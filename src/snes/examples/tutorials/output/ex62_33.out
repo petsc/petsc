@@ -2,15 +2,13 @@
     0 KSP Residual norm 27.5941 
     1 KSP Residual norm 8.01214 
     2 KSP Residual norm 0.469682 
-    3 KSP Residual norm 0.000187804 
-    4 KSP Residual norm 5.68256e-06 
-    5 KSP Residual norm 1.10197e-09 
-  1 SNES Function norm 1.10197e-09 
+    3 KSP Residual norm 1.39396e-09 
+  1 SNES Function norm 1.39396e-09 
 SNES Object: 1 MPI processes
   type: ls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=5
+  total number of linear solver iterations=3
   total number of function evaluations=2
   KSP Object:   1 MPI processes
     type: fgmres
@@ -63,8 +61,9 @@ SNES Object: 1 MPI processes
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             GMRES: happy breakdown tolerance 1e-30
           maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          tolerances:  relative=1e-10, absolute=1e-50, divergence=10000
           left preconditioning
+          has attached null space
           using PRECONDITIONED norm type for convergence test
         PC Object:        (fieldsplit_pressure_)         1 MPI processes
           type: jacobi
@@ -146,4 +145,4 @@ SNES Object: 1 MPI processes
     maximum iterations=40
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 Number of SNES iterations = 1
-L_2 Error: 3.92e-09
+L_2 Error: 1.27e-09

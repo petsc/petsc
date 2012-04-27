@@ -388,27 +388,63 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
               jj[nfields*j + k] = rstart + bs*j + fields_col[k];
             }
           }
-          ierr = ISCreateGeneral(((PetscObject)pc)->comm,nslots*nfields,ii,PETSC_OWN_POINTER,&ilink->is);CHKERRQ(ierr);       
+          ierr = ISCreateGeneral(((PetscObject)pc)->comm,nslots*nfields,ii,PETSC_OWN_POINTER,&ilink->is);CHKERRQ(ierr);
           ierr = ISCreateGeneral(((PetscObject)pc)->comm,nslots*nfields,jj,PETSC_OWN_POINTER,&ilink->is_col);CHKERRQ(ierr);
-        } else { 
-          ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+ilink->fields[0],bs,&ilink->is);CHKERRQ(ierr); 
+        } else {
+          ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+ilink->fields[0],bs,&ilink->is);CHKERRQ(ierr);
           ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+ilink->fields_col[0],bs,&ilink->is_col);CHKERRQ(ierr);
        }
-      } 
+      }
       ierr = ISSorted(ilink->is,&sorted);CHKERRQ(ierr);
       if (ilink->is_col) { ierr = ISSorted(ilink->is_col,&sorted_col);CHKERRQ(ierr); }
       if (!sorted || !sorted_col) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Fields must be sorted when creating split");
       ilink = ilink->next;
     }
   }
-  
+
   ilink  = jac->head;
   if (!jac->pmat) {
+    Vec xtmp;
+
+    ierr = MatGetVecs(pc->pmat,&xtmp,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->pmat);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nsplit,Vec,&jac->x,nsplit,Vec,&jac->y);CHKERRQ(ierr);
     for (i=0; i<nsplit; i++) {
+      MatNullSpace sp;
+
       ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is_col,MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+      /* create work vectors for each split */
+      ierr = MatGetVecs(jac->pmat[i],&jac->x[i],&jac->y[i]);CHKERRQ(ierr);
+      ilink->x = jac->x[i]; ilink->y = jac->y[i];
+      /* compute scatter contexts needed by multiplicative versions and non-default splits */
+      ierr = VecScatterCreate(xtmp,ilink->is,jac->x[i],PETSC_NULL,&ilink->sctx);CHKERRQ(ierr);
+      /* HACK: Check for the constant null space */
+      ierr = MatGetNullSpace(pc->pmat, &sp);CHKERRQ(ierr);
+      if (sp) {
+        MatNullSpace subsp;
+        Vec          ftmp, gtmp;
+        PetscScalar  norm;
+        PetscInt     N;
+
+        ierr = MatGetVecs(pc->pmat,     &gtmp, PETSC_NULL);CHKERRQ(ierr);
+        ierr = MatGetVecs(jac->pmat[i], &ftmp, PETSC_NULL);CHKERRQ(ierr);
+        ierr = VecGetSize(ftmp, &N);CHKERRQ(ierr);
+        ierr = VecSet(ftmp, 1.0/N);CHKERRQ(ierr);
+        ierr = VecScatterBegin(ilink->sctx, ftmp, gtmp, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
+        ierr = VecScatterEnd(ilink->sctx, ftmp, gtmp, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
+        ierr = MatNullSpaceRemove(sp, gtmp, PETSC_NULL);CHKERRQ(ierr);
+        ierr = VecNorm(gtmp, NORM_2, &norm);CHKERRQ(ierr);
+        if (norm < 1.0e-10) {
+          ierr  = MatNullSpaceCreate(((PetscObject)pc)->comm, PETSC_TRUE, 0, PETSC_NULL, &subsp);CHKERRQ(ierr);
+          ierr  = MatSetNullSpace(jac->pmat[i], subsp);CHKERRQ(ierr);
+          ierr  = MatNullSpaceDestroy(&subsp);CHKERRQ(ierr);
+        }
+        ierr = VecDestroy(&ftmp);CHKERRQ(ierr);
+        ierr = VecDestroy(&gtmp);CHKERRQ(ierr);
+      }
       ilink = ilink->next;
     }
+    ierr = VecDestroy(&xtmp);CHKERRQ(ierr);
   } else {
     for (i=0; i<nsplit; i++) {
       ierr = MatGetSubMatrix(pc->pmat,ilink->is,ilink->is_col,MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
@@ -476,6 +512,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
      } else {
       KSP ksp;
       char schurprefix[256];
+      MatNullSpace sp;
 
       /* extract the A01 and A10 matrices */
       ilink = jac->head;
@@ -488,6 +525,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       /* Use mat[0] (diagonal block of the real matrix) preconditioned by pmat[0] */
       ierr  = MatCreateSchurComplement(jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],&jac->schur);CHKERRQ(ierr);
+      ierr  = MatGetNullSpace(jac->pmat[1], &sp);CHKERRQ(ierr);
+      if (sp) {ierr  = MatSetNullSpace(jac->schur, sp);CHKERRQ(ierr);}
       /* set tabbing and options prefix of KSP inside the MatSchur */
       ierr  = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
       ierr  = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,2);CHKERRQ(ierr);
@@ -512,14 +551,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
       /* need to call this every time, since the jac->kspschur is freshly created, otherwise its options never get set */
       ierr = KSPSetFromOptions(jac->kspschur);CHKERRQ(ierr);
-
-      ierr = PetscMalloc2(2,Vec,&jac->x,2,Vec,&jac->y);CHKERRQ(ierr);
-      ierr = MatGetVecs(jac->pmat[0],&jac->x[0],&jac->y[0]);CHKERRQ(ierr);
-      ierr = MatGetVecs(jac->pmat[1],&jac->x[1],&jac->y[1]);CHKERRQ(ierr);
-      ilink = jac->head;
-      ilink->x = jac->x[0]; ilink->y = jac->y[0];
-      ilink = ilink->next;
-      ilink->x = jac->x[1]; ilink->y = jac->y[1];
     }
 
     /* HACK: special support to forward L and Lp matrices that might be used by PCLSC */
@@ -543,40 +574,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       i++;
       ilink = ilink->next;
     }
-  
-    /* create work vectors for each split */
-    if (!jac->x) {
-      ierr = PetscMalloc2(nsplit,Vec,&jac->x,nsplit,Vec,&jac->y);CHKERRQ(ierr);
-      ilink = jac->head;
-      for (i=0; i<nsplit; i++) {
-        Vec *vl,*vr;
-
-        ierr      = KSPGetVecs(ilink->ksp,1,&vr,1,&vl);CHKERRQ(ierr);
-        ilink->x  = *vr;
-        ilink->y  = *vl;
-        ierr      = PetscFree(vr);CHKERRQ(ierr);
-        ierr      = PetscFree(vl);CHKERRQ(ierr);
-        jac->x[i] = ilink->x;
-        jac->y[i] = ilink->y;
-        ilink     = ilink->next;
-      }
-    }
   }
 
-
-  if (!jac->head->sctx) {
-    Vec xtmp;
-
-    /* compute scatter contexts needed by multiplicative versions and non-default splits */
-    
-    ilink = jac->head;
-    ierr = MatGetVecs(pc->pmat,&xtmp,PETSC_NULL);CHKERRQ(ierr);
-    for (i=0; i<nsplit; i++) {
-      ierr = VecScatterCreate(xtmp,ilink->is,jac->x[i],PETSC_NULL,&ilink->sctx);CHKERRQ(ierr);
-      ilink = ilink->next;
-    }
-    ierr = VecDestroy(&xtmp);CHKERRQ(ierr);
-  }
   jac->suboptionsset = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

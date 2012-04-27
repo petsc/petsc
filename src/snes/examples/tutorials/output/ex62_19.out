@@ -9,10 +9,10 @@
     7 KSP Residual norm 0.0046995 
     8 KSP Residual norm 0.00183816 
     9 KSP Residual norm 6.80092e-06 
-   10 KSP Residual norm 1.57304e-07 
-   11 KSP Residual norm 2.61194e-09 
-   12 KSP Residual norm 2.947e-11 
-  1 SNES Function norm 1.144e-10 
+   10 KSP Residual norm 8.90958e-07 
+   11 KSP Residual norm 3.44821e-09 
+   12 KSP Residual norm 2.109e-11 
+  1 SNES Function norm 8.167e-11 
 SNES Object: 2 MPI processes
   type: ls
   maximum iterations=50, maximum function evaluations=10000

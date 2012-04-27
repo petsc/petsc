@@ -31,7 +31,7 @@ SNES Object: 3 MPI processes
     maximum iterations=40
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 Number of SNES iterations = 1
-L_2 Error: 9.29e-10
+L_2 Error: 7.48e-10
 Solution
 Vector Object: 3 MPI processes
   type: mpi
