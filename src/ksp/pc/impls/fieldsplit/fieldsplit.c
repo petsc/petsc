@@ -423,7 +423,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       if (sp) {
         MatNullSpace subsp;
         Vec          ftmp, gtmp;
-        PetscScalar  norm;
+        PetscReal    norm;
         PetscInt     N;
 
         ierr = MatGetVecs(pc->pmat,     &gtmp, PETSC_NULL);CHKERRQ(ierr);
