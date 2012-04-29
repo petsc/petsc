@@ -244,6 +244,7 @@ int main(int argc,char *argv[])
     trstarts[j+1] = trstarts[j]+nloc;
   }
   ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)tuned_STREAM_Initialize_Kernel,1,&scalar);CHKERRQ(ierr);
+  ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 # else
     for (j=0; j<N; j++) {
       a[j] = 1.0;
@@ -267,6 +268,7 @@ int main(int argc,char *argv[])
     
 #if WITH_PTHREADS
     ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)tuned_STREAM_2A_Kernel,0);CHKERRQ(ierr);
+    ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 #else
     for (j = 0; j < N; j++)
       a[j] = 2.0E0 * a[j];
@@ -286,6 +288,7 @@ int main(int argc,char *argv[])
       times[0][k] = mysecond();
 #if WITH_PTHREADS
       ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)tuned_STREAM_Copy_Kernel,0);CHKERRQ(ierr);
+      ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 #else
       for (j=0; j<N; j++)
 	c[j] = a[j];
@@ -295,6 +298,7 @@ int main(int argc,char *argv[])
       times[1][k] = mysecond();
 #if WITH_PTHREADS
       ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)tuned_STREAM_Scale_Kernel,1,&scalar);CHKERRQ(ierr);
+      ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 #else
       for (j=0; j<N; j++)
 	b[j] = scalar*c[j];
@@ -304,6 +308,7 @@ int main(int argc,char *argv[])
       times[2][k] = mysecond();
 #if WITH_PTHREADS
       ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)tuned_STREAM_Add_Kernel,0);CHKERRQ(ierr);
+      ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 #else
       for (j=0; j<N; j++)
 	c[j] = a[j]+b[j];
@@ -313,6 +318,7 @@ int main(int argc,char *argv[])
       times[3][k] = mysecond();
 #if WITH_PTHREADS
       ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)tuned_STREAM_Triad_Kernel,1,&scalar);CHKERRQ(ierr);
+      ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 #else
       for (j=0; j<N; j++)
 	a[j] = b[j]+scalar*c[j];
