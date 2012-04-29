@@ -377,11 +377,11 @@ PetscErrorCode SNESDMMeshComputeJacobian(SNES snes, Vec X, Mat *J, Mat *B, MatSt
 #endif
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDMComplexComputeFunction"
+#define __FUNCT__ "SNESDMComputeFunction"
 /*@C
-  SNESDMComplexComputeFunction - This is a universal function evaluation routine that
-  may be used with SNESSetFunction() as long as the user context has a DMComplex
-  as its first record and the user has called DMComplexSetLocalFunction().
+  SNESDMComputeFunction - This is a universal function evaluation routine that
+  may be used with SNESSetFunction() as long as the user context has a DM
+  as its first record and the user has called DMSetLocalFunction().
 
   Collective on SNES
 
@@ -389,14 +389,14 @@ PetscErrorCode SNESDMMeshComputeJacobian(SNES snes, Vec X, Mat *J, Mat *B, MatSt
 + snes - the SNES context
 . X - input vector
 . F - function vector
-- ptr - pointer to a structure that must have a DMComplex as its first entry.
-        This ptr must have been passed into SNESDMComplexComputeFunction() as the context.
+- ptr - pointer to a structure that must have a DM as its first entry.
+        This ptr must have been passed into SNESDMComputeFunction() as the context.
 
   Level: intermediate
 
-.seealso: DMComplexSetLocalFunction(), DMComplexSetLocalJacobian(), SNESSetFunction(), SNESSetJacobian()
+.seealso: DMSetLocalFunction(), DMSetLocalJacobian(), SNESSetFunction(), SNESSetJacobian()
 @*/
-PetscErrorCode SNESDMComplexComputeFunction(SNES snes, Vec X, Vec F, void *ptr)
+PetscErrorCode SNESDMComputeFunction(SNES snes, Vec X, Vec F, void *ptr)
 {
   DM               dm = *(DM*) ptr;
   PetscErrorCode (*lf)(DM, Vec, Vec, void *);
@@ -408,7 +408,7 @@ PetscErrorCode SNESDMComplexComputeFunction(SNES snes, Vec X, Vec F, void *ptr)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(F, VEC_CLASSID, 3);
-  if (!dm) SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONGSTATE, "Looks like you called SNESSetFromFuntion(snes,SNESDMComplexComputeFunction,) without the DMComplex context");
+  if (!dm) SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONGSTATE, "Looks like you called SNESSetFromFuntion(snes,SNESDMComputeFunction,) without the DM context");
   PetscValidHeaderSpecific(dm, DM_CLASSID, 4);
 
   /* determine whether X = localX */
@@ -427,7 +427,7 @@ PetscErrorCode SNESDMComplexComputeFunction(SNES snes, Vec X, Vec F, void *ptr)
     ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
     localX = X;
   }
-  ierr = DMComplexGetLocalFunction(dm, &lf);CHKERRQ(ierr);
+  ierr = DMGetLocalFunction(dm, &lf);CHKERRQ(ierr);
   ierr = (*lf)(dm, localX, localF, ptr);CHKERRQ(ierr);
   if (n != N){
     ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
@@ -439,11 +439,11 @@ PetscErrorCode SNESDMComplexComputeFunction(SNES snes, Vec X, Vec F, void *ptr)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDMComplexComputeJacobian"
+#define __FUNCT__ "SNESDMComputeJacobian"
 /*
-  SNESDMComplexComputeJacobian - This is a universal Jacobian evaluation routine that
-  may be used with SNESSetJacobian() as long as the user context has a DMComplex
-  as its first record and the user has called DMComplexSetLocalJacobian().
+  SNESDMComputeJacobian - This is a universal Jacobian evaluation routine that
+  may be used with SNESSetJacobian() as long as the user context has a DM
+  as its first record and the user has called DMSetLocalJacobian().
 
   Collective on SNES
 
@@ -453,14 +453,14 @@ PetscErrorCode SNESDMComplexComputeFunction(SNES snes, Vec X, Vec F, void *ptr)
 . J - Jacobian
 . B - Jacobian used in preconditioner (usally same as J)
 . flag - indicates if the matrix changed its structure
-- ptr - pointer to a structure that must have a DMComplex as its first entry.
-        This ptr must have been passed into SNESDMComplexComputeFunction() as the context.
+- ptr - pointer to a structure that must have a DM as its first entry.
+        This ptr must have been passed into SNESDMComputeFunction() as the context.
 
   Level: intermediate
 
-.seealso: DMComplexSetLocalFunction(), DMComplexSetLocalJacobian(), SNESSetFunction(), SNESSetJacobian()
+.seealso: DMSetLocalFunction(), DMSetLocalJacobian(), SNESSetFunction(), SNESSetJacobian()
 */
-PetscErrorCode SNESDMComplexComputeJacobian(SNES snes, Vec X, Mat *J, Mat *B, MatStructure *flag, void *ptr)
+PetscErrorCode SNESDMComputeJacobian(SNES snes, Vec X, Mat *J, Mat *B, MatStructure *flag, void *ptr)
 {
   DM               dm = *(DM*) ptr;
   PetscErrorCode (*lj)(DM, Vec, Mat, Mat, void *);
@@ -471,7 +471,7 @@ PetscErrorCode SNESDMComplexComputeJacobian(SNES snes, Vec X, Mat *J, Mat *B, Ma
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
-  ierr = DMComplexGetLocalJacobian(dm, &lj);CHKERRQ(ierr);
+  ierr = DMGetLocalJacobian(dm, &lj);CHKERRQ(ierr);
   ierr = (*lj)(dm, localX, *J, *B, ptr);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */

@@ -295,8 +295,6 @@ PetscErrorCode DMCreate_Complex(DM dm)
   mesh->labels               = PETSC_NULL;
   mesh->defaultSection       = PETSC_NULL;
   mesh->defaultGlobalSection = PETSC_NULL;
-  mesh->lf                   = PETSC_NULL;
-  mesh->lj                   = PETSC_NULL;
   mesh->printSetValues       = PETSC_FALSE;
 
   ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);

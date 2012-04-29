@@ -87,6 +87,8 @@ struct _p_DM {
   PetscBool              setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
   void                   *data;
   DMCoarsenHookLink      coarsenhook; /* For transfering auxiliary problem data to coarser grids */
+  DMLocalFunction1       lf;
+  DMLocalJacobian1       lj;
 };
 
 extern PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;

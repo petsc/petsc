@@ -48,6 +48,8 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->ltogmapb     = PETSC_NULL;
   v->bs           = 1;
   v->coloringtype = IS_COLORING_GLOBAL;
+  v->lf           = PETSC_NULL;
+  v->lj           = PETSC_NULL;
 
   *dm = v;
   PetscFunctionReturn(0);
@@ -2303,3 +2305,132 @@ PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, P
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMGetLocalFunction"
+/*@C
+  DMGetLocalFunction - Get the local residual function from this DM
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. lf - The local residual function
+
+   Calling sequence of lf:
+$    lf (SNES snes, Vec x, Vec f, void *ctx);
+
++  snes - the SNES context
+.  x - local vector with the state at which to evaluate residual
+.  f - local vector to put residual in
+-  ctx - optional user-defined function context
+
+  Level: intermediate
+
+.seealso DMSetLocalFunction(), DMGetLocalJacobian(), DMSetLocalJacobian()
+@*/
+PetscErrorCode DMGetLocalFunction(DM dm, PetscErrorCode (**lf)(DM, Vec, Vec, void *))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (lf) *lf = dm->lf;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetLocalFunction"
+/*@C
+  DMSetLocalFunction - Set the local residual function from this DM
+
+  Not collective
+
+  Input Parameters:
++ dm - The DM
+- lf - The local residual function
+
+   Calling sequence of lf:
+$    lf (SNES snes, Vec x, Vec f, void *ctx);
+
++  snes - the SNES context
+.  x - local vector with the state at which to evaluate residual
+.  f - local vector to put residual in
+-  ctx - optional user-defined function context
+
+  Level: intermediate
+
+.seealso DMGetLocalFunction(), DMGetLocalJacobian(), DMSetLocalJacobian()
+@*/
+PetscErrorCode DMSetLocalFunction(DM dm, PetscErrorCode (*lf)(DM, Vec, Vec, void *))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  dm->lf = lf;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetLocalJacobian"
+/*@C
+  DMGetLocalJacobian - Get the local Jacobian function from this DM
+
+  Not collective
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. lj - The local Jacobian function
+
+   Calling sequence of lj:
+$    lj (SNES snes, Vec x, Mat J, Mat M, void *ctx);
+
++  snes - the SNES context
+.  x - local vector with the state at which to evaluate residual
+.  J - matrix to put Jacobian in
+.  M - matrix to use for defining Jacobian preconditioner
+-  ctx - optional user-defined function context
+
+  Level: intermediate
+
+.seealso DMSetLocalJacobian(), DMGetLocalFunction(), DMSetLocalFunction()
+@*/
+PetscErrorCode DMGetLocalJacobian(DM dm, PetscErrorCode (**lj)(DM, Vec, Mat, Mat, void *))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (lj) *lj = dm->lj;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetLocalJacobian"
+/*@C
+  DMSetLocalJacobian - Set the local Jacobian function from this DM
+
+  Not collective
+
+  Input Parameters:
++ dm - The DM
+- lj - The local Jacobian function
+
+   Calling sequence of lj:
+$    lj (SNES snes, Vec x, Mat J, Mat M, void *ctx);
+
++  snes - the SNES context
+.  x - local vector with the state at which to evaluate residual
+.  J - matrix to put Jacobian in
+.  M - matrix to use for defining Jacobian preconditioner
+-  ctx - optional user-defined function context
+
+  Level: intermediate
+
+.seealso DMGetLocalJacobian(), DMGetLocalFunction(), DMSetLocalFunction()
+@*/
+PetscErrorCode DMSetLocalJacobian(DM dm, PetscErrorCode (*lj)(DM, Vec, Mat,  Mat, void *))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  dm->lj = lj;
+  PetscFunctionReturn(0);
+}

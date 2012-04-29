@@ -184,6 +184,8 @@ extern PetscErrorCode  PetscViewerBinaryMatlabOutputVecDA(PetscViewer, const cha
 #define DM_FILE_CLASSID 1211221
 
 /* FEM support */
+typedef PetscErrorCode (*DMLocalFunction1)(DM, Vec, Vec, void*);
+typedef PetscErrorCode (*DMLocalJacobian1)(DM, Vec, Mat, Mat, void*);
 extern PetscErrorCode DMPrintCellVector(PetscInt, const char [], PetscInt, const PetscScalar []);
 extern PetscErrorCode DMPrintCellMatrix(PetscInt, const char [], PetscInt, PetscInt, const PetscScalar []);
 

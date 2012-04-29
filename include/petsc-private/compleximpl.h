@@ -43,8 +43,6 @@ typedef struct {
 
   PetscSection            defaultSection;
   PetscSection            defaultGlobalSection;
-  DMComplexLocalFunction1 lf;
-  DMComplexLocalJacobian1 lj;
 
   /* Debugging */
   PetscBool               printSetValues;

@@ -10,24 +10,6 @@ PetscClassId  SNES_CLASSID;
 PetscLogEvent  SNES_Solve, SNES_FunctionEval, SNES_JacobianEval, SNES_GSEval;
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDMComputeJacobian"
-/*
-    Translates from a SNES call to a DM call in computing a Jacobian
-
-    This is a legacy calling sequence, should transition to dispatching through the SNESDM.
-*/
-PetscErrorCode SNESDMComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
-{
-  PetscErrorCode ierr;
-  DM             dm;
-
-  PetscFunctionBegin;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMComputeJacobian(dm,X,*J,*B,flag);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "SNESSetErrorIfNotConverged"
 /*@
    SNESSetErrorIfNotConverged - Causes SNESSolve() to generate an error if the solver has not converged.

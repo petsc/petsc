@@ -5179,54 +5179,6 @@ PetscErrorCode DMCreateLocalToGlobalMapping_Complex(DM dm)
 /******************************** FEM Support **********************************/
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexGetLocalFunction"
-PetscErrorCode DMComplexGetLocalFunction(DM dm, PetscErrorCode (**lf)(DM, Vec, Vec, void *))
-{
-  DM_Complex *mesh = (DM_Complex *) dm->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (lf) *lf = mesh->lf;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComplexSetLocalFunction"
-PetscErrorCode DMComplexSetLocalFunction(DM dm, PetscErrorCode (*lf)(DM, Vec, Vec, void *))
-{
-  DM_Complex *mesh = (DM_Complex *) dm->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  mesh->lf = lf;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComplexGetLocalJacobian"
-PetscErrorCode DMComplexGetLocalJacobian(DM dm, PetscErrorCode (**lj)(DM, Vec, Mat, Mat, void *))
-{
-  DM_Complex *mesh = (DM_Complex *) dm->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (lj) *lj = mesh->lj;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComplexSetLocalJacobian"
-PetscErrorCode DMComplexSetLocalJacobian(DM dm, PetscErrorCode (*lj)(DM, Vec, Mat,  Mat, void *))
-{
-  DM_Complex *mesh = (DM_Complex *) dm->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  mesh->lj = lj;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMComplexVecGetClosure"
 /*@C
   DMComplexVecGetClosure - Get an array of the values on the closure of 'point'
