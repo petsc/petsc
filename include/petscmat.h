@@ -387,6 +387,8 @@ extern PetscErrorCode  MatGetArray(Mat,PetscScalar *[]);
 extern PetscErrorCode  MatRestoreArray(Mat,PetscScalar *[]);
 extern PetscErrorCode  MatGetBlockSize(Mat,PetscInt *);
 extern PetscErrorCode  MatSetBlockSize(Mat,PetscInt);
+extern PetscErrorCode  MatGetBlockSizes(Mat,PetscInt *,PetscInt *);
+extern PetscErrorCode  MatSetBlockSizes(Mat,PetscInt,PetscInt);
 extern PetscErrorCode MatSetNThreads(Mat,PetscInt);
 extern PetscErrorCode MatGetNThreads(Mat,PetscInt*);
 
@@ -1602,7 +1604,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_TRANSCOLORING_APPLY_DENTOSP=135,
                MATOP_RARt=136,
                MATOP_RARt_SYMBOLIC=137,
-               MATOP_RARt_NUMERIC=138
+               MATOP_RARt_NUMERIC=138,
+               MATOP_SET_BLOCK_SIZES=139
              } MatOperation;
 extern PetscErrorCode  MatHasOperation(Mat,MatOperation,PetscBool *);
 extern PetscErrorCode  MatShellSetOperation(Mat,MatOperation,void(*)(void));

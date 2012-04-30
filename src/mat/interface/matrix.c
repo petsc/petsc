@@ -6743,6 +6743,44 @@ PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetBlockSizes"
+/*@
+   MatGetBlockSizes - Returns the matrix block row and column sizes; 
+   useful especially for the block row and block diagonal formats.
+   
+   Not Collective
+
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameter:
+.  rbs - row block size
+.  cbs - coumn block size
+
+   Notes:
+   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ
+
+   Level: intermediate
+
+   Concepts: matrices^block size
+
+.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ(), MatGetBlockSize()
+@*/
+PetscErrorCode  MatGetBlockSizes(Mat mat,PetscInt *rbs, PetscInt *cbs)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  PetscValidIntPointer(rbs,2);
+  PetscValidIntPointer(cbs,3);
+  MatCheckPreallocated(mat,1);
+  *rbs = mat->rmap->bs;
+  *cbs = mat->cmap->bs;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSetBlockSize"
 /*@
    MatSetBlockSize - Sets the matrix block size.
@@ -6771,6 +6809,39 @@ PetscErrorCode  MatSetBlockSize(Mat mat,PetscInt bs)
   PetscValidLogicalCollectiveInt(mat,bs,2);
   ierr = PetscLayoutSetBlockSize(mat->rmap,bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(mat->cmap,bs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetBlockSizes"
+/*@
+   MatSetBlockSizes - Sets the matrix block row and column sizes.
+   
+   Logically Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+-  rbs - row block size
+-  cbs - column block size
+
+   Notes:
+     This must be called before MatSetUp() or MatXXXSetPreallocation() (or will default to 1) and the block size cannot be changed later
+
+   Level: intermediate
+
+   Concepts: matrices^block size
+
+.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ(), MatGetBlockSize()
+@*/
+PetscErrorCode  MatSetBlockSizes(Mat mat,PetscInt rbs,PetscInt cbs)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveInt(mat,rbs,2);
+  ierr = PetscLayoutSetBlockSize(mat->rmap,rbs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(mat->cmap,cbs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
