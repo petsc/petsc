@@ -11,19 +11,17 @@ T*/
 
 PetscInt    *trstarts;
 
-PetscErrorCode reduce_kernel(PetscInt myrank,PetscScalar *a,PetscScalar *sum,PetscScalar *prod)
+PetscErrorCode reduce_kernel(PetscInt myrank,PetscScalar *a,PetscScalar *sum)
 {
-  PetscScalar my_sum=*sum,my_prod=*prod;
+  PetscScalar my_sum=*sum;
   PetscInt    i;
   PetscThreadComm tcomm;
 
-  for(i=trstarts[myrank];i < trstarts[myrank+1];i++) { my_sum += a[i]; my_prod *= a[i];}
+  for(i=trstarts[myrank];i < trstarts[myrank+1];i++) { my_sum += a[i];}
 
   PetscCommGetThreadComm(PETSC_COMM_WORLD,&tcomm);
   PetscThreadReductionKernelBegin(myrank,tcomm,THREADCOMM_SUM,PETSC_SCALAR,&my_sum,sum);
   PetscThreadReductionKernelEnd(myrank,tcomm,THREADCOMM_SUM,PETSC_SCALAR,&my_sum,sum);
-  //  PetscThreadReductionKernelBegin(myrank,tcomm,THREADCOMM_PROD,PETSC_SCALAR,&my_prod,prod);
-  //  PetscThreadReductionKernelEnd(myrank,tcomm,THREADCOMM_PROD,PETSC_SCALAR,&my_prod,prod);
   
   return 0;
 }
@@ -35,7 +33,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       nthreads,i,Q,R,nloc;
   PetscBool      S;
-  PetscScalar    *a,sum=0.0,prod=1.0;
+  PetscScalar    *a,sum=0.0;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -56,11 +54,10 @@ int main(int argc,char **argv)
     
   ierr = PetscThreadCommView(PETSC_COMM_WORLD,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)reduce_kernel,3,a,&sum,&prod);CHKERRQ(ierr);
+  ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)reduce_kernel,2,a,&sum);CHKERRQ(ierr);
   ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Sum(x) = %f\n",sum);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Product(x) = %f\n",prod);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }
