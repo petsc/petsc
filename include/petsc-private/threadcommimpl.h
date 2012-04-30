@@ -34,6 +34,24 @@ extern PetscMPIInt Petsc_ThreadComm_keyval;
 /* Max. number of kernels */
 #define PETSC_KERNELS_MAX 10
 
+/* Status of threads */
+#define THREADCOMM_THREAD_WAITING_FOR_NEWRED 0
+#define THREADCOMM_THREAD_POSTED_LOCALRED    1
+/* Status of the reduction */
+#define THREADCOMM_REDUCTION_NONE           -1
+#define THREADCOMM_REDUCTION_NEW             0
+#define THREADCOMM_REDUCTION_COMPLETE        1
+
+#define PetscReadOnce(type,val) (*(volatile type *)&val)
+
+typedef struct _p_PetscThreadCommRedCtx *PetscThreadCommRedCtx;
+struct _p_PetscThreadCommRedCtx{
+  PetscInt                      red_status;   /* Reduction status */
+  PetscInt                      nworkThreads; /* Number of threads doing the reduction */
+  PetscInt                      *thread_status; /* Reduction status of each thread */
+  long long                     *local_red; /* array to hold local reductions provided by each thread */
+};
+
 typedef struct _p_PetscThreadCommJobCtx *PetscThreadCommJobCtx;
 struct  _p_PetscThreadCommJobCtx{
   PetscThreadComm   tcomm;                         /* The thread communicator */
@@ -67,9 +85,9 @@ struct _p_PetscThreadComm{
   PetscInt                leader;       /* Rank of the leader thread. This thread manages
                                            the synchronization for collective operatons like reductions.
 					*/
+  PetscThreadCommRedCtx red;      /* Reduction context */
 };
 
-extern PetscErrorCode PetscCommGetThreadComm(MPI_Comm,PetscThreadComm*);
 /* register thread communicator models */
 extern PetscErrorCode PetscThreadCommRegister(const char[],const char[],const char[],PetscErrorCode(*)(PetscThreadComm));
 extern PetscErrorCode PetscThreadCommRegisterAll(const char path[]);

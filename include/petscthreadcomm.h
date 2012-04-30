@@ -25,6 +25,10 @@ extern PetscInt N_CORES; /* Number of available cores */
 
 extern PetscFList PetscThreadCommList;
 
+typedef enum {THREADCOMM_SUM,THREADCOMM_PROD} PetscThreadCommReductionType;
+extern const char *const PetscThreadCommReductionTypes[];
+
+extern PetscErrorCode PetscCommGetThreadComm(MPI_Comm,PetscThreadComm*);
 extern PetscErrorCode PetscThreadCommInitializePackage(const char *path);
 extern PetscErrorCode PetscThreadCommFinalizePackage();
 extern PetscErrorCode PetscThreadCommInitialize();
@@ -35,6 +39,9 @@ extern PetscErrorCode PetscThreadCommRunKernel(MPI_Comm,PetscErrorCode (*)(Petsc
 extern PetscErrorCode PetscThreadCommBarrier(MPI_Comm);
 
 extern PetscErrorCode PetscThreadCommRegisterDestroy(void);
+
+extern PetscErrorCode PetscThreadReductionKernelBegin(PetscInt,PetscThreadComm,PetscThreadCommReductionType,PetscDataType,void*,void*);
+extern PetscErrorCode PetscThreadReductionKernelEnd(PetscInt,PetscThreadComm,PetscThreadCommReductionType,PetscDataType,void*,void*);
 
 
 PETSC_EXTERN_CXX_END

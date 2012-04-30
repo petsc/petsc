@@ -63,7 +63,6 @@ extern PETSC_PTHREAD_LOCAL PetscInt PetscPThreadRank; /* Rank of the calling thr
 extern pthread_key_t  PetscPThreadRankkey;
 #endif
 
-#define PetscReadOnce(type,val) (*(volatile type *)&val)
 
 EXTERN_C_BEGIN
 extern PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm);
