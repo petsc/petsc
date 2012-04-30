@@ -72,40 +72,37 @@
 
       <!-- This is here for the grepping between begin / end, weaksauce! -->
 
-      <h3>Quick instructions:</h3>
+      <h3>Quick Instructions:</h3>
 
-      Invoke the following commands from the top level PETSc directory [using bash shell]: <br>
-      <ul>
-        <li><code>export PETSC_DIR=$PWD</code></li>
-        <li><code>./configure --with-cc=gcc --with-fc=gfortran --download-f-blas-lapack --download-mpich</code></li>
-        <li><code>make all test</code></li>
+      Invoke the following commands from the top level PETSc directory: <br>
+      <ul class="code">
+        <li>./configure --with-cc=gcc --with-fc=gfortran --download-f-blas-lapack --download-mpich</li>
+        <li>make all test</li>
       </ul>
 
-      <h3>Detailed instructions: [<a style="color: rgb(204, 102, 0);" href="#windows">Check here for MS Windows Installation</a>]</h3>
-
-      <ul>
-        <li>Sugest downloading and installing PETSc as a <b>regular/non-root user</b>, perhaps in <b>/home/username/soft</b></li>
-        <li><a href="../download/index.html">Download</a> latest PETSc release tarball: petsc-3.2-p0.tar.gz</li>
-        <li><code>cd /home/username/soft</code></li>
-        <li><code>gunzip -c petsc-3.2-p0.tar.gz | tar -xof -</code></li>
-        <li><code>cd petsc-3.2-p0</code></li>
-        <li>
-          sh/bash shell:  <code>PETSC_DIR=$PWD; export PETSC_DIR</code><br>
-          csh/tcsh shell: <code>setenv PETSC_DIR $PWD</code>
-        </li>
-        <li><code>./configure</code> (takes most standard autoconf configure options or use --help or see the <a href="#exampleusage">example usages</a>)</li>
-        <li><code>make all</code></li>
-        <li><code>make test</code></li>
-      </ul>
+      <a style="color: rgb(204,102,0);" href="#windows"><b>Check here for MS Windows Installation</b></a>
 
       <h3>Encounter problems?</h3>
 
       <ul>
         <li><b>Read the error message from ./configure!</b></li>
-        <li>If you get the message 'No such file or directory' try <code style="color: red">python ./configure</code></li>
+        <li>If you get the message 'No such file or directory' try: <code style="color: red">python ./configure</code></li>
         <li><a href="installation.html#blas-lapack">BLAS and LAPACK problems</a></li>
         <li><a href="installation.html#mpi">MPI problems</a>. I <a href="installation.html#i-dont-want-to-use-mpi">don't want MPI</a></li>
+        <li><i><b>make</i></b> problems? Just copy/paste <i><b>make</i></b> command printed by configure including PETSC_DIR and PETSC_ARCH options</li>
+        <li>Do not have fortran compiler? check <a href=#exampleusage>examples</a> below
         <li> Check the <a href="http://www.mcs.anl.gov/petsc/documentation/bugreporting.html">bug-reporting</a> section</li>
+      </ul>
+
+
+      <h3>Notes:</h3>
+
+      <ul>
+        <li>Please <a href="../download/index.html">download</a> the <b>latest</b> patched tarball
+        <li>Please install PETSc as a <b>regular/non-root user</b>, perhaps in <b>/home/username/soft</b></li>
+        <li>To extract the sources use: <code>gunzip -c petsc-3.2-p0.tar.gz | tar -xof -</code></li>
+        <li>Please check: <code>./configure --help</code></li>
+        <li>Please check <a href="#exampleusage">example usages</a></li>
       </ul>
 
     </div>
@@ -122,61 +119,63 @@
             Examples are at <b>config/examples/*.py</b>. We use some of these scripts
             locally for testing - for example one can update these files and run as:
             <ul>
-              <li>config/examples/arch-osx-10.6.py</li>
+              <li>./config/examples/arch-osx-10.6.py</li>
             </ul>
           </li>
 
           <li>
-            Using the bash shell, assuming BLAS, LAPACK, MPICH are not currently
+            Assuming BLAS, LAPACK, MPICH are not currently
             installed <code>./configure</code> will download &amp; install BLAS,
             LAPACK, MPICH if they are not already installed on the system):
             <ul>
-              <li>export PETSC_DIR=/home/petsc/petsc-3.2-p0</li>
-              <li>cd $PETSC_DIR</li>
               <li>./configure --with-cc=gcc --with-fc=gfortran --download-f-blas-lapack --download-mpich</li>
-              <li>make</li>
-              <li>make test</li>
             </ul>
           </li>
 
           <li>
-            Same as above - but build Complex version of PETSc [using c++ compiler]
-            (add the option <code>--with-fortran-kernels=generic</code> to get
-            possibly faster complex number performance on some systems):
+            Same as above - but do not have a fortran compiler [and want to use PETSc from C].
             <ul>
-              <li>export PETSC_DIR=/home/petsc/petsc-3.2-p0</li>
-              <li>cd $PETSC_DIR</li>
-              <li>./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --download-f-blas-lapack --download-mpich --with-scalar-type=complex --with-clanguage=cxx</li>
-              <li>make</li>
-              <li>make test</li>
+              <li>./configure --with-cc=gcc --with-fc=0 --download-f2cblaslapack --download-mpich</li>
             </ul>
           </li>
 
           <li>
-            Using the bash shell, assuming BLAS, LAPACK, MPICH software are
-            installed at the specified locations, and use MPI compilers
-            <b>mpicc/mpif90</b>:
-            <br>
+            If BLAS, LAPACK, MPI are already installed in default system/compiler locations and mpicc,
+            mpif90, mpiexec are available via PATH - configure does not require any additional options.
+            <ul>
+              <li>./configure</li>
+            </ul>
+          </li>
+
+          <li>
+            If BLAS, LAPACK, MPI are already installed in known user location use:<br>
             [Note: Do not specify --with-cc --with-fc etc when using --with-mpi-dir -
             so that mpicc/mpif90 can be picked up from mpi-dir]
             <ul>
-              <li>export PETSC_DIR=/home/petsc/petsc-3.2-p0</li>
-              <li>cd $PETSC_DIR</li>
-              <li>./configure --with-blas-lapack-dir=/usr/local/lib --with-mpi-dir=/usr/local/mpich</li>
-              <li>make</li>
-              <li>make test</li>
+              <li>./configure --with-blas-lapack-dir=/usr/local/blaslapack --with-mpi-dir=/usr/local/mpich</li>
+            </ul>
+            or
+            <ul>
+              <li>./configure --with-blas-lapack-dir=/usr/local/blaslapack --with-cc=/usr/local/mpich/bin/mpicc --with-mpi-f90=/usr/local/mpich/bin/mpif90 --with-mpiexec=/usr/local/mpich/bin/mpiexec</li>
             </ul>
           </li>
 
           <li>
-            Using csh shell, install 2 variants of PETSc, one with gnu, the other with intel compilers
+            Build Complex version of PETSc [using c++ compiler]
+            (add the option <code>--with-fortran-kernels=generic</code> to get
+            possibly faster complex number performance on some systems):
             <ul>
-              <li>./configure --PETSC_ARCH=linux-gnu --CC=gcc --FC=gfortran --download-mpich</li>
-              <li>make PETSC_ARCH=linux-gnu</li>
-              <li>make PETSC_ARCH=linux-gnu test</li>
-              <li>./configure --PETSC_ARCH=linux-gnu-intel --CC=icc --FC=ifort --download-mpich --with-blas-lapack-dir=/usr/local/mkl</li>
-              <li>make PETSC_ARCH=linux-gnu-intel</li>
-              <li>make PETSC_ARCH=linux-gnu-intel test </li>
+              <li>./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --download-f-blas-lapack --download-mpich --with-scalar-type=complex --with-clanguage=cxx</li>
+            </ul>
+          </li>
+
+          <li>
+            Install 2 variants of PETSc, one with gnu, the other with intel compilers. Specify different PETSC_ARCH for each build.
+            <ul>
+              <li>./configure PETSC_ARCH=linux-gnu --with-cc=gcc --with-fc=gfortran --download-mpich</li>
+              <li>make PETSC_ARCH=linux-gnu all test</li>
+              <li>./configure PETSC_ARCH=linux-gnu-intel --with-cc=icc --with-fc=ifort --download-mpich --with-blas-lapack-dir=/usr/local/mkl</li>
+              <li>make PETSC_ARCH=linux-gnu-intel all test</li>
             </ul>
           </li>
 
@@ -211,7 +210,7 @@
           <li>
             specify variable on commandline to configure
             <ul>
-              <li>./configure --PETSC_DIR=/home/balay/petsc-3.2-p0 --PETSC_ARCH=linux-gnu-c-debug [other configure options]</li>
+              <li>./configure PETSC_DIR=/home/balay/petsc-3.2-p0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</li>
             </ul>
           </li>
 
@@ -319,7 +318,7 @@
             flags with the options COPTFLAGS, FOPTFLAGS,
             CXXOPTFLAGS.
             <ul>
-              <li>./configure --with-cc=gcc --with-fc=gfortran --with-debugging=0 --COPTFLAGS='-O3 -march=p4 -mtune=p4' --FOPTFLAGS='-O3 -qarch=p4 -qtune=p4'</li>
+              <li>./configure --with-cc=gcc --with-fc=gfortran --with-debugging=0 COPTFLAGS='-O3 -march=p4 -mtune=p4' FOPTFLAGS='-O3 -qarch=p4 -qtune=p4'</li>
             </ul>
           </li>
 
@@ -834,10 +833,9 @@
 
         <ul class="code">
           <li>[untar PETSc in a non-root regular location - say /home/username]</li>
-          <li>setenv PETSC_DIR $PWD</li>
           <li>./configure --prefix=/opt/petsc/petsc-3.2-p0  [other configure options]</li>
           <li>make</li>
-          <li>sudo make install PETSC_DIR=$PWD</li>
+          <li>sudo make install</li>
         </ul>
 
         <p>
@@ -887,23 +885,19 @@
       <hr>
 
       <div id="tau">
-        <h3><a name="AdditionalMicrosoftWindowsNotes">Installing with TAU Instrumentation package:</a></h3>
+        <h3><a name="usingtau">Installing with TAU Instrumentation package:</a></h3>
 
         <p>
           <a href="http://www.cs.uoregon.edu/research/paracomp/tau/tautools/">TAU</a>
           package and the prerequisite <a href="http://www.cs.uoregon.edu/research/paracomp/pdtoolkit/">PDT</a>
-          packages need to be installed separately. PETSc provides a wrapper
-          compiler for TAU. This needs to be invoked with the correct information
-          for the installed TAU and PDT packages. For eg:
+          packages need to be installed separately [perhaps with MPI].
+          Now use tau_cc.sh as compiler to PETSc configure.
         </p>
 
-        <code>
-          ./configure --with-mpi-dir=/home/petsc/soft/linux-rh73/mpich-1.2.4
-          --with-fc=0 --with-cxx=0 -PETSC_ARCH=linux-tau
-          --with-cc="`pwd`/bin/taucc.py -cc=gcc
-          -pdt_parse=/homes/petsc/soft/linux-rh73/pdtoolkit-2.2b1/linux/bin/cparse
-          -tau_lib_dir=/homes/petsc/soft/linux-rh73/tau-2.11.18/i386_linux/lib"
-        </code>
+        <ul class="code">
+          <li>export TAU_MAKEFILE=/home/balay/soft/linux64/tau-2.20.3/x86_64/lib/Makefile.tau-mpi-pdt</li>
+          <li>./configure CC=/home/balay/soft/linux64/tau-2.20.3/x86_64/bin/tau_cc.sh --with-fc=0 PETSC_ARCH=arch-tau</li>
+        </ul>
 
         <a href="#" target="_top">Return to Installation Instructions</a>
       </div> <!-- #tau -->
@@ -915,27 +909,24 @@
 
         <ul>
           <li>
-            Install CUDA and Cusp in default locations; /usr/local/cuda. The
-            version of Cusp you should use is listed in
-            <code>$PETSC_DIR/config/PETSc/packages/cuda.py</code>.  Thrust has
-            been included in CUDA since the 4.0 release.  The required version of
-            CUDA may not be publically available, you may need to register as an
-            NVIDIA Developer (free) to access them.
+            Requires <a href="http://developer.nvidia.com/cuda-downloads"> CUDA</a>,
+            <a href="https://code.google.com/p/thrust"> Thrust</a> and
+            <a href="https://code.google.com/p/cusp-library/"> Cusp </a>.
+            Thrust has been included in CUDA since the 4.0 release - so a separate install is not needed.
           </li>
 
-          <li>Make sure nvcc is in <code>$PATH</code>. On Linux:
-            <ul style="color: black">
-              <li>
-                install compatible NVidia kernel <a href="http://developer.nvidia.com/object/cuda_3_1_downloads.html#Linux">developer driver</a>
-                by running the executable you download, as root
-              </li>
-            </ul>
+          <li>Currently using CUDA-4.1 or CUDA-4.2 with Cusp-v0.3.1</li>
+
+          <li>
+            On Linux - make sure you have  compatible <a href="http://developer.nvidia.com/cuda-downloads"> NVidia driver</a>
+            installed.
           </li>
+
+          <li>check <code>config/examples/arch-cuda-double.py</code> for example usage.</li>
         </ul>
 
         <p>
-          We only have experience using Nvidia GPUs on Apple machines and Intel
-          Xeon servers running Ubuntu 10.04 x86_64 NVidia GT200 [Tesla C1060].
+          Cuda build of PETSc curently works on Apple OSX, Linux [Ubuntu 10.04], Microsoft Windows [Server 2003].
         </p>
 
         <a href="#" target="_top">Return to Installation Instructions</a>
