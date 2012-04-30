@@ -56,15 +56,8 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec* g)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(g,2);
   ierr = VecCreate(PETSC_COMM_SELF,g);CHKERRQ(ierr);
-  if (dd->defaultSection) {
-    PetscInt localSize;
-
-    ierr = PetscSectionGetStorageSize(dd->defaultSection, &localSize);CHKERRQ(ierr);
-    ierr = VecSetSizes(*g, localSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  } else {
-    ierr = VecSetSizes(*g,dd->nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
-  }
+  ierr = VecSetSizes(*g,dd->nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
   ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*g,"DM",(PetscObject)da);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
@@ -96,95 +89,234 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec* g)
 
     - Cells:    [0,             nC)
     - Vertices: [nC,            nC+nV)
-    - X-Faces:  [nC+nV,         nC+nV+nXF)
-    - Y-Faces:  [nC+nV+nXF,     nC+nV+nXF+nYF)
-    - Z-Faces:  [nC+nV+nXF+nYF, nC+nV+nXF+nYF+nZF)
+    - X-Faces:  [nC+nV,         nC+nV+nXF)         normal is +- x-dir
+    - Y-Faces:  [nC+nV+nXF,     nC+nV+nXF+nYF)     normal is +- y-dir
+    - Z-Faces:  [nC+nV+nXF+nYF, nC+nV+nXF+nYF+nZF) normal is +- z-dir
 
   We interpret the default DMDA partition as a cell partition, and the data assignment as a cell assignment.
 @*/
 PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDof[], PetscInt numFaceDof[], PetscInt numCellDof[])
 {
   DM_DA         *da  = (DM_DA *) dm->data;
-  PetscInt       mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
-  PetscInt       nC  = (mx  )*(da->dim > 1 ? (my  )*(da->dim > 2 ? (mz  ) : 1) : 1);
-  PetscInt       nV  = (mx+1)*(da->dim > 1 ? (my+1)*(da->dim > 2 ? (mz+1) : 1) : 1);
-  PetscInt       nXF = (mx+1)*(da->dim > 1 ? (my  )*(da->dim > 2 ? (mz  ) : 1) : 1);
-  PetscInt       nYF = (mx  )*(da->dim > 1 ? (my+1)*(da->dim > 2 ? (mz  ) : 1) : 0);
-  PetscInt       nZF = (mx  )*(da->dim > 1 ? (my  )*(da->dim > 2 ? (mz+1) : 0) : 0);
-  PetscInt       cStart  = 0,     cEnd  = cStart+nC;
-  PetscInt       vStart  = cEnd,  vEnd  = vStart+nV;
-  PetscInt       xfStart = vEnd,  xfEnd = xfStart+nXF;
-  PetscInt       yfStart = xfEnd, yfEnd = yfStart+nYF;
-  PetscInt       zfStart = yfEnd, zfEnd = zfStart+nZF;
-  PetscInt       pStart  = 0,     pEnd  = zfEnd;
+  const PetscInt dim = da->dim;
+  const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
+  const PetscInt nC  = (mx  )*(dim > 1 ? (my  )*(dim > 2 ? (mz  ) : 1) : 1);
+  const PetscInt nVx = mx+1;
+  const PetscInt nVy = dim > 1 ? (my+1) : 1;
+  const PetscInt nVz = dim > 2 ? (mz+1) : 1;
+  const PetscInt nV  = nVx*nVy*nVz;
+  const PetscInt nxF = (dim > 1 ? (my  )*(dim > 2 ? (mz  ) : 1) : 1);
+  const PetscInt nXF = (mx+1)*nxF;
+  const PetscInt nyF = mx*(dim > 2 ? mz : 1);
+  const PetscInt nYF = dim > 1 ? (my+1)*nyF : 0;
+  const PetscInt nzF = mx*(dim > 1 ? my : 0);
+  const PetscInt nZF = dim > 2 ? (mz+1)*nzF : 0;
+  const PetscInt cStart  = 0,     cEnd  = cStart+nC;
+  const PetscInt vStart  = cEnd,  vEnd  = vStart+nV;
+  const PetscInt xfStart = vEnd,  xfEnd = xfStart+nXF;
+  const PetscInt yfStart = xfEnd, yfEnd = yfStart+nYF;
+  const PetscInt zfStart = yfEnd, zfEnd = zfStart+nZF;
+  const PetscInt pStart  = 0,     pEnd  = zfEnd;
   PetscInt       numFields, numVertexTotDof = 0, numCellTotDof = 0, numFaceTotDof[3] = {0, 0, 0};
-  PetscInt       f, v, c, xf, yf, zf;
+  PetscSF        sf;
+  const PetscMPIInt *neighbors;
+  PetscInt      *localPoints;
+  PetscSFNode   *remotePoints;
+  PetscInt       nleaves = 0,  nleavesCheck = 0;
+  PetscInt       f, v, c, xf, yf, zf, xn, yn, zn;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  /* Create local section */
   ierr = DMDAGetInfo(dm, 0,0,0,0,0,0,0, &numFields, 0,0,0,0,0);CHKERRQ(ierr);
   for(f = 0; f < numFields; ++f) {
     if (numVertexDof) {numVertexTotDof  += numVertexDof[f];}
     if (numCellDof)   {numCellTotDof    += numCellDof[f];}
-    if (numFaceDof)   {numFaceTotDof[0] += numFaceDof[f*da->dim+0];
-                       numFaceTotDof[1] += da->dim > 1 ? numFaceDof[f*da->dim+1] : 0;
-                       numFaceTotDof[2] += da->dim > 2 ? numFaceDof[f*da->dim+2] : 0;}
+    if (numFaceDof)   {numFaceTotDof[0] += numFaceDof[f*dim+0];
+                       numFaceTotDof[1] += dim > 1 ? numFaceDof[f*dim+1] : 0;
+                       numFaceTotDof[2] += dim > 2 ? numFaceDof[f*dim+2] : 0;}
   }
-  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &da->defaultSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &dm->defaultSection);CHKERRQ(ierr);
   if (numFields > 1) {
-    ierr = PetscSectionSetNumFields(da->defaultSection, numFields);CHKERRQ(ierr);
+    ierr = PetscSectionSetNumFields(dm->defaultSection, numFields);CHKERRQ(ierr);
     for(f = 0; f < numFields; ++f) {
       const char *name;
 
       ierr = DMDAGetFieldName(dm, f, &name);CHKERRQ(ierr);
-      ierr = PetscSectionSetFieldName(da->defaultSection, f, name);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldName(dm->defaultSection, f, name);CHKERRQ(ierr);
       if (numComp) {
-        ierr = PetscSectionSetFieldComponents(da->defaultSection, f, numComp[f]);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldComponents(dm->defaultSection, f, numComp[f]);CHKERRQ(ierr);
       }
     }
   } else {
     numFields = 0;
   }
-  ierr = PetscSectionSetChart(da->defaultSection, pStart, pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(dm->defaultSection, pStart, pEnd);CHKERRQ(ierr);
   if (numVertexDof) {
     for(v = vStart; v < vEnd; ++v) {
       for(f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(da->defaultSection, v, f, numVertexDof[f]);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(dm->defaultSection, v, f, numVertexDof[f]);CHKERRQ(ierr);
       }
-      ierr = PetscSectionSetDof(da->defaultSection, v, numVertexTotDof);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(dm->defaultSection, v, numVertexTotDof);CHKERRQ(ierr);
     }
   }
   if (numFaceDof) {
     for(xf = xfStart; xf < xfEnd; ++xf) {
       for(f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(da->defaultSection, xf, f, numFaceDof[f*da->dim+0]);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(dm->defaultSection, xf, f, numFaceDof[f*dim+0]);CHKERRQ(ierr);
       }
-      ierr = PetscSectionSetDof(da->defaultSection, xf, numFaceTotDof[0]);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(dm->defaultSection, xf, numFaceTotDof[0]);CHKERRQ(ierr);
     }
     for(yf = yfStart; yf < yfEnd; ++yf) {
       for(f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(da->defaultSection, yf, f, numFaceDof[f*da->dim+1]);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(dm->defaultSection, yf, f, numFaceDof[f*dim+1]);CHKERRQ(ierr);
       }
-      ierr = PetscSectionSetDof(da->defaultSection, yf, numFaceTotDof[1]);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(dm->defaultSection, yf, numFaceTotDof[1]);CHKERRQ(ierr);
     }
     for(zf = zfStart; zf < zfEnd; ++zf) {
       for(f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(da->defaultSection, zf, f, numFaceDof[f*da->dim+2]);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(dm->defaultSection, zf, f, numFaceDof[f*dim+2]);CHKERRQ(ierr);
       }
-      ierr = PetscSectionSetDof(da->defaultSection, zf, numFaceTotDof[2]);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(dm->defaultSection, zf, numFaceTotDof[2]);CHKERRQ(ierr);
     }
   }
   if (numCellDof) {
     for(c = cStart; c < cEnd; ++c) {
       for(f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(da->defaultSection, c, f, numCellDof[f]);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(dm->defaultSection, c, f, numCellDof[f]);CHKERRQ(ierr);
       }
-      ierr = PetscSectionSetDof(da->defaultSection, c, numCellTotDof);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(dm->defaultSection, c, numCellTotDof);CHKERRQ(ierr);
     }
   }
-  ierr = PetscSectionSetUp(da->defaultSection);CHKERRQ(ierr);
-  da->defaultGlobalSection = da->defaultSection;
+  ierr = PetscSectionSetUp(dm->defaultSection);CHKERRQ(ierr);
+  /* Create mesh point SF */
+  ierr = DMDAGetNeighbors(dm, &neighbors);CHKERRQ(ierr);
+  for(zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
+    for(yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
+      for(xn = 0; xn < 3; ++xn) {
+        const PetscInt xp = xn-1, yp = yn-1, zp = zn-1;
+        const PetscInt neighbor = neighbors[(zn*3+yn)*3+xn];
+
+        if (neighbor) {
+          nleaves += (xp ? nVx : 1) * (yp ? nVy : 1) * (zp ? nVz : 1); /* vertices */
+          if (xp && !yp && !zp) {
+            nleaves += nxF; /* x faces */
+          } else if (yp && !zp && !xp) {
+            nleaves += nyF; /* y faces */
+          } else if (zp && !xp && !yp) {
+            nleaves += nzF; /* z faces */
+          }
+        }
+      }
+    }
+  }
+  ierr = PetscMalloc2(nleaves,PetscInt,&localPoints,nleaves,PetscSFNode,&remotePoints);CHKERRQ(ierr);
+  for(zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
+    for(yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
+      for(xn = 0; xn < 3; ++xn) {
+        const PetscInt xp = xn-1, yp = yn-1, zp = zn-1;
+        const PetscInt neighbor = neighbors[(zn*3+yn)*3+xn];
+
+        if (neighbor) {
+          nleaves += (xp ? nVx : 1) * (yp ? nVy : 1) * (zp ? nVz : 1);
+          if (xp < 0) { /* left */
+            if (yp < 0) { /* bottom */
+              if (zp < 0) { /* back */
+                nleavesCheck += 1; /* left bottom back vertex */
+              } else if (zp > 0) { /* front */
+                nleavesCheck += 1; /* left bottom front vertex */
+              } else {
+                nleavesCheck += nVz; /* left bottom vertices */
+              }
+            } else if (yp > 0) { /* top */
+              if (zp < 0) { /* back */
+                nleavesCheck += 1; /* left top back vertex */
+              } else if (zp > 0) { /* front */
+                nleavesCheck += 1; /* left top front vertex */
+              } else {
+                nleavesCheck += nVz; /* left top vertices */
+              }
+            } else {
+              if (zp < 0) { /* back */
+                nleavesCheck += nVy; /* left back vertices */
+              } else if (zp > 0) { /* front */
+                nleavesCheck += nVy; /* left front vertices */
+              } else {
+                nleavesCheck += nVy*nVz; /* left vertices */
+                nleavesCheck += nxF;     /* left faces */
+              }
+            }
+          } else if (xp > 0) { /* right */
+            if (yp < 0) { /* bottom */
+              if (zp < 0) { /* back */
+                nleavesCheck += 1; /* right bottom back vertex */
+              } else if (zp > 0) { /* front */
+                nleavesCheck += 1; /* right bottom front vertex */
+              } else {
+                nleavesCheck += nVz; /* right bottom vertices */
+              }
+            } else if (yp > 0) { /* top */
+              if (zp < 0) { /* back */
+                nleavesCheck += 1; /* right top back vertex */
+              } else if (zp > 0) { /* front */
+                nleavesCheck += 1; /* right top front vertex */
+              } else {
+                nleavesCheck += nVz; /* right top vertices */
+              }
+            } else {
+              if (zp < 0) { /* back */
+                nleavesCheck += nVy; /* right back vertices */
+              } else if (zp > 0) { /* front */
+                nleavesCheck += nVy; /* right front vertices */
+              } else {
+                nleavesCheck += nVy*nVz; /* right vertices */
+                nleavesCheck += nxF;     /* right faces */
+              }
+            }
+          } else {
+            if (yp < 0) { /* bottom */
+              if (zp < 0) { /* back */
+                nleavesCheck += nVx; /* bottom back vertices */
+              } else if (zp > 0) { /* front */
+                nleavesCheck += nVx; /* bottom front vertices */
+              } else {
+                nleavesCheck += nVx*nVz; /* bottom vertices */
+                nleavesCheck += nyF;     /* bottom faces */
+              }
+            } else if (yp > 0) { /* top */
+              if (zp < 0) { /* back */
+                nleavesCheck += nVx; /* top back vertices */
+              } else if (zp > 0) { /* front */
+                nleavesCheck += nVx; /* top front vertices */
+              } else {
+                nleavesCheck += nVx*nVz; /* top vertices */
+                nleavesCheck += nyF;     /* top faces */
+              }
+            } else {
+              if (zp < 0) { /* back */
+                nleavesCheck += nVx*nVy; /* back vertices */
+                nleavesCheck += nzF;     /* back faces */
+              } else if (zp > 0) { /* front */
+                nleavesCheck += nVx*nVy; /* front vertices */
+                nleavesCheck += nzF;     /* front faces */
+              } else {
+                /* Nothing is shared from the interior */
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  if (nleaves != nleavesCheck) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "The number of leaves %d did not match the number of remote leaves %d", nleaves, nleavesCheck);
+  ierr = PetscSFCreate(((PetscObject) dm)->comm, &sf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sf, pEnd, nleaves, localPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  /* Create global section */
+  ierr = PetscSectionCreateGlobalSection(dm->defaultSection, sf, &dm->defaultGlobalSection);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+  /* Create default SF */
+  ierr = DMCreateDefaultSF(dm, dm->defaultSection, dm->defaultGlobalSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -199,7 +331,7 @@ EXTERN_C_END
 #define __FUNCT__ "DMDAGetAdicArray"
 /*@C
      DMDAGetAdicArray - Gets an array of derivative types for a DMDA
-          
+
     Input Parameter:
 +    da - information about my local patch
 -    ghosted - do you want arrays for the ghosted or nonghosted patch

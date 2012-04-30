@@ -207,6 +207,12 @@ int main(int argc, char **argv)
   ierr = SNESSetDM(snes, user.dm);CHKERRQ(ierr);
 
   ierr = SetupSection(user.dm, &user);CHKERRQ(ierr);
+  /* We need to:
+   - Create the point SF
+   - Create the default SF (take from DMComplex)
+   - Create the proper globalSection (take from DMComplex)
+   - Create the local to global mappings (take from DMComplex)
+  */
 
   ierr = DMCreateGlobalVector(user.dm, &u);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);

@@ -245,8 +245,6 @@ extern PetscErrorCode DMGlobalToLocalBegin_Complex(DM dm, Vec g, InsertMode mode
 extern PetscErrorCode DMGlobalToLocalEnd_Complex(DM dm, Vec g, InsertMode mode, Vec l);
 extern PetscErrorCode DMLocalToGlobalBegin_Complex(DM dm, Vec l, InsertMode mode, Vec g);
 extern PetscErrorCode DMLocalToGlobalEnd_Complex(DM dm, Vec l, InsertMode mode, Vec g);
-extern PetscErrorCode DMCreateGlobalVector_Complex(DM dm, Vec *gvec);
-extern PetscErrorCode DMCreateLocalVector_Complex(DM dm, Vec *lvec);
 extern PetscErrorCode DMCreateLocalToGlobalMapping_Complex(DM dm);
 extern PetscErrorCode DMCreateFieldIS_Complex(DM dm, PetscInt *numFields, char ***names, IS **fields);
 extern PetscErrorCode DMCreateInterpolation_Complex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
@@ -270,8 +268,6 @@ PetscErrorCode DMCreate_Complex(DM dm)
   dm->data = mesh;
 
   mesh->dim              = 0;
-  ierr = PetscSFCreate(((PetscObject) dm)->comm, &mesh->sf);CHKERRQ(ierr);
-  ierr = PetscSFCreate(((PetscObject) dm)->comm, &mesh->sfDefault);CHKERRQ(ierr);
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coneSection);CHKERRQ(ierr);
   mesh->maxConeSize      = 0;
   mesh->cones            = PETSC_NULL;
@@ -293,16 +289,14 @@ PetscErrorCode DMCreate_Complex(DM dm)
   mesh->facesTmp         = PETSC_NULL;
 
   mesh->labels               = PETSC_NULL;
-  mesh->defaultSection       = PETSC_NULL;
-  mesh->defaultGlobalSection = PETSC_NULL;
   mesh->printSetValues       = PETSC_FALSE;
 
   ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);
   dm->ops->view               = DMView_Complex;
   dm->ops->setfromoptions     = DMSetFromOptions_Complex;
   dm->ops->setup              = DMSetUp_Complex;
-  dm->ops->createglobalvector = DMCreateGlobalVector_Complex;
-  dm->ops->createlocalvector  = DMCreateLocalVector_Complex;
+  dm->ops->createglobalvector = PETSC_NULL;
+  dm->ops->createlocalvector  = PETSC_NULL;
   dm->ops->createlocaltoglobalmapping      = DMCreateLocalToGlobalMapping_Complex;
   dm->ops->createlocaltoglobalmappingblock = 0;
   dm->ops->createfieldis      = DMCreateFieldIS_Complex;

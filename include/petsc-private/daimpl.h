@@ -85,10 +85,6 @@ typedef struct {
 
   /* used by DMDASetMatPreallocateOnly() */
   PetscBool              prealloc_only;
-
-  /* Allows a non-standard data layout */
-  PetscSection           defaultSection;       /* Layout for local vectors */
-  PetscSection           defaultGlobalSection; /* Layout for global vectors */
 } DM_DA;
 
 /*

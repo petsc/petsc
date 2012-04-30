@@ -759,6 +759,7 @@ PetscErrorCode  PetscSectionDestroy(PetscSection *s)
       ierr = PetscFree((*s)->fieldNames[f]);CHKERRQ(ierr);
     }
     ierr = PetscFree((*s)->fieldNames);CHKERRQ(ierr);
+    ierr = PetscFree((*s)->field);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&(*s)->bc);CHKERRQ(ierr);
     ierr = PetscFree((*s)->bcIndices);CHKERRQ(ierr);
     ierr = PetscFree2((*s)->atlasDof, (*s)->atlasOff);CHKERRQ(ierr);

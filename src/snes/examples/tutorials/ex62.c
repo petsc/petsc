@@ -461,7 +461,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   ierr = DMComplexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 0, "velocity");CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 1, "pressure");CHKERRQ(ierr);
-  ierr = DMComplexSetDefaultSection(dm, section);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
   if (user->bcType == DIRICHLET) {
     ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
   }
@@ -606,7 +606,7 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
   PetscFunctionBegin;
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMComplexGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
   ierr = PetscMalloc(numComp * sizeof(PetscScalar), &values);CHKERRQ(ierr);
@@ -714,7 +714,7 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSp
     PetscInt     pStart, pEnd, p;
     PetscScalar *a;
 
-    ierr = DMComplexGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = VecGetArray(localP, &a);CHKERRQ(ierr);
     for(p = pStart; p < pEnd; ++p) {
@@ -1744,6 +1744,7 @@ int main(int argc, char **argv)
       ierr = SNESDMComputeFunction(snes, r, b, &user);CHKERRQ(ierr);
       ierr = MatMult(A, u, r);CHKERRQ(ierr);
       ierr = VecAXPY(r, 1.0, b);CHKERRQ(ierr);
+      ierr = VecDestroy(&b);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Au - b = Au + F(0)\n");CHKERRQ(ierr);
       ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
       ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

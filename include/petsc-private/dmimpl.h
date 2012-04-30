@@ -76,7 +76,7 @@ struct _p_DM {
   void                   *ctx;    /* a user context */
   PetscErrorCode         (*ctxdestroy)(void**);
   Vec                    x;       /* location at which the functions/Jacobian are computed */
-  ISColoringType         coloringtype; 
+  ISColoringType         coloringtype;
   MatFDColoring          fd;      /* used by DMComputeJacobianDefault() */
   VecType                vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
   MatType                mattype;  /* type of matrix created with DMCreateMatrix() */
@@ -89,6 +89,12 @@ struct _p_DM {
   DMCoarsenHookLink      coarsenhook; /* For transfering auxiliary problem data to coarser grids */
   DMLocalFunction1       lf;
   DMLocalJacobian1       lj;
+  /* Flexible communication */
+  PetscSF                sf;                   /* SF for parallel point overlap */
+  PetscSF                defaultSF;            /* SF for parallel dof overlap using default section */
+  /* Allows a non-standard data layout */
+  PetscSection           defaultSection;       /* Layout for local vectors */
+  PetscSection           defaultGlobalSection; /* Layout for global vectors */
 };
 
 extern PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;

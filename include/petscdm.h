@@ -193,6 +193,13 @@ typedef PetscErrorCode (*DMLocalJacobian1)(DM, Vec, Mat, Mat, void*);
 extern PetscErrorCode DMPrintCellVector(PetscInt, const char [], PetscInt, const PetscScalar []);
 extern PetscErrorCode DMPrintCellMatrix(PetscInt, const char [], PetscInt, PetscInt, const PetscScalar []);
 
+extern PetscErrorCode DMGetDefaultSection(DM, PetscSection *);
+extern PetscErrorCode DMSetDefaultSection(DM, PetscSection);
+extern PetscErrorCode DMGetDefaultGlobalSection(DM, PetscSection *);
+extern PetscErrorCode DMGetDefaultSF(DM, PetscSF *);
+extern PetscErrorCode DMSetDefaultSF(DM, PetscSF);
+extern PetscErrorCode DMCreateDefaultSF(DM, PetscSection, PetscSection);
+
 typedef struct {
   PetscInt         numQuadPoints; /* The number of quadrature points on an element */
   const PetscReal *quadPoints;    /* The quadrature point coordinates */

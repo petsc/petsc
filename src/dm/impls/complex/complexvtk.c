@@ -327,7 +327,7 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   /* Vertices */
   /* TODO: Need to check for "coordinates_dimensioned" */
   ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionCreateGlobalSection(coordSection, mesh->sf, &globalCoordSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreateGlobalSection(coordSection, dm->sf, &globalCoordSection);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
   ierr = PetscSectionGetPointLayout(((PetscObject) dm)->comm, globalCoordSection, &vLayout);CHKERRQ(ierr);
   ierr = PetscLayoutGetSize(vLayout, &totVertices);CHKERRQ(ierr);
@@ -335,7 +335,7 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   ierr = DMComplexVTKWriteSection(dm, globalCoordSection, coordinates, fp, 3, PETSC_DETERMINE);CHKERRQ(ierr);
   /* Cells */
   ierr = DMComplexGetConeSection(dm, &coneSection);CHKERRQ(ierr);
-  ierr = PetscSectionCreateGlobalSection(coneSection, mesh->sf, &globalConeSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreateGlobalSection(coneSection, dm->sf, &globalConeSection);CHKERRQ(ierr);
   ierr = DMComplexVTKWriteCells(dm, globalConeSection, fp, &totCells);CHKERRQ(ierr);
   /* Vertex fields */
   for(link = vtk->link; link; link = link->next) {
@@ -358,7 +358,7 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
       if (!c) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
       ierr = PetscContainerGetPointer(c, (void **) &section);CHKERRQ(ierr);
       if (!section) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
-      ierr = PetscSectionCreateGlobalSection(section, mesh->sf, &globalSection);CHKERRQ(ierr);
+      ierr = PetscSectionCreateGlobalSection(section, dm->sf, &globalSection);CHKERRQ(ierr);
       ierr = DMComplexVTKWriteField(dm, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
     }
@@ -380,7 +380,7 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
       if (!c) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
       ierr = PetscContainerGetPointer(c, (void **) &section);CHKERRQ(ierr);
       if (!section) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
-      ierr = PetscSectionCreateGlobalSection(section, mesh->sf, &globalSection);CHKERRQ(ierr);
+      ierr = PetscSectionCreateGlobalSection(section, dm->sf, &globalSection);CHKERRQ(ierr);
       ierr = DMComplexVTKWriteField(dm, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
     }

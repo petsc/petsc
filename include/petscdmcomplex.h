@@ -69,11 +69,6 @@ extern PetscErrorCode DMComplexGetCoordinateVec(DM, Vec *);
 extern PetscErrorCode DMComplexCreateConeSection(DM, PetscSection *);
 
 /* FEM Support */
-extern PetscErrorCode DMComplexGetDefaultSection(DM, PetscSection *);
-extern PetscErrorCode DMComplexSetDefaultSection(DM, PetscSection);
-extern PetscErrorCode DMComplexGetDefaultGlobalSection(DM, PetscSection *);
-extern PetscErrorCode DMComplexCreateDefaultSF(DM);
-
 extern PetscErrorCode DMComplexComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 extern PetscErrorCode DMComplexVecGetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar *[]);
 extern PetscErrorCode DMComplexVecSetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar[], InsertMode);

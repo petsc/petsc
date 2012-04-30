@@ -18,8 +18,6 @@ struct Sieve_Label {
 
 typedef struct {
   PetscInt             dim;   /* Topological mesh dimension */
-  PetscSF              sf;    /* SF for parallel point overlap */
-  PetscSF              sfDefault; /* SF for parallel dof overlap using default section */
 
   /* Sieve */
   PetscSection         coneSection;      /* Layout of cones (inedges for DAG) */
@@ -40,9 +38,6 @@ typedef struct {
 
   /* Labels */
   SieveLabel           labels;         /* Linked list of labels */
-
-  PetscSection            defaultSection;
-  PetscSection            defaultGlobalSection;
 
   /* Debugging */
   PetscBool               printSetValues;
