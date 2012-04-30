@@ -1,7 +1,7 @@
 
 /* Program usage:  mpiexec ex1 [-help] [all PETSc options] */
 
-static char help[] = "Demonstrates using PetscWebServe().\n\n";
+static char help[] = "Demonstrates using PetscWebServe().\nRun with -ams_publish_objects\n\n";
 
 /*T
    Concepts: introduction to PETSc;
@@ -30,9 +30,9 @@ int main(int argc,char **argv)
   ierr = PetscRandomSetFromOptions(rand1);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand2);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand2);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Starting up PetscWebServe()\n");CHKERRQ(ierr);
 #if defined(PETSC_USE_SERVER)
-  /*   ierr = PetscWebServe(PETSC_COMM_WORLD,PETSC_DEFAULT);CHKERRQ(ierr); */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Starting up PetscWebServe()\n");CHKERRQ(ierr);
+  ierr = PetscWebServe(PETSC_COMM_WORLD,PETSC_DEFAULT);CHKERRQ(ierr); 
   while (1) {;}
 #endif
   ierr = PetscRandomDestroy(&rand1);CHKERRQ(ierr);

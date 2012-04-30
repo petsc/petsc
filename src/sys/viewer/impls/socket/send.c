@@ -1300,10 +1300,9 @@ PetscErrorCode  PetscWebServeRequest(int port)
       ierr = PetscAMSDisplayList(fd);CHKERRQ(ierr);
       goto theend;
     }
-    printf("path %s\n",path);
+    ierr = PetscInfo1(PETSC_NULL,"Browser path %s\n",path);
     ierr = PetscStrcmp(path,"/ams-tree",&flg);CHKERRQ(ierr);
     if (flg) {      
-    printf("found path %s\n",path);
       ierr = PetscAMSDisplayTree(fd);CHKERRQ(ierr);
       goto theend;
     }
@@ -1352,7 +1351,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
 
     Level: developer
 
-.seealso: PetscViewerSocketOpen()
+.seealso: PetscViewerSocketOpen(), PetscWebServe()
 @*/ 
 void  *PetscWebServeWait(int *port)
 {
@@ -1383,12 +1382,16 @@ void  *PetscWebServeWait(int *port)
 -   port - port to listen on
 
   Options Database Key:
-.  -server <port> - start PETSc webserver (default port is 8080)
++  -server <port> - start PETSc webserver (default port is 8080)
+-  -ams_publish_objects 
+
 
    Notes: Point your browser to http://hostname:8080   to access the PETSc web server, where hostname is the name of your machine.
       If you are running PETSc on your local machine you can use http://localhost:8080
 
       If the PETSc program completes before you connect with the browser you will not be able to connect to the PETSc webserver.
+
+      Read the top of $PETSC_DIR/include/web/AMSJavascript.py before running.
 
     Level: developer
 
