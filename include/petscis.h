@@ -262,6 +262,8 @@ extern PetscErrorCode  ISAllGatherColors(MPI_Comm,PetscInt,ISColoringValue*,Pets
     have been created. One should use ISColoringGetIS() to make sure they are 
     created when needed.
 
+    Developer Note: this is not a PetscObject
+
 .seealso:  ISColoringCreate(), ISColoringGetIS(), ISColoringView(), ISColoringGetIS()
 S*/
 struct _n_ISColoring {

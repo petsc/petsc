@@ -239,7 +239,7 @@ extern PetscErrorCode  PetscLogObjects(PetscBool);
 extern PetscErrorCode  PetscLogGetRGBColor(const char*[]);
 extern PetscErrorCode  PetscLogDestroy(void);
 extern PetscErrorCode  PetscLogSet(PetscErrorCode (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
-                   PetscErrorCode (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject));
+                                   PetscErrorCode (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject));
 extern PetscErrorCode  PetscLogObjectState(PetscObject, const char[], ...);
 /* Output functions */
 extern PetscErrorCode  PetscLogView(PetscViewer);

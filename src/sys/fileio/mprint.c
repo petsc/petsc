@@ -20,7 +20,6 @@ FILE *PETSC_STDOUT = 0;
      writes to go to terminal XX; assuming you have write permission there
 */
 FILE *PETSC_STDERR = 0;
-/*
 
 /*
      Return the maximum expected new size of the format

@@ -1,8 +1,8 @@
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
-    constants and functions for working with single and double precision
-    floating point numbers as well as complex and integers.
+    constants and functions for working with single, double, and quad precision
+    floating point numbers as well as complex single and double.
 
     This file is included by petscsys.h and should not be used directly.
 
@@ -19,7 +19,7 @@ extern  MPI_Datatype  MPIU_2INT;
 /*
 
      Defines operations that are different for complex and real numbers;
-   note that one cannot really mix the use of complex and real in the same 
+   note that one cannot mix the use of complex and real in the same 
    PETSc program. All PETSc objects in one program are built around the object
    PetscScalar which is either always a real or a complex.
 
@@ -340,14 +340,6 @@ extern PetscErrorCode PetscIsInfOrNanScalar(PetscScalar);
 extern PetscErrorCode PetscIsInfOrNanReal(PetscReal);
 
 /* ----------------------------------------------------------------------------*/
-/*
-    PetscLogDouble variables are used to contain double precision numbers
-  that are not used in the numerical computations, but rather in logging,
-  timing etc.
-*/
-typedef double PetscLogDouble;
-#define MPIU_PETSCLOGDOUBLE MPI_DOUBLE
-
 #define PassiveReal   PetscReal
 #define PassiveScalar PetscScalar
 

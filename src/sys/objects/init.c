@@ -259,7 +259,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 {
   char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm       comm = PETSC_COMM_WORLD;
-  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flag,flgz,flgzout;
+  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flag,flgz;
   PetscErrorCode ierr;
   PetscReal      si;
   int            i;

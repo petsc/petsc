@@ -390,7 +390,7 @@ M*/
   }
 
 /*
-   petscViewer writes to MATLAB .mat file
+   PetscViewer writes to MATLAB .mat file
 */
 extern PetscErrorCode  PetscViewerMatlabPutArray(PetscViewer,int,int,const PetscScalar*,const char*);
 extern PetscErrorCode  PetscViewerMatlabGetArray(PetscViewer,int,int,PetscScalar*,const char*);
@@ -421,7 +421,6 @@ extern PetscViewer    PETSC_VIEWER_AMS_(MPI_Comm);
 extern PetscErrorCode PETSC_VIEWER_AMS_Destroy(MPI_Comm);
 #define PETSC_VIEWER_AMS_WORLD PETSC_VIEWER_AMS_(PETSC_COMM_WORLD)
 #endif
-
 
 PETSC_EXTERN_CXX_END
 #endif

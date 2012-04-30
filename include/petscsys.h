@@ -1051,6 +1051,14 @@ extern PetscErrorCode   PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[
 extern PetscErrorCode   PetscMallocClear(void);
 
 /*
+    PetscLogDouble variables are used to contain double precision numbers
+  that are not used in the numerical computations, but rather in logging,
+  timing etc.
+*/
+typedef double PetscLogDouble;
+#define MPIU_PETSCLOGDOUBLE MPI_DOUBLE
+
+/*
    Routines for tracing memory corruption/bleeding with default PETSc  memory allocation
 */
 extern PetscErrorCode    PetscMallocDump(FILE *);

@@ -364,9 +364,9 @@ extern PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*)(int,void *),voi
 extern PetscErrorCode  PetscPopSignalHandler(void);
 
 typedef enum {PETSC_FP_TRAP_OFF=0,PETSC_FP_TRAP_ON=1} PetscFPTrap;
-extern PetscErrorCode   PetscSetFPTrap(PetscFPTrap);
-extern PetscErrorCode PetscFPTrapPush(PetscFPTrap);
-extern PetscErrorCode PetscFPTrapPop(void);
+extern PetscErrorCode  PetscSetFPTrap(PetscFPTrap);
+extern PetscErrorCode  PetscFPTrapPush(PetscFPTrap);
+extern PetscErrorCode  PetscFPTrapPop(void);
 
 /*
       Allows the code to build a stack frame as it runs
@@ -380,11 +380,11 @@ typedef struct  {
   const char *file[PETSCSTACKSIZE];
   const char *directory[PETSCSTACKSIZE];
         int  line[PETSCSTACKSIZE];
-        int currentsize;
+        int  currentsize;
 } PetscStack;
 
 #if defined(PETSC_PTHREAD_LOCAL)
-extern  PETSC_PTHREAD_LOCAL PetscStack *petscstack;
+extern PETSC_PTHREAD_LOCAL PetscStack *petscstack;
 #else
 extern PetscStack *petscstack;
 #endif
@@ -529,7 +529,6 @@ extern PetscErrorCode   PetscStackView(PetscViewer);
 extern PetscErrorCode   PetscStackDestroy(void);
 extern PetscErrorCode   PetscStackPublish(void);
 extern PetscErrorCode   PetscStackDepublish(void);
-
 
 PETSC_EXTERN_CXX_END
 #endif
