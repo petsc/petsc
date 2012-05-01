@@ -241,10 +241,6 @@ PetscErrorCode DMComplexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool int
 }
 
 /* External function declarations here */
-extern PetscErrorCode DMGlobalToLocalBegin_Complex(DM dm, Vec g, InsertMode mode, Vec l);
-extern PetscErrorCode DMGlobalToLocalEnd_Complex(DM dm, Vec g, InsertMode mode, Vec l);
-extern PetscErrorCode DMLocalToGlobalBegin_Complex(DM dm, Vec l, InsertMode mode, Vec g);
-extern PetscErrorCode DMLocalToGlobalEnd_Complex(DM dm, Vec l, InsertMode mode, Vec g);
 extern PetscErrorCode DMCreateLocalToGlobalMapping_Complex(DM dm);
 extern PetscErrorCode DMCreateFieldIS_Complex(DM dm, PetscInt *numFields, char ***names, IS **fields);
 extern PetscErrorCode DMCreateInterpolation_Complex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
@@ -309,10 +305,10 @@ PetscErrorCode DMCreate_Complex(DM dm)
   dm->ops->coarsen            = 0;
   dm->ops->refinehierarchy    = 0;
   dm->ops->coarsenhierarchy   = 0;
-  dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_Complex;
-  dm->ops->globaltolocalend   = DMGlobalToLocalEnd_Complex;
-  dm->ops->localtoglobalbegin = DMLocalToGlobalBegin_Complex;
-  dm->ops->localtoglobalend   = DMLocalToGlobalEnd_Complex;
+  dm->ops->globaltolocalbegin = PETSC_NULL;
+  dm->ops->globaltolocalend   = PETSC_NULL;
+  dm->ops->localtoglobalbegin = PETSC_NULL;
+  dm->ops->localtoglobalend   = PETSC_NULL;
   dm->ops->destroy            = DMDestroy_Complex;
   PetscFunctionReturn(0);
 }

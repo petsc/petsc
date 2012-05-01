@@ -195,10 +195,10 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   for(zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
     for(yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
       for(xn = 0; xn < 3; ++xn) {
-        const PetscInt xp = xn-1, yp = yn-1, zp = zn-1;
+        const PetscInt xp = xn-1, yp = dim > 1 ? yn-1 : 0, zp = dim > 2 ? zn-1 : 0;
         const PetscInt neighbor = neighbors[(zn*3+yn)*3+xn];
 
-        if (neighbor) {
+        if (neighbor >= 0) {
           nleaves += (xp ? nVx : 1) * (yp ? nVy : 1) * (zp ? nVz : 1); /* vertices */
           if (xp && !yp && !zp) {
             nleaves += nxF; /* x faces */
@@ -215,11 +215,11 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   for(zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
     for(yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
       for(xn = 0; xn < 3; ++xn) {
-        const PetscInt xp = xn-1, yp = yn-1, zp = zn-1;
+        const PetscInt xp = xn-1, yp = dim > 1 ? yn-1 : 0, zp = dim > 2 ? zn-1 : 0;
         const PetscInt neighbor = neighbors[(zn*3+yn)*3+xn];
 
-        if (neighbor) {
-          nleaves += (xp ? nVx : 1) * (yp ? nVy : 1) * (zp ? nVz : 1);
+        if (neighbor >= 0) {
+          nleavesCheck += (xp ? nVx : 1) * (yp ? nVy : 1) * (zp ? nVz : 1);
           if (xp < 0) { /* left */
             if (yp < 0) { /* bottom */
               if (zp < 0) { /* back */
