@@ -88,7 +88,7 @@ PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm tcomm,PetscThreadC
   PetscFunctionBegin;
   ierr = PetscNew(struct _p_PetscThreadCommRedCtx,&redout);CHKERRQ(ierr);
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&redout->thread_status);CHKERRQ(ierr);
-  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(long long),&redout->local_red);CHKERRQ(ierr);
+  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscScalar),&redout->local_red);CHKERRQ(ierr);
   redout->nworkThreads = tcomm->nworkThreads;
   redout->red_status = THREADCOMM_REDUCTION_NONE;
   for(i=0;i<redout->nworkThreads;i++) redout->thread_status[i] = THREADCOMM_THREAD_WAITING_FOR_NEWRED;
@@ -669,15 +669,15 @@ PetscErrorCode PetscThreadReductionKernelBegin(PetscInt trank,PetscThreadComm tc
 
   switch(type) {
   case PETSC_INT:
-    tcomm->red->local_red[trank] = *(PetscInt*)lred;
+    ((PetscInt*)tcomm->red->local_red)[trank] = *(PetscInt*)lred;
     break;
 #if defined(PETSC_USE_COMPLEX)
   case PETSC_REAL:
-    tcomm->red->local_red[trank] = *(PetscReal*)lred;
+    ((PetscReal*)tcomm->red->local_red)[trank] = *(PetscReal*)lred;
     break;
 #endif
   case PETSC_SCALAR:
-    tcomm->red->local_red[trank] = *(PetscScalar*)lred;
+    ((PetscScalar*)tcomm->red->local_red)[trank] = *(PetscScalar*)lred;
     break;
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown datatype provided for kernel reduction");
@@ -727,7 +727,7 @@ PetscErrorCode PetscThreadReductionKernelEnd(PetscInt trank,PetscThreadComm tcom
       if(type == PETSC_REAL) {
 	PetscReal red_sum=0.0;
 	for(i=0; i < tcomm->nworkThreads;i++) {
-	  red_sum += (PetscReal)tcomm->red->local_red[i];
+	  red_sum += ((PetscReal*)tcomm->red->local_red)[i];
 	}
 	PetscMemcpy(outdata,&red_sum,sizeof(PetscReal));
 	break;
@@ -735,7 +735,7 @@ PetscErrorCode PetscThreadReductionKernelEnd(PetscInt trank,PetscThreadComm tcom
       if(type == PETSC_SCALAR) {
 	PetscScalar red_sum=0.0;
 	for(i=0; i < tcomm->nworkThreads;i++) {
-	  red_sum += (PetscScalar)tcomm->red->local_red[i];
+	  red_sum += ((PetscScalar*)tcomm->red->local_red)[i];
 	}
 	PetscMemcpy(outdata,&red_sum,sizeof(PetscScalar));
 	break;
@@ -743,7 +743,7 @@ PetscErrorCode PetscThreadReductionKernelEnd(PetscInt trank,PetscThreadComm tcom
       if(type == PETSC_INT) {
 	PetscInt red_sum=0.0;
 	for(i=0; i < tcomm->nworkThreads;i++) {
-	  red_sum += (PetscInt)tcomm->red->local_red[i];
+	  red_sum += ((PetscInt*)tcomm->red->local_red)[i];
 	}
 	PetscMemcpy(outdata,&red_sum,sizeof(PetscInt));
 	break;
@@ -753,7 +753,7 @@ PetscErrorCode PetscThreadReductionKernelEnd(PetscInt trank,PetscThreadComm tcom
       if(type == PETSC_REAL) {
 	PetscReal red_prod=0.0;
 	for(i=0; i < tcomm->nworkThreads;i++) {
-	  red_prod *= (PetscReal)tcomm->red->local_red[i];
+	  red_prod *= ((PetscReal*)tcomm->red->local_red)[i];
 	}
 	PetscMemcpy(outdata,&red_prod,sizeof(PetscReal));
 	break;
@@ -761,7 +761,7 @@ PetscErrorCode PetscThreadReductionKernelEnd(PetscInt trank,PetscThreadComm tcom
       if(type == PETSC_SCALAR) {
 	PetscScalar red_prod=0.0;
 	for(i=0; i < tcomm->nworkThreads;i++) {
-	  red_prod *= (PetscScalar)tcomm->red->local_red[i];
+	  red_prod *= ((PetscScalar*)tcomm->red->local_red)[i];
 	}
 	PetscMemcpy(outdata,&red_prod,sizeof(PetscScalar));
 	break;
@@ -769,7 +769,7 @@ PetscErrorCode PetscThreadReductionKernelEnd(PetscInt trank,PetscThreadComm tcom
       if(type == PETSC_INT) {
 	PetscInt red_prod=0.0;
 	for(i=0; i < tcomm->nworkThreads;i++) {
-	  red_prod *= (PetscInt)tcomm->red->local_red[i];
+	  red_prod *= ((PetscInt*)tcomm->red->local_red)[i];
 	}
 	PetscMemcpy(outdata,&red_prod,sizeof(PetscInt));
 	break;
