@@ -84,6 +84,114 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char **list,Pe
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscBagRegisterIntArray"
+/*@C
+   PetscBagRegisterIntArray - add an integer value to the bag
+
+   Logically Collective on PetscBag
+
+   Input Parameter:
++  bag - the bag of values
+.  addr - location of integer in struct
+.  msize - number of entries in array
+.  name - name of the integer array
+-  help - longer string with more information about the value
+
+   Level: beginner
+
+.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
+           PetscBagRegisterInt(), PetscBagRegisterBool(), PetscBagRegisterScalar()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
+
+@*/
+PetscErrorCode PetscBagRegisterIntArray(PetscBag bag,void *addr,PetscInt msize, const char* name, const char* help)
+{
+  PetscErrorCode ierr;
+  PetscBagItem   item;
+  char           nname[PETSC_BAG_NAME_LENGTH+1];
+  PetscBool      printhelp;
+  PetscInt       i,tmp = msize;
+
+  PetscFunctionBegin;
+  /* ierr = PetscMemzero(addr,msize*sizeof(PetscInt));CHKERRQ(ierr);*/
+  nname[0] = '-';
+  nname[1] = 0;
+  ierr     = PetscStrncat(nname,name,PETSC_BAG_NAME_LENGTH-1);CHKERRQ(ierr);
+  ierr     = PetscOptionsHasName(PETSC_NULL,"-help",&printhelp);CHKERRQ(ierr);
+  if (printhelp) {
+    ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <",bag->bagprefix?bag->bagprefix:"",name);CHKERRQ(ierr);
+    for (i=0; i<msize; i++) {
+      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"%D ",*((PetscInt*)addr)+i);CHKERRQ(ierr);
+  }
+    ierr     = (*PetscHelpPrintf)(bag->bagcomm,">: %s \n",help);CHKERRQ(ierr);
+  }
+  ierr     = PetscOptionsGetIntArray(bag->bagprefix,nname,(PetscInt*)addr,&tmp,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
+  item->dtype  = PETSC_INT;
+  item->offset = ((char*)addr) - ((char*)bag);
+  if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
+  item->next   = 0;
+  item->msize  = msize;
+  ierr = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscBagRegisterRealArray"
+/*@C
+   PetscBagRegisterRealArray - add an real array to the bag
+
+   Logically Collective on PetscBag
+
+   Input Parameter:
++  bag - the bag of values
+.  addr - location of real array in struct
+.  msize - number of entries in array
+.  name - name of the integer array
+-  help - longer string with more information about the value
+
+   Level: beginner
+
+.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
+           PetscBagRegisterInt(), PetscBagRegisterBool(), PetscBagRegisterScalar()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
+
+@*/
+PetscErrorCode PetscBagRegisterRealArray(PetscBag bag,void *addr,PetscInt msize, const char* name, const char* help)
+{
+  PetscErrorCode ierr;
+  PetscBagItem   item;
+  char           nname[PETSC_BAG_NAME_LENGTH+1];
+  PetscBool      printhelp;
+  PetscInt       i,tmp = msize;
+
+  PetscFunctionBegin;
+  /* ierr = PetscMemzero(addr,msize*sizeof(PetscInt));CHKERRQ(ierr);*/
+  nname[0] = '-';
+  nname[1] = 0;
+  ierr     = PetscStrncat(nname,name,PETSC_BAG_NAME_LENGTH-1);CHKERRQ(ierr);
+  ierr     = PetscOptionsHasName(PETSC_NULL,"-help",&printhelp);CHKERRQ(ierr);
+  if (printhelp) {
+    ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <",bag->bagprefix?bag->bagprefix:"",name);CHKERRQ(ierr);
+    for (i=0; i<msize; i++) {
+      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"%G ",*((PetscReal*)addr)+i);CHKERRQ(ierr);
+  }
+    ierr     = (*PetscHelpPrintf)(bag->bagcomm,">: %s \n",help);CHKERRQ(ierr);
+  }
+  ierr     = PetscOptionsGetRealArray(bag->bagprefix,nname,(PetscReal*)addr,&tmp,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
+  item->dtype  = PETSC_REAL;
+  item->offset = ((char*)addr) - ((char*)bag);
+  if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
+  item->next   = 0;
+  item->msize  = msize;
+  ierr = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscBagRegisterInt"
 /*@C
    PetscBagRegisterInt - add an integer value to the bag
@@ -474,8 +582,13 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
         ierr = PetscViewerASCIIPrintf(view,"  %s = %s; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
         value[nitem->msize-1] =tmp;        
       } else if (nitem->dtype == PETSC_REAL) {
-        PetscReal value = *(PetscReal*)(((char*)bag) + nitem->offset);
-        ierr = PetscViewerASCIIPrintf(view,"  %s = %G; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
+        PetscReal *value = (PetscReal*)(((char*)bag) + nitem->offset);
+        PetscInt  i;
+        ierr = PetscViewerASCIIPrintf(view,"  %s = ",nitem->name);CHKERRQ(ierr);
+        for (i=0; i<nitem->msize; i++) {
+          ierr = PetscViewerASCIIPrintf(view,"%G ",value[i]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(view,"; %s\n",nitem->help);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_SCALAR) {
         PetscScalar value = *(PetscScalar*)(((char*)bag) + nitem->offset);
 #if defined(PETSC_USE_COMPLEX)
@@ -484,8 +597,12 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
         ierr = PetscViewerASCIIPrintf(view,"  %s = %G; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
 #endif
       } else if (nitem->dtype == PETSC_INT) {
-        PetscInt value = *(PetscInt*)(((char*)bag) + nitem->offset);
-        ierr = PetscViewerASCIIPrintf(view,"  %s = %D; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
+        PetscInt i,*value = (PetscInt*)(((char*)bag) + nitem->offset);
+        ierr = PetscViewerASCIIPrintf(view,"  %s = ",nitem->name);CHKERRQ(ierr);
+        for (i=0; i<nitem->msize; i++) {
+          ierr = PetscViewerASCIIPrintf(view,"%D ",value[i]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(view,"; %s\n",nitem->help);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_BOOL) {
         PetscBool  value = *(PetscBool*)(((char*)bag) + nitem->offset);
         /* some Fortran compilers use -1 as boolean */
@@ -587,11 +704,11 @@ PetscErrorCode  PetscBagLoad(PetscViewer view,PetscBag bag)
     if (dtype == (PetscInt) PETSC_CHAR) {
       ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,PETSC_CHAR);CHKERRQ(ierr);
     } else if (dtype == (PetscInt) PETSC_REAL) {
-      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,1,PETSC_REAL);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,PETSC_REAL);CHKERRQ(ierr);
     } else if (dtype == (PetscInt) PETSC_SCALAR) {
       ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,1,PETSC_SCALAR);CHKERRQ(ierr);
     } else if (dtype == (PetscInt) PETSC_INT) {
-      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,1,PETSC_INT);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,msize,PETSC_INT);CHKERRQ(ierr);
     } else if (dtype == (PetscInt) PETSC_BOOL) {
       ierr = PetscViewerBinaryRead(view,((char*)bag)+nitem->offset,1,PETSC_BOOL);CHKERRQ(ierr);
     } else if (dtype == (PetscInt) PETSC_ENUM) {

@@ -37,9 +37,11 @@ extern PetscErrorCode  PetscBagCreate(MPI_Comm,size_t,PetscBag*);
 extern PetscErrorCode  PetscBagDestroy(PetscBag*);
 extern PetscErrorCode  PetscBagGetData(PetscBag,void **);
 extern PetscErrorCode  PetscBagRegisterReal(PetscBag,void*,PetscReal, const char*, const char*);
+extern PetscErrorCode  PetscBagRegisterRealArray(PetscBag,void*,PetscInt, const char*, const char*);
 extern PetscErrorCode  PetscBagRegisterString(PetscBag,void*,PetscInt,const char*, const char*, const char*);
 extern PetscErrorCode  PetscBagRegisterScalar(PetscBag,void*,PetscScalar,const  char*,const  char*);
 extern PetscErrorCode  PetscBagRegisterInt(PetscBag,void*,PetscInt,const  char*,const  char*);
+extern PetscErrorCode  PetscBagRegisterIntArray(PetscBag,void*,PetscInt,const  char*,const  char*);
 extern PetscErrorCode  PetscBagRegisterEnum(PetscBag,void*,const  char*[],PetscEnum,const char*,const  char*);
 extern PetscErrorCode  PetscBagRegisterBool(PetscBag,void*,PetscBool ,const  char*,const  char*);
 

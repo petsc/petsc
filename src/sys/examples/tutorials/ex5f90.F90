@@ -15,6 +15,7 @@
          PetscScalar :: x
          PetscReal :: y
          PetscInt :: nxc
+         PetscReal :: rarray(2)
          PetscBool  :: t
          character*(80) :: c
          type(tuple) :: pos
@@ -60,7 +61,7 @@
 !     really need a sizeof(data) operator here. There could be padding inside the
 !     structure due to alignment issues - so, this computed value cold be wrong.
       sizeofbag = sizeofint + sizeofscalar + sizeoftruth + sizeofchar*80 &
-     &       + 3*sizeofreal
+     &       + 3*sizeofreal+2*sizeofreal
 
 ! create the bag
       call PetscBagCreate(PETSC_COMM_WORLD,sizeofbag,bag,ierr)
@@ -72,6 +73,8 @@
 ! register the data within the bag, grabbing values from the options database
       call PetscBagRegisterInt(bag,data%nxc ,56,'nxc',                   &
      &      'nxc_variable help message',ierr)
+      call PetscBagRegisterRealArray(bag,data%rarray ,2,'rarray',        &
+     &      'rarray help message',ierr)
       call PetscBagRegisterScalar(bag,data%x ,103.2d0,'x',               &
      &      'x variable help message',ierr)
       call PetscBagRegisterBool(bag,data%t ,PETSC_TRUE,'t',              &
@@ -87,6 +90,8 @@
       call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
       data%nxc = 23
+      data%rarray(1) = -1.0
+      data%rarray(2) = -2.0
       data%x   = 155.4
       data%c   = 'a whole new string'
       data%t   = PETSC_TRUE

@@ -9,9 +9,11 @@
 #define petscbagload_ PETSCBAGLOAD
 #define petscbaggetdata_ PETSCBAGGETDATA
 #define petscbagregisterint_ PETSCBAGREGISTERINT
+#define petscbagregisterintarray_ PETSCBAGREGISTERINTARRAY
 #define petscbagregisterscalar_ PETSCBAGREGISTERSCALAR
 #define petscbagregisterstring_ PETSCBAGREGISTERSTRING
 #define petscbagregisterreal_ PETSCBAGREGISTERREAL
+#define petscbagregisterrealarray_ PETSCBAGREGISTERREALARRAY
 #define petscbagregisterbool_ PETSCBAGREGISTERBOOL
 #define petscbagsetname_ PETSCBAGSETNAME
 #define petscbagsetoptionsprefix_ PETSCBAGSETOPTIONSPREFIX
@@ -21,9 +23,11 @@
 #define petscbagload_ petscbagload
 #define petscbaggetdata_ petscbaggetdata
 #define petscbagregisterint_ petscbagregisterint
+#define petscbagregisterintarray_ petscbagregisterintarray
 #define petscbagregisterscalar_ petscbagregisterscalar
 #define petscbagregisterstring_ petscbagregisterstring
 #define petscbagregisterreal_ petscbagregisterreal
+#define petscbagregisterrealarray_ petscbagregisterrealarray
 #define petscbagregisterbool_ petscbagregisterbool
 #define petscbagsetname_ petscbagsetname
 #define petscbagsetoptionsprefix_ petscbagsetoptionsprefix
@@ -62,6 +66,17 @@ void PETSC_STDCALL petscbagregisterint_(PetscBag *bag,void *ptr,PetscInt *def,CH
   FREECHAR(s2,t2);
 }
 
+void PETSC_STDCALL petscbagregisterintarray_(PetscBag *bag,void *ptr,PetscInt *msize,CHAR s1 PETSC_MIXED_LEN(l1),
+					CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
+{
+  char *t1,*t2;
+  FIXCHAR(s1,l1,t1);
+  FIXCHAR(s2,l2,t2);
+  *ierr = PetscBagRegisterIntArray(*bag,ptr,*msize,t1,t2);
+  FREECHAR(s1,t1);
+  FREECHAR(s2,t2);
+}
+
 void PETSC_STDCALL petscbagregisterscalar_(PetscBag *bag,void *ptr,PetscScalar *def,CHAR s1 PETSC_MIXED_LEN(l1),
 					CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
 {
@@ -80,6 +95,17 @@ void PETSC_STDCALL petscbagregisterreal_(PetscBag *bag,void *ptr,PetscReal *def,
   FIXCHAR(s1,l1,t1);
   FIXCHAR(s2,l2,t2);
   *ierr = PetscBagRegisterReal(*bag,ptr,*def,t1,t2);
+  FREECHAR(s1,t1);
+  FREECHAR(s2,t2);
+}
+
+void PETSC_STDCALL petscbagregisterrealarray_(PetscBag *bag,void *ptr,PetscInt *msize,CHAR s1 PETSC_MIXED_LEN(l1),
+					CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
+{
+  char *t1,*t2;
+  FIXCHAR(s1,l1,t1);
+  FIXCHAR(s2,l2,t2);
+  *ierr = PetscBagRegisterRealArray(*bag,ptr,*msize,t1,t2);
   FREECHAR(s1,t1);
   FREECHAR(s2,t2);
 }

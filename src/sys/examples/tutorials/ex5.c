@@ -35,6 +35,8 @@ typedef struct {
   PetscReal     rho;
   TwoVec        pos; 
   PetscInt      Ii;
+  PetscInt      iarray[3];
+  PetscReal     rarray[2];
   PetscBool     T;
   PetscDataType dt;
   char          filename[PETSC_MAX_PATH_LEN];
@@ -75,6 +77,13 @@ int main(int argc,char **argv)
   ierr = PetscBagRegisterReal  (bag,&params->rho,3.0,"rho","Density, kg/m^3");CHKERRQ(ierr);
   ierr = PetscBagRegisterScalar(bag,&params->W,  5.0,"W","Vertical velocity, m/sec");CHKERRQ(ierr);
   ierr = PetscBagRegisterInt   (bag,&params->Ii, 2,"modes_x","Number of modes in x-direction");CHKERRQ(ierr);
+  params->iarray[0] = 1;
+  params->iarray[1] = 2;
+  params->iarray[2] = 3;
+  ierr = PetscBagRegisterIntArray(bag,&params->iarray, 3,"int_array","Int array with 3 locations");CHKERRQ(ierr);
+  params->rarray[0] = -1.0;
+  params->rarray[1] = -2.0;
+  ierr = PetscBagRegisterRealArray(bag,&params->rarray, 2,"real_array","Real array with 2 locations");CHKERRQ(ierr);
   ierr = PetscBagRegisterBool (bag,&params->T,  PETSC_FALSE,"do_output","Write output file (yes/no)");CHKERRQ(ierr);
   ierr = PetscBagRegisterEnum  (bag,&params->dt, PetscDataTypes,(PetscEnum)PETSC_INT,"dt","meaningless datatype");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal  (bag,&params->pos.x1,1.0,"x1","x position");CHKERRQ(ierr);
@@ -93,7 +102,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   
-  ierr = PetscMemzero(params,sizeof(params));CHKERRQ(ierr);
+  ierr = PetscMemzero(params,sizeof(Parameter));CHKERRQ(ierr);
 
   /* load bag from file & write to stdio */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);

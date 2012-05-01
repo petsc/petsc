@@ -21,9 +21,9 @@ for lcv = 1:count
   msize = read(fd,1,'int32');
 
   if dtype == 0     % integer
-    val = read(fd,1,'int32');
+    val = read(fd,msize,'int32');
   elseif dtype == 1 % double
-    val = read(fd,1,'double');
+    val = read(fd,msize,'double');
   elseif dtype == 6 % char
     val = deblank(char(read(fd,msize,'uchar')'));
   elseif dtype == 9 % truth
