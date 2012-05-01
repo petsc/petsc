@@ -119,6 +119,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   const PetscInt pStart  = 0,     pEnd  = zfEnd;
   PetscInt       numFields, numVertexTotDof = 0, numCellTotDof = 0, numFaceTotDof[3] = {0, 0, 0};
   PetscSF        sf;
+  PetscMPIInt    rank;
   const PetscMPIInt *neighbors;
   PetscInt      *localPoints;
   PetscSFNode   *remotePoints;
@@ -128,6 +129,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
   /* Create local section */
   ierr = DMDAGetInfo(dm, 0,0,0,0,0,0,0, &numFields, 0,0,0,0,0);CHKERRQ(ierr);
   for(f = 0; f < numFields; ++f) {
@@ -198,8 +200,8 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
         const PetscInt xp = xn-1, yp = dim > 1 ? yn-1 : 0, zp = dim > 2 ? zn-1 : 0;
         const PetscInt neighbor = neighbors[(zn*3+yn)*3+xn];
 
-        if (neighbor >= 0) {
-          nleaves += (xp ? nVx : 1) * (yp ? nVy : 1) * (zp ? nVz : 1); /* vertices */
+        if (neighbor >= 0 && neighbor != rank) {
+          nleaves += (!xp ? nVx : 1) * (!yp ? nVy : 1) * (!zp ? nVz : 1); /* vertices */
           if (xp && !yp && !zp) {
             nleaves += nxF; /* x faces */
           } else if (yp && !zp && !xp) {
@@ -218,8 +220,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
         const PetscInt xp = xn-1, yp = dim > 1 ? yn-1 : 0, zp = dim > 2 ? zn-1 : 0;
         const PetscInt neighbor = neighbors[(zn*3+yn)*3+xn];
 
-        if (neighbor >= 0) {
-          nleavesCheck += (xp ? nVx : 1) * (yp ? nVy : 1) * (zp ? nVz : 1);
+        if (neighbor >= 0 && neighbor != rank) {
           if (xp < 0) { /* left */
             if (yp < 0) { /* bottom */
               if (zp < 0) { /* back */
