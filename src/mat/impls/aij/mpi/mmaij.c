@@ -104,7 +104,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 
   /* create two temporary Index sets for build scatter gather */
   /*  check for the special case where blocks are communicated for faster VecScatterXXX */
-  useblockis = PETSC_TRUE;
+  useblockis = PETSC_FALSE;
   if (mat->rmap->bs > 1) {
     PetscInt bs = mat->rmap->bs,ibs,ga;
     if (!(ec % bs)) {
@@ -198,6 +198,7 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
   }
   ierr = MatCreate(PETSC_COMM_SELF,&Bnew);CHKERRQ(ierr);
   ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr);
+  ierr = MatSetBlockSizes(Bnew,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
   ierr = MatSetType(Bnew,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Bnew,0,nz);CHKERRQ(ierr);
   ((Mat_SeqAIJ*)Bnew->data)->nonew = Baij->nonew; /* Inherit insertion error options. */

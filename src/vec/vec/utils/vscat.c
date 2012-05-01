@@ -859,8 +859,6 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   ierr = MPI_Comm_size(ycomm,&size);CHKERRQ(ierr);
   if (size > 1) {comm = ycomm; yin_type = VEC_MPI_ID;}
 
-
-  
   /* generate the Scatter context */
   ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter","VecScatter","Vec",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
   ctx->inuse               = PETSC_FALSE;

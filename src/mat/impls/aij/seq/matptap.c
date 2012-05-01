@@ -149,7 +149,9 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy2(Mat A,Mat P,PetscReal f
   
   /* put together the new matrix */
   ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,pn,pn,ci,cj,ca,C);CHKERRQ(ierr);
-
+  (*C)->rmap->bs = P->cmap->bs;
+  (*C)->cmap->bs = P->cmap->bs;
+PetscPrintf(PETSC_COMM_SELF,"************%s C.bs=%d,%d\n",__FUNCT__,(*C)->rmap->bs,(*C)->cmap->bs);
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* Since these are PETSc arrays, change flags to free them as necessary. */
   c = (Mat_SeqAIJ *)((*C)->data);
@@ -254,6 +256,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy2(Mat A,Mat P,Mat C)
   /* Assemble the final matrix and clean up */
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+PetscPrintf(PETSC_COMM_SELF,"************%s C.bs=%d,%d\n",__FUNCT__,C->rmap->bs,C->cmap->bs);
   ierr = PetscFree(apa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -278,6 +281,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-matptap_sparseaxpy",&sparse_axpy,PETSC_NULL);CHKERRQ(ierr);
   if (sparse_axpy == 2){ 
     ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy2(A,P,fill,C);CHKERRQ(ierr);
+
     PetscFunctionReturn(0);
   }
 
@@ -286,6 +290,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* Get symbolic AP = A*P */
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,P,fill,&AP);CHKERRQ(ierr);
+
   ap          = (Mat_SeqAIJ*)AP->data;
   api         = ap->i; 
   apj         = ap->j;
@@ -293,6 +298,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* Get C = Pt*AP */
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(Pt,AP,fill,C);CHKERRQ(ierr);
+
   c  = (Mat_SeqAIJ*)(*C)->data;
   ci = c->i; 
   ierr = PetscMalloc((ci[pn]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);

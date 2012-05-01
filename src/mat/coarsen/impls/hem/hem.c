@@ -354,6 +354,10 @@ PetscErrorCode PetscCDGetASMBlocks( const PetscCoarsenData *ail, const PetscInt 
 PetscErrorCode PetscCDSetRemovedIS( PetscCoarsenData *ail, MPI_Comm comm, const PetscInt a_sz, PetscInt a_ids[])
 {
   PetscErrorCode ierr;
+
+  if( ail->removedIS ) {
+    ierr = ISDestroy( &ail->removedIS); CHKERRQ(ierr);
+  }
   ierr = ISCreateGeneral( comm, a_sz, a_ids, PETSC_COPY_VALUES, &ail->removedIS ); CHKERRQ(ierr);
   return 0;
 }

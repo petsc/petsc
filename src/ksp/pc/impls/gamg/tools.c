@@ -210,17 +210,17 @@ PetscErrorCode PCGAMGFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pe
    . data_sz - number of data terms per node (# cols in output)
    . data_in[nloc*data_sz] - column oriented data
    Output Parameter:
-   . stride - numbrt of rows of output
-   . data_out[stride*data_sz] - output data with ghosts
+   . a_stride - numbrt of rows of output
+   . a_data_out[stride*data_sz] - output data with ghosts
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGGetDataWithGhosts"
 PetscErrorCode PCGAMGGetDataWithGhosts( const Mat Gmat,
-                                  const PetscInt data_sz,
-                                  const PetscReal data_in[],
-                                  PetscInt *a_stride,
-                                  PetscReal **a_data_out
-                                  )
+                                        const PetscInt data_sz,
+                                        const PetscReal data_in[],
+                                        PetscInt *a_stride,
+                                        PetscReal **a_data_out
+                                        )
 {
   PetscErrorCode ierr;
   PetscMPIInt    mype,npe;

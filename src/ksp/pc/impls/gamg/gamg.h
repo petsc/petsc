@@ -27,17 +27,10 @@ typedef struct gamg_TAG{
   PetscErrorCode (*coarsen)( PC, Mat *, PetscCoarsenData** );
   PetscErrorCode (*prolongator)( PC, const Mat, const Mat, PetscCoarsenData *, Mat* );
   PetscErrorCode (*optprol)( PC, const Mat, Mat* );
-
+  PetscErrorCode (*formkktprol)( PC, const Mat, const Mat, Mat* );
   PetscErrorCode (*createdefaultdata)( PC, Mat ); /* for data methods that have a default (SA) */
   void          *subctx;
 } PC_GAMG;
-
-/* #if defined(PETSC_USE_DYNAMIC_LIBRARIES) */
-/* #  define PCGAMGRegisterDynamic(a,b,c,d)       PCGAMGRegister(a,b,c,0) */
-/* #else */
-/* #  define PCGAMGRegisterDynamic(a,b,c,d)       PCGAMGRegister(a,b,c,d) */
-/* #endif */
-/* PetscErrorCode PCGAMGRegister(const char *implname,const char *path,const char *fname,PetscErrorCode (*cfunc)(PC)); */
 
 #define GAMGAGG "agg"
 #define GAMGGEO "geo"
@@ -71,6 +64,7 @@ extern PetscLogEvent PC_GAMGCoarsen_GEO;
 extern PetscLogEvent PC_GAMGProlongator_AGG;
 extern PetscLogEvent PC_GAMGProlongator_GEO;
 extern PetscLogEvent PC_GAMGOptprol_AGG;
+extern PetscLogEvent PC_GAMGKKTProl_AGG;
 #endif
 
 typedef struct _GAMGHashTable{

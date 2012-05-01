@@ -20,7 +20,8 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
     ierr = MatCreate(subComm,subMat);CHKERRQ(ierr);
     ierr = MatSetType(*subMat,MATMPIAIJ);CHKERRQ(ierr);
     ierr = MatSetSizes(*subMat,mat->rmap->n,mat->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  
+    ierr = MatSetBlockSizes(*subMat,mat->rmap->bs,mat->cmap->bs);CHKERRQ(ierr);
+
     /* need to setup rmap and cmap before Preallocation */
     ierr = PetscLayoutSetBlockSize((*subMat)->rmap,mat->rmap->bs);CHKERRQ(ierr);
     ierr = PetscLayoutSetBlockSize((*subMat)->cmap,mat->cmap->bs);CHKERRQ(ierr);

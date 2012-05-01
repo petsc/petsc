@@ -107,8 +107,12 @@ int main(int argc,char **args)
       ierr = MatCreateBAIJ(wcomm,3,m,m,M,M,0,d_nnz,0,o_nnz,&Amat);CHKERRQ(ierr);
     }
     else {
-      ierr = MatCreateAIJ(wcomm,m,m,M,M,0,d_nnz,0,o_nnz,&Amat);CHKERRQ(ierr);
-      ierr = MatSetBlockSize(Amat,3);      CHKERRQ(ierr);
+      ierr = MatCreate(wcomm,&Amat);CHKERRQ(ierr);
+      ierr = MatSetSizes(Amat,m,m,M,M);CHKERRQ(ierr);
+      ierr = MatSetBlockSize(Amat,3);CHKERRQ(ierr);
+      ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
+      ierr = MatSeqAIJSetPreallocation(Amat,0,d_nnz);CHKERRQ(ierr);
+      ierr = MatMPIAIJSetPreallocation(Amat,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
     }
     ierr = PetscFree( d_nnz );  CHKERRQ(ierr);
     ierr = PetscFree( o_nnz );  CHKERRQ(ierr);

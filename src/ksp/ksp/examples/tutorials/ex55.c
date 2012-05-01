@@ -7,6 +7,7 @@ Load of 1.0 in x direction on all nodes (not a true uniform load).\n\
   -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
 
 #include <petscksp.h>
+#include <assert.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -66,7 +67,7 @@ int main(int argc,char **args)
   ierr = MatMPIAIJSetPreallocation(Pmat,18,PETSC_NULL,12,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
-  m = Iend - Istart;
+  assert(m == Iend - Istart);
   /* Generate vectors */
   ierr = VecCreate(wcomm,&xx);   CHKERRQ(ierr);
   ierr = VecSetSizes(xx,m,M);    CHKERRQ(ierr);
@@ -158,7 +159,7 @@ int main(int argc,char **args)
         else DD2[i][j] = DD1[i][j];
   }
   {
-    PetscReal coords[2*m];
+    PetscReal coords[m];
     /* forms the element stiffness for the Laplacian and coordinates */
     for (Ii = Istart/2, ix = 0; Ii < Iend/2; Ii++, ix++ ) {
       j = Ii/(ne+1); i = Ii%(ne+1);
@@ -207,7 +208,7 @@ int main(int argc,char **args)
     /* finish KSP/PC setup */
     ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
     if( use_coords ) {
-      ierr = PCSetCoordinates( pc, 2, m, coords );                   CHKERRQ(ierr);
+      ierr = PCSetCoordinates( pc, 2, m/2, coords );                   CHKERRQ(ierr);
     }
   }
 

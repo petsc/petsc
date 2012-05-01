@@ -44,8 +44,10 @@ PetscErrorCode PCSetCoordinates_GEO( PC pc, PetscInt ndm, PetscInt a_nloc, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific( Amat, MAT_CLASSID, 1 );
   ierr  = MatGetBlockSize( Amat, &bs );               CHKERRQ( ierr );
+
   ierr  = MatGetOwnershipRange( Amat, &my0, &Iend ); CHKERRQ(ierr);
   nloc = (Iend-my0)/bs;
+
   if(nloc!=a_nloc)SETERRQ2(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Stokes not supported nloc = %d %d.",a_nloc,nloc);
   if((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
 
@@ -140,8 +142,8 @@ PetscErrorCode PCSetFromOptions_GEO( PC pc )
 
    Input Parameter:
    . selected_2 - list of selected local ID, includes selected ghosts
-   . nnodes -
-   . coords[2*nnodes] - column vector of local coordinates w/ ghosts
+   . data_stride -
+   . coords[2*data_stride] - column vector of local coordinates w/ ghosts
    . nselected_1 - selected IDs that go with base (1) graph
    . clid_lid_1[nselected_1] - lids of selected (c) nodes   ???????????
    . agg_lists_1 - list of aggregates 
@@ -154,7 +156,7 @@ PetscErrorCode PCSetFromOptions_GEO( PC pc )
 #undef __FUNCT__
 #define __FUNCT__ "triangulateAndFormProl"
 static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selected local ID, includes selected ghosts */
-                                              const PetscInt nnodes,
+                                              const PetscInt data_stride,
                                               const PetscReal coords[], /* column vector of local coordinates w/ ghosts */
                                               const PetscInt nselected_1, /* list of selected local ID, includes selected ghosts */
                                               const PetscInt clid_lid_1[],
@@ -203,7 +205,7 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
   for(kk=0,sid=0;kk<nselected_2;kk++,sid += 2){
     PetscInt lid = selected_idx_2[kk];
     in.pointlist[sid] = coords[lid];
-    in.pointlist[sid+1] = coords[nnodes + lid];
+    in.pointlist[sid+1] = coords[data_stride + lid];
     if(lid>=nFineLoc) nPlotPts++;
   }
   assert(sid==2*nselected_2);
@@ -298,7 +300,7 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
           if( lid == jj ) sel = PETSC_FALSE;
         }
         if( sel ) {
-          fprintf(file, "%d %e %e\n",sid++,coords[jj],coords[nnodes + jj]);
+          fprintf(file, "%d %e %e\n",sid++,coords[jj],coords[data_stride + jj]);
         }
       }
       fclose(file);
@@ -346,7 +348,7 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
             PetscInt bestTID = -1; PetscReal best_alpha = 1.e10;
             const PetscInt fgid = flid + myFine0;
             /* compute shape function for gid */
-            const PetscReal fcoord[3] = {coords[flid],coords[nnodes+flid],1.0};
+            const PetscReal fcoord[3] = {coords[flid],coords[data_stride+flid],1.0};
             PetscBool haveit=PETSC_FALSE; PetscScalar alpha[3]; PetscInt clids[3];
             /* look for it */
             for( tid = node_tri[clid], jj=0;
@@ -355,7 +357,7 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
               for(tt=0;tt<3;tt++){
                 PetscInt cid2 = mid.trianglelist[3*tid + tt];
                 PetscInt lid2 = selected_idx_2[cid2];
-                AA[tt][0] = coords[lid2]; AA[tt][1] = coords[nnodes + lid2]; AA[tt][2] = 1.0;
+                AA[tt][0] = coords[lid2]; AA[tt][1] = coords[data_stride + lid2]; AA[tt][2] = 1.0;
                 clids[tt] = cid2; /* store for interp */
               }
 
@@ -383,7 +385,7 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
                 for(tt=0;tt<3;tt++){
                   PetscInt cid2 = mid.trianglelist[3*tid + tt];
                   PetscInt lid2 = selected_idx_2[cid2];
-                  AA[tt][0] = coords[lid2]; AA[tt][1] = coords[nnodes + lid2]; AA[tt][2] = 1.0;
+                  AA[tt][0] = coords[lid2]; AA[tt][1] = coords[data_stride + lid2]; AA[tt][2] = 1.0;
                   clids[tt] = cid2; /* store for interp */
                 }
                 for(tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
@@ -408,7 +410,7 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
               for(tt=0;tt<3;tt++){
                 PetscInt cid2 = mid.trianglelist[3*bestTID + tt];
                 PetscInt lid2 = selected_idx_2[cid2];
-                AA[tt][0] = coords[lid2]; AA[tt][1] = coords[nnodes + lid2]; AA[tt][2] = 1.0;
+                AA[tt][0] = coords[lid2]; AA[tt][1] = coords[data_stride + lid2]; AA[tt][2] = 1.0;
                 clids[tt] = cid2; /* store for interp */
               }
               for(tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
@@ -758,7 +760,7 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange( Amat, &Istart, &Iend ); CHKERRQ(ierr);
-  ierr  = MatGetBlockSize( Amat, &bs );               CHKERRQ( ierr );
+  ierr = MatGetBlockSize( Amat, &bs );               CHKERRQ( ierr );
   nloc = (Iend-Istart)/bs; my0 = Istart/bs; assert((Iend-Istart)%bs==0);
 
   /* get 'nLocalSelected' */
@@ -778,15 +780,23 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
     }
   }
   ierr = ISRestoreIndices( selected_1, &selected_idx );     CHKERRQ(ierr);
-  
+  ierr = ISDestroy( &selected_1 ); CHKERRQ(ierr); /* this is selected_1 in serial */
+
   /* create prolongator, create P matrix */
-  ierr = MatCreateAIJ(wcomm, 
-                      nloc*bs, nLocalSelected*bs,
-                      PETSC_DETERMINE, PETSC_DETERMINE,
-                      3*data_cols, PETSC_NULL, /* don't have a good way to set this!!! */
-                      3*data_cols, PETSC_NULL,
-                      &Prol );
+  ierr = MatCreate( wcomm, &Prol ); CHKERRQ(ierr);
+  ierr = MatSetSizes(Prol,nloc*bs,nLocalSelected*bs,PETSC_DETERMINE,PETSC_DETERMINE); 
   CHKERRQ(ierr);
+  ierr = MatSetBlockSizes( Prol, bs, bs ); CHKERRQ(ierr);
+  ierr = MatSetType( Prol, MATAIJ );   CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(Prol,3*data_cols,PETSC_NULL);   CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Prol,3*data_cols,PETSC_NULL,3*data_cols,PETSC_NULL); CHKERRQ(ierr);
+  /* ierr = MatCreateAIJ( wcomm,  */
+  /*                      nloc*bs, nLocalSelected*bs, */
+  /*                      PETSC_DETERMINE, PETSC_DETERMINE, */
+  /*                      3*data_cols, PETSC_NULL,  */
+  /*                      3*data_cols, PETSC_NULL, */
+  /*                      &Prol ); */
+  /* CHKERRQ(ierr); */
   
   /* can get all points "removed" - but not on geomg */
   ierr =  MatGetSize( Prol, &kk, &jj ); CHKERRQ(ierr);
@@ -802,7 +812,7 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
 
   {
     PetscReal *coords; 
-    PetscInt nnodes;
+    PetscInt   data_stride;
     PetscInt  *crsGID = PETSC_NULL;
     Mat        Gmat2;
 
@@ -811,6 +821,7 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
 #if defined PETSC_GAMG_USE_LOG
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET5],0,0,0,0);CHKERRQ(ierr);
 #endif
+    /* messy method, squares graph and gets some data */
     ierr = getGIDsOnSquareGraph( nLocalSelected, clid_flid, Gmat, &selected_2, &Gmat2, &crsGID );
     CHKERRQ(ierr);
     /* llist is now not valid wrt squared graph, but will work as iterator in 'triangulateAndFormProl' */
@@ -819,12 +830,12 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
 #endif
     /* create global vector of coorindates in 'coords' */
     if (npe > 1) {
-      ierr = PCGAMGGetDataWithGhosts( Gmat2, dim, pc_gamg->data, &nnodes, &coords );
+      ierr = PCGAMGGetDataWithGhosts( Gmat2, dim, pc_gamg->data, &data_stride, &coords );
       CHKERRQ(ierr);
     }
     else {
       coords = (PetscReal*)pc_gamg->data;
-      nnodes = nloc;
+      data_stride = pc_gamg->data_sz/pc_gamg->data_cell_cols;
     }
     ierr = MatDestroy( &Gmat2 );  CHKERRQ(ierr);
 
@@ -834,7 +845,7 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
 #if defined PETSC_GAMG_USE_LOG
       ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET6],0,0,0,0);CHKERRQ(ierr);
 #endif
-      ierr = triangulateAndFormProl( selected_2, nnodes, coords,
+      ierr = triangulateAndFormProl( selected_2, data_stride, coords,
                                      nLocalSelected, clid_flid, agg_lists, crsGID, bs, Prol, &metric );
       CHKERRQ(ierr);
 #if defined PETSC_GAMG_USE_LOG
@@ -869,13 +880,14 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
         PetscInt lid = clid_flid[kk];
         for(jj=0;jj<dim;jj++) crs_crds[jj*nLocalSelected + kk] = pc_gamg->data[jj*nloc + lid];
       }
-      
+
       ierr = PetscFree( pc_gamg->data ); CHKERRQ( ierr );
       pc_gamg->data = crs_crds; /* out */
       pc_gamg->data_sz = dim*nLocalSelected;
     }
-    ierr = ISDestroy( &selected_2 ); CHKERRQ(ierr); /* this is selected_1 in serial */
+    ierr = ISDestroy( &selected_2 ); CHKERRQ(ierr); 
   }
+
   *a_P_out = Prol;  /* out */
   ierr = PetscFree( clid_flid );  CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
@@ -909,6 +921,7 @@ PetscErrorCode  PCCreateGAMG_GEO( PC pc )
   pc_gamg->coarsen = PCGAMGcoarsen_GEO;
   pc_gamg->prolongator = PCGAMGProlongator_GEO;
   pc_gamg->optprol = 0;
+  pc_gamg->formkktprol = 0;
 
   pc_gamg->createdefaultdata = PCSetData_GEO;
   

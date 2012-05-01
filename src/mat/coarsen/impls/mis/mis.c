@@ -322,7 +322,7 @@ PetscErrorCode maxIndSetAgg( const IS perm,
     if( lid_removed[kk] ) lid_gid[n++] = ix;
   }
   assert(n==nremoved);
-  ierr = PetscCDSetRemovedIS(agg_lists, wcomm, n, lid_gid ); CHKERRQ(ierr);
+  ierr = PetscCDSetRemovedIS( agg_lists, wcomm, n, lid_gid ); CHKERRQ(ierr);
 
   ierr = PetscFree( lid_cprowID );  CHKERRQ(ierr);
   ierr = PetscFree( lid_gid );  CHKERRQ(ierr);
