@@ -108,7 +108,7 @@ PetscErrorCode  PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewe
     viewers->viewer = v;
   }
   if (!viewers->viewer[n]) {
-    ierr = PetscViewerCreate(((PetscObject)viewers)->comm,&viewers->viewer[n]);CHKERRQ(ierr);
+    ierr = PetscViewerCreate(viewers->comm,&viewers->viewer[n]);CHKERRQ(ierr);
   }
   *viewer = viewers->viewer[n];
   PetscFunctionReturn(0);

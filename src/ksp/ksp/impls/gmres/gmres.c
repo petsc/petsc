@@ -546,10 +546,15 @@ PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void
   PetscErrorCode ierr;
   Vec            x;
   PetscViewer    viewer;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscViewersGetViewer(viewers,gmres->it+1,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer,PETSCVIEWERDRAW);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare(viewer,PETSCVIEWERDRAW,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscViewerSetType(viewer,PETSCVIEWERDRAW);CHKERRQ(ierr);
+    ierr = PetscViewerDrawSetInfo(viewer,PETSC_NULL,"Krylov GMRES Monitor",PETSC_DECIDE,PETSC_DECIDE,300,300);CHKERRQ(ierr);
+  }
 
   x      = VEC_VV(gmres->it+1);
   ierr   = VecView(x,viewer);CHKERRQ(ierr);
