@@ -34,10 +34,10 @@ void PetscPThreadCommDoCoreAffinity(void)
   cpu_set_t mset;
   PetscInt  myrank=PetscGetPThreadRank();
   PetscThreadComm          tcomm;
-  PetscThreadComm_PThread *gptcomm;
+  PetscThreadComm_PThread  gptcomm;
   
   PetscCommGetThreadComm(PETSC_COMM_WORLD,&tcomm);
-  gptcomm=(PetscThreadComm_PThread*)tcomm->data;
+  gptcomm=(PetscThreadComm_PThread)tcomm->data;
   switch(gptcomm->aff) {
   case PTHREADAFFPOLICY_ONECORE:
     icorr = tcomm->affinities[myrank];
@@ -60,7 +60,7 @@ void PetscPThreadCommDoCoreAffinity(void)
 #define __FUNCT__ "PetscThreadCommDestroy_PThread"
 PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
 {
-  PetscThreadComm_PThread *ptcomm=(PetscThreadComm_PThread*)tcomm->data;
+  PetscThreadComm_PThread ptcomm=(PetscThreadComm_PThread)tcomm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -84,14 +84,14 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscThreadCommCreate_PThread"
 PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
 {
-  PetscThreadComm_PThread *ptcomm;
+  PetscThreadComm_PThread ptcomm;
   PetscErrorCode          ierr;
   PetscInt                i;
 
   PetscFunctionBegin;
   ptcommcrtct++;
   ierr = PetscStrcpy(tcomm->type,PTHREAD);CHKERRQ(ierr);
-  ierr = PetscNewLog(tcomm,PetscThreadComm_PThread,&ptcomm);CHKERRQ(ierr);
+  ierr = PetscNew(struct _p_PetscThreadComm_PThread,&ptcomm);CHKERRQ(ierr);
   tcomm->data = (void*)ptcomm;
   ptcomm->nthreads = 0;
   ptcomm->sync = PTHREADSYNC_LOCKFREE;
@@ -164,14 +164,14 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
 
   } else {
     PetscThreadComm          gtcomm;
-    PetscThreadComm_PThread *gptcomm;
+    PetscThreadComm_PThread  gptcomm;
     PetscInt *granks;
     PetscInt j;
     PetscInt *gaffinities;
 
     ierr = PetscCommGetThreadComm(PETSC_COMM_WORLD,&gtcomm);CHKERRQ(ierr);
     gaffinities = gtcomm->affinities;
-    gptcomm = (PetscThreadComm_PThread*)tcomm->data;
+    gptcomm = (PetscThreadComm_PThread)tcomm->data;
     granks = gptcomm->granks;
     /* Copy over the data from the global thread communicator structure */
     ptcomm->ismainworker     = gptcomm->ismainworker;

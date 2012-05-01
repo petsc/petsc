@@ -38,7 +38,7 @@ extern const char *const PetscPThreadCommPoolSparkTypes[];
    and PTHREAD threading models. For NONTHREADED threading model, no extra
    pthreads are created
 */
-typedef struct {
+struct _p_PetscThreadComm_PThread{
   PetscInt    nthreads;                      /* Number of threads created */
   pthread_t  *tid;                           /* thread ids */
   PetscBool  ismainworker;                   /* Is the main thread also a work thread?*/
@@ -55,7 +55,9 @@ typedef struct {
   PetscPThreadCommPoolSparkType       spark;  /* Type for sparking threads */
   PetscErrorCode (*initialize)(PetscThreadComm);
   PetscErrorCode (*finalize)(PetscThreadComm);
-}PetscThreadComm_PThread;
+};
+
+typedef struct _p_PetscThreadComm_PThread *PetscThreadComm_PThread;
 
 #if defined(PETSC_PTHREAD_LOCAL)
 extern PETSC_PTHREAD_LOCAL PetscInt PetscPThreadRank; /* Rank of the calling thread ... thread local variable */

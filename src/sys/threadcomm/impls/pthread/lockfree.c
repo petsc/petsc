@@ -16,10 +16,10 @@ static sjob_lockfree job_lockfree = {NULL,NULL};
 void SparkThreads_LockFree(PetscInt myrank,PetscThreadComm tcomm,PetscThreadCommJobCtx job)
 {
   PetscInt i,thread_num;
-  PetscThreadComm_PThread *ptcomm;
+  PetscThreadComm_PThread  ptcomm;
   PetscInt                 next;
 
-  ptcomm = (PetscThreadComm_PThread*)tcomm->data;
+  ptcomm = (PetscThreadComm_PThread)tcomm->data;
   
   switch(ptcomm->spark) {
   case PTHREADPOOLSPARK_LEADER:
@@ -83,7 +83,7 @@ PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm tcomm)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscThreadComm_PThread *ptcomm=(PetscThreadComm_PThread*)tcomm->data;
+  PetscThreadComm_PThread ptcomm=(PetscThreadComm_PThread)tcomm->data;
 
   PetscFunctionBegin;
 
@@ -108,7 +108,7 @@ PetscErrorCode PetscPThreadCommBarrier_LockFree(PetscThreadComm tcomm)
 {
   PetscInt active_threads=0,i;
   PetscBool wait=PETSC_TRUE;
-  PetscThreadComm_PThread *ptcomm=(PetscThreadComm_PThread*)tcomm->data;
+  PetscThreadComm_PThread ptcomm=(PetscThreadComm_PThread)tcomm->data;
 
   PetscFunctionBegin;
   /* Loop till all threads signal that they have done their job */
@@ -126,7 +126,7 @@ PetscErrorCode PetscPThreadCommFinalize_LockFree(PetscThreadComm tcomm)
 {
   PetscErrorCode           ierr;
   void*                    jstatus;
-  PetscThreadComm_PThread *ptcomm=(PetscThreadComm_PThread*)tcomm->data;
+  PetscThreadComm_PThread  ptcomm=(PetscThreadComm_PThread)tcomm->data;
   PetscInt                 i;
   PetscFunctionBegin;
   ierr = PetscPThreadCommBarrier_LockFree(tcomm);CHKERRQ(ierr);
@@ -146,11 +146,11 @@ PetscErrorCode PetscPThreadCommRunKernel_LockFree(MPI_Comm comm,PetscThreadCommJ
 {
   PetscErrorCode           ierr;
   PetscThreadComm          tcomm=0;
-  PetscThreadComm_PThread  *ptcomm;    
+  PetscThreadComm_PThread  ptcomm;    
   
   PetscFunctionBegin;
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
-  ptcomm = (PetscThreadComm_PThread*)tcomm->data;
+  ptcomm = (PetscThreadComm_PThread)tcomm->data;
   if(ptcomm->nthreads) {
     PetscInt thread_num;
     /* Spark the leader thread */

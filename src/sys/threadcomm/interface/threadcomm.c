@@ -229,6 +229,7 @@ PetscErrorCode PetscThreadCommView(MPI_Comm comm,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"Thread Communicator\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Number of threads = %D\n",tcomm->nworkThreads);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Type = %s\n",tcomm->type);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     if(tcomm->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
