@@ -203,4 +203,6 @@
 #define PetscRandomType character*(80)
 #define PetscBinarySeekType PetscEnum
 
+#define PetscSF PetscFortranAddr
+
 #endif
