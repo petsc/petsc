@@ -443,15 +443,13 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,const PetscThreadCom
   if(!PetscThreadCommRegisterAllCalled) { ierr = PetscThreadCommRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Thread comm - setting threading model",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-threadcomm_type","Thread communicator model","PetscThreadCommSetType",PetscThreadCommList,PTHREAD,ttype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-threadcomm_type","Thread communicator model","PetscThreadCommSetType",PetscThreadCommList,type,ttype,256,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (!flg) {
-    ierr = PetscStrcpy(ttype,type);CHKERRQ(ierr); 
+  if(!flg) {
+    ierr = PetscStrcpy(ttype,type);CHKERRQ(ierr);
   }
-  
-  ierr = PetscFListFind(PetscThreadCommList,PETSC_COMM_WORLD,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFListFind(PetscThreadCommList,PETSC_COMM_WORLD,ttype,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PetscThreadComm type %s",ttype);
-  ierr = PetscStrcpy(tcomm->type,ttype);CHKERRQ(ierr);
   ierr = (*r)(tcomm);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -619,7 +617,7 @@ EXTERN_C_END
   PetscThreadCommInitialize - Initializes the thread communicator object 
                               and stashes it inside PETSC_COMM_WORLD
                               
-  PetscThreadCommInitialize() defaults to 1 thread and PTHREAD type.
+  PetscThreadCommInitialize() defaults to using the nonthreaded communicator.
 */
 PetscErrorCode PetscThreadCommInitialize(void)
 {
@@ -634,7 +632,7 @@ PetscErrorCode PetscThreadCommInitialize(void)
   ierr = PetscThreadCommSetNThreads(tcomm,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscThreadCommSetAffinities(tcomm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_put(PETSC_COMM_WORLD,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
-  ierr = PetscThreadCommSetType(tcomm,PTHREAD);CHKERRQ(ierr);
+  ierr = PetscThreadCommSetType(tcomm,NOTHREAD);CHKERRQ(ierr);
   ierr = PetscThreadCommReductionCreate(tcomm,&tcomm->red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -787,5 +785,45 @@ PetscErrorCode PetscThreadReductionKernelEnd(PetscInt trank,PetscThreadComm tcom
   while(PetscReadOnce(int,tcomm->red->red_status) != THREADCOMM_REDUCTION_COMPLETE) 
     ;
   tcomm->red->thread_status[trank] = THREADCOMM_THREAD_WAITING_FOR_NEWRED;
+  return 0;
+}
+
+PetscErrorCode PetscRunKernel(PetscInt trank,PetscInt nargs,PetscThreadCommJobCtx job)
+{
+  switch(nargs) {
+  case 0:
+    (*job->pfunc)(trank);
+    break;
+  case 1:
+    (*job->pfunc)(trank,job->args[0]);
+    break;
+  case 2:
+    (*job->pfunc)(trank,job->args[0],job->args[1]);
+    break;
+  case 3:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2]);
+    break;
+  case 4:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3]);
+    break;
+  case 5:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4]);
+    break;
+  case 6:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5]);
+    break;
+  case 7:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6]);
+    break;
+  case 8:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6],job->args[7]);
+    break;
+  case 9:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6],job->args[7],job->args[8]);
+    break;
+  case 10:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6],job->args[7],job->args[8],job->args[9]);
+    break;
+  }
   return 0;
 }

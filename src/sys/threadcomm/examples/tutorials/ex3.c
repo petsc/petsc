@@ -58,6 +58,8 @@ int main(int argc,char **argv)
   ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Sum(x) = %f\n",sum);CHKERRQ(ierr);
+  ierr = PetscFree(a);CHKERRQ(ierr);
+  ierr = PetscFree(trstarts);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

@@ -22,6 +22,7 @@ extern PetscInt N_CORES; /* Number of available cores */
 
 #define PetscThreadCommType char*
 #define PTHREAD             "pthread"
+#define NOTHREAD            "nothread"
 
 extern PetscFList PetscThreadCommList;
 

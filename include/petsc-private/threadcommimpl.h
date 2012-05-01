@@ -97,4 +97,5 @@ extern PetscErrorCode PetscThreadCommRegisterAll(const char path[]);
 #define PetscThreadCommRegisterDynamic(a,b,c,d) PetscThreadCommRegister(a,b,c,d)
 #endif
 
+extern PetscErrorCode PetscRunKernel(PetscInt,PetscInt,PetscThreadCommJobCtx);
 #endif

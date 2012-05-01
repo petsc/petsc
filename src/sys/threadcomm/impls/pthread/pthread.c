@@ -90,6 +90,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
 
   PetscFunctionBegin;
   ptcommcrtct++;
+  ierr = PetscStrcpy(tcomm->type,PTHREAD);CHKERRQ(ierr);
   ierr = PetscNewLog(tcomm,PetscThreadComm_PThread,&ptcomm);CHKERRQ(ierr);
   tcomm->data = (void*)ptcomm;
   ptcomm->nthreads = 0;

@@ -12,44 +12,6 @@ typedef struct {
 
 static sjob_lockfree job_lockfree = {NULL,NULL};
 
-void RunJob_LockFree(PetscInt myrank,PetscInt nargs,PetscThreadCommJobCtx job)
-{
-  switch(nargs) {
-  case 0:
-    (*job->pfunc)(myrank);
-    break;
-  case 1:
-    (*job->pfunc)(myrank,job->args[0]);
-    break;
-  case 2:
-    (*job->pfunc)(myrank,job->args[0],job->args[1]);
-    break;
-  case 3:
-    (*job->pfunc)(myrank,job->args[0],job->args[1],job->args[2]);
-    break;
-  case 4:
-    (*job->pfunc)(myrank,job->args[0],job->args[1],job->args[2],job->args[3]);
-    break;
-  case 5:
-    (*job->pfunc)(myrank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4]);
-    break;
-  case 6:
-    (*job->pfunc)(myrank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5]);
-    break;
-  case 7:
-    (*job->pfunc)(myrank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6]);
-    break;
-  case 8:
-    (*job->pfunc)(myrank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6],job->args[7]);
-    break;
-  case 9:
-    (*job->pfunc)(myrank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6],job->args[7],job->args[8]);
-    break;
-  case 10:
-    (*job->pfunc)(myrank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6],job->args[7],job->args[8],job->args[9]);
-    break;
-  }
-}
 
 void SparkThreads_LockFree(PetscInt myrank,PetscThreadComm tcomm,PetscThreadCommJobCtx job)
 {
@@ -106,7 +68,7 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
       /* Spark the thread pool */
       SparkThreads_LockFree(PetscPThreadRank,job_lockfree.data[PetscPThreadRank]->tcomm,job_lockfree.data[PetscPThreadRank]);
       /* Do own job */
-      RunJob_LockFree(PetscPThreadRank,job_lockfree.data[PetscPThreadRank]->nargs,job_lockfree.data[PetscPThreadRank]);
+      PetscRunKernel(PetscPThreadRank,job_lockfree.data[PetscPThreadRank]->nargs,job_lockfree.data[PetscPThreadRank]);
       /* Reset own status */ 
       job_lockfree.my_job_status[PetscPThreadRank] = THREAD_WAITING_FOR_JOB;
     }
@@ -202,7 +164,7 @@ PetscErrorCode PetscPThreadCommRunKernel_LockFree(MPI_Comm comm,PetscThreadCommJ
   if(ptcomm->ismainworker) {
     job_lockfree.my_job_status[0] = THREAD_RECIEVED_JOB;
     job_lockfree.data[0] = job;
-    RunJob_LockFree(0,job->nargs, job_lockfree.data[0]);
+    PetscRunKernel(0,job->nargs, job_lockfree.data[0]);
   }
   job_lockfree.my_job_status[0] = THREAD_WAITING_FOR_JOB;
  
