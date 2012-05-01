@@ -2661,8 +2661,13 @@ PetscErrorCode DMGetDefaultSF(DM dm, PetscSF *sf) {
     PetscSection section, gSection;
 
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-    ierr = DMGetDefaultGlobalSection(dm, &gSection);CHKERRQ(ierr);
-    ierr = DMCreateDefaultSF(dm, section, gSection);CHKERRQ(ierr);
+    if (section) {
+      ierr = DMGetDefaultGlobalSection(dm, &gSection);CHKERRQ(ierr);
+      ierr = DMCreateDefaultSF(dm, section, gSection);CHKERRQ(ierr);
+    } else {
+      *sf = PETSC_NULL;
+      PetscFunctionReturn(0);
+    }
   }
   *sf = dm->defaultSF;
   PetscFunctionReturn(0);
