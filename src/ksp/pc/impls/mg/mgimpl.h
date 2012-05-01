@@ -48,6 +48,7 @@ typedef struct {
   PetscReal     rtol,abstol,dtol,ttol;        /* tolerances for when running with PCApplyRichardson_MG */
 
   void          *innerctx;                   /* optional data for preconditioner, like PCEXOTIC that inherits off of PCMG */
+  PetscLogStage  stageApply;
 } PC_MG;
 
 extern PetscErrorCode PCSetUp_MG(PC);

@@ -202,6 +202,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
+  mg->stageApply = 0;
   for (i=0; i<levels; i++) {
     ierr = PetscNewLog(pc,PC_MG_Levels,&mglevels[i]);CHKERRQ(ierr);
     mglevels[i]->level           = i;
@@ -303,7 +304,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
   PetscInt       levels = mglevels[0]->levels,i;
 
   PetscFunctionBegin;
-
+  if (mg->stageApply) {ierr = PetscLogStagePush(mg->stageApply);CHKERRQ(ierr);}
   /* When the DM is supplying the matrix then it will not exist until here */
   for (i=0; i<levels; i++) {
     if (!mglevels[i]->A) {
@@ -312,14 +313,14 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
     }
   }
 
-  mglevels[levels-1]->b = b; 
+  mglevels[levels-1]->b = b;
   mglevels[levels-1]->x = x;
   if (mg->am == PC_MG_MULTIPLICATIVE) {
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
     for (i=0; i<mg->cyclesperpcapply; i++) {
       ierr = PCMGMCycle_Private(pc,mglevels+levels-1,PETSC_NULL);CHKERRQ(ierr);
     }
-  } 
+  }
   else if (mg->am == PC_MG_ADDITIVE) {
     ierr = PCMGACycle_Private(pc,mglevels);CHKERRQ(ierr);
   }
@@ -329,6 +330,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
   else {
     ierr = PCMGFCycle_Private(pc,mglevels);CHKERRQ(ierr);
   }
+  if (mg->stageApply) {ierr = PetscLogStagePop();CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -406,6 +408,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
           ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->classid,&mglevels[i]->eventinterprestrict);CHKERRQ(ierr);
         }
       }
+      ierr = PetscLogStageRegister("MG Apply", &mg->stageApply);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
