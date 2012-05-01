@@ -46,10 +46,10 @@ extern PetscMPIInt Petsc_ThreadComm_keyval;
 
 typedef struct _p_PetscThreadCommRedCtx *PetscThreadCommRedCtx;
 struct _p_PetscThreadCommRedCtx{
-  PetscInt                      red_status;   /* Reduction status */
-  PetscInt                      nworkThreads; /* Number of threads doing the reduction */
+  PetscInt                      red_status;     /* Reduction status */
+  PetscInt                      nworkThreads;   /* Number of threads doing the reduction */
   PetscInt                      *thread_status; /* Reduction status of each thread */
-  long long                     *local_red; /* array to hold local reductions provided by each thread */
+  void                          *local_red;     /* Array to hold local reduction contribution from each thread */
 };
 
 typedef struct _p_PetscThreadCommJobCtx *PetscThreadCommJobCtx;
