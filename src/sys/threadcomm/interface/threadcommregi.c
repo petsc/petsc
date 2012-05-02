@@ -1,4 +1,4 @@
-
+ 
 #include <petsc-private/threadcommimpl.h>     /*I    "petscthreadcomm.h"  I*/
 
 EXTERN_C_BEGIN
@@ -6,6 +6,7 @@ extern PetscErrorCode PetscThreadCommCreate_NoThread(PetscThreadComm);
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 extern PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm);
 #endif
+extern PetscErrorCode PetscThreadCommCreate_OpenMP(PetscThreadComm);
 EXTERN_C_END
 
 extern PetscBool PetscThreadCommRegisterAllCalled;
@@ -33,5 +34,7 @@ PetscErrorCode PetscThreadCommRegisterAll(const char path[])
 #if defined(PETSC_HAVE_PTHREADCLASSES)
   ierr = PetscThreadCommRegisterDynamic(PTHREAD,          path,"PetscThreadCommCreate_PThread",          PetscThreadCommCreate_PThread);CHKERRQ(ierr);
 #endif
+  ierr = PetscThreadCommRegisterDynamic(OPENMP,         path,"PetscThreadCommCreate_OpenMP",         PetscThreadCommCreate_OpenMP);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
