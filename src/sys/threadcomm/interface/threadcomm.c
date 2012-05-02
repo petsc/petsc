@@ -609,6 +609,7 @@ PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void* tc
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  if(!tcomm) {PetscFunctionReturn(0);}
   ierr = PetscThreadCommDestroy((PetscThreadComm)tcomm);CHKERRQ(ierr);
   ierr = PetscInfo1(0,"Deleting thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(0);

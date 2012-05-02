@@ -48,6 +48,8 @@ int main(int argc,char **argv)
   ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)kernel_func2,2,ranks,values);CHKERRQ(ierr);
 
   ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscFree(ranks);CHKERRQ(ierr);
+  ierr = PetscFree(values);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }
