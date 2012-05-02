@@ -17,7 +17,6 @@ typedef struct gamg_TAG{
   PetscReal      threshold; /* common quatity to many AMG methods so keep it up here */
   PetscInt       verbose;
   PetscInt       emax_id; /* stashing places */
-  PetscInt       col_bs_id;
   /* these 4 are all related to the method data and should be in the subctx */
   PetscInt       data_sz; /* nloc*data_rows*data_cols */
   PetscInt       data_cell_rows; 

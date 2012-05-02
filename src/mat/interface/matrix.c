@@ -6772,11 +6772,11 @@ PetscErrorCode  MatGetBlockSizes(Mat mat,PetscInt *rbs, PetscInt *cbs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidIntPointer(rbs,2);
-  PetscValidIntPointer(cbs,3);
+  if(rbs) PetscValidIntPointer(rbs,2);
+  if(cbs) PetscValidIntPointer(cbs,3);
   MatCheckPreallocated(mat,1);
-  *rbs = mat->rmap->bs;
-  *cbs = mat->cmap->bs;
+  if(rbs) *rbs = mat->rmap->bs;
+  if(cbs) *cbs = mat->cmap->bs;
   PetscFunctionReturn(0);
 }
 

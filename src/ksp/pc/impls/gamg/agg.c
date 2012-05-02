@@ -250,10 +250,10 @@ PetscErrorCode PCSetCoordinates_AGG( PC pc, PetscInt ndm, PetscInt a_nloc, Petsc
 {
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
-  PetscErrorCode ierr;
-  PetscInt       arrsz,kk,ii,jj,nloc,ndatarows,bs;
-  Mat            mat = pc->pmat;
-  /* MPI_Comm       wcomm = ((PetscObject)pc)->comm; */
+  PetscErrorCode  ierr;
+  PetscInt        arrsz,kk,ii,jj,nloc,ndatarows,bs;
+  Mat             mat = pc->pmat;
+  /* MPI_Comm     wcomm = ((PetscObject)pc)->comm; */
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -700,9 +700,9 @@ PetscErrorCode PCSetData_AGG( PC pc, Mat a_A )
   ierr = MatGetNearNullSpace( a_A, &mnull ); CHKERRQ(ierr);
   if( !mnull ) {
     PetscInt bs,NN,MM;
-    ierr = MatGetBlockSize( a_A, &bs ); CHKERRQ( ierr ); /* this does not work for Stokes */
-    ierr = MatGetLocalSize( a_A, &MM, &NN ); CHKERRQ( ierr ); 
-    /* this does not work for Stokes */
+    ierr = MatGetBlockSize( a_A, &bs ); CHKERRQ( ierr ); 
+    ierr = MatGetLocalSize( a_A, &MM, &NN ); CHKERRQ( ierr );  assert(MM%bs==0);
+PetscPrintf(((PetscObject)a_A)->comm,"[%d]%s bs=%d MM=%d\n",0,__FUNCT__,bs,MM);
     ierr = PCSetCoordinates_AGG( pc, bs, MM/bs, PETSC_NULL ); CHKERRQ(ierr);
   }
   else {
@@ -1250,12 +1250,6 @@ PetscErrorCode PCGAMGProlongator_AGG( PC pc,
   if (npe > 1) ierr = PetscFree( data_w_ghost );      CHKERRQ(ierr);
   ierr = PetscFree( flid_fgid ); CHKERRQ(ierr);
   
-  /* attach block size of columns */
-  if( pc_gamg->col_bs_id == -1 ) {
-    ierr = PetscObjectComposedDataRegister( &pc_gamg->col_bs_id ); assert(pc_gamg->col_bs_id != -1 );
-  }
-  ierr = PetscObjectComposedDataSetInt( (PetscObject)Prol, pc_gamg->col_bs_id, data_cols ); CHKERRQ(ierr);
-
   *a_P_out = Prol;  /* out */
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventEnd(PC_GAMGProlongator_AGG,0,0,0,0);CHKERRQ(ierr);

@@ -72,6 +72,7 @@ static PetscErrorCode GAMGKKTMatCreate( Mat A, PetscBool iskkt, GAMGKKTMat *out 
     ierr = MatGetSubMatrix( A, is_prime, is_prime,      MAT_INITIAL_MATRIX, &out->A11); CHKERRQ(ierr);
     ierr = MatGetSubMatrix( A, is_prime, is_constraint, MAT_INITIAL_MATRIX, &out->A12); CHKERRQ(ierr);
     ierr = MatGetSubMatrix( A, is_constraint, is_prime, MAT_INITIAL_MATRIX, &out->A21); CHKERRQ(ierr);
+PetscPrintf(((PetscObject)A)->comm,"[%d]%s N=%d N_11=%d\n",0,__FUNCT__,A->rmap->N,out->A11->rmap->N);
   }
   else {
     out->A11 = A;
@@ -580,6 +581,8 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
 
   ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,PETSC_NULL);CHKERRQ(ierr);
 
+  ierr = GAMGKKTMatCreate( Pmat, stokes, &kktMatsArr[0] ); CHKERRQ(ierr);
+
   if( pc_gamg->data == 0 ) {
     if( !pc_gamg->createdefaultdata ){
       SETERRQ(wcomm,PETSC_ERR_LIB,"'createdefaultdata' not set(?) need to support NULL data");
@@ -587,22 +590,17 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     if( stokes ) {
       SETERRQ(wcomm,PETSC_ERR_LIB,"Need data (eg, PCSetCoordinates) for Stokes problems");
     }
-    ierr = pc_gamg->createdefaultdata( pc, Pmat ); CHKERRQ(ierr);
+    ierr = pc_gamg->createdefaultdata( pc, kktMatsArr[0].A11 ); CHKERRQ(ierr);
   }
 
   /* get basic dims */
   if( stokes ) {
     bs = pc_gamg->data_cell_rows; /* this is agg-mg specific */
-    /* nloc = pc_gamg->data_sz/pc_gamg->data_cell_cols/bs; assert(pc_gamg->data_sz%(pc_gamg->data_cell_cols*bs)==0); */
   }
   else {
-    /* PetscInt Istart,Iend,M,N; */
     ierr = MatGetBlockSize( Pmat, &bs ); CHKERRQ(ierr);
-    /* ierr = MatGetSize( Pmat, &M, &N );CHKERRQ(ierr); */
-    /* ierr = MatGetOwnershipRange( Pmat, &Istart, &Iend ); CHKERRQ(ierr); */
-    /* nloc = (Iend-Istart)/bs; assert((Iend-Istart)%bs == 0); */
   }
-
+  
   ierr = MatGetSize( Pmat, &M, &qq );CHKERRQ(ierr);
   if (pc_gamg->verbose) {
     if(pc_gamg->verbose==1) ierr =  MatGetInfo(Pmat,MAT_LOCAL,&info); 
@@ -627,8 +625,9 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
 #endif
 #endif
     /* deal with Stokes, get sub matrices */
-    ierr = GAMGKKTMatCreate( Aarr[level], stokes, &kktMatsArr[level] ); CHKERRQ(ierr);
-
+    if( level > 0 ) {
+      ierr = GAMGKKTMatCreate( Aarr[level], stokes, &kktMatsArr[level] ); CHKERRQ(ierr);
+    }
     { /* construct prolongator */
       Mat Gmat;
       PetscCoarsenData *agg_lists;
@@ -642,11 +641,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       /* could have failed to create new level */
       if( Prol11 ){
         /* get new block size of coarse matrices */    
-        if( pc_gamg->col_bs_id != -1 ){
-          PetscBool flag;
-          ierr = PetscObjectComposedDataGetInt( (PetscObject)Prol11, pc_gamg->col_bs_id, bs, flag );
-          CHKERRQ( ierr ); assert(flag);
-        }
+        ierr = MatGetBlockSizes( Prol11, PETSC_NULL, &bs ); CHKERRQ(ierr);
 
         if( stokes ) {
           if(!pc_gamg->formkktprol) SETERRQ(wcomm,PETSC_ERR_USER,"Stokes not supportd by AMG method.");
@@ -1513,7 +1508,6 @@ PetscErrorCode  PCCreate_GAMG( PC pc )
   pc_gamg->Nlevels = GAMG_MAXLEVELS;
   pc_gamg->verbose = 0;
   pc_gamg->emax_id = -1;
-  pc_gamg->col_bs_id = -1;
 
   /* private events */
 #if defined PETSC_GAMG_USE_LOG
