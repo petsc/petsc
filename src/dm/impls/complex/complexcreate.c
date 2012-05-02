@@ -241,8 +241,6 @@ PetscErrorCode DMComplexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool int
 }
 
 /* External function declarations here */
-extern PetscErrorCode DMCreateLocalToGlobalMapping_Complex(DM dm);
-extern PetscErrorCode DMCreateFieldIS_Complex(DM dm, PetscInt *numFields, char ***names, IS **fields);
 extern PetscErrorCode DMCreateInterpolation_Complex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 extern PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J);
 extern PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined);
@@ -293,9 +291,9 @@ PetscErrorCode DMCreate_Complex(DM dm)
   dm->ops->setup              = DMSetUp_Complex;
   dm->ops->createglobalvector = PETSC_NULL;
   dm->ops->createlocalvector  = PETSC_NULL;
-  dm->ops->createlocaltoglobalmapping      = DMCreateLocalToGlobalMapping_Complex;
-  dm->ops->createlocaltoglobalmappingblock = 0;
-  dm->ops->createfieldis      = DMCreateFieldIS_Complex;
+  dm->ops->createlocaltoglobalmapping      = PETSC_NULL;
+  dm->ops->createlocaltoglobalmappingblock = PETSC_NULL;
+  dm->ops->createfieldis      = PETSC_NULL;
   dm->ops->getcoloring        = 0;
   dm->ops->creatematrix       = DMCreateMatrix_Complex;
   dm->ops->createinterpolation= 0;

@@ -111,11 +111,13 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
 */
 PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
 {
+#if 0
   const PetscInt   debug = user->debug;
   const PetscInt   dim   = user->dim;
   PetscReal       *coords, *v0, *J, *invJ, *detJ;
   PetscScalar     *elemVec;
   PetscInt         cStart, cEnd, c, field;
+#endif
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -191,10 +193,42 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "FormJacobianLocal"
+/*
+  FormJacobianLocal - Form the local portion of the Jacobian matrix J from the local input X.
+
+  Input Parameters:
++ dm - The mesh
+. X  - Local input vector
+- user - The user context
+
+  Output Parameter:
+. Jac  - Jacobian matrix
+
+  Note:
+  We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
+  like a GPU, or vectorize on a multicore machine.
+
+.seealso: FormFunctionLocal()
+*/
+PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, AppCtx *user)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventBegin(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   SNES           snes;                 /* nonlinear solver */
+  Mat            A,J;                  /* Jacobian,preconditioner matrix */
   Vec            u,r;                  /* solution, residual vectors */
   AppCtx         user;                 /* user-defined work context */
   PetscReal      error = 0.0;          /* L_2 error in the solution */
@@ -207,18 +241,17 @@ int main(int argc, char **argv)
   ierr = SNESSetDM(snes, user.dm);CHKERRQ(ierr);
 
   ierr = SetupSection(user.dm, &user);CHKERRQ(ierr);
-  /* We need to:
-   - Create the point SF
-   - Create the default SF (take from DMComplex)
-   - Create the proper globalSection (take from DMComplex)
-   - Create the local to global mappings (take from DMComplex)
-  */
 
   ierr = DMCreateGlobalVector(user.dm, &u);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
+  ierr = DMCreateMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
+  A    = J;
+
   ierr = DMSetLocalFunction(user.dm, (DMLocalFunction1) FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DMSetLocalJacobian(user.dm, (DMLocalJacobian1) FormJacobianLocal);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes, r, SNESDMComputeFunction, &user);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes, A, J, SNESDMComputeJacobian, &user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   {

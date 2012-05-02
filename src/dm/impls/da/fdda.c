@@ -606,6 +606,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, const MatType mtype,Mat *J)
   Mat            A;
   MPI_Comm       comm;
   const MatType  Atype;
+  PetscSection   section, sectionGlobal;
   void           (*aij)(void)=PETSC_NULL,(*baij)(void)=PETSC_NULL,(*sbaij)(void)=PETSC_NULL;
   MatType        ttype[256];
   PetscBool      flg;
@@ -622,6 +623,62 @@ PetscErrorCode DMCreateMatrix_DA(DM da, const MatType mtype,Mat *J)
   ierr = PetscOptionsList("-dm_mat_type","Matrix type","MatSetType",MatList,mtype,(char*)ttype,256,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
+  ierr = DMGetDefaultSection(da, &section);CHKERRQ(ierr);
+  if (section) {
+    PetscInt  bs = -1;
+    PetscInt  localSize;
+    PetscBool isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock, isSymmetric;
+
+    ierr = DMGetDefaultGlobalSection(da, &sectionGlobal);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstrainedStorageSize(sectionGlobal, &localSize);CHKERRQ(ierr);
+    ierr = MatCreate(((PetscObject) da)->comm, J);CHKERRQ(ierr);
+    ierr = MatSetSizes(*J, localSize, localSize, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype, MATSHELL, &isShell);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype, MATBAIJ, &isBlock);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype, MATSEQBAIJ, &isSeqBlock);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype, MATMPIBAIJ, &isMPIBlock);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype, MATSBAIJ, &isSymBlock);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype, MATSEQSBAIJ, &isSymSeqBlock);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
+    /* Check for symmetric storage */
+    isSymmetric = (PetscBool) (isSymBlock || isSymSeqBlock || isSymMPIBlock);
+    if (isSymmetric) {
+      ierr = MatSetOption(*J, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE);CHKERRQ(ierr);
+    }
+    if (!isShell) {
+      PetscBool fillMatrix = (PetscBool) !da->prealloc_only;
+      PetscInt *dnz, *onz, *dnzu, *onzu, bsLocal;
+
+      if (bs < 0) {
+        if (isBlock || isSeqBlock || isMPIBlock || isSymBlock || isSymSeqBlock || isSymMPIBlock) {
+          PetscInt pStart, pEnd, p, dof;
+
+          ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
+          for(p = pStart; p < pEnd; ++p) {
+            ierr = PetscSectionGetDof(sectionGlobal, p, &dof);CHKERRQ(ierr);
+            if (dof) {
+              bs = dof;
+              break;
+            }
+          }
+        } else {
+          bs = 1;
+        }
+        /* Must have same blocksize on all procs (some might have no points) */
+        bsLocal = bs;
+        ierr = MPI_Allreduce(&bsLocal, &bs, 1, MPIU_INT, MPI_MAX, ((PetscObject) da)->comm);CHKERRQ(ierr);
+      }
+      ierr = PetscMalloc4(localSize/bs, PetscInt, &dnz, localSize/bs, PetscInt, &onz, localSize/bs, PetscInt, &dnzu, localSize/bs, PetscInt, &onzu);CHKERRQ(ierr);
+      ierr = PetscMemzero(dnz,  localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMemzero(onz,  localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMemzero(dnzu, localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMemzero(onzu, localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);
+      /* ierr = DMComplexPreallocateOperator(dm, bs, section, sectionGlobal, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr); */
+      ierr = PetscFree4(dnz, onz, dnzu, onzu);CHKERRQ(ierr);
+    }
+  }
   /*
                                   m
           ------------------------------------------------------

@@ -496,8 +496,33 @@ PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(ltog,2);
   if (!dm->ltogmap) {
-    if (!dm->ops->createlocaltoglobalmapping) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"DM can not create LocalToGlobalMapping");
-    ierr = (*dm->ops->createlocaltoglobalmapping)(dm);CHKERRQ(ierr);
+    PetscSection section, sectionGlobal;
+
+    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    if (section) {
+      PetscInt      *ltog;
+      PetscInt       pStart, pEnd, size, p, l;
+
+      ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
+      ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+      ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
+      ierr = PetscMalloc(size * sizeof(PetscInt), &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
+      for(p = pStart, l = 0; p < pEnd; ++p) {
+        PetscInt dof, off, c;
+
+        /* Should probably use constrained dofs */
+        ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(sectionGlobal, p, &off);CHKERRQ(ierr);
+        for(c = 0; c < dof; ++c, ++l) {
+          ltog[l] = off+c;
+        }
+      }
+      ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent(dm, dm->ltogmap);CHKERRQ(ierr);
+    } else {
+      if (!dm->ops->createlocaltoglobalmapping) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"DM can not create LocalToGlobalMapping");
+      ierr = (*dm->ops->createlocaltoglobalmapping)(dm);CHKERRQ(ierr);
+    }
   }
   *ltog = dm->ltogmap;
   PetscFunctionReturn(0);
@@ -829,9 +854,9 @@ PetscErrorCode DMCreateDecompositionDM(DM dm, const char* name, DM *ddm)
 . dm - the DM object
 
   Output Parameters:
-+ numFields - The number of fields (or PETSC_NULL if not requested)
-. names     - The name for each field (or PETSC_NULL if not requested)
-- fields    - The global indices for each field (or PETSC_NULL if not requested)
++ numFields  - The number of fields (or PETSC_NULL if not requested)
+. fieldNames - The name for each field (or PETSC_NULL if not requested)
+- fields     - The global indices for each field (or PETSC_NULL if not requested)
 
   Level: intermediate
 
@@ -842,8 +867,9 @@ PetscErrorCode DMCreateDecompositionDM(DM dm, const char* name, DM *ddm)
 
 .seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix()
 @*/
-PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***names, IS **fields)
+PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, IS **fields)
 {
+  PetscSection   section, sectionGlobal;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -852,16 +878,80 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***names, IS **f
     PetscValidPointer(numFields,2);
     *numFields = 0;
   }
-  if (names) {
-    PetscValidPointer(names,3);
-    *names = PETSC_NULL;
+  if (fieldNames) {
+    PetscValidPointer(fieldNames,3);
+    *fieldNames = PETSC_NULL;
   }
   if (fields) {
     PetscValidPointer(fields,4);
     *fields = PETSC_NULL;
   }
-  if(dm->ops->createfieldis) {
-    ierr = (*dm->ops->createfieldis)(dm, numFields, names, fields);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  if (section) {
+    PetscInt *fieldSizes, **fieldIndices;
+    PetscInt  nF, f, pStart, pEnd, p;
+
+    ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
+    ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nF,PetscInt,&fieldSizes,nF,PetscInt *,&fieldIndices);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
+    for(f = 0; f < nF; ++f) {
+      fieldSizes[f] = 0;
+    }
+    for(p = pStart; p < pEnd; ++p) {
+      PetscInt gdof;
+
+      ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+      if (gdof > 0) {
+        for(f = 0; f < nF; ++f) {
+          PetscInt fdof, fcdof;
+
+          ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
+          ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
+          fieldSizes[f] += fdof-fcdof;
+        }
+      }
+    }
+    for(f = 0; f < nF; ++f) {
+      ierr = PetscMalloc(fieldSizes[f] * sizeof(PetscInt), &fieldIndices[f]);CHKERRQ(ierr);
+      fieldSizes[f] = 0;
+    }
+    for(p = pStart; p < pEnd; ++p) {
+      PetscInt gdof, goff;
+
+      ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+      if (gdof > 0) {
+        ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
+        for(f = 0; f < nF; ++f) {
+          PetscInt fdof, fcdof, fc;
+
+          ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
+          ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
+          for(fc = 0; fc < fdof-fcdof; ++fc, ++fieldSizes[f]) {
+            fieldIndices[f][fieldSizes[f]] = goff++;
+          }
+        }
+      }
+    }
+    if (numFields) {*numFields = nF;}
+    if (fieldNames) {
+      ierr = PetscMalloc(nF * sizeof(char *), fieldNames);CHKERRQ(ierr);
+      for(f = 0; f < nF; ++f) {
+        const char *fieldName;
+
+        ierr = PetscSectionGetFieldName(section, f, &fieldName);CHKERRQ(ierr);
+        ierr = PetscStrallocpy(fieldName, (char **) &(*fieldNames)[f]);CHKERRQ(ierr);
+      }
+    }
+    if (fields) {
+      ierr = PetscMalloc(nF * sizeof(IS), fields);CHKERRQ(ierr);
+      for(f = 0; f < nF; ++f) {
+        ierr = ISCreateGeneral(((PetscObject) dm)->comm, fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &(*fields)[f]);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscFree2(fieldSizes,fieldIndices);CHKERRQ(ierr);
+  } else {
+    if(dm->ops->createfieldis) {ierr = (*dm->ops->createfieldis)(dm, numFields, fieldNames, fields);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
