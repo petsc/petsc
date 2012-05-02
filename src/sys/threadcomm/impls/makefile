@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = pthread nothread openmp
+DIRS     = pthread nothread
 LOCDIR   = src/sys/threadcomm/impls/
 
 include ${PETSC_DIR}/conf/variables

@@ -1,6 +1,6 @@
 ALL: lib
 
-CFLAGS   = -fopenmp
+CFLAGS   =
 SOURCEH	 = 
 SOURCEC  = dlregisthreadcomm.c threadcomm.c threadcommregi.c
 OBJSC	 = $(SOURCEC:.c=.o)
