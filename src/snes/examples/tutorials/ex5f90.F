@@ -82,6 +82,7 @@
 #include <finclude/petscpc.h>
 #include <finclude/petscsnes.h>
 #include <finclude/petscvec.h90>
+#include <finclude/petscsnes.h90>
 
 !  Input/output variables:
       SNES           snes
