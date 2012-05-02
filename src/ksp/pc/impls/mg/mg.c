@@ -396,7 +396,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
       char     eventname[128];
       if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
       levels = mglevels[0]->levels;
-      for (i=0; i<levels; i++) {  
+      for (i=0; i<levels; i++) {
         sprintf(eventname,"MGSetup Level %d",(int)i);
         ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->classid,&mglevels[i]->eventsmoothsetup);CHKERRQ(ierr);
         sprintf(eventname,"MGSmooth Level %d",(int)i);
@@ -408,7 +408,24 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
           ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->classid,&mglevels[i]->eventinterprestrict);CHKERRQ(ierr);
         }
       }
-      ierr = PetscLogStageRegister("MG Apply", &mg->stageApply);CHKERRQ(ierr);
+
+      {
+        const char   *sname = "MG Apply";
+        PetscStageLog stageLog;
+        PetscInt      st;
+
+        PetscFunctionBegin;
+        ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+        for(st = 0; st < stageLog->numStages; ++st) {
+          PetscBool same;
+
+          ierr = PetscStrcmp(stageLog->stageInfo[st].name, sname, &same);CHKERRQ(ierr);
+          if (same) {mg->stageApply = st;}
+        }
+        if (!mg->stageApply) {
+          ierr = PetscLogStageRegister(sname, &mg->stageApply);CHKERRQ(ierr);
+        }
+      }
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
