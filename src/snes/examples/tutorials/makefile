@@ -257,6 +257,11 @@ runex1:
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo  ${PWD} "\nPossible problem with with ex1_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_1.tmp
+runex1_X:
+	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_type gmres -ksp_gmres_krylov_monitor -snes_monitor_short > ex1_X.tmp 2>&1;   \
+	   if (${DIFF} output/ex1_X.out ex1_X.tmp) then true; \
+	   else echo  ${PWD} "\nPossible problem with with ex1_X, diffs above \n========================================="; fi; \
+	   ${RM} -f ex1_X.tmp
 runex1_2:
 	-@${MPIEXEC} -n 2 ./ex1 -snes_mf_operator -snes_fd -snes_monitor_short > ex1_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true; \
@@ -855,7 +860,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 ex48.rm \
                                  ex58.PETSc runex58 runex58_2 ex58.rm \
                                  ex54.PETSc ex54.rm ex59.PETSc ex59.rm
-TESTEXAMPLES_C_X	       = 
+TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex26.PETSc ex26.rm ex30.PETSc ex30.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex5f.PETSc runex5f runex5f_3 ex5f.rm
