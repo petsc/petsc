@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   ierr = PetscThreadCommGetNThreads(PETSC_COMM_WORLD,&nthreads);CHKERRQ(ierr);
 
   ierr = PetscMalloc(100*sizeof(PetscScalar),&a);CHKERRQ(ierr);
-  for(i=0;i<100;i++) a[i] = 1.0;
+  for(i=0;i<100;i++) a[i] = 1.05;
     
   ierr = PetscMalloc((nthreads+1)*sizeof(PetscInt),&trstarts);CHKERRQ(ierr);
   trstarts[0] = 0;

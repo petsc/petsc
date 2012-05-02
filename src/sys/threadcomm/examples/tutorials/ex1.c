@@ -24,15 +24,6 @@ PetscErrorCode kernel_func2(PetscInt myrank,PetscInt *ranks,PetscScalar *values)
 
 }
 
-PetscErrorCode kernel_func3(PetscInt myrank,PetscInt *ranks,PetscScalar *values)
-{
-  values[myrank] *= 4;
-  printf("Third Kernel:My rank is %d, x = %f\n",ranks[myrank],values[myrank]); 
-  return(0);
-
-}
-
-
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -56,6 +47,7 @@ int main(int argc,char **argv)
   ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)kernel_func1,2,ranks,values);CHKERRQ(ierr);
   ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)kernel_func2,2,ranks,values);CHKERRQ(ierr);
 
+  ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }
