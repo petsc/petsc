@@ -301,7 +301,11 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
     if(l == 1) {
       /* simply set alpha[0] = beta[0] / H[0, 0] */
-      beta[0] = beta[0] / H(0, 0);
+      if (H(0, 0) != 0.) {
+        beta[0] = beta[0] / H(0, 0);
+      } else {
+        beta[0] = 0.;
+      }
     } else {
 #ifdef PETSC_MISSING_LAPACK_GELSS
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "NGMRES with LS requires the LAPACK GELSS routine.");
