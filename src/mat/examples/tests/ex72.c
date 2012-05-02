@@ -33,14 +33,16 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,filein,"r",&file);CHKERRQ(ierr);
 
-  /* Ignore the first line */
-  /* while (getc(file) != '\n'); */
-  fgets(buf,PETSC_MAX_PATH_LEN-1,file);
-  printf("%s",buf);
-  fscanf(file,"%d %d %d\n",&m,&n,&nnz);
+  /* process header with comments */
+  do fgets(buf,PETSC_MAX_PATH_LEN-1,file);
+  while (buf[0] == '%');
+
+  /* The first non-comment line has the matrix dimensions */
+  sscanf(buf,"%d %d %d\n",&m,&n,&nnz);
   printf ("m = %d, n = %d, nnz = %d\n",m,n,nnz);
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,m,n,20,0,&A);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,m,n,nnz*2/m,0,&A);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = VecSetSizes(b,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
