@@ -14,6 +14,10 @@
 #include "petsc-private/tsimpl.h"
 #endif
 
+#if PETSC_VERSION_(3,2,0)
+#define PetscObjectTypeCompare PetscTypeCompare
+#endif
+
 EXTERN_C_BEGIN
 extern PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char*);
 EXTERN_C_END

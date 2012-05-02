@@ -10,3 +10,5 @@ PetscErrorCode PetscTokenDestroy_Compat(PetscToken *a)
   PetscFunctionReturn(0);
 }
 #define PetscTokenDestroy PetscTokenDestroy_Compat
+
+#define PetscObjectTypeCompare PetscTypeCompare

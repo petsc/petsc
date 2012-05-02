@@ -63,7 +63,7 @@ cdef extern from * nogil:
     PetscErrorCode PetscObjectReference(PetscObject)
     ctypedef void (*PetscVoidFunction)()
     PetscErrorCode PetscObjectComposeFunction(PetscObject,char[],char[],void (*ptr)())
-    PetscErrorCode PetscTypeCompare(PetscObject,char[],PetscBool*)
+    PetscErrorCode PetscObjectTypeCompare(PetscObject,char[],PetscBool*)
     PetscErrorCode PetscObjectChangeTypeName(PetscObject, char[])
     PetscErrorCode PetscOptionsString(char[],char[],char[],char[],char[],size_t,PetscBool*)
     PetscErrorCode PetscOptionsGetString(char[],char[],char[],size_t,PetscBool*)
@@ -374,8 +374,8 @@ cdef createcontext(char name_p[]):
 
 cdef int viewcontext(_PyObj ctx, PetscViewer viewer) except -1:
     cdef PetscBool isascii = PETSC_FALSE, isstring = PETSC_FALSE
-    CHKERR( PetscTypeCompare(<PetscObject>viewer, PETSCVIEWERASCII,  &isascii)  )
-    CHKERR( PetscTypeCompare(<PetscObject>viewer, PETSCVIEWERSTRING, &isstring) )
+    CHKERR( PetscObjectTypeCompare(<PetscObject>viewer, PETSCVIEWERASCII,  &isascii)  )
+    CHKERR( PetscObjectTypeCompare(<PetscObject>viewer, PETSCVIEWERSTRING, &isstring) )
     cdef char *name = ctx.getname()
     if isascii:
         if name == NULL: name = b"unknown/no yet set"

@@ -21,7 +21,7 @@ cdef extern from * nogil:
     int PetscObjectSetName(PetscObject,char[])
     int PetscObjectGetName(PetscObject,char*[])
 
-    int PetscTypeCompare(PetscObject,char[],PetscBool*)
+    int PetscObjectTypeCompare(PetscObject,char[],PetscBool*)
     int PetscObjectCompose(PetscObject,char[],PetscObject)
     int PetscObjectQuery(PetscObject,char[],PetscObject*)
 
@@ -120,7 +120,7 @@ cdef inline type subtype_DM(PetscDM dm):
     if obj == NULL: return klass
     cdef PetscBool match = PETSC_FALSE
     # -- DA --
-    CHKERR( PetscTypeCompare(obj, b"da", &match) )
+    CHKERR( PetscObjectTypeCompare(obj, b"da", &match) )
     if match == PETSC_TRUE: klass = DA
     # --------
     return klass

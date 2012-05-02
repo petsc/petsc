@@ -574,7 +574,7 @@ SNESGetUseMFFD(SNES snes,PetscBool *flag)
   PetscValidPointer(flag,2);
   *flag = PETSC_FALSE;
   ierr = SNESGetJacobian(snes,&J,0,&jac,0);CHKERRQ(ierr);
-  if (J) { ierr = PetscTypeCompare((PetscObject)J,MATMFFD,flag);CHKERRQ(ierr); }
+  if (J) { ierr = PetscObjectTypeCompare((PetscObject)J,MATMFFD,flag);CHKERRQ(ierr); }
   else if (jac == MatMFFDComputeJacobian) *flag = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -622,8 +622,8 @@ SNESSetUseMFFD(SNES snes,PetscBool flag)
     ierr = SNESSetJacobian(snes,J,J,MatMFFDComputeJacobian,jacP);CHKERRQ(ierr);
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&shell);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)pc,PCPYTHON,&python);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc,PCSHELL,&shell);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc,PCPYTHON,&python);CHKERRQ(ierr);
     if (!shell && !python) { ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr); }
   } else {
     ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
