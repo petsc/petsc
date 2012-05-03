@@ -165,8 +165,9 @@ PetscErrorCode PetscPThreadCommRunKernel_LockFree(MPI_Comm comm,PetscThreadCommJ
     job_lockfree.my_job_status[0] = THREAD_RECIEVED_JOB;
     job_lockfree.data[0] = job;
     PetscRunKernel(0,job->nargs, job_lockfree.data[0]);
+    job_lockfree.my_job_status[0] = THREAD_WAITING_FOR_JOB;
   }
-  job_lockfree.my_job_status[0] = THREAD_WAITING_FOR_JOB;
+
  
   PetscFunctionReturn(0);
 }
