@@ -1,12 +1,12 @@
 
 
-CFLAGS           = -fopenmp
+CFLAGS           =
 FFLAGS           =
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/sys/threadcomm/examples/tutorials/
 MANSEC           = PetscThreadComm
-EXAMPLESC        = ex1.c ex2.c
+EXAMPLESC        = ex1.c ex2.c ex3.c
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
