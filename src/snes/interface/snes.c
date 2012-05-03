@@ -516,6 +516,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   const char              *optionsprefix;
   PetscViewer             monviewer;
   PetscErrorCode          ierr;
+  DM                      dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -685,7 +686,8 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (snes->pc) {
     ierr = SNESSetOptionsPrefix(snes->pc, optionsprefix);CHKERRQ(ierr);
     ierr = SNESAppendOptionsPrefix(snes->pc, "npc_");CHKERRQ(ierr);
-    ierr = SNESSetDM(snes->pc, snes->dm);CHKERRQ(ierr);
+    ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
+    ierr = SNESSetDM(snes->pc, dm);CHKERRQ(ierr);
     /* default to 1 iteration */
     ierr = SNESSetTolerances(snes->pc, snes->pc->abstol, snes->pc->rtol, snes->pc->stol, 1, snes->pc->max_funcs);CHKERRQ(ierr);
     ierr = SNESSetNormType(snes->pc, SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
