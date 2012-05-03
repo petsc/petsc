@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = openmp.c
+SOURCEC  = hpc.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = openmp.o
+OBJSC    = hpc.o
 OBJSF    =
 LIBBASE  = libpetscksp
 DIRS     = 

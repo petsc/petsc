@@ -8,7 +8,6 @@ class Configure(PETSc.package.NewPackage):
     self.includes          = ['omp.h']
     self.liblist           = []
     self.complex           = 1   # 0 means cannot use complex
-    self.lookforbydefault  = 1
     self.double            = 0   # 1 means requires double precision 
     self.requires32bitint  = 0;  # 1 means that the package will not work with 64 bit integers
     self.worksonWindows    = 1  # 1 means that package can be used on Microsof Windows
@@ -19,14 +18,9 @@ class Configure(PETSc.package.NewPackage):
     self.deps = []
     return
 
-  def getSearchDirectories(self):
-    ''' libomp.a is in the usual place'''
-    yield ''
-    return
-
   def configureLibrary(self):
     ''' Checks for -fopenmp compiler flag'''
-    PETSc.package.NewPackage.configureLibrary(self)
+    ''' Needs to check if OpenMP actually exists and works '''
     self.setCompilers.pushLanguage('C')
     # 
     for flag in ["-fopenmp", # Gnu
@@ -44,6 +38,8 @@ class Configure(PETSc.package.NewPackage):
         ompflag = flag
         break
     self.setCompilers.addCompilerFlag(ompflag)
+    if self.setCompilers.checkLinkerFlag(ompflag):
+      self.setCompilers.addLinkerFlag(ompflag)
     self.setCompilers.popLanguage()
     self.setCompilers.pushLanguage('FC')
     self.setCompilers.addCompilerFlag(ompflag)
@@ -51,8 +47,13 @@ class Configure(PETSc.package.NewPackage):
     if self.languages.clanguage == 'Cxx':
       self.setCompilers.pushLanguage('Cxx')
       self.setCompilers.addCompilerFlag(ompflag)
+      if self.setCompilers.checkLinkerFlag(ompflag):
+        self.setCompilers.addLinkerFlag(ompflag)
       self.setCompilers.popLanguage()
-    self.addDefine('HAVE_OPENMP', '1')
+    # register package since PETSc.package.NewPackage.configureLibrary(self) will not work since there is no library to find
+    if not hasattr(self.framework, 'packages'):
+      self.framework.packages = []
+    self.framework.packages.append(self)
 
 # sets PETSC_HAVE_OPENMP and adds the relevant flag
 # to the compile and link lines

@@ -1,4 +1,5 @@
-#requirespackage 'PETSC_HAVE_OPENMP'
+#requirespackage   'PETSC_HAVE_OPENMP'
+
 ALL: lib
 
 CFLAGS   =
