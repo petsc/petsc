@@ -80,7 +80,7 @@ class Configure(config.base.Configure):
       try:
         import multiprocessing
         cores = multiprocessing.cpu_count()
-        make_np = min(cores+1,5)
+        make_np = max(min(cores+1,5),cores/3)
         self.framework.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
       except (ImportError), e:
         make_np = 2
@@ -99,6 +99,7 @@ class Configure(config.base.Configure):
             self.framework.logPrint('Found number of cores using system_profiler: make_np = %d' % (make_np,))
         except:
           pass
+    self.make_np = make_np
     self.addMakeMacro('MAKE_NP',str(make_np))
     return
 
