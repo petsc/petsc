@@ -1,6 +1,7 @@
+#requirespackage 'PETSC_HAVE_OPENMP'
 ALL: lib
 
-CFLAGS   = -fopenmp
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = openmp.c
 SOURCEF  =

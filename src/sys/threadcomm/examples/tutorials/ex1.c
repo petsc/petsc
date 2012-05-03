@@ -35,6 +35,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
+  ierr = PetscThreadCommView(PETSC_COMM_WORLD,0);CHKERRQ(ierr);
   ierr = PetscThreadCommGetNThreads(PETSC_COMM_WORLD,&nthreads);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nthreads*sizeof(PetscInt),&ranks);CHKERRQ(ierr);
