@@ -740,7 +740,7 @@ PetscErrorCode  SNESSetComputeApplicationContext(SNES snes,PetscErrorCode (*comp
 
 .keywords: SNES, nonlinear, set, application, context
 
-.seealso: SNESGetApplicationContext(), SNESSetApplicationContext()
+.seealso: SNESGetApplicationContext()
 @*/
 PetscErrorCode  SNESSetApplicationContext(SNES snes,void *usrP)
 {
