@@ -14,8 +14,8 @@
       type bag_data_type
          PetscScalar :: x
          PetscReal :: y
-         PetscInt :: nxc
-         PetscReal :: rarray(2)
+         PetscInt  :: nxc
+         PetscReal :: rarray(3)
          PetscBool  :: t
          character*(80) :: c
          type(tuple) :: pos
@@ -37,13 +37,14 @@
 
       program ex5f90
       use Bag_interface_module
-!     use Bag_module
       use petsc
       implicit none
 
       PetscBag bag
       PetscErrorCode ierr
       type(bag_data_type), pointer :: data
+      type(bag_data_type)          :: dummydata
+      character(len=1),pointer     :: dummychar(:)
       PetscViewer viewer
       PetscSizeT sizeofbag,sizeofint
       PetscSizeT sizeofscalar,sizeoftruth
@@ -60,8 +61,13 @@
 
 !     really need a sizeof(data) operator here. There could be padding inside the
 !     structure due to alignment issues - so, this computed value cold be wrong.
-      sizeofbag = sizeofint + sizeofscalar + sizeoftruth + sizeofchar*80 &
-     &       + 3*sizeofreal+2*sizeofreal
+!      sizeofbag = sizeofint + sizeofscalar + sizeoftruth + sizeofchar*80 &
+!     &       + 3*sizeofreal+3*sizeofreal
+!     That is correct... unless the sequence keyword is used in the derived
+!     types, this length will be wrong because of padding
+!     this is a situation where the transfer function is very helpful...
+      sizeofbag = size(transfer(dummydata,dummychar))*sizeofchar
+      
 
 ! create the bag
       call PetscBagCreate(PETSC_COMM_WORLD,sizeofbag,bag,ierr)
@@ -73,7 +79,7 @@
 ! register the data within the bag, grabbing values from the options database
       call PetscBagRegisterInt(bag,data%nxc ,56,'nxc',                   &
      &      'nxc_variable help message',ierr)
-      call PetscBagRegisterRealArray(bag,data%rarray ,2,'rarray',        &
+      call PetscBagRegisterRealArray(bag,data%rarray ,3,'rarray',        &
      &      'rarray help message',ierr)
       call PetscBagRegisterScalar(bag,data%x ,103.2d0,'x',               &
      &      'x variable help message',ierr)
@@ -92,6 +98,7 @@
       data%nxc = 23
       data%rarray(1) = -1.0
       data%rarray(2) = -2.0
+      data%rarray(3) = -3.0
       data%x   = 155.4
       data%c   = 'a whole new string'
       data%t   = PETSC_TRUE
@@ -101,6 +108,9 @@
      &      FILE_MODE_READ,viewer,ierr)
       call PetscBagLoad(viewer,bag,ierr)
       call PetscViewerDestroy(viewer,ierr)
+      call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr)
+      
+      call PetscBagSetFromOptions(bag,ierr)
       call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr)
       call PetscBagDestroy(bag,ierr)
 

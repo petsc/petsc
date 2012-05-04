@@ -104,7 +104,7 @@ runex5:
 	   ${RM} -f ex5_1.tmp 
 
 runex5f90:
-	-@${MPIEXEC} -n 1 ./ex5f90 > ex5f90_1.tmp 5>&1; \
+	-@${MPIEXEC} -n 1 ./ex5f90 -pbag_rarray 4,5,88 > ex5f90_1.tmp 5>&1; \
 	   if (${DIFF} output/ex5f90_1.out ex5f90_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex5f90_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5f90_1.tmp 
