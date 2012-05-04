@@ -10,7 +10,7 @@ CFLAGS	 =
 FFLAGS	 = 
 
 # next line defines PETSC_DIR and PETSC_ARCH if they are not set
-include ./${PETSC_ARCH}/conf/petscvariables
+include ${PWD}/${PETSC_ARCH}/conf/petscvariables
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
