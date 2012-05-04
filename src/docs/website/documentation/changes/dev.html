@@ -131,6 +131,8 @@
       <ul>
         <li>Remove PCASASetDM(), use PCSetDM() instead.</li>
         <li>Add PCFieldSplitSetSchurFactType(), rename -pc_fieldsplit_set_schur_factorization_type to -pc_fieldsplit_set_schur_fact_type.</li>
+        <li>Added native algebraic multigrid method -pc_type gamg. Aggregation method is recommended: -pc_gamg_type agg and for elliptic operators smoothing is recommended: -pc_gamg_agg_nsmooths 1.</li>
+        <li>PCSetCoordinates(PC,PetscInt,PetscInt,PetscReal*) added second integer argument for number of local vertices.</li>
       </ul>
       <h4>KSP:</h4>
 
