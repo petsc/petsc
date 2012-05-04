@@ -18,7 +18,7 @@ PetscErrorCode PetscThreadCommFinalizePackage(void)
   PetscErrorCode ierr;
   MPI_Comm        icomm;
   void            *ptr;
-  PetscInt        flg;
+  PetscMPIInt     flg;
   PetscFunctionBegin;
   ierr = PetscThreadCommRegisterDestroy();CHKERRQ(ierr);
   /* Get the inner communicator */
