@@ -31,15 +31,16 @@ all:
 	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-legacy; \
 	 fi
 	-@ln -sf ${PETSC_ARCH}/conf/make.log make.log
-	-@egrep -i "( error | error: |no such file or directory)" ${PETSC_ARCH}/conf/make.log > /dev/null; if [ "$$?" = "0" ]; then \
+	@egrep -i "( error | error: |no such file or directory)" ${PETSC_ARCH}/conf/make.log | tee ${PETSC_ARCH}/conf/error.log > /dev/null
+	@if test -s ${PETSC_ARCH}/conf/error.log; then \
            echo "********************************************************************" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
            echo "  Error during compile, check ${PETSC_ARCH}/conf/make.log" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
            echo "  Send it and ${PETSC_ARCH}/conf/configure.log to petsc-maint@mcs.anl.gov" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log;\
-           echo "********************************************************************" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
-           exit 1; \
+           echo "********************************************************************" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log;\
 	 else \
 	  ${OMAKE} shared_install PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log ;\
-	 fi
+        fi #solaris make likes to print the whole command that gave error. So split this up into the smallest chunk below
+	@if test -s ${PETSC_ARCH}/conf/error.log; then exit 1; fi
 
 all-cmake:
 	@cd ${PETSC_DIR}/${PETSC_ARCH} && ${OMAKE} -j ${MAKE_NP} VERBOSE=1 2>&1 | tee ${PETSC_DIR}/${PETSC_ARCH}/conf/make.log \
