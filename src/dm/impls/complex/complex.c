@@ -5938,7 +5938,7 @@ PETSC_STATIC_INLINE PetscInt epsilon(PetscInt i, PetscInt j, PetscInt k)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexCreateRigidBody"
-/*@
+/*@C
   DMComplexCreateRigidBody - create rigid body modes from coordinates
 
   Collective on DM
