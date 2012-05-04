@@ -20017,7 +20017,7 @@ PetscErrorCode TetGenMeshRemoveEdge(TetGenMesh *m, badface* remedge, PetscBool o
   face checksh = {PETSC_NULL, 0};
   PetscReal key;
   PetscBool remflag, subflag;
-  int n, n1, m1, i, j, k;
+  PetscInt n, n1, m1, i, j, k;
   triface newtet = {PETSC_NULL, 0, 0};
   point *ppt;
   PetscErrorCode ierr;

@@ -4441,7 +4441,7 @@ PetscErrorCode DMComplexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
 {
   PetscReal      refinementLimit;
-  PetscInt       dim, cStart, cEnd, c;
+  PetscInt       dim, cStart, cEnd;
   char           genname[1024], *name = PETSC_NULL;
   PetscBool      isTriangle = PETSC_FALSE, isTetgen = PETSC_FALSE, isCTetgen = PETSC_FALSE, flg;
   PetscErrorCode ierr;
@@ -4462,7 +4462,8 @@ PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
   case 2:
     if (!name || isTriangle) {
 #ifdef PETSC_HAVE_TRIANGLE
-      double *maxVolumes;
+      double  *maxVolumes;
+      PetscInt c;
 
       ierr = PetscMalloc((cEnd - cStart) * sizeof(double), &maxVolumes);CHKERRQ(ierr);
       for(c = 0; c < cEnd-cStart; ++c) {
@@ -4478,6 +4479,7 @@ PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
     if (!name || isCTetgen) {
 #ifdef PETSC_HAVE_CTETGEN
       PetscReal *maxVolumes;
+      PetscInt   c;
 
       ierr = PetscMalloc((cEnd - cStart) * sizeof(PetscReal), &maxVolumes);CHKERRQ(ierr);
       for(c = 0; c < cEnd-cStart; ++c) {
@@ -4489,7 +4491,8 @@ PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
 #endif
     } else if (isTetgen) {
 #ifdef PETSC_HAVE_TETGEN
-      double *maxVolumes;
+      double  *maxVolumes;
+      PetscInt c;
 
       ierr = PetscMalloc((cEnd - cStart) * sizeof(double), &maxVolumes);CHKERRQ(ierr);
       for(c = 0; c < cEnd-cStart; ++c) {
@@ -4801,7 +4804,8 @@ PetscErrorCode DMComplexGetCoordinateVec(DM dm, Vec *coordinates) {
 
   Input Parameters:
 + dm - The DM
-. section - The section describing the layout in v
+. section - The section describing the layout in v, or PETSC_NULL to use the default section
+. v - The local vector
 - point - The sieve point in the DM
 
   Output Parameters:
@@ -4993,6 +4997,23 @@ PetscErrorCode updatePointFields_private(PetscSection section, PetscInt point, P
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexVecSetClosure"
+/*@C
+  DMComplexVecSetClosure - Set an array of the values on the closure of 'point'
+
+  Not collective
+
+  Input Parameters:
++ dm - The DM
+. section - The section describing the layout in v, or PETSC_NULL to use the default sectionw
+. v - The local vector
+. point - The sieve point in the DM
+. values - The array of values, which is a borrowed array and should not be freed
+- mode - The insert mode, where INSERT_ALL_VALUES and ADD_ALL_VALUES also overwrite boundary conditions
+
+  Level: intermediate
+
+.seealso DMComplexVecGetClosure(), DMComplexMatSetClosure()
+@*/
 PetscErrorCode DMComplexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode) {
   PetscScalar    *array;
   PetscInt       *points = PETSC_NULL;
