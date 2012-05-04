@@ -159,6 +159,18 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     /* Create array holding pthread ids */
     ierr = PetscMalloc(tcomm->nworkThreads*sizeof(pthread_t),&ptcomm->tid);CHKERRQ(ierr);
 
+    /* Set affinity of the main thread */
+    
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+    cpu_set_t mset;
+    PetscInt  icorr;
+
+    CPU_ZERO(&mset);
+    icorr = tcomm->affinities[0]%N_CORES;
+    CPU_SET(icorr,&mset);
+    sched_setaffinity(0,sizeof(cpu_set_t),&mset);
+#endif
+
     /* Initialize thread pool */
     ierr = (*ptcomm->initialize)(tcomm);CHKERRQ(ierr);
 
