@@ -108,17 +108,17 @@ libfastcompile:
 	-@if [ "${SOURCECU}" != "" ]; then \
 	echo ${CUDAC} ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}; \
 	${CUDAC} ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSCU} > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf; \
+	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSCU}; \
 		    ${RM} ${OBJSCU} ${OBJSCU:.o=.lo}; \
 	    fi; \
           if [ "${SOURCEC}" != "" ]; then \
                     ${PETSC_COMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS} > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf; \
+	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
 		    ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
 	    fi; \
 	if [ "${SOURCEF}" != "" ]; then \
                     ${PETSC_FCOMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSF} > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf; \
+	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSF}; \
 		    ${RM} ${OBJSF}; \
 	    fi
 
