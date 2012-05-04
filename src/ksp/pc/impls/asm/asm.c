@@ -149,7 +149,6 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   PetscErrorCode ierr;
   PetscBool      symset,flg;
   PetscInt       i,m,m_local,firstRow,lastRow;
-  PetscMPIInt    size;
   MatReuse       scall = MAT_REUSE_MATRIX;
   IS             isl;
   KSP            ksp;
@@ -166,8 +165,8 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       if (symset && flg) { osm->type = PC_ASM_BASIC; }
     }
 
-    /* Note: if osm->n_local_true has been set, it is at least 1. */
-    if (osm->n == PETSC_DECIDE && osm->n_local_true < 1) { 
+    /* Note: if subdomains have been set either via PCASMSetTotalSubdomains() or via PCASMSetLocalSubdomains(), osm->n_local_true will not be PETSC_DECIDE */
+    if (osm->n_local_true == PETSC_DECIDE) { 
       /* no subdomains given */
       /* try pc->dm first */
       if(pc->dm) {
@@ -199,14 +198,12 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         ierr = PetscFree(domain_names);CHKERRQ(ierr);
         ierr = PetscFree(domain_is);CHKERRQ(ierr);
       }
-      if (osm->n == PETSC_DECIDE && osm->n_local_true < 1) {
+      if (osm->n_local_true == PETSC_DECIDE) {
         /* still no subdomains; use one subdomain per processor */
-        osm->n_local = osm->n_local_true = 1;
-        ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
-        osm->n = size;
+        osm->n_local_true = 1;
       }
-    } else if (osm->n == PETSC_DECIDE) {
-      /* determine global number of subdomains */
+    }
+    {/* determine the global and max number of subdomains */
       PetscInt inwork[2],outwork[2];
       inwork[0] = inwork[1] = osm->n_local_true;
       ierr = MPI_Allreduce(inwork,outwork,1,MPIU_2INT,PetscMaxSum_Op,((PetscObject)pc)->comm);CHKERRQ(ierr);
@@ -245,7 +242,6 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         }
       }
     }
-
     /* Create the local work vectors and scatter contexts */
     ierr = MatGetVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
     ierr = PetscMalloc(osm->n_local*sizeof(VecScatter),&osm->restriction);CHKERRQ(ierr);
@@ -1042,7 +1038,7 @@ PetscErrorCode  PCCreate_ASM(PC pc)
   ierr = PetscNewLog(pc,PC_ASM,&osm);CHKERRQ(ierr);
   osm->n                 = PETSC_DECIDE;
   osm->n_local           = 0;
-  osm->n_local_true      = 0;
+  osm->n_local_true      = PETSC_DECIDE;
   osm->overlap           = 1;
   osm->ksp               = 0;
   osm->restriction       = 0;
