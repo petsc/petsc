@@ -251,7 +251,7 @@ PetscErrorCode PCSetCoordinates_AGG( PC pc, PetscInt ndm, PetscInt a_nloc, Petsc
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
   PetscErrorCode  ierr;
-  PetscInt        arrsz,kk,ii,jj,nloc,ndatarows,bs;
+  PetscInt        arrsz,kk,ii,jj,nloc,ndatarows,ndf;
   Mat             mat = pc->pmat;
   /* MPI_Comm     wcomm = ((PetscObject)pc)->comm; */
 
@@ -261,35 +261,39 @@ PetscErrorCode PCSetCoordinates_AGG( PC pc, PetscInt ndm, PetscInt a_nloc, Petsc
   nloc = a_nloc;
 
   /* SA: null space vectors */
-  ierr = MatGetBlockSize( mat, &bs ); CHKERRQ( ierr ); /* this does not work for Stokes */
-  if( coords && bs==1 ) pc_gamg->data_cell_cols = 1; /* scalar w/ coords and SA (not needed) */
+  ierr = MatGetBlockSize( mat, &ndf ); CHKERRQ( ierr ); /* this does not work for Stokes */
+  if( coords && ndf==1 ) pc_gamg->data_cell_cols = 1; /* scalar w/ coords and SA (not needed) */
   else if( coords ) {
-    if(ndm > bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"degrees of motion %d > block size %d",ndm,bs);
-    pc_gamg->data_cell_cols = (ndm==2 ? (bs+1) : (bs+3)); /* elasticity */
+    if(ndm > ndf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"degrees of motion %d > block size %d",ndm,ndf);
+    pc_gamg->data_cell_cols = (ndm==2 ? 3 : 6); /* displacement elasticity */
+    if(ndm != ndf) {
+      if(pc_gamg->data_cell_cols != ndf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Don't know how to create null space for ndm=%d, ndf=%d.  Use MatSetNearNullSpace.",ndm,ndf);
+    }
   }
-  else pc_gamg->data_cell_cols = bs; /* no data, force SA with constant null space vectors */
-  pc_gamg->data_cell_rows = ndatarows = bs;
-  assert(pc_gamg->data_cell_cols>0);
+  else pc_gamg->data_cell_cols = ndf; /* no data, force SA with constant null space vectors */
+  pc_gamg->data_cell_rows = ndatarows = ndf;     assert(pc_gamg->data_cell_cols>0);
   arrsz = nloc*pc_gamg->data_cell_rows*pc_gamg->data_cell_cols;
 
   /* create data - syntactic sugar that should be refactored at some point */
   if (pc_gamg->data==0 || (pc_gamg->data_sz != arrsz)) {
     ierr = PetscFree( pc_gamg->data );  CHKERRQ(ierr);
     ierr = PetscMalloc((arrsz+1)*sizeof(PetscReal), &pc_gamg->data ); CHKERRQ(ierr);
-    /* pc_gamg->data != null if nloc==0: flag for called */
   }
   /* copy data in - column oriented */
   for(kk=0;kk<nloc;kk++){
-    const PetscInt M = nloc*pc_gamg->data_cell_rows;
-    PetscReal *data = &pc_gamg->data[kk*ndatarows];
+    const PetscInt M = nloc*pc_gamg->data_cell_rows; /* stride into data */
+    PetscReal *data = &pc_gamg->data[kk*ndatarows]; /* start of cell */
     if( pc_gamg->data_cell_cols==1 ) *data = 1.0;
     else {
+      /* translational modes */
       for(ii=0;ii<ndatarows;ii++)
         for(jj=0;jj<ndatarows;jj++)
-          if(ii==jj)data[ii*M + jj] = 1.0; /* translational modes */
+          if(ii==jj)data[ii*M + jj] = 1.0; 
           else data[ii*M + jj] = 0.0;
+
+      /* rotational modes */
       if( coords ) {
-        if( ndm == 2 ){ /* rotational modes */
+        if( ndm == 2 ){ 
           data += 2*M;
           data[0] = -coords[2*kk+1];
           data[1] =  coords[2*kk];
