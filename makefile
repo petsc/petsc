@@ -1,4 +1,3 @@
-
 #
 # This is the makefile for compiling PETSc. See 
 # http://www.mcs.anl.gov/petsc/documentation/installation.html for directions on installing PETSc.
@@ -20,17 +19,14 @@ include ${PETSC_DIR}/conf/test
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
 all:
-	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chkpetsc_dir petscnagupgrade cmakegen
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chkpetsc_dir petscnagupgrade | tee ${PETSC_ARCH}/conf/make.log
+	@ln -sf ${PETSC_ARCH}/conf/make.log make.log
 	@if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
-	   echo "=========================================="; \
-           echo "Building PETSc using CMake with ${MAKE_NP} build threads"; \
-	   echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"; \
-	   echo "=========================================="; \
-	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-cmake; \
+	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-cmake 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log \
+		| egrep -v '( --check-build-system |cmake -E | -o CMakeFiles/petsc[[:lower:]]*.dir/| -o lib/libpetsc|CMakeFiles/petsc[[:lower:]]*\.dir/(build|depend|requires)|-f CMakeFiles/Makefile2|Dependee .* is newer than depender |provides\.build. is up to date)'; \
 	 else \
-	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-legacy; \
+	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-legacy 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
 	 fi
-	-@ln -sf ${PETSC_ARCH}/conf/make.log make.log
 	@egrep -i "( error | error: |no such file or directory)" ${PETSC_ARCH}/conf/make.log | tee ${PETSC_ARCH}/conf/error.log > /dev/null
 	@if test -s ${PETSC_ARCH}/conf/error.log; then \
            echo "********************************************************************" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
@@ -42,14 +38,9 @@ all:
         fi #solaris make likes to print the whole command that gave error. So split this up into the smallest chunk below
 	@if test -s ${PETSC_ARCH}/conf/error.log; then exit 1; fi
 
-all-cmake:
-	@cd ${PETSC_DIR}/${PETSC_ARCH} && ${OMAKE} -j ${MAKE_NP} VERBOSE=1 2>&1 | tee ${PETSC_DIR}/${PETSC_ARCH}/conf/make.log \
-	          | egrep -v '( --check-build-system |cmake -E | -o CMakeFiles/petsc[[:lower:]]*.dir/| -o lib/libpetsc|CMakeFiles/petsc[[:lower:]]*\.dir/(build|depend|requires)|-f CMakeFiles/Makefile2|Dependee .* is newer than depender |provides\.build. is up to date)'
+all-cmake: info cmakegen cmake
 
-all-legacy:
-	-@${OMAKE} all_build PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1  | tee ${PETSC_ARCH}/conf/make.log
-
-all_build: chk_petsc_dir chklib_dir info deletelibs deletemods build shared_nomesg mpi4py petsc4py
+all-legacy: chklib_dir info deletelibs deletemods build shared_nomesg mpi4py petsc4py
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -193,17 +184,6 @@ deletemods:
 # Cleans up build
 allclean: deletelibs deletemods
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=clean tree
-
-
-#
-# Check if PETSC_DIR variable specified is valid
-#
-chk_petsc_dir:
-	@if [ ! -f ${PETSC_DIR}/include/petscversion.h ]; then \
-	  echo "Incorrect PETSC_DIR specified: ${PETSC_DIR}!"; \
-	  echo "You need to use / to separate directories, not \\!"; \
-	  echo "Aborting build"; \
-	  false; fi
 #
 reconfigure:
 	@${PYTHON} ${PETSC_ARCH}/conf/reconfigure-${PETSC_ARCH}.py
@@ -499,7 +479,7 @@ exercises:
 	/home/MPI/class/mpiexmpl/maint/makepage.new -pageform=docs/pageform.txt -access_extra=/dev/null -outdir=docs/exercises
 	-@echo "========================================="
 
-.PHONY: info info_h all all_build build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update chk_petsc_dir \
+.PHONY: info info_h all build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
         allhtml allcleanhtml  allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
         start_configure configure_petsc configure_clean

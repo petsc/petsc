@@ -69,7 +69,10 @@ chkopts: petscnagupgrade
 #
 # uses the cmake infrastructure to build/rebuild the libraries
 cmake:
-	cd ${PETSC_DIR}/${PETSC_ARCH} && ${OMAKE} -j ${MAKE_NP}
+	@echo "Building PETSc using CMake with ${MAKE_NP} build threads"
+	@echo "=========================================="
+	@cd ${PETSC_DIR}/${PETSC_ARCH} && ${OMAKE} -j ${MAKE_NP} VERBOSE=1
+	@echo "========================================="
 
 # Does nothing; needed for some rules that require actions.
 foo:
