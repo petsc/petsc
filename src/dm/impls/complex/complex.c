@@ -5027,7 +5027,6 @@ PetscErrorCode DMComplexVecSetClosure(DM dm, PetscSection section, Vec v, PetscI
   if (!section) {
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   }
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields > 32) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %D limited to 32", numFields);
   ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
@@ -5879,5 +5878,157 @@ PetscErrorCode DMComplexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize,
     }
   }
   ierr = DMComplexGetFaceOrientation(dm, cell, numCorners, indices, oppositeVertex, origVertices, faceVertices, posOriented);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_STATIC_INLINE PetscInt epsilon(PetscInt i, PetscInt j, PetscInt k)
+{
+  switch(i) {
+  case 0:
+    switch(j) {
+    case 0: return 0;
+    case 1:
+      switch(k) {
+      case 0: return 0;
+      case 1: return 0;
+      case 2: return 1;
+      }
+    case 2:
+      switch(k) {
+      case 0: return 0;
+      case 1: return -1;
+      case 2: return 0;
+      }
+    }
+  case 1:
+    switch(j) {
+    case 0:
+      switch(k) {
+      case 0: return 0;
+      case 1: return 0;
+      case 2: return -1;
+      }
+    case 1: return 0;
+    case 2:
+      switch(k) {
+      case 0: return 1;
+      case 1: return 0;
+      case 2: return 0;
+      }
+    }
+  case 2:
+    switch(j) {
+    case 0:
+      switch(k) {
+      case 0: return 0;
+      case 1: return 1;
+      case 2: return 0;
+      }
+    case 1:
+      switch(k) {
+      case 0: return -1;
+      case 1: return 0;
+      case 2: return 0;
+      }
+    case 2: return 0;
+    }
+  }
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexCreateRigidBody"
+/*@
+  DMComplexCreateRigidBody - create rigid body modes from coordinates
+
+  Collective on DM
+
+  Input Arguments:
++ dm - the DM
+- section - the local section associated with the rigid field, or PETSC_NULL for the default section
+- globalSection - the global section associated with the rigid field, or PETSC_NULL for the default section
+
+  Output Argument:
+. sp - the null space
+
+  Note: This is necessary to take account of Dirichlet conditions on the displacements
+
+  Level: advanced
+
+.seealso: MatNullSpaceCreate()
+@*/
+PetscErrorCode DMComplexCreateRigidBody(DM dm, PetscSection section, PetscSection globalSection, MatNullSpace *sp)
+{
+  MPI_Comm       comm = ((PetscObject) dm)->comm;
+  Vec            coordinates, localMode, mode[6];
+  PetscSection   coordSection;
+  PetscScalar   *coords;
+  PetscInt       dim, vStart, vEnd, v, n, m, d, i, j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim == 1) {
+    ierr = MatNullSpaceCreate(comm, PETSC_TRUE, 0, PETSC_NULL, sp);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  if (!section)       {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
+  if (!globalSection) {ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);}
+  ierr = PetscSectionGetConstrainedStorageSize(globalSection, &n);CHKERRQ(ierr);
+  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMComplexGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
+  m    = (dim*(dim+1))/2;
+  ierr = VecCreate(comm, &mode[0]);CHKERRQ(ierr);
+  ierr = VecSetSizes(mode[0], n, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetUp(mode[0]);CHKERRQ(ierr);
+  for(i = 1; i < m; ++i) {ierr = VecDuplicate(mode[0], &mode[i]);CHKERRQ(ierr);}
+  /* Assume P1 */
+  ierr = DMGetLocalVector(dm, &localMode);CHKERRQ(ierr);
+  for(d = 0; d < dim; ++d) {
+    PetscScalar values[3] = {0.0, 0.0, 0.0};
+
+    values[d] = 1.0;
+    ierr = VecSet(localMode, 0.0);CHKERRQ(ierr);
+    for(v = vStart; v < vEnd; ++v) {
+      ierr = DMComplexVecSetClosure(dm, section, localMode, v, values, INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = DMLocalToGlobalBegin(dm, localMode, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(dm, localMode, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
+  }
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  for(d = dim; d < dim*(dim+1)/2; ++d) {
+    PetscInt i, j, k = dim > 2 ? d - dim : d;
+
+    ierr = VecSet(localMode, 0.0);CHKERRQ(ierr);
+    for(v = vStart; v < vEnd; ++v) {
+      PetscScalar values[3] = {0.0, 0.0, 0.0};
+      PetscInt    off;
+
+      ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
+      for(i = 0; i < dim; ++i) {
+        for(j = 0; j < dim; ++j) {
+          values[j] += epsilon(i, j, k)*coords[off+i];
+        }
+      }
+      ierr = DMComplexVecSetClosure(dm, section, localMode, v, values, INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = DMLocalToGlobalBegin(dm, localMode, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(dm, localMode, INSERT_VALUES, mode[d]);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &localMode);CHKERRQ(ierr);
+  for(i = 0; i < dim; ++i) {ierr = VecNormalize(mode[i], PETSC_NULL);CHKERRQ(ierr);}
+  /* Orthonormalize system */
+  for(i = dim; i < m; ++i) {
+    PetscScalar dots[6];
+
+    ierr = VecMDot(mode[i], i, mode, dots);CHKERRQ(ierr);
+    for(j = 0; j < i; ++j) dots[j] *= -1.0;
+    ierr = VecMAXPY(mode[i], i, dots, mode);CHKERRQ(ierr);
+    ierr = VecNormalize(mode[i], PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = MatNullSpaceCreate(comm, PETSC_FALSE, m, mode, sp);CHKERRQ(ierr);
+  for(i = 0; i< m; ++i) {ierr = VecDestroy(&mode[i]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
