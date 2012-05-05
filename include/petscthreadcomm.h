@@ -44,7 +44,8 @@ extern PetscErrorCode PetscThreadCommRegisterDestroy(void);
 
 extern PetscErrorCode PetscThreadReductionKernelBegin(PetscInt,PetscThreadComm,PetscThreadCommReductionType,PetscDataType,void*,void*);
 extern PetscErrorCode PetscThreadReductionKernelEnd(PetscInt,PetscThreadComm,PetscThreadCommReductionType,PetscDataType,void*,void*);
-
+extern PetscErrorCode PetscThreadCommGetOwnershipRanges(MPI_Comm,PetscInt,PetscInt*[]);
+extern PetscInt PetscThreadCommGetRank(PetscThreadComm);
 
 PETSC_EXTERN_CXX_END
 #endif

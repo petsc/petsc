@@ -1,6 +1,11 @@
 #include <../src/sys/threadcomm/impls/openmp/openmpimpl.h>
-
 #include <omp.h>
+
+PetscInt PetscThreadCommGetRank_OpenMP(void)
+{
+  return omp_get_thread_num();
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommCreate_OpenMP"
@@ -11,6 +16,7 @@ PetscErrorCode PetscThreadCommCreate_OpenMP(PetscThreadComm tcomm)
   PetscFunctionBegin;
   ierr = PetscStrcpy(tcomm->type,OPENMP);CHKERRQ(ierr);
   tcomm->ops->runkernel = PetscThreadCommRunKernel_OpenMP;
+  tcomm->ops->getrank   = PetscThreadCommGetRank_OpenMP;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -834,3 +834,55 @@ PetscErrorCode PetscRunKernel(PetscInt trank,PetscInt nargs,PetscThreadCommJobCt
   }
   return 0;
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadCommGetOwnershipRanges"
+/*
+   PetscThreadComMGetOwnershipRanges - Given the global size of an array, computes the local sizes and sets
+                                       the starting array indices
+
+   Input Parameters:
++  comm - the MPI communicator which holds the thread communicator
+-  N    - the global size of the array
+
+   Output Parameters:
+.  trstarts - The starting array indices for each thread. the size of trstarts is nthreads+1
+
+   Notes:
+   trstarts is malloced in this routine
+*/
+PetscErrorCode PetscThreadCommGetOwnershipRanges(MPI_Comm comm,PetscInt N,PetscInt *trstarts[])
+{
+  PetscErrorCode  ierr;
+  PetscInt        Q,R;
+  PetscBool       S;
+  PetscThreadComm tcomm;
+  PetscInt        *trstarts_out,nloc,i;
+
+  PetscFunctionBegin;
+  ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
+
+  ierr = PetscMalloc((tcomm->nworkThreads+1)*sizeof(PetscInt),&trstarts_out);CHKERRQ(ierr);
+  trstarts_out[0] = 0;
+  Q = N/tcomm->nworkThreads;
+  R = N - Q*tcomm->nworkThreads;
+  for(i=0;i<tcomm->nworkThreads;i++) {
+    S = (PetscBool)(i < R);
+    nloc = S?Q+1:Q;
+    trstarts_out[i+1] = trstarts_out[i] + nloc;
+  }
+
+  *trstarts = trstarts_out;
+
+  PetscFunctionReturn(0);
+}
+
+PetscInt PetscThreadCommGetRank(PetscThreadComm tcomm)
+{
+  PetscInt trank = 0;
+
+  if(tcomm->ops->getrank) {
+    trank = (*tcomm->ops->getrank)();
+  }
+  return trank;
+}

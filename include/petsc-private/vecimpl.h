@@ -16,6 +16,7 @@ PETSC_EXTERN_CXX_BEGIN
      Level: developer
 
 S*/
+/* PetscThreadsLayout will be removed eventually with the removal of the old pthread interface. */
 typedef struct _n_PetscThreadsLayout* PetscThreadsLayout;
 struct _n_PetscThreadsLayout{
   PetscInt nthreads;        /* Number of threads used for vector/matrix operations */
@@ -43,6 +44,7 @@ struct _n_PetscLayout{
   ISLocalToGlobalMapping mapping;     /* mapping used in Vec/MatSetValuesLocal() */
   ISLocalToGlobalMapping bmapping;    /* mapping used in Vec/MatSetValuesBlockedLocal() */
   PetscThreadsLayout     tmap;        /* threads specific  layout info */
+  PetscInt               *trstarts;   /* local start for each thread */
 };
 
 extern PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);

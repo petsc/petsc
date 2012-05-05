@@ -17,7 +17,7 @@ static PetscInt ptcommcrtct = 0; /* PThread communicator creation count. Increme
                                     last pthread communicator destruction, the thread pool is also terminated
                                   */
 
-PetscInt PetscGetPThreadRank()
+PetscInt PetscThreadCommGetRank_PThread()
 {
 #if defined(PETSC_PTHREAD_LOCAL)
   return PetscPThreadRank;
@@ -32,7 +32,7 @@ void PetscPThreadCommDoCoreAffinity(void)
 {
   PetscInt  i,icorr=0; 
   cpu_set_t mset;
-  PetscInt  myrank=PetscGetPThreadRank();
+  PetscInt  myrank=PetscThreadCommGetRank_PThread();
   PetscThreadComm          tcomm;
   PetscThreadComm_PThread  gptcomm;
   
@@ -101,6 +101,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
   tcomm->ops->destroy = PetscThreadCommDestroy_PThread;
   tcomm->ops->runkernel = PetscPThreadCommRunKernel_LockFree;
   tcomm->ops->barrier   = PetscPThreadCommBarrier_LockFree;
+  tcomm->ops->getrank   = PetscThreadCommGetRank_PThread;
 
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&ptcomm->granks);CHKERRQ(ierr);
 

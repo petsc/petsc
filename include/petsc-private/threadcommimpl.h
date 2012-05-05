@@ -73,6 +73,7 @@ struct _PetscThreadCommOps {
   PetscErrorCode (*runkernel)(MPI_Comm,PetscThreadCommJobCtx);
   PetscErrorCode (*view)(PetscThreadComm,PetscViewer);
   PetscErrorCode (*barrier)(PetscThreadComm);
+  PetscInt       (*getrank)(void);
 };
 
 struct _p_PetscThreadComm{
