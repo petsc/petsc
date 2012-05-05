@@ -442,6 +442,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr = VecDestroy(&ftmp);CHKERRQ(ierr);
         ierr = VecDestroy(&gtmp);CHKERRQ(ierr);
       }
+      /* Check for null space attached to IS */
+      ierr = PetscObjectQuery((PetscObject) ilink->is, "nearnullspace", (PetscObject *) &sp);CHKERRQ(ierr);
+      if (sp) {
+        ierr  = MatSetNearNullSpace(jac->pmat[i], sp);CHKERRQ(ierr);
+      }
       ilink = ilink->next;
     }
     ierr = VecDestroy(&xtmp);CHKERRQ(ierr);
