@@ -21,6 +21,7 @@ PetscErrorCode PetscThreadCommFinalizePackage(void)
   PetscMPIInt     flg;
   PetscFunctionBegin;
   ierr = PetscThreadCommRegisterDestroy();CHKERRQ(ierr);
+
   /* Get the inner communicator */
   ierr  = MPI_Attr_get(PETSC_COMM_WORLD,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -29,6 +30,7 @@ PetscErrorCode PetscThreadCommFinalizePackage(void)
     /* Delete the thread communicator */
     ierr = MPI_Attr_delete(icomm,Petsc_ThreadComm_keyval);CHKERRQ(ierr);
   }
+
   /* Free the thread communicator key */
   ierr = MPI_Keyval_free(&Petsc_ThreadComm_keyval);CHKERRQ(ierr);
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);

@@ -86,7 +86,8 @@ struct _p_PetscThreadComm{
   PetscInt                leader;       /* Rank of the leader thread. This thread manages
                                            the synchronization for collective operatons like reductions.
 					*/
-  PetscThreadCommRedCtx red;      /* Reduction context */
+  PetscThreadCommRedCtx   red;      /* Reduction context */
+  PetscInt                refcount; /* Reference count */
 };
 
 /* register thread communicator models */

@@ -134,6 +134,7 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
   }
   tcommout->jobqueue->ctr = 0;
   tcommout->leader = 0;
+  tcommout->refcount = 1;
   *tcomm = tcommout;
 
   if(!PetscGetNCoresCalled) {     
@@ -185,6 +186,8 @@ PetscErrorCode PetscThreadCommDestroy(PetscThreadComm tcomm)
   PetscInt       i;
 
   PetscFunctionBegin;
+  if(--tcomm->refcount > 0) PetscFunctionReturn(0);
+
   if(!tcomm) PetscFunctionReturn(0);
 
   /* Destroy the implementation specific data struct */
@@ -628,7 +631,7 @@ PetscErrorCode PetscThreadCommInitialize(void)
 {
   PetscErrorCode  ierr;
   PetscThreadComm tcomm;
-  MPI_Comm        icomm;
+  MPI_Comm        icomm,icomm1;
 
   PetscFunctionBegin;
   if(Petsc_ThreadComm_keyval == MPI_KEYVAL_INVALID) {
@@ -639,6 +642,10 @@ PetscErrorCode PetscThreadCommInitialize(void)
   ierr = PetscThreadCommSetAffinities(tcomm,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&icomm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_put(icomm,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(PETSC_COMM_SELF,&icomm1,PETSC_NULL);CHKERRQ(ierr);
+  tcomm->refcount++;
+  ierr = MPI_Attr_put(icomm1,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
+
   ierr = PetscThreadCommSetType(tcomm,NOTHREAD);CHKERRQ(ierr);
   ierr = PetscThreadCommReductionCreate(tcomm,&tcomm->red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
