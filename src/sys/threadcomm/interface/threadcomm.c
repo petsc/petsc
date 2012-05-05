@@ -134,7 +134,6 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
   }
   tcommout->jobqueue->ctr = 0;
   tcommout->leader = 0;
-  tcommout->refcount = 1;
   *tcomm = tcommout;
 
   if(!PetscGetNCoresCalled) {     
@@ -186,7 +185,6 @@ PetscErrorCode PetscThreadCommDestroy(PetscThreadComm tcomm)
   PetscInt       i;
 
   PetscFunctionBegin;
-  if(--tcomm->refcount > 0) PetscFunctionReturn(0);
 
   if(!tcomm) PetscFunctionReturn(0);
 
@@ -607,14 +605,18 @@ EXTERN_C_BEGIN
 
   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 */
-PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void* tcomm,void* extra_state)
+PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void* attr,void* extra_state)
 {
   PetscErrorCode  ierr;
+  PetscThreadComm tcomm;
+  PetscMPIInt     flg;
 
   PetscFunctionBegin;
-  if(!tcomm) {PetscFunctionReturn(0);}
-  ierr = PetscThreadCommDestroy((PetscThreadComm)tcomm);CHKERRQ(ierr);
-  ierr = PetscInfo1(0,"Deleting thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = MPI_Attr_get(comm,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
+  if(flg) {
+    ierr = PetscThreadCommDestroy((PetscThreadComm)tcomm);CHKERRQ(ierr);
+    ierr = PetscInfo1(0,"Deleting thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -643,7 +645,6 @@ PetscErrorCode PetscThreadCommInitialize(void)
   ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&icomm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_put(icomm,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(PETSC_COMM_SELF,&icomm1,PETSC_NULL);CHKERRQ(ierr);
-  tcomm->refcount++;
   ierr = MPI_Attr_put(icomm1,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
 
   ierr = PetscThreadCommSetType(tcomm,NOTHREAD);CHKERRQ(ierr);
