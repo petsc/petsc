@@ -7,7 +7,7 @@
 using ALE::Obj;
 
 template<typename Section, typename Order>
-void constructFieldSplit(const Obj<Section>& section, PetscInt numSplits, PetscInt numSplitFields[], PetscInt splitFields[], const Obj<Order>& globalOrder, Vec v, PC fieldSplit) {
+void constructFieldSplit(const Obj<Section>& section, PetscInt numSplits, PetscInt numSplitFields[], PetscInt splitFields[], const Obj<Order>& globalOrder, MatNullSpace nullsp[], Vec v, PC fieldSplit) {
   const typename Section::chart_type&  chart = section->getChart();
   PetscInt                            *numFields = PETSC_NULL;
   PetscInt                            *fields    = PETSC_NULL;
@@ -107,6 +107,9 @@ void constructFieldSplit(const Obj<Section>& section, PetscInt numSplits, PetscI
     }
     if (i != n-1) {throw PETSc::Exception("Invalid fibration numbering");}
     ierr = ISCreateGeneral(section->comm(), n, idx,PETSC_OWN_POINTER, &is);CHKERRXX(ierr);
+    if (nullsp && nullsp[s]) {
+      ierr = PetscObjectCompose((PetscObject) is, "nearnullspace", (PetscObject) nullsp[s]);CHKERRXX(ierr);
+    }
     ierr = PCFieldSplitSetIS(fieldSplit, splitName, is);CHKERRXX(ierr);
     ++splitName[0];
     q += numFields[s];
