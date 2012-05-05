@@ -23,3 +23,7 @@ ex2: ex2.o chkopts
 ex3: ex3.o chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_VEC_LIB}
 	${RM} -f ex3.o
+
+ex4: ex4.o chkopts
+	-${CLINKER} -o ex4 ex4.o  ${PETSC_VEC_LIB}
+	${RM} -f ex4.o
