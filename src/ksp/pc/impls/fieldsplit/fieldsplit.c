@@ -1537,8 +1537,8 @@ PetscErrorCode  PCFieldSplitSetType(PC pc,PCCompositeType type)
 .   -pc_fieldsplit_default - automatically add any fields to additional splits that have not
                               been supplied explicitly by -pc_fieldsplit_%d_fields
 .   -pc_fieldsplit_block_size <bs> - size of block that defines fields (i.e. there are bs fields)
-.   -pc_fieldsplit_type <additive,multiplicative,schur,symmetric_multiplicative>
-.   -pc_fieldsplit_schur_precondition <true,false> default is true
+.   -pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative,schur> - type of relaxation or factorization splitting
+.   -pc_fieldsplit_schur_precondition <self,user,diag> - default is diag
 .   -pc_fieldsplit_detect_saddle_point - automatically finds rows with zero or negative diagonal and uses Schur complement with no preconditioner as the solver
 
 -    Options prefix for inner solvers when using Schur complement preconditioner are -fieldsplit_0_ and -fieldsplit_1_
