@@ -1,6 +1,6 @@
-Level 0 domain size (m)    1e+04 x    1e+04 x    1e+03, num elements   6 x   6 x   4 (     144), size (m) 1666.67 x 1666.67 x 333.333
 Level 1 domain size (m)    1e+04 x    1e+04 x    1e+03, num elements  12 x  12 x   7 (    1008), size (m) 833.333 x 833.333 x 166.667
   0 SNES Function norm 28.4846 
+Level 0 domain size (m)    1e+04 x    1e+04 x    1e+03, num elements   6 x   6 x   4 (     144), size (m) 1666.67 x 1666.67 x 333.333
     0 KSP Residual norm 28.4846 
     1 KSP Residual norm 0.112113 
     2 KSP Residual norm 0.00207342 

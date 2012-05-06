@@ -643,7 +643,7 @@ extern PetscErrorCode DMSNESGetGS(DM,PetscErrorCode(**)(SNES,Vec,Vec,void*),void
 extern PetscErrorCode DMSNESSetJacobian(DM,PetscErrorCode(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void*);
 extern PetscErrorCode DMSNESGetJacobian(DM,PetscErrorCode(**)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void**);
 
-extern PetscErrorCode DMDASNESSetFunctionLocal(DM,PetscErrorCode(*)(DMDALocalInfo*,void*,void*,void*),void*);
+extern PetscErrorCode DMDASNESSetFunctionLocal(DM,InsertMode,PetscErrorCode(*)(DMDALocalInfo*,void*,void*,void*),void*);
 extern PetscErrorCode DMDASNESSetJacobianLocal(DM,PetscErrorCode(*)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*),void*);
 
 /* Routines for Multiblock solver */
