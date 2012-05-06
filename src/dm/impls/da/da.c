@@ -798,6 +798,13 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
   }
+
+  for (i=0; i<da->bs; i++) {
+    const char *fieldname;
+    ierr = DMDAGetFieldName(da,i,&fieldname);CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da2,i,fieldname);CHKERRQ(ierr);
+  }
+
   *daref = da2;
   PetscFunctionReturn(0);
 }
