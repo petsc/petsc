@@ -1,45 +1,45 @@
 #include <petsc-private/threadcommimpl.h>      /*I "petscthreadcomm.h" I*/
 
-PetscInt N_CORES;
+static PetscInt N_CORES = -1;
 
 PetscBool  PetscThreadCommRegisterAllCalled = PETSC_FALSE;
 PetscFList PetscThreadCommList              = PETSC_NULL;
-
-static PetscBool  PetscGetNCoresCalled      = PETSC_FALSE;
-
-PetscMPIInt Petsc_ThreadComm_keyval = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_ThreadComm_keyval         = MPI_KEYVAL_INVALID;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetNCores"
-/*
-  PetscGetNCores - Gets the number of availalbe cores
-                   on the system
+/*@
+  PetscGetNCores - Gets the number of available cores on the system
 		   
   Level: developer
 
   Notes
-  Defaults to 1 if the available cores cannot be found
-*/
-PetscErrorCode PetscGetNCores(void)
+  Defaults to 1 if the available core count cannot be found
+
+@*/
+PetscErrorCode PetscGetNCores(PetscInt *ncores)
 {
   PetscFunctionBegin;
-  N_CORES=1; /* Default value if N_CORES cannot be found out */
-  /* Find the number of cores */
+  if (N_CORES == -1) {
+    N_CORES = 1; /* Default value if number of cores cannot be found out */
+
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T) /* Linux */
-  N_CORES = get_nprocs();
+    N_CORES = get_nprocs();
 #elif defined(PETSC_HAVE_SYS_SYSCTL_H) /* MacOS, BSD */
-  {
-    PetscErrorCode ierr;
-    size_t   len = sizeof(N_CORES);
-    ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
-  }
+    {
+      PetscErrorCode ierr;
+      size_t         len = sizeof(N_CORES);
+      ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
+    }
 #elif defined(PETSC_HAVE_WINDOWS_H)   /* Windows */
-  {
-    SYSTEM_INFO sysinfo;
-    GetSystemInfo( &sysinfo );
-    N_CORES = sysinfo.dwNumberOfProcessors;
-  }
+    {
+      SYSTEM_INFO sysinfo;
+      GetSystemInfo( &sysinfo );
+      N_CORES = sysinfo.dwNumberOfProcessors;
+    }
 #endif
+  }
+  if (ncores) *ncores = N_CORES;
   PetscFunctionReturn(0);
 }
 			    
@@ -136,12 +136,7 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
   tcommout->leader = 0;
   *tcomm = tcommout;
 
-  if(!PetscGetNCoresCalled) {     
-    /* Set the number of available cores */
-    ierr = PetscGetNCores();CHKERRQ(ierr);
-    PetscGetNCoresCalled = PETSC_TRUE;
-  }
-
+  ierr = PetscGetNCores(PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -272,15 +267,16 @@ PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm tcomm,PetscInt nthread
 {
   PetscErrorCode ierr;
   PetscBool      flg;
-  PetscInt        nthr;
+  PetscInt       nthr;
+
   PetscFunctionBegin;
   if(nthreads == PETSC_DECIDE) {
     tcomm->nworkThreads = 1;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Thread comm - setting number of threads",PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-threadcomm_nthreads","number of threads to use in the thread communicator","PetscThreadCommSetNThreads",1,&nthr,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    if(flg){ 
-      if(nthr == PETSC_DECIDE) {
+    if (flg){ 
+      if (nthr == PETSC_DECIDE) {
       tcomm->nworkThreads = N_CORES;
       } else tcomm->nworkThreads = nthr;
     }
@@ -308,7 +304,7 @@ PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm tcomm,PetscInt nthread
 @*/
 PetscErrorCode PetscThreadCommGetNThreads(MPI_Comm comm,PetscInt *nthreads)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
   PetscThreadComm tcomm=0;
 
   PetscFunctionBegin;
@@ -362,16 +358,15 @@ PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt
   PetscFunctionBegin;
   /* Free if affinities set already */
   ierr = PetscFree(tcomm->affinities);CHKERRQ(ierr);
-
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&tcomm->affinities);CHKERRQ(ierr);
 
-  if(affinities == PETSC_NULL) {
+  if (affinities == PETSC_NULL) {
     /* Check if option is present in the options database */
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Thread comm - setting thread affinities",PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsIntArray("-threadcomm_affinities","Set core affinities of threads","PetscThreadCommSetAffinities",tcomm->affinities,&nmax,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    if(flg) {
-      if(nmax != tcomm->nworkThreads) {
+    if (flg) {
+      if (nmax != tcomm->nworkThreads) {
 	SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, Threads = %D, Core affinities set = %D",tcomm->nworkThreads,nmax);
       }
     } else {
@@ -408,7 +403,7 @@ PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt
 */
 PetscErrorCode PetscThreadCommGetAffinities(MPI_Comm comm,PetscInt affinities[])
 {
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
   PetscThreadComm tcomm=0;
 
   PetscFunctionBegin;
@@ -481,7 +476,7 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,const PetscThreadCom
 */
 PetscErrorCode PetscThreadCommBarrier(MPI_Comm comm)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
   PetscThreadComm tcomm=0;
 
   PetscFunctionBegin;

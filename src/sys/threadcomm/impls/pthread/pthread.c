@@ -30,19 +30,20 @@ PetscInt PetscThreadCommGetRank_PThread()
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 void PetscPThreadCommDoCoreAffinity(void)
 {
-  PetscInt  i,icorr=0; 
-  cpu_set_t mset;
-  PetscInt  myrank=PetscThreadCommGetRank_PThread();
+  PetscInt                 i,icorr=0; 
+  cpu_set_t                mset;
+  PetscInt                 ncores,myrank=PetscThreadCommGetRank_PThread();
   PetscThreadComm          tcomm;
   PetscThreadComm_PThread  gptcomm;
   
   PetscCommGetThreadComm(PETSC_COMM_WORLD,&tcomm);
+  ierr = PetscGetNCores(&ncores);CHKERRQ(ierr);
   gptcomm=(PetscThreadComm_PThread)tcomm->data;
   switch(gptcomm->aff) {
   case PTHREADAFFPOLICY_ONECORE:
     icorr = tcomm->affinities[myrank];
     CPU_ZERO(&mset);
-    CPU_SET(icorr%N_CORES,&mset);
+    CPU_SET(icorr%ncores,&mset);
     pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
     break;
   case PTHREADAFFPOLICY_ALL:
@@ -61,7 +62,7 @@ void PetscPThreadCommDoCoreAffinity(void)
 PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
 {
   PetscThreadComm_PThread ptcomm=(PetscThreadComm_PThread)tcomm->data;
-  PetscErrorCode ierr;
+  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
   if(!ptcomm) PetscFunctionReturn(0);
@@ -164,10 +165,12 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
     cpu_set_t mset;
-    PetscInt  icorr;
+    PetscInt  ncores,icorr;
+    
 
+    ierr = PetscGetNCores(&ncores);CHKERRQ(ierr);
     CPU_ZERO(&mset);
-    icorr = tcomm->affinities[0]%N_CORES;
+    icorr = tcomm->affinities[0]%ncores;
     CPU_SET(icorr,&mset);
     sched_setaffinity(0,sizeof(cpu_set_t),&mset);
 #endif
@@ -178,9 +181,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
   } else {
     PetscThreadComm          gtcomm;
     PetscThreadComm_PThread  gptcomm;
-    PetscInt *granks;
-    PetscInt j;
-    PetscInt *gaffinities;
+    PetscInt                 *granks,j,*gaffinities;
 
     ierr = PetscCommGetThreadComm(PETSC_COMM_WORLD,&gtcomm);CHKERRQ(ierr);
     gaffinities = gtcomm->affinities;

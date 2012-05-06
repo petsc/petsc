@@ -18,8 +18,6 @@ typedef PetscErrorCode (*PetscThreadKernel)(PetscInt,...);
 S*/
 typedef struct _p_PetscThreadComm* PetscThreadComm;
 
-extern PetscInt N_CORES; /* Number of available cores */
-
 #define PetscThreadCommType char*
 #define PTHREAD             "pthread"
 #define NOTHREAD            "nothread"
@@ -30,6 +28,7 @@ extern PetscFList PetscThreadCommList;
 typedef enum {THREADCOMM_SUM,THREADCOMM_PROD} PetscThreadCommReductionType;
 extern const char *const PetscThreadCommReductionTypes[];
 
+extern PetscErrorCode PetscGetNCores(PetscInt*);
 extern PetscErrorCode PetscCommGetThreadComm(MPI_Comm,PetscThreadComm*);
 extern PetscErrorCode PetscThreadCommInitializePackage(const char *path);
 extern PetscErrorCode PetscThreadCommFinalizePackage();
