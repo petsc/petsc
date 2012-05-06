@@ -37,7 +37,7 @@ void PetscPThreadCommDoCoreAffinity(void)
   PetscThreadComm_PThread  gptcomm;
   
   PetscCommGetThreadComm(PETSC_COMM_WORLD,&tcomm);
-  ierr = PetscGetNCores(&ncores);CHKERRQ(ierr);
+  PetscGetNCores(&ncores);
   gptcomm=(PetscThreadComm_PThread)tcomm->data;
   switch(gptcomm->aff) {
   case PTHREADAFFPOLICY_ONECORE:
@@ -48,7 +48,7 @@ void PetscPThreadCommDoCoreAffinity(void)
     break;
   case PTHREADAFFPOLICY_ALL:
     CPU_ZERO(&mset);
-    for(i=0;i<N_CORES;i++) CPU_SET(i,&mset);
+    for(i=0;i<ncores;i++) CPU_SET(i,&mset);
     pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
     break;
   case PTHREADAFFPOLICY_NONE:
