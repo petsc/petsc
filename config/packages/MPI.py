@@ -747,6 +747,8 @@ class Configure(config.package.Package):
     if self.libraries.check(self.dlib, "MPI_Win_create"):
       self.addDefine('HAVE_MPI_WIN_CREATE',1)
       self.addDefine('HAVE_MPI_REPLACE',1) # MPI_REPLACE is strictly for use with the one-sided function MPI_Accumulate
+    if self.libraries.check(self.dlib, 'MPI_Init_thread'):
+        self.addDefine('HAVE_MPI_INIT_THREAD',1)
     if self.libraries.check(self.dlib, "MPIX_Iallreduce"):
       self.addDefine('HAVE_MPIX_IALLREDUCE',1)
     if self.libraries.check(self.dlib, "MPI_Finalized"):
