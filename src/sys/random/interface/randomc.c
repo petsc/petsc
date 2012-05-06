@@ -362,7 +362,7 @@ static PetscErrorCode PetscRandomPublish_Petsc(PetscObject obj)
       PetscRandomSetType(r,PETSCRAND48);
       PetscRandomGetValue(r,&value1);
       PetscRandomGetValueReal(r,&value2);
-      PetscRandomDestroy(r);
+      PetscRandomDestroy(&r);
 .ve
 
    Concepts: random numbers^creating
