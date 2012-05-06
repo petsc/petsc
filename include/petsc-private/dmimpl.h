@@ -49,10 +49,18 @@ struct _DMOps {
 
 typedef struct _DMCoarsenHookLink *DMCoarsenHookLink;
 struct _DMCoarsenHookLink {
-  PetscErrorCode (*coarsenhook)(DM,DM,void*);
-  PetscErrorCode (*restricthook)(DM,Mat,Vec,Mat,DM,void*);
+  PetscErrorCode (*coarsenhook)(DM,DM,void*);              /* Run once, when coarse DM is created */
+  PetscErrorCode (*restricthook)(DM,Mat,Vec,Mat,DM,void*); /* Run each time a new problem is restricted to a coarse grid */
   void *ctx;
   DMCoarsenHookLink next;
+};
+
+typedef struct _DMRefineHookLink *DMRefineHookLink;
+struct _DMRefineHookLink {
+  PetscErrorCode (*refinehook)(DM,DM,void*);     /* Run once, when a fine DM is created */
+  PetscErrorCode (*interphook)(DM,Mat,DM,void*); /* Run each time a new problem is interpolated to a fine grid */
+  void *ctx;
+  DMRefineHookLink next;
 };
 
 typedef enum {DMVEC_STATUS_IN,DMVEC_STATUS_OUT} DMVecStatus;
@@ -87,6 +95,7 @@ struct _p_DM {
   PetscBool              setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
   void                   *data;
   DMCoarsenHookLink      coarsenhook; /* For transfering auxiliary problem data to coarser grids */
+  DMRefineHookLink       refinehook;
   DMLocalFunction1       lf;
   DMLocalJacobian1       lj;
   /* Flexible communication */

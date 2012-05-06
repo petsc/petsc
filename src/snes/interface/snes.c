@@ -3489,6 +3489,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
       ierr = DMCreateInterpolation(snes->dm,fine,&interp,PETSC_NULL);CHKERRQ(ierr);
       ierr = DMCreateGlobalVector(fine,&xnew);CHKERRQ(ierr);
       ierr = MatInterpolate(interp,x,xnew);CHKERRQ(ierr);
+      ierr = DMInterpolate(snes->dm,interp,fine);CHKERRQ(ierr);
       ierr = MatDestroy(&interp);CHKERRQ(ierr);
       x    = xnew;
 

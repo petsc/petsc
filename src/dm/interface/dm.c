@@ -167,7 +167,6 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
 PetscErrorCode  DMDestroy(DM *dm)
 {
   PetscInt       i, cnt = 0;
-  DMCoarsenHookLink link,next;
   DMNamedVecLink nlink,nnext;
   PetscErrorCode ierr;
 
@@ -209,11 +208,22 @@ PetscErrorCode  DMDestroy(DM *dm)
   (*dm)->namedglobal = PETSC_NULL;
 
   /* Destroy the list of hooks */
-  for (link=(*dm)->coarsenhook; link; link=next) {
-    next = link->next;
-    ierr = PetscFree(link);CHKERRQ(ierr);
+  {
+    DMCoarsenHookLink link,next;
+    for (link=(*dm)->coarsenhook; link; link=next) {
+      next = link->next;
+      ierr = PetscFree(link);CHKERRQ(ierr);
+    }
+    (*dm)->coarsenhook = PETSC_NULL;
   }
-  (*dm)->coarsenhook = PETSC_NULL;
+  {
+    DMRefineHookLink link,next;
+    for (link=(*dm)->refinehook; link; link=next) {
+      next = link->next;
+      ierr = PetscFree(link);CHKERRQ(ierr);
+    }
+    (*dm)->refinehook = PETSC_NULL;
+  }
 
   if ((*dm)->ctx && (*dm)->ctxdestroy) {
     ierr = (*(*dm)->ctxdestroy)(&(*dm)->ctx);CHKERRQ(ierr);
@@ -1030,6 +1040,7 @@ PetscErrorCode DMCreateDecomposition(DM dm, PetscInt *len, char ***namelist, IS 
 PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 {
   PetscErrorCode ierr;
+  DMRefineHookLink link;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -1045,6 +1056,91 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmf);CHKERRQ(ierr);
     (*dmf)->ctx     = dm->ctx;
     (*dmf)->levelup = dm->levelup + 1;
+    for (link=dm->refinehook; link; link=link->next) {
+      if (link->refinehook) {ierr = (*link->refinehook)(dm,*dmf,link->ctx);CHKERRQ(ierr);}
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMRefineHookAdd"
+/*@
+   DMRefineHookAdd - adds a callback to be run when interpolating a nonlinear problem to a finer grid
+
+   Logically Collective
+
+   Input Arguments:
++  coarse - nonlinear solver context on which to run a hook when restricting to a coarser level
+.  refinehook - function to run when setting up a coarser level
+.  interphook - function to run to update data on finer levels (once per SNESSolve())
+-  ctx - [optional] user-defined context for provide data for the hooks (may be PETSC_NULL)
+
+   Calling sequence of refinehook:
+$    refinehook(DM coarse,DM fine,void *ctx);
+
++  coarse - coarse level DM
+.  fine - fine level DM to interpolate problem to
+-  ctx - optional user-defined function context
+
+   Calling sequence for interphook:
+$    interphook(DM coarse,Mat interp,DM fine,void *ctx)
+
++  coarse - coarse level DM
+.  interp - matrix interpolating a coarse-level solution to the finer grid
+.  fine - fine level DM to update
+-  ctx - optional user-defined function context
+
+   Level: advanced
+
+   Notes:
+   This function is only needed if auxiliary data needs to be passed to fine grids while grid sequencing
+
+   If this function is called multiple times, the hooks will be run in the order they are added.
+
+.seealso: DMCoarsenHookAdd(), SNESFASGetInterpolation(), SNESFASGetInjection(), PetscObjectCompose(), PetscContainerCreate()
+@*/
+PetscErrorCode DMRefineHookAdd(DM coarse,PetscErrorCode (*refinehook)(DM,DM,void*),PetscErrorCode (*interphook)(DM,Mat,DM,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DMRefineHookLink link,*p;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(coarse,DM_CLASSID,1);
+  for (p=&coarse->refinehook; *p; p=&(*p)->next) {} /* Scan to the end of the current list of hooks */
+  ierr = PetscMalloc(sizeof(struct _DMRefineHookLink),&link);CHKERRQ(ierr);
+  link->refinehook = refinehook;
+  link->interphook = interphook;
+  link->ctx = ctx;
+  link->next = PETSC_NULL;
+  *p = link;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMInterpolate"
+/*@
+   DMInterpolate - interpolates user-defined problem data to a finer DM by running hooks registered by DMRefineHookAdd()
+
+   Collective if any hooks are
+
+   Input Arguments:
++  coarse - coarser DM to use as a base
+.  restrct - interpolation matrix, apply using MatInterpolate()
+-  fine - finer DM to update
+
+   Level: developer
+
+.seealso: DMRefineHookAdd(), MatInterpolate()
+@*/
+PetscErrorCode DMInterpolate(DM coarse,Mat interp,DM fine)
+{
+  PetscErrorCode ierr;
+  DMRefineHookLink link;
+
+  PetscFunctionBegin;
+  for (link=fine->refinehook; link; link=link->next) {
+    if (link->interphook) {ierr = (*link->interphook)(coarse,interp,fine,link->ctx);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -1373,11 +1469,12 @@ $    coarsenhook(DM fine,DM coarse,void *ctx);
 -  ctx - optional user-defined function context
 
    Calling sequence for restricthook:
-$    restricthook(DM fine,Mat mrestrict,Mat inject,DM coarse,void *ctx)
+$    restricthook(DM fine,Mat mrestrict,Vec rscale,Mat inject,DM coarse,void *ctx)
 
 +  fine - fine level DM
 .  mrestrict - matrix restricting a fine-level solution to the coarse grid
-.  inject - matrix restricting by applying the transpose of injection
+.  rscale - scaling vector for restriction
+.  inject - matrix restricting by injection
 .  coarse - coarse level DM to update
 -  ctx - optional user-defined function context
 
@@ -1391,7 +1488,7 @@ $    restricthook(DM fine,Mat mrestrict,Mat inject,DM coarse,void *ctx)
    In order to compose with nonlinear preconditioning without duplicating storage, the hook should be implemented to
    extract the finest level information from its context (instead of from the SNES).
 
-.seealso: SNESFASGetInterpolation(), SNESFASGetInjection(), PetscObjectCompose(), PetscContainerCreate()
+.seealso: DMRefineHookAdd(), SNESFASGetInterpolation(), SNESFASGetInjection(), PetscObjectCompose(), PetscContainerCreate()
 @*/
 PetscErrorCode DMCoarsenHookAdd(DM fine,PetscErrorCode (*coarsenhook)(DM,DM,void*),PetscErrorCode (*restricthook)(DM,Mat,Vec,Mat,DM,void*),void *ctx)
 {
