@@ -7,7 +7,7 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
-  PetscInt       refine = 0;
+  PetscInt       refine = 0,maxnlevels = 100,*refx,*refy,*refz,n,i;
   PetscBool      negativeMNP = PETSC_FALSE,bM = PETSC_FALSE,bN = PETSC_FALSE, bP = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -42,10 +42,40 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
     if (dd->dim > 1) {ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DMDASetRefinementFactor",dd->refine_y,&dd->refine_y,PETSC_NULL);CHKERRQ(ierr);}
     if (dd->dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DMDASetRefinementFactor",dd->refine_z,&dd->refine_z,PETSC_NULL);CHKERRQ(ierr);}
 
+    /* Get refinement factors, defaults taken from the coarse DMDA */
+    ierr = PetscMalloc3(maxnlevels,PetscInt,&refx,maxnlevels,PetscInt,&refy,maxnlevels,PetscInt,&refz);CHKERRQ(ierr);
+    ierr = DMDAGetRefinementFactor(da,&refx[0],&refy[0],&refz[0]);CHKERRQ(ierr);
+    for (i=1; i<maxnlevels; i++) {
+      refx[i] = refx[0];
+      refy[i] = refy[0];
+      refz[i] = refz[0];
+    }
+    n = maxnlevels;
+    ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_x",refx,&n,PETSC_NULL);CHKERRQ(ierr);
+    if (da->levelup - da->leveldown >= 0) dd->refine_x = refx[da->levelup - da->leveldown];
+    if (da->levelup - da->leveldown >= 1) dd->coarsen_x = refx[da->levelup - da->leveldown - 1];
+    if (dd->dim > 1) {
+      n = maxnlevels;
+      ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_y",refy,&n,PETSC_NULL);CHKERRQ(ierr);
+      if (da->levelup - da->leveldown >= 0) dd->refine_y = refy[da->levelup - da->leveldown];
+      if (da->levelup - da->leveldown >= 1) dd->coarsen_y = refy[da->levelup - da->leveldown - 1];
+    }
+    if (dd->dim > 2) {
+      n = maxnlevels;
+      ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,PETSC_NULL);CHKERRQ(ierr);
+      if (da->levelup - da->leveldown >= 0) dd->refine_z = refz[da->levelup - da->leveldown];
+      if (da->levelup - da->leveldown >= 1) dd->coarsen_z = refz[da->levelup - da->leveldown - 1];
+    }
+
     if (negativeMNP) {ierr = PetscOptionsInt("-da_refine","Uniformly refine DA one or more times","None",refine,&refine,PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   while (refine--) {
+    if (da->levelup - da->leveldown >= 0) {
+      dd->refine_x = refx[da->levelup - da->leveldown];
+      dd->refine_y = refy[da->levelup - da->leveldown];
+      dd->refine_z = refz[da->levelup - da->leveldown];
+    }
     if (dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
       dd->M = dd->refine_x*dd->M;
     } else {
@@ -63,6 +93,7 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
     }
     da->levelup++;
   }
+  ierr = PetscFree3(refx,refy,refz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

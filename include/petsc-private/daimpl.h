@@ -45,7 +45,8 @@ typedef struct {
   PetscInt               ne;                  /* number of elements */
   PetscInt               *e;                  /* the elements */
 
-  PetscInt               refine_x,refine_y,refine_z; /* ratio used in refining */
+  PetscInt               refine_x,refine_y,refine_z;    /* ratio used in refining */
+  PetscInt               coarsen_x,coarsen_y,coarsen_z; /* ratio used for coarsening */
 
 #define DMDA_MAX_AD_ARRAYS 2 /* work arrays for holding derivative type data, via DMDAGetAdicArray() */
   void                   *adarrayin[DMDA_MAX_AD_ARRAYS],*adarrayout[DMDA_MAX_AD_ARRAYS]; 

@@ -625,26 +625,35 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   } else {
     P = 1 + dd->refine_z*(dd->P - 1);
   }
+  ierr = DMDACreate(((PetscObject)da)->comm,&da2);CHKERRQ(ierr);
+  ierr = DMSetOptionsPrefix(da2,((PetscObject)da)->prefix);CHKERRQ(ierr);
+  ierr = DMDASetDim(da2,dd->dim);CHKERRQ(ierr);
+  ierr = DMDASetSizes(da2,M,N,P);CHKERRQ(ierr);
+  ierr = DMDASetNumProcs(da2,dd->m,dd->n,dd->p);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(da2,dd->bx,dd->by,dd->bz);CHKERRQ(ierr);
+  ierr = DMDASetDof(da2,dd->w);CHKERRQ(ierr);
+  ierr = DMDASetStencilType(da2,dd->stencil_type);CHKERRQ(ierr);
+  ierr = DMDASetStencilWidth(da2,dd->s);CHKERRQ(ierr);
   if (dd->dim == 3) {
     PetscInt *lx,*ly,*lz;
     ierr = PetscMalloc3(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly,dd->p,PetscInt,&lz);CHKERRQ(ierr);
     ierr = DMDARefineOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
     ierr = DMDARefineOwnershipRanges(da,(PetscBool)(dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
     ierr = DMDARefineOwnershipRanges(da,(PetscBool)(dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_z,dd->p,dd->lz,lz);CHKERRQ(ierr);
-    ierr = DMDACreate3d(((PetscObject)da)->comm,dd->bx,dd->by,dd->bz,dd->stencil_type,M,N,P,dd->m,dd->n,dd->p,dd->w,dd->s,lx,ly,lz,&da2);CHKERRQ(ierr);
+    ierr = DMDASetOwnershipRanges(da2,lx,ly,lz);CHKERRQ(ierr);
     ierr = PetscFree3(lx,ly,lz);CHKERRQ(ierr);
   } else if (dd->dim == 2) {
     PetscInt *lx,*ly;
     ierr = PetscMalloc2(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly);CHKERRQ(ierr);
     ierr = DMDARefineOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
     ierr = DMDARefineOwnershipRanges(da,(PetscBool)(dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
-    ierr = DMDACreate2d(((PetscObject)da)->comm,dd->bx,dd->by,dd->stencil_type,M,N,dd->m,dd->n,dd->w,dd->s,lx,ly,&da2);CHKERRQ(ierr);
+    ierr = DMDASetOwnershipRanges(da2,lx,ly,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscFree2(lx,ly);CHKERRQ(ierr);
   } else if (dd->dim == 1) {
     PetscInt *lx;
     ierr = PetscMalloc(dd->m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
     ierr = DMDARefineOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DMDACreate1d(((PetscObject)da)->comm,dd->bx,M,dd->w,dd->s,lx,&da2);CHKERRQ(ierr);
+    ierr = DMDASetOwnershipRanges(da2,lx,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscFree(lx);CHKERRQ(ierr);
   }
   dd2 = (DM_DA*)da2->data;
@@ -665,9 +674,9 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     ierr = PetscMemcpy(dd2->ofill,dd->ofill,(dd->ofill[dd->w]+dd->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
   }
   /* copy the refine information */
-  dd2->refine_x = dd->refine_x;
-  dd2->refine_y = dd->refine_y;
-  dd2->refine_z = dd->refine_z;
+  dd2->coarsen_x = dd2->refine_x = dd->refine_x;
+  dd2->coarsen_y = dd2->refine_y = dd->refine_y;
+  dd2->coarsen_z = dd2->refine_z = dd->refine_z;
 
   /* copy vector type information */
   ierr = PetscFree(da2->vectype);CHKERRQ(ierr);
@@ -692,21 +701,31 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
     ierr = MatDestroy(&II);CHKERRQ(ierr);
   }
+
+  /* Need to set up before we can do field names  */
+  da2->leveldown = da->leveldown;
+  da2->levelup   = da->levelup + 1;
+  ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
+  ierr = DMSetUp(da2);CHKERRQ(ierr);
+  ierr = DMView_DA_Private(da2);CHKERRQ(ierr);
+
   for (i=0; i<da->bs; i++) {
     const char *fieldname;
     ierr = DMDAGetFieldName(da,i,&fieldname);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da2,i,fieldname);CHKERRQ(ierr);
   }
+
   *daref = da2;
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCoarsen_DA"
 PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
 {
   PetscErrorCode ierr;
-  PetscInt       M,N,P;
+  PetscInt       M,N,P,i;
   DM             da2;
   DM_DA          *dd = (DM_DA*)da->data,*dd2;
 
@@ -715,40 +734,49 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   PetscValidPointer(daref,3);
 
   if (dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
-    M = dd->M / dd->refine_x;
+    M = dd->M / dd->coarsen_x;
   } else {
-    M = 1 + (dd->M - 1) / dd->refine_x;
+    M = 1 + (dd->M - 1) / dd->coarsen_x;
   }
   if (dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
-    N = dd->N / dd->refine_y;
+    N = dd->N / dd->coarsen_y;
   } else {
-    N = 1 + (dd->N - 1) / dd->refine_y;
+    N = 1 + (dd->N - 1) / dd->coarsen_y;
   }
   if (dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
-    P = dd->P / dd->refine_z;
+    P = dd->P / dd->coarsen_z;
   } else {
-    P = 1 + (dd->P - 1) / dd->refine_z;
+    P = 1 + (dd->P - 1) / dd->coarsen_z;
   }
+  ierr = DMDACreate(((PetscObject)da)->comm,&da2);CHKERRQ(ierr);
+  ierr = DMSetOptionsPrefix(da2,((PetscObject)da)->prefix);CHKERRQ(ierr);
+  ierr = DMDASetDim(da2,dd->dim);CHKERRQ(ierr);
+  ierr = DMDASetSizes(da2,M,N,P);CHKERRQ(ierr);
+  ierr = DMDASetNumProcs(da2,dd->m,dd->n,dd->p);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(da2,dd->bx,dd->by,dd->bz);CHKERRQ(ierr);
+  ierr = DMDASetDof(da2,dd->w);CHKERRQ(ierr);
+  ierr = DMDASetStencilType(da2,dd->stencil_type);CHKERRQ(ierr);
+  ierr = DMDASetStencilWidth(da2,dd->s);CHKERRQ(ierr);
   if (dd->dim == 3) {
     PetscInt *lx,*ly,*lz;
     ierr = PetscMalloc3(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly,dd->p,PetscInt,&lz);CHKERRQ(ierr);
-    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
-    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_z,dd->p,dd->lz,lz);CHKERRQ(ierr);
-    ierr = DMDACreate3d(((PetscObject)da)->comm,dd->bx,dd->by,dd->bz,dd->stencil_type,M,N,P,dd->m,dd->n,dd->p,dd->w,dd->s,lx,ly,lz,&da2);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_z,dd->p,dd->lz,lz);CHKERRQ(ierr);
+    ierr = DMDASetOwnershipRanges(da2,lx,ly,lz);CHKERRQ(ierr);
     ierr = PetscFree3(lx,ly,lz);CHKERRQ(ierr);
   } else if (dd->dim == 2) {
     PetscInt *lx,*ly;
     ierr = PetscMalloc2(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly);CHKERRQ(ierr);
-    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
-    ierr = DMDACreate2d(((PetscObject)da)->comm,dd->bx,dd->by,dd->stencil_type,M,N,dd->m,dd->n,dd->w,dd->s,lx,ly,&da2);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
+    ierr = DMDASetOwnershipRanges(da2,lx,ly,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscFree2(lx,ly);CHKERRQ(ierr);
   } else if (dd->dim == 1) {
     PetscInt *lx;
     ierr = PetscMalloc(dd->m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
-    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DMDACreate1d(((PetscObject)da)->comm,dd->bx,M,dd->w,dd->s,lx,&da2);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->coarsen_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDASetOwnershipRanges(da2,lx,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscFree(lx);CHKERRQ(ierr);
   }
   dd2 = (DM_DA*)da2->data;
@@ -769,9 +797,9 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     ierr = PetscMemcpy(dd2->ofill,dd->ofill,(dd->ofill[dd->w]+dd->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
   }
   /* copy the refine information */
-  dd2->refine_x = dd->refine_x;
-  dd2->refine_y = dd->refine_y;
-  dd2->refine_z = dd->refine_z;
+  dd2->coarsen_x = dd2->refine_x = dd->coarsen_x;
+  dd2->coarsen_y = dd2->refine_y = dd->coarsen_y;
+  dd2->coarsen_z = dd2->refine_z = dd->coarsen_z;
 
   /* copy vector type information */
   ierr = PetscFree(da2->vectype);CHKERRQ(ierr);
@@ -798,6 +826,13 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
   }
+
+  /* Need to set up before we can do field names  */
+  da2->leveldown = da->leveldown + 1;
+  da2->levelup   = da->levelup;
+  ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
+  ierr = DMSetUp(da2);CHKERRQ(ierr);
+  ierr = DMView_DA_Private(da2);CHKERRQ(ierr);
 
   for (i=0; i<da->bs; i++) {
     const char *fieldname;
