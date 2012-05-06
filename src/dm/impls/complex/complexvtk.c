@@ -306,7 +306,6 @@ PetscErrorCode DMComplexVTKWriteField(DM dm, PetscSection section, Vec field, co
 static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
 {
   MPI_Comm                 comm = ((PetscObject) dm)->comm;
-  DM_Complex              *mesh = (DM_Complex *) dm->data;
   PetscViewer_VTK         *vtk  = (PetscViewer_VTK *) viewer->data;
   FILE                    *fp;
   PetscViewerVTKObjectLink link;
