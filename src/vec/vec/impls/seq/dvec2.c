@@ -572,7 +572,11 @@ PetscErrorCode VecSet_kernel(PetscInt thread_id,Vec xin,PetscScalar *alpha_p)
   start = trstarts[thread_id];
   end   = trstarts[thread_id+1];
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
-  for(i=start;i<end;i++) xx[i] = alpha;
+  if (alpha == (PetscScalar)0.0) {
+    ierr = PetscMemzero(xx+start,(end-start)*sizeof(PetscScalar));CHKERRQ(ierr);
+  } else {
+    for (i=start;i<end;i++) xx[i] = alpha;
+  }
   ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   return 0;
 }

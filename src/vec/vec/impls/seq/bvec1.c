@@ -15,7 +15,7 @@ PetscErrorCode VecDot_kernel(PetscInt thread_id,Vec xin,Vec yin,PetscScalar *z)
   PetscErrorCode       ierr;
   PetscInt             *trstarts=xin->map->trstarts;
   PetscInt             start,end,n;
-  PetscBLASInt         one = 1,bn,bstart;
+  PetscBLASInt         one = 1,bn;
   const PetscScalar    *xa,*ya;
   PetscScalar          z_loc;
   PetscThreadComm      tcomm;
@@ -24,11 +24,10 @@ PetscErrorCode VecDot_kernel(PetscInt thread_id,Vec xin,Vec yin,PetscScalar *z)
   ierr = VecGetArrayRead(yin,&ya);CHKERRQ(ierr);
   start = trstarts[thread_id];
   end   = trstarts[thread_id+1];
-  n = end-start;
+  n     = end-start;
   bn = PetscBLASIntCast(n);
-  bstart = PetscBLASIntCast(start);
   /* arguments ya, xa are reversed because BLAS complex conjugates the first argument, PETSc the second */
-  z_loc = BLASdot_(&bn,ya+bstart,&one,xa+bstart,&one);
+  z_loc = BLASdot_(&bn,ya+start,&one,xa+start,&one);
 
   ierr = PetscCommGetThreadComm(((PetscObject)xin)->comm,&tcomm);CHKERRQ(ierr);
   ierr = PetscThreadReductionKernelBegin(thread_id,tcomm,THREADCOMM_SUM,PETSC_SCALAR,(void*)&z_loc,(void*)z);CHKERRQ(ierr);
@@ -118,18 +117,17 @@ PetscErrorCode VecAXPY_kernel(PetscInt thread_id,Vec yin,PetscScalar *alpha_p,Ve
   PetscErrorCode    ierr;
   const PetscScalar *xarray;
   PetscScalar       *yarray;
-  PetscBLASInt      one=1,bn,bstart;
+  PetscBLASInt      one=1,bn;
   PetscInt          *trstarts=yin->map->trstarts,start,end,n;
   PetscScalar       alpha = *alpha_p;
 
   start = trstarts[thread_id];
   end   = trstarts[thread_id+1];
-  bstart = PetscBLASIntCast(start);
-  n = end - start;
+  n     = end - start;
   bn = PetscBLASIntCast(n);
   ierr = VecGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecGetArray(yin,&yarray);CHKERRQ(ierr);
-  BLASaxpy_(&bn,&alpha,xarray+bstart,&one,yarray+bstart,&one);
+  BLASaxpy_(&bn,&alpha,xarray+start,&one,yarray+start,&one);
   ierr = VecRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(yin,&yarray);CHKERRQ(ierr);
 
