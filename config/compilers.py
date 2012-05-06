@@ -983,17 +983,6 @@ class Configure(config.base.Configure):
           self.logPrint(str(e), 4, 'compilers')
           raise RuntimeError('Fortran libraries cannot be used with C compiler')
 
-    # check if Intel library exists (that is not linked by default but has iargc_ in it :-(
-    self.logPrint('Check for Intel PEPCF90 library', 4, 'compilers')
-    self.setCompilers.LIBS = oldLibs+' -lPEPCF90 '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
-    try:
-      self.setCompilers.checkCompiler('C')
-      self.flibs = ['-lPEPCF90']+self.flibs
-      self.logPrint('Intel PEPCF90 library exists', 4, 'compilers')
-    except RuntimeError, e:
-      self.logPrint('Intel PEPCF90 library does not exist', 4, 'compilers')
-      self.setCompilers.LIBS = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
-
     # check these monster libraries work from C++
     if hasattr(self.setCompilers, 'CXX'):
       self.logPrint('Check that Fortran libraries can be used from C++', 4, 'compilers')
