@@ -1054,8 +1054,9 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
       (*dmf)->ops->jacobian     = dm->ops->jacobian;
     }
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmf);CHKERRQ(ierr);
-    (*dmf)->ctx     = dm->ctx;
-    (*dmf)->levelup = dm->levelup + 1;
+    (*dmf)->ctx       = dm->ctx;
+    (*dmf)->leveldown = dm->leveldown;
+    (*dmf)->levelup   = dm->levelup + 1;
     for (link=dm->refinehook; link; link=link->next) {
       if (link->refinehook) {ierr = (*link->refinehook)(dm,*dmf,link->ctx);CHKERRQ(ierr);}
     }
@@ -1441,6 +1442,7 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   }
   ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmc);CHKERRQ(ierr);
   (*dmc)->ctx       = dm->ctx;
+  (*dmc)->levelup   = dm->levelup;
   (*dmc)->leveldown = dm->leveldown + 1;
   for (link=dm->coarsenhook; link; link=link->next) {
     if (link->coarsenhook) {ierr = (*link->coarsenhook)(dm,*dmc,link->ctx);CHKERRQ(ierr);}
