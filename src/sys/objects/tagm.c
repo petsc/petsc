@@ -196,13 +196,19 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   if (first_tag) {
     *first_tag = counter->tag--;
   }
+
+#if defined(PETSC_THREADCOMM_ACTIVE)
   /* Only the main thread updates counter->refcount */
   ierr = MPI_Attr_get(*comm_out,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
-  if(flg) {
+  if (flg) {
     PetscInt trank; 
     trank = PetscThreadCommGetRank(tcomm);
-    if(!trank) counter->refcount++; /* number of references to this comm */
+    if (!trank) counter->refcount++; /* number of references to this comm */
   } else counter->refcount++;
+#else
+  counter->refcount++;
+#endif
+
   PetscFunctionReturn(0);
 }
 
@@ -242,6 +248,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tag/name counter, problem with corrupted memory");
   }
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
   /* Only the main thread updates counter->refcount */
   ierr = MPI_Attr_get(icomm,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
   if(flg) {
@@ -250,6 +257,9 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
     /* Only thread rank 0 updates the counter */
     if(!trank) counter->refcount--;
   } else counter->refcount--;
+#else
+  counter->refcount--;
+#endif
 
   if (!counter->refcount) {
     /* if MPI_Comm has outer comm then remove reference to inner MPI_Comm from outer MPI_Comm */
