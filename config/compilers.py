@@ -988,7 +988,7 @@ class Configure(config.base.Configure):
     self.setCompilers.LIBS = oldLibs+' -lPEPCF90 '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
     try:
       self.setCompilers.checkCompiler('C')
-      self.flibs = [' -lPEPCF90']+self.flibs
+      self.flibs = ['-lPEPCF90']+self.flibs
       self.logPrint('Intel PEPCF90 library exists', 4, 'compilers')
     except RuntimeError, e:
       self.logPrint('Intel PEPCF90 library does not exist', 4, 'compilers')
