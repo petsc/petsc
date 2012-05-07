@@ -638,7 +638,10 @@ extern int    MPI_Comm_rank(MPI_Comm,int*);
 #define MPI_Group_size(group,size) (*(size)=1,MPI_SUCCESS)
 #define MPI_Group_rank(group,rank) (*(rank)=0,MPI_SUCCESS)
 #define MPI_Group_translate_ranks(group1,n,ranks1,group2,ranks2) \
-  MPIUNI_Memcpy(ranks2,ranks1,(n) * MPI_sizeof(int))
+  (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (group1),                 \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (group2),                 \
+   MPIUNI_Memcpy((ranks2),(ranks1),(n) * sizeof(int)),           \
+   MPI_SUCCESS)
 #define MPI_Group_compare(group1,group2,result) \
      (*(result)=1,MPI_SUCCESS)
 #define MPI_Group_union(group1,group2,newgroup) MPI_SUCCESS
