@@ -234,6 +234,9 @@ PetscErrorCode  DMCreate_DA(DM da)
   dd->refine_x   = 2;
   dd->refine_y   = 2;
   dd->refine_z   = 2;
+  dd->coarsen_x  = 2;
+  dd->coarsen_y  = 2;
+  dd->coarsen_z  = 2;
   dd->fieldname  = PETSC_NULL;
   dd->nlocal     = -1;
   dd->Nlocal     = -1;
