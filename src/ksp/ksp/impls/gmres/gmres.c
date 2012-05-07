@@ -62,8 +62,8 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
     /* Allocate workspace to hold Hessenberg matrix needed by lapack */
     ierr = PetscMalloc((max_k + 3)*(max_k + 9)*sizeof(PetscScalar),&gmres->Rsvd);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(ksp,(max_k + 3)*(max_k + 9)*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = PetscMalloc(5*(max_k+2)*sizeof(PetscReal),&gmres->Dsvd);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,5*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscMalloc(6*(max_k+2)*sizeof(PetscReal),&gmres->Dsvd);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(ksp,6*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
