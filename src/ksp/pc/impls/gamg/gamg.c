@@ -799,12 +799,12 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
           PetscInt my0,kk;
           ierr = MatGetOwnershipRange( Aarr[level], &my0, &kk ); CHKERRQ(ierr);
           ierr = ISCreateGeneral(PETSC_COMM_SELF, 1, &my0, PETSC_COPY_VALUES, &is ); CHKERRQ(ierr);
-          ierr = PCGASMSetLocalSubdomains( subpc, 1, &is, PETSC_NULL ); CHKERRQ(ierr);
+          ierr = PCGASMSetSubdomains( subpc, 1, &is, PETSC_NULL ); CHKERRQ(ierr);
           ierr = ISDestroy( &is ); CHKERRQ(ierr);
         }
         else {
           PetscInt kk;
-          ierr = PCGASMSetLocalSubdomains( subpc, sz, is, PETSC_NULL ); CHKERRQ(ierr);
+          ierr = PCGASMSetSubdomains( subpc, sz, is, PETSC_NULL ); CHKERRQ(ierr);
           for(kk=0;kk<sz;kk++){
             ierr = ISDestroy( &is[kk] ); CHKERRQ(ierr);
           }

@@ -323,17 +323,17 @@ E*/
 typedef enum {PC_GASM_BASIC = 3,PC_GASM_RESTRICT = 1,PC_GASM_INTERPOLATE = 2,PC_GASM_NONE = 0} PCGASMType;
 extern const char *PCGASMTypes[];
 
-extern PetscErrorCode  PCGASMSetLocalSubdomains(PC,PetscInt,IS[],IS[]);
-extern PetscErrorCode  PCGASMSetTotalSubdomains(PC,PetscInt);
+extern PetscErrorCode  PCGASMSetSubdomains(PC,PetscInt,IS[],IS[]);
+extern PetscErrorCode  PCGASMSetTotalSubdomainCount(PC,PetscInt);
 extern PetscErrorCode  PCGASMSetOverlap(PC,PetscInt);
 extern PetscErrorCode  PCGASMSetSortIndices(PC,PetscBool );
 
 extern PetscErrorCode  PCGASMSetType(PC,PCGASMType);
-extern PetscErrorCode  PCGASMCreateSubdomains(Mat,PetscInt,IS*[]);
+extern PetscErrorCode  PCGASMCreateLocalSubdomains(Mat,PetscInt,IS*[],IS*[]);
 extern PetscErrorCode  PCGASMDestroySubdomains(PetscInt,IS[],IS[]);
 extern PetscErrorCode  PCGASMCreateSubdomains2D(PC,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,IS**,IS**);
-extern PetscErrorCode  PCGASMGetLocalSubdomains(PC,PetscInt*,IS*[],IS*[]);
-extern PetscErrorCode  PCGASMGetLocalSubmatrices(PC,PetscInt*,Mat*[]);
+extern PetscErrorCode  PCGASMGetSubdomains(PC,PetscInt*,IS*[],IS*[]);
+extern PetscErrorCode  PCGASMGetSubmatrices(PC,PetscInt*,Mat*[]);
 
 /*E
     PCCompositeType - Determines how two or more preconditioner are composed

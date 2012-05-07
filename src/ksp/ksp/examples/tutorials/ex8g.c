@@ -167,7 +167,7 @@ int main(int argc,char **args)
     ierr = PCGASMSetOverlap(pc,overlap);CHKERRQ(ierr);
   } else { /* advanced version */
     ierr = PCGASMCreateSubdomains2D(pc, m,n,M,N,1,overlap,&Nsub,&is,&is_local);CHKERRQ(ierr);
-    ierr = PCGASMSetLocalSubdomains(pc,Nsub,is,is_local);CHKERRQ(ierr);
+    ierr = PCGASMSetSubdomains(pc,Nsub,is,is_local);CHKERRQ(ierr);
     ierr = PCView(pc, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
 

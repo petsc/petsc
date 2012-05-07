@@ -470,8 +470,10 @@ runex8:
 	-@${MPIEXEC} -n ${NP} ./ex8 -m $M -n $N -pc_asm_blocks ${BLOCKS} -print_error ${ARGS} 
 
 VALGRIND=
+Mdomains = 2
+Ndomains = 1
 runex8g:
-	-@${MPIEXEC} -n ${NP} ${VALGRIND} ./ex8g -print_error ${ARGS}
+	-@${MPIEXEC} -n ${NP} ${VALGRIND} ./ex8g -N $M -N $N -Mdomains ${Mdomains} -Ndomains ${Ndomains} -print_error ${ARGS}
 
 
 BREAKPOINT=
