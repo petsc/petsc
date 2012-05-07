@@ -142,7 +142,10 @@ PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
   PetscFunctionBegin;
   /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */
   if (alpha != (PetscScalar)0.0) {
-    ierr = PetscThreadCommRunKernel(((PetscObject)yin)->comm,(PetscThreadKernel)VecAXPY_kernel,3,yin,&alpha,xin);CHKERRQ(ierr);
+    PetscScalar *scalar;
+    ierr = PetscThreadCommGetScalars(((PetscObject)yin)->comm,&scalar,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    *scalar = alpha;
+    ierr = PetscThreadCommRunKernel(((PetscObject)yin)->comm,(PetscThreadKernel)VecAXPY_kernel,3,yin,scalar,xin);CHKERRQ(ierr);
     ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
