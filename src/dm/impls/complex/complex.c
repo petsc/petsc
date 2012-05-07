@@ -6008,7 +6008,7 @@ PetscErrorCode DMComplexCreateRigidBody(DM dm, PetscSection section, PetscSectio
       ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
       for(i = 0; i < dim; ++i) {
         for(j = 0; j < dim; ++j) {
-          values[j] += epsilon(i, j, k)*coords[off+i];
+          values[j] += (PetscReal)epsilon(i, j, k)*coords[off+i];
         }
       }
       ierr = DMComplexVecSetClosure(dm, section, localMode, v, values, INSERT_VALUES);CHKERRQ(ierr);
