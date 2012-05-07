@@ -53,6 +53,7 @@ struct _p_PetscThreadComm_PThread{
   PetscPThreadCommSynchronizationType sync;   /* Synchronization type */
   PetscPThreadCommAffinityPolicyType  aff;    /* affinity policy */
   PetscPThreadCommPoolSparkType       spark;  /* Type for sparking threads */
+  PetscBool                           synchronizeafter; /* Whether the main thread should be blocked till all threads complete the given kernel */     
   PetscErrorCode (*initialize)(PetscThreadComm);
   PetscErrorCode (*finalize)(PetscThreadComm);
 };

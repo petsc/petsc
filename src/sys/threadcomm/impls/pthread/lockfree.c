@@ -171,7 +171,8 @@ PetscErrorCode PetscPThreadCommRunKernel_LockFree(MPI_Comm comm,PetscThreadCommJ
     PetscRunKernel(0,job->nargs, job_lockfree.data[0]);
     job_lockfree.my_job_status[0] = THREAD_WAITING_FOR_JOB;
   }
-  ierr = PetscThreadCommBarrier(comm);CHKERRQ(ierr);
- 
+  if(ptcomm->synchronizeafter) {
+    ierr = PetscThreadCommBarrier(comm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
