@@ -36,6 +36,7 @@ extern PetscErrorCode PetscThreadCommInitialize();
 extern PetscErrorCode PetscThreadCommGetNThreads(MPI_Comm,PetscInt*);
 extern PetscErrorCode PetscThreadCommGetAffinities(MPI_Comm,PetscInt[]);
 extern PetscErrorCode PetscThreadCommView(MPI_Comm,PetscViewer);
+extern PetscErrorCode PetscThreadCommGetScalars(MPI_Comm,PetscScalar**,PetscScalar**,PetscScalar**);
 extern PetscErrorCode PetscThreadCommRunKernel(MPI_Comm,PetscErrorCode (*)(PetscInt,...),PetscInt,...);
 extern PetscErrorCode PetscThreadCommBarrier(MPI_Comm);
 

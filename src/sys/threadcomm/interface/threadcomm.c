@@ -530,6 +530,61 @@ PetscErrorCode  PetscThreadCommRegister(const char sname[],const char path[],con
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscThreadCommGetScalars"
+/*@C
+   PetscThreadCommGetScalars - Gets pointers to locations for storing three PetscScalars that may be passed
+                               to PetscThreadCommRunKernel to ensure that the scalar values remain valid
+                               even after the main thread exits the calling function.
+
+   Input Parameters:
++  comm - the MPI communicator having the thread communicator
+.  val1 - pointer to store the first scalar value
+.  val2 - pointer to store the second scalar value
+-  val3 - pointer to store the third scalar value
+
+   Level: developer
+
+   Notes:
+   This is a utility function to ensure that any scalars passed to PetscThreadCommRunKernel remain 
+   valid even after the main thread exits the calling function. If any scalars need to passed to 
+   PetscThreadCommRunKernel then these should be first stored in the locations provided by PetscThreadCommGetScalars()
+   
+   Pass PETSC_NULL if any pointers are not needed.
+
+   Called by the main thread only, not from within kernels
+
+   Typical usage:
+
+   PetscScalar *valptr;
+   PetscThreadCommGetScalar(comm,&valptr,PETSC_NULL,PETSC_NULL);
+   *valptr = alpha;   (alpha is the scalar you wish to pass in PetscThreadCommRunKernel)
+
+   PetscThreadCommRunKernel(comm,(PetscThreadKernel)kernel_func,3,x,y,valptr);
+
+.seealso: PetscThreadCommRunKernel()
+@*/
+PetscErrorCode PetscThreadCommGetScalars(MPI_Comm comm,PetscScalar **val1, PetscScalar **val2, PetscScalar **val3)
+{
+  PetscErrorCode ierr;
+  PetscThreadComm tcomm;
+  PetscThreadCommJobQueue queue;
+  PetscThreadCommJobCtx   job;
+  PetscInt                job_num;
+
+  PetscFunctionBegin;
+  ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
+  queue = tcomm->jobqueue;
+  if(queue->ctr == PETSC_KERNELS_MAX) job_num = 0;
+  else job_num = queue->ctr;
+  job = queue->jobs[job_num];
+  if(val1) *val1 = &job->scalars[0];
+  if(val2) *val2 = &job->scalars[1];
+  if(val3) *val3 = &job->scalars[2];
+  
+  PetscFunctionReturn(0);
+}
+  
+#undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommRunKernel"
 /*@C
    PetscThreadCommRunKernel - Runs the kernel using the thread communicator

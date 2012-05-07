@@ -58,6 +58,7 @@ struct  _p_PetscThreadCommJobCtx{
   PetscInt          nargs;                         /* Number of arguments for the kernel */
   PetscThreadKernel pfunc;                         /* Kernel function */
   void              *args[PETSC_KERNEL_NARGS_MAX]; /* Array of void* to hold the arguments */
+  PetscScalar       scalars[3];                    /* Array to hold three scalar values */
 };
 
 /* Structure to manage job queue */
