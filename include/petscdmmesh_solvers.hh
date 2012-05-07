@@ -63,49 +63,50 @@ void constructFieldSplit(const Obj<Section>& section, PetscInt numSplits, PetscI
   for(PetscInt s = 0, q = 0; s < numSplits; ++s) {
     PetscInt  n = splitSize[s];
     PetscInt  i = -1;
-    PetscInt *idx;
+    PetscInt *idx = PETSC_NULL;
     IS        is;
 
-    if (!n) continue;
-    ierr = PetscMalloc(n * sizeof(PetscInt), &idx);CHKERRXX(ierr);
-    for(typename Section::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-      for(PetscInt f = 0, q2 = q; f < numFields[s]; ++f, ++q2) {
-        const PetscInt space = fields[q2];
-        const PetscInt dim   = section->getFiberDimension(*c_iter, space);
-        const PetscInt cDim  = section->getConstraintDimension(*c_iter, space);
+    if (n) {
+      ierr = PetscMalloc(n * sizeof(PetscInt), &idx);CHKERRXX(ierr);
+      for(typename Section::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        for(PetscInt f = 0, q2 = q; f < numFields[s]; ++f, ++q2) {
+          const PetscInt space = fields[q2];
+          const PetscInt dim   = section->getFiberDimension(*c_iter, space);
+          const PetscInt cDim  = section->getConstraintDimension(*c_iter, space);
 
-        if (dim > cDim) {
-          if (!globalOrder->isLocal(*c_iter)) continue;
-          PetscInt off = globalOrder->getIndex(*c_iter);
+          if (dim > cDim) {
+            if (!globalOrder->isLocal(*c_iter)) continue;
+            PetscInt off = globalOrder->getIndex(*c_iter);
 
-          for(PetscInt sp = 0; sp < space; ++sp) {
-            off += section->getConstrainedFiberDimension(*c_iter, sp);
-          }
-          if (cDim) {
-            // This is potentially dangerous
-            //   These constraints dofs are for SINGLE FIELDS, not the entire point (confusing)
-            const PetscInt *cDofs = section->getConstraintDof(*c_iter, space);
-
-            for(PetscInt d = 0, c = 0, k = 0; d < dim; ++d) {
-              if ((c < cDim) && (cDofs[c] == d)) {
-                if (debug) {std::cout << "  Ignored " << (off+k) << " at local pos " << d << " for point " << (*c_iter) << std::endl;}
-                ++c;
-                continue;
-              }
-              idx[++i] = off+k;
-              if (debug) {std::cout << "Added " << (off+k) << " at pos " << i << " for point " << (*c_iter) << std::endl;}
-              ++k;
+            for(PetscInt sp = 0; sp < space; ++sp) {
+              off += section->getConstrainedFiberDimension(*c_iter, sp);
             }
-          } else {
-            for(PetscInt d = 0; d < dim; ++d) {
-              idx[++i] = off+d;
-              if (debug) {std::cout << "Added " << (off+d) << " at pos " << i << " for point " << (*c_iter) << std::endl;}
+            if (cDim) {
+              // This is potentially dangerous
+              //   These constraints dofs are for SINGLE FIELDS, not the entire point (confusing)
+              const PetscInt *cDofs = section->getConstraintDof(*c_iter, space);
+
+              for(PetscInt d = 0, c = 0, k = 0; d < dim; ++d) {
+                if ((c < cDim) && (cDofs[c] == d)) {
+                  if (debug) {std::cout << "  Ignored " << (off+k) << " at local pos " << d << " for point " << (*c_iter) << std::endl;}
+                  ++c;
+                  continue;
+                }
+                idx[++i] = off+k;
+                if (debug) {std::cout << "Added " << (off+k) << " at pos " << i << " for point " << (*c_iter) << std::endl;}
+                ++k;
+              }
+            } else {
+              for(PetscInt d = 0; d < dim; ++d) {
+                idx[++i] = off+d;
+                if (debug) {std::cout << "Added " << (off+d) << " at pos " << i << " for point " << (*c_iter) << std::endl;}
+              }
             }
           }
         }
       }
+      if (i != n-1) {throw PETSc::Exception("Invalid fibration numbering");}
     }
-    if (i != n-1) {throw PETSc::Exception("Invalid fibration numbering");}
     ierr = ISCreateGeneral(section->comm(), n, idx,PETSC_OWN_POINTER, &is);CHKERRXX(ierr);
     if (nullsp && nullsp[s]) {
       ierr = PetscObjectCompose((PetscObject) is, "nearnullspace", (PetscObject) nullsp[s]);CHKERRXX(ierr);
