@@ -324,7 +324,7 @@ typedef enum {PC_GASM_BASIC = 3,PC_GASM_RESTRICT = 1,PC_GASM_INTERPOLATE = 2,PC_
 extern const char *PCGASMTypes[];
 
 extern PetscErrorCode  PCGASMSetSubdomains(PC,PetscInt,IS[],IS[]);
-extern PetscErrorCode  PCGASMSetTotalSubdomainCount(PC,PetscInt);
+extern PetscErrorCode  PCGASMSetTotalBlockCount(PC,PetscInt);
 extern PetscErrorCode  PCGASMSetOverlap(PC,PetscInt);
 extern PetscErrorCode  PCGASMSetSortIndices(PC,PetscBool );
 
