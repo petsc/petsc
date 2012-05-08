@@ -1,6 +1,7 @@
 
 #include <petsc-private/snesimpl.h>      /*I "petscsnes.h"  I*/
-#include <petscdmshell.h>          /*I "petscdmshell.h" I*/
+#include <petscdmshell.h>                /*I "petscdmshell.h" I*/
+#include <petscsys.h>                    /*I "petscsys.h" I*/
 
 PetscBool  SNESRegisterAllCalled = PETSC_FALSE;
 PetscFList SNESList              = PETSC_NULL;
@@ -513,10 +514,9 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   const char              *convtests[] = {"default","skip"};
   SNESKSPEW               *kctx = NULL;
   char                    type[256], monfilename[PETSC_MAX_PATH_LEN];
-  const char              *optionsprefix;
   PetscViewer             monviewer;
   PetscErrorCode          ierr;
-  DM                      dm;
+  const char              *optionsprefix;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -682,16 +682,6 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = PetscOptionsHasName(optionsprefix, "-npc_snes_type", &pcset);CHKERRQ(ierr);
   if (pcset && (!snes->pc)) {
     ierr = SNESGetPC(snes, &snes->pc);CHKERRQ(ierr);
-  }
-  if (snes->pc) {
-    ierr = SNESSetOptionsPrefix(snes->pc, optionsprefix);CHKERRQ(ierr);
-    ierr = SNESAppendOptionsPrefix(snes->pc, "npc_");CHKERRQ(ierr);
-    ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
-    ierr = SNESSetDM(snes->pc, dm);CHKERRQ(ierr);
-    /* default to 1 iteration */
-    ierr = SNESSetTolerances(snes->pc, snes->pc->abstol, snes->pc->rtol, snes->pc->stol, 1, snes->pc->max_funcs);CHKERRQ(ierr);
-    ierr = SNESSetNormType(snes->pc, SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
-    ierr = SNESSetFromOptions(snes->pc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -4360,15 +4350,47 @@ PetscErrorCode SNESSetPC(SNES snes, SNES pc)
 @*/
 PetscErrorCode SNESGetPC(SNES snes, SNES *pc)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode              ierr;
+  SNESLineSearch              linesearch;
+  SNESLineSearch              pclinesearch;
+  void                        *lsprectx,*lspostctx;
+  SNESLineSearchPreCheckFunc  lsprefunc;
+  SNESLineSearchPostCheckFunc lspostfunc;
+  DM                          dm;
+  const char                  *optionsprefix;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidPointer(pc, 2);
   if (!snes->pc) {
-    ierr = SNESCreate(((PetscObject) snes)->comm, &snes->pc);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject) snes->pc, (PetscObject) snes, 1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(snes, snes->pc);CHKERRQ(ierr);
+    ierr = SNESCreate(((PetscObject) snes)->comm,&snes->pc);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)snes->pc,(PetscObject)snes,1);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(snes,snes->pc);CHKERRQ(ierr);
+    ierr = SNESGetOptionsPrefix(snes,&optionsprefix);CHKERRQ(ierr);
+    ierr = SNESSetOptionsPrefix(snes->pc,optionsprefix);CHKERRQ(ierr);
+    ierr = SNESAppendOptionsPrefix(snes->pc,"npc_");CHKERRQ(ierr);
+
+    /* copy the DM over */
+    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr = SNESSetDM(snes->pc,dm);CHKERRQ(ierr);
+
+   /* copy the function pointers over */
+    ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes,(PetscObject)snes->pc);CHKERRQ(ierr);
+
+     /* default to 1 iteration */
+    ierr = SNESSetTolerances(snes->pc, snes->pc->abstol, snes->pc->rtol, snes->pc->stol, 1, snes->pc->max_funcs);CHKERRQ(ierr);
+    ierr = SNESSetNormType(snes->pc, SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
+    ierr = SNESSetFromOptions(snes->pc);CHKERRQ(ierr);
+
+
+    /* copy the line search context over */
+    ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
+    ierr = SNESGetSNESLineSearch(snes->pc,&pclinesearch);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetPreCheck(linesearch,&lsprefunc,&lsprectx);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetPostCheck(linesearch,&lspostfunc,&lspostctx);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetPreCheck(pclinesearch,lsprefunc,lsprectx);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetPostCheck(pclinesearch,lspostfunc,lspostctx);CHKERRQ(ierr);
+    ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)linesearch, (PetscObject)pclinesearch);CHKERRQ(ierr);
   }
   *pc = snes->pc;
   PetscFunctionReturn(0);
