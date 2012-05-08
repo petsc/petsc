@@ -1,7 +1,7 @@
 
 ALL: lib
 
-SOURCEH  = ../../include/petsc-private/threadcommimpl.h ../../include/petscthreadcomm.h
+SOURCEH  = ../../../include/petsc-private/threadcommimpl.h ../../../include/petscthreadcomm.h
 DIRS     = interface impls examples
 LOCDIR   = src/sys/
 MANSEC   = PetscThreadComm
