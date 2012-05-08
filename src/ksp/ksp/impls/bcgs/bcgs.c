@@ -63,6 +63,8 @@ static PetscErrorCode KSPSetUp_BCGS(KSP ksp)
 }
 
 /* Flexible BiCGSTAB contributed by Jie Chen */
+/* Only right preconditioning is supported */
+/* Only need a few hacks from KSPSolve_FBCGS */
 #include <petsc-private/pcimpl.h>            /*I "petscksp.h" I*/
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_FBCGS"
@@ -71,10 +73,9 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       i;
   PetscScalar    rho,rhoold,alpha,beta,omega,omegaold,d1,d2;
-  Vec            X,B,V,P,R,RP,T,S;
+  Vec            X,B,V,P,R,RP,T,S,P2,S2;
   PetscReal      dp = 0.0;
   KSP_BCGS       *bcgs = (KSP_BCGS*)ksp->data;
-  Vec            P2,S2;
   PC             pc;
 
   PetscFunctionBegin;
@@ -86,12 +87,10 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   T       = ksp->work[3];
   S       = ksp->work[4]; 
   P       = ksp->work[5];
-  S2 = ksp->work[6]; P2 = ksp->work[7];
+  S2      = ksp->work[6];
+  P2      = ksp->work[7];
 
-  /* Compute initial preconditioned residual - check for scaling! */
-  ierr = KSPInitialResidual(ksp,X,V,T,R,B);CHKERRQ(ierr);
-
-  /* with right preconditioning need to save initial guess to add to final solution */
+  /* Only supports right preconditioning */
   if (ksp->pc_side != PC_RIGHT) 
     SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP fbcgs does not support %s",PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
@@ -99,8 +98,19 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
       ierr = VecDuplicate(X,&bcgs->guess);CHKERRQ(ierr);
     }
     ierr = VecCopy(X,bcgs->guess);CHKERRQ(ierr);
+  }
+  else {
     ierr = VecSet(X,0.0);CHKERRQ(ierr);
   }
+
+  /* Compute initial residual */
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  if (pc->setupcalled < 2) {
+    ierr = PCSetUp(pc);CHKERRQ(ierr);
+  }
+  ierr = MatMult(pc->mat,X,S2);CHKERRQ(ierr);
+  ierr = VecCopy(B,R);CHKERRQ(ierr);
+  ierr = VecAXPY(R,-1.0,S2);CHKERRQ(ierr);
 
   /* Test for nothing to do */
   if (ksp->normtype != KSP_NORM_NONE) {
@@ -126,41 +136,36 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
  
   i=0;
   do {
-    ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);       /*   rho <- (r,rp)      */
+    ierr = VecDot(R,RP,&rho);CHKERRQ(ierr); /* rho <- (r,rp) */
     beta = (rho/rhoold) * (alpha/omegaold);
-    ierr = VecAXPBYPCZ(P,1.0,-omegaold*beta,beta,R,V);CHKERRQ(ierr);  /* p <- r - omega * beta* v + beta * p */
+    ierr = VecAXPBYPCZ(P,1.0,-omegaold*beta,beta,R,V);CHKERRQ(ierr); /* p <- r - omega * beta* v + beta * p */
 
-    /* ierr = KSP_PCApplyBAorAB(ksp,P,V,T);CHKERRQ(ierr); */ /*   v <- K p           */
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     if (pc->setupcalled < 2) {
       ierr = PCSetUp(pc);CHKERRQ(ierr);
     }
-    ierr = PCApply(pc,P,P2);CHKERRQ(ierr);
-    ierr = MatMult(pc->mat,P2,V);CHKERRQ(ierr);
+    ierr = PCApply(pc,P,P2);CHKERRQ(ierr); /* p2 <- K p */
+    ierr = MatMult(pc->mat,P2,V);CHKERRQ(ierr); /* v <- A p2 */
     
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     if (d1 == 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"Divide by zero");
-    alpha = rho / d1;                 /*   a <- rho / (v,rp)  */
-    ierr = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr);      /*   s <- r - a v       */
+    alpha = rho / d1; /* alpha <- rho / (v,rp) */
+    ierr = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr);  /* s <- r - alpha v */
 
-    /* ierr = KSP_PCApplyBAorAB(ksp,S,T,R);CHKERRQ(ierr); *//*   t <- K s    */
     if (pc->setupcalled < 2) {
       ierr = PCSetUp(pc);CHKERRQ(ierr);
     }
-    ierr = PCApply(pc,S,S2);CHKERRQ(ierr);
-    ierr = MatMult(pc->mat,S2,T);CHKERRQ(ierr);
+    ierr = PCApply(pc,S,S2);CHKERRQ(ierr); /* s2 <- K s */
+    ierr = MatMult(pc->mat,S2,T);CHKERRQ(ierr); /* t <- A s2 */
 
     ierr = VecDotNorm2(S,T,&d1,&d2);CHKERRQ(ierr);
     if (d2 == 0.0) {
-      /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
-	 may be our solution.  Give it a try? */
+      /* t is 0. if s is 0, then alpha v == r, and hence alpha p may be our solution. Give it a try? */
       ierr = VecDot(S,S,&d1);CHKERRQ(ierr);
       if (d1 != 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         break;
       }
-      /* ierr = VecAXPY(X,alpha,P);CHKERRQ(ierr); */  /*   x <- x + a p       */
-      ierr = VecAXPY(X,alpha,P2);CHKERRQ(ierr);   /*   x <- x + a p2       */
+      ierr = VecAXPY(X,alpha,P2);CHKERRQ(ierr);   /* x <- x + alpha p2 */
       ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->its++;
       ksp->rnorm  = 0.0;
@@ -170,11 +175,10 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
       ierr = KSPMonitor(ksp,i+1,0.0);CHKERRQ(ierr);
       break;
     }
-    omega = d1 / d2;                               /*   w <- (t's) / (t't) */
-    /* ierr = VecAXPBYPCZ(X,alpha,omega,1.0,P,S);CHKERRQ(ierr); *//* x <- alpha * p + omega * s + x */
+    omega = d1 / d2; /* omega <- (t's) / (t't) */
     ierr = VecAXPBYPCZ(X,alpha,omega,1.0,P2,S2);CHKERRQ(ierr); /* x <- alpha * p2 + omega * s2 + x */
 
-    ierr  = VecWAXPY(R,-omega,T,S);CHKERRQ(ierr);     /*   r <- s - w t       */
+    ierr  = VecWAXPY(R,-omega,T,S);CHKERRQ(ierr); /* r <- s - omega t */
     if (ksp->normtype != KSP_NORM_NONE && ksp->chknorm < i+2) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     }
@@ -189,7 +193,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     KSPLogResidualHistory(ksp,dp);
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-    if (ksp->reason) break;    
+    if (ksp->reason) break;
     if (rho == 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
       break;
@@ -201,10 +205,6 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     ksp->reason = KSP_DIVERGED_ITS;
   }
 
-  /* ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr); */
-  if (bcgs->guess) {
-    ierr = VecAXPY(X,1.0,bcgs->guess);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
