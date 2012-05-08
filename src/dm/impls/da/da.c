@@ -685,6 +685,12 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   dd2->lf = dd->lf;
   dd2->lj = dd->lj;
 
+  da2->leveldown = da->leveldown;
+  da2->levelup   = da->levelup + 1;
+  ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
+  ierr = DMSetUp(da2);CHKERRQ(ierr);
+  ierr = DMView_DA_Private(da2);CHKERRQ(ierr);
+
   /* interpolate coordinates if they are set on the coarse grid */
   if (dd->coordinates) {
     DM  cdaf,cdac;
@@ -701,13 +707,6 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
     ierr = MatDestroy(&II);CHKERRQ(ierr);
   }
-
-  /* Need to set up before we can do field names  */
-  da2->leveldown = da->leveldown;
-  da2->levelup   = da->levelup + 1;
-  ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
-  ierr = DMSetUp(da2);CHKERRQ(ierr);
-  ierr = DMView_DA_Private(da2);CHKERRQ(ierr);
 
   for (i=0; i<da->bs; i++) {
     const char *fieldname;
@@ -808,6 +807,12 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   dd2->lf = dd->lf;
   dd2->lj = dd->lj;
 
+  da2->leveldown = da->leveldown + 1;
+  da2->levelup   = da->levelup;
+  ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
+  ierr = DMSetUp(da2);CHKERRQ(ierr);
+  ierr = DMView_DA_Private(da2);CHKERRQ(ierr);
+
   /* inject coordinates if they are set on the fine grid */
   if (dd->coordinates) {
     DM         cdaf,cdac;
@@ -826,13 +831,6 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
   }
-
-  /* Need to set up before we can do field names  */
-  da2->leveldown = da->leveldown + 1;
-  da2->levelup   = da->levelup;
-  ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
-  ierr = DMSetUp(da2);CHKERRQ(ierr);
-  ierr = DMView_DA_Private(da2);CHKERRQ(ierr);
 
   for (i=0; i<da->bs; i++) {
     const char *fieldname;
