@@ -166,14 +166,16 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
   ierr = MatCreate(PETSC_COMM_SELF,&is->A);CHKERRQ(ierr);
   ierr = MatSetSizes(is->A,n,n,n,n);CHKERRQ(ierr);
   ierr = MatSetBlockSize(is->A,bs);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(is->A,"is");CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(is->A,((PetscObject)A)->prefix);CHKERRQ(ierr);
+  ierr = MatAppendOptionsPrefix(is->A,"is_");CHKERRQ(ierr);
   ierr = MatSetFromOptions(is->A);CHKERRQ(ierr);
 
   /* Create the local work vectors */
   ierr = VecCreate(PETSC_COMM_SELF,&is->x);CHKERRQ(ierr);
   ierr = VecSetBlockSize(is->x,bs);CHKERRQ(ierr);
   ierr = VecSetSizes(is->x,n,n);CHKERRQ(ierr);
-  ierr = VecSetOptionsPrefix(is->x,"is");CHKERRQ(ierr);
+  ierr = VecSetOptionsPrefix(is->x,((PetscObject)A)->prefix);CHKERRQ(ierr);
+  ierr = VecAppendOptionsPrefix(is->x,"is_");CHKERRQ(ierr);
   ierr = VecSetFromOptions(is->x);CHKERRQ(ierr);
   ierr = VecDuplicate(is->x,&is->y);CHKERRQ(ierr);
 
