@@ -225,6 +225,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
      } else {
       ierr = SNESSetNormType(fas->smoothd, SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
     }
+    ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)fas->smoothd);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(fas->smoothd);CHKERRQ(ierr);
     ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
     ierr = SNESGetSNESLineSearch(fas->smoothd,&slinesearch);CHKERRQ(ierr);
@@ -242,6 +243,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     } else {
       ierr = SNESSetNormType(fas->smoothu, SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
     }
+    ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)fas->smoothu);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(fas->smoothu);CHKERRQ(ierr);
     ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
     ierr = SNESGetSNESLineSearch(fas->smoothu,&slinesearch);CHKERRQ(ierr);
@@ -256,6 +258,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     /* gotta set up the solution vector for this to work */
     if (!next->vec_sol) {ierr = SNESFASCreateCoarseVec(snes,&next->vec_sol);CHKERRQ(ierr);}
     if (!next->vec_rhs) {ierr = SNESFASCreateCoarseVec(snes,&next->vec_rhs);CHKERRQ(ierr);}
+    ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)next);CHKERRQ(ierr);
     ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
     ierr = SNESGetSNESLineSearch(fas->next,&slinesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchGetPreCheck(linesearch,&lsprefunc,&lsprectx);CHKERRQ(ierr);
