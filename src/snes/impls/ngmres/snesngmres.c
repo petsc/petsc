@@ -183,7 +183,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   PetscReal           fminnorm;
 
   SNESConvergedReason reason;
-  PetscBool           lssucceed;
+  PetscBool           lssucceed,changed_y,changed_w;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -360,6 +360,11 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ierr = VecScale(XA, 1. - alph_total);CHKERRQ(ierr);
 
     ierr = VecMAXPY(XA, l, beta, Xdot);CHKERRQ(ierr);
+
+    /* check the validity of the step */
+    ierr = VecCopy(Y,XA);CHKERRQ(ierr);
+    ierr = VecAXPY(Y,-1.0,X);CHKERRQ(ierr);
+    ierr = SNESLineSearchPostCheck(snes->linesearch,X,Y,XA,&changed_y,&changed_w);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, XA, FA);CHKERRQ(ierr);
 
     /* differences for selection and restart */
