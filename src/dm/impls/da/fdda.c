@@ -648,7 +648,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, const MatType mtype,Mat *J)
       ierr = MatSetOption(*J, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE);CHKERRQ(ierr);
     }
     if (!isShell) {
-      PetscBool fillMatrix = (PetscBool) !da->prealloc_only;
+      /* PetscBool fillMatrix = (PetscBool) !da->prealloc_only; */
       PetscInt *dnz, *onz, *dnzu, *onzu, bsLocal;
 
       if (bs < 0) {

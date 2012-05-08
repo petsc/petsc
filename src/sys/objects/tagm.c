@@ -137,7 +137,9 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   PetscErrorCode   ierr;
   PetscCommCounter *counter;
   PetscMPIInt      *maxval,flg;
+#if defined(PETSC_THREADCOMM_ACTIVE)
   PetscThreadComm  tcomm;
+#endif
 
   PetscFunctionBegin;
   ierr = MPI_Attr_get(comm_in,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
@@ -235,7 +237,9 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
   PetscMPIInt      flg;
   MPI_Comm         icomm = *comm,ocomm;
   void             *ptr;
+#if defined(PETSC_THREADCOMM_ACTIVE)
   PetscThreadComm  tcomm;
+#endif
 
   PetscFunctionBegin;
   ierr = MPI_Attr_get(icomm,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
