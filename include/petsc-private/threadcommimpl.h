@@ -44,12 +44,14 @@ extern PetscMPIInt Petsc_ThreadComm_keyval;
 
 #define PetscReadOnce(type,val) (*(volatile type *)&val)
 
-typedef struct _p_PetscThreadCommRedCtx *PetscThreadCommRedCtx;
 struct _p_PetscThreadCommRedCtx{
+  PetscThreadComm               tcomm;          /* The associated threadcomm */
   PetscInt                      red_status;     /* Reduction status */
   PetscInt                      nworkThreads;   /* Number of threads doing the reduction */
   PetscInt                      *thread_status; /* Reduction status of each thread */
   void                          *local_red;     /* Array to hold local reduction contribution from each thread */
+  PetscThreadCommReductionOp    op;             /* The reduction operation */
+  PetscDataType                 type;           /* The reduction data type */
 };
 
 typedef struct _p_PetscThreadCommJobCtx *PetscThreadCommJobCtx;
@@ -99,5 +101,7 @@ extern PetscErrorCode PetscThreadCommRegisterAll(const char path[]);
 #define PetscThreadCommRegisterDynamic(a,b,c,d) PetscThreadCommRegister(a,b,c,d)
 #endif
 
+extern PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm,PetscThreadCommRedCtx*);
+extern PetscErrorCode PetscThreadCommReductionDestroy(PetscThreadCommRedCtx);
 extern PetscErrorCode PetscRunKernel(PetscInt,PetscInt,PetscThreadCommJobCtx);
 #endif

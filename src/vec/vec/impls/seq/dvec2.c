@@ -586,9 +586,12 @@ PetscErrorCode VecSet_kernel(PetscInt thread_id,Vec xin,PetscScalar *alpha_p)
 PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
 {
   PetscErrorCode ierr;
+  PetscScalar    *scalar;
 
   PetscFunctionBegin;
-  ierr = PetscThreadCommRunKernel(((PetscObject)xin)->comm,(PetscThreadKernel)VecSet_kernel,2,xin,&alpha);CHKERRQ(ierr);
+  ierr = PetscThreadCommGetScalars(((PetscObject)xin)->comm,&scalar,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  *scalar = alpha;
+  ierr = PetscThreadCommRunKernel(((PetscObject)xin)->comm,(PetscThreadKernel)VecSet_kernel,2,xin,scalar);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #else

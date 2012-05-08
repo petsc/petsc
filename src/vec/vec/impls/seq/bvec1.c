@@ -10,7 +10,7 @@
 #include <petscthreadcomm.h>
 
 #if defined(PETSC_THREADCOMM_ACTIVE)
-PetscErrorCode VecDot_kernel(PetscInt thread_id,Vec xin,Vec yin,PetscScalar *z)
+PetscErrorCode VecDot_kernel(PetscInt thread_id,Vec xin,Vec yin,PetscThreadCommRedCtx red)
 {
   PetscErrorCode       ierr;
   PetscInt             *trstarts=xin->map->trstarts;
@@ -18,7 +18,6 @@ PetscErrorCode VecDot_kernel(PetscInt thread_id,Vec xin,Vec yin,PetscScalar *z)
   PetscBLASInt         one = 1,bn;
   const PetscScalar    *xa,*ya;
   PetscScalar          z_loc;
-  PetscThreadComm      tcomm;
 
   ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
   ierr = VecGetArrayRead(yin,&ya);CHKERRQ(ierr);
@@ -29,9 +28,10 @@ PetscErrorCode VecDot_kernel(PetscInt thread_id,Vec xin,Vec yin,PetscScalar *z)
   /* arguments ya, xa are reversed because BLAS complex conjugates the first argument, PETSc the second */
   z_loc = BLASdot_(&bn,ya+start,&one,xa+start,&one);
 
-  ierr = PetscCommGetThreadComm(((PetscObject)xin)->comm,&tcomm);CHKERRQ(ierr);
-  ierr = PetscThreadReductionKernelBegin(thread_id,tcomm,THREADCOMM_SUM,PETSC_SCALAR,(void*)&z_loc,(void*)z);CHKERRQ(ierr);
-  ierr = PetscThreadReductionKernelEnd(thread_id,tcomm,THREADCOMM_SUM,PETSC_SCALAR,(void*)&z_loc,(void*)z);CHKERRQ(ierr);
+  ierr = PetscThreadReductionKernelBegin(thread_id,red,(void*)&z_loc);CHKERRQ(ierr);
+
+  ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(yin,&ya);CHKERRQ(ierr);
   return 0;
 }  
 
@@ -39,10 +39,13 @@ PetscErrorCode VecDot_kernel(PetscInt thread_id,Vec xin,Vec yin,PetscScalar *z)
 #define __FUNCT__ "VecDot_Seq"
 PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
-  PetscErrorCode    ierr;
+  PetscErrorCode        ierr;
+  PetscThreadCommRedCtx red;
 
   PetscFunctionBegin;
-  ierr = PetscThreadCommRunKernel(((PetscObject)xin)->comm,(PetscThreadKernel)VecDot_kernel,3,xin,yin,z);CHKERRQ(ierr);
+  ierr = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_SUM,PETSC_SCALAR,&red);CHKERRQ(ierr);
+  ierr = PetscThreadCommRunKernel(((PetscObject)xin)->comm,(PetscThreadKernel)VecDot_kernel,3,xin,yin,red);CHKERRQ(ierr);
+  ierr = PetscThreadReductionEnd(red,z);CHKERRQ(ierr);
   if (xin->map->n > 0) {
     ierr = PetscLogFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
   }

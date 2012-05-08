@@ -11,9 +11,9 @@ static char help[] = "Test Basic vector routines.\n\n";
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscScalar    dot=0.0,dot1,v;
+  PetscScalar    dot=0.0,v;
   Vec            x,y;
-  PetscInt       N=10;
+  PetscInt       N=8;
   PetscScalar    one=1.0,two=2.0,alpha=2.0;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -27,22 +27,25 @@ int main(int argc,char **argv)
   ierr = VecSetSizes(x,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecSet(x,one);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"x = %lf\n",one);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
   ierr = VecSetSizes(y,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
   ierr = VecSet(y,two);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"y = %lf\n",two);CHKERRQ(ierr);
 
   ierr = VecAXPY(y,alpha,x);CHKERRQ(ierr);
+  v = two+alpha*one;
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"x+%lfy = %lf\n",alpha,v);CHKERRQ(ierr);
+  
   ierr = VecDot(x,y,&dot);CHKERRQ(ierr);
 
 #if defined(PETSC_THREADCOMM_ACTIVE)
   ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 #endif
 
-  dot1 = N*4.0;
-  v = dot1-dot; if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in dot product is %lf\n",v);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Dot product %d*(%lf*%lf) is %lf\n",N,one,v,dot);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
   PetscFinalize();
