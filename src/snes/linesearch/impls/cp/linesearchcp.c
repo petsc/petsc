@@ -28,7 +28,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   ierr = SNESLineSearchGetMonitor(linesearch, &monitor);CHKERRQ(ierr);
 
   /* precheck */
-  ierr = SNESLineSearchPreCheck(linesearch, &changed_y);CHKERRQ(ierr);
+  ierr = SNESLineSearchPreCheck(linesearch,X,Y,&changed_y);CHKERRQ(ierr);
   lambda_old = 0.0;
   ierr = VecDot(F, Y, &fty_old);CHKERRQ(ierr);
   fty_init = fty_old;
@@ -112,7 +112,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
   }
   /* postcheck */
-  ierr = SNESLineSearchPostCheck(linesearch, &changed_y, &changed_w);CHKERRQ(ierr);
+  ierr = SNESLineSearchPostCheck(linesearch,X,Y,W,&changed_y,&changed_w);CHKERRQ(ierr);
   if (changed_y) {
     ierr = VecAXPY(X, -lambda, Y);CHKERRQ(ierr);
     if (linesearch->ops->viproject) {

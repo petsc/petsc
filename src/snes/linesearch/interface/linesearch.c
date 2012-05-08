@@ -287,7 +287,9 @@ PetscErrorCode  SNESLineSearchGetPostCheck(SNESLineSearch linesearch, SNESLineSe
    Logically Collective on SNESLineSearch
 
    Input Parameters:
-.  linesearch - The linesearch instance.
++  linesearch - The linesearch instance.
+.  X - The current solution
+-  Y - The step direction
 
    Output Parameters:
 .  changed - Indicator that the precheck routine has changed anything
@@ -298,13 +300,13 @@ PetscErrorCode  SNESLineSearchGetPostCheck(SNESLineSearch linesearch, SNESLineSe
 
 .seealso: SNESLineSearchPostCheck()
 @*/
-PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch, PetscBool * changed)
+PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch,Vec X,Vec Y,PetscBool *changed)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   *changed = PETSC_FALSE;
   if (linesearch->ops->precheckstep) {
-    ierr = (*linesearch->ops->precheckstep)(linesearch, linesearch->vec_sol, linesearch->vec_update, changed, linesearch->precheckctx);CHKERRQ(ierr);
+    ierr = (*linesearch->ops->precheckstep)(linesearch, X, Y, changed, linesearch->precheckctx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -317,7 +319,10 @@ PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch, PetscBool * cha
    Logically Collective on SNESLineSearch
 
    Input Parameters:
-.  linesearch - The linesearch context
++  linesearch - The linesearch context
+.  X - The last solution
+.  Y - The step direction
+-  W - The updated solution, W = X + lambda*Y for some lambda
 
    Output Parameters:
 +  changed_Y - Indicator if the direction Y has been changed.
@@ -329,14 +334,14 @@ PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch, PetscBool * cha
 
 .seealso: SNESLineSearchPreCheck()
 @*/
-PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch, PetscBool * changed_Y, PetscBool * changed_W)
+PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch,Vec X,Vec Y,Vec W,PetscBool *changed_Y,PetscBool *changed_W)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   *changed_Y = PETSC_FALSE;
   *changed_W = PETSC_FALSE;
   if (linesearch->ops->postcheckstep) {
-    ierr = (*linesearch->ops->postcheckstep)(linesearch, linesearch->vec_sol, linesearch->vec_update, linesearch->vec_sol_new, changed_Y, changed_W, linesearch->postcheckctx);CHKERRQ(ierr);
+    ierr = (*linesearch->ops->postcheckstep)(linesearch,X,Y,W,changed_Y,changed_W,linesearch->postcheckctx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

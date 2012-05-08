@@ -92,7 +92,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     SETERRQ(((PetscObject)linesearch)->comm, PETSC_ERR_USER, "SNESLineSearchBT requires a Jacobian matrix");
   }
   /* precheck */
-  ierr = SNESLineSearchPreCheck(linesearch, &changed_y);CHKERRQ(ierr);
+  ierr = SNESLineSearchPreCheck(linesearch,X,Y,&changed_y);CHKERRQ(ierr);
   ierr = SNESLineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
 
   ierr = VecNorm(Y, NORM_2, &ynorm);CHKERRQ(ierr);
@@ -287,7 +287,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   }
 
   /* postcheck */
-  ierr = SNESLineSearchPostCheck(linesearch, &changed_y, &changed_w);CHKERRQ(ierr);
+  ierr = SNESLineSearchPostCheck(linesearch,X,Y,W,&changed_y,&changed_w);CHKERRQ(ierr);
   if (changed_y) {
     ierr = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
     if (linesearch->ops->viproject) {
