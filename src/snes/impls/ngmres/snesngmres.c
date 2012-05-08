@@ -362,7 +362,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ierr = VecMAXPY(XA, l, beta, Xdot);CHKERRQ(ierr);
 
     /* check the validity of the step */
-    ierr = VecCopy(Y,XA);CHKERRQ(ierr);
+    ierr = VecCopy(XA,Y);CHKERRQ(ierr);
     ierr = VecAXPY(Y,-1.0,X);CHKERRQ(ierr);
     ierr = SNESLineSearchPostCheck(snes->linesearch,X,Y,XA,&changed_y,&changed_w);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, XA, FA);CHKERRQ(ierr);
