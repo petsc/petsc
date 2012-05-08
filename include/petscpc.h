@@ -478,6 +478,7 @@ extern PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
 /* Enum defining how to treat the coarse problem */
 typedef enum {SEQUENTIAL_BDDC,REPLICATED_BDDC,PARALLEL_BDDC,MULTILEVEL_BDDC} CoarseProblemType;
 extern PetscErrorCode PCBDDCSetDirichletBoundaries(PC,IS);
+extern PetscErrorCode PCBDDCGetDirichletBoundaries(PC,IS*);
 extern PetscErrorCode PCBDDCSetNeumannBoundaries(PC,IS);
 extern PetscErrorCode PCBDDCGetNeumannBoundaries(PC,IS*);
 extern PetscErrorCode PCBDDCSetCoarseProblemType(PC,CoarseProblemType);
