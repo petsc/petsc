@@ -1,6 +1,8 @@
 /* TODOLIST
    DofSplitting and DM attached to pc.
    Exact solvers: Solve local saddle point directly for very hard problems
+     - change prec_type to switch_inexact_prec_type
+     - add bool solve_exact_saddle_point slot to pdbddc data
    Inexact solvers: global preconditioner application is ready, ask to developers (Jed?) on how to best implement Dohrmann's approach (PCSHELL?)
    change how to deal with the coarse problem (PCBDDCSetCoarseEnvironment):
      - mind the problem with coarsening_factor 

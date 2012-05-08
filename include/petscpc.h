@@ -484,6 +484,8 @@ extern PetscErrorCode PCBDDCSetCoarseProblemType(PC,CoarseProblemType);
 extern PetscErrorCode PCBDDCSetDofsSplitting(PC,PetscInt,IS[]);
 #endif
 
+extern PetscErrorCode PCISSetSubdomainScalingFactor(PC,PetscScalar);
+
 PETSC_EXTERN_CXX_END
 
 #endif /* __PETSCPC_H */
