@@ -125,6 +125,7 @@
         <li>MatCreateMPIAIJ(), MatCreateMPIBAIJ(), MatCreateMPISBAIJ(), MatCreateMPIDense() are now MatCreateAIJ(), MatCreateBAIJ(), MatCreateSBAIJ(), MatCreateDense(). Note that on a single process they have always created the sequential version of the matrix so this naming is more accurate. </li>
         <li>Renamed MatMerge_SeqsToMPI() to MatCreateMPIAIJSumSeqAIJ()</li>
         <li>Renamed MatMerge() to MatCreateMPIAIJConcatenateSeqAIJ()</li>
+        <li>Added block size in call to MatCreateIS()</li>
       </ul>
 
       <h4>PC:</h4>

@@ -15,31 +15,6 @@
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetVecs_IS" 
-PetscErrorCode MatGetVecs_IS(Mat A,Vec *right,Vec *left)
-{
-  PetscErrorCode ierr;
-  PetscInt       bs,rows,columns;
-
-  PetscFunctionBegin;
-  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&rows,&columns);CHKERRQ(ierr);
-  if(right) {
-    ierr = VecCreate(((PetscObject)A)->comm,right);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*right,bs);CHKERRQ(ierr);
-    ierr = VecSetSizes(*right,PETSC_DECIDE,columns);CHKERRQ(ierr);
-    ierr = VecSetType(*right,VECMPI);CHKERRQ(ierr);
-  }
-  if(left) {
-    ierr = VecCreate(((PetscObject)A)->comm,left);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(*left,bs);CHKERRQ(ierr);
-    ierr = VecSetSizes(*left,PETSC_DECIDE,rows);CHKERRQ(ierr);
-    ierr = VecSetType(*left,VECMPI);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_IS" 
 PetscErrorCode MatDestroy_IS(Mat A)
 {
@@ -528,23 +503,14 @@ PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool  flg)
 PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,ISLocalToGlobalMapping map,Mat *A)
 {
   PetscErrorCode ierr;
-  PetscInt       local_size;
-  Vec            global;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(*A,bs);CHKERRQ(ierr);
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATIS);CHKERRQ(ierr);
-  /* Set block size manually */
-  (*A)->rmap->bs=bs;
-  (*A)->cmap->bs=bs;
   ierr = MatSetUp(*A);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(*A,map,map);CHKERRQ(ierr);
-  /* force local dimensions */
-  ierr = MatGetVecs(*A,&global,PETSC_NULL);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(global,&local_size);CHKERRQ(ierr);
-  (*A)->rmap->n=local_size;
-  (*A)->cmap->n=local_size;
   PetscFunctionReturn(0);
 }
 
@@ -615,7 +581,6 @@ PetscErrorCode  MatCreate_IS(Mat A)
   A->ops->scale                   = MatScale_IS;
   A->ops->getdiagonal             = MatGetDiagonal_IS;
   A->ops->setoption               = MatSetOption_IS;
-  A->ops->getvecs                 = MatGetVecs_IS;
 
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
