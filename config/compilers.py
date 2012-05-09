@@ -290,10 +290,11 @@ class Configure(config.base.Configure):
 
     self.logPrint('Libraries needed to link C code with another linker: '+str(self.clibs), 3, 'compilers')
 
-    if hasattr(self.setCompilers, 'FC'):
+    if hasattr(self.setCompilers, 'FC') or hasattr(self.setCompilers, 'CXX'):
       self.logPrint('Check that C libraries can be used from Fortran', 4, 'compilers')
       oldLibs = self.setCompilers.LIBS
       self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.clibs])+' '+self.setCompilers.LIBS
+    if hasattr(self.setCompilers, 'FC'):
       try:
         self.setCompilers.checkCompiler('FC')
       except RuntimeError, e:
