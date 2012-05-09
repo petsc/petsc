@@ -1,4 +1,4 @@
-#include "viimpl.h"  /*I "petscsnes.h" I*/
+#include <petsc-private/snesimpl.h>  /*I "petscsnes.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVISetComputeVariableBounds"
@@ -547,13 +547,19 @@ EXTERN_C_END
 PetscErrorCode SNESSetFromOptions_VI(SNES snes)
 {
   PetscErrorCode  ierr;
-  PetscBool       flg; 
+  PetscBool       flg;
+  SNESLineSearch  linesearch;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES VI options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_vi_monitor","Monitor all non-active variables","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESMonitorSet(snes,SNESMonitorVI,0,0);CHKERRQ(ierr);
+  }
+  if (!snes->linesearch) {
+    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
+    ierr = SNESLineSearchBTSetAlpha(linesearch, 0.0);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
