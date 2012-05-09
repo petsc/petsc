@@ -99,7 +99,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
   ptcomm->aff = PTHREADAFFPOLICY_ONECORE;
   ptcomm->spark = PTHREADPOOLSPARK_LEADER;
   ptcomm->ismainworker = PETSC_TRUE;
-  ptcomm->synchronizeafter = PETSC_FALSE;
+  ptcomm->synchronizeafter = PETSC_TRUE;
   tcomm->ops->destroy = PetscThreadCommDestroy_PThread;
   tcomm->ops->runkernel = PetscPThreadCommRunKernel_LockFree;
   tcomm->ops->barrier   = PetscPThreadCommBarrier_LockFree;
@@ -116,7 +116,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     ierr = PetscOptionsEnum("-threadcomm_pthread_affpolicy","Thread affinity policy"," ",PetscPThreadCommAffinityPolicyTypes,(PetscEnum)ptcomm->aff,(PetscEnum*)&ptcomm->aff,&flg2);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-threadcomm_pthread_type","Thread pool type"," ",PetscPThreadCommSynchronizationTypes,(PetscEnum)ptcomm->sync,(PetscEnum*)&ptcomm->sync,&flg3);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-threadcomm_pthread_spark","Thread pool spark type"," ",PetscPThreadCommPoolSparkTypes,(PetscEnum)ptcomm->spark,(PetscEnum*)&ptcomm->spark,&flg4);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-threadcomm_pthread_synchronizeafter","Puts a barrier after every kernel call",PETSC_NULL,PETSC_FALSE,&ptcomm->synchronizeafter,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-threadcomm_pthread_synchronizeafter","Puts a barrier after every kernel call",PETSC_NULL,PETSC_TRUE,&ptcomm->synchronizeafter,&flg1);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
     if(ptcomm->ismainworker) {
