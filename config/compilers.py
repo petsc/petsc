@@ -465,10 +465,7 @@ class Configure(config.base.Configure):
           if not arg in lflags:
             lflags.append(arg)
             self.logPrint('Found library directory: '+arg, 4, 'compilers')
-            if arg in self.clibs:
-              self.logPrint('Library directory already in C list so skipping in C++')
-            else:
-              cxxlibs.append(arg)
+            cxxlibs.append(arg)
           continue
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
         if arg == '-rpath' or arg == '-R':
@@ -844,7 +841,12 @@ class Configure(config.base.Configure):
             else:
               lflags.append(arg)
             self.logPrint('Found library: '+arg, 4, 'compilers')
-            flibs.append(arg)
+            if arg in self.clibs:
+              self.logPrint('Library already in C list so skipping in Fortran')
+            elif arg in self.cxxlibs:
+              self.logPrint('Library already in Cxx list so skipping in Fortran')
+            else:
+              flibs.append(arg)
           else:
             self.logPrint('Already in lflags: '+arg, 4, 'compilers')
           continue
