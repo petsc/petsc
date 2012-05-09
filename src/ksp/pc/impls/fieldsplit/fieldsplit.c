@@ -126,6 +126,21 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  FieldSplit with Schur preconditioner, factorization %s\n",PCFieldSplitSchurFactTypes[jac->schurfactorization]);CHKERRQ(ierr);
     }
+    switch(jac->schurpre) {
+    case PC_FIELDSPLIT_SCHUR_PRE_SELF:
+      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from S itself\n");CHKERRQ(ierr);break;
+    case PC_FIELDSPLIT_SCHUR_PRE_DIAG: return jac->pmat[1];
+      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from the block diagonal part of A11\n");CHKERRQ(ierr);break;
+    case PC_FIELDSPLIT_SCHUR_PRE_USER:
+      if (jac->schur_user) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from user provided matrix\n");CHKERRQ(ierr);
+      } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from the block diagonal part of A11\n");CHKERRQ(ierr);
+      }
+      break;
+    default:
+      SETERRQ1(((PetscObject) pc)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid Schur preconditioning type: %d", jac->schurpre);
+    }
     ierr = PetscViewerASCIIPrintf(viewer,"  Split info:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     for (i=0; i<jac->nsplits; i++) {
