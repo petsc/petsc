@@ -276,7 +276,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     SNESLogConvHistory(snes,snes->norm,snes->iter);
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* set parameter for default relative tolerance convergence test */
-    ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
 
 

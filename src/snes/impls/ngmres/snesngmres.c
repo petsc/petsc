@@ -180,7 +180,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   /* solution selection data */
   PetscBool           selectA, selectRestart;
   PetscReal           dnorm, dminnorm = 0.0, dcurnorm;
-  PetscReal           fminnorm;
+  PetscReal           fminnorm,xnorm,ynorm;
 
   SNESConvergedReason reason;
   PetscBool           lssucceed,changed_y,changed_w;
@@ -418,8 +418,8 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       ierr = VecCopy(FM, F);CHKERRQ(ierr);
       ierr = VecCopy(XM, X);CHKERRQ(ierr);
       ierr = VecCopy(XA, Y);CHKERRQ(ierr);
-      fnorm = fMnorm;
       ierr = VecAYPX(Y, -1.0, X);CHKERRQ(ierr);
+      fnorm = fMnorm;
       ierr = SNESLineSearchApply(ngmres->additive_linesearch,X,F,&fnorm,Y);CHKERRQ(ierr);
       ierr = SNESLineSearchGetSuccess(ngmres->additive_linesearch, &lssucceed);CHKERRQ(ierr);
       if (!lssucceed) {
@@ -458,6 +458,8 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
         }
         fnorm = fMnorm;
         nu = fnorm*fnorm;
+        ierr = VecCopy(XM, Y);CHKERRQ(ierr);
+        ierr = VecAXPY(Y,-1.0,X);CHKERRQ(ierr);
         ierr = VecCopy(FM, F);CHKERRQ(ierr);
         ierr = VecCopy(XM, X);CHKERRQ(ierr);
       }
@@ -554,8 +556,11 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes, snes->norm, snes->iter);
     ierr = SNESMonitor(snes, snes->iter, snes->norm);CHKERRQ(ierr);
-
-    ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    ierr = VecNormBegin(Y,NORM_2,&ynorm);CHKERRQ(ierr);
+    ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);
+    ierr = VecNormEnd(Y,NORM_2,&ynorm);CHKERRQ(ierr);
+    ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
+    ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
   }
   snes->reason = SNES_DIVERGED_MAX_IT;
