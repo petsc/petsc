@@ -7,7 +7,7 @@
 using ALE::Obj;
 
 template<typename Section, typename Order>
-void constructFieldSplit(const Obj<Section>& section, PetscInt numSplits, PetscInt numSplitFields[], PetscInt splitFields[], const Obj<Order>& globalOrder, MatNullSpace nullsp[], Vec v, PC fieldSplit) {
+void constructFieldSplit(const Obj<Section>& section, PetscInt numSplits, PetscInt numSplitFields[], PetscInt splitFields[], const Obj<Order>& globalOrder, Mat precon[], MatNullSpace nullsp[], Vec v, PC fieldSplit) {
   const typename Section::chart_type&  chart = section->getChart();
   PetscInt                            *numFields = PETSC_NULL;
   PetscInt                            *fields    = PETSC_NULL;
@@ -110,6 +110,9 @@ void constructFieldSplit(const Obj<Section>& section, PetscInt numSplits, PetscI
     ierr = ISCreateGeneral(section->comm(), n, idx,PETSC_OWN_POINTER, &is);CHKERRXX(ierr);
     if (nullsp && nullsp[s]) {
       ierr = PetscObjectCompose((PetscObject) is, "nearnullspace", (PetscObject) nullsp[s]);CHKERRXX(ierr);
+    }
+    if (precon && precon[s]) {
+      ierr = PetscObjectCompose((PetscObject) is, "pmat", (PetscObject) precon[s]);CHKERRXX(ierr);
     }
     ierr = PCFieldSplitSetIS(fieldSplit, splitName, is);CHKERRXX(ierr);
     ++splitName[0];
