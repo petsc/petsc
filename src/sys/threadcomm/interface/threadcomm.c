@@ -57,17 +57,25 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
 @*/
 PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
 {
+  static MPI_Comm comm_cached = MPI_COMM_NULL;
+  static PetscThreadComm tcomm_cached = 0;
   PetscErrorCode ierr;
   PetscMPIInt    flg;
   void*          ptr;
   MPI_Comm       icomm;
 
   PetscFunctionBegin;
+  if (comm == comm_cached) {
+    *tcommp = tcomm_cached;
+    PetscFunctionReturn(0);
+  }
   ierr = PetscCommDuplicate(comm,&icomm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_get(icomm,Petsc_ThreadComm_keyval,&ptr,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"MPI_Comm does not have a thread communicator");
   *tcommp = (PetscThreadComm)ptr;
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
+  comm_cached = comm;
+  tcomm_cached = *tcommp;
   PetscFunctionReturn(0);
 }
 
