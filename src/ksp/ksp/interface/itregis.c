@@ -3,7 +3,7 @@
 
 EXTERN_C_BEGIN
 extern PetscErrorCode  KSPCreate_Richardson(KSP);
-extern PetscErrorCode  KSPCreate_Chebychev(KSP);
+extern PetscErrorCode  KSPCreate_Chebyshev(KSP);
 extern PetscErrorCode  KSPCreate_CG(KSP);
 extern PetscErrorCode  KSPCreate_CGNE(KSP);
 extern PetscErrorCode  KSPCreate_NASH(KSP);
@@ -67,7 +67,7 @@ PetscErrorCode  KSPRegisterAll(const char path[])
   ierr = KSPRegisterDynamic(KSPSTCG,       path,"KSPCreate_STCG",      KSPCreate_STCG);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPGLTR,       path,"KSPCreate_GLTR",      KSPCreate_GLTR);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPRICHARDSON, path,"KSPCreate_Richardson",KSPCreate_Richardson);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPCHEBYCHEV,  path,"KSPCreate_Chebychev", KSPCreate_Chebychev);CHKERRQ(ierr);
+  ierr = KSPRegisterDynamic(KSPCHEBYSHEV,  path,"KSPCreate_Chebyshev", KSPCreate_Chebyshev);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPGMRES,      path,"KSPCreate_GMRES",     KSPCreate_GMRES);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPTCQMR,      path,"KSPCreate_TCQMR",     KSPCreate_TCQMR);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPBCGS,       path,"KSPCreate_BCGS",      KSPCreate_BCGS);CHKERRQ(ierr);

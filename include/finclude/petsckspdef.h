@@ -21,7 +21,7 @@
 !  Various Krylov subspace methods
 !
 #define KSPRICHARDSON 'richardson'
-#define KSPCHEBYCHEV 'chebychev'
+#define KSPCHEBYSHEV 'chebyshev'
 #define KSPCG 'cg'
 #define KSPCGNE 'cgne'
 #define KSPNASH 'nash'

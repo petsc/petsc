@@ -405,7 +405,7 @@ runex5_5_ngmres_fas:
 	   ${RM} -f ex5_5_ngmres_fas.tmp
 
 runex5_6:
-	-@${MPIEXEC} -n 4 ./ex5 -snes_converged_reason -ksp_converged_reason -da_grid_x 129 -da_grid_y 129  -pc_type mg -pc_mg_levels 8 -mg_levels_ksp_type chebychev -mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.5,0,1.1 -mg_levels_ksp_max_it 2 > ex5_6.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex5 -snes_converged_reason -ksp_converged_reason -da_grid_x 129 -da_grid_y 129  -pc_type mg -pc_mg_levels 8 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.5,0,1.1 -mg_levels_ksp_max_it 2 > ex5_6.tmp 2>&1; \
 	   ${DIFF} output/ex5_6.out ex5_6.tmp || echo  ${PWD} "\nPossible problem with ex5_6, diffs above \n========================================="; \
 	   ${RM} -f ex5_6.tmp
 

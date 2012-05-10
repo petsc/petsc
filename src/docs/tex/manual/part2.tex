@@ -2184,17 +2184,17 @@ be used, one calls the command
 \begin{tabbing}
   KSPSetType(KSP ksp,KSPType method);
 \end{tabbing}
-The type can be one of KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, 
+The type can be one of KSPRICHARDSON, KSPCHEBYSHEV, KSPCG, KSPGMRES, 
 KSPTCQMR, KSPBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPLSQR, KSPBICG, or KSPPREONLY.
 The KSP method can also be set with the options database command 
 \trl{-ksp_type},
-followed by one of the options \trl{richardson}, \trl{chebychev}, \trl{cg}, \trl{gmres}, \trl{tcqmr}, 
+followed by one of the options \trl{richardson}, \trl{chebyshev}, \trl{cg}, \trl{gmres}, \trl{tcqmr}, 
 \trl{bcgs}, \trl{cgs}, \trl{tfqmr}, \trl{cr}, \trl{lsqr}, \trl{bicg}, or \trl{preonly.} \findex{-ksp_type}
-There are method-specific options for the Richardson, Chebychev,
+There are method-specific options for the Richardson, Chebyshev,
 and GMRES methods: \sindex{GMRES} \sindex{CG}
 \begin{tabbing}
   KSPRichardsonSetScale(KSP ksp,double damping\_factor);\\
-  KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin);\\
+  KSPChebyshevSetEigenvalues(KSP ksp,double emax,double emin);\\
   KSPGMRESSetRestart(KSP ksp,int max\_steps);
 \end{tabbing}
 The default parameter values are \trl{damping_factor=1.0, 
@@ -2312,7 +2312,7 @@ the options database command \trl{ksp_norm_type unpreconditioned } or by calling
 {\bf Method}    &{\bf KSPType}  & {\bf Name}    \\
 \hline
 Richardson                                & KSPRICHARDSON & richardson \\
-Chebychev                                 & KSPCHEBYCHEV  & chebychev   \\
+Chebyshev                                 & KSPCHEBYSHEV  & chebyshev   \\
 Conjugate Gradient \cite{hs:52}           & KSPCG         & cg          \\
 BiConjugate Gradient                      & KSPBICG       & bicg        \\
 Generalized Minimal Residual \cite{ss:86} & KSPGMRES      & gmres       \\
