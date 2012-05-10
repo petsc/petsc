@@ -37,7 +37,7 @@ PetscErrorCode  PetscStackCreate(void)
   ierr = PetscNew(PetscStack,&petscstack_in);CHKERRQ(ierr);
   petscstack_in->currentsize = 0;
   petscstack = petscstack_in;
-
+  PetscThreadLocalSetValue(petscstack,petscstack); /* Sets the value for the pthread_key_t if it is used */
   return 0;
 }
 
@@ -88,6 +88,7 @@ PetscErrorCode  PetscStackDestroy(void)
     PetscStack *petscstack_in = petscstack;
     petscstack = 0;
     ierr = PetscFree(petscstack_in);CHKERRQ(ierr);
+    PetscThreadLocalDestroy(petscstack); /* Deletes pthread_key if it was used */
   }
   return 0;
 }
