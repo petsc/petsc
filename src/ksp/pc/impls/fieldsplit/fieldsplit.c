@@ -129,7 +129,7 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
     switch(jac->schurpre) {
     case PC_FIELDSPLIT_SCHUR_PRE_SELF:
       ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from S itself\n");CHKERRQ(ierr);break;
-    case PC_FIELDSPLIT_SCHUR_PRE_DIAG: return jac->pmat[1];
+    case PC_FIELDSPLIT_SCHUR_PRE_DIAG:
       ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from the block diagonal part of A11\n");CHKERRQ(ierr);break;
     case PC_FIELDSPLIT_SCHUR_PRE_USER:
       if (jac->schur_user) {
@@ -1517,7 +1517,7 @@ EXTERN_C_END
    Options Database Key:
 .  -pc_fieldsplit_type <type: one of multiplicative, additive, symmetric_multiplicative, special, schur> - Sets fieldsplit preconditioner type
 
-   Level: Developer
+   Level: Intermediate
 
 .keywords: PC, set, type, composite preconditioner, additive, multiplicative
 
@@ -1531,6 +1531,36 @@ PetscErrorCode  PCFieldSplitSetType(PC pc,PCCompositeType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscTryMethod(pc,"PCFieldSplitSetType_C",(PC,PCCompositeType),(pc,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFieldSplitGetType"
+/*@
+  PCFieldSplitGetType - Gets the type of fieldsplit preconditioner.
+
+  Not collective
+
+  Input Parameter:
+. pc - the preconditioner context
+
+  Output Parameter:
+. type - PC_COMPOSITE_ADDITIVE, PC_COMPOSITE_MULTIPLICATIVE (default), PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE, PC_COMPOSITE_SPECIAL, PC_COMPOSITE_SCHUR
+
+  Level: Intermediate
+
+.keywords: PC, set, type, composite preconditioner, additive, multiplicative
+.seealso: PCCompositeSetType()
+@*/
+PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
+{
+  PC_FieldSplit *jac = (PC_FieldSplit *) pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidIntPointer(type,2);
+  *type = jac->type;
   PetscFunctionReturn(0);
 }
 
