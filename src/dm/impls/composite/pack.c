@@ -797,7 +797,7 @@ PetscErrorCode  DMCompositeGetLocalVectors(DM dm,...)
   while (next) {
     Vec *vec;
     vec = va_arg(Argp, Vec*);
-    ierr = DMGetLocalVector(next->dm,vec);CHKERRQ(ierr);
+    if (vec) {ierr = DMGetLocalVector(next->dm,vec);CHKERRQ(ierr);}
     next = next->next;
   }
   va_end(Argp);
@@ -839,7 +839,7 @@ PetscErrorCode  DMCompositeRestoreLocalVectors(DM dm,...)
   while (next) {
     Vec *vec;
     vec = va_arg(Argp, Vec*);
-    ierr = DMRestoreLocalVector(next->dm,vec);CHKERRQ(ierr);
+    if (vec) {ierr = DMRestoreLocalVector(next->dm,vec);CHKERRQ(ierr);}
     next = next->next;
   }
   va_end(Argp);
