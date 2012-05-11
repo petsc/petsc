@@ -328,7 +328,7 @@ class MakeParser(object):
     '''Parses a PETSc action
     - Return a dictionary for the portions of a run'''
     import re
-    m = re.match('-@\$\{MPIEXEC\} -n (?P<numProcs>\d+) ./(?P<ex>ex\w+) (?P<args>[-.,\w ]+) >', lines[0])
+    m = re.match('-@\$\{MPIEXEC\} -n (?P<numProcs>\d+) ./(?P<ex>ex\w+)(?P<args>[-.,\w ]+)>', lines[0])
     if not m:
       raise RuntimeError('Could not parse launch sequence:\n'+lines[0])
     m2 = re.search('\$\{DIFF\} output/%s_(?P<num>\w+)\.out' % m.group('ex'), lines[1])
@@ -668,9 +668,9 @@ class DirectoryTreeWalker(logger.Logger):
     - Otherwise calls checkSourceDir()'''
     base = os.path.basename(dirname)
 
-    if base == 'examples':
+    if base in ['examples', 'tutorials']:
       return self.allowExamples
-    elif base in ['externalpackages', 'projects', 'tutorials', 'benchmarks', 'contrib']:
+    elif base in ['externalpackages', 'projects', 'benchmarks', 'contrib']:
       return False
     elif base in ['ftn-auto', 'ftn-custom', 'f90-custom']:
       return self.allowFortran
@@ -1308,7 +1308,7 @@ class PETScMaker(script.Script):
    else:
      walker = DirectoryTreeWalker(self.argDB, self.log, self.configInfo)
      if totalRebuild:
-       dirs = map(lambda d: os.path.join(rootDir, 'src', d), ['inline', 'sys', 'vec', 'mat', 'dm', 'ksp', 'snes', 'ts', 'docs', 'tops'])
+       dirs = map(lambda d: os.path.join(rootDir, 'src', d), ['inline', 'sys', 'vec', 'mat', 'dm', 'ksp', 'snes', 'ts', 'docs'])
      else:
        dirs = [rootDir]
      if parallel:
