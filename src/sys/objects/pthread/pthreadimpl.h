@@ -2,15 +2,6 @@
 #if !defined(__PETSCTHREADS_H)
 #define __PETSCTHREADS_H
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#if defined(PETSC_HAVE_SCHED_H)
-#ifndef __USE_GNU
-#define __USE_GNU
-#endif
-#include <sched.h>
-#endif
 #if defined(PETSC_HAVE_PTHREAD_H)
 #include <pthread.h>
 #elif defined(PETSC_HAVE_WINPTHREADS_H)
