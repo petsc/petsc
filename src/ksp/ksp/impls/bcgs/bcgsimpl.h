@@ -19,5 +19,5 @@ extern PetscErrorCode KSPSolve_BCGS(KSP);
 extern PetscErrorCode KSPBuildSolution_BCGS(KSP,Vec,Vec*);
 extern PetscErrorCode KSPReset_BCGS(KSP);
 extern PetscErrorCode KSPDestroy_BCGS(KSP);
-extern PetscErrorCode KSPCreate_BCGS(KSP);
+
 #endif

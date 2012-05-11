@@ -2,7 +2,6 @@
 /*
     This file implements flexible BiCGStab contributed by Jie Chen.
     Only right preconditioning is supported. 
-    Most routines are copied from bcgs.c execpt Solve() - will factor these routine out later - Hong
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
 
@@ -171,8 +170,6 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 
    Notes: See KSPBCGSL for additional stabilization
           Only supports right preconditioning 
-
-   References: Jie Chen's paper
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
 M*/
