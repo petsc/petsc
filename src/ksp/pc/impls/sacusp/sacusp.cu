@@ -59,6 +59,7 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
   PetscBool      flg = PETSC_FALSE;
   PetscErrorCode ierr;
   Mat_SeqAIJCUSP *gpustruct;
+  CUSPMATRIX* mat;	
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
@@ -73,7 +74,18 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
   try {
     ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
     gpustruct  = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);
-    sa->SACUSP = new cuspsaprecond(*(CUSPMATRIX*)gpustruct->mat);
+#ifdef PETSC_HAVE_TXPETSCGPU
+    mat = (CUSPMATRIX*)gpustruct->mat->getCsrMatrix();
+#else
+    mat = (CUSPMATRIX*)gpustruct->mat;
+#endif
+
+#if defined(PETSC_USE_COMPLEX)
+    sa->SACUSP = 0; CHKERRQ(1); /* TODO */
+#else
+    sa->SACUSP = new cuspsaprecond(*mat);
+#endif
+
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
@@ -95,7 +107,12 @@ static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscR
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = VecCUSPGetArrayRead(b,&barray);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayReadWrite(y,&yarray);CHKERRQ(ierr);
-  cusp::default_monitor<PetscScalar> monitor(*barray,its,rtol,abstol);
+  cusp::default_monitor<PetscReal> monitor(*barray,its,rtol,abstol);
+#if defined(PETSC_USE_COMPLEX)
+  sac = 0;
+  CHKERRQ(1);
+  /* TODO */
+#else
   sac->SACUSP->solve(*barray,*yarray,monitor);
   *outits = monitor.iteration_count();
   if (monitor.converged()){
@@ -104,6 +121,7 @@ static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscR
   } else{
     *reason = PCRICHARDSON_CONVERGED_ITS;
   }
+#endif
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayRead(b,&barray);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayReadWrite(y,&yarray);CHKERRQ(ierr);
@@ -144,7 +162,11 @@ static PetscErrorCode PCApply_SACUSP(PC pc,Vec x,Vec y)
   ierr = VecCUSPGetArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayWrite(y,&yarray);CHKERRQ(ierr);
   try {
+#if defined(PETSC_USE_COMPLEX)
+
+#else
     cusp::multiply(*sac->SACUSP,*xarray,*yarray);
+#endif
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }

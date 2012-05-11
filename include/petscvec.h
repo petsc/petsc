@@ -381,6 +381,8 @@ extern PetscErrorCode  VecRestoreArray2d(Vec,PetscInt,PetscInt,PetscInt,PetscInt
 extern PetscErrorCode  VecGetArray1d(Vec,PetscInt,PetscInt,PetscScalar *[]);
 extern PetscErrorCode  VecRestoreArray1d(Vec,PetscInt,PetscInt,PetscScalar *[]);
 
+extern PetscErrorCode  VecTransplantPlaceArray(Vec,Vec);
+extern PetscErrorCode  VecTransplantResetArray(Vec,Vec);
 extern PetscErrorCode  VecPlaceArray(Vec,const PetscScalar[]);
 extern PetscErrorCode  VecResetArray(Vec);
 extern PetscErrorCode  VecReplaceArray(Vec,const PetscScalar[]);

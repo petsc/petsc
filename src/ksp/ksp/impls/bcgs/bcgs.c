@@ -137,7 +137,6 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     }
     ierr = PCApply(pc,P,P2);CHKERRQ(ierr);
     ierr = MatMult(pc->mat,P2,V);CHKERRQ(ierr);
-    
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     if (d1 == 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"Divide by zero");
     alpha = rho / d1;                 /*   a <- rho / (v,rp)  */
@@ -149,7 +148,6 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     }
     ierr = PCApply(pc,S,S2);CHKERRQ(ierr);
     ierr = MatMult(pc->mat,S2,T);CHKERRQ(ierr);
-
     ierr = VecDotNorm2(S,T,&d1,&d2);CHKERRQ(ierr);
     if (d2 == 0.0) {
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
@@ -270,15 +268,50 @@ static PetscErrorCode KSPSolve_BCGS(KSP ksp)
 
   i=0;
   do {
+    printf("Start of Loop\n");
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);       /*   rho <- (r,rp)      */
     beta = (rho/rhoold) * (alpha/omegaold);
     ierr = VecAXPBYPCZ(P,1.0,-omegaold*beta,beta,R,V);CHKERRQ(ierr);  /* p <- r - omega * beta* v + beta * p */
+    printf("**** BETA=%1.5g,%1.5g\n",PetscRealPart(beta),PetscImaginaryPart(beta));
+#if 1
+    printf("\nVecNorm : P\t%d\t%p\n",P->valid_GPU_array,*P->ops->norm);
+    ierr = VecNorm(P,NORM_2,&dp);CHKERRQ(ierr);    
+    printf("\nVecNorm : R\t%d\t%p\n",R->valid_GPU_array,*R->ops->norm);
+    ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);    
+    printf("\nVecNorm : V\t%d\t%p\n",V->valid_GPU_array,*V->ops->norm);
+    ierr = VecNorm(V,NORM_2,&dp);CHKERRQ(ierr);    
+    printf("\n");
+#endif
+
+    printf("Before first MatMult\n");
     ierr = KSP_PCApplyBAorAB(ksp,P,V,T);CHKERRQ(ierr);  /*   v <- K p           */
+
+#if 1
+    printf("\nKSP_PCApplyBAorAB : V\t%d\n",V->valid_GPU_array);
+    ierr = VecNorm(V,NORM_2,&dp);CHKERRQ(ierr);    
+    printf("\nKSP_PCApplyBAorAB : P\t%d\n",P->valid_GPU_array);
+    ierr = VecNorm(P,NORM_2,&dp);CHKERRQ(ierr);    
+    printf("\nKSP_PCApplyBAorAB : T\t%d\n",T->valid_GPU_array);
+    ierr = VecNorm(T,NORM_2,&dp);CHKERRQ(ierr);    
+    printf("\n");
+#endif
+
+    printf("Before VecDot\n");
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     if (d1 == 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"Divide by zero");
     alpha = rho / d1;                 /*   a <- rho / (v,rp)  */
+    printf("Before VecWAXPY\n");
     ierr = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr);      /*   s <- r - a v       */
+    printf("Before second MatMult\n");
     ierr = KSP_PCApplyBAorAB(ksp,S,T,R);CHKERRQ(ierr);/*   t <- K s    */
+#if 1
+    if (i>0) {
+      printf("\nKSP_PCApplyBAorAB\n");
+      ierr = VecNorm(T,NORM_2,&dp);CHKERRQ(ierr);    
+      printf("\n");
+    }
+#endif
+    printf("Before VecDotNorm2\n");
     ierr = VecDotNorm2(S,T,&d1,&d2);CHKERRQ(ierr);
     if (d2 == 0.0) {
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p

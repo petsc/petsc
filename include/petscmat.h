@@ -43,6 +43,9 @@ J*/
 #define MATAIJCUSP         "aijcusp"
 #define MATSEQAIJCUSP      "seqaijcusp"
 #define MATMPIAIJCUSP      "mpiaijcusp"
+#define MATAIJCUSPARSE     "aijcusparse"
+#define MATSEQAIJCUSPARSE  "seqaijcusparse"
+#define MATMPIAIJCUSPARSE  "mpiaijcusparse"
 #define MATAIJPERM         "aijperm"
 #define MATSEQAIJPERM      "seqaijperm"
 #define MATMPIAIJPERM      "mpiaijperm"
@@ -108,7 +111,7 @@ J*/
 #define MATSOLVERPETSC        "petsc"
 #define MATSOLVERPLAPACK      "plapack"
 #define MATSOLVERBAS          "bas"
-
+#define MATSOLVERCUSPARSE     "cusparse"
 #define MATSOLVERBSTRM        "bstrm"
 #define MATSOLVERSBSTRM       "sbstrm"
 
@@ -1776,9 +1779,25 @@ extern PetscErrorCode  MatMumpsSetIcntl(Mat,PetscInt,PetscInt);
 extern PetscErrorCode  MatSuperluSetILUDropTol(Mat,PetscReal);
 #endif
 
+#if defined PETSC_HAVE_CUDA
+#define GPUStorageFormat char*
+#define CSR              "csr"
+#define DIA              "dia"
+#define ELL              "ell"
+#define HYB              "hyb"
+#endif
+
+#if defined PETSC_HAVE_TXPETSCGPU
+extern PetscErrorCode  MatCreateSeqAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
+extern PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
+extern PetscErrorCode  MatAIJCUSPARSESetGPUStorageFormatForMatMult(Mat,const GPUStorageFormat);
+extern PetscErrorCode  MatAIJCUSPARSESetGPUStorageFormatForMatSolve(Mat,const GPUStorageFormat);
+#endif
+
 #if defined(PETSC_HAVE_CUSP)
 extern PetscErrorCode  MatCreateSeqAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 extern PetscErrorCode  MatCreateAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
+extern PetscErrorCode  MatAIJCUSPSetGPUStorageFormatForMatMult(Mat,const GPUStorageFormat);
 #endif
 
 /* 

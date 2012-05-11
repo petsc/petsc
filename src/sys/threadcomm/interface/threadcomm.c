@@ -682,9 +682,12 @@ PetscErrorCode PetscThreadReductionKernelBegin(PetscInt trank,PetscThreadComm tc
     ((PetscReal*)tcomm->red->local_red)[trank] = *(PetscReal*)lred;
     break;
 #endif
+
+#if !defined(PETSC_USE_COMPLEX)
   case PETSC_SCALAR:
     ((PetscScalar*)tcomm->red->local_red)[trank] = *(PetscScalar*)lred;
     break;
+#endif
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown datatype provided for kernel reduction");
     break;

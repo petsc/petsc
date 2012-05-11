@@ -328,6 +328,7 @@ extern PetscLogEvent VEC_CUSPCopyToGPU, VEC_CUSPCopyFromGPU;
 extern PetscLogEvent VEC_CUSPCopyToGPUSome, VEC_CUSPCopyFromGPUSome;
 
 #if defined(PETSC_HAVE_CUSP)
+extern PetscErrorCode VecCUSPAllocateCheckHost(Vec v);
 extern PetscErrorCode VecCUSPCopyFromGPU(Vec v);
 #endif
 

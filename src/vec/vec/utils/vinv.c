@@ -3,7 +3,7 @@
      Some useful vector utility functions.
 */
 #include <petsc-private/vecimpl.h>          /*I "petscvec.h" I*/
-
+#include <../src/vec/vec/impls/mpi/pvecimpl.h>
 extern MPI_Op VecMax_Local_Op;
 extern MPI_Op VecMin_Local_Op;
 
@@ -1253,15 +1253,23 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscScalar *nm)
     ierr = VecGetArray(s, &sx);CHKERRQ(ierr);
     ierr = VecGetArray(t, &tx);CHKERRQ(ierr);
 
+    PetscReal tmp = 0.0;
+    ierr = VecNorm_MPI(s,NORM_2, &tmp);
+    ierr = VecNorm_MPI(t,NORM_2, &tmp);
+
     for (i = 0; i<n; i++) {
       dpx += sx[i]*PetscConj(tx[i]);
       nmx += tx[i]*PetscConj(tx[i]);
     }
     work[0] = dpx;
     work[1] = nmx;
+    //printf("VecDotNorm2=%1.5g,%1.5g\n",PetscRealPart(dpx),PetscImaginaryPart(dpx));
+    //printf("VecDotNorm2=%1.5g,%1.5g\n",PetscRealPart(nmx),PetscImaginaryPart(nmx));
     ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
     *dp  = sum[0];
     *nm  = sum[1];
+    //printf("MPI : VecDotNorm2=%1.5g,%1.5g\n",PetscRealPart(*dp),PetscImaginaryPart(*dp));
+    //printf("MPI : VecDotNorm2=%1.5g,%1.5g\n",PetscRealPart(*nm),PetscImaginaryPart(*nm));
 
     ierr = VecRestoreArray(t, &tx);CHKERRQ(ierr);
     ierr = VecRestoreArray(s, &sx);CHKERRQ(ierr);

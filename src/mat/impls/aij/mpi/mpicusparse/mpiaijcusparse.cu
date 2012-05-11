@@ -2,8 +2,8 @@
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUSP"
-PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
+#define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUSPARSE"
+PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_MPIAIJ     *b;
   PetscErrorCode ierr;
@@ -15,6 +15,8 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const P
   if (d_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %D",d_nz);
   if (o_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %D",o_nz);
 
+  ierr = PetscLayoutSetBlockSize(B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(B->cmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   if (d_nnz) {
@@ -33,11 +35,11 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const P
     /* Explicitly create 2 MATSEQAIJ matrices. */
     ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
     ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
-    ierr = MatSetType(b->A,MATSEQAIJCUSP);CHKERRQ(ierr);
+    ierr = MatSetType(b->A,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
     ierr = MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N);CHKERRQ(ierr);
-    ierr = MatSetType(b->B,MATSEQAIJCUSP);CHKERRQ(ierr);
+    ierr = MatSetType(b->B,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
   }
 
@@ -48,8 +50,8 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const P
 }
 EXTERN_C_END
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetVecs_MPIAIJCUSP"
-PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
+#define __FUNCT__ "MatGetVecs_MPIAIJCUSPARSE"
+PetscErrorCode  MatGetVecs_MPIAIJCUSPARSE(Mat mat,Vec *right,Vec *left)
 {
   PetscErrorCode ierr;
 
@@ -74,8 +76,8 @@ PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
 
 #ifdef PETSC_HAVE_TXPETSCGPU
 #undef __FUNCT__
-#define __FUNCT__ "MatMult_MPIAIJCUSP"
-PetscErrorCode MatMult_MPIAIJCUSP(Mat A,Vec xx,Vec yy)
+#define __FUNCT__ "MatMult_MPIAIJCUSPARSE"
+PetscErrorCode MatMult_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 {
   // This multiplication sequence is different sequence
   // than the CPU version. In particular, the diagonal block
@@ -108,34 +110,34 @@ PetscErrorCode MatMult_MPIAIJCUSP(Mat A,Vec xx,Vec yy)
 EXTERN_C_BEGIN
 PetscErrorCode  MatCreate_MPIAIJ(Mat);
 EXTERN_C_END
-PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats);
+//PetscErrorCode MatSetValuesBatch_MPIAIJCUSPARSE(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatCreate_MPIAIJCUSP"
-PetscErrorCode  MatCreate_MPIAIJCUSP(Mat B)
+#define __FUNCT__ "MatCreate_MPIAIJCUSPARSE"
+PetscErrorCode  MatCreate_MPIAIJCUSPARSE(Mat B)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate_MPIAIJ(B);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAIJSetPreallocation_C",
-                                     "MatMPIAIJSetPreallocation_MPIAIJCUSP",
-                                      MatMPIAIJSetPreallocation_MPIAIJCUSP);CHKERRQ(ierr);
-  B->ops->getvecs        = MatGetVecs_MPIAIJCUSP;
-  B->ops->setvaluesbatch = MatSetValuesBatch_MPIAIJCUSP;
+                                     "MatMPIAIJSetPreallocation_MPIAIJCUSPARSE",
+                                      MatMPIAIJSetPreallocation_MPIAIJCUSPARSE);CHKERRQ(ierr);
+  B->ops->getvecs        = MatGetVecs_MPIAIJCUSPARSE;
+  //B->ops->setvaluesbatch = MatSetValuesBatch_MPIAIJCUSPARSE;
 #ifdef PETSC_HAVE_TXPETSCGPU
-  B->ops->mult        = MatMult_MPIAIJCUSP;
+  B->ops->mult        = MatMult_MPIAIJCUSPARSE;
 #endif
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJCUSPARSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatCreateAIJCUSP"
-PetscErrorCode  MatCreateAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
+#define __FUNCT__ "MatCreateAIJCUSPARSE"
+PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -145,29 +147,29 @@ PetscErrorCode  MatCreateAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
-    ierr = MatSetType(*A,MATMPIAIJCUSP);CHKERRQ(ierr);
+    ierr = MatSetType(*A,MATMPIAIJCUSPARSE);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(*A,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
   } else {
-    ierr = MatSetType(*A,MATSEQAIJCUSP);CHKERRQ(ierr);
+    ierr = MatSetType(*A,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(*A,d_nz,d_nnz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 /*MC
-   MATAIJCUSP - MATAIJCUSP = "aijcusp" - A matrix type to be used for sparse matrices.
+   MATAIJCUSPARSE - MATAIJCUSPARSE = "aijcusparse" - A matrix type to be used for sparse matrices.
 
-   This matrix type is identical to MATSEQAIJCUSP when constructed with a single process communicator,
-   and MATMPIAIJCUSP otherwise.  As a result, for single process communicators, 
+   This matrix type is identical to MATSEQAIJCUSPARSE when constructed with a single process communicator,
+   and MATMPIAIJCUSPARSE otherwise.  As a result, for single process communicators, 
   MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported 
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.
 
    Options Database Keys:
-. -mat_type mpiaijcusp - sets the matrix type to "mpiaijcusp" during a call to MatSetFromOptions()
+. -mat_type mpiaijcusparse - sets the matrix type to "mpiaijcusparse" during a call to MatSetFromOptions()
 
   Level: beginner
 
-.seealso: MatCreateMPIAIJ,MATSEQAIJ,MATMPIAIJ, MATMPIAIJCUSP, MATSEQAIJCUSP
+.seealso: MatCreateMPIAIJ,MATSEQAIJ,MATMPIAIJ, MATMPIAIJCUSPARSE, MATSEQAIJCUSPARSE
 M*/
 

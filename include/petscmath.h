@@ -46,6 +46,7 @@ typedef __float128 PetscReal;
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_CLANGUAGE_CXX)
 /* C++ support of complex number */
+/*
 #include <complex>
 
 #define PetscRealPart(a)      (a).real()
@@ -63,11 +64,32 @@ typedef __float128 PetscReal;
 typedef std::complex<float> PetscScalar;
 #elif defined(PETSC_USE_REAL_DOUBLE)
 typedef std::complex<double> PetscScalar;
-#endif /* PETSC_USE_REAL_* */
+#endif */ /* PETSC_USE_REAL_* */
+
+/* CUSP support of complex number */
+
+#include <cusp/complex.h>
+
+#define PetscRealPart(a)      (a).real()
+#define PetscImaginaryPart(a) (a).imag()
+#define PetscAbsScalar(a)     cusp::abs(a)
+#define PetscConj(a)          cusp::conj(a)
+#define PetscSqrtScalar(a)    cusp::sqrt(a)
+#define PetscPowScalar(a,b)   cusp::pow(a,b)
+#define PetscExpScalar(a)     cusp::exp(a)
+#define PetscLogScalar(a)     cusp::log(a)
+#define PetscSinScalar(a)     cusp::sin(a)
+#define PetscCosScalar(a)     cusp::cos(a)
+
+#if defined(PETSC_USE_REAL_SINGLE)
+typedef cusp::complex<float> PetscScalar;
+#elif defined(PETSC_USE_REAL_DOUBLE)
+typedef cusp::complex<double> PetscScalar;
+#endif
 
 #else /* PETSC_CLANGUAGE_CXX */
 /*  C support of complex numbers: Requires C99 compliant compiler*/
-#include <complex.h>
+#include <cusp::complex.h>
 
 #if defined(PETSC_USE_REAL_SINGLE)
 typedef float complex PetscScalar;

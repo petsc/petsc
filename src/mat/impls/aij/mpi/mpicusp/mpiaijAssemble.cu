@@ -147,7 +147,7 @@ class tiled_range
 
 typedef cusp::device_memory memSpace;
 typedef int   IndexType;
-typedef float ValueType;
+typedef PetscScalar ValueType;
 typedef cusp::array1d<IndexType, memSpace> IndexArray;
 typedef cusp::array1d<ValueType, memSpace> ValueArray;
 typedef cusp::array1d<IndexType, cusp::host_memory> IndexHostArray;
@@ -391,8 +391,10 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
 
   // print the "fat" COO representation
   if (PetscLogPrintInfo) {
+#if !defined(PETSC_USE_COMPLEX)
     cusp::print(diagCOO);
     cusp::print(offdiagCOO);
+#endif
   }
 
   // Figure out the number of unique off-diagonal columns
@@ -466,8 +468,10 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
 
   // print the final matrix
   if (PetscLogPrintInfo) {
+#if !defined(PETSC_USE_COMPLEX)
     cusp::print(A);
     cusp::print(B);
+#endif
   }
 
   ierr = PetscInfo(J, "Converting to PETSc matrix\n");CHKERRQ(ierr);
@@ -477,8 +481,10 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   cusp::convert(A, *Agpu);
   cusp::convert(B, *Bgpu);
   if (PetscLogPrintInfo) {
+#if !defined(PETSC_USE_COMPLEX)
     cusp::print(*Agpu);
     cusp::print(*Bgpu);
+#endif
   }
   {
     ierr = PetscInfo(J, "Copying to CPU matrix");CHKERRQ(ierr);

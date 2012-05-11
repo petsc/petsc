@@ -144,7 +144,7 @@ class tiled_range
 
 typedef cusp::device_memory memSpace;
 typedef int   IndexType;
-typedef float ValueType;
+typedef PetscScalar ValueType;
 typedef cusp::array1d<IndexType, memSpace> IndexArray;
 typedef cusp::array1d<ValueType, memSpace> ValueArray;
 typedef IndexArray::iterator IndexArrayIterator;
@@ -188,8 +188,9 @@ PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   //   Need the column map
 
   // print the "fat" COO representation
+#if !defined(PETSC_USE_COMPLEX)
   if (PetscLogPrintInfo) {cusp::print(COO);}
-
+#endif
   // sort COO format by (i,j), this is the most costly step
   ierr = PetscInfo(J, "Sorting rows and columns\n");CHKERRQ(ierr);
 #if 1
@@ -237,8 +238,9 @@ PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
 #endif
 
   // print the "fat" COO representation
+#if !defined(PETSC_USE_COMPLEX)
   if (PetscLogPrintInfo) {cusp::print(COO);}
-
+#endif
   // compute number of unique (i,j) entries
   //   this counts the number of changes as we move along the (i,j) list
   ierr = PetscInfo(J, "Computing number of unique entries\n");CHKERRQ(ierr);
@@ -268,8 +270,9 @@ PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
      thrust::plus<ValueType>());
 
   // print the final matrix
+#if !defined(PETSC_USE_COMPLEX)
   if (PetscLogPrintInfo) {cusp::print(A);}
-
+#endif
   //std::cout << "Writing matrix" << std::endl;
   //cusp::io::write_matrix_market_file(A, "A.mtx");
 
@@ -278,7 +281,9 @@ PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   //cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory> Jgpu;
   CUSPMATRIX *Jgpu = new CUSPMATRIX;
   cusp::convert(A, *Jgpu);
+#if !defined(PETSC_USE_COMPLEX)
   if (PetscLogPrintInfo) {cusp::print(*Jgpu);}
+#endif
   ierr = PetscInfo(J, "Copying to CPU matrix\n");CHKERRQ(ierr);
   ierr = MatCUSPCopyFromGPU(J, Jgpu);CHKERRQ(ierr);
   PetscFunctionReturn(0);

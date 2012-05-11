@@ -11,9 +11,7 @@ class Configure(config.package.Package):
     self.cxx             = 0
     self.archIndependent = 1
     self.worksonWindows  = 1
-    self.downloadonWindows = 1
-    self.complex         = 0
-    self.useddirectly    = 1
+    self.complex         = 1
     return
 
   def setupDependencies(self, framework):
@@ -48,7 +46,7 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional tests needed by txpetscgpu'''
     if not self.cusp.found or not self.thrust.found:
-      raise RuntimeError('PETSc CUDA support requires the CUSP and Thrust packages\nRerun configure using --with-cusp-dir and --with-thrust-dir')
+      raise RuntimeError('PETSc TxPETScGPU support requires the CUSP and Thrust packages\nRerun configure using --with-cusp-dir and --with-thrust-dir')
     config.package.Package.configureLibrary(self)
     return
 

@@ -78,6 +78,9 @@
 #define MATAIJCUSP         'aijcusp'
 #define MATSEQAIJCUSP      'seqaijcusp'
 #define MATMPIAIJCUSP      'mpiaijcusp'
+#define MATAIJCUSPARSE     'aijcusparse'
+#define MATSEQAIJCUSPARSE  'seqaijcusparse'
+#define MATMPIAIJCUSPARSE  'mpiaijcusparse'
 #define MATAIJPERM         'aijperm'
 #define MATSEQAIJPERM      'seqaijperm'
 #define MATMPIAIJPERM      'mpiaijperm'
@@ -134,7 +137,14 @@
 #define MATSOLVERPETSC        'petsc'
 #define MATSOLVERPLAPACK      'plapack'
 #define MATSOLVERBAS          'bas'
-
+#define MATSOLVERCUSPARSE     'cusparse'
 #define MATSOLVERBSTRM        'bstrm'
 #define MATSOLVERSBSTRM       'sbstrm'
+!
+! GPUStorageFormats
+!
+#define CSR              'csr'
+#define DIA              'dia'
+#define ELL              'ell'
+#define HYB              'hyb'
 #endif

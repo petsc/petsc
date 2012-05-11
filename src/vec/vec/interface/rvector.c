@@ -162,7 +162,6 @@ PetscErrorCode  VecNorm(Vec x,NormType type,PetscReal *val)
     ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[type],*val,flg);CHKERRQ(ierr);
     if (flg) PetscFunctionReturn(0);
   }
-
   ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
   ierr = (*x->ops->norm)(x,type,val);CHKERRQ(ierr);
   ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
@@ -1533,6 +1532,61 @@ PetscErrorCode  VecPlaceArray(Vec vec,const PetscScalar array[])
     ierr = (*vec->ops->placearray)(vec,array);CHKERRQ(ierr);
   } else SETERRQ(((PetscObject)vec)->comm,PETSC_ERR_SUP,"Cannot place array in this type of vector");
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode  VecTransplantPlaceArray(Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+  PetscScalar            *x_array;
+  PetscFunctionBegin;
+
+  // Effectively VecGetArray? ... the difference is that we only
+  // do a VecCUSPAllocateCheckHost rather than VecCUSPCopyFromGPU.
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  if (x->petscnative){
+#if defined(PETSC_HAVE_CUSP)
+    if (!*((PetscScalar**)x->data)) {
+      ierr = VecCUSPAllocateCheckHost(x);CHKERRQ(ierr);
+    }
+#endif
+    x_array = *((PetscScalar **)x->data);
+  } else {
+    ierr = (*x->ops->getarray)(x,&x_array);CHKERRQ(ierr);
+  }
+
+  // next, place array
+  ierr = VecPlaceArray(y,x_array);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_CUSP)
+  y->valid_GPU_array = x->valid_GPU_array;
+  if (x->spptr)
+    y->spptr = x->spptr;
+#endif
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode  VecTransplantResetArray(Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+  PetscScalar            *y_array;
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_CUSP)
+  y->valid_GPU_array = x->valid_GPU_array;
+  if (!y->spptr)
+    y->spptr = x->spptr;
+  x->spptr = PETSC_NULL;
+  x->valid_GPU_array = PETSC_CUSP_UNALLOCATED;
+#endif
+
+  ierr = VecResetArray(x);CHKERRQ(ierr);
+
+  // This acts as the VecRestoreArray
+  y_array = *((PetscScalar **)y->data);
+  if (!y->petscnative)
+    ierr = (*y->ops->restorearray)(y,&y_array);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
+  if (&y_array) y_array = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 

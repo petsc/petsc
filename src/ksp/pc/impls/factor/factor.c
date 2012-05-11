@@ -263,7 +263,7 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
 -  stype - for example, spooles, superlu, superlu_dist
 
    Options Database Key:
-.  -pc_factor_mat_solver_package <stype> - spooles, petsc, superlu, superlu_dist, mumps
+.  -pc_factor_mat_solver_package <stype> - spooles, petsc, superlu, superlu_dist, mumps, cusparse
 
    Level: intermediate
 
