@@ -795,13 +795,13 @@ runex37_3:
 	   ${RM} -f ex37.tmp
 
 runex38:
-	-@${MPIEXEC} -n 8 ./ex38 -ksp_type bcgs -ksp_bcgs_flexible -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 64 -n2 64 > ex38.tmp 2>&1;\
+	-@${MPIEXEC} -n 8 ./ex38 -ksp_type fbcgs -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 64 -n2 64 > ex38.tmp 2>&1;\
 	if (${DIFF} output/ex38.out ex38.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex38_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex38.tmp
 
 runex39:
-	-@${MPIEXEC} -n 8 ./ex39 -ksp_type bcgs -ksp_bcgs_flexible -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 32 -n2 32 -n3 32 > ex39.tmp 2>&1;\
+	-@${MPIEXEC} -n 8 ./ex39 -ksp_type fbcgs -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 32 -n2 32 -n3 32 > ex39.tmp 2>&1;\
 	if (${DIFF} output/ex39.out ex39.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex39_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex39.tmp

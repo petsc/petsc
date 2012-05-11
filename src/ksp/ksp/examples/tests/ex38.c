@@ -1,7 +1,7 @@
 /*
   Program usage:  mpiexec -n <procs> ex38 [-help] [all PETSc options]
   Example:
-mpiexec -n 8 ./ex38 -ksp_type bcgs -ksp_bcgs_flexible -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -ksp_monitor -n1 64 -n2 64
+mpiexec -n 8 ./ex38 -ksp_type fbcgs -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -ksp_monitor -n1 64 -n2 64
 
   Contributed by Jie Chen for testing flexible BiCGStab algorithm
 */
