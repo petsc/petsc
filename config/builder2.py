@@ -154,8 +154,25 @@ def regression(args):
   ret   = 0
   maker = builder.PETScMaker()
   maker.setup()
-  for ex in examples:
-    ret = checkSingleRun(maker, ex)
+
+  args.retain  = False
+  args.testnum = None
+  walker = builder.DirectoryTreeWalker(maker.argDB, maker.log, maker.configInfo, allowExamples = True)
+  #dirs = map(lambda d: os.path.join(maker.petscDir, 'src', d), ['inline', 'sys', 'vec', 'mat', 'dm', 'ksp', 'snes', 'ts', 'docs', 'tops'])
+  dirs = map(lambda d: os.path.join(maker.petscDir, 'src', d), ['vec'])
+  for d in dirs:
+    print 'Dir',d
+    for root, files in walker.walk(d):
+      baseDir = os.path.basename(root)
+      if not baseDir == 'tests' and not baseDir == 'tutorials': continue
+      for f in files:
+        basename, ext = os.path.splitext(f)
+        if not basename.startswith('ex'): continue
+        if not ext in ['.c', '.F']: continue
+        ex  = os.path.join(root, f)
+        ret = checkSingleRun(maker, ex)
+        if ret: break
+      if ret: break
     if ret: break
   if not ret:
     print('All regression tests pass')
