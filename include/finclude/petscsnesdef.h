@@ -40,7 +40,6 @@
 #define SNESQN          'qn'
 #define SNESSHELL       'shell'
 #define SNESNCG         'ncg'
-#define SNESSORQN       'sorqn'
 #define SNESFAS         'fas'
 #define SNESMS          'ms'
 

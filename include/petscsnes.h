@@ -41,7 +41,6 @@ J*/
 #define SNESSHELL        "shell"
 #define SNESGS           "gs"
 #define SNESNCG          "ncg"
-#define SNESSORQN        "sorqn"
 #define SNESFAS          "fas"
 #define SNESMS           "ms"
 
