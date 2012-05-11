@@ -368,7 +368,21 @@ extern PetscErrorCode  PetscSetFPTrap(PetscFPTrap);
 extern PetscErrorCode  PetscFPTrapPush(PetscFPTrap);
 extern PetscErrorCode  PetscFPTrapPop(void);
 
+/*  Linux functions CPU_SET and others don't work if sched.h is not included before
+    including pthread.h. Also, these functions are active only if either _GNU_SOURCE
+    or __USE_GNU is not set (see /usr/include/sched.h and /usr/include/features.h), hence
+    set these first.
+*/
 #if defined(PETSC_HAVE_PTHREADCLASSES)
+#if defined(PETSC_HAVE_SCHED_H)
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+#ifndef __USE_GNU
+#define __USE_GNU
+#endif
+#include <sched.h>
+#endif
 #include <pthread.h>
 #endif
 

@@ -4,23 +4,16 @@ Residual norm of relaxation after 0.0001 20 relaxations: 0.016546 7.12054
 Initialization stage: creating level 2
 Level 2 can be treated directly.
 Algorithm will use 2 levels.
-After 1 iterations residual norm is 0.001217
-After 1 iterations Rayleigh quotient of residual is 0.078496
-After 2 iterations residual norm is 0.000012
-After 2 iterations Rayleigh quotient of residual is 0.054463
-After 3 iterations residual norm is 0.000000
-After 3 iterations Rayleigh quotient of residual is 0.043182
+After 1 iterations residual norm is 0.001562
+After 1 iterations Rayleigh quotient of residual is 0.013884
+After 2 iterations residual norm is 0.000045
+After 2 iterations Rayleigh quotient of residual is 0.007357
+After 3 iterations residual norm is 0.000002
+After 3 iterations Rayleigh quotient of residual is 0.006120
 After 4 iterations residual norm is 0.000000
-After 4 iterations Rayleigh quotient of residual is 0.039107
+After 4 iterations Rayleigh quotient of residual is 0.005943
 General setup stage
 Adding candidate vector 2
-After 5 iterations residual norm is 0.000105
-After 5 iterations Rayleigh quotient of residual is 0.028312
-After 6 iterations residual norm is 0.000000
-After 6 iterations Rayleigh quotient of residual is 0.025977
-General setup stage
-nd_fast is true
-either too many candidates for storage or cycle is already effective
-  0 KSP Residual norm 2.85148 
-  1 KSP Residual norm 0.000406401 
-  2 KSP Residual norm 1.31395e-07 
+After 5 iterations residual norm is 0.000000
+  0 KSP Residual norm 2.8519 
+  1 KSP Residual norm < 1.e-11
