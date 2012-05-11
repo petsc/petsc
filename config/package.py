@@ -437,11 +437,11 @@ class Package(config.base.Configure):
     self.checkDependencies(libs, incls)
     if self.needsMath:
       if self.libraries.math is None:
-        raise RuntimeError('Math library not found')
+        raise RuntimeError('Math library [libm.a or equivalent] is not found')
       libs += self.libraries.math
     if self.needsCompression:
       if self.libraries.compression is None:
-        raise RuntimeError('Compression library not found')
+        raise RuntimeError('Compression library [libz.a or equivalent] not found')
       libs += self.libraries.compression
 
     for location, directory, lib, incl in self.generateGuesses():
@@ -1006,11 +1006,11 @@ class GNUPackage(Package):
     self.checkDependencies(libs, incls)
     if self.needsMath:
       if self.libraries.math is None:
-        raise RuntimeError('Math library not found')
+        raise RuntimeError('Math library [libm.a or equivalent] is not found')
       libs += self.libraries.math
     if self.needsCompression:
       if self.libraries.compression is None:
-        raise RuntimeError('Compression library not found')
+        raise RuntimeError('Compression [libz.a or equivalent] library not found')
       libs += self.libraries.compression
 
     for location, directory, lib, incl in self.generateGuesses():

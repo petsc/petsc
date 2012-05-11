@@ -9,6 +9,7 @@ class Configure(config.package.Package):
     self.includes  = ['hdf5.h']
     self.liblist   = [['libhdf5.a','libhdf5_hl.a']]
     self.needsMath = 1
+    self.needsCompression = 1
     self.extraLib  = ['libz.a']
     self.complex   = 1
     self.worksonWindows = 1
