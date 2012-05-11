@@ -239,7 +239,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     ierr = (*ksp->ops->setup)(ksp);CHKERRQ(ierr);
     break;
   case KSP_SETUP_NEWMATRIX: {   /* This should be replaced with a more general mechanism */
-    ierr = KSPChebychevSetNewMatrix(ksp);CHKERRQ(ierr);
+    ierr = KSPChebyshevSetNewMatrix(ksp);CHKERRQ(ierr);
   } break;
   default: break;
   }

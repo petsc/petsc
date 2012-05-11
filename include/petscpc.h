@@ -379,6 +379,7 @@ extern PetscErrorCode  PCBJacobiGetLocalBlocks(PC,PetscInt*,const PetscInt*[]);
 extern PetscErrorCode  PCBJacobiGetTotalBlocks(PC,PetscInt*,const PetscInt*[]);
 
 extern PetscErrorCode  PCFieldSplitSetFields(PC,const char[],PetscInt,const PetscInt*,const PetscInt*);
+extern PetscErrorCode  PCFieldSplitGetType(PC,PCCompositeType*);
 extern PetscErrorCode  PCFieldSplitSetType(PC,PCCompositeType);
 extern PetscErrorCode  PCFieldSplitSetBlockSize(PC,PetscInt);
 extern PetscErrorCode  PCFieldSplitSetIS(PC,const char[],IS);

@@ -117,10 +117,10 @@ If MatLoad don't immediately load the data for rank 0 and they only store the fi
         </li>
 
         <li>
-          Convert KSPSPECEST to something like -ksp_type chebychev
-          -ksp_chebychev_precompute_parameters
-          -ksp_chebychev_precompute_ksp_type cg
-          -ksp_chebychev_precompute_minfactor .95
+          Convert KSPSPECEST to something like -ksp_type chebyshev
+          -ksp_chebyshev_precompute_parameters
+          -ksp_chebyshev_precompute_ksp_type cg
+          -ksp_chebyshev_precompute_minfactor .95
         </li>
 
         <li>MatSOR() should used blocks when bs > for AIJ matrices and no inodes        </li>

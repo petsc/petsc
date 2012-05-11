@@ -1986,7 +1986,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       pcbddc->coarse_communications_type = SCATTERS_BDDC;
       coarse_mat_type = MATIS;
       coarse_pc_type  = PCBDDC;
-      coarse_ksp_type  = KSPCHEBYCHEV;
+      coarse_ksp_type  = KSPCHEBYSHEV;
 
       /* details of coarse decomposition */
       n_subdomains = pcbddc->active_procs;
@@ -2517,7 +2517,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
     /* restore coarse ksp to default values */
     ierr = KSPSetComputeSingularValues(pcbddc->coarse_ksp,PETSC_FALSE);CHKERRQ(ierr);
     ierr = KSPSetType(pcbddc->coarse_ksp,coarse_ksp_type);CHKERRQ(ierr);
-    ierr = KSPChebychevSetEigenvalues(pcbddc->coarse_ksp,lambda_max,lambda_min);CHKERRQ(ierr);
+    ierr = KSPChebyshevSetEigenvalues(pcbddc->coarse_ksp,lambda_max,lambda_min);CHKERRQ(ierr);
     ierr = KSPSetTolerances(pcbddc->coarse_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,max_it_coarse_ksp);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(pcbddc->coarse_ksp);CHKERRQ(ierr);
     ierr = KSPSetUp(pcbddc->coarse_ksp);CHKERRQ(ierr);

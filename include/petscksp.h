@@ -30,7 +30,7 @@ typedef struct _p_KSP*     KSP;
 J*/
 #define KSPType char*
 #define KSPRICHARDSON "richardson"
-#define KSPCHEBYCHEV  "chebychev"
+#define KSPCHEBYSHEV  "chebyshev"
 #define KSPCG         "cg"
 #define   KSPCGNE       "cgne"
 #define   KSPNASH       "nash"
@@ -173,9 +173,9 @@ extern PetscErrorCode  KSPBuildResidual(KSP,Vec,Vec,Vec *);
 
 extern PetscErrorCode  KSPRichardsonSetScale(KSP,PetscReal);
 extern PetscErrorCode  KSPRichardsonSetSelfScale(KSP,PetscBool );
-extern PetscErrorCode  KSPChebychevSetEigenvalues(KSP,PetscReal,PetscReal);
-extern PetscErrorCode  KSPChebychevSetEstimateEigenvalues(KSP,PetscReal,PetscReal,PetscReal,PetscReal);
-extern PetscErrorCode  KSPChebychevSetNewMatrix(KSP);
+extern PetscErrorCode  KSPChebyshevSetEigenvalues(KSP,PetscReal,PetscReal);
+extern PetscErrorCode  KSPChebyshevSetEstimateEigenvalues(KSP,PetscReal,PetscReal,PetscReal,PetscReal);
+extern PetscErrorCode  KSPChebyshevSetNewMatrix(KSP);
 extern PetscErrorCode  KSPComputeExtremeSingularValues(KSP,PetscReal*,PetscReal*);
 extern PetscErrorCode  KSPComputeEigenvalues(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt *);
 extern PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP,PetscInt,PetscReal*,PetscReal*);

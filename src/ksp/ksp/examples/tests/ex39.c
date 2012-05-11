@@ -107,7 +107,7 @@ int main(int argc,char **args)
   co1 = gamma * h * h / 2.0;
   co2 = beta * h * h;
   for (Ii=Istart; Ii<Iend; Ii++) { 
-    i = Ii/(n2*n3); j = (Ii - i*n2*n3)/n2; k = Ii - i*n2*n3 - j*n2;
+    i = Ii/(n2*n3); j = (Ii - i*n2*n3)/n3; k = Ii - i*n2*n3 - j*n3;
     if (i>0)   {
       J = Ii - n2*n3;  v = -1.0 + co1*i;
       ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);

@@ -740,15 +740,17 @@ PetscErrorCode PCSetUp_ML(PC pc)
       ierr = PCSetType(subpc,PCSOR);CHKERRQ(ierr);
     }
   }
+  ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
   ierr = PCSetFromOptions_MG(pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
-   
-  ierr = PetscMalloc(Nlevels*sizeof(GridCtx),&gridctx);CHKERRQ(ierr); 
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  ierr = PetscMalloc(Nlevels*sizeof(GridCtx),&gridctx);CHKERRQ(ierr);
   pc_ml->gridctx = gridctx;
 
-  /* wrap ML matrices by PETSc shell matrices at coarsened grids. 
+  /* wrap ML matrices by PETSc shell matrices at coarsened grids.
      Level 0 is the finest grid for ML, but coarsest for PETSc! */
   gridctx[fine_level].A = A;
-  
+
   level = fine_level - 1;
   if (size == 1){ /* convert ML P, R and A into seqaij format */
     for (mllevel=1; mllevel<Nlevels; mllevel++){ 
