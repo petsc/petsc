@@ -302,18 +302,27 @@ extern PetscErrorCode  PCASMGetLocalSubdomains(PC,PetscInt*,IS*[],IS*[]);
 extern PetscErrorCode  PCASMGetLocalSubmatrices(PC,PetscInt*,Mat*[]);
 
 /*E
-    PCGASMType - Type of generalized additive Schwarz method to use (differs from ASM in allowing multiple processors per domain)
+    PCGASMType - Type of generalized additive Schwarz method to use (differs from ASM in allowing multiple processors per subdomain).
 
-$  PC_GASM_BASIC       - Symmetric version where residuals from the ghost points are used
-$                        and computed values in ghost regions are added together. 
+   Each subdomain has nested inner and outer parts.  The inner subdomains are assumed to form a non-overlapping covering of the computational 
+   domain, while the outer subdomains contain the inner subdomains and overlap with each other.  This preconditioner will compute
+   a subdomain correction over each *outer* subdomain from a residual computed there, but its different variants will differ in
+   (a) how the outer subdomain residual is computed, and (b) how the outer subdomain correction is computed.
+
+$  PC_GASM_BASIC       - Symmetric version where the full from the outer subdomain is used, and the resulting correction is applied
+$                        over the outer subdomains.  As a result, points in the overlap will receive the sum of the corrections 
+$                        from neighboring subdomains.
 $                        Classical standard additive Schwarz.
-$  PC_GASM_RESTRICT    - Residuals from ghost points are used but computed values in ghost
-$                        region are discarded. 
+$  PC_GASM_RESTRICT    - Residual from the outer subdomain is used but the correction is restricted to the inner subdomain only
+$                        (i.e., zeroed out over the overlap portion of the outer subdomain before being applied).  As a result, 
+$                        each point will receive a correction only from the unique inner subdomain containing it (nonoverlapping covering 
+$                        assumption).
 $                        Default.
-$  PC_GASM_INTERPOLATE - Residuals from ghost points are not used, computed values in ghost
-$                        region are added back in.
-$  PC_GASM_NONE        - Residuals from ghost points are not used, computed ghost values are 
-$                        discarded.
+$  PC_GASM_INTERPOLATE - Residual is zeroed out over the overlap portion of the outer subdomain, but the resulting correction is 
+$                        applied over the outer subdomain. As a result, points in the overlap will receive the sum of the corrections 
+$                        from neighboring subdomains.
+$
+$  PC_GASM_NONE        - Residuals and corrections are zeroed out outside the local subdomains.
 $                        Not very good.
 
    Level: beginner
@@ -324,12 +333,12 @@ typedef enum {PC_GASM_BASIC = 3,PC_GASM_RESTRICT = 1,PC_GASM_INTERPOLATE = 2,PC_
 extern const char *PCGASMTypes[];
 
 extern PetscErrorCode  PCGASMSetSubdomains(PC,PetscInt,IS[],IS[]);
-extern PetscErrorCode  PCGASMSetTotalBlockCount(PC,PetscInt);
+extern PetscErrorCode  PCGASMSetTotalSubdomains(PC,PetscInt,PetscBool);
 extern PetscErrorCode  PCGASMSetOverlap(PC,PetscInt);
 extern PetscErrorCode  PCGASMSetSortIndices(PC,PetscBool );
 
 extern PetscErrorCode  PCGASMSetType(PC,PCGASMType);
-extern PetscErrorCode  PCGASMCreateLocalSubdomains(Mat,PetscInt,IS*[],IS*[]);
+extern PetscErrorCode  PCGASMCreateLocalSubdomains(Mat,PetscInt,PetscInt,IS*[],IS*[]);
 extern PetscErrorCode  PCGASMDestroySubdomains(PetscInt,IS[],IS[]);
 extern PetscErrorCode  PCGASMCreateSubdomains2D(PC,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,IS**,IS**);
 extern PetscErrorCode  PCGASMGetSubdomains(PC,PetscInt*,IS*[],IS*[]);
