@@ -98,7 +98,7 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('hypre'):
       try:
         self.logPrintBox('Configuring hypre; this may take several minutes')
-        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make distclean && ./configure '+args, timeout=900, log = self.framework.log)
+        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && touch config/Makefile.config && make distclean && ./configure '+args, timeout=900, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running configure on HYPRE: '+str(e))
       try:
