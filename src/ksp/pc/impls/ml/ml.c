@@ -372,10 +372,6 @@ static PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,MatReuse reuse,Mat *new
   PetscFunctionBegin;
   m = mlmat->outvec_leng; 
   n = mlmat->invec_leng;
-  if (!m || !n){
-    newmat = PETSC_NULL;
-    PetscFunctionReturn(0);
-  } 
 
   if (reuse){
     ierr = MatShellGetContext(*newmat,(void **)&shellctx);CHKERRQ(ierr);
