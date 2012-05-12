@@ -616,12 +616,20 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     M = 1 + dd->refine_x*(dd->M - 1);
   }
   if (dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
-    N = dd->refine_y*dd->N;
+    if (dd->dim > 1) {
+      N = dd->refine_y*dd->N;
+    } else {
+      N = 1;
+    }
   } else {
     N = 1 + dd->refine_y*(dd->N - 1);
   }
   if (dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
-    P = dd->refine_z*dd->P;
+    if (dd->dim > 2) {
+      P = dd->refine_z*dd->P;
+    } else {
+      P = 1;
+    }
   } else {
     P = 1 + dd->refine_z*(dd->P - 1);
   }
@@ -738,12 +746,20 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     M = 1 + (dd->M - 1) / dd->coarsen_x;
   }
   if (dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
-    N = dd->N / dd->coarsen_y;
+    if (dd->dim > 1) {
+      N = dd->N / dd->coarsen_y;
+    } else {
+      N = 1;
+    }
   } else {
     N = 1 + (dd->N - 1) / dd->coarsen_y;
   }
   if (dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
-    P = dd->P / dd->coarsen_z;
+    if (dd->dim > 2) {
+      P = dd->P / dd->coarsen_z;
+    } else {
+      P = 1;
+    }
   } else {
     P = 1 + (dd->P - 1) / dd->coarsen_z;
   }
