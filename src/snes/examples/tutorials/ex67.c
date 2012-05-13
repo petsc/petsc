@@ -8,7 +8,7 @@ static char help[] = "Simple test for using advanced discretizations with DMDA\n
  -----------------------------------------------------------------------------*/
 #include "ex67.h"
 
-#define NUM_FIELDS 2 /* C89 Sucks Sucks Sucks Sucks: numFields = 2, numComponents = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1 */
+#define NUM_FIELDS 2 /* C89 Sucks Sucks Sucks Sucks: Cannot use static const values for array sizes */
 const PetscInt numFields     = 2;
 const PetscInt numComponents = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1;
 
