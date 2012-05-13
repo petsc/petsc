@@ -11,6 +11,7 @@ if 'PETSC_DIR' in os.environ:
 import PETSc.FEM
 from FIAT.reference_element import default_simplex
 from FIAT.lagrange import Lagrange
+from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 
 generator  = PETSc.FEM.QuadratureGenerator()
 generator.setup()
@@ -23,7 +24,10 @@ for n in range((len(sys.argv)-2) / 5):
   components = int(sys.argv[n*5+3])
   numBlocks  = int(sys.argv[n*5+4])
   operator   = sys.argv[n*5+5]
-  element    = Lagrange(default_simplex(dim), order)
+  if order == 0:
+    element  = DiscontinuousLagrange(default_simplex(dim), order)
+  else:
+    element  = Lagrange(default_simplex(dim), order)
   element.numComponents = components
   elements.append(element)
 filename = sys.argv[-1]
