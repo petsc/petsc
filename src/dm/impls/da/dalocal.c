@@ -69,6 +69,134 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec* g)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDAGetNumCells"
+PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCells)
+{
+  DM_DA         *da  = (DM_DA *) dm->data;
+  const PetscInt dim = da->dim;
+  const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
+  const PetscInt nC  = (mx  )*(dim > 1 ? (my  )*(dim > 2 ? (mz  ) : 1) : 1);
+
+  PetscFunctionBegin;
+  if (numCells) {
+    PetscValidIntPointer(numCells,2);
+    *numCells = nC;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetNumVertices"
+PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVerticesY, PetscInt *numVerticesZ, PetscInt *numVertices)
+{
+  DM_DA         *da  = (DM_DA *) dm->data;
+  const PetscInt dim = da->dim;
+  const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
+  const PetscInt nVx = mx+1;
+  const PetscInt nVy = dim > 1 ? (my+1) : 1;
+  const PetscInt nVz = dim > 2 ? (mz+1) : 1;
+  const PetscInt nV  = nVx*nVy*nVz;
+
+  PetscFunctionBegin;
+  if (numVerticesX) {
+    PetscValidIntPointer(numVerticesX,2);
+    *numVerticesX = nVx;
+  }
+  if (numVerticesY) {
+    PetscValidIntPointer(numVerticesY,3);
+    *numVerticesY = nVy;
+  }
+  if (numVerticesZ) {
+    PetscValidIntPointer(numVerticesZ,4);
+    *numVerticesZ = nVz;
+  }
+  if (numVertices) {
+    PetscValidIntPointer(numVertices,5);
+    *numVertices = nV;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetNumFaces"
+PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces, PetscInt *numYFacesY, PetscInt *numYFaces, PetscInt *numZFacesZ, PetscInt *numZFaces)
+{
+  DM_DA         *da  = (DM_DA *) dm->data;
+  const PetscInt dim = da->dim;
+  const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
+  const PetscInt nxF = (dim > 1 ? (my  )*(dim > 2 ? (mz  ) : 1) : 1);
+  const PetscInt nXF = (mx+1)*nxF;
+  const PetscInt nyF = mx*(dim > 2 ? mz : 1);
+  const PetscInt nYF = dim > 1 ? (my+1)*nyF : 0;
+  const PetscInt nzF = mx*(dim > 1 ? my : 0);
+  const PetscInt nZF = dim > 2 ? (mz+1)*nzF : 0;
+
+  PetscFunctionBegin;
+  if (numXFacesX) {
+    PetscValidIntPointer(numXFacesX,2);
+    *numXFacesX = nxF;
+  }
+  if (numXFaces) {
+    PetscValidIntPointer(numXFaces,3);
+    *numXFaces = nXF;
+  }
+  if (numYFacesY) {
+    PetscValidIntPointer(numYFacesY,4);
+    *numYFacesY = nyF;
+  }
+  if (numYFaces) {
+    PetscValidIntPointer(numYFaces,5);
+    *numYFaces = nYF;
+  }
+  if (numZFacesZ) {
+    PetscValidIntPointer(numZFacesZ,6);
+    *numZFacesZ = nzF;
+  }
+  if (numZFaces) {
+    PetscValidIntPointer(numZFaces,7);
+    *numZFaces = nZF;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetHeightStratum"
+PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, PetscInt *pEnd)
+{
+  DM_DA         *da  = (DM_DA *) dm->data;
+  const PetscInt dim = da->dim;
+  PetscInt       nC, nV, nXF, nYF, nZF;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (pStart) {PetscValidIntPointer(pStart,3);}
+  if (pEnd)   {PetscValidIntPointer(pEnd,4);}
+  ierr = DMDAGetNumCells(dm, &nC);CHKERRQ(ierr);
+  ierr = DMDAGetNumVertices(dm, PETSC_NULL, PETSC_NULL, PETSC_NULL, &nV);CHKERRQ(ierr);
+  ierr = DMDAGetNumFaces(dm, PETSC_NULL, &nXF, PETSC_NULL, &nYF, PETSC_NULL, &nZF);CHKERRQ(ierr);
+  if (height == 0) {
+    /* Cells */
+    if (pStart) {*pStart = 0;}
+    if (pEnd)   {*pEnd   = nC;}
+  } else if (height == 1) {
+    /* Faces */
+    if (pStart) {*pStart = nC+nV;}
+    if (pEnd)   {*pEnd   = nC+nV+nXF+nYF+nZF;}
+  } else if (height == dim) {
+    /* Vertices */
+    if (pStart) {*pStart = nC;}
+    if (pEnd)   {*pEnd   = nC+nV;}
+  } else if (height < 0) {
+    /* All points */
+    if (pStart) {*pStart = 0;}
+    if (pEnd)   {*pEnd   = nC+nV+nXF+nYF+nZF;}
+  } else {
+    SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "No points of height %d in the DA", height);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDACreateSection"
 /*@C
   DMDACreateSection - Create a PetscSection inside the DMDA that describes data layout. This allows multiple fields with
@@ -99,24 +227,6 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
 {
   DM_DA         *da  = (DM_DA *) dm->data;
   const PetscInt dim = da->dim;
-  const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
-  const PetscInt nC  = (mx  )*(dim > 1 ? (my  )*(dim > 2 ? (mz  ) : 1) : 1);
-  const PetscInt nVx = mx+1;
-  const PetscInt nVy = dim > 1 ? (my+1) : 1;
-  const PetscInt nVz = dim > 2 ? (mz+1) : 1;
-  const PetscInt nV  = nVx*nVy*nVz;
-  const PetscInt nxF = (dim > 1 ? (my  )*(dim > 2 ? (mz  ) : 1) : 1);
-  const PetscInt nXF = (mx+1)*nxF;
-  const PetscInt nyF = mx*(dim > 2 ? mz : 1);
-  const PetscInt nYF = dim > 1 ? (my+1)*nyF : 0;
-  const PetscInt nzF = mx*(dim > 1 ? my : 0);
-  const PetscInt nZF = dim > 2 ? (mz+1)*nzF : 0;
-  const PetscInt cStart  = 0,     cEnd  = cStart+nC;
-  const PetscInt vStart  = cEnd,  vEnd  = vStart+nV;
-  const PetscInt xfStart = vEnd,  xfEnd = xfStart+nXF;
-  const PetscInt yfStart = xfEnd, yfEnd = yfStart+nYF;
-  const PetscInt zfStart = yfEnd, zfEnd = zfStart+nZF;
-  const PetscInt pStart  = 0,     pEnd  = zfEnd;
   PetscInt       numFields, numVertexTotDof = 0, numCellTotDof = 0, numFaceTotDof[3] = {0, 0, 0};
   PetscSF        sf;
   PetscMPIInt    rank;
@@ -124,12 +234,25 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   PetscInt      *localPoints;
   PetscSFNode   *remotePoints;
   PetscInt       nleaves = 0,  nleavesCheck = 0;
+  PetscInt       nC, nVx, nVy, nVz, nV, nxF, nXF, nyF, nYF, nzF, nZF;
+  PetscInt       pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart, yfEnd, zfStart, zfEnd;
   PetscInt       f, v, c, xf, yf, zf, xn, yn, zn;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+  ierr = DMDAGetNumCells(dm, &nC);CHKERRQ(ierr);
+  ierr = DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, &nV);CHKERRQ(ierr);
+  ierr = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
+  ierr = DMDAGetHeightStratum(dm, -1,  &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMDAGetHeightStratum(dm, 0,   &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMDAGetHeightStratum(dm, 1,   &fStart, &fEnd);CHKERRQ(ierr);
+  ierr = DMDAGetHeightStratum(dm, dim, &vStart, &vEnd);CHKERRQ(ierr);
+  xfStart = vEnd;  xfEnd = xfStart+nXF;
+  yfStart = xfEnd; yfEnd = yfStart+nYF;
+  zfStart = yfEnd; zfEnd = zfStart+nZF;
+  if (zfEnd != fEnd) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Invalid face end %d, should be %d", zfEnd, fEnd);
   /* Create local section */
   ierr = DMDAGetInfo(dm, 0,0,0,0,0,0,0, &numFields, 0,0,0,0,0);CHKERRQ(ierr);
   for(f = 0; f < numFields; ++f) {
