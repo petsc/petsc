@@ -1345,7 +1345,7 @@ extern PetscErrorCode  PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);
 extern PetscErrorCode  PetscObjectAddOptionsHandler(PetscObject,PetscErrorCode (*)(PetscObject,void*),PetscErrorCode (*)(PetscObject,void*),void*);
 extern PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscObject);
 extern PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject);
-extern PetscErrorCode  PetscObjectListGetGlobalNumbering(MPI_Comm, PetscInt,PetscObject*, PetscInt*,PetscInt*);
+extern PetscErrorCode  PetscObjectsGetGlobalNumbering(MPI_Comm,PetscInt,PetscObject*,PetscInt*,PetscInt*);
 
 /*MC
    PetscObjectComposeFunctionDynamic - Associates a function with a given PETSc object. 

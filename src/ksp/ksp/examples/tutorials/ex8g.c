@@ -57,7 +57,7 @@ int main(int argc,char **args)
   Mat            A;                      /* linear system matrix */
   KSP            ksp;                    /* linear solver context */
   PC             pc;                     /* PC context */
-  IS             *is,*is_local;          /* array of index sets that define the subdomains */
+  IS             *inneris,*outeris;      /* array of index sets that define the subdomains */
   PetscInt       overlap = 1;            /* width of subdomain overlap */
   PetscInt       Nsub;                   /* number of subdomains */
   PetscInt       m = 15,n = 17;          /* mesh dimensions in x- and y- directions */
@@ -166,9 +166,9 @@ int main(int argc,char **args)
   if (!user_set_subdomains) { /* basic version */
     ierr = PCGASMSetOverlap(pc,overlap);CHKERRQ(ierr);
   } else { /* advanced version */
-    ierr = PCGASMCreateSubdomains2D(pc, m,n,M,N,1,overlap,&Nsub,&is,&is_local);CHKERRQ(ierr);
-    ierr = PCGASMSetSubdomains(pc,Nsub,is,is_local);CHKERRQ(ierr);
-    ierr = PCView(pc, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+    ierr = PCGASMCreateSubdomains2D(pc, m,n,M,N,1,overlap,&Nsub,&inneris,&outeris);CHKERRQ(ierr);
+    ierr = PCGASMSetSubdomains(pc,Nsub,inneris,outeris);CHKERRQ(ierr);
+    /*ierr = PCView(pc, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);*/
   }
 
   /* -------------------------------------------------------------------
@@ -274,12 +274,7 @@ int main(int argc,char **args)
   */
 
   if (user_set_subdomains) {
-    for (i=0; i<Nsub; i++) {
-      ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
-      ierr = ISDestroy(&is_local[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(is);CHKERRQ(ierr);
-    ierr = PetscFree(is_local);CHKERRQ(ierr);
+    ierr = PCGASMDestroySubdomains(Nsub, inneris, outeris); CHKERRQ(ierr);
   }
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);

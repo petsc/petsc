@@ -7,10 +7,10 @@ lid velocity = 0.0625, prandtl # = 1, grashof # = 1
     4 KSP Residual norm 8.36744e-05 
     5 KSP Residual norm 9.68825e-06 
     6 KSP Residual norm 2.05679e-06 
-  1 SNES Function norm 6.81703e-05 
-    0 KSP Residual norm 6.81703e-05 
+  1 SNES Function norm 6.81704e-05 
+    0 KSP Residual norm 6.81704e-05 
     1 KSP Residual norm 2.71272e-06 
-    2 KSP Residual norm 4.47725e-07 
+    2 KSP Residual norm 4.47726e-07 
     3 KSP Residual norm 4.36455e-08 
     4 KSP Residual norm 6.20043e-09 
     5 KSP Residual norm 5.928e-10 

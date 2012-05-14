@@ -473,7 +473,7 @@ VALGRIND=
 Mdomains = 2
 Ndomains = 1
 runex8g:
-	-@${MPIEXEC} -n ${NP} ${VALGRIND} ./ex8g -N $M -N $N -Mdomains ${Mdomains} -Ndomains ${Ndomains} -print_error ${ARGS}
+	-@${MPIEXEC} -n ${NP} ${VALGRIND} ./ex8g -N $M -N $N -user_set_subdomains -Mdomains ${Mdomains} -Ndomains ${Ndomains} -print_error ${ARGS}
 
 
 BREAKPOINT=

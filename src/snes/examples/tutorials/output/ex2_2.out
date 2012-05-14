@@ -28,6 +28,11 @@ SNES Object: 1 MPI processes
       total: nonzeros=11, allocated nonzeros=15
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
+  SNESLineSearch Object:   1 MPI processes
+    type: basic
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=1
 number of SNES iterations = 3
 
 Norm of error 1.49752e-10, Iterations 3

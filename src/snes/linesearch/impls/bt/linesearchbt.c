@@ -337,7 +337,7 @@ PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer view
     } else if (linesearch->order == SNES_LINESEARCH_ORDER_QUADRATIC) {
     ierr = PetscViewerASCIIPrintf(viewer, "  interpolation: quadratic\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer, "  alpha=%G\n", bt->alpha);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  alpha=%e\n", bt->alpha);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

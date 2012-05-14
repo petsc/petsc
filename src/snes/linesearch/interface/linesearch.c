@@ -731,8 +731,8 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
       ierr = (*linesearch->ops->view)(linesearch,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  maxstep=%G, minlambda=%G\n", linesearch->maxstep,linesearch->steptol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%G, absolute=%G, lambda=%G\n", linesearch->rtol,linesearch->atol,linesearch->ltol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  maxstep=%e, minlambda=%e\n", linesearch->maxstep,linesearch->steptol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%e, absolute=%e, lambda=%e\n", linesearch->rtol,linesearch->atol,linesearch->ltol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D\n", linesearch->max_its);CHKERRQ(ierr);
     if (linesearch->ops->precheckstep) {
       if (linesearch->ops->precheckstep == SNESLineSearchPreCheckPicard) {
