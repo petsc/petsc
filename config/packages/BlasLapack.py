@@ -196,6 +196,12 @@ class Configure(config.package.Package):
     # Try specified installation root
     if 'with-blas-lapack-dir' in self.framework.argDB:
       dir = self.framework.argDB['with-blas-lapack-dir']
+      # error if package-dir is in externalpackages
+      if os.path.realpath(dir).find(os.path.realpath(self.externalPackagesDir)) >=0:
+        fakeExternalPackagesDir = dir.replace(os.path.realpath(dir).replace(os.path.realpath(self.externalPackagesDir),''),'')
+        raise RuntimeError('Bad option: '+'--with-blas-lapack-dir='+self.framework.argDB['with-blas-lapack-dir']+'\n'+
+                           fakeExternalPackagesDir+' is reserved for --download-pacakge scratch space. \n'+
+                           'Do not install software in this location.')
       if not (len(dir) > 2 and dir[1] == ':') :
         dir = os.path.abspath(dir)
       self.framework.log.write('Looking for BLAS/LAPACK in user specified directory: '+dir+'\n')
