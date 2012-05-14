@@ -240,8 +240,8 @@ class Package(config.base.Configure):
       if os.path.realpath(d).find(os.path.realpath(self.externalPackagesDir)) >=0:
         fakeExternalPackagesDir = d.replace(os.path.realpath(d).replace(os.path.realpath(self.externalPackagesDir),''),'')
         raise RuntimeError('Bad option: '+'--with-'+self.package+'-dir='+self.framework.argDB['with-'+self.package+'-dir']+'\n'+
-                           fakeExternalPackagesDir+' is reserved for --download-pacakge scratch space. \n'+
-                           'Do not install software in this location.')
+                           fakeExternalPackagesDir+' is reserved for --download-package scratch space. \n'+
+                           'Do not install software in this location nor use software in this directory.')
       for l in self.generateLibList(os.path.join(d, self.libdir)):
         yield('User specified root directory '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
       for l in self.generateLibList(os.path.join(d, self.altlibdir)):
