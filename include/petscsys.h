@@ -25,6 +25,9 @@
 #if defined(PETSC__BSD_SOURCE) && !defined(_BSD_SOURCE)
 #define _BSD_SOURCE
 #endif
+#if defined(PETSC__GNU_SOURCE) && !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
 #endif
 
 /* ========================================================================== */

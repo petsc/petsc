@@ -551,6 +551,8 @@ class Configure(config.base.Configure):
        self.addDefine('_POSIX_C_SOURCE_200112L', '1')
     if self.checkCompile('#define _BSD_SOURCE\n#include<stdlib.h>',''):
        self.addDefine('_BSD_SOURCE', '1')
+    if self.checkCompile('#define _GNU_SOURCE\n#include <sched.h>','cpu_set_t mset;\nCPU_ZERO(&mset);'):
+       self.addDefine('_GNU_SOURCE', '1')
 
   def configureAtoll(self):
     '''Checks if atoll exists'''

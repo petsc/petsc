@@ -1,3 +1,7 @@
+/* Define feature test macros to make sure CPU_SET and other functions are available
+ */
+#define PETSC_DESIRE_FEATURE_TEST_MACROS
+
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #include <../src/sys/objects/pthread/pthreadimpl.h>
 
