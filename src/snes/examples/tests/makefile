@@ -110,7 +110,7 @@ runex1f_2:
 	-@${MPIEXEC} -n 1 ./ex1f -snes_monitor_short -nox -snes_fd -ksp_gmres_cgs_refinement_type refine_always > ex1f_2.tmp 2>&1;\
 	   if (${DIFF} output/ex1f_2.out ex1f_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex1f_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex1f_2.tmp
+	   #${RM} -f ex1f_2.tmp
 runex1f_3:
 	-@${MPIEXEC} -n 1 ./ex1f -snes_monitor_short -nox -snes_fd_coloring -ksp_gmres_cgs_refinement_type refine_always > ex1f_3.tmp 2>&1;\
 	   if (${DIFF} output/ex1f_2.out ex1f_3.tmp) then true; \
