@@ -12,7 +12,7 @@ PetscErrorCode KSPSetUp_IFBCGS(KSP ksp)
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  ierr = KSPDefaultGetWork(ksp,12);CHKERRQ(ierr); 
+  ierr = KSPDefaultGetWork(ksp,11);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -26,8 +26,8 @@ PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
   PetscReal         rho;
   PetscScalar       tau,sigma,alpha,omega,beta;
   PetscScalar       xi1,xi2,xi3,xi4,xi5,xi6,xi7,xi8;
-  Vec               X,B,R,V2,S2,T2,P2,TMP,RP,V,S,T,Q,U;
-  PetscScalar       *PETSC_RESTRICT r, *PETSC_RESTRICT v2, *PETSC_RESTRICT s2, *PETSC_RESTRICT t2, *PETSC_RESTRICT p2, *PETSC_RESTRICT tmp;
+  Vec               X,B,R,V2,S2,T2,P2,RP,V,S,T,Q,U;
+  PetscScalar       *PETSC_RESTRICT r, *PETSC_RESTRICT v2, *PETSC_RESTRICT s2, *PETSC_RESTRICT t2, *PETSC_RESTRICT p2;
   PetscScalar       *PETSC_RESTRICT rp, *PETSC_RESTRICT v, *PETSC_RESTRICT s, *PETSC_RESTRICT t, *PETSC_RESTRICT q, *PETSC_RESTRICT u;
   PetscScalar       insums[8],outsums[8];
   KSP_BCGS          *bcgs = (KSP_BCGS*)ksp->data;
@@ -40,19 +40,20 @@ PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
   X   = ksp->vec_sol;
   B   = ksp->vec_rhs;
 
-  R   = ksp->work[0]; ierr = VecGetArray(R,(PetscScalar**)&r);CHKERRQ(ierr);ierr = VecRestoreArray(R,PETSC_NULL);CHKERRQ(ierr);
-  V2  = ksp->work[1]; ierr = VecGetArray(V2,(PetscScalar**)&v2);CHKERRQ(ierr);ierr = VecRestoreArray(V2,PETSC_NULL);CHKERRQ(ierr);
-  S2  = ksp->work[2]; ierr = VecGetArray(S2,(PetscScalar**)&s2);CHKERRQ(ierr);ierr = VecRestoreArray(S2,PETSC_NULL);CHKERRQ(ierr);
-  T2  = ksp->work[3]; ierr = VecGetArray(T2,(PetscScalar**)&t2);CHKERRQ(ierr);ierr = VecRestoreArray(T2,PETSC_NULL);CHKERRQ(ierr);
-  P2  = ksp->work[4]; ierr = VecGetArray(P2,(PetscScalar**)&p2);CHKERRQ(ierr);ierr = VecRestoreArray(P2,PETSC_NULL);CHKERRQ(ierr);
-  TMP = ksp->work[5]; ierr = VecGetArray(TMP,(PetscScalar**)&tmp);CHKERRQ(ierr);ierr = VecRestoreArray(TMP,PETSC_NULL);CHKERRQ(ierr);
+  /* lowercase variables used in vector updates */
+  R   = ksp->work[0]; ierr = VecGetArray(R,(PetscScalar**)&r);CHKERRQ(ierr);
+  V2  = ksp->work[1]; ierr = VecGetArray(V2,(PetscScalar**)&v2);CHKERRQ(ierr);
+  S2  = ksp->work[2]; ierr = VecGetArray(S2,(PetscScalar**)&s2);CHKERRQ(ierr);
+  T2  = ksp->work[3]; ierr = VecGetArray(T2,(PetscScalar**)&t2);CHKERRQ(ierr);
+  P2  = ksp->work[4]; ierr = VecGetArray(P2,(PetscScalar**)&p2);CHKERRQ(ierr);
 
-  RP  = ksp->work[6]; ierr = VecGetArray(RP,(PetscScalar**)&rp);CHKERRQ(ierr);ierr = VecRestoreArrayRead(RP,PETSC_NULL);CHKERRQ(ierr);
-  V   = ksp->work[7]; ierr = VecGetArray(V,(PetscScalar**)&v);CHKERRQ(ierr);ierr = VecRestoreArrayRead(V,PETSC_NULL);CHKERRQ(ierr);
-  S   = ksp->work[8]; ierr = VecGetArray(S,(PetscScalar**)&s);CHKERRQ(ierr);ierr = VecRestoreArrayRead(S,PETSC_NULL);CHKERRQ(ierr);
-  T   = ksp->work[9]; ierr = VecGetArray(T,(PetscScalar**)&t);CHKERRQ(ierr);ierr = VecRestoreArrayRead(T,PETSC_NULL);CHKERRQ(ierr);
-  Q   = ksp->work[10]; ierr = VecGetArray(Q,(PetscScalar**)&q);CHKERRQ(ierr);ierr = VecRestoreArrayRead(Q,PETSC_NULL);CHKERRQ(ierr);
-  U   = ksp->work[11]; ierr = VecGetArray(U,(PetscScalar**)&u);CHKERRQ(ierr);ierr = VecRestoreArrayRead(U,PETSC_NULL);CHKERRQ(ierr);
+  /* lowercase variables used in inner product calculations */
+  RP  = ksp->work[5]; ierr = VecGetArray(RP,(PetscScalar**)&rp);CHKERRQ(ierr);
+  V   = ksp->work[6]; ierr = VecGetArray(V,(PetscScalar**)&v);CHKERRQ(ierr);
+  S   = ksp->work[7]; ierr = VecGetArray(S,(PetscScalar**)&s);CHKERRQ(ierr);
+  T   = ksp->work[8]; ierr = VecGetArray(T,(PetscScalar**)&t);CHKERRQ(ierr);
+  Q   = ksp->work[9]; ierr = VecGetArray(Q,(PetscScalar**)&q);CHKERRQ(ierr);
+  U   = ksp->work[10]; ierr = VecGetArray(U,(PetscScalar**)&u);CHKERRQ(ierr);
 
   /* Only supports right preconditioning */
   if (ksp->pc_side != PC_RIGHT) 
@@ -71,9 +72,9 @@ PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
-  ierr = MatMult(pc->mat,X,TMP);CHKERRQ(ierr);
+  ierr = MatMult(pc->mat,X,P2);CHKERRQ(ierr); /* P2 is used as temporary storage */
   ierr = VecCopy(B,R);CHKERRQ(ierr);
-  ierr = VecAXPY(R,-1.0,TMP);CHKERRQ(ierr);
+  ierr = VecAXPY(R,-1.0,P2);CHKERRQ(ierr);
 
   /* Test for nothing to do */
   if (ksp->normtype != KSP_NORM_NONE) {
@@ -99,8 +100,7 @@ PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
   ierr = VecDot(V,RP,&sigma);CHKERRQ(ierr); /* sigma <- (v,rp) */
   /* rho has been computed previously */
 
-  i=0;
-  do {
+  for (i=0; i<ksp->max_it; i++) {
     if (sigma == 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"Divide by zero");
 
     /* scalar update */
@@ -189,9 +189,20 @@ PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
 
     /* matmult */
     ierr = MatMult(pc->mat,P2,V);CHKERRQ(ierr); /* v <- A p2 */
+  }
 
-    i++;
-  } while (i<ksp->max_it);
+  ierr = VecRestoreArray(R,(PetscScalar**)&r);CHKERRQ(ierr);
+  ierr = VecRestoreArray(V2,(PetscScalar**)&v2);CHKERRQ(ierr);
+  ierr = VecRestoreArray(S2,(PetscScalar**)&s2);CHKERRQ(ierr);
+  ierr = VecRestoreArray(T2,(PetscScalar**)&t2);CHKERRQ(ierr);
+  ierr = VecRestoreArray(P2,(PetscScalar**)&p2);CHKERRQ(ierr);
+
+  ierr = VecRestoreArray(RP,(PetscScalar**)&rp);CHKERRQ(ierr);
+  ierr = VecRestoreArray(V,(PetscScalar**)&v);CHKERRQ(ierr);
+  ierr = VecRestoreArray(S,(PetscScalar**)&s);CHKERRQ(ierr);
+  ierr = VecRestoreArray(T,(PetscScalar**)&t);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Q,(PetscScalar**)&q);CHKERRQ(ierr);
+  ierr = VecRestoreArray(U,(PetscScalar**)&u);CHKERRQ(ierr);
 
   if (i >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;

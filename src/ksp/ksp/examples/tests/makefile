@@ -805,6 +805,11 @@ runex39:
 	if (${DIFF} output/ex39.out ex39.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex39_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex39.tmp
+runex39_2:
+	-@${MPIEXEC} -n 8 ./ex39 -ksp_type ifbcgs -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 32 -n2 32 -n3 32 > ex39.tmp 2>&1;\
+	if (${DIFF} output/ex39.out ex39.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex39_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex39.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
@@ -816,7 +821,7 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
                                  runex32_inode2 runex32_inode2_nd runex32_inode3 runex32_inode3_nd runex32_inode4 runex32_inode4_nd \
                                  runex32_inode5 runex32_inode5_nd ex32.rm \
 				 ex35.PETSc runex35_1 runex35_2 runex35_inode ex35.rm \
-                                 ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 ex39.rm
+                                 ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 runex39_2 ex39.rm
 TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm 
 TESTEXAMPLES_C_NOCOMPLEX       = ex33.PETSc runex33 ex33.rm 
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm 
