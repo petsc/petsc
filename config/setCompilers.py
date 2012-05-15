@@ -1453,21 +1453,20 @@ if (dlclose(handle)) {
   def checkMPICompilerOverride(self):
     '''Check if --with-mpi-dir is used along with CC CXX or FC compiler options.
     This usually prevents mpi compilers from being used - so issue a warning'''
-    
-    opts = ['with-cc','with-fc','with-cxx','CC','FC','CXX']
-    optsMatch = []
-    if 'with-mpi-dir' in self.argDB:
-      for opt in opts:
-        if (opt in self.argDB  and self.argDB[opt] != '0'):
-          optsMatch.append(opt)
-    if optsMatch:
-      mesg = '''\
-Warning: [with-mpi-dir] option is used along with options: ''' + str(optsMatch) + '''
-This prevents configure from picking up MPI compilers from specified mpi-dir.
 
-Suggest using *only* [with-mpi-dir] option - and no other compiler option.
-This way - mpi compilers from '''+self.argDB['with-mpi-dir']+ ''' are used.'''
-      self.logPrintBox(mesg)
+    if 'with-mpi-dir' in self.argDB:
+      optcplrs = [(['with-cc','CC'],['mpicc','mpcc','hcc','mpcc_r']),
+              (['with-fc','FC'],['mpif90','mpif77','mpxlf95_r','mpxlf90_r','mpxlf_r','mpf90','mpf77']),
+              (['with-cxx','CXX'],['mpicxx','hcp','mpic++','mpiCC','mpCC_r'])]
+      for opts,cplrs in optcplrs:
+        for opt in opts:
+          if (opt in self.argDB  and self.argDB[opt] != '0'):
+            # check if corresponding mpi wrapper exists
+            for cplr in cplrs:
+              mpicplr = os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', cplr)
+              if os.path.exists(mpicplr):
+                msg = '--'+opt+'='+self.argDB[opt]+' is specified with --with-mpi-dir='+self.framework.argDB['with-mpi-dir']+'. However '+mpicplr+' exists and should be the prefered compiler! Suggest not specifying --'+opt+' option so that configure can use '+ mpicplr +' instead.'
+                raise RuntimeError(msg)
     return
 
   def resetEnvCompilers(self):
