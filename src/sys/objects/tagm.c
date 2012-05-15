@@ -345,11 +345,17 @@ PetscErrorCode  PetscObjectsGetGlobalNumbering(MPI_Comm comm, PetscInt len, Pets
   /* Now we are ready to communicate global subcomm numbers from subcomm roots to the other subcomm ranks.*/
   /* 
    Communication proceeds one subcomm at a time: here the deadlock-free ordering assumption is used. 
-   The reason for this is that getting a tag on each subcomm is collective.  An alternative would be to use
-   one sided primitives, but only with MPI-3. 
+   The reason for this is that getting a tag on each subcomm is collective.  
    */
+  roots = 0;
   for(i = 0; i < len; ++i) {
-    PetscInt num = offset + i;
+    /* 
+     The following only makes sense if ssrank == 0 (below). 
+     In that case roots counts the number of local subdomains this rank anchors (so far).
+     The global number is then this roots counter plus the offset of ALL the local roots 
+     at the ranks before this one.
+     */
+    PetscInt num = offset + roots; 
     PetscMPIInt srank, ssize, tag, j;
     MPI_Request *sreq, rreq;
     /* Subcomm rank and size. */
@@ -365,6 +371,7 @@ PetscErrorCode  PetscObjectsGetGlobalNumbering(MPI_Comm comm, PetscInt len, Pets
       for(j = 0; j < ssize; ++j) {
         ierr = MPI_Isend((PetscMPIInt*)&num,1,MPI_INT,j,tag,objlist[i]->comm,sreq+j); CHKERRQ(ierr);
       }
+      ++roots;
     }
     /* Now we wait on receives. */
     ierr = MPI_Wait(&rreq, MPI_STATUS_IGNORE); CHKERRQ(ierr);

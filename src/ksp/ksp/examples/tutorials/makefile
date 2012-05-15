@@ -438,6 +438,24 @@ runex9:
 	   if (${DIFF} output/ex9_1.out ex9_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex9_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex9_1.tmp
+NP = 1
+M  = 4
+N  = 5
+MDOMAINS = 2
+NDOMAINS = 1
+OVERLAP=1
+runex8:
+	-@${MPIEXEC} -n ${NP} ./ex8 -m $M -n $N -user_set_subdomains -Mdomains ${MDOMAINS} -Ndomains ${NDOMAINS} -overlap ${OVERLAP} -print_error ${ARGS} 
+
+VALGRIND=
+runex8g:
+	-@${MPIEXEC} -n ${NP} ${VALGRIND} ./ex8g -M $M -N $N -user_set_subdomains -Mdomains ${MDOMAINS} -Ndomains ${NDOMAINS} -overlap ${OVERLAP} -print_error ${ARGS}
+
+
+BREAKPOINT=
+runex8g_debug:
+	-@${MPIEXEC} -n ${NP} xterm -e gdb -ex 'set breakpoint pending on' -ex 'b ${BREAKPOINT}' -ex r -ex bt --args ./ex8g -M $M -N $N -user_set_subdomains -Mdomains ${MDOMAINS} -Ndomains ${NDOMAINS} -overlap ${OVERLAP} -print_error ${ARGS}
+
 runex8_1:
 	-@${MPIEXEC} -n 1 ./ex8 -print_error > ex8_1.tmp 2>&1; \
 	   if (${DIFF} output/ex8_1.out ex8_1.tmp) then true; \
@@ -445,40 +463,23 @@ runex8_1:
 	   ${RM} -f ex8_1.tmp
 
 runex8g_1: 
-	-@${MPIEXEC} -n 1 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -print_error -pc_gasm_print_subdomains > ex8g_1.tmp 2>&1; \
-	   if (${DIFF} output/ex8g_1.out ex8g_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex8g_1, diffs above \n========================================="; fi; \
-	   ${RM} -f ex8g_1.tmp
+	-@${MPIEXEC} -n 1 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -overlap 1 -print_error -pc_gasm_print_subdomains > ex8g_1.tmp 2>&1; \
+	    if (${DIFF} output/ex8g_1.out ex8g_1.tmp) then true; \
+	    else echo ${PWD} ; echo "Possible problem with with ex8g_1, diffs above \n========================================="; fi; \
+	    ${RM} -f ex8g_1.tmp
 
 runex8g_2: 
-	-@${MPIEXEC} -n 2 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -print_error -pc_gasm_print_subdomains > ex8g_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -overlap 1 -print_error -pc_gasm_print_subdomains > ex8g_2.tmp 2>&1; \
 	   if (${DIFF} output/ex8g_2.out ex8g_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex8g_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex8g_2.tmp
 
 runex8g_3: 
-	-@${MPIEXEC} -n 3 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -print_error -pc_gasm_print_subdomains > ex8g_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -overlap 1 -print_error -pc_gasm_print_subdomains > ex8g_3.tmp 2>&1; \
 	   if (${DIFF} output/ex8g_3.out ex8g_3.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex8g_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex8g_3.tmp
 
-NP = 1
-M  = 4
-N  = 5
-BLOCKS = 2
-runex8:
-	-@${MPIEXEC} -n ${NP} ./ex8 -m $M -n $N -pc_asm_blocks ${BLOCKS} -print_error ${ARGS} 
-
-VALGRIND=
-Mdomains = 2
-Ndomains = 1
-runex8g:
-	-@${MPIEXEC} -n ${NP} ${VALGRIND} ./ex8g -N $M -N $N -user_set_subdomains -Mdomains ${Mdomains} -Ndomains ${Ndomains} -print_error ${ARGS}
-
-
-BREAKPOINT=
-runex8g_debug:
-	-@${MPIEXEC} -n ${NP} xterm -e gdb -ex 'set breakpoint pending on' -ex 'b ${BREAKPOINT}' -ex r -ex bt --args ./ex8g -print_error ${ARGS}
 
 
 runex10_basic:
