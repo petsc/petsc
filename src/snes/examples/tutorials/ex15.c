@@ -176,10 +176,10 @@ int main(int argc,char **argv)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
   if (user.picard) {
-    ierr = DMDASNESSetFunctionLocal(da,(DMDALocalFunction1)FormFunctionPicardLocal,&user);CHKERRQ(ierr);
+    ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(DMDALocalFunction1)FormFunctionPicardLocal,&user);CHKERRQ(ierr);
     ierr = SNESSetPicard(snes,r,SNESDMDAComputeFunction,A,B,SNESDMDAComputeJacobian,&user);CHKERRQ(ierr);
   } else {
-    ierr = DMDASNESSetFunctionLocal(da,(DMDALocalFunction1)FormFunctionLocal,&user);CHKERRQ(ierr);
+    ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(DMDALocalFunction1)FormFunctionLocal,&user);CHKERRQ(ierr);
   }
   ierr = DMDASNESSetJacobianLocal(da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
 
