@@ -41,7 +41,6 @@ J*/
 #define SNESSHELL        "shell"
 #define SNESGS           "gs"
 #define SNESNCG          "ncg"
-#define SNESSORQN        "sorqn"
 #define SNESFAS          "fas"
 #define SNESMS           "ms"
 
@@ -538,8 +537,8 @@ extern PetscErrorCode SNESLineSearchSetType(SNESLineSearch, const SNESLineSearch
 extern PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch);
 extern PetscErrorCode SNESLineSearchSetUp(SNESLineSearch);
 extern PetscErrorCode SNESLineSearchApply(SNESLineSearch, Vec, Vec, PetscReal *, Vec);
-extern PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch, PetscBool *);
-extern PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch, PetscBool *, PetscBool *);
+extern PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch,Vec,Vec,PetscBool *);
+extern PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *);
 extern PetscErrorCode SNESLineSearchGetWork(SNESLineSearch, PetscInt);
 
 /* set the functions for precheck and postcheck */
@@ -643,7 +642,7 @@ extern PetscErrorCode DMSNESGetGS(DM,PetscErrorCode(**)(SNES,Vec,Vec,void*),void
 extern PetscErrorCode DMSNESSetJacobian(DM,PetscErrorCode(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void*);
 extern PetscErrorCode DMSNESGetJacobian(DM,PetscErrorCode(**)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void**);
 
-extern PetscErrorCode DMDASNESSetFunctionLocal(DM,PetscErrorCode(*)(DMDALocalInfo*,void*,void*,void*),void*);
+extern PetscErrorCode DMDASNESSetFunctionLocal(DM,InsertMode,PetscErrorCode(*)(DMDALocalInfo*,void*,void*,void*),void*);
 extern PetscErrorCode DMDASNESSetJacobianLocal(DM,PetscErrorCode(*)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*),void*);
 
 /* Routines for Multiblock solver */

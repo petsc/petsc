@@ -26,7 +26,7 @@
 #define matzerorowscolumnslocalis_       MATZEROROWSCOLUMNSLOCALIS
 #define matsetoptionsprefix_             MATSETOPTIONSPREFIX
 #define matgetvecs_                      MATGETVECS
-#define matnullspaceremove_              MATNULLSPACEREMOV
+#define matnullspaceremove_              MATNULLSPACEREMOVE
 #define matgetinfo_                      MATGETINFO
 #define matlufactor_                     MATLUFACTOR
 #define matilufactor_                    MATILUFACTOR

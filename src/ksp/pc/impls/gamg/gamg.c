@@ -784,7 +784,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       ierr = GAMGKKTMatDestroy( &kktMatsArr[level] ); CHKERRQ(ierr);
 
       /* set defaults */
-      ierr = KSPSetType( smoother, KSPCHEBYCHEV );CHKERRQ(ierr);
+      ierr = KSPSetType( smoother, KSPCHEBYSHEV );CHKERRQ(ierr);
 
       /* override defaults and command line args (!) */
       if ( pc_gamg->use_aggs_in_gasm ) {
@@ -799,12 +799,12 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
           PetscInt my0,kk;
           ierr = MatGetOwnershipRange( Aarr[level], &my0, &kk ); CHKERRQ(ierr);
           ierr = ISCreateGeneral(PETSC_COMM_SELF, 1, &my0, PETSC_COPY_VALUES, &is ); CHKERRQ(ierr);
-          ierr = PCGASMSetLocalSubdomains( subpc, 1, &is, PETSC_NULL ); CHKERRQ(ierr);
+          ierr = PCGASMSetSubdomains( subpc, 1, &is, PETSC_NULL ); CHKERRQ(ierr);
           ierr = ISDestroy( &is ); CHKERRQ(ierr);
         }
         else {
           PetscInt kk;
-          ierr = PCGASMSetLocalSubdomains( subpc, sz, is, PETSC_NULL ); CHKERRQ(ierr);
+          ierr = PCGASMSetSubdomains( subpc, sz, is, PETSC_NULL ); CHKERRQ(ierr);
           for(kk=0;kk<sz;kk++){
             ierr = ISDestroy( &is[kk] ); CHKERRQ(ierr);
           }
@@ -863,7 +863,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       }
 
       /* do my own cheby */
-      ierr = PetscObjectTypeCompare( (PetscObject)smoother, KSPCHEBYCHEV, &flag ); CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare( (PetscObject)smoother, KSPCHEBYSHEV, &flag ); CHKERRQ(ierr);
       if( flag ) {
         PetscReal emax, emin;
         ierr = PetscObjectTypeCompare( (PetscObject)subpc, PCJACOBI, &flag ); CHKERRQ(ierr);
@@ -948,7 +948,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
           emin = 1.*emax/((PetscReal)N1/(PetscReal)N0); 
           emax *= 1.05;
         }
-        ierr = KSPChebychevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
+        ierr = KSPChebyshevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
       } /* setup checby flag */
 
       if( removedEqs[level] ) {

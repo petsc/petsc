@@ -84,7 +84,8 @@ PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],
 
     Input Parameters:
 +   comm - the communicator
--   string - the string to use
+.   string - the string to use
+-   len    - the string length
 
     Output Parameter:
 .   lab - the PetscViewer

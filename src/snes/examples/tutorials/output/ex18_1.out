@@ -1,10 +1,8 @@
 SNES Object: 1 MPI processes
   type: ls
-    alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
-    damping factor=1.000000000000e+00
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=32
+  total number of linear solver iterations=22
   total number of function evaluations=7
   KSP Object:   1 MPI processes
     type: fgmres
@@ -122,7 +120,13 @@ SNES Object: 1 MPI processes
       total: nonzeros=1377, allocated nonzeros=1377
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
-  line search variant: bt
+  SNESLineSearch Object:   1 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
 Number of SNES iterations = 6
-Number of Linear iterations = 32
-Average Linear its / SNES = 5.333333e+00
+Number of Linear iterations = 22
+Average Linear its / SNES = 3.666667e+00

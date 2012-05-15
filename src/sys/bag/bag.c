@@ -484,7 +484,7 @@ PetscErrorCode  PetscBagDestroy(PetscBag *bag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBagSetFromOptions"
-/*@C
+/*@
    PetscBagSetFromOptions - Allows setting options from a bag
 
    Collective on PetscBag
@@ -504,6 +504,7 @@ PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
   PetscErrorCode ierr;
   PetscBagItem   nitem = bag->bagitems;
   char           name[PETSC_BAG_NAME_LENGTH+1],helpname[PETSC_BAG_NAME_LENGTH+PETSC_BAG_HELP_LENGTH+3];
+  PetscInt       n;
   
   PetscFunctionBegin;
   ierr = PetscStrcpy(helpname,bag->bagname);CHKERRQ(ierr);
@@ -519,13 +520,23 @@ PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
         ierr = PetscOptionsString(name,nitem->help,"",value,value,nitem->msize,PETSC_NULL);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_REAL) {
         PetscReal *value = (PetscReal*)(((char*)bag) + nitem->offset);
-        ierr = PetscOptionsReal(name,nitem->help,"",*value,value,PETSC_NULL);CHKERRQ(ierr);
+        if (nitem->msize == 1) {
+          ierr = PetscOptionsReal(name,nitem->help,"",*value,value,PETSC_NULL);CHKERRQ(ierr);
+        } else {
+          n = nitem->msize;
+          ierr = PetscOptionsRealArray(name,nitem->help,"",value,&n,PETSC_NULL);CHKERRQ(ierr);
+        }
       } else if (nitem->dtype == PETSC_SCALAR) {
         PetscScalar *value = (PetscScalar*)(((char*)bag) + nitem->offset);
         ierr = PetscOptionsScalar(name,nitem->help,"",*value,value,PETSC_NULL);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_INT) {
         PetscInt *value = (PetscInt*)(((char*)bag) + nitem->offset);
-        ierr = PetscOptionsInt(name,nitem->help,"",*value,value,PETSC_NULL);CHKERRQ(ierr);
+        if (nitem->msize == 1) {
+          ierr = PetscOptionsInt(name,nitem->help,"",*value,value,PETSC_NULL);CHKERRQ(ierr);
+        } else {
+          n = nitem->msize;
+          ierr = PetscOptionsIntArray(name,nitem->help,"",value,&n,PETSC_NULL);CHKERRQ(ierr);
+        }
       } else if (nitem->dtype == PETSC_ENUM) {
         PetscEnum *value = (PetscEnum*)(((char*)bag) + nitem->offset);                     
         PetscInt  i = 0;

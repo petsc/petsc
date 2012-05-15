@@ -1,18 +1,16 @@
 
-ALL: lib
+ALL: lib 
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = sorqn.c
+SOURCEC  = ifbcgs.c
 SOURCEF  =
-SOURCEH  =
-OBJSC    = $(SOURCEC:.c=.o)
+OBJSC    = ifbcgs.o
 OBJSF    =
-LIBBASE  = libpetscsnes
-MANSEC   = SNES
-LOCDIR   = src/snes/impls/sorqn
+LIBBASE  = libpetscksp
+LOCDIR   = src/ksp/ksp/impls/bcgs/ifbcgs
+MANSEC   = KSP
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
-

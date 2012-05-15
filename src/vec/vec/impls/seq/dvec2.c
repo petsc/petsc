@@ -5,6 +5,7 @@
 */
 #include <../src/vec/vec/impls/dvecimpl.h>   
 #include <petsc-private/petscaxpy.h>
+#include <petscthreadcomm.h>
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
 #include <../src/vec/vec/impls/seq/ftn-kernels/fmdot.h>
@@ -559,6 +560,41 @@ PetscErrorCode VecMin_Seq(Vec xin,PetscInt* idx,PetscReal * z)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode VecSet_kernel(PetscInt thread_id,Vec xin,PetscScalar *alpha_p)
+{
+  PetscErrorCode ierr;
+  PetscScalar    *xx;
+  PetscInt       i,start,end;
+  PetscInt       *trstarts=xin->map->trstarts;
+  PetscScalar    alpha = *alpha_p;
+
+  start = trstarts[thread_id];
+  end   = trstarts[thread_id+1];
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+  if (alpha == (PetscScalar)0.0) {
+    ierr = PetscMemzero(xx+start,(end-start)*sizeof(PetscScalar));CHKERRQ(ierr);
+  } else {
+    for (i=start;i<end;i++) xx[i] = alpha;
+  }
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecSet_Seq"
+PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
+{
+  PetscErrorCode ierr;
+  PetscScalar    *scalar;
+
+  PetscFunctionBegin;
+  ierr = PetscThreadCommGetScalars(((PetscObject)xin)->comm,&scalar,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  *scalar = alpha;
+  ierr = PetscThreadCommRunKernel(((PetscObject)xin)->comm,(PetscThreadKernel)VecSet_kernel,2,xin,scalar);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__  
 #define __FUNCT__ "VecSet_Seq"
 PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
@@ -577,7 +613,7 @@ PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
   ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMAXPY_Seq"

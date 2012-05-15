@@ -58,8 +58,12 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
   PC_SACUSP      *sa = (PC_SACUSP*)pc->data;
   PetscBool      flg = PETSC_FALSE;
   PetscErrorCode ierr;
+#if !defined(PETSC_USE_COMPLEX)
+  // protect these in order to avoid compiler warnings. This preconditioner does 
+  // not work for complex types.
   Mat_SeqAIJCUSP *gpustruct;
   CUSPMATRIX* mat;	
+#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
@@ -72,6 +76,9 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
     }
   }
   try {
+#if defined(PETSC_USE_COMPLEX)
+    sa->SACUSP = 0; CHKERRQ(1); /* TODO */
+#else
     ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
     gpustruct  = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);
 #ifdef PETSC_HAVE_TXPETSCGPU
@@ -79,10 +86,6 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
 #else
     mat = (CUSPMATRIX*)gpustruct->mat;
 #endif
-
-#if defined(PETSC_USE_COMPLEX)
-    sa->SACUSP = 0; CHKERRQ(1); /* TODO */
-#else
     sa->SACUSP = new cuspsaprecond(*mat);
 #endif
 
@@ -98,7 +101,11 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
 #define __FUNCT__ "PCApplyRichardson_SACUSP"
 static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
+#if !defined(PETSC_USE_COMPLEX)
+  // protect these in order to avoid compiler warnings. This preconditioner does 
+  // not work for complex types.
   PC_SACUSP      *sac = (PC_SACUSP*)pc->data;
+#endif
   PetscErrorCode ierr;
   CUSPARRAY      *barray,*yarray;
 
@@ -109,7 +116,6 @@ static PetscErrorCode PCApplyRichardson_SACUSP(PC pc, Vec b, Vec y, Vec w,PetscR
   ierr = VecCUSPGetArrayReadWrite(y,&yarray);CHKERRQ(ierr);
   cusp::default_monitor<PetscReal> monitor(*barray,its,rtol,abstol);
 #if defined(PETSC_USE_COMPLEX)
-  sac = 0;
   CHKERRQ(1);
   /* TODO */
 #else

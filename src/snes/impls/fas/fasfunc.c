@@ -382,6 +382,8 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth) {
     ierr = SNESSetTolerances(nsmooth, 0.0, 0.0, 0.0, fas->max_down_it, nsmooth->max_funcs);CHKERRQ(ierr);
   }
   ierr = PetscObjectIncrementTabLevel((PetscObject)nsmooth, (PetscObject)snes, 1);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(snes,nsmooth);CHKERRQ(ierr);
+  ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)nsmooth);CHKERRQ(ierr);
   *smooth = nsmooth;
   PetscFunctionReturn(0);
 }

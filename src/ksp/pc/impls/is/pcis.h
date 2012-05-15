@@ -46,6 +46,7 @@ typedef struct {
   VecScatter      N_to_B     ;    /* scattering context from all local nodes to local interface nodes */
   VecScatter      global_to_B;    /* scattering context from global to local interface nodes */
   PetscBool       pure_neumann;
+  PetscScalar     scaling_factor;
 
   PetscBool  ISLocalToGlobalMappingGetInfoWasCalled;
   PetscInt   n_neigh;    /* number of neighbours this subdomain has (by now, INCLUDING OR NOT the subdomain itself). */
@@ -75,5 +76,6 @@ extern PetscErrorCode  PCISCreate(PC pc);
 extern PetscErrorCode  PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D);
 extern PetscErrorCode  PCISScatterArrayNToVecB(PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc);
 extern PetscErrorCode  PCISApplyInvSchur(PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N);
+extern PetscErrorCode  PCISSetSubdomainScalingFactor(PC pc, PetscScalar scal);
 
 #endif /* __pcis_h */

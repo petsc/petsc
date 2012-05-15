@@ -319,8 +319,6 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode SNESLineSearchNo_VI(SNES,void *,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal *,PetscReal *,PetscBool *);
-
 /* Variational Inequality solver using reduce space method. No semismooth algorithm is
    implemented in this algorithm. It basically identifies the active constraints and does
    a linear solve on the other variables (those not associated with the active constraints). */

@@ -7,7 +7,7 @@ lid velocity = 0.0204082, prandtl # = 1, grashof # = 1
     4 KSP Residual norm 0.00360523 
     5 KSP Residual norm 0.00187927 
     6 KSP Residual norm 0.000997932 
-    7 KSP Residual norm 0.000325884 
+    7 KSP Residual norm 0.000325883 
     8 KSP Residual norm 0.000122254 
     9 KSP Residual norm 6.21287e-05 
    10 KSP Residual norm 4.04759e-05 
@@ -20,30 +20,28 @@ lid velocity = 0.0204082, prandtl # = 1, grashof # = 1
     0 KSP Residual norm 2.5489e-05 
     1 KSP Residual norm 1.07362e-05 
     2 KSP Residual norm 3.78935e-06 
-    3 KSP Residual norm 1.4375e-06 
-    4 KSP Residual norm 6.54918e-07 
-    5 KSP Residual norm 5.12181e-07 
-    6 KSP Residual norm 3.42535e-07 
-    7 KSP Residual norm 1.4512e-07 
-    8 KSP Residual norm 7.40799e-08 
-    9 KSP Residual norm 3.79586e-08 
+    3 KSP Residual norm 1.43754e-06 
+    4 KSP Residual norm 6.54958e-07 
+    5 KSP Residual norm 5.1222e-07 
+    6 KSP Residual norm 3.42561e-07 
+    7 KSP Residual norm 1.45139e-07 
+    8 KSP Residual norm 7.40915e-08 
+    9 KSP Residual norm 3.7962e-08 
    10 KSP Residual norm 1.50282e-08 
-   11 KSP Residual norm 5.03326e-09 
+   11 KSP Residual norm 5.03342e-09 
    12 KSP Residual norm 2.41714e-09 
-   13 KSP Residual norm 1.38639e-09 
+   13 KSP Residual norm 1.38641e-09 
    14 KSP Residual norm 7.047e-10 
    15 KSP Residual norm 3.897e-10 
    16 KSP Residual norm 2.021e-10 
-  2 SNES Function norm 2.021e-10 
-SNES Object:
+  2 SNES Function norm 2.020e-10 
+SNES Object: 3 MPI processes
   type: ls
-    line search variant: SNESLineSearchCubic
-    alpha=0.0001, maxstep=1e+08, minlambda=1e-12
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=31
   total number of function evaluations=129
-  KSP Object:
+  KSP Object:   3 MPI processes
     type: fgmres
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       GMRES: happy breakdown tolerance 1e-30
@@ -51,198 +49,216 @@ SNES Object:
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
-  PC Object:
+  PC Object:   3 MPI processes
     type: fieldsplit
-      FieldSplit with MULTIPLICATIVE composition: total splits = 4, blocksize = 4
+      FieldSplit with MULTIPLICATIVE composition: total splits = 4
       Solver info for each split is in the following KSP objects:
-      Split number 0 Fields  0
-      KSP Object:(fieldsplit_0_)
+      Split number 0 Defined by IS
+      KSP Object:      (fieldsplit_x_velocity_)       3 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
-        using PRECONDITIONED norm type for convergence test
-      PC Object:(fieldsplit_0_)
+        using NONE norm type for convergence test
+      PC Object:      (fieldsplit_x_velocity_)       3 MPI processes
         type: bjacobi
           block Jacobi: number of blocks = 3
           Local solve is same for all blocks, in the following KSP and PC objects:
-        KSP Object:(fieldsplit_0_sub_)
+        KSP Object:        (fieldsplit_x_velocity_sub_)         1 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
           left preconditioning
-          using PRECONDITIONED norm type for convergence test
-        PC Object:(fieldsplit_0_sub_)
+          using NONE norm type for convergence test
+        PC Object:        (fieldsplit_x_velocity_sub_)         1 MPI processes
           type: ilu
             ILU: out-of-place factorization
             0 levels of fill
-            tolerance for zero pivot 1e-12
-            using diagonal shift on blocks to prevent zero pivot
+            tolerance for zero pivot 2.22045e-14
+            using diagonal shift to prevent zero pivot
             matrix ordering: natural
             factor fill ratio given 1, needed 1
               Factored matrix follows:
-                Matrix Object:
+                Matrix Object:                 1 MPI processes
                   type: seqaij
                   rows=21, cols=21
                   package used to perform factorization: petsc
                   total: nonzeros=85, allocated nonzeros=85
+                  total number of mallocs used during MatSetValues calls =0
                     not using I-node routines
           linear system matrix = precond matrix:
-          Matrix Object:
+          Matrix Object:           1 MPI processes
             type: seqaij
             rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
+            total number of mallocs used during MatSetValues calls =0
               not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:
+        Matrix Object:         3 MPI processes
           type: mpiaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
+          total number of mallocs used during MatSetValues calls =0
             not using I-node (on process 0) routines
-      Split number 1 Fields  1
-      KSP Object:(fieldsplit_1_)
+      Split number 1 Defined by IS
+      KSP Object:      (fieldsplit_y_velocity_)       3 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
-        using PRECONDITIONED norm type for convergence test
-      PC Object:(fieldsplit_1_)
+        using NONE norm type for convergence test
+      PC Object:      (fieldsplit_y_velocity_)       3 MPI processes
         type: bjacobi
           block Jacobi: number of blocks = 3
           Local solve is same for all blocks, in the following KSP and PC objects:
-        KSP Object:(fieldsplit_1_sub_)
+        KSP Object:        (fieldsplit_y_velocity_sub_)         1 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
           left preconditioning
-          using PRECONDITIONED norm type for convergence test
-        PC Object:(fieldsplit_1_sub_)
+          using NONE norm type for convergence test
+        PC Object:        (fieldsplit_y_velocity_sub_)         1 MPI processes
           type: ilu
             ILU: out-of-place factorization
             0 levels of fill
-            tolerance for zero pivot 1e-12
-            using diagonal shift on blocks to prevent zero pivot
+            tolerance for zero pivot 2.22045e-14
+            using diagonal shift to prevent zero pivot
             matrix ordering: natural
             factor fill ratio given 1, needed 1
               Factored matrix follows:
-                Matrix Object:
+                Matrix Object:                 1 MPI processes
                   type: seqaij
                   rows=21, cols=21
                   package used to perform factorization: petsc
                   total: nonzeros=85, allocated nonzeros=85
+                  total number of mallocs used during MatSetValues calls =0
                     not using I-node routines
           linear system matrix = precond matrix:
-          Matrix Object:
+          Matrix Object:           1 MPI processes
             type: seqaij
             rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
+            total number of mallocs used during MatSetValues calls =0
               not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:
+        Matrix Object:         3 MPI processes
           type: mpiaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
+          total number of mallocs used during MatSetValues calls =0
             not using I-node (on process 0) routines
-      Split number 2 Fields  2
-      KSP Object:(fieldsplit_2_)
+      Split number 2 Defined by IS
+      KSP Object:      (fieldsplit_Omega_)       3 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
-        using PRECONDITIONED norm type for convergence test
-      PC Object:(fieldsplit_2_)
+        using NONE norm type for convergence test
+      PC Object:      (fieldsplit_Omega_)       3 MPI processes
         type: bjacobi
           block Jacobi: number of blocks = 3
           Local solve is same for all blocks, in the following KSP and PC objects:
-        KSP Object:(fieldsplit_2_sub_)
+        KSP Object:        (fieldsplit_Omega_sub_)         1 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
           left preconditioning
-          using PRECONDITIONED norm type for convergence test
-        PC Object:(fieldsplit_2_sub_)
+          using NONE norm type for convergence test
+        PC Object:        (fieldsplit_Omega_sub_)         1 MPI processes
           type: ilu
             ILU: out-of-place factorization
             0 levels of fill
-            tolerance for zero pivot 1e-12
-            using diagonal shift on blocks to prevent zero pivot
+            tolerance for zero pivot 2.22045e-14
+            using diagonal shift to prevent zero pivot
             matrix ordering: natural
             factor fill ratio given 1, needed 1
               Factored matrix follows:
-                Matrix Object:
+                Matrix Object:                 1 MPI processes
                   type: seqaij
                   rows=21, cols=21
                   package used to perform factorization: petsc
                   total: nonzeros=85, allocated nonzeros=85
+                  total number of mallocs used during MatSetValues calls =0
                     not using I-node routines
           linear system matrix = precond matrix:
-          Matrix Object:
+          Matrix Object:           1 MPI processes
             type: seqaij
             rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
+            total number of mallocs used during MatSetValues calls =0
               not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:
+        Matrix Object:         3 MPI processes
           type: mpiaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
+          total number of mallocs used during MatSetValues calls =0
             not using I-node (on process 0) routines
-      Split number 3 Fields  3
-      KSP Object:(fieldsplit_3_)
+      Split number 3 Defined by IS
+      KSP Object:      (fieldsplit_temperature_)       3 MPI processes
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
-        using PRECONDITIONED norm type for convergence test
-      PC Object:(fieldsplit_3_)
+        using NONE norm type for convergence test
+      PC Object:      (fieldsplit_temperature_)       3 MPI processes
         type: bjacobi
           block Jacobi: number of blocks = 3
           Local solve is same for all blocks, in the following KSP and PC objects:
-        KSP Object:(fieldsplit_3_sub_)
+        KSP Object:        (fieldsplit_temperature_sub_)         1 MPI processes
           type: preonly
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
           left preconditioning
-          using PRECONDITIONED norm type for convergence test
-        PC Object:(fieldsplit_3_sub_)
+          using NONE norm type for convergence test
+        PC Object:        (fieldsplit_temperature_sub_)         1 MPI processes
           type: ilu
             ILU: out-of-place factorization
             0 levels of fill
-            tolerance for zero pivot 1e-12
-            using diagonal shift on blocks to prevent zero pivot
+            tolerance for zero pivot 2.22045e-14
+            using diagonal shift to prevent zero pivot
             matrix ordering: natural
             factor fill ratio given 1, needed 1
               Factored matrix follows:
-                Matrix Object:
+                Matrix Object:                 1 MPI processes
                   type: seqaij
                   rows=21, cols=21
                   package used to perform factorization: petsc
                   total: nonzeros=85, allocated nonzeros=85
+                  total number of mallocs used during MatSetValues calls =0
                     not using I-node routines
           linear system matrix = precond matrix:
-          Matrix Object:
+          Matrix Object:           1 MPI processes
             type: seqaij
             rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
+            total number of mallocs used during MatSetValues calls =0
               not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:
+        Matrix Object:         3 MPI processes
           type: mpiaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
+          total number of mallocs used during MatSetValues calls =0
             not using I-node (on process 0) routines
     linear system matrix followed by preconditioner matrix:
-    Matrix Object:
+    Matrix Object:     3 MPI processes
       type: mffd
       rows=196, cols=196
-          matrix-free approximation:
-            err=1e-07 (relative error in function evaluation)
-            Using wp compute h routine
-            Computes normA
-            Does not compute normU
-    Matrix Object:
+        Matrix-free approximation:
+          err=1.49012e-08 (relative error in function evaluation)
+          Using wp compute h routine
+              Does not compute normU
+    Matrix Object:     3 MPI processes
       type: mpiaij
-      rows=196, cols=196
+      rows=196, cols=196, bs=4
       total: nonzeros=3472, allocated nonzeros=3472
-        using I-node (on process 0) routines: found 21 nodes, limit used is 5
+      total number of mallocs used during MatSetValues calls =0
+  SNESLineSearch Object:   3 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
 Number of SNES iterations = 2

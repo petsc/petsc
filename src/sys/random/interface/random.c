@@ -49,7 +49,7 @@
       PetscRandomGetValue(r,&value1);
       PetscRandomGetValue(r,&value2);
       PetscRandomGetValue(r,&value3);
-      PetscRandomDestroy(r);
+      PetscRandomDestroy(&r);
 .ve
 
    Concepts: random numbers^getting
@@ -95,7 +95,7 @@ PetscErrorCode  PetscRandomGetValue(PetscRandom r,PetscScalar *val)
       PetscRandomGetValueReal(r,&value1);
       PetscRandomGetValueReal(r,&value2);
       PetscRandomGetValueReal(r,&value3);
-      PetscRandomDestroy(r);
+      PetscRandomDestroy(&r);
 .ve
 
    Concepts: random numbers^getting

@@ -4,6 +4,7 @@
 */
 
 #include <petsc-private/vecimpl.h>   /*I  "petscvec.h"   I*/
+#include <petsc-private/threadcommimpl.h>
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLayoutCreate"
 /*@C
@@ -50,6 +51,7 @@ PetscErrorCode  PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
   (*map)->range  = 0;
   (*map)->rstart = 0;
   (*map)->rend   = 0;
+  (*map)->trstarts = 0;
   PetscFunctionReturn(0);
 }
 
@@ -88,6 +90,10 @@ PetscErrorCode  PetscLayoutDestroy(PetscLayout *map)
 #if defined(PETSC_HAVE_PTHREADCLASSES)
     ierr = PetscThreadsLayoutDestroy(&(*map)->tmap);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_THREADCOMM_ACTIVE)
+    ierr = PetscFree((*map)->trstarts);CHKERRQ(ierr);
+#endif
+
     ierr = PetscFree((*map));CHKERRQ(ierr);
   }
   *map = PETSC_NULL;
@@ -153,6 +159,11 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
 
   map->rstart = map->range[rank];
   map->rend   = map->range[rank+1];
+#if defined(PETSC_THREADCOMM_ACTIVE)
+  /* Set the thread ownership ranges */
+  ierr = PetscThreadCommGetOwnershipRanges(map->comm,map->n,&map->trstarts);CHKERRQ(ierr);
+#endif
+
   PetscFunctionReturn(0);
 }
 

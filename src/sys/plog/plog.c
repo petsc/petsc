@@ -22,6 +22,9 @@
 #include <malloc.h>
 #endif
 #include <petsc-private/logimpl.h>
+#if defined(PETSC_THREADCOMM_ACTIVE)
+#include <petscthreadcomm.h>
+#endif
 
 PetscLogEvent  PETSC_LARGEST_EVENT  = PETSC_EVENT;
 
@@ -1287,6 +1290,9 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   PetscErrorCode     ierr;
   char               version[256];
   MPI_Comm           comm;
+#if defined(PETSC_THREADCOMM_ACTIVE)
+  PetscInt           nthreads;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
@@ -1320,6 +1326,13 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   } else {
     ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, size, username, date);CHKERRQ(ierr);
   }
+#if defined(PETSC_THREADCOMM_ACTIVE)
+  ierr = PetscThreadCommGetNThreads(PETSC_COMM_WORLD,&nthreads);CHKERRQ(ierr);
+  if (nthreads > 1) {
+    ierr = PetscFPrintf(comm,fd,"With %d threads per MPI_Comm\n", (int)nthreads);CHKERRQ(ierr);
+  }
+#endif
+  
   ierr = PetscFPrintf(comm, fd, "Using %s\n", version);CHKERRQ(ierr);
 
   /* Must preserve reduction count before we go on */

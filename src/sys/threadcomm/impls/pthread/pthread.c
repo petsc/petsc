@@ -1,3 +1,7 @@
+/* Define feature test macros to make sure CPU_SET and other functions are available
+ */
+#define PETSC_DESIRE_FEATURE_TEST_MACROS
+
 #include <../src/sys/threadcomm/impls/pthread/pthreadimpl.h>
 
 #if defined(PETSC_PTHREAD_LOCAL)
@@ -17,7 +21,7 @@ static PetscInt ptcommcrtct = 0; /* PThread communicator creation count. Increme
                                     last pthread communicator destruction, the thread pool is also terminated
                                   */
 
-PetscInt PetscGetPThreadRank()
+PetscInt PetscThreadCommGetRank_PThread()
 {
 #if defined(PETSC_PTHREAD_LOCAL)
   return PetscPThreadRank;
@@ -30,24 +34,25 @@ PetscInt PetscGetPThreadRank()
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 void PetscPThreadCommDoCoreAffinity(void)
 {
-  PetscInt  i,icorr=0; 
-  cpu_set_t mset;
-  PetscInt  myrank=PetscGetPThreadRank();
+  PetscInt                 i,icorr=0; 
+  cpu_set_t                mset;
+  PetscInt                 ncores,myrank=PetscThreadCommGetRank_PThread();
   PetscThreadComm          tcomm;
   PetscThreadComm_PThread  gptcomm;
   
   PetscCommGetThreadComm(PETSC_COMM_WORLD,&tcomm);
+  PetscGetNCores(&ncores);
   gptcomm=(PetscThreadComm_PThread)tcomm->data;
   switch(gptcomm->aff) {
   case PTHREADAFFPOLICY_ONECORE:
     icorr = tcomm->affinities[myrank];
     CPU_ZERO(&mset);
-    CPU_SET(icorr%N_CORES,&mset);
+    CPU_SET(icorr%ncores,&mset);
     pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
     break;
   case PTHREADAFFPOLICY_ALL:
     CPU_ZERO(&mset);
-    for(i=0;i<N_CORES;i++) CPU_SET(i,&mset);
+    for(i=0;i<ncores;i++) CPU_SET(i,&mset);
     pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
     break;
   case PTHREADAFFPOLICY_NONE:
@@ -61,7 +66,7 @@ void PetscPThreadCommDoCoreAffinity(void)
 PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
 {
   PetscThreadComm_PThread ptcomm=(PetscThreadComm_PThread)tcomm->data;
-  PetscErrorCode ierr;
+  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
   if(!ptcomm) PetscFunctionReturn(0);
@@ -98,9 +103,11 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
   ptcomm->aff = PTHREADAFFPOLICY_ONECORE;
   ptcomm->spark = PTHREADPOOLSPARK_LEADER;
   ptcomm->ismainworker = PETSC_TRUE;
+  ptcomm->synchronizeafter = PETSC_TRUE;
   tcomm->ops->destroy = PetscThreadCommDestroy_PThread;
   tcomm->ops->runkernel = PetscPThreadCommRunKernel_LockFree;
   tcomm->ops->barrier   = PetscPThreadCommBarrier_LockFree;
+  tcomm->ops->getrank   = PetscThreadCommGetRank_PThread;
 
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&ptcomm->granks);CHKERRQ(ierr);
 
@@ -113,6 +120,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     ierr = PetscOptionsEnum("-threadcomm_pthread_affpolicy","Thread affinity policy"," ",PetscPThreadCommAffinityPolicyTypes,(PetscEnum)ptcomm->aff,(PetscEnum*)&ptcomm->aff,&flg2);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-threadcomm_pthread_type","Thread pool type"," ",PetscPThreadCommSynchronizationTypes,(PetscEnum)ptcomm->sync,(PetscEnum*)&ptcomm->sync,&flg3);CHKERRQ(ierr);
     ierr = PetscOptionsEnum("-threadcomm_pthread_spark","Thread pool spark type"," ",PetscPThreadCommPoolSparkTypes,(PetscEnum)ptcomm->spark,(PetscEnum*)&ptcomm->spark,&flg4);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-threadcomm_pthread_synchronizeafter","Puts a barrier after every kernel call",PETSC_NULL,PETSC_TRUE,&ptcomm->synchronizeafter,&flg1);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
     if(ptcomm->ismainworker) {
@@ -159,15 +167,27 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     /* Create array holding pthread ids */
     ierr = PetscMalloc(tcomm->nworkThreads*sizeof(pthread_t),&ptcomm->tid);CHKERRQ(ierr);
 
+    /* Set affinity of the main thread */
+    
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+    cpu_set_t mset;
+    PetscInt  ncores,icorr;
+    
+
+    ierr = PetscGetNCores(&ncores);CHKERRQ(ierr);
+    CPU_ZERO(&mset);
+    icorr = tcomm->affinities[0]%ncores;
+    CPU_SET(icorr,&mset);
+    sched_setaffinity(0,sizeof(cpu_set_t),&mset);
+#endif
+
     /* Initialize thread pool */
     ierr = (*ptcomm->initialize)(tcomm);CHKERRQ(ierr);
 
   } else {
     PetscThreadComm          gtcomm;
     PetscThreadComm_PThread  gptcomm;
-    PetscInt *granks;
-    PetscInt j;
-    PetscInt *gaffinities;
+    PetscInt                 *granks,j,*gaffinities;
 
     ierr = PetscCommGetThreadComm(PETSC_COMM_WORLD,&gtcomm);CHKERRQ(ierr);
     gaffinities = gtcomm->affinities;

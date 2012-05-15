@@ -51,9 +51,13 @@ static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
 {
   PC_AINVCUSP     *ainv = (PC_AINVCUSP*)pc->data;
   PetscBool       flg = PETSC_FALSE;
+#if !defined(PETSC_USE_COMPLEX)
+  // protect these in order to avoid compiler warnings. This preconditioner does 
+  // not work for complex types.
   Mat_SeqAIJCUSP *gpustruct;
-  PetscErrorCode  ierr;
   CUSPMATRIX* mat;	
+#endif
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);

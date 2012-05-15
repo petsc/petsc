@@ -25,6 +25,9 @@
 #if defined(PETSC__BSD_SOURCE) && !defined(_BSD_SOURCE)
 #define _BSD_SOURCE
 #endif
+#if defined(PETSC__GNU_SOURCE) && !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
 #endif
 
 /* ========================================================================== */
@@ -1342,6 +1345,7 @@ extern PetscErrorCode  PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);
 extern PetscErrorCode  PetscObjectAddOptionsHandler(PetscObject,PetscErrorCode (*)(PetscObject,void*),PetscErrorCode (*)(PetscObject,void*),void*);
 extern PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscObject);
 extern PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject);
+extern PetscErrorCode  PetscObjectsGetGlobalNumbering(MPI_Comm,PetscInt,PetscObject*,PetscInt*,PetscInt*);
 
 /*MC
    PetscObjectComposeFunctionDynamic - Associates a function with a given PETSc object. 

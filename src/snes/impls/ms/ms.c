@@ -517,7 +517,7 @@ PetscErrorCode SNESMSSetType(SNES snes,const SNESMSType rostype)
 
       Notes:
       These multistage methods are explicit Runge-Kutta methods that are often used as smoothers for
-      FAS multigrid for transport problems. In the linear case, these are equivalent to polynomial smoothers (such as Chebychev).
+      FAS multigrid for transport problems. In the linear case, these are equivalent to polynomial smoothers (such as Chebyshev).
 
       Multi-stage smoothers should usually be preconditioned by point-block Jacobi to ensure proper scaling and to normalize the wave speeds.
 
@@ -533,7 +533,7 @@ PetscErrorCode SNESMSSetType(SNES snes,const SNESMSType rostype)
 
       Level: beginner
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESMS, SNESFAS, KSPCHEBYCHEV
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESMS, SNESFAS, KSPCHEBYSHEV
 
 M*/
 EXTERN_C_BEGIN

@@ -105,6 +105,15 @@ PetscErrorCode MatDestroy_SeqMAIJ(Mat A)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSetUp_MAIJ" 
+PetscErrorCode MatSetUp_MAIJ(Mat A)
+{
+  PetscFunctionBegin;
+  SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Must use MatCreateMAIJ() to create MAIJ matrices");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatView_SeqMAIJ" 
 PetscErrorCode MatView_SeqMAIJ(Mat A,PetscViewer viewer)
 {
@@ -179,6 +188,7 @@ PetscErrorCode  MatCreate_MAIJ(Mat A)
   ierr     = PetscNewLog(A,Mat_MPIMAIJ,&b);CHKERRQ(ierr);
   A->data  = (void*)b;
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
+  A->ops->setup = MatSetUp_MAIJ;
 
   b->AIJ  = 0;
   b->dof  = 0;  
@@ -3395,6 +3405,7 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       Mat_SeqMAIJ    *b;
 
       ierr = MatSetType(B,MATSEQMAIJ);CHKERRQ(ierr);
+      B->ops->setup   = PETSC_NULL;
       B->ops->destroy = MatDestroy_SeqMAIJ;
       B->ops->view    = MatView_SeqMAIJ;
       b      = (Mat_SeqMAIJ*)B->data;
@@ -3476,6 +3487,7 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       Vec         gvec;
 
       ierr = MatSetType(B,MATMPIMAIJ);CHKERRQ(ierr);
+      B->ops->setup   = PETSC_NULL;
       B->ops->destroy = MatDestroy_MPIMAIJ;
       B->ops->view    = MatView_MPIMAIJ;
       b      = (Mat_MPIMAIJ*)B->data;

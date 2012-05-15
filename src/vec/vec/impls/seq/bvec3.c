@@ -5,7 +5,7 @@
 
 #include <petsc-private/vecimpl.h>          /*I "petscvec.h" I*/
 #include <../src/vec/vec/impls/dvecimpl.h>
-
+#include <petscthreadcomm.h>
 /*MC
    VECSEQ - VECSEQ = "seq" - The basic sequential vector
 
@@ -39,10 +39,10 @@ PetscErrorCode  VecCreate_Seq(Vec V)
 #if !defined(PETSC_USE_MIXED_PRECISION)
   ierr = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(V, n*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(array,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecCreate_Seq_Private(V,array);CHKERRQ(ierr);
   s    = (Vec_Seq*)V->data;
   s->array_allocated = array;
+  ierr = VecSet(V,0.0);CHKERRQ(ierr);
 #else
   if (((PetscObject)V)->precision == PETSC_PRECISION_SINGLE) {
     float *aarray;

@@ -147,7 +147,7 @@ PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
 PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping)
 {
   PetscErrorCode ierr;
-  PetscInt       n;
+  PetscInt       n,bs;
   Mat_IS         *is = (Mat_IS*)A->data;
   IS             from,to;
   Vec            global;
@@ -162,19 +162,27 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
 
   /* Create the local matrix A */
   ierr = ISLocalToGlobalMappingGetSize(rmapping,&n);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&is->A);CHKERRQ(ierr);
   ierr = MatSetSizes(is->A,n,n,n,n);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(is->A,"is");CHKERRQ(ierr);
+  ierr = MatSetBlockSize(is->A,bs);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(is->A,((PetscObject)A)->prefix);CHKERRQ(ierr);
+  ierr = MatAppendOptionsPrefix(is->A,"is_");CHKERRQ(ierr);
   ierr = MatSetFromOptions(is->A);CHKERRQ(ierr);
 
   /* Create the local work vectors */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&is->x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,&is->x);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(is->x,bs);CHKERRQ(ierr);
+  ierr = VecSetSizes(is->x,n,n);CHKERRQ(ierr);
+  ierr = VecSetOptionsPrefix(is->x,((PetscObject)A)->prefix);CHKERRQ(ierr);
+  ierr = VecAppendOptionsPrefix(is->x,"is_");CHKERRQ(ierr);
+  ierr = VecSetFromOptions(is->x);CHKERRQ(ierr);
   ierr = VecDuplicate(is->x,&is->y);CHKERRQ(ierr);
 
   /* setup the global to local scatter */
   ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&to);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApplyIS(rmapping,to,&from);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(((PetscObject)A)->comm,1,A->cmap->n,A->cmap->N,PETSC_NULL,&global);CHKERRQ(ierr);
+  ierr = MatGetVecs(A,&global,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,is->x,to,&is->ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
@@ -268,7 +276,7 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
     */
     Vec         counter;
     PetscScalar one=1.0, zero=0.0;
-    ierr = VecCreateMPI(((PetscObject)A)->comm,A->cmap->n,A->cmap->N,&counter);CHKERRQ(ierr);
+    ierr = MatGetVecs(A,&counter,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecSet(counter,zero);CHKERRQ(ierr);
     ierr = VecSet(is->x,one);CHKERRQ(ierr);
     ierr = VecScatterBegin(is->ctx,is->x,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -372,10 +380,12 @@ PetscErrorCode  MatISSetLocalMat_IS(Mat mat,Mat local)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(is->A,&orows,&ocols);CHKERRQ(ierr);
-  ierr = MatGetSize(local,&nrows,&ncols);CHKERRQ(ierr);
-  if(orows != nrows || ocols != ncols ) {
-    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local MATIS matrix should be of size %dx%d (you passed a %dx%d matrix)\n",orows,ocols,nrows,ncols);
+  if(is->A) {
+    ierr = MatGetSize(is->A,&orows,&ocols);CHKERRQ(ierr);
+    ierr = MatGetSize(local,&nrows,&ncols);CHKERRQ(ierr);
+    if(orows != nrows || ocols != ncols ) {
+      SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local MATIS matrix should be of size %dx%d (you passed a %dx%d matrix)\n",orows,ocols,nrows,ncols);
+    }
   }
   ierr = PetscObjectReference((PetscObject)local);CHKERRQ(ierr);
   ierr = MatDestroy(&is->A);CHKERRQ(ierr);
@@ -476,6 +486,7 @@ PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool  flg)
 
    Input Parameters:
 +     comm - MPI communicator that will share the matrix
+.     bs - local and global block size of the matrix
 .     m,n,M,N - local and/or global sizes of the the left and right vector used in matrix vector products
 -     map - mapping that defines the global number for each local number
 
@@ -491,12 +502,13 @@ PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool  flg)
 
 .seealso: MATIS, MatSetLocalToGlobalMapping()
 @*/
-PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,ISLocalToGlobalMapping map,Mat *A)
+PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,ISLocalToGlobalMapping map,Mat *A)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(*A,bs);CHKERRQ(ierr);
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATIS);CHKERRQ(ierr);
   ierr = MatSetUp(*A);CHKERRQ(ierr);

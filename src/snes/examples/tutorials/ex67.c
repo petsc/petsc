@@ -72,10 +72,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupSection"
+/* This is now Q_1-P_0 */
 PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscInt       dim             = user->dim;
   PetscInt       numComp[2]      = {dim, 1};
-  PetscInt       numVertexDof[2] = {0, 0};
+  PetscInt       numVertexDof[2] = {dim, 0};
   PetscInt       numCellDof[2]   = {0, 1};
   PetscInt       numFaceDof[6];
   PetscInt       d;
@@ -83,7 +84,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
 
   PetscFunctionBegin;
   for(d = 0; d < dim; ++d) {
-    numFaceDof[0*dim + d] = 1;
+    numFaceDof[0*dim + d] = 0;
     numFaceDof[1*dim + d] = 0;
   }
   ierr = DMDACreateSection(dm, numComp, numVertexDof, numFaceDof, numCellDof);CHKERRQ(ierr);
@@ -111,36 +112,37 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
 */
 PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
 {
-#if 0
   const PetscInt   debug = user->debug;
   const PetscInt   dim   = user->dim;
   PetscReal       *coords, *v0, *J, *invJ, *detJ;
-  PetscScalar     *elemVec;
+  PetscScalar     *elemVec, *u;
+  const PetscInt   numCells = cEnd - cStart;
+  PetscInt         cellDof  = 0;
+  PetscInt         maxQuad  = 0;
+  PetscInt         jacSize  = 1;
   PetscInt         cStart, cEnd, c, field;
-#endif
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->residualEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
-#if 0
-  ierr = PetscMalloc3(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
-  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  const PetscInt numCells = cEnd - cStart;
-  PetscInt       cellDof  = 0;
-  PetscScalar   *u;
-
+  ierr = DMDAGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for(field = 0; field < numFields; ++field) {
-    cellDof += user->q[field].numBasisFuncs*user->q[field].numComponents;
+    PetscInt dof = 1;
+    for(d = 0; d < dim; ++d) {dof *= user->q[field].numBasisFuncs*user->q[field].numComponents;}
+    cellDof += dof;
+    maxQuad  = PetscMax(maxQuad, user->q[field].numQuadPoints);
   }
-  ierr = PetscMalloc4(numCells*cellDof,PetscScalar,&u,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
+  for(d = 0; d < dim; ++d) {jacSize *= maxQuad;}
+  ierr = PetscMalloc3(dim,PetscReal,&coords,dim,PetscReal,&v0,jacSize,PetscReal,&J);CHKERRQ(ierr);
+  ierr = PetscMalloc4(numCells*cellDof,PetscScalar,&u,numCells*jacSize,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
   for(c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
     PetscInt           i;
 
-    ierr = DMComplexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
+    ierr = DMDAComputeCellGeometry(dm, c, v0, J, &invJ[c*jacSize], &detJ[c]);CHKERRQ(ierr);
     if (detJ[c] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);
-    ierr = DMComplexVecGetClosure(dm, PETSC_NULL, X, c, &x);CHKERRQ(ierr);
+    ierr = DMDAVecGetClosure(dm, PETSC_NULL, X, c, &x);CHKERRQ(ierr);
 
     for(i = 0; i < cellDof; ++i) {
       u[c*cellDof+i] = x[i];
@@ -187,7 +189,6 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
       ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
     }
   }
-#endif
   ierr = PetscLogEventEnd(user->residualEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

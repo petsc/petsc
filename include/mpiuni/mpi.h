@@ -204,6 +204,7 @@ typedef int MPI_Op;
 #define MPI_PACKED        0
 #define MPI_MAX_ERROR_STRING 2056
 #define MPI_STATUS_IGNORE (MPI_Status *)1
+#define MPI_STATUSES_IGNORE (MPI_Status *)1
 #define MPI_ORDER_FORTRAN        57
 #define MPI_IN_PLACE      (void *) -1
 
@@ -636,8 +637,11 @@ extern int    MPI_Comm_rank(MPI_Comm,int*);
      MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Group_size(group,size) (*(size)=1,MPI_SUCCESS)
 #define MPI_Group_rank(group,rank) (*(rank)=0,MPI_SUCCESS)
-#define MPI_Group_translate_ranks (group1,n,ranks1,\
-     group2,ranks2) MPI_Abort(MPI_COMM_WORLD,0)
+#define MPI_Group_translate_ranks(group1,n,ranks1,group2,ranks2) \
+  (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (group1),                 \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (group2),                 \
+   MPIUNI_Memcpy((ranks2),(ranks1),(n) * sizeof(int)),           \
+   MPI_SUCCESS)
 #define MPI_Group_compare(group1,group2,result) \
      (*(result)=1,MPI_SUCCESS)
 #define MPI_Group_union(group1,group2,newgroup) MPI_SUCCESS

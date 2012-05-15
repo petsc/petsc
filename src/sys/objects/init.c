@@ -8,16 +8,6 @@
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#if defined(PETSC_HAVE_SCHED_H)
-#ifndef __USE_GNU
-#define __USE_GNU
-#endif
-#include <sched.h>
-#endif
-
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
 #include <sys/sysinfo.h>
 #endif
@@ -80,6 +70,11 @@ PetscErrorCode  (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfD
   This is needed to turn on/off cusp synchronization 
 */
 PetscBool   PetscCUSPSynchronize = PETSC_FALSE;
+
+/* pthread_key for PetscStack */
+#if defined(PETSC_HAVE_PTHREADCLASSES) && !defined(PETSC_PTHREAD_LOCAL)
+pthread_key_t petscstack_key;
+#endif
 
 /* ------------------------------------------------------------------------------*/
 /* 
@@ -259,12 +254,15 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 {
   char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm       comm = PETSC_COMM_WORLD;
-  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flag,flgz;
+  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flag;
   PetscErrorCode ierr;
   PetscReal      si;
   int            i;
   PetscMPIInt    rank;
   char           version[256];
+#if defined(PETSC_USE_SERVER)
+  PetscBool      flgz;
+#endif
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -517,6 +515,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       Setup building of stack frames for all function calls
   */
 #if defined(PETSC_USE_DEBUG)
+  PetscThreadLocalRegister(petscstack); /* Creates petscstack_key if needed */
   ierr = PetscStackCreate();CHKERRQ(ierr);
 #endif
 

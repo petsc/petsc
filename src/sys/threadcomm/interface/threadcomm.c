@@ -1,51 +1,51 @@
 #include <petsc-private/threadcommimpl.h>      /*I "petscthreadcomm.h" I*/
 
-PetscInt N_CORES;
+static PetscInt N_CORES = -1;
 
 PetscBool  PetscThreadCommRegisterAllCalled = PETSC_FALSE;
 PetscFList PetscThreadCommList              = PETSC_NULL;
-
-static PetscBool  PetscGetNCoresCalled      = PETSC_FALSE;
-
-PetscMPIInt Petsc_ThreadComm_keyval = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_ThreadComm_keyval         = MPI_KEYVAL_INVALID;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetNCores"
-/*
-  PetscGetNCores - Gets the number of availalbe cores
-                   on the system
+/*@
+  PetscGetNCores - Gets the number of available cores on the system
 		   
   Level: developer
 
   Notes
-  Defaults to 1 if the available cores cannot be found
-*/
-PetscErrorCode PetscGetNCores(void)
+  Defaults to 1 if the available core count cannot be found
+
+@*/
+PetscErrorCode PetscGetNCores(PetscInt *ncores)
 {
   PetscFunctionBegin;
-  N_CORES=1; /* Default value if N_CORES cannot be found out */
-  /* Find the number of cores */
+  if (N_CORES == -1) {
+    N_CORES = 1; /* Default value if number of cores cannot be found out */
+
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T) /* Linux */
-  N_CORES = get_nprocs();
+    N_CORES = get_nprocs();
 #elif defined(PETSC_HAVE_SYS_SYSCTL_H) /* MacOS, BSD */
-  {
-    PetscErrorCode ierr;
-    size_t   len = sizeof(N_CORES);
-    ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
-  }
+    {
+      PetscErrorCode ierr;
+      size_t         len = sizeof(N_CORES);
+      ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
+    }
 #elif defined(PETSC_HAVE_WINDOWS_H)   /* Windows */
-  {
-    SYSTEM_INFO sysinfo;
-    GetSystemInfo( &sysinfo );
-    N_CORES = sysinfo.dwNumberOfProcessors;
-  }
+    {
+      SYSTEM_INFO sysinfo;
+      GetSystemInfo( &sysinfo );
+      N_CORES = sysinfo.dwNumberOfProcessors;
+    }
 #endif
+  }
+  if (ncores) *ncores = N_CORES;
   PetscFunctionReturn(0);
 }
 			    
 #undef __FUNCT__
 #define __FUNCT__ "PetscCommGetThreadComm"
-/*
+/*@C
   PetscCommGetThreadComm - Gets the thread communicator
                            associated with the MPI communicator
   
@@ -54,7 +54,7 @@ PetscErrorCode PetscGetNCores(void)
 
   Output Parameters:
 . tcommp - pointer to the thread communicator
-*/
+@*/
 PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
 {
   PetscErrorCode ierr;
@@ -68,34 +68,6 @@ PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"MPI_Comm does not have a thread communicator");
   *tcommp = (PetscThreadComm)ptr;
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscThreadCommReductionCreate"
-/*
-   PetscThreadCommReductionCreate - Allocates the reduction context and
-                                 initializes it
-
-   Input Parameters:
-+  tcomm - the thread communicator
-.  red   - the reduction context
-
-*/
-PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm tcomm,PetscThreadCommRedCtx *red)
-{
-  PetscErrorCode        ierr;
-  PetscThreadCommRedCtx redout;
-  PetscInt              i;
-  
-  PetscFunctionBegin;
-  ierr = PetscNew(struct _p_PetscThreadCommRedCtx,&redout);CHKERRQ(ierr);
-  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&redout->thread_status);CHKERRQ(ierr);
-  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscScalar),&redout->local_red);CHKERRQ(ierr);
-  redout->nworkThreads = tcomm->nworkThreads;
-  redout->red_status = THREADCOMM_REDUCTION_NONE;
-  for(i=0;i<redout->nworkThreads;i++) redout->thread_status[i] = THREADCOMM_THREAD_WAITING_FOR_NEWRED;
-  *red = redout;
   PetscFunctionReturn(0);
 }
 
@@ -136,34 +108,7 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
   tcommout->leader = 0;
   *tcomm = tcommout;
 
-  if(!PetscGetNCoresCalled) {     
-    /* Set the number of available cores */
-    ierr = PetscGetNCores();CHKERRQ(ierr);
-    PetscGetNCoresCalled = PETSC_TRUE;
-  }
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscThreadCommReductionDestroy"
-/* 
-   PetscThreadCommReductionDestroy - Destroys the reduction context
-
-   Input Parameters:
-.  red - the reduction context
-
-*/
-PetscErrorCode PetscThreadCommReductionDestroy(PetscThreadCommRedCtx red)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if(!red) PetscFunctionReturn(0);
-
-  ierr = PetscFree(red->thread_status);CHKERRQ(ierr);
-  ierr = PetscFree(red->local_red);CHKERRQ(ierr);
-  ierr = PetscFree(red);CHKERRQ(ierr);
+  ierr = PetscGetNCores(PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -185,6 +130,7 @@ PetscErrorCode PetscThreadCommDestroy(PetscThreadComm tcomm)
   PetscInt       i;
 
   PetscFunctionBegin;
+
   if(!tcomm) PetscFunctionReturn(0);
 
   /* Destroy the implementation specific data struct */
@@ -271,15 +217,16 @@ PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm tcomm,PetscInt nthread
 {
   PetscErrorCode ierr;
   PetscBool      flg;
-  PetscInt        nthr;
+  PetscInt       nthr;
+
   PetscFunctionBegin;
   if(nthreads == PETSC_DECIDE) {
     tcomm->nworkThreads = 1;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Thread comm - setting number of threads",PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-threadcomm_nthreads","number of threads to use in the thread communicator","PetscThreadCommSetNThreads",1,&nthr,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    if(flg){ 
-      if(nthr == PETSC_DECIDE) {
+    if (flg){ 
+      if (nthr == PETSC_DECIDE) {
       tcomm->nworkThreads = N_CORES;
       } else tcomm->nworkThreads = nthr;
     }
@@ -307,7 +254,7 @@ PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm tcomm,PetscInt nthread
 @*/
 PetscErrorCode PetscThreadCommGetNThreads(MPI_Comm comm,PetscInt *nthreads)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
   PetscThreadComm tcomm=0;
 
   PetscFunctionBegin;
@@ -361,16 +308,15 @@ PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt
   PetscFunctionBegin;
   /* Free if affinities set already */
   ierr = PetscFree(tcomm->affinities);CHKERRQ(ierr);
-
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&tcomm->affinities);CHKERRQ(ierr);
 
-  if(affinities == PETSC_NULL) {
+  if (affinities == PETSC_NULL) {
     /* Check if option is present in the options database */
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Thread comm - setting thread affinities",PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsIntArray("-threadcomm_affinities","Set core affinities of threads","PetscThreadCommSetAffinities",tcomm->affinities,&nmax,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    if(flg) {
-      if(nmax != tcomm->nworkThreads) {
+    if (flg) {
+      if (nmax != tcomm->nworkThreads) {
 	SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Must set affinities for all threads, Threads = %D, Core affinities set = %D",tcomm->nworkThreads,nmax);
       }
     } else {
@@ -407,7 +353,7 @@ PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt
 */
 PetscErrorCode PetscThreadCommGetAffinities(MPI_Comm comm,PetscInt affinities[])
 {
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
   PetscThreadComm tcomm=0;
 
   PetscFunctionBegin;
@@ -480,7 +426,7 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,const PetscThreadCom
 */
 PetscErrorCode PetscThreadCommBarrier(MPI_Comm comm)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
   PetscThreadComm tcomm=0;
 
   PetscFunctionBegin;
@@ -533,6 +479,61 @@ PetscErrorCode  PetscThreadCommRegister(const char sname[],const char path[],con
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadCommGetScalars"
+/*@C
+   PetscThreadCommGetScalars - Gets pointers to locations for storing three PetscScalars that may be passed
+                               to PetscThreadCommRunKernel to ensure that the scalar values remain valid
+                               even after the main thread exits the calling function.
+
+   Input Parameters:
++  comm - the MPI communicator having the thread communicator
+.  val1 - pointer to store the first scalar value
+.  val2 - pointer to store the second scalar value
+-  val3 - pointer to store the third scalar value
+
+   Level: developer
+
+   Notes:
+   This is a utility function to ensure that any scalars passed to PetscThreadCommRunKernel remain 
+   valid even after the main thread exits the calling function. If any scalars need to passed to 
+   PetscThreadCommRunKernel then these should be first stored in the locations provided by PetscThreadCommGetScalars()
+   
+   Pass PETSC_NULL if any pointers are not needed.
+
+   Called by the main thread only, not from within kernels
+
+   Typical usage:
+
+   PetscScalar *valptr;
+   PetscThreadCommGetScalar(comm,&valptr,PETSC_NULL,PETSC_NULL);
+   *valptr = alpha;   (alpha is the scalar you wish to pass in PetscThreadCommRunKernel)
+
+   PetscThreadCommRunKernel(comm,(PetscThreadKernel)kernel_func,3,x,y,valptr);
+
+.seealso: PetscThreadCommRunKernel()
+@*/
+PetscErrorCode PetscThreadCommGetScalars(MPI_Comm comm,PetscScalar **val1, PetscScalar **val2, PetscScalar **val3)
+{
+  PetscErrorCode ierr;
+  PetscThreadComm tcomm;
+  PetscThreadCommJobQueue queue;
+  PetscThreadCommJobCtx   job;
+  PetscInt                job_num;
+
+  PetscFunctionBegin;
+  ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
+  queue = tcomm->jobqueue;
+  if(queue->ctr == PETSC_KERNELS_MAX) job_num = 0;
+  else job_num = queue->ctr;
+  job = queue->jobs[job_num];
+  if(val1) *val1 = &job->scalars[0];
+  if(val2) *val2 = &job->scalars[1];
+  if(val3) *val3 = &job->scalars[2];
+  
+  PetscFunctionReturn(0);
+}
+  
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommRunKernel"
 /*@C
@@ -604,14 +605,18 @@ EXTERN_C_BEGIN
 
   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 */
-PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void* tcomm,void* extra_state)
+PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void* attr,void* extra_state)
 {
   PetscErrorCode  ierr;
+  PetscThreadComm tcomm;
+  PetscMPIInt     flg;
 
   PetscFunctionBegin;
-  if(!tcomm) {PetscFunctionReturn(0);}
-  ierr = PetscThreadCommDestroy((PetscThreadComm)tcomm);CHKERRQ(ierr);
-  ierr = PetscInfo1(0,"Deleting thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = MPI_Attr_get(comm,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
+  if(flg) {
+    ierr = PetscThreadCommDestroy((PetscThreadComm)tcomm);CHKERRQ(ierr);
+    ierr = PetscInfo1(0,"Deleting thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -628,7 +633,7 @@ PetscErrorCode PetscThreadCommInitialize(void)
 {
   PetscErrorCode  ierr;
   PetscThreadComm tcomm;
-  MPI_Comm        icomm;
+  MPI_Comm        icomm,icomm1;
 
   PetscFunctionBegin;
   if(Petsc_ThreadComm_keyval == MPI_KEYVAL_INVALID) {
@@ -639,163 +644,12 @@ PetscErrorCode PetscThreadCommInitialize(void)
   ierr = PetscThreadCommSetAffinities(tcomm,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&icomm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_put(icomm,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(PETSC_COMM_SELF,&icomm1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Attr_put(icomm1,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
+
   ierr = PetscThreadCommSetType(tcomm,NOTHREAD);CHKERRQ(ierr);
   ierr = PetscThreadCommReductionCreate(tcomm,&tcomm->red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscThreadReductionKernelBegin"
-/*
-   PetscThreadReductionKernelBegin - Begins a threaded reduction operation
-
-   Input Parameters:
-+  trank   - Rank of the calling thread
-.  tcomm   - the thread communicator
-.  op      - the reduction operation
-.  type    - datatype of the operation
-.  lred    - local contribution from the thread
--  outdata - the reduction result
-
-   Level: developer
-
-   Notes:
-   See include/petscthreadcomm.h for the available reduction operations
-
-*/
-PetscErrorCode PetscThreadReductionKernelBegin(PetscInt trank,PetscThreadComm tcomm,PetscThreadCommReductionType op,PetscDataType type,void* lred,void* outdata)
-{
-  if(trank == PetscReadOnce(int,tcomm->leader)) {
-    /* leader initiates the reduction */
-    tcomm->red->red_status = THREADCOMM_REDUCTION_NEW;
-  }
-  tcomm->red->thread_status[trank] = THREADCOMM_THREAD_WAITING_FOR_NEWRED;
-  while(PetscReadOnce(int,tcomm->red->red_status) != THREADCOMM_REDUCTION_NEW)
-    ; 
-
-  switch(type) {
-  case PETSC_INT:
-    ((PetscInt*)tcomm->red->local_red)[trank] = *(PetscInt*)lred;
-    break;
-#if defined(PETSC_USE_COMPLEX)
-  case PETSC_REAL:
-    ((PetscReal*)tcomm->red->local_red)[trank] = *(PetscReal*)lred;
-    break;
-#endif
-
-#if !defined(PETSC_USE_COMPLEX)
-  case PETSC_SCALAR:
-    ((PetscScalar*)tcomm->red->local_red)[trank] = *(PetscScalar*)lred;
-    break;
-#endif
-  default:
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown datatype provided for kernel reduction");
-    break;
-  }
-  tcomm->red->thread_status[trank] = THREADCOMM_THREAD_POSTED_LOCALRED;
-  return 0;
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscThreadReductionKernelEnd"
-/*
-   PetscThreadReductionKernelBegin - Finishes a reduction operation
-
-   Input Parameters:
-+  trank   - Rank of the calling thread
-.  tcomm   - the thread communicator
-.  op      - the reduction operation
-.  type    - datatype of the operation
-.  lred    - local contribution from the thread
--  outdata - the reduction result 
-
-   Level: developer
-
-   Notes:
-   See include/petscthreadcomm.h for the available reduction operations
-
-*/
-PetscErrorCode PetscThreadReductionKernelEnd(PetscInt trank,PetscThreadComm tcomm,PetscThreadCommReductionType op,PetscDataType type,void* lred,void *outdata)
-{
-
-  if(PetscReadOnce(int,tcomm->leader) == trank) {
-    /* Check whether all threads have posted their contributions */
-    PetscBool wait=PETSC_TRUE;
-    PetscInt  i,nthreads_posted;
-    while(wait) {
-      nthreads_posted = 0;
-      for(i=0;i < tcomm->nworkThreads;i++) { 
-	nthreads_posted += PetscReadOnce(int,tcomm->red->thread_status[i]);
-      }
-      if(nthreads_posted == tcomm->nworkThreads) wait = PETSC_FALSE;
-    }
-
-    /* Apply the reduction operation */
-    switch(op) {
-    case THREADCOMM_SUM:
-      if(type == PETSC_REAL) {
-	PetscReal red_sum=0.0;
-	for(i=0; i < tcomm->nworkThreads;i++) {
-	  red_sum += ((PetscReal*)tcomm->red->local_red)[i];
-	}
-	PetscMemcpy(outdata,&red_sum,sizeof(PetscReal));
-	break;
-      }
-      if(type == PETSC_SCALAR) {
-	PetscScalar red_sum=0.0;
-	for(i=0; i < tcomm->nworkThreads;i++) {
-	  red_sum += ((PetscScalar*)tcomm->red->local_red)[i];
-	}
-	PetscMemcpy(outdata,&red_sum,sizeof(PetscScalar));
-	break;
-      }
-      if(type == PETSC_INT) {
-	PetscInt red_sum=0.0;
-	for(i=0; i < tcomm->nworkThreads;i++) {
-	  red_sum += ((PetscInt*)tcomm->red->local_red)[i];
-	}
-	PetscMemcpy(outdata,&red_sum,sizeof(PetscInt));
-	break;
-      }
-      break;
-    case THREADCOMM_PROD:
-      if(type == PETSC_REAL) {
-	PetscReal red_prod=0.0;
-	for(i=0; i < tcomm->nworkThreads;i++) {
-	  red_prod *= ((PetscReal*)tcomm->red->local_red)[i];
-	}
-	PetscMemcpy(outdata,&red_prod,sizeof(PetscReal));
-	break;
-      }
-      if(type == PETSC_SCALAR) {
-	PetscScalar red_prod=0.0;
-	for(i=0; i < tcomm->nworkThreads;i++) {
-	  red_prod *= ((PetscScalar*)tcomm->red->local_red)[i];
-	}
-	PetscMemcpy(outdata,&red_prod,sizeof(PetscScalar));
-	break;
-      }
-      if(type == PETSC_INT) {
-	PetscInt red_prod=0.0;
-	for(i=0; i < tcomm->nworkThreads;i++) {
-	  red_prod *= ((PetscInt*)tcomm->red->local_red)[i];
-	}
-	PetscMemcpy(outdata,&red_prod,sizeof(PetscInt));
-	break;
-      }
-      break;
-    default:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Undefined thread reduction operation");
-      break;
-    }
-    tcomm->red->red_status = THREADCOMM_REDUCTION_COMPLETE;
-  }
-
-  /* Wait till the leader performs the reduction */
-  while(PetscReadOnce(int,tcomm->red->red_status) != THREADCOMM_REDUCTION_COMPLETE) 
-    ;
-  tcomm->red->thread_status[trank] = THREADCOMM_THREAD_WAITING_FOR_NEWRED;
-  return 0;
 }
 
 PetscErrorCode PetscRunKernel(PetscInt trank,PetscInt nargs,PetscThreadCommJobCtx job)
@@ -836,4 +690,56 @@ PetscErrorCode PetscRunKernel(PetscInt trank,PetscInt nargs,PetscThreadCommJobCt
     break;
   }
   return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadCommGetOwnershipRanges"
+/*
+   PetscThreadComMGetOwnershipRanges - Given the global size of an array, computes the local sizes and sets
+                                       the starting array indices
+
+   Input Parameters:
++  comm - the MPI communicator which holds the thread communicator
+-  N    - the global size of the array
+
+   Output Parameters:
+.  trstarts - The starting array indices for each thread. the size of trstarts is nthreads+1
+
+   Notes:
+   trstarts is malloced in this routine
+*/
+PetscErrorCode PetscThreadCommGetOwnershipRanges(MPI_Comm comm,PetscInt N,PetscInt *trstarts[])
+{
+  PetscErrorCode  ierr;
+  PetscInt        Q,R;
+  PetscBool       S;
+  PetscThreadComm tcomm;
+  PetscInt        *trstarts_out,nloc,i;
+
+  PetscFunctionBegin;
+  ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
+
+  ierr = PetscMalloc((tcomm->nworkThreads+1)*sizeof(PetscInt),&trstarts_out);CHKERRQ(ierr);
+  trstarts_out[0] = 0;
+  Q = N/tcomm->nworkThreads;
+  R = N - Q*tcomm->nworkThreads;
+  for(i=0;i<tcomm->nworkThreads;i++) {
+    S = (PetscBool)(i < R);
+    nloc = S?Q+1:Q;
+    trstarts_out[i+1] = trstarts_out[i] + nloc;
+  }
+
+  *trstarts = trstarts_out;
+
+  PetscFunctionReturn(0);
+}
+
+PetscInt PetscThreadCommGetRank(PetscThreadComm tcomm)
+{
+  PetscInt trank = 0;
+
+  if(tcomm->ops->getrank) {
+    trank = (*tcomm->ops->getrank)();
+  }
+  return trank;
 }

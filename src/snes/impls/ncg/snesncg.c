@@ -383,7 +383,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
 
     /* Test for convergence */
-    ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
 
     /* Call general purpose update function */

@@ -1,6 +1,8 @@
 /* TODOLIST
    DofSplitting and DM attached to pc.
    Exact solvers: Solve local saddle point directly for very hard problems
+     - change prec_type to switch_inexact_prec_type
+     - add bool solve_exact_saddle_point slot to pdbddc data
    Inexact solvers: global preconditioner application is ready, ask to developers (Jed?) on how to best implement Dohrmann's approach (PCSHELL?)
    change how to deal with the coarse problem (PCBDDCSetCoarseEnvironment):
      - mind the problem with coarsening_factor 
@@ -108,8 +110,8 @@ static PetscErrorCode PCBDDCSetDirichletBoundaries_BDDC(PC pc,IS DirichletBounda
 
   PetscFunctionBegin;
   ierr = ISDestroy(&pcbddc->DirichletBoundaries);CHKERRQ(ierr);
-  ierr = ISDuplicate(DirichletBoundaries,&pcbddc->DirichletBoundaries);CHKERRQ(ierr);
-  ierr = ISCopy(DirichletBoundaries,pcbddc->DirichletBoundaries);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)DirichletBoundaries);CHKERRQ(ierr);
+  pcbddc->DirichletBoundaries=DirichletBoundaries;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -130,7 +132,6 @@ EXTERN_C_END
    Level: intermediate
 
    Notes:
-   The sequential IS is copied; the user must destroy the IS object passed in.
 
 .seealso: PCBDDC
 @*/
@@ -154,8 +155,8 @@ static PetscErrorCode PCBDDCSetNeumannBoundaries_BDDC(PC pc,IS NeumannBoundaries
 
   PetscFunctionBegin;
   ierr = ISDestroy(&pcbddc->NeumannBoundaries);CHKERRQ(ierr);
-  ierr = ISDuplicate(NeumannBoundaries,&pcbddc->NeumannBoundaries);CHKERRQ(ierr);
-  ierr = ISCopy(NeumannBoundaries,pcbddc->NeumannBoundaries);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)NeumannBoundaries);CHKERRQ(ierr);
+  pcbddc->NeumannBoundaries=NeumannBoundaries;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -176,7 +177,6 @@ EXTERN_C_END
    Level: intermediate
 
    Notes:
-   The sequential IS is copied; the user must destroy the IS object passed in.
 
 .seealso: PCBDDC
 @*/
@@ -198,12 +198,7 @@ static PetscErrorCode PCBDDCGetNeumannBoundaries_BDDC(PC pc,IS *NeumannBoundarie
   PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
 
   PetscFunctionBegin;
-  if(pcbddc->NeumannBoundaries) {
-    *NeumannBoundaries = pcbddc->NeumannBoundaries;
-  } else {
-    *NeumannBoundaries = PETSC_NULL;
-    //SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Error in %s: Neumann boundaries not set!.\n",__FUNCT__);
-  }
+  *NeumannBoundaries = pcbddc->NeumannBoundaries;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -226,7 +221,6 @@ EXTERN_C_END
    Level: intermediate
 
    Notes:
-   If the user has not yet provided such information, PETSC_NULL is returned.
 
 .seealso: PCBDDC
 @*/
@@ -237,6 +231,50 @@ PetscErrorCode PCBDDCGetNeumannBoundaries(PC pc,IS *NeumannBoundaries)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscUseMethod(pc,"PCBDDCGetNeumannBoundaries_C",(PC,IS*),(pc,NeumannBoundaries));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+/* -------------------------------------------------------------------------- */
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCBDDCGetDirichletBoundaries_BDDC"
+static PetscErrorCode PCBDDCGetDirichletBoundaries_BDDC(PC pc,IS *DirichletBoundaries)
+{
+  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+
+  PetscFunctionBegin;
+  *DirichletBoundaries = pcbddc->DirichletBoundaries;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+/* -------------------------------------------------------------------------- */
+#undef __FUNCT__  
+#define __FUNCT__ "PCBDDCGetDirichletBoundaries"
+/*@
+ PCBDDCGetDirichletBoundaries - Get index set defining subdomain part of
+                              Dirichlet boundaries for the global problem.
+
+   Not collective
+
+   Input Parameters:
++  pc - the preconditioning context
+
+   Output Parameters:
++  DirichletBoundaries - index set defining the subdomain part of Dirichlet boundaries
+
+   Level: intermediate
+
+   Notes:
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode PCBDDCGetDirichletBoundaries(PC pc,IS *DirichletBoundaries)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscUseMethod(pc,"PCBDDCGetDirichletBoundaries_C",(PC,IS*),(pc,DirichletBoundaries));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -736,6 +774,8 @@ PetscErrorCode PCCreate_BDDC(PC pc)
                     PCBDDCSetDirichletBoundaries_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetNeumannBoundaries_C","PCBDDCSetNeumannBoundaries_BDDC",
                     PCBDDCSetNeumannBoundaries_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCGetDirichletBoundaries_C","PCBDDCGetDirichletBoundaries_BDDC",
+                    PCBDDCGetDirichletBoundaries_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCGetNeumannBoundaries_C","PCBDDCGetNeumannBoundaries_BDDC",
                     PCBDDCGetNeumannBoundaries_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetCoarseProblemType_C","PCBDDCSetCoarseProblemType_BDDC",
@@ -1946,7 +1986,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       pcbddc->coarse_communications_type = SCATTERS_BDDC;
       coarse_mat_type = MATIS;
       coarse_pc_type  = PCBDDC;
-      coarse_ksp_type  = KSPCHEBYCHEV;
+      coarse_ksp_type  = KSPCHEBYSHEV;
 
       /* details of coarse decomposition */
       n_subdomains = pcbddc->active_procs;
@@ -2399,7 +2439,8 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       ierr = MatSetOption(pcbddc->coarse_mat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
     } else {
       Mat matis_coarse_local_mat;
-      ierr = MatCreateIS(coarse_comm,PETSC_DECIDE,PETSC_DECIDE,pcbddc->coarse_size,pcbddc->coarse_size,coarse_ISLG,&pcbddc->coarse_mat);CHKERRQ(ierr);
+      /* remind bs */
+      ierr = MatCreateIS(coarse_comm,bs,PETSC_DECIDE,PETSC_DECIDE,pcbddc->coarse_size,pcbddc->coarse_size,coarse_ISLG,&pcbddc->coarse_mat);CHKERRQ(ierr);
       ierr = MatSetUp(pcbddc->coarse_mat);CHKERRQ(ierr);
       ierr = MatISGetLocalMat(pcbddc->coarse_mat,&matis_coarse_local_mat);CHKERRQ(ierr);
       ierr = MatSetUp(matis_coarse_local_mat);CHKERRQ(ierr);
@@ -2410,11 +2451,6 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
     ierr = MatSetValues(pcbddc->coarse_mat,ins_local_primal_size,ins_local_primal_indices,ins_local_primal_size,ins_local_primal_indices,ins_coarse_mat_vals,ADD_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(pcbddc->coarse_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(pcbddc->coarse_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    if(pcbddc->coarse_problem_type == MULTILEVEL_BDDC) {
-      Mat matis_coarse_local_mat;
-      ierr = MatISGetLocalMat(pcbddc->coarse_mat,&matis_coarse_local_mat);CHKERRQ(ierr);
-      ierr = MatSetBlockSize(matis_coarse_local_mat,bs);CHKERRQ(ierr);
-    } 
 
     ierr = MatGetVecs(pcbddc->coarse_mat,&pcbddc->coarse_vec,&pcbddc->coarse_rhs);CHKERRQ(ierr);
     /* Preconditioner for coarse problem */
@@ -2481,7 +2517,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
     /* restore coarse ksp to default values */
     ierr = KSPSetComputeSingularValues(pcbddc->coarse_ksp,PETSC_FALSE);CHKERRQ(ierr);
     ierr = KSPSetType(pcbddc->coarse_ksp,coarse_ksp_type);CHKERRQ(ierr);
-    ierr = KSPChebychevSetEigenvalues(pcbddc->coarse_ksp,lambda_max,lambda_min);CHKERRQ(ierr);
+    ierr = KSPChebyshevSetEigenvalues(pcbddc->coarse_ksp,lambda_max,lambda_min);CHKERRQ(ierr);
     ierr = KSPSetTolerances(pcbddc->coarse_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,max_it_coarse_ksp);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(pcbddc->coarse_ksp);CHKERRQ(ierr);
     ierr = KSPSetUp(pcbddc->coarse_ksp);CHKERRQ(ierr);
@@ -2519,6 +2555,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   PetscBool   use_faces=PETSC_FALSE,use_edges=PETSC_FALSE;
   const PetscInt *neumann_nodes;
   const PetscInt *dirichlet_nodes;
+  IS          used_IS;
 
   PetscFunctionBegin;
   /* allocate and initialize needed graph structure */
@@ -2570,9 +2607,10 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
     }
   }
   /* Take into account Neumann data -> it increments number of sharing subdomains for all but faces nodes lying on the interface */
-  if(pcbddc->NeumannBoundaries) {
-    ierr = ISGetSize(pcbddc->NeumannBoundaries,&neumann_bsize);CHKERRQ(ierr);
-    ierr = ISGetIndices(pcbddc->NeumannBoundaries,&neumann_nodes);CHKERRQ(ierr);
+  ierr = PCBDDCGetNeumannBoundaries(pc,&used_IS);CHKERRQ(ierr);
+  if(used_IS) {
+    ierr = ISGetSize(used_IS,&neumann_bsize);CHKERRQ(ierr);
+    ierr = ISGetIndices(used_IS,&neumann_nodes);CHKERRQ(ierr);
     for(i=0;i<neumann_bsize;i++){
       iindex = neumann_nodes[i];
       if(mat_graph->count[iindex] > 1){ 
@@ -2595,7 +2633,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
     }
   }
   /* set -1 fake neighbour to mimic Neumann boundary */
-  if(pcbddc->NeumannBoundaries) {
+  if(used_IS) {
     for(i=0;i<neumann_bsize;i++){
       iindex = neumann_nodes[i];
       if(mat_graph->count[iindex] > 1){
@@ -2603,18 +2641,19 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
         mat_graph->count[iindex]+=1;
       }
     }
-    ierr = ISRestoreIndices(pcbddc->NeumannBoundaries,&neumann_nodes);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(used_IS,&neumann_nodes);CHKERRQ(ierr);
   }
   /* sort set of sharing subdomains (needed for comparison below) */
   for(i=0;i<mat_graph->nvtxs;i++) { ierr = PetscSortInt(mat_graph->count[i],neighbours_set[i]);CHKERRQ(ierr); }
   /* remove interior nodes and dirichlet boundary nodes from the next search into the graph */
-  if(pcbddc->DirichletBoundaries) {
-    ierr = ISGetSize(pcbddc->DirichletBoundaries,&dirichlet_bsize);CHKERRQ(ierr);
-    ierr = ISGetIndices(pcbddc->DirichletBoundaries,&dirichlet_nodes);CHKERRQ(ierr);
+  ierr = PCBDDCGetDirichletBoundaries(pc,&used_IS);CHKERRQ(ierr);
+  if(used_IS) {
+    ierr = ISGetSize(used_IS,&dirichlet_bsize);CHKERRQ(ierr);
+    ierr = ISGetIndices(used_IS,&dirichlet_nodes);CHKERRQ(ierr);
     for(i=0;i<dirichlet_bsize;i++){
       mat_graph->count[dirichlet_nodes[i]]=0;
     }
-    ierr = ISRestoreIndices(pcbddc->DirichletBoundaries,&dirichlet_nodes);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(used_IS,&dirichlet_nodes);CHKERRQ(ierr);
   }
   for(i=0;i<mat_graph->nvtxs;i++){
     if(!mat_graph->count[i]){  /* interior nodes */

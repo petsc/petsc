@@ -125,17 +125,29 @@
         <li>MatCreateMPIAIJ(), MatCreateMPIBAIJ(), MatCreateMPISBAIJ(), MatCreateMPIDense() are now MatCreateAIJ(), MatCreateBAIJ(), MatCreateSBAIJ(), MatCreateDense(). Note that on a single process they have always created the sequential version of the matrix so this naming is more accurate. </li>
         <li>Renamed MatMerge_SeqsToMPI() to MatCreateMPIAIJSumSeqAIJ()</li>
         <li>Renamed MatMerge() to MatCreateMPIAIJConcatenateSeqAIJ()</li>
+        <li>Added block size in call to MatCreateIS()</li>
       </ul>
 
       <h4>PC:</h4>
       <ul>
         <li>Remove PCASASetDM(), use PCSetDM() instead.</li>
         <li>Add PCFieldSplitSetSchurFactType(), rename -pc_fieldsplit_set_schur_factorization_type to -pc_fieldsplit_set_schur_fact_type.</li>
+        <li>Added native algebraic multigrid method -pc_type gamg. Aggregation method is recommended: -pc_gamg_type agg and for elliptic operators smoothing is recommended: -pc_gamg_agg_nsmooths 1.</li>
+        <li>PCSetCoordinates(PC,PetscInt,PetscInt,PetscReal*) added second integer argument for number of local vertices.</li>
+        <li>Added PCISSetSubdomainScalingFactor(PC,PetscScalar).</li>
+        <li> <h5>PCGASM:</h5>
+          <ul>
+            <li> Remove PCGASMSetLocalSubdomains(), use PCGASMSetSubdomains(); <b>note:</b> the first argument is now the list of "inner" subdomains (without overlap), unlike before and for PCASM</li>
+            <li> PCGASMSetTotalSubdomains(PC,PetscInt,PetscBool); added third argument to indicate whether local subdomains should be constructed. </li>
+            <li> Removed PCGASMCreateSubdomains(), use PCGASMCreateLocalSubdomains(Mat,PetscInt,PetscInt,IS*[],IS*[]); second PetscInt argument is requested overlap</li>
+            <li> PCGASMCreateSubdomains2D(PC,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,IS[]*,IS[]*): the 9-th and 10-th argument have been swapped: the 9-th outputs the inner subdomains, the 10-th outputs the outer subdomains.
+          </ul>
       </ul>
       <h4>KSP:</h4>
 
       <ul>
         <li>KSPSetOperators() will automatically set the null space present on the input matrix</li>
+         <li>Renamed KSPCHEBYCHEV to KSPCHEBYSHEV</li>
       </ul>
 
       <h4>SNES:</h4>
@@ -175,6 +187,10 @@
       </ul>
 
       <h4>DM/DA:</h4>
+      <ul>
+        <li>Added DMCreateDecomposition(DM,PetscInt,char*[]*,IS[]*,DM[]*) for use with PCFIELDSPLIT,PCASM,PCGASM</li>
+        <li>Added DMCreateDecompositionDM(DM,const char*,DM*) to create a version  of the DM encapsulating a named decomposition; use with DMCreateDecomposition()</li>
+      </ul>
 
       <ul>
         <li>Added DMRedundant for managing globally coupled degrees of freedom.</li>

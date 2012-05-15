@@ -1,7 +1,7 @@
-static char help[] = "Test PetscThreadComm Reductions.\n\n";
+static char help[] = "Test to demonstrate interface for thread reductions and passing scalar values.\n\n";
 
 /*T
-   Concepts: PetscThreadComm^basic example: Threaded reductions
+   Concepts: PetscThreadComm^basic example: Threaded reductions and passing scalar values
 T*/
 
 /*
@@ -11,17 +11,24 @@ T*/
 
 PetscInt    *trstarts;
 
-PetscErrorCode reduce_kernel(PetscInt myrank,PetscScalar *a,PetscScalar *sum)
+PetscErrorCode set_kernel(PetscInt myrank,PetscScalar *a,PetscScalar *alphap)
 {
-  PetscScalar my_sum=*sum;
+  PetscScalar alpha=*alphap;
   PetscInt    i;
-  PetscThreadComm tcomm;
 
-  for(i=trstarts[myrank];i < trstarts[myrank+1];i++) { my_sum += a[i];}
+  for(i=trstarts[myrank];i < trstarts[myrank+1];i++) a[i] = alpha;
 
-  PetscCommGetThreadComm(PETSC_COMM_WORLD,&tcomm);
-  PetscThreadReductionKernelBegin(myrank,tcomm,THREADCOMM_SUM,PETSC_SCALAR,&my_sum,sum);
-  PetscThreadReductionKernelEnd(myrank,tcomm,THREADCOMM_SUM,PETSC_SCALAR,&my_sum,sum);
+  return 0;
+}
+
+PetscErrorCode reduce_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommRedCtx red)
+{
+  PetscScalar my_sum=0.0;
+  PetscInt    i;
+
+  for(i=trstarts[myrank];i < trstarts[myrank+1];i++) my_sum += a[i];
+
+  PetscThreadReductionKernelBegin(myrank,red,&my_sum);
   
   return 0;
 }
@@ -30,31 +37,31 @@ PetscErrorCode reduce_kernel(PetscInt myrank,PetscScalar *a,PetscScalar *sum)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
-  PetscInt       nthreads,i,Q,R,nloc;
-  PetscBool      S;
-  PetscScalar    *a,sum=0.0;
+  PetscErrorCode         ierr;
+  PetscInt               N=64;
+  PetscScalar           *a,sum=0.0,alpha=1.0,*scalar;
+  PetscThreadCommRedCtx  red;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-  ierr = PetscThreadCommGetNThreads(PETSC_COMM_WORLD,&nthreads);CHKERRQ(ierr);
-
-  ierr = PetscMalloc(100*sizeof(PetscScalar),&a);CHKERRQ(ierr);
-  for(i=0;i<100;i++) a[i] = 1.05;
-    
-  ierr = PetscMalloc((nthreads+1)*sizeof(PetscInt),&trstarts);CHKERRQ(ierr);
-  trstarts[0] = 0;
-  Q = 100/nthreads;
-  R = 100 - Q*nthreads;
-  for(i=0;i<nthreads;i++) {
-    S = (PetscBool)(i < R);
-    nloc = S?Q+1:Q;
-    trstarts[i+1] = trstarts[i] + nloc;
-  }
-    
   ierr = PetscThreadCommView(PETSC_COMM_WORLD,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)reduce_kernel,2,a,&sum);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscScalar),&a);CHKERRQ(ierr);
+    
+  /* Set thread ownership ranges for the array */
+  ierr = PetscThreadCommGetOwnershipRanges(PETSC_COMM_WORLD,N,&trstarts);CHKERRQ(ierr);
+
+  /* Set a[i] = 1.0 .. i = 1,N */
+  /* Get location to store the scalar value alpha from threadcomm */
+  ierr = PetscThreadCommGetScalars(PETSC_COMM_WORLD,&scalar,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  *scalar = alpha;
+  ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)set_kernel,2,a,scalar);CHKERRQ(ierr);
+
+  ierr = PetscThreadReductionBegin(PETSC_COMM_WORLD,THREADCOMM_SUM,PETSC_SCALAR,&red);CHKERRQ(ierr);
+  ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)reduce_kernel,2,a,red);CHKERRQ(ierr);
+  ierr = PetscThreadReductionEnd(red,&sum);CHKERRQ(ierr);
+
   ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Sum(x) = %f\n",sum);CHKERRQ(ierr);

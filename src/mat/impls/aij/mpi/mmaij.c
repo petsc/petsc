@@ -108,6 +108,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   if (mat->rmap->bs > 1) {
     PetscInt bs = mat->rmap->bs,ibs,ga;
     if (!(ec % bs)) {
+      useblockis = PETSC_TRUE;
       for (i=0; i<ec/bs; i++) {
         if ((ga = garray[ibs = i*bs]) % bs) {
           useblockis = PETSC_FALSE;

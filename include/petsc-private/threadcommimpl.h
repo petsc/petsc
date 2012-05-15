@@ -4,12 +4,6 @@
 
 #include <petscthreadcomm.h>
 
-#if defined(PETSC_HAVE_SCHED_H)
-#ifndef __USE_GNU
-#define __USE_GNU
-#endif
-#include <sched.h>
-#endif
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
 #include <sys/sysinfo.h>
 #endif
@@ -44,12 +38,14 @@ extern PetscMPIInt Petsc_ThreadComm_keyval;
 
 #define PetscReadOnce(type,val) (*(volatile type *)&val)
 
-typedef struct _p_PetscThreadCommRedCtx *PetscThreadCommRedCtx;
 struct _p_PetscThreadCommRedCtx{
+  PetscThreadComm               tcomm;          /* The associated threadcomm */
   PetscInt                      red_status;     /* Reduction status */
   PetscInt                      nworkThreads;   /* Number of threads doing the reduction */
   PetscInt                      *thread_status; /* Reduction status of each thread */
   void                          *local_red;     /* Array to hold local reduction contribution from each thread */
+  PetscThreadCommReductionOp    op;             /* The reduction operation */
+  PetscDataType                 type;           /* The reduction data type */
 };
 
 typedef struct _p_PetscThreadCommJobCtx *PetscThreadCommJobCtx;
@@ -58,6 +54,7 @@ struct  _p_PetscThreadCommJobCtx{
   PetscInt          nargs;                         /* Number of arguments for the kernel */
   PetscThreadKernel pfunc;                         /* Kernel function */
   void              *args[PETSC_KERNEL_NARGS_MAX]; /* Array of void* to hold the arguments */
+  PetscScalar       scalars[3];                    /* Array to hold three scalar values */
 };
 
 /* Structure to manage job queue */
@@ -73,6 +70,7 @@ struct _PetscThreadCommOps {
   PetscErrorCode (*runkernel)(MPI_Comm,PetscThreadCommJobCtx);
   PetscErrorCode (*view)(PetscThreadComm,PetscViewer);
   PetscErrorCode (*barrier)(PetscThreadComm);
+  PetscInt       (*getrank)(void);
 };
 
 struct _p_PetscThreadComm{
@@ -85,7 +83,7 @@ struct _p_PetscThreadComm{
   PetscInt                leader;       /* Rank of the leader thread. This thread manages
                                            the synchronization for collective operatons like reductions.
 					*/
-  PetscThreadCommRedCtx red;      /* Reduction context */
+  PetscThreadCommRedCtx   red;      /* Reduction context */
 };
 
 /* register thread communicator models */
@@ -97,5 +95,7 @@ extern PetscErrorCode PetscThreadCommRegisterAll(const char path[]);
 #define PetscThreadCommRegisterDynamic(a,b,c,d) PetscThreadCommRegister(a,b,c,d)
 #endif
 
+extern PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm,PetscThreadCommRedCtx*);
+extern PetscErrorCode PetscThreadCommReductionDestroy(PetscThreadCommRedCtx);
 extern PetscErrorCode PetscRunKernel(PetscInt,PetscInt,PetscThreadCommJobCtx);
 #endif

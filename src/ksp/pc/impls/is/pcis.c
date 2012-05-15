@@ -1,5 +1,47 @@
 
-#include <../src/ksp/pc/impls/is/pcis.h>
+#include "pcis.h" /*I "petscpc.h" I*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCISSetSubdomainScalingFactor_IS"
+static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
+{
+  PC_IS  *pcis = (PC_IS*)pc->data;
+
+  PetscFunctionBegin;
+  pcis->scaling_factor = scal; 
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCISSetSubdomainScalingFactor"
+/*@
+ PCISSetSubdomainScalingFactor - Set scaling factor for PCIS.
+
+   Not collective
+
+   Input Parameters:
++  pc - the preconditioning context
+-  scal - scaling factor for the subdomain
+
+   Level: intermediate
+
+   Notes:
+   Intended to use with jumping coefficients cases.
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode PCISSetSubdomainScalingFactor(PC pc, PetscScalar scal)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCISSetSubdomainScalingFactor_C",(PC,PetscScalar),(pc,scal));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -14,6 +56,7 @@ PetscErrorCode  PCISSetUp(PC pc)
   PetscInt        i;
   PetscErrorCode  ierr;
   PetscBool       flg;
+  Vec    counter;
   
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->mat,MATIS,&flg);CHKERRQ(ierr);
@@ -28,18 +71,14 @@ PetscErrorCode  PCISSetUp(PC pc)
     a global vector (adding the values); scatter the result back to
     local vectors and finally invert the result.
   */
-  {
-    Vec    counter;
-    ierr = VecDuplicate(matis->x,&pcis->vec1_N);CHKERRQ(ierr);
-    ierr = MatGetVecs(pc->pmat,&counter,0);CHKERRQ(ierr); /* temporary auxiliar vector */
-    ierr = VecSet(counter,0.0);CHKERRQ(ierr);
-    ierr = VecSet(pcis->vec1_N,1.0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (matis->ctx,counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecDestroy(&counter);CHKERRQ(ierr);
-  }
+  ierr = VecDuplicate(matis->x,&pcis->vec1_N);CHKERRQ(ierr);
+  ierr = MatGetVecs(pc->pmat,&counter,0);CHKERRQ(ierr); /* temporary auxiliar vector */
+  ierr = VecSet(counter,0.0);CHKERRQ(ierr);
+  ierr = VecSet(pcis->vec1_N,1.0);CHKERRQ(ierr);
+  ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterBegin(matis->ctx,counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (matis->ctx,counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   /*
     Creating local and global index sets for interior and
     inteface nodes. Notice that interior nodes have D[i]==1.0.
@@ -108,11 +147,20 @@ PetscErrorCode  PCISSetUp(PC pc)
   ierr = VecScatterCreate(pcis->vec1_N,pcis->is_B_local,pcis->vec1_B,(IS)0,&pcis->N_to_B);CHKERRQ(ierr);
   ierr = VecScatterCreate(pcis->vec1_global,pcis->is_B_global,pcis->vec1_B,(IS)0,&pcis->global_to_B);CHKERRQ(ierr);
 
-  /* Creating scaling "matrix" D, from information in vec1_N */
-  ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
-  ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecReciprocal(pcis->D);CHKERRQ(ierr);    
+  /* Creating scaling "matrix" D */
+  if( !pcis->D ) {
+    ierr = VecSet(counter,0.0);CHKERRQ(ierr);
+    ierr = VecSet(pcis->vec1_N,pcis->scaling_factor);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->ctx,counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (matis->ctx,counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecReciprocal(pcis->D);CHKERRQ(ierr);
+    ierr = VecScale(pcis->D,pcis->scaling_factor);CHKERRQ(ierr); 
+  } 
 
   /* See historical note 01, at the bottom of this file. */
 
@@ -196,6 +244,7 @@ PetscErrorCode  PCISSetUp(PC pc)
 
   ierr = ISLocalToGlobalMappingGetInfo(((Mat_IS*)(pc->mat->data))->mapping,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
   pcis->ISLocalToGlobalMappingGetInfoWasCalled = PETSC_TRUE;
+  ierr = VecDestroy(&counter);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -250,6 +299,7 @@ PetscErrorCode  PCISDestroy(PC pc)
 PetscErrorCode  PCISCreate(PC pc)
 {
   PC_IS *pcis = (PC_IS*)(pc->data);
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   pcis->is_B_local  = 0;
@@ -277,6 +327,10 @@ PetscErrorCode  PCISCreate(PC pc)
   pcis->N_to_B      = 0;
   pcis->global_to_B = 0;
   pcis->ISLocalToGlobalMappingGetInfoWasCalled = PETSC_FALSE;
+  pcis->scaling_factor = 1.0;
+  /* composing functions */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetSubdomainScalingFactor_C","PCISSetSubdomainScalingFactor_IS",
+                    PCISSetSubdomainScalingFactor_IS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -296,7 +350,7 @@ PetscErrorCode  PCISCreate(PC pc)
 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCIterSuApplySchur"
+#define __FUNCT__ "PCISApplySchur"
 PetscErrorCode  PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   PetscErrorCode ierr;

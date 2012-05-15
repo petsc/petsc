@@ -149,6 +149,12 @@ ex36: ex36.o  chkopts
 ex37: ex37.o  chkopts
 	-${CLINKER} -o ex37 ex37.o  ${PETSC_KSP_LIB}
 	${RM} ex37.o
+ex38: ex38.o chkopts
+	-${CLINKER} -o ex38 ex38.o ${PETSC_KSP_LIB}
+	${RM} ex38.o
+ex39: ex39.o chkopts
+	-${CLINKER} -o ex39 ex39.o ${PETSC_KSP_LIB}
+	${RM} ex39.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -788,6 +794,18 @@ runex37_3:
 	   else echo ${PWD} ; echo "Possible problem with with ex37_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex37.tmp
 
+runex38:
+	-@${MPIEXEC} -n 8 ./ex38 -ksp_type fbcgs -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 64 -n2 64 > ex38.tmp 2>&1;\
+	if (${DIFF} output/ex38.out ex38.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex38_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex38.tmp
+
+runex39:
+	-@${MPIEXEC} -n 8 ./ex39 -ksp_type fbcgs -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 32 -n2 32 -n3 32 > ex39.tmp 2>&1;\
+	if (${DIFF} output/ex39.out ex39.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex39_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex39.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                                  ex22.PETSc runex22 runex22_2 ex22.rm \
@@ -797,7 +815,8 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
                                  runex32_aij_sbaij_icc runex32_aij_sbaij_icc_lev1 runex32_aij_sbaij_icc_lev10 runex32_aij_sbaij_cholesky \
                                  runex32_inode2 runex32_inode2_nd runex32_inode3 runex32_inode3_nd runex32_inode4 runex32_inode4_nd \
                                  runex32_inode5 runex32_inode5_nd ex32.rm \
-				 ex35.PETSc runex35_1 runex35_2 runex35_inode ex35.rm 
+				 ex35.PETSc runex35_1 runex35_2 runex35_inode ex35.rm \
+                                 ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 ex39.rm
 TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm 
 TESTEXAMPLES_C_NOCOMPLEX       = ex33.PETSc runex33 ex33.rm 
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm 

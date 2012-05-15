@@ -461,6 +461,7 @@ static PetscErrorCode SNESSetFromOptions_VISS(SNES snes)
   if (!snes->linesearch) {
     ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
+    ierr = SNESLineSearchBTSetAlpha(linesearch, 0.0);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

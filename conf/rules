@@ -69,7 +69,10 @@ chkopts: petscnagupgrade
 #
 # uses the cmake infrastructure to build/rebuild the libraries
 cmake:
-	cd ${PETSC_DIR}/${PETSC_ARCH} && ${OMAKE} -j ${MAKE_NP}
+	@echo "Building PETSc using CMake with ${MAKE_NP} build threads"
+	@echo "=========================================="
+	@cd ${PETSC_DIR}/${PETSC_ARCH} && ${OMAKE} -j ${MAKE_NP} VERBOSE=1
+	@echo "========================================="
 
 # Does nothing; needed for some rules that require actions.
 foo:
@@ -105,17 +108,17 @@ libfastcompile:
 	-@if [ "${SOURCECU}" != "" ]; then \
 	echo ${CUDAC} ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}; \
 	${CUDAC} ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSCU} > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf; \
+	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSCU}; \
 		    ${RM} ${OBJSCU} ${OBJSCU:.o=.lo}; \
 	    fi; \
           if [ "${SOURCEC}" != "" ]; then \
                     ${PETSC_COMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS} > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf; \
+	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
 		    ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
 	    fi; \
 	if [ "${SOURCEF}" != "" ]; then \
                     ${PETSC_FCOMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSF} > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf; \
+	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSF}; \
 		    ${RM} ${OBJSF}; \
 	    fi
 
@@ -218,64 +221,10 @@ tree: ${ACTION}
               continue; \
             fi; \
             (cd $$dir ; \
-            echo ${ACTION} in: `pwd`; \
-            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR});\
+            if [ ${NO_PRINT_DIR}foo = foo ] ; then echo ${ACTION} in: `pwd`; fi; \
+            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR} NO_PRINT_DIR=${NO_PRINT_DIR});\
 	  done
 
-treenodir: ${ACTION}
-	-@for dir in ${DIRS} ftn-auto ftn-custom f90-custom; do \
-            if [ -d $$dir ]; then \
-	      r=`grep -w requirespackage $$dir/makefile`; \
-              if [ "$$?" = 0 ]; then \
-		PKGFLG=`echo $$r | cut -d \' -f2`;\
-                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
-                if [ "$$?" = 1 ]; then \
-                  continue; \
-                fi; \
-              fi; \
-	      r=`grep -w requiresfunction $$dir/makefile`; \
-              if [ "$$?" = 0 ]; then \
-		PKGFLG=`echo $$r | cut -d \' -f2`;\
-                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
-                if [ "$$?" = 1 ]; then \
-                  continue; \
-                fi; \
-              fi; \
-	      r=`grep -w requiresdefine $$dir/makefile`; \
-              if [ "$$?" = 0 ]; then \
-		PKGFLG=`echo $$r | cut -d \' -f2`;\
-                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
-                if [ "$$?" = 1 ]; then \
-                  continue; \
-                fi; \
-              fi; \
-              r=`grep -w requireslanguage $$dir/makefile`; \
-              if [ "$$?" = 0 ]; then \
-                echo $$r | grep -w ${PETSC_LANGUAGE} > /dev/null; \
-                if [ "$$?" = 1 ]; then \
-                  continue; \
-                fi; \
-              fi; \
-              r=`grep -w requiresscalar $$dir/makefile`; \
-              if [ "$$?" = 0 ]; then \
-                echo $$r |  grep -w ${PETSC_SCALAR} > /dev/null; \
-                if [ "$$?" = 1 ]; then \
-                  continue; \
-                fi; \
-              fi; \
-              r=`grep -w requiresprecision $$dir/makefile`; \
-              if [ "$$?" = 0 ]; then \
-                echo $$r |  grep -w ${PETSC_PRECISION} > /dev/null; \
-                if [ "$$?" = 1 ]; then \
-                  continue; \
-                fi; \
-              fi; \
-            else \
-              continue; \
-            fi; \
-            (cd $$dir ; \
-            ${OMAKE} treenodir ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR});\
-	  done
 
 # Performs the specified action throughout the directory tree
 tree_basic: ${ACTION}

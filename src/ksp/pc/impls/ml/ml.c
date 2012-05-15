@@ -46,16 +46,16 @@ typedef struct {
 
 /* Private context for the ML preconditioner */
 typedef struct {
-  ML             *ml_object;
-  ML_Aggregate   *agg_object;
-  GridCtx        *gridctx;
-  FineGridCtx    *PetscMLdata;
-  PetscInt       Nlevels,MaxNlevels,MaxCoarseSize,CoarsenScheme,EnergyMinimization;
-  PetscReal      Threshold,DampingFactor,EnergyMinimizationDropTol;
-  PetscBool      SpectralNormScheme_Anorm,BlockScaling,EnergyMinimizationCheap,Symmetrize,OldHierarchy,KeepAggInfo,Reusable;
-  PetscBool      reuse_interpolation;
+  ML                *ml_object;
+  ML_Aggregate      *agg_object;
+  GridCtx           *gridctx;
+  FineGridCtx       *PetscMLdata;
+  PetscInt          Nlevels,MaxNlevels,MaxCoarseSize,CoarsenScheme,EnergyMinimization;
+  PetscReal         Threshold,DampingFactor,EnergyMinimizationDropTol;
+  PetscBool         SpectralNormScheme_Anorm,BlockScaling,EnergyMinimizationCheap,Symmetrize,OldHierarchy,KeepAggInfo,Reusable;
+  PetscBool         reuse_interpolation;
   PCMLNullSpaceType nulltype;
-  PetscMPIInt    size; /* size of communicator for pc->pmat */
+  PetscMPIInt       size; /* size of communicator for pc->pmat */
 } PC_ML;
 
 #undef __FUNCT__  
@@ -67,7 +67,6 @@ static int PetscML_getrow(ML_Operator *ML_data, int N_requested_rows, int reques
   PetscScalar    *aa;
   FineGridCtx    *ml=(FineGridCtx*)ML_Get_MyGetrowData(ML_data);
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)ml->Aloc->data;
-
 
   ierr = MatGetSize(ml->Aloc,&m,PETSC_NULL); if (ierr) return(0);
   for (i = 0; i<N_requested_rows; i++) {
@@ -201,7 +200,7 @@ static PetscErrorCode MatMultAdd_ML(Mat A,Vec x,Vec w,Vec y)
   PetscFunctionReturn(0);
 }
 
-/* newtype is ignored because "ml" is not listed under Petsc MatType */
+/* newtype is ignored since only handles one case */
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_MPIAIJ_ML"
 static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,Mat *Aloc) 
@@ -265,9 +264,7 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
       ncols = bi[i+1] - bi[i];
       for (j=0; j<ncols; j++) *ca++ = *ba++; 
     }
-  } else {
-    SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
-  }
+  } else SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
   PetscFunctionReturn(0);
 }
 
@@ -375,10 +372,6 @@ static PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,MatReuse reuse,Mat *new
   PetscFunctionBegin;
   m = mlmat->outvec_leng; 
   n = mlmat->invec_leng;
-  if (!m || !n){
-    newmat = PETSC_NULL;
-    PetscFunctionReturn(0);
-  } 
 
   if (reuse){
     ierr = MatShellGetContext(*newmat,(void **)&shellctx);CHKERRQ(ierr);
@@ -540,7 +533,6 @@ PetscErrorCode PCSetUp_ML(PC pc)
   KSP             smoother;
   PC              subpc;
   PetscInt        mesh_level, old_mesh_level;
-
 
   PetscFunctionBegin;
   A = pc->pmat;
@@ -748,15 +740,17 @@ PetscErrorCode PCSetUp_ML(PC pc)
       ierr = PCSetType(subpc,PCSOR);CHKERRQ(ierr);
     }
   }
+  ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
   ierr = PCSetFromOptions_MG(pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
-   
-  ierr = PetscMalloc(Nlevels*sizeof(GridCtx),&gridctx);CHKERRQ(ierr); 
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  ierr = PetscMalloc(Nlevels*sizeof(GridCtx),&gridctx);CHKERRQ(ierr);
   pc_ml->gridctx = gridctx;
 
-  /* wrap ML matrices by PETSc shell matrices at coarsened grids. 
+  /* wrap ML matrices by PETSc shell matrices at coarsened grids.
      Level 0 is the finest grid for ML, but coarsest for PETSc! */
   gridctx[fine_level].A = A;
-  
+
   level = fine_level - 1;
   if (size == 1){ /* convert ML P, R and A into seqaij format */
     for (mllevel=1; mllevel<Nlevels; mllevel++){ 

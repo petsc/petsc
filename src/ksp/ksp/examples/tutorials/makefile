@@ -366,11 +366,11 @@ runex2_specest_2:
 	   ${DIFF} output/ex2_specest_2.out ex2.tmp || echo ${PWD} "\nPossible problem with with ex2_specest_2, diffs above \n========================================="; \
 	   ${RM} -f ex2.tmp
 runex2_chebyest_1:
-	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebychev -ksp_ksp_max_it 5 -ksp_ksp_chebychev_estimate_eigenvalues 0.9,0,0,1.1 -ksp_monitor_short > ex2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_estimate_eigenvalues 0.9,0,0,1.1 -ksp_monitor_short > ex2.tmp 2>&1; \
            ${DIFF} output/ex2_chebyest_1.out ex2.tmp || echo ${PWD} "\nPossible problem with with ex2_chebyest_1, diffs above \n========================================="; \
            ${RM} -f ex2.tmp
 runex2_chebyest_2:
-	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebychev -ksp_ksp_max_it 5 -ksp_ksp_chebychev_estimate_eigenvalues 0.9,0,0,1.1 -ksp_est_ksp_type cg -ksp_monitor_short > ex2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_estimate_eigenvalues 0.9,0,0,1.1 -ksp_est_ksp_type cg -ksp_monitor_short > ex2.tmp 2>&1; \
            ${DIFF} output/ex2_chebyest_2.out ex2.tmp || echo ${PWD} "\nPossible problem with with ex2_chebyest_2, diffs above \n========================================="; \
            ${RM} -f ex2.tmp
 runex2_umfpack:
@@ -438,6 +438,24 @@ runex9:
 	   if (${DIFF} output/ex9_1.out ex9_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex9_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex9_1.tmp
+NP = 1
+M  = 4
+N  = 5
+MDOMAINS = 2
+NDOMAINS = 1
+OVERLAP=1
+runex8:
+	-@${MPIEXEC} -n ${NP} ./ex8 -m $M -n $N -user_set_subdomains -Mdomains ${MDOMAINS} -Ndomains ${NDOMAINS} -overlap ${OVERLAP} -print_error ${ARGS} 
+
+VALGRIND=
+runex8g:
+	-@${MPIEXEC} -n ${NP} ${VALGRIND} ./ex8g -M $M -N $N -user_set_subdomains -Mdomains ${MDOMAINS} -Ndomains ${NDOMAINS} -overlap ${OVERLAP} -print_error ${ARGS}
+
+
+BREAKPOINT=
+runex8g_debug:
+	-@${MPIEXEC} -n ${NP} xterm -e gdb -ex 'set breakpoint pending on' -ex 'b ${BREAKPOINT}' -ex r -ex bt --args ./ex8g -M $M -N $N -user_set_subdomains -Mdomains ${MDOMAINS} -Ndomains ${NDOMAINS} -overlap ${OVERLAP} -print_error ${ARGS}
+
 runex8_1:
 	-@${MPIEXEC} -n 1 ./ex8 -print_error > ex8_1.tmp 2>&1; \
 	   if (${DIFF} output/ex8_1.out ex8_1.tmp) then true; \
@@ -445,38 +463,23 @@ runex8_1:
 	   ${RM} -f ex8_1.tmp
 
 runex8g_1: 
-	-@${MPIEXEC} -n 1 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -print_error -pc_gasm_print_subdomains > ex8g_1.tmp 2>&1; \
-	   if (${DIFF} output/ex8g_1.out ex8g_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex8g_1, diffs above \n========================================="; fi; \
-	   ${RM} -f ex8g_1.tmp
+	-@${MPIEXEC} -n 1 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -overlap 1 -print_error -pc_gasm_print_subdomains > ex8g_1.tmp 2>&1; \
+	    if (${DIFF} output/ex8g_1.out ex8g_1.tmp) then true; \
+	    else echo ${PWD} ; echo "Possible problem with with ex8g_1, diffs above \n========================================="; fi; \
+	    ${RM} -f ex8g_1.tmp
 
 runex8g_2: 
-	-@${MPIEXEC} -n 2 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -print_error -pc_gasm_print_subdomains > ex8g_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -overlap 1 -print_error -pc_gasm_print_subdomains > ex8g_2.tmp 2>&1; \
 	   if (${DIFF} output/ex8g_2.out ex8g_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex8g_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex8g_2.tmp
 
 runex8g_3: 
-	-@${MPIEXEC} -n 3 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -print_error -pc_gasm_print_subdomains > ex8g_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -overlap 1 -print_error -pc_gasm_print_subdomains > ex8g_3.tmp 2>&1; \
 	   if (${DIFF} output/ex8g_3.out ex8g_3.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex8g_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex8g_3.tmp
 
-NP = 1
-M  = 4
-N  = 5
-BLOCKS = 2
-runex8:
-	-@${MPIEXEC} -n ${NP} ./ex8 -m $M -n $N -pc_asm_blocks ${BLOCKS} -print_error ${ARGS} 
-
-VALGRIND=
-runex8g:
-	-@${MPIEXEC} -n ${NP} ${VALGRIND} ./ex8g -print_error ${ARGS}
-
-
-BREAKPOINT=
-runex8g_debug:
-	-@${MPIEXEC} -n ${NP} xterm -e gdb -ex 'set breakpoint pending on' -ex 'b ${BREAKPOINT}' -ex r -ex bt --args ./ex8g -print_error ${ARGS}
 
 
 runex10_basic:
@@ -969,7 +972,7 @@ runex43_2:
 	   ${RM} -f ex43_2.tmp
 
 runex43_3:
-	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_type gcr -stokes_ksp_gcr_restart 60 -stokes_ksp_norm_type unpreconditioned -stokes_ksp_rtol 1e-8 -c_str 3 -sinker_eta0 1.0 -sinker_eta1 100 -sinker_dx 0.4 -sinker_dy 0.3 -mx 128 -my 128 -stokes_ksp_monitor_short -stokes_pc_type mg -stokes_mg_levels_pc_type fieldsplit -stokes_pc_mg_galerkin -stokes_mg_levels_pc_fieldsplit_block_size 3 -stokes_mg_levels_pc_fieldsplit_0_fields 0,1 -stokes_mg_levels_pc_fieldsplit_1_fields 2 -stokes_mg_levels_fieldsplit_0_pc_type sor -stokes_mg_levels_fieldsplit_1_pc_type sor -stokes_mg_levels_ksp_type chebychev -stokes_mg_levels_ksp_max_it 1 -stokes_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1 -stokes_pc_mg_levels 4 -stokes_ksp_view > ex43_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex43 -stokes_ksp_type gcr -stokes_ksp_gcr_restart 60 -stokes_ksp_norm_type unpreconditioned -stokes_ksp_rtol 1e-8 -c_str 3 -sinker_eta0 1.0 -sinker_eta1 100 -sinker_dx 0.4 -sinker_dy 0.3 -mx 128 -my 128 -stokes_ksp_monitor_short -stokes_pc_type mg -stokes_mg_levels_pc_type fieldsplit -stokes_pc_mg_galerkin -stokes_mg_levels_pc_fieldsplit_block_size 3 -stokes_mg_levels_pc_fieldsplit_0_fields 0,1 -stokes_mg_levels_pc_fieldsplit_1_fields 2 -stokes_mg_levels_fieldsplit_0_pc_type sor -stokes_mg_levels_fieldsplit_1_pc_type sor -stokes_mg_levels_ksp_type chebyshev -stokes_mg_levels_ksp_max_it 1 -stokes_mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.2,0,1.1 -stokes_pc_mg_levels 4 -stokes_ksp_view > ex43_3.tmp 2>&1;	  \
 	   ${DIFF} output/ex43_3.out ex43_3.tmp || echo ${PWD} "\nPossible problem with with ex43_3, diffs above \n========================================="; \
 	   ${RM} -f ex43_3.tmp
 
@@ -982,7 +985,7 @@ runex45_2:
 	   ${DIFF} output/ex45_2.out ex45_2.tmp || echo ${PWD} "\nPossible problem with with ex45_2, diffs above \n========================================="; \
 	   ${RM} -f ex45_2.tmp
 runex45f:
-	-@${MPIEXEC} -n 4 ./ex45f -ksp_monitor_short -da_refine 5 -pc_type mg -pc_mg_levels 5 -mg_levels_ksp_type chebychev -mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.1,0,1.1 -mg_levels_ksp_max_it 2 -mg_levels_pc_type jacobi -ksp_pc_side right > ex45f_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex45f -ksp_monitor_short -da_refine 5 -pc_type mg -pc_mg_levels 5 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.1,0,1.1 -mg_levels_ksp_max_it 2 -mg_levels_pc_type jacobi -ksp_pc_side right > ex45f_1.tmp 2>&1; \
 	   ${DIFF} output/ex45f_1.out ex45f_1.tmp || echo ${PWD} "\nPossible problem with with ex45f_1, diffs above \n========================================="; \
 	   ${RM} -f ex45f_1.tmp
 
@@ -1002,7 +1005,7 @@ runex49_3:
 	   ${RM} -f ex49_3.tmp
 
 runex49_4:
-	-@${MPIEXEC} -n 4 ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type unpreconditioned -mx 40 -my 40 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_mg_levels_ksp_type chebychev -elas_pc_type ml -elas_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1 -elas_mg_levels_pc_type pbjacobi -elas_mg_levels_ksp_max_it 2 -use_nonsymbc -elas_pc_ml_nullspace user > ex49_4.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex49 -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type unpreconditioned -mx 40 -my 40 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_mg_levels_ksp_type chebyshev -elas_pc_type ml -elas_mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.2,0,1.1 -elas_mg_levels_pc_type pbjacobi -elas_mg_levels_ksp_max_it 2 -use_nonsymbc -elas_pc_ml_nullspace user > ex49_4.tmp 2>&1; \
 	   ${DIFF} output/ex49_4.out ex49_4.tmp || echo ${PWD} "\nPossible problem with with ex49_4, diffs above \n========================================="; \
 	   ${RM} -f ex49_4.tmp
 
@@ -1067,7 +1070,7 @@ runex55_SA:
 
 runex55_NC:
 	-@${MPIEXEC} -n 4 ./ex55 -ne 29 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1  -ksp_converged_reason -pc_gamg_verbose 0 -pc_gamg_coarse_eq_limit 80 > ex55_nc.tmp 2>&1; \
-         ${DIFF} output/ex54_2.out ex55_nc.tmp || echo ${PWD} "\nPossible problem with with ex54_2, diffs above \n======================================"; \
+         ${DIFF} output/ex55_NC.out ex55_nc.tmp || echo ${PWD} "\nPossible problem with with ex54_2, diffs above \n======================================"; \
         ${RM} -f ex55_nc.tmp
 
 runex56:
