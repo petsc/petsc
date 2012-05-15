@@ -6728,7 +6728,7 @@ PetscErrorCode  MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],PetscInt ov)
 
    Concepts: matrices^block size
 
-.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ()
+.seealso: MatCreateSeqBAIJ(), MatCreateBAIJ(), MatGetBlockSizes()
 @*/
 PetscErrorCode  MatGetBlockSize(Mat mat,PetscInt *bs)
 {

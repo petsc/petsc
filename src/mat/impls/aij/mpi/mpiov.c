@@ -574,7 +574,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatGetSubMatrixOption flag,MatRe
     */
     ierr  = MatCreate(PETSC_COMM_SELF,&B);CHKERRQ(ierr);
     ierr  = MatSetSizes(B,A->rmap->N,A->cmap->N,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-    /* ierr  = MatSetBlockSizes(B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr); */
+    ierr  = MatSetBlockSizes(B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
     ierr  = MatSetType(B,((PetscObject)a->A)->type_name);CHKERRQ(ierr);
     ierr  = MatSeqAIJSetPreallocation(B,0,lens);CHKERRQ(ierr);
     ierr  = PetscMalloc(sizeof(Mat),Bin);CHKERRQ(ierr);
@@ -1305,11 +1305,16 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
       ierr = PetscMemzero(mat->ilen,submats[i]->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
       submats[i]->factortype = C->factortype;
     }
-  } else {
+  } else {    
     for (i=0; i<ismax; i++) {
+      PetscInt rbs,cbs;
+      ierr = ISGetBlockSize(isrow[i],&rbs); CHKERRQ(ierr);
+      ierr = ISGetBlockSize(iscol[i],&cbs); CHKERRQ(ierr);
+
       ierr = MatCreate(PETSC_COMM_SELF,submats+i);CHKERRQ(ierr);
       ierr = MatSetSizes(submats[i],nrow[i],ncol[i],PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-      /* ierr = MatSetBlockSizes(submats[i],C->rmap->bs,C->cmap->bs); CHKERRQ(ierr); */
+
+      ierr = MatSetBlockSizes(submats[i],rbs,cbs); CHKERRQ(ierr);
       ierr = MatSetType(submats[i],((PetscObject)A)->type_name);CHKERRQ(ierr);
       ierr = MatSeqAIJSetPreallocation(submats[i],0,lens[i]);CHKERRQ(ierr);
     }
@@ -1529,7 +1534,7 @@ PetscErrorCode MatCreateMPIAIJFromSeqMatrices_Private(MPI_Comm comm, Mat A, Mat 
 
   ierr = MatCreate(comm, C); CHKERRQ(ierr);
   ierr = MatSetSizes(*C,A->rmap->n, A->cmap->n, PETSC_DECIDE, PETSC_DECIDE); CHKERRQ(ierr);
-  /* ierr = MatSetBlockSizes(*C,A->rmap->bs, A->cmap->bs); CHKERRQ(ierr); */
+  ierr = MatSetBlockSizes(*C,A->rmap->bs, A->cmap->bs); CHKERRQ(ierr);
   ierr = PetscLayoutSetUp((*C)->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp((*C)->cmap);CHKERRQ(ierr);
   if((*C)->cmap->N != A->cmap->n + B->cmap->n) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incompatible component matrices of an MPIAIJ matrix");
