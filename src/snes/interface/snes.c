@@ -396,6 +396,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
   ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->computejacobian) {
     Mat J,B;
+    void *functx;
     ierr = DMCreateMatrix(snes->dm,MATAIJ,&B);CHKERRQ(ierr);
     if (snes->mf_operator) {
       ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
@@ -405,7 +406,8 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
       J = B;
       ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
     }
-    ierr = SNESSetJacobian(snes,J,B,SNESDMComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESGetFunction(snes,PETSC_NULL,PETSC_NULL,&functx);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,B,SNESDMComputeJacobian,functx);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   } else if (!snes->jacobian && sdm->computejacobian == MatMFFDComputeJacobian) {
@@ -419,13 +421,12 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     ierr = MatDestroy(&J);CHKERRQ(ierr);
   } else if (snes->mf_operator && !snes->jacobian_pre && !snes->jacobian) {
     Mat J,B;
-    void *functx;
     ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
     ierr = MatMFFDSetOptionsPrefix(J,((PetscObject)snes)->prefix);CHKERRQ(ierr);
     ierr = MatSetFromOptions(J);CHKERRQ(ierr);
     ierr = DMCreateMatrix(snes->dm,MATAIJ,&B);CHKERRQ(ierr);
-    ierr = SNESGetFunction(snes,PETSC_NULL,PETSC_NULL,&functx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,B,SNESDMComputeJacobian,functx);CHKERRQ(ierr);
+    /* sdm->computejacobian was already set to reach here */
+    ierr = SNESSetJacobian(snes,J,B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   } else if (!snes->jacobian_pre) {
