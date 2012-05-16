@@ -188,6 +188,9 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
                  snes->rtol,snes->abstol,snes->stol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",snes->linear_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of function evaluations=%D\n",snes->nfuncs);CHKERRQ(ierr);
+    if (snes->gridsequence) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of grid sequence refinements=%D\n",snes->gridsequence);CHKERRQ(ierr);
+    }
     if (snes->ksp_ewconv) {
       kctx = (SNESKSPEW *)snes->kspconvctx;
       if (kctx) {
