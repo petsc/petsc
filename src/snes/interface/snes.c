@@ -395,21 +395,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->computejacobian) {
-    Mat J,B;
-    void *functx;
-    ierr = DMCreateMatrix(snes->dm,MATAIJ,&B);CHKERRQ(ierr);
-    if (snes->mf_operator) {
-      ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
-      ierr = MatMFFDSetOptionsPrefix(J,((PetscObject)snes)->prefix);CHKERRQ(ierr);
-      ierr = MatSetFromOptions(J);CHKERRQ(ierr);
-    } else {
-      J = B;
-      ierr = PetscObjectReference((PetscObject)J);CHKERRQ(ierr);
-    }
-    ierr = SNESGetFunction(snes,PETSC_NULL,PETSC_NULL,&functx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,B,SNESDMComputeJacobian,functx);CHKERRQ(ierr);
-    ierr = MatDestroy(&J);CHKERRQ(ierr);
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESDM not improperly configured");
   } else if (!snes->jacobian && sdm->computejacobian == MatMFFDComputeJacobian) {
     Mat J;
     void *functx;
