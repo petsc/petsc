@@ -51,12 +51,7 @@ Next Steps:
   - How do we get sparsity? I think by chopping up elemMat into blocks, and setting individual blocks
   - Maybe we just have MatSetClosure() handle this by ignoring blocks which do not interact
 
-Possible new examples:
-
-- Hexahedral Stokes example
-  - Improve DMDA conversion to get edges
-- A Finite Volume problem
-- Make new SNES F90 example that solves two-domain Laplace with different coefficient, reads from Exodus file
+For tensor product meshes, see SNES ex67
 */
 
 #include <petscdmcomplex.h>

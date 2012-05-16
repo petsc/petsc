@@ -1,5 +1,14 @@
 static char help[] = "Simple test for using advanced discretizations with DMDA\n\n\n";
 
+/*
+TODO for Mantle Convection:
+  - Variable viscosity
+  - Free-slip boundary condition on upper surface
+  - Stress-free boundary condition on sides and bottom
+  - Parse Citcom input
+  - Visualize output
+*/
+
 #include <petscdmda.h>
 #include <petscsnes.h>
 
