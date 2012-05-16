@@ -16,6 +16,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('Types', '-known-endian=<big or little>', nargs.Arg(None, None, 'Are bytes stored in big or little endian?'))
+    help.addArgument('Visibility', '-with-visibility=<bool>', nargs.Arg(None, 0, 'Use compiler visibility flags to limit symbol visibility'))
     return
 
   def setupDependencies(self, framework):
@@ -350,6 +351,13 @@ void (*signal())();
     self.addDefine('BITS_PER_BYTE', bits)
     return
 
+
+  def checkVisibility(self):
+    if self.framework.argDB['with-visibility']:
+      if not self.checkCompile('','__attribute__((visibility ("default"))) int foo(void);'):
+        raise RuntimeError('Cannot use visibility attributes')
+      self.addDefine('USE_VISIBILITY',1)
+
   def configure(self):
     self.executeTest(self.check__int64)
     self.executeTest(self.checkSizeTypes)
@@ -369,6 +377,5 @@ void (*signal())();
     self.executeTest(self.checkEndian)
     map(lambda type: self.executeTest(self.checkSizeof, type), ['char','void *', 'short', 'int', 'long', 'long long', 'float', 'double', 'size_t'])
     self.executeTest(self.checkBitsPerByte)
-
-
+    self.executeTest(self.checkVisibility)
     return

@@ -18,6 +18,8 @@ class CompilerOptions(config.base.Configure):
     if config.setCompilers.Configure.isGNU(compiler) or config.setCompilers.Configure.isClang(compiler):
       if bopt == '':
         flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
+        if self.framework.argDB['with-visibility']:
+          flags.extend(['-fvisibility=hidden'])
       elif bopt == 'g':
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
@@ -83,6 +85,8 @@ class CompilerOptions(config.base.Configure):
     if config.setCompilers.Configure.isGNU(compiler) or config.setCompilers.Configure.isClang(compiler):
       if bopt == '':
         flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
+        if self.framework.argDB['with-visibility']:
+          flags.extend(['-fvisibility=hidden'])
       elif bopt in ['g']:
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
