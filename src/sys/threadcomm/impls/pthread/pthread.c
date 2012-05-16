@@ -105,8 +105,8 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
   ptcomm->ismainworker = PETSC_TRUE;
   ptcomm->synchronizeafter = PETSC_TRUE;
   tcomm->ops->destroy = PetscThreadCommDestroy_PThread;
-  tcomm->ops->runkernel = PetscPThreadCommRunKernel_LockFree;
-  tcomm->ops->barrier   = PetscPThreadCommBarrier_LockFree;
+  tcomm->ops->runkernel = PetscThreadCommRunKernel_PThread_LockFree;
+  tcomm->ops->barrier   = PetscThreadCommBarrier_PThread_LockFree;
   tcomm->ops->getrank   = PetscThreadCommGetRank_PThread;
 
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&ptcomm->granks);CHKERRQ(ierr);
@@ -135,8 +135,8 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     case PTHREADSYNC_LOCKFREE:
       ptcomm->initialize      = PetscPThreadCommInitialize_LockFree;
       ptcomm->finalize        = PetscPThreadCommFinalize_LockFree;
-      tcomm->ops->runkernel   = PetscPThreadCommRunKernel_LockFree;
-      tcomm->ops->barrier     = PetscPThreadCommBarrier_LockFree;
+      tcomm->ops->runkernel   = PetscThreadCommRunKernel_PThread_LockFree;
+      tcomm->ops->barrier     = PetscThreadCommBarrier_PThread_LockFree;
       break;
     default:
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only Lock-free synchronization scheme supported currently");
