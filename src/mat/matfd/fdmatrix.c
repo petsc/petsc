@@ -382,7 +382,7 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
 
   if (mat->ops->fdcoloringcreate) {
     ierr = (*mat->ops->fdcoloringcreate)(mat,iscoloring,c);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Code not yet written for this matrix type");
+  } else SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
 
   ierr = MatGetVecs(mat,PETSC_NULL,&c->w1);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(c,c->w1);CHKERRQ(ierr);
