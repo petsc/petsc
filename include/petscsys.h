@@ -45,7 +45,7 @@
 #  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_C
 #endif
 
-#if defined(_WIN32)             /* For Win32 shared libraries */
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES) /* For Win32 shared libraries */
 #  define PETSC_DLLEXPORT __declspec(dllexport)
 #  define PETSC_DLLIMPORT __declspec(dllimport)
 #elif defined(PETSC_USE_VISIBILITY)
