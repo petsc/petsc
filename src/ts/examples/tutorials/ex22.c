@@ -59,12 +59,12 @@ int main(int argc,char **argv)
 
   /* Initialize user application context */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Advection-reaction options",""); {
-    ierr = PetscOptionsReal("-a0","Advection rate 0","",user.a[0]=1,&user.a[0],PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-a1","Advection rate 1","",user.a[1]=0,&user.a[1],PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-k0","Reaction rate 0","",user.k[0]=1e6,&user.k[0],PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-k1","Reaction rate 1","",user.k[1]=2*user.k[0],&user.k[1],PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-s0","Source 0","",user.s[0]=0,&user.s[0],PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-s1","Source 1","",user.s[1]=1,&user.s[1],PETSC_NULL);CHKERRQ(ierr);
+    user.a[0] = 1;           ierr = PetscOptionsReal("-a0","Advection rate 0","",user.a[0],&user.a[0],PETSC_NULL);CHKERRQ(ierr);
+    user.a[1] = 0;           ierr = PetscOptionsReal("-a1","Advection rate 1","",user.a[1],&user.a[1],PETSC_NULL);CHKERRQ(ierr);
+    user.k[0] = 1e6;         ierr = PetscOptionsReal("-k0","Reaction rate 0","",user.k[0],&user.k[0],PETSC_NULL);CHKERRQ(ierr);
+    user.k[1] = 2*user.k[0]; ierr = PetscOptionsReal("-k1","Reaction rate 1","",user.k[1],&user.k[1],PETSC_NULL);CHKERRQ(ierr);
+    user.s[0] = 0;           ierr = PetscOptionsReal("-s0","Source 0","",user.s[0],&user.s[0],PETSC_NULL);CHKERRQ(ierr);
+    user.s[1] = 1;           ierr = PetscOptionsReal("-s1","Source 1","",user.s[1],&user.s[1],PETSC_NULL);CHKERRQ(ierr);
   } ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
