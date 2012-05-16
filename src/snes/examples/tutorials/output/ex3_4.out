@@ -12,7 +12,7 @@ Checking candidate step at iteration 2 with tolerance 1
 iter = 3,SNES Function norm 7.24709e-05
 Checking candidate step at iteration 3 with tolerance 1
   Altering entry 0: x=0, x_last=0, diff=2, x_new=0
-iter = 4,SNES Function norm 1.30876e-11
+iter = 4,SNES Function norm 1.30874e-11
 Number of SNES iterations = 4
 
 Norm of error 1.26526e-12 Iterations 4

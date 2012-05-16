@@ -173,8 +173,8 @@ SNES Object: 1 MPI processes
   SNESLineSearch Object:   1 MPI processes
     type: bt
       interpolation: cubic
-      alpha=0.0001
-    maxstep=1e+08, minlambda=1e-12
-    tolerances: relative=1e-08, absolute=1e-15, lambda=1e-08
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=40
 Number of SNES iterations = 2
