@@ -106,7 +106,7 @@ struct _p_DM {
   PetscSection           defaultGlobalSection; /* Layout for global vectors */
 };
 
-extern PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
+PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 
 /*
 

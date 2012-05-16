@@ -189,8 +189,8 @@ struct _MatOps {
 */
 
 #include <petscsys.h>
-extern PetscErrorCode  MatRegisterOp(MPI_Comm, const char[], PetscVoidFunction, const char[], PetscInt, ...);
-extern PetscErrorCode  MatQueryOp(MPI_Comm, PetscVoidFunction*, const char[], PetscInt, ...);
+PETSC_EXTERN PetscErrorCode MatRegisterOp(MPI_Comm, const char[], PetscVoidFunction, const char[], PetscInt, ...);
+PETSC_EXTERN PetscErrorCode MatQueryOp(MPI_Comm, PetscVoidFunction*, const char[], PetscInt, ...);
 
 typedef struct _p_MatBaseName* MatBaseName;
 struct _p_MatBaseName {
@@ -198,20 +198,20 @@ struct _p_MatBaseName {
   MatBaseName next;
 };
 
-extern MatBaseName MatBaseNameList;
+PETSC_EXTERN MatBaseName MatBaseNameList;
 
 /*
    Utility private matrix routines
 */
-extern PetscErrorCode MatConvert_Basic(Mat, const MatType,MatReuse,Mat*);
-extern PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
-extern PetscErrorCode MatView_Private(Mat);
+PETSC_EXTERN PetscErrorCode MatConvert_Basic(Mat, const MatType,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
+PETSC_EXTERN PetscErrorCode MatView_Private(Mat);
 
-extern PetscErrorCode MatHeaderMerge(Mat,Mat);
-extern PetscErrorCode MatHeaderReplace(Mat,Mat);
-extern PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscInt*, PetscInt*,PetscInt*,PetscInt*, PetscInt**);
-extern PetscErrorCode MatPtAP_Basic(Mat,Mat,MatReuse,PetscReal,Mat*);
-extern PetscErrorCode MatDiagonalSet_Default(Mat,Vec,InsertMode);
+PETSC_EXTERN PetscErrorCode MatHeaderMerge(Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscInt*, PetscInt*,PetscInt*,PetscInt*, PetscInt**);
+PETSC_EXTERN PetscErrorCode MatPtAP_Basic(Mat,Mat,MatReuse,PetscReal,Mat*);
+PETSC_EXTERN PetscErrorCode MatDiagonalSet_Default(Mat,Vec,InsertMode);
 
 #if defined(PETSC_USE_DEBUG)
 #  define MatCheckPreallocated(A,arg) do {                              \
@@ -238,9 +238,9 @@ struct _MatStashSpace {
   PetscInt           local_remaining;
 };
 
-extern PetscErrorCode PetscMatStashSpaceGet(PetscInt,PetscInt,PetscMatStashSpace *);
-extern PetscErrorCode PetscMatStashSpaceContiguous(PetscInt,PetscMatStashSpace *,PetscScalar *,PetscInt *,PetscInt *);
-extern PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace*);
+PETSC_EXTERN PetscErrorCode PetscMatStashSpaceGet(PetscInt,PetscInt,PetscMatStashSpace *);
+PETSC_EXTERN PetscErrorCode PetscMatStashSpaceContiguous(PetscInt,PetscMatStashSpace *,PetscScalar *,PetscInt *,PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace*);
 
 typedef struct {
   PetscInt      nmax;                   /* maximum stash size */
@@ -268,17 +268,17 @@ typedef struct {
   PetscInt      reproduce_count;
 } MatStash;
 
-extern PetscErrorCode MatStashCreate_Private(MPI_Comm,PetscInt,MatStash*);
-extern PetscErrorCode MatStashDestroy_Private(MatStash*);
-extern PetscErrorCode MatStashScatterEnd_Private(MatStash*);
-extern PetscErrorCode MatStashSetInitialSize_Private(MatStash*,PetscInt);
-extern PetscErrorCode MatStashGetInfo_Private(MatStash*,PetscInt*,PetscInt*);
-extern PetscErrorCode MatStashValuesRow_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscBool );
-extern PetscErrorCode MatStashValuesCol_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscBool );
-extern PetscErrorCode MatStashValuesRowBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
-extern PetscErrorCode MatStashValuesColBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
-extern PetscErrorCode MatStashScatterBegin_Private(Mat,MatStash*,PetscInt*);
-extern PetscErrorCode MatStashScatterGetMesg_Private(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatStashCreate_Private(MPI_Comm,PetscInt,MatStash*);
+PETSC_EXTERN PetscErrorCode MatStashDestroy_Private(MatStash*);
+PETSC_EXTERN PetscErrorCode MatStashScatterEnd_Private(MatStash*);
+PETSC_EXTERN PetscErrorCode MatStashSetInitialSize_Private(MatStash*,PetscInt);
+PETSC_EXTERN PetscErrorCode MatStashGetInfo_Private(MatStash*,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatStashValuesRow_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscBool );
+PETSC_EXTERN PetscErrorCode MatStashValuesCol_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscBool );
+PETSC_EXTERN PetscErrorCode MatStashValuesRowBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode MatStashValuesColBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode MatStashScatterBegin_Private(Mat,MatStash*,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatStashScatterGetMesg_Private(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
 
 typedef struct {
   PetscInt   dim;
@@ -295,7 +295,7 @@ typedef struct {
   PetscInt   *i;                            /* compressed row pointer  */
   PetscInt   *rindex;                       /* compressed row index               */
 } Mat_CompressedRow;
-extern PetscErrorCode MatCheckCompressedRow(Mat,Mat_CompressedRow*,PetscInt*,PetscInt,PetscReal);
+PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat,Mat_CompressedRow*,PetscInt*,PetscInt,PetscReal);
 
 struct _p_Mat {
   PETSCHEADER(struct _MatOps);
@@ -324,8 +324,8 @@ struct _p_Mat {
   MatSolverPackage       solvertype;
   };
 
-extern PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);
-extern PetscErrorCode MatAXPY_BasicWithPreallocation(Mat,Mat,PetscScalar,Mat,MatStructure);
+PETSC_EXTERN PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);
+PETSC_EXTERN PetscErrorCode MatAXPY_BasicWithPreallocation(Mat,Mat,PetscScalar,Mat,MatStructure);
 /*
     Object for partitioning graphs
 */
@@ -501,7 +501,7 @@ typedef struct {
   PetscScalar    pv;  /* pivot of the active row */
 } FactorShiftCtx;
 
-extern PetscErrorCode MatFactorDumpMatrix(Mat);
+PETSC_EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPivotCheck_nz"
@@ -1470,25 +1470,25 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_fast(PetscInt *lnk)
   return PetscFree(lnk);
 }
 
-extern PetscLogEvent  MAT_Mult, MAT_MultMatrixFree, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
-extern PetscLogEvent  MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose;
-extern PetscLogEvent  MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
-extern PetscLogEvent  MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
-extern PetscLogEvent  MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
-extern PetscLogEvent  MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_GetRedundantMatrix;
-extern PetscLogEvent  MAT_IncreaseOverlap, MAT_Partitioning, MAT_Coarsen, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate, MAT_TransposeColoringCreate;
-extern PetscLogEvent  MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
-extern PetscLogEvent  MAT_MatMult, MAT_MatSolve,MAT_MatMultSymbolic, MAT_MatMultNumeric,MAT_Getlocalmatcondensed,MAT_GetBrowsOfAcols,MAT_GetBrowsOfAocols;
-extern PetscLogEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_Seqstompinum,MAT_Seqstompisym,MAT_Seqstompi,MAT_Getlocalmat;
-extern PetscLogEvent  MAT_RARt, MAT_RARtSymbolic, MAT_RARtNumeric;
-extern PetscLogEvent  MAT_MatTransposeMult, MAT_MatTransposeMultSymbolic, MAT_MatTransposeMultNumeric;
-extern PetscLogEvent  MAT_TransposeMatMult, MAT_TransposeMatMultSymbolic, MAT_TransposeMatMultNumeric;
-extern PetscLogEvent  MAT_Applypapt, MAT_Applypapt_symbolic, MAT_Applypapt_numeric;
-extern PetscLogEvent  MAT_Getsymtranspose, MAT_Transpose_SeqAIJ, MAT_Getsymtransreduced,MAT_GetSequentialNonzeroStructure;
+PETSC_EXTERN PetscLogEvent MAT_Mult, MAT_MultMatrixFree, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
+PETSC_EXTERN PetscLogEvent MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose;
+PETSC_EXTERN PetscLogEvent MAT_SolveTransposeAdd, MAT_SOR, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
+PETSC_EXTERN PetscLogEvent MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
+PETSC_EXTERN PetscLogEvent MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
+PETSC_EXTERN PetscLogEvent MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_GetRedundantMatrix;
+PETSC_EXTERN PetscLogEvent MAT_IncreaseOverlap, MAT_Partitioning, MAT_Coarsen, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate, MAT_TransposeColoringCreate;
+PETSC_EXTERN PetscLogEvent MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
+PETSC_EXTERN PetscLogEvent MAT_MatMult, MAT_MatSolve,MAT_MatMultSymbolic, MAT_MatMultNumeric,MAT_Getlocalmatcondensed,MAT_GetBrowsOfAcols,MAT_GetBrowsOfAocols;
+PETSC_EXTERN PetscLogEvent MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_Seqstompinum,MAT_Seqstompisym,MAT_Seqstompi,MAT_Getlocalmat;
+PETSC_EXTERN PetscLogEvent MAT_RARt, MAT_RARtSymbolic, MAT_RARtNumeric;
+PETSC_EXTERN PetscLogEvent MAT_MatTransposeMult, MAT_MatTransposeMultSymbolic, MAT_MatTransposeMultNumeric;
+PETSC_EXTERN PetscLogEvent MAT_TransposeMatMult, MAT_TransposeMatMultSymbolic, MAT_TransposeMatMultNumeric;
+PETSC_EXTERN PetscLogEvent MAT_Applypapt, MAT_Applypapt_symbolic, MAT_Applypapt_numeric;
+PETSC_EXTERN PetscLogEvent MAT_Getsymtranspose, MAT_Transpose_SeqAIJ, MAT_Getsymtransreduced,MAT_GetSequentialNonzeroStructure;
 
-extern PetscLogEvent  MATMFFD_Mult;
-extern PetscLogEvent  MAT_GetMultiProcBlock;
-extern PetscLogEvent  MAT_CUSPCopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
-extern PetscLogEvent  MAT_Merge;
+PETSC_EXTERN PetscLogEvent MATMFFD_Mult;
+PETSC_EXTERN PetscLogEvent MAT_GetMultiProcBlock;
+PETSC_EXTERN PetscLogEvent MAT_CUSPCopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
+PETSC_EXTERN PetscLogEvent MAT_Merge;
 
 #endif

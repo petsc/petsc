@@ -104,7 +104,7 @@
 #include "petscconf.h"
 
 #if defined(__cplusplus)
-extern "C" {
+PETSC_EXTERN "C" {
 #endif
 
 /* require an int variable large enough to hold a pointer */
@@ -117,7 +117,7 @@ extern "C" {
     MPIUNI_TMP is used in the macros below only to stop various C/C++ compilers
 from generating warning messages about unused variables while compiling PETSc.
 */
-extern void *MPIUNI_TMP;
+PETSC_EXTERN void  *MPIUNI_TMP;
 
 #define MPI_COMM_WORLD       1
 #define MPI_COMM_SELF        MPI_COMM_WORLD
@@ -177,12 +177,12 @@ typedef int    MPI_Offset;
 #define MPI_2INT             (2* sizeof(int))
 
 #if defined(PETSC_USE_REAL___FLOAT128)
-extern MPI_Datatype MPIU___FLOAT128;
+PETSC_EXTERN MPI_Datatype MPIU___FLOAT128;
 #define MPI_sizeof(datatype) ((datatype == MPIU___FLOAT128) ? 2*sizeof(double) : datatype)
 #else
 #define MPI_sizeof(datatype) (datatype)
 #endif
-extern int MPIUNI_Memcpy(void*,const void*,int);
+PETSC_EXTERN int MPIUNI_Memcpy(void*,const void*,int);
 
 
 #define MPI_REQUEST_NULL     ((MPI_Request)0)
@@ -245,21 +245,21 @@ typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
 #define MPI_Comm_get_attr      Petsc_MPI_Attr_get
 #define MPI_Comm_set_attr      Petsc_MPI_Attr_put
 
-extern int    MPI_Abort(MPI_Comm,int);
-extern int    MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag);
-extern int    MPI_Keyval_free(int*);
-extern int    MPI_Attr_put(MPI_Comm,int,void *);
-extern int    MPI_Attr_delete(MPI_Comm,int);
-extern int    MPI_Keyval_create(MPI_Copy_function *,MPI_Delete_function *,int *,void *);
-extern int    MPI_Comm_free(MPI_Comm*);
-extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
-extern int    MPI_Comm_create(MPI_Comm,MPI_Group,MPI_Comm *);
-extern int    MPI_Init(int *, char ***);
-extern int    MPI_Finalize(void);
-extern int    MPI_Initialized(int*);
-extern int    MPI_Finalized(int*);
-extern int    MPI_Comm_size(MPI_Comm,int*);
-extern int    MPI_Comm_rank(MPI_Comm,int*);
+PETSC_EXTERN int    MPI_Abort(MPI_Comm,int);
+PETSC_EXTERN int    MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag);
+PETSC_EXTERN int    MPI_Keyval_free(int*);
+PETSC_EXTERN int    MPI_Attr_put(MPI_Comm,int,void *);
+PETSC_EXTERN int    MPI_Attr_delete(MPI_Comm,int);
+PETSC_EXTERN int    MPI_Keyval_create(MPI_Copy_function *,MPI_Delete_function *,int *,void *);
+PETSC_EXTERN int    MPI_Comm_free(MPI_Comm*);
+PETSC_EXTERN int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
+PETSC_EXTERN int    MPI_Comm_create(MPI_Comm,MPI_Group,MPI_Comm *);
+PETSC_EXTERN int    MPI_Init(int *, char ***);
+PETSC_EXTERN int    MPI_Finalize(void);
+PETSC_EXTERN int    MPI_Initialized(int*);
+PETSC_EXTERN int    MPI_Finalized(int*);
+PETSC_EXTERN int    MPI_Comm_size(MPI_Comm,int*);
+PETSC_EXTERN int    MPI_Comm_rank(MPI_Comm,int*);
 
 #define MPI_Aint MPIUNI_INTPTR
 /* 

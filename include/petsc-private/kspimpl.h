@@ -128,10 +128,10 @@ PETSC_STATIC_INLINE PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode KSPDefaultDestroy(KSP);
-extern PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
-extern PetscErrorCode KSPDefaultGetWork(KSP,PetscInt);
-extern PetscErrorCode KSPSetUpNorms_Private(KSP);
+PETSC_EXTERN PetscErrorCode KSPDefaultDestroy(KSP);
+PETSC_EXTERN PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
+PETSC_EXTERN PetscErrorCode KSPDefaultGetWork(KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode KSPSetUpNorms_Private(KSP);
 
 /* Context for resolution-dependent KSP callback information */
 typedef struct _n_KSPDM *KSPDM;
@@ -152,10 +152,10 @@ struct _n_KSPDM {
 
   void (*fortran_func_pointers[2])(void); /* Store our own function pointers so they are associated with the KSPDM instead of the DM */
 };
-extern PetscErrorCode DMKSPGetContext(DM,KSPDM*);
-extern PetscErrorCode DMKSPGetContextWrite(DM,KSPDM*);
-extern PetscErrorCode DMKSPCopyContext(DM,DM);
-extern PetscErrorCode DMKSPDuplicateContext(DM,DM);
+PETSC_EXTERN PetscErrorCode DMKSPGetContext(DM,KSPDM*);
+PETSC_EXTERN PetscErrorCode DMKSPGetContextWrite(DM,KSPDM*);
+PETSC_EXTERN PetscErrorCode DMKSPCopyContext(DM,DM);
+PETSC_EXTERN PetscErrorCode DMKSPDuplicateContext(DM,DM);
 
 /*
        These allow the various Krylov methods to apply to either the linear system or its transpose.
@@ -169,7 +169,7 @@ extern PetscErrorCode DMKSPDuplicateContext(DM,DM);
 #define KSP_PCApplyBAorAB(ksp,x,y,w)    (!ksp->transpose_solve) ? (PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w) || KSP_RemoveNullSpace(ksp,y)) : PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w)
 #define KSP_PCApplyBAorABTranspose(ksp,x,y,w)    (!ksp->transpose_solve) ? (PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w) || KSP_RemoveNullSpace(ksp,y)) : PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w)
 
-extern PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
+PETSC_EXTERN PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
 
 #endif

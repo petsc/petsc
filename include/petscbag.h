@@ -2,7 +2,6 @@
 #if !defined(__PETSCBAG_H)
 #define __PETSCBAG_H
 #include "petscsys.h"
-PETSC_EXTERN_CXX_BEGIN
 
 /*S
      PetscBag - PETSc object that manages a collection of user data including parameters.
@@ -33,31 +32,30 @@ S*/
 typedef struct _n_PetscBag*     PetscBag;
 typedef struct _n_PetscBagItem* PetscBagItem;
 
-extern PetscErrorCode  PetscBagCreate(MPI_Comm,size_t,PetscBag*);
-extern PetscErrorCode  PetscBagDestroy(PetscBag*);
-extern PetscErrorCode  PetscBagGetData(PetscBag,void **);
-extern PetscErrorCode  PetscBagRegisterReal(PetscBag,void*,PetscReal, const char*, const char*);
-extern PetscErrorCode  PetscBagRegisterRealArray(PetscBag,void*,PetscInt, const char*, const char*);
-extern PetscErrorCode  PetscBagRegisterString(PetscBag,void*,PetscInt,const char*, const char*, const char*);
-extern PetscErrorCode  PetscBagRegisterScalar(PetscBag,void*,PetscScalar,const  char*,const  char*);
-extern PetscErrorCode  PetscBagRegisterInt(PetscBag,void*,PetscInt,const  char*,const  char*);
-extern PetscErrorCode  PetscBagRegisterIntArray(PetscBag,void*,PetscInt,const  char*,const  char*);
-extern PetscErrorCode  PetscBagRegisterEnum(PetscBag,void*,const  char*[],PetscEnum,const char*,const  char*);
-extern PetscErrorCode  PetscBagRegisterBool(PetscBag,void*,PetscBool ,const  char*,const  char*);
+PETSC_EXTERN PetscErrorCode PetscBagCreate(MPI_Comm,size_t,PetscBag*);
+PETSC_EXTERN PetscErrorCode PetscBagDestroy(PetscBag*);
+PETSC_EXTERN PetscErrorCode PetscBagGetData(PetscBag,void **);
+PETSC_EXTERN PetscErrorCode PetscBagRegisterReal(PetscBag,void*,PetscReal, const char*, const char*);
+PETSC_EXTERN PetscErrorCode PetscBagRegisterRealArray(PetscBag,void*,PetscInt, const char*, const char*);
+PETSC_EXTERN PetscErrorCode PetscBagRegisterString(PetscBag,void*,PetscInt,const char*, const char*, const char*);
+PETSC_EXTERN PetscErrorCode PetscBagRegisterScalar(PetscBag,void*,PetscScalar,const  char*,const  char*);
+PETSC_EXTERN PetscErrorCode PetscBagRegisterInt(PetscBag,void*,PetscInt,const  char*,const  char*);
+PETSC_EXTERN PetscErrorCode PetscBagRegisterIntArray(PetscBag,void*,PetscInt,const  char*,const  char*);
+PETSC_EXTERN PetscErrorCode PetscBagRegisterEnum(PetscBag,void*,const  char*[],PetscEnum,const char*,const  char*);
+PETSC_EXTERN PetscErrorCode PetscBagRegisterBool(PetscBag,void*,PetscBool ,const  char*,const  char*);
 
-extern PetscErrorCode  PetscBagSetFromOptions(PetscBag);
-extern PetscErrorCode  PetscBagGetName(PetscBag, char **);
-extern PetscErrorCode  PetscBagSetName(PetscBag, const char *, const char *);
-extern PetscErrorCode  PetscBagSetOptionsPrefix(PetscBag, const char *);
+PETSC_EXTERN PetscErrorCode PetscBagSetFromOptions(PetscBag);
+PETSC_EXTERN PetscErrorCode PetscBagGetName(PetscBag, char **);
+PETSC_EXTERN PetscErrorCode PetscBagSetName(PetscBag, const char *, const char *);
+PETSC_EXTERN PetscErrorCode PetscBagSetOptionsPrefix(PetscBag, const char *);
 
-extern PetscErrorCode  PetscBagView(PetscBag,PetscViewer);
-extern PetscErrorCode  PetscBagLoad(PetscViewer,PetscBag);
+PETSC_EXTERN PetscErrorCode PetscBagView(PetscBag,PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscBagLoad(PetscViewer,PetscBag);
 
-extern PetscErrorCode  PetscBagSetViewer(PetscBag,PetscErrorCode (*)(PetscBag,PetscViewer));
-extern PetscErrorCode  PetscBagSetLoader(PetscBag,PetscErrorCode (*)(PetscBag,PetscViewer));
-extern PetscErrorCode  PetscBagSetDestroy(PetscBag,PetscErrorCode (*)(PetscBag));
+PETSC_EXTERN PetscErrorCode PetscBagSetViewer(PetscBag,PetscErrorCode (*)(PetscBag,PetscViewer));
+PETSC_EXTERN PetscErrorCode PetscBagSetLoader(PetscBag,PetscErrorCode (*)(PetscBag,PetscViewer));
+PETSC_EXTERN PetscErrorCode PetscBagSetDestroy(PetscBag,PetscErrorCode (*)(PetscBag));
 
 #define PETSC_BAG_FILE_CLASSID 1211219
 
-PETSC_EXTERN_CXX_END
 #endif

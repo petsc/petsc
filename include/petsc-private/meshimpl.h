@@ -65,8 +65,8 @@ struct _p_SectionReal {
   ALE::Obj<PETSC_MESH_TYPE> b;
 };
 
-extern PetscClassId SECTIONREAL_CLASSID;
-extern PetscLogEvent SectionReal_View;
+PETSC_EXTERN PetscClassId SECTIONREAL_CLASSID;
+PETSC_EXTERN PetscLogEvent SectionReal_View;
 
 typedef struct _SectionIntOps *SectionIntOps;
 struct _SectionIntOps {
@@ -81,7 +81,7 @@ struct _p_SectionInt {
   ALE::Obj<PETSC_MESH_TYPE> b;
 };
 
-extern PetscClassId SECTIONINT_CLASSID;
-extern PetscLogEvent SectionInt_View;
+PETSC_EXTERN PetscClassId SECTIONINT_CLASSID;
+PETSC_EXTERN PetscLogEvent SectionInt_View;
 
 #endif /* _MESHIMPL_H */

@@ -11,10 +11,9 @@
 #if !defined(__PETSCMATH_H)
 #define __PETSCMATH_H
 #include <math.h>
-PETSC_EXTERN_CXX_BEGIN
 
-extern  MPI_Datatype  MPIU_2SCALAR;
-extern  MPI_Datatype  MPIU_2INT;
+PETSC_EXTERN MPI_Datatype MPIU_2SCALAR;
+PETSC_EXTERN MPI_Datatype MPIU_2INT;
 
 /*
 
@@ -104,8 +103,8 @@ typedef double complex PetscScalar;
 #define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX
 #define MPIU_C_COMPLEX MPI_C_COMPLEX
 #else
-extern MPI_Datatype  MPIU_C_DOUBLE_COMPLEX;
-extern MPI_Datatype  MPIU_C_COMPLEX;
+PETSC_EXTERN MPI_Datatype MPIU_C_DOUBLE_COMPLEX;
+PETSC_EXTERN MPI_Datatype MPIU_C_COMPLEX;
 #endif /* PETSC_HAVE_MPI_C_DOUBLE_COMPLEX */
 
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -125,7 +124,7 @@ typedef float PetscScalar;
 #define MPIU_SCALAR           MPI_DOUBLE
 typedef double PetscScalar;
 #elif defined(PETSC_USE_REAL___FLOAT128)
-extern MPI_Datatype MPIU___FLOAT128;
+PETSC_EXTERN MPI_Datatype MPIU___FLOAT128;
 #define MPIU_SCALAR MPIU___FLOAT128
 typedef __float128 PetscScalar;
 #endif /* PETSC_USE_REAL_* */
@@ -164,7 +163,7 @@ PETSC_STATIC_INLINE PetscReal PetscAbsScalar(PetscScalar a) {return a < 0.0 ? -a
 typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE, PETSC_SCALAR_LONG_DOUBLE } PetscScalarPrecision;
 
 /* PETSC_i is the imaginary number, i */
-extern  PetscScalar  PETSC_i;
+PETSC_EXTERN PetscScalar   PETSC_i;
 
 /*MC
    PetscMin - Returns minimum of two numbers
@@ -331,13 +330,13 @@ M*/
 
 #if defined PETSC_HAVE_ADIC
 /* Use MPI_Allreduce when ADIC is not available. */
-extern PetscErrorCode  PetscGlobalMax(MPI_Comm, const PetscReal*,PetscReal*);
-extern PetscErrorCode  PetscGlobalMin(MPI_Comm, const PetscReal*,PetscReal*);
-extern PetscErrorCode  PetscGlobalSum(MPI_Comm, const PetscScalar*,PetscScalar*);
+PETSC_EXTERN PetscErrorCode PetscGlobalMax(MPI_Comm, const PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscGlobalMin(MPI_Comm, const PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscGlobalSum(MPI_Comm, const PetscScalar*,PetscScalar*);
 #endif
 
-extern PetscErrorCode PetscIsInfOrNanScalar(PetscScalar);
-extern PetscErrorCode PetscIsInfOrNanReal(PetscReal);
+PETSC_EXTERN PetscErrorCode PetscIsInfOrNanScalar(PetscScalar);
+PETSC_EXTERN PetscErrorCode PetscIsInfOrNanReal(PetscReal);
 
 /* ----------------------------------------------------------------------------*/
 #define PassiveReal   PetscReal
@@ -352,5 +351,4 @@ typedef PetscScalar MatScalar;
 typedef PetscReal MatReal;
 
 
-PETSC_EXTERN_CXX_END
 #endif

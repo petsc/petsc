@@ -104,15 +104,15 @@ typedef struct {
 */
 
 EXTERN_C_BEGIN
-extern PetscErrorCode  VecView_MPI_DA(Vec,PetscViewer);
-extern PetscErrorCode  VecLoad_Default_DA(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode VecView_MPI_DA(Vec,PetscViewer);
+PETSC_EXTERN PetscErrorCode VecLoad_Default_DA(Vec, PetscViewer);
 EXTERN_C_END
-extern PetscErrorCode DMView_DA_Private(DM);
-extern PetscErrorCode DMView_DA_Matlab(DM,PetscViewer);
-extern PetscErrorCode DMView_DA_Binary(DM,PetscViewer);
-extern PetscErrorCode DMView_DA_VTK(DM,PetscViewer);
-extern PetscErrorCode DMDAVTKWriteAll(PetscObject,PetscViewer);
+PETSC_EXTERN PetscErrorCode DMView_DA_Private(DM);
+PETSC_EXTERN PetscErrorCode DMView_DA_Matlab(DM,PetscViewer);
+PETSC_EXTERN PetscErrorCode DMView_DA_Binary(DM,PetscViewer);
+PETSC_EXTERN PetscErrorCode DMView_DA_VTK(DM,PetscViewer);
+PETSC_EXTERN PetscErrorCode DMDAVTKWriteAll(PetscObject,PetscViewer);
 
-extern PetscLogEvent  DMDA_LocalADFunction;
+PETSC_EXTERN PetscLogEvent DMDA_LocalADFunction;
 
 #endif

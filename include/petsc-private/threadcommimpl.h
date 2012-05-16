@@ -20,7 +20,7 @@
 #include <windows.h>
 #endif
 
-extern PetscMPIInt Petsc_ThreadComm_keyval;
+PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 
 /* Max. number of arguments for kernel */
 #define PETSC_KERNEL_NARGS_MAX 10
@@ -87,15 +87,15 @@ struct _p_PetscThreadComm{
 };
 
 /* register thread communicator models */
-extern PetscErrorCode PetscThreadCommRegister(const char[],const char[],const char[],PetscErrorCode(*)(PetscThreadComm));
-extern PetscErrorCode PetscThreadCommRegisterAll(const char path[]);
+PETSC_EXTERN PetscErrorCode PetscThreadCommRegister(const char[],const char[],const char[],PetscErrorCode(*)(PetscThreadComm));
+PETSC_EXTERN PetscErrorCode PetscThreadCommRegisterAll(const char path[]);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PetscThreadCommRegisterDynamic(a,b,c,d) PetscThreadCommRegister(a,b,c,0)
 #else
 #define PetscThreadCommRegisterDynamic(a,b,c,d) PetscThreadCommRegister(a,b,c,d)
 #endif
 
-extern PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm,PetscThreadCommRedCtx*);
-extern PetscErrorCode PetscThreadCommReductionDestroy(PetscThreadCommRedCtx);
-extern PetscErrorCode PetscRunKernel(PetscInt,PetscInt,PetscThreadCommJobCtx);
+PETSC_EXTERN PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm,PetscThreadCommRedCtx*);
+PETSC_EXTERN PetscErrorCode PetscThreadCommReductionDestroy(PetscThreadCommRedCtx);
+PETSC_EXTERN PetscErrorCode PetscRunKernel(PetscInt,PetscInt,PetscThreadCommJobCtx);
 #endif

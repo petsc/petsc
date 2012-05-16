@@ -30,20 +30,18 @@
 #define f90array1ddestroyfortranaddr_     f90array1ddestroyfortranaddr
 #endif
 
-EXTERN_C_BEGIN
-extern void PETSC_STDCALL f90array1dcreatescalar_(void *,PetscInt *,PetscInt *,F90Array1d * PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array1daccessscalar_(F90Array1d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array1ddestroyscalar_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array1dcreatereal_(void *,PetscInt *,PetscInt *,F90Array1d * PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array1daccessreal_(F90Array1d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array1ddestroyreal_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array1dcreateint_(void *,PetscInt *,PetscInt *,F90Array1d * PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array1daccessint_(F90Array1d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array1ddestroyint_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array1dcreatefortranaddr_(void *,PetscInt *,PetscInt *,F90Array1d * PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array1daccessfortranaddr_(F90Array1d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array1ddestroyfortranaddr_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
-EXTERN_C_END
+PETSC_EXTERN_C void PETSC_STDCALL f90array1dcreatescalar_(void *,PetscInt *,PetscInt *,F90Array1d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array1daccessscalar_(F90Array1d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array1ddestroyscalar_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array1dcreatereal_(void *,PetscInt *,PetscInt *,F90Array1d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array1daccessreal_(F90Array1d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array1ddestroyreal_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array1dcreateint_(void *,PetscInt *,PetscInt *,F90Array1d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array1daccessint_(F90Array1d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array1ddestroyint_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array1dcreatefortranaddr_(void *,PetscInt *,PetscInt *,F90Array1d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array1daccessfortranaddr_(F90Array1d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array1ddestroyfortranaddr_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array1dCreate"
@@ -138,20 +136,18 @@ PetscErrorCode  F90Array1dDestroy(F90Array1d *ptr,PetscDataType type PETSC_F90_2
 #define f90array2ddestroyfortranaddr_     f90array2ddestroyfortranaddr
 #endif
 
-EXTERN_C_BEGIN
-extern void PETSC_STDCALL f90array2dcreatescalar_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d * PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array2daccessscalar_(F90Array2d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array2ddestroyscalar_(F90Array2d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array2dcreatereal_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d * PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array2daccessreal_(F90Array2d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array2ddestroyreal_(F90Array2d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array2dcreateint_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d * PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array2daccessint_(F90Array2d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array2ddestroyint_(F90Array2d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array2dcreatefortranaddr_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d * PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array2daccessfortranaddr_(F90Array2d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array2ddestroyfortranaddr_(F90Array2d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
-EXTERN_C_END
+PETSC_EXTERN_C void PETSC_STDCALL f90array2dcreatescalar_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array2daccessscalar_(F90Array2d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array2ddestroyscalar_(F90Array2d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array2dcreatereal_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array2daccessreal_(F90Array2d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array2ddestroyreal_(F90Array2d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array2dcreateint_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array2daccessint_(F90Array2d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array2ddestroyint_(F90Array2d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array2dcreatefortranaddr_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array2daccessfortranaddr_(F90Array2d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array2ddestroyfortranaddr_(F90Array2d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array2dCreate"
@@ -240,20 +236,18 @@ PetscErrorCode  F90Array2dDestroy(F90Array2d *ptr,PetscDataType type PETSC_F90_2
 #define f90array3ddestroyfortranaddr_     f90array3ddestroyfortranaddr
 #endif
 
-EXTERN_C_BEGIN
-extern void PETSC_STDCALL f90array3dcreatescalar_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array3d * PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array3daccessscalar_(F90Array3d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array3ddestroyscalar_(F90Array3d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array3dcreatereal_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array3d * PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array3daccessreal_(F90Array3d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array3ddestroyreal_(F90Array3d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array3dcreateint_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array3d * PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array3daccessint_(F90Array3d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array3ddestroyint_(F90Array3d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array3dcreatefortranaddr_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array3d * PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array3daccessfortranaddr_(F90Array3d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array3ddestroyfortranaddr_(F90Array3d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
-EXTERN_C_END
+PETSC_EXTERN_C void PETSC_STDCALL f90array3dcreatescalar_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array3d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array3daccessscalar_(F90Array3d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array3ddestroyscalar_(F90Array3d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array3dcreatereal_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array3d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array3daccessreal_(F90Array3d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array3ddestroyreal_(F90Array3d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array3dcreateint_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array3d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array3daccessint_(F90Array3d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array3ddestroyint_(F90Array3d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array3dcreatefortranaddr_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array3d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array3daccessfortranaddr_(F90Array3d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array3ddestroyfortranaddr_(F90Array3d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array3dCreate"
@@ -322,10 +316,8 @@ PetscErrorCode  F90Array3dDestroy(F90Array3d *ptr,PetscDataType type PETSC_F90_2
 #define f90array4ddestroyscalar_          f90array4ddestroyscalar
 #endif
 
-EXTERN_C_BEGIN
-extern void PETSC_STDCALL f90array4dcreatescalar_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt*,PetscInt*,F90Array4d * PETSC_F90_2PTR_PROTO_NOVAR);
-extern void PETSC_STDCALL f90array4ddestroyscalar_(F90Array4d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
-EXTERN_C_END
+PETSC_EXTERN_C void PETSC_STDCALL f90array4dcreatescalar_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt*,PetscInt*,F90Array4d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array4ddestroyscalar_(F90Array4d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array4dCreate"
@@ -366,24 +358,22 @@ PetscErrorCode  F90Array4dDestroy(F90Array4d *ptr,PetscDataType type PETSC_F90_2
 #define f90array1dgetaddrfortranaddr_       f90array1dgetaddrfortranaddr
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL f90array1dgetaddrscalar_(void *array, PetscFortranAddr *address)
+PETSC_EXTERN_C void PETSC_STDCALL f90array1dgetaddrscalar_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
-void PETSC_STDCALL f90array1dgetaddrreal_(void *array, PetscFortranAddr *address)
+PETSC_EXTERN_C void PETSC_STDCALL f90array1dgetaddrreal_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
-void PETSC_STDCALL f90array1dgetaddrint_(void *array, PetscFortranAddr *address)
+PETSC_EXTERN_C void PETSC_STDCALL f90array1dgetaddrint_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
-void PETSC_STDCALL f90array1dgetaddrfortranaddr_(void *array, PetscFortranAddr *address)
+PETSC_EXTERN_C void PETSC_STDCALL f90array1dgetaddrfortranaddr_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
-EXTERN_C_END
 
 /*************************************************************************/
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -398,24 +388,22 @@ EXTERN_C_END
 #define f90array2dgetaddrfortranaddr_       f90array2dgetaddrfortranaddr
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL f90array2dgetaddrscalar_(void *array, PetscFortranAddr *address)
+PETSC_EXTERN_C void PETSC_STDCALL f90array2dgetaddrscalar_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
-void PETSC_STDCALL f90array2dgetaddrreal_(void *array, PetscFortranAddr *address)
+PETSC_EXTERN_C void PETSC_STDCALL f90array2dgetaddrreal_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
-void PETSC_STDCALL f90array2dgetaddrint_(void *array, PetscFortranAddr *address)
+PETSC_EXTERN_C void PETSC_STDCALL f90array2dgetaddrint_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
-void PETSC_STDCALL f90array2dgetaddrfortranaddr_(void *array, PetscFortranAddr *address)
+PETSC_EXTERN_C void PETSC_STDCALL f90array2dgetaddrfortranaddr_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
-EXTERN_C_END
 
 /*************************************************************************/
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -430,23 +418,21 @@ EXTERN_C_END
 #define f90array3dgetaddrfortranaddr_       f90array3dgetaddrfortranaddr
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL f90array3dgetaddrscalar_(void *array, PetscFortranAddr *address)
+PETSC_EXTERN_C void PETSC_STDCALL f90array3dgetaddrscalar_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
-void PETSC_STDCALL f90array3dgetaddrreal_(void *array, PetscFortranAddr *address)
+PETSC_EXTERN_C void PETSC_STDCALL f90array3dgetaddrreal_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
-void PETSC_STDCALL f90array3dgetaddrint_(void *array, PetscFortranAddr *address)
+PETSC_EXTERN_C void PETSC_STDCALL f90array3dgetaddrint_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
-void PETSC_STDCALL f90array3dgetaddrfortranaddr_(void *array, PetscFortranAddr *address)
+PETSC_EXTERN_C void PETSC_STDCALL f90array3dgetaddrfortranaddr_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
-EXTERN_C_END
 
 /*************************************************************************/

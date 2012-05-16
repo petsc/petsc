@@ -127,22 +127,20 @@
 #  define LAPACKgetrf_ zgetrf
 
 #ifdef PETSC_COMPLEX_DOT_RESULT_ARGUMENT
-EXTERN_C_BEGIN
-extern void zdotc(PetscScalar *,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+PETSC_EXTERN void  zdotc(PetscScalar *,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
 PETSC_STATIC_INLINE PetscScalar BLASdot_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy) 
 {
   PetscScalar tmpz;
   zdotc(&tmpz,n,x,sx,y,sy);
   return tmpz;
 }
-extern void zdotu(PetscScalar *,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+PETSC_EXTERN void  zdotu(PetscScalar *,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
 PETSC_STATIC_INLINE PetscScalar BLASdotu_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy) 
 {
   PetscScalar tmpz;
   zdotu(&tmpz,n,x,sx,y,sy);
   return tmpz;
 }
-EXTERN_C_END
 #else
 #  define BLASdot_     zdotc
 #  define BLASdotu_    zdotu

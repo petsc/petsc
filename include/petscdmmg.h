@@ -5,7 +5,6 @@
 #define __PETSCDMMG_H
 #include "petscsnes.h"
 #include "petscdmda.h"
-PETSC_EXTERN_CXX_BEGIN
 
 /*S
      DMMGArray - Fortran only. This is used in the main program when doing DMMGCreate(), DMMGSetDM() etc.
@@ -84,28 +83,28 @@ struct _n_DMMG {
   
 };
 
-extern PetscErrorCode  DMMGCreate(MPI_Comm,PetscInt,void*,DMMG**);
-extern PetscErrorCode  DMMGDestroy(DMMG*);
-extern PetscErrorCode  DMMGSetUp(DMMG*);
-extern PetscErrorCode  DMMGSetKSP(DMMG*,PetscErrorCode (*)(DMMG,Vec),PetscErrorCode (*)(DMMG,Mat,Mat));
-extern PetscErrorCode  DMMGSetSNES(DMMG*,PetscErrorCode (*)(SNES,Vec,Vec,void*),PetscErrorCode (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
-extern PetscErrorCode  DMMGSetFromOptions(DMMG*);
+PETSC_EXTERN PetscErrorCode DMMGCreate(MPI_Comm,PetscInt,void*,DMMG**);
+PETSC_EXTERN PetscErrorCode DMMGDestroy(DMMG*);
+PETSC_EXTERN PetscErrorCode DMMGSetUp(DMMG*);
+PETSC_EXTERN PetscErrorCode DMMGSetKSP(DMMG*,PetscErrorCode (*)(DMMG,Vec),PetscErrorCode (*)(DMMG,Mat,Mat));
+PETSC_EXTERN PetscErrorCode DMMGSetSNES(DMMG*,PetscErrorCode (*)(SNES,Vec,Vec,void*),PetscErrorCode (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
+PETSC_EXTERN PetscErrorCode DMMGSetFromOptions(DMMG*);
 
-extern PetscErrorCode  DMMGSetInitialGuess(DMMG*,PetscErrorCode (*)(DMMG,Vec));
-extern PetscErrorCode  DMMGInitialGuessCurrent(DMMG,Vec);
-extern PetscErrorCode  DMMGView(DMMG*,PetscViewer);
-extern PetscErrorCode  DMMGSolve(DMMG*);
-extern PetscErrorCode  DMMGSetUseMatrixFree(DMMG*);
-extern PetscErrorCode  DMMGSetDM(DMMG*,DM);
-extern PetscErrorCode  DMMGSetUpLevel(DMMG*,KSP,PetscInt);
-extern PetscErrorCode  DMMGSetNullSpace(DMMG*,PetscBool ,PetscInt,PetscErrorCode (*)(DMMG,Vec[]));
-extern PetscErrorCode  DMMGSetMatType(DMMG*,const MatType);
-extern PetscErrorCode  DMMGSetISColoringType(DMMG*,ISColoringType);
-extern PetscErrorCode  DMMGSetOptionsPrefix(DMMG*,const char[]);
-extern PetscErrorCode  DMMGFormFunction(SNES,Vec,Vec,void *);
+PETSC_EXTERN PetscErrorCode DMMGSetInitialGuess(DMMG*,PetscErrorCode (*)(DMMG,Vec));
+PETSC_EXTERN PetscErrorCode DMMGInitialGuessCurrent(DMMG,Vec);
+PETSC_EXTERN PetscErrorCode DMMGView(DMMG*,PetscViewer);
+PETSC_EXTERN PetscErrorCode DMMGSolve(DMMG*);
+PETSC_EXTERN PetscErrorCode DMMGSetUseMatrixFree(DMMG*);
+PETSC_EXTERN PetscErrorCode DMMGSetDM(DMMG*,DM);
+PETSC_EXTERN PetscErrorCode DMMGSetUpLevel(DMMG*,KSP,PetscInt);
+PETSC_EXTERN PetscErrorCode DMMGSetNullSpace(DMMG*,PetscBool ,PetscInt,PetscErrorCode (*)(DMMG,Vec[]));
+PETSC_EXTERN PetscErrorCode DMMGSetMatType(DMMG*,const MatType);
+PETSC_EXTERN PetscErrorCode DMMGSetISColoringType(DMMG*,ISColoringType);
+PETSC_EXTERN PetscErrorCode DMMGSetOptionsPrefix(DMMG*,const char[]);
+PETSC_EXTERN PetscErrorCode DMMGFormFunction(SNES,Vec,Vec,void *);
 
-extern PetscErrorCode  DMMGGetSNESLocal(DMMG*,DMDALocalFunction1*,DMDALocalFunction1*);
-extern PetscErrorCode  DMMGSetSNESLocal_Private(DMMG*,DMDALocalFunction1,DMDALocalFunction1,DMDALocalFunction1,DMDALocalFunction1);
+PETSC_EXTERN PetscErrorCode DMMGGetSNESLocal(DMMG*,DMDALocalFunction1*,DMDALocalFunction1*);
+PETSC_EXTERN PetscErrorCode DMMGSetSNESLocal_Private(DMMG*,DMDALocalFunction1,DMDALocalFunction1,DMDALocalFunction1,DMDALocalFunction1);
 #if defined(PETSC_HAVE_ADIC)
 #  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function,admf_function) \
   DMMGSetSNESLocal_Private(dmmg,(DMDALocalFunction1)function,(DMDALocalFunction1)jacobian,(DMDALocalFunction1)(ad_function),(DMDALocalFunction1)(admf_function))
@@ -113,21 +112,21 @@ extern PetscErrorCode  DMMGSetSNESLocal_Private(DMMG*,DMDALocalFunction1,DMDALoc
 #  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function,admf_function) DMMGSetSNESLocal_Private(dmmg,(DMDALocalFunction1)function,(DMDALocalFunction1)jacobian,(DMDALocalFunction1)0,(DMDALocalFunction1)0)
 #endif
 
-extern PetscErrorCode  DMMGSetSNESLocali_Private(DMMG*,PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*));
+PETSC_EXTERN PetscErrorCode DMMGSetSNESLocali_Private(DMMG*,PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*));
 #if defined(PETSC_HAVE_ADIC)
 #  define DMMGSetSNESLocali(dmmg,function,ad_function,admf_function) DMMGSetSNESLocali_Private(dmmg,(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))(ad_function),(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))(admf_function))
 #else
 #  define DMMGSetSNESLocali(dmmg,function,ad_function,admf_function) DMMGSetSNESLocali_Private(dmmg,(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,0,0)
 #endif
 
-extern PetscErrorCode  DMMGSetSNESLocalib_Private(DMMG*,PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*));
+PETSC_EXTERN PetscErrorCode DMMGSetSNESLocalib_Private(DMMG*,PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*));
 #if defined(PETSC_HAVE_ADIC)
 #  define DMMGSetSNESLocalib(dmmg,function,ad_function,admf_function) DMMGSetSNESLocalib_Private(dmmg,(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))(ad_function),(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))(admf_function))
 #else
 #  define DMMGSetSNESLocalib(dmmg,function,ad_function,admf_function) DMMGSetSNESLocalib_Private(dmmg,(PetscErrorCode(*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,0,0)
 #endif
 
-extern PetscErrorCode DMMGSetSNESLocalFD(DMMG*,DMDALocalFunction1);
+PETSC_EXTERN PetscErrorCode DMMGSetSNESLocalFD(DMMG*,DMDALocalFunction1);
 
 /*MC
    DMMGGetRHS - Returns the right hand side vector from a DMMG solve on the finest grid
@@ -367,5 +366,4 @@ M*/
 M*/
 #define DMMGGetLevels(ctx)         (ctx)[0]->nlevels
 
-PETSC_EXTERN_CXX_END
 #endif

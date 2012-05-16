@@ -23,7 +23,7 @@ typedef double InactiveDouble;
 typedef float InactiveFloat;
 
 #if defined(__cplusplus)
-extern "C" {
+PETSC_EXTERN "C" {
 #endif
 
 #if !defined(ad_GRAD_PTR) 

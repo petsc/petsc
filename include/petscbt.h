@@ -1,7 +1,6 @@
 
 #if !defined(__PETSCBT_H)
 #define __PETSCBT_H
-PETSC_EXTERN_CXX_BEGIN
 
 /*S
      PetscBT - PETSc bitarrays
@@ -109,5 +108,4 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBTClear(PetscBT array,PetscInt index)
 }
 
 
-PETSC_EXTERN_CXX_END
 #endif

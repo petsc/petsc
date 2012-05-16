@@ -14,9 +14,9 @@
 
 #include <string.h>
 
-extern int ad_grad_size;
-extern int ad_total_grad_size;   /*only used when generating MPI programs*/
-extern int ad_grad_size_shadow;
+PETSC_EXTERN int ad_grad_size;
+PETSC_EXTERN int ad_total_grad_size;   /*only used when generating MPI programs*/
+PETSC_EXTERN int ad_grad_size_shadow;
 
 #   if defined(__cplusplus)
         extern "C" {
@@ -166,9 +166,9 @@ extern int ad_grad_size_shadow;
         } \
     }
 
-extern int ad_AD_IncrShadowVar(void);
-extern void ad_AD_CommitShadowVar(void);
-extern void ad_AD_ResetShadowVar(void);
+PETSC_EXTERN int ad_AD_IncrShadowVar(void);
+PETSC_EXTERN void  ad_AD_CommitShadowVar(void);
+PETSC_EXTERN void  ad_AD_ResetShadowVar(void);
 
 
 #   if defined(__cplusplus)

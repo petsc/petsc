@@ -4,9 +4,8 @@
 #if !defined(__PETSCDRAW_H)
 #define __PETSCDRAW_H
 #include "petscsys.h"
-PETSC_EXTERN_CXX_BEGIN
 
-extern PetscClassId PETSC_DRAW_CLASSID;
+PETSC_EXTERN PetscClassId PETSC_DRAW_CLASSID;
 
 /*J
     PetscDrawType - String with the name of a PetscDraw 
@@ -31,12 +30,12 @@ J*/
 S*/
 typedef struct _p_PetscDraw* PetscDraw;
 
-extern PetscFList PetscDrawList;
-extern PetscErrorCode  PetscDrawRegisterAll(const char[]);
-extern PetscErrorCode  PetscDrawInitializePackage(const char[]);
-extern PetscErrorCode  PetscDrawRegisterDestroy(void);
+PETSC_EXTERN PetscFList PetscDrawList;
+PETSC_EXTERN PetscErrorCode PetscDrawRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode PetscDrawInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode PetscDrawRegisterDestroy(void);
 
-extern PetscErrorCode  PetscDrawRegister(const char*,const char*,const char*,PetscErrorCode(*)(PetscDraw));
+PETSC_EXTERN PetscErrorCode PetscDrawRegister(const char*,const char*,const char*,PetscErrorCode(*)(PetscDraw));
 
 /*MC
    PetscDrawRegisterDynamic - Adds a method to the Krylov subspace solver package.
@@ -82,11 +81,11 @@ M*/
 #define PetscDrawRegisterDynamic(a,b,c,d) PetscDrawRegister(a,b,c,d)
 #endif
 
-extern PetscErrorCode  PetscDrawGetType(PetscDraw,const PetscDrawType*);
-extern PetscErrorCode  PetscDrawSetType(PetscDraw,const PetscDrawType);
-extern PetscErrorCode  PetscDrawCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
-extern PetscErrorCode  PetscDrawSetFromOptions(PetscDraw);
-extern PetscErrorCode  PetscDrawSetSave(PetscDraw,const char*,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscDrawGetType(PetscDraw,const PetscDrawType*);
+PETSC_EXTERN PetscErrorCode PetscDrawSetType(PetscDraw,const PetscDrawType);
+PETSC_EXTERN PetscErrorCode PetscDrawCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
+PETSC_EXTERN PetscErrorCode PetscDrawSetFromOptions(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawSetSave(PetscDraw,const char*,PetscBool);
 
 /*
    Number of basic colors in the draw routines, the others are used
@@ -130,69 +129,69 @@ extern PetscErrorCode  PetscDrawSetSave(PetscDraw,const char*,PetscBool);
 #define PETSC_DRAW_LAVENDERBLUSH   31
 #define PETSC_DRAW_PLUM            32
 
-extern PetscErrorCode  PetscDrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
+PETSC_EXTERN PetscErrorCode PetscDrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
 
 #define PETSC_DRAW_FULL_SIZE    -3
 #define PETSC_DRAW_HALF_SIZE    -4
 #define PETSC_DRAW_THIRD_SIZE   -5
 #define PETSC_DRAW_QUARTER_SIZE -6
 
-extern PetscErrorCode  PetscDrawOpenNull(MPI_Comm,PetscDraw *);
-extern PetscErrorCode  PetscDrawDestroy(PetscDraw*);
-extern PetscErrorCode  PetscDrawIsNull(PetscDraw,PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscDrawOpenNull(MPI_Comm,PetscDraw *);
+PETSC_EXTERN PetscErrorCode PetscDrawDestroy(PetscDraw*);
+PETSC_EXTERN PetscErrorCode PetscDrawIsNull(PetscDraw,PetscBool *);
 
-extern PetscErrorCode  PetscDrawGetPopup(PetscDraw,PetscDraw*);
-extern PetscErrorCode  PetscDrawCheckResizedWindow(PetscDraw);
-extern PetscErrorCode  PetscDrawResizeWindow(PetscDraw,int,int);
+PETSC_EXTERN PetscErrorCode PetscDrawGetPopup(PetscDraw,PetscDraw*);
+PETSC_EXTERN PetscErrorCode PetscDrawCheckResizedWindow(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawResizeWindow(PetscDraw,int,int);
 
-extern PetscErrorCode  PetscDrawScalePopup(PetscDraw,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawScalePopup(PetscDraw,PetscReal,PetscReal);
 
-extern PetscErrorCode  PetscDrawLine(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
-extern PetscErrorCode  PetscDrawArrow(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
-extern PetscErrorCode  PetscDrawLineSetWidth(PetscDraw,PetscReal);
-extern PetscErrorCode  PetscDrawLineGetWidth(PetscDraw,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDrawLine(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
+PETSC_EXTERN PetscErrorCode PetscDrawArrow(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
+PETSC_EXTERN PetscErrorCode PetscDrawLineSetWidth(PetscDraw,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawLineGetWidth(PetscDraw,PetscReal*);
 
-extern PetscErrorCode  PetscDrawPoint(PetscDraw,PetscReal,PetscReal,int);
-extern PetscErrorCode  PetscDrawPointSetSize(PetscDraw,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawPoint(PetscDraw,PetscReal,PetscReal,int);
+PETSC_EXTERN PetscErrorCode PetscDrawPointSetSize(PetscDraw,PetscReal);
 
-extern PetscErrorCode  PetscDrawRectangle(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int,int);
-extern PetscErrorCode  PetscDrawTriangle(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int);
-extern PetscErrorCode  PetscDrawEllipse(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
-extern PetscErrorCode  PetscDrawTensorContourPatch(PetscDraw,int,int,PetscReal*,PetscReal*,PetscReal,PetscReal,PetscReal*);
-extern PetscErrorCode  PetscDrawTensorContour(PetscDraw,int,int,const PetscReal[],const PetscReal[],PetscReal *);
+PETSC_EXTERN PetscErrorCode PetscDrawRectangle(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int,int);
+PETSC_EXTERN PetscErrorCode PetscDrawTriangle(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int);
+PETSC_EXTERN PetscErrorCode PetscDrawEllipse(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
+PETSC_EXTERN PetscErrorCode PetscDrawTensorContourPatch(PetscDraw,int,int,PetscReal*,PetscReal*,PetscReal,PetscReal,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDrawTensorContour(PetscDraw,int,int,const PetscReal[],const PetscReal[],PetscReal *);
 
-extern PetscErrorCode  PetscDrawString(PetscDraw,PetscReal,PetscReal,int,const char[]);
-extern PetscErrorCode  PetscDrawStringVertical(PetscDraw,PetscReal,PetscReal,int,const char[]);
-extern PetscErrorCode  PetscDrawStringSetSize(PetscDraw,PetscReal,PetscReal);
-extern PetscErrorCode  PetscDrawStringGetSize(PetscDraw,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDrawString(PetscDraw,PetscReal,PetscReal,int,const char[]);
+PETSC_EXTERN PetscErrorCode PetscDrawStringVertical(PetscDraw,PetscReal,PetscReal,int,const char[]);
+PETSC_EXTERN PetscErrorCode PetscDrawStringSetSize(PetscDraw,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawStringGetSize(PetscDraw,PetscReal*,PetscReal*);
 
-extern PetscErrorCode  PetscDrawSetViewPort(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
-extern PetscErrorCode  PetscDrawSplitViewPort(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawSetViewPort(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawSplitViewPort(PetscDraw);
 
-extern PetscErrorCode  PetscDrawSetCoordinates(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
-extern PetscErrorCode  PetscDrawGetCoordinates(PetscDraw,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDrawSetCoordinates(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawGetCoordinates(PetscDraw,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
-extern PetscErrorCode  PetscDrawSetTitle(PetscDraw,const char[]);
-extern PetscErrorCode  PetscDrawAppendTitle(PetscDraw,const char[]);
-extern PetscErrorCode  PetscDrawGetTitle(PetscDraw,char **);
+PETSC_EXTERN PetscErrorCode PetscDrawSetTitle(PetscDraw,const char[]);
+PETSC_EXTERN PetscErrorCode PetscDrawAppendTitle(PetscDraw,const char[]);
+PETSC_EXTERN PetscErrorCode PetscDrawGetTitle(PetscDraw,char **);
 
-extern PetscErrorCode  PetscDrawSetPause(PetscDraw,PetscReal);
-extern PetscErrorCode  PetscDrawGetPause(PetscDraw,PetscReal*);
-extern PetscErrorCode  PetscDrawPause(PetscDraw);
-extern PetscErrorCode  PetscDrawSetDoubleBuffer(PetscDraw);
-extern PetscErrorCode  PetscDrawFlush(PetscDraw);
-extern PetscErrorCode  PetscDrawSynchronizedFlush(PetscDraw);
-extern PetscErrorCode  PetscDrawClear(PetscDraw);
-extern PetscErrorCode  PetscDrawSave(PetscDraw);
-extern PetscErrorCode  PetscDrawSynchronizedClear(PetscDraw);
-extern PetscErrorCode  PetscDrawBOP(PetscDraw);
-extern PetscErrorCode  PetscDrawEOP(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawSetPause(PetscDraw,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawGetPause(PetscDraw,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDrawPause(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawSetDoubleBuffer(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawFlush(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawSynchronizedFlush(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawClear(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawSave(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawSynchronizedClear(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawBOP(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawEOP(PetscDraw);
 
-extern PetscErrorCode  PetscDrawSetDisplay(PetscDraw,char*);
+PETSC_EXTERN PetscErrorCode PetscDrawSetDisplay(PetscDraw,char*);
 #define PetscDrawSetFilename(a,b) PetscDrawSetDisplay(a,b)
 
-extern PetscErrorCode  PetscDrawGetSingleton(PetscDraw,PetscDraw*);
-extern PetscErrorCode  PetscDrawRestoreSingleton(PetscDraw,PetscDraw*);
+PETSC_EXTERN PetscErrorCode PetscDrawGetSingleton(PetscDraw,PetscDraw*);
+PETSC_EXTERN PetscErrorCode PetscDrawRestoreSingleton(PetscDraw,PetscDraw*);
 
 /*E
     PetscDrawButton - Used to determine which button was pressed
@@ -203,10 +202,10 @@ extern PetscErrorCode  PetscDrawRestoreSingleton(PetscDraw,PetscDraw*);
 E*/
 typedef enum {PETSC_BUTTON_NONE,PETSC_BUTTON_LEFT,PETSC_BUTTON_CENTER,PETSC_BUTTON_RIGHT,PETSC_BUTTON_LEFT_SHIFT,PETSC_BUTTON_CENTER_SHIFT,PETSC_BUTTON_RIGHT_SHIFT} PetscDrawButton;
 
-extern PetscErrorCode  PetscDrawGetMouseButton(PetscDraw,PetscDrawButton *,PetscReal*,PetscReal *,PetscReal *,PetscReal *);
-extern PetscErrorCode  PetscDrawSynchronizedGetMouseButton(PetscDraw,PetscDrawButton *,PetscReal*,PetscReal *,PetscReal *,PetscReal *);
+PETSC_EXTERN PetscErrorCode PetscDrawGetMouseButton(PetscDraw,PetscDrawButton *,PetscReal*,PetscReal *,PetscReal *,PetscReal *);
+PETSC_EXTERN PetscErrorCode PetscDrawSynchronizedGetMouseButton(PetscDraw,PetscDrawButton *,PetscReal*,PetscReal *,PetscReal *,PetscReal *);
 
-extern PetscErrorCode  PetscDrawZoom(PetscDraw,PetscErrorCode (*)(PetscDraw,void *),void *);
+PETSC_EXTERN PetscErrorCode PetscDrawZoom(PetscDraw,PetscErrorCode (*)(PetscDraw,void *),void *);
 
 /*S
      PetscDrawViewPorts - Subwindows in a PetscDraw object
@@ -225,10 +224,10 @@ typedef struct {
   PetscReal *yr;
   PetscDraw draw;
 } PetscDrawViewPorts;
-extern PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw,PetscInt,PetscDrawViewPorts**);
-extern PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw,PetscInt,PetscInt,PetscDrawViewPorts**);
-extern PetscErrorCode  PetscDrawViewPortsDestroy(PetscDrawViewPorts*);
-extern PetscErrorCode  PetscDrawViewPortsSet(PetscDrawViewPorts*,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscDrawViewPortsCreate(PetscDraw,PetscInt,PetscDrawViewPorts**);
+PETSC_EXTERN PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw,PetscInt,PetscInt,PetscDrawViewPorts**);
+PETSC_EXTERN PetscErrorCode PetscDrawViewPortsDestroy(PetscDrawViewPorts*);
+PETSC_EXTERN PetscErrorCode PetscDrawViewPortsSet(PetscDrawViewPorts*,PetscInt);
 
 /*S
      PetscDrawAxis - Manages X-Y axis
@@ -241,15 +240,15 @@ extern PetscErrorCode  PetscDrawViewPortsSet(PetscDrawViewPorts*,PetscInt);
 S*/
 typedef struct _p_PetscDrawAxis* PetscDrawAxis;
 
-extern PetscClassId PETSC_DRAWAXIS_CLASSID;
+PETSC_EXTERN PetscClassId PETSC_DRAWAXIS_CLASSID;
 
-extern PetscErrorCode  PetscDrawAxisCreate(PetscDraw,PetscDrawAxis *);
-extern PetscErrorCode  PetscDrawAxisDestroy(PetscDrawAxis*);
-extern PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis);
-extern PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis,PetscReal,PetscReal,PetscReal,PetscReal);
-extern PetscErrorCode  PetscDrawAxisSetHoldLimits(PetscDrawAxis,PetscBool );
-extern PetscErrorCode  PetscDrawAxisSetColors(PetscDrawAxis,int,int,int);
-extern PetscErrorCode  PetscDrawAxisSetLabels(PetscDrawAxis,const char[],const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscDrawAxisCreate(PetscDraw,PetscDrawAxis *);
+PETSC_EXTERN PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis*);
+PETSC_EXTERN PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis);
+PETSC_EXTERN PetscErrorCode PetscDrawAxisSetLimits(PetscDrawAxis,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawAxisSetHoldLimits(PetscDrawAxis,PetscBool );
+PETSC_EXTERN PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis,int,int,int);
+PETSC_EXTERN PetscErrorCode PetscDrawAxisSetLabels(PetscDrawAxis,const char[],const char[],const char[]);
 
 /*S
      PetscDrawLG - Manages drawing x-y plots
@@ -262,22 +261,22 @@ extern PetscErrorCode  PetscDrawAxisSetLabels(PetscDrawAxis,const char[],const c
 S*/
 typedef struct _p_PetscDrawLG*   PetscDrawLG;
 
-extern PetscClassId PETSC_DRAWLG_CLASSID;
+PETSC_EXTERN PetscClassId PETSC_DRAWLG_CLASSID;
 
-extern PetscErrorCode  PetscDrawLGCreate(PetscDraw,int,PetscDrawLG *);
-extern PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG*);
-extern PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG,PetscReal*,PetscReal*);
-extern PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG,int,PetscReal**,PetscReal**);
-extern PetscErrorCode  PetscDrawLGDraw(PetscDrawLG);
-extern PetscErrorCode  PetscDrawLGPrint(PetscDrawLG);
-extern PetscErrorCode  PetscDrawLGReset(PetscDrawLG);
-extern PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG,PetscInt);
-extern PetscErrorCode  PetscDrawLGSetLegend(PetscDrawLG,const char *const*);
-extern PetscErrorCode  PetscDrawLGGetAxis(PetscDrawLG,PetscDrawAxis *);
-extern PetscErrorCode  PetscDrawLGGetDraw(PetscDrawLG,PetscDraw *);
-extern PetscErrorCode  PetscDrawLGIndicateDataPoints(PetscDrawLG);
-extern PetscErrorCode  PetscDrawLGSetLimits(PetscDrawLG,PetscReal,PetscReal,PetscReal,PetscReal);
-extern PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG,const int*);
+PETSC_EXTERN PetscErrorCode PetscDrawLGCreate(PetscDraw,int,PetscDrawLG *);
+PETSC_EXTERN PetscErrorCode PetscDrawLGDestroy(PetscDrawLG*);
+PETSC_EXTERN PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDrawLGAddPoints(PetscDrawLG,int,PetscReal**,PetscReal**);
+PETSC_EXTERN PetscErrorCode PetscDrawLGDraw(PetscDrawLG);
+PETSC_EXTERN PetscErrorCode PetscDrawLGPrint(PetscDrawLG);
+PETSC_EXTERN PetscErrorCode PetscDrawLGReset(PetscDrawLG);
+PETSC_EXTERN PetscErrorCode PetscDrawLGSetDimension(PetscDrawLG,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscDrawLGSetLegend(PetscDrawLG,const char *const*);
+PETSC_EXTERN PetscErrorCode PetscDrawLGGetAxis(PetscDrawLG,PetscDrawAxis *);
+PETSC_EXTERN PetscErrorCode PetscDrawLGGetDraw(PetscDrawLG,PetscDraw *);
+PETSC_EXTERN PetscErrorCode PetscDrawLGIndicateDataPoints(PetscDrawLG);
+PETSC_EXTERN PetscErrorCode PetscDrawLGSetLimits(PetscDrawLG,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawLGSetColors(PetscDrawLG,const int*);
 
 /*S
      PetscDrawSP - Manages drawing scatter plots
@@ -290,19 +289,19 @@ extern PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG,const int*);
 S*/
 typedef struct _p_PetscDrawSP*   PetscDrawSP;
 
-extern PetscClassId PETSC_DRAWSP_CLASSID;
+PETSC_EXTERN PetscClassId PETSC_DRAWSP_CLASSID;
 
-extern PetscErrorCode  PetscDrawSPCreate(PetscDraw,int,PetscDrawSP *);
-extern PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP*);
-extern PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP,PetscReal*,PetscReal*);
-extern PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP,int,PetscReal**,PetscReal**);
-extern PetscErrorCode  PetscDrawSPDraw(PetscDrawSP);
-extern PetscErrorCode  PetscDrawSPReset(PetscDrawSP);
-extern PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP,int);
-extern PetscErrorCode  PetscDrawSPGetAxis(PetscDrawSP,PetscDrawAxis *);
-extern PetscErrorCode  PetscDrawSPGetDraw(PetscDrawSP,PetscDraw *);
-extern PetscErrorCode  PetscDrawSPSetLimits(PetscDrawSP,PetscReal,PetscReal,PetscReal,PetscReal);
-extern PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG,PetscDrawSP);
+PETSC_EXTERN PetscErrorCode PetscDrawSPCreate(PetscDraw,int,PetscDrawSP *);
+PETSC_EXTERN PetscErrorCode PetscDrawSPDestroy(PetscDrawSP*);
+PETSC_EXTERN PetscErrorCode PetscDrawSPAddPoint(PetscDrawSP,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDrawSPAddPoints(PetscDrawSP,int,PetscReal**,PetscReal**);
+PETSC_EXTERN PetscErrorCode PetscDrawSPDraw(PetscDrawSP);
+PETSC_EXTERN PetscErrorCode PetscDrawSPReset(PetscDrawSP);
+PETSC_EXTERN PetscErrorCode PetscDrawSPSetDimension(PetscDrawSP,int);
+PETSC_EXTERN PetscErrorCode PetscDrawSPGetAxis(PetscDrawSP,PetscDrawAxis *);
+PETSC_EXTERN PetscErrorCode PetscDrawSPGetDraw(PetscDrawSP,PetscDraw *);
+PETSC_EXTERN PetscErrorCode PetscDrawSPSetLimits(PetscDrawSP,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawLGSPDraw(PetscDrawLG,PetscDrawSP);
 
 /*S
      PetscDrawHG - Manages drawing histograms
@@ -315,33 +314,32 @@ extern PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG,PetscDrawSP);
 S*/
 typedef struct _p_PetscDrawHG*   PetscDrawHG;
 
-extern PetscClassId PETSC_DRAWHG_CLASSID;
+PETSC_EXTERN PetscClassId PETSC_DRAWHG_CLASSID;
 
-extern PetscErrorCode  PetscDrawHGCreate(PetscDraw,int,PetscDrawHG *);
-extern PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG*);
-extern PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG,PetscReal);
-extern PetscErrorCode  PetscDrawHGDraw(PetscDrawHG);
-extern PetscErrorCode  PetscDrawHGPrint(PetscDrawHG);
-extern PetscErrorCode  PetscDrawHGReset(PetscDrawHG);
-extern PetscErrorCode  PetscDrawHGGetAxis(PetscDrawHG,PetscDrawAxis *);
-extern PetscErrorCode  PetscDrawHGGetDraw(PetscDrawHG,PetscDraw *);
-extern PetscErrorCode  PetscDrawHGSetLimits(PetscDrawHG,PetscReal,PetscReal,int,int);
-extern PetscErrorCode  PetscDrawHGSetNumberBins(PetscDrawHG,int);
-extern PetscErrorCode  PetscDrawHGSetColor(PetscDrawHG,int);
-extern PetscErrorCode  PetscDrawHGCalcStats(PetscDrawHG, PetscBool );
-extern PetscErrorCode  PetscDrawHGIntegerBins(PetscDrawHG, PetscBool );
+PETSC_EXTERN PetscErrorCode PetscDrawHGCreate(PetscDraw,int,PetscDrawHG *);
+PETSC_EXTERN PetscErrorCode PetscDrawHGDestroy(PetscDrawHG*);
+PETSC_EXTERN PetscErrorCode PetscDrawHGAddValue(PetscDrawHG,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawHGDraw(PetscDrawHG);
+PETSC_EXTERN PetscErrorCode PetscDrawHGPrint(PetscDrawHG);
+PETSC_EXTERN PetscErrorCode PetscDrawHGReset(PetscDrawHG);
+PETSC_EXTERN PetscErrorCode PetscDrawHGGetAxis(PetscDrawHG,PetscDrawAxis *);
+PETSC_EXTERN PetscErrorCode PetscDrawHGGetDraw(PetscDrawHG,PetscDraw *);
+PETSC_EXTERN PetscErrorCode PetscDrawHGSetLimits(PetscDrawHG,PetscReal,PetscReal,int,int);
+PETSC_EXTERN PetscErrorCode PetscDrawHGSetNumberBins(PetscDrawHG,int);
+PETSC_EXTERN PetscErrorCode PetscDrawHGSetColor(PetscDrawHG,int);
+PETSC_EXTERN PetscErrorCode PetscDrawHGCalcStats(PetscDrawHG, PetscBool );
+PETSC_EXTERN PetscErrorCode PetscDrawHGIntegerBins(PetscDrawHG, PetscBool );
 
 /*
     PetscViewer routines that allow you to access underlying PetscDraw objects
 */
-extern PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer,PetscInt,PetscDraw*);
-extern PetscErrorCode  PetscViewerDrawBaseAdd(PetscViewer,PetscInt);
-extern PetscErrorCode  PetscViewerDrawBaseSet(PetscViewer,PetscInt);
-extern PetscErrorCode  PetscViewerDrawGetDrawLG(PetscViewer,PetscInt,PetscDrawLG*);
-extern PetscErrorCode  PetscViewerDrawGetDrawAxis(PetscViewer,PetscInt,PetscDrawAxis*);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDraw(PetscViewer,PetscInt,PetscDraw*);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawBaseAdd(PetscViewer,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawBaseSet(PetscViewer,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer,PetscInt,PetscDrawLG*);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer,PetscInt,PetscDrawAxis*);
 
-extern PetscErrorCode  PetscDrawUtilitySetCmapHue(unsigned char *,unsigned char *,unsigned char *,int);
-extern PetscErrorCode  PetscDrawUtilitySetGamma(PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawUtilitySetCmapHue(unsigned char *,unsigned char *,unsigned char *,int);
+PETSC_EXTERN PetscErrorCode PetscDrawUtilitySetGamma(PetscReal);
 
-PETSC_EXTERN_CXX_END
 #endif

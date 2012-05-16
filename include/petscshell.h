@@ -3,7 +3,7 @@
 
 #include "petscsys.h"
 
-extern  PetscClassId PETSC_SHELL_CLASSID;
+PETSC_EXTERN PetscClassId PETSC_SHELL_CLASSID;
 
 /* 
    There is only one type implementing PetscShell, 
@@ -30,29 +30,29 @@ extern  PetscClassId PETSC_SHELL_CLASSID;
 S*/
 typedef struct _p_PetscShell *PetscShell;
 
-extern PetscShell  PETSC_SHELL_DEFAULT_(MPI_Comm);
+PETSC_EXTERN PetscShell  PETSC_SHELL_DEFAULT_(MPI_Comm);
 #define PETSC_SHELL_DEFAULT_SELF  PETSC_SHELL_DEFAULT_(PETSC_COMM_SELF)
 #define PETSC_SHELL_DEFAULT_WORLD PETSC_SHELL_DEFAULT_(PETSC_COMM_WORLD)
 
 
 
-extern PetscErrorCode  PetscShellInitializePackage(const char[]);
-extern PetscErrorCode  PetscShellFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode PetscShellInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode PetscShellFinalizePackage(void);
 
 /**/
-extern PetscErrorCode  PetscShellCreate(MPI_Comm, PetscShell*);
-extern PetscErrorCode  PetscShellSetURL(PetscShell,     const char*);
-extern PetscErrorCode  PetscShellCall(PetscShell,       const char *);
-extern PetscErrorCode  PetscShellGetURL(PetscShell,     const char **);
-extern PetscErrorCode  PetscShellView(PetscShell, PetscViewer);
-extern PetscErrorCode  PetscShellDestroy(PetscShell*);
+PETSC_EXTERN PetscErrorCode PetscShellCreate(MPI_Comm, PetscShell*);
+PETSC_EXTERN PetscErrorCode PetscShellSetURL(PetscShell,     const char*);
+PETSC_EXTERN PetscErrorCode PetscShellCall(PetscShell,       const char *);
+PETSC_EXTERN PetscErrorCode PetscShellGetURL(PetscShell,     const char **);
+PETSC_EXTERN PetscErrorCode PetscShellView(PetscShell, PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscShellDestroy(PetscShell*);
 /**/
-extern PetscErrorCode  PetscShellRegisterComponentShell(PetscShell, const char[], PetscShell);
-extern PetscErrorCode  PetscShellRegisterComponentURL(PetscShell, const char[], const char[]);
-extern PetscErrorCode  PetscShellRegisterDependence(PetscShell, const char[], const char[]);
-extern PetscErrorCode  PetscShellGetComponent(PetscShell, const char[], PetscShell *, PetscBool  *);
-extern PetscErrorCode  PetscShellVisit(PetscShell, const char *);
-extern PetscErrorCode  PetscShellGetVisitor(PetscShell, PetscShell *);
+PETSC_EXTERN PetscErrorCode PetscShellRegisterComponentShell(PetscShell, const char[], PetscShell);
+PETSC_EXTERN PetscErrorCode PetscShellRegisterComponentURL(PetscShell, const char[], const char[]);
+PETSC_EXTERN PetscErrorCode PetscShellRegisterDependence(PetscShell, const char[], const char[]);
+PETSC_EXTERN PetscErrorCode PetscShellGetComponent(PetscShell, const char[], PetscShell *, PetscBool  *);
+PETSC_EXTERN PetscErrorCode PetscShellVisit(PetscShell, const char *);
+PETSC_EXTERN PetscErrorCode PetscShellGetVisitor(PetscShell, PetscShell *);
 
 
 

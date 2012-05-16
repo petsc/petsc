@@ -4,9 +4,8 @@
 
 #if !defined(__PETSCMATLAB_H)
 #define __PETSCMATLAB_H
-PETSC_EXTERN_CXX_BEGIN
 
-extern PetscClassId MATLABENGINE_CLASSID;
+PETSC_EXTERN PetscClassId MATLABENGINE_CLASSID;
 
 /*S
      PetscMatlabEngine - Object used to communicate with MATLAB
@@ -20,17 +19,17 @@ extern PetscClassId MATLABENGINE_CLASSID;
 S*/
 typedef struct _p_PetscMatlabEngine* PetscMatlabEngine;
 
-extern PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm,const char[],PetscMatlabEngine*);
-extern PetscErrorCode  PetscMatlabEngineDestroy(PetscMatlabEngine*);
-extern PetscErrorCode  PetscMatlabEngineEvaluate(PetscMatlabEngine,const char[],...);
-extern PetscErrorCode  PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
-extern PetscErrorCode  PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*);
-extern PetscErrorCode  PetscMatlabEnginePut(PetscMatlabEngine,PetscObject);
-extern PetscErrorCode  PetscMatlabEngineGet(PetscMatlabEngine,PetscObject);
-extern PetscErrorCode  PetscMatlabEnginePutArray(PetscMatlabEngine,int,int,const PetscScalar*,const char[]);
-extern PetscErrorCode  PetscMatlabEngineGetArray(PetscMatlabEngine,int,int,PetscScalar*,const char[]);
+PETSC_EXTERN PetscErrorCode PetscMatlabEngineCreate(MPI_Comm,const char[],PetscMatlabEngine*);
+PETSC_EXTERN PetscErrorCode PetscMatlabEngineDestroy(PetscMatlabEngine*);
+PETSC_EXTERN PetscErrorCode PetscMatlabEngineEvaluate(PetscMatlabEngine,const char[],...);
+PETSC_EXTERN PetscErrorCode PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
+PETSC_EXTERN PetscErrorCode PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*);
+PETSC_EXTERN PetscErrorCode PetscMatlabEnginePut(PetscMatlabEngine,PetscObject);
+PETSC_EXTERN PetscErrorCode PetscMatlabEngineGet(PetscMatlabEngine,PetscObject);
+PETSC_EXTERN PetscErrorCode PetscMatlabEnginePutArray(PetscMatlabEngine,int,int,const PetscScalar*,const char[]);
+PETSC_EXTERN PetscErrorCode PetscMatlabEngineGetArray(PetscMatlabEngine,int,int,PetscScalar*,const char[]);
 
-extern PetscMatlabEngine  PETSC_MATLAB_ENGINE_(MPI_Comm);
+PETSC_EXTERN PetscMatlabEngine  PETSC_MATLAB_ENGINE_(MPI_Comm);
 
 /*MC
   PETSC_MATLAB_ENGINE_WORLD - same as PETSC_MATLAB_ENGINE_(PETSC_COMM_WORLD)
@@ -46,5 +45,4 @@ M*/
 M*/
 #define PETSC_MATLAB_ENGINE_SELF  PETSC_MATLAB_ENGINE_(PETSC_COMM_SELF)
 
-PETSC_EXTERN_CXX_END
 #endif

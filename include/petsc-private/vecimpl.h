@@ -9,7 +9,6 @@
 #define __VECIMPL_H
 
 #include <petscvec.h>
-PETSC_EXTERN_CXX_BEGIN
 
 /*S  PetscThreadsLayout - defines layout of vectors and matrices across threads (which rows are assigned to which threads)
 
@@ -47,27 +46,27 @@ struct _n_PetscLayout{
   PetscInt               *trstarts;   /* local start for each thread */
 };
 
-extern PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
-extern PetscErrorCode PetscLayoutSetUp(PetscLayout);
-extern PetscErrorCode PetscLayoutDestroy(PetscLayout*);
-extern PetscErrorCode PetscLayoutDuplicate(PetscLayout,PetscLayout*);
-extern PetscErrorCode PetscLayoutReference(PetscLayout,PetscLayout*);
-extern PetscErrorCode  PetscLayoutSetLocalSize(PetscLayout,PetscInt);
-extern PetscErrorCode  PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
-extern PetscErrorCode  PetscLayoutSetSize(PetscLayout,PetscInt);
-extern PetscErrorCode  PetscLayoutGetSize(PetscLayout,PetscInt *);
-extern PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout,PetscInt);
-extern PetscErrorCode  PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
-extern PetscErrorCode  PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
-extern PetscErrorCode  PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
-extern PetscErrorCode  PetscLayoutSetISLocalToGlobalMapping(PetscLayout,ISLocalToGlobalMapping);
-extern PetscErrorCode  PetscLayoutSetISLocalToGlobalMappingBlock(PetscLayout,ISLocalToGlobalMapping);
+PETSC_EXTERN PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetUp(PetscLayout);
+PETSC_EXTERN PetscErrorCode PetscLayoutDestroy(PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutDuplicate(PetscLayout,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutReference(PetscLayout,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetLocalSize(PetscLayout,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetSize(PetscLayout,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetSize(PetscLayout,PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetBlockSize(PetscLayout,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout,ISLocalToGlobalMapping);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMappingBlock(PetscLayout,ISLocalToGlobalMapping);
 
-extern PetscErrorCode PetscThreadsLayoutCreate(PetscThreadsLayout*);
-extern PetscErrorCode PetscThreadsLayoutDestroy(PetscThreadsLayout*);
-extern PetscErrorCode PetscThreadsLayoutSetNThreads(PetscThreadsLayout,PetscInt);
-extern PetscErrorCode PetscThreadsLayoutSetThreadAffinities(PetscThreadsLayout, PetscInt[]);
-extern PetscErrorCode PetscThreadsLayoutSetUp(PetscThreadsLayout);
+PETSC_EXTERN PetscErrorCode PetscThreadsLayoutCreate(PetscThreadsLayout*);
+PETSC_EXTERN PetscErrorCode PetscThreadsLayoutDestroy(PetscThreadsLayout*);
+PETSC_EXTERN PetscErrorCode PetscThreadsLayoutSetNThreads(PetscThreadsLayout,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscThreadsLayoutSetThreadAffinities(PetscThreadsLayout, PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscThreadsLayoutSetUp(PetscThreadsLayout);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLayoutFindOwner"
@@ -117,8 +116,8 @@ struct _n_PetscUniformSection {
 
 #if 0
 /* Should I protect these for C++? */
-extern PetscErrorCode PetscSectionGetDof(PetscUniformSection, PetscInt, PetscInt*);
-extern PetscErrorCode PetscSectionGetOffset(PetscUniformSection, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionGetDof(PetscUniformSection, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionGetOffset(PetscUniformSection, PetscInt, PetscInt*);
 #endif
 
 /*S
@@ -145,49 +144,49 @@ struct _n_PetscSection {
   PetscSection                 *field;        /* A section describing the layout and constraints for each field */
 };
 
-extern PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
-extern PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);
-extern PetscErrorCode PetscSectionSetNumFields(PetscSection, PetscInt);
-extern PetscErrorCode PetscSectionGetFieldName(PetscSection, PetscInt, const char *[]);
-extern PetscErrorCode PetscSectionSetFieldName(PetscSection, PetscInt, const char []);
-extern PetscErrorCode PetscSectionGetFieldComponents(PetscSection, PetscInt, PetscInt *);
-extern PetscErrorCode PetscSectionSetFieldComponents(PetscSection, PetscInt, PetscInt);
-extern PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, PetscInt *);
-extern PetscErrorCode PetscSectionSetChart(PetscSection, PetscInt, PetscInt);
-extern PetscErrorCode PetscSectionGetDof(PetscSection, PetscInt, PetscInt*);
-extern PetscErrorCode PetscSectionSetDof(PetscSection, PetscInt, PetscInt);
-extern PetscErrorCode PetscSectionAddDof(PetscSection, PetscInt, PetscInt);
-extern PetscErrorCode PetscSectionGetFieldDof(PetscSection, PetscInt, PetscInt, PetscInt*);
-extern PetscErrorCode PetscSectionSetFieldDof(PetscSection, PetscInt, PetscInt, PetscInt);
-extern PetscErrorCode PetscSectionGetConstraintDof(PetscSection, PetscInt, PetscInt*);
-extern PetscErrorCode PetscSectionSetConstraintDof(PetscSection, PetscInt, PetscInt);
-extern PetscErrorCode PetscSectionAddConstraintDof(PetscSection, PetscInt, PetscInt);
-extern PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt*);
-extern PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt);
-extern PetscErrorCode PetscSectionGetConstraintIndices(PetscSection, PetscInt, PetscInt**);
-extern PetscErrorCode PetscSectionSetConstraintIndices(PetscSection, PetscInt, PetscInt*);
-extern PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, PetscInt**);
-extern PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, PetscInt*);
-extern PetscErrorCode PetscSectionSetUp(PetscSection);
-extern PetscErrorCode PetscSectionGetStorageSize(PetscSection, PetscInt*);
-extern PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection, PetscInt*);
-extern PetscErrorCode PetscSectionGetOffset(PetscSection, PetscInt, PetscInt*);
-extern PetscErrorCode PetscSectionGetFieldOffset(PetscSection, PetscInt, PetscInt, PetscInt*);
-extern PetscErrorCode PetscSectionGetOffsetRange(PetscSection, PetscInt *, PetscInt *);
-extern PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
-extern PetscErrorCode PetscSectionVecView(PetscSection, Vec, PetscViewer);
-extern PetscErrorCode PetscSectionDestroy(PetscSection*);
-extern PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscSection *);
-extern PetscErrorCode PetscSectionGetPointLayout(MPI_Comm, PetscSection, PetscLayout *);
-extern PetscErrorCode PetscSectionGetValueLayout(MPI_Comm, PetscSection, PetscLayout *);
+PETSC_EXTERN PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
+PETSC_EXTERN PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSectionSetNumFields(PetscSection, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldName(PetscSection, PetscInt, const char *[]);
+PETSC_EXTERN PetscErrorCode PetscSectionSetFieldName(PetscSection, PetscInt, const char []);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldComponents(PetscSection, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSectionSetFieldComponents(PetscSection, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSectionSetChart(PetscSection, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetDof(PetscSection, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionSetDof(PetscSection, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionAddDof(PetscSection, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldDof(PetscSection, PetscInt, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionSetFieldDof(PetscSection, PetscInt, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetConstraintDof(PetscSection, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionSetConstraintDof(PetscSection, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionAddConstraintDof(PetscSection, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionGetConstraintIndices(PetscSection, PetscInt, PetscInt**);
+PETSC_EXTERN PetscErrorCode PetscSectionSetConstraintIndices(PetscSection, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, PetscInt**);
+PETSC_EXTERN PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionSetUp(PetscSection);
+PETSC_EXTERN PetscErrorCode PetscSectionGetStorageSize(PetscSection, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionGetOffset(PetscSection, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldOffset(PetscSection, PetscInt, PetscInt, PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionGetOffsetRange(PetscSection, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscSectionVecView(PetscSection, Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscSectionDestroy(PetscSection*);
+PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscSection *);
+PETSC_EXTERN PetscErrorCode PetscSectionGetPointLayout(MPI_Comm, PetscSection, PetscLayout *);
+PETSC_EXTERN PetscErrorCode PetscSectionGetValueLayout(MPI_Comm, PetscSection, PetscLayout *);
 
 /* Sieve support */
-extern PetscErrorCode PetscSFConvertPartition(PetscSF, PetscSection, IS, ISLocalToGlobalMapping *, PetscSF *);
-extern PetscErrorCode PetscSFDistributeSection(PetscSF, PetscSection, PetscInt **, PetscSection);
-extern PetscErrorCode PetscSFCreateSectionSF(PetscSF, PetscSection, PetscInt [], PetscSection, PetscSF *);
+PETSC_EXTERN PetscErrorCode PetscSFConvertPartition(PetscSF, PetscSection, IS, ISLocalToGlobalMapping *, PetscSF *);
+PETSC_EXTERN PetscErrorCode PetscSFDistributeSection(PetscSF, PetscSection, PetscInt **, PetscSection);
+PETSC_EXTERN PetscErrorCode PetscSFCreateSectionSF(PetscSF, PetscSection, PetscInt [], PetscSection, PetscSF *);
 
-extern PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);
-extern PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, PetscScalar [], InsertMode);
+PETSC_EXTERN PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);
+PETSC_EXTERN PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, PetscScalar [], InsertMode);
 
 /* ----------------------------------------------------------------------------*/
 
@@ -320,17 +319,17 @@ struct _p_Vec {
 #endif
 };
 
-extern PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot;
-extern PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY;
-extern PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
-extern PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
-extern PetscLogEvent VEC_ReduceBegin,VEC_ReduceEnd;
-extern PetscLogEvent VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier, VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_Ops;
-extern PetscLogEvent VEC_CUSPCopyToGPU, VEC_CUSPCopyFromGPU;
-extern PetscLogEvent VEC_CUSPCopyToGPUSome, VEC_CUSPCopyFromGPUSome;
+PETSC_EXTERN PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot;
+PETSC_EXTERN PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY;
+PETSC_EXTERN PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
+PETSC_EXTERN PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
+PETSC_EXTERN PetscLogEvent VEC_ReduceBegin,VEC_ReduceEnd;
+PETSC_EXTERN PetscLogEvent VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier, VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_Ops;
+PETSC_EXTERN PetscLogEvent VEC_CUSPCopyToGPU, VEC_CUSPCopyFromGPU;
+PETSC_EXTERN PetscLogEvent VEC_CUSPCopyToGPUSome, VEC_CUSPCopyFromGPUSome;
 
 #if defined(PETSC_HAVE_CUSP)
-extern PetscErrorCode VecCUSPCopyFromGPU(Vec v);
+PETSC_EXTERN PetscErrorCode VecCUSPCopyFromGPU(Vec v);
 #endif
 
 #undef __FUNCT__
@@ -418,12 +417,12 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
   PetscScalar *unplacedarray;                           /* if one called VecPlaceArray(), this is where it stashed the original */
 
 /* Default obtain and release vectors; can be used by any implementation */
-extern PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
-extern PetscErrorCode VecDestroyVecs_Default(PetscInt,Vec []);
-extern PetscErrorCode VecLoad_Binary(Vec, PetscViewer);
-extern PetscErrorCode VecLoad_Default(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
+PETSC_EXTERN PetscErrorCode VecDestroyVecs_Default(PetscInt,Vec []);
+PETSC_EXTERN PetscErrorCode VecLoad_Binary(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 
-extern PetscInt NormIds[7];  /* map from NormType to IDs used to cache/retreive values of norms */
+PETSC_EXTERN PetscInt  NormIds[7];  /* map from NormType to IDs used to cache/retreive values of norms */
 
 /* --------------------------------------------------------------------*/
 /*                                                                     */
@@ -522,14 +521,14 @@ struct _p_VecScatter {
   void           *spptr;
 };
 
-extern PetscErrorCode VecStashCreate_Private(MPI_Comm,PetscInt,VecStash*);
-extern PetscErrorCode VecStashDestroy_Private(VecStash*);
-extern PetscErrorCode VecStashExpand_Private(VecStash*,PetscInt);
-extern PetscErrorCode VecStashScatterEnd_Private(VecStash*);
-extern PetscErrorCode VecStashSetInitialSize_Private(VecStash*,PetscInt);
-extern PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
-extern PetscErrorCode VecStashScatterBegin_Private(VecStash*,PetscInt*);
-extern PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,PetscInt**,PetscScalar**,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecStashCreate_Private(MPI_Comm,PetscInt,VecStash*);
+PETSC_EXTERN PetscErrorCode VecStashDestroy_Private(VecStash*);
+PETSC_EXTERN PetscErrorCode VecStashExpand_Private(VecStash*,PetscInt);
+PETSC_EXTERN PetscErrorCode VecStashScatterEnd_Private(VecStash*);
+PETSC_EXTERN PetscErrorCode VecStashSetInitialSize_Private(VecStash*,PetscInt);
+PETSC_EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecStashScatterBegin_Private(VecStash*,PetscInt*);
+PETSC_EXTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,PetscInt**,PetscScalar**,PetscInt*);
 
 /*
   VecStashValue_Private - inserts a single value into the stash.
@@ -575,18 +574,17 @@ PETSC_STATIC_INLINE PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash
   return 0;
 }
 
-extern PetscErrorCode VecStrideGather_Default(Vec,PetscInt,Vec,InsertMode);
-extern PetscErrorCode VecStrideScatter_Default(Vec,PetscInt,Vec,InsertMode);
-extern PetscErrorCode VecReciprocal_Default(Vec);
+PETSC_EXTERN PetscErrorCode VecStrideGather_Default(Vec,PetscInt,Vec,InsertMode);
+PETSC_EXTERN PetscErrorCode VecStrideScatter_Default(Vec,PetscInt,Vec,InsertMode);
+PETSC_EXTERN PetscErrorCode VecReciprocal_Default(Vec);
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 EXTERN_C_BEGIN
-extern PetscErrorCode VecMatlabEnginePut_Default(PetscObject,void*);
-extern PetscErrorCode VecMatlabEngineGet_Default(PetscObject,void*);
+PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject,void*);
+PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject,void*);
 EXTERN_C_END
 #endif
 
-PETSC_EXTERN_CXX_END
 
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__

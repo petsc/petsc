@@ -2,7 +2,7 @@
 #define RUN_MAP_H
 
 #if defined(__cplusplus)
-extern "C" {
+PETSC_EXTERN "C" {
 #endif
 
     static int desc_size = 0;

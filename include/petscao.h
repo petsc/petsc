@@ -7,7 +7,6 @@
 #define __PETSCAO_H
 #include "petscis.h"
 #include "petscmat.h"
-PETSC_EXTERN_CXX_BEGIN
 
 /*S
      AO - Abstract PETSc object that manages mapping between different global numbering
@@ -35,33 +34,33 @@ J*/
 #define AOMEMORYSCALABLE      "memoryscalable"
 
 /* Logging support */
-extern PetscClassId  AO_CLASSID;
+PETSC_EXTERN PetscClassId AO_CLASSID;
 
-extern PetscErrorCode  AOInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode AOInitializePackage(const char[]);
 
-extern PetscErrorCode  AOCreate(MPI_Comm,AO*);
-extern PetscErrorCode  AOSetIS(AO,IS,IS);
-extern PetscErrorCode  AOSetFromOptions(AO);
+PETSC_EXTERN PetscErrorCode AOCreate(MPI_Comm,AO*);
+PETSC_EXTERN PetscErrorCode AOSetIS(AO,IS,IS);
+PETSC_EXTERN PetscErrorCode AOSetFromOptions(AO);
 
-extern PetscErrorCode  AOCreateBasic(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
-extern PetscErrorCode  AOCreateBasicIS(IS,IS,AO*);
-extern PetscErrorCode  AOCreateMemoryScalable(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
-extern PetscErrorCode  AOCreateMemoryScalableIS(IS,IS,AO*);
-extern PetscErrorCode  AOCreateMapping(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
-extern PetscErrorCode  AOCreateMappingIS(IS,IS,AO*);
+PETSC_EXTERN PetscErrorCode AOCreateBasic(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
+PETSC_EXTERN PetscErrorCode AOCreateBasicIS(IS,IS,AO*);
+PETSC_EXTERN PetscErrorCode AOCreateMemoryScalable(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
+PETSC_EXTERN PetscErrorCode AOCreateMemoryScalableIS(IS,IS,AO*);
+PETSC_EXTERN PetscErrorCode AOCreateMapping(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
+PETSC_EXTERN PetscErrorCode AOCreateMappingIS(IS,IS,AO*);
 
-extern PetscErrorCode  AOView(AO,PetscViewer);
-extern PetscErrorCode  AODestroy(AO*);
+PETSC_EXTERN PetscErrorCode AOView(AO,PetscViewer);
+PETSC_EXTERN PetscErrorCode AODestroy(AO*);
 
 /* Dynamic creation and loading functions */
-extern PetscFList AOList;
-extern PetscBool  AORegisterAllCalled;
-extern PetscErrorCode  AOSetType(AO, const AOType);
-extern PetscErrorCode  AOGetType(AO, const AOType *);
+PETSC_EXTERN PetscFList AOList;
+PETSC_EXTERN PetscBool AORegisterAllCalled;
+PETSC_EXTERN PetscErrorCode AOSetType(AO, const AOType);
+PETSC_EXTERN PetscErrorCode AOGetType(AO, const AOType *);
 
-extern PetscErrorCode  AORegister(const char [], const char [], const char [], PetscErrorCode (*)(AO));
-extern PetscErrorCode  AORegisterAll(const char []);
-extern PetscErrorCode  AORegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode AORegister(const char [], const char [], const char [], PetscErrorCode (*)(AO));
+PETSC_EXTERN PetscErrorCode AORegisterAll(const char []);
+PETSC_EXTERN PetscErrorCode AORegisterDestroy(void);
 
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define AORegisterDynamic(a,b,c,d) AORegister(a,b,c,0)
@@ -69,19 +68,18 @@ extern PetscErrorCode  AORegisterDestroy(void);
 #define AORegisterDynamic(a,b,c,d) AORegister(a,b,c,d)
 #endif
 
-extern PetscErrorCode  AOPetscToApplication(AO,PetscInt,PetscInt[]);
-extern PetscErrorCode  AOApplicationToPetsc(AO,PetscInt,PetscInt[]);
-extern PetscErrorCode  AOPetscToApplicationIS(AO,IS);
-extern PetscErrorCode  AOApplicationToPetscIS(AO,IS);
+PETSC_EXTERN PetscErrorCode AOPetscToApplication(AO,PetscInt,PetscInt[]);
+PETSC_EXTERN PetscErrorCode AOApplicationToPetsc(AO,PetscInt,PetscInt[]);
+PETSC_EXTERN PetscErrorCode AOPetscToApplicationIS(AO,IS);
+PETSC_EXTERN PetscErrorCode AOApplicationToPetscIS(AO,IS);
 
-extern PetscErrorCode  AOPetscToApplicationPermuteInt(AO, PetscInt, PetscInt[]);
-extern PetscErrorCode  AOApplicationToPetscPermuteInt(AO, PetscInt, PetscInt[]);
-extern PetscErrorCode  AOPetscToApplicationPermuteReal(AO, PetscInt, PetscReal[]);
-extern PetscErrorCode  AOApplicationToPetscPermuteReal(AO, PetscInt, PetscReal[]);
+PETSC_EXTERN PetscErrorCode AOPetscToApplicationPermuteInt(AO, PetscInt, PetscInt[]);
+PETSC_EXTERN PetscErrorCode AOApplicationToPetscPermuteInt(AO, PetscInt, PetscInt[]);
+PETSC_EXTERN PetscErrorCode AOPetscToApplicationPermuteReal(AO, PetscInt, PetscReal[]);
+PETSC_EXTERN PetscErrorCode AOApplicationToPetscPermuteReal(AO, PetscInt, PetscReal[]);
 
-extern PetscErrorCode  AOMappingHasApplicationIndex(AO, PetscInt, PetscBool  *);
-extern PetscErrorCode  AOMappingHasPetscIndex(AO, PetscInt, PetscBool  *);
+PETSC_EXTERN PetscErrorCode AOMappingHasApplicationIndex(AO, PetscInt, PetscBool  *);
+PETSC_EXTERN PetscErrorCode AOMappingHasPetscIndex(AO, PetscInt, PetscBool  *);
 
 /* ----------------------------------------------------*/
-PETSC_EXTERN_CXX_END
 #endif
