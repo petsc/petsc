@@ -366,9 +366,9 @@ PETSC_EXTERN PetscErrorCode SNESDMComputeFunction(SNES,Vec,Vec,void *);
 PETSC_EXTERN PetscErrorCode SNESDMComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 /* --------- Solving systems of nonlinear equations --------------- */
-typedef PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*);
-typedef PetscErrorCode (*SNESJacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-typedef PetscErrorCode (*SNESGSFunction)(SNES,Vec,Vec,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESJacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESGSFunction)(SNES,Vec,Vec,void*);
 PETSC_EXTERN PetscErrorCode SNESSetFunction(SNES,Vec,SNESFunction,void*);
 PETSC_EXTERN PetscErrorCode SNESGetFunction(SNES,Vec*,SNESFunction*,void**);
 PETSC_EXTERN PetscErrorCode SNESComputeFunction(SNES,Vec,Vec);
@@ -521,12 +521,12 @@ PETSC_EXTERN PetscLogEvent SNESLineSearch_Apply;
 #define SNES_LINESEARCH_ORDER_QUADRATIC 2
 #define SNES_LINESEARCH_ORDER_CUBIC     3
 
-typedef PetscErrorCode (*SNESLineSearchPreCheckFunc)(SNESLineSearch,Vec,Vec,PetscBool*,void*);
-typedef PetscErrorCode (*SNESLineSearchVIProjectFunc)(SNES,Vec);
-typedef PetscErrorCode (*SNESLineSearchVINormFunc)(SNES,Vec,Vec,PetscReal *);
-typedef PetscErrorCode (*SNESLineSearchPostCheckFunc)(SNESLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *,void*);
-typedef PetscErrorCode (*SNESLineSearchApplyFunc)(SNESLineSearch);
-typedef PetscErrorCode (*SNESLineSearchUserFunc)(SNESLineSearch, void *);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESLineSearchPreCheckFunc)(SNESLineSearch,Vec,Vec,PetscBool*,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESLineSearchVIProjectFunc)(SNES,Vec);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESLineSearchVINormFunc)(SNES,Vec,Vec,PetscReal *);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESLineSearchPostCheckFunc)(SNESLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESLineSearchApplyFunc)(SNESLineSearch);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESLineSearchUserFunc)(SNESLineSearch, void *);
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate(MPI_Comm, SNESLineSearch*);
 PETSC_EXTERN PetscErrorCode SNESLineSearchReset(SNESLineSearch);

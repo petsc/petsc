@@ -64,8 +64,10 @@
 
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 #define PETSC_EXTERN extern "C" PETSC_VISIBILITY_PUBLIC
+#define PETSC_EXTERN_TYPEDEF extern "C"
 #else
 #define PETSC_EXTERN extern PETSC_VISIBILITY_PUBLIC
+#define PETSC_EXTERN_TYPEDEF
 #endif
 /* ========================================================================== */
 /* 
@@ -1293,9 +1295,9 @@ PETSC_EXTERN PetscErrorCode PetscPythonMonitorSet(PetscObject,const char[]);
      These are so that in extern C code we can caste function pointers to non-extern C
    function pointers. Since the regular C++ code expects its function pointers to be C++
 */
-typedef void (**PetscVoidStarFunction)(void);
-typedef void (*PetscVoidFunction)(void); 
-typedef PetscErrorCode (*PetscErrorCodeFunction)(void); 
+PETSC_EXTERN_TYPEDEF typedef void (**PetscVoidStarFunction)(void);
+PETSC_EXTERN_TYPEDEF typedef void (*PetscVoidFunction)(void); 
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscErrorCodeFunction)(void); 
 
 /*
    PetscTryMethod - Queries an object for a method, if it exists then calls it.

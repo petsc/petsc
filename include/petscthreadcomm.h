@@ -4,7 +4,7 @@
 #include "petscsys.h"
 
 /* Function pointer cast for the kernel function */
-typedef PetscErrorCode (*PetscThreadKernel)(PetscInt,...);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscThreadKernel)(PetscInt,...);
 
 /*
   PetscThreadComm - Abstract object that manages all thread communication models

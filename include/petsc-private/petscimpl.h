@@ -100,8 +100,8 @@ typedef struct _p_PetscObject {
 
 #define  PETSCFREEDHEADER -1
 
-typedef PetscErrorCode (*PetscObjectFunction)(PetscObject*); /* force cast in next macro to NEVER use extern "C" style */
-typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer); 
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectFunction)(PetscObject*); /* force cast in next macro to NEVER use extern "C" style */
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer); 
 
 /*@C
     PetscHeaderCreate - Creates a PETSc object

@@ -195,7 +195,7 @@ PETSC_EXTERN PetscErrorCode SNESDestroy_VI(SNES);
 PETSC_EXTERN PetscErrorCode SNESView_VI(SNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESSetFromOptions_VI(SNES);
 PETSC_EXTERN PetscErrorCode SNESSetUp_VI(SNES);
-typedef PetscErrorCode (*SNESVIComputeVariableBoundsFunction)(SNES,Vec,Vec);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESVIComputeVariableBoundsFunction)(SNES,Vec,Vec);
 EXTERN_C_BEGIN
 PETSC_EXTERN PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES,SNESVIComputeVariableBoundsFunction);
 PETSC_EXTERN PetscErrorCode SNESVISetVariableBounds_VI(SNES,Vec,Vec);

@@ -173,8 +173,8 @@ PETSC_EXTERN PetscErrorCode DMMeshAssembleVector(Vec, DM, SectionReal, PetscInt,
 PETSC_EXTERN PetscErrorCode DMMeshAssembleMatrix(Mat, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
 PETSC_EXTERN PetscErrorCode DMMeshSetupSection(DM, SectionReal);
 
-typedef PetscErrorCode (*DMMeshLocalFunction1)(DM, Vec, Vec, void*);
-typedef PetscErrorCode (*DMMeshLocalJacobian1)(DM, Vec, Mat, void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMMeshLocalFunction1)(DM, Vec, Vec, void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMMeshLocalJacobian1)(DM, Vec, Mat, void*);
 
 PETSC_EXTERN PetscErrorCode DMMeshCreateGlobalRealVector(DM, SectionReal, Vec *);
 PETSC_EXTERN PetscErrorCode DMMeshGetGlobalScatter(DM,VecScatter *);

@@ -127,14 +127,14 @@
 #  define LAPACKgetrf_ zgetrf
 
 #ifdef PETSC_COMPLEX_DOT_RESULT_ARGUMENT
-PETSC_EXTERN void  zdotc(PetscScalar *,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+PETSC_EXTERN_C void  zdotc(PetscScalar *,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
 PETSC_STATIC_INLINE PetscScalar BLASdot_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy) 
 {
   PetscScalar tmpz;
   zdotc(&tmpz,n,x,sx,y,sy);
   return tmpz;
 }
-PETSC_EXTERN void  zdotu(PetscScalar *,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
+PETSC_EXTERN_C void  zdotu(PetscScalar *,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
 PETSC_STATIC_INLINE PetscScalar BLASdotu_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy) 
 {
   PetscScalar tmpz;
