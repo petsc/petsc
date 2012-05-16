@@ -44,8 +44,9 @@ use compatible domain decomposition relative to the 3D DMDAs.
 */
 
 #include <petscts.h>
-#include <petscdmmg.h>
+#include <petscdmda.h>
 #include <petscdmcomposite.h>
+#include <stddef.h>             /* offsetof() */
 #include <ctype.h>              /* toupper() */
 
 #if defined __SSE2__
@@ -720,7 +721,7 @@ static PetscErrorCode THIInitial(THI thi,DM pack,Vec X)
       for (k=zs; k<zs+zm; k++) {
         const PetscScalar zm1 = zm-1,
           drivingx = thi->rhog * (prm[i+1][j].b+prm[i+1][j].h - prm[i-1][j].b-prm[i-1][j].h) / (2*hx),
-          drivingy = thi->rhog * (prm[i][j+1].b+prm[i][j+1].h - prm[i][j-1].b-prm[i][j-1].h) / (2*hx);
+          drivingy = thi->rhog * (prm[i][j+1].b+prm[i][j+1].h - prm[i][j-1].b-prm[i][j-1].h) / (2*hy);
         x[i][j][k].u = 0. * drivingx * prm[i][j].h*(PetscScalar)k/zm1;
         x[i][j][k].v = 0. * drivingy * prm[i][j].h*(PetscScalar)k/zm1;
       }
@@ -735,17 +736,6 @@ static PetscErrorCode THIInitial(THI thi,DM pack,Vec X)
   ierr = DMRestoreLocalVector(da2,&X2);CHKERRQ(ierr);
 
   ierr = DMCompositeRestoreAccess(pack,X,&X3g,&X2g);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "THIInitialDMMG"
-static PetscErrorCode THIInitialDMMG(DMMG dmmg,Vec X)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = THIInitial((THI)dmmg->user,dmmg->dm,X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -885,7 +875,6 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
 static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,const PrmNode **prm,const PrmNode **prmdot,PrmNode **f,THI thi)
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k;
-  PetscReal      hx,hy;
 
   PetscFunctionBegin;
   xs = info->zs;
@@ -893,8 +882,6 @@ static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,co
   xm = info->zm;
   ym = info->ym;
   zm = info->xm;
-  hx = thi->Lx / info->mz;
-  hy = thi->Ly / info->my;
 
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
@@ -1069,21 +1056,23 @@ static PetscErrorCode THISurfaceStatistics(DM pack,Vec X,PetscReal *min,PetscRea
 
 #undef __FUNCT__  
 #define __FUNCT__ "THISolveStatistics"
-static PetscErrorCode THISolveStatistics(THI thi,DMMG *dmmg,PetscInt coarsened,const char name[])
+static PetscErrorCode THISolveStatistics(THI thi,TS ts,PetscInt coarsened,const char name[])
 {
   MPI_Comm       comm    = ((PetscObject)thi)->comm;
-  PetscInt       nlevels = DMMGGetLevels(dmmg),level = nlevels-1-coarsened;
-  SNES           snes    = dmmg[level]->snes;
-  DM             pack    = dmmg[level]->dm;
-  Vec            X       = dmmg[level]->x,X3,X2;
+  DM             pack;
+  Vec            X,X3,X2;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = TSGetDM(ts,&pack);CHKERRQ(ierr);
+  ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"Solution statistics after solve: %s\n",name);CHKERRQ(ierr);
   {
     PetscInt its,lits;
     SNESConvergedReason reason;
+    SNES snes;
+    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
@@ -1117,7 +1106,7 @@ static PetscErrorCode THISolveStatistics(THI thi,DMMG *dmmg,PetscInt coarsened,c
     ierr = PetscPrintf(comm,"|X|_2 %g   u in [%g, %g]   v in [%g, %g]   c in [%g, %g] \n",nrm2,min[0],max[0],min[1],max[1],min[2],max[2]);CHKERRQ(ierr);
     {
       PetscReal umin,umax,umean;
-      ierr = THISurfaceStatistics(dmmg[level]->dm,X,&umin,&umax,&umean);CHKERRQ(ierr);
+      ierr = THISurfaceStatistics(pack,X,&umin,&umax,&umean);CHKERRQ(ierr);
       umin  *= thi->units->year / thi->units->meter;
       umax  *= thi->units->year / thi->units->meter;
       umean *= thi->units->year / thi->units->meter;
@@ -1291,7 +1280,6 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,c
 {
   PetscErrorCode ierr;
   PetscInt       xs,ys,xm,ym,zm,i,j,k;
-  PetscReal      hx,hy;
 
   PetscFunctionBegin;
   xs = info->zs;
@@ -1299,8 +1287,6 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,c
   xm = info->zm;
   ym = info->ym;
   zm = info->xm;
-  hx = thi->Lx / info->mz;
-  hy = thi->Ly / info->my;
 
   if (zm > 1024) SETERRQ(((PetscObject)info->da)->comm,PETSC_ERR_SUP,"Need to allocate more space");
   for (i=xs; i<xs+xm; i++) {
@@ -1374,10 +1360,10 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
-  ierr = DMCompositeGetLocalVectors(pack,0,&Xdot2);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(pack,NULL,&Xdot2);CHKERRQ(ierr);
   ierr = DMCompositeScatter(pack,X,X3,X2);CHKERRQ(ierr);
   ierr = THIFixGhosts(thi,da3,da2,X3,X2);CHKERRQ(ierr);
-  ierr = DMCompositeScatter(pack,Xdot,0,Xdot2);CHKERRQ(ierr);
+  ierr = DMCompositeScatter(pack,Xdot,NULL,Xdot2);CHKERRQ(ierr);
 
   ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 
@@ -1615,38 +1601,12 @@ static PetscErrorCode THICreateDM3d(THI thi,DM *dm3d)
   PetscFunctionReturn(0);
 }
 
-#if 0
-#undef __FUNCT__  
-#define __FUNCT__ "SNESSolve_THI_DMMG"
-static PetscErrorCode SNESSolve_THI_DMMG(SNES snes)
-{
-  PetscErrorCode ierr,(*realsolve)(SNES);
-  DMMG *dmmg;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)snes,"DMMG",(PetscObject*)&dmmg);CHKERRQ(ierr);
-  if (!dmmg) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONG,"No DMMG attached to this SNES");
-  if (snes != DMMGGetSNES(dmmg)) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_INCOMP,"DMMG does not have attached SNES");
-  if (!DMMGGetx(dmmg)) {ierr = VecDuplicate(X,&dmmg->x);CHKERRQ(ierr);}
-  ierr = VecCopy(X,DMMGGetx(dmmg));CHKERRQ(ierr);
-
-  ierr = PetscObjectQueryFunction((PetscObject)dmmg,"SNESSolve_Real",(void(**)(void))&realsolve);CHKERRQ(ierr);
-  if (!realsolve) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_INCOMP,"No cache solve function pointer");
-  snes->ops->solve = realsolve;
-
-  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
-  snes->ops->solve = &SNESSolve_THI_DMMG;
-  PetscFunctionReturn(0);
-}
-#endif
-
 #undef __FUNCT__  
 #define __FUNCT__ "main"
 int main(int argc,char *argv[])
 {
   MPI_Comm       comm;
   DM             pack,da3,da2;
-  DMMG           *dmmg;
   TS             ts;
   THI            thi;
   Vec            X;
@@ -1683,10 +1643,8 @@ int main(int argc,char *argv[])
   ierr = DMDestroy(&da2);CHKERRQ(ierr);
   ierr = DMSetUp(pack);CHKERRQ(ierr);
   ierr = DMCreateMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(B,"thi_");CHKERRQ(ierr);
-
-  ierr = DMMGCreate(comm,thi->nlevels,thi,&dmmg);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg,pack);CHKERRQ(ierr);
 
   for (i=0; i<thi->nlevels; i++) {
     PetscReal Lx = thi->Lx / thi->units->meter,Ly = thi->Ly / thi->units->meter,Lz = thi->Lz / thi->units->meter;
@@ -1695,19 +1653,6 @@ int main(int argc,char *argv[])
     ierr = DMDAGetInfo(da3,0, &Mz,&My,&Mx, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
     ierr = PetscPrintf(((PetscObject)thi)->comm,"Level %d domain size (m) %8.2g x %8.2g x %8.2g, num elements %3d x %3d x %3d (%8d), size (m) %g x %g x %g\n",i,Lx,Ly,Lz,Mx,My,Mz,Mx*My*Mz,Lx/Mx,Ly/My,1000./(Mz-1));CHKERRQ(ierr);
   }
-  ierr = DMMGSetInitialGuess(dmmg,THIInitialDMMG);CHKERRQ(ierr);
-
-  {
-    /* Use the user-defined matrix type on all but the coarse level */
-    ierr = DMMGSetMatType(dmmg,thi->mattype);CHKERRQ(ierr);
-    /* PCREDUNDANT only works with AIJ, and so do the third-party direct solvers.  So when running in parallel, we can't
-    * use the faster (S)BAIJ formats on the coarse level. */
-    ierr = PetscFree(dmmg[0]->mtype);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(MATAIJ,&dmmg[0]->mtype);CHKERRQ(ierr);
-  }
-  //ierr = DMMGSetSNES(dmmg,THIFunction,PETSC_NULL);CHKERRQ(ierr);
-  //ierr = MatSetOptionsPrefix(DMMGGetB(dmmg),"thi_");CHKERRQ(ierr);
-  //ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(pack,&X);CHKERRQ(ierr);
   ierr = THIInitial(thi,pack,X);CHKERRQ(ierr);
@@ -1728,7 +1673,7 @@ int main(int argc,char *argv[])
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Steps %D  final time %G\n",steps,ftime);CHKERRQ(ierr);
 
-  if (0) {ierr = THISolveStatistics(thi,dmmg,0,"Full");CHKERRQ(ierr);}
+  if (0) {ierr = THISolveStatistics(thi,ts,0,"Full");CHKERRQ(ierr);}
 
   {
     PetscBool  flg;
@@ -1739,7 +1684,8 @@ int main(int argc,char *argv[])
     }
   }
 
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = DMDestroy(&pack);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = THIDestroy(&thi);CHKERRQ(ierr);
