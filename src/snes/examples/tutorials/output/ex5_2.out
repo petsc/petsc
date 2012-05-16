@@ -101,57 +101,6 @@
             1 KSP Residual norm 0.055766 
           3 KSP Residual norm < 1.e-11
         6 SNES Function norm 1.41669e-09 
-      SNES Object:       1 MPI processes
-        type: ls
-        maximum iterations=50, maximum function evaluations=10000
-        tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-        total number of linear solver iterations=18
-        total number of function evaluations=7
-        KSP Object:         1 MPI processes
-          type: gmres
-            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-            GMRES: happy breakdown tolerance 1e-30
-          maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-          left preconditioning
-          using PRECONDITIONED norm type for convergence test
-        PC Object:         1 MPI processes
-          type: mg
-            MG: type is FULL, levels=1 cycles=v
-              Using Galerkin computed coarse grid matrices
-          Coarse grid solver -- level -------------------------------
-            KSP Object:            (mg_levels_0_)             1 MPI processes
-              type: gmres
-                GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-                GMRES: happy breakdown tolerance 1e-30
-              maximum iterations=1, initial guess is zero
-              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-              left preconditioning
-              using PRECONDITIONED norm type for convergence test
-            PC Object:            (mg_levels_0_)             1 MPI processes
-              type: sor
-                SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
-              linear system matrix = precond matrix:
-              Matrix Object:               1 MPI processes
-                type: seqaij
-                rows=16, cols=16
-                total: nonzeros=64, allocated nonzeros=64
-                total number of mallocs used during MatSetValues calls =0
-                  not using I-node routines
-          linear system matrix = precond matrix:
-          Matrix Object:           1 MPI processes
-            type: seqaij
-            rows=16, cols=16
-            total: nonzeros=64, allocated nonzeros=64
-            total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
-        SNESLineSearch Object:         1 MPI processes
-          type: bt
-            interpolation: cubic
-            alpha=1.000000e-04
-          maxstep=1.000000e+08, minlambda=1.000000e-12
-          tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
-          maximum iterations=40
       0 SNES Function norm 0.937398 
           Residual norms for mg_levels_1_ solve.
           0 KSP Residual norm 0.268244 
@@ -226,87 +175,6 @@
           1 KSP Residual norm 0.00725384 
         2 KSP Residual norm 1.978e-10 
       3 SNES Function norm 5.918e-10 
-    SNES Object:     1 MPI processes
-      type: ls
-      maximum iterations=50, maximum function evaluations=10000
-      tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-      total number of linear solver iterations=7
-      total number of function evaluations=4
-      KSP Object:       1 MPI processes
-        type: gmres
-          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          GMRES: happy breakdown tolerance 1e-30
-        maximum iterations=10000, initial guess is zero
-        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-        left preconditioning
-        using PRECONDITIONED norm type for convergence test
-      PC Object:       1 MPI processes
-        type: mg
-          MG: type is FULL, levels=2 cycles=v
-            Using Galerkin computed coarse grid matrices
-        Coarse grid solver -- level -------------------------------
-          KSP Object:          (mg_coarse_)           1 MPI processes
-            type: preonly
-            maximum iterations=1, initial guess is zero
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-            left preconditioning
-            using NONE norm type for convergence test
-          PC Object:          (mg_coarse_)           1 MPI processes
-            type: lu
-              LU: out-of-place factorization
-              tolerance for zero pivot 2.22045e-14
-              matrix ordering: nd
-              factor fill ratio given 5, needed 1.42
-                Factored matrix follows:
-                  Matrix Object:                   1 MPI processes
-                    type: seqaij
-                    rows=16, cols=16
-                    package used to perform factorization: petsc
-                    total: nonzeros=142, allocated nonzeros=142
-                    total number of mallocs used during MatSetValues calls =0
-                      using I-node routines: found 11 nodes, limit used is 5
-            linear system matrix = precond matrix:
-            Matrix Object:             1 MPI processes
-              type: seqaij
-              rows=16, cols=16
-              total: nonzeros=100, allocated nonzeros=100
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-        Down solver (pre-smoother) on level 1 -------------------------------
-          KSP Object:          (mg_levels_1_)           1 MPI processes
-            type: gmres
-              GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-              GMRES: happy breakdown tolerance 1e-30
-            maximum iterations=1
-            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-            left preconditioning
-            using nonzero initial guess
-            using PRECONDITIONED norm type for convergence test
-          PC Object:          (mg_levels_1_)           1 MPI processes
-            type: sor
-              SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
-            linear system matrix = precond matrix:
-            Matrix Object:             1 MPI processes
-              type: seqaij
-              rows=49, cols=49
-              total: nonzeros=217, allocated nonzeros=217
-              total number of mallocs used during MatSetValues calls =0
-                not using I-node routines
-        Up solver (post-smoother) same as down solver (pre-smoother)
-        linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes
-          type: seqaij
-          rows=49, cols=49
-          total: nonzeros=217, allocated nonzeros=217
-          total number of mallocs used during MatSetValues calls =0
-            not using I-node routines
-      SNESLineSearch Object:       1 MPI processes
-        type: bt
-          interpolation: cubic
-          alpha=1.000000e-04
-        maxstep=1.000000e+08, minlambda=1.000000e-12
-        tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
-        maximum iterations=40
     0 SNES Function norm 0.517003 
           Residual norms for mg_levels_1_ solve.
           0 KSP Residual norm 0.0110284 
@@ -501,108 +369,6 @@
         1 KSP Residual norm 0.00173441 
       2 KSP Residual norm < 1.e-11
     3 SNES Function norm < 1.e-11
-  SNES Object:   1 MPI processes
-    type: ls
-    maximum iterations=50, maximum function evaluations=10000
-    tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-    total number of linear solver iterations=7
-    total number of function evaluations=4
-    KSP Object:     1 MPI processes
-      type: gmres
-        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-        GMRES: happy breakdown tolerance 1e-30
-      maximum iterations=10000, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-      left preconditioning
-      using PRECONDITIONED norm type for convergence test
-    PC Object:     1 MPI processes
-      type: mg
-        MG: type is FULL, levels=3 cycles=v
-          Using Galerkin computed coarse grid matrices
-      Coarse grid solver -- level -------------------------------
-        KSP Object:        (mg_coarse_)         1 MPI processes
-          type: preonly
-          maximum iterations=1, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-          left preconditioning
-          using NONE norm type for convergence test
-        PC Object:        (mg_coarse_)         1 MPI processes
-          type: lu
-            LU: out-of-place factorization
-            tolerance for zero pivot 2.22045e-14
-            matrix ordering: nd
-            factor fill ratio given 5, needed 1.42
-              Factored matrix follows:
-                Matrix Object:                 1 MPI processes
-                  type: seqaij
-                  rows=16, cols=16
-                  package used to perform factorization: petsc
-                  total: nonzeros=142, allocated nonzeros=142
-                  total number of mallocs used during MatSetValues calls =0
-                    using I-node routines: found 11 nodes, limit used is 5
-          linear system matrix = precond matrix:
-          Matrix Object:           1 MPI processes
-            type: seqaij
-            rows=16, cols=16
-            total: nonzeros=100, allocated nonzeros=100
-            total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
-      Down solver (pre-smoother) on level 1 -------------------------------
-        KSP Object:        (mg_levels_1_)         1 MPI processes
-          type: gmres
-            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-            GMRES: happy breakdown tolerance 1e-30
-          maximum iterations=1
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-          left preconditioning
-          using nonzero initial guess
-          using PRECONDITIONED norm type for convergence test
-        PC Object:        (mg_levels_1_)         1 MPI processes
-          type: sor
-            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
-          linear system matrix = precond matrix:
-          Matrix Object:           1 MPI processes
-            type: seqaij
-            rows=49, cols=49
-            total: nonzeros=361, allocated nonzeros=361
-            total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
-      Up solver (post-smoother) same as down solver (pre-smoother)
-      Down solver (pre-smoother) on level 2 -------------------------------
-        KSP Object:        (mg_levels_2_)         1 MPI processes
-          type: gmres
-            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-            GMRES: happy breakdown tolerance 1e-30
-          maximum iterations=1
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-          left preconditioning
-          using nonzero initial guess
-          using PRECONDITIONED norm type for convergence test
-        PC Object:        (mg_levels_2_)         1 MPI processes
-          type: sor
-            SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
-          linear system matrix = precond matrix:
-          Matrix Object:           1 MPI processes
-            type: seqaij
-            rows=169, cols=169
-            total: nonzeros=793, allocated nonzeros=793
-            total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
-      Up solver (post-smoother) same as down solver (pre-smoother)
-      linear system matrix = precond matrix:
-      Matrix Object:       1 MPI processes
-        type: seqaij
-        rows=169, cols=169
-        total: nonzeros=793, allocated nonzeros=793
-        total number of mallocs used during MatSetValues calls =0
-          not using I-node routines
-    SNESLineSearch Object:     1 MPI processes
-      type: bt
-        interpolation: cubic
-        alpha=1.000000e-04
-      maxstep=1.000000e+08, minlambda=1.000000e-12
-      tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
-      maximum iterations=40
   0 SNES Function norm 0.269931 
           Residual norms for mg_levels_1_ solve.
           0 KSP Residual norm 0.00303821 
@@ -871,6 +637,7 @@ SNES Object: 1 MPI processes
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=5
   total number of function evaluations=3
+  total number of grid sequence refinements=3
   KSP Object:   1 MPI processes
     type: gmres
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
