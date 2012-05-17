@@ -76,5 +76,6 @@ PETSC_EXTERN PetscErrorCode DMComplexMatSetClosure(DM, PetscSection, PetscSectio
 
 PETSC_EXTERN PetscErrorCode DMComplexCreateExodus(MPI_Comm , PetscInt , DM *);
 
+PETSC_EXTERN PetscErrorCode DMComplexVTKWriteAll(PetscObject, PetscViewer);
 
 #endif
