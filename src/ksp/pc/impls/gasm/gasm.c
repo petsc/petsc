@@ -136,6 +136,7 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
     ierr = MPI_Barrier(((PetscObject)pc)->comm); CHKERRQ(ierr);
   }
   ierr = PetscViewerDestroy(&viewer); CHKERRQ(ierr);
+  ierr = PetscFree2(permutation,numbering); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -379,6 +380,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = ISCreateStride(((PetscObject)pc)->comm,on,gofirst,1, &goid);CHKERRQ(ierr);
     ierr = VecScatterCreate(x,gois,osm->gx,goid, &(osm->gorestriction));CHKERRQ(ierr);
     ierr = VecDestroy(&x); CHKERRQ(ierr);
+    ierr = ISDestroy(&gois); CHKERRQ(ierr);
     /* Merge inner subdomain ISs and construct a restriction onto the disjoint union of local inner subdomains. */
     { PetscInt       ini;     /* Number of indices the i-th a local inner subdomain. */
       PetscInt       in;      /* Number of indices in the disjoint uniont of local inner subdomains. */
