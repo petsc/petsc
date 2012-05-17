@@ -47,9 +47,6 @@ Next Steps:
 - Refine and show convergence of correct order automatically (use femTest.py)
 - Fix InitialGuess for arbitrary disc (means making dual application work again)
 - Redo slides from GUCASTutorial for this new example
-- Sparsify Jacobian
-  - How do we get sparsity? I think by chopping up elemMat into blocks, and setting individual blocks
-  - Maybe we just have MatSetClosure() handle this by ignoring blocks which do not interact
 
 For tensor product meshes, see SNES ex67
 */
