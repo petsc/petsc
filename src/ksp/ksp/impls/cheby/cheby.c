@@ -295,7 +295,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   scale  = 2.0/(cheb->emax + cheb->emin);
 
   /*   -alpha <=  scale*lambda(B^{-1}A) <= alpha   */
-  alpha  = 1.0 - scale*(cheb->emin); ;
+  alpha  = 1.0 - scale*(cheb->emin); 
   Gamma  = 1.0;
   mu     = 1.0/alpha; 
   omegaprod = 2.0/alpha;
@@ -303,7 +303,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   c[km1] = 1.0;
   c[k]   = mu;
 
-  if (!ksp->guess_zero || hybrid) {
+  if (!ksp->guess_zero || (hybrid && cheb->its== 0)) {
     ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);     /*  r = b - Ax     */
     ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
   } else {
