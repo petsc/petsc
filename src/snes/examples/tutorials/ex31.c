@@ -8,7 +8,6 @@ TODO for Mantle Convection:
   - Free-slip boundary condition on upper surface
   - Stress-free boundary condition on sides and bottom
   - Parse Citcom input
-  - Visualize output
 
 The isoviscous Stokes problem, which we discretize using the finite
 element method on an unstructured mesh. The weak form equations are
@@ -62,7 +61,7 @@ puts it into the Sieve ordering.
 const PetscInt numFields     = 2;
 const PetscInt numComponents = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1;
 
-typedef enum {NEUMANN, DIRICHLET} BCType;
+typedef enum {DIRICHLET, BC_MANTLE} BCType;
 typedef enum {RUN_FULL, RUN_TEST} RunType;
 
 typedef struct {
@@ -130,6 +129,30 @@ PetscScalar quadratic_v_2d(const PetscReal x[]) {
 PetscScalar linear_p_2d(const PetscReal x[]) {
   return x[0] + x[1] - 1.0;
 };
+
+/*
+  In 2D, for the mantle, we use exact solution:
+
+    u = 2 (x+1)^2 - 4 (x+1) y
+    v = 2 (y-1)^2 - 4 x (y-1)
+    p = x + y - 1
+    f_x = f_y = 3
+
+  so that
+
+    -\Delta u + \nabla p + f = <-4, -4> + <1, 1> + <3, 3> = 0
+    \nabla \cdot u           = 4(x+1)-4y + 4(y-1)-4x      = 0
+*/
+PetscScalar quadratic2_u_2d(const PetscReal x[]) {
+  PetscReal xp = x[0] + 1.0;
+  return 2.0*xp*xp - 4.0*xp*x[1];
+};
+
+PetscScalar quadratic2_v_2d(const PetscReal x[]) {
+  PetscReal ym = x[1] - 1.0;
+  return 2.0*ym*ym - 4.0*x[0]*ym;
+};
+
 
 void f0_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
@@ -245,7 +268,7 @@ PetscScalar linear_p_3d(const PetscReal x[]) {
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
-  const char    *bcTypes[2]  = {"neumann", "dirichlet"};
+  const char    *bcTypes[2]  = {"dirichlet", "mantle"};
   const char    *runTypes[2] = {"full", "test"};
   PetscInt       bc, run;
   PetscErrorCode ierr;
@@ -448,12 +471,22 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   if (user->bcType == DIRICHLET) {
     numBC = 1;
     ierr  = DMComplexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
+  } else if (user->bcType == BC_MANTLE) {
+    IS       faces[6];
+    PetscInt s, n = 0;
+
+    numBC = 1;
+    for(s = 0; s < 6; ++s) {
+      ierr  = DMComplexGetStratumIS(dm, "marker", s, &faces[n]);CHKERRQ(ierr);
+      if (faces[n]) ++n;
+    }
+    ierr  = ISConcatenate(((PetscObject) dm)->comm, n, faces, &bcPoints[0]);CHKERRQ(ierr);
   }
   ierr = DMComplexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 0, "velocity");CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 1, "pressure");CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
-  if (user->bcType == DIRICHLET) {
+  if ((user->bcType == DIRICHLET) || (user->bcType == BC_MANTLE)) {
     ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -483,20 +516,37 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
   user->g3Funcs[1] = PETSC_NULL;
   user->g3Funcs[2] = PETSC_NULL;
   user->g3Funcs[3] = PETSC_NULL;
-  switch(user->dim) {
-  case 2:
-    user->exactFuncs[0] = quadratic_u_2d;
-    user->exactFuncs[1] = quadratic_v_2d;
-    user->exactFuncs[2] = linear_p_2d;
+  switch(user->bcType) {
+  case DIRICHLET:
+    switch(user->dim) {
+    case 2:
+      user->exactFuncs[0] = quadratic_u_2d;
+      user->exactFuncs[1] = quadratic_v_2d;
+      user->exactFuncs[2] = linear_p_2d;
+      break;
+    case 3:
+      user->exactFuncs[0] = quadratic_u_3d;
+      user->exactFuncs[1] = quadratic_v_3d;
+      user->exactFuncs[2] = quadratic_w_3d;
+      user->exactFuncs[3] = linear_p_3d;
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+    }
     break;
-  case 3:
-    user->exactFuncs[0] = quadratic_u_3d;
-    user->exactFuncs[1] = quadratic_v_3d;
-    user->exactFuncs[2] = quadratic_w_3d;
-    user->exactFuncs[3] = linear_p_3d;
+  case BC_MANTLE:
+    switch(user->dim) {
+    case 2:
+      user->exactFuncs[0] = quadratic2_u_2d;
+      user->exactFuncs[1] = quadratic2_v_2d;
+      user->exactFuncs[2] = linear_p_2d;
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+    }
     break;
   default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid boundary condition type %d", user->bcType);
   }
   PetscFunctionReturn(0);
 }
@@ -1759,8 +1809,8 @@ int main(int argc, char **argv)
     ierr = PetscViewerFileSetName(viewer, "ex31_sol.vtk");CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMGetLocalVector(user.dm, &sol);CHKERRQ(ierr);
-    ierr = PetscObjectGetName(u, &name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName(sol, name);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) u, &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) sol, name);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(user.dm, u, INSERT_VALUES, sol);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(user.dm, u, INSERT_VALUES, sol);CHKERRQ(ierr);
     ierr = DMGetDefaultSection(user.dm, &section);CHKERRQ(ierr);
