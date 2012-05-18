@@ -3510,7 +3510,10 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Ma
     ierr = PetscObjectQuery((PetscObject)*newmat,"ISAllGather",(PetscObject*)&iscol_local);CHKERRQ(ierr);
     if (!iscol_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
   } else {
+    PetscInt cbs;
+    ierr = ISGetBlockSize(iscol,&cbs); CHKERRQ(ierr);
     ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
+    ierr = ISSetBlockSize(iscol_local,cbs); CHKERRQ(ierr);
   }
   ierr = MatGetSubMatrix_MPIAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
   if (call == MAT_INITIAL_MATRIX) {
