@@ -343,7 +343,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
     PetscValidHeaderSpecific(islist[i], IS_CLASSID, 1);
   }
 #endif
-  PetscValidPointer(isout, 5);
+  PetscValidPointer(isout, 4);
   if(!len) {
     ierr = ISCreateStride(comm, 0,0,0, isout); CHKERRQ(ierr);
     PetscFunctionReturn(0);
