@@ -40,6 +40,11 @@ PetscErrorCode DMComplexCreateSquareBoundary(DM dm, const PetscReal lower[], con
   DM_Complex    *mesh        = (DM_Complex *) dm->data;
   PetscInt       numVertices = (edges[0]+1)*(edges[1]+1);
   PetscInt       numEdges    = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
+  PetscInt       markerTop      = 1;
+  PetscInt       markerBottom   = 1;
+  PetscInt       markerRight    = 1;
+  PetscInt       markerLeft     = 1;
+  PetscBool      markerSeparate = PETSC_FALSE;
   PetscScalar   *coords;
   PetscInt       coordSize;
   PetscMPIInt    rank;
@@ -47,6 +52,13 @@ PetscErrorCode DMComplexCreateSquareBoundary(DM dm, const PetscReal lower[], con
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_complex_separate_marker", &markerSeparate, PETSC_NULL);CHKERRQ(ierr);
+  if (markerSeparate) {
+    markerTop    = 1;
+    markerBottom = 0;
+    markerRight  = 0;
+    markerLeft   = 0;
+  }
   ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
   if (!rank) {
     PetscInt e, ex, ey;
@@ -56,22 +68,6 @@ PetscErrorCode DMComplexCreateSquareBoundary(DM dm, const PetscReal lower[], con
       ierr = DMComplexSetConeSize(dm, e, 2);CHKERRQ(ierr);
     }
     ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
-    for(vy = 0; vy <= edges[1]; vy++) {
-      for(ex = 0; ex < edges[0]; ex++) {
-        PetscInt edge    = vy*edges[0]     + ex;
-        PetscInt vertex  = vy*(edges[0]+1) + ex + numEdges;
-        PetscInt cone[2] = {vertex, vertex+1};
-
-        ierr = DMComplexSetCone(dm, edge, cone);CHKERRQ(ierr);
-        if ((vy == 0) || (vy == edges[1])) {
-          ierr = DMComplexSetLabelValue(dm, "marker", edge,    1);CHKERRQ(ierr);
-          ierr = DMComplexSetLabelValue(dm, "marker", cone[0], 1);CHKERRQ(ierr);
-          if (ex == edges[0]-1) {
-            ierr = DMComplexSetLabelValue(dm, "marker", cone[1], 1);CHKERRQ(ierr);
-          }
-        }
-      }
-    }
     for(vx = 0; vx <= edges[0]; vx++) {
       for(ey = 0; ey < edges[1]; ey++) {
         PetscInt edge    = vx*edges[1] + ey + edges[0]*(edges[1]+1);
@@ -79,11 +75,39 @@ PetscErrorCode DMComplexCreateSquareBoundary(DM dm, const PetscReal lower[], con
         PetscInt cone[2] = {vertex, vertex+edges[0]+1};
 
         ierr = DMComplexSetCone(dm, edge, cone);CHKERRQ(ierr);
-        if ((vx == 0) || (vx == edges[0])) {
-          ierr = DMComplexSetLabelValue(dm, "marker", edge,    1);CHKERRQ(ierr);
-          ierr = DMComplexSetLabelValue(dm, "marker", cone[0], 1);CHKERRQ(ierr);
+        if (vx == edges[0]) {
+          ierr = DMComplexSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
+          ierr = DMComplexSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
           if (ey == edges[1]-1) {
-            ierr = DMComplexSetLabelValue(dm, "marker", cone[1], 1);CHKERRQ(ierr);
+            ierr = DMComplexSetLabelValue(dm, "marker", cone[1], markerRight);CHKERRQ(ierr);
+          }
+        } else if (vx == 0) {
+          ierr = DMComplexSetLabelValue(dm, "marker", edge,    markerLeft);CHKERRQ(ierr);
+          ierr = DMComplexSetLabelValue(dm, "marker", cone[0], markerLeft);CHKERRQ(ierr);
+          if (ey == edges[1]-1) {
+            ierr = DMComplexSetLabelValue(dm, "marker", cone[1], markerLeft);CHKERRQ(ierr);
+          }
+        }
+      }
+    }
+    for(vy = 0; vy <= edges[1]; vy++) {
+      for(ex = 0; ex < edges[0]; ex++) {
+        PetscInt edge    = vy*edges[0]     + ex;
+        PetscInt vertex  = vy*(edges[0]+1) + ex + numEdges;
+        PetscInt cone[2] = {vertex, vertex+1};
+
+        ierr = DMComplexSetCone(dm, edge, cone);CHKERRQ(ierr);
+        if (vy == edges[1]) {
+          ierr = DMComplexSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
+          ierr = DMComplexSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
+          if (ex == edges[0]-1) {
+            ierr = DMComplexSetLabelValue(dm, "marker", cone[1], markerTop);CHKERRQ(ierr);
+          }
+        } else if (vy == 0) {
+          ierr = DMComplexSetLabelValue(dm, "marker", edge,    markerBottom);CHKERRQ(ierr);
+          ierr = DMComplexSetLabelValue(dm, "marker", cone[0], markerBottom);CHKERRQ(ierr);
+          if (ex == edges[0]-1) {
+            ierr = DMComplexSetLabelValue(dm, "marker", cone[1], markerBottom);CHKERRQ(ierr);
           }
         }
       }

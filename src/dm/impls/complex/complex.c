@@ -3270,6 +3270,7 @@ PetscErrorCode DMComplexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined
       }
     }
   }
+  /* TODO: Segment markers are missing on input */
 #if 0 /* Do not currently support holes */
   PetscReal *holeCoords;
   PetscInt   h, d;
