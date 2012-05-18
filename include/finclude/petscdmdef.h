@@ -12,6 +12,5 @@
 #if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define DM PetscFortranAddr
 #endif
-#define DMMG PetscFortranAddr
 
 #endif

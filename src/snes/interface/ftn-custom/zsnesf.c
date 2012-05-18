@@ -6,12 +6,9 @@
 #define snessolve_                       SNESSOLVE
 #define snesdefaultcomputejacobian_      SNESDEFAULTCOMPUTEJACOBIAN
 #define snesdefaultcomputejacobiancolor_ SNESDEFAULTCOMPUTEJACOBIANCOLOR
-#define snesdmdacomputejacobian_           SNESDMDACOMPUTEJACOBIAN
-#define snesdmdacomputejacobianwithadifor_ SNESDMDACOMPUTEJACOBIANWITHADIFOR
 #define snessetjacobian_                 SNESSETJACOBIAN
 #define snesgetoptionsprefix_            SNESGETOPTIONSPREFIX
 #define snesgettype_                     SNESGETTYPE
-#define snesdmdacomputefunction_              SNESDMDACOMPUTEFUNCTION
 #define snessetfunction_                 SNESSETFUNCTION
 #define snessetgs_                       SNESSETGS
 #define snesgetfunction_                 SNESGETFUNCTION
@@ -36,12 +33,9 @@
 #define snessolve_                       snessolve
 #define snesdefaultcomputejacobian_      snesdefaultcomputejacobian
 #define snesdefaultcomputejacobiancolor_ snesdefaultcomputejacobiancolor
-#define snesdmdacomputejacobian_           snesdmdacomputejacobian
-#define snesdmdacomputejacobianwithadifor_ snesdmdacomputejacobianwithadifor
 #define snessetjacobian_                 snessetjacobian
 #define snesgetoptionsprefix_            snesgetoptionsprefix
 #define snesgettype_                     snesgettype
-#define snesdmdacomputefunction_              snesdmdacomputefunction
 #define snessetfunction_                 snessetfunction
 #define snessetgs_                       snessetgs
 #define snesgetfunction_                 snesgetfunction
@@ -132,18 +126,6 @@ void  snesdefaultcomputejacobiancolor_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStruct
   *ierr = SNESDefaultComputeJacobianColor(*snes,*x,m,p,type,*(MatFDColoring*)ctx);
 }
 
-void  snesdmdacomputejacobianwithadifor_(SNES *snes,Vec *X,Mat *m,Mat *p,MatStructure* type,void *ctx,PetscErrorCode *ierr) 
-{
-  (*PetscErrorPrintf)("Cannot call this function from Fortran");
-  *ierr = 1;
-}
-
-void  snesdmdacomputejacobian_(SNES *snes,Vec *X,Mat *m,Mat *p,MatStructure* type,void *ctx,PetscErrorCode *ierr) 
-{
-  (*PetscErrorPrintf)("Cannot call this function from Fortran");
-  *ierr = 1;
-}
-
 void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL *func)(SNES*,Vec*,Mat*,Mat*,
             MatStructure*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
@@ -154,10 +136,6 @@ void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobian,ctx);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesdefaultcomputejacobiancolor_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobianColor,*(MatFDColoring*)ctx);
-  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesdmdacomputejacobianwithadifor_) {
-    *ierr = SNESSetJacobian(*snes,*A,*B,SNESDMDAComputeJacobianWithAdifor,ctx);
-  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesdmdacomputejacobian_) {
-    *ierr = SNESSetJacobian(*snes,*A,*B,SNESDMDAComputeJacobian,ctx);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)matmffdcomputejacobian_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,MatMFFDComputeJacobian,ctx);
   } else if (!func) {
@@ -202,21 +180,13 @@ void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len), Petsc
 
    functions, hence no STDCALL
 */
-void  snesdmdacomputefunction_(SNES *snes,Vec *X, Vec *F,void *ptr,PetscErrorCode *ierr)
-{
-  *ierr = SNESDMDAComputeFunction(*snes,*X,*F,ptr);
-}
 
 void PETSC_STDCALL snessetfunction_(SNES *snes,Vec *r,void (PETSC_STDCALL *func)(SNES*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(ctx);
   PetscObjectAllocateFortranPointers(*snes,12);
-  if ((PetscVoidFunction)func == (PetscVoidFunction)snesdmdacomputefunction_) {
-    *ierr = SNESSetFunction(*snes,*r,SNESDMDAComputeFunction,ctx);
-  } else {
-    ((PetscObject)*snes)->fortran_func_pointers[0] = (PetscVoidFunction)func;
-    *ierr = SNESSetFunction(*snes,*r,oursnesfunction,ctx);
-  }
+  ((PetscObject)*snes)->fortran_func_pointers[0] = (PetscVoidFunction)func;
+  *ierr = SNESSetFunction(*snes,*r,oursnesfunction,ctx);
 }
 
 
@@ -224,12 +194,8 @@ void PETSC_STDCALL snessetgs_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,Vec*,V
 {
   CHKFORTRANNULLOBJECT(ctx);
   PetscObjectAllocateFortranPointers(*snes,12);
-  if ((PetscVoidFunction)func == (PetscVoidFunction)snesdmdacomputefunction_) {
-    *ierr = SNESSetGS(*snes,SNESDMDAComputeFunction,ctx);
-  } else {
-    ((PetscObject)*snes)->fortran_func_pointers[0] = (PetscVoidFunction)func;
-    *ierr = SNESSetGS(*snes,oursnesfunction,ctx);
-  }
+  ((PetscObject)*snes)->fortran_func_pointers[0] = (PetscVoidFunction)func;
+  *ierr = SNESSetGS(*snes,oursnesfunction,ctx);
 }
 /* ---------------------------------------------------------*/
 

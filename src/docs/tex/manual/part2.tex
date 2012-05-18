@@ -2997,8 +2997,6 @@ the coarse grid solver, smoothers, restriction, and interpolation,
 as well as the code to calculate residuals. The PC package
 allows all of that to be wrapped up into a PETSc compliant preconditioner. 
 We fully support both matrix-free and matrix-based multigrid solvers. 
-See also Chapter \ref{chapter_dmmg} for a higher level
-interface to the multigrid solvers for linear and nonlinear problems using the DMMG object.
 
 A multigrid preconditioner is created with the four commands 
 \begin{tabbing}
@@ -4737,115 +4735,10 @@ More details about the solver and code examples can be found at
 
 
 \cleardoublepage
-\chapter{High Level Support for Multigrid with DMMG}
-\label{chapter_dmmg}
+\chapter{High Level Support for Multigrid with KSPSetDM() and SNESSetDM()}
+\label{chapter_kspdm}
 
-This infrastructure will be replaced in the next PETSc release. DO NOT USE IT.
-
-PETSc provides an easy to use high-level interface for multigrid on a
-single structured grid using the PETSc DMDA object (or the DMComposite
-object) to decompose the grid across the processes.  This DMMG code
-is built on top of the lower level PETSc multigrid
-interface provided in the PCType of MG, see Section
-\ref{sec_mg}. Currently we only provide piecewise linear and piecewise
-constant interpolation, but can add more if needed. The DMMG routines
-only provide linear multigrid but they can be used easily with either
-KSP (for linear problems) or SNES (for nonlinear problems).
-
-For linear problems the examples \trl{src/ksp/ksp/examples/tutorials/ex22.c} and \trl{ex25.c} can be used
-to guide your development. We give a short summary here.
-\begin{tabbing}
-  DMMG        *dmmg;\\
-  DM          da;\\
-  Vec         soln;\\
-
-  /* Create the DMDA that stores information about the coarsest grid you wish to use */\\
-  ierr = DMDACreate3d(PETSC\_COMM\_WORLD,DMDA\_NONPERIODIC,DMDA\_STENCIL\_STAR,\\
-         3,3,3,PETSC\_DECIDE,PETSC\_DECIDE,PETSC\_DECIDE,1,1,0,0,0,\&da);CHKERRQ(ierr);\\
-
-  /* Create the DMMG data structure */\\
-       - the second argument indicates the number of levels you wish to use and \\
-         can be changed with the option -dmmg\_nlevels \\
-  ierr = DMMGCreate(PETSC\_COMM\_WORLD,3,PETSC\_NULL,\&dmmg);CHKERRQ(ierr);\\
-
-  /*  Tell the DMMG object to use the da to define the coarsest grid */\\
-  ierr = DMMGSetDM(dmmg,(DM)da);\\
-
-  /*  Tell the DMMG we are solving a linear problem (hence KSP) and provide the \\
-      callback function to compute the right hand side and matrices for each level */\\
-  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);\\
-
-  /*  Solve the problem */\\
-  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);\\
-
-  /*  One can access the solution with */\\
-  soln = DMMGGetx(dmmg);\\
-
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);\\
-  ierr = DMDestroy(\&da);CHKERRQ(ierr);\\
-\end{tabbing}
-The option \trl{-ksp_monitor} \findex{-ksp_monitor} and \trl{-mg_levels_ksp_monitor} and optionally \trl{-mg_coarse_ksp_monitor} 
- causes the DMMG code to print the residual norms for each level of the solver to the screen so that
-the coarser the grid the more indented the print out. The option \trl{-dmmg_grid_sequence} \findex{-dmmg_grid_sequence} causes the 
-DMMG solve to use grid sequencing to generate the initial guess by solving the same problem on the previous coarser grid; this often
-results in a much faster time to solution.
-
-The solver (smoother) used on each level but the coarsest can be controled via the options
-database with any PC or KSP option prefixed as \trl{-mg_levels_[pc/ksp]_}. The 
-solver options on the finest grid can be set with  \trl{-mg_coarse_[pc/ksp]_}. The 
-DMMG has many other options that can view by running the DMMG program with the option \trl{-help}.
-You should generally run your code with the option \trl{-ksp_view} to see exactly what 
-solvers are being used.
-
-For nonlinear problems one replaces the DMMGSetKSP() with 
-\begin{tabbing}
-  DMMGSetSNES(\=DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,void*),\\
-             \>PetscErrorCode (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
-\end{tabbing}
-or the prefered approach
-\begin{tabbing}
-  DMMGSetSNESLocal(\=DMMG *dmmg,\\
-  \>PetscErrorCode (*localfunction)(DMDALocalInfo *info,void *x,void *f,void* appctx),\\
-  \>PetscErrorCode (*localjacobian)(DMDALocalInfo *,void *x,Mat J,void *appctx),\\
-  \>ad\_function,ad\_mf\_function);
-\end{tabbing}
-The \trl{ad_function} and \trl{ad_mf_function} are described in the next chapter. 
-See examples \trl{src/snes/examples/tutorials/ex18.c} and \trl{ex19.c} for complete details.
-
-For scalar problems (problems with one degree of freedom per node),
-the \trl{localfunction} \trl{x} and \trl{f} arguments are simply
-multi-dimensional arrays of double precision (or complex) numbers
-(according to the dimension of the grid) that should be indexed using
-{\em global} i, j, k indices on the entire grid. For multi-component
-problems you must create a C struct with an entry for each component
-and the \trl{x} and \trl{f} arguments are appropriately dimensioned
-arrays of that struct. For example, for a 3d scalar problem the function
-would be 
-\begin{tabbing}
-int localfunction(DMDALocalInfo *info,double ***x, double ***f,void *ctx)
-\end{tabbing}
-For a 2d multi-component problem with u, v, and p components one would write
-\begin{tabbing}
-ty\=pedef struct \{\\
-  \> PetscScalar u,v,p;\\
- \} Field;\\
-...\\
-int localfunction(DMDALocalInfo *info,Field **x,Field **f,void *ctx)
-\end{tabbing}
-
-For many nonlinear problems it is too difficult to compute the
-Jacobian analytically, thus if \trl{jacobian} or \trl{localjacobian} is not
-provided, (indicated by passing in a PETSC\_NULL) the DMMG will compute the
-sparse Jacobian reasonably efficiently automatically using finite
-differencing. See the next chapter on computing the Jacobian via
-automatic differentiation. The option \trl{-dmmg_jacobian_mf_fd}
-causes the code to not compute the Jacobian explicitly but rather to
-use differences to apply the matrix vector product of the Jacobian.
-
-The usual option \trl{-snes_monitor} \findex{-snes_monitor} can
-be used to monitor the progress of the nonlinear solver. The usual \trl{-snes_} options
-may be used to control the nonlinearr solves. Again we recommend using the 
-option \trl{-dmmg_grid_sequence} and \trl{-snes_view} for most runs.
+This chapter needs to be written.
 
 
 \cleardoublepage
@@ -4853,12 +4746,7 @@ option \trl{-dmmg_grid_sequence} and \trl{-snes_view} for most runs.
 
 Automatic differentiation is an incredible technique to generate code
 that computes Jacobians and other differentives directly from code
-that only evaluates the function. For structured grid problems, via
-the DMMG interface (see Chapter \ref{chapter_dmmg}) PETSc provides a way to use
-ADIFOR and ADIC to compute the sparse Jacobians or perform matrix free
-vector products with them. See
-\trl{src/snes/examples/tutorials/ex18.c} and \trl{ex5f.F} for example
-usage. 
+that only evaluates the function. 
 
 First one indicates the functions for which one needs Jacobians by adding
 in the comments in the code 
@@ -4871,7 +4759,7 @@ where one lists the functions. In Fortran use
 \end{tabbing}
 Next one uses the call
 \begin{tabbing}
-  DMMGSetSNESLocal(DMMG *dmmg,\\
+  DMDASetSNESLocal(DM dm,\\
    PetscErrorCode (*localfunction)(DMDALocalInfo *info,void *x,void *f,void* appctx),PETSC\_NULL,\\
   ad\_localfunction,ad\_mf\_localfunction);
 \end{tabbing}
@@ -4879,13 +4767,7 @@ where the names of the last two functions are obtained
 by prepending an \trl{ad_} and \trl{ad_mf_} in front
 of the function name. In Fortran, this is done by prepending a \trl{g_} and \trl{m_}.
 
-Two useful options are \trl{-dmmg_jacobian_mf_ad} and \trl{-dmmg_jacobian_mf_ad_operator},
-with the former is uses the matrix-free automatic differentiation to apply the operator
-and to define the preconditioner operator. The latter form uses the matrix-free for the 
-matrix-vector product but still computes the Jacobian (by default with finite differences)
-used to construct the preconditioner.
-
-\section{Work arrays inside the local functions} In C you can call DMDAGetArray() to get 
+\section{Work arrays inside the local functions} In C you can call DMDAVecGetArray() to get 
 work arrays (this is low overhead). In Fortran you can provide a \trl{FormFunctionLocal()}
 that had local arrays that have hardwired sizes that are large enough or somehow allocate
 space and pass it into an inner FormFunctionLocal() that is the one you differentiate; this

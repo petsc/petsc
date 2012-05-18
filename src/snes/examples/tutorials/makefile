@@ -470,7 +470,7 @@ runex5f90_4:
 	   else  echo  ${PWD} "\nPossible problem with with ex5f90_4, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5f90_4.tmp
 runex5f90_5:
-	-@${MPIEXEC} -n 1 ./ex5f90 -test_appctx > ex5f90_5.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex5f90  > ex5f90_5.tmp 2>&1;\
 	   if (${DIFF} output/ex5f90_5.out ex5f90_5.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5f90_5, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5f90_5.tmp
