@@ -1018,8 +1018,8 @@ PetscErrorCode IntegrateJacobianActionBatchCPU(PetscInt Ne, PetscInt numFields, 
         elemVec[cOffset+i] = 0.0;
       }
       for(q = 0; q < Nq; ++q) {
-        PetscScalar u[dim+1];
-        PetscScalar gradU[dim*(dim+1)];
+        PetscScalar u[NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1];
+        PetscScalar gradU[dim*(NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1)];
         PetscInt    fOffset            = 0;       /* Offset into u[] for field_q (like offsetI) */
         PetscInt    dOffset            = cOffset; /* Offset into coefficients[] for field_q */
         PetscInt    field_q, d;
@@ -1030,8 +1030,8 @@ PetscErrorCode IntegrateJacobianActionBatchCPU(PetscInt Ne, PetscInt numFields, 
         PetscInt    c;
 
         if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-        for(d = 0; d <= dim; ++d)        {u[d]     = 0.0;}
-        for(d = 0; d < dim*(dim+1); ++d) {gradU[d] = 0.0;}
+        for(d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
+        for(d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
         for(field_q = 0; field_q < numFields; ++field_q) {
           const PetscInt   Nb          = quad[field_q].numBasisFuncs;
           const PetscInt   Ncomp       = quad[field_q].numComponents;
