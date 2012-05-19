@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = dmsnes.c dmdasnes.c
+SOURCEC  = dmsnes.c dmdasnes.c dmmeshsnes.c
 SOURCEF  =
 SOURCEH  = 
 OBJSC    = $(SOURCEC:.c=.o)
