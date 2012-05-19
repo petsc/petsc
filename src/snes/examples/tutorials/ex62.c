@@ -759,16 +759,16 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
     }
     for(q = 0; q < Nq; ++q) {
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      PetscScalar      u[dim+1];
-      PetscScalar      gradU[dim*(dim+1)];
+      PetscScalar      u[NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1];
+      PetscScalar      gradU[dim*(NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1)];
       PetscInt         fOffset            = 0;
       PetscInt         dOffset            = cOffset;
       const PetscInt   Ncomp       = quad[field].numComponents;
       const PetscReal *quadWeights = quad[field].quadWeights;
       PetscInt         d, f, i;
 
-      for(d = 0; d <= dim; ++d)        {u[d]     = 0.0;}
-      for(d = 0; d < dim*(dim+1); ++d) {gradU[d] = 0.0;}
+      for(d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
+      for(d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
       for(f = 0; f < numFields; ++f) {
         const PetscInt   Nb       = quad[f].numBasisFuncs;
         const PetscInt   Ncomp    = quad[f].numComponents;
