@@ -6,7 +6,6 @@ domain, using a parallel unstructured mesh (DMCOMPLEX) to discretize it.\n\n\n";
 TODO for Mantle Convection:
   - Variable viscosity
   - Free-slip boundary condition on upper surface
-  - Stress-free boundary condition on sides and bottom
   - Parse Citcom input
 
 The isoviscous Stokes problem, which we discretize using the finite
@@ -15,8 +14,13 @@ element method on an unstructured mesh. The weak form equations are
   < \nabla v, \nabla u + {\nabla u}^T > - < \nabla\cdot v, p > + < v, f > = 0
   < q, \nabla\cdot v >                                                    = 0
 
-We start with homogeneous Dirichlet conditions. We will expand this as the set
-of test problems is developed.
+Boundary Conditions:
+
+  -bc_type dirichlet   Dirichlet conditions on the entire boundary, coming from the exact solution functions
+
+  -dm_complex_separate_marker
+  -bc_type mantle      Dirichlet conditions on the y-velocity at the top boundary
+                       Stress-free (homogeneous Neumann) conditions on the other boundaries
 
 Discretization:
 
@@ -53,13 +57,13 @@ puts it into the Sieve ordering.
 #include <petscsnes.h>
 
 /*------------------------------------------------------------------------------
-  This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py dim order dim 1 laplacian dim order 1 1 gradient src/snes/examples/tutorials/ex62.h'
+  This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py dim order dim 1 laplacian dim order 1 1 gradient dim order 1 1 identity src/snes/examples/tutorials/ex31.h'
  -----------------------------------------------------------------------------*/
-#include "ex62.h"
+#include "ex31.h"
 
-#define NUM_FIELDS 2 /* C89 Sucks Sucks Sucks Sucks: Cannot use static const values for array sizes */
-const PetscInt numFields     = 2;
-const PetscInt numComponents = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1;
+#define NUM_FIELDS 3 /* C89 Sucks Sucks Sucks Sucks: Cannot use static const values for array sizes */
+const PetscInt numFields     = 3;
+const PetscInt numComponents = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1+NUM_BASIS_COMPONENTS_2;
 
 typedef enum {DIRICHLET, BC_MANTLE} BCType;
 typedef enum {RUN_FULL, RUN_TEST} RunType;
@@ -84,13 +88,13 @@ typedef struct {
   PetscInt      numBatches;        /* The number of cell batches per kernel */
   PetscInt      numBlocks;         /* The number of concurrent blocks per kernel */
   /* Problem definition */
-  void        (*f0Funcs[NUM_FIELDS])(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]); /* The f_0 functions f0_u(x,y,z), and f0_p(x,y,z) */
-  void        (*f1Funcs[NUM_FIELDS])(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]); /* The f_1 functions f1_u(x,y,z), and f1_p(x,y,z) */
+  void        (*f0Funcs[NUM_FIELDS])(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]); /* The f_0 functions f0_u(x,y,z), f0_p(x,y,z), and f0_T(x,y,z) */
+  void        (*f1Funcs[NUM_FIELDS])(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]); /* The f_1 functions f1_u(x,y,z), f1_p(x,y,z), and f1_T(x,y,z) */
   void        (*g0Funcs[NUM_FIELDS*NUM_FIELDS])(PetscScalar u[], const PetscScalar gradU[], PetscScalar g0[]); /* The g_0 functions g0_uu(x,y,z), g0_up(x,y,z), g0_pu(x,y,z), and g0_pp(x,y,z) */
   void        (*g1Funcs[NUM_FIELDS*NUM_FIELDS])(PetscScalar u[], const PetscScalar gradU[], PetscScalar g1[]); /* The g_1 functions g1_uu(x,y,z), g1_up(x,y,z), g1_pu(x,y,z), and g1_pp(x,y,z) */
   void        (*g2Funcs[NUM_FIELDS*NUM_FIELDS])(PetscScalar u[], const PetscScalar gradU[], PetscScalar g2[]); /* The g_2 functions g2_uu(x,y,z), g2_up(x,y,z), g2_pu(x,y,z), and g2_pp(x,y,z) */
   void        (*g3Funcs[NUM_FIELDS*NUM_FIELDS])(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]); /* The g_3 functions g3_uu(x,y,z), g3_up(x,y,z), g3_pu(x,y,z), and g3_pp(x,y,z) */
-  PetscScalar (*exactFuncs[NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1])(const PetscReal x[]); /* The exact solution function u(x,y,z), v(x,y,z), and p(x,y,z) */
+  PetscScalar (*exactFuncs[NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1+NUM_BASIS_COMPONENTS_2])(const PetscReal x[]); /* The exact solution function u(x,y,z), v(x,y,z), p(x,y,z), and T(x,y,z) */
   BCType        bcType;            /* The type of boundary conditions */
 } AppCtx;
 
@@ -111,6 +115,7 @@ PetscScalar zero(const PetscReal coords[]) {
     u = x^2 + y^2
     v = 2 x^2 - 2xy
     p = x + y - 1
+    T = x + y
     f_x = f_y = 3
 
   so that
@@ -130,12 +135,18 @@ PetscScalar linear_p_2d(const PetscReal x[]) {
   return x[0] + x[1] - 1.0;
 };
 
+PetscScalar linear_T_2d(const PetscReal x[]) {
+  //return x[0] + x[1];
+  return 10.0;
+};
+
 /*
   In 2D, for the mantle, we use exact solution:
 
     u = 2 (x+1)^2 - 4 (x+1) y
     v = 2 (y-1)^2 - 4 x (y-1)
     p = x + y - 1
+    T = x + y
     f_x = f_y = 3
 
   so that
@@ -197,6 +208,26 @@ void f1_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
   for(d = 0; d < dim; ++d) {
     f1[d] = 0.0;
   }
+}
+
+void f0_T(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
+  const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1;
+
+  f0[0] = u[Ncomp] - 10.0;
+}
+
+void f1_T(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
+  const PetscInt dim = SPATIAL_DIM_0;
+  PetscInt       d;
+
+  for(d = 0; d < dim; ++d) {
+    f1[d] = 0.0;
+  }
+}
+
+/* < v_t, I t > */
+void g0_TT(PetscScalar u[], const PetscScalar gradU[], PetscScalar g0[]) {
+  g0[0] = 1.0;
 }
 
 /* < q, \nabla\cdot v >
@@ -436,6 +467,13 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
   user->q[1].numComponents = NUM_BASIS_COMPONENTS_1;
   user->q[1].basis         = Basis_1;
   user->q[1].basisDer      = BasisDerivatives_1;
+  user->q[2].numQuadPoints = NUM_QUADRATURE_POINTS_2;
+  user->q[2].quadPoints    = points_2;
+  user->q[2].quadWeights   = weights_2;
+  user->q[2].numBasisFuncs = NUM_BASIS_FUNCTIONS_2;
+  user->q[2].numComponents = NUM_BASIS_COMPONENTS_2;
+  user->q[2].basis         = Basis_2;
+  user->q[2].basisDer      = BasisDerivatives_2;
   PetscFunctionReturn(0);
 }
 
@@ -449,7 +487,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscSection   section;
   PetscInt       dim                = user->dim;
   PetscInt       numBC              = 0;
-  PetscInt       numComp[NUM_FIELDS] = {NUM_BASIS_COMPONENTS_0, NUM_BASIS_COMPONENTS_1};
+  PetscInt       numComp[NUM_FIELDS] = {NUM_BASIS_COMPONENTS_0, NUM_BASIS_COMPONENTS_1, NUM_BASIS_COMPONENTS_2};
   PetscInt       bcFields[1]        = {0};
   IS             bcPoints[1]        = {PETSC_NULL};
   PetscInt       numDof[NUM_FIELDS*(SPATIAL_DIM_0+1)];
@@ -462,6 +500,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   for(d = 0; d <= dim; ++d) {
     numDof[0*(dim+1)+d] = numDof_0[d];
     numDof[1*(dim+1)+d] = numDof_1[d];
+    numDof[2*(dim+1)+d] = numDof_2[d];
   }
   for(f = 0; f < numFields; ++f) {
     for(d = 1; d < dim; ++d) {
@@ -485,6 +524,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   ierr = DMComplexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 0, "velocity");CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 1, "pressure");CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldName(section, 2, "temperature");CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
   if ((user->bcType == DIRICHLET) || (user->bcType == BC_MANTLE)) {
     ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
@@ -498,24 +538,46 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
   PetscFunctionBegin;
   user->f0Funcs[0] = f0_u;
   user->f0Funcs[1] = f0_p;
+  user->f0Funcs[2] = f0_T;
   user->f1Funcs[0] = f1_u;
   user->f1Funcs[1] = f1_p;
+  user->f1Funcs[2] = f1_T;
   user->g0Funcs[0] = PETSC_NULL;
   user->g0Funcs[1] = PETSC_NULL;
   user->g0Funcs[2] = PETSC_NULL;
   user->g0Funcs[3] = PETSC_NULL;
+  user->g0Funcs[4] = PETSC_NULL;
+  user->g0Funcs[5] = PETSC_NULL;
+  user->g0Funcs[6] = PETSC_NULL;
+  user->g0Funcs[7] = PETSC_NULL;
+  user->g0Funcs[8] = g0_TT;
   user->g1Funcs[0] = PETSC_NULL;
   user->g1Funcs[1] = PETSC_NULL;
-  user->g1Funcs[2] = g1_pu;      /* < q, \nabla\cdot v > */
-  user->g1Funcs[3] = PETSC_NULL;
+  user->g1Funcs[2] = PETSC_NULL;
+  user->g1Funcs[3] = g1_pu;      /* < q, \nabla\cdot v > */
+  user->g1Funcs[4] = PETSC_NULL;
+  user->g1Funcs[5] = PETSC_NULL;
+  user->g1Funcs[6] = PETSC_NULL;
+  user->g1Funcs[7] = PETSC_NULL;
+  user->g1Funcs[8] = PETSC_NULL;
   user->g2Funcs[0] = PETSC_NULL;
   user->g2Funcs[1] = g2_up;      /* < \nabla\cdot v, p > */
   user->g2Funcs[2] = PETSC_NULL;
   user->g2Funcs[3] = PETSC_NULL;
+  user->g2Funcs[4] = PETSC_NULL;
+  user->g2Funcs[5] = PETSC_NULL;
+  user->g2Funcs[6] = PETSC_NULL;
+  user->g2Funcs[7] = PETSC_NULL;
+  user->g2Funcs[8] = PETSC_NULL;
   user->g3Funcs[0] = g3_uu;      /* < \nabla v, \nabla u + {\nabla u}^T > */
   user->g3Funcs[1] = PETSC_NULL;
   user->g3Funcs[2] = PETSC_NULL;
   user->g3Funcs[3] = PETSC_NULL;
+  user->g3Funcs[4] = PETSC_NULL;
+  user->g3Funcs[5] = PETSC_NULL;
+  user->g3Funcs[6] = PETSC_NULL;
+  user->g3Funcs[7] = PETSC_NULL;
+  user->g3Funcs[8] = PETSC_NULL;
   switch(user->bcType) {
   case DIRICHLET:
     switch(user->dim) {
@@ -523,12 +585,14 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
       user->exactFuncs[0] = quadratic_u_2d;
       user->exactFuncs[1] = quadratic_v_2d;
       user->exactFuncs[2] = linear_p_2d;
+      user->exactFuncs[3] = linear_T_2d;
       break;
     case 3:
       user->exactFuncs[0] = quadratic_u_3d;
       user->exactFuncs[1] = quadratic_v_3d;
       user->exactFuncs[2] = quadratic_w_3d;
       user->exactFuncs[3] = linear_p_3d;
+      user->exactFuncs[4] = linear_T_2d;
       break;
     default:
       SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
@@ -540,6 +604,7 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
       user->exactFuncs[0] = quadratic2_u_2d;
       user->exactFuncs[1] = quadratic2_v_2d;
       user->exactFuncs[2] = linear_p_2d;
+      user->exactFuncs[3] = linear_T_2d;
       break;
     default:
       SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
@@ -808,16 +873,16 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
     }
     for(q = 0; q < Nq; ++q) {
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      PetscScalar      u[dim+1];
-      PetscScalar      gradU[dim*(dim+1)];
+      PetscScalar      u[NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1+NUM_BASIS_COMPONENTS_2];
+      PetscScalar      gradU[dim*(NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1+NUM_BASIS_COMPONENTS_2)];
       PetscInt         fOffset            = 0;
       PetscInt         dOffset            = cOffset;
       const PetscInt   Ncomp       = quad[field].numComponents;
       const PetscReal *quadWeights = quad[field].quadWeights;
       PetscInt         d, f, i;
 
-      for(d = 0; d <= dim; ++d)        {u[d]     = 0.0;}
-      for(d = 0; d < dim*(dim+1); ++d) {gradU[d] = 0.0;}
+      for(d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
+      for(d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
       for(f = 0; f < numFields; ++f) {
         const PetscInt   Nb       = quad[f].numBasisFuncs;
         const PetscInt   Ncomp    = quad[f].numComponents;
