@@ -60,9 +60,14 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
-  ierr = MatMult(pc->mat,X,S2);CHKERRQ(ierr);
-  ierr = VecCopy(B,R);CHKERRQ(ierr);
-  ierr = VecAXPY(R,-1.0,S2);CHKERRQ(ierr);
+  if (!ksp->guess_zero) {
+    ierr = MatMult(pc->mat,X,S2);CHKERRQ(ierr);
+    ierr = VecCopy(B,R);CHKERRQ(ierr);
+    ierr = VecAXPY(R,-1.0,S2);CHKERRQ(ierr);
+  }
+  else {
+    ierr = VecCopy(B,R);CHKERRQ(ierr);
+  }
 
   /* Test for nothing to do */
   if (ksp->normtype != KSP_NORM_NONE) {
@@ -168,8 +173,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 
    Level: beginner
 
-   Notes: See KSPBCGSL for additional stabilization
-          Only supports right preconditioning 
+   Notes: Only supports right preconditioning 
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
 M*/

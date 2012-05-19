@@ -1,6 +1,7 @@
 
 /*
     This file implements improved flexible BiCGStab contributed by Jie Chen.
+    It can almost certainly supercede fbcgs.c.
     Only right preconditioning is supported. 
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
@@ -219,8 +220,7 @@ PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
 
    Level: beginner
 
-   Notes: See KSPIFBCGSL for additional stabilization
-          Only supports right preconditioning 
+   Notes: Only supports right preconditioning 
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
 M*/
