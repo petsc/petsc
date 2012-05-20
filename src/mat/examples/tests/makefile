@@ -1713,11 +1713,11 @@ runex151:
 	   ${DIFF} output/ex151_1.out ex151_1.tmp || echo ${PWD} "\nPossible problem with with ex151, diffs above \n========================================="; \
 	   ${RM} -f ex151_1.tmp
 runex151_2:
-	-@${MPIEXEC} -n 2 ./ex151 | sort  > ex151_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex151  > ex151_2.tmp 2>&1; \
 	   ${DIFF} output/ex151_2.out ex151_2.tmp || echo ${PWD} "\nPossible problem with with ex151_2, diffs above \n========================================="; \
 	   ${RM} -f ex151_2.tmp
 runex151_3:
-	-@${MPIEXEC} -n 3 ./ex151 | sort > ex151_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex151 > ex151_3.tmp 2>&1; \
 	   ${DIFF} output/ex151_3.out ex151_3.tmp || echo ${PWD} "\nPossible problem with with ex151_3, diffs above \n========================================="; \
 	   ${RM} -f ex151_3.tmp
 

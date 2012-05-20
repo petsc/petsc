@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(A,&cstart,&cend);CHKERRQ(ierr);
 
-  for (i=0; i<sizeof(entries)/sizeof(entries[0]); i++) {
+  for (i=0; i<(PetscInt)(sizeof(entries)/sizeof(entries[0])); i++) {
     ierr = MatSetValue(A,entries[i].i,entries[i].j,entries[i].v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -49,9 +49,9 @@ int main(int argc,char **argv)
   ierr = PetscViewerASCIIPrintf(viewer,"Row permutation\n");CHKERRQ(ierr);
   ierr = ISView(isrow,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Column permutation\n");CHKERRQ(ierr);
-  ierr = PetscViewerGetSubcomm(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
   ierr = ISView(iscol,sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSubcomm(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
 
   /* Free data structures */
   ierr = ISDestroy(&isrow);CHKERRQ(ierr);
