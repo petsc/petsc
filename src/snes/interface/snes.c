@@ -1722,6 +1722,45 @@ PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,Ve
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESGetPicard"
+/*@C
+   SNESGetPicard - Returns the context for the Picard iteration
+
+   Not Collective, but Vec is parallel if SNES is parallel. Collective if Vec is requested, but has not been created yet.
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Output Parameter:
++  r - the function (or PETSC_NULL)
+.  func - the function (or PETSC_NULL)
+.  jmat - the picard matrix (or PETSC_NULL)
+.  mat  - the picard preconditioner matrix (or PETSC_NULL)
+.  mfunc - the function for matrix evaluation (or PETSC_NULL)
+-  ctx - the function context (or PETSC_NULL)
+
+   Level: advanced
+
+.keywords: SNES, nonlinear, get, function
+
+.seealso: SNESSetPicard, SNESGetFunction, SNESGetJacobian, SNESGetDM
+@*/
+PetscErrorCode  SNESGetPicard(SNES snes,Vec *r,PetscErrorCode (**func)(SNES,Vec,Vec,void*),Mat *jmat, Mat *mat, PetscErrorCode (**mfunc)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  ierr = SNESGetFunction(snes,r,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes,jmat,mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = DMSNESGetPicard(dm,func,mfunc,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetComputeInitialGuess"
 /*@C
