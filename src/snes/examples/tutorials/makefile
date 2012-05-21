@@ -520,6 +520,10 @@ runex15_2:
 	-@${MPIEXEC} -n 2 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype 2 -precheck 1 > ex15_2.tmp 2>&1; \
 	   ${DIFF} output/ex15_2.out ex15_2.tmp || echo  ${PWD} "\nPossible problem with with ex15_2, diffs above \n========================================="; \
 	   ${RM} -f ex15_2.tmp
+runex15_3:
+	-@${MPIEXEC} -n 2 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype 2 -picard -precheck 1 > ex15_3.tmp 2>&1; \
+	   ${DIFF} output/ex15_3.out ex15_3.tmp || echo  ${PWD} "\nPossible problem with with ex15_3, diffs above \n========================================="; \
+	   ${RM} -f ex15_3.tmp
 runex19:
 	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
@@ -846,7 +850,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex5_5_fas runex5_5_ngmres_fas runex5_5_fas_additive \
                                  runex5_6 ex5.rm\
                                  ex6.PETSc runex6 runex6_2 ex6.rm\
-                                 ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc runex15 ex15.rm ex18.PETSc runex18 ex18.rm \
+                                 ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc runex15 runex15_3 ex15.rm ex18.PETSc runex18 ex18.rm \
                                  ex19.PETSc runex19 runex19_5 \
                                  runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 \
                                  runex19_composite_fieldsplit runex19_composite_fieldsplit_bjacobi runex19_composite_fieldsplit_bjacobi_2\
