@@ -1613,14 +1613,29 @@ PetscErrorCode SNESGetGSSweeps(SNES snes, PetscInt * sweeps) {
 PetscErrorCode  SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   PetscErrorCode ierr;
-  void *functx,*jacctx;
+  DM dm;
+  SNESDM sdm;
 
   PetscFunctionBegin;
-  ierr = SNESGetFunction(snes,PETSC_NULL,PETSC_NULL,&functx);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(snes,PETSC_NULL,PETSC_NULL,PETSC_NULL,&jacctx);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
   /*  A(x)*x - b(x) */
-  ierr = (*snes->ops->computepjacobian)(snes,x,&snes->jacobian,&snes->jacobian_pre,&snes->matstruct,jacctx);CHKERRQ(ierr);
-  ierr = (*snes->ops->computepfunction)(snes,x,f,functx);CHKERRQ(ierr);
+  if (sdm->computepfunction) {
+    ierr = (*sdm->computepfunction)(snes,x,f,sdm->pctx);CHKERRQ(ierr);
+  } else if (snes->dm) {
+    ierr = DMComputeFunction(snes->dm,x,f);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() or SNESSetDM() before SNESPicardComputeFunction to provide Picard function.");
+  }
+
+  if (sdm->computepjacobian) {
+    ierr = (*sdm->computepjacobian)(snes,x,&snes->jacobian,&snes->jacobian_pre,&snes->matstruct,sdm->pctx);CHKERRQ(ierr);
+  } else if (snes->dm) {
+    ierr = DMComputeJacobian(snes->dm,x,snes->jacobian,snes->jacobian_pre,&snes->matstruct);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() or SNESSetDM() before SNESPicardComputeFunction to provide Picard matrix.");
+  }
+
   ierr = VecView(x,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
   ierr = VecView(f,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
   ierr = VecScale(f,-1.0);CHKERRQ(ierr);
@@ -1633,6 +1648,7 @@ PetscErrorCode  SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 PetscErrorCode  SNESPicardComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   PetscFunctionBegin;
+  /* the jacobian matrix should be pre-filled in SNESPicardComputeFunction */
   *flag = snes->matstruct;
   PetscFunctionReturn(0);
 }
@@ -1695,10 +1711,12 @@ $     Note that when an exact solver is used this corresponds to the "classic" P
 PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,Vec,void*),Mat jmat, Mat mat, PetscErrorCode (*mfunc)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscErrorCode ierr;
+  DM             dm;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  snes->ops->computepfunction = func;
-  snes->ops->computepjacobian = mfunc;
+  ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
+  ierr = DMSNESSetPicard(dm,func,mfunc,ctx);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,r,SNESPicardComputeFunction,ctx);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,jmat,mat,SNESPicardComputeJacobian,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

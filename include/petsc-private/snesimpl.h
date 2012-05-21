@@ -146,8 +146,13 @@ struct _n_SNESDM {
   PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computegs)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+
+  /* Picard iteration functions */
+  PetscErrorCode (*computepfunction)(SNES,Vec,Vec,void*);
+  PetscErrorCode (*computepjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
   void *functionctx;
   void *gsctx;
+  void *pctx;
   void *jacobianctx;
 
   /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */
