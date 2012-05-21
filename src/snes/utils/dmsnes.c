@@ -410,7 +410,7 @@ PetscErrorCode DMSNESGetGS(DM dm,PetscErrorCode (**func)(SNES,Vec,Vec,void*),voi
 #undef __FUNCT__
 #define __FUNCT__ "DMSNESSetJacobian"
 /*@C
-   DMSNESSetFunction - set SNES Jacobian evaluation function
+   DMSNESSetJacobian - set SNES Jacobian evaluation function
 
    Not Collective
 
@@ -444,7 +444,7 @@ PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*
 #undef __FUNCT__
 #define __FUNCT__ "DMSNESGetJacobian"
 /*@C
-   DMSNESGetFunction - get SNES Jacobian evaluation function
+   DMSNESGetJacobian - get SNES Jacobian evaluation function
 
    Not Collective
 
