@@ -74,10 +74,10 @@ pde = Poisson2D(da)
 x = da.createGlobalVec()
 b = da.createGlobalVec()
 # A = da.createMat('python')
-A = PETSc.Mat().createPython([x.getSizes(), b.getSizes()],
-                             comm=da.comm)
+A = PETSc.Mat().createPython(
+    [x.getSizes(), b.getSizes()], comm=da.comm)
 A.setPythonContext(pde)
-
+A.setUp()
 
 ksp = PETSc.KSP().create()
 ksp.setOperators(A)

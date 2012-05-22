@@ -8,6 +8,7 @@ m, n  = 16, 32
 A = PETSc.Mat().create(PETSc.COMM_WORLD)
 A.setSizes([m*n, m*n])
 A.setFromOptions()
+A.setUp()
 Istart, Iend = A.getOwnershipRange()
 for I in xrange(Istart, Iend) :
     A[I,I] = 4

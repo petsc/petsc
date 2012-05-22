@@ -39,6 +39,7 @@ int main(int argc,char **argv)
   MatShellSetOperation(A, MATOP_MULT,           DEL2MAT_MULT);
   MatShellSetOperation(A, MATOP_MULT_TRANSPOSE, DEL2MAT_MULT);
   MatShellSetOperation(A, MATOP_GET_DIAGONAL,   DEL2MAT_DIAG);
+  MatSetUp(A);
   /* setup linear system vectors */
   MatGetVecs(A, &x, &b);
   VecSet(x, 0);

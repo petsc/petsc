@@ -15,6 +15,7 @@ A.setSizes([n**3, n**3])
 A.setType('python')
 shell = Del2Mat(n) # shell context
 A.setPythonContext(shell)
+A.setUp()
 
 # setup linear system vectors
 x, b = A.getVecs()

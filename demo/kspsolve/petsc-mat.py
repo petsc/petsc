@@ -13,6 +13,7 @@ A = PETSc.Mat()
 A.create(PETSc.COMM_WORLD)
 A.setSizes([m*n, m*n])
 A.setType('aij') # sparse
+A.setPreallocationNNZ(5)
 
 # precompute values for setting
 # diagonal and non-diagonal entries
