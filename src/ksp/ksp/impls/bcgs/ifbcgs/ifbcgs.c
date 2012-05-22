@@ -24,8 +24,9 @@ PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
 {
   PetscErrorCode    ierr;
   PetscInt          i,j,N;
-  PetscScalar       tau,sigma,rho,alpha,omega,beta;
+  PetscScalar       tau,sigma,alpha,omega,beta;
   PetscScalar       xi1,xi2,xi3,xi4;
+  PetscReal         rho;
   Vec               X,B,P,P2,RP,R,V,S,T,S2;
   PetscScalar       *PETSC_RESTRICT rp, *PETSC_RESTRICT r, *PETSC_RESTRICT p;
   PetscScalar       *PETSC_RESTRICT v, *PETSC_RESTRICT s, *PETSC_RESTRICT t, *PETSC_RESTRICT s2;
@@ -162,7 +163,7 @@ PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
     /* scalar updates */
     omega = xi2 / xi3;
     beta = - xi4 / sigma;
-    rho = sqrt(fabs(xi1 - omega * xi2)); /* residual norm */
+    rho = PetscSqrtReal(PetscAbsScalar(xi1 - omega * xi2)); /* residual norm */
 
     /* vector updates */
     ierr = VecAXPBYPCZ(X,alpha,omega,1.0,P2,S2);CHKERRQ(ierr); /* x <- alpha * p2 + omega * s2 + x */
