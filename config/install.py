@@ -33,14 +33,6 @@ class Installer(script.Script):
   def __init__(self, clArgs = None):
     import RDict
     argDB = RDict.RDict(None, None, 0, 0, readonly = True)
-    if os.environ.has_key('PETSC_DIR'):
-      PETSC_DIR = os.environ['PETSC_DIR']
-    else:
-      fd = file(os.path.join('conf','petscvariables'))
-      a = fd.readline()
-      a = fd.readline()
-      PETSC_DIR = a.split('=')[1][0:-1]
-      fd.close()
     argDB.saveFilename = os.path.join(PETSC_DIR, PETSC_ARCH, 'conf', 'RDict.db')
     argDB.load()
     script.Script.__init__(self, argDB = argDB)
