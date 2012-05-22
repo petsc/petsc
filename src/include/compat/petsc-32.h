@@ -6,6 +6,7 @@
 #include "petsc-32/petscvec.h"
 #include "petsc-32/petscmat.h"
 #include "petsc-32/petscpc.h"
+#include "petsc-32/petscksp.h"
 #include "petsc-32/petscsnes.h"
 #include "petsc-32/petscdm.h"
 

@@ -1,0 +1,2 @@
+#define KSPCHEBYSHEV KSPCHEBYCHEV
+#define KSPPGMRES    "pgmres"

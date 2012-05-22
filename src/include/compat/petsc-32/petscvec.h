@@ -1,3 +1,5 @@
+#define VECMPIPTHREAD VECPTHREAD
+
 #undef  __FUNCT__
 #define __FUNCT__ "VecCreateSeqWithArray_Compat"
 PetscErrorCode VecCreateSeqWithArray_Compat(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar array[],Vec *V)

@@ -5,8 +5,10 @@
 #define SNESVISS         "viss"
 #define SNESQN           "qn"
 #define SNESSHELL        "shell"
+#define SNESGS           "gs"
 #define SNESNCG          "ncg"
 #define SNESFAS          "fas"
+#define SNESMS           "ms"
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetIterationNumber"

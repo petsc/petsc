@@ -12,9 +12,10 @@ cdef extern from * nogil:
     PetscSNESType SNESNGMRES
     PetscSNESType SNESQN
     PetscSNESType SNESSHELL
+    PetscSNESType SNESGS
     PetscSNESType SNESNCG
-    PetscSNESType SNESSORQN
     PetscSNESType SNESFAS
+    PetscSNESType SNESMS
 
     ctypedef enum PetscSNESConvergedReason "SNESConvergedReason":
       # iterating

@@ -12,9 +12,10 @@ class SNESType(object):
     NGMRES  = S_(SNESNGMRES)
     QN      = S_(SNESQN)
     SHELL   = S_(SNESSHELL)
+    GS      = S_(SNESGS)
     NCG     = S_(SNESNCG)
-    SORQN   = S_(SNESSORQN)
     FAS     = S_(SNESFAS)
+    MS      = S_(SNESMS)
 
 class SNESConvergedReason(object):
     # iterating

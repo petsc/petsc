@@ -2,7 +2,7 @@
 
 class KSPType(object):
     RICHARDSON = S_(KSPRICHARDSON)
-    CHEBYCHEV  = S_(KSPCHEBYCHEV)
+    CHEBYSHEV  = S_(KSPCHEBYSHEV)
     CG         = S_(KSPCG)
     CGNE       = S_(KSPCGNE)
     NASH       = S_(KSPNASH)
