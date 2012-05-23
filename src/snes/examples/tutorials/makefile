@@ -721,7 +721,7 @@ runex20:
 	   else  echo  ${PWD} "\nPossible problem with with ex20_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex20_1.tmp
 runex21:
-	-@${MPIEXEC} -n 4 ./ex21  -snes_mf -snes_monitor_short -nox > ex21_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex21 -snes_linesearch_monitor -snes_mf -snes_monitor_short -nox -ksp_monitor -snes_converged_reason > ex21_1.tmp 2>&1; \
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex21_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex21_1.tmp
