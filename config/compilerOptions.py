@@ -85,6 +85,8 @@ class CompilerOptions(config.base.Configure):
     if config.setCompilers.Configure.isGNU(compiler) or config.setCompilers.Configure.isClang(compiler):
       if bopt == '':
         flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
+        # The option below would prevent warnings about compiling C as C++ being deprecated, but it causes Clang to SEGV, http://llvm.org/bugs/show_bug.cgi?id=12924
+        # flags.extend([('-x','c++')])
         if self.framework.argDB['with-visibility']:
           flags.extend(['-fvisibility=hidden'])
       elif bopt in ['g']:

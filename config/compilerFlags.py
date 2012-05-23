@@ -96,6 +96,8 @@ class Configure(config.base.Configure):
           else:
             flags = options.getCompilerFlags(language, self.setCompilers.getCompiler(), bopt)
           for testFlag in flags:
+            if isinstance(testFlag,tuple):
+              testFlag = ' '.join(testFlag)
             try:
               self.framework.logPrint('Trying '+language+' compiler flag '+testFlag)
               self.setCompilers.addCompilerFlag(testFlag)
