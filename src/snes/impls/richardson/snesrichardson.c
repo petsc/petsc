@@ -259,6 +259,7 @@ PetscErrorCode  SNESCreate_NRichardson(SNES snes)
   if (!snes->tolerancesset) {
     snes->max_funcs = 30000;
     snes->max_its   = 10000;
+    snes->stol      = 1e-20;
   }
 
   PetscFunctionReturn(0);
