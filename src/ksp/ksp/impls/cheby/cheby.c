@@ -278,12 +278,14 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   if (cheb->kspest && !cheb->estimate_current) { 
     PetscReal max,min;
     Vec X = ksp->vec_sol;
-    if (hybrid) cheb->its = 0; /* initialize Chebyshev iteration associated to kspest */
     if (!ksp->guess_zero && !hybrid) {ierr = VecDuplicate(ksp->vec_sol,&X);CHKERRQ(ierr);}
     ierr = KSPSolve(cheb->kspest,ksp->vec_rhs,X);CHKERRQ(ierr);
     if (!hybrid){
       if (!ksp->guess_zero) {ierr = VecDestroy(&X);CHKERRQ(ierr);} 
       else {ierr = VecZeroEntries(X);CHKERRQ(ierr);}
+    } else {
+      cheb->its = 0; /* initialize Chebyshev iteration associated to kspest */
+      ierr = KSPSetInitialGuessNonzero(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = KSPComputeExtremeSingularValues(cheb->kspest,&max,&min);CHKERRQ(ierr);
     cheb->emin = cheb->tform[0]*min + cheb->tform[1]*max;
@@ -324,34 +326,38 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     ierr = VecCopy(b,r);CHKERRQ(ierr);
   }
                   
-  ierr = KSP_PCApply(ksp,r,p[k]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + x */
-  ierr = VecAYPX(p[k],scale,x);CHKERRQ(ierr);
+  ierr = KSP_PCApply(ksp,r,p[k]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + x, x = ksp->vec_sol */
+  ierr = VecAYPX(p[k],scale,x);CHKERRQ(ierr);   
 
   for (i=0; i<maxit; i++) {
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     if (hybrid && cheb->its && (cheb->its%cheb->chebysteps==0)){
       /* Adaptive step: update eigenvalue estimate - does not seem to improve convergence */
       PetscReal max,min;
-      x = ksp->vec_sol;
-      ierr = KSPSolve(cheb->kspest,ksp->vec_rhs,x);CHKERRQ(ierr);
+      
+      x    = ksp->vec_sol;
+      ierr = VecCopy(p[k],x);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)ksp->vec_sol);CHKERRQ(ierr); /* cause memory leak; without it, memory corruption - need fix! */
+      ierr = KSPSolve(cheb->kspest,ksp->vec_rhs,x);CHKERRQ(ierr); 
       ierr = KSPComputeExtremeSingularValues(cheb->kspest,&max,&min);CHKERRQ(ierr);
       cheb->emin = cheb->tform[0]*min + cheb->tform[1]*max;
       cheb->emax = cheb->tform[2]*min + cheb->tform[3]*max;
       cheb->estimate_current = PETSC_TRUE;
 
       b      = ksp->vec_rhs;
-      p[km1] = x;
+      p[km1] = x;  /* = ksp->vec_sol */
       scale  = 2.0/(cheb->emax + cheb->emin);
-      alpha  = 1.0 - scale*(cheb->emin); ;
+      alpha  = 1.0 - scale*(cheb->emin); 
       mu     = 1.0/alpha; 
       omegaprod = 2.0/alpha;
+    
       c[km1] = 1.0;
-      c[k]   = mu;
+      c[k]   = mu; 
       ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);     /*  r = b - Ax     */
       ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
 
       ierr = KSP_PCApply(ksp,r,p[k]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + x */
-      ierr = VecAYPX(p[k],scale,x);CHKERRQ(ierr);
+      ierr = VecAYPX(p[k],scale,x);CHKERRQ(ierr);    
     }
 
     ksp->its++;
