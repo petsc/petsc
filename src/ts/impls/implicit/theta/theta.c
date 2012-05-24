@@ -24,15 +24,35 @@ static PetscErrorCode TSThetaGetX0AndXdot(TS ts,DM dm,Vec *X0,Vec *Xdot)
   PetscFunctionBegin;
   if (X0) {
     if (dm && dm != ts->dm) {
-      ierr = PetscObjectQuery((PetscObject)dm,"TSTheta_X0",(PetscObject*)X0);CHKERRQ(ierr);
-      if (!*X0) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_ARG_INCOMP,"TSTheta_X0 has not been composed with DM from SNES");
+      ierr = DMGetNamedGlobalVector(dm,"TSTheta_X0",X0);CHKERRQ(ierr);
     } else *X0 = ts->vec_sol;
   }
   if (Xdot) {
     if (dm && dm != ts->dm) {
-      ierr = PetscObjectQuery((PetscObject)dm,"TSTheta_Xdot",(PetscObject*)Xdot);CHKERRQ(ierr);
-      if (!*Xdot) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_ARG_INCOMP,"TSTheta_Xdot has not been composed with DM from SNES");
+      ierr = DMGetNamedGlobalVector(dm,"TSTheta_Xdot",Xdot);CHKERRQ(ierr);
     } else *Xdot = th->Xdot;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TSThetaRestoreX0AndXdot"
+static PetscErrorCode TSThetaRestoreX0AndXdot(TS ts,DM dm,Vec *X0,Vec *Xdot)
+{
+  TS_Theta       *th = (TS_Theta*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (X0) {
+    if (dm && dm != ts->dm) {
+      ierr = DMRestoreNamedGlobalVector(dm,"TSTheta_X0",X0);CHKERRQ(ierr);
+    }
+  }
+  if (Xdot) {
+    if (dm && dm != ts->dm) {
+      ierr = DMRestoreNamedGlobalVector(dm,"TSTheta_Xdot",Xdot);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -41,20 +61,8 @@ static PetscErrorCode TSThetaGetX0AndXdot(TS ts,DM dm,Vec *X0,Vec *Xdot)
 #define __FUNCT__ "DMCoarsenHook_TSTheta"
 static PetscErrorCode DMCoarsenHook_TSTheta(DM fine,DM coarse,void *ctx)
 {
-  Vec X0,Xdot;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMCreateGlobalVector(coarse,&X0);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(coarse,&Xdot);CHKERRQ(ierr);
-  /* Oh noes, this would create a loop because the Vec holds a reference to the DM.
-     Making a PetscContainer to hold these Vecs would make the following call succeed, but would create a reference loop.
-     Need to decide on a way to break the reference counting loop.
-   */
-  ierr = PetscObjectCompose((PetscObject)coarse,"TSTheta_X0",(PetscObject)X0);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)coarse,"TSTheta_Xdot",(PetscObject)Xdot);CHKERRQ(ierr);
-  ierr = VecDestroy(&X0);CHKERRQ(ierr);
-  ierr = VecDestroy(&Xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -73,6 +81,8 @@ static PetscErrorCode DMRestrictHook_TSTheta(DM fine,Mat restrct,Vec rscale,Mat 
   ierr = MatRestrict(restrct,Xdot,Xdot_c);CHKERRQ(ierr);
   ierr = VecPointwiseMult(X0_c,rscale,X0_c);CHKERRQ(ierr);
   ierr = VecPointwiseMult(Xdot_c,rscale,Xdot_c);CHKERRQ(ierr);
+  ierr = TSThetaRestoreX0AndXdot(ts,fine,&X0,&Xdot);CHKERRQ(ierr);
+  ierr = TSThetaRestoreX0AndXdot(ts,coarse,&X0_c,&Xdot_c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -194,6 +204,7 @@ static PetscErrorCode SNESTSFormFunction_Theta(SNES snes,Vec x,Vec y,TS ts)
   ts->dm = dm;
   ierr = TSComputeIFunction(ts,th->stage_time,x,Xdot,y,PETSC_FALSE);CHKERRQ(ierr);
   ts->dm = dmsave;
+  ierr = TSThetaRestoreX0AndXdot(ts,dm,&X0,&Xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -216,6 +227,7 @@ static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,Mat
   ts->dm = dm;
   ierr = TSComputeIJacobian(ts,th->stage_time,x,Xdot,th->shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
   ts->dm = dmsave;
+  ierr = TSThetaRestoreX0AndXdot(ts,dm,PETSC_NULL,&Xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
