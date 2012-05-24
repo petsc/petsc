@@ -1377,6 +1377,9 @@ PetscErrorCode  PCPreSolve(PC pc,KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
+  pc->presolvedone++;
+  if (pc->presolvedone > 1) PetscFunctionReturn(0);
+
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&rhs);CHKERRQ(ierr);
   /*
@@ -1434,6 +1437,8 @@ PetscErrorCode  PCPostSolve(PC pc,KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
+  pc->presolvedone--;
+  if (pc->presolvedone > 0) PetscFunctionReturn(0);
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&rhs);CHKERRQ(ierr);
   if (pc->ops->postsolve) {

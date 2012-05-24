@@ -3,6 +3,18 @@
 #include <../src/ksp/ksp/impls/cheby/chebyshevimpl.h>
 
 #undef __FUNCT__  
+#define __FUNCT__ "KSPReset_Chebyshev"
+PetscErrorCode KSPReset_Chebyshev(KSP ksp)
+{
+  KSP_Chebyshev *cheb = (KSP_Chebyshev*)ksp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPReset(cheb->kspest);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_Chebyshev"
 PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
 {
@@ -504,6 +516,7 @@ PetscErrorCode  KSPCreate_Chebyshev(KSP ksp)
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->setfromoptions       = KSPSetFromOptions_Chebyshev;
   ksp->ops->view                 = KSPView_Chebyshev;
+  ksp->ops->reset                = KSPReset_Chebyshev;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C",
                                     "KSPChebyshevSetEigenvalues_Chebyshev",
