@@ -85,20 +85,23 @@ class Configure(config.base.Configure):
       except (ImportError), e:
         make_np = 2
         self.framework.logPrint('module multiprocessing *not* found: using default make_np = %d' % make_np)
-      import os
-      import pwd
-      if 'barrysmith' == pwd.getpwuid(os.getuid()).pw_name:
-        # Barry wants to use exactly the number of physical cores (not logical cores) because it breaks otherwise.
-        # Since this works for everyone else who uses a Mac, something must be wrong with their systems. ;-)
-        try:
-          (output, error, status) = config.base.Configure.executeShellCommand('/usr/sbin/system_profiler -detailLevel full SPHardwareDataType', log = self.framework.log)
-          import re
-          match = re.search(r'.*Total Number Of Cores: (\d+)', output)
-          if match:
-            make_np = int(match.groups()[0])
-            self.framework.logPrint('Found number of cores using system_profiler: make_np = %d' % (make_np,))
-        except:
-          pass
+      try:
+        import os
+        import pwd
+        if 'barrysmith' == pwd.getpwuid(os.getuid()).pw_name:
+          # Barry wants to use exactly the number of physical cores (not logical cores) because it breaks otherwise.
+          # Since this works for everyone else who uses a Mac, something must be wrong with their systems. ;-)
+          try:
+            (output, error, status) = config.base.Configure.executeShellCommand('/usr/sbin/system_profiler -detailLevel full SPHardwareDataType', log = self.framework.log)
+            import re
+            match = re.search(r'.*Total Number Of Cores: (\d+)', output)
+            if match:
+              make_np = int(match.groups()[0])
+              self.framework.logPrint('Found number of cores using system_profiler: make_np = %d' % (make_np,))
+          except:
+            pass
+      except:
+        pass
     self.make_np = make_np
     self.addMakeMacro('MAKE_NP',str(make_np))
     return
