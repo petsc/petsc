@@ -1,95 +1,73 @@
       0 SNES Function norm 0.207564 
-        0 KSP Residual norm 0.228979 
-        1 KSP Residual norm < 1.e-11
-      Linear solve converged due to CONVERGED_ATOL iterations 1
+        0 KSP Residual norm 0.118086 
+        1 KSP Residual norm 0.00627467 
+        2 KSP Residual norm < 1.e-11
+      Linear solve converged due to CONVERGED_RTOL iterations 2
       1 SNES Function norm 0.0148968 
-        0 KSP Residual norm 0.0192507 
-        1 KSP Residual norm < 1.e-11
-      Linear solve converged due to CONVERGED_ATOL iterations 1
+        0 KSP Residual norm 0.00854464 
+        1 KSP Residual norm 0.000539766 
+        2 KSP Residual norm < 1.e-11
+      Linear solve converged due to CONVERGED_RTOL iterations 2
       2 SNES Function norm 0.000113967 
-        0 KSP Residual norm 0.000149569 
-        1 KSP Residual norm < 1.e-11
-      Linear solve converged due to CONVERGED_ATOL iterations 1
+        0 KSP Residual norm 7.23812e-05 
+        1 KSP Residual norm 4.50548e-06 
+        2 KSP Residual norm < 1.e-11
+      Linear solve converged due to CONVERGED_RTOL iterations 2
       3 SNES Function norm 6.92417e-09 
-        0 KSP Residual norm 9.08829e-09 
-        1 KSP Residual norm < 1.e-11
-      Linear solve converged due to CONVERGED_RTOL iterations 1
+        0 KSP Residual norm 4.40671e-09 
+        1 KSP Residual norm 2.741e-10 
+        2 KSP Residual norm < 1.e-11
+      Linear solve converged due to CONVERGED_RTOL iterations 2
       4 SNES Function norm < 1.e-11
-    Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 4
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
     0 SNES Function norm 0.937398 
-      0 KSP Residual norm 0.436616 
-      1 KSP Residual norm 0.0121677 
-      2 KSP Residual norm 0.000592886 
-      3 KSP Residual norm 1.83697e-05 
-      4 KSP Residual norm 6.55774e-07 
+      0 KSP Residual norm 0.422873 
+      1 KSP Residual norm 0.00815939 
+      2 KSP Residual norm 0.000291602 
+      3 KSP Residual norm 9.61686e-06 
+      4 KSP Residual norm 2.89216e-07 
     Linear solve converged due to CONVERGED_RTOL iterations 4
-    1 SNES Function norm 0.00614111 
-      0 KSP Residual norm 0.0192729 
-      1 KSP Residual norm 0.000318214 
-      2 KSP Residual norm 9.87023e-06 
-      3 KSP Residual norm 4.93809e-07 
-      4 KSP Residual norm 1.77039e-08 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    2 SNES Function norm 0.000157297 
-      0 KSP Residual norm 6.12447e-05 
-      1 KSP Residual norm 1.06462e-05 
-      2 KSP Residual norm 1.70247e-07 
-      3 KSP Residual norm 7.81708e-09 
-      4 KSP Residual norm 1.784e-10 
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    3 SNES Function norm 1.6436e-06 
-      0 KSP Residual norm 5.32221e-07 
-      1 KSP Residual norm 1.2426e-07 
-      2 KSP Residual norm 3.84033e-09 
-      3 KSP Residual norm 1.575e-10 
-      4 KSP Residual norm < 1.e-11
-      5 KSP Residual norm < 1.e-11
-    Linear solve converged due to CONVERGED_RTOL iterations 5
-    4 SNES Function norm 3.1313e-08 
-      0 KSP Residual norm 1.12466e-08 
-      1 KSP Residual norm 2.31289e-09 
-      2 KSP Residual norm 3.571e-11 
-      3 KSP Residual norm < 1.e-11
-      4 KSP Residual norm < 1.e-11
-    Linear solve converged due to CONVERGED_RTOL iterations 4
-    5 SNES Function norm 2.130e-10 
-  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
+    1 SNES Function norm 0.00645553 
+      0 KSP Residual norm 0.0204134 
+      1 KSP Residual norm 0.000109075 
+      2 KSP Residual norm 2.91594e-06 
+      3 KSP Residual norm 1.21266e-07 
+    Linear solve converged due to CONVERGED_RTOL iterations 3
+    2 SNES Function norm 1.84327e-05 
+      0 KSP Residual norm 7.25513e-05 
+      1 KSP Residual norm 3.30254e-07 
+      2 KSP Residual norm 9.74836e-09 
+      3 KSP Residual norm 3.225e-10 
+    Linear solve converged due to CONVERGED_RTOL iterations 3
+    3 SNES Function norm 1.28767e-09 
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
   0 SNES Function norm 0.517003 
-    0 KSP Residual norm 0.251451 
-    1 KSP Residual norm 0.00847913 
-    2 KSP Residual norm 0.000361866 
-    3 KSP Residual norm 5.09908e-05 
-    4 KSP Residual norm 7.96243e-07 
+    0 KSP Residual norm 0.238111 
+    1 KSP Residual norm 0.0048574 
+    2 KSP Residual norm 0.000724042 
+    3 KSP Residual norm 8.98044e-06 
+    4 KSP Residual norm 2.08071e-07 
   Linear solve converged due to CONVERGED_RTOL iterations 4
-  1 SNES Function norm 0.000522768 
-    0 KSP Residual norm 0.00392448 
-    1 KSP Residual norm 3.06554e-05 
-    2 KSP Residual norm 1.13465e-06 
-    3 KSP Residual norm 7.12515e-08 
-    4 KSP Residual norm 3.69536e-09 
-  Linear solve converged due to CONVERGED_RTOL iterations 4
-  2 SNES Function norm 5.87944e-06 
-    0 KSP Residual norm 1.40211e-05 
-    1 KSP Residual norm 4.96354e-07 
-    2 KSP Residual norm 1.26884e-08 
-    3 KSP Residual norm 5.449e-10 
-    4 KSP Residual norm 2.871e-11 
-  Linear solve converged due to CONVERGED_RTOL iterations 4
-  3 SNES Function norm 4.07897e-08 
-    0 KSP Residual norm 1.42312e-07 
-    1 KSP Residual norm 2.87198e-09 
-    2 KSP Residual norm 1.224e-10 
+  1 SNES Function norm 0.000279815 
+    0 KSP Residual norm 0.00334403 
+    1 KSP Residual norm 1.2075e-05 
+    2 KSP Residual norm 4.37272e-07 
+    3 KSP Residual norm 1.89695e-08 
+  Linear solve converged due to CONVERGED_RTOL iterations 3
+  2 SNES Function norm 9.05271e-08 
+    0 KSP Residual norm 9.5408e-07 
+    1 KSP Residual norm 3.39027e-09 
+    2 KSP Residual norm 1.057e-10 
     3 KSP Residual norm < 1.e-11
-    4 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_RTOL iterations 4
-  4 SNES Function norm 1.27719e-09 
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
+  Linear solve converged due to CONVERGED_RTOL iterations 3
+  3 SNES Function norm 1.767e-11 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 SNES Object: 2 MPI processes
   type: ls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=16
-  total number of function evaluations=5
+  total number of linear solver iterations=10
+  total number of function evaluations=4
   total number of grid sequence refinements=2
   KSP Object:   2 MPI processes
     type: gmres
@@ -149,47 +127,35 @@ SNES Object: 2 MPI processes
           total number of mallocs used during MatSetValues calls =0
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object:      (mg_levels_1_)       2 MPI processes
-        type: gmres
-          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          GMRES: happy breakdown tolerance 1e-30
-        maximum iterations=1
+        type: chebyshev
+          Chebyshev: eigenvalue estimates:  min = 0.131186, max = 1.44304
+          Chebyshev: estimated using:  [0 0.1; 0 1.1]
+          KSP Object:           2 MPI processes
+            type: gmres
+              GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+              GMRES: happy breakdown tolerance 1e-30
+            maximum iterations=10
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            left preconditioning
+            using nonzero initial guess
+            using NONE norm type for convergence test
+          PC Object:          (mg_levels_1_)           2 MPI processes
+            type: sor
+              SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
+            linear system matrix = precond matrix:
+            Matrix Object:             2 MPI processes
+              type: mpiaij
+              rows=49, cols=49
+              total: nonzeros=217, allocated nonzeros=217
+              total number of mallocs used during MatSetValues calls =0
+        maximum iterations=2
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using nonzero initial guess
-        using PRECONDITIONED norm type for convergence test
+        using NONE norm type for convergence test
       PC Object:      (mg_levels_1_)       2 MPI processes
-        type: bjacobi
-          block Jacobi: number of blocks = 2
-          Local solve is same for all blocks, in the following KSP and PC objects:
-        KSP Object:        (mg_levels_1_sub_)         1 MPI processes
-          type: preonly
-          maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-          left preconditioning
-          using NONE norm type for convergence test
-        PC Object:        (mg_levels_1_sub_)         1 MPI processes
-          type: ilu
-            ILU: out-of-place factorization
-            0 levels of fill
-            tolerance for zero pivot 2.22045e-14
-            using diagonal shift to prevent zero pivot
-            matrix ordering: natural
-            factor fill ratio given 1, needed 1
-              Factored matrix follows:
-                Matrix Object:                 1 MPI processes
-                  type: seqaij
-                  rows=28, cols=28
-                  package used to perform factorization: petsc
-                  total: nonzeros=118, allocated nonzeros=118
-                  total number of mallocs used during MatSetValues calls =0
-                    not using I-node routines
-          linear system matrix = precond matrix:
-          Matrix Object:           1 MPI processes
-            type: seqaij
-            rows=28, cols=28
-            total: nonzeros=118, allocated nonzeros=118
-            total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
+        type: sor
+          SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
         linear system matrix = precond matrix:
         Matrix Object:         2 MPI processes
           type: mpiaij
@@ -199,47 +165,35 @@ SNES Object: 2 MPI processes
     Up solver (post-smoother) same as down solver (pre-smoother)
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object:      (mg_levels_2_)       2 MPI processes
-        type: gmres
-          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          GMRES: happy breakdown tolerance 1e-30
-        maximum iterations=1
+        type: chebyshev
+          Chebyshev: eigenvalue estimates:  min = 0.128678, max = 1.41546
+          Chebyshev: estimated using:  [0 0.1; 0 1.1]
+          KSP Object:           2 MPI processes
+            type: gmres
+              GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+              GMRES: happy breakdown tolerance 1e-30
+            maximum iterations=10
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            left preconditioning
+            using nonzero initial guess
+            using NONE norm type for convergence test
+          PC Object:          (mg_levels_2_)           2 MPI processes
+            type: sor
+              SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
+            linear system matrix = precond matrix:
+            Matrix Object:             2 MPI processes
+              type: mpiaij
+              rows=169, cols=169
+              total: nonzeros=793, allocated nonzeros=793
+              total number of mallocs used during MatSetValues calls =0
+        maximum iterations=2
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using nonzero initial guess
-        using PRECONDITIONED norm type for convergence test
+        using NONE norm type for convergence test
       PC Object:      (mg_levels_2_)       2 MPI processes
-        type: bjacobi
-          block Jacobi: number of blocks = 2
-          Local solve is same for all blocks, in the following KSP and PC objects:
-        KSP Object:        (mg_levels_2_sub_)         1 MPI processes
-          type: preonly
-          maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-          left preconditioning
-          using NONE norm type for convergence test
-        PC Object:        (mg_levels_2_sub_)         1 MPI processes
-          type: ilu
-            ILU: out-of-place factorization
-            0 levels of fill
-            tolerance for zero pivot 2.22045e-14
-            using diagonal shift to prevent zero pivot
-            matrix ordering: natural
-            factor fill ratio given 1, needed 1
-              Factored matrix follows:
-                Matrix Object:                 1 MPI processes
-                  type: seqaij
-                  rows=91, cols=91
-                  package used to perform factorization: petsc
-                  total: nonzeros=415, allocated nonzeros=415
-                  total number of mallocs used during MatSetValues calls =0
-                    not using I-node routines
-          linear system matrix = precond matrix:
-          Matrix Object:           1 MPI processes
-            type: seqaij
-            rows=91, cols=91
-            total: nonzeros=415, allocated nonzeros=415
-            total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
+        type: sor
+          SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
         linear system matrix = precond matrix:
         Matrix Object:         2 MPI processes
           type: mpiaij

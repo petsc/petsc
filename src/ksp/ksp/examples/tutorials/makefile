@@ -878,7 +878,7 @@ runex21f:
 	   else echo ${PWD} ; echo "Possible problem with with ex21f_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex21f_1.tmp
 runex22f:
-	-@${MPIEXEC} -n 1 ./ex22f -pc_mg_type full -ksp_monitor_short -mg_levels_ksp_monitor_short -pc_type mg -da_refine 2 -ksp_type fgmres > ex22_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex22f -pc_mg_type full -ksp_monitor_short -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type preconditioned -pc_type mg -da_refine 2 -ksp_type fgmres > ex22_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex22f_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex22_1.tmp
@@ -896,19 +896,19 @@ runex23_2:
 	   ${RM} -f ex23_2.tmp
 
 runex25:
-	-@${MPIEXEC} -n 1 ./ex25 -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -ksp_view -pc_mg_type full  > ex25_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex25 -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type unpreconditioned -ksp_view -pc_mg_type full  > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex25_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex25_1.tmp
 
 runex25_2:
-	-@${MPIEXEC} -n 2 ./ex25 -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -ksp_view -pc_mg_type full > ex25_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex25 -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type unpreconditioned -ksp_view -pc_mg_type full > ex25_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex25_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex25_2.tmp
 
 runex28:
-	-@${MPIEXEC} -n 1 ./ex28 -ksp_monitor_short -pc_type mg -pc_mg_type full -ksp_type fgmres -da_refine 2   > ex28_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex28 -ksp_monitor_short -pc_type mg -pc_mg_type full -ksp_type fgmres -da_refine 2 -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type ilu > ex28_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex28_1.out ex28_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex28_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex28_1.tmp
@@ -932,13 +932,13 @@ runex30:
 	   ${RM} -f ex30_1.tmp
 
 runex32:
-	-@${MPIEXEC} -n 1 ./ex32 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -pc_mg_levels 3 -mg_levels_pc_factor_shift_type nonzero -mg_coarse_pc_factor_shift_type nonzero > ex32_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex32 -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -pc_mg_levels 3 -mg_coarse_pc_factor_shift_type nonzero > ex32_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex32_1.out ex32_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex32_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex32_1.tmp
 
 runex34:
-	-@${MPIEXEC} -n 1 ./ex34  -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -pc_mg_levels 3 -mg_levels_pc_factor_shift_type nonzero -mg_coarse_pc_factor_shift_type nonzero -ksp_view > ex34_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex34  -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -pc_mg_levels 3 -mg_coarse_pc_factor_shift_type nonzero -ksp_view > ex34_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex34_1.out ex34_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex34_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex34_1.tmp
@@ -977,11 +977,11 @@ runex43_3:
 	   ${RM} -f ex43_3.tmp
 
 runex45:
-	-@${MPIEXEC} -n 4 ./ex45 -pc_type exotic -ksp_type fgmres -ksp_monitor_short  > ex45_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex45 -pc_type exotic -ksp_monitor_short -ksp_type fgmres -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type bjacobi > ex45_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex45_1.out ex45_1.tmp || echo ${PWD} "\nPossible problem with with ex45_1, diffs above \n========================================="; \
 	   ${RM} -f ex45_1.tmp
 runex45_2:
-	-@${MPIEXEC} -n 4 ./ex45 -ksp_monitor_short -da_grid_x 21 -da_grid_y 21 -da_grid_z 21 -pc_type mg -pc_mg_levels 3 -mg_levels_ksp_type richardson > ex45_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex45 -ksp_monitor_short -da_grid_x 21 -da_grid_y 21 -da_grid_z 21 -pc_type mg -pc_mg_levels 3 -mg_levels_ksp_type richardson -mg_levels_ksp_max_it 1 -mg_levels_pc_type bjacobi > ex45_2.tmp 2>&1; \
 	   ${DIFF} output/ex45_2.out ex45_2.tmp || echo ${PWD} "\nPossible problem with with ex45_2, diffs above \n========================================="; \
 	   ${RM} -f ex45_2.tmp
 runex45f:
