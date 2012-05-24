@@ -23,30 +23,31 @@ PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
 
   PetscFunctionBegin;
   ierr = KSPDefaultGetWork(ksp,3);CHKERRQ(ierr);
-  cheb->estimate_current = PETSC_FALSE;
+  if (cheb->emin == 0. || cheb->emax == 0.) { /* We need to estimate eigenvalues */
+    ierr = KSPChebyshevSetEstimateEigenvalues(ksp,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPChebyshevSetEigenvalues_Chebyshev"
-PetscErrorCode  KSPChebyshevSetEigenvalues_Chebyshev(KSP ksp,PetscReal emax,PetscReal emin)
+PETSC_EXTERN_C PetscErrorCode KSPChebyshevSetEigenvalues_Chebyshev(KSP ksp,PetscReal emax,PetscReal emin)
 {
   KSP_Chebyshev *chebyshevP = (KSP_Chebyshev*)ksp->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (emax <= emin) SETERRQ2(((PetscObject)ksp)->comm,PETSC_ERR_ARG_INCOMP,"Maximum eigenvalue must be larger than minimum: max %g min %G",emax,emin);
   if (emax*emin <= 0.0) SETERRQ2(((PetscObject)ksp)->comm,PETSC_ERR_ARG_INCOMP,"Both eigenvalues must be of the same sign: max %G min %G",emax,emin);
   chebyshevP->emax = emax;
   chebyshevP->emin = emin;
+  ierr = KSPChebyshevSetEstimateEigenvalues(ksp,0.,0.,0.,0.);CHKERRQ(ierr); /* Destroy any estimation setup */
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPChebyshevSetEstimateEigenvalues_Chebyshev"
-PetscErrorCode  KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
+PETSC_EXTERN_C PetscErrorCode KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
 {
   KSP_Chebyshev *cheb = (KSP_Chebyshev*)ksp->data;
   PetscErrorCode ierr;
@@ -84,7 +85,6 @@ PetscErrorCode  KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP ksp,PetscReal a
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPChebyshevSetNewMatrix_Chebyshev"
@@ -159,9 +159,11 @@ PetscErrorCode  KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin
 
    If 0.0 is passed for all transform arguments (a,b,c,d), eigenvalue estimation is disabled.
 
+   The default transform is (0,0.1; 0,1.1) which targets the "upper" part of the spectrum, as desirable for use with multigrid.
+
    Level: intermediate
 
-.keywords: KSP, Chebyshev, set, eigenvalues
+.keywords: KSP, Chebyshev, set, eigenvalues, PCMG
 @*/
 PetscErrorCode KSPChebyshevSetEstimateEigenvalues(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
 {
@@ -434,6 +436,7 @@ PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: eigenvalue estimates:  min = %G, max = %G\n",cheb->emin,cheb->emax);CHKERRQ(ierr);
     if (cheb->kspest) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: estimated using:  [%G %G; %G %G]\n",cheb->tform[0],cheb->tform[1],cheb->tform[2],cheb->tform[3]);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = KSPView(cheb->kspest,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -477,15 +480,17 @@ PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
           be symmetric positive (semi) definite.
           Only support for left preconditioning.
 
+          Chebyshev is configured as a smoother by default, targetting the "upper" part of the spectrum.
+          The user should call KSPChebyshevSetEigenvalues() if they have eigenvalue estimates.
+
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPChebyshevSetEigenvalues(), KSPRICHARDSON, KSPCG
+           KSPChebyshevSetEigenvalues(), KSPChebyshevSetEstimateEigenvalues(), KSPRICHARDSON, KSPCG, PCMG
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_Chebyshev"
-PetscErrorCode  KSPCreate_Chebyshev(KSP ksp)
+PETSC_EXTERN_C PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_Chebyshev  *chebyshevP;
@@ -497,11 +502,11 @@ PetscErrorCode  KSPCreate_Chebyshev(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
 
-  chebyshevP->emin               = 1.e-2;
-  chebyshevP->emax               = 1.e+2;
+  chebyshevP->emin               = 0.;
+  chebyshevP->emax               = 0.;
 
   chebyshevP->tform[0]           = 0.0;
-  chebyshevP->tform[1]           = 0.02;
+  chebyshevP->tform[1]           = 0.1;
   chebyshevP->tform[2]           = 0;
   chebyshevP->tform[3]           = 1.1;
 
@@ -529,4 +534,3 @@ PetscErrorCode  KSPCreate_Chebyshev(KSP ksp)
                                     KSPChebyshevSetNewMatrix_Chebyshev);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
