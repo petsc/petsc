@@ -225,8 +225,6 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,vo
   PetscErrorCode  ierr;
   Vec             resid,work;
   PetscReal       scnorm,bnorm;
-  PC              pc;
-  Mat             A,B;
   PetscViewer     viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(((PetscObject)ksp)->comm);
   char            normtype[256];
 
@@ -260,8 +258,6 @@ PetscErrorCode  KSPMonitorRange_Private(KSP ksp,PetscInt it,PetscReal *per)
   PetscErrorCode          ierr;
   Vec                     resid,work;
   PetscReal               rmax,pwork;
-  PC                      pc;
-  Mat                     A,B;
   PetscInt                i,n,N;
   PetscScalar             *r;
 

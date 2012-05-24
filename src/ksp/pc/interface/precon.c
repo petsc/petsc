@@ -1372,7 +1372,6 @@ PetscErrorCode  PCPreSolve(PC pc,KSP ksp)
 {
   PetscErrorCode ierr;
   Vec            x,rhs;
-  Mat            A,B;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -1422,7 +1421,6 @@ PetscErrorCode  PCPostSolve(PC pc,KSP ksp)
 {
   PetscErrorCode ierr;
   Vec            x,rhs;
-  Mat            A,B;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
