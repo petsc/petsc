@@ -57,6 +57,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,dim,dim);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = FormTestMatrix(A,n,type);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
   flg  = PETSC_FALSE;

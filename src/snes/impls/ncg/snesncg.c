@@ -500,6 +500,7 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
   if (!snes->tolerancesset) {
     snes->max_funcs = 30000;
     snes->max_its   = 10000;
+    snes->stol      = 1e-20;
   }
 
   ierr = PetscNewLog(snes, SNES_NCG, &neP);CHKERRQ(ierr);

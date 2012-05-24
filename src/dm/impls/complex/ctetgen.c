@@ -1352,8 +1352,8 @@ PETSC_STATIC_INLINE void cross(PetscReal *v1, PetscReal *v2, PetscReal *n)
   n[1] = -(v1[0] * v2[2] - v2[0] * v1[2]);
   n[2] =   v1[0] * v2[1] - v2[0] * v1[1];
 }
-/*  distance() computes the Euclidean distance between two points. */
-PETSC_STATIC_INLINE PetscReal distance(PetscReal *p1, PetscReal *p2)
+/*  tetgenmesh::distance() computes the Euclidean distance between two points. */
+PETSC_STATIC_INLINE PetscReal TetGenMeshDistance(PetscReal *p1, PetscReal *p2)
 {
   return sqrt((p2[0] - p1[0]) * (p2[0] - p1[0]) +
               (p2[1] - p1[1]) * (p2[1] - p1[1]) +
@@ -7554,7 +7554,7 @@ PetscErrorCode TetGenMeshLawson3D(TetGenMesh *m, Queue *flipqueue, long *numFlip
                       end1 = (point) checkseg.sh[3];
                       end2 = (point) checkseg.sh[4];
                       ori4 = TetGenOrient3D(end1, end2, pd, pe);
-                      len = distance(end1, end2);
+                      len = TetGenMeshDistance(end1, end2);
                       vol = len * len * len;
                       /*  Is it nearly degnerate? */
                       if ((fabs(ori4) / vol) < b->epsilon) {
@@ -11692,7 +11692,7 @@ PetscErrorCode TetGenMeshDelaunayIncrFlip(TetGenMesh *m, triface *oldtet, point 
 
   /*  Get the second point b, that is not identical or very close to a. */
   for(i = 1; i < arraysize; i++) {
-    det = distance(insertarray[0], insertarray[i]);
+    det = TetGenMeshDistance(insertarray[0], insertarray[i]);
     if (det > (m->longest * eps)) break;
   }
   if (i == arraysize) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "All points seem to be identical,");
@@ -12665,7 +12665,7 @@ PetscErrorCode TetGenMeshIncrFlipDelaunaySub(TetGenMesh *m, int shmark, PetscRea
   epscount = 0;
   while(1) {
     for(i = 1; i < arraysize; i++) {
-      det = distance(insertarray[0], insertarray[i]);
+      det = TetGenMeshDistance(insertarray[0], insertarray[i]);
       if (det > (m->longest * eps)) break;
     }
     if (i < arraysize) {
@@ -17915,7 +17915,7 @@ PetscErrorCode TetGenMeshDecideFeaturePointSizes(TetGenMesh *m)
                 adjpt = e1;
               }
             }
-            len = distance(ploop, adjpt);
+            len = TetGenMeshDistance(ploop, adjpt);
             if (lfs_0 > len) lfs_0 = len;
           }
           ploop[m->pointmtrindex] = lfs_0;
@@ -18002,8 +18002,8 @@ PetscErrorCode TetGenMeshDecideFeaturePointSizes(TetGenMesh *m)
             } while (1);
             /*  e1 = sorg(prevseg); */
             /*  e2 = sdest(nextseg); */
-            len = distance(e1, e2);
-            lfs_0 = distance(e1, ploop);
+            len = TetGenMeshDistance(e1, e2);
+            lfs_0 = TetGenMeshDistance(e1, ploop);
             /*  The following assert() happens when -Y option is used. */
             if (b->nobisect == 0) {
               if (lfs_0 >= len) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This is wrong");
@@ -18316,7 +18316,7 @@ PetscErrorCode TetGenMeshCheckSeg4Encroach(TetGenMesh *m, face *testseg, point t
   cent[0] = 0.5 * (eorg[0] + edest[0]);
   cent[1] = 0.5 * (eorg[1] + edest[1]);
   cent[2] = 0.5 * (eorg[2] + edest[2]);
-  radius = distance(cent, eorg);
+  radius = TetGenMeshDistance(cent, eorg);
 
   if (m->varconstraint && (areabound(m, testseg) > 0.0)) {
     enq = ((2.0 * radius) > areabound(m, testseg)) ? PETSC_TRUE : PETSC_FALSE;
@@ -18331,7 +18331,7 @@ PetscErrorCode TetGenMeshCheckSeg4Encroach(TetGenMesh *m, face *testseg, point t
       spintet = starttet;
       hitbdry = 0;
       do {
-        dist = distance(cent, apex(&spintet));
+        dist = TetGenMeshDistance(cent, apex(&spintet));
         diff = dist - radius;
         if (fabs(diff) / radius <= b->epsilon) diff = 0.0; /*  Rounding. */
         if (diff <= 0.0) {
@@ -18362,7 +18362,7 @@ PetscErrorCode TetGenMeshCheckSeg4Encroach(TetGenMesh *m, face *testseg, point t
       } while(apex(&spintet) != eapex && (hitbdry < 2));
     } else {
       /*  Only check if 'testseg' is encroached by 'testpt'. */
-      dist = distance(cent, testpt);
+      dist = TetGenMeshDistance(cent, testpt);
       diff = dist - radius;
       if (fabs(diff) / radius <= b->epsilon) diff = 0.0; /*  Rounding. */
       enq = (diff <= 0.0) ? PETSC_TRUE : PETSC_FALSE;
@@ -18462,7 +18462,7 @@ PetscErrorCode TetGenMeshCheckSub4Encroach(TetGenMesh *m, face *testsub, point t
     if (!testpt) {
       stpivot(m, testsub, &abuttet);
       if (abuttet.tet != m->dummytet) {
-        dist = distance(cent, oppo(&abuttet));
+        dist = TetGenMeshDistance(cent, oppo(&abuttet));
         diff = dist - radius;
         if (fabs(diff) / radius <= b->epsilon) diff = 0.0; /*  Rounding. */
         enq = (diff <= 0.0) ? PETSC_TRUE : PETSC_FALSE;
@@ -18472,7 +18472,7 @@ PetscErrorCode TetGenMeshCheckSub4Encroach(TetGenMesh *m, face *testsub, point t
         sesymself(testsub);
         stpivot(m, testsub, &abuttet);
         if (abuttet.tet != m->dummytet) {
-          dist = distance(cent, oppo(&abuttet));
+          dist = TetGenMeshDistance(cent, oppo(&abuttet));
           diff = dist - radius;
           if (fabs(diff) / radius <= b->epsilon) diff = 0.0; /*  Rounding. */
           enq = (diff <= 0.0) ? PETSC_TRUE : PETSC_FALSE;
@@ -18480,7 +18480,7 @@ PetscErrorCode TetGenMeshCheckSub4Encroach(TetGenMesh *m, face *testsub, point t
         }
       }
     } else {
-      dist = distance(cent, testpt);
+      dist = TetGenMeshDistance(cent, testpt);
       diff = dist - radius;
       if (fabs(diff) / radius <= b->epsilon) diff = 0.0; /*  Rounding. */
       enq = (diff <= 0.0) ? PETSC_TRUE : PETSC_FALSE;
@@ -18627,7 +18627,7 @@ PetscErrorCode TetGenMeshCheckTet4BadQual(TetGenMesh *m, triface *testtet, Petsc
     }
     /*  The shortest edge is e1->e2. */
     for (i = 0; i < 3; i++) bicent[i] = 0.5 * (pe1[i] + pe2[i]);
-    dist = distance(bicent, circumcent);
+    dist = TetGenMeshDistance(bicent, circumcent);
     /*  sdist = sqrt(smlen2) * sin(PI / 3.0);  A icoso-triangle. */
     /*  The following formulae is from  */
     sdist = b->alpha3 * (b->minratio+sqrt(b->goodratio-0.25))* sqrt(smlen2);
@@ -18737,7 +18737,7 @@ PetscErrorCode TetGenMeshAcceptSegPt(TetGenMesh *m, point segpt, point refpt, fa
   p[1] = sdest(splitseg);
   if (m->varconstraint && (areabound(m, splitseg) > 0)) {
     lfs = areabound(m, splitseg);
-    L = distance(p[0], p[1]);
+    L = TetGenMeshDistance(p[0], p[1]);
     if (L > lfs) {
       if (isInserted) {*isInserted = PETSC_TRUE;} /*  case (1) */
       PetscFunctionReturn(0);
@@ -18749,7 +18749,7 @@ PetscErrorCode TetGenMeshAcceptSegPt(TetGenMesh *m, point segpt, point refpt, fa
     /*  Check if p is inside the protect ball of q. */
     if (p[i][m->pointmtrindex] > 0.0) {
       lfs = b->alpha2 * p[i][m->pointmtrindex];
-      L = distance(p[i], segpt);
+      L = TetGenMeshDistance(p[i], segpt);
       if (L < lfs) j++; /*  p is inside ball. */
     }
   }
@@ -18838,7 +18838,7 @@ PetscErrorCode TetGenMeshAcceptFacPt(TetGenMesh *m, point facpt, List *subceilli
     /*  Check if p is inside the protect ball of q. */
     if (ploop[m->pointmtrindex] > 0.0) {
       lfs = b->alpha2 * ploop[m->pointmtrindex];
-      L = distance(ploop, facpt);
+      L = TetGenMeshDistance(ploop, facpt);
       if (L < lfs) j++; /*  p is inside ball. */
     }
   }
@@ -18899,7 +18899,7 @@ PetscErrorCode TetGenMeshAcceptVolPt(TetGenMesh *m, point volpt, List *ceillist,
     /*  Check if p is inside the protect ball of q. */
     if (ploop[m->pointmtrindex] > 0.0) {
       lfs = b->alpha2 * ploop[m->pointmtrindex];
-      L = distance(ploop, volpt);
+      L = TetGenMeshDistance(ploop, volpt);
       if (L < lfs) j++; /*  p is inside the protect ball. */
     }
   }
@@ -18936,13 +18936,13 @@ PetscErrorCode TetGenMeshGetSplitPoint(TetGenMesh *m, point e1, point e2, point 
       /*  Only one endpoint is acute. Use rule-2 or rule-3. */
       ei = acutea ? e1 : e2;
       ej = acutea ? e2 : e1;
-      L = distance(ei, ej);
+      L = TetGenMeshDistance(ei, ej);
       /*  Apply rule-2. */
-      d1 = distance(ei, refpt);
+      d1 = TetGenMeshDistance(ei, refpt);
       split = d1 / L;
       for(i = 0; i < 3; i++) newpt[i] = ei[i] + split * (ej[i] - ei[i]);
       /*  Check if rule-3 is needed. */
-      d2 = distance(refpt, newpt);
+      d2 = TetGenMeshDistance(refpt, newpt);
       if (d2 > (L - d1)) {
         /*  Apply rule-3. */
         if ((d1 - d2) > (0.5 * d1)) {
@@ -18995,8 +18995,8 @@ PetscErrorCode TetGenMeshSetNewPointSize(TetGenMesh *m, point newpt, point e1, p
     if (e2) {
       /*  Interpolate the size between the two endpoints. */
       PetscReal split, l, d;
-      l = distance(e1, e2);
-      d = distance(e1, newpt);
+      l = TetGenMeshDistance(e1, e2);
+      d = TetGenMeshDistance(e1, newpt);
       split = d / l;
 #ifdef PETSC_USE_DEBUG
       /*  Check if e1 and e2 are endpoints of a sharp segment. */

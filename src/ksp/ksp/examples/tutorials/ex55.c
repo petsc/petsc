@@ -146,9 +146,13 @@ int main(int argc,char **args)
       DD[7][7] =  0.53333333333333321     ;
     }
     else {
-      for(i=0;i<8;i++)
-        for(j=0;j<8;j++)
-          fscanf(file, "%le", &DD1[i][j]);
+      for(i=0;i<8;i++) {
+        for(j=0;j<8;j++) {
+          double val;
+          fscanf(file, "%le", &val);
+          DD1[i][j] = val;
+        }
+      }
     }
     /* BC version of element */
     for(i=0;i<8;i++)

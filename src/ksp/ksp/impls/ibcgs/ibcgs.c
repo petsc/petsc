@@ -46,7 +46,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       i,N;
   PetscReal      rnorm,rnormin = 0.0;
-#if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
   /* Because of possible instabilities in the algorithm (as indicated by different residual histories for the same problem 
      on the same number of processes  with different runs) we support computing the inner products using Intel's 80 bit arithematic
      rather than just 64 bit. Thus we copy our double precision values into long doubles (hoping this keeps the 16 extra bits)
@@ -193,7 +193,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     insums[5] = kappan;
     insums[6] = rnormin;
     ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
     if (ksp->lagnorm && ksp->its > 1) {
       ierr = MPI_Allreduce(insums,outsums,7,MPI_LONG_DOUBLE,MPI_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
     } else {
@@ -201,9 +201,9 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     }
 #else
     if (ksp->lagnorm && ksp->its > 1) {
-      ierr = MPI_Allreduce(insums,outsums,7,MPIU_SCALAR,MPI_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(insums,outsums,7,MPIU_SCALAR,MPIU_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
     } else {
-      ierr = MPI_Allreduce(insums,outsums,6,MPIU_SCALAR,MPI_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(insums,outsums,6,MPIU_SCALAR,MPIU_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
     }
 #endif
     ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);

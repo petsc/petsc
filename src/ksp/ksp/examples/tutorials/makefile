@@ -1074,9 +1074,9 @@ runex55_NC:
         ${RM} -f ex55_nc.tmp
 
 runex56:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 15 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_verbose 0 -pc_gamg_coarse_eq_limit 80 > ex56.tmp 2>&1;	\
+	-@${MPIEXEC} -n 8 ./ex56 -ne 19 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_verbose 0 -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.2,0,1.1 -mg_levels_pc_type pbjacobi > ex56.tmp 2>&1;	\
          ${DIFF} output/ex56_0.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56_0, diffs above \n========================================="; \
-        ${RM} -f ex56.tmp
+#        ${RM} -f ex56.tmp
 
 runex58:
 	-@${MPIEXEC} -n 1 ./ex58 -mat_type aij > ex58.tmp 2>&1;         \
