@@ -499,10 +499,6 @@ PETSC_EXTERN PetscErrorCode MatZeroRowsColumnsStencil(Mat,PetscInt,const MatSten
 PETSC_EXTERN PetscErrorCode MatZeroRowsColumns(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsColumnsIS(Mat,IS,PetscScalar,Vec,Vec);
 
-PETSC_EXTERN PetscErrorCode MatUseScaledForm(Mat,PetscBool );
-PETSC_EXTERN PetscErrorCode MatScaleSystem(Mat,Vec,Vec);
-PETSC_EXTERN PetscErrorCode MatUnScaleSystem(Mat,Vec,Vec);
-
 PETSC_EXTERN PetscErrorCode MatGetSize(Mat,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatGetLocalSize(Mat,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatGetOwnershipRange(Mat,PetscInt*,PetscInt*);

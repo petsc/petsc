@@ -91,10 +91,10 @@ struct _MatOps {
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*view)(Mat,PetscViewer);
   PetscErrorCode (*convertfrom)(Mat, const MatType,MatReuse,Mat*);
-  PetscErrorCode (*usescaledform)(Mat,PetscBool );
+  PetscErrorCode (*dummy10)(Mat,PetscBool );
   /*64*/
-  PetscErrorCode (*scalesystem)(Mat,Vec,Vec);
-  PetscErrorCode (*unscalesystem)(Mat,Vec,Vec);
+  PetscErrorCode (*dummy8)(Mat,Vec,Vec);
+  PetscErrorCode (*dummy9)(Mat,Vec,Vec);
   PetscErrorCode (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping,ISLocalToGlobalMapping);
   PetscErrorCode (*setvalueslocal)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
   PetscErrorCode (*zerorowslocal)(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);

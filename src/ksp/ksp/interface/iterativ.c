@@ -243,11 +243,6 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,vo
     they be scaled.
   */
   ierr = VecCopy(resid,work);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
-  if (A == B) {
-    ierr = MatUnScaleSystem(A,work,PETSC_NULL);CHKERRQ(ierr);
-  }
   ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
   ierr = VecDestroy(&work);CHKERRQ(ierr);
   ierr = VecNorm(ksp->vec_rhs,NORM_2,&bnorm);CHKERRQ(ierr);
@@ -279,11 +274,6 @@ PetscErrorCode  KSPMonitorRange_Private(KSP ksp,PetscInt it,PetscReal *per)
     they be scaled.
   */
   ierr = VecCopy(resid,work);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
-  if (A == B) {
-    ierr = MatUnScaleSystem(A,work,PETSC_NULL);CHKERRQ(ierr);
-  }
   ierr = VecNorm(work,NORM_INFINITY,&rmax);CHKERRQ(ierr);
   ierr = VecGetLocalSize(work,&n);CHKERRQ(ierr);
   ierr = VecGetSize(work,&N);CHKERRQ(ierr);
