@@ -58,19 +58,19 @@ PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *al
 #define __FUNCT__ "SNESLineSearchApply_BT"
 static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
 {
-  PetscBool      changed_y, changed_w;
+  PetscBool      changed_y,changed_w;
   PetscErrorCode ierr;
-  Vec            X, F, Y, W, G;
+  Vec            X,F,Y,W,G;
   SNES           snes;
   PetscReal      fnorm, xnorm, ynorm, gnorm, gnormprev;
-  PetscReal      lambda, lambdatemp, lambdaprev, minlambda, maxstep, rellength, initslope, alpha;
-  PetscReal      t1, t2, a, b, d, steptol;
+  PetscReal      lambda,lambdatemp,lambdaprev,minlambda,maxstep,initslope,alpha;
+  PetscReal      t1,t2,a,b,d;
 #if defined(PETSC_USE_COMPLEX)
   PetscScalar    cinitslope;
 #endif
   PetscBool      domainerror;
   PetscViewer    monitor;
-  PetscInt       max_its, count;
+  PetscInt       max_its,count;
   SNESLineSearch_BT  *bt;
   Mat            jac;
 
@@ -82,7 +82,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   ierr = SNESLineSearchGetLambda(linesearch, &lambda);CHKERRQ(ierr);
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
   ierr = SNESLineSearchGetMonitor(linesearch, &monitor);CHKERRQ(ierr);
-  ierr = SNESLineSearchGetTolerances(linesearch, &steptol, &maxstep, PETSC_NULL, PETSC_NULL, PETSC_NULL, &max_its);
+  ierr = SNESLineSearchGetTolerances(linesearch,&minlambda,&maxstep,PETSC_NULL,PETSC_NULL,PETSC_NULL,&max_its);
   bt = (SNESLineSearch_BT *)linesearch->data;
 
   alpha = bt->alpha;
@@ -116,8 +116,6 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     ierr = VecScale(Y,maxstep/(ynorm));CHKERRQ(ierr);
     ynorm = maxstep;
   }
-  ierr      = VecMaxPointwiseDivide(Y,X,&rellength);CHKERRQ(ierr);
-  minlambda = steptol/rellength;
   ierr      = MatMult(jac,Y,W);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   ierr      = VecDot(F,W,&cinitslope);CHKERRQ(ierr);
