@@ -91,7 +91,7 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
   }
 
   /* since smoother is applied to full system, not just residual we need to make sure that smoothers don't 
-     stop prematurely do to small residual */
+     stop prematurely due to small residual */
   for (i=1; i<levels; i++) {  
     ierr = KSPSetTolerances(mglevels[i]->smoothu,0,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
     if (mglevels[i]->smoothu != mglevels[i]->smoothd) {
@@ -208,8 +208,8 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
     mglevels[i]->level           = i;
     mglevels[i]->levels          = levels;
     mglevels[i]->cycles          = PC_MG_CYCLE_V;
-    mg->default_smoothu = 1;
-    mg->default_smoothd = 1;
+    mg->default_smoothu = 2;
+    mg->default_smoothd = 2;
     mglevels[i]->eventsmoothsetup    = 0;
     mglevels[i]->eventsmoothsolve    = 0;
     mglevels[i]->eventresidual       = 0;
@@ -217,8 +217,13 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 
     if (comms) comm = comms[i];
     ierr = KSPCreate(comm,&mglevels[i]->smoothd);CHKERRQ(ierr);
+    ierr = KSPSetType(mglevels[i]->smoothd,KSPCHEBYSHEV);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(mglevels[i]->smoothd,KSPSkipConverged,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = KSPSetNormType(mglevels[i]->smoothd,KSP_NORM_NONE);CHKERRQ(ierr);
+    ierr = KSPGetPC(mglevels[i]->smoothd,&ipc);CHKERRQ(ierr);
+    ierr = PCSetType(ipc,PCSOR);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)mglevels[i]->smoothd,(PetscObject)pc,levels-i);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(mglevels[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT, mg->default_smoothd);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(mglevels[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT, i?mg->default_smoothd:1);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(mglevels[i]->smoothd,prefix);CHKERRQ(ierr);
 
     /* do special stuff for coarse grid */
