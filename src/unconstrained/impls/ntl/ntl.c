@@ -1018,7 +1018,7 @@ static PetscErrorCode TaoView_NTL(TaoSolver tao, PetscViewer viewer)
     ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
     if (NTL_PC_BFGS == tl->pc_type && tl->M) {
       ierr = MatLMVMGetRejects(tl->M, &nrejects); CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "Rejected matrix updates: %D\n", &nrejects); CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "Rejected matrix updates: %D\n", nrejects); CHKERRQ(ierr);
 
     }
 
