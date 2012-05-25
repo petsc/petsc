@@ -371,7 +371,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}z  */
 
     /* calculate residual norm if requested */
-    if (ksp->normtype != KSP_NORM_NONE) {
+    if (ksp->normtype != KSP_NORM_NONE || ksp->numbermonitors) {
       if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);}
       else {ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);}
       ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
