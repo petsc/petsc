@@ -1826,6 +1826,21 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op,PetscBool  flg)
   case MAT_SYMMETRY_ETERNAL:
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     break;
+  case DIAGBLOCK_MAT_CSR:
+  case OFFDIAGBLOCK_MAT_CSR:
+  case MAT_CSR:
+  case DIAGBLOCK_MAT_DIA:
+  case OFFDIAGBLOCK_MAT_DIA:
+  case MAT_DIA:
+  case DIAGBLOCK_MAT_ELL:
+  case OFFDIAGBLOCK_MAT_ELL:
+  case MAT_ELL:
+  case DIAGBLOCK_MAT_HYB:
+  case OFFDIAGBLOCK_MAT_HYB:
+  case MAT_HYB:
+    /* Not an error because MatSetOption_MPIAIJCUSP/CUSPARSE handle these options */
+    break;
+
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %d",op);
   }
@@ -3307,7 +3322,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   PetscInt       *ourlens = PETSC_NULL,*procsnz = PETSC_NULL,*offlens = PETSC_NULL,jj,*mycols,*smycols;
   PetscInt       cend,cstart,n,*rowners,sizesset=1;
   int            fd;
-
+  
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -3490,7 +3505,6 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   ierr = PetscFree(vals);CHKERRQ(ierr);
   ierr = PetscFree(mycols);CHKERRQ(ierr);
   ierr = PetscFree(rowners);CHKERRQ(ierr);
-
   ierr = MatAssemblyBegin(newMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(newMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -5528,6 +5542,12 @@ PetscErrorCode  MatCreate_MPIAIJ(Mat B)
   b->rowindices   = 0;
   b->rowvalues    = 0;
   b->getrowactive = PETSC_FALSE;
+
+#if defined(PETSC_HAVE_TXPETSCGPU)
+  /* stuff for GPU capabilities */
+  b->diagGPUMatFormat = MAT_CSR;
+  b->offdiagGPUMatFormat = MAT_CSR;
+#endif
 
 #if defined(PETSC_HAVE_SPOOLES)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_spooles_C",

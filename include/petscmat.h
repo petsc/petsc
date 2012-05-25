@@ -373,7 +373,15 @@ typedef enum {MAT_ROW_ORIENTED,MAT_NEW_NONZERO_LOCATIONS,
               MAT_IGNORE_LOWER_TRIANGULAR,MAT_ERROR_LOWER_TRIANGULAR,
               MAT_GETROW_UPPERTRIANGULAR,MAT_UNUSED_NONZERO_LOCATION_ERR,
               MAT_SPD,MAT_NO_OFF_PROC_ENTRIES,MAT_NO_OFF_PROC_ZERO_ROWS,
+#if !defined(PETSC_HAVE_TXPETSCGPU)
               NUM_MAT_OPTIONS} MatOption;
+#else
+              DIAGBLOCK_MAT_CSR, OFFDIAGBLOCK_MAT_CSR, MAT_CSR, 
+              DIAGBLOCK_MAT_DIA, OFFDIAGBLOCK_MAT_DIA, MAT_DIA, 
+              DIAGBLOCK_MAT_ELL, OFFDIAGBLOCK_MAT_ELL, MAT_ELL, 
+              DIAGBLOCK_MAT_HYB, OFFDIAGBLOCK_MAT_HYB, MAT_HYB, 
+              NUM_MAT_OPTIONS} MatOption;
+#endif
 extern const char *MatOptions[];
 extern PetscErrorCode  MatSetOption(Mat,MatOption,PetscBool );
 extern PetscErrorCode  MatGetType(Mat,const MatType*);
@@ -1790,14 +1798,14 @@ extern PetscErrorCode  MatSuperluSetILUDropTol(Mat,PetscReal);
 #if defined PETSC_HAVE_TXPETSCGPU
 extern PetscErrorCode  MatCreateSeqAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 extern PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-extern PetscErrorCode  MatAIJCUSPARSESetGPUStorageFormatForMatMult(Mat,const GPUStorageFormat);
-extern PetscErrorCode  MatAIJCUSPARSESetGPUStorageFormatForMatSolve(Mat,const GPUStorageFormat);
+extern PetscErrorCode  MatSetOption_SeqAIJCUSPARSE(Mat,MatOption,PetscBool);
+extern PetscErrorCode  MatAIJCUSPARSESetGPUStorageFormatForMatSolve(Mat,GPUStorageFormat);
 #endif
 
 #if defined(PETSC_HAVE_CUSP)
 extern PetscErrorCode  MatCreateSeqAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 extern PetscErrorCode  MatCreateAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-extern PetscErrorCode  MatAIJCUSPSetGPUStorageFormatForMatMult(Mat,const GPUStorageFormat);
+extern PetscErrorCode  MatSetOption_SeqAIJCUSP(Mat,MatOption,PetscBool);
 #endif
 
 /* 

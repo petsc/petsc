@@ -1,5 +1,9 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
 
+//#ifdef PETSC_HAVE_TXPETSCGPU
+//extern PetscErrorCode MatSetOption_SeqAIJCUSP(Mat,MatOption,PetscBool);
+//#endif
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUSP"
@@ -43,6 +47,10 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const P
 
   ierr = MatSeqAIJSetPreallocation(b->A,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_TXPETSCGPU
+  ierr=MatSetOption_SeqAIJCUSP(b->A,b->diagGPUMatFormat,PETSC_TRUE);CHKERRQ(ierr);
+  ierr=MatSetOption_SeqAIJCUSP(b->B,b->offdiagGPUMatFormat,PETSC_TRUE);CHKERRQ(ierr);
+#endif
   B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -110,6 +118,92 @@ PetscErrorCode  MatCreate_MPIAIJ(Mat);
 EXTERN_C_END
 PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats);
 
+#ifdef PETSC_HAVE_TXPETSCGPU
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetOption_MPIAIJCUSP"
+PetscErrorCode MatSetOption_MPIAIJCUSP(Mat A,MatOption op,PetscBool  flg)
+{
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;  
+  ierr = MatSetOption_MPIAIJ(A,op,flg);CHKERRQ(ierr);
+  switch (op) {
+  case DIAGBLOCK_MAT_CSR:
+    a->diagGPUMatFormat = DIAGBLOCK_MAT_CSR;
+    break;
+  case OFFDIAGBLOCK_MAT_CSR:
+    a->offdiagGPUMatFormat = OFFDIAGBLOCK_MAT_CSR;
+    break;
+  case DIAGBLOCK_MAT_DIA:
+    a->diagGPUMatFormat = DIAGBLOCK_MAT_DIA;
+    break;
+  case OFFDIAGBLOCK_MAT_DIA:
+    a->offdiagGPUMatFormat = OFFDIAGBLOCK_MAT_DIA;
+    break;
+  case DIAGBLOCK_MAT_ELL:
+    a->diagGPUMatFormat = DIAGBLOCK_MAT_ELL;
+    break;
+  case OFFDIAGBLOCK_MAT_ELL:
+    a->offdiagGPUMatFormat = OFFDIAGBLOCK_MAT_ELL;
+    break;
+  case DIAGBLOCK_MAT_HYB:
+  case OFFDIAGBLOCK_MAT_HYB:
+  case MAT_HYB:
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported GPU matrix storage format HYB for (MPI,SEQ)AIJCUSP matrix type.");
+  default:
+    break;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetFromOptions_MPIAIJCUSP"
+PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
+{
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  PetscErrorCode     ierr;
+  PetscInt       idxDiag=0,idxOffDiag=0;
+  char * formats[]={CSR,DIA,ELL};
+  MatOption diagFormat, offdiagFormat;
+  PetscBool      flg;
+  PetscFunctionBegin;
+  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"When using TxPETSCGPU, MPIAIJCUSP Options","Mat");CHKERRQ(ierr);
+  if (A->factortype==MAT_FACTOR_NONE) {
+    ierr = PetscOptionsEList("-mat_mult_cusp_diag_storage_format",
+			     "Set the storage format of (mpi)aijcusp gpu matrices for SpMV",
+			     "None",formats,3,formats[0],&idxDiag,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-mat_mult_cusp_offdiag_storage_format",
+			     "Set the storage format of (mpi)aijcusp gpu matrices for SpMV",
+			     "None",formats,3,formats[0],&idxOffDiag,&flg);CHKERRQ(ierr);
+
+    //printf("MatSetFromOptions_MPIAIJCUSP : %s %s\n",formats[idxDiag],formats[idxOffDiag]);
+    if (formats[idxDiag] == CSR)
+      diagFormat=MAT_CSR;
+    else if (formats[idxDiag] == DIA)
+      diagFormat=MAT_DIA;
+    else if (formats[idxDiag] == ELL)
+      diagFormat=MAT_ELL;
+
+    if (formats[idxOffDiag] == CSR)
+      offdiagFormat=MAT_CSR;
+    else if (formats[idxOffDiag] == DIA)
+      offdiagFormat=MAT_DIA;
+    else if (formats[idxOffDiag] == ELL)
+      offdiagFormat=MAT_ELL;
+
+    a->diagGPUMatFormat = diagFormat;
+    a->offdiagGPUMatFormat = offdiagFormat;
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+#endif
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIAIJCUSP"
@@ -125,7 +219,9 @@ PetscErrorCode  MatCreate_MPIAIJCUSP(Mat B)
   B->ops->getvecs        = MatGetVecs_MPIAIJCUSP;
   B->ops->setvaluesbatch = MatSetValuesBatch_MPIAIJCUSP;
 #ifdef PETSC_HAVE_TXPETSCGPU
-  B->ops->mult        = MatMult_MPIAIJCUSP;
+  B->ops->mult           = MatMult_MPIAIJCUSP; 
+  B->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSP;	
+  B->ops->setoption      = MatSetOption_MPIAIJCUSP;	
 #endif
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
