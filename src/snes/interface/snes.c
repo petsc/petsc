@@ -426,14 +426,10 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   {
-    PetscBool flg = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_kspcompute",&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {                  /* Plan to transition to this model */
-      KSP ksp;
-      ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetComputeOperators(ksp,KSPComputeOperators_SNES,snes);CHKERRQ(ierr);
-      ierr = DMCoarsenHookAdd(snes->dm,PETSC_NULL,DMRestrictHook_SNESVecSol,snes);CHKERRQ(ierr);
-    }
+    KSP ksp;
+    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetComputeOperators(ksp,KSPComputeOperators_SNES,snes);CHKERRQ(ierr);
+    ierr = DMCoarsenHookAdd(snes->dm,PETSC_NULL,DMRestrictHook_SNESVecSol,snes);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
