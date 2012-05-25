@@ -38,7 +38,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-default-arch=<bool>',        nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
     help.addArgument('PETSc','-with-single-library=<bool>',       nargs.ArgBool(None, 1,'Put all PETSc code into the single -lpetsc library'))
     help.addArgument('PETSc', '-with-iphone=<bool>',              nargs.ArgBool(None, 0, 'Build an iPhone version of PETSc'))
-    help.addArgument('CTetgen', '-with-ctetgen=<bool>',           nargs.ArgBool(None, 0, 'Enable CTetgen support'))
     return
 
   def setupDependencies(self, framework):
@@ -219,8 +218,6 @@ class Configure(config.base.Configure):
 
 #-----------------------------------------------------------------------------------------------------
     # print include and lib for makefiles
-    if self.framework.argDB['with-ctetgen']:
-      self.addDefine('HAVE_CTETGEN', 1)
     self.framework.packages.reverse()
     includes = [os.path.join(self.petscdir.dir,'include'),os.path.join(self.petscdir.dir,self.arch.arch,'include')]
     libs = []
