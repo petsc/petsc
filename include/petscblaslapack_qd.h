@@ -41,8 +41,8 @@
 #  define LAPACKgeqrf_ cgeqrf_
 #  define LAPACKungqr_ cungqr_
 #  define LAPACKgetrf_ cgetrf_
-#  define BLASdot_     cdotc_
-#  define BLASdotu_    cdotu_
+/* #  define BLASdot_     cdotc_ */
+/* #  define BLASdotu_    cdotu_ */
 #  define BLASnrm2_    scnrm2_
 #  define BLASscal_    cscal_
 #  define BLAScopy_    ccopy_
