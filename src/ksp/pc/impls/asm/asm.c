@@ -200,7 +200,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     if (osm->n_local_true == PETSC_DECIDE) { 
       /* no subdomains given */
       /* try pc->dm first */
-      if(pc->dm) {
+      if(pc->dm && 0) {         /* disabled because this causes much unexpected/wrong behavior */
         char      ddm_name[1024];
         DM        ddm;
         PetscBool flg;
