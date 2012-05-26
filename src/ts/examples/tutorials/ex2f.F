@@ -417,7 +417,7 @@
       call VecNorm(solution,NORM_2,en2,ierr)
 
 !  Scale the 2-norm by the grid spacing
-      en2s = dsqrt(h)*en2
+      en2s = sqrt(dble(h))*en2
       call VecNorm(solution,NORM_MAX,enmax,ierr)
 
 !  Print only from processor 0
