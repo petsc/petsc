@@ -83,8 +83,8 @@ PetscErrorCode DMAKKTGetMatrix(DM dm, Mat *Aff) {
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "DMAKKTSetDecompositionName"
-PetscErrorCode DMAKKTSetDecompositionName(DM dm, const char* dname) {
+#define __FUNCT__ "DMAKKTSetFieldDecompositionName"
+PetscErrorCode DMAKKTSetFieldDecompositionName(DM dm, const char* dname) {
   PetscBool iskkt;
   DM_AKKT *kkt = (DM_AKKT*)(dm->data);
   PetscErrorCode ierr;
@@ -104,8 +104,8 @@ PetscErrorCode DMAKKTSetDecompositionName(DM dm, const char* dname) {
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "DMAKKTGetDecompositionName"
-PetscErrorCode DMAKKTGetDecompositionName(DM dm, char** dname) {
+#define __FUNCT__ "DMAKKTGetFieldDecompositionName"
+PetscErrorCode DMAKKTGetFieldDecompositionName(DM dm, char** dname) {
   PetscBool iskkt;
   DM_AKKT *kkt = (DM_AKKT*)(dm->data);
   PetscErrorCode ierr;
@@ -125,8 +125,8 @@ PetscErrorCode DMAKKTGetDecompositionName(DM dm, char** dname) {
 
 
 #undef  __FUNCT__
-#define __FUNCT__ "DMAKKTSetDecomposition"
-PetscErrorCode DMAKKTSetDecomposition(DM dm, PetscInt n, const char* const *names, IS *iss, DM *dms) {
+#define __FUNCT__ "DMAKKTSetFieldDecomposition"
+PetscErrorCode DMAKKTSetFieldDecomposition(DM dm, PetscInt n, const char* const *names, IS *iss, DM *dms) {
   PetscBool iskkt;
   DM_AKKT *kkt = (DM_AKKT*)(dm->data);
   PetscInt i;
@@ -169,8 +169,8 @@ PetscErrorCode DMAKKTSetDecomposition(DM dm, PetscInt n, const char* const *name
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "DMAKKTGetDecomposition"
-PetscErrorCode DMAKKTGetDecomposition(DM dm, PetscInt *n, char*** names, IS **iss, DM **dms) {
+#define __FUNCT__ "DMAKKTGetFieldDecomposition"
+PetscErrorCode DMAKKTGetFieldDecomposition(DM dm, PetscInt *n, char*** names, IS **iss, DM **dms) {
   PetscBool iskkt;
   DM_AKKT *kkt = (DM_AKKT*)(dm->data);
   PetscInt i;
@@ -246,7 +246,7 @@ PetscErrorCode DMSetFromOptions_AKKT(DM dm) {
   CHKERRQ(ierr);
   ierr = PetscOptionsString("-dm_akkt_decomposition_name",
                             "Name of primal-dual decomposition to request from DM",
-                            "DMAKKTSetDecompositionName",
+                            "DMAKKTSetFieldDecompositionName",
                             kkt->dname,
                             kkt->dname,
                             DMAKKT_DECOMPOSITION_NAME_LEN,
@@ -280,8 +280,8 @@ PetscErrorCode DMSetUp_AKKT(DM dm) {
       IS *iss;
       DM *dms;
       PetscInt i;
-      ierr = DMCreateDecompositionDM(kkt->dm, kkt->dname, &ddm); CHKERRQ(ierr);
-      ierr = DMCreateDecomposition(ddm, &n, &names, &iss, &dms); CHKERRQ(ierr);
+      ierr = DMCreateFieldDecompositionDM(kkt->dm, kkt->dname, &ddm); CHKERRQ(ierr);
+      ierr = DMCreateFieldDecomposition(ddm, &n, &names, &iss, &dms); CHKERRQ(ierr);
       if(n < 1 || n > 2) 
         SETERRQ2(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "Number of parts in decomposition %s must be between 1 and 2.  Got %D instead",kkt->dname, n);
       for(i = 0; i < n; ++i) {
@@ -294,7 +294,7 @@ PetscErrorCode DMSetUp_AKKT(DM dm) {
           SETERRQ1(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "Decomposition defines %s subDM, but no embedding IS is given", label);
         }
       }
-      ierr = DMAKKTSetDecomposition(dm, n, (const char**)names, iss, dms);     CHKERRQ(ierr);
+      ierr = DMAKKTSetFieldDecomposition(dm, n, (const char**)names, iss, dms);     CHKERRQ(ierr);
       for(i = 0; i < n; ++i) {
         ierr = PetscFree(names[i]);   CHKERRQ(ierr);
         ierr = ISDestroy(&(iss[i]));  CHKERRQ(ierr);
@@ -326,7 +326,7 @@ PetscErrorCode DMSetUp_AKKT(DM dm) {
     ierr = DMAKKTSetMatrix(kkt->dmf[0], A0f0f);                                             CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(A0f0f, &lstart, &lend);                                     CHKERRQ(ierr);
     ierr = ISCreateStride(((PetscObject)A0f0f)->comm, lend-lstart, lstart, 1, &is00);       CHKERRQ(ierr);
-    ierr = DMAKKTSetDecomposition(kkt->dmf[0], 1, &primal, &is00, PETSC_NULL);              CHKERRQ(ierr);
+    ierr = DMAKKTSetFieldDecomposition(kkt->dmf[0], 1, &primal, &is00, PETSC_NULL);              CHKERRQ(ierr);
   }
   dm->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -478,7 +478,7 @@ PetscErrorCode DMCoarsen_AKKT(DM dm, MPI_Comm comm, DM *cdm) {
   ierr = MatPtAP(kkt->Aff, kkt->Pfc, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Acc); CHKERRQ(ierr);
   ierr = DMAKKTSetMatrix(dm, Acc);                                             CHKERRQ(ierr);
   /* Set the coarsened decomposition. */
-  ierr = DMAKKTSetDecomposition(kkt->cdm, 2, (const char**)kkt->names, isc, dmc); CHKERRQ(ierr);
+  ierr = DMAKKTSetFieldDecomposition(kkt->cdm, 2, (const char**)kkt->names, isc, dmc); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

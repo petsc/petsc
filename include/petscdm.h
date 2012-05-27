@@ -165,8 +165,10 @@ PETSC_EXTERN PetscErrorCode DMComputeJacobian(DM,Vec,Mat,Mat,MatStructure *);
 PETSC_EXTERN PetscErrorCode DMComputeJacobianDefault(DM,Vec,Mat,Mat,MatStructure *);
 PETSC_EXTERN PetscErrorCode DMComputeVariableBounds(DM,Vec,Vec);
 
-PETSC_EXTERN PetscErrorCode DMCreateDecompositionDM(DM,const char*,DM*);
-PETSC_EXTERN PetscErrorCode DMCreateDecomposition(DM,PetscInt*,char***,IS**,DM**);
+PETSC_EXTERN PetscErrorCode DMCreateFieldDecompositionDM(DM,const char*,DM*);
+PETSC_EXTERN PetscErrorCode DMCreateFieldDecomposition(DM,PetscInt*,char***,IS**,DM**);
+PETSC_EXTERN PetscErrorCode DMCreateDomainDecompositionDM(DM,const char*,DM*);
+PETSC_EXTERN PetscErrorCode DMCreateDomainDecomposition(DM,PetscInt*,char***,IS**,DM**);
 
 PETSC_EXTERN PetscErrorCode DMGetRefineLevel(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMGetCoarsenLevel(DM,PetscInt*);

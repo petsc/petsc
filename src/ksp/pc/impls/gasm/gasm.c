@@ -302,14 +302,14 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
         ierr = PetscStrncpy(ddm_name, "", 1024); CHKERRQ(ierr);
         ierr = PetscOptionsString("-pc_gasm_decomposition","Name of the DM defining the composition", "PCSetDM", ddm_name, ddm_name,1024,&flg); CHKERRQ(ierr);
         if(flg) {
-          ierr = DMCreateDecompositionDM(pc->dm, ddm_name, &ddm); CHKERRQ(ierr);
+          ierr = DMCreateDomainDecompositionDM(pc->dm, ddm_name, &ddm); CHKERRQ(ierr);
           if(!ddm) {
             SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown DM decomposition name %s", ddm_name);
           }
           ierr = PetscInfo(pc,"Using decomposition DM defined using options database\n");CHKERRQ(ierr);
           ierr = PCSetDM(pc,ddm); CHKERRQ(ierr);
         }
-        ierr = DMCreateDecomposition(pc->dm, &num_domains, &domain_names, &domain_is, &domain_dm);    CHKERRQ(ierr);
+        ierr = DMCreateDomainDecomposition(pc->dm, &num_domains, &domain_names, &domain_is, &domain_dm);    CHKERRQ(ierr);
         if(num_domains) {
           ierr = PCGASMSetSubdomains(pc, num_domains, domain_is, PETSC_NULL);CHKERRQ(ierr);
         }

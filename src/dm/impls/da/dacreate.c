@@ -165,8 +165,8 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMCreateDecomposition_DA"
-PetscErrorCode DMCreateDecomposition_DA(DM dm, PetscInt *len,char ***namelist, IS **islist, DM** dmlist)
+#define __FUNCT__ "DMCreateFieldDecomposition_DA"
+PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***namelist, IS **islist, DM** dmlist)
 {
   PetscInt       i;
   PetscErrorCode ierr;
@@ -291,7 +291,7 @@ PetscErrorCode  DMCreate_DA(DM da)
   da->ops->setfromoptions      = DMSetFromOptions_DA;
   da->ops->setup               = DMSetUp_DA;
   da->ops->load                = DMLoad_DA;
-  da->ops->createdecomposition = DMCreateDecomposition_DA;
+  da->ops->createfielddecomposition = DMCreateFieldDecomposition_DA;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
