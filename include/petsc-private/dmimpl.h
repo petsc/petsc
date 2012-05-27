@@ -106,6 +106,9 @@ struct _p_DM {
   /* Allows a non-standard data layout */
   PetscSection           defaultSection;       /* Layout for local vectors */
   PetscSection           defaultGlobalSection; /* Layout for global vectors */
+  /* Helpers for DMXXXDecomposition() combination */
+  DM                     ambientdm;
+  IS                     embedding;
 };
 
 PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;

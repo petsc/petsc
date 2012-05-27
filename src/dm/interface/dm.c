@@ -244,6 +244,9 @@ PetscErrorCode  DMDestroy(DM *dm)
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(*dm);CHKERRQ(ierr);
 
+  ierr = DMDestroy(&(*dm)->ambientdm);    CHKERRQ(ierr);
+  ierr = ISDestroy(&(*dm)->embedding); CHKERRQ(ierr);
+
   ierr = (*(*dm)->ops->destroy)(*dm);CHKERRQ(ierr);
   ierr = PetscFree((*dm)->data);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);
@@ -959,10 +962,8 @@ PetscErrorCode DMCreateFieldDecompositionDM(DM dm, const char* name, DM *ddm)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidCharPointer(name,2);
   PetscValidPointer(ddm,3);
-  if(!dm->ops->createfielddecompositiondm) {
-    *ddm = PETSC_NULL;
-  }
-  else {
+  *ddm = PETSC_NULL;
+  if(dm->ops->createfielddecompositiondm) {
     ierr = (*dm->ops->createfielddecompositiondm)(dm,name,ddm); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1003,10 +1004,10 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (len) {PetscValidPointer(len,2);}
-  if (namelist) {PetscValidPointer(namelist,3);}
-  if (islist) {PetscValidPointer(islist,4);}
-  if (dmlist) {PetscValidPointer(dmlist,5);}
+  if (len)      {PetscValidPointer(len,2);      *len      = 0;}
+  if (namelist) {PetscValidPointer(namelist,3); *namelist = 0;}
+  if (islist)   {PetscValidPointer(islist,4);   *islist   = 0;}
+  if (dmlist)   {PetscValidPointer(dmlist,5);   *dmlist   = 0;}
   if(!dm->ops->createfielddecomposition) {
     ierr = DMCreateFieldIS(dm, len, namelist, islist);CHKERRQ(ierr);
     /* By default there are no DMs associated with subproblems. */
@@ -1044,10 +1045,8 @@ PetscErrorCode DMCreateDomainDecompositionDM(DM dm, const char* name, DM *ddm)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidCharPointer(name,2);
   PetscValidPointer(ddm,3);
-  if(!dm->ops->createdomaindecompositiondm) {
-    *ddm = PETSC_NULL;
-  }
-  else {
+  *ddm = PETSC_NULL;
+  if(dm->ops->createdomaindecompositiondm) {
     ierr = (*dm->ops->createdomaindecompositiondm)(dm,name,ddm); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1088,12 +1087,125 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (len) {PetscValidPointer(len,2);}
-  if (namelist) {PetscValidPointer(namelist,3); *namelist = PETSC_NULL;}
-  if (islist) {PetscValidPointer(islist,4);     *islist   = PETSC_NULL;}
-  if (dmlist) {PetscValidPointer(dmlist,5);     *dmlist   = PETSC_NULL;}
+  if (len)      {PetscValidPointer(len,2);       *len      = PETSC_NULL;}
+  if (namelist) {PetscValidPointer(namelist,3);  *namelist = PETSC_NULL;}
+  if (islist)   {PetscValidPointer(islist,4);    *islist   = PETSC_NULL;}
+  if (dmlist)   {PetscValidPointer(dmlist,5);    *dmlist   = PETSC_NULL;}
   if(dm->ops->createdomaindecomposition) {
     ierr = (*dm->ops->createdomaindecomposition)(dm,len,namelist,islist,dmlist); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMSetEmbedding"
+/*@C
+  DMSetEmbedding - Set the embedding of DM's indices (hence, vectors and matrices) into another DM's index space.
+
+  Not collective
+
+  Input Parameters:
++ dm         - the DM object
+. embedding  - IS mapping dm's local indices into ambientdm's global indices (or PETSC_NULL to remove the embedding)
+- ambientdm  - the DM into which to embed (or PETSC_NULL to remove the embedding)
+
+  Level: advanced
+
+  Notes:
+  Decomposition DMs created with DMCreateDecomposition() are automatically embedded into the decomposing DM.
+  This allows (for evaluation of embedded DMs' residuals, Jacobians and bounds by injecting the current solution
+  into the ambient DM's solution, evaluating the ambient DM's residual (or Jacobian, or bounds) and then 
+  extracting the subvector (submatrix or bounds subvectors).
+
+  Both embedding and ambientdm must either be valid or PETSC_NULL together.
+
+.seealso DMCreateDecomposition(), DMCreateFieldIS()
+@*/
+PetscErrorCode DMSetEmbedding(DM dm, IS embedding, DM ambientdm)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if((!embedding && ambientdm) ||(embedding &&!ambientdm)) 
+    SETERRQ(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "Both embedding IS and DM must be PETSC_NULL or valid together");
+  if(embedding) {
+    PetscValidHeaderSpecific(embedding,IS_CLASSID,2);
+    PetscValidHeaderSpecific(ambientdm,DM_CLASSID,3);
+    ierr = PetscObjectReference((PetscObject)ambientdm); CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)embedding); CHKERRQ(ierr);
+  }
+  ierr = DMDestroy(&dm->ambientdm);                    CHKERRQ(ierr);
+  dm->ambientdm = ambientdm;
+  ierr = ISDestroy(&dm->embedding);                    CHKERRQ(ierr);
+  dm->embedding = embedding;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMGetEmbedding"
+/*@C
+  DMGetEmbedding - extract the embedding of this DM into another DM.
+
+  Not collective
+
+  Input Parameter:
+. dm         - the DM object
+
+  Output Parameters:
++ embedding  - IS mapping dm's local indices into ambientdm's global indices
+- ambientdm  - the DM into which this DM is embedded
+
+  Level: advanced
+
+  Notes:
+  The embedding IS and the ambient dm are read-only and must be restored to this DM using DMRestoreEmbedding().
+  The embedding must have been set using DMSetEmbedding() or automatically created by a routine such as  DMCreateDecomposition().
+
+.seealso DMSetEmbedding(), DMRestoreEmbedding(), DMCreateDecomposition()
+@*/
+PetscErrorCode DMGetEmbedding(DM dm, IS* embedding, DM* ambientdm)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if(embedding) {PetscValidPointer(embedding,2); *embedding = dm->embedding;}
+  if(ambientdm) {PetscValidPointer(ambientdm,3); *ambientdm = dm->ambientdm;};
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMRestoreEmbedding"
+/*@C
+  DMRestoreEmbedding - restore the embedding obtained with DMGetEmbedding()
+
+  Not collective
+
+  Input Parameters:
++ dm         - the DM object
+. embedding  - IS mapping dm's local indices into ambientdm's global indices (must have been obtained with DMGetEmbedding())
+- ambientdm  - the DM into which to embed (must have been obtained with DMGetEmbedding())
+
+  Level: advanced
+
+  Notes:
+  The embedding must have been obtained with DMGetEmbedding().
+
+.seealso DMSetEmbedding(), DMGetEmbedding()
+@*/
+PetscErrorCode DMRestoreEmbedding(DM dm, IS* embedding, DM* ambientdm)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if(embedding) {
+    PetscValidPointer(embedding,2);
+    if(*embedding != dm->embedding) 
+      SETERRQ(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "Embedding IS not obtained with DMGetEmbedding()");
+  }
+  if(ambientdm) {
+    PetscValidPointer(ambientdm,3);
+    if(*ambientdm != dm->ambientdm) 
+      SETERRQ(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "Ambient DM not obtained with DMGetEmbedding()");
   }
   PetscFunctionReturn(0);
 }

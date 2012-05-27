@@ -169,6 +169,9 @@ PETSC_EXTERN PetscErrorCode DMCreateFieldDecompositionDM(DM,const char*,DM*);
 PETSC_EXTERN PetscErrorCode DMCreateFieldDecomposition(DM,PetscInt*,char***,IS**,DM**);
 PETSC_EXTERN PetscErrorCode DMCreateDomainDecompositionDM(DM,const char*,DM*);
 PETSC_EXTERN PetscErrorCode DMCreateDomainDecomposition(DM,PetscInt*,char***,IS**,DM**);
+PETSC_EXTERN PetscErrorCode DMSetEmbedding(DM,IS,DM);
+PETSC_EXTERN PetscErrorCode DMGetEmbedding(DM,IS*,DM*);
+PETSC_EXTERN PetscErrorCode DMRestoreEmbedding(DM,IS*,DM*);
 
 PETSC_EXTERN PetscErrorCode DMGetRefineLevel(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMGetCoarsenLevel(DM,PetscInt*);

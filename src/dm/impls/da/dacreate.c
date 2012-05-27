@@ -174,6 +174,7 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
   PetscInt       dof = dd->w;
 
   PetscFunctionBegin;
+  if(len) *len = dof;
   if (islist) {
     Vec      v;
     PetscInt rstart,n;
@@ -211,7 +212,6 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
     for (i=0; i<dof-1; i++) {ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);}
     for (i=0; i<dof; i++) (*dmlist)[i] = da;
   }
-  *len = dof;
 
   PetscFunctionReturn(0);
 }
