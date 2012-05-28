@@ -833,6 +833,12 @@ runex48_4:
 	-@${MPIEXEC} -n 6 ./ex48 -M 4 -P 2 -da_refine_hierarchy_x 1,1,3 -da_refine_hierarchy_y 2,2,1 -da_refine_hierarchy_z 2,2,1 -snes_grid_sequence 3 -ksp_converged_reason -ksp_type fgmres -ksp_rtol 1e-2 -pc_type mg -mg_levels_pc_type bjacobi -mg_levels_1_sub_pc_type cholesky -pc_mg_type multiplicative -snes_converged_reason -snes_stol 1e-12 -thi_L 80e3 -thi_alpha 0.05 -thi_friction_m 1 -thi_hom x -snes_view -mg_levels_0_pc_type redundant -mg_levels_0_ksp_type preonly > ex48.tmp 2>&1; \
 	   ${DIFF} output/ex48_4.out ex48.tmp || echo  ${PWD} "\nPossible problem with ex48_4, diffs above \n========================================="; \
 	   ${RM} -f ex48.tmp
+runex48_5:
+	-@for mtype in aij baij sbaij; do \
+           ${MPIEXEC} -n 6 ./ex48 -M 12 -P 5 -snes_monitor_short -ksp_converged_reason -pc_type asm -pc_asm_type restrict -dm_mat_type $$mtype > ex48_5.tmp 2>&1; \
+	   ${DIFF} output/ex48_5.out ex48_5.tmp || echo  ${PWD} "\nPossible problem with ex48_5 mtype=$${mtype}, diffs above \n========================================="; \
+	   ${RM} -f ex48.tmp; \
+         done
 
 runex58:
 	-@${MPIEXEC} -n 1 ./ex58 -pc_type mg -ksp_monitor_short -pc_mg_galerkin -da_refine 5   -snes_vi_monitor -pc_mg_type full -snes_rtol 1.e-12 -snes_max_it 100 -snes_converged_reason > ex58.tmp 2>&1; \
