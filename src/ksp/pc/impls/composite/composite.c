@@ -309,6 +309,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCCompositeSetType_Composite"
 PetscErrorCode  PCCompositeSetType_Composite(PC pc,PCCompositeType type)
 {
+  PC_Composite *jac = (PC_Composite*)pc->data;
+
   PetscFunctionBegin;
   if (type == PC_COMPOSITE_ADDITIVE) {
     pc->ops->apply          = PCApply_Composite_Additive;
@@ -320,6 +322,7 @@ PetscErrorCode  PCCompositeSetType_Composite(PC pc,PCCompositeType type)
     pc->ops->apply          = PCApply_Composite_Special;
     pc->ops->applytranspose = PETSC_NULL;
   } else SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Unkown composite preconditioner type");
+  jac->type = type;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
