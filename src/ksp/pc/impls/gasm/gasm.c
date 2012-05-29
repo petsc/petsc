@@ -297,28 +297,30 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
         PetscBool flg;
         PetscInt     num_domains, d;
         char         **domain_names;
-        IS           *domain_is;
+        IS           *inner_domain_is, *outer_domain_is;
         /* Allow the user to request a decomposition DM by name */
         ierr = PetscStrncpy(ddm_name, "", 1024); CHKERRQ(ierr);
         ierr = PetscOptionsString("-pc_gasm_decomposition","Name of the DM defining the composition", "PCSetDM", ddm_name, ddm_name,1024,&flg); CHKERRQ(ierr);
         if(flg) {
-          ierr = DMCreateDecompositionDM(pc->dm, ddm_name, &ddm); CHKERRQ(ierr);
+          ierr = DMCreateDomainDecompositionDM(pc->dm, ddm_name, &ddm); CHKERRQ(ierr);
           if(!ddm) {
             SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown DM decomposition name %s", ddm_name);
           }
           ierr = PetscInfo(pc,"Using decomposition DM defined using options database\n");CHKERRQ(ierr);
           ierr = PCSetDM(pc,ddm); CHKERRQ(ierr);
         }
-        ierr = DMCreateDecomposition(pc->dm, &num_domains, &domain_names, &domain_is, &domain_dm);    CHKERRQ(ierr);
+        ierr = DMCreateDomainDecomposition(pc->dm, &num_domains, &domain_names, &inner_domain_is, &outer_domain_is, &domain_dm);    CHKERRQ(ierr);
         if(num_domains) {
-          ierr = PCGASMSetSubdomains(pc, num_domains, domain_is, PETSC_NULL);CHKERRQ(ierr);
+          ierr = PCGASMSetSubdomains(pc, num_domains, inner_domain_is, outer_domain_is);CHKERRQ(ierr);
         }
         for(d = 0; d < num_domains; ++d) {
           ierr = PetscFree(domain_names[d]); CHKERRQ(ierr);
-          ierr = ISDestroy(&domain_is[d]);   CHKERRQ(ierr);
+          ierr = ISDestroy(&inner_domain_is[d]);   CHKERRQ(ierr);
+          ierr = ISDestroy(&outer_domain_is[d]);   CHKERRQ(ierr);
         }
         ierr = PetscFree(domain_names);CHKERRQ(ierr);
-        ierr = PetscFree(domain_is);CHKERRQ(ierr);
+        ierr = PetscFree(inner_domain_is);CHKERRQ(ierr);
+        ierr = PetscFree(outer_domain_is);CHKERRQ(ierr);
       }
       if (osm->n == PETSC_DECIDE) { /* still no subdomains; use one per processor */
         osm->nmax = osm->n = 1;

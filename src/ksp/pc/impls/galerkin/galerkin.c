@@ -180,7 +180,7 @@ PetscErrorCode  PCGalerkinSetRestriction(PC pc,Mat R)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCGalerkinSetRestriction"
+#define __FUNCT__ "PCGalerkinSetInterpolation"
 /*@
    PCGalerkinSetInterpolation - Sets the interpolation operator for the "Galerkin-type" preconditioner
    

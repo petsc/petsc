@@ -897,6 +897,7 @@ PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,PetscVoidFunctio
   PetscValidPointer(r,3);
   if (!op) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Attempting to find operation with null name");
   *r = PETSC_NULL;
+  match = PETSC_FALSE;
   entry = fl;
   while (entry) {
     ierr = PetscStrcmp(entry->op,op,&match); CHKERRQ(ierr);

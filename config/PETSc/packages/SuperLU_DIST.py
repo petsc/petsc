@@ -3,7 +3,8 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_dist_3.0-p1.tar.gz']
+    self.download   = ['http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_dist_3.1.tar.gz',
+                       'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_dist_3.1.tar.gz']
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
     self.liblist    = [['libsuperlu_dist_3.0.a']]

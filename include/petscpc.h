@@ -364,7 +364,7 @@ PETSC_EXTERN const char *PCCompositeTypes[];
 
 PETSC_EXTERN PetscErrorCode PCCompositeSetUseTrue(PC);
 PETSC_EXTERN PetscErrorCode PCCompositeSetType(PC,PCCompositeType);
-PETSC_EXTERN PetscErrorCode PCCompositeAddPC(PC,PCType);
+PETSC_EXTERN PetscErrorCode PCCompositeAddPC(PC,const PCType);
 PETSC_EXTERN PetscErrorCode PCCompositeGetPC(PC,PetscInt,PC *);
 PETSC_EXTERN PetscErrorCode PCCompositeSpecialSetAlpha(PC,PetscScalar);
 

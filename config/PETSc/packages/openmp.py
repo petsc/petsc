@@ -24,14 +24,14 @@ class Configure(PETSc.package.NewPackage):
     self.setCompilers.pushLanguage('C')
     # 
     for flag in ["-fopenmp", # Gnu
-                 "-h omp",   # Cray
+                 "-qsmp=omp",# IBM XL C/C++
+                 "-h omp",   # Cray. Must come after XL because XL interprets this option as meaning "-soname omp"
                  "-mp",      # Portland Group
                  "-Qopenmp", # Intel windows
                  "-openmp",  # Intel
                  " ",        # Empty, if compiler automatically accepts openmp
                  "-xopenmp", # Sun
                  "+Oopenmp", # HP
-                 "-qsmp",    # IBM XL C/c++
                  "/openmp"   # Microsoft Visual Studio
                  ]:
       if self.setCompilers.checkCompilerFlag(flag):

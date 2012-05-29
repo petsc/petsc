@@ -343,6 +343,8 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
     case 2: u[0] = (0 < x0 && x0 < 1) ? 1 : 0; break;
     case 3: u[0] = sin(2*M_PI*x0); break;
     case 4: u[0] = PetscAbs(x0); break;
+    case 5: u[0] = (x0 < 0 || x0 > 0.5) ? 0 : PetscSqr(sin(2*M_PI*x0)); break;
+    case 6: u[0] = (x0 < 0) ? 0 : ((x0 < 1) ? x0 : ((x0 < 2) ? 2-x0 : 0)); break;
     default: SETERRQ(PETSC_COMM_SELF,1,"unknown initial condition");
   }
   PetscFunctionReturn(0);
