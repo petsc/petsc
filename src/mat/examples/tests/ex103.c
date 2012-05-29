@@ -29,6 +29,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
   ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(C);CHKERRQ(ierr); 
+  ierr = MatSetUp(C);CHKERRQ(ierr);
 
   /* Assembly C */
   ierr = MatGetOwnershipRange(C,&start,&end);CHKERRQ(ierr);

@@ -146,7 +146,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
   PetscScalar    zero = 0.0,one = 1.0;
   PetscScalar    hx,hy,hz,hxhydhz,hyhzdhx,hzhxdhy;
   PetscScalar    t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
-  PetscScalar    tleft,tright,beta,td,ad,dd,fd,tu,au,du,fu;
+  PetscScalar    tleft,tright,beta,td,ad,dd,fd,tu,au,du=0.0,fu=0.0;
   PetscScalar    ***x,***f;
   Vec            localX;
   DM             da;
