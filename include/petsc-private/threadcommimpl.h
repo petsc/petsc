@@ -28,7 +28,7 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 /* Max. number of kernels */
 #define PETSC_KERNELS_MAX 10
 
-/* Status of threads */
+/* Reduction status of threads */
 #define THREADCOMM_THREAD_WAITING_FOR_NEWRED 0
 #define THREADCOMM_THREAD_POSTED_LOCALRED    1
 /* Status of the reduction */
@@ -64,6 +64,8 @@ struct _p_PetscThreadCommJobQueue{
   PetscThreadCommJobCtx jobs[PETSC_KERNELS_MAX]; /* queue of jobs */
 };
 
+extern PetscThreadCommJobQueue PetscJobQueue;
+
 typedef struct _PetscThreadCommOps *PetscThreadCommOps;
 struct _PetscThreadCommOps {
   PetscErrorCode (*destroy)(PetscThreadComm);
@@ -78,7 +80,6 @@ struct _p_PetscThreadComm{
   PetscInt                *affinities;  /* Thread affinity */
   PetscThreadCommOps      ops;          /* Operations table */ 
   void                    *data;        /* implementation specific data */
-  PetscThreadCommJobQueue jobqueue;     /* Job queue */
   char                    type[256];    /* Thread model type */
   PetscInt                leader;       /* Rank of the leader thread. This thread manages
                                            the synchronization for collective operatons like reductions.

@@ -13,7 +13,6 @@ typedef struct {
 
 static sjob_lockfree job_lockfree = {NULL,NULL};
 
-
 void SparkThreads_LockFree(PetscInt myrank,PetscThreadComm tcomm,PetscThreadCommJobCtx job)
 {
   PetscInt i,thread_num;

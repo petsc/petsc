@@ -6,6 +6,8 @@ PetscBool  PetscThreadCommRegisterAllCalled = PETSC_FALSE;
 PetscFList PetscThreadCommList              = PETSC_NULL;
 PetscMPIInt Petsc_ThreadComm_keyval         = MPI_KEYVAL_INVALID;
 
+PetscThreadCommJobQueue PetscJobQueue=PETSC_NULL;
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetNCores"
 /*@
@@ -90,7 +92,6 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
 {
   PetscErrorCode  ierr;
   PetscThreadComm tcommout;
-  PetscInt        i;
 
   PetscFunctionBegin;
   PetscValidPointer(tcomm,2);
@@ -100,11 +101,6 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
   tcommout->nworkThreads =  -1;
   tcommout->affinities = PETSC_NULL;
   ierr = PetscNew(struct _PetscThreadCommOps,&tcommout->ops);CHKERRQ(ierr);
-  ierr = PetscNew(struct _p_PetscThreadCommJobQueue,&tcommout->jobqueue);CHKERRQ(ierr);
-  for(i=0;i<PETSC_KERNELS_MAX;i++) {
-    ierr = PetscNew(struct _p_PetscThreadCommJobCtx,&tcommout->jobqueue->jobs[i]);CHKERRQ(ierr);
-  }
-  tcommout->jobqueue->ctr = 0;
   tcommout->leader = 0;
   *tcomm = tcommout;
 
@@ -141,9 +137,9 @@ PetscErrorCode PetscThreadCommDestroy(PetscThreadComm tcomm)
   ierr = PetscFree(tcomm->affinities);CHKERRQ(ierr);
   ierr = PetscFree(tcomm->ops);CHKERRQ(ierr);
   for(i=0;i<PETSC_KERNELS_MAX;i++) {
-    ierr = PetscFree(tcomm->jobqueue->jobs[i]);CHKERRQ(ierr);
+    ierr = PetscFree(PetscJobQueue->jobs[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(tcomm->jobqueue);CHKERRQ(ierr);
+  ierr = PetscFree(PetscJobQueue);CHKERRQ(ierr);
   ierr = PetscThreadCommReductionDestroy(tcomm->red);CHKERRQ(ierr);
   ierr = PetscFree(tcomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -506,7 +502,7 @@ PetscErrorCode  PetscThreadCommRegister(const char sname[],const char path[],con
    Typical usage:
 
    PetscScalar *valptr;
-   PetscThreadCommGetScalar(comm,&valptr,PETSC_NULL,PETSC_NULL);
+   PetscThreadCommGetScalars(comm,&valptr,PETSC_NULL,PETSC_NULL);
    *valptr = alpha;   (alpha is the scalar you wish to pass in PetscThreadCommRunKernel)
 
    PetscThreadCommRunKernel(comm,(PetscThreadKernel)kernel_func,3,x,y,valptr);
@@ -517,16 +513,13 @@ PetscErrorCode PetscThreadCommGetScalars(MPI_Comm comm,PetscScalar **val1, Petsc
 {
   PetscErrorCode ierr;
   PetscThreadComm tcomm;
-  PetscThreadCommJobQueue queue;
   PetscThreadCommJobCtx   job;
   PetscInt                job_num;
 
   PetscFunctionBegin;
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
-  queue = tcomm->jobqueue;
-  if(queue->ctr == PETSC_KERNELS_MAX) job_num = 0;
-  else job_num = queue->ctr;
-  job = queue->jobs[job_num];
+  job_num = PetscJobQueue->ctr%PETSC_KERNELS_MAX;
+  job = PetscJobQueue->jobs[job_num];
   if(val1) *val1 = &job->scalars[0];
   if(val2) *val2 = &job->scalars[1];
   if(val3) *val3 = &job->scalars[2];
@@ -567,21 +560,19 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
   va_list                 argptr;
   PetscInt                i;
   PetscThreadComm         tcomm=0;
-  PetscThreadCommJobQueue queue;
   PetscThreadCommJobCtx   job;
 
   PetscFunctionBegin;
   if(nargs > PETSC_KERNEL_NARGS_MAX) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Requested %D input arguments for kernel, max. limit %D",nargs,PETSC_KERNEL_NARGS_MAX);
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
-  queue = tcomm->jobqueue;
-  if(queue->ctr == PETSC_KERNELS_MAX) {
+  if(PetscJobQueue->ctr == PETSC_KERNELS_MAX) {
     /* Put a barrier so that the last given job is finished and reset the
        job queue counter
     */
     ierr = PetscThreadCommBarrier(comm);CHKERRQ(ierr);
-    queue->ctr = 0;
+    PetscJobQueue->ctr = 0;
   }
-  job = queue->jobs[queue->ctr];
+  job = PetscJobQueue->jobs[PetscJobQueue->ctr];
   job->tcomm = tcomm;
   job->nargs = nargs;
   job->pfunc = func;
@@ -590,7 +581,7 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
     job->args[i] = va_arg(argptr,void*);
   }
   va_end(argptr);
-  queue->ctr++;
+  PetscJobQueue->ctr++;
   ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -634,6 +625,7 @@ PetscErrorCode PetscThreadCommInitialize(void)
   PetscErrorCode  ierr;
   PetscThreadComm tcomm;
   MPI_Comm        icomm,icomm1;
+  PetscInt        i;
 
   PetscFunctionBegin;
   if(Petsc_ThreadComm_keyval == MPI_KEYVAL_INVALID) {
@@ -642,6 +634,12 @@ PetscErrorCode PetscThreadCommInitialize(void)
   ierr = PetscThreadCommCreate(PETSC_COMM_WORLD,&tcomm);CHKERRQ(ierr);
   ierr = PetscThreadCommSetNThreads(tcomm,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscThreadCommSetAffinities(tcomm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscNew(struct _p_PetscThreadCommJobQueue,&PetscJobQueue);CHKERRQ(ierr);
+  for(i=0;i<PETSC_KERNELS_MAX;i++) {
+    ierr = PetscNew(struct _p_PetscThreadCommJobCtx,&PetscJobQueue->jobs[i]);CHKERRQ(ierr);
+  }
+  PetscJobQueue->ctr = 0;
+
   ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&icomm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_put(icomm,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(PETSC_COMM_SELF,&icomm1,PETSC_NULL);CHKERRQ(ierr);
