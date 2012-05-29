@@ -69,8 +69,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
       ierr = VecDuplicate(X,&bcgs->guess);CHKERRQ(ierr);
     }
     ierr = VecCopy(X,bcgs->guess);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = VecSet(X,0.0);CHKERRQ(ierr);
   }
 
@@ -83,8 +82,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     ierr = MatMult(pc->mat,X,S2);CHKERRQ(ierr);
     ierr = VecCopy(B,R);CHKERRQ(ierr);
     ierr = VecAXPY(R,-1.0,S2);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = VecCopy(B,R);CHKERRQ(ierr);
   }
 
@@ -180,7 +178,6 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   if (i >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
-
   PetscFunctionReturn(0);
 }
 
