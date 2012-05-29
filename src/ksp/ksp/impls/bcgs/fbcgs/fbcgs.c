@@ -5,6 +5,25 @@
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
 
+/* copied from KSPBuildSolution_GCR() */
+#undef __FUNCT__  
+#define __FUNCT__ "KSPBuildSolution_FBCGS" 
+PetscErrorCode  KSPBuildSolution_FBCGS(KSP ksp, Vec v, Vec *V)
+{       
+  PetscErrorCode ierr;
+  Vec            x;
+        
+  PetscFunctionBegin;
+  x = ksp->vec_sol;
+  if (v) {
+    ierr = VecCopy(x, v);CHKERRQ(ierr);
+    if (V) *V = v;
+  } else if (V) {
+    *V = ksp->vec_sol;
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_FBCGS"
 static PetscErrorCode KSPSetUp_FBCGS(KSP ksp)
@@ -192,7 +211,7 @@ PetscErrorCode  KSPCreate_FBCGS(KSP ksp)
   ksp->ops->solve           = KSPSolve_FBCGS;
   ksp->ops->destroy         = KSPDestroy_BCGS;
   ksp->ops->reset           = KSPReset_BCGS;
-  ksp->ops->buildsolution   = KSPBuildSolution_BCGS;
+  ksp->ops->buildsolution   = KSPBuildSolution_FBCGS;
   ksp->ops->buildresidual   = KSPDefaultBuildResidual;
   ksp->ops->setfromoptions  = KSPSetFromOptions_BCGS;
   ksp->ops->view            = KSPView_BCGS;
