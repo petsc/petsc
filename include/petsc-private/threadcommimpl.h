@@ -76,6 +76,7 @@ struct _PetscThreadCommOps {
 };
 
 struct _p_PetscThreadComm{
+  PetscInt                refct;
   PetscInt                nworkThreads; /* Number of threads in the pool */
   PetscInt                *affinities;  /* Thread affinity */
   PetscThreadCommOps      ops;          /* Operations table */ 
