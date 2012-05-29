@@ -330,7 +330,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeAddPC_Composite"
-PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
+PetscErrorCode  PCCompositeAddPC_Composite(PC pc,const PCType type)
 {
   PC_Composite     *jac;
   PC_CompositeLink next,ilink;
@@ -476,13 +476,13 @@ PetscErrorCode  PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
 
 .keywords: PC, composite preconditioner, add
 @*/
-PetscErrorCode  PCCompositeAddPC(PC pc,PCType type)
+PetscErrorCode  PCCompositeAddPC(PC pc,const PCType type)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCCompositeAddPC_C",(PC,PCType),(pc,type));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCCompositeAddPC_C",(PC,const PCType),(pc,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
