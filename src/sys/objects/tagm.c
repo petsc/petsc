@@ -330,13 +330,13 @@ PetscErrorCode  PetscObjectsGetGlobalNumbering(MPI_Comm comm, PetscInt len, Pets
     if(!srank) ++roots;
   }
   /* Obtain the sum of all roots -- the global number of distinct subcomms. */
-  ierr   = MPI_Allreduce((void*)&roots,(void*)count,1,MPIU_INT,MPIU_SUM,comm); CHKERRQ(ierr);
+  ierr   = MPI_Allreduce((void*)&roots,(void*)count,1,MPIU_INT,MPI_SUM,comm); CHKERRQ(ierr);
   /* Now introduce a global numbering for subcomms, initially known only by subcomm roots. */
   /* 
    At the subcomm roots number the subcomms in the subcomm-root local manner, 
    and make it global by calculating the shift.
    */
-  ierr = MPI_Scan((PetscMPIInt*)&roots,(PetscMPIInt*)&offset,1,MPIU_INT,MPIU_SUM,comm); CHKERRQ(ierr);
+  ierr = MPI_Scan((PetscMPIInt*)&roots,(PetscMPIInt*)&offset,1,MPIU_INT,MPI_SUM,comm); CHKERRQ(ierr);
   offset -= roots;
   /* Now we are ready to broadcast global subcomm numbers within each subcomm.*/
   /* 
