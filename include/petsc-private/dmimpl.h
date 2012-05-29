@@ -45,7 +45,7 @@ struct _DMOps {
   PetscErrorCode (*createfielddecompositiondm)(DM,const char*,DM*);
   PetscErrorCode (*createfielddecomposition)(DM,PetscInt*,char***,IS**,DM**);
   PetscErrorCode (*createdomaindecompositiondm)(DM,const char*,DM*);
-  PetscErrorCode (*createdomaindecomposition)(DM,PetscInt*,char***,IS**,DM**);
+  PetscErrorCode (*createdomaindecomposition)(DM,PetscInt*,char***,IS**,IS**,DM**);
 
 };
 
@@ -106,9 +106,6 @@ struct _p_DM {
   /* Allows a non-standard data layout */
   PetscSection           defaultSection;       /* Layout for local vectors */
   PetscSection           defaultGlobalSection; /* Layout for global vectors */
-  /* Helpers for DMXXXDecomposition() combination */
-  DM                     ambientdm;
-  IS                     embedding;
 };
 
 PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
