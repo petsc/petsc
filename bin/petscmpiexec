@@ -50,5 +50,8 @@ if ( ${valgrind} == "1" ) then
 else
   $qrun -n $np $*
 endif
+if ( ${valgrind} == "1" &&  `uname` == 'Darwin') then
+  rm -rf ${PETSC_DIR}/${PETSC_ARCH}/lib/lib*.dSYM
+endif
 
 

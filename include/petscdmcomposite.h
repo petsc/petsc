@@ -3,24 +3,22 @@
 #define __PETSCDMCOMPOSITE_H
 
 #include "petscdm.h"
-PETSC_EXTERN_CXX_BEGIN
 
-extern PetscErrorCode   DMCompositeCreate(MPI_Comm,DM*);
-extern PetscErrorCode   DMCompositeAddDM(DM,DM);
-extern PetscErrorCode   DMCompositeSetCoupling(DM,PetscErrorCode (*)(DM,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt));
-extern PetscErrorCode   DMCompositeAddVecScatter(DM,VecScatter);
-extern PetscErrorCode   DMCompositeScatter(DM,Vec,...);
-extern PetscErrorCode   DMCompositeGather(DM,Vec,InsertMode,...);
-extern PetscErrorCode   DMCompositeGetAccess(DM,Vec,...);
-extern PetscErrorCode   DMCompositeGetNumberDM(DM,PetscInt*);
-extern PetscErrorCode   DMCompositeRestoreAccess(DM,Vec,...);
-extern PetscErrorCode   DMCompositeGetLocalVectors(DM,...);
-extern PetscErrorCode   DMCompositeGetEntries(DM,...);
-extern PetscErrorCode   DMCompositeGetEntriesArray(DM,DM[]);
-extern PetscErrorCode   DMCompositeRestoreLocalVectors(DM,...);
-extern PetscErrorCode   DMCompositeGetGlobalISs(DM,IS*[]);
-extern PetscErrorCode   DMCompositeGetLocalISs(DM,IS**);
-extern PetscErrorCode   DMCompositeGetISLocalToGlobalMappings(DM,ISLocalToGlobalMapping**);
+PETSC_EXTERN PetscErrorCode DMCompositeCreate(MPI_Comm,DM*);
+PETSC_EXTERN PetscErrorCode DMCompositeAddDM(DM,DM);
+PETSC_EXTERN PetscErrorCode DMCompositeSetCoupling(DM,PetscErrorCode (*)(DM,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt));
+PETSC_EXTERN PetscErrorCode DMCompositeAddVecScatter(DM,VecScatter);
+PETSC_EXTERN PetscErrorCode DMCompositeScatter(DM,Vec,...);
+PETSC_EXTERN PetscErrorCode DMCompositeGather(DM,Vec,InsertMode,...);
+PETSC_EXTERN PetscErrorCode DMCompositeGetAccess(DM,Vec,...);
+PETSC_EXTERN PetscErrorCode DMCompositeGetNumberDM(DM,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMCompositeRestoreAccess(DM,Vec,...);
+PETSC_EXTERN PetscErrorCode DMCompositeGetLocalVectors(DM,...);
+PETSC_EXTERN PetscErrorCode DMCompositeGetEntries(DM,...);
+PETSC_EXTERN PetscErrorCode DMCompositeGetEntriesArray(DM,DM[]);
+PETSC_EXTERN PetscErrorCode DMCompositeRestoreLocalVectors(DM,...);
+PETSC_EXTERN PetscErrorCode DMCompositeGetGlobalISs(DM,IS*[]);
+PETSC_EXTERN PetscErrorCode DMCompositeGetLocalISs(DM,IS**);
+PETSC_EXTERN PetscErrorCode DMCompositeGetISLocalToGlobalMappings(DM,ISLocalToGlobalMapping**);
 
-PETSC_EXTERN_CXX_END
 #endif

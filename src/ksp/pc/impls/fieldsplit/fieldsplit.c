@@ -252,7 +252,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       char         **fieldNames;
       IS          *fields;
       DM          *dms;
-      ierr = DMCreateDecomposition(pc->dm, &numFields, &fieldNames, &fields, &dms);    CHKERRQ(ierr);
+      ierr = DMCreateFieldDecomposition(pc->dm, &numFields, &fieldNames, &fields, &dms);    CHKERRQ(ierr);
       for(f = 0; f < numFields; ++f) {
         ierr = PCFieldSplitSetIS(pc, fieldNames[f], fields[f]);CHKERRQ(ierr);
         ierr = PetscFree(fieldNames[f]);CHKERRQ(ierr);
@@ -937,13 +937,13 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
   if(pc->dm) {
     /* Allow the user to request a decomposition DM by name */
     ierr = PetscStrncpy(ddm_name, "", 1024); CHKERRQ(ierr);
-    ierr = PetscOptionsString("-pc_fieldsplit_decomposition_dm", "Name of the DM defining the composition", "PCSetDM", ddm_name, ddm_name,1024,&flg); CHKERRQ(ierr);
+    ierr = PetscOptionsString("-pc_fieldsplit_decomposition", "Name of the DM defining the composition", "PCSetDM", ddm_name, ddm_name,1024,&flg); CHKERRQ(ierr);
     if(flg) {
-      ierr = DMCreateDecompositionDM(pc->dm, ddm_name, &ddm); CHKERRQ(ierr);
+      ierr = DMCreateFieldDecompositionDM(pc->dm, ddm_name, &ddm); CHKERRQ(ierr);
       if(!ddm) {
-        SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown DM decomposition name %s", ddm_name);
+        SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown field decomposition name %s", ddm_name);
       }
-      ierr = PetscInfo(pc,"Using decomposition DM defined using options database\n");CHKERRQ(ierr);
+      ierr = PetscInfo(pc,"Using field decomposition DM defined using options database\n");CHKERRQ(ierr);
       ierr = PCSetDM(pc,ddm); CHKERRQ(ierr);
     }
   }

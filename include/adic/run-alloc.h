@@ -2,7 +2,7 @@
 #define RUN_ALLOC_H
 
 #if defined(__cplusplus)
-extern "C" {
+PETSC_EXTERN "C" {
 #endif
 
 void* ad_adic_deriv_init(int dsize, int bsize);

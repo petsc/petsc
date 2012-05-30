@@ -42,8 +42,10 @@ struct _DMOps {
 
   PetscErrorCode (*computevariablebounds)(DM,Vec,Vec);
 
-  PetscErrorCode (*createdecompositiondm)(DM,const char*,DM*);
-  PetscErrorCode (*createdecomposition)(DM,PetscInt*,char***,IS**,DM**);
+  PetscErrorCode (*createfielddecompositiondm)(DM,const char*,DM*);
+  PetscErrorCode (*createfielddecomposition)(DM,PetscInt*,char***,IS**,DM**);
+  PetscErrorCode (*createdomaindecompositiondm)(DM,const char*,DM*);
+  PetscErrorCode (*createdomaindecomposition)(DM,PetscInt*,char***,IS**,IS**,DM**);
 
 };
 
@@ -106,7 +108,7 @@ struct _p_DM {
   PetscSection           defaultGlobalSection; /* Layout for global vectors */
 };
 
-extern PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
+PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 
 /*
 

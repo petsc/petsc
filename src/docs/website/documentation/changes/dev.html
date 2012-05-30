@@ -111,6 +111,7 @@
       <h4>Mat:</h4>
 
       <ul>
+        <li>MatScaleSystem() and MatUnScaleSystem() are gone, they didn't do anything.</li>
         <li>Renamed MatNullSpaceAttach() to MatSetNullSpace()</li>
         <li>MatMult() no longer removes the nullspace set by MatSetNullSpace()</li>
         <li>Renamed MatMatMultTranspose() for C=A^T*B to MatTransposeMatMult()</li>
@@ -204,6 +205,10 @@
       </ul>
 
       <h4>DMMG:</h4>
+      <ul>
+        <li>DMMG is now completely removed from PETSc</li>
+      </ul>
+
       <h4>PetscViewer:</h4>
       <h4>SYS:</h4>
       <h4>AO:</h4>

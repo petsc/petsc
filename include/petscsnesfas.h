@@ -16,51 +16,51 @@
 
 E*/
 typedef enum { SNES_FAS_MULTIPLICATIVE, SNES_FAS_ADDITIVE } SNESFASType;
-extern const char * SNESFASTypes[];
+PETSC_EXTERN const char * SNESFASTypes[];
 
 /* called on the finest level FAS instance*/
-extern PetscErrorCode SNESFASSetType(SNES, SNESFASType);
-extern PetscErrorCode SNESFASGetType(SNES, SNESFASType*);
-extern PetscErrorCode SNESFASSetLevels(SNES, PetscInt, MPI_Comm *);
-extern PetscErrorCode SNESFASGetLevels(SNES, PetscInt *);
-extern PetscErrorCode SNESFASGetCycleSNES(SNES, PetscInt, SNES*);
-extern PetscErrorCode SNESFASSetNumberSmoothUp(SNES, PetscInt);
-extern PetscErrorCode SNESFASSetNumberSmoothDown(SNES, PetscInt);
-extern PetscErrorCode SNESFASSetCycles(SNES, PetscInt);
-extern PetscErrorCode SNESFASSetMonitor(SNES, PetscBool);
+PETSC_EXTERN PetscErrorCode SNESFASSetType(SNES, SNESFASType);
+PETSC_EXTERN PetscErrorCode SNESFASGetType(SNES, SNESFASType*);
+PETSC_EXTERN PetscErrorCode SNESFASSetLevels(SNES, PetscInt, MPI_Comm *);
+PETSC_EXTERN PetscErrorCode SNESFASGetLevels(SNES, PetscInt *);
+PETSC_EXTERN PetscErrorCode SNESFASGetCycleSNES(SNES, PetscInt, SNES*);
+PETSC_EXTERN PetscErrorCode SNESFASSetNumberSmoothUp(SNES, PetscInt);
+PETSC_EXTERN PetscErrorCode SNESFASSetNumberSmoothDown(SNES, PetscInt);
+PETSC_EXTERN PetscErrorCode SNESFASSetCycles(SNES, PetscInt);
+PETSC_EXTERN PetscErrorCode SNESFASSetMonitor(SNES, PetscBool);
 
 
-extern PetscErrorCode SNESFASSetGalerkin(SNES, PetscBool);
-extern PetscErrorCode SNESFASGetGalerkin(SNES, PetscBool*);
+PETSC_EXTERN PetscErrorCode SNESFASSetGalerkin(SNES, PetscBool);
+PETSC_EXTERN PetscErrorCode SNESFASGetGalerkin(SNES, PetscBool*);
 
 /* called on any level -- "Cycle" FAS instance */
-extern PetscErrorCode SNESFASCycleGetSmoother(SNES, SNES*);
-extern PetscErrorCode SNESFASCycleGetSmootherUp(SNES, SNES*);
-extern PetscErrorCode SNESFASCycleGetSmootherDown(SNES, SNES*);
-extern PetscErrorCode SNESFASCycleGetCorrection(SNES, SNES*);
-extern PetscErrorCode SNESFASCycleGetInterpolation(SNES, Mat*);
-extern PetscErrorCode SNESFASCycleGetRestriction(SNES, Mat*);
-extern PetscErrorCode SNESFASCycleGetInjection(SNES, Mat*);
-extern PetscErrorCode SNESFASCycleGetRScale(SNES, Vec*);
-extern PetscErrorCode SNESFASCycleSetCycles(SNES, PetscInt);
-extern PetscErrorCode SNESFASCycleIsFine(SNES, PetscBool*);
+PETSC_EXTERN PetscErrorCode SNESFASCycleGetSmoother(SNES, SNES*);
+PETSC_EXTERN PetscErrorCode SNESFASCycleGetSmootherUp(SNES, SNES*);
+PETSC_EXTERN PetscErrorCode SNESFASCycleGetSmootherDown(SNES, SNES*);
+PETSC_EXTERN PetscErrorCode SNESFASCycleGetCorrection(SNES, SNES*);
+PETSC_EXTERN PetscErrorCode SNESFASCycleGetInterpolation(SNES, Mat*);
+PETSC_EXTERN PetscErrorCode SNESFASCycleGetRestriction(SNES, Mat*);
+PETSC_EXTERN PetscErrorCode SNESFASCycleGetInjection(SNES, Mat*);
+PETSC_EXTERN PetscErrorCode SNESFASCycleGetRScale(SNES, Vec*);
+PETSC_EXTERN PetscErrorCode SNESFASCycleSetCycles(SNES, PetscInt);
+PETSC_EXTERN PetscErrorCode SNESFASCycleIsFine(SNES, PetscBool*);
 
 /* called on the (outer) finest level FAS to set/get parameters on any level instance */
-extern PetscErrorCode SNESFASSetInterpolation(SNES, PetscInt, Mat);
-extern PetscErrorCode SNESFASGetInterpolation(SNES, PetscInt, Mat*);
-extern PetscErrorCode SNESFASSetRestriction(SNES, PetscInt, Mat);
-extern PetscErrorCode SNESFASGetRestriction(SNES, PetscInt, Mat*);
-extern PetscErrorCode SNESFASSetInjection(SNES, PetscInt, Mat);
-extern PetscErrorCode SNESFASGetInjection(SNES, PetscInt, Mat*);
-extern PetscErrorCode SNESFASSetRScale(SNES, PetscInt, Vec);
-extern PetscErrorCode SNESFASGetRScale(SNES, PetscInt, Vec*);
+PETSC_EXTERN PetscErrorCode SNESFASSetInterpolation(SNES, PetscInt, Mat);
+PETSC_EXTERN PetscErrorCode SNESFASGetInterpolation(SNES, PetscInt, Mat*);
+PETSC_EXTERN PetscErrorCode SNESFASSetRestriction(SNES, PetscInt, Mat);
+PETSC_EXTERN PetscErrorCode SNESFASGetRestriction(SNES, PetscInt, Mat*);
+PETSC_EXTERN PetscErrorCode SNESFASSetInjection(SNES, PetscInt, Mat);
+PETSC_EXTERN PetscErrorCode SNESFASGetInjection(SNES, PetscInt, Mat*);
+PETSC_EXTERN PetscErrorCode SNESFASSetRScale(SNES, PetscInt, Vec);
+PETSC_EXTERN PetscErrorCode SNESFASGetRScale(SNES, PetscInt, Vec*);
 
-extern PetscErrorCode SNESFASGetSmoother(SNES,     PetscInt, SNES*);
-extern PetscErrorCode SNESFASGetSmootherUp(SNES,   PetscInt, SNES*);
-extern PetscErrorCode SNESFASGetSmootherDown(SNES, PetscInt, SNES*);
-extern PetscErrorCode SNESFASGetCoarseSolve(SNES, SNES*);
+PETSC_EXTERN PetscErrorCode SNESFASGetSmoother(SNES,     PetscInt, SNES*);
+PETSC_EXTERN PetscErrorCode SNESFASGetSmootherUp(SNES,   PetscInt, SNES*);
+PETSC_EXTERN PetscErrorCode SNESFASGetSmootherDown(SNES, PetscInt, SNES*);
+PETSC_EXTERN PetscErrorCode SNESFASGetCoarseSolve(SNES, SNES*);
 
-extern PetscErrorCode SNESFASCreateCoarseVec(SNES,Vec*);
-extern PetscErrorCode SNESFASRestrict(SNES,Vec,Vec);
+PETSC_EXTERN PetscErrorCode SNESFASCreateCoarseVec(SNES,Vec*);
+PETSC_EXTERN PetscErrorCode SNESFASRestrict(SNES,Vec,Vec);
 
 #endif

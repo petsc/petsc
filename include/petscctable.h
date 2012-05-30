@@ -1,7 +1,6 @@
 #ifndef __PETSCCTABLE_H
 #define __PETSCCTABLE_H
 #include "petscsys.h"
-PETSC_EXTERN_CXX_BEGIN
 
 struct _n_PetscTable {
   PetscInt *keytable;
@@ -18,16 +17,16 @@ typedef PetscInt* PetscTablePosition;
 #define HASH_FACT 79943
 #define HASHT(ta,x) ((unsigned long)((HASH_FACT*(unsigned long)x)%ta->tablesize))
 
-extern PetscErrorCode  PetscTableCreate(const PetscInt,PetscInt,PetscTable*);
-extern PetscErrorCode  PetscTableCreateCopy(const PetscTable,PetscTable*);
-extern PetscErrorCode  PetscTableDestroy(PetscTable*);
-extern PetscErrorCode  PetscTableGetCount(const PetscTable,PetscInt*);
-extern PetscErrorCode  PetscTableIsEmpty(const PetscTable,PetscInt*);
-extern PetscErrorCode  PetscTableAddExpand(PetscTable,PetscInt,PetscInt,InsertMode);
-extern PetscErrorCode  PetscTableAddCountExpand(PetscTable,PetscInt);
-extern PetscErrorCode  PetscTableGetHeadPosition(PetscTable,PetscTablePosition*);
-extern PetscErrorCode  PetscTableGetNext(PetscTable,PetscTablePosition*,PetscInt*,PetscInt*);
-extern PetscErrorCode  PetscTableRemoveAll(PetscTable);
+PETSC_EXTERN PetscErrorCode PetscTableCreate(const PetscInt,PetscInt,PetscTable*);
+PETSC_EXTERN PetscErrorCode PetscTableCreateCopy(const PetscTable,PetscTable*);
+PETSC_EXTERN PetscErrorCode PetscTableDestroy(PetscTable*);
+PETSC_EXTERN PetscErrorCode PetscTableGetCount(const PetscTable,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscTableIsEmpty(const PetscTable,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscTableAddExpand(PetscTable,PetscInt,PetscInt,InsertMode);
+PETSC_EXTERN PetscErrorCode PetscTableAddCountExpand(PetscTable,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscTableGetHeadPosition(PetscTable,PetscTablePosition*);
+PETSC_EXTERN PetscErrorCode PetscTableGetNext(PetscTable,PetscTablePosition*,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscTableRemoveAll(PetscTable);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTableAdd"
@@ -131,5 +130,4 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableFind(PetscTable ta,PetscInt key,Pe
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN_CXX_END
 #endif

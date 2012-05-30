@@ -18,7 +18,7 @@ EXTERN_C_END
 #endif
 
 /* Global counters */
-extern PetscLogDouble  petsc_BaseTime;
+PETSC_EXTERN PetscLogDouble petsc_BaseTime;
 
 /*
    PetscTime - Returns the current time of day in seconds.  
@@ -115,7 +115,7 @@ extern PetscLogDouble  petsc_BaseTime;
    Power1,2,3,PC machines have a fast clock read_real_time()
 */ 
 #elif defined(PETSC_USE_READ_REAL_TIME)
-extern PetscLogDouble rs6000_time(void);
+PETSC_EXTERN PetscLogDouble rs6000_time(void);
 #define PetscTime(v)         (v)=rs6000_time();
 
 #define PetscTimeSubtract(v) (v)-=rs6000_time();
@@ -149,7 +149,7 @@ EXTERN_C_END
 */
 #elif defined (PETSC_USE_DCLOCK)
 EXTERN_C_BEGIN
-extern PetscLogDouble dclock();
+PETSC_EXTERN PetscLogDouble dclock();
 EXTERN_C_END
 
 #define PetscTime(v)         (v)=dclock();
@@ -165,7 +165,7 @@ EXTERN_C_END
 #elif defined (PETSC_USE_NT_TIME)
 #include <time.h>
 EXTERN_C_BEGIN
-extern PetscLogDouble nt_time(void);
+PETSC_EXTERN PetscLogDouble nt_time(void);
 EXTERN_C_END
 #define PetscTime(v)         (v)=nt_time();
 

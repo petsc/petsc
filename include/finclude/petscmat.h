@@ -54,6 +54,18 @@
       PetscEnum MAT_SPD
       PetscEnum MAT_NO_OFF_PROC_ENTRIES
       PetscEnum MAT_NO_OFF_PROC_ZERO_ROWS
+      PetscEnum MAT_DIAGBLOCK_CSR
+      PetscEnum MAT_OFFDIAGBLOCK_CSR
+      PetscEnum MAT_CSR
+      PetscEnum MAT_DIAGBLOCK_DIA
+      PetscEnum MAT_OFFDIAGBLOCK_DIA
+      PetscEnum MAT_DIA 
+      PetscEnum MAT_DIAGBLOCK_ELL
+      PetscEnum MAT_OFFDIAGBLOCK_ELL
+      PetscEnum MAT_ELL
+      PetscEnum MAT_DIAGBLOCK_HYB
+      PetscEnum MAT_OFFDIAGBLOCK_HYB 
+      PetscEnum MAT_HYB
       PetscEnum NUM_MAT_OPTIONS
 
       parameter (MAT_ROW_ORIENTED=0)
@@ -78,7 +90,19 @@
       parameter (MAT_SPD=19)
       parameter (MAT_NO_OFF_PROC_ENTRIES=20)
       parameter (MAT_NO_OFF_PROC_ZERO_ROWS=21)
-      parameter (NUM_MAT_OPTIONS=22)
+      parameter (MAT_DIAGBLOCK_CSR=22)
+      parameter (MAT_OFFDIAGBLOCK_CSR=23)
+      parameter (MAT_CSR=24)
+      parameter (MAT_DIAGBLOCK_DIA=25)
+      parameter (MAT_OFFDIAGBLOCK_DIA=26)
+      parameter (MAT_DIA=27)
+      parameter (MAT_DIAGBLOCK_ELL=28)
+      parameter (MAT_OFFDIAGBLOCK_ELL=29)
+      parameter (MAT_ELL=30)
+      parameter (MAT_DIAGBLOCK_HYB=31)
+      parameter (MAT_OFFDIAGBLOCK_HYB=32)
+      parameter (MAT_HYB=33)
+      parameter (NUM_MAT_OPTIONS=34)
 !
 !  MatFactorShiftType
 !

@@ -2,7 +2,7 @@
   1 SNES Function norm 21.1059 
   2 SNES Function norm 1.48792 
   3 SNES Function norm 0.0100219 
-  4 SNES Function norm 4.69213e-07 
+  4 SNES Function norm 4.69212e-07 
 SNES Object: 1 MPI processes
   type: ls
   maximum iterations=50, maximum function evaluations=10000
@@ -51,30 +51,36 @@ SNES Object: 1 MPI processes
             using I-node routines: found 100 nodes, limit used is 5
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object:      (mg_levels_1_)       1 MPI processes
-        type: gmres
-          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          GMRES: happy breakdown tolerance 1e-30
-        maximum iterations=1
+        type: chebyshev
+          Chebyshev: eigenvalue estimates:  min = 0.955071, max = 10.5058
+          Chebyshev: estimated using:  [0 0.1; 0 1.1]
+          KSP Object:           1 MPI processes
+            type: gmres
+              GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+              GMRES: happy breakdown tolerance 1e-30
+            maximum iterations=10
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            left preconditioning
+            using nonzero initial guess
+            using NONE norm type for convergence test
+          PC Object:          (mg_levels_1_)           1 MPI processes
+            type: sor
+              SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
+            linear system matrix = precond matrix:
+            Matrix Object:             1 MPI processes
+              type: seqaij
+              rows=722, cols=722, bs=2
+              total: nonzeros=12100, allocated nonzeros=12100
+              total number of mallocs used during MatSetValues calls =0
+                using I-node routines: found 361 nodes, limit used is 5
+        maximum iterations=2
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using nonzero initial guess
-        using PRECONDITIONED norm type for convergence test
+        using NONE norm type for convergence test
       PC Object:      (mg_levels_1_)       1 MPI processes
-        type: ilu
-          ILU: out-of-place factorization
-          0 levels of fill
-          tolerance for zero pivot 2.22045e-14
-          using diagonal shift to prevent zero pivot
-          matrix ordering: natural
-          factor fill ratio given 1, needed 1
-            Factored matrix follows:
-              Matrix Object:               1 MPI processes
-                type: seqaij
-                rows=722, cols=722, bs=2
-                package used to perform factorization: petsc
-                total: nonzeros=12100, allocated nonzeros=12100
-                total number of mallocs used during MatSetValues calls =0
-                  using I-node routines: found 361 nodes, limit used is 5
+        type: sor
+          SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
         linear system matrix = precond matrix:
         Matrix Object:         1 MPI processes
           type: seqaij

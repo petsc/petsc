@@ -105,8 +105,9 @@ PC Object:(stokes_) 4 MPI processes
           using I-node (on process 0) routines: found 81 nodes, limit used is 5
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object:    (stokes_mg_levels_1_)     4 MPI processes
-      type: chebychev
-        Chebychev: eigenvalue estimates:  min = 0.306745, max = 1.6871
+      type: chebyshev
+        Chebyshev: eigenvalue estimates:  min = 0.306745, max = 1.6871
+        Chebyshev: estimated using:  [0 0.2; 0 1.1]
         KSP Object:        (stokes_mg_levels_1_est_)         4 MPI processes
           type: gmres
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -164,7 +165,7 @@ PC Object:(stokes_) 4 MPI processes
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
       left preconditioning
       using nonzero initial guess
-      using PRECONDITIONED norm type for convergence test
+      using NONE norm type for convergence test
     PC Object:    (stokes_mg_levels_1_)     4 MPI processes
       type: fieldsplit
         FieldSplit with MULTIPLICATIVE composition: total splits = 2, blocksize = 3
@@ -213,8 +214,9 @@ PC Object:(stokes_) 4 MPI processes
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object:    (stokes_mg_levels_2_)     4 MPI processes
-      type: chebychev
-        Chebychev: eigenvalue estimates:  min = 0.291361, max = 1.60249
+      type: chebyshev
+        Chebyshev: eigenvalue estimates:  min = 0.291361, max = 1.60249
+        Chebyshev: estimated using:  [0 0.2; 0 1.1]
         KSP Object:        (stokes_mg_levels_2_est_)         4 MPI processes
           type: gmres
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -272,7 +274,7 @@ PC Object:(stokes_) 4 MPI processes
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
       left preconditioning
       using nonzero initial guess
-      using PRECONDITIONED norm type for convergence test
+      using NONE norm type for convergence test
     PC Object:    (stokes_mg_levels_2_)     4 MPI processes
       type: fieldsplit
         FieldSplit with MULTIPLICATIVE composition: total splits = 2, blocksize = 3
@@ -321,8 +323,9 @@ PC Object:(stokes_) 4 MPI processes
   Up solver (post-smoother) same as down solver (pre-smoother)
   Down solver (pre-smoother) on level 3 -------------------------------
     KSP Object:    (stokes_mg_levels_3_)     4 MPI processes
-      type: chebychev
-        Chebychev: eigenvalue estimates:  min = 0.356873, max = 1.9628
+      type: chebyshev
+        Chebyshev: eigenvalue estimates:  min = 0.356873, max = 1.9628
+        Chebyshev: estimated using:  [0 0.2; 0 1.1]
         KSP Object:        (stokes_mg_levels_3_est_)         4 MPI processes
           type: gmres
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -384,7 +387,7 @@ PC Object:(stokes_) 4 MPI processes
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
       left preconditioning
       using nonzero initial guess
-      using PRECONDITIONED norm type for convergence test
+      using NONE norm type for convergence test
     PC Object:    (stokes_mg_levels_3_)     4 MPI processes
       type: fieldsplit
         FieldSplit with MULTIPLICATIVE composition: total splits = 2, blocksize = 3

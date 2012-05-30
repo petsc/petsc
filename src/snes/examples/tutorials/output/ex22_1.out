@@ -21,9 +21,9 @@
             5 KSP Residual norm 9.32366e-08 
             6 KSP Residual norm 8.65006e-08 
             7 KSP Residual norm 7.52065e-08 
-            8 KSP Residual norm 3.48616e-08 
-            9 KSP Residual norm 2.03231e-08 
-           10 KSP Residual norm 1.69506e-09 
+            8 KSP Residual norm 3.48617e-08 
+            9 KSP Residual norm 2.03232e-08 
+           10 KSP Residual norm 1.69509e-09 
            11 KSP Residual norm 1.259e-10 
            12 KSP Residual norm 2.765e-11 
           2 SNES Function norm 2.765e-11 
@@ -35,17 +35,17 @@
           4 KSP Residual norm 0.000360236 
           5 KSP Residual norm 0.000178816 
           6 KSP Residual norm 9.83607e-05 
-          7 KSP Residual norm 8.7044e-06 
-          8 KSP Residual norm 2.69631e-06 
-        1 SNES Function norm 2.69624e-06 
-          0 KSP Residual norm 2.69624e-06 
-          1 KSP Residual norm 6.84095e-07 
-          2 KSP Residual norm 6.6804e-07 
-          3 KSP Residual norm 2.6837e-08 
-          4 KSP Residual norm 5.39562e-09 
-          5 KSP Residual norm 1.36624e-09 
-          6 KSP Residual norm 5.440e-10 
-          7 KSP Residual norm 3.184e-11 
+          7 KSP Residual norm 8.70441e-06 
+          8 KSP Residual norm 2.69632e-06 
+        1 SNES Function norm 2.69638e-06 
+          0 KSP Residual norm 2.69638e-06 
+          1 KSP Residual norm 6.84162e-07 
+          2 KSP Residual norm 6.6816e-07 
+          3 KSP Residual norm 2.66282e-08 
+          4 KSP Residual norm 5.3463e-09 
+          5 KSP Residual norm 1.35669e-09 
+          6 KSP Residual norm 5.402e-10 
+          7 KSP Residual norm 3.361e-11 
           8 KSP Residual norm < 1.e-11
         2 SNES Function norm < 1.e-11
       0 SNES Function norm 0.345625 
@@ -54,18 +54,18 @@
         2 KSP Residual norm 0.000375527 
         3 KSP Residual norm 0.000374586 
         4 KSP Residual norm 0.000374409 
-        5 KSP Residual norm 0.000172784 
-        6 KSP Residual norm 5.09463e-05 
-        7 KSP Residual norm 6.42707e-06 
-        8 KSP Residual norm 3.26121e-07 
-      1 SNES Function norm 3.26154e-07 
-        0 KSP Residual norm 3.26154e-07 
-        1 KSP Residual norm 2.56074e-07 
-        2 KSP Residual norm 2.38221e-07 
-        3 KSP Residual norm 2.1649e-07 
-        4 KSP Residual norm 5.51382e-08 
-        5 KSP Residual norm 7.793e-10 
-        6 KSP Residual norm 6.205e-11 
+        5 KSP Residual norm 0.000172783 
+        6 KSP Residual norm 5.09457e-05 
+        7 KSP Residual norm 6.42582e-06 
+        8 KSP Residual norm 3.26114e-07 
+      1 SNES Function norm 3.26069e-07 
+        0 KSP Residual norm 3.26069e-07 
+        1 KSP Residual norm 2.56234e-07 
+        2 KSP Residual norm 2.37696e-07 
+        3 KSP Residual norm 2.17231e-07 
+        4 KSP Residual norm 5.5142e-08 
+        5 KSP Residual norm 1.11018e-09 
+        6 KSP Residual norm 5.078e-11 
         7 KSP Residual norm < 1.e-11
         8 KSP Residual norm < 1.e-11
       2 SNES Function norm < 1.e-11
@@ -74,211 +74,175 @@
       1 KSP Residual norm 0.000970266 
       2 KSP Residual norm 0.00019236 
       3 KSP Residual norm 0.000186602 
-      4 KSP Residual norm 5.914e-05 
-      5 KSP Residual norm 3.08879e-06 
-      6 KSP Residual norm 2.61907e-08 
-    1 SNES Function norm 2.67099e-08 
-      0 KSP Residual norm 2.67099e-08 
-      1 KSP Residual norm 3.62785e-09 
-      2 KSP Residual norm 3.31057e-09 
-      3 KSP Residual norm 1.97693e-09 
-      4 KSP Residual norm 1.34737e-09 
-      5 KSP Residual norm 1.29823e-09 
-      6 KSP Residual norm 7.439e-10 
-      7 KSP Residual norm 6.074e-11 
-      8 KSP Residual norm < 1.e-11
-      9 KSP Residual norm < 1.e-11
+      4 KSP Residual norm 5.91427e-05 
+      5 KSP Residual norm 3.08617e-06 
+      6 KSP Residual norm 2.3564e-08 
+    1 SNES Function norm 2.35739e-08 
+      0 KSP Residual norm 2.35739e-08 
+      1 KSP Residual norm 2.84886e-09 
+      2 KSP Residual norm 2.45589e-09 
+      3 KSP Residual norm 1.91139e-09 
+      4 KSP Residual norm 1.08482e-09 
+      5 KSP Residual norm 9.781e-10 
+      6 KSP Residual norm 5.545e-10 
+      7 KSP Residual norm 1.238e-10 
+      8 KSP Residual norm 4.495e-11 
+      9 KSP Residual norm 1.183e-11 
+     10 KSP Residual norm < 1.e-11
+     11 KSP Residual norm < 1.e-11
     2 SNES Function norm < 1.e-11
   0 SNES Function norm 0.195765 
     0 KSP Residual norm 0.195765 
     1 KSP Residual norm 0.000434696 
-    2 KSP Residual norm 6.98759e-05 
+    2 KSP Residual norm 6.98756e-05 
     3 KSP Residual norm 6.89761e-05 
-    4 KSP Residual norm 5.83465e-05 
-    5 KSP Residual norm 2.80355e-06 
-    6 KSP Residual norm 2.67181e-06 
-    7 KSP Residual norm 3.95865e-07 
-  1 SNES Function norm 3.95727e-07 
-    0 KSP Residual norm 3.95727e-07 
-    1 KSP Residual norm 6.43621e-08 
-    2 KSP Residual norm 4.78563e-08 
-    3 KSP Residual norm 3.73094e-08 
-    4 KSP Residual norm 3.72201e-08 
-    5 KSP Residual norm 2.4131e-08 
-    6 KSP Residual norm 3.09451e-09 
-    7 KSP Residual norm 6.976e-10 
-    8 KSP Residual norm 4.941e-11 
-    9 KSP Residual norm 1.701e-11 
-   10 KSP Residual norm < 1.e-11
-  2 SNES Function norm < 1.e-11
-DMMG Object with 5 levels
-Using global (nonghosted) Jacobian coloring computation
-  DM (no prefix)
-    contains 2 DMs
-    Link 0: DM of type redundant
-      redundant: rank=0 N=1
-    Link 1: DM of type da
-      Processor [0] M 10 m 2 w 2 s 1
-      X range of indices: 0 5
-      Processor [1] M 10 m 2 w 2 s 1
-      X range of indices: 5 10
-  DM (no prefix)
-    contains 2 DMs
-    Link 0: DM of type redundant
-      redundant: rank=0 N=1
-    Link 1: DM of type da
-      Processor [0] M 19 m 2 w 2 s 1
-      X range of indices: 0 10
-      Processor [1] M 19 m 2 w 2 s 1
-      X range of indices: 10 19
-  DM (no prefix)
-    contains 2 DMs
-    Link 0: DM of type redundant
-      redundant: rank=0 N=1
-    Link 1: DM of type da
-      Processor [0] M 37 m 2 w 2 s 1
-      X range of indices: 0 19
-      Processor [1] M 37 m 2 w 2 s 1
-      X range of indices: 19 37
-  DM (no prefix)
-    contains 2 DMs
-    Link 0: DM of type redundant
-      redundant: rank=0 N=1
-    Link 1: DM of type da
-      Processor [0] M 73 m 2 w 2 s 1
-      X range of indices: 0 37
-      Processor [1] M 73 m 2 w 2 s 1
-      X range of indices: 37 73
-  DM (no prefix)
-    contains 2 DMs
-    Link 0: DM of type redundant
-      redundant: rank=0 N=1
-    Link 1: DM of type da
-      Processor [0] M 145 m 2 w 2 s 1
-      X range of indices: 0 73
-      Processor [1] M 145 m 2 w 2 s 1
-      X range of indices: 73 145
-Using matrix type aij
-KSP Object: 2 MPI processes
-  type: fgmres
-    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-    GMRES: happy breakdown tolerance 1e-30
-  maximum iterations=10000, initial guess is zero
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-  right preconditioning
-  using UNPRECONDITIONED norm type for convergence test
-PC Object: 2 MPI processes
-  type: mg
-    MG: type is FULL, levels=5 cycles=v
-      Not using Galerkin computed coarse grid matrices
-  Coarse grid solver -- level -------------------------------
-    KSP Object:    (mg_coarse_)     2 MPI processes
-      type: gmres
-        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-        GMRES: happy breakdown tolerance 1e-30
-      maximum iterations=6, initial guess is zero
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-      left preconditioning
-      using PRECONDITIONED norm type for convergence test
-    PC Object:    (mg_coarse_)     2 MPI processes
-      type: none
-      linear system matrix = precond matrix:
-      Matrix Object:       2 MPI processes
-        type: mffd
-        rows=21, cols=21
-            matrix-free approximation:
+    4 KSP Residual norm 5.86439e-05 
+    5 KSP Residual norm 2.56279e-06 
+    6 KSP Residual norm 1.68072e-06 
+  1 SNES Function norm 1.68072e-06 
+    0 KSP Residual norm 1.68072e-06 
+    1 KSP Residual norm 1.66821e-06 
+    2 KSP Residual norm 1.1489e-06 
+    3 KSP Residual norm 5.28263e-07 
+    4 KSP Residual norm 2.68428e-08 
+    5 KSP Residual norm 3.24907e-09 
+    6 KSP Residual norm 8.138e-10 
+    7 KSP Residual norm 1.678e-11 
+  2 SNES Function norm 6.473e-11 
+SNES Object: 2 MPI processes
+  type: ls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=13
+  total number of function evaluations=1510
+  total number of grid sequence refinements=4
+  KSP Object:   2 MPI processes
+    type: fgmres
+      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      GMRES: happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+    right preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object:   2 MPI processes
+    type: mg
+      MG: type is FULL, levels=5 cycles=v
+        Not using Galerkin computed coarse grid matrices
+    Coarse grid solver -- level -------------------------------
+      KSP Object:      (mg_coarse_)       2 MPI processes
+        type: gmres
+          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          GMRES: happy breakdown tolerance 1e-30
+        maximum iterations=6, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        left preconditioning
+        using NONE norm type for convergence test
+      PC Object:      (mg_coarse_)       2 MPI processes
+        type: none
+        linear system matrix = precond matrix:
+        Matrix Object:         2 MPI processes
+          type: mffd
+          rows=21, cols=21
+            Matrix-free approximation:
               err=1.49012e-08 (relative error in function evaluation)
               Using wp compute h routine
-              Does not compute normU
-  Down solver (pre-smoother) on level 1 -------------------------------
-    KSP Object:    (mg_levels_1_)     2 MPI processes
-      type: gmres
-        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-        GMRES: happy breakdown tolerance 1e-30
-      maximum iterations=3
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-      left preconditioning
-      using nonzero initial guess
-      using PRECONDITIONED norm type for convergence test
-    PC Object:    (mg_levels_1_)     2 MPI processes
-      type: none
-      linear system matrix = precond matrix:
-      Matrix Object:       2 MPI processes
-        type: mffd
-        rows=39, cols=39
-            matrix-free approximation:
+                  Does not compute normU
+    Down solver (pre-smoother) on level 1 -------------------------------
+      KSP Object:      (mg_levels_1_)       2 MPI processes
+        type: gmres
+          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          GMRES: happy breakdown tolerance 1e-30
+        maximum iterations=3
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        left preconditioning
+        using nonzero initial guess
+        using NONE norm type for convergence test
+      PC Object:      (mg_levels_1_)       2 MPI processes
+        type: none
+        linear system matrix = precond matrix:
+        Matrix Object:         2 MPI processes
+          type: mffd
+          rows=39, cols=39
+            Matrix-free approximation:
               err=1.49012e-08 (relative error in function evaluation)
               Using wp compute h routine
-              Does not compute normU
-  Up solver (post-smoother) same as down solver (pre-smoother)
-  Down solver (pre-smoother) on level 2 -------------------------------
-    KSP Object:    (mg_levels_2_)     2 MPI processes
-      type: gmres
-        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-        GMRES: happy breakdown tolerance 1e-30
-      maximum iterations=3
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-      left preconditioning
-      using nonzero initial guess
-      using PRECONDITIONED norm type for convergence test
-    PC Object:    (mg_levels_2_)     2 MPI processes
-      type: none
-      linear system matrix = precond matrix:
-      Matrix Object:       2 MPI processes
-        type: mffd
-        rows=75, cols=75
-            matrix-free approximation:
+                  Does not compute normU
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    Down solver (pre-smoother) on level 2 -------------------------------
+      KSP Object:      (mg_levels_2_)       2 MPI processes
+        type: gmres
+          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          GMRES: happy breakdown tolerance 1e-30
+        maximum iterations=3
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        left preconditioning
+        using nonzero initial guess
+        using NONE norm type for convergence test
+      PC Object:      (mg_levels_2_)       2 MPI processes
+        type: none
+        linear system matrix = precond matrix:
+        Matrix Object:         2 MPI processes
+          type: mffd
+          rows=75, cols=75
+            Matrix-free approximation:
               err=1.49012e-08 (relative error in function evaluation)
               Using wp compute h routine
-              Does not compute normU
-  Up solver (post-smoother) same as down solver (pre-smoother)
-  Down solver (pre-smoother) on level 3 -------------------------------
-    KSP Object:    (mg_levels_3_)     2 MPI processes
-      type: gmres
-        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-        GMRES: happy breakdown tolerance 1e-30
-      maximum iterations=3
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-      left preconditioning
-      using nonzero initial guess
-      using PRECONDITIONED norm type for convergence test
-    PC Object:    (mg_levels_3_)     2 MPI processes
-      type: none
-      linear system matrix = precond matrix:
-      Matrix Object:       2 MPI processes
-        type: mffd
-        rows=147, cols=147
-            matrix-free approximation:
+                  Does not compute normU
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    Down solver (pre-smoother) on level 3 -------------------------------
+      KSP Object:      (mg_levels_3_)       2 MPI processes
+        type: gmres
+          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          GMRES: happy breakdown tolerance 1e-30
+        maximum iterations=3
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        left preconditioning
+        using nonzero initial guess
+        using NONE norm type for convergence test
+      PC Object:      (mg_levels_3_)       2 MPI processes
+        type: none
+        linear system matrix = precond matrix:
+        Matrix Object:         2 MPI processes
+          type: mffd
+          rows=147, cols=147
+            Matrix-free approximation:
               err=1.49012e-08 (relative error in function evaluation)
               Using wp compute h routine
-              Does not compute normU
-  Up solver (post-smoother) same as down solver (pre-smoother)
-  Down solver (pre-smoother) on level 4 -------------------------------
-    KSP Object:    (mg_levels_4_)     2 MPI processes
-      type: gmres
-        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-        GMRES: happy breakdown tolerance 1e-30
-      maximum iterations=3
-      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-      left preconditioning
-      using nonzero initial guess
-      using PRECONDITIONED norm type for convergence test
-    PC Object:    (mg_levels_4_)     2 MPI processes
-      type: none
-      linear system matrix = precond matrix:
-      Matrix Object:       2 MPI processes
-        type: mffd
-        rows=291, cols=291
-            matrix-free approximation:
+                  Does not compute normU
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    Down solver (pre-smoother) on level 4 -------------------------------
+      KSP Object:      (mg_levels_4_)       2 MPI processes
+        type: gmres
+          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          GMRES: happy breakdown tolerance 1e-30
+        maximum iterations=3
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        left preconditioning
+        using nonzero initial guess
+        using NONE norm type for convergence test
+      PC Object:      (mg_levels_4_)       2 MPI processes
+        type: none
+        linear system matrix = precond matrix:
+        Matrix Object:         2 MPI processes
+          type: mffd
+          rows=291, cols=291
+            Matrix-free approximation:
               err=1.49012e-08 (relative error in function evaluation)
               Using wp compute h routine
-              Does not compute normU
-  Up solver (post-smoother) same as down solver (pre-smoother)
-  linear system matrix = precond matrix:
-  Matrix Object:   2 MPI processes
-    type: mffd
-    rows=291, cols=291
-        matrix-free approximation:
+                  Does not compute normU
+    Up solver (post-smoother) same as down solver (pre-smoother)
+    linear system matrix = precond matrix:
+    Matrix Object:     2 MPI processes
+      type: mffd
+      rows=291, cols=291
+        Matrix-free approximation:
           err=1.49012e-08 (relative error in function evaluation)
           Using wp compute h routine
-          Does not compute normU
+              Does not compute normU
+  SNESLineSearch Object:   2 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40

@@ -1,6 +1,6 @@
 
 #if defined(__cplusplus)
-extern "C" {
+PETSC_EXTERN "C" {
 #endif
 
 ADINTR_EXTERN void adintr_acos Proto((int,int,int,double*,...));

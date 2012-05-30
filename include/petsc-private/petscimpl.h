@@ -6,7 +6,6 @@
 #if !defined(_PETSCHEAD_H)
 #define _PETSCHEAD_H
 #include <petscsys.h>  
-PETSC_EXTERN_CXX_BEGIN
 
 /*
    All major PETSc data structures have a common core; this is defined 
@@ -101,8 +100,8 @@ typedef struct _p_PetscObject {
 
 #define  PETSCFREEDHEADER -1
 
-typedef PetscErrorCode (*PetscObjectFunction)(PetscObject*); /* force cast in next macro to NEVER use extern "C" style */
-typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer); 
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectFunction)(PetscObject*); /* force cast in next macro to NEVER use extern "C" style */
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer); 
 
 /*@C
     PetscHeaderCreate - Creates a PETSc object
@@ -133,8 +132,8 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
    PetscLogObjectCreate(h) ||						\
    PetscLogObjectMemory(h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
 
-extern PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
-extern PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,PetscInt,const char[],const char[],const char[],MPI_Comm,PetscErrorCode (*)(PetscObject*),PetscErrorCode (*)(PetscObject,PetscViewer));
+PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
+PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,PetscInt,const char[],const char[],const char[],MPI_Comm,PetscErrorCode (*)(PetscObject*),PetscErrorCode (*)(PetscObject,PetscViewer));
 
 /*@C
     PetscHeaderDestroy - Final step in destroying a PetscObject
@@ -153,8 +152,8 @@ extern PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,PetscIn
    PetscFree((*h)->ops) ||			   \
    PetscFree(*h))
 
-extern PetscErrorCode  PetscHeaderDestroy_Private(PetscObject);
-extern PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject,PetscObject);
+PETSC_EXTERN PetscErrorCode PetscHeaderDestroy_Private(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject,PetscObject);
 
 /* ---------------------------------------------------------------------------------------*/
 
@@ -409,16 +408,16 @@ M*/
 M*/
 #define PetscObjectStateDecrease(obj) ((obj)->state--,0)
 
-extern PetscErrorCode  PetscObjectStateQuery(PetscObject,PetscInt*);
-extern PetscErrorCode  PetscObjectSetState(PetscObject,PetscInt);
-extern PetscErrorCode  PetscObjectComposedDataRegister(PetscInt*);
-extern PetscErrorCode  PetscObjectComposedDataIncreaseInt(PetscObject);
-extern PetscErrorCode  PetscObjectComposedDataIncreaseIntstar(PetscObject);
-extern PetscErrorCode  PetscObjectComposedDataIncreaseReal(PetscObject);
-extern PetscErrorCode  PetscObjectComposedDataIncreaseRealstar(PetscObject);
-extern PetscErrorCode  PetscObjectComposedDataIncreaseScalar(PetscObject);
-extern PetscErrorCode  PetscObjectComposedDataIncreaseScalarstar(PetscObject);
-extern PetscInt        PetscObjectComposedDataMax;
+PETSC_EXTERN PetscErrorCode PetscObjectStateQuery(PetscObject,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscObjectSetState(PetscObject,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscObjectComposedDataRegister(PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseInt(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseIntstar(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseReal(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseRealstar(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseScalar(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseScalarstar(PetscObject);
+PETSC_EXTERN PetscInt         PetscObjectComposedDataMax;
 /*MC
    PetscObjectComposedDataSetInt - attach integer data to a PetscObject
 
@@ -723,12 +722,12 @@ M*/
 #endif
 
 /* some vars for logging */
-extern  PetscBool  PetscPreLoadingUsed;       /* true if we are or have done preloading */
-extern  PetscBool  PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
+PETSC_EXTERN PetscBool PetscPreLoadingUsed;       /* true if we are or have done preloading */
+PETSC_EXTERN PetscBool PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
 
-extern  PetscMPIInt Petsc_Counter_keyval;
-extern  PetscMPIInt Petsc_InnerComm_keyval;
-extern  PetscMPIInt Petsc_OuterComm_keyval;
+PETSC_EXTERN PetscMPIInt Petsc_Counter_keyval;
+PETSC_EXTERN PetscMPIInt Petsc_InnerComm_keyval;
+PETSC_EXTERN PetscMPIInt Petsc_OuterComm_keyval;
 
 /*
   PETSc communicators have this attribute, see
@@ -740,6 +739,5 @@ typedef struct {
   PetscInt    namecount;        /* used to generate the next name, as in Vec_0, Mat_1, ... */
 } PetscCommCounter;
 
-PETSC_EXTERN_CXX_END
 
 #endif /* _PETSCHEAD_H */

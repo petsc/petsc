@@ -405,8 +405,8 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
       hc = hydhx*(1.0+d7*d7)/(f1*f1*f1) + hxdhy*(1.0+d8*d8)/(f3*f3*f3) +
 	hydhx*(1.0+d5*d5)/(f5*f5*f5) + hxdhy*(1.0+d6*d6)/(f6*f6*f6) +
-	(hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +
-	(hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
+	(hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2.0*d1*d4)/(f2*f2*f2) +
+	(hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2.0*d2*d3)/(f4*f4*f4);
 
       hl/=2.0; hr/=2.0; ht/=2.0; hb/=2.0; hbr/=2.0; htl/=2.0;  hc/=2.0; 
 
@@ -512,7 +512,7 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
   ierr = PetscMalloc(lsize*sizeof(PetscScalar), &user->left);CHKERRQ(ierr);
   ierr = PetscMalloc(rsize*sizeof(PetscScalar), &user->right);CHKERRQ(ierr);
 
-  hx= (r-l)/(mx+1); hy=(t-b)/(my+1);
+  hx= (r-l)/(mx+1.0); hy=(t-b)/(my+1.0);
 
   for (j=0; j<4; j++){
     if (j==0){
@@ -616,7 +616,7 @@ PetscErrorCode ComputeInitialGuess(SNES snes, Vec X,void *dummy)
   /* Perform local computations */
   for (j=ys; j<ys+ym; j++){
     for (i=xs; i< xs+xm; i++){
-      x[j][i] = ( ((j+1)*user->bottom[i+1]+(my-j+1)*user->top[i+1])/(my+2)+((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
+      x[j][i] = ( ((j+1.0)*user->bottom[i+1]+(my-j+1.0)*user->top[i+1])/(my+2.0)+((i+1.0)*user->left[j+1]+(mx-i+1.0)*user->right[j+1])/(mx+2.0))/2.0;
     }
   }
   /* Restore vectors */

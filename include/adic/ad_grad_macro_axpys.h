@@ -18,7 +18,7 @@
 #endif
 
 #ifdef __cplusplus
-extern "C" {
+PETSC_EXTERN "C" {
 #endif
 
 void ad_grad_axpy_n(int, void*, ...);

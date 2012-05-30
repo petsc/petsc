@@ -16,65 +16,65 @@
 
 .seealso:  DM, DMComplexCreate()
 S*/
-extern PetscErrorCode DMComplexCreate(MPI_Comm, DM*);
-extern PetscErrorCode DMComplexGetDimension(DM, PetscInt *);
-extern PetscErrorCode DMComplexSetDimension(DM, PetscInt);
-extern PetscErrorCode DMComplexGetChart(DM, PetscInt *, PetscInt *);
-extern PetscErrorCode DMComplexSetChart(DM, PetscInt, PetscInt);
-extern PetscErrorCode DMComplexGetConeSize(DM, PetscInt, PetscInt *);
-extern PetscErrorCode DMComplexSetConeSize(DM, PetscInt, PetscInt);
-extern PetscErrorCode DMComplexGetCone(DM, PetscInt, const PetscInt *[]);
-extern PetscErrorCode DMComplexSetCone(DM, PetscInt, const PetscInt[]);
-extern PetscErrorCode DMComplexGetConeOrientation(DM, PetscInt, const PetscInt *[]);
-extern PetscErrorCode DMComplexSetConeOrientation(DM, PetscInt, const PetscInt[]);
-extern PetscErrorCode DMComplexGetSupportSize(DM, PetscInt, PetscInt *);
-extern PetscErrorCode DMComplexGetSupport(DM, PetscInt, const PetscInt *[]);
-extern PetscErrorCode DMComplexGetConeSection(DM, PetscSection *);
-extern PetscErrorCode DMComplexGetCones(DM, PetscInt *[]);
-extern PetscErrorCode DMComplexGetConeOrientations(DM, PetscInt *[]);
-extern PetscErrorCode DMComplexGetMaxSizes(DM, PetscInt *, PetscInt *);
-extern PetscErrorCode DMComplexSetUp(DM);
-extern PetscErrorCode DMComplexSymmetrize(DM);
-extern PetscErrorCode DMComplexStratify(DM);
+PETSC_EXTERN PetscErrorCode DMComplexCreate(MPI_Comm, DM*);
+PETSC_EXTERN PetscErrorCode DMComplexGetDimension(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMComplexSetDimension(DM, PetscInt);
+PETSC_EXTERN PetscErrorCode DMComplexGetChart(DM, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMComplexSetChart(DM, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode DMComplexGetConeSize(DM, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMComplexSetConeSize(DM, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode DMComplexGetCone(DM, PetscInt, const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode DMComplexSetCone(DM, PetscInt, const PetscInt[]);
+PETSC_EXTERN PetscErrorCode DMComplexGetConeOrientation(DM, PetscInt, const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode DMComplexSetConeOrientation(DM, PetscInt, const PetscInt[]);
+PETSC_EXTERN PetscErrorCode DMComplexGetSupportSize(DM, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMComplexGetSupport(DM, PetscInt, const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode DMComplexGetConeSection(DM, PetscSection *);
+PETSC_EXTERN PetscErrorCode DMComplexGetCones(DM, PetscInt *[]);
+PETSC_EXTERN PetscErrorCode DMComplexGetConeOrientations(DM, PetscInt *[]);
+PETSC_EXTERN PetscErrorCode DMComplexGetMaxSizes(DM, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMComplexSetUp(DM);
+PETSC_EXTERN PetscErrorCode DMComplexSymmetrize(DM);
+PETSC_EXTERN PetscErrorCode DMComplexStratify(DM);
 
-extern PetscErrorCode DMComplexHasLabel(DM, const char [], PetscBool *);
-extern PetscErrorCode DMComplexGetLabelValue(DM, const char[], PetscInt, PetscInt *);
-extern PetscErrorCode DMComplexSetLabelValue(DM, const char[], PetscInt, PetscInt);
-extern PetscErrorCode DMComplexGetLabelSize(DM, const char[], PetscInt *);
-extern PetscErrorCode DMComplexGetLabelIdIS(DM, const char[], IS *);
-extern PetscErrorCode DMComplexGetStratumSize(DM, const char [], PetscInt, PetscInt *);
-extern PetscErrorCode DMComplexGetStratumIS(DM, const char [], PetscInt, IS *);
+PETSC_EXTERN PetscErrorCode DMComplexHasLabel(DM, const char [], PetscBool *);
+PETSC_EXTERN PetscErrorCode DMComplexGetLabelValue(DM, const char[], PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMComplexSetLabelValue(DM, const char[], PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode DMComplexGetLabelSize(DM, const char[], PetscInt *);
+PETSC_EXTERN PetscErrorCode DMComplexGetLabelIdIS(DM, const char[], IS *);
+PETSC_EXTERN PetscErrorCode DMComplexGetStratumSize(DM, const char [], PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMComplexGetStratumIS(DM, const char [], PetscInt, IS *);
 
-extern PetscErrorCode DMComplexMeetPoints(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
-extern PetscErrorCode DMComplexJoinPoints(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
-extern PetscErrorCode DMComplexGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt *[]);
+PETSC_EXTERN PetscErrorCode DMComplexMeetPoints(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
+PETSC_EXTERN PetscErrorCode DMComplexJoinPoints(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
+PETSC_EXTERN PetscErrorCode DMComplexGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt *[]);
 
-extern PetscErrorCode DMComplexCreatePartition(DM, PetscSection *, IS *, PetscInt);
-extern PetscErrorCode DMComplexCreatePartitionClosure(DM, PetscSection, IS, PetscSection *, IS *);
+PETSC_EXTERN PetscErrorCode DMComplexCreatePartition(DM, PetscSection *, IS *, PetscInt);
+PETSC_EXTERN PetscErrorCode DMComplexCreatePartitionClosure(DM, PetscSection, IS, PetscSection *, IS *);
 
-extern PetscErrorCode DMComplexGenerate(DM, const char [], PetscBool , DM *);
-extern PetscErrorCode DMComplexSetRefinementLimit(DM, PetscReal);
-extern PetscErrorCode DMComplexDistribute(DM, const char[], DM*);
-extern PetscErrorCode DMComplexLoad(PetscViewer, DM);
+PETSC_EXTERN PetscErrorCode DMComplexGenerate(DM, const char [], PetscBool , DM *);
+PETSC_EXTERN PetscErrorCode DMComplexSetRefinementLimit(DM, PetscReal);
+PETSC_EXTERN PetscErrorCode DMComplexDistribute(DM, const char[], DM*);
+PETSC_EXTERN PetscErrorCode DMComplexLoad(PetscViewer, DM);
 
-extern PetscErrorCode DMComplexCreateCubeBoundary(DM, const PetscReal [], const PetscReal [], const PetscInt []);
-extern PetscErrorCode DMComplexCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, DM *);
-extern PetscErrorCode DMComplexGetDepth(DM, PetscInt *);
-extern PetscErrorCode DMComplexGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
-extern PetscErrorCode DMComplexGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
-extern PetscErrorCode DMComplexCreateSection(DM, PetscInt, PetscInt, PetscInt [], PetscInt [], PetscInt, PetscInt [], IS [], PetscSection *);
-extern PetscErrorCode DMComplexGetCoordinateSection(DM, PetscSection *);
-extern PetscErrorCode DMComplexSetCoordinateSection(DM, PetscSection);
-extern PetscErrorCode DMComplexGetCoordinateVec(DM, Vec *);
-extern PetscErrorCode DMComplexCreateConeSection(DM, PetscSection *);
+PETSC_EXTERN PetscErrorCode DMComplexCreateCubeBoundary(DM, const PetscReal [], const PetscReal [], const PetscInt []);
+PETSC_EXTERN PetscErrorCode DMComplexCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, DM *);
+PETSC_EXTERN PetscErrorCode DMComplexGetDepth(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMComplexGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMComplexGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMComplexCreateSection(DM, PetscInt, PetscInt, PetscInt [], PetscInt [], PetscInt, PetscInt [], IS [], PetscSection *);
+PETSC_EXTERN PetscErrorCode DMComplexGetCoordinateSection(DM, PetscSection *);
+PETSC_EXTERN PetscErrorCode DMComplexSetCoordinateSection(DM, PetscSection);
+PETSC_EXTERN PetscErrorCode DMComplexGetCoordinateVec(DM, Vec *);
+PETSC_EXTERN PetscErrorCode DMComplexCreateConeSection(DM, PetscSection *);
 
 /* FEM Support */
-extern PetscErrorCode DMComplexComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
-extern PetscErrorCode DMComplexVecGetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar *[]);
-extern PetscErrorCode DMComplexVecSetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar[], InsertMode);
-extern PetscErrorCode DMComplexMatSetClosure(DM, PetscSection, PetscSection, Mat, PetscInt, PetscScalar[], InsertMode);
+PETSC_EXTERN PetscErrorCode DMComplexComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMComplexVecGetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode DMComplexVecSetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar[], InsertMode);
+PETSC_EXTERN PetscErrorCode DMComplexMatSetClosure(DM, PetscSection, PetscSection, Mat, PetscInt, PetscScalar[], InsertMode);
 
-extern PetscErrorCode DMComplexCreateExodus(MPI_Comm , PetscInt , DM *);
+PETSC_EXTERN PetscErrorCode DMComplexCreateExodus(MPI_Comm , PetscInt , DM *);
 
 
 #endif

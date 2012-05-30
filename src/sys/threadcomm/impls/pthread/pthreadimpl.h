@@ -73,8 +73,8 @@ EXTERN_C_END
 
 extern PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm);
 extern PetscErrorCode PetscPThreadCommFinalize_LockFree(PetscThreadComm);
-extern PetscErrorCode PetscPThreadCommRunKernel_LockFree(MPI_Comm,PetscThreadCommJobCtx);
-extern PetscErrorCode PetscPThreadCommBarrier_LockFree(PetscThreadComm);
+extern PetscErrorCode PetscThreadCommRunKernel_PThread_LockFree(MPI_Comm,PetscThreadCommJobCtx);
+extern PetscErrorCode PetscThreadCommBarrier_PThread_LockFree(PetscThreadComm);
 
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
 extern void PetscPThreadCommDoCoreAffinity();

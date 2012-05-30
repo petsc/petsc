@@ -80,8 +80,8 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscPThreadCommBarrier_LockFree"
-PetscErrorCode PetscPThreadCommBarrier_LockFree(PetscThreadComm tcomm)
+#define __FUNCT__ "PetscThreadCommBarrier_PThread_LockFree"
+PetscErrorCode PetscThreadCommBarrier_PThread_LockFree(PetscThreadComm tcomm)
 {
   PetscInt active_threads=0,i;
   PetscBool wait=PETSC_TRUE;
@@ -120,7 +120,7 @@ PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm tcomm)
   }
 
   /* Put a barrier so that all threads get pinned properly */
-  ierr = PetscPThreadCommBarrier_LockFree(tcomm);CHKERRQ(ierr);
+  ierr = PetscThreadCommBarrier_PThread_LockFree(tcomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -133,7 +133,7 @@ PetscErrorCode PetscPThreadCommFinalize_LockFree(PetscThreadComm tcomm)
   PetscThreadComm_PThread  ptcomm=(PetscThreadComm_PThread)tcomm->data;
   PetscInt                 i;
   PetscFunctionBegin;
-  ierr = PetscPThreadCommBarrier_LockFree(tcomm);CHKERRQ(ierr);
+  ierr = PetscThreadCommBarrier_PThread_LockFree(tcomm);CHKERRQ(ierr);
   for(i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
     job_lockfree.my_job_status[i] = THREAD_TERMINATE;
     ierr = pthread_join(ptcomm->tid[i],&jstatus);CHKERRQ(ierr);
@@ -145,8 +145,8 @@ PetscErrorCode PetscPThreadCommFinalize_LockFree(PetscThreadComm tcomm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscPThreadCommRunKernel_LockFree"
-PetscErrorCode PetscPThreadCommRunKernel_LockFree(MPI_Comm comm,PetscThreadCommJobCtx job)
+#define __FUNCT__ "PetscThreadCommRunKernel_PThread_LockFree"
+PetscErrorCode PetscThreadCommRunKernel_PThread_LockFree(MPI_Comm comm,PetscThreadCommJobCtx job)
 {
   PetscErrorCode           ierr;
   PetscThreadComm          tcomm=0;

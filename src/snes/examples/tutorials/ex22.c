@@ -55,7 +55,7 @@ extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
 
 */
 char  common_options[]      = "-ksp_type fgmres\
-                               -snes_grid_sequence 5 \
+                               -snes_grid_sequence 4 \
                                -pc_type mg\
                                -mg_levels_pc_type none \
                                -mg_coarse_pc_type none \

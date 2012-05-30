@@ -34,91 +34,91 @@ typedef struct _Object {
 } Object;
 
 /* Action and object logging variables */
-extern Action    *petsc_actions;
-extern Object    *petsc_objects;
-extern PetscBool  petsc_logActions;
-extern PetscBool  petsc_logObjects;
-extern int        petsc_numActions, petsc_maxActions;
-extern int        petsc_numObjects, petsc_maxObjects;
-extern int        petsc_numObjectsDestroyed;
+PETSC_EXTERN Action    *petsc_actions;
+PETSC_EXTERN Object    *petsc_objects;
+PETSC_EXTERN PetscBool petsc_logActions;
+PETSC_EXTERN PetscBool petsc_logObjects;
+PETSC_EXTERN int        petsc_numActions, petsc_maxActions;
+PETSC_EXTERN int        petsc_numObjects, petsc_maxObjects;
+PETSC_EXTERN int        petsc_numObjectsDestroyed;
 
-extern FILE          *petsc_tracefile;
-extern int            petsc_tracelevel;
-extern const char    *petsc_traceblanks;
-extern char           petsc_tracespace[128];
-extern PetscLogDouble petsc_tracetime;
+PETSC_EXTERN FILE          *petsc_tracefile;
+PETSC_EXTERN int            petsc_tracelevel;
+PETSC_EXTERN const char    *petsc_traceblanks;
+PETSC_EXTERN char           petsc_tracespace[128];
+PETSC_EXTERN PetscLogDouble petsc_tracetime;
 
 #ifdef PETSC_USE_LOG
 
 /* Runtime functions */
-extern PetscErrorCode PetscStageLogGetClassRegLog(PetscStageLog, PetscClassRegLog *);
-extern PetscErrorCode PetscStageLogGetEventRegLog(PetscStageLog, PetscEventRegLog *);
-extern PetscErrorCode PetscStageLogGetClassPerfLog(PetscStageLog, int, PetscClassPerfLog *);
+PETSC_EXTERN PetscErrorCode PetscStageLogGetClassRegLog(PetscStageLog, PetscClassRegLog *);
+PETSC_EXTERN PetscErrorCode PetscStageLogGetEventRegLog(PetscStageLog, PetscEventRegLog *);
+PETSC_EXTERN PetscErrorCode PetscStageLogGetClassPerfLog(PetscStageLog, int, PetscClassPerfLog *);
 
 
 /* Creation and destruction functions */
-extern PetscErrorCode EventRegLogCreate(PetscEventRegLog *);
-extern PetscErrorCode EventRegLogDestroy(PetscEventRegLog);
-extern PetscErrorCode EventPerfLogCreate(PetscEventPerfLog *);
-extern PetscErrorCode EventPerfLogDestroy(PetscEventPerfLog);
+PETSC_EXTERN PetscErrorCode EventRegLogCreate(PetscEventRegLog *);
+PETSC_EXTERN PetscErrorCode EventRegLogDestroy(PetscEventRegLog);
+PETSC_EXTERN PetscErrorCode EventPerfLogCreate(PetscEventPerfLog *);
+PETSC_EXTERN PetscErrorCode EventPerfLogDestroy(PetscEventPerfLog);
 /* General functions */
-extern PetscErrorCode EventPerfLogEnsureSize(PetscEventPerfLog, int);
-extern PetscErrorCode EventPerfInfoClear(PetscEventPerfInfo *);
-extern PetscErrorCode EventPerfInfoCopy(PetscEventPerfInfo *, PetscEventPerfInfo *);
+PETSC_EXTERN PetscErrorCode EventPerfLogEnsureSize(PetscEventPerfLog, int);
+PETSC_EXTERN PetscErrorCode EventPerfInfoClear(PetscEventPerfInfo *);
+PETSC_EXTERN PetscErrorCode EventPerfInfoCopy(PetscEventPerfInfo *, PetscEventPerfInfo *);
 /* Registration functions */
-extern PetscErrorCode EventRegLogRegister(PetscEventRegLog, const char [], PetscClassId, PetscLogEvent *);
+PETSC_EXTERN PetscErrorCode EventRegLogRegister(PetscEventRegLog, const char [], PetscClassId, PetscLogEvent *);
 /* Query functions */
-extern PetscErrorCode EventPerfLogSetVisible(PetscEventPerfLog, PetscLogEvent, PetscBool );
-extern PetscErrorCode EventPerfLogGetVisible(PetscEventPerfLog, PetscLogEvent, PetscBool  *);
+PETSC_EXTERN PetscErrorCode EventPerfLogSetVisible(PetscEventPerfLog, PetscLogEvent, PetscBool );
+PETSC_EXTERN PetscErrorCode EventPerfLogGetVisible(PetscEventPerfLog, PetscLogEvent, PetscBool  *);
 /* Activaton functions */
-extern PetscErrorCode EventPerfLogActivate(PetscEventPerfLog, PetscLogEvent);
-extern PetscErrorCode EventPerfLogDeactivate(PetscEventPerfLog, PetscLogEvent);
-extern PetscErrorCode EventPerfLogActivateClass(PetscEventPerfLog, PetscEventRegLog, PetscClassId);
-extern PetscErrorCode EventPerfLogDeactivateClass(PetscEventPerfLog, PetscEventRegLog, PetscClassId);
+PETSC_EXTERN PetscErrorCode EventPerfLogActivate(PetscEventPerfLog, PetscLogEvent);
+PETSC_EXTERN PetscErrorCode EventPerfLogDeactivate(PetscEventPerfLog, PetscLogEvent);
+PETSC_EXTERN PetscErrorCode EventPerfLogActivateClass(PetscEventPerfLog, PetscEventRegLog, PetscClassId);
+PETSC_EXTERN PetscErrorCode EventPerfLogDeactivateClass(PetscEventPerfLog, PetscEventRegLog, PetscClassId);
 
 /* Logging functions */
-extern PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
-extern PetscErrorCode PetscLogEventEndDefault(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
-extern PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
-extern PetscErrorCode PetscLogEventEndComplete(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
-extern PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
-extern PetscErrorCode PetscLogEventEndTrace(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+PETSC_EXTERN PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+PETSC_EXTERN PetscErrorCode PetscLogEventEndDefault(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+PETSC_EXTERN PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+PETSC_EXTERN PetscErrorCode PetscLogEventEndComplete(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+PETSC_EXTERN PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+PETSC_EXTERN PetscErrorCode PetscLogEventEndTrace(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
 
 /* Creation and destruction functions */
-extern PetscErrorCode PetscClassRegLogCreate(PetscClassRegLog *);
-extern PetscErrorCode PetscClassRegLogDestroy(PetscClassRegLog);
-extern PetscErrorCode ClassPerfLogCreate(PetscClassPerfLog *);
-extern PetscErrorCode ClassPerfLogDestroy(PetscClassPerfLog);
-extern PetscErrorCode PetscClassRegInfoDestroy(PetscClassRegInfo *);
+PETSC_EXTERN PetscErrorCode PetscClassRegLogCreate(PetscClassRegLog *);
+PETSC_EXTERN PetscErrorCode PetscClassRegLogDestroy(PetscClassRegLog);
+PETSC_EXTERN PetscErrorCode ClassPerfLogCreate(PetscClassPerfLog *);
+PETSC_EXTERN PetscErrorCode ClassPerfLogDestroy(PetscClassPerfLog);
+PETSC_EXTERN PetscErrorCode PetscClassRegInfoDestroy(PetscClassRegInfo *);
 /* General functions */
-extern PetscErrorCode ClassPerfLogEnsureSize(PetscClassPerfLog, int);
-extern PetscErrorCode ClassPerfInfoClear(PetscClassPerfInfo *);
+PETSC_EXTERN PetscErrorCode ClassPerfLogEnsureSize(PetscClassPerfLog, int);
+PETSC_EXTERN PetscErrorCode ClassPerfInfoClear(PetscClassPerfInfo *);
 /* Registration functions */
-extern PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog, const char [], PetscClassId);
+PETSC_EXTERN PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog, const char [], PetscClassId);
 /* Query functions */
-extern PetscErrorCode PetscClassRegLogGetClass(PetscClassRegLog, PetscClassId, int *);
+PETSC_EXTERN PetscErrorCode PetscClassRegLogGetClass(PetscClassRegLog, PetscClassId, int *);
 /* Logging functions */
-extern PetscErrorCode PetscLogObjCreateDefault(PetscObject);
-extern PetscErrorCode PetscLogObjDestroyDefault(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscLogObjCreateDefault(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscLogObjDestroyDefault(PetscObject);
 
 /* Creation and destruction functions */
-extern PetscErrorCode  PetscStageLogCreate(PetscStageLog *);
-extern PetscErrorCode  PetscStageLogDestroy(PetscStageLog);
+PETSC_EXTERN PetscErrorCode PetscStageLogCreate(PetscStageLog *);
+PETSC_EXTERN PetscErrorCode PetscStageLogDestroy(PetscStageLog);
 /* Registration functions */
-extern PetscErrorCode  PetscStageLogRegister(PetscStageLog, const char [], int *);
+PETSC_EXTERN PetscErrorCode PetscStageLogRegister(PetscStageLog, const char [], int *);
 /* Runtime functions */
-extern PetscErrorCode  PetscStageLogPush(PetscStageLog, int);
-extern PetscErrorCode  PetscStageLogPop(PetscStageLog);
-extern PetscErrorCode  PetscStageLogSetActive(PetscStageLog, int, PetscBool );
-extern PetscErrorCode  PetscStageLogGetActive(PetscStageLog, int, PetscBool  *);
-extern PetscErrorCode  PetscStageLogSetVisible(PetscStageLog, int, PetscBool );
-extern PetscErrorCode  PetscStageLogGetVisible(PetscStageLog, int, PetscBool  *);
-extern PetscErrorCode  PetscStageLogGetStage(PetscStageLog, const char [], int *);
-extern PetscErrorCode  PetscStageLogGetClassRegLog(PetscStageLog, PetscClassRegLog *);
-extern PetscErrorCode  PetscStageLogGetEventRegLog(PetscStageLog, PetscEventRegLog *);
-extern PetscErrorCode  PetscStageLogGetClassPerfLog(PetscStageLog, int, PetscClassPerfLog *);
+PETSC_EXTERN PetscErrorCode PetscStageLogPush(PetscStageLog, int);
+PETSC_EXTERN PetscErrorCode PetscStageLogPop(PetscStageLog);
+PETSC_EXTERN PetscErrorCode PetscStageLogSetActive(PetscStageLog, int, PetscBool );
+PETSC_EXTERN PetscErrorCode PetscStageLogGetActive(PetscStageLog, int, PetscBool  *);
+PETSC_EXTERN PetscErrorCode PetscStageLogSetVisible(PetscStageLog, int, PetscBool );
+PETSC_EXTERN PetscErrorCode PetscStageLogGetVisible(PetscStageLog, int, PetscBool  *);
+PETSC_EXTERN PetscErrorCode PetscStageLogGetStage(PetscStageLog, const char [], int *);
+PETSC_EXTERN PetscErrorCode PetscStageLogGetClassRegLog(PetscStageLog, PetscClassRegLog *);
+PETSC_EXTERN PetscErrorCode PetscStageLogGetEventRegLog(PetscStageLog, PetscEventRegLog *);
+PETSC_EXTERN PetscErrorCode PetscStageLogGetClassPerfLog(PetscStageLog, int, PetscClassPerfLog *);
 
-extern PetscErrorCode  EventRegLogGetEvent(PetscEventRegLog, const char [], PetscLogEvent *);
+PETSC_EXTERN PetscErrorCode EventRegLogGetEvent(PetscEventRegLog, const char [], PetscLogEvent *);
 
 
 #endif /* PETSC_USE_LOG */

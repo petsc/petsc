@@ -10,20 +10,20 @@
 #define PETSC_STDCALL
 #endif
 
-extern PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscInt,PetscScalar*,PetscScalar*,PetscInt,size_t*);
-extern PetscErrorCode PetscScalarAddressFromFortran(PetscObject,PetscScalar*,size_t,PetscInt,PetscScalar **);
-extern size_t         PetscIntAddressToFortran(PetscInt*,PetscInt*);
-extern PetscInt       *PetscIntAddressFromFortran(PetscInt*,size_t); 
-extern void   *PETSC_NULL_Fortran;
-extern char   *PETSC_NULL_CHARACTER_Fortran;
-extern void   *PETSC_NULL_INTEGER_Fortran;
-extern void   *PETSC_NULL_SCALAR_Fortran;
-extern void   *PETSC_NULL_DOUBLE_Fortran;
-extern void   *PETSC_NULL_REAL_Fortran;
-extern void   *PETSC_NULL_OBJECT_Fortran;
-extern void   *PETSC_NULL_BOOL_Fortran;
+PETSC_EXTERN PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscInt,PetscScalar*,PetscScalar*,PetscInt,size_t*);
+PETSC_EXTERN PetscErrorCode PetscScalarAddressFromFortran(PetscObject,PetscScalar*,size_t,PetscInt,PetscScalar **);
+PETSC_EXTERN size_t         PetscIntAddressToFortran(PetscInt*,PetscInt*);
+PETSC_EXTERN PetscInt        *PetscIntAddressFromFortran(PetscInt*,size_t); 
+PETSC_EXTERN void    *PETSC_NULL_Fortran;
+PETSC_EXTERN char   *PETSC_NULL_CHARACTER_Fortran;
+PETSC_EXTERN void    *PETSC_NULL_INTEGER_Fortran;
+PETSC_EXTERN void    *PETSC_NULL_SCALAR_Fortran;
+PETSC_EXTERN void    *PETSC_NULL_DOUBLE_Fortran;
+PETSC_EXTERN void    *PETSC_NULL_REAL_Fortran;
+PETSC_EXTERN void    *PETSC_NULL_OBJECT_Fortran;
+PETSC_EXTERN void    *PETSC_NULL_BOOL_Fortran;
 EXTERN_C_BEGIN
-extern void   (*PETSC_NULL_FUNCTION_Fortran)(void);
+PETSC_EXTERN void    (*PETSC_NULL_FUNCTION_Fortran)(void);
 EXTERN_C_END
 /*  ----------------------------------------------------------------------*/
 /*
@@ -111,7 +111,7 @@ if (flg) {					\
     "Use PETSC_NULL_OBJECT"); *ierr = 1; return; } \
   else if (FORTRANNULLOBJECT(a)) { a = PETSC_NULL; }
 
-extern void *PETSCNULLPOINTERADDRESS;
+PETSC_EXTERN void  *PETSCNULLPOINTERADDRESS;
 
 #define CHKFORTRANNULLOBJECTDEREFERENCE(a)  \
   if (FORTRANNULL(a) || FORTRANNULLSCALAR(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLFUNCTION(a)) { \

@@ -3058,7 +3058,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatStoreValues_SeqBAIJ(Mat mat)
 {
   Mat_SeqBAIJ    *aij = (Mat_SeqBAIJ *)mat->data;
-  PetscInt       nz = aij->i[mat->rmap->N]*mat->rmap->bs*aij->bs2;
+  PetscInt       nz = aij->i[aij->mbs]*aij->bs2;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3083,7 +3083,7 @@ PetscErrorCode  MatRetrieveValues_SeqBAIJ(Mat mat)
 {
   Mat_SeqBAIJ    *aij = (Mat_SeqBAIJ *)mat->data;
   PetscErrorCode ierr;
-  PetscInt       nz = aij->i[mat->rmap->N]*mat->rmap->bs*aij->bs2;
+  PetscInt       nz = aij->i[aij->mbs]*aij->bs2;
 
   PetscFunctionBegin;
   if (aij->nonew != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");

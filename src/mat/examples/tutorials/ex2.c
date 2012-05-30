@@ -106,11 +106,12 @@ int main(int argc,char **argv)
   ierr = MatMultAdd(A21,X1,Z2,Z2);CHKERRQ(ierr);
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
-  printf("Test1; error norm=%e\n",nrm);
-  
-  printf("MatMult the usual way:\n"); VecView(Y,0);
-  printf("MatMult by subblock:\n"); VecView(Z,0);
-  
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test1; error norm=%G\n",nrm);CHKERRQ(ierr);
+
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMult the usual way:\n");CHKERRQ(ierr);
+  ierr = VecView(Y,0);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMult by subblock:\n");CHKERRQ(ierr);
+  ierr = VecView(Z,0);CHKERRQ(ierr);
 
   /*
    * Next test: change both matrices
@@ -137,7 +138,7 @@ int main(int argc,char **argv)
   ierr = MatMultAdd(A21,X1,Z2,Z2);CHKERRQ(ierr);
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
-  printf("Test2; error norm=%e\n",nrm);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test2; error norm=%G\n",nrm);CHKERRQ(ierr);
 
   /*
    * Transpose product
@@ -149,7 +150,7 @@ int main(int argc,char **argv)
   ierr = MatMultTransposeAdd(A12,X1,Z2,Z2);CHKERRQ(ierr);
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
-  printf("Test3; error norm=%e\n",nrm);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test3; error norm=%G\n",nrm);CHKERRQ(ierr);
 
   ierr = PetscFree(a);CHKERRQ(ierr);
   ierr = PetscFree(b);CHKERRQ(ierr);

@@ -4,7 +4,6 @@
 #if !defined(__PETSCPCMG_H)
 #define __PETSCPCMG_H
 #include "petscksp.h"
-PETSC_EXTERN_CXX_BEGIN
 
 /*E
     PCMGType - Determines the type of multigrid method that is run.
@@ -28,7 +27,7 @@ PETSC_EXTERN_CXX_BEGIN
 
 E*/
 typedef enum { PC_MG_MULTIPLICATIVE,PC_MG_ADDITIVE,PC_MG_FULL,PC_MG_KASKADE } PCMGType;
-extern const char *PCMGTypes[];
+PETSC_EXTERN const char *PCMGTypes[];
 #define PC_MG_CASCADE PC_MG_KASKADE;
 
 /*E
@@ -44,39 +43,39 @@ extern const char *PCMGTypes[];
 
 E*/
 typedef enum { PC_MG_CYCLE_V = 1,PC_MG_CYCLE_W = 2 } PCMGCycleType;
-extern const char *PCMGCycleTypes[];
+PETSC_EXTERN const char *PCMGCycleTypes[];
 
-extern PetscErrorCode  PCMGSetType(PC,PCMGType);
-extern PetscErrorCode  PCMGSetLevels(PC,PetscInt,MPI_Comm*);
-extern PetscErrorCode  PCMGGetLevels(PC,PetscInt*);
+PETSC_EXTERN PetscErrorCode PCMGSetType(PC,PCMGType);
+PETSC_EXTERN PetscErrorCode PCMGSetLevels(PC,PetscInt,MPI_Comm*);
+PETSC_EXTERN PetscErrorCode PCMGGetLevels(PC,PetscInt*);
 
-extern PetscErrorCode  PCMGSetNumberSmoothUp(PC,PetscInt);
-extern PetscErrorCode  PCMGSetNumberSmoothDown(PC,PetscInt);
-extern PetscErrorCode  PCMGSetCycleType(PC,PCMGCycleType);
-extern PetscErrorCode  PCMGSetCycleTypeOnLevel(PC,PetscInt,PCMGCycleType);
-extern PetscErrorCode  PCMGSetCyclesOnLevel(PC,PetscInt,PetscInt);
-extern PetscErrorCode  PCMGMultiplicativeSetCycles(PC,PetscInt);
-extern PetscErrorCode  PCMGSetGalerkin(PC,PetscBool);
-extern PetscErrorCode  PCMGGetGalerkin(PC,PetscBool*);
+PETSC_EXTERN PetscErrorCode PCMGSetNumberSmoothUp(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCMGSetNumberSmoothDown(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCMGSetCycleType(PC,PCMGCycleType);
+PETSC_EXTERN PetscErrorCode PCMGSetCycleTypeOnLevel(PC,PetscInt,PCMGCycleType);
+PETSC_EXTERN PetscErrorCode PCMGSetCyclesOnLevel(PC,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode PCMGMultiplicativeSetCycles(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCMGSetGalerkin(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCMGGetGalerkin(PC,PetscBool*);
 
-extern PetscErrorCode  PCMGGetSmoother(PC,PetscInt,KSP*);
-extern PetscErrorCode  PCMGGetSmootherDown(PC,PetscInt,KSP*);
-extern PetscErrorCode  PCMGGetSmootherUp(PC,PetscInt,KSP*);
-extern PetscErrorCode  PCMGGetCoarseSolve(PC,KSP*);
+PETSC_EXTERN PetscErrorCode PCMGGetSmoother(PC,PetscInt,KSP*);
+PETSC_EXTERN PetscErrorCode PCMGGetSmootherDown(PC,PetscInt,KSP*);
+PETSC_EXTERN PetscErrorCode PCMGGetSmootherUp(PC,PetscInt,KSP*);
+PETSC_EXTERN PetscErrorCode PCMGGetCoarseSolve(PC,KSP*);
 
 
-extern PetscErrorCode  PCMGSetRhs(PC,PetscInt,Vec);
-extern PetscErrorCode  PCMGSetX(PC,PetscInt,Vec);
-extern PetscErrorCode  PCMGSetR(PC,PetscInt,Vec);
+PETSC_EXTERN PetscErrorCode PCMGSetRhs(PC,PetscInt,Vec);
+PETSC_EXTERN PetscErrorCode PCMGSetX(PC,PetscInt,Vec);
+PETSC_EXTERN PetscErrorCode PCMGSetR(PC,PetscInt,Vec);
 
-extern PetscErrorCode  PCMGSetRestriction(PC,PetscInt,Mat);
-extern PetscErrorCode  PCMGGetRestriction(PC,PetscInt,Mat*);
-extern PetscErrorCode  PCMGSetInterpolation(PC,PetscInt,Mat);
-extern PetscErrorCode  PCMGGetInterpolation(PC,PetscInt,Mat*);
-extern PetscErrorCode  PCMGSetRScale(PC,PetscInt,Vec);
-extern PetscErrorCode  PCMGGetRScale(PC,PetscInt,Vec*);
-extern PetscErrorCode  PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
-extern PetscErrorCode  PCMGDefaultResidual(Mat,Vec,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCMGSetRestriction(PC,PetscInt,Mat);
+PETSC_EXTERN PetscErrorCode PCMGGetRestriction(PC,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode PCMGSetInterpolation(PC,PetscInt,Mat);
+PETSC_EXTERN PetscErrorCode PCMGGetInterpolation(PC,PetscInt,Mat*);
+PETSC_EXTERN PetscErrorCode PCMGSetRScale(PC,PetscInt,Vec);
+PETSC_EXTERN PetscErrorCode PCMGGetRScale(PC,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
+PETSC_EXTERN PetscErrorCode PCMGDefaultResidual(Mat,Vec,Vec,Vec);
 
 /*E
     PCExoticType - Face based or wirebasket based coarse grid space
@@ -86,9 +85,8 @@ extern PetscErrorCode  PCMGDefaultResidual(Mat,Vec,Vec,Vec);
 .seealso: PCExoticSetType(), PCEXOTIC
 E*/ 
 typedef enum { PC_EXOTIC_FACE,PC_EXOTIC_WIREBASKET } PCExoticType;
-extern const char *PCExoticTypes[];
-extern PetscErrorCode  PCExoticSetType(PC,PCExoticType);
+PETSC_EXTERN const char *PCExoticTypes[];
+PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
 
 
-PETSC_EXTERN_CXX_END
 #endif

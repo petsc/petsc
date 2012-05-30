@@ -41,6 +41,7 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
     ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DMDASetRefinementFactor",dd->refine_x,&dd->refine_x,PETSC_NULL);CHKERRQ(ierr);
     if (dd->dim > 1) {ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DMDASetRefinementFactor",dd->refine_y,&dd->refine_y,PETSC_NULL);CHKERRQ(ierr);}
     if (dd->dim > 2) {ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DMDASetRefinementFactor",dd->refine_z,&dd->refine_z,PETSC_NULL);CHKERRQ(ierr);}
+    dd->coarsen_x = dd->refine_x; dd->coarsen_y = dd->refine_y; dd->coarsen_z = dd->refine_z;
 
     /* Get refinement factors, defaults taken from the coarse DMDA */
     ierr = PetscMalloc3(maxnlevels,PetscInt,&refx,maxnlevels,PetscInt,&refy,maxnlevels,PetscInt,&refz);CHKERRQ(ierr);
@@ -164,8 +165,8 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMCreateDecomposition_DA"
-PetscErrorCode DMCreateDecomposition_DA(DM dm, PetscInt *len,char ***namelist, IS **islist, DM** dmlist)
+#define __FUNCT__ "DMCreateFieldDecomposition_DA"
+PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***namelist, IS **islist, DM** dmlist)
 {
   PetscInt       i;
   PetscErrorCode ierr;
@@ -173,6 +174,7 @@ PetscErrorCode DMCreateDecomposition_DA(DM dm, PetscInt *len,char ***namelist, I
   PetscInt       dof = dd->w;
 
   PetscFunctionBegin;
+  if(len) *len = dof;
   if (islist) {
     Vec      v;
     PetscInt rstart,n;
@@ -210,7 +212,6 @@ PetscErrorCode DMCreateDecomposition_DA(DM dm, PetscInt *len,char ***namelist, I
     for (i=0; i<dof-1; i++) {ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);}
     for (i=0; i<dof; i++) (*dmlist)[i] = da;
   }
-  *len = dof;
 
   PetscFunctionReturn(0);
 }
@@ -290,7 +291,7 @@ PetscErrorCode  DMCreate_DA(DM da)
   da->ops->setfromoptions      = DMSetFromOptions_DA;
   da->ops->setup               = DMSetUp_DA;
   da->ops->load                = DMLoad_DA;
-  da->ops->createdecomposition = DMCreateDecomposition_DA;
+  da->ops->createfielddecomposition = DMCreateFieldDecomposition_DA;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

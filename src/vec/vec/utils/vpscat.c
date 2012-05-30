@@ -2029,6 +2029,13 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
     ctx->copy      = VecScatterCopy_PtoP_X;
   }
   ierr = PetscInfo1(ctx,"Using blocksize %D scatter\n",bs);CHKERRQ(ierr);
+  
+#if defined(PETSC_USE_DEBUG)
+  ierr = MPI_Allreduce(&bs,&i,1,MPIU_INT,MPI_MIN,((PetscObject)ctx)->comm); CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&bs,&n,1,MPIU_INT,MPI_MAX,((PetscObject)ctx)->comm); CHKERRQ(ierr);
+  if(bs!=i || bs!=n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Blocks size %D != %D or %D",bs,i,n);
+#endif
+
   switch (bs) {
   case 12: 
     ctx->begin     = VecScatterBegin_12;

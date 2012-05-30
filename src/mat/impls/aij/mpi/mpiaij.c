@@ -3228,10 +3228,12 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscInt d_nz,const Petsc
     /* Explicitly create 2 MATSEQAIJ matrices. */
     ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
     ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(b->A,B->rmap->bs,B->cmap->bs);CHKERRQ(ierr);
     ierr = MatSetType(b->A,MATSEQAIJ);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
     ierr = MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N);CHKERRQ(ierr);
+    ierr = MatSetBlockSizes(b->B,B->rmap->bs,B->cmap->bs);CHKERRQ(ierr);
     ierr = MatSetType(b->B,MATSEQAIJ);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
   }
@@ -3528,7 +3530,10 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Ma
     ierr = PetscObjectQuery((PetscObject)*newmat,"ISAllGather",(PetscObject*)&iscol_local);CHKERRQ(ierr);
     if (!iscol_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
   } else {
+    PetscInt cbs;
+    ierr = ISGetBlockSize(iscol,&cbs); CHKERRQ(ierr);
     ierr = ISAllGather(iscol,&iscol_local);CHKERRQ(ierr);
+    ierr = ISSetBlockSize(iscol_local,cbs); CHKERRQ(ierr);
   }
   ierr = MatGetSubMatrix_MPIAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
   if (call == MAT_INITIAL_MATRIX) {

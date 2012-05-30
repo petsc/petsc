@@ -104,7 +104,7 @@ int main(int argc,char **args)
     /* create stiffness matrix */
     if( strcmp(type, PCPROMETHEUS) == 0 ){
       /* prometheus needs BAIJ */
-      ierr = MatCreateBAIJ(wcomm,3,m,m,M,M,0,d_nnz,0,o_nnz,&Amat);CHKERRQ(ierr);
+      ierr = MatCreateBAIJ(wcomm,3,m,m,M,M,27,PETSC_NULL,19,PETSC_NULL,&Amat);CHKERRQ(ierr);
     }
     else {
       ierr = MatCreate(wcomm,&Amat);CHKERRQ(ierr);
@@ -152,7 +152,7 @@ int main(int argc,char **args)
       for(i=0;i<24;i++)
 	for(j=0;j<24;j++)
 	  if(i<12 || j < 12)
-	    if(i==j) DD2[i][j] = 0.*DD1[i][j];
+	    if(i==j) DD2[i][j] = 0.1*DD1[i][j];
 	    else DD2[i][j] = 0.0;
 	  else DD2[i][j] = DD1[i][j];
       /* element residual/load vector */

@@ -87,8 +87,8 @@
 #  define LAPACKgeqrf_ CGEQRF
 #  define LAPACKungqr_ CUNGQR
 #  define LAPACKgetrf_ CGETRF
-#  define BLASdot_     CDOTC
-#  define BLASdotu_    CDOTU
+/* #  define BLASdot_     CDOTC */
+/* #  define BLASdotu_    CDOTU */
 #  define BLASnrm2_    SCNRM2
 #  define BLASscal_    CSCAL
 #  define BLAScopy_    CCOPY
@@ -124,27 +124,8 @@
 #  define LAPACKgeqrf_ ZGEQRF
 #  define LAPACKungqr_ ZUNGQR
 #  define LAPACKgetrf_ ZGETRF
-#ifdef PETSC_COMPLEX_DOT_RESULT_ARGUMENT
-EXTERN_C_BEGIN
-extern void ZDOTC(PetscScalar *,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
-PETSC_STATIC_INLINE PetscScalar BLASdot_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy) 
-{
-  PetscScalar tmpz;
-  ZDOTC(&tmpz,n,x,sx,y,sy);
-  return tmpz;
-}
-extern void ZDOTU(PetscScalar *,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);
-PETSC_STATIC_INLINE PetscScalar BLASdotu_(const PetscBLASInt *n,const PetscScalar *x,const PetscBLASInt *sx,const PetscScalar *y,const PetscBLASInt *sy) 
-{
-  PetscScalar tmpz;
-  ZDOTU(&tmpz,n,x,sx,y,sy);
-  return tmpz;
-}
-EXTERN_C_END
-#else
-#  define BLASdot_     ZDOTC
-#  define BLASdotu_    ZDOTU
-#endif
+/* #  define BLASdot_     ZDOTC */
+/* #  define BLASdotu_    ZDOTU */
 #  define BLASnrm2_    DZNRM2
 #  define BLASscal_    ZSCAL
 #  define BLAScopy_    ZCOPY

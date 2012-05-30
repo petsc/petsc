@@ -2040,10 +2040,13 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
       if (n_rows != nrows || n_cols != ncols) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Reused submatrix wrong size");
       ierr = MatZeroEntries(*B);CHKERRQ(ierr);
       C = *B;
-    } else {  
+    } else {
+      PetscInt rbs,cbs;
       ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
       ierr = MatSetSizes(C,nrows,ncols,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-      ierr = MatSetBlockSizes(C,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
+      ierr = ISGetBlockSize(isrow,&rbs);CHKERRQ(ierr);
+      ierr = ISGetBlockSize(iscol,&cbs);CHKERRQ(ierr);
+      ierr = MatSetBlockSizes(C,rbs,cbs);CHKERRQ(ierr);
       ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
       ierr = MatSeqAIJSetPreallocation_SeqAIJ(C,0,lens);CHKERRQ(ierr);
     }
@@ -2101,10 +2104,13 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
       }
       ierr = PetscMemzero(c->ilen,(*B)->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
       C = *B;
-    } else {  
+    } else {
+      PetscInt rbs,cbs;
       ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
       ierr = MatSetSizes(C,nrows,ncols,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-      ierr = MatSetBlockSizes(C,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
+      ierr = ISGetBlockSize(isrow,&rbs);CHKERRQ(ierr);
+      ierr = ISGetBlockSize(iscol,&cbs);CHKERRQ(ierr);
+      ierr = MatSetBlockSizes(C,rbs,cbs);CHKERRQ(ierr);
       ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
       ierr = MatSeqAIJSetPreallocation_SeqAIJ(C,0,lens);CHKERRQ(ierr);
     }

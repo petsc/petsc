@@ -1,5 +1,5 @@
 
-#include <petscmat.h>
+#include <petsc-private/matimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP_Basic"

@@ -97,6 +97,7 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
   *tcomm = PETSC_NULL;
 
   ierr = PetscNew(struct _p_PetscThreadComm,&tcommout);CHKERRQ(ierr);
+  tcommout->refct = 1;
   tcommout->nworkThreads =  -1;
   tcommout->affinities = PETSC_NULL;
   ierr = PetscNew(struct _PetscThreadCommOps,&tcommout->ops);CHKERRQ(ierr);
@@ -131,7 +132,7 @@ PetscErrorCode PetscThreadCommDestroy(PetscThreadComm tcomm)
 
   PetscFunctionBegin;
 
-  if(!tcomm) PetscFunctionReturn(0);
+  if (!tcomm || --tcomm->refct > 0) PetscFunctionReturn(0);
 
   /* Destroy the implementation specific data struct */
   if(tcomm->ops->destroy) {
@@ -612,7 +613,7 @@ PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void* at
   PetscMPIInt     flg;
 
   PetscFunctionBegin;
-  ierr = MPI_Attr_get(comm,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
   if(flg) {
     ierr = PetscThreadCommDestroy((PetscThreadComm)tcomm);CHKERRQ(ierr);
     ierr = PetscInfo1(0,"Deleting thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
@@ -644,8 +645,12 @@ PetscErrorCode PetscThreadCommInitialize(void)
   ierr = PetscThreadCommSetAffinities(tcomm,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&icomm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_put(icomm,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
+
+  tcomm->refct++;               /* Share the threadcomm with PETSC_COMM_SELF */
   ierr = PetscCommDuplicate(PETSC_COMM_SELF,&icomm1,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_put(icomm1,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
+
+  /* This routine leaves extra references to the inner comms. They are released in PetscThreadCommFinalizePackage(). */
 
   ierr = PetscThreadCommSetType(tcomm,NOTHREAD);CHKERRQ(ierr);
   ierr = PetscThreadCommReductionCreate(tcomm,&tcomm->red);CHKERRQ(ierr);

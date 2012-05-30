@@ -8,7 +8,6 @@
 #include <string.h> /* for strcmp */
 #endif
 
-PETSC_EXTERN_CXX_BEGIN
 
 /*
    Defines the directory where the compiled source is located; used
@@ -347,26 +346,26 @@ M*/
 E*/
 typedef enum {PETSC_ERROR_INITIAL=0,PETSC_ERROR_REPEAT=1,PETSC_ERROR_IN_CXX = 2} PetscErrorType;
 
-extern PetscErrorCode  PetscErrorPrintfInitialize(void);
-extern PetscErrorCode  PetscErrorMessage(int,const char*[],char **);
-extern PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-extern PetscErrorCode  PetscIgnoreErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-extern PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-extern PetscErrorCode  PetscMPIAbortErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-extern PetscErrorCode  PetscAbortErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-extern PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-extern PetscErrorCode  PetscReturnErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
-extern PetscErrorCode  PetscError(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,...);
-extern PetscErrorCode  PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void*);
-extern PetscErrorCode  PetscPopErrorHandler(void);
-extern PetscErrorCode  PetscDefaultSignalHandler(int,void*);
-extern PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
-extern PetscErrorCode  PetscPopSignalHandler(void);
+PETSC_EXTERN PetscErrorCode PetscErrorPrintfInitialize(void);
+PETSC_EXTERN PetscErrorCode PetscErrorMessage(int,const char*[],char **);
+PETSC_EXTERN PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+PETSC_EXTERN PetscErrorCode PetscIgnoreErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+PETSC_EXTERN PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+PETSC_EXTERN PetscErrorCode PetscMPIAbortErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+PETSC_EXTERN PetscErrorCode PetscAbortErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+PETSC_EXTERN PetscErrorCode PetscAttachDebuggerErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+PETSC_EXTERN PetscErrorCode PetscReturnErrorHandler(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*);
+PETSC_EXTERN PetscErrorCode PetscError(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,...);
+PETSC_EXTERN PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void*);
+PETSC_EXTERN PetscErrorCode PetscPopErrorHandler(void);
+PETSC_EXTERN PetscErrorCode PetscDefaultSignalHandler(int,void*);
+PETSC_EXTERN PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
+PETSC_EXTERN PetscErrorCode PetscPopSignalHandler(void);
 
 typedef enum {PETSC_FP_TRAP_OFF=0,PETSC_FP_TRAP_ON=1} PetscFPTrap;
-extern PetscErrorCode  PetscSetFPTrap(PetscFPTrap);
-extern PetscErrorCode  PetscFPTrapPush(PetscFPTrap);
-extern PetscErrorCode  PetscFPTrapPop(void);
+PETSC_EXTERN PetscErrorCode PetscSetFPTrap(PetscFPTrap);
+PETSC_EXTERN PetscErrorCode PetscFPTrapPush(PetscFPTrap);
+PETSC_EXTERN PetscErrorCode PetscFPTrapPop(void);
 
 /*  Linux functions CPU_SET and others don't work if sched.h is not included before
     including pthread.h. Also, these functions are active only if either _GNU_SOURCE
@@ -400,17 +399,17 @@ typedef struct  {
 
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 #if defined(PETSC_PTHREAD_LOCAL)
-extern PETSC_PTHREAD_LOCAL PetscStack *petscstack;
+PETSC_EXTERN PETSC_PTHREAD_LOCAL PetscStack *petscstack;
 #else
-extern pthread_key_t petscstack_key;
-extern PetscStack *petscstack;
+PETSC_EXTERN pthread_key_t petscstack_key;
+PETSC_EXTERN PetscStack *petscstack;
 #endif
 #else
-extern PetscStack *petscstack;
+PETSC_EXTERN PetscStack *petscstack;
 #endif
 
-extern PetscErrorCode   PetscStackCopy(PetscStack*,PetscStack*);
-extern PetscErrorCode   PetscStackPrint(PetscStack*,FILE* fp);
+PETSC_EXTERN PetscErrorCode PetscStackCopy(PetscStack*,PetscStack*);
+PETSC_EXTERN PetscErrorCode PetscStackPrint(PetscStack*,FILE* fp);
 
 #define PetscStackActive (petscstack != 0)
 
@@ -566,11 +565,10 @@ M*/
 */
 #define PetscStackCall(name,routine) PetscStackPush(name);routine;PetscStackPop;
 
-extern PetscErrorCode   PetscStackCreate(void);
-extern PetscErrorCode   PetscStackView(PetscViewer);
-extern PetscErrorCode   PetscStackDestroy(void);
-extern PetscErrorCode   PetscStackPublish(void);
-extern PetscErrorCode   PetscStackDepublish(void);
+PETSC_EXTERN PetscErrorCode PetscStackCreate(void);
+PETSC_EXTERN PetscErrorCode PetscStackView(PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscStackDestroy(void);
+PETSC_EXTERN PetscErrorCode PetscStackPublish(void);
+PETSC_EXTERN PetscErrorCode PetscStackDepublish(void);
 
-PETSC_EXTERN_CXX_END
 #endif

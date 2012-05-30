@@ -21,7 +21,7 @@
 
 
 #if defined(__cplusplus)
-extern "C" {
+PETSC_EXTERN "C" {
 #endif
 
 #define VALIDATE(px) \

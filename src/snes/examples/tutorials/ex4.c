@@ -167,7 +167,7 @@ PetscErrorCode PrintVector(DM da, Vec U)
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
   for(j = ys+ym-1; j >= ys; j--) {
     for(i = xs; i < xs+xm; i++) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"u[%d][%d] = %G ", j, i, u[j][i]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"u[%d][%d] = %G ", j, i, PetscRealPart(u[j][i]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
   }
@@ -337,7 +337,7 @@ PetscErrorCode nonlinearResidualBratu(PetscReal lambda, PetscScalar u[], PetscSc
 
 #undef __FUNCT__
 #define __FUNCT__ "nonlinearJacobian"
-PetscErrorCode nonlinearJacobian(PetscReal lambda, PetscScalar u[], PetscScalar J[]) {
+PetscErrorCode nonlinearJacobian(PetscScalar lambda, PetscScalar u[], PetscScalar J[]) {
   PetscFunctionBegin;
   J[0]  = lambda*(72.0*u[0]*u[0] + 12.0*u[1]*u[1] + 9.0*u[0]*(4.0*u[1] + u[2] + 4.0*u[3]) + u[1]*(6.0*u[2] + 9.0*u[3]) + 2.0*(u[2]*u[2] + 3.0*u[2]*u[3] + 6.0*u[3]*u[3]))/600.0;
   J[1]  = lambda*(18.0*u[0]*u[0] + 18.0*u[1]*u[1] + 3.0*u[2]*u[2] + 4.0*u[2]*u[3] + 3.0*u[3]*u[3] + 3.0*u[0]*(8.0*u[1] + 2.0*u[2] + 3.0*u[3]) + u[1]*(9.0*u[2] + 6.0*u[3]))/600.0;

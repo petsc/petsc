@@ -12,7 +12,6 @@ static PetscErrorCode PetscBagRegister_Private(PetscBag bag,PetscBagItem item,co
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  item->freelist = PETSC_FALSE;
   ierr = PetscStrncpy(item->name,name,PETSC_BAG_NAME_LENGTH-1);CHKERRQ(ierr);
   ierr = PetscStrncpy(item->help,help,PETSC_BAG_HELP_LENGTH-1);CHKERRQ(ierr);
   if (!bag->bagitems) bag->bagitems = item;
@@ -77,7 +76,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char **list,Pe
   if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next   = 0;
   item->msize  = 1;
-  item->list   = list;
+  ierr = PetscStrArrayallocpy(list,(char ***)&item->list);CHKERRQ(ierr);
   *(PetscEnum*)addr = mdefault;
   ierr = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -470,9 +469,8 @@ PetscErrorCode  PetscBagDestroy(PetscBag *bag)
   PetscFunctionBegin;
   while (nitem) {
     item  = nitem->next;
-    if (nitem->freelist) {
-      void *v = (void*)nitem->list;
-      ierr = PetscFree(v);CHKERRQ(ierr);
+    if (nitem->list) {
+      ierr = PetscStrArrayDestroy(&nitem->list);CHKERRQ(ierr);
     }
     ierr  = PetscFree(nitem);CHKERRQ(ierr);
     nitem = item;
@@ -541,7 +539,7 @@ PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
         PetscEnum *value = (PetscEnum*)(((char*)bag) + nitem->offset);                     
         PetscInt  i = 0;
         while (nitem->list[i++]);
-        ierr = PetscOptionsEnum(name,nitem->help,nitem->list[i-3],nitem->list,*value,value,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnum(name,nitem->help,nitem->list[i-3],(const char*const*)nitem->list,*value,value,PETSC_NULL);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_BOOL) {
         PetscBool  *value = (PetscBool*)(((char*)bag) + nitem->offset);
         ierr = PetscOptionsBool(name,nitem->help,"",*value,value,PETSC_NULL);CHKERRQ(ierr);

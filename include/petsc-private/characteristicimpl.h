@@ -5,10 +5,10 @@
 #include <petsccharacteristic.h>
 
 /* Logging support */
-extern PetscClassId CHARACTERISTIC_CLASSID;
-extern PetscLogEvent  CHARACTERISTIC_SetUp, CHARACTERISTIC_Solve, CHARACTERISTIC_QueueSetup, CHARACTERISTIC_DAUpdate;
-extern PetscLogEvent  CHARACTERISTIC_HalfTimeLocal, CHARACTERISTIC_HalfTimeRemote, CHARACTERISTIC_HalfTimeExchange;
-extern PetscLogEvent  CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTimeRemote, CHARACTERISTIC_FullTimeExchange;
+PETSC_EXTERN PetscClassId CHARACTERISTIC_CLASSID;
+PETSC_EXTERN PetscLogEvent CHARACTERISTIC_SetUp, CHARACTERISTIC_Solve, CHARACTERISTIC_QueueSetup, CHARACTERISTIC_DAUpdate;
+PETSC_EXTERN PetscLogEvent CHARACTERISTIC_HalfTimeLocal, CHARACTERISTIC_HalfTimeRemote, CHARACTERISTIC_HalfTimeExchange;
+PETSC_EXTERN PetscLogEvent CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTimeRemote, CHARACTERISTIC_FullTimeExchange;
 
 #define MAX_COMPONENTS 10
 
@@ -73,14 +73,14 @@ struct _p_Characteristic {
   void        *data;            /* Holder for implementation class */
 };
 
-extern PetscErrorCode CharacteristicSetNeighbors(Characteristic, PetscInt, PetscMPIInt []);
-extern PetscErrorCode CharacteristicAddPoint(Characteristic, CharacteristicPointDA2D *);
-extern PetscErrorCode CharacteristicSendCoordinatesBegin(Characteristic);
-extern PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic);
-extern PetscErrorCode CharacteristicGetValuesBegin(Characteristic);
-extern PetscErrorCode CharacteristicGetValuesEnd(Characteristic);
+PETSC_EXTERN PetscErrorCode CharacteristicSetNeighbors(Characteristic, PetscInt, PetscMPIInt []);
+PETSC_EXTERN PetscErrorCode CharacteristicAddPoint(Characteristic, CharacteristicPointDA2D *);
+PETSC_EXTERN PetscErrorCode CharacteristicSendCoordinatesBegin(Characteristic);
+PETSC_EXTERN PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic);
+PETSC_EXTERN PetscErrorCode CharacteristicGetValuesBegin(Characteristic);
+PETSC_EXTERN PetscErrorCode CharacteristicGetValuesEnd(Characteristic);
 
-extern PetscBool   CharacteristicRegisterAllCalled;
-extern PetscFList  CharacteristicList;
+PETSC_EXTERN PetscBool CharacteristicRegisterAllCalled;
+PETSC_EXTERN PetscFList CharacteristicList;
 
 #endif /*__CHARACTERISTICIMPL_H*/

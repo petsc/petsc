@@ -205,8 +205,8 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
       }
       u          = x[j][i][0];
       v          = x[j][i][1];
-      uxx        = (-2*u + x[j][i-1][0] + x[j][i+1][0])*sx;
-      uyy        = (-2*u + x[j-1][i][0] + x[j+1][i][0])*sy;
+      uxx        = (-2.0*u + x[j][i-1][0] + x[j][i+1][0])*sx;
+      uyy        = (-2.0*u + x[j-1][i][0] + x[j+1][i][0])*sy;
       f[j][i][0] = v;
       f[j][i][1] = uxx + uyy;
     }
