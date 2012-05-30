@@ -76,7 +76,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char **list,Pe
   if (item->offset > bag->bagsize) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Registered item %s %s is not in bag memory space",name,help);
   item->next   = 0;
   item->msize  = 1;
-  ierr = PetscStrArrayallocpy(list,&item->list);CHKERRQ(ierr);
+  ierr = PetscStrArrayallocpy(list,(char ***)&item->list);CHKERRQ(ierr);
   *(PetscEnum*)addr = mdefault;
   ierr = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -470,7 +470,7 @@ PetscErrorCode  PetscBagDestroy(PetscBag *bag)
   while (nitem) {
     item  = nitem->next;
     if (nitem->list) {
-      ierr = PetscStrArrayDestroy(nitem->list);CHKERRQ(ierr);
+      ierr = PetscStrArrayDestroy((char **)nitem->list);CHKERRQ(ierr);
     }
     ierr  = PetscFree(nitem);CHKERRQ(ierr);
     nitem = item;
