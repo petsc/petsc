@@ -244,6 +244,9 @@ extern "C" {
     elif self.check('z', funcs, prototype = prototypes, call = calls):
       self.logPrint('Using libz for the compression library')
       self.compression = ['libz.a']
+    elif self.check('zlib.lib', funcs, prototype = prototypes, call = calls):
+      self.logPrint('Using zlib.lib for the compression library')
+      self.compression = ['zlib.lib']
     else:
       self.logPrint('Warning: No compression library found')
     return

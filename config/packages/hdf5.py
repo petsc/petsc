@@ -10,7 +10,6 @@ class Configure(config.package.Package):
     self.liblist   = [['libhdf5.a','libhdf5_hl.a']]
     self.needsMath = 1
     self.needsCompression = 1
-    self.extraLib  = ['libz.a']
     self.complex   = 1
     self.worksonWindows = 1
     return
@@ -59,6 +58,7 @@ class Configure(config.package.Package):
     return self.installDir
 
   def configureLibrary(self):
+    self.extraLib = self.libraries.compression
     if hasattr(self.compilers, 'FC'):
       self.liblist   = [['libhdf5_fortran.a', 'libhdf5.a', 'libhdf5hl_fortran.la', 'libhdf5_hl.la']]
     config.package.Package.configureLibrary(self)
