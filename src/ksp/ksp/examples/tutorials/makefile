@@ -403,23 +403,23 @@ runex5_5:
 runex5_dense_1:
 	-@${MPIEXEC} -n 1 ./ex5 -mat_type dense -ksp_type preonly -pc_type lu -pc_factor_mat_ordering_type natural > ex5_plapack.tmp 2>&1; \
 	   if (${DIFF} output/ex5_plapack.out ex5_plapack.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex5_plapack_1, diffs above \n========================================="; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex5_dense_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_plapack.tmp
 runex5_dense_2:
 	-@${MPIEXEC} -n 1 ./ex5 -mat_type dense -ksp_type preonly -pc_type cholesky -pc_factor_mat_ordering_type natural > ex5_plapack.tmp 2>&1; \
 	   if (${DIFF} output/ex5_plapack.out ex5_plapack.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex5_plapack_3, diffs above \n========================================="; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex5_dense_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_plapack.tmp
 runex5_plapack_lu:
 	-@${MPIEXEC} -n 3 ./ex5 -mat_type dense -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package plapack> ex5_plapack.tmp 2>&1; \
 	   if (${DIFF} output/ex5_plapack.out ex5_plapack.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex5_plapack_2, diffs above \n========================================="; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex5_plapack_lu, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_plapack.tmp
 
 runex5_plapack_cholesky:
 	-@${MPIEXEC} -n 3 ./ex5 -mat_type dense -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package plapack > ex5_plapack.tmp 2>&1; \
 	   if (${DIFF} output/ex5_plapack.out ex5_plapack.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex5_plapack_4, diffs above \n========================================="; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex5_plapack_cholesky, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_plapack.tmp
 runex6f:
 	-@${MPIEXEC} -n 1 ./ex6f -pc_type jacobi -mat_view -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex6f_1.tmp 2>&1; \
@@ -761,12 +761,12 @@ runex10_mumps_cholesky_spd_2:
 runex10_plapack_lu:
 	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package plapack -mat_type dense -num_numfac 2 -num_rhs 2 > ex10_plapack_lu_2.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_plapack_lu_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex10_plapack_lu_2, diffs above \n========================================="; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex10_plapack_lu, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_plapack_lu_2.tmp
 runex10_plapack_cholesky:
 	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package plapack -mat_type dense -num_numfac 2 -num_rhs 2 -check_symmetry > ex10_plapack_cholesky_2.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_plapack_cholesky_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex10_plapack_cholesky_2, diffs above \n========================================="; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex10_plapack_cholesky, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_plapack_cholesky_2.tmp
 
 NSUBCOMM = 8 7 6 5 4 3 2 1

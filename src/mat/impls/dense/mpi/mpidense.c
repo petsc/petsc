@@ -1392,6 +1392,7 @@ PetscErrorCode MatGetFactor_mpidense_plapack(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatCreate(((PetscObject)A)->comm,F);CHKERRQ(ierr);
   ierr = MatSetSizes(*F,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(*F,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  ierr = MatSetUp(*F);CHKERRQ(ierr);
   ierr = PetscNewLog(*F,Mat_Plapack,&lu);CHKERRQ(ierr);
   (*F)->spptr = (void*)lu;
 

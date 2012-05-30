@@ -495,6 +495,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,const Ma
 {
   PetscFunctionBegin;
   fact->assembled                  = PETSC_TRUE;
+  fact->preallocated               = PETSC_TRUE;
   fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqDense;
   PetscFunctionReturn(0);
 }
