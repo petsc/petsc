@@ -753,7 +753,7 @@ runex28_2:
 	-@${MPIEXEC} -n 3 ./ex28 -da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 2 > ex28_2.tmp 2>&1; \
 	  ${DIFF} output/ex28_2.out ex28_2.tmp || echo  ${PWD} "\nPossible problem with ex28_2, diffs above \n========================================="; ${RM} -f ex28_2.tmp
 runex28_3:
-	-@for mtype in aij nest; do \
+	-@for mtype in aij nest ; do \
 	    ${MPIEXEC} -n 3 ./ex28 -da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 -snes_mf_operator \
 	    -pack_dm_mat_type $$mtype -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi > ex28_3.tmp 2>&1; \
 	    ${DIFF} output/ex28_3.out ex28_3.tmp || echo  ${PWD} "\nPossible problem with ex28_3 mtype=$${mtype}; diffs above \n========================================="; ${RM} -f ex28_3.tmp; \

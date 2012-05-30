@@ -34,7 +34,6 @@
        call KSPDestroy(ksp,ierr)
        call DMDestroy(dm,ierr)
        call PetscFinalize(ierr)
-       return
        end
 
 
