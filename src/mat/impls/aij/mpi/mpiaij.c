@@ -1826,21 +1826,25 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op,PetscBool  flg)
   case MAT_SYMMETRY_ETERNAL:
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     break;
-  case DIAGBLOCK_MAT_CSR:
-  case OFFDIAGBLOCK_MAT_CSR:
+#if defined(PETSC_HAVE_TXPETSCGPU)
+    // Sorry, I don't know how else to add MatOptions for data specific
+    // to GPU classes without protecting against it in this case statement.
+    // If anyone knows of a better way, let me know. Paul
+  case MAT_DIAGBLOCK_CSR:
+  case MAT_OFFDIAGBLOCK_CSR:
   case MAT_CSR:
-  case DIAGBLOCK_MAT_DIA:
-  case OFFDIAGBLOCK_MAT_DIA:
+  case MAT_DIAGBLOCK_DIA:
+  case MAT_OFFDIAGBLOCK_DIA:
   case MAT_DIA:
-  case DIAGBLOCK_MAT_ELL:
-  case OFFDIAGBLOCK_MAT_ELL:
+  case MAT_DIAGBLOCK_ELL:
+  case MAT_OFFDIAGBLOCK_ELL:
   case MAT_ELL:
-  case DIAGBLOCK_MAT_HYB:
-  case OFFDIAGBLOCK_MAT_HYB:
+  case MAT_DIAGBLOCK_HYB:
+  case MAT_OFFDIAGBLOCK_HYB:
   case MAT_HYB:
     /* Not an error because MatSetOption_MPIAIJCUSP/CUSPARSE handle these options */
     break;
-
+#endif
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %d",op);
   }
@@ -5517,12 +5521,10 @@ PetscErrorCode  MatCreate_MPIAIJ(Mat B)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
-
   ierr            = PetscNewLog(B,Mat_MPIAIJ,&b);CHKERRQ(ierr);
   B->data         = (void*)b;
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->assembled    = PETSC_FALSE;
-
   B->insertmode   = NOT_SET_VALUES;
   b->size         = size;
   ierr = MPI_Comm_rank(((PetscObject)B)->comm,&b->rank);CHKERRQ(ierr);
@@ -5542,13 +5544,9 @@ PetscErrorCode  MatCreate_MPIAIJ(Mat B)
   b->rowindices   = 0;
   b->rowvalues    = 0;
   b->getrowactive = PETSC_FALSE;
-
-#if defined(PETSC_HAVE_TXPETSCGPU)
-  /* stuff for GPU capabilities */
-  b->diagGPUMatFormat = MAT_CSR;
-  b->offdiagGPUMatFormat = MAT_CSR;
-#endif
-
+  
+  /* flexible pointer used in CUSP/CUSPARSE classes */
+  b->spptr        = PETSC_NULL;
 #if defined(PETSC_HAVE_SPOOLES)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_spooles_C",
                                      "MatGetFactor_mpiaij_spooles",

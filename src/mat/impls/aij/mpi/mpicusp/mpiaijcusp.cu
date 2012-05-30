@@ -1,15 +1,15 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
-
-//#ifdef PETSC_HAVE_TXPETSCGPU
-//extern PetscErrorCode MatSetOption_SeqAIJCUSP(Mat,MatOption,PetscBool);
-//#endif
+#include "mpicuspmatimpl.h"
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUSP"
 PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
-  Mat_MPIAIJ     *b;
+  Mat_MPIAIJ *b = (Mat_MPIAIJ*)B->data;
+#ifdef PETSC_HAVE_TXPETSCGPU
+  Mat_MPIAIJCUSP * cuspStruct = (Mat_MPIAIJCUSP*)b->spptr;
+#endif
   PetscErrorCode ierr;
   PetscInt       i;
 
@@ -31,10 +31,8 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const P
       if (o_nnz[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than 0: local row %D value %D",i,o_nnz[i]);
     }
   }
-  b = (Mat_MPIAIJ*)B->data;
-
   if (!B->preallocated) {
-    /* Explicitly create 2 MATSEQAIJ matrices. */
+    /* Explicitly create 2 MATSEQAIJCUSP matrices. */
     ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
     ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
     ierr = MatSetType(b->A,MATSEQAIJCUSP);CHKERRQ(ierr);
@@ -44,12 +42,11 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const P
     ierr = MatSetType(b->B,MATSEQAIJCUSP);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
   }
-
   ierr = MatSeqAIJSetPreallocation(b->A,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_TXPETSCGPU
-  ierr=MatSetOption_SeqAIJCUSP(b->A,b->diagGPUMatFormat,PETSC_TRUE);CHKERRQ(ierr);
-  ierr=MatSetOption_SeqAIJCUSP(b->B,b->offdiagGPUMatFormat,PETSC_TRUE);CHKERRQ(ierr);
+  ierr=MatSetOption_SeqAIJCUSP(b->A,cuspStruct->diagGPUMatFormat,PETSC_TRUE);CHKERRQ(ierr);
+  ierr=MatSetOption_SeqAIJCUSP(b->B,cuspStruct->offdiagGPUMatFormat,PETSC_TRUE);CHKERRQ(ierr);
 #endif
   B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -119,37 +116,37 @@ EXTERN_C_END
 PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats);
 
 #ifdef PETSC_HAVE_TXPETSCGPU
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_MPIAIJCUSP"
-PetscErrorCode MatSetOption_MPIAIJCUSP(Mat A,MatOption op,PetscBool  flg)
+PetscErrorCode MatSetOption_MPIAIJCUSP(Mat A,MatOption op,PetscBool flg)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  Mat_MPIAIJCUSP * cuspStruct  = (Mat_MPIAIJCUSP*)a->spptr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;  
   ierr = MatSetOption_MPIAIJ(A,op,flg);CHKERRQ(ierr);
   switch (op) {
-  case DIAGBLOCK_MAT_CSR:
-    a->diagGPUMatFormat = DIAGBLOCK_MAT_CSR;
+  case MAT_DIAGBLOCK_CSR:
+    cuspStruct->diagGPUMatFormat = MAT_DIAGBLOCK_CSR;
     break;
-  case OFFDIAGBLOCK_MAT_CSR:
-    a->offdiagGPUMatFormat = OFFDIAGBLOCK_MAT_CSR;
+  case MAT_OFFDIAGBLOCK_CSR:
+    cuspStruct->offdiagGPUMatFormat = MAT_OFFDIAGBLOCK_CSR;
     break;
-  case DIAGBLOCK_MAT_DIA:
-    a->diagGPUMatFormat = DIAGBLOCK_MAT_DIA;
+  case MAT_DIAGBLOCK_DIA:
+    cuspStruct->diagGPUMatFormat = MAT_DIAGBLOCK_DIA;
     break;
-  case OFFDIAGBLOCK_MAT_DIA:
-    a->offdiagGPUMatFormat = OFFDIAGBLOCK_MAT_DIA;
+  case MAT_OFFDIAGBLOCK_DIA:
+    cuspStruct->offdiagGPUMatFormat = MAT_OFFDIAGBLOCK_DIA;
     break;
-  case DIAGBLOCK_MAT_ELL:
-    a->diagGPUMatFormat = DIAGBLOCK_MAT_ELL;
+  case MAT_DIAGBLOCK_ELL:
+    cuspStruct->diagGPUMatFormat = MAT_DIAGBLOCK_ELL;
     break;
-  case OFFDIAGBLOCK_MAT_ELL:
-    a->offdiagGPUMatFormat = OFFDIAGBLOCK_MAT_ELL;
+  case MAT_OFFDIAGBLOCK_ELL:
+    cuspStruct->offdiagGPUMatFormat = MAT_OFFDIAGBLOCK_ELL;
     break;
-  case DIAGBLOCK_MAT_HYB:
-  case OFFDIAGBLOCK_MAT_HYB:
+  case MAT_DIAGBLOCK_HYB:
+  case MAT_OFFDIAGBLOCK_HYB:
   case MAT_HYB:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported GPU matrix storage format HYB for (MPI,SEQ)AIJCUSP matrix type.");
   default:
@@ -165,6 +162,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  Mat_MPIAIJCUSP * cuspStruct  = (Mat_MPIAIJCUSP*)a->spptr;
   PetscErrorCode     ierr;
   PetscInt       idxDiag=0,idxOffDiag=0;
   char * formats[]={CSR,DIA,ELL};
@@ -180,7 +178,6 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
 			     "Set the storage format of (mpi)aijcusp gpu matrices for SpMV",
 			     "None",formats,3,formats[0],&idxOffDiag,&flg);CHKERRQ(ierr);
 
-    //printf("MatSetFromOptions_MPIAIJCUSP : %s %s\n",formats[idxDiag],formats[idxOffDiag]);
     if (formats[idxDiag] == CSR)
       diagFormat=MAT_CSR;
     else if (formats[idxDiag] == DIA)
@@ -195,8 +192,8 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
     else if (formats[idxOffDiag] == ELL)
       offdiagFormat=MAT_ELL;
 
-    a->diagGPUMatFormat = diagFormat;
-    a->offdiagGPUMatFormat = offdiagFormat;
+    cuspStruct->diagGPUMatFormat = diagFormat;
+    cuspStruct->offdiagGPUMatFormat = offdiagFormat;
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -204,26 +201,64 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
 EXTERN_C_END
 #endif
 
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_MPIAIJCUSP"
+PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
+{
+  PetscErrorCode ierr;
+#ifdef PETSC_HAVE_TXPETSCGPU
+  Mat_MPIAIJ *a  = (Mat_MPIAIJ*)A->data;
+  Mat_MPIAIJCUSP * cuspStruct  = (Mat_MPIAIJCUSP*)a->spptr;
+#endif
+  PetscFunctionBegin;
+#ifdef PETSC_HAVE_TXPETSCGPU
+  try {
+    delete cuspStruct;
+  } catch(char* ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSP error: %s", ex);
+  } 
+  cuspStruct = 0;
+#endif
+  ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIAIJCUSP"
-PetscErrorCode  MatCreate_MPIAIJCUSP(Mat B)
+PetscErrorCode  MatCreate_MPIAIJCUSP(Mat A)
 {
   PetscErrorCode ierr;
-
+#ifdef PETSC_HAVE_TXPETSCGPU
+  Mat_MPIAIJ *a;
+  Mat_MPIAIJCUSP * cuspStruct;
+#endif
   PetscFunctionBegin;
-  ierr = MatCreate_MPIAIJ(B);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAIJSetPreallocation_C",
+  ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMPIAIJSetPreallocation_C",
                                      "MatMPIAIJSetPreallocation_MPIAIJCUSP",
                                       MatMPIAIJSetPreallocation_MPIAIJCUSP);CHKERRQ(ierr);
-  B->ops->getvecs        = MatGetVecs_MPIAIJCUSP;
-  B->ops->setvaluesbatch = MatSetValuesBatch_MPIAIJCUSP;
+  A->ops->getvecs        = MatGetVecs_MPIAIJCUSP;
+  A->ops->setvaluesbatch = MatSetValuesBatch_MPIAIJCUSP;
+
 #ifdef PETSC_HAVE_TXPETSCGPU
-  B->ops->mult           = MatMult_MPIAIJCUSP; 
-  B->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSP;	
-  B->ops->setoption      = MatSetOption_MPIAIJCUSP;	
+  a               = (Mat_MPIAIJ*)A->data;
+  a->spptr        = new Mat_MPIAIJCUSP;
+  cuspStruct  = (Mat_MPIAIJCUSP*)a->spptr;
+
+  cuspStruct->diagGPUMatFormat    = MAT_DIAGBLOCK_CSR;
+  cuspStruct->offdiagGPUMatFormat = MAT_OFFDIAGBLOCK_CSR;
+
+  A->ops->mult           = MatMult_MPIAIJCUSP; 
+  A->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSP;	
+  A->ops->setoption      = MatSetOption_MPIAIJCUSP;	
+  A->ops->destroy        = MatDestroy_MPIAIJCUSP;
 #endif
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

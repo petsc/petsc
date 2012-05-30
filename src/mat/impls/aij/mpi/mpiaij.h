@@ -67,11 +67,8 @@ typedef struct {
   /* Used by MatMatMult() and MatPtAP() */
   Mat_PtAPMPI   *ptap;
 
-#if defined(PETSC_HAVE_TXPETSCGPU)
-  /* The following are used by GPU capabilities to store matrix storage formats on the device */
-  MatOption diagGPUMatFormat;
-  MatOption offdiagGPUMatFormat;
-#endif
+  /* Used by MPICUSP and MPICUSPARSE classes */
+  void * spptr;
 } Mat_MPIAIJ;
 
 extern PetscErrorCode MatSetColoring_MPIAIJ(Mat,ISColoring);
@@ -102,6 +99,7 @@ extern PetscErrorCode MatPtAPNumeric_MPIAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat);
+extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 
 extern PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat,Mat,MatReuse,PetscInt**,PetscInt**,MatScalar**,Mat*);
 extern PetscErrorCode MatSetValues_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar [],InsertMode);

@@ -1,11 +1,13 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
+#include "mpicusparsematimpl.h"
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUSPARSE"
 PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
-  Mat_MPIAIJ     *b;
+  Mat_MPIAIJ *b = (Mat_MPIAIJ*)B->data;
+  Mat_MPIAIJCUSPARSE * cusparseStruct = (Mat_MPIAIJCUSPARSE*)b->spptr;
   PetscErrorCode ierr;
   PetscInt       i;
 
@@ -29,10 +31,8 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,con
       if (o_nnz[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than 0: local row %D value %D",i,o_nnz[i]);
     }
   }
-  b = (Mat_MPIAIJ*)B->data;
-
   if (!B->preallocated) {
-    /* Explicitly create 2 MATSEQAIJ matrices. */
+    /* Explicitly create 2 MATSEQAIJCUSPARSE matrices. */
     ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
     ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
     ierr = MatSetType(b->A,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
@@ -42,11 +42,10 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,con
     ierr = MatSetType(b->B,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
   }
-
   ierr = MatSeqAIJSetPreallocation(b->A,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz);CHKERRQ(ierr);
-  ierr=MatSetOption_SeqAIJCUSPARSE(b->A,b->diagGPUMatFormat,PETSC_TRUE);CHKERRQ(ierr);
-  ierr=MatSetOption_SeqAIJCUSPARSE(b->B,b->offdiagGPUMatFormat,PETSC_TRUE);CHKERRQ(ierr);
+  ierr=MatSetOption_SeqAIJCUSPARSE(b->A,cusparseStruct->diagGPUMatFormat,PETSC_TRUE);CHKERRQ(ierr);
+  ierr=MatSetOption_SeqAIJCUSPARSE(b->B,cusparseStruct->offdiagGPUMatFormat,PETSC_TRUE);CHKERRQ(ierr);
   B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -146,35 +145,36 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_MPIAIJCUSPARSE"
-PetscErrorCode MatSetOption_MPIAIJCUSPARSE(Mat A,MatOption op,PetscBool  flg)
+PetscErrorCode MatSetOption_MPIAIJCUSPARSE(Mat A,MatOption op,PetscBool flg)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  Mat_MPIAIJCUSPARSE * cusparseStruct  = (Mat_MPIAIJCUSPARSE*)a->spptr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;  
   ierr = MatSetOption_MPIAIJ(A,op,flg);CHKERRQ(ierr);
   switch (op) {
-  case DIAGBLOCK_MAT_CSR:
-    a->diagGPUMatFormat = DIAGBLOCK_MAT_CSR;
+  case MAT_DIAGBLOCK_CSR:
+    cusparseStruct->diagGPUMatFormat = MAT_DIAGBLOCK_CSR;
     break;
-  case OFFDIAGBLOCK_MAT_CSR:
-    a->offdiagGPUMatFormat = OFFDIAGBLOCK_MAT_CSR;
+  case MAT_OFFDIAGBLOCK_CSR:
+    cusparseStruct->offdiagGPUMatFormat = MAT_OFFDIAGBLOCK_CSR;
     break;
-  case DIAGBLOCK_MAT_DIA:
-  case OFFDIAGBLOCK_MAT_DIA:
+  case MAT_DIAGBLOCK_DIA:
+  case MAT_OFFDIAGBLOCK_DIA:
   case MAT_DIA:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported GPU matrix storage format DIA for (MPI,SEQ)AIJCUSPARSE matrix type.");
-  case DIAGBLOCK_MAT_ELL:
-    a->diagGPUMatFormat = DIAGBLOCK_MAT_ELL;
+  case MAT_DIAGBLOCK_ELL:
+    cusparseStruct->diagGPUMatFormat = MAT_DIAGBLOCK_ELL;
     break;
-  case OFFDIAGBLOCK_MAT_ELL:
-    a->offdiagGPUMatFormat = OFFDIAGBLOCK_MAT_ELL;
+  case MAT_OFFDIAGBLOCK_ELL:
+    cusparseStruct->offdiagGPUMatFormat = MAT_OFFDIAGBLOCK_ELL;
     break;
-  case DIAGBLOCK_MAT_HYB:
-    a->diagGPUMatFormat = DIAGBLOCK_MAT_HYB;
+  case MAT_DIAGBLOCK_HYB:
+    cusparseStruct->diagGPUMatFormat = MAT_DIAGBLOCK_HYB;
     break;
-  case OFFDIAGBLOCK_MAT_HYB:
-    a->offdiagGPUMatFormat = OFFDIAGBLOCK_MAT_HYB;
+  case MAT_OFFDIAGBLOCK_HYB:
+    cusparseStruct->offdiagGPUMatFormat = MAT_OFFDIAGBLOCK_HYB;
     break;
   default:
     break;
@@ -189,6 +189,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(Mat A)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  Mat_MPIAIJCUSPARSE * cusparseStruct  = (Mat_MPIAIJCUSPARSE*)a->spptr;
   PetscErrorCode     ierr;
   PetscInt       idxDiag=0,idxOffDiag=0;
   char * formats[]={CSR,ELL,HYB};
@@ -204,7 +205,6 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(Mat A)
 			     "Set the storage format of (mpi)aijcusparse gpu matrices for SpMV",
 			     "None",formats,3,formats[0],&idxOffDiag,&flg);CHKERRQ(ierr);
 
-    //printf("MatSetFromOptions_MPIAIJCUSPARSE : %s %s\n",formats[idxDiag],formats[idxOffDiag]);
     if (formats[idxDiag] == CSR)
       diagFormat=MAT_CSR;
     else if (formats[idxDiag] == ELL)
@@ -219,33 +219,61 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(Mat A)
     else if (formats[idxOffDiag] == HYB)
       offdiagFormat=MAT_HYB;
 
-    a->diagGPUMatFormat = diagFormat;
-    a->offdiagGPUMatFormat = offdiagFormat;
+    cusparseStruct->diagGPUMatFormat = diagFormat;
+    cusparseStruct->offdiagGPUMatFormat = offdiagFormat;
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_MPIAIJCUSPARSE"
+PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
+{
+  PetscErrorCode ierr;
+  Mat_MPIAIJ *a  = (Mat_MPIAIJ*)A->data;
+  Mat_MPIAIJCUSPARSE * cusparseStruct  = (Mat_MPIAIJCUSPARSE*)a->spptr;
+
+  PetscFunctionBegin;
+  try {
+    delete cusparseStruct;
+  } catch(char* ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSPARSE error: %s", ex);
+  } 
+  cusparseStruct = 0;
+  ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIAIJCUSPARSE"
-PetscErrorCode  MatCreate_MPIAIJCUSPARSE(Mat B)
+PetscErrorCode  MatCreate_MPIAIJCUSPARSE(Mat A)
 {
   PetscErrorCode ierr;
+  Mat_MPIAIJ *a;
+  Mat_MPIAIJCUSPARSE * cusparseStruct;
 
   PetscFunctionBegin;
-  ierr = MatCreate_MPIAIJ(B);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAIJSetPreallocation_C",
-                                     "MatMPIAIJSetPreallocation_MPIAIJCUSPARSE",
-                                      MatMPIAIJSetPreallocation_MPIAIJCUSPARSE);CHKERRQ(ierr);
-  B->ops->getvecs        = MatGetVecs_MPIAIJCUSPARSE;
-  B->ops->mult           = MatMult_MPIAIJCUSPARSE;
-  B->ops->multtranspose  = MatMultTranspose_MPIAIJCUSPARSE;
-  B->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSPARSE;	
-  B->ops->setoption      = MatSetOption_MPIAIJCUSPARSE;	
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJCUSPARSE);CHKERRQ(ierr);
+  ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMPIAIJSetPreallocation_C",
+					   "MatMPIAIJSetPreallocation_MPIAIJCUSPARSE",
+					   MatMPIAIJSetPreallocation_MPIAIJCUSPARSE);CHKERRQ(ierr);
+  a  = (Mat_MPIAIJ*)A->data;
+  a->spptr                      = new Mat_MPIAIJCUSPARSE;
+  cusparseStruct  = (Mat_MPIAIJCUSPARSE*)a->spptr;
+  cusparseStruct->diagGPUMatFormat    = MAT_DIAGBLOCK_CSR;
+  cusparseStruct->offdiagGPUMatFormat = MAT_OFFDIAGBLOCK_CSR;
+  A->ops->getvecs        = MatGetVecs_MPIAIJCUSPARSE;
+  A->ops->mult           = MatMult_MPIAIJCUSPARSE;
+  A->ops->multtranspose  = MatMultTranspose_MPIAIJCUSPARSE;
+  A->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSPARSE;	
+  A->ops->setoption      = MatSetOption_MPIAIJCUSPARSE;	
+  A->ops->destroy        = MatDestroy_MPIAIJCUSPARSE;
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJCUSPARSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -43,26 +43,26 @@ PetscErrorCode MatSetOption_SeqAIJCUSP(Mat A,MatOption op,PetscBool  flg)
   PetscFunctionBegin;  
   ierr = MatSetOption_SeqAIJ(A,op,flg);CHKERRQ(ierr);
   switch (op) {
-  case DIAGBLOCK_MAT_CSR:
-  case OFFDIAGBLOCK_MAT_CSR:
+  case MAT_DIAGBLOCK_CSR:
+  case MAT_OFFDIAGBLOCK_CSR:
   case MAT_CSR:
     //std::cout << "MatSetOption_SeqAIJCUSP : CSR" << std::endl;
     cuspMat->format = CSR;    
     break;
-  case DIAGBLOCK_MAT_DIA:
-  case OFFDIAGBLOCK_MAT_DIA:
+  case MAT_DIAGBLOCK_DIA:
+  case MAT_OFFDIAGBLOCK_DIA:
   case MAT_DIA:
     //std::cout << "MatSetOption_SeqAIJCUSP : DIA" << std::endl;
     cuspMat->format = DIA;    
     break;
-  case DIAGBLOCK_MAT_ELL:
-  case OFFDIAGBLOCK_MAT_ELL:
+  case MAT_DIAGBLOCK_ELL:
+  case MAT_OFFDIAGBLOCK_ELL:
   case MAT_ELL:
     //std::cout << "MatSetOption_SeqAIJCUSP : ELL" << std::endl;
     cuspMat->format = ELL;    
     break;
-  case DIAGBLOCK_MAT_HYB:
-  case OFFDIAGBLOCK_MAT_HYB:
+  case MAT_DIAGBLOCK_HYB:
+  case MAT_OFFDIAGBLOCK_HYB:
   case MAT_HYB:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported GPU matrix storage format HYB for (MPI,SEQ)AIJCUSP matrix type.");
   default:

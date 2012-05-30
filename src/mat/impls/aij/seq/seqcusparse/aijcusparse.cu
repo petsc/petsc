@@ -117,26 +117,23 @@ PetscErrorCode MatSetOption_SeqAIJCUSPARSE(Mat A,MatOption op,PetscBool  flg)
   PetscFunctionBegin;  
   ierr = MatSetOption_SeqAIJ(A,op,flg);CHKERRQ(ierr);
   switch (op) {
-  case DIAGBLOCK_MAT_CSR:
-  case OFFDIAGBLOCK_MAT_CSR:
+  case MAT_DIAGBLOCK_CSR:
+  case MAT_OFFDIAGBLOCK_CSR:
   case MAT_CSR:
-    //std::cout << "MatSetOption_SeqAIJCUSPARSE : CSR" << std::endl;
     cusparseMat->format = CSR;    
     break;
-  case DIAGBLOCK_MAT_DIA:
-  case OFFDIAGBLOCK_MAT_DIA:
+  case MAT_DIAGBLOCK_DIA:
+  case MAT_OFFDIAGBLOCK_DIA:
   case MAT_DIA:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported GPU matrix storage format DIA for (MPI,SEQ)AIJCUSPARSE matrix type.");
-  case DIAGBLOCK_MAT_ELL:
-  case OFFDIAGBLOCK_MAT_ELL:
+  case MAT_DIAGBLOCK_ELL:
+  case MAT_OFFDIAGBLOCK_ELL:
   case MAT_ELL:
-    //std::cout << "MatSetOption_SeqAIJCUSPARSE : ELL" << std::endl;
     cusparseMat->format = ELL;    
     break;
-  case DIAGBLOCK_MAT_HYB:
-  case OFFDIAGBLOCK_MAT_HYB:
+  case MAT_DIAGBLOCK_HYB:
+  case MAT_OFFDIAGBLOCK_HYB:
   case MAT_HYB:
-    //std::cout << "MatSetOption_SeqAIJCUSPARSE : HYB" << std::endl;
     cusparseMat->format = HYB;    
     break;
   default:
@@ -784,6 +781,10 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A,MatAssemblyType mode)
   //if (A->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED){
   //  A->valid_GPU_matrix = PETSC_CUSP_CPU;
   //}
+  A->ops->mult             = MatMult_SeqAIJCUSPARSE;
+  A->ops->multadd          = MatMultAdd_SeqAIJCUSPARSE;
+  A->ops->multtranspose    = MatMultTranspose_SeqAIJCUSPARSE;
+  A->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJCUSPARSE;
   PetscFunctionReturn(0);
 }
 
