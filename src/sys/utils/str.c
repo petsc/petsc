@@ -247,17 +247,19 @@ PetscErrorCode  PetscStrArrayallocpy(const char *const*list,char ***t)
 .seealso: PetscStrArrayallocpy()
 
 @*/
-PetscErrorCode  PetscStrArrayDestroy(char **list)
+PetscErrorCode PetscStrArrayDestroy(char ***list)
 {
   PetscInt       n = 0;
   PetscErrorCode ierr;
 
-  while (list[n]) {
-    ierr = PetscFree(list[n]);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  if (!*list) PetscFunctionReturn(0);
+  while ((*list)[n]) {
+    ierr = PetscFree((*list)[n]);CHKERRQ(ierr);
     n++;
   }
-  ierr = PetscFree(list);CHKERRQ(ierr);
-  return 0;
+  ierr = PetscFree(*list);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  

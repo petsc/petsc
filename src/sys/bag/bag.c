@@ -470,7 +470,7 @@ PetscErrorCode  PetscBagDestroy(PetscBag *bag)
   while (nitem) {
     item  = nitem->next;
     if (nitem->list) {
-      ierr = PetscStrArrayDestroy((char **)nitem->list);CHKERRQ(ierr);
+      ierr = PetscStrArrayDestroy(&nitem->list);CHKERRQ(ierr);
     }
     ierr  = PetscFree(nitem);CHKERRQ(ierr);
     nitem = item;
@@ -539,7 +539,7 @@ PetscErrorCode  PetscBagSetFromOptions(PetscBag bag)
         PetscEnum *value = (PetscEnum*)(((char*)bag) + nitem->offset);                     
         PetscInt  i = 0;
         while (nitem->list[i++]);
-        ierr = PetscOptionsEnum(name,nitem->help,nitem->list[i-3],nitem->list,*value,value,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsEnum(name,nitem->help,nitem->list[i-3],(const char*const*)nitem->list,*value,value,PETSC_NULL);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_BOOL) {
         PetscBool  *value = (PetscBool*)(((char*)bag) + nitem->offset);
         ierr = PetscOptionsBool(name,nitem->help,"",*value,value,PETSC_NULL);CHKERRQ(ierr);

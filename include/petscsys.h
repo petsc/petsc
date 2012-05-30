@@ -1154,7 +1154,7 @@ PETSC_EXTERN PetscErrorCode PetscStrendswith(const char[],const char[],PetscBool
 PETSC_EXTERN PetscErrorCode PetscStrendswithwhich(const char[],const char *const*,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscStrallocpy(const char[],char *[]);
 PETSC_EXTERN PetscErrorCode PetscStrArrayallocpy(const char *const*,char***);
-PETSC_EXTERN PetscErrorCode PetscStrArrayDestroy(char**);
+PETSC_EXTERN PetscErrorCode PetscStrArrayDestroy(char***);
 PETSC_EXTERN PetscErrorCode PetscStrreplace(MPI_Comm,const char[],char[],size_t);
 
 /*S
