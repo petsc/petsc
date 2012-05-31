@@ -64,6 +64,7 @@
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
       call MatSetFromOptions(A,ierr)
+      call MatSetUp(A,ierr)
 
 !  The matrix is partitioned by contiguous chunks of rows across the
 !  processors.  Determine which rows of the matrix are locally owned. 
@@ -186,6 +187,7 @@
      &       pflag,ierr)
         if (pflag) then
           if (rank .eq. 0) write(6,100)
+          call flush(6)
         endif
         call MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,A2,ierr)
 ! All other times: Set previous solution as initial guess for next solve.
@@ -202,6 +204,7 @@
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       if (pflag) then
         if (rank .eq. 0) write(6,110)
+        call flush(6)
       endif
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
