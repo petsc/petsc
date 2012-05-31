@@ -3,14 +3,14 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  =
-SOURCEF  = f90_fwrap.F 
+SOURCEF  = bagenum.F
 SOURCEH  = 
 OBJSC    =
-OBJSF	 = f90_fwrap.o 
+OBJSF	 = bagenum.o
 DIRS     = 
 LIBBASE  = libpetscsys
 MANSEC   = Sys
-LOCDIR   = src/sys/f90-src/fsrc/
+LOCDIR   = src/sys/bag/f2003-src/fsrc/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

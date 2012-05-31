@@ -1,16 +1,17 @@
-ALL: lib
+#requiresdefine 'PETSC_USING_F2003'
 
+ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  =
-SOURCEF  = f90_fwrap.F 
+SOURCEC  = 
+SOURCEF  =
 SOURCEH  = 
-OBJSC    =
-OBJSF	 = f90_fwrap.o 
-DIRS     = 
+OBJSC    = 
+OBJSF	 =
+DIRS     = fsrc
 LIBBASE  = libpetscsys
 MANSEC   = Sys
-LOCDIR   = src/sys/f90-src/fsrc/
+LOCDIR   = src/sys/bag/f2003-src/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
