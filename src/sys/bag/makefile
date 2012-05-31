@@ -11,7 +11,7 @@ OBJSC	  = bag.o
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
-DIRS	  = 
+DIRS	  = f2003-src
 LOCDIR	  = src/sys/bag/
 
 include ${PETSC_DIR}/conf/variables
