@@ -314,9 +314,9 @@ static PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
 }
 
 /* p-Laplacian diffusivity */
-static inline PetscScalar eta(const AppCtx *ctx,PetscScalar ux,PetscScalar uy)
+PETSC_STATIC_INLINE PetscScalar eta(const AppCtx *ctx,PetscScalar ux,PetscScalar uy)
 {return pow(PetscSqr(ctx->epsilon)+0.5*(ux*ux + uy*uy),0.5*(ctx->p-2.));}
-static inline PetscScalar deta(const AppCtx *ctx,PetscScalar ux,PetscScalar uy)
+PETSC_STATIC_INLINE PetscScalar deta(const AppCtx *ctx,PetscScalar ux,PetscScalar uy)
 {
   return (ctx->p == 2)
     ? 0
