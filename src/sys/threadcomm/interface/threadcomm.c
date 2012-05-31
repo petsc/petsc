@@ -604,6 +604,28 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "Petsc_CopyThreadComm"
+/*
+  This frees the thread communicator attached to MPI_Comm
+
+  This is called by MPI, not by users. This is called when MPI_Comm_free() is called on the communicator.
+
+  Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
+*/
+PETSC_EXTERN_C PetscMPIInt MPIAPI Petsc_CopyThreadComm(MPI_Comm comm,PetscMPIInt keyval,void *extra_state,void *attr_in,void *attr_out,int *flag)
+{
+  PetscErrorCode  ierr;
+  PetscThreadComm tcomm = (PetscThreadComm)attr_out;
+
+  PetscFunctionBegin;
+  tcomm->refct++;
+  *(void**)attr_out = tcomm;
+  *flag = 1;
+  ierr = PetscInfo1(0,"Deleting thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "Petsc_DelThreadComm"
@@ -646,7 +668,7 @@ PetscErrorCode PetscThreadCommInitialize(void)
 
   PetscFunctionBegin;
   if(Petsc_ThreadComm_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelThreadComm,&Petsc_ThreadComm_keyval,(void*)0);CHKERRQ(ierr);
+    ierr = MPI_Keyval_create(Petsc_CopyThreadComm,Petsc_DelThreadComm,&Petsc_ThreadComm_keyval,(void*)0);CHKERRQ(ierr);
   }
   ierr = PetscThreadCommCreate(PETSC_COMM_WORLD,&tcomm);CHKERRQ(ierr);
   ierr = PetscThreadCommSetNThreads(tcomm,PETSC_DECIDE);CHKERRQ(ierr);
