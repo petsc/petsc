@@ -1057,6 +1057,19 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
+  def checkFortran2003(self):
+    '''Determine whether the Fortran compiler handles F2003'''
+    self.pushLanguage('FC')
+    if self.checkLink(body = '      use,intrinsic :: iso_c_binding\n      Type(C_Ptr),Dimension(:),Pointer :: CArray'):
+      self.addDefine('USING_F2003', 1)
+      self.fortranIsF2003 = 1
+      self.logPrint('Fortran compiler supports F2003')
+    else:
+      self.fortranIsF2003 = 0
+      self.logPrint('Fortran compiler does not support F2003')
+    self.popLanguage()
+    return
+
   def checkFortran90Array(self):
     '''Check for F90 array interfaces'''
     if not self.fortranIsF90:
@@ -1330,6 +1343,7 @@ class Configure(config.base.Configure):
       if hasattr(self.setCompilers, 'CXX'):
         self.executeTest(self.checkFortranLinkingCxx)
       self.executeTest(self.checkFortran90)
+      self.executeTest(self.checkFortran2003)
       self.executeTest(self.checkFortran90Array)
       self.executeTest(self.checkFortranModuleInclude)
       self.executeTest(self.checkFortranModuleOutput)
