@@ -16,6 +16,7 @@
       PetscInt   :: i,Len
       Character(kind=C_char,len=99),Dimension(:),Pointer::list1
 
+      Len=0
       do i=1,100
         if (len_trim(Farray(i)) .eq. 0) then
           Len = i-1
