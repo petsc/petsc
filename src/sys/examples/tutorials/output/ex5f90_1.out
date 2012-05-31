@@ -7,6 +7,7 @@ PetscBag Object:  demo parameters super secret demo parameters in a bag
   y = -11 ; y variable help message
   pos_x1 = 1 ; tuple value 1 help message
   pos_x2 = 2 ; tuple value 2 help message
+  enum = b456; (list) tuple value 2 help message
 PetscBag Object:  demo parameters super secret demo parameters in a bag
   nxc = 23 ; nxc_variable help message
   rarray = -1 -2 -3 ; rarray help message
@@ -16,6 +17,7 @@ PetscBag Object:  demo parameters super secret demo parameters in a bag
   y = -11 ; y variable help message
   pos_x1 = 1 ; tuple value 1 help message
   pos_x2 = 2 ; tuple value 2 help message
+  enum = b456; (list) tuple value 2 help message
 PetscBag Object:  demo parameters super secret demo parameters in a bag
   nxc = 23 ; nxc_variable help message
   rarray = 4 5 88 ; rarray help message
@@ -25,3 +27,4 @@ PetscBag Object:  demo parameters super secret demo parameters in a bag
   y = -11 ; y variable help message
   pos_x1 = 1 ; tuple value 1 help message
   pos_x2 = 2 ; tuple value 2 help message
+  enum = b456; (list) tuple value 2 help message

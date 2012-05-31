@@ -5,6 +5,7 @@
 #include "finclude/petscsysdef.h"
 #include "finclude/petscdrawdef.h"
 #include "finclude/petscviewerdef.h"
+#include "finclude/petscbagdef.h"
 #include "finclude/petscisdef.h"
 #include "finclude/petscvecdef.h"
 #include "finclude/petscmatdef.h"

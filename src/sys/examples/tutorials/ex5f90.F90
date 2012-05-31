@@ -17,6 +17,7 @@
          PetscInt  :: nxc
          PetscReal :: rarray(3)
          PetscBool  :: t
+         PetscEnum :: enum
          character*(80) :: c
          type(tuple) :: pos
       end type bag_data_type
@@ -49,15 +50,22 @@
       PetscSizeT sizeofbag,sizeofint
       PetscSizeT sizeofscalar,sizeoftruth
       PetscSizeT sizeofchar,sizeofreal
-
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      Character(len=99) list(6)
+      
+      Call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      list(1) = 'a123'
+      list(2) = 'b456'
+      list(3) = 'c789'
+      list(4) = 'list'
+      list(5) = 'prefix_'
+      list(6) = ''
 
 !   compute size of the data
-      call PetscDataTypeGetSize(PETSC_INT,sizeofint,ierr)
-      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
-      call PetscDataTypeGetSize(PETSC_BOOL,sizeoftruth,ierr)
-      call PetscDataTypeGetSize(PETSC_CHAR,sizeofchar,ierr)
-      call PetscDataTypeGetSize(PETSC_REAL,sizeofreal,ierr)
+!      call PetscDataTypeGetSize(PETSC_INT,sizeofint,ierr)
+!      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
+!      call PetscDataTypeGetSize(PETSC_BOOL,sizeoftruth,ierr)
+       call PetscDataTypeGetSize(PETSC_CHAR,sizeofchar,ierr)
+!      call PetscDataTypeGetSize(PETSC_REAL,sizeofreal,ierr)
 
 !     really need a sizeof(data) operator here. There could be padding inside the
 !     structure due to alignment issues - so, this computed value cold be wrong.
@@ -92,6 +100,8 @@
       call PetscBagRegisterReal(bag,data%pos%x1 ,1.0d0,'pos_x1',         &
      &      'tuple value 1 help message',ierr)
       call PetscBagRegisterReal(bag,data%pos%x2 ,2.0d0,'pos_x2',         &
+     &      'tuple value 2 help message',ierr)
+      call PetscBagRegisterEnum(bag,data%enum ,list,1,'enum',            &
      &      'tuple value 2 help message',ierr)
       call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
