@@ -332,6 +332,14 @@ static PetscErrorCode DMRestrictHook_SNESVecSol(DM dmfine,Mat Restrict,Vec Rscal
   Vec Xfine,Xfine_named = PETSC_NULL,Xcoarse;
 
   PetscFunctionBegin;
+  if (PetscLogPrintInfo) {
+    PetscInt finelevel,coarselevel,fineclevel,coarseclevel;
+    ierr = DMGetRefineLevel(dmfine,&finelevel);CHKERRQ(ierr);
+    ierr = DMGetCoarsenLevel(dmfine,&fineclevel);CHKERRQ(ierr);
+    ierr = DMGetRefineLevel(dmcoarse,&coarselevel);CHKERRQ(ierr);
+    ierr = DMGetCoarsenLevel(dmcoarse,&coarseclevel);CHKERRQ(ierr);
+    ierr = PetscInfo4(dmfine,"Restricting SNES solution vector from level %D-%D to level %D-%D\n",finelevel,fineclevel,coarselevel,coarseclevel);CHKERRQ(ierr);
+  }
   if (dmfine == snes->dm) Xfine = snes->vec_sol;
   else {
     ierr = DMGetNamedGlobalVector(dmfine,"SNESVecSol",&Xfine_named);CHKERRQ(ierr);
@@ -342,6 +350,17 @@ static PetscErrorCode DMRestrictHook_SNESVecSol(DM dmfine,Mat Restrict,Vec Rscal
   ierr = VecPointwiseMult(Xcoarse,Xcoarse,Rscale);CHKERRQ(ierr);
   ierr = DMRestoreNamedGlobalVector(dmcoarse,"SNESVecSol",&Xcoarse);CHKERRQ(ierr);
   if (Xfine_named) {ierr = DMRestoreNamedGlobalVector(dmfine,"SNESVecSol",&Xfine_named);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCoarsenHook_SNESVecSol"
+static PetscErrorCode DMCoarsenHook_SNESVecSol(DM dm,DM dmc,void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCoarsenHookAdd(dmc,DMCoarsenHook_SNESVecSol,DMRestrictHook_SNESVecSol,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -429,7 +448,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     KSP ksp;
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr = KSPSetComputeOperators(ksp,KSPComputeOperators_SNES,snes);CHKERRQ(ierr);
-    ierr = DMCoarsenHookAdd(snes->dm,PETSC_NULL,DMRestrictHook_SNESVecSol,snes);CHKERRQ(ierr);
+    ierr = DMCoarsenHookAdd(snes->dm,DMCoarsenHook_SNESVecSol,DMRestrictHook_SNESVecSol,snes);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
