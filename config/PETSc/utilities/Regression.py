@@ -49,7 +49,9 @@ class Configure(config.base.Configure):
           if self.scalartypes.scalartype.lower() == 'complex':
             rjobs.append('F90_Complex')
           else:
-            rjobs.append('F90_NoComplex')            
+            rjobs.append('F90_NoComplex')
+        if self.compilers.fortranIsF2003:
+          rjobs.append('F2003')
         if self.scalartypes.scalartype.lower() == 'complex':
           rjobs.append('Fortran_Complex')
         else:

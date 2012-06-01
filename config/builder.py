@@ -640,7 +640,7 @@ class DirectoryTreeWalker(logger.Logger):
             self.logPrint('Rejecting '+dirname+' because define '+reqValue+' does not exist')
             return False
         elif reqType == 'package':
-          if not self.allowFortran and reqValue in ['\'PETSC_HAVE_FORTRAN\'', '\'PETSC_USING_F90\'']:
+          if not self.allowFortran and reqValue in ['\'PETSC_HAVE_FORTRAN\'', '\'PETSC_USING_F90\'', '\'PETSC_USING_F2003\'']:
             self.logPrint('Rejecting '+dirname+' because fortran is not being used')
             return False
           elif not self.configInfo.libraryOptions.useLog and reqValue == '\'PETSC_USE_LOG\'':
