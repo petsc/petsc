@@ -127,7 +127,7 @@ PetscScalar funcADer(PetscScalar z, AppCtx *user)
   for(i = 0; i < user->m-1; ++i) {
     v *= z;
   }
-  return user->m*v;
+  return (PetscScalar)user->m*v;
 }
 
 #undef __FUNCT__

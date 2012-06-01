@@ -241,6 +241,7 @@ PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp)
    */
   ierr = PetscOptionsBool("-ksp_chebyshev_hybrid","Use hybrid Chebyshev","",cheb->hybrid,&cheb->hybrid,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_chebyshev_hybrid_chebysteps","Number of Chebyshev steps in hybrid Chebyshev","",cheb->chebysteps,&cheb->chebysteps,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ksp_chebyshev_hybrid_purification","Use purification in hybrid Chebyshev","",cheb->purification,&cheb->purification,PETSC_NULL);CHKERRQ(ierr);
 
   if (cheb->kspest) {
     /* Mask the PC so that PCSetFromOptions does not do anything */
@@ -270,6 +271,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   Mat            Amat,Pmat;
   MatStructure   pflag;
   PetscBool      diagonalscale,hybrid=cheb->hybrid;
+  PetscInt       purification=cheb->purification;
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -277,16 +279,19 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 
   if (cheb->kspest && !cheb->estimate_current) { 
     PetscReal max,min;
-    Vec       X = ksp->vec_sol;
-    if (!ksp->guess_zero && !hybrid) {ierr = VecDuplicate(ksp->vec_sol,&X);CHKERRQ(ierr);}
+    Vec       X;
+    
+    if (hybrid && purification){
+      X = ksp->vec_sol;
+    } else {
+      X = ksp->work[0];
+    }
     ierr = KSPSolve(cheb->kspest,ksp->vec_rhs,X);CHKERRQ(ierr);
     if (hybrid){
       cheb->its = 0; /* initialize Chebyshev iteration associated to kspest */
       ierr = KSPSetInitialGuessNonzero(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr);
     } else {
-      if (!ksp->guess_zero) {
-        ierr = VecDestroy(&X);CHKERRQ(ierr);
-      } else {
+      if (ksp->guess_zero) {
         ierr = VecZeroEntries(X);CHKERRQ(ierr);
       }
     } 
@@ -337,15 +342,22 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     if (hybrid && cheb->its && (cheb->its%cheb->chebysteps==0)){
       /* Adaptive step: update eigenvalue estimate - does not seem to improve convergence */
       PetscReal max,min;
-      Vec       X;
+      Vec       X = ksp->vec_sol; /* = previous p[k] */
       
-      X = ksp->vec_sol; /* = previous p[k] */
+      if (purification <= 1){ /* no purification here */
+        X = p[km1]; /* a tmp vector, != ksp->vec_sol */
+      } 
+
       ierr = VecCopy(p[k],X);CHKERRQ(ierr); /* p[k] = previous p[kp1] */
       ierr = KSPSolve(cheb->kspest,ksp->vec_rhs,X);CHKERRQ(ierr); 
       ierr = KSPComputeExtremeSingularValues(cheb->kspest,&max,&min);CHKERRQ(ierr);
       cheb->emin = cheb->tform[0]*min + cheb->tform[1]*max;
       cheb->emax = cheb->tform[2]*min + cheb->tform[3]*max;
       cheb->estimate_current = PETSC_TRUE;
+      if (purification <= 1){ /* no purification here */
+        X    = ksp->vec_sol;
+        ierr = VecCopy(p[k],X);CHKERRQ(ierr);
+      }
 
       b      = ksp->vec_rhs;
       p[km1] = X; 
@@ -446,6 +458,9 @@ PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: eigenvalue estimates:  min = %G, max = %G\n",cheb->emin,cheb->emax);CHKERRQ(ierr);
     if (cheb->kspest) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: estimated using:  [%G %G; %G %G]\n",cheb->tform[0],cheb->tform[1],cheb->tform[2],cheb->tform[3]);CHKERRQ(ierr);
+      if (cheb->hybrid){ /* display info about hybrid options being used */
+        ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: hybrid is used, chebysteps %D, purification %D\n",cheb->chebysteps,cheb->purification);CHKERRQ(ierr);
+      }
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = KSPView(cheb->kspest,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -522,6 +537,7 @@ PETSC_EXTERN_C PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
   chebyshevP->hybrid             = PETSC_FALSE;
   chebyshevP->chebysteps         = 20000;
   chebyshevP->its                = 0;
+  chebyshevP->purification       = 0; /* no purification */
 
   ksp->ops->setup                = KSPSetUp_Chebyshev;
   ksp->ops->solve                = KSPSolve_Chebyshev;

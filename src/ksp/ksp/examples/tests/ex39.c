@@ -109,27 +109,27 @@ int main(int argc,char **args)
   for (Ii=Istart; Ii<Iend; Ii++) { 
     i = Ii/(n2*n3); j = (Ii - i*n2*n3)/n3; k = Ii - i*n2*n3 - j*n3;
     if (i>0)   {
-      J = Ii - n2*n3;  v = -1.0 + co1*i;
+      J = Ii - n2*n3;  v = -1.0 + co1*(PetscScalar)i;
       ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (i<n1-1) {
-      J = Ii + n2*n3;  v = -1.0 + co1*i;
+      J = Ii + n2*n3;  v = -1.0 + co1*(PetscScalar)i;
       ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (j>0)   {
-      J = Ii - n3;  v = -1.0 + co1*j;
+      J = Ii - n3;  v = -1.0 + co1*(PetscScalar)j;
       ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (j<n2-1) {
-      J = Ii + n3;  v = -1.0 + co1*j;
+      J = Ii + n3;  v = -1.0 + co1*(PetscScalar)j;
       ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (k>0)   {
-      J = Ii - 1;  v = -1.0 + co1*k;
+      J = Ii - 1;  v = -1.0 + co1*(PetscScalar)k;
       ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (k<n3-1) {
-      J = Ii + 1;  v = -1.0 + co1*k;
+      J = Ii + 1;  v = -1.0 + co1*(PetscScalar)k;
       ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     v = 6.0 + co2;

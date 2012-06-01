@@ -69,7 +69,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg){
     printf(" %d evals: \n",nevs);
-    for (i=0; i<nevs; i++) printf("%d  %G\n",i,evals[i]); 
+    for (i=0; i<nevs; i++) printf("%d  %G\n",i,PetscRealPart(evals[i])); 
   } 
 
   /* Check residuals and orthogonality */ 

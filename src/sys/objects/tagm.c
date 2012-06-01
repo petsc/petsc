@@ -203,7 +203,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   /* Only the main thread updates counter->refcount */
   ierr = MPI_Attr_get(*comm_out,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
   if (flg) {
-    PetscInt trank; 
+    PetscInt trank;
     trank = PetscThreadCommGetRank(tcomm);
     if (!trank) counter->refcount++; /* number of references to this comm */
   } else counter->refcount++;
@@ -259,7 +259,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
     PetscInt trank;
     trank = PetscThreadCommGetRank(tcomm);
     /* Only thread rank 0 updates the counter */
-    if(!trank) counter->refcount--;
+    if (!trank) counter->refcount--;
   } else counter->refcount--;
 #else
   counter->refcount--;
@@ -330,13 +330,13 @@ PetscErrorCode  PetscObjectsGetGlobalNumbering(MPI_Comm comm, PetscInt len, Pets
     if(!srank) ++roots;
   }
   /* Obtain the sum of all roots -- the global number of distinct subcomms. */
-  ierr   = MPI_Allreduce((void*)&roots,(void*)count,1,MPIU_INT,MPIU_SUM,comm); CHKERRQ(ierr);
+  ierr   = MPI_Allreduce((void*)&roots,(void*)count,1,MPIU_INT,MPI_SUM,comm); CHKERRQ(ierr);
   /* Now introduce a global numbering for subcomms, initially known only by subcomm roots. */
   /* 
    At the subcomm roots number the subcomms in the subcomm-root local manner, 
    and make it global by calculating the shift.
    */
-  ierr = MPI_Scan((PetscMPIInt*)&roots,(PetscMPIInt*)&offset,1,MPIU_INT,MPIU_SUM,comm); CHKERRQ(ierr);
+  ierr = MPI_Scan((PetscMPIInt*)&roots,(PetscMPIInt*)&offset,1,MPIU_INT,MPI_SUM,comm); CHKERRQ(ierr);
   offset -= roots;
   /* Now we are ready to broadcast global subcomm numbers within each subcomm.*/
   /* 

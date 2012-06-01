@@ -72,11 +72,6 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   while (refine--) {
-    if (da->levelup - da->leveldown >= 0) {
-      dd->refine_x = refx[da->levelup - da->leveldown];
-      dd->refine_y = refy[da->levelup - da->leveldown];
-      dd->refine_z = refz[da->levelup - da->leveldown];
-    }
     if (dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
       dd->M = dd->refine_x*dd->M;
     } else {
@@ -93,6 +88,16 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
       dd->P = 1 + dd->refine_z*(dd->P - 1);
     }
     da->levelup++;
+    if (da->levelup - da->leveldown >= 0) {
+      dd->refine_x = refx[da->levelup - da->leveldown];
+      dd->refine_y = refy[da->levelup - da->leveldown];
+      dd->refine_z = refz[da->levelup - da->leveldown];
+    }
+    if (da->levelup - da->leveldown >= 1) {
+      dd->coarsen_x = refx[da->levelup - da->leveldown - 1];
+      dd->coarsen_y = refy[da->levelup - da->leveldown - 1];
+      dd->coarsen_z = refz[da->levelup - da->leveldown - 1];
+    }
   }
   ierr = PetscFree3(refx,refy,refz);CHKERRQ(ierr);
   PetscFunctionReturn(0);

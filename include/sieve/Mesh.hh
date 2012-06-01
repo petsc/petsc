@@ -1878,7 +1878,7 @@ namespace ALE {
       typename real_section_type::value_type v0[2], J[4], invJ[4], detJ;
 
       for(typename label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-        std::cout << "Checking cell " << *c_iter << std::endl;
+        //std::cout << "Checking cell " << *c_iter << std::endl;
         this->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
         double xi   = invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]);
         double eta  = invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]);
@@ -1902,7 +1902,7 @@ namespace ALE {
         const PetscReal *coords    = this->restrictClosure(coordinates, *c_iter);
         PetscInt         crossings = 0;
 
-        std::cout << "Checking cell " << *c_iter << std::endl;
+        //std::cout << "Checking cell " << *c_iter << std::endl;
         for(PetscInt f = 0; f < 4; f++) {
           PetscReal x_i   = coords[faces[2*f+0]*2+0];
           PetscReal y_i   = coords[faces[2*f+0]*2+1];
@@ -1959,7 +1959,7 @@ namespace ALE {
         const PetscReal *coords = this->restrictClosure(coordinates, *c_iter);
         PetscBool        found  = PETSC_TRUE;
 
-        std::cout << "Checking cell " << *c_iter << std::endl;
+        //std::cout << "Checking cell " << *c_iter << std::endl;
         for(PetscInt f = 0; f < 6; f++) {
           /* Check the point is under plane */
           /*   Get face normal */

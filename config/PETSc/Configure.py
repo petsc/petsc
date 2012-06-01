@@ -414,6 +414,8 @@ class Configure(config.base.Configure):
         cmakeset(fd,'PETSC_HAVE_FORTRAN')
         if self.compilers.fortranIsF90:
           cmakeset(fd,'PETSC_USING_F90')
+        if self.compilers.fortranIsF2003:
+          cmakeset(fd,'PETSC_USING_F2003')
       if self.sharedlibraries.useShared:
         cmakeset(fd,'BUILD_SHARED_LIBS')
     def writeBuildFlags(fd):
@@ -475,7 +477,7 @@ class Configure(config.base.Configure):
       if self.cmakeboot_success:
         if self.framework.argDB['with-cuda']: # Our CMake build does not support CUDA at this time
           self.framework.logPrint('CMake configured successfully, but could not be used by default because --with-cuda was used\n')
-        elif hasattr(self.compilers, 'FC') and not self.setCompilers.fortranModuleOutputFlag:
+        elif hasattr(self.compilers, 'FC') and self.compilers.fortranIsF90 and not self.setCompilers.fortranModuleOutputFlag:
           self.framework.logPrint('CMake configured successfully, but could not be used by default because of missing fortranModuleOutputFlag\n')
         else:
           self.framework.logPrint('CMake configured successfully, using as default build\n')

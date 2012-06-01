@@ -137,7 +137,7 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, Pets
   ctx->n = 0;
   for(p = 0; p < N; ++p) {
     if (globalProcs[p] == size) {
-      SETERRQ4(comm, PETSC_ERR_PLIB, "Point %d: %g %g %g not located in mesh", p, globalPoints[p*ctx->dim+0], ctx->dim > 1 ? globalPoints[p*ctx->dim+0] : 0.0, ctx->dim > 2 ? globalPoints[p*ctx->dim+0] : 0.0);
+      SETERRQ4(comm, PETSC_ERR_PLIB, "Point %d: %g %g %g not located in mesh", p, globalPoints[p*ctx->dim+0], ctx->dim > 1 ? globalPoints[p*ctx->dim+1] : 0.0, ctx->dim > 2 ? globalPoints[p*ctx->dim+2] : 0.0);
     } else if (globalProcs[p] == rank) {
       ctx->n++;
     }

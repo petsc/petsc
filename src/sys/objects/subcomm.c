@@ -3,6 +3,7 @@
      Provides utility routines for split MPI communicator.
 */
 #include <petscsys.h>    /*I   "petscsys.h"    I*/
+#include <petsc-private/threadcommimpl.h> /* Petsc_ThreadComm_keyval */
 
 extern PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm);
 extern PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm);
@@ -208,6 +209,17 @@ PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
   ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
   psubcomm->color     = color;
+
+#if defined(PETSC_THREADCOMM_ACTIVE)
+  {
+    PetscThreadComm tcomm;
+    ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
+    ierr = MPI_Attr_put(psubcomm->dupparent,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
+    tcomm->refct++;
+    ierr = MPI_Attr_put(psubcomm->comm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
+    tcomm->refct++;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -282,6 +294,17 @@ PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
   ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
   psubcomm->color     = color;
+
+#if defined(PETSC_THREADCOMM_ACTIVE)
+  {
+    PetscThreadComm tcomm;
+    ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
+    ierr = MPI_Attr_put(psubcomm->dupparent,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
+    tcomm->refct++;
+    ierr = MPI_Attr_put(psubcomm->comm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
+    tcomm->refct++;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 

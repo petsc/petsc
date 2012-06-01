@@ -2742,6 +2742,13 @@ Booktitle = "Supercomputing '95 Proceedings",
      year="2003"
 )
 
+@book{vandervorst03,
+   author = "Henk A. {van der Vorst}",
+   title = "Iterative Krylov Methods for Large Linear Systems",
+   publisher = "Cambridge Monographs on Applied ahd Computational Mathematics",
+   year = 2003
+}
+
 @BOOK{koniges00,
        EDITOR = "Alice E. Koniges",
        TITLE = "Industrial Strength Parallel Computing",
@@ -4992,6 +4999,15 @@ year =  2010,
 url = "http://extremecomputing.labworks.org/SumReps/Crosscutting-SumRep-PNNL_20168.pdf"
 }
 
+@misc{extreme-scale-solvers-workshop12,
+author= "J. Ang and K. Evans and A. Geist and M. Heroux and P. Hovland and O. Marques and L.C. McInnes and E. Ng and S. Wild",
+title = "Report on the Workshop on Extreme-Scale Solvers: Transitions to Future Architectures", 
+howpublished = "Office of Advanced Scientific Computing Research, U.S. Department of Energy",
+note = "Washington, DC, March 8-9, 2012", 
+url = "http://science.energy.gov/~/media/ascr/pdf/program-documents/docs/reportExtremeScaleSolvers2012.pdf",
+year =  2012
+}
+
 @misc{MonizRosner09,
 author= "{E. Moniz and R. Rosner}",
 title=  "{Workshop on Science Based Nuclear Energy Systems Enabled by Advanced Modeling and Simulation at the Extreme Scale}",
@@ -6557,7 +6573,7 @@ author = "Andreas Klöckner and Nicolas Pinto and Yunsup Lee and Bryan Catanzaro
 }
 
 @article{Ghysels_Ashby_Meerbergen_Vanroose_2012,
- title={Hiding global communication latency in the GMRES algorithm on massively parallel machines},
+ title={Hiding global communication latency in the {GMRES} algorithm on massively parallel machines},
  volume={},
  url={http://www.exascience.com/wp-content/uploads/2012/02/Ghysels_latency_gmres.pdf},
  number={},
@@ -6568,7 +6584,7 @@ author = "Andreas Klöckner and Nicolas Pinto and Yunsup Lee and Bryan Catanzaro
 }
 
 @article{Bai_Hu_Reichel_1994,
- title={A Newton basis GMRES implementation},
+ title={A {Newton} basis {GMRES} implementation},
  volume={14},
  url={},
  number={},
@@ -6579,7 +6595,7 @@ author = "Andreas Klöckner and Nicolas Pinto and Yunsup Lee and Bryan Catanzaro
 }
 
 @article{Chronopoulos_Gear_1989,
- title={s-step iterative methods for symmetric linear systems},
+ title={{S-step} iterative methods for symmetric linear systems},
  volume={25},
  url={},
  number={},
@@ -6590,8 +6606,8 @@ author = "Andreas Klöckner and Nicolas Pinto and Yunsup Lee and Bryan Catanzaro
 }
 
 @article{Sturler_Vorst_1995,
- title={Reducing the effect of global communication in GMRES(m) and
-CG on parallel distributed memory computers},
+ title={Reducing the effect of global communication in {GMRES(m)} and
+{CG} on parallel distributed memory computers},
  volume={18},
  url={},
  number={},
@@ -6719,4 +6735,27 @@ part I: Theory},
   number    = {2},
   year      = {2011},
   pages     = {217-288},
-  doi       = {10.1137/090771806}}
+  doi       = {10.1137/090771806}
+}
+@inproceedings{MHDY09,
+        Author = {Mohiyuddin, M. and Hoemmen, M. and Demmel, J. and Yelick, K.},
+        Booktitle = {Proceedings of SC09},
+        Organization = {ACM},
+        Title = {Minimizing communication in sparse matrix solvers},
+        doi = {10.1145/1654059.1654096},
+        Year = {2009}
+}
+@inproceedings{vanRosendale83,
+ title={Minimizing inner product data dependencies in conjugate gradient iteration},
+ booktitle={Proc. IEEE Internat. Confer. Parallel Processing},
+ author={J. van Rosendale},
+ year={1983},
+ publisher = "IEEE Computer Society",
+}
+@phdthesis{Vuduc95,
+  title={Quantitative performance modeling of scientific computations and creating locality in numerical algorithms},
+  author={R. Vuduc},
+  journal={Massachusetts Institute of Technology},
+  school={Massachusetts Institute of Technology},
+  year={1995}
+}

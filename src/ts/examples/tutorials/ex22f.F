@@ -151,7 +151,7 @@
       call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,  &
      &     xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       call DMDAGetGhostCorners(da,                                      &
-     &     gxs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,
+     &     gxs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                   &
      &     gxm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       xs = xs + 1
       gxs = gxs + 1
@@ -193,7 +193,6 @@
 
       DM             da
       PetscInt       mx,xs,xe,gxs,gxe
-      Vec            Xloc
       PetscOffset    ixx,ixxdot,iff
       PetscScalar    xx(0:1),xxdot(0:1),ff(0:1)
 
@@ -394,7 +393,6 @@
 #include <finclude/petscts.h>
 #include <finclude/petscdmda.h>
       TS ts
-      PetscReal t
       Vec X
       PetscReal user(6)
       PetscErrorCode ierr
