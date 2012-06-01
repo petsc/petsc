@@ -546,7 +546,7 @@ class Configure(config.base.Configure):
 
   def configureFeatureTestMacros(self):
     '''Checks if certain feature test macros are support'''
-    if self.checkCompile('#define _POSIX_C_SOURCE 200112L\n#include <stdlib.h>',''):
+    if self.checkCompile('#define _POSIX_C_SOURCE 200112L\n#include <sysctl.h>',''):
        self.addDefine('_POSIX_C_SOURCE_200112L', '1')
     if self.checkCompile('#define _BSD_SOURCE\n#include<stdlib.h>',''):
        self.addDefine('_BSD_SOURCE', '1')
