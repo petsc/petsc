@@ -14,7 +14,7 @@ static PetscBool PetscPThreadCommInitializeCalled = PETSC_FALSE;
 
 const char *const PetscPThreadCommSynchronizationTypes[] = {"LOCKFREE","PetscPThreadCommSynchronizationType","PTHREADSYNC_",0};
 const char *const PetscPThreadCommAffinityPolicyTypes[] = {"ALL","ONECORE","NONE","PetscPThreadCommAffinityPolicyType","PTHREADAFFPOLICY_",0};
-const char *const PetscPThreadCommPoolSparkTypes[] = {"LEADER","CHAIN","PetscPThreadCommPoolSparkType","PTHREADPOOLSPARK_",0};
+const char *const PetscPThreadCommPoolSparkTypes[] = {"SELF","PetscPThreadCommPoolSparkType","PTHREADPOOLSPARK_",0};
 
 static PetscInt ptcommcrtct = 0; /* PThread communicator creation count. Incremented whenever a pthread
                                     communicator is created and decremented when it is destroyed. On the
@@ -77,9 +77,6 @@ PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
     ierr = PetscFree(ptcomm->tid);CHKERRQ(ierr);
   }
   ierr = PetscFree(ptcomm->granks);CHKERRQ(ierr);
-  if(ptcomm->spark == PTHREADPOOLSPARK_CHAIN) {
-    ierr = PetscFree(ptcomm->ngranks);CHKERRQ(ierr);
-  }
   ierr = PetscFree(ptcomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -101,7 +98,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
   ptcomm->nthreads = 0;
   ptcomm->sync = PTHREADSYNC_LOCKFREE;
   ptcomm->aff = PTHREADAFFPOLICY_ONECORE;
-  ptcomm->spark = PTHREADPOOLSPARK_LEADER;
+  ptcomm->spark = PTHREADPOOLSPARK_SELF;
   ptcomm->ismainworker = PETSC_TRUE;
   ptcomm->synchronizeafter = PETSC_TRUE;
   tcomm->ops->destroy = PetscThreadCommDestroy_PThread;
@@ -158,12 +155,6 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
       else tcomm->leader = ptcomm->granks[0];
     }
   
-    if(ptcomm->spark == PTHREADPOOLSPARK_CHAIN) {
-      ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&ptcomm->ngranks);CHKERRQ(ierr);
-      for(i=ptcomm->thread_num_start;i < tcomm->nworkThreads-1;i++) ptcomm->ngranks[i] = ptcomm->granks[i+1];
-      ptcomm->ngranks[tcomm->nworkThreads-1] = -1;
-    }
-
     /* Create array holding pthread ids */
     ierr = PetscMalloc(tcomm->nworkThreads*sizeof(pthread_t),&ptcomm->tid);CHKERRQ(ierr);
 

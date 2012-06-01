@@ -26,7 +26,7 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 #define PETSC_KERNEL_NARGS_MAX 10
 
 /* Max. number of kernels */
-#define PETSC_KERNELS_MAX 10
+#define PETSC_KERNELS_MAX 32
 
 /* Reduction status of threads */
 #define THREADCOMM_THREAD_WAITING_FOR_NEWRED 0
@@ -35,6 +35,12 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 #define THREADCOMM_REDUCTION_NONE           -1
 #define THREADCOMM_REDUCTION_NEW             0
 #define THREADCOMM_REDUCTION_COMPLETE        1
+
+/* Job status for threads */
+#define THREAD_JOB_NONE        0
+#define THREAD_JOB_POSTED      1
+#define THREAD_JOB_RECIEVED    2
+#define THREAD_JOB_COMPLETED   0
 
 #define PetscReadOnce(type,val) (*(volatile type *)&val)
 
@@ -55,13 +61,14 @@ struct  _p_PetscThreadCommJobCtx{
   PetscThreadKernel pfunc;                         /* Kernel function */
   void              *args[PETSC_KERNEL_NARGS_MAX]; /* Array of void* to hold the arguments */
   PetscScalar       scalars[3];                    /* Array to hold three scalar values */
+  PetscInt          *job_status;                   /* Thread job status */
 };
 
 /* Structure to manage job queue */
 typedef struct _p_PetscThreadCommJobQueue *PetscThreadCommJobQueue;
 struct _p_PetscThreadCommJobQueue{
-  PetscInt ctr;                                  /* job counter */
-  PetscThreadCommJobCtx jobs[PETSC_KERNELS_MAX]; /* queue of jobs */
+  PetscInt ctr;                                         /* job counter */
+  PetscThreadCommJobCtx jobs[PETSC_KERNELS_MAX];        /* queue of jobs */
 };
 
 extern PetscThreadCommJobQueue PetscJobQueue;
@@ -85,7 +92,8 @@ struct _p_PetscThreadComm{
   PetscInt                leader;       /* Rank of the leader thread. This thread manages
                                            the synchronization for collective operatons like reductions.
 					*/
-  PetscThreadCommRedCtx   red;      /* Reduction context */
+  PetscThreadCommRedCtx   red;          /* Reduction context */
+  PetscInt                job_ctr;      /* which job is this threadcomm running in the job queue */
 };
 
 /* register thread communicator models */

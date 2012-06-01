@@ -29,7 +29,7 @@ $ PTHREADAFFPOLICY_NONE    - No set affinity policy. OS decides thread schedulin
 typedef enum {PTHREADAFFPOLICY_ALL,PTHREADAFFPOLICY_ONECORE,PTHREADAFFPOLICY_NONE} PetscPThreadCommAffinityPolicyType;
 extern const char *const PetscPTheadCommAffinityPolicyTypes[];
 
-typedef enum {PTHREADPOOLSPARK_LEADER,PTHREADPOOLSPARK_CHAIN} PetscPThreadCommPoolSparkType;
+typedef enum {PTHREADPOOLSPARK_SELF} PetscPThreadCommPoolSparkType;
 extern const char *const PetscPThreadCommPoolSparkTypes[];
 
 /*
@@ -48,8 +48,6 @@ struct _p_PetscThreadComm_PThread{
                                                 These ranks are with respect to the first initialized thread pool */
   PetscInt    thread_num_start;              /* index for the first created thread (= 1 if the main thread is a worker
                                                 else 0) */
-  PetscInt    *ngranks;                      /* Stores the rank of the next thread to be sparked by this thread 
-						Only used for CHAIN PoolSpark type */
   PetscPThreadCommSynchronizationType sync;   /* Synchronization type */
   PetscPThreadCommAffinityPolicyType  aff;    /* affinity policy */
   PetscPThreadCommPoolSparkType       spark;  /* Type for sparking threads */

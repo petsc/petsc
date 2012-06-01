@@ -35,6 +35,7 @@ PetscErrorCode PetscThreadCommRunKernel_OpenMP(MPI_Comm comm,PetscThreadCommJobC
   {
     trank = omp_get_thread_num();
     PetscRunKernel(trank,job->nargs,job);
+    job->job_status[trank] = THREAD_JOB_COMPLETED;
   }
   PetscFunctionReturn(0);
 }
