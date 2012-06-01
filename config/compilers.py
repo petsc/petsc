@@ -1060,7 +1060,11 @@ class Configure(config.base.Configure):
   def checkFortran2003(self):
     '''Determine whether the Fortran compiler handles F2003'''
     self.pushLanguage('FC')
-    if self.checkLink(body = '      use,intrinsic :: iso_c_binding\n      Type(C_Ptr),Dimension(:),Pointer :: CArray'):
+    if self.checkLink(body = '''
+      use,intrinsic :: iso_c_binding
+      Type(C_Ptr),Dimension(:),Pointer :: CArray
+      character(kind=c_char),pointer   :: nullc => null()
+      CArray = c_loc(nullc)'''):
       self.addDefine('USING_F2003', 1)
       self.fortranIsF2003 = 1
       self.logPrint('Fortran compiler supports F2003')
