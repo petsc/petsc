@@ -52,7 +52,12 @@ PetscErrorCode PetscThreadCommInitializePackage(const char *path)
 
   PetscFunctionBegin;
   if(PetscThreadCommPackageInitialized) PetscFunctionReturn(0);
+  ierr = PetscLogEventRegister("ThreadCommInitialize", 0, &ThreadComm_Init);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ThreadCommRunKernel",  0, &ThreadComm_RunKernel);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ThreadCommBarrier",    0, &ThreadComm_Barrier);CHKERRQ(ierr);
+  PetscLogEventBegin(ThreadComm_Init,0,0,0,0);
   ierr = PetscThreadCommInitialize();CHKERRQ(ierr);
+  PetscLogEventEnd(ThreadComm_Init,0,0,0,0);
   PetscThreadCommPackageInitialized = PETSC_TRUE;
   ierr = PetscRegisterFinalize(PetscThreadCommFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -108,4 +108,6 @@ PETSC_EXTERN PetscErrorCode PetscThreadCommRegisterAll(const char path[]);
 PETSC_EXTERN PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm,PetscThreadCommRedCtx*);
 PETSC_EXTERN PetscErrorCode PetscThreadCommReductionDestroy(PetscThreadCommRedCtx);
 PETSC_EXTERN PetscErrorCode PetscRunKernel(PetscInt,PetscInt,PetscThreadCommJobCtx);
+
+PETSC_EXTERN PetscLogEvent ThreadComm_Init, ThreadComm_RunKernel, ThreadComm_Barrier;
 #endif

@@ -8,6 +8,9 @@ PetscMPIInt Petsc_ThreadComm_keyval         = MPI_KEYVAL_INVALID;
 
 PetscThreadCommJobQueue PetscJobQueue=PETSC_NULL;
 
+/* Logging support */
+PetscLogEvent ThreadComm_Init, ThreadComm_RunKernel, ThreadComm_Barrier;
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetNCores"
 /*@
@@ -436,10 +439,12 @@ PetscErrorCode PetscThreadCommBarrier(MPI_Comm comm)
   PetscThreadComm tcomm=0;
 
   PetscFunctionBegin;
+  PetscLogEventBegin(ThreadComm_Barrier,0,0,0,0);
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
   if(tcomm->ops->barrier) {
     (*tcomm->ops->barrier)(tcomm);
   }
+  PetscLogEventEnd(ThreadComm_Barrier,0,0,0,0);
   PetscFunctionReturn(0);
 }
 
@@ -574,6 +579,7 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
 
   PetscFunctionBegin;
   if(nargs > PETSC_KERNEL_NARGS_MAX) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Requested %D input arguments for kernel, max. limit %D",nargs,PETSC_KERNEL_NARGS_MAX);
+  PetscLogEventBegin(ThreadComm_RunKernel,0,0,0,0);
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
   job = PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   job->tcomm = tcomm;
@@ -592,6 +598,7 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
   }
   PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%PETSC_KERNELS_MAX; /* Increment the queue ctr to point to the next available slot */
   ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
+  PetscLogEventEnd(ThreadComm_RunKernel,0,0,0,0);
   PetscFunctionReturn(0);
 }
 
