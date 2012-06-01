@@ -147,7 +147,7 @@ int main(int argc,char **argv)
  */
 PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
 {
-  PETSC_UNUSED AppCtx *user=(AppCtx*)ptr;
+  /* PETSC_UNUSED AppCtx *user=(AppCtx*)ptr; */
   DM             da;
   PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
