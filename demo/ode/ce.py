@@ -7,7 +7,7 @@ from petsc4py import PETSc
 from math import sin, cos, exp
 
 class CE(object):
-    n = 3
+    n = 1
     comm = PETSc.COMM_SELF
     def __init__(self, lambda_=1.0):
         self.lambda_ = lambda_
