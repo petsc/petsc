@@ -870,6 +870,16 @@ cdef class Mat(Object):
         if R is not None: vecr = R.vec
         CHKERR( MatDiagonalScale(self.mat, vecl, vecr) )
 
+    def invertBlockDiagonal(self):
+        cdef PetscInt bs = 0, m = 0
+        cdef const_PetscScalar *cibdiag = NULL
+        CHKERR( MatGetBlockSize(self.mat, &bs) )
+        CHKERR( MatGetLocalSize(self.mat, &m, NULL) )
+        CHKERR( MatInvertBlockDiagonal(self.mat, &cibdiag) )
+        cdef object ibdiag = None
+        ibdiag = array_s(m*bs, cibdiag)
+        return ibdiag.reshape(m//bs, bs, bs).transpose(0, 2, 1)
+
     # matrix-vector product
 
     def setNullSpace(self, NullSpace nsp not None):

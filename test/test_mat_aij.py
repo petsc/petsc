@@ -177,6 +177,16 @@ class BaseTestMatAnyAIJ(object):
         self.assertEqual(self.A.getLocalSize(), B.getSize())
         B.destroy()
 
+    def testInvertBlockDiagonal(self):
+        self._preallocate()
+        self._set_values_ijv()
+        self.A.assemble()
+        self.A.shift(1000)      # Make nonsingular
+        ibdiag = self.A.invertBlockDiagonal()
+        bs = self.A.getBlockSize()
+        m, _ = self.A.getLocalSize()
+        self.assertEqual(ibdiag.shape, (m//bs, bs, bs))
+
     def testGetSubMatrix(self):
         if 'baij' in self.A.getType(): return # XXX
         self._preallocate()
