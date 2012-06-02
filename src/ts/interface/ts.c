@@ -92,9 +92,9 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     opt = ts->exact_final_time == PETSC_DECIDE ? PETSC_FALSE : (PetscBool)ts->exact_final_time;
     ierr = PetscOptionsBool("-ts_exact_final_time","Interpolate output to stop exactly at the final time","TSSetExactFinalTime",opt,&opt,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSSetExactFinalTime(ts,opt);CHKERRQ(ierr);}
-    ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","",ts->max_snes_failures,&ts->max_snes_failures,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections","",ts->max_reject,&ts->max_reject,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ts_error_if_step_failed","Error if no step succeeds","",ts->errorifstepfailed,&ts->errorifstepfailed,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","TSSetMaxSNESFailures",ts->max_snes_failures,&ts->max_snes_failures,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections before step fails","TSSetMaxStepRejections",ts->max_reject,&ts->max_reject,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_error_if_step_fails","Error if no step succeeds","TSSetErrorIfStepFails",ts->errorifstepfailed,&ts->errorifstepfailed,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_rtol","Relative tolerance for local truncation error","TSSetTolerances",ts->rtol,&ts->rtol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_atol","Absolute tolerance for local truncation error","TSSetTolerances",ts->atol,&ts->atol,PETSC_NULL);CHKERRQ(ierr);
 
@@ -1827,7 +1827,11 @@ PetscErrorCode  TSStep(TS ts)
   ts->time_step_prev = ts->ptime - ptime_prev;
 
   if (ts->reason < 0) {
-    if (ts->errorifstepfailed) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
+    if (ts->errorifstepfailed) {
+      if (ts->reason == TS_DIVERGED_NONLINEAR_SOLVE) {
+        SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery",TSConvergedReasons[ts->reason]);
+      } else SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
+    }
   } else if (!ts->reason) {
     if (ts->steps >= ts->max_steps)
       ts->reason = TS_CONVERGED_ITS;
@@ -2836,6 +2840,158 @@ PetscErrorCode TSGetLinearSolveIterations(TS ts,PetscInt *lits)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidIntPointer(lits,2);
   *lits = ts->linear_its;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetStepRejections"
+/*@
+   TSGetStepRejections - Gets the total number of rejected steps.
+
+   Not Collective
+
+   Input Parameter:
+.  ts - TS context
+
+   Output Parameter:
+.  rejects - number of steps rejected
+
+   Notes:
+   This counter is reset to zero for each successive call to TSSolve().
+
+   Level: intermediate
+
+.keywords: TS, get, number
+
+.seealso:  TSGetNonlinearSolveIterations(), TSGetLinearSolveIterations(), TSSetMaxStepRejections(), TSGetSNESFailures(), TSSetMaxSNESFailures(), TSSetErrorIfStepFails()
+@*/
+PetscErrorCode TSGetStepRejections(TS ts,PetscInt *rejects)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidIntPointer(rejects,2);
+  *rejects = ts->reject;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetSNESFailures"
+/*@
+   TSGetSNESFailures - Gets the total number of failed SNES solves
+
+   Not Collective
+
+   Input Parameter:
+.  ts - TS context
+
+   Output Parameter:
+.  fails - number of failed nonlinear solves
+
+   Notes:
+   This counter is reset to zero for each successive call to TSSolve().
+
+   Level: intermediate
+
+.keywords: TS, get, number
+
+.seealso:  TSGetNonlinearSolveIterations(), TSGetLinearSolveIterations(), TSSetMaxStepRejections(), TSGetStepRejections(), TSSetMaxSNESFailures()
+@*/
+PetscErrorCode TSGetSNESFailures(TS ts,PetscInt *fails)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidIntPointer(fails,2);
+  *fails = ts->num_snes_failures;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetMaxStepRejections"
+/*@
+   TSSetMaxStepRejections - Sets the maximum number of step rejections before a step fails
+
+   Not Collective
+
+   Input Parameter:
++  ts - TS context
+-  rejects - maximum number of rejected steps, pass -1 for unlimited
+
+   Notes:
+   The counter is reset to zero for each step
+
+   Options Database Key:
+ .  -ts_max_reject - Maximum number of step rejections before a step fails
+
+   Level: intermediate
+
+.keywords: TS, set, maximum, number
+
+.seealso:  TSGetNonlinearSolveIterations(), TSGetLinearSolveIterations(), TSSetMaxSNESFailures(), TSGetStepRejections(), TSGetSNESFailures(), TSSetErrorIfStepFails(), TSGetConvergedReason()
+@*/
+PetscErrorCode TSSetMaxStepRejections(TS ts,PetscInt rejects)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->max_reject = rejects;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetMaxSNESFailures"
+/*@
+   TSSetMaxSNESFailures - Sets the maximum number of failed SNES solves
+
+   Not Collective
+
+   Input Parameter:
++  ts - TS context
+-  fails - maximum number of failed nonlinear solves, pass -1 for unlimited
+
+   Notes:
+   The counter is reset to zero for each successive call to TSSolve().
+
+   Options Database Key:
+ .  -ts_max_snes_failures - Maximum number of nonlinear solve failures
+
+   Level: intermediate
+
+.keywords: TS, set, maximum, number
+
+.seealso:  TSGetNonlinearSolveIterations(), TSGetLinearSolveIterations(), TSSetMaxStepRejections(), TSGetStepRejections(), TSGetSNESFailures(), SNESGetConvergedReason(), TSGetConvergedReason()
+@*/
+PetscErrorCode TSSetMaxSNESFailures(TS ts,PetscInt fails)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->max_snes_failures = fails;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetErrorIfStepFails()"
+/*@
+   TSSetErrorIfStepFails - Error if no step succeeds
+
+   Not Collective
+
+   Input Parameter:
++  ts - TS context
+-  err - PETSC_TRUE to error if no step succeeds, PETSC_FALSE to return without failure
+
+   Options Database Key:
+ .  -ts_error_if_step_fails - Error if no step succeeds
+
+   Level: intermediate
+
+.keywords: TS, set, error
+
+.seealso:  TSGetNonlinearSolveIterations(), TSGetLinearSolveIterations(), TSSetMaxStepRejections(), TSGetStepRejections(), TSGetSNESFailures(), TSSetErrorIfStepFails(), TSGetConvergedReason()
+@*/
+PetscErrorCode TSSetErrorIfStepFails(TS ts,PetscBool err)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->errorifstepfailed = err;
   PetscFunctionReturn(0);
 }
 

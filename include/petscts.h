@@ -152,6 +152,11 @@ PETSC_EXTERN PetscErrorCode TSSolve(TS,Vec,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSGetConvergedReason(TS,TSConvergedReason*);
 PETSC_EXTERN PetscErrorCode TSGetNonlinearSolveIterations(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSGetLinearSolveIterations(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSGetStepRejections(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSSetMaxStepRejections(TS,PetscInt);
+PETSC_EXTERN PetscErrorCode TSGetSNESFailures(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSSetMaxSNESFailures(TS,PetscInt);
+PETSC_EXTERN PetscErrorCode TSSetErrorIfStepFails(TS,PetscBool);
 
 PETSC_EXTERN PetscErrorCode TSSetInitialTimeStep(TS,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetTimeStep(TS,PetscReal*);
