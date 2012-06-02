@@ -9133,7 +9133,7 @@ PetscErrorCode  MatFindZeroDiagonals(Mat mat,IS *is)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatInvertBlockDiagonal"
-/*@
+/*@C
   MatInvertBlockDiagonal - Inverts the block diagonal entries.
 
   Collective on Mat
@@ -9144,9 +9144,12 @@ PetscErrorCode  MatFindZeroDiagonals(Mat mat,IS *is)
   Output Parameters:
 . values - the block inverses in column major order (FORTRAN-like)
 
+   Note:
+   This routine is not available from Fortran.
+
   Level: advanced
 @*/
-PetscErrorCode  MatInvertBlockDiagonal(Mat mat,PetscScalar **values)
+PetscErrorCode MatInvertBlockDiagonal(Mat mat,const PetscScalar **values)
 {
   PetscErrorCode ierr;
 

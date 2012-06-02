@@ -1137,6 +1137,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
     (*dmf)->ctx       = dm->ctx;
     (*dmf)->leveldown = dm->leveldown;
     (*dmf)->levelup   = dm->levelup + 1;
+    ierr = DMSetMatType(*dmf,dm->mattype);CHKERRQ(ierr);
     for (link=dm->refinehook; link; link=link->next) {
       if (link->refinehook) {ierr = (*link->refinehook)(dm,*dmf,link->ctx);CHKERRQ(ierr);}
     }
@@ -1524,6 +1525,7 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   (*dmc)->ctx       = dm->ctx;
   (*dmc)->levelup   = dm->levelup;
   (*dmc)->leveldown = dm->leveldown + 1;
+  ierr = DMSetMatType(*dmc,dm->mattype);CHKERRQ(ierr);
   for (link=dm->coarsenhook; link; link=link->next) {
     if (link->coarsenhook) {ierr = (*link->coarsenhook)(dm,*dmc,link->ctx);CHKERRQ(ierr);}
   }

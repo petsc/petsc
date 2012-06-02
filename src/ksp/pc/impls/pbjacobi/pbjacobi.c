@@ -11,7 +11,7 @@
    Private context (data structure) for the PBJacobi preconditioner.  
 */
 typedef struct {
-  MatScalar   *diag;
+  const MatScalar *diag;
   PetscInt    bs,mbs;
 } PC_PBJacobi;
 

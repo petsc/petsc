@@ -10,7 +10,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatInvertBlockDiagonal_SeqBAIJ"
-PetscErrorCode  MatInvertBlockDiagonal_SeqBAIJ(Mat A,PetscScalar **values)
+PetscErrorCode  MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*) A->data;
   PetscErrorCode ierr;
