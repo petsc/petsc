@@ -189,9 +189,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
     for (i=0; i<size-1; i++) {
       if (rank == i) {
         fd = fopen(filename,"w");
-        if (!fd) {
-          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
-        }
+        if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
         err = fclose(fd);
         if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
       }
@@ -214,9 +212,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
       if (sum == size) {
         *shared = PETSC_TRUE;
         break;
-      } else if (sum != 1) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share /tmp ");
-      }
+      } else if (sum != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share /tmp ");
     }
     *tagvalp = (int)*shared;
     ierr = PetscInfo2(0,"processors %s %s\n",(*shared) ? "share":"do NOT share",(iflg ? tmpname:"/tmp"));CHKERRQ(ierr);
@@ -337,9 +333,7 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
       if (sum == size) {
         *shared = PETSC_TRUE;
         break;
-      } else if (sum != 1) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share working directory");
-      }
+      } else if (sum != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share working directory");
     }
     *tagvalp = (int)*shared;
   } else {
@@ -416,9 +410,7 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
     ierr = PetscTestFile(urlget,'r',&exists);CHKERRQ(ierr);
     if (!exists) {
       ierr = PetscTestFile("urlget",'r',&exists);CHKERRQ(ierr);
-      if (!exists) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot locate PETSc script urlget in %s or current directory",urlget);
-      }
+      if (!exists) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot locate PETSc script urlget in %s or current directory",urlget);
       ierr = PetscStrcpy(urlget,"urlget");CHKERRQ(ierr);
     }
     ierr = PetscStrcat(urlget," ");CHKERRQ(ierr);
@@ -438,9 +430,7 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
 #else
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
-    if (!fgets(buf,1024,fp)) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No output from ${PETSC_DIR}/bin/urlget in getting file %s",libname);
-    }
+    if (!fgets(buf,1024,fp)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No output from ${PETSC_DIR}/bin/urlget in getting file %s",libname);
     ierr = PetscInfo1(0,"Message back from urlget: %s\n",buf);CHKERRQ(ierr);
 
     ierr = PetscStrncmp(buf,"Error",5,&flg1);CHKERRQ(ierr);
