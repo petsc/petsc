@@ -2735,7 +2735,7 @@ extern PetscErrorCode  MatFDColoringApply_BAIJ(Mat,MatFDColoring,Vec,MatStructur
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatInvertBlockDiagonal_MPIBAIJ"
-PetscErrorCode  MatInvertBlockDiagonal_MPIBAIJ(Mat A,PetscScalar **values)
+PetscErrorCode  MatInvertBlockDiagonal_MPIBAIJ(Mat A,const PetscScalar **values)
 {
   Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*) A->data;
   PetscErrorCode ierr;
