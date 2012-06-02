@@ -38,10 +38,10 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Mode must be one of r, w, or x");
 #if defined(PETSC_HAVE_ACCESS)
   if (!access(fname, m)) { 
-    ierr = PetscInfo1(PETSC_NULL,"System call access() succeeded on file %s\n",fname);
+    ierr = PetscInfo1(PETSC_NULL,"System call access() succeeded on file %s\n",fname);CHKERRQ(ierr);
     *flg = PETSC_TRUE;
   } else {
-    ierr = PetscInfo1(PETSC_NULL,"System call access() failed on file %s\n",fname);
+    ierr = PetscInfo1(PETSC_NULL,"System call access() failed on file %s\n",fname);CHKERRQ(ierr);
     *flg = PETSC_FALSE;
   }
 #else
