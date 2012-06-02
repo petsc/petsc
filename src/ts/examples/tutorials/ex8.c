@@ -25,6 +25,7 @@ struct _Problem {
   MPI_Comm comm;
   PetscReal final_time;
   PetscInt n;
+  PetscBool hasexact;
   void *data;
 };
 
@@ -215,6 +216,7 @@ static PetscErrorCode CECreate(Problem p)
   p->solution   = &CESolution;
   p->final_time = 10;
   p->n          = 1;
+  p->hasexact   = PETSC_TRUE;
 
   ce->lambda = 10;
   ierr = PetscOptionsBegin(p->comm,PETSC_NULL,"CE options","");CHKERRQ(ierr);
@@ -222,6 +224,95 @@ static PetscErrorCode CECreate(Problem p)
     ierr = PetscOptionsReal("-problem_ce_lambda","Parameter controlling stiffness: xdot + lambda*(x - cos(t))","",ce->lambda,&ce->lambda,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+*  Stiff 3-variable oscillatory system from chemical reactions. problem OREGO in Hairer&Wanner
+*/
+#undef __FUNCT__
+#define __FUNCT__ "OregoFunction"
+static PetscErrorCode OregoFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscScalar *x,*xdot,*f;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  f[0] = xdot[0] - 77.27*(x[1] + x[0]*(1. - 8.375e-6*x[0] - x[1]));
+  f[1] = xdot[1] - 1/77.27*(x[2] - (1. + x[0])*x[1]);
+  f[2] = xdot[2] - 0.161*(x[0] - x[2]);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "OregoJacobian"
+static PetscErrorCode OregoJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscInt rowcol[] = {0,1,2};
+  PetscScalar *x,*xdot,J[3][3];
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
+  J[0][0] = a - 77.27*((1. - 8.375e-6*x[0] - x[1]) - 8.375e-6*x[0]);
+  J[0][1] = -77.27*(1. - x[0]);
+  J[0][2] = 0;
+  J[1][0] = 1./77.27*x[1];
+  J[1][1] = a + 1./77.27*(1. + x[0]);
+  J[1][2] = -1./77.27;
+  J[2][0] = -0.161;
+  J[2][1] = 0;
+  J[2][2] = a + 0.161;
+  ierr = MatSetValues(*B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*A != *B) {
+    ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  *flag = SAME_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "OregoSolution"
+static PetscErrorCode OregoSolution(PetscReal t,Vec X,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscScalar *x;
+
+  PetscFunctionBegin;
+  if (t != 0) SETERRQ(PETSC_COMM_SELF,1,"not implemented");
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  x[0] = 1;
+  x[1] = 2;
+  x[2] = 3;
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "OregoCreate"
+static PetscErrorCode OregoCreate(Problem p)
+{
+
+  PetscFunctionBegin;
+  p->destroy    = 0;
+  p->function   = &OregoFunction;
+  p->jacobian   = &OregoJacobian;
+  p->solution   = &OregoSolution;
+  p->final_time = 360;
+  p->n          = 3;
   PetscFunctionReturn(0);
 }
 
@@ -268,7 +359,7 @@ int main(int argc,char **argv)
   Mat             A;            /* Jacobian matrix */
   Problem         problem;
   PetscBool       use_monitor;
-  PetscInt        steps,maxsteps = 100;
+  PetscInt        steps,maxsteps = 1000,nonlinits,linits,snesfails,rejects;
   PetscReal       ftime;
   MonitorCtx      mon;
   PetscErrorCode  ierr;
@@ -281,6 +372,7 @@ int main(int argc,char **argv)
   /* Register the available problems */
   ierr = PetscFListAdd(&plist,"rober","",(void(*)(void))&RoberCreate);CHKERRQ(ierr);
   ierr = PetscFListAdd(&plist,"ce",   "",(void(*)(void))&CECreate   );CHKERRQ(ierr);
+  ierr = PetscFListAdd(&plist,"orego","",(void(*)(void))&OregoCreate);CHKERRQ(ierr);
   ierr = PetscStrcpy(pname,"ce");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -326,10 +418,12 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSGL);CHKERRQ(ierr); /* General Linear method, TSTHETA can also solve DAE */
+  ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr); /* Rosenbrock-W */
   ierr = TSSetIFunction(ts,PETSC_NULL,problem->function,problem->data);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,problem->jacobian,problem->data);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxsteps,problem->final_time);CHKERRQ(ierr);
+  ierr = TSSetMaxStepRejections(ts,10);CHKERRQ(ierr);
+  ierr = TSSetMaxSNESFailures(ts,-1);CHKERRQ(ierr); /* unlimited */
   if (use_monitor) {
     ierr = TSMonitorSet(ts,&MonitorError,&mon,PETSC_NULL);CHKERRQ(ierr);
   }
@@ -351,8 +445,12 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,x,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"steps %D, ftime %G\n",steps,ftime);CHKERRQ(ierr);
-  ierr = MonitorError(ts,steps,ftime,x,&mon);CHKERRQ(ierr);
+  ierr = TSGetSNESFailures(ts,&snesfails);CHKERRQ(ierr);
+  ierr = TSGetStepRejections(ts,&rejects);CHKERRQ(ierr);
+  ierr = TSGetNonlinearSolveIterations(ts,&nonlinits);CHKERRQ(ierr);
+  ierr = TSGetLinearSolveIterations(ts,&linits);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"steps %D (%D rejected, %D SNES fails), ftime %G, nonlinits %D, linits %D\n",steps,rejects,snesfails,ftime,nonlinits,linits);CHKERRQ(ierr);
+  if (problem->hasexact) {ierr = MonitorError(ts,steps,ftime,x,&mon);CHKERRQ(ierr);}
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
