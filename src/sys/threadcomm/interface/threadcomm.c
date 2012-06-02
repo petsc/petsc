@@ -597,7 +597,6 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
     job->job_status[i] = THREAD_JOB_POSTED;
   }
   PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%PETSC_KERNELS_MAX; /* Increment the queue ctr to point to the next available slot */
-  PetscJobQueue->kernel_ctr++;
   ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(ThreadComm_RunKernel,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -680,7 +679,6 @@ PetscErrorCode PetscThreadCommInitialize(void)
     for(j=0;j<tcomm->nworkThreads;j++) PetscJobQueue->jobs[i]->job_status[j] = THREAD_JOB_NONE;
   }
   PetscJobQueue->ctr = 0;
-  PetscJobQueue->kernel_ctr = 0;
   tcomm->job_ctr     = 0;
 
   ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&icomm,PETSC_NULL);CHKERRQ(ierr);

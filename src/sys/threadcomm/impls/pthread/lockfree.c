@@ -51,6 +51,7 @@ void SparkThreads_LockFree(PetscInt myrank,PetscThreadComm tcomm,PetscThreadComm
 void* PetscPThreadCommFunc_LockFree(void* arg)
 {
   PetscInt              my_job_counter = 0,my_kernel_ctr=0;
+  PetscInt              kernel_ctr,n=0;
   PetscThreadCommJobCtx job;
 
 #if defined(PETSC_PTHREAD_LOCAL)
@@ -68,7 +69,8 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
 
   /* Spin loop */
   while(PetscReadOnce(int,job_lockfree.my_job_status[PetscPThreadRank]) != THREAD_TERMINATE) {
-    if(PetscReadOnce(int,PetscJobQueue->kernel_ctr) != my_kernel_ctr) {
+    kernel_ctr = PetscReadOnce(int,PetscJobQueue->ctr) + n*PETSC_KERNELS_MAX;
+    if(kernel_ctr != my_kernel_ctr) {
       job = PetscJobQueue->jobs[my_job_counter];
       /* Spark the thread pool */
       SparkThreads_LockFree(PetscPThreadRank,job->tcomm,job);
@@ -79,6 +81,7 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
 	job->job_status[PetscPThreadRank] = THREAD_JOB_COMPLETED;
       } 
       my_job_counter = (my_job_counter+1)%PETSC_KERNELS_MAX;
+      if(!my_job_counter) n++;
       my_kernel_ctr++;
     }
   }
