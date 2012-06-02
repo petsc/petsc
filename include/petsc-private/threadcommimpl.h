@@ -68,6 +68,7 @@ struct  _p_PetscThreadCommJobCtx{
 typedef struct _p_PetscThreadCommJobQueue *PetscThreadCommJobQueue;
 struct _p_PetscThreadCommJobQueue{
   PetscInt ctr;                                         /* job counter */
+  PetscInt kernel_ctr;                                  
   PetscThreadCommJobCtx jobs[PETSC_KERNELS_MAX];        /* queue of jobs */
 };
 

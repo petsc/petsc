@@ -81,6 +81,8 @@ PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
   PetscFunctionReturn(0);
 }
 
+/* PetscLogEvent PThreadComm_Init; */
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommCreate_PThread"
@@ -172,8 +174,11 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     sched_setaffinity(0,sizeof(cpu_set_t),&mset);
 #endif
 
+    /*    ierr = PetscLogEventRegister("PThreadCommInitialize", 0, &PThreadComm_Init);CHKERRQ(ierr);
+        PetscLogEventBegin(PThreadComm_Init,0,0,0,0); */
     /* Initialize thread pool */
     ierr = (*ptcomm->initialize)(tcomm);CHKERRQ(ierr);
+    /*    PetscLogEventEnd(PThreadComm_Init,0,0,0,0); */
 
   } else {
     PetscThreadComm          gtcomm;

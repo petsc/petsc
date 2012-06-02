@@ -4,6 +4,7 @@ static char help[] = "Micro-benchmark kernel times.\n\n";
   Include "petscthreadcomm.h" so that we can use the PetscThreadComm interface.
 */
 #include <petscthreadcomm.h>
+#include <petsc-private/threadcommimpl.h>
 #include <petscvec.h>
 #if defined(PETSC_HAVE_OPENMP)
 #  include <omp.h>

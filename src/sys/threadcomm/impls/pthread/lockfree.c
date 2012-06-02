@@ -2,6 +2,7 @@
 
 #define THREAD_TERMINATE      0
 #define THREAD_INITIALIZED    1
+#define THREAD_CREATED        0
 #if defined PETSC_HAVE_MALLOC_H
 #include <malloc.h>
 #endif
@@ -49,7 +50,7 @@ void SparkThreads_LockFree(PetscInt myrank,PetscThreadComm tcomm,PetscThreadComm
 
 void* PetscPThreadCommFunc_LockFree(void* arg)
 {
-  PetscInt              my_job_counter = 0;
+  PetscInt              my_job_counter = 0,my_kernel_ctr=0;
   PetscThreadCommJobCtx job;
 
 #if defined(PETSC_PTHREAD_LOCAL)
@@ -67,7 +68,7 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
 
   /* Spin loop */
   while(PetscReadOnce(int,job_lockfree.my_job_status[PetscPThreadRank]) != THREAD_TERMINATE) {
-    if(PetscReadOnce(int,PetscJobQueue->ctr) != my_job_counter) {
+    if(PetscReadOnce(int,PetscJobQueue->kernel_ctr) != my_kernel_ctr) {
       job = PetscJobQueue->jobs[my_job_counter];
       /* Spark the thread pool */
       SparkThreads_LockFree(PetscPThreadRank,job->tcomm,job);
@@ -78,6 +79,7 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
 	job->job_status[PetscPThreadRank] = THREAD_JOB_COMPLETED;
       } 
       my_job_counter = (my_job_counter+1)%PETSC_KERNELS_MAX;
+      my_kernel_ctr++;
     }
   }
 
@@ -126,6 +128,7 @@ PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm tcomm)
 #endif
   /* Create threads */
   for(i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
+    job_lockfree.my_job_status[i] = THREAD_CREATED;
     ierr = pthread_create(&ptcomm->tid[i],NULL,&PetscPThreadCommFunc_LockFree,&ptcomm->granks[i]);CHKERRQ(ierr);
   }
 
