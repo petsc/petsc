@@ -1,4 +1,4 @@
-#include <../src/sys/threadcomm/impls/pthread/pthreadimpl.h>
+#include <../src/sys/threadcomm/impls/pthread/tcpthreadimpl.h>
 
 #define THREAD_TERMINATE      -1
 #define THREAD_WAITING_FOR_JOB 0
