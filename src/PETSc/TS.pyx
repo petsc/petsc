@@ -14,6 +14,7 @@ class TSType(object):
     GL       = S_(TSGL)
     SSP      = S_(TSSSP)
     ARKIMEX  = S_(TSARKIMEX)
+    ROSW     = S_(TSROSW)
     # aliases
     FE = EULER
     BE = BEULER
