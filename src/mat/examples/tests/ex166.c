@@ -1,22 +1,23 @@
-static char help[] = "Tests MatPermute() in parallel.\n\n";
+static char help[] = "Tests MatPermute() for a square matrix in parallel.\n\n";
+#include <petscmat.h>
 /* Results:
    Sequential:
    - seqaij:   correct permutation
    - seqbaij:  permutation not supported for this MATTYPE
    - seqsbaij: permutation not supported for this MATTYPE
    Parallel:
-   - mpiaij:   incorrect permutation (disable this op for now).
-   - mpibaij:  weird error indicating that it can't handle rectangular matrices (disable this op for now).
-   - mpisbaij: permutation not supported for this MATTYPE
+   - mpiaij:   incorrect permutation (disable this op for now)
+   - seqbaij:  correct permutation, but all manner of memory leaks 
+               (disable this op for now, because it appears broken for nonsquare matrices; see ex151)
+   - seqsbaij: permutation not supported for this MATTYPE
+   
  */
-#include <petscmat.h>
-
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  const struct {PetscInt i,j; PetscScalar v;} entries[] = {{0,3,1.},{1,2,2.},{2,1,3.},{2,5,4.},{3,0,5.},{3,6,6.},{4,1,7.},{4,4,8.}};
-  const PetscInt ixrow[5] = {4,2,1,3,0},ixcol[7] = {5,3,6,1,2,0,4};
+  const struct {PetscInt i,j; PetscScalar v;} entries[] = {{0,3,1.},{1,2,2.},{2,1,3.},{2,4,4.},{3,0,5.},{3,3,6.},{4,1,7.},{4,4,8.}};
+  const PetscInt ixrow[5] = {4,2,1,3,0},ixcol[5] = {3,2,1,4,0};
   Mat            A,B;
   PetscErrorCode ierr;
   PetscInt       i,rstart,rend,cstart,cend;
@@ -28,7 +29,7 @@ int main(int argc,char **argv)
 
   /* ------- Assemble matrix, --------- */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,5,7);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,5,5);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
@@ -42,8 +43,7 @@ int main(int argc,char **argv)
 
   /* ------ Prepare index sets ------ */
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,rend-rstart,ixrow+rstart,PETSC_USE_POINTER,&isrow);CHKERRQ(ierr);
-  /* The column index set must currently be  */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,7,ixcol,PETSC_USE_POINTER,&iscol);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,5,ixcol,PETSC_USE_POINTER,&iscol);CHKERRQ(ierr);
   ierr = ISSetPermutation(isrow);CHKERRQ(ierr);
   ierr = ISSetPermutation(iscol);CHKERRQ(ierr);
 

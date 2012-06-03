@@ -6307,7 +6307,7 @@ PetscErrorCode  MatRestoreArray(Mat mat,PetscScalar *v[])
    Input Parameters:
 +  mat - the matrix
 .  n   - the number of submatrixes to be extracted (on this processor, may be zero)
-.  irow, icol - index sets of rows and columns to extract
+.  irow, icol - index sets of rows and columns to extract (must be sorted)
 -  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
@@ -6317,6 +6317,9 @@ PetscErrorCode  MatRestoreArray(Mat mat,PetscScalar *v[])
    MatGetSubMatrices() can extract ONLY sequential submatrices
    (from both sequential and parallel matrices). Use MatGetSubMatrix()
    to extract a parallel submatrix.
+
+   Currently both row and column indices must be sorted to guarantee 
+   correctness with all matrix types.
 
    When extracting submatrices from a parallel matrix, each processor can
    form a different submatrix by setting the rows and columns of its
