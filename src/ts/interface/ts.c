@@ -3142,25 +3142,56 @@ PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
 
    Level: beginner
 
-.seealso: TS, TSAdapt, TSVecNormWRMS()
+.seealso: TS, TSAdapt, TSVecNormWRMS(), TSGetTolerances()
 @*/
 PetscErrorCode TSSetTolerances(TS ts,PetscReal atol,Vec vatol,PetscReal rtol,Vec vrtol)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (atol != PETSC_DECIDE) ts->atol = atol;
+  if (atol != PETSC_DECIDE && atol != PETSC_DEFAULT) ts->atol = atol;
   if (vatol) {
     ierr = PetscObjectReference((PetscObject)vatol);CHKERRQ(ierr);
     ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
     ts->vatol = vatol;
   }
-  if (rtol != PETSC_DECIDE) ts->rtol = rtol;
+  if (rtol != PETSC_DECIDE && rtol != PETSC_DEFAULT) ts->rtol = rtol;
   if (vrtol) {
     ierr = PetscObjectReference((PetscObject)vrtol);CHKERRQ(ierr);
     ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
     ts->vrtol = vrtol;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetTolerances"
+/*@
+   TSGetTolerances - Get tolerances for local truncation error when using adaptive controller
+
+   Logically Collective
+
+   Input Arguments:
+.  ts - time integration context
+
+   Output Arguments:
++  atol - scalar absolute tolerances, PETSC_NULL to ignore
+.  vatol - vector of absolute tolerances, PETSC_NULL to ignore
+.  rtol - scalar relative tolerances, PETSC_NULL to ignore
+-  vrtol - vector of relative tolerances, PETSC_NULL to ignore
+
+   Level: beginner
+
+.seealso: TS, TSAdapt, TSVecNormWRMS(), TSSetTolerances()
+@*/
+PetscErrorCode TSGetTolerances(TS ts,PetscReal *atol,Vec *vatol,PetscReal *rtol,Vec *vrtol)
+{
+
+  PetscFunctionBegin;
+  if (atol)  *atol  = ts->atol;
+  if (vatol) *vatol = ts->vatol;
+  if (rtol)  *rtol  = ts->rtol;
+  if (vrtol) *vrtol = ts->vrtol;
   PetscFunctionReturn(0);
 }
 
@@ -3198,17 +3229,42 @@ PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
   PetscCheckSameTypeAndComm(X,1,Y,2);
   if (X == Y) SETERRQ(((PetscObject)X)->comm,PETSC_ERR_ARG_IDN,"Y cannot be the TS solution vector");
 
-  /* This is simple to implement, just not done yet */
-  if (ts->vatol || ts->vrtol) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_SUP,"No support for vector scaling yet");
-
   ierr = VecGetSize(X,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
   sum = 0.;
-  for (i=0; i<n; i++) {
-    PetscReal tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(x[i]),PetscAbsScalar(y[i]));
-    sum += PetscSqr(PetscAbsScalar(y[i] - x[i]) / tol);
+  if (ts->vatol && ts->vrtol) {
+    const PetscScalar *atol,*rtol;
+    ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      PetscReal tol = PetscRealPart(atol[i]) + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(x[i]),PetscAbsScalar(y[i]));
+      sum += PetscSqr(PetscAbsScalar(y[i] - x[i]) / tol);
+    }
+    ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+  } else if (ts->vatol) {       /* vector atol, scalar rtol */
+    const PetscScalar *atol;
+    ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      PetscReal tol = PetscRealPart(atol[i]) + ts->rtol * PetscMax(PetscAbsScalar(x[i]),PetscAbsScalar(y[i]));
+      sum += PetscSqr(PetscAbsScalar(y[i] - x[i]) / tol);
+    }
+    ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+  } else if (ts->vrtol) {       /* scalar atol, vector rtol */
+    const PetscScalar *rtol;
+    ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      PetscReal tol = ts->atol + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(x[i]),PetscAbsScalar(y[i]));
+      sum += PetscSqr(PetscAbsScalar(y[i] - x[i]) / tol);
+    }
+    ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+  } else {                      /* scalar atol, scalar rtol */
+    for (i=0; i<n; i++) {
+      PetscReal tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(x[i]),PetscAbsScalar(y[i]));
+      sum += PetscSqr(PetscAbsScalar(y[i] - x[i]) / tol);
+    }
   }
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
