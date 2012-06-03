@@ -192,9 +192,6 @@
       <ul>
         <li>Added DMCreateDecomposition(DM,PetscInt,char*[]*,IS[]*,DM[]*) for use with PCFIELDSPLIT,PCASM,PCGASM</li>
         <li>Added DMCreateDecompositionDM(DM,const char*,DM*) to create a version  of the DM encapsulating a named decomposition; use with DMCreateDecomposition()</li>
-      </ul>
-
-      <ul>
         <li>Added DMRedundant for managing globally coupled degrees of freedom.</li>
         <li>Removed DMCompositeAddArray(), use DMRedundantCreate() and DMCompositeAddDM().</li>
 
@@ -203,11 +200,20 @@
           DMGetColoring() to DMCreateMatrix(), etc for semantic consistency.
         </li>
         <li>The communicator argument to DMRefine() and DMCoarsen() can be MPI_COMM_NULL, but not PETSC_NULL, because the latter may not be the correct type.</li>
+        <li>Added DMCoarsenHookAdd() and DMRefineHookAdd() for shepherding persistent resolution-dependent data between levels.</li>
+        <li>Added DMGetNamedGlobalVector() for storing persistent resolution-dependent data.</li>
+        <li>DMDASNESSetFunctionLocal() and DMDASNESSetJacobianLocal() can be used for convenient local evaluation; these routines will eventually replace DMDASetLocalFunction() and DMDASetLocalJacobian().</li>
       </ul>
 
       <h4>DMMG:</h4>
       <ul>
-        <li>DMMG is now completely removed from PETSc</li>
+        <li>
+          DMMG is now completely removed from PETSc.
+          Equivalent (and better) functionality can now be obtained by calling SNESSetDM() or KSPSetDM().
+          Make sure to avoid resolution-dependent data in the user context.
+          Use SNESGetDM() or KSPGetDM() in the function evaluation context to obtain the grid.
+          DMGetNamedGlobalVector(), DMCoarsenHookAdd(), and DMRefineHookAdd() can be used to manage persistent resolution-dependent data.
+        </li>
       </ul>
 
       <h4>PetscViewer:</h4>
