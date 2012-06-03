@@ -1,5 +1,4 @@
 #include <petscsnes.h>
-#include <../src/snes/impls/vi/viimpl.h>
 #include <petscdmda.h>
 
 static  char help[]= 
@@ -61,7 +60,7 @@ int main(int argc, char **argv)
 
   /* Create distributed array to manage the 2d grid */
   info = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-10,-10,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(info);
-  info = DMDAGetInfo(user.da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(info);
+  info = DMDAGetInfo(user.da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(info);
 
   user.bheight=0.1;
   info = PetscOptionsGetScalar(PETSC_NULL,"-bheight",&user.bheight,&flg); CHKERRQ(info);
