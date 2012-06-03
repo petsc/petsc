@@ -47,7 +47,6 @@ int main(int argc, char **argv)
   Vec             xl,xu;            /* Bounds on the variables */
   SNES            snes;             /* nonlinear solver context */
   Mat             J;                /* Jacobian matrix */
-  PetscInt        N;            /* Number of elements in vector */
   AppCtx          user;             /* user-defined work context */
   PetscBool       flg;
 
@@ -77,13 +76,13 @@ int main(int argc, char **argv)
   info = DMCreateGlobalVector(user.da,&x);CHKERRQ(info);
   info = VecDuplicate(x, &r); CHKERRQ(info);
 
-  N = user.mx*user.my;
   info = DMCreateMatrix(user.da,MATAIJ,&J);CHKERRQ(info);
 
   /* Create nonlinear solver context */
   info = SNESCreate(PETSC_COMM_WORLD,&snes); CHKERRQ(info);
 
   /*  Set function evaluation and Jacobian evaluation  routines */
+  info = SNESSetDM(snes,user.da);CHKERRQ(info);
   info = SNESSetFunction(snes,r,FormGradient,&user);CHKERRQ(info);
   info = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(info);
 
