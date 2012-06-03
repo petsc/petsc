@@ -3229,17 +3229,42 @@ PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
   PetscCheckSameTypeAndComm(X,1,Y,2);
   if (X == Y) SETERRQ(((PetscObject)X)->comm,PETSC_ERR_ARG_IDN,"Y cannot be the TS solution vector");
 
-  /* This is simple to implement, just not done yet */
-  if (ts->vatol || ts->vrtol) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_SUP,"No support for vector scaling yet");
-
   ierr = VecGetSize(X,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
   sum = 0.;
-  for (i=0; i<n; i++) {
-    PetscReal tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(x[i]),PetscAbsScalar(y[i]));
-    sum += PetscSqr(PetscAbsScalar(y[i] - x[i]) / tol);
+  if (ts->vatol && ts->vrtol) {
+    const PetscScalar *atol,*rtol;
+    ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      PetscReal tol = PetscRealPart(atol[i]) + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(x[i]),PetscAbsScalar(y[i]));
+      sum += PetscSqr(PetscAbsScalar(y[i] - x[i]) / tol);
+    }
+    ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+  } else if (ts->vatol) {       /* vector atol, scalar rtol */
+    const PetscScalar *atol;
+    ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      PetscReal tol = PetscRealPart(atol[i]) + ts->rtol * PetscMax(PetscAbsScalar(x[i]),PetscAbsScalar(y[i]));
+      sum += PetscSqr(PetscAbsScalar(y[i] - x[i]) / tol);
+    }
+    ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
+  } else if (ts->vrtol) {       /* scalar atol, vector rtol */
+    const PetscScalar *rtol;
+    ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      PetscReal tol = ts->atol + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(x[i]),PetscAbsScalar(y[i]));
+      sum += PetscSqr(PetscAbsScalar(y[i] - x[i]) / tol);
+    }
+    ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
+  } else {                      /* scalar atol, scalar rtol */
+    for (i=0; i<n; i++) {
+      PetscReal tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(x[i]),PetscAbsScalar(y[i]));
+      sum += PetscSqr(PetscAbsScalar(y[i] - x[i]) / tol);
+    }
   }
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
