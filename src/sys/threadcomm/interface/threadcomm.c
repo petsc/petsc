@@ -614,13 +614,13 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
 PETSC_EXTERN_C PetscMPIInt MPIAPI Petsc_CopyThreadComm(MPI_Comm comm,PetscMPIInt keyval,void *extra_state,void *attr_in,void *attr_out,int *flag)
 {
   PetscErrorCode  ierr;
-  PetscThreadComm tcomm = (PetscThreadComm)attr_out;
+  PetscThreadComm tcomm = (PetscThreadComm)attr_in;
 
   PetscFunctionBegin;
   tcomm->refct++;
   *(void**)attr_out = tcomm;
   *flag = 1;
-  ierr = PetscInfo1(0,"Deleting thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = PetscInfo1(0,"Copying thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(0);
 }
 
