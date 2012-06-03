@@ -1,4 +1,4 @@
-#include <../src/sys/threadcomm/impls/openmp/openmpimpl.h>
+#include <../src/sys/threadcomm/impls/openmp/tcopenmpimpl.h>
 #include <omp.h>
 
 PetscInt PetscThreadCommGetRank_OpenMP(void)

@@ -1,6 +1,6 @@
 
-#ifndef __TCOMMOPENMPIMPLH
-#define __TCOMMOPENMPIMPLH
+#ifndef __TCOPENMPIMPLH
+#define __TCOPENMPIMPLH
 
 #include <petsc-private/threadcommimpl.h>
 EXTERN_C_BEGIN

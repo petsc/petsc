@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = openmp.c
+SOURCEC  = tcopenmp.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = openmp.o
+OBJSC    = tcopenmp.o
 OBJSF    =
 LIBBASE  = libpetscsys
 MANSEC   = PetscThreadComm
