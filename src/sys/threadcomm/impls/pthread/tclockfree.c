@@ -104,7 +104,7 @@ PetscErrorCode PetscThreadCommBarrier_PThread_LockFree(PetscThreadComm tcomm)
   }
   /* Loop till all threads signal that they have done their job */
   while(wait) {
-    for(i=0;i<tcomm->nworkThreads;i++) active_threads += job->job_status[ptcomm->granks[i]];
+    for(i=0;i<tcomm->nworkThreads;i++) active_threads += PetscReadOnce(int,job->job_status[ptcomm->granks[i]]);
     if(active_threads) active_threads = 0;
     else wait=PETSC_FALSE;
   }

@@ -592,7 +592,7 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
   }
   va_end(argptr);
   for(i=0;i<tcomm->nworkThreads;i++) { 
-    while(job->job_status[i] != THREAD_JOB_COMPLETED)
+    while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
       ;
     job->job_status[i] = THREAD_JOB_POSTED;
   }
