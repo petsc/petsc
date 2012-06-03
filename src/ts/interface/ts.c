@@ -3142,25 +3142,56 @@ PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
 
    Level: beginner
 
-.seealso: TS, TSAdapt, TSVecNormWRMS()
+.seealso: TS, TSAdapt, TSVecNormWRMS(), TSGetTolerances()
 @*/
 PetscErrorCode TSSetTolerances(TS ts,PetscReal atol,Vec vatol,PetscReal rtol,Vec vrtol)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (atol != PETSC_DECIDE) ts->atol = atol;
+  if (atol != PETSC_DECIDE && atol != PETSC_DEFAULT) ts->atol = atol;
   if (vatol) {
     ierr = PetscObjectReference((PetscObject)vatol);CHKERRQ(ierr);
     ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
     ts->vatol = vatol;
   }
-  if (rtol != PETSC_DECIDE) ts->rtol = rtol;
+  if (rtol != PETSC_DECIDE && rtol != PETSC_DEFAULT) ts->rtol = rtol;
   if (vrtol) {
     ierr = PetscObjectReference((PetscObject)vrtol);CHKERRQ(ierr);
     ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
     ts->vrtol = vrtol;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetTolerances"
+/*@
+   TSGetTolerances - Get tolerances for local truncation error when using adaptive controller
+
+   Logically Collective
+
+   Input Arguments:
+.  ts - time integration context
+
+   Output Arguments:
++  atol - scalar absolute tolerances, PETSC_NULL to ignore
+.  vatol - vector of absolute tolerances, PETSC_NULL to ignore
+.  rtol - scalar relative tolerances, PETSC_NULL to ignore
+-  vrtol - vector of relative tolerances, PETSC_NULL to ignore
+
+   Level: beginner
+
+.seealso: TS, TSAdapt, TSVecNormWRMS(), TSSetTolerances()
+@*/
+PetscErrorCode TSGetTolerances(TS ts,PetscReal *atol,Vec *vatol,PetscReal *rtol,Vec *vrtol)
+{
+
+  PetscFunctionBegin;
+  if (atol)  *atol  = ts->atol;
+  if (vatol) *vatol = ts->vatol;
+  if (rtol)  *rtol  = ts->rtol;
+  if (vrtol) *vrtol = ts->vrtol;
   PetscFunctionReturn(0);
 }
 
