@@ -54,6 +54,10 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
 
   Output Parameters:
 . tcommp - pointer to the thread communicator
+
+  Level: Intermediate
+
+.seealso: PetscThreadCommCreate(), PetscThreadCommDestroy()
 @*/
 PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
 {
