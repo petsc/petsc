@@ -61,7 +61,7 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     if (snesreason < 0 && !th->adapt) break;
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
-    ts->nonlinear_its += its; ts->linear_its += lits;
+    ts->snes_its += its; ts->ksp_its += lits;
     ierr = PetscInfo3(ts,"step=%D, nonlinear solve iterations=%D, linear solve iterations=%D\n",ts->steps,its,lits);CHKERRQ(ierr);
     /* time step adaptativity */
     if (!th->adapt) break;

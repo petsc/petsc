@@ -192,9 +192,6 @@
       <ul>
         <li>Added DMCreateDecomposition(DM,PetscInt,char*[]*,IS[]*,DM[]*) for use with PCFIELDSPLIT,PCASM,PCGASM</li>
         <li>Added DMCreateDecompositionDM(DM,const char*,DM*) to create a version  of the DM encapsulating a named decomposition; use with DMCreateDecomposition()</li>
-      </ul>
-
-      <ul>
         <li>Added DMRedundant for managing globally coupled degrees of freedom.</li>
         <li>Removed DMCompositeAddArray(), use DMRedundantCreate() and DMCompositeAddDM().</li>
 
@@ -203,11 +200,20 @@
           DMGetColoring() to DMCreateMatrix(), etc for semantic consistency.
         </li>
         <li>The communicator argument to DMRefine() and DMCoarsen() can be MPI_COMM_NULL, but not PETSC_NULL, because the latter may not be the correct type.</li>
+        <li>Added DMCoarsenHookAdd() and DMRefineHookAdd() for shepherding persistent resolution-dependent data between levels.</li>
+        <li>Added DMGetNamedGlobalVector() for storing persistent resolution-dependent data.</li>
+        <li>DMDASNESSetFunctionLocal() and DMDASNESSetJacobianLocal() can be used for convenient local evaluation; these routines will eventually replace DMDASetLocalFunction() and DMDASetLocalJacobian().</li>
       </ul>
 
       <h4>DMMG:</h4>
       <ul>
-        <li>DMMG is now completely removed from PETSc</li>
+        <li>
+          DMMG is now completely removed from PETSc.
+          Equivalent (and better) functionality can now be obtained by calling SNESSetDM() or KSPSetDM().
+          Make sure to avoid resolution-dependent data in the user context.
+          Use SNESGetDM() or KSPGetDM() in the function evaluation context to obtain the grid.
+          DMGetNamedGlobalVector(), DMCoarsenHookAdd(), and DMRefineHookAdd() can be used to manage persistent resolution-dependent data.
+        </li>
       </ul>
 
       <h4>PetscViewer:</h4>
@@ -226,6 +232,11 @@
       <h4><a href="http://www.mcs.anl.gov/petsc/miscellaneous/external.html">ExternalPackages</a>:</h4>
       <ul>
         <li>The Hypre interface was updated to 2.8.0b and now supports 64-bit integers.</li>
+        <li>SuperLU_DIST interface updated to 3.1.</li>
+        <li>SuperLU interface updated to 4.3.</li>
+        <li>Sundials interface updated to 2.5.0.</li>
+        <li>FFTW interface updated to 3.3.2.</li>
+        <li>ParMetis updated to 4.0.2 and split from Metis 5.0.2 which is now separate.</li>
       </ul>
     </div>
 

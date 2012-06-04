@@ -102,8 +102,8 @@ struct _p_TS {
   PetscReal time_step_prev;         /* previous time step  */
   PetscInt  steps;                  /* steps taken so far */
   PetscReal ptime;                  /* time at the start of the current step (stage time is internal if it exists) */
-  PetscInt  linear_its;             /* total number of linear solver iterations */
-  PetscInt  nonlinear_its;          /* total number of nonlinear solver iterations */
+  PetscInt  ksp_its;                /* total number of linear solver iterations */
+  PetscInt  snes_its;               /* total number of nonlinear solver iterations */
 
   PetscInt num_snes_failures;
   PetscInt max_snes_failures;

@@ -648,6 +648,14 @@ ex164: ex164.o chkopts
 ex165: ex165.o chkopts
 	-${CLINKER} -o ex165 ex165.o ${PETSC_MAT_LIB}
 	${RM} ex165.o
+
+ex166: ex166.o chkopts
+	-${CLINKER} -o ex166 ex166.o ${PETSC_MAT_LIB}
+	${RM} ex166.o
+
+ex167: ex167.o chkopts
+	-${CLINKER} -o ex167 ex167.o ${PETSC_MAT_LIB}
+	${RM} ex167.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -1712,14 +1720,14 @@ runex151:
 	-@${MPIEXEC} -n 1 ./ex151  > ex151_1.tmp 2>&1; \
 	   ${DIFF} output/ex151_1.out ex151_1.tmp || echo ${PWD} "\nPossible problem with with ex151, diffs above \n========================================="; \
 	   ${RM} -f ex151_1.tmp
-runex151_2:
-	-@${MPIEXEC} -n 2 ./ex151  > ex151_2.tmp 2>&1; \
-	   ${DIFF} output/ex151_2.out ex151_2.tmp || echo ${PWD} "\nPossible problem with with ex151_2, diffs above \n========================================="; \
-	   ${RM} -f ex151_2.tmp
-runex151_3:
-	-@${MPIEXEC} -n 3 ./ex151 > ex151_3.tmp 2>&1; \
-	   ${DIFF} output/ex151_3.out ex151_3.tmp || echo ${PWD} "\nPossible problem with with ex151_3, diffs above \n========================================="; \
-	   ${RM} -f ex151_3.tmp
+#runex151_2:
+#	-@${MPIEXEC} -n 2 ./ex151  > ex151_2.tmp 2>&1; \
+#	   ${DIFF} output/ex151_2.out ex151_2.tmp || echo ${PWD} "\nPossible problem with with ex151_2, diffs above \n========================================="; \
+#	   ${RM} -f ex151_2.tmp
+#runex151_3:
+#	-@${MPIEXEC} -n 3 ./ex151 > ex151_3.tmp 2>&1; \
+#	   ${DIFF} output/ex151_3.out ex151_3.tmp || echo ${PWD} "\nPossible problem with with ex151_3, diffs above \n========================================="; \
+#	   ${RM} -f ex151_3.tmp
 
 runex158:
 	-@${MPIEXEC} -n 1 ./ex158 > ex158.tmp 2>&1; \

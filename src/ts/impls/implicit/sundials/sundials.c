@@ -196,7 +196,7 @@ PetscErrorCode TSStep_Sundials(TS ts)
   ierr = VecCopy(cvode->update,ts->vec_sol);CHKERRQ(ierr);
   ierr = CVodeGetNumNonlinSolvIters(mem,&its);CHKERRQ(ierr);
   ierr = CVSpilsGetNumLinIters(mem, &its);
-  ts->nonlinear_its = its; ts->linear_its = its;
+  ts->snes_its = its; ts->ksp_its = its;
 
   ts->time_step = t - ts->ptime;
   ts->ptime     = t;
@@ -614,8 +614,8 @@ EXTERN_C_BEGIN
 PetscErrorCode  TSSundialsGetIterations_Sundials(TS ts,int *nonlin,int *lin)
 {
   PetscFunctionBegin;
-  if (nonlin) *nonlin = ts->nonlinear_its;
-  if (lin)    *lin    = ts->linear_its;
+  if (nonlin) *nonlin = ts->snes_its;
+  if (lin)    *lin    = ts->ksp_its;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

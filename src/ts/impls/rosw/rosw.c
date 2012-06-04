@@ -826,7 +826,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = SNESSolve(snes,PETSC_NULL,Y[i]);CHKERRQ(ierr);
         ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
-        ts->nonlinear_its += its; ts->linear_its += lits;
+        ts->snes_its += its; ts->ksp_its += lits;
         ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
         ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
         if (!accept) goto reject_step;
@@ -848,7 +848,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
 
         ierr = VecAXPY(Y[i],-1.0,Zdot);CHKERRQ(ierr); 
         ierr = VecScale(Y[i],h);
-        ts->linear_its += 1;
+        ts->ksp_its += 1;
       }
     }
     ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
