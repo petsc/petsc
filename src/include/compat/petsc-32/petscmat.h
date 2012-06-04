@@ -94,3 +94,10 @@ static PetscErrorCode MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal f
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   PetscFunctionReturn(PETSC_ERR_SUP);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatInvertBlockDiagonal_Compat"
+static PetscErrorCode MatInvertBlockDiagonal_Compat(Mat mat,const PetscScalar **values)
+{return MatInvertBlockDiagonal(mat,(PetscScalar**)values);}
+#undef  MatInvertBlockDiagonal
+#define MatInvertBlockDiagonal MatInvertBlockDiagonal_Compat
