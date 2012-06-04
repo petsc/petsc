@@ -2011,8 +2011,8 @@ cdef extern from * nogil:
         TSOps ops
         TSUserOps userops
         TSProblemType problem_type
-        PetscInt  snes_its
-        PetscInt  ksp_its
+        PetscInt  snes_its "_TSOps_snes_its"
+        PetscInt  ksp_its  "_TSOps_ksp_its"
         PetscInt  reject
         PetscInt  max_reject
         PetscInt  steps

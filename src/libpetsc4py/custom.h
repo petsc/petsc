@@ -38,9 +38,13 @@ extern PetscErrorCode (*PetscShellPythonClearVTable_C)(PetscShell,void**);
 EXTERN_C_END
 
 #if PETSC_VERSION_(3,2,0)
-#define _MatOps_setup setuppreallocation
+#define _MatOps_setup   setuppreallocation
+#define _TSOps_snes_its nonlinear_its
+#define _TSOps_ksp_its  linear_its
 #else
-#define _MatOps_setup setup
+#define _MatOps_setup   setup
+#define _TSOps_snes_its snes_its
+#define _TSOps_ksp_its  ksp_its
 #endif
 
 #undef __FUNCT__
