@@ -106,7 +106,7 @@ static PetscErrorCode TSStep_Theta(TS ts)
   ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
   ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
-  ts->nonlinear_its += its; ts->linear_its += lits;
+  ts->snes_its += its; ts->ksp_its += lits;
   if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
     ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
     ierr = PetscInfo2(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);

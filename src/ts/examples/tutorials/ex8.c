@@ -447,8 +447,8 @@ int main(int argc,char **argv)
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetSNESFailures(ts,&snesfails);CHKERRQ(ierr);
   ierr = TSGetStepRejections(ts,&rejects);CHKERRQ(ierr);
-  ierr = TSGetNonlinearSolveIterations(ts,&nonlinits);CHKERRQ(ierr);
-  ierr = TSGetLinearSolveIterations(ts,&linits);CHKERRQ(ierr);
+  ierr = TSGetSNESIterations(ts,&nonlinits);CHKERRQ(ierr);
+  ierr = TSGetKSPIterations(ts,&linits);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"steps %D (%D rejected, %D SNES fails), ftime %G, nonlinits %D, linits %D\n",steps,rejects,snesfails,ftime,nonlinits,linits);CHKERRQ(ierr);
   if (problem->hasexact) {ierr = MonitorError(ts,steps,ftime,x,&mon);CHKERRQ(ierr);}
 

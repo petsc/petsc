@@ -871,10 +871,10 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum steps=%D\n",ts->max_steps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%G\n",ts->max_time);CHKERRQ(ierr);
     if (ts->problem_type == TS_NONLINEAR) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%D\n",ts->nonlinear_its);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%D\n",ts->snes_its);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solve failures=%D\n",ts->num_snes_failures);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->linear_its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->ksp_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of rejected steps=%D\n",ts->reject);CHKERRQ(ierr);
     if (ts->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -1927,8 +1927,8 @@ PetscErrorCode TSSolve(TS ts,Vec x,PetscReal *ftime)
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   /* reset time step and iteration counters */
   ts->steps = 0;
-  ts->linear_its = 0;
-  ts->nonlinear_its = 0;
+  ts->ksp_its = 0;
+  ts->snes_its = 0;
   ts->num_snes_failures = 0;
   ts->reject = 0;
   ts->reason = TS_CONVERGED_ITERATING;
@@ -2780,9 +2780,9 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSGetNonlinearSolveIterations"
+#define __FUNCT__ "TSGetSNESIterations"
 /*@
-   TSGetNonlinearSolveIterations - Gets the total number of linear iterations
+   TSGetSNESIterations - Gets the total number of nonlinear iterations
    used by the time integrator.
 
    Not Collective
@@ -2800,21 +2800,21 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
 
 .keywords: TS, get, number, nonlinear, iterations
 
-.seealso:  TSGetLinearSolveIterations()
+.seealso:  TSGetKSPIterations()
 @*/
-PetscErrorCode TSGetNonlinearSolveIterations(TS ts,PetscInt *nits)
+PetscErrorCode TSGetSNESIterations(TS ts,PetscInt *nits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidIntPointer(nits,2);
-  *nits = ts->nonlinear_its;
+  *nits = ts->snes_its;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSGetLinearSolveIterations"
+#define __FUNCT__ "TSGetKSPIterations"
 /*@
-   TSGetLinearSolveIterations - Gets the total number of linear iterations
+   TSGetKSPIterations - Gets the total number of linear iterations
    used by the time integrator.
 
    Not Collective
@@ -2832,14 +2832,14 @@ PetscErrorCode TSGetNonlinearSolveIterations(TS ts,PetscInt *nits)
 
 .keywords: TS, get, number, linear, iterations
 
-.seealso:  TSGetNonlinearSolveIterations(), SNESGetLinearSolveIterations()
+.seealso:  TSGetSNESIterations(), SNESGetKSPIterations()
 @*/
-PetscErrorCode TSGetLinearSolveIterations(TS ts,PetscInt *lits)
+PetscErrorCode TSGetKSPIterations(TS ts,PetscInt *lits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidIntPointer(lits,2);
-  *lits = ts->linear_its;
+  *lits = ts->ksp_its;
   PetscFunctionReturn(0);
 }
 
@@ -2863,7 +2863,7 @@ PetscErrorCode TSGetLinearSolveIterations(TS ts,PetscInt *lits)
 
 .keywords: TS, get, number
 
-.seealso:  TSGetNonlinearSolveIterations(), TSGetLinearSolveIterations(), TSSetMaxStepRejections(), TSGetSNESFailures(), TSSetMaxSNESFailures(), TSSetErrorIfStepFails()
+.seealso:  TSGetSNESIterations(), TSGetKSPIterations(), TSSetMaxStepRejections(), TSGetSNESFailures(), TSSetMaxSNESFailures(), TSSetErrorIfStepFails()
 @*/
 PetscErrorCode TSGetStepRejections(TS ts,PetscInt *rejects)
 {
@@ -2894,7 +2894,7 @@ PetscErrorCode TSGetStepRejections(TS ts,PetscInt *rejects)
 
 .keywords: TS, get, number
 
-.seealso:  TSGetNonlinearSolveIterations(), TSGetLinearSolveIterations(), TSSetMaxStepRejections(), TSGetStepRejections(), TSSetMaxSNESFailures()
+.seealso:  TSGetSNESIterations(), TSGetKSPIterations(), TSSetMaxStepRejections(), TSGetStepRejections(), TSSetMaxSNESFailures()
 @*/
 PetscErrorCode TSGetSNESFailures(TS ts,PetscInt *fails)
 {
@@ -2926,7 +2926,7 @@ PetscErrorCode TSGetSNESFailures(TS ts,PetscInt *fails)
 
 .keywords: TS, set, maximum, number
 
-.seealso:  TSGetNonlinearSolveIterations(), TSGetLinearSolveIterations(), TSSetMaxSNESFailures(), TSGetStepRejections(), TSGetSNESFailures(), TSSetErrorIfStepFails(), TSGetConvergedReason()
+.seealso:  TSGetSNESIterations(), TSGetKSPIterations(), TSSetMaxSNESFailures(), TSGetStepRejections(), TSGetSNESFailures(), TSSetErrorIfStepFails(), TSGetConvergedReason()
 @*/
 PetscErrorCode TSSetMaxStepRejections(TS ts,PetscInt rejects)
 {
@@ -2957,7 +2957,7 @@ PetscErrorCode TSSetMaxStepRejections(TS ts,PetscInt rejects)
 
 .keywords: TS, set, maximum, number
 
-.seealso:  TSGetNonlinearSolveIterations(), TSGetLinearSolveIterations(), TSSetMaxStepRejections(), TSGetStepRejections(), TSGetSNESFailures(), SNESGetConvergedReason(), TSGetConvergedReason()
+.seealso:  TSGetSNESIterations(), TSGetKSPIterations(), TSSetMaxStepRejections(), TSGetStepRejections(), TSGetSNESFailures(), SNESGetConvergedReason(), TSGetConvergedReason()
 @*/
 PetscErrorCode TSSetMaxSNESFailures(TS ts,PetscInt fails)
 {
@@ -2985,7 +2985,7 @@ PetscErrorCode TSSetMaxSNESFailures(TS ts,PetscInt fails)
 
 .keywords: TS, set, error
 
-.seealso:  TSGetNonlinearSolveIterations(), TSGetLinearSolveIterations(), TSSetMaxStepRejections(), TSGetStepRejections(), TSGetSNESFailures(), TSSetErrorIfStepFails(), TSGetConvergedReason()
+.seealso:  TSGetSNESIterations(), TSGetKSPIterations(), TSSetMaxStepRejections(), TSGetStepRejections(), TSGetSNESFailures(), TSSetErrorIfStepFails(), TSGetConvergedReason()
 @*/
 PetscErrorCode TSSetErrorIfStepFails(TS ts,PetscBool err)
 {

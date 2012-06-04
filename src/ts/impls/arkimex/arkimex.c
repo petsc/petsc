@@ -666,7 +666,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         ierr = SNESSolve(snes,W,Y[i]);CHKERRQ(ierr);
         ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
-        ts->nonlinear_its += its; ts->linear_its += lits;
+        ts->snes_its += its; ts->ksp_its += lits;
         ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
         ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
         if (!accept) goto reject_step;
