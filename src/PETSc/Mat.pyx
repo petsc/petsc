@@ -876,9 +876,9 @@ cdef class Mat(Object):
         CHKERR( MatGetBlockSize(self.mat, &bs) )
         CHKERR( MatGetLocalSize(self.mat, &m, NULL) )
         CHKERR( MatInvertBlockDiagonal(self.mat, &cibdiag) )
-        cdef object ibdiag = None
-        ibdiag = array_s(m*bs, cibdiag)
-        return ibdiag.reshape(m//bs, bs, bs).transpose(0, 2, 1)
+        cdef ndarray ibdiag = array_s(m*bs, cibdiag)
+        ibdiag.shape = (toInt(m//bs), toInt(bs), toInt(bs))
+        return ibdiag.transpose(0, 2, 1)
 
     # matrix-vector product
 

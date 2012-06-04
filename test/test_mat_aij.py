@@ -181,11 +181,17 @@ class BaseTestMatAnyAIJ(object):
         self._preallocate()
         self._set_values_ijv()
         self.A.assemble()
-        self.A.shift(1000)      # Make nonsingular
+        self.A.shift(1000) # Make nonsingular
         ibdiag = self.A.invertBlockDiagonal()
         bs = self.A.getBlockSize()
         m, _ = self.A.getLocalSize()
         self.assertEqual(ibdiag.shape, (m//bs, bs, bs))
+        tmp = N.empty((m//bs, bs, bs), dtype=PETSc.ScalarType)
+        for i in range(m//bs):
+            rows = cols = N.arange(i*bs,(i+1)*bs, dtype=PETSc.IntType)
+            vals = self.A.getValues(rows,cols)
+            tmp[i,:,:] = N.linalg.inv(vals)
+        self.assertTrue(N.allclose(ibdiag, tmp))
 
     def testGetSubMatrix(self):
         if 'baij' in self.A.getType(): return # XXX
