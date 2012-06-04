@@ -70,7 +70,7 @@ ode.evalSolution(0.0, x)
 ts.solve(x)
 print('steps %d (%d rejected, %d SNES fails), nonlinear its %d, linear its %d'
       % (ts.getStepNumber(), ts.getStepRejections(), ts.getSNESFailures(),
-         ts.getNonlinearSolveIterations(), ts.getLinearSolveIterations()))
+         ts.getSNESIterations(), ts.getKSPIterations()))
 title = 'Oregonator: TS \\texttt{%s}' % ts.getType()
 
 del ode, J, x, ts

@@ -2011,8 +2011,8 @@ cdef extern from * nogil:
         TSOps ops
         TSUserOps userops
         TSProblemType problem_type
-        PetscInt  nonlinear_its
-        PetscInt  linear_its
+        PetscInt  snes_its
+        PetscInt  ksp_its
         PetscInt  reject
         PetscInt  max_reject
         PetscInt  steps
@@ -2307,8 +2307,8 @@ cdef PetscErrorCode TSSolveStep_Python(
     cdef PetscInt nits = 0, lits = 0
     CHKERR( SNESGetIterationNumber(ts.snes,&nits) )
     CHKERR( SNESGetLinearSolveIterations(ts.snes,&lits) )
-    ts.nonlinear_its += nits
-    ts.linear_its    += lits
+    ts.snes_its += nits
+    ts.ksp_its  += lits
     return FunctionEnd()
 
 cdef PetscErrorCode TSAdaptStep_Python(

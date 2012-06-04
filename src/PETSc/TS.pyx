@@ -335,14 +335,14 @@ cdef class TS(Object):
         CHKERR( TSGetDuration(self.ts, &ival, &rval) )
         return (toReal(rval), toInt(ival))
 
-    def getNonlinearSolveIterations(self):
+    def getSNESIterations(self):
         cdef PetscInt n = 0
-        CHKERR( TSGetNonlinearSolveIterations(self.ts, &n) )
+        CHKERR( TSGetSNESIterations(self.ts, &n) )
         return toInt(n)
 
-    def getLinearSolveIterations(self):
+    def getKSPIterations(self):
         cdef PetscInt n = 0
-        CHKERR( TSGetLinearSolveIterations(self.ts, &n) )
+        CHKERR( TSGetKSPIterations(self.ts, &n) )
         return toInt(n)
 
     def getStepRejections(self):

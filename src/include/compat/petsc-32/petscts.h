@@ -3,8 +3,8 @@
 #define TSROSW "rosw"
 
 #undef __FUNCT__
-#define __FUNCT__ "TSGetNonlinearSolveIterations"
-static PetscErrorCode TSGetNonlinearSolveIterations(TS ts,PetscInt *nits)
+#define __FUNCT__ "TSGetSNESIterations"
+static PetscErrorCode TSGetSNESIterations(TS ts,PetscInt *nits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -14,8 +14,8 @@ static PetscErrorCode TSGetNonlinearSolveIterations(TS ts,PetscInt *nits)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSGetLinearSolveIterations"
-static PetscErrorCode TSGetLinearSolveIterations(TS ts,PetscInt *lits)
+#define __FUNCT__ "TSGetKSPIterations"
+static PetscErrorCode TSGetKSPIterations(TS ts,PetscInt *lits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
