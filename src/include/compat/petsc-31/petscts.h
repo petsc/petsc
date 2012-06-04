@@ -18,10 +18,6 @@
 #define TSARKIMEX "arkimex"
 #endif
 
-if (PETSC_VERSION_(3,2,0) || PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
-#  define TSROSW    "rosw"
-#endif
-
 #if PETSC_VERSION_(3,1,0)
 #define TSCN      TSCRANK_NICHOLSON
 #define TSRK      TSRUNGE_KUTTA

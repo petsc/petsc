@@ -8,6 +8,7 @@
 #include "petsc-32/petscpc.h"
 #include "petsc-32/petscksp.h"
 #include "petsc-32/petscsnes.h"
+#include "petsc-32/petscts.h"
 #include "petsc-32/petscdm.h"
 
 #endif/*PETSC4PY_COMPAT_32_H*/
