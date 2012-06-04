@@ -367,34 +367,42 @@ cdef class TS(Object):
         cdef PetscBool bval = flag
         CHKERR( TSSetErrorIfStepFails(self.ts, bval))
 
-    def setTolerances(self, atol=None, rtol=None):
-        "atol and rtol can either be real values or scaling vectors"
-        cdef PetscReal rrtol = PETSC_DEFAULT, ratol = PETSC_DEFAULT
-        cdef PetscVec vrtol = NULL, vatol = NULL
-        cdef Vec atmp = None, rtmp = None
-        if atol is None:
-            pass
-        elif isinstance(atol,Vec):
-            atmp = atol
-            vatol = atmp.vec
-        else:
-            ratol = asReal(atol)
+    def setTolerances(self, rtol=None, atol=None):
+        cdef PetscReal rrtol = PETSC_DEFAULT
+        cdef PetscReal ratol = PETSC_DEFAULT
+        cdef PetscVec  vrtol = NULL
+        cdef PetscVec  vatol = NULL
         if rtol is None:
             pass
-        elif isinstance(rtol,Vec):
-            rtmp = rtol
-            vrtol = rtmp.vec
+        elif isinstance(rtol, Vec):
+            vrtol = (<Vec>rtol).vec
         else:
             rrtol = asReal(rtol)
+        if atol is None:
+            pass
+        elif isinstance(atol, Vec):
+            vatol = (<Vec>atol).vec
+        else:
+            ratol = asReal(atol)
         CHKERR( TSSetTolerances(self.ts, ratol, vatol, rrtol, vrtol) )
 
     def getTolerances(self):
-        cdef PetscReal ratol=0, rrtol=0
-        cdef Vec vatol = Vec(), vrtol = Vec()
-        CHKERR( TSGetTolerances(self.ts, &ratol, &vatol.vec, &rrtol, &vrtol.vec) )
-        if vatol.vec == NULL: vatol = None
-        if vrtol.vec == NULL: vrtol = None
-        return (toReal(ratol), vatol, toReal(rrtol), vrtol)
+        cdef PetscReal rrtol = PETSC_DEFAULT
+        cdef PetscReal ratol = PETSC_DEFAULT
+        cdef PetscVec  vrtol = NULL
+        cdef PetscVec  vatol = NULL
+        CHKERR( TSGetTolerances(self.ts, &ratol, &vatol, &rrtol, &vrtol) )
+        cdef object rtol = None
+        if vrtol != NULL:
+            rtol = ref_Vec(vrtol)
+        else:
+            rtol = toReal(rrtol)
+        cdef object atol = None
+        if vatol != NULL:
+            atol = ref_Vec(vatol)
+        else:
+            atol = toReal(ratol)
+        return (rtol, atol)
 
     #def setExactFinalTime(self, flag=True):
     #    cdef PetscBool bval = flag
