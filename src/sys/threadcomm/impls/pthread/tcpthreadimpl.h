@@ -1,6 +1,6 @@
 
-#ifndef __PTHREADIMPLH
-#define __PTHREADIMPLH
+#ifndef __TCPTHREADIMPLH
+#define __TCPTHREADIMPLH
 
 #include <petsc-private/threadcommimpl.h>
 

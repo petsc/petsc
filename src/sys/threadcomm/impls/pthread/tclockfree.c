@@ -1,4 +1,4 @@
-#include <../src/sys/threadcomm/impls/pthread/pthreadimpl.h>
+#include <../src/sys/threadcomm/impls/pthread/tcpthreadimpl.h>
 
 #define THREAD_TERMINATE      0
 #define THREAD_INITIALIZED    1
@@ -51,6 +51,7 @@ void SparkThreads_LockFree(PetscInt myrank,PetscThreadComm tcomm,PetscThreadComm
 void* PetscPThreadCommFunc_LockFree(void* arg)
 {
   PetscInt              my_job_counter = 0,my_kernel_ctr=0;
+  PetscInt              kernel_ctr,n=0;
   PetscThreadCommJobCtx job;
 
 #if defined(PETSC_PTHREAD_LOCAL)
@@ -68,7 +69,8 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
 
   /* Spin loop */
   while(PetscReadOnce(int,job_lockfree.my_job_status[PetscPThreadRank]) != THREAD_TERMINATE) {
-    if(PetscReadOnce(int,PetscJobQueue->kernel_ctr) != my_kernel_ctr) {
+    kernel_ctr = PetscReadOnce(int,PetscJobQueue->ctr) + n*PETSC_KERNELS_MAX;
+    if(kernel_ctr != my_kernel_ctr) {
       job = PetscJobQueue->jobs[my_job_counter];
       /* Spark the thread pool */
       SparkThreads_LockFree(PetscPThreadRank,job->tcomm,job);
@@ -79,6 +81,7 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
 	job->job_status[PetscPThreadRank] = THREAD_JOB_COMPLETED;
       } 
       my_job_counter = (my_job_counter+1)%PETSC_KERNELS_MAX;
+      if(!my_job_counter) n++;
       my_kernel_ctr++;
     }
   }
@@ -101,7 +104,7 @@ PetscErrorCode PetscThreadCommBarrier_PThread_LockFree(PetscThreadComm tcomm)
   }
   /* Loop till all threads signal that they have done their job */
   while(wait) {
-    for(i=0;i<tcomm->nworkThreads;i++) active_threads += job->job_status[ptcomm->granks[i]];
+    for(i=0;i<tcomm->nworkThreads;i++) active_threads += PetscReadOnce(int,job->job_status[ptcomm->granks[i]]);
     if(active_threads) active_threads = 0;
     else wait=PETSC_FALSE;
   }

@@ -2,7 +2,7 @@
  */
 #define PETSC_DESIRE_FEATURE_TEST_MACROS
 
-#include <../src/sys/threadcomm/impls/pthread/pthreadimpl.h>
+#include <../src/sys/threadcomm/impls/pthread/tcpthreadimpl.h>
 
 #if defined(PETSC_PTHREAD_LOCAL)
 PETSC_PTHREAD_LOCAL PetscInt PetscPThreadRank;

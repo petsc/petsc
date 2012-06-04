@@ -59,6 +59,10 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
 
   Output Parameters:
 . tcommp - pointer to the thread communicator
+
+  Level: Intermediate
+
+.seealso: PetscThreadCommCreate(), PetscThreadCommDestroy()
 @*/
 PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
 {
@@ -597,7 +601,6 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
     job->job_status[i] = THREAD_JOB_POSTED;
   }
   PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%PETSC_KERNELS_MAX; /* Increment the queue ctr to point to the next available slot */
-  PetscJobQueue->kernel_ctr++;
   ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(ThreadComm_RunKernel,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -615,13 +618,13 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
 PETSC_EXTERN_C PetscMPIInt MPIAPI Petsc_CopyThreadComm(MPI_Comm comm,PetscMPIInt keyval,void *extra_state,void *attr_in,void *attr_out,int *flag)
 {
   PetscErrorCode  ierr;
-  PetscThreadComm tcomm = (PetscThreadComm)attr_out;
+  PetscThreadComm tcomm = (PetscThreadComm)attr_in;
 
   PetscFunctionBegin;
   tcomm->refct++;
   *(void**)attr_out = tcomm;
   *flag = 1;
-  ierr = PetscInfo1(0,"Deleting thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = PetscInfo1(0,"Copying thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(0);
 }
 
@@ -680,7 +683,6 @@ PetscErrorCode PetscThreadCommInitialize(void)
     for(j=0;j<tcomm->nworkThreads;j++) PetscJobQueue->jobs[i]->job_status[j] = THREAD_JOB_NONE;
   }
   PetscJobQueue->ctr = 0;
-  PetscJobQueue->kernel_ctr = 0;
   tcomm->job_ctr     = 0;
 
   ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&icomm,PETSC_NULL);CHKERRQ(ierr);
