@@ -1,4 +1,7 @@
 #include <petsc-private/threadcommimpl.h>      /*I "petscthreadcomm.h" I*/
+#if defined(PETSC_HAVE_MALLOC_H)
+#include <malloc.h>
+#endif
 
 static PetscInt N_CORES = -1;
 
@@ -153,7 +156,11 @@ PetscErrorCode PetscThreadCommDestroy(PetscThreadComm tcomm)
   ierr = PetscFree(tcomm->affinities);CHKERRQ(ierr);
   ierr = PetscFree(tcomm->ops);CHKERRQ(ierr);
   for(i=0;i<PETSC_KERNELS_MAX;i++) {
+#if defined(PETSC_HAVE_MEMALIGN)
+    free(PetscJobQueue->jobs[i]->job_status);
+#else
     ierr = PetscFree(PetscJobQueue->jobs[i]->job_status);CHKERRQ(ierr);
+#endif
     ierr = PetscFree(PetscJobQueue->jobs[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(PetscJobQueue);CHKERRQ(ierr);
@@ -684,7 +691,11 @@ PetscErrorCode PetscThreadCommInitialize(void)
   ierr = PetscNew(struct _p_PetscThreadCommJobQueue,&PetscJobQueue);CHKERRQ(ierr);
   for(i=0;i<PETSC_KERNELS_MAX;i++) {
     ierr = PetscNew(struct _p_PetscThreadCommJobCtx,&PetscJobQueue->jobs[i]);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MEMALIGN)
+    PetscJobQueue->jobs[i]->job_status = (PetscInt*)memalign(PETSC_LEVEL1_DCACHE_LINESIZE,tcomm->nworkThreads*PETSC_LEVEL1_DCACHE_LINESIZE);
+#else
     ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&PetscJobQueue->jobs[i]->job_status);CHKERRQ(ierr);
+#endif
     for(j=0;j<tcomm->nworkThreads;j++) PetscJobQueue->jobs[i]->job_status[j] = THREAD_JOB_NONE;
   }
   PetscJobQueue->ctr = 0;
