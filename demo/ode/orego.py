@@ -12,13 +12,11 @@ class Orego(object):
     comm = PETSc.COMM_SELF
     def evalSolution(self, t, x):
         assert t == 0.0, "only for t=0.0"
-        x[:] = [1, 2, 3]
-        x.assemble()
+        x.setArray([1, 2, 3])
     def evalFunction(self, ts, t, x, xdot, f):
-        f[:] = [xdot[0] - 77.27*(x[1] + x[0]*(1 - 8.375e-6*x[0] - x[1])),
-                xdot[1] - 1/77.27*(x[2] - (1 + x[0])*x[1]),
-                xdot[2] - 0.161*(x[0] - x[2])]
-        f.assemble()
+        f.setArray([xdot[0] - 77.27*(x[1] + x[0]*(1 - 8.375e-6*x[0] - x[1])),
+                    xdot[1] - 1/77.27*(x[2] - (1 + x[0])*x[1]),
+                    xdot[2] - 0.161*(x[0] - x[2])])
     def evalJacobian(self, ts, t, x, xdot, a, A, B):
         B[:,:] = [[a - 77.27*((1 - 8.375e-6*x[0] - x[1]) - 8.375e-6*x[0]),   -77.27*(1 - x[0]),               0],
                   [1/77.27*x[1],                                             a + 1/77.27*(1 + x[0]),   -1/77.27],
@@ -49,13 +47,11 @@ ts.setMonitor(monitor)
 ts.setTime(0.0)
 ts.setTimeStep(0.1)
 ts.setMaxTime(360)
-ts.setMaxSteps(1000)
+ts.setMaxSteps(2000)
 ts.setMaxSNESFailures(-1)       # allow an unlimited number of failures (step will be rejected and retried)
 
 # Set a different tolerance on each variable. Can use a scalar or a vector for either or both atol and rtol.
-vatol = x.duplicate()
-vatol[:] = [1e-2, 1e-1, 1e-4]
-vatol.assemble()
+vatol = x.duplicate(array=[1e-2, 1e-1, 1e-4])
 ts.setTolerances(atol=vatol,rtol=1e-3) # adaptive controller attempts to match this tolerance
 
 snes = ts.getSNES()             # Nonlinear solver
@@ -71,9 +67,6 @@ ts.solve(x)
 print('steps %d (%d rejected, %d SNES fails), nonlinear its %d, linear its %d'
       % (ts.getStepNumber(), ts.getStepRejections(), ts.getSNESFailures(),
          ts.getSNESIterations(), ts.getKSPIterations()))
-title = 'Oregonator: TS \\texttt{%s}' % ts.getType()
-
-del ode, J, x, ts
 
 if OptDB.getBool('plot_history', True):
     try:
@@ -89,7 +82,7 @@ if OptDB.getBool('plot_history', True):
     xx = np.asarray([v[2] for v in history])
 
     rc('text', usetex=True)
-    pylab.suptitle(title)
+    pylab.suptitle('Oregonator: TS \\texttt{%s}' % ts.getType())
     pylab.subplot(2,2,0)
     pylab.subplots_adjust(wspace=0.3)
     pylab.semilogy(ii[:-1], np.diff(tt), )
