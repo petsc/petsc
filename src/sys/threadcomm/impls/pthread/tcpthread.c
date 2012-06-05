@@ -95,9 +95,9 @@ PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
     ierr = PetscFree(ptcomm->cpuset);CHKERRQ(ierr);
 #endif
-    for(i=0;i<tcomm->nworkThreads;i++) {
+    /*    for(i=0;i<tcomm->nworkThreads;i++) {
       ierr = pthread_attr_destroy(&ptcomm->attr[i]);CHKERRQ(ierr);
-    }
+      } */
     ierr = PetscFree(ptcomm->attr);CHKERRQ(ierr);
   }
   ierr = PetscFree(ptcomm->granks);CHKERRQ(ierr);
