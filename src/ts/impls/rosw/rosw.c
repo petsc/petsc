@@ -210,6 +210,88 @@ M*/
 .seealso: TSROSW, TSROSWASSP3P3S1C, TSROSWLASSP3P4S2C, TSSSP
 M*/
 
+/*MC
+     TSROSWGRK4T - four stage, fourth order Rosenbrock (not W) method from Kaps and Rentrop
+
+     By default, the Jacobian is only recomputed once per step.
+
+     A(89.3 degrees)-stable, |R(infty)| = 0.454.
+
+     This method does not provide a dense output formula.
+
+     References:
+     Kaps and Rentrop, Generalized Runge-Kutta methods of order four with stepsize control for stiff ordinary differential equations, 1979.
+
+     Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
+
+     Hairer's code ros4.f
+
+     Level: intermediate
+
+.seealso: TSROSW, TSROSWSHAMP4, TSROSWVELDD4, TSROSW4L
+M*/
+
+/*MC
+     TSROSWSHAMP4 - four stage, fourth order Rosenbrock (not W) method from Shampine
+
+     By default, the Jacobian is only recomputed once per step.
+
+     A-stable, |R(infty)| = 1/3.
+
+     This method does not provide a dense output formula.
+
+     References:
+     Shampine, Implementation of Rosenbrock methods, 1982.
+
+     Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
+
+     Hairer's code ros4.f
+
+     Level: intermediate
+
+.seealso: TSROSW, TSROSWGRK4T, TSROSWVELDD4, TSROSW4L
+M*/
+
+/*MC
+     TSROSWVELDD4 - four stage, fourth order Rosenbrock (not W) method from van Veldhuizen
+
+     By default, the Jacobian is only recomputed once per step.
+
+     A(89.5 degrees)-stable, |R(infty)| = 0.24.
+
+     This method does not provide a dense output formula.
+
+     References:
+     van Veldhuizen, D-stability and Kaps-Rentrop methods, 1984.
+
+     Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
+
+     Hairer's code ros4.f
+
+     Level: intermediate
+
+.seealso: TSROSW, TSROSWGRK4T, TSROSWSHAMP4, TSROSW4L
+M*/
+
+/*MC
+     TSROSW4L - four stage, fourth order Rosenbrock (not W) method
+
+     By default, the Jacobian is only recomputed once per step.
+
+     A-stable and L-stable
+
+     This method does not provide a dense output formula.
+
+     References:
+     Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
+
+     Hairer's code ros4.f
+
+     Level: intermediate
+
+.seealso: TSROSW, TSROSWGRK4T, TSROSWSHAMP4, TSROSW4L
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "TSRosWRegisterAll"
 /*@C
@@ -445,61 +527,64 @@ PetscErrorCode TSRosWRegisterAll(void)
         ierr = TSRosWRegister(TSROSWLLSSP3P4S2C,3,4,&A[0][0],&Gamma[0][0],b,b2,3,&binterpt[0][0]);CHKERRQ(ierr);
   }
 
- {
-   PetscReal A[4][4],Gamma[4][4],b[4],b2[4];
-   PetscReal  binterpt[4][3];
+  {
+    PetscReal A[4][4],Gamma[4][4],b[4],b2[4];
+    PetscReal  binterpt[4][3];
 
-   Gamma[0][0]=0.4358665215084589994160194475295062513822671686978816;
-   Gamma[0][1]=0; Gamma[0][2]=0; Gamma[0][3]=0;
-   Gamma[1][0]=-1.997527830934941248426324674704153457289527280554476;
-   Gamma[1][1]=0.4358665215084589994160194475295062513822671686978816;
-   Gamma[1][2]=0; Gamma[1][3]=0;
-   Gamma[2][0]=-1.007948511795029620852002345345404191008352770119903;
-   Gamma[2][1]=-0.004648958462629345562774289390054679806993396798458131;
-   Gamma[2][2]=0.4358665215084589994160194475295062513822671686978816;
-   Gamma[2][3]=0;
-   Gamma[3][0]=-0.6685429734233467180451604600279552604364311322650783;
-   Gamma[3][1]=0.6056625986449338476089525334450053439525178740492984;
-   Gamma[3][2]=-0.9717899277217721234705114616271378792182450260943198;
-   Gamma[3][3]=0;
+    Gamma[0][0]=0.4358665215084589994160194475295062513822671686978816;
+    Gamma[0][1]=0; Gamma[0][2]=0; Gamma[0][3]=0;
+    Gamma[1][0]=-1.997527830934941248426324674704153457289527280554476;
+    Gamma[1][1]=0.4358665215084589994160194475295062513822671686978816;
+    Gamma[1][2]=0; Gamma[1][3]=0;
+    Gamma[2][0]=-1.007948511795029620852002345345404191008352770119903;
+    Gamma[2][1]=-0.004648958462629345562774289390054679806993396798458131;
+    Gamma[2][2]=0.4358665215084589994160194475295062513822671686978816;
+    Gamma[2][3]=0;
+    Gamma[3][0]=-0.6685429734233467180451604600279552604364311322650783;
+    Gamma[3][1]=0.6056625986449338476089525334450053439525178740492984;
+    Gamma[3][2]=-0.9717899277217721234705114616271378792182450260943198;
+    Gamma[3][3]=0;
 
-   A[0][0]=0; A[0][1]=0; A[0][2]=0; A[0][3]=0;
-   A[1][0]=0.8717330430169179988320388950590125027645343373957631;
-   A[1][1]=0; A[1][2]=0; A[1][3]=0;
-   A[2][0]=0.5275890119763004115618079766722914408876108660811028;
-   A[2][1]=0.07241098802369958843819203208518599088698057726988732;
-   A[2][2]=0; A[2][3]=0;
-   A[3][0]=0.3990960076760701320627260685975778145384666450351314;
-   A[3][1]=-0.4375576546135194437228463747348862825846903771419953;
-   A[3][2]=1.038461646937449311660120300601880176655352737312713;
-   A[3][3]=0;
+    A[0][0]=0; A[0][1]=0; A[0][2]=0; A[0][3]=0;
+    A[1][0]=0.8717330430169179988320388950590125027645343373957631;
+    A[1][1]=0; A[1][2]=0; A[1][3]=0;
+    A[2][0]=0.5275890119763004115618079766722914408876108660811028;
+    A[2][1]=0.07241098802369958843819203208518599088698057726988732;
+    A[2][2]=0; A[2][3]=0;
+    A[3][0]=0.3990960076760701320627260685975778145384666450351314;
+    A[3][1]=-0.4375576546135194437228463747348862825846903771419953;
+    A[3][2]=1.038461646937449311660120300601880176655352737312713;
+    A[3][3]=0;
 
-   b[0]=0.1876410243467238251612921333138006734899663569186926;
-   b[1]=-0.5952974735769549480478230473706443582188442040780541;
-   b[2]=0.9717899277217721234705114616271378792182450260943198;
-   b[3]=0.4358665215084589994160194475295062513822671686978816;
+    b[0]=0.1876410243467238251612921333138006734899663569186926;
+    b[1]=-0.5952974735769549480478230473706443582188442040780541;
+    b[2]=0.9717899277217721234705114616271378792182450260943198;
+    b[3]=0.4358665215084589994160194475295062513822671686978816;
 
-   b2[0]=0.2147402862233891404862383521089097657790734483804460;
-   b2[1]=-0.4851622638849390928209050538171743017757490232519684;
-   b2[2]=0.8687250025203875511662123688667549217531982787600080;
-   b2[3]=0.4016969751411624011684543450940068201770721128357014;
+    b2[0]=0.2147402862233891404862383521089097657790734483804460;
+    b2[1]=-0.4851622638849390928209050538171743017757490232519684;
+    b2[2]=0.8687250025203875511662123688667549217531982787600080;
+    b2[3]=0.4016969751411624011684543450940068201770721128357014;
 
-   binterpt[0][0]=2.2565812720167954547104627844105;
-   binterpt[1][0]=1.349166413351089573796243820819;
-   binterpt[2][0]=-2.4695174540533503758652847586647;
-   binterpt[3][0]=-0.13623023131453465264142184656474;
-   binterpt[0][1]=-3.0826699111559187902922463354557;
-   binterpt[1][1]=-2.4689115685996042534544925650515;
-   binterpt[2][1]=5.7428279814696677152129332773553;
-   binterpt[3][1]=-0.19124650171414467146619437684812;
-   binterpt[0][2]=1.0137296634858471607430756831148;
-   binterpt[1][2]=0.52444768167155973161042570784064;
-   binterpt[2][2]=-2.3015205996945452158771370439586;
-   binterpt[3][2]=0.76334325453713832352363565300308;
+    binterpt[0][0]=2.2565812720167954547104627844105;
+    binterpt[1][0]=1.349166413351089573796243820819;
+    binterpt[2][0]=-2.4695174540533503758652847586647;
+    binterpt[3][0]=-0.13623023131453465264142184656474;
+    binterpt[0][1]=-3.0826699111559187902922463354557;
+    binterpt[1][1]=-2.4689115685996042534544925650515;
+    binterpt[2][1]=5.7428279814696677152129332773553;
+    binterpt[3][1]=-0.19124650171414467146619437684812;
+    binterpt[0][2]=1.0137296634858471607430756831148;
+    binterpt[1][2]=0.52444768167155973161042570784064;
+    binterpt[2][2]=-2.3015205996945452158771370439586;
+    binterpt[3][2]=0.76334325453713832352363565300308;
 
-   ierr = TSRosWRegister(TSROSWARK3,3,4,&A[0][0],&Gamma[0][0],b,b2,3,&binterpt[0][0]);CHKERRQ(ierr);
+    ierr = TSRosWRegister(TSROSWARK3,3,4,&A[0][0],&Gamma[0][0],b,b2,3,&binterpt[0][0]);CHKERRQ(ierr);
   }
-
+  ierr = TSRosWRegisterRos4(TSROSWGRK4T,0.231,PETSC_DEFAULT,PETSC_DEFAULT,0,-0.1282612945269037e+01);CHKERRQ(ierr);
+  ierr = TSRosWRegisterRos4(TSROSWSHAMP4,0.5,PETSC_DEFAULT,PETSC_DEFAULT,0,125./108.);CHKERRQ(ierr);
+  ierr = TSRosWRegisterRos4(TSROSWVELDD4,0.22570811482256823492,PETSC_DEFAULT,PETSC_DEFAULT,0,-1.355958941201148);CHKERRQ(ierr);
+  ierr = TSRosWRegisterRos4(TSROSW4L,0.57282,PETSC_DEFAULT,PETSC_DEFAULT,0,-1.093502252409163);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -597,9 +682,9 @@ PetscErrorCode TSRosWFinalizePackage(void)
 .  A - Table of propagated stage coefficients (dimension s*s, row-major), strictly lower triangular
 .  Gamma - Table of coefficients in implicit stage equations (dimension s*s, row-major), lower triangular with nonzero diagonal
 .  b - Step completion table (dimension s)
--  bembed - Step completion table for a scheme of order one less (dimension s, PETSC_NULL if no embedded scheme is available)
+.  bembed - Step completion table for a scheme of order one less (dimension s, PETSC_NULL if no embedded scheme is available)
 .  pinterp - Order of the interpolation scheme, equal to the number of columns of binterpt 
-.  binterpt - Coefficients of the interpolation formula (dimension s*pinterp)
+-  binterpt - Coefficients of the interpolation formula (dimension s*pinterp)
 
    Notes:
    Several Rosenbrock W methods are provided, this function is only needed to create new methods.
@@ -713,6 +798,111 @@ PetscErrorCode TSRosWRegister(const TSRosWType name,PetscInt order,PetscInt s,
   ierr = PetscMemcpy(t->binterpt,binterpt,s*pinterp*sizeof(binterpt[0]));CHKERRQ(ierr);
   link->next = RosWTableauList;
   RosWTableauList = link;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSRosWRegisterRos4"
+/*@C
+   TSRosWRegisterRos4 - register a fourth order Rosenbrock scheme by providing paramter choices
+
+   Not Collective, but the same schemes should be registered on all processes on which they will be used
+
+   Input Parameters:
++  name - identifier for method
+.  gamma - leading coefficient (diagonal entry)
+.  a2 - design parameter, see Table 7.2 of Hairer&Wanner
+.  a3 - design parameter or PETSC_DEFAULT to satisfy one of the order five conditions (Eq 7.22)
+.  b3 - design parameter, see Table 7.2 of Hairer&Wanner
+.  beta43 - design parameter or PETSC_DEFAULT to use Equation 7.21 of Hairer&Wanner
+.  e4 - design parameter for embedded method, see coefficient E4 in ros4.f code from Hairer
+
+   Notes:
+   This routine encodes the design of fourth order Rosenbrock methods as described in Hairer and Wanner volume 2.
+   It is used here to implement several methods from the book and can be used to experiment with new methods.
+   It was written this way instead of by copying coefficients in order to provide better than double precision satisfaction of the order conditions.
+
+   Level: developer
+
+.keywords: TS, register
+
+.seealso: TSRosW, TSRosWRegister()
+@*/
+PetscErrorCode TSRosWRegisterRos4(const TSRosWType name,PetscReal gamma,PetscReal a2,PetscReal a3,PetscReal b3,PetscReal e4)
+{
+  PetscErrorCode ierr;
+  /* Declare numeric constants so they can be quad precision without being truncated at double */
+  const PetscReal one = 1,two = 2,three = 3,four = 4,five = 5,six = 6,eight = 8,twelve = 12,twenty = 20,twentyfour = 24,
+    p32 = one/six - gamma + gamma*gamma,
+    p42 = one/eight - gamma/three,
+    p43 = one/twelve - gamma/three,
+    p44 = one/twentyfour - gamma/two + three/two*gamma*gamma - gamma*gamma*gamma,
+    p56 = one/twenty - gamma/four;
+  PetscReal a4,a32,a42,a43,b1,b2,b4,beta2p,beta3p,beta4p,beta32,beta42,beta43,beta32beta2p,beta4jbetajp;
+  PetscReal A[4][4],Gamma[4][4],b[4],bm[4];
+  PetscScalar M[3][3],rhs[3];
+
+  PetscFunctionBegin;
+  /* Step 1: choose Gamma (input) */
+  /* Step 2: choose a2,a3,a4; b1,b2,b3,b4 to satisfy order conditions */
+  if (a3 == PETSC_DEFAULT) a3 = (one/five - a2/four)/(one/four - a2/three); /* Eq 7.22 */
+  a4 = a3;                                                  /* consequence of 7.20 */
+
+  /* Solve order conditions 7.15a, 7.15c, 7.15e */
+  M[0][0] = one; M[0][1] = one;      M[0][2] = one;      /* 7.15a */
+  M[1][0] = 0.0; M[1][1] = a2*a2;    M[1][2] = a4*a4;    /* 7.15c */
+  M[2][0] = 0.0; M[2][1] = a2*a2*a2; M[2][2] = a4*a4*a4; /* 7.15e */
+  rhs[0] = one - b3;
+  rhs[1] = one/three - a3*a3*b3;
+  rhs[2] = one/four - a3*a3*a3*b3;
+  ierr = PetscKernel_A_gets_inverse_A_3(&M[0][0],0);CHKERRQ(ierr);
+  b1 = PetscRealPart(M[0][0]*rhs[0] + M[0][1]*rhs[1] + M[0][2]*rhs[2]);
+  b2 = PetscRealPart(M[1][0]*rhs[0] + M[1][1]*rhs[1] + M[1][2]*rhs[2]);
+  b4 = PetscRealPart(M[2][0]*rhs[0] + M[2][1]*rhs[1] + M[2][2]*rhs[2]);
+
+  /* Step 3 */
+  beta43 = (p56 - a2*p43) / (b4*a3*a3*(a3 - a2)); /* 7.21 */
+  beta32beta2p =  p44 / (b4*beta43);              /* 7.15h */
+  beta4jbetajp = (p32 - b3*beta32beta2p) / b4;
+  M[0][0] = b2;                                    M[0][1] = b3;                 M[0][2] = b4;
+  M[1][0] = a4*a4*beta32beta2p-a3*a3*beta4jbetajp; M[1][1] = a2*a2*beta4jbetajp; M[1][2] = -a2*a2*beta32beta2p;
+  M[2][0] = b4*beta43*a3*a3-p43;                   M[2][1] = -b4*beta43*a2*a2;   M[2][2] = 0;
+  rhs[0] = one/two - gamma; rhs[1] = 0; rhs[2] = -a2*a2*p32;
+  ierr = PetscKernel_A_gets_inverse_A_3(&M[0][0],0);CHKERRQ(ierr);
+  beta2p = PetscRealPart(M[0][0]*rhs[0] + M[0][1]*rhs[1] + M[0][2]*rhs[2]);
+  beta3p = PetscRealPart(M[1][0]*rhs[0] + M[1][1]*rhs[1] + M[1][2]*rhs[2]);
+  beta4p = PetscRealPart(M[2][0]*rhs[0] + M[2][1]*rhs[1] + M[2][2]*rhs[2]);
+
+  /* Step 4: back-substitute */
+  beta32 = beta32beta2p / beta2p;
+  beta42 = (beta4jbetajp - beta43*beta3p) / beta2p;
+
+  /* Step 5: 7.15f and 7.20, then 7.16 */
+  a43 = 0;
+  a32 = p42 / (b3*a3*beta2p + b4*a4*beta2p);
+  a42 = a32;
+
+  A[0][0] = 0;          A[0][1] = 0;   A[0][2] = 0;   A[0][3] = 0;
+  A[1][0] = a2;         A[1][1] = 0;   A[1][2] = 0;   A[1][3] = 0;
+  A[2][0] = a3-a32;     A[2][1] = a32; A[2][2] = 0;   A[2][3] = 0;
+  A[3][0] = a4-a43-a42; A[3][1] = a42; A[3][2] = a43; A[3][3] = 0;
+  Gamma[0][0] = gamma;                        Gamma[0][1] = 0;              Gamma[0][2] = 0;              Gamma[0][3] = 0;
+  Gamma[1][0] = beta2p-A[1][0];               Gamma[1][1] = gamma;          Gamma[1][2] = 0;              Gamma[1][3] = 0;
+  Gamma[2][0] = beta3p-beta32-A[2][0];        Gamma[2][1] = beta32-A[2][1]; Gamma[2][2] = gamma;          Gamma[2][3] = 0;
+  Gamma[3][0] = beta4p-beta42-beta43-A[3][0]; Gamma[3][1] = beta42-A[3][1]; Gamma[3][2] = beta43-A[3][2]; Gamma[3][3] = gamma;
+  b[0] = b1; b[1] = b2; b[2] = b3; b[3] = b4;
+
+  /* Construct embedded formula using given e4. We are solving Equation 7.18. */
+  bm[3] = b[3] - e4*gamma;                                          /* using definition of E4 */
+  bm[2] = (p32 - beta4jbetajp*bm[3]) / (beta32*beta2p);             /* fourth row of 7.18 */
+  bm[1] = (one/two - gamma - beta3p*bm[2] - beta4p*bm[3]) / beta2p; /* second row */
+  bm[0] = one - bm[1] - bm[2] - bm[3];                              /* first row */
+
+  {
+    const PetscReal misfit = a2*a2*bm[1] + a3*a3*bm[2] + a4*a4*bm[3] - one/three;
+    if (PetscAbs(misfit) > PETSC_SMALL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Assumptions violated, could not construct a third order embedded method");
+  }
+  ierr = TSRosWRegister(name,4,4,&A[0][0],&Gamma[0][0],b,bm,0,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

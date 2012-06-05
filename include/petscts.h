@@ -656,12 +656,16 @@ J*/
 #define TSROSWARK3        "ark3"
 #define TSROSWTHETA1      "theta1"
 #define TSROSWTHETA2      "theta2"
-
+#define TSROSWGRK4T       "grk4t"
+#define TSROSWSHAMP4      "shamp4"
+#define TSROSWVELDD4      "veldd4"
+#define TSROSW4L          "4l"
 
 PETSC_EXTERN PetscErrorCode TSRosWGetType(TS ts,const TSRosWType*);
 PETSC_EXTERN PetscErrorCode TSRosWSetType(TS ts,const TSRosWType);
 PETSC_EXTERN PetscErrorCode TSRosWSetRecomputeJacobian(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRosWRegister(const TSRosWType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSRosWRegisterRos4(const TSRosWType,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSRosWFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSRosWInitializePackage(const char path[]);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterDestroy(void);

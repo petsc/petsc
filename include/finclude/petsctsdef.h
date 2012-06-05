@@ -70,5 +70,9 @@
 #define TSROSWARK3        'ark3'
 #define TSROSWTHETA1      'theta1'
 #define TSROSWTHETA2      'theta2'
+#define TSROSWGRK4T       'grk4t'
+#define TSROSWSHAMP4      'shamp4'
+#define TSROSWVELDD4      'veldd4'
+#define TSROSW4L          '4l'
 
 #endif
