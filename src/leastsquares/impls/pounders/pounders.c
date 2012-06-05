@@ -186,59 +186,72 @@ PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
 	mfqP->Hdel[i] = 0;
     }
 
-    /* Let Ltmp = (L'*L) */
-    BLASgemm_("T","N",&blasint2,&blasint2,&blasint,&one,&mfqP->L[(mfqP->n+1)*blasint],&blasint,&mfqP->L[(mfqP->n+1)*blasint],&blasint,&zero,mfqP->L_tmp,&blasint);
-    
-    /* factor Ltmp */
-    LAPACKpotrf_("L",&blasint2,mfqP->L_tmp,&blasint,&blasinfo);
-    if (blasinfo != 0) {
-	SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine potrf returned with value %D\n",blasinfo);
-    }
-
     /* factor M */
     LAPACKgetrf_(&blasnplus1,&blasnpmax,mfqP->M,&blasnplus1,mfqP->npmaxiwork,&blasinfo);
     if (blasinfo != 0) {
 	SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine getrf returned with value %D\n",blasinfo);
     }
     
+
+    if (np == mfqP->n+1) {
+      for (i=0;i<mfqP->npmax-mfqP->n-1;i++) {
+	mfqP->omega[i]=0.0;
+      }
+      for (i=0;i<mfqP->n*(mfqP->n+1)/2;i++) {
+	mfqP->beta[i]=0.0;
+      }
+    } else {
+      /* Let Ltmp = (L'*L) */
+      BLASgemm_("T","N",&blasint2,&blasint2,&blasint,&one,&mfqP->L[(mfqP->n+1)*blasint],&blasint,&mfqP->L[(mfqP->n+1)*blasint],&blasint,&zero,mfqP->L_tmp,&blasint);
+    
+      /* factor Ltmp */
+      LAPACKpotrf_("L",&blasint2,mfqP->L_tmp,&blasint,&blasinfo);
+      if (blasinfo != 0) {
+	SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine potrf returned with value %D\n",blasinfo);
+      }
+    }
+
     for (k=0;k<mfqP->m;k++) {
+
+      if (np != mfqP->n+1) {
 	/* Solve L'*L*Omega = Z' * RESk*/
 	BLASgemv_("T",&blasnp,&blasint2,&one,mfqP->Z,&blasnpmax,&mfqP->RES[mfqP->npmax*k],&ione,&zero,mfqP->omega,&ione);
-
+	
 	LAPACKpotrs_("L",&blasint2,&ione,mfqP->L_tmp,&blasint,mfqP->omega,&blasint2,&blasinfo);
 	if (blasinfo != 0) {
-	    SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine potrs returned with value %D\n",blasinfo);
-	}
-	
-	
-	/* Beta = L*Omega */
-	BLASgemv_("N",&blasint,&blasint2,&one,&mfqP->L[(mfqP->n+1)*blasint],&blasint,mfqP->omega,&ione,&zero,mfqP->beta,&ione);
-	
-	/* solve M'*Alpha = RESk - N'*Beta */
-	BLASgemv_("T",&blasint,&blasnp,&negone,mfqP->N,&blasint,mfqP->beta,&ione,&one,&mfqP->RES[mfqP->npmax*k],&ione);
-	LAPACKgetrs_("T",&blasnplus1,&ione,mfqP->M,&blasnplus1,mfqP->npmaxiwork,&mfqP->RES[mfqP->npmax*k],&blasnplus1,&blasinfo);
-	if (blasinfo != 0) {
-	    SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine getrs returned with value %D\n",blasinfo);
+	  SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine potrs returned with value %D\n",blasinfo);
 	}
 
-	/* Gdel(:,k) = Alpha(2:n+1) */
-	for (i=0;i<mfqP->n;i++) {
-	    mfqP->Gdel[i + mfqP->n*k] = mfqP->RES[mfqP->npmax*k + i+1];
-	}
+	/* Beta = L*Omega */
+	BLASgemv_("N",&blasint,&blasint2,&one,&mfqP->L[(mfqP->n+1)*blasint],&blasint,mfqP->omega,&ione,&zero,mfqP->beta,&ione);
+      }
+      
+
+      /* solve M'*Alpha = RESk - N'*Beta */
+      BLASgemv_("T",&blasint,&blasnp,&negone,mfqP->N,&blasint,mfqP->beta,&ione,&one,&mfqP->RES[mfqP->npmax*k],&ione);
+      LAPACKgetrs_("T",&blasnplus1,&ione,mfqP->M,&blasnplus1,mfqP->npmaxiwork,&mfqP->RES[mfqP->npmax*k],&blasnplus1,&blasinfo);
+      if (blasinfo != 0) {
+	SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine getrs returned with value %D\n",blasinfo);
+      }
+
+      /* Gdel(:,k) = Alpha(2:n+1) */
+      for (i=0;i<mfqP->n;i++) {
+	mfqP->Gdel[i + mfqP->n*k] = mfqP->RES[mfqP->npmax*k + i+1];
+      }
 	
-	/* Set Hdels */
-	num=0;
-	for (i=0;i<mfqP->n;i++) {
-	    /* H[i,i,k] = Beta(num) */
-	    mfqP->Hdel[(i*mfqP->n + i)*mfqP->m + k] = mfqP->beta[num];
-	    num++;
-	    for (j=i+1;j<mfqP->n;j++) {
-		/* H[i,j,k] = H[j,i,k] = Beta(num)/sqrt(2) */
-		mfqP->Hdel[(j*mfqP->n + i)*mfqP->m + k] = mfqP->beta[num]/sqrt2;
-		mfqP->Hdel[(i*mfqP->n + j)*mfqP->m + k] = mfqP->beta[num]/sqrt2;
-		num++;
-	    }
+      /* Set Hdels */
+      num=0;
+      for (i=0;i<mfqP->n;i++) {
+	/* H[i,i,k] = Beta(num) */
+	mfqP->Hdel[(i*mfqP->n + i)*mfqP->m + k] = mfqP->beta[num];
+	num++;
+	for (j=i+1;j<mfqP->n;j++) {
+	  /* H[i,j,k] = H[j,i,k] = Beta(num)/sqrt(2) */
+	  mfqP->Hdel[(j*mfqP->n + i)*mfqP->m + k] = mfqP->beta[num]/sqrt2;
+	  mfqP->Hdel[(i*mfqP->n + j)*mfqP->m + k] = mfqP->beta[num]/sqrt2;
+	  num++;
 	}
+      }
     }
     
     PetscFunctionReturn(0);
@@ -258,6 +271,7 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
     PetscErrorCode ierr;
     PetscFunctionBegin;
 
+    /* Initialize M,N */
     for (i=0;i<mfqP->n+1;i++) {
 	ierr = VecGetArray(mfqP->Xhist[mfqP->model_indices[i]],&x); CHKERRQ(ierr);
 	mfqP->M[(mfqP->n+1)*i] = 1.0;
@@ -405,6 +419,19 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
     for (i=offset;i<mfqP->npmax*mfqP->npmax;i++) {
 	mfqP->Z[i-offset] = mfqP->Q_tmp[i];
     }
+
+
+    if (mfqP->nmodelpoints == mfqP->n + 1) {
+    /* Set L to I_{n+1} */
+      for (i=0;i<mfqP->npmax * mfqP->n*(mfqP->n+1)/2;i++) {
+	mfqP->L[i] = 0.0;
+      }
+      for (i=0;i<mfqP->n;i++) {
+	mfqP->L[(mfqP->n*(mfqP->n+1)/2)*i + i] = 1.0;
+      }
+
+    }
+
     PetscFunctionReturn(0);
 }
 
@@ -885,12 +912,6 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
     mfqP->nmodelpoints++;
     mfqP->model_indices[0] = mfqP->minindex;
     ierr = morepoints(mfqP); CHKERRQ(ierr);
-    if (mfqP->nmodelpoints == mfqP->n + 1) {
-      ierr = PetscInfo(tao,"Cannot add enough model points, try larger delta");
-      reason = TAO_DIVERGED_TR_REDUCTION;
-      tao->reason = TAO_DIVERGED_TR_REDUCTION;
-      continue;
-    }
     for (i=0;i<mfqP->nmodelpoints;i++) {
 	ierr = VecGetArray(mfqP->Xhist[mfqP->model_indices[i]],&x); CHKERRQ(ierr);
 	for (j=0;j<mfqP->n;j++) {
