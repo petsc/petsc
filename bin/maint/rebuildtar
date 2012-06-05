@@ -5,7 +5,7 @@ export LANG=en_US
 export LC=C
 export LC_ALL=C
 
-RELEASE=3.2
+RELEASE=3.3
 PETSC_DIR=/home/balay/hg-repo/petsc-release-${RELEASE}
 
 #automatically crankup the patchlevel
