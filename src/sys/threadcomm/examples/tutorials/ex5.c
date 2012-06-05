@@ -96,6 +96,7 @@ int main(int argc,char **argv)
   }
 
   ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)CounterFree_kernel,1,counters);CHKERRQ(ierr);
+  ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscFree(counters);CHKERRQ(ierr);
   PetscFinalize();
   return 0;

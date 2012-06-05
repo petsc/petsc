@@ -37,7 +37,7 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 #define THREADCOMM_REDUCTION_COMPLETE        1
 
 /* Job status for threads */
-#define THREAD_JOB_NONE        0
+#define THREAD_JOB_NONE       -1
 #define THREAD_JOB_POSTED      1
 #define THREAD_JOB_RECIEVED    2
 #define THREAD_JOB_COMPLETED   0
@@ -68,6 +68,7 @@ struct  _p_PetscThreadCommJobCtx{
 typedef struct _p_PetscThreadCommJobQueue *PetscThreadCommJobQueue;
 struct _p_PetscThreadCommJobQueue{
   PetscInt ctr;                                         /* job counter */
+  PetscInt kernel_ctr;                                  /* kernel counter .. need this otherwise race conditions are unavoidable */
   PetscThreadCommJobCtx jobs[PETSC_KERNELS_MAX];        /* queue of jobs */
 };
 
