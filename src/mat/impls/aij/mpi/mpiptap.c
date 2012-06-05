@@ -224,7 +224,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* destroy list of free space and other temporary array(s) */
   ierr = PetscMalloc((api[am]+1)*sizeof(PetscInt),&apj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,apj);CHKERRQ(ierr);
-  afill_tmp = (PetscReal)api[am]/(adi[am]+aoi[am]+pi_loc[pm]);
+  afill_tmp = (PetscReal)api[am]/(adi[am]+aoi[am]+pi_loc[pm]+1);
   if (afill_tmp > afill) afill = afill_tmp;
 
   /* determine symbolic Co=(p->B)^T*AP - send to others */
@@ -270,7 +270,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   }
   ierr = PetscMalloc((coi[pon]+1)*sizeof(PetscInt),&coj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,coj);CHKERRQ(ierr);
-  afill_tmp = (PetscReal)coi[pon]/(poti[pon] + api[am]);
+  afill_tmp = (PetscReal)coi[pon]/(poti[pon] + api[am]+1);
   if (afill_tmp > afill) afill = afill_tmp;
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(p->B,&poti,&potj);CHKERRQ(ierr);
 
@@ -459,7 +459,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   ierr = PetscMalloc((bi[pn]+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,bj);CHKERRQ(ierr);
-  afill_tmp = (PetscReal)bi[pn]/(pi_loc[pm] + api[am]); 
+  afill_tmp = (PetscReal)bi[pn]/(pi_loc[pm] + api[am]+1); 
   if (afill_tmp > afill) afill = afill_tmp;
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 

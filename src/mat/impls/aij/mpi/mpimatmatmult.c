@@ -322,7 +322,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   *C = Cmpi;
 
   /* set MatInfo */
-  afill = (PetscReal)api[am]/(adi[am]+aoi[am]+pi_loc[pm]) + 1.e-5;
+  afill = (PetscReal)api[am]/(adi[am]+aoi[am]+pi_loc[pm]+1) + 1.e-5;
   if (afill < 1.0) afill = 1.0;
   Cmpi->info.mallocs           = nspacedouble;
   Cmpi->info.fill_ratio_given  = fill;               
@@ -774,7 +774,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,PetscReal f
   *C = Cmpi;
 
   /* set MatInfo */
-  afill = (PetscReal)api[am]/(adi[am]+aoi[am]+pi_loc[pm]) + 1.e-5;
+  afill = (PetscReal)api[am]/(adi[am]+aoi[am]+pi_loc[pm]+1) + 1.e-5;
   if (afill < 1.0) afill = 1.0;
   Cmpi->info.mallocs           = nspacedouble;
   Cmpi->info.fill_ratio_given  = fill;               
@@ -1090,7 +1090,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   
   ierr = PetscMalloc((coi[pon]+1)*sizeof(PetscInt),&coj);CHKERRQ(ierr); 
   ierr = PetscFreeSpaceContiguous(&free_space,coj);CHKERRQ(ierr);
-  afill_tmp = (PetscReal)coi[pon]/(poti[pon] + ai[am]);
+  afill_tmp = (PetscReal)coi[pon]/(poti[pon] + ai[am]+1);
   if (afill_tmp > afill) afill = afill_tmp;
  
   /* send j-array (coj) of Co to other processors */
@@ -1259,7 +1259,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
 
   ierr = PetscMalloc((bi[pn]+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,bj);CHKERRQ(ierr);
-  afill_tmp = (PetscReal)bi[pn]/(pdti[pn] + poti[pon] + ai[am]); 
+  afill_tmp = (PetscReal)bi[pn]/(pdti[pn] + poti[pon] + ai[am]+1); 
   if (afill_tmp > afill) afill = afill_tmp;
   ierr = PetscLLCondensedDestroy(lnk,lnkbt);CHKERRQ(ierr);
   ierr = MatDestroy(&POt);CHKERRQ(ierr);
@@ -1593,7 +1593,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Pe
   
   ierr = PetscMalloc((coi[pon]+1)*sizeof(PetscInt),&coj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,coj);CHKERRQ(ierr);
-  afill_tmp = (PetscReal)coi[pon]/(poti[pon] + ai[am]);
+  afill_tmp = (PetscReal)coi[pon]/(poti[pon] + ai[am]+1);
   if (afill_tmp > afill) afill = afill_tmp;
  
   /* send j-array (coj) of Co to other processors */
@@ -1762,7 +1762,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Pe
 
   ierr = PetscMalloc((bi[pn]+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,bj);CHKERRQ(ierr);
-  afill_tmp = (PetscReal)bi[pn]/(pdti[pn] + poti[pon] + ai[am]); 
+  afill_tmp = (PetscReal)bi[pn]/(pdti[pn] + poti[pon] + ai[am]+1); 
   if (afill_tmp > afill) afill = afill_tmp;
   ierr = PetscLLCondensedDestroy_Scalable(lnk);CHKERRQ(ierr);
   ierr = MatDestroy(&POt);CHKERRQ(ierr);
