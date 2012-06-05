@@ -350,6 +350,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
      PetscErrorCode ierr;
      PetscViewer viewer;
      PetscInt low1,low2,low3,high1,high2,high3;
+     PetscBool flg;
      char filename[PETSC_MAX_PATH_LEN];
 
      PetscFunctionBegin;
@@ -437,6 +438,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
        *steplength=ls->step;
      }
 
+     ierr = PetscOptionsGetString(((PetscObject)ls)->prefix,"-tao_ls_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
      if (ls->viewls && !PetscPreLoadingOn) {
 	 ierr = PetscViewerASCIIOpen(((PetscObject)ls)->comm,filename,&viewer); CHKERRQ(ierr);
 	 ierr = TaoLineSearchView(ls,viewer); CHKERRQ(ierr);
@@ -545,7 +547,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
    PetscFunctionBegin;
    PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
 
-   ierr = PetscOptionsBegin(((PetscObject)ls)->comm, ((PetscObject)ls)->prefix,"Tao line search options","TaoLineSearch"); CHKERRQ(ierr);
+   ierr = PetscObjectOptionsBegin((PetscObject)ls); CHKERRQ(ierr);
    {
      if (!TaoLineSearchInitialized) {
        ierr = TaoLineSearchInitializePackage(PETSC_NULL); CHKERRQ(ierr);

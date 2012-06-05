@@ -1,3 +1,4 @@
+
 LOCDIR=tests/
 
 
@@ -67,6 +68,13 @@ test_limit_minff: test_limit_minff.o tao_chkopts
 	-${FLINKER} -o  test_limit_minff test_limit_minff.o ${TAO_LIB} ${PETSC_SNES_LIB}
 	${RM} test_limit_minff.o
 
+test_prefix: test_prefix.o tao_chkopts
+	-${CLINKER} -o test_prefix test_prefix.o ${TAO_LIB} ${PETSC_SNES_LIB}
+	${RM} test_prefix.o
+
+test_prefixf: test_prefixf.o tao_chkopts
+	-${FLINKER} -o test_prefixf test_prefixf.o ${TAO_LIB} ${PETSC_SNES_LIB}
+	${RM} test_prefixf.o
 
 test_jbearing2: test_jbearing2.o tao_chkopts
 	-${CLINKER} -o test_jbearing2 test_jbearing2.o ${TAO_LIB} ${PETSC_LIB}

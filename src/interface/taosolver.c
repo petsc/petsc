@@ -361,7 +361,7 @@ PetscErrorCode TaoSetFromOptions(TaoSolver tao)
     ierr = PetscOptionsHasName(prefix,"-tao_ls_type",&flg);
     
 
-    ierr = PetscOptionsBegin(comm, ((PetscObject)tao)->prefix,"TaoSolver options","TaoSolver"); CHKERRQ(ierr);
+    ierr = PetscObjectOptionsBegin((PetscObject)tao); CHKERRQ(ierr);
     {
 							
 
@@ -1919,8 +1919,16 @@ PetscErrorCode TaoDefaultConvergenceTest(TaoSolver tao,void *dummy)
 
 PetscErrorCode TaoSetOptionsPrefix(TaoSolver tao, const char p[])
 {
-  PetscObjectSetOptionsPrefix((PetscObject)tao,p);
-  return(0);
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)tao,p); CHKERRQ(ierr);
+  if (tao->linesearch) {
+    ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,p); CHKERRQ(ierr);
+  }
+  if (tao->ksp) {
+    ierr = KSPSetOptionsPrefix(tao->ksp,p); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -1947,8 +1955,16 @@ PetscErrorCode TaoSetOptionsPrefix(TaoSolver tao, const char p[])
 @*/
 PetscErrorCode TaoAppendOptionsPrefix(TaoSolver tao, const char p[])
 {
-  PetscObjectAppendOptionsPrefix((PetscObject)tao,p);
-  return(0);
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)tao,p); CHKERRQ(ierr);
+  if (tao->linesearch) {
+    ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,p); CHKERRQ(ierr);
+  }
+  if (tao->ksp) {
+    ierr = KSPSetOptionsPrefix(tao->ksp,p); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -2444,6 +2460,9 @@ PetscErrorCode TaoMonitor(TaoSolver tao, PetscInt its, PetscReal f, PetscReal re
     tao->cnorm = cnorm;
     tao->step = steplength;
     tao->niter=its;
+    if (its == 0) {
+      tao->cnorm0 = cnorm; tao->gnorm0 = res;
+    }
     TaoLogHistory(tao,f,res,cnorm);
     if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(res)) {
       SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
