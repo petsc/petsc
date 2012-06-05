@@ -319,7 +319,7 @@ runex17_2:
 	   ${RM} -f ex17_2.tmp
 
 runex22:
-	-@${MPIEXEC} -n 1 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 -ts_adapt_type none -snes_linesearch_type basic > ex22_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 -ts_adapt_type none > ex22_1.tmp 2>&1; \
 	   ${DIFF} output/ex22_1.out ex22_1.tmp || echo  ${PWD} "\nPossible problem with ex22_1, diffs above \n=========================================";  \
 	   ${RM} -f ex22_1.tmp
 runex22_2:
@@ -331,12 +331,12 @@ runex22_3:
 	   ${DIFF} output/ex22_3.out ex22_3.tmp || echo  ${PWD} "\nPossible problem with ex22_3, diffs above \n=========================================";  \
 	   ${RM} -f ex22_3.tmp
 runex22f:
-	-@${MPIEXEC} -n 1 ./ex22f -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 -snes_linesearch_type basic > ex22f_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex22f -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 > ex22f_1.tmp 2>&1; \
 	   ${DIFF} output/ex22f_1.out ex22f_1.tmp || echo  ${PWD} "\nPossible problem with ex22f_1, diffs above \n=========================================";  \
 	   ${RM} -f ex22f_1.tmp
 
 runex22f_mf:
-	-@${MPIEXEC} -n 1 ./ex22f_mf -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 -snes_linesearch_type basic > ex22f_mf_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex22f_mf -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 > ex22f_mf_1.tmp 2>&1; \
 	   ${DIFF} output/ex22f_mf_1.out ex22f_mf_1.tmp || echo  ${PWD} "\nPossible problem with ex22f_mf_1, diffs above \n=========================================";  \
 	   ${RM} -f ex22f_mf_1.tmp
 
