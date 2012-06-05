@@ -60,9 +60,6 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
   pthread_setspecific(PetscPThreadRankkey,&PetscPThreadRank);
 #endif
 
-#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-  PetscPThreadCommDoCoreAffinity();
-#endif
   job_lockfree.data[PetscPThreadRank] = 0;
   job_lockfree.my_job_status[PetscPThreadRank] = THREAD_INITIALIZED;
 
@@ -129,7 +126,7 @@ PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm tcomm)
   /* Create threads */
   for(i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
     job_lockfree.my_job_status[i] = THREAD_CREATED;
-    ierr = pthread_create(&ptcomm->tid[i],NULL,&PetscPThreadCommFunc_LockFree,&ptcomm->granks[i]);CHKERRQ(ierr);
+    ierr = pthread_create(&ptcomm->tid[i],&ptcomm->attr[i],&PetscPThreadCommFunc_LockFree,&ptcomm->granks[i]);CHKERRQ(ierr);
   }
 
   if(ptcomm->ismainworker) job_lockfree.my_job_status[0] = THREAD_INITIALIZED;
@@ -144,7 +141,6 @@ PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm tcomm)
       threads_initialized++;
     }
   }
-
   PetscFunctionReturn(0);
 }
 

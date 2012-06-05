@@ -31,35 +31,51 @@ PetscInt PetscThreadCommGetRank_PThread()
 }
 
 
-#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
-void PetscPThreadCommDoCoreAffinity(void)
+/* Sets the attributes for threads */
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadCommSetPThreadAttributes"
+PetscErrorCode PetscThreadCommSetPThreadAttributes(PetscThreadComm tcomm)
 {
-  PetscInt                 i,icorr=0; 
-  cpu_set_t                mset;
-  PetscInt                 ncores,myrank=PetscThreadCommGetRank_PThread();
-  PetscThreadComm          tcomm;
-  PetscThreadComm_PThread  gptcomm;
-  
-  PetscCommGetThreadComm(PETSC_COMM_WORLD,&tcomm);
+  PetscErrorCode          ierr;
+  PetscThreadComm_PThread ptcomm=(PetscThreadComm_PThread)tcomm->data;
+  pthread_attr_t          *attr=ptcomm->attr;
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+  PetscInt                ncores;
+  cpu_set_t               *cpuset;
+#endif
+  PetscInt                i;
+
+  PetscFunctionBegin;
+
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(cpu_set_t),&cpuset);CHKERRQ(ierr);
+  ptcomm->cpuset = cpuset;
   PetscGetNCores(&ncores);
-  gptcomm=(PetscThreadComm_PThread)tcomm->data;
-  switch(gptcomm->aff) {
-  case PTHREADAFFPOLICY_ONECORE:
-    icorr = tcomm->affinities[myrank];
-    CPU_ZERO(&mset);
-    CPU_SET(icorr%ncores,&mset);
-    pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
+#endif
+
+  for(i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
+    ierr = pthread_attr_init(&attr[i]);CHKERRQ(ierr);
+    /* CPU affinity */
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+    PetscInt j;
+    switch(ptcomm->aff) {
+    case PTHREADAFFPOLICY_ONECORE:
+      CPU_ZERO(&cpuset[i]);
+      CPU_SET(tcomm->affinities[i]%ncores,&cpuset[i]);
+      pthread_attr_setaffinity_np(&attr[i],sizeof(cpu_set_t),&cpuset[i]);
     break;
   case PTHREADAFFPOLICY_ALL:
-    CPU_ZERO(&mset);
-    for(i=0;i<ncores;i++) CPU_SET(i,&mset);
-    pthread_setaffinity_np(pthread_self(),sizeof(cpu_set_t),&mset);
+    CPU_ZERO(&cpuset[i]);
+    for(j=0;j<ncores;j++) CPU_SET(j,&cpuset[i]);
+    pthread_attr_setaffinity_np(&attr[i],sizeof(cpu_set_t),&cpuset[i]);
     break;
-  case PTHREADAFFPOLICY_NONE:
-    break;
+    case PTHREADAFFPOLICY_NONE:
+      break;
+    }
+#endif  
   }
+  PetscFunctionReturn(0);
 }
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommDestroy_PThread"
@@ -67,6 +83,7 @@ PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
 {
   PetscThreadComm_PThread ptcomm=(PetscThreadComm_PThread)tcomm->data;
   PetscErrorCode          ierr;
+  PetscInt                i;
 
   PetscFunctionBegin;
   if(!ptcomm) PetscFunctionReturn(0);
@@ -75,13 +92,18 @@ PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
     /* Terminate the thread pool */
     ierr = (*ptcomm->finalize)(tcomm);CHKERRQ(ierr);
     ierr = PetscFree(ptcomm->tid);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+    ierr = PetscFree(ptcomm->cpuset);CHKERRQ(ierr);
+#endif
+    for(i=0;i<tcomm->nworkThreads;i++) {
+      ierr = pthread_attr_destroy(&ptcomm->attr[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(ptcomm->attr);CHKERRQ(ierr);
   }
   ierr = PetscFree(ptcomm->granks);CHKERRQ(ierr);
   ierr = PetscFree(ptcomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-/* PetscLogEvent PThreadComm_Init; */
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -159,26 +181,24 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
   
     /* Create array holding pthread ids */
     ierr = PetscMalloc(tcomm->nworkThreads*sizeof(pthread_t),&ptcomm->tid);CHKERRQ(ierr);
-
-    /* Set affinity of the main thread */
-    
+    /* Create thread attributes */
+    ierr = PetscMalloc(tcomm->nworkThreads*sizeof(pthread_attr_t),&ptcomm->attr);CHKERRQ(ierr);
+    ierr = PetscThreadCommSetPThreadAttributes(tcomm);CHKERRQ(ierr);
+    if(ptcomm->ismainworker) {
+      /* Pin main thread */
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
     cpu_set_t mset;
     PetscInt  ncores,icorr;
     
-
     ierr = PetscGetNCores(&ncores);CHKERRQ(ierr);
     CPU_ZERO(&mset);
     icorr = tcomm->affinities[0]%ncores;
     CPU_SET(icorr,&mset);
     sched_setaffinity(0,sizeof(cpu_set_t),&mset);
 #endif
-
-    /*    ierr = PetscLogEventRegister("PThreadCommInitialize", 0, &PThreadComm_Init);CHKERRQ(ierr);
-        PetscLogEventBegin(PThreadComm_Init,0,0,0,0); */
+    }
     /* Initialize thread pool */
     ierr = (*ptcomm->initialize)(tcomm);CHKERRQ(ierr);
-    /*    PetscLogEventEnd(PThreadComm_Init,0,0,0,0); */
 
   } else {
     PetscThreadComm          gtcomm;

@@ -41,6 +41,10 @@ extern const char *const PetscPThreadCommPoolSparkTypes[];
 struct _p_PetscThreadComm_PThread{
   PetscInt    nthreads;                      /* Number of threads created */
   pthread_t  *tid;                           /* thread ids */
+  pthread_attr_t *attr;                      /* thread attributes */
+#if defined(PETSC_HAVE_SCHED_CPU_SET_T)
+  cpu_set_t   *cpuset;
+#endif
   PetscBool  ismainworker;                   /* Is the main thread also a work thread?*/
   PetscInt   *granks;                        /* Thread ranks - if main thread is a worker then main thread 
 				                rank is 0 and ranks for other threads start from 1, 
