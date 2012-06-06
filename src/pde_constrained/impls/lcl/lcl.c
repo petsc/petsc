@@ -283,9 +283,6 @@ static PetscErrorCode TaoSolve_LCL(TaoSolver tao)
   ierr = TaoMonitor(tao, iter,f,mnorm,cnorm,step,&reason); CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING) {
-    /* Reset rho to initial value */
-    lclP->rho = lclP->rho0;
-
     /* Compute a descent direction for the linearly constrained subproblem
        minimize f(u+du, v+dv)
        s.t. A(u0,v0)du + B(u0,v0)dv = -g(u0,v0) */
