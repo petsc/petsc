@@ -94,22 +94,15 @@
         <h2><a name="CHANGES">CHANGES in the PETSc Development Version</a></h2>
       </div>
 
-      <h4>General:</h4>
-
-      <ul>
-        <li>PetscBagLoad() now requires you previously created and registered all the records in the PETSc bag</li>
-      </ul>
-
-      <h4>Logging:</h4>
       <h4>config/configure.py:</h4>
-      <h4>IS:</h4>
-      <h4>PF:</h4>
+      <ul>
+        <li>Building PETSc using CMake is enabled automatically if CMake is installed (enabling parallel builds and fast incremental builds), otherwise the plain make-based system is used.</li>
+      </ul>
       <h4>Vec:</h4>
       <ul>
         <li>VecCreateSeqWithArray() and VecCreateMPIWithArray() now take a blocksize argument before the local length</li>
         <li>VecSetBlockSize() cannot be called after VecCreateSeq() or VecCreateMPI() and must be called before VecSetUp() or VecSetFromOptions() or before either VecSetType() or VecSetSizes()</li>
       </ul>
-      <h4>VecScatter:</h4>
       <h4>Mat:</h4>
 
       <ul>
@@ -151,7 +144,9 @@
 
       <ul>
         <li>KSPSetOperators() will automatically set the null space present on the input matrix</li>
-         <li>Renamed KSPCHEBYCHEV to KSPCHEBYSHEV</li>
+        <li>Renamed KSPCHEBYCHEV to KSPCHEBYSHEV</li>
+        <li>Added pipelined GMRES (KSPPGMRES) which performs one non-blocking reduction per iteration instead of two blocking reductions.</li>
+        <li>Added improved flexible BiCGStab (KSPIFBCGS) which tolerates a nonlinear preconditioner and performs one reduction every other iteration (like KSPIBCGS).</li>
       </ul>
 
       <h4>SNES:</h4>
@@ -159,6 +154,9 @@
         <li>Added SNESGetSNESLineSearch</li>
         <li>Changed default max_its and max_funcs for non-newton SNES solvers to 10000 and 30000 respectively</li>
         <li>Changed options and command-line arguments for SNESFAS to be in line with PCMG</li>
+        <li>Added quasi-Newton (SNESQN), Nonlinear GMRES (SNESNGMRES), nonlinear conjugate gradients (SNESNCG), and multi-stage methods (SNESMS, used as a smoother for nonlinear multigrid).</li>
+        <li>Support for Full Approximation Scheme nonlinear multigrid (SNESFAS) moved from DMMG to SNES and made composable with the methods above.</li>
+        <li>SNES line search type should be set by name with SNESLineSearchSetType rather than with SNESLineSearchSet, see below.</li>
       </ul>
 
       <h4>SNESLineSearch:</h4>
@@ -219,16 +217,19 @@
       </ul>
 
       <h4>PetscViewer:</h4>
+      <ul>
+        <li>A VTK binary viewer was added, see PETSCVIEWERVTK.</li>
+      </ul>
       <h4>SYS:</h4>
-      <h4>AO:</h4>
-      <h4>Sieve:</h4>
+      <ul>
+        <li>PetscBagLoad() now requires you previously created and registered all the records in the PETSc bag, allows loading on systems with different struct layout/endianness.</li>
+        <li>PetscSF added as a type-generic graph communication mechanism. The current implementation requires MPI-2 one-sided and the interface is currently optional.</li>
+      </ul>
+
       <h4>Fortran:</h4>
       <ul>
         <li>PETSC_NULL_TRUTH is now PETSC_NULL_BOOL</li>
-      </ul>
-
-      <ul>
-        <li>SNES line search type should be set by name with SNESLineSearchSetType rather than with SNESLineSearchSet</li>
+        <li>PetscOptionsGetEnum() now available from Fortran</li>
       </ul>
 
       <h4><a href="http://www.mcs.anl.gov/petsc/miscellaneous/external.html">ExternalPackages</a>:</h4>
