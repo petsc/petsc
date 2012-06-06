@@ -145,7 +145,9 @@
       <ul>
         <li>KSPSetOperators() will automatically set the null space present on the input matrix</li>
         <li>Renamed KSPCHEBYCHEV to KSPCHEBYSHEV</li>
+        <li>Added Hybrid CHEBYCHEV (-ksp_chebyshev_hybrid) </li>
         <li>Added pipelined GMRES (KSPPGMRES) which performs one non-blocking reduction per iteration instead of two blocking reductions.</li>
+        <li>Added flexible BiCGStab (KSPFBCGS) which tolerates a nonlinear preconditioner (like KSPFGMRES).</li>
         <li>Added improved flexible BiCGStab (KSPIFBCGS) which tolerates a nonlinear preconditioner and performs one reduction every other iteration (like KSPIBCGS).</li>
       </ul>
 
