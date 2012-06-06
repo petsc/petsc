@@ -540,7 +540,7 @@ static PetscErrorCode TaoView_POUNDER(TaoSolver tao, PetscViewer viewer)
   TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
   PetscBool isascii;
   PetscErrorCode ierr;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"points in model: %D\n",mfqP->nmodelpoints); 

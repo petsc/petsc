@@ -28,6 +28,7 @@ typedef struct {
   Vec *Xhist;
   Vec *Fhist;
   Mat *Hres; /* array of nxn matrices,  length m */
+  Mat *Hresdel; /* array of nxn matrices,  length m */
   PetscReal *Fres; /* (nfmax) */
   PetscReal *RES; /* npxm */
   PetscReal *work; /* (n) */
@@ -38,9 +39,9 @@ typedef struct {
   PetscReal *Disp; /* nxn */
   PetscReal *Fdiff;/* nxm */
   PetscReal *H; /* model hessians (mxnxn) */
+  PetscReal *Hdel_array; /* mxnxn */
   PetscReal *Gres;  /* n */
-  PetscReal *Gdel; /* mxn */
-  PetscReal *Hdel; /* mxnxn */
+  PetscReal *Gdel_array; /* mxn */
   PetscReal *Gpoints; /* nxn */
   PetscReal *C; /* m */
   PetscReal *D; /* n */
@@ -93,12 +94,13 @@ typedef struct {
 
 
 
-PetscErrorCode solvequadratic(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin);
-PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi);
-PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP);
-PetscErrorCode morepoints(TAO_POUNDERS *mfqP);
-PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index);
-PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt addallpoints);
-PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c);
+PetscErrorCode TaoPounders_formquad(TAO_POUNDERS *mfqP,PetscBool checkonly)
+PetscErrorCode TaoPounders_solvequadratic(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin);
+//PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi);
+//PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP);
+//PetscErrorCode morepoints(TAO_POUNDERS *mfqP);
+//PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index);
+//PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt addallpoints);
+//PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c);
 
 #endif /* ifndef __TAO_MFQNLS */

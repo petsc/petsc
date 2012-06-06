@@ -752,7 +752,7 @@ static PetscErrorCode TaoView_NTR(TaoSolver tao, PetscViewer viewer)
   PetscInt nrejects;
   PetscBool isascii;
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
     if (NTR_PC_BFGS == tr->pc_type && tr->M) {

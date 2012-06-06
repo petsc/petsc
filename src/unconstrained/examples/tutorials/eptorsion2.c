@@ -86,6 +86,7 @@ int main(int argc, char **argv)
     TaoSolver tao;
     TaoSolverTerminationReason reason;
     PetscBool flg;
+    KSP ksp; PC pc;
     AppCtx user;
 
     /* Initialize PETSc, TAO */
@@ -137,6 +138,12 @@ int main(int argc, char **argv)
 
     /* Check for any TAO command line options */
     ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
+    
+    ierr = TaoGetKSP(tao,&ksp); CHKERRQ(ierr);
+    if (ksp) {
+      ierr = KSPGetPC(ksp,&pc); CHKERRQ(ierr);
+      ierr = PCSetType(pc,PCNONE); CHKERRQ(ierr);
+    }
 
     /* SOLVE THE APPLICATION */
     ierr = TaoSolve(tao);  CHKERRQ(ierr);

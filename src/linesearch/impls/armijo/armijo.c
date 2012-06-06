@@ -79,7 +79,7 @@ static PetscErrorCode TaoLineSearchView_Armijo(TaoLineSearch ls, PetscViewer pv)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(pv,"  maxf=%D, ftol=%G, gtol=%G\n",ls->max_funcs, ls->rtol, ls->ftol); CHKERRQ(ierr);
     ierr=PetscViewerASCIIPrintf(pv,"  Armijo linesearch",armP->alpha);CHKERRQ(ierr);

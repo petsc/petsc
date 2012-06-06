@@ -482,10 +482,10 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
   MPI_Comm_size(((PetscObject)mat)->comm,&size);
 
 
-  ierr = PetscTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)mat,MATSAME,&issame); CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)mat,MATMPIDENSE,&isdense); CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)mat,MATSEQDENSE,&isseqdense); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATSAME,&issame); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIDENSE,&isdense); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQDENSE,&isseqdense); CHKERRQ(ierr);
 
   if (sametype || issame) {
 

@@ -521,8 +521,8 @@ PetscErrorCode TaoView(TaoSolver tao, PetscViewer viewer)
     PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
     PetscCheckSameComm(tao,1,viewer,2);
 
-    ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii); CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring); CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii); CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring); CHKERRQ(ierr);
     if (isascii) {
         ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tao,viewer,"TaoSolver"); CHKERRQ(ierr);
 	ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
@@ -2139,7 +2139,7 @@ PetscErrorCode TaoSetType(TaoSolver tao, const TaoSolverType type)
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     
-    ierr = PetscTypeCompare((PetscObject)tao,type,&issame); CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)tao,type,&issame); CHKERRQ(ierr);
     if (issame) PetscFunctionReturn(0);
 
     ierr = PetscFListFind(TaoSolverList,((PetscObject)tao)->comm, type, PETSC_TRUE, (void(**)(void))&create_xxx); CHKERRQ(ierr);

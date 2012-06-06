@@ -265,7 +265,7 @@ static PetscErrorCode TaoView_LMVM(TaoSolver tao, PetscViewer viewer)
 
 
     PetscFunctionBegin;
-    ierr = PetscTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
     if (isascii) {
 
         ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);

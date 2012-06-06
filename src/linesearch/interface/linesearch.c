@@ -50,8 +50,8 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(ls,1,viewer,2);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
     if (((PetscObject)ls)->prefix) {
       ierr = PetscViewerASCIIPrintf(viewer,"TaoLineSearch Object:(%s)\n",((PetscObject)ls)->prefix);CHKERRQ(ierr);
@@ -482,7 +482,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, const TaoLineSearchType ty
      PetscFunctionBegin;
      PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
      PetscValidCharPointer(type,2);
-     ierr = PetscTypeCompare((PetscObject)ls, type, &flg); CHKERRQ(ierr);
+     ierr = PetscObjectTypeCompare((PetscObject)ls, type, &flg); CHKERRQ(ierr);
      if (flg) PetscFunctionReturn(0);
 
      ierr = PetscFListFind(TaoLineSearchList, ((PetscObject)ls)->comm,type, PETSC_TRUE, (void (**)(void)) &r); CHKERRQ(ierr);

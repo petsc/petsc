@@ -278,7 +278,7 @@ static PetscErrorCode TaoView_CG(TaoSolver tao, PetscViewer viewer)
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    ierr = PetscTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
     if (isascii) {
         ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
 	ierr = PetscViewerASCIIPrintf(viewer, "CG Type: %s\n", CG_Table[cgP->cg_type]); CHKERRQ(ierr);

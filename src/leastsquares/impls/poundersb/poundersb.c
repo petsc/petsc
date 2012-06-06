@@ -29,8 +29,8 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
   
   PetscFunctionBegin;
   CHKMEMQ;
-  blasm = mfqP->m; blasn=mfqP->n; blasnpmax = mfqP->npmax;
-  for (i=0;i<mfqP->n*mfqP->n*mfqP->m;i++) mfqP->H[i]=0;
+
+  /* TODO -- use previous function evaluations */
 
   ierr = VecCopy(tao->solution,mfqP->Xhist[0]); CHKERRQ(ierr);
   CHKMEMQ;
@@ -38,9 +38,10 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
   ierr = VecDot(mfqP->Fhist[0],mfqP->Fhist[0],&mfqP->Fres[0]); CHKERRQ(ierr);
   mfqP->minindex = 0;
   minnorm = mfqP->Fres[mfqP->minindex];
-  /*
+
+  /* Compute objective at x+delta*e_i, i=1..n*/
   ierr = VecGetOwnershipRange(mfqP->Xhist[0],&low,&high); CHKERRQ(ierr);
-  for (i=1;i<mfqP->n+1;i++) {
+  for (i=1;i<=mfqP->n;i++) {
       ierr = VecCopy(tao->solution,mfqP->Xhist[i]); CHKERRQ(ierr);
       if (i-1 >= low && i-1 < high) {
 	  ierr = VecGetArray(mfqP->Xhist[i],&x); CHKERRQ(ierr);
@@ -50,19 +51,22 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
       CHKMEMQ;
       ierr = TaoComputeSeparableObjective(tao,mfqP->Xhist[i],mfqP->Fhist[i]); CHKERRQ(ierr);
       ierr = VecNorm(mfqP->Fhist[i],NORM_2,&mfqP->Fres[i]); CHKERRQ(ierr);
+      if (PetscIsInfOrNanReal(mfqP->Fres[i])) {
+	SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
+      }
       mfqP->Fres[i]*=mfqP->Fres[i];
       if (mfqP->Fres[i] < minnorm) {
 	  mfqP->minindex = i;
 	  minnorm = mfqP->Fres[i];
       }
   }
-  */
-
+  
+  
   ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution); CHKERRQ(ierr);
   ierr = VecCopy(mfqP->Fhist[mfqP->minindex],tao->sep_objective); CHKERRQ(ierr);
 
   /* Fdiff[i] = (Fi-Fmin)', i=1,..,mfqP->minindex-1,mfqP->minindex+1,..,n */
-  /* (Column oriented for blas calls) */
+
   ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution); CHKERRQ(ierr);
   mfqP->nHist = 1;
   mfqP->nmodelpoints = 1;
@@ -92,7 +96,7 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
       ierr = VecAXPY(mfqP->Res[i],-0.5,mfqP->DH); CHKERRQ(ierr);
 
       /* Form quadratic model */
-      ierr = formquad(mfqP,PETSC_FALSE); CHKERRQ(ierr);
+      ierr = TaoPounders_formquad(mfqP,PETSC_FALSE); CHKERRQ(ierr);
       
 	ierr = VecGetArray(mfqP->Xhist[mfqP->model_indices[i]],&x); CHKERRQ(ierr);
 	for (j=0;j<mfqP->n;j++) {

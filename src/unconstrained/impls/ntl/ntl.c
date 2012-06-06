@@ -1013,7 +1013,7 @@ static PetscErrorCode TaoView_NTL(TaoSolver tao, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
     if (NTL_PC_BFGS == tl->pc_type && tl->M) {

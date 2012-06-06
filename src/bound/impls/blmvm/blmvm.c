@@ -229,7 +229,7 @@ static int TaoView_BLMVM(TaoSolver tao, PetscViewer viewer)
 
 
     PetscFunctionBegin;
-    ierr = PetscTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
     if (isascii) {
       ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "Gradient steps: %D\n", lmP->grad); CHKERRQ(ierr);

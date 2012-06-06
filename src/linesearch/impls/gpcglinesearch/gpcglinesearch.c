@@ -39,7 +39,7 @@ static PetscErrorCode TaoLineSearchView_GPCG(TaoLineSearch ls, PetscViewer viewe
   PetscErrorCode            ierr;
   PetscFunctionBegin;
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
 
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer," GPCG Line search"); CHKERRQ(ierr);

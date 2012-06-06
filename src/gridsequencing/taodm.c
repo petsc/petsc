@@ -461,7 +461,7 @@ PetscErrorCode  TaoDMSetUpLevel(TaoDM *taodm,KSP ksp,PetscInt nlevels)
   ierr  = PetscFree(comms);CHKERRQ(ierr); 
   ierr =  PCMGSetType(pc,PC_MG_FULL);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
     /* set solvers for each level */
     for (i=0; i<nlevels; i++) {
@@ -475,9 +475,9 @@ PetscErrorCode  TaoDMSetUpLevel(TaoDM *taodm,KSP ksp,PetscInt nlevels)
       /* If using a matrix free multiply and did not provide an explicit matrix to build
          the preconditioner then must use no preconditioner 
       */
-      ierr = PetscTypeCompare((PetscObject)taodm[i]->B,MATSHELL,&isshell);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)taodm[i]->B,MATDAAD,&ismf);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)taodm[i]->B,MATMFFD,&ismffd);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)taodm[i]->B,MATSHELL,&isshell);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)taodm[i]->B,MATDAAD,&ismf);CHKERRQ(ierr);
+      ierr = PetscObjectTypeCompare((PetscObject)taodm[i]->B,MATMFFD,&ismffd);CHKERRQ(ierr);
       if (isshell || ismf || ismffd) {
         PC  lpc;
         ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
@@ -542,7 +542,7 @@ PetscErrorCode  TaoDMSetKSP(TaoDM *taodm,PetscErrorCode (*rhs)(TaoDM,Vec),PetscE
 
   /* evaluate matrix on each level */
   ierr = KSPGetPC(taodm[nlevels-1]->ksp,&pc);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
     ierr = PCMGGetGalerkin(pc,&galerkin);CHKERRQ(ierr);
   }
@@ -611,8 +611,8 @@ PetscErrorCode  TaoDMView(TaoDM *taodm,PetscViewer viewer)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the TaoDM and the PetscViewer");
   }
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (isbinary) {
     for (i=0; i<nlevels; i++) {
       ierr = MatView(taodm[i]->hessian,viewer);CHKERRQ(ierr);

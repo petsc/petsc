@@ -62,7 +62,7 @@ static PetscErrorCode TaoView_GPCG(TaoSolver tao, PetscViewer viewer)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Total PG its: %D,",gpcg->total_gp_its);CHKERRQ(ierr);

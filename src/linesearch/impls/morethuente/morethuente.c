@@ -53,7 +53,7 @@ static PetscErrorCode TaoLineSearchView_MT(TaoLineSearch ls, PetscViewer pv)
     PetscErrorCode ierr;
     PetscBool isascii;
     PetscFunctionBegin;
-    ierr = PetscTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
     if (isascii) {
 	ierr = PetscViewerASCIIPrintf(pv,"  maxf=%D, ftol=%G, gtol=%G\n",ls->max_funcs, ls->rtol, ls->ftol); CHKERRQ(ierr);
     } else {

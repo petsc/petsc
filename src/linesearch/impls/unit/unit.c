@@ -33,7 +33,7 @@ static PetscErrorCode TaoLineSearchView_Unit(TaoLineSearch ls,PetscViewer viewer
   PetscBool isascii;
   PetscFunctionBegin;
   
-  ierr = PetscTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
   if (isascii) {
       ierr=PetscViewerASCIIPrintf(viewer,"  Line Search: Unit Step.\n");CHKERRQ(ierr);
   } else {
