@@ -140,6 +140,10 @@
             <li> Removed PCGASMCreateSubdomains(), use PCGASMCreateLocalSubdomains(Mat,PetscInt,PetscInt,IS*[],IS*[]); second PetscInt argument is requested overlap</li>
             <li> PCGASMCreateSubdomains2D(PC,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,IS[]*,IS[]*): the 9-th and 10-th argument have been swapped: the 9-th outputs the inner subdomains, the 10-th outputs the outer subdomains.
           </ul>
+        <li>PCMG multigrid defaults changed to use a Chebyshev smoother with block Jacobi Gauss-Seidel relaxation.
+          This is a linear preconditioner so it can be used with normal Krylov methods rather than only flexible methods, as well as having fewer synchronization pointst.
+          Use <tt>-mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type bjacobi</tt> for the original behavior.
+        </li>
       </ul>
       <h4>KSP:</h4>
 
