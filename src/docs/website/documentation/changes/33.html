@@ -97,6 +97,7 @@
       <h4>config/configure.py:</h4>
       <ul>
         <li>Building PETSc using CMake is enabled automatically if CMake is installed (enabling parallel builds and fast incremental builds), otherwise the plain make-based system is used.</li>
+        <li>Added --with-cuda-only flag to allow compiling CUDA files without requiring Thrust and Cusp</li>
       </ul>
       <h4>Vec:</h4>
       <ul>
@@ -240,6 +241,19 @@
         <li>Sundials interface updated to 2.5.0.</li>
         <li>FFTW interface updated to 3.3.2.</li>
         <li>ParMetis updated to 4.0.2 and split from Metis 5.0.2 which is now separate.</li>
+      </ul>
+
+      <h4>Build:</h4>
+      <ul>
+        <li>If Python 2.7 is available, the config/builder2.py is now available for a complete build, including
+        dependency tracking.</li>
+      </ul>
+
+      <h4>Examples:</h4>
+      <ul>
+        <li>SNES ex62 illustrates the use of DMComplex to solve the Stokes equation on an unstructured mesh. The Python
+          tests show how to use block preconditioning strategies from the command line.</li>
+        <li>SNES ex52 illustrates the use of CUDA for FEM integration</li>
       </ul>
     </div>
 
