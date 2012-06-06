@@ -34,7 +34,7 @@ def currentversion(petscdir):
   except:
     return 
   aversion = str(amajorversion)+'.'+str(aminorversion)+'.'+str(apatchversion)
-  if (amajorversion > majorversion) or ((amajorversion ==  majorversion) and (aminorversion > minorversion)) or
+  if (amajorversion > majorversion) or ((amajorversion ==  majorversion) and (aminorversion > minorversion)) or \
   ((amajorversion ==  majorversion) and (aminorversion == minorversion) and (apatchversion > patchversion)):
     print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     print("The version of PETSc you are using is out-of-date, we recommend updating to the new release")
