@@ -86,15 +86,14 @@ cdef class IS(Object):
         PetscCLEAR(self.obj); self.iset = newiset
         return self
 
-    def duplicate(self, copy=False):
-        cdef IS iset = IS()
+    def duplicate(self):
+        cdef IS iset = type(self)()
         CHKERR( ISDuplicate(self.iset, &iset.iset) )
-        if copy: CHKERR( ISCopy(self.iset, iset.iset) )
         return iset
 
     def copy(self, IS result=None):
         if result is None:
-            result = IS()
+            result = type(self)()
         if result.iset == NULL:
             CHKERR( ISDuplicate(self.iset, &result.iset) )
         CHKERR( ISCopy(self.iset, result.iset) )

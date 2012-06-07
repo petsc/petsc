@@ -356,14 +356,10 @@ cdef class Vec(Object):
         self.set_attr('__placed_array__', None)
         return array
 
-    def duplicate(self, copy=False, array=None):
+    def duplicate(self, array=None):
         cdef Vec vec = type(self)()
         CHKERR( VecDuplicate(self.vec, &vec.vec) )
-        if copy:
-            if array is not None:
-                raise ValueError('Cannot set array when copy=True')
-            CHKERR( VecCopy(self.vec, vec.vec) )
-        elif array is not None:
+        if array is not None:
             vec_setarray(vec, array)
         return vec
 
