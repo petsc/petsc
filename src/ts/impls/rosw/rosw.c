@@ -588,6 +588,8 @@ PetscErrorCode TSRosWRegisterAll(void)
   PetscFunctionReturn(0);
 }
 
+
+
 #undef __FUNCT__
 #define __FUNCT__ "TSRosWRegisterDestroy"
 /*@C
@@ -1164,6 +1166,104 @@ static PetscErrorCode TSDestroy_RosW(TS ts)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "TSRosWGetVecs"
+static PetscErrorCode TSRosWGetVecs(TS ts,DM dm,Vec *Ydot,Vec *Zdot,Vec *Ystage,Vec *Zstage)
+{
+  TS_RosW        *rw = (TS_RosW*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (Ydot) {
+    if (dm && dm != ts->dm) {
+      ierr = DMGetNamedGlobalVector(dm,"TSRosW_Ydot",Ydot);CHKERRQ(ierr);
+    } else *Ydot = rw->Ydot;
+  }
+  if (Zdot) {
+    if (dm && dm != ts->dm) {
+      ierr = DMGetNamedGlobalVector(dm,"TSRosW_Zdot",Zdot);CHKERRQ(ierr);
+    } else *Zdot = rw->Zdot;
+  }
+  if (Ystage) {
+    if (dm && dm != ts->dm) {
+      ierr = DMGetNamedGlobalVector(dm,"TSRosW_Ystage",Ystage);CHKERRQ(ierr);
+    } else *Ystage = rw->Ystage;
+  }
+  if (Zstage) {
+    if (dm && dm != ts->dm) {
+      ierr = DMGetNamedGlobalVector(dm,"TSRosW_Zstage",Zstage);CHKERRQ(ierr);
+    } else *Zstage = rw->Zstage;
+  }
+
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TSRosWRestoreVecs"
+static PetscErrorCode TSRosWRestoreVecs(TS ts,DM dm,Vec *Ydot,Vec *Zdot, Vec *Ystage, Vec *Zstage)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (Ydot) {
+    if (dm && dm != ts->dm) {
+      ierr = DMRestoreNamedGlobalVector(dm,"TSRosW_Ydot",Ydot);CHKERRQ(ierr);
+    }
+  }
+  if (Zdot) {
+    if (dm && dm != ts->dm) {
+      ierr = DMRestoreNamedGlobalVector(dm,"TSRosW_Zdot",Zdot);CHKERRQ(ierr);
+    }
+  }
+  if (Ystage) {
+    if (dm && dm != ts->dm) {
+      ierr = DMRestoreNamedGlobalVector(dm,"TSRosW_Ystage",Ystage);CHKERRQ(ierr);
+    }
+  }
+  if (Zstage) {
+    if (dm && dm != ts->dm) {
+      ierr = DMRestoreNamedGlobalVector(dm,"TSRosW_Zstage",Zstage);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCoarsenHook_TSRosW"
+static PetscErrorCode DMCoarsenHook_TSRosW(DM fine,DM coarse,void *ctx)
+{
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMRestrictHook_TSRosW"
+static PetscErrorCode DMRestrictHook_TSRosW(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse,void *ctx)
+{
+  TS ts = (TS)ctx;
+  PetscErrorCode ierr;
+  Vec Ydot,Zdot,Ystage,Zstage;
+  Vec Ydotc,Zdotc,Ystagec,Zstagec;
+
+  PetscFunctionBegin;
+  ierr = TSRosWGetVecs(ts,fine,&Ydot,&Ystage,&Zdot,&Zstage);CHKERRQ(ierr);
+  ierr = TSRosWGetVecs(ts,coarse,&Ydotc,&Ystagec,&Zdotc,&Zstagec);CHKERRQ(ierr);
+  ierr = MatRestrict(restrct,Ydot,Ydotc);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(Ydotc,rscale,Ydotc);CHKERRQ(ierr);
+  ierr = MatRestrict(restrct,Ystage,Ystagec);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(Ystagec,rscale,Ystagec);CHKERRQ(ierr);
+  ierr = MatRestrict(restrct,Zdot,Zdotc);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(Zdotc,rscale,Zdotc);CHKERRQ(ierr);
+  ierr = MatRestrict(restrct,Zstage,Zstagec);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(Zstagec,rscale,Zstagec);CHKERRQ(ierr);
+  ierr = TSRosWRestoreVecs(ts,fine,&Ydot,&Ystage,&Zdot,&Zstage);CHKERRQ(ierr);
+  ierr = TSRosWRestoreVecs(ts,coarse,&Ydotc,&Ystagec,&Zdotc,&Zstagec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
   This defines the nonlinear equation that is to be solved with SNES
   G(U) = F[t0+Theta*dt, U, (U-U0)*shift] = 0
@@ -1174,11 +1274,19 @@ static PetscErrorCode SNESTSFormFunction_RosW(SNES snes,Vec X,Vec F,TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
   PetscErrorCode ierr;
+  Vec Ydot,Zdot,Ystage,Zstage;
+  DM dm,dmsave;
 
   PetscFunctionBegin;
-  ierr = VecWAXPY(ros->Ydot,ros->shift,X,ros->Zdot);CHKERRQ(ierr); /* Ydot = shift*X + Zdot */
-  ierr = VecWAXPY(ros->Ystage,1.0,X,ros->Zstage);CHKERRQ(ierr);    /* Ystage = X + Zstage */
-  ierr = TSComputeIFunction(ts,ros->stage_time,ros->Ystage,ros->Ydot,F,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = TSRosWGetVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
+  ierr = VecWAXPY(Ydot,ros->shift,X,Zdot);CHKERRQ(ierr); /* Ydot = shift*X + Zdot */
+  ierr = VecWAXPY(Ystage,1.0,X,Zstage);CHKERRQ(ierr);    /* Ystage = X + Zstage */
+  dmsave = ts->dm;
+  ts->dm = dm;
+  ierr = TSComputeIFunction(ts,ros->stage_time,Ystage,Ydot,F,PETSC_FALSE);CHKERRQ(ierr);
+  ts->dm = dmsave;
+  ierr = TSRosWRestoreVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1187,11 +1295,19 @@ static PetscErrorCode SNESTSFormFunction_RosW(SNES snes,Vec X,Vec F,TS ts)
 static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *str,TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
+  Vec Ydot,Zdot,Ystage,Zstage;
   PetscErrorCode ierr;
+  DM dm,dmsave;
 
   PetscFunctionBegin;
   /* ros->Ydot and ros->Ystage have already been computed in SNESTSFormFunction_RosW (SNES guarantees this) */
-  ierr = TSComputeIJacobian(ts,ros->stage_time,ros->Ystage,ros->Ydot,ros->shift,A,B,str,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = TSRosWGetVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
+  dmsave = ts->dm;
+  ts->dm = dm;
+  ierr = TSComputeIJacobian(ts,ros->stage_time,Ystage,Ydot,ros->shift,A,B,str,PETSC_TRUE);CHKERRQ(ierr);
+  ts->dm = dmsave;
+  ierr = TSRosWRestoreVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1203,6 +1319,7 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
   RosWTableau    tab  = ros->tableau;
   PetscInt       s    = tab->s;
   PetscErrorCode ierr;
+  DM             dm;
 
   PetscFunctionBegin;
   if (!ros->tableau) {
@@ -1215,6 +1332,10 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&ros->Zstage);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&ros->VecSolPrev);CHKERRQ(ierr);
   ierr = PetscMalloc(s*sizeof(ros->work[0]),&ros->work);CHKERRQ(ierr);
+  ierr = TSGetDM(ts,&dm);
+  if (dm) {
+    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSRosW,DMRestrictHook_TSRosW,ts);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -1433,6 +1554,7 @@ PetscErrorCode  TSRosWSetRecomputeJacobian_RosW(TS ts,PetscBool flg)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
 
 /* ------------------------------------------------------------ */
 /*MC
