@@ -33,7 +33,6 @@ petsc-dist/conffix.h
 petsc-dist/conftest.c
 petsc-dist/todo
 petsc-dist/surplus
-petsc-dist/CTAGS
 petsc-dist/TAGS_MAKEFILES
 petsc-dist/TAGS_NO_EXAMPLES
 petsc-dist/TAGS_COMPLETE

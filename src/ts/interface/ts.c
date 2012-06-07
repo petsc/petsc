@@ -1263,6 +1263,8 @@ PetscErrorCode  TSReset(TS ts)
   ierr = MatDestroy(&ts->Brhs);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->Frhs);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_sol);CHKERRQ(ierr);
+  ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
+  ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);

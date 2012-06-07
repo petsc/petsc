@@ -47,17 +47,19 @@ def createTags(etagfile,ctagfile,dirname,files):
   if status:
     raise RuntimeError("Error running etags "+output)
 
-  # run ctags in root directory because ctags need path of each file from root directory
-  files= []
-  gfiles = glob.glob(os.path.join(dirname,'*'))
-  for file in gfiles:
-    if file.endswith('.h') or file.endswith('.c') or file.endswith('.cu') or file.endswith('.F') or file.endswith('.cpp') or file.endswith('.F90'):
-      files.append(file)
-  if files:
-    (status,output) = commands.getstatusoutput('ctags -a -f '+ctagfile+' '+' '.join(files))
-    if status:
-      raise RuntimeError("Error running ctags "+output)
-  return
+  # linux can use '--tag-relative=yes --langmap=c:+.cu'. For others [Mac,bsd] try running ctags in root directory - with relative path to file
+  (status,output) = commands.getstatusoutput('cd '+dirname+';ctags --tag-relative=yes --langmap=c:+.cu  -a -f '+ctagfile+' '+' '.join(files))
+  if status:
+    files= []
+    gfiles = glob.glob(os.path.join(dirname,'*'))
+    for file in gfiles:
+      if file.endswith('.h') or file.endswith('.c') or file.endswith('.cu') or file.endswith('.F') or file.endswith('.cpp') or file.endswith('.F90'):
+        files.append(os.path.relpath(os.path.realpath(file)))
+    if files:
+      (status,output) = commands.getstatusoutput('ctags -a -f '+ctagfile+' '+' '.join(files))
+      if status:
+        raise RuntimeError("Error running ctags "+output)
+    return
 
 def endsWithSuffix(file,suffixes):
   # returns 1 if any of the suffixes match - else return 0
