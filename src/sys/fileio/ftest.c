@@ -1,5 +1,6 @@
 
 #include <petscsys.h>
+#include <errno.h>
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
@@ -128,10 +129,11 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
   ierr = stat(fname, &statbuf);
 #endif
   if (ierr) {
-     ierr = PetscInfo1(PETSC_NULL,"System call stat() failed on file %s\n",fname);
+    if (errno == EOVERFLOW) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"EOVERFLOW in stat(), configure PETSc --with-large-file-io=1 to support files larger than 2GiB");
+    ierr = PetscInfo1(PETSC_NULL,"System call stat() failed on file %s\n",fname);CHKERRQ(ierr);
     *exists = PETSC_FALSE;
   } else {
-     ierr = PetscInfo1(PETSC_NULL,"System call stat() succeeded on file %s\n",fname);
+     ierr = PetscInfo1(PETSC_NULL,"System call stat() succeeded on file %s\n",fname);CHKERRQ(ierr);
     *exists = PETSC_TRUE;
     *fileUid  = statbuf.st_uid;
     *fileGid  = statbuf.st_gid;
