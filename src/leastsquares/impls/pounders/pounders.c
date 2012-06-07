@@ -266,7 +266,7 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
        np is actual number of points in model (should equal npmax?) */
     PetscInt point,i,j,offset;
     PetscInt reject;
-    PetscBLASInt blasn=mfqP->n,blasnpmax=mfqP->npmax,blasnplus1=mfqP->n+1,blasinfo,blasnpmax_x_5=mfqP->npmax*5,blasint,blasint2,blasnp,blasmaxmn;
+    PetscBLASInt blasn=mfqP->n,blasnpmax=mfqP->npmax,blasnplus1=mfqP->n+1,blasinfo,blasnmax=mfqP->nmax,blasint,blasint2,blasnp,blasmaxmn;
     PetscReal *x,normd;
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -354,7 +354,7 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
 
 	/* L_tmp = N*Qtmp' */
 	LAPACKormqr_("R","N",&blasint2,&blasnp,&blasnplus1,mfqP->Q_tmp,&blasnpmax,mfqP->tau_tmp,
-		     mfqP->L_tmp,&blasint2,mfqP->npmaxwork,&blasnpmax_x_5,&blasinfo);
+		     mfqP->L_tmp,&blasint2,mfqP->npmaxwork,&blasnmax,&blasinfo);
 
 	if (blasinfo != 0) {
 	    SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine ormqr returned with value %D\n",blasinfo);
@@ -368,7 +368,7 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
 	/* Get svd for L_tmp(:,n+2:np+1) (L_tmp is modified in process) */
 	blasint = mfqP->nmodelpoints - mfqP->n;
 	LAPACKgesvd_("N","N",&blasint2,&blasint,&mfqP->L_tmp[(mfqP->n+1)*blasint2],&blasint2,
-		     mfqP->beta,mfqP->work,&blasn,mfqP->work,&blasn,mfqP->npmaxwork,&blasnpmax_x_5,
+		     mfqP->beta,mfqP->work,&blasn,mfqP->work,&blasn,mfqP->npmaxwork,&blasnmax,
 		     &blasinfo);
 	if (blasinfo != 0) {
 	    SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine gesvd returned with value %D\n",blasinfo);
@@ -408,7 +408,7 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
     }
 
     /* Q_tmp = I * Q */
-    LAPACKormqr_("R","N",&blasnp,&blasnp,&blasnplus1,mfqP->Q,&blasnpmax,mfqP->tau,mfqP->Q_tmp,&blasnpmax,mfqP->npmaxwork,&blasnpmax_x_5,&blasinfo);
+    LAPACKormqr_("R","N",&blasnp,&blasnp,&blasnplus1,mfqP->Q,&blasnpmax,mfqP->tau,mfqP->Q_tmp,&blasnpmax,mfqP->npmaxwork,&blasnmax,&blasinfo);
 
     if (blasinfo != 0) {
 	SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine ormqr returned with value %D\n",blasinfo);
@@ -483,7 +483,7 @@ PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt addallpo
   PetscInt i,j,minindex=0;
   PetscReal dp,half=0.5,one=1.0,minvalue=TAO_INFINITY;
   PetscBLASInt blasn=mfqP->n,  blasnpmax = mfqP->npmax, blask,info;
-  PetscBLASInt blas1=1,blasnpmax_x_5 = mfqP->npmax*5;
+  PetscBLASInt blas1=1,blasnmax = mfqP->nmax;
   blask = mfqP->nmodelpoints;
 
    
@@ -500,7 +500,7 @@ PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt addallpo
 
   /* Qtmp = Q * I */
   LAPACKormqr_("R","N",&blasn,&blasn,&blask,mfqP->Q,&blasnpmax,
-	       mfqP->tau, mfqP->Q_tmp, &blasnpmax, mfqP->npmaxwork,&blasnpmax_x_5, &info);
+	       mfqP->tau, mfqP->Q_tmp, &blasnpmax, mfqP->npmaxwork,&blasnmax, &info);
   
   for (i=mfqP->nmodelpoints;i<mfqP->n;i++) {
     dp = BLASdot_(&blasn,&mfqP->Q_tmp[i*mfqP->npmax],&blas1,mfqP->Gres,&blas1);
@@ -1027,8 +1027,9 @@ static PetscErrorCode TaoSetUp_POUNDERS(TaoSolver tao)
     ierr = PetscMalloc(mfqP->npmax * (mfqP->npmax - mfqP->n - 1) * sizeof(PetscReal), &mfqP->Z); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->npmax*sizeof(PetscReal),&mfqP->tau); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->npmax*sizeof(PetscReal),&mfqP->tau_tmp); CHKERRQ(ierr);
-    ierr = PetscMalloc(5*mfqP->npmax*sizeof(PetscReal),&mfqP->npmaxwork); CHKERRQ(ierr);
-    ierr = PetscMalloc(5*mfqP->npmax*sizeof(PetscBLASInt),&mfqP->npmaxiwork); CHKERRQ(ierr);
+    mfqP->nmax = PetscMax(5*mfqP->npmax,mfqP->n*(mfqP->n+1)/2); 
+    ierr = PetscMalloc(mfqP->nmax*sizeof(PetscReal),&mfqP->npmaxwork); CHKERRQ(ierr);
+    ierr = PetscMalloc(mfqP->nmax*sizeof(PetscBLASInt),&mfqP->npmaxiwork); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->n*sizeof(PetscReal),&mfqP->xmin); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->m*sizeof(PetscReal),&mfqP->C); CHKERRQ(ierr);
     ierr = PetscMalloc(mfqP->m*mfqP->n*sizeof(PetscReal),&mfqP->Fdiff); CHKERRQ(ierr);

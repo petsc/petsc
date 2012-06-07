@@ -8,6 +8,7 @@
 
 typedef struct {
   PetscInt npmax;  /* Max number of interpolation points (>n+1) (def: 2n+1) */
+  PetscInt nmax; /* Max(n*(n+1)/2, 5*npmax) */
   PetscInt m,n;
   Vec *Xhist;
   Vec *Fhist;
