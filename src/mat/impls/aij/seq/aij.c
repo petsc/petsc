@@ -2383,7 +2383,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
 {
   PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void *))coloring->f;
   PetscErrorCode ierr;
-  PetscInt       k,N,start,end,l,row,col,srow,**vscaleforrow,m1,m2;
+  PetscInt       k,N,start,end,l,row,col,srow,**vscaleforrow;
   PetscScalar    dx,*y,*xx,*w3_array;
   PetscScalar    *vscale_array;
   PetscReal      epsilon = coloring->error_rel,umin = coloring->umin; 
@@ -2417,24 +2417,12 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
   ierr = VecGetSize(x1,&N);CHKERRQ(ierr);
 
-  /*
-       This is a horrible, horrible, hack. 
-  */
-  if (coloring->F) {
-    ierr = VecGetLocalSize(coloring->F,&m1);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(w1,&m2);CHKERRQ(ierr);
-    if (m1 != m2) {
-      coloring->F = 0; 
-    }    
-  }
-
-  if (coloring->F) {
-    w1          = coloring->F;
-    coloring->F = 0;
-  } else {
+  if (!coloring->fset) {
     ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     ierr = (*f)(sctx,x1,w1,fctx);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+  } else {
+    coloring->fset = PETSC_FALSE;
   }
 
   /* 

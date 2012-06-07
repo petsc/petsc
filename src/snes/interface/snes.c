@@ -370,11 +370,13 @@ static PetscErrorCode DMCoarsenHook_SNESVecSol(DM dm,DM dmc,void *ctx)
  * safely call SNESGetDM() in their residual evaluation routine. */
 static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,MatStructure *mstruct,void *ctx)
 {
-  SNES snes = (SNES)ctx;
-  PetscErrorCode ierr;
-  Mat Asave = A,Bsave = B;
-  Vec X,Xnamed = PETSC_NULL;
-  DM dmsave;
+  SNES snes =                 (SNES)ctx;
+  PetscErrorCode              ierr;
+  Mat                         Asave = A,Bsave = B;
+  Vec                         X,Xnamed = PETSC_NULL;
+  DM                          dmsave;
+  void                        *ctxsave;
+  PetscErrorCode              (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
   PetscFunctionBegin;
   dmsave = snes->dm;
@@ -383,8 +385,19 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,MatStructure 
   else {                                     /* We are on a coarser level, this vec was initialized using a DM restrict hook */
     ierr = DMGetNamedGlobalVector(snes->dm,"SNESVecSol",&Xnamed);CHKERRQ(ierr);
     X = Xnamed;
+    ierr = SNESGetJacobian(snes,PETSC_NULL,PETSC_NULL,&jac,&ctxsave);CHKERRQ(ierr);
+    /* If the DM's don't match up, the MatFDColoring context needed for the jacobian won't match up either -- fixit. */
+    if (jac == SNESDefaultComputeJacobianColor) {
+      ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr);
+    }
   }
+  /* put the previous context back */
+
   ierr = SNESComputeJacobian(snes,X,&A,&B,mstruct);CHKERRQ(ierr);
+  if (snes->dm != dmsave && jac == SNESDefaultComputeJacobianColor) {
+    ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,jac,ctxsave);CHKERRQ(ierr);
+  }
+
   if (A != Asave || B != Bsave) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_SUP,"No support for changing matrices at this time");
   if (Xnamed) {
     ierr = DMRestoreNamedGlobalVector(snes->dm,"SNESVecSol",&Xnamed);CHKERRQ(ierr);
@@ -2145,12 +2158,12 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
 
       /* This method of getting the function is currently unreliable since it doesn't work for DM local functions. */
       ierr = SNESGetFunction(snes,PETSC_NULL,&func,&funcctx);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))func,funcctx);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject)matfdcoloring,((PetscObject)snes)->prefix);CHKERRQ(ierr);
-      ierr = PetscObjectAppendOptionsPrefix((PetscObject)matfdcoloring,"coloring_");CHKERRQ(ierr);
-      ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-      ierr = MatFDColoringApply(Bfd,matfdcoloring,X,&mstruct,snes);CHKERRQ(ierr);
-      ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
+        ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))func,funcctx);CHKERRQ(ierr);
+        ierr = PetscObjectSetOptionsPrefix((PetscObject)matfdcoloring,((PetscObject)snes)->prefix);CHKERRQ(ierr);
+        ierr = PetscObjectAppendOptionsPrefix((PetscObject)matfdcoloring,"coloring_");CHKERRQ(ierr);
+        ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+        ierr = MatFDColoringApply(Bfd,matfdcoloring,X,&mstruct,snes);CHKERRQ(ierr);
+        ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
 
       ierr = PetscViewerASCIIGetStdout(((PetscObject)snes)->comm,&vstdout);CHKERRQ(ierr);
       if (flag_draw || flag_contour) {
