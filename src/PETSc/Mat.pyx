@@ -472,9 +472,14 @@ cdef class Mat(Object):
         return mat
 
     def copy(self, Mat result=None, structure=None):
-        if result is None: return self.duplicate(True)
-        cdef PetscMatStructure flag = matstructure(structure)
-        CHKERR( MatCopy(self.mat, result.mat, flag) )
+        cdef PetscMatDuplicateOption copy = MAT_COPY_VALUES
+        cdef PetscMatStructure mstr = matstructure(structure)
+        if result is None:
+            result = type(self)()
+        if result.mat == NULL:
+            CHKERR( MatDuplicate(self.mat, copy, &result.mat) )
+        else:
+            CHKERR( MatCopy(self.mat, result.mat, mstr) )
         return result
 
     def load(self, Viewer viewer not None):
