@@ -128,16 +128,17 @@ def run_setup():
           **metadata)
 
 def chk_cython(VERSION):
-    CYTHON_VERSION_REQUIRED = VERSION
+    import re
     from distutils import log
-    from distutils.version import StrictVersion as Version
+    from distutils.version import LooseVersion
+    from distutils.version import StrictVersion
     warn = lambda msg='': sys.stderr.write(msg+'\n')
     #
     cython_zip = 'cython.zip'
     if os.path.isfile(cython_zip):
         path = os.path.abspath(cython_zip)
         if sys.path[0] != path:
-            sys.path.insert(0, os.path.abspath(cython_zip))
+            sys.path.insert(0, path)
             log.info("adding '%s' to sys.path", cython_zip)
     #
     try:
@@ -155,17 +156,20 @@ def chk_cython(VERSION):
         CYTHON_VERSION = Cython.__version__
     except AttributeError:
         from Cython.Compiler.Version import version as CYTHON_VERSION
-    CYTHON_VERSION = CYTHON_VERSION.split('+', 1)[0]
-    for s in ('.alpha', 'alpha'):
-        CYTHON_VERSION = CYTHON_VERSION.replace(s, 'a')
-    for s in ('.beta',  'beta', '.rc', 'rc', '.c', 'c'):
-        CYTHON_VERSION = CYTHON_VERSION.replace(s, 'b')
-    if (CYTHON_VERSION_REQUIRED is not None and
-        Version(CYTHON_VERSION) < Version(CYTHON_VERSION_REQUIRED)):
+    REQUIRED = VERSION
+    m = re.match(r"(\d+\.\d+(?:\.\d+)?).*", CYTHON_VERSION)
+    if m:
+        Version = StrictVersion
+        AVAILABLE = m.groups()[0]
+    else:
+        Version = LooseVersion
+        AVAILABLE = CYTHON_VERSION
+    if (REQUIRED is not None and
+        Version(AVAILABLE) < Version(REQUIRED)):
         warn("*"*80)
         warn()
         warn(" You need to install Cython %s (you have version %s)"
-             % (CYTHON_VERSION_REQUIRED, CYTHON_VERSION))
+             % (REQUIRED, CYTHON_VERSION))
         warn(" Download and install Cython <http://www.cython.org>")
         warn()
         warn("*"*80)
