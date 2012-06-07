@@ -18,6 +18,7 @@ PetscErrorCode TaoSetFromOptions_SSLS(TaoSolver tao)
   ierr = PetscOptionsReal("-ssls_rho", "descent test power", "",
                          ssls->rho, &(ssls->rho), &flg);CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
   ierr = PetscOptionsTail(); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
