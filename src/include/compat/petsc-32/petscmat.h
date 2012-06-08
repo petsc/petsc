@@ -64,7 +64,7 @@ MatSetBlockSize_Patch(Mat mat,PetscInt bs)
     ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
     ierr = MatBlockSize_SetUp(mat,bs);CHKERRQ(ierr);
     } else */ 
-  if (mat->rmap->bs == -1 && mat->cmap->bs == -1) {
+  if (mat->rmap->bs == -1 || mat->cmap->bs == -1) {
     ierr = MatBlockSize_Check(mat,bs);CHKERRQ(ierr);
     ierr = MatBlockSize_SetUp(mat,bs);CHKERRQ(ierr);
   } else if (mat->rmap->bs != bs || mat->cmap->bs != bs) {
