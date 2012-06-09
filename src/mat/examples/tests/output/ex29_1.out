@@ -14,3 +14,5 @@ Heap size 9 with 0 stashed
 Heap in (id,value) pairs
 0: 4 3 9 7 5 25 6 11 1 19 2 36 0 100 3 17 8 12
 Stash in (id,value) pairs
+Sorted values:
+0: 3 7 11 12 17 19 25 36 100
