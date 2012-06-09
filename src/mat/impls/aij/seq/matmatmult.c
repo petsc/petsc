@@ -18,7 +18,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
 {
   PetscErrorCode ierr;
-  PetscBool      scalable=PETSC_FALSE,scalable_fast=PETSC_FALSE,heap = PETSC_FALSE;
+  PetscBool      scalable=PETSC_FALSE,scalable_fast=PETSC_FALSE,heap = PETSC_FALSE,btheap = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
@@ -26,6 +26,7 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
     ierr = PetscOptionsBool("-matmatmult_scalable","Use a scalable but slower C=A*B","",scalable,&scalable,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-matmatmult_scalable_fast","Use a scalable but slower C=A*B","",scalable_fast,&scalable_fast,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-matmatmult_heap","Use heap implementation of symbolic factorization C=A*B","",heap,&heap,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-matmatmult_btheap","Use btheap implementation of symbolic factorization C=A*B","",btheap,&btheap,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr); 
     if (scalable_fast){
@@ -34,6 +35,8 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(A,B,fill,C);CHKERRQ(ierr);
     } else if (heap) {
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(A,B,fill,C);CHKERRQ(ierr);
+    } else if (btheap) {
+      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(A,B,fill,C);CHKERRQ(ierr);
     } else {
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
     }
@@ -534,6 +537,133 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(Mat A,Mat B,PetscReal fill,
   }
   ierr = PetscFree(bb);CHKERRQ(ierr);
   ierr = PetscHeapDestroy(&h);CHKERRQ(ierr);
+
+  /* Column indices are in the list of free space */
+  /* Allocate space for cj, initialize cj, and */
+  /* destroy list of free space and other temporary array(s) */
+  ierr = PetscMalloc(ci[am]*sizeof(PetscInt),&cj);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
+
+  /* Allocate space for ca */
+  /*-----------------------*/
+  ierr = PetscMalloc(ci[am]*sizeof(MatScalar),&ca);CHKERRQ(ierr);
+  ierr = PetscMemzero(ca,ci[am]*sizeof(MatScalar));CHKERRQ(ierr);
+
+  /* put together the new symbolic matrix */
+  ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,am,bn,ci,cj,ca,C);CHKERRQ(ierr);
+  (*C)->rmap->bs = A->rmap->bs;
+  (*C)->cmap->bs = B->cmap->bs;
+
+  /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
+  /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
+  c = (Mat_SeqAIJ *)((*C)->data);
+  c->free_a   = PETSC_TRUE;
+  c->free_ij  = PETSC_TRUE;
+  c->nonew    = 0;
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable; /* slower, less memory */
+
+  /* set MatInfo */
+  afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
+  if (afill < 1.0) afill = 1.0;
+  c->maxnz                     = ci[am];
+  c->nz                        = ci[am];
+  (*C)->info.mallocs           = ndouble;
+  (*C)->info.fill_ratio_given  = fill;
+  (*C)->info.fill_ratio_needed = afill;
+
+#if defined(PETSC_USE_INFO)
+  if (ci[am]) {
+    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",ndouble,fill,afill);CHKERRQ(ierr);
+    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap"
+PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscErrorCode     ierr;
+  Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
+  const PetscInt     *ai=a->i,*bi=b->i,*aj=a->j,*bj=b->j;
+  PetscInt           *ci,*cj,*bb;
+  PetscInt           am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
+  MatScalar          *ca;
+  PetscReal          afill;
+  PetscInt           i,j,col,ndouble = 0;
+  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  PetscHeap          h;
+  PetscBT            bt;
+
+  PetscFunctionBegin;
+  /* Get ci and cj - same as MatMatMultSymbolic_SeqAIJ_SeqAIJ except using PetscLLxxx_Scalalbe() */
+  /*---------------------------------------------------------------------------------------------*/
+  /* Allocate arrays for fill computation and free space for accumulating nonzero column */
+  ierr = PetscMalloc(((am+1)+1)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
+  ci[0] = 0;
+
+  /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
+  ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+bi[bm])),&free_space);CHKERRQ(ierr);
+  current_space = free_space;
+
+  ierr = PetscHeapCreate(a->rmax,&h);CHKERRQ(ierr);
+  ierr = PetscMalloc(a->rmax*sizeof(PetscInt),&bb);CHKERRQ(ierr);
+  ierr = PetscBTCreate(bn,&bt);CHKERRQ(ierr);
+
+  /* Determine ci and cj */
+  for (i=0; i<am; i++) {
+    const PetscInt anzi  = ai[i+1] - ai[i]; /* number of nonzeros in this row of A, this is the number of rows of B that we merge */
+    const PetscInt *acol = aj + ai[i]; /* column indices of nonzero entries in this row */
+    const PetscInt *fptr = current_space->array; /* Save beginning of the row so we can clear the BT later */
+    ci[i+1] = ci[i];
+    /* Populate the min heap */
+    for (j=0; j<anzi; j++) {
+      PetscInt brow = acol[j];
+      for (bb[j] = bi[brow]; bb[j] < bi[brow+1]; bb[j]++) {
+        PetscInt bcol = bj[bb[j]];
+        if (!PetscBTLookupSet(bt,bcol)) { /* new entry */
+          ierr = PetscHeapAdd(h,j,bcol);CHKERRQ(ierr);
+          bb[j]++;
+          break;
+        }
+      }
+    }
+    /* Pick off the min element, adding it to free space */
+    ierr = PetscHeapPop(h,&j,&col);CHKERRQ(ierr);
+    while (j >= 0) {
+      if (current_space->local_remaining < 1) { /* double the size, but don't exceed 16 MiB */
+        fptr = PETSC_NULL;                      /* need PetscBTMemzero */
+        ierr = PetscFreeSpaceGet(PetscMin(2*current_space->total_array_size,16 << 20),&current_space);CHKERRQ(ierr);
+        ndouble++;
+      }
+      *(current_space->array++) = col;
+      current_space->local_used++;
+      current_space->local_remaining--;
+      ci[i+1]++;
+
+      /* stash if anything else remains in this row of B */
+      for ( ; bb[j] < bi[acol[j]+1]; bb[j]++) {
+        PetscInt bcol = bj[bb[j]];
+        if (!PetscBTLookupSet(bt,bcol)) { /* new entry */
+          ierr = PetscHeapAdd(h,j,bcol);CHKERRQ(ierr);
+          bb[j]++;
+          break;
+        }
+      }
+      ierr = PetscHeapPop(h,&j,&col);CHKERRQ(ierr);
+    }
+    if (fptr) {                 /* Clear the bits for this row */
+      for ( ; fptr<current_space->array; fptr++) {ierr = PetscBTClear(bt,*fptr);CHKERRQ(ierr);}
+    } else {                    /* We reallocated so we don't remember (easily) how to clear only the bits we changed */
+      ierr = PetscBTMemzero(bn,bt);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree(bb);CHKERRQ(ierr);
+  ierr = PetscHeapDestroy(&h);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&bt);CHKERRQ(ierr);
 
   /* Column indices are in the list of free space */
   /* Allocate space for cj, initialize cj, and */
