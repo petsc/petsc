@@ -477,7 +477,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(Mat A,Mat B,PetscReal fill,
   const PetscInt     *ai=a->i,*bi=b->i,*aj=a->j,*bj=b->j;
   PetscInt           *ci,*cj,*bb;
   PetscInt           am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
-  MatScalar          *ca;
   PetscReal          afill;
   PetscInt           i,j,col,ndouble = 0;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
@@ -544,13 +543,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(Mat A,Mat B,PetscReal fill,
   ierr = PetscMalloc(ci[am]*sizeof(PetscInt),&cj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
 
-  /* Allocate space for ca */
-  /*-----------------------*/
-  ierr = PetscMalloc(ci[am]*sizeof(MatScalar),&ca);CHKERRQ(ierr);
-  ierr = PetscMemzero(ca,ci[am]*sizeof(MatScalar));CHKERRQ(ierr);
-
   /* put together the new symbolic matrix */
-  ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,am,bn,ci,cj,ca,C);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,am,bn,ci,cj,PETSC_NULL,C);CHKERRQ(ierr);
   (*C)->rmap->bs = A->rmap->bs;
   (*C)->cmap->bs = B->cmap->bs;
 
@@ -560,7 +554,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(Mat A,Mat B,PetscReal fill,
   c->free_a   = PETSC_TRUE;
   c->free_ij  = PETSC_TRUE;
   c->nonew    = 0;
-  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable; /* slower, less memory */
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ;
 
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
@@ -591,7 +585,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat A,Mat B,PetscReal fil
   const PetscInt     *ai=a->i,*bi=b->i,*aj=a->j,*bj=b->j;
   PetscInt           *ci,*cj,*bb;
   PetscInt           am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
-  MatScalar          *ca;
   PetscReal          afill;
   PetscInt           i,j,col,ndouble = 0;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
@@ -671,13 +664,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat A,Mat B,PetscReal fil
   ierr = PetscMalloc(ci[am]*sizeof(PetscInt),&cj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
 
-  /* Allocate space for ca */
-  /*-----------------------*/
-  ierr = PetscMalloc(ci[am]*sizeof(MatScalar),&ca);CHKERRQ(ierr);
-  ierr = PetscMemzero(ca,ci[am]*sizeof(MatScalar));CHKERRQ(ierr);
-
   /* put together the new symbolic matrix */
-  ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,am,bn,ci,cj,ca,C);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,am,bn,ci,cj,PETSC_NULL,C);CHKERRQ(ierr);
   (*C)->rmap->bs = A->rmap->bs;
   (*C)->cmap->bs = B->cmap->bs;
 
@@ -687,7 +675,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat A,Mat B,PetscReal fil
   c->free_a   = PETSC_TRUE;
   c->free_ij  = PETSC_TRUE;
   c->nonew    = 0;
-  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable; /* slower, less memory */
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqAIJ;
 
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
