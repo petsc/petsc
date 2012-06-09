@@ -215,7 +215,7 @@ int main(int Argc,char **Args)
 
   ierr = KSPSetOperators(kspmg, HtH, HtH, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  ierr = PCASASetDM(pcmg, (DM) adda);CHKERRQ(ierr);
+  ierr = PCSetDM(pcmg,adda);CHKERRQ(ierr);
   ierr = DMDestroy(&adda);CHKERRQ(ierr);
 
   ierr = PCASASetTolerances(pcmg, 1.e-6, 1.e-10,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
