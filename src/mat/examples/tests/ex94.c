@@ -59,7 +59,7 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr);
-  nzp  = (PetscInt)(0.1*M);
+  nzp  = PetscMax((PetscInt)(0.1*M),5);
   ierr = PetscMalloc((nzp+1)*(sizeof(PetscInt)+sizeof(PetscScalar)),&idxn);CHKERRQ(ierr);
   a    = (PetscScalar*)(idxn + nzp);              
  
