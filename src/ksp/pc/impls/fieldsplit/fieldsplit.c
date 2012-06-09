@@ -259,7 +259,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       ierr = DMCreateFieldDecomposition(pc->dm, &numFields, &fieldNames, &fields, &dms);    CHKERRQ(ierr);
       for(f = 0; f < numFields; ++f) {
         if(jac->reset) {
-          ilink->is = fields[i];
+          ilink->is = fields[f];
           ilink     = ilink->next;
         }
         else {
