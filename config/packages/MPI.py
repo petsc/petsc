@@ -425,7 +425,7 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running make on OPENMPI, libraries not installed')
       try:
         # OpenMPI puts Fortran 90 modules into lib instead of include like we want
-        output,err,ret  = config.base.Configure.executeShellCommand('cp '+os.path.join(installDir,'lib','*.mod ')+os.path.join(installDir,'include'), timeout=30, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cp '+os.path.join(installDir,'lib*','*.mod ')+os.path.join(installDir,'include'), timeout=30, log = self.framework.log)
       except RuntimeError, e:
         pass
 
@@ -435,12 +435,6 @@ class Configure(config.package.Package):
         fd.close()
       except:
         self.framework.logPrint('Unable to output configure arguments into '+os.path.join(self.confDir, self.name))
-      #need to run ranlib on the libraries using the full path
-      try:
-        if not self.framework.argDB['with-shared-libraries']:
-          output,err,ret  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running ranlib on OPENMPI/MPI libraries: '+str(e))
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed OPENMPI/MPI into '+installDir)
 
     self.updateCompilers(installDir,'mpicc','mpic++','mpif77','mpif90')
