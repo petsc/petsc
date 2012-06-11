@@ -12,7 +12,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.tar.gz']
-    self.download_mpich     = ['http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.4.1p1/mpich2-1.4.1p1.tar.gz']
+    self.download_mpich     = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich2-trunk-r9942.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
@@ -531,8 +531,10 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running configure on MPICH: '+str(e))
       try:
         self.logPrintBox('Running make on MPICH; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && make && make install', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && make clean', timeout=200, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.programs.make+' clean', timeout=200, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.programs.make+' -j ' + str(self.programs.make_np)+' all', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.programs.make+' install', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.programs.make+' clean', timeout=200, log = self.framework.log)
       except RuntimeError, e:
         import sys
         if sys.platform.startswith('cygwin'):
