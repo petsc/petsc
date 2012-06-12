@@ -3309,6 +3309,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   PetscInt       *ourlens = PETSC_NULL,*procsnz = PETSC_NULL,*offlens = PETSC_NULL,jj,*mycols,*smycols;
   PetscInt       cend,cstart,n,*rowners,sizesset=1;
   int            fd;
+  PetscInt       bs = 1;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -3318,6 +3319,10 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT);CHKERRQ(ierr);
     if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
   }
+
+  ierr = PetscOptionsBegin(comm,PETSC_NULL,"Options for loading SEQAIJ matrix","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (newMat->rmap->n < 0 && newMat->rmap->N < 0 && newMat->cmap->n < 0 && newMat->cmap->N < 0) sizesset = 0;
 
@@ -3334,10 +3339,11 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   if (sizesset && newMat->rmap->N != grows) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows:Matrix in file has (%d) and input matrix has (%d)",M,grows);
   if (sizesset && newMat->cmap->N != gcols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of cols:Matrix in file has (%d) and input matrix has (%d)",N,gcols);
 
-  /* determine ownership of all rows */
-  if (newMat->rmap->n < 0 ) m    = M/size + ((M % size) > rank); /* PETSC_DECIDE */
+  /* determine ownership of all (block) rows */
+  if( M%bs ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows (%d) and block size (%d)",M,bs);
+  if (newMat->rmap->n < 0 ) m    = bs*((M/bs)/size + (((M/bs) % size) > rank)); /* PETSC_DECIDE */
   else m = newMat->rmap->n; /* Set by user */
- 
+
   ierr = PetscMalloc((size+1)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
   ierr = MPI_Allgather(&m,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
 
@@ -3439,6 +3445,9 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   if (!sizesset) {
     ierr = MatSetSizes(newMat,m,n,M,N);CHKERRQ(ierr);
   }
+ 
+  if (bs > 1) {ierr = MatSetBlockSize(newMat,bs);CHKERRQ(ierr);}
+
   ierr = MatMPIAIJSetPreallocation(newMat,0,ourlens,0,offlens);CHKERRQ(ierr);
 
   for (i=0; i<m; i++) {
@@ -3495,6 +3504,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
 
   ierr = MatAssemblyBegin(newMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(newMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
