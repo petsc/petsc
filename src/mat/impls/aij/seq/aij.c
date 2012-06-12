@@ -396,6 +396,7 @@ PetscErrorCode MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscInt       i,*col_lens;
   int            fd;
+  FILE           *file;
 
   PetscFunctionBegin;  
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
@@ -417,6 +418,12 @@ PetscErrorCode MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
 
   /* store nonzero values */
   ierr = PetscBinaryWrite(fd,a->a,a->nz,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+
+  ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
+  if (file) {
+    fprintf(file,"-matload_block_size %d\n",(int)A->rmap->bs);
+  }
+
   PetscFunctionReturn(0);
 }
 

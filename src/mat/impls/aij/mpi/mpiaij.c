@@ -1299,6 +1299,7 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   PetscInt          nzmax,*column_indices,j,k,col,*garray = aij->garray,cnt,cstart = mat->cmap->rstart,rnz;
   PetscScalar       *column_values;
   PetscInt          message_count,flowcontrolcount;
+  FILE              *file;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)mat)->comm,&rank);CHKERRQ(ierr);
@@ -1423,6 +1424,12 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
     ierr = PetscViewerFlowControlEndWorker(viewer,message_count);CHKERRQ(ierr);
   }
   ierr = PetscFree(column_values);CHKERRQ(ierr);
+
+  ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
+  if (file) {
+    fprintf(file,"-matload_block_size %d\n",(int)mat->rmap->bs);
+  }
+
   PetscFunctionReturn(0);
 }
 
