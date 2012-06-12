@@ -49,7 +49,6 @@ J*/
 #define MATDENSE           "dense"
 #define MATSEQDENSE        "seqdense"
 #define MATMPIDENSE        "mpidense"
-#define MATELEMENTAL       "elemental"
 #define MATBAIJ            "baij"
 #define MATSEQBAIJ         "seqbaij"
 #define MATMPIBAIJ         "mpibaij"
@@ -1784,10 +1783,6 @@ PETSC_EXTERN PetscErrorCode MatCreateAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt
 PETSC_EXTERN PetscErrorCode VecScatterPetscToFFTW(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecScatterFFTWToPetsc(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatGetVecsFFTW(Mat,Vec*,Vec*,Vec*);
-#endif
-
-#if defined(PETSC_HAVE_ELEMENTAL)
-
 #endif
 
 PETSC_EXTERN PetscErrorCode MatCreateNest(MPI_Comm,PetscInt,const IS[],PetscInt,const IS[],const Mat[],Mat*);
