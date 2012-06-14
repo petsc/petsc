@@ -7,7 +7,7 @@ class Configure(PETSc.package.NewPackage):
     self.download = ['/home/xzhou/temp/elemental-dev-061312.tgz']
     self.liblist    = [['libelemental.a','libplcg.a','libpmrrr.a']]
     #self.functions  = ['GaussianElimination']
-    self.includes   = ['elemental.hpp']
+    #self.includes   = ['elemental.hpp']
     self.requires32bitint = 0
     self.complex          = 1
     self.worksonWindows   = 0
@@ -26,18 +26,32 @@ class Configure(PETSc.package.NewPackage):
     import os
     if not self.cmake.found:
       raise RuntimeError('CMake 2.8.5 or above is needed to build Elemental')
-    print 'self.installDir = ', self.installDir
-    print 'self.packageDir = ', self.packageDir
+    #print 'self.installDir = ', self.installDir
+    #print 'self.packageDir = ', self.packageDir
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
-    """args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
+    args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
 
     self.framework.pushLanguage('C')
+    args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
+    cflags = self.setCompilers.getCompilerFlags()
+    #args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
+    self.framework.popLanguage()
+
+    self.framework.pushLanguage('Cxx')
+    args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
+    cxxflags = self.setCompilers.getCompilerFlags()
+    #args.append('-DCMAKE_CXX_FLAGS:STRING="'+cxxflags+'"')
+    self.framework.popLanguage()
+
+
+    """self.framework.pushLanguage('C')
     args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
     cflags = self.setCompilers.getCompilerFlags()
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     self.framework.popLanguage()
 
     self.framework.pushLanguage('Cxx')
+
     args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
     cxxflags = self.setCompilers.getCompilerFlags()
     args.append('-DCMAKE_CXX_FLAGS:STRING="'+cxxflags+'"')
@@ -64,7 +78,7 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('elemental'):
       # effectively, this is 'make clean'
       folder = os.path.join(self.packageDir, self.arch)
-      print 'folder = ', folder
+      #print 'folder = ', folder
       if os.path.isdir(folder):
         import shutil
         shutil.rmtree(folder)
