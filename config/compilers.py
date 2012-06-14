@@ -1064,7 +1064,10 @@ class Configure(config.base.Configure):
       use,intrinsic :: iso_c_binding
       Type(C_Ptr),Dimension(:),Pointer :: CArray
       character(kind=c_char),pointer   :: nullc => null()
-      CArray = c_loc(nullc)'''):
+      character(kind=c_char,len=5),dimension(:),pointer::list1
+
+      allocate(list1(5))
+      CArray = (/(c_loc(list1(i)),i=1,5),c_loc(nullc)/)'''):
       self.addDefine('USING_F2003', 1)
       self.fortranIsF2003 = 1
       self.logPrint('Fortran compiler supports F2003')
