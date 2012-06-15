@@ -416,6 +416,8 @@ class Configure(config.base.Configure):
           cmakeset(fd,'PETSC_USING_F90')
         if self.compilers.fortranIsF2003:
           cmakeset(fd,'PETSC_USING_F2003')
+      if hasattr(self.compilers, 'CXX'):
+        cmakeset(fd,'PETSC_HAVE_CXX')
       if self.sharedlibraries.useShared:
         cmakeset(fd,'BUILD_SHARED_LIBS')
     def writeBuildFlags(fd):
