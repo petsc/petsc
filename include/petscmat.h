@@ -505,6 +505,7 @@ PETSC_EXTERN PetscErrorCode MatGetOwnershipRange(Mat,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatGetOwnershipRanges(Mat,const PetscInt**);
 PETSC_EXTERN PetscErrorCode MatGetOwnershipRangeColumn(Mat,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatGetOwnershipRangesColumn(Mat,const PetscInt**);
+PETSC_EXTERN PetscErrorCode MatGetOwnershipIS(Mat,IS*,IS*);
 
 PETSC_EXTERN PetscErrorCode MatGetSubMatrices(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 PETSC_EXTERN PetscErrorCode MatGetSubMatricesParallel(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);

@@ -6048,6 +6048,40 @@ PetscErrorCode  MatGetOwnershipRangesColumn(Mat mat,const PetscInt **ranges)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatGetOwnershipIS"
+/*@C
+   MatGetOwnershipIS - Get row and column ownership as index sets
+
+   Not Collective
+
+   Input Arguments:
+.  A - matrix of type Elemental
+
+   Output Arguments:
++  rows - rows in which this process owns elements
+.  cols - columns in which this process owns elements
+
+   Level: intermediate
+
+.seealso: MatGetOwnershipRange(), MatGetOwnershipRangeColumn(), MatSetValues(), MATELEMENTAL, MatSetValues()
+@*/
+PetscErrorCode MatGetOwnershipIS(Mat A,IS *rows,IS *cols)
+{
+  PetscErrorCode ierr,(*f)(Mat,IS*,IS*);
+
+  PetscFunctionBegin;
+  MatCheckPreallocated(A,1);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetOwnershipIS_C",(PetscVoidStarFunction)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(A,rows,cols);CHKERRQ(ierr);
+  } else {   /* Create a standard row-based partition, each process is responsible for ALL columns in their row block */
+    if (rows) {ierr = ISCreateStride(PETSC_COMM_SELF,A->rmap->n,A->rmap->rstart,1,rows);CHKERRQ(ierr);}
+    if (cols) {ierr = ISCreateStride(PETSC_COMM_SELF,A->cmap->N,0,1,cols);CHKERRQ(ierr);}
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic"
 /*@C
