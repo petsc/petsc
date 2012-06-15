@@ -8,6 +8,7 @@ class Configure(PETSc.package.NewPackage):
     self.liblist    = [['libelemental.a','libplcg.a','libpmrrr.a']]
     #self.functions  = ['GaussianElimination']
     self.includes   = ['elemental.hpp']
+    self.cxx              = 1
     self.requires32bitint = 0
     self.complex          = 1
     self.worksonWindows   = 0
