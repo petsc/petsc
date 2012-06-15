@@ -52,6 +52,7 @@ extern PetscErrorCode  MatCreate_MPIAIJCUSP(Mat);
 #if defined PETSC_HAVE_FFTW
 extern PetscErrorCode  MatCreate_FFTW(Mat);
 #endif
+extern PetscErrorCode  MatCreate_Elemental(Mat);
 EXTERN_C_END
   
 /*
@@ -142,6 +143,9 @@ PetscErrorCode  MatRegisterAll(const char path[])
 
 #if defined PETSC_HAVE_FFTW
   ierr = MatRegisterDynamic(MATFFTW,           path,"MatCreate_FFTW",        MatCreate_FFTW);CHKERRQ(ierr);
+#endif
+#if defined PETSC_HAVE_ELEMENTAL
+  ierr = MatRegisterDynamic(MATELEMENTAL,      path,"MatCreate_Elemental",    MatCreate_Elemental);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

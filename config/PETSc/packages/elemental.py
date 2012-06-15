@@ -6,7 +6,7 @@ class Configure(PETSc.package.NewPackage):
     self.download   = ['http://elemental.googlecode.com/files/elemental-0.74.tgz']
     self.liblist    = [['libelemental.a','libplcg.a','libpmrrr.a']]
     #self.functions  = ['elemental']
-    #self.includes   = ['elemental.hpp']
+    self.includes   = ['elemental.hpp']
     self.requires32bitint = 0
     self.complex          = 1
     self.worksonWindows   = 0

@@ -1008,6 +1008,14 @@ runex37_6:
 	   if (${DIFF} output/ex37_6.out ex37_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex37_6, diffs above \n========================================="; fi; \
 	   ${RM} -f ex37_1.tmp
+runex38:
+	-@${MPIEXEC} -n 2 ./ex38 -mat_type elemental -m 2 -n 3 > ex38_1.tmp 2>&1;   \
+	   ${DIFF} output/ex38_1.out ex38_1.tmp || printf "${PWD}\nPossible problem with with ex38_1, diffs above \n========================================="; \
+	   ${RM} -f ex38_1.tmp
+runex38_2:
+	-@${MPIEXEC} -n 6 ./ex38 -mat_type elemental -m 2 -n 2 > ex38_2.tmp 2>&1;   \
+	   ${DIFF} output/ex38_2.out ex38_2.tmp || printf "${PWD}\nPossible problem with with ex38_2, diffs above \n========================================="; \
+	   ${RM} -f ex38_2.tmp
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex40:
 	-@${MPIEXEC} -n 3 ./ex40 -f ${DATAFILESPATH}/matrices/arco1 -nd 7 -ov 2 > ex40_1.tmp 2>&1; \
