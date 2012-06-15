@@ -41,8 +41,11 @@ def currentversion(petscdir):
     print(" Available Version: "+aversion+"   Installed Version: "+version)
     print("http://www.mcs.anl.gov/petsc/download/index.html")
     print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-  fd = open(os.path.join(petscdir,'.nagged'),"w")
-  fd.close()
+  try:
+    fd = open(os.path.join(petscdir,'.nagged'),"w")
+    fd.close()
+  except:
+    return
 
   return 0
 #
