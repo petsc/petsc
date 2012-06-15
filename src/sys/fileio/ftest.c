@@ -129,7 +129,9 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
   ierr = stat(fname, &statbuf);
 #endif
   if (ierr) {
+#if defined(EOVERFLOW)
     if (errno == EOVERFLOW) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"EOVERFLOW in stat(), configure PETSc --with-large-file-io=1 to support files larger than 2GiB");
+#endif
     ierr = PetscInfo1(PETSC_NULL,"System call stat() failed on file %s\n",fname);CHKERRQ(ierr);
     *exists = PETSC_FALSE;
   } else {
