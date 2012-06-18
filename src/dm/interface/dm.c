@@ -2109,6 +2109,32 @@ PetscErrorCode  DMHasJacobian(DM dm,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMHasColoring"
+/*@
+    DMHasColoring - does the DM object have a method of providing a coloring?
+
+    Not Collective
+
+    Input Parameter:
+.   dm - the DM object
+
+    Output Parameter:
+.   flg - PETSC_TRUE if the DM has facilities for DMCreateColoring().
+
+    Level: developer
+
+.seealso DMHasFunction(), DMCreateColoring()
+
+@*/
+PetscErrorCode  DMHasColoring(DM dm,PetscBool  *flg)
+{
+  PetscFunctionBegin;
+  *flg =  (dm->ops->getcoloring) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+
 #undef  __FUNCT__
 #define __FUNCT__ "DMSetVec"
 /*@C
