@@ -69,6 +69,7 @@ PetscErrorCode  SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,M
       ierr = MatFDColoringSetFromOptions(color);CHKERRQ(ierr);
     }
     ierr = PetscObjectCompose((PetscObject)*B,"SNESMatFDColoring",(PetscObject)color);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)color);CHKERRQ(ierr);
   }
   ierr  = MatFDColoringSetF(color,PETSC_NULL);CHKERRQ(ierr);
   ierr  = MatFDColoringApply(*B,color,x1,flag,snes);CHKERRQ(ierr);
