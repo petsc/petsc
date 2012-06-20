@@ -137,7 +137,7 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
 
    PetscViewerType is actually a string
 
-.seealso: PetscViewerCreate(), PetscViewerSetType()
+.seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerType
 
 @*/
 PetscErrorCode  PetscViewerGetType(PetscViewer viewer,const PetscViewerType *type)

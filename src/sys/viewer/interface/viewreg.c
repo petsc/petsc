@@ -22,7 +22,7 @@ PetscFList PetscViewerList              = 0;
    Concepts: file input/output^creating PetscViewer
    Concepts: sockets^creating PetscViewer
 
-.seealso: PetscViewerDestroy(), PetscViewerSetType()
+.seealso: PetscViewerDestroy(), PetscViewerSetType(), PetscViewerType
 
 @*/
 PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
@@ -62,7 +62,7 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
    See "include/petscviewer.h" for available methods (for instance,
    PETSC_VIEWER_SOCKET)
 
-.seealso: PetscViewerCreate(), PetscViewerGetType()
+.seealso: PetscViewerCreate(), PetscViewerGetType(), PetscViewerType
 @*/
 PetscErrorCode  PetscViewerSetType(PetscViewer viewer,const PetscViewerType type)
 {
@@ -144,7 +144,7 @@ PetscErrorCode  PetscViewerRegister(const char *sname,const char *path,const cha
 
   Concepts: PetscViewer^setting options
 
-.seealso: PetscViewerCreate(), PetscViewerSetType()
+.seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerType
 
 @*/
 PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
