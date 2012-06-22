@@ -33,6 +33,8 @@ F_SH_LIB_PATH	= ${PETSC_F_SH_LIB_PATH}
 PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
 PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} 
 PETSC_FCOMPILE        = ${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}  ${SOURCEF}
+PETSC_CUCOMPILE       = ${CUDAC} ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}
+PETSC_CUCOMPILE_SINGLE= ${CUDAC} -o $*.o ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}"
 #
 # The following additional variables are used by PETSc targets and should not be redefined
 #
@@ -43,8 +45,8 @@ PETSC_FCOMPILE        = ${FC} -c ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}  ${SOURCEF}
 # SOBJS      - single precision versions of some object files
 #
 LIBNAME    = ${INSTALL_LIB_DIR}/${LIBBASE}.${AR_LIB_SUFFIX}
-SOURCE     = ${SOURCEC} ${SOURCEF}
-OBJS       = ${OBJSC} ${OBJSF}
+SOURCE     = ${SOURCECU} ${SOURCEC} ${SOURCEF}
+OBJS       = ${OBJSCU} ${OBJSC} ${OBJSF}
 
 CLINKER = ${PCC_LINKER} ${PCC_LINKER_FLAGS} ${CFLAGS}
 FLINKER = ${FC_LINKER} ${FC_LINKER_FLAGS} ${FFLAGS}
