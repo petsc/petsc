@@ -114,8 +114,8 @@ libfastcompile:
 	    fi; \
           if [ "${SOURCEC}" != "" ]; then \
                     ${PETSC_COMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
-		    ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
+	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC}; \
+		    ${RM} ${OBJSC} ${OBJSC:.o=.lo}; \
 	    fi; \
 	if [ "${SOURCEF}" != "" ]; then \
                     ${PETSC_FCOMPILE}; \
