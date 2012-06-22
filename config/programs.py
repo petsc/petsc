@@ -67,7 +67,7 @@ class Configure(config.base.Configure):
       
     # Check to see if make allows rules which look inside archives
     if haveGNUMake:
-      self.addMakeRule('libc','${LIBNAME}(${OBJSC} ${SOBJSC})')
+      self.addMakeRule('libc','${LIBNAME}(${OBJSC})')
       self.addMakeRule('libcu','${LIBNAME}(${OBJSCU})')
     else:
       self.addMakeRule('libc','${OBJSC}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}')
