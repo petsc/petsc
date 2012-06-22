@@ -68,8 +68,10 @@ class Configure(config.base.Configure):
     # Check to see if make allows rules which look inside archives
     if haveGNUMake:
       self.addMakeRule('libc','${LIBNAME}(${OBJSC} ${SOBJSC})')
+      self.addMakeRule('libcu','${LIBNAME}(${OBJSCU})')
     else:
       self.addMakeRule('libc','${OBJSC}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}')
+      self.addMakeRule('libcu','${OBJSCU}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSCU}')
     self.addMakeRule('libf','${OBJSF}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}')
 
     # check no of cores on the build machine [perhaps to do make '-j ncores']
