@@ -73,11 +73,12 @@ info:
 	-@echo "Using configuration flags:"
 	-@grep "\#define " ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h
 	-@echo "-----------------------------------------"
-	-@echo "Using C/C++ include paths: ${PETSC_CC_INCLUDES}"
-	-@echo "Using C/C++ compiler: ${PCC} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS}"
+	-@echo "Using C/C++ compile: ${PETSC_COMPILE}"
 	-@if [ "${FC}" != "" ]; then \
-	   echo "Using Fortran include/module paths: ${PETSC_FC_INCLUDES}";\
-	   echo "Using Fortran compiler: ${FC} ${FC_FLAGS} ${FFLAGS} ${FPP_FLAGS}";\
+	   echo "Using Fortran compile: ${PETSC_FCOMPILE}";\
+         fi
+	-@if [ "${CUDAC}" != "" ]; then \
+	   echo "Using CUDA compile: ${PETSC_CUCOMPILE}";\
          fi
 	-@echo "-----------------------------------------"
 	-@echo "Using C/C++ linker: ${PCC_LINKER}"
