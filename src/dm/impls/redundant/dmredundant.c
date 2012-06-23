@@ -56,6 +56,8 @@ static PetscErrorCode DMDestroy_Redundant(DM dm)
   PetscFunctionBegin;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantSetSize_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantGetSize_C","",PETSC_NULL);CHKERRQ(ierr);
+  /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
+  ierr = PetscFree(dm->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

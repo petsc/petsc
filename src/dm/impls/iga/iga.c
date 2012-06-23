@@ -16,6 +16,8 @@ PetscErrorCode DMDestroy_IGA(DM dm)
   ierr = BDDestroy(&iga->bdZ);CHKERRQ(ierr);
   ierr = DMDestroy(&iga->da_dof);CHKERRQ(ierr);
   ierr = DMDestroy(&iga->da_geometry);CHKERRQ(ierr);
+  /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
+  ierr = PetscFree(iga);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

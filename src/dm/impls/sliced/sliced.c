@@ -228,6 +228,8 @@ PetscErrorCode  DMDestroy_Sliced(DM dm)
   ierr = PetscFree(slice->ghosts);CHKERRQ(ierr);
   if (slice->dfill) {ierr = PetscFree3(slice->dfill,slice->dfill->i,slice->dfill->j);CHKERRQ(ierr);}
   if (slice->ofill) {ierr = PetscFree3(slice->ofill,slice->ofill->i,slice->ofill->j);CHKERRQ(ierr);}
+  /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
+  ierr = PetscFree(slice);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

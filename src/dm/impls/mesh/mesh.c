@@ -532,6 +532,8 @@ PetscErrorCode DMDestroy_Mesh(DM dm)
     ierr = PetscFree(next);CHKERRQ(ierr);
     next = tmp;
   }
+  /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
+  ierr = PetscFree(mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

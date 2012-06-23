@@ -46,6 +46,8 @@ PetscErrorCode  DMDestroy_Composite(DM dm)
     ierr = PetscFree(prev->grstarts);CHKERRQ(ierr);
     ierr = PetscFree(prev);CHKERRQ(ierr);
   }
+  /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
+  ierr = PetscFree(com);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
