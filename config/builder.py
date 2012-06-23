@@ -139,7 +139,7 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                         'src/snes/examples/tutorials/ex31':   [# Mantle Convection
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0     -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient 2 1 1 1 identity src/snes/examples/tutorials/ex31.h'},
-                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_temperature_ksp_type fgmres -fieldsplit_temperature_ksp_rtol 1e-10 -fieldsplit_0_pc_type fieldsplit -fieldsplit_0_pc_fieldsplit_type schur -fieldsplit_0_pc_fieldsplitschur_factorization_type full -fieldsplit_0_fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_0_fieldsplit_velocity_pc_type lu -fieldsplit_0_fieldsplit_pressure_pc_type jacobi -fieldsplit_temperature_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
                                                                {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -dm_complex_separate_marker -bc_type mantle -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'}],
                         'src/snes/examples/tutorials/ex33':   [{'numProcs': 1, 'args': '-snes_converged_reason -snes_monitor_short'}],
                         'src/snes/examples/tutorials/ex52':   [# 2D Laplacian 0-3
@@ -352,7 +352,7 @@ class MakeParser(object):
     targets = self.getTargets(maketext)
     srcDir  = os.path.dirname(filename)
     regressionParameters = {}
-    testTargets = [r for r in makevars[testTarget].split(' ') if r]
+    testTargets = [r for r in makevars.get(testTarget, '').split(' ') if r]
     examples    = [e for e in testTargets if e.endswith('.PETSc')]
     for ex in examples:
       base   = os.path.splitext(ex)[0]
