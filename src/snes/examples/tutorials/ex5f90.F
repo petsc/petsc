@@ -192,7 +192,6 @@
       PetscInt         ione,nfour
       double precision lambda_max,lambda_min
       type (userctx)   user
-      type(userctx), pointer:: puser
       DM               da
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)

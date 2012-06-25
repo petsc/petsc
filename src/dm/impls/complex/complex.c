@@ -2011,6 +2011,7 @@ PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
     }
     next = next->next;
   }
+  if (!next) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label with name %s exists in this mesh", name);
   ierr = ISCreateGeneral(((PetscObject) dm)->comm, size, values, PETSC_OWN_POINTER, ids);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3932,6 +3933,8 @@ PetscErrorCode DMComplexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 #endif
 
 #ifdef PETSC_HAVE_CTETGEN
+#include "ctetgen.h"
+
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexGenerate_CTetgen"
 PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm)
@@ -4480,7 +4483,7 @@ PetscErrorCode DMComplexGenerate(DM boundary, const char name[], PetscBool inter
 #ifdef PETSC_HAVE_CTETGEN
       ierr = DMComplexGenerate_CTetgen(boundary, interpolate, mesh);CHKERRQ(ierr);
 #else
-      SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "CTetgen needs external package support.\nPlease reconfigure with --with-ctetgen.");
+      SETERRQ(((PetscObject) boundary)->comm, PETSC_ERR_SUP, "CTetgen needs external package support.\nPlease reconfigure with --download-ctetgen.");
 #endif
     } else if (isTetgen) {
 #ifdef PETSC_HAVE_TETGEN

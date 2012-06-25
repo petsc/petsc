@@ -203,7 +203,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   /* Only the main thread updates counter->refcount */
   ierr = MPI_Attr_get(*comm_out,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
   if (flg) {
-    PetscInt trank; 
+    PetscInt trank;
     trank = PetscThreadCommGetRank(tcomm);
     if (!trank) counter->refcount++; /* number of references to this comm */
   } else counter->refcount++;
@@ -259,7 +259,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
     PetscInt trank;
     trank = PetscThreadCommGetRank(tcomm);
     /* Only thread rank 0 updates the counter */
-    if(!trank) counter->refcount--;
+    if (!trank) counter->refcount--;
   } else counter->refcount--;
 #else
   counter->refcount--;
@@ -315,71 +315,41 @@ PetscErrorCode  PetscObjectsGetGlobalNumbering(MPI_Comm comm, PetscInt len, Pets
 {
   PetscErrorCode ierr;
   PetscInt i, roots, offset;
-  PetscMPIInt size, rank, r0 = 0, r;
-  MPI_Group group, subgroup;
+  PetscMPIInt size, rank;
   PetscFunctionBegin;
   PetscValidPointer(objlist,3);
   PetscValidPointer(count,4);
   PetscValidPointer(numbering,5);
-  /* Identify comm ranks of subcomm roots.  What makes it work is that MPI_Group_translate_ranks is not collective. */
   ierr = MPI_Comm_size(comm, &size);                   CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);                   CHKERRQ(ierr);
-  ierr = MPI_Comm_group(comm, &group);                 CHKERRQ(ierr);
   roots = 0;
   for(i = 0; i < len; ++i) {
-    ierr = MPI_Comm_group(objlist[i]->comm, &subgroup);         CHKERRQ(ierr);
-    ierr = MPI_Group_translate_ranks(subgroup, 1,&r0,group,&r); CHKERRQ(ierr);
-    if(r == MPI_UNDEFINED) SETERRQ1(objlist[i]->comm, PETSC_ERR_ARG_WRONG, "Cannot determine global rank of the root of local subcomm %D", i); CHKERRQ(ierr);
+    PetscMPIInt srank;
+    ierr = MPI_Comm_rank(objlist[i]->comm, &srank);         CHKERRQ(ierr);
     /* Am I the root of the i-th subcomm? */
-    if(r == rank) ++roots;
+    if(!srank) ++roots;
   }
   /* Obtain the sum of all roots -- the global number of distinct subcomms. */
-    ierr   = MPI_Allreduce((void*)&roots,(void*)count,1,MPIU_INT,MPI_SUM,comm); CHKERRQ(ierr);
+  ierr   = MPI_Allreduce((void*)&roots,(void*)count,1,MPIU_INT,MPI_SUM,comm); CHKERRQ(ierr);
   /* Now introduce a global numbering for subcomms, initially known only by subcomm roots. */
   /* 
    At the subcomm roots number the subcomms in the subcomm-root local manner, 
    and make it global by calculating the shift.
    */
-  ierr = MPI_Scan((PetscMPIInt*)&roots,(PetscMPIInt*)&offset,1,MPI_INT,MPI_SUM,comm); CHKERRQ(ierr);
+  ierr = MPI_Scan((PetscMPIInt*)&roots,(PetscMPIInt*)&offset,1,MPIU_INT,MPI_SUM,comm); CHKERRQ(ierr);
   offset -= roots;
-  /* Now we are ready to communicate global subcomm numbers from subcomm roots to the other subcomm ranks.*/
+  /* Now we are ready to broadcast global subcomm numbers within each subcomm.*/
   /* 
-   Communication proceeds one subcomm at a time: here the deadlock-free ordering assumption is used. 
-   The reason for this is that getting a tag on each subcomm is collective.  
+     This is where the assumption of a deadlock-free ordering of the subcomms is assumed: 
+     broadcast is collective on the subcomm. 
    */
   roots = 0;
   for(i = 0; i < len; ++i) {
-    /* 
-     The following only makes sense if ssrank == 0 (below). 
-     In that case roots counts the number of local subdomains this rank anchors (so far).
-     The global number is then this roots counter plus the offset of ALL the local roots 
-     at the ranks before this one.
-     */
-    PetscInt num = offset + roots; 
-    PetscMPIInt srank, ssize, tag, j;
-    MPI_Request *sreq, rreq;
-    /* Subcomm rank and size. */
-    ierr = MPI_Comm_size(objlist[i]->comm, &ssize); CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(objlist[i]->comm, &srank); CHKERRQ(ierr);
-    /* Obtain a subcomm tag.  */
-    ierr = PetscCommGetNewTag(objlist[i]->comm, &tag); CHKERRQ(ierr);
-    /* Post the receive first. */
-    ierr = MPI_Irecv((PetscMPIInt*)(numbering+i),1,MPI_INT,0,tag,objlist[i]->comm, &rreq); CHKERRQ(ierr);
-    /* Only the subcomm root posts the sends. */
-    if(!srank) {
-      ierr = PetscMalloc(sizeof(MPI_Request)*ssize, &sreq); CHKERRQ(ierr);
-      for(j = 0; j < ssize; ++j) {
-        ierr = MPI_Isend((PetscMPIInt*)&num,1,MPI_INT,j,tag,objlist[i]->comm,sreq+j); CHKERRQ(ierr);
-      }
-      ++roots;
-    }
-    /* Now we wait on receives. */
-    ierr = MPI_Wait(&rreq, MPI_STATUS_IGNORE); CHKERRQ(ierr);
-    /* And finally we wait on the sends. */
-    if(!srank) {
-      ierr = MPI_Waitall(ssize,sreq,MPI_STATUSES_IGNORE); CHKERRQ(ierr);
-      ierr = PetscFree(sreq); CHKERRQ(ierr);
-    }
+    PetscMPIInt srank;
+    numbering[i] = offset + roots; /* only meaningful if !srank. */
+    ierr = MPI_Comm_rank(objlist[i]->comm, &srank);      CHKERRQ(ierr);
+    ierr = MPI_Bcast(numbering+i,1,MPIU_INT,0,objlist[i]->comm); CHKERRQ(ierr);
+    if(!srank) ++roots;
   }
 
   PetscFunctionReturn(0);

@@ -9,7 +9,7 @@ int CreateError(int n)
 {
   PetscErrorCode ierr;
   PetscReal      *x = 0;
-  if (!n) x[0] = 100.; 
+  if (!n) {x[0] = 100.; return 0;}
   ierr = CreateError(n-1);CHKERRQ(ierr);
   return 0;
 }

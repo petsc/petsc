@@ -435,12 +435,29 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
   */
   if (!l) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"There is no such thing as a up smoother on the coarse grid");
   if (mglevels[l]->smoothu == mglevels[l]->smoothd) {
+    const KSPType ksptype;
+    const PCType pctype;
+    PC ipc;
+    PetscReal rtol,abstol,dtol;
+    PetscInt maxits;
+    KSPNormType normtype;
     ierr = PetscObjectGetComm((PetscObject)mglevels[l]->smoothd,&comm);CHKERRQ(ierr);
     ierr = KSPGetOptionsPrefix(mglevels[l]->smoothd,&prefix);CHKERRQ(ierr);
+    ierr = KSPGetTolerances(mglevels[l]->smoothd,&rtol,&abstol,&dtol,&maxits);CHKERRQ(ierr);
+    ierr = KSPGetType(mglevels[l]->smoothd,&ksptype);
+    ierr = KSPGetNormType(mglevels[l]->smoothd,&normtype);CHKERRQ(ierr);
+    ierr = KSPGetPC(mglevels[l]->smoothd,&ipc);CHKERRQ(ierr);
+    ierr = PCGetType(ipc,&pctype);CHKERRQ(ierr);
+
     ierr = KSPCreate(comm,&mglevels[l]->smoothu);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)mglevels[l]->smoothu,(PetscObject)pc,mglevels[0]->levels-l);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(mglevels[l]->smoothu,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(mglevels[l]->smoothu,prefix);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(mglevels[l]->smoothu,rtol,abstol,dtol,maxits);CHKERRQ(ierr);
+    ierr = KSPSetType(mglevels[l]->smoothu,ksptype);CHKERRQ(ierr);
+    ierr = KSPSetNormType(mglevels[l]->smoothu,normtype);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(mglevels[l]->smoothu,KSPSkipConverged,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = KSPGetPC(mglevels[l]->smoothu,&ipc);CHKERRQ(ierr);
+    ierr = PCSetType(ipc,pctype);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,mglevels[l]->smoothu);CHKERRQ(ierr);
   }
   if (ksp) *ksp = mglevels[l]->smoothu;

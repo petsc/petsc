@@ -1,8 +1,0 @@
-#! /bin/csh
-
-set MACH=petsc-mini.mcs.anl.gov
-set USR=petsc
-set LOC=/Users/petsc/petsc32
-set CONF=arch-osx-10.6
-set PURL=http://petsc.cs.iit.edu/petsc/releases/petsc-3.2
-set BURL=http://petsc.cs.iit.edu/petsc/releases/BuildSystem-3.2

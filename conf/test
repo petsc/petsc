@@ -22,6 +22,7 @@ testexamples_C_Complex_MPIUni: ${TESTEXAMPLES_C_CCOMPLEX_MPIUNI}
 testexamples_F90: ${TESTEXAMPLES_F90}
 testexamples_F90_Complex: ${TESTEXAMPLES_F90_COMPLEX}
 testexamples_F90_NoComplex: ${TESTEXAMPLES_F90_NOCOMPLEX}
+testexamples_F2003: ${TESTEXAMPLES_F2003}
 testexamples_13: ${TESTEXAMPLES_13}
 testexamples_17: ${TESTEXAMPLES_17}
 testexamples_18: ${TESTEXAMPLES_18}
@@ -66,6 +67,8 @@ testexamples_C2HTML:
 testexamples_BLACS:
 testexamples_SCALAPACK:
 testexamples_OPENMP:
+testexamples_TXPETSCGPU:
+testexamples_CMAKE:
 
 buildexamples_MPI: 
 	-@${OMAKE} testexamples_MPI TESTEXAMPLES_MPI=`echo ${TESTEXAMPLES_MPI} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
@@ -93,6 +96,8 @@ buildexamples_C_Complex_MPIUni:
 	-@${OMAKE} testexamples_C_Complex_MPIUni TESTEXAMPLES_C_COMPLEX_MPIUNI=`echo ${TESTEXAMPLES_C_COMPLEX_MPIUNI} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_F90:
 	-@${OMAKE} testexamples_F90 TESTEXAMPLES_F90=`echo ${TESTEXAMPLES_F90} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_F2003:
+	-@${OMAKE} testexamples_F2003 TESTEXAMPLES_2003=`echo ${TESTEXAMPLES_F2003} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_13:
 	-@${OMAKE} testexamples_13 TESTEXAMPLES_13=`echo ${TESTEXAMPLES_13} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_18:

@@ -127,12 +127,20 @@ def config(dry_run=False):
 
 def build(dry_run=False):
     log.info('PETSc: build')
-    # Run PETSc builder
+    # Run PETSc build
     if dry_run: return
-    import builder
-    builder.PETScMaker().run()
-    import logger
-    logger.Logger.defaultLog = None
+    use_builder_py = False
+    if use_builder_py:
+        import builder
+        builder.PETScMaker().run()
+        import logger
+        logger.Logger.defaultLog = None
+    else:
+        make = find_executable('make')
+        status = os.system(" ".join(
+                [make, 'all']
+                ))
+        if status != 0: raise RuntimeError(status)
 
 def install(dest_dir, prefix=None, dry_run=False):
     log.info('PETSc: install')
@@ -147,10 +155,18 @@ def install(dest_dir, prefix=None, dry_run=False):
         log.info(' '*4 + opt)
     # Run PETSc installer
     if dry_run: return
-    import install
-    install.Installer(options).run()
-    import logger
-    logger.Logger.defaultLog = None
+    use_install_py = True
+    if use_install_py:
+        import install
+        install.Installer(options).run()
+        import logger
+        logger.Logger.defaultLog = None
+    else:
+        make = find_executable('make')
+        status = os.system(" ".join(
+                [make, 'install', 'DESTDIR='+dest_dir]
+                ))
+        if status != 0: raise RuntimeError(status)
 
 class context:
     def __init__(self):

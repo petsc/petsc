@@ -91,10 +91,10 @@ struct _MatOps {
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*view)(Mat,PetscViewer);
   PetscErrorCode (*convertfrom)(Mat, const MatType,MatReuse,Mat*);
-  PetscErrorCode (*usescaledform)(Mat,PetscBool );
+  PetscErrorCode (*dummy10)(Mat,PetscBool );
   /*64*/
-  PetscErrorCode (*scalesystem)(Mat,Vec,Vec);
-  PetscErrorCode (*unscalesystem)(Mat,Vec,Vec);
+  PetscErrorCode (*dummy8)(Mat,Vec,Vec);
+  PetscErrorCode (*dummy9)(Mat,Vec,Vec);
   PetscErrorCode (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping,ISLocalToGlobalMapping);
   PetscErrorCode (*setvalueslocal)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
   PetscErrorCode (*zerorowslocal)(Mat,PetscInt,const PetscInt[],PetscScalar,Vec,Vec);
@@ -167,7 +167,7 @@ struct _MatOps {
   /*124*/
   PetscErrorCode (*findnonzerorows)(Mat,IS*);
   PetscErrorCode (*getcolumnnorms)(Mat,NormType,PetscReal*);
-  PetscErrorCode (*invertblockdiagonal)(Mat,PetscScalar**);
+  PetscErrorCode (*invertblockdiagonal)(Mat,const PetscScalar**);
   PetscErrorCode (*dummy4)(Mat,Vec,Vec,Vec);
   PetscErrorCode (*getsubmatricesparallel)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
   /*129*/
@@ -448,11 +448,11 @@ struct  _p_MatFDColoring{
   PetscReal      error_rel;        /* square root of relative error in computing function */
   PetscReal      umin;             /* minimum allowable u'dx value */
   Vec            w1,w2,w3;         /* work vectors used in computing Jacobian */
+  PetscBool      fset;             /* indicates that the initial function value F(X) is set */
   PetscErrorCode (*f)(void);       /* function that defines Jacobian */
   void           *fctx;            /* optional user-defined context for use by the function f */
   PetscInt       **vscaleforrow;   /* location in vscale for each columnsforrow[] entry */
   Vec            vscale;           /* holds FD scaling, i.e. 1/dx for each perturbed column */
-  Vec            F;                /* current value of user provided function; can set with MatFDColoringSetF() */
   PetscInt       currentcolor;     /* color for which function evaluation is being done now */
   const char     *htype;            /* "wp" or "ds" */
   ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_GHOSTED */

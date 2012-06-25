@@ -106,19 +106,19 @@ int main(int argc,char **args)
   for (Ii=Istart; Ii<Iend; Ii++) { 
     i = Ii/n2; j = Ii - i*n2;  
     if (i>0)   {
-      J = Ii - n2;  v = -1.0 + co1*i;
+      J = Ii - n2;  v = -1.0 + co1*(PetscScalar)i;
       ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (i<n1-1) {
-      J = Ii + n2;  v = -1.0 + co1*i;
+      J = Ii + n2;  v = -1.0 + co1*(PetscScalar)i;
       ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (j>0)   {
-      J = Ii - 1;  v = -1.0 + co1*j;
+      J = Ii - 1;  v = -1.0 + co1*(PetscScalar)j;
       ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (j<n2-1) {
-      J = Ii + 1;  v = -1.0 + co1*j;
+      J = Ii + 1;  v = -1.0 + co1*(PetscScalar)j;
       ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     v = 4.0 + co2;

@@ -1,5 +1,6 @@
 
 #include <petscsys.h>
+#include <errno.h>
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
@@ -28,15 +29,22 @@
 #define __FUNCT__ "PetscTestOwnership"
 static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool  *flg) 
 {
-  int m = R_OK;
-  
+  int            m = R_OK;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (mode == 'r') m = R_OK;
   else if (mode == 'w') m = W_OK;
   else if (mode == 'x') m = X_OK;
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Mode must be one of r, w, or x");
 #if defined(PETSC_HAVE_ACCESS)
-  if(!access(fname, m))  *flg = PETSC_TRUE;
+  if (!access(fname, m)) { 
+    ierr = PetscInfo1(PETSC_NULL,"System call access() succeeded on file %s\n",fname);CHKERRQ(ierr);
+    *flg = PETSC_TRUE;
+  } else {
+    ierr = PetscInfo1(PETSC_NULL,"System call access() failed on file %s\n",fname);CHKERRQ(ierr);
+    *flg = PETSC_FALSE;
+  }
 #else
   if (m == X_OK) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Unable to check execute permission for file %s", fname);
   if(!_access(fname, m)) *flg = PETSC_TRUE;
@@ -121,8 +129,11 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
   ierr = stat(fname, &statbuf);
 #endif
   if (ierr) {
+    if (errno == EOVERFLOW) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"EOVERFLOW in stat(), configure PETSc --with-large-file-io=1 to support files larger than 2GiB");
+    ierr = PetscInfo1(PETSC_NULL,"System call stat() failed on file %s\n",fname);CHKERRQ(ierr);
     *exists = PETSC_FALSE;
   } else {
+     ierr = PetscInfo1(PETSC_NULL,"System call stat() succeeded on file %s\n",fname);CHKERRQ(ierr);
     *exists = PETSC_TRUE;
     *fileUid  = statbuf.st_uid;
     *fileGid  = statbuf.st_gid;
@@ -147,8 +158,7 @@ PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
 
   ierr = PetscGetFileStat(fname, &fuid, &fgid, &fmode,&exists);CHKERRQ(ierr);
   if (!exists) PetscFunctionReturn(0);
-  /* Except for systems that have this broken stat macros (rare), this
-     is the correct way to check for a regular file */
+  /* Except for systems that have this broken stat macros (rare), this is the correct way to check for a regular file */
   if (!S_ISREG(fmode)) PetscFunctionReturn(0);
 
   ierr = PetscTestOwnership(fname, mode, fuid, fgid, fmode, flg);CHKERRQ(ierr);

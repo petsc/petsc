@@ -32,6 +32,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
   ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(C);CHKERRQ(ierr); 
+  ierr = MatSetUp(C);CHKERRQ(ierr);
 
   /* Create vectors */
   ierr = MatGetOwnershipRange(C,&start,&end);CHKERRQ(ierr);
@@ -51,6 +52,8 @@ int main(int argc,char **args)
   ierr = MatSetType(Cpetsc,MATDENSE);CHKERRQ(ierr); 
   ierr = MatMPIDenseSetPreallocation(Cpetsc,PETSC_NULL);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(Cpetsc);CHKERRQ(ierr);
+  ierr = MatSetUp(Cpetsc);CHKERRQ(ierr);
+
   ierr = MatSetOption(Cpetsc,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr); 
   ierr = MatSetOption(C,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr); 
 
@@ -165,6 +168,8 @@ int main(int argc,char **args)
   ierr = MatSetSizes(Csymm,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
   ierr = MatSetType(Csymm,MATDENSE);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(Csymm);CHKERRQ(ierr);
+  ierr = MatSetUp(Csymm);CHKERRQ(ierr);
+
   ierr = MatSetOption(Csymm,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatSetOption(Csymm,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetOption(Csymm,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);

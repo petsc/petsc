@@ -82,7 +82,6 @@ def main(args):
     # these are all included in the .mex file and selected via dlsym()
     fd = open('matlab/'+i+'Createmex.c','w')
     fd.write('#include "petscts.h"\n')
-    fd.write('#include "petscdmmg.h"\n')                
     fd.write('#include "mex.h"\n')
     fd.write('void mexFunction'+i+'(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])\n{\n')
     fd.write('  plhs[0]  = mxCreateNumericMatrix(1,1,mxINT32_CLASS,mxREAL);')
@@ -223,7 +222,6 @@ def main(args):
 def buildmex(i,j,classes):
   fd = open('matlab/'+i+j+'mex.c','w')
   fd.write('#include "petscts.h"\n')
-  fd.write('#include "petscdmmg.h"\n')                
   fd.write('#include "mex.h"\n')
   fd.write('void mexFunction'+i+j+'(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])\n{\n')
   

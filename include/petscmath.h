@@ -34,6 +34,13 @@ typedef float PetscReal;
 typedef double PetscReal;
 #define PetscSqrtReal(a)    sqrt(a)
 #elif defined(PETSC_USE_REAL___FLOAT128)
+#if defined(__cplusplus)
+extern "C" {
+#endif
+#include <quadmath.h>
+#if defined(__cplusplus)
+}
+#endif
 #define MPIU_REAL MPIU___FLOAT128
 typedef __float128 PetscReal;
 #define PetscSqrtReal(a)    sqrtq(a)
@@ -140,7 +147,6 @@ PETSC_STATIC_INLINE PetscReal PetscAbsScalar(PetscScalar a) {return a < 0.0 ? -a
 #define PetscSinScalar(a)     sin(a)
 #define PetscCosScalar(a)     cos(a)
 #else /* PETSC_USE_REAL___FLOAT128 */
-#include <quadmath.h>
 #define PetscSqrtScalar(a)    sqrtq(a)
 #define PetscPowScalar(a,b)   powq(a,b)
 #define PetscExpScalar(a)     expq(a)

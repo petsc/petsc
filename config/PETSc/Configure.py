@@ -38,7 +38,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-default-arch=<bool>',        nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
     help.addArgument('PETSc','-with-single-library=<bool>',       nargs.ArgBool(None, 1,'Put all PETSc code into the single -lpetsc library'))
     help.addArgument('PETSc', '-with-iphone=<bool>',              nargs.ArgBool(None, 0, 'Build an iPhone version of PETSc'))
-    help.addArgument('CTetgen', '-with-ctetgen=<bool>',           nargs.ArgBool(None, 0, 'Enable CTetgen support'))
     return
 
   def setupDependencies(self, framework):
@@ -219,8 +218,6 @@ class Configure(config.base.Configure):
 
 #-----------------------------------------------------------------------------------------------------
     # print include and lib for makefiles
-    if self.framework.argDB['with-ctetgen']:
-      self.addDefine('HAVE_CTETGEN', 1)
     self.framework.packages.reverse()
     includes = [os.path.join(self.petscdir.dir,'include'),os.path.join(self.petscdir.dir,self.arch.arch,'include')]
     libs = []
@@ -417,6 +414,8 @@ class Configure(config.base.Configure):
         cmakeset(fd,'PETSC_HAVE_FORTRAN')
         if self.compilers.fortranIsF90:
           cmakeset(fd,'PETSC_USING_F90')
+        if self.compilers.fortranIsF2003:
+          cmakeset(fd,'PETSC_USING_F2003')
       if self.sharedlibraries.useShared:
         cmakeset(fd,'BUILD_SHARED_LIBS')
     def writeBuildFlags(fd):
@@ -478,7 +477,7 @@ class Configure(config.base.Configure):
       if self.cmakeboot_success:
         if self.framework.argDB['with-cuda']: # Our CMake build does not support CUDA at this time
           self.framework.logPrint('CMake configured successfully, but could not be used by default because --with-cuda was used\n')
-        elif hasattr(self.compilers, 'FC') and not self.setCompilers.fortranModuleOutputFlag:
+        elif hasattr(self.compilers, 'FC') and self.compilers.fortranIsF90 and not self.setCompilers.fortranModuleOutputFlag:
           self.framework.logPrint('CMake configured successfully, but could not be used by default because of missing fortranModuleOutputFlag\n')
         else:
           self.framework.logPrint('CMake configured successfully, using as default build\n')
@@ -547,7 +546,7 @@ class Configure(config.base.Configure):
 
   def configureFeatureTestMacros(self):
     '''Checks if certain feature test macros are support'''
-    if self.checkCompile('#define _POSIX_C_SOURCE 200112L\n#include <stdlib.h>',''):
+    if self.checkCompile('#define _POSIX_C_SOURCE 200112L\n#include <sysctl.h>',''):
        self.addDefine('_POSIX_C_SOURCE_200112L', '1')
     if self.checkCompile('#define _BSD_SOURCE\n#include<stdlib.h>',''):
        self.addDefine('_BSD_SOURCE', '1')

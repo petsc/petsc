@@ -1345,6 +1345,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat F,Mat A,IS perm,const MatF
   ierr = MatIsSymmetricKnown(A,&set,&issymmetric);CHKERRQ(ierr);
   if (!set || !issymmetric) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_USER,"Matrix must be set as MAT_SYMMETRIC for CholeskyFactor()");
   F->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_MPIDense;
+  F->preallocated                = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1361,6 +1362,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIDense(Mat F,Mat A,IS r,IS c,const MatFacto
   lu = (Mat_Plapack*)F->spptr;
   ierr = PLA_Mvector_create(MPI_INT,M,1,lu->templ,PLA_ALIGN_FIRST,&lu->pivots);CHKERRQ(ierr);
   F->ops->lufactornumeric  = MatLUFactorNumeric_MPIDense;
+  F->preallocated          = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1390,6 +1392,7 @@ PetscErrorCode MatGetFactor_mpidense_plapack(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatCreate(((PetscObject)A)->comm,F);CHKERRQ(ierr);
   ierr = MatSetSizes(*F,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(*F,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  ierr = MatSetUp(*F);CHKERRQ(ierr);
   ierr = PetscNewLog(*F,Mat_Plapack,&lu);CHKERRQ(ierr);
   (*F)->spptr = (void*)lu;
 

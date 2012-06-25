@@ -26,7 +26,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   PetscFunctionBegin;
 
 #if defined (PETSC_USE_CTABLE)
-  /* use a table - Mark Adams */
+  /* use a table */
   ierr = PetscTableCreate(aij->B->rmap->n,mat->cmap->N+1,&gid1_lid1);CHKERRQ(ierr);
   for (i=0; i<aij->B->rmap->n; i++) {
     for (j=0; j<B->ilen[i]; j++) {
@@ -64,7 +64,6 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   aij->B->cmap->n = aij->B->cmap->N = ec;
   ierr = PetscLayoutSetUp((aij->B->cmap));CHKERRQ(ierr);
   ierr = PetscTableDestroy(&gid1_lid1);CHKERRQ(ierr);
-  /* Mark Adams */
 #else
   /* Make an array as long as the number of columns */
   /* mark those columns that are in aij->B */
@@ -105,8 +104,8 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   /* create two temporary Index sets for build scatter gather */
   /*  check for the special case where blocks are communicated for faster VecScatterXXX */
   useblockis = PETSC_FALSE;
-  if (mat->rmap->bs > 1) {
-    PetscInt bs = mat->rmap->bs,ibs,ga;
+  if (mat->cmap->bs > 1) {
+    PetscInt bs = mat->cmap->bs,ibs,ga;
     if (!(ec % bs)) {
       useblockis = PETSC_TRUE;
       for (i=0; i<ec/bs; i++) {
@@ -124,15 +123,23 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
       }
     }
   }
+#if defined(PETSC_USE_DEBUG)
+  i = (PetscInt)useblockis;
+  ierr = MPI_Allreduce(&i,&j,1,MPIU_INT,MPI_MIN,((PetscObject)mat)->comm); CHKERRQ(ierr);
+  if(j!=i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Use of blocked not consistant (I am usning blocked)");
+#endif
+
   if (useblockis) {
-    PetscInt *ga,bs = mat->rmap->bs,iec = ec/bs;
+    PetscInt *ga,bs = mat->cmap->bs,iec = ec/bs;
+    if(ec%bs)SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ec=%D bs=%D",ec,bs);
     ierr = PetscInfo(mat,"Using block index set to define scatter\n");
-    ierr = PetscMalloc((ec/mat->rmap->bs)*sizeof(PetscInt),&ga);CHKERRQ(ierr);
+    ierr = PetscMalloc(iec*sizeof(PetscInt),&ga);CHKERRQ(ierr);
     for (i=0; i<iec; i++) ga[i] = garray[i*bs]/bs;
     ierr = ISCreateBlock(((PetscObject)mat)->comm,bs,iec,ga,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
   } else {
     ierr = ISCreateGeneral(((PetscObject)mat)->comm,ec,garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   }
+
   ierr = ISCreateStride(PETSC_COMM_SELF,ec,0,1,&to);CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */

@@ -1372,23 +1372,14 @@ PetscErrorCode  PCPreSolve(PC pc,KSP ksp)
 {
   PetscErrorCode ierr;
   Vec            x,rhs;
-  Mat            A,B;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
+  pc->presolvedone++;
+  if (pc->presolvedone > 2) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Cannot embed PCPreSolve() more than twice");
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&rhs);CHKERRQ(ierr);
-  /*
-      Scale the system and have the matrices use the scaled form
-    only if the two matrices are actually the same (and hence
-    have the same scaling
-  */  
-  ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
-  if (A == B) {
-    ierr = MatScaleSystem(pc->mat,rhs,x);CHKERRQ(ierr);
-    ierr = MatUseScaledForm(pc->mat,PETSC_TRUE);CHKERRQ(ierr);
-  }
 
   if (pc->ops->presolve) {
     ierr = (*pc->ops->presolve)(pc,ksp,rhs,x);CHKERRQ(ierr);
@@ -1429,25 +1420,15 @@ PetscErrorCode  PCPostSolve(PC pc,KSP ksp)
 {
   PetscErrorCode ierr;
   Vec            x,rhs;
-  Mat            A,B;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
+  pc->presolvedone--;
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&rhs);CHKERRQ(ierr);
   if (pc->ops->postsolve) {
     ierr =  (*pc->ops->postsolve)(pc,ksp,rhs,x);CHKERRQ(ierr);
-  }
-  /*
-      Scale the system and have the matrices use the scaled form
-    only if the two matrices are actually the same (and hence
-    have the same scaling
-  */  
-  ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
-  if (A == B) {
-    ierr = MatUnScaleSystem(pc->mat,rhs,x);CHKERRQ(ierr);
-    ierr = MatUseScaledForm(pc->mat,PETSC_FALSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

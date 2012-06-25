@@ -146,9 +146,13 @@ int main(int argc,char **args)
       DD[7][7] =  0.53333333333333321     ;
     }
     else {
-      for(i=0;i<8;i++)
-        for(j=0;j<8;j++)
-          fscanf(file, "%le", &DD1[i][j]);
+      for(i=0;i<8;i++) {
+        for(j=0;j<8;j++) {
+          double val;
+          fscanf(file, "%le", &val);
+          DD1[i][j] = val;
+        }
+      }
     }
     /* BC version of element */
     for(i=0;i<8;i++)
@@ -159,7 +163,8 @@ int main(int argc,char **args)
         else DD2[i][j] = DD1[i][j];
   }
   {
-    PetscReal coords[m];
+    PetscReal *coords;
+    ierr = PetscMalloc(m*sizeof(PetscReal),&coords);
     /* forms the element stiffness for the Laplacian and coordinates */
     for (Ii = Istart/2, ix = 0; Ii < Iend/2; Ii++, ix++ ) {
       j = Ii/(ne+1); i = Ii%(ne+1);
@@ -210,6 +215,7 @@ int main(int argc,char **args)
     if( use_coords ) {
       ierr = PCSetCoordinates( pc, 2, m/2, coords );                   CHKERRQ(ierr);
     }
+    ierr = PetscFree(coords);CHKERRQ(ierr);
   }
 
   if( !PETSC_TRUE ) {

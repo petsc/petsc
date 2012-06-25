@@ -972,7 +972,7 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,CellProperties cell_
         /* form element stiffness matrix */
         FormStressOperatorQ13D(Ae,el_coords,prop_eta);
         FormGradientOperatorQ13D(Ge,el_coords);
-        /*FormDivergenceOperatorQ13D(De,el_coords);*/
+        /* FormDivergenceOperatorQ13D(De,el_coords); */
         FormScaledMassMatrixOperatorQ13D(Ce,el_coords,prop_eta);
 
         /* insert element matrix into global matrix */

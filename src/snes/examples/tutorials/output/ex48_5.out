@@ -1,0 +1,23 @@
+Level 0 domain size (m)    1e+04 x    1e+04 x    1e+03, num elements  12 x  12 x   5 (     720), size (m) 833.333 x 833.333 x 250
+  0 SNES Function norm 33.6173 
+  Linear solve converged due to CONVERGED_RTOL iterations 8
+  1 SNES Function norm 29.0749 
+  Linear solve converged due to CONVERGED_RTOL iterations 11
+  2 SNES Function norm 20.9986 
+  Linear solve converged due to CONVERGED_RTOL iterations 13
+  3 SNES Function norm 10.7087 
+  Linear solve converged due to CONVERGED_RTOL iterations 14
+  4 SNES Function norm 2.92474 
+  Linear solve converged due to CONVERGED_RTOL iterations 15
+  5 SNES Function norm 0.231119 
+  Linear solve converged due to CONVERGED_RTOL iterations 15
+  6 SNES Function norm 0.00139465 
+  Linear solve converged due to CONVERGED_RTOL iterations 15
+  7 SNES Function norm 6.09126e-08 
+Solution statistics after solve: Full
+CONVERGED_FNORM_RELATIVE: Number of SNES iterations = 7, total linear iterations = 91
+|X|_2 436.046   -0 <= u <=  23.8906   -2.81989 <= v <=  2.81989   0 <= c <=  23.8906 
+Surface statistics: u in [1.240979e+01, 2.389059e+01] mean 1.985571e+01
+Global eta range   3.31802e+10 to 9.2273e+12 converged range 3.31802e+10 to 7.04279e+11
+Global beta2 range 1e+100 to 0 converged range 1e+100 to 0
+

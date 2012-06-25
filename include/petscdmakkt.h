@@ -8,10 +8,10 @@ PETSC_EXTERN PetscErrorCode DMAKKTSetDM(DM,DM);
 PETSC_EXTERN PetscErrorCode DMAKKTGetDM(DM,DM*);
 PETSC_EXTERN PetscErrorCode DMAKKTSetMatrix(DM,Mat);
 PETSC_EXTERN PetscErrorCode DMAKKTGetMatrix(DM,Mat*);
-PETSC_EXTERN PetscErrorCode DMAKKTSetDecompositionName(DM,const char*);
-PETSC_EXTERN PetscErrorCode DMAKKTGetDecompositionName(DM,char**);
-PETSC_EXTERN PetscErrorCode DMAKKTSetDecomposition(DM,PetscInt, const char* const*, IS[], DM[]);
-PETSC_EXTERN PetscErrorCode DMAKKTGetDecomposition(DM,PetscInt*, char***, IS**, DM**);
+PETSC_EXTERN PetscErrorCode DMAKKTSetFieldDecompositionName(DM,const char*);
+PETSC_EXTERN PetscErrorCode DMAKKTGetFieldDecompositionName(DM,char**);
+PETSC_EXTERN PetscErrorCode DMAKKTSetFieldDecomposition(DM,PetscInt, const char* const*, IS[], DM[]);
+PETSC_EXTERN PetscErrorCode DMAKKTGetFieldDecomposition(DM,PetscInt*, char***, IS**, DM**);
 
 PETSC_EXTERN PetscErrorCode DMAKKTSetDuplicateMat(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMAKKTGetDuplicateMat(DM,PetscBool*);

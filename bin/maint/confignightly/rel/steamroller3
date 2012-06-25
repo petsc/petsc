@@ -1,0 +1,9 @@
+#! /bin/csh
+
+set MACH=steamroller
+set USR=petsc
+set LOC=/sandbox/petsc/petsc33-3
+set CONF=arch-linux-mpich1
+set PURL=http://petsc.cs.iit.edu/petsc/releases/petsc-3.3
+set BURL=http://petsc.cs.iit.edu/petsc/releases/BuildSystem-3.3
+

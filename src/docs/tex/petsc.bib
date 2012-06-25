@@ -1182,6 +1182,17 @@ University of Colorado-Boulder",
     Note= "(accepted by SIAM J. of Scientific  Computing)"
     )
 
+@article{cai2003restricted,
+  title={Restricted additive {S}chwarz preconditioners with harmonic overlap for symmetric positive definite linear systems},
+  author={Cai, X.C. and Dryja, M. and Sarkis, M.},
+  journal={SIAM Journal on Numerical Analysis},
+  volume=41,
+  issue=1,
+  pages={1209--1231},
+  year=2003,
+  doi={10.1137/S0036142901389621}
+}
+
 @TECHREPORT{caisaad,
         AUTHOR="Xiao-Chuan Cai and Youcef Saad",
         TITLE="Overlapping domain decomposition algorithms for
@@ -2742,6 +2753,13 @@ Booktitle = "Supercomputing '95 Proceedings",
      year="2003"
 )
 
+@book{vandervorst03,
+   author = "Henk A. {van der Vorst}",
+   title = "Iterative Krylov Methods for Large Linear Systems",
+   publisher = "Cambridge Monographs on Applied ahd Computational Mathematics",
+   year = 2003
+}
+
 @BOOK{koniges00,
        EDITOR = "Alice E. Koniges",
        TITLE = "Industrial Strength Parallel Computing",
@@ -3695,9 +3713,16 @@ year = 2003}
 
 @unpublished{groundwater-scidac2:web,
   author =	 "Peter {Lichtner (PI)}",
+  title =	 "Modeling Multiscale-Multiphase-Multicomponent Subsurface Reactive Flows 
+                  Using Advanced Computing",
+  url = "http://www.scidac.gov/groundwater/gwflow.html"
+}
+
+@misc{pflotran:web,
+  author =	 "Peter {Lichtner (PI)}",
   title =	 "{Modeling Multiscale-Multiphase-Multicomponent Subsurface Reactive Flows 
                   Using Advanced Computing}",
-  url = "http://www.scidac.gov/groundwater/gwflow.html"
+  note = "\url{http://ees.lanl.gov/pflotran/}"
 }
 
 @Misc{accel-scidac2-solicitation,
@@ -4985,6 +5010,15 @@ year =  2010,
 url = "http://extremecomputing.labworks.org/SumReps/Crosscutting-SumRep-PNNL_20168.pdf"
 }
 
+@misc{extreme-scale-solvers-workshop12,
+author= "J. Ang and K. Evans and A. Geist and M. Heroux and P. Hovland and O. Marques and L.C. McInnes and E. Ng and S. Wild",
+title = "Report on the Workshop on Extreme-Scale Solvers: Transitions to Future Architectures", 
+howpublished = "Office of Advanced Scientific Computing Research, U.S. Department of Energy",
+note = "{Washington, DC}, March 8-9, 2012", 
+url = "http://science.energy.gov/~/media/ascr/pdf/program-documents/docs/reportExtremeScaleSolvers2012.pdf",
+year =  2012
+}
+
 @misc{MonizRosner09,
 author= "{E. Moniz and R. Rosner}",
 title=  "{Workshop on Science Based Nuclear Energy Systems Enabled by Advanced Modeling and Simulation at the Extreme Scale}",
@@ -5648,7 +5682,7 @@ year = {1993}
 @TechReport( parms04,
     Author = "Yousef Saad and Masha Sosonkina",
     Title  = "{pARMS}: A package for the parallel iterative solution of general large sparse linear systems user's guide",
-    number = UMSI2004-8,
+    number = "UMSI2004-8",
     Institution = "Minnesota Supercomputer Institute, University of Minnesota",
     Year   = 2004,
     note = "\url{http://www-users.cs.umn.edu/~saad/software/pARMS}"
@@ -5988,7 +6022,7 @@ ee        = {http://dx.doi.org/10.1137/100791142}
 
 @inproceedings{MadayPatera89,
   author    = {Y. Maday and A. T. Patera},
-  title     = {Spectral element methods for the Navier-Stokes equations},
+  title     = {Spectral element methods for the {Navier-Stokes} equations},
   editor    = {A. K. Noor and J. T. Oden},
   booktitle = {State-of-the-Art Surveys in Computational Mechanics},
   pages     = {71-–143},
@@ -6358,7 +6392,7 @@ year = {2010}
 
 @techreport{Zheng11,
   author      = {Liang Zheng and Taras Gerya and Matthew G. Knepley and David A. Yuen and Huai Zhang and Yaolin Shi},
-  title       = {Implementation of a multigrid solver on {GPU} for Stokes equations with strongly variable viscosity based on {Matlab} and {CUDA}},
+  title       = {Implementation of a multigrid solver on {GPU} for {Stokes} equations with strongly variable viscosity based on {Matlab} and {CUDA}},
   type        = {Research Report},
   number      = {UMSI 2011/33},
   institution = {University of Minnesota Supercomputing Institute},
@@ -6370,7 +6404,7 @@ year = {2010}
 
 @inproceedings{Zheng2010,
   author       = {Liang Zheng and Taras Gerya and David A. Yuen and Matthew G. Knepley and Huai Zhang and Yaolin Shi},
-  title        = {GPU Implementation of Stokes Equation with Strongly Variable Coefficients},
+  title        = {GPU Implementation of {Stokes} Equation with Strongly Variable Coefficients},
   booktitle    = {Eos Transactions of the AGU},
   organization = {American Geophysical Union},
   note         = {Fall Meeting Supplemental, Abstract IN41A-1350},
@@ -6537,7 +6571,7 @@ year = {2010}
 }
 
 @article{Ghysels_Ashby_Meerbergen_Vanroose_2012,
- title={Hiding global communication latency in the GMRES algorithm on massively parallel machines},
+ title={Hiding global communication latency in the {GMRES} algorithm on massively parallel machines},
  volume={},
  url={http://www.exascience.com/wp-content/uploads/2012/02/Ghysels_latency_gmres.pdf},
  number={},
@@ -6548,7 +6582,7 @@ year = {2010}
 }
 
 @article{Bai_Hu_Reichel_1994,
- title={A Newton basis GMRES implementation},
+ title={A {Newton} basis {GMRES} implementation},
  volume={14},
  url={},
  number={},
@@ -6559,7 +6593,7 @@ year = {2010}
 }
 
 @article{Chronopoulos_Gear_1989,
- title={s-step iterative methods for symmetric linear systems},
+ title={{S-step} iterative methods for symmetric linear systems},
  volume={25},
  url={},
  number={},
@@ -6570,8 +6604,8 @@ year = {2010}
 }
 
 @article{Sturler_Vorst_1995,
- title={Reducing the effect of global communication in GMRES(m) and
-CG on parallel distributed memory computers},
+ title={Reducing the effect of global communication in {GMRES(m)} and
+{CG} on parallel distributed memory computers},
  volume={18},
  url={},
  number={},
@@ -6594,7 +6628,7 @@ part I: Theory},
 }
 
 @article{Elman_SaadSaylor_1986,
- title={A hybrid Chebyshev Krylov-subspace algorithm for solving nonsymmetric systems of linear equations},
+ title={A hybrid {Chebyshev} {Krylov}-subspace algorithm for solving nonsymmetric systems of linear equations},
  volume={7},
  url={},
  number={3},
@@ -6606,7 +6640,7 @@ part I: Theory},
 
 @ARTICLE{Golub95innerand,
     author = {Eldar Giladi and Gene H. Golub and Joseph B. Keller},
-    title = {Inner and outer iterations for the Chebyshev algorithm},
+    title = {Inner and outer iterations for the {Chebyshev} algorithm},
     journal = {SIAM J. Numer. Anal},
     year = {1995},
     volume = {35},
@@ -6614,8 +6648,8 @@ part I: Theory},
 }
 
 @article{Golub_Varga_1961,
- title={Chebyshev semi-iterative methods, successive overrelaxation iterative methods, and
-        second-order Richardson iterative methods, parts I and II},
+ title={{Chebyshev} semi-iterative methods, successive overrelaxation iterative methods, and
+        second-order Richardson iterative methods, parts {I} and {II}},
  volume={3},
  url={},
  number={},
@@ -6625,16 +6659,109 @@ part I: Theory},
  pages={147--168}
 }
 
-@article{maliki_Guenette_Fortin_2008,
- title={A hierarchical iterative method for quadratic discretizations of finite element problems},
- volume={},
- url={},
- number={},
- journal={NUMERICAL LINEAR ALGEBRA WITH APPLICATIONS},
- author={A. El maliki and R. Guenette and M. Fortin},
- year={2008},
- pages={}
+@article{El_maliki_Guenette_Fortin_2011,
+ title={An efficient hierarchical preconditioner for quadratic discretizations of finite element problems},
+ volume={18},
+ doi={10.1002/nla.757},
+ number={5},
+ journal={Numerical Linear Algebra with Applications},
+ author={A. {El maliki} and R. Guenette and M. Fortin},
+ year={2011},
+ pages={789-803}
 }
 
-
-
+@article{lewis2005model,
+  title={Model problems for the multigrid optimization of systems governed by differential equations},
+  author={Lewis, R.M. and Nash, S.G.},
+  journal={SIAM Journal on Scientific Computing},
+  volume={26},
+  number={6},
+  pages={1811--1837},
+  year={2005},
+  publisher={Philadelphia, PA: SIAM, c1993-}
+}
+@article{nash2000mgopt,
+  title={A multigrid approach to discretized optimization problems},
+  author={Nash, S.G.},
+  journal={Optimization Methods and Software},
+  volume={14},
+  number={1-2},
+  pages={99--116},
+  year={2000},
+  publisher={Taylor \& Francis}
+}
+@article{borzi2009multigrid,
+  title={Multigrid Methods for {PDE} Optimization},
+  author={Borz{\`\i}, A. and Schulz, V.},
+  journal={SIAM Review},
+  volume={51},
+  pages={361},
+  year={2009}
+}
+@article{brandt2002multiscale,
+  title={Multiscale scientific computation: {R}eview 2001},
+  author={Brandt, A.},
+  journal={Lecture Notes in Computational Science and Engineering},
+  volume={20},
+  pages={3--96},
+  year={2002},
+}
+@inbook{brandt2003multigrid,
+  title={Multigrid solvers and multilevel optimization strategies},
+  author={Brandt, A. and Ron, D.},
+  booktitle={Multilevel Optimization and VLSICAD},
+  editors={J. Cong and J.R. Shinnerl},
+  pages={1--69},
+  publisher={Kluwer Academic Publishers},
+  year={2003}
+}
+@article{brandt2008principles,
+  title={Principles of systematic upscaling},
+  author={Brandt, A.},
+  journal={Bridging the Scales in Science and Engineering},
+  pages={193--215},
+  year={2008}
+}
+@article{halko2011finding,
+  author    = {Nathan Halko and
+               Per-Gunnar Martinsson and
+               Joel A. Tropp},
+  title     = {Finding Structure with Randomness: Probabilistic Algorithms
+               for Constructing Approximate Matrix Decompositions},
+  journal   = {SIAM Review},
+  volume    = {53},
+  number    = {2},
+  year      = {2011},
+  pages     = {217-288},
+  doi       = {10.1137/090771806}
+}
+@inproceedings{MHDY09,
+        Author = {Mohiyuddin, M. and Hoemmen, M. and Demmel, J. and Yelick, K.},
+        Booktitle = {Proceedings of SC09},
+        Organization = {ACM},
+        Title = {Minimizing communication in sparse matrix solvers},
+        doi = {10.1145/1654059.1654096},
+        Year = {2009}
+}
+@inproceedings{vanRosendale83,
+ title={Minimizing inner product data dependencies in conjugate gradient iteration},
+ booktitle={Proceedings of the IEEE International Conference on Parallel Processing},
+ author={J. van Rosendale},
+ year={1983},
+ publisher = "IEEE Computer Society",
+}
+@phdthesis{Vuduc95,
+  title={Quantitative performance modeling of scientific computations and creating locality in numerical algorithms},
+  author={R. Vuduc},
+  journal={Massachusetts Institute of Technology},
+  school={Massachusetts Institute of Technology},
+  year={1995}
+}
+@article{simoncini2003flexible,
+ title={Flexible inner-outer {Krylov} subspace methods},
+ author={Simoncini, V. and Szyld, D.B.},
+ journal={SIAM Journal on Numerical Analysis},
+ pages={2219--2239},
+ year={2003},
+ publisher={JSTOR}
+}

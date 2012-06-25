@@ -895,128 +895,6 @@ PetscErrorCode  MatLoad(Mat newmat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatScaleSystem"
-/*@
-   MatScaleSystem - Scale a vector solution and right hand side to 
-   match the scaling of a scaled matrix.
-  
-   Collective on Mat
-
-   Input Parameter:
-+  mat - the matrix
-.  b - right hand side vector (or PETSC_NULL)
--  x - solution vector (or PETSC_NULL)
-
-
-   Notes: 
-   For AIJ, and BAIJ matrix formats, the matrices are not 
-   internally scaled, so this does nothing. 
-
-   The KSP methods automatically call this routine when required
-   (via PCPreSolve()) so it is rarely used directly.
-
-   Level: Developer            
-
-   Concepts: matrices^scaling
-
-.seealso: MatUseScaledForm(), MatUnScaleSystem()
-@*/
-PetscErrorCode  MatScaleSystem(Mat mat,Vec b,Vec x)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  MatCheckPreallocated(mat,1);
-  if (x) {PetscValidHeaderSpecific(x,VEC_CLASSID,3);PetscCheckSameComm(mat,1,x,3);}
-  if (b) {PetscValidHeaderSpecific(b,VEC_CLASSID,2);PetscCheckSameComm(mat,1,b,2);}
-
-  if (mat->ops->scalesystem) {
-    ierr = (*mat->ops->scalesystem)(mat,b,x);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatUnScaleSystem"
-/*@
-   MatUnScaleSystem - Unscales a vector solution and right hand side to 
-   match the original scaling of a scaled matrix.
-  
-   Collective on Mat
-
-   Input Parameter:
-+  mat - the matrix
-.  b - right hand side vector (or PETSC_NULL)
--  x - solution vector (or PETSC_NULL)
-
-
-   Notes: 
-   For AIJ and BAIJ matrix formats, the matrices are not 
-   internally scaled, so this does nothing. 
-
-   The KSP methods automatically call this routine when required
-   (via PCPreSolve()) so it is rarely used directly.
-
-   Level: Developer            
-
-.seealso: MatUseScaledForm(), MatScaleSystem()
-@*/
-PetscErrorCode  MatUnScaleSystem(Mat mat,Vec b,Vec x)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  MatCheckPreallocated(mat,1);
-  if (x) {PetscValidHeaderSpecific(x,VEC_CLASSID,3);PetscCheckSameComm(mat,1,x,3);}
-  if (b) {PetscValidHeaderSpecific(b,VEC_CLASSID,2);PetscCheckSameComm(mat,1,b,2);}
-  if (mat->ops->unscalesystem) {
-    ierr = (*mat->ops->unscalesystem)(mat,b,x);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseScaledForm"
-/*@
-   MatUseScaledForm - For matrix storage formats that scale the 
-   matrix indicates matrix operations (MatMult() etc) are 
-   applied using the scaled matrix.
-  
-   Logically Collective on Mat
-
-   Input Parameter:
-+  mat - the matrix
--  scaled - PETSC_TRUE for applying the scaled, PETSC_FALSE for 
-            applying the original matrix
-
-   Notes: 
-   For scaled matrix formats, applying the original, unscaled matrix
-   will be slightly more expensive
-
-   Level: Developer            
-
-.seealso: MatScaleSystem(), MatUnScaleSystem()
-@*/
-PetscErrorCode  MatUseScaledForm(Mat mat,PetscBool  scaled)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  PetscValidLogicalCollectiveBool(mat,scaled,2);
-  MatCheckPreallocated(mat,1);
-  if (mat->ops->usescaledform) {
-    ierr = (*mat->ops->usescaledform)(mat,scaled);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy"
 /*@
@@ -6429,7 +6307,7 @@ PetscErrorCode  MatRestoreArray(Mat mat,PetscScalar *v[])
    Input Parameters:
 +  mat - the matrix
 .  n   - the number of submatrixes to be extracted (on this processor, may be zero)
-.  irow, icol - index sets of rows and columns to extract
+.  irow, icol - index sets of rows and columns to extract (must be sorted)
 -  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
@@ -6439,6 +6317,9 @@ PetscErrorCode  MatRestoreArray(Mat mat,PetscScalar *v[])
    MatGetSubMatrices() can extract ONLY sequential submatrices
    (from both sequential and parallel matrices). Use MatGetSubMatrix()
    to extract a parallel submatrix.
+
+   Currently both row and column indices must be sorted to guarantee 
+   correctness with all matrix types.
 
    When extracting submatrices from a parallel matrix, each processor can
    form a different submatrix by setting the rows and columns of its
@@ -9255,7 +9136,7 @@ PetscErrorCode  MatFindZeroDiagonals(Mat mat,IS *is)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatInvertBlockDiagonal"
-/*@
+/*@C
   MatInvertBlockDiagonal - Inverts the block diagonal entries.
 
   Collective on Mat
@@ -9266,9 +9147,12 @@ PetscErrorCode  MatFindZeroDiagonals(Mat mat,IS *is)
   Output Parameters:
 . values - the block inverses in column major order (FORTRAN-like)
 
+   Note:
+   This routine is not available from Fortran.
+
   Level: advanced
 @*/
-PetscErrorCode  MatInvertBlockDiagonal(Mat mat,PetscScalar **values)
+PetscErrorCode MatInvertBlockDiagonal(Mat mat,const PetscScalar **values)
 {
   PetscErrorCode ierr;
 

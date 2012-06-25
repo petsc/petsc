@@ -16,34 +16,18 @@ static PetscBool PetscThreadCommPackageInitialized = PETSC_FALSE;
 PetscErrorCode PetscThreadCommFinalizePackage(void)
 {
   PetscErrorCode ierr;
-  MPI_Comm        icomm;
-  void            *ptr;
-  PetscMPIInt     flg;
+  MPI_Comm comm;
+
   PetscFunctionBegin;
   ierr = PetscThreadCommRegisterDestroy();CHKERRQ(ierr);
 
-  /* Get the inner communicator from PETSC_COMM_WORLD */
-  ierr  = MPI_Attr_get(PETSC_COMM_WORLD,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
-  if (flg) {
-    /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
-    ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
-    /* Delete the thread communicator */
-    ierr = MPI_Attr_delete(icomm,Petsc_ThreadComm_keyval);CHKERRQ(ierr);
-  }
-  /* Free the thread communicator key */
-  ierr = MPI_Keyval_free(&Petsc_ThreadComm_keyval);CHKERRQ(ierr);
-  ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
+  comm = PETSC_COMM_WORLD;      /* Release double-reference from PetscThreadCommInitialize */
+  ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
 
-  /* Since PETSC_COMM_SELF and PETSC_COMM_WORLD share the same thread communictor,
-     we only need to destroy the inner comm of PETSC_COMM_SELF */
-  /* Get the inner communicator from PETSC_COMM_SELF */
-  ierr  = MPI_Attr_get(PETSC_COMM_SELF,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
-  if (flg) {
-    /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
-    ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
-    ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
-  }
-  
+  comm = PETSC_COMM_SELF;       /* Release double-reference from PetscThreadCommInitialize */
+  ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
+
+  ierr = MPI_Keyval_free(&Petsc_ThreadComm_keyval);CHKERRQ(ierr);
   PetscThreadCommPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -68,7 +52,12 @@ PetscErrorCode PetscThreadCommInitializePackage(const char *path)
 
   PetscFunctionBegin;
   if(PetscThreadCommPackageInitialized) PetscFunctionReturn(0);
+  ierr = PetscLogEventRegister("ThreadCommInitialize", 0, &ThreadComm_Init);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ThreadCommRunKernel",  0, &ThreadComm_RunKernel);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ThreadCommBarrier",    0, &ThreadComm_Barrier);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(ThreadComm_Init,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscThreadCommInitialize();CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(ThreadComm_Init,0,0,0,0);CHKERRQ(ierr);
   PetscThreadCommPackageInitialized = PETSC_TRUE;
   ierr = PetscRegisterFinalize(PetscThreadCommFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);

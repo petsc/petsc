@@ -454,7 +454,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
         ierr = VecCopy(XA, X);CHKERRQ(ierr);
       } else {
         if (ngmres->monitor) {
-          ierr = PetscViewerASCIIPrintf(ngmres->monitor, "picked X_M, ||F_A||_2 = %e, ||F_M||_2 = %e\n", fAnorm, fnorm);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(ngmres->monitor, "picked X_M, ||F_A||_2 = %e, ||F_M||_2 = %e\n", fAnorm, fMnorm);CHKERRQ(ierr);
         }
         fnorm = fMnorm;
         nu = fnorm*fnorm;

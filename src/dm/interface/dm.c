@@ -818,40 +818,6 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt size,PetscScalar **array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateDecompositionDM"
-/*@C
-  DMCreateDecompositionDM - creates a DM that encapsulates a decomposition of the original DM.
-
-  Not Collective
-
-  Input Parameters:
-+ dm   - the DM object
-- name - the name of the decomposition
-
-  Output Parameter:
-. ddm  - the decomposition DM (PETSC_NULL, if no such decomposition is known)
-
-  Level: advanced
-
-.seealso DMDestroy(), DMCreate(), DMCreateDecomposition()
-@*/
-PetscErrorCode DMCreateDecompositionDM(DM dm, const char* name, DM *ddm)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidCharPointer(name,2);
-  PetscValidPointer(ddm,3);
-  if(!dm->ops->createdecompositiondm) {
-    *ddm = PETSC_NULL;
-  }
-  else {
-    ierr = (*dm->ops->createdecompositiondm)(dm,name,ddm); CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetNullSpaceConstructor"
@@ -977,12 +943,45 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "DMCreateDecomposition"
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateFieldDecompositionDM"
 /*@C
-  DMCreateDecomposition - Returns a list of IS objects defining a decomposition of a problem into subproblems: 
-                          each IS contains the global indices of the dofs of the corresponding subproblem.
-                          The optional list of DMs define the DM for each subproblem.
+  DMCreateFieldDecompositionDM - creates a DM that encapsulates a decomposition of the original DM into fields.
+
+  Not Collective
+
+  Input Parameters:
++ dm   - the DM object
+- name - the name of the field decomposition
+
+  Output Parameter:
+. ddm  - the field decomposition DM (PETSC_NULL, if no such decomposition is known)
+
+  Level: advanced
+
+.seealso DMDestroy(), DMCreate(), DMCreateFieldDecomposition(), DMCreateDomainDecompositionDM()
+@*/
+PetscErrorCode DMCreateFieldDecompositionDM(DM dm, const char* name, DM *ddm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidCharPointer(name,2);
+  PetscValidPointer(ddm,3);
+  *ddm = PETSC_NULL;
+  if(dm->ops->createfielddecompositiondm) {
+    ierr = (*dm->ops->createfielddecompositiondm)(dm,name,ddm); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCreateFieldDecomposition"
+/*@C
+  DMCreateFieldDecomposition - Returns a list of IS objects defining a decomposition of a problem into subproblems 
+                          corresponding to different fields: each IS contains the global indices of the dofs of the 
+                          corresponding field. The optional list of DMs define the DM for each subproblem.
                           Generalizes DMCreateFieldIS().
 
   Not collective
@@ -991,10 +990,10 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
 . dm - the DM object
 
   Output Parameters:
-+ len       - The number of subproblems in the decomposition (or PETSC_NULL if not requested)
-. namelist  - The name for each subproblem (or PETSC_NULL if not requested)
-. islist    - The global indices for each subproblem (or PETSC_NULL if not requested)
-- dmlist    - The DMs for each subproblem (or PETSC_NULL, if not requested; if PETSC_NULL is returned, no DMs are defined)
++ len       - The number of subproblems in the field decomposition (or PETSC_NULL if not requested)
+. namelist  - The name for each field (or PETSC_NULL if not requested)
+. islist    - The global indices for each field (or PETSC_NULL if not requested)
+- dmlist    - The DMs for each field subproblem (or PETSC_NULL, if not requested; if PETSC_NULL is returned, no DMs are defined)
 
   Level: intermediate
 
@@ -1005,17 +1004,17 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
 
 .seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateFieldIS()
 @*/
-PetscErrorCode DMCreateDecomposition(DM dm, PetscInt *len, char ***namelist, IS **islist, DM **dmlist)
+PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist, IS **islist, DM **dmlist)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (len) {PetscValidPointer(len,2);}
-  if (namelist) {PetscValidPointer(namelist,3);}
-  if (islist) {PetscValidPointer(islist,4);}
-  if (dmlist) {PetscValidPointer(dmlist,5);}
-  if(!dm->ops->createdecomposition) {
+  if (len)      {PetscValidPointer(len,2);      *len      = 0;}
+  if (namelist) {PetscValidPointer(namelist,3); *namelist = 0;}
+  if (islist)   {PetscValidPointer(islist,4);   *islist   = 0;}
+  if (dmlist)   {PetscValidPointer(dmlist,5);   *dmlist   = 0;}
+  if (!dm->ops->createfielddecomposition) {
     PetscSection section;
     PetscInt     numFields, f;
 
@@ -1038,7 +1037,7 @@ PetscErrorCode DMCreateDecomposition(DM dm, PetscInt *len, char ***namelist, IS 
     }
   }
   else {
-    ierr = (*dm->ops->createdecomposition)(dm,len,namelist,islist,dmlist); CHKERRQ(ierr);
+    ierr = (*dm->ops->createfielddecomposition)(dm,len,namelist,islist,dmlist); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1079,6 +1078,85 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, PetscInt fields[], IS *i
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateDomainDecompositionDM"
+/*@C
+  DMCreateDomainDecompositionDM - creates a DM that encapsulates a decomposition of the original DM into subdomains.
+
+  Not Collective
+
+  Input Parameters:
++ dm   - the DM object
+- name - the name of the subdomain decomposition
+
+  Output Parameter:
+. ddm  - the subdomain decomposition DM (PETSC_NULL, if no such decomposition is known)
+
+  Level: advanced
+
+.seealso DMDestroy(), DMCreate(), DMCreateFieldDecomposition(), DMCreateDomainDecompositionDM()
+@*/
+PetscErrorCode DMCreateDomainDecompositionDM(DM dm, const char* name, DM *ddm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidCharPointer(name,2);
+  PetscValidPointer(ddm,3);
+  *ddm = PETSC_NULL;
+  if(dm->ops->createdomaindecompositiondm) {
+    ierr = (*dm->ops->createdomaindecompositiondm)(dm,name,ddm); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCreateDomainDecomposition"
+/*@C
+  DMCreateDomainDecomposition - Returns lists of IS objects defining a decomposition of a problem into subproblems 
+                          corresponding to restrictions to pairs nested subdomains: each IS contains the global 
+                          indices of the dofs of the corresponding subdomains.  The inner subdomains conceptually
+                          define a nonoverlapping covering, while outer subdomains can overlap.
+                          The optional list of DMs define the DM for each subproblem.
+
+  Not collective
+
+  Input Parameter:
+. dm - the DM object
+
+  Output Parameters:
++ len         - The number of subproblems in the domain decomposition (or PETSC_NULL if not requested)
+. namelist    - The name for each subdomain (or PETSC_NULL if not requested)
+. innerislist - The global indices for each inner subdomain (or PETSC_NULL, if not requested)
+. outerislist - The global indices for each outer subdomain (or PETSC_NULL, if not requested)
+- dmlist      - The DMs for each subdomain subproblem (or PETSC_NULL, if not requested; if PETSC_NULL is returned, no DMs are defined)
+
+  Level: intermediate
+
+  Notes:
+  The user is responsible for freeing all requested arrays. In particular, every entry of names should be freed with
+  PetscFree(), every entry of is should be destroyed with ISDestroy(), every entry of dm should be destroyed with DMDestroy(),
+  and all of the arrays should be freed with PetscFree().
+
+.seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateDomainDecompositionDM(), DMCreateFieldDecomposition()
+@*/
+PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelist, IS **innerislist, IS **outerislist, DM **dmlist)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (len)           {PetscValidPointer(len,2);            *len         = PETSC_NULL;}
+  if (namelist)      {PetscValidPointer(namelist,3);       *namelist    = PETSC_NULL;}
+  if (innerislist)   {PetscValidPointer(innerislist,4);    *innerislist = PETSC_NULL;}
+  if (outerislist)   {PetscValidPointer(outerislist,5);    *outerislist = PETSC_NULL;}
+  if (dmlist)        {PetscValidPointer(dmlist,6);         *dmlist      = PETSC_NULL;}
+  if(dm->ops->createdomaindecomposition) {
+    ierr = (*dm->ops->createdomaindecomposition)(dm,len,namelist,innerislist,outerislist,dmlist); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMRefine"
@@ -1120,6 +1198,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
     (*dmf)->ctx       = dm->ctx;
     (*dmf)->leveldown = dm->leveldown;
     (*dmf)->levelup   = dm->levelup + 1;
+    ierr = DMSetMatType(*dmf,dm->mattype);CHKERRQ(ierr);
     for (link=dm->refinehook; link; link=link->next) {
       if (link->refinehook) {ierr = (*link->refinehook)(dm,*dmf,link->ctx);CHKERRQ(ierr);}
     }
@@ -1507,6 +1586,7 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   (*dmc)->ctx       = dm->ctx;
   (*dmc)->levelup   = dm->levelup;
   (*dmc)->leveldown = dm->leveldown + 1;
+  ierr = DMSetMatType(*dmc,dm->mattype);CHKERRQ(ierr);
   for (link=dm->coarsenhook; link; link=link->next) {
     if (link->coarsenhook) {ierr = (*link->coarsenhook)(dm,*dmc,link->ctx);CHKERRQ(ierr);}
   }

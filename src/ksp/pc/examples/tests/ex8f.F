@@ -37,7 +37,7 @@
       PetscInt  n,dim,istart,iend
       PetscInt  i,j,jj,ii,one,zero
       PetscErrorCode ierr
-      double precision v
+      PetscScalar v
       external         MyResidual
       PetscScalar      pfive
       KSP              ksp

@@ -5,6 +5,25 @@
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
 
+/* copied from KSPBuildSolution_GCR() */
+#undef __FUNCT__  
+#define __FUNCT__ "KSPBuildSolution_FBCGS" 
+PetscErrorCode  KSPBuildSolution_FBCGS(KSP ksp, Vec v, Vec *V)
+{       
+  PetscErrorCode ierr;
+  Vec            x;
+        
+  PetscFunctionBegin;
+  x = ksp->vec_sol;
+  if (v) {
+    ierr = VecCopy(x, v);CHKERRQ(ierr);
+    if (V) *V = v;
+  } else if (V) {
+    *V = ksp->vec_sol;
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_FBCGS"
 static PetscErrorCode KSPSetUp_FBCGS(KSP ksp)
@@ -50,8 +69,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
       ierr = VecDuplicate(X,&bcgs->guess);CHKERRQ(ierr);
     }
     ierr = VecCopy(X,bcgs->guess);CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = VecSet(X,0.0);CHKERRQ(ierr);
   }
 
@@ -60,9 +78,13 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
-  ierr = MatMult(pc->mat,X,S2);CHKERRQ(ierr);
-  ierr = VecCopy(B,R);CHKERRQ(ierr);
-  ierr = VecAXPY(R,-1.0,S2);CHKERRQ(ierr);
+  if (!ksp->guess_zero) {
+    ierr = MatMult(pc->mat,X,S2);CHKERRQ(ierr);
+    ierr = VecCopy(B,R);CHKERRQ(ierr);
+    ierr = VecAXPY(R,-1.0,S2);CHKERRQ(ierr);
+  } else {
+    ierr = VecCopy(B,R);CHKERRQ(ierr);
+  }
 
   /* Test for nothing to do */
   if (ksp->normtype != KSP_NORM_NONE) {
@@ -156,7 +178,6 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   if (i >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -168,8 +189,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 
    Level: beginner
 
-   Notes: See KSPBCGSL for additional stabilization
-          Only supports right preconditioning 
+   Notes: Only supports right preconditioning 
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
 M*/
@@ -188,7 +208,7 @@ PetscErrorCode  KSPCreate_FBCGS(KSP ksp)
   ksp->ops->solve           = KSPSolve_FBCGS;
   ksp->ops->destroy         = KSPDestroy_BCGS;
   ksp->ops->reset           = KSPReset_BCGS;
-  ksp->ops->buildsolution   = KSPBuildSolution_BCGS;
+  ksp->ops->buildsolution   = KSPBuildSolution_FBCGS;
   ksp->ops->buildresidual   = KSPDefaultBuildResidual;
   ksp->ops->setfromoptions  = KSPSetFromOptions_BCGS;
   ksp->ops->view            = KSPView_BCGS;

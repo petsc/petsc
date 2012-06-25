@@ -21,9 +21,9 @@
             5 KSP Residual norm 9.32366e-08 
             6 KSP Residual norm 8.65006e-08 
             7 KSP Residual norm 7.52065e-08 
-            8 KSP Residual norm 3.48616e-08 
+            8 KSP Residual norm 3.48617e-08 
             9 KSP Residual norm 2.03232e-08 
-           10 KSP Residual norm 1.69508e-09 
+           10 KSP Residual norm 1.69509e-09 
            11 KSP Residual norm 1.259e-10 
            12 KSP Residual norm 2.765e-11 
           2 SNES Function norm 2.765e-11 
@@ -31,21 +31,21 @@
           0 KSP Residual norm 0.470831 
           1 KSP Residual norm 0.00343534 
           2 KSP Residual norm 0.000537029 
-          3 KSP Residual norm 0.00041226 
+          3 KSP Residual norm 0.000412259 
           4 KSP Residual norm 0.000360236 
           5 KSP Residual norm 0.000178816 
           6 KSP Residual norm 9.83607e-05 
           7 KSP Residual norm 8.70441e-06 
-          8 KSP Residual norm 2.69631e-06 
-        1 SNES Function norm 2.69617e-06 
-          0 KSP Residual norm 2.69617e-06 
-          1 KSP Residual norm 6.84103e-07 
-          2 KSP Residual norm 6.68077e-07 
-          3 KSP Residual norm 2.67068e-08 
-          4 KSP Residual norm 5.37625e-09 
-          5 KSP Residual norm 1.36683e-09 
-          6 KSP Residual norm 5.430e-10 
-          7 KSP Residual norm 3.207e-11 
+          8 KSP Residual norm 2.69632e-06 
+        1 SNES Function norm 2.69638e-06 
+          0 KSP Residual norm 2.69638e-06 
+          1 KSP Residual norm 6.84162e-07 
+          2 KSP Residual norm 6.6816e-07 
+          3 KSP Residual norm 2.66282e-08 
+          4 KSP Residual norm 5.3463e-09 
+          5 KSP Residual norm 1.35669e-09 
+          6 KSP Residual norm 5.402e-10 
+          7 KSP Residual norm 3.361e-11 
           8 KSP Residual norm < 1.e-11
         2 SNES Function norm < 1.e-11
       0 SNES Function norm 0.345625 
@@ -54,18 +54,18 @@
         2 KSP Residual norm 0.000375527 
         3 KSP Residual norm 0.000374586 
         4 KSP Residual norm 0.000374409 
-        5 KSP Residual norm 0.000172781 
-        6 KSP Residual norm 5.09428e-05 
-        7 KSP Residual norm 6.41976e-06 
-        8 KSP Residual norm 3.26015e-07 
-      1 SNES Function norm 3.26023e-07 
-        0 KSP Residual norm 3.26023e-07 
-        1 KSP Residual norm 2.56258e-07 
-        2 KSP Residual norm 2.37811e-07 
-        3 KSP Residual norm 2.17365e-07 
-        4 KSP Residual norm 5.63571e-08 
-        5 KSP Residual norm 9.850e-10 
-        6 KSP Residual norm 5.637e-11 
+        5 KSP Residual norm 0.000172783 
+        6 KSP Residual norm 5.09457e-05 
+        7 KSP Residual norm 6.42582e-06 
+        8 KSP Residual norm 3.26114e-07 
+      1 SNES Function norm 3.26069e-07 
+        0 KSP Residual norm 3.26069e-07 
+        1 KSP Residual norm 2.56234e-07 
+        2 KSP Residual norm 2.37696e-07 
+        3 KSP Residual norm 2.17231e-07 
+        4 KSP Residual norm 5.5142e-08 
+        5 KSP Residual norm 1.11018e-09 
+        6 KSP Residual norm 5.078e-11 
         7 KSP Residual norm < 1.e-11
         8 KSP Residual norm < 1.e-11
       2 SNES Function norm < 1.e-11
@@ -74,49 +74,47 @@
       1 KSP Residual norm 0.000970266 
       2 KSP Residual norm 0.00019236 
       3 KSP Residual norm 0.000186602 
-      4 KSP Residual norm 5.91375e-05 
-      5 KSP Residual norm 3.09084e-06 
-      6 KSP Residual norm 2.82113e-08 
-    1 SNES Function norm 2.81839e-08 
-      0 KSP Residual norm 2.81839e-08 
-      1 KSP Residual norm 4.4177e-09 
-      2 KSP Residual norm 3.91547e-09 
-      3 KSP Residual norm 3.02569e-09 
-      4 KSP Residual norm 2.5104e-09 
-      5 KSP Residual norm 1.65194e-09 
-      6 KSP Residual norm 8.186e-10 
-      7 KSP Residual norm 3.549e-11 
-      8 KSP Residual norm < 1.e-11
-      9 KSP Residual norm < 1.e-11
+      4 KSP Residual norm 5.91427e-05 
+      5 KSP Residual norm 3.08617e-06 
+      6 KSP Residual norm 2.3564e-08 
+    1 SNES Function norm 2.35739e-08 
+      0 KSP Residual norm 2.35739e-08 
+      1 KSP Residual norm 2.84886e-09 
+      2 KSP Residual norm 2.45589e-09 
+      3 KSP Residual norm 1.91139e-09 
+      4 KSP Residual norm 1.08482e-09 
+      5 KSP Residual norm 9.781e-10 
+      6 KSP Residual norm 5.545e-10 
+      7 KSP Residual norm 1.238e-10 
+      8 KSP Residual norm 4.495e-11 
+      9 KSP Residual norm 1.183e-11 
+     10 KSP Residual norm < 1.e-11
+     11 KSP Residual norm < 1.e-11
     2 SNES Function norm < 1.e-11
   0 SNES Function norm 0.195765 
     0 KSP Residual norm 0.195765 
     1 KSP Residual norm 0.000434696 
-    2 KSP Residual norm 6.9876e-05 
-    3 KSP Residual norm 6.89762e-05 
-    4 KSP Residual norm 5.82443e-05 
-    5 KSP Residual norm 2.92442e-06 
-    6 KSP Residual norm 2.71596e-06 
-    7 KSP Residual norm 3.77532e-07 
-  1 SNES Function norm 3.77383e-07 
-    0 KSP Residual norm 3.77383e-07 
-    1 KSP Residual norm 2.38261e-07 
-    2 KSP Residual norm 1.51811e-07 
-    3 KSP Residual norm 1.27e-07 
-    4 KSP Residual norm 1.25418e-07 
-    5 KSP Residual norm 1.23003e-07 
-    6 KSP Residual norm 2.39778e-08 
-    7 KSP Residual norm 8.31686e-09 
-    8 KSP Residual norm 3.108e-10 
-    9 KSP Residual norm 1.788e-11 
-   10 KSP Residual norm < 1.e-11
-  2 SNES Function norm 4.184e-11 
+    2 KSP Residual norm 6.98756e-05 
+    3 KSP Residual norm 6.89761e-05 
+    4 KSP Residual norm 5.86439e-05 
+    5 KSP Residual norm 2.56279e-06 
+    6 KSP Residual norm 1.68072e-06 
+  1 SNES Function norm 1.68072e-06 
+    0 KSP Residual norm 1.68072e-06 
+    1 KSP Residual norm 1.66821e-06 
+    2 KSP Residual norm 1.1489e-06 
+    3 KSP Residual norm 5.28263e-07 
+    4 KSP Residual norm 2.68428e-08 
+    5 KSP Residual norm 3.24907e-09 
+    6 KSP Residual norm 8.138e-10 
+    7 KSP Residual norm 1.678e-11 
+  2 SNES Function norm 6.473e-11 
 SNES Object: 2 MPI processes
   type: ls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=17
-  total number of function evaluations=1970
+  total number of linear solver iterations=13
+  total number of function evaluations=1510
   total number of grid sequence refinements=4
   KSP Object:   2 MPI processes
     type: fgmres
@@ -138,7 +136,7 @@ SNES Object: 2 MPI processes
         maximum iterations=6, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
-        using PRECONDITIONED norm type for convergence test
+        using NONE norm type for convergence test
       PC Object:      (mg_coarse_)       2 MPI processes
         type: none
         linear system matrix = precond matrix:
@@ -158,7 +156,7 @@ SNES Object: 2 MPI processes
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using nonzero initial guess
-        using PRECONDITIONED norm type for convergence test
+        using NONE norm type for convergence test
       PC Object:      (mg_levels_1_)       2 MPI processes
         type: none
         linear system matrix = precond matrix:
@@ -179,7 +177,7 @@ SNES Object: 2 MPI processes
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using nonzero initial guess
-        using PRECONDITIONED norm type for convergence test
+        using NONE norm type for convergence test
       PC Object:      (mg_levels_2_)       2 MPI processes
         type: none
         linear system matrix = precond matrix:
@@ -200,7 +198,7 @@ SNES Object: 2 MPI processes
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using nonzero initial guess
-        using PRECONDITIONED norm type for convergence test
+        using NONE norm type for convergence test
       PC Object:      (mg_levels_3_)       2 MPI processes
         type: none
         linear system matrix = precond matrix:
@@ -221,7 +219,7 @@ SNES Object: 2 MPI processes
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using nonzero initial guess
-        using PRECONDITIONED norm type for convergence test
+        using NONE norm type for convergence test
       PC Object:      (mg_levels_4_)       2 MPI processes
         type: none
         linear system matrix = precond matrix:

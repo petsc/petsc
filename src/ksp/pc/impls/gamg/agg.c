@@ -880,7 +880,9 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
 
       ndone += aggID;
       /* QR */
+      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       LAPACKgeqrf_( &Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO );
+      ierr = PetscFPTrapPop();CHKERRQ(ierr);
       if( INFO != 0 ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRS error");
       /* get R - column oriented - output B_{i+1} */
       {

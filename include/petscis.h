@@ -150,8 +150,9 @@ PETSC_EXTERN PetscErrorCode ISCopy(IS,IS);
 PETSC_EXTERN PetscErrorCode ISAllGather(IS,IS*);
 PETSC_EXTERN PetscErrorCode ISComplement(IS,PetscInt,PetscInt,IS*);
 PETSC_EXTERN PetscErrorCode ISConcatenate(MPI_Comm,PetscInt,const IS[],IS*);
-PETSC_EXTERN PetscErrorCode ISListToColoring(MPI_Comm,PetscInt, IS[],IS*,IS*);
-PETSC_EXTERN PetscErrorCode ISColoringToList(IS, IS, PetscInt*, IS *[]);
+PETSC_EXTERN PetscErrorCode ISListToMap(MPI_Comm,PetscInt, IS[],IS*,IS*);
+PETSC_EXTERN PetscErrorCode ISMapToList(IS,IS,PetscInt*, IS *[]);
+PETSC_EXTERN PetscErrorCode ISMapFactorRight(IS,IS,PetscBool,IS*);
 PETSC_EXTERN PetscErrorCode ISOnComm(IS,MPI_Comm,PetscCopyMode,IS*);
 
 /* --------------------------------------------------------------------------*/

@@ -1,5 +1,4 @@
 #include <petscsnes.h>
-#include <../src/snes/impls/vi/viimpl.h>
 #include <petscdmda.h>
 
 static  char help[]= 
@@ -48,7 +47,6 @@ int main(int argc, char **argv)
   Vec             xl,xu;            /* Bounds on the variables */
   SNES            snes;             /* nonlinear solver context */
   Mat             J;                /* Jacobian matrix */
-  PetscInt        N;            /* Number of elements in vector */
   AppCtx          user;             /* user-defined work context */
   PetscBool       flg;
 
@@ -61,7 +59,7 @@ int main(int argc, char **argv)
 
   /* Create distributed array to manage the 2d grid */
   info = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-10,-10,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(info);
-  info = DMDAGetInfo(user.da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(info);
+  info = DMDAGetInfo(user.da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(info);
 
   user.bheight=0.1;
   info = PetscOptionsGetScalar(PETSC_NULL,"-bheight",&user.bheight,&flg); CHKERRQ(info);
@@ -78,13 +76,13 @@ int main(int argc, char **argv)
   info = DMCreateGlobalVector(user.da,&x);CHKERRQ(info);
   info = VecDuplicate(x, &r); CHKERRQ(info);
 
-  N = user.mx*user.my;
   info = DMCreateMatrix(user.da,MATAIJ,&J);CHKERRQ(info);
 
   /* Create nonlinear solver context */
   info = SNESCreate(PETSC_COMM_WORLD,&snes); CHKERRQ(info);
 
   /*  Set function evaluation and Jacobian evaluation  routines */
+  info = SNESSetDM(snes,user.da);CHKERRQ(info);
   info = SNESSetFunction(snes,r,FormGradient,&user);CHKERRQ(info);
   info = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(info);
 

@@ -183,14 +183,14 @@ PetscErrorCode PCGAMGFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pe
 
   if( verbose ) {
     if( verbose == 1 ) {
-      PetscPrintf(wcomm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave.\n",mype,__FUNCT__,
-                  100.*(double)nnz1/(double)nnz0,vfilter,(double)nnz0/(double)nloc);
+      PetscPrintf(wcomm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",mype,__FUNCT__,
+                  100.*(double)nnz1/(double)nnz0,vfilter,(double)nnz0/(double)nloc,MM);
     }
     else {
       PetscInt nnz[2] = {nnz0,nnz1},out[2];
       ierr = MPI_Allreduce( nnz, out, 2, MPIU_INT, MPI_SUM, wcomm );  CHKERRQ(ierr);
-      PetscPrintf(wcomm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave.\n",mype,__FUNCT__,
-                  100.*(double)out[1]/(double)out[0],vfilter,(double)out[0]/(double)MM);
+      PetscPrintf(wcomm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",mype,__FUNCT__,
+                  100.*(double)out[1]/(double)out[0],vfilter,(double)out[0]/(double)MM,MM);
     }
   }
   

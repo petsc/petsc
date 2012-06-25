@@ -799,7 +799,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
         }
         /* recieve requests, send response, clear lists */
         kk = nactive_edges; 
-        ierr = MPI_Allreduce(&kk,&nactive_edges,1,MPIU_INT,MPIU_SUM,wcomm); /* not correct syncronization and global */
+        ierr = MPI_Allreduce(&kk,&nactive_edges,1,MPIU_INT,MPI_SUM,wcomm); /* not correct syncronization and global */
         nSend2 = 0;
         while( 1 ){
 #define BF_SZ 10000

@@ -38,9 +38,6 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
   KSP_FGMRES     *fgmres = (KSP_FGMRES *)ksp->data;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"no symmetric preconditioning for KSPFGMRES");
-  else if (ksp->pc_side == PC_LEFT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"no left preconditioning for KSPFGMRES");
-
   max_k         = fgmres->max_k;
 
   ierr = KSPSetUp_GMRES(ksp);CHKERRQ(ierr);
@@ -726,6 +723,7 @@ PetscErrorCode  KSPCreate_FGMRES(KSP ksp)
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,0);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
                                     "KSPGMRESSetPreAllocateVectors_GMRES",

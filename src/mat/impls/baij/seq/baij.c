@@ -10,7 +10,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatInvertBlockDiagonal_SeqBAIJ"
-PetscErrorCode  MatInvertBlockDiagonal_SeqBAIJ(Mat A,PetscScalar **values)
+PetscErrorCode  MatInvertBlockDiagonal_SeqBAIJ(Mat A,const PetscScalar **values)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*) A->data;
   PetscErrorCode ierr;
@@ -2741,7 +2741,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
 {
   PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void *))coloring->f;
   PetscErrorCode ierr;
-  PetscInt       bs = J->rmap->bs,i,j,k,start,end,l,row,col,*srows,**vscaleforrow,m1,m2;
+  PetscInt       bs = J->rmap->bs,i,j,k,start,end,l,row,col,*srows,**vscaleforrow;
   PetscScalar    dx,*y,*xx,*w3_array;
   PetscScalar    *vscale_array;
   PetscReal      epsilon = coloring->error_rel,umin = coloring->umin,unorm; 
@@ -2774,33 +2774,21 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
   if (!coloring->vscale){ 
     ierr = VecDuplicate(x1_tmp,&coloring->vscale);CHKERRQ(ierr);
   }
-    
-  /*
-    This is a horrible, horrible, hack. 
-  */
-  if (coloring->F) {
-    ierr = VecGetLocalSize(coloring->F,&m1);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(w1,&m2);CHKERRQ(ierr);
-    if (m1 != m2) {  
-      coloring->F = 0; 
-      }    
-    }   
 
   if (coloring->htype[0] == 'w') { /* tacky test; need to make systematic if we add other approaches to computing h*/
     ierr = VecNorm(x1_tmp,NORM_2,&unorm);CHKERRQ(ierr);
   }
   ierr = VecGetOwnershipRange(w1,&start,&end);CHKERRQ(ierr); /* OwnershipRange is used by ghosted x! */
-      
+
   /* Set w1 = F(x1) */
-  if (coloring->F) {
-    w1          = coloring->F; /* use already computed value of function */
-    coloring->F = 0; 
-  } else {
+  if (!coloring->fset) {
     ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     ierr = (*f)(sctx,x1_tmp,w1,fctx);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+  } else {
+    coloring->fset = PETSC_FALSE;
   }
-      
+
   if (!coloring->w3) {
     ierr = VecDuplicate(x1_tmp,&coloring->w3);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(coloring,coloring->w3);CHKERRQ(ierr);
@@ -3058,7 +3046,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatStoreValues_SeqBAIJ(Mat mat)
 {
   Mat_SeqBAIJ    *aij = (Mat_SeqBAIJ *)mat->data;
-  PetscInt       nz = aij->i[mat->rmap->N]*mat->rmap->bs*aij->bs2;
+  PetscInt       nz = aij->i[aij->mbs]*aij->bs2;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3083,7 +3071,7 @@ PetscErrorCode  MatRetrieveValues_SeqBAIJ(Mat mat)
 {
   Mat_SeqBAIJ    *aij = (Mat_SeqBAIJ *)mat->data;
   PetscErrorCode ierr;
-  PetscInt       nz = aij->i[mat->rmap->N]*mat->rmap->bs*aij->bs2;
+  PetscInt       nz = aij->i[aij->mbs]*aij->bs2;
 
   PetscFunctionBegin;
   if (aij->nonew != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");

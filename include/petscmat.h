@@ -298,7 +298,7 @@ PETSC_EXTERN PetscErrorCode MatRealPart(Mat);
 PETSC_EXTERN PetscErrorCode MatImaginaryPart(Mat);
 PETSC_EXTERN PetscErrorCode MatGetDiagonalBlock(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetTrace(Mat,PetscScalar*);
-PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonal(Mat,PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonal(Mat,const PetscScalar **);
 
 /* ------------------------------------------------------------*/
 PETSC_EXTERN PetscErrorCode MatSetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
@@ -498,10 +498,6 @@ PETSC_EXTERN PetscErrorCode MatZeroRowsStencil(Mat,PetscInt,const MatStencil [],
 PETSC_EXTERN PetscErrorCode MatZeroRowsColumnsStencil(Mat,PetscInt,const MatStencil[],PetscScalar,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsColumns(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsColumnsIS(Mat,IS,PetscScalar,Vec,Vec);
-
-PETSC_EXTERN PetscErrorCode MatUseScaledForm(Mat,PetscBool );
-PETSC_EXTERN PetscErrorCode MatScaleSystem(Mat,Vec,Vec);
-PETSC_EXTERN PetscErrorCode MatUnScaleSystem(Mat,Vec,Vec);
 
 PETSC_EXTERN PetscErrorCode MatGetSize(Mat,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatGetLocalSize(Mat,PetscInt*,PetscInt*);

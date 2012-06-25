@@ -42,6 +42,7 @@ struct _p_PC {
   void           *modifysubmatricesP; /* context for user routine */
   void           *data;
   PetscInt       reuse; /* flag for reusing the numerical factorization */
+  PetscInt       presolvedone;  /* has PCPreSolve() already been run */
   void           *user;             /* optional user-defined context */
 };
 

@@ -539,7 +539,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
 	  pv = b->a + bdiag[row+1]+1;
 	  nz = bdiag[row]-bdiag[row+1]-1; /* num of entries in U(row,:) excluding diag */
           for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
-          ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
+          ierr = PetscLogFlops(1+2*nz);CHKERRQ(ierr);
         }
         row = *bjtmp++;
       }
@@ -694,7 +694,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_inplace(Mat B,Mat A,const MatFactorInfo
           *pc        = multiplier;
           nz         = bi[row+1] - diag_offset[row] - 1;
           for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
-          ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
+          ierr = PetscLogFlops(1+2*nz);CHKERRQ(ierr);
         }
         row = *bjtmp++;
       }
@@ -882,7 +882,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFa
           *pc        = multiplier;
           nz         = ai[r[row]+1] - diag[r[row]] - 1;
           for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
-          ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
+          ierr = PetscLogFlops(1+2*nz);CHKERRQ(ierr);
         }
         row = *ajtmp++;
       }
@@ -3368,7 +3368,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
         /* if (multiplier < -1.0 or multiplier >1.0) printf("row/prow %d, %d, multiplier %g\n",i,row,multiplier); */
         nz         = bdiag[row] - bdiag[row+1] - 1; /* num of entries in U(row,:), excluding diagonal */
         for (j=0; j<nz; j++) rtmp[*pj++] -= multiplier * (*pv++);
-        ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr);
+        ierr = PetscLogFlops(1+2*nz);CHKERRQ(ierr);
       } 
       row = *bjtmp++;
     }
@@ -3557,7 +3557,7 @@ PetscErrorCode  MatILUDTFactorNumeric_SeqAIJ(Mat fact,Mat A,const MatFactorInfo 
         pv         = b->a + bdiag[row+1] + 1;
         nz         = bdiag[row] - bdiag[row+1] - 1; /* num of entries in U(row,:), excluding diagonal */
         for (j=0; j<nz; j++) rtmp[*pj++] -= multiplier * (*pv++);
-        /* ierr = PetscLogFlops(2.0*nz);CHKERRQ(ierr); */
+        ierr = PetscLogFlops(1+2*nz);CHKERRQ(ierr);
       } 
       k++;
     }

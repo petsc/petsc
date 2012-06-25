@@ -1,14 +1,14 @@
   0 SNES Function norm 0.252383 
   1 SNES Function norm 0.0738456 
   2 SNES Function norm 0.0155009 
-  3 SNES Function norm 0.000871577 
-  4 SNES Function norm 1.96309e-06 
+  3 SNES Function norm 0.000871576 
+  4 SNES Function norm 1.9631e-06 
   5 SNES Function norm < 1.e-11
 SNES Object: 4 MPI processes
   type: ls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=17
+  total number of linear solver iterations=16
   total number of function evaluations=6
   KSP Object:   4 MPI processes
     type: fgmres
@@ -68,47 +68,35 @@ SNES Object: 4 MPI processes
             not using I-node (on process 0) routines
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object:      (mg_levels_1_)       4 MPI processes
-        type: gmres
-          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          GMRES: happy breakdown tolerance 1e-30
-        maximum iterations=1
+        type: chebyshev
+          Chebyshev: eigenvalue estimates:  min = 0.136088, max = 1.49697
+          Chebyshev: estimated using:  [0 0.1; 0 1.1]
+          KSP Object:           4 MPI processes
+            type: gmres
+              GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+              GMRES: happy breakdown tolerance 1e-30
+            maximum iterations=10
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            left preconditioning
+            using nonzero initial guess
+            using NONE norm type for convergence test
+          PC Object:          (mg_levels_1_)           4 MPI processes
+            type: sor
+              SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
+            linear system matrix = precond matrix:
+            Matrix Object:             4 MPI processes
+              type: mpiaij
+              rows=125, cols=125
+              total: nonzeros=725, allocated nonzeros=725
+              total number of mallocs used during MatSetValues calls =0
+        maximum iterations=2
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using nonzero initial guess
-        using PRECONDITIONED norm type for convergence test
+        using NONE norm type for convergence test
       PC Object:      (mg_levels_1_)       4 MPI processes
-        type: bjacobi
-          block Jacobi: number of blocks = 4
-          Local solve is same for all blocks, in the following KSP and PC objects:
-        KSP Object:        (mg_levels_1_sub_)         1 MPI processes
-          type: preonly
-          maximum iterations=10000, initial guess is zero
-          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-          left preconditioning
-          using NONE norm type for convergence test
-        PC Object:        (mg_levels_1_sub_)         1 MPI processes
-          type: ilu
-            ILU: out-of-place factorization
-            0 levels of fill
-            tolerance for zero pivot 2.22045e-14
-            using diagonal shift to prevent zero pivot
-            matrix ordering: natural
-            factor fill ratio given 1, needed 1
-              Factored matrix follows:
-                Matrix Object:                 1 MPI processes
-                  type: seqaij
-                  rows=45, cols=45
-                  package used to perform factorization: petsc
-                  total: nonzeros=237, allocated nonzeros=237
-                  total number of mallocs used during MatSetValues calls =0
-                    not using I-node routines
-          linear system matrix = precond matrix:
-          Matrix Object:           1 MPI processes
-            type: seqaij
-            rows=45, cols=45
-            total: nonzeros=237, allocated nonzeros=237
-            total number of mallocs used during MatSetValues calls =0
-              not using I-node routines
+        type: sor
+          SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
         linear system matrix = precond matrix:
         Matrix Object:         4 MPI processes
           type: mpiaij
@@ -130,5 +118,5 @@ SNES Object: 4 MPI processes
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=40
 Number of SNES iterations = 5
-Number of Linear iterations = 17
-Average Linear its / SNES = 3.400000e+00
+Number of Linear iterations = 16
+Average Linear its / SNES = 3.200000e+00

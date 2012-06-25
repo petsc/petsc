@@ -740,8 +740,8 @@ PetscErrorCode DMCreateFieldIS_Composite(DM dm, PetscInt *numFields,char ***fiel
  At this point it's probably best to be less intrusive, however.
  */
 #undef __FUNCT__
-#define __FUNCT__ "DMCreateDecomposition_Composite"
-PetscErrorCode DMCreateDecomposition_Composite(DM dm, PetscInt *len,char ***namelist, IS **islist, DM** dmlist)
+#define __FUNCT__ "DMCreateFieldDecomposition_Composite"
+PetscErrorCode DMCreateFieldDecomposition_Composite(DM dm, PetscInt *len,char ***namelist, IS **islist, DM** dmlist)
 {
   PetscInt       nDM;
   PetscInt       i;
@@ -1178,11 +1178,11 @@ PetscErrorCode  DMCreate_Composite(DM p)
   p->ops->createlocaltoglobalmapping      = DMCreateLocalToGlobalMapping_Composite;
   p->ops->createlocaltoglobalmappingblock = 0;
   p->ops->createfieldis                   = DMCreateFieldIS_Composite;
-  p->ops->createdecomposition             = DMCreateDecomposition_Composite;
+  p->ops->createfielddecomposition        = DMCreateFieldDecomposition_Composite;
   p->ops->refine                          = DMRefine_Composite;
   p->ops->coarsen                         = DMCoarsen_Composite;
-  p->ops->createinterpolation                = DMCreateInterpolation_Composite;
-  p->ops->creatematrix                       = DMCreateMatrix_Composite;
+  p->ops->createinterpolation             = DMCreateInterpolation_Composite;
+  p->ops->creatematrix                    = DMCreateMatrix_Composite;
   p->ops->getcoloring                     = DMCreateColoring_Composite;
   p->ops->globaltolocalbegin              = DMGlobalToLocalBegin_Composite;
   p->ops->globaltolocalend                = DMGlobalToLocalEnd_Composite;
