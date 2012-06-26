@@ -306,6 +306,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       if (dms) {
         ierr = PetscInfo(pc, "Setting up physics based fieldsplit preconditioner using the embedded DM\n");CHKERRQ(ierr);
         for(ilink = jac->head, i = 0; ilink; ilink = ilink->next, ++i) {
+          const char *prefix;
           ierr = PetscObjectGetOptionsPrefix((PetscObject)(ilink->ksp),&prefix); CHKERRQ(ierr);
           ierr = PetscObjectSetOptionsPrefix((PetscObject)(dms[i]), prefix);     CHKERRQ(ierr);
           ierr = KSPSetDM(ilink->ksp, dms[i]);CHKERRQ(ierr);
@@ -570,9 +571,9 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),pc->flag);CHKERRQ(ierr);
      } else {
       KSP ksp;
-      const char  *Aprefix, *Dprefix;
+      const char  *Dprefix;
+      char schurprefix[256];
       MatNullSpace sp;
-      DM Adm;
 
       /* extract the A01 and A10 matrices */
       ilink = jac->head;
