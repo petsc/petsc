@@ -848,6 +848,52 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSp
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateNullSpaces"
+/*
+  . field - The field whose diagonal block (of the Jacobian) has this null space
+*/
+PetscErrorCode CreateNullSpaces(DM dm, PetscInt field, MatNullSpace *nullSpace) {
+  AppCtx        *user;
+  Vec            nullVec, localNullVec;
+  PetscSection   section;
+  PetscScalar   *a;
+  PetscInt       pressure = field;
+  PetscInt       pStart, pEnd, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetApplicationContext(dm, (void **) &user);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &nullVec);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &localNullVec);CHKERRQ(ierr);
+  ierr = VecSet(nullVec, 0.0);CHKERRQ(ierr);
+  /* Put a constant in for all pressures */
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = VecGetArray(localNullVec, &a);CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    PetscInt fDim, off, d;
+
+    ierr = PetscSectionGetFieldDof(section, p, pressure, &fDim);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldOffset(section, p, pressure, &off);CHKERRQ(ierr);
+    for(d = 0; d < fDim; ++d) {
+      a[off+d] = 1.0;
+    }
+  }
+  ierr = VecRestoreArray(localNullVec, &a);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(dm, localNullVec, INSERT_VALUES, nullVec);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm, localNullVec, INSERT_VALUES, nullVec);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &localNullVec);CHKERRQ(ierr);
+  ierr = VecNormalize(nullVec, PETSC_NULL);CHKERRQ(ierr);
+  if (user->debug) {
+    ierr = PetscPrintf(((PetscObject) dm)->comm, "Pressure Null Space\n");CHKERRQ(ierr);
+    ierr = VecView(nullVec, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+  ierr = MatNullSpaceCreate(((PetscObject) dm)->comm, PETSC_FALSE, 1, &nullVec, nullSpace);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &nullVec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "IntegrateResidualBatchCPU"
 PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscInt field, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscQuadrature quad[], void (*f0_func)(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]), void (*f1_func)(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]), PetscScalar elemVec[], AppCtx *user) {
   const PetscInt debug   = user->debug;
@@ -1743,6 +1789,7 @@ int main(int argc, char **argv)
   ierr = SNESCreate(comm, &snes);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &user, &user.dm);CHKERRQ(ierr);
   ierr = SNESSetDM(snes, user.dm);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(user.dm, &user);CHKERRQ(ierr);
 
   ierr = SetupExactSolution(&user);CHKERRQ(ierr);
   ierr = SetupQuadrature(&user);CHKERRQ(ierr);
@@ -1772,11 +1819,7 @@ int main(int argc, char **argv)
     A = J;
   }
   ierr = SNESSetJacobian(snes, A, J, SNESDMComputeJacobian, &user);CHKERRQ(ierr);
-  ierr = CreatePressureNullSpace(user.dm, &user, &nullSpace);CHKERRQ(ierr);
-  ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
-  if (A != J) {
-    ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
-  }
+  ierr = DMSetNullSpaceConstructor(user.dm, 1, CreateNullSpaces);CHKERRQ(ierr);
 
   ierr = DMSetLocalFunction(user.dm, (DMLocalFunction1) FormFunctionLocal);CHKERRQ(ierr);
   ierr = DMSetLocalJacobian(user.dm, (DMLocalJacobian1) FormJacobianLocal);CHKERRQ(ierr);
@@ -1843,11 +1886,15 @@ int main(int argc, char **argv)
     {
       Vec          b;
       MatStructure flag;
+      MatNullSpace nullSpace2;
       PetscBool    isNull;
 
-      ierr = SNESDMComputeJacobian(snes, u, &A, &A, &flag, &user);CHKERRQ(ierr);
-      ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
+      ierr = CreateNullSpaces(user.dm, 1, &nullSpace2);CHKERRQ(ierr);
+      ierr = MatNullSpaceTest(nullSpace2, J, &isNull);CHKERRQ(ierr);
       if (!isNull) SETERRQ(comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
+      ierr = MatNullSpaceDestroy(&nullSpace2);CHKERRQ(ierr);
+
+      ierr = SNESDMComputeJacobian(snes, u, &A, &A, &flag, &user);CHKERRQ(ierr);
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
       ierr = SNESDMComputeFunction(snes, r, b, &user);CHKERRQ(ierr);
