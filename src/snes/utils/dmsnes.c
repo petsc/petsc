@@ -1,5 +1,5 @@
 #include <petsc-private/snesimpl.h>   /*I "petscsnes.h" I*/
-#include <petscdm.h>            /*I "petscdm.h" I*/
+#include <petsc-private/dmimpl.h>     /*I "petscdm.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESDMComputeFunction"
@@ -581,6 +581,12 @@ PetscErrorCode DMSNESSetUpLegacy(DM dm)
   ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->computefunction) {ierr = DMSNESSetFunction(dm,SNESDefaultComputeFunction_DMLegacy,PETSC_NULL);CHKERRQ(ierr);}
   ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
-  if (!sdm->computejacobian) {ierr = DMSNESSetJacobian(dm,SNESDefaultComputeJacobian_DMLegacy,PETSC_NULL);CHKERRQ(ierr);}
+  if (!sdm->computejacobian) {
+    if (dm->ops->functionj) {
+      ierr = DMSNESSetJacobian(dm,SNESDefaultComputeJacobian_DMLegacy,PETSC_NULL);CHKERRQ(ierr);
+    } else {
+      ierr = DMSNESSetJacobian(dm,SNESDefaultComputeJacobianColor,PETSC_NULL);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }

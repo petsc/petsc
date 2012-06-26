@@ -1,0 +1,18 @@
+Initial heap:
+Heap size 9 with 0 stashed
+Heap in (id,value) pairs
+0: 6 1 8 2 4 3 9 7 1 19 2 36 5 25 0 100 3 17
+Stash in (id,value) pairs
+Pop two items, increment, and place in stash:
+Heap size 7 with 2 stashed
+Heap in (id,value) pairs
+0: 4 3 9 7 5 25 3 17 1 19 2 36 0 100
+Stash in (id,value) pairs
+0: 8 12 6 11
+After unpacking the stash:
+Heap size 9 with 0 stashed
+Heap in (id,value) pairs
+0: 4 3 9 7 5 25 6 11 1 19 2 36 0 100 3 17 8 12
+Stash in (id,value) pairs
+Sorted values:
+0: 3 7 11 12 17 19 25 36 100

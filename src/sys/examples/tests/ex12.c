@@ -12,9 +12,13 @@ int main(int argc,char **argv)
   PetscRandom    rand;
   PetscScalar    value;
   PetscErrorCode ierr;
+  PetscBool      values_view=PETSC_FALSE;
+  PetscMPIInt    rank;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(0,"-values_view",&values_view,PETSC_NULL);CHKERRQ(ierr);
   
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
@@ -38,9 +42,10 @@ int main(int argc,char **argv)
 
   for (i=1; i<n; i++) {
     if (values[i] < values[i-1]) SETERRQ(PETSC_COMM_SELF,1,"Values not sorted");
+    if (values_view && !rank){ierr = PetscPrintf(PETSC_COMM_SELF,"%d %d\n",i,values[i]);CHKERRQ(ierr);}
   }
   ierr = PetscFree(values);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

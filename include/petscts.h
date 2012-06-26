@@ -150,8 +150,13 @@ PETSC_EXTERN PetscErrorCode TSStep(TS);
 PETSC_EXTERN PetscErrorCode TSEvaluateStep(TS,PetscInt,Vec,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSSolve(TS,Vec,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSGetConvergedReason(TS,TSConvergedReason*);
-PETSC_EXTERN PetscErrorCode TSGetNonlinearSolveIterations(TS,PetscInt*);
-PETSC_EXTERN PetscErrorCode TSGetLinearSolveIterations(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSGetSNESIterations(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSGetKSPIterations(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSGetStepRejections(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSSetMaxStepRejections(TS,PetscInt);
+PETSC_EXTERN PetscErrorCode TSGetSNESFailures(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSSetMaxSNESFailures(TS,PetscInt);
+PETSC_EXTERN PetscErrorCode TSSetErrorIfStepFails(TS,PetscBool);
 
 PETSC_EXTERN PetscErrorCode TSSetInitialTimeStep(TS,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetTimeStep(TS,PetscReal*);
@@ -186,6 +191,7 @@ PETSC_EXTERN PetscErrorCode TSPostStep(TS);
 PETSC_EXTERN PetscErrorCode TSSetRetainStages(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSInterpolate(TS,PetscReal,Vec);
 PETSC_EXTERN PetscErrorCode TSSetTolerances(TS,PetscReal,Vec,PetscReal,Vec);
+PETSC_EXTERN PetscErrorCode TSGetTolerances(TS,PetscReal*,Vec*,PetscReal*,Vec*);
 PETSC_EXTERN PetscErrorCode TSErrorNormWRMS(TS,Vec,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetCFLTimeLocal(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetCFLTime(TS,PetscReal*);
@@ -650,12 +656,16 @@ J*/
 #define TSROSWARK3        "ark3"
 #define TSROSWTHETA1      "theta1"
 #define TSROSWTHETA2      "theta2"
-
+#define TSROSWGRK4T       "grk4t"
+#define TSROSWSHAMP4      "shamp4"
+#define TSROSWVELDD4      "veldd4"
+#define TSROSW4L          "4l"
 
 PETSC_EXTERN PetscErrorCode TSRosWGetType(TS ts,const TSRosWType*);
 PETSC_EXTERN PetscErrorCode TSRosWSetType(TS ts,const TSRosWType);
 PETSC_EXTERN PetscErrorCode TSRosWSetRecomputeJacobian(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRosWRegister(const TSRosWType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSRosWRegisterRos4(const TSRosWType,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSRosWFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSRosWInitializePackage(const char path[]);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterDestroy(void);

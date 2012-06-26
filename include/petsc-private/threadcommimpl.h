@@ -26,15 +26,21 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 #define PETSC_KERNEL_NARGS_MAX 10
 
 /* Max. number of kernels */
-#define PETSC_KERNELS_MAX 10
+#define PETSC_KERNELS_MAX 32
 
-/* Status of threads */
+/* Reduction status of threads */
 #define THREADCOMM_THREAD_WAITING_FOR_NEWRED 0
 #define THREADCOMM_THREAD_POSTED_LOCALRED    1
 /* Status of the reduction */
 #define THREADCOMM_REDUCTION_NONE           -1
 #define THREADCOMM_REDUCTION_NEW             0
 #define THREADCOMM_REDUCTION_COMPLETE        1
+
+/* Job status for threads */
+#define THREAD_JOB_NONE       -1
+#define THREAD_JOB_POSTED      1
+#define THREAD_JOB_RECIEVED    2
+#define THREAD_JOB_COMPLETED   0
 
 #define PetscReadOnce(type,val) (*(volatile type *)&val)
 
@@ -55,14 +61,18 @@ struct  _p_PetscThreadCommJobCtx{
   PetscThreadKernel pfunc;                         /* Kernel function */
   void              *args[PETSC_KERNEL_NARGS_MAX]; /* Array of void* to hold the arguments */
   PetscScalar       scalars[3];                    /* Array to hold three scalar values */
+  PetscInt          *job_status;                   /* Thread job status */
 };
 
 /* Structure to manage job queue */
 typedef struct _p_PetscThreadCommJobQueue *PetscThreadCommJobQueue;
 struct _p_PetscThreadCommJobQueue{
-  PetscInt ctr;                                  /* job counter */
-  PetscThreadCommJobCtx jobs[PETSC_KERNELS_MAX]; /* queue of jobs */
+  PetscInt ctr;                                         /* job counter */
+  PetscInt kernel_ctr;                                  /* kernel counter .. need this otherwise race conditions are unavoidable */
+  PetscThreadCommJobCtx jobs[PETSC_KERNELS_MAX];        /* queue of jobs */
 };
+
+extern PetscThreadCommJobQueue PetscJobQueue;
 
 typedef struct _PetscThreadCommOps *PetscThreadCommOps;
 struct _PetscThreadCommOps {
@@ -79,12 +89,12 @@ struct _p_PetscThreadComm{
   PetscInt                *affinities;  /* Thread affinity */
   PetscThreadCommOps      ops;          /* Operations table */ 
   void                    *data;        /* implementation specific data */
-  PetscThreadCommJobQueue jobqueue;     /* Job queue */
   char                    type[256];    /* Thread model type */
   PetscInt                leader;       /* Rank of the leader thread. This thread manages
                                            the synchronization for collective operatons like reductions.
 					*/
-  PetscThreadCommRedCtx   red;      /* Reduction context */
+  PetscThreadCommRedCtx   red;          /* Reduction context */
+  PetscInt                job_ctr;      /* which job is this threadcomm running in the job queue */
 };
 
 /* register thread communicator models */
@@ -99,4 +109,6 @@ PETSC_EXTERN PetscErrorCode PetscThreadCommRegisterAll(const char path[]);
 PETSC_EXTERN PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm,PetscThreadCommRedCtx*);
 PETSC_EXTERN PetscErrorCode PetscThreadCommReductionDestroy(PetscThreadCommRedCtx);
 PETSC_EXTERN PetscErrorCode PetscRunKernel(PetscInt,PetscInt,PetscThreadCommJobCtx);
+
+PETSC_EXTERN PetscLogEvent ThreadComm_Init, ThreadComm_RunKernel, ThreadComm_Barrier;
 #endif

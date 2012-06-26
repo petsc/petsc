@@ -34,14 +34,18 @@ def currentversion(petscdir):
   except:
     return 
   aversion = str(amajorversion)+'.'+str(aminorversion)+'.'+str(apatchversion)
-  if (amajorversion > majorversion) or (aminorversion > minorversion) or (apatchversion > patchversion):
+  if (amajorversion > majorversion) or ((amajorversion ==  majorversion) and (aminorversion > minorversion)) or \
+  ((amajorversion ==  majorversion) and (aminorversion == minorversion) and (apatchversion > patchversion)):
     print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     print("The version of PETSc you are using is out-of-date, we recommend updating to the new release")
     print(" Available Version: "+aversion+"   Installed Version: "+version)
     print("http://www.mcs.anl.gov/petsc/download/index.html")
     print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-  fd = open(os.path.join(petscdir,'.nagged'),"w")
-  fd.close()
+  try:
+    fd = open(os.path.join(petscdir,'.nagged'),"w")
+    fd.close()
+  except:
+    return
 
   return 0
 #

@@ -95,13 +95,13 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscViewerBinaryReadVecHeader_Private(viewer,&rows);CHKERRQ(ierr);
-  /* Set Vec sizes,blocksize,and type if not already set */
-  if (vec->map->n < 0 && vec->map->N < 0) {
-     ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
-  }
+  /* Set Vec sizes,blocksize,and type if not already set. Block size first so that local sizes will be compatible. */
   ierr = PetscOptionsGetInt(((PetscObject)vec)->prefix, "-vecload_block_size", &bs, &flag);CHKERRQ(ierr);
   if (flag) {
     ierr = VecSetBlockSize(vec, bs);CHKERRQ(ierr);
+  }
+  if (vec->map->n < 0 && vec->map->N < 0) {
+     ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
   }
 
   /* If sizes and type already set,check if the vector global size is correct */

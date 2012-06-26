@@ -100,7 +100,7 @@
       <ul>
         <li>Please <a href="../download/index.html">download</a> the <b>latest</b> patched tarball
         <li>Please install PETSc as a <b>regular/non-root user</b>, perhaps in <b>/home/username/soft</b></li>
-        <li>To extract the sources use: <code>gunzip -c petsc-3.2-p0.tar.gz | tar -xof -</code></li>
+        <li>To extract the sources use: <code>gunzip -c petsc-3.3-p0.tar.gz | tar -xof -</code></li>
         <li>Please check: <code>./configure --help</code></li>
         <li>Please check <a href="#exampleusage">example usages</a></li>
       </ul>
@@ -194,7 +194,7 @@
           <li>
             specify enviornment variable for csh/tcsh [can be specified in ~/.cshrc]
             <ul>
-              <li>setenv PETSC_DIR /home/balay/petsc-3.2-p0</li>
+              <li>setenv PETSC_DIR /home/balay/petsc-3.3-p0</li>
               <li>setenv PETSC_ARCH linux-gnu-c-debug</li>
             </ul>
           </li>
@@ -202,7 +202,7 @@
           <li>
             specify enviornment variable for bash [can be specified in ~/.bashrc]
             <ul>
-              <li>export PETSC_DIR=/home/balay/petsc-3.2-p0</li>
+              <li>export PETSC_DIR=/home/balay/petsc-3.3-p0</li>
               <li>export PETSC_ARCH=linux-gnu-c-debug</li>
             </ul>
           </li>
@@ -210,14 +210,14 @@
           <li>
             specify variable on commandline to configure
             <ul>
-              <li>./configure PETSC_DIR=/home/balay/petsc-3.2-p0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</li>
+              <li>./configure PETSC_DIR=/home/balay/petsc-3.3-p0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</li>
             </ul>
           </li>
 
           <li>
             specify variables on command line to make
             <ul>
-              <li>make PETSC_DIR=/home/balay/petsc-3.2-p0 PETSC_ARCH=linux-gnu-c-debug [other make options]</li>
+              <li>make PETSC_DIR=/home/balay/petsc-3.3-p0 PETSC_ARCH=linux-gnu-c-debug [other make options]</li>
             </ul>
           </li>
         </ul>
@@ -622,7 +622,7 @@
 
         <p>
           <code>
-            -bash-3.2$ ./conftest <br>
+            -bash-3.3$ ./conftest <br>
             ./conftest: error while loading shared libraries: libmpi.so.0: cannot open shared object file: No such file or directory
           </code>
         </p>
@@ -823,8 +823,8 @@
           <li>sudo mkdir /opt/petsc</li>
           <li>sudo chown user:group /opt/petsc</li>
           <li>cd /opt/petsc</li>
-          <li>tar -xzf petsc-3.2-p0.tar.gz</li>
-          <li>cd petsc-3.2-p0</li>
+          <li>tar -xzf petsc-3.3-p0.tar.gz</li>
+          <li>cd petsc-3.3-p0</li>
           <li>./configure</li>
           <li>make</li>
         </ul>
@@ -833,14 +833,14 @@
 
         <ul class="code">
           <li>[untar PETSc in a non-root regular location - say /home/username]</li>
-          <li>./configure --prefix=/opt/petsc/petsc-3.2-p0  [other configure options]</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.3-p0  [other configure options]</li>
           <li>make</li>
           <li>sudo make install</li>
         </ul>
 
         <p>
           After the install is done, one has to switch to using
-          <code>PETSC_DIR=/opt/petsc/petsc-3.2-p0</code>.  If you've installed
+          <code>PETSC_DIR=/opt/petsc/petsc-3.3-p0</code>.  If you've installed
           PETSc with the --prefix option then you <b>DO NOT</b> use a PETSC_ARCH
           variable. You should install different configurations using different
           --prefix names.

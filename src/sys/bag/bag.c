@@ -47,7 +47,7 @@ static PetscErrorCode PetscBagRegister_Private(PetscBag bag,PetscBagItem item,co
            PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName()
 
 @*/
-PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char **list,PetscEnum mdefault, const char *name, const char* help)
+PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char *const*list,PetscEnum mdefault, const char *name, const char* help)
 {
   PetscErrorCode ierr;
   PetscBagItem   item;

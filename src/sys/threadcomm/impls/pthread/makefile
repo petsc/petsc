@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = pthread.c lockfree.c
+SOURCEC  = tcpthread.c tclockfree.c
 SOURCEF  =
-SOURCEH  = pthreadimpl.h
-OBJSC    = pthread.o lockfree.o
+SOURCEH  = tcpthreadimpl.h
+OBJSC    = $(SOURCEC:.c=.o)
 OBJSF    =
 LIBBASE  = libpetscsys
 MANSEC   = PetscThreadComm

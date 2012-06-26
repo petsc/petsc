@@ -1209,6 +1209,29 @@ doi = {10.1190/1.3628198}
  year =       {2012},
 }
 
+@Article{weatherley12,
+  author =	 {S. Weatherley and R.F. Katz},
+  title =	  {Melting and channelized magmatic flow in chemically
+                 heterogeneous, upwelling mantle},
+  journal =	  {Geochem.\ Geophys.\ Geosys.},
+  year =   2012,
+  volume =  13,
+  number =   1,
+  pages =        {Q0AC18},
+  doi =		  {10.1029/2011GC003989},
+}
+
+@Article{katz12,
+  author =       {R.F. Katz and S. Weatherley},
+  title =        {Consequences of mantle heterogeneity for melt extraction
+                  at mid-ocean ridges},
+  journal =      {Earth\ Planet.\ Sci.\ Lett.},
+  year =         2012,
+  doi =          {10.1016/j.epsl.2012.04.042},
+  volume =       {335-336},
+  pages = 	 {226-237}
+}
+
 @Article{katz10b,
  author =     {R.F. Katz},
  title =      {Porosity-driven convection and asymmetry beneath
@@ -1672,6 +1695,15 @@ resolution and capturing sharp interfaces.}
 % LiteralHTML:for a variety of these simulations.</p>
 % LiteralHTML:</font>
 % LiteralHTML:
+@article{mills2009modeling,
+  title={Modeling subsurface reactive flows using leadership-class computing},
+  author={Mills, R.T. and Hammond, G.E. and Lichtner, P.C. and Sripathi, V. and Mahinthakumar, G.K. and Smith, B.F.},
+  journal={Journal of Physics: Conference Series},
+  volume={180},
+  pages={012062},
+  year={2009},
+  publisher={IOP Publishing}
+}
 @conference{mills2007simulating,
   title={{Simulating subsurface flow and transport on ultrascale computers using PFLOTRAN}},
   author={Mills, R.T. and Lu, C. and Lichtner, P.C. and Hammond, G.E.},
@@ -1679,6 +1711,15 @@ resolution and capturing sharp interfaces.}
   volume={78},
   pages={012051},
   year={2007},
+  organization={IOP Publishing}
+}
+@inproceedings{mills2009,
+  title={Modeling subsurface reactive flows using leadership-class computing},
+  author={Mills, R.T. and Hammond, G.E. and Lichtner, P.C. and Sripathi, V. and Mahinthakmuar, G. and Smith, B.},
+  booktitle={Journal of Physics: Conference Series},
+  volume={180},
+  pages={102062},
+  year={2009},
   organization={IOP Publishing}
 }
 @Unpublished{stomp,
@@ -3367,12 +3408,35 @@ pages   = "157--166"
   school = {Illinois Institute of Technology},
   year = 2011
 }
-@InProceedings{aszf,
+@InProceedings{AbhyankarHiPCNA11-1,
   author = {Shrirang Abhyankar and Barry Smith and Hong Zhang and A. Flueck},
   title =  {Using {PETSc} to Develop Scalable Applications for Next-Generation Power Grid},
   year = 2011,
   booktitle = {Proceedings of the 1st International Workshop on High Performance Computing, Networking and Analytics for the Power Grid},
+  url       = "http://www.mcs.anl.gov/uploads/cels/papers/P1957-0911.pdf",
   publisher = {ACM}
+}
+@InProceedings{AbhyankarHiPCNA11-2,
+  author = {Shrirang Abhyankar and Alexander Flueck and Xu Zhang and H. Flueck},
+  title =  {Development of a parallel three-phase transient stability simulator for power systems},
+  year = 2011,
+  booktitle = {Proceedings of the 1st International Workshop on High Performance Computing, Networking and Analytics for the Power Grid},
+  publisher = {ACM}
+}
+@InProceedings{AbhyankarPESGeneral2012,
+  author = {Shrirang Abhyankar and A. Flueck},
+  title =  {An implicitly-coupled solution approach for combined electromechanical and electromagnetic transients simulation},
+  year = 2012,
+  booktitle = {Proceedings of the IEEE PES General Meeting},
+  publisher = {IEEE}
+}
+@article{IdemaLahayeVuikSluis2012,
+  author = {Reijer Idema and Domenico Lahaye and Cornelis Vuik and Lou van der Sluis},
+  title  = {Scalable Newton-Krylov solver for very large Power Flow problems},
+  journal = {IEEE Transactions on Power Systems},
+  year    = 2012,
+  volume  = 27,
+  pages   = {390-396}
 }
 
 % LiteralHTML: <td width="100%" colspan="2"><hr size="4" color="#FF5B5B"> </td>
@@ -4021,7 +4085,7 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   title =	 {{PETS}c {W}eb page},
   url =		 {http://www.mcs.anl.gov/petsc},
   howpublished = {\url{http://www.mcs.anl.gov/petsc}},
-  year = {2011}
+  year = {2012}
 }
 @Unpublished{petsc-debian-package,
     author = "Adam C. Powell, IV",
@@ -4344,8 +4408,8 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
             Lois Curfman McInnes and Barry~F. Smith and Hong Zhang},
   title  = {{PETS}c Users Manual},
   institution = {Argonne National Laboratory},
-  year   = 2011,
-  number = {ANL-95/11 - Revision 3.2},
+  year   = 2012,
+  number = {ANL-95/11 - Revision 3.3},
   url    = {http://www.mcs.anl.gov/petsc}
 }
 @TechReport{petsc-developers,
@@ -4507,6 +4571,16 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   institution = "Argonne National Laboratory"
   }
 
+@techreport{mszm2012,
+  title = "Hierarchical and Nested {Krylov} Methods for Extreme-Scale Computing",
+  author = "Lois Curfman McInnes and Barry Smith and Hong Zhang and Richard Tran Mills",
+  year = 2012,
+  type = "Preprint",
+  note = "submitted to {Parallel Computing}",
+  number = "ANL/MCS-P2097-0512",
+  institution = "Argonne National Laboratory"
+  }
+
 @techreport{bkmms2012,
  author      = "J. Brown and M. G. Knepley and D. A. May and L. C. McInnes and B. F. Smith",
  title       = "Composable Linear Solvers for Multiphysics",
@@ -4515,6 +4589,13 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
  type        = "Preprint",
  note        = "To appear in 11th International Symposium on Parallel and Distributed Computing (ISPDC 2012)",
  institution = "Argonne National Laboratory"
+}
+
+@inproceedings{bkmms2012b,
+  author    = {J. Brown and M. G. Knepley and D. A. May and L. C. McInnes and B. F. Smith},
+  title     = {Composable Linear Solvers for Multiphysics},
+  booktitle = {Proceeedings of the 11th International Symposium on Parallel and Distributed Computing (ISPDC 2012)},
+  year      = {2012},
 }
 
 @article{BourdinBucurOudet2009,
@@ -4569,6 +4650,13 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   title =   {A Parallel Maximal Independent Set Algorithm}, 
   booktitle =   {Proceedings 5th copper mountain conference on iterative methods}, 
   year =   {1998} 
+}
+@article{akcelik2005ddd,
+  title={{Dynamic data-driven inversion for terascale simulations: real-time identification of airborne contaminants}},
+  author={Ak\c{c}elik, V. and Biros, G. and Draganescu, A. and Hill, J. and Ghattas, O. and van Bloemen Waanders, B.},
+  journal={Proceedings of the 2005 ACM/IEEE conference on Supercomputing},
+  year={2005},
+  publisher={IEEE Computer Society Washington, DC, USA}
 }
 @InBook{Akcelik-2006,
   author = {V. Akcelik and G. Biros and Omar Ghattas and J. Hill and David Keyes and B. van Bloemen Waanders},
@@ -5187,7 +5275,7 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
    publisher = {Springer Netherlands},
    issn = {0885-7474},
    keyword = {Mathematics and Statistics},
-   pages = {180-201},
+   pages = {180--201},
    volume = 52,
    issue = 1,
    year = 2012,
@@ -5269,14 +5357,12 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
    howpublished = "\url{http://dohp.org}"
 }
 
-@TechReport{McCourtRognlienEtAl12,
+@InProceedings{McCourtRognlienEtAl12,
  title = "Improving parallel scalability for edge plasma transport simulations with neutral gas species",
  author = "M. McCourt and T. D. Rognlien and L. C. McInnes and H. Zhang",
- type = "Preprint",
- note = "submitted to the Proceedings of the Twenty Second International Conference on Numerical Simulations of Plasmas, Sept. 7-9, 2011, Long Branch, NJ",
- institution = "Argonne National Laboratory",
- number = "ANL/MCS-P2018-0112",
- year = 2012
+ booktitle = "Proceedings of the Twenty Second International Conference on Numerical Simulations of Plasmas, Sept. 7-9, 2011, Long Branch, NJ (to appear)",
+ year = 2012,
+ note = "also available as preprint ANL/MCS-P2018-0112",
 }
 
 @misc{petclaw-github,

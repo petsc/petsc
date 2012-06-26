@@ -1,8 +1,0 @@
-#! /bin/csh
-#
-set MACH=n-gage
-set USR=petsc
-set LOC=/export/home/petsc/petsc32-2
-set CONF=arch-opensolaris-cxx-pkgs-opt
-set PURL=http://petsc.cs.iit.edu/petsc/releases/petsc-3.2
-set BURL=http://petsc.cs.iit.edu/petsc/releases/BuildSystem-3.2

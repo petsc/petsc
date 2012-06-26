@@ -68,8 +68,8 @@ int main(int argc,char **args)
   /* View evals */
   ierr = PetscOptionsHasName(PETSC_NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg){
-    printf(" %d evals: \n",nevs);
-    for (i=0; i<nevs; i++) printf("%d  %G\n",i,evals[i]); 
+    PetscPrintf(PETSC_COMM_SELF," %d evals: \n",nevs);
+    for (i=0; i<nevs; i++) PetscPrintf(PETSC_COMM_SELF,"%d  %G\n",i,evals[i]);
   } 
 
   /* Check residuals and orthogonality */ 

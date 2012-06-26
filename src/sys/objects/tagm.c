@@ -203,7 +203,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   /* Only the main thread updates counter->refcount */
   ierr = MPI_Attr_get(*comm_out,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
   if (flg) {
-    PetscInt trank; 
+    PetscInt trank;
     trank = PetscThreadCommGetRank(tcomm);
     if (!trank) counter->refcount++; /* number of references to this comm */
   } else counter->refcount++;
@@ -259,7 +259,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
     PetscInt trank;
     trank = PetscThreadCommGetRank(tcomm);
     /* Only thread rank 0 updates the counter */
-    if(!trank) counter->refcount--;
+    if (!trank) counter->refcount--;
   } else counter->refcount--;
 #else
   counter->refcount--;

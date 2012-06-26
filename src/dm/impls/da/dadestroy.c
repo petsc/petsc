@@ -115,5 +115,7 @@ PetscErrorCode  DMDestroy_DA(DM da)
   ierr = PetscFree(dd->e);CHKERRQ(ierr);
 
   /* ierr = PetscSectionDestroy(&dd->defaultGlobalSection);CHKERRQ(ierr); */
+  /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
+  ierr = PetscFree(dd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

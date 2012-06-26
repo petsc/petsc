@@ -192,7 +192,7 @@ int main(int Argc,char **Args)
   ierr = KSPSetOperators(kspmg, HtH, HtH, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   ierr = DMDASetRefinementFactor(da, 3, 3, 3);CHKERRQ(ierr);
-  ierr = PCASASetDM(pcmg, (DM) da);CHKERRQ(ierr);
+  ierr = PCSetDM(pcmg,da);CHKERRQ(ierr);
 
   ierr = PCASASetTolerances(pcmg, 1.e-6, 1.e-10,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 

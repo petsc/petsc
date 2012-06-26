@@ -1,0 +1,271 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../../style.css" rel="stylesheet" type="text/css">
+    <title>PETSc: Documentation: Changes: 3.3</title>
+  </head>
+  <body>
+
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
+
+    <div id="header">
+      <h1><!--begin-->Documentation: Changes: 3.3<!--end--></h1>
+    </div>
+
+    <hr>
+
+    <div id="sidebar">
+      <ul>
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../download/index.html">Download</a></li>
+        <li><a href="../../features/index.html">Features</a></li>
+        <li>
+          <a href="../../documentation/index.html">Documentation</a>
+          <ul>
+            <li><a href="../index.html">Manual pages and Users Manual</a></li>
+            <li><a href="../referencing.html">Referencing PETSc</a></li>
+            <li><a href="../tutorials/index.html">Tutorials</a></li>
+            <li><a href="../installation.html">Installation</a></li>
+            <li><a href="../ams.html">AMS</a></li>
+            <li>
+              <a href="index.html">Changes</a>
+              <ul>
+                <li><a href="dev.html">dev</a></li>
+                <li><span class="current">3.3</span></li>
+                <li><a href="33.html">3.3</a></li>
+                <li><a href="32.html">3.2</a></li>
+                <li><a href="31.html">3.1</a></li>
+                <li><a href="300.html">3.0.0</a></li>
+                <li><a href="233.html">2.3.3</a></li>
+                <li><a href="232.html">2.3.2</a></li>
+                <li><a href="231.html">2.3.1</a></li>
+                <li><a href="230.html">2.3.0</a></li>
+                <li><a href="221.html">2.2.1</a></li>
+                <li><a href="220.html">2.2.0</a></li>
+                <li><a href="216.html">2.1.6</a></li>
+                <li><a href="215.html">2.1.5</a></li>
+                <li><a href="213.html">2.1.3</a></li>
+                <li><a href="212.html">2.1.2</a></li>
+                <li><a href="211.html">2.1.1</a></li>
+                <li><a href="21.html">2.1.0</a></li>
+                <li><a href="2029.html">2.0.29</a></li>
+                <li><a href="2028.html">2.0.28</a></li>
+                <li><a href="2024.html">2.0.24</a></li>
+                <li><a href="2022.html">2.0.22</a></li>
+                <li><a href="2018-21.html">2.0.18-21</a></li>
+                <li><a href="2017.html">2.0.17</a></li>
+                <li><a href="2016.html">2.0.16</a></li>
+                <li><a href="2015.html">2.0.15</a></li>
+              </ul>
+            </li>
+            <li><a href="../bugreporting.html">Bug Reporting</a></li>
+            <li><a href="../codemanagement.html">Code Management</a></li>
+            <li><a href="../faq.html">FAQ</a></li>
+            <li><a href="../copyright.html">License</a></li>
+            <li><a href="../linearsolvertable.html">Linear Solver Table</a></li>
+          </ul>
+        </li>
+        <li><a href="../../publications/index.html">Applications/Publications</a></li>
+        <li><a href="../../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../../miscellaneous/external.html">External Software</a></li>
+        <li><a href="../../developers/index.html">Developers Site</a></li>
+      </ul>
+    </div>
+
+    <!--begin-->
+
+    <style type="text/css">
+      h2 {
+        color: red;
+      }
+
+      h4 {
+        font-weight: bold;
+        text-decoration: underline;
+      }
+    </style>
+
+    <div id="main">
+
+      <div align="center">
+        <h2><a name="CHANGES">CHANGES in the PETSc 3.3</a></h2>
+      </div>
+
+      <h4>config/configure.py:</h4>
+      <ul>
+        <li>Building PETSc using CMake is enabled automatically if CMake is installed (enabling parallel builds and fast incremental builds), otherwise the plain make-based system is used.</li>
+        <li>Added --with-cuda-only flag to allow compiling CUDA files without requiring Thrust and Cusp</li>
+      </ul>
+      <h4>Vec:</h4>
+      <ul>
+        <li>VecCreateSeqWithArray() and VecCreateMPIWithArray() now take a blocksize argument before the local length</li>
+        <li>VecSetBlockSize() cannot be called after VecCreateSeq() or VecCreateMPI() and must be called before VecSetUp() or VecSetFromOptions() or before either VecSetType() or VecSetSizes()</li>
+      </ul>
+      <h4>Mat:</h4>
+
+      <ul>
+        <li>MatScaleSystem() and MatUnScaleSystem() are gone, they didn't do anything.</li>
+        <li>Renamed MatNullSpaceAttach() to MatSetNullSpace()</li>
+        <li>MatMult() no longer removes the nullspace set by MatSetNullSpace()</li>
+        <li>Renamed MatMatMultTranspose() for C=A^T*B to MatTransposeMatMult()</li>
+        <li>Added MatMatTransposeMult() for C=A*B^T</li>
+        <li>Added MatRARt() for C=R*A*R^T</li>
+        <li>Preallocation routines now automatically set MAT_NEW_NONZERO_ALLOCATION_ERR, if you intentionally preallocate less than necessary then use MatSetOption(mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE) to disable the error generation.</li>
+        <li> MatSetBlockSize() must be called before MatSetUp() or MatXXXXSetPreallocation() or block size defaults to 1 </li>
+        <li> -mat_block_size is NOT processed by MatXXXXSetPreallocation() you MUST call MatSetFromOptions() before MatSetUp() to have it processed</li>
+        <li>You MUST now call MatXXXSetPreallocation() or MatSetUp() on any matrix you create directly (not using DMCreateMatrix()) before calling MatSetValues(), MatSetValuesBlocked() etc.</li>
+        <li>MatSetUpPreallocation() and MatPreallocated() are removed, use MatSetUp()</li>
+        <li>MatPreallocateSymmetricInitialize() is removed, use MatPreallocateInitialize()</li>
+        <li>MatCreateMPIAIJ(), MatCreateMPIBAIJ(), MatCreateMPISBAIJ(), MatCreateMPIDense() are now MatCreateAIJ(), MatCreateBAIJ(), MatCreateSBAIJ(), MatCreateDense(). Note that on a single process they have always created the sequential version of the matrix so this naming is more accurate. </li>
+        <li>Renamed MatMerge_SeqsToMPI() to MatCreateMPIAIJSumSeqAIJ()</li>
+        <li>Renamed MatMerge() to MatCreateMPIAIJConcatenateSeqAIJ()</li>
+        <li>Added block size in call to MatCreateIS()</li>
+        <li>MatInvertBlockDiagonal() now returns a const pointer</li>
+      </ul>
+
+      <h4>PC:</h4>
+      <ul>
+        <li>Remove PCASASetDM(), use PCSetDM() instead.</li>
+        <li>Add PCFieldSplitSetSchurFactType(), rename -pc_fieldsplit_set_schur_factorization_type to -pc_fieldsplit_set_schur_fact_type.</li>
+        <li>Added native algebraic multigrid method -pc_type gamg. Aggregation method is recommended: -pc_gamg_type agg and for elliptic operators smoothing is recommended: -pc_gamg_agg_nsmooths 1.</li>
+        <li>PCSetCoordinates(PC,PetscInt,PetscInt,PetscReal*) added second integer argument for number of local vertices.</li>
+        <li>Added PCISSetSubdomainScalingFactor(PC,PetscScalar).</li>
+        <li> <h5>PCGASM:</h5>
+          <ul>
+            <li> Remove PCGASMSetLocalSubdomains(), use PCGASMSetSubdomains(); <b>note:</b> the first argument is now the list of "inner" subdomains (without overlap), unlike before and for PCASM</li>
+            <li> PCGASMSetTotalSubdomains(PC,PetscInt,PetscBool); added third argument to indicate whether local subdomains should be constructed. </li>
+            <li> Removed PCGASMCreateSubdomains(), use PCGASMCreateLocalSubdomains(Mat,PetscInt,PetscInt,IS*[],IS*[]); second PetscInt argument is requested overlap</li>
+            <li> PCGASMCreateSubdomains2D(PC,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,IS[]*,IS[]*): the 9-th and 10-th argument have been swapped: the 9-th outputs the inner subdomains, the 10-th outputs the outer subdomains.
+          </ul>
+        <li>PCMG multigrid defaults changed to use a Chebyshev smoother with block Jacobi Gauss-Seidel relaxation.
+          This is a linear preconditioner so it can be used with normal Krylov methods rather than only flexible methods, as well as having fewer synchronization pointst.
+          Use <tt>-mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type bjacobi</tt> for the original behavior.
+        </li>
+      </ul>
+      <h4>KSP:</h4>
+
+      <ul>
+        <li>KSPSetOperators() will automatically set the null space present on the input matrix</li>
+        <li>Renamed KSPCHEBYCHEV to KSPCHEBYSHEV</li>
+        <li>Added Hybrid CHEBYCHEV (-ksp_chebyshev_hybrid) </li>
+        <li>Added pipelined GMRES (KSPPGMRES) which performs one non-blocking reduction per iteration instead of two blocking reductions.</li>
+        <li>Added flexible BiCGStab (KSPFBCGS) which tolerates a nonlinear preconditioner (like KSPFGMRES).</li>
+        <li>Added improved flexible BiCGStab (KSPIFBCGS) which tolerates a nonlinear preconditioner and performs one reduction every other iteration (like KSPIBCGS).</li>
+      </ul>
+
+      <h4>SNES:</h4>
+      <ul>
+        <li>Added SNESGetSNESLineSearch</li>
+        <li>Changed default max_its and max_funcs for non-newton SNES solvers to 10000 and 30000 respectively</li>
+        <li>Changed options and command-line arguments for SNESFAS to be in line with PCMG</li>
+        <li>Added quasi-Newton (SNESQN), Nonlinear GMRES (SNESNGMRES), nonlinear conjugate gradients (SNESNCG), and multi-stage methods (SNESMS, used as a smoother for nonlinear multigrid).</li>
+        <li>Support for Full Approximation Scheme nonlinear multigrid (SNESFAS) moved from DMMG to SNES and made composable with the methods above.</li>
+        <li>SNES line search type should be set by name with SNESLineSearchSetType rather than with SNESLineSearchSet, see below.</li>
+      </ul>
+
+      <h4>SNESLineSearch:</h4>
+
+      <ul>
+        <li>SNESLineSearch object added</li>
+        <li>The default SNESLineSearch of a SNES may be gotten with SNESGetSNESLineSearch(SNES snes, SNESLineSearch *linesearch)</li>
+        <li>The linesearch type may be set with SNESLineSearchSetType() or -snes_linesearch_type</li>
+        <li>The line search (and pre and post checks) is applied using SNESLineSearchApply()</li>
+        <li>Pre/Post-check methods may be set with SNESLineSearchSetPre/PostCheck()</li>
+        <li>The previous steplength may be accessed through SNESLineSearchSetLambda()</li>
+        <li>The damping parameter may be set through SNESLineSearchSetDamping() or -snes_linesearch_damping</li>
+        <li>Success of the line search is determined using SNESLineSearchGetSuccess()</li>
+        <li>Custom linesearches may be built through SNESLINESEARCHSHELL,("shell") or by registering a new linesearch type with SNESLineSearchRegisterDynamic()</li>
+        <li>SNESLINESEARCHBT,("bt") replaces SNES_LS_CUBIC and SNES_LS_QUADRATIC, and order may be set with SNESLineSearchSetOrder() or -snes_linesearch_order<quadratic,cubic></li>
+        <li>SNESLINESEARCHBASIC,("basic") replaces SNES_LS_BASIC and SNES_LS_BASICNONORMS.  Norms may be turned off with SNESLineSearchSetComputeNorms() or -snes_linesearch_norms 0</li>
+        <li>SNESLineSearchSetTolerances() replaces SNESLSSetParams(), with the former alpha parameter set with SNESLineSearchBTSetAlpha() or -snes_linesearch_alpha</li>
+        <li>Added Line Search type SNESLINESEARCHL2,("l2") as the default for NRICHARDSON</li>
+        <li>SNESLINESEARCHCP,("cp") added as the default line search method for SNESNCG and SNESQN</li>
+      </ul>
+
+      <h4>TS:</h4>
+
+      <ul>
+        <li>-ts_max_time changed to -ts_final_time</li>
+        <li>TSDefaultComputeJacobian() and TSDefaultComputeJacobianColor() have been removed.
+          Configure TS to use coloring with SNESSetJacobian().</li>
+        <li>Added TSROSW for Rosenbrock-W methods.</li>
+        <li>Added a common, extensible system for adaptive controllers, see TSGetAdapt().</li>
+      </ul>
+
+      <h4>DM/DA:</h4>
+      <ul>
+        <li>Added DMCreateDecomposition(DM,PetscInt,char*[]*,IS[]*,DM[]*) for use with PCFIELDSPLIT,PCASM,PCGASM</li>
+        <li>Added DMCreateDecompositionDM(DM,const char*,DM*) to create a version  of the DM encapsulating a named decomposition; use with DMCreateDecomposition()</li>
+        <li>Added DMRedundant for managing globally coupled degrees of freedom.</li>
+        <li>Removed DMCompositeAddArray(), use DMRedundantCreate() and DMCompositeAddDM().</li>
+
+        <li>
+          Renamed DMGetMatrix(), DMGetInterpolation(), DMGetInjection(), and
+          DMGetColoring() to DMCreateMatrix(), etc for semantic consistency.
+        </li>
+        <li>The communicator argument to DMRefine() and DMCoarsen() can be MPI_COMM_NULL, but not PETSC_NULL, because the latter may not be the correct type.</li>
+        <li>Added DMCoarsenHookAdd() and DMRefineHookAdd() for shepherding persistent resolution-dependent data between levels.</li>
+        <li>Added DMGetNamedGlobalVector() for storing persistent resolution-dependent data.</li>
+        <li>DMDASNESSetFunctionLocal() and DMDASNESSetJacobianLocal() can be used for convenient local evaluation; these routines will eventually replace DMDASetLocalFunction() and DMDASetLocalJacobian().</li>
+      </ul>
+
+      <h4>DMMG:</h4>
+      <ul>
+        <li>
+          DMMG is now completely removed from PETSc.
+          Equivalent (and better) functionality can now be obtained by calling SNESSetDM() or KSPSetDM().
+          Make sure to avoid resolution-dependent data in the user context.
+          Use SNESGetDM() or KSPGetDM() in the function evaluation context to obtain the grid.
+          DMGetNamedGlobalVector(), DMCoarsenHookAdd(), and DMRefineHookAdd() can be used to manage persistent resolution-dependent data.
+        </li>
+      </ul>
+
+      <h4>PetscViewer:</h4>
+      <ul>
+        <li>A VTK binary viewer was added, see PETSCVIEWERVTK.</li>
+      </ul>
+      <h4>SYS:</h4>
+      <ul>
+        <li>PetscBagLoad() now requires you previously created and registered all the records in the PETSc bag, allows loading on systems with different struct layout/endianness.</li>
+        <li>PetscSF added as a type-generic graph communication mechanism. The current implementation requires MPI-2 one-sided and the interface is currently optional.</li>
+      </ul>
+
+      <h4>Fortran:</h4>
+      <ul>
+        <li>PETSC_NULL_TRUTH is now PETSC_NULL_BOOL</li>
+        <li>PetscOptionsGetEnum() now available from Fortran</li>
+      </ul>
+
+      <h4><a href="http://www.mcs.anl.gov/petsc/miscellaneous/external.html">ExternalPackages</a>:</h4>
+      <ul>
+        <li>The Hypre interface was updated to 2.8.0b and now supports 64-bit integers.</li>
+        <li>SuperLU_DIST interface updated to 3.1.</li>
+        <li>SuperLU interface updated to 4.3.</li>
+        <li>Sundials interface updated to 2.5.0.</li>
+        <li>FFTW interface updated to 3.3.2.</li>
+        <li>ParMetis updated to 4.0.2 and split from Metis 5.0.2 which is now separate.</li>
+      </ul>
+
+      <h4>Build:</h4>
+      <ul>
+        <li>If Python 2.7 is available, the config/builder2.py is now available for a complete build, including
+        dependency tracking.</li>
+      </ul>
+
+      <h4>Examples:</h4>
+      <ul>
+        <li>SNES ex62 illustrates the use of DMComplex to solve the Stokes equation on an unstructured mesh. The Python
+          tests show how to use block preconditioning strategies from the command line.</li>
+        <li>SNES ex52 illustrates the use of CUDA for FEM integration</li>
+      </ul>
+    </div>
+
+    <!--end-->
+
+    <hr>
+
+  </body>
+</html>

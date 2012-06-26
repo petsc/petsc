@@ -666,7 +666,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         ierr = SNESSolve(snes,W,Y[i]);CHKERRQ(ierr);
         ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
-        ts->nonlinear_its += its; ts->linear_its += lits;
+        ts->snes_its += its; ts->ksp_its += lits;
         ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
         ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
         if (!accept) goto reject_step;
@@ -787,6 +787,49 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "TSARKIMEXGetVecs"
+static PetscErrorCode TSARKIMEXGetVecs(TS ts,DM dm,Vec *Z,Vec *Ydot)
+{
+  TS_ARKIMEX     *ax = (TS_ARKIMEX*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (Z) {
+    if (dm && dm != ts->dm) {
+      ierr = DMGetNamedGlobalVector(dm,"TSARKIMEX_Z",Z);CHKERRQ(ierr);
+    } else *Z = ax->Z;
+  }
+  if (Ydot) {
+    if (dm && dm != ts->dm) {
+      ierr = DMGetNamedGlobalVector(dm,"TSARKIMEX_Ydot",Ydot);CHKERRQ(ierr);
+    } else *Ydot = ax->Ydot;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TSARKIMEXRestoreVecs"
+static PetscErrorCode TSARKIMEXRestoreVecs(TS ts,DM dm,Vec *Z,Vec *Ydot)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (Z) {
+    if (dm && dm != ts->dm) {
+      ierr = DMRestoreNamedGlobalVector(dm,"TSARKIMEX_Z",Z);CHKERRQ(ierr);
+    }
+  }
+  if (Ydot) {
+    if (dm && dm != ts->dm) {
+      ierr = DMRestoreNamedGlobalVector(dm,"TSARKIMEX_Ydot",Ydot);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 /*
   This defines the nonlinear equation that is to be solved with SNES
   G(U) = F[t0+Theta*dt, U, (U-U0)*shift] = 0
@@ -796,11 +839,19 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
 static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes,Vec X,Vec F,TS ts)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
+  DM             dm,dmsave;
+  Vec            Z,Ydot;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecAXPBYPCZ(ark->Ydot,-ark->shift,ark->shift,0,ark->Z,X);CHKERRQ(ierr); /* Ydot = shift*(X-Z) */
-  ierr = TSComputeIFunction(ts,ark->stage_time,X,ark->Ydot,F,ark->imex);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = TSARKIMEXGetVecs(ts,dm,&Z,&Ydot);CHKERRQ(ierr);
+  ierr = VecAXPBYPCZ(Ydot,-ark->shift,ark->shift,0,Z,X);CHKERRQ(ierr); /* Ydot = shift*(X-Z) */
+  dmsave = ts->dm;
+  ts->dm = dm;
+  ierr = TSComputeIFunction(ts,ark->stage_time,X,Ydot,F,ark->imex);CHKERRQ(ierr);
+  ts->dm = dmsave;
+  ierr = TSARKIMEXRestoreVecs(ts,dm,&Z,&Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -808,12 +859,47 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes,Vec X,Vec F,TS ts)
 #define __FUNCT__ "SNESTSFormJacobian_ARKIMEX"
 static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *str,TS ts)
 {
-  TS_ARKIMEX       *ark = (TS_ARKIMEX*)ts->data;
+  TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
+  DM             dm,dmsave;
+  Vec            Ydot;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = TSARKIMEXGetVecs(ts,dm,PETSC_NULL,&Ydot);CHKERRQ(ierr);
   /* ark->Ydot has already been computed in SNESTSFormFunction_ARKIMEX (SNES guarantees this) */
-  ierr = TSComputeIJacobian(ts,ark->stage_time,X,ark->Ydot,ark->shift,A,B,str,PETSC_TRUE);CHKERRQ(ierr);
+  dmsave = ts->dm;
+  ts->dm = dm;
+  ierr = TSComputeIJacobian(ts,ark->stage_time,X,Ydot,ark->shift,A,B,str,PETSC_TRUE);CHKERRQ(ierr);
+  ts->dm = dmsave;
+  ierr = TSARKIMEXRestoreVecs(ts,dm,PETSC_NULL,&Ydot);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCoarsenHook_TSARKIMEX"
+static PetscErrorCode DMCoarsenHook_TSARKIMEX(DM fine,DM coarse,void *ctx)
+{
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMRestrictHook_TSARKIMEX"
+static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse,void *ctx)
+{
+  TS ts = (TS)ctx;
+  PetscErrorCode ierr;
+  Vec Z,Z_c;
+
+  PetscFunctionBegin;
+  ierr = TSARKIMEXGetVecs(ts,fine,&Z,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSARKIMEXGetVecs(ts,coarse,&Z_c,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatRestrict(restrct,Z,Z_c);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(Z_c,rscale,Z_c);CHKERRQ(ierr);
+  ierr = TSARKIMEXRestoreVecs(ts,fine,&Z,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSARKIMEXRestoreVecs(ts,coarse,&Z_c,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -825,7 +911,7 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
   ARKTableau     tab  = ark->tableau;
   PetscInt       s = tab->s;
   PetscErrorCode ierr;
-
+  DM             dm;
   PetscFunctionBegin;
   if (!ark->tableau) {
     ierr = TSARKIMEXSetType(ts,TSARKIMEXDefault);CHKERRQ(ierr);
@@ -837,6 +923,10 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&ark->Work);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&ark->Z);CHKERRQ(ierr);
   ierr = PetscMalloc(s*sizeof(ark->work[0]),&ark->work);CHKERRQ(ierr);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  if (dm) {
+    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSARKIMEX,DMRestrictHook_TSARKIMEX,ts);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

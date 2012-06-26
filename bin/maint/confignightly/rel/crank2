@@ -1,0 +1,8 @@
+#! /bin/csh
+#
+set MACH=crank
+set USR=petsc
+set LOC=/sandbox/petsc/petsc33-2
+set CONF=arch-linux-gcc-ifc
+set PURL=http://petsc.cs.iit.edu/petsc/releases/petsc-3.3
+set BURL=http://petsc.cs.iit.edu/petsc/releases/BuildSystem-3.3

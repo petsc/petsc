@@ -223,13 +223,13 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
           ierr = PCASMSetLocalSubdomains(pc, num_domains, outer_domain_is, inner_domain_is);CHKERRQ(ierr);
         }
         for(d = 0; d < num_domains; ++d) {
-          ierr = PetscFree(domain_names[d]); CHKERRQ(ierr);
-          ierr = ISDestroy(&inner_domain_is[d]);   CHKERRQ(ierr);
-          ierr = ISDestroy(&outer_domain_is[d]);   CHKERRQ(ierr);
+          if(domain_names)    {ierr = PetscFree(domain_names[d]);       CHKERRQ(ierr);}
+          if(inner_domain_is) {ierr = ISDestroy(&inner_domain_is[d]);   CHKERRQ(ierr);}
+          if(outer_domain_is) {ierr = ISDestroy(&outer_domain_is[d]);   CHKERRQ(ierr);}
         }
-        ierr = PetscFree(domain_names);CHKERRQ(ierr);
-        ierr = PetscFree(inner_domain_is);CHKERRQ(ierr);
-        ierr = PetscFree(outer_domain_is);CHKERRQ(ierr);
+        ierr = PetscFree(domain_names);    CHKERRQ(ierr);
+        ierr = PetscFree(inner_domain_is); CHKERRQ(ierr);
+        ierr = PetscFree(outer_domain_is); CHKERRQ(ierr);
       }
       if (osm->n_local_true == PETSC_DECIDE) {
         /* still no subdomains; use one subdomain per processor */
@@ -558,11 +558,10 @@ static PetscErrorCode PCReset_ASM(PC pc)
     ierr = PetscFree(osm->y);CHKERRQ(ierr);
     ierr = PetscFree(osm->y_local);CHKERRQ(ierr);
   }
-  if (osm->is) {
-    ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
-    osm->is       = 0;
-    osm->is_local = 0;
-  }
+  ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
+  osm->is       = 0;
+  osm->is_local = 0;
+
   PetscFunctionReturn(0);
 }
 
@@ -627,7 +626,8 @@ PetscErrorCode  PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,IS is[],IS is_local
 
   PetscFunctionBegin;
   if (n < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Each process must have 1 or more blocks, n = %D",n);
-  if (pc->setupcalled && (n != osm->n_local_true || is)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"PCASMSetLocalSubdomains() should be called before calling PCSetUp().");
+  if (pc->setupcalled && (n != osm->n_local_true || is)) 
+    SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"PCASMSetLocalSubdomains() should be called before calling PCSetUp().");
 
   if (!pc->setupcalled) {
     if (is) {
@@ -636,9 +636,7 @@ PetscErrorCode  PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,IS is[],IS is_local
     if (is_local) {
       for (i=0; i<n; i++) {ierr = PetscObjectReference((PetscObject)is_local[i]);CHKERRQ(ierr);}
     }
-    if (osm->is) {
-      ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
-    }
+    ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
     osm->n_local_true = n;
     osm->is           = 0;
     osm->is_local     = 0;
@@ -651,6 +649,18 @@ PetscErrorCode  PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,IS is[],IS is_local
     if (is_local) {
       ierr = PetscMalloc(n*sizeof(IS),&osm->is_local);CHKERRQ(ierr);
       for (i=0; i<n; i++) { osm->is_local[i] = is_local[i]; }
+      if(!is) {
+        ierr = PetscMalloc(osm->n_local_true*sizeof(IS),&osm->is);CHKERRQ(ierr);
+        for (i=0; i<osm->n_local_true; i++) {
+          if (osm->overlap > 0) { /* With positive overlap, osm->is[i] will be modified */
+            ierr = ISDuplicate(osm->is_local[i],&osm->is[i]);CHKERRQ(ierr);
+            ierr = ISCopy(osm->is_local[i],osm->is[i]);CHKERRQ(ierr);
+          } else {
+            ierr = PetscObjectReference((PetscObject)osm->is_local[i]);CHKERRQ(ierr);
+            osm->is[i] = osm->is_local[i];
+          }
+        }
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -680,9 +690,7 @@ PetscErrorCode  PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,IS *is,IS *is_local
   if (!n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Process %d must have at least one block: total processors %d total blocks %D",(int)rank,(int)size,N);
   if (pc->setupcalled && n != osm->n_local_true) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PCASMSetTotalSubdomains() should be called before PCSetUp().");
   if (!pc->setupcalled) {
-    if (osm->is) {
-      ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
-    }
+    ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
     osm->n_local_true = n;
     osm->is           = 0;
     osm->is_local     = 0;
@@ -1325,10 +1333,12 @@ PetscErrorCode  PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
   PetscInt       i;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (n <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n must be > 0: n = %D",n);
-  PetscValidPointer(is,2);
-  for (i=0; i<n; i++) { ierr = ISDestroy(&is[i]);CHKERRQ(ierr); }
-  ierr = PetscFree(is);CHKERRQ(ierr);
+  if (n <= 0) PetscFunctionReturn(0);
+  if(is) {
+    PetscValidPointer(is,2);
+    for (i=0; i<n; i++) { ierr = ISDestroy(&is[i]);CHKERRQ(ierr); }
+    ierr = PetscFree(is);CHKERRQ(ierr);
+  }
   if (is_local) {
     PetscValidPointer(is_local,3);
     for (i=0; i<n; i++) { ierr = ISDestroy(&is_local[i]);CHKERRQ(ierr); }

@@ -26,6 +26,7 @@
 PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
   MPI_Comm         comm;
+  PetscSection     section;
   DM               cda;
   DMDABoundaryType bx,by,bz;
   Vec              xcoor;
@@ -36,12 +37,90 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
 
   PetscFunctionBegin;
   if (xmax <= xmin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %G %G",xmin,xmax);
+  if ((ymax <= ymin) && (dim > 1)) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
+  if ((zmax <= zmin) && (dim > 2)) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %G %G",zmin,zmax);
 
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(da,&section);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&bx,&by,&bz,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&istart,&jstart,&kstart,&isize,&jsize,&ksize);CHKERRQ(ierr);
   ierr = DMDAGetCoordinateDA(da, &cda);CHKERRQ(ierr);
+  if (section) {
+    /* This would be better as a vector, but this is compatible */
+    PetscInt numComp[3]      = {1, 1, 1};
+    PetscInt numVertexDof[3] = {1, 1, 1};
+
+    ierr = DMDASetFieldName(cda, 0, "x");CHKERRQ(ierr);
+    if (dim > 1) {ierr = DMDASetFieldName(cda, 1, "y");CHKERRQ(ierr);}
+    if (dim > 2) {ierr = DMDASetFieldName(cda, 2, "z");CHKERRQ(ierr);}
+    ierr = DMDACreateSection(cda, numComp, numVertexDof, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  }
   ierr = DMCreateGlobalVector(cda, &xcoor);CHKERRQ(ierr);
+  if (section) {
+    PetscSection csection;
+    PetscInt     vStart, vEnd;
+
+    ierr = DMGetDefaultGlobalSection(cda,&csection);CHKERRQ(ierr);
+    ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
+    ierr = DMDAGetHeightStratum(da, dim, &vStart, &vEnd);CHKERRQ(ierr);
+    if (bx == DMDA_BOUNDARY_PERIODIC) hx  = (xmax-xmin)/(M+1);
+    else                              hx  = (xmax-xmin)/(M ? M : 1);
+    if (by == DMDA_BOUNDARY_PERIODIC) hy  = (ymax-ymin)/(N+1);
+    else                              hy  = (ymax-ymin)/(N ? N : 1);
+    if (bz == DMDA_BOUNDARY_PERIODIC) hz_ = (zmax-zmin)/(P+1);
+    else                              hz_ = (zmax-zmin)/(P ? P : 1);
+    switch (dim) {
+    case 1:
+      for(i = 0; i < isize+1; ++i) {
+        PetscInt v = i+vStart, dof, off;
+
+        ierr = PetscSectionGetDof(csection, v, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(csection, v, &off);CHKERRQ(ierr);
+        if (off >= 0) {
+          coors[off] = xmin + hx*(i+istart);
+        }
+      }
+      break;
+    case 2:
+      for(j = 0; j < jsize+1; ++j) {
+        for(i = 0; i < isize+1; ++i) {
+          PetscInt v = j*(isize+1)+i+vStart, dof, off;
+
+          ierr = PetscSectionGetDof(csection, v, &dof);CHKERRQ(ierr);
+          ierr = PetscSectionGetOffset(csection, v, &off);CHKERRQ(ierr);
+          if (off >= 0) {
+            coors[off+0] = xmin + hx*(i+istart);
+            coors[off+1] = ymin + hy*(j+jstart);
+          }
+        }
+      }
+      break;
+    case 3:
+      for(k = 0; k < ksize+1; ++k) {
+        for(j = 0; j < jsize+1; ++j) {
+          for(i = 0; i < isize+1; ++i) {
+            PetscInt v = (k*(jsize+1)+j)*(isize+1)+i+vStart, dof, off;
+
+            ierr = PetscSectionGetDof(csection, v, &dof);CHKERRQ(ierr);
+            ierr = PetscSectionGetOffset(csection, v, &off);CHKERRQ(ierr);
+            if (off >= 0) {
+              coors[off+0] = xmin + hx*(i+istart);
+              coors[off+1] = ymin + hy*(j+jstart);
+              coors[off+2] = zmin + hz_*(k+kstart);
+            }
+          }
+        }
+      }
+      break;
+    default:
+      SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot create uniform coordinates for this dimension %D\n",dim);
+    }
+    ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
+    ierr = DMDASetCoordinates(da,xcoor);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(da,xcoor);CHKERRQ(ierr);
+    ierr = VecDestroy(&xcoor);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   if (dim == 1) {
     if (bx == DMDA_BOUNDARY_PERIODIC) hx = (xmax-xmin)/M;
     else                         hx = (xmax-xmin)/(M-1);
@@ -51,7 +130,6 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 2) {
-    if (ymax <= ymin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
     if (bx == DMDA_BOUNDARY_PERIODIC) hx = (xmax-xmin)/(M);
     else                       hx = (xmax-xmin)/(M-1);
     if (by == DMDA_BOUNDARY_PERIODIC) hy = (ymax-ymin)/(N);
@@ -66,8 +144,6 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 3) {
-    if (ymax <= ymin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
-    if (zmax <= zmin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %G %G",zmin,zmax);
     if (bx == DMDA_BOUNDARY_PERIODIC) hx = (xmax-xmin)/(M);
     else                       hx = (xmax-xmin)/(M-1);
     if (by == DMDA_BOUNDARY_PERIODIC) hy = (ymax-ymin)/(N);

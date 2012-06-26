@@ -120,7 +120,7 @@ include (${PETSc_BINARY_DIR}/conf/PETScConfig.cmake)
 if (PETSC_HAVE_FORTRAN)
   enable_language (Fortran)
 endif ()
-if (PETSC_CLANGUAGE_Cxx)
+if (PETSC_CLANGUAGE_Cxx OR PETSC_HAVE_CXX)
   enable_language (CXX)
 endif ()
 

@@ -74,7 +74,6 @@ int main(int argc,char **argv)
   PetscBool              matrix_free = PETSC_FALSE,coloring = PETSC_FALSE;
   PetscErrorCode         ierr;
   PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
-  MatFDColoring          matfdcoloring;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -129,15 +128,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-fdcoloring",&coloring,PETSC_NULL);CHKERRQ(ierr);
   if (!matrix_free) {
     if (coloring) {
-      ISColoring    iscoloring;
-
-      ierr = DMCreateColoring(user.da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
       ierr = DMCreateMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
-      ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-      ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-      ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr);
     } else {
       ierr = DMCreateMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
@@ -178,9 +170,6 @@ int main(int argc,char **argv)
 
   if (!matrix_free) {
     ierr = MatDestroy(&J);CHKERRQ(ierr);
-  }
-  if (coloring) {
-    ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);      

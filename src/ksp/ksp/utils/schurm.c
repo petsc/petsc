@@ -65,6 +65,34 @@ PetscErrorCode MatMult_SchurComplement(Mat N,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+/*
+           A11 - A10 ksp(A00,Ap00)  A01
+*/
+#undef __FUNCT__
+#define __FUNCT__ "MatMultAdd_SchurComplement"
+PetscErrorCode MatMultAdd_SchurComplement(Mat N,Vec x,Vec y,Vec z)
+{
+  Mat_SchurComplement  *Na = (Mat_SchurComplement*)N->data;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  if (!Na->work1) {ierr = MatGetVecs(Na->A,&Na->work1,PETSC_NULL);CHKERRQ(ierr);}
+  if (!Na->work2) {ierr = MatGetVecs(Na->A,&Na->work2,PETSC_NULL);CHKERRQ(ierr);}
+  ierr = MatMult(Na->B,x,Na->work1);CHKERRQ(ierr);
+  ierr = KSPSolve(Na->ksp,Na->work1,Na->work2);CHKERRQ(ierr);
+  if (y == z) {
+    ierr = VecScale(Na->work2,-1.0);CHKERRQ(ierr);
+    ierr = MatMultAdd(Na->C,Na->work2,z,z);CHKERRQ(ierr);
+  } else {
+    ierr = MatMult(Na->C,Na->work2,z);CHKERRQ(ierr);
+    ierr = VecAYPX(z,-1.0,y);CHKERRQ(ierr);
+  }
+  if (Na->D) {
+    ierr = MatMultAdd(Na->D,x,z,z);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetFromOptions_SchurComplement"
 PetscErrorCode MatSetFromOptions_SchurComplement(Mat N)
@@ -173,6 +201,7 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
   (*N)->ops->destroy        = MatDestroy_SchurComplement;
   (*N)->ops->view           = MatView_SchurComplement;
   (*N)->ops->mult           = MatMult_SchurComplement;
+  (*N)->ops->multadd        = MatMultAdd_SchurComplement;
   (*N)->ops->setfromoptions = MatSetFromOptions_SchurComplement;
   (*N)->assembled           = PETSC_TRUE;
   (*N)->preallocated        = PETSC_TRUE;

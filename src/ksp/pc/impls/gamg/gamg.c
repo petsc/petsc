@@ -673,6 +673,8 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
           ierr = pc_gamg->optprol( pc, kktMatsArr[level].A11, &Prol11 ); CHKERRQ(ierr);
         }
         
+        /* remove rows of singleton rows (BCs) */
+        
         if( stokes ) {
           IS is_row[2] = {kktMatsArr[level].prim_is,kktMatsArr[level].constr_is};
           Mat a[4] = {Prol11, PETSC_NULL, PETSC_NULL, Prol22 };

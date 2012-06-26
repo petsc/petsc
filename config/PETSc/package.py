@@ -32,8 +32,6 @@ class NewPackage(config.package.Package):
   def consistencyChecks(self):
     config.package.Package.consistencyChecks(self)
     if self.framework.argDB['with-'+self.package]:
-      if self.cxx and not self.languages.clanguage == 'Cxx':
-        raise RuntimeError('Cannot use '+self.name+' without C++, run ./configure --with-clanguage=C++')
       if self.double and not self.scalartypes.precision.lower() == 'double':
         raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')
       if not self.complex and self.scalartypes.scalartype.lower() == 'complex':

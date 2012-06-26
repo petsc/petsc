@@ -184,7 +184,8 @@ static PetscErrorCode DMDestroy_Shell(DM dm)
   PetscFunctionBegin;
   ierr = MatDestroy(&shell->A);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->Xglobal);CHKERRQ(ierr);
-  ierr = PetscFree(dm->data);CHKERRQ(ierr);
+  /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
+  ierr = PetscFree(shell);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

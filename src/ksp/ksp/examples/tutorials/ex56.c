@@ -151,7 +151,12 @@ int main(int argc,char **args)
       /* BC version of element */
       for(i=0;i<24;i++)
 	for(j=0;j<24;j++)
-	  if(i<12 || j < 12)
+/* #define TEST_NONZERO_COLS */
+#if defined(TEST_NONZERO_COLS)
+          if(i<12)
+#else
+          if(i<12 || j < 12)
+#endif
 	    if(i==j) DD2[i][j] = 0.1*DD1[i][j];
 	    else DD2[i][j] = 0.0;
 	  else DD2[i][j] = DD1[i][j];
@@ -262,6 +267,17 @@ int main(int argc,char **args)
 #if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
   ierr = PetscLogStagePop();      CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage[1]);                    CHKERRQ(ierr);
+#endif
+
+  /* test BCs */
+#if defined(TEST_NONZERO_COLS)
+  VecZeroEntries(xx);
+  if(mype==0){
+    VecSetValue(xx,0,1.0,INSERT_VALUES);
+  }
+  VecAssemblyBegin(xx);
+  VecAssemblyEnd(xx);
+  KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);
 #endif
 
   /* 1st solve */

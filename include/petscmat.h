@@ -52,6 +52,7 @@ J*/
 #define MATDENSE           "dense"
 #define MATSEQDENSE        "seqdense"
 #define MATMPIDENSE        "mpidense"
+#define MATELEMENTAL       "elemental"
 #define MATBAIJ            "baij"
 #define MATSEQBAIJ         "seqbaij"
 #define MATMPIBAIJ         "mpibaij"
@@ -301,7 +302,7 @@ PETSC_EXTERN PetscErrorCode MatRealPart(Mat);
 PETSC_EXTERN PetscErrorCode MatImaginaryPart(Mat);
 PETSC_EXTERN PetscErrorCode MatGetDiagonalBlock(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetTrace(Mat,PetscScalar*);
-PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonal(Mat,PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatInvertBlockDiagonal(Mat,const PetscScalar **);
 
 /* ------------------------------------------------------------*/
 PETSC_EXTERN PetscErrorCode MatSetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
@@ -516,6 +517,7 @@ PETSC_EXTERN PetscErrorCode MatGetOwnershipRange(Mat,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatGetOwnershipRanges(Mat,const PetscInt**);
 PETSC_EXTERN PetscErrorCode MatGetOwnershipRangeColumn(Mat,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode MatGetOwnershipRangesColumn(Mat,const PetscInt**);
+PETSC_EXTERN PetscErrorCode MatGetOwnershipIS(Mat,IS*,IS*);
 
 PETSC_EXTERN PetscErrorCode MatGetSubMatrices(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 PETSC_EXTERN PetscErrorCode MatGetSubMatricesParallel(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
@@ -1810,6 +1812,11 @@ PETSC_EXTERN PetscErrorCode MatSetOption_SeqAIJCUSP(Mat,MatOption,PetscBool);
 PETSC_EXTERN PetscErrorCode VecScatterPetscToFFTW(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode VecScatterFFTWToPetsc(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode MatGetVecsFFTW(Mat,Vec*,Vec*,Vec*);
+#endif
+
+#if defined(PETSC_HAVE_ELEMENTAL)
+PETSC_EXTERN PetscErrorCode PetscElementalInitializePackage(const char*);
+PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatCreateNest(MPI_Comm,PetscInt,const IS[],PetscInt,const IS[],const Mat[],Mat*);

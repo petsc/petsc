@@ -23,6 +23,7 @@ PetscErrorCode PetscThreadCommRunKernel_NoThread(MPI_Comm comm,PetscThreadCommJo
 
   PetscFunctionBegin;
   ierr = PetscRunKernel(0,job->nargs,job);CHKERRQ(ierr);
+  job->job_status[0] = THREAD_JOB_COMPLETED;
   PetscFunctionReturn(0);
 }
  

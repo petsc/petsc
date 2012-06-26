@@ -63,7 +63,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   Vec            X,F,Y,W,G;
   SNES           snes;
   PetscReal      fnorm, xnorm, ynorm, gnorm, gnormprev;
-  PetscReal      lambda,lambdatemp,lambdaprev,minlambda,maxstep,initslope,alpha;
+  PetscReal      lambda,lambdatemp,lambdaprev,minlambda,maxstep,initslope,alpha,stol;
   PetscReal      t1,t2,a,b,d;
 #if defined(PETSC_USE_COMPLEX)
   PetscScalar    cinitslope;
@@ -83,6 +83,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
   ierr = SNESLineSearchGetMonitor(linesearch, &monitor);CHKERRQ(ierr);
   ierr = SNESLineSearchGetTolerances(linesearch,&minlambda,&maxstep,PETSC_NULL,PETSC_NULL,PETSC_NULL,&max_its);
+  ierr = SNESGetTolerances(snes,PETSC_NULL,PETSC_NULL,&stol,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   bt = (SNESLineSearch_BT *)linesearch->data;
 
   alpha = bt->alpha;
@@ -95,7 +96,11 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
   ierr = SNESLineSearchPreCheck(linesearch,X,Y,&changed_y);CHKERRQ(ierr);
   ierr = SNESLineSearchSetSuccess(linesearch, PETSC_TRUE);CHKERRQ(ierr);
 
-  ierr = VecNorm(Y, NORM_2, &ynorm);CHKERRQ(ierr);
+  ierr = VecNormBegin(Y, NORM_2, &ynorm);CHKERRQ(ierr);
+  ierr = VecNormBegin(X, NORM_2, &xnorm);CHKERRQ(ierr);
+  ierr = VecNormEnd(Y, NORM_2, &ynorm);CHKERRQ(ierr);
+  ierr = VecNormEnd(X, NORM_2, &xnorm);CHKERRQ(ierr);
+
   if (ynorm == 0.0) {
     if (monitor) {
       ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
@@ -151,7 +156,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
 
   if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   ierr = PetscInfo2(snes,"Initial fnorm %14.12e gnorm %14.12e\n", fnorm, gnorm);CHKERRQ(ierr);
-  if (.5*gnorm*gnorm <= .5*fnorm*fnorm + lambda*alpha*initslope) { /* Sufficient reduction */
+  if (.5*gnorm*gnorm <= .5*fnorm*fnorm + lambda*alpha*initslope || ynorm < stol*xnorm) { /* Sufficient reduction or step tolerance convergence */
     if (monitor) {
       ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Using full step: fnorm %14.12e gnorm %14.12e\n", fnorm, gnorm);CHKERRQ(ierr);

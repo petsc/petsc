@@ -6048,6 +6048,40 @@ PetscErrorCode  MatGetOwnershipRangesColumn(Mat mat,const PetscInt **ranges)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatGetOwnershipIS"
+/*@C
+   MatGetOwnershipIS - Get row and column ownership as index sets
+
+   Not Collective
+
+   Input Arguments:
+.  A - matrix of type Elemental
+
+   Output Arguments:
++  rows - rows in which this process owns elements
+.  cols - columns in which this process owns elements
+
+   Level: intermediate
+
+.seealso: MatGetOwnershipRange(), MatGetOwnershipRangeColumn(), MatSetValues(), MATELEMENTAL, MatSetValues()
+@*/
+PetscErrorCode MatGetOwnershipIS(Mat A,IS *rows,IS *cols)
+{
+  PetscErrorCode ierr,(*f)(Mat,IS*,IS*);
+
+  PetscFunctionBegin;
+  MatCheckPreallocated(A,1);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetOwnershipIS_C",(PetscVoidStarFunction)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(A,rows,cols);CHKERRQ(ierr);
+  } else {   /* Create a standard row-based partition, each process is responsible for ALL columns in their row block */
+    if (rows) {ierr = ISCreateStride(PETSC_COMM_SELF,A->rmap->n,A->rmap->rstart,1,rows);CHKERRQ(ierr);}
+    if (cols) {ierr = ISCreateStride(PETSC_COMM_SELF,A->cmap->N,0,1,cols);CHKERRQ(ierr);}
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic"
 /*@C
@@ -6307,7 +6341,7 @@ PetscErrorCode  MatRestoreArray(Mat mat,PetscScalar *v[])
    Input Parameters:
 +  mat - the matrix
 .  n   - the number of submatrixes to be extracted (on this processor, may be zero)
-.  irow, icol - index sets of rows and columns to extract
+.  irow, icol - index sets of rows and columns to extract (must be sorted)
 -  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
@@ -6317,6 +6351,9 @@ PetscErrorCode  MatRestoreArray(Mat mat,PetscScalar *v[])
    MatGetSubMatrices() can extract ONLY sequential submatrices
    (from both sequential and parallel matrices). Use MatGetSubMatrix()
    to extract a parallel submatrix.
+
+   Currently both row and column indices must be sorted to guarantee 
+   correctness with all matrix types.
 
    When extracting submatrices from a parallel matrix, each processor can
    form a different submatrix by setting the rows and columns of its
@@ -9133,7 +9170,7 @@ PetscErrorCode  MatFindZeroDiagonals(Mat mat,IS *is)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatInvertBlockDiagonal"
-/*@
+/*@C
   MatInvertBlockDiagonal - Inverts the block diagonal entries.
 
   Collective on Mat
@@ -9144,9 +9181,12 @@ PetscErrorCode  MatFindZeroDiagonals(Mat mat,IS *is)
   Output Parameters:
 . values - the block inverses in column major order (FORTRAN-like)
 
+   Note:
+   This routine is not available from Fortran.
+
   Level: advanced
 @*/
-PetscErrorCode  MatInvertBlockDiagonal(Mat mat,PetscScalar **values)
+PetscErrorCode MatInvertBlockDiagonal(Mat mat,const PetscScalar **values)
 {
   PetscErrorCode ierr;
 

@@ -119,7 +119,7 @@ $    int handler(MPI_Comm comm,int line,char *func,char *file,char *dir,PetscErr
 
    Fortran Notes: You can only push one error handler from Fortran before poping it.
 
-.seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
+.seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler(), PetscPushSignalHandler()
 
 @*/
 PetscErrorCode  PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,int,const char *,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void *ctx)

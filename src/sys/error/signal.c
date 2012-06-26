@@ -190,7 +190,7 @@ PetscErrorCode  PetscDefaultSignalHandler(int sig,void *ptr)
 
    Concepts: signal handler^setting
 
-.seealso: PetscPopSignalHandler(), PetscDefaultSignalHandler()
+.seealso: PetscPopSignalHandler(), PetscDefaultSignalHandler(), PetscPushErrorHandler()
 
 @*/
 PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void* ctx)

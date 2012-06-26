@@ -37,7 +37,6 @@ int main(int argc,char **argv)
   PetscReal      h,xp = 0.0; 
   PetscScalar    v,pfive = .5;
   PetscBool      flg;
-  MatFDColoring  matfdcoloring = 0;
   PetscBool      fd_jacobian_coloring;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -102,8 +101,6 @@ int main(int argc,char **argv)
   if (fd_jacobian_coloring){ 
     /* Jacobian using finite differences with matfdcoloring based on the sparse structure.
      In this case, only three calls to FormFunction() for each Jacobian evaluation - very fast! */
-    ISColoring    iscoloring;
-    
     /* Get the data structure of J */
     flg = PETSC_FALSE;
     ierr = PetscOptionsGetBool(PETSC_NULL,"-my_jacobian_struct",&flg,PETSC_NULL);CHKERRQ(ierr);
@@ -115,17 +112,8 @@ int main(int argc,char **argv)
       MatStructure  flag;
       ierr = SNESComputeJacobian(snes,x,&J,&J,&flag);CHKERRQ(ierr);
     }
-
-    /* Create coloring context */
-    ierr = MatGetColoring(J,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,(void*)F);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-    /* ierr = MatFDColoringView(matfdcoloring,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-    
     /* Use SNESDefaultComputeJacobianColor() for Jacobian evaluation */
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr); 
-    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr); 
   }
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -144,9 +132,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&x);CHKERRQ(ierr);     ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = VecDestroy(&F);CHKERRQ(ierr);     ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = MatDestroy(&JPrec);CHKERRQ(ierr); ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  if (fd_jacobian_coloring){
-    ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
-  }
   ierr = PetscFinalize();
   return 0;
 }

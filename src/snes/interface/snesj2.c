@@ -22,6 +22,11 @@
 
     Level: intermediate
 
+.notes: If ctx is not provided, this will try to get the coloring from the DM.  If the DM type
+        has no coloring routine, then it will try to get the coloring from the matrix.  This
+        requires that the matrix have nonzero entries precomputed, such as in
+        snes/examples/tutorials/ex45.c.
+
 .keywords: SNES, finite differences, Jacobian, coloring, sparse
 
 .seealso: SNESSetJacobian(), SNESTestJacobian(), SNESDefaultComputeJacobian()
@@ -31,19 +36,42 @@
 
 PetscErrorCode  SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  MatFDColoring  color = (MatFDColoring) ctx;
+  MatFDColoring  color = (MatFDColoring)ctx;
   PetscErrorCode ierr;
-  Vec            f;
-  PetscErrorCode (*ff)(void),(*fd)(void);
+  DM dm;
+  PetscErrorCode              (*func)(SNES,Vec,Vec,void*);
+  Vec                         F;
+  void                        *funcctx;
+  ISColoring                  iscoloring;
+  PetscBool                   hascolor;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(color,MAT_FDCOLORING_CLASSID,6);
-  *flag = SAME_NONZERO_PATTERN;
-  ierr  = SNESGetFunction(snes,&f,(PetscErrorCode (**)(SNES,Vec,Vec,void*))&ff,0);CHKERRQ(ierr);
-  ierr  = MatFDColoringGetFunction(color,&fd,PETSC_NULL);CHKERRQ(ierr);
-  if (fd == ff && !snes->vec_rhs) { /* reuse function value computed in SNES */
-    ierr  = MatFDColoringSetF(color,f);CHKERRQ(ierr);
+  if (color) {
+    PetscValidHeaderSpecific(color,MAT_FDCOLORING_CLASSID,6);
+  } else {
+    ierr = PetscObjectQuery((PetscObject)*B,"SNESMatFDColoring",(PetscObject *)&color);CHKERRQ(ierr);
   }
+  *flag = SAME_NONZERO_PATTERN;
+  ierr = SNESGetFunction(snes,&F,&func,&funcctx);
+  if (!color) {
+    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr = DMHasColoring(dm,&hascolor);CHKERRQ(ierr);
+    if (hascolor) {
+      ierr = DMCreateColoring(dm,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringCreate(*B,iscoloring,&color);CHKERRQ(ierr);
+      ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFunction(color,(PetscErrorCode (*)(void))func,funcctx);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFromOptions(color);CHKERRQ(ierr);
+    } else {
+      ierr = MatGetColoring(*B,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringCreate(*B,iscoloring,&color);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFunction(color,(PetscErrorCode (*)(void))func,(void*)funcctx);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFromOptions(color);CHKERRQ(ierr);
+    }
+    ierr = PetscObjectCompose((PetscObject)*B,"SNESMatFDColoring",(PetscObject)color);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)color);CHKERRQ(ierr);
+  }
+  ierr  = MatFDColoringSetF(color,PETSC_NULL);CHKERRQ(ierr);
   ierr  = MatFDColoringApply(*B,color,x1,flag,snes);CHKERRQ(ierr);
   if (*J != *B) {
     ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -51,6 +79,3 @@ PetscErrorCode  SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,M
   }
   PetscFunctionReturn(0);
 }
-
-
-
