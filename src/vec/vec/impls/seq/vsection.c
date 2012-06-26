@@ -531,6 +531,85 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSectionCreateSubsection"
+PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, PetscInt fields[], PetscSection *subs)
+{
+  PetscInt       nF, f, pStart, pEnd, p, maxCdof = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!numFields) PetscFunctionReturn(0);
+  ierr = PetscSectionGetNumFields(s, &nF);CHKERRQ(ierr);
+  if (numFields > nF) SETERRQ2(s->atlasLayout.comm, PETSC_ERR_ARG_WRONG, "Number of requested fields %d greater than number of fields %d", numFields, nF);
+  ierr = PetscSectionCreate(s->atlasLayout.comm, subs);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(*subs, numFields);CHKERRQ(ierr);
+  for(f = 0; f < numFields; ++f) {
+    const char *name;
+    PetscInt    numComp;
+
+    ierr = PetscSectionGetFieldName(s, fields[f], &name);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldName(*subs, f, name);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldComponents(s, fields[f], &numComp);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(*subs, f, numComp);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(*subs, pStart, pEnd);CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    PetscInt dof = 0, cdof = 0, fdof, cfdof;
+
+    for(f = 0; f < numFields; ++f) {
+      ierr = PetscSectionGetFieldDof(s, p, fields[f], &fdof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(*subs, p, f, fdof);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldConstraintDof(s, p, fields[f], &cfdof);CHKERRQ(ierr);
+      if (cfdof) {ierr = PetscSectionSetFieldConstraintDof(*subs, p, f, cfdof);CHKERRQ(ierr);}
+      dof  += fdof;
+      cdof += cfdof;
+    }
+    ierr = PetscSectionSetDof(*subs, p, dof);CHKERRQ(ierr);
+    if (cdof) {ierr = PetscSectionSetConstraintDof(*subs, p, cdof);CHKERRQ(ierr);}
+    maxCdof = PetscMax(cdof, maxCdof);
+  }
+  ierr = PetscSectionSetUp(*subs);CHKERRQ(ierr);
+  if (maxCdof) {
+    PetscInt *indices;
+
+    ierr = PetscMalloc(maxCdof * sizeof(PetscInt), &indices);CHKERRQ(ierr);
+    for(p = pStart; p < pEnd; ++p) {
+      PetscInt cdof;
+
+      ierr = PetscSectionGetConstraintDof(*subs, p, &cdof);CHKERRQ(ierr);
+      if (cdof) {
+        PetscInt *oldIndices;
+        PetscInt  fdof, cfdof, fc, numConst = 0, fOff = 0;
+
+        for(f = 0; f < numFields; ++f) {
+          PetscInt oldFoff = 0, oldf;
+
+          ierr = PetscSectionGetFieldDof(s, p, fields[f], &fdof);CHKERRQ(ierr);
+          ierr = PetscSectionGetFieldConstraintDof(s, p, fields[f], &cfdof);CHKERRQ(ierr);
+          ierr = PetscSectionGetFieldConstraintIndices(s, p, fields[f], &oldIndices);CHKERRQ(ierr);
+          /* This can be sped up if we assume sorted fields */
+          for(oldf = 0; oldf < fields[f]; ++oldf) {
+            PetscInt oldfdof;
+            ierr = PetscSectionGetFieldDof(s, p, oldf, &oldfdof);CHKERRQ(ierr);
+            oldFoff += oldfdof;
+          }
+          for(fc = 0; fc < cfdof; ++fc) {
+            indices[numConst+fc] = oldIndices[fc] + (fOff - oldFoff);
+          }
+          ierr = PetscSectionSetFieldConstraintIndices(*subs, p, f, &indices[numConst]);CHKERRQ(ierr);
+          numConst += cfdof;
+          fOff     += fdof;
+        }
+        ierr = PetscSectionSetConstraintIndices(*subs, p, indices);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscFree(indices);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetPointLayout"
 PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
 {

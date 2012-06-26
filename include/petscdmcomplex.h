@@ -17,7 +17,7 @@
 .seealso:  DM, DMComplexCreate()
 S*/
 PETSC_EXTERN PetscErrorCode DMComplexCreate(MPI_Comm, DM*);
-PETSC_EXTERN PetscErrorCode DMComplexClone(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMComplexClone(DM, DM*);
 PETSC_EXTERN PetscErrorCode DMComplexGetDimension(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexSetDimension(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMComplexGetChart(DM, PetscInt *, PetscInt *);
