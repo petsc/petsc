@@ -302,7 +302,7 @@ PetscErrorCode DMDAVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAComputeCellGeometry_2D"
-PetscErrorCode DMDAComputeCellGeometry_2D(DM dm, const PetscScalar vertices[], const PetscReal refPoint[], PetscReal J[], PetscReal invJ[], PetscScalar *detJ)
+PetscErrorCode DMDAComputeCellGeometry_2D(DM dm, const PetscScalar vertices[], const PetscReal refPoint[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
   const PetscScalar x0   = vertices[0];
   const PetscScalar y0   = vertices[1];
@@ -320,10 +320,13 @@ PetscErrorCode DMDAComputeCellGeometry_2D(DM dm, const PetscScalar vertices[], c
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(PETSC_COMM_SELF, "Cell (%g,%g)--(%g,%g)--(%g,%g)--(%g,%g)\n", x0, y0, x1, y1, x2, y2, x3, y3);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "Ref Point (%g,%g)\n", x, y);CHKERRQ(ierr);
-  J[0] = (x1 - x0 + f_01*y) * 0.5; J[1] = (x3 - x0 + f_01*x) * 0.5;
-  J[2] = (y1 - y0 + g_01*y) * 0.5; J[3] = (y3 - y0 + g_01*x) * 0.5;
+#if defined(PETSC_USE_DEBUG)
+  ierr = PetscPrintf(PETSC_COMM_SELF, "Cell (%g,%g)--(%g,%g)--(%g,%g)--(%g,%g)\n",
+                     PetscRealPart(x0),PetscRealPart(y0),PetscRealPart(y1),PetscRealPart(x2),PetscRealPart(y2),PetscRealPart(x3),PetscRealPart(y3));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "Ref Point (%g,%g)\n", PetscRealPart(x), PetscRealPart(y));CHKERRQ(ierr);
+#endif
+  J[0] = PetscRealPart(x1 - x0 + f_01*y) * 0.5; J[1] = PetscRealPart(x3 - x0 + f_01*x) * 0.5;
+  J[2] = PetscRealPart(y1 - y0 + g_01*y) * 0.5; J[3] = PetscRealPart(y3 - y0 + g_01*x) * 0.5;
   *detJ   = J[0]*J[3] - J[1]*J[2];
   invDet  = 1.0/(*detJ);
   invJ[0] =  invDet*J[3]; invJ[1] = -invDet*J[1];
@@ -349,7 +352,7 @@ PetscErrorCode DMDAComputeCellGeometry(DM dm, PetscInt cell, PetscQuadrature *qu
   ierr = DMDAGetCoordinateDA(dm, &cdm);CHKERRQ(ierr);
   ierr = DMDAVecGetClosure(cdm, PETSC_NULL, coordinates, cell, &vertices);CHKERRQ(ierr);
   for(d = 0; d < dim; ++d) {
-    v0[d] = vertices[d];
+    v0[d] = PetscRealPart(vertices[d]);
   }
   switch(dim) {
   case 2:
