@@ -98,6 +98,12 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
          a contiguous buffer. Then, this buffer is messaged after the MatMult is called.
      */
 #if 0 /* Paul, why did you leave this line commented after writing the note above explaining why it should be called? */
+    /* I couldn't make this version run more efficiently. In theory, I would like to do it this way
+       since the amount of data transfer between GPU and CPU is reduced. However, gather kernels
+       really don't perform very well on the device. Thus, what I do is message (from GPU to CPU) the 
+       smallest contiguous chunk of the vector containing all those elements needing to be MPI-messaged. 
+       I would like to leave this code in here for now ... maybe I'll figure out how to do a better 
+       gather kernel on GPU. */
     ierr = VecCUSPCopySomeToContiguousBufferGPU_Public(x,(PetscCUSPIndices)inctx->spptr);CHKERRQ(ierr);
 #endif
     } else {

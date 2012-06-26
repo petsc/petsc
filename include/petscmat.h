@@ -1800,7 +1800,7 @@ PETSC_EXTERN PetscErrorCode  MatAIJCUSPARSESetGPUStorageFormatForMatSolve(Mat,GP
 #if defined(PETSC_HAVE_CUSP)
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-PETSC_EXTERN PetscErrorCode  MatSetOption_SeqAIJCUSP(Mat,MatOption,PetscBool);
+PETSC_EXTERN PetscErrorCode MatSetOption_SeqAIJCUSP(Mat,MatOption,PetscBool);
 #endif
 
 /* 

@@ -918,6 +918,7 @@ PetscErrorCode  MatCreate_SeqAIJCUSPARSE(Mat B)
     ((Mat_SeqAIJCUSPARSE *)B->spptr)->format = format;
   } else {
     /* NEXT, set the pointers to the triangular factors */
+    B->spptr        = new Mat_SeqAIJCUSPARSETriFactors;
     ((Mat_SeqAIJCUSPARSETriFactors *)B->spptr)->loTriFactorPtr = 0;
     ((Mat_SeqAIJCUSPARSETriFactors *)B->spptr)->upTriFactorPtr = 0;
     ((Mat_SeqAIJCUSPARSETriFactors *)B->spptr)->tempvec = 0;
