@@ -26,6 +26,8 @@ PetscErrorCode  DMDestroy_ADDA(DM dm)
   ierr = PetscFree(dd->refine);CHKERRQ(ierr);
 
   ierr = VecDestroy(&dd->global);CHKERRQ(ierr);
+  /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
+  ierr = PetscFree(dd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -17,7 +17,8 @@ struct Sieve_Label {
 };
 
 typedef struct {
-  PetscInt             dim;   /* Topological mesh dimension */
+  PetscInt             refct;
+  PetscInt             dim;              /* Topological mesh dimension */
 
   /* Sieve */
   PetscSection         coneSection;      /* Layout of cones (inedges for DAG) */
@@ -42,6 +43,5 @@ typedef struct {
   /* Debugging */
   PetscBool               printSetValues;
 } DM_Complex;
-
 
 #endif /* _COMPLEXIMPL_H */
