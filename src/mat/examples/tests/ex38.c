@@ -59,11 +59,16 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  /* Test MatView() */
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = MatComputeExplicitOperator(C,&Cexp);CHKERRQ(ierr);
   ierr = MatView(Cexp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&Cexp);CHKERRQ(ierr);
+
+  /* Test MatMult() */
+
+  /* Test MatMultAdd() */
 
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
