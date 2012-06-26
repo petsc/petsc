@@ -221,7 +221,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
   if (!snes->norm_init_set) {
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FP, "Infinite or not-a-number generated in function evaluation");
+    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_FP, "Infinite or not-a-number generated in function evaluation");
   } else {
     fnorm = snes->norm_init;
     snes->norm_init_set = PETSC_FALSE;
@@ -308,7 +308,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       }
     } else {
 #ifdef PETSC_MISSING_LAPACK_GELSS
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "NGMRES with LS requires the LAPACK GELSS routine.");
+      SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_SUP, "NGMRES with LS requires the LAPACK GELSS routine.");
 #else
     ngmres->m = PetscBLASIntCast(l);
     ngmres->n = PetscBLASIntCast(l);
@@ -346,9 +346,15 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
                  &ngmres->info);
 #endif
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
-    if (ngmres->info < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELSS");
-    if (ngmres->info > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SVD failed to converge");
+    if (ngmres->info < 0) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_LIB,"Bad argument to GELSS");
+    if (ngmres->info > 0) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_LIB,"SVD failed to converge");
 #endif
+    }
+
+    for (i=0;i<l;i++) {
+      if (PetscIsInfOrNanScalar(beta[i])) {
+        SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_LIB,"SVD generated inconsistent output");
+      }
     }
 
     alph_total = 0.;
@@ -409,6 +415,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     } else {
       ierr = VecNorm(FA, NORM_2, &fAnorm);CHKERRQ(ierr);
     }
+    if (PetscIsInfOrNanReal(fAnorm)) SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_FP, "Infinite or not-a-number generated in function evaluation");
     /* combination (additive) or selection (multiplicative) of the N-GMRES solution */
     if (ngmres->select_type == SNES_NGMRES_SELECT_LINESEARCH) {
       /* X = X + \lambda(XA - X) */
