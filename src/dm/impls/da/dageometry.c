@@ -302,7 +302,7 @@ PetscErrorCode DMDAVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAComputeCellGeometry_2D"
-PetscErrorCode DMDAComputeCellGeometry_2D(DM dm, const PetscScalar vertices[], PetscReal refPoint[], PetscReal J[], PetscReal invJ[], PetscScalar *detJ)
+PetscErrorCode DMDAComputeCellGeometry_2D(DM dm, const PetscScalar vertices[], const PetscReal refPoint[], PetscReal J[], PetscReal invJ[], PetscScalar *detJ)
 {
   const PetscScalar x0   = vertices[0];
   const PetscScalar y0   = vertices[1];
