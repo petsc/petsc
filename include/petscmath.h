@@ -79,6 +79,9 @@ typedef complexlib::complex<double> PetscScalar;
 
 #else /* PETSC_CLANGUAGE_CXX */
 
+/*  C support of complex numbers: Requires C99 compliant compiler*/
+#include <complex.h>
+
 #if defined(PETSC_USE_REAL_SINGLE)
 typedef float complex PetscScalar;
 
