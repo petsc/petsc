@@ -160,6 +160,33 @@ static PetscErrorCode MatMultAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatMatMult_Elemental"
+static PetscErrorCode MatMatMult_Elemental(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+{
+  Mat_Elemental *a = (Mat_Elemental*)A->data;
+  Mat_Elemental *b = (Mat_Elemental*)B->data;
+  Mat_Elemental *c = (Mat_Elemental*)(*C)->data;
+  PetscErrorCode ierr;
+  //const PetscScalar *x;
+  //PetscScalar *y;
+  PetscScalar one = 1,zero = 0;
+
+  PetscFunctionBegin;
+  //ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  //ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
+  {                             /* Scoping so that constructor is called before pointer is returned */
+    //elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> xe(A->cmap->N,1,0,x,A->cmap->n,*a->grid);
+    //elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> ye(A->rmap->N,1,0,y,A->rmap->n,*a->grid);
+    elem::Gemm(elem::NORMAL,elem::NORMAL,one,*a->emat,*b->emat,zero,*c->emat);
+  }
+  //ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  //ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
 #define __FUNCT__ "MatGetOwnershipIS_Elemental"
 static PetscErrorCode MatGetOwnershipIS_Elemental(Mat A,IS *rows,IS *cols)
 {
@@ -267,6 +294,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   A->ops->setvalues = MatSetValues_Elemental;
   A->ops->mult      = MatMult_Elemental;
   A->ops->multadd   = MatMultAdd_Elemental;
+  A->ops->matmult   = MatMatMult_Elemental;
 
   A->insertmode = NOT_SET_VALUES;
 
@@ -274,7 +302,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   elem::mpi::Comm cxxcomm(((PetscObject)A)->comm);
   a->grid = new elem::Grid(cxxcomm);
   a->emat = new elem::DistMatrix<PetscScalar>(*a->grid);
-
+ 
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(((PetscObject)A)->comm,1,&A->stash);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetOwnershipIS_C","MatGetOwnershipIS_Elemental",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
