@@ -96,9 +96,10 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
       if (cols[j] < 0) continue;
       P2RO(A,1,cols[j],&crank,&cidx);
       RO2E(A,1,crank,cidx,&ecol);
-    if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_PLIB,"Incorrect col translation");
-      if (erow % grid.MCSize() != grid.MCRank() || ecol % grid.MRSize() != grid.MRRank())
+      if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_PLIB,"Incorrect col translation");
+      if (erow % grid.MCSize() != grid.MCRank() || ecol % grid.MRSize() != grid.MRRank()){
         SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for setting off-process entry (%D,%D), Elemental (%D,%D)",rows[i],cols[j],erow,ecol);
+      }
       elrow = erow / grid.MCSize();
       elcol = ecol / grid.MRSize();
       switch (imode) {
@@ -236,11 +237,22 @@ PetscErrorCode MatSetUp_Elemental(Mat A)
   PetscFunctionReturn(0);
 }
 
+/*MC
+   MATELEMENTAL = "elemental" - A matrix type for dense matrices using the Elemental package
+
+   Options Database Keys:
+. -mat_type elemental - sets the matrix type to "elemental" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MATDENSE,MatCreateElemental()
+M*/
+EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Elemental"
 PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
 {
-  Mat_Elemental   *a;
+  Mat_Elemental  *a;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -270,15 +282,4 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-/*MC
-   MATELEMENTAL = "elemental" - A matrix type for dense matrices using the Elemental package
-
-   Options Database Keys:
-. -mat_type elemental - sets the matrix type to "elemental" during a call to MatSetFromOptions()
-
-  Level: beginner
-
-
-.seealso: MATDENSE,MatCreateElemental()
-M*/
+EXTERN_C_END
