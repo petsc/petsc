@@ -1,6 +1,6 @@
 #!/bin/bash
 export BUILDDIR=$HOME/working/taobuild
-export VERSION=2.0-p3
+export VERSION=2.1-p0
 export REVISION=default
 export HERE=$PWD
 if [ ! -d "$BUILDDIR" ]
@@ -14,8 +14,8 @@ then
     rm -rf tao-$VERSION
 fi
 
-echo "Cloning /home/aotools/hg/tao-2.0 -r $REVISION"
-hg clone /home/aotools/hg/tao-2.0 -r $REVISION tao-$VERSION
+echo "Cloning /home/aotools/hg/tao-2.1 -r $REVISION"
+hg clone /home/aotools/hg/tao-2.1 -r $REVISION tao-$VERSION
 
 cd tao-$VERSION
 export TAO_DIR=$BUILDDIR/tao-$VERSION
