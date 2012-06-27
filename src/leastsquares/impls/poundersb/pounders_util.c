@@ -2,6 +2,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "TaoPounders_formquad"
 /* Calls Matlab version of formquad for error checking in development */
+/* function [Mdir,np,valid,G,H,Mind] = formquad(X,F,delta,xkin,npmax,Pars,vf)*/
 /*
   Given:
     mfqP->delta
@@ -21,19 +22,13 @@
 PetscErrorCode TaoPounders_formquad(TAO_POUNDERS *mfqP,PetscBool checkonly)
 {
   PetscErrorCode ierr;
+  PetscScalar *h;
   PetscInt i,j;
-  PetscReal *v;
-  PetscInt *indices;
-  FILE *outfile,*infile;
-  /* Need to write X,F,delta,xkin,npmax,Pars,vf to file */
+  
+  for (i=0;i<mfqP->nHist;i++) {
+    
 
-  PetscFunctionBegin;
-  ierr = PetscMalloc(mfqP->n*sizeof(PetscInt),&indices);
-  for (i=0;i<mfqP->n;i++) {
-    indices[i] = i;
-  }
-  outfile = fopen("formquad.m","w");
-
+  
   /* Write X */
   fprintf(outfile,"X = [");
   for (i=0;i<mfqP->nHist;i++) {

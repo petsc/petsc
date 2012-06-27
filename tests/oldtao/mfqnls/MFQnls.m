@@ -70,7 +70,7 @@ X(1,:) = X0;
 X(2:n+1,:) = repmat(X(1,:),n,1)+delta*eye(n);
 for nf = 1:n+1
 
-    F(nf,:) = nls_f(X(nf,:))';
+    F(nf,:) = abih_orig_f(X(nf,:))';
 %    F(nf,:) = func(X(nf,:))'
     Fres(nf) = sum(F(nf,:).^2);
 end
@@ -132,7 +132,7 @@ while nf<nfmax
             nf = nf + 1;
             nm = nm+1; % Use to count model numbers for now
             X(nf,:) = X(xkin,:) + delta2*Modeldir;
-            F(nf,:) = nls_f(X(nf,:))';
+            F(nf,:) = abih_orig_f(X(nf,:))';
             Fres(nf) = sum(F(nf,:).^2);
             disp(sprintf('***** %i value of Critical Point: %g',nm,Fres(nf)));
             %disp(sprintf('***** %i value of SP So Point: %g',nm,F(nf-1)));
@@ -141,12 +141,11 @@ while nf<nfmax
 
     % 2. Solve the subproblem min{Q(s): ||s|| <= delta}
         [Xsp,mdec,dum1,dum2] = gqt(Hres,Gres,1,rtol,itmax,ng);
-
-        mdec = -mdec % Correct the sign
+        mdec = -mdec; % Correct the sign
 
     % 3a. Evaluate the function at the new point
     nf = nf + 1;    X(nf,:) = X(xkin,:) + delta*Xsp';   
-    F(nf,:) = nls_f(X(nf,:))';
+    F(nf,:) = abih_orig_f(X(nf,:))';
     Fres(nf) = sum(F(nf,:).^2);
     rho = (Fres(xkin) - Fres(nf))/mdec;
 
@@ -192,7 +191,7 @@ while nf<nfmax
             nm = nm+1; % Use to count model numbers for now
             X(nf,:) = X(xkin,:) + delta*Modeldir;
 %            F(nf,:) = func(X(nf,:))';
-            F(nf,:) = nls_f(X(nf,:))';
+            F(nf,:) = abih_orig_f(X(nf,:))';
             Fres(nf) = sum(F(nf,:).^2);
             %rho
             %disp(sprintf('***** %i value of Model Point: %g',nm,F(nf)));
@@ -210,8 +209,6 @@ while nf<nfmax
 
     % 6a. Compute the next interpolation set.
     [ModelIn,Modeld,Q,R] = AffPoints(X(1:nf,:),eye(n),[],[],xkin,delta,theta1,c1);
-    showq=Q
-    showr=R			 
     if size(ModelIn,1)==n
         valid = true;
     else
@@ -227,7 +224,7 @@ while nf<nfmax
             ModelIn(np+i,1) = nf;
             X(nf,:) = X(xkin,:) + delta*GPoints(i,:);
 %            F(nf,:) = func(X(nf,:))';
-            F(nf,:) = nls_f(X(nf,:))';
+            F(nf,:) = abih_orig_f(X(nf,:))';
             Fres(nf) = sum(F(nf,:).^2);
             disp(sprintf('***** value of Geometry Point: %g',Fres(nf)));
             %**eventually may need to check if we're valid here

@@ -444,8 +444,6 @@ static PetscErrorCode TaoDestroy_POUNDERS(TaoSolver tao)
       ierr = VecDestroy(&mfqP->localfmin);  CHKERRQ(ierr);
   }
 
-
-
   if (tao->data) {
     ierr = PetscFree(tao->data); CHKERRQ(ierr);
   }
