@@ -55,8 +55,8 @@ int main(int argc,char **args)
   ierr = PetscMalloc(nrows*ncols*sizeof *v,&v);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
-      v[i*ncols+j] = (PetscReal)(rank); 
-      //v[i*ncols+j] = (PetscReal)(rank*10000+100*rows[i]+cols[j]); 
+      //v[i*ncols+j] = (PetscReal)(rank); 
+      v[i*ncols+j] = (PetscReal)(rank*10000+100*rows[i]+cols[j]); 
       if (rank==-1) {ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] set (%d, %d, %g)\n",rank,rows[i],cols[j],v[i*ncols+j]);CHKERRQ(ierr);}
     }
   }
@@ -66,20 +66,28 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  // Set unowned matrix entries - not done yet
-  if (rank == size-1) { // select rank == 0!
-    PetscInt M,N;
+  // Test MatView() 
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatComputeExplicitOperator(C,&Cexp);CHKERRQ(ierr);
+  ierr = MatView(Cexp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatDestroy(&Cexp);CHKERRQ(ierr);
+
+  // Set unowned matrix entries - add subdiagonals and diagonals from proc[0]
+  if (rank == 0) { 
+    PetscInt M,N,cols[2];
     ierr = MatGetSize(C,&M,&N);CHKERRQ(ierr);
-    printf("M %d, N %d\n",M,N);
-    i = M-1; j = N-1; //(i,j)-the entry
-    v[0] = 0.5;
-    ierr = MatSetValues(C,1,&i,1,&j,v,ADD_VALUES);CHKERRQ(ierr);
+    for (i=0; i<M; i++){
+      cols[0] = i;   v[0] = i + 0.5;
+      cols[1] = i-1; v[1] = 0.5;
+      if (i) {
+        ierr = MatSetValues(C,1,&i,2,cols,v,ADD_VALUES);CHKERRQ(ierr);
+      } else {
+        ierr = MatSetValues(C,1,&i,1,&i,v,ADD_VALUES);CHKERRQ(ierr);
+      }
+    }
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  // Test MatView() 
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatComputeExplicitOperator(C,&Cexp);CHKERRQ(ierr);
   ierr = MatView(Cexp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 

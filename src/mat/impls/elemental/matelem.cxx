@@ -54,7 +54,7 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  PetscBool iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -79,12 +79,12 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
 {
   PetscErrorCode ierr;
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  PetscMPIInt rank;
-  PetscInt i,j,rrank,ridx,crank,cidx;
-
+  PetscMPIInt    rank;
+  PetscInt       i,j,rrank,ridx,crank,cidx;
+  
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)A)->comm,&rank);CHKERRQ(ierr);
-
+  
   const elem::Grid &grid = a->emat->Grid();
   for (i=0; i<nr; i++) {
     PetscInt erow,ecol,elrow,elcol;
@@ -97,8 +97,12 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
       P2RO(A,1,cols[j],&crank,&cidx);
       RO2E(A,1,crank,cidx,&ecol);
       if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_PLIB,"Incorrect col translation");
-      if (erow % grid.MCSize() != grid.MCRank() || ecol % grid.MRSize() != grid.MRRank()){
-        SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for setting off-process entry (%D,%D), Elemental (%D,%D)",rows[i],cols[j],erow,ecol);
+      if (erow % grid.MCSize() != grid.MCRank() || ecol % grid.MRSize() != grid.MRRank()){ /* off-proc entry */
+        if (imode != ADD_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
+        /* PetscPrintf(PETSC_COMM_SELF,"[%D] add off-proc entry (%D,%D, %g) (%D %D)\n",rank,rows[i],cols[j],*(vals+i*nc),erow,ecol); */
+        a->esubmat->Set(0,0, vals[i*nc+j]);
+        a->interface->Axpy(1.0,*(a->esubmat),erow,ecol); 
+        continue;
       }
       elrow = erow / grid.MCSize();
       elcol = ecol / grid.MRSize();
@@ -116,16 +120,16 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
 #define __FUNCT__ "MatMult_Elemental"
 static PetscErrorCode MatMult_Elemental(Mat A,Vec X,Vec Y)
 {
-  Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  PetscErrorCode ierr;
+  Mat_Elemental     *a = (Mat_Elemental*)A->data;
+  PetscErrorCode    ierr;
   const PetscScalar *x;
-  PetscScalar *y;
-  PetscScalar one = 1,zero = 0;
+  PetscScalar       *y;
+  PetscScalar       one = 1,zero = 0;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  {                             /* Scoping so that constructor is called before pointer is returned */
+  { /* Scoping so that constructor is called before pointer is returned */
     elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> xe(A->cmap->N,1,0,x,A->cmap->n,*a->grid);
     elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> ye(A->rmap->N,1,0,y,A->rmap->n,*a->grid);
     elem::Gemv(elem::NORMAL,one,*a->emat,xe,zero,ye);
@@ -139,17 +143,17 @@ static PetscErrorCode MatMult_Elemental(Mat A,Vec X,Vec Y)
 #define __FUNCT__ "MatMultAdd_Elemental"
 static PetscErrorCode MatMultAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
 {
-  Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  PetscErrorCode ierr;
+  Mat_Elemental     *a = (Mat_Elemental*)A->data;
+  PetscErrorCode    ierr;
   const PetscScalar *x;
-  PetscScalar *z;
-  PetscScalar one = 1;
+  PetscScalar       *z;
+  PetscScalar       one = 1.0;
 
   PetscFunctionBegin;
   if (Y != Z) {ierr = VecCopy(Y,Z);CHKERRQ(ierr);}
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Z,&z);CHKERRQ(ierr);
-  {                             /* Scoping so that constructor is called before pointer is returned */
+  { /* Scoping so that constructor is called before pointer is returned */
     elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> xe(A->cmap->N,1,0,x,A->cmap->n,*a->grid);
     elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> ze(A->rmap->N,1,0,z,A->rmap->n,*a->grid);
     elem::Gemv(elem::NORMAL,one,*a->emat,xe,one,ze);
@@ -166,12 +170,12 @@ static PetscErrorCode MatMatMult_Elemental(Mat A,Mat B,MatReuse scall,PetscReal 
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
   Mat_Elemental  *b = (Mat_Elemental*)B->data;
   Mat_Elemental  *c = (Mat_Elemental*)(*C)->data;
-  PetscErrorCode ierr;
-  PetscScalar    one = 1,zero = 0;
+  PetscScalar    one = 1.0,zero = 0.0;
 
   PetscFunctionBegin;
-  /* Scoping so that constructor is called before pointer is returned */
-  elem::Gemm(elem::NORMAL,elem::NORMAL,one,*a->emat,*b->emat,zero,*c->emat);
+  { /* Scoping so that constructor is called before pointer is returned */
+    elem::Gemm(elem::NORMAL,elem::NORMAL,one,*a->emat,*b->emat,zero,*c->emat);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -181,7 +185,7 @@ static PetscErrorCode MatGetOwnershipIS_Elemental(Mat A,IS *rows,IS *cols)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
   PetscErrorCode ierr;
-  PetscInt i,m,shift,stride,*idx;
+  PetscInt       i,m,shift,stride,*idx;
 
   PetscFunctionBegin;
   if (rows) {
@@ -219,9 +223,11 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  delete a->interface;
+  delete a->esubmat;
   delete a->emat;
   delete a->grid;
-  ierr = MatStashDestroy_Private(&A->stash);CHKERRQ(ierr);
+  /* ierr = MatStashDestroy_Private(&A->stash);CHKERRQ(ierr); */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetOwnershipIS_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -233,7 +239,7 @@ PetscErrorCode MatSetUp_Elemental(Mat A)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
   PetscErrorCode ierr;
-  PetscMPIInt rsize,csize;
+  PetscMPIInt    rsize,csize;
 
   PetscFunctionBegin;
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
@@ -250,6 +256,27 @@ PetscErrorCode MatSetUp_Elemental(Mat A)
   a->mr[1] = A->cmap->N % csize; if (!a->mr[1]) a->mr[1] = csize;
   a->m[0] = A->rmap->N / rsize + (a->mr[0] != rsize);
   a->m[1] = A->cmap->N / csize + (a->mr[1] != csize);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyBegin_Elemental"
+PetscErrorCode MatAssemblyBegin_Elemental(Mat A, MatAssemblyType type)
+{
+  Mat_Elemental  *a = (Mat_Elemental*)A->data;
+
+  PetscFunctionBegin;
+  a->interface->Detach();
+  a->interface->Attach(elem::LOCAL_TO_GLOBAL,*(a->emat));
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_Elemental"
+PetscErrorCode MatAssemblyEnd_Elemental(Mat A, MatAssemblyType type)
+{
+  PetscFunctionBegin;
+  /* Currently does nothing */
   PetscFunctionReturn(0);
 }
 
@@ -277,23 +304,28 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   ierr = PetscNewLog(A,Mat_Elemental,&a);CHKERRQ(ierr);
   A->data = (void*)a;
 
-  A->ops->view      = MatView_Elemental;
-  A->ops->destroy   = MatDestroy_Elemental;
-  A->ops->setup     = MatSetUp_Elemental;
-  A->ops->setvalues = MatSetValues_Elemental;
-  A->ops->mult      = MatMult_Elemental;
-  A->ops->multadd   = MatMultAdd_Elemental;
-  A->ops->matmult   = MatMatMult_Elemental;
+  A->ops->view          = MatView_Elemental;
+  A->ops->destroy       = MatDestroy_Elemental;
+  A->ops->setup         = MatSetUp_Elemental;
+  A->ops->setvalues     = MatSetValues_Elemental;
+  A->ops->mult          = MatMult_Elemental;
+  A->ops->multadd       = MatMultAdd_Elemental;
+  A->ops->matmult       = MatMatMult_Elemental;
+  A->ops->assemblybegin = MatAssemblyBegin_Elemental;
+  A->ops->assemblyend   = MatAssemblyEnd_Elemental;
 
   A->insertmode = NOT_SET_VALUES;
 
   /* Set up the elemental matrix */
   elem::mpi::Comm cxxcomm(((PetscObject)A)->comm);
-  a->grid = new elem::Grid(cxxcomm);
-  a->emat = new elem::DistMatrix<PetscScalar>(*a->grid);
+  a->grid      = new elem::Grid(cxxcomm);
+  a->emat      = new elem::DistMatrix<PetscScalar>(*a->grid);
+  a->esubmat   = new elem::Matrix<PetscScalar>(1,1);
+  a->interface = new elem::AxpyInterface<PetscScalar>;
  
   /* build cache for off array entries formed */
-  ierr = MatStashCreate_Private(((PetscObject)A)->comm,1,&A->stash);CHKERRQ(ierr);
+  a->interface->Attach(elem::LOCAL_TO_GLOBAL,*(a->emat));
+  /* ierr = MatStashCreate_Private(((PetscObject)A)->comm,1,&A->stash);CHKERRQ(ierr); */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetOwnershipIS_C","MatGetOwnershipIS_Elemental",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL);CHKERRQ(ierr);

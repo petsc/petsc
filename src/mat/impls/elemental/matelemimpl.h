@@ -11,6 +11,8 @@ typedef struct {
   PetscInt mr[2];               /* First incomplete/ragged rank of (row) column space */
   elem::Grid *grid;
   elem::DistMatrix<PetscScalar> *emat;
+  elem::Matrix<PetscScalar> *esubmat; /* Used for adding off-proc matrix entries */
+  elem::AxpyInterface<PetscScalar> *interface;
 } Mat_Elemental;
 
 PETSC_STATIC_INLINE void P2RO(Mat A,PetscInt rc,PetscInt p,PetscInt *rank,PetscInt *offset) {
