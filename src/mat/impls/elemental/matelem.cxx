@@ -163,28 +163,17 @@ static PetscErrorCode MatMultAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
 #define __FUNCT__ "MatMatMult_Elemental"
 static PetscErrorCode MatMatMult_Elemental(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
-  Mat_Elemental *a = (Mat_Elemental*)A->data;
-  Mat_Elemental *b = (Mat_Elemental*)B->data;
-  Mat_Elemental *c = (Mat_Elemental*)(*C)->data;
+  Mat_Elemental  *a = (Mat_Elemental*)A->data;
+  Mat_Elemental  *b = (Mat_Elemental*)B->data;
+  Mat_Elemental  *c = (Mat_Elemental*)(*C)->data;
   PetscErrorCode ierr;
-  //const PetscScalar *x;
-  //PetscScalar *y;
-  PetscScalar one = 1,zero = 0;
+  PetscScalar    one = 1,zero = 0;
 
   PetscFunctionBegin;
-  //ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  //ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-  {                             /* Scoping so that constructor is called before pointer is returned */
-    //elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> xe(A->cmap->N,1,0,x,A->cmap->n,*a->grid);
-    //elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> ye(A->rmap->N,1,0,y,A->rmap->n,*a->grid);
-    elem::Gemm(elem::NORMAL,elem::NORMAL,one,*a->emat,*b->emat,zero,*c->emat);
-  }
-  //ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  //ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
+  /* Scoping so that constructor is called before pointer is returned */
+  elem::Gemm(elem::NORMAL,elem::NORMAL,one,*a->emat,*b->emat,zero,*c->emat);
   PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOwnershipIS_Elemental"
