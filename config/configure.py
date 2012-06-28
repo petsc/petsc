@@ -113,6 +113,28 @@ def chkwinf90():
       return 1
   return 0
 
+def chkdosfiles():
+  if not os.path.exists('/usr/bin/cygcheck.exe'): return
+  (status,output) = commands.getstatusoutput('hg showconfig paths.default')
+  if not status and output: return
+  # cygwin - but not a hg clone - so check files in bin dir
+  (status,output) = commands.getstatusoutput('file bin/*')
+  if status:
+    print '==============================================================================='
+    print ' *** Incomplete cygwin install? command "file" not found!                    **'
+    print '==============================================================================='
+    return
+  if output.find('with CRLF line terminators') >= 0:
+    print '==============================================================================='
+    print ' *** Scripts are in DOS mode. Was winzip used instead of tar? Converting.......'
+    print '==============================================================================='
+    (status,output) = commands.getstatusoutput('dos2unix bin/*')
+    if status:
+      print '==============================================================================='
+      print ' *** Incomplete cygwin install? command "dos2unix" not found!                **'
+      print '==============================================================================='
+  return
+
 def chkcygwinlink():
   if os.path.exists('/usr/bin/cygcheck.exe') and os.path.exists('/usr/bin/link.exe') and chkwinf90():
       if '--ignore-cygwin-link' in sys.argv: return 0
@@ -267,6 +289,7 @@ def petsc_configure(configure_options):
   # Threads don't work for cygwin & python...
   chkcygwinpython()
   chkcygwinlink()
+  chkdosfiles()
 
   # Should be run from the toplevel
   configDir = os.path.abspath('config')

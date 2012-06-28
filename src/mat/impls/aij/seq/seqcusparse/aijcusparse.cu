@@ -395,12 +395,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,const MatFactorInfo
   if (row_identity && col_identity) B->ops->solve = MatSolve_SeqAIJCUSPARSE_NaturalOrdering;    
   else                              B->ops->solve = MatSolve_SeqAIJCUSPARSE; 
 
-  // Not sure why this is necessary but somehow the function pointers got reset 
-  A->ops->mult             = MatMult_SeqAIJCUSPARSE;
-  A->ops->multadd          = MatMultAdd_SeqAIJCUSPARSE;
-  A->ops->multtranspose    = MatMultTranspose_SeqAIJCUSPARSE;
-  A->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJCUSPARSE;
-
   //if (!row_identity) printf("Row permutations exist!");
   //if (!col_identity) printf("Col permutations exist!");
 

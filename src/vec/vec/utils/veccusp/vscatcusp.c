@@ -129,10 +129,11 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
 @*/
 PetscErrorCode  VecScatterFinalizeForGPU(VecScatter inctx)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (inctx->spptr)
+  if (inctx->spptr) {
+    PetscErrorCode ierr;
     ierr = VecCUSPResetIndexBuffersFlagsGPU_Public((PetscCUSPIndices)inctx->spptr);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -3779,18 +3779,18 @@ PetscErrorCode MatDuplicate_SeqAIJ_Inode(Mat A,MatDuplicateOption cpvalues,Mat *
     c->inode.node_count = a->inode.node_count;
     ierr                = PetscMemcpy(c->inode.size,a->inode.size,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
     /* note the table of functions below should match that in Mat_CheckInode() */
-    if (!A->factortype) {
-      A->ops->mult              = MatMult_SeqAIJ_Inode;
-      A->ops->sor               = MatSOR_SeqAIJ_Inode;
-      A->ops->multadd           = MatMultAdd_SeqAIJ_Inode;
-      A->ops->getrowij          = MatGetRowIJ_SeqAIJ_Inode;
-      A->ops->restorerowij      = MatRestoreRowIJ_SeqAIJ_Inode;
-      A->ops->getcolumnij       = MatGetColumnIJ_SeqAIJ_Inode;
-      A->ops->restorecolumnij   = MatRestoreColumnIJ_SeqAIJ_Inode;
-      A->ops->coloringpatch     = MatColoringPatch_SeqAIJ_Inode;
-      A->ops->multdiagonalblock = MatMultDiagonalBlock_SeqAIJ_Inode;
+    if (!B->factortype) {
+      B->ops->mult              = MatMult_SeqAIJ_Inode;
+      B->ops->sor               = MatSOR_SeqAIJ_Inode;
+      B->ops->multadd           = MatMultAdd_SeqAIJ_Inode;
+      B->ops->getrowij          = MatGetRowIJ_SeqAIJ_Inode;
+      B->ops->restorerowij      = MatRestoreRowIJ_SeqAIJ_Inode;
+      B->ops->getcolumnij       = MatGetColumnIJ_SeqAIJ_Inode;
+      B->ops->restorecolumnij   = MatRestoreColumnIJ_SeqAIJ_Inode;
+      B->ops->coloringpatch     = MatColoringPatch_SeqAIJ_Inode;
+      B->ops->multdiagonalblock = MatMultDiagonalBlock_SeqAIJ_Inode;
     } else {
-      A->ops->solve             = MatSolve_SeqAIJ_Inode_inplace;
+      B->ops->solve             = MatSolve_SeqAIJ_Inode_inplace;
     }
   } else {
     c->inode.size       = 0;
