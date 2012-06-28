@@ -301,13 +301,13 @@ PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm comm,PetscInt m,PetscInt n,PetscIn
 }
 
 /*MC
-   MATAIJCUSPARSE - MATAIJCUSPARSE = "aijcusparse" - A matrix type to be used for sparse matrices.
+   MATMPIAIJCUSPARSE - MATMPIAIJCUSPARSE = "aijcusparse" - A matrix type to be used for sparse matrices.
 
    This matrix type is identical to MATSEQAIJCUSPARSE when constructed with a single process communicator,
    and MATMPIAIJCUSPARSE otherwise.  As a result, for single process communicators, 
-  MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported 
-  for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.
+   MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported 
+   for communicators controlling multiple processes.  It is recommended that you call both of
+   the above preallocation routines for simplicity.
 
    Options Database Keys:
 . -mat_type mpiaijcusparse - sets the matrix type to "mpiaijcusparse" during a call to MatSetFromOptions()

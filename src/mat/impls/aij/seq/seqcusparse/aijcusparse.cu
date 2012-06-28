@@ -28,6 +28,10 @@ PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat,Vec,Vec);
 PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat,Vec,Vec);
 PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(Mat);
 PetscErrorCode MatCUSPARSEAnalysisAndCopyToGPU(Mat);
+PetscErrorCode MatMult_SeqAIJCUSPARSE(Mat,Vec,Vec);
+PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat,Vec,Vec,Vec);
+PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat,Vec,Vec);
+PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat,Vec,Vec,Vec);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
@@ -50,7 +54,7 @@ EXTERN_C_END
 /*MC
   MATSOLVERCUSPARSE = "cusparse" - A matrix type providing triangular solvers (ILU) for seq matrices 
   on the GPU of type, seqaijcusparse, aijcusparse, or seqaijcusp, aijcusp
-
+5~
   ./configure --download-txpetscgpu to install PETSc to use CUSPARSE solves
 
   Options Database Keys:
@@ -390,6 +394,13 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,const MatFactorInfo
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
   if (row_identity && col_identity) B->ops->solve = MatSolve_SeqAIJCUSPARSE_NaturalOrdering;    
   else                              B->ops->solve = MatSolve_SeqAIJCUSPARSE; 
+
+  // Not sure why this is necessary but somehow the function pointers got reset 
+  A->ops->mult             = MatMult_SeqAIJCUSPARSE;
+  A->ops->multadd          = MatMultAdd_SeqAIJCUSPARSE;
+  A->ops->multtranspose    = MatMultTranspose_SeqAIJCUSPARSE;
+  A->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJCUSPARSE;
+
   //if (!row_identity) printf("Row permutations exist!");
   //if (!col_identity) printf("Col permutations exist!");
 

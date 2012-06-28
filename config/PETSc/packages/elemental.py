@@ -4,9 +4,8 @@ class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
     #self.download   = ['http://elemental.googlecode.com/files/elemental-0.74.tgz']
-    self.download = ['/home/xzhou/temp/elemental-dev-061312.tgz']
+    self.download = ['/home/xzhou/temp/elemental-dev.tgz']
     self.liblist    = [['libelemental.a','libplcg.a','libpmrrr.a']]
-    #self.functions  = ['GaussianElimination']
     self.includes   = ['elemental.hpp']
     self.cxx              = 1
     self.requires32bitint = 0

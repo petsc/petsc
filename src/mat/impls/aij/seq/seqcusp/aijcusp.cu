@@ -46,19 +46,16 @@ PetscErrorCode MatSetOption_SeqAIJCUSP(Mat A,MatOption op,PetscBool  flg)
   case MAT_DIAGBLOCK_CSR:
   case MAT_OFFDIAGBLOCK_CSR:
   case MAT_CSR:
-    //std::cout << "MatSetOption_SeqAIJCUSP : CSR" << std::endl;
     cuspMat->format = CSR;    
     break;
   case MAT_DIAGBLOCK_DIA:
   case MAT_OFFDIAGBLOCK_DIA:
   case MAT_DIA:
-    //std::cout << "MatSetOption_SeqAIJCUSP : DIA" << std::endl;
     cuspMat->format = DIA;    
     break;
   case MAT_DIAGBLOCK_ELL:
   case MAT_OFFDIAGBLOCK_ELL:
   case MAT_ELL:
-    //std::cout << "MatSetOption_SeqAIJCUSP : ELL" << std::endl;
     cuspMat->format = ELL;    
     break;
   case MAT_DIAGBLOCK_HYB:
