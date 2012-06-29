@@ -1263,13 +1263,9 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscScalar *nm)
     }
     work[0] = dpx;
     work[1] = nmx;
-    //printf("VecDotNorm2=%1.5g,%1.5g\n",PetscRealPart(dpx),PetscImaginaryPart(dpx));
-    //printf("VecDotNorm2=%1.5g,%1.5g\n",PetscRealPart(nmx),PetscImaginaryPart(nmx));
     ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
     *dp  = sum[0];
     *nm  = sum[1];
-    //printf("MPI : VecDotNorm2=%1.5g,%1.5g\n",PetscRealPart(*dp),PetscImaginaryPart(*dp));
-    //printf("MPI : VecDotNorm2=%1.5g,%1.5g\n",PetscRealPart(*nm),PetscImaginaryPart(*nm));
 
     ierr = VecRestoreArray(t, &tx);CHKERRQ(ierr);
     ierr = VecRestoreArray(s, &sx);CHKERRQ(ierr);
