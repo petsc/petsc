@@ -307,6 +307,7 @@ PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch,Vec X,Vec Y,Pets
   *changed = PETSC_FALSE;
   if (linesearch->ops->precheckstep) {
     ierr = (*linesearch->ops->precheckstep)(linesearch, X, Y, changed, linesearch->precheckctx);CHKERRQ(ierr);
+    PetscValidLogicalCollectiveBool(linesearch,*changed,4);
   }
   PetscFunctionReturn(0);
 }
@@ -342,6 +343,8 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch,Vec X,Vec Y,Vec
   *changed_W = PETSC_FALSE;
   if (linesearch->ops->postcheckstep) {
     ierr = (*linesearch->ops->postcheckstep)(linesearch,X,Y,W,changed_Y,changed_W,linesearch->postcheckctx);CHKERRQ(ierr);
+    PetscValidLogicalCollectiveBool(linesearch,*changed_Y,5);
+    PetscValidLogicalCollectiveBool(linesearch,*changed_W,6);
   }
   PetscFunctionReturn(0);
 }

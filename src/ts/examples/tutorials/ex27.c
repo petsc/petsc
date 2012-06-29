@@ -326,21 +326,26 @@ PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Ve
   Field          **x;
   SNES           snes;
   DM             da;
+  PetscScalar    min;
 
   PetscFunctionBegin;
+   *changed_w = PETSC_FALSE;
+  ierr = VecMin(X,PETSC_NULL,&min);CHKERRQ(ierr);
+  if (min >= 0.) {
+    PetscFunctionReturn(0);
+  }
+  *changed_w = PETSC_TRUE;
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
-  ierr = SNESGetDM(snes, &da);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
 		     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
   ierr = DMDAVecGetArray(da,W,&x);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       for (l = 0; l < N_SPECIES; l++) {
 	if (x[j][i].sp[l] < 0.) {
 	  x[j][i].sp[l] = 0.;
-	  *changed_w = PETSC_TRUE;
 	}
       }
     }
