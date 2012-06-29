@@ -1197,6 +1197,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
     ierr = MatAssemblyBegin(user->Ones, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(user->Ones, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatCreateLRC(user->DSG,user->Ones,user->Ones,&user->JsBlock); CHKERRQ(ierr);
+    ierr = MatSetUp(user->JsBlock); CHKERRQ(ierr);
   } else {
     /* Create matrix-free shell user->Js for computing (A + h^3*e*e^T)*x */
     ierr = MatCreateShell(PETSC_COMM_WORLD,ysubnlocal,ysubnlocal,user->ndesign,user->ndesign,user,&user->JsBlock); CHKERRQ(ierr);

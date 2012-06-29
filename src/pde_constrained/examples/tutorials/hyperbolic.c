@@ -891,7 +891,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   Vec XX,YY,XXwork,YYwork,yi,uxi,ui,bc;
   PetscReal h,sum;
   PetscScalar hinv,neg_hinv,quarter=0.25,one=1.0,half_hinv,neg_half_hinv;
-  PetscScalar vx,vy;
+  PetscScalar vx,vy,zero=0.0;
   IS is_from_y,is_to_yi,is_from_u,is_to_uxi,is_to_uyi;
 
   PetscFunctionBegin;
@@ -913,8 +913,8 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   ierr = MatCreate(PETSC_COMM_WORLD,&user->Grad); CHKERRQ(ierr);
   ierr = MatSetSizes(user->Grad,PETSC_DECIDE,PETSC_DECIDE,2*n,n); CHKERRQ(ierr);
   ierr = MatSetFromOptions(user->Grad); CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(user->Grad,2,PETSC_NULL,2,PETSC_NULL); CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(user->Grad,2,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(user->Grad,3,PETSC_NULL,3,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(user->Grad,3,PETSC_NULL); CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(user->Grad,&istart,&iend); CHKERRQ(ierr);
 
   for (i=istart; i<iend; i++){
@@ -939,8 +939,8 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   ierr = MatCreate(PETSC_COMM_WORLD,&user->Gradxy[0]); CHKERRQ(ierr);
   ierr = MatSetSizes(user->Gradxy[0],PETSC_DECIDE,PETSC_DECIDE,n,n); CHKERRQ(ierr);
   ierr = MatSetFromOptions(user->Gradxy[0]); CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(user->Gradxy[0],2,PETSC_NULL,2,PETSC_NULL); CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(user->Gradxy[0],2,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(user->Gradxy[0],3,PETSC_NULL,3,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(user->Gradxy[0],3,PETSC_NULL); CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(user->Gradxy[0],&istart,&iend); CHKERRQ(ierr);
   
   for (i=istart; i<iend; i++){
@@ -949,6 +949,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
     ierr = MatSetValues(user->Gradxy[0],1,&i,1,&j,&half_hinv,INSERT_VALUES); CHKERRQ(ierr);
     j = iblock*user->mx + ((i+1) % user->mx);
     ierr = MatSetValues(user->Gradxy[0],1,&i,1,&j,&neg_half_hinv,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(user->Gradxy[0],1,&i,1,&i,&zero,INSERT_VALUES); CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(user->Gradxy[0],MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(user->Gradxy[0],MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -956,8 +957,8 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   ierr = MatCreate(PETSC_COMM_WORLD,&user->Gradxy[1]); CHKERRQ(ierr);
   ierr = MatSetSizes(user->Gradxy[1],PETSC_DECIDE,PETSC_DECIDE,n,n); CHKERRQ(ierr);
   ierr = MatSetFromOptions(user->Gradxy[1]); CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(user->Gradxy[1],2,PETSC_NULL,2,PETSC_NULL); CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(user->Gradxy[1],2,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(user->Gradxy[1],3,PETSC_NULL,3,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(user->Gradxy[1],3,PETSC_NULL); CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(user->Gradxy[1],&istart,&iend); CHKERRQ(ierr);
 
   for (i=istart; i<iend; i++){
@@ -965,6 +966,7 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
     ierr = MatSetValues(user->Gradxy[1],1,&i,1,&j,&half_hinv,INSERT_VALUES); CHKERRQ(ierr);
     j = (j + 2*user->mx) % n;
     ierr = MatSetValues(user->Gradxy[1],1,&i,1,&j,&neg_half_hinv,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(user->Gradxy[1],1,&i,1,&i,&zero,INSERT_VALUES); CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(user->Gradxy[1],MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(user->Gradxy[1],MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
