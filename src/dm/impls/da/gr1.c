@@ -36,6 +36,8 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  ierr = DMDAGetDimension(da, &dim);CHKERRQ(ierr);
   if (xmax <= xmin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %G %G",xmin,xmax);
   if ((ymax <= ymin) && (dim > 1)) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
   if ((zmax <= zmin) && (dim > 2)) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %G %G",zmin,zmax);
