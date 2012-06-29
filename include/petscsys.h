@@ -1639,7 +1639,7 @@ PETSC_EXTERN PetscErrorCode PetscHelpPrintfDefault(MPI_Comm,const char [],...);
 
 #if defined(PETSC_HAVE_POPEN)
 PETSC_EXTERN PetscErrorCode PetscPOpen(MPI_Comm,const char[],const char[],const char[],FILE **);
-PETSC_EXTERN PetscErrorCode PetscPClose(MPI_Comm,FILE*);
+PETSC_EXTERN PetscErrorCode PetscPClose(MPI_Comm,FILE*,PetscInt*);
 #endif
 
 PETSC_EXTERN PetscErrorCode PetscSynchronizedPrintf(MPI_Comm,const char[],...);
