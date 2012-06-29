@@ -274,13 +274,13 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         ierr = DMCreateSubDM(pc->dm, nfields, ifields, &compField, &subdm[i]);CHKERRQ(ierr);
         if (nfields == 1) {
           ierr = PCFieldSplitSetIS(pc, fieldNames[ifields[0]], compField);CHKERRQ(ierr);
-          ierr = PetscPrintf(((PetscObject) pc)->comm, "%s Field Indices:", fieldNames[ifields[0]]);CHKERRQ(ierr);
-          ierr = ISView(compField, PETSC_NULL);CHKERRQ(ierr);
+          /* ierr = PetscPrintf(((PetscObject) pc)->comm, "%s Field Indices:", fieldNames[ifields[0]]);CHKERRQ(ierr);
+             ierr = ISView(compField, PETSC_NULL);CHKERRQ(ierr); */
         } else {
           ierr = PetscSNPrintf(splitname, sizeof splitname, "%D", i);CHKERRQ(ierr);
           ierr = PCFieldSplitSetIS(pc, splitname, compField);CHKERRQ(ierr);
-          ierr = PetscPrintf(((PetscObject) pc)->comm, "%s Field Indices:", splitname);CHKERRQ(ierr);
-          ierr = ISView(compField, PETSC_NULL);CHKERRQ(ierr);
+          /* ierr = PetscPrintf(((PetscObject) pc)->comm, "%s Field Indices:", splitname);CHKERRQ(ierr);
+             ierr = ISView(compField, PETSC_NULL);CHKERRQ(ierr); */
         }
         ierr = ISDestroy(&compField);CHKERRQ(ierr);
         for(j = 0; j < nfields; ++j) {

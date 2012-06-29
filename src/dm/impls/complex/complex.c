@@ -4784,7 +4784,9 @@ PetscErrorCode DMComplexCreateSection(DM dm, PetscInt dim, PetscInt numFields, P
             ierr = PetscSectionGetFieldDof(*section, p, f, &fDof);CHKERRQ(ierr);
             ierr = PetscSectionGetFieldConstraintDof(*section, p, f, &cfDof);CHKERRQ(ierr);
             for(d = 0; d < cfDof; ++d) {
-              indices[numConst+d] = fOff+d;
+              /* Change constraint numbering from absolute local dof number to field relative local dof number */
+              /* indices[numConst+d] = fOff+d; */
+              indices[numConst+d] = d;
             }
             ierr = PetscSectionSetFieldConstraintIndices(*section, p, f, &indices[numConst]);CHKERRQ(ierr);
             numConst += cfDof;
