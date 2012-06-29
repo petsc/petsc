@@ -13,6 +13,7 @@ element method on an unstructured mesh. The weak form equations are
 
   < \nabla v, \nabla u + {\nabla u}^T > - < \nabla\cdot v, p > + < v, f > = 0
   < q, \nabla\cdot v >                                                    = 0
+  < \nabla t, \nabla T>                                                   = q_T
 
 Boundary Conditions:
 
@@ -122,6 +123,7 @@ PetscScalar zero(const PetscReal coords[]) {
 
     -\Delta u + \nabla p + f = <-4, -4> + <1, 1> + <3, 3> = 0
     \nabla \cdot u           = 2x - 2x                    = 0
+    -\Delta T + q_T          = 0
 */
 PetscScalar quadratic_u_2d(const PetscReal x[]) {
   return x[0]*x[0] + x[1]*x[1];
@@ -136,8 +138,7 @@ PetscScalar linear_p_2d(const PetscReal x[]) {
 };
 
 PetscScalar linear_T_2d(const PetscReal x[]) {
-  //return x[0] + x[1];
-  return 10.0;
+  return x[0] + x[1];
 };
 
 /*
@@ -153,6 +154,7 @@ PetscScalar linear_T_2d(const PetscReal x[]) {
 
     -\Delta u + \nabla p + f = <-4, -4> + <1, 1> + <3, 3> = 0
     \nabla \cdot u           = 4(x+1)-4y + 4(y-1)-4x      = 0
+    -\Delta T + q_T          = 0
 */
 PetscScalar quadratic2_u_2d(const PetscReal x[]) {
   PetscReal xp = x[0] + 1.0;
@@ -213,15 +215,16 @@ void f1_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
 void f0_T(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1;
 
-  f0[0] = u[Ncomp] - 10.0;
+  f0[0] = 0.0;
 }
 
 void f1_T(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
-  const PetscInt dim = SPATIAL_DIM_0;
+  const PetscInt dim = SPATIAL_DIM_2;
+  const PetscInt off = SPATIAL_DIM_0*NUM_BASIS_COMPONENTS_0+SPATIAL_DIM_1*NUM_BASIS_COMPONENTS_1;
   PetscInt       d;
 
   for(d = 0; d < dim; ++d) {
-    f1[d] = 0.0;
+    f1[d] = gradU[off+d];
   }
 }
 
@@ -257,6 +260,20 @@ void g2_up(PetscScalar u[], const PetscScalar gradU[], PetscScalar g2[]) {
 void g3_uu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]) {
   const PetscInt dim   = SPATIAL_DIM_0;
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
+  PetscInt       compI, d;
+
+  for(compI = 0; compI < Ncomp; ++compI) {
+    for(d = 0; d < dim; ++d) {
+      g3[((compI*Ncomp+compI)*dim+d)*dim+d] = 1.0;
+    }
+  }
+}
+
+/* < \nabla t, \nabla T + {\nabla u}^T >
+   This just gives \nabla T, give the perdiagonal for the transpose */
+void g3_TT(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]) {
+  const PetscInt dim   = SPATIAL_DIM_2;
+  const PetscInt Ncomp = NUM_BASIS_COMPONENTS_2;
   PetscInt       compI, d;
 
   for(compI = 0; compI < Ncomp; ++compI) {
@@ -488,8 +505,8 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscInt       dim                = user->dim;
   PetscInt       numBC              = 0;
   PetscInt       numComp[NUM_FIELDS] = {NUM_BASIS_COMPONENTS_0, NUM_BASIS_COMPONENTS_1, NUM_BASIS_COMPONENTS_2};
-  PetscInt       bcFields[1]        = {0};
-  IS             bcPoints[1]        = {PETSC_NULL};
+  PetscInt       bcFields[2]        = {0, 2};
+  IS             bcPoints[2]        = {PETSC_NULL, PETSC_NULL};
   PetscInt       numDof[NUM_FIELDS*(SPATIAL_DIM_0+1)];
   PetscInt       f, d;
   PetscErrorCode ierr;
@@ -508,8 +525,10 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
     }
   }
   if (user->bcType == DIRICHLET) {
-    numBC = 1;
+    numBC = 2;
     ierr  = DMComplexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
+    bcPoints[1] = bcPoints[0];
+    ierr  = PetscObjectReference((PetscObject) bcPoints[1]);CHKERRQ(ierr);
   } else if (user->bcType == BC_MANTLE) {
     IS       faces[6];
     PetscInt s, n = 0;
@@ -528,6 +547,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
   if ((user->bcType == DIRICHLET) || (user->bcType == BC_MANTLE)) {
     ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
+    ierr = ISDestroy(&bcPoints[1]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -550,7 +570,7 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
   user->g0Funcs[5] = PETSC_NULL;
   user->g0Funcs[6] = PETSC_NULL;
   user->g0Funcs[7] = PETSC_NULL;
-  user->g0Funcs[8] = g0_TT;
+  user->g0Funcs[8] = PETSC_NULL;
   user->g1Funcs[0] = PETSC_NULL;
   user->g1Funcs[1] = PETSC_NULL;
   user->g1Funcs[2] = PETSC_NULL;
@@ -577,7 +597,7 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
   user->g3Funcs[5] = PETSC_NULL;
   user->g3Funcs[6] = PETSC_NULL;
   user->g3Funcs[7] = PETSC_NULL;
-  user->g3Funcs[8] = PETSC_NULL;
+  user->g3Funcs[8] = g3_TT;      /* < \nabla t, \nabla T + {\nabla T}^T > */
   switch(user->bcType) {
   case DIRICHLET:
     switch(user->dim) {
