@@ -1535,62 +1535,6 @@ PetscErrorCode  VecPlaceArray(Vec vec,const PetscScalar array[])
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode  VecTransplantPlaceArray(Vec x,Vec y)
-{
-  PetscErrorCode ierr;
-  PetscScalar            *x_array;
-  PetscFunctionBegin;
-
-  // Effectively VecGetArray? ... the difference is that we only
-  // do a VecCUSPAllocateCheckHost rather than VecCUSPCopyFromGPU.
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  if (x->petscnative){
-#if defined(PETSC_HAVE_CUSP)
-    if (!*((PetscScalar**)x->data)) {
-      ierr = VecCUSPAllocateCheckHost(x);CHKERRQ(ierr);
-    }
-#endif
-    x_array = *((PetscScalar **)x->data);
-  } else {
-    ierr = (*x->ops->getarray)(x,&x_array);CHKERRQ(ierr);
-  }
-
-  // next, place array
-  ierr = VecPlaceArray(y,x_array);CHKERRQ(ierr);
-
-#if defined(PETSC_HAVE_CUSP)
-  y->valid_GPU_array = x->valid_GPU_array;
-  if (x->spptr)
-    y->spptr = x->spptr;
-#endif
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode  VecTransplantResetArray(Vec x,Vec y)
-{
-  PetscErrorCode ierr;
-  PetscScalar            *y_array;
-  PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUSP)
-  y->valid_GPU_array = x->valid_GPU_array;
-  if (!y->spptr)
-    y->spptr = x->spptr;
-  x->spptr = PETSC_NULL;
-  x->valid_GPU_array = PETSC_CUSP_UNALLOCATED;
-#endif
-
-  ierr = VecResetArray(x);CHKERRQ(ierr);
-
-  // This acts as the VecRestoreArray
-  y_array = *((PetscScalar **)y->data);
-  if (!y->petscnative)
-    ierr = (*y->ops->restorearray)(y,&y_array);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
-  if (&y_array) y_array = PETSC_NULL;
-  PetscFunctionReturn(0);
-}
-
-
 #undef __FUNCT__  
 #define __FUNCT__ "VecReplaceArray"
 /*@C

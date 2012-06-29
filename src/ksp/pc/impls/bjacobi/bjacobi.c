@@ -723,9 +723,7 @@ PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscErrorCode         ierr;
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
-#if !defined(PETSC_HAVE_TXPETSCGPU)
   PetscScalar            *x_array,*y_array;
-#endif
   PetscFunctionBegin;
   /* 
       The VecPlaceArray() is to avoid having to copy the 
@@ -733,33 +731,15 @@ PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
     the bjac->x vector is that we need a sequential vector
     for the sequential solve.
   */
-#ifdef PETSC_HAVE_TXPETSCGPU
-  //This is a temporary solution to avoiding extra copies
-  //on and off the GPUs. This has not been extended to 
-  //MultiBlock or MultiProc case yet.
-  ierr = VecTransplantPlaceArray(x,bjac->x);CHKERRQ(ierr);
-  ierr = VecTransplantPlaceArray(y,bjac->y);CHKERRQ(ierr);
-#else
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr); 
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr); 
-#endif
-
   ierr = KSPSolve(jac->ksp[0],bjac->x,bjac->y);CHKERRQ(ierr); 
-
-#ifdef PETSC_HAVE_TXPETSCGPU
-  //This is a temporary solution to avoiding extra copies
-  //on and off the GPUs. This has not been extended to 
-  //MultiBlock or MultiProc case yet.
-  ierr = VecTransplantResetArray(bjac->x,x);CHKERRQ(ierr);
-  ierr = VecTransplantResetArray(bjac->y,y);CHKERRQ(ierr);
-#else
   ierr = VecResetArray(bjac->x);CHKERRQ(ierr); 
   ierr = VecResetArray(bjac->y);CHKERRQ(ierr); 
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr); 
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr); 
-#endif
   PetscFunctionReturn(0);
 }
 
