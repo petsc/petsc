@@ -1,7 +1,6 @@
 #!/bin/sh
 #
 # This script builds the PETSc tar file distribution
-# It uses the hg rep in triumph:/sandbox/petsc/petsc-dev-dist (or asterix)
 #
 # Usage: builddist petscrepo
 # example usage: builddist /sandbox/petsc/petsc-dist
@@ -13,9 +12,9 @@
 #echo "(2) Set the version number and release date in petscversion.h?"
 #echo "(3) Made sure Fortran include files match C ones?"
 #echo "(4) Latest version of win32fe.exe is copied over into /sandbox/petsc/petsc-dist on login.mcs"
-#echo "(5) Update update-docs.py with additional docs on the www-fp web page (for eg new changes file)"
-#echo "(5) Update version info on all www-fp/petsc web pages"
-#echo "(5) tag the new release with 'hg' and make a new clone for the release"
+#echo "(5) Update update-docs.py with additional docs on the petsc web page (for eg new changes file)"
+#echo "(6) Update version info on all petsc web pages"
+#echo "(7) tag the new release with 'hg' and make a new clone for the release"
 
 # If version specified on the commandline, set the version
 echo "Starting date: `date`"

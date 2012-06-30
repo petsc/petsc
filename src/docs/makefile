@@ -33,7 +33,7 @@ include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
 
-# petscapps* get built with 'builddist' and 'rsync'ed over to www-fp via the crontab
+# petscapps* get built with 'builddist' and 'rsync'ed over to petsc web via the crontab
 bib2html: clean
 	${BIB2HTML} -group tex/doctext/petsc.group -listfile website/publications/petscapps.html -listconfig tex/doctext/petscapp.cfg tex/petscapp.bib -nospecials > website/publications/petscapps-bib.html
 
