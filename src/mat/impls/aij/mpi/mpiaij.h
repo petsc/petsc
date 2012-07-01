@@ -71,6 +71,10 @@ typedef struct {
   void * spptr;
 } Mat_MPIAIJ;
 
+EXTERN_C_BEGIN
+extern PetscErrorCode  MatCreate_MPIAIJ(Mat);
+EXTERN_C_END
+
 extern PetscErrorCode MatSetColoring_MPIAIJ(Mat,ISColoring);
 extern PetscErrorCode MatSetValuesAdic_MPIAIJ(Mat,void*);
 extern PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat,PetscInt,void*);

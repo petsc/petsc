@@ -1,4 +1,7 @@
+#include "petscconf.h"
+PETSC_CUDA_EXTERN_C_BEGIN
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
+PETSC_CUDA_EXTERN_C_END
 #include "mpicusparsematimpl.h"
 
 EXTERN_C_BEGIN
@@ -137,9 +140,6 @@ PetscErrorCode MatMultTranspose_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-PetscErrorCode  MatCreate_MPIAIJ(Mat);
-EXTERN_C_END
 //PetscErrorCode MatSetValuesBatch_MPIAIJCUSPARSE(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats);
 
 

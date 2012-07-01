@@ -1,4 +1,7 @@
+#include "petscconf.h"
+PETSC_CUDA_EXTERN_C_BEGIN
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
+PETSC_CUDA_EXTERN_C_END
 #include "mpicuspmatimpl.h"
 
 EXTERN_C_BEGIN
@@ -110,9 +113,6 @@ PetscErrorCode MatMult_MPIAIJCUSP(Mat A,Vec xx,Vec yy)
 }
 #endif 
 
-EXTERN_C_BEGIN
-PetscErrorCode  MatCreate_MPIAIJ(Mat);
-EXTERN_C_END
 PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats);
 
 #ifdef PETSC_HAVE_TXPETSCGPU
