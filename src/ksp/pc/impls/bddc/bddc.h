@@ -16,6 +16,7 @@ struct _PCBDDCGraph {
   PetscInt ncmps;
   PetscInt *xadj;
   PetscInt *adjncy;
+  PetscInt **neighbours_set;
   PetscInt *where;
   PetscInt *which_dof;
   PetscInt *cptr;
@@ -76,6 +77,7 @@ typedef struct {
   PetscBool     faces_flag;
   PetscBool     edges_flag;
   /* Some customization is possible */
+  PCBDDCGraph                mat_graph;
   PetscBool                  use_nnsp_true;
   PetscInt                   n_ISForDofs;
   IS                         *ISForDofs;
