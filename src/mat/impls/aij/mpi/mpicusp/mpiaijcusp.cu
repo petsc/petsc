@@ -178,20 +178,31 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
 			     "Set the storage format of (mpi)aijcusp gpu matrices for SpMV",
 			     "None",formats,3,formats[0],&idxOffDiag,&flg);CHKERRQ(ierr);
 
-    if (formats[idxDiag] == CSR)
-      diagFormat=MAT_CSR;
-    else if (formats[idxDiag] == DIA)
-      diagFormat=MAT_DIA;
-    else if (formats[idxDiag] == ELL)
-      diagFormat=MAT_ELL;
-
-    if (formats[idxOffDiag] == CSR)
-      offdiagFormat=MAT_CSR;
-    else if (formats[idxOffDiag] == DIA)
-      offdiagFormat=MAT_DIA;
-    else if (formats[idxOffDiag] == ELL)
-      offdiagFormat=MAT_ELL;
-
+    switch (idxDiag)
+      {
+      case 0:
+	diagFormat=MAT_CSR;
+	break;
+      case 2:
+	diagFormat=MAT_DIA;
+	break;
+      case 3:
+	diagFormat=MAT_ELL;
+	break;      
+      }
+    
+    switch (idxOffDiag)
+      {
+      case 0:
+	offdiagFormat=MAT_CSR;
+	break;
+      case 2:
+	offdiagFormat=MAT_DIA;
+	break;
+      case 3:
+	offdiagFormat=MAT_ELL;
+	break;      
+      }
     cuspStruct->diagGPUMatFormat = diagFormat;
     cuspStruct->offdiagGPUMatFormat = offdiagFormat;
   }

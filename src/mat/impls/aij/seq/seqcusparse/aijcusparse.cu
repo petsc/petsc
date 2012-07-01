@@ -163,13 +163,18 @@ PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(Mat A)
     ierr = PetscOptionsEList("-mat_mult_cusparse_storage_format",
 			     "Set the storage format of (seq)aijcusparse gpu matrices for SpMV",
 			     "None",formats,3,formats[0],&idx,&flg);CHKERRQ(ierr);
-    if (formats[idx] == CSR)
-      format=MAT_CSR;
-    else if (formats[idx] == ELL)
-      format=MAT_ELL;
-    else if (formats[idx] == HYB)
-      format=MAT_HYB;
-
+    switch (idx)
+      {	
+      case 0:
+	format=MAT_CSR;
+	break;
+      case 2:
+	format=MAT_ELL;
+	break;
+      case 3:
+	format=MAT_HYB;
+	break;      
+      }
     ierr=MatSetOption_SeqAIJCUSPARSE(A,format,PETSC_TRUE);CHKERRQ(ierr);
   }
   else { 

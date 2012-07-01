@@ -86,12 +86,18 @@ PetscErrorCode MatSetFromOptions_SeqAIJCUSP(Mat A)
 			   "Set the storage format of (seq)aijcusp gpu matrices for SpMV",
 			   "None",formats,3,formats[0],&idx,&flg);CHKERRQ(ierr);
 
-  if (formats[idx] == CSR)
-    format=MAT_CSR;
-  else if (formats[idx] == DIA)
-    format=MAT_DIA;
-  else if (formats[idx] == ELL)
-    format=MAT_ELL;
+  switch (idx)
+    {
+    case 0:
+      format=MAT_CSR;
+      break;
+    case 2:
+      format=MAT_DIA;
+      break;
+    case 3:
+      format=MAT_ELL;
+      break;      
+    }
   ierr=MatSetOption_SeqAIJCUSP(A,format,PETSC_TRUE);CHKERRQ(ierr);
 
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
