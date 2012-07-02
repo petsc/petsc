@@ -180,6 +180,22 @@ static PetscErrorCode MatMatMult_Elemental(Mat A,Mat B,MatReuse scall,PetscReal 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatAXPY_Elemental"
+static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure str)
+{
+  Mat_Elemental  *x = (Mat_Elemental*)X->data;
+  Mat_Elemental  *y = (Mat_Elemental*)Y->data;
+  //PetscScalar    one = 1.0,zero = 0.0;
+
+  PetscFunctionBegin;
+  { /* Scoping so that constructor is called before pointer is returned */
+    std::cout << "elemental::axpy\n";
+    elem::Axpy(a,*x->emat,*y->emat);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatGetOwnershipIS_Elemental"
 static PetscErrorCode MatGetOwnershipIS_Elemental(Mat A,IS *rows,IS *cols)
 {
@@ -313,6 +329,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   A->ops->matmult       = MatMatMult_Elemental;
   A->ops->assemblybegin = MatAssemblyBegin_Elemental;
   A->ops->assemblyend   = MatAssemblyEnd_Elemental;
+  A->ops->axpy          = MatAXPY_Elemental;
 
   A->insertmode = NOT_SET_VALUES;
 

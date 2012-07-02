@@ -56,7 +56,7 @@ int main(int argc,char **args)
     }
   }
   ierr = MatSetValues(C,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = PetscFree(v);CHKERRQ(ierr);
+  //ierr = PetscFree(v);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -90,35 +90,43 @@ int main(int argc,char **args)
   ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
 
   /* Test MatMalMult() */
-  //ierr = MatCreateTranspose(C,&A);CHKERRQ(ierr);
-  //ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  //ierr = MatSetSizes(A,n,p,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  //ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  //ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  /*ierr = PetscMalloc(nrowsa*ncolsa*sizeof *va,&va);CHKERRQ(ierr);
-  for (i=0; i<nrowsa; i++) {
-    for (j=0; j<ncolsa; j++) {
-      //va[i*ncols+j] = (PetscReal)(100000*rank+100*rowsa[i]+colsa[j]);
-      va[i*ncolsa+j] = (PetscReal)(1000*rowsa[i]+colsa[j]);
-    }
-   }*/
-  //ierr = MatSetValues(A,ncolsa,colsa,nrowsa,rowsa,va,INSERT_VALUES);CHKERRQ(ierr);
-  //ierr = PetscFree(va);CHKERRQ(ierr);
-  //ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  //ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  //ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+  /*ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,m,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatMatMult(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
-  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
 
   /* Test MatMultAdd() */
+
+  /* Test MalAXPY() */
+  ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
+  ierr = MatSetUp(B);CHKERRQ(ierr);
+  ierr = MatGetOwnershipIS(B,&isrows,&iscols);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr);
+  ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
+  ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
+  for (i=0; i<nrows; i++) {
+    for (j=0; j<ncols; j++) {
+      v[i*ncols+j] = (PetscReal)(1000*rows[i]+cols[j]);
+    }
+   }
+  ierr = MatSetValues(B,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = PetscFree(v);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatAXPY(B,2.5,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
