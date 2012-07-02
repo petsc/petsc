@@ -232,6 +232,19 @@ static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure s
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatAYPX_Elemental"
+static PetscErrorCode MatAYPX_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure str)
+{
+  Mat_Elemental  *x = (Mat_Elemental*)X->data;
+  Mat_Elemental  *y = (Mat_Elemental*)Y->data;
+  
+  PetscFunctionBegin;
+ 
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "MatGetOwnershipIS_Elemental"
 static PetscErrorCode MatGetOwnershipIS_Elemental(Mat A,IS *rows,IS *cols)
 {
@@ -368,6 +381,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   A->ops->assemblybegin   = MatAssemblyBegin_Elemental;
   A->ops->assemblyend     = MatAssemblyEnd_Elemental;
   A->ops->axpy            = MatAXPY_Elemental;
+  A->ops->aypx            = MatAYPX_Elemental;
 
   A->insertmode = NOT_SET_VALUES;
 

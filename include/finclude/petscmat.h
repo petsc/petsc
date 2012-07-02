@@ -489,6 +489,7 @@
       parameter(MATOP_GET_SUBMATRICES_PARALLEL=128)
       parameter(MATOP_SET_VALUES_BATCH=129)
       parameter(MATOP_SET_BLOCK_SIZES=139)
+      parameter(MATOP_AYPX=140)
 !
 !
 !

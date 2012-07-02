@@ -182,6 +182,9 @@ struct _MatOps {
   PetscErrorCode (*rart)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*rartsymbolic)(Mat,Mat,PetscReal,Mat*); /* double dispatch wrapper routine */
   PetscErrorCode (*rartnumeric)(Mat,Mat,Mat);             /* double dispatch wrapper routine */
+  /*139*/
+  PetscErrorCode (*setblocksizes)(Mat,PetscInt,PetscInt);
+  PetscErrorCode (*aypx)(Mat,PetscScalar,Mat,MatStructure);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

@@ -1613,7 +1613,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_RARt=136,
                MATOP_RARt_SYMBOLIC=137,
                MATOP_RARt_NUMERIC=138,
-               MATOP_SET_BLOCK_SIZES=139
+               MATOP_SET_BLOCK_SIZES=139,
+               MATOP_AYPX=140
              } MatOperation;
 PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));
