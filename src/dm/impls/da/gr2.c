@@ -270,42 +270,78 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 {
   DM             dm;
   DM_DA          *da;
-  hsize_t        dim,dims[5];
-  hsize_t        count[5];
-  hsize_t        offset[5];
-  PetscInt       cnt = 0;
-  PetscScalar    *x;
-  const char     *vecname;
-  hid_t          filespace; /* file dataspace identifier */
-  hid_t	         plist_id;  /* property list identifier */
-  hid_t          dset_id;   /* dataset identifier */
-  hid_t          memspace;  /* memory dataspace identifier */
-  hid_t             scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
+  hid_t          filespace;  /* file dataspace identifier */
+  hid_t          chunkspace; /* chunk dataset property identifier */
+  hid_t	         plist_id;   /* property list identifier */
+  hid_t          dset_id;    /* dataset identifier */
+  hid_t          memspace;   /* memory dataspace identifier */
   hid_t          file_id;
   hid_t          group;
+  hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   herr_t         status;
-  PetscInt          timestep;
+  hsize_t        i, dim;
+  hsize_t        maxDims[6], dims[6], chunkDims[6], count[6], offset[6];
+  PetscInt       timestep;
+  PetscScalar    *x;
+  const char     *vecname;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
-  //ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
 
   ierr = PetscObjectQuery((PetscObject)xin,"DM",(PetscObject*)&dm);CHKERRQ(ierr);
   if (!dm) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
   da = (DM_DA*)dm->data;
 
-  /* Create the dataspace for the dataset */
-  dim       = PetscHDF5IntCast(da->dim + ((da->w == 1) ? 0 : 1));
-  if (da->dim == 3) dims[cnt++]   = PetscHDF5IntCast(da->P);
-  if (da->dim > 1)  dims[cnt++]   = PetscHDF5IntCast(da->N);
-  dims[cnt++]   = PetscHDF5IntCast(da->M);
-  if (da->w > 1) dims[cnt++] = PetscHDF5IntCast(da->w);
+  /* Create the dataspace for the dataset.
+   *
+   * dims - holds the current dimensions of the dataset
+   *
+   * maxDims - holds the maximum dimensions of the dataset (unlimited
+   * for the number of time steps with the current dimensions for the
+   * other dimensions; so only additional time steps can be added).
+   *
+   * chunkDims - holds the size of a single time step (required to
+   * permit extending dataset).
+   */
+  dim = 0;
+  if (timestep >= 0) {
+    dims[dim]      = timestep+1;
+    maxDims[dim]   = H5S_UNLIMITED;
+    chunkDims[dim] = 1;
+    ++dim;
+  }
+  if (da->dim == 3) {
+    dims[dim]      = PetscHDF5IntCast(da->P);
+    maxDims[dim]   = dims[dim];
+    chunkDims[dim] = dims[dim];
+    ++dim;
+  }
+  if (da->dim > 1) {
+    dims[dim]      = PetscHDF5IntCast(da->N);
+    maxDims[dim]   = dims[dim];
+    chunkDims[dim] = dims[dim];
+    ++dim;
+  }
+  dims[dim]    = PetscHDF5IntCast(da->M);
+  maxDims[dim]   = dims[dim];
+  chunkDims[dim] = dims[dim];
+  ++dim;
+  if (da->w > 1) {
+    dims[dim]      = PetscHDF5IntCast(da->w);
+    maxDims[dim]   = dims[dim];
+    chunkDims[dim] = dims[dim];
+    ++dim;
+  }
 #if defined(PETSC_USE_COMPLEX)
-  dim++;
-  dims[cnt++] = 2;
+    dims[dim]      = 2;
+    maxDims[dim]   = dims[dim];
+    chunkDims[dim] = dims[dim];
+    ++dim;
 #endif
-  filespace = H5Screate_simple(dim, dims, NULL); 
+  for (i=0; i < dim; ++i)
+  filespace = H5Screate_simple(dim, dims, maxDims); 
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -319,8 +355,13 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   /* Create the dataset with default properties and close filespace */
   ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
   if (!H5Lexists(group, vecname, H5P_DEFAULT)) {
+    /* Create chunk */
+    chunkspace = H5Pcreate(H5P_DATASET_CREATE);
+    if (chunkspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Pcreate()");
+    status = H5Pset_chunk(chunkspace, dim, chunkDims); CHKERRQ(status);
+    
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-    dset_id = H5Dcreate2(group, vecname, scalartype, filespace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    dset_id = H5Dcreate2(group, vecname, scalartype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT);
 #else
     dset_id = H5Dcreate(group, vecname, scalartype, filespace, H5P_DEFAULT);
 #endif
@@ -332,25 +373,32 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   status = H5Sclose(filespace);CHKERRQ(status);
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
-  cnt = 0; 
-  if (da->dim == 3) offset[cnt++] = PetscHDF5IntCast(da->zs);
-  if (da->dim > 1)  offset[cnt++] = PetscHDF5IntCast(da->ys);
-  offset[cnt++] = PetscHDF5IntCast(da->xs/da->w);
-  if (da->w > 1) offset[cnt++] = 0;
+  dim = 0; 
+  if (timestep >= 0) {
+    offset[dim] = timestep;
+    ++dim;
+  }
+  if (da->dim == 3) offset[dim++] = PetscHDF5IntCast(da->zs);
+  if (da->dim > 1)  offset[dim++] = PetscHDF5IntCast(da->ys);
+  offset[dim++] = PetscHDF5IntCast(da->xs/da->w);
+  if (da->w > 1) offset[dim++] = 0;
 #if defined(PETSC_USE_COMPLEX)
-  offset[cnt++] = 0;
+  offset[dim++] = 0;
 #endif
-  cnt = 0; 
-  if (da->dim == 3) count[cnt++] = PetscHDF5IntCast(da->ze - da->zs);
-  if (da->dim > 1)  count[cnt++] = PetscHDF5IntCast(da->ye - da->ys);
-  count[cnt++] = PetscHDF5IntCast((da->xe - da->xs)/da->w);
-  if (da->w > 1) count[cnt++] = PetscHDF5IntCast(da->w);
+  dim = 0; 
+  if (timestep >= 0) {
+    count[dim] = 1;
+    ++dim;
+  }
+  if (da->dim == 3) count[dim++] = PetscHDF5IntCast(da->ze - da->zs);
+  if (da->dim > 1)  count[dim++] = PetscHDF5IntCast(da->ye - da->ys);
+  count[dim++] = PetscHDF5IntCast((da->xe - da->xs)/da->w);
+  if (da->w > 1) count[dim++] = PetscHDF5IntCast(da->w);
 #if defined(PETSC_USE_COMPLEX)
-  count[cnt++] = 2;
+  count[dim++] = 2;
 #endif
   memspace = H5Screate_simple(dim, count, NULL);
   if (memspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
-
 
   filespace = H5Dget_space(dset_id);
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dget_space()");
