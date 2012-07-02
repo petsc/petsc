@@ -135,6 +135,7 @@ cdef extern from * nogil:
     int VecStrideNorm(PetscVec,PetscInt,PetscNormType,PetscReal*)
 
     int VecGhostGetLocalForm(PetscVec,PetscVec*)
+    int VecGhostRestoreLocalForm(PetscVec,PetscVec*)
     int VecGhostUpdateBegin(PetscVec,PetscInsertMode,PetscScatterMode)
     int VecGhostUpdateEnd(PetscVec,PetscInsertMode,PetscScatterMode)
     int VecMPISetGhost(PetscVec,PetscInt,const_PetscInt*)

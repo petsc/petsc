@@ -676,10 +676,28 @@ cdef class Vec(Object):
 
     # --- methods for vectors with ghost values ---
 
-    def getLocalForm(self):
-        cdef Vec vec = Vec()
-        CHKERR( VecGhostGetLocalForm(self.vec, &vec.vec) )
-        return vec
+    def localForm(self):
+        '''
+        Intended for use in context manager
+            with vec.localForm() as lf:
+                use(lf)
+        '''
+        class VecLocalForm(Object):
+            "Context manager for 'with' statement (PEP 343)"
+            def __init__(self, Vec gvec not None):
+                self.gvec = gvec
+            def __enter__(self):
+                cdef Vec lvec = Vec()
+                cdef Vec gvec = self.gvec
+                CHKERR( VecGhostGetLocalForm(gvec.vec, &lvec.vec) )
+                self.lvec = lvec
+                PetscINCREF(lvec.obj)
+                return lvec
+            def __exit__(self, *exc):
+                cdef Vec gvec = self.gvec
+                cdef Vec lvec = self.lvec
+                CHKERR( VecGhostRestoreLocalForm(gvec.vec, &lvec.vec) )
+        return VecLocalForm(self)
 
     def ghostUpdateBegin(self, addv=None, mode=None):
         cdef PetscInsertMode  caddv = insertmode(addv)
