@@ -697,6 +697,12 @@ cdef class Vec(Object):
         CHKERR( VecGhostUpdateBegin(self.vec, caddv, csctm) )
         CHKERR( VecGhostUpdateEnd(self.vec, caddv, csctm) )
 
+    def setMPIGhost(self, ghosts):
+        "Alternative to createGhost()"
+        cdef PetscInt ng, *ig=NULL
+        ghosts = iarray_i(ghosts, &ng, &ig)
+        CHKERR( VecMPISetGhost(self.vec, ng, ig) )
+
     #
 
     property sizes:
