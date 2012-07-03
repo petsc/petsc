@@ -158,18 +158,17 @@ static PetscErrorCode createLevel( const PC pc,
   
   /* get number of PEs to make active 'new_npe', reduce, can be any integer 1-P */
   {
-    PetscInt ncrs_eq_glob,ncrs_eq_ave;
+    PetscInt ncrs_eq_glob;
     ierr = MatGetSize( Cmat, &ncrs_eq_glob, PETSC_NULL );  CHKERRQ(ierr);
-    ncrs_eq_ave = ncrs_eq_glob/npe;
-    new_npe = (PetscMPIInt)((float)ncrs_eq_ave/(float)min_eq_proc + 0.5); /* hardwire min. number of eq/proc */
-    if( new_npe == 0 || ncrs_eq_ave < coarse_max ) new_npe = 1; 
+    new_npe = (PetscMPIInt)((float)ncrs_eq_glob/(float)min_eq_proc + 0.5); /* hardwire min. number of eq/proc */
+    if( new_npe == 0 || ncrs_eq_glob < coarse_max ) new_npe = 1; 
     else if ( new_npe >= nactive ) new_npe = nactive; /* no change, rare */
     if( isLast ) new_npe = 1;
   }
 
   if( !repart && new_npe==nactive ) { 
     *a_Amat_crs = Cmat; /* output - no repartitioning or reduction - could bail here */
-    }
+  }
   else {
     const PetscInt *idx,ndata_rows=pc_gamg->data_cell_rows,ndata_cols=pc_gamg->data_cell_cols,node_data_sz=ndata_rows*ndata_cols;
     PetscInt       *counts,*newproc_idx,ii,jj,kk,strideNew,*tidx,ncrs_prim_new,ncrs_eq_new,nloc_old;
