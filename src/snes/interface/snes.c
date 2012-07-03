@@ -654,6 +654,15 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
       ierr = PetscInfo(snes,"Setting default finite difference Jacobian matrix\n");CHKERRQ(ierr);
     }
 
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsBool("-snes_fd_color","Use finite differences with coloring to compute Jacobian","SNESDefaultComputeJacobianColor",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    if (flg) {
+      void *functx;
+      ierr = SNESGetFunction(snes,PETSC_NULL,PETSC_NULL,&functx);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESDefaultComputeJacobianColor,functx);CHKERRQ(ierr);
+      ierr = PetscInfo(snes,"Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
+    }
+
     mf = mf_operator = PETSC_FALSE;
     flg = PETSC_FALSE;
     ierr = PetscOptionsBool("-snes_mf_operator","Use a Matrix-Free Jacobian with user-provided preconditioner matrix","MatCreateSNESMF",PETSC_FALSE,&mf_operator,&flg);CHKERRQ(ierr);
