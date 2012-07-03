@@ -26,8 +26,6 @@ class Configure(PETSc.package.NewPackage):
     import os
     if not self.cmake.found:
       raise RuntimeError('CMake 2.8.5 or above is needed to build Elemental')
-    #print 'self.installDir = ', self.installDir
-    #print 'self.packageDir = ', self.packageDir
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
     args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
     args.append('-DMATH_LIBS:STRING="'+self.libraries.toString(self.blasLapack.dlib)+'"')
@@ -35,13 +33,13 @@ class Configure(PETSc.package.NewPackage):
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
     cflags = self.setCompilers.getCompilerFlags()
-    #args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
+    args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     self.framework.popLanguage()
 
     self.framework.pushLanguage('Cxx')
     args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
     cxxflags = self.setCompilers.getCompilerFlags()
-    #args.append('-DCMAKE_CXX_FLAGS:STRING="'+cxxflags+'"')
+    args.append('-DCMAKE_CXX_FLAGS:STRING="'+cxxflags+'"')
     self.framework.popLanguage()
 
 
@@ -56,7 +54,7 @@ class Configure(PETSc.package.NewPackage):
     args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
     cxxflags = self.setCompilers.getCompilerFlags()
     args.append('-DCMAKE_CXX_FLAGS:STRING="'+cxxflags+'"')
-    self.framework.popLanguage()
+    self.framework.popLanguage()"""
 
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
@@ -64,12 +62,14 @@ class Configure(PETSc.package.NewPackage):
       fcflags = self.setCompilers.getCompilerFlags()
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+fcflags+'"')
       self.framework.popLanguage()
+    else:
+      args.append('-DBUILD_PMRRR=OFF')
     """
     #if self.sharedLibraries.useShared:
       #args.append('-DSHARED=1')
 
     #if self.compilerFlags.debugging:
-      #args.append('-DDEBUG=1')
+      #args.append('-DDEBUG=1')"""
 
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'elemental'), 'w')

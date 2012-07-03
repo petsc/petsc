@@ -360,6 +360,7 @@
       PetscEnum MATOP_GET_SUBMATRICES_PARALLEL
       PetscEnum MATOP_SET_VALUES_BATCH
       PetscEnum MATOP_SET_BLOCK_SIZES
+      PetscEnum MATOP_AYPX
 
       parameter(MATOP_SET_VALUES=0)
       parameter(MATOP_GET_ROW=1)
@@ -489,6 +490,7 @@
       parameter(MATOP_GET_SUBMATRICES_PARALLEL=128)
       parameter(MATOP_SET_VALUES_BATCH=129)
       parameter(MATOP_SET_BLOCK_SIZES=139)
+      parameter(MATOP_AYPX=140)
 !
 !
 !

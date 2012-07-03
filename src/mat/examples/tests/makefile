@@ -1029,6 +1029,12 @@ runex38_2:
 	-@${MPIEXEC} -n 6 ./ex38 -mat_type elemental -m 2 -n 2 > ex38_2.tmp 2>&1;   \
 	   ${DIFF} output/ex38_2.out ex38_2.tmp || printf "${PWD}\nPossible problem with with ex38_2, diffs above \n========================================="; \
 	   ${RM} -f ex38_2.tmp
+runex38_3:
+	-@${MPIEXEC} -n 6 ./ex38 -mat_type elemental -m 2 -n 2 -test_matmatmult > ex38_2.tmp 2>&1;   \
+	   ${DIFF} output/ex38_2.out ex38_2.tmp || printf "${PWD}\nPossible problem with with ex38_3, diffs above \n========================================="; \
+	   ${RM} -f ex38_2.tmp
+
+
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex40:
 	-@${MPIEXEC} -n 3 ./ex40 -f ${DATAFILESPATH}/matrices/arco1 -nd 7 -ov 2 > ex40_1.tmp 2>&1; \

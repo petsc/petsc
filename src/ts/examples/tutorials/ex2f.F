@@ -76,7 +76,7 @@
       TS               ts
       Vec              u
       Mat              A
-      PetscBool        flg,monitor
+      PetscBool        flg,fdjac,monitor
       PetscErrorCode ierr
       PetscInt  time_steps_max,i1,steps
       PetscReal dt,time_total_max,ftime,norm
@@ -103,9 +103,10 @@
       m              = 60
       debug          = .false.
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',M,flg,ierr)
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-debug',debug,ierr)
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-monitor',monitor,       &
-     &                         ierr)
+      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-debug',debug,flg, &
+     &     ierr)
+      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-monitor',monitor, &
+     &                         flg,ierr)
       one_d0  = 1.0d0
       two_d0  = 2.0d0
       four_d0 = 4.0d0
@@ -119,7 +120,7 @@
 !  Set up the ghost point communication pattern.  There are m total
 !  grid values spread equally among all the processors.
       i1 = 1
-      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m,i1,i1,                &
+      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m,i1,i1,    &
      &     PETSC_NULL_INTEGER,da,ierr)
 
 !  Extract global and local vectors from DMDA; then duplicate for remaining
@@ -166,8 +167,10 @@
       call MatSetFromOptions(A,ierr)
       call MatSetUp(A,ierr)
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-fdjac',flg,ierr)
-      if (flg) then
+      fdjac = PETSC_FALSE
+      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-fdjac',fdjac,flg, &
+     &     ierr)
+      if (fdjac) then
          call SetCRoutineFromFortran(ts,A,A,ierr)
       else
          call TSSetRHSJacobian(ts,A,A,RHSJacobian,PETSC_NULL_OBJECT,    &

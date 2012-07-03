@@ -164,20 +164,85 @@ static PetscErrorCode MatMultAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMult_Elemental"
-static PetscErrorCode MatMatMult_Elemental(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatMatMultNumeric_Elemental"
+static PetscErrorCode MatMatMultNumeric_Elemental(Mat A,Mat B,Mat C)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
   Mat_Elemental  *b = (Mat_Elemental*)B->data;
-  Mat_Elemental  *c = (Mat_Elemental*)(*C)->data;
+  Mat_Elemental  *c = (Mat_Elemental*)C->data;
   PetscScalar    one = 1.0,zero = 0.0;
 
   PetscFunctionBegin;
   { /* Scoping so that constructor is called before pointer is returned */
     elem::Gemm(elem::NORMAL,elem::NORMAL,one,*a->emat,*b->emat,zero,*c->emat);
   }
+  C->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultSymbolic_Elemental"
+static PetscErrorCode MatMatMultSymbolic_Elemental(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+  Mat            Ce;
+  MPI_Comm       comm=((PetscObject)A)->comm;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(comm,&Ce);CHKERRQ(ierr);
+  ierr = MatSetSizes(Ce,A->rmap->n,B->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(Ce,MATELEMENTAL);CHKERRQ(ierr);
+  ierr = MatSetUp(Ce);CHKERRQ(ierr);
+  *C = Ce;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMult_Elemental"
+static PetscErrorCode MatMatMult_Elemental(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+    ierr = MatMatMultSymbolic_Elemental(A,B,1.0,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);   
+  }
+  ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); 
+  ierr = MatMatMultNumeric_Elemental(A,B,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAXPY_Elemental"
+static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure str)
+{
+  Mat_Elemental  *x = (Mat_Elemental*)X->data;
+  Mat_Elemental  *y = (Mat_Elemental*)Y->data;
+  //PetscScalar    one = 1.0,zero = 0.0;
+
+  PetscFunctionBegin;
+  { /* Scoping so that constructor is called before pointer is returned */
+    std::cout << "elemental::axpy\n";
+    elem::Axpy(a,*x->emat,*y->emat);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAYPX_Elemental"
+static PetscErrorCode MatAYPX_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure str)
+{
+  Mat_Elemental  *x = (Mat_Elemental*)X->data;
+  Mat_Elemental  *y = (Mat_Elemental*)Y->data;
+  
+  PetscFunctionBegin;
+ 
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOwnershipIS_Elemental"
@@ -304,15 +369,19 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   ierr = PetscNewLog(A,Mat_Elemental,&a);CHKERRQ(ierr);
   A->data = (void*)a;
 
-  A->ops->view          = MatView_Elemental;
-  A->ops->destroy       = MatDestroy_Elemental;
-  A->ops->setup         = MatSetUp_Elemental;
-  A->ops->setvalues     = MatSetValues_Elemental;
-  A->ops->mult          = MatMult_Elemental;
-  A->ops->multadd       = MatMultAdd_Elemental;
-  A->ops->matmult       = MatMatMult_Elemental;
-  A->ops->assemblybegin = MatAssemblyBegin_Elemental;
-  A->ops->assemblyend   = MatAssemblyEnd_Elemental;
+  A->ops->view            = MatView_Elemental;
+  A->ops->destroy         = MatDestroy_Elemental;
+  A->ops->setup           = MatSetUp_Elemental;
+  A->ops->setvalues       = MatSetValues_Elemental;
+  A->ops->mult            = MatMult_Elemental;
+  A->ops->multadd         = MatMultAdd_Elemental;
+  A->ops->matmult         = MatMatMult_Elemental;
+  A->ops->matmultsymbolic = MatMatMultSymbolic_Elemental;
+  A->ops->matmultnumeric  = MatMatMultNumeric_Elemental;
+  A->ops->assemblybegin   = MatAssemblyBegin_Elemental;
+  A->ops->assemblyend     = MatAssemblyEnd_Elemental;
+  A->ops->axpy            = MatAXPY_Elemental;
+  A->ops->aypx            = MatAYPX_Elemental;
 
   A->insertmode = NOT_SET_VALUES;
 
