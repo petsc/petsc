@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatSetValues().\n\n"; 
+static char help[] = "Tests Elemental interface.\n\n"; 
 
 #include <petscmat.h>
 
@@ -23,8 +23,8 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   n = m;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  p = n;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
+  /*p = n;
+   ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);*/
 
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -90,7 +90,7 @@ int main(int argc,char **args)
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
 
-  /* Test MatAXPY() */
+  /* Test MatAXPY() and MatAYPX() */
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);
@@ -106,13 +106,14 @@ int main(int argc,char **args)
     }
    }
   ierr = MatSetValues(B,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
-  
   ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatAXPY(B,2.5,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatAYPX(B,3.75,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);

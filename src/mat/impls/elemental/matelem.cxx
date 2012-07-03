@@ -216,30 +216,29 @@ static PetscErrorCode MatMatMult_Elemental(Mat A,Mat B,MatReuse scall,PetscReal 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatAXPY_Elemental"
-static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure str)
+#define __FUNCT__ "MatScale_Elemental"
+static PetscErrorCode MatScale_Elemental(Mat X,PetscScalar a)
 {
   Mat_Elemental  *x = (Mat_Elemental*)X->data;
-  Mat_Elemental  *y = (Mat_Elemental*)Y->data;
-  //PetscScalar    one = 1.0,zero = 0.0;
 
   PetscFunctionBegin;
   { /* Scoping so that constructor is called before pointer is returned */
-    std::cout << "elemental::axpy\n";
-    elem::Axpy(a,*x->emat,*y->emat);
+    elem::Scal(a,*x->emat);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatAYPX_Elemental"
-static PetscErrorCode MatAYPX_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure str)
+#define __FUNCT__ "MatAXPY_Elemental"
+static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   Mat_Elemental  *x = (Mat_Elemental*)X->data;
   Mat_Elemental  *y = (Mat_Elemental*)Y->data;
-  
+
   PetscFunctionBegin;
- 
+  { /* Scoping so that constructor is called before pointer is returned */
+    elem::Axpy(a,*x->emat,*y->emat);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -401,8 +400,8 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   A->ops->matmultnumeric  = MatMatMultNumeric_Elemental;
   A->ops->assemblybegin   = MatAssemblyBegin_Elemental;
   A->ops->assemblyend     = MatAssemblyEnd_Elemental;
+  A->ops->scale           = MatScale_Elemental;
   A->ops->axpy            = MatAXPY_Elemental;
-  A->ops->aypx            = MatAYPX_Elemental;
   A->ops->lufactor        = MatLUFactor_Elemental;
   A->ops->matsolve        = MatMatSolve_Elemental;
 
