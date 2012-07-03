@@ -257,9 +257,11 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
 #define __FUNCT__ "MatLUFactor_Elemental"
 static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorInfo *info)
 {
+  Mat_Elemental  *a = (Mat_Elemental*)A->data;
+
   PetscFunctionBegin;
   printf("MatLUFactor_Elemental is called...\n");
-  // elem::LU
+  elem::LU(*a->emat,*a->pivot);
   PetscFunctionReturn(0);
 }
 
@@ -413,6 +415,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   a->emat      = new elem::DistMatrix<PetscScalar>(*a->grid);
   a->esubmat   = new elem::Matrix<PetscScalar>(1,1);
   a->interface = new elem::AxpyInterface<PetscScalar>;
+  a->pivot     = new elem::DistMatrix<PetscInt,elem::VC,elem::STAR>;
  
   /* build cache for off array entries formed */
   a->interface->Attach(elem::LOCAL_TO_GLOBAL,*(a->emat));
