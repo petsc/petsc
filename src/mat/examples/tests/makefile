@@ -669,10 +669,6 @@ ex170: ex170.o chkopts
 	-${CLINKER} -o ex170 ex170.o ${PETSC_MAT_LIB}
 	${RM} ex170.o
 
-GaussianElimination: GaussianElimination.o chkopts
-	-${CLINKER} -o GaussianElimination GaussianElimination.o ${PETSC_MAT_LIB}
-	${RM} GaussianElimination.o
-
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B

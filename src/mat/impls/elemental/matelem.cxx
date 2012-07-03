@@ -243,6 +243,27 @@ static PetscErrorCode MatAYPX_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure s
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMatSolve_Elemental"
+static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
+{
+  PetscFunctionBegin;
+  printf("MatMatSolve_Elemental is called...\n");
+  if (X != B) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_IDN,"X and B must be same matrices");
+  // elem::GuassianElimination
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatLUFactor_Elemental"
+static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorInfo *info)
+{
+  PetscFunctionBegin;
+  printf("MatLUFactor_Elemental is called...\n");
+  // elem::LU
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOwnershipIS_Elemental"
@@ -382,6 +403,8 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   A->ops->assemblyend     = MatAssemblyEnd_Elemental;
   A->ops->axpy            = MatAXPY_Elemental;
   A->ops->aypx            = MatAYPX_Elemental;
+  A->ops->lufactor        = MatLUFactor_Elemental;
+  A->ops->matsolve        = MatMatSolve_Elemental;
 
   A->insertmode = NOT_SET_VALUES;
 
