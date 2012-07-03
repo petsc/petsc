@@ -500,6 +500,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
 .  -snes_monitor_solution_update - plots update to solution at each iteration
 .  -snes_monitor_draw - plots residual norm at each iteration
 .  -snes_fd - use finite differences to compute Jacobian; very slow, only for testing
+.  -snes_fd_color - use finite differences with coloring to compute Jacobian
 .  -snes_mf_ksp_monitor - if using matrix-free multiply then print h at each KSP iteration
 -  -snes_converged_reason - print the reason for convergence/divergence after each solve
 
