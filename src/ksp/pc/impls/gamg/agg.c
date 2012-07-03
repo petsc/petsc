@@ -1361,7 +1361,7 @@ PetscErrorCode PCGAMGOptprol_AGG( PC pc,
     ierr = VecReciprocal( diag );         CHKERRQ(ierr);
     ierr = MatDiagonalScale( tMat, diag, 0 ); CHKERRQ(ierr);
     ierr = VecDestroy( &diag );           CHKERRQ(ierr);
-    alpha = -1.5/emax;
+    alpha = -1.4/emax;
     ierr = MatAYPX( tMat, alpha, Prol, SUBSET_NONZERO_PATTERN );           CHKERRQ(ierr);
     ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
     Prol = tMat;

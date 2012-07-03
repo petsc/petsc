@@ -965,7 +965,8 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
           ierr = MatGetSize( Aarr[level], &N1, PETSC_NULL );         CHKERRQ(ierr);
           ierr = MatGetSize( Aarr[level+1], &N0, PETSC_NULL );       CHKERRQ(ierr);
           /* heuristic - is this crap? */
-          emin = 1.*emax/((PetscReal)N1/(PetscReal)N0); 
+          /* emin = 1.*emax/((PetscReal)N1/(PetscReal)N0); */
+	  emin = emax/20.;
           emax *= 1.05;
         }
         ierr = KSPChebyshevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
