@@ -51,7 +51,7 @@ PetscMPIInt Petsc_OuterComm_keyval = MPI_KEYVAL_INVALID;
 const char *PetscBools[]     = {"FALSE","TRUE","PetscBool","PETSC_",0};
 const char *PetscCopyModes[] = {"COPY_VALUES","OWN_POINTER","USE_POINTER","PetscCopyMode","PETSC_",0};
 const char *PetscDataTypes[] = {"INT","DOUBLE","COMPLEX","LONG","SHORT","FLOAT",
-                                "CHAR","LOGICAL","ENUM","BOOL","LONGDOUBLE","PetscDataType","PETSC_",0};
+                                "CHAR","LOGICAL","ENUM","BOOL","LONGDOUBLE","OBJECT","PetscDataType","PETSC_",0};
 
 PetscBool  PetscPreLoadingUsed = PETSC_FALSE;
 PetscBool  PetscPreLoadingOn   = PETSC_FALSE;

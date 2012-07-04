@@ -234,7 +234,7 @@ static const char *PetscErrorStrings[] = {
           "Write to file failed",
           "Invalid pointer",
   /*69 */ "Arguments must have same type",
-          "",
+  /*70 */ "Attempt to use a pointer that does not point to a valid accessible location",
   /*71 */ "Detected zero pivot in LU factorization:\nsee http://www.mcs.anl.gov/petsc/documentation/faq.html#ZeroPivot",
   /*72 */ "Floating point exception",
   /*73 */ "Object is in wrong state",

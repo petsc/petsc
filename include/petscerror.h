@@ -53,6 +53,7 @@
 #define PETSC_ERR_CONV_FAILED      82   /* iterative method (KSP or SNES) failed */
 #define PETSC_ERR_USER             83   /* user has not provided needed function */
 #define PETSC_ERR_SYS              88   /* error in system call */
+#define PETSC_ERR_POINTER          70   /* pointer does not point to valid address */
 
 #define PETSC_ERR_ARG_SIZ          60   /* nonconforming object sizes used in operation */
 #define PETSC_ERR_ARG_IDN          61   /* two arguments not allowed to be the same */

@@ -156,6 +156,80 @@ PETSC_EXTERN PetscErrorCode PetscHeaderDestroy_Private(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject,PetscObject);
 
 /* ---------------------------------------------------------------------------------------*/
+#if defined(PETSC_HAVE_SETJMP_H)
+#include <signal.h>
+#include <setjmp.h>
+extern jmp_buf PetscSegvJumpBuf;
+extern void PetscSegv_sigaction(int, siginfo_t*, void *);
+/*@
+     PetscCheckPointer - Returns PETSC_TRUE if a pointer points to accessible data
+
+   Not Collective
+
+   Input Parameters:
++     ptr - the pointer
+-     dtype - the type of data the pointer is suppose to point to
+
+@*/
+PETSC_STATIC_INLINE PetscBool PetscCheckPointer(void *ptr,PetscDataType dtype)
+{
+  struct sigaction sa,oldsa;
+
+  if (!ptr) return PETSC_FALSE;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_sigaction = PetscSegv_sigaction;
+  sa.sa_flags   = SA_SIGINFO;
+  sigaction(SIGSEGV, &sa, &oldsa);
+
+  if (setjmp(PetscSegvJumpBuf)) {
+    /* A segv was triggered in the code below hence we return with an error code */
+    sigaction(SIGSEGV, &oldsa, PETSC_NULL);/* reset old signal hanlder */
+    return PETSC_FALSE;
+  } else {
+    switch (dtype) {
+    case PETSC_INT:{
+      PETSC_UNUSED PetscInt x = *(PetscInt*)ptr;
+      break;
+    }
+    case PETSC_SCALAR:{
+      PETSC_UNUSED PetscScalar x = *(PetscScalar*)ptr;
+      break;
+    }
+#if defined(PETSC_USE_COMPLEX)
+    case PETSC_REAL:{
+      PETSC_UNUSED PetscReal x = *(PetscReal*)ptr;
+      break;
+    }
+#endif
+    case PETSC_BOOL:{
+      PETSC_UNUSED PetscBool x = *(PetscBool*)ptr;
+      break;
+    }
+    case PETSC_ENUM:{
+      PETSC_UNUSED PetscEnum x = *(PetscEnum*)ptr;
+      break;
+    }
+    case PETSC_CHAR:{
+      PETSC_UNUSED char *x = *(char**)ptr;
+      break;
+    }
+    case PETSC_OBJECT:{
+      PETSC_UNUSED PetscClassId classid = ((PetscObject)ptr)->classid;
+      break;
+    }
+    default:;
+    }
+  }
+  sigaction(SIGSEGV, &oldsa, PETSC_NULL); /* reset old signal hanlder */
+  return PETSC_TRUE;
+}
+#else
+PETSC_STATIC_INLINE PetscBool PetscCheckPointer(void *ptr,PetscDataType dtype)
+{
+  if (!ptr) return PETSC_FALSE;
+  return PETSC_TRUE;
+}
+#endif
 
 #if !defined(PETSC_USE_DEBUG)
 

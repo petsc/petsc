@@ -85,7 +85,7 @@ class Configure(config.base.Configure):
     self.libraries.headerPrefix  = self.headerPrefix
     self.blaslapack.headerPrefix = self.headerPrefix
     self.mpi.headerPrefix        = self.headerPrefix
-    headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
+    headersC = map(lambda name: name+'.h', ['setjmp','dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'unistd', 'sys/sysinfo', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib','memory',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',

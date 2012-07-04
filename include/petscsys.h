@@ -1099,7 +1099,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
 
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2, PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
-              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10} PetscDataType;
+              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10,PETSC_OBJECT = 11} PetscDataType;
 PETSC_EXTERN const char *PetscDataTypes[];
 
 #if defined(PETSC_USE_COMPLEX)
