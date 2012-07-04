@@ -474,3 +474,26 @@ cdef class _Vec_buffer:
                         typestr=typestr)
 
 # --------------------------------------------------------------------
+
+cdef class _Vec_LocalForm:
+
+    "Context manager for `Vec` local form"
+
+    cdef Vec gvec
+    cdef Vec lvec
+
+    def __init__(self, Vec gvec not None):
+        self.gvec = gvec
+        self.lvec = Vec()
+
+    def __enter__(self):
+        cdef PetscVec gvec = self.gvec.vec
+        CHKERR( VecGhostGetLocalForm(gvec, &self.lvec.vec) )
+        return self.lvec
+
+    def __exit__(self, *exc):
+        cdef PetscVec gvec = self.gvec.vec
+        CHKERR( VecGhostRestoreLocalForm(gvec, &self.lvec.vec) )
+        self.lvec.vec = NULL
+
+# --------------------------------------------------------------------
