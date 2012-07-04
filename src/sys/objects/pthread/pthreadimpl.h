@@ -19,9 +19,6 @@
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
-#if defined(PETSC_HAVE_VALGRIND)
-#include <valgrind/valgrind.h>
-#endif
 #if defined(PETSC_HAVE_SYS_SYSCTL_H)
 #include <sys/sysctl.h>
 #endif

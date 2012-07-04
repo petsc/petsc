@@ -175,7 +175,9 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(void *ptr,PetscDataType dtype)
 {
   struct sigaction sa,oldsa;
 
+  if (PETSC_RUNNING_ON_VALGRIND) return PETSC_TRUE;
   if (!ptr) return PETSC_FALSE;
+
   sigemptyset(&sa.sa_mask);
   sa.sa_sigaction = PetscSegv_sigaction;
   sa.sa_flags   = SA_SIGINFO;

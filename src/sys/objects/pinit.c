@@ -8,12 +8,6 @@
 #if defined(PETSC_HAVE_CUSP)
 #include <cublas.h>
 #endif
-#if defined(PETSC_HAVE_VALGRIND)
-#  include <valgrind/valgrind.h>
-#  define PETSC_RUNNING_ON_VALGRIND RUNNING_ON_VALGRIND
-#else
-#  define PETSC_RUNNING_ON_VALGRIND PETSC_FALSE
-#endif
 
 #include <petscthreadcomm.h>
 

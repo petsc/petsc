@@ -198,10 +198,6 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_VALGRIND)
-#include <valgrind/valgrind.h>
-#endif
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLSym"
 /*@C
@@ -283,13 +279,9 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
 #endif
       }
 #if defined(PETSC_HAVE_DLERROR)
-#if defined(PETSC_HAVE_VALGRIND)
-      if (!(RUNNING_ON_VALGRIND)) {
-#endif
+      if (!(PETSC_RUNNING_ON_VALGRIND)) {
         dlerror(); /* clear any previous error; valgrind does not like this */
-#if defined(PETSC_HAVE_VALGRIND)
       }
-#endif
 #endif
       /* Attempt to open the main executable as a dynamic library. */
 #if defined(PETSC_HAVE_RTDL_DEFAULT)
