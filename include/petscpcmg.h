@@ -27,7 +27,7 @@
 
 E*/
 typedef enum { PC_MG_MULTIPLICATIVE,PC_MG_ADDITIVE,PC_MG_FULL,PC_MG_KASKADE } PCMGType;
-PETSC_EXTERN const char *PCMGTypes[];
+PETSC_EXTERN const char *const PCMGTypes[];
 #define PC_MG_CASCADE PC_MG_KASKADE;
 
 /*E
@@ -43,7 +43,7 @@ PETSC_EXTERN const char *PCMGTypes[];
 
 E*/
 typedef enum { PC_MG_CYCLE_V = 1,PC_MG_CYCLE_W = 2 } PCMGCycleType;
-PETSC_EXTERN const char *PCMGCycleTypes[];
+PETSC_EXTERN const char *const PCMGCycleTypes[];
 
 PETSC_EXTERN PetscErrorCode PCMGSetType(PC,PCMGType);
 PETSC_EXTERN PetscErrorCode PCMGSetLevels(PC,PetscInt,MPI_Comm*);
@@ -85,7 +85,7 @@ PETSC_EXTERN PetscErrorCode PCMGDefaultResidual(Mat,Vec,Vec,Vec);
 .seealso: PCExoticSetType(), PCEXOTIC
 E*/ 
 typedef enum { PC_EXOTIC_FACE,PC_EXOTIC_WIREBASKET } PCExoticType;
-PETSC_EXTERN const char *PCExoticTypes[];
+PETSC_EXTERN const char *const PCExoticTypes[];
 PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);
 
 

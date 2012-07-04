@@ -677,13 +677,13 @@ typedef enum {
   SNES_NGMRES_RESTART_NONE       = 0,
   SNES_NGMRES_RESTART_PERIODIC   = 1,
   SNES_NGMRES_RESTART_DIFFERENCE = 2} SNESNGMRESRestartType;
-PETSC_EXTERN const char *SNESNGMRESRestartTypes[];
+PETSC_EXTERN const char *const SNESNGMRESRestartTypes[];
 
 typedef enum {
   SNES_NGMRES_SELECT_NONE       = 0,
   SNES_NGMRES_SELECT_DIFFERENCE = 1,
   SNES_NGMRES_SELECT_LINESEARCH = 2} SNESNGMRESSelectType;
-PETSC_EXTERN const char *SNESNGMRESSelectTypes[];
+PETSC_EXTERN const char *const SNESNGMRESSelectTypes[];
 
 PETSC_EXTERN PetscErrorCode SNESNGMRESSetRestartType(SNES, SNESNGMRESRestartType);
 PETSC_EXTERN PetscErrorCode SNESNGMRESSetSelectType(SNES, SNESNGMRESSelectType);
@@ -696,7 +696,7 @@ typedef enum {
   SNES_NCG_HS    = 2,
   SNES_NCG_DY    = 3,
   SNES_NCG_CD    = 4} SNESNCGType;
-PETSC_EXTERN const char *SNESNCGTypes[];
+PETSC_EXTERN const char *const SNESNCGTypes[];
 
 PETSC_EXTERN PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
 
@@ -704,16 +704,16 @@ PETSC_EXTERN PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
 
 typedef enum {SNES_QN_SEQUENTIAL = 0,
               SNES_QN_COMPOSED   = 1} SNESQNCompositionType;
-PETSC_EXTERN const char *SNESQNCompositionTypes[];
+PETSC_EXTERN const char *const SNESQNCompositionTypes[];
 typedef enum {SNES_QN_SCALE_NONE       = 0,
               SNES_QN_SCALE_SHANNO     = 1,
               SNES_QN_SCALE_LINESEARCH = 2,
               SNES_QN_SCALE_JACOBIAN   = 3} SNESQNScaleType;
-PETSC_EXTERN const char *SNESQNScaleTypes[];
+PETSC_EXTERN const char *const SNESQNScaleTypes[];
 typedef enum {SNES_QN_RESTART_NONE     = 0,
               SNES_QN_RESTART_POWELL   = 1,
               SNES_QN_RESTART_PERIODIC = 2} SNESQNRestartType;
-PETSC_EXTERN const char *SNESQNRestartTypes[];
+PETSC_EXTERN const char *const SNESQNRestartTypes[];
 
 PETSC_EXTERN PetscErrorCode SNESQNSetCompositionType(SNES, SNESQNCompositionType);
 PETSC_EXTERN PetscErrorCode SNESQNSetScaleType(SNES, SNESQNScaleType);

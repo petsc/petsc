@@ -1,8 +1,8 @@
 #include <../src/snes/impls/ngmres/snesngmres.h> /*I "petscsnes.h" I*/
 #include <petscblaslapack.h>
 
-const char *SNESNGMRESRestartTypes[] = {"NONE","PERIODIC","DIFFERENCE","SNESNGMRESRestartType","SNES_NGMRES_RESTART_",0};
-const char *SNESNGMRESSelectTypes[] = {"NONE","DIFFERENCE","LINESEARCH","SNESNGMRESSelectType","SNES_NGMRES_SELECT_",0};
+const char *const SNESNGMRESRestartTypes[] = {"NONE","PERIODIC","DIFFERENCE","SNESNGMRESRestartType","SNES_NGMRES_RESTART_",0};
+const char *const SNESNGMRESSelectTypes[] = {"NONE","DIFFERENCE","LINESEARCH","SNESNGMRESSelectType","SNES_NGMRES_SELECT_",0};
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESReset_NGMRES"

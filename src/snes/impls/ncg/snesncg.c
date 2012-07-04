@@ -1,5 +1,5 @@
 #include <../src/snes/impls/ncg/snesncgimpl.h> /*I "petscsnes.h" I*/
-const char         *SNESNCGTypes[] = {"FR","PRP","HS","DY","CD","SNESNCGType","SNES_NCG_",0};
+const char *const SNESNCGTypes[] = {"FR","PRP","HS","DY","CD","SNESNCGType","SNES_NCG_",0};
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESReset_NCG"

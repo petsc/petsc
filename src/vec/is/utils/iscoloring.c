@@ -1,7 +1,7 @@
 
 #include <petscis.h>    /*I "petscis.h"  I*/
 
-const char *ISColoringTypes[] = {"global","ghosted","ISColoringType","IS_COLORING_",0};
+const char *const ISColoringTypes[] = {"global","ghosted","ISColoringType","IS_COLORING_",0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISColoringDestroy"

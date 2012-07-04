@@ -42,9 +42,9 @@ PetscMPIInt Petsc_OuterComm_keyval = MPI_KEYVAL_INVALID;
 /*
      Declare and set all the string names of the PETSc enums
 */
-const char *PetscBools[]     = {"FALSE","TRUE","PetscBool","PETSC_",0};
-const char *PetscCopyModes[] = {"COPY_VALUES","OWN_POINTER","USE_POINTER","PetscCopyMode","PETSC_",0};
-const char *PetscDataTypes[] = {"INT","DOUBLE","COMPLEX","LONG","SHORT","FLOAT",
+const char *const PetscBools[]     = {"FALSE","TRUE","PetscBool","PETSC_",0};
+const char *const PetscCopyModes[] = {"COPY_VALUES","OWN_POINTER","USE_POINTER","PetscCopyMode","PETSC_",0};
+const char *const PetscDataTypes[] = {"INT","DOUBLE","COMPLEX","LONG","SHORT","FLOAT",
                                 "CHAR","LOGICAL","ENUM","BOOL","LONGDOUBLE","OBJECT","PetscDataType","PETSC_",0};
 
 PetscBool  PetscPreLoadingUsed = PETSC_FALSE;

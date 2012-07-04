@@ -95,7 +95,7 @@ PETSC_EXTERN PetscClassId PC_CLASSID;
 E*/
 typedef enum { PC_SIDE_DEFAULT=-1,PC_LEFT,PC_RIGHT,PC_SYMMETRIC} PCSide;
 #define PC_SIDE_MAX (PC_SYMMETRIC + 1)
-PETSC_EXTERN const char *PCSides[];
+PETSC_EXTERN const char *const PCSides[];
 
 PETSC_EXTERN PetscErrorCode PCCreate(MPI_Comm,PC*);
 PETSC_EXTERN PetscErrorCode PCSetType(PC,const PCType);
@@ -291,7 +291,7 @@ $                        Not very good.
 .seealso: PCASMSetType()
 E*/
 typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0} PCASMType;
-PETSC_EXTERN const char *PCASMTypes[];
+PETSC_EXTERN const char *const PCASMTypes[];
 
 PETSC_EXTERN PetscErrorCode PCASMSetType(PC,PCASMType);
 PETSC_EXTERN PetscErrorCode PCASMCreateSubdomains(Mat,PetscInt,IS*[]);
@@ -329,7 +329,7 @@ $                        Not very good.
 .seealso: PCGASMSetType()
 E*/
 typedef enum {PC_GASM_BASIC = 3,PC_GASM_RESTRICT = 1,PC_GASM_INTERPOLATE = 2,PC_GASM_NONE = 0} PCGASMType;
-PETSC_EXTERN const char *PCGASMTypes[];
+PETSC_EXTERN const char *const PCGASMTypes[];
 
 PETSC_EXTERN PetscErrorCode PCGASMSetSubdomains(PC,PetscInt,IS[],IS[]);
 PETSC_EXTERN PetscErrorCode PCGASMSetTotalSubdomains(PC,PetscInt,PetscBool);
@@ -360,7 +360,7 @@ $                         alpha I + R
 .seealso: PCCompositeSetType()
 E*/
 typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE,PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE,PC_COMPOSITE_SPECIAL,PC_COMPOSITE_SCHUR} PCCompositeType;
-PETSC_EXTERN const char *PCCompositeTypes[];
+PETSC_EXTERN const char *const PCCompositeTypes[];
 
 PETSC_EXTERN PetscErrorCode PCCompositeSetUseTrue(PC);
 PETSC_EXTERN PetscErrorCode PCCompositeSetType(PC,PCCompositeType);
@@ -452,7 +452,7 @@ PETSC_EXTERN PetscErrorCode PCAINVCUSPSetLinParameter(PC,PetscInt);
 .seealso: PCPARMSSetGlobal()
 E*/
 typedef enum {PC_PARMS_GLOBAL_RAS,PC_PARMS_GLOBAL_SCHUR,PC_PARMS_GLOBAL_BJ} PCPARMSGlobalType;
-PETSC_EXTERN const char *PCPARMSGlobalTypes[];
+PETSC_EXTERN const char *const PCPARMSGlobalTypes[];
 /*E
     PCPARMSLocalType - Determines the local preconditioner method in PARMS
 
@@ -461,7 +461,7 @@ PETSC_EXTERN const char *PCPARMSGlobalTypes[];
 .seealso: PCPARMSSetLocal()
 E*/
 typedef enum {PC_PARMS_LOCAL_ILU0,PC_PARMS_LOCAL_ILUK,PC_PARMS_LOCAL_ILUT,PC_PARMS_LOCAL_ARMS} PCPARMSLocalType;
-PETSC_EXTERN const char *PCPARMSLocalTypes[];
+PETSC_EXTERN const char *const PCPARMSLocalTypes[];
 
 PETSC_EXTERN PetscErrorCode PCPARMSSetGlobal(PC pc,PCPARMSGlobalType type);
 PETSC_EXTERN PetscErrorCode PCPARMSSetLocal(PC pc,PCPARMSLocalType type);

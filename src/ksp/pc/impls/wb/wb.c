@@ -10,7 +10,7 @@ typedef struct {
   KSP          ksp;
 } PC_Exotic;
 
-const char *PCExoticTypes[] = {"face","wirebasket","PCExoticType","PC_Exotic",0};
+const char *const PCExoticTypes[] = {"face","wirebasket","PCExoticType","PC_Exotic",0};
 
 
 #undef __FUNCT__  

@@ -355,7 +355,7 @@ M*/
 
 E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
-PETSC_EXTERN const char *PetscBools[];
+PETSC_EXTERN const char *const PetscBools[];
 
 /*E
     PetscCopyMode  - Determines how an array passed to certain functions is copied or retained
@@ -370,7 +370,7 @@ $   PETSC_USE_POINTER - the array values are NOT copied, the object uses the arr
 
 E*/
 typedef enum { PETSC_COPY_VALUES, PETSC_OWN_POINTER, PETSC_USE_POINTER} PetscCopyMode;
-PETSC_EXTERN const char *PetscCopyModes[];
+PETSC_EXTERN const char *const PetscCopyModes[];
 
 /*MC
     PETSC_FALSE - False value of PetscBool 
@@ -1100,7 +1100,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2, PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
               PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10,PETSC_OBJECT = 11} PetscDataType;
-PETSC_EXTERN const char *PetscDataTypes[];
+PETSC_EXTERN const char *const PetscDataTypes[];
 
 #if defined(PETSC_USE_COMPLEX)
 #define  PETSC_SCALAR  PETSC_COMPLEX
@@ -2431,7 +2431,7 @@ struct _n_PetscSubcomm {
 };
 
 typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_INTERLACED=2} PetscSubcommType;
-PETSC_EXTERN const char *PetscSubcommTypes[];
+PETSC_EXTERN const char *const PetscSubcommTypes[];
 
 PETSC_EXTERN PetscErrorCode PetscSubcommCreate(MPI_Comm,PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommDestroy(PetscSubcomm*);

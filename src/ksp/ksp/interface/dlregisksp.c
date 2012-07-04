@@ -3,12 +3,12 @@
 #include <petsc-private/kspimpl.h>
 
 
-const char *PCSides[]          = {"LEFT","RIGHT","SYMMETRIC","PCSide","PC_",0};
-const char *PCASMTypes[]       = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",0};
-const char *PCGASMTypes[]       = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCGASMType","PC_GASM_",0};
-const char *PCCompositeTypes[] = {"ADDITIVE","MULTIPLICATIVE","SYMMETRIC_MULTIPLICATIVE","SPECIAL","SCHUR","PCCompositeType","PC_COMPOSITE",0};
-const char *PCPARMSGlobalTypes[] = {"RAS","SCHUR","BJ","PCPARMSGlobalType","PC_PARMS_",0};
-const char *PCPARMSLocalTypes[]  = {"ILU0","ILUK","ILUT","ARMS","PCPARMSLocalType","PC_PARMS_",0};
+const char *const PCSides[]          = {"LEFT","RIGHT","SYMMETRIC","PCSide","PC_",0};
+const char *const PCASMTypes[]       = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",0};
+const char *const PCGASMTypes[]       = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCGASMType","PC_GASM_",0};
+const char *const PCCompositeTypes[] = {"ADDITIVE","MULTIPLICATIVE","SYMMETRIC_MULTIPLICATIVE","SPECIAL","SCHUR","PCCompositeType","PC_COMPOSITE",0};
+const char *const PCPARMSGlobalTypes[] = {"RAS","SCHUR","BJ","PCPARMSGlobalType","PC_PARMS_",0};
+const char *const PCPARMSLocalTypes[]  = {"ILU0","ILUK","ILUT","ARMS","PCPARMSLocalType","PC_PARMS_",0};
 
 static PetscBool  PCPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
@@ -91,11 +91,11 @@ PetscErrorCode  PCInitializePackage(const char path[])
   PetscFunctionReturn(0);
 }
 
-const char *KSPCGTypes[]                  = {"SYMMETRIC","HERMITIAN","KSPCGType","KSP_CG_",0};
-const char *KSPGMRESCGSRefinementTypes[]  = {"REFINE_NEVER", "REFINE_IFNEEDED", "REFINE_ALWAYS","KSPGMRESRefinementType","KSP_GMRES_CGS_",0};
-const char *KSPNormTypes_Shifted[]        = {"DEFAULT","NONE","PRECONDITIONED","UNPRECONDITIONED","NATURAL","KSPNormType","KSP_NORM_",0};
+const char *const KSPCGTypes[]                  = {"SYMMETRIC","HERMITIAN","KSPCGType","KSP_CG_",0};
+const char *const KSPGMRESCGSRefinementTypes[]  = {"REFINE_NEVER", "REFINE_IFNEEDED", "REFINE_ALWAYS","KSPGMRESRefinementType","KSP_GMRES_CGS_",0};
+const char *const KSPNormTypes_Shifted[]        = {"DEFAULT","NONE","PRECONDITIONED","UNPRECONDITIONED","NATURAL","KSPNormType","KSP_NORM_",0};
 const char *const*const KSPNormTypes = KSPNormTypes_Shifted + 1;
-const char *KSPConvergedReasons_Shifted[] = {"DIVERGED_INDEFINITE_MAT","DIVERGED_NAN","DIVERGED_INDEFINITE_PC",
+const char *const KSPConvergedReasons_Shifted[] = {"DIVERGED_INDEFINITE_MAT","DIVERGED_NAN","DIVERGED_INDEFINITE_PC",
 					     "DIVERGED_NONSYMMETRIC", "DIVERGED_BREAKDOWN_BICG","DIVERGED_BREAKDOWN",
                                              "DIVERGED_DTOL","DIVERGED_ITS","DIVERGED_NULL","","CONVERGED_ITERATING",
                                              "CONVERGED_RTOL_NORMAL","CONVERGED_RTOL","CONVERGED_ATOL","CONVERGED_ITS",

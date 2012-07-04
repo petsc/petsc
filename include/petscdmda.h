@@ -50,7 +50,7 @@ M*/
 E*/
 typedef enum { DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_MIRROR, DMDA_BOUNDARY_PERIODIC } DMDABoundaryType;
 
-PETSC_EXTERN const char *DMDABoundaryTypes[];
+PETSC_EXTERN const char *const DMDABoundaryTypes[];
 
 /*E
     DMDAInterpolationType - Defines the type of interpolation that will be returned by 

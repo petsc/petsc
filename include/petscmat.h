@@ -1022,7 +1022,7 @@ PETSC_EXTERN PetscErrorCode MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
 
 S*/
 typedef enum {MAT_SHIFT_NONE,MAT_SHIFT_NONZERO,MAT_SHIFT_POSITIVE_DEFINITE,MAT_SHIFT_INBLOCKS} MatFactorShiftType;
-PETSC_EXTERN const char *MatFactorShiftTypes[];
+PETSC_EXTERN const char *const MatFactorShiftTypes[];
 
 /*S 
    MatFactorInfo - Data passed into the matrix factorization routines
@@ -1307,11 +1307,11 @@ PETSC_EXTERN PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartit
 PETSC_EXTERN PetscErrorCode MatPartitioningParmetisGetEdgeCut(MatPartitioning, PetscInt *);
 
 typedef enum { MP_CHACO_MULTILEVEL=1,MP_CHACO_SPECTRAL=2,MP_CHACO_LINEAR=4,MP_CHACO_RANDOM=5,MP_CHACO_SCATTERED=6 } MPChacoGlobalType;
-PETSC_EXTERN const char *MPChacoGlobalTypes[];
+PETSC_EXTERN const char *const MPChacoGlobalTypes[];
 typedef enum { MP_CHACO_KERNIGHAN=1,MP_CHACO_NONE=2 } MPChacoLocalType;
-PETSC_EXTERN const char *MPChacoLocalTypes[];
+PETSC_EXTERN const char *const MPChacoLocalTypes[];
 typedef enum { MP_CHACO_LANCZOS=0,MP_CHACO_RQI=1 } MPChacoEigenType;
-PETSC_EXTERN const char *MPChacoEigenTypes[];
+PETSC_EXTERN const char *const MPChacoEigenTypes[];
 
 PETSC_EXTERN PetscErrorCode MatPartitioningChacoSetGlobal(MatPartitioning,MPChacoGlobalType);
 PETSC_EXTERN PetscErrorCode MatPartitioningChacoGetGlobal(MatPartitioning,MPChacoGlobalType*);
@@ -1343,7 +1343,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning,PetscB
 PETSC_EXTERN PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning,PetscBool);
 
 typedef enum { MP_PTSCOTCH_QUALITY,MP_PTSCOTCH_SPEED,MP_PTSCOTCH_BALANCE,MP_PTSCOTCH_SAFETY,MP_PTSCOTCH_SCALABILITY } MPPTScotchStrategyType;
-PETSC_EXTERN const char *MPPTScotchStrategyTypes[];
+PETSC_EXTERN const char *const MPPTScotchStrategyTypes[];
 
 PETSC_EXTERN PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning,PetscReal);
 PETSC_EXTERN PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning,PetscReal*);
