@@ -201,11 +201,19 @@ cdef class Object:
         def __get__(self):
             return self.getRefCount()
 
+    # --- ctypes support  ---
+
+    property handle:
+        def __get__(self):
+            cdef PetscObject obj = self.obj[0]
+            return PyLong_FromVoidPtr(<void*>obj)
+
     # --- Fortran support  ---
 
     property fortran:
         def __get__(self):
-            return Object_toFortran(self.obj[0])
+            cdef PetscObject obj = self.obj[0]
+            return Object_toFortran(obj)
 
 # --------------------------------------------------------------------
 

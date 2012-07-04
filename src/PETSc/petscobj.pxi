@@ -109,6 +109,9 @@ cdef object PetscSetPyObj(PetscObject o, char name[], object p):
 
 # --------------------------------------------------------------------
 
+cdef extern from *:
+    object PyLong_FromVoidPtr(void*)
+
 cdef inline long Object_toFortran(PetscObject o) nogil:
     return <long> o
 
