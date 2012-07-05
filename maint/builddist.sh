@@ -31,10 +31,10 @@ echo "Building manual..."
 make tao_manual
 
 echo "Building manpages..."
-make tao_allmanpages
+make tao_allmanpages DOCTEXT=doctext MANPAGES=manpages
 
-echo "Creating html from source files..."
-make tao_htmlpages DOCTEXT=doctext MANPAGES=manpages
+#echo "Creating html from source files..."
+#make tao_htmlpages DOCTEXT=doctext MANPAGES=manpages
 
 echo "Building tarball $BUILDDIR/tao-$VERSION.tar.gz"
 cd $BUILDDIR

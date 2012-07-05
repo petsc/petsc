@@ -21,9 +21,8 @@ all       : tao_info tao_chk_tao_dir tao_chk_lib_dir tao_deletelibs tao_build ta
 tao_info:
 	-@echo "=========================================="
 	-@echo " "
-	-@echo "See docs/troubleshooting.html and docs/bugreporting.html"
-	-@echo "for help with installation problems. Please send EVERYTHING"
-	-@echo "printed out below when reporting problems."
+	-@echo "Please send EVERYTHING printed out below when"
+	-@echo "reporting problems to tao-comments@mcs.anl.gov"
 	-@echo " "
 	-@echo "To subscribe to the TAO users mailing list, please "
 	-@echo "visit https://lists.mcs.anl.gov/mailman/listinfo/tao-news"
@@ -36,58 +35,32 @@ tao_info:
 	-@echo "Using PETSc arch: ${PETSC_ARCH}"
 	-@echo "Using TAO directory: ${TAO_DIR}"
 	-@echo "-----------------------------------------"
-	-@grep "define PETSC_VERSION" ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//"
-	-@grep TAO_VERSION_NUMBER include/tao_version.h | sed "s/........//"
+	-@grep -e "TAO_VERSION_MAJOR" ${TAO_DIR}/include/tao_version.h | grep -v "&&" | sed "s/........//"
+	-@grep -e "TAO_VERSION_MINOR" ${TAO_DIR}/include/tao_version.h | grep -v "&&" | sed "s/........//"
+	-@grep -e "TAO_VERSION_PATCH" ${TAO_DIR}/include/tao_version.h | grep -v "&&" | sed "s/........//"
+	-@grep "define PETSC_VERSION" ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//" 
 	-@echo "-----------------------------------------"
-	-@echo "Using include paths: ${TAO_INCLUDE}"
+	-@echo "Using PETSc configure Options: ${CONFIGURE_OPTIONS}"
 	-@echo "------------------------------------------"
-	-@echo "Using C/C++ compiler: ${CC} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS}"
-	-@echo "C/C++ Compiler version: " `${CCV}`
+	-@echo "Using C/C++ include paths: ${TAO_INCLUDE}"
+	-@echo "Using C/C++ compiler: ${PCC} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS}"
 	-@if [ "${FC}" != "" ]; then \
+	   echo "Using Fortran include/module paths: ${PETSC_FC_INCLUDES}";\
 	   echo "Using Fortran compiler: ${FC} ${FC_FLAGS} ${FFLAGS} ${FPP_FLAGS}";\
-	   echo "Fortran Compiler version: " `${FCV}`;\
          fi
 	-@echo "-----------------------------------------"
-	-@echo "Using C/C++ linker: ${CC_LINKER}"
+	-@echo "Using C/C++ linker: ${PCC_LINKER}"
+	-@echo "Using C/C++ flags: ${PCC_LINKER_FLAGS}"
 	-@if [ "${FC}" != "" ]; then \
 	   echo "Using Fortran linker: ${FC_LINKER}";\
+	   echo "Using Fortran flags: ${FC_LINKER_FLAGS}";\
          fi
 	-@echo "-----------------------------------------"
-	-@echo "Using libraries: ${TAO_LIB}"
+	-@echo "Using PETSc libraries: ${PETSC_LIB}"
+	-@echo "Using TAO libraries: ${TAO_LIB}"
 	-@echo "------------------------------------------"
 	-@echo "Using mpiexec: ${MPIEXEC}"
 	-@echo "=========================================="
-
-MINFO = ${PETSC_DIR}/${PETSC_ARCH}/include/petscmachineinfo.h
-tao_info_h:
-	-@$(RM) -f ${MINFO} MINFO
-	-@echo  "static const char *petscmachineinfo = \"\__n__\"" >> MINFO
-	-@echo  "\"-----------------------------------------\__n__\"" >> MINFO
-	-@if [ -f /usr/bin/cygcheck.exe ]; then \
-	  echo  "\"Libraries compiled on `date` on `hostname|/usr/bin/dos2unix` \__n__\"" >> MINFO; \
-          else \
-	  echo  "\"Libraries compiled on `date` on `hostname` \__n__\"" >> MINFO; \
-          fi
-	-@echo  "\"Machine characteristics: `uname -a` \__n__\"" >> MINFO
-	-@echo  "\"Using PETSc directory: ${PETSC_DIR}\__n__\"" >> MINFO
-	-@echo  "\"Using PETSc arch: ${PETSC_ARCH}\__n__\"" >> MINFO
-	-@echo  "\"-----------------------------------------\"; " >> MINFO
-	-@echo  "static const char *petsccompilerinfo = \"\__n__\"" >> MINFO
-	-@echo  "\"Using C compiler: ${PCC} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS}\__n__\"" >> MINFO
-	-@echo  "\"Using Fortran compiler: ${FC} ${FC_FLAGS} ${FFLAGS} ${FPP_FLAGS}\__n__\"" >> MINFO
-	-@echo  "\"-----------------------------------------\"; " >> MINFO
-	-@echo  "static const char *petsccompilerflagsinfo = \"\__n__\"" >> MINFO
-	-@echo  "\"Using include paths: ${PETSC_INCLUDE}\__n__\"" >> MINFO
-	-@echo  "\"------------------------------------------\"; " >> MINFO
-	-@echo  "static const char *petsclinkerinfo = \"\__n__\"" >> MINFO
-	-@echo  "\"Using C linker: ${CLINKER}\__n__\"" >> MINFO
-	-@echo  "\"Using Fortran linker: ${FLINKER}\__n__\"" >> MINFO
-	-@echo  "\"Using libraries: ${PETSC_LIB} \__n__\"" >> MINFO
-	-@echo  "\"------------------------------------------\"; " >> MINFO
-	-@cat MINFO | ${SED} -e 's/\\ /\\\\ /g' | ${SED} -e 's/__n__/n/g' > ${MINFO}
-	-@ if [ -f /usr/bin/cygcheck.exe ]; then /usr/bin/dos2unix ${MINFO} 2> /dev/null; fi
-	-@$(RM) -f MINFO
-
 
 
 
@@ -113,6 +86,8 @@ tao_deletelibs:
 
 tao_shared: shared
 
+install:
+	@${PYTHON} ./conf/install.py -destDir=${DESTDIR}
 
 tao_alletags:
 	-@maint/generateetags.py
@@ -141,18 +116,44 @@ tao_deletemanpages:
 	${RM} -f ${TAO_DIR}/docs/manpages/*/*.html \
                  ${TAO_DIR}/docs/manpages/manpages.cit 
 
-tao_allmanpages: tao_htmlpages tao_deletemanpages
+tao_allmanpages: tao_htmlpages tao_deletemanpages tao_pages tao_docsetdate
+
+tao_pages:
 	@mkdir -p ${TAO_DIR}/docs/manpages/taosolver
 	@mkdir -p ${TAO_DIR}/docs/manpages/taolinesearch
-
 
 	-${OMAKE} ACTION=tao_manpages_buildcite tree
 	-${OMAKE} ACTION=tao_manpages tree
 	-${OMAKE} ACTION=tao_manexamples tree LOC=${TAO_DIR}
 	-maint/wwwindex.py ${TAO_DIR}
 
+
 tao_htmlpages: 
 	-${OMAKE} ACTION=tao_html TAO_DIR=${TAO_DIR} PETSC_DIR=${PETSC_DIR} alltree LOC=${TAO_DIR}
 
+
+tao_docsetdate: 
+	@echo "Updating generated html files with TAO version, date info";\
+        version_release=`grep '^#define TAO_VERSION_RELEASE ' include/tao_version.h |tr -s ' ' | cut -d ' ' -f 3`; \
+        version_major=`grep '^#define TAO_VERSION_MAJOR ' include/tao_version.h |tr -s ' ' | cut -d ' ' -f 3`; \
+        version_minor=`grep '^#define TAO_VERSION_MINOR ' include/tao_version.h |tr -s ' ' | cut -d ' ' -f 3`; \
+        version_patch=`grep '^#define TAO_VERSION_PATCH ' include/tao_version.h |tr -s ' ' | cut -d ' ' -f 3`; \
+        if  [ $${version_release} = 0 ]; then \
+          taoversion=tao-devel; \
+          export taoversion; \
+        elif [ $${version_release} = 1 ]; then \
+          taoversion=petsc-$${version_major}.$${version_minor}-p$${version_patch}; \
+          export taoversion; \
+        else \
+          echo "Unknown TAO_VERSION_RELEASE: $${version_release}"; \
+          exit; \
+        fi; \
+        datestr=`hg tip --template "{date|shortdate}"`; \
+        export datestr; \
+        find * -type d -wholename src/docs/website -prune -o \
+          -type f -name \*.html \
+          -exec perl -pi -e 's^(<body.*>)^$$1\n   <div id=\"version\" align=right><b>$$ENV{taoversion} $$ENV{datestr}</b></div>^i' {} \; \
+          -exec perl -pi -e 's^(<head>)^$$1 <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/{}" />^i' {} \; ; \
+        echo "Done fixing version number, date, canonical URL info"
 
 tao_chk_lib_dir: chklib_dir

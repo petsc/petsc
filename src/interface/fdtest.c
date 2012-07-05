@@ -1,4 +1,4 @@
-#include "private/taosolver_impl.h" /*I "taosolver.h" I*/
+#include "tao-private/taosolver_impl.h" /*I "taosolver.h" I*/
 
 typedef struct {
   PetscBool  check_gradient;

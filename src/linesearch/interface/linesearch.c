@@ -1,6 +1,6 @@
 #include "taosolver.h"   
 #include "taolinesearch.h" /*I "taolinesearch.h" I*/
-#include "private/taolinesearch_impl.h"
+#include "tao-private/taolinesearch_impl.h"
 
 PetscBool TaoLineSearchInitialized = PETSC_FALSE;
 PetscFList TaoLineSearchList              = PETSC_NULL;

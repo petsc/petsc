@@ -1,6 +1,6 @@
 #define TAOSOLVER_DLL
 
-#include "include/private/taosolver_impl.h" /*I "taosolver.h" I*/
+#include "tao-private/taosolver_impl.h" /*I "taosolver.h" I*/
 
 PetscBool TaoSolverRegisterAllCalled = PETSC_FALSE;
 PetscFList TaoSolverList = PETSC_NULL;

@@ -5,7 +5,7 @@
 
 #ifndef __TAO_NTL_H
 #define __TAO_NTL_H
-#include "include/private/taosolver_impl.h"
+#include "tao-private/taosolver_impl.h"
 
 typedef struct {
   Mat M;

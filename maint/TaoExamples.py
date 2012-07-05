@@ -7,7 +7,7 @@ import string
 def findPetscVariable(key):
     import re
     value = None
-    configfile = os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'conf','petscvariables')
+    configfile = os.path.join(os.environ['PETSC_DIR'],'conf','petscvariables')
     if os.access(configfile,os.R_OK):
         f = open(configfile)
         lines = f.readlines()
@@ -15,6 +15,16 @@ def findPetscVariable(key):
             m = re.match(key+'\s*=\s*(\S+)',l)
             if m and len(m.groups()):
                 value = m.groups()[0]
+    if value is None:
+        configfile = os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'conf','petscvariables')
+        if os.access(configfile,os.R_OK):
+            f = open(configfile)
+            lines = f.readlines()
+            for l in lines:
+                m = re.match(key+'\s*=\s*(\S+)',l)
+                if m and len(m.groups()):
+                    value = m.groups()[0]
+    
     return value
             
 

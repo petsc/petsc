@@ -4,7 +4,7 @@ Context for a Newton line search method (unconstrained minimization)
 
 #ifndef __TAO_NLS_H
 #define __TAO_NLS_H
-#include "include/private/taosolver_impl.h"
+#include "tao-private/taosolver_impl.h"
 
 typedef struct {
   Mat M;

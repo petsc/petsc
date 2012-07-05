@@ -1,8 +1,8 @@
 #include "petscdm.h"            /*I "petscdm.h"   I*/
 #include "petscksp.h"           /*I "petscksp.h"  I*/
 #include "petsc-private/pcimpl.h"     /*I "petscpc.h"   I*/
-#include "private/taosolver_impl.h" /*I "taosolver.h" I*/
-#include "private/taodm_impl.h" /*I "taodm.h" I*/
+#include "tao-private/taosolver_impl.h" /*I "taosolver.h" I*/
+#include "tao-private/taodm_impl.h" /*I "taodm.h" I*/
 
 PetscClassId TAODM_CLASSID;
 static PetscBool taodmclass_registered = PETSC_FALSE;

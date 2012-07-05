@@ -1,6 +1,6 @@
 #include "petsc-private/fortranimpl.h"
 #include "taosolver.h"
-#include "private/taodm_impl.h"
+#include "tao-private/taodm_impl.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define taodmsetobjectiveandgradientroutine_          TAODMSETOBJECTIVEANDGRADIENTROUTINE
