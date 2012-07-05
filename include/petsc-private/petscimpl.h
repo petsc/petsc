@@ -190,33 +190,32 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(void *ptr,PetscDataType dtype)
   } else {
     switch (dtype) {
     case PETSC_INT:{
-      *(volatile PetscInt*)ptr;
+      PETSC_UNUSED PetscInt x = *(volatile PetscInt*)ptr;
       break;
     }
     case PETSC_SCALAR:{
-      *(volatile PetscScalar*)ptr;
+      PETSC_UNUSED PetscScalar x = *(volatile PetscScalar*)ptr;
       break;
     }
 #if defined(PETSC_USE_COMPLEX)
     case PETSC_REAL:{
-      *(volatile PetscReal*)ptr;
+      PETSC_UNUSED PetscReal x = *(volatile PetscReal*)ptr;
       break;
     }
 #endif
     case PETSC_BOOL:{
-      *(volatile PetscBool*)ptr;
+      PETSC_UNUSED PetscBool x = *(volatile PetscBool*)ptr;
       break;
     }
     case PETSC_ENUM:{
-      *(volatile PetscEnum*)ptr;
+      PETSC_UNUSED PetscEnum x = *(volatile PetscEnum*)ptr;
       break;
     }
     case PETSC_CHAR:{
-      *(char*volatile*)ptr;
+      PETSC_UNUSED char *x = *(char*volatile*)ptr;
       break;
     }
     case PETSC_OBJECT:{
-      *(volatile struct _p_PetscObject*)ptr;
       PETSC_UNUSED volatile PetscClassId classid = ((PetscObject)ptr)->classid;
       break;
     }
