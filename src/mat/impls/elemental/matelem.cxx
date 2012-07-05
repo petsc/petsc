@@ -246,10 +246,15 @@ static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure s
 #define __FUNCT__ "MatMatSolve_Elemental"
 static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
 {
+  Mat_Elemental *a=(Mat_Elemental*)A->data;
+  Mat_Elemental *x=(Mat_Elemental*)X->data;
+
   PetscFunctionBegin;
   printf("MatMatSolve_Elemental is called...\n");
-  if (X != B) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_IDN,"X and B must be same matrices");
-  // elem::GuassianElimination
+  if (X != B) {
+    // ierr = MatCopy_Elemental(B,X,SAME_NONZERO_PATTERN);
+  }
+  elem::LUSolve(elem::NORMAL,*a->emat,*x->emat);
   PetscFunctionReturn(0);
 }
 
@@ -264,7 +269,6 @@ static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorI
   elem::LU(*a->emat,*a->pivot);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOwnershipIS_Elemental"
