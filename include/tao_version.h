@@ -2,7 +2,7 @@
 #define __TAO_VERSION_H
 
 /* ========================================================================== */
-#define TAO_VERSION_RELEASE  0 /*  1 if official release */
+#define TAO_VERSION_RELEASE  1 /*  1 if official release */
 /* 
    Current TAO version number and release date
 */
@@ -15,7 +15,7 @@
     ((TAO_VERSION_MAJOR == (MAJOR)) &&       \
     (TAO_VERSION_MINOR == (MINOR)) &&       \
      (TAO_VERSION_SUBMINOR == (SUBMINOR)))
-#define TAO_VERSION_DATE     "Jun 28, 2012"
+#define TAO_VERSION_DATE     "Jul 6, 2012"
 #define TAO_AUTHOR_INFO      "The TAO Team:\
  Todd Munson, Jason Sarich, Stefan Wild\n\
 Bug reports, questions: tao-comments@mcs.anl.gov\n\
