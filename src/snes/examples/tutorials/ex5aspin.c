@@ -255,10 +255,7 @@ PetscErrorCode FormFunctionASPIN(SNES snes,Vec X,Vec F,void *ctx)
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = SNESGetDM(sneslocal,&dmlocal);CHKERRQ(ierr);
-  ierr = SNESGetSolution(sneslocal,&Xlocal);CHKERRQ(ierr);
-  if (!Xlocal) {
-    DMCreateGlobalVector(dmlocal,&Xlocal);CHKERRQ(ierr);
-  }
+  DMGetGlobalVector(dmlocal,&Xlocal);CHKERRQ(ierr);
 
   /* get work vectors */
   ierr = DMDAGetLocalInfo(dm,&ginfo);CHKERRQ(ierr);
@@ -268,16 +265,6 @@ PetscErrorCode FormFunctionASPIN(SNES snes,Vec X,Vec F,void *ctx)
   ierr = VecSet(Xgloballoc,0.);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xgloballoc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xgloballoc);CHKERRQ(ierr);
-
-  ierr = DMDAVecGetArray(dmlocal,Xlocalloc,&xloc);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(dm,Xgloballoc,&xglob);CHKERRQ(ierr);
-  for (j=info.ys; j<info.ys+info.ym; j++) {
-    for (i=info.xs; i<info.xs+info.xm; i++) {
-      xloc[j+info.ys][i+info.xs] = xglob[j+ginfo.gys][i+ginfo.gxs];
-    }
-  }
-  ierr = DMDAVecRestoreArray(dmlocal,Xlocalloc,&xloc);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(dm,Xgloballoc,&xglob);CHKERRQ(ierr);
 
   /* local for both DMs should be the same size without overlap */
   ierr = VecCopy(Xgloballoc,Xlocalloc);CHKERRQ(ierr);
@@ -291,6 +278,7 @@ PetscErrorCode FormFunctionASPIN(SNES snes,Vec X,Vec F,void *ctx)
   ierr = DMGlobalToLocalBegin(dmlocal,Xlocal,INSERT_VALUES,Xlocalloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dmlocal,Xlocal,INSERT_VALUES,Xlocalloc);CHKERRQ(ierr);
   ierr = VecAYPX(Xgloballoc,-1.0,Xlocalloc);CHKERRQ(ierr);
+
   /* restrict and subtract */
   ierr = DMLocalToGlobalBegin(dm,Xgloballoc,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm,Xgloballoc,INSERT_VALUES,F);CHKERRQ(ierr);
@@ -299,5 +287,6 @@ PetscErrorCode FormFunctionASPIN(SNES snes,Vec X,Vec F,void *ctx)
   /* restore work vectors */
   ierr = DMRestoreLocalVector(dmlocal,&Xlocalloc);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&Xgloballoc);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dmlocal,&Xlocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
