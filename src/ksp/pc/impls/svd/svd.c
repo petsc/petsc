@@ -7,13 +7,16 @@
 */
 typedef struct {
   Vec         diag,work;
-  Mat         A,U,V;
+  Mat         A,U,Vt;
   PetscInt    nzero;
   PetscReal   zerosing;         /* measure of smallest singular value treated as nonzero */
   PetscInt    essrank;          /* essential rank of operator */
+  VecScatter  left2red,right2red;
+  Vec         leftred,rightred;
   PetscViewer monitor;
 } PC_SVD;
 
+typedef enum {READ=1, WRITE=2, READ_WRITE=3} AccessMode;
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -41,17 +44,27 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   PetscScalar    *a,*u,*v,*d,*work;
   PetscBLASInt   nb,lwork;
   PetscInt       i,n;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
-  if (!jac->diag) {
-    /* assume square matrices */
-    ierr = MatGetVecs(pc->pmat,&jac->diag,&jac->work);CHKERRQ(ierr);
-  }
   ierr = MatDestroy(&jac->A);CHKERRQ(ierr);
-  ierr = MatConvert(pc->pmat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)pc->pmat)->comm,&size);CHKERRQ(ierr);
+  if (size > 1) {
+    Mat redmat;
+    PetscInt M;
+    ierr = MatGetSize(pc->pmat,&M,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetRedundantMatrix(pc->pmat,size,PETSC_COMM_SELF,M,MAT_INITIAL_MATRIX,&redmat);CHKERRQ(ierr);
+    ierr = MatConvert(redmat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A);CHKERRQ(ierr);
+    ierr = MatDestroy(&redmat);CHKERRQ(ierr);
+  } else {
+    ierr = MatConvert(pc->pmat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A);CHKERRQ(ierr);
+  }
+  if (!jac->diag) {    /* assume square matrices */
+    ierr = MatGetVecs(jac->A,&jac->diag,&jac->work);CHKERRQ(ierr);
+  }
   if (!jac->U) {
     ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->U);CHKERRQ(ierr);
-    ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->V);CHKERRQ(ierr);
+    ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->Vt);CHKERRQ(ierr);
   }
   ierr = MatGetSize(pc->pmat,&n,PETSC_NULL);CHKERRQ(ierr);
   nb    = PetscBLASIntCast(n);
@@ -59,7 +72,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   ierr  = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr); 
   ierr  = MatGetArray(jac->A,&a);CHKERRQ(ierr); 
   ierr  = MatGetArray(jac->U,&u);CHKERRQ(ierr); 
-  ierr  = MatGetArray(jac->V,&v);CHKERRQ(ierr); 
+  ierr  = MatGetArray(jac->Vt,&v);CHKERRQ(ierr); 
   ierr  = VecGetArray(jac->diag,&d);CHKERRQ(ierr); 
 #if !defined(PETSC_USE_COMPLEX)
   {
@@ -74,7 +87,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
 #endif
   ierr  = MatRestoreArray(jac->A,&a);CHKERRQ(ierr); 
   ierr  = MatRestoreArray(jac->U,&u);CHKERRQ(ierr); 
-  ierr  = MatRestoreArray(jac->V,&v);CHKERRQ(ierr);
+  ierr  = MatRestoreArray(jac->Vt,&v);CHKERRQ(ierr);
   for (i=n-1; i>=0; i--) if (PetscRealPart(d[i]) > jac->zerosing) break;
   jac->nzero = n-1-i;
   if (jac->monitor) {
@@ -112,7 +125,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"joe",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = MatView(jac->A,viewer);CHKERRQ(ierr);
   ierr = MatView(jac->U,viewer);CHKERRQ(ierr);
-  ierr = MatView(jac->V,viewer);CHKERRQ(ierr);
+  ierr = MatView(jac->Vt,viewer);CHKERRQ(ierr);
   ierr = VecView(jac->diag,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
  }
@@ -120,6 +133,74 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   ierr = PetscFree(work);
   PetscFunctionReturn(0);
 #endif
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCSVDGetVec"
+static PetscErrorCode PCSVDGetVec(PC pc,PCSide side,AccessMode amode,Vec x,Vec *xred)
+{
+  PC_SVD         *jac = (PC_SVD*)pc->data;
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
+  *xred = PETSC_NULL;
+  switch (side) {
+  case PC_LEFT:
+    if (size == 1) *xred = x;
+    else {
+      if (!jac->left2red) {ierr = VecScatterCreateToAll(x,&jac->left2red,&jac->leftred);CHKERRQ(ierr);}
+      if (amode & READ) {
+        ierr = VecScatterBegin(jac->left2red,x,jac->leftred,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = VecScatterEnd(jac->left2red,x,jac->leftred,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      }
+      *xred = jac->leftred;
+    }
+    break;
+  case PC_RIGHT:
+    if (size == 1) *xred = x;
+    else {
+      if (!jac->right2red) {ierr = VecScatterCreateToAll(x,&jac->right2red,&jac->rightred);CHKERRQ(ierr);}
+      if (amode & READ) {
+        ierr = VecScatterBegin(jac->right2red,x,jac->rightred,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = VecScatterEnd(jac->right2red,x,jac->rightred,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      }
+      *xred = jac->rightred;
+    }
+    break;
+  default: SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_PLIB,"Side must be LEFT or RIGHT");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCSVDRestoreVec"
+static PetscErrorCode PCSVDRestoreVec(PC pc,PCSide side,AccessMode amode,Vec x,Vec *xred)
+{
+  PC_SVD         *jac = (PC_SVD*)pc->data;
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
+  switch (side) {
+  case PC_LEFT:
+    if (size != 1 && amode & WRITE) {
+      ierr = VecScatterBegin(jac->left2red,jac->leftred,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(jac->left2red,jac->leftred,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    }
+    break;
+  case PC_RIGHT:
+    if (size != 1 && amode & WRITE) {
+      ierr = VecScatterBegin(jac->right2red,jac->rightred,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(jac->right2red,jac->rightred,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    }
+    break;
+  default: SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_PLIB,"Side must be LEFT or RIGHT");
+  }
+  *xred = PETSC_NULL;
+  PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -140,13 +221,36 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
 static PetscErrorCode PCApply_SVD(PC pc,Vec x,Vec y)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
-  Vec            work = jac->work;
+  Vec            work = jac->work,xred,yred;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMultTranspose(jac->U,x,work);CHKERRQ(ierr);
+  ierr = PCSVDGetVec(pc,PC_RIGHT,READ,x,&xred);CHKERRQ(ierr);
+  ierr = PCSVDGetVec(pc,PC_LEFT,WRITE,y,&yred);CHKERRQ(ierr);
+  ierr = MatMultTranspose(jac->U,xred,work);CHKERRQ(ierr);
   ierr = VecPointwiseMult(work,work,jac->diag);CHKERRQ(ierr);
-  ierr = MatMultTranspose(jac->V,work,y);CHKERRQ(ierr);
+  ierr = MatMultTranspose(jac->Vt,work,yred);CHKERRQ(ierr);
+  ierr = PCSVDRestoreVec(pc,PC_RIGHT,READ,x,&xred);CHKERRQ(ierr);
+  ierr = PCSVDRestoreVec(pc,PC_LEFT,WRITE,y,&yred);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyTranspose_SVD"
+static PetscErrorCode PCApplyTranspose_SVD(PC pc,Vec x,Vec y)
+{
+  PC_SVD         *jac = (PC_SVD*)pc->data;
+  Vec            work = jac->work,xred,yred;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCSVDGetVec(pc,PC_LEFT,READ,x,&xred);CHKERRQ(ierr);
+  ierr = PCSVDGetVec(pc,PC_RIGHT,WRITE,y,&yred);CHKERRQ(ierr);
+  ierr = MatMultTranspose(jac->Vt,work,yred);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(work,work,jac->diag);CHKERRQ(ierr);
+  ierr = MatMultTranspose(jac->U,xred,work);CHKERRQ(ierr);
+  ierr = PCSVDRestoreVec(pc,PC_LEFT,READ,x,&xred);CHKERRQ(ierr);
+  ierr = PCSVDRestoreVec(pc,PC_RIGHT,WRITE,y,&yred);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -160,9 +264,13 @@ static PetscErrorCode PCReset_SVD(PC pc)
   PetscFunctionBegin;
   ierr = MatDestroy(&jac->A);CHKERRQ(ierr);
   ierr = MatDestroy(&jac->U);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->V);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->Vt);CHKERRQ(ierr);
   ierr = VecDestroy(&jac->diag);CHKERRQ(ierr);
   ierr = VecDestroy(&jac->work);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&jac->right2red);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&jac->left2red);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->rightred);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->leftred);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -265,7 +373,7 @@ PetscErrorCode PCCreate_SVD(PC pc)
       not needed.
   */
   pc->ops->apply               = PCApply_SVD;
-  pc->ops->applytranspose      = PCApply_SVD;
+  pc->ops->applytranspose      = PCApplyTranspose_SVD;
   pc->ops->setup               = PCSetUp_SVD;
   pc->ops->reset               = PCReset_SVD;
   pc->ops->destroy             = PCDestroy_SVD;
