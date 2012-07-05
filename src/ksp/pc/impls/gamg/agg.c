@@ -706,7 +706,6 @@ PetscErrorCode PCSetData_AGG( PC pc, Mat a_A )
     PetscInt bs,NN,MM;
     ierr = MatGetBlockSize( a_A, &bs ); CHKERRQ( ierr ); 
     ierr = MatGetLocalSize( a_A, &MM, &NN ); CHKERRQ( ierr );  assert(MM%bs==0);
-PetscPrintf(((PetscObject)a_A)->comm,"[%d]%s bs=%d MM=%d\n",0,__FUNCT__,bs,MM);
     ierr = PCSetCoordinates_AGG( pc, bs, MM/bs, PETSC_NULL ); CHKERRQ(ierr);
   }
   else {
