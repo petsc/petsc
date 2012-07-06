@@ -159,8 +159,8 @@ PETSC_EXTERN PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject,P
 #if defined(PETSC_HAVE_SETJMP_H)
 #include <signal.h>
 #include <setjmp.h>
-extern jmp_buf PetscSegvJumpBuf;
-extern void PetscSegv_sigaction(int, siginfo_t*, void *);
+PETSC_EXTERN jmp_buf PetscSegvJumpBuf;
+PETSC_EXTERN void PetscSegv_sigaction(int, siginfo_t*, void *);
 /*@
      PetscCheckPointer - Returns PETSC_TRUE if a pointer points to accessible data
 
