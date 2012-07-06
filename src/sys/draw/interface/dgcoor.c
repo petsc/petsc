@@ -31,10 +31,10 @@ PetscErrorCode  PetscDrawGetCoordinates(PetscDraw draw,PetscReal *xl,PetscReal *
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscValidDoublePointer(xl,2);
-  PetscValidDoublePointer(yl,3);
-  PetscValidDoublePointer(xr,4);
-  PetscValidDoublePointer(yr,5);
+  PetscValidRealPointer(xl,2);
+  PetscValidRealPointer(yl,3);
+  PetscValidRealPointer(xr,4);
+  PetscValidRealPointer(yr,5);
   *xl = draw->coor_xl; *yl = draw->coor_yl;
   *xr = draw->coor_xr; *yr = draw->coor_yr;
   PetscFunctionReturn(0);

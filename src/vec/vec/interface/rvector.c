@@ -38,7 +38,7 @@ PetscErrorCode  VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *max)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1); 
   PetscValidHeaderSpecific(y,VEC_CLASSID,2);
-  PetscValidDoublePointer(max,3);
+  PetscValidRealPointer(max,3);
   PetscValidType(x,1);
   PetscValidType(y,2);
   PetscCheckSameTypeAndComm(x,1,y,2);
@@ -151,7 +151,7 @@ PetscErrorCode  VecNorm(Vec x,NormType type,PetscReal *val)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  PetscValidDoublePointer(val,3);
+  PetscValidRealPointer(val,3);
   PetscValidType(x,1);
   if (((PetscObject)x)->precision != sizeof(PetscScalar)) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_SUP,"Wrong precision of input argument");
 
@@ -220,7 +220,7 @@ PetscErrorCode  VecNormAvailable(Vec x,NormType type,PetscBool  *available,Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  PetscValidDoublePointer(val,3);
+  PetscValidRealPointer(val,3);
   PetscValidType(x,1);
 
   *available = PETSC_FALSE;

@@ -738,7 +738,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
   for(i = 0; i < ismax; ++i) {
     PetscBool sorted;
     ierr = ISSorted(iscol[i], &sorted); CHKERRQ(ierr);
-    if(!sorted) SETERRQ1(((PetscObject)iscol[i])->comm, PETSC_ERR_SUP, "Column index set %D not sorted", i);
+    if(!sorted) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Column index set %D not sorted", i);
   }
 
   /*
