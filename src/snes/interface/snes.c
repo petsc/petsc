@@ -660,7 +660,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     if (flg) {
       void *functx;
       ierr = SNESGetFunction(snes,PETSC_NULL,PETSC_NULL,&functx);CHKERRQ(ierr);
-      ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESDefaultComputeJacobianColor,functx);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr);
       ierr = PetscInfo(snes,"Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
     }
 
