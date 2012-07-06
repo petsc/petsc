@@ -249,17 +249,45 @@ static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure s
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatCopy_Elemental"
+static PetscErrorCode MatCopy_Elemental(Mat A,Mat B,MatStructure str)
+{
+  Mat_Elemental *a=(Mat_Elemental*)A->data;
+  Mat_Elemental *b=(Mat_Elemental*)B->data;
+
+  PetscFunctionBegin;
+  elem::Copy(*a->emat,*b->emat);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatTranspose_Elemental"
+static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
+{
+  //Mat_Elemental  *x = (Mat_Elemental*)X->data;
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMatSolve_Elemental"
 static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
 {
   Mat_Elemental *a=(Mat_Elemental*)A->data;
+  Mat_Elemental *b=(Mat_Elemental*)B->data;
   Mat_Elemental *x=(Mat_Elemental*)X->data;
 
   PetscFunctionBegin;
-  printf("MatMatSolve_Elemental is called...\n");
-  // ierr = MatCopy_Elemental(B,X,SAME_NONZERO_PATTERN);
-  
-  elem::LUSolve(elem::NORMAL,*a->emat,*x->emat);
+  elem::Copy(*b->emat,*x->emat);
+  if ((*a->pivot).AllocatedMemory()) {
+    printf("pivot is not empty.\n");
+    elem::LUSolve(elem::NORMAL,*a->emat,*a->pivot,*x->emat);
+  }
+  else {
+    printf("pivot is empty.\n");
+    elem::LUSolve(elem::NORMAL,*a->emat,*x->emat);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -267,11 +295,19 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
 #define __FUNCT__ "MatLUFactor_Elemental"
 static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorInfo *info)
 {
+  A->factortype = MAT_FACTOR_LU;
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
 
   PetscFunctionBegin;
   printf("MatLUFactor_Elemental is called...\n");
-  elem::LU(*a->emat,*a->pivot);
+  if (info->dtcol){
+    printf("LUFactor w/ pivoting\n");
+    elem::LU(*a->emat,*a->pivot);
+  }
+  else {
+    printf("LUFactor w/o pivoting\n");
+    elem::LU(*a->emat);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -428,6 +464,8 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   A->ops->axpy            = MatAXPY_Elemental;
   A->ops->lufactor        = MatLUFactor_Elemental;
   A->ops->matsolve        = MatMatSolve_Elemental;
+  A->ops->copy            = MatCopy_Elemental;
+  A->ops->transpose       = MatTranspose_Elemental;
 
   A->insertmode = NOT_SET_VALUES;
 
