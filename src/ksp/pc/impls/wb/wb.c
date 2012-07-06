@@ -414,6 +414,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   ierr = ISCreateGeneral(PETSC_COMM_SELF,Nsurf,Isurf,PETSC_COPY_VALUES,&issurf);CHKERRQ(ierr);
   ierr = PetscFree3(II,Iint,Isurf);CHKERRQ(ierr);
 
+  ierr = ISSort(is);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(Aglobal,1,&is,&is,MAT_INITIAL_MATRIX,&Aholder);CHKERRQ(ierr);
   A    = *Aholder;
   ierr = PetscFree(Aholder);CHKERRQ(ierr);
