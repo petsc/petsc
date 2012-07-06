@@ -457,6 +457,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   PetscErrorCode    ierr;
   const PetscScalar one = 1.0;
   const PetscScalar m_one = -1.0;
+  const PetscScalar zero = 0.0;
 
 /* This code is similar to that provided in nn.c for PCNN
    NN interface preconditioner changed to BDDC
@@ -480,13 +481,20 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
-  /*
-    Apply interface preconditioner
-    Results are stored in:
-    -  vec1_D (if needed, i.e. with prec_type = PETSC_TRUE)
-    -  the interface part of the global vector z
-  */
-  ierr = PCBDDCApplyInterfacePreconditioner(pc,z);CHKERRQ(ierr);
+  /* Get Local boundary and apply partition of unity */
+  ierr = VecScatterBegin(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(pcis->vec1_B,pcis->D,pcis->vec1_B);CHKERRQ(ierr);
+
+  /* Apply interface preconditioner
+     input/output vecs: pcis->vec1_B and pcis->vec1_D */
+  ierr = PCBDDCApplyInterfacePreconditioner(pc);CHKERRQ(ierr);
+
+  /* Apply partition of unity and sum boundary values */
+  ierr = VecPointwiseMult(pcis->vec1_B,pcis->D,pcis->vec1_B);CHKERRQ(ierr);
+  ierr = VecSet(z,zero);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
   /* Second Dirichlet solve and assembling of output */
   ierr = VecScatterBegin(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -701,7 +709,7 @@ static PetscErrorCode PCBDDCSetupLocalAdjacencyGraph(PC pc)
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCApplyInterfacePreconditioner"
-static PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, Vec z)
+static PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc)
 { 
   PetscErrorCode ierr;
   PC_BDDC*        pcbddc = (PC_BDDC*)(pc->data);
@@ -709,11 +717,6 @@ static PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, Vec z)
   const PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
-  /* Get Local boundary and apply partition of unity */
-  ierr = VecScatterBegin(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(pcis->vec1_B,pcis->D,pcis->vec1_B);CHKERRQ(ierr);
-
   /* Application of PHI^T  */
   ierr = MatMultTranspose(pcbddc->coarse_phi_B,pcis->vec1_B,pcbddc->vec1_P);CHKERRQ(ierr);
   if(pcbddc->prec_type) { ierr = MatMultTransposeAdd(pcbddc->coarse_phi_D,pcis->vec1_D,pcbddc->vec1_P,pcbddc->vec1_P);CHKERRQ(ierr); }
@@ -748,12 +751,6 @@ static PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, Vec z)
   /* Sum contributions from two levels */
   ierr = MatMultAdd(pcbddc->coarse_phi_B,pcbddc->vec1_P,pcis->vec1_B,pcis->vec1_B);CHKERRQ(ierr);
   if(pcbddc->prec_type) { ierr = MatMultAdd(pcbddc->coarse_phi_D,pcbddc->vec1_P,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
-
-  /* Apply partition of unity and sum boundary values */
-  ierr = VecPointwiseMult(pcis->vec1_B,pcis->D,pcis->vec1_B);CHKERRQ(ierr);
-  ierr = VecSet(z,zero);CHKERRQ(ierr);
-  ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */

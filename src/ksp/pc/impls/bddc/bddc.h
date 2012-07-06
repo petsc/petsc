@@ -101,7 +101,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC);
 static PetscErrorCode PCBDDCFindConnectedComponents(PCBDDCGraph,PetscInt);
 static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC,PetscScalar*);
 static PetscErrorCode PCBDDCManageLocalBoundaries(PC);
-static PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC,Vec);
+static PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC);
 static PetscErrorCode PCBDDCSolveSaddlePoint(PC);
 static PetscErrorCode PCBDDCScatterCoarseDataBegin(PC,Vec,Vec,InsertMode,ScatterMode);
 static PetscErrorCode PCBDDCScatterCoarseDataEnd(PC,Vec,Vec,InsertMode,ScatterMode);
