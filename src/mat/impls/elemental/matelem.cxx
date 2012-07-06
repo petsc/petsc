@@ -1,5 +1,11 @@
 #include <../src/mat/impls/elemental/matelemimpl.h> /*I "petscmat.h" I*/
 
+/*
+    The variable Petsc_Elemental_keyval is used to indicate an MPI attribute that
+  is attached to a communicator, in this case the attribute is a Mat_Elemental_Grid
+*/
+static PetscMPIInt Petsc_Elemental_keyval = MPI_KEYVAL_INVALID;
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscElementalInitializePackage"
 /*@C
@@ -246,10 +252,15 @@ static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure s
 #define __FUNCT__ "MatMatSolve_Elemental"
 static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
 {
+  Mat_Elemental *a=(Mat_Elemental*)A->data;
+  Mat_Elemental *x=(Mat_Elemental*)X->data;
+
   PetscFunctionBegin;
   printf("MatMatSolve_Elemental is called...\n");
-  if (X != B) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_IDN,"X and B must be same matrices");
-  // elem::GuassianElimination
+  if (X != B) {
+    // ierr = MatCopy_Elemental(B,X,SAME_NONZERO_PATTERN);
+  }
+  elem::LUSolve(elem::NORMAL,*a->emat,*x->emat);
   PetscFunctionReturn(0);
 }
 
@@ -264,7 +275,6 @@ static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorI
   elem::LU(*a->emat,*a->pivot);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOwnershipIS_Elemental"
@@ -306,15 +316,25 @@ static PetscErrorCode MatGetOwnershipIS_Elemental(Mat A,IS *rows,IS *cols)
 #define __FUNCT__ "MatDestroy_Elemental"
 static PetscErrorCode MatDestroy_Elemental(Mat A)
 {
-  Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  PetscErrorCode ierr;
+  Mat_Elemental      *a = (Mat_Elemental*)A->data;
+  PetscErrorCode     ierr;
+  Mat_Elemental_Grid *commgrid;
+  PetscBool          flg;
+  MPI_Comm           icomm;
 
   PetscFunctionBegin;
   delete a->interface;
   delete a->esubmat;
   delete a->emat;
-  delete a->grid;
-  /* ierr = MatStashDestroy_Private(&A->stash);CHKERRQ(ierr); */
+  elem::mpi::Comm cxxcomm(((PetscObject)A)->comm);
+  
+  ierr = PetscCommDuplicate(cxxcomm,&icomm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
+  if (--commgrid->grid_refct == 0) {
+    delete commgrid->grid;
+    ierr = PetscFree(commgrid);CHKERRQ(ierr);
+  }
+  ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetOwnershipIS_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -382,8 +402,11 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_Elemental"
 PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
 {
-  Mat_Elemental  *a;
-  PetscErrorCode ierr;
+  Mat_Elemental      *a;
+  PetscErrorCode     ierr;
+  PetscBool          flg;
+  Mat_Elemental_Grid *commgrid;
+  MPI_Comm           icomm;
 
   PetscFunctionBegin;
   ierr = PetscElementalInitializePackage(PETSC_NULL);CHKERRQ(ierr);
@@ -411,7 +434,23 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
 
   /* Set up the elemental matrix */
   elem::mpi::Comm cxxcomm(((PetscObject)A)->comm);
-  a->grid      = new elem::Grid(cxxcomm);
+
+  /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
+  if (Petsc_Elemental_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0);
+  }
+  ierr = PetscCommDuplicate(cxxcomm,&icomm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
+  if (!flg) { 
+    ierr = PetscNewLog(A,Mat_Elemental_Grid,&commgrid);CHKERRQ(ierr);
+    commgrid->grid       = new elem::Grid(cxxcomm);
+    commgrid->grid_refct = 1;
+    ierr = MPI_Attr_put(icomm,Petsc_Elemental_keyval,(void*)commgrid);CHKERRQ(ierr);
+  } else {
+    commgrid->grid_refct++;
+  }
+  ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
+  a->grid      = commgrid->grid;
   a->emat      = new elem::DistMatrix<PetscScalar>(*a->grid);
   a->esubmat   = new elem::Matrix<PetscScalar>(1,1);
   a->interface = new elem::AxpyInterface<PetscScalar>;
@@ -419,7 +458,6 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
  
   /* build cache for off array entries formed */
   a->interface->Attach(elem::LOCAL_TO_GLOBAL,*(a->emat));
-  /* ierr = MatStashCreate_Private(((PetscObject)A)->comm,1,&A->stash);CHKERRQ(ierr); */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetOwnershipIS_C","MatGetOwnershipIS_Elemental",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL);CHKERRQ(ierr);

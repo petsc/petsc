@@ -45,6 +45,9 @@ ex4: ex4.o  chkopts
 ex5: ex5.o chkopts
 	-${CLINKER} -o ex5 ex5.o ${PETSC_SNES_LIB}
 	${RM} ex5.o
+ex5aspin: ex5aspin.o chkopts
+	-${CLINKER} -o ex5aspin ex5aspin.o ${PETSC_SNES_LIB}
+	${RM} ex5aspin.o
 ex5f: ex5f.o  chkopts
 	-${FLINKER} -o ex5f ex5f.o ${PETSC_SNES_LIB}
 	${RM} ex5f.o

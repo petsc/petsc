@@ -57,7 +57,7 @@ int main(int argc,char **args)
   ierr = MatSetBlockSize(Amat,2);CHKERRQ(ierr);
   ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Amat,18,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Amat,18,PETSC_NULL,12,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(Amat,18,PETSC_NULL,18,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(wcomm,&Pmat);CHKERRQ(ierr);
   ierr = MatSetSizes(Pmat,m,m,M,M);CHKERRQ(ierr);

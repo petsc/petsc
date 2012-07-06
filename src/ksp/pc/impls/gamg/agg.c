@@ -961,7 +961,7 @@ PetscErrorCode PCGAMGgraph_AGG( PC pc,
   PetscMPIInt    mype,npe;
   Mat            Gmat;
   MPI_Comm       wcomm = ((PetscObject)Amat)->comm;
-  PetscBool  set,flg,symm;
+  PetscBool  /* set,flg , */symm;
 
   PetscFunctionBegin;
 #if defined PETSC_USE_LOG
@@ -970,8 +970,8 @@ PetscErrorCode PCGAMGgraph_AGG( PC pc,
   ierr = MPI_Comm_rank( wcomm, &mype);  CHKERRQ(ierr);
   ierr = MPI_Comm_size( wcomm, &npe);   CHKERRQ(ierr);
 
-  ierr = MatIsSymmetricKnown(Amat, &set, &flg);        CHKERRQ(ierr);
-  symm = (PetscBool)(pc_gamg_agg->sym_graph || !(set && flg));
+  /* ierr = MatIsSymmetricKnown(Amat, &set, &flg); CHKERRQ(ierr); || !(set && flg) -- this causes lot of symm calls */
+  symm = (PetscBool)(pc_gamg_agg->sym_graph );
 
   ierr  = PCGAMGCreateGraph( Amat, &Gmat ); CHKERRQ( ierr );
   ierr  = PCGAMGFilterGraph( &Gmat, vfilter, symm, verbose ); CHKERRQ( ierr );
