@@ -30,7 +30,6 @@ int main(int argc,char **argv)
   p = m;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
 
-
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(A,MATELEMENTAL);CHKERRQ(ierr);
@@ -66,7 +65,6 @@ int main(int argc,char **argv)
    ierr = MatDestroy(&Aaij);CHKERRQ(ierr);*/
 
   /* create rhs matrix B */
-
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,p,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(B,MATELEMENTAL);CHKERRQ(ierr);
@@ -96,9 +94,9 @@ int main(int argc,char **argv)
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
   ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  /*ierr = MatComputeExplicitOperator(B,&Baij);CHKERRQ(ierr);
+  ierr = MatComputeExplicitOperator(B,&Baij);CHKERRQ(ierr);
   ierr = MatView(Baij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-   ierr = MatDestroy(&Baij);CHKERRQ(ierr);*/
+  ierr = MatDestroy(&Baij);CHKERRQ(ierr);
 
 
   /* Cholesky factorization - perm and factinfo are ignored by LAPACK */
@@ -106,20 +104,20 @@ int main(int argc,char **argv)
   /* out-place Cholesky */
   
 
-  /* LU factorization - perms and factinfo are ignored by Elemental */
+  /* A=LU factorization - perms and factinfo are ignored by Elemental */
   /* in-place LU */
-  ierr = MatLUFactor(B,0,0,0);CHKERRQ(ierr);
-  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    
-
-
   //ierr = MatDuplicate(A,MAT_COPY_VALUES,&F);CHKERRQ(ierr);
-  //F = A;
   //ierr = MatLUFactor(F,0,0,0);CHKERRQ(ierr);
-  //X = B; 
-  //ierr = MatDuplicate(B,MAT_COPY_VALUES,&X);CHKERRQ(ierr);
-  //ierr = MatMatSolve(F,X,X);CHKERRQ(ierr); 
-#if defined(TMP)
+  ierr = MatLUFactor(A,0,0,0);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"A = LU: \n");
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
+  ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatDestroy(&Aaij);CHKERRQ(ierr);
+
+#if defined(TMP) 
+  /* Create X - same size as B */
+  ierr = MatMatSolve(F,B,X);CHKERRQ(ierr); 
   /* Check norm(A*X - B) */
   if (norm > tol){
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);

@@ -257,9 +257,8 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
 
   PetscFunctionBegin;
   printf("MatMatSolve_Elemental is called...\n");
-  if (X != B) {
-    // ierr = MatCopy_Elemental(B,X,SAME_NONZERO_PATTERN);
-  }
+  // ierr = MatCopy_Elemental(B,X,SAME_NONZERO_PATTERN);
+  
   elem::LUSolve(elem::NORMAL,*a->emat,*x->emat);
   PetscFunctionReturn(0);
 }
@@ -433,11 +432,11 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   A->insertmode = NOT_SET_VALUES;
 
   /* Set up the elemental matrix */
-  elem::mpi::Comm cxxcomm(((PetscObject)A)->comm);
+  elem::mpi::Comm cxxcomm(((PetscObject)A)->comm); 
 
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
   if (Petsc_Elemental_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0);
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0); // MPI_Keyval_free()?
   }
   ierr = PetscCommDuplicate(cxxcomm,&icomm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
@@ -446,8 +445,10 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
     commgrid->grid       = new elem::Grid(cxxcomm);
     commgrid->grid_refct = 1;
     ierr = MPI_Attr_put(icomm,Petsc_Elemental_keyval,(void*)commgrid);CHKERRQ(ierr);
+    printf(" create commgrid ...\n");
   } else {
     commgrid->grid_refct++;
+    printf(" share commgrid ...\n");
   }
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   a->grid      = commgrid->grid;
@@ -458,6 +459,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
  
   /* build cache for off array entries formed */
   a->interface->Attach(elem::LOCAL_TO_GLOBAL,*(a->emat));
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetOwnershipIS_C","MatGetOwnershipIS_Elemental",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL);CHKERRQ(ierr);
