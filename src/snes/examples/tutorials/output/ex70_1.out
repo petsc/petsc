@@ -171,7 +171,6 @@ PC Object: 2 MPI processes
         (0,1) : prefix="a01_", type=mpiaij, rows=3072, cols=1536 
         (1,0) : prefix="a10_", type=mpiaij, rows=1536, cols=3072 
         (1,1) : prefix="a11_", type=mpiaij, rows=1536, cols=1536 
- number of iterations = 47
  residual u = 3.28303e-05
  residual p = 1.02764e-07
  residual [u,p] = 3.28304e-05

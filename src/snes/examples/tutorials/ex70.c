@@ -3,30 +3,30 @@
 //----------------------------------------------------------------------------
 // author : Christiaan M. Klaij
 //----------------------------------------------------------------------------
-// 
+//
 // Poiseuille flow problem.
-// 
+//
 // Viscous, laminar flow in a 2D channel with parabolic velocity
 // profile and linear pressure drop, exact solution of the 2D Stokes
 // equations.
-// 
+//
 // Discretized with the cell-centered finite-volume method on a
 // Cartesian grid with co-located variables. Variables ordered as
 // [u1...uN v1...vN p1...pN]^T. Matrix [A00 A01; A10, A11] solved with
 // PCFIELDSPLIT.
-// 
+//
 // Disclaimer: does not contain the pressure-weighed interpolation
 // method needed to suppress spurious pressure modes in real-life
 // problems.
-// 
+//
 // usage:
 //
-// mpiexec -n 2 ./stokes -nx 32 -ny 48 
+// mpiexec -n 2 ./stokes -nx 32 -ny 48
 //
 //   Runs with PETSc defaults on 32x48 grid, no PC for the Schur
 //   complement because A11 is zero.
 //
-// mpiexec -n 2 ./stokes -nx 32 -ny 48 -fieldsplit_1_user_pc 
+// mpiexec -n 2 ./stokes -nx 32 -ny 48 -fieldsplit_1_user_pc
 //
 //   Same as above but with user defined PC for the true Schur
 //   complement. PC based on the SIMPLE-type approximation (inverse of
@@ -43,34 +43,25 @@
 //   SIMPLE-type approximations are crude, there's no benefit in
 //   solving the subsystems in the preconditioner very accurately.
 //
-//---------------------------------------------------------------------------- 
+//----------------------------------------------------------------------------
 
 #include <petscksp.h>
 
 typedef struct {
-  PetscBool userPC, userKSP; // user defined preconditioner and matrix for the Schur complement
-  PetscInt nx, ny;   // nb of cells in x- and y-direction
-  PetscReal hx, hy;  // mesh size in x- and y-direction
-  Mat A;             // block matrix
-  Mat subA[4]; 	     // the four blocks
-  Mat myS;           // the approximation of the Schur complement
-  Vec x, b, y;       // solution, rhs and temporary vector
-  KSP ksp;           // krylov subspace solver
-  PC pc;             // preconditioner
-  IS isg[2];         // index sets of split "0" and "1"
+  PetscBool userPC, userKSP; /* user defined preconditioner and matrix for the Schur complement */
+  PetscInt  nx, ny;  /* nb of cells in x- and y-direction */
+  PetscReal hx, hy;  /* mesh size in x- and y-direction */
+  Mat A;             /* block matrix */
+  Mat subA[4]; 	     /* the four blocks */
+  Mat myS;           /* the approximation of the Schur complement */
+  Vec x, b, y;       /* solution, rhs and temporary vector */
+  IS isg[2];         /* index sets of split "0" and "1" */
 } Stokes;
-
-PetscErrorCode StokesCreate(PetscInt m, PetscInt n, PetscBool userPC, PetscBool userKSP, Stokes *s);
-PetscErrorCode StokesSolve(Stokes *s);
-
-PetscErrorCode StokesSetupMatrix(Stokes *s);      // setup the 2-by-2 block matrix [Q G; D C]
-PetscErrorCode StokesSetupIndexSets(Stokes *s);   // setup the index sets       
-PetscErrorCode StokesSetupVectors(Stokes *s);     // setup the vectors
 
 PetscErrorCode StokesSetupMatBlock00(Stokes *s);  // setup the block Q
 PetscErrorCode StokesSetupMatBlock01(Stokes *s);  // setup the block G
 PetscErrorCode StokesSetupMatBlock10(Stokes *s);  // setup the block D (equal to the transpose of G)
-PetscErrorCode StokesSetupMatBlock11(Stokes *s);  // setup the block C (equal to zero)   
+PetscErrorCode StokesSetupMatBlock11(Stokes *s);  // setup the block C (equal to zero)
 
 PetscErrorCode StokesGetPosition(Stokes *s, PetscInt row, PetscInt *i, PetscInt *j); // row number j*nx+i corresponds to position (i,j) in grid
 
@@ -84,113 +75,47 @@ PetscErrorCode StokesRhsMomY(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val
 PetscErrorCode StokesRhsMass(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val);   // right hand side of pressure
 
 PetscErrorCode StokesSetupApproxSchur(Stokes *s);  // approximation of the Schur complement
-PetscErrorCode StokesCalcResidual(Stokes *s);      // compute the residual
-PetscErrorCode StokesCalcError(Stokes *s);         // compute the error
 
 PetscErrorCode StokesExactSolution(Stokes *s); // exact solution vector
 PetscErrorCode StokesWriteSolution(Stokes *s); // write solution to file
-PetscErrorCode StokesCleanup(Stokes *s);       // cleanup Petsc objects
 
-PetscScalar StokesExactVelocityX(const PetscScalar y);  // exact solution for the velocity (x-component, y-component is zero)
-PetscScalar StokesExactPressure(const PetscScalar x);   // exact solution for the pressure
-
-PetscErrorCode StokesCreate(PetscInt m, PetscInt n, PetscBool myPC, PetscBool myKSP, Stokes *s) {
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  s->nx=m;
-  s->ny=n;
-  s->hx=2.0/s->nx;
-  s->hy=1.0/s->ny;
-  s->userPC=myPC;
-  s->userKSP=myKSP;
-  ierr = StokesSetupMatrix(s);CHKERRQ(ierr);
-  ierr = StokesSetupIndexSets(s);CHKERRQ(ierr);
-  ierr = StokesSetupVectors(s);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-
-PetscScalar StokesExactVelocityX (const PetscScalar y) {
+/* exact solution for the velocity (x-component, y-component is zero) */
+PetscScalar StokesExactVelocityX(const PetscScalar y) {
   return 4.0*y*(1.0-y);
 }
 
-
-
-PetscScalar StokesExactPressure (const PetscScalar x) {
+/* exact solution for the pressure */
+PetscScalar StokesExactPressure(const PetscScalar x) {
   return 8.0*(2.0-x);
 }
 
-
-
-PetscErrorCode StokesSolve(Stokes *s) {
-  KSP      *subksp;
-  PC       subpc;
-  PetscInt n=1, its;
+PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp) {
+  KSP           *subksp;
+  PC             subpc, pc;
+  PetscInt       n = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  // Krylov solver
-  ierr = KSPCreate(PETSC_COMM_WORLD,&s->ksp); CHKERRQ(ierr);
-  ierr = KSPSetType(s->ksp,KSPFGMRES); CHKERRQ(ierr); // must allow variable preconditioner
-  ierr = KSPSetOperators(s->ksp,s->A,s->A,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
-  ierr = KSPGetPC(s->ksp,&s->pc); CHKERRQ(ierr);
-
-  // preconditioners
-  ierr = PCSetType(s->pc,PCFIELDSPLIT); CHKERRQ(ierr);
-  ierr = PCFieldSplitSetType(s->pc,PC_COMPOSITE_SCHUR); CHKERRQ(ierr);
-  ierr = PCFieldSplitSetSchurFactType(s->pc,PC_FIELDSPLIT_SCHUR_FACT_LOWER); CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc, PCFIELDSPLIT);CHKERRQ(ierr);
+  ierr = PCFieldSplitSetType(pc, PC_COMPOSITE_SCHUR);CHKERRQ(ierr);
+  ierr = PCFieldSplitSetSchurFactType(pc, PC_FIELDSPLIT_SCHUR_FACT_LOWER);CHKERRQ(ierr);
   if (s->userPC) {
-    ierr = PCFieldSplitSchurPrecondition(s->pc,PC_FIELDSPLIT_SCHUR_PRE_USER,s->myS); CHKERRQ(ierr);
+    ierr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS);CHKERRQ(ierr);
   }
-  ierr = PCFieldSplitSetIS(s->pc,"0",s->isg[0]); CHKERRQ(ierr);
-  ierr = PCFieldSplitSetIS(s->pc,"1",s->isg[1]); CHKERRQ(ierr);
-  ierr = PCSetUp(s->pc); CHKERRQ(ierr);
-  ierr = PCFieldSplitGetSubKSP(s->pc,&n,&subksp); CHKERRQ(ierr);
+  ierr = PCFieldSplitSetIS(pc, "0", s->isg[0]);CHKERRQ(ierr);
+  ierr = PCFieldSplitSetIS(pc, "1", s->isg[1]);CHKERRQ(ierr);
+  ierr = PCSetUp(pc);CHKERRQ(ierr);
+  ierr = PCFieldSplitGetSubKSP(pc, &n, &subksp);CHKERRQ(ierr);
   if (s->userKSP) {
-    ierr = KSPSetOperators(subksp[1],s->myS,s->myS,SAME_PRECONDITIONER); CHKERRQ(ierr);
+    ierr = KSPSetOperators(subksp[1], s->myS, s->myS, SAME_PRECONDITIONER);CHKERRQ(ierr);
   }
-  if (!s->userPC && !s->userKSP) { // must be pcnone because A11 is zero
-    ierr = KSPGetPC(subksp[1],&subpc); CHKERRQ(ierr);
-    ierr = PCSetType(subpc,PCNONE); CHKERRQ(ierr); 
+  if (!s->userPC && !s->userKSP) {
+    /* must be pcnone because A11 is zero */
+    ierr = KSPGetPC(subksp[1], &subpc);CHKERRQ(ierr);
+    ierr = PCSetType(subpc, PCNONE);CHKERRQ(ierr);
   }
-
-  // solve
-  ierr = KSPSetInitialGuessNonzero(s->ksp,PETSC_TRUE); CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(s->ksp); CHKERRQ(ierr); //overrule above settings with command-line options
-  ierr = KSPSolve(s->ksp,s->b,s->x); CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(s->ksp,&its); CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," number of iterations = %D\n",its); CHKERRQ(ierr);
-  //  ierr = VecView(x,(PetscViewer)PETSC_VIEWER_DEFAULT); CHKERRQ(ierr);
-
-  // don't trust, verify!
-  ierr = StokesCalcResidual(s); CHKERRQ(ierr);
-  ierr = StokesCalcError(s); CHKERRQ(ierr);
-  ierr = StokesWriteSolution(s); CHKERRQ(ierr);
-
-  // cleanup
-  ierr = StokesCleanup(s); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}
-
-PetscErrorCode StokesCleanup(Stokes *s) {
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatDestroy(&s->subA[0]); CHKERRQ(ierr);
-  ierr = MatDestroy(&s->subA[1]); CHKERRQ(ierr);
-  ierr = MatDestroy(&s->subA[2]); CHKERRQ(ierr);
-  ierr = MatDestroy(&s->subA[3]); CHKERRQ(ierr);
-  ierr = MatDestroy(&s->A); CHKERRQ(ierr);
-
-  ierr = VecDestroy(&s->x); CHKERRQ(ierr);
-  ierr = VecDestroy(&s->b); CHKERRQ(ierr);
-  ierr = VecDestroy(&s->y); CHKERRQ(ierr);
-
-  ierr = MatDestroy(&s->myS); CHKERRQ(ierr);
-  ierr = KSPDestroy(&s->ksp); CHKERRQ(ierr);
-  return 0;
 }
 
 PetscErrorCode StokesWriteSolution(Stokes *s) {
@@ -216,36 +141,6 @@ PetscErrorCode StokesWriteSolution(Stokes *s) {
     }
     ierr = VecRestoreArray(s->x, &array); CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode StokesSetupMatrix(Stokes *s) {
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  // the four matrices
-  ierr = StokesSetupMatBlock00(s);CHKERRQ(ierr);
-  ierr = StokesSetupMatBlock01(s);CHKERRQ(ierr);
-  ierr = StokesSetupMatBlock10(s);CHKERRQ(ierr);
-  ierr = StokesSetupMatBlock11(s);CHKERRQ(ierr);
-
-  // nesting of the four matrices
-  ierr = MatCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,2,PETSC_NULL,s->subA,&s->A); CHKERRQ(ierr);
-
-  // Schur preconditioner
-  ierr = StokesSetupApproxSchur(s); CHKERRQ(ierr);
-
-//  // view and draw sparsity pattern
-//  PetscViewer viewer;
-//  ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "mySchur.m", &viewer); CHKERRQ(ierr);
-//  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB); CHKERRQ(ierr);
-//  ierr = MatView(myS, viewer); CHKERRQ(ierr);
-//  ierr = PetscViewerDestroy(&viewer); CHKERRQ(ierr);
-//  PetscDraw draw;
-//  PetscViewerDrawGetDraw(PETSC_VIEWER_DRAW_WORLD,0,&draw);
-//  PetscDrawSetPause(draw,-1);
-//  ierr = MatView(subA[0],PETSC_VIEWER_DRAW_WORLD); CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -479,6 +374,19 @@ PetscErrorCode StokesSetupApproxSchur(Stokes *s) {
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode StokesSetupMatrix(Stokes *s) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = StokesSetupMatBlock00(s);CHKERRQ(ierr);
+  ierr = StokesSetupMatBlock01(s);CHKERRQ(ierr);
+  ierr = StokesSetupMatBlock10(s);CHKERRQ(ierr);
+  ierr = StokesSetupMatBlock11(s);CHKERRQ(ierr);
+  ierr = MatCreateNest(PETSC_COMM_WORLD, 2, PETSC_NULL, 2, PETSC_NULL, s->subA, &s->A);CHKERRQ(ierr);
+  ierr = StokesSetupApproxSchur(s);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode StokesStencilLaplacian(Stokes *s, PetscInt i, PetscInt j, PetscInt *size, PetscInt *cols, PetscScalar *vals) {
   PetscInt p=j*s->nx+i, w=p-1, e=p+1, s2=p-s->nx, n=p+s->nx;
   PetscScalar ae=s->hy/s->hx, aeb=0;
@@ -665,8 +573,8 @@ PetscErrorCode StokesStencilGradientY(Stokes *s, PetscInt i, PetscInt j, PetscIn
 }
 
 PetscErrorCode StokesRhsMomX(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val) {
-  PetscScalar x=i*s->hx+s->hx/2, y=j*s->hy+s->hy/2;
-  PetscScalar awb=s->hy/(s->hx/2);
+  PetscScalar y   = j*s->hy+s->hy/2;
+  PetscScalar awb = s->hy/(s->hx/2);
 
   PetscFunctionBegin;
   if (i == 0) { // west boundary
@@ -684,7 +592,7 @@ PetscErrorCode StokesRhsMomY(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val
 }
 
 PetscErrorCode StokesRhsMass(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val) {
-  PetscScalar x = i*s->hx+s->hx/2, y = j*s->hy+s->hy/2;
+  PetscScalar y   = j*s->hy+s->hy/2;
   PetscScalar aeb = s->hy;
 
   PetscFunctionBegin;
@@ -754,102 +662,47 @@ PetscErrorCode StokesCalcError(Stokes *s) {
 }
 
 int main(int argc, char **argv) {
-  Stokes         lin;
-  PetscInt       nx = 4, ny = 6;  
-  PetscBool      flg, pcflg, kspflg;
+  Stokes         s;
+  KSP            ksp;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  s.nx = 4;
+  s.ny = 6;
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-nx", &s.nx, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-ny", &s.ny, PETSC_NULL);CHKERRQ(ierr);
+  s.hx = 2.0/s.nx;
+  s.hy = 1.0/s.ny;
+  s.userPC = s.userKSP = PETSC_FALSE;
+  ierr = PetscOptionsHasName(PETSC_NULL, "-user_pc", &s.userPC);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL, "-user_ksp", &s.userKSP);CHKERRQ(ierr);
 
-  // set parameters
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nx",&nx,&flg); CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-ny",&ny,&flg); CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-fieldsplit_1_user_pc", &pcflg); CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-fieldsplit_1_user_ksp", &kspflg); CHKERRQ(ierr);
+  ierr = StokesSetupMatrix(&s);CHKERRQ(ierr);
+  ierr = StokesSetupIndexSets(&s);CHKERRQ(ierr);
+  ierr = StokesSetupVectors(&s);CHKERRQ(ierr);
 
-  // solve
-  ierr = StokesCreate(nx, ny, pcflg, kspflg, &lin);CHKERRQ(ierr);
-  ierr = StokesSolve(&lin);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp, s.A, s.A, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = StokesSetupPC(&s, ksp);CHKERRQ(ierr);
 
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp, s.b, s.x);CHKERRQ(ierr);
+
+  /* don't trust, verify! */
+  ierr = StokesCalcResidual(&s);CHKERRQ(ierr);
+  ierr = StokesCalcError(&s);CHKERRQ(ierr);
+  ierr = StokesWriteSolution(&s);CHKERRQ(ierr);
+
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = MatDestroy(&s.subA[0]); CHKERRQ(ierr);
+  ierr = MatDestroy(&s.subA[1]); CHKERRQ(ierr);
+  ierr = MatDestroy(&s.subA[2]); CHKERRQ(ierr);
+  ierr = MatDestroy(&s.subA[3]); CHKERRQ(ierr);
+  ierr = MatDestroy(&s.A); CHKERRQ(ierr);
+  ierr = VecDestroy(&s.x); CHKERRQ(ierr);
+  ierr = VecDestroy(&s.b); CHKERRQ(ierr);
+  ierr = VecDestroy(&s.y); CHKERRQ(ierr);
+  ierr = MatDestroy(&s.myS); CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
-
-/*
-
-
-  //  ierr = MatView(lin.subA[1],(PetscViewer)PETSC_VIEWER_DEFAULT);
-
-//  // draw sparsity pattern
-//  PetscDraw draw;
-//  PetscViewerDrawGetDraw(PETSC_VIEWER_DRAW_WORLD,0,&draw);
-//  PetscDrawSetPause(draw,-1);
-//  ierr = MatView(lin.subA[1],PETSC_VIEWER_DRAW_WORLD); CHKERRQ(ierr);
-//  ierr = MatView(lin.subA[1],(PetscViewer)PETSC_VIEWER_DEFAULT); CHKERRQ(ierr);
-
-//  ierr = MatView(lin.A,(PetscViewer)PETSC_VIEWER_DEFAULT);
-//  ierr = VecView(lin.b,(PetscViewer)PETSC_VIEWER_DEFAULT);
-//  ierr = VecView(lin.x,(PetscViewer)PETSC_VIEWER_DEFAULT);
-
-//    ierr = VecView(lin.x,(PetscViewer)PETSC_VIEWER_DEFAULT); CHKERRQ(ierr);
-//    ierr = VecView(lin.y,(PetscViewer)PETSC_VIEWER_DEFAULT); CHKERRQ(ierr);
-
-////  PetscReal r[lin.nx*lin.ny];
-////  PetscReal c[lin.nx*lin.ny];
-////  ierr = KSPComputeEigenvaluesExplicitly(lin.ksp,lin.nx*lin.ny,r,c); CHKERRQ(ierr);
-//
-
-//
-//  // N vector corresponding to block 1
-//  ierr = VecNestGetSubVec(nullvecs[0],1,&sub[1]); CHKERRQ(ierr);
-
-//  
-//  Mat S;
-//  Vec tmp;
-//  ierr = VecDuplicate(sub[1],&tmp); CHKERRQ(ierr);
-//  ierr = MatCreateSchurComplement(subA[0],subA[0],subA[1],subA[2],subA[3],&S);CHKERRQ(ierr); 
-//
-//  ierr = MatSchurComplementGetKSP(S,&ksp);
-//  ierr = KSPSetFromOptions(ksp); CHKERRQ(ierr);
-//
-//  ierr = VecView(sub[1],(PetscViewer)PETSC_VIEWER_DEFAULT);
-//  ierr = MatView(S,(PetscViewer)PETSC_VIEWER_DEFAULT);
-//
-//  ierr = MatMult(S,sub[1],tmp); CHKERRQ(ierr);
-//  val = VecNorm(tmp);
-//  ierr = PetscPrintf(PETSC_COMM_WORLD,"Null space [0] = %G\n",val); CHKERRQ(ierr);
-
-  //  ierr = VecView(nullvecs[0],(PetscViewer)PETSC_VIEWER_DEFAULT);
-  
-  // sanity check
-  ierr = MatMult(A,nullvecs[0],y); CHKERRQ(ierr);
-  val = VecNorm(y);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Null space [0] = %G\n",val); CHKERRQ(ierr);
-  
-  ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,PETSC_NULL,&nullsp); CHKERRQ(ierr);
-*/
-//PetscErrorCode stokes::setupVectors() {
-//
-//  // solution vector x
-//  ierr = VecCreate(PETSC_COMM_WORLD,&x); CHKERRQ(ierr);
-//  ierr = VecSetSizes(x,PETSC_DECIDE,3*nx*ny); CHKERRQ(ierr);
-//  ierr = VecSetType(x,VECMPI); CHKERRQ(ierr);
-//  ierr = VecSetRandom(x,PETSC_NULL); CHKERRQ(ierr);
-//  ierr = zeroAveragePressure(); CHKERRQ(ierr);
-//  //ierr = VecView(x,(PetscViewer)PETSC_VIEWER_DEFAULT); CHKERRQ(ierr);
-//
-//  // rhs vector b
-//  ierr = VecDuplicate(x,&b); CHKERRQ(ierr);
-//  ierr = MatMult(A,x,b); CHKERRQ(ierr);
-//
-//  // backup solution x in vector y
-//  ierr = VecDuplicate(x,&y); CHKERRQ(ierr);
-//  ierr = VecCopy(x,y); CHKERRQ(ierr);
-//
-//  //  ierr = VecView(b,(PetscViewer)PETSC_VIEWER_DEFAULT); CHKERRQ(ierr);
-//
-//  return 0;
-//}
-
-
-
