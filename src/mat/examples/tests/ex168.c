@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   MatInfo        info;
   PetscErrorCode ierr;
   PetscInt       m = 5,n,p,i,j,nrows,ncols;
-  PetscScalar    value = 1.0,*v;
+  PetscScalar    value = 1.0,*v,rval;
   PetscReal      norm,tol=1.e-15;
   PetscMPIInt    size,rank;
   PetscRandom    rand;
@@ -24,6 +24,8 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   //if (size <= 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is parallel example only!");
 
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   /* create matrix A */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   n = m;
@@ -46,8 +48,10 @@ int main(int argc,char **argv)
   ierr = PetscMalloc(nrows*ncols*sizeof *v,&v);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
+      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      v[i*ncols+j] = rval;
       //v[i*ncols+j] = (PetscReal)(rank); 
-      v[i*ncols+j] = (PetscReal)(100*rows[i]+cols[j]+3.14); 
+      //v[i*ncols+j] = (PetscReal)(100*rows[i]+cols[j]+3.14); 
       //if (rank==-1) {ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] set (%d, %d, %g)\n",rank,rows[i],cols[j],v[i*ncols+j]);CHKERRQ(ierr);}
     }
   }
@@ -81,7 +85,8 @@ int main(int argc,char **argv)
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
       //v[i*ncols+j] = (PetscReal)(rank);
-      v[i*ncols+j] = (PetscReal)(1000*rows[i]+cols[j]);
+      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      v[i*ncols+j] = rval;
       //if (rank==-1) {ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] set (%d, %d, %g)\n",rank,rows[i],cols[j],v[i*ncols+j]);CHKERRQ(ierr);}
     }
   }
@@ -117,7 +122,7 @@ int main(int argc,char **argv)
   /* Copy A to F */
   ierr = MatCopy(A,F,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   /* PF=LU or F=LU factorization - perms is ignored by Elemental; set finfo.dtcol to 1 or 0 to enable/disable partial pivoting  */ 
-  finfo.dtcol = 0;
+  finfo.dtcol = 1;
   ierr = MatLUFactor(F,0,0,&finfo);CHKERRQ(ierr);
   ierr = MatView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
@@ -153,6 +158,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&X);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -264,7 +264,7 @@ static PetscErrorCode MatCopy_Elemental(Mat A,Mat B,MatStructure str)
 #define __FUNCT__ "MatTranspose_Elemental"
 static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
 {
-  //Mat_Elemental  *x = (Mat_Elemental*)X->data;
+  /* not implemented yet */
 
   PetscFunctionBegin;
   PetscFunctionReturn(0);
