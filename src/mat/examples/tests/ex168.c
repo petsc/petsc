@@ -113,12 +113,14 @@ int main(int argc,char **argv)
   ierr = MatSetUp(F);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(F,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(F,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
   /* Copy A to F */
   ierr = MatCopy(A,F,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   /* PF=LU or F=LU factorization - perms is ignored by Elemental; set finfo.dtcol to 1 or 0 to enable/disable partial pivoting  */ 
   finfo.dtcol = 0;
   ierr = MatLUFactor(F,0,0,&finfo);CHKERRQ(ierr);
   ierr = MatView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   /* Create X - same size as B */
   ierr = MatCreate(PETSC_COMM_WORLD,&X);CHKERRQ(ierr);
   ierr = MatSetSizes(X,m,p,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -127,22 +129,27 @@ int main(int argc,char **argv)
   ierr = MatSetUp(X);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(X,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(X,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
   /* Solve LUX=PB or LUX=B */
   ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
   ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  /* Check norm(A*X - B) */
-  if(0)
-  {if (norm > tol){
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
-  }
   ierr = MatDestroy(&F);CHKERRQ(ierr);
 
+  /* Check norm(A*X - B) */
+  if(0) {
+    if (norm > tol){
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
+    }
   }
+
   /* out-place LU */
-  
+  ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+  //ierr = MatLUFactorSymbolic(F,A,0,0,0);CHKERRQ(ierr);
+  //ierr = MatLUFactorNumeric(F,A,0);CHKERRQ(ierr);
+  //ierr = MatSolve(F,B,X);CHKERRQ(ierr);
+  ierr = MatDestroy(&F);CHKERRQ(ierr);
 
   /* free space */
-  ierr = MatDestroy(&F);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&X);CHKERRQ(ierr);

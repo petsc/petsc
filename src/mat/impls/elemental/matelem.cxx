@@ -295,7 +295,6 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
 #define __FUNCT__ "MatLUFactor_Elemental"
 static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorInfo *info)
 {
-  A->factortype = MAT_FACTOR_LU;
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
 
   PetscFunctionBegin;
@@ -303,14 +302,36 @@ static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorI
   if (info->dtcol){
     printf("LUFactor w/ pivoting\n");
     elem::LU(*a->emat,*a->pivot);
-  }
-  else {
+  } else {
     printf("LUFactor w/o pivoting\n");
     elem::LU(*a->emat);
   }
+  A->factortype = MAT_FACTOR_LU; 
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN 
+#undef __FUNCT__
+#define __FUNCT__ "MatGetFactor_elemental_petsc"
+static PetscErrorCode MatGetFactor_elemental_petsc(Mat A,MatFactorType ftype,Mat *F)
+{
+  Mat            B;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  printf("MatGetFactor_elemental_petsc is called...\n");
+  /* Create the factorization matrix */
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATELEMENTAL);CHKERRQ(ierr);
+  ierr = MatSetUp(B);CHKERRQ(ierr);
+  B->factortype = ftype;
+  *F            = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOwnershipIS_Elemental"
 static PetscErrorCode MatGetOwnershipIS_Elemental(Mat A,IS *rows,IS *cols)
@@ -346,6 +367,7 @@ static PetscErrorCode MatGetOwnershipIS_Elemental(Mat A,IS *rows,IS *cols)
   }
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_Elemental"
@@ -371,6 +393,7 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   }
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetOwnershipIS_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetFactor_petsc_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -499,6 +522,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   a->interface->Attach(elem::LOCAL_TO_GLOBAL,*(a->emat));
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetOwnershipIS_C","MatGetOwnershipIS_Elemental",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetFactor_petsc_C","MatGetFactor_elemental_petsc",MatGetFactor_elemental_petsc);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
