@@ -128,7 +128,6 @@ PetscErrorCode StokesSolve(Stokes *s) {
   KSP      *subksp;
   PC       subpc;
   PetscInt n=1, its;
-  PetscLogDouble t1, t2;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -160,10 +159,7 @@ PetscErrorCode StokesSolve(Stokes *s) {
   // solve
   ierr = KSPSetInitialGuessNonzero(s->ksp,PETSC_TRUE); CHKERRQ(ierr);
   ierr = KSPSetFromOptions(s->ksp); CHKERRQ(ierr); //overrule above settings with command-line options
-  ierr = PetscGetCPUTime(&t1);CHKERRQ(ierr);
   ierr = KSPSolve(s->ksp,s->b,s->x); CHKERRQ(ierr);
-  ierr = PetscGetCPUTime(&t2);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," solver CPU time = %fs\n",10000*(t2-t1)); CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(s->ksp,&its); CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD," number of iterations = %D\n",its); CHKERRQ(ierr);
   //  ierr = VecView(x,(PetscViewer)PETSC_VIEWER_DEFAULT); CHKERRQ(ierr);
