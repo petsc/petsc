@@ -7,38 +7,39 @@ static char help[] = "Tests LU, Cholesky factorization and MatMatSolve() for a E
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat            A,F,B,X,Aaij,Baij;
-  MatInfo        info;
+  Mat            A,F,B,X;
   PetscErrorCode ierr;
   PetscInt       m = 5,n,p,i,j,nrows,ncols;
-  PetscScalar    value = 1.0,*v,rval;
+  PetscScalar    *v,rval;
   PetscReal      norm,tol=1.e-15;
-  PetscMPIInt    size,rank;
+  PetscMPIInt    size;
   PetscRandom    rand;
   const PetscInt *rows,*cols;
   IS             isrows,iscols;
-  PetscBool      flg;
+  PetscBool      mats_view=PETSC_FALSE;
   MatFactorInfo  finfo;
 
   PetscInitialize(&argc,&argv,(char*) 0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  //if (size <= 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is parallel example only!");
-
+  
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-  /* create matrix A */
+
+  /* Get local dimensions of matrices */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   n = m;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  p = m;
+  p = m/2;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
 
+  /* Create matrix A */
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Create Elemental matrix A\n");CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(A,MATELEMENTAL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-
   /* Set local matrix entries */
   ierr = MatGetOwnershipIS(A,&isrows,&iscols);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr);
@@ -64,18 +65,21 @@ int main(int argc,char **argv)
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  /*ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
-  ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-   ierr = MatDestroy(&Aaij);CHKERRQ(ierr);*/
+  if (mats_view){
+    Mat Aaij;
+    ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
+    ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = MatDestroy(&Aaij);CHKERRQ(ierr);
+  }
 
-  /* create rhs matrix B */
+  /* Create rhs matrix B */
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Create rhs matrix B ...\n");CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,p,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(B,MATELEMENTAL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
-
   ierr = MatGetOwnershipIS(B,&isrows,&iscols);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr);
   ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
@@ -84,10 +88,8 @@ int main(int argc,char **argv)
   ierr = PetscMalloc(nrows*ncols*sizeof *v,&v);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
-      //v[i*ncols+j] = (PetscReal)(rank);
       ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
       v[i*ncols+j] = rval;
-      //if (rank==-1) {ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] set (%d, %d, %g)\n",rank,rows[i],cols[j],v[i*ncols+j]);CHKERRQ(ierr);}
     }
   }
   ierr = MatSetValues(B,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
@@ -95,38 +97,19 @@ int main(int argc,char **argv)
   ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
-  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  /*ierr = MatComputeExplicitOperator(B,&Baij);CHKERRQ(ierr);
-  ierr = MatView(Baij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-   ierr = MatDestroy(&Baij);CHKERRQ(ierr);*/
-
-
-  /* Cholesky factorization - perm and factinfo are ignored by LAPACK */
-  /* in-place Cholesky */
-  /* out-place Cholesky */
-  
-
-  /* Create F - same size as A */
-  ierr = MatCreate(PETSC_COMM_WORLD,&F);CHKERRQ(ierr);
-  ierr = MatSetSizes(F,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(F,MATELEMENTAL);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(F);CHKERRQ(ierr);
-  ierr = MatSetUp(F);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(F,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(F,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  /* Copy A to F */
-  ierr = MatCopy(A,F,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  /* PF=LU or F=LU factorization - perms is ignored by Elemental; set finfo.dtcol to 1 or 0 to enable/disable partial pivoting  */ 
-  finfo.dtcol = 1;
-  ierr = MatLUFactor(F,0,0,&finfo);CHKERRQ(ierr);
-  ierr = MatView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  if (mats_view){
+    Mat Baij;
+    ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = MatComputeExplicitOperator(B,&Baij);CHKERRQ(ierr);
+    ierr = MatView(Baij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = MatDestroy(&Baij);CHKERRQ(ierr);
+  }
 
   /* Create X - same size as B */
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Create solution matrix X ...\n");CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&X);CHKERRQ(ierr);
   ierr = MatSetSizes(X,m,p,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(X,MATELEMENTAL);CHKERRQ(ierr);
@@ -135,9 +118,37 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(X,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(X,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* Solve LUX=PB or LUX=B */
+
+  /* Cholesky factorization */
+  /*------------------------*/
+  /* In-place Cholesky */
+  /* Out-place Cholesky */
+  
+
+  /* LU factorization */
+  /*------------------*/
+  /* In-place LU */
+  /* Create matrix factor F, then copy A to F */
+  ierr = MatCreate(PETSC_COMM_WORLD,&F);CHKERRQ(ierr);
+  ierr = MatSetSizes(F,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(F,MATELEMENTAL);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(F);CHKERRQ(ierr);
+  ierr = MatSetUp(F);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(F,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(F,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatCopy(A,F,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+
+  /* PF=LU or F=LU factorization - perms is ignored by Elemental; set finfo.dtcol !0 or 0 to enable/disable partial pivoting */ 
+  finfo.dtcol = 0.1;
+  ierr = MatLUFactor(F,0,0,&finfo);CHKERRQ(ierr);
+  if (mats_view){
+    ierr = MatView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+
+  /* Solve LUX = PB or LUX = B */
+  // ierr = MatSolve(F,b,x);CHKERRQ(ierr);
   ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
-  ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
 
   /* Check norm(A*X - B) */
@@ -147,11 +158,12 @@ int main(int argc,char **argv)
     }
   }
 
-  /* out-place LU */
+  /* Out-place LU */
   ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
-  //ierr = MatLUFactorSymbolic(F,A,0,0,0);CHKERRQ(ierr);
-  //ierr = MatLUFactorNumeric(F,A,0);CHKERRQ(ierr);
-  //ierr = MatSolve(F,B,X);CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic(F,A,0,0,&finfo);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(F,A,&finfo);CHKERRQ(ierr);
+  // ierr = MatSolve(F,b,x);CHKERRQ(ierr);
+  ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
 
   /* free space */

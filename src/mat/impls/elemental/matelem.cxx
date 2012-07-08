@@ -310,6 +310,28 @@ static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorI
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatLUFactorNumeric_Elemental"
+static PetscErrorCode  MatLUFactorNumeric_Elemental(Mat F,Mat A,const MatFactorInfo *info)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  printf("MatLUFactorNumeric_Elemental is called...\n");
+  ierr = MatCopy(A,F,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatLUFactor_Elemental(F,0,0,info);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatLUFactorSymbolic_Elemental"
+static PetscErrorCode  MatLUFactorSymbolic_Elemental(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
+{
+  PetscFunctionBegin;
+  /* F is create and allocated by MatGetFactor_elemental_petsc(), skip this routine. */
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_elemental_petsc"
@@ -486,6 +508,8 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   A->ops->scale           = MatScale_Elemental;
   A->ops->axpy            = MatAXPY_Elemental;
   A->ops->lufactor        = MatLUFactor_Elemental;
+  A->ops->lufactorsymbolic = MatLUFactorSymbolic_Elemental;
+   A->ops->lufactornumeric = MatLUFactorNumeric_Elemental;
   A->ops->matsolve        = MatMatSolve_Elemental;
   A->ops->copy            = MatCopy_Elemental;
   A->ops->transpose       = MatTranspose_Elemental;
