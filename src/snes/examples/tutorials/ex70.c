@@ -91,29 +91,21 @@ PetscScalar StokesExactPressure(const PetscScalar x) {
 
 PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp) {
   KSP           *subksp;
-  PC             subpc, pc;
+  PC             pc;
   PetscInt       n = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc, PCFIELDSPLIT);CHKERRQ(ierr);
-  ierr = PCFieldSplitSetType(pc, PC_COMPOSITE_SCHUR);CHKERRQ(ierr);
-  ierr = PCFieldSplitSetSchurFactType(pc, PC_FIELDSPLIT_SCHUR_FACT_LOWER);CHKERRQ(ierr);
+  ierr = PCFieldSplitSetIS(pc, "0", s->isg[0]);CHKERRQ(ierr);
+  ierr = PCFieldSplitSetIS(pc, "1", s->isg[1]);CHKERRQ(ierr);
   if (s->userPC) {
     ierr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS);CHKERRQ(ierr);
   }
-  ierr = PCFieldSplitSetIS(pc, "0", s->isg[0]);CHKERRQ(ierr);
-  ierr = PCFieldSplitSetIS(pc, "1", s->isg[1]);CHKERRQ(ierr);
-  ierr = PCSetUp(pc);CHKERRQ(ierr);
-  ierr = PCFieldSplitGetSubKSP(pc, &n, &subksp);CHKERRQ(ierr);
   if (s->userKSP) {
+    ierr = PCSetUp(pc);CHKERRQ(ierr);
+    ierr = PCFieldSplitGetSubKSP(pc, &n, &subksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(subksp[1], s->myS, s->myS, SAME_PRECONDITIONER);CHKERRQ(ierr);
-  }
-  if (!s->userPC && !s->userKSP) {
-    /* must be pcnone because A11 is zero */
-    ierr = KSPGetPC(subksp[1], &subpc);CHKERRQ(ierr);
-    ierr = PCSetType(subpc, PCNONE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -683,9 +675,8 @@ int main(int argc, char **argv) {
 
   ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp, s.A, s.A, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = StokesSetupPC(&s, ksp);CHKERRQ(ierr);
-
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = StokesSetupPC(&s, ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, s.b, s.x);CHKERRQ(ierr);
 
   /* don't trust, verify! */
