@@ -64,6 +64,7 @@ static size_t     TRMaxMem     = 0;
       Arrays to log information on all Mallocs
 */
 static int        PetscLogMallocMax = 10000,PetscLogMalloc = -1;
+static size_t     PetscLogMallocThreshold = 0;
 static size_t     *PetscLogMallocLength;
 static const char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallocFunction;
 
@@ -219,7 +220,7 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],c
   /*
          Allow logging of all mallocs made
   */
-  if (PetscLogMalloc > -1 && PetscLogMalloc < PetscLogMallocMax) {
+  if (PetscLogMalloc > -1 && PetscLogMalloc < PetscLogMallocMax && a >= PetscLogMallocThreshold) {
     if (!PetscLogMalloc) {
       PetscLogMallocLength    = (size_t*)malloc(PetscLogMallocMax*sizeof(size_t));
       if (!PetscLogMallocLength) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM," ");
@@ -489,19 +490,49 @@ PetscErrorCode  PetscMallocDump(FILE *fp)
     Not Collective
 
     Options Database Key:
-.  -malloc_log - Activates PetscMallocDumpLog()
++  -malloc_log <filename> - Activates PetscMallocDumpLog()
+-  -malloc_log_threshold <min> - Activates logging and sets a minimum size
 
     Level: advanced
 
-.seealso: PetscMallocDump(), PetscMallocDumpLog()
+.seealso: PetscMallocDump(), PetscMallocDumpLog(), PetscMallocSetDumpLogThreshold()
 @*/
-PetscErrorCode  PetscMallocSetDumpLog(void)
+PetscErrorCode PetscMallocSetDumpLog(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscLogMalloc = 0;
   ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMallocSetDumpLogThreshold"
+/*@C
+    PetscMallocSetDumpLogThreshold - Activates logging of all calls to PetscMalloc().
+
+    Not Collective
+
+    Input Arguments:
+.   logmin - minimum allocation size to log, or PETSC_DEFAULT
+
+    Options Database Key:
++  -malloc_log <filename> - Activates PetscMallocDumpLog()
+-  -malloc_log_threshold <min> - Activates logging and sets a minimum size
+
+    Level: advanced
+
+.seealso: PetscMallocDump(), PetscMallocDumpLog(), PetscMallocSetDumpLog()
+@*/
+PetscErrorCode PetscMallocSetDumpLogThreshold(PetscLogDouble logmin)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMallocSetDumpLog();CHKERRQ(ierr);
+  if (logmin < 0) logmin = 0.0; /* PETSC_DEFAULT or PETSC_DECIDE */
+  PetscLogMallocThreshold = (size_t)logmin;
   PetscFunctionReturn(0);
 }
 

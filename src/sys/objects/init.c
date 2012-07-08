@@ -250,7 +250,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   MPI_Comm       comm = PETSC_COMM_WORLD;
   PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flag;
   PetscErrorCode ierr;
-  PetscReal      si;
+  PetscReal      si,logthreshold;
   int            i;
   PetscMPIInt    rank;
   char           version[256];
@@ -265,6 +265,9 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       Setup the memory management; support for tracing malloc() usage 
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_log",&flg3);CHKERRQ(ierr);
+  logthreshold = 0.0;
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-malloc_log_threshold",&logthreshold,&flg1);CHKERRQ(ierr);
+  if (flg1) flg3 = PETSC_TRUE;
 #if defined(PETSC_USE_DEBUG)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc",&flg1,&flg2);CHKERRQ(ierr);
   if ((!flg2 || flg1) && !petscsetmallocvisited) {
@@ -279,7 +282,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   if (flg1 || flg2 || flg3) {ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);}
 #endif
   if (flg3) {
-    ierr = PetscMallocSetDumpLog();CHKERRQ(ierr); 
+    ierr = PetscMallocSetDumpLogThreshold((PetscLogDouble)logthreshold);CHKERRQ(ierr);
   }
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_debug",&flg1,PETSC_NULL);CHKERRQ(ierr);

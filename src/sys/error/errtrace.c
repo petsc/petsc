@@ -169,7 +169,7 @@ $     SETERRQ(comm,number,n,mess)
 PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscLogDouble    mem,rss;
-  PetscBool         flg1 = PETSC_FALSE,flg2 = PETSC_FALSE;
+  PetscBool         flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE;
   PetscMPIInt       rank = 0;
 
   PetscFunctionBegin;
@@ -187,7 +187,8 @@ PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fu
 	PetscMemoryGetCurrentUsage(&rss);
 	PetscOptionsGetBool(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
 	PetscOptionsGetBool(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
-	if (flg2) {
+	PetscOptionsHasName(PETSC_NULL,"-malloc_log_threshold",&flg3);
+	if (flg2 || flg3) {
 	  PetscMallocDumpLog(stdout);
 	} else {
 	  (*PetscErrorPrintf)("Memory allocated %.0f Memory used by process %.0f\n",mem,rss);
