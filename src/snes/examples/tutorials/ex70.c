@@ -106,6 +106,7 @@ PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
     ierr = PCFieldSplitGetSubKSP(pc, &n, &subksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(subksp[1], s->myS, s->myS, SAME_PRECONDITIONER);CHKERRQ(ierr);
+    ierr = PetscFree(subksp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -132,6 +133,7 @@ PetscErrorCode StokesWriteSolution(Stokes *s) {
       }
     }
     ierr = VecRestoreArray(s->x, &array); CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -363,6 +365,7 @@ PetscErrorCode StokesSetupApproxSchur(Stokes *s) {
   // restore A10
   ierr = MatGetDiagonal(s->subA[0],diag);
   ierr = MatDiagonalScale(s->subA[1],diag,PETSC_NULL);
+  ierr = VecDestroy(&diag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
