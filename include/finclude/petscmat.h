@@ -90,19 +90,7 @@
       parameter (MAT_SPD=19)
       parameter (MAT_NO_OFF_PROC_ENTRIES=20)
       parameter (MAT_NO_OFF_PROC_ZERO_ROWS=21)
-      parameter (MAT_DIAGBLOCK_CSR=22)
-      parameter (MAT_OFFDIAGBLOCK_CSR=23)
-      parameter (MAT_CSR=24)
-      parameter (MAT_DIAGBLOCK_DIA=25)
-      parameter (MAT_OFFDIAGBLOCK_DIA=26)
-      parameter (MAT_DIA=27)
-      parameter (MAT_DIAGBLOCK_ELL=28)
-      parameter (MAT_OFFDIAGBLOCK_ELL=29)
-      parameter (MAT_ELL=30)
-      parameter (MAT_DIAGBLOCK_HYB=31)
-      parameter (MAT_OFFDIAGBLOCK_HYB=32)
-      parameter (MAT_HYB=33)
-      parameter (NUM_MAT_OPTIONS=34)
+      parameter (NUM_MAT_OPTIONS=22)
 !
 !  MatFactorShiftType
 !
