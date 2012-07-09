@@ -1884,11 +1884,14 @@ namespace ALE {
       if ((xi >= 0.0) && (eta >= 0.0) && (xi + eta <= 2.0)) {
         return cell;
       }
+#if 0
       {
         ostringstream msg;
         msg << "Could not locate point: (" << point[0] <<","<< point[1] << ")" << std::endl;
         throw ALE::Exception(msg.str().c_str());
       }
+#endif
+      return -1;
     };
     point_type locatePoint_General_2D(const typename real_section_type::value_type p[], const point_type cell) {
       const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
@@ -1910,11 +1913,14 @@ namespace ALE {
         if ((cond1 || cond2)  && above) ++crossings;
       }
       if (crossings % 2) {return cell;}
+#if 0
       {
         ostringstream msg;
         msg << "Could not locate point: (" << p[0] <<","<< p[1] << ")" << std::endl;
         throw ALE::Exception(msg.str().c_str());
       }
+#endif
+      return -1;
     };
     //   Assume a simplex and 3D
     point_type locatePoint_Simplex_3D(const typename real_section_type::value_type point[], const point_type cell) {
