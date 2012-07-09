@@ -58,7 +58,9 @@ void PETSC_STDCALL dmdavecgetarrayf901_(DM *da,Vec *v,F90Array1d *a,PetscErrorCo
 
 void PETSC_STDCALL dmdavecrestorearrayf901_(DM *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  *ierr = VecRestoreArray(*v,0);if (*ierr) return;
+  PetscScalar *fa;
+  *ierr = F90Array1dAccess(a,PETSC_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = VecRestoreArray(*v,&fa);if (*ierr) return;
   *ierr = F90Array1dDestroy(&a,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
@@ -95,7 +97,9 @@ void PETSC_STDCALL dmdavecgetarrayf902_(DM *da,Vec *v,F90Array2d *a,PetscErrorCo
 
 void PETSC_STDCALL dmdavecrestorearrayf902_(DM *da,Vec *v,F90Array2d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  *ierr = VecRestoreArray(*v,0);if (*ierr) return;
+  PetscScalar *fa;
+  *ierr = F90Array2dAccess(a,PETSC_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = VecRestoreArray(*v,&fa);if (*ierr) return;
   *ierr = F90Array2dDestroy(&a,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
@@ -134,7 +138,9 @@ void PETSC_STDCALL dmdavecgetarrayf903_(DM *da,Vec *v,F90Array3d *a,PetscErrorCo
 
 void PETSC_STDCALL dmdavecrestorearrayf903_(DM *da,Vec *v,F90Array3d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  *ierr = VecRestoreArray(*v,0);if (*ierr) return;
+  PetscScalar *fa;
+  *ierr = F90Array3dAccess(a,PETSC_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = VecRestoreArray(*v,&fa);if (*ierr) return;
   *ierr = F90Array3dDestroy(&a,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
@@ -165,7 +171,14 @@ void PETSC_STDCALL dmdavecgetarrayf904_(DM *da,Vec *v,F90Array4d *a,PetscErrorCo
 
 void PETSC_STDCALL dmdavecrestorearrayf904_(DM *da,Vec *v,F90Array4d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  *ierr = VecRestoreArray(*v,0);if (*ierr) return;
+  PetscScalar *fa;
+  /* 
+    F90Array4dAccess is not implemented, so the following call would fail
+  */
+  /*
+  *ierr = F90Array4dAccess(a,PETSC_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  */
+  *ierr = VecRestoreArray(*v,&fa);if (*ierr) return;
   *ierr = F90Array4dDestroy(&a,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 

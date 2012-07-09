@@ -313,11 +313,11 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   /* create symbolic P=Rt */
   ierr = MatGetSymbolicTranspose_SeqAIJ(R,&rti,&rtj);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,R->cmap->n,R->rmap->n,rti,rtj,PETSC_NULL,&P);CHKERRQ(ierr);
-  (*C)->rmap->bs = R->rmap->bs;
-  (*C)->cmap->bs = R->rmap->bs;
 
   /* get symbolic C=Pt*A*P */
   ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ(A,P,fill,C);CHKERRQ(ierr);
+  (*C)->rmap->bs = R->rmap->bs;                                                                                        
+  (*C)->cmap->bs = R->rmap->bs; 
 
   /* create a supporting struct */
   ierr = PetscNew(Mat_RARt,&rart);CHKERRQ(ierr);
