@@ -3,8 +3,8 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    #self.download   = ['http://elemental.googlecode.com/files/elemental-0.74.tgz']
-    self.download = ['/home/xzhou/temp/elemental-dev.tgz']
+    self.download   = ['http://elemental.googlecode.com/files/elemental-0.75p1.tgz']
+    #self.download = ['/home/xzhou/temp/elemental-dev.tgz']
     self.liblist    = [['libelemental.a','libplcg.a','libpmrrr.a']]
     self.includes   = ['elemental.hpp']
     self.cxx              = 1
@@ -41,20 +41,6 @@ class Configure(PETSc.package.NewPackage):
     cxxflags = self.setCompilers.getCompilerFlags()
     args.append('-DCMAKE_CXX_FLAGS:STRING="'+cxxflags+'"')
     self.framework.popLanguage()
-
-
-    """self.framework.pushLanguage('C')
-    args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
-    cflags = self.setCompilers.getCompilerFlags()
-    args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
-    self.framework.popLanguage()
-
-    self.framework.pushLanguage('Cxx')
-
-    args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
-    cxxflags = self.setCompilers.getCompilerFlags()
-    args.append('-DCMAKE_CXX_FLAGS:STRING="'+cxxflags+'"')
-    self.framework.popLanguage()"""
 
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
