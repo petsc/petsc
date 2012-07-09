@@ -83,7 +83,6 @@ PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
 {
   PetscThreadComm_PThread ptcomm=(PetscThreadComm_PThread)tcomm->data;
   PetscErrorCode          ierr;
-  PetscInt                i;
 
   PetscFunctionBegin;
   if(!ptcomm) PetscFunctionReturn(0);
@@ -95,9 +94,6 @@ PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
     ierr = PetscFree(ptcomm->cpuset);CHKERRQ(ierr);
 #endif
-    /*    for(i=0;i<tcomm->nworkThreads;i++) {
-      ierr = pthread_attr_destroy(&ptcomm->attr[i]);CHKERRQ(ierr);
-      } */
     ierr = PetscFree(ptcomm->attr);CHKERRQ(ierr);
   }
   ierr = PetscFree(ptcomm->granks);CHKERRQ(ierr);
