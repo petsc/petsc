@@ -21,6 +21,7 @@ typedef struct gamg_TAG{
   PetscInt       data_sz; /* nloc*data_rows*data_cols */
   PetscInt       data_cell_rows; 
   PetscInt       data_cell_cols;
+  PetscReal      eigtarget[2];
   PetscReal     *data;      /* [data_sz] blocked vector of vertex data on fine grid (coordinates/nullspace) */
   PetscErrorCode (*graph)( PC, const Mat, Mat * );
   PetscErrorCode (*coarsen)( PC, Mat *, PetscCoarsenData** );

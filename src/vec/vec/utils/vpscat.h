@@ -54,8 +54,9 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
        the just is still out.
    */
   if (xin->valid_GPU_array == PETSC_CUSP_GPU) {
-    if (xin->spptr && ctx->spptr) 
+    if (xin->spptr && ctx->spptr) {
       ierr = VecCUSPCopyFromGPUSome_Public(xin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+    }
   }
 #endif
   xv   = *(PetscScalar**)xin->data;
@@ -91,7 +92,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
 
   if (!(mode & SCATTER_LOCAL)) {
-    if (!from->use_readyreceiver && !to->sendfirst && !to->use_alltoallv  & !to->use_window) {  
+    if (!from->use_readyreceiver && !to->sendfirst && !to->use_alltoallv  & !to->use_window) {      
       /* post receives since they were not previously posted    */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
@@ -223,8 +224,9 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
   ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_TXPETSCGPU)
   if (yin->valid_GPU_array == PETSC_CUSP_CPU) {
-    if (yin->spptr && ctx->spptr) 
+    if (yin->spptr && ctx->spptr) {
       ierr = VecCUSPCopyToGPUSome_Public(yin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+    }
   }
 #endif
   PetscFunctionReturn(0);

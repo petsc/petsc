@@ -158,18 +158,17 @@ static PetscErrorCode createLevel( const PC pc,
   
   /* get number of PEs to make active 'new_npe', reduce, can be any integer 1-P */
   {
-    PetscInt ncrs_eq_glob,ncrs_eq_ave;
+    PetscInt ncrs_eq_glob;
     ierr = MatGetSize( Cmat, &ncrs_eq_glob, PETSC_NULL );  CHKERRQ(ierr);
-    ncrs_eq_ave = ncrs_eq_glob/npe;
-    new_npe = (PetscMPIInt)((float)ncrs_eq_ave/(float)min_eq_proc + 0.5); /* hardwire min. number of eq/proc */
-    if( new_npe == 0 || ncrs_eq_ave < coarse_max ) new_npe = 1; 
+    new_npe = (PetscMPIInt)((float)ncrs_eq_glob/(float)min_eq_proc + 0.5); /* hardwire min. number of eq/proc */
+    if( new_npe == 0 || ncrs_eq_glob < coarse_max ) new_npe = 1; 
     else if ( new_npe >= nactive ) new_npe = nactive; /* no change, rare */
     if( isLast ) new_npe = 1;
   }
 
   if( !repart && new_npe==nactive ) { 
     *a_Amat_crs = Cmat; /* output - no repartitioning or reduction - could bail here */
-    }
+  }
   else {
     const PetscInt *idx,ndata_rows=pc_gamg->data_cell_rows,ndata_cols=pc_gamg->data_cell_cols,node_data_sz=ndata_rows*ndata_cols;
     PetscInt       *counts,*newproc_idx,ii,jj,kk,strideNew,*tidx,ncrs_prim_new,ncrs_eq_new,nloc_old;
@@ -966,8 +965,9 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
           ierr = MatGetSize( Aarr[level], &N1, PETSC_NULL );         CHKERRQ(ierr);
           ierr = MatGetSize( Aarr[level+1], &N0, PETSC_NULL );       CHKERRQ(ierr);
           /* heuristic - is this crap? */
-          emin = 1.*emax/((PetscReal)N1/(PetscReal)N0); 
-          emax *= 1.05;
+          /* emin = 1.*emax/((PetscReal)N1/(PetscReal)N0); */
+	  emin = emax * pc_gamg->eigtarget[0];
+          emax *= pc_gamg->eigtarget[1];
         }
         ierr = KSPChebyshevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
       } /* setup checby flag */
@@ -1353,6 +1353,7 @@ PetscErrorCode PCSetFromOptions_GAMG( PC pc )
   PC_MG           *mg = (PC_MG*)pc->data;
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
   PetscBool        flag;
+  PetscInt         two = 2;
   MPI_Comm         wcomm = ((PetscObject)pc)->comm;
 
   PetscFunctionBegin;
@@ -1409,6 +1410,8 @@ PetscErrorCode PCSetFromOptions_GAMG( PC pc )
                             &flag ); 
     CHKERRQ(ierr);
     if(flag && pc_gamg->verbose) PetscPrintf(wcomm,"\t[%d]%s threshold set %e\n",0,__FUNCT__,pc_gamg->threshold);
+
+    ierr = PetscOptionsRealArray("-pc_gamg_eigtarget","Target eigenvalue range as fraction of estimated maximum eigenvalue","PCGAMGSetEigTarget",pc_gamg->eigtarget,&two,PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscOptionsInt("-pc_mg_levels",
                            "Set number of MG levels",
@@ -1529,6 +1532,8 @@ PetscErrorCode  PCCreate_GAMG( PC pc )
   pc_gamg->Nlevels = GAMG_MAXLEVELS;
   pc_gamg->verbose = 0;
   pc_gamg->emax_id = -1;
+  pc_gamg->eigtarget[0] = 0.05;
+  pc_gamg->eigtarget[1] = 1.05;
 
   /* private events */
 #if defined PETSC_GAMG_USE_LOG

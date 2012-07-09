@@ -65,6 +65,7 @@ PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *
   char        command[PETSC_MAX_PATH_LEN];
   const char  *pdir;
   FILE        *fp;
+  PetscInt    rval;
 
   PetscFunctionBegin;
   /* Note: don't check error codes since this an error handler :-) */
@@ -72,7 +73,7 @@ PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *
   sprintf(command,"cd %s; emacsclient --no-wait +%d %s%s\n",pdir,line,dir,file);
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(MPI_COMM_WORLD,(char*)ctx,command,"r",&fp);
-  ierr = PetscPClose(MPI_COMM_WORLD,fp);
+  ierr = PetscPClose(MPI_COMM_WORLD,fp,&rval);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
@@ -119,7 +120,7 @@ $    int handler(MPI_Comm comm,int line,char *func,char *file,char *dir,PetscErr
 
    Fortran Notes: You can only push one error handler from Fortran before poping it.
 
-.seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
+.seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler(), PetscPushSignalHandler()
 
 @*/
 PetscErrorCode  PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm,int,const char *,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void *ctx)
@@ -233,7 +234,7 @@ static const char *PetscErrorStrings[] = {
           "Write to file failed",
           "Invalid pointer",
   /*69 */ "Arguments must have same type",
-          "",
+  /*70 */ "Attempt to use a pointer that does not point to a valid accessible location",
   /*71 */ "Detected zero pivot in LU factorization:\nsee http://www.mcs.anl.gov/petsc/documentation/faq.html#ZeroPivot",
   /*72 */ "Floating point exception",
   /*73 */ "Object is in wrong state",

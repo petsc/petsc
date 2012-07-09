@@ -159,12 +159,14 @@ PETSC_EXTERN PetscErrorCode DMHasInitialGuess(DM,PetscBool *);
 PETSC_EXTERN PetscErrorCode DMHasFunction(DM,PetscBool *);
 PETSC_EXTERN PetscErrorCode DMHasJacobian(DM,PetscBool *);
 PETSC_EXTERN PetscErrorCode DMHasVariableBounds(DM,PetscBool *);
+PETSC_EXTERN PetscErrorCode DMHasColoring(DM,PetscBool *);
 PETSC_EXTERN PetscErrorCode DMComputeInitialGuess(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMComputeFunction(DM,Vec,Vec);
 PETSC_EXTERN PetscErrorCode DMComputeJacobian(DM,Vec,Mat,Mat,MatStructure *);
 PETSC_EXTERN PetscErrorCode DMComputeJacobianDefault(DM,Vec,Mat,Mat,MatStructure *);
 PETSC_EXTERN PetscErrorCode DMComputeVariableBounds(DM,Vec,Vec);
 
+PETSC_EXTERN PetscErrorCode DMCreateSubDM(DM, PetscInt, PetscInt[], IS *, DM *);
 PETSC_EXTERN PetscErrorCode DMCreateFieldDecompositionDM(DM,const char*,DM*);
 PETSC_EXTERN PetscErrorCode DMCreateFieldDecomposition(DM,PetscInt*,char***,IS**,DM**);
 PETSC_EXTERN PetscErrorCode DMCreateDomainDecompositionDM(DM,const char*,DM*);

@@ -30,7 +30,7 @@ static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
       if (fgets(buf,1024,fp)) {
         SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error from compression command %s\n%s",par,buf);
       }
-      ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
+      ierr = PetscPClose(PETSC_COMM_SELF,fp,PETSC_NULL);CHKERRQ(ierr);
 #else
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif

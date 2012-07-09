@@ -1,7 +1,7 @@
 #requirespackage 'PETSC_HAVE_PTHREADCLASSES'
 ALL: lib
 
-CFLAGS   = ${VALGRIND_INCLUDE}
+CFLAGS   = 
 FFLAGS   =
 SOURCEC  = pthread.c lockfree.c # pthreadpool_main.c pthreadpool_chain.c pthreadpool_tree.c pthreadpool_true.c nopool.c
 SOURCEF  =

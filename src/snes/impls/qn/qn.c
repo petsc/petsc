@@ -2,9 +2,9 @@
 
 #define H(i,j)  qn->dXdFmat[i*qn->m + j]
 
-const char *SNESQNCompositionTypes[] =  {"SEQUENTIAL","COMPOSED","SNESQNCompositionType","SNES_QN_",0};
-const char *SNESQNScaleTypes[] =      {"NONE","SHANNO","LINESEARCH","JACOBIAN","SNESQNScaleType","SNES_QN_SCALING_",0};
-const char *SNESQNRestartTypes[] =      {"NONE","POWELL","PERIODIC","SNESQNRestartType","SNES_QN_RESTART_",0};
+const char *const SNESQNCompositionTypes[] =  {"SEQUENTIAL","COMPOSED","SNESQNCompositionType","SNES_QN_",0};
+const char *const SNESQNScaleTypes[] =      {"NONE","SHANNO","LINESEARCH","JACOBIAN","SNESQNScaleType","SNES_QN_SCALING_",0};
+const char *const SNESQNRestartTypes[] =      {"NONE","POWELL","PERIODIC","SNESQNRestartType","SNES_QN_RESTART_",0};
 
 typedef struct {
   Vec          *dX;              /* The change in X */

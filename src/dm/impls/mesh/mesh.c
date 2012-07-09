@@ -532,6 +532,8 @@ PetscErrorCode DMDestroy_Mesh(DM dm)
     ierr = PetscFree(next);CHKERRQ(ierr);
     next = tmp;
   }
+  /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
+  ierr = PetscFree(mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2189,7 +2191,7 @@ PetscErrorCode MatSetValuesTopology(Mat mat, DM dmr, PetscInt nrow, const PetscI
   PetscValidIntPointer(rowPoints,4);
   PetscValidHeaderSpecific(dmc,DM_CLASSID,5);
   PetscValidIntPointer(colPoints,7);
-  if (v) PetscValidDoublePointer(v,8);
+  if (v) PetscValidScalarPointer(v,8);
   ierr = DMMeshGetMesh(dmr, mr);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dmc, mc);CHKERRQ(ierr);
   typedef ALE::ISieveVisitor::IndicesVisitor<PETSC_MESH_TYPE::real_section_type,PETSC_MESH_TYPE::order_type,PetscInt> visitor_type;

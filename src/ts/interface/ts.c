@@ -1079,7 +1079,7 @@ PetscErrorCode  TSGetTimeStep(TS ts,PetscReal* dt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidDoublePointer(dt,2);
+  PetscValidRealPointer(dt,2);
   *dt = ts->time_step;
   PetscFunctionReturn(0);
 }
@@ -2128,7 +2128,7 @@ PetscErrorCode  TSGetTime(TS ts,PetscReal* t)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidDoublePointer(t,2);
+  PetscValidRealPointer(t,2);
   *t = ts->ptime;
   PetscFunctionReturn(0);
 }

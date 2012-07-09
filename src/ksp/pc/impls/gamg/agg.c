@@ -706,7 +706,6 @@ PetscErrorCode PCSetData_AGG( PC pc, Mat a_A )
     PetscInt bs,NN,MM;
     ierr = MatGetBlockSize( a_A, &bs ); CHKERRQ( ierr ); 
     ierr = MatGetLocalSize( a_A, &MM, &NN ); CHKERRQ( ierr );  assert(MM%bs==0);
-PetscPrintf(((PetscObject)a_A)->comm,"[%d]%s bs=%d MM=%d\n",0,__FUNCT__,bs,MM);
     ierr = PCSetCoordinates_AGG( pc, bs, MM/bs, PETSC_NULL ); CHKERRQ(ierr);
   }
   else {
@@ -962,7 +961,7 @@ PetscErrorCode PCGAMGgraph_AGG( PC pc,
   PetscMPIInt    mype,npe;
   Mat            Gmat;
   MPI_Comm       wcomm = ((PetscObject)Amat)->comm;
-  PetscBool  set,flg,symm;
+  PetscBool  /* set,flg , */symm;
 
   PetscFunctionBegin;
 #if defined PETSC_USE_LOG
@@ -971,8 +970,8 @@ PetscErrorCode PCGAMGgraph_AGG( PC pc,
   ierr = MPI_Comm_rank( wcomm, &mype);  CHKERRQ(ierr);
   ierr = MPI_Comm_size( wcomm, &npe);   CHKERRQ(ierr);
 
-  ierr = MatIsSymmetricKnown(Amat, &set, &flg);        CHKERRQ(ierr);
-  symm = (PetscBool)(pc_gamg_agg->sym_graph || !(set && flg));
+  /* ierr = MatIsSymmetricKnown(Amat, &set, &flg); CHKERRQ(ierr); || !(set && flg) -- this causes lot of symm calls */
+  symm = (PetscBool)(pc_gamg_agg->sym_graph );
 
   ierr  = PCGAMGCreateGraph( Amat, &Gmat ); CHKERRQ( ierr );
   ierr  = PCGAMGFilterGraph( &Gmat, vfilter, symm, verbose ); CHKERRQ( ierr );
@@ -1361,7 +1360,7 @@ PetscErrorCode PCGAMGOptprol_AGG( PC pc,
     ierr = VecReciprocal( diag );         CHKERRQ(ierr);
     ierr = MatDiagonalScale( tMat, diag, 0 ); CHKERRQ(ierr);
     ierr = VecDestroy( &diag );           CHKERRQ(ierr);
-    alpha = -1.5/emax;
+    alpha = -1.4/emax;
     ierr = MatAYPX( tMat, alpha, Prol, SUBSET_NONZERO_PATTERN );           CHKERRQ(ierr);
     ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
     Prol = tMat;

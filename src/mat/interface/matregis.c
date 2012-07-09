@@ -49,6 +49,11 @@ extern PetscErrorCode  MatCreate_SeqAIJCUSP(Mat);
 extern PetscErrorCode  MatCreate_MPIAIJCUSP(Mat);
 #endif
 
+#if defined PETSC_HAVE_TXPETSCGPU
+extern PetscErrorCode  MatCreate_SeqAIJCUSPARSE(Mat);
+extern PetscErrorCode  MatCreate_MPIAIJCUSPARSE(Mat);
+#endif
+
 #if defined PETSC_HAVE_FFTW
 extern PetscErrorCode  MatCreate_FFTW(Mat);
 #endif
@@ -139,6 +144,12 @@ PetscErrorCode  MatRegisterAll(const char path[])
   ierr = MatRegisterBaseName(MATAIJCUSP,MATSEQAIJCUSP,MATMPIAIJCUSP);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQAIJCUSP,     path,"MatCreate_SeqAIJCUSP",  MatCreate_SeqAIJCUSP);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPIAIJCUSP,     path,"MatCreate_MPIAIJCUSP",  MatCreate_MPIAIJCUSP);CHKERRQ(ierr);
+#endif
+
+#if defined PETSC_HAVE_TXPETSCGPU
+  ierr = MatRegisterBaseName(MATAIJCUSPARSE,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSEQAIJCUSPARSE,     path,"MatCreate_SeqAIJCUSPARSE",  MatCreate_SeqAIJCUSPARSE);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATMPIAIJCUSPARSE,     path,"MatCreate_MPIAIJCUSPARSE",  MatCreate_MPIAIJCUSPARSE);CHKERRQ(ierr);
 #endif
 
 #if defined PETSC_HAVE_FFTW

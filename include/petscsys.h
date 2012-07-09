@@ -355,7 +355,7 @@ M*/
 
 E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
-PETSC_EXTERN const char *PetscBools[];
+PETSC_EXTERN const char *const PetscBools[];
 
 /*E
     PetscCopyMode  - Determines how an array passed to certain functions is copied or retained
@@ -370,7 +370,7 @@ $   PETSC_USE_POINTER - the array values are NOT copied, the object uses the arr
 
 E*/
 typedef enum { PETSC_COPY_VALUES, PETSC_OWN_POINTER, PETSC_USE_POINTER} PetscCopyMode;
-PETSC_EXTERN const char *PetscCopyModes[];
+PETSC_EXTERN const char *const PetscCopyModes[];
 
 /*MC
     PETSC_FALSE - False value of PetscBool 
@@ -1085,6 +1085,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocDebug(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscMallocValidate(int,const char[],const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLog(void);
+PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLogThreshold(PetscLogDouble);
 PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
 
 /*E
@@ -1099,8 +1100,8 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);
 
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2, PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
-              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10} PetscDataType;
-PETSC_EXTERN const char *PetscDataTypes[];
+              PETSC_CHAR = 6,PETSC_BIT_LOGICAL = 7,PETSC_ENUM = 8,PETSC_BOOL=9, PETSC___FLOAT128 = 10,PETSC_OBJECT = 11} PetscDataType;
+PETSC_EXTERN const char *const PetscDataTypes[];
 
 #if defined(PETSC_USE_COMPLEX)
 #define  PETSC_SCALAR  PETSC_COMPLEX
@@ -1522,6 +1523,13 @@ $     PetscBool  flag = PetscNot(a)
 */
 #include "petscdraw.h"
 
+#if defined(PETSC_HAVE_VALGRIND)
+#  include <valgrind/valgrind.h>
+#  define PETSC_RUNNING_ON_VALGRIND RUNNING_ON_VALGRIND
+#else
+#  define PETSC_RUNNING_ON_VALGRIND PETSC_FALSE
+#endif
+
 /*
     Defines the base data structures for all PETSc objects
 */
@@ -1639,7 +1647,7 @@ PETSC_EXTERN PetscErrorCode PetscHelpPrintfDefault(MPI_Comm,const char [],...);
 
 #if defined(PETSC_HAVE_POPEN)
 PETSC_EXTERN PetscErrorCode PetscPOpen(MPI_Comm,const char[],const char[],const char[],FILE **);
-PETSC_EXTERN PetscErrorCode PetscPClose(MPI_Comm,FILE*);
+PETSC_EXTERN PetscErrorCode PetscPClose(MPI_Comm,FILE*,PetscInt*);
 #endif
 
 PETSC_EXTERN PetscErrorCode PetscSynchronizedPrintf(MPI_Comm,const char[],...);
@@ -2424,7 +2432,7 @@ struct _n_PetscSubcomm {
 };
 
 typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_INTERLACED=2} PetscSubcommType;
-PETSC_EXTERN const char *PetscSubcommTypes[];
+PETSC_EXTERN const char *const PetscSubcommTypes[];
 
 PETSC_EXTERN PetscErrorCode PetscSubcommCreate(MPI_Comm,PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommDestroy(PetscSubcomm*);
@@ -2438,5 +2446,6 @@ PETSC_EXTERN PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__
 #define __FUNCT__ "User provided function"
+
 
 #endif

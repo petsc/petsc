@@ -950,54 +950,73 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscBool  flg)
 
   PetscFunctionBegin;  
   switch (op) {
-    case MAT_ROW_ORIENTED:
-      a->roworiented       = flg;
-      break;
-    case MAT_KEEP_NONZERO_PATTERN:
-      a->keepnonzeropattern    = flg;
-      break;
-    case MAT_NEW_NONZERO_LOCATIONS:
-      a->nonew             = (flg ? 0 : 1);
-      break;
-    case MAT_NEW_NONZERO_LOCATION_ERR:     
-      a->nonew             = (flg ? -1 : 0);
-      break;
-    case MAT_NEW_NONZERO_ALLOCATION_ERR:
-      a->nonew             = (flg ? -2 : 0);
-      break;
-    case MAT_UNUSED_NONZERO_LOCATION_ERR:
-      a->nounused          = (flg ? -1 : 0);
-      break;
-    case MAT_IGNORE_ZERO_ENTRIES:
-      a->ignorezeroentries = flg;
-      break;
-    case MAT_CHECK_COMPRESSED_ROW:
-      a->compressedrow.check = flg;
-      break;
-    case MAT_SPD:
-      A->spd_set                         = PETSC_TRUE;
-      A->spd                             = flg;
-      if (flg) {
-        A->symmetric                     = PETSC_TRUE;
-        A->structurally_symmetric        = PETSC_TRUE;
-        A->symmetric_set                 = PETSC_TRUE;
-        A->structurally_symmetric_set    = PETSC_TRUE;
-      }
-      break;
-    case MAT_SYMMETRIC:
-    case MAT_STRUCTURALLY_SYMMETRIC:
-    case MAT_HERMITIAN:
-    case MAT_SYMMETRY_ETERNAL:
-    case MAT_NEW_DIAGONALS:
-    case MAT_IGNORE_OFF_PROC_ENTRIES:
-    case MAT_USE_HASH_TABLE:
-      ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
-      break;
-    case MAT_USE_INODES:
-      /* Not an error because MatSetOption_SeqAIJ_Inode handles this one */
-      break;
-    default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %d",op);
+  case MAT_ROW_ORIENTED:
+    a->roworiented       = flg;
+    break;
+  case MAT_KEEP_NONZERO_PATTERN:
+    a->keepnonzeropattern    = flg;
+    break;
+  case MAT_NEW_NONZERO_LOCATIONS:
+    a->nonew             = (flg ? 0 : 1);
+    break;
+  case MAT_NEW_NONZERO_LOCATION_ERR:     
+    a->nonew             = (flg ? -1 : 0);
+    break;
+  case MAT_NEW_NONZERO_ALLOCATION_ERR:
+    a->nonew             = (flg ? -2 : 0);
+    break;
+  case MAT_UNUSED_NONZERO_LOCATION_ERR:
+    a->nounused          = (flg ? -1 : 0);
+    break;
+  case MAT_IGNORE_ZERO_ENTRIES:
+    a->ignorezeroentries = flg;
+    break;
+  case MAT_CHECK_COMPRESSED_ROW:
+    a->compressedrow.check = flg;
+    break;
+  case MAT_SPD:
+    A->spd_set                         = PETSC_TRUE;
+    A->spd                             = flg;
+    if (flg) {
+      A->symmetric                     = PETSC_TRUE;
+      A->structurally_symmetric        = PETSC_TRUE;
+      A->symmetric_set                 = PETSC_TRUE;
+      A->structurally_symmetric_set    = PETSC_TRUE;
+    }
+    break;
+  case MAT_SYMMETRIC:
+  case MAT_STRUCTURALLY_SYMMETRIC:
+  case MAT_HERMITIAN:
+  case MAT_SYMMETRY_ETERNAL:
+  case MAT_NEW_DIAGONALS:
+  case MAT_IGNORE_OFF_PROC_ENTRIES:
+  case MAT_USE_HASH_TABLE:
+    ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
+    break;
+  case MAT_USE_INODES:
+    /* Not an error because MatSetOption_SeqAIJ_Inode handles this one */
+    break;
+#if defined(PETSC_HAVE_TXPETSCGPU)
+    // Sorry, I don't know how else to add MatOptions for data specific
+    // to GPU classes without protecting against it in this case statement.
+    // If anyone knows of a better way, let me know. Paul
+  case MAT_DIAGBLOCK_CSR:
+  case MAT_OFFDIAGBLOCK_CSR:
+  case MAT_CSR:
+  case MAT_DIAGBLOCK_DIA:
+  case MAT_OFFDIAGBLOCK_DIA:
+  case MAT_DIA:
+  case MAT_DIAGBLOCK_ELL:
+  case MAT_OFFDIAGBLOCK_ELL:
+  case MAT_ELL:
+  case MAT_DIAGBLOCK_HYB:
+  case MAT_OFFDIAGBLOCK_HYB:
+  case MAT_HYB:
+    /* Not an error because MatSetOption_SeqAIJCUSP/CUSPARSE handle these options */
+    break;
+#endif
+  default:
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %d",op);
   }
   ierr = MatSetOption_SeqAIJ_Inode(A,op,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);

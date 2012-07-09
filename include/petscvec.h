@@ -150,7 +150,7 @@ PETSC_EXTERN PetscErrorCode VecRestoreSubVector(Vec,IS,Vec*);
 .seealso: VecNorm(), VecNormBegin(), VecNormEnd(), MatNorm()
 E*/
 typedef enum {NORM_1=0,NORM_2=1,NORM_FROBENIUS=2,NORM_INFINITY=3,NORM_1_AND_2=4} NormType;
-PETSC_EXTERN const char *NormTypes[];
+PETSC_EXTERN const char *const NormTypes[];
 #define NORM_MAX NORM_INFINITY
 
 /*MC

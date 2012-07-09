@@ -49,8 +49,12 @@ static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
   PC_SACUSPPoly      *sa = (PC_SACUSPPoly*)pc->data;
   PetscBool      flg = PETSC_FALSE;
   PetscErrorCode ierr;
+#if !defined(PETSC_USE_COMPLEX)
+  // protect these in order to avoid compiler warnings. This preconditioner does 
+  // not work for complex types.
   Mat_SeqAIJCUSP *gpustruct;
-
+  CUSPMATRIX* mat;	
+#endif
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUSP matrices");
@@ -62,9 +66,19 @@ static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
     } 
   }
   try {
+#if defined(PETSC_USE_COMPLEX)
+    sa->SACUSPPoly = 0; CHKERRQ(1); /* TODO */
+#else
     ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
     gpustruct  = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);
-    sa->SACUSPPoly = new cuspsaprecond(*(CUSPMATRIX*)gpustruct->mat);
+#ifdef PETSC_HAVE_TXPETSCGPU
+    mat = (CUSPMATRIX*)gpustruct->mat->getCsrMatrix();
+#else
+    mat = (CUSPMATRIX*)gpustruct->mat;
+#endif
+
+    sa->SACUSPPoly = new cuspsaprecond(*mat);
+#endif
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   } 
@@ -77,7 +91,11 @@ static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
 #define __FUNCT__ "PCApplyRichardson_SACUSPPoly"
 static PetscErrorCode PCApplyRichardson_SACUSPPoly(PC pc, Vec b, Vec y, Vec w,PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
+#if !defined(PETSC_USE_COMPLEX)
+  // protect these in order to avoid compiler warnings. This preconditioner does 
+  // not work for complex types.
   PC_SACUSPPoly      *sac = (PC_SACUSPPoly*)pc->data;
+#endif
   PetscErrorCode ierr;
   CUSPARRAY      *barray,*yarray;
   
@@ -86,8 +104,12 @@ static PetscErrorCode PCApplyRichardson_SACUSPPoly(PC pc, Vec b, Vec y, Vec w,Pe
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = VecCUSPGetArrayRead(b,&barray);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayReadWrite(y,&yarray);CHKERRQ(ierr);
-  cusp::default_monitor<PetscScalar> monitor(*barray,its,rtol,abstol);
+  cusp::default_monitor<PetscReal> monitor(*barray,its,rtol,abstol);
+#if defined(PETSC_USE_COMPLEX)
+  CHKERRQ(1); /* TODO */
+#else
   sac->SACUSPPoly->solve(*barray,*yarray,monitor);
+#endif
   *outits = monitor.iteration_count();
   if (monitor.converged()){
     /* how to discern between converging from RTOL or ATOL?*/
@@ -135,7 +157,11 @@ static PetscErrorCode PCApply_SACUSPPoly(PC pc,Vec x,Vec y)
   ierr = VecCUSPGetArrayRead(x,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayWrite(y,&yarray);CHKERRQ(ierr);
   try {
+#if defined(PETSC_USE_COMPLEX)
+    CHKERRQ(1); /* TODO */
+#else
     cusp::multiply(*sac->SACUSPPoly,*xarray,*yarray);
+#endif
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   } 

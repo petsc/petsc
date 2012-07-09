@@ -86,7 +86,7 @@ extern void  MPIAPI VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 extern void  MPIAPI PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 EXTERN_C_END
 
-const char *NormTypes[] = {"1","2","FROBENIUS","INFINITY","1_AND_2","NormType","NORM_",0};
+const char *const NormTypes[] = {"1","2","FROBENIUS","INFINITY","1_AND_2","NormType","NORM_",0};
 PetscInt   NormIds[7];  /* map from NormType to IDs used to cache Normvalues */
 
 static PetscBool  VecPackageInitialized = PETSC_FALSE;

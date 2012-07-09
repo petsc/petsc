@@ -57,48 +57,40 @@ PetscErrorCode RHSJacobianFD(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructur
   Vec            jj1,jj2,xx2;
   PetscInt       i,N,start,end,j;
   PetscErrorCode ierr;
-  PetscScalar    dx,*y,scale,*xx,wscale;
+  PetscScalar    dx,*y,scale,wscale;
   PetscReal      amax,epsilon = 1.e-8; /* assumes PetscReal precision */
   PetscReal      dx_min = 1.e-16,dx_par = 1.e-1;
   MPI_Comm       comm;
-  PetscBool      assembled;
 
   ierr = VecDuplicate(xx1,&jj1);CHKERRQ(ierr);
   ierr = VecDuplicate(xx1,&jj2);CHKERRQ(ierr);
   ierr = VecDuplicate(xx1,&xx2);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)xx1,&comm);CHKERRQ(ierr);
-  ierr = MatAssembled(*J,&assembled);CHKERRQ(ierr);
-  if (assembled) {
-    ierr = MatZeroEntries(*J);CHKERRQ(ierr);
-  }
+  ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 
   ierr = VecGetSize(xx1,&N);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xx1,&start,&end);CHKERRQ(ierr);
-  ierr = TSComputeRHSFunction(ts,ts->ptime,xx1,jj1);CHKERRQ(ierr);
+  ierr = TSComputeRHSFunction(ts,t,xx1,jj1);CHKERRQ(ierr);
 
   /* Compute Jacobian approximation, 1 column at a time.
       xx1 = current iterate, jj1 = F(xx1)
       xx2 = perturbed iterate, jj2 = F(xx2)
    */
-  ierr = VecGetArray(xx1,&xx);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     ierr = VecCopy(xx1,xx2);CHKERRQ(ierr);
     if (i>= start && i<end) {
-      dx = xx[i-start];
-#if !defined(PETSC_USE_COMPLEX)
-      if (dx < dx_min && dx >= 0.0) dx = dx_par;
-      else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
-#else
+      ierr = VecGetValues(xx1,1,&i,&dx);CHKERRQ(ierr);
       if (PetscAbsScalar(dx) < dx_min && PetscRealPart(dx) >= 0.0) dx = dx_par;
       else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < dx_min) dx = -dx_par;
-#endif
       dx *= epsilon;
       wscale = 1.0/dx;
       ierr = VecSetValues(xx2,1,&i,&dx,ADD_VALUES);CHKERRQ(ierr);
     } else {
       wscale = 0.0;
     }
+    ierr = VecAssemblyBegin(xx2);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(xx2);CHKERRQ(ierr);
     ierr = TSComputeRHSFunction(ts,t,xx2,jj2);CHKERRQ(ierr);
     ierr = VecAXPY(jj2,-1.0,jj1);CHKERRQ(ierr);
     /* Communicate scale to all processors */
@@ -109,15 +101,14 @@ PetscErrorCode RHSJacobianFD(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructur
     amax *= 1.e-14;
     for (j=start; j<end; j++) {
       if (PetscAbsScalar(y[j-start]) > amax) {
-        ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(*B,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = VecRestoreArray(jj2,&y);CHKERRQ(ierr);
   }
 
-  ierr = VecRestoreArray(xx1,&xx);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *flag =  DIFFERENT_NONZERO_PATTERN;
 
   ierr = VecDestroy(&jj1);CHKERRQ(ierr);

@@ -78,12 +78,14 @@ cmake:
 foo:
 
 # Builds library
-lib:  ${SOURCEC}
+lib:  ${SOURCE}
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} chkpetsc_dir
 	@-if [ "${SPECIALLIB}" = "yes" ] ; then \
 	   ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  speciallib;  \
 	  else \
-            if [ "${OBJSC}" != "" ] ; then \
+            if [ "${SOURCECU}" != "" ] ; then \
+              ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libcu; fi ; \
+            if [ "${SOURCEC}" != "" ] ; then \
               ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libc; fi ; \
             if [ "${SOURCEF}" != "" ] ; then \
 		${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libf; fi ; \
@@ -106,15 +108,14 @@ libfast:  ${SOURCECU} ${SOURCEC} ${SOURCEF}
 
 libfastcompile:
 	-@if [ "${SOURCECU}" != "" ]; then \
-	echo ${CUDAC} ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}; \
-	${CUDAC} ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}; \
+                    ${PETSC_CUCOMPILE}; \
 	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSCU}; \
 		    ${RM} ${OBJSCU} ${OBJSCU:.o=.lo}; \
 	    fi; \
           if [ "${SOURCEC}" != "" ]; then \
                     ${PETSC_COMPILE}; \
-	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
-		    ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
+	            ${AR} ${FAST_AR_FLAGS} ${LIBNAME} ${OBJSC}; \
+		    ${RM} ${OBJSC} ${OBJSC:.o=.lo}; \
 	    fi; \
 	if [ "${SOURCEF}" != "" ]; then \
                     ${PETSC_FCOMPILE}; \
@@ -417,14 +418,14 @@ getmpiexec:
 #
 #   Compiles CUDA code
 .cu.o:
-	${CUDAC} ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}"  $<
+	${PETSC_CUCOMPILE_SINGLE} $<
 
-.cu.a: 
-	${CUDAC} ${CUDAC_FLAGS} -c --compiler-options="${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS}" ${SOURCECU}
+.cu.a:
+	${PETSC_CUCOMPILE_SINGLE} $<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo
- 
+
 .c.a .cpp.a .cc.a .C.a: 
 	-${PETSC_COMPILE_SINGLE} $<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o

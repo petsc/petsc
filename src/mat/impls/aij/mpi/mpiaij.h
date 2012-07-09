@@ -66,7 +66,14 @@ typedef struct {
 
   /* Used by MatMatMult() and MatPtAP() */
   Mat_PtAPMPI   *ptap;
+
+  /* Used by MPICUSP and MPICUSPARSE classes */
+  void * spptr;
 } Mat_MPIAIJ;
+
+EXTERN_C_BEGIN
+extern PetscErrorCode  MatCreate_MPIAIJ(Mat);
+EXTERN_C_END
 
 extern PetscErrorCode MatSetColoring_MPIAIJ(Mat,ISColoring);
 extern PetscErrorCode MatSetValuesAdic_MPIAIJ(Mat,void*);
@@ -96,11 +103,13 @@ extern PetscErrorCode MatPtAPNumeric_MPIAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat);
+extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 
 extern PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat,Mat,MatReuse,PetscInt**,PetscInt**,MatScalar**,Mat*);
 extern PetscErrorCode MatSetValues_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar [],InsertMode);
 extern PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat);
 extern PetscErrorCode PetscContainerDestroy_Mat_MatMatMultMPI(void*);
+extern PetscErrorCode MatSetOption_MPIAIJ(Mat,MatOption,PetscBool);
 
 extern PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);

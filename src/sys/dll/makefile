@@ -1,6 +1,6 @@
 
 ALL: lib 
-CFLAGS    =  ${VALGRIND_INCLUDE}
+CFLAGS    =  
 FFLAGS    =
 CPPFLAGS  = 
 SOURCEC	  = dlimpl.c dl.c   reg.c

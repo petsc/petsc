@@ -276,7 +276,7 @@ PetscErrorCode  PetscDrawSetSave_X(PetscDraw draw,const char *filename)
   if (!rank) {
     ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"rm -f %s_[0-9]*.Gif %s.Mpeg",draw->savefilename,draw->savefilename);CHKERRQ(ierr);
     ierr = PetscPOpen(((PetscObject)draw)->comm,PETSC_NULL,command,"r",&fd);CHKERRQ(ierr);
-    ierr = PetscPClose(((PetscObject)draw)->comm,fd);CHKERRQ(ierr);
+    ierr = PetscPClose(((PetscObject)draw)->comm,fd,PETSC_NULL);CHKERRQ(ierr);
   }
 #endif
   PetscFunctionReturn(0);

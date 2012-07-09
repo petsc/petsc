@@ -42,6 +42,9 @@ J*/
 #define MATAIJCUSP         "aijcusp"
 #define MATSEQAIJCUSP      "seqaijcusp"
 #define MATMPIAIJCUSP      "mpiaijcusp"
+#define MATAIJCUSPARSE     "aijcusparse"
+#define MATSEQAIJCUSPARSE  "seqaijcusparse"
+#define MATMPIAIJCUSPARSE  "mpiaijcusparse"
 #define MATAIJPERM         "aijperm"
 #define MATSEQAIJPERM      "seqaijperm"
 #define MATMPIAIJPERM      "mpiaijperm"
@@ -108,7 +111,7 @@ J*/
 #define MATSOLVERPETSC        "petsc"
 #define MATSOLVERPLAPACK      "plapack"
 #define MATSOLVERBAS          "bas"
-
+#define MATSOLVERCUSPARSE     "cusparse"
 #define MATSOLVERBSTRM        "bstrm"
 #define MATSOLVERSBSTRM       "sbstrm"
 
@@ -370,7 +373,15 @@ typedef enum {MAT_ROW_ORIENTED,MAT_NEW_NONZERO_LOCATIONS,
               MAT_IGNORE_LOWER_TRIANGULAR,MAT_ERROR_LOWER_TRIANGULAR,
               MAT_GETROW_UPPERTRIANGULAR,MAT_UNUSED_NONZERO_LOCATION_ERR,
               MAT_SPD,MAT_NO_OFF_PROC_ENTRIES,MAT_NO_OFF_PROC_ZERO_ROWS,
+#if !defined(PETSC_HAVE_TXPETSCGPU)
               NUM_MAT_OPTIONS} MatOption;
+#else
+              MAT_DIAGBLOCK_CSR, MAT_OFFDIAGBLOCK_CSR, MAT_CSR, 
+              MAT_DIAGBLOCK_DIA, MAT_OFFDIAGBLOCK_DIA, MAT_DIA, 
+              MAT_DIAGBLOCK_ELL, MAT_OFFDIAGBLOCK_ELL, MAT_ELL, 
+              MAT_DIAGBLOCK_HYB, MAT_OFFDIAGBLOCK_HYB, MAT_HYB, 
+              NUM_MAT_OPTIONS} MatOption;
+#endif
 PETSC_EXTERN const char *MatOptions[];
 PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool );
 PETSC_EXTERN PetscErrorCode MatGetType(Mat,const MatType*);
@@ -1011,7 +1022,7 @@ PETSC_EXTERN PetscErrorCode MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
 
 S*/
 typedef enum {MAT_SHIFT_NONE,MAT_SHIFT_NONZERO,MAT_SHIFT_POSITIVE_DEFINITE,MAT_SHIFT_INBLOCKS} MatFactorShiftType;
-PETSC_EXTERN const char *MatFactorShiftTypes[];
+PETSC_EXTERN const char *const MatFactorShiftTypes[];
 
 /*S 
    MatFactorInfo - Data passed into the matrix factorization routines
@@ -1296,11 +1307,11 @@ PETSC_EXTERN PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartit
 PETSC_EXTERN PetscErrorCode MatPartitioningParmetisGetEdgeCut(MatPartitioning, PetscInt *);
 
 typedef enum { MP_CHACO_MULTILEVEL=1,MP_CHACO_SPECTRAL=2,MP_CHACO_LINEAR=4,MP_CHACO_RANDOM=5,MP_CHACO_SCATTERED=6 } MPChacoGlobalType;
-PETSC_EXTERN const char *MPChacoGlobalTypes[];
+PETSC_EXTERN const char *const MPChacoGlobalTypes[];
 typedef enum { MP_CHACO_KERNIGHAN=1,MP_CHACO_NONE=2 } MPChacoLocalType;
-PETSC_EXTERN const char *MPChacoLocalTypes[];
+PETSC_EXTERN const char *const MPChacoLocalTypes[];
 typedef enum { MP_CHACO_LANCZOS=0,MP_CHACO_RQI=1 } MPChacoEigenType;
-PETSC_EXTERN const char *MPChacoEigenTypes[];
+PETSC_EXTERN const char *const MPChacoEigenTypes[];
 
 PETSC_EXTERN PetscErrorCode MatPartitioningChacoSetGlobal(MatPartitioning,MPChacoGlobalType);
 PETSC_EXTERN PetscErrorCode MatPartitioningChacoGetGlobal(MatPartitioning,MPChacoGlobalType*);
@@ -1332,7 +1343,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning,PetscB
 PETSC_EXTERN PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning,PetscBool);
 
 typedef enum { MP_PTSCOTCH_QUALITY,MP_PTSCOTCH_SPEED,MP_PTSCOTCH_BALANCE,MP_PTSCOTCH_SAFETY,MP_PTSCOTCH_SCALABILITY } MPPTScotchStrategyType;
-PETSC_EXTERN const char *MPPTScotchStrategyTypes[];
+PETSC_EXTERN const char *const MPPTScotchStrategyTypes[];
 
 PETSC_EXTERN PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning,PetscReal);
 PETSC_EXTERN PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning,PetscReal*);
@@ -1602,7 +1613,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_RARt=136,
                MATOP_RARt_SYMBOLIC=137,
                MATOP_RARt_NUMERIC=138,
-               MATOP_SET_BLOCK_SIZES=139
+               MATOP_SET_BLOCK_SIZES=139,
+               MATOP_AYPX=140
              } MatOperation;
 PETSC_EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscBool *);
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));
@@ -1773,9 +1785,25 @@ PETSC_EXTERN PetscErrorCode MatMumpsSetIcntl(Mat,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat,PetscReal);
 #endif
 
+#if defined PETSC_HAVE_CUDA
+#define GPUStorageFormat char*
+#define CSR              "csr"
+#define DIA              "dia"
+#define ELL              "ell"
+#define HYB              "hyb"
+#endif
+
+#if defined PETSC_HAVE_TXPETSCGPU
+PETSC_EXTERN PetscErrorCode  MatCreateSeqAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
+PETSC_EXTERN PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
+PETSC_EXTERN PetscErrorCode  MatSetOption_SeqAIJCUSPARSE(Mat,MatOption,PetscBool);
+PETSC_EXTERN PetscErrorCode  MatAIJCUSPARSESetGPUStorageFormatForMatSolve(Mat,GPUStorageFormat);
+#endif
+
 #if defined(PETSC_HAVE_CUSP)
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
+PETSC_EXTERN PetscErrorCode MatSetOption_SeqAIJCUSP(Mat,MatOption,PetscBool);
 #endif
 
 /* 

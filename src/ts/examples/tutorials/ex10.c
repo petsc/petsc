@@ -1037,7 +1037,6 @@ int main(int argc, char *argv[])
   Mat            A,B;
   PetscInt       steps;
   PetscReal      ftime;
-  MatFDColoring  matfdcoloring = 0;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = RDCreate(PETSC_COMM_WORLD,&rd);CHKERRQ(ierr);
@@ -1048,6 +1047,7 @@ int main(int argc, char *argv[])
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
+  ierr = TSSetDM(ts,rd->da);CHKERRQ(ierr);
   switch (rd->discretization) {
   case DISCRETIZATION_FD:
     ierr = TSSetIFunction(ts,PETSC_NULL,RDIFunction_FD,rd);CHKERRQ(ierr);
@@ -1070,13 +1070,7 @@ int main(int argc, char *argv[])
   case JACOBIAN_MATRIXFREE:
     break;
   case JACOBIAN_FD_COLORING: {
-    ISColoring     iscoloring;
-    ierr = DMCreateColoring(rd->da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringCreate(B,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr);
   } break;
   case JACOBIAN_FD_FULL:
     ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobian,ts);CHKERRQ(ierr);
@@ -1098,8 +1092,6 @@ int main(int argc, char *argv[])
     ierr = RDView(rd,X,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
-
-  if (matfdcoloring) {ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);}
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = RDDestroy(&rd);CHKERRQ(ierr);

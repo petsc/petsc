@@ -208,7 +208,7 @@ PETSC_EXTERN PetscErrorCode KSPGCRSetModifyPC(KSP,PetscErrorCode (*)(KSP,PetscIn
 
 E*/
 typedef enum {KSP_GMRES_CGS_REFINE_NEVER, KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS} KSPGMRESCGSRefinementType;
-PETSC_EXTERN const char *KSPGMRESCGSRefinementTypes[];
+PETSC_EXTERN const char *const KSPGMRESCGSRefinementTypes[];
 /*MC
     KSP_GMRES_CGS_REFINE_NEVER - Just do the classical (unmodified) Gram-Schmidt process
 
@@ -555,7 +555,7 @@ PETSC_EXTERN PetscErrorCode KSPComputeExplicitOperator(KSP,Mat *);
 .seealso: KSPCGSetType()
 E*/
 typedef enum {KSP_CG_SYMMETRIC=0,KSP_CG_HERMITIAN=1} KSPCGType;
-PETSC_EXTERN const char *KSPCGTypes[];
+PETSC_EXTERN const char *const KSPCGTypes[];
 
 PETSC_EXTERN PetscErrorCode KSPCGSetType(KSP,KSPCGType);
 PETSC_EXTERN PetscErrorCode KSPCGUseSingleReduction(KSP,PetscBool );

@@ -12,7 +12,7 @@ OBJSC    = aij.o aijfact.o ij.o fdaij.o \
 OBJSF    = 
 LIBBASE  = libpetscmat
 DIRS     = spooles superlu umfpack essl lusol matlab csrperm crl bas ftn-kernels seqcusp \
-           cholmod seqpthread
+           cholmod seqpthread seqcusparse
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/
 

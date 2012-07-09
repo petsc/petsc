@@ -33,7 +33,7 @@
        array(1:dof,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from 
        DMDAGetCorners() for a global array or DMDAGetGhostCorners() for a local array. Include finclude/petscdmda.h90 to access this routine.
 
-  Due to bugs in the compiler DMDAVecGetArrayF90() does not work with gfortran versions before 2.5
+  Due to bugs in the compiler DMDAVecGetArrayF90() does not work with gfortran versions before 4.5
 
   Level: intermediate
 

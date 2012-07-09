@@ -247,7 +247,7 @@ $                         DMGetLocalVector() and DMGetGlobalVector() this could 
 .seealso: DMCreateColoring()
 E*/
 typedef enum {IS_COLORING_GLOBAL,IS_COLORING_GHOSTED} ISColoringType;
-PETSC_EXTERN const char *ISColoringTypes[];
+PETSC_EXTERN const char *const ISColoringTypes[];
 typedef unsigned PETSC_IS_COLOR_VALUE_TYPE ISColoringValue;
 PETSC_EXTERN PetscErrorCode ISAllGatherColors(MPI_Comm,PetscInt,ISColoringValue*,PetscInt*,ISColoringValue*[]);
 

@@ -36,7 +36,8 @@ PetscErrorCode  DMDASetCoordinates(DM da,Vec c)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(c,VEC_CLASSID,2);
   ierr = VecGetBlockSize(c,&bs);CHKERRQ(ierr);
-  if (bs != dd->dim) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"Block size of vector must match dimension of DMDA");
+  /* I am relaxing this requirement, so that we can use a PetscSection */
+  /* if (bs != dd->dim) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"Block size of vector must match dimension of DMDA"); */
   ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
   ierr = VecDestroy(&dd->coordinates);CHKERRQ(ierr);
   dd->coordinates = c;

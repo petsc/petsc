@@ -76,7 +76,7 @@ const char *const PetscViewerFormats[] = {
  
    Concepts: PetscViewer^setting format
 
-.seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
+.seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(), PetscViewerType,
           PetscViewerPushFormat(), PetscViewerPopFormat(), PetscViewerDrawOpen(),PetscViewerSocketOpen()
 @*/
 PetscErrorCode  PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)

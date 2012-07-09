@@ -1,5 +1,5 @@
 #include <../src/snes/impls/ncg/snesncgimpl.h> /*I "petscsnes.h" I*/
-const char         *SNESNCGTypes[] = {"FR","PRP","HS","DY","CD","SNESNCGType","SNES_NCG_",0};
+const char *const SNESNCGTypes[] = {"FR","PRP","HS","DY","CD","SNESNCGType","SNES_NCG_",0};
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESReset_NCG"
@@ -75,7 +75,7 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes)
   PetscErrorCode     ierr;
   PetscBool          debug;
   SNESLineSearch     linesearch;
-  SNESNCGType        ncgtype;
+  SNESNCGType        ncgtype=ncg->type;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES NCG options");CHKERRQ(ierr);

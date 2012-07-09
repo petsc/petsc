@@ -114,12 +114,6 @@ struct _n_PetscUniformSection {
   PetscInt numDof;       /* Describes layout of storage, point --> (constant # of values, (p - pStart)*constant # of values) */
 };
 
-#if 0
-/* Should I protect these for C++? */
-PETSC_EXTERN PetscErrorCode PetscSectionGetDof(PetscUniformSection, PetscInt, PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscSectionGetOffset(PetscUniformSection, PetscInt, PetscInt*);
-#endif
-
 /*S
   PetscSection - This is a mapping from DMMESH points to sets of values, which is
   our presentation of a fibre bundle.
@@ -177,6 +171,7 @@ PETSC_EXTERN PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscSectionVecView(PetscSection, Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscSectionDestroy(PetscSection*);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscSection *);
+PETSC_EXTERN PetscErrorCode PetscSectionCreateSubsection(PetscSection, PetscInt, PetscInt [], PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionGetPointLayout(MPI_Comm, PetscSection, PetscLayout *);
 PETSC_EXTERN PetscErrorCode PetscSectionGetValueLayout(MPI_Comm, PetscSection, PetscLayout *);
 
@@ -329,6 +324,7 @@ PETSC_EXTERN PetscLogEvent VEC_CUSPCopyToGPU, VEC_CUSPCopyFromGPU;
 PETSC_EXTERN PetscLogEvent VEC_CUSPCopyToGPUSome, VEC_CUSPCopyFromGPUSome;
 
 #if defined(PETSC_HAVE_CUSP)
+PETSC_EXTERN PetscErrorCode VecCUSPAllocateCheckHost(Vec v);
 PETSC_EXTERN PetscErrorCode VecCUSPCopyFromGPU(Vec v);
 #endif
 

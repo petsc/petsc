@@ -32,7 +32,7 @@ PetscErrorCode  KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidDoublePointer(rnorm,2);
+  PetscValidRealPointer(rnorm,2);
   *rnorm = ksp->rnorm;
   PetscFunctionReturn(0);
 }

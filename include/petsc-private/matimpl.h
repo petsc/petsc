@@ -182,6 +182,9 @@ struct _MatOps {
   PetscErrorCode (*rart)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*rartsymbolic)(Mat,Mat,PetscReal,Mat*); /* double dispatch wrapper routine */
   PetscErrorCode (*rartnumeric)(Mat,Mat,Mat);             /* double dispatch wrapper routine */
+  /*139*/
+  PetscErrorCode (*setblocksizes)(Mat,PetscInt,PetscInt);
+  PetscErrorCode (*aypx)(Mat,PetscScalar,Mat,MatStructure);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -1273,15 +1276,19 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy(PetscInt *lnk,PetscBT
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLLCondensedCreate_Scalable"
 /* 
- Same as PetscLLCondensedCreate(), but does not use O(lnk_max) bitarray 
+ Same as PetscLLCondensedCreate(), but does not use non-scalable O(lnk_max) bitarray 
+  Input Parameters:
+    nlnk_max  - max length of the list
+  Output Parameters:
+    lnk       - list created and initialized 
 */
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt lnk_max,PetscInt **lnk)
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt nlnk_max,PetscInt **lnk)
 {
   PetscErrorCode ierr;
   PetscInt       *llnk;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(2*(lnk_max+2)*sizeof(PetscInt),lnk);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*(nlnk_max+2)*sizeof(PetscInt),lnk);CHKERRQ(ierr);
   llnk = *lnk;
   llnk[0] = 0;               /* number of entries on the list */
   llnk[2] = PETSC_MAX_INT;   /* value in the head node */ 
@@ -1364,13 +1371,13 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedDestroy_Scalable(PetscInt *ln
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLLCondensedCreate_fast"
-PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_fast(PetscInt lnk_max,PetscInt **lnk)
+PETSC_STATIC_INLINE PetscErrorCode PetscLLCondensedCreate_fast(PetscInt nlnk_max,PetscInt **lnk)
 {
   PetscErrorCode ierr;
   PetscInt       *llnk;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(3*(lnk_max+3)*sizeof(PetscInt),lnk);CHKERRQ(ierr);
+  ierr = PetscMalloc(3*(nlnk_max+3)*sizeof(PetscInt),lnk);CHKERRQ(ierr);
   llnk = *lnk;
   llnk[0] = 0;   /* nlnk: number of entries on the list */
   llnk[1] = 0;          /* number of integer entries represented in list */
@@ -1488,7 +1495,7 @@ PETSC_EXTERN PetscLogEvent MAT_Getsymtranspose, MAT_Transpose_SeqAIJ, MAT_Getsym
 
 PETSC_EXTERN PetscLogEvent MATMFFD_Mult;
 PETSC_EXTERN PetscLogEvent MAT_GetMultiProcBlock;
-PETSC_EXTERN PetscLogEvent MAT_CUSPCopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
+PETSC_EXTERN PetscLogEvent MAT_CUSPCopyToGPU, MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
 PETSC_EXTERN PetscLogEvent MAT_Merge;
 
 #endif

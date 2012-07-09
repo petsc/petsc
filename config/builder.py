@@ -136,6 +136,12 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
 -snes_mf_operator -pack_dm_mat_type aij -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 \
 -snes_mf_operator -pack_dm_mat_type nest -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'}],
+                        'src/snes/examples/tutorials/ex31':   [# Mantle Convection
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0     -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian',
+                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient 2 1 1 1 identity src/snes/examples/tutorials/ex31.h'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.0     -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type additive -fieldsplit_0_ksp_type fgmres -fieldsplit_0_pc_type fieldsplit -fieldsplit_0_pc_fieldsplit_type schur -fieldsplit_0_pc_fieldsplit_schur_factorization_type full -fieldsplit_0_fieldsplit_velocity_ksp_type preonly -fieldsplit_0_fieldsplit_velocity_pc_type lu -fieldsplit_0_fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_0_fieldsplit_pressure_pc_type jacobi -fieldsplit_temperature_ksp_type preonly -fieldsplit_temperature_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -bc_type dirichlet -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2 -pc_fieldsplit_type additive -fieldsplit_0_ksp_type fgmres -fieldsplit_0_pc_type fieldsplit -fieldsplit_0_pc_fieldsplit_type schur -fieldsplit_0_pc_fieldsplit_schur_factorization_type full -fieldsplit_0_fieldsplit_velocity_ksp_type preonly -fieldsplit_0_fieldsplit_velocity_pc_type lu -fieldsplit_0_fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_0_fieldsplit_pressure_pc_type jacobi -fieldsplit_temperature_ksp_type preonly -fieldsplit_temperature_pc_type lu -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'},
+                                                               {'numProcs': 1, 'args': '-run_type full -refinement_limit 0.00625 -dm_complex_separate_marker -bc_type mantle -interpolate 1 -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi -snes_monitor_short -ksp_monitor_short -snes_converged_reason -snes_view -show_solution 0'}],
                         'src/snes/examples/tutorials/ex33':   [{'numProcs': 1, 'args': '-snes_converged_reason -snes_monitor_short'}],
                         'src/snes/examples/tutorials/ex52':   [# 2D Laplacian 0-3
                                                                {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function',
@@ -284,10 +290,13 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -show_initial -show_residual -show_jacobian'},
                                                                ],
 
-                        'src/snes/examples/tutorials/ex67':   [{'numProcs': 1, 'args': '-dm_view -snes_monitor -ksp_monitor -snes_view'},
+                        'src/snes/examples/tutorials/ex67':   [{'numProcs': 1, 'args': '-dm_view -snes_monitor -ksp_monitor -snes_view',
+                                                                'setup': 'bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py 2 1 2 1 laplacian 2 0 1 1 gradient src/snes/examples/tutorials/ex67.h'},
                                                                {'numProcs': 2, 'args': '-dm_view -snes_monitor -ksp_monitor -snes_view'}],
                         'src/snes/examples/tutorials/ex68':   [{'numProcs': 1, 'args': '-snes_monitor -ksp_monitor -snes_view'},
                                                                {'numProcs': 1, 'args': '-snes_monitor -ksp_monitor -snes_view -problem 2 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_detect_saddle_point -pc_fieldsplit_schur_fact_type lower -fieldsplit_0_pc_type lu -fieldsplit_1_ksp_rtol 1e-10'}],
+                        'src/snes/examples/tutorials/ex70':   [{'numProcs': 1, 'args': '-nx 32 -ny 48 -ksp_type fgmres -ksp_initial_guess_nonzero -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -user_ksp -ksp_monitor -ksp_view'},
+                                                               {'numProcs': 2, 'args': '-nx 32 -ny 48 -ksp_type fgmres -ksp_initial_guess_nonzero -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -user_ksp -ksp_monitor -ksp_view'}],
                         'src/ts/examples/tutorials/ex18':      {'numProcs': 1, 'args': '-snes_mf -ts_monitor_solution -ts_monitor -snes_monitor'},
                         }
 
@@ -328,7 +337,7 @@ class MakeParser(object):
     '''Parses a PETSc action
     - Return a dictionary for the portions of a run'''
     import re
-    m = re.match('-@\$\{MPIEXEC\} -n (?P<numProcs>\d+) ./(?P<ex>ex\w+) (?P<args>[-.,\w ]+) >', lines[0])
+    m = re.match('-@\$\{MPIEXEC\} -n (?P<numProcs>\d+) ./(?P<ex>ex\w+)(?P<args>[-.,\w ]+)>', lines[0])
     if not m:
       raise RuntimeError('Could not parse launch sequence:\n'+lines[0])
     m2 = re.search('\$\{DIFF\} output/%s_(?P<num>\w+)\.out' % m.group('ex'), lines[1])
@@ -346,7 +355,7 @@ class MakeParser(object):
     targets = self.getTargets(maketext)
     srcDir  = os.path.dirname(filename)
     regressionParameters = {}
-    testTargets = [r for r in makevars[testTarget].split(' ') if r]
+    testTargets = [r for r in makevars.get(testTarget, '').split(' ') if r]
     examples    = [e for e in testTargets if e.endswith('.PETSc')]
     for ex in examples:
       base   = os.path.splitext(ex)[0]
@@ -668,9 +677,9 @@ class DirectoryTreeWalker(logger.Logger):
     - Otherwise calls checkSourceDir()'''
     base = os.path.basename(dirname)
 
-    if base == 'examples':
+    if base in ['examples', 'tutorials']:
       return self.allowExamples
-    elif base in ['externalpackages', 'projects', 'tutorials', 'benchmarks', 'contrib']:
+    elif base in ['externalpackages', 'projects', 'benchmarks', 'contrib']:
       return False
     elif base in ['ftn-auto', 'ftn-custom', 'f90-custom']:
       return self.allowFortran
@@ -1308,7 +1317,7 @@ class PETScMaker(script.Script):
    else:
      walker = DirectoryTreeWalker(self.argDB, self.log, self.configInfo)
      if totalRebuild:
-       dirs = map(lambda d: os.path.join(rootDir, 'src', d), ['inline', 'sys', 'vec', 'mat', 'dm', 'ksp', 'snes', 'ts', 'docs', 'tops'])
+       dirs = map(lambda d: os.path.join(rootDir, 'src', d), ['inline', 'sys', 'vec', 'mat', 'dm', 'ksp', 'snes', 'ts', 'docs'])
      else:
        dirs = [rootDir]
      if parallel:

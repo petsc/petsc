@@ -11,7 +11,15 @@ typedef struct {
   PetscInt mr[2];               /* First incomplete/ragged rank of (row) column space */
   elem::Grid *grid;
   elem::DistMatrix<PetscScalar> *emat;
+  elem::Matrix<PetscScalar> *esubmat; /* Used for adding off-proc matrix entries */
+  elem::AxpyInterface<PetscScalar> *interface;
+  elem::DistMatrix<PetscInt,elem::VC,elem::STAR> *pivot; /* pivot vector representing the pivot matrix P in PA = LU */
 } Mat_Elemental;
+
+typedef struct {
+  elem::Grid *grid;
+  PetscInt   grid_refct;
+} Mat_Elemental_Grid;
 
 PETSC_STATIC_INLINE void P2RO(Mat A,PetscInt rc,PetscInt p,PetscInt *rank,PetscInt *offset) {
   Mat_Elemental *a = (Mat_Elemental*)A->data;

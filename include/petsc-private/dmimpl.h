@@ -5,6 +5,8 @@
 
 #include <petscdm.h>
 
+typedef PetscErrorCode (*NullSpaceFunc)(DM dm, PetscInt field, MatNullSpace *nullSpace);
+
 typedef struct _DMOps *DMOps;
 struct _DMOps {
   PetscErrorCode (*view)(DM,PetscViewer); 
@@ -42,11 +44,11 @@ struct _DMOps {
 
   PetscErrorCode (*computevariablebounds)(DM,Vec,Vec);
 
+  PetscErrorCode (*createsubdm)(DM,PetscInt,PetscInt*,IS*,DM*);
   PetscErrorCode (*createfielddecompositiondm)(DM,const char*,DM*);
   PetscErrorCode (*createfielddecomposition)(DM,PetscInt*,char***,IS**,DM**);
   PetscErrorCode (*createdomaindecompositiondm)(DM,const char*,DM*);
   PetscErrorCode (*createdomaindecomposition)(DM,PetscInt*,char***,IS**,IS**,DM**);
-
 };
 
 typedef struct _DMCoarsenHookLink *DMCoarsenHookLink;
@@ -106,6 +108,8 @@ struct _p_DM {
   /* Allows a non-standard data layout */
   PetscSection           defaultSection;       /* Layout for local vectors */
   PetscSection           defaultGlobalSection; /* Layout for global vectors */
+  /* Null spaces -- of course I should make this have a variable number of fields */
+  NullSpaceFunc          nullspaceConstructors[10];
 };
 
 PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;

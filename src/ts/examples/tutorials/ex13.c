@@ -42,12 +42,10 @@ int main(int argc,char **argv)
   PetscInt       steps,maxsteps = 1000;     /* iterations for convergence */
   PetscErrorCode ierr;
   DM             da;
-  ISColoring     iscoloring;
   PetscReal      ftime,dt;
   MonitorCtx     usermonitor;       /* user-defined monitor context */
   AppCtx         user;              /* user-defined work context */
   PetscBool      coloring=PETSC_FALSE;
-  MatFDColoring  matfdcoloring;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -84,14 +82,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_coloring",&coloring,PETSC_NULL);CHKERRQ(ierr);
   if (coloring){
     SNES snes;
-    ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-
-    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,SNESDefaultComputeJacobianColor,PETSC_NULL);CHKERRQ(ierr);
   }
 
   ftime = 1.0;
@@ -120,9 +112,6 @@ int main(int argc,char **argv)
      Free work space.  
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatDestroy(&J);CHKERRQ(ierr);
-  if (coloring){
-    ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
-  }
   ierr = VecDestroy(&u);CHKERRQ(ierr);    
   ierr = VecDestroy(&r);CHKERRQ(ierr);    
   ierr = TSDestroy(&ts);CHKERRQ(ierr);

@@ -1,0 +1,176 @@
+  0 KSP Residual norm 3.374743066687e+00 
+  1 KSP Residual norm 3.374738861520e+00 
+  2 KSP Residual norm 3.341813103920e+00 
+  3 KSP Residual norm 2.923860042036e+00 
+  4 KSP Residual norm 1.848536962305e+00 
+  5 KSP Residual norm 9.392388710557e-01 
+  6 KSP Residual norm 4.711735273340e-01 
+  7 KSP Residual norm 2.431913358467e-01 
+  8 KSP Residual norm 1.391589585511e-01 
+  9 KSP Residual norm 1.189333183389e-01 
+ 10 KSP Residual norm 8.698009315313e-02 
+ 11 KSP Residual norm 6.180207853573e-02 
+ 12 KSP Residual norm 4.452983653730e-02 
+ 13 KSP Residual norm 3.361275429822e-02 
+ 14 KSP Residual norm 2.874470872215e-02 
+ 15 KSP Residual norm 2.024122164764e-02 
+ 16 KSP Residual norm 1.376183246603e-02 
+ 17 KSP Residual norm 8.696581035144e-03 
+ 18 KSP Residual norm 5.286718533193e-03 
+ 19 KSP Residual norm 3.276643830402e-03 
+ 20 KSP Residual norm 1.990158605327e-03 
+ 21 KSP Residual norm 1.375053434674e-03 
+ 22 KSP Residual norm 1.150827170784e-03 
+ 23 KSP Residual norm 7.817003251190e-04 
+ 24 KSP Residual norm 5.277109643704e-04 
+ 25 KSP Residual norm 3.730484101637e-04 
+ 26 KSP Residual norm 3.035580088306e-04 
+ 27 KSP Residual norm 2.523837384155e-04 
+ 28 KSP Residual norm 1.928486264563e-04 
+ 29 KSP Residual norm 1.530073847897e-04 
+ 30 KSP Residual norm 1.249053116812e-04 
+ 31 KSP Residual norm 1.151384964031e-04 
+ 32 KSP Residual norm 1.130489579187e-04 
+ 33 KSP Residual norm 1.022939601045e-04 
+ 34 KSP Residual norm 9.882996242698e-05 
+ 35 KSP Residual norm 9.265364349652e-05 
+ 36 KSP Residual norm 8.452828643226e-05 
+ 37 KSP Residual norm 8.095034684768e-05 
+ 38 KSP Residual norm 7.643625074427e-05 
+ 39 KSP Residual norm 6.484225033865e-05 
+ 40 KSP Residual norm 6.104238373645e-05 
+ 41 KSP Residual norm 5.426215059751e-05 
+ 42 KSP Residual norm 4.242801062814e-05 
+ 43 KSP Residual norm 3.740446116500e-05 
+ 44 KSP Residual norm 3.132337954318e-05 
+KSP Object: 1 MPI processes
+  type: fgmres
+    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    GMRES: happy breakdown tolerance 1e-30
+  maximum iterations=10000
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+  right preconditioning
+  using nonzero initial guess
+  using UNPRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
+  type: fieldsplit
+    FieldSplit with Schur preconditioner, factorization LOWER
+    Preconditioner for the Schur complement formed from the block diagonal part of A11
+    Split info:
+    Split number 0 Defined by IS
+    Split number 1 Defined by IS
+    KSP solver for A00 block 
+      KSP Object:      (fieldsplit_0_)       1 MPI processes
+        type: gmres
+          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          GMRES: happy breakdown tolerance 1e-30
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        left preconditioning
+        using PRECONDITIONED norm type for convergence test
+      PC Object:      (fieldsplit_0_)       1 MPI processes
+        type: bjacobi
+          block Jacobi: number of blocks = 1
+          Local solve is same for all blocks, in the following KSP and PC objects:
+          KSP Object:          (fieldsplit_0_sub_)           1 MPI processes
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object:          (fieldsplit_0_sub_)           1 MPI processes
+            type: ilu
+              ILU: out-of-place factorization
+              0 levels of fill
+              tolerance for zero pivot 2.22045e-14
+              using diagonal shift to prevent zero pivot
+              matrix ordering: natural
+              factor fill ratio given 1, needed 1
+                Factored matrix follows:
+                  Matrix Object:                   1 MPI processes
+                    type: seqaij
+                    rows=3072, cols=3072
+                    package used to perform factorization: petsc
+                    total: nonzeros=15040, allocated nonzeros=15040
+                    total number of mallocs used during MatSetValues calls =0
+                      not using I-node routines
+            linear system matrix = precond matrix:
+            Matrix Object:            (a00_)             1 MPI processes
+              type: seqaij
+              rows=3072, cols=3072
+              total: nonzeros=15040, allocated nonzeros=15360
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+        linear system matrix = precond matrix:
+        Matrix Object:        (a00_)         1 MPI processes
+          type: mpiaij
+          rows=3072, cols=3072
+          total: nonzeros=15040, allocated nonzeros=30720
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node (on process 0) routines
+    KSP solver for S = A11 - A10 inv(A00) A01 
+      KSP Object:      (fieldsplit_1_)       1 MPI processes
+        type: gmres
+          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+          GMRES: happy breakdown tolerance 1e-30
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        left preconditioning
+        using PRECONDITIONED norm type for convergence test
+      PC Object:      (fieldsplit_1_)       1 MPI processes
+        type: bjacobi
+          block Jacobi: number of blocks = 1
+          Local solve is same for all blocks, in the following KSP and PC objects:
+          KSP Object:          (fieldsplit_1_sub_)           1 MPI processes
+            type: preonly
+            maximum iterations=10000, initial guess is zero
+            tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+            left preconditioning
+            using NONE norm type for convergence test
+          PC Object:          (fieldsplit_1_sub_)           1 MPI processes
+            type: ilu
+              ILU: out-of-place factorization
+              0 levels of fill
+              tolerance for zero pivot 2.22045e-14
+              using diagonal shift to prevent zero pivot
+              matrix ordering: natural
+              factor fill ratio given 1, needed 1
+                Factored matrix follows:
+                  Matrix Object:                   1 MPI processes
+                    type: seqaij
+                    rows=1536, cols=1536
+                    package used to perform factorization: petsc
+                    total: nonzeros=7680, allocated nonzeros=7680
+                    total number of mallocs used during MatSetValues calls =0
+                      not using I-node routines
+            linear system matrix = precond matrix:
+            Matrix Object:             1 MPI processes
+              type: seqaij
+              rows=1536, cols=1536
+              total: nonzeros=7680, allocated nonzeros=7680
+              total number of mallocs used during MatSetValues calls =0
+                not using I-node routines
+        linear system matrix = precond matrix:
+        Matrix Object:         1 MPI processes
+          type: mpiaij
+          rows=1536, cols=1536
+          total: nonzeros=7680, allocated nonzeros=7680
+          total number of mallocs used during MatSetValues calls =0
+            not using I-node (on process 0) routines
+  linear system matrix = precond matrix:
+  Matrix Object:   1 MPI processes
+    type: nest
+    rows=4608, cols=4608
+      Matrix object: 
+        type=nest, rows=2, cols=2 
+        MatNest structure: 
+        (0,0) : prefix="a00_", type=mpiaij, rows=3072, cols=3072 
+        (0,1) : prefix="a01_", type=mpiaij, rows=3072, cols=1536 
+        (1,0) : prefix="a10_", type=mpiaij, rows=1536, cols=3072 
+        (1,1) : prefix="a11_", type=mpiaij, rows=1536, cols=1536 
+ residual u = 3.13231e-05
+ residual p = 1.41741e-07
+ residual [u,p] = 3.13234e-05
+ discretization error u = 0.000184709
+ discretization error p = 0.248937
+ discretization error [u,p] = 0.248937

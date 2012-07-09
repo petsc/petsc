@@ -724,7 +724,6 @@ PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
   PetscScalar            *x_array,*y_array;
-
   PetscFunctionBegin;
   /* 
       The VecPlaceArray() is to avoid having to copy the 
@@ -765,15 +764,12 @@ PetscErrorCode PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr); 
-
   /* apply the symmetric left portion of the inner PC operator */
   /* note this by-passes the inner KSP and its options completely */
-
   ierr = KSPGetPC(jac->ksp[0],&subpc);CHKERRQ(ierr);
   ierr = PCApplySymmetricLeft(subpc,bjac->x,bjac->y);CHKERRQ(ierr);
   ierr = VecResetArray(bjac->x);CHKERRQ(ierr); 
   ierr = VecResetArray(bjac->y);CHKERRQ(ierr); 
-
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr); 
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr); 
   PetscFunctionReturn(0);

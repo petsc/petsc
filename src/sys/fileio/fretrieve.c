@@ -374,6 +374,9 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
   PetscMPIInt       rank;
   size_t            len = 0;
   PetscBool         flg1,flg2,flg3,sharedtmp,exists;
+#if defined(PETSC_HAVE_POPEN)
+  PetscInt          rval;
+#endif
 
   PetscFunctionBegin;
   *found = PETSC_FALSE;
@@ -436,7 +439,7 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
     ierr = PetscStrncmp(buf,"Error",5,&flg1);CHKERRQ(ierr);
     ierr = PetscStrncmp(buf,"Traceback",9,&flg2);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)
-    ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
+    ierr = PetscPClose(PETSC_COMM_SELF,fp,&rval);CHKERRQ(ierr);
 #endif
     if (flg1 || flg2) {
       *found = PETSC_FALSE;

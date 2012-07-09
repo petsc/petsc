@@ -15,20 +15,14 @@ PETSC_CUDA_EXTERN_C_END
 #undef VecType
 #include "../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h"
 
-
 #ifdef PETSC_HAVE_TXPETSCGPU
-// this is such a hack ... but I don't know of another way to pass this variable
+
+// this is such a hack ... but I haven't written another way to pass this variable
 // from one GPU_Matrix_Ifc class to another. This is necessary for the parallel
 //  SpMV. Essentially, I need to use the same stream variable in two different
 //  data structures. I do this by creating a single instance of that stream
 //  and reuse it.
-cudaStream_t theBodyStream=0;
-
-struct Mat_SeqAIJGPU {
-  GPU_Matrix_Ifc*   mat; /* pointer to the matrix on the GPU */
-  CUSPARRAY*        tempvec; /*pointer to a workvector to which we can copy the relevant indices of a vector we want to multiply */
-  PetscInt          nonzerorow; /* number of nonzero rows ... used in the flop calculations */
-};
+cudaStream_t theCUSPBodyStream=0;
 #endif // PETSC_HAVE_TXPETSCGPU
 
 #include <algorithm>
@@ -36,502 +30,89 @@ struct Mat_SeqAIJGPU {
 #include <string>
 #include <thrust/sort.h>
 #include <thrust/fill.h>
-#include <cusparse.h>
 
-// Hanlde to the CUSPARSE library. Only need one
-cusparseHandle_t Mat_CUSPARSE_Handle;
+#ifdef PETSC_HAVE_TXPETSCGPU
 
-struct Mat_SeqAIJTriFactors {
-  void *loTriFactorPtr; /* pointer for lower triangular (factored matrix) on GPU */
-  void *upTriFactorPtr; /* pointer for upper triangular (factored matrix) on GPU */
-};
-
-struct Mat_SeqAIJCUSPARSETriFactor {
-  CUSPMATRIX*                 mat;     /* pointer to the matrix on the GPU */
-  cusparseMatDescr_t          Mat_CUSPARSE_description;
-  cusparseSolveAnalysisInfo_t Mat_CUSPARSE_solveAnalysisInfo; 
-  CUSPARRAY*                  tempvecGPU; /*pointer to a workvector to which we can copy the relevant indices of a vector we want to multiply */
-  CUSPINTARRAYGPU*            ordIndicesGPU; /* For Lower triangular, this is the row permutation. For Upper triangular, this the column permutation */
-};
-
-
-EXTERN_C_BEGIN
-PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSP(Mat,Mat,IS,IS,const MatFactorInfo*);
-PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSP(Mat,Mat,IS,IS,const MatFactorInfo*);
-PetscErrorCode MatLUFactorNumeric_SeqAIJCUSP(Mat,Mat,const MatFactorInfo *);
-PetscErrorCode MatSolve_SeqAIJCUSP(Mat,Vec,Vec);
-PetscErrorCode MatSolve_SeqAIJCUSP_NaturalOrdering(Mat,Vec,Vec);
-EXTERN_C_END
-
-
-EXTERN_C_BEGIN
-extern PetscErrorCode MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
+//EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetFactor_seqaij_petsccusp"
-PetscErrorCode MatGetFactor_seqaij_petsccusp(Mat A,MatFactorType ftype,Mat *B)
+#define __FUNCT__ "MatSetOption_SeqAIJCUSP"
+PetscErrorCode MatSetOption_SeqAIJCUSP(Mat A,MatOption op,PetscBool  flg)
 {
-  PetscErrorCode     ierr;
-
-  PetscFunctionBegin;
-  ierr = MatGetFactor_seqaij_petsc(A,ftype,B);CHKERRQ(ierr);
-
-  if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT){
-    ierr = MatSetType(*B,MATSEQAIJCUSP);CHKERRQ(ierr);
-    (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqAIJCUSP;
-    (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqAIJCUSP;
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported for CUSP Matrix Types");
-  (*B)->factortype = ftype;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatILUFactorSymbolic_SeqAIJCUSP"
-PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSP(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
-{
-  PetscErrorCode     ierr;
-
-  PetscFunctionBegin;
-  ierr = MatILUFactorSymbolic_SeqAIJ(fact,A,isrow,iscol,info);CHKERRQ(ierr);
-  (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJCUSP;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorSymbolic_SeqAIJCUSP"
-PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSP(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
-{
-  PetscErrorCode     ierr;
-
-  PetscFunctionBegin;
-  ierr = MatLUFactorSymbolic_SeqAIJ(B,A,isrow,iscol,info);CHKERRQ(ierr);
-  B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJCUSP;
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatCUSPARSEInitialize"
-PetscErrorCode MatCUSPARSEInitialize(Mat A)
-{
-  Mat_SeqAIJTriFactors *cusparseTriFactors  = (Mat_SeqAIJTriFactors*)A->spptr;
-  Mat_SeqAIJCUSPARSETriFactor* cusparsestructLo  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->loTriFactorPtr;
-  Mat_SeqAIJCUSPARSETriFactor* cusparsestructUp  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->upTriFactorPtr;
-  cusparseStatus_t stat;
-
-  PetscFunctionBegin;
-  try {	
-    // cusparse handle creation
-    stat = cusparseCreate(&Mat_CUSPARSE_Handle);CHKERRCUSP(stat);
-
-    //  LOWER TRIANGULAR MATRIX
-    stat = cusparseCreateMatDescr(&(cusparsestructLo->Mat_CUSPARSE_description));CHKERRCUSP(stat);
-    stat = cusparseSetMatType(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_MATRIX_TYPE_TRIANGULAR);CHKERRCUSP(stat);
-    stat = cusparseSetMatFillMode(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_FILL_MODE_LOWER);CHKERRCUSP(stat);    
-    // cusparse set matrix diag type ... this doesn't seem to work right now??
-    //stat = cusparseSetMatDiagType(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_DIAG_TYPE_UNIT);CHKERRCUSP(stat);
-    stat = cusparseSetMatIndexBase(cusparsestructLo->Mat_CUSPARSE_description, CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSP(stat);
-    stat = cusparseCreateSolveAnalysisInfo(&(cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo));CHKERRCUSP(stat);
-  
-    //  UPPER TRIANGULAR MATRIX    
-    stat = cusparseCreateMatDescr(&(cusparsestructUp->Mat_CUSPARSE_description));CHKERRCUSP(stat);
-    stat = cusparseSetMatType(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_MATRIX_TYPE_TRIANGULAR);CHKERRCUSP(stat);
-    stat = cusparseSetMatFillMode(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_FILL_MODE_UPPER);CHKERRCUSP(stat);
-    stat = cusparseSetMatDiagType(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_DIAG_TYPE_NON_UNIT);CHKERRCUSP(stat);
-    stat = cusparseSetMatIndexBase(cusparsestructUp->Mat_CUSPARSE_description, CUSPARSE_INDEX_BASE_ZERO);CHKERRCUSP(stat);
-    stat = cusparseCreateSolveAnalysisInfo(&(cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo));CHKERRCUSP(stat);  
-  } catch(char* ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
-  }
-  PetscFunctionReturn(0);	  
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatCUSPARSEBuildLowerTriMatrix"
-PetscErrorCode MatCUSPARSEBuildLowerTriMatrix(Mat A)
-{
-  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
-  PetscInt          n = A->rmap->n;
-  Mat_SeqAIJTriFactors *cusparseTriFactors  = (Mat_SeqAIJTriFactors*)A->spptr;
-  Mat_SeqAIJCUSPARSETriFactor* cusparsestructLo  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->loTriFactorPtr;
-  const PetscInt    *ai = a->i,*aj = a->j,*vi;
-  const MatScalar   *aa = a->a,*v;
-  cusparseStatus_t stat;
-  PetscErrorCode     ierr;
-  PetscInt *AiLo, *AjLo;
-  PetscScalar *AALo;
-  PetscInt i,nz, nzLower, offset, rowOffset;
-
-  PetscFunctionBegin;
-  if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU){	
-    try {	
-      /* first figure out the number of nonzeros in the lower triangular matrix including 1's on the diagonal. */
-      nzLower=n+ai[n]-ai[1];
-      
-      /* Allocate Space for the lower triangular matrix */	
-      ierr = cudaMallocHost((void **) &AiLo, (n+1)*sizeof(PetscInt));CHKERRCUSP(ierr);
-      ierr = cudaMallocHost((void **) &AjLo, nzLower*sizeof(PetscInt));CHKERRCUSP(ierr);
-      ierr = cudaMallocHost((void **) &AALo, nzLower*sizeof(PetscScalar));CHKERRCUSP(ierr);
-      
-      /* Fill the lower triangular matrix */
-      AiLo[0]=(PetscInt) 0;
-      AiLo[n]=nzLower;
-      AjLo[0]=(PetscInt) 0;
-      AALo[0]=(MatScalar) 1.0;
-      v    = aa;
-      vi   = aj;
-      offset=1;
-      rowOffset=1;
-      for (i=1; i<n; i++) {
-	nz  = ai[i+1] - ai[i];
-	// additional 1 for the term on the diagonal
-	AiLo[i]=rowOffset;
-	rowOffset+=nz+1;
-
-	ierr = PetscMemcpy(&(AjLo[offset]), vi, nz*sizeof(PetscInt));CHKERRQ(ierr);
-	ierr = PetscMemcpy(&(AALo[offset]), v, nz*sizeof(MatScalar));CHKERRQ(ierr);
-	
-	offset+=nz;
-	AjLo[offset]=(PetscInt) i;
-	AALo[offset]=(MatScalar) 1.0;
-	offset+=1;
-	
-	v  += nz;
-	vi += nz;
-      }    
-      /* The Lower triangular matrix */
-      cusparsestructLo->mat = new CUSPMATRIX;
-      cusparsestructLo->mat->resize(n,n,nzLower);
-      cusparsestructLo->mat->row_offsets.assign(AiLo,AiLo+n+1);
-      cusparsestructLo->mat->column_indices.assign(AjLo,AjLo+nzLower);
-      cusparsestructLo->mat->values.assign(AALo,AALo+nzLower);
-      
-      // work vector allocation
-      cusparsestructLo->tempvecGPU = new CUSPARRAY;
-      (cusparsestructLo->tempvecGPU)->resize(n);
-      
-      // cusparse analysis 
-#if defined(PETSC_USE_REAL_SINGLE)  
-      stat = cusparseScsrsv_analysis(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-				     n, cusparsestructLo->Mat_CUSPARSE_description,
-				     thrust::raw_pointer_cast(&(cusparsestructLo->mat)->values[0]),
-				     thrust::raw_pointer_cast(&(cusparsestructLo->mat)->row_offsets[0]),
-				     thrust::raw_pointer_cast(&(cusparsestructLo->mat)->column_indices[0]),
-				     cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo);CHKERRCUSP(stat);
-#elif defined(PETSC_USE_REAL_DOUBLE)
-      stat = cusparseDcsrsv_analysis(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-				     n, cusparsestructLo->Mat_CUSPARSE_description,
-				     thrust::raw_pointer_cast(&(cusparsestructLo->mat)->values[0]),
-				     thrust::raw_pointer_cast(&(cusparsestructLo->mat)->row_offsets[0]),
-				     thrust::raw_pointer_cast(&(cusparsestructLo->mat)->column_indices[0]),
-				     cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo);CHKERRCUSP(stat);
-#endif      
-    } catch(char* ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
-    }
-  }
-  PetscFunctionReturn(0);	  
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatCUSPARSEBuildUpperTriMatrix"
-PetscErrorCode MatCUSPARSEBuildUpperTriMatrix(Mat A)
-{
-  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
-  PetscInt          n = A->rmap->n;
-  Mat_SeqAIJTriFactors *cusparseTriFactors  = (Mat_SeqAIJTriFactors*)A->spptr;
-  Mat_SeqAIJCUSPARSETriFactor* cusparsestructUp  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->upTriFactorPtr;
-  const PetscInt    *aj = a->j,*adiag = a->diag,*vi;
-  const MatScalar   *aa = a->a,*v;
-  cusparseStatus_t stat;
-  PetscInt *AiUp, *AjUp;
-  PetscScalar *AAUp;
-  PetscInt i,nz, nzUpper, offset;
-  PetscErrorCode     ierr;
-  
-  PetscFunctionBegin;
-
-  if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU){	
-    try {	
-      /* next, figure out the number of nonzeros in the upper triangular matrix. */
-      nzUpper = adiag[0]-adiag[n];
-      
-      /* Allocate Space for the upper triangular matrix */
-      ierr = cudaMallocHost((void **) &AiUp, (n+1)*sizeof(PetscInt));CHKERRCUSP(ierr);
-      ierr = cudaMallocHost((void **) &AjUp, nzUpper*sizeof(PetscInt));CHKERRCUSP(ierr);
-      ierr = cudaMallocHost((void **) &AAUp, nzUpper*sizeof(PetscScalar));CHKERRCUSP(ierr);
-      
-      /* Fill the upper triangular matrix */
-      AiUp[0]=(PetscInt) 0;
-      AiUp[n]=nzUpper;
-      offset = nzUpper;
-      for (i=n-1; i>=0; i--){
-	v   = aa + adiag[i+1] + 1;
-	vi  = aj + adiag[i+1] + 1;
-	
-	// number of elements NOT on the diagonal
-	nz = adiag[i] - adiag[i+1]-1;
-	
-	// decrement the offset
-	offset -= (nz+1);
-	
-	// first, set the diagonal elements
-	AjUp[offset] = (PetscInt) i;
-	AAUp[offset] = 1./v[nz];
-	AiUp[i] = AiUp[i+1] - (nz+1);
-	
-	ierr = PetscMemcpy(&(AjUp[offset+1]), vi, nz*sizeof(PetscInt));CHKERRQ(ierr);
-	ierr = PetscMemcpy(&(AAUp[offset+1]), v, nz*sizeof(MatScalar));CHKERRQ(ierr);
-      }      
-      /* The Upper triangular matrix */
-      cusparsestructUp->mat = new CUSPMATRIX;
-      cusparsestructUp->mat->resize(n,n,nzUpper);
-      cusparsestructUp->mat->row_offsets.assign(AiUp,AiUp+n+1);
-      cusparsestructUp->mat->column_indices.assign(AjUp,AjUp+nzUpper);
-      cusparsestructUp->mat->values.assign(AAUp,AAUp+nzUpper);
-      
-      // work vector allocation
-      cusparsestructUp->tempvecGPU = new CUSPARRAY;
-      (cusparsestructUp->tempvecGPU)->resize(n);
-    
-      // cusparse analysis 
-#if defined(PETSC_USE_REAL_SINGLE)  
-      stat = cusparseScsrsv_analysis(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-				     n, cusparsestructUp->Mat_CUSPARSE_description,
-				     thrust::raw_pointer_cast(&(cusparsestructUp->mat)->values[0]),
-				     thrust::raw_pointer_cast(&(cusparsestructUp->mat)->row_offsets[0]),
-				     thrust::raw_pointer_cast(&(cusparsestructUp->mat)->column_indices[0]),
-				     cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo);CHKERRCUSP(stat);
-#elif defined(PETSC_USE_REAL_DOUBLE)
-      stat = cusparseDcsrsv_analysis(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-				     n, cusparsestructUp->Mat_CUSPARSE_description,
-				     thrust::raw_pointer_cast(&(cusparsestructUp->mat)->values[0]),
-				     thrust::raw_pointer_cast(&(cusparsestructUp->mat)->row_offsets[0]),
-				     thrust::raw_pointer_cast(&(cusparsestructUp->mat)->column_indices[0]),
-				     cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo);CHKERRCUSP(stat);
-#endif
-    } catch(char* ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
-    }
-  }
-  PetscFunctionReturn(0);	  
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatCUSPARSEAnalysiAndCopyToGPU"
-PetscErrorCode MatCUSPARSEAnalysisAndCopyToGPU(Mat A)
-{
-  PetscErrorCode     ierr;
-  Mat_SeqAIJ *a=(Mat_SeqAIJ *)A->data;
-  Mat_SeqAIJTriFactors *cusparseTriFactors  = (Mat_SeqAIJTriFactors*)A->spptr;
-  Mat_SeqAIJCUSPARSETriFactor* cusparsestructLo  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->loTriFactorPtr;
-  Mat_SeqAIJCUSPARSETriFactor* cusparsestructUp  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->upTriFactorPtr;
-  IS               isrow = a->row,iscol = a->icol;
-  PetscBool        row_identity,col_identity;
-  const PetscInt   *r,*c;
-  PetscFunctionBegin;      
-        
-  ierr = MatCUSPARSEInitialize(A);CHKERRQ(ierr);
-  ierr = MatCUSPARSEBuildLowerTriMatrix(A);CHKERRQ(ierr);
-  ierr = MatCUSPARSEBuildUpperTriMatrix(A);CHKERRQ(ierr);
-  A->valid_GPU_matrix = PETSC_CUSP_BOTH;
-
-  //lower triangular indices
-  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
-  ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
-  cusparsestructLo->ordIndicesGPU = new CUSPINTARRAYGPU;
-  (cusparsestructLo->ordIndicesGPU)->assign(&r[0], &r[0]+A->rmap->n);
-
-  //upper triangular indices
-  ierr = ISGetIndices(iscol,&c);CHKERRQ(ierr);
-  ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  cusparsestructUp->ordIndicesGPU = new CUSPINTARRAYGPU;
-  (cusparsestructUp->ordIndicesGPU)->assign(&c[0], &c[0]+A->rmap->n);
-
-  PetscFunctionReturn(0);	  
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorNumeric_SeqAIJCUSP"
-PetscErrorCode MatLUFactorNumeric_SeqAIJCUSP(Mat B,Mat A,const MatFactorInfo *info)
-{
-  PetscErrorCode   ierr;
-  Mat_SeqAIJ       *b=(Mat_SeqAIJ *)B->data;
-  IS               isrow = b->row,iscol = b->col;
-  PetscBool        row_identity,col_identity;
-
-  PetscFunctionBegin;
-  
-  ierr = MatLUFactorNumeric_SeqAIJ(B,A,info);CHKERRQ(ierr);
-  
-  // determine which version of MatSolve needs to be used.
-  ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
-  ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  if (row_identity && col_identity) B->ops->solve = MatSolve_SeqAIJCUSP_NaturalOrdering;    
-  else                              B->ops->solve = MatSolve_SeqAIJCUSP; 
-
-  // get the triangular factors
-  ierr = MatCUSPARSEAnalysisAndCopyToGPU(B);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqAIJCUSP"
-PetscErrorCode MatSolve_SeqAIJCUSP(Mat A,Vec bb,Vec xx)
-{
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJCUSP *cuspMat  = (Mat_SeqAIJCUSP*)A->spptr; 
   PetscErrorCode ierr;
-  CUSPARRAY      *xGPU, *bGPU;
-  PetscInt          n = A->rmap->n;
-  cusparseStatus_t stat;
-  Mat_SeqAIJTriFactors *cusparseTriFactors  = (Mat_SeqAIJTriFactors*)A->spptr;
-  Mat_SeqAIJCUSPARSETriFactor *cusparsestructLo  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->loTriFactorPtr;
-  Mat_SeqAIJCUSPARSETriFactor *cusparsestructUp  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->upTriFactorPtr;
-
-  PetscFunctionBegin;
-
-  // Get the GPU pointers
-  ierr = VecCUSPGetArrayWrite(xx,&xGPU);CHKERRQ(ierr);
-  ierr = VecCUSPGetArrayRead(bb,&bGPU);CHKERRQ(ierr);
-  
-  // Copy the right hand side vector, bGPU, into xGPU with the row permutation
-  thrust::copy(thrust::make_permutation_iterator(bGPU->begin(), (cusparsestructLo->ordIndicesGPU)->begin()),
-	       thrust::make_permutation_iterator(bGPU->end(),   (cusparsestructLo->ordIndicesGPU)->end()),
-	       xGPU->begin());
-
-
-#if defined(PETSC_USE_REAL_SINGLE)  
-  stat = cusparseScsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-			      n, 1.0f, cusparsestructLo->Mat_CUSPARSE_description,
-			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->values[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->row_offsets[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->column_indices[0]),
-			      cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo,
-			      (const PetscScalar *) thrust::raw_pointer_cast(xGPU->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()));CHKERRCUSP(stat);
-  
-  stat = cusparseScsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-			      n, 1.0f, cusparsestructUp->Mat_CUSPARSE_description,
-			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->values[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->row_offsets[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->column_indices[0]),
-			      cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo,
-			      (const PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast(xGPU->data()));CHKERRCUSP(stat);
-
-#elif defined(PETSC_USE_REAL_DOUBLE)
-  stat = cusparseDcsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-			      n, 1.0, cusparsestructLo->Mat_CUSPARSE_description,
-			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->values[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->row_offsets[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->column_indices[0]),
-			      cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo,
-			      (const PetscScalar *) thrust::raw_pointer_cast(xGPU->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()));CHKERRCUSP(stat);
-  
-  stat = cusparseDcsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-			      n, 1.0, cusparsestructUp->Mat_CUSPARSE_description,
-			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->values[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->row_offsets[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->column_indices[0]),
-			      cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo,
-			      (const PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast(xGPU->data()));CHKERRCUSP(stat);
- #endif
-  
-  // Copy the solution, xGPU, into a temporary with the column permutation ... can't be done in place.
-  thrust::copy(thrust::make_permutation_iterator(xGPU->begin(),   (cusparsestructUp->ordIndicesGPU)->begin()),
-	       thrust::make_permutation_iterator(xGPU->end(), (cusparsestructUp->ordIndicesGPU)->end()),
-	       (cusparsestructLo->tempvecGPU)->begin());
-  
-  // Copy the temporary to the full solution.
-  thrust::copy((cusparsestructLo->tempvecGPU)->begin(), (cusparsestructLo->tempvecGPU)->end(), xGPU->begin());
-	  	  
-  ierr = VecCUSPRestoreArrayRead(bb,&bGPU);CHKERRQ(ierr);
-  ierr = VecCUSPRestoreArrayWrite(xx,&xGPU);CHKERRQ(ierr);
-  ierr = WaitForGPU();CHKERRCUSP(ierr);
-  ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
+  PetscFunctionBegin;  
+  ierr = MatSetOption_SeqAIJ(A,op,flg);CHKERRQ(ierr);
+  switch (op) {
+  case MAT_DIAGBLOCK_CSR:
+  case MAT_OFFDIAGBLOCK_CSR:
+  case MAT_CSR:
+    cuspMat->format = CSR;    
+    break;
+  case MAT_DIAGBLOCK_DIA:
+  case MAT_OFFDIAGBLOCK_DIA:
+  case MAT_DIA:
+    cuspMat->format = DIA;    
+    break;
+  case MAT_DIAGBLOCK_ELL:
+  case MAT_OFFDIAGBLOCK_ELL:
+  case MAT_ELL:
+    cuspMat->format = ELL;    
+    break;
+  case MAT_DIAGBLOCK_HYB:
+  case MAT_OFFDIAGBLOCK_HYB:
+  case MAT_HYB:
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported GPU matrix storage format HYB for (MPI,SEQ)AIJCUSP matrix type.");
+  default:
+    break;
+  }
   PetscFunctionReturn(0);
 }
+//EXTERN_C_END
 
 
-
-
+//EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqAIJCUSP_NaturalOrdering"
-PetscErrorCode MatSolve_SeqAIJCUSP_NaturalOrdering(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSetFromOptions_SeqAIJCUSP"
+PetscErrorCode MatSetFromOptions_SeqAIJCUSP(Mat A)
 {
-  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode    ierr;
-  CUSPARRAY         *xGPU, *bGPU;
-  PetscInt          n = A->rmap->n;
-  cusparseStatus_t stat;
-  Mat_SeqAIJTriFactors *cusparseTriFactors  = (Mat_SeqAIJTriFactors*)A->spptr;
-  Mat_SeqAIJCUSPARSETriFactor *cusparsestructLo  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->loTriFactorPtr;
-  Mat_SeqAIJCUSPARSETriFactor *cusparsestructUp  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->upTriFactorPtr;
-  
+  PetscErrorCode ierr;
+  PetscInt       idx;
+  char * formats[]={CSR,DIA,ELL};
+  MatOption format;
+  PetscBool      flg;
   PetscFunctionBegin;
-  ierr = VecCUSPGetArrayWrite(xx,&xGPU);CHKERRQ(ierr);
-  ierr = VecCUSPGetArrayRead(bb,&bGPU);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"When using TxPETSCGPU, AIJCUSP Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-mat_mult_cusp_storage_format",
+			   "Set the storage format of (seq)aijcusp gpu matrices for SpMV",
+			   "None",formats,3,formats[0],&idx,&flg);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_REAL_SINGLE)  
-  stat = cusparseScsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-			      n, 1.0f, cusparsestructLo->Mat_CUSPARSE_description,
-			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->values[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->row_offsets[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->column_indices[0]),
-			      cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo,
-			      (const PetscScalar *) thrust::raw_pointer_cast(bGPU->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()));CHKERRCUSP(stat);
-    
-  stat = cusparseScsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-			      n, 1.0f, cusparsestructUp->Mat_CUSPARSE_description,
-			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->values[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->row_offsets[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->column_indices[0]),
-			      cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo,
-			      (const PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast(xGPU->data()));CHKERRCUSP(stat);
-  
-#elif defined(PETSC_USE_REAL_DOUBLE)	
-  stat = cusparseDcsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-			      n, 1.0, cusparsestructLo->Mat_CUSPARSE_description,
-			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->values[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->row_offsets[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructLo->mat)->column_indices[0]),
-			      cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo,
-			      (const PetscScalar *) thrust::raw_pointer_cast(bGPU->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()));CHKERRCUSP(stat);
-  
-  stat = cusparseDcsrsv_solve(Mat_CUSPARSE_Handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-			      n, 1.0, cusparsestructUp->Mat_CUSPARSE_description,
-			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->values[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->row_offsets[0]),
-			      thrust::raw_pointer_cast(&(cusparsestructUp->mat)->column_indices[0]),
-			      cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo,
-			      (const PetscScalar *) thrust::raw_pointer_cast((cusparsestructLo->tempvecGPU)->data()),
-			      (PetscScalar *) thrust::raw_pointer_cast(xGPU->data()));CHKERRCUSP(stat);
-#endif
-  ierr = VecCUSPRestoreArrayRead(bb,&bGPU);CHKERRQ(ierr);
-  ierr = VecCUSPRestoreArrayWrite(xx,&xGPU);CHKERRQ(ierr);
-  ierr = WaitForGPU();CHKERRCUSP(ierr);
-  ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
+  switch (idx)
+    {
+    case 0:
+      format=MAT_CSR;
+      break;
+    case 2:
+      format=MAT_DIA;
+      break;
+    case 3:
+      format=MAT_ELL;
+      break;      
+    }
+  ierr=MatSetOption_SeqAIJCUSP(A,format,PETSC_TRUE);CHKERRQ(ierr);
+
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
+
 }
+//EXTERN_C_END
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCUSPCopyToGPU"
 PetscErrorCode MatCUSPCopyToGPU(Mat A)
 {
 
-#ifdef PETSC_HAVE_TXPETSCGPU
-  Mat_SeqAIJGPU *cuspstruct  = (Mat_SeqAIJGPU*)A->spptr;
-#else
   Mat_SeqAIJCUSP *cuspstruct  = (Mat_SeqAIJCUSP*)A->spptr;
-#endif
   Mat_SeqAIJ      *a          = (Mat_SeqAIJ*)A->data;
   PetscInt        m           = A->rmap->n,*ii,*ridx;
   PetscErrorCode  ierr;
@@ -583,58 +164,43 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
       }
 
       // Build our matrix ... first determine the GPU storage type
-      PetscBool found;
-      char      input[4] = "csr";
-      std::string storageFormat;
-      ierr = PetscOptionsGetString(PETSC_NULL, "-cusp_storage_format", input, 4, &found);CHKERRQ(ierr);
-      storageFormat.assign(input);
-      if(storageFormat!="csr" && storageFormat!="dia"&& storageFormat!="ell"&& storageFormat!="coo")
-	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Bad argument to -cusp_storage_format. Must be either 'csr', 'dia' (diagonal), 'ell' (ellpack), or 'coo' (coordinate)\n");
-      else {
-	cuspstruct->mat = GPU_Matrix_Factory::getNew(storageFormat);
+      cuspstruct->mat = GPU_Matrix_Factory::getNew(cuspstruct->format);
 
-	// Create the streams and events (if desired). 
-	PetscMPIInt    size;
-	ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-	ierr = cuspstruct->mat->buildStreamsAndEvents(size, &theBodyStream);CHKERRCUSP(ierr);	
-
-	// Determine which library to use : cusp or cusparse
-	PetscBool flg = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_cusparse",&flg,PETSC_NULL);CHKERRQ(ierr);
-	if (flg)
-	  cuspstruct->mat->initializeCusparse();
+      // Create the streams and events (if desired). 
+      PetscMPIInt    size;
+      ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+      ierr = cuspstruct->mat->buildStreamsAndEvents(size, &theCUSPBodyStream);CHKERRCUSP(ierr);	
 	
-	// lastly, build the matrix
-	cuspstruct->mat->setMatrix(m, A->cmap->n, a->nz, ii, a->j, a->a);
-	cuspstruct->mat->setCPRowIndices(ridx, m);
-	
-	///
-	// INODES : Determine the inode data structure for the GPU.
-	//   This only really matters for the CSR format.
-	//
-	if (a->inode.use) {
-	  PetscInt * temp;
-	  ierr = PetscMalloc((a->inode.node_count+1)*sizeof(PetscInt), &temp);CHKERRQ(ierr);
-	  temp[0]=0;
-	  PetscInt nodeMax=0, nnzPerRowMax=0;
-	  for (int i = 0; i<a->inode.node_count; i++) {
-	    temp[i+1]= a->inode.size[i]+temp[i];
-	    if (a->inode.size[i] > nodeMax)
-	      nodeMax = a->inode.size[i];
-	  }
-	  // Determine the maximum number of nonzeros in a row.
-	  cuspstruct->nonzerorow = 0;
-	  for (int j = 0; j<A->rmap->n; j++) {
-	    cuspstruct->nonzerorow += ((a->i[j+1]-a->i[j])>0);
-	    if (a->i[j+1]-a->i[j] > nnzPerRowMax) {
-	      nnzPerRowMax = a->i[j+1]-a->i[j];
-	    }
-	  }
-	  // Set the Inode data ... only relevant for CSR really
-	  cuspstruct->mat->setInodeData(temp, a->inode.node_count+1, nnzPerRowMax, nodeMax, a->inode.node_count);
-	  ierr = PetscFree(temp);CHKERRQ(ierr);
+      // lastly, build the matrix
+      ierr = cuspstruct->mat->setMatrix(m, A->cmap->n, a->nz, ii, a->j, a->a);;CHKERRCUSP(ierr);
+      cuspstruct->mat->setCPRowIndices(ridx, m);
+      
+      ///
+      // INODES : Determine the inode data structure for the GPU.
+      //   This only really matters for the CSR format.
+      //
+      if (a->inode.use) {
+	PetscInt * temp;
+	ierr = PetscMalloc((a->inode.node_count+1)*sizeof(PetscInt), &temp);CHKERRQ(ierr);
+	temp[0]=0;
+	PetscInt nodeMax=0, nnzPerRowMax=0;
+	for (int i = 0; i<a->inode.node_count; i++) {
+	  temp[i+1]= a->inode.size[i]+temp[i];
+	  if (a->inode.size[i] > nodeMax)
+	    nodeMax = a->inode.size[i];
 	}
-
+	// Determine the maximum number of nonzeros in a row.
+	cuspstruct->nonzerorow = 0;
+	for (int j = 0; j<A->rmap->n; j++) {
+	  cuspstruct->nonzerorow += ((a->i[j+1]-a->i[j])>0);
+	  if (a->i[j+1]-a->i[j] > nnzPerRowMax) {
+	    nnzPerRowMax = a->i[j+1]-a->i[j];
+	  }
+	}
+	// Set the Inode data ... only relevant for CSR really
+	cuspstruct->mat->setInodeData(temp, a->inode.node_count+1, nnzPerRowMax, nodeMax, a->inode.node_count);
+	//        A->spptr = cusparseMat;     	
+	ierr = PetscFree(temp);CHKERRQ(ierr);
       }
       if (!a->compressedrow.use) {	
 	// free data
@@ -683,19 +249,24 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
   PetscInt        m          = A->rmap->n;
   PetscErrorCode  ierr;
 
+#ifdef PETSC_HAVE_TXPETSCGPU
+  CUSPMATRIX* mat = (CUSPMATRIX*)cuspstruct->mat->getCsrMatrix();
+#else
+  CUSPMATRIX* mat = (CUSPMATRIX*)cuspstruct->mat;
+#endif
   PetscFunctionBegin;
   if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED) {
     if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED) {
       try {
-        cuspstruct->mat = Agpu;
+        mat = Agpu;
         if (a->compressedrow.use) {
           //PetscInt *ii, *ridx;
           SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Cannot handle row compression for GPU matrices");
         } else {
           PetscInt i;
 
-          if (m+1 != (PetscInt) cuspstruct->mat->row_offsets.size()) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "GPU matrix has %d rows, should be %d", cuspstruct->mat->row_offsets.size()-1, m);
-          a->nz    = cuspstruct->mat->values.size();
+          if (m+1 != (PetscInt) mat->row_offsets.size()) {SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "GPU matrix has %d rows, should be %d", mat->row_offsets.size()-1, m);}
+          a->nz    = mat->values.size();
           a->maxnz = a->nz; /* Since we allocate exactly the right amount */
           A->preallocated = PETSC_TRUE;
           // Copy ai, aj, aa
@@ -709,9 +280,9 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
           ierr = PetscMalloc3(a->nz,PetscScalar,&a->a,a->nz,PetscInt,&a->j,m+1,PetscInt,&a->i);CHKERRQ(ierr);
           ierr = PetscLogObjectMemory(A, a->nz*(sizeof(PetscScalar)+sizeof(PetscInt))+(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
           a->singlemalloc = PETSC_TRUE;
-          thrust::copy(cuspstruct->mat->row_offsets.begin(), cuspstruct->mat->row_offsets.end(), a->i);
-          thrust::copy(cuspstruct->mat->column_indices.begin(), cuspstruct->mat->column_indices.end(), a->j);
-          thrust::copy(cuspstruct->mat->values.begin(), cuspstruct->mat->values.end(), a->a);
+          thrust::copy(mat->row_offsets.begin(), mat->row_offsets.end(), a->i);
+          thrust::copy(mat->column_indices.begin(), mat->column_indices.end(), a->j);
+          thrust::copy(mat->values.begin(), mat->values.end(), a->a);
           // Setup row lengths
           if (a->imax) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
           ierr = PetscMalloc2(m,PetscInt,&a->imax,m,PetscInt,&a->ilen);CHKERRQ(ierr);
@@ -768,11 +339,9 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-#ifdef PETSC_HAVE_TXPETSCGPU
-  Mat_SeqAIJGPU *cuspstruct = (Mat_SeqAIJGPU *)A->spptr;
-#else
-  PetscBool      usecprow    = a->compressedrow.use;
   Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP *)A->spptr;
+#ifndef PETSC_HAVE_TXPETSCGPU
+  PetscBool      usecprow    = a->compressedrow.use;
 #endif
   CUSPARRAY      *xarray,*yarray;
 
@@ -784,8 +353,6 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
   try {
 #ifdef PETSC_HAVE_TXPETSCGPU
     ierr = cuspstruct->mat->multiply(xarray, yarray);CHKERRCUSP(ierr);
-    //ierr = cuspstruct->mat->multiply(thrust::raw_pointer_cast(xarray->data()),
-    //				     thrust::raw_pointer_cast(yarray->data()));CHKERRCUSP(ierr);
 #else
     if (usecprow){ /* use compressed row format */
       cusp::multiply(*cuspstruct->mat,*xarray,*cuspstruct->tempvec);
@@ -828,11 +395,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-#ifdef PETSC_HAVE_TXPETSCGPU
-  Mat_SeqAIJGPU *cuspstruct = (Mat_SeqAIJGPU *)A->spptr;
-#else
   Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP *)A->spptr;
-#endif
   CUSPARRAY      *xarray,*yarray,*zarray;
   PetscFunctionBegin;
   // The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSP
@@ -966,7 +529,7 @@ PetscErrorCode  MatCreateSeqAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt
 PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 {
   PetscErrorCode        ierr;
-  Mat_SeqAIJGPU      *cuspstruct = (Mat_SeqAIJGPU*)A->spptr;
+  Mat_SeqAIJCUSP      *cuspstruct = (Mat_SeqAIJCUSP*)A->spptr;
 
   PetscFunctionBegin;
   if (A->factortype==MAT_FACTOR_NONE) {
@@ -981,37 +544,6 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
       A->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-    } 
-  } else {
-    // The triangular factors
-    try {
-      Mat_SeqAIJTriFactors *cusparseTriFactors  = (Mat_SeqAIJTriFactors*)A->spptr;
-      Mat_SeqAIJCUSPARSETriFactor *cusparsestructLo  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->loTriFactorPtr;
-      Mat_SeqAIJCUSPARSETriFactor *cusparsestructUp  = (Mat_SeqAIJCUSPARSETriFactor*)cusparseTriFactors->upTriFactorPtr;
-      cusparseStatus_t stat;
-      
-      stat = cusparseDestroy(Mat_CUSPARSE_Handle);CHKERRCUSP(stat);
-      stat = cusparseDestroyMatDescr(cusparsestructLo->Mat_CUSPARSE_description);CHKERRCUSP(stat);
-      stat = cusparseDestroySolveAnalysisInfo(cusparsestructLo->Mat_CUSPARSE_solveAnalysisInfo);CHKERRCUSP(stat);
-
-      // destroy the matrix and the container
-      if (cusparsestructLo->mat!=0)
-	delete cusparsestructLo->mat;
-      if (cusparsestructLo->tempvecGPU!=0)
-	delete cusparsestructLo->tempvecGPU;
-      delete cusparsestructLo;
-      
-      stat = cusparseDestroyMatDescr(cusparsestructUp->Mat_CUSPARSE_description);CHKERRCUSP(stat);
-      stat = cusparseDestroySolveAnalysisInfo(cusparsestructUp->Mat_CUSPARSE_solveAnalysisInfo);CHKERRCUSP(stat);
-
-      // destroy the matrix and the container
-      if (cusparsestructUp->mat!=0)
-	delete cusparsestructUp->mat;
-      if (cusparsestructUp->tempvecGPU!=0)
-	delete cusparsestructUp->tempvecGPU;
-      delete cusparsestructUp;	  
-    } catch(char* ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSPARSE error: %s", ex);
     } 
   }
 
@@ -1065,6 +597,13 @@ PetscErrorCode MatCreateSeqAIJCUSPFromTriple(MPI_Comm comm, PetscInt m, PetscInt
 extern PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat, PetscInt, PetscInt, PetscInt *,const PetscScalar*);
 
 #ifdef PETSC_HAVE_TXPETSCGPU
+EXTERN_C_BEGIN
+extern PetscErrorCode MatGetFactor_seqaij_cusparse(Mat,MatFactorType,Mat*);
+extern PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat,const MatSolverPackage *);
+EXTERN_C_END
+#endif
+
+#ifdef PETSC_HAVE_TXPETSCGPU
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -1072,7 +611,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
 {
   PetscErrorCode ierr;
-
+  GPUStorageFormat format = CSR;
   PetscFunctionBegin;
   ierr            = MatCreate_SeqAIJ(B);CHKERRQ(ierr);
   B->ops->mult    = MatMult_SeqAIJCUSP;
@@ -1080,38 +619,23 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
 
   if (B->factortype==MAT_FACTOR_NONE) {
     /* you cannot check the inode.use flag here since the matrix was just created.*/
-    B->spptr        = new Mat_SeqAIJGPU;
-    ((Mat_SeqAIJGPU *)B->spptr)->mat = 0;
-    ((Mat_SeqAIJGPU *)B->spptr)->tempvec = 0;
-  } else {
-    Mat_SeqAIJTriFactors *triFactors;
-    /* NEXT, set the pointers to the triangular factors */
-    B->spptr = new Mat_SeqAIJTriFactors;
-    triFactors  = (Mat_SeqAIJTriFactors*)B->spptr;
-    triFactors->loTriFactorPtr = 0;
-    triFactors->upTriFactorPtr = 0;
-    
-    triFactors->loTriFactorPtr        = new Mat_SeqAIJCUSPARSETriFactor;
-    ((Mat_SeqAIJCUSPARSETriFactor *)triFactors->loTriFactorPtr)->mat = 0;
-    ((Mat_SeqAIJCUSPARSETriFactor *)triFactors->loTriFactorPtr)->Mat_CUSPARSE_description = 0;
-    ((Mat_SeqAIJCUSPARSETriFactor *)triFactors->loTriFactorPtr)->Mat_CUSPARSE_solveAnalysisInfo = 0;
-    ((Mat_SeqAIJCUSPARSETriFactor *)triFactors->loTriFactorPtr)->tempvecGPU = 0;
-    
-    triFactors->upTriFactorPtr        = new Mat_SeqAIJCUSPARSETriFactor;
-    ((Mat_SeqAIJCUSPARSETriFactor *)triFactors->upTriFactorPtr)->mat = 0;
-    ((Mat_SeqAIJCUSPARSETriFactor *)triFactors->upTriFactorPtr)->Mat_CUSPARSE_description = 0;
-    ((Mat_SeqAIJCUSPARSETriFactor *)triFactors->upTriFactorPtr)->Mat_CUSPARSE_solveAnalysisInfo = 0;
-    ((Mat_SeqAIJCUSPARSETriFactor *)triFactors->upTriFactorPtr)->tempvecGPU = 0;
-  }
-
+    B->spptr        = new Mat_SeqAIJCUSP;
+    ((Mat_SeqAIJCUSP *)B->spptr)->mat = 0;
+    ((Mat_SeqAIJCUSP *)B->spptr)->tempvec = 0;
+    ((Mat_SeqAIJCUSP *)B->spptr)->format = format;
+  } 
   B->ops->assemblyend    = MatAssemblyEnd_SeqAIJCUSP;
   B->ops->destroy        = MatDestroy_SeqAIJCUSP;
   B->ops->getvecs        = MatGetVecs_SeqAIJCUSP;
   B->ops->setvaluesbatch = MatSetValuesBatch_SeqAIJCUSP;
+  B->ops->setfromoptions = MatSetFromOptions_SeqAIJCUSP;
+  B->ops->setoption      = MatSetOption_SeqAIJCUSP;
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUSP);CHKERRQ(ierr);
   B->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;
-
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_petsc_C","MatGetFactor_seqaij_petsccusp",MatGetFactor_seqaij_petsccusp);CHKERRQ(ierr);
+  // Here we overload MatGetFactor_cusparse_C which enables -pc_factor_mat_solver_package cusparse to work with
+  // -mat_type aijcusp. That is, an aijcusp matrix can call the cusparse tri solve.
+  // Note the difference with the implementation in MatCreate_SeqAIJCUSPARSE in ../seqcusparse/aijcusparse.cu
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_cusparse_C","MatGetFactor_seqaij_cusparse",MatGetFactor_seqaij_cusparse);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

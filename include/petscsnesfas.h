@@ -16,7 +16,7 @@
 
 E*/
 typedef enum { SNES_FAS_MULTIPLICATIVE, SNES_FAS_ADDITIVE } SNESFASType;
-PETSC_EXTERN const char * SNESFASTypes[];
+PETSC_EXTERN const char *const  SNESFASTypes[];
 
 /* called on the finest level FAS instance*/
 PETSC_EXTERN PetscErrorCode SNESFASSetType(SNES, SNESFASType);

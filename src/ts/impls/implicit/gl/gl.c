@@ -35,6 +35,75 @@ static PetscScalar CPowF(PetscScalar c,PetscInt p)
   return Pow(c,p)/Factorial(p);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSGLGetVecs"
+static PetscErrorCode TSGLGetVecs(TS ts,DM dm,Vec *Z,Vec *Ydotstage)
+{
+  TS_GL       *gl = (TS_GL*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (Z) {
+    if (dm && dm != ts->dm) {
+      ierr = DMGetNamedGlobalVector(dm,"TSGL_Z",Z);CHKERRQ(ierr);
+    } else *Z = gl->Z;
+  }
+  if (Ydotstage) {
+    if (dm && dm != ts->dm) {
+      ierr = DMGetNamedGlobalVector(dm,"TSGL_Ydot",Ydotstage);CHKERRQ(ierr);
+    } else *Ydotstage = gl->Ydot[gl->stage];
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGLRestoreVecs"
+static PetscErrorCode TSGLRestoreVecs(TS ts,DM dm,Vec *Z,Vec *Ydotstage)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (Z) {
+    if (dm && dm != ts->dm) {
+      ierr = DMRestoreNamedGlobalVector(dm,"TSGL_Z",Z);CHKERRQ(ierr);
+    }
+  }
+  if (Ydotstage) {
+
+    if (dm && dm != ts->dm) {
+      ierr = DMRestoreNamedGlobalVector(dm,"TSGL_Ydot",Ydotstage);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCoarsenHook_TSGL"
+static PetscErrorCode DMCoarsenHook_TSGL(DM fine,DM coarse,void *ctx)
+{
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMRestrictHook_TSGL"
+static PetscErrorCode DMRestrictHook_TSGL(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse,void *ctx)
+{
+  TS ts = (TS)ctx;
+  PetscErrorCode ierr;
+  Vec Ydot,Ydot_c;
+
+  PetscFunctionBegin;
+  ierr = TSGLGetVecs(ts,fine,PETSC_NULL,&Ydot);CHKERRQ(ierr);
+  ierr = TSGLGetVecs(ts,coarse,PETSC_NULL,&Ydot_c);CHKERRQ(ierr);
+  ierr = MatRestrict(restrct,Ydot,Ydot_c);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(Ydot_c,rscale,Ydot_c);CHKERRQ(ierr);
+  ierr = TSGLRestoreVecs(ts,fine,PETSC_NULL,&Ydot);CHKERRQ(ierr);
+  ierr = TSGLRestoreVecs(ts,coarse,PETSC_NULL,&Ydot_c);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLSchemeCreate"
 static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt s,const PetscScalar *c,
@@ -1038,10 +1107,18 @@ static PetscErrorCode SNESTSFormFunction_GL(SNES snes,Vec x,Vec f,TS ts)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscErrorCode  ierr;
+  Vec             Z,Ydot;
+  DM              dm,dmsave;
 
   PetscFunctionBegin;
-  ierr = VecWAXPY(gl->Ydot[gl->stage],gl->shift,x,gl->Z);CHKERRQ(ierr);
-  ierr = TSComputeIFunction(ts,gl->stage_time,x,gl->Ydot[gl->stage],f,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = TSGLGetVecs(ts,dm,&Z,&Ydot);CHKERRQ(ierr);
+  ierr = VecWAXPY(Ydot,gl->shift,x,Z);CHKERRQ(ierr);
+  dmsave = ts->dm;
+  ts->dm = dm;
+  ierr = TSComputeIFunction(ts,gl->stage_time,x,Ydot,f,PETSC_FALSE);CHKERRQ(ierr);
+  ts->dm = dmsave;
+  ierr = TSGLRestoreVecs(ts,dm,&Z,&Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1051,10 +1128,17 @@ static PetscErrorCode SNESTSFormJacobian_GL(SNES snes,Vec x,Mat *A,Mat *B,MatStr
 {
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscErrorCode  ierr;
-
+  Vec             Z,Ydot;
+  DM              dm,dmsave;
   PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = TSGLGetVecs(ts,dm,&Z,&Ydot);CHKERRQ(ierr);
+  dmsave = ts->dm;
+  ts->dm = dm;
   /* gl->Xdot will have already been computed in SNESTSFormFunction_GL */
   ierr = TSComputeIJacobian(ts,gl->stage_time,x,gl->Ydot[gl->stage],gl->shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
+  ts->dm = dmsave;
+  ierr = TSGLRestoreVecs(ts,dm,&Z,&Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1066,6 +1150,7 @@ static PetscErrorCode TSSetUp_GL(TS ts)
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscInt        max_r,max_s;
   PetscErrorCode  ierr;
+  DM              dm;
 
   PetscFunctionBegin;
   gl->setupcalled = PETSC_TRUE;
@@ -1089,6 +1174,10 @@ static PetscErrorCode TSSetUp_GL(TS ts)
       if (i+1 == gl->nschemes) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No schemes available with requested start order %d",i);
     }
     gl->current_scheme = i;
+  }
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  if (dm) {
+    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSGL,DMRestrictHook_TSGL,ts);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

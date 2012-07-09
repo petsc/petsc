@@ -54,6 +54,12 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   ierr = PetscSFCreate(comm, &v->defaultSF);CHKERRQ(ierr);
   v->defaultSection       = PETSC_NULL;
   v->defaultGlobalSection = PETSC_NULL;
+  {
+    PetscInt i;
+    for(i = 0; i < 10; ++i) {
+      v->nullspaceConstructors[i] = PETSC_NULL;
+    }
+  }
 
   *dm = v;
   PetscFunctionReturn(0);
@@ -245,7 +251,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = PetscObjectDepublish(*dm);CHKERRQ(ierr);
 
   ierr = (*(*dm)->ops->destroy)(*dm);CHKERRQ(ierr);
-  ierr = PetscFree((*dm)->data);CHKERRQ(ierr);
+  /* We do not destroy (*dm)->data here so that we can reference count backend objects */
   ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -819,6 +825,17 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt size,PetscScalar **array)
 }
 
 
+#undef __FUNCT__
+#define __FUNCT__ "DMSetNullSpaceConstructor"
+PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM dm, PetscInt field, MatNullSpace *nullSpace))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (field >= 10) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %d >= 10 fields", field);
+  dm->nullspaceConstructors[field] = nullsp;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateFieldIS"
 /*@C
@@ -932,7 +949,6 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateFieldDecompositionDM"
 /*@C
@@ -965,7 +981,6 @@ PetscErrorCode DMCreateFieldDecompositionDM(DM dm, const char* name, DM *ddm)
   }
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateFieldDecomposition"
@@ -1005,14 +1020,67 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
   if (namelist) {PetscValidPointer(namelist,3); *namelist = 0;}
   if (islist)   {PetscValidPointer(islist,4);   *islist   = 0;}
   if (dmlist)   {PetscValidPointer(dmlist,5);   *dmlist   = 0;}
-  if(!dm->ops->createfielddecomposition) {
-    ierr = DMCreateFieldIS(dm, len, namelist, islist);CHKERRQ(ierr);
-    /* By default there are no DMs associated with subproblems. */
-    if(dmlist) *dmlist = PETSC_NULL;
+  if (!dm->ops->createfielddecomposition) {
+    PetscSection section;
+    PetscInt     numFields, f;
+
+    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    if (section) {ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);}
+    if (section && numFields && dm->ops->createsubdm) {
+      *len = numFields;
+      ierr = PetscMalloc3(numFields,char*,namelist,numFields,IS,islist,numFields,DM,dmlist);CHKERRQ(ierr);
+      for(f = 0; f < numFields; ++f) {
+        const char *fieldName;
+
+        ierr = DMCreateSubDM(dm, 1, &f, &(*islist)[f], &(*dmlist)[f]);CHKERRQ(ierr);
+        ierr = PetscSectionGetFieldName(section, f, &fieldName);CHKERRQ(ierr);
+        ierr = PetscStrallocpy(fieldName, (char **) &(*namelist)[f]);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = DMCreateFieldIS(dm, len, namelist, islist);CHKERRQ(ierr);
+      /* By default there are no DMs associated with subproblems. */
+      if(dmlist) *dmlist = PETSC_NULL;
+    }
   }
   else {
     ierr = (*dm->ops->createfielddecomposition)(dm,len,namelist,islist,dmlist); CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateSubDM"
+/*@C
+  DMCreateSubDM - Returns an IS and DM encapsulating a subproblem defined by the fields passed in.
+                  The fields are defined by DMCreateFieldIS().
+
+  Not collective
+
+  Input Parameters:
++ dm - the DM object
+. numFields - number of fields in this subproblem
+- len       - The number of subproblems in the decomposition (or PETSC_NULL if not requested)
+
+  Output Parameters:
+. is - The global indices for the subproblem
+- dm - The DM for the subproblem
+
+  Level: intermediate
+
+.seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateFieldIS()
+@*/
+PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(fields,3);
+  if (is) {PetscValidPointer(is,4);}
+  if (subdm) {PetscValidPointer(subdm,5);}
+  if (dm->ops->createsubdm) {
+    ierr = (*dm->ops->createsubdm)(dm, numFields, fields, is, subdm); CHKERRQ(ierr);
+  } else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This type has no DMCreateSubDM implementation defined");
   PetscFunctionReturn(0);
 }
 
@@ -1048,7 +1116,6 @@ PetscErrorCode DMCreateDomainDecompositionDM(DM dm, const char* name, DM *ddm)
   }
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateDomainDecomposition"
@@ -2106,6 +2173,31 @@ PetscErrorCode  DMHasJacobian(DM dm,PetscBool  *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   *flg =  (dm->ops->jacobian) ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMHasColoring"
+/*@
+    DMHasColoring - does the DM object have a method of providing a coloring?
+
+    Not Collective
+
+    Input Parameter:
+.   dm - the DM object
+
+    Output Parameter:
+.   flg - PETSC_TRUE if the DM has facilities for DMCreateColoring().
+
+    Level: developer
+
+.seealso DMHasFunction(), DMCreateColoring()
+
+@*/
+PetscErrorCode  DMHasColoring(DM dm,PetscBool  *flg)
+{
+  PetscFunctionBegin;
+  *flg =  (dm->ops->getcoloring) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

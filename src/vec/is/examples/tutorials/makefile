@@ -43,43 +43,43 @@ ex4: ex4.o  chkopts
 	${RM} -f ex4.o
 #------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1  ./ex1  > ex1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex1  > ex1.tmp 2>&1;\
 	   if (${DIFF} output/ex1.out ex1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex1, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex1.tmp
 
 runex1f:
-	-@${MPIEXEC} -n 1  ./ex1f  | sort > ex1f.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex1f  | sort > ex1f.tmp 2>&1;\
 	   if (${DIFF} output/ex1f.out ex1f.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex1f, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex1f.tmp
 
 runex1f90:
-	-@${MPIEXEC} -n 1  ./ex1f90  | sort > ex1f90.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex1f90  | sort > ex1f90.tmp 2>&1;\
 	   if (${DIFF} output/ex1f90.out ex1f90.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex1f90, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex1f90.tmp
 
 runex2:
-	-@${MPIEXEC} -n 1  ./ex2  > ex2.tmp 2>&1;\
+	-@${MPIEXEC} -n 1d  ./ex2  > ex2.tmp 2>&1;\
 	   if (${DIFF} output/ex2.out ex2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex2, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex2.tmp
 
 runex2f:
-	-@${MPIEXEC} -n 1  ./ex2f  > ex2f.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex2f  > ex2f.tmp 2>&1;\
 	   if (${DIFF} output/ex2f.out ex2f.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex2f, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex2f.tmp
 
 runex3:
-	-@${MPIEXEC} -n 1  ./ex3  > ex3.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex3  > ex3.tmp 2>&1;\
 	   if (${DIFF} output/ex3.out ex3.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex3, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex3.tmp
 
 runex3f90:
-	-@${MPIEXEC} -n 1  ./ex3f90 |sort > ex3f90.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex3f90 |sort > ex3f90.tmp 2>&1;\
 	   if (${DIFF} output/ex3f90.out ex3f90.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex3f90, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex3f90.tmp

@@ -51,7 +51,12 @@ static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
 {
   PC_AINVCUSP     *ainv = (PC_AINVCUSP*)pc->data;
   PetscBool       flg = PETSC_FALSE;
-  Mat_SeqAIJCUSP  *gpustruct;
+#if !defined(PETSC_USE_COMPLEX)
+  // protect these in order to avoid compiler warnings. This preconditioner does 
+  // not work for complex types.
+  Mat_SeqAIJCUSP *gpustruct;
+  CUSPMATRIX* mat;	
+#endif
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -70,12 +75,22 @@ static PetscErrorCode PCSetUp_AINVCUSP(PC pc)
   }
   try {
     ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+    ainv->AINVCUSP =  0; CHKERRQ(1); /* TODO */
+#else
     gpustruct = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);
+#ifdef PETSC_HAVE_TXPETSCGPU
+    mat = (CUSPMATRIX*)gpustruct->mat->getCsrMatrix();
+#else
+    mat = (CUSPMATRIX*)gpustruct->mat;
+#endif
+
     if (ainv->scaled) {
-      ainv->AINVCUSP =  new cuspainvprecondscaled(*(CUSPMATRIX*)gpustruct->mat, ainv->droptolerance,ainv->nonzeros,ainv->uselin,ainv->linparam);
+      ainv->AINVCUSP =  new cuspainvprecondscaled(*mat, ainv->droptolerance,ainv->nonzeros,ainv->uselin,ainv->linparam);
     } else {
-      ainv->AINVCUSP =  new cuspainvprecond(*(CUSPMATRIX*)gpustruct->mat, ainv->droptolerance,ainv->nonzeros,ainv->uselin,ainv->linparam);
+      ainv->AINVCUSP =  new cuspainvprecond(*mat, ainv->droptolerance,ainv->nonzeros,ainv->uselin,ainv->linparam);
     }
+#endif
   } catch(char* ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s",ex);
   }

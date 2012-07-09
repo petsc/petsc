@@ -52,26 +52,33 @@ typedef __float128 PetscReal;
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_CLANGUAGE_CXX)
 /* C++ support of complex number */
+#if defined(PETSC_HAVE_CUSP)
+#define complexlib cusp
+#include <cusp/complex.h>
+#else
+#define complexlib std
 #include <complex>
+#endif
 
 #define PetscRealPart(a)      (a).real()
 #define PetscImaginaryPart(a) (a).imag()
-#define PetscAbsScalar(a)     std::abs(a)
-#define PetscConj(a)          std::conj(a)
-#define PetscSqrtScalar(a)    std::sqrt(a)
-#define PetscPowScalar(a,b)   std::pow(a,b)
-#define PetscExpScalar(a)     std::exp(a)
-#define PetscLogScalar(a)     std::log(a)
-#define PetscSinScalar(a)     std::sin(a)
-#define PetscCosScalar(a)     std::cos(a)
+#define PetscAbsScalar(a)     complexlib::abs(a)
+#define PetscConj(a)          complexlib::conj(a)
+#define PetscSqrtScalar(a)    complexlib::sqrt(a)
+#define PetscPowScalar(a,b)   complexlib::pow(a,b)
+#define PetscExpScalar(a)     complexlib::exp(a)
+#define PetscLogScalar(a)     complexlib::log(a)
+#define PetscSinScalar(a)     complexlib::sin(a)
+#define PetscCosScalar(a)     complexlib::cos(a)
 
 #if defined(PETSC_USE_REAL_SINGLE)
-typedef std::complex<float> PetscScalar;
+typedef complexlib::complex<float> PetscScalar;
 #elif defined(PETSC_USE_REAL_DOUBLE)
-typedef std::complex<double> PetscScalar;
-#endif /* PETSC_USE_REAL_* */
+typedef complexlib::complex<double> PetscScalar;
+#endif  /* PETSC_USE_REAL_ */
 
 #else /* PETSC_CLANGUAGE_CXX */
+
 /*  C support of complex numbers: Requires C99 compliant compiler*/
 #include <complex.h>
 

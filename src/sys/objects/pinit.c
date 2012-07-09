@@ -8,12 +8,6 @@
 #if defined(PETSC_HAVE_CUSP)
 #include <cublas.h>
 #endif
-#if defined(PETSC_HAVE_VALGRIND)
-#  include <valgrind/valgrind.h>
-#  define PETSC_RUNNING_ON_VALGRIND RUNNING_ON_VALGRIND
-#else
-#  define PETSC_RUNNING_ON_VALGRIND PETSC_FALSE
-#endif
 
 #include <petscthreadcomm.h>
 
@@ -48,10 +42,10 @@ PetscMPIInt Petsc_OuterComm_keyval = MPI_KEYVAL_INVALID;
 /*
      Declare and set all the string names of the PETSc enums
 */
-const char *PetscBools[]     = {"FALSE","TRUE","PetscBool","PETSC_",0};
-const char *PetscCopyModes[] = {"COPY_VALUES","OWN_POINTER","USE_POINTER","PetscCopyMode","PETSC_",0};
-const char *PetscDataTypes[] = {"INT","DOUBLE","COMPLEX","LONG","SHORT","FLOAT",
-                                "CHAR","LOGICAL","ENUM","BOOL","LONGDOUBLE","PetscDataType","PETSC_",0};
+const char *const PetscBools[]     = {"FALSE","TRUE","PetscBool","PETSC_",0};
+const char *const PetscCopyModes[] = {"COPY_VALUES","OWN_POINTER","USE_POINTER","PetscCopyMode","PETSC_",0};
+const char *const PetscDataTypes[] = {"INT","DOUBLE","COMPLEX","LONG","SHORT","FLOAT",
+                                "CHAR","LOGICAL","ENUM","BOOL","LONGDOUBLE","OBJECT","PetscDataType","PETSC_",0};
 
 PetscBool  PetscPreLoadingUsed = PETSC_FALSE;
 PetscBool  PetscPreLoadingOn   = PETSC_FALSE;
@@ -1134,20 +1128,24 @@ PetscErrorCode  PetscFinalize(void)
   }
   {
     char fname[PETSC_MAX_PATH_LEN];
-    FILE *fd;
-    
+    FILE *fd = PETSC_NULL;
+
     fname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_log",fname,250,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_log_threshold",&flg2);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
-      char sname[PETSC_MAX_PATH_LEN];
       int  err;
 
-      sprintf(sname,"%s_%d",fname,rank);
-      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
-      ierr = PetscMallocDumpLog(fd);CHKERRQ(ierr); 
-      err = fclose(fd);
-      if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
-    } else if (flg1) {
+      if (!rank) {
+        fd = fopen(fname,"w");
+        if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",fname);
+      }
+      ierr = PetscMallocDumpLog(fd);CHKERRQ(ierr);
+      if (fd) {
+        err = fclose(fd);
+        if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+      }
+    } else if (flg1 || flg2) {
       ierr = PetscMallocDumpLog(stdout);CHKERRQ(ierr); 
     }
   }

@@ -137,6 +137,10 @@ ex26: ex26.o chkopts
 	-${CLINKER} -o ex26 ex26.o ${PETSC_TS_LIB}
 	${RM} ex26.o
 
+ex27: ex27.o chkopts
+	-${CLINKER} -o ex27 ex27.o ${PETSC_TS_LIB}
+	${RM} ex27.o
+
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type ls -ts_monitor_pseudo > ex1_1.tmp 2>&1;	  \

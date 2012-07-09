@@ -108,6 +108,7 @@
         <li><a href="#makefiles">Can I use my own makefiles or rules for compiling code, rather than PETSc's?</a></li>
         <li><a href="#cmake">Can I use CMake to build my own project that depends on PETSc?</a></li>
         <li><a href="#carriagereturns">How can I put carriage returns in PetscPrintf() statements from Fortran?</a></li>
+        <li><a href="#cxxmethod">How can I implement callbacks using C++ class methods?</a></li>
         <li><a href="#functionjacobian">Everyone knows that when you code Newton's method you should compute the function and its Jacobian at the same time. How can one do this in PETSc?</a></li>
         <li><a href="#conditionnumber">How can I determine the condition number of a matrix?</a></li>
         <li><a href="#invertmatrix">How can I compute the inverse of a PETSc matrix?</a></li>
@@ -904,6 +905,12 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
       <p>
         Or you can use the Fortran concatination // and char(10); for example
         'some string'//char(10)//'another string on the next line'
+      </p>
+
+      <h3><a name="cxxmethod">How can I implement callbacks using C++ class methods?</a></h3>
+
+      <p>
+        Declare the class method <tt>static</tt>. Static methods do not have a <tt>this</tt> pointer, but the <tt>void*</tt> context parameter will usually be cast to a pointer to the class where it can serve the same function. Note that all PETSc callbacks return <tt>PetscErrorCode</tt>.
       </p>
 
       <h3><a name="functionjacobian">Everyone knows that when you code Newton's method you should compute the function and its Jacobian at the same time. How can one do this in PETSc?</a></h3>

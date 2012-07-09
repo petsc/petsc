@@ -676,9 +676,9 @@ PETSC_EXTERN PetscErrorCode TSRosWRegisterAll(void);
 */
 #ifdef PETSC_HAVE_SUNDIALS
 typedef enum { SUNDIALS_ADAMS=1,SUNDIALS_BDF=2} TSSundialsLmmType;
-PETSC_EXTERN const char *TSSundialsLmmTypes[];
+PETSC_EXTERN const char *const TSSundialsLmmTypes[];
 typedef enum { SUNDIALS_MODIFIED_GS = 1,SUNDIALS_CLASSICAL_GS = 2 } TSSundialsGramSchmidtType;
-PETSC_EXTERN const char *TSSundialsGramSchmidtTypes[];
+PETSC_EXTERN const char *const TSSundialsGramSchmidtTypes[];
 PETSC_EXTERN PetscErrorCode TSSundialsSetType(TS,TSSundialsLmmType);
 PETSC_EXTERN PetscErrorCode TSSundialsGetPC(TS,PC*);
 PETSC_EXTERN PetscErrorCode TSSundialsSetTolerance(TS,PetscReal,PetscReal);

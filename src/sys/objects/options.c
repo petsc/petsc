@@ -1589,7 +1589,7 @@ PetscErrorCode  PetscOptionsGetReal(const char pre[],const char name[],PetscReal
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);
-  PetscValidDoublePointer(dvalue,3);
+  PetscValidRealPointer(dvalue,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (!value) {if (set) *set = PETSC_FALSE;}
@@ -1715,7 +1715,7 @@ PetscErrorCode  PetscOptionsGetRealArray(const char pre[],const char name[],Pets
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);
-  PetscValidDoublePointer(dvalue,3);
+  PetscValidRealPointer(dvalue,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (!flag)  {if (set) *set = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
   if (!value) {if (set) *set = PETSC_TRUE; *nmax = 0; PetscFunctionReturn(0);}

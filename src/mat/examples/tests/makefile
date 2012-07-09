@@ -660,6 +660,15 @@ ex166: ex166.o chkopts
 ex167: ex167.o chkopts
 	-${CLINKER} -o ex167 ex167.o ${PETSC_MAT_LIB}
 	${RM} ex167.o
+
+ex168: ex168.o chkopts
+	-${CLINKER} -o ex168 ex168.o ${PETSC_MAT_LIB}
+	${RM} ex168.o
+
+ex170: ex170.o chkopts
+	-${CLINKER} -o ex170 ex170.o ${PETSC_MAT_LIB}
+	${RM} ex170.o
+
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -1016,6 +1025,12 @@ runex38_2:
 	-@${MPIEXEC} -n 6 ./ex38 -mat_type elemental -m 2 -n 2 > ex38_2.tmp 2>&1;   \
 	   ${DIFF} output/ex38_2.out ex38_2.tmp || printf "${PWD}\nPossible problem with with ex38_2, diffs above \n========================================="; \
 	   ${RM} -f ex38_2.tmp
+runex38_3:
+	-@${MPIEXEC} -n 6 ./ex38 -mat_type elemental -m 2 -n 2 -test_matmatmult > ex38_2.tmp 2>&1;   \
+	   ${DIFF} output/ex38_2.out ex38_2.tmp || printf "${PWD}\nPossible problem with with ex38_3, diffs above \n========================================="; \
+	   ${RM} -f ex38_2.tmp
+
+
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex40:
 	-@${MPIEXEC} -n 3 ./ex40 -f ${DATAFILESPATH}/matrices/arco1 -nd 7 -ov 2 > ex40_1.tmp 2>&1; \

@@ -99,9 +99,7 @@ int main(int argc,char **argv)
   DM             da;
   Vec            X;
   PetscReal      ftime;
-  PetscBool      fdcoloring;
   TSConvergedReason reason;
-  MatFDColoring matfdcoloring = PETSC_NULL;
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return(1);
 
@@ -121,7 +119,6 @@ int main(int argc,char **argv)
   user.draw_contours = PETSC_FALSE;
   user.parabolic     = PETSC_FALSE;
   user.cfl_initial   = 50.;
-  fdcoloring         = PETSC_TRUE;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Driven cavity/natural convection options","");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-lidvelocity","Lid velocity, related to Reynolds number","",user.lidvelocity,&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-prandtl","Ratio of viscous to thermal diffusivity","",user.prandtl,&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
@@ -129,7 +126,6 @@ int main(int argc,char **argv)
   ierr = PetscOptionsBool("-draw_contours","Plot the solution with contours","",user.draw_contours,&user.draw_contours,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-parabolic","Relax incompressibility to make the system parabolic instead of differential-algebraic","",user.parabolic,&user.parabolic,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-cfl_initial","Advective CFL for the first time step","",user.cfl_initial,&user.cfl_initial,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-fdcoloring","Use finite difference coloring to compute Jacobian","",fdcoloring,&fdcoloring,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = DMDASetFieldName(da,0,"x-velocity");CHKERRQ(ierr);
@@ -147,20 +143,6 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunction,&user);CHKERRQ(ierr);
-  if (fdcoloring) {
-    Mat B;
-    SNES snes;
-    ISColoring iscoloring;
-    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
-    ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringCreate(B,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,B,B,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
-  }
   ierr = TSSetDuration(ts,10000,1e12);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,user.cfl_initial/(user.lidvelocity*mx));CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
@@ -193,7 +175,6 @@ int main(int argc,char **argv)
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 

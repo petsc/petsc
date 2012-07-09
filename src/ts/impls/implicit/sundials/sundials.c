@@ -388,9 +388,9 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
 }
 
 /* type of CVODE linear multistep method */
-const char *TSSundialsLmmTypes[] = {"","adams","bdf","TSSundialsLmmType","SUNDIALS_",0};
+const char *const TSSundialsLmmTypes[] = {"","ADAMS","BDF","TSSundialsLmmType","SUNDIALS_",0};
 /* type of G-S orthogonalization used by CVODE linear solver */
-const char *TSSundialsGramSchmidtTypes[] = {"","modified","classical","TSSundialsGramSchmidtType","SUNDIALS_",0};
+const char *const TSSundialsGramSchmidtTypes[] = {"","MODIFIED","CLASSICAL","TSSundialsGramSchmidtType","SUNDIALS_",0};
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Sundials"

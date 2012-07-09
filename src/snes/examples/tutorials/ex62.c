@@ -47,16 +47,8 @@ Next Steps:
 - Refine and show convergence of correct order automatically (use femTest.py)
 - Fix InitialGuess for arbitrary disc (means making dual application work again)
 - Redo slides from GUCASTutorial for this new example
-- Sparsify Jacobian
-  - How do we get sparsity? I think by chopping up elemMat into blocks, and setting individual blocks
-  - Maybe we just have MatSetClosure() handle this by ignoring blocks which do not interact
 
-Possible new examples:
-
-- Hexahedral Stokes example
-  - Improve DMDA conversion to get edges
-- A Finite Volume problem
-- Make new SNES F90 example that solves two-domain Laplace with different coefficient, reads from Exodus file
+For tensor product meshes, see SNES ex67
 */
 
 #include <petscdmcomplex.h>
@@ -67,6 +59,7 @@ Possible new examples:
  -----------------------------------------------------------------------------*/
 #include "ex62.h"
 
+#define NUM_FIELDS 2 /* C89 Sucks Sucks Sucks Sucks: Cannot use static const values for array sizes */
 const PetscInt numFields     = 2;
 const PetscInt numComponents = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1;
 
@@ -88,18 +81,17 @@ typedef struct {
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
   char          partitioner[2048]; /* The graph partitioner */
   /* Element quadrature */
-  PetscQuadrature q[/*numFields*/2]; /* C89 Sucks Sucks Sucks Sucks */
+  PetscQuadrature q[NUM_FIELDS];
   /* GPU partitioning */
   PetscInt      numBatches;        /* The number of cell batches per kernel */
   PetscInt      numBlocks;         /* The number of concurrent blocks per kernel */
   /* Problem definition */
-  /* C89 Sucks Sucks Sucks Sucks: numFields = 2, numComponents = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1 */
-  void        (*f0Funcs[2])(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]); /* The f_0 functions f0_u(x,y,z), and f0_p(x,y,z) */
-  void        (*f1Funcs[2])(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]); /* The f_1 functions f1_u(x,y,z), and f1_p(x,y,z) */
-  void        (*g0Funcs[2*2])(PetscScalar u[], const PetscScalar gradU[], PetscScalar g0[]); /* The g_0 functions g0_uu(x,y,z), g0_up(x,y,z), g0_pu(x,y,z), and g0_pp(x,y,z) */
-  void        (*g1Funcs[2*2])(PetscScalar u[], const PetscScalar gradU[], PetscScalar g1[]); /* The g_1 functions g1_uu(x,y,z), g1_up(x,y,z), g1_pu(x,y,z), and g1_pp(x,y,z) */
-  void        (*g2Funcs[2*2])(PetscScalar u[], const PetscScalar gradU[], PetscScalar g2[]); /* The g_2 functions g2_uu(x,y,z), g2_up(x,y,z), g2_pu(x,y,z), and g2_pp(x,y,z) */
-  void        (*g3Funcs[2*2])(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]); /* The g_3 functions g3_uu(x,y,z), g3_up(x,y,z), g3_pu(x,y,z), and g3_pp(x,y,z) */
+  void        (*f0Funcs[NUM_FIELDS])(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]); /* The f_0 functions f0_u(x,y,z), and f0_p(x,y,z) */
+  void        (*f1Funcs[NUM_FIELDS])(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]); /* The f_1 functions f1_u(x,y,z), and f1_p(x,y,z) */
+  void        (*g0Funcs[NUM_FIELDS*NUM_FIELDS])(PetscScalar u[], const PetscScalar gradU[], PetscScalar g0[]); /* The g_0 functions g0_uu(x,y,z), g0_up(x,y,z), g0_pu(x,y,z), and g0_pp(x,y,z) */
+  void        (*g1Funcs[NUM_FIELDS*NUM_FIELDS])(PetscScalar u[], const PetscScalar gradU[], PetscScalar g1[]); /* The g_1 functions g1_uu(x,y,z), g1_up(x,y,z), g1_pu(x,y,z), and g1_pp(x,y,z) */
+  void        (*g2Funcs[NUM_FIELDS*NUM_FIELDS])(PetscScalar u[], const PetscScalar gradU[], PetscScalar g2[]); /* The g_2 functions g2_uu(x,y,z), g2_up(x,y,z), g2_pu(x,y,z), and g2_pp(x,y,z) */
+  void        (*g3Funcs[NUM_FIELDS*NUM_FIELDS])(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]); /* The g_3 functions g3_uu(x,y,z), g3_up(x,y,z), g3_pu(x,y,z), and g3_pp(x,y,z) */
   PetscScalar (*exactFuncs[NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1])(const PetscReal x[]); /* The exact solution function u(x,y,z), v(x,y,z), and p(x,y,z) */
   BCType        bcType;            /* The type of boundary conditions */
 } AppCtx;
@@ -435,10 +427,10 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscSection   section;
   PetscInt       dim                = user->dim;
   PetscInt       numBC              = 0;
-  PetscInt       numComp[/*numFields*/2] = {NUM_BASIS_COMPONENTS_0, NUM_BASIS_COMPONENTS_1}; /* C89 Sucks Sucks Sucks Sucks */
+  PetscInt       numComp[NUM_FIELDS] = {NUM_BASIS_COMPONENTS_0, NUM_BASIS_COMPONENTS_1};
   PetscInt       bcFields[1]        = {0};
   IS             bcPoints[1]        = {PETSC_NULL};
-  PetscInt       numDof[/*numFields*/2*(SPATIAL_DIM_0+1)]; /* C89 Sucks Sucks Sucks Sucks */
+  PetscInt       numDof[NUM_FIELDS*(SPATIAL_DIM_0+1)];
   PetscInt       f, d;
   PetscErrorCode ierr;
 
@@ -767,16 +759,16 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
     }
     for(q = 0; q < Nq; ++q) {
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      PetscScalar      u[dim+1];
-      PetscScalar      gradU[dim*(dim+1)];
+      PetscScalar      u[NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1];
+      PetscScalar      gradU[dim*(NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1)];
       PetscInt         fOffset            = 0;
       PetscInt         dOffset            = cOffset;
       const PetscInt   Ncomp       = quad[field].numComponents;
       const PetscReal *quadWeights = quad[field].quadWeights;
       PetscInt         d, f, i;
 
-      for(d = 0; d <= dim; ++d)        {u[d]     = 0.0;}
-      for(d = 0; d < dim*(dim+1); ++d) {gradU[d] = 0.0;}
+      for(d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
+      for(d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
       for(f = 0; f < numFields; ++f) {
         const PetscInt   Nb       = quad[f].numBasisFuncs;
         const PetscInt   Ncomp    = quad[f].numComponents;
@@ -1026,8 +1018,8 @@ PetscErrorCode IntegrateJacobianActionBatchCPU(PetscInt Ne, PetscInt numFields, 
         elemVec[cOffset+i] = 0.0;
       }
       for(q = 0; q < Nq; ++q) {
-        PetscScalar u[dim+1];
-        PetscScalar gradU[dim*(dim+1)];
+        PetscScalar u[NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1];
+        PetscScalar gradU[dim*(NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1)];
         PetscInt    fOffset            = 0;       /* Offset into u[] for field_q (like offsetI) */
         PetscInt    dOffset            = cOffset; /* Offset into coefficients[] for field_q */
         PetscInt    field_q, d;
@@ -1038,8 +1030,8 @@ PetscErrorCode IntegrateJacobianActionBatchCPU(PetscInt Ne, PetscInt numFields, 
         PetscInt    c;
 
         if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-        for(d = 0; d <= dim; ++d)        {u[d]     = 0.0;}
-        for(d = 0; d < dim*(dim+1); ++d) {gradU[d] = 0.0;}
+        for(d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
+        for(d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
         for(field_q = 0; field_q < numFields; ++field_q) {
           const PetscInt   Nb          = quad[field_q].numBasisFuncs;
           const PetscInt   Ncomp       = quad[field_q].numComponents;
