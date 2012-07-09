@@ -299,27 +299,30 @@ static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
 {
   Mat_Elemental     *a = (Mat_Elemental*)A->data;
   PetscErrorCode    ierr;
-  const PetscScalar *b;
+  //const PetscScalar *b;
   PetscScalar       *x;
   //PetscScalar       one = 1,zero = 0;
 
   PetscFunctionBegin;
-  //ierr = VecGetArrayRead(B,&b);CHKERRQ(ierr);
+  ierr = VecCopy(B,X);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  //ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
-    elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> be(A->rmap->N,1,0,b,A->rmap->n,*a->grid);
+    //elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> be(A->rmap->N,1,0,b,A->rmap->n,*a->grid);
     elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,x,A->rmap->n,*a->grid);
+    elem::DistMatrix<PetscScalar,elem::MC,elem::MR> xer = xe;
     if ((*a->pivot).AllocatedMemory()) {
       printf("pivot is not empty.\n");
-      //elem::LUSolve(elem::NORMAL,*a->emat,*a->pivot,be);
+      elem::LUSolve(elem::NORMAL,*a->emat,*a->pivot,xer);
+      elem::Copy(xer,xe);
     }
     else {
       printf("pivot is empty.\n");
       //elem::Gemv(elem::NORMAL,1.0,*a->emat,be,0.0,xe);
-      //elem::LUSolve(elem::NORMAL,*a->emat,xe);
+      elem::LUSolve(elem::NORMAL,*a->emat,xer);
+      elem::Copy(xer,xe);
     }
   }
-  ierr = VecRestoreArrayRead(B,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -383,6 +386,25 @@ static PetscErrorCode  MatLUFactorSymbolic_Elemental(Mat F,Mat A,IS r,IS c,const
 {
   PetscFunctionBegin;
   /* F is create and allocated by MatGetFactor_elemental_petsc(), skip this routine. */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatCholeskyFactor_Elemental"
+static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorInfo *info)
+{
+  Mat_Elemental  *a = (Mat_Elemental*)A->data;
+
+  PetscFunctionBegin;
+  printf("MatLUFactor_Elemental is called...\n");
+  if (info->dtcol){
+    printf("LUFactor w/ pivoting\n");
+    elem::LU(*a->emat,*a->pivot);
+  } else {
+    printf("LUFactor w/o pivoting\n");
+    elem::LU(*a->emat);
+  }
+  A->factortype = MAT_FACTOR_LU; 
   PetscFunctionReturn(0);
 }
 
@@ -605,6 +627,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   A->ops->norm            = MatNorm_Elemental;
   A->ops->solve           = MatSolve_Elemental;
   A->ops->zeroentries     = MatZeroEntries_Elemental;
+  A->ops->choleskyfactor  = MatCholeskyFactor_Elemental;
 
   A->insertmode = NOT_SET_VALUES;
 

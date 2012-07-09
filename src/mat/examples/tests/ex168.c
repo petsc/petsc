@@ -8,7 +8,7 @@ static char help[] = "Tests LU, Cholesky factorization and MatMatSolve() for a E
 int main(int argc,char **argv)
 {
   Mat            A,F,B,X,C;
-  Vec            b,x;
+  Vec            b,x,c;
   PetscErrorCode ierr;
   PetscInt       m = 5,n,p,i,j,nrows,ncols;
   PetscScalar    *v,*vb,rval;
@@ -169,12 +169,26 @@ int main(int argc,char **argv)
   }
 
   /* Solve LUX = PB or LUX = B */
-  // ierr = MatSolve(F,b,x);CHKERRQ(ierr);
+  ierr = MatSolve(F,b,x);CHKERRQ(ierr);
   ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
+  //ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   //ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
 
   /* Check norm(A*X - B) */
+  ierr = VecCreate(PETSC_COMM_WORLD,&c);CHKERRQ(ierr);
+  ierr = VecSetSizes(c,m,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(c);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(c);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(c);CHKERRQ(ierr);
+  ierr = MatMult(A,x,c);CHKERRQ(ierr);
+  ierr = VecAXPY(c,-1.0,b);CHKERRQ(ierr);
+  ierr = VecNorm(c,NORM_1,&norm);CHKERRQ(ierr);
+  //printf("vec norm is %f\n",norm);
+  if (norm > tol){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
+  }
+
   ierr = MatMatMult(A,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);
@@ -196,6 +210,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&c);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = PetscFinalize();
