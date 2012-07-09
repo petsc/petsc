@@ -264,9 +264,32 @@ static PetscErrorCode MatCopy_Elemental(Mat A,Mat B,MatStructure str)
 #define __FUNCT__ "MatTranspose_Elemental"
 static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
 {
-  /* not implemented yet */
+  printf("MatTranspose_Elemental is called...\n");
+  Mat            Be;
+  PetscErrorCode ierr;
+  MPI_Comm       comm=((PetscObject)A)->comm;
 
   PetscFunctionBegin;
+  if (reuse == MAT_INITIAL_MATRIX){
+    ierr = MatCreate(comm,&Be);CHKERRQ(ierr);
+    ierr = MatSetSizes(Be,A->cmap->n,A->rmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = MatSetType(Be,MATELEMENTAL);CHKERRQ(ierr);
+    ierr = MatSetUp(Be);CHKERRQ(ierr);
+    *B = Be;
+
+    /*ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
+    ierr = MatMatMultSymbolic_Elemental(A,B,1.0,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);   */
+  }
+  Mat_Elemental     *a = (Mat_Elemental*)A->data;
+  Mat_Elemental     *b = (Mat_Elemental*)Be->data;
+  elem::Transpose(*a->emat,*b->emat);
+  Be->assembled = PETSC_TRUE;
+
+
+  /*ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); 
+  ierr = MatMatMultNumeric_Elemental(A,B,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 
@@ -405,6 +428,17 @@ static PetscErrorCode MatNorm_Elemental(Mat A,NormType type,PetscReal *nrm)
   default:
     printf("Error: unsupported norm type!\n");
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatZeroEntries_Elemental"
+static PetscErrorCode MatZeroEntries_Elemental(Mat A)
+{
+  Mat_Elemental *a=(Mat_Elemental*)A->data;  
+
+  PetscFunctionBegin;
+  elem::Zero(*a->emat);
   PetscFunctionReturn(0);
 }
 
@@ -570,6 +604,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   A->ops->transpose       = MatTranspose_Elemental;
   A->ops->norm            = MatNorm_Elemental;
   A->ops->solve           = MatSolve_Elemental;
+  A->ops->zeroentries     = MatZeroEntries_Elemental;
 
   A->insertmode = NOT_SET_VALUES;
 

@@ -8,7 +8,7 @@ static char help[] = "Tests Elemental interface.\n\n";
 int main(int argc,char **args)
 {
   Vec            x,y;
-  Mat            B,C,Cexp;
+  Mat            B,C,Cexp,Ct;
   PetscInt       i,j,m = 5,n,p,nrows,ncols;
   const PetscInt *rows,*cols;
   IS             isrows,iscols;
@@ -67,8 +67,13 @@ int main(int argc,char **args)
   ierr = MatDestroy(&Cexp);CHKERRQ(ierr);
 
   /* Test MatNorm() */
-  ierr = MatNorm(C,NORM_1,&Cnorm);
+  ierr = MatNorm(C,NORM_1,&Cnorm);CHKERRQ(ierr);
   printf("The 1-norm of C is %f\n",Cnorm);
+
+  /* Test MatTranspose() and MatZeroEntries() */
+  ierr = MatTranspose(C,MAT_INITIAL_MATRIX,&Ct);CHKERRQ(ierr);
+  ierr = MatZeroEntries(Ct);CHKERRQ(ierr);
+  ierr = MatView(Ct,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Test MatMult() */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
@@ -129,6 +134,7 @@ int main(int argc,char **args)
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&Ct);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = PetscFinalize();
