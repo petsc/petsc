@@ -7,10 +7,11 @@ static char help[] = "Tests LU, Cholesky factorization and MatMatSolve() for a E
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat            A,F,B,X;
+  Mat            A,F,B,X,C;
+  Vec            b,x;
   PetscErrorCode ierr;
   PetscInt       m = 5,n,p,i,j,nrows,ncols;
-  PetscScalar    *v,rval;
+  PetscScalar    *v,*vb,rval;
   PetscReal      norm,tol=1.e-15;
   PetscMPIInt    size;
   PetscRandom    rand;
@@ -93,12 +94,12 @@ int main(int argc,char **argv)
     }
   }
   ierr = MatSetValues(B,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
+  //ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
+  //ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscols);CHKERRQ(ierr);
+  //ierr = ISDestroy(&isrows);CHKERRQ(ierr);
+  //ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
   if (mats_view){
     Mat Baij;
@@ -107,6 +108,26 @@ int main(int argc,char **argv)
     ierr = MatView(Baij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = MatDestroy(&Baij);CHKERRQ(ierr);
   }
+
+  /* Create rhs vector b */
+  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+  ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrows*sizeof *vb,&vb);CHKERRQ(ierr);
+  for (j=0; j<nrows; j++) {
+    ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+    vb[j] = rval;
+  }
+  ierr = VecSetValues(b,nrows,rows,vb,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = PetscFree(vb);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscols);CHKERRQ(ierr);
+  ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
+
 
   /* Create X - same size as B */
   ierr = PetscPrintf(PETSC_COMM_WORLD," Create solution matrix X ...\n");CHKERRQ(ierr);
@@ -118,6 +139,8 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(X,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(X,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  /* Create x - same size as b */
+  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
 
   /* Cholesky factorization */
   /*------------------------*/
@@ -152,10 +175,11 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&F);CHKERRQ(ierr);
 
   /* Check norm(A*X - B) */
-  if(0) {
-    if (norm > tol){
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
-    }
+  ierr = MatMatMult(A,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+  ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);
+  if (norm > tol){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
   }
 
   /* Out-place LU */
@@ -169,7 +193,10 @@ int main(int argc,char **argv)
   /* free space */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

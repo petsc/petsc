@@ -271,6 +271,37 @@ static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatSolve_Elemental"
+static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
+{
+  Mat_Elemental     *a = (Mat_Elemental*)A->data;
+  PetscErrorCode    ierr;
+  const PetscScalar *b;
+  PetscScalar       *x;
+  //PetscScalar       one = 1,zero = 0;
+
+  PetscFunctionBegin;
+  //ierr = VecGetArrayRead(B,&b);CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  { /* Scoping so that constructor is called before pointer is returned */
+    elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> be(A->rmap->N,1,0,b,A->rmap->n,*a->grid);
+    elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,x,A->rmap->n,*a->grid);
+    if ((*a->pivot).AllocatedMemory()) {
+      printf("pivot is not empty.\n");
+      //elem::LUSolve(elem::NORMAL,*a->emat,*a->pivot,be);
+    }
+    else {
+      printf("pivot is empty.\n");
+      //elem::Gemv(elem::NORMAL,1.0,*a->emat,be,0.0,xe);
+      //elem::LUSolve(elem::NORMAL,*a->emat,xe);
+    }
+  }
+  ierr = VecRestoreArrayRead(B,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMatSolve_Elemental"
 static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
 {
@@ -352,6 +383,30 @@ static PetscErrorCode MatGetFactor_elemental_petsc(Mat A,MatFactorType ftype,Mat
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "MatNorm_Elemental"
+static PetscErrorCode MatNorm_Elemental(Mat A,NormType type,PetscReal *nrm)
+{
+  Mat_Elemental *a=(Mat_Elemental*)A->data;  
+
+  PetscFunctionBegin;
+  printf("MatNorm_Elemental is called...\n");
+  switch (type){
+  case NORM_1:
+    *nrm = elem::Norm(*a->emat,elem::ONE_NORM);
+    break;
+  case NORM_FROBENIUS:
+    *nrm = elem::Norm(*a->emat,elem::FROBENIUS_NORM);
+    break;
+  case NORM_INFINITY:
+    *nrm = elem::Norm(*a->emat,elem::INFINITY_NORM);
+    break;
+  default:
+    printf("Error: unsupported norm type!\n");
+  }
+  PetscFunctionReturn(0);
+}
 
 EXTERN_C_BEGIN 
 #undef __FUNCT__
@@ -509,10 +564,12 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   A->ops->axpy            = MatAXPY_Elemental;
   A->ops->lufactor        = MatLUFactor_Elemental;
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_Elemental;
-   A->ops->lufactornumeric = MatLUFactorNumeric_Elemental;
+  A->ops->lufactornumeric = MatLUFactorNumeric_Elemental;
   A->ops->matsolve        = MatMatSolve_Elemental;
   A->ops->copy            = MatCopy_Elemental;
   A->ops->transpose       = MatTranspose_Elemental;
+  A->ops->norm            = MatNorm_Elemental;
+  A->ops->solve           = MatSolve_Elemental;
 
   A->insertmode = NOT_SET_VALUES;
 

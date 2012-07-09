@@ -16,6 +16,7 @@ int main(int argc,char **args)
   PetscBool      flg;
   PetscScalar    *v,*vx;
   PetscMPIInt    rank,size;
+  PetscReal Cnorm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -56,8 +57,6 @@ int main(int argc,char **args)
     }
   }
   ierr = MatSetValues(C,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -66,6 +65,10 @@ int main(int argc,char **args)
   ierr = MatComputeExplicitOperator(C,&Cexp);CHKERRQ(ierr);
   ierr = MatView(Cexp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&Cexp);CHKERRQ(ierr);
+
+  /* Test MatNorm() */
+  ierr = MatNorm(C,NORM_1,&Cnorm);
+  printf("The 1-norm of C is %f\n",Cnorm);
 
   /* Test MatMult() */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
@@ -77,6 +80,8 @@ int main(int argc,char **args)
   }
   ierr = VecSetValues(x,ncols,cols,vx,INSERT_VALUES);CHKERRQ(ierr);
   ierr = PetscFree(vx);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
