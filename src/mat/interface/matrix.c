@@ -8894,8 +8894,8 @@ PetscErrorCode  MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
   To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
    actually needed.
 
-   This routine is currently only implemented for pairs of SeqAIJ matrices and pairs of SeqDense matrices and classes
-   which inherit from SeqAIJ.  C will be of type MATSEQAIJ.
+   This routine is currently implemented for pairs of AIJ matrices and pairs of SeqDense matrices and classes
+   which inherit from SeqAIJ.  C will be of same type as the input matrices.
 
    Level: intermediate
 
