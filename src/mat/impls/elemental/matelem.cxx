@@ -384,13 +384,15 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorI
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
 
   PetscFunctionBegin;
-  printf("MatLUFactor_Elemental is called...\n");
+  printf("MatCholeskyFactor_Elemental is called...\n");
   if (info->dtcol){
-    printf("LUFactor w/ pivoting\n");
-    elem::LU(*a->emat,*a->pivot);
+    /* A = U^T * U for SPD Matrix A */
+    printf("Cholesky Factorization for SPD Matrices...\n");
+    elem::Cholesky(elem::UPPER,*a->emat);
   } else {
-    printf("LUFactor w/o pivoting\n");
-    elem::LU(*a->emat);
+    /* A = U^T * D * U * for Symmetric Matrix A */ 
+    printf("LDL^H Factorization for Symmetric Matrices\n");
+    //elem::LU(*a->emat);
   }
   A->factortype = MAT_FACTOR_LU; 
   PetscFunctionReturn(0);
