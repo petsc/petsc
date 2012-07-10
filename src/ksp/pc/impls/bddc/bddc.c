@@ -2873,12 +2873,12 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
         }
         j = where_to_nodes_indices[i];
         k = (mat_graph->neighbours_set[j][0] == -1 ?  1 : 0);
+        sizes_of_sends[i]=size_of_send;
         for(;k<mat_graph->count[j];k++){
-          ierr = MPI_Isend(&size_of_send,1,MPIU_INT,mat_graph->neighbours_set[j][k],(my_rank+1)*mat_graph->count[j],interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr); 
+          ierr = MPI_Isend(&sizes_of_sends[i],1,MPIU_INT,mat_graph->neighbours_set[j][k],(my_rank+1)*mat_graph->count[j],interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr); 
           ierr = MPI_Irecv(&recv_buffer_where[sum_requests+start_of_recv],1,MPIU_INT,mat_graph->neighbours_set[j][k],(mat_graph->neighbours_set[j][k]+1)*mat_graph->count[j],interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
           sum_requests++;
         }
-        sizes_of_sends[i]=size_of_send;
         start_of_send+=size_of_send;
       }
     }
