@@ -41,6 +41,7 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
   ierr = PetscFree(ptap->bufa);CHKERRQ(ierr);
   ierr = MatDestroy(&ptap->P_loc);CHKERRQ(ierr);
   ierr = MatDestroy(&ptap->P_oth);CHKERRQ(ierr);
+  ierr = MatDestroy(&ptap->Pt);CHKERRQ(ierr);
   ierr = PetscFree(ptap->api);CHKERRQ(ierr);
   ierr = PetscFree(ptap->apj);CHKERRQ(ierr);
   ierr = PetscFree(ptap->apa);CHKERRQ(ierr);
@@ -796,9 +797,33 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,PetscReal f
 PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIAIJ(Mat P,Mat A,MatReuse scall,PetscReal fill,Mat *C) 
 {
   PetscErrorCode ierr;
-  PetscBool      scalable=PETSC_FALSE;
+  PetscBool      scalable=PETSC_FALSE,viamatmatmult=PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsBool("-mattransposematmult_viamatmatmult","Use R=Pt and C=R*A","",viamatmatmult,&viamatmatmult,PETSC_NULL);CHKERRQ(ierr);
+  if (viamatmatmult){
+    Mat         Pt;
+    Mat_PtAPMPI *ptap;
+    Mat_MPIAIJ  *c;
+    if (scall == MAT_INITIAL_MATRIX){
+      ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
+      ierr = MatMatMult(Pt,A,MAT_INITIAL_MATRIX,fill,C);CHKERRQ(ierr);
+   
+      c        = (Mat_MPIAIJ*)(*C)->data;
+      ptap     = c->ptap;
+      ptap->Pt = Pt;
+    } else if (scall == MAT_REUSE_MATRIX){
+      c    = (Mat_MPIAIJ*)(*C)->data;
+      ptap = c->ptap;
+      Pt   = ptap->Pt;
+      ierr = MatTranspose(P,scall,&Pt);CHKERRQ(ierr);
+      ierr = MatMatMult(Pt,A,scall,fill,C);CHKERRQ(ierr);  
+    } else {
+      SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not supported");
+    }
+    PetscFunctionReturn(0);
+  }
+
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
       ierr = PetscOptionsBool("-mattransposematmult_scalable","Use a scalable but slower C=Pt*A","",scalable,&scalable,PETSC_NULL);CHKERRQ(ierr);

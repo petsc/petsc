@@ -150,6 +150,13 @@ int main(int argc,char **args)
 
     /* Create R = P^T */
     ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr); 
+
+    {/* Test R = P^T, C1 = R*B */
+      ierr = MatMatMult(R,B,MAT_INITIAL_MATRIX,fill,&C1);CHKERRQ(ierr);
+      ierr = MatTranspose(P,MAT_REUSE_MATRIX,&R);CHKERRQ(ierr); 
+      ierr = MatMatMult(R,B,MAT_REUSE_MATRIX,fill,&C1);CHKERRQ(ierr);
+      ierr = MatDestroy(&C1);CHKERRQ(ierr);
+    }
     
     /* C = P^T*B */
     ierr = MatTransposeMatMult(P,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);

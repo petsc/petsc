@@ -24,6 +24,7 @@ typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ
   MatReuse       reuse;        /* flag to skip MatGetBrowsOfAoCols_MPIAIJ() and MatMPIAIJGetLocalMat() in 1st call of MatPtAPNumeric_MPIAIJ_MPIAIJ() */
   PetscScalar    *apa;         /* tmp array for store a row of A*P used in MatMatMult() */
   Mat            A_loc;        /* used by MatTransposeMatMult(), contains api and apj */
+  Mat            Pt;           /* used by MatTransposeMatMult(), Pt = P^T */
 
   Mat_Merge_SeqsToMPI *merge;
   PetscErrorCode (*destroy)(Mat);
