@@ -23,6 +23,12 @@ If multiple tags with no dash(-) are given, the example must match all tags.
 """)
 
 if __name__=="__main__":
+    TAO_DIR=os.environ['TAO_DIR']
+    PETSC_DIR=os.environ['PETSC_DIR']
+    if (TAO_DIR == PETSC_DIR):
+        TAO_SRC_DIR=os.getcwd()
+    else:
+        TAO_SRC_DIR=TAO_DIR
     verbose = False
     showoutput = False
     match = False
@@ -81,7 +87,7 @@ if __name__=="__main__":
     else:
         examples = TaoExamples.TaoTests()
             
-        
+    
     examples.setWithTags(args)
     if examples is None:
         sys.stderr.write('No examples match arguments:\n%s\n' % str(args))
@@ -101,9 +107,9 @@ if __name__=="__main__":
         #os.environ.update(TAO)
         #cwd = os.path.join(TAO['TAO_DIR'],"tests")
         if ex.section is None:
-            cwd = os.path.join(os.environ['TAO_DIR'],"tests")
+            cwd = os.path.join(TAO_SRC_DIR,"tests")
         else:
-            cwd = os.path.join(os.environ['TAO_DIR'],"src",ex.section,"examples","tutorials")
+            cwd = os.path.join(TAO_SRC_DIR,"src",ex.section,"examples","tutorials")
         (r,o,e) = examples.execute(['rm','-f',ex.executableName()],cwd=cwd,echo=verbose)
         (r,o,e) = examples.execute(ex.buildCommand(),cwd=cwd,echo=verbose)
         if (showoutput):
@@ -134,7 +140,7 @@ if __name__=="__main__":
                 if (not showdiff):
                     sys.stdout.write("%s executed\n" % ex.name)
                 else:
-                    goodname = os.path.join(os.environ['TAO_DIR'],'tests','output',ex.name+".out" )
+                    goodname = os.path.join(TAO_SRC_DIR,'tests','output',ex.name+".out" )
                     if (not os.access(goodname,os.R_OK)):
                         sys.stderr.write("Error: Could not find file %s\n" % goodname)
                     else:
