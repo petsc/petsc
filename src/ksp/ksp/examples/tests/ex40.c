@@ -30,30 +30,20 @@ T*/
 int main(int argc,char **args)
 {
   Vec            x,b,u;  /* approx solution, RHS, exact solution */
-  Mat            A;        /* linear system matrix */
+  Mat            A,Aaij;        /* linear system matrix */
   KSP            ksp;     /* linear solver context */
   PetscRandom    rctx;     /* random number generator context */
   PetscReal      norm;     /* norm of solution error */
-  PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its,nrows,ncols;
-  const PetscInt *rows,*cols;
+  PetscInt       i,j,Ii,J,m = 8,n = 7,its;
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
-  PetscScalar    v,rval;
-  PetscScalar    *va;
-  IS             isrows,iscols;
-  PetscMPIInt    rank,size;
+  PetscScalar    v;
+  PetscMPIInt    rank;
   
-#if defined(PETSC_USE_LOG)
-  PetscLogStage  stage;
-#endif
-
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
@@ -75,26 +65,23 @@ int main(int argc,char **args)
   ierr = MatSetType(A,MATELEMENTAL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatGetOwnershipIS(A,&isrows,&iscols);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr);
-  ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
-  ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrows*ncols*sizeof *va,&va);CHKERRQ(ierr);
-  for (i=0; i<nrows; i++) {
-    for (j=0; j<ncols; j++) {
-      ierr = PetscRandomGetValue(rctx,&rval);CHKERRQ(ierr);
-      va[i*ncols+j] = rval;
+  ierr = MatZeroEntries(A);CHKERRQ(ierr);
+  if (rank == 0) { 
+    PetscInt M,N;
+    ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+    for (Ii=0; Ii<M; Ii++){
+      v = -1.0; i = Ii/n; j = Ii - i*n;
+      if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = MatSetValues(A,nrows,rows,ncols,cols,va,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = PetscFree(va);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
+  ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   //ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -128,6 +115,8 @@ int main(int argc,char **args)
   */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-random_exact_sol",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     ierr = VecSetRandom(u,rctx);CHKERRQ(ierr);
   } else {
@@ -217,6 +206,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&Aaij);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
 
   /*
