@@ -100,6 +100,11 @@ PetscErrorCode MatSetFromOptions_SeqAIJCUSP(Mat A)
   if (flg) {
     ierr = MatCUSPSetFormat(A,MAT_CUSP_MULT,format);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsEnum("-mat_cusp_storage_format","sets storage format of (seq)aijcusp gpu matrices for SpMV",
+			  "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatCUSPSetFormat(A,MAT_CUSP_ALL,format);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 
@@ -457,7 +462,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUSP(Mat A,MatAssemblyType mode)
 /*@
    MatCreateSeqAIJCUSP - Creates a sparse matrix in AIJ (compressed row) format
    (the default parallel PETSc format).  This matrix will ultimately pushed down
-   to NVidia GPUs and use the CUSPARSE library for calculations. For good matrix 
+   to NVidia GPUs and use the CUSP library for calculations. For good matrix 
    assembly performance the user should preallocate the matrix storage by setting 
    the parameter nz (or the array nnz).  By setting these parameters accurately, 
    performance during matrix assembly can be increased by more than a factor of 50.
