@@ -2064,6 +2064,10 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
     ierr = PetscFree(d_nnz);CHKERRQ(ierr);
   } else {
     B = *matout;
+    ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+    for (i=0; i<ai[ma]; i++){
+      aj[i] += cstart; /* global col index to be used by MatSetValues() */
+    }
   }
 
   /* copy over the A part */ 
