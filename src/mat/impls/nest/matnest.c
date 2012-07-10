@@ -103,7 +103,7 @@ static PetscErrorCode MatMultTranspose_Nest(Mat A,Vec x,Vec y)
   for (j=0; j<nc; j++) {
     ierr = VecZeroEntries(by[j]);CHKERRQ(ierr);
     for (i=0; i<nr; i++) {
-      if (!bA->m[j][i]) continue;
+      if (!bA->m[i][j]) continue;
       /* y[j] <- y[j] + (A[i][j])^T * x[i] */
       ierr = MatMultTransposeAdd(bA->m[i][j],bx[i],by[j],by[j]);CHKERRQ(ierr);
     }
@@ -133,7 +133,7 @@ static PetscErrorCode MatMultTransposeAdd_Nest(Mat A,Vec x,Vec y,Vec z)
       ierr = VecRestoreSubVector(y,bA->isglobal.col[j],&by);CHKERRQ(ierr);
     }
     for (i=0; i<nr; i++) {
-      if (!bA->m[j][i]) continue;
+      if (!bA->m[i][j]) continue;
       /* z[j] <- y[j] + (A[i][j])^T * x[i] */
       ierr = MatMultTransposeAdd(bA->m[i][j],bx[i],bz[j],bz[j]);CHKERRQ(ierr);
     }
