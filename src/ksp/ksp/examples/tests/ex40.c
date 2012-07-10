@@ -30,21 +30,21 @@ T*/
 int main(int argc,char **args)
 {
   Vec            x,b,u;  /* approx solution, RHS, exact solution */
-  Mat            A,Aaij;        /* linear system matrix */
+  Mat            A;        /* linear system matrix */
   KSP            ksp;     /* linear solver context */
   PetscRandom    rctx;     /* random number generator context */
   PetscReal      norm;     /* norm of solution error */
-  PetscInt       i,j,Ii,J,m = 8,n = 7,its;
+  PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
   PetscScalar    v;
-  PetscMPIInt    rank;
-  
+#if defined(PETSC_USE_LOG)
+  PetscLogStage  stage;
+#endif
+
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
@@ -59,31 +59,56 @@ int main(int argc,char **args)
      preallocation of matrix memory is crucial for attaining good 
      performance. See the matrix chapter of the users manual for details.
   */
-
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATELEMENTAL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A,5,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatZeroEntries(A);CHKERRQ(ierr);
-  if (rank == 0) { 
-    PetscInt M,N;
-    ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-    for (Ii=0; Ii<M; Ii++){
-      v = -1.0; i = Ii/n; j = Ii - i*n;
-      if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
-    }
+
+  /* 
+     Currently, all PETSc parallel matrix formats are partitioned by
+     contiguous chunks of rows across the processors.  Determine which
+     rows of the matrix are locally owned. 
+  */
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+
+  /* 
+     Set matrix elements for the 2-D, five-point stencil in parallel.
+      - Each processor needs to insert only elements that it owns
+        locally (but any non-local elements will be sent to the
+        appropriate processor during matrix assembly). 
+      - Always specify global rows and columns of matrix entries.
+
+     Note: this uses the less common natural ordering that orders first
+     all the unknowns for x = h then for x = 2h etc; Hence you see J = Ii +- n
+     instead of J = I +- m as you might expect. The more standard ordering
+     would first do all variables for y = h, then y = 2h etc.
+
+   */
+  ierr = PetscLogStageRegister("Assembly", &stage);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
+  for (Ii=Istart; Ii<Iend; Ii++) { 
+    v = -1.0; i = Ii/n; j = Ii - i*n;  
+    if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
+
+  /* 
+     Assemble matrix, using the 2-step process:
+       MatAssemblyBegin(), MatAssemblyEnd()
+     Computations can be done while messages are in transition
+     by placing code between these two statements.
+  */
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
-  ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
-  //ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  /* A is symmetric. Set symmetric flag to enable ICC/Cholesky preconditioner */
+  ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
   /* 
      Create parallel vectors.
@@ -117,8 +142,8 @@ int main(int argc,char **args)
   if (flg) {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     ierr = VecSetRandom(u,rctx);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   } else {
     ierr = VecSet(u,1.0);CHKERRQ(ierr);
   }
@@ -138,14 +163,13 @@ int main(int argc,char **args)
   /* 
      Create linear solver context
   */
-
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* 
      Set linear solver defaults for this problem (optional).
@@ -201,13 +225,8 @@ int main(int argc,char **args)
      are no longer needed.
   */
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&Aaij);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);  ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
