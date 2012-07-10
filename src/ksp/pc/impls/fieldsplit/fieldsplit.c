@@ -590,7 +590,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       if (sp) {ierr  = MatSetNullSpace(jac->schur, sp);CHKERRQ(ierr);}
       /* set tabbing, options prefix and DM of KSP inside the MatSchur (inherited from the split) */
       ierr  = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
-      ierr  = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,2);CHKERRQ(ierr);
+      /* Indent this deeper to emphasize the "inner" nature of this solver. */
+      ierr  = KSPIncrementTabLevel(ksp,(PetscObject)pc,2);CHKERRQ(ierr);
       ierr  = PetscSNPrintf(schurprefix, sizeof schurprefix, "%sfieldsplit_%s_", ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", jac->head->splitname);CHKERRQ(ierr);
       /* Dmitry had KSPGetOptionsPrefix(jac->head->ksp, &schurprefix). Do we want this??? */
       ierr  = KSPSetOptionsPrefix(ksp,schurprefix);CHKERRQ(ierr);
