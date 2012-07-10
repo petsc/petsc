@@ -4,7 +4,6 @@ PETSC_CUDA_EXTERN_C_BEGIN
 PETSC_CUDA_EXTERN_C_END
 #include "mpicuspmatimpl.h"
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUSP"
 PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
@@ -48,13 +47,13 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const P
   ierr = MatSeqAIJSetPreallocation(b->A,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_TXPETSCGPU
-  ierr=MatSetOption_SeqAIJCUSP(b->A,cuspStruct->diagGPUMatFormat,PETSC_TRUE);CHKERRQ(ierr);
-  ierr=MatSetOption_SeqAIJCUSP(b->B,cuspStruct->offdiagGPUMatFormat,PETSC_TRUE);CHKERRQ(ierr);
+  ierr=MatCUSPSetFormat(b->A,MAT_CUSP_MULT,cuspStruct->diagGPUMatFormat);CHKERRQ(ierr);
+  ierr=MatCUSPSetFormat(b->B,MAT_CUSP_MULT,cuspStruct->offdiagGPUMatFormat);CHKERRQ(ierr);
 #endif
   B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetVecs_MPIAIJCUSP"
 PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
@@ -85,17 +84,17 @@ PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
 #define __FUNCT__ "MatMult_MPIAIJCUSP"
 PetscErrorCode MatMult_MPIAIJCUSP(Mat A,Vec xx,Vec yy)
 {
-  // This multiplication sequence is different sequence
-  // than the CPU version. In particular, the diagonal block
-  // multiplication kernel is launched in one stream. Then,
-  // in a separate stream, the data transfers from DeviceToHost
-  // (with MPI messaging in between), then HostToDevice are 
-  // launched. Once the data transfer stream is synchronized,
-  // to ensure messaging is complete, the MatMultAdd kernel
-  // is launched in the original (MatMult) stream to protect
-  // against race conditions.
-  //
-  // This sequence should only be called for GPU computation.
+  /* This multiplication sequence is different sequence
+     than the CPU version. In particular, the diagonal block
+     multiplication kernel is launched in one stream. Then,
+     in a separate stream, the data transfers from DeviceToHost
+     (with MPI messaging in between), then HostToDevice are 
+     launched. Once the data transfer stream is synchronized,
+     to ensure messaging is complete, the MatMultAdd kernel
+     is launched in the original (MatMult) stream to protect
+     against race conditions.
+  
+     This sequence should only be called for GPU computation. */
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       nt;
@@ -116,104 +115,67 @@ PetscErrorCode MatMult_MPIAIJCUSP(Mat A,Vec xx,Vec yy)
 PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats);
 
 #ifdef PETSC_HAVE_TXPETSCGPU
+
+EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetOption_MPIAIJCUSP"
-PetscErrorCode MatSetOption_MPIAIJCUSP(Mat A,MatOption op,PetscBool flg)
+#define __FUNCT__ "MatCUSPSetFormat_MPIAIJCUSP"
+PetscErrorCode MatCUSPSetFormat_MPIAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFormat format)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   Mat_MPIAIJCUSP * cuspStruct  = (Mat_MPIAIJCUSP*)a->spptr;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;  
-  ierr = MatSetOption_MPIAIJ(A,op,flg);CHKERRQ(ierr);
   switch (op) {
-  case MAT_DIAGBLOCK_CSR:
-    cuspStruct->diagGPUMatFormat = MAT_DIAGBLOCK_CSR;
+  case MAT_CUSP_MULT_DIAG:
+    cuspStruct->diagGPUMatFormat = format;
     break;
-  case MAT_OFFDIAGBLOCK_CSR:
-    cuspStruct->offdiagGPUMatFormat = MAT_OFFDIAGBLOCK_CSR;
+  case MAT_CUSP_MULT_OFFDIAG:
+    cuspStruct->offdiagGPUMatFormat = format;
     break;
-  case MAT_DIAGBLOCK_DIA:
-    cuspStruct->diagGPUMatFormat = MAT_DIAGBLOCK_DIA;
+  case MAT_CUSP_ALL:
+    cuspStruct->diagGPUMatFormat = format;
+    cuspStruct->offdiagGPUMatFormat = format;
     break;
-  case MAT_OFFDIAGBLOCK_DIA:
-    cuspStruct->offdiagGPUMatFormat = MAT_OFFDIAGBLOCK_DIA;
-    break;
-  case MAT_DIAGBLOCK_ELL:
-    cuspStruct->diagGPUMatFormat = MAT_DIAGBLOCK_ELL;
-    break;
-  case MAT_OFFDIAGBLOCK_ELL:
-    cuspStruct->offdiagGPUMatFormat = MAT_OFFDIAGBLOCK_ELL;
-    break;
-  case MAT_DIAGBLOCK_HYB:
-  case MAT_OFFDIAGBLOCK_HYB:
-  case MAT_HYB:
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported GPU matrix storage format HYB for (MPI,SEQ)AIJCUSP matrix type.");
   default:
-    break;
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported operation %d for MatCUSPFormatOperation. Only MAT_CUSP_MULT_DIAG, MAT_CUSP_MULT_DIAG, and MAT_CUSP_MULT_ALL are currently supported.",op);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(0);  
 }
+EXTERN_C_END
 
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetFromOptions_MPIAIJCUSP"
 PetscErrorCode MatSetFromOptions_MPIAIJCUSP(Mat A)
 {
-  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
-  Mat_MPIAIJCUSP * cuspStruct  = (Mat_MPIAIJCUSP*)a->spptr;
+  MatCUSPStorageFormat format;
   PetscErrorCode     ierr;
-  PetscInt       idxDiag=0,idxOffDiag=0;
-  char * formats[]={CSR,DIA,ELL};
-  MatOption diagFormat, offdiagFormat;
   PetscBool      flg;
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"When using TxPETSCGPU, MPIAIJCUSP Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsHead("MPIAIJCUSP options");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)A);
   if (A->factortype==MAT_FACTOR_NONE) {
-    ierr = PetscOptionsEList("-mat_mult_cusp_diag_storage_format",
-			     "Set the storage format of (mpi)aijcusp gpu matrices for SpMV",
-			     "None",formats,3,formats[0],&idxDiag,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-mat_mult_cusp_offdiag_storage_format",
-			     "Set the storage format of (mpi)aijcusp gpu matrices for SpMV",
-			     "None",formats,3,formats[0],&idxOffDiag,&flg);CHKERRQ(ierr);
-
-    switch (idxDiag)
-      {
-      case 0:
-	diagFormat=MAT_CSR;
-	break;
-      case 2:
-	diagFormat=MAT_DIA;
-	break;
-      case 3:
-	diagFormat=MAT_ELL;
-	break;      
-      }
-    
-    switch (idxOffDiag)
-      {
-      case 0:
-	offdiagFormat=MAT_CSR;
-	break;
-      case 2:
-	offdiagFormat=MAT_DIA;
-	break;
-      case 3:
-	offdiagFormat=MAT_ELL;
-	break;      
-      }
-    cuspStruct->diagGPUMatFormat = diagFormat;
-    cuspStruct->offdiagGPUMatFormat = offdiagFormat;
+    ierr = PetscOptionsEnum("-mat_cusp_mult_diag_storage_format","sets storage format of the diagonal blocks of (mpi)aijcusp gpu matrices for SpMV",
+			    "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatCUSPSetFormat(A,MAT_CUSP_MULT_DIAG,format);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsEnum("-mat_cusp_mult_offdiag_storage_format","sets storage format of the off-diagonal blocks (mpi)aijcusp gpu matrices for SpMV",
+			    "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatCUSPSetFormat(A,MAT_CUSP_MULT_OFFDIAG,format);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsEnum("-mat_cusp_storage_format","sets storage format of the diagonal and off-diagonal blocks (mpi)aijcusp gpu matrices for SpMV",
+			    "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatCUSPSetFormat(A,MAT_CUSP_ALL,format);CHKERRQ(ierr);
+    }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 #endif
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MPIAIJCUSP"
 PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
@@ -235,8 +197,6 @@ PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -261,13 +221,13 @@ PetscErrorCode  MatCreate_MPIAIJCUSP(Mat A)
   a->spptr        = new Mat_MPIAIJCUSP;
   cuspStruct  = (Mat_MPIAIJCUSP*)a->spptr;
 
-  cuspStruct->diagGPUMatFormat    = MAT_DIAGBLOCK_CSR;
-  cuspStruct->offdiagGPUMatFormat = MAT_OFFDIAGBLOCK_CSR;
+  cuspStruct->diagGPUMatFormat    = MAT_CUSP_CSR;
+  cuspStruct->offdiagGPUMatFormat = MAT_CUSP_CSR;
 
   A->ops->mult           = MatMult_MPIAIJCUSP; 
   A->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSP;	
-  A->ops->setoption      = MatSetOption_MPIAIJCUSP;	
   A->ops->destroy        = MatDestroy_MPIAIJCUSP;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatCUSPSetFormat_C", "MatCUSPSetFormat_MPIAIJCUSP", MatCUSPSetFormat_MPIAIJCUSP);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -275,6 +235,54 @@ PetscErrorCode  MatCreate_MPIAIJCUSP(Mat A)
 EXTERN_C_END
 
 
+/*@
+   MatCreateAIJCUSP - Creates a sparse matrix in AIJ (compressed row) format
+   (the default parallel PETSc format).  This matrix will ultimately pushed down
+   to NVidia GPUs and use the CUSP library for calculations. For good matrix 
+   assembly performance the user should preallocate the matrix storage by setting 
+   the parameter nz (or the array nnz).  By setting these parameters accurately, 
+   performance during matrix assembly can be increased by more than a factor of 50.
+
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - MPI communicator, set to PETSC_COMM_SELF
+.  m - number of rows
+.  n - number of columns
+.  nz - number of nonzeros per row (same for all rows)
+-  nnz - array containing the number of nonzeros in the various rows 
+         (possibly different for each row) or PETSC_NULL
+
+   Output Parameter:
+.  A - the matrix 
+
+   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   MatXXXXSetPreallocation() paradigm instead of this routine directly.
+   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+
+   Notes:
+   If nnz is given then nz is ignored
+
+   The AIJ format (also called the Yale sparse matrix format or
+   compressed row storage), is fully compatible with standard Fortran 77
+   storage.  That is, the stored row and column indices can begin at
+   either one (as in Fortran) or zero.  See the users' manual for details.
+
+   Specify the preallocated storage with either nz or nnz (not both).
+   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
+   allocation.  For large problems you MUST preallocate memory or you 
+   will get TERRIBLE performance, see the users' manual chapter on matrices.
+
+   By default, this format uses inodes (identical nodes) when possible, to 
+   improve numerical efficiency of matrix-vector products and solves. We 
+   search for consecutive rows with the same nonzero structure, thereby
+   reusing matrix information to achieve increased efficiency.
+
+   Level: intermediate
+
+.seealso: MatCreate(), MatCreateAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays(), MatCreateAIJ(), MATMPIAIJCUSP, MATAIJCUSP
+@*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateAIJCUSP"
 PetscErrorCode  MatCreateAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
@@ -296,20 +304,28 @@ PetscErrorCode  MatCreateAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,
   PetscFunctionReturn(0);
 }
 
-/*MC
-   MATAIJCUSP - MATAIJCUSP = "aijcusp" - A matrix type to be used for sparse matrices.
+/*M
+   MATAIJCUSP - MATMPIAIJCUSP = "aijcusp" = "mpiaijcusp" - A matrix type to be used for sparse matrices.
+
+   A matrix type type whose data resides on Nvidia GPUs. These matrices can be CSR format. 
+   All matrix calculations are performed on Nvidia GPUs using the CUSP library. DIA and ELL 
+   formats are ONLY available when using the 'txpetscgpu' package. Use --download-txpetscgpu 
+   to build/install PETSc to use different GPU storage formats with CUSP matrix types.
 
    This matrix type is identical to MATSEQAIJCUSP when constructed with a single process communicator,
    and MATMPIAIJCUSP otherwise.  As a result, for single process communicators, 
-  MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported 
-  for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.
+   MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported 
+   for communicators controlling multiple processes.  It is recommended that you call both of
+   the above preallocation routines for simplicity.
 
    Options Database Keys:
-. -mat_type mpiaijcusp - sets the matrix type to "mpiaijcusp" during a call to MatSetFromOptions()
++  -mat_type mpiaijcusp - sets the matrix type to "mpiaijcusp" during a call to MatSetFromOptions()
+.  -mat_cusp_storage_format csr (dia (diagonal) or ell (ellpack)) sets the storage format of diagonal and off-diagonal matrices during a call to MatSetFromOptions(). Only availabe with 'txpetscgpu' package.
+.  -mat_cusp_mult_diag_storage_format csr (dia (diagonal) or ell (ellpack)) sets the storage format of diagonal matrix during a call to MatSetFromOptions().  Only availabe with 'txpetscgpu' package.
+-  -mat_cusp_mult_offdiag_storage_format csr (dia (diagonal) or ell (ellpack)) sets the storage format of off-diagonal matrix during a call to MatSetFromOptions().  Only availabe with 'txpetscgpu' package.
 
   Level: beginner
 
-.seealso: MatCreateMPIAIJ,MATSEQAIJ,MATMPIAIJ, MATMPIAIJCUSP, MATSEQAIJCUSP
+.seealso: MatCreateMPIAIJ,MATSEQAIJ,MATMPIAIJ, MATMPIAIJCUSP, MATSEQAIJCUSP, MatCUSPSetFormat(), MatCUSPStorageFormat, MatCUSPFormatOperation
 M*/
 

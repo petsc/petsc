@@ -996,25 +996,6 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscBool  flg)
   case MAT_USE_INODES:
     /* Not an error because MatSetOption_SeqAIJ_Inode handles this one */
     break;
-#if defined(PETSC_HAVE_TXPETSCGPU)
-    // Sorry, I don't know how else to add MatOptions for data specific
-    // to GPU classes without protecting against it in this case statement.
-    // If anyone knows of a better way, let me know. Paul
-  case MAT_DIAGBLOCK_CSR:
-  case MAT_OFFDIAGBLOCK_CSR:
-  case MAT_CSR:
-  case MAT_DIAGBLOCK_DIA:
-  case MAT_OFFDIAGBLOCK_DIA:
-  case MAT_DIA:
-  case MAT_DIAGBLOCK_ELL:
-  case MAT_OFFDIAGBLOCK_ELL:
-  case MAT_ELL:
-  case MAT_DIAGBLOCK_HYB:
-  case MAT_OFFDIAGBLOCK_HYB:
-  case MAT_HYB:
-    /* Not an error because MatSetOption_SeqAIJCUSP/CUSPARSE handle these options */
-    break;
-#endif
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %d",op);
   }
