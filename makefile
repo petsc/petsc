@@ -1,3 +1,4 @@
+
 #
 # This is the makefile for installing TAO. See the file
 # docs/installation.html for directions on installing TAO.
@@ -5,10 +6,10 @@
 #
 ALL: all
 
-
 # Call make recursively in these directory
 DIRS = src include docs tests
 
+include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables
 include ${TAO_DIR}/conf/tao_base
 
 #
@@ -70,12 +71,12 @@ tao_info:
 # files and compiles .F files
 #
 tao_build:
-	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
-	-@echo "========================================="
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} TAO_DIR=${TAO_DIR} ACTION=libfast tree
-	-@${RANLIB} ${TAO_LIB_DIR}/*.${AR_LIB_SUFFIX}
-	-@echo "Completed building libraries"
-	-@echo "========================================="
+	@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
+	@echo "========================================="
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} TAO_DIR=${TAO_DIR} ACTION=libfast tree
+	@${RANLIB} ${TAO_LIB_DIR}/*.${AR_LIB_SUFFIX}
+	@echo "Completed building libraries"
+	@echo "========================================="
 
 #
 
@@ -86,7 +87,7 @@ tao_deletelibs:
 
 tao_shared: shared
 
-install:
+install: tao_chk_petsc_install 
 	@${PYTHON} ./conf/install.py -destDir=${DESTDIR}
 
 tao_alletags:

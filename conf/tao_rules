@@ -8,10 +8,41 @@ tao_chk_tao_dir:
           echo "Your TAO_DIR may not match the directory you are in";\
           echo "TAO_DIR " $${true_TAO_DIR} "Current directory" $${mypwd};\
           echo "******************************************************" ; \
-        fi
+        fi;
+
+tao_chk_petsc_install:
+	@if [ ! -e ${PETSC_DIR}/src/snes/ ]; then \
+	echo "*********************Warning*************************" ; \
+	echo "To install TAO, PETSC_DIR must be set to the PETSc source";\
+	echo "directory, not the PETSc install directory";\
+	echo "******************************************************" ; \
+	exit 1;\
+	fi
 
 .SUFFIXES: ${SUFFIXES} .tao
 
+show:
+	@if [ "${PETSC_ARCH}x" = "x" ] ; then \
+	  echo "TAO_DIR=${TAO_DIR}";\
+	  echo "PETSC_DIR=${PETSC_DIR}";\
+	  echo "PETSC_ARCH=${PETSC_ARCH}";\
+	  echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES";\
+	  echo "=========================================";\
+	  echo "make" PETSC_ARCH=NONE PETSC_DIR=${PETSC_DIR} TAO_DIR=${TAO_DIR} ACTION=libfast tree;\
+	  echo ${RANLIB} ${TAO_LIB_DIR}/*.${AR_LIB_SUFFIX};\
+	  echo "Completed building libraries";\
+	  echo "=========================================";\
+	else\
+	  echo "TAO_DIR=${TAO_DIR}";\
+	  echo "PETSC_DIR=${PETSC_DIR}";\
+	  echo "PETSC_ARCH=${PETSC_ARCH}";\
+	  echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES";\
+	  echo "=========================================";\
+	  echo "make" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} TAO_DIR=${TAO_DIR} ACTION=libfast tree;\
+	  echo ${RANLIB} ${TAO_LIB_DIR}/*.${AR_LIB_SUFFIX};\
+	  echo "Completed building libraries";\
+	  echo "=========================================";\
+	fi;
 #
 #  These rules are for compiling the test examples.
 #
