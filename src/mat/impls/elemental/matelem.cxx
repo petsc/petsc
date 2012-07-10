@@ -276,20 +276,11 @@ static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
     ierr = MatSetType(Be,MATELEMENTAL);CHKERRQ(ierr);
     ierr = MatSetUp(Be);CHKERRQ(ierr);
     *B = Be;
-
-    /*ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-    ierr = MatMatMultSymbolic_Elemental(A,B,1.0,C);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);   */
   }
   Mat_Elemental     *a = (Mat_Elemental*)A->data;
   Mat_Elemental     *b = (Mat_Elemental*)Be->data;
   elem::Transpose(*a->emat,*b->emat);
   Be->assembled = PETSC_TRUE;
-
-
-  /*ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); 
-  ierr = MatMatMultNumeric_Elemental(A,B,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 
@@ -306,9 +297,7 @@ static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
   PetscFunctionBegin;
   ierr = VecCopy(B,X);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  //ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
-    //elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> be(A->rmap->N,1,0,b,A->rmap->n,*a->grid);
     elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,x,A->rmap->n,*a->grid);
     elem::DistMatrix<PetscScalar,elem::MC,elem::MR> xer = xe;
     if ((*a->pivot).AllocatedMemory()) {
@@ -318,7 +307,6 @@ static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
     }
     else {
       printf("pivot is empty.\n");
-      //elem::Gemv(elem::NORMAL,1.0,*a->emat,be,0.0,xe);
       elem::LUSolve(elem::NORMAL,*a->emat,xer);
       elem::Copy(xer,xe);
     }
