@@ -1,4 +1,5 @@
-static char help[]="This program illustrates the use of PETSc-fftw interface for real 2D DFT\n";
+static char help[]="This program illustrates the use of PETSc-fftw interface for real 2D DFT.\n\
+                    See ~petsc/src/mat/examples/tests/ex158.c for general cases. \n\n";
 #include <petscmat.h>
 
 #undef __FUNCT__
@@ -42,7 +43,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
 
   /* Scatter PETSc vector 'input' to FFTW vector 'x' */
-  ierr = InputTransformFFT(A,input,x);CHKERRQ(ierr);
+  ierr = VecScatterPetscToFFTW(A,input,x);CHKERRQ(ierr);
 
   /* Apply forward FFT */
   ierr = MatMult(A,x,y);CHKERRQ(ierr);
@@ -51,14 +52,11 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
 
   /* Scatter FFTW vector 'z' to PETSc vector 'output' */
-  ierr = OutputTransformFFT(A,z,output);CHKERRQ(ierr);
+  ierr = VecScatterFFTWToPetsc(A,z,output);CHKERRQ(ierr);
 
   /* Check accuracy */
   fac = 1.0/(PetscReal)N;
   ierr = VecScale(output,fac);CHKERRQ(ierr);
-  //  ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  //  ierr = VecView(output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
   ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
   ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);
   if (enorm > 1.e-11 && !rank){
