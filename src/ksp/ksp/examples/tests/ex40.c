@@ -34,17 +34,16 @@ int main(int argc,char **args)
   KSP            ksp;     /* linear solver context */
   PetscRandom    rctx;     /* random number generator context */
   PetscReal      norm;     /* norm of solution error */
-  PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
+  PetscInt       i,j,Ii,J,m = 8,n = 7,its;
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
   PetscScalar    v;
-#if defined(PETSC_USE_LOG)
-  PetscLogStage  stage;
-#endif
+  PetscMPIInt    rank;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
@@ -61,54 +60,26 @@ int main(int argc,char **args)
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATELEMENTAL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,5,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-
-  /* 
-     Currently, all PETSc parallel matrix formats are partitioned by
-     contiguous chunks of rows across the processors.  Determine which
-     rows of the matrix are locally owned. 
-  */
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
-
-  /* 
-     Set matrix elements for the 2-D, five-point stencil in parallel.
-      - Each processor needs to insert only elements that it owns
-        locally (but any non-local elements will be sent to the
-        appropriate processor during matrix assembly). 
-      - Always specify global rows and columns of matrix entries.
-
-     Note: this uses the less common natural ordering that orders first
-     all the unknowns for x = h then for x = 2h etc; Hence you see J = Ii +- n
-     instead of J = I +- m as you might expect. The more standard ordering
-     would first do all variables for y = h, then y = 2h etc.
-
-   */
-  ierr = PetscLogStageRegister("Assembly", &stage);CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
-  for (Ii=Istart; Ii<Iend; Ii++) { 
-    v = -1.0; i = Ii/n; j = Ii - i*n;  
-    if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
+  if (rank==0) {
+    PetscInt M,N;
+    ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+    for (Ii=0; Ii<M; Ii++) { 
+      v = -1.0; i = Ii/n; j = Ii - i*n;  
+      if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
+    }
   }
-
-  /* 
-     Assemble matrix, using the 2-step process:
-       MatAssemblyBegin(), MatAssemblyEnd()
-     Computations can be done while messages are in transition
-     by placing code between these two statements.
-  */
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* A is symmetric. Set symmetric flag to enable ICC/Cholesky preconditioner */
-  ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  //ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
   /* 
      Create parallel vectors.
