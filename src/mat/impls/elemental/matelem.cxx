@@ -295,17 +295,25 @@ static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
   PetscFunctionBegin;
   ierr = VecCopy(B,X);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  { /* Scoping so that constructor is called before pointer is returned */
-    elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,x,A->rmap->n,*a->grid);
-    elem::DistMatrix<PetscScalar,elem::MC,elem::MR> xer = xe;
+  elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,x,A->rmap->n,*a->grid);
+  elem::DistMatrix<PetscScalar,elem::MC,elem::MR> xer = xe;
+  switch (A->factortype) {
+  case MAT_FACTOR_LU:
     if ((*a->pivot).AllocatedMemory()) {
       elem::SolveAfterLU(elem::NORMAL,*a->emat,*a->pivot,xer);
       elem::Copy(xer,xe);
-    }
-    else {
+    } else {
       elem::SolveAfterLU(elem::NORMAL,*a->emat,xer);
       elem::Copy(xer,xe);
     }
+    break;
+  case MAT_FACTOR_CHOLESKY:
+    elem::SolveAfterCholesky(elem::UPPER,elem::NORMAL,*a->emat,xer);
+    elem::Copy(xer,xe);
+    break;
+  default:
+    printf("Error: Unfactored Matrix or Unsupported MatFactorType!\n");
+    break;
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -321,11 +329,20 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
 
   PetscFunctionBegin;
   elem::Copy(*b->emat,*x->emat);
-  if ((*a->pivot).AllocatedMemory()) {
-    elem::SolveAfterLU(elem::NORMAL,*a->emat,*a->pivot,*x->emat);
-  }
-  else {
-    elem::SolveAfterLU(elem::NORMAL,*a->emat,*x->emat);
+  switch (A->factortype) {
+  case MAT_FACTOR_LU:
+    if ((*a->pivot).AllocatedMemory()) {
+      elem::SolveAfterLU(elem::NORMAL,*a->emat,*a->pivot,*x->emat);
+    } else {
+      elem::SolveAfterLU(elem::NORMAL,*a->emat,*x->emat);
+    }
+    break;
+  case MAT_FACTOR_CHOLESKY:
+    elem::SolveAfterCholesky(elem::UPPER,elem::NORMAL,*a->emat,*x->emat);
+    break;
+  default:
+    printf("Error: Unfactored Matrix or Unsupported MatFactorType!\n");
+    break;
   }
   PetscFunctionReturn(0);
 }
@@ -384,7 +401,7 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorI
     printf("LDL^H Factorization for Symmetric Matrices\n");
     //elem::LU(*a->emat);
   }
-  A->factortype = MAT_FACTOR_LU; 
+  A->factortype = MAT_FACTOR_CHOLESKY; 
   PetscFunctionReturn(0);
 }
 

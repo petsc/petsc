@@ -161,7 +161,6 @@ int main(int argc,char **argv)
     ierr = MatView(Asymaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = MatDestroy(&Asymaij);CHKERRQ(ierr);
   }
-
   /*------------------------*/
   /* In-place Cholesky */
   /* Create matrix factor G, then copy Asym to G */
@@ -173,17 +172,32 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(G,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(G,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCopy(Asym,G,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-
   /* Only G = U^T * U is implemented for now */ 
   finfo.dtcol = 0.1;
   ierr = MatCholeskyFactor(G,0,&finfo);CHKERRQ(ierr);
-  if (mats_view){
-    ierr = MatView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
-
+  /* Solve U^T * U = B */
+  ierr = MatSolve(G,b,x);CHKERRQ(ierr);
+  ierr = MatMatSolve(G,B,X);CHKERRQ(ierr);
   /* Out-place Cholesky */
   ierr = MatDestroy(&G);CHKERRQ(ierr);
-  
+  /* Check norm(Asym*X-B) */
+  ierr = VecCreate(PETSC_COMM_WORLD,&c);CHKERRQ(ierr);
+  ierr = VecSetSizes(c,m,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(c);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(c);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(c);CHKERRQ(ierr);
+  ierr = MatMult(Asym,x,c);CHKERRQ(ierr);
+  ierr = VecAXPY(c,-1.0,b);CHKERRQ(ierr);
+  ierr = VecNorm(c,NORM_1,&norm);CHKERRQ(ierr);
+  if (norm > tol){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
+  }
+  ierr = MatMatMult(Asym,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+  ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);
+  if (norm > tol){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
+  }
 
   /* LU factorization */
   /*------------------*/
@@ -197,27 +211,16 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(F,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(F,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCopy(A,F,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-
   /* PF=LU or F=LU factorization - perms is ignored by Elemental; set finfo.dtcol !0 or 0 to enable/disable partial pivoting */ 
   finfo.dtcol = 0.1;
   ierr = MatLUFactor(F,0,0,&finfo);CHKERRQ(ierr);
-  if (mats_view){
-    ierr = MatView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
-
   /* Solve LUX = PB or LUX = B */
   ierr = MatSolve(F,b,x);CHKERRQ(ierr);
   ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
   //ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   //ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
-
   /* Check norm(A*X - B) */
-  ierr = VecCreate(PETSC_COMM_WORLD,&c);CHKERRQ(ierr);
-  ierr = VecSetSizes(c,m,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(c);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(c);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(c);CHKERRQ(ierr);
   ierr = MatMult(A,x,c);CHKERRQ(ierr);
   ierr = VecAXPY(c,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(c,NORM_1,&norm);CHKERRQ(ierr);
@@ -225,8 +228,7 @@ int main(int argc,char **argv)
   if (norm > tol){
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
   }
-
-  ierr = MatMatMult(A,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+  ierr = MatMatMult(A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);
   if (norm > tol){
@@ -237,7 +239,7 @@ int main(int argc,char **argv)
   ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(F,A,0,0,&finfo);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(F,A,&finfo);CHKERRQ(ierr);
-  // ierr = MatSolve(F,b,x);CHKERRQ(ierr);
+  ierr = MatSolve(F,b,x);CHKERRQ(ierr);
   ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
 
