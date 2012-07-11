@@ -12,13 +12,14 @@ int main(int argc,char **args)
   const PetscInt *rows,*cols;
   IS             isrows,iscols;
   PetscErrorCode ierr;
-  PetscBool      flg,Test_MatMatMult=PETSC_FALSE;
+  PetscBool      flg,Test_MatMatMult=PETSC_FALSE,mats_view=PETSC_FALSE;
   PetscScalar    *v;
   PetscMPIInt    rank,size;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
 
   // Get local block or element size
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -29,7 +30,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(C,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
-
+  
   ierr = PetscOptionsHasName(PETSC_NULL,"-row_oriented",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatSetOption(C,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);}
   ierr = MatGetOwnershipIS(C,&isrows,&iscols);CHKERRQ(ierr);
@@ -67,11 +68,10 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   // Test MatView() 
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatComputeExplicitOperator(C,&Caij);CHKERRQ(ierr);
-  ierr = MatView(Caij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(&Caij);CHKERRQ(ierr);
-
+  if (mats_view){
+    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+  
   // Set unowned matrix entries - add subdiagonals and diagonals from proc[0]
   if (rank == 0) { 
     PetscInt M,N,cols[2];
@@ -88,10 +88,9 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatComputeExplicitOperator(C,&Caij);CHKERRQ(ierr);
-  ierr = MatView(Caij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   // Test MatMult() 
+  ierr = MatComputeExplicitOperator(C,&Caij);CHKERRQ(ierr);
   ierr = MatMultEqual(C,Caij,5,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultEqual() fails");
 
@@ -104,14 +103,6 @@ int main(int argc,char **args)
   if (Test_MatMatMult){
     Mat CCelem,CCaij;
     ierr = MatMatMult(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CCelem);CHKERRQ(ierr);
-    /*
-     Mat CCexp;
-     ierr = PetscPrintf(PETSC_COMM_WORLD,"CCelem = C*C\n");CHKERRQ(ierr);
-     ierr = MatView(CCelem,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-     ierr = MatComputeExplicitOperator(CCelem,&CCexp);CHKERRQ(ierr);
-     ierr = MatView(CCexp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-     ierr = MatDestroy(&CCexp);CHKERRQ(ierr);
-     */
     ierr = MatMatMult(Caij,Caij,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CCaij);CHKERRQ(ierr);
     ierr = MatMultEqual(CCelem,CCaij,5,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"CCelem != CCaij. MatMatMult() fails");

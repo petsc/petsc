@@ -70,10 +70,15 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_INFO) {
       SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Info viewer not implemented yet");
     } else if (format == PETSC_VIEWER_DEFAULT) {
+      Mat Aaij;
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
       ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
       a->emat->Print("Elemental matrix (cyclic ordering)");
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)viewer)->comm,"Elemental matrix (explicit ordering)\n");CHKERRQ(ierr);
+      ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
+      ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      ierr = MatDestroy(&Aaij);CHKERRQ(ierr);     
     } else SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Format");
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by Elemental matrices",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
@@ -635,10 +640,8 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
     commgrid->grid       = new elem::Grid(cxxcomm);
     commgrid->grid_refct = 1;
     ierr = MPI_Attr_put(icomm,Petsc_Elemental_keyval,(void*)commgrid);CHKERRQ(ierr);
-    printf(" create commgrid ...\n");
   } else {
     commgrid->grid_refct++;
-    printf(" share commgrid ...\n");
   }
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   a->grid      = commgrid->grid;
