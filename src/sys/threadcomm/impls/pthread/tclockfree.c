@@ -69,7 +69,7 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
       job = PetscJobQueue->jobs[my_job_counter];
       /* Spark the thread pool */
       SparkThreads_LockFree(PetscPThreadRank,job->tcomm,job);
-      if(PetscReadOnce(int,job->job_status[PetscPThreadRank]) == THREAD_JOB_RECIEVED) {
+      if(job->job_status[PetscPThreadRank] == THREAD_JOB_RECIEVED) {
 	/* Do own job */
 	PetscRunKernel(PetscPThreadRank,job_lockfree.data[PetscPThreadRank]->nargs,job_lockfree.data[PetscPThreadRank]);
 	/* Post job completed status */
