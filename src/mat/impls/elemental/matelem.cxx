@@ -265,6 +265,7 @@ static PetscErrorCode MatCopy_Elemental(Mat A,Mat B,MatStructure str)
 #define __FUNCT__ "MatTranspose_Elemental"
 static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
 {
+  /* Only out-of-place supported */
   Mat            Be;
   PetscErrorCode ierr;
   MPI_Comm       comm=((PetscObject)A)->comm;
@@ -389,6 +390,8 @@ static PetscErrorCode  MatLUFactorSymbolic_Elemental(Mat F,Mat A,IS r,IS c,const
 static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
+  elem::DistMatrix<PetscScalar,elem::MC,elem::MR>   atrans;
+  elem::DistMatrix<PetscScalar,elem::MC,elem::STAR> d;    
 
   PetscFunctionBegin;
   printf("MatCholeskyFactor_Elemental is called...\n");
@@ -398,8 +401,10 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorI
     elem::Cholesky(elem::UPPER,*a->emat);
   } else {
     /* A = U^T * D * U * for Symmetric Matrix A */ 
-    printf("LDL^H Factorization for Symmetric Matrices\n");
-    //elem::LU(*a->emat);
+    printf("LDL^T Factorization for Symmetric Matrices\n");
+    elem::LDLT(*a->emat,d);
+    elem::Transpose(*a->emat,atrans);
+    elem::Copy(atrans,*a->emat);
   }
   A->factortype = MAT_FACTOR_CHOLESKY; 
   PetscFunctionReturn(0);

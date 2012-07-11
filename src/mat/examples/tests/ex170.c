@@ -8,12 +8,11 @@ static char help[] = "Tests Elemental interface.\n\n";
 int main(int argc,char **args)
 {
   Vec            x,y;
-  Mat            B,C,Cexp,Ct;
+  Mat            B,C,Ct;
   PetscInt       i,j,m = 5,n,p,nrows,ncols;
   const PetscInt *rows,*cols;
   IS             isrows,iscols;
   PetscErrorCode ierr;
-  PetscBool      flg;
   PetscScalar    *v,*vx;
   PetscMPIInt    rank,size;
   PetscReal Cnorm;
@@ -29,23 +28,10 @@ int main(int argc,char **args)
 
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(C,MATELEMENTAL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
-
-  ierr = PetscOptionsHasName(PETSC_NULL,"-row_oriented",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = MatSetOption(C,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);}
   ierr = MatGetOwnershipIS(C,&isrows,&iscols);CHKERRQ(ierr);
-  if (0) {
-    IS tmp;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Row index set:\n");CHKERRQ(ierr);
-    ierr = ISOnComm(isrows,PETSC_COMM_WORLD,PETSC_USE_POINTER,&tmp);CHKERRQ(ierr);
-    ierr = ISView(tmp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = ISDestroy(&tmp);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Column index set:\n");CHKERRQ(ierr);
-    ierr = ISOnComm(iscols,PETSC_COMM_WORLD,PETSC_USE_POINTER,&tmp);CHKERRQ(ierr);
-    ierr = ISView(tmp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = ISDestroy(&tmp);CHKERRQ(ierr);
-  }
   ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr);
   ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
@@ -62,9 +48,6 @@ int main(int argc,char **args)
 
   /* Test MatView() */
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatComputeExplicitOperator(C,&Cexp);CHKERRQ(ierr);
-  ierr = MatView(Cexp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(&Cexp);CHKERRQ(ierr);
 
   /* Test MatNorm() */
   ierr = MatNorm(C,NORM_1,&Cnorm);CHKERRQ(ierr);
@@ -103,6 +86,7 @@ int main(int argc,char **args)
   /* Test MatAXPY() and MatAYPX() */
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATELEMENTAL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
   ierr = MatGetOwnershipIS(B,&isrows,&iscols);CHKERRQ(ierr);
@@ -129,10 +113,7 @@ int main(int argc,char **args)
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
- 
   ierr = PetscFree(v);CHKERRQ(ierr);
-  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&Ct);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
