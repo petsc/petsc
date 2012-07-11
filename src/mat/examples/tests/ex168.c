@@ -53,17 +53,13 @@ int main(int argc,char **argv)
     for (j=0; j<ncols; j++) {
       ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
       v[i*ncols+j] = rval;
-      //v[i*ncols+j] = (PetscReal)(rank); 
-      //v[i*ncols+j] = (PetscReal)(100*rows[i]+cols[j]+3.14); 
-      //if (rank==-1) {ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] set (%d, %d, %g)\n",rank,rows[i],cols[j],v[i*ncols+j]);CHKERRQ(ierr);}
     }
   }
   ierr = MatSetValues(A,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
+  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
@@ -96,11 +92,10 @@ int main(int argc,char **argv)
     }
   }
   ierr = MatSetValues(B,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  //printf("[%d] B: nrows %d, m %d\n",rank,nrows,m);
+  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
@@ -175,9 +170,14 @@ int main(int argc,char **argv)
   /* Only G = U^T * U is implemented for now */ 
   finfo.dtcol = 0.1;
   ierr = MatCholeskyFactor(G,0,&finfo);CHKERRQ(ierr);
+  if (mats_view){
+    ierr = MatView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+
   /* Solve U^T * U = B */
   ierr = MatSolve(G,b,x);CHKERRQ(ierr);
   ierr = MatMatSolve(G,B,X);CHKERRQ(ierr);
+
   /* Out-place Cholesky */
   ierr = MatDestroy(&G);CHKERRQ(ierr);
   /* Check norm(Asym*X-B) */
@@ -239,6 +239,9 @@ int main(int argc,char **argv)
   ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(F,A,0,0,&finfo);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(F,A,&finfo);CHKERRQ(ierr);
+  if (mats_view){
+    ierr = MatView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   ierr = MatSolve(F,b,x);CHKERRQ(ierr);
   ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);

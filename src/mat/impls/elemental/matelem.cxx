@@ -75,10 +75,12 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
       ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
       a->emat->Print("Elemental matrix (cyclic ordering)");
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = PetscPrintf(((PetscObject)viewer)->comm,"Elemental matrix (explicit ordering)\n");CHKERRQ(ierr);
-      ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
-      ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      ierr = MatDestroy(&Aaij);CHKERRQ(ierr);     
+      if (A->factortype == MAT_FACTOR_NONE){
+        ierr = PetscPrintf(((PetscObject)viewer)->comm,"Elemental matrix (explicit ordering)\n");CHKERRQ(ierr);
+        ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
+        ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+        ierr = MatDestroy(&Aaij);CHKERRQ(ierr);     
+      }
     } else SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Format");
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by Elemental matrices",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
@@ -361,6 +363,7 @@ static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorI
     elem::LU(*a->emat);
   }
   A->factortype = MAT_FACTOR_LU; 
+  A->assembled  = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -407,6 +410,7 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorI
     elem::Copy(atrans,*a->emat);
   }
   A->factortype = MAT_FACTOR_CHOLESKY; 
+  A->assembled  = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
