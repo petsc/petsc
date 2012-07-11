@@ -228,9 +228,7 @@ static PetscErrorCode MatScale_Elemental(Mat X,PetscScalar a)
   Mat_Elemental  *x = (Mat_Elemental*)X->data;
 
   PetscFunctionBegin;
-  { /* Scoping so that constructor is called before pointer is returned */
-    elem::Scal(a,*x->emat);
-  }
+  elem::Scal(a,*x->emat);
   PetscFunctionReturn(0);
 }
 
@@ -242,9 +240,7 @@ static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure s
   Mat_Elemental  *y = (Mat_Elemental*)Y->data;
 
   PetscFunctionBegin;
-  { /* Scoping so that constructor is called before pointer is returned */
-    elem::Axpy(a,*x->emat,*y->emat);
-  }
+  elem::Axpy(a,*x->emat,*y->emat);
   PetscFunctionReturn(0);
 }
 
@@ -264,7 +260,6 @@ static PetscErrorCode MatCopy_Elemental(Mat A,Mat B,MatStructure str)
 #define __FUNCT__ "MatTranspose_Elemental"
 static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
 {
-  printf("MatTranspose_Elemental is called...\n");
   Mat            Be;
   PetscErrorCode ierr;
   MPI_Comm       comm=((PetscObject)A)->comm;
@@ -290,9 +285,7 @@ static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
 {
   Mat_Elemental     *a = (Mat_Elemental*)A->data;
   PetscErrorCode    ierr;
-  //const PetscScalar *b;
   PetscScalar       *x;
-  //PetscScalar       one = 1,zero = 0;
 
   PetscFunctionBegin;
   ierr = VecCopy(B,X);CHKERRQ(ierr);
@@ -301,13 +294,11 @@ static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
     elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,x,A->rmap->n,*a->grid);
     elem::DistMatrix<PetscScalar,elem::MC,elem::MR> xer = xe;
     if ((*a->pivot).AllocatedMemory()) {
-      printf("pivot is not empty.\n");
-      elem::LUSolve(elem::NORMAL,*a->emat,*a->pivot,xer);
+      elem::SolveAfterLU(elem::NORMAL,*a->emat,*a->pivot,xer);
       elem::Copy(xer,xe);
     }
     else {
-      printf("pivot is empty.\n");
-      elem::LUSolve(elem::NORMAL,*a->emat,xer);
+      elem::SolveAfterLU(elem::NORMAL,*a->emat,xer);
       elem::Copy(xer,xe);
     }
   }
@@ -326,12 +317,10 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
   PetscFunctionBegin;
   elem::Copy(*b->emat,*x->emat);
   if ((*a->pivot).AllocatedMemory()) {
-    printf("pivot is not empty.\n");
-    elem::LUSolve(elem::NORMAL,*a->emat,*a->pivot,*x->emat);
+    elem::SolveAfterLU(elem::NORMAL,*a->emat,*a->pivot,*x->emat);
   }
   else {
-    printf("pivot is empty.\n");
-    elem::LUSolve(elem::NORMAL,*a->emat,*x->emat);
+    elem::SolveAfterLU(elem::NORMAL,*a->emat,*x->emat);
   }
   PetscFunctionReturn(0);
 }
@@ -343,12 +332,9 @@ static PetscErrorCode MatLUFactor_Elemental(Mat A,IS row,IS col,const MatFactorI
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
 
   PetscFunctionBegin;
-  printf("MatLUFactor_Elemental is called...\n");
   if (info->dtcol){
-    printf("LUFactor w/ pivoting\n");
     elem::LU(*a->emat,*a->pivot);
   } else {
-    printf("LUFactor w/o pivoting\n");
     elem::LU(*a->emat);
   }
   A->factortype = MAT_FACTOR_LU; 
@@ -362,7 +348,6 @@ static PetscErrorCode  MatLUFactorNumeric_Elemental(Mat F,Mat A,const MatFactorI
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  printf("MatLUFactorNumeric_Elemental is called...\n");
   ierr = MatCopy(A,F,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatLUFactor_Elemental(F,0,0,info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -407,7 +392,6 @@ static PetscErrorCode MatGetFactor_elemental_petsc(Mat A,MatFactorType ftype,Mat
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  printf("MatGetFactor_elemental_petsc is called...\n");
   /* Create the factorization matrix */
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -426,7 +410,6 @@ static PetscErrorCode MatNorm_Elemental(Mat A,NormType type,PetscReal *nrm)
   Mat_Elemental *a=(Mat_Elemental*)A->data;  
 
   PetscFunctionBegin;
-  printf("MatNorm_Elemental is called...\n");
   switch (type){
   case NORM_1:
     *nrm = elem::Norm(*a->emat,elem::ONE_NORM);
@@ -635,10 +618,8 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
     commgrid->grid       = new elem::Grid(cxxcomm);
     commgrid->grid_refct = 1;
     ierr = MPI_Attr_put(icomm,Petsc_Elemental_keyval,(void*)commgrid);CHKERRQ(ierr);
-    printf(" create commgrid ...\n");
   } else {
     commgrid->grid_refct++;
-    printf(" share commgrid ...\n");
   }
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   a->grid      = commgrid->grid;
