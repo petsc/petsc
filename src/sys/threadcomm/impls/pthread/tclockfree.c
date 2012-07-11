@@ -78,6 +78,7 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
       my_job_counter = (my_job_counter+1)%PETSC_KERNELS_MAX;
       my_kernel_ctr++;
     }
+    PetscCPURelax();
   }
 
   return NULL;
