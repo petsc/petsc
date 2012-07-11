@@ -22,8 +22,8 @@
 #endif
 
 #if defined(PETSC_USE_FORTRAN_DATATYPES)
-      Type(Vec)  g,l
-      Type   ada
+      Type(Vec)  g
+      Type(DM)   ada
 #else
       Vec  g
       DM  ada

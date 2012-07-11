@@ -153,6 +153,9 @@ PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
 
     In C, the indexing is "backwards" from what expects: array[k][j][i][DOF] NOT array[i][j][k][DOF]!
 
+    In Fortran 90 you do not need a version of DMDAVecRestoreArrayDOF() just use  DMDAVecRestoreArrayF90() and declare your array with one higher dimension, 
+    see src/dm/examples/tutorials/ex11f90.F
+
   Level: intermediate
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
