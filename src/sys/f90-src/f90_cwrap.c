@@ -307,17 +307,46 @@ PetscErrorCode  F90Array3dDestroy(F90Array3d *ptr,PetscDataType type PETSC_F90_2
 }
 
 /*************************************************************************/
-
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define f90array4dcreatescalar_           F90ARRAY4DCREATESCALAR
+#define f90array4daccessscalar_           F90ARRAY4DACCESSSCALAR
 #define f90array4ddestroyscalar_          F90ARRAY4DDESTROYSCALAR
+#define f90array4dcreatereal_             F90ARRAY4DCREATEREAL
+#define f90array4daccessreal_             F90ARRAY4DACCESSREAL
+#define f90array4ddestroyreal_            F90ARRAY4DDESTROYREAL
+#define f90array4dcreateint_              F90ARRAY4DCREATEINT
+#define f90array4daccessint_              F90ARRAY4DACCESSINT
+#define f90array4ddestroyint_             F90ARRAY4DDESTROYINT
+#define f90array4dcreatefortranaddr_      F90ARRAY4DCREATEFORTRANADDR
+#define f90array4daccessfortranaddr_      F90ARRAY4DACCESSFORTRANADDR
+#define f90array4ddestroyfortranaddr_     F90ARRAY4DDESTROYFORTRANADDR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define f90array4dcreatescalar_           f90array4dcreatescalar
+#define f90array4daccessscalar_           f90array4daccessscalar
 #define f90array4ddestroyscalar_          f90array4ddestroyscalar
+#define f90array4dcreatereal_             f90array4dcreatereal
+#define f90array4daccessreal_             f90array4daccessreal
+#define f90array4ddestroyreal_            f90array4ddestroyreal
+#define f90array4dcreateint_              f90array4dcreateint
+#define f90array4daccessint_              f90array4daccessint
+#define f90array4ddestroyint_             f90array4ddestroyint
+#define f90array4dcreatefortranaddr_      f90array4dcreatefortranaddr
+#define f90array4daccessfortranaddr_      f90array4daccessfortranaddr
+#define f90array4ddestroyfortranaddr_     f90array4ddestroyfortranaddr
 #endif
 
 PETSC_EXTERN_C void PETSC_STDCALL f90array4dcreatescalar_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt*,PetscInt*,F90Array4d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array4daccessscalar_(F90Array4d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN_C void PETSC_STDCALL f90array4ddestroyscalar_(F90Array4d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array4dcreatereal_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt*,PetscInt*,F90Array4d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array4daccessreal_(F90Array4d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array4ddestroyreal_(F90Array4d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array4dcreateint_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt*,PetscInt*,F90Array4d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array4daccessint_(F90Array4d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array4ddestroyint_(F90Array4d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array4dcreatefortranaddr_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt*,PetscInt*,F90Array4d * PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array4daccessfortranaddr_(F90Array4d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN_C void PETSC_STDCALL f90array4ddestroyfortranaddr_(F90Array4d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array4dCreate"
@@ -326,6 +355,25 @@ PetscErrorCode F90Array4dCreate(void *array,PetscDataType type,PetscInt start1,P
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {
     f90array4dcreatescalar_(array,&start1,&len1,&start2,&len2,&start3,&len3,&start4,&len4,ptr PETSC_F90_2PTR_PARAM(ptrd));
+  } else {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "F90Array4dAccess"
+PetscErrorCode  F90Array4dAccess(F90Array4d *ptr,PetscDataType type,void **array PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscFunctionBegin;
+  if (type == PETSC_SCALAR) {
+    f90array4daccessscalar_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
+  } else if (type == PETSC_REAL) {
+    f90array4daccessreal_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
+  } else if (type == PETSC_INT) {
+    f90array4daccessint_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
+  } else if (type == PETSC_FORTRANADDR) {
+    f90array4daccessfortranaddr_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
   } else {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported PetscDataType: %d",(PetscInt)type);
   }
@@ -436,3 +484,31 @@ PETSC_EXTERN_C void PETSC_STDCALL f90array3dgetaddrfortranaddr_(void *array, Pet
 }
 
 /*************************************************************************/
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define f90array4dgetaddrscalar_            F90ARRAY4DGETADDRSCALAR
+#define f90array4dgetaddrreal_              F90ARRAY4DGETADDRREAL
+#define f90array4dgetaddrint_               F90ARRAY4DGETADDRINT
+#define f90array4dgetaddrfortranaddr_       F90ARRAY4DGETADDRFORTRANADDR
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define f90array4dgetaddrscalar_            f90array4dgetaddrscalar
+#define f90array4dgetaddrreal_              f90array4dgetaddrreal
+#define f90array4dgetaddrint_               f90array4dgetaddrint
+#define f90array4dgetaddrfortranaddr_       f90array4dgetaddrfortranaddr
+#endif
+
+PETSC_EXTERN_C void PETSC_STDCALL f90array4dgetaddrscalar_(void *array, PetscFortranAddr *address)
+{
+  *address = (PetscFortranAddr)array;
+}
+PETSC_EXTERN_C void PETSC_STDCALL f90array4dgetaddrreal_(void *array, PetscFortranAddr *address)
+{
+  *address = (PetscFortranAddr)array;
+}
+PETSC_EXTERN_C void PETSC_STDCALL f90array4dgetaddrint_(void *array, PetscFortranAddr *address)
+{
+  *address = (PetscFortranAddr)array;
+}
+PETSC_EXTERN_C void PETSC_STDCALL f90array4dgetaddrfortranaddr_(void *array, PetscFortranAddr *address)
+{
+  *address = (PetscFortranAddr)array;
+}

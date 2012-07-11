@@ -322,23 +322,6 @@
       end subroutine
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      subroutine F90Array4dCreateScalar(array,start1,len1,                        &
-     &     start2,len2,start3,len3,start4,len4,ptr)
-      implicit none
-#include <finclude/petscsys.h>
-      PetscInt start1,len1
-      PetscInt start2,len2
-      PetscInt start3,len3
-      PetscInt start4,len4
-      PetscScalar, target ::                                                      &
-     &     array(start1:start1+len1-1,start2:start2+len2-1,                       &
-     &           start3:start3+len3-1,start4:start4+len4-1)
-      PetscScalar, pointer :: ptr(:,:,:,:)
-
-      ptr => array
-      end subroutine
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array3dAccessScalar(ptr,address)
       implicit none
 #include <finclude/petscsys.h>
@@ -426,10 +409,158 @@
       end subroutine
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      subroutine F90Array4dCreateScalar(array,start1,len1,                        &
+     &     start2,len2,start3,len3,start4,len4,ptr)
+      implicit none
+#include <finclude/petscsys.h>
+      PetscInt start1,len1
+      PetscInt start2,len2
+      PetscInt start3,len3
+      PetscInt start4,len4
+      PetscScalar, target ::                                                      &
+     &     array(start1:start1+len1-1,start2:start2+len2-1,                       &
+     &           start3:start3+len3-1,start4:start4+len4-1)
+      PetscScalar, pointer :: ptr(:,:,:,:)
+
+      ptr => array
+      end subroutine
+
+      subroutine F90Array4dCreateReal(array,start1,len1,                          &
+     &     start2,len2,start3,len3,start4,len4,ptr)
+      implicit none
+#include <finclude/petscsys.h>
+      PetscInt start1,len1
+      PetscInt start2,len2
+      PetscInt start3,len3
+      PetscInt start4,len4
+      PetscReal, target ::                                                        &
+     &     array(start1:start1+len1-1,start2:start2+len2-1,                       &
+     &           start3:start3+len3-1,start4:start4+len4-1)
+      PetscReal, pointer :: ptr(:,:,:,:)
+
+      ptr => array
+      end subroutine
+
+      subroutine F90Array4dCreateInt(array,start1,len1,                           &
+     &     start2,len2,start3,len3,start4,len4,ptr)
+      implicit none
+#include <finclude/petscsys.h>
+      PetscInt start1,len1
+      PetscInt start2,len2
+      PetscInt start3,len3
+      PetscInt start4,len4
+      PetscInt, target ::                                                         &
+     &     array(start1:start1+len1-1,start2:start2+len2-1,                       &
+     &           start3:start3+len3-1,start4:start4+len4-1)
+      PetscInt, pointer :: ptr(:,:,:,:)
+
+      ptr => array
+      end subroutine
+
+      subroutine F90Array4dCreateFortranAddr(array,start1,len1,                   &
+     &     start2,len2,start3,len3,start4,len4,ptr)
+      implicit none
+#include <finclude/petscsys.h>
+      PetscInt start1,len1
+      PetscInt start2,len2
+      PetscInt start3,len3
+      PetscInt start4,len4
+      PetscFortranAddr, target ::                                                 &
+     &     array(start1:start1+len1-1,start2:start2+len2-1,                       &
+     &           start3:start3+len3-1,start4:start4+len4-1)
+      PetscFortranAddr, pointer :: ptr(:,:,:,:)
+
+      ptr => array
+      end subroutine
+
+      subroutine F90Array4dAccessScalar(ptr,address)
+      implicit none
+#include <finclude/petscsys.h>
+      PetscScalar, pointer :: ptr(:,:,:,:)
+      PetscFortranAddr address
+      PetscInt start1,start2,start3,start4
+
+      start1 = lbound(ptr,1)
+      start2 = lbound(ptr,2)
+      start3 = lbound(ptr,3)
+      start4 = lbound(ptr,4)
+      call F90Array4dGetAddrScalar(ptr(start1,start2,start3,start4),              &
+     &                             address)
+      end subroutine
+
+      subroutine F90Array4dAccessReal(ptr,address)
+      implicit none
+#include <finclude/petscsys.h>
+      PetscReal, pointer :: ptr(:,:,:,:)
+      PetscFortranAddr address
+      PetscInt start1,start2,start3,start4
+
+      start1 = lbound(ptr,1)
+      start2 = lbound(ptr,2)
+      start3 = lbound(ptr,3)
+      start4 = lbound(ptr,4)
+      call F90Array4dGetAddrReal(ptr(start1,start2,start3,start4),                &
+     &                             address)
+      end subroutine
+
+      subroutine F90Array4dAccessInt(ptr,address)
+      implicit none
+#include <finclude/petscsys.h>
+      PetscInt, pointer :: ptr(:,:,:,:)
+      PetscFortranAddr address
+      PetscInt start1,start2,start3,start4
+
+      start1 = lbound(ptr,1)
+      start2 = lbound(ptr,2)
+      start3 = lbound(ptr,3)
+      start4 = lbound(ptr,4)
+      call F90Array4dGetAddrInt(ptr(start1,start2,start3,start4),                 &
+     &                             address)
+      end subroutine
+
+      subroutine F90Array4dAccessFortranAddr(ptr,address)
+      implicit none
+#include <finclude/petscsys.h>
+      PetscScalar, pointer :: ptr(:,:,:,:)
+      PetscFortranAddr address
+      PetscFortranAddr start1,start2,start3,start4
+
+      start1 = lbound(ptr,1)
+      start2 = lbound(ptr,2)
+      start3 = lbound(ptr,3)
+      start4 = lbound(ptr,4)
+      call F90Array4dGetAddrFortranAddr(ptr(start1,start2,start3,                 &
+     &                                      start4),address)
+      end subroutine
+
       subroutine F90Array4dDestroyScalar(ptr)
       implicit none
 #include <finclude/petscsys.h>
-      PetscScalar, pointer :: ptr(:,:,:)
+      PetscScalar, pointer :: ptr(:,:,:,:)
+
+      nullify(ptr)
+      end subroutine
+
+      subroutine F90Array4dDestroyReal(ptr)
+      implicit none
+#include <finclude/petscsys.h>
+      PetscReal, pointer :: ptr(:,:,:,:)
+
+      nullify(ptr)
+      end subroutine
+
+      subroutine F90Array4dDestroyInt(ptr)
+      implicit none
+#include <finclude/petscsys.h>
+      PetscInt, pointer :: ptr(:,:,:,:)
+
+      nullify(ptr)
+      end subroutine
+
+      subroutine F90Array4dDestroyFortranAddr(ptr)
+      implicit none
+#include <finclude/petscsys.h>
+      PetscFortranAddr, pointer :: ptr(:,:,:,:)
 
       nullify(ptr)
       end subroutine
