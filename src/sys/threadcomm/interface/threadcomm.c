@@ -613,6 +613,7 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
 
   PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%PETSC_KERNELS_MAX; /* Increment the queue ctr to point to the next available slot */
   PetscJobQueue->kernel_ctr++;
+  PetscWriteMemoryBarrier(); /* Ensure that PetscJobQueue is visible to all threads */
   ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(ThreadComm_RunKernel,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

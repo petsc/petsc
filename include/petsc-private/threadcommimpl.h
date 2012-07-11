@@ -44,6 +44,23 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 
 #define PetscReadOnce(type,val) (*(volatile type *)&val)
 
+/* Definitions for memory barriers and cpu_relax taken from the linux kernel source code */
+#if defined(__x86_64__)
+#define PetscMemoryBarrier()      asm volatile("mfence":::"memory")
+#define PetscReadMemoryBarrier()  asm volatile("lfence":::"memory")
+#define PetscWriteMemoryBarrier() asm volatile("sfence":::"memory")
+#define PetscCPURelax()           asm volatile("rep; nop" ::: "memory")
+#elif defined(__powerpc__)
+#define PetscMemoryBarrier()      __asm__ __volatile__ ("sync":::"memory")
+#define PetscReadMemoryBarrier()  __asm__ __volatile__ ("sync":::"memory")
+#define PetscWriteMemoryBarrier() __asm__ __volatile__ ("sync":::"memory")
+#define PetscCPURelax()           __asm__ __volatile__ ("" ::: "memory")
+#else
+#define PetscMemoryBarrier()
+#define PetscReadMemoryBarrier()
+#define PetscWriteMemoryBarrier()
+#endif
+
 struct _p_PetscThreadCommRedCtx{
   PetscThreadComm               tcomm;          /* The associated threadcomm */
   PetscInt                      red_status;     /* Reduction status */

@@ -10,23 +10,6 @@
 #include "winpthreads.h"       /* http://locklessinc.com/downloads/winpthreads.h */
 #endif
 
-/* Linux specific definitions for memory barriers and cpu_relax taken from the linux kernel source code */
-#if defined(__x86_64__)
-#define PetscMemoryBarrier() asm volatile("mfence":::"memory")
-#define PetscReadMemoryBarrier() asm volatile("lfence":::"memory")
-#define PetscWriteMemoryBarrier() asm volatile("sfence":::"memory")
-#define PetscCPURelax() asm volatile("rep; nop" ::: "memory")
-#elif defined(__powerpc__)
-#define PetscMemoryBarrier() __asm__ __volatile__ ("sync":::"memory")
-#define PetscReadMemoryBarrier() __asm__ __volatile__ ("sync":::"memory")
-#define PetscWriteMemoryBarrier() __asm__ __volatile__ ("sync":::"memory")
-#define PetscCPURelax() __asm__ __volatile__ ("" ::: "memory")
-#else
-#define PetscMemoryBarrier()
-#define PetscReadMemoryBarrier()
-#define PetscWriteMemoryBarrier()
-#endif
-
 /*
   PetscPThreadCommSynchronizationType - Type of thread synchronization for pthreads communicator.
 
