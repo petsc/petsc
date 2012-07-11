@@ -394,7 +394,7 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorI
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
   elem::DistMatrix<PetscScalar,elem::MC,elem::MR>   atrans;
-  elem::DistMatrix<PetscScalar,elem::MC,elem::STAR> d;    
+  elem::DistMatrix<PetscScalar,elem::MC,elem::STAR> d;
 
   PetscFunctionBegin;
   printf("MatCholeskyFactor_Elemental is called...\n");
@@ -405,9 +405,14 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorI
   } else {
     /* A = U^T * D * U * for Symmetric Matrix A */ 
     printf("LDL^T Factorization for Symmetric Matrices\n");
+    PetscInt i,size;
     elem::LDLT(*a->emat,d);
     elem::Transpose(*a->emat,atrans);
     elem::Copy(atrans,*a->emat);
+    size = (*a->emat).Height();
+    for (i=0;i<size;i++) {
+      (*a->emat).Set(i,i,1.0 / (*a->emat).Get(i,i));
+    }
   }
   A->factortype = MAT_FACTOR_CHOLESKY; 
   A->assembled  = PETSC_TRUE;
