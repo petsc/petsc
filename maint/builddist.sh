@@ -29,9 +29,8 @@ make tao_alletags
 
 echo "Building manual..."
 make tao_manual
-
 echo "Building manpages..."
-make tao_allmanpages DOCTEXT=doctext MANPAGES=manpages
+make tao_allmanpages DOCTEXT=doctext MANPAGES=manpages C2HTML=c2html MAPNAMES=mapnames
 
 #echo "Creating html from source files..."
 #make tao_htmlpages DOCTEXT=doctext MANPAGES=manpages
