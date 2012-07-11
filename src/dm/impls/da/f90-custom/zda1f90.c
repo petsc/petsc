@@ -175,9 +175,7 @@ void PETSC_STDCALL dmdavecrestorearrayf904_(DM *da,Vec *v,F90Array4d *a,PetscErr
   /* 
     F90Array4dAccess is not implemented, so the following call would fail
   */
-  /*
   *ierr = F90Array4dAccess(a,PETSC_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));
-  */
   *ierr = VecRestoreArray(*v,&fa);if (*ierr) return;
   *ierr = F90Array4dDestroy(&a,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
