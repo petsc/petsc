@@ -7,9 +7,9 @@ iter =   2, Function value: 4.46353e-05,  Residual: 8.72583e-05
 iter =   3, Function value: 8.12611e-10,  Residual: 1.80227e-09 
 TaoSolver: 1 MPI processes
   type: tao_ssfls
-  TaoLineSearch:   1 MPI processes  
+  TaoLineSearch:   1 MPI processes
     type: armijo
-  KSP Solver:   1 MPI processes  
+  KSP Solver:   1 MPI processes
     type: gmres
   total KSP iterations: 13
   Active Set subset type: subvec

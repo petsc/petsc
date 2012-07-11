@@ -14,7 +14,7 @@ TaoSolver: 3 MPI processes
       CG Type: fr
       Gradient steps: 0
       Reset steps: 0
-  TaoLineSearch:   3 MPI processes  
+  TaoLineSearch:   3 MPI processes
     type: more-thuente
   convergence tolerances: fatol=0.0001,   frtol=0.0001
   convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0

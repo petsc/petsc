@@ -6,13 +6,13 @@ Testing hand-coded gradient (hc) against finite difference gradient (fd), if the
 0 (1.e-8), the hand-coded gradient is probably correct.
 Run with -tao_fd_test_display to show difference
 between hand-coded and finite difference gradient.
-ratio ||fd-hc||/||hc|| = 2.74406e-06, difference ||fd-hc|| = 2.00031e-06
-ratio ||fd-hc||/||hc|| = 2.43412e-07, difference ||fd-hc|| = 1.74641e-06
-ratio ||fd-hc||/||hc|| = 2.54982e-07, difference ||fd-hc|| = 1.70791e-06
+ratio ||fd-hc||/||hc|| = 4.20234e-07, difference ||fd-hc|| = 3.06334e-07
+ratio ||fd-hc||/||hc|| = 1.23816e-07, difference ||fd-hc|| = 8.88347e-07
+ratio ||fd-hc||/||hc|| = 5.44218e-08, difference ||fd-hc|| = 3.64524e-07
 Testing hand-coded Hessian (hc) against finite difference Hessian (fd). If the ratio is
 O (1.e-8), the hand-coded Hessian is probably correct.
 Run with -tao_fd_test_display to show difference
 of hand-coded and finite difference Hessian.
-ratio ||fd-hc||/||hc|| = 2.97056e-11, difference ||fd-hc|| = 1.31512e-09
-ratio ||fd-hc||/||hc|| = 2.97056e-11, difference ||fd-hc|| = 1.31512e-09
-ratio ||fd-hc||/||hc|| = 2.97056e-11, difference ||fd-hc|| = 1.31512e-09
+ratio ||fd-hc||/||hc|| = 1.11022e-16, difference ||fd-hc|| = 4.91517e-15
+ratio ||fd-hc||/||hc|| = 1.11022e-16, difference ||fd-hc|| = 4.91517e-15
+ratio ||fd-hc||/||hc|| = 1.11022e-16, difference ||fd-hc|| = 4.91517e-15
