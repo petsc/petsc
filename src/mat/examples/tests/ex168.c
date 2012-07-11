@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   Vec            b,x,c;
   PetscErrorCode ierr;
   PetscInt       m = 5,n,p,i,j,nrows,ncols;
-  PetscScalar    *v,*vb,rval;
+  PetscScalar    *v,*barray,rval;
   PetscReal      norm,tol=1.e-15;
   PetscMPIInt    size,rank;
   PetscRandom    rand;
@@ -51,9 +51,9 @@ int main(int argc,char **argv)
   ierr = PetscMalloc(nrows*ncols*sizeof *v,&v);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
-      //ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-      //v[i*ncols+j] = rval;
-      v[i*ncols+j] = (PetscReal)(rank); 
+      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      v[i*ncols+j] = rval;
+      //v[i*ncols+j] = (PetscReal)(rank); 
       //v[i*ncols+j] = (PetscReal)(100*rows[i]+cols[j]+3.14); 
       //if (rank==-1) {ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] set (%d, %d, %g)\n",rank,rows[i],cols[j],v[i*ncols+j]);CHKERRQ(ierr);}
     }
@@ -96,13 +96,13 @@ int main(int argc,char **argv)
     }
   }
   ierr = MatSetValues(B,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
-  //ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
-  //ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   //printf("[%d] B: nrows %d, m %d\n",rank,nrows,m);
-  //ierr = ISDestroy(&isrows);CHKERRQ(ierr);
-  //ierr = ISDestroy(&iscols);CHKERRQ(ierr);
+  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
   if (mats_view){
     Mat Baij;
@@ -117,22 +117,15 @@ int main(int argc,char **argv)
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-  PetscScalar *barray;
   ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
   for (j=0; j<m; j++) {
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
     barray[j] = rval;
   }
   ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
-  
-  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
-  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
-
 
   /* Create X - same size as B */
   ierr = PetscPrintf(PETSC_COMM_WORLD," Create solution matrix X ...\n");CHKERRQ(ierr);
