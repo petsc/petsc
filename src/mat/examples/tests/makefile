@@ -569,10 +569,6 @@ ex144: ex144.o chkopts
 	-${CLINKER} -o ex144 ex144.o ${PETSC_MAT_LIB}
 	${RM} ex144.o
 
-ex145: ex145.o chkopts
-	-${CLINKER} -o ex145 ex145.o ${PETSC_MAT_LIB}
-	${RM} ex145.o
-
 ex146: ex146.o chkopts
 	-${CLINKER} -o ex146 ex146.o ${PETSC_MAT_LIB}
 	${RM} ex146.o
@@ -604,10 +600,6 @@ ex152: ex152.o chkopts
 ex153: ex153.o chkopts
 	-${CLINKER} -o ex153 ex153.o ${PETSC_MAT_LIB}
 	${RM} ex153.o
-
-ex154: ex154.o chkopts
-	-${CLINKER} -o ex154 ex154.o ${PETSC_MAT_LIB}
-	${RM} ex154.o
 
 ex155: ex155.o chkopts
 	-${CLINKER} -o ex155 ex155.o ${PETSC_MAT_LIB}
@@ -1850,7 +1842,7 @@ TESTEXAMPLES_PLAPACK 	       = ex103.PETSc runex103_2 ex103.rm ex107.PETSc runex
 TESTEXAMPLES_FFTW_REAL         = ex142.PETSc ex142.rm ex144.PETSc runex144 runex144_2 ex144.rm \
                                  ex158.PETsc runex158 runex158_3 ex158.rm
 TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc ex121.rm \
-                                 ex143.PETSc runex143 runex143_2 ex143.rm ex145.PETSc ex145.rm \
+                                 ex143.PETSc runex143 runex143_2 ex143.rm \
 TESTEXAMPLES_C_COMPLEX	       = ex127.PETSc runex127 runex127_2 ex127.rm 
 TESTEXAMPLES_ELEMENTAL_REAL    = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm \
                                ex168.PETSc ex168.rm
