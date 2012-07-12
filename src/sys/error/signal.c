@@ -412,7 +412,7 @@ PetscErrorCode  PetscPopSignalHandler(void)
 }
 
 
-#if defined(PETSC_HAVE_SETJMP_H)
+#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_SIGINFO_T)
 #include <setjmp.h>
 jmp_buf PetscSegvJumpBuf;
 /*

@@ -156,7 +156,7 @@ PETSC_EXTERN PetscErrorCode PetscHeaderDestroy_Private(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject,PetscObject);
 
 /* ---------------------------------------------------------------------------------------*/
-#if defined(PETSC_HAVE_SETJMP_H)
+#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_SIGINFO_T)
 #include <signal.h>
 #include <setjmp.h>
 PETSC_EXTERN jmp_buf PetscSegvJumpBuf;
