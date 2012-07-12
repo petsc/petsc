@@ -68,7 +68,12 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
     PetscViewerFormat format;
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Info viewer not implemented yet");
+      if (format == PETSC_VIEWER_ASCII_FACTOR_INFO){
+        SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"FactorInfo viewer not implemented yet");
+        /* ierr = MatInfo_Elemental(A,viewer);CHKERRQ(ierr); */
+      } else {
+        SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Info viewer not implemented yet");
+      }
     } else if (format == PETSC_VIEWER_DEFAULT) {
       Mat Aaij;
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
@@ -271,6 +276,7 @@ static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
   Mat            Be;
   PetscErrorCode ierr;
   MPI_Comm       comm=((PetscObject)A)->comm;
+  Mat_Elemental  *a = (Mat_Elemental*)A->data, *b;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX){
@@ -280,8 +286,7 @@ static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
     ierr = MatSetUp(Be);CHKERRQ(ierr);
     *B = Be;
   }
-  Mat_Elemental     *a = (Mat_Elemental*)A->data;
-  Mat_Elemental     *b = (Mat_Elemental*)Be->data;
+  b = (Mat_Elemental*)Be->data;
   elem::Transpose(*a->emat,*b->emat);
   Be->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -315,7 +320,7 @@ static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
     elem::Copy(xer,xe);
     break;
   default:
-    printf("Error: Unfactored Matrix or Unsupported MatFactorType!\n");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unfactored Matrix or Unsupported MatFactorType"); 
     break;
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
@@ -344,7 +349,7 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
     elem::SolveAfterCholesky(elem::UPPER,elem::NORMAL,*a->emat,*x->emat);
     break;
   default:
-    printf("Error: Unfactored Matrix or Unsupported MatFactorType!\n");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unfactored Matrix or Unsupported MatFactorType"); 
     break;
   }
   PetscFunctionReturn(0);
@@ -397,7 +402,6 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorI
   elem::DistMatrix<PetscScalar,elem::MC,elem::STAR> d;
 
   PetscFunctionBegin;
-  printf("MatCholeskyFactor_Elemental is called...\n");
   if (info->dtcol){
     /* A = U^T * U for SPD Matrix A */
     printf("Cholesky Factorization for SPD Matrices...\n");
