@@ -76,7 +76,7 @@ class Configure(config.base.Configure):
 
   def checkUID(self):
     '''Checks for uid_t and gid_t, and defines them if necessary'''
-    if not self.outputPreprocess('sys/types.h').find('uid_t'):
+    if self.outputPreprocess('#include <sys/types.h>').find('uid_t') < 0:
       self.addDefine('uid_t', 'int')
       self.addDefine('gid_t', 'int')
     return
