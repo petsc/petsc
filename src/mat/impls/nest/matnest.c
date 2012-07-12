@@ -1432,7 +1432,7 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *new
       for(br = 0; br < bm; ++br) {
         PetscInt row = bmindices[br], rowowner, brncols, col, colowner;
         const PetscInt *brcols;
-        PetscInt rowrel;    /* row's relative index on its owner rank */;
+        PetscInt rowrel;    /* row's relative index on its owner rank */
         PetscInt rowownerm; /* local row size on row's owning rank. */
         ierr = PetscLayoutFindOwnerIndex(A->rmap,row,&rowowner,&rowrel); CHKERRQ(ierr);
         rowownerm = A->rmap->range[rowowner+1]-A->rmap->range[rowowner];
