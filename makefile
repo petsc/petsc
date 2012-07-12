@@ -149,12 +149,6 @@ tao_docsetdate:
           echo "Unknown TAO_VERSION_RELEASE: $${version_release}"; \
           exit; \
         fi; \
-        datestr=`hg tip --template "{date|shortdate}"`; \
-        export datestr; \
-        #find * -type d -wholename src/docs/website -prune -o \
-        #  -type f -name \*.html \
-        #  -exec perl -pi -e 's^(<body.*>)^$$1\n   <div id=\"version\" align=right><b>$$ENV{taoversion} $$ENV{datestr}</b></div>^i' {} \; \
-        #  -exec perl -pi -e 's^(<head>)^$$1 <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/{}" />^i' {} \; ; 
-        echo "Done fixing version number, date, canonical URL info"
+	echo "Done fixing version number, date, canonical URL info"
 
 tao_chk_lib_dir: chklib_dir
