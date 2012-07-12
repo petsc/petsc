@@ -59,6 +59,7 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 #define PetscMemoryBarrier()
 #define PetscReadMemoryBarrier()
 #define PetscWriteMemoryBarrier()
+#define PetscCPURelax()
 #endif
 
 struct _p_PetscThreadCommRedCtx{
