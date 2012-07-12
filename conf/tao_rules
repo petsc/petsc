@@ -21,28 +21,6 @@ tao_chk_petsc_install:
 
 .SUFFIXES: ${SUFFIXES} .tao
 
-show:
-	@if [ "${PETSC_ARCH}x" = "x" ] ; then \
-	  echo "TAO_DIR=${TAO_DIR}";\
-	  echo "PETSC_DIR=${PETSC_DIR}";\
-	  echo "PETSC_ARCH=${PETSC_ARCH}";\
-	  echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES";\
-	  echo "=========================================";\
-	  echo "make" PETSC_ARCH=NONE PETSC_DIR=${PETSC_DIR} TAO_DIR=${TAO_DIR} ACTION=libfast tree;\
-	  echo ${RANLIB} ${TAO_LIB_DIR}/*.${AR_LIB_SUFFIX};\
-	  echo "Completed building libraries";\
-	  echo "=========================================";\
-	else\
-	  echo "TAO_DIR=${TAO_DIR}";\
-	  echo "PETSC_DIR=${PETSC_DIR}";\
-	  echo "PETSC_ARCH=${PETSC_ARCH}";\
-	  echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES";\
-	  echo "=========================================";\
-	  echo "make" PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} TAO_DIR=${TAO_DIR} ACTION=libfast tree;\
-	  echo ${RANLIB} ${TAO_LIB_DIR}/*.${AR_LIB_SUFFIX};\
-	  echo "Completed building libraries";\
-	  echo "=========================================";\
-	fi;
 #
 #  These rules are for compiling the test examples.
 #

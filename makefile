@@ -143,7 +143,7 @@ tao_docsetdate:
           taoversion=tao-devel; \
           export taoversion; \
         elif [ $${version_release} = 1 ]; then \
-          taoversion=petsc-$${version_major}.$${version_minor}-p$${version_patch}; \
+          taoversion=tao-$${version_major}.$${version_minor}-p$${version_patch}; \
           export taoversion; \
         else \
           echo "Unknown TAO_VERSION_RELEASE: $${version_release}"; \
