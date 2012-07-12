@@ -45,11 +45,89 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 #define PetscReadOnce(type,val) (*(volatile type *)&val)
 
 /* Definitions for memory barriers and cpu_relax taken from the linux kernel source code */
-#if defined(__x86_64__)
+/* x86_64 */
+#if defined(__x86_64__) || defined(__x86_64)
+#if defined (__GNUC__)
 #define PetscMemoryBarrier()      asm volatile("mfence":::"memory")
 #define PetscReadMemoryBarrier()  asm volatile("lfence":::"memory")
 #define PetscWriteMemoryBarrier() asm volatile("sfence":::"memory")
 #define PetscCPURelax()           asm volatile("rep; nop" ::: "memory")
+#elif defined(__INTEL_COMPILER)
+/* Intel ECC compiler doesn't support gcc specific asm stmts.
+   It uses intrinsics to do the equivalent things
+*/
+#define PetscMemoryBarrier()      __memory_barrier()
+#define PetscReadMemoryBarrier()  __memory_barrier()
+#define PetscWriteMemoryBarrier() __memory_barrier()
+#define PetscCPURelax()
+#else
+#define PetscMemoryBarrier()
+#define PetscReadMemoryBarrier()
+#define PetscWriteMemoryBarrier()
+#define PetscCPURelax()
+#endif
+/* x86_32 */
+#elif defined(__i386__) || defined(i386)
+#if defined(__GNUC__)
+/* alternative assembly primitive: */
+#ifndef ALTERNATIVE
+#define ALTERNATIVE(oldinstr, newinstr, feature)			\
+									\
+      "661:\n\t" oldinstr "\n662:\n"					\
+      ".section .altinstructions,\"a\"\n"				\
+      "	 .long 661b - .\n"			/* label           */	\
+      "	 .long 663f - .\n"			/* new instruction */	\
+      "	 .word " __stringify(feature) "\n"	/* feature bit     */	\
+      "	 .byte 662b-661b\n"			/* sourcelen       */	\
+      "	 .byte 664f-663f\n"			/* replacementlen  */	\
+      ".previous\n"							\
+      ".section .discard,\"aw\",@progbits\n"				\
+      "	 .byte 0xff + (664f-663f) - (662b-661b)\n" /* rlen <= slen */	\
+      ".previous\n"							\
+      ".section .altinstr_replacement, \"ax\"\n"			\
+      "663:\n\t" newinstr "\n664:\n"		/* replacement     */	\
+      ".previous"
+#endif
+/*
+ * Alternative instructions for different CPU types or capabilities.
+ *
+ * This allows to use optimized instructions even on generic binary
+ * kernels.
+ *
+ * length of oldinstr must be longer or equal the length of newinstr
+ * It can be padded with nops as needed.
+ *
+ * For non barrier like inlines please define new variants
+ * without volatile and memory clobber.
+ */
+#ifndef alternative
+#define alternative(oldinstr, newinstr, feature)			\
+	asm volatile (ALTERNATIVE(oldinstr, newinstr, feature) : : : "memory")
+#endif
+#ifndef X86_FEATURE_XMM
+#define X86_FEATURE_XMM		(0*32+25) /* "sse" */
+#endif
+#ifndef X86_FEATURE_XMM2
+#define X86_FEATURE_XMM2	(0*32+26) /* "sse2" */
+#endif
+#define PetscMemoryBarrier() alternative("lock; addl $0,0(%%esp)", "mfence", X86_FEATURE_XMM2)
+#define PetscReadMemoryBarrier() alternative("lock; addl $0,0(%%esp)", "lfence", X86_FEATURE_XMM2)
+#define PetscWriteMemoryBarrier() alternative("lock; addl $0,0(%%esp)", "sfence", X86_FEATURE_XMM)
+#define PetscCPURelax()           asm volatile("rep; nop" ::: "memory")
+#elif defined(__INTEL_COMPILER)
+/* Intel ECC compiler doesn't support gcc specific asm stmts.
+   It uses intrinsics to do the equivalent things
+*/
+#define PetscMemoryBarrier()      __memory_barrier()
+#define PetscReadMemoryBarrier()  __memory_barrier()
+#define PetscWriteMemoryBarrier() __memory_barrier()
+#define PetscCPURelax()
+#else
+#define PetscMemoryBarrier()
+#define PetscReadMemoryBarrier()
+#define PetscWriteMemoryBarrier()
+#define PetscCPURelax()
+#endif
 #elif defined(__powerpc__)
 #define PetscMemoryBarrier()      __asm__ __volatile__ ("sync":::"memory")
 #define PetscReadMemoryBarrier()  __asm__ __volatile__ ("sync":::"memory")
