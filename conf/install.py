@@ -268,7 +268,7 @@ PETSC_DIR=%s
 TAO_DIR=%s
 [and no more PETSC_ARCH].
 Now to check if the libraries are working do (in current directory):
-make PETSC_DIR=%s TAO_DIR=%s tao_testexamples
+make PETSC_ARCH= PETSC_DIR=%s TAO_DIR=%s tao_testexamples
 ====================================\
 ''' % (self.installDir,self.installDir,self.installDir,self.installDir)
     return
