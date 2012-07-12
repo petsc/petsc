@@ -92,6 +92,15 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatGetInfo_Elemental"
+static PetscErrorCode MatGetInfo_Elemental(Mat F,MatInfoType flag,MatInfo *info)
+{
+  PetscFunctionBegin;
+  /* this routine is called by PCSetUp_LU(). It does nothing yet. */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatSetValues_Elemental"
 static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *rows,PetscInt nc,const PetscInt *cols,const PetscScalar *vals,InsertMode imode)
 {
@@ -529,8 +538,8 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   delete a->interface;
   delete a->esubmat;
   delete a->emat;
+ 
   elem::mpi::Comm cxxcomm(((PetscObject)A)->comm);
-  
   ierr = PetscCommDuplicate(cxxcomm,&icomm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
   if (--commgrid->grid_refct == 0) {
@@ -618,6 +627,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   ierr = PetscNewLog(A,Mat_Elemental,&a);CHKERRQ(ierr);
   A->data = (void*)a;
 
+  A->ops->getinfo         = MatGetInfo_Elemental;
   A->ops->view            = MatView_Elemental;
   A->ops->destroy         = MatDestroy_Elemental;
   A->ops->setup           = MatSetUp_Elemental;
@@ -649,7 +659,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
 
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
   if (Petsc_Elemental_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0); // MPI_Keyval_free()?
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0); 
   }
   ierr = PetscCommDuplicate(cxxcomm,&icomm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
