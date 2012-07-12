@@ -42,6 +42,12 @@ class Configure(config.base.Configure):
       self.framework.log.write(typeName+' found\n')
     return found
 
+  def check_siginfo_t(self):
+    '''Checks if siginfo_t exists in signal.h. This check is primarily for windows.'''
+    if self.outputPreprocess('#include <signal.h>').find('siginfo_t') >=0:
+      self.addDefine('HAVE_SIGINFO_T',1)
+    return
+
   def check__int64(self):
     '''Checks if __int64 exists. This is primarily for windows.'''
     if self.check('__int64'):
@@ -359,6 +365,7 @@ void (*signal())();
       self.addDefine('USE_VISIBILITY',1)
 
   def configure(self):
+    self.executeTest(self.check_siginfo_t)
     self.executeTest(self.check__int64)
     self.executeTest(self.checkSizeTypes)
     self.executeTest(self.checkFileTypes)
