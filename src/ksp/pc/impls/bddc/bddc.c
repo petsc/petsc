@@ -2938,7 +2938,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   PC_IS         *pcis = (PC_IS*)pc->data;
   Mat_IS      *matis  = (Mat_IS*)pc->pmat->data; 
   PCBDDCGraph mat_graph=pcbddc->mat_graph;
-  PetscInt    *queue_in_global_numbering;
+  PetscInt    *queue_in_global_numbering,*is_indices;
   PetscInt    bs,ierr,i,j,s,k,iindex,neumann_bsize,dirichlet_bsize;
   PetscInt    total_counts,nodes_touched,where_values=1,vertex_size;
   PetscMPIInt adapt_interface=0,adapt_interface_reduced=0,NEUMANNCNT=0;
@@ -2947,7 +2947,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   PetscBool   use_faces=PETSC_FALSE,use_edges=PETSC_FALSE;
   const PetscInt *neumann_nodes;
   const PetscInt *dirichlet_nodes;
-  IS          used_IS;
+  IS          used_IS,*custom_ISForDofs;
   PetscScalar *array;
   PetscScalar *array2;
   PetscViewer viewer=pcbddc->dbg_viewer;
@@ -2966,29 +2966,37 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   ierr = PetscMemzero(mat_graph->queue,mat_graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(mat_graph->cptr,(mat_graph->nvtxs+1)*sizeof(PetscInt));CHKERRQ(ierr);
   
-  /* Setting dofs splitting in mat_graph->which_dof */
-  if(pcbddc->n_ISForDofs) { /* get information about dofs' splitting if provided by the user */
-    PetscInt *is_indices;
-    PetscInt is_size;
-    for(i=0;i<pcbddc->n_ISForDofs;i++) {
-      ierr = ISGetSize(pcbddc->ISForDofs[i],&is_size);CHKERRQ(ierr);
-      ierr = ISGetIndices(pcbddc->ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
-      for(j=0;j<is_size;j++) {
-        mat_graph->which_dof[is_indices[j]]=i;
-      }
-      ierr = ISRestoreIndices(pcbddc->ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    }
-    /* use mat block size as vertex size */
-    ierr = MatGetBlockSize(matis->A,&vertex_size);CHKERRQ(ierr);
-  } else { /* otherwise it assumes a constant block size */
+  /* Setting dofs splitting in mat_graph->which_dof
+     Get information about dofs' splitting if provided by the user
+     Otherwise it assumes a constant block size */
+  vertex_size=0;
+  if(!pcbddc->n_ISForDofs) {
     ierr = MatGetBlockSize(matis->A,&bs);CHKERRQ(ierr);
-    for(i=0;i<mat_graph->nvtxs/bs;i++) {
-      for(s=0;s<bs;s++) {
-        mat_graph->which_dof[i*bs+s]=s;
-      }
+    ierr = PetscMalloc(bs*sizeof(IS),&custom_ISForDofs);CHKERRQ(ierr);
+    for(i=0;i<bs;i++) {
+      ierr = ISCreateStride(PETSC_COMM_SELF,pcis->n/bs,i,bs,&custom_ISForDofs[i]);CHKERRQ(ierr);
     }
+    ierr = PCBDDCSetDofsSplitting(pc,bs,custom_ISForDofs);CHKERRQ(ierr);
     vertex_size=1;
+    /* remove my references to IS objects */
+    for(i=0;i<bs;i++) {
+      ierr = ISDestroy(&custom_ISForDofs[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(custom_ISForDofs);CHKERRQ(ierr);
   }
+  for(i=0;i<pcbddc->n_ISForDofs;i++) {
+    ierr = ISGetSize(pcbddc->ISForDofs[i],&k);CHKERRQ(ierr);
+    ierr = ISGetIndices(pcbddc->ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
+    for(j=0;j<k;j++) {
+      mat_graph->which_dof[is_indices[j]]=i;
+    }
+    ierr = ISRestoreIndices(pcbddc->ISForDofs[i],(const PetscInt**)&is_indices);CHKERRQ(ierr);
+  }
+  /* use mat block size as vertex size if it has not yet set */
+  if(!vertex_size) {
+    ierr = MatGetBlockSize(matis->A,&vertex_size);CHKERRQ(ierr);
+  }
+
   /* count number of neigh per node */
   total_counts=0;
   for(i=1;i<pcis->n_neigh;i++){
