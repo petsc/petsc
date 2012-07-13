@@ -68,12 +68,12 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
     PetscViewerFormat format;
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      if (format == PETSC_VIEWER_ASCII_FACTOR_INFO){
-        SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"FactorInfo viewer not implemented yet");
-        /* ierr = MatInfo_Elemental(A,viewer);CHKERRQ(ierr); */
-      } else {
-        SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Info viewer not implemented yet");
+      /* call elemental viewing function */
+     
+      if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
+        /* call elemental viewing function */
       }
+      
     } else if (format == PETSC_VIEWER_DEFAULT) {
       Mat Aaij;
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
@@ -432,6 +432,20 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorI
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatCholeskyFactorNumeric_Elemental"
+static PetscErrorCode MatCholeskyFactorNumeric_Elemental(Mat F,Mat A,const MatFactorInfo *info)
+{
+}
+#undef __FUNCT__
+#define __FUNCT__ "MatCholeskyFactorSymbolic_Elemental"
+static PetscErrorCode MatCholeskyFactorSymbolic_Elemental(Mat F,Mat A,IS perm,const MatFactorInfo *info)
+{
+  PetscFunctionBegin;
+  /* F is create and allocated by MatGetFactor_elemental_petsc(), skip this routine. */
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_elemental_petsc"
@@ -643,7 +657,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   A->ops->axpy            = MatAXPY_Elemental;
   A->ops->lufactor        = MatLUFactor_Elemental;
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_Elemental;
-  A->ops->lufactornumeric = MatLUFactorNumeric_Elemental;
+  A->ops->lufactornumeric  = MatLUFactorNumeric_Elemental;
   A->ops->matsolve        = MatMatSolve_Elemental;
   A->ops->copy            = MatCopy_Elemental;
   A->ops->transpose       = MatTranspose_Elemental;
@@ -651,6 +665,8 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   A->ops->solve           = MatSolve_Elemental;
   A->ops->zeroentries     = MatZeroEntries_Elemental;
   A->ops->choleskyfactor  = MatCholeskyFactor_Elemental;
+  A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_Elemental;
+  A->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_Elemental;
 
   A->insertmode = NOT_SET_VALUES;
 
