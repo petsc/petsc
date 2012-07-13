@@ -206,5 +206,5 @@ PETSC_EXTERN PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm,Petsc
 PETSC_EXTERN PetscErrorCode PetscThreadCommReductionDestroy(PetscThreadCommRedCtx);
 PETSC_EXTERN PetscErrorCode PetscRunKernel(PetscInt,PetscInt,PetscThreadCommJobCtx);
 
-PETSC_EXTERN PetscLogEvent ThreadComm_Init, ThreadComm_RunKernel, ThreadComm_Barrier;
+PETSC_EXTERN PetscLogEvent ThreadComm_RunKernel, ThreadComm_Barrier;
 #endif

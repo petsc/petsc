@@ -12,7 +12,7 @@ PetscMPIInt Petsc_ThreadComm_keyval         = MPI_KEYVAL_INVALID;
 PetscThreadCommJobQueue PetscJobQueue=PETSC_NULL;
 
 /* Logging support */
-PetscLogEvent ThreadComm_Init, ThreadComm_RunKernel, ThreadComm_Barrier;
+PetscLogEvent ThreadComm_RunKernel, ThreadComm_Barrier;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetNCores"
