@@ -40,6 +40,7 @@
 #define maticcfactor_                    MATICCFACTOR
 #define matfactorinfoinitialize_         MATFACTORINFOINITIALIZE
 #define matnullspacesetfunction_         MATNULLSPACESETFUNCTION
+#define matfindnonzerorows_              MATFINDNONZEROROWS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matdestroymatrices_              matdestroymatrices_
 #define matgetfactor_                    matgetfactor
@@ -79,6 +80,7 @@
 #define maticcfactor_                    maticcfactor
 #define matfactorinfoinitialize_         matfactorinfoinitialize
 #define matnullspacesetfunction_         matnullspacesetfunction
+#define matfindnonzerorows_              matfindnonzerorows
 #endif
 
 EXTERN_C_BEGIN

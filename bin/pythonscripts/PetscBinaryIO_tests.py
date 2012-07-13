@@ -24,13 +24,13 @@ class TestPetscBinaryIO(unittest.TestCase):
         viewer.destroy()
         vec.destroy()
         
-        result, = readBinaryFile('test.dat')
+        result, = PetscBinaryIO().readBinaryFile('test.dat')
         self.assertTrue(np.allclose(array, result))
 
     def test_VecWrite(self):
         """Test writing a Vec"""
         array = np.array([1.1, 2.2, 3.3])
-        writeBinaryFile('test.dat', [array.view(Vec),])
+        PetscBinaryIO().writeBinaryFile('test.dat', [array.view(Vec),])
 
         vec = PETSc.Vec().createSeq(3)
         vec.set(0.)
@@ -50,7 +50,7 @@ class TestPetscBinaryIO(unittest.TestCase):
         viewer.destroy()
         anis.destroy()
         
-        result, = readBinaryFile('test.dat')
+        result, = PetscBinaryIO().readBinaryFile('test.dat')
         self.assertTrue((indices == result).all())
 
     def test_MatRead(self):
@@ -70,7 +70,7 @@ class TestPetscBinaryIO(unittest.TestCase):
         viewer.destroy()
         mat.destroy()
         
-        result, = readBinaryFile('test.dat')
+        result, = PetscBinaryIO().readBinaryFile('test.dat')
         self.assertTrue(np.allclose(vals, result[1][2]))
         self.assertTrue((counts == result[1][0]).all())
         self.assertTrue((cols == result[1][1]).all())
@@ -84,8 +84,8 @@ class TestPetscBinaryIO(unittest.TestCase):
         mat = MatSparse(((2,2),(counts,cols,vals)))
 
         dense = np.array([1.1,2.1,0.0,3.1])
-        
-        writeBinaryFile('test.dat', [mat,])
+
+        PetscBinaryIO().writeBinaryFile('test.dat', [mat,])
 
         mat = PETSc.Mat().createAIJ(2)
         viewer = PETSc.Viewer().createBinary('test.dat', PETSc.Viewer.Mode.R)

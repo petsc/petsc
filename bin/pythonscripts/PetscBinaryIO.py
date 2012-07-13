@@ -196,17 +196,21 @@ class PetscBinaryIO(object):
         else:
             self._inttype = np.dtype('>i4')
 
+        if self.precision == 'longlong':
+            nbyte = 16
+            print nbyte
+        elif self.precision == 'single':
+            nbyte = 4
+        else:
+            nbyte = 8
+
         if self.complexscalars:
             name = 'c'
+            nbyte = nbyte * 2 # complex scalar takes twice as many bytes
         else:
             name = 'f'
 
-        if self.precision == 'longlong':
-            self._scalartype = '>%s16'%name
-        if self.precision == 'single':
-            self._scalartype = '>%s4'%name
-        else:
-            self._scalartype = '>%s8'%name
+        self._scalartype = '>{0}{1}'.format(name, nbyte)
 
     @decorate_with_conf
     def readVec(self, fh):
