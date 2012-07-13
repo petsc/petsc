@@ -423,10 +423,8 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   *ierr = PetscOptionsCheckInitial_Components(); 
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
 
-#if defined(PETSC_THREADCOMM_ACTIVE)
   *ierr = PetscThreadCommInitializePackage(PETSC_NULL);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Calling PetscThreadCommInitialize()\n");return;}
-#endif
 
 #if defined(PETSC_HAVE_CUDA)
   cublasInit();

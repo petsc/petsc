@@ -212,7 +212,6 @@ PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
   psubcomm->color     = color;
 
-#if defined(PETSC_THREADCOMM_ACTIVE)
   {
     PetscThreadComm tcomm;
     ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
@@ -221,7 +220,6 @@ PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
     ierr = MPI_Attr_put(psubcomm->comm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
     tcomm->refct++;
   }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -297,7 +295,6 @@ PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
   psubcomm->color     = color;
 
-#if defined(PETSC_THREADCOMM_ACTIVE)
   {
     PetscThreadComm tcomm;
     ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
@@ -306,7 +303,6 @@ PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
     ierr = MPI_Attr_put(psubcomm->comm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
     tcomm->refct++;
   }
-#endif
   PetscFunctionReturn(0);
 }
 
