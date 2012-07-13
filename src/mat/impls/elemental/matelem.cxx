@@ -69,9 +69,11 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
       /* call elemental viewing function */
-     
+      ierr = PetscPrintf(((PetscObject)viewer)->comm,"allocated entries=%d\n",(*a->emat).AllocatedMemory());CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)viewer)->comm,"grid height=%d, grid width=%d\n",(*a->emat).Grid().Height(),(*a->emat).Grid().Width());CHKERRQ(ierr);
       if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
         /* call elemental viewing function */
+        ierr = PetscPrintf(((PetscObject)viewer)->comm,"test matview_elemental 2\n");CHKERRQ(ierr);
       }
       
     } else if (format == PETSC_VIEWER_DEFAULT) {
@@ -410,7 +412,6 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorI
   elem::DistMatrix<PetscScalar,elem::MC,elem::STAR> d;
 
   PetscFunctionBegin;
-  printf("Cholesky Factorization for SPD Matrices...\n");
   elem::Cholesky(elem::UPPER,*a->emat);
   // if (info->dtcol){
   //   /* A = U^T * U for SPD Matrix A */
