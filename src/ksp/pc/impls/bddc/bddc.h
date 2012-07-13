@@ -71,6 +71,11 @@ typedef struct {
   PetscInt      n_constraints;
   PetscInt      n_vertices;
   Mat           ConstraintMatrix;
+  PetscBool     usechangeofbasis;
+  PetscBool     usechangeonfaces;
+  Mat           ChangeOfBasisMatrix;
+  Vec           original_rhs;
+  Mat           local_mat;
   /* Some defaults on selecting vertices and constraints*/
   PetscBool     vertices_flag;
   PetscBool     constraints_flag;
