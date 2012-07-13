@@ -436,7 +436,14 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorI
 #define __FUNCT__ "MatCholeskyFactorNumeric_Elemental"
 static PetscErrorCode MatCholeskyFactorNumeric_Elemental(Mat F,Mat A,const MatFactorInfo *info)
 {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCopy(A,F,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatCholeskyFactor_Elemental(F,0,info);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorSymbolic_Elemental"
 static PetscErrorCode MatCholeskyFactorSymbolic_Elemental(Mat F,Mat A,IS perm,const MatFactorInfo *info)

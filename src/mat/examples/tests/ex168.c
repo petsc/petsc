@@ -174,6 +174,15 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&G);CHKERRQ(ierr);
 
   /* Out-place Cholesky */
+  ierr = MatGetFactor(Asym,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&G);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorSymbolic(G,Asym,0,&finfo);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorNumeric(G,Asym,&finfo);CHKERRQ(ierr);
+  if (mats_view){
+    ierr = MatView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+  ierr = MatSolve(G,b,x);CHKERRQ(ierr);
+  ierr = MatMatSolve(G,B,X);CHKERRQ(ierr);
+  ierr = MatDestroy(&G);CHKERRQ(ierr);
  
   /* Check norm(Asym*x - b) */
   ierr = VecCreate(PETSC_COMM_WORLD,&c);CHKERRQ(ierr);
