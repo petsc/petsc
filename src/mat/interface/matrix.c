@@ -36,7 +36,7 @@ const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFindNonzeroRows"
-/*@C
+/*@
       MatFindNonzeroRows - Locate all rows that are not completely zero in the matrix
 
   Input Parameter:
