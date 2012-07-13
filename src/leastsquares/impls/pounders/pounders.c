@@ -803,8 +803,8 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
 
   while (reason == TAO_CONTINUE_ITERATING) {
 
-    iter++;
     PetscReal gnm = 1e-4;
+    iter++;
     /* Solve the subproblem min{Q(s): ||s|| <= delta} */
     ierr = gqtwrap(tao,&gnm,&mdec); CHKERRQ(ierr);
     /* Evaluate the function at the new point */
