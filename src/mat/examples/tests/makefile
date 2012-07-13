@@ -569,6 +569,10 @@ ex144: ex144.o chkopts
 	-${CLINKER} -o ex144 ex144.o ${PETSC_MAT_LIB}
 	${RM} ex144.o
 
+ex145: ex145.o chkopts
+	-${CLINKER} -o ex145 ex145.o ${PETSC_MAT_LIB}
+	${RM} ex145.o
+
 ex146: ex146.o chkopts
 	-${CLINKER} -o ex146 ex146.o ${PETSC_MAT_LIB}
 	${RM} ex146.o
@@ -652,10 +656,6 @@ ex166: ex166.o chkopts
 ex167: ex167.o chkopts
 	-${CLINKER} -o ex167 ex167.o ${PETSC_MAT_LIB}
 	${RM} ex167.o
-
-ex168: ex168.o chkopts
-	-${CLINKER} -o ex168 ex168.o ${PETSC_MAT_LIB}
-	${RM} ex168.o
 
 ex170: ex170.o chkopts
 	-${CLINKER} -o ex170 ex170.o ${PETSC_MAT_LIB}

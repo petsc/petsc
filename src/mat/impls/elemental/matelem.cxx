@@ -407,26 +407,21 @@ static PetscErrorCode  MatLUFactorSymbolic_Elemental(Mat F,Mat A,IS r,IS c,const
 static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  elem::DistMatrix<PetscScalar,elem::MC,elem::MR>   atrans;
   elem::DistMatrix<PetscScalar,elem::MC,elem::STAR> d;
 
   PetscFunctionBegin;
-  if (info->dtcol){
-    /* A = U^T * U for SPD Matrix A */
-    printf("Cholesky Factorization for SPD Matrices...\n");
-    elem::Cholesky(elem::UPPER,*a->emat);
-  } else {
-    /* A = U^T * D * U * for Symmetric Matrix A */ 
-    printf("LDL^T Factorization for Symmetric Matrices\n");
-    PetscInt i,size;
-    elem::LDLT(*a->emat,d);
-    elem::Transpose(*a->emat,atrans);
-    elem::Copy(atrans,*a->emat);
-    size = (*a->emat).Height();
-    for (i=0;i<size;i++) {
-      (*a->emat).Set(i,i,1.0 / (*a->emat).Get(i,i));
-    }
-  }
+  printf("Cholesky Factorization for SPD Matrices...\n");
+  elem::Cholesky(elem::UPPER,*a->emat);
+  // if (info->dtcol){
+  //   /* A = U^T * U for SPD Matrix A */
+  //   printf("Cholesky Factorization for SPD Matrices...\n");
+  //   elem::Cholesky(elem::UPPER,*a->emat);
+  // } else {
+  //   /* A = U^T * D * U * for Symmetric Matrix A */ 
+  //   printf("LDL^T Factorization for Symmetric Matrices.\n");
+  //   printf("This routine does not pivot. Use with caution.\n");
+  //   elem::LDLT(*a->emat,d);
+  // }
   A->factortype = MAT_FACTOR_CHOLESKY; 
   A->assembled  = PETSC_TRUE;
   PetscFunctionReturn(0);
