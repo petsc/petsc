@@ -46,13 +46,12 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 
 /* Definitions for memory barriers and cpu_relax taken from the linux kernel source code */
 /* x86_64 */
-#if defined(__x86_64__) || defined(__x86_64)
-#if defined (__GNUC__)
+#if defined(PETSC_HAVE_x86_64) && defined(PETSC_COMPILER_GNU)
 #define PetscMemoryBarrier()      asm volatile("mfence":::"memory")
 #define PetscReadMemoryBarrier()  asm volatile("lfence":::"memory")
 #define PetscWriteMemoryBarrier() asm volatile("sfence":::"memory")
 #define PetscCPURelax()           asm volatile("rep; nop" ::: "memory")
-#elif defined(__INTEL_COMPILER)
+#elif defined(PETSC_HAVE_x86_64) && defined(PETSC_COMPILER_INTEL)
 /* Intel ECC compiler doesn't support gcc specific asm stmts.
    It uses intrinsics to do the equivalent things
 */
@@ -60,17 +59,12 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 #define PetscReadMemoryBarrier()  __memory_barrier()
 #define PetscWriteMemoryBarrier() __memory_barrier()
 #define PetscCPURelax()
-#else
-#define PetscMemoryBarrier()
-#define PetscReadMemoryBarrier()
-#define PetscWriteMemoryBarrier()
-#define PetscCPURelax()
-#endif
 #if 0 /* Need to test this on x86_32 before activating it. Mark got an error for __stringify */
 /* x86_32 */
-#elif defined(__i386__) || defined(i386)
-#if defined(__GNUC__)
+#elif defined(PETSC_HAVE_x86_32) && defined(PETSC_COMPILER_GNU)
 /* alternative assembly primitive: */
+#define stringify_1(x...) #x
+#define stringify(x...) stringify_1(x)
 #ifndef ALTERNATIVE
 #define ALTERNATIVE(oldinstr, newinstr, feature)			\
 									\
@@ -115,7 +109,7 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 #define PetscReadMemoryBarrier() alternative("lock; addl $0,0(%%esp)", "lfence", X86_FEATURE_XMM2)
 #define PetscWriteMemoryBarrier() alternative("lock; addl $0,0(%%esp)", "sfence", X86_FEATURE_XMM)
 #define PetscCPURelax()           asm volatile("rep; nop" ::: "memory")
-#elif defined(__INTEL_COMPILER)
+#elif defined(PETSC_HAVE_x86_32) && defined(__INTEL_COMPILER)
 /* Intel ECC compiler doesn't support gcc specific asm stmts.
    It uses intrinsics to do the equivalent things
 */
@@ -123,14 +117,8 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 #define PetscReadMemoryBarrier()  __memory_barrier()
 #define PetscWriteMemoryBarrier() __memory_barrier()
 #define PetscCPURelax()
-#else
-#define PetscMemoryBarrier()
-#define PetscReadMemoryBarrier()
-#define PetscWriteMemoryBarrier()
-#define PetscCPURelax()
-#endif
 #endif /* End of #if 0 */
-#elif defined(__powerpc__)
+#elif defined(PETSC_HAVE_POWERPC)
 #define PetscMemoryBarrier()      __asm__ __volatile__ ("sync":::"memory")
 #define PetscReadMemoryBarrier()  __asm__ __volatile__ ("sync":::"memory")
 #define PetscWriteMemoryBarrier() __asm__ __volatile__ ("sync":::"memory")

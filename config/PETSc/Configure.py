@@ -720,6 +720,29 @@ class Configure(config.base.Configure):
 
     return
 
+  def configurex86(self):
+    ''' Checks for x86_32 and x86_64 architecture'''
+    if self.checkCompile('','#if !defined(__x86_64__) || !defined(__x86_64) || !defined(__amd64__) || !defined(__amd64)\n #error not an x86_64 architecture\n#endif'):
+      self.addDefine('HAVE_x86_64','1')
+    if self.checkCompile('','#if !defined(__i386__) || !defined(i386) \n #error not an x86_32 architecture\n#endif'):
+      self.addDefine('HAVE_x86_32','1')
+
+  def configurePowerPC(self):
+    ''' Checks for PowerPC architecture'''
+    # GNU C
+    if self.checkCompile('','#if !defined(__powerpc) || !defined(__powerpc__) || !defined(__POWERPC__) || !defined(__ppc__) \n # error not a PowerPC architecture\n#endif'):
+      self.addDefined('HAVE_POWERPC','1')
+
+  def configureGNUCompiler(self):
+    ''' Checks for GNU'''
+    if self.checkCompile('','#if !defined(__GNUC__)\n #error not a GCC C/C++ compiler\n#endif'):
+      self.addDefine('COMPILER_GNU','1')
+
+  def configureIntelCompiler(self):
+    ''' Checks for Intel'''
+    if self.checkCompile('','#if !defined(__INTEL_COMPILER)\n #error not an Intel C/C++ compiler\n#endif'):
+      self.addDefine('COMPILER_INTEL','1')
+
 #-----------------------------------------------------------------------------------------------------
   def configureDefaultArch(self):
     conffile = os.path.join('conf', 'petscvariables')
@@ -840,6 +863,10 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureFortranFlush)
     self.executeTest(self.configureFeatureTestMacros)
     self.executeTest(self.configureAtoll)
+    self.executeTest(self.configurex86)
+    self.executeTest(self.configurePowerPC)
+    self.executeTest(self.configureGNUCompiler)
+    self.executeTest(self.configureIntelCompiler)
     # dummy rules, always needed except for remote builds
     self.addMakeRule('remote','')
     self.addMakeRule('remoteclean','')
