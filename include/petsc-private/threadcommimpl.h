@@ -66,6 +66,7 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 #define PetscWriteMemoryBarrier()
 #define PetscCPURelax()
 #endif
+#if 0 /* Need to test this on x86_32 before activating it. Mark got an error for __stringify */
 /* x86_32 */
 #elif defined(__i386__) || defined(i386)
 #if defined(__GNUC__)
@@ -128,6 +129,7 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 #define PetscWriteMemoryBarrier()
 #define PetscCPURelax()
 #endif
+#endif /* End of #if 0 */
 #elif defined(__powerpc__)
 #define PetscMemoryBarrier()      __asm__ __volatile__ ("sync":::"memory")
 #define PetscReadMemoryBarrier()  __asm__ __volatile__ ("sync":::"memory")
