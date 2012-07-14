@@ -400,7 +400,7 @@ PetscErrorCode  SNESDefaultConverged(SNES snes,PetscInt it,PetscReal xnorm,Petsc
     /* set parameter for default relative tolerance convergence test */
     snes->ttol = fnorm*snes->rtol;
   }
-  if (fnorm != fnorm) {
+  if (PetscIsInfOrNanReal(fnorm)) {
     ierr = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FNORM_NAN;
   } else if (fnorm < snes->abstol) {

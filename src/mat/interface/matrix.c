@@ -4902,6 +4902,12 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
         ierr = PetscPrintf(((PetscObject)mat)->comm,"Matrix is not symmetric (tolerance %G)\n",tol);CHKERRQ(ierr);
       }
     }
+    if (mat->nullsp) {
+      ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_null_space_test",&flg,PETSC_NULL);CHKERRQ(ierr);
+      if (flg) {
+        ierr = MatNullSpaceTest(mat->nullsp,mat,PETSC_NULL);CHKERRQ(ierr);
+      }
+    }
   }
   inassm--;
   PetscFunctionReturn(0);
