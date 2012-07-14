@@ -245,8 +245,13 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   int               wsize,err;
   size_t            m = (size_t) n,maxblock = 65536;
   char              *pp = (char*)p;
-#if !defined(PETSC_WORDS_BIGENDIAN)
+#if defined(PETSC_USE_REAL___FLOAT128)
+  double            *ppp;
+#endif
+#if !defined(PETSC_WORDS_BIGENDIAN) || defined(PETSC_USE_REAL___FLOAT128)
   PetscErrorCode    ierr;
+#endif
+#if !defined(PETSC_WORDS_BIGENDIAN)
   void              *ptmp = p; 
 #endif
 
@@ -264,6 +269,15 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   else if (type == PETSC_BIT_LOGICAL) m  = PetscBTLength(m)*sizeof(char);
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
   
+#if defined(PETSC_USE_REAL___FLOAT128)
+  /* If using __float128 precision we still read in doubles from file */
+  if (type == PETSC_SCALAR) {
+    m    = m/2;
+    ierr = PetscMalloc(n*sizeof(double),&ppp);CHKERRQ(ierr);
+    pp   = (char*)ppp;
+  }
+#endif
+
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
     err = read(fd,pp,wsize);
@@ -273,6 +287,22 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
     m  -= err;
     pp += err;
   }
+
+#if defined(PETSC_USE_REAL___FLOAT128)
+  if (type == PETSC_SCALAR) {
+    PetscScalar *pv = (PetscScalar*) p;
+    PetscInt    i;
+#if !defined(PETSC_WORDS_BIGENDIAN)
+    ierr = PetscByteSwapDouble(ppp,n);CHKERRQ(ierr);
+#endif
+    for (i=0; i<n; i++) {
+      pv[i] = ppp[i];
+    }
+    ierr = PetscFree(ppp);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+#endif
+
 #if !defined(PETSC_WORDS_BIGENDIAN)
   ierr = PetscByteSwap(ptmp,type,n);CHKERRQ(ierr);
 #endif
