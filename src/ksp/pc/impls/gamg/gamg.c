@@ -603,10 +603,10 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
 
   if( pc_gamg->data == 0 ) {
     if( !pc_gamg->createdefaultdata ){
-      SETERRQ(wcomm,PETSC_ERR_LIB,"'createdefaultdata' not set(?) need to support NULL data");
+      SETERRQ(wcomm,PETSC_ERR_PLIB,"'createdefaultdata' not set(?) need to support NULL data");
     }
     if( stokes ) {
-      SETERRQ(wcomm,PETSC_ERR_LIB,"Need data (eg, PCSetCoordinates) for Stokes problems");
+      SETERRQ(wcomm,PETSC_ERR_PLIB,"Need data (eg, PCSetCoordinates) for Stokes problems");
     }
     ierr = pc_gamg->createdefaultdata( pc, kktMatsArr[0].A11 ); CHKERRQ(ierr);
   }

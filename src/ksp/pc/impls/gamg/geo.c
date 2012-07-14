@@ -92,7 +92,7 @@ EXTERN_C_END
 PetscErrorCode PCSetData_GEO( PC pc, Mat m )
 {
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_LIB,"GEO MG needs coordinates");
+  SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_PLIB,"GEO MG needs coordinates");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -451,7 +451,7 @@ static PetscErrorCode triangulateAndFormProl( IS  selected_2, /* list of selecte
 
   PetscFunctionReturn(0);
 #else
-  SETERRQ(((PetscObject)a_Prol)->comm,PETSC_ERR_LIB,"configure with TRIANGLE to use geometric MG");
+  SETERRQ(((PetscObject)a_Prol)->comm,PETSC_ERR_PLIB,"configure with TRIANGLE to use geometric MG");
 #endif
 }
 /* -------------------------------------------------------------------------- */
@@ -870,7 +870,7 @@ PetscErrorCode PCGAMGProlongator_GEO( PC pc,
         }
       }
     } else {
-      SETERRQ(wcomm,PETSC_ERR_LIB,"3D not implemented for 'geo' AMG");
+      SETERRQ(wcomm,PETSC_ERR_PLIB,"3D not implemented for 'geo' AMG");
     }
     { /* create next coords - output */
       PetscReal *crs_crds;

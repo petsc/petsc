@@ -264,10 +264,10 @@ PetscErrorCode PCSetCoordinates_AGG( PC pc, PetscInt ndm, PetscInt a_nloc, Petsc
   ierr = MatGetBlockSize( mat, &ndf ); CHKERRQ( ierr ); /* this does not work for Stokes */
   if( coords && ndf==1 ) pc_gamg->data_cell_cols = 1; /* scalar w/ coords and SA (not needed) */
   else if( coords ) {
-    if(ndm > ndf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"degrees of motion %d > block size %d",ndm,ndf);
+    if(ndm > ndf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"degrees of motion %d > block size %d",ndm,ndf);
     pc_gamg->data_cell_cols = (ndm==2 ? 3 : 6); /* displacement elasticity */
     if(ndm != ndf) {
-      if(pc_gamg->data_cell_cols != ndf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Don't know how to create null space for ndm=%d, ndf=%d.  Use MatSetNearNullSpace.",ndm,ndf);
+      if(pc_gamg->data_cell_cols != ndf) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Don't know how to create null space for ndm=%d, ndf=%d.  Use MatSetNearNullSpace.",ndm,ndf);
     }
   }
   else pc_gamg->data_cell_cols = ndf; /* no data, force SA with constant null space vectors */
@@ -506,12 +506,14 @@ static PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
               ierr = PetscCDGetNextPos(aggs_2,slid,&pos); CHKERRQ(ierr);
             }
             if(hav!=1){
-              if(hav==0)SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"failed to find adj in 'selected' lists - structurally unsymmetric matrix");
-              SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"found node %d times???",hav);
+              if(hav==0)SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"failed to find adj in 'selected' lists - structurally unsymmetric matrix");
+              SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"found node %d times???",hav);
             }
           }
           else{            /* I'm stealing this local, owned by a ghost */
-            assert(sgid==-1);
+            if(sgid != -1 ) {
+              SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Have un-symmetric graph (apparently). Use '-pc_gamg_sym_graph true' to symetrize the graph or '-pc_gamg_threshold 0.0' if the matrix is structurally symmetric.");
+            }
             ierr = PetscCDAppendID( aggs_2, lid, lidj+my0 );      CHKERRQ(ierr);
           }
         }
@@ -549,8 +551,8 @@ static PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
                 ierr = PetscCDGetNextPos(aggs_2,oldslidj,&pos); CHKERRQ(ierr);
               }
               if(hav!=1){
-                if(hav==0)SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"failed to find adj in 'selected' lists - structurally unsymmetric matrix");
-                SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"found node %d times???",hav);
+                if(hav==0)SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"failed to find adj in 'selected' lists - structurally unsymmetric matrix");
+                SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"found node %d times???",hav);
               }
             }
             else {
@@ -882,7 +884,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       LAPACKgeqrf_( &Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO );
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      if( INFO != 0 ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRS error");
+      if( INFO != 0 ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xGEQRS error");
       /* get R - column oriented - output B_{i+1} */
       {
         PetscReal *data = &out_data[clid*nSAvec];
@@ -897,7 +899,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
 
       /* get Q - row oriented */
       LAPACKungqr_( &Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO );
-      if( INFO != 0 ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR error arg %d",-INFO);
+      if( INFO != 0 ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xORGQR error arg %d",-INFO);
 
       for( ii = 0 ; ii < M ; ii++ ){
         for( jj = 0 ; jj < N ; jj++ ) {
@@ -971,7 +973,7 @@ PetscErrorCode PCGAMGgraph_AGG( PC pc,
   ierr = MPI_Comm_size( wcomm, &npe);   CHKERRQ(ierr);
 
   /* ierr = MatIsSymmetricKnown(Amat, &set, &flg); CHKERRQ(ierr); || !(set && flg) -- this causes lot of symm calls */
-  symm = (PetscBool)(pc_gamg_agg->sym_graph );
+  symm = (PetscBool)(pc_gamg_agg->sym_graph); /* && !pc_gamg_agg->square_graph; */
 
   ierr  = PCGAMGCreateGraph( Amat, &Gmat ); CHKERRQ( ierr );
   ierr  = PCGAMGFilterGraph( &Gmat, vfilter, symm, verbose ); CHKERRQ( ierr );
@@ -1467,7 +1469,7 @@ PetscErrorCode PCGAMGKKTProl_AGG( PC pc,
       if( ii > 0 ) {
         PetscInt asz=ii,cgid=my0+clid,rids[1000];
         PetscCDPos pos;
-        if(asz>1000)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Very large aggregate: %d",asz);
+        if(asz>1000)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Very large aggregate: %d",asz);
         ii = 0;
         ierr = PetscCDGetHeadPos(agg_lists,mm,&pos); CHKERRQ(ierr);
         while(pos){              
