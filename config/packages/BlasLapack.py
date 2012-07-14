@@ -184,7 +184,7 @@ class Configure(config.package.Package):
         raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-f2cblaslapack=1?')
       libdir = self.downLoadBlasLapack('f','f')            
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'), 1)
-      raise RuntimeError('Could not use downloaded f-blas-lapack?')
+      raise RuntimeError('Could not use downloaded f-blas-lapack.')
     # Try specified BLASLAPACK library
     if 'with-blas-lapack-lib' in self.framework.argDB:
       yield ('User specified BLAS/LAPACK library', None, self.framework.argDB['with-blas-lapack-lib'], 1)
@@ -481,7 +481,7 @@ class Configure(config.package.Package):
         import glob
         blib = glob.glob('/usr/lib/libblas.*')
         if blib != [] and not (os.path.isfile('/usr/lib/libblas.so') or os.path.isfile('/usr/lib/libblas.a')):
-          raise RuntimeError('Incomplete BLAS install? Perhaps blas package is installed - but blas-dev/blas-devel is required.')
+          raise RuntimeError('Incomplete BLAS install; Perhaps blas package is installed - but blas-dev/blas-devel is required?')
         if hasattr(self.compilers, 'FC'): C = 'f'
         else: C = 'c'
         raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate the library containing BLAS.\n Or --download-'+C+'-blas-lapack=1 to have one automatically downloaded and installed\n')
@@ -490,7 +490,7 @@ class Configure(config.package.Package):
         import glob
         llib = glob.glob('/usr/lib/liblapack.*')
         if llib != [] and not (os.path.isfile('/usr/lib/liblapack.so') or os.path.isfile('/usr/lib/liblapack.a')):
-          raise RuntimeError('Incomplete LAPACK install? Perhaps lapack package is installed - but lapack-dev/lapack-devel is required.')
+          raise RuntimeError('Incomplete LAPACK install; Perhaps lapack package is installed - but lapack-dev/lapack-devel is required?')
         if hasattr(self.compilers, 'FC'): C = 'f'
         else: C = 'c'
         raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate the library containing LAPACK.\n Or --download-'+C+'-blas-lapack=1 to have one automatically downloaded and installed\n')
