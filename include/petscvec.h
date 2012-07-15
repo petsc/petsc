@@ -272,7 +272,7 @@ PETSC_EXTERN PetscErrorCode VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,Pe
    VecSetValue - Set a single entry into a vector.
 
    Synopsis:
-   PetscErrorCode VecSetValue(Vec v,int row,PetscScalar value, InsertMode mode);
+   PetscErrorCode VecSetValue(Vec v,PetscInt row,PetscScalar value, InsertMode mode);
 
    Not Collective
 
@@ -403,7 +403,7 @@ PETSC_EXTERN PetscErrorCode VecSetValuesLocal(Vec,PetscInt,const PetscInt[],cons
    VecSetValueLocal - Set a single entry into a vector using the local numbering
 
    Synopsis:
-   PetscErrorCode VecSetValueLocal(Vec v,int row,PetscScalar value, InsertMode mode);
+   PetscErrorCode VecSetValueLocal(Vec v,PetscInt row,PetscScalar value, InsertMode mode);
 
    Not Collective
 
