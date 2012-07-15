@@ -424,9 +424,9 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
     alpha = ylastnorm / ydiffnorm;
     ierr = VecCopy(Y,Ylast);CHKERRQ(ierr);
     ierr = VecScale(Y,alpha);CHKERRQ(ierr);
-    ierr = PetscInfo3(snes,"Angle %G degrees less than threshold %G, corrected step by alpha=%G\n",theta*180./PETSC_PI,angle,alpha);CHKERRQ(ierr);
+    ierr = PetscInfo3(snes,"Angle %14.12e degrees less than threshold %14.12e, corrected step by alpha=%14.12e\n",(double)(theta*180./PETSC_PI),(double)angle,(double)alpha);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo2(snes,"Angle %G degrees exceeds threshold %G, no correction applied\n",theta*180./PETSC_PI,angle);CHKERRQ(ierr);
+    ierr = PetscInfo2(snes,"Angle %14.12e degrees exceeds threshold %14.12e, no correction applied\n",(double)(theta*180./PETSC_PI),(double)angle);CHKERRQ(ierr);
     ierr = VecCopy(Y,Ylast);CHKERRQ(ierr);
     *changed = PETSC_FALSE;
   }
@@ -734,8 +734,8 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
       ierr = (*linesearch->ops->view)(linesearch,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  maxstep=%e, minlambda=%e\n", linesearch->maxstep,linesearch->steptol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%e, absolute=%e, lambda=%e\n", linesearch->rtol,linesearch->atol,linesearch->ltol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  maxstep=%e, minlambda=%e\n", (double)linesearch->maxstep,(double)linesearch->steptol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%e, absolute=%e, lambda=%e\n", (double)linesearch->rtol,(double)linesearch->atol,(double)linesearch->ltol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D\n", linesearch->max_its);CHKERRQ(ierr);
     if (linesearch->ops->precheckstep) {
       if (linesearch->ops->precheckstep == SNESLineSearchPreCheckPicard) {
@@ -1017,27 +1017,27 @@ PetscErrorCode  SNESLineSearchSetTolerances(SNESLineSearch linesearch,PetscReal 
   PetscValidLogicalCollectiveInt(linesearch,max_its,7);
 
   if ( steptol!= PETSC_DEFAULT) {
-    if ( steptol < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Minimum step length %G must be non-negative",steptol);
+    if ( steptol < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Minimum step length %14.12e must be non-negative",(double)steptol);
     linesearch->steptol = steptol;
   }
 
   if ( maxstep!= PETSC_DEFAULT) {
-    if ( maxstep < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Maximum step length %G must be non-negative",maxstep);
+    if ( maxstep < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Maximum step length %14.12e must be non-negative",(double)maxstep);
     linesearch->maxstep = maxstep;
   }
 
   if (rtol != PETSC_DEFAULT) {
-    if (rtol < 0.0 || 1.0 <= rtol) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %G must be non-negative and less than 1.0",rtol);
+    if (rtol < 0.0 || 1.0 <= rtol) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %14.12e must be non-negative and less than 1.0",(double)rtol);
     linesearch->rtol = rtol;
   }
 
   if (atol != PETSC_DEFAULT) {
-    if (atol < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %G must be non-negative",atol);
+    if (atol < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %14.12e must be non-negative",(double)atol);
     linesearch->atol = atol;
   }
 
   if (ltol != PETSC_DEFAULT) {
-    if (ltol < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Labmda tolerance %G must be non-negative",ltol);
+    if (ltol < 0.0) SETERRQ1(((PetscObject)linesearch)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Labmda tolerance %14.12e must be non-negative",(double)ltol);
   linesearch->ltol = ltol;
   }
 
