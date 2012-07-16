@@ -1723,6 +1723,15 @@ runex144_2:
 	   ${DIFF} output/ex144.out ex144.tmp || echo ${PWD} "\nPossible problem with ex144_2, diffs above \n========================================="; \
 	   ${RM} -f ex144.tmp
 
+runex145:
+	-@${MPIEXEC} -n 2 ./ex145  > ex145.tmp 2>&1; \
+	   ${DIFF} output/ex145.out ex145.tmp || echo ${PWD} "\nPossible problem with ex145, diffs above \n========================================="; \
+	   ${RM} -f ex145.tmp
+runex145_2:
+	-@${MPIEXEC} -n 6 ./ex145  > ex145.tmp 2>&1; \
+	   ${DIFF} output/ex145.out ex145.tmp || echo ${PWD} "\nPossible problem with ex145_2, diffs above \n========================================="; \
+	   ${RM} -f ex145.tmp
+
 runex148:
 	-@${MPIEXEC} -n 1 ./ex148  > ex148.tmp 2>&1; \
 	   ${DIFF} output/ex148.out ex148.tmp || echo ${PWD} "\nPossible problem with ex148, diffs above \n========================================="; \
@@ -1837,6 +1846,6 @@ TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_2 runex112_3 run
                                  ex143.PETSc runex143 runex143_2 ex143.rm \
 TESTEXAMPLES_C_COMPLEX	       = ex127.PETSc runex127 runex127_2 ex127.rm 
 TESTEXAMPLES_ELEMENTAL_REAL    = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm \
-                               ex168.PETSc ex168.rm
+                                 ex145.PETSc runex145 ex145.rm
 
 include ${PETSC_DIR}/conf/test

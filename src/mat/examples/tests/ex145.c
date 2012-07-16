@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       m = 5,n,p,i,j,nrows,ncols;
   PetscScalar    *v,*barray,rval;
-  PetscReal      norm,tol=1.e-15;
+  PetscReal      norm,tol=1.e-13;
   PetscMPIInt    size,rank;
   PetscRandom    rand;
   const PetscInt *rows,*cols;
@@ -69,7 +69,7 @@ int main(int argc,char **argv)
   }
 
   /* Create rhs matrix B */
-  ierr = PetscPrintf(PETSC_COMM_WORLD," Create rhs matrix B ...\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Create rhs matrix B\n");CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,p,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(B,MATELEMENTAL);CHKERRQ(ierr);
@@ -120,7 +120,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
 
   /* Create matrix X - same size as B */
-  ierr = PetscPrintf(PETSC_COMM_WORLD," Create solution matrix X ...\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Create solution matrix X\n");CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&X);CHKERRQ(ierr);
   ierr = MatSetSizes(X,m,p,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(X,MATELEMENTAL);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(X,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Cholesky factorization */
-   /*-----------------------*/
+  /*------------------------*/
   ierr = PetscPrintf(PETSC_COMM_WORLD," Create Elemental matrix Asym\n");CHKERRQ(ierr);
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&Asym);CHKERRQ(ierr);
   ierr = MatAXPY(Asym,1.0,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* Asym = A + A^T */
@@ -149,6 +149,9 @@ int main(int argc,char **argv)
     ierr = MatView(Asym,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   
+  /* Cholesky factorization */
+  /*------------------------*/
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Test Cholesky Solver \n");CHKERRQ(ierr);
   /* In-place Cholesky */
   /* Create matrix factor G, then copy Asym to G */
   ierr = MatCreate(PETSC_COMM_WORLD,&G);CHKERRQ(ierr);
@@ -194,7 +197,7 @@ int main(int argc,char **argv)
   ierr = VecAXPY(c,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(c,NORM_1,&norm);CHKERRQ(ierr);
   if (norm > tol){
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |Asym*x - b| for Cholesky %G\n",norm);CHKERRQ(ierr);
   }
 
   /* Check norm(Asym*X - B) */
@@ -202,11 +205,12 @@ int main(int argc,char **argv)
   ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);
   if (norm > tol){
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |Asym*X - B| for Cholesky %G\n",norm);CHKERRQ(ierr);
   }
 
   /* LU factorization */
   /*------------------*/
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Test LU Solver \n");CHKERRQ(ierr);
   /* In-place LU */
   /* Create matrix factor F, then copy A to F */
   ierr = MatCreate(PETSC_COMM_WORLD,&F);CHKERRQ(ierr);
@@ -218,30 +222,28 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(F,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCopy(A,F,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  /* PF=LU or F=LU factorization - perms is ignored by Elemental; set finfo.dtcol !0 or 0 to enable/disable partial pivoting */ 
+  /* PF=LU or F=LU factorization - perms is ignored by Elemental; 
+     set finfo.dtcol !0 or 0 to enable/disable partial pivoting */ 
   finfo.dtcol = 0.1;
   ierr = MatLUFactor(F,0,0,&finfo);CHKERRQ(ierr);
 
   /* Solve LUX = PB or LUX = B */
   ierr = MatSolve(F,b,x);CHKERRQ(ierr);
   ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
-  //ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  //ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
 
   /* Check norm(A*X - B) */
   ierr = MatMult(A,x,c);CHKERRQ(ierr);
   ierr = VecAXPY(c,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(c,NORM_1,&norm);CHKERRQ(ierr);
-  //printf("vec norm is %f\n",norm);
   if (norm > tol){
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |A*x - b| for LU %G\n",norm);CHKERRQ(ierr);
   }
   ierr = MatMatMult(A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);
   if (norm > tol){
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |A*X - B| for LU %G\n",norm);CHKERRQ(ierr);
   }
 
   /* Out-place LU */
@@ -255,7 +257,7 @@ int main(int argc,char **argv)
   ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
 
-  /* free space */
+  /* Free space */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&Asym);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);

@@ -552,6 +552,7 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   MPI_Comm           icomm;
 
   PetscFunctionBegin;
+  a->interface->Detach();
   delete a->interface;
   delete a->esubmat;
   delete a->emat;
