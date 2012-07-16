@@ -1051,11 +1051,11 @@ int main(int argc, char *argv[])
   switch (rd->discretization) {
   case DISCRETIZATION_FD:
     ierr = TSSetIFunction(ts,PETSC_NULL,RDIFunction_FD,rd);CHKERRQ(ierr);
-    ierr = TSSetIJacobian(ts,B,B,RDIJacobian_FD,rd);CHKERRQ(ierr);
+    if (rd->jacobian == JACOBIAN_ANALYTIC) ierr = TSSetIJacobian(ts,B,B,RDIJacobian_FD,rd);CHKERRQ(ierr);
     break;
   case DISCRETIZATION_FE:
     ierr = TSSetIFunction(ts,PETSC_NULL,RDIFunction_FE,rd);CHKERRQ(ierr);
-    ierr = TSSetIJacobian(ts,B,B,RDIJacobian_FE,rd);CHKERRQ(ierr);
+    if (rd->jacobian == JACOBIAN_ANALYTIC) ierr = TSSetIJacobian(ts,B,B,RDIJacobian_FE,rd);CHKERRQ(ierr);
     break;
   }
   ierr = TSSetDuration(ts,10000,rd->final_time);CHKERRQ(ierr);
