@@ -421,6 +421,7 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,const PetscThreadCom
   ierr = PetscFListFind(PetscThreadCommList,PETSC_COMM_WORLD,ttype,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PetscThreadComm type %s",ttype);
   ierr = (*r)(tcomm);CHKERRQ(ierr);
+  ierr = PetscStrcmp(NOTHREAD,tcomm->type,&tcomm->isnothread);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -613,7 +614,12 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
 
   PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%PETSC_KERNELS_MAX; /* Increment the queue ctr to point to the next available slot */
   PetscJobQueue->kernel_ctr++;
-  ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
+  if(tcomm->isnothread) {
+    ierr = PetscRunKernel(0,job->nargs,job);CHKERRQ(ierr);
+    job->job_status[0] = THREAD_JOB_COMPLETED;
+  } else {
+    ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(ThreadComm_RunKernel,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -717,46 +723,6 @@ PetscErrorCode PetscThreadCommInitialize(void)
   ierr = PetscThreadCommSetType(tcomm,NOTHREAD);CHKERRQ(ierr);
   ierr = PetscThreadCommReductionCreate(tcomm,&tcomm->red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}
-
-PetscErrorCode PetscRunKernel(PetscInt trank,PetscInt nargs,PetscThreadCommJobCtx job)
-{
-  switch(nargs) {
-  case 0:
-    (*job->pfunc)(trank);
-    break;
-  case 1:
-    (*job->pfunc)(trank,job->args[0]);
-    break;
-  case 2:
-    (*job->pfunc)(trank,job->args[0],job->args[1]);
-    break;
-  case 3:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2]);
-    break;
-  case 4:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3]);
-    break;
-  case 5:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4]);
-    break;
-  case 6:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5]);
-    break;
-  case 7:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6]);
-    break;
-  case 8:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6],job->args[7]);
-    break;
-  case 9:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6],job->args[7],job->args[8]);
-    break;
-  case 10:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6],job->args[7],job->args[8],job->args[9]);
-    break;
-  }
-  return 0;
 }
 
 #undef __FUNCT__
