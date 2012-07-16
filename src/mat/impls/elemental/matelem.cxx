@@ -54,6 +54,31 @@ PetscErrorCode PetscElementalFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
+/* Sets Elemental options from the options database */
+#undef __FUNCT__
+#define __FUNCT__ "PetscSetElementalFromOptions"
+PetscErrorCode PetscSetElementalFromOptions(Mat A)
+{
+  //Mat_Elemental  *a = (Mat_Elemental*)A->data;
+  PetscErrorCode ierr;
+  //PetscInt       optv1,optv2;
+  //PetscBool      flg;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"Elemental Options","Mat");CHKERRQ(ierr);
+  //ierr = PetscOptionsInt("-mat_elemental_grid_height","Gird Height","None",(*a->emat).Grid().Height(),&optv1,&flg);CHKERRQ(ierr);
+  //ierr = PetscOptionsInt("-mat_elemental_grid_width","Gird Width","None",(*a->emat).Grid().Width(),&optv2,&flg);CHKERRQ(ierr);
+  //if (flg) (*a->emat).Grid().ResizeTo(optv1,optv2);
+  // ierr = PetscOptionsInt("-mat_mumps_icntl_2","ICNTL(2): output stream for diagnostic printing, statistics, and warning","None",mumps->id.ICNTL(2),&icntl,&flg);CHKERRQ(ierr);
+  // if (flg) mumps->id.ICNTL(2) = icntl;
+  // ierr = PetscOptionsInt("-mat_mumps_icntl_3","ICNTL(3): output stream for global information, collected on the host","None",mumps->id.ICNTL(3),&icntl,&flg);CHKERRQ(ierr);
+  // if (flg) mumps->id.ICNTL(3) = icntl;
+
+
+  PetscOptionsEnd();
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatView_Elemental"
 static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
@@ -70,8 +95,8 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_INFO) {
       /* call elemental viewing function */
       ierr = PetscViewerASCIIPrintf(viewer,"Elemental run parameters:\n");CHKERRQ(ierr);
-      ierr = PetscPrintf(((PetscObject)viewer)->comm,"    allocated entries=%d\n",(*a->emat).AllocatedMemory());CHKERRQ(ierr);
-      ierr = PetscPrintf(((PetscObject)viewer)->comm,"    grid height=%d, grid width=%d\n",(*a->emat).Grid().Height(),(*a->emat).Grid().Width());CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  allocated entries=%d\n",(*a->emat).AllocatedMemory());CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  grid height=%d, grid width=%d\n",(*a->emat).Grid().Height(),(*a->emat).Grid().Width());CHKERRQ(ierr);
       if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
         /* call elemental viewing function */
         ierr = PetscPrintf(((PetscObject)viewer)->comm,"test matview_elemental 2\n");CHKERRQ(ierr);
@@ -588,11 +613,6 @@ PetscErrorCode MatSetUp_Elemental(Mat A)
   PetscMPIInt    rsize,csize;
 
   PetscFunctionBegin;
-
-  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"Elemental Options","Mat");CHKERRQ(ierr);
-
-  PetscOptionsEnd();
-
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
@@ -648,9 +668,10 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
 {
   Mat_Elemental      *a;
   PetscErrorCode     ierr;
-  PetscBool          flg;
+  PetscBool          flg,flg1,flg2;
   Mat_Elemental_Grid *commgrid;
   MPI_Comm           icomm;
+  PetscInt           optv1,optv2;
 
   PetscFunctionBegin;
   ierr = PetscElementalInitializePackage(PETSC_NULL);CHKERRQ(ierr);
@@ -689,6 +710,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
 
   /* Set up the elemental matrix */
   elem::mpi::Comm cxxcomm(((PetscObject)A)->comm); 
+  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"Elemental Options","Mat");CHKERRQ(ierr);
 
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
   if (Petsc_Elemental_keyval == MPI_KEYVAL_INVALID) {
@@ -699,6 +721,16 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   if (!flg) { 
     ierr = PetscNewLog(A,Mat_Elemental_Grid,&commgrid);CHKERRQ(ierr);
     commgrid->grid       = new elem::Grid(cxxcomm);
+    ierr = PetscOptionsInt("-mat_elemental_grid_height","Gird Height","None",commgrid->grid->Height(),&optv1,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_elemental_grid_width","Gird Width","None",commgrid->grid->Width(),&optv2,&flg2);CHKERRQ(ierr);
+    if (flg1 || flg2) {
+      if (optv1*optv2 != elem::mpi::CommSize(cxxcomm)) {
+        SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"Gird Height times Grid Width must equal CommSize!");
+        PetscFunctionReturn(0);
+      }
+      delete commgrid->grid;
+      commgrid->grid = new elem::Grid(cxxcomm,optv1,optv2);
+    }
     commgrid->grid_refct = 1;
     ierr = MPI_Attr_put(icomm,Petsc_Elemental_keyval,(void*)commgrid);CHKERRQ(ierr);
   } else {
@@ -718,6 +750,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetFactor_petsc_C","MatGetFactor_elemental_petsc",MatGetFactor_elemental_petsc);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL);CHKERRQ(ierr);
+  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
