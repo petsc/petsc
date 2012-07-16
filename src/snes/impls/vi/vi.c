@@ -455,6 +455,7 @@ PetscErrorCode SNESReset_VI(SNES snes)
   PetscFunctionBegin;
   ierr = VecDestroy(&snes->xl);CHKERRQ(ierr);
   ierr = VecDestroy(&snes->xu);CHKERRQ(ierr);
+  snes->usersetbounds = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
