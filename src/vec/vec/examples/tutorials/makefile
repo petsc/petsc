@@ -150,36 +150,6 @@ runex1_2:
 	   else echo ${PWD} ; echo "Possible problem with with ex1_2, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex1_2.tmp
 
-runex1_pthread_lockfree:
-	-@${MPIEXEC} -n 1 ./ex1 -vec_type seqpthread -n 10000000 > ex1_pthread_lockfree.tmp 2>&1;   \
-	   if (${DIFF} output/ex1_pthread.out ex1_pthread_lockfree.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex1_pthread_lockfree, diffs above \n========================================="; fi; \
-	   ${RM} -f ex1_pthread_lockfree.tmp
-runex1_pthread_main:
-	-@${MPIEXEC} -n 1 ./ex1 -vec_type seqpthread -n 10000000 -thread_sync_type MAINPOOL > ex1_pthread_main.tmp 2>&1;   \
-	   if (${DIFF} output/ex1_pthread.out ex1_pthread_main.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex1_pthread_main, diffs above \n========================================="; fi; \
-	   ${RM} -f ex1_pthread_main.tmp
-runex1_pthread_chain:
-	-@${MPIEXEC} -n 1 ./ex1 -vec_type seqpthread -n 10000000 -thread_sync_type CHAINPOOL > ex1_pthread_chain.tmp 2>&1;   \
-	   if (${DIFF} output/ex1_pthread.out ex1_pthread_chain.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex1_pthread_chain, diffs above \n========================================="; fi; \
-	   ${RM} -f ex1_pthread_chain.tmp
-runex1_pthread_tree:
-	-@${MPIEXEC} -n 1 ./ex1 -vec_type seqpthread -n 10000000 -thread_sync_type TREEPOOL > ex1_pthread_tree.tmp 2>&1;   \
-	   if (${DIFF} output/ex1_pthread.out ex1_pthread_tree.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex1_pthread_tree, diffs above \n========================================="; fi; \
-	   ${RM} -f ex1_pthread_tree.tmp
-runex1_pthread_true:
-	-@${MPIEXEC} -n 1 ./ex1 -vec_type seqpthread -n 10000000 -thread_sync_type TRUEPOOL > ex1_pthread_true.tmp 2>&1;   \
-	   if (${DIFF} output/ex1_pthread.out ex1_pthread_true.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex1_pthread_true, diffs above \n========================================="; fi; \
-	   ${RM} -f ex1_pthread_true.tmp
-runex1_pthread_2:
-	-@${MPIEXEC} -n 2 ./ex1 -vec_type mpipthread -n 10000000 > ex1_pthread_2.tmp 2>&1;   \
-	   if (${DIFF} output/ex1_pthread.out ex1_pthread_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex1_pthread_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex1_pthread_2.tmp
 runex1f:
 	-@${MPIEXEC} -n 1  ./ex1f > ex1f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1f_1.out ex1f_1.tmp) then true; \
@@ -334,6 +304,4 @@ TESTEXAMPLES_FORTRAN	    = ex1f.PETSc runex1f runex1f_2 ex1f.rm ex2f.PETSc runex
 TESTEXAMPLES_C_X_MPIUNI   = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_FORTRAN_MPIUNI = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm ex7.PETSc ex7.rm
 TESTEXAMPLES_F90	    = ex1f90.PETSc runex1f90 ex1f90.rm ex20f90.PETSc runex20f90 ex20f90.rm ex4f90.PETSc runex4f90 ex4f90.rm
-TESTEXAMPLES_PTHREADCLASSES = ex1.PETSc runex1_pthread_lockfree runex1_pthread_main runex1_pthread_chain runex1_pthread_tree \
-                              runex1_pthread_true runex1_pthread_2 ex1.rm 
 include ${PETSC_DIR}/conf/test
