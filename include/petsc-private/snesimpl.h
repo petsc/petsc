@@ -138,6 +138,7 @@ struct _p_SNES {
 
   Vec         xl,xu;             /* upper and lower bounds for box constrained VI problems */
   PetscInt    ntruebounds;       /* number of non-infinite bounds set for VI box constraints */
+  PetscBool   usersetbounds;     /* bounds have been set via SNESVISetVariableBounds(), rather than via computevariablebounds() callback. */
 };
 
 /* Context for resolution-dependent SNES callback information */

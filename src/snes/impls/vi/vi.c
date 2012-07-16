@@ -417,25 +417,30 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
 
   if(!snes->ops->computevariablebounds && snes->dm) {
+    PetscBool flag;
+    ierr = DMHasVariableBounds(snes->dm, &flag); CHKERRQ(ierr);
     snes->ops->computevariablebounds = SNESVIDMComputeVariableBounds;
   }
-  if (snes->ops->computevariablebounds) {
-    if (!snes->xl) {ierr = VecDuplicate(snes->vec_sol,&snes->xl);CHKERRQ(ierr);}
-    if (!snes->xu) {ierr = VecDuplicate(snes->vec_sol,&snes->xu);CHKERRQ(ierr);}
-    ierr = (*snes->ops->computevariablebounds)(snes,snes->xl,snes->xu);CHKERRQ(ierr);
-  } else if (!snes->xl && !snes->xu) {
-    /* If the lower and upper bound on variables are not set, set it to -Inf and Inf */
-    ierr = VecDuplicate(snes->vec_sol, &snes->xl);CHKERRQ(ierr);
-    ierr = VecSet(snes->xl,SNES_VI_NINF);CHKERRQ(ierr);
-    ierr = VecDuplicate(snes->vec_sol, &snes->xu);CHKERRQ(ierr);
-    ierr = VecSet(snes->xu,SNES_VI_INF);CHKERRQ(ierr);
-  } else {
-    /* Check if lower bound, upper bound and solution vector distribution across the processors is identical */
-    ierr = VecGetOwnershipRange(snes->vec_sol,i_start,i_end);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(snes->xl,i_start+1,i_end+1);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(snes->xu,i_start+2,i_end+2);CHKERRQ(ierr);
-    if ((i_start[0] != i_start[1]) || (i_start[0] != i_start[2]) || (i_end[0] != i_end[1]) || (i_end[0] != i_end[2]))
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Distribution of lower bound, upper bound and the solution vector should be identical across all the processors.");
+  if(!snes->usersetbounds) {
+    if (snes->ops->computevariablebounds) {
+      if (!snes->xl) {ierr = VecDuplicate(snes->vec_sol,&snes->xl);CHKERRQ(ierr);}
+      if (!snes->xu) {ierr = VecDuplicate(snes->vec_sol,&snes->xu);CHKERRQ(ierr);}
+      ierr = (*snes->ops->computevariablebounds)(snes,snes->xl,snes->xu);CHKERRQ(ierr);
+    } 
+    else if(!snes->xl && !snes->xu) {
+      /* If the lower and upper bound on variables are not set, set it to -Inf and Inf */
+      ierr = VecDuplicate(snes->vec_sol, &snes->xl);CHKERRQ(ierr);
+      ierr = VecSet(snes->xl,SNES_VI_NINF);CHKERRQ(ierr);
+      ierr = VecDuplicate(snes->vec_sol, &snes->xu);CHKERRQ(ierr);
+      ierr = VecSet(snes->xu,SNES_VI_INF);CHKERRQ(ierr);
+    } else {
+      /* Check if lower bound, upper bound and solution vector distribution across the processors is identical */
+      ierr = VecGetOwnershipRange(snes->vec_sol,i_start,i_end);CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(snes->xl,i_start+1,i_end+1);CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(snes->xu,i_start+2,i_end+2);CHKERRQ(ierr);
+      if ((i_start[0] != i_start[1]) || (i_start[0] != i_start[2]) || (i_end[0] != i_end[1]) || (i_end[0] != i_end[2]))
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Distribution of lower bound, upper bound and the solution vector should be identical across all the processors.");
+    }
   }
 
   PetscFunctionReturn(0);
@@ -505,6 +510,7 @@ PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESVISetVariableBounds_C",(PetscVoidStarFunction)&f);CHKERRQ(ierr);
   if (!f) {ierr = SNESSetType(snes,SNESVIRS);CHKERRQ(ierr);}
   ierr = PetscUseMethod(snes,"SNESVISetVariableBounds_C",(SNES,Vec,Vec),(snes,xl,xu));CHKERRQ(ierr);
+  snes->usersetbounds = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
