@@ -69,8 +69,9 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
       /* call elemental viewing function */
-      ierr = PetscPrintf(((PetscObject)viewer)->comm,"allocated entries=%d\n",(*a->emat).AllocatedMemory());CHKERRQ(ierr);
-      ierr = PetscPrintf(((PetscObject)viewer)->comm,"grid height=%d, grid width=%d\n",(*a->emat).Grid().Height(),(*a->emat).Grid().Width());CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Elemental run parameters:\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)viewer)->comm,"    allocated entries=%d\n",(*a->emat).AllocatedMemory());CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)viewer)->comm,"    grid height=%d, grid width=%d\n",(*a->emat).Grid().Height(),(*a->emat).Grid().Width());CHKERRQ(ierr);
       if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
         /* call elemental viewing function */
         ierr = PetscPrintf(((PetscObject)viewer)->comm,"test matview_elemental 2\n");CHKERRQ(ierr);
@@ -587,6 +588,11 @@ PetscErrorCode MatSetUp_Elemental(Mat A)
   PetscMPIInt    rsize,csize;
 
   PetscFunctionBegin;
+
+  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"Elemental Options","Mat");CHKERRQ(ierr);
+
+  PetscOptionsEnd();
+
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
