@@ -65,8 +65,7 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
 
   /* Spin loop */
   while(PetscReadOnce(int,job_lockfree.my_job_status[PetscPThreadRank]) != THREAD_TERMINATE) {
-    glob_kernel_ctr = PetscJobQueue->kernel_ctr;
-    PetscReadMemoryBarrier(); /* Ensure that PetscJobQueue->kernel_ctr gets read from memory */
+    glob_kernel_ctr = PetscReadOnce(int,PetscJobQueue->kernel_ctr);
     if(my_kernel_ctr < glob_kernel_ctr) {
       job = PetscJobQueue->jobs[my_job_counter];
       /* Spark the thread pool */
@@ -76,12 +75,10 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
 	PetscRunKernel(PetscPThreadRank,job_lockfree.data[PetscPThreadRank]->nargs,job_lockfree.data[PetscPThreadRank]);
 	/* Post job completed status */
 	job->job_status[PetscPThreadRank] = THREAD_JOB_COMPLETED;
-        PetscWriteMemoryBarrier(); /* Ensure that job->job_status[PetscPThreadRank] gets written to memory */
       }
       my_job_counter = (my_job_counter+1)%PETSC_KERNELS_MAX;
       my_kernel_ctr++;
     }
-    PetscCPURelax();
   }
 
   return NULL;
@@ -107,8 +104,7 @@ PetscErrorCode PetscThreadCommBarrier_PThread_LockFree(PetscThreadComm tcomm)
       job_status = job->job_status[ptcomm->granks[i]];
       active_threads += job_status;
     }
-    PetscReadMemoryBarrier(); /* Ensure that all job_status get read */
-    if(active_threads) active_threads = 0;
+    if(PetscReadOnce(int,active_threads)) active_threads = 0;
     else wait=PETSC_FALSE;
   }
   PetscFunctionReturn(0);
