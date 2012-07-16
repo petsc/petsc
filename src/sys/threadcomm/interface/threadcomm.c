@@ -679,7 +679,7 @@ PetscErrorCode PetscThreadCommInitialize(void)
 {
   PetscErrorCode  ierr;
   PetscThreadComm tcomm;
-  MPI_Comm        icomm,icomm1;
+  MPI_Comm        icomm;
   PetscInt        i,j;
 
   PetscFunctionBegin;
@@ -703,13 +703,15 @@ PetscErrorCode PetscThreadCommInitialize(void)
   PetscJobQueue->kernel_ctr  = 0;
   tcomm->job_ctr     = 0;
 
-
+  /* PETSC_COMM_SELF = PETSC_COMM_WORLD for MPIUNI */
+#if !defined(PETSC_HAVE_MPIUNI)
   ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&icomm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Attr_put(icomm,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
-
   tcomm->refct++;               /* Share the threadcomm with PETSC_COMM_SELF */
-  ierr = PetscCommDuplicate(PETSC_COMM_SELF,&icomm1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MPI_Attr_put(icomm1,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
+#endif
+
+  ierr = PetscCommDuplicate(PETSC_COMM_SELF,&icomm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Attr_put(icomm,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
 
   /* This routine leaves extra references to the inner comms. They are released in PetscThreadCommFinalizePackage(). */
 
