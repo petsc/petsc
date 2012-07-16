@@ -77,19 +77,26 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
       }
       
     } else if (format == PETSC_VIEWER_DEFAULT) {
-      Mat Aaij;
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
       ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
       a->emat->Print("Elemental matrix (cyclic ordering)");
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
       if (A->factortype == MAT_FACTOR_NONE){
+        Mat Aaij;
         ierr = PetscPrintf(((PetscObject)viewer)->comm,"Elemental matrix (explicit ordering)\n");CHKERRQ(ierr);
         ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
-        ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+        ierr = MatView(Aaij,viewer);CHKERRQ(ierr);
         ierr = MatDestroy(&Aaij);CHKERRQ(ierr);     
       }
     } else SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Format");
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by Elemental matrices",((PetscObject)viewer)->type_name);
+  } else {
+    /* convert to aij/mpidense format and call MatView() */
+    Mat Aaij;
+    ierr = PetscPrintf(((PetscObject)viewer)->comm,"Elemental matrix (explicit ordering)\n");CHKERRQ(ierr);
+    ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
+    ierr = MatView(Aaij,viewer);CHKERRQ(ierr);
+    ierr = MatDestroy(&Aaij);CHKERRQ(ierr);     
+  }
   PetscFunctionReturn(0);
 }
 
