@@ -28,10 +28,6 @@ extern PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 extern PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 extern PetscErrorCode PetscCloseHistoryFile(FILE **);
 
-#if defined(PETSC_HAVE_PTHREADCLASSES)
-# include <../src/sys/objects/pthread/pthreadimpl.h>
-#endif
-
 /* user may set this BEFORE calling PetscInitialize() */
 MPI_Comm PETSC_COMM_WORLD = MPI_COMM_NULL;
 
@@ -901,10 +897,6 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   ierr = PetscHMPIFinalize();CHKERRQ(ierr);
-
-#if defined(PETSC_HAVE_PTHREADCLASSES)
-  ierr = PetscThreadsFinalize();CHKERRQ(ierr);
-#endif
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_info",&flg2,PETSC_NULL);CHKERRQ(ierr);
