@@ -8,8 +8,8 @@ static char help[] = "Tests Elemental interface.\n\n";
 int main(int argc,char **args)
 {
   Vec            x,y;
-  Mat            B,C,Ct;
-  PetscInt       i,j,m = 5,n,p,nrows,ncols;
+  Mat            A,B,C,Ct;
+  PetscInt       i,j,m = 5,n,nrows,ncols;
   const PetscInt *rows,*cols;
   IS             isrows,iscols;
   PetscErrorCode ierr;
@@ -39,7 +39,7 @@ int main(int argc,char **args)
   ierr = PetscMalloc(nrows*ncols*sizeof *v,&v);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
-      v[i*ncols+j] = (PetscReal)(100*rows[i]+cols[j]);
+      v[i*ncols+j] = (PetscReal)(10000*rank+100*rows[i]+cols[j]);
     }
   }
   ierr = MatSetValues(C,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
@@ -48,15 +48,17 @@ int main(int argc,char **args)
 
   /* Test MatView() */
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatConvert(C,MATMPIDENSE,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Test MatNorm() */
   ierr = MatNorm(C,NORM_1,&Cnorm);CHKERRQ(ierr);
-  printf("The 1-norm of C is %f\n",Cnorm);
+  if (rank==0) printf("The 1-norm of C is %f\n",Cnorm);
 
   /* Test MatTranspose() and MatZeroEntries() */
   ierr = MatTranspose(C,MAT_INITIAL_MATRIX,&Ct);CHKERRQ(ierr);
   ierr = MatZeroEntries(Ct);CHKERRQ(ierr);
-  ierr = MatView(Ct,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /*ierr = MatView(Ct,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
   /* Test MatMult() */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
@@ -72,14 +74,14 @@ int main(int argc,char **args)
   ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
+  /*ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  */
   ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
   ierr = VecSetSizes(y,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
   ierr = MatMult(C,x,y);CHKERRQ(ierr);
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
+  /*ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  */
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
 
@@ -104,14 +106,15 @@ int main(int argc,char **args)
   ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatAXPY(B,2.5,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatAYPX(B,3.75,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);

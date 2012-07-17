@@ -575,6 +575,46 @@ static PetscErrorCode MatGetOwnershipIS_Elemental(Mat A,IS *rows,IS *cols)
 EXTERN_C_END
 
 #undef __FUNCT__
+#define __FUNCT__ "MatConvert_Elemental_MPIDense"
+static PetscErrorCode MatConvert_Elemental_MPIDense(Mat A,const MatType newtype,MatReuse reuse,Mat *B)
+{
+  Mat                Bmpi,Bt;
+  Mat_Elemental      *a = (Mat_Elemental*)A->data;
+  PetscErrorCode     ierr;
+  MPI_Comm           comm=((PetscObject)A)->comm;
+  IS                 isrows,iscols;
+  PetscInt           nrows,ncols,i,j,m,n;
+  const PetscInt     *rows,*cols;
+  PetscScalar        *v;
+
+  PetscFunctionBegin;
+  if (reuse == MAT_INITIAL_MATRIX){
+    ierr = MatCreate(comm,&Bmpi);CHKERRQ(ierr);
+    ierr = MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = MatSetType(Bmpi,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
+    *B = Bmpi;
+  }
+  v = a->emat->LocalBuffer(0,0);
+  ierr = MatGetOwnershipIS(Bmpi,&isrows,&iscols);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr);
+  ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
+  ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
+  ierr = MatSetValues(Bmpi,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscols);CHKERRQ(ierr);
+  //ierr = MatCreateTranspose(Bmpi,&Bt);CHKERRQ(ierr);
+  //*B = Bt;
+  //ierr = MatDestroy(&Bmpi);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_Elemental"
 static PetscErrorCode MatDestroy_Elemental(Mat A)
 {
@@ -705,6 +745,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   A->ops->choleskyfactor  = MatCholeskyFactor_Elemental;
   A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_Elemental;
   A->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_Elemental;
+  A->ops->convert         = MatConvert_Elemental_MPIDense;
 
   A->insertmode = NOT_SET_VALUES;
 
@@ -725,8 +766,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
     ierr = PetscOptionsInt("-mat_elemental_grid_width","Gird Width","None",commgrid->grid->Width(),&optv2,&flg2);CHKERRQ(ierr);
     if (flg1 || flg2) {
       if (optv1*optv2 != elem::mpi::CommSize(cxxcomm)) {
-        SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"Gird Height times Grid Width must equal CommSize!");
-        PetscFunctionReturn(0);
+        SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"Gird Height times Grid Width must equal CommSize");
       }
       delete commgrid->grid;
       commgrid->grid = new elem::Grid(cxxcomm,optv1,optv2);
