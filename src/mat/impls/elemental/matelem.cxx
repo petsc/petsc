@@ -575,42 +575,40 @@ static PetscErrorCode MatGetOwnershipIS_Elemental(Mat A,IS *rows,IS *cols)
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "MatConvert_Elemental_MPIDense"
-static PetscErrorCode MatConvert_Elemental_MPIDense(Mat A,const MatType newtype,MatReuse reuse,Mat *B)
+#define __FUNCT__ "MatConvert_Elemental_Dense"
+static PetscErrorCode MatConvert_Elemental_Dense(Mat A,const MatType newtype,MatReuse reuse,Mat *B)
 {
-  Mat                Bmpi,Bt;
+  Mat                Bmpi;
   Mat_Elemental      *a = (Mat_Elemental*)A->data;
-  PetscErrorCode     ierr;
   MPI_Comm           comm=((PetscObject)A)->comm;
-  IS                 isrows,iscols;
-  PetscInt           nrows,ncols,i,j,m,n;
-  const PetscInt     *rows,*cols;
-  PetscScalar        *v;
+  PetscErrorCode     ierr;
+  PetscInt           rrank,ridx,crank,cidx,nrows,ncols,i,j;
+  PetscScalar        v;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX){
     ierr = MatCreate(comm,&Bmpi);CHKERRQ(ierr);
     ierr = MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = MatSetType(Bmpi,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatSetType(Bmpi,MATDENSE);CHKERRQ(ierr);
     ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
     *B = Bmpi;
   }
-  v = a->emat->LocalBuffer(0,0);
-  ierr = MatGetOwnershipIS(Bmpi,&isrows,&iscols);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr);
-  ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
-  ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = MatSetValues(Bmpi,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&nrows,&ncols);CHKERRQ(ierr);
+  for (i=0; i<nrows; i++) {
+    PetscInt erow,ecol;
+    P2RO(A,0,i,&rrank,&ridx);
+    RO2E(A,0,rrank,ridx,&erow);
+    if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect row translation");
+    for (j=0; j<ncols; j++) {
+      P2RO(A,1,j,&crank,&cidx);
+      RO2E(A,1,crank,cidx,&ecol);
+      if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect col translation");
+      v = a->emat->Get(erow,ecol);
+      ierr = MatSetValues(Bmpi,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
   ierr = MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscols);CHKERRQ(ierr);
-  //ierr = MatCreateTranspose(Bmpi,&Bt);CHKERRQ(ierr);
-  //*B = Bt;
-  //ierr = MatDestroy(&Bmpi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -764,7 +762,7 @@ static struct _MatOps MatOps_Values = {
        0,
 /*69*/ 0,
        0,
-       MatConvert_Elemental_MPIDense,
+       MatConvert_Elemental_Dense,
        0,
        0,
 /*74*/ 0,
@@ -876,15 +874,15 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
   if (!flg) { 
     ierr = PetscNewLog(A,Mat_Elemental_Grid,&commgrid);CHKERRQ(ierr);
-    commgrid->grid       = new elem::Grid(cxxcomm);
-    ierr = PetscOptionsInt("-mat_elemental_grid_height","Gird Height","None",commgrid->grid->Height(),&optv1,&flg1);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-mat_elemental_grid_width","Gird Width","None",commgrid->grid->Width(),&optv2,&flg2);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_elemental_grid_height","Grid Height","None",elem::mpi::CommSize(cxxcomm),&optv1,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_elemental_grid_width","Grid Width","None",1,&optv2,&flg2);CHKERRQ(ierr);
     if (flg1 || flg2) {
       if (optv1*optv2 != elem::mpi::CommSize(cxxcomm)) {
-        SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"Gird Height times Grid Width must equal CommSize");
+        SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"Grid Height times Grid Width must equal CommSize");
       }
-      delete commgrid->grid;
       commgrid->grid = new elem::Grid(cxxcomm,optv1,optv2);
+    } else {
+      commgrid->grid = new elem::Grid(cxxcomm);
     }
     commgrid->grid_refct = 1;
     ierr = MPI_Attr_put(icomm,Petsc_Elemental_keyval,(void*)commgrid);CHKERRQ(ierr);
