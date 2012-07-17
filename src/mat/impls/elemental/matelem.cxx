@@ -691,6 +691,149 @@ PetscErrorCode MatAssemblyEnd_Elemental(Mat A, MatAssemblyType type)
   PetscFunctionReturn(0);
 }
 
+/* -------------------------------------------------------------------*/
+static struct _MatOps MatOps_Values = {
+       MatSetValues_Elemental,
+       0,
+       0,
+       MatMult_Elemental,
+/* 4*/ MatMultAdd_Elemental,
+       0, //MatMultTranspose_Elemental,
+       0, //MatMultTransposeAdd_Elemental,
+       MatSolve_Elemental,
+       0, //MatSolveAdd_Elemental,
+       0, //MatSolveTranspose_Elemental,
+/*10*/ 0, //MatSolveTransposeAdd_Elemental,
+       MatLUFactor_Elemental,
+       MatCholeskyFactor_Elemental,
+       0,
+       MatTranspose_Elemental,
+/*15*/ MatGetInfo_Elemental,
+       0, 
+       0,
+       0, 
+       MatNorm_Elemental,
+/*20*/ MatAssemblyBegin_Elemental,
+       MatAssemblyEnd_Elemental,
+       0, //MatSetOption_Elemental,
+       MatZeroEntries_Elemental,
+/*24*/ 0,
+       MatLUFactorSymbolic_Elemental,
+       MatLUFactorNumeric_Elemental,
+       MatCholeskyFactorSymbolic_Elemental,
+       MatCholeskyFactorNumeric_Elemental,
+/*29*/ MatSetUp_Elemental,
+       0,
+       0,
+       0,
+       0,
+/*34*/ 0, //MatDuplicate_Elemental,
+       0,
+       0,
+       0,
+       0,
+/*39*/ MatAXPY_Elemental,
+       0,
+       0,
+       0,
+       MatCopy_Elemental,
+/*44*/ 0,
+       MatScale_Elemental,
+       0,
+       0,
+       0,
+/*49*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*54*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*59*/ 0,
+       MatDestroy_Elemental,
+       MatView_Elemental,
+       0, 
+       0,
+/*64*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*69*/ 0,
+       0,
+       MatConvert_Elemental_MPIDense,
+       0,
+       0,
+/*74*/ 0,
+       0, 
+       0,
+       0,
+       0,
+/*79*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*84*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*89*/ MatMatMult_Elemental,  
+       MatMatMultSymbolic_Elemental,  
+       MatMatMultNumeric_Elemental,   
+       0,
+       0,
+/*94*/ 0,
+       0, //MatMatTransposeMult_Elemental,  
+       0, //MatMatTransposeMultSymbolic_Elemental,  
+       0, //MatMatTransposeMultNumeric_Elemental_Elemental,  
+       0,
+/*99*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*104*/0,
+       0,
+       0,
+       0,
+       0,
+/*109*/MatMatSolve_Elemental,
+       0,
+       0,
+       0,
+       0,
+/*114*/0,
+       0,
+       0,
+       0,
+       0,
+/*119*/0,
+       0,
+       0,
+       0,
+       0,
+/*124*/0,
+       0,
+       0,
+       0,
+       0,
+/*129*/0,
+       0,
+       0,
+       0,
+       0,
+/*134*/0,
+       0,
+       0,
+       0,
+       0
+};
+
 /*MC
    MATELEMENTAL = "elemental" - A matrix type for dense matrices using the Elemental package
 
@@ -715,40 +858,12 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
 
   PetscFunctionBegin;
   ierr = PetscElementalInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+  A->insertmode = NOT_SET_VALUES;
 
   ierr = PetscNewLog(A,Mat_Elemental,&a);CHKERRQ(ierr);
   A->data = (void*)a;
-
-  A->ops->getinfo         = MatGetInfo_Elemental;
-  A->ops->view            = MatView_Elemental;
-  A->ops->destroy         = MatDestroy_Elemental;
-  A->ops->setup           = MatSetUp_Elemental;
-  A->ops->setvalues       = MatSetValues_Elemental;
-  A->ops->mult            = MatMult_Elemental;
-  A->ops->multadd         = MatMultAdd_Elemental;
-  A->ops->matmult         = MatMatMult_Elemental;
-  A->ops->matmultsymbolic = MatMatMultSymbolic_Elemental;
-  A->ops->matmultnumeric  = MatMatMultNumeric_Elemental;
-  A->ops->assemblybegin   = MatAssemblyBegin_Elemental;
-  A->ops->assemblyend     = MatAssemblyEnd_Elemental;
-  A->ops->scale           = MatScale_Elemental;
-  A->ops->axpy            = MatAXPY_Elemental;
-  A->ops->lufactor        = MatLUFactor_Elemental;
-  A->ops->lufactorsymbolic = MatLUFactorSymbolic_Elemental;
-  A->ops->lufactornumeric  = MatLUFactorNumeric_Elemental;
-  A->ops->matsolve        = MatMatSolve_Elemental;
-  A->ops->copy            = MatCopy_Elemental;
-  A->ops->transpose       = MatTranspose_Elemental;
-  A->ops->norm            = MatNorm_Elemental;
-  A->ops->solve           = MatSolve_Elemental;
-  A->ops->zeroentries     = MatZeroEntries_Elemental;
-  A->ops->choleskyfactor  = MatCholeskyFactor_Elemental;
-  A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_Elemental;
-  A->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_Elemental;
-  A->ops->convert         = MatConvert_Elemental_MPIDense;
-
-  A->insertmode = NOT_SET_VALUES;
-
+  
   /* Set up the elemental matrix */
   elem::mpi::Comm cxxcomm(((PetscObject)A)->comm); 
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"Elemental Options","Mat");CHKERRQ(ierr);
