@@ -17,6 +17,9 @@ cdef extern from * nogil:
     int MPI_Initialized(int*)
     int MPI_Finalized(int*)
 
+    ctypedef int MPI_Fint
+    MPI_Fint MPI_Comm_c2f(MPI_Comm)
+
 
 cdef extern from * nogil:
 

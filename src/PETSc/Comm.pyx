@@ -82,7 +82,7 @@ cdef class Comm:
             raise ValueError("null communicator")
         MPI_Barrier(self.comm)
 
-    #
+    # --- properties ---
 
     property size:
         def __get__(self):
@@ -91,6 +91,13 @@ cdef class Comm:
     property rank:
         def __get__(self):
             return self.getRank()
+
+    # --- Fortran support ---
+
+    property fortran:
+        def __get__(self):
+            cdef MPI_Comm comm = self.comm
+            return MPI_Comm_c2f(comm)
 
     # --- mpi4py compatibility API ---
 
