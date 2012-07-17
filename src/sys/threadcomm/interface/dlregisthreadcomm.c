@@ -2,6 +2,7 @@
 
 static PetscBool PetscThreadCommPackageInitialized = PETSC_FALSE;
 
+PETSC_EXTERN PetscErrorCode PetscThreadCommDetach(MPI_Comm);
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommFinalizePackage"
 /*@C
@@ -16,18 +17,12 @@ static PetscBool PetscThreadCommPackageInitialized = PETSC_FALSE;
 PetscErrorCode PetscThreadCommFinalizePackage(void)
 {
   PetscErrorCode ierr;
-  MPI_Comm comm;
 
   PetscFunctionBegin;
   ierr = PetscThreadCommRegisterDestroy();CHKERRQ(ierr);
 
-#if !defined(PETSC_HAVE_MPIUNI)
-  comm = PETSC_COMM_WORLD;      /* Release reference from PetscThreadCommInitialize */
-  ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
-#endif
-
-  comm = PETSC_COMM_SELF;       /* Release reference from PetscThreadCommInitialize */
-  ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
+  ierr = PetscThreadCommDetach(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscThreadCommDetach(PETSC_COMM_SELF);CHKERRQ(ierr);
 
   ierr = MPI_Keyval_free(&Petsc_ThreadComm_keyval);CHKERRQ(ierr);
   PetscThreadCommPackageInitialized = PETSC_FALSE;
