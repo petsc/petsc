@@ -1183,6 +1183,65 @@ static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char n
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsFindPairPrefix_Private"
+PetscErrorCode PetscOptionsFindPairPrefix_Private(const char pre[], const char name[], char *value[], PetscBool *flg)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,N;
+  size_t         len;
+  char           **names,tmp[256];
+  PetscBool      match;
+
+  PetscFunctionBegin;
+  if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
+  N = options->N;
+  names = options->names;
+
+  if (name[0] != '-') SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Name must begin with -: Instead %s",name);
+
+  /* append prefix to name, if prefix="foo_" and option='--bar", prefixed option is --foo_bar */
+  if (pre) {
+    char *ptr = tmp;
+    const char *namep = name;
+    if (pre[0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Prefix should not begin with a -");
+    if (name[1] == '-') {
+      *ptr++ = '-';
+      namep++;
+    }
+    ierr = PetscStrncpy(ptr,pre,tmp+sizeof tmp-ptr);CHKERRQ(ierr);
+    tmp[sizeof tmp-1] = 0;
+    ierr = PetscStrlen(tmp,&len);CHKERRQ(ierr);
+    ierr = PetscStrncat(tmp,namep+1,sizeof tmp-len-1);CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrncpy(tmp,name+1,sizeof tmp);CHKERRQ(ierr);
+    tmp[sizeof tmp-1] = 0;
+  }
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscBool valid;
+    char key[sizeof tmp+1] = "-";
+    ierr = PetscMemcpy(key+1,tmp,sizeof tmp);CHKERRQ(ierr);
+    ierr = PetscOptionsValidKey(key,&valid);CHKERRQ(ierr);
+    if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid option '%s' obtained from pre='%s' and name='%s'",key,pre?pre:"",name);
+  }
+#endif
+
+  /* slow search */
+  *flg = PETSC_FALSE;
+  ierr = PetscStrlen(tmp,&len);CHKERRQ(ierr);
+  for(i = 0; i < N; ++i) {
+    ierr = PetscStrncmp(names[i], tmp, len, &match);CHKERRQ(ierr);
+    if (match) {
+      if (value) *value = options->values[i];
+      options->used[i]  = PETSC_TRUE;
+      if (flg)   *flg   = PETSC_TRUE;
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsReject" 
 /*@C

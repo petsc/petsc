@@ -380,6 +380,8 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscOptionsFindPairPrefix_Private(const char pre[], const char name[], char *value[], PetscBool *flg);
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_FieldSplit"
 static PetscErrorCode PCSetUp_FieldSplit(PC pc)
@@ -573,7 +575,9 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       KSP ksp;
       const char  *Dprefix;
       char schurprefix[256];
+      char schurtestoption[256];
       MatNullSpace sp;
+      PetscBool    flg;
 
       /* extract the A01 and A10 matrices */
       ilink = jac->head;
@@ -581,30 +585,35 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
-      ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
-      ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
-      ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
+      ierr = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
+      ierr = ISDestroy(&ccis);CHKERRQ(ierr);
       /* Use mat[0] (diagonal block of the real matrix) preconditioned by pmat[0] */
-      ierr  = MatCreateSchurComplement(jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],&jac->schur);CHKERRQ(ierr);
-      ierr  = MatGetNullSpace(jac->pmat[1], &sp);CHKERRQ(ierr);
+      ierr = MatCreateSchurComplement(jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],&jac->schur);CHKERRQ(ierr);
+      ierr = MatGetNullSpace(jac->pmat[1], &sp);CHKERRQ(ierr);
       if (sp) {ierr  = MatSetNullSpace(jac->schur, sp);CHKERRQ(ierr);}
-      /* set tabbing, options prefix and DM of KSP inside the MatSchur (inherited from the split) */
-      ierr  = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
-      /* Indent this deeper to emphasize the "inner" nature of this solver. */
-      ierr  = KSPIncrementTabLevel(ksp,(PetscObject)pc,2);CHKERRQ(ierr);
-      ierr  = PetscSNPrintf(schurprefix, sizeof schurprefix, "%sfieldsplit_%s_", ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", jac->head->splitname);CHKERRQ(ierr);
-      /* Dmitry had KSPGetOptionsPrefix(jac->head->ksp, &schurprefix). Do we want this??? */
-      ierr  = KSPSetOptionsPrefix(ksp,schurprefix);CHKERRQ(ierr);
-      {
+      /* set tabbing, options prefix and DM of KSP inside the MatSchur */
+      ierr = PetscSNPrintf(schurtestoption, sizeof schurtestoption, "-fieldsplit_%s_inner_", ilink->splitname);CHKERRQ(ierr);
+      ierr = PetscOptionsFindPairPrefix_Private(((PetscObject)pc)->prefix, schurtestoption, PETSC_NULL, &flg);CHKERRQ(ierr);
+      if (flg) {
         DM dmInner;
+
+        ierr = PetscSNPrintf(schurprefix, sizeof schurprefix, "%sfieldsplit_%s_inner_", ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", ilink->splitname);CHKERRQ(ierr);
+        ierr  = MatSchurComplementGetKSP(jac->schur, &ksp);CHKERRQ(ierr);
+        /* Indent this deeper to emphasize the "inner" nature of this solver. */
+        ierr  = KSPIncrementTabLevel(ksp, (PetscObject) pc, 2);CHKERRQ(ierr);
+        ierr  = KSPSetOptionsPrefix(ksp, schurprefix);CHKERRQ(ierr);
+        /* Set DM for new solver */
         ierr = KSPGetDM(jac->head->ksp, &dmInner);CHKERRQ(ierr);
         ierr = KSPSetDM(ksp, dmInner);CHKERRQ(ierr);
         ierr = KSPSetDMActive(ksp, PETSC_FALSE);CHKERRQ(ierr);
+      } else {
+        ierr = MatSchurComplementSetKSP(jac->schur, jac->head->ksp);CHKERRQ(ierr);
+        ierr = PetscObjectReference((PetscObject) jac->head->ksp);CHKERRQ(ierr);
       }
       /* Need to call this everytime because new matrix is being created */
       ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
       ierr  = MatSetUp(jac->schur);   CHKERRQ(ierr);
-
 
       ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);               CHKERRQ(ierr);
       ierr  = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);

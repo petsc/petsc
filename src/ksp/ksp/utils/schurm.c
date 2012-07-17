@@ -214,37 +214,65 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSchurComplementGetKSP"
 /*@
-      MatSchurComplementGetKSP - Creates gets the KSP object that is used in the Schur complement matrix
+  MatSchurComplementGetKSP - Gets the KSP object that is used to invert A in the Schur complement matrix S = C A^{-1} B
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.   A - matrix created with MatCreateSchurComplement()
+  Input Parameter:
+. A - matrix created with MatCreateSchurComplement()
 
-   Output Parameter:
-.   ksp - the linear solver object
+  Output Parameter:
+. ksp - the linear solver object
 
-   Options Database:
--     -fieldsplit_0_XXX sets KSP and PC options for the A block solver inside the Schur complement
+  Options Database:
+. -fieldsplit_0_XXX sets KSP and PC options for the A block solver inside the Schur complement
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes: 
-.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatCreateSchurComplement()
-
+.seealso: MatSchurComplementSetKSP(), MatCreateSchurComplement(), MatCreateNormal(), MatMult(), MatCreate()
 @*/
-PetscErrorCode  MatSchurComplementGetKSP(Mat A,KSP *ksp)
+PetscErrorCode MatSchurComplementGetKSP(Mat A, KSP *ksp)
 {
   Mat_SchurComplement  *Na;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(ksp,2);
-  Na = (Mat_SchurComplement*)A->data;
+  Na = (Mat_SchurComplement*) A->data;
   *ksp = Na->ksp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSchurComplementSetKSP"
+/*@
+  MatSchurComplementGetKSP - Sets the KSP object that is used to invert A in the Schur complement matrix S = C A^{-1} B
+
+  Not Collective
+
+  Input Parameters:
++ A - matrix created with MatCreateSchurComplement()
+- ksp - the linear solver object
+
+  Level: intermediate
+
+.seealso: MatSchurComplementSetKSP(), MatCreateSchurComplement(), MatCreateNormal(), MatMult(), MatCreate()
+@*/
+PetscErrorCode MatSchurComplementSetKSP(Mat A, KSP ksp)
+{
+  Mat_SchurComplement *Na;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
+  Na = (Mat_SchurComplement*) A->data;
+  ierr = KSPDestroy(&Na->ksp);CHKERRQ(ierr);
+  Na->ksp = ksp;
+  ierr = KSPSetOperators(Na->ksp, Na->A, Na->Ap, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
