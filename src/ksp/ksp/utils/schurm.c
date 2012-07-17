@@ -249,7 +249,7 @@ PetscErrorCode MatSchurComplementGetKSP(Mat A, KSP *ksp)
 #undef __FUNCT__
 #define __FUNCT__ "MatSchurComplementSetKSP"
 /*@
-  MatSchurComplementGetKSP - Sets the KSP object that is used to invert A in the Schur complement matrix S = C A^{-1} B
+  MatSchurComplementSetKSP - Sets the KSP object that is used to invert A in the Schur complement matrix S = C A^{-1} B
 
   Not Collective
 
