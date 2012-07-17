@@ -242,6 +242,9 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
         if (lambdatemp <= .1*lambda) lambda     = .1*lambda;
         else                         lambda     = lambdatemp;
         ierr  = VecWAXPY(W,-lambda,Y,X);CHKERRQ(ierr);
+        if (linesearch->ops->viproject) {
+          ierr = (*linesearch->ops->viproject)(snes,W);CHKERRQ(ierr);
+        }
         if (snes->nfuncs >= snes->max_funcs) {
           ierr = PetscInfo1(snes,"Exceeded maximum function evaluations, while looking for good step length! %D \n",count);CHKERRQ(ierr);
           ierr = PetscInfo5(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",
