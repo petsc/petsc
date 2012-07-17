@@ -2065,10 +2065,7 @@ PetscErrorCode  DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
   if(dm->ops->computevariablebounds) {
     ierr = (*dm->ops->computevariablebounds)(dm, xl,xu); CHKERRQ(ierr);
   }
-  else {
-    ierr = VecSet(xl,SNES_VI_NINF); CHKERRQ(ierr);
-    ierr = VecSet(xu,SNES_VI_INF);  CHKERRQ(ierr);
-  }
+  else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "This DM is incapable of computing variable bounds.");
   PetscFunctionReturn(0);
 }
 
