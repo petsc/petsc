@@ -610,12 +610,14 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,const MatType newtype,Mat
   PetscScalar        v;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX){
+  if (strcmp(newtype,MATDENSE) && strcmp(newtype,MATSEQDENSE) && strcmp(newtype,MATMPIDENSE)) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported New MatType: must be MATDENSE, MATSEQDENSE or MATMPIDENSE");
+  }
+  if (1){
     ierr = MatCreate(comm,&Bmpi);CHKERRQ(ierr);
     ierr = MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = MatSetType(Bmpi,MATDENSE);CHKERRQ(ierr);
     ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
-    *B = Bmpi;
   }
   ierr = MatGetSize(A,&nrows,&ncols);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
@@ -633,6 +635,13 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,const MatType newtype,Mat
   }
   ierr = MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    //*B = Bmpi;
+    //MatDestroy(&A);
+    ierr = MatHeaderReplace(A,Bmpi);CHKERRQ(ierr);
+  } else {
+    *B = Bmpi;
+  }
   PetscFunctionReturn(0);
 }
 
