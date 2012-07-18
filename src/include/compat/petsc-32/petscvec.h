@@ -25,3 +25,15 @@ PetscErrorCode VecCreateMPIWithArray_Compat(MPI_Comm comm,PetscInt bs,PetscInt n
   PetscFunctionReturn(0);
 }
 #define VecCreateMPIWithArray VecCreateMPIWithArray_Compat
+
+#undef  __FUNCT__
+#define __FUNCT__ "VecMPISetGhost_Compat"
+PetscErrorCode VecMPISetGhost_Compat(Vec V,PetscInt nghost,const PetscInt ghosts[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(V,VEC_CLASSID,1);
+  if (nghost) PetscValidPointer(ghosts,3);
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(PETSC_ERR_SUP);
+}
+#define VecMPISetGhost VecMPISetGhost_Compat
