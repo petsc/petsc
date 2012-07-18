@@ -26,3 +26,22 @@ class Configure(PETSc.package.NewPackage):
     elif self.checkCompile('__declspec(thread) int i;\n',''):
       self.addDefine('PTHREAD_LOCAL','__declspec(thread)')
 
+    # Definition for cpu_relax()
+    # From Linux documentation
+    # cpu_relax() call can lower power consumption or yield to a hyperthreaded
+    # twin processor; it also happens to serve as a compiler barrier
+    # x86
+    if self.checkCompile('', 'asm volatile("rep; nop" ::: "memory");'):
+      self.addDefine('CPURelax()','asm volatile("rep; nop" ::: "memory")')
+      return
+    # PowerPC
+    if self.checkCompile('','do { HMT_low; HMT_medium; barrier(); } while (0)'):
+      self.addDefine('CPURelax()','do {HMT_low; HMT_medium; barrier(); } while(0)')
+      return
+    elif self.checkCompile('','barrier();'):
+      self.addDefine('CPURelax()','barrier()')
+      return
+    self.addDefine('CPURelax()','')
+    return
+
+
