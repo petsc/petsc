@@ -373,6 +373,7 @@ PetscErrorCode  MatGetRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt *c
 @*/
 PetscErrorCode  MatConjugate(Mat mat)
 {
+#ifdef PETSC_USE_COMPLEX
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -386,6 +387,9 @@ PetscErrorCode  MatConjugate(Mat mat)
   }
 #endif
   PetscFunctionReturn(0);
+#else
+  return 0;
+#endif
 }
 
 #undef __FUNCT__  
