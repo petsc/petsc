@@ -9,6 +9,11 @@ HISTORY: PETSc for Python
 :Address:      CCT CONICET, 3000 Santa Fe, Argentina
 
 
+Release 3.3
+===========
+
+- Update to PETSc 3.3 release.
+
 Release 1.2
 ===========
 
