@@ -2578,3 +2578,24 @@ cdef public PetscErrorCode PetscPythonRegisterAll(char path[]) except IERR:
     return FunctionEnd()
 
 # --------------------------------------------------------------------
+
+# Cython 0.16 - Function prototypes for unused entries are not emitted
+# despite them being marked as 'public'. The lack of explicit extern
+# "C" binding causes trouble with C++ builds of PETSc. The bogus calls
+# below trick Cython to treat all these entries as used.
+
+if PETSC_FALSE:
+    <void>import_libpetsc4py()
+    <void>MatPythonGetContext(NULL,NULL)
+    <void>MatPythonSetContext(NULL,NULL)
+    <void>PCPythonGetContext(NULL,NULL)
+    <void>PCPythonSetContext(NULL,NULL)
+    <void>KSPPythonGetContext(NULL,NULL)
+    <void>KSPPythonSetContext(NULL,NULL)
+    <void>SNESPythonGetContext(NULL,NULL)
+    <void>SNESPythonSetContext(NULL,NULL)
+    <void>TSPythonGetContext(NULL,NULL)
+    <void>TSPythonSetContext(NULL,NULL)
+    <void>PetscPythonRegisterAll(NULL)
+
+# --------------------------------------------------------------------
