@@ -2,7 +2,7 @@
 
 static PetscBool PetscThreadCommPackageInitialized = PETSC_FALSE;
 
-PETSC_EXTERN PetscErrorCode PetscThreadCommDetach(MPI_Comm);
+extern PetscErrorCode PetscThreadCommDetach(MPI_Comm);
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommFinalizePackage"
 /*@C
