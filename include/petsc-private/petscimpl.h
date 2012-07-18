@@ -161,7 +161,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject,P
 #include <setjmp.h>
 PETSC_EXTERN jmp_buf PetscSegvJumpBuf;
 PETSC_EXTERN void PetscSegv_sigaction(int, siginfo_t*, void *);
-/*@
+/*@C
      PetscCheckPointer - Returns PETSC_TRUE if a pointer points to accessible data
 
    Not Collective
