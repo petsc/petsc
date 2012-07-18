@@ -8,7 +8,17 @@ from numpy.distutils.command import build_src
 import Cython.Compiler.Main
 build_src.Pyrex = Cython
 build_src.have_pyrex = True
-
+def have_pyrex():
+    import sys
+    try:
+        import Cython.Compiler.Main
+        sys.modules['Pyrex'] = Cython
+        sys.modules['Pyrex.Compiler'] = Cython.Compiler
+        sys.modules['Pyrex.Compiler.Main'] = Cython.Compiler.Main
+        return True
+    except ImportError:
+        return False
+build_src.have_pyrex = have_pyrex
 
 def configuration(parent_package='',top_path=None):
     INCLUDE_DIRS = []
