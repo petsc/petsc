@@ -3,7 +3,7 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zmatregf.c  zmatrixf.c
+SOURCEC  = zmatregf.c  zmatrixf.c zmatnullf.c
 OBJSC    = ${SOURCEC:.c=.o}
 SOURCEF  =
 SOURCEH  =
