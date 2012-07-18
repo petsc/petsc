@@ -9,6 +9,9 @@
 #include <petscblaslapack.h>
 #include <petscbt.h>
 #include <../src/mat/blocktranspose.h>
+#if defined(PETSC_THREADCOMM_ACTIVE)
+#include <petscthreadcomm.h>
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColumnNorms_SeqAIJ"
@@ -883,6 +886,35 @@ PetscErrorCode MatImaginaryPart_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode MatZeroEntries_SeqAIJ_Kernel(PetscInt thread_id,Mat A)
+{
+  PetscErrorCode ierr;
+  PetscInt       *trstarts=A->rmap->trstarts;
+  PetscInt       n,start,end;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+
+  start = trstarts[thread_id];
+  end   = trstarts[thread_id+1];
+  n     = end - start;
+  ierr = PetscMemzero(a->a+start,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatZeroEntries_SeqAIJ"
+PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+
+  PetscFunctionBegin;
+  ierr = PetscThreadCommRunKernel(((PetscObject)A)->comm,(PetscThreadKernel)MatZeroEntries_SeqAIJ_Kernel,1,A);CHKERRQ(ierr);
+  a->idiagvalid = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroEntries_SeqAIJ"
 PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
@@ -896,6 +928,7 @@ PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
   a->ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqAIJ"
@@ -1103,6 +1136,91 @@ PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
 }
 
 #include <../src/mat/impls/aij/seq/ftn-kernels/fmult.h>
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode MatMult_SeqAIJ_Kernel(PetscInt thread_id,Mat A,Vec xx,Vec yy)
+{
+  PetscErrorCode    ierr;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar       *y;
+  const PetscScalar *x;
+  const MatScalar   *aa;
+  PetscInt          *trstarts=A->rmap->trstarts;
+  PetscInt          n,start,end,i;
+  const PetscInt   *aj,*ai;
+  PetscScalar      sum;
+
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  start = trstarts[thread_id];
+  end   = trstarts[thread_id+1];
+  aj    = a->j;
+  aa    = a->a;
+  ai    = a->i;
+  for(i=start;i<end;i++) {
+    n = ai[i+1] - ai[i];
+    aj = a->j + ai[i];
+    aa = a->a + ai[i];
+    sum = 0.0;
+    PetscSparseDensePlusDot(sum,x,aa,aj,n);
+    y[i] = sum;
+  }
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_SeqAIJ"
+PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar       *y;
+  const PetscScalar *x;
+  const MatScalar   *aa;
+  PetscErrorCode    ierr;
+  PetscInt          m=A->rmap->n;
+  const PetscInt    *aj,*ii,*ridx=PETSC_NULL;
+  PetscInt          n,i,nonzerorow=0;
+  PetscScalar       sum;
+  PetscBool         usecprow=a->compressedrow.use;
+
+#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#pragma disjoint(*x,*y,*aa)
+#endif
+
+  PetscFunctionBegin;
+  aj  = a->j;
+  aa  = a->a;
+  ii  = a->i;
+  if (usecprow){ /* use compressed row format */
+    ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+    m    = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+    for (i=0; i<m; i++){
+      n   = ii[i+1] - ii[i]; 
+      aj  = a->j + ii[i];
+      aa  = a->a + ii[i];
+      sum = 0.0;
+      nonzerorow += (n>0);
+      PetscSparseDensePlusDot(sum,x,aa,aj,n); 
+      /* for (j=0; j<n; j++) sum += (*aa++)*x[*aj++]; */
+      y[*ridx++] = sum;
+    }
+    ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  } else { /* do not use compressed row format */
+#if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
+    fortranmultaij_(&m,x,ii,aj,aa,y);
+#else
+    ierr = PetscThreadCommRunKernel(((PetscObject)A)->comm,(PetscThreadKernel)MatMult_SeqAIJ_Kernel,3,A,xx,yy);CHKERRQ(ierr);
+#endif
+  }
+  ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqAIJ"
 PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
@@ -1146,6 +1264,9 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
     fortranmultaij_(&m,x,ii,aj,aa,y);
 #else
+#if defined(PETSC_THREADCOMM_ACTIVE)
+    ierr = PetscThreadCommRunKernel(((PetscObject)A)->comm,(PetscThreadKernel)MatMult_SeqAIJ_Kernel,3,A,xx,yy);CHKERRQ(ierr);
+#else
     for (i=0; i<m; i++) {
       n   = ii[i+1] - ii[i]; 
       aj  = a->j + ii[i];
@@ -1156,12 +1277,14 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
       y[i] = sum;
     }
 #endif
+#endif
   }
   ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #include <../src/mat/impls/aij/seq/ftn-kernels/fmultadd.h>
 #undef __FUNCT__
@@ -3440,6 +3563,9 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
   b->maxnz             = nz;
   B->info.nz_unneeded  = (double)b->maxnz;
   if (realalloc) {ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);}
+#if defined(PETSC_THREADCOMM_ACTIVE)
+  ierr = MatZeroEntries_SeqAIJ(B);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
