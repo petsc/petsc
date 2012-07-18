@@ -202,6 +202,30 @@ static PetscErrorCode MatMult_Elemental(Mat A,Vec X,Vec Y)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatMultTranspose_Elemental"
+static PetscErrorCode MatMultTranspose_Elemental(Mat A,Vec X,Vec Y)
+{
+  Mat_Elemental     *a = (Mat_Elemental*)A->data;
+  PetscErrorCode    ierr;
+  const PetscScalar *x;
+  PetscScalar       *y;
+  PetscScalar       one = 1,zero = 0;
+
+  PetscFunctionBegin;
+  printf("elemental test is called...\n");
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
+  { /* Scoping so that constructor is called before pointer is returned */
+    elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> xe(A->cmap->N,1,0,x,A->cmap->n,*a->grid);
+    elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> ye(A->rmap->N,1,0,y,A->rmap->n,*a->grid);
+    elem::Gemv(elem::TRANSPOSE,one,*a->emat,xe,zero,ye);
+  }
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_Elemental"
 static PetscErrorCode MatMultAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
 {
@@ -586,12 +610,14 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,const MatType newtype,Mat
   PetscScalar        v;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX){
+  if (strcmp(newtype,MATDENSE) && strcmp(newtype,MATSEQDENSE) && strcmp(newtype,MATMPIDENSE)) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported New MatType: must be MATDENSE, MATSEQDENSE or MATMPIDENSE");
+  }
+  if (1){
     ierr = MatCreate(comm,&Bmpi);CHKERRQ(ierr);
     ierr = MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = MatSetType(Bmpi,MATDENSE);CHKERRQ(ierr);
     ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
-    *B = Bmpi;
   }
   ierr = MatGetSize(A,&nrows,&ncols);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
@@ -609,6 +635,13 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,const MatType newtype,Mat
   }
   ierr = MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (reuse == MAT_REUSE_MATRIX) {
+    //*B = Bmpi;
+    //MatDestroy(&A);
+    ierr = MatHeaderReplace(A,Bmpi);CHKERRQ(ierr);
+  } else {
+    *B = Bmpi;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -696,7 +729,7 @@ static struct _MatOps MatOps_Values = {
        0,
        MatMult_Elemental,
 /* 4*/ MatMultAdd_Elemental,
-       0, //MatMultTranspose_Elemental,
+       MatMultTranspose_Elemental,
        0, //MatMultTransposeAdd_Elemental,
        MatSolve_Elemental,
        0, //MatSolveAdd_Elemental,
