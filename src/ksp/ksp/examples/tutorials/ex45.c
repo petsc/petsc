@@ -71,15 +71,31 @@ int main(int argc,char **argv)
 PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscInt       mx,my,mz;
-  PetscScalar    h;
+  PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
   DM             dm;
+  PetscScalar    Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
+  PetscScalar    ***barray;
 
   PetscFunctionBegin;
   ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dm,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  h    = 1.0/((mx-1)*(my-1)*(mz-1));
-  ierr = VecSet(b,h);CHKERRQ(ierr);
+  Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
+  HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
+  ierr = DMDAGetCorners(dm,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(dm,b,&barray);CHKERRQ(ierr);
+
+  for (k=zs; k<zs+zm; k++){
+    for (j=ys; j<ys+ym; j++){
+      for(i=xs; i<xs+xm; i++){
+	if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){
+          barray[k][j][i] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
+	} else {
+          barray[k][j][i] = Hx*Hy*Hz;
+        }
+      }
+    }
+  }
+  ierr = DMDAVecRestoreArray(dm,b,&barray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
