@@ -168,6 +168,10 @@ ex38: ex38.o chkopts
 	-${CLINKER} -o ex38 ex38.o ${PETSC_MAT_LIB}
 	${RM} ex38.o
 
+ex39: ex39.o chkopts
+	-${CLINKER} -o ex39 ex39.o ${PETSC_MAT_LIB}
+	${RM} ex39.o
+
 ex40: ex40.o chkopts
 	-${CLINKER} -o ex40 ex40.o ${PETSC_MAT_LIB}
 	${RM} ex40.o
@@ -654,9 +658,6 @@ ex167: ex167.o chkopts
 	-${CLINKER} -o ex167 ex167.o ${PETSC_MAT_LIB}
 	${RM} ex167.o
 
-ex170: ex170.o chkopts
-	-${CLINKER} -o ex170 ex170.o ${PETSC_MAT_LIB}
-	${RM} ex170.o
 
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3

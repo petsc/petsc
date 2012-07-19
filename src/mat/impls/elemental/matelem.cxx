@@ -216,8 +216,8 @@ static PetscErrorCode MatMultTranspose_Elemental(Mat A,Vec X,Vec Y)
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
-    elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> xe(A->cmap->N,1,0,x,A->cmap->n,*a->grid);
-    elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> ye(A->rmap->N,1,0,y,A->rmap->n,*a->grid);
+    elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,x,A->rmap->n,*a->grid);
+    elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> ye(A->cmap->N,1,0,y,A->cmap->n,*a->grid);
     elem::Gemv(elem::TRANSPOSE,one,*a->emat,xe,zero,ye);
   }
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
