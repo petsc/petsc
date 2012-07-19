@@ -2403,7 +2403,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
   Vec                         f,fpc;
   void                        *funcctx;
   PetscErrorCode              (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-  void                        *jacctx;
+  void                        *jacctx,*appctx;
   Mat                         A,B;
 
   PetscFunctionBegin;
@@ -2450,6 +2450,8 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = SNESSetFunction(snes->pc,fpc,func,funcctx);CHKERRQ(ierr);
     ierr = SNESGetJacobian(snes,&A,&B,&jac,&jacctx);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes->pc,A,B,jac,jacctx);CHKERRQ(ierr);
+    ierr = SNESGetApplicationContext(snes,&appctx);CHKERRQ(ierr);
+    ierr = SNESSetApplicationContext(snes->pc,appctx);CHKERRQ(ierr);
     ierr = VecDestroy(&fpc);CHKERRQ(ierr);
 
     /* copy the function pointers over */
