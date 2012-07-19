@@ -608,6 +608,7 @@ PETSC_EXTERN PetscErrorCode KSPGetFischerGuess(KSP,KSPFischerGuess*);
 
 PETSC_EXTERN PetscErrorCode MatCreateSchurComplement(Mat,Mat,Mat,Mat,Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatSchurComplementGetKSP(Mat,KSP*);
+PETSC_EXTERN PetscErrorCode MatSchurComplementSetKSP(Mat,KSP);
 PETSC_EXTERN PetscErrorCode MatSchurComplementUpdate(Mat,Mat,Mat,Mat,Mat,Mat,MatStructure);
 PETSC_EXTERN PetscErrorCode MatSchurComplementGetSubmatrices(Mat,Mat*,Mat*,Mat*,Mat*,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat *,MatReuse,Mat *);

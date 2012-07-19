@@ -1137,21 +1137,21 @@ EXTERN_C_END
 
 /* ------------------------------------------------------------ */
 /*MC
-      TSARKIMEX - ODE solver using Additive Runge-Kutta IMEX schemes
+      TSARKIMEX - ODE and DAE solver using Additive Runge-Kutta IMEX schemes
 
   These methods are intended for problems with well-separated time scales, especially when a slow scale is strongly
   nonlinear such that it is expensive to solve with a fully implicit method. The user should provide the stiff part
   of the equation using TSSetIFunction() and the non-stiff part with TSSetRHSFunction().
 
   Notes:
-  The default is TSARKIMEX2E, it can be changed with TSARKIMEXSetType() or -ts_arkimex_type
+  The default is TSARKIMEX3, it can be changed with TSARKIMEXSetType() or -ts_arkimex_type
 
-  This method currently only works with ODE, for which the stiff part G(t,X,Xdot) has the form Xdot + Ghat(t,X).
+  Methods with an explicit stage can only be used with ODE in which the stiff part G(t,X,Xdot) has the form Xdot + Ghat(t,X).
 
   Level: beginner
 
 .seealso:  TSCreate(), TS, TSSetType(), TSARKIMEXSetType(), TSARKIMEXGetType(), TSARKIMEXSetFullyImplicit(), TSARKIMEX2D, TTSARKIMEX2E, TSARKIMEX3, 
-           TSARKIMEX4, TSARKIMEX5, TSARKIMEXType, TSARKIMEXRegister()
+           TSARKIMEX4, TSARKIMEX5, TSARKIMEXPRSSP2, TSARKIMEXBPR3, TSARKIMEXType, TSARKIMEXRegister()
 
 M*/
 EXTERN_C_BEGIN

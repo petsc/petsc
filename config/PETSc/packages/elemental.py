@@ -48,8 +48,6 @@ class Configure(PETSc.package.NewPackage):
       fcflags = self.setCompilers.getCompilerFlags()
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+fcflags+'"')
       self.framework.popLanguage()
-    else:
-      args.append('-DBUILD_PMRRR=OFF')
     """
     #if self.sharedLibraries.useShared:
       #args.append('-DSHARED=1')

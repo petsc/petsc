@@ -672,11 +672,21 @@
       YEAR="2000",
       PUBLISHER="SIAM",
 }
-@BOOK{tos2001,
-      AUTHOR="Ulrich Trottenberg and Cornelis Oosterlee and Anton Schuller",
-      TITLE="Multigrid",
-      YEAR="2001",
-      PUBLISHER="SIAM",
+@book{trottenberg2001multigrid,
+  title={{Multigrid}},
+  author={Trottenberg, U. and Oosterlee, C.W. and Sch{\"u}ller, A.},
+  isbn={012701070X},
+  year={2001},
+  publisher={Academic Press}
+}
+@article{brandt1977multi,
+  title={Multi-{L}evel {A}daptive {S}olutions},
+  author={Brandt, A.},
+  journal={Mathematics of Computation},
+  volume={31},
+  number={138},
+  pages={333--390},
+  year={1977}
 }
 @TechReport{brandt1984,
   author = "Achi Brandt",
@@ -685,13 +695,23 @@
   number = "GMD-Studien Nr. 85",
   year = 1984
 }
-@Article{brandt1977,
-  author = "Achi Brandt",
-  title = "Multilevel Adaptive Solution to Boundary Value Problems",
-  journal = "Math. Comp.",
-  volume = 31,
-  year = 1977,
-  pages = "333--390"
+@article{yavneh1998coarse,
+  title={Coarse-Grid Correction for Nonelliptic and Singular Perturbation Problems},
+  author={Yavneh, I.},
+  journal={SIAM Journal on Scientific Computing},
+  volume={19},
+  number={5},
+  pages={1682--1699},
+  year={1998},
+  publisher={Society for Industrial and Applied Mathematics}
+}
+@article{wan2003phase,
+  title={A Phase Error Analysis of Multigrid Methods for Hyperbolic Equations},
+  author={Wan, WL and Chan, T.F.},
+  journal={SIAM Journal on Scientific Computing},
+  volume={25},
+  pages={857},
+  year={2003}
 }
 
 @ARTICLE{imex,
@@ -930,6 +950,12 @@
                   and Steering of Parallel Applications",
   journal =   "International Journal of Supercomputing Applications",
   year      = 1997
+}
+@techreport{daly2012interagency,
+  author={John Daly and Bill Harrod and Thuc Hoang and Lucy Nowell and Bob Adolf and Shekhar Borkar and Nathan DeBardeleben and Mootaz Elnozahy and Mike Heroux and David Rogers and Rob Ross and Vivek Sarkar and Martin Schulz and Marc Snir and Paul Woodward},
+  title={Inter-Agency Workshop on HPC Resilience at Extreme Scale},
+  year=2012,
+  publisher={US Department of Defense}
 }
 
 @Article{karpeev1,
@@ -2731,6 +2757,26 @@ Booktitle = "Supercomputing '95 Proceedings",
        YEAR = 1994
 }
 
+@article{hackbusch1980fast,
+  title={Fast solution of elliptic control problems},
+  author={Hackbusch, W.},
+  journal={Journal of Optimization Theory and Applications},
+  volume={31},
+  number={4},
+  pages={565--581},
+  year={1980},
+  publisher={Springer}
+}
+
+@book{hackbusch1985multi,
+  title={{Multi-grid methods and applications}},
+  author={Hackbusch, W.},
+  isbn={3540127615},
+  issn={0179-3632},
+  year={1985},
+  publisher={Springer Verlag}
+}
+
 @BOOK{axelsson94,
        AUTHOR = "Owe Axelsson",
        TITLE = "Iterative Solution Methods",
@@ -3388,14 +3434,6 @@ publisher = {ACM Press}
   volume = "22",
   pages = "1570--1592",
   year      = 2000
-}
-
-@BOOK{brandt1,
-       AUTHOR = "A. Brandt",
-       TITLE = "Multigrid Techniques: 1984 Guide with Applications to Fluid Dynamics",
-       PUBLISHER = "GMD-Studien Nr. 85, Gesellschaft fur Mathematik und Dataenverarbeitung",
-       address = "St. Augustin, Bonn",
-       YEAR = 1984
 }
 
 @BOOK{bramble1,
@@ -5618,7 +5656,7 @@ year = {1993}
 
 @article{MoresiZhongGurnis96,
   author  = {Louis N. Moresi and Shijie Zhong and Michael Gurnis},
-  title   = {The accuracy of finite element solutions of Stoke’s flow with strongly varying viscosity},
+  title   = {The accuracy of finite element solutions of Stokes' flow with strongly varying viscosity},
   journal = {Physics of the Earth and Planetary Interiors},
   volume  = {97},
   pages   = {83-–94},
@@ -5670,7 +5708,12 @@ year = {1993}
   year = 2002, 
   publisher = "IEEE"
 }
-
+@article{demmel2008communication,
+  title={Communication-optimal parallel and sequential {QR} and {LU} factorizations},
+  author={Demmel, J. and Grigori, L. and Hoemmen, M. and Langou, J.},
+  journal={Arxiv preprint arXiv:0808.2664},
+  year={2008}
+}
 @article{demmel09,
   author = "J. Demmel and M. Hoemmen and M. Mohiyuddin and K Yelick",
   title = "Communication-optimal Iterative Methods", 
@@ -5775,6 +5818,14 @@ author = "Eric C. Cyr and John N. Shadid and Raymond S. Tuminaro",
   year = 2010,
   howpublished = "Office of Science, U.S. Department of Energy",
   url = {http://science.energy.gov/~/media/ascr/ascac/pdf/reports/Exascale_subcommittee_report.pdf}
+}
+
+@misc{kogge2008exascale,
+  title={ExaScale Computing Study: {T}echnology Challenges in achieving exascale systems},
+  author={Peter Kogge and Keren Bergman and Shekhar Borkar and Dan Campbell and Willian Carlson and William Dally and Monty Denneau and Paul Franzon and William Harrod and Kerry Hill and Jon Hiller and Sherman Karp and Stephen Keckler and Dean Klein and Robert Lucas and Mark Richards and Al Scarpelly and Steven Scott and Allan Snavely and Themas Sterling and R. Stanley Williams and Katherine Yelick},
+  howpublished={DARPA},
+  year=2008,
+  url={http://www.cse.nd.edu/Reports/2008/TR-2008-13.pdf}
 }
 
 @Misc{DOEGrandChallengeWorkshops,
@@ -6046,6 +6097,21 @@ keywords = "MHD",
 keywords = "Uncertainty quantification",
 keywords = "Multi-level Monte Carlo",
 keywords = "Parallelization"
+}
+@article{barth2011mlmcfe,
+   author = {Barth, Andrea and Schwab, Christoph and Zollinger, Nathaniel},
+   affiliation = {ETH Zentrum, Seminar für Angewandte Mathematik, Rämistrasse 101, 8092 Zurich, Switzerland},
+   title = {Multi-Level {M}onte {C}arlo Finite Element method for elliptic {PDE}s with stochastic coefficients},
+   journal = {Numerische Mathematik},
+   publisher = {Springer Berlin / Heidelberg},
+   issn = {0029-599X},
+   keyword = {Mathematics and Statistics},
+   pages = {123-161},
+   volume = {119},
+   issue = {1},
+   url = {http://dx.doi.org/10.1007/s00211-011-0377-0},
+   note = {10.1007/s00211-011-0377-0},
+   year = {2011}
 }
 @article{nguyen2011hybridizable,
   title={Hybridizable discontinuous {G}alerkin methods},
@@ -6557,8 +6623,11 @@ year = {2010}
   author  = {Jaydeep P. Bardhan and Matthew G. Knepley},
   title   = {Computational science and re-discovery: open-source implementations of ellipsoidal harmonics for problems in potential theory},
   journal = {Computational Science \& Discovery},
-  url     = {http://arxiv.org/abs/1204.0267},
-  note    = {submitted, \url{http://arxiv.org/abs/1204.0267}},
+  volume  = {5},
+  pages   = {014006},
+  url     = {http://iopscience.iop.org/1749-4699/5/1/014006/},
+  note    = {\url{http://arxiv.org/abs/1204.0267}},
+  doi     = {doi:10.1088/1749-4699/5/1/014006},
   year    = {2012}
 }
 
@@ -6669,7 +6738,25 @@ part I: Theory},
  year={2011},
  pages={789-803}
 }
-
+@article{adavani2008multigrid,
+  title={Multigrid Algorithms for Inverse Problems with Linear Parabolic {PDE} Constraints},
+  author={Adavani, S.S. and Biros, G.},
+  journal={SIAM Journal on Scientific Computing},
+  volume={31},
+  number={1},
+  pages={369--397},
+  year={2008},
+  publisher={Society for Industrial and Applied Mathematics}
+}
+@article{horton1995space,
+  title={A space-time multigrid method for parabolic {PDE}s},
+  author={Horton, G. and Vandewalle, S.},
+  journal={SIAM Journal on Scientific Computing},
+  volume={16},
+  number={4},
+  pages={848--864},
+  year={1995}
+}
 @article{lewis2005model,
   title={Model problems for the multigrid optimization of systems governed by differential equations},
   author={Lewis, R.M. and Nash, S.G.},
@@ -6692,19 +6779,157 @@ part I: Theory},
 }
 @article{borzi2009multigrid,
   title={Multigrid Methods for {PDE} Optimization},
-  author={Borz{\`\i}, A. and Schulz, V.},
+  author={Borz{\`i}, A. and Schulz, V.},
   journal={SIAM Review},
   volume={51},
   pages={361},
   year={2009}
 }
-@article{brandt2002multiscale,
+@article{borzi2005multigrid,
+  title={A multigrid scheme for elliptic constrained optimal control problems},
+  author={Borz{\`i}, A. and Kunisch, K.},
+  journal={Computational Optimization and Applications},
+  volume={31},
+  number={3},
+  pages={309--333},
+  year={2005},
+  publisher={Springer}
+}
+@article{borzi2003multigrid,
+  title={Multigrid methods for parabolic distributed optimal control problems},
+  author={Borz{\`i}, A.},
+  journal={Journal of Computational and Applied Mathematics},
+  volume={157},
+  number={2},
+  pages={365--382},
+  year={2003},
+  publisher={Elsevier}
+}
+@article{ito2002receding,
+  title={Receding horizon optimal control for infinite dimensional systems},
+  author={Ito, K. and Kunisch, K.},
+  journal={ESAIM: Control, Optimisation and Calculus of Variations},
+  volume={8},
+  number={1},
+  pages={741--760},
+  year={2002},
+  publisher={Cambridge Univ Press}
+}
+@article{schulz1998solving,
+  title={Solving discretized optimization problems by partially reduced {SQP} methods},
+  author={Schulz, V.H.},
+  journal={Computing and Visualization in Science},
+  volume={1},
+  number={2},
+  pages={83--96},
+  year={1998},
+  publisher={Springer}
+}
+@article{hazra2005aerodynamic,
+  title={Aerodynamic shape optimization using simultaneous pseudo-timestepping},
+  author={Hazra, S.B. and Schulz, V. and Brezillon, J. and Gauger, N.R.},
+  journal={Journal of Computational Physics},
+  volume={204},
+  number={1},
+  pages={46--64},
+  year={2005},
+  publisher={Elsevier}
+}
+@article{mandel1985multilevel,
+  title={On multilevel iterative methods for integral equations of the second kind and related problems},
+  author={Mandel, J.},
+  journal={Numerische Mathematik},
+  volume={46},
+  number={1},
+  pages={147--157},
+  year={1985},
+  publisher={Springer}
+}
+@article{king1992multilevel,
+  title={Multilevel algorithms for ill-posed problems},
+  author={King, J.T.},
+  journal={Numerische Mathematik},
+  volume={61},
+  number={1},
+  pages={311--334},
+  year={1992},
+  publisher={Springer}
+}
+@article{kaltenbacher2001regularizing,
+  title={On the regularizing properties of a full multigrid method for ill-posed problems},
+  author={Kaltenbacher, B.},
+  journal={Inverse Problems},
+  volume={17},
+  pages={767},
+  year={2001},
+  publisher={IOP Publishing}
+}
+@article{kaltenbacher2002multi,
+  title={A multi-grid method with a priori and a posteriori level choice for the regularization of nonlinear ill-posed problems},
+  author={Kaltenbacher, B. and Schicho, J.},
+  journal={Numerische Mathematik},
+  volume={93},
+  number={1},
+  pages={77--107},
+  year={2002},
+  publisher={Springer}
+}
+@article{burger2006regularizing,
+  title={Regularizing {N}ewton-{K}aczmarz Methods for Nonlinear Ill-Posed Problems},
+  author={Burger, M. and Kaltenbacher, B.},
+  journal={SIAM Journal on Numerical Analysis},
+  volume={44},
+  pages={153},
+  year={2006}
+}
+@article{draganescu2008optimal,
+  title={Optimal order multilevel preconditioners for regularized ill-posed problems},
+  author={Draganescu, A. and Dupont, T.F.},
+  journal={Mathematics of Computation},
+  volume={77},
+  number={264},
+  pages={2001--2038},
+  year={2008},
+  publisher={Washington, DC: National Academy of Sciences-National Research Council,[1960?-}
+}
+@article{bastian1998additive,
+  title={Additive and multiplicative multi-grid---a comparison},
+  author={Bastian, P. and Wittum, G. and Hackbusch, W.},
+  journal={Computing},
+  volume={60},
+  number={4},
+  pages={345--364},
+  year={1998},
+  publisher={Springer}
+}
+@article{fournier2001multiplicative,
+  title={Multiplicative and additive parallel multigrid algorithms for the acceleration of compressible flow computations on unstructured meshes},
+  author={Fournier, L. and Lanteri, S.},
+  journal={Applied Numerical Mathematics},
+  volume={36},
+  number={4},
+  pages={401--426},
+  year={2001},
+  publisher={Elsevier}
+}
+@article{chow2006survey,
+  title={A survey of parallelization techniques for multigrid solvers},
+  author={Chow, E. and Falgout, R.D. and Hu, J.J. and Tuminaro, R.S. and Yang, U.M.},
+  journal={Parallel Processing for Scientific Computing, MA Heroux, P. Raghavan, and HD Simon, eds},
+  volume={20},
+  pages={179--201},
+  year={2006}
+}
+@inbook{brandt2001multiscale,
   title={Multiscale scientific computation: {R}eview 2001},
   author={Brandt, A.},
-  journal={Lecture Notes in Computational Science and Engineering},
+  booktitle={Multiscale and Multiresolution Methods: Theory and Applications},
+  editors={Barth, T.J. and Chan, T.F. and Haimes, R.},
+  series={Lecture Notes in Computational Science and Engineering},
+  year={2001},
   volume={20},
   pages={3--96},
-  year={2002},
+  publisher={Springer Verlag}
 }
 @inbook{brandt2003multigrid,
   title={Multigrid solvers and multilevel optimization strategies},
@@ -6721,6 +6946,25 @@ part I: Theory},
   journal={Bridging the Scales in Science and Engineering},
   pages={193--215},
   year={2008}
+}
+@article{livne2004coarsening,
+  title={Coarsening by compatible relaxation},
+  author={Livne, O.E.},
+  journal={Numerical Linear Algebra with Applications},
+  volume={11},
+  number={2-3},
+  pages={205--227},
+  year={2004},
+  publisher={Wiley Online Library}
+}
+@inproceedings{brandt1986stochastic,
+  title={Multi-Level Approaches to Discrete-State and Stochastic Problems},
+  author={Brandt, A. and Ron, D. and Amit, D.J.},
+  booktitle={Multigrid methods II: proceedings of the 2nd European Conference on Multigrid Methods, held at Cologne, October 1-4, 1985},
+  volume={1228},
+  pages={65--98},
+  year={1986},
+  organization={Springer}
 }
 @article{halko2011finding,
   author    = {Nathan Halko and
@@ -6764,4 +7008,243 @@ part I: Theory},
  pages={2219--2239},
  year={2003},
  publisher={JSTOR}
+}
+@article{parks2006recycling,
+  title={Recycling {K}rylov Subspaces for Sequences of Linear Systems},
+  author={Parks, M.L. and de Sturler, E. and Mackey, G. and Johnson, D.D. and Maiti, S.},
+  journal={SIAM Journal on Scientific Computing},
+  volume={28},
+  number={5},
+  pages={1651--1674},
+  year={2006},
+  publisher={Society for Industrial and Applied Mathematics}
+}
+@article{freund2003model,
+  title={Model reduction methods based on Krylov subspaces},
+  author={Freund, R.W.},
+  journal={Acta Numerica},
+  volume={12},
+  number={1},
+  pages={267--319},
+  year={2003},
+  publisher={Cambridge Univ Press}
+}
+@inbook{gutknecht2006block,
+  title={Block {K}rylov space methods for linear systems with multiple right-hand sides: an introduction},
+  booktitle={Modern Mathematical Models, Methods and Algorithms for Real World Systems},
+  author={Gutknecht, M.H.},
+  editors={Siddiqi A.H. and Duff I.S. and Christensen O.},
+  publisher={Anamaya Publishers},
+  location={New Delhi},
+  year={2006},
+  publisher={Citeseer}
+}
+@article{moulton1998black,
+  title={The black box multigrid numerical homogenization algorithm},
+  author={Moulton, J.D. and Dendy, J.E. and Hyman, J.M. and others},
+  journal={Journal of Computational Physics},
+  volume={142},
+  number={1},
+  pages={80--108},
+  year={1998},
+  publisher={Elsevier}
+}
+@article{neuss2001homogenization,
+  title={Homogenization and multigrid},
+  author={Neuss, N. and J{\"a}ger, W. and Wittum, G.},
+  journal={Computing},
+  volume={66},
+  number={1},
+  pages={1--26},
+  year={2001},
+  publisher={Springer}
+}
+@article{bai2002krylov,
+  title={Krylov subspace techniques for reduced-order modeling of large-scale dynamical systems},
+  author={Bai, Z.},
+  journal={Applied Numerical Mathematics},
+  volume={43},
+  number={1},
+  pages={9--44},
+  year={2002},
+  publisher={Elsevier}
+}
+@inproceedings{dong2003piecewise,
+  title={Piecewise polynomial nonlinear model reduction},
+  author={Dong, N. and Roychowdhury, J.},
+  booktitle={Design Automation Conference, 2003. Proceedings},
+  pages={484--489},
+  year={2003},
+  organization={IEEE}
+}
+@article{bond2009stable,
+  title={Stable reduced models for nonlinear descriptor systems through piecewise-linear approximation and projection},
+  author={Bond, B.N. and Daniel, L.},
+  journal={IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems},
+  volume={28},
+  number={10},
+  pages={1467--1480},
+  year={2009},
+  publisher={IEEE}
+}
+@article{xin2000front,
+  title={Front Propagation in Heterogeneous Media},
+  author={Xin, J.},
+  journal={SIAM Review},
+  volume={42},
+  number={2},
+  pages={161--230},
+  year={2000},
+  publisher={Society for Industrial and Applied Mathematics}
+}
+@article{owhadi2011localized,
+  title={Localized Bases for Finite-Dimensional Homogenization Approximations with Nonseparated Scales and High Contrast},
+  author={Owhadi, H. and Zhang, L.},
+  journal={Multiscale Modeling and Simulation},
+  volume={9},
+  pages={1373},
+  year={2011}
+}
+@article{berlyand2010flux,
+  title={Flux norm approach to finite dimensional homogenization approximations with non-separated scales and high contrast},
+  author={Berlyand, L. and Owhadi, H.},
+  journal={Archive for rational mechanics and analysis},
+  volume={198},
+  number={2},
+  pages={677--721},
+  year={2010},
+  publisher={Springer}
+}
+@article{babuska2011optimal,
+  title={Optimal Local Approximation Spaces for Generalized Finite Element Methods with Application to Multiscale Problems},
+  author={Babuska, I. and Lipton, R.},
+  journal={Multiscale Modeling \& Simulation},
+  volume={9},
+  pages={373},
+  year={2011}
+}
+@article{boettinger2002phase,
+  title={Phase-Field Simulation of Solidification},
+  author={Boettinger, W.J. and Warren, J.A. and Beckermann, C. and Karma, A.},
+  journal={Annual review of materials research},
+  volume={32},
+  number={1},
+  pages={163--194},
+  year={2002},
+  publisher={Annual Reviews}
+}
+@article{karma1998quantitative,
+  title={Quantitative phase-field modeling of dendritic growth in two and three dimensions},
+  author={Karma, A. and Rappel, W.J.},
+  journal={Physical Review E},
+  volume={57},
+  number={4},
+  pages={4323},
+  year={1998},
+  publisher={APS}
+}
+@article{chen2002phase,
+  title={Phase-field models for microstructure evolution},
+  author={Chen, L.Q.},
+  journal={Annual review of materials research},
+  volume={32},
+  number={1},
+  pages={113--140},
+  year={2002},
+  publisher={Annual Reviews}
+}
+@article{galbally2010reductionuq,
+  title={Non-linear model reduction for uncertainty quantification in large-scale inverse problems},
+  author={Galbally, D. and Fidkowski, K. and Willcox, K. and Ghattas, O.},
+  journal={International journal for numerical methods in engineering},
+  volume={81},
+  number={12},
+  pages={1581--1608},
+  year={2010},
+  publisher={Wiley Online Library}
+}
+@article{griebel1995abstract,
+  title={On the abstract theory of additive and multiplicative {Schwarz} algorithms},
+  author={Griebel, M. and Oswald, P.},
+  journal={Numerische Mathematik},
+  volume={70},
+  number={2},
+  pages={163--180},
+  year={1995},
+  publisher={Springer}
+}
+@inproceedings{voutchkov2006multiobjective,
+  title={Multiobjective optimization using surrogates},
+  author={Voutchkov, I. and Keane, A.J.},
+  booktitle={Adaptive Computing in Design and Manufacture},
+  pages={167--175},
+  year={2006},
+  publisher={The MC Escher Company}
+}
+@article{leary2001constraint,
+  title={A constraint mapping approach to the structural optimization of an expensive model using surrogates},
+  author={Leary, S.J. and Bhaskar, A. and Keane, A.J.},
+  journal={Optimization and Engineering},
+  volume={2},
+  number={4},
+  pages={385--398},
+  year={2001},
+  publisher={Springer}
+}
+@inproceedings{legresley2000airfoil,
+  title={Airfoil design optimization using reduced order models based on proper orthogonal decomposition},
+  author={LeGresley, P.A. and Alonso, J.J.},
+  booktitle={Fluids 2000 Conference and Exhibit, Denver, CO},
+  year={2000}
+}
+@book{myers2009response,
+  title={Response surface methodology: process and product optimization using designed experiments},
+  author={Myers, R.H. and Montgomery, D.C. and Anderson-Cook, C.M.},
+  volume={705},
+  year={2009},
+  publisher={John Wiley \& Sons Inc}
+}
+@article{carlberg2012gnat,
+  title={The {GNAT} method for nonlinear model reduction: effective implementation and application to computational fluid dynamics and turbulent flows},
+  author = {Kevin Carlberg and Charbel Farhat and Julien Cortial and David Amsallem},
+  journal={arXiv},
+  volume={1207.1349},
+  year = 2012
+}
+@article{biros2008multilevel,
+  title={A multilevel algorithm for inverse problems with elliptic {PDE} constraints},
+  author={Biros, G. and Dogan, G.},
+  journal={Inverse Problems},
+  volume={24},
+  pages={034010},
+  year={2008},
+  publisher={IOP Publishing}
+}
+@article{rees2010optimal,
+  title={Optimal Solvers for {PDE}-Constrained Optimization},
+  author={Rees, T. and Dollar, H.S. and Wathen, A.J.},
+  journal={SIAM Journal on Scientific Computing},
+  volume={32},
+  pages={271},
+  year={2010}
+}
+@article{rees2010block,
+  title={Block-triangular preconditioners for {PDE}-constrained optimization},
+  author={Rees, T. and Stoll, M.},
+  journal={Numerical Linear Algebra with Applications},
+  volume={17},
+  number={6},
+  pages={977--996},
+  year={2010},
+  publisher={Wiley Online Library}
+}
+@article{rees2011preconditioning,
+  title={Preconditioning Iterative Methods for the Optimal Control of the {S}tokes Equations},
+  author={Rees, T. and Wathen, A.J.},
+  journal={SIAM Journal on Scientific Computing},
+  volume={33},
+  number={5},
+  pages={2903--2926},
+  year={2011},
+  publisher={Society for Industrial and Applied Mathematics}
 }

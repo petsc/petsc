@@ -55,7 +55,6 @@ testexamples_PASTIX: ${TESTEXAMPLES_PASTIX}
 testexamples_ML: ${TESTEXAMPLES_ML}
 testexamples_CUSP: ${TESTEXAMPLES_CUSP}
 testexamples_PTHREAD: ${TESTEXAMPLES_PTHREAD}
-testexamples_PTHREADCLASSES: ${TESTEXAMPLES_PTHREADCLASSES}
 testexamples_YAML: ${TESTEXAMPLES_YAML}
 testexamples_X:
 testexamples_MPE:
@@ -122,8 +121,6 @@ buildexamples_MPE:
 	-@${OMAKE} testexamples_MPE TESTEXAMPLES_MPE=`echo ${TESTEXAMPLES_MPE} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_ESSL:
 	-@${OMAKE} testexamples_ESSL TESTEXAMPLES_ESSL=`echo ${TESTEXAMPLES_ESSL} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_PTHREADCLASSES:
-	-@${OMAKE} testexamples_PTHREADCLASSES TESTEXAMPLES_PTHREADCLASSES=`echo ${TESTEXAMPLES_PTHREADCLASSES} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_OPENMP:
 	-@${OMAKE} testexamples_OPENMP TESTEXAMPLES_OPENMP=`echo ${TESTEXAMPLES_OPENMP} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 

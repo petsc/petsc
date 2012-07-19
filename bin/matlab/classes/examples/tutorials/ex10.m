@@ -11,7 +11,7 @@ PetscInitialize([args {'-ksp_monitor_true_residual','-ksp_converged_reason','-ks
 %%
 %  Create a matrix and put some values in it
 filename = PetscOptionsGetString('-f0');
-filename
+filename 
 viewer = PetscViewer(filename,Petsc.FILE_MODE_READ);
 mat = PetscMat();
 mat.SetFromOptions()
@@ -33,6 +33,13 @@ ksp.SetType('gmres');
 ksp.SetOperators(mat,mat,PetscMat.SAME_NONZERO_PATTERN);
 ksp.SetFromOptions();
 ksp.Solve(b,x);
+
+%%
+%  Write x into a binary file
+%out_filename = %/path/out_filename. The default path might be ~MATLAB/
+%viewer = PetscViewer(out_filename,Petsc.FILE_MODE_WRITE);
+%x.View(viewer);
+%viewer.Destroy();
 %%
 %   Free PETSc objects and shutdown PETSc
 %

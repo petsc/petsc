@@ -90,19 +90,7 @@
       parameter (MAT_SPD=19)
       parameter (MAT_NO_OFF_PROC_ENTRIES=20)
       parameter (MAT_NO_OFF_PROC_ZERO_ROWS=21)
-      parameter (MAT_DIAGBLOCK_CSR=22)
-      parameter (MAT_OFFDIAGBLOCK_CSR=23)
-      parameter (MAT_CSR=24)
-      parameter (MAT_DIAGBLOCK_DIA=25)
-      parameter (MAT_OFFDIAGBLOCK_DIA=26)
-      parameter (MAT_DIA=27)
-      parameter (MAT_DIAGBLOCK_ELL=28)
-      parameter (MAT_OFFDIAGBLOCK_ELL=29)
-      parameter (MAT_ELL=30)
-      parameter (MAT_DIAGBLOCK_HYB=31)
-      parameter (MAT_OFFDIAGBLOCK_HYB=32)
-      parameter (MAT_HYB=33)
-      parameter (NUM_MAT_OPTIONS=34)
+      parameter (NUM_MAT_OPTIONS=22)
 !
 !  MatFactorShiftType
 !
@@ -295,9 +283,6 @@
       PetscEnum MATOP_DESTROY
       PetscEnum MATOP_VIEW
       PetscEnum MATOP_CONVERT_FROM
-      PetscEnum MATOP_USE_SCALED_FORM
-      PetscEnum MATOP_SCALE_SYSTEM
-      PetscEnum MATOP_UNSCALE_SYSTEM
       PetscEnum MATOP_SET_LOCAL_TO_GLOBAL_MAP
       PetscEnum MATOP_SET_VALUES_LOCAL
       PetscEnum MATOP_ZERO_ROWS_LOCAL
@@ -309,8 +294,8 @@
       PetscEnum MATOP_SET_VALUES_ADIFOR
       PetscEnum MATOP_FD_COLORING_APPLY
       PetscEnum MATOP_SET_FROM_OPTIONS
-      PetscEnum MATOP_MULT_CON
-      PetscEnum MATOP_MULT_TRANSPOSE_CON
+      PetscEnum MATOP_MULT_CONSTRAINED
+      PetscEnum MATOP_MULT_TRANSPOSE_CONSTRAIN
       PetscEnum MATOP_PERMUTE_SPARSIFY
       PetscEnum MATOP_MULT_MULTIPLE
       PetscEnum MATOP_SOLVE_MULTIPLE
@@ -327,9 +312,9 @@
       PetscEnum MATOP_PTAP
       PetscEnum MATOP_PTAP_SYMBOLIC
       PetscEnum MATOP_PTAP_NUMERIC
-      PetscEnum MATOP_MAT_MULTTRANSPOSE
-      PetscEnum MATOP_MAT_MULTTRANSPOSE_SYM
-      PetscEnum MATOP_MAT_MULTTRANSPOSE_NUM
+      PetscEnum MATOP_MAT_TRANSPOSE_MULT
+      PetscEnum MATOP_MAT_TRANSPOSE_MULT_SYMBO
+      PetscEnum MATOP_MAT_TRANSPOSE_MULT_NUMER
       PetscEnum MATOP_PTAP_SYMBOLIC_SEQAIJ
       PetscEnum MATOP_PTAP_NUMERIC_SEQAIJ
       PetscEnum MATOP_PTAP_SYMBOLIC_MPIAIJ
@@ -338,10 +323,10 @@
       PetscEnum MATOP_SET_SIZES
       PetscEnum MATOP_SET_VALUES_ROW 
       PetscEnum MATOP_REAL_PART
-      PetscEnum MATOP_IMAG_PART
-      PetscEnum MATOP_GET_ROW_UTRIANGULAR
-      PetscEnum MATOP_RESTORE_ROW_UTRIANGULAR
-      PetscEnum MATOP_MATSOLVE
+      PetscEnum MATOP_IMAGINARY_PART
+      PetscEnum MATOP_GET_ROW_UPPER_TRIANGULAR
+      PetscEnum MATOP_RESTORE_ROW_UPPER_TRIANG
+      PetscEnum MATOP_MAT_SOLVE
       PetscEnum MATOP_GET_REDUNDANTMATRIX
       PetscEnum MATOP_GET_ROW_MIN
       PetscEnum MATOP_GET_COLUMN_VEC
@@ -425,9 +410,6 @@
       parameter(MATOP_DESTROY=60)
       parameter(MATOP_VIEW=61)
       parameter(MATOP_CONVERT_FROM=62)
-      parameter(MATOP_USE_SCALED_FORM=63)
-      parameter(MATOP_SCALE_SYSTEM=64)
-      parameter(MATOP_UNSCALE_SYSTEM=65)
       parameter(MATOP_SET_LOCAL_TO_GLOBAL_MAP=66)
       parameter(MATOP_SET_VALUES_LOCAL=67)
       parameter(MATOP_ZERO_ROWS_LOCAL=68)
@@ -439,8 +421,8 @@
       parameter(MATOP_SET_VALUES_ADIFOR=74)
       parameter(MATOP_FD_COLORING_APPLY=75)
       parameter(MATOP_SET_FROM_OPTIONS=76)
-      parameter(MATOP_MULT_CON=77)
-      parameter(MATOP_MULT_TRANSPOSE_CON=78)
+      parameter(MATOP_MULT_CONSTRAINED=77)
+      parameter(MATOP_MULT_TRANSPOSE_CONSTRAIN=78)
       parameter(MATOP_PERMUTE_SPARSIFY=79)
       parameter(MATOP_MULT_MULTIPLE=80)
       parameter(MATOP_SOLVE_MULTIPLE=81)
@@ -457,9 +439,9 @@
       parameter(MATOP_PTAP=92)
       parameter(MATOP_PTAP_SYMBOLIC=93)
       parameter(MATOP_PTAP_NUMERIC=94)
-      parameter(MATOP_MAT_MULTTRANSPOSE=95)
-      parameter(MATOP_MAT_MULTTRANSPOSE_SYM=96)
-      parameter(MATOP_MAT_MULTTRANSPOSE_NUM=97)
+      parameter(MATOP_MAT_TRANSPOSE_MULT=95)
+      parameter(MATOP_MAT_TRANSPOSE_MULT_SYMBO=96)
+      parameter(MATOP_MAT_TRANSPOSE_MULT_NUMER=97)
       parameter(MATOP_PTAP_SYMBOLIC_SEQAIJ=98)
       parameter(MATOP_PTAP_NUMERIC_SEQAIJ=99)
       parameter(MATOP_PTAP_SYMBOLIC_MPIAIJ=100)
@@ -468,10 +450,10 @@
       parameter(MATOP_SET_SIZES=103)
       parameter(MATOP_SET_VALUES_ROW=104)
       parameter(MATOP_REAL_PART=105)
-      parameter(MATOP_IMAG_PART=106)
-      parameter(MATOP_GET_ROW_UTRIANGULAR=107)
-      parameter(MATOP_RESTORE_ROW_UTRIANGULAR=108)
-      parameter(MATOP_MATSOLVE=109)
+      parameter(MATOP_IMAGINARY_PART=106)
+      parameter(MATOP_GET_ROW_UPPER_TRIANGULAR=107)
+      parameter(MATOP_RESTORE_ROW_UPPER_TRIANG=108)
+      parameter(MATOP_MAT_SOLVE=109)
       parameter(MATOP_GET_REDUNDANTMATRIX=110)
       parameter(MATOP_GET_ROW_MIN=111)
       parameter(MATOP_GET_COLUMN_VEC=112)

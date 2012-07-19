@@ -12,7 +12,7 @@ PetscMPIInt Petsc_ThreadComm_keyval         = MPI_KEYVAL_INVALID;
 PetscThreadCommJobQueue PetscJobQueue=PETSC_NULL;
 
 /* Logging support */
-PetscLogEvent ThreadComm_Init, ThreadComm_RunKernel, ThreadComm_Barrier;
+PetscLogEvent ThreadComm_RunKernel, ThreadComm_Barrier;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetNCores"
@@ -116,7 +116,7 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
   *tcomm = PETSC_NULL;
 
   ierr = PetscNew(struct _p_PetscThreadComm,&tcommout);CHKERRQ(ierr);
-  tcommout->refct = 1;
+  tcommout->refct = 0;
   tcommout->nworkThreads =  -1;
   tcommout->affinities = PETSC_NULL;
   ierr = PetscNew(struct _PetscThreadCommOps,&tcommout->ops);CHKERRQ(ierr);
@@ -139,33 +139,34 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
 
 .seealso: PetscThreadCommCreate()
 */
-PetscErrorCode PetscThreadCommDestroy(PetscThreadComm tcomm)
+PetscErrorCode PetscThreadCommDestroy(PetscThreadComm *tcomm)
 {
   PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
 
-  if (!tcomm || --tcomm->refct > 0) PetscFunctionReturn(0);
-
-  /* Destroy the implementation specific data struct */
-  if(tcomm->ops->destroy) {
-    (*tcomm->ops->destroy)(tcomm);
-  } 
-
-  ierr = PetscFree(tcomm->affinities);CHKERRQ(ierr);
-  ierr = PetscFree(tcomm->ops);CHKERRQ(ierr);
-  for(i=0;i<PETSC_KERNELS_MAX;i++) {
+  if (!*tcomm) PetscFunctionReturn(0);
+  if(!--(*tcomm)->refct) {
+    /* Destroy the implementation specific data struct */
+    if((*tcomm)->ops->destroy) {
+      (*(*tcomm)->ops->destroy)(*tcomm);
+    } 
+    ierr = PetscFree((*tcomm)->affinities);CHKERRQ(ierr);
+    ierr = PetscFree((*tcomm)->ops);CHKERRQ(ierr);
+    for(i=0;i<PETSC_KERNELS_MAX;i++) {
 #if defined(PETSC_HAVE_MEMALIGN)
-    free(PetscJobQueue->jobs[i]->job_status);
+      free(PetscJobQueue->jobs[i]->job_status);
 #else
-    ierr = PetscFree(PetscJobQueue->jobs[i]->job_status);CHKERRQ(ierr);
+      ierr = PetscFree(PetscJobQueue->jobs[i]->job_status);CHKERRQ(ierr);
 #endif
-    ierr = PetscFree(PetscJobQueue->jobs[i]);CHKERRQ(ierr);
+      ierr = PetscFree(PetscJobQueue->jobs[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(PetscJobQueue);CHKERRQ(ierr);
+    ierr = PetscThreadCommReductionDestroy((*tcomm)->red);CHKERRQ(ierr);
+    ierr = PetscFree((*tcomm));CHKERRQ(ierr);
   }
-  ierr = PetscFree(PetscJobQueue);CHKERRQ(ierr);
-  ierr = PetscThreadCommReductionDestroy(tcomm->red);CHKERRQ(ierr);
-  ierr = PetscFree(tcomm);CHKERRQ(ierr);
+  *tcomm = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -421,6 +422,7 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,const PetscThreadCom
   ierr = PetscFListFind(PetscThreadCommList,PETSC_COMM_WORLD,ttype,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PetscThreadComm type %s",ttype);
   ierr = (*r)(tcomm);CHKERRQ(ierr);
+  ierr = PetscStrcmp(NOTHREAD,tcomm->type,&tcomm->isnothread);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -613,7 +615,12 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
 
   PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%PETSC_KERNELS_MAX; /* Increment the queue ctr to point to the next available slot */
   PetscJobQueue->kernel_ctr++;
-  ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
+  if(tcomm->isnothread) {
+    ierr = PetscRunKernel(0,job->nargs,job);CHKERRQ(ierr);
+    job->job_status[0] = THREAD_JOB_COMPLETED;
+  } else {
+    ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(ThreadComm_RunKernel,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -653,18 +660,61 @@ EXTERN_C_BEGIN
 PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void* attr,void* extra_state)
 {
   PetscErrorCode  ierr;
-  PetscThreadComm tcomm;
-  PetscMPIInt     flg;
 
   PetscFunctionBegin;
-  ierr = MPI_Attr_get(comm,keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
-  if(flg) {
-    ierr = PetscThreadCommDestroy((PetscThreadComm)tcomm);CHKERRQ(ierr);
-    ierr = PetscInfo1(0,"Deleting thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
-  }
+  ierr = PetscThreadCommDestroy((PetscThreadComm*)&attr);CHKERRQ(ierr);
+  ierr = PetscInfo1(0,"Deleting thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+/*
+   Detaches the thread communicator from the MPI communicator if it exists
+*/
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadCommDetach" 
+PetscErrorCode PetscThreadCommDetach(MPI_Comm comm)
+{
+  PetscErrorCode ierr;
+  MPI_Comm       icomm;
+  PetscMPIInt    flg;
+  void           *ptr;
+
+  PetscFunctionBegin;
+  ierr = PetscCommDuplicate(comm,&icomm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(icomm,Petsc_ThreadComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+  if(flg) {
+    ierr = MPI_Attr_delete(icomm,Petsc_ThreadComm_keyval);CHKERRQ(ierr);
+  }
+  ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
+  /* Release reference from PetscThreadCommAttach */
+  ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+/* 
+   This routine attaches the thread communicator to the MPI communicator if it does not
+   exist already.
+*/
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadCommAttach"
+PetscErrorCode PetscThreadCommAttach(MPI_Comm comm,PetscThreadComm tcomm)
+{
+  PetscErrorCode ierr;
+  MPI_Comm       icomm;
+  PetscMPIInt    flg;
+  void           *ptr;
+
+  PetscFunctionBegin;
+  ierr = PetscCommDuplicate(comm,&icomm,PETSC_NULL);CHKERRQ(ierr); /* This extra reference is released in PetscThreadCommDetach */
+  ierr = MPI_Attr_get(icomm,Petsc_ThreadComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+  if(!flg) {
+    tcomm->refct++;
+    ierr = MPI_Attr_put(icomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommInitialize"
@@ -678,7 +728,6 @@ PetscErrorCode PetscThreadCommInitialize(void)
 {
   PetscErrorCode  ierr;
   PetscThreadComm tcomm;
-  MPI_Comm        icomm,icomm1;
   PetscInt        i,j;
 
   PetscFunctionBegin;
@@ -702,65 +751,18 @@ PetscErrorCode PetscThreadCommInitialize(void)
   PetscJobQueue->kernel_ctr  = 0;
   tcomm->job_ctr     = 0;
 
-
-  ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&icomm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MPI_Attr_put(icomm,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
-
-  tcomm->refct++;               /* Share the threadcomm with PETSC_COMM_SELF */
-  ierr = PetscCommDuplicate(PETSC_COMM_SELF,&icomm1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MPI_Attr_put(icomm1,Petsc_ThreadComm_keyval,(void*)tcomm);CHKERRQ(ierr);
-
-  /* This routine leaves extra references to the inner comms. They are released in PetscThreadCommFinalizePackage(). */
+  ierr = PetscThreadCommAttach(PETSC_COMM_WORLD,tcomm);CHKERRQ(ierr);
+  ierr = PetscThreadCommAttach(PETSC_COMM_SELF,tcomm);CHKERRQ(ierr);
 
   ierr = PetscThreadCommSetType(tcomm,NOTHREAD);CHKERRQ(ierr);
   ierr = PetscThreadCommReductionCreate(tcomm,&tcomm->red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscRunKernel(PetscInt trank,PetscInt nargs,PetscThreadCommJobCtx job)
-{
-  switch(nargs) {
-  case 0:
-    (*job->pfunc)(trank);
-    break;
-  case 1:
-    (*job->pfunc)(trank,job->args[0]);
-    break;
-  case 2:
-    (*job->pfunc)(trank,job->args[0],job->args[1]);
-    break;
-  case 3:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2]);
-    break;
-  case 4:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3]);
-    break;
-  case 5:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4]);
-    break;
-  case 6:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5]);
-    break;
-  case 7:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6]);
-    break;
-  case 8:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6],job->args[7]);
-    break;
-  case 9:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6],job->args[7],job->args[8]);
-    break;
-  case 10:
-    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6],job->args[7],job->args[8],job->args[9]);
-    break;
-  }
-  return 0;
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommGetOwnershipRanges"
 /*
-   PetscThreadComMGetOwnershipRanges - Given the global size of an array, computes the local sizes and sets
+   PetscThreadCommGetOwnershipRanges - Given the global size of an array, computes the local sizes and sets
                                        the starting array indices
 
    Input Parameters:

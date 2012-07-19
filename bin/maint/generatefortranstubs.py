@@ -150,7 +150,7 @@ def processDir(arg,dirname,names):
   outdir = os.path.join(dirname,'ftn-auto')
 
   for l in names:
-    if os.path.splitext(l)[1] =='.c' or os.path.splitext(l)[1] == '.h':
+    if os.path.splitext(l)[1] in ['.c','.h','.cu']:
       newls.append(l)
   if newls:
     PrepFtnDir(outdir)

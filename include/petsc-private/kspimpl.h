@@ -131,7 +131,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
 PETSC_EXTERN PetscErrorCode KSPDefaultDestroy(KSP);
 PETSC_EXTERN PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
 PETSC_EXTERN PetscErrorCode KSPDefaultGetWork(KSP,PetscInt);
-PETSC_EXTERN PetscErrorCode KSPSetUpNorms_Private(KSP);
+PETSC_EXTERN PetscErrorCode KSPSetUpNorms_Private(KSP,KSPNormType*,PCSide*);
 
 /* Context for resolution-dependent KSP callback information */
 typedef struct _n_KSPDM *KSPDM;

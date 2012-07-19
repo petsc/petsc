@@ -301,6 +301,10 @@ post-pull = "$HG" $HG_ARGS -u  $@ --cwd config/BuildSystem
         </li>
       </ul>
 
+        <b>Note</b>: sowing, c2html have additional dependencies like gcc, g++, flex and do not
+        use compilers specified to PETSc configure. [Windows users please install the corresponding
+        cygwin packages]
+
       <p>Once pdflatex (from teTeX) is in your PATH you can build the documentation with:</p>
 
       <ul>

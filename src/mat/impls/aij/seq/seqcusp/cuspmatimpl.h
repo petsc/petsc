@@ -17,14 +17,13 @@
 
 /* New Way */
 #ifdef PETSC_HAVE_TXPETSCGPU
-
 #include "tx_sparse_interface.h"
 
 struct Mat_SeqAIJCUSP {
   GPU_Matrix_Ifc*   mat; /* pointer to the matrix on the GPU */
   CUSPARRAY*        tempvec; /*pointer to a workvector to which we can copy the relevant indices of a vector we want to multiply */
   PetscInt          nonzerorow; /* number of nonzero rows ... used in the flop calculations */
-  GPUStorageFormat  format;   /* the storage format for the matrix on the device */
+  MatCUSPStorageFormat     format;   /* the storage format for the matrix on the device */
 };
 
 #else // PETSC_HAVE_TXPETSCGPU not defined!

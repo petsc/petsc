@@ -300,6 +300,21 @@ PetscErrorCode DMDAVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
   PetscFunctionReturn(0);
 }
 
+/*
+  Convert (i,j,k) --> local cell number
+
+PetscErrorCode DMDAConvertToCell(DM dm, MatStencil s)
+{
+  DM_DA         *da  = (DM_DA *) dm->data;
+  const PetscInt dim = da->dim;
+  const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
+  const PetscInt nC  = (mx  )*(dim > 1 ? (my  )*(dim > 2 ? (mz  ) : 1) : 1);
+
+  PetscFunctionBegin;
+  PetscFUnctionReturn(0);
+}
+*/
+
 #undef __FUNCT__
 #define __FUNCT__ "DMDAComputeCellGeometry_2D"
 PetscErrorCode DMDAComputeCellGeometry_2D(DM dm, const PetscScalar vertices[], const PetscReal refPoint[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)

@@ -111,6 +111,12 @@ runex3:
 	-@${MPIEXEC} -n 1 ./ex3 -fp_trap
 	-@echo "This is a contrived error to test error handling of floating point exceptions."
 
+runex4:
+	-@${MPIEXEC} -n 1 ./ex4 > ex4_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with ex4_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex4_1.tmp
+
 runex7:
 	-@${MPIEXEC} -n 1 ./ex7 > ex7.tmp 2>&1;\
 	   if (${DIFF} output/ex7.out ex7.tmp) then true; \
@@ -150,7 +156,7 @@ runex23:
 	   ${RM} -f ex23.tmp
 
 
-TESTEXAMPLES_C		       = ex19.PETSc runex19 ex19.rm \
+TESTEXAMPLES_C		       = ex4.PETSc runex4 ex4.rm ex19.PETSc runex19 ex19.rm \
                                  ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm \
                                  ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm 

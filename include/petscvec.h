@@ -272,7 +272,7 @@ PETSC_EXTERN PetscErrorCode VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,Pe
    VecSetValue - Set a single entry into a vector.
 
    Synopsis:
-   PetscErrorCode VecSetValue(Vec v,int row,PetscScalar value, InsertMode mode);
+   PetscErrorCode VecSetValue(Vec v,PetscInt row,PetscScalar value, InsertMode mode);
 
    Not Collective
 
@@ -403,7 +403,7 @@ PETSC_EXTERN PetscErrorCode VecSetValuesLocal(Vec,PetscInt,const PetscInt[],cons
    VecSetValueLocal - Set a single entry into a vector using the local numbering
 
    Synopsis:
-   PetscErrorCode VecSetValueLocal(Vec v,int row,PetscScalar value, InsertMode mode);
+   PetscErrorCode VecSetValueLocal(Vec v,PetscInt row,PetscScalar value, InsertMode mode);
 
    Not Collective
 
@@ -551,15 +551,6 @@ PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
 
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUSP(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPICUSP(MPI_Comm,PetscInt,PetscInt,Vec*);
-#endif
-
-#if defined(PETSC_HAVE_PTHREADCLASSES)
-PETSC_EXTERN PetscErrorCode VecSetNThreads(Vec,PetscInt);
-PETSC_EXTERN PetscErrorCode VecGetNThreads(Vec,PetscInt*);
-PETSC_EXTERN PetscErrorCode VecGetThreadOwnershipRange(Vec,PetscInt,PetscInt*,PetscInt*);
-PETSC_EXTERN PetscErrorCode VecSetThreadAffinities(Vec,const PetscInt[]);
-PETSC_EXTERN PetscErrorCode VecCreateSeqPThread(MPI_Comm,PetscInt,PetscInt,PetscInt[],Vec*);
-PETSC_EXTERN PetscErrorCode VecCreateMPIPThread(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],Vec*);
 #endif
 
 PETSC_EXTERN PetscErrorCode VecNestGetSubVecs(Vec,PetscInt*,Vec**);

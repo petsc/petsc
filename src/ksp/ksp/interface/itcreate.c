@@ -258,11 +258,11 @@ PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUpNorms_Private"
-PetscErrorCode KSPSetUpNorms_Private(KSP ksp)
+PetscErrorCode KSPSetUpNorms_Private(KSP ksp,KSPNormType *normtype,PCSide *pcside)
 {
   PetscInt i,j,best,ibest = 0,jbest = 0;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
   best = 0;
   for (i=0; i<KSP_NORM_MAX; i++) {
     for (j=0; j<PC_SIDE_MAX; j++) {
@@ -283,8 +283,8 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp)
     if (ksp->pc_side == PC_SIDE_DEFAULT) SETERRQ2(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype]);
     SETERRQ3(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP %s does not support %s with %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype],PCSides[ksp->pc_side]);
   }
-  ksp->normtype = (KSPNormType)ibest;
-  ksp->pc_side = (PCSide)jbest;
+  *normtype = (KSPNormType)ibest;
+  *pcside = (PCSide)jbest;
   PetscFunctionReturn(0);
 }
 
@@ -314,7 +314,7 @@ PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(normtype,2);
-  ierr = KSPSetUpNorms_Private(ksp);CHKERRQ(ierr);
+  ierr = KSPSetUpNorms_Private(ksp,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
   *normtype = ksp->normtype;
   PetscFunctionReturn(0);
 }
@@ -446,8 +446,8 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
   if (ksp->guess) {
     ierr = KSPFischerGuessReset(ksp->guess);CHKERRQ(ierr);
   }
-  if (Amat) {
-    ierr = MatGetNullSpace(Amat, &nullsp);CHKERRQ(ierr);
+  if (Pmat) {
+    ierr = MatGetNullSpace(Pmat, &nullsp);CHKERRQ(ierr);
     if (nullsp) {
       ierr = KSPSetNullSpace(ksp, nullsp);CHKERRQ(ierr);
     }

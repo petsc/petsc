@@ -141,11 +141,15 @@
 #define MATSOLVERCUSPARSE     'cusparse'
 #define MATSOLVERBSTRM        'bstrm'
 #define MATSOLVERSBSTRM       'sbstrm'
+
 !
-! GPUStorageFormats
+! GPU Storage Formats for CUSP and CUSPARSE
 !
-#define CSR              'csr'
-#define DIA              'dia'
-#define ELL              'ell'
-#define HYB              'hyb'
+#if !defined(PETSC_HAVE_TXPETSCGPU)
+#define MatCUSPARSEStorageFormat PetscEnum
+#if !defined(PETSC_HAVE_CUSP)
+#define MatCUSPStorageFormat PetscEnum
+#endif
+#endif
+
 #endif

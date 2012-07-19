@@ -156,12 +156,12 @@ PETSC_EXTERN PetscErrorCode PetscHeaderDestroy_Private(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject,PetscObject);
 
 /* ---------------------------------------------------------------------------------------*/
-#if defined(PETSC_HAVE_SETJMP_H)
+#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_SIGINFO_T)
 #include <signal.h>
 #include <setjmp.h>
 PETSC_EXTERN jmp_buf PetscSegvJumpBuf;
 PETSC_EXTERN void PetscSegv_sigaction(int, siginfo_t*, void *);
-/*@
+/*@C
      PetscCheckPointer - Returns PETSC_TRUE if a pointer points to accessible data
 
    Not Collective
@@ -190,19 +190,20 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PetscDataType dt
   } else {
     switch (dtype) {
     case PETSC_INT:{
-      PETSC_UNUSED PetscInt x = *(volatile PetscInt*)ptr;
-      break;
-    }
-    case PETSC_SCALAR:{
-      PETSC_UNUSED PetscScalar x = *(volatile PetscScalar*)ptr;
+      PETSC_UNUSED PetscInt x = (PetscInt)*(volatile PetscInt*)ptr;
       break;
     }
 #if defined(PETSC_USE_COMPLEX)
+    case PETSC_SCALAR:{         /* C++ is seriously dysfunctional with volatile std::complex. */
+      PetscReal xreal = ((volatile PetscReal*)ptr)[0],ximag = ((volatile PetscReal*)ptr)[1];
+      PETSC_UNUSED volatile PetscScalar x = xreal + PETSC_i*ximag;
+      break;
+    }
+#endif
     case PETSC_REAL:{
       PETSC_UNUSED PetscReal x = *(volatile PetscReal*)ptr;
       break;
     }
-#endif
     case PETSC_BOOL:{
       PETSC_UNUSED PetscBool x = *(volatile PetscBool*)ptr;
       break;
@@ -226,7 +227,7 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PetscDataType dt
   return PETSC_TRUE;
 }
 #else
-PETSC_STATIC_INLINE PetscBool PetscCheckPointer(void *ptr,PetscDataType dtype)
+PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
 {
   if (!ptr) return PETSC_FALSE;
   return PETSC_TRUE;

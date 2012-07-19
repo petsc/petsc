@@ -2,8 +2,8 @@
 #include <petsc-private/pcimpl.h>
 #include <petsc-private/kspimpl.h>
 
-
-const char *const PCSides[]          = {"LEFT","RIGHT","SYMMETRIC","PCSide","PC_",0};
+static const char *const PCSides_Shifted[] = {"DEFAULT","LEFT","RIGHT","SYMMETRIC","PCSide","PC_",0};
+const char *const *const PCSides = PCSides_Shifted + 1;
 const char *const PCASMTypes[]       = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",0};
 const char *const PCGASMTypes[]       = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCGASMType","PC_GASM_",0};
 const char *const PCCompositeTypes[] = {"ADDITIVE","MULTIPLICATIVE","SYMMETRIC_MULTIPLICATIVE","SPECIAL","SCHUR","PCCompositeType","PC_COMPOSITE",0};

@@ -21,6 +21,7 @@
 #define petscoptionsinsertfile_            PETSCOPTIONSINSERTFILE
 #define petscoptionsclear_                 PETSCOPTIONSCLEAR
 #define petscoptionsinsertstring_          PETSCOPTIONSINSERTSTRING
+#define petscoptionsview_                  PETSCOPTIONSVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscoptionsgetenumprivate_        petscoptionsgetenumprivate
 #define petscoptionsgetbool_               petscoptionsgetbool
@@ -36,6 +37,7 @@
 #define petscoptionsinsertfile_            petscoptionsinsertfile
 #define petscoptionsclear_                 petscoptionsclear
 #define petscoptionsinsertstring_          petscoptionsinsertstring
+#define petscoptionsview_                  petscoptionsview
 #endif
 
 EXTERN_C_BEGIN
@@ -210,6 +212,14 @@ void PETSC_STDCALL petscgetprogramname_(CHAR name PETSC_MIXED_LEN(len_in),PetscE
   len = len_in - 1;
   *ierr = PetscGetProgramName(tmp,len);
   FIXRETURNCHAR(PETSC_TRUE,name,len_in);
+}
+
+void PETSC_STDCALL petscoptionsview_(PetscViewer *vin,PetscErrorCode *ierr)
+{
+  PetscViewer v;
+
+  PetscPatchDefaultViewers_Fortran(vin,v);
+  *ierr = PetscOptionsView(v);
 }
 
 EXTERN_C_END

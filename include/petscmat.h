@@ -373,15 +373,8 @@ typedef enum {MAT_ROW_ORIENTED,MAT_NEW_NONZERO_LOCATIONS,
               MAT_IGNORE_LOWER_TRIANGULAR,MAT_ERROR_LOWER_TRIANGULAR,
               MAT_GETROW_UPPERTRIANGULAR,MAT_UNUSED_NONZERO_LOCATION_ERR,
               MAT_SPD,MAT_NO_OFF_PROC_ENTRIES,MAT_NO_OFF_PROC_ZERO_ROWS,
-#if !defined(PETSC_HAVE_TXPETSCGPU)
               NUM_MAT_OPTIONS} MatOption;
-#else
-              MAT_DIAGBLOCK_CSR, MAT_OFFDIAGBLOCK_CSR, MAT_CSR, 
-              MAT_DIAGBLOCK_DIA, MAT_OFFDIAGBLOCK_DIA, MAT_DIA, 
-              MAT_DIAGBLOCK_ELL, MAT_OFFDIAGBLOCK_ELL, MAT_ELL, 
-              MAT_DIAGBLOCK_HYB, MAT_OFFDIAGBLOCK_HYB, MAT_HYB, 
-              NUM_MAT_OPTIONS} MatOption;
-#endif
+
 PETSC_EXTERN const char *MatOptions[];
 PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool );
 PETSC_EXTERN PetscErrorCode MatGetType(Mat,const MatType*);
@@ -1540,9 +1533,6 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_DESTROY=60,
                MATOP_VIEW=61,
                MATOP_CONVERT_FROM=62,
-               MATOP_USE_SCALED_FORM=63,
-               MATOP_SCALE_SYSTEM=64,
-               MATOP_UNSCALE_SYSTEM=65,
                MATOP_SET_LOCAL_TO_GLOBAL_MAP=66,
                MATOP_SET_VALUES_LOCAL=67,
                MATOP_ZERO_ROWS_LOCAL=68,
@@ -1554,8 +1544,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_SET_VALUES_ADIFOR=74,
                MATOP_FD_COLORING_APPLY=75,
                MATOP_SET_FROM_OPTIONS=76,
-               MATOP_MULT_CON=77,
-               MATOP_MULT_TRANSPOSE_CON=78,
+               MATOP_MULT_CONSTRAINED=77,
+               MATOP_MULT_TRANSPOSE_CONSTRAIN=78,
                MATOP_PERMUTE_SPARSIFY=79,
                MATOP_MULT_MULTIPLE=80,
                MATOP_SOLVE_MULTIPLE=81,
@@ -1572,9 +1562,9 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_PTAP=92,
                MATOP_PTAP_SYMBOLIC=93,
                MATOP_PTAP_NUMERIC=94,
-               MATOP_MAT_MULTTRANSPOSE=95,
-               MATOP_MAT_MULTTRANSPOSE_SYM=96,
-               MATOP_MAT_MULTTRANSPOSE_NUM=97,
+               MATOP_MAT_TRANSPOSE_MULT=95,
+               MATOP_MAT_TRANSPOSE_MULT_SYMBO=96,
+               MATOP_MAT_TRANSPOSE_MULT_NUMER=97,
                MATOP_PTAP_SYMBOLIC_SEQAIJ=98,
                MATOP_PTAP_NUMERIC_SEQAIJ=99,
                MATOP_PTAP_SYMBOLIC_MPIAIJ=100,
@@ -1583,10 +1573,10 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_SET_SIZES=103,
                MATOP_SET_VALUES_ROW=104,
                MATOP_REAL_PART=105,
-               MATOP_IMAG_PART=106,
-               MATOP_GET_ROW_UTRIANGULAR=107,
-               MATOP_RESTORE_ROW_UTRIANGULAR=108,
-               MATOP_MATSOLVE=109,
+               MATOP_IMAGINARY_PART=106,
+               MATOP_GET_ROW_UPPER_TRIANGULAR=107,
+               MATOP_RESTORE_ROW_UPPER_TRIANG=108,
+               MATOP_MAT_SOLVE=109,
                MATOP_GET_REDUNDANTMATRIX=110,
                MATOP_GET_ROW_MIN=111,
                MATOP_GET_COLUMN_VEC=112,
@@ -1785,25 +1775,118 @@ PETSC_EXTERN PetscErrorCode MatMumpsSetIcntl(Mat,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat,PetscReal);
 #endif
 
-#if defined PETSC_HAVE_CUDA
-#define GPUStorageFormat char*
-#define CSR              "csr"
-#define DIA              "dia"
-#define ELL              "ell"
-#define HYB              "hyb"
-#endif
-
 #if defined PETSC_HAVE_TXPETSCGPU
-PETSC_EXTERN PetscErrorCode  MatCreateSeqAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
-PETSC_EXTERN PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-PETSC_EXTERN PetscErrorCode  MatSetOption_SeqAIJCUSPARSE(Mat,MatOption,PetscBool);
-PETSC_EXTERN PetscErrorCode  MatAIJCUSPARSESetGPUStorageFormatForMatSolve(Mat,GPUStorageFormat);
+
+/*EC
+    MatCUSPARSEStorageFormat - indicates the storage format for CUSPARSE (GPU) 
+    matrices. 
+
+    Not Collective
+
++   MAT_CUSPARSE_CSR : Compressed Sparse Row
+.   MAT_CUSPARSE_ELL : Ellpack 
+-   MAT_CUSPARSE_HYB : Hybrid, a combination of Ellpack and Coordinate format.
+
+    Level: intermediate
+
+   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+
+.seealso: MatCUSPARSESetFormat(), MatCUSPARSEFormatOperation
+E*/
+
+typedef enum {
+  MAT_CUSPARSE_CSR, MAT_CUSPARSE_ELL, MAT_CUSPARSE_HYB}
+  MatCUSPARSEStorageFormat;
+
+/* these will be strings associated with enumerated type defined above */
+PETSC_EXTERN const char *const MatCUSPARSEStorageFormats[];
+
+/*EC
+    MatCUSPARSEFormatOperation - indicates the operation of CUSPARSE (GPU) 
+    matrices whose operation should use a particular storage format.
+
+    Not Collective
+
++   MAT_CUSPARSE_MULT_DIAG : sets the storage format for the diagonal matrix in the parallel MatMult
+.   MAT_CUSPARSE_MULT_OFFDIAG : sets the storage format for the offdiagonal matrix in the parallel MatMult
+.   MAT_CUSPARSE_MULT = 0x3 : sets the storage format for the entire matrix in the serial (single GPU) MatMult
+.   MAT_CUSPARSE_SOLVE = 0x4 : sets the storage format for the triangular factors in the serial (single GPU) MatSolve
+-   MAT_CUSPARSE_ALL = 0x7 : sets the storage format for all CUSPARSE (GPU) matrices
+
+    Level: intermediate
+
+.seealso: MatCUSPARSESetFormat(), MatCUSPARSEStorageFormat
+E*/
+typedef enum {
+  MAT_CUSPARSE_MULT_DIAG = 0x1,
+  MAT_CUSPARSE_MULT_OFFDIAG = 0x2,
+  MAT_CUSPARSE_MULT = 0x3,
+  MAT_CUSPARSE_SOLVE = 0x4,
+  MAT_CUSPARSE_ALL = 0x7
+} MatCUSPARSEFormatOperation;
+
+PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
+PETSC_EXTERN PetscErrorCode MatCUSPARSESetFormat(Mat,MatCUSPARSEFormatOperation,MatCUSPARSEStorageFormat);
+
 #endif
 
 #if defined(PETSC_HAVE_CUSP)
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
-PETSC_EXTERN PetscErrorCode MatSetOption_SeqAIJCUSP(Mat,MatOption,PetscBool);
+
+#ifdef PETSC_HAVE_TXPETSCGPU
+/*EC
+    MatCUSPStorageFormat - indicates the storage format for CUSP (GPU) 
+    matrices. 
+
+    Not Collective
+
++   MAT_CUSP_CSR Compressed Sparse Row), 
+.   MAT_CUSP_DIA (diagonal)
+-   MAT_CUSP_ELL (Ellpack) 
+
+    Level: intermediate
+
+   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+
+.seealso: MatCUSPSetFormat(), MatCUSPFormatOperation
+E*/
+typedef enum {
+  MAT_CUSP_CSR, MAT_CUSP_DIA, MAT_CUSP_ELL}
+  MatCUSPStorageFormat;
+
+/* these will be strings associated with enumerated type defined above */
+PETSC_EXTERN const char *const MatCUSPStorageFormats[];
+
+/*EC
+    MatCUSPFormatOperation - indicates the operation of CUSP (GPU) 
+    matrices whose operation should use a particular storage format.
+
+    Not Collective
+
++   MAT_CUSP_MULT_DIAG : sets the storage format for the diagonal matrix in the parallel MatMult
+.   MAT_CUSP_MULT_OFFDIAG : sets the storage format for the offdiagonal matrix in the parallel MatMult
+.   MAT_CUSP_MULT = 0x3 : sets the storage format for the entire matrix in the serial (single GPU) MatMult
+.   MAT_CUSP_SOLVE = 0x4 : sets the storage format for the triangular factors in the serial (single GPU) MatSolve
+-   MAT_CUSP_ALL = 0x7 : sets the storage format for all CUSP (GPU) matrices
+
+    Level: intermediate
+
+   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+
+.seealso: MatCUSPSetFormat(), MatCUSPStorageFormat
+E*/
+typedef enum {
+  MAT_CUSP_MULT_DIAG = 0x1,
+  MAT_CUSP_MULT_OFFDIAG = 0x2,
+  MAT_CUSP_MULT = 0x3,
+  MAT_CUSP_SOLVE = 0x4,
+  MAT_CUSP_ALL = 0x7
+} MatCUSPFormatOperation;
+
+PETSC_EXTERN PetscErrorCode MatCUSPSetFormat(Mat,MatCUSPFormatOperation,MatCUSPStorageFormat);
+#endif 
 #endif
 
 /* 

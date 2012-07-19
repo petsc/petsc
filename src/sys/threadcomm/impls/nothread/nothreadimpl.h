@@ -8,6 +8,6 @@ EXTERN_C_BEGIN
 extern PetscErrorCode PetscThreadCommCreate_NoThread(PetscThreadComm);
 EXTERN_C_END
 
-extern PetscErrorCode PetscThreadCommRunKernel_NoThread(MPI_Comm,PetscThreadCommJobCtx);
+//extern PetscErrorCode PetscThreadCommRunKernel_NoThread(MPI_Comm,PetscThreadCommJobCtx);
 
 #endif

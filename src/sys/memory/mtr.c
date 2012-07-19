@@ -621,11 +621,7 @@ PetscErrorCode  PetscMallocDumpLog(FILE *fp)
   shortcount       = (int*)malloc(PetscLogMalloc*sizeof(int));if (!shortcount) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Out of memory");
   shortlength      = (size_t*)malloc(PetscLogMalloc*sizeof(size_t));if (!shortlength) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Out of memory");
   shortfunction    = (const char**)malloc(PetscLogMalloc*sizeof(char *));if (!shortfunction) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"Out of memory");
-  shortfunction[0] = PetscLogMallocFunction[0];
-  shortlength[0]   = PetscLogMallocLength[0]; 
-  shortcount[0]    = 0;
-  n = 1;
-  for (i=1; i<PetscLogMalloc; i++) {
+  for (i=0,n=0; i<PetscLogMalloc; i++) {
     for (j=0; j<n; j++) {
       ierr = PetscStrcmp(shortfunction[j],PetscLogMallocFunction[i],&match);CHKERRQ(ierr);
       if (match) {

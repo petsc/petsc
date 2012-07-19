@@ -231,7 +231,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
         }
       }
       ierr = MatDestroy(&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
-      ierr = MatGetFactor(pc->pmat,MATSOLVERPETSC,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
+      ierr = MatGetFactor(pc->pmat,((PC_Factor*)ilu)->solvertype,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
       ierr = MatILUFactorSymbolic(((PC_Factor*)ilu)->fact,pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
       ierr = MatGetInfo(((PC_Factor*)ilu)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       ilu->actualfill = info.fill_ratio_needed;

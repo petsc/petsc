@@ -18,9 +18,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-#if defined(PETSC_THREADCOMM_ACTIVE)
   ierr = PetscThreadCommView(PETSC_COMM_WORLD,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-#endif
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
@@ -41,9 +39,7 @@ int main(int argc,char **argv)
   
   ierr = VecDot(x,y,&dot);CHKERRQ(ierr);
 
-#if defined(PETSC_THREADCOMM_ACTIVE)
   ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-#endif
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Dot product %d*(%lf*%lf) is %lf\n",N,one,v,dot);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);

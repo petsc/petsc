@@ -36,7 +36,7 @@ const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFindNonzeroRows"
-/*@C
+/*@
       MatFindNonzeroRows - Locate all rows that are not completely zero in the matrix
 
   Input Parameter:
@@ -373,6 +373,7 @@ PetscErrorCode  MatGetRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt *c
 @*/
 PetscErrorCode  MatConjugate(Mat mat)
 {
+#ifdef PETSC_USE_COMPLEX
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -386,6 +387,9 @@ PetscErrorCode  MatConjugate(Mat mat)
   }
 #endif
   PetscFunctionReturn(0);
+#else
+  return 0;
+#endif
 }
 
 #undef __FUNCT__  
@@ -4902,6 +4906,12 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
         ierr = PetscPrintf(((PetscObject)mat)->comm,"Matrix is not symmetric (tolerance %G)\n",tol);CHKERRQ(ierr);
       }
     }
+    if (mat->nullsp) {
+      ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_null_space_test",&flg,PETSC_NULL);CHKERRQ(ierr);
+      if (flg) {
+        ierr = MatNullSpaceTest(mat->nullsp,mat,PETSC_NULL);CHKERRQ(ierr);
+      }
+    }
   }
   inassm--;
   PetscFunctionReturn(0);
@@ -8894,8 +8904,8 @@ PetscErrorCode  MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
   To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
    actually needed.
 
-   This routine is currently only implemented for pairs of SeqAIJ matrices and pairs of SeqDense matrices and classes
-   which inherit from SeqAIJ.  C will be of type MATSEQAIJ.
+   This routine is currently implemented for pairs of AIJ matrices and pairs of SeqDense matrices and classes
+   which inherit from SeqAIJ.  C will be of same type as the input matrices.
 
    Level: intermediate
 

@@ -95,6 +95,7 @@ struct _p_PetscThreadComm{
 					*/
   PetscThreadCommRedCtx   red;          /* Reduction context */
   PetscInt                job_ctr;      /* which job is this threadcomm running in the job queue */
+  PetscBool               isnothread;   /* No threading model used */
 };
 
 /* register thread communicator models */
@@ -106,9 +107,50 @@ PETSC_EXTERN PetscErrorCode PetscThreadCommRegisterAll(const char path[]);
 #define PetscThreadCommRegisterDynamic(a,b,c,d) PetscThreadCommRegister(a,b,c,d)
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__
+PETSC_STATIC_INLINE PetscErrorCode PetscRunKernel(PetscInt trank,PetscInt nargs,PetscThreadCommJobCtx job)
+{
+  switch(nargs) {
+  case 0:
+    (*job->pfunc)(trank);
+    break;
+  case 1:
+    (*job->pfunc)(trank,job->args[0]);
+    break;
+  case 2:
+    (*job->pfunc)(trank,job->args[0],job->args[1]);
+    break;
+  case 3:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2]);
+    break;
+  case 4:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3]);
+    break;
+  case 5:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4]);
+    break;
+  case 6:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5]);
+    break;
+  case 7:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6]);
+    break;
+  case 8:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6],job->args[7]);
+    break;
+  case 9:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6],job->args[7],job->args[8]);
+    break;
+  case 10:
+    (*job->pfunc)(trank,job->args[0],job->args[1],job->args[2],job->args[3],job->args[4],job->args[5],job->args[6],job->args[7],job->args[8],job->args[9]);
+    break;
+  }
+  return 0;
+}
+
 PETSC_EXTERN PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm,PetscThreadCommRedCtx*);
 PETSC_EXTERN PetscErrorCode PetscThreadCommReductionDestroy(PetscThreadCommRedCtx);
-PETSC_EXTERN PetscErrorCode PetscRunKernel(PetscInt,PetscInt,PetscThreadCommJobCtx);
 
-PETSC_EXTERN PetscLogEvent ThreadComm_Init, ThreadComm_RunKernel, ThreadComm_Barrier;
+PETSC_EXTERN PetscLogEvent ThreadComm_RunKernel, ThreadComm_Barrier;
 #endif

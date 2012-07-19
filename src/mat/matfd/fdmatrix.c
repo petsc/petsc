@@ -689,11 +689,6 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
 
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_null_space_test",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MatNullSpaceTest(J->nullsp,J,PETSC_NULL);CHKERRQ(ierr);
-  }
   ierr = MatFDColoringView_Private(coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

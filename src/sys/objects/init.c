@@ -234,10 +234,6 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_PTHREADCLASSES)
-extern PetscErrorCode PetscOptionsCheckInitial_Private_Pthread(void);
-#endif
-
 #if defined(PETSC_HAVE_CUDA)
 #include <cublas.h>
 #endif
@@ -553,9 +549,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #endif
 
 
-#if defined(PETSC_HAVE_PTHREADCLASSES)
-  ierr = PetscOptionsCheckInitial_Private_Pthread();
-#endif
   /*
        Print basic help message
   */

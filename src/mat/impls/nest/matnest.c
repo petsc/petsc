@@ -103,7 +103,7 @@ static PetscErrorCode MatMultTranspose_Nest(Mat A,Vec x,Vec y)
   for (j=0; j<nc; j++) {
     ierr = VecZeroEntries(by[j]);CHKERRQ(ierr);
     for (i=0; i<nr; i++) {
-      if (!bA->m[j][i]) continue;
+      if (!bA->m[i][j]) continue;
       /* y[j] <- y[j] + (A[i][j])^T * x[i] */
       ierr = MatMultTransposeAdd(bA->m[i][j],bx[i],by[j],by[j]);CHKERRQ(ierr);
     }
@@ -133,7 +133,7 @@ static PetscErrorCode MatMultTransposeAdd_Nest(Mat A,Vec x,Vec y,Vec z)
       ierr = VecRestoreSubVector(y,bA->isglobal.col[j],&by);CHKERRQ(ierr);
     }
     for (i=0; i<nr; i++) {
-      if (!bA->m[j][i]) continue;
+      if (!bA->m[i][j]) continue;
       /* z[j] <- y[j] + (A[i][j])^T * x[i] */
       ierr = MatMultTransposeAdd(bA->m[i][j],bx[i],bz[j],bz[j]);CHKERRQ(ierr);
     }
@@ -1367,6 +1367,146 @@ PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscIn
   *B = A;
   PetscFunctionReturn(0);
 }
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_Nest_AIJ"
+PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+{
+  PetscErrorCode ierr;
+  Mat_Nest       *nest = (Mat_Nest*)A->data;
+  PetscInt       m,n,M,N,i,j,k,*dnnz,*onnz;
+  Mat            C;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  switch (reuse) {
+  case MAT_INITIAL_MATRIX:
+    ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
+    ierr = MatSetType(C,newtype);CHKERRQ(ierr);
+    ierr = MatSetSizes(C,m,n,M,N);CHKERRQ(ierr);
+    *newmat = C;
+    break;
+  case MAT_REUSE_MATRIX:
+    C = *newmat;
+    break;
+  default: SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatReuse");
+  }
+
+  /* Preallocation */
+  ierr = PetscMalloc(2*m*sizeof(PetscInt),&dnnz);CHKERRQ(ierr);
+  onnz = dnnz + m;
+  for (k=0; k<m; k++) {
+    dnnz[k] = 0;
+    onnz[k] = 0;
+  }
+  for (j=0; j<nest->nc; ++j) {
+    IS bNis;
+    PetscInt bN;
+    const PetscInt *bNindices;
+    /* Using global column indices and ISAllGather() is not scalable. */
+    ierr = ISAllGather(nest->isglobal.col[j], &bNis);        CHKERRQ(ierr); 
+    ierr = ISGetSize(bNis, &bN);                             CHKERRQ(ierr);
+    ierr = ISGetIndices(bNis,&bNindices);                    CHKERRQ(ierr);
+    for (i=0; i<nest->nr; ++i) {
+      PetscSF bmsf;
+      PetscSFNode *bmedges;
+      Mat B;
+      PetscInt bm, *bmdnnz, *bmonnz, br;
+      const PetscInt *bmindices;
+      B = nest->m[i][j];
+      if (!B) continue;
+      ierr = ISGetLocalSize(nest->isglobal.row[i],&bm);          CHKERRQ(ierr);
+      ierr = ISGetIndices(nest->isglobal.row[i],&bmindices);     CHKERRQ(ierr);
+      ierr = PetscSFCreate(((PetscObject)A)->comm, &bmsf);       CHKERRQ(ierr);
+      ierr = PetscMalloc(2*bm*sizeof(PetscSFNode),&bmedges);     CHKERRQ(ierr);
+      ierr = PetscMalloc(2*bm*sizeof(PetscInt),&bmdnnz);         CHKERRQ(ierr);
+      for(k = 0; k < 2*bm; ++k) bmdnnz[k] = 0;
+      bmonnz = bmdnnz+bm;
+      /*
+       Locate the owners for all of the locally-owned global row indices for this row block.
+       These determine the roots of PetscSF used to communicate preallocation data to row owners.
+       The roots correspond to the dnnz and onnz entries; thus, there are two roots per row.
+       */
+      for(br = 0; br < bm; ++br) {
+        PetscInt row = bmindices[br], rowowner, brncols, col, colowner;
+        const PetscInt *brcols;
+        PetscInt rowrel;    /* row's relative index on its owner rank */
+        PetscInt rowownerm; /* local row size on row's owning rank. */
+        ierr = PetscLayoutFindOwnerIndex(A->rmap,row,&rowowner,&rowrel); CHKERRQ(ierr);
+        rowownerm = A->rmap->range[rowowner+1]-A->rmap->range[rowowner];
+        bmedges[br].rank = rowowner; bmedges[br].index = rowrel;           /* edge from bmdnnz to dnnz */
+        bmedges[br].rank = rowowner; bmedges[br].index = rowrel+rowownerm; /* edge from bmonnz to onnz */
+        /* Now actually compute the data -- bmdnnz and bmonnz by looking at the global columns in the br row of this block. */
+        /* Note that this is not a pessimistic bound only because we assume the index sets embedding the blocks do not overlap. */
+        ierr = MatGetRow(B,br,&brncols,&brcols,PETSC_NULL);CHKERRQ(ierr);
+        for (k=0; k<brncols; k++) {
+          col = bNindices[brcols[k]];
+          ierr = PetscLayoutFindOwnerIndex(A->cmap,col,&colowner,PETSC_NULL);CHKERRQ(ierr);
+          if (colowner == rowowner) bmdnnz[br]++;
+          else onnz[br]++;
+        }
+        ierr = MatRestoreRow(B,br,&brncols,&brcols,PETSC_NULL);CHKERRQ(ierr);
+      }
+      ierr = ISRestoreIndices(nest->isglobal.row[i],&bmindices); CHKERRQ(ierr);
+      /* bsf will have to take care of disposing of bedges. */
+      ierr = PetscSFSetGraph(bmsf,m,2*bm,PETSC_NULL,PETSC_COPY_VALUES,bmedges,PETSC_OWN_POINTER); CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(bmsf,MPIU_INT,bmdnnz,dnnz,MPIU_SUM);                              CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(bmsf,MPIU_INT,bmdnnz,dnnz,MPIU_SUM);                                CHKERRQ(ierr);
+      ierr = PetscFree(bmdnnz);                                                                   CHKERRQ(ierr);
+      ierr = PetscSFDestroy(&bmsf);                                                               CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(bNis,&bNindices);
+    ierr = ISDestroy(&bNis); CHKERRQ(ierr);
+  }
+  ierr = MatSeqAIJSetPreallocation(C,0,dnnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(C,0,dnnz,0,onnz);CHKERRQ(ierr);
+  ierr = PetscFree(dnnz);CHKERRQ(ierr);
+
+  /* Fill by row */
+  for (j=0; j<nest->nc; ++j) {
+    /* Using global column indices and ISAllGather() is not scalable. */
+    IS bNis;
+    PetscInt bN;
+    const PetscInt *bNindices;
+    ierr = ISAllGather(nest->isglobal.col[j], &bNis);      CHKERRQ(ierr);
+    ierr = ISGetSize(bNis,&bN);                            CHKERRQ(ierr);
+    ierr = ISGetIndices(bNis,&bNindices);                  CHKERRQ(ierr);
+    for (i=0; i<nest->nr; ++i) {
+      Mat B;
+      PetscInt bm, br;
+      const PetscInt *bmindices;
+      B = nest->m[i][j];
+      if (!B) continue;
+      ierr = ISGetLocalSize(nest->isglobal.row[i],&bm);      CHKERRQ(ierr);
+      ierr = ISGetIndices(nest->isglobal.row[i],&bmindices); CHKERRQ(ierr);
+      for(br = 0; br < bm; ++br) {
+        PetscInt row = bmindices[br], brncols,  *cols;
+        const PetscInt *brcols;
+        const PetscScalar *brcoldata;
+        ierr = MatGetRow(B,br,&brncols,&brcols,&brcoldata);CHKERRQ(ierr);
+        ierr = PetscMalloc(brncols*sizeof(PetscInt),&cols); CHKERRQ(ierr);
+        for (k=0; k<brncols; k++)
+          cols[k] = bNindices[brcols[k]];
+        /* 
+         Nest blocks are required to be nonoverlapping -- otherwise nest and monolithic index layouts wouldn't match.
+         Thus, we could use INSERT_VALUES, but I prefer ADD_VALUES. 
+         */
+        ierr = MatSetValues(C,1,&row,brncols,cols,brcoldata,ADD_VALUES);
+        ierr = MatRestoreRow(B,br,&brncols,&brcols,&brcoldata);CHKERRQ(ierr);
+        ierr = PetscFree(cols); CHKERRQ(ierr);
+      }
+      ierr = ISRestoreIndices(nest->isglobal.row[i],&bmindices); CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(bNis,&bNindices);
+    ierr = ISDestroy(&bNis); CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 /*MC
   MATNEST - MATNEST = "nest" - Matrix type consisting of nested submatrices, each stored separately.

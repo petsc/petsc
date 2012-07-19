@@ -1613,8 +1613,8 @@ $  g(x_0 + sum_j a_ij y_j + y_i, ydot_i) = 0
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSRosWSetType(), TSRosWRegister()
-
+.seealso:  TSCreate(), TS, TSSetType(), TSRosWSetType(), TSRosWRegister(), TSROSW2M, TSROSW2P, TSROSWRA3PW, TSROSWRA34PW2, TSROSWRODAS3,
+           TSROSWSANDU3, TSROSWASSP3P3S1C, TSROSWLASSP3P4S2C, TSROSWLLSSP3P4S2C, TSROSWGRK4T, TSROSWSHAMP4, TSROSWVELDD4, TSROSW4L
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__

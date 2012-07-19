@@ -87,9 +87,6 @@ PetscErrorCode  PetscLayoutDestroy(PetscLayout *map)
     ierr = PetscFree((*map)->range);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&(*map)->mapping);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&(*map)->bmapping);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_PTHREADCLASSES)
-    ierr = PetscThreadsLayoutDestroy(&(*map)->tmap);CHKERRQ(ierr);
-#endif
 #if defined(PETSC_THREADCOMM_ACTIVE)
     ierr = PetscFree((*map)->trstarts);CHKERRQ(ierr);
 #endif
