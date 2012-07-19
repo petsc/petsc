@@ -64,7 +64,7 @@ PetscErrorCode DMDAVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
   PetscInt       dim = da->dim;
   PetscScalar   *vArray;
   PetscInt       nVx, nVy, nxF, nXF, nyF, nYF, nzF, nZF;
-  PetscInt       pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart, yfEnd, zfStart, zfEnd;
+  PetscInt       pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart, yfEnd, zfStart;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -81,7 +81,7 @@ PetscErrorCode DMDAVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
   ierr = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
   xfStart = fStart; xfEnd = xfStart+nXF;
   yfStart = xfEnd;  yfEnd = yfStart+nYF;
-  zfStart = yfEnd;  zfEnd = zfStart+nZF;
+  zfStart = yfEnd;
   if ((p < pStart) || (p >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid point %d should be in [%d, %d)", p, pStart, pEnd);
   ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
   if ((p >= cStart) || (p < cEnd)) {
@@ -189,7 +189,7 @@ PetscErrorCode DMDAVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
   PetscInt       dim = da->dim;
   PetscScalar   *vArray;
   PetscInt       nVx, nVy, nxF, nXF, nyF, nYF, nzF, nZF;
-  PetscInt       pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart, yfEnd, zfStart, zfEnd;
+  PetscInt       pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart, yfEnd, zfStart;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -206,7 +206,7 @@ PetscErrorCode DMDAVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
   ierr = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
   xfStart = fStart; xfEnd = xfStart+nXF;
   yfStart = xfEnd;  yfEnd = yfStart+nYF;
-  zfStart = yfEnd;  zfEnd = zfStart+nZF;
+  zfStart = yfEnd;
   if ((p < pStart) || (p >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid point %d should be in [%d, %d)", p, pStart, pEnd);
   ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
   if ((p >= cStart) || (p < cEnd)) {
