@@ -166,7 +166,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESMatrixFreeCreate2"
+#define __FUNCT__ "SNESDefaultMatrixFreeCreate2"
 /*@C
    SNESMatrixFreeCreate2 - Creates a matrix-free matrix
    context for use with a SNES solver.  This matrix can be used as

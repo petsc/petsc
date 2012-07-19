@@ -526,8 +526,8 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
 @*/
 PetscErrorCode  SNESSetFromOptions(SNES snes)
 {
-  PetscBool               flg,mf,mf_operator,pcset;
-  PetscInt                i,indx,lag,mf_version,grids;
+  PetscBool               flg,pcset;
+  PetscInt                i,indx,lag,grids;
   MatStructure            matflag;
   const char              *deft = SNESLS;
   const char              *convtests[] = {"default","skip"};
@@ -664,19 +664,16 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
       ierr = PetscInfo(snes,"Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
     }
 
-    mf = mf_operator = PETSC_FALSE;
     flg = PETSC_FALSE;
-    ierr = PetscOptionsBool("-snes_mf_operator","Use a Matrix-Free Jacobian with user-provided preconditioner matrix","MatCreateSNESMF",PETSC_FALSE,&mf_operator,&flg);CHKERRQ(ierr);
-    if (flg && mf_operator) {
+    ierr = PetscOptionsBool("-snes_mf_operator","Use a Matrix-Free Jacobian with user-provided preconditioner matrix","MatCreateSNESMF",PETSC_FALSE,&snes->mf_operator,&flg);CHKERRQ(ierr);
+    if (flg && snes->mf_operator) {
       snes->mf_operator = PETSC_TRUE;
-      mf = PETSC_TRUE;
+      snes->mf = PETSC_TRUE;
     }
     flg = PETSC_FALSE;
-    ierr = PetscOptionsBool("-snes_mf","Use a Matrix-Free Jacobian with no preconditioner matrix","MatCreateSNESMF",PETSC_FALSE,&mf,&flg);CHKERRQ(ierr);
-    if (!flg && mf_operator) mf = PETSC_TRUE;
-    mf_version = 1;
-    ierr = PetscOptionsInt("-snes_mf_version","Matrix-Free routines version 1 or 2","None",mf_version,&mf_version,0);CHKERRQ(ierr);
-
+    ierr = PetscOptionsBool("-snes_mf","Use a Matrix-Free Jacobian with no preconditioner matrix","MatCreateSNESMF",PETSC_FALSE,&snes->mf,&flg);CHKERRQ(ierr);
+    if (!flg && snes->mf_operator) snes->mf = PETSC_TRUE;
+    ierr = PetscOptionsInt("-snes_mf_version","Matrix-Free routines version 1 or 2","None",snes->mf_version,&snes->mf_version,0);CHKERRQ(ierr);
 
     /* GS Options */
     ierr = PetscOptionsInt("-snes_gs_sweeps","Number of sweeps of GS to apply","SNESComputeGS",snes->gssweeps,&snes->gssweeps,PETSC_NULL);CHKERRQ(ierr);
@@ -692,8 +689,6 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     /* process any options handlers added with PetscObjectAddOptionsHandler() */
     ierr = PetscObjectProcessOptionsHandlers((PetscObject)snes);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
-  if (mf) { ierr = SNESSetUpMatrixFree_Private(snes, mf_operator, mf_version);CHKERRQ(ierr); }
 
   if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
   ierr = KSPGetOperators(snes->ksp,PETSC_NULL,PETSC_NULL,&matflag);
@@ -1346,6 +1341,10 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->norm_init_set     = PETSC_FALSE;
   snes->reason            = SNES_CONVERGED_ITERATING;
   snes->gssweeps          = 1;
+
+  snes->mf                = PETSC_FALSE;
+  snes->mf_operator       = PETSC_FALSE;
+  snes->mf_version        = 1;
 
   snes->numLinearSolveFailures = 0;
   snes->maxLinearSolveFailures = 1;
@@ -2424,6 +2423,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
   }
 
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = DMShellSetGlobalVector(snes->dm,snes->vec_sol);CHKERRQ(ierr);
   ierr = DMSNESSetUpLegacy(dm);CHKERRQ(ierr); /* To be removed when function routines are taken out of the DM package */
   ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->computefunction) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must provide a residual function with SNESSetFunction(), DMSNESSetFunction(), DMDASNESSetFunctionLocal(), etc");
@@ -2434,6 +2434,10 @@ PetscErrorCode  SNESSetUp(SNES snes)
   if (!snes->ksp) {ierr = SNESGetKSP(snes, &snes->ksp);CHKERRQ(ierr);}
 
   if (!snes->linesearch) {ierr = SNESGetSNESLineSearch(snes, &snes->linesearch);}
+
+
+  if (snes->mf) { ierr = SNESSetUpMatrixFree_Private(snes, snes->mf_operator, snes->mf_version);CHKERRQ(ierr); }
+
 
   if (snes->ops->usercompute && !snes->user) {
     ierr = (*snes->ops->usercompute)(snes,(void**)&snes->user);CHKERRQ(ierr);
