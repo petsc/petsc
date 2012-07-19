@@ -1254,7 +1254,6 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
   const PetscInt *is;
   PetscInt       nis = iscoloring->n,*rowhit,bs = 1;
   IS             *isa;
-  PetscBool      done;
   PetscBool      flg1,flg2;
   Mat_SeqAIJ     *csp = (Mat_SeqAIJ*)mat->data;
   PetscInt       *colorforrow,*rows,*rows_i,*columnsforspidx,*columnsforspidx_i,*idxhit,*spidx; 
@@ -1290,8 +1289,7 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
   colorforcol[0] = 0; 
   columns_i      = columns;
   
-  ierr = MatGetColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,&done);CHKERRQ(ierr); /* column-wise storage of mat */
-  if (!done) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"MatGetColumnIJ() not supported for matrix type %s",((PetscObject)mat)->type_name);
+  ierr = MatGetColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,PETSC_NULL);CHKERRQ(ierr); /* column-wise storage of mat */
 
   cm = c->m; 
   ierr = PetscMalloc((cm+1)*sizeof(PetscInt),&rowhit);CHKERRQ(ierr);
@@ -1339,7 +1337,7 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
     ierr = ISRestoreIndices(isa[i],&is);CHKERRQ(ierr);  
     rows_i += nrows; columnsforspidx_i += nrows; 
   }
-  ierr = MatRestoreColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,&done);CHKERRQ(ierr);
+  ierr = MatRestoreColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(rowhit);CHKERRQ(ierr);
   ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
