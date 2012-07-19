@@ -14,7 +14,7 @@ Python 2.4 and above, then you can issue at the command line::
 """
 
 def help(args=None):
-    import sys
+    import sys, shlex
     # program name
     try:
         prog = sys.argv[0]
@@ -23,7 +23,7 @@ def help(args=None):
     if args is None:
         args = sys.argv[1:]
     elif isinstance(args, str):
-        args = args.split()
+        args = shlex.split(args)
     else:
         args = [str(a) for a in args]
     import petsc4py
