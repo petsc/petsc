@@ -8,6 +8,7 @@
         Subroutine DMCompositeGetEntries1(dm1, d1,ierr)
           USE_DM_HIDE
           DM_HIDE dm1
+          DM_HIDE d1
           PetscErrorCode ierr
         End Subroutine
 
