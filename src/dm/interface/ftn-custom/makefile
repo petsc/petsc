@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zdmf.c
+SOURCEC  = zdmf.c zdmgetf.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = zdmf.o
+OBJSC    = ${SOURCEC:.c=.o}
 OBJSF    = 
 LIBBASE  = libpetscdm
 MANSEC   = DM
