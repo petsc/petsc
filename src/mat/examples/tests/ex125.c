@@ -47,7 +47,8 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs);CHKERRQ(ierr);
   ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr); 
-  ierr = MatSetFromOptions(C);CHKERRQ(ierr);   
+  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+  ierr = MatSetUp(C);CHKERRQ(ierr);
   
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
@@ -118,10 +119,12 @@ int main(int argc,char **args)
     ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
 
     /* Test MatMatSolve() */
+    /*
     if ((ipack == 0 || ipack == 2) && testMatMatSolve){
-      printf("   MaMattSolve() is not implemented for this package. Skip the testing.\n");
+      printf("   MatMatSolve() is not implemented for this package. Skip the testing.\n");
       testMatMatSolve = PETSC_FALSE;
     }
+     */
     if (testMatMatSolve){
       if (!nfact){
         ierr = MatMatMult(A,C,MAT_INITIAL_MATRIX,2.0,&RHS);CHKERRQ(ierr);
@@ -172,23 +175,6 @@ int main(int argc,char **args)
         }
       }
     }
-
-    /* Test MatMatSolve() */
-    if (testMatMatSolve){
-      for (nsolve = 0; nsolve < 2; nsolve++){
-        if (!rank) printf("   %d-the MatMatSolve \n",nsolve);
-        ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
-       
-        /* Check the error */
-        ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-        ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-        if (norm > tol){ 
-          if (!rank){
-            ierr = PetscPrintf(PETSC_COMM_SELF,"2nd MatMatSolve: Norm of error %g, nsolve %d\n",norm,nsolve);CHKERRQ(ierr);
-          }
-        }
-      } 
-    } 
   } 
   
   /* Free data structures */
