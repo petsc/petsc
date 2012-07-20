@@ -3554,6 +3554,9 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
     b->singlemalloc = PETSC_TRUE;
     b->free_a       = PETSC_TRUE;
     b->free_ij      = PETSC_TRUE;
+#if defined(PETSC_THREADCOMM_ACTIVE)
+  ierr = MatZeroEntries_SeqAIJ(B);CHKERRQ(ierr);
+#endif
   } else {
     b->free_a       = PETSC_FALSE;
     b->free_ij      = PETSC_FALSE;
@@ -3563,9 +3566,6 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
   b->maxnz             = nz;
   B->info.nz_unneeded  = (double)b->maxnz;
   if (realalloc) {ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);}
-#if defined(PETSC_THREADCOMM_ACTIVE)
-  ierr = MatZeroEntries_SeqAIJ(B);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
