@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
     <link href="../style.css" rel="stylesheet" type="text/css">
-    <title>Hosting alternate mercurial repository</title>
+    <title>Hosting alternate mercurial repositorys</title>
   </head>
   <body>
 
@@ -42,13 +42,11 @@
 
     <div id="main">
 
-      <p>Our current repository site <a href="http://petsc.cs.iit.edu">http://petsc.cs.iit.edu</a>
-        can ocassionally go offline. An alternate common repository where one could share [push/pull]
-        commits is usefull at such times. The current recommendation is to host the alternate repo
-        at <a href="https://bitbucket.org">https://bitbucket.org</a>.</p>
+      <p>Our repository site <a href="http://petsc.cs.iit.edu">http://petsc.cs.iit.edu</a>
+        can ocassionally go offline. An alternate repository location where one could share [push/pull]
+        commits is useful at such times. No data will be lost by switching.</p>
 
-      <h2><a name="create-account">Create a bitbucket account</h2>
-      <p>Each user/admin should create an individual bitbucket account for themselves.</p>
+      <h2><a name="create-account">Create a bitbucket account (Manditory)</h2>
 
       <ul>
         <li>Sign-up with bitbucket at <a href="https://bitbucket.org/account/signup/">
@@ -57,30 +55,26 @@
         <li>[Optional:] For ssh access - register your public ssh key at:
           <a style="color: purple">'YourName' -> 'Account' -> 'SSH keys'</a>.</li>
 
-        <li>[Admin note:] If you have a .edu email id - add it to:
+        <li>If you have a .edu email id - add it to:
           <a style="color: purple">'YourName'-> 'Account' -> 'Email adresses'</a>.
           If you were to host private repositories - this will enable you to add in over 5 users
           to such a repository.</li>
       </ul>
 
-      <h2>Sharing petsc-dev</h2>
+      <h2>Alternative location for petsc-dev and buildsystem</h2>
 
-      <h4>Admin notes:</h4>
-      <p>Alternate petsc-dev and BuildSystem repos are already hosted at:</p>
-      <ul>
-        <li><a href="https://bitbucket.org/petsc/petsc-dev">https://bitbucket.org/petsc/petsc-dev</a></li>
-        <li><a href="https://bitbucket.org/petsc/buildsystem">https://bitbucket.org/petsc/buildsystem</a></li>
-      </ul>
-
-      <h4>User notes:</h4>
-      <p>If you wish to push your commits to this alternate shared repo, do the following:
+      <p>If the default petsc-dev or BuildSystem site is unavailable:
         <ul>
-          <li> <a href="#crete-account">create</a> an individual account.</li>
-          <li> ask one of the admins [Sean,Jed,Matt,Satish,Barry] to enable write access for you.</li>
-          <li> now you should be able to pull or push with the commands:
+          <li> ask petsc-maint@mcs.anl.gov to enable write access for you (try it first, you may already have access).</li>
+          <li> from your petsc-dev repository directory use
             <ul>
               <li><code style="color: red">hg pull https://YourUserName@bitbucket.org/petsc/petsc-dev</code></li>
-              <li><code style="color: red">hg push https://YourUserName@bitbucket.org/petsc/petsc-dev</code></li>
+              <li><code style="color: red">hg push https://YourUserName@bitbucket.org/petsc/petsc-dev</code></li>  
+            </ul>
+          <li> from your BuildSystem repository directory use
+            <ul>
+              <li><code style="color: red">hg pull https://YourUserName@bitbucket.org/petsc/buildsystem</code></li>
+              <li><code style="color: red">hg push https://YourUserName@bitbucket.org/petsc/buildsystem</code></li>  
             </ul>
         </ul>
 
@@ -89,14 +83,12 @@
 
       <h2>Sharing other repositories</h2>
 
-      <h4>Admin notes:</h4>
-      <p> To temporarily share an existing 'RepoName' - one can do the following:</p>
+      <h4>Setting up alternative repository for reponame (anyone can do this):</h4>
 
       <ul>
-        <li> <a href="#crete-account">create</a> an individual account.</li>
-        <li> create a new repository 'reponame' (must be lower case) at:
+        <li> At bitbucket create a new repository reponame (must be lower case) at:
           <a style="color: purple">'Repositories' -> 'Create repository'</a>.</li>
-        <li> from your current clone push to the newly created repo.
+        <li> from your current repository directory
           <ul>
             <li><code style="color: red">hg push https://YourUserName@bitbucket.org/YourUserName/reponame</code></li>
           </ul>
@@ -104,11 +96,10 @@
           and add in users with their bitbucket UserName or invite them by their registered email address.</li>
       </ul>
 
-      <h4>User notes:</h4>
+      <h4>Using the alternative repository (created by AdminUserName):</h4>
 
       <ul>
-        <li> <a href="#crete-account">create</a> an individual account.</li>
-        <li> ask repo admin to enable read/write access for you.</li>
+        <li> ask repo admin to enable read/write access for you (if they have not done so)</li>
         <li> now you should be able to pull or push with the commands:
           <ul>
             <li><code style="color: red">hg pull https://YourUserName@bitbucket.org/AdminUserName/reponame</code></li>
