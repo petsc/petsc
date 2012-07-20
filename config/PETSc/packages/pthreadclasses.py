@@ -32,16 +32,15 @@ class Configure(PETSc.package.NewPackage):
     # twin processor; it also happens to serve as a compiler barrier
     # x86
     if self.checkCompile('', 'asm volatile("rep; nop" ::: "memory");'):
-      self.addDefine('CPURelax()','asm volatile("rep; nop" ::: "memory")')
+      self.addDefine('CPU_RELAX_X86','1')
       return
     # PowerPC
-    if self.checkCompile('','do { HMT_low; HMT_medium; barrier(); } while (0)'):
-      self.addDefine('CPURelax()','do {HMT_low; HMT_medium; barrier(); } while(0)')
+    if self.checkCompile('','do { HMT_low; HMT_medium; __asm__ __volatile__ ("":::"memory"); } while (0)'):
+      self.addDefine('CPU_RELAX_PPC64','1')
       return
-    elif self.checkCompile('','barrier();'):
-      self.addDefine('CPURelax()','barrier()')
+    elif self.checkCompile('','__asm__ __volatile__ ("":::"memory);'):
+      self.addDefine('CPU_RELAX_PPC','1')
       return
-    self.addDefine('CPURelax()','')
     return
 
 
