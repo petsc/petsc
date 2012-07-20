@@ -136,7 +136,7 @@ class Installer(script.Script):
     """
     copies = []
     names  = os.listdir(src)
-    ignorefiles= ["makefile"]
+    ignorefiles = ["makefile","index.html","makefile.html","install.py","uninstall.py"]
     if not os.path.exists(dst):
       os.makedirs(dst)
     elif not os.path.isdir(dst):
@@ -278,7 +278,6 @@ make PETSC_ARCH= PETSC_DIR=%s TAO_DIR=%s tao_testexamples
     self.setupDirectories()
     self.checkPrefix()
     self.checkDestdir()
-    self.createUninstaller()
     #self.fixConf()
 
 
@@ -298,6 +297,7 @@ make PETSC_ARCH= PETSC_DIR=%s TAO_DIR=%s tao_testexamples
     self.installLib()
     #self.installShare()
     self.outputDone()
+    self.createUninstaller()
 
     return
 
