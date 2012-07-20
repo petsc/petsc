@@ -8,7 +8,7 @@ static char help[] = "Tests LU, Cholesky factorization and MatMatSolve() for a E
 int main(int argc,char **argv)
 {
   Mat            A,F,B,X,C,Asym,G;
-  Vec            b,x,c;
+  Vec            b,x,c,d,e;
   PetscErrorCode ierr;
   PetscInt       m = 5,n,p,i,j,nrows,ncols;
   PetscScalar    *v,*barray,rval;
@@ -191,8 +191,8 @@ int main(int argc,char **argv)
   ierr = VecCreate(PETSC_COMM_WORLD,&c);CHKERRQ(ierr);
   ierr = VecSetSizes(c,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(c);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(c);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(c);CHKERRQ(ierr);
+  //ierr = VecAssemblyBegin(c);CHKERRQ(ierr);
+  //ierr = VecAssemblyEnd(c);CHKERRQ(ierr);
   ierr = MatMult(Asym,x,c);CHKERRQ(ierr);
   ierr = VecAXPY(c,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(c,NORM_1,&norm);CHKERRQ(ierr);
@@ -221,6 +221,9 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(F,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(F,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCopy(A,F,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  /* Create vector d to test MatSolveAdd() */
+  ierr = VecDuplicate(x,&d);CHKERRQ(ierr);
+  ierr = VecCopy(x,d);CHKERRQ(ierr);
 
   /* PF=LU or F=LU factorization - perms is ignored by Elemental; 
      set finfo.dtcol !0 or 0 to enable/disable partial pivoting */ 
@@ -228,12 +231,17 @@ int main(int argc,char **argv)
   ierr = MatLUFactor(F,0,0,&finfo);CHKERRQ(ierr);
 
   /* Solve LUX = PB or LUX = B */
-  ierr = MatSolve(F,b,x);CHKERRQ(ierr);
+  ierr = MatSolveAdd(F,b,d,x);CHKERRQ(ierr);
   ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
 
   /* Check norm(A*X - B) */
+  ierr = VecCreate(PETSC_COMM_WORLD,&e);CHKERRQ(ierr);
+  ierr = VecSetSizes(e,m,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(e);CHKERRQ(ierr);
   ierr = MatMult(A,x,c);CHKERRQ(ierr);
+  ierr = MatMult(A,d,e);CHKERRQ(ierr);
+  ierr = VecAXPY(c,-1.0,e);CHKERRQ(ierr);
   ierr = VecAXPY(c,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(c,NORM_1,&norm);CHKERRQ(ierr);
   if (norm > tol){
@@ -265,6 +273,8 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&c);CHKERRQ(ierr);
+  ierr = VecDestroy(&d);CHKERRQ(ierr);
+  ierr = VecDestroy(&e);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = PetscFinalize();

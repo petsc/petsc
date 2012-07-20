@@ -7,7 +7,7 @@ static char help[] = "Tests Elemental interface.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            A,B,C,Ct;
+  Mat            Cdense,B,C,Ct;
   PetscInt       i,j,m = 5,n,nrows,ncols;
   const PetscInt *rows,*cols;
   IS             isrows,iscols;
@@ -49,13 +49,15 @@ int main(int argc,char **args)
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
 
-  /* Test MatView() * and out-of-place MatConvert() */
+  /* Test MatView(), MatDuplicate() and out-of-place MatConvert() */
+  ierr = MatDuplicate(C,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   if (mats_view) {
-    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  ierr = MatConvert(C,MATMPIDENSE,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatConvert(C,MATMPIDENSE,MAT_INITIAL_MATRIX,&Cdense);CHKERRQ(ierr);
   if (mats_view) {
-    ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = MatView(Cdense,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /* Test MatNorm() */
@@ -66,7 +68,7 @@ int main(int argc,char **args)
   ierr = MatTranspose(C,MAT_INITIAL_MATRIX,&Ct);CHKERRQ(ierr);
   ierr = MatZeroEntries(Ct);CHKERRQ(ierr);
 
-  /* Test MatAXPY() and MatAYPX() */
+  /* Test MatAXPY(), MatAYPX() and in-place MatConvert() */
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(B,MATELEMENTAL);CHKERRQ(ierr);
@@ -83,6 +85,7 @@ int main(int argc,char **args)
     }
    }
   ierr = MatSetValues(B,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = PetscFree(v);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -99,12 +102,19 @@ int main(int argc,char **args)
   if (mats_view) {
     ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
+  
+  /* Test MatMatTransposeMult() */
+  ierr = MatMatTransposeMult(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
+  if (mats_view) {
+    ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+
+  ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&Ct);CHKERRQ(ierr);
   ierr = PetscFinalize();
