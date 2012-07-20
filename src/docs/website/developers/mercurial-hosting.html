@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
     <link href="../style.css" rel="stylesheet" type="text/css">
-    <title>Hosting alternate mercurial repositorys</title>
+    <title>Hosting alternate mercurial repositories</title>
   </head>
   <body>
 
@@ -12,7 +12,7 @@
     </div>
 
     <div id="header">
-      <h1>Hosting alternate mercurial repository</h1>
+      <h1>Hosting alternate mercurial repositories</h1>
     </div>
 
     <hr>
@@ -46,11 +46,12 @@
         can ocassionally go offline. An alternate repository location where one could share [push/pull]
         commits is useful at such times. No data will be lost by switching.</p>
 
-      <h2><a name="create-account">Create a bitbucket account (Manditory)</h2>
+      <h2><a name="create-account">Create a bitbucket account (Mandatory)</h2>
 
       <ul>
-        <li>Sign-up with bitbucket at <a href="https://bitbucket.org/account/signup/">
-            https://bitbucket.org/account/signup/</a>.</li>
+        <li>Sign-up at <a href="https://bitbucket.org/account/signup/">
+            https://bitbucket.org/account/signup/</a> and create an individual account:
+          <a style="color: brown">YourUserName</a>.</li>
 
         <li>[Optional:] For ssh access - register your public ssh key at:
           <a style="color: purple">'YourName' -> 'Account' -> 'SSH keys'</a>.</li>
@@ -69,12 +70,12 @@
           <li> from your petsc-dev repository directory use
             <ul>
               <li><code style="color: red">hg pull https://YourUserName@bitbucket.org/petsc/petsc-dev</code></li>
-              <li><code style="color: red">hg push https://YourUserName@bitbucket.org/petsc/petsc-dev</code></li>  
+              <li><code style="color: red">hg push https://YourUserName@bitbucket.org/petsc/petsc-dev</code></li>
             </ul>
           <li> from your BuildSystem repository directory use
             <ul>
               <li><code style="color: red">hg pull https://YourUserName@bitbucket.org/petsc/buildsystem</code></li>
-              <li><code style="color: red">hg push https://YourUserName@bitbucket.org/petsc/buildsystem</code></li>  
+              <li><code style="color: red">hg push https://YourUserName@bitbucket.org/petsc/buildsystem</code></li>
             </ul>
         </ul>
 
@@ -83,10 +84,10 @@
 
       <h2>Sharing other repositories</h2>
 
-      <h4>Setting up alternative repository for reponame (anyone can do this):</h4>
+      <h4>Setting up alternative repository for <a style="color: brown">reponame</a> (anyone can do this):</h4>
 
       <ul>
-        <li> At bitbucket create a new repository reponame (must be lower case) at:
+        <li> At bitbucket create a new repository <a style="color: brown">reponame</a> (must be lower case) at:
           <a style="color: purple">'Repositories' -> 'Create repository'</a>.</li>
         <li> from your current repository directory
           <ul>
