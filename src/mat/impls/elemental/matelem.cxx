@@ -166,7 +166,7 @@ static PetscErrorCode MatGetInfo_Elemental(Mat A,MatInfoType flag,MatInfo *info)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValues_Elemental"
-static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *rows,PetscInt nc,const PetscInt *cols,const PetscElemScalar *vals,InsertMode imode)
+static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *rows,PetscInt nc,const PetscInt *cols,const PetscScalar *vals,InsertMode imode)
 {
   PetscErrorCode ierr;
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
@@ -191,15 +191,15 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
       if (erow % grid.MCSize() != grid.MCRank() || ecol % grid.MRSize() != grid.MRRank()){ /* off-proc entry */
         if (imode != ADD_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ADD_VALUES to off-processor entry is supported");
         /* PetscPrintf(PETSC_COMM_SELF,"[%D] add off-proc entry (%D,%D, %g) (%D %D)\n",rank,rows[i],cols[j],*(vals+i*nc),erow,ecol); */
-        a->esubmat->Set(0,0, vals[i*nc+j]);
+        a->esubmat->Set(0,0, (PetscElemScalar)vals[i*nc+j]);
         a->interface->Axpy(1.0,*(a->esubmat),erow,ecol); 
         continue;
       }
       elrow = erow / grid.MCSize();
       elcol = ecol / grid.MRSize();
       switch (imode) {
-      case INSERT_VALUES: a->emat->SetLocal(elrow,elcol,vals[i*nc+j]); break;
-      case ADD_VALUES: a->emat->UpdateLocal(elrow,elcol,vals[i*nc+j]); break;
+      case INSERT_VALUES: a->emat->SetLocal(elrow,elcol,(PetscElemScalar)vals[i*nc+j]); break;
+      case ADD_VALUES: a->emat->UpdateLocal(elrow,elcol,(PetscElemScalar)vals[i*nc+j]); break;
       default: SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"No support for InsertMode %d",(int)imode);
       }
     }
@@ -213,20 +213,20 @@ static PetscErrorCode MatMult_Elemental(Mat A,Vec X,Vec Y)
 {
   Mat_Elemental     *a = (Mat_Elemental*)A->data;
   PetscErrorCode    ierr;
-  const PetscScalar *x;
-  PetscScalar       *y;
+  const PetscElemScalar *x;
+  PetscElemScalar       *y;
   PetscElemScalar       one = 1,zero = 0;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
+  ierr = VecGetArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
     elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe(A->cmap->N,1,0,x,A->cmap->n,*a->grid);
     elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> ye(A->rmap->N,1,0,y,A->rmap->n,*a->grid);
     elem::Gemv(elem::NORMAL,one,*a->emat,xe,zero,ye);
   }
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -238,18 +238,18 @@ static PetscErrorCode MatMultTranspose_Elemental(Mat A,Vec X,Vec Y)
   PetscErrorCode    ierr;
   const PetscElemScalar *x;
   PetscElemScalar       *y;
-  PetscScalar       one = 1,zero = 0;
+  PetscElemScalar       one = 1,zero = 0;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
+  ierr = VecGetArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
     elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,x,A->rmap->n,*a->grid);
     elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> ye(A->cmap->N,1,0,y,A->cmap->n,*a->grid);
     elem::Gemv(elem::TRANSPOSE,one,*a->emat,xe,zero,ye);
   }
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -261,19 +261,19 @@ static PetscErrorCode MatMultAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
   PetscErrorCode    ierr;
   const PetscElemScalar *x;
   PetscElemScalar       *z;
-  PetscScalar       one = 1;
+  PetscElemScalar       one = 1;
 
   PetscFunctionBegin;
   if (Y != Z) {ierr = VecCopy(Y,Z);CHKERRQ(ierr);}
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Z,&z);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
+  ierr = VecGetArray(Z,(PetscScalar **)&z);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
     elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe(A->cmap->N,1,0,x,A->cmap->n,*a->grid);
     elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> ze(A->rmap->N,1,0,z,A->rmap->n,*a->grid);
     elem::Gemv(elem::NORMAL,one,*a->emat,xe,one,ze);
   }
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Z,&z);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Z,(PetscScalar **)&z);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -285,19 +285,19 @@ static PetscErrorCode MatMultTransposeAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
   PetscErrorCode    ierr;
   const PetscElemScalar *x;
   PetscElemScalar       *z;
-  PetscScalar       one = 1;
+  PetscElemScalar       one = 1;
 
   PetscFunctionBegin;
   if (Y != Z) {ierr = VecCopy(Y,Z);CHKERRQ(ierr);}
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Z,&z);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
+  ierr = VecGetArray(Z,(PetscScalar **)&z);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
     elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,x,A->rmap->n,*a->grid);
     elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> ze(A->cmap->N,1,0,z,A->cmap->n,*a->grid);
     elem::Gemv(elem::TRANSPOSE,one,*a->emat,xe,one,ze);
   }
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Z,&z);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Z,(PetscScalar **)&z);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -308,7 +308,7 @@ static PetscErrorCode MatMatMultNumeric_Elemental(Mat A,Mat B,Mat C)
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
   Mat_Elemental  *b = (Mat_Elemental*)B->data;
   Mat_Elemental  *c = (Mat_Elemental*)C->data;
-  PetscScalar    one = 1,zero = 0;
+  PetscElemScalar    one = 1,zero = 0;
 
   PetscFunctionBegin;
   { /* Scoping so that constructor is called before pointer is returned */
@@ -360,7 +360,7 @@ static PetscErrorCode MatMatTransposeMultNumeric_Elemental(Mat A,Mat B,Mat C)
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
   Mat_Elemental  *b = (Mat_Elemental*)B->data;
   Mat_Elemental  *c = (Mat_Elemental*)C->data;
-  PetscScalar    one = 1,zero = 0;
+  PetscElemScalar    one = 1,zero = 0;
 
   PetscFunctionBegin;
   { /* Scoping so that constructor is called before pointer is returned */
@@ -407,24 +407,24 @@ static PetscErrorCode MatMatTransposeMult_Elemental(Mat A,Mat B,MatReuse scall,P
 
 #undef __FUNCT__
 #define __FUNCT__ "MatScale_Elemental"
-static PetscErrorCode MatScale_Elemental(Mat X,PetscElemScalar a)
+static PetscErrorCode MatScale_Elemental(Mat X,PetscScalar a)
 {
   Mat_Elemental  *x = (Mat_Elemental*)X->data;
 
   PetscFunctionBegin;
-  elem::Scal(a,*x->emat);
+  elem::Scal((PetscElemScalar)a,*x->emat);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAXPY_Elemental"
-static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscElemScalar a,Mat X,MatStructure str)
+static PetscErrorCode MatAXPY_Elemental(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   Mat_Elemental  *x = (Mat_Elemental*)X->data;
   Mat_Elemental  *y = (Mat_Elemental*)Y->data;
 
   PetscFunctionBegin;
-  elem::Axpy(a,*x->emat,*y->emat);
+  elem::Axpy((PetscElemScalar)a,*x->emat,*y->emat);
   PetscFunctionReturn(0);
 }
 
@@ -497,7 +497,7 @@ static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
 
   PetscFunctionBegin;
   ierr = VecCopy(B,X);CHKERRQ(ierr);
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(X,(PetscScalar **)&x);CHKERRQ(ierr);
   elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,x,A->rmap->n,*a->grid);
   elem::DistMatrix<PetscElemScalar,elem::MC,elem::MR> xer = xe;
   switch (A->factortype) {
@@ -518,7 +518,7 @@ static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unfactored Matrix or Unsupported MatFactorType"); 
     break;
   }
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,(PetscScalar **)&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -609,16 +609,6 @@ static PetscErrorCode MatCholeskyFactor_Elemental(Mat A,IS perm,const MatFactorI
 
   PetscFunctionBegin;
   elem::Cholesky(elem::UPPER,*a->emat);
-  // if (info->dtcol){
-  //   /* A = U^T * U for SPD Matrix A */
-  //   printf("Cholesky Factorization for SPD Matrices...\n");
-  //   elem::Cholesky(elem::UPPER,*a->emat);
-  // } else {
-  //   /* A = U^T * D * U * for Symmetric Matrix A */ 
-  //   printf("LDL^T Factorization for Symmetric Matrices.\n");
-  //   printf("This routine does not pivot. Use with caution.\n");
-  //   elem::LDLT(*a->emat,d);
-  // }
   A->factortype = MAT_FACTOR_CHOLESKY; 
   A->assembled  = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -779,7 +769,7 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,const MatType newtype,Mat
       RO2E(A,1,crank,cidx,&ecol);
       if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect col translation");
       v = a->emat->Get(erow,ecol);
-      ierr = MatSetValues(Bmpi,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(Bmpi,1,&i,1,&j,(PetscScalar *)&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
