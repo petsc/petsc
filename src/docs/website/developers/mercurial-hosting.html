@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <link href="../style.css" rel="stylesheet" type="text/css">
+    <title>Hosting alternate mercurial repository</title>
+  </head>
+  <body>
+
+    <div id="logo">
+      <h1>PETSc</h1>
+    </div>
+
+    <div id="header">
+      <h1>Hosting alternate mercurial repository</h1>
+    </div>
+
+    <hr>
+
+    <div id="sidebar">
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../download/index.html">Download</a></li>
+        <li><a href="../features/index.html">Features</a></li>
+        <li><a href="../documentation/index.html">Documentation</a></li>
+        <li><a href="../publications/index.html">Applications/Publications</a></li>
+        <li><a href="../miscellaneous/index.html">Miscellaneous</a></li>
+        <li><a href="../miscellaneous/external.html">External Software</a></li>
+        <li>
+          <span class="current">Developers Site</span>
+          <ul>
+            <li><a href="index.html">Getting started</a></li>
+            <li><a href="../documentation/changes/dev.html">Changes</a></li>
+            <li><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/index.html">Development copy of documentation</a></li>
+            <li><a href="developers.pdf">Developers Instructions</a></li>
+            <li><a href="projects.html">Proposed projects</a></li>
+            <li><span class="current">Hosting mercurial repository</span></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <div id="main">
+
+      <p>Our current repository site <a href="http://petsc.cs.iit.edu">http://petsc.cs.iit.edu</a>
+        can ocassionally go offline. An alternate common repository where one could share [push/pull]
+        commits is usefull at such times. The current recommendation is to host the alternate repo
+        at <a href="https://bitbucket.org">https://bitbucket.org</a>.</p>
+
+      <h2><a name="create-account">Create a bitbucket account</h2>
+      <p>Each user/admin should create an individual bitbucket account for themselves.</p>
+
+      <ul>
+        <li>Sign-up with bitbucket at <a href="https://bitbucket.org/account/signup/">
+            https://bitbucket.org/account/signup/</a>.</li>
+
+        <li>[Optional:] For ssh access - register your public ssh key at:
+          <a style="color: purple">'YourName' -> 'Account' -> 'SSH keys'</a>.</li>
+
+        <li>[Admin note:] If you have a .edu email id - add it to:
+          <a style="color: purple">'YourName'-> 'Account' -> 'Email adresses'</a>.
+          If you were to host private repositories - this will enable you to add in over 5 users
+          to such a repository.</li>
+      </ul>
+
+      <h2>Sharing petsc-dev</h2>
+
+      <h4>Admin notes:</h4>
+      <p>Alternate petsc-dev, BuildSystem repos are already hosted at:</p>
+      <ul>
+        <li><a href="https://bitbucket.org/petsc/petsc-dev">https://bitbucket.org/petsc/petsc-dev</a></li>
+        <li><a href="https://bitbucket.org/petsc/buildsystem">https://bitbucket.org/petsc/buildsystem</a></li>
+      </ul>
+
+      <h4>User notes:</h4>
+      <p>If you wish to push your commits to this alternate shared repo, do the following:
+        <ul>
+          <li> <a href="#crete-account">create</a> an individual account.</li>
+          <li> ask one of the admins [Sean,Jed,Matt,Satish,Barry] to enable write access for you.</li>
+          <li> now you should be able to pull or push with the commands:
+            <ul>
+              <li><code style="color: red">hg pull https://YourUserName@bitbucket.org/petsc/petsc-dev</code></li>
+              <li><code style="color: red">hg push https://YourUserName@bitbucket.org/petsc/petsc-dev</code></li>
+            </ul>
+        </ul>
+
+      <p>Once the outage is over - switch back to using petsc.cs.iit.edu with '<code style="color: red">hg push</code>'
+        and '<code style="color: red">hg pull</code>'.</p>
+
+      <h2>Sharing other repositories</h2>
+
+      <h4>Admin notes:</h4>
+      <p> To temporarily share an existing 'RepoName' - one can do the following:</p>
+
+      <ul>
+        <li> <a href="#crete-account">create</a> an individual account.</li>
+        <li> create a new repository 'RepoName' at:
+          <a style="color: purple">'Repositories' -> 'Create repository'</a>.</li>
+        <li> from your current clone push to the newly created repo.
+          <ul>
+            <li><code style="color: red">hg push https://YourUserName@bitbucket.org/YourUserName/RepoName</code></li>
+          </ul>
+        <li>Go to <a style="color: purple">'Repositories' -> 'RepoName' -> Admin -> 'Access management'</a>
+          and add in users with their bitbucket UserName or invite them by their registered email address.</li>
+      </ul>
+
+      <h4>User notes:</h4>
+
+      <ul>
+        <li> <a href="#crete-account">create</a> an individual account.</li>
+        <li> ask repo admin to enable read/write access for you.</li>
+        <li> now you should be able to pull or push with the commands:
+          <ul>
+            <li><code style="color: red">hg pull https://YourUserName@bitbucket.org/AdminUserName/ReopName</code></li>
+            <li><code style="color: red">hg push https://YourUserName@bitbucket.org/AdminUserName/RepoName</code></li>
+          </ul>
+      </ul>
+
+      <p>Once the outage is over - switch back to using petsc.cs.iit.edu with '<code style="color: red">hg push</code>'
+        and '<code style="color: red">hg pull</code>'</p>
+
+    </div>
+
+    <hr>
+
+  </body>
+</html>
