@@ -2180,6 +2180,7 @@ PetscErrorCode  MatMultTranspose(Mat mat,Vec x,Vec y)
 PetscErrorCode  MatMultHermitianTranspose(Mat mat,Vec x,Vec y)
 {
   PetscErrorCode ierr;
+  Vec            w;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -2196,9 +2197,17 @@ PetscErrorCode  MatMultHermitianTranspose(Mat mat,Vec x,Vec y)
 #endif
   MatCheckPreallocated(mat,1);
 
-  if (!mat->ops->multhermitiantranspose) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = PetscLogEventBegin(MAT_MultHermitianTranspose,mat,x,y,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->multhermitiantranspose)(mat,x,y);CHKERRQ(ierr);
+  if (mat->ops->multhermitiantranspose) {
+    ierr = (*mat->ops->multhermitiantranspose)(mat,x,y);CHKERRQ(ierr);
+  } else {
+    ierr = VecDuplicate(x,&w);CHKERRQ(ierr);
+    ierr = VecCopy(x,w);CHKERRQ(ierr);
+    ierr = VecConjugate(w);CHKERRQ(ierr);
+    ierr = MatMultTranspose(mat,w,y);CHKERRQ(ierr);
+    ierr = VecDestroy(&w);CHKERRQ(ierr);
+    ierr = VecConjugate(y);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(MAT_MultHermitianTranspose,mat,x,y,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
