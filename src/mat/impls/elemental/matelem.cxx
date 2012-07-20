@@ -128,10 +128,39 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetInfo_Elemental"
-static PetscErrorCode MatGetInfo_Elemental(Mat F,MatInfoType flag,MatInfo *info)
+static PetscErrorCode MatGetInfo_Elemental(Mat A,MatInfoType flag,MatInfo *info)
 {
+  Mat_Elemental  *a = (Mat_Elemental*)A->data;
+  PetscMPIInt    rank;
+
   PetscFunctionBegin;
-  /* this routine is called by PCSetUp_LU(). It does nothing yet. */
+  MPI_Comm_rank(((PetscObject)A)->comm,&rank);
+  
+  /* if (!rank) printf("          .........MatGetInfo_Elemental ...\n"); */
+  info->block_size     = 1.0; /* ? */
+
+  if (flag == MAT_LOCAL) {
+    info->nz_allocated   = (double)(*a->emat).AllocatedMemory(); /* locally allocated */
+    info->nz_used        = info->nz_allocated; 
+  } else if (flag == MAT_GLOBAL_MAX) {
+    //ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_MAX,((PetscObject)matin)->comm);CHKERRQ(ierr);
+    /* see MatGetInfo_MPIAIJ() for getting global info->nz_allocated! */
+    //SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP," MAT_GLOBAL_MAX not written yet");
+  } else if (flag == MAT_GLOBAL_SUM) {
+    //SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP," MAT_GLOBAL_SUM not written yet");
+    info->nz_allocated   = (double)(*a->emat).AllocatedMemory(); /* locally allocated */
+    info->nz_used        = info->nz_allocated; /* assume Elemental does accurate allocation */
+    //ierr = MPI_Allreduce(isend,irecv,1,MPIU_REAL,MPIU_SUM,((PetscObject)A)->comm);CHKERRQ(ierr);
+    //PetscPrintf(PETSC_COMM_SELF,"    ... [%d] locally allocated %g\n",rank,info->nz_allocated);
+  }
+  
+  info->nz_unneeded       = 0.0;
+  info->assemblies        = (double)A->num_ass;
+  info->mallocs           = 0;
+  info->memory            = ((PetscObject)A)->mem;
+  info->fill_ratio_given  = 0; /* determined by Elemental */
+  info->fill_ratio_needed = 0;
+  info->factor_mallocs    = 0;
   PetscFunctionReturn(0);
 }
 
@@ -616,9 +645,21 @@ static PetscErrorCode MatCholeskyFactorSymbolic_Elemental(Mat F,Mat A,IS perm,co
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN 
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorGetSolverPackage_elemental_elemental"
+PetscErrorCode MatFactorGetSolverPackage_elemental_elemental(Mat A,const MatSolverPackage *type)
+{
+  PetscFunctionBegin;
+  *type = MATSOLVERELEMENTAL;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetFactor_elemental_petsc"
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_elemental_petsc(Mat A,MatFactorType ftype,Mat *F)
+#define __FUNCT__ "MatGetFactor_elemental_elemental"
+static PetscErrorCode MatGetFactor_elemental_elemental(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   PetscErrorCode ierr;
@@ -630,9 +671,11 @@ PETSC_EXTERN_C PetscErrorCode MatGetFactor_elemental_petsc(Mat A,MatFactorType f
   ierr = MatSetType(B,MATELEMENTAL);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
   B->factortype = ftype;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_elemental_elemental",MatFactorGetSolverPackage_elemental_elemental);CHKERRQ(ierr);
   *F            = B;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNorm_Elemental"
@@ -742,8 +785,6 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,const MatType newtype,Mat
   ierr = MatAssemblyBegin(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Bmpi,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (reuse == MAT_REUSE_MATRIX) {
-    //*B = Bmpi;
-    //MatDestroy(&A);
     ierr = MatHeaderReplace(A,Bmpi);CHKERRQ(ierr);
   } else {
     *B = Bmpi;
@@ -777,6 +818,7 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetOwnershipIS_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetFactor_petsc_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1039,7 +1081,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   a->interface->Attach(elem::LOCAL_TO_GLOBAL,*(a->emat));
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetOwnershipIS_C","MatGetOwnershipIS_Elemental",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetFactor_petsc_C","MatGetFactor_elemental_petsc",MatGetFactor_elemental_petsc);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetFactor_elemental_C","MatGetFactor_elemental_elemental",MatGetFactor_elemental_elemental);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL);CHKERRQ(ierr);
   PetscOptionsEnd();

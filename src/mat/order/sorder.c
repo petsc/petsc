@@ -183,7 +183,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *
   PetscErrorCode ierr;
   PetscInt       mmat,nmat,mis,m;
   PetscErrorCode (*r)(Mat,const MatOrderingType,IS*,IS*);
-  PetscBool      flg = PETSC_FALSE,isseqdense,ismpidense,ismpiaij,ismpibaij,ismpisbaij,ismpiaijcusp,ismpiaijcusparse;
+  PetscBool      flg = PETSC_FALSE,isseqdense,ismpidense,ismpiaij,ismpibaij,ismpisbaij,ismpiaijcusp,ismpiaijcusparse,iselemental;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -201,11 +201,11 @@ PetscErrorCode  MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIAIJCUSPARSE,&ismpiaijcusparse);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&ismpibaij);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPISBAIJ,&ismpisbaij);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATELEMENTAL,&ismpisbaij);CHKERRQ(ierr);
-  if (isseqdense || ismpidense || ismpiaij || ismpibaij || ismpisbaij || ismpiaijcusp || ismpiaijcusparse) {
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATELEMENTAL,&iselemental);CHKERRQ(ierr);
+  if (isseqdense || ismpidense || ismpiaij || ismpibaij || ismpisbaij || ismpiaijcusp || ismpiaijcusparse || iselemental) {
     ierr = MatGetLocalSize(mat,&m,PETSC_NULL);CHKERRQ(ierr);
     /*
-       Dense matrices only give natural ordering
+       These matrices only give natural ordering
     */
     ierr = ISCreateStride(PETSC_COMM_SELF,0,m,1,cperm);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,0,m,1,rperm);CHKERRQ(ierr);

@@ -1777,7 +1777,6 @@ PetscErrorCode MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
   info->fill_ratio_given  = 0; /* no parallel LU/ILU/Cholesky */
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;
-
   PetscFunctionReturn(0);
 }
 

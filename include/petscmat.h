@@ -114,6 +114,7 @@ J*/
 #define MATSOLVERCUSPARSE     "cusparse"
 #define MATSOLVERBSTRM        "bstrm"
 #define MATSOLVERSBSTRM       "sbstrm"
+#define MATSOLVERELEMENTAL    "elemental"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
