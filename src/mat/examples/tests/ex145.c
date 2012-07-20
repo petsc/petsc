@@ -133,6 +133,7 @@ int main(int argc,char **argv)
   /*------------------------*/
   ierr = PetscPrintf(PETSC_COMM_WORLD," Create Elemental matrix Asym\n");CHKERRQ(ierr);
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&Asym);CHKERRQ(ierr);
+  ierr = MatConjugate(Asym);CHKERRQ(ierr);
   ierr = MatAXPY(Asym,1.0,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* Asym = A + A^T */
   if (rank == 0) { /* add 100.0 to diagonals of Asym to make it spd */
     PetscInt M,N;
@@ -177,7 +178,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&G);CHKERRQ(ierr);
 
   /* Out-place Cholesky */
-  ierr = MatGetFactor(Asym,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&G);CHKERRQ(ierr);
+  ierr = MatGetFactor(Asym,MATSOLVERELEMENTAL,MAT_FACTOR_CHOLESKY,&G);CHKERRQ(ierr);
   ierr = MatCholeskyFactorSymbolic(G,Asym,0,&finfo);CHKERRQ(ierr);
   ierr = MatCholeskyFactorNumeric(G,Asym,&finfo);CHKERRQ(ierr);
   if (mats_view){
@@ -255,7 +256,7 @@ int main(int argc,char **argv)
   }
 
   /* Out-place LU */
-  ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+  ierr = MatGetFactor(A,MATSOLVERELEMENTAL,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(F,A,0,0,&finfo);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(F,A,&finfo);CHKERRQ(ierr);
   if (mats_view){

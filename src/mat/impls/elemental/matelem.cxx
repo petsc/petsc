@@ -59,22 +59,10 @@ PetscErrorCode PetscElementalFinalizePackage(void)
 #define __FUNCT__ "PetscSetElementalFromOptions"
 PetscErrorCode PetscSetElementalFromOptions(Mat A)
 {
-  //Mat_Elemental  *a = (Mat_Elemental*)A->data;
   PetscErrorCode ierr;
-  //PetscInt       optv1,optv2;
-  //PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"Elemental Options","Mat");CHKERRQ(ierr);
-  //ierr = PetscOptionsInt("-mat_elemental_grid_height","Gird Height","None",(*a->emat).Grid().Height(),&optv1,&flg);CHKERRQ(ierr);
-  //ierr = PetscOptionsInt("-mat_elemental_grid_width","Gird Width","None",(*a->emat).Grid().Width(),&optv2,&flg);CHKERRQ(ierr);
-  //if (flg) (*a->emat).Grid().ResizeTo(optv1,optv2);
-  // ierr = PetscOptionsInt("-mat_mumps_icntl_2","ICNTL(2): output stream for diagnostic printing, statistics, and warning","None",mumps->id.ICNTL(2),&icntl,&flg);CHKERRQ(ierr);
-  // if (flg) mumps->id.ICNTL(2) = icntl;
-  // ierr = PetscOptionsInt("-mat_mumps_icntl_3","ICNTL(3): output stream for global information, collected on the host","None",mumps->id.ICNTL(3),&icntl,&flg);CHKERRQ(ierr);
-  // if (flg) mumps->id.ICNTL(3) = icntl;
-
-
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -211,8 +199,8 @@ static PetscErrorCode MatSetValues_Elemental(Mat A,PetscInt nr,const PetscInt *r
 #define __FUNCT__ "MatMult_Elemental"
 static PetscErrorCode MatMult_Elemental(Mat A,Vec X,Vec Y)
 {
-  Mat_Elemental     *a = (Mat_Elemental*)A->data;
-  PetscErrorCode    ierr;
+  Mat_Elemental         *a = (Mat_Elemental*)A->data;
+  PetscErrorCode        ierr;
   const PetscElemScalar *x;
   PetscElemScalar       *y;
   PetscElemScalar       one = 1,zero = 0;
@@ -234,8 +222,8 @@ static PetscErrorCode MatMult_Elemental(Mat A,Vec X,Vec Y)
 #define __FUNCT__ "MatMultTranspose_Elemental"
 static PetscErrorCode MatMultTranspose_Elemental(Mat A,Vec X,Vec Y)
 {
-  Mat_Elemental     *a = (Mat_Elemental*)A->data;
-  PetscErrorCode    ierr;
+  Mat_Elemental         *a = (Mat_Elemental*)A->data;
+  PetscErrorCode        ierr;
   const PetscElemScalar *x;
   PetscElemScalar       *y;
   PetscElemScalar       one = 1,zero = 0;
@@ -257,8 +245,8 @@ static PetscErrorCode MatMultTranspose_Elemental(Mat A,Vec X,Vec Y)
 #define __FUNCT__ "MatMultAdd_Elemental"
 static PetscErrorCode MatMultAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
 {
-  Mat_Elemental     *a = (Mat_Elemental*)A->data;
-  PetscErrorCode    ierr;
+  Mat_Elemental         *a = (Mat_Elemental*)A->data;
+  PetscErrorCode        ierr;
   const PetscElemScalar *x;
   PetscElemScalar       *z;
   PetscElemScalar       one = 1;
@@ -281,8 +269,8 @@ static PetscErrorCode MatMultAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
 #define __FUNCT__ "MatMultTransposeAdd_Elemental"
 static PetscErrorCode MatMultTransposeAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
 {
-  Mat_Elemental     *a = (Mat_Elemental*)A->data;
-  PetscErrorCode    ierr;
+  Mat_Elemental         *a = (Mat_Elemental*)A->data;
+  PetscErrorCode        ierr;
   const PetscElemScalar *x;
   PetscElemScalar       *z;
   PetscElemScalar       one = 1;
@@ -305,10 +293,10 @@ static PetscErrorCode MatMultTransposeAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
 #define __FUNCT__ "MatMatMultNumeric_Elemental"
 static PetscErrorCode MatMatMultNumeric_Elemental(Mat A,Mat B,Mat C)
 {
-  Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  Mat_Elemental  *b = (Mat_Elemental*)B->data;
-  Mat_Elemental  *c = (Mat_Elemental*)C->data;
-  PetscElemScalar    one = 1,zero = 0;
+  Mat_Elemental    *a = (Mat_Elemental*)A->data;
+  Mat_Elemental    *b = (Mat_Elemental*)B->data;
+  Mat_Elemental    *c = (Mat_Elemental*)C->data;
+  PetscElemScalar  one = 1,zero = 0;
 
   PetscFunctionBegin;
   { /* Scoping so that constructor is called before pointer is returned */
@@ -357,9 +345,9 @@ static PetscErrorCode MatMatMult_Elemental(Mat A,Mat B,MatReuse scall,PetscReal 
 #define __FUNCT__ "MatMatTransposeMultNumeric_Elemental"
 static PetscErrorCode MatMatTransposeMultNumeric_Elemental(Mat A,Mat B,Mat C)
 {
-  Mat_Elemental  *a = (Mat_Elemental*)A->data;
-  Mat_Elemental  *b = (Mat_Elemental*)B->data;
-  Mat_Elemental  *c = (Mat_Elemental*)C->data;
+  Mat_Elemental      *a = (Mat_Elemental*)A->data;
+  Mat_Elemental      *b = (Mat_Elemental*)B->data;
+  Mat_Elemental      *c = (Mat_Elemental*)C->data;
   PetscElemScalar    one = 1,zero = 0;
 
   PetscFunctionBegin;
@@ -488,12 +476,23 @@ static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatConjugate_Elemental"
+static PetscErrorCode MatConjugate_Elemental(Mat A)
+{
+  Mat_Elemental  *a = (Mat_Elemental*)A->data;
+
+  PetscFunctionBegin;
+  elem::Conjugate(*a->emat);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatSolve_Elemental"
 static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
 {
   Mat_Elemental     *a = (Mat_Elemental*)A->data;
   PetscErrorCode    ierr;
-  PetscElemScalar       *x;
+  PetscElemScalar   *x;
 
   PetscFunctionBegin;
   ierr = VecCopy(B,X);CHKERRQ(ierr);
@@ -748,7 +747,7 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,const MatType newtype,Mat
   MPI_Comm           comm=((PetscObject)A)->comm;
   PetscErrorCode     ierr;
   PetscInt           rrank,ridx,crank,cidx,nrows,ncols,i,j;
-  PetscElemScalar        v;
+  PetscElemScalar    v;
 
   PetscFunctionBegin;
   if (strcmp(newtype,MATDENSE) && strcmp(newtype,MATSEQDENSE) && strcmp(newtype,MATMPIDENSE)) {
@@ -964,7 +963,7 @@ static struct _MatOps MatOps_Values = {
 /*99*/ 0,
        0,
        0,
-       0,
+       MatConjugate_Elemental,
        0,
 /*104*/0,
        0,
