@@ -93,10 +93,14 @@ int main(int argc,char **args)
   ierr = MatComputeExplicitOperator(C,&Caij);CHKERRQ(ierr);
   ierr = MatMultEqual(C,Caij,5,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultEqual() fails");
+  ierr = MatMultTransposeEqual(C,Caij,5,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultTransposeEqual() fails");
 
-  // Test MatMultAdd() 
+  // Test MatMultAdd() and MatMultTransposeAddEqual()
   ierr = MatMultAddEqual(C,Caij,5,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultAddEqual() fails");
+  ierr = MatMultTransposeAddEqual(C,Caij,5,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultTransposeAddEqual() fails");
 
   // Test MatMatMult()
   ierr = PetscOptionsHasName(PETSC_NULL,"-test_matmatmult",&Test_MatMatMult);CHKERRQ(ierr);

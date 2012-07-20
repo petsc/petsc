@@ -7,7 +7,6 @@ static char help[] = "Tests Elemental interface.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec            x,y;
   Mat            A,B,C,Ct;
   PetscInt       i,j,m = 5,n,nrows,ncols;
   const PetscInt *rows,*cols;
@@ -17,7 +16,6 @@ int main(int argc,char **args)
   PetscMPIInt    rank,size;
   PetscReal      Cnorm;
   PetscBool      mats_view=PETSC_FALSE;
-  PetscRandom    rctx;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -68,23 +66,6 @@ int main(int argc,char **args)
   ierr = MatTranspose(C,MAT_INITIAL_MATRIX,&Ct);CHKERRQ(ierr);
   ierr = MatZeroEntries(Ct);CHKERRQ(ierr);
 
-  /* Test MatMult() and MatMultTranspose() */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-  ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
-
-  ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
-  ierr = VecSetSizes(y,m,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(y);CHKERRQ(ierr);
-  ierr = MatMult(C,x,y);CHKERRQ(ierr);
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatMultTranspose(C,y,x);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
   /* Test MatAXPY() and MatAYPX() */
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -126,8 +107,6 @@ int main(int argc,char **args)
   ierr = PetscFree(v);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&Ct);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

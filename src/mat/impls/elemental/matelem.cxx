@@ -212,7 +212,6 @@ static PetscErrorCode MatMultTranspose_Elemental(Mat A,Vec X,Vec Y)
   PetscScalar       one = 1,zero = 0;
 
   PetscFunctionBegin;
-  printf("elemental test is called...\n");
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   { /* Scoping so that constructor is called before pointer is returned */
@@ -243,6 +242,30 @@ static PetscErrorCode MatMultAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
     elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> xe(A->cmap->N,1,0,x,A->cmap->n,*a->grid);
     elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> ze(A->rmap->N,1,0,z,A->rmap->n,*a->grid);
     elem::Gemv(elem::NORMAL,one,*a->emat,xe,one,ze);
+  }
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Z,&z);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMultTransposeAdd_Elemental"
+static PetscErrorCode MatMultTransposeAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
+{
+  Mat_Elemental     *a = (Mat_Elemental*)A->data;
+  PetscErrorCode    ierr;
+  const PetscScalar *x;
+  PetscScalar       *z;
+  PetscScalar       one = 1.0;
+
+  PetscFunctionBegin;
+  if (Y != Z) {ierr = VecCopy(Y,Z);CHKERRQ(ierr);}
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(Z,&z);CHKERRQ(ierr);
+  { /* Scoping so that constructor is called before pointer is returned */
+    elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> xe(A->rmap->N,1,0,x,A->rmap->n,*a->grid);
+    elem::DistMatrix<PetscScalar,elem::VC,elem::STAR> ze(A->cmap->N,1,0,z,A->cmap->n,*a->grid);
+    elem::Gemv(elem::TRANSPOSE,one,*a->emat,xe,one,ze);
   }
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Z,&z);CHKERRQ(ierr);
@@ -730,7 +753,7 @@ static struct _MatOps MatOps_Values = {
        MatMult_Elemental,
 /* 4*/ MatMultAdd_Elemental,
        MatMultTranspose_Elemental,
-       0, //MatMultTransposeAdd_Elemental,
+       MatMultTransposeAdd_Elemental,
        MatSolve_Elemental,
        0, //MatSolveAdd_Elemental,
        0, //MatSolveTranspose_Elemental,
