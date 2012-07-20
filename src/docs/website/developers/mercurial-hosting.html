@@ -66,7 +66,7 @@
       <h2>Sharing petsc-dev</h2>
 
       <h4>Admin notes:</h4>
-      <p>Alternate petsc-dev, BuildSystem repos are already hosted at:</p>
+      <p>Alternate petsc-dev and BuildSystem repos are already hosted at:</p>
       <ul>
         <li><a href="https://bitbucket.org/petsc/petsc-dev">https://bitbucket.org/petsc/petsc-dev</a></li>
         <li><a href="https://bitbucket.org/petsc/buildsystem">https://bitbucket.org/petsc/buildsystem</a></li>
@@ -94,13 +94,13 @@
 
       <ul>
         <li> <a href="#crete-account">create</a> an individual account.</li>
-        <li> create a new repository 'RepoName' at:
+        <li> create a new repository 'reponame' (must be lower case) at:
           <a style="color: purple">'Repositories' -> 'Create repository'</a>.</li>
         <li> from your current clone push to the newly created repo.
           <ul>
-            <li><code style="color: red">hg push https://YourUserName@bitbucket.org/YourUserName/RepoName</code></li>
+            <li><code style="color: red">hg push https://YourUserName@bitbucket.org/YourUserName/reponame</code></li>
           </ul>
-        <li>Go to <a style="color: purple">'Repositories' -> 'RepoName' -> Admin -> 'Access management'</a>
+        <li>Go to <a style="color: purple">'Repositories' -> 'reponame' -> Admin -> 'Access management'</a>
           and add in users with their bitbucket UserName or invite them by their registered email address.</li>
       </ul>
 
@@ -111,8 +111,8 @@
         <li> ask repo admin to enable read/write access for you.</li>
         <li> now you should be able to pull or push with the commands:
           <ul>
-            <li><code style="color: red">hg pull https://YourUserName@bitbucket.org/AdminUserName/ReopName</code></li>
-            <li><code style="color: red">hg push https://YourUserName@bitbucket.org/AdminUserName/RepoName</code></li>
+            <li><code style="color: red">hg pull https://YourUserName@bitbucket.org/AdminUserName/reponame</code></li>
+            <li><code style="color: red">hg push https://YourUserName@bitbucket.org/AdminUserName/reponame</code></li>
           </ul>
       </ul>
 
