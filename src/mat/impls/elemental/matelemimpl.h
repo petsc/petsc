@@ -4,15 +4,20 @@
 #include <elemental.hpp>
 #include <petsc-private/matimpl.h>
 
+#if defined (PETSC_USE_COMPLEX)
+typedef elem::Complex<PetscReal> PetscElemScalar;
+#else
+typedef PetscScalar PetscElemScalar;
+#endif
 
 typedef struct {
   PetscInt commsize;
   PetscInt m[2];                /* Number of entries in a local block of the row (column) space */
   PetscInt mr[2];               /* First incomplete/ragged rank of (row) column space */
   elem::Grid *grid;
-  elem::DistMatrix<PetscScalar> *emat;
-  elem::Matrix<PetscScalar> *esubmat; /* Used for adding off-proc matrix entries */
-  elem::AxpyInterface<PetscScalar> *interface;
+  elem::DistMatrix<PetscElemScalar> *emat;
+  elem::Matrix<PetscElemScalar> *esubmat; /* Used for adding off-proc matrix entries */
+  elem::AxpyInterface<PetscElemScalar> *interface;
   elem::DistMatrix<PetscInt,elem::VC,elem::STAR> *pivot; /* pivot vector representing the pivot matrix P in PA = LU */
 } Mat_Elemental;
 

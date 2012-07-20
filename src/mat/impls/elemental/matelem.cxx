@@ -184,8 +184,8 @@ static PetscErrorCode MatMult_Elemental(Mat A,Vec X,Vec Y)
 {
   Mat_Elemental     *a = (Mat_Elemental*)A->data;
   PetscErrorCode    ierr;
-  const PetscElemScalar *x;
-  PetscElemScalar       *y;
+  const PetscScalar *x;
+  PetscScalar       *y;
   PetscElemScalar       one = 1,zero = 0;
 
   PetscFunctionBegin;
@@ -232,7 +232,7 @@ static PetscErrorCode MatMultAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
   PetscErrorCode    ierr;
   const PetscElemScalar *x;
   PetscElemScalar       *z;
-  PetscScalar       one = 1.0;
+  PetscScalar       one = 1;
 
   PetscFunctionBegin;
   if (Y != Z) {ierr = VecCopy(Y,Z);CHKERRQ(ierr);}
@@ -256,7 +256,7 @@ static PetscErrorCode MatMultTransposeAdd_Elemental(Mat A,Vec X,Vec Y,Vec Z)
   PetscErrorCode    ierr;
   const PetscElemScalar *x;
   PetscElemScalar       *z;
-  PetscScalar       one = 1.0;
+  PetscScalar       one = 1;
 
   PetscFunctionBegin;
   if (Y != Z) {ierr = VecCopy(Y,Z);CHKERRQ(ierr);}
@@ -279,7 +279,7 @@ static PetscErrorCode MatMatMultNumeric_Elemental(Mat A,Mat B,Mat C)
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
   Mat_Elemental  *b = (Mat_Elemental*)B->data;
   Mat_Elemental  *c = (Mat_Elemental*)C->data;
-  PetscScalar    one = 1.0,zero = 0.0;
+  PetscScalar    one = 1,zero = 0;
 
   PetscFunctionBegin;
   { /* Scoping so that constructor is called before pointer is returned */
@@ -331,7 +331,7 @@ static PetscErrorCode MatMatTransposeMultNumeric_Elemental(Mat A,Mat B,Mat C)
   Mat_Elemental  *a = (Mat_Elemental*)A->data;
   Mat_Elemental  *b = (Mat_Elemental*)B->data;
   Mat_Elemental  *c = (Mat_Elemental*)C->data;
-  PetscScalar    one = 1.0,zero = 0.0;
+  PetscScalar    one = 1,zero = 0;
 
   PetscFunctionBegin;
   { /* Scoping so that constructor is called before pointer is returned */
@@ -501,7 +501,7 @@ static PetscErrorCode MatSolveAdd_Elemental(Mat A,Vec B,Vec Y,Vec X)
 
   PetscFunctionBegin;
   ierr = MatSolve_Elemental(A,B,X);CHKERRQ(ierr);
-  ierr = VecAXPY(X,1.0,Y);CHKERRQ(ierr);
+  ierr = VecAXPY(X,1,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -721,12 +721,10 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,const MatType newtype,Mat
   if (strcmp(newtype,MATDENSE) && strcmp(newtype,MATSEQDENSE) && strcmp(newtype,MATMPIDENSE)) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported New MatType: must be MATDENSE, MATSEQDENSE or MATMPIDENSE");
   }
-  if (1){
-    ierr = MatCreate(comm,&Bmpi);CHKERRQ(ierr);
-    ierr = MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = MatSetType(Bmpi,MATDENSE);CHKERRQ(ierr);
-    ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
-  }
+  ierr = MatCreate(comm,&Bmpi);CHKERRQ(ierr);
+  ierr = MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(Bmpi,MATDENSE);CHKERRQ(ierr);
+  ierr = MatSetUp(Bmpi);CHKERRQ(ierr);
   ierr = MatGetSize(A,&nrows,&ncols);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     PetscInt erow,ecol;
