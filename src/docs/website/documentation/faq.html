@@ -134,8 +134,8 @@
         <li><a href="#info">When I dump some matrices and vectors to binary, I seem to be generating some empty files with .info extensions. What's the deal with these?</a></li>
         <li><a href="#slowerparallel">Why is my parallel <b>solver slower</b> than the sequential solver, or I have poor speed-up?</a></li>
         <li><a href="#singleprecision">When using PETSc in single precision mode (--with-precision=single when running ./configure) are the operations done in single or double precision?</a></li>
-        <li><a href="#newton">Why is Newton's method (SNES) not converging?</a></li>
-        <li><a href="#kspdiverged">Why is the linear solver (KSP) not converging?</a></li>
+        <li><a href="#newton">Why is Newton's method (SNES) not converging, or converges slowly?</a></li>
+        <li><a href="#kspdiverged">Why is the linear solver (KSP) not converging, or converges slowly?</a></li>
       </ul>
 
       <h4><a href="#debugging">Debugging</a></h4>
@@ -1313,7 +1313,7 @@ PETSC_COMM_WORLD = NewComm;
       a bit of a mystery what decisions get made sometimes. There may be compiler
       flags in some circumstances that can affect this.
 
-      <h3><a name="newton">Why is Newton's method (SNES) not converging?</a></h3>
+      <h3><a name="newton">Why is Newton's method (SNES) not converging, or converges slowly?</a></h3>
 
       Newton's method may not converge for many reasons, here are some of the most common.
 
@@ -1437,7 +1437,7 @@ PETSC_COMM_WORLD = NewComm;
         </li>
       </ul>
 
-      <h3><a name="kspdiverged">Why is the linear solver (KSP) not converging?</a></h3>
+      <h3><a name="kspdiverged">Why is the linear solver (KSP) not converging, or converges slowly?</a></h3>
 
       <p>
         Always run with <code>-ksp_converged_reason -ksp_monitor_true_residual</code>
