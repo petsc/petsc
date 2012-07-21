@@ -297,6 +297,10 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                {'numProcs': 1, 'args': '-snes_monitor -ksp_monitor -snes_view -problem 2 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_detect_saddle_point -pc_fieldsplit_schur_fact_type lower -fieldsplit_0_pc_type lu -fieldsplit_1_ksp_rtol 1e-10'}],
                         'src/snes/examples/tutorials/ex70':   [{'numProcs': 1, 'args': '-nx 32 -ny 48 -ksp_type fgmres -ksp_initial_guess_nonzero -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -user_ksp -ksp_monitor -ksp_view'},
                                                                {'numProcs': 2, 'args': '-nx 32 -ny 48 -ksp_type fgmres -ksp_initial_guess_nonzero -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type lower -user_ksp -ksp_monitor -ksp_view'}],
+                        'src/snes/examples/tutorials/ex72':   [# 2D serial P1 tests 0-1
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -show_initial -show_residual -show_jacobian',
+                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py 2 1 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex72.h'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -show_initial -show_residual -show_jacobian'}],
                         'src/ts/examples/tutorials/ex18':      {'numProcs': 1, 'args': '-snes_mf -ts_monitor_solution -ts_monitor -snes_monitor'},
                         }
 

@@ -1,4 +1,4 @@
-static char help[] = "Stokes Problem in 2d and 3d with simplicial finite elements.\n\
+static char help[] = "Stokes Problem in 2d and 3d with hexhedral finite elements.\n\
 We solve the Stokes problem in a rectangular\n\
 domain, using a parallel unstructured mesh (DMCOMPLEX) to discretize it.\n\n\n";
 
@@ -18,7 +18,7 @@ We use a Python script to generate a tabulation of the finite element basis
 functions at quadrature points, which we put in a C header file. The generic
 command would be:
 
-    bin/pythonscripts/PetscGenerateFEMQuadrature.py dim order dim 1 laplacian dim order 1 1 gradient src/snes/examples/tutorials/ex62.h
+    bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py dim order dim 1 laplacian dim order 1 1 gradient src/snes/examples/tutorials/ex72.h
 
 We can currently generate an arbitrary order Lagrange element. The underlying
 FIAT code is capable of handling more exotic elements, but these have not been
@@ -41,23 +41,15 @@ the data so that each field is contiguous
 
 Likewise, DMComplexVecSetClosure() takes data partitioned by field, and correctly
 puts it into the Sieve ordering.
-
-Next Steps:
-
-- Refine and show convergence of correct order automatically (use femTest.py)
-- Fix InitialGuess for arbitrary disc (means making dual application work again)
-- Redo slides from GUCASTutorial for this new example
-
-For tensor product meshes, see SNES ex67, ex72
 */
 
 #include <petscdmcomplex.h>
 #include <petscsnes.h>
 
 /*------------------------------------------------------------------------------
-  This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py dim order dim 1 laplacian dim order 1 1 gradient src/snes/examples/tutorials/ex62.h'
+  This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py dim order dim 1 laplacian dim order 1 1 gradient src/snes/examples/tutorials/ex72.h'
  -----------------------------------------------------------------------------*/
-#include "ex62.h"
+#include "ex72.h"
 
 #define NUM_FIELDS 2 /* C89 Sucks Sucks Sucks Sucks: Cannot use static const values for array sizes */
 const PetscInt numFields     = 2;
@@ -255,7 +247,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   options->debug           = 0;
   options->runType         = RUN_FULL;
   options->dim             = 2;
-  options->interpolate     = PETSC_FALSE;
+  options->interpolate     = PETSC_TRUE;
   options->refinementLimit = 0.0;
   options->bcType          = DIRICHLET;
   options->numBatches      = 1;
@@ -275,6 +267,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   options->runType = (RunType) run;
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex62.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex62.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+  if (!options->interpolate) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated");
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex62.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
@@ -367,22 +360,18 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      interpolate     = user->interpolate;
   PetscReal      refinementLimit = user->refinementLimit;
   const char    *partitioner     = user->partitioner;
+  PetscInt       cells[3]        = {2, 2, 2};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMComplexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
+  if (refinementLimit > 0.0) {
+    cells[0] = cells[1] = cells[2] = ceil(pow(1.0/refinementLimit, 1.0/dim));
+  }
+  ierr = DMComplexCreateHexBoxMesh(comm, dim, cells, dm);CHKERRQ(ierr);
   {
-    DM refinedMesh     = PETSC_NULL;
     DM distributedMesh = PETSC_NULL;
 
-    /* Refine mesh using a volume constraint */
-    ierr = DMComplexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
-    ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
-    if (refinedMesh) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
-      *dm  = refinedMesh;
-    }
     /* Distribute mesh over processes */
     ierr = DMComplexDistribute(*dm, partitioner, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {

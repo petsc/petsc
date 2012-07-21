@@ -122,3 +122,6 @@ src/snes/examples/tutorials/ex67\.h
 src/snes/examples/tutorials/ex31_gpu_inline\.h
 src/snes/examples/tutorials/ex31_gpu\.h
 src/snes/examples/tutorials/ex31\.h
+src/snes/examples/tutorials/ex72_gpu_inline\.h
+src/snes/examples/tutorials/ex72_gpu\.h
+src/snes/examples/tutorials/ex72\.h

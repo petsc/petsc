@@ -226,6 +226,147 @@ PetscErrorCode DMComplexCreateCubeBoundary(DM dm, const PetscReal lower[], const
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexCreateSquareMesh"
+/*
+ Simple square mesh:
+
+ 22--8-23--9--24
+  |     |     |
+ 13  2 14  3  15
+  |     |     |
+ 19--6-20--7--21
+  |     |     |
+ 10  0 11  1 12
+  |     |     |
+ 16--4-17--5--18
+*/
+PetscErrorCode DMComplexCreateSquareMesh(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
+{
+  DM_Complex    *mesh         = (DM_Complex *) dm->data;
+  const PetscInt numXEdges    = edges[0];
+  const PetscInt numYEdges    = edges[1];
+  const PetscInt numXVertices = edges[0]+1;
+  const PetscInt numYVertices = edges[1]+1;
+  const PetscInt numTotXEdges = numXEdges*numYVertices;
+  const PetscInt numTotYEdges = numYEdges*numXVertices;
+  const PetscInt numVertices  = numXVertices*numYVertices;
+  const PetscInt numEdges     = numTotXEdges + numTotYEdges;
+  const PetscInt numFaces     = numXEdges*numYEdges;
+  const PetscInt firstVertex  = numFaces;
+  const PetscInt firstXEdge   = numFaces + numVertices;
+  const PetscInt firstYEdge   = numFaces + numVertices + numTotXEdges;
+  PetscInt       markerTop    = 1;
+  PetscInt       markerBottom = 1;
+  PetscInt       markerRight  = 1;
+  PetscInt       markerLeft   = 1;
+  PetscBool      markerSeparate = PETSC_FALSE;
+  PetscScalar   *coords;
+  PetscInt       coordSize;
+  PetscMPIInt    rank;
+  PetscInt       v, vx, vy;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_complex_separate_marker", &markerSeparate, PETSC_NULL);CHKERRQ(ierr);
+  if (markerSeparate) {
+    markerTop    = 3;
+    markerBottom = 1;
+    markerRight  = 2;
+    markerLeft   = 4;
+  }
+  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+  if (!rank) {
+    PetscInt f, fx, fy, e, ex, ey;
+
+    ierr = DMComplexSetChart(dm, 0, numFaces+numEdges+numVertices);CHKERRQ(ierr);
+    for(f = 0; f < numFaces; ++f) {
+      ierr = DMComplexSetConeSize(dm, f, 4);CHKERRQ(ierr);
+    }
+    for(e = firstXEdge; e < firstXEdge+numEdges; ++e) {
+      ierr = DMComplexSetConeSize(dm, e, 2);CHKERRQ(ierr);
+    }
+    ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
+    /* Build faces */
+    for(fy = 0; fy < numYEdges; fy++) {
+      for(fx = 0; fx < numXEdges; fx++) {
+        const PetscInt face    = fy*numXEdges + fx;
+        const PetscInt edgeL   = firstYEdge + fx*numYEdges + fy;
+        const PetscInt edgeB   = firstXEdge + fy*numXEdges + fx;
+        const PetscInt cone[4] = {edgeB, edgeL+numYEdges, edgeB+numXEdges, edgeL};
+
+        ierr = DMComplexSetCone(dm, face, cone);CHKERRQ(ierr);
+      }
+    }
+    /* Build Y edges*/
+    for(vx = 0; vx < numXVertices; vx++) {
+      for(ey = 0; ey < numYEdges; ey++) {
+        const PetscInt edge    = firstYEdge  + vx*numYEdges + ey;
+        const PetscInt vertex  = firstVertex + ey*numXVertices + vx;
+        const PetscInt cone[2] = {vertex, vertex+numXVertices};
+
+        ierr = DMComplexSetCone(dm, edge, cone);CHKERRQ(ierr);
+        if (vx == numXVertices-1) {
+          ierr = DMComplexSetLabelValue(dm, "marker", edge,    markerRight);CHKERRQ(ierr);
+          ierr = DMComplexSetLabelValue(dm, "marker", cone[0], markerRight);CHKERRQ(ierr);
+          if (ey == numYEdges-1) {
+            ierr = DMComplexSetLabelValue(dm, "marker", cone[1], markerRight);CHKERRQ(ierr);
+          }
+        } else if (vx == 0) {
+          ierr = DMComplexSetLabelValue(dm, "marker", edge,    markerLeft);CHKERRQ(ierr);
+          ierr = DMComplexSetLabelValue(dm, "marker", cone[0], markerLeft);CHKERRQ(ierr);
+          if (ey == numYEdges-1) {
+            ierr = DMComplexSetLabelValue(dm, "marker", cone[1], markerLeft);CHKERRQ(ierr);
+          }
+        }
+      }
+    }
+    /* Build X edges*/
+    for(vy = 0; vy < numYVertices; vy++) {
+      for(ex = 0; ex < numXEdges; ex++) {
+        const PetscInt edge    = firstXEdge  + vy*numXEdges + ex;
+        const PetscInt vertex  = firstVertex + vy*numXVertices + ex;
+        const PetscInt cone[2] = {vertex, vertex+1};
+
+        ierr = DMComplexSetCone(dm, edge, cone);CHKERRQ(ierr);
+        if (vy == numYVertices-1) {
+          ierr = DMComplexSetLabelValue(dm, "marker", edge,    markerTop);CHKERRQ(ierr);
+          ierr = DMComplexSetLabelValue(dm, "marker", cone[0], markerTop);CHKERRQ(ierr);
+          if (ex == numXEdges-1) {
+            ierr = DMComplexSetLabelValue(dm, "marker", cone[1], markerTop);CHKERRQ(ierr);
+          }
+        } else if (vy == 0) {
+          ierr = DMComplexSetLabelValue(dm, "marker", edge,    markerBottom);CHKERRQ(ierr);
+          ierr = DMComplexSetLabelValue(dm, "marker", cone[0], markerBottom);CHKERRQ(ierr);
+          if (ex == numXEdges-1) {
+            ierr = DMComplexSetLabelValue(dm, "marker", cone[1], markerBottom);CHKERRQ(ierr);
+          }
+        }
+      }
+    }
+  }
+  ierr = DMComplexSymmetrize(dm);CHKERRQ(ierr);
+  ierr = DMComplexStratify(dm);CHKERRQ(ierr);
+  /* Build coordinates */
+  ierr = PetscSectionSetChart(mesh->coordSection, firstVertex, firstVertex+numVertices);CHKERRQ(ierr);
+  for(v = firstVertex; v < firstVertex+numVertices; ++v) {
+    ierr = PetscSectionSetDof(mesh->coordSection, v, 2);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(mesh->coordSection, &coordSize);CHKERRQ(ierr);
+  ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(mesh->coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+  for(vy = 0; vy < numYVertices; ++vy) {
+    for(vx = 0; vx < numXVertices; ++vx) {
+      coords[(vy*numXVertices+vx)*2+0] = lower[0] + ((upper[0] - lower[0])/numXEdges)*vx;
+      coords[(vy*numXVertices+vx)*2+1] = lower[1] + ((upper[1] - lower[1])/numYEdges)*vy;
+    }
+  }
+  ierr = VecRestoreArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexCreateBoxMesh"
 PetscErrorCode DMComplexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm) {
   DM             boundary;
@@ -261,6 +402,42 @@ PetscErrorCode DMComplexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool int
   }
   ierr = DMComplexGenerate(boundary, PETSC_NULL, interpolate, dm);CHKERRQ(ierr);
   ierr = DMDestroy(&boundary);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexCreateHexBoxMesh"
+PetscErrorCode DMComplexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const PetscInt cells[], DM *dm) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(dm, 4);
+  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+  PetscValidLogicalCollectiveInt(*dm,dim,2);
+  ierr = DMSetType(*dm, DMCOMPLEX);CHKERRQ(ierr);
+  ierr = DMComplexSetDimension(*dm, dim);CHKERRQ(ierr);
+  switch(dim) {
+  case 2:
+  {
+    PetscReal lower[2] = {0.0, 0.0};
+    PetscReal upper[2] = {1.0, 1.0};
+
+    ierr = DMComplexCreateSquareMesh(*dm, lower, upper, cells);CHKERRQ(ierr);
+    break;
+  }
+#if 0
+  case 3:
+  {
+    PetscReal lower[3] = {0.0, 0.0, 0.0};
+    PetscReal upper[3] = {1.0, 1.0, 1.0};
+
+    ierr = DMComplexCreateCubeMesh(boundary, lower, upper, cells);CHKERRQ(ierr);
+    break;
+  }
+#endif
+  default:
+    SETERRQ1(comm, PETSC_ERR_SUP, "Dimension not supported: %d", dim);
+  }
   PetscFunctionReturn(0);
 }
 
