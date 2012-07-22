@@ -31,5 +31,5 @@ for n in range((len(sys.argv)-2) / 5):
   element.numComponents = components
   elements.append(element)
 filename = sys.argv[-1]
-generator.quadDegree = max([e.order for e in elements])
+generator.quadDegree = max([e.order+1 for e in elements])
 generator.runTensorProduct(dim, elements, numBlocks, operator, filename)
