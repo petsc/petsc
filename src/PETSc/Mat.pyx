@@ -8,6 +8,8 @@ class MatType(object):
     IS              = S_(MATIS)
     AIJ             = S_(MATAIJ)
     SEQAIJ          = S_(MATSEQAIJ)
+    SEQAIJPTHREAD   =  S_(MATSEQAIJPTHREAD)
+    AIJPTHREAD      =  S_(MATAIJPTHREAD)
     MPIAIJ          = S_(MATMPIAIJ)
     AIJCRL          = S_(MATAIJCRL)
     SEQAIJCRL       = S_(MATSEQAIJCRL)
@@ -29,6 +31,12 @@ class MatType(object):
     SBAIJ           = S_(MATSBAIJ)
     SEQSBAIJ        = S_(MATSEQSBAIJ)
     MPISBAIJ        = S_(MATMPISBAIJ)
+    SEQBSTRM        = S_(MATSEQBSTRM)
+    MPIBSTRM        = S_(MATMPIBSTRM)
+    BSTRM           = S_(MATBSTRM)
+    SEQSBSTRM       = S_(MATSEQSBSTRM)
+    MPISBSTRM       = S_(MATMPISBSTRM)
+    SBSTRM          = S_(MATSBSTRM)
     DAAD            = S_(MATDAAD)
     MFFD            = S_(MATMFFD)
     NORMAL          = S_(MATNORMAL)
@@ -44,6 +52,10 @@ class MatType(object):
     SCHURCOMPLEMENT = S_(MATSCHURCOMPLEMENT)
     HYPRESTRUCT     = S_(MATHYPRESTRUCT)
     HYPRESSTRUCT    = S_(MATHYPRESSTRUCT)
+    SUBMATRIX       = S_(MATSUBMATRIX)
+    LOCALREF        = S_(MATLOCALREF)
+    NEST            = S_(MATNEST)
+    IJ              = S_(MATIJ)
 
 class MatOption(object):
     ROW_ORIENTED               = MAT_ROW_ORIENTED

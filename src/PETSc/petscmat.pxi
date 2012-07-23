@@ -8,6 +8,8 @@ cdef extern from * nogil:
     PetscMatType MATIS
     PetscMatType MATAIJ
     PetscMatType   MATSEQAIJ
+    PetscMatType   MATSEQAIJPTHREAD
+    PetscMatType   MATAIJPTHREAD
     PetscMatType   MATMPIAIJ
     PetscMatType     MATAIJCRL
     PetscMatType       MATSEQAIJCRL
@@ -29,6 +31,12 @@ cdef extern from * nogil:
     PetscMatType MATSBAIJ
     PetscMatType   MATSEQSBAIJ
     PetscMatType   MATMPISBAIJ
+    PetscMatType MATBSTRM
+    PetscMatType   MATSEQBSTRM
+    PetscMatType   MATMPIBSTRM
+    PetscMatType MATSBSTRM
+    PetscMatType   MATSEQSBSTRM
+    PetscMatType   MATMPISBSTRM
     PetscMatType MATDAAD
     PetscMatType MATMFFD
     PetscMatType MATNORMAL
@@ -47,6 +55,7 @@ cdef extern from * nogil:
     PetscMatType MATSUBMATRIX
     PetscMatType MATLOCALREF
     PetscMatType MATNEST
+    PetscMatType MATIJ
 
     ctypedef char* PetscMatOrderingType "const char*"
     PetscMatOrderingType MATORDERINGNATURAL
