@@ -251,6 +251,9 @@ ex633D_DB: ex633D_DB.o  chkopts
 ex70: ex70.o  chkopts
 	-${CLINKER} -o ex70 ex70.o ${PETSC_SNES_LIB}
 	${RM} ex70.o
+ex72: ex72.o  chkopts
+	-${CLINKER} -o ex72 ex72.o ${PETSC_SNES_LIB}
+	${RM} ex72.o
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex1_1.tmp 2>&1;   \
