@@ -145,11 +145,13 @@
 !
 ! GPU Storage Formats for CUSP and CUSPARSE
 !
-#if !defined(PETSC_HAVE_TXPETSCGPU)
+#if defined(PETSC_HAVE_TXPETSCGPU)
 #define MatCUSPARSEStorageFormat PetscEnum
-#if !defined(PETSC_HAVE_CUSP)
-#define MatCUSPStorageFormat PetscEnum
-#endif
+#define MatCUSPARSEFormatOperation PetscEnum
 #endif
 
+#if defined(PETSC_HAVE_CUSP)
+#define MatCUSPStorageFormat PetscEnum
+#define MatCUSPFormatOperation PetscEnum
+#endif
 #endif

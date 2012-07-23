@@ -1778,7 +1778,7 @@ PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat,PetscReal);
 
 #if defined PETSC_HAVE_TXPETSCGPU
 
-/*EC
+/*E
     MatCUSPARSEStorageFormat - indicates the storage format for CUSPARSE (GPU) 
     matrices. 
 
@@ -1795,14 +1795,12 @@ PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat,PetscReal);
 .seealso: MatCUSPARSESetFormat(), MatCUSPARSEFormatOperation
 E*/
 
-typedef enum {
-  MAT_CUSPARSE_CSR, MAT_CUSPARSE_ELL, MAT_CUSPARSE_HYB}
-  MatCUSPARSEStorageFormat;
+typedef enum {MAT_CUSPARSE_CSR, MAT_CUSPARSE_ELL, MAT_CUSPARSE_HYB} MatCUSPARSEStorageFormat;
 
 /* these will be strings associated with enumerated type defined above */
 PETSC_EXTERN const char *const MatCUSPARSEStorageFormats[];
 
-/*EC
+/*E
     MatCUSPARSEFormatOperation - indicates the operation of CUSPARSE (GPU) 
     matrices whose operation should use a particular storage format.
 
@@ -1810,21 +1808,15 @@ PETSC_EXTERN const char *const MatCUSPARSEStorageFormats[];
 
 +   MAT_CUSPARSE_MULT_DIAG : sets the storage format for the diagonal matrix in the parallel MatMult
 .   MAT_CUSPARSE_MULT_OFFDIAG : sets the storage format for the offdiagonal matrix in the parallel MatMult
-.   MAT_CUSPARSE_MULT = 0x3 : sets the storage format for the entire matrix in the serial (single GPU) MatMult
-.   MAT_CUSPARSE_SOLVE = 0x4 : sets the storage format for the triangular factors in the serial (single GPU) MatSolve
--   MAT_CUSPARSE_ALL = 0x7 : sets the storage format for all CUSPARSE (GPU) matrices
+.   MAT_CUSPARSE_MULT : sets the storage format for the entire matrix in the serial (single GPU) MatMult
+.   MAT_CUSPARSE_SOLVE : sets the storage format for the triangular factors in the serial (single GPU) MatSolve
+-   MAT_CUSPARSE_ALL : sets the storage format for all CUSPARSE (GPU) matrices
 
     Level: intermediate
 
 .seealso: MatCUSPARSESetFormat(), MatCUSPARSEStorageFormat
 E*/
-typedef enum {
-  MAT_CUSPARSE_MULT_DIAG = 0x1,
-  MAT_CUSPARSE_MULT_OFFDIAG = 0x2,
-  MAT_CUSPARSE_MULT = 0x3,
-  MAT_CUSPARSE_SOLVE = 0x4,
-  MAT_CUSPARSE_ALL = 0x7
-} MatCUSPARSEFormatOperation;
+typedef enum {MAT_CUSPARSE_MULT_DIAG, MAT_CUSPARSE_MULT_OFFDIAG, MAT_CUSPARSE_MULT, MAT_CUSPARSE_SOLVE, MAT_CUSPARSE_ALL} MatCUSPARSEFormatOperation;
 
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
@@ -1836,16 +1828,15 @@ PETSC_EXTERN PetscErrorCode MatCUSPARSESetFormat(Mat,MatCUSPARSEFormatOperation,
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 
-#ifdef PETSC_HAVE_TXPETSCGPU
-/*EC
+/*E
     MatCUSPStorageFormat - indicates the storage format for CUSP (GPU) 
     matrices. 
 
     Not Collective
 
-+   MAT_CUSP_CSR Compressed Sparse Row), 
-.   MAT_CUSP_DIA (diagonal)
--   MAT_CUSP_ELL (Ellpack) 
++   MAT_CUSP_CSR : Compressed Sparse Row
+.   MAT_CUSP_DIA : Diagonal
+-   MAT_CUSP_ELL : Ellpack
 
     Level: intermediate
 
@@ -1853,14 +1844,12 @@ PETSC_EXTERN PetscErrorCode MatCreateAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt
 
 .seealso: MatCUSPSetFormat(), MatCUSPFormatOperation
 E*/
-typedef enum {
-  MAT_CUSP_CSR, MAT_CUSP_DIA, MAT_CUSP_ELL}
-  MatCUSPStorageFormat;
+typedef enum {MAT_CUSP_CSR, MAT_CUSP_DIA, MAT_CUSP_ELL} MatCUSPStorageFormat;
 
 /* these will be strings associated with enumerated type defined above */
 PETSC_EXTERN const char *const MatCUSPStorageFormats[];
 
-/*EC
+/*E
     MatCUSPFormatOperation - indicates the operation of CUSP (GPU) 
     matrices whose operation should use a particular storage format.
 
@@ -1868,9 +1857,9 @@ PETSC_EXTERN const char *const MatCUSPStorageFormats[];
 
 +   MAT_CUSP_MULT_DIAG : sets the storage format for the diagonal matrix in the parallel MatMult
 .   MAT_CUSP_MULT_OFFDIAG : sets the storage format for the offdiagonal matrix in the parallel MatMult
-.   MAT_CUSP_MULT = 0x3 : sets the storage format for the entire matrix in the serial (single GPU) MatMult
-.   MAT_CUSP_SOLVE = 0x4 : sets the storage format for the triangular factors in the serial (single GPU) MatSolve
--   MAT_CUSP_ALL = 0x7 : sets the storage format for all CUSP (GPU) matrices
+.   MAT_CUSP_MULT : sets the storage format for the entire matrix in the serial (single GPU) MatMult
+.   MAT_CUSP_SOLVE : sets the storage format for the triangular factors in the serial (single GPU) MatSolve
+-   MAT_CUSP_ALL : sets the storage format for all CUSP (GPU) matrices
 
     Level: intermediate
 
@@ -1878,16 +1867,9 @@ PETSC_EXTERN const char *const MatCUSPStorageFormats[];
 
 .seealso: MatCUSPSetFormat(), MatCUSPStorageFormat
 E*/
-typedef enum {
-  MAT_CUSP_MULT_DIAG = 0x1,
-  MAT_CUSP_MULT_OFFDIAG = 0x2,
-  MAT_CUSP_MULT = 0x3,
-  MAT_CUSP_SOLVE = 0x4,
-  MAT_CUSP_ALL = 0x7
-} MatCUSPFormatOperation;
+typedef enum {MAT_CUSP_MULT_DIAG, MAT_CUSP_MULT_OFFDIAG, MAT_CUSP_MULT, MAT_CUSP_SOLVE, MAT_CUSP_ALL} MatCUSPFormatOperation;
 
 PETSC_EXTERN PetscErrorCode MatCUSPSetFormat(Mat,MatCUSPFormatOperation,MatCUSPStorageFormat);
-#endif 
 #endif
 
 /* 

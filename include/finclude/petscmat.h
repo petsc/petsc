@@ -518,6 +518,50 @@
       parameter (PETSC_SCALAR_DOUBLE=0,PETSC_SCALAR_SINGLE=1)
       parameter (PETSC_SCALAR_LONG_DOUBLE=2)
 
+
+!
+!     CUSP enumerated types
+!
+#if defined(PETSC_HAVE_CUSP)
+      PetscEnum MAT_CUSP_CSR
+      PetscEnum MAT_CUSP_DIA
+      PetscEnum MAT_CUSP_ELL
+      parameter(MAT_CUSP_CSR=0,MAT_CUSP_DIA=1)
+      parameter(MAT_CUSP_ELL=2)
+      PetscEnum MAT_CUSP_MULT_DIAG
+      PetscEnum MAT_CUSP_MULT_OFFDIAG
+      PetscEnum MAT_CUSP_MULT
+      PetscEnum MAT_CUSP_SOLVE
+      PetscEnum MAT_CUSP_ALL
+      parameter(MAT_CUSP_MULT_DIAG=0)
+      parameter(MAT_CUSP_MULT_OFFDIAG=1)
+      parameter(MAT_CUSP_MULT=2)
+      parameter(MAT_CUSP_SOLVE=3)
+      parameter(MAT_CUSP_ALL=4)
+#endif      
+
+
+!
+!     CUSPARSE enumerated types
+!
+#if defined(PETSC_HAVE_TXPETSCGPU)
+      PetscEnum MAT_CUSPARSE_CSR
+      PetscEnum MAT_CUSPARSE_ELL
+      PetscEnum MAT_CUSPARSE_HYB
+      parameter(MAT_CUSPARSE_CSR=0,MAT_CUSPARSE_ELL=1)
+      parameter(MAT_CUSPARSE_HYB=2)
+      PetscEnum MAT_CUSPARSE_MULT_DIAG
+      PetscEnum MAT_CUSPARSE_MULT_OFFDIAG
+      PetscEnum MAT_CUSPARSE_MULT
+      PetscEnum MAT_CUSPARSE_SOLVE
+      PetscEnum MAT_CUSPARSE_ALL
+      parameter(MAT_CUSPARSE_MULT_DIAG=0)
+      parameter(MAT_CUSPARSE_MULT_OFFDIAG=1)
+      parameter(MAT_CUSPARSE_MULT=2)
+      parameter(MAT_CUSPARSE_SOLVE=3)
+      parameter(MAT_CUSPARSE_ALL=4)
+#endif      
+		     
 !
 !  End of Fortran include file for the Mat package in PETSc
 !

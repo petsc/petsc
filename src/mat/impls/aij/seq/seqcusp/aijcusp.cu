@@ -32,15 +32,17 @@ cudaStream_t theCUSPBodyStream=0;
 #include <thrust/sort.h>
 #include <thrust/fill.h>
 
-#ifdef PETSC_HAVE_TXPETSCGPU
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCUSPSetFormat_SeqAIJCUSP"
 PetscErrorCode MatCUSPSetFormat_SeqAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFormat format)
 {
+#if defined PETSC_HAVE_TXPETSCGPU
   Mat_SeqAIJCUSP *cuspMat  = (Mat_SeqAIJCUSP*)A->spptr; 
+#endif
   PetscFunctionBegin;  
+#if defined PETSC_HAVE_TXPETSCGPU
   switch (op) {
   case MAT_CUSP_MULT:
     cuspMat->format = format;
@@ -51,6 +53,7 @@ PetscErrorCode MatCUSPSetFormat_SeqAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCU
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported operation %d for MatCUSPFormatOperation. Only MAT_CUSP_MULT and MAT_CUSP_ALL are currently supported.",op);
   }
+#endif
   PetscFunctionReturn(0);  
 }
 EXTERN_C_END
@@ -59,7 +62,9 @@ EXTERN_C_END
    MatCUSPSetFormat - Sets the storage format of CUSP matrices for a particular
    operation. Only the MatMult operation can use different GPU storage formats
    for SEQAIJCUSP matrices. This requires the txpetscgpu package. Use --download-txpetscgpu 
-   to build/install PETSc to use these capabilities.
+   to build/install PETSc to use these capabilities. If txpetscgpu is not enabled,
+   this function simply passes through leaving the matrix in the original CSR format
+   for usage on the GPU.
 
    Not Collective
 
@@ -78,13 +83,18 @@ EXTERN_C_END
 #define __FUNCT__ "MatCUSPSetFormat"
 PetscErrorCode MatCUSPSetFormat(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFormat format)
 {
+#if defined PETSC_HAVE_TXPETSCGPU
   PetscErrorCode ierr;
+#endif
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID,1);
+#if defined PETSC_HAVE_TXPETSCGPU
   ierr = PetscTryMethod(A, "MatCUSPSetFormat_C",(Mat,MatCUSPFormatOperation,MatCUSPStorageFormat),(A,op,format));CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
+#if defined PETSC_HAVE_TXPETSCGPU
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetFromOptions_SeqAIJCUSP"
 PetscErrorCode MatSetFromOptions_SeqAIJCUSP(Mat A)
@@ -663,6 +673,7 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
   B->ops->destroy        = MatDestroy_SeqAIJCUSP;
   B->ops->getvecs        = MatGetVecs_SeqAIJCUSP;
   B->ops->setvaluesbatch = MatSetValuesBatch_SeqAIJCUSP;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatCUSPSetFormat_C", "MatCUSPSetFormat_SeqAIJCUSP", MatCUSPSetFormat_SeqAIJCUSP);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUSP);CHKERRQ(ierr);
   B->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;
   PetscFunctionReturn(0);

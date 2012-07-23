@@ -11,6 +11,7 @@ class Configure(config.package.Package):
     self.cxx             = 0
     self.archIndependent = 1
     self.worksonWindows  = 1
+    self.downloadonWindows = 1
     self.complex         = 1
     return
 

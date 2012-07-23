@@ -262,7 +262,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   // TODO: Ask Nathan how to do this on GPU
   ierr = PetscLogEventBegin(MAT_SetValuesBatchI,0,0,0,0);CHKERRQ(ierr);
   PetscMPIInt *procSendSizes, *procRecvSizes;
-  ierr = PetscMalloc2(numProcs, PetscInt, &procSendSizes, numProcs, PetscInt, &procRecvSizes);CHKERRQ(ierr);
+  ierr = PetscMalloc2(numProcs, PetscMPIInt, &procSendSizes, numProcs, PetscMPIInt, &procRecvSizes);CHKERRQ(ierr);
   ierr = PetscMemzero(procSendSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(procRecvSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
   numNonlocalRows = 0;
@@ -329,7 +329,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   PetscInt    *sendRows, *recvRows;
   PetscInt    *sendCols, *recvCols;
   PetscScalar *sendVals, *recvVals;
-  ierr = PetscMalloc2(numProcs, PetscInt, &procSendDispls, numProcs, PetscInt, &procRecvDispls);CHKERRQ(ierr);
+  ierr = PetscMalloc2(numProcs, PetscMPIInt, &procSendDispls, numProcs, PetscMPIInt, &procRecvDispls);CHKERRQ(ierr);
   ierr = PetscMalloc3(numSendEntries, PetscInt, &sendRows, numSendEntries, PetscInt, &sendCols, numSendEntries, PetscScalar, &sendVals);CHKERRQ(ierr);
   ierr = PetscMalloc3(numRecvEntries, PetscInt, &recvRows, numRecvEntries, PetscInt, &recvCols, numRecvEntries, PetscScalar, &recvVals);CHKERRQ(ierr);
   procSendDispls[0] = procRecvDispls[0] = 0;

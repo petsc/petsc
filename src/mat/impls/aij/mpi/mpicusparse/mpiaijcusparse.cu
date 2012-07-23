@@ -250,10 +250,10 @@ PetscErrorCode  MatCreate_MPIAIJCUSPARSE(Mat A)
 }
 EXTERN_C_END
 
-/*@C
-   MatCreateAIJCUSP - Creates a sparse matrix in AIJ (compressed row) format
+/*@
+   MatCreateAIJCUSPARSE - Creates a sparse matrix in AIJ (compressed row) format
    (the default parallel PETSc format).  This matrix will ultimately pushed down
-   to NVidia GPUs and use the CUSPARSe library for calculations. For good matrix 
+   to NVidia GPUs and use the CUSPARSE library for calculations. For good matrix 
    assembly performance the user should preallocate the matrix storage by setting 
    the parameter nz (or the array nnz).  By setting these parameters accurately, 
    performance during matrix assembly can be increased by more than a factor of 50.
@@ -320,7 +320,7 @@ PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm comm,PetscInt m,PetscInt n,PetscIn
   PetscFunctionReturn(0);
 }
 
-/*MC
+/*M
    MATAIJCUSPARSE - MATMPIAIJCUSPARSE = "aijcusparse" = "mpiaijcusparse" - A matrix type to be used for sparse matrices.
 
    A matrix type type whose data resides on Nvidia GPUs. These matrices can be in CSR format. 
