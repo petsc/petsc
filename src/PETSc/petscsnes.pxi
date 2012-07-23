@@ -23,6 +23,7 @@ cdef extern from * nogil:
       # converged
       SNES_CONVERGED_FNORM_ABS
       SNES_CONVERGED_FNORM_RELATIVE
+      SNES_CONVERGED_SNORM_RELATIVE
       SNES_CONVERGED_ITS
       SNES_CONVERGED_TR_DELTA
       # diverged
@@ -32,6 +33,7 @@ cdef extern from * nogil:
       SNES_DIVERGED_FNORM_NAN
       SNES_DIVERGED_MAX_IT
       SNES_DIVERGED_LINE_SEARCH
+      SNES_DIVERGED_INNER
       SNES_DIVERGED_LOCAL_MIN
 
 

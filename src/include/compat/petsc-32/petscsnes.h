@@ -10,6 +10,9 @@
 #define SNESFAS          "fas"
 #define SNESMS           "ms"
 
+#define SNES_CONVERGED_SNORM_RELATIVE SNES_CONVERGED_FNORM_RELATIVE
+#define SNES_DIVERGED_INNER           SNES_DIVERGED_FUNCTION_DOMAIN
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetIterationNumber"
 static PetscErrorCode
