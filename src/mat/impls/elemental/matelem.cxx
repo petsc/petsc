@@ -83,20 +83,20 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
       a->emat->Print("Elemental matrix (cyclic ordering)");
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
       if (A->factortype == MAT_FACTOR_NONE){
-        Mat Aaij;
+        Mat Adense;
         ierr = PetscPrintf(((PetscObject)viewer)->comm,"Elemental matrix (explicit ordering)\n");CHKERRQ(ierr);
-        ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
-        ierr = MatView(Aaij,viewer);CHKERRQ(ierr);
-        ierr = MatDestroy(&Aaij);CHKERRQ(ierr);     
+        ierr = MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense);CHKERRQ(ierr);
+        ierr = MatView(Adense,viewer);CHKERRQ(ierr);
+        ierr = MatDestroy(&Adense);CHKERRQ(ierr);     
       }
     } else SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Format");
   } else {
     /* convert to aij/mpidense format and call MatView() */
-    Mat Aaij;
+    Mat Adense;
     ierr = PetscPrintf(((PetscObject)viewer)->comm,"Elemental matrix (explicit ordering)\n");CHKERRQ(ierr);
-    ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
-    ierr = MatView(Aaij,viewer);CHKERRQ(ierr);
-    ierr = MatDestroy(&Aaij);CHKERRQ(ierr);     
+    ierr = MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense);CHKERRQ(ierr);
+    ierr = MatView(Adense,viewer);CHKERRQ(ierr);
+    ierr = MatDestroy(&Adense);CHKERRQ(ierr);     
   }
   PetscFunctionReturn(0);
 }
@@ -377,6 +377,22 @@ static PetscErrorCode MatMatTransposeMult_Elemental(Mat A,Mat B,MatReuse scall,P
   ierr = PetscLogEventBegin(MAT_MatTransposeMultNumeric,A,B,0,0);CHKERRQ(ierr); 
   ierr = MatMatTransposeMultNumeric_Elemental(A,B,*C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MatTransposeMultNumeric,A,B,0,0);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetDiagonal_Elemental"
+static PetscErrorCode MatGetDiagonal_Elemental(Mat X,Vec D)
+{
+  Mat_Elemental   *x = (Mat_Elemental*)X->data;
+  PetscElemScalar *d;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(D,(PetscScalar **)&d);CHKERRQ(ierr);
+  elem::DistMatrix<PetscElemScalar,elem::MD,elem::STAR> de((X->rmap->N > X->cmap->N)?X->cmap->N:X->rmap->N,1,0,d,(X->rmap->N > X->cmap->N)?X->cmap->n:X->rmap->n,*x->grid);
+  x->emat->GetDiagonal(de,0);
+  ierr = VecRestoreArray(D,(PetscScalar **)&d);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -889,7 +905,7 @@ static struct _MatOps MatOps_Values = {
        MatTranspose_Elemental,
 /*15*/ MatGetInfo_Elemental,
        0, 
-       0, //MatGetDiagonal_Elemental,?
+       MatGetDiagonal_Elemental,
        0, //MatDiagonalScale_Elemental,?
        MatNorm_Elemental,
 /*20*/ MatAssemblyBegin_Elemental,

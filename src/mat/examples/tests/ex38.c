@@ -2,7 +2,6 @@
 static char help[] = "Test interface of Elemental. \n\n"; 
 
 #include <petscmat.h>
-#include <elemental.hpp>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -60,7 +59,6 @@ int main(int argc,char **args)
     for (j=0; j<ncols; j++) {
       //v[i*ncols+j] = (PetscReal)(rank); 
       v[i*ncols+j] = (PetscReal)(rank*10000+100*rows[i]+cols[j]); 
-      if (rank==-1) {ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] set (%d, %d, %g)\n",rank,rows[i],cols[j],v[i*ncols+j]);CHKERRQ(ierr);}
     }
   }
   ierr = MatSetValues(C,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);

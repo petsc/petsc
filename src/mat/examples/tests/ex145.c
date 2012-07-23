@@ -265,6 +265,9 @@ int main(int argc,char **argv)
   ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
 
+  ierr = MatGetDiagonal(A,x);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   /* Free space */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&Asym);CHKERRQ(ierr);

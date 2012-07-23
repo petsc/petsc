@@ -8,14 +8,15 @@ static char help[] = "Tests Elemental interface.\n\n";
 int main(int argc,char **args)
 {
   Mat            Cdense,B,C,Ct;
+  Vec            d;
   PetscInt       i,j,m = 5,n,nrows,ncols;
   const PetscInt *rows,*cols;
   IS             isrows,iscols;
   PetscErrorCode ierr;
-  PetscScalar    *v,rval;
+  PetscScalar    *v;
   PetscMPIInt    rank,size;
   PetscReal      Cnorm;
-  PetscBool      mats_view=PETSC_FALSE;
+  PetscBool      flg,mats_view=PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -38,6 +39,7 @@ int main(int argc,char **args)
   ierr = PetscMalloc(nrows*ncols*sizeof *v,&v);CHKERRQ(ierr);
 #if defined (PETSC_USE_COMPLEX)
   PetscRandom rand;
+  PetscScalar rval;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
@@ -69,9 +71,8 @@ int main(int argc,char **args)
   }
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatConvert(C,MATMPIDENSE,MAT_INITIAL_MATRIX,&Cdense);CHKERRQ(ierr);
-  if (mats_view) {
-    ierr = MatView(Cdense,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
+  ierr = MatMultEqual(C,Cdense,5,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Cdense != C. MatConvert() fails");
 
   /* Test MatNorm() */
   ierr = MatNorm(C,NORM_1,&Cnorm);CHKERRQ(ierr);
@@ -84,6 +85,10 @@ int main(int argc,char **args)
     ierr = MatView(Ct,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = MatZeroEntries(Ct);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&d);CHKERRQ(ierr);
+  ierr = VecSetSizes(d,m>n?n:m,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(d);CHKERRQ(ierr);
+  ierr = MatGetDiagonal(C,d);CHKERRQ(ierr);
 
   /* Test MatAXPY(), MatAYPX() and in-place MatConvert() */
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
@@ -107,13 +112,7 @@ int main(int argc,char **args)
   ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (mats_view) {
-    ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
   ierr = MatAXPY(B,2.5,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  if (mats_view) {
-    ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
   ierr = MatAYPX(B,3.75,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatConvert(B,MATDENSE,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
   if (mats_view) {
@@ -134,6 +133,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&Ct);CHKERRQ(ierr);
+  ierr = VecDestroy(&d);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

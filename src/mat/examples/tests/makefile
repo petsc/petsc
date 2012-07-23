@@ -1015,6 +1015,14 @@ runex38_3:
 	-@${MPIEXEC} -n 6 ./ex38 -mat_type elemental -m 2 -n 2 -test_matmatmult > ex38_2.tmp 2>&1;   \
 	   ${DIFF} output/ex38_2.out ex38_2.tmp || printf "${PWD}\nPossible problem with ex38_3, diffs above \n========================================="; \
 	   ${RM} -f ex38_2.tmp
+runex39:
+	-@${MPIEXEC} -n 2 ./ex39 -m 3 -n 2 > ex39_1.tmp 2>&1;   \
+	   ${DIFF} output/ex39_1.out ex39_1.tmp || printf "${PWD}\nPossible problem with ex39_1, diffs above \n========================================="; \
+	   ${RM} -f ex39_1.tmp
+runex39_2:
+	-@${MPIEXEC} -n 6 ./ex39 -m 2 -n 3 > ex39_2.tmp 2>&1;   \
+	   ${DIFF} output/ex39_2.out ex39_2.tmp || printf "${PWD}\nPossible problem with ex39_2, diffs above \n========================================="; \
+	   ${RM} -f ex39_2.tmp
 
 
 # See http://www.mcs.anl.gov/petsc/documentation/faq.html#datafiles for how to obtain the datafiles used below
