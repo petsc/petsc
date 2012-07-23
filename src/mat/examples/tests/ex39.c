@@ -123,7 +123,7 @@ int main(int argc,char **args)
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   
-  /* Test MatMatTransposeMult() */
+  /* Test MatMatTransposeMult(): B = C*C^T */
   ierr = MatMatTransposeMult(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
   if (mats_view) {
     ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

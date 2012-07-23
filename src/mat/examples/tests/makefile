@@ -1846,7 +1846,8 @@ TESTEXAMPLES_FFTW_REAL         = ex142.PETSc ex142.rm ex144.PETSc runex144 runex
 TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc ex121.rm \
                                  ex143.PETSc runex143 runex143_2 ex143.rm \
 TESTEXAMPLES_C_COMPLEX	       = ex127.PETSc runex127 runex127_2 ex127.rm 
-TESTEXAMPLES_ELEMENTAL_REAL    = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm \
-                                 ex145.PETSc runex145 ex145.rm
+TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm \
+                                 ex39.PETSc ex39.rm \
+                                 ex145.PETSc runex145 runex145_2 ex145.rm
 
 include ${PETSC_DIR}/conf/test

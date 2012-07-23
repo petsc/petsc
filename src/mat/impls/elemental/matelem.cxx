@@ -54,19 +54,6 @@ PetscErrorCode PetscElementalFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-/* Sets Elemental options from the options database */
-#undef __FUNCT__
-#define __FUNCT__ "PetscSetElementalFromOptions"
-PetscErrorCode PetscSetElementalFromOptions(Mat A)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"Elemental Options","Mat");CHKERRQ(ierr);
-  PetscOptionsEnd();
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "MatView_Elemental"
 static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
@@ -902,8 +889,8 @@ static struct _MatOps MatOps_Values = {
        MatTranspose_Elemental,
 /*15*/ MatGetInfo_Elemental,
        0, 
-       0,
-       0, 
+       0, //MatGetDiagonal_Elemental,?
+       0, //MatDiagonalScale_Elemental,?
        MatNorm_Elemental,
 /*20*/ MatAssemblyBegin_Elemental,
        MatAssemblyEnd_Elemental,
@@ -1074,9 +1061,9 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
       if (optv1*optv2 != elem::mpi::CommSize(cxxcomm)) {
         SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"Grid Height times Grid Width must equal CommSize");
       }
-      commgrid->grid = new elem::Grid(cxxcomm,optv1,optv2);
+      commgrid->grid = new elem::Grid(cxxcomm,optv1,optv2); /* use user-provided grid sizes */
     } else {
-      commgrid->grid = new elem::Grid(cxxcomm);
+      commgrid->grid = new elem::Grid(cxxcomm); /* use Elemental default grid sizes */
     }
     commgrid->grid_refct = 1;
     ierr = MPI_Attr_put(icomm,Petsc_Elemental_keyval,(void*)commgrid);CHKERRQ(ierr);
