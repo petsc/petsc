@@ -2,6 +2,7 @@
 static char help[] = "Test interface of Elemental. \n\n"; 
 
 #include <petscmat.h>
+#include <elemental.hpp>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

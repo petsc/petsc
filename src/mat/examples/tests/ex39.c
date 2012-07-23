@@ -12,7 +12,7 @@ int main(int argc,char **args)
   const PetscInt *rows,*cols;
   IS             isrows,iscols;
   PetscErrorCode ierr;
-  PetscScalar    *v;
+  PetscScalar    *v,rval;
   PetscMPIInt    rank,size;
   PetscReal      Cnorm;
   PetscBool      mats_view=PETSC_FALSE;
@@ -36,11 +36,24 @@ int main(int argc,char **args)
   ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
   ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
   ierr = PetscMalloc(nrows*ncols*sizeof *v,&v);CHKERRQ(ierr);
+#if defined (PETSC_USE_COMPLEX)
+  PetscRandom rand;
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
+  for (i=0; i<nrows; i++) {
+    for (j=0; j<ncols; j++) {
+      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      v[i*ncols+j] = rval;
+    }
+  }
+  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+#else
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
       v[i*ncols+j] = (PetscReal)(10000*rank+100*rows[i]+cols[j]);
     }
   }
+#endif
   ierr = MatSetValues(C,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
@@ -66,6 +79,10 @@ int main(int argc,char **args)
 
   /* Test MatTranspose() and MatZeroEntries() */
   ierr = MatTranspose(C,MAT_INITIAL_MATRIX,&Ct);CHKERRQ(ierr);
+  ierr = MatConjugate(Ct);CHKERRQ(ierr);
+  if (mats_view) {
+    ierr = MatView(Ct,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   ierr = MatZeroEntries(Ct);CHKERRQ(ierr);
 
   /* Test MatAXPY(), MatAYPX() and in-place MatConvert() */
@@ -83,7 +100,7 @@ int main(int argc,char **args)
     for (j=0; j<ncols; j++) {
       v[i*ncols+j] = (PetscReal)(1000*rows[i]+cols[j]);
     }
-   }
+  }
   ierr = MatSetValues(B,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);

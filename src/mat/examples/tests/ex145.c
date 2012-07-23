@@ -64,7 +64,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
   if (mats_view){
-    ierr = PetscPrintf(PETSC_COMM_SELF, "[%d] A: nrows %d, m %d; ncols %d, n %d\n",rank,nrows,m,ncols,n);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "A: nrows %d, m %d; ncols %d, n %d\n",nrows,m,ncols,n);CHKERRQ(ierr);
     ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -96,7 +96,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
   if (mats_view){
-    ierr = PetscPrintf(PETSC_COMM_SELF, "[%d] B: nrows %d, m %d; ncols %d, p %d\n",rank,nrows,m,ncols,p);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "B: nrows %d, m %d; ncols %d, p %d\n",nrows,m,ncols,p);CHKERRQ(ierr);
     ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -132,8 +132,7 @@ int main(int argc,char **argv)
   /* Cholesky factorization */
   /*------------------------*/
   ierr = PetscPrintf(PETSC_COMM_WORLD," Create Elemental matrix Asym\n");CHKERRQ(ierr);
-  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&Asym);CHKERRQ(ierr);
-  ierr = MatConjugate(Asym);CHKERRQ(ierr);
+  ierr = MatHermitianTranspose(A,MAT_INITIAL_MATRIX,&Asym);CHKERRQ(ierr);
   ierr = MatAXPY(Asym,1.0,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* Asym = A + A^T */
   if (rank == 0) { /* add 100.0 to diagonals of Asym to make it spd */
     PetscInt M,N;

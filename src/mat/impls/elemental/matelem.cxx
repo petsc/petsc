@@ -487,6 +487,30 @@ static PetscErrorCode MatConjugate_Elemental(Mat A)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatHermitianTranspose_Elemental"
+static PetscErrorCode MatHermitianTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
+{
+  /* Only out-of-place supported */
+  Mat            Be;
+  PetscErrorCode ierr;
+  MPI_Comm       comm=((PetscObject)A)->comm;
+  Mat_Elemental  *a = (Mat_Elemental*)A->data, *b;
+
+  PetscFunctionBegin;
+  if (reuse == MAT_INITIAL_MATRIX){
+    ierr = MatCreate(comm,&Be);CHKERRQ(ierr);
+    ierr = MatSetSizes(Be,A->cmap->n,A->rmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = MatSetType(Be,MATELEMENTAL);CHKERRQ(ierr);
+    ierr = MatSetUp(Be);CHKERRQ(ierr);
+    *B = Be;
+  }
+  b = (Mat_Elemental*)Be->data;
+  elem::Adjoint(*a->emat,*b->emat);
+  Be->assembled = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatSolve_Elemental"
 static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
 {
@@ -981,7 +1005,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
 /*119*/0,
-       0,
+       MatHermitianTranspose_Elemental,
        0,
        0,
        0,
@@ -1012,7 +1036,7 @@ static struct _MatOps MatOps_Values = {
 
 .seealso: MATDENSE,MatCreateElemental()
 M*/
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Elemental"
 PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
@@ -1076,4 +1100,4 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
