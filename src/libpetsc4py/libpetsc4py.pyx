@@ -1,3 +1,4 @@
+#cython: cdivision=True
 #cython: autotestdict=False
 cimport cython
 
