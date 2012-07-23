@@ -10,8 +10,7 @@ README: PETSc for Python
 
 Thank you for downloading the *PETSc for Python* project archive. As
 this is a work in progress, please check the `project website`_ for
-updates.  This project should be considered experimental, APIs are
-subject to change at any time.
+updates.
 
 .. _CIMEC:            http://www.cimec.org.ar/
 .. _project website:  http://petsc4py.googlecode.com/

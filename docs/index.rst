@@ -6,7 +6,6 @@ PETSc for Python
 :Contact:      dalcinl@gmail.com
 :Organization: `CIMEC <http://www.cimec.org.ar/>`_
 :Address:      CCT CONICET, 3000 Santa Fe, Argentina
-:Web Site:     http://petsc4py.googlecode.com
 
 
 Online Documentation
@@ -24,11 +23,24 @@ Online Documentation
 .. _Epydoc:    http://epydoc.sourceforge.net/
 
 
-Downloads, Support and Development
-----------------------------------
+Discussion and Support
+----------------------
 
-+ Project Page:    http://petsc4py.googlecode.com/
++ Mailing Lists: petsc-users@mcs.anl.gov, petsc-dev@mcs.anl.gov
+
+
+Downloads and Development
+-------------------------
+
++ Project Site:    http://petsc4py.googlecode.com/
 + Source Releases: http://code.google.com/p/petsc4py/downloads/
-+ Mailing Lists:   petsc-users@mcs.anl.gov, petsc-dev@mcs.anl.gov
 + Issue Tracker:   http://code.google.com/p/petsc4py/issues/
-+ HG Repository:   http://petsc4py.googlecode.com/hg/
++ Repository:      http://petsc4py.googlecode.com/hg/
+
+
+Acknowledgments
+---------------
+
+This project was partially supported by the Center for Numerical
+Porous Media, Mathematics and Computational Science and Engineering
+Division, King Abdullah University of Science and Technology (KAUST).
