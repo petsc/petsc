@@ -6137,3 +6137,27 @@ PetscErrorCode DMComplexCreateRigidBody(DM dm, PetscSection section, PetscSectio
   for(i = 0; i< m; ++i) {ierr = VecDestroy(&mode[i]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetVTKBounds"
+PetscErrorCode DMComplexGetVTKBounds(DM dm, PetscInt *cMax, PetscInt *vMax)
+{
+  DM_Complex *mesh = (DM_Complex *) dm->data;
+
+  PetscFunctionBegin;
+  if (cMax) *cMax = mesh->vtkCellMax;
+  if (vMax) *vMax = mesh->vtkVertexMax;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexSetVTKBounds"
+PetscErrorCode DMComplexSetVTKBounds(DM dm, PetscInt cMax, PetscInt vMax)
+{
+  DM_Complex *mesh = (DM_Complex *) dm->data;
+
+  PetscFunctionBegin;
+  if (cMax >= 0) mesh->vtkCellMax   = cMax;
+  if (vMax >= 0) mesh->vtkVertexMax = vMax;
+  PetscFunctionReturn(0);
+}

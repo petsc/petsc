@@ -85,8 +85,9 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, PetscSection globalConeSection, FIL
   PetscInt       dim;
   PetscInt       numCorners = 0, maxCorners;
   PetscInt       numCells   = 0, totCells, cellType;
-  PetscInt       cStart, cEnd, c, vStart, vEnd, v;
+  PetscInt       cMax, cStart, cEnd, c, vStart, vEnd, v;
   PetscMPIInt    numProcs, rank, proc, tag = 1;
+  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -95,6 +96,8 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, PetscSection globalConeSection, FIL
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetVTKBounds(dm, &cMax, PETSC_NULL);CHKERRQ(ierr);
+  if (cMax >= 0) {cEnd = PetscMin(cEnd, cMax);}
   for(c = cStart; c < cEnd; ++c) {
     PetscInt  nC;
     PetscBool valid;
@@ -104,7 +107,11 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, PetscSection globalConeSection, FIL
     ierr = DMComplexVTKGetCellType(dm, dim, nC, &cellType);CHKERRQ(ierr);
     ierr = DMComplexVTKCellTypeValid(dm, cellType, &valid);CHKERRQ(ierr);
     if (!valid) continue;
-    if (!numCorners) numCorners = nC;
+    if (!numCorners) {
+      numCorners = nC;
+    } else if (numCorners != nC) {
+      SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %d has %d corners, which should be %d", c, nC, numCorners);
+    }
     ++numCells;
   }
   ierr = MPI_Reduce(&numCells, &totCells, 1, MPIU_INT, MPI_SUM, 0, comm);CHKERRQ(ierr);
@@ -192,8 +199,9 @@ PetscErrorCode DMComplexVTKWriteSection(DM dm, PetscSection section, PetscSectio
   const MPI_Datatype mpiType = MPIU_SCALAR;
   PetscScalar       *array;
   PetscInt           numDof = 0, maxDof;
-  PetscInt           cStart, vEnd, pStart, pEnd, p;
+  PetscInt           cMax, cStart, vMax, vStart, vEnd, pStart, pEnd, p;
   PetscMPIInt        numProcs, rank, proc, tag = 1;
+  PetscBool          flag;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -203,7 +211,10 @@ PetscErrorCode DMComplexVTKWriteSection(DM dm, PetscSection section, PetscSectio
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   /* VTK only wants the values at cells or vertices */
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMComplexGetDepthStratum(dm, 0, PETSC_NULL, &vEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetVTKBounds(dm, &cMax, &vMax);CHKERRQ(ierr);
+  if (vMax >= 0) {vEnd = PetscMin(vEnd, vMax);}
+  if (cMax >= 0 && !pStart) {vEnd = PetscMin(vEnd, cMax);}
   pStart = PetscMax(cStart, pStart);
   pEnd   = PetscMin(vEnd,   pEnd);
   for(p = pStart; p < pEnd; ++p) {
@@ -325,7 +336,7 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   PetscSection             coneSection, globalConeSection;
   PetscLayout              vLayout;
   Vec                      coordinates;
-  PetscInt                 totVertices, totCells;
+  PetscInt                 vMax, totVertices, totCells;
   PetscBool                hasPoint = PETSC_FALSE, hasCell = PETSC_FALSE;
   PetscErrorCode           ierr;
 
@@ -340,7 +351,25 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionCreateGlobalSection(coordSection, dm->sf, &globalCoordSection);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
-  ierr = PetscSectionGetPointLayout(((PetscObject) dm)->comm, globalCoordSection, &vLayout);CHKERRQ(ierr);
+  ierr = DMComplexGetVTKBounds(dm, PETSC_NULL, &vMax);CHKERRQ(ierr);
+  if (vMax >= 0) {
+    PetscInt pStart, pEnd, p, localSize = 0;
+
+    ierr = PetscSectionGetChart(globalCoordSection, &pStart, &pEnd);CHKERRQ(ierr);
+    pEnd = PetscMin(pEnd, vMax);
+    for(p = pStart; p < pEnd; ++p) {
+      PetscInt dof;
+
+      ierr = PetscSectionGetDof(globalCoordSection, p, &dof);CHKERRQ(ierr);
+      if (dof > 0) {++localSize;}
+    }
+    ierr = PetscLayoutCreate(((PetscObject) dm)->comm, &vLayout);CHKERRQ(ierr);
+    ierr = PetscLayoutSetLocalSize(vLayout, localSize);CHKERRQ(ierr);
+    ierr = PetscLayoutSetBlockSize(vLayout, 1);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(vLayout);CHKERRQ(ierr);
+  } else {
+    ierr = PetscSectionGetPointLayout(((PetscObject) dm)->comm, globalCoordSection, &vLayout);CHKERRQ(ierr);
+  }
   ierr = PetscLayoutGetSize(vLayout, &totVertices);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "POINTS %d double\n", totVertices);CHKERRQ(ierr);
   ierr = DMComplexVTKWriteSection(dm, coordSection, globalCoordSection, coordinates, fp, 3, PETSC_DETERMINE);CHKERRQ(ierr);

@@ -40,8 +40,11 @@ typedef struct {
   /* Labels */
   SieveLabel           labels;         /* Linked list of labels */
 
+  /* Output */
+  PetscInt             vtkCellMax, vtkVertexMax; /* Allow exclusion of some points in the VTK output */
+
   /* Debugging */
-  PetscBool               printSetValues;
+  PetscBool            printSetValues;
 } DM_Complex;
 
 #endif /* _COMPLEXIMPL_H */
