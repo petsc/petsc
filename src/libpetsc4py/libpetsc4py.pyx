@@ -326,9 +326,10 @@ cdef class _PyObj:
             return NULL
         if self.name is not None:
             return self.name
-        ctx = self.self
+        cdef ctx = self.self
+        cdef name = None
         if PyModule_Check(ctx):
-            self.name = getattr(ctx, '__name__', None)
+            name = getattr(ctx, '__name__', None)
         else:
             modname = getattr(ctx, '__module__', None)
             cls = getattr(ctx, '__class__', None)
@@ -337,11 +338,13 @@ cdef class _PyObj:
                 if not modname:
                     modname = getattr(cls, '__module__', None)
             if modname and clsname:
-                self.name = modname + '.' + clsname
+                name = modname + '.' + clsname
             elif clsname:
-                self.name = clsname
+                name = clsname
             elif modname:
-                self.name = modname
+                name = modname
+        if name is not None:
+            self.name = name.encode()
         if self.name is not None:
             return self.name
         return NULL
