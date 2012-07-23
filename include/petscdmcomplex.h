@@ -60,6 +60,7 @@ PETSC_EXTERN PetscErrorCode DMComplexLoad(PetscViewer, DM);
 
 PETSC_EXTERN PetscErrorCode DMComplexCreateCubeBoundary(DM, const PetscReal [], const PetscReal [], const PetscInt []);
 PETSC_EXTERN PetscErrorCode DMComplexCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, DM *);
+PETSC_EXTERN PetscErrorCode DMComplexCreateHexBoxMesh(MPI_Comm,PetscInt,const PetscInt[],DM *);
 PETSC_EXTERN PetscErrorCode DMComplexGetDepth(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
