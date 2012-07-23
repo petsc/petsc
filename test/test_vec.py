@@ -262,7 +262,7 @@ class TestVecWithArray(unittest.TestCase):
         a2 = v2.getDict()['__array__']; self.assertTrue(a is a2)
         a3 = v3.getDict()['__array__']; self.assertTrue(a is a2)
 
-    def testMPIGhost(self):
+    def testSetMPIGhost(self):
         import numpy
         v = PETSc.Vec().create()
         v.setType(PETSc.Vec.Type.MPI)
@@ -276,6 +276,9 @@ class TestVecWithArray(unittest.TestCase):
             self.assertTrue((loc[v.local_size:] == ghosts).all())
 
 # --------------------------------------------------------------------
+
+if PETSc.Sys.getVersion() < (3,3,0):
+    del TestVecWithArray.testSetMPIGhost
 
 if __name__ == '__main__':
     unittest.main()
