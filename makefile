@@ -154,7 +154,7 @@ tao_docsetdate:
 	find * -type d -wholename src/docs/website -prune -o \
 	  -type f -name \*.html \
 	  -exec perl -pi -e 's^(<body.*>)^$$1\n <div id=\"version\" align=right><b>$$ENV{taoversion} $$ENV{datestr}</b></div>^i' {} \; \
-	  -exec perl -pi -e 's^(<head>)^$$1 <link rel="canonical" href="http://www.mcs.anl.gov/tao/docs/{}" />^i' {} \; ; \
+	  -exec perl -pi -e 's^(<head>)^$$1 <link rel="canonical" href="http://www.mcs.anl.gov/tao/www/{}" />^i' {} \; ; \
 	echo "Done fixing version number, date, canonical URL info"
 
 tao_chk_lib_dir: chklib_dir
