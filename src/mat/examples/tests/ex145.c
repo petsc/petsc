@@ -1,5 +1,5 @@
 
-static char help[] = "Tests LU, Cholesky factorization and MatMatSolve() for a Elemental dense matrix.\n\n";
+static char help[] = "Tests LU, Cholesky factorization and MatMatSolve() for an Elemental dense matrix.\n\n";
 
 #include <petscmat.h>
 
@@ -7,7 +7,7 @@ static char help[] = "Tests LU, Cholesky factorization and MatMatSolve() for a E
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat            A,F,B,X,C,Asym,G;
+  Mat            A,F,B,X,C,Aher,G;
   Vec            b,x,c,d,e;
   PetscErrorCode ierr;
   PetscInt       m = 5,n,p,i,j,nrows,ncols;
@@ -131,29 +131,29 @@ int main(int argc,char **argv)
 
   /* Cholesky factorization */
   /*------------------------*/
-  ierr = PetscPrintf(PETSC_COMM_WORLD," Create Elemental matrix Asym\n");CHKERRQ(ierr);
-  ierr = MatHermitianTranspose(A,MAT_INITIAL_MATRIX,&Asym);CHKERRQ(ierr);
-  ierr = MatAXPY(Asym,1.0,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* Asym = A + A^T */
-  if (rank == 0) { /* add 100.0 to diagonals of Asym to make it spd */
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Create Elemental matrix Aher\n");CHKERRQ(ierr);
+  ierr = MatHermitianTranspose(A,MAT_INITIAL_MATRIX,&Aher);CHKERRQ(ierr);
+  ierr = MatAXPY(Aher,1.0,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* Aher = A + A^T */
+  if (rank == 0) { /* add 100.0 to diagonals of Aher to make it spd */
     PetscInt M,N;
-    ierr = MatGetSize(Asym,&M,&N);CHKERRQ(ierr);
+    ierr = MatGetSize(Aher,&M,&N);CHKERRQ(ierr);
     for (i=0; i<M; i++){
       rval = 100.0;
-      ierr = MatSetValues(Asym,1,&i,1,&i,&rval,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(Aher,1,&i,1,&i,&rval,ADD_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = MatAssemblyBegin(Asym,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(Asym,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Aher,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Aher,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (mats_view){
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Asym:\n");CHKERRQ(ierr);
-    ierr = MatView(Asym,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Aher:\n");CHKERRQ(ierr);
+    ierr = MatView(Aher,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   
   /* Cholesky factorization */
   /*------------------------*/
   ierr = PetscPrintf(PETSC_COMM_WORLD," Test Cholesky Solver \n");CHKERRQ(ierr);
   /* In-place Cholesky */
-  /* Create matrix factor G, then copy Asym to G */
+  /* Create matrix factor G, then copy Aher to G */
   ierr = MatCreate(PETSC_COMM_WORLD,&G);CHKERRQ(ierr);
   ierr = MatSetSizes(G,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(G,MATELEMENTAL);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ int main(int argc,char **argv)
   ierr = MatSetUp(G);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(G,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(G,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatCopy(Asym,G,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatCopy(Aher,G,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* Only G = U^T * U is implemented for now */ 
   finfo.dtcol = 0.1;
@@ -177,9 +177,9 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&G);CHKERRQ(ierr);
 
   /* Out-place Cholesky */
-  ierr = MatGetFactor(Asym,MATSOLVERELEMENTAL,MAT_FACTOR_CHOLESKY,&G);CHKERRQ(ierr);
-  ierr = MatCholeskyFactorSymbolic(G,Asym,0,&finfo);CHKERRQ(ierr);
-  ierr = MatCholeskyFactorNumeric(G,Asym,&finfo);CHKERRQ(ierr);
+  ierr = MatGetFactor(Aher,MATSOLVERELEMENTAL,MAT_FACTOR_CHOLESKY,&G);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorSymbolic(G,Aher,0,&finfo);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorNumeric(G,Aher,&finfo);CHKERRQ(ierr);
   if (mats_view){
     ierr = MatView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -187,25 +187,25 @@ int main(int argc,char **argv)
   ierr = MatMatSolve(G,B,X);CHKERRQ(ierr);
   ierr = MatDestroy(&G);CHKERRQ(ierr);
  
-  /* Check norm(Asym*x - b) */
+  /* Check norm(Aher*x - b) */
   ierr = VecCreate(PETSC_COMM_WORLD,&c);CHKERRQ(ierr);
   ierr = VecSetSizes(c,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(c);CHKERRQ(ierr);
   //ierr = VecAssemblyBegin(c);CHKERRQ(ierr);
   //ierr = VecAssemblyEnd(c);CHKERRQ(ierr);
-  ierr = MatMult(Asym,x,c);CHKERRQ(ierr);
+  ierr = MatMult(Aher,x,c);CHKERRQ(ierr);
   ierr = VecAXPY(c,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(c,NORM_1,&norm);CHKERRQ(ierr);
   if (norm > tol){
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |Asym*x - b| for Cholesky %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |Aher*x - b| for Cholesky %G\n",norm);CHKERRQ(ierr);
   }
 
-  /* Check norm(Asym*X - B) */
-  ierr = MatMatMult(Asym,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
+  /* Check norm(Aher*X - B) */
+  ierr = MatMatMult(Aher,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);
   if (norm > tol){
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |Asym*X - B| for Cholesky %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: |Aher*X - B| for Cholesky %G\n",norm);CHKERRQ(ierr);
   }
 
   /* LU factorization */
@@ -265,12 +265,9 @@ int main(int argc,char **argv)
   ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
 
-  ierr = MatGetDiagonal(A,x);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
   /* Free space */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&Asym);CHKERRQ(ierr);
+  ierr = MatDestroy(&Aher);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&X);CHKERRQ(ierr);

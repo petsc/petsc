@@ -67,6 +67,7 @@ int main(int argc,char **args)
   /* Test MatView(), MatDuplicate() and out-of-place MatConvert() */
   ierr = MatDuplicate(C,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   if (mats_view) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Duplicated C:\n");CHKERRQ(ierr);
     ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -78,10 +79,11 @@ int main(int argc,char **args)
   ierr = MatNorm(C,NORM_1,&Cnorm);CHKERRQ(ierr);
   if (rank==0) printf("The 1-norm of C is %f\n",Cnorm);
 
-  /* Test MatTranspose() and MatZeroEntries() */
+  /* Test MatTranspose(), MatZeroEntries() and MatGetDiagonal() */
   ierr = MatTranspose(C,MAT_INITIAL_MATRIX,&Ct);CHKERRQ(ierr);
   ierr = MatConjugate(Ct);CHKERRQ(ierr);
   if (mats_view) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"C's Transpose Conjugate:\n");CHKERRQ(ierr);
     ierr = MatView(Ct,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = MatZeroEntries(Ct);CHKERRQ(ierr);
@@ -89,6 +91,15 @@ int main(int argc,char **args)
   ierr = VecSetSizes(d,m>n?n:m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(d);CHKERRQ(ierr);
   ierr = MatGetDiagonal(C,d);CHKERRQ(ierr);
+  if (m>n) {
+    ierr = MatDiagonalScale(C,PETSC_NULL,d);CHKERRQ(ierr);
+  } else {
+    ierr = MatDiagonalScale(C,d,PETSC_NULL);CHKERRQ(ierr);
+  }
+  if (mats_view) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Diagonal Scaled C:\n");CHKERRQ(ierr);
+    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
 
   /* Test MatAXPY(), MatAYPX() and in-place MatConvert() */
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
@@ -116,6 +127,7 @@ int main(int argc,char **args)
   ierr = MatAYPX(B,3.75,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatConvert(B,MATDENSE,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
   if (mats_view) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"B after MatAXPY and MatAYPX:\n");CHKERRQ(ierr);
     ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
@@ -125,6 +137,7 @@ int main(int argc,char **args)
   /* Test MatMatTransposeMult(): B = C*C^T */
   ierr = MatMatTransposeMult(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
   if (mats_view) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"C MatMatTransposeMult C:\n");CHKERRQ(ierr);
     ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 

@@ -390,9 +390,37 @@ static PetscErrorCode MatGetDiagonal_Elemental(Mat X,Vec D)
 
   PetscFunctionBegin;
   ierr = VecGetArray(D,(PetscScalar **)&d);CHKERRQ(ierr);
-  elem::DistMatrix<PetscElemScalar,elem::MD,elem::STAR> de((X->rmap->N > X->cmap->N)?X->cmap->N:X->rmap->N,1,0,d,(X->rmap->N > X->cmap->N)?X->cmap->n:X->rmap->n,*x->grid);
-  x->emat->GetDiagonal(de,0);
+  if (X->rmap->N > X->cmap->N) {
+    elem::DistMatrix<PetscElemScalar,elem::MD,elem::STAR> de(X->cmap->N,1,0,d,X->cmap->n,*x->grid);
+    x->emat->GetDiagonal(de,0);
+  } else {
+    elem::DistMatrix<PetscElemScalar,elem::MD,elem::STAR> de(X->rmap->N,1,0,d,X->rmap->n,*x->grid);
+    x->emat->GetDiagonal(de,0);
+  }
   ierr = VecRestoreArray(D,(PetscScalar **)&d);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDiagonalScale_Elemental"
+static PetscErrorCode MatDiagonalScale_Elemental(Mat X,Vec L,Vec R)
+{
+  Mat_Elemental         *x = (Mat_Elemental*)X->data;
+  const PetscElemScalar *d;
+  PetscErrorCode        ierr;
+
+  PetscFunctionBegin;
+  if (L == PETSC_NULL) {
+    ierr = VecGetArrayRead(R,(const PetscScalar **)&d);CHKERRQ(ierr);
+    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> de(X->cmap->N,1,0,d,X->cmap->n,*x->grid);
+    elem::DiagonalScale(elem::RIGHT,elem::NORMAL,de,*x->emat);
+    ierr = VecRestoreArrayRead(R,(const PetscScalar **)&d);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetArrayRead(L,(const PetscScalar **)&d);CHKERRQ(ierr);
+    elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> de(X->rmap->N,1,0,d,X->rmap->n,*x->grid);
+    elem::DiagonalScale(elem::LEFT,elem::NORMAL,de,*x->emat);
+    ierr = VecRestoreArrayRead(L,(const PetscScalar **)&d);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -906,7 +934,7 @@ static struct _MatOps MatOps_Values = {
 /*15*/ MatGetInfo_Elemental,
        0, 
        MatGetDiagonal_Elemental,
-       0, //MatDiagonalScale_Elemental,?
+       MatDiagonalScale_Elemental,
        MatNorm_Elemental,
 /*20*/ MatAssemblyBegin_Elemental,
        MatAssemblyEnd_Elemental,
