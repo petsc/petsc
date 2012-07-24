@@ -964,7 +964,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
   PC_IS*         pcis = (PC_IS*)(pc->data);
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
   Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
-  PetscInt       *nnz,*vertices,*is_indices;
+  PetscInt       *nnz,*is_indices;
   PetscScalar    *temp_quadrature_constraint;
   PetscInt       *temp_indices,*temp_indices_to_constraint,*temp_indices_to_constraint_B,*local_to_B;
   PetscInt       local_primal_size,i,j,k,total_counts,max_size_of_constraint;
@@ -1128,7 +1128,6 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
   temp_indices[0]=0;
   /* vertices */
   PetscBool used_vertex;
-  ierr = PetscMalloc(n_vertices*sizeof(PetscInt),&vertices);CHKERRQ(ierr);
   ierr = ISGetIndices(pcbddc->ISForVertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
   if(nnsp_has_cnst) { /* consider all vertices */
     for(i=0;i<n_vertices;i++) {
@@ -1136,7 +1135,6 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
       temp_indices_to_constraint_B[temp_indices[total_counts]]=local_to_B[is_indices[i]];
       temp_quadrature_constraint[temp_indices[total_counts]]=1.0;
       temp_indices[total_counts+1]=temp_indices[total_counts]+1;
-      vertices[total_counts]=is_indices[i]; 
       change_basis[total_counts]=PETSC_FALSE; 
       total_counts++;
     }
@@ -1151,7 +1149,6 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
           temp_indices_to_constraint_B[temp_indices[total_counts]]=local_to_B[is_indices[i]];
           temp_quadrature_constraint[temp_indices[total_counts]]=1.0;
           temp_indices[total_counts+1]=temp_indices[total_counts]+1;
-          vertices[total_counts]=is_indices[i]; 
           change_basis[total_counts]=PETSC_FALSE; 
           total_counts++; 
           used_vertex=PETSC_TRUE;
@@ -3402,6 +3399,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
     ierr = PetscFree(send_buffer);CHKERRQ(ierr);
     ierr = PetscFree(cum_recv_counts);CHKERRQ(ierr);
     ierr = PetscFree(where_to_nodes_indices);CHKERRQ(ierr);
+    ierr = PetscFree(where_cc_adapt);CHKERRQ(ierr);
     /* We are ready to evaluate consistent connected components on each part of the shared interface */
     if(global_where_counter) {
       for(i=0;i<mat_graph->nvtxs;i++){ mat_graph->touched[i]=PETSC_FALSE; }
