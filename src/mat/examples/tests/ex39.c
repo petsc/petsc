@@ -77,7 +77,6 @@ int main(int argc,char **args)
 
   /* Test MatNorm() */
   ierr = MatNorm(C,NORM_1,&Cnorm);CHKERRQ(ierr);
-  if (rank==0) printf("The 1-norm of C is %f\n",Cnorm);
 
   /* Test MatTranspose(), MatZeroEntries() and MatGetDiagonal() */
   ierr = MatTranspose(C,MAT_INITIAL_MATRIX,&Ct);CHKERRQ(ierr);
