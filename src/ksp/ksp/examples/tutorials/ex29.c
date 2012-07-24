@@ -36,9 +36,9 @@ extern PetscErrorCode ComputeRHS(KSP,Vec,void*);
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
 typedef struct {
-  PetscScalar   rho;
-  PetscScalar   nu;
-  BCType        bcType;
+  PetscReal   rho;
+  PetscReal   nu;
+  BCType      bcType;
 } UserContext;
 
 #undef __FUNCT__
@@ -56,13 +56,15 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-3,-3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-3,-3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(da,0,1,0,1,0,0);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,0,"Pressure");CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMqq");
     user.rho    = 1.0;
-    ierr        = PetscOptionsScalar("-rho", "The conductivity", "ex29.c", user.rho, &user.rho, PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsReal("-rho", "The conductivity", "ex29.c", user.rho, &user.rho, PETSC_NULL);CHKERRQ(ierr);
     user.nu     = 0.1;
-    ierr        = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex29.c", user.nu, &user.nu, PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsReal("-nu", "The width of the Gaussian source", "ex29.c", user.nu, &user.nu, PETSC_NULL);CHKERRQ(ierr);
     bc          = (PetscInt)DIRICHLET;
     ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
     user.bcType = (BCType)bc;
@@ -126,7 +128,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
     
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRho"
-PetscErrorCode ComputeRho(PetscInt i, PetscInt j, PetscInt mx, PetscInt my, PetscScalar centerRho, PetscScalar *rho)
+PetscErrorCode ComputeRho(PetscInt i, PetscInt j, PetscInt mx, PetscInt my, PetscReal centerRho, PetscReal *rho)
 {
   PetscFunctionBegin;
   if ((i > mx/3.0) && (i < 2.0*mx/3.0) && (j > my/3.0) && (j < 2.0*my/3.0)) {
@@ -142,10 +144,11 @@ PetscErrorCode ComputeRho(PetscInt i, PetscInt j, PetscInt mx, PetscInt my, Pets
 PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
 {
   UserContext    *user = (UserContext*)ctx;
-  PetscScalar    centerRho;
+  PetscReal      centerRho;
   PetscErrorCode ierr;
-  PetscInt       i,j,mx,my,xm,ym,xs,ys,num;
-  PetscScalar    v[5],Hx,Hy,HydHx,HxdHy,rho;
+  PetscInt       i,j,mx,my,xm,ym,xs,ys;
+  PetscScalar    v[5];
+  PetscReal      Hx,Hy,HydHx,HxdHy,rho;
   MatStencil     row, col[5];
   DM             da;
 
@@ -167,24 +170,24 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
            v[0] = 2.0*rho*(HxdHy + HydHx);
           ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
         } else if (user->bcType == NEUMANN) {
-          num = 0;
+          PetscInt numx = 0, numy = 0, num = 0;
           if (j!=0) {
             v[num] = -rho*HxdHy;              col[num].i = i;   col[num].j = j-1;
-            num++;
+            numy++; num++;
           }
           if (i!=0) {
             v[num] = -rho*HydHx;              col[num].i = i-1; col[num].j = j;
-            num++;
+            numx++; num++;
           }
           if (i!=mx-1) {
             v[num] = -rho*HydHx;              col[num].i = i+1; col[num].j = j;
-            num++;
+            numx++; num++;
           }
           if (j!=my-1) {
             v[num] = -rho*HxdHy;              col[num].i = i;   col[num].j = j+1;
-            num++;
+            numy++; num++;
           }
-          v[num]   = (num/2.0)*rho*(HxdHy + HydHx); col[num].i = i;   col[num].j = j;
+          v[num]   = numx*rho*HydHx + numy*rho*HxdHy; col[num].i = i;   col[num].j = j;
           num++;
           ierr = MatSetValuesStencil(jac,1,&row,num,col,v,INSERT_VALUES);CHKERRQ(ierr);
         }
