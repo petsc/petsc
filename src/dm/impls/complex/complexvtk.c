@@ -87,7 +87,6 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, PetscSection globalConeSection, FIL
   PetscInt       numCells   = 0, totCells, cellType;
   PetscInt       cMax, cStart, cEnd, c, vStart, vEnd, v;
   PetscMPIInt    numProcs, rank, proc, tag = 1;
-  PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -201,7 +200,6 @@ PetscErrorCode DMComplexVTKWriteSection(DM dm, PetscSection section, PetscSectio
   PetscInt           numDof = 0, maxDof;
   PetscInt           cMax, cStart, vMax, vStart, vEnd, pStart, pEnd, p;
   PetscMPIInt        numProcs, rank, proc, tag = 1;
-  PetscBool          flag;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
