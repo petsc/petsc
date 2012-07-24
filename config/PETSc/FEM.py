@@ -92,8 +92,26 @@ class QuadratureGenerator(script.Script):
       points = quadrature.get_points()
       weights = quadrature.get_weights()
       for d in range(2, tensor+1):
-        points  = np.outer(points, quadrature.get_points())
+#        points  = np.meshgrid(points, quadrature.get_points())
         weights = np.outer(weights, quadrature.get_weights())
+      if tensor == 2:
+        newPoints = np.zeros((len(points), len(points), 2))
+        for i, p in enumerate(points):
+          for j, q in enumerate(points):
+            newPoints[i,j, 0] = p
+            newPoints[i,j, 1] = q
+        points = newPoints
+      elif tensor == 3:
+        newPoints = np.zeros((len(points), len(points), len(points), 3))
+        for i, p in enumerate(points):
+          for j, q in enumerate(points):
+            for k, r in enumerate(points):
+              newPoints[i,j,k, 0] = p
+              newPoints[i,j,k, 1] = q
+              newPoints[i,j,k, 2] = r
+        points = newPoints
+      else:
+        raise RuntimeError('Not implemented')
       code = [numPointsDim, numPoints,
               self.getArray(self.Cxx.getVar('points_dim'+ext), quadrature.get_points(), 'Quadrature points along each dimension\n   - (x1,y1,x2,y2,...)', 'PetscReal'),
               self.getArray(self.Cxx.getVar('weights_dim'+ext), quadrature.get_weights(), 'Quadrature weights along each dimension\n   - (v1,v2,...)', 'PetscReal'),
@@ -128,8 +146,26 @@ class QuadratureGenerator(script.Script):
       points = quadrature.get_points()
       weights = quadrature.get_weights()
       for d in range(2, tensor+1):
-        points  = np.outer(points, quadrature.get_points())
+#        points  = np.outer(points, quadrature.get_points())
         weights = np.outer(weights, quadrature.get_weights())
+      if tensor == 2:
+        newPoints = np.zeros((len(points), len(points), 2))
+        for i, p in enumerate(points):
+          for j, q in enumerate(points):
+            newPoints[i,j, 0] = p
+            newPoints[i,j, 1] = q
+        points = newPoints
+      elif tensor == 3:
+        newPoints = np.zeros((len(points), len(points), len(points), 3))
+        for i, p in enumerate(points):
+          for j, q in enumerate(points):
+            for k, r in enumerate(points):
+              newPoints[i,j,k, 0] = p
+              newPoints[i,j,k, 1] = q
+              newPoints[i,j,k, 2] = r
+        points = newPoints
+      else:
+        raise RuntimeError('Not implemented')
       code = [self.Cxx.getDecl(numPointsDim), self.Cxx.getDecl(numPoints),
               self.getArray(self.Cxx.getVar('points_dim'+ext), quadrature.get_points(), 'Quadrature points along each dimension\n   - (x1,y1,x2,y2,...)', 'const PetscReal', static = False),
               self.getArray(self.Cxx.getVar('weights_dim'+ext), quadrature.get_weights(), 'Quadrature weights along each dimension\n   - (v1,v2,...)', 'const PetscReal', static = False),
@@ -194,6 +230,23 @@ class QuadratureGenerator(script.Script):
           perm.extend(ids[1][e][::-1])
       for v in ids[0]:
         perm.extend(ids[0][v])
+    else:
+      perm = None
+    print [f.get_point_dict() for f in element.dual_basis()]
+    print element.entity_dofs()
+    print 'Perm:',perm
+    return perm
+
+  def getTensorBasisFuncOrder(self, element, dim):
+    basis = element.get_nodal_basis()
+    ids   = element.entity_dofs()
+    if dim == 2:
+      perm = []
+      #for e in ids[1]:
+      #  perm.extend(ids[1][e])
+      #for v in ids[0]:
+      #  perm.extend(ids[0][v])
+      perm.extend([0, 2, 3, 1])
     else:
       perm = None
     print [f.get_point_dict() for f in element.dual_basis()]
@@ -270,8 +323,7 @@ class QuadratureGenerator(script.Script):
       basisDimName    = name+'BasisDim'+ext
       basisDerDimName = name+'BasisDerivativesDim'+ext
       # BROKEN
-      # perm            = self.getBasisFuncOrder(element)
-      perm            = None
+      perm            = self.getTensorBasisFuncOrder(element, tensor)
       evals           = basis.tabulate(points, 1)
       basisDimTab     = numpy.array(evals[mis(dim, 0)[0]]).transpose()
       basisDerDimTab  = numpy.array([evals[alpha] for alpha in mis(dim, 1)]).transpose()
@@ -280,13 +332,14 @@ class QuadratureGenerator(script.Script):
       basisTab        = numpy.zeros((len(points)**tensor,basisDimTab.shape[1]**tensor))
       basisDerTab     = numpy.zeros((len(points)**tensor,basisDimTab.shape[1]**tensor,tensor))
       if tensor == 2:
+        nB = basisDimTab.shape[1]
         for q in range(len(points)):
           for r in range(len(points)):
-            for b1 in range(basisDimTab.shape[1]):
-              for b2 in range(basisDimTab.shape[1]):
-                basisTab[q*len(points)+r][b1*basisDimTab.shape[1]+b2] = basisDimTab[q][b1]*basisDimTab[r][b2]
-                basisDerTab[q*len(points)+r][b1*basisDimTab.shape[1]+b2][0] = basisDerDimTab[q][b1][0]*basisDimTab[r][b2]
-                basisDerTab[q*len(points)+r][b1*basisDimTab.shape[1]+b2][1] = basisDimTab[q][b1]*basisDerDimTab[r][b2][0]
+            for b1 in range(nB):
+              for b2 in range(nB):
+                basisTab[q*len(points)+r][b1*nB+b2] = basisDimTab[q][b1]*basisDimTab[r][b2]
+                basisDerTab[q*len(points)+r][b1*nB+b2][0] = basisDerDimTab[q][b1][0]*basisDimTab[r][b2]
+                basisDerTab[q*len(points)+r][b1*nB+b2][1] = basisDimTab[q][b1]*basisDerDimTab[r][b2][0]
       elif tensor == 3:
         for q in range(len(points)):
           for r in range(len(points)):
@@ -316,8 +369,8 @@ class QuadratureGenerator(script.Script):
         basisDerDimTab = basisDerDimTabNew
       code.extend([spatialDim, numFunctionsDim, numFunctions, numComponents,
                    self.getArray(self.Cxx.getVar(numDofDimName), numDofDims, 'Number of degrees of freedom for each dimension', 'int'),
-                   self.getArray(self.Cxx.getVar(basisDimName), basisDimTab, 'Nodal basis function evaluations along eaach dimension\n    - basis function is fastest varying, then point', 'PetscReal'),
-                   self.getArray(self.Cxx.getVar(basisDerDimName), basisDerDimTab, 'Nodal basis function derivative evaluations along eaach dimension,\n    - derivative direction fastest varying, then basis function, then point')])
+                   self.getArray(self.Cxx.getVar(basisDimName), basisDimTab, 'Nodal basis function evaluations along each dimension\n    - basis component is fastest varying, then basis function, then quad point', 'PetscReal'),
+                   self.getArray(self.Cxx.getVar(basisDerDimName), basisDerDimTab, 'Nodal basis function derivative evaluations along each dimension,\n    - basis component is fastest varying, then derivative direction, then basis function, then quad point')])
     else:
       spatialDim = Define()
       spatialDim.identifier = 'SPATIAL_DIM'+ext
@@ -359,8 +412,8 @@ class QuadratureGenerator(script.Script):
       basisTab    = basisTabNew
       basisDerTab = basisDerTabNew
     code.extend([self.getArray(self.Cxx.getVar(numDofName), numDofs, 'Number of degrees of freedom for each dimension', 'int'),
-                 self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis function is fastest varying, then point', 'PetscReal'),
-                 self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point', 'PetscReal')])
+                 self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis component is fastest varying, then basis function, then quad point', 'PetscReal'),
+                 self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - basis component is fastest varying, then derivative direction, then basis function, then quad point', 'PetscReal')])
     return code
 
   def getBasisStructsInline(self, name, element, quadrature, num, tensor = 0):
