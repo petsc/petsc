@@ -635,6 +635,24 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecDestroy(&t);CHKERRQ(ierr);
     ierr = PetscPrintf(((PetscObject)ksp)->comm,"KSP final norm of residual %G\n",norm);CHKERRQ(ierr);
   }
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view_solution",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {
+    PetscViewer viewer;
+    viewer = PETSC_VIEWER_DRAW_(((PetscObject)ksp)->comm);
+    ierr = VecView(ksp->vec_sol,viewer);CHKERRQ(ierr);
+  }
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view_solution_vtk",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {
+    PetscViewer viewer;
+    ierr = PetscViewerCreate(((PetscObject)ksp)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer,filename);CHKERRQ(ierr);
+    ierr = VecView(ksp->vec_sol,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+
   if (inXisinB) {
     ierr = VecCopy(x,b);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
