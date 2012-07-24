@@ -8,9 +8,9 @@ iter =   3, Function value 1.49406, Residual: < 1.0e-6
 TaoSolver: 1 MPI processes
   type: tao_tron
       Total PG its: 9,      PG tolerance: 0.001 
-  TaoLineSearch:   1 MPI processes  
+  TaoLineSearch:   1 MPI processes
     type: more-thuente
-  KSP Solver:   1 MPI processes  
+  KSP Solver:   1 MPI processes
     type: gmres
   total KSP iterations: 95
   Active Set subset type: matrixfree

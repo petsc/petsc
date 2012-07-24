@@ -17,7 +17,7 @@ iter =  12, Function value 1.60116, Residual: 0.00529782
 TaoSolver: 2 MPI processes
   type: tao_blmvm
       Gradient steps: 0
-  TaoLineSearch:   2 MPI processes  
+  TaoLineSearch:   2 MPI processes
     type: more-thuente
   Active Set subset type: subvec
   convergence tolerances: fatol=0.0001,   frtol=0.0001

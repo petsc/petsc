@@ -14,7 +14,7 @@ PC Object: 1 MPI processes
   type: shell
     Shell: bfgs
   linear system matrix = precond matrix:
-  Matrix Object:   1 MPI processes  
+  Matrix Object:   1 MPI processes
     type: seqaij
     rows=100, cols=100
     total: nonzeros=460, allocated nonzeros=500

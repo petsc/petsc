@@ -52,7 +52,7 @@ const char *TaoSolverTerminationReasons_Shifted[] = {
     "CONVERGED_STEPTOL",
     "CONVERGED_MINF",
     "CONVERGED_USER" };
-const char **TaoSolverTerminationReasons = TaoSolverTerminationReasons_Shifted + 8;
+const char **TaoSolverTerminationReasons = TaoSolverTerminationReasons_Shifted + 7;
 
 						   
 

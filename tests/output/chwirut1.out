@@ -40,13 +40,13 @@ iter =  38, Function value 2384.48, Residual: 0.0495324
 iter =  39, Function value 2384.48, Residual: 0.031516 
 iter =  40, Function value 2384.48, Residual: 0.0010846 
 iter =  41, Function value 2384.48, Residual: 0.000300057 
-iter =  42, Function value 2384.48, Residual: 4.85282e-05 
-iter =  43, Function value 2384.48, Residual: 7.32642e-05 
-iter =  44, Function value 2384.48, Residual: 4.36183e-05 
-iter =  45, Function value 2384.48, Residual: 0.000174224 
-iter =  46, Function value 2384.48, Residual: 0.000790477 
-iter =  47, Function value 2384.48, Residual: 0.000136271 
-iter =  48, Function value 2384.48, Residual: 1.87352e-05 
+iter =  42, Function value 2384.48, Residual: 4.85281e-05 
+iter =  43, Function value 2384.48, Residual: 7.32635e-05 
+iter =  44, Function value 2384.48, Residual: 4.36192e-05 
+iter =  45, Function value 2384.48, Residual: 0.000174227 
+iter =  46, Function value 2384.48, Residual: 0.000790461 
+iter =  47, Function value 2384.48, Residual: 0.00013627 
+iter =  48, Function value 2384.48, Residual: 1.87364e-05 
 4575.71	1815.3
 4575.71	4838.21
 4575.71	1404.45
@@ -89,19 +89,19 @@ iter =  48, Function value 2384.48, Residual: 1.87352e-05
 2384.48	0.031516
 2384.48	0.0010846
 2384.48	0.000300057
-2384.48	4.85282e-05
-2384.48	7.32642e-05
-2384.48	4.36183e-05
-2384.48	0.000174224
-2384.48	0.000790477
-2384.48	0.000136271
-2384.48	1.87352e-05
+2384.48	4.85281e-05
+2384.48	7.32635e-05
+2384.48	4.36192e-05
+2384.48	0.000174227
+2384.48	0.000790461
+2384.48	0.00013627
+2384.48	1.87364e-05
 TaoSolver: 1 MPI processes
   type: tao_pounders
-      Subproblem solver: bqpip
+      Subproblem solver: tron
   convergence tolerances: fatol=0,   frtol=0
   convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
-  Residual in Function/Gradient:=1.87352e-05
+  Residual in Function/Gradient:=1.87364e-05
   Objective value=2384.48
   total number of iterations=48,                          (max: 2000)
   total number of function evaluations=52,                  max: 4000

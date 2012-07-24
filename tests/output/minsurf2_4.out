@@ -10,7 +10,7 @@ iter =   3, Function value 1.41775, Residual: 7.88629e-06
 TaoSolver: 2 MPI processes
   type: tao_ntr
       Rejected matrix updates: 0
-  KSP Solver:   2 MPI processes  
+  KSP Solver:   2 MPI processes
     type: stcg
   total KSP iterations: 87
   convergence tolerances: fatol=1e-10,   frtol=1e-10

@@ -24,7 +24,7 @@ if __name__=="__main__":
         else:
             cwd = os.path.join(os.environ['TAO_DIR'],"src",ex.section,"examples","tutorials")
         (r,o,e) = examples.execute(['rm','-f',ex.executableName()])
-        (r,o,e) = examples.execute(ex.buildCommand(),cwd=cwd,echo=False)
+        (r,o,e) = examples.execute(ex.buildCommand(),cwd=cwd,echo=True)
         if (r != 0):
             sys.stdout.write(o)
             sys.stdout.write(e)
