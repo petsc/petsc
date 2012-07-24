@@ -17,7 +17,7 @@
 # CPPFLAGS      - preprocessor flags for *.c, *.F preprocessing
 #
 
-#INSTALL_LIB_DIR	= ${TAO_DIR}/${PETSC_ARCH}/lib
+INSTALL_LIB_DIR	= ${TAO_DIR}/${PETSC_ARCH}/lib
 TAO_LIB_DIR     = ${TAO_DIR}/${PETSC_ARCH}/lib
 TAO_INCLUDE	= -I${TAO_DIR} -I${TAO_DIR}/include 
 CPP_FLAGS	= ${TAO_INCLUDE} 
