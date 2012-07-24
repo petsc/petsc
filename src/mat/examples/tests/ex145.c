@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       m = 5,n,p,i,j,nrows,ncols;
   PetscScalar    *v,*barray,rval;
-  PetscReal      norm,tol=1.e-13;
+  PetscReal      norm,tol=1.e-12;
   PetscMPIInt    size,rank;
   PetscRandom    rand;
   const PetscInt *rows,*cols;
