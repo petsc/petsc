@@ -5508,7 +5508,7 @@ PetscErrorCode DMComplexComputeRectangleGeometry_private(DM dm, PetscInt e, Pets
   if (J) {
     for(d = 0; d < dim; d++) {
       for(f = 0; f < dim; f++) {
-        J[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
+        J[d*dim+f] = 0.5*(PetscRealPart(coords[(f*2+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
       }
     }
     *detJ = J[0]*J[3] - J[1]*J[2];
