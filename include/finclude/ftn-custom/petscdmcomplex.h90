@@ -1,0 +1,24 @@
+
+#if !defined(PETSC_USE_FORTRAN_MODULES)
+#include "finclude/ftn-custom/petscdmcomplexdef.h90"
+#endif
+
+#include "finclude/ftn-custom/petscdmhide.h90"
+
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(USE_DMCOMPLEX_HIDE)
+#  define USE_DMCOMPLEX_HIDE use petscdmcomplexdef
+#elif !defined(USE_DMCOMPLEX_HIDE)
+#  define USE_DMCOMPLEX_HIDE
+#endif
+
+      Interface
+        Subroutine DMComplexVecGetClosure(m,section,v,point,values,ierr)
+          USE_DMCOMPLEX_HIDE
+          PETSCSECTION_HIDE section
+          Vec          v
+          PetscInt     point
+          PetscScalar, pointer :: array(:,:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
