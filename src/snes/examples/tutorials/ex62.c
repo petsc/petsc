@@ -261,7 +261,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   options->numBatches      = 1;
   options->numBlocks       = 1;
   options->jacobianMF      = PETSC_FALSE;
-  options->showResidual    = PETSC_FALSE;
+  options->showInitial     = PETSC_FALSE;
   options->showResidual    = PETSC_FALSE;
   options->showJacobian    = PETSC_FALSE;
   options->showSolution    = PETSC_TRUE;
@@ -1701,23 +1701,25 @@ int main(int argc, char **argv)
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   {
-    KSP ksp; PC pc; Vec crd_vec;
+    KSP ksp;
+    PC  pc;
+    Vec crd_vec;
     const PetscScalar *v;
-    PetscInt i,k,j,mlocal;
+    PetscInt   i, mlocal;
     PetscReal *coords;
 
-    ierr = SNESGetKSP( snes, &ksp ); CHKERRQ(ierr);
-    ierr = KSPGetPC( ksp, &pc ); CHKERRQ(ierr);
-    ierr = DMComplexGetCoordinateVec( user.dm, &crd_vec ); CHKERRQ(ierr);
-    ierr = VecGetLocalSize(crd_vec,&mlocal);     CHKERRQ(ierr);
-    ierr = PetscMalloc(SPATIAL_DIM_0*mlocal*sizeof *coords,&coords);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(crd_vec,&v);CHKERRQ(ierr);
-    for(k=j=0; j<mlocal; j++) 
-      for(i=0; i<SPATIAL_DIM_0; i++,k++) 
-        coords[k] = PetscRealPart(v[k]);
-    ierr = VecRestoreArrayRead(crd_vec,&v);CHKERRQ(ierr);
-    ierr = PCSetCoordinates( pc, SPATIAL_DIM_0, mlocal, coords ); CHKERRQ(ierr);
-    ierr = PetscFree( coords );CHKERRQ(ierr);
+    ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+    ierr = DMComplexGetCoordinateVec(user.dm, &crd_vec);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(crd_vec,&mlocal);CHKERRQ(ierr);
+    ierr = PetscMalloc(mlocal*sizeof *coords, &coords);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(crd_vec, &v);CHKERRQ(ierr);
+    for(i = 0; i < mlocal; i++) {
+      coords[i] = PetscRealPart(v[i]);
+    }
+    ierr = VecRestoreArrayRead(crd_vec, &v);CHKERRQ(ierr);
+    ierr = PCSetCoordinates(pc, SPATIAL_DIM_0, mlocal/SPATIAL_DIM_0, coords);CHKERRQ(ierr);
+    ierr = PetscFree(coords);CHKERRQ(ierr);
   }
 
   ierr = DMComputeVertexFunction(user.dm, INSERT_ALL_VALUES, u, numComponents, user.exactFuncs, &user);CHKERRQ(ierr);
@@ -1782,22 +1784,28 @@ int main(int argc, char **argv)
   if (user.runType == RUN_FULL) {
     PetscContainer c;
     PetscSection   s;
-    PetscViewer viewer;
+    Vec            uLocal;
+    PetscViewer    viewer;
 
     ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "ex62_sol.vtk");CHKERRQ(ierr);
 
+    ierr = DMGetLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
+
     ierr = DMGetDefaultSection(user.dm, &s);CHKERRQ(ierr);
-    ierr = PetscContainerCreate(((PetscObject) u)->comm, &c);CHKERRQ(ierr);
+    ierr = PetscContainerCreate(((PetscObject) uLocal)->comm, &c);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(c, s);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) u, "section", (PetscObject) c);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) uLocal, "section", (PetscObject) c);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
 
     ierr = PetscObjectReference((PetscObject) user.dm);CHKERRQ(ierr); /* Needed because viewer destroys the DM */
-    ierr = PetscObjectReference((PetscObject) u);CHKERRQ(ierr); /* Needed because viewer destroys the Vec */
-    ierr = PetscViewerVTKAddField(viewer, (PetscObject) user.dm, DMComplexVTKWriteAll, PETSC_VTK_POINT_FIELD, (PetscObject) u);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject) uLocal);CHKERRQ(ierr); /* Needed because viewer destroys the Vec */
+    ierr = PetscViewerVTKAddField(viewer, (PetscObject) user.dm, DMComplexVTKWriteAll, PETSC_VTK_POINT_FIELD, (PetscObject) uLocal);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 

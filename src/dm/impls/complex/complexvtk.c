@@ -194,7 +194,7 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, PetscSection globalConeSection, FIL
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexVTKWriteSection"
 PetscErrorCode DMComplexVTKWriteSection(DM dm, PetscSection section, PetscSection globalSection, Vec v, FILE *fp, PetscInt enforceDof, PetscInt precision) {
-  MPI_Comm           comm    = ((PetscObject) v)->comm;
+  MPI_Comm           comm    = ((PetscObject) dm)->comm;
   const MPI_Datatype mpiType = MPIU_SCALAR;
   PetscScalar       *array;
   PetscInt           numDof = 0, maxDof;
