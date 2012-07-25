@@ -502,6 +502,7 @@ getmpiexec:
           grep -v "warning, duplicate dylib" | \
           grep -v "warning: duplicate dylib" | \
           grep -v "consider using mkstemp"  |\
+          grep -v "Nonconforming tab character"  |\
 	  grep -v "Unused external reference" | \
           grep -v "WARNING 134: weak definition of" | \
           grep -v 'continuing despite warning messages' | \
