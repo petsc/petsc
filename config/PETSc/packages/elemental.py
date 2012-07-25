@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download   = ['http://elemental.googlecode.com/files/elemental-0.75p1.tgz']
+    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/elemental-dev-072512.tar.gz']
     self.liblist    = [['libelemental.a','libplcg.a','libpmrrr.a']]
     self.includes   = ['elemental.hpp']
     self.cxx              = 1
@@ -47,12 +47,12 @@ class Configure(PETSc.package.NewPackage):
       fcflags = self.setCompilers.getCompilerFlags()
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+fcflags+'"')
       self.framework.popLanguage()
-    """
-    #if self.sharedLibraries.useShared:
-      #args.append('-DSHARED=1')
 
-    #if self.compilerFlags.debugging:
-      #args.append('-DDEBUG=1')"""
+    """if self.sharedLibraries.useShared:
+      args.append('-DSHARE_LIBRARIES=ON')
+
+    if self.compilerFlags.debugging:
+      args.append('-DCMAKE_BUILD_TYPE=PureDebug')"""
 
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'elemental'), 'w')
@@ -62,7 +62,6 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('elemental'):
       # effectively, this is 'make clean'
       folder = os.path.join(self.packageDir, self.arch)
-      #print 'folder = ', folder
       if os.path.isdir(folder):
         import shutil
         shutil.rmtree(folder)

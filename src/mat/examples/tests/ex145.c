@@ -191,8 +191,6 @@ int main(int argc,char **argv)
   ierr = VecCreate(PETSC_COMM_WORLD,&c);CHKERRQ(ierr);
   ierr = VecSetSizes(c,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(c);CHKERRQ(ierr);
-  //ierr = VecAssemblyBegin(c);CHKERRQ(ierr);
-  //ierr = VecAssemblyEnd(c);CHKERRQ(ierr);
   ierr = MatMult(Aher,x,c);CHKERRQ(ierr);
   ierr = VecAXPY(c,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(c,NORM_1,&norm);CHKERRQ(ierr);
