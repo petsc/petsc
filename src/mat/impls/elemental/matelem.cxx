@@ -91,7 +91,7 @@ static PetscErrorCode MatView_Elemental(Mat A,PetscViewer viewer)
       }
     } else SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Format");
   } else {
-    /* convert to aij/mpidense format and call MatView() */
+    /* convert to dense format and call MatView() */
     Mat Adense;
     ierr = PetscPrintf(((PetscObject)viewer)->comm,"Elemental matrix (explicit ordering)\n");CHKERRQ(ierr);
     ierr = MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense);CHKERRQ(ierr);
@@ -112,7 +112,7 @@ static PetscErrorCode MatGetInfo_Elemental(Mat A,MatInfoType flag,MatInfo *info)
   MPI_Comm_rank(((PetscObject)A)->comm,&rank);
   
   /* if (!rank) printf("          .........MatGetInfo_Elemental ...\n"); */
-  info->block_size     = 1.0; /* ? */
+  info->block_size     = 1.0; 
 
   if (flag == MAT_LOCAL) {
     info->nz_allocated   = (double)(*a->emat).AllocatedMemory(); /* locally allocated */
@@ -486,13 +486,13 @@ static PetscErrorCode MatDuplicate_Elemental(Mat A,MatDuplicateOption op,Mat *B)
 #define __FUNCT__ "MatTranspose_Elemental"
 static PetscErrorCode MatTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
 {
-  /* Only out-of-place supported */
   Mat            Be;
   PetscErrorCode ierr;
   MPI_Comm       comm=((PetscObject)A)->comm;
   Mat_Elemental  *a = (Mat_Elemental*)A->data, *b;
 
   PetscFunctionBegin;
+  /* Only out-of-place supported */
   if (reuse == MAT_INITIAL_MATRIX){
     ierr = MatCreate(comm,&Be);CHKERRQ(ierr);
     ierr = MatSetSizes(Be,A->cmap->n,A->rmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -521,13 +521,13 @@ static PetscErrorCode MatConjugate_Elemental(Mat A)
 #define __FUNCT__ "MatHermitianTranspose_Elemental"
 static PetscErrorCode MatHermitianTranspose_Elemental(Mat A,MatReuse reuse,Mat *B)
 {
-  /* Only out-of-place supported */
   Mat            Be;
   PetscErrorCode ierr;
   MPI_Comm       comm=((PetscObject)A)->comm;
   Mat_Elemental  *a = (Mat_Elemental*)A->data, *b;
 
   PetscFunctionBegin;
+  /* Only out-of-place supported */
   if (reuse == MAT_INITIAL_MATRIX){
     ierr = MatCreate(comm,&Be);CHKERRQ(ierr);
     ierr = MatSetSizes(Be,A->cmap->n,A->rmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -888,8 +888,8 @@ PetscErrorCode MatSetUp_Elemental(Mat A)
   a->commsize = rsize;
   a->mr[0] = A->rmap->N % rsize; if (!a->mr[0]) a->mr[0] = rsize;
   a->mr[1] = A->cmap->N % csize; if (!a->mr[1]) a->mr[1] = csize;
-  a->m[0] = A->rmap->N / rsize + (a->mr[0] != rsize);
-  a->m[1] = A->cmap->N / csize + (a->mr[1] != csize);
+  a->m[0]  = A->rmap->N / rsize + (a->mr[0] != rsize);
+  a->m[1]  = A->cmap->N / csize + (a->mr[1] != csize);
   PetscFunctionReturn(0);
 }
 
@@ -1062,10 +1062,12 @@ static struct _MatOps MatOps_Values = {
 
    Options Database Keys:
 . -mat_type elemental - sets the matrix type to "elemental" during a call to MatSetFromOptions()
+. -mat_elemental_grid_height - sets Grid Height 
+. -mat_elemental_grid_width - sets Grid Width
 
   Level: beginner
 
-.seealso: MATDENSE,MatCreateElemental()
+.seealso: MATDENSE
 M*/
 
 #undef __FUNCT__
@@ -1089,8 +1091,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   
   /* Set up the elemental matrix */
   elem::mpi::Comm cxxcomm(((PetscObject)A)->comm); 
-  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"Elemental Options","Mat");CHKERRQ(ierr);
-
+ 
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
   if (Petsc_Elemental_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Elemental_keyval,(void*)0); 
@@ -1099,6 +1100,9 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   ierr = MPI_Attr_get(icomm,Petsc_Elemental_keyval,(void**)&commgrid,(int*)&flg);CHKERRQ(ierr);
   if (!flg) { 
     ierr = PetscNewLog(A,Mat_Elemental_Grid,&commgrid);CHKERRQ(ierr);
+
+    ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"Elemental Options","Mat");CHKERRQ(ierr);
+    /* displayed default grid sizes (CommSize,1) are set by us arbitrarily until elem::Grid() is called */
     ierr = PetscOptionsInt("-mat_elemental_grid_height","Grid Height","None",elem::mpi::CommSize(cxxcomm),&optv1,&flg1);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_elemental_grid_width","Grid Width","None",1,&optv2,&flg2);CHKERRQ(ierr);
     if (flg1 || flg2) {
@@ -1111,6 +1115,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
     }
     commgrid->grid_refct = 1;
     ierr = MPI_Attr_put(icomm,Petsc_Elemental_keyval,(void*)commgrid);CHKERRQ(ierr);
+    PetscOptionsEnd();
   } else {
     commgrid->grid_refct++;
   }
@@ -1128,7 +1133,6 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetFactor_elemental_C","MatGetFactor_elemental_elemental",MatGetFactor_elemental_elemental);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL);CHKERRQ(ierr);
-  PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 

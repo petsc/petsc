@@ -12,8 +12,11 @@ typedef PetscScalar PetscElemScalar;
 
 typedef struct {
   PetscInt commsize;
-  PetscInt m[2];                /* Number of entries in a local block of the row (column) space */
-  PetscInt mr[2];               /* First incomplete/ragged rank of (row) column space */
+  PetscInt m[2];       /* Number of entries in a local block of the row (column) space */
+  PetscInt mr[2];      /* First incomplete/ragged rank of (row) column space.
+                          We expose a blocked ordering to the user because that is what all other PETSc infrastructure uses.
+                          With the blocked ordering when the number of processes do not evenly divide the vector size, 
+                          we still need to be able to convert from PETSc/blocked ordering to VC/VR ordering. */
   elem::Grid *grid;
   elem::DistMatrix<PetscElemScalar> *emat;
   elem::Matrix<PetscElemScalar> *esubmat; /* Used for adding off-proc matrix entries */

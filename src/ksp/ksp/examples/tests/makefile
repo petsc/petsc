@@ -814,6 +814,18 @@ runex39_2:
 	   else echo ${PWD} ; echo "Possible problem with with ex39_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex39.tmp
 
+runex40:
+	-@${MPIEXEC} -n 6 ./ex40 -pc_type none  > ex40.tmp 2>&1;\
+	if (${DIFF} output/ex40.out ex40.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex40_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex40.tmp
+runex40_2:
+	-@${MPIEXEC} -n 6 ./ex40 -pc_type lu -pc_factor_mat_solver_package elemental > ex40.tmp 2>&1;\
+	if (${DIFF} output/ex40_2.out ex40.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex40_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex40.tmp
+
+
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                                  ex22.PETSc runex22 runex22_2 ex22.rm \
@@ -840,5 +852,6 @@ TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 runex6_3 ex6.rm ex11.
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = 
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 TESTEXAMPLES_ML                = ex26.PETSc runex26_ml runex26_ml_2 runex26_ml_3 ex26.rm ex29.PETSc runex29 runex29_2 ex29.rm
+TESTEXAMPLES_ELEMENTAL         = ex40.PETSc runex40 runex40_2 ex40.rm
 
 include ${PETSC_DIR}/conf/test

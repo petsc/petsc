@@ -4,7 +4,6 @@ class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download   = ['http://elemental.googlecode.com/files/elemental-0.75p1.tgz']
-    #self.download = ['/home/xzhou/temp/elemental-dev.tgz']
     self.liblist    = [['libelemental.a','libplcg.a','libpmrrr.a']]
     self.includes   = ['elemental.hpp']
     self.cxx              = 1
