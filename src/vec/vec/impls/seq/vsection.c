@@ -426,8 +426,20 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   ierr = PetscSectionSetUpBC(*gsection);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf, &nroots, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   if (nroots >= 0) {
-    ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasDof[-pStart]);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasDof[-pStart]);CHKERRQ(ierr);
+    if (nroots > pEnd - pStart) {
+      PetscInt *tmpDof;
+      /* Help Jed: HAVE TO MAKE A BUFFER HERE THE SIZE OF THE COMPLETE SPACE AND THEN COPY INTO THE atlasDof FOR THIS SECTION */
+      ierr = PetscMalloc(nroots * sizeof(PetscInt), &tmpDof);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], tmpDof);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], tmpDof);CHKERRQ(ierr);
+      for(p = pStart; p < pEnd; ++p) {
+        if (tmpDof[p] < 0) {(*gsection)->atlasDof[p-pStart] = tmpDof[p];}
+      }
+      ierr = PetscFree(tmpDof);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasDof[-pStart]);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasDof[-pStart]);CHKERRQ(ierr);
+    }
   }
   /* Calculate new sizes, get proccess offset, and calculate point offsets */
   for(p = 0, off = 0; p < pEnd-pStart; ++p) {
@@ -443,8 +455,20 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   }
   /* Put in negative offsets for ghost points */
   if (nroots >= 0) {
-    ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasOff[-pStart]);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasOff[-pStart]);CHKERRQ(ierr);
+    if (nroots > pEnd - pStart) {
+      PetscInt *tmpOff;
+      /* Help Jed: HAVE TO MAKE A BUFFER HERE THE SIZE OF THE COMPLETE SPACE AND THEN COPY INTO THE atlasDof FOR THIS SECTION */
+      ierr = PetscMalloc(nroots * sizeof(PetscInt), &tmpOff);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], tmpOff);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], tmpOff);CHKERRQ(ierr);
+      for(p = pStart; p < pEnd; ++p) {
+        if (tmpOff[p] < 0) {(*gsection)->atlasOff[p-pStart] = tmpOff[p];}
+      }
+      ierr = PetscFree(tmpOff);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasOff[-pStart]);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasOff[-pStart]);CHKERRQ(ierr);
+    }
   }
   ierr = PetscFree(neg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
