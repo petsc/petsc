@@ -122,15 +122,15 @@ PetscScalar zero(const PetscReal coords[]) {
 */
 PetscScalar quadratic_u_2d(const PetscReal x[]) {
   return x[0]*x[0] + x[1]*x[1];
-};
+}
 
 PetscScalar quadratic_v_2d(const PetscReal x[]) {
   return 2.0*x[0]*x[0] - 2.0*x[0]*x[1];
-};
+}
 
 PetscScalar linear_p_2d(const PetscReal x[]) {
   return x[0] + x[1] - 1.0;
-};
+}
 
 void f0_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
@@ -229,19 +229,19 @@ void g3_uu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]) {
 */
 PetscScalar quadratic_u_3d(const PetscReal x[]) {
   return x[0]*x[0] + x[1]*x[1];
-};
+}
 
 PetscScalar quadratic_v_3d(const PetscReal x[]) {
   return x[1]*x[1] + x[2]*x[2];
-};
+}
 
 PetscScalar quadratic_w_3d(const PetscReal x[]) {
   return x[0]*x[0] + x[1]*x[1] - 2.0*(x[0] + x[1])*x[2];
-};
+}
 
 PetscScalar linear_p_3d(const PetscReal x[]) {
   return x[0] + x[1] + x[2] - 1.5;
-};
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
@@ -297,7 +297,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   ierr = PetscLogEventRegister("IntegJacActBatchCPU", SNES_CLASSID, &options->integrateJacActionCPUEvent);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("Jacobian",            SNES_CLASSID, &options->jacobianEvent);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-};
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "VecChop"
@@ -504,6 +504,17 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeError"
+/*
+  ComputeError - This function computes the L_2 error, or difference between the exact solution function u
+  and the FEM interpolant solution u_h.
+
+  Input Parameters:
++ X - The solution vector u_h
+- user - The user context, containing the exact solution function u
+
+  Output Parameter:
+. error - The error ||u - u_h||_2
+*/
 PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
   PetscScalar   (**exactFuncs)(const PetscReal []) = user->exactFuncs;
   const PetscInt   debug         = user->debug;
@@ -735,6 +746,13 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSp
 
 #undef __FUNCT__
 #define __FUNCT__ "IntegrateResidualBatchCPU"
+/*
+Loop over batch of elements (e):
+  Loop over element matrix entries (f,fc,g,gc --> i,j):
+    Loop over quadrature points (q):
+      Make u_q and gradU_q (loops over fields,Nb,Ncomp)
+        elemVec[i] += \psi^{fc}_f(q) f0_{fc}(u, \nabla u) + \nabla\psi^{fc}_f(q) \cdot f1_{fc,df}(u, \nabla u)
+*/
 PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscInt field, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscQuadrature quad[], void (*f0_func)(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]), void (*f1_func)(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]), PetscScalar elemVec[], AppCtx *user) {
   const PetscInt debug   = user->debug;
   const PetscInt dim     = SPATIAL_DIM_0;
@@ -870,7 +888,7 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
   /* ierr = PetscLogFlops((((2+(2+2*dim)*dim)*Ncomp*Nb+(2+2)*dim*Ncomp)*Nq + (2+2*dim)*dim*Nq*Ncomp*Nb)*Ne);CHKERRQ(ierr); */
   ierr = PetscLogEventEnd(user->integrateResCPUEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-};
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal"
@@ -889,7 +907,7 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
   We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
   like a GPU, or vectorize on a multicore machine.
 
-.seealso: FormJacobianLocal()
+.seealso: FormJacobianLocal, FormJacobianActionLocal()
 */
 PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
 {
@@ -1257,6 +1275,22 @@ PetscErrorCode FormJacobianActionLocal(DM dm, Mat Jac, Vec X, Vec F, AppCtx *use
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianAction"
+/*
+  FormFunctionLocal - Form the global Jacobian action Y = JX from the global input X
+
+  Input Parameters:
++ mat - The Jacobian shell matrix
+- X  - Global input vector
+
+  Output Parameter:
+. Y  - Local output vector
+
+  Note:
+  We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
+  like a GPU, or vectorize on a multicore machine.
+
+.seealso: FormJacobianActionLocal()
+*/
 PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
 {
   JacActionCtx    *ctx;
@@ -1746,16 +1780,24 @@ int main(int argc, char **argv)
   }
 
   if (user.runType == RUN_FULL) {
+    PetscContainer c;
+    PetscSection   s;
     PetscViewer viewer;
 
     ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
-    /*ierr = PetscViewerSetType(viewer, PETSCVIEWERDRAW);CHKERRQ(ierr);
-      ierr = PetscViewerDrawSetInfo(viewer, PETSC_NULL, "Solution", PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr); */
-    ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "ex62_sol.vtk");CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = DMView(user.dm, viewer);CHKERRQ(ierr);
-    ierr = VecView(u, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "ex62_sol.vtk");CHKERRQ(ierr);
+
+    ierr = DMGetDefaultSection(user.dm, &s);CHKERRQ(ierr);
+    ierr = PetscContainerCreate(((PetscObject) u)->comm, &c);CHKERRQ(ierr);
+    ierr = PetscContainerSetPointer(c, s);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject) u, "section", (PetscObject) c);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
+
+    ierr = PetscObjectReference((PetscObject) user.dm);CHKERRQ(ierr); /* Needed because viewer destroys the DM */
+    ierr = PetscObjectReference((PetscObject) u);CHKERRQ(ierr); /* Needed because viewer destroys the Vec */
+    ierr = PetscViewerVTKAddField(viewer, (PetscObject) user.dm, DMComplexVTKWriteAll, PETSC_VTK_POINT_FIELD, (PetscObject) u);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
