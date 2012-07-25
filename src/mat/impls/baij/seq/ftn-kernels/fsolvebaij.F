@@ -10,11 +10,15 @@
       subroutine FortranSolveBAIJ4Unroll(n,x,ai,aj,adiag,a,b)
       implicit none
       MatScalar   a(0:*)
-      PetscScalar x(0:*),b(0:*)
-      PetscInt    n,ai(0:*),aj(0:*)
+      PetscScalar x(0:*)
+      PetscScalar b(0:*)
+      PetscInt    n
+      PetscInt    ai(0:*)
+      PetscInt    aj(0:*)
       PetscInt    adiag(0:*)
 
-      PetscInt    i,j,jstart,jend,idx,ax,jdx
+      PetscInt    i,j,jstart,jend
+      PetscInt    idx,ax,jdx
       PetscScalar s1,s2,s3,s4
       PetscScalar x1,x2,x3,x4
 !    
