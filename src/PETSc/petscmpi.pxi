@@ -20,7 +20,6 @@ cdef extern from * nogil:
     ctypedef int MPI_Fint
     MPI_Fint MPI_Comm_c2f(MPI_Comm)
 
-
 cdef extern from * nogil:
 
     MPI_Comm PETSC_COMM_SELF
@@ -28,6 +27,32 @@ cdef extern from * nogil:
 
     int PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*)
     int PetscCommDestroy(MPI_Comm*)
+
+# --------------------------------------------------------------------
+
+cdef extern from "cython.h":
+    void *Cython_ImportFunction(object, char[], char[]) except? NULL
+
+ctypedef MPI_Comm* PyMPICommGet(object) except NULL
+ctypedef object    PyMPICommNew(MPI_Comm)
+
+cdef inline MPI_Comm mpi4py_Comm_Get(object comm) except *:
+    from mpi4py import MPI
+    cdef PyMPICommGet *commget = \
+        <PyMPICommGet*> Cython_ImportFunction(
+        MPI, b"PyMPIComm_Get", b"MPI_Comm *(PyObject *)")
+    if commget == NULL: return MPI_COMM_NULL
+    cdef MPI_Comm *ptr = commget(comm)
+    if ptr == NULL: return MPI_COMM_NULL
+    return ptr[0]
+
+cdef inline object mpi4py_Comm_New(MPI_Comm comm):
+    from mpi4py import MPI
+    cdef PyMPICommNew *commnew = \
+        <PyMPICommNew*> Cython_ImportFunction(
+        MPI, b"PyMPIComm_New", b"PyObject *(MPI_Comm)")
+    if commnew == NULL: return None
+    return commnew(comm)
 
 # --------------------------------------------------------------------
 
@@ -40,22 +65,6 @@ cdef inline int PetscCommDEALLOC(MPI_Comm* comm):
     if (<int>PetscFinalizeCalled): return 0
     return PetscCommDestroy(&tmp)
 
-cdef extern from "cython.h":
-    void *Cython_ImportFunction(object, char[], char[]) except? NULL
-
-ctypedef MPI_Comm* PyMPICommGet(object) except NULL
-
-cdef inline MPI_Comm mpi4py_Comm(object comm) except *:
-    from mpi4py import MPI
-    cdef PyMPICommGet *commget = \
-        <PyMPICommGet*> Cython_ImportFunction(
-        MPI, b"PyMPIComm_Get", b"MPI_Comm *(PyObject *)")
-    if commget == NULL: return MPI_COMM_NULL
-    cdef MPI_Comm *ptr = commget(comm)
-    if ptr == NULL: return MPI_COMM_NULL
-    return ptr[0]
-
-
 cdef inline MPI_Comm def_Comm(object comm, MPI_Comm defv) except *:
     cdef MPI_Comm retv = MPI_COMM_NULL
     if comm is None:
@@ -63,11 +72,10 @@ cdef inline MPI_Comm def_Comm(object comm, MPI_Comm defv) except *:
     elif isinstance(comm, Comm):
         retv = (<Comm>comm).comm
     elif type(comm).__module__ == 'mpi4py.MPI':
-        retv = mpi4py_Comm(comm)
+        retv = mpi4py_Comm_Get(comm)
     else:
         retv = (<Comm?>comm).comm
     return retv
-
 
 cdef inline Comm new_Comm(MPI_Comm comm):
     cdef Comm ob = <Comm> Comm()

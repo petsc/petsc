@@ -20,7 +20,11 @@ Release 3.3
 - Add ``AO.createMemoryScalable()`` and ``LGMap.block()`` /
   ``LGMap.unblock()``
 
-- Add ``Object.handle`` property (C pointer as a Python integer).
+- Add ``Object.handle`` property (C pointer as a Python integer). Can
+  be used with ``ctypes`` to pass a PETSc handle. 
+
+- Add ``Comm.tompi4py()`` to get a ``mpi4py`` communicator instance.
+
 
 Release 1.2
 ===========
@@ -91,7 +95,7 @@ Release 1.1
 Release 1.0.3
 =============
 
-This is a bug-fix release. 
+This is a bug-fix release.
 
 - Added a quick fix to solve build issues. The macro __SDIR__ is no
   longer passed to the compiler in the command line.
