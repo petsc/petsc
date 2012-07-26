@@ -1838,7 +1838,7 @@ PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, 
   Level: beginner
 
 .keywords: mesh
-.seealso: DMComplexGetLabelStratum()
+.seealso: DMComplexGetLabelStratum(), DMComplexClearLabelValue()
 @*/
 PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
 {
@@ -1922,6 +1922,111 @@ PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, 
     ++next->stratumSizes[v];
     ierr = PetscSortInt(next->stratumSizes[v], &next->points[next->stratumOffsets[v]]);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexClearLabelValue"
+/*@C
+  DMComplexClearLabelValue - Remove a point from a Sieve Label with given value
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMComplex object
+. name - The label name
+. point - The mesh point
+- value - The label value for this point
+
+  Output Parameter:
+
+  Level: beginner
+
+.keywords: mesh
+.seealso: DMComplexSetLabelValue(), DMComplexGetLabelStratum()
+@*/
+PetscErrorCode DMComplexClearLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  SieveLabel     next = mesh->labels;
+  PetscBool      flg  = PETSC_FALSE;
+  PetscInt       v, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  /* Find label */
+  while(next) {
+    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
+    if (flg) break;
+    next = next->next;
+  }
+  if (!flg) PetscFunctionReturn(0);
+  /* Find label value */
+  for(v = 0; v < next->numStrata; ++v) {
+    if (next->stratumValues[v] == value) break;
+  }
+  if (v >= next->numStrata) PetscFunctionReturn(0);
+  /* Check whether point exists */
+  for(p = next->stratumOffsets[v]; p < next->stratumOffsets[v]+next->stratumSizes[v]; ++p) {
+    if (next->points[p] == point) {
+      /* Found point */
+      PetscInt  q;
+
+      for(q = p+1; q < next->stratumOffsets[v]+next->stratumSizes[v]; ++q) {
+        next->points[q-1] = next->points[q];
+      }
+      --next->stratumSizes[v];
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexClearLabelStratum"
+/*@C
+  DMComplexClearLabelStratum - Remove all points from a stratum from a Sieve Label
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMComplex object
+. name - The label name
+- value - The label value for this point
+
+  Output Parameter:
+
+  Level: beginner
+
+.keywords: mesh
+.seealso: DMComplexSetLabelValue(), DMComplexGetLabelStratum(), DMComplexClearLabelValue()
+@*/
+PetscErrorCode DMComplexClearLabelStratum(DM dm, const char name[], PetscInt value)
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  SieveLabel     next = mesh->labels;
+  PetscBool      flg  = PETSC_FALSE;
+  PetscInt       v, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  /* Find label */
+  while(next) {
+    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
+    if (flg) break;
+    next = next->next;
+  }
+  if (!flg) PetscFunctionReturn(0);
+  /* Find label value */
+  for(v = 0; v < next->numStrata; ++v) {
+    if (next->stratumValues[v] == value) break;
+  }
+  if (v >= next->numStrata) PetscFunctionReturn(0);
+  next->stratumSizes[v] = 0;
   PetscFunctionReturn(0);
 }
 
