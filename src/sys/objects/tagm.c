@@ -242,6 +242,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
 #endif
 
   PetscFunctionBegin;
+  if (*comm == MPI_COMM_NULL) PetscFunctionReturn(0);
   ierr = MPI_Attr_get(icomm,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
   if (!flg) { /* not a PETSc comm, check if it has an inner comm */
     ierr  = MPI_Attr_get(icomm,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
@@ -280,7 +281,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
     ierr = PetscInfo1(0,"Deleting PETSc MPI_Comm %ld\n",(long)icomm);CHKERRQ(ierr);
     ierr = MPI_Comm_free(&icomm);CHKERRQ(ierr);
   }
-  *comm = 0;
+  *comm = MPI_COMM_NULL;
   PetscFunctionReturn(0);
 }
 
