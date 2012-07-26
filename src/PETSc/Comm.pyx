@@ -43,8 +43,7 @@ cdef class Comm:
     #
 
     def destroy(self):
-        if self.comm == MPI_COMM_NULL:
-            raise ValueError("null communicator")
+        if self.comm == MPI_COMM_NULL: return
         if not self.isdup:
             raise ValueError("communicator not owned")
         CHKERR( PetscCommDestroy(&self.comm) )
@@ -98,6 +97,12 @@ cdef class Comm:
         def __get__(self):
             cdef MPI_Comm comm = self.comm
             return MPI_Comm_c2f(comm)
+
+    # --- mpi4py support ---
+
+    def tompi4py(self):
+        cdef MPI_Comm comm = self.comm
+        return mpi4py_Comm_New(comm)
 
     # --- mpi4py compatibility API ---
 

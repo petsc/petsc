@@ -10,7 +10,7 @@ build *PETSc for Python*:
 * Any MPI_ implementation [#]_ (e.g., MPICH_ or `Open MPI`_), 
   built with **shared libraries**.
 
-* PETSc_  3.2, 3.1, or 3.0.0 built with **shared libraries** [#]_.
+* PETSc_  3.3 or 3.2 built with **shared libraries** [#]_.
 
 * Python_ 2.4 to 2.7 and 3.1 to 3.2 [#]_.
 
@@ -32,23 +32,23 @@ build *PETSc for Python*:
 Using **pip** or **easy_install**
 ---------------------------------
 
-If you already have a working PETSc, set environment variables
-:envvar:`PETSC_DIR` and :envvar:`PETSC_ARCH` to appropriate values::
+You can use :program:`pip` to install :mod:`petsc4py` and its
+dependencies (:mod:`mpi4py` is optional but highly recommended)::
 
-    $ export PETSC_DIR=/path/to/petsc
-    $ export PETSC_ARCH=linux-gnu
+    $ [sudo] pip install [--user] numpy mpi4py
+    $ [sudo] pip install [--user] petsc petsc4py
 
-.. note:: If you do not set these environment variables, the install
-   process will attempt to download and install PETSc for you.
-
-Now you can use :program:`pip`::
-
-    $ [sudo] pip install [--user] petsc4py
-
-Alternatively, you can use *setuptools* :program:`easy_install`
-(deprecated)::
+Alternatively, you can use :program:`easy_install` (deprecated)::
 
     $ [sudo] easy_install petsc4py
+
+If you already have a working PETSc install, set environment variables
+:envvar:`PETSC_DIR` and :envvar:`PETSC_ARCH` to appropriate values and
+next use :program:`pip`::
+
+    $ export PETSC_DIR=/path/to/petsc
+    $ export PETSC_ARCH=arch-linux2-c-opt
+    $ pip install petsc4py
 
 
 Using **distutils**

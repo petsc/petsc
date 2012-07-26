@@ -10,8 +10,7 @@ README: PETSc for Python
 
 Thank you for downloading the *PETSc for Python* project archive. As
 this is a work in progress, please check the `project website`_ for
-updates.  This project should be considered experimental, APIs are
-subject to change at any time.
+updates.
 
 .. _CIMEC:            http://www.cimec.org.ar/
 .. _project website:  http://petsc4py.googlecode.com/
@@ -20,7 +19,7 @@ subject to change at any time.
 - To build and install this package, you must meet the following
   requirements.
 
-  + PETSc_ 3.2, 3.1 or 3.0.0, built with *shared libraries* (i.e., by
+  + PETSc_ 3.3 or 3.2, built with *shared libraries* (i.e., by
     passing ``--with-shared-libraries`` option to PETSc ``configure``
     script; this is not strictly required, but **highly** recommended).
 

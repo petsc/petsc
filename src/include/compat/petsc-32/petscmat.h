@@ -1,5 +1,7 @@
 #include "private/matimpl.h"
 
+#define MATIJ "ij"
+
 #undef __FUNCT__
 #define __FUNCT__ "MatBlockSize_Check"
 static PetscErrorCode

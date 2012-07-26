@@ -47,7 +47,7 @@ url      = 'http://%(name)s.googlecode.com/' % vars()
 download = url + 'files/%(name)s-%(version)s.tar.gz' % vars()
 
 descr    = __doc__.strip().split('\n'); del descr[1:3]
-devstat  = ['Development Status :: 3 - Alpha']
+devstat  = ['Development Status :: 5 - Production/Stable']
 keywords = ['PETSc', 'MPI']
 
 metadata['name'] = name

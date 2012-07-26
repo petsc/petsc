@@ -16,6 +16,8 @@ class KSPType(object):
     TCQMR      = S_(KSPTCQMR)
     BCGS       = S_(KSPBCGS)
     IBCGS      = S_(KSPIBCGS)
+    FBCGS      = S_(KSPFBCGS)
+    IFBCGS     = S_(KSPIFBCGS)
     BCGSL      = S_(KSPBCGSL)
     CGS        = S_(KSPCGS)
     TFQMR      = S_(KSPTFQMR)

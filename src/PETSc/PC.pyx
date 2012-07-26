@@ -13,6 +13,7 @@ class PCType(object):
     ILU          = S_(PCILU)
     ICC          = S_(PCICC)
     ASM          = S_(PCASM)
+    GASM         = S_(PCGASM)
     KSP          = S_(PCKSP)
     COMPOSITE    = S_(PCCOMPOSITE)
     REDUNDANT    = S_(PCREDUNDANT)
@@ -22,6 +23,7 @@ class PCType(object):
     PBJACOBI     = S_(PCPBJACOBI)
     MAT          = S_(PCMAT)
     HYPRE        = S_(PCHYPRE)
+    PARMS        = S_(PCPARMS)
     FIELDSPLIT   = S_(PCFIELDSPLIT)
     TFS          = S_(PCTFS)
     ML           = S_(PCML)
@@ -38,12 +40,13 @@ class PCType(object):
     PFMG         = S_(PCPFMG)
     SYSPFMG      = S_(PCSYSPFMG)
     REDISTRIBUTE = S_(PCREDISTRIBUTE)
+    SVD          = S_(PCSVD)
+    GAMG         = S_(PCGAMG)
     SACUSP       = S_(PCSACUSP)
     SACUSPPOLY   = S_(PCSACUSPPOLY)
     BICGSTABCUSP = S_(PCBICGSTABCUSP)
-    SVD          = S_(PCSVD)
     AINVCUSP     = S_(PCAINVCUSP)
-    GAMG         = S_(PCGAMG)
+    BDDC         = S_(PCBDDC)
 
 
 class PCSide(object):

@@ -9,6 +9,7 @@ class VecType(object):
     SEQCUSP    = S_(VECSEQCUSP)
     MPICUSP    = S_(VECMPICUSP)
     CUSP       = S_(VECCUSP)
+    NEST       = S_(VECNEST)
     SEQPTHREAD = S_(VECSEQPTHREAD)
     MPIPTHREAD = S_(VECMPIPTHREAD)
     PTHREAD    = S_(VECPTHREAD)

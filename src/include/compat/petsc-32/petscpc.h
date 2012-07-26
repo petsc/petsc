@@ -1,3 +1,5 @@
+#define PCBDDC "bddc"
+
 #undef __FUNCT__
 #define __FUNCT__ "PCFieldSplitSetFields_Compat"
 static PetscErrorCode PCFieldSplitSetFields_Compat(PC pc,const char splitname[],PetscInt n,const PetscInt *fields,const PetscInt *fields_col)

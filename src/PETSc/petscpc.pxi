@@ -12,6 +12,7 @@ cdef extern from * nogil:
     PetscPCType PCILU
     PetscPCType PCICC
     PetscPCType PCASM
+    PetscPCType PCGASM
     PetscPCType PCKSP
     PetscPCType PCCOMPOSITE
     PetscPCType PCREDUNDANT
@@ -21,6 +22,7 @@ cdef extern from * nogil:
     PetscPCType PCPBJACOBI
     PetscPCType PCMAT
     PetscPCType PCHYPRE
+    PetscPCType PCPARMS
     PetscPCType PCFIELDSPLIT
     PetscPCType PCTFS
     PetscPCType PCML
@@ -37,12 +39,13 @@ cdef extern from * nogil:
     PetscPCType PCPFMG
     PetscPCType PCSYSPFMG
     PetscPCType PCREDISTRIBUTE
+    PetscPCType PCSVD
+    PetscPCType PCGAMG
     PetscPCType PCSACUSP
     PetscPCType PCSACUSPPOLY
     PetscPCType PCBICGSTABCUSP
-    PetscPCType PCSVD
     PetscPCType PCAINVCUSP
-    PetscPCType PCGAMG
+    PetscPCType PCBDDC
 
     ctypedef enum PetscPCSide "PCSide":
         PC_LEFT

@@ -17,7 +17,6 @@ class TestComm(unittest.TestCase):
 
     def testDupDestr(self):
         self.assertRaises(ValueError, PETSc.COMM_NULL.duplicate)
-        self.assertRaises(ValueError, PETSc.COMM_NULL.destroy)
         comm = PETSc.COMM_SELF.duplicate()
         comm.destroy()
         self.assertEqual(comm, PETSc.COMM_NULL)
@@ -57,14 +56,26 @@ class TestComm(unittest.TestCase):
             from mpi4py import MPI
         except ImportError:
             return
+        # mpi4py -> petsc4py
         cn = PETSc.Comm(MPI.COMM_NULL)
         cs = PETSc.Comm(MPI.COMM_SELF)
         cw = PETSc.Comm(MPI.COMM_WORLD)
         self.assertEqual(cn, PETSc.COMM_NULL)
         self.assertEqual(cs, PETSc.COMM_SELF)
         self.assertEqual(cw, PETSc.COMM_WORLD)
-        f = lambda : PETSc.Comm(MPI.GROUP_NULL)
-        self.assertRaises(TypeError, f)
+        # petsc4py - > mpi4py
+        cn = PETSc.COMM_NULL.tompi4py()
+        self.assertTrue(isinstance(cn, MPI.Comm))
+        self.assertFalse(cn)
+        cs = PETSc.COMM_SELF.tompi4py()
+        self.assertTrue(isinstance(cs, MPI.Intracomm))
+        self.assertEqual(cs.Get_size(), 1)
+        self.assertEqual(cs.Get_rank(), 0)
+        cw = PETSc.COMM_WORLD.tompi4py()
+        self.assertTrue(isinstance(cw, MPI.Intracomm))
+        self.assertEqual(cw.Get_size(), PETSc.COMM_WORLD.getSize())
+        self.assertEqual(cw.Get_rank(), PETSc.COMM_WORLD.getRank())
+        
 
 # --------------------------------------------------------------------
 
