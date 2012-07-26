@@ -85,8 +85,9 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, PetscSection globalConeSection, FIL
   PetscInt       dim;
   PetscInt       numCorners = 0, maxCorners;
   PetscInt       numCells   = 0, totCells, cellType;
-  PetscInt       cMax, cStart, cEnd, c, vStart, vEnd, v;
+  PetscInt       numLabelCells, cMax, cStart, cEnd, c, vStart, vEnd, v;
   PetscMPIInt    numProcs, rank, proc, tag = 1;
+  PetscBool      hasLabel;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -97,10 +98,18 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, PetscSection globalConeSection, FIL
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMComplexGetVTKBounds(dm, &cMax, PETSC_NULL);CHKERRQ(ierr);
   if (cMax >= 0) {cEnd = PetscMin(cEnd, cMax);}
+  ierr = DMComplexGetStratumSize(dm, "vtk", 0, &numLabelCells);CHKERRQ(ierr);
+  hasLabel = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
   for(c = cStart; c < cEnd; ++c) {
     PetscInt  nC;
     PetscBool valid;
 
+    if (hasLabel) {
+      PetscInt value;
+
+      ierr = DMComplexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+      if (!value) continue;
+    }
     /* TODO: Does not work for interpolated meshes */
     ierr = PetscSectionGetDof(globalConeSection, c, &nC);CHKERRQ(ierr);
     ierr = DMComplexVTKGetCellType(dm, dim, nC, &cellType);CHKERRQ(ierr);
