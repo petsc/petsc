@@ -12,12 +12,53 @@
 #endif
 
       Interface
+        Subroutine DMComplexGetCone(m,p,cone,ierr)
+          USE_DMCOMPLEX_HIDE
+          PetscInt     p
+          PetscInt, pointer :: cone(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMComplexGetConeOrientation(m,p,coneOrientation,ierr)
+          USE_DMCOMPLEX_HIDE
+          PetscInt     p
+          PetscInt, pointer :: coneOrientation(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMComplexGetSupport(m,p,support,ierr)
+          USE_DMCOMPLEX_HIDE
+          PetscInt     p
+          PetscInt, pointer :: support(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMComplexGetTransitiveClosure(m,p,useCone,points,ierr)
+          USE_DMCOMPLEX_HIDE
+          PetscInt     p
+          PetscBool    useCone
+          PetscInt, pointer :: points(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
         Subroutine DMComplexVecGetClosure(m,section,v,point,values,ierr)
           USE_DMCOMPLEX_HIDE
           PETSCSECTION_HIDE section
           Vec          v
           PetscInt     point
-          PetscScalar, pointer :: array(:,:)
+          PetscScalar, pointer :: values(:)
           PetscErrorCode ierr
           DM_HIDE m
         End Subroutine
