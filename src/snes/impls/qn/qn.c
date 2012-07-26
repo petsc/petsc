@@ -469,9 +469,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     }
     ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
     if (qn->scale_type == SNES_QN_SCALE_LINESEARCH) {
-      PetscScalar scl;
-      ierr = SNESLineSearchGetLambda(snes->linesearch, &scl);CHKERRQ(ierr);
-      qn->scaling = PetscRealPart(scl);CHKERRQ(ierr);
+      ierr = SNESLineSearchGetLambda(snes->linesearch, &qn->scaling);CHKERRQ(ierr);
     }
 
     /* convergence monitoring */
