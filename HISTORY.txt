@@ -14,6 +14,13 @@ Release 3.3
 
 - Update to PETSc 3.3 release.
 
+- Change ``Vec.getLocalForm()`` to ``Vec.localForm()`` for use with
+  context manager and add ``Vec.setMPIGhost()``.
+
+- Add ``AO.createMemoryScalable()`` and ``LGMap.block()`` /
+  ``LGMap.unblock()``
+
+- Add ``Object.handle`` property (C pointer as a Python integer).
 
 Release 1.2
 ===========
