@@ -176,7 +176,8 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
   if (!rank) {
     PetscScalar  sdummy,*cwork;
     PetscReal    *work,*realpart;
-    PetscBLASInt clen,idummy,lwork,*perm,zero = 0;
+    PetscBLASInt clen,idummy,lwork,bn,zero = 0;
+    PetscInt *perm;
 
 #if !defined(PETSC_USE_COMPLEX)
     clen = n;
@@ -184,12 +185,13 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     clen = 2*n;
 #endif
     ierr   = PetscMalloc(clen*sizeof(PetscScalar),&cwork);CHKERRQ(ierr);
-    idummy = n;
+    idummy = -1;                /* unused */
+    bn = PetscBLASIntCast(n);
     lwork  = 5*n;
     ierr   = PetscMalloc(lwork*sizeof(PetscReal),&work);CHKERRQ(ierr);
     ierr   = PetscMalloc(n*sizeof(PetscReal),&realpart);CHKERRQ(ierr);
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-    LAPACKgeev_(&zero,array,&n,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
+    LAPACKgeev_(&zero,array,&bn,cwork,&sdummy,&idummy,&idummy,&bn,work,&lwork);
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
 
