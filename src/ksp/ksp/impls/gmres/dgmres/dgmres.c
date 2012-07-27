@@ -6,7 +6,7 @@
 
  */
 
-#include "dgmresimpl.h"       /*I  "petscksp.h"  I*/
+#include "../src/ksp/ksp/impls/gmres/dgmres/dgmresimpl.h"       /*I  "petscksp.h"  I*/
 #define GMRES_DELTA_DIRECTIONS 10
 #define GMRES_DEFAULT_MAXK     30
 #define PetscTruth PetscBool

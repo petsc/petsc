@@ -1,5 +1,5 @@
 
-#include "pcis.h" /*I "petscpc.h" I*/
+#include "../src/ksp/pc/impls/is/pcis.h" /*I "petscpc.h" I*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

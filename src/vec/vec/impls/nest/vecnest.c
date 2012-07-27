@@ -1,5 +1,5 @@
 
-#include "vecnestimpl.h"   /*I  "petscvec.h"   I*/
+#include "../src/vec/vec/impls/nest/vecnestimpl.h"   /*I  "petscvec.h"   I*/
 
 /* check all blocks are filled */
 #undef __FUNCT__  

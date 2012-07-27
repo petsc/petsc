@@ -5,11 +5,12 @@
 #   Before using removed /usr/include/mpi.h and /Developer/SDKs/MacOSX10.5.sdk/usr/include/mpi.h or
 #      Xcode will use those instead of the MPIuni one we point to
 #
-#
-#   Run ./config/examples/arch-iphone.py [use --with-debugging=0 to get iPhone/iPad version, otherwise creates simulator version]
+#   export PETSC_ARCH=arch-iphone
+
+#   ./config/examples/arch-iphone.py [use --with-debugging=0 to get iPhone/iPad version, otherwise creates simulator version]
 #      this sets up the appropriate configuration file and builds C BLAS/LAPACK for the iPhone/iPad
 #
-#   Run ./bin/maint/iphonebuilder.py
+#   ./bin/maint/iphonebuilder.py
 #      this creates the PETSc iPhone library
 #
 #   open xcode/examples/examples.xcodeproj
@@ -44,7 +45,6 @@ class PETScMaker(script.Script):
    self.languages     = self.framework.require('PETSc.utilities.languages',   None)
    self.debugging     = self.framework.require('PETSc.utilities.debugging',   None)
    self.make          = self.framework.require('config.programs',             None)
-   self.CHUD          = self.framework.require('PETSc.utilities.CHUD',        None)
    self.compilers     = self.framework.require('config.compilers',            None)
    self.types         = self.framework.require('config.types',                None)
    self.headers       = self.framework.require('config.headers',              None)
@@ -145,6 +145,8 @@ class PETScMaker(script.Script):
    - Excludes benchmarks directory
    - Checks whether fortran bindings are necessary
    - Checks makefile to see if compiler is allowed to visit this directory for this configuration'''
+#   print self.functions.functions
+#   print self.base.defines
    base = os.path.basename(dirname)
 
    if base == 'examples': return False
@@ -171,51 +173,62 @@ class PETScMaker(script.Script):
        text = reg.sub(' ',text)
        rtype = text.split(' ')[0]
        rvalue = text.split(' ')[1]
-       if rtype == 'scalar' and not self.scalarType.scalartype == rvalue:
+
+       if rvalue == "'"+'PETSC_HAVE_FORTRAN'+"'" or rvalue == "'"+'PETSC_USING_F90'+"'" or rvalue == "'"+'PETSC_USING_F2003'+"'":
+         if not hasattr(self.compilers, 'FC'):
+           if self.verbose: print 'Rejecting',dirname,'because fortran is not being used'
+           return 0
+       elif rvalue == "'"+'PETSC_USE_LOG'+"'":
+         if not self.libraryOptions.useLog:
+           if self.verbose: print 'Rejecting',dirname,'because logging is turned off'
+           return 0
+       elif rvalue == "'"+'PETSC_USE_FORTRAN_KERNELS'+"'":
+         if not self.libraryOptions.useFortranKernels:
+           if self.verbose: print 'Rejecting',dirname,'because fortran kernels are turned off'
+           return 0
+       elif rtype == 'scalar' and not self.scalarType.scalartype == rvalue:
          if self.verbose: print 'Rejecting',dirname,'because scalar type '+self.scalarType.scalartype+' is not '+rvalue
          return 0
-       if rtype == 'language':
+       elif rtype == 'language':
          if rvalue == 'CXXONLY' and self.languages.clanguage == 'C':
            if self.verbose: print 'Rejecting',dirname,'because language is '+self.languages.clanguage+' is not C++'
            return 0
-       if rtype == 'precision' and not rvalue == self.scalarType.precision:
+       elif rtype == 'precision' and not rvalue == self.scalarType.precision:
          if self.verbose: print 'Rejecting',dirname,'because precision '+self.scalarType.precision+' is not '+rvalue
          return 0
-       # handles both missing packages and other random stuff that is treated as a package, that should be changed
-       if rtype == 'package':
-         if rvalue == "'"+'PETSC_HAVE_FORTRAN'+"'" or rvalue == "'"+'PETSC_USING_F90'+"'":
-           if not hasattr(self.compilers, 'FC'):
-             if self.verbose: print 'Rejecting',dirname,'because fortran is not being used'
-             return 0
-         elif rvalue == "'"+'PETSC_USE_LOG'+"'":
-           if not self.libraryOptions.useLog:
-             if self.verbose: print 'Rejecting',dirname,'because logging is turned off'
-             return 0
-         elif rvalue == "'"+'PETSC_USE_FORTRAN_KERNELS'+"'":
-           if not self.libraryOptions.useFortranKernels:
-             if self.verbose: print 'Rejecting',dirname,'because fortran kernels are turned off'
-             return 0
-         else:    
-           found = 0
-           if self.mpi.usingMPIUni:
-             pname = 'PETSC_HAVE_MPIUNI'
-             pname = "'"+pname+"'"
-             if pname == rvalue: found = 1
-           for i in self.framework.packages:
-             pname = 'PETSC_HAVE_'+i.PACKAGE
-             pname = "'"+pname+"'"
-             if pname == rvalue: found = 1
-           for i in self.base.defines:
-             pname = 'PETSC_'+i
-             pname = "'"+pname+"'"
-             if pname == rvalue: found = 1
-           for i in self.functions.defines:
-             pname = 'PETSC_'+i
-             pname = "'"+pname+"'"
-             if pname == rvalue: found = 1
-           if not found:
-             if self.verbose: print 'Rejecting',dirname,'because package '+rvalue+' is not installed or function does not exist'
-             return 0
+       elif rtype == 'package':
+         found = 0
+         if self.mpi.usingMPIUni:
+           pname = 'PETSC_HAVE_MPIUNI'
+           pname = "'"+pname+"'"
+           if pname == rvalue: found = 1
+         for i in self.framework.packages:
+           pname = 'PETSC_HAVE_'+i.PACKAGE
+           pname = "'"+pname+"'"
+           if pname == rvalue: found = 1
+         if not found:
+           if self.verbose: print 'Rejecting',dirname,'because package '+rvalue+' does not exist'
+           return 0
+       elif rtype == 'define':
+         found = 0
+         for i in self.base.defines:
+           pname = 'PETSC_HAVE_'+i.upper()
+           pname = "'"+pname+"'"
+           if pname == rvalue: found = 1
+         if not found:
+           if self.verbose: print 'Rejecting',dirname,'because define '+rvalue+' does not exist'
+           return 0
+       elif rtype == 'function':
+         found = 0
+         for i in self.functions.functions:
+           pname = 'PETSC_HAVE_'+i.upper()
+           pname = "'"+pname+"'"
+#           print pname
+#           print rvalue
+           if pname == rvalue: found = 1
+         if not found:
+           if self.verbose: print 'Rejecting',dirname,'because function '+rvalue+' does not exist'
+           return 0
          
      text = fd.readline()
    fd.close()
@@ -240,7 +253,7 @@ class PETScMaker(script.Script):
        dirs.remove(badDir)
 
    debug = 'Debug'
-   debugdir = 'Debug-iphonesimulator'
+   debugdir = 'Debug-iphonesos'
    if not self.compilerFlags.debugging:
      debug = 'Release'
      debugdir = 'Release-iphoneos'

@@ -1,5 +1,5 @@
 
-#include "packimpl.h" /*I   "petscdmcomposite.h"   I*/
+#include <../src/dm/impls/composite/packimpl.h>       /*I  "petscdmcomposite.h"  I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeSetCoupling"

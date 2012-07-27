@@ -12,6 +12,7 @@ if __name__ == '__main__':
     '--with-cc=gcc -m32',
     '--with-mpi=0',
     '--with-iphone=1',
+    '--with-valgrind=0',
     '--download-f2cblaslapack',
     '--with-x=0',
     'PETSC_ARCH=arch-iphone',
