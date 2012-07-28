@@ -2008,7 +2008,7 @@ PetscErrorCode DMComplexClearLabelStratum(DM dm, const char name[], PetscInt val
   DM_Complex    *mesh = (DM_Complex *) dm->data;
   SieveLabel     next = mesh->labels;
   PetscBool      flg  = PETSC_FALSE;
-  PetscInt       v, p;
+  PetscInt       v;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -5008,13 +5008,14 @@ PetscErrorCode DMComplexGetCoordinateVec(DM dm, Vec *coordinates) {
 - point - The sieve point in the DM
 
   Output Parameters:
-. values - The array of values, which is a borrowed array and should not be freed
++ csize - The number of values in the closure, or PETSC_NULL
+- values - The array of values, which is a borrowed array and should not be freed
 
   Level: intermediate
 
 .seealso DMComplexVecSetClosure(), DMComplexMatSetClosure()
 @*/
-PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, const PetscScalar *values[]) {
+PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, const PetscScalar *values[]) {
   PetscScalar    *array, *vArray;
   PetscInt       *points = PETSC_NULL;
   PetscInt        offsets[32];
@@ -5055,7 +5056,7 @@ PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscI
     offsets[f+1] += offsets[f];
   }
   if (numFields && offsets[numFields] != size) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Invalid size for closure %d should be %d", offsets[numFields], size);
-  ierr = DMGetWorkArray(dm, 2*size, &array);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, size, &array);CHKERRQ(ierr);
   ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
   for(p = 0; p < numPoints*2; p += 2) {
     PetscInt     o = points[p+1];
@@ -5097,6 +5098,7 @@ PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscI
     }
   }
   ierr = VecRestoreArray(v, &vArray);CHKERRQ(ierr);
+  if (csize) *csize = size;
   *values = array;
   PetscFunctionReturn(0);
 }
@@ -5547,7 +5549,7 @@ PetscErrorCode DMComplexComputeTriangleGeometry_private(DM dm, PetscInt e, Petsc
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = DMComplexVecGetClosure(dm, mesh->coordSection, mesh->coordinates, e, &coords);CHKERRQ(ierr);
+  ierr = DMComplexVecGetClosure(dm, mesh->coordSection, mesh->coordinates, e, PETSC_NULL, &coords);CHKERRQ(ierr);
   if (v0) {
     for(d = 0; d < dim; d++) {
       v0[d] = PetscRealPart(coords[d]);
@@ -5604,7 +5606,7 @@ PetscErrorCode DMComplexComputeRectangleGeometry_private(DM dm, PetscInt e, Pets
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = DMComplexVecGetClosure(dm, mesh->coordSection, mesh->coordinates, e, &coords);CHKERRQ(ierr);
+  ierr = DMComplexVecGetClosure(dm, mesh->coordSection, mesh->coordinates, e, PETSC_NULL, &coords);CHKERRQ(ierr);
   if (v0) {
     for(d = 0; d < dim; d++) {
       v0[d] = PetscRealPart(coords[d]);
@@ -5643,7 +5645,7 @@ PetscErrorCode DMComplexComputeTetrahedronGeometry_private(DM dm, PetscInt e, Pe
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = DMComplexVecGetClosure(dm, mesh->coordSection, mesh->coordinates, e, &coords);CHKERRQ(ierr);
+  ierr = DMComplexVecGetClosure(dm, mesh->coordSection, mesh->coordinates, e, PETSC_NULL, &coords);CHKERRQ(ierr);
   if (v0) {
     for(d = 0; d < dim; d++) {
       v0[d] = PetscRealPart(coords[d]);
@@ -5689,7 +5691,7 @@ PetscErrorCode DMComplexComputeHexahedronGeometry_private(DM dm, PetscInt e, Pet
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = DMComplexVecGetClosure(dm, mesh->coordSection, mesh->coordinates, e, &coords);CHKERRQ(ierr);
+  ierr = DMComplexVecGetClosure(dm, mesh->coordSection, mesh->coordinates, e, PETSC_NULL, &coords);CHKERRQ(ierr);
   if (v0) {
     for(d = 0; d < dim; d++) {
       v0[d] = PetscRealPart(coords[d]);

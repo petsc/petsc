@@ -53,11 +53,47 @@
       End Interface
 
       Interface
+        Subroutine DMComplexRestoreTransitiveClosure(m,p,useCone,points,ierr)
+          USE_DMCOMPLEX_HIDE
+          PetscInt     p
+          PetscBool    useCone
+          PetscInt, pointer :: points(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
         Subroutine DMComplexVecGetClosure(m,section,v,point,values,ierr)
           USE_DMCOMPLEX_HIDE
           PETSCSECTION_HIDE section
-          Vec          v
+          VEC_HIDE     v
           PetscInt     point
+          PetscScalar, pointer :: values(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMComplexVecRestoreClosure(m,section,v,point,values,ierr)
+          USE_DMCOMPLEX_HIDE
+          PETSCSECTION_HIDE section
+          VEC_HIDE     v
+          PetscInt     point
+          PetscScalar, pointer :: values(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMComplexVecSetClosure(m,section,v,point,values,mode,ierr)
+          USE_DMCOMPLEX_HIDE
+          PETSCSECTION_HIDE section
+          VEC_HIDE     v
+          PetscInt     point
+          InsertMode   mode
           PetscScalar, pointer :: values(:)
           PetscErrorCode ierr
           DM_HIDE m
