@@ -253,16 +253,17 @@ class PETScMaker(script.Script):
        dirs.remove(badDir)
 
    debug = 'Debug'
-   debugdir = 'Debug-iphonesos'
+   debugdir = 'Debug-iphoneos'
    if not self.compilerFlags.debugging:
      debug = 'Release'
-     debugdir = 'Release-iphoneos'
+     debugdir = 'Release-iphoneo'
    try:
      output,err,ret  = self.executeShellCommand('cd '+os.path.join(os.environ['PETSC_DIR'],'xcode','PETSc')+';xcodebuild -configuration '+debug, timeout=3000, log = self.log)
    except RuntimeError, e:
      raise RuntimeError('Error making iPhone version of PETSc libraries: '+str(e))
    try:
-     output,err,ret  = self.executeShellCommand('mv -f '+os.path.join(os.environ['PETSC_DIR'],'xcode','PETSc','build',debugdir,'libPETSc.a')+' '+os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'lib'), timeout=30, log = self.log)
+     pass
+#     output,err,ret  = self.executeShellCommand('mv -f '+os.path.join(os.environ['PETSC_DIR'],'xcode','PETSc','build',debugdir,'libPETSc.a')+' '+os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'lib'), timeout=30, log = self.log)
    except RuntimeError, e:
      raise RuntimeError('Error copying iPhone version of PETSc libraries: '+str(e))
 

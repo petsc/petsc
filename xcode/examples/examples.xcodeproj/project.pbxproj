@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 45;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -15,7 +15,7 @@
 		D83A8D7E119DD87B009DD17A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D83A8D7D119DD87B009DD17A /* UIKit.framework */; };
 		D83A8DD0119DD88A009DD17A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D83A8DCF119DD88A009DD17A /* Foundation.framework */; };
 		D83A8DF3119DD897009DD17A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D83A8DF2119DD897009DD17A /* CoreGraphics.framework */; };
-		D86E4BE211A328D50055BBC5 /* libBlasLapack.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D86E4BE111A328D50055BBC5 /* libBlasLapack.a */; };
+		D86E4BE211A328D50055BBC5 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D86E4BE111A328D50055BBC5 /* Accelerate.framework */; };
 		D86E4BE411A328E00055BBC5 /* libPETSc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D86E4BE311A328E00055BBC5 /* libPETSc.a */; };
 /* End PBXBuildFile section */
 
@@ -33,7 +33,7 @@
 		D83A8D7D119DD87B009DD17A /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		D83A8DCF119DD88A009DD17A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D83A8DF2119DD897009DD17A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		D86E4BE111A328D50055BBC5 /* libBlasLapack.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libBlasLapack.a; path = "/Users/barrysmith/Src/petsc-dev/arch-iphone/lib/libBlasLapack.a"; sourceTree = "<absolute>"; };
+		D86E4BE111A328D50055BBC5 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = "/Users/barrysmith/Src/petsc-dev/arch-iphone/lib/Accelerate.framework"; sourceTree = "<absolute>"; };
 		D86E4BE311A328E00055BBC5 /* libPETSc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPETSc.a; path = "/Users/barrysmith/Src/petsc-dev/arch-iphone/lib/libPETSc.a"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -45,7 +45,7 @@
 				D83A8D7E119DD87B009DD17A /* UIKit.framework in Frameworks */,
 				D83A8DD0119DD88A009DD17A /* Foundation.framework in Frameworks */,
 				D83A8DF3119DD897009DD17A /* CoreGraphics.framework in Frameworks */,
-				D86E4BE211A328D50055BBC5 /* libBlasLapack.a in Frameworks */,
+				D86E4BE211A328D50055BBC5 /* Accelerate.framework in Frameworks */,
 				D86E4BE411A328E00055BBC5 /* libPETSc.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -109,7 +109,7 @@
 				D83A8D7D119DD87B009DD17A /* UIKit.framework */,
 				D83A8DCF119DD88A009DD17A /* Foundation.framework */,
 				D83A8DF2119DD897009DD17A /* CoreGraphics.framework */,
-				D86E4BE111A328D50055BBC5 /* libBlasLapack.a */,
+				D86E4BE111A328D50055BBC5 /* Accelerate.framework */,
 				D86E4BE311A328E00055BBC5 /* libPETSc.a */,
 			);
 			name = Frameworks;
@@ -140,9 +140,16 @@
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0440;
+			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "examples" */;
-			compatibilityVersion = "Xcode 3.1";
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -182,6 +189,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -197,7 +205,7 @@
 					"\"$(SRCROOT)/../../arch-iphone/lib\"",
 				);
 				PRODUCT_NAME = examples;
-				SDKROOT = iphonesimulator3.2;
+				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -207,6 +215,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -220,7 +229,7 @@
 					"\"$(SRCROOT)/../../arch-iphone/lib\"",
 				);
 				PRODUCT_NAME = examples;
-				SDKROOT = iphoneos3.2;
+				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -239,7 +248,6 @@
 					"$(SRCROOT)/../../include/mpiuni",
 					"$(SRCROOT)/../../arch-iphone/include",
 				);
-				PREBINDING = NO;
 				"PROVISIONING_PROFILE[sdk=iphoneos3.2]" = "AFDA94A8-BF9D-4B65-999C-118FE0474B66";
 				SDKROOT = iphonesimulator3.2;
 			};
@@ -259,9 +267,8 @@
 					"$(SRCROOT)/../../arch-iphone/include",
 				);
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
-				PREBINDING = NO;
 				"PROVISIONING_PROFILE[sdk=iphoneos3.2]" = "AFDA94A8-BF9D-4B65-999C-118FE0474B66";
-				SDKROOT = iphoneos3.2;
+				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

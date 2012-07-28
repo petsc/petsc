@@ -75,8 +75,8 @@ UITextView *globalTextView;
 */
 PetscErrorCode PetscVFPrintfiPhone(FILE *fd,const char *format,va_list Argp)
 {
-  int len;
-  char str[1024];
+  size_t len;
+  char   str[1024];
   
   PetscVSNPrintf(str,1024,format,&len,Argp);
   globalTextView.text = [NSString stringWithFormat:@"%@%s", globalTextView.text,str];
