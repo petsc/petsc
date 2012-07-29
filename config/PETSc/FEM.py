@@ -242,11 +242,16 @@ class QuadratureGenerator(script.Script):
     ids   = element.entity_dofs()
     if dim == 2:
       perm = []
-      #for e in ids[1]:
-      #  perm.extend(ids[1][e])
-      #for v in ids[0]:
-      #  perm.extend(ids[0][v])
-      perm.extend([0, 2, 3, 1])
+      print ids
+      if len(ids[1]) > 1: raise RuntimeError('More than 1 edge in a 1D discretization')
+      numEdgeDof   = len(ids[1][0])
+      numVertexDof = len(ids[0][0])
+      if numEdgeDof == 1 and numVertexDof == 0:
+        perm.append(0)
+      elif numEdgeDof == 0 and numVertexDof == 1:
+        perm.extend([0, 2, 3, 1])
+      else:
+        raise RuntimeError('I have not figured this out yet')
     else:
       perm = None
     print [f.get_point_dict() for f in element.dual_basis()]
