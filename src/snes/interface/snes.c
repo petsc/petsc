@@ -646,6 +646,11 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsBool("-snes_monitor_range_draw","Plot function range at each iteration","SNESMonitorLG",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorLGRange,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
 
+
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsBool("-snes_monitor_jacupdate_spectrum","Print the change in the spectrum of the Jacobian","SNESMonitorJacUpdateSpectrum",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorJacUpdateSpectrum,0,0);CHKERRQ(ierr);}
+
     flg  = PETSC_FALSE;
     ierr = PetscOptionsBool("-snes_fd","Use finite differences (slow) to compute Jacobian","SNESDefaultComputeJacobian",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
