@@ -40,8 +40,8 @@ M*/
 M*/
 
 #undef __FUNCT__
-#define __FUNCT__ "MatFindNonZeroRows_MPIAIJ"
-PetscErrorCode MatFindNonZeroRows_MPIAIJ(Mat M,IS *keptrows)
+#define __FUNCT__ "MatFindNonzeroRows_MPIAIJ"
+PetscErrorCode MatFindNonzeroRows_MPIAIJ(Mat M,IS *keptrows)
 {
   PetscErrorCode  ierr;
   Mat_MPIAIJ      *mat = (Mat_MPIAIJ*)M->data;
@@ -3129,7 +3129,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
        MatGetMultiProcBlock_MPIAIJ, 
-/*124*/MatFindNonZeroRows_MPIAIJ,
+/*124*/MatFindNonzeroRows_MPIAIJ,
        MatGetColumnNorms_MPIAIJ,
        MatInvertBlockDiagonal_MPIAIJ,
        0,
