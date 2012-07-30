@@ -191,10 +191,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(DEVELOPER_DIR)/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator3.2.sdk/System/Library/Frameworks\"",
-				);
+				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -214,13 +211,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(DEVELOPER_DIR)/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneSimulator3.2.sdk/System/Library/Frameworks\"",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = examples_Prefix.pch;
 				INFOPLIST_FILE = "examples-Info.plist";
@@ -239,7 +233,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos3.2]" = "iPhone Developer: Barry Smith (5HETQ7Q6GP)";
+				"CODE_SIGN_IDENTITY[sdk=iphonesimulator5.1]" = "iPhone Developer: Barry Smith (5HETQ7Q6GP)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
@@ -248,8 +242,10 @@
 					"$(SRCROOT)/../../include/mpiuni",
 					"$(SRCROOT)/../../arch-iphone/include",
 				);
-				"PROVISIONING_PROFILE[sdk=iphoneos3.2]" = "AFDA94A8-BF9D-4B65-999C-118FE0474B66";
-				SDKROOT = iphonesimulator3.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				"PROVISIONING_PROFILE[sdk=iphonesimulator5.1]" = "AFDA94A8-BF9D-4B65-999C-118FE0474B66";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 			};
 			name = Debug;
 		};
@@ -257,7 +253,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos3.2]" = "iPhone Developer: Barry Smith (5HETQ7Q6GP)";
+				"CODE_SIGN_IDENTITY[sdk=iphonesimulator5.1]" = "iPhone Developer: Barry Smith (5HETQ7Q6GP)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
@@ -266,9 +262,11 @@
 					"$(SRCROOT)/../../include/mpiuni",
 					"$(SRCROOT)/../../arch-iphone/include",
 				);
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
-				"PROVISIONING_PROFILE[sdk=iphoneos3.2]" = "AFDA94A8-BF9D-4B65-999C-118FE0474B66";
+				"PROVISIONING_PROFILE[sdk=iphonesimulator5.1]" = "AFDA94A8-BF9D-4B65-999C-118FE0474B66";
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

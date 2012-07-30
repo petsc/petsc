@@ -212,7 +212,7 @@ class PETScMaker(script.Script):
        elif rtype == 'define':
          found = 0
          for i in self.base.defines:
-           pname = 'PETSC_HAVE_'+i.upper()
+           pname = 'PETSC_'+i.upper()
            pname = "'"+pname+"'"
            if pname == rvalue: found = 1
          if not found:
@@ -252,18 +252,23 @@ class PETScMaker(script.Script):
      for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
        dirs.remove(badDir)
 
-   debug = 'Debug'
-   debugdir = 'Debug-iphoneos'
+   sdk         = ' -sdk iphonesimulator5.1 '
+   destination = 'iphonesimulator'
+   debug       = 'Debug'
+   debugdir    = 'Debug-'+destination
    if not self.compilerFlags.debugging:
      debug = 'Release'
-     debugdir = 'Release-iphoneo'
+     debugdir = 'Release-'+destination
    try:
-     output,err,ret  = self.executeShellCommand('cd '+os.path.join(os.environ['PETSC_DIR'],'xcode','PETSc')+';xcodebuild -configuration '+debug, timeout=3000, log = self.log)
+     output,err,ret  = self.executeShellCommand('cd '+os.path.join(os.environ['PETSC_DIR'],'xcode','PETSc')+';xcodebuild -configuration '+debug+sdk, timeout=3000, log = self.log)
    except RuntimeError, e:
      raise RuntimeError('Error making iPhone version of PETSc libraries: '+str(e))
+
+   liblocation = os.path.join(os.environ['PETSC_DIR'],'xcode','PETSc','build',debugdir,'libPETSc.a')
+   if not os.path.exists(liblocation):
+     raise RuntimeError('Error library '+liblocation+' not created')
    try:
-     pass
-#     output,err,ret  = self.executeShellCommand('mv -f '+os.path.join(os.environ['PETSC_DIR'],'xcode','PETSc','build',debugdir,'libPETSc.a')+' '+os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'lib'), timeout=30, log = self.log)
+     output,err,ret  = self.executeShellCommand('mv -f '+liblocation+' '+os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'lib'), timeout=30, log = self.log)
    except RuntimeError, e:
      raise RuntimeError('Error copying iPhone version of PETSc libraries: '+str(e))
 
