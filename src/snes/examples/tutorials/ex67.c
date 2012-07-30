@@ -450,9 +450,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = DMDAGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   numCells = cEnd - cStart;
   for(field = 0; field < numFields; ++field) {
-    PetscInt dof = 1;
-    for(d = 0; d < dim; ++d) {dof *= user->q[field].numBasisFuncs*user->q[field].numComponents;}
-    cellDof += dof;
+    cellDof += user->q[field].numBasisFuncs*user->q[field].numComponents;
     maxQuad  = PetscMax(maxQuad, user->q[field].numQuadPoints);
   }
   for(d = 0; d < dim; ++d) {jacSize *= maxQuad;}
@@ -462,7 +460,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
     const PetscScalar *x;
     PetscInt           i;
 
-    ierr = DMDAComputeCellGeometry(dm, c, &user->q[0], v0, J, &invJ[c*jacSize], &detJ[c*maxQuad]);CHKERRQ(ierr);
+    ierr = DMDAComputeCellGeometry(dm, c, &user->q[0], v0, J, &invJ[c*jacSize], &detJ[c]);CHKERRQ(ierr);
     if (detJ[c] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);
     ierr = DMDAVecGetClosure(dm, PETSC_NULL, X, c, &x);CHKERRQ(ierr);
 

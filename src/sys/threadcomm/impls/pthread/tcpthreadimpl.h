@@ -68,12 +68,8 @@ extern PETSC_PTHREAD_LOCAL PetscInt PetscPThreadRank; /* Rank of the calling thr
 extern pthread_key_t  PetscPThreadRankkey;
 #endif
 
-#if defined(PETSC_CPU_RELAX_X86)
-#define PetscCPURelax() asm volatile("rep; nop" ::: "memory")
-#elif defined(PETSC_CPU_RELAX_PPC64)
-#define PetscCPURelax() do { HMT_low; HMT_medium; __asm__ __volatile__ ("":::"memory"); } while (0)
-#elif defined(PETSC_CPU_RELAX_PPC)
-#define PetscCPURelax() __asm__ __volatile__ ("":::"memory")
+#if defined(PETSC_CPU_RELAX)
+#define PetscCPURelax() do {PETSC_CPU_RELAX;} while(0)
 #else
 #define PetscCPURelax() do { } while(0)
 #endif

@@ -13,7 +13,7 @@ PETSC_STATIC_INLINE PetscErrorCode FillClosureArray_Private(DM dm, PetscSection 
     ierr = PetscSectionGetDof(section, points[i], &dof);CHKERRQ(ierr);
     size += dof;
   }
-  ierr = DMGetWorkArray(dm, 2*size, &a);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, size, &a);CHKERRQ(ierr);
   for(i = 0, k = 0; i < nP; ++i) {
     ierr = PetscSectionGetDof(section, points[i], &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, points[i], &off);CHKERRQ(ierr);
@@ -337,7 +337,7 @@ PetscErrorCode DMDAComputeCellGeometry_2D(DM dm, const PetscScalar vertices[], c
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
   ierr = PetscPrintf(PETSC_COMM_SELF, "Cell (%g,%g)--(%g,%g)--(%g,%g)--(%g,%g)\n",
-                     PetscRealPart(x0),PetscRealPart(y0),PetscRealPart(y1),PetscRealPart(x2),PetscRealPart(y2),PetscRealPart(x3),PetscRealPart(y3));CHKERRQ(ierr);
+                     PetscRealPart(x0),PetscRealPart(y0),PetscRealPart(x1),PetscRealPart(y1),PetscRealPart(x2),PetscRealPart(y2),PetscRealPart(x3),PetscRealPart(y3));CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "Ref Point (%g,%g)\n", PetscRealPart(x), PetscRealPart(y));CHKERRQ(ierr);
 #endif
   J[0] = PetscRealPart(x1 - x0 + f_01*y) * 0.5; J[1] = PetscRealPart(x3 - x0 + f_01*x) * 0.5;

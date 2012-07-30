@@ -50,13 +50,13 @@ PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x)
   Mat_Essl       *essl = (Mat_Essl*)A->spptr;
   PetscScalar    *xx;
   PetscErrorCode ierr;
-  int            m,zero = 0;
+  int            nessl,zero = 0;
 
   PetscFunctionBegin;
-  ierr = VecGetLocalSize(b,&m);CHKERRQ(ierr);
+  nessl = PetscBLASIntCast(A->cmap->n);
   ierr = VecCopy(b,x);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-  dgss(&zero,&A->cmap->n,essl->a,essl->ia,essl->ja,&essl->lna,xx,essl->aux,&essl->naux);
+  dgss(&zero,&nessl,essl->a,essl->ia,essl->ja,&essl->lna,xx,essl->aux,&essl->naux);
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -68,9 +68,10 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
   Mat_SeqAIJ     *aa=(Mat_SeqAIJ*)(A)->data;
   Mat_Essl       *essl=(Mat_Essl*)(F)->spptr;
   PetscErrorCode ierr;
-  int            i,one = 1;
+  int            nessl,i,one = 1;
 
   PetscFunctionBegin;
+  nessl = PetscBLASIntCast(A->rmap->n);
   /* copy matrix data into silly ESSL data structure (1-based Frotran style) */
   for (i=0; i<A->rmap->n+1; i++) essl->ia[i] = aa->i[i] + 1;
   for (i=0; i<aa->nz; i++) essl->ja[i]  = aa->j[i] + 1;
@@ -86,7 +87,7 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
   essl->rparm[1] = 1.0;
   ierr = PetscOptionsGetReal(((PetscObject)A)->prefix,"-matessl_lu_threshold",&essl->rparm[1],PETSC_NULL);CHKERRQ(ierr);
 
-  dgsf(&one,&A->rmap->n,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,essl->rparm,essl->oparm,essl->aux,&essl->naux);
+  dgsf(&one,&nessl,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,essl->rparm,essl->oparm,essl->aux,&essl->naux);
 
   F->ops->solve = MatSolve_Essl;
   (F)->assembled = PETSC_TRUE;
@@ -111,9 +112,9 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInf
 
   /* allocate the work arrays required by ESSL */
   f = info->fill;
-  essl->nz   = a->nz;
-  essl->lna  = (int)a->nz*f;
-  essl->naux = 100 + 10*A->rmap->n;
+  essl->nz   = PetscBLASIntCast(a->nz);
+  essl->lna  = PetscBLASIntCast((PetscInt)(a->nz*f));
+  essl->naux = PetscBLASIntCast(100 + 10*A->rmap->n);
 
   /* since malloc is slow on IBM we try a single malloc */
   ierr = PetscMalloc4(essl->lna,PetscScalar,&essl->a,essl->naux,PetscScalar,&essl->aux,essl->lna,int,&essl->ia,essl->lna,int,&essl->ja);CHKERRQ(ierr);

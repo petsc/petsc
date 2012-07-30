@@ -227,7 +227,7 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PetscDataType dt
   return PETSC_TRUE;
 }
 #else
-PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
+PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PETSC_UNUSED PetscDataType dtype)
 {
   if (!ptr) return PETSC_FALSE;
   return PETSC_TRUE;

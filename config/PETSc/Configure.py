@@ -53,6 +53,7 @@ class Configure(config.base.Configure):
     self.headers       = framework.require('config.headers',           self)
     self.functions     = framework.require('config.functions',         self)
     self.libraries     = framework.require('config.libraries',         self)
+    self.atomics       = framework.require('config.atomics',           self)
     if os.path.isdir(os.path.join('config', 'PETSc')):
       for d in ['utilities', 'packages']:
         for utility in os.listdir(os.path.join('config', 'PETSc', d)):
