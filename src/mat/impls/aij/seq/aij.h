@@ -181,6 +181,7 @@ extern PetscErrorCode MatDuplicate_SeqAIJ(Mat,MatDuplicateOption,Mat*);
 extern PetscErrorCode MatCopy_SeqAIJ(Mat,Mat,MatStructure);
 extern PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat,PetscBool *,PetscInt*);
 extern PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat);
+extern PetscErrorCode MatFindZeroDiagonals_SeqAIJ_Private(Mat,PetscInt*,PetscInt**);
 
 extern PetscErrorCode MatMult_SeqAIJ(Mat A,Vec,Vec);
 extern PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
