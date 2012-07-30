@@ -1269,7 +1269,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   PetscStageInfo     *stageInfo = PETSC_NULL;
   PetscEventPerfInfo *eventInfo = PETSC_NULL;
   PetscClassPerfInfo *classInfo;
-  char               arch[10], hostname[64], username[16], pname[PETSC_MAX_PATH_LEN], date[64];
+  char               arch[128],hostname[128],username[128],pname[PETSC_MAX_PATH_LEN],date[128];
   const char         *name;
   PetscLogDouble     locTotalTime, TotalTime, TotalFlops;
   PetscLogDouble     numMessages, messageLength, avgMessLen, numReductions;
@@ -1311,12 +1311,12 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   ierr = PetscFPrintf(comm, fd, "***             WIDEN YOUR WINDOW TO 120 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document            ***\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "************************************************************************************************************************\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "\n---------------------------------------------- PETSc Performance Summary: ----------------------------------------------\n\n");CHKERRQ(ierr);
-  ierr = PetscGetArchType(arch, 10);CHKERRQ(ierr);
-  ierr = PetscGetHostName(hostname, 64);CHKERRQ(ierr);
-  ierr = PetscGetUserName(username, 16);CHKERRQ(ierr);
-  ierr = PetscGetProgramName(pname, PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscGetDate(date, 64);CHKERRQ(ierr);
-  ierr = PetscGetVersion(version,256);CHKERRQ(ierr);
+  ierr = PetscGetArchType(arch,sizeof(arch));CHKERRQ(ierr);
+  ierr = PetscGetHostName(hostname,sizeof(hostname));CHKERRQ(ierr);
+  ierr = PetscGetUserName(username,sizeof(username));CHKERRQ(ierr);
+  ierr = PetscGetProgramName(pname,sizeof(pname));CHKERRQ(ierr);
+  ierr = PetscGetDate(date,sizeof(date));CHKERRQ(ierr);
+  ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s\n", pname, arch, hostname, size, username, date);CHKERRQ(ierr);
   } else {
@@ -1623,7 +1623,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
                             name, maxCt, ratCt, maxt, ratt, maxf, ratf, totm, totml, totr,
                             100.0*fracTime, 100.0*fracFlops, 100.0*fracMess, 100.0*fracMessLen, 100.0*fracRed,
                             100.0*fracStageTime, 100.0*fracStageFlops, 100.0*fracStageMess, 100.0*fracStageMessLen, 100.0*fracStageRed,
-                            flopr/1.0e6);CHKERRQ(ierr);
+                            PetscAbsReal(flopr/1.0e6));CHKERRQ(ierr);
       }
     }
   }
