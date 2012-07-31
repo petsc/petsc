@@ -15,8 +15,8 @@
 		D83A8D7E119DD87B009DD17A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D83A8D7D119DD87B009DD17A /* UIKit.framework */; };
 		D83A8DD0119DD88A009DD17A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D83A8DCF119DD88A009DD17A /* Foundation.framework */; };
 		D83A8DF3119DD897009DD17A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D83A8DF2119DD897009DD17A /* CoreGraphics.framework */; };
-		D86E4BE211A328D50055BBC5 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D86E4BE111A328D50055BBC5 /* Accelerate.framework */; };
 		D86E4BE411A328E00055BBC5 /* libPETSc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D86E4BE311A328E00055BBC5 /* libPETSc.a */; };
+		D89698F415C85DE600C720F1 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D89698F315C85DE600C720F1 /* Accelerate.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,8 +33,9 @@
 		D83A8D7D119DD87B009DD17A /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		D83A8DCF119DD88A009DD17A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D83A8DF2119DD897009DD17A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		D86E4BE111A328D50055BBC5 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = "/Users/barrysmith/Src/petsc-dev/arch-iphone/lib/Accelerate.framework"; sourceTree = "<absolute>"; };
 		D86E4BE311A328E00055BBC5 /* libPETSc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPETSc.a; path = "/Users/barrysmith/Src/petsc-dev/arch-iphone/lib/libPETSc.a"; sourceTree = "<absolute>"; };
+		D89698F115C85D3100C720F1 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		D89698F315C85DE600C720F1 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -45,8 +46,9 @@
 				D83A8D7E119DD87B009DD17A /* UIKit.framework in Frameworks */,
 				D83A8DD0119DD88A009DD17A /* Foundation.framework in Frameworks */,
 				D83A8DF3119DD897009DD17A /* CoreGraphics.framework in Frameworks */,
-				D86E4BE211A328D50055BBC5 /* Accelerate.framework in Frameworks */,
 				D86E4BE411A328E00055BBC5 /* libPETSc.a in Frameworks */,
+				D89698F415C85DE600C720F1 /* Accelerate.framework in Frameworks */,
+				D89698F415C85DE600C720F1 /* Accelerate.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,6 +77,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				D89698F115C85D3100C720F1 /* Accelerate.framework */,
 				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
@@ -109,8 +112,8 @@
 				D83A8D7D119DD87B009DD17A /* UIKit.framework */,
 				D83A8DCF119DD88A009DD17A /* Foundation.framework */,
 				D83A8DF2119DD897009DD17A /* CoreGraphics.framework */,
-				D86E4BE111A328D50055BBC5 /* Accelerate.framework */,
 				D86E4BE311A328E00055BBC5 /* libPETSc.a */,
+				D89698F315C85DE600C720F1 /* Accelerate.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

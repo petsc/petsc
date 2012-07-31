@@ -8,10 +8,11 @@
 #   export PETSC_ARCH=arch-iphone
 
 #   ./config/examples/arch-iphone.py [use --with-debugging=0 to get iPhone/iPad version, otherwise creates simulator version]
-#      this sets up the appropriate configuration file and builds C BLAS/LAPACK for the iPhone/iPad
+#      this sets up the appropriate configuration file
 #
 #   ./bin/maint/iphonebuilder.py
 #      this creates the PETSc iPhone library
+#      this will open Xcode and give you directions to follow
 #
 #   open xcode/examples/examples.xcodeproj
 #       Project -> Edit Project Setting  -> Configuration (make sure it is Release or Debug depending on if you used --with-debugging=0)
@@ -251,6 +252,18 @@ class PETScMaker(script.Script):
      self.buildDir(root)
      for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
        dirs.remove(badDir)
+
+   print 'In Xcode mouse click on xcode-links and the delete key, then'
+   print 'control mouse click on "Other Sources" and select "Add files to PETSc ...", then'
+   print 'in the finder window locate ${PETSC_DIR}/arch-iphone/xcode-links and select it. Now'
+   print 'exit Xcode'
+
+   try:
+     import subprocess
+     subprocess.call('cd '+os.path.join(os.environ['PETSC_DIR'],'xcode','PETSc')+';open -W PETSc.xcodeproj', shell=True)
+   except RuntimeError, e:
+     raise RuntimeError('Error opening xcode project '+str(e))
+
 
    sdk         = ' -sdk iphonesimulator5.1 '
    destination = 'iphonesimulator'
