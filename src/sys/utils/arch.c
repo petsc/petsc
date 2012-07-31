@@ -21,6 +21,13 @@
      Concepts: machine type
      Concepts: architecture
 
+   Fortran Version:
+   In Fortran this routine has the format
+
+$       character*(64) name
+$       call PetscGetHostName(name,ierr)
+
+.seealso: PetscGetUserName(),PetscGetHostName()
 @*/
 PetscErrorCode  PetscGetArchType(char str[],size_t slen)
 {

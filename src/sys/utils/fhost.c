@@ -43,7 +43,13 @@
     Concepts: machine name
     Concepts: host name
 
-.seealso: PetscGetUserName()
+   Fortran Version:
+   In Fortran this routine has the format
+
+$       character*(64) name
+$       call PetscGetHostName(name,ierr)
+
+.seealso: PetscGetUserName(),PetscGetArchType()
 @*/
 PetscErrorCode  PetscGetHostName(char name[],size_t nlen)
 {
