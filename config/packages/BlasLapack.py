@@ -494,6 +494,11 @@ class Configure(config.package.Package):
         if hasattr(self.compilers, 'FC'): C = 'f'
         else: C = 'c'
         raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate the library containing LAPACK.\n Or --download-'+C+'-blas-lapack=1 to have one automatically downloaded and installed\n')
+
+    #  allow user to dictate which blas/lapack mangling to use (some blas/lapack libraries, like on Apple, provide several)
+    if 'known-blaslapack-mangling' in self.argDB:
+      self.mangling = self.argDB['known-blaslapack-mangling']
+
     if self.mangling == 'underscore':
         self.addDefine('BLASLAPACK_UNDERSCORE', 1)
     elif self.mangling == 'caps':
