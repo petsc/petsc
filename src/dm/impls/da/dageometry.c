@@ -303,7 +303,7 @@ PetscErrorCode DMDAVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
 #undef __FUNCT__
 #define __FUNCT__ "DMDACnvertToCell"
 /*@
-  DMDACnvertToCell - Convert (i,j,k) to local cell number
+  DMDAConvertToCell - Convert (i,j,k) to local cell number
 
   Not Collective
 
