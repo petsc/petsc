@@ -95,8 +95,6 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
 
    Concepts: drawing^X windows
    Concepts: X windows^graphics
-   Concepts: drawing^postscript
-   Concepts: postscript^graphics
    Concepts: drawing^Microsoft Windows
 
 .seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy()
@@ -315,11 +313,8 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
    Level: intermediate
 
    Concepts: X windows^graphics
-   Concepts: drawing^postscript
-   Concepts: postscript^graphics
-   Concepts: drawing^Microsoft Windows
 
-   Notes: Requires that PETSc be configured with the option --with-afterimage
+   Notes: Requires that PETSc be configured with the option --with-afterimage to save the images and ffmpeg must be in your path to make the movie
 
 
 .seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy(), PetscDrawSave()
