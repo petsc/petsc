@@ -5630,7 +5630,6 @@ PetscErrorCode DMComplexComputeRectangleGeometry_private(DM dm, PetscInt e, Pets
     invJ[3] =  invDet*J[0];
     PetscLogFlopsNoError(5.0);
   }
-  *detJ *= 2.0;
   PetscFunctionReturn(0);
 }
 
