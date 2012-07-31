@@ -164,8 +164,7 @@ int main(int argc,char **argv)
   ierr = MatCopy(Aher,G,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* Only G = U^T * U is implemented for now */ 
-  finfo.dtcol = 0.1;
-  ierr = MatCholeskyFactor(G,0,&finfo);CHKERRQ(ierr);
+  ierr = MatCholeskyFactor(G,0,0);CHKERRQ(ierr);
   if (mats_view){
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Cholesky Factor G:\n");CHKERRQ(ierr);
     ierr = MatView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

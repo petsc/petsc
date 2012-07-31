@@ -300,20 +300,40 @@ PetscErrorCode DMDAVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
   PetscFunctionReturn(0);
 }
 
-/*
-  Convert (i,j,k) --> local cell number
+#undef __FUNCT__
+#define __FUNCT__ "DMDACnvertToCell"
+/*@
+  DMDACnvertToCell - Convert (i,j,k) to local cell number
 
-PetscErrorCode DMDAConvertToCell(DM dm, MatStencil s)
+  Not Collective
+
+  Input Parameter:
++ da - the distributed array
+= s - A MatStencil giving (i,j,k)
+
+  Output Parameter:
+. cell - the local cell number
+
+  Level: developer
+
+.seealso: DMDAVecGetClosure()
+@*/
+PetscErrorCode DMDAConvertToCell(DM dm, MatStencil s, PetscInt *cell)
 {
   DM_DA         *da  = (DM_DA *) dm->data;
   const PetscInt dim = da->dim;
   const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
   const PetscInt nC  = (mx  )*(dim > 1 ? (my  )*(dim > 2 ? (mz  ) : 1) : 1);
+  const PetscInt il  = s.i - da->Xs/da->w, jl = dim > 1 ? s.j - da->Ys : 0, kl = dim > 2 ? s.k - da->Zs : 0;
 
   PetscFunctionBegin;
-  PetscFUnctionReturn(0);
+  *cell = -1;
+  if ((s.i < da->Xs/da->w) || (s.i >= da->Xe/da->w))    SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Stencil i %d should be in [%d, %d)", s.i, da->Xs/da->w, da->Xe/da->w);
+  if ((dim > 1) && ((s.j < da->Ys) || (s.j >= da->Ye))) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Stencil j %d should be in [%d, %d)", s.j, da->Ys, da->Ye);
+  if ((dim > 2) && ((s.k < da->Zs) || (s.k >= da->Ze))) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Stencil k %d should be in [%d, %d)", s.k, da->Zs, da->Ze);
+  *cell = (kl*my + jl)*mx + il;
+  PetscFunctionReturn(0);
 }
-*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAComputeCellGeometry_2D"

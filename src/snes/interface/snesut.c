@@ -1,5 +1,6 @@
 
 #include <petsc-private/snesimpl.h>       /*I   "petscsnes.h"   I*/
+#include <petscblaslapack.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESMonitorSolution"
@@ -147,6 +148,68 @@ PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,void 
   ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,(double)fgnorm);CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESMonitorJacUpdateSpectrum"
+PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnorm,void *ctx) {
+
+#if defined(PETSC_MISSING_LAPACK_GEEV)
+  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
+#elif defined(PETSC_HAVE_ESSL)
+  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GEEV - No support for ESSL Lapack Routines");
+#else
+  Vec            X;
+  Mat            J,dJ,dJdense;
+  PetscErrorCode ierr;
+  PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscInt       n,i;
+  PetscBLASInt   nb,lwork;
+  PetscReal      *eigr,*eigi;
+  MatStructure   flg = DIFFERENT_NONZERO_PATTERN;
+  PetscScalar    *work;
+  PetscScalar    *a;
+
+  PetscFunctionBegin;
+  if (it == 0) PetscFunctionReturn(0);
+  /* create the difference between the current update and the current jacobian */
+  ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes,&J,PETSC_NULL,&func,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatDuplicate(J,MAT_COPY_VALUES,&dJ);CHKERRQ(ierr);
+  ierr = SNESComputeJacobian(snes,X,&dJ,&dJ,&flg);CHKERRQ(ierr);
+  ierr = MatAXPY(dJ,-1.0,J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  /* compute the spectrum directly */
+  ierr = MatConvert(dJ,MATSEQDENSE,MAT_INITIAL_MATRIX,&dJdense);CHKERRQ(ierr);
+  ierr = MatGetSize(dJ,&n,PETSC_NULL);CHKERRQ(ierr);
+  nb    = PetscBLASIntCast(n);
+  lwork = 3*nb;
+  ierr = PetscMalloc(n*sizeof(PetscReal),&eigr);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscReal),&eigi);CHKERRQ(ierr);
+  ierr = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+  ierr = MatGetArray(dJdense,&a);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
+  {
+    PetscBLASInt lierr;
+    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+    LAPACKgeev_("N","N",&nb,a,&nb,eigr,eigi,PETSC_NULL,&nb,PETSC_NULL,&nb,work,&lwork,&lierr);
+    if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"geev() error %d",lierr);
+    ierr = PetscFPTrapPop();CHKERRQ(ierr);
+  }
+#else
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for complex");
+#endif
+  PetscPrintf(((PetscObject)snes)->comm,"Eigenvalues of J_%d - J_%d:\n",it,it-1);CHKERRQ(ierr);
+  for (i=0;i<n;i++) {
+    PetscPrintf(((PetscObject)snes)->comm,"%5d: %20.5g + %20.5gi\n",i,eigr[i],eigi[i]);CHKERRQ(ierr);
+  }
+  ierr = MatRestoreArray(dJdense,&a);CHKERRQ(ierr); 
+  ierr = MatDestroy(&dJ);CHKERRQ(ierr);
+  ierr = MatDestroy(&dJdense);CHKERRQ(ierr);
+  ierr = PetscFree(eigr);CHKERRQ(ierr);
+  ierr = PetscFree(eigi);CHKERRQ(ierr);
+  ierr = PetscFree(work);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+#endif
 }
 
 #undef __FUNCT__  
