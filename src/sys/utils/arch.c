@@ -24,8 +24,8 @@
    Fortran Version:
    In Fortran this routine has the format
 
-$       character*(64) name
-$       call PetscGetHostName(name,ierr)
+$       character*(10) name
+$       call PetscGetArchType(str,ierr)
 
 .seealso: PetscGetUserName(),PetscGetHostName()
 @*/
