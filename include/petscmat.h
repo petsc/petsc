@@ -115,6 +115,7 @@ J*/
 #define MATSOLVERBSTRM        "bstrm"
 #define MATSOLVERSBSTRM       "sbstrm"
 #define MATSOLVERELEMENTAL    "elemental"
+#define MATSOLVERCLIQUE       "clique"
 
 /*E
     MatFactorType - indicates what type of factorization is requested

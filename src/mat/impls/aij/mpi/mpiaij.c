@@ -5510,6 +5510,9 @@ extern PetscErrorCode MatGetFactor_mpiaij_superlu_dist(Mat,MatFactorType,Mat*);
 #if defined(PETSC_HAVE_SPOOLES)
 extern PetscErrorCode MatGetFactor_mpiaij_spooles(Mat,MatFactorType,Mat*);
 #endif
+#if defined(PETSC_HAVE_CLIQUE)
+extern PetscErrorCode MatGetFactor_aij_clique(Mat,MatFactorType,Mat*);
+#endif
 EXTERN_C_END
 
 /*MC
@@ -5579,6 +5582,11 @@ PetscErrorCode  MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_superlu_dist_C",
                                      "MatGetFactor_mpiaij_superlu_dist",
                                      MatGetFactor_mpiaij_superlu_dist);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_CLIQUE)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_clique_C",
+                                     "MatGetFactor_aij_clique",
+                                     MatGetFactor_aij_clique);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIAIJ",

@@ -3824,6 +3824,9 @@ extern PetscErrorCode  MatGetFactor_seqaij_matlab(Mat,MatFactorType,Mat*);
 extern PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject,void*);
 extern PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject,void*);
 #endif
+#if defined(PETSC_HAVE_CLIQUE)
+extern PetscErrorCode MatGetFactor_aij_clique(Mat,MatFactorType,Mat*);
+#endif
 EXTERN_C_END
 
 
@@ -3897,8 +3900,12 @@ PetscErrorCode  MatCreate_SeqAIJ(Mat B)
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_cholmod_C","MatGetFactor_seqaij_cholmod",MatGetFactor_seqaij_cholmod);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_LUSOL)
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_lusol_C","MatGetFactor_seqaij_lusol",MatGetFactor_seqaij_lusol);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_lusol_C","MatGetFactor_aij_lusol",MatGetFactor_seqaij_lusol);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_CLIQUE)
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_clique_C","MatGetFactor_aij_clique",MatGetFactor_aij_clique);CHKERRQ(ierr);
+#endif
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_petsc_C","MatGetFactor_seqaij_petsc",MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactorAvailable_petsc_C","MatGetFactorAvailable_seqaij_petsc",MatGetFactorAvailable_seqaij_petsc);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_bas_C","MatGetFactor_seqaij_bas",MatGetFactor_seqaij_bas);CHKERRQ(ierr);
