@@ -25,7 +25,7 @@ typedef struct _p_PetscViewer* PetscViewer;
 }
 #endif
 
-#include "petscsys.h"
+#include <petscsys.h>
 
 PETSC_EXTERN PetscClassId PETSC_VIEWER_CLASSID;
 

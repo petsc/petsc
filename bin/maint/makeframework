@@ -4,6 +4,13 @@
 #
 #  ./configure --download-mpich --with-fc=0 -download-mpich-shared=0 --with-shared-libraries
 #
+# To use the framework:
+#
+#    1) replace all #include <petscXXX.h> in application with #import <PETSc/petscXXX.h>
+#    2a) compile with, for example, cc -v ex1.c -o ex1 -I/opt/local/include -F ${PETSC_DIR}/${PETSC_ARCH} -framework PETSc  or 
+#    2b) copy ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework to /System/Library/Frameworks/ then you do not need the -F option
+#    3) you can also use the framework inside Xcode by simply indicating the targets dependence on the PETSc framework
+#
 #
 rm -rf ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework
 
@@ -16,7 +23,14 @@ ln -s A Current
 cd A 
 mkdir Headers
 cp  ${PETSC_DIR}/include/*.h Headers
+cp  ${PETSC_DIR}/${PETSC_ARCH}/include/*.h Headers
 cp -r  ${PETSC_DIR}/include/petsc-private Headers
+cd Headers
+sed -i "" "s?#include [ ]*<petsc-private?#import <PETSc/petsc-private?g" *.h petsc-private/*.h
+sed -i "" "s?#include [ ]*<petsc?#import <PETSc/petsc?g" *.h petsc-private/*.h
+sed -i "" "s?#include [ ]*<mpi?#import <PETSc/mpi?g" *.h petsc-private/*.h
+cd ..
+
 cp  ${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc.dylib PETSc
 mkdir Resources
 cd Resources

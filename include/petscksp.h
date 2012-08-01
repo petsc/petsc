@@ -3,7 +3,7 @@
 */
 #ifndef __PETSCKSP_H
 #define __PETSCKSP_H
-#include "petscpc.h"
+#include <petscpc.h>
 
 PETSC_EXTERN PetscErrorCode KSPInitializePackage(const char[]);
 

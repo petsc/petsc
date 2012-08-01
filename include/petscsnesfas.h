@@ -1,6 +1,6 @@
 #if !(defined __PETSCSNESFAS_H)
 #define __PETSCSNESFAS_H
-#include "petscsnes.h"
+#include <petscsnes.h>
 
 
 /*E

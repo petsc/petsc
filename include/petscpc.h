@@ -3,7 +3,7 @@
 */
 #if !defined(__PETSCPC_H)
 #define __PETSCPC_H
-#include "petscdm.h"
+#include <petscdm.h>
 
 PETSC_EXTERN PetscErrorCode PCInitializePackage(const char[]);
 

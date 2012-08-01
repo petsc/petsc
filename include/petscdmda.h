@@ -1,9 +1,9 @@
 #if !defined(__PETSCDMDA_H)
 #define __PETSCDMDA_H
 
-#include "petscdm.h"
-#include "petscpf.h"
-#include "petscao.h"
+#include <petscdm.h>
+#include <petscpf.h>
+#include <petscao.h>
 
 /*E
     DMDAStencilType - Determines if the stencil extends only along the coordinate directions, or also

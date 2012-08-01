@@ -1,7 +1,7 @@
 #ifndef __PETSCSHELL_H
 #define __PETSCSHELL_H
 
-#include "petscsys.h"
+#include <petscsys.h>
 
 PETSC_EXTERN PetscClassId PETSC_SHELL_CLASSID;
 

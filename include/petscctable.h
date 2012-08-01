@@ -1,6 +1,6 @@
 #ifndef __PETSCCTABLE_H
 #define __PETSCCTABLE_H
-#include "petscsys.h"
+#include <petscsys.h>
 
 struct _n_PetscTable {
   PetscInt *keytable;

@@ -3,8 +3,8 @@
 */
 #if !defined(__PETSCSNES_H)
 #define __PETSCSNES_H
-#include "petscksp.h"
-#include "petscdmda.h"
+#include <petscksp.h>
+#include <petscdmda.h>
 
 /*S
      SNES - Abstract PETSc object that manages all nonlinear solves

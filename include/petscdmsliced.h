@@ -2,7 +2,7 @@
 #if !defined(__PETSCDMSLICED_H)
 #define __PETSCDMSLICED_H
 
-#include "petscdm.h"
+#include <petscdm.h>
 
 PETSC_EXTERN PetscErrorCode DMSlicedCreate(MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMSlicedSetPreallocation(DM,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);

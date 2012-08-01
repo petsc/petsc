@@ -5,8 +5,8 @@
 */
 #if !defined(__PETSCAO_H)
 #define __PETSCAO_H
-#include "petscis.h"
-#include "petscmat.h"
+#include <petscis.h>
+#include <petscmat.h>
 
 /*S
      AO - Abstract PETSc object that manages mapping between different global numbering

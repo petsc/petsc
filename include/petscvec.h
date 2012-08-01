@@ -6,7 +6,7 @@
 
 #ifndef __PETSCVEC_H 
 #define __PETSCVEC_H
-#include "petscis.h"
+#include <petscis.h>
 
 
 /*S
@@ -479,7 +479,7 @@ PETSC_EXTERN PetscErrorCode VecSetOption(Vec,VecOption,PetscBool );
    call overhead on any 'native' Vecs.
 */
 
-#include "petsc-private/vecimpl.h"
+#include <petsc-private/vecimpl.h>
 
 PETSC_EXTERN PetscErrorCode VecContourScale(Vec,PetscReal,PetscReal);
 

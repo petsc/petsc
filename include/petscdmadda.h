@@ -1,7 +1,7 @@
 #if !defined(__PETSCDMDA_H)
 #define __PETSCDMDA_H
 
-#include "petscdm.h"
+#include <petscdm.h>
 
 PetscErrorCode  DMADDACreate(MPI_Comm,PetscInt,PetscInt*,PetscInt*,PetscInt,PetscBool *,DM*);
 PetscErrorCode  DMADDASetParameters(DM,PetscInt,PetscInt*,PetscInt*,PetscInt,PetscBool*);

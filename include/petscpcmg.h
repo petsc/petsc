@@ -3,7 +3,7 @@
 */
 #if !defined(__PETSCPCMG_H)
 #define __PETSCPCMG_H
-#include "petscksp.h"
+#include <petscksp.h>
 
 /*E
     PCMGType - Determines the type of multigrid method that is run.

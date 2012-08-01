@@ -2,7 +2,7 @@
 #if !defined(__PETSCDMAKKT_H)
 #define __PETSCDMAKKT_H
 
-#include "petscdm.h"
+#include <petscdm.h>
 
 PETSC_EXTERN PetscErrorCode DMAKKTSetDM(DM,DM);
 PETSC_EXTERN PetscErrorCode DMAKKTGetDM(DM,DM*);

@@ -2,7 +2,7 @@
 #if !defined(__PETSCDMCOMPOSITE_H)
 #define __PETSCDMCOMPOSITE_H
 
-#include "petscdm.h"
+#include <petscdm.h>
 
 PETSC_EXTERN PetscErrorCode DMCompositeCreate(MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMCompositeAddDM(DM,DM);

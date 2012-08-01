@@ -3,7 +3,7 @@
 */
 #if !defined(__PETSCOPTIONS_H)
 #define __PETSCOPTIONS_H
-#include "petscsys.h"
+#include <petscsys.h>
 
 PETSC_EXTERN PetscErrorCode PetscOptionsHasName(const char[],const char[],PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetInt(const char[],const char [],PetscInt *,PetscBool *);

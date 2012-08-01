@@ -3,7 +3,7 @@
 */
 #if !defined(__PETSCDRAW_H)
 #define __PETSCDRAW_H
-#include "petscsys.h"
+#include <petscsys.h>
 
 PETSC_EXTERN PetscClassId PETSC_DRAW_CLASSID;
 

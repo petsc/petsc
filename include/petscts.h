@@ -4,7 +4,7 @@
 */
 #if !defined(__PETSCTS_H)
 #define __PETSCTS_H
-#include "petscsnes.h"
+#include <petscsnes.h>
 
 /*S
      TS - Abstract PETSc object that manages all time-steppers (ODE integrators)

@@ -8,7 +8,7 @@
 
 #if !defined(__PETSCADIC_H)
 #define __PETSCADIC_H
-#include "mat.h"  
+#include <petscmat.h>  
 
 PETSC_EXTERN PetscErrorCode ad_PetscInitialize(int *,char ***,char *,char*);
 PETSC_EXTERN PetscErrorCode ad_PetscFinalize(void);

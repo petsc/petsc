@@ -1,7 +1,7 @@
 
 #if !defined(__PETSCTHREADCOMM_H)
 #define __PETSCTHREADCOMM_H
-#include "petscsys.h"
+#include <petscsys.h>
 
 /* Function pointer cast for the kernel function */
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscThreadKernel)(PetscInt,...);

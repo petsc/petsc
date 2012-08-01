@@ -2,7 +2,7 @@
 #if !defined(__PETSCDMREDUNDANT_H)
 #define __PETSCDMREDUNDANT_H
 
-#include "petscdm.h"
+#include <petscdm.h>
 
 PETSC_EXTERN PetscErrorCode DMRedundantCreate(MPI_Comm,PetscInt,PetscInt,DM*);
 PETSC_EXTERN PetscErrorCode DMRedundantSetSize(DM,PetscInt,PetscInt);

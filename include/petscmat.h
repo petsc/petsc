@@ -3,7 +3,7 @@
 */
 #ifndef __PETSCMAT_H
 #define __PETSCMAT_H
-#include "petscvec.h"
+#include <petscvec.h>
 
 /*S
      Mat - Abstract PETSc matrix object

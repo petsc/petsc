@@ -577,7 +577,9 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscStageLogGetEventPerfLog(PetscStageLog s
 }
 
 /* Special support for C++ */
-#include "petsclog.hh"
+#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
+#include <petsclog.hh>
+#endif
 
 #define PetscPreLoadBegin(flag,name) \
 do {\

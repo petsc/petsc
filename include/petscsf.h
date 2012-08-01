@@ -3,7 +3,7 @@
 */
 #if !defined(__PETSCSF_H)
 #define __PETSCSF_H
-#include "petscsys.h"
+#include <petscsys.h>
 
 PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 

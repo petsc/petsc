@@ -1,7 +1,7 @@
 
 #if !defined(__PETSCBAG_H)
 #define __PETSCBAG_H
-#include "petscsys.h"
+#include <petscsys.h>
 
 /*S
      PetscBag - PETSc object that manages a collection of user data including parameters.

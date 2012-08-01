@@ -3,7 +3,7 @@
 */
 #if !defined(__PETSCDM_H)
 #define __PETSCDM_H
-#include "petscmat.h"
+#include <petscmat.h>
 
 PETSC_EXTERN PetscErrorCode DMInitializePackage(const char[]);
 /*S
@@ -178,7 +178,7 @@ PETSC_EXTERN PetscErrorCode DMFinalizePackage(void);
 
 typedef struct NLF_DAAD* NLF;
 
-#include "petscbag.h"
+#include <petscbag.h>
 
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryMatlabOpen(MPI_Comm, const char [], PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryMatlabDestroy(PetscViewer*);

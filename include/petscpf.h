@@ -3,7 +3,7 @@
 */
 #if !defined(__PETSCPF_H)
 #define __PETSCPF_H
-#include "petscvec.h"
+#include <petscvec.h>
 
 /*
     PFList contains the list of preconditioners currently registered

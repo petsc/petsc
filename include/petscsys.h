@@ -11,8 +11,8 @@
    in the conf/variables definition of PETSC_INCLUDE. For --prefix installs the ${PETSC_ARCH}/
    does not exist and petscconf.h is in the same directory as the other PETSc include files.
 */
-#include "petscconf.h"
-#include "petscfix.h"
+#include <petscconf.h>
+#include <petscfix.h>
 
 #if defined(PETSC_DESIRE_FEATURE_TEST_MACROS)
 /*
@@ -77,7 +77,7 @@
     src/docs/tex/manual/manual.tex.
     src/docs/website/index.html.
 */
-#include "petscversion.h"
+#include <petscversion.h>
 #define PETSC_AUTHOR_INFO        "       The PETSc Team\n    petsc-maint@mcs.anl.gov\n http://www.mcs.anl.gov/petsc/\n"
 #if (PETSC_VERSION_RELEASE == 1)
 #define PetscGetVersion(version,len) PetscSNPrintf(version,len,"Petsc Release Version %d.%d.%d, Patch %d, %s ", \
@@ -123,7 +123,7 @@ M*/
 */
 #define MPICH_SKIP_MPICXX 1
 #define OMPI_SKIP_MPICXX 1
-#include "mpi.h"
+#include <mpi.h>
 
 /*
     Need to put stdio.h AFTER mpi.h for MPICH2 with C++ compiler 
@@ -334,7 +334,7 @@ M*/
 /*
     Defines some elementary mathematics functions and constants.
 */
-#include "petscmath.h"
+#include <petscmath.h>
 
 /*
     Declare extern C stuff after including external header files
@@ -1242,8 +1242,8 @@ typedef struct _n_PetscOpFList *PetscOpFList;
 E*/
 typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE} PetscFileMode;
 
-#include "petscviewer.h"
-#include "petscoptions.h"
+#include <petscviewer.h>
+#include <petscoptions.h>
 
 #define PETSC_SMALLEST_CLASSID  1211211
 PETSC_EXTERN PetscClassId PETSC_LARGEST_CLASSID;
@@ -1425,7 +1425,7 @@ PETSC_EXTERN PetscErrorCode PetscRegisterFinalizeAll(void);
 /*
     Defines PETSc error handling.
 */
-#include "petscerror.h"
+#include <petscerror.h>
 
 /*S
      PetscOList - Linked list of PETSc objects, each accessable by string name
@@ -1496,7 +1496,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryClose(PetscDLLibrary);
   PetscShell support.  Needs to be better documented.  
   Logically it is an extension of PetscDLLXXX, PetscObjectCompose, etc.
 */
-#include "petscshell.h"
+#include <petscshell.h>
 
 /*
      Useful utility routines
@@ -1521,7 +1521,7 @@ $     PetscBool  flag = PetscNot(a)
 /*
     Defines basic graphics available from PETSc. 
 */
-#include "petscdraw.h"
+#include <petscdraw.h>
 
 #if defined(PETSC_HAVE_VALGRIND)
 #  include <valgrind/valgrind.h>
@@ -1533,7 +1533,7 @@ $     PetscBool  flag = PetscNot(a)
 /*
     Defines the base data structures for all PETSc objects
 */
-#include "petsc-private/petscimpl.h"
+#include <petsc-private/petscimpl.h>
 
 
 /*MC
@@ -1604,7 +1604,7 @@ PETSC_EXTERN PetscErrorCode (*PetscHelpPrintf)(MPI_Comm,const char[],...);
 /*
      Defines PETSc profiling.
 */
-#include "petsclog.h"
+#include <petsclog.h>
 
 /*
           For locking, unlocking and destroying AMS memories associated with  PETSc objects. ams.h is included in petscviewer.h
@@ -1872,7 +1872,7 @@ M*/
 /*
     Allows accessing MATLAB Engine
 */
-#include "petscmatlab.h"
+#include <petscmatlab.h>
 
 /*
       Determine if some of the kernel computation routines use
@@ -2097,7 +2097,9 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Da
 #endif
 
 /* Special support for C++ */
-#include "petscsys.hh"
+#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
+#include <petscsys.hh>
+#endif
 
 /*MC
 

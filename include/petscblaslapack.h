@@ -10,15 +10,15 @@
 #define _BLASLAPACK_H
 
 #if defined(PETSC_BLASLAPACK_STDCALL)
-#include "petscblaslapack_stdcall.h"
+#include <petscblaslapack_stdcall.h>
 #else
 
 #if defined(PETSC_BLASLAPACK_UNDERSCORE)
-#include "petscblaslapack_uscore.h"
+#include <petscblaslapack_uscore.h>
 #elif defined(PETSC_BLASLAPACK_CAPS)
-#include "petscblaslapack_caps.h"
+#include <petscblaslapack_caps.h>
 #else
-#include "petscblaslapack_c.h"
+#include <petscblaslapack_c.h>
 #endif
 
 PETSC_EXTERN_C void  LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
