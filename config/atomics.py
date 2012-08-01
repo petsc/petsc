@@ -23,16 +23,31 @@ class Configure(config.base.Configure):
 
     # x86
     if self.checkCompile('', 'asm volatile("rep; nop" ::: "memory");'):
-      self.addDefine('CPU_RELAX','asm volatile("rep; nop" ::: "memory")')
+      self.addDefine('CPU_RELAX()','asm volatile("rep; nop" ::: "memory")')
       return
     # PowerPC
     if self.checkCompile('','do { HMT_low; HMT_medium; __asm__ __volatile__ ("":::"memory"); } while (0)'):
-      self.addDefine('CPU_RELAX','do { HMT_low; HMT_medium; __asm__ __volatile__ ("":::"memory"); } while (0)')
+      self.addDefine('CPU_RELAX()','do { HMT_low; HMT_medium; __asm__ __volatile__ ("":::"memory"); } while (0)')
       return
     elif self.checkCompile('','__asm__ __volatile__ ("":::"memory");'):
-      self.addDefine('CPU_RELAX','__asm__ __volatile__ ("":::"memory")')
+      self.addDefine('CPU_RELAX()','__asm__ __volatile__ ("":::"memory")')
       return
+
+  def configureMemoryBarriers(self):
+    ''' Definitions for memory barrier instructions'''
+    # ---- Definitions for x86_64 -----
+    # General Memory Barrier
+    if self.checkCompile('','asm volatile("mfence":::"memory")'):
+      self.addDefine('MEMORY_BARRIER()','asm volatile("mfence":::"memory")')
+    # Read Memory Barrier
+    if self.checkCompile('','asm volatile("lfence":::"memory")'):
+      self.addDefine('READ_MEMORY_BARRIER()','asm volatile("lfence":::"memory")')
+    # Write Memory Barrier
+    if self.checkCompile('','asm volatile("sfence":::"memory")'):
+      self.addDefine('WRITE_MEMORY_BARRIER()','asm volatile("sfence":::"memory")')
+    return
 
   def configure(self):
     self.executeTest(self.configureCPURelax)
+    self.executeTest(self.configureMemoryBarriers)
     return
