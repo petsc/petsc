@@ -9,8 +9,8 @@
 # To use the framework:
 #
 #    1) replace all #include <petscXXX.h> in application with #import <PETSc/petscXXX.h>
-#    2a) compile with, for example, cc -v ex1.c -o ex1 -I/opt/local/include -F ${PETSC_DIR}/${PETSC_ARCH} -framework PETSc  or 
-#    2b) copy ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework to /System/Library/Frameworks/ then you do not need the -F option
+#    2a) compile in src/snes/examples/tutorials, cc -v ex19.c -o ex19 -DPETSC_APPLE_FRAMEWORK=1 -F ${PETSC_DIR}/${PETSC_ARCH} -framework PETSc  or 
+#    2b) copy ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework to /System/Library/Frameworks/ then you do not need the -F option or
 #    3) you can also use the framework inside Xcode by simply indicating the targets dependence on the PETSc framework
 #
 #
