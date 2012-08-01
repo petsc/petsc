@@ -476,8 +476,9 @@ PetscErrorCode FormIFunctionASPIN(TS ts,PetscReal ptime,Vec X,Vec Xdot,Vec F,voi
   ierr = VecAYPX(Xgloballoc,-1.0,Xlocal);CHKERRQ(ierr);
 
   /* restrict and subtract */
-  ierr = DMLocalToGlobalBegin(daoverlap,Xgloballoc,INSERT_VALUES,F);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(daoverlap,Xgloballoc,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = VecSet(F,0);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(daoverlap,Xgloballoc,ADD_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(daoverlap,Xgloballoc,ADD_VALUES,F);CHKERRQ(ierr);
 
   /* restore work vectors */
   ierr = DMRestoreLocalVector(dalocal,&Xlocalloc);CHKERRQ(ierr);
