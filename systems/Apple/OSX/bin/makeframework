@@ -2,7 +2,9 @@
 #
 # This script makes a Apple Mac OS X framework for PETSc 
 #
-#  ./configure --download-mpich --with-fc=0 -download-mpich-shared=0 --with-shared-libraries
+#  ./systems/Apple/OSX/bin/arch-OSX.py
+#  make cmake test
+#  ./systems/Apple/OSX/bin/makeframework
 #
 # To use the framework:
 #

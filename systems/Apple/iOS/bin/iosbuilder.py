@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 #
-#   Builds a iPhone static library of PETSc
+#   Builds a iPhone/iPad static library of PETSc
 #
 #   Before using removed /usr/include/mpi.h and /Developer/SDKs/MacOSX10.5.sdk/usr/include/mpi.h or
 #      Xcode will use those instead of the MPIuni one we point to
 #
-#   export PETSC_ARCH=arch-iphone
+#   export PETSC_ARCH=arch-ios
 
-#   ./config/examples/arch-iphone.py [use --with-debugging=0 to get iPhone/iPad version, otherwise creates simulator version]
+#   ./systems/Apple/iOS/bin/arch-ios.py [use --with-debugging=0 to get iPhone/iPad version, otherwise creates simulator version]
 #      this sets up the appropriate configuration file
 #
-#   ./bin/maint/iphonebuilder.py
-#      this creates the PETSc iPhone library
+#   ./systems/Apple/iOS/bin/iosbuilder.py
+#      this creates the PETSc iPhone/iPad library
 #      this will open Xcode and give you directions to follow
 #
 #   open xcode/examples/examples.xcodeproj
@@ -255,12 +255,12 @@ class PETScMaker(script.Script):
 
    print 'In Xcode mouse click on xcode-links and the delete key, then'
    print 'control mouse click on "Other Sources" and select "Add files to PETSc ...", then'
-   print 'in the finder window locate ${PETSC_DIR}/arch-iphone/xcode-links and select it. Now'
+   print 'in the finder window locate ${PETSC_DIR}/arch-ios/xcode-links and select it. Now'
    print 'exit Xcode'
 
    try:
      import subprocess
-     subprocess.call('cd '+os.path.join(os.environ['PETSC_DIR'],'xcode','PETSc')+';open -W PETSc.xcodeproj', shell=True)
+     subprocess.call('cd '+os.path.join(os.environ['PETSC_DIR'],'systems','Apple','iOS','PETSc')+';open -W PETSc.xcodeproj', shell=True)
    except RuntimeError, e:
      raise RuntimeError('Error opening xcode project '+str(e))
 
@@ -273,17 +273,17 @@ class PETScMaker(script.Script):
      debug = 'Release'
      debugdir = 'Release-'+destination
    try:
-     output,err,ret  = self.executeShellCommand('cd '+os.path.join(os.environ['PETSC_DIR'],'xcode','PETSc')+';xcodebuild -configuration '+debug+sdk, timeout=3000, log = self.log)
+     output,err,ret  = self.executeShellCommand('cd '+os.path.join(os.environ['PETSC_DIR'],'systems','Apple','iOS','PETSc')+';xcodebuild -configuration '+debug+sdk, timeout=3000, log = self.log)
    except RuntimeError, e:
-     raise RuntimeError('Error making iPhone version of PETSc libraries: '+str(e))
+     raise RuntimeError('Error making iPhone/iPad version of PETSc libraries: '+str(e))
 
-   liblocation = os.path.join(os.environ['PETSC_DIR'],'xcode','PETSc','build',debugdir,'libPETSc.a')
+   liblocation = os.path.join(os.environ['PETSC_DIR'],'systems','Apple','iOS','PETSc','build',debugdir,'libPETSc.a')
    if not os.path.exists(liblocation):
      raise RuntimeError('Error library '+liblocation+' not created')
    try:
      output,err,ret  = self.executeShellCommand('mv -f '+liblocation+' '+os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'lib'), timeout=30, log = self.log)
    except RuntimeError, e:
-     raise RuntimeError('Error copying iPhone version of PETSc libraries: '+str(e))
+     raise RuntimeError('Error copying iPhone/iPad version of PETSc libraries: '+str(e))
 
    return
 

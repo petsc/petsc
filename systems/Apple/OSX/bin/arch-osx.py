@@ -9,6 +9,6 @@ if __name__ == '__main__':
     '--with-fc=0',
     '--with-shared-libraries',
     '-download-mpich-shared=0',
-    'PETSC_ARCH=arch-framework',
+    'PETSC_ARCH=arch-osx',
   ]
   configure.petsc_configure(configure_options)

@@ -202,7 +202,7 @@
 				INFOPLIST_FILE = "examples-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../../arch-iphone/lib\"",
+					"\"$(SRCROOT)/../../../../arch-ios/lib\"",
 				);
 				PRODUCT_NAME = examples;
 				SDKROOT = iphoneos;
@@ -223,7 +223,7 @@
 				INFOPLIST_FILE = "examples-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../../arch-iphone/lib\"",
+					"\"$(SRCROOT)/../../../../arch-ios/lib\"",
 				);
 				PRODUCT_NAME = examples;
 				SDKROOT = iphoneos;
@@ -241,9 +241,9 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/../../include",
-					"$(SRCROOT)/../../include/mpiuni",
-					"$(SRCROOT)/../../arch-iphone/include",
+					"$(SRCROOT)/../../../../include",
+					"$(SRCROOT)/../../../../include/mpiuni",
+					"$(SRCROOT)/../../../../arch-ios/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				"PROVISIONING_PROFILE[sdk=iphonesimulator5.1]" = "AFDA94A8-BF9D-4B65-999C-118FE0474B66";
@@ -261,9 +261,9 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/../../include",
-					"$(SRCROOT)/../../include/mpiuni",
-					"$(SRCROOT)/../../arch-iphone/include",
+					"$(SRCROOT)/../../../../include",
+					"$(SRCROOT)/../../../../include/mpiuni",
+					"$(SRCROOT)/../../../../arch-ios/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";

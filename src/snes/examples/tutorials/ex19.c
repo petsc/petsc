@@ -63,8 +63,13 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers 
 */
+#if defined(PETSC_APPLE_FRAMEWORK)
+#import <PETSc/petscsnes.h>
+#import <PETSc/petscdmda.h>
+#else
 #include <petscsnes.h>
 #include <petscdmda.h>
+#endif
 
 /* 
    User-defined routines and data structures
