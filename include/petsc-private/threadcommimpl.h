@@ -44,6 +44,22 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 
 #define PetscReadOnce(type,val) (*(volatile type *)&val)
 
+#if defined(PETSC_MEMORY_BARRIER)
+#define PetscMemoryBarrier() do {PETSC_MEMORY_BARRIER();} while(0)
+#else
+#define PetscMemoryBarrier()
+#endif
+#if defined(PETSC_READ_MEMORY_BARRIER)
+#define PetscReadMemoryBarrier() do {PETSC_READ_MEMORY_BARRIER();} while(0)
+#else
+#define PetscReadMemoryBarrier()
+#endif
+#if defined(PETSC_WRITE_MEMORY_BARRIER)
+#define PetscWriteMemoryBarrier() do {PETSC_WRITE_MEMORY_BARRIER();} while(0)
+#else
+#define PetscWriteMemoryBarrier()
+#endif
+
 struct _p_PetscThreadCommRedCtx{
   PetscThreadComm               tcomm;          /* The associated threadcomm */
   PetscInt                      red_status;     /* Reduction status */
