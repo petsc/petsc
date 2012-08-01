@@ -992,12 +992,15 @@ PetscErrorCode  PCASMSetSortIndices(PC pc,PetscBool  doSort)
 -  ksp - the array of KSP contexts
 
    Note:  
-   After PCASMGetSubKSP() the array of KSPes is not to be freed
+   After PCASMGetSubKSP() the array of KSPes is not to be freed.
 
    Currently for some matrix implementations only 1 block per processor 
    is supported.
    
    You must call KSPSetUp() before calling PCASMGetSubKSP().
+
+   Fortran note:
+   The output argument 'ksp' must be an array of sufficient length or PETSC_NULL_OBJECT. The latter can be used to learn the necessary length.
 
    Level: advanced
 
