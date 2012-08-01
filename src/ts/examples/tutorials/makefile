@@ -137,6 +137,10 @@ ex26: ex26.o chkopts
 	-${CLINKER} -o ex26 ex26.o ${PETSC_TS_LIB}
 	${RM} ex26.o
 
+ex26aspin: ex26aspin.o chkopts
+	-${CLINKER} -o ex26aspin ex26aspin.o ${PETSC_TS_LIB}
+	${RM} ex26aspin.o
+
 ex27: ex27.o chkopts
 	-${CLINKER} -o ex27 ex27.o ${PETSC_TS_LIB}
 	${RM} ex27.o
@@ -358,6 +362,9 @@ runex26:
 	-@${MPIEXEC} -n 1 ./ex26 -da_grid_x 20 -da_grid_y 20 -lidvelocity 100 -grashof 1e3 -ts_max_steps 100 -ts_rtol 1e-3 -ts_atol 1e-3 -ts_type rosw -ts_rosw_type ra3pw -ts_monitor -ts_monitor_solution_vtk 'foo-%03D.vts' > ex26_1.tmp 2>&1; \
 	   ${DIFF} output/ex26_1.out ex26_1.tmp || echo  ${PWD} "\nPossible problem with ex26_1, diffs above \n=========================================";  \
 	   ${RM} -f ex26_1.tmp
+
+runex26aspin:
+	-@${MPIEXEC} -n 4 ./ex26aspin -da_refine 3 -ts_max_steps 1 -ts_rtol 1e-3 -ts_atol 1e-3 -ts_type beuler -ts_monitor -snes_monitor -snes_mf -ksp_monitor -overlap 2
 
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
