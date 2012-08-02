@@ -425,6 +425,11 @@ class Configure(config.package.Package):
       output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && mv -f lib'+f2c+'blas.'+self.setCompilers.AR_LIB_SUFFIX+' lib'+f2c+'lapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=30, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
+    try:
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(self.confDir, self.name), timeout=30, log = self.framework.log)
+    except RuntimeError, e:
+      pass
+    return libdir
 
   def configureLibrary(self):
     self.functionalBlasLapack = []
