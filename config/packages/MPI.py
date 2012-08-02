@@ -66,7 +66,7 @@ class Configure(config.package.Package):
     help.addArgument('MPI', '-download-mpich-pm=<hydra, gforker or mpd>',        nargs.Arg(None, 'hydra', 'Launcher for MPI processes'))
     help.addArgument('MPI', '-download-mpich-device=<ch3:nemesis or see mpich2 docs>', nargs.Arg(None, 'ch3:sock', 'Communicator for MPI processes'))
     help.addArgument('MPI', '-download-mpich-mpe=<bool>',                        nargs.ArgBool(None, 0, 'Install MPE with MPICH'))
-    help.addArgument('MPI', '-download-mpich-shared=<bool>',                     nargs.ArgBool(None, 0, 'Install MPICH with shared libraries'))
+    help.addArgument('MPI', '-download-mpich-shared=<bool>',                     nargs.ArgBool(None, 1, 'Install MPICH with shared libraries'))
     help.addArgument('MPI', '-with-mpiuni-fortran-binding=<bool>',               nargs.ArgBool(None, 1, 'Build the MPIUni Fortran bindings'))
     return
 
@@ -490,7 +490,7 @@ class Configure(config.package.Package):
     else:
       args.append('--disable-f77')
       args.append('--disable-fc')
-    if self.framework.argDB['with-shared-libraries'] or self.framework.argDB['download-mpich-shared']:
+    if self.framework.argDB['download-mpich-shared']:
       args.append('--enable-shared') # --enable-sharedlibs can now be removed?
       if self.compilers.isGCC or config.setCompilers.Configure.isIntel(compiler):
         if config.setCompilers.Configure.isDarwin():

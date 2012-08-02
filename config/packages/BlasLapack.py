@@ -426,29 +426,6 @@ class Configure(config.package.Package):
     except RuntimeError, e:
       raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
 
-    if self.framework.argDB['with-iphone']:
-      # Build version of C BLAS/LAPACK suitable for the iPhone
-      # Note: regular libraries are also built because iPhone libraries cannot be tested with ./configure
-      debug = 'Debug'
-      debugdir = 'Debug-iphonesimulator'
-      if not self.compilerFlags.debugging:
-        debug = 'Release'
-        debugdir = 'Release-iphoneos'
-      try:
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+os.path.join(blasDir,'BlasLapack')+' && xcodebuild -configuration '+debug, timeout=3000, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error making iPhone version of BLAS/LAPACK on '+blasDir+': '+str(e))
-      try:
-        output,err,ret  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(blasDir,'BlasLapack','build',debugdir,'libBlasLapack.a')+' '+libdir, timeout=30, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error copying iPhone version of BLAS/LAPACK libraries on '+blasDir+': '+str(e))
-      
-    try:
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(self.confDir, self.name), timeout=30, log = self.framework.log)
-    except RuntimeError, e:
-      pass
-    return libdir
-  
   def configureLibrary(self):
     self.functionalBlasLapack = []
     self.foundBlas   = 0
