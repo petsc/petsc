@@ -1,7 +1,50 @@
 #include <../src/mat/impls/aij/mpi/clique/matcliqueimpl.h> /*I "petscmat.h" I*/
 /*
- Provides an interface to the Clique sparse solver
+ Provides an interface to the Clique sparse solver (http://poulson.github.com/Clique/)
 */
+
+/*
+  Convert Petsc aij matrix to Clique matrix C
+
+  input:
+    A       - matrix in seqaij or mpiaij format
+    valOnly - FALSE: spaces are allocated and values are set for the Clique matrix C
+              TRUE:  Only fill values
+  output:
+*/
+
+#undef __FUNCT__
+#define __FUNCT__ "MatConvertToClique"
+PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, cliq::DistSparseMatrix<double> **cmat)
+{
+  PetscErrorCode    ierr;
+  PetscInt          i,rstart,rend,ncols;
+  const PetscInt    *cols;
+  const PetscScalar *vals;
+  MPI_Comm          comm=((PetscObject)A)->comm;
+  cliq::DistSparseMatrix<PetscScalar> *cmat_ptr;
+ 
+  PetscFunctionBegin;
+  printf("MatConvertToClique ...\n");
+  if (!valOnly){ 
+    /* create Clique matrix */
+    cliq::mpi::Comm cxxcomm(((PetscObject)A)->comm);
+    cmat_ptr = new cliq::DistSparseMatrix<double>(A->rmap->N,cxxcomm);
+    cmat = &cmat_ptr;
+  } else {
+    cmat_ptr = *cmat;
+  }
+  /* fill matrix values */
+  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  cmat_ptr->StartAssembly();
+  for (i=rstart; i<rend; i++){
+    ierr = MatGetRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr); 
+    //cmat.Update();
+    ierr = MatRestoreRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr); 
+  }
+  cmat_ptr->StopAssembly();
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_Clique"
@@ -31,7 +74,15 @@ PetscErrorCode MatSolve_Clique(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatCholeskyFactorNumeric_Clique"
 PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *info)
 {
+  PetscErrorCode    ierr;
+  cliq::DistSparseMatrix<PetscScalar> *cmat;
+
   PetscFunctionBegin;
+  /* Convert A to Aclique */
+  ierr = MatConvertToClique(A,PETSC_FALSE,&cmat);CHKERRQ(ierr);
+
+  /* Numeric factorization */
+
   PetscFunctionReturn(0);
 }
 
@@ -39,6 +90,9 @@ PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *
 #define __FUNCT__ "MatCholeskyFactorSymbolic_Clique"
 PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactorInfo *info)
 {
+  PetscErrorCode    ierr;
+  cliq::DistSparseMatrix<PetscScalar> *cmat;
+
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -55,48 +109,33 @@ PetscErrorCode MatFactorGetSolverPackage_Clique(Mat A,const MatSolverPackage *ty
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-/*
-    The seq and mpi versions of this function are the same
-*/
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_aij_clique"
 PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
 {
-  PetscFunctionBegin;
-  printf("MatGetFactor_seqaij_Clique ...\n");
   Mat            B;
   Mat_Clique     *Acliq;
   PetscErrorCode ierr;
-  //PetscInt       indx,m=A->rmap->n,n=A->cmap->n;  
-  //PetscBool      flg;
-  //const char     *colperm[]={"NATURAL","MMD_ATA","MMD_AT_PLUS_A","COLAMD"}; /* MY_PERMC - not supported by the petsc interface yet */
-  //const char     *iterrefine[]={"NOREFINE", "SINGLE", "DOUBLE", "EXTRA"};
-  //const char     *rowperm[]={"NOROWPERM", "LargeDiag"}; /* MY_PERMC - not supported by the petsc interface yet */
-
+  
   PetscFunctionBegin;
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
-  //ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 
   if (ftype == MAT_FACTOR_CHOLESKY){
-    B->ops->choleskyfactorsymbolic  = MatCholeskyFactorSymbolic_Clique;
+    B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_Clique;
+    B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_Clique;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
 
-  B->ops->destroy          = MatDestroy_Clique;
-  B->ops->view             = MatView_Clique;
-  B->factortype            = ftype; 
-  B->assembled             = PETSC_TRUE;  /* required by -ksp_view */
-  //B->preallocated          = PETSC_TRUE;
+  B->ops->destroy = MatDestroy_Clique;
+  B->ops->view    = MatView_Clique;
+  B->factortype   = ftype; 
+  B->assembled    = PETSC_FALSE;  
   
   ierr = PetscNewLog(B,Mat_Clique,&Acliq);CHKERRQ(ierr);
-  
-  /*if (ftype == MAT_FACTOR_LU){
-    lu->options.Equil = NO;
-    }*/
   B->spptr = Acliq;
-  *F = B;
+  *F       = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

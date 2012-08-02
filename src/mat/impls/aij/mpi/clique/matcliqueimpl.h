@@ -1,3 +1,5 @@
+#ifndef _matcliqueimpl_h
+#define _matcliqueimpl_h
 
 #include <clique.hpp>
 #include <petsc-private/matimpl.h>
@@ -11,3 +13,5 @@ typedef PetscScalar PetscCliqScalar;
 typedef struct {
   cliq::DistSparseMatrix<PetscCliqScalar> *cmat;
 } Mat_Clique;
+
+#endif
