@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'PETSc cocoa example' target in the 'PETSc cocoa example' project
+//
+
+#ifdef __OBJC__
+    #import <Cocoa/Cocoa.h>
+#endif
