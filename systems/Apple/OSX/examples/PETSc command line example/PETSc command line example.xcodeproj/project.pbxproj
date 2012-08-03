@@ -182,7 +182,6 @@
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../../../../../../arch-osx\"",
 					"\"$(SRCROOT)/../../../../../arch-osx\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -194,7 +193,6 @@
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../../../../../../arch-osx\"",
 					"\"$(SRCROOT)/../../../../../arch-osx\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
