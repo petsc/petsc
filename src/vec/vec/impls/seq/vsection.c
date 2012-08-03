@@ -92,6 +92,22 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetFieldName"
+/*@C
+  PetscSectionGetFieldName - Returns the name of a field in the PetscSection
+
+  Not Collective
+
+  Input Parameters:
++ s     - the PetscSection
+- field - the field number
+
+  Output Parameter:
+. fieldName - the field name
+
+  Level: developer
+
+.seealso: PetscSectionSetFieldName()
+@*/
 PetscErrorCode PetscSectionGetFieldName(PetscSection s, PetscInt field, const char *fieldName[])
 {
   PetscFunctionBegin;
@@ -105,6 +121,20 @@ PetscErrorCode PetscSectionGetFieldName(PetscSection s, PetscInt field, const ch
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetFieldName"
+/*@C
+  PetscSectionSetFieldName - Sets the name of a field in the PetscSection
+
+  Not Collective
+
+  Input Parameters:
++ s     - the PetscSection
+. field - the field number
+- fieldName - the field name
+
+  Level: developer
+
+.seealso: PetscSectionGetFieldName()
+@*/
 PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const char fieldName[])
 {
   PetscErrorCode ierr;
