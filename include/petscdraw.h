@@ -15,9 +15,10 @@ PETSC_EXTERN PetscClassId PETSC_DRAW_CLASSID;
 .seealso: PetscDrawSetType(), PetscDraw, PetscViewer
 J*/
 #define PetscDrawType  char*
-#define PETSC_DRAW_X     "x"
-#define PETSC_DRAW_NULL  "null"
-#define PETSC_DRAW_WIN32 "win32"
+#define PETSC_DRAW_X      "x"
+#define PETSC_DRAW_OPENGL "opengl"
+#define PETSC_DRAW_NULL   "null"
+#define PETSC_DRAW_WIN32  "win32"
  
 /*S
      PetscDraw - Abstract PETSc object for graphics
