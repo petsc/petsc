@@ -15,21 +15,21 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvertToClique"
-PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, cliq::DistSparseMatrix<double> **cmat)
+PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, cliq::DistSparseMatrix<PetscCliqScalar> **cmat)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,rstart,rend,ncols;
+  PetscInt          i,j,rstart,rend,ncols;
   const PetscInt    *cols;
-  const PetscScalar *vals;
+  const PetscCliqScalar *vals;
   MPI_Comm          comm=((PetscObject)A)->comm;
-  cliq::DistSparseMatrix<PetscScalar> *cmat_ptr;
+  cliq::DistSparseMatrix<PetscCliqScalar> *cmat_ptr;
  
   PetscFunctionBegin;
   printf("MatConvertToClique ...\n");
   if (!valOnly){ 
     /* create Clique matrix */
     cliq::mpi::Comm cxxcomm(((PetscObject)A)->comm);
-    cmat_ptr = new cliq::DistSparseMatrix<double>(A->rmap->N,cxxcomm);
+    cmat_ptr = new cliq::DistSparseMatrix<PetscCliqScalar>(A->rmap->N,cxxcomm);
     cmat = &cmat_ptr;
   } else {
     cmat_ptr = *cmat;
@@ -39,7 +39,9 @@ PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, cliq::DistSparseMatri
   cmat_ptr->StartAssembly();
   for (i=rstart; i<rend; i++){
     ierr = MatGetRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr); 
-    //cmat.Update();
+    for (j=0; j<ncols; j++){
+      cmat_ptr->Update(i,cols[j],vals[j]);
+    }
     ierr = MatRestoreRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr); 
   }
   cmat_ptr->StopAssembly();
@@ -50,6 +52,9 @@ PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, cliq::DistSparseMatri
 #define __FUNCT__ "MatView_Clique"
 PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
 {
+  //Mat_Clique        *Acliq = (Mat_Clique*)A->spptr;
+  //PetscErrorCode    ierr;
+
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -75,14 +80,13 @@ PetscErrorCode MatSolve_Clique(Mat A,Vec b,Vec x)
 PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *info)
 {
   PetscErrorCode    ierr;
-  cliq::DistSparseMatrix<PetscScalar> *cmat;
+  cliq::DistSparseMatrix<PetscCliqScalar> *cmat;
 
   PetscFunctionBegin;
   /* Convert A to Aclique */
   ierr = MatConvertToClique(A,PETSC_FALSE,&cmat);CHKERRQ(ierr);
 
   /* Numeric factorization */
-
   PetscFunctionReturn(0);
 }
 
@@ -94,6 +98,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
   cliq::DistSparseMatrix<PetscScalar> *cmat;
 
   PetscFunctionBegin;
+  F->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_Clique;
   PetscFunctionReturn(0);
 }
 
