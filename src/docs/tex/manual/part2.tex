@@ -6852,13 +6852,13 @@ To use PETSc from MS Visual Studio - one would have to compile a PETSc example w
 
 Follow the instructions in systems/Apple/OSX/bin/makeframework to build the PETSc framework.
 
-You can then use the PETSc framework in \$\{PETSC\_DIR\}/arch-osx/PETSc.framework in the usual manner for Apple framworks, see the examples in systems/Apple/OSX/examples.  When working in xcode things like function name completion should work for all PETSc functions as well as MPI functions.
+You can then use the PETSc framework in \$\{PETSC\_DIR\}/arch-osx/PETSc.framework in the usual manner for Apple framworks, see the examples in systems/Apple/OSX/examples.  When working in xcode things like function name completion should work for all PETSc functions as well as MPI functions. You must also link against the Apple Accelerate.framework.
 
 \subsection{iPhone/iPad iOS}
 
 Follow the instructions in systems/Apple/ios/bin/iosbuilder.py to build the PETSc library for use on the iPhone/iPad.
 
-You can then use the PETSc static library in \$\{PETSC\_DIR\}/arch-osx/libPETSc.a in the usual manner for Apple libraries inside your iOS xcode projects, see the examples in systems/Apple/iOS/examples.
+You can then use the PETSc static library in \$\{PETSC\_DIR\}/arch-osx/libPETSc.a in the usual manner for Apple libraries inside your iOS xcode projects, see the examples in systems/Apple/iOS/examples.  You must also link against the Apple Accelerate.framework.
 
 \section{Parallel Communication}
 
