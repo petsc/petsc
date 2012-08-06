@@ -11,7 +11,6 @@ typedef PetscScalar PetscCliqScalar;
 #endif
 
 typedef struct {
-  cliq::DistSparseMatrix<PetscCliqScalar> *cmat;
 } Mat_Clique;
 
 #endif

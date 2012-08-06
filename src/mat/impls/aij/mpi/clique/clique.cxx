@@ -21,7 +21,6 @@ PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, cliq::DistSparseMatri
   PetscInt          i,j,rstart,rend,ncols;
   const PetscInt    *cols;
   const PetscCliqScalar *vals;
-  MPI_Comm          comm=((PetscObject)A)->comm;
   cliq::DistSparseMatrix<PetscCliqScalar> *cmat_ptr;
  
   PetscFunctionBegin;
@@ -49,13 +48,61 @@ PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, cliq::DistSparseMatri
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatMult_Clique"
+static PetscErrorCode MatMult_Clique(Mat A,Vec X,Vec Y)
+{
+  PetscErrorCode        ierr;
+  PetscInt              i;
+  const PetscCliqScalar *x;
+  PetscCliqScalar       *y;
+  cliq::DistSparseMatrix<PetscCliqScalar> *cmat;
+  cliq::mpi::Comm cxxcomm(((PetscObject)A)->comm);
+
+  PetscFunctionBegin;
+  ierr = MatConvertToClique(A,PETSC_FALSE,&cmat);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
+  ierr = VecGetArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
+  //ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
+  //ierr = VecGetLocalSize(Y,&m);CHKERRQ(ierr);
+  //ierr = VecGetSize(X,&N);CHKERRQ(ierr);
+  //ierr = VecGetSize(Y,&M);CHKERRQ(ierr);
+  cliq::DistVector<PetscCliqScalar> xc(A->cmap->N,cxxcomm);
+  cliq::DistVector<PetscCliqScalar> yc(A->rmap->N,cxxcomm);
+  for (i=0; i<A->cmap->n; i++) {
+    xc.SetLocal(i,x[i]);
+  }
+  cliq::Multiply(1.0,*cmat,xc,0.0,yc);
+  ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatView_Clique"
 PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
 {
-  //Mat_Clique        *Acliq = (Mat_Clique*)A->spptr;
-  //PetscErrorCode    ierr;
+  PetscErrorCode ierr;
+  //Mat_Elemental  *a = (Mat_Elemental*)A->data;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    PetscViewerFormat format;
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_INFO) {
+      SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Info viewer not implemented yet");
+    } else if (format == PETSC_VIEWER_DEFAULT) {
+      Mat Aaij;
+      ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)viewer)->comm,"Clique matrix\n");CHKERRQ(ierr);
+      ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
+      ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      ierr = MatDestroy(&Aaij);CHKERRQ(ierr);     
+    } else SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Format");
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by Elemental matrices",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 
@@ -135,6 +182,7 @@ PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->destroy = MatDestroy_Clique;
   B->ops->view    = MatView_Clique;
+  B->ops->mult    = MatMult_Clique;
   B->factortype   = ftype; 
   B->assembled    = PETSC_FALSE;  
   
