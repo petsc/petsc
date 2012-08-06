@@ -4804,6 +4804,32 @@ PetscErrorCode DMComplexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexCreateSection"
+/*@C
+  DMComplexCreateSection - Create a PetscSection based upon the dof layout specification provided.
+
+  Not Collective
+
+  Input Parameters:
++ dm        - The DMComplex object
+. dim       - The spatial dimension of the problem
+. numFields - The number of fields in the problem
+. numComp   - An array of size numFields that holds the number of components for each field
+. numDof    - An array of size numFields*(dim+1) which holds the number of dof for each field on a mesh piece of dimension d
+. numBC     - The number of boundary conditions
+. bcField   - An array of size numBC giving the field number for each boundry condition
+- bcPoints  - An array of size numBC giving an IS holding the sieve points to which each boundary condition applies
+
+  Output Parameter:
+. section - The PetscSection object
+
+  Notes: numDof[f*(dim+1)+d] gives the number of dof for field f on sieve points of dimension d. For instance, numDof[1] is the
+  nubmer of dof for field 0 on each edge.
+
+  Level: developer
+
+.keywords: mesh, elements
+.seealso: DMComplexCreate(), PetscSectionCreate()
+@*/
 PetscErrorCode DMComplexCreateSection(DM dm, PetscInt dim, PetscInt numFields, PetscInt numComp[], PetscInt numDof[], PetscInt numBC, PetscInt bcField[], IS bcPoints[], PetscSection *section) {
   PetscInt      *numDofTot, *maxConstraints;
   PetscInt       pStart = 0, pEnd = 0;
