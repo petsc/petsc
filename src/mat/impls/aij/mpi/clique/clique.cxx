@@ -17,10 +17,11 @@
 #define __FUNCT__ "MatConvertToClique"
 PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, cliq::DistSparseMatrix<PetscCliqScalar> **cmat)
 {
-  PetscErrorCode    ierr;
-  PetscInt          i,j,rstart,rend,ncols;
-  const PetscInt    *cols;
+  PetscErrorCode        ierr;
+  PetscInt              i,j,rstart,rend,ncols;
+  const PetscInt        *cols;
   const PetscCliqScalar *vals;
+  MPI_Comm              comm=((PetscObject)A)->comm;
   cliq::DistSparseMatrix<PetscCliqScalar> *cmat_ptr;
  
   PetscFunctionBegin;
@@ -82,7 +83,6 @@ static PetscErrorCode MatMult_Clique(Mat A,Vec X,Vec Y)
 PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  //Mat_Elemental  *a = (Mat_Elemental*)A->data;
   PetscBool      iascii;
 
   PetscFunctionBegin;
@@ -110,7 +110,24 @@ PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatDestroy_Clique"
 PetscErrorCode MatDestroy_Clique(Mat A)
 {
+  PetscErrorCode ierr;
+  Mat_Clique     *cliq=(Mat_Clique*)A->spptr;
+
   PetscFunctionBegin;
+  printf("MatDestroy_Clique ...\n");
+  if (cliq && cliq->CleanUpClique) { 
+    /* Terminate instance, deallocate memories */
+    printf("MatDestroy_Clique ... destroy clique struct \n");
+    // free cmat here 
+  }
+  if (cliq && cliq->Destroy) {
+    ierr = cliq->Destroy(A);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
+
+  /* clear composed functions */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0);
 }
 
@@ -127,13 +144,19 @@ PetscErrorCode MatSolve_Clique(Mat A,Vec b,Vec x)
 PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *info)
 {
   PetscErrorCode    ierr;
+  Mat_Clique        *cliq=(Mat_Clique*)F->spptr;
   cliq::DistSparseMatrix<PetscCliqScalar> *cmat;
 
   PetscFunctionBegin;
-  /* Convert A to Aclique */
-  ierr = MatConvertToClique(A,PETSC_FALSE,&cmat);CHKERRQ(ierr);
+  printf("MatCholeskyFactorNumeric_Clique \n");
+  if (cliq->matstruc == SAME_NONZERO_PATTERN){ /* successing numerical factorization */
+    /* Update cmat */
+    ierr = MatConvertToClique(A,PETSC_TRUE,&cmat);CHKERRQ(ierr);
+  }
 
   /* Numeric factorization */
+
+  cliq->matstruc = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -142,10 +165,18 @@ PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *
 PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactorInfo *info)
 {
   PetscErrorCode    ierr;
+  Mat_Clique        *cliq=(Mat_Clique*)F->spptr;
   cliq::DistSparseMatrix<PetscScalar> *cmat;
 
   PetscFunctionBegin;
-  F->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_Clique;
+  printf("MatCholeskyFactorSymbolic_Clique \n");
+  /* Convert A to Aclique */
+  ierr = MatConvertToClique(A,PETSC_FALSE,&cmat);CHKERRQ(ierr);
+  cliq->cmat = cmat;
+
+  cliq->matstruc      = DIFFERENT_NONZERO_PATTERN;
+  cliq->CleanUpClique = PETSC_TRUE;
+
   PetscFunctionReturn(0);
 }
 
@@ -166,7 +197,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
-  Mat_Clique     *Acliq;
+  Mat_Clique     *cliq;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -180,15 +211,20 @@ PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
     B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_Clique;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
 
-  B->ops->destroy = MatDestroy_Clique;
+  ierr = PetscNewLog(B,Mat_Clique,&cliq);CHKERRQ(ierr);
+  B->spptr            = (void*)cliq;
+  cliq->CleanUpClique = PETSC_FALSE;
+  cliq->Destroy       = B->ops->destroy;
+
   B->ops->view    = MatView_Clique;
   B->ops->mult    = MatMult_Clique;
-  B->factortype   = ftype; 
-  B->assembled    = PETSC_FALSE;  
-  
-  ierr = PetscNewLog(B,Mat_Clique,&Acliq);CHKERRQ(ierr);
-  B->spptr = Acliq;
-  *F       = B;
+  B->ops->solve   = MatSolve_Clique;
+
+  B->ops->destroy = MatDestroy_Clique;
+  B->factortype   = ftype;
+  B->assembled    = PETSC_FALSE;  /* required by -ksp_view */
+
+  *F = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -11,6 +11,10 @@ typedef PetscScalar PetscCliqScalar;
 #endif
 
 typedef struct {
+  cliq::DistSparseMatrix<PetscCliqScalar> *cmat;  /* Clique sparse matrix */
+  MatStructure   matstruc;
+  PetscBool      CleanUpClique;  /* Boolean indicating if we call Clique clean step */
+  PetscErrorCode (*Destroy)(Mat);
 } Mat_Clique;
 
 #endif
