@@ -102,7 +102,7 @@ PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
       ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = MatDestroy(&Aaij);CHKERRQ(ierr);     
     } else SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Format");
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by Elemental matrices",((PetscObject)viewer)->type_name);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by Clique matrices",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 

@@ -17,8 +17,8 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.cmake           = framework.require('PETSc.packages.cmake',self)
-    self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.deps       = [self.mpi,self.blasLapack]
+    self.blasLapack      = framework.require('config.packages.BlasLapack',self)
+    self.deps            = [self.mpi,self.cmake,self.blasLapack]
     return
 
   def Install(self):
