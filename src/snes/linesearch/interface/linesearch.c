@@ -618,6 +618,7 @@ PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer 
    Options Database Keys:
 + -snes_linesearch_type <type> - basic, bt, l2, cp, shell
 . -snes_linesearch_order <order> - 1, 2, 3.  Most types only support certain orders (bt supports 2 or 3)
+. -snes_linesearch_norms   - Turn on/off the linesearch norms for the basic linesearch type
 . -snes_linesearch_minlambda - The minimum step length
 . -snes_linesearch_maxstep - The maximum step size
 . -snes_linesearch_rtol - Relative tolerance for iterative line searches
@@ -626,7 +627,6 @@ PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer 
 . -snes_linesearch_max_it - The number of iterations for iterative line searches
 . -snes_linesearch_monitor - Print progress of line searches
 . -snes_linesearch_damping - The linesearch damping parameter
-. -snes_linesearch_norms   - Turn on/off the linesearch norms
 . -snes_linesearch_keeplambda - Keep the previous search length as the initial guess.
 . -snes_linesearch_precheck_picard - Use precheck that speeds up convergence of picard method
 - -snes_linesearch_precheck_picard_angle - Angle used in picard precheck method
@@ -655,9 +655,6 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch) {
     ierr = SNESLineSearchSetType(linesearch,type);CHKERRQ(ierr);
   } else if (!((PetscObject)linesearch)->type_name) {
     ierr = SNESLineSearchSetType(linesearch,deft);CHKERRQ(ierr);
-  }
-  if (linesearch->ops->setfromoptions) {
-    (*linesearch->ops->setfromoptions)(linesearch);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsBool("-snes_linesearch_monitor","Print progress of line searches","SNESSNESLineSearchSetMonitor",
@@ -691,6 +688,10 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch) {
   }
   ierr = PetscOptionsInt("-snes_linesearch_order","Order of approximation used in the line search","SNESLineSearchSetOrder",linesearch->order,&linesearch->order,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_linesearch_norms","Compute final norms in line search","SNESLineSearchSetComputeNorms",linesearch->norms,&linesearch->norms,0);CHKERRQ(ierr);
+
+  if (linesearch->ops->setfromoptions) {
+    (*linesearch->ops->setfromoptions)(linesearch);CHKERRQ(ierr);
+  }
 
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
