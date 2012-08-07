@@ -226,7 +226,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
 {
   PetscErrorCode    ierr;
   Mat_Clique        *cliq=(Mat_Clique*)F->spptr;
-  cliq::DistSparseMatrix<PetscScalar> *cmat;
+  cliq::DistSparseMatrix<PetscCliqScalar> *cmat;
 
   PetscFunctionBegin;
   printf("MatCholeskyFactorSymbolic_Clique \n");
@@ -235,7 +235,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
   cmat = cliq->cmat;
 
   //NestedDissection
-  const cliq::DistGraph& graph = cmat->Graph();
+  const cliq::DistGraph &graph = cmat->Graph();
   cliq::DistSymmInfo cinfo;
   cliq::DistSeparatorTree sepTree;
   cliq::DistMap map, inverseMap;

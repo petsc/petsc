@@ -5,7 +5,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     #self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/elemental-dev-072512.tar.gz']
     self.download   = ['/home/xzhou/temp/clique.tgz']
-    self.liblist    = [['libclique.a']]
+    self.liblist    = [['libclique.a','libmetis.a','libparmetis']]
     self.includes   = ['clique.hpp']
     self.cxx              = 1
     self.requires32bitint = 0
@@ -20,8 +20,9 @@ class Configure(PETSc.package.NewPackage):
     self.cmake           = framework.require('PETSc.packages.cmake',self)
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
     self.elemental       = framework.require('PETSc.packages.elemental',self)
-    self.parmetis        = framework.require('PETSc.packages.parmetis',self)
-    self.deps            = [self.cmake,self.blasLapack,self.elemental,self.parmetis]
+    #self.parmetis        = framework.require('PETSc.packages.parmetis',self)
+    #self.deps            = [self.cmake,self.blasLapack,self.elemental,self.parmetis]
+    self.deps            = [self.cmake,self.blasLapack,self.elemental]
     return
 
   def Install(self):
