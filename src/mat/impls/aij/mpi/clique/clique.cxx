@@ -79,25 +79,26 @@ PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, Mat_Clique *cliq)
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
   printf("X:\n");
-  //ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
+  ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
 
   // must pass x to xc, y to yc!
   cliq::DistVector<PetscCliqScalar> xc(A->cmap->N,cliq->cliq_comm);
   cliq::DistVector<PetscCliqScalar> yc(A->rmap->N,cliq->cliq_comm);
-  
+  for (i=0; i< A->cmap->n; i++) {
+    xc.SetLocal(i,x[i]);
+  }
+  const double xOrigNorm = cliq::Norm( xc );
   cliq::Multiply(1.0,*cliq->cmat,xc,0.0,yc);
-
+  const double yOrigNorm = cliq::Norm( yc );
+  printf(" clique norm(xc1,yc1) %g %g\n",xOrigNorm,yOrigNorm);
   ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
-  
   printf("Y = A*X:\n");
-  //ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&Y);CHKERRQ(ierr);
- 
   PetscFunctionReturn(0);
 }
 
@@ -156,7 +157,7 @@ PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
       ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = MatDestroy(&Aaij);CHKERRQ(ierr);     
     } else SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Format");
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by Elemental matrices",((PetscObject)viewer)->type_name);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by Clique matrices",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 
@@ -173,7 +174,8 @@ PetscErrorCode MatDestroy_Clique(Mat A)
     /* Terminate instance, deallocate memories */
     printf("MatDestroy_Clique ... destroy clique struct \n");
     ierr = PetscCommDestroy(&(cliq->cliq_comm));CHKERRQ(ierr);
-    // free cmat here 
+    // free cmat here
+    delete cliq->cmat;
   }
   if (cliq && cliq->Destroy) {
     ierr = cliq->Destroy(A);CHKERRQ(ierr);
@@ -240,11 +242,9 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
   PetscInt cutoff=128;  /* maximum size of leaf node */
   PetscInt numDistSeps=10; /* number of distributed separators to try */
   PetscInt numSeqSeps=5;  /* number of sequential separators to try */
-        
-  //cliq::NestedDissection( graph, map, sepTree, cinfo, cutoff, numDistSeps, numSeqSeps );
-  //map.FormInverse( inverseMap );
-  //DistSymmFrontTree<double> frontTree( TRANSPOSE, A, map, sepTree, cinfo );
-        
+  cliq::NestedDissection( graph, map, sepTree, cinfo, PETSC_TRUE, numDistSeps, numSeqSeps, cutoff);
+  map.FormInverse( inverseMap );
+  //cliq::DistSymmFrontTree<PetscCliqScalar> frontTree( cliq::TRANSPOSE, *cmat, map, sepTree, cinfo );
 
   cliq->matstruc      = DIFFERENT_NONZERO_PATTERN;
   cliq->CleanUpClique = PETSC_TRUE;
