@@ -33,7 +33,7 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
   PetscValidPointer(outlinesearch,2);
   *outlinesearch = PETSC_NULL;
   ierr = PetscHeaderCreate(linesearch,_p_LineSearch,struct _LineSearchOps,SNESLINESEARCH_CLASSID, 0,
-                           "SNESLineSearch","Line-search method","SNESLineSearch",comm,SNESLineSearchDestroy,SNESLineSearchView);CHKERRQ(ierr);
+                           "SNESLineSearch","Linesearch","SNESLineSearch",comm,SNESLineSearchDestroy,SNESLineSearchView);CHKERRQ(ierr);
 
   linesearch->ops->precheckstep = PETSC_NULL;
   linesearch->ops->postcheckstep = PETSC_NULL;
@@ -450,12 +450,12 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
 -  fnorm - The new function norm
 
    Options Database Keys:
-+ -snes_linesearch_type - The Line search method
++ -snes_linesearch_type - basic, bt, l2, cp, shell
 . -snes_linesearch_monitor - Print progress of line searches
-. -snes_linesearch_damping - The linesearch damping parameter.
+. -snes_linesearch_damping - The linesearch damping parameter
 . -snes_linesearch_norms   - Turn on/off the linesearch norms
-. -snes_linesearch_keeplambda - Keep the previous search length as the initial guess.
-- -snes_linesearch_max_it - The number of iterations for iterative line searches.
+. -snes_linesearch_keeplambda - Keep the previous search length as the initial guess
+- -snes_linesearch_max_it - The number of iterations for iterative line searches
 
    Notes:
    This is typically called from within a SNESSolve() implementation in order to
@@ -616,7 +616,8 @@ PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer 
 .  linesearch - linesearch context
 
    Options Database Keys:
-+ -snes_linesearch_type - The Line search method
++ -snes_linesearch_type <type> - basic, bt, l2, cp, shell
+. -snes_linesearch_order <order> - 1, 2, 3.  Most types only support certain orders (bt supports 2 or 3)
 . -snes_linesearch_minlambda - The minimum step length
 . -snes_linesearch_maxstep - The maximum step size
 . -snes_linesearch_rtol - Relative tolerance for iterative line searches
@@ -627,7 +628,6 @@ PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer 
 . -snes_linesearch_damping - The linesearch damping parameter
 . -snes_linesearch_norms   - Turn on/off the linesearch norms
 . -snes_linesearch_keeplambda - Keep the previous search length as the initial guess.
-. -snes_linesearch_order - The polynomial order of approximation used in the linesearch
 . -snes_linesearch_precheck_picard - Use precheck that speeds up convergence of picard method
 - -snes_linesearch_precheck_picard_angle - Angle used in picard precheck method
 
@@ -636,7 +636,7 @@ PetscErrorCode  SNESLineSearchGetMonitor(SNESLineSearch linesearch, PetscViewer 
    Level: intermediate
 
 
-.seealso: SNESLineSearchCreate()
+.seealso: SNESLineSearchCreate(), SNESLineSearchSetOrder(), SNESLineSearchSetType(), SNESLineSearchSetTolerances(), SNESLineSearchSetDamping(), SNESLineSearchPreCheckPicard()
 @*/
 PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch) {
   PetscErrorCode ierr;
@@ -650,7 +650,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch) {
   if (((PetscObject)linesearch)->type_name) {
     deft = ((PetscObject)linesearch)->type_name;
   }
-  ierr = PetscOptionsList("-snes_linesearch_type","Line-search method","SNESLineSearchSetType",SNESLineSearchList,deft,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-snes_linesearch_type","Linesearch type","SNESLineSearchSetType",SNESLineSearchList,deft,type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESLineSearchSetType(linesearch,type);CHKERRQ(ierr);
   } else if (!((PetscObject)linesearch)->type_name) {
@@ -922,7 +922,7 @@ PetscErrorCode  SNESLineSearchSetLambda(SNESLineSearch linesearch, PetscReal lam
 #undef  __FUNCT__
 #define __FUNCT__ "SNESLineSearchGetTolerances"
 /*@
-   SNESLineSearchGetTolerances - Gets the tolerances for the method.  These include
+   SNESLineSearchGetTolerances - Gets the tolerances for the linesearch.  These include
    tolerances for the relative and absolute change in the function norm, the change
    in lambda for iterative line searches, the minimum steplength, the maximum steplength,
    and the maximum number of iterations the line search procedure may take.
@@ -942,7 +942,7 @@ PetscErrorCode  SNESLineSearchSetLambda(SNESLineSearch linesearch, PetscReal lam
 
    Notes:
    Different line searches may implement these parameters slightly differently as
-   the method requires.
+   the type requires.
 
 .seealso: SNESLineSearchSetTolerances()
 @*/
@@ -980,7 +980,7 @@ PetscErrorCode  SNESLineSearchGetTolerances(SNESLineSearch linesearch,PetscReal 
 #undef  __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetTolerances"
 /*@
-   SNESLineSearchSetTolerances -  Gets the tolerances for the method.  These include
+   SNESLineSearchSetTolerances -  Gets the tolerances for the linesearch.  These include
    tolerances for the relative and absolute change in the function norm, the change
    in lambda for iterative line searches, the minimum steplength, the maximum steplength,
    and the maximum number of iterations the line search procedure may take.
@@ -995,7 +995,7 @@ PetscErrorCode  SNESLineSearchGetTolerances(SNESLineSearch linesearch,PetscReal 
 -  max_it  - The maximum number of iterations of the line search
 
    Notes:
-   The user may choose to not set any of the tolerances in the method using PETSC_DEFAULT in
+   The user may choose to not set any of the tolerances using PETSC_DEFAULT in
    place of an argument.
 
    Level: intermediate
@@ -1112,9 +1112,9 @@ PetscErrorCode  SNESLineSearchSetDamping(SNESLineSearch linesearch,PetscReal dam
 .  order - The order
 
    Possible Values for order:
-+  SNES_LINESEARCH_LINEAR - linear method
-.  SNES_LINESEARCH_QUADRATIC - quadratic method
--  SNES_LINESEARCH_CUBIC - cubic method
++  1 or SNES_LINESEARCH_ORDER_LINEAR - linear order
+.  2 or SNES_LINESEARCH_ORDER_QUADRATIC - quadratic order
+-  3 or SNES_LINESEARCH_ORDER_CUBIC - cubic order
 
    Level: intermediate
 
@@ -1142,9 +1142,9 @@ PetscErrorCode  SNESLineSearchGetOrder(SNESLineSearch linesearch,PetscInt *order
    Level: intermediate
 
    Possible Values for order:
-+  SNES_LINESEARCH_ORDER_LINEAR - linear method
-.  SNES_LINESEARCH_ORDER_QUADRATIC - quadratic method
--  SNES_LINESEARCH_ORDER_CUBIC - cubic method
++  1 or SNES_LINESEARCH_ORDER_LINEAR - linear order
+.  2 or SNES_LINESEARCH_ORDER_QUADRATIC - quadratic order
+-  3 or SNES_LINESEARCH_ORDER_CUBIC - cubic order
 
    Notes:
    Variable orders are supported by the following line searches:
