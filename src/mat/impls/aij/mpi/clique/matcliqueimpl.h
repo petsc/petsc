@@ -14,6 +14,7 @@ typedef struct {
   cliq::DistSparseMatrix<PetscCliqScalar> *cmat;  /* Clique sparse matrix */
   MatStructure   matstruc;
   PetscBool      CleanUpClique;  /* Boolean indicating if we call Clique clean step */
+  MPI_Comm       cliq_comm;      /* Clique MPI communicator                         */
   PetscErrorCode (*Destroy)(Mat);
 } Mat_Clique;
 
