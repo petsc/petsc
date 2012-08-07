@@ -29,8 +29,7 @@ PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, Mat_Clique *cliq)
     printf("  create cmat...\n");
     /* create Clique matrix */
     cliq::mpi::Comm cxxcomm(((PetscObject)A)->comm);
-    ierr = PetscCommDuplicate(cxxcomm,&cliq->cliq_comm,PETSC_NULL);CHKERRQ(ierr);
-
+    ierr = PetscCommDuplicate(cxxcomm,&(cliq->cliq_comm),PETSC_NULL);CHKERRQ(ierr);
     cmat_ptr = new cliq::DistSparseMatrix<PetscCliqScalar>(A->rmap->N,cliq->cliq_comm);
     cliq->cmat = cmat_ptr;
   } else {
@@ -44,6 +43,7 @@ PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, Mat_Clique *cliq)
   if (rstart != firstLocalRow || rend-rstart != localHeight) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix rowblock distribution does not match");
 
   cmat_ptr->StartAssembly();
+  //cmat_ptr->Reserve( 7*localHeight ); ???
   for (i=rstart; i<rend; i++){ 
     ierr = MatGetRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr); 
     //printf("row %d, ncols %d\n",i,ncols);
@@ -172,7 +172,7 @@ PetscErrorCode MatDestroy_Clique(Mat A)
   if (cliq && cliq->CleanUpClique) { 
     /* Terminate instance, deallocate memories */
     printf("MatDestroy_Clique ... destroy clique struct \n");
-    //ierr = MPI_Comm_free(&(cliq->cliq_comm));CHKERRQ(ierr);
+    ierr = PetscCommDestroy(&(cliq->cliq_comm));CHKERRQ(ierr);
     // free cmat here 
   }
   if (cliq && cliq->Destroy) {
@@ -191,6 +191,7 @@ PetscErrorCode MatDestroy_Clique(Mat A)
 PetscErrorCode MatSolve_Clique(Mat A,Vec b,Vec x)
 {
   PetscFunctionBegin;
+  //LDLSolve( TRANSPOSE, info, frontTree, yNodal.localVec );
   PetscFunctionReturn(0);
 }
 
@@ -210,6 +211,7 @@ PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *
   }
 
   /* Numeric factorization */
+  //LDL( TRANSPOSE, info, frontTree );
 
   cliq->matstruc = SAME_NONZERO_PATTERN;
   F->assembled   = PETSC_TRUE;
@@ -229,6 +231,20 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
   /* Convert A to Aclique */
   ierr = MatConvertToClique(A,PETSC_FALSE,cliq);CHKERRQ(ierr);
   cmat = cliq->cmat;
+
+  //NestedDissection
+  const cliq::DistGraph& graph = cmat->Graph();
+  cliq::DistSymmInfo cinfo;
+  cliq::DistSeparatorTree sepTree;
+  cliq::DistMap map, inverseMap;
+  PetscInt cutoff=128;  /* maximum size of leaf node */
+  PetscInt numDistSeps=10; /* number of distributed separators to try */
+  PetscInt numSeqSeps=5;  /* number of sequential separators to try */
+        
+  //cliq::NestedDissection( graph, map, sepTree, cinfo, cutoff, numDistSeps, numSeqSeps );
+  //map.FormInverse( inverseMap );
+  //DistSymmFrontTree<double> frontTree( TRANSPOSE, A, map, sepTree, cinfo );
+        
 
   cliq->matstruc      = DIFFERENT_NONZERO_PATTERN;
   cliq->CleanUpClique = PETSC_TRUE;
