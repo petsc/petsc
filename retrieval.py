@@ -87,8 +87,8 @@ Downloaded package %s from: %s is not a tarball.
       import tarfile
       try:
         tf  = tarfile.open(os.path.join(root, localFile))
-      except tarfile.ReadError:
-        raise RuntimeError(failureMessage)
+      except tarfile.ReadError, e:
+        raise RuntimeError(str(e)+'\n'+failureMessage)
       # some tarfiles list packagename/ but some list packagename/filename in the first entry
       if not tf: raise RuntimeError(failureMessage)
       if not tf.firstmember: raise RuntimeError(failureMessage)
