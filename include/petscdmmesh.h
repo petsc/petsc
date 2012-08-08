@@ -106,6 +106,7 @@ PETSC_EXTERN PetscErrorCode DMMeshGetCoordinateVec(DM, Vec *);
 PETSC_EXTERN PetscErrorCode DMMeshComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMMeshVecSetClosure(DM, Vec, PetscInt, const PetscScalar [], InsertMode);
 PETSC_EXTERN PetscErrorCode DMMeshVecGetClosure(DM, Vec, PetscInt, const PetscScalar **);
+PETSC_EXTERN PetscErrorCode DMMeshVecRestoreClosure(DM, Vec, PetscInt, const PetscScalar **);
 PETSC_EXTERN PetscErrorCode DMMeshMatSetClosure(DM, Mat, PetscInt, PetscScalar [], InsertMode);
 
 PETSC_EXTERN PetscErrorCode MatSetValuesTopology(Mat, DM, PetscInt, const PetscInt [], DM, PetscInt, const PetscInt [], const PetscScalar [], InsertMode);
