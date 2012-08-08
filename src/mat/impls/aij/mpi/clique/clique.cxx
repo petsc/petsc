@@ -14,6 +14,32 @@
 */
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscCliqueFinalizePackage"
+PetscErrorCode PetscCliqueFinalizePackage(void)
+{
+  PetscFunctionBegin;
+  cliq::Finalize();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscCliqueInitializePackage"
+PetscErrorCode PetscCliqueInitializePackage(const char *path)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (cliq::Initialized()) PetscFunctionReturn(0);
+  { /* We have already initialized MPI, so this song and dance is just to pass these variables (which won't be used by Clique) through the interface that needs references */
+    int zero = 0;
+    char **nothing = 0;
+    cliq::Initialize(zero,nothing);
+  }
+  ierr = PetscRegisterFinalize(PetscCliqueFinalizePackage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatConvertToClique"
 PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, Mat_Clique *cliq)
 {
@@ -67,7 +93,7 @@ PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, Mat_Clique *cliq)
   */
 
   // Test cmat using petsc vectors - fail!
-  Vec X,Y;
+  /* Vec X,Y;
   i=0;
   PetscScalar zero=0.0,one=1.0;
   const PetscCliqScalar *x;
@@ -98,7 +124,7 @@ PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, Mat_Clique *cliq)
   printf("Y = A*X:\n");
   ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&Y);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y);CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
 }
 
@@ -230,23 +256,28 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
 
   PetscFunctionBegin;
   printf("MatCholeskyFactorSymbolic_Clique \n");
+  int zero = 0;
+  char **nothing = 0;
+  cliq::Initialize( zero, nothing );
   /* Convert A to Aclique */
   ierr = MatConvertToClique(A,PETSC_FALSE,cliq);CHKERRQ(ierr);
   cmat = cliq->cmat;
 
   //NestedDissection
-  const cliq::DistGraph &graph = cmat->Graph();
+
+  const cliq::DistGraph& graph = cmat->Graph();
   cliq::DistSymmInfo cinfo;
   cliq::DistSeparatorTree sepTree;
   cliq::DistMap map, inverseMap;
   PetscInt cutoff=128;  /* maximum size of leaf node */
-  PetscInt numDistSeps=10; /* number of distributed separators to try */
-  PetscInt numSeqSeps=5;  /* number of sequential separators to try */
+  PetscInt numDistSeps=1; /* number of distributed separators to try */
+  PetscInt numSeqSeps=1;  /* number of sequential separators to try */
   cliq::NestedDissection( graph, map, sepTree, cinfo, PETSC_TRUE, numDistSeps, numSeqSeps, cutoff);
   map.FormInverse( inverseMap );
-  //cliq::DistSymmFrontTree<PetscCliqScalar> frontTree( cliq::TRANSPOSE, *cmat, map, sepTree, cinfo );
+  printf("nested dissection complete\n");
+  cliq::DistSymmFrontTree<PetscCliqScalar> frontTree( cliq::TRANSPOSE, *cmat, map, sepTree, cinfo );
 
-  cliq->matstruc      = DIFFERENT_NONZERO_PATTERN;
+  /*cliq->matstruc      = DIFFERENT_NONZERO_PATTERN;
   cliq->CleanUpClique = PETSC_TRUE;
 
   // Test cmat using Clique vectors
@@ -257,7 +288,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
   cliq::MakeZeros( yc1 );
   cliq::Multiply( 1., *cliq->cmat, xc1, 0., yc1 );
   const double yOrigNorm = cliq::Norm( yc1 );
-  printf(" clique norm(xc1,yc1) %g %g\n",xOrigNorm,yOrigNorm);
+  printf(" clique norm(xc1,yc1) %g %g\n",xOrigNorm,yOrigNorm);*/
 
   PetscFunctionReturn(0);
 }
@@ -283,6 +314,7 @@ PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
+  ierr = PetscCliqueInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
