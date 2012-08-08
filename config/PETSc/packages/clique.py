@@ -5,7 +5,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     #self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/elemental-dev-072512.tar.gz']
     self.download   = ['/home/xzhou/temp/clique.tgz']
-    self.liblist    = [['libclique.a','libmetis.a','libparmetis.a']]
+    self.liblist    = [['libclique.a','libparmetis','libmetis.a']]
     self.includes   = ['clique.hpp']
     self.cxx              = 1
     self.requires32bitint = 0
