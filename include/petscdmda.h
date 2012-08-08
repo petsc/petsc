@@ -374,6 +374,11 @@ PETSC_EXTERN PetscErrorCode DMDACreateSection(DM, PetscInt[], PetscInt[], PetscI
 PETSC_EXTERN PetscErrorCode DMDAComputeCellGeometry(DM, PetscInt, PetscQuadrature *, PetscReal [], PetscReal [], PetscReal [], PetscReal []);
 PETSC_EXTERN PetscErrorCode DMDAVecGetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar **);
 PETSC_EXTERN PetscErrorCode DMDAVecSetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar *, InsertMode);
+PETSC_EXTERN PetscErrorCode DMDAGetClosure(DM,PetscSection,PetscInt,PetscInt*,const PetscInt**);
+PETSC_EXTERN PetscErrorCode DMDARestoreClosure(DM,PetscSection,PetscInt,PetscInt*,const PetscInt**);
+PETSC_EXTERN PetscErrorCode DMDAGetClosureScalar(DM,PetscSection,PetscInt,PetscScalar*,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode DMDARestoreClosureScalar(DM,PetscSection,PetscInt,PetscScalar*,const PetscScalar**);
+PETSC_EXTERN PetscErrorCode DMDASetClosureScalar(DM,PetscSection,PetscInt,PetscScalar*,const PetscScalar*,InsertMode);
 PETSC_EXTERN PetscErrorCode DMDAConvertToCell(DM, MatStencil, PetscInt *);
 
 #define DMDA_FILE_CLASSID 1211220

@@ -1,5 +1,5 @@
  
-#include <petscdmda.h>    /*I   "petscdmda.h"   I*/
+#include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDAVecGetArray"
@@ -51,6 +51,10 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
+  if (da->defaultSection) {
+    ierr = VecGetArray(vec,(PetscScalar**)array);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
@@ -107,6 +111,10 @@ PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
   PetscValidPointer(array, 3);
+  if (da->defaultSection) {
+    ierr = VecRestoreArray(vec,(PetscScalar**)array);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);

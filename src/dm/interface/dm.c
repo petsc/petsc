@@ -42,8 +42,6 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   ierr = PetscMemzero(v->ops, sizeof(struct _DMOps));CHKERRQ(ierr);
 
 
-  v->workSize     = 0;
-  v->workArray    = PETSC_NULL;
   v->ltogmap      = PETSC_NULL;
   v->ltogmapb     = PETSC_NULL;
   v->bs           = 1;
@@ -230,6 +228,17 @@ PetscErrorCode  DMDestroy(DM *dm)
     }
     (*dm)->refinehook = PETSC_NULL;
   }
+  /* Destroy the work arrays */
+  {
+    DMWorkLink link,next;
+    if ((*dm)->workout) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Work array still checked out");
+    for (link=(*dm)->workin; link; link=next) {
+      next = link->next;
+      ierr = PetscFree(link->mem);CHKERRQ(ierr);
+      ierr = PetscFree(link);CHKERRQ(ierr);
+    }
+    (*dm)->workin = PETSC_NULL;
+  }
 
   if ((*dm)->ctx && (*dm)->ctxdestroy) {
     ierr = (*(*dm)->ctxdestroy)(&(*dm)->ctx);CHKERRQ(ierr);
@@ -241,7 +250,6 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmapb);CHKERRQ(ierr);
   ierr = PetscFree((*dm)->vectype);CHKERRQ(ierr);
   ierr = PetscFree((*dm)->mattype);CHKERRQ(ierr);
-  ierr = PetscFree((*dm)->workArray);CHKERRQ(ierr);
 
   ierr = PetscSectionDestroy(&(*dm)->defaultSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&(*dm)->defaultGlobalSection);CHKERRQ(ierr);
@@ -793,13 +801,14 @@ PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
 #undef __FUNCT__
 #define __FUNCT__ "DMGetWorkArray"
 /*@C
-  DMGetWorkArray - Gets a work array guaranteed to be at least the input size
+  DMGetWorkArray - Gets a work array guaranteed to be at least the input size, restore with DMRestoreWorkArray()
 
   Not Collective
 
   Input Parameters:
 + dm - the DM object
-- size - The minium size
+. count - The minium size
+- dtype - data type (PETSC_REAL, PETSC_SCALAR, PETSC_INT)
 
   Output Parameter:
 . array - the work array
@@ -808,22 +817,71 @@ PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
 
 .seealso DMDestroy(), DMCreate()
 @*/
-PetscErrorCode DMGetWorkArray(DM dm,PetscInt size,PetscScalar **array)
+PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,PetscDataType dtype,void *mem)
 {
   PetscErrorCode ierr;
+  DMWorkLink link;
+  size_t size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(array,3);
-  if (size > dm->workSize) {
-    dm->workSize = size;
-    ierr = PetscFree(dm->workArray);CHKERRQ(ierr);
-    ierr = PetscMalloc(dm->workSize * sizeof(PetscScalar), &dm->workArray);CHKERRQ(ierr);
+  PetscValidPointer(mem,4);
+  if (dm->workin) {
+    link = dm->workin;
+    dm->workin = dm->workin->next;
+  } else {
+    ierr = PetscNewLog(dm,struct _DMWorkLink,&link);CHKERRQ(ierr);
   }
-  *array = dm->workArray;
+  ierr = PetscDataTypeGetSize(dtype,&size);CHKERRQ(ierr);
+  if (size*count > link->bytes) {
+    ierr = PetscFree(link->mem);CHKERRQ(ierr);
+    ierr = PetscMalloc(size*count,&link->mem);CHKERRQ(ierr);
+    link->bytes = size*count;
+  }
+  link->next = dm->workout;
+  dm->workout = link;
+  *(void**)mem = link->mem;
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMRestoreWorkArray"
+/*@C
+  DMRestoreWorkArray - Restores a work array guaranteed to be at least the input size, restore with DMRestoreWorkArray()
+
+  Not Collective
+
+  Input Parameters:
++ dm - the DM object
+. count - The minium size
+- dtype - data type (PETSC_REAL, PETSC_SCALAR, PETSC_INT)
+
+  Output Parameter:
+. array - the work array
+
+  Level: developer
+
+.seealso DMDestroy(), DMCreate()
+@*/
+PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,PetscDataType dtype,void *mem)
+{
+  DMWorkLink *p,link;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(mem,4);
+  for (p=&dm->workout; (link=*p); p=&link->next) {
+    if (link->mem == *(void**)mem) {
+      *p = link->next;
+      link->next = dm->workin;
+      dm->workin = link;
+      *(void**)mem = PETSC_NULL;
+      PetscFunctionReturn(0);
+    }
+  }
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Array was not checked out");
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetNullSpaceConstructor"

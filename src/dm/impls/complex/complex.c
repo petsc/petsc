@@ -5039,7 +5039,7 @@ PetscErrorCode DMComplexGetCoordinateVec(DM dm, Vec *coordinates) {
 
   Level: intermediate
 
-.seealso DMComplexVecSetClosure(), DMComplexMatSetClosure()
+.seealso DMComplexVecRestoreClosure(), DMComplexVecSetClosure(), DMComplexMatSetClosure()
 @*/
 PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, const PetscScalar *values[]) {
   PetscScalar    *array, *vArray;
@@ -5082,7 +5082,7 @@ PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscI
     offsets[f+1] += offsets[f];
   }
   if (numFields && offsets[numFields] != size) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Invalid size for closure %d should be %d", offsets[numFields], size);
-  ierr = DMGetWorkArray(dm, size, &array);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, size, PETSC_SCALAR, &array);CHKERRQ(ierr);
   ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
   for(p = 0; p < numPoints*2; p += 2) {
     PetscInt     o = points[p+1];
@@ -5126,6 +5126,35 @@ PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscI
   ierr = VecRestoreArray(v, &vArray);CHKERRQ(ierr);
   if (csize) *csize = size;
   *values = array;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexVecRestoreClosure"
+/*@C
+  DMComplexVecRestoreClosure - Restore the array of the values on the closure of 'point'
+
+  Not collective
+
+  Input Parameters:
++ dm - The DM
+. section - The section describing the layout in v, or PETSC_NULL to use the default section
+. v - The local vector
+. point - The sieve point in the DM
+. csize - The number of values in the closure, or PETSC_NULL
+- values - The array of values, which is a borrowed array and should not be freed
+
+  Level: intermediate
+
+.seealso DMComplexVecGetClosure(), DMComplexVecSetClosure(), DMComplexMatSetClosure()
+@*/
+PetscErrorCode DMComplexVecRestoreClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, const PetscScalar *values[]) {
+  PetscInt        size = 0;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  /* Should work without recalculating size */
+  ierr = DMRestoreWorkArray(dm, size, PETSC_SCALAR, values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5533,7 +5562,7 @@ PetscErrorCode DMComplexMatSetClosure(DM dm, PetscSection section, PetscSection 
     offsets[f+1] += offsets[f];
   }
   if (numFields && offsets[numFields] != numIndices) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Invalid size for closure %d should be %d", offsets[numFields], numIndices);
-  ierr = DMGetWorkArray(dm, numIndices, (PetscScalar **) &indices);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, numIndices, PETSC_INT, &indices);CHKERRQ(ierr);
   if (numFields) {
     for(p = 0; p < numPoints*2; p += 2) {
       PetscInt o = points[p+1];
@@ -5559,8 +5588,10 @@ PetscErrorCode DMComplexMatSetClosure(DM dm, PetscSection section, PetscSection 
     ierr2 = MPI_Comm_rank(((PetscObject) A)->comm, &rank);CHKERRQ(ierr2);
     ierr2 = PetscPrintf(PETSC_COMM_SELF, "[%D]ERROR in DMComplexMatSetClosure\n", rank);CHKERRQ(ierr2);
     ierr2 = DMComplexPrintMatSetValues(A, point, numIndices, indices, values);CHKERRQ(ierr2);
+    ierr2 = DMRestoreWorkArray(dm, numIndices, PETSC_INT, &indices);CHKERRQ(ierr);
     CHKERRQ(ierr);
   }
+  ierr = DMRestoreWorkArray(dm, numIndices, PETSC_INT, &indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5618,6 +5649,7 @@ PetscErrorCode DMComplexComputeTriangleGeometry_private(DM dm, PetscInt e, Petsc
     invJ[3] =  invDet*J[0];
     PetscLogFlops(5.0);
   }
+  ierr = DMComplexVecRestoreClosure(dm, mesh->coordSection, mesh->coordinates, e, PETSC_NULL, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5656,6 +5688,7 @@ PetscErrorCode DMComplexComputeRectangleGeometry_private(DM dm, PetscInt e, Pets
     invJ[3] =  invDet*J[0];
     PetscLogFlopsNoError(5.0);
   }
+  ierr = DMComplexVecRestoreClosure(dm, mesh->coordSection, mesh->coordinates, e, PETSC_NULL, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5702,6 +5735,7 @@ PetscErrorCode DMComplexComputeTetrahedronGeometry_private(DM dm, PetscInt e, Pe
     invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
     PetscLogFlops(37.0);
   }
+  ierr = DMComplexVecRestoreClosure(dm, mesh->coordSection, mesh->coordinates, e, PETSC_NULL, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5748,6 +5782,7 @@ PetscErrorCode DMComplexComputeHexahedronGeometry_private(DM dm, PetscInt e, Pet
     PetscLogFlops(37.0);
   }
   *detJ *= 8.0;
+  ierr = DMComplexVecRestoreClosure(dm, mesh->coordSection, mesh->coordinates, e, PETSC_NULL, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

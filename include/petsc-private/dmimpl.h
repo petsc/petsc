@@ -76,6 +76,13 @@ struct _DMNamedVecLink {
   DMNamedVecLink next;
 };
 
+typedef struct _DMWorkLink *DMWorkLink;
+struct _DMWorkLink {
+  size_t     bytes;
+  void       *mem;
+  DMWorkLink next;
+};
+
 #define DM_MAX_WORK_VECTORS 100 /* work vectors available to users  via DMGetGlobalVector(), DMGetLocalVector() */
 
 struct _p_DM {
@@ -83,8 +90,7 @@ struct _p_DM {
   Vec                    localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];
   Vec                    globalin[DM_MAX_WORK_VECTORS],globalout[DM_MAX_WORK_VECTORS];
   DMNamedVecLink         namedglobal;
-  PetscInt               workSize;
-  PetscScalar            *workArray;
+  DMWorkLink             workin,workout;
   void                   *ctx;    /* a user context */
   PetscErrorCode         (*ctxdestroy)(void**);
   Vec                    x;       /* location at which the functions/Jacobian are computed */

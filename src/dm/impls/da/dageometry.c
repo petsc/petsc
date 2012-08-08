@@ -13,7 +13,7 @@ PETSC_STATIC_INLINE PetscErrorCode FillClosureArray_Private(DM dm, PetscSection 
     ierr = PetscSectionGetDof(section, points[i], &dof);CHKERRQ(ierr);
     size += dof;
   }
-  ierr = DMGetWorkArray(dm, size, &a);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, size, PETSC_SCALAR, &a);CHKERRQ(ierr);
   for(i = 0, k = 0; i < nP; ++i) {
     ierr = PetscSectionGetDof(section, points[i], &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, points[i], &off);CHKERRQ(ierr);
@@ -57,19 +57,161 @@ PETSC_STATIC_INLINE PetscErrorCode FillClosureVec_Private(DM dm, PetscSection se
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAVecGetClosure"
-PetscErrorCode DMDAVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt p, const PetscScalar **values)
+#define __FUNCT__ "GetPointArray_Private"
+PETSC_STATIC_INLINE PetscErrorCode GetPointArray_Private(DM dm,PetscInt n,PetscInt *points,PetscInt *rn,const PetscInt **rpoints)
+{
+  PetscErrorCode ierr;
+  PetscInt *work;
+
+  PetscFunctionBegin;
+  if (rn) *rn = n;
+  if (rpoints) {
+    ierr = DMGetWorkArray(dm,n,PETSC_INT,&work);CHKERRQ(ierr);
+    ierr = PetscMemcpy(work,points,n*sizeof(PetscInt));CHKERRQ(ierr);
+    *rpoints = work;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "RestorePointArray_Private"
+PETSC_STATIC_INLINE PetscErrorCode RestorePointArray_Private(DM dm,PetscInt *rn,const PetscInt **rpoints)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (rn) *rn = 0;
+  if (rpoints) {ierr = DMRestoreWorkArray(dm,*rn,PETSC_INT,rpoints);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetClosure"
+PetscErrorCode DMDAGetClosure(DM dm, PetscSection section, PetscInt p,PetscInt *n,const PetscInt **closure)
 {
   DM_DA         *da  = (DM_DA *) dm->data;
   PetscInt       dim = da->dim;
-  PetscScalar   *vArray;
+  PetscInt       nVx, nVy, nxF, nXF, nyF, nYF, nzF, nZF;
+  PetscInt       pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (n) PetscValidIntPointer(n,4);
+  if (closure) PetscValidPointer(closure, 5);
+  if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
+  if (!section) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "This DM has not default PetscSection");
+  ierr = DMDAGetHeightStratum(dm, -1,  &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMDAGetHeightStratum(dm, 0,   &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMDAGetHeightStratum(dm, 1,   &fStart, &fEnd);CHKERRQ(ierr);
+  ierr = DMDAGetHeightStratum(dm, dim, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMDAGetNumVertices(dm, &nVx, &nVy, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
+  xfStart = fStart; xfEnd = xfStart+nXF;
+  yfStart = xfEnd;
+  if ((p < pStart) || (p >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid point %d should be in [%d, %d)", p, pStart, pEnd);
+  if ((p >= cStart) || (p < cEnd)) {
+    /* Cell */
+    if (dim == 1) {
+      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
+    } else if (dim == 2) {
+      /* 4 faces, 4 vertices
+         Bottom-left vertex follows same order as cells
+         Bottom y-face same order as cells
+         Left x-face follows same order as cells
+         We number the quad:
+
+           8--3--7
+           |     |
+           4  0  2
+           |     |
+           5--1--6
+      */
+      PetscInt c         = p - cStart, cx = c % (nVx-1), cy = c / (nVx-1);
+      PetscInt v         = cy*nVx + cx +  vStart;
+      PetscInt xf        = cy*nxF + cx + xfStart;
+      PetscInt yf        = c + yfStart;
+      PetscInt points[9] = {p, yf, xf+1, yf+nyF, xf+0, v+0, v+1, v+nVx+1, v+nVx+0};
+
+      ierr = GetPointArray_Private(dm,9,points,n,closure);CHKERRQ(ierr);
+    } else {
+      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
+    }
+  } else if ((p >= vStart) || (p < vEnd)) {
+    /* Vertex */
+    ierr = GetPointArray_Private(dm,1,&p,n,closure);CHKERRQ(ierr);
+  } else if ((p >= fStart) || (p < fStart + nXF)) {
+    /* X Face */
+    if (dim == 1) {
+      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
+    } else if (dim == 2) {
+      /* 2 vertices: The bottom vertex has the same numbering as the face */
+      PetscInt f         = p - xfStart;
+      PetscInt points[3] = {p, f, f+nVx};
+
+      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Broken");
+      ierr = GetPointArray_Private(dm,3,points,n,closure);CHKERRQ(ierr);
+    } else if (dim == 3) {
+      /* 4 vertices */
+      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
+    }
+  } else if ((p >= fStart + nXF) || (p < fStart + nXF + nYF)) {
+    /* Y Face */
+    if (dim == 1) {
+      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
+    } else if (dim == 2) {
+      /* 2 vertices: The left vertex has the same numbering as the face */
+      PetscInt f         = p - yfStart;
+      PetscInt points[3] = {p, f, f+1};
+
+      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Broken");
+      ierr = GetPointArray_Private(dm, 3, points, n, closure);CHKERRQ(ierr);
+    } else if (dim == 3) {
+      /* 4 vertices */
+      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
+    }
+  } else {
+    /* Z Face */
+    if (dim == 1) {
+      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
+    } else if (dim == 2) {
+      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no z-faces in 2D");
+    } else if (dim == 3) {
+      /* 4 vertices */
+      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDARestoreClosure"
+PetscErrorCode DMDARestoreClosure(DM dm, PetscSection section, PetscInt p,PetscInt *n,const PetscInt **closure)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(n,4);
+  PetscValidPointer(closure, 5);
+  ierr = RestorePointArray_Private(dm,n,closure);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetClosureScalar"
+/* If you did not pass PETSC_NULL for 'values', you must call DMDARestoreClosureScalar() */
+PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section,PetscInt p,PetscScalar *vArray,const PetscScalar **values)
+{
+  DM_DA         *da  = (DM_DA *) dm->data;
+  PetscInt       dim = da->dim;
   PetscInt       nVx, nVy, nxF, nXF, nyF, nYF, nzF, nZF;
   PetscInt       pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart, yfEnd, zfStart;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
+  PetscValidScalarPointer(vArray, 4);
   PetscValidPointer(values, 5);
   if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
   if (!section) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "This DM has not default PetscSection");
@@ -83,7 +225,6 @@ PetscErrorCode DMDAVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
   yfStart = xfEnd;  yfEnd = yfStart+nYF;
   zfStart = yfEnd;
   if ((p < pStart) || (p >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid point %d should be in [%d, %d)", p, pStart, pEnd);
-  ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
   if ((p >= cStart) || (p < cEnd)) {
     /* Cell */
     if (dim == 1) {
@@ -177,24 +318,68 @@ PetscErrorCode DMDAVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
       SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
     }
   }
-  ierr = VecRestoreArray(v, &vArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAVecSetClosure"
-PetscErrorCode DMDAVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt p, const PetscScalar *values, InsertMode mode)
+#define __FUNCT__ "DMDAVecGetClosure"
+PetscErrorCode DMDAVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt p, const PetscScalar **values)
+{
+  PetscScalar *vArray;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
+  PetscValidPointer(values, 5);
+  ierr = VecGetArray(v,&vArray);CHKERRQ(ierr);
+  ierr = DMDAGetClosureScalar(dm,section,p,vArray,values);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&vArray);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDARestoreClosureScalar"
+PetscErrorCode DMDARestoreClosureScalar(DM dm, PetscSection section,PetscInt p,PetscScalar *vArray,const PetscScalar **values)
+{
+  PetscErrorCode ierr;
+  PetscInt count;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(values, 5);
+  count = 0;                    /* We are lying about the count */
+  ierr = DMRestoreWorkArray(dm,count,PETSC_SCALAR,values);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAVecRestoreClosure"
+PetscErrorCode DMDAVecRestoreClosure(DM dm, PetscSection section, Vec v, PetscInt p, const PetscScalar **values)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
+  PetscValidPointer(values, 5);
+  ierr = DMDARestoreClosureScalar(dm,section,p,PETSC_NULL,values);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetClosureScalar"
+PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,PetscScalar *vArray, const PetscScalar *values, InsertMode mode)
 {
   DM_DA         *da  = (DM_DA *) dm->data;
   PetscInt       dim = da->dim;
-  PetscScalar   *vArray;
   PetscInt       nVx, nVy, nxF, nXF, nyF, nYF, nzF, nZF;
   PetscInt       pStart, pEnd, cStart, cEnd, vStart, vEnd, fStart, fEnd, xfStart, xfEnd, yfStart, yfEnd, zfStart;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
+  PetscValidScalarPointer(values, 4);
   PetscValidPointer(values, 5);
   if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
   if (!section) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "This DM has not default PetscSection");
@@ -208,7 +393,6 @@ PetscErrorCode DMDAVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
   yfStart = xfEnd;  yfEnd = yfStart+nYF;
   zfStart = yfEnd;
   if ((p < pStart) || (p >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid point %d should be in [%d, %d)", p, pStart, pEnd);
-  ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
   if ((p >= cStart) || (p < cEnd)) {
     /* Cell */
     if (dim == 1) {
@@ -296,7 +480,23 @@ PetscErrorCode DMDAVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt p,
       SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
     }
   }
-  ierr = VecRestoreArray(v, &vArray);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAVecSetClosure"
+PetscErrorCode DMDAVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt p, const PetscScalar *values, InsertMode mode)
+{
+  PetscScalar   *vArray;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
+  PetscValidPointer(values, 5);
+  ierr = VecGetArray(v,&vArray);CHKERRQ(ierr);
+  ierr = DMDASetClosureScalar(dm,section,p,vArray,values,mode);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&vArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

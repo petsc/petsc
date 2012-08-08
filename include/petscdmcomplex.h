@@ -73,6 +73,7 @@ PETSC_EXTERN PetscErrorCode DMComplexCreateConeSection(DM, PetscSection *);
 /* FEM Support */
 PETSC_EXTERN PetscErrorCode DMComplexComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMComplexVecGetClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, const PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode DMComplexVecRestoreClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, const PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode DMComplexVecSetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode DMComplexMatSetClosure(DM, PetscSection, PetscSection, Mat, PetscInt, PetscScalar[], InsertMode);
 
