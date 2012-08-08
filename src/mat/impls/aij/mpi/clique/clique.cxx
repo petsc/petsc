@@ -233,6 +233,7 @@ PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *
 
   PetscFunctionBegin;
   printf("MatCholeskyFactorNumeric_Clique \n");
+  cmat = cliq->cmat;
   if (cliq->matstruc == SAME_NONZERO_PATTERN){ /* successing numerical factorization */
     /* Update cmat */
     ierr = MatConvertToClique(A,PETSC_TRUE,cliq);CHKERRQ(ierr);
@@ -256,15 +257,11 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
 
   PetscFunctionBegin;
   printf("MatCholeskyFactorSymbolic_Clique \n");
-  int zero = 0;
-  char **nothing = 0;
-  cliq::Initialize( zero, nothing );
   /* Convert A to Aclique */
   ierr = MatConvertToClique(A,PETSC_FALSE,cliq);CHKERRQ(ierr);
   cmat = cliq->cmat;
 
   //NestedDissection
-
   const cliq::DistGraph& graph = cmat->Graph();
   cliq::DistSymmInfo cinfo;
   cliq::DistSeparatorTree sepTree;
@@ -277,18 +274,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
   printf("nested dissection complete\n");
   cliq::DistSymmFrontTree<PetscCliqScalar> frontTree( cliq::TRANSPOSE, *cmat, map, sepTree, cinfo );
 
-  /*cliq->matstruc      = DIFFERENT_NONZERO_PATTERN;
+  cliq->matstruc      = DIFFERENT_NONZERO_PATTERN;
   cliq->CleanUpClique = PETSC_TRUE;
-
-  // Test cmat using Clique vectors
-  PetscInt N=A->cmap->N;
-  cliq::DistVector<double> xc1( N, cliq->cliq_comm), yc1( N, cliq->cliq_comm);
-  cliq::MakeUniform( xc1 );
-  const double xOrigNorm = cliq::Norm( xc1 );
-  cliq::MakeZeros( yc1 );
-  cliq::Multiply( 1., *cliq->cmat, xc1, 0., yc1 );
-  const double yOrigNorm = cliq::Norm( yc1 );
-  printf(" clique norm(xc1,yc1) %g %g\n",xOrigNorm,yOrigNorm);*/
 
   PetscFunctionReturn(0);
 }
