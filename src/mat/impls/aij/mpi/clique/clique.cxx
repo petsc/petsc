@@ -105,7 +105,7 @@ PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, Mat_Clique *cliq)
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
   printf("X:\n");
-  ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
 
@@ -122,7 +122,7 @@ PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, Mat_Clique *cliq)
   ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
   printf("Y = A*X:\n");
-  ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&Y);CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
@@ -220,6 +220,11 @@ PetscErrorCode MatSolve_Clique(Mat A,Vec b,Vec x)
 {
   PetscFunctionBegin;
   //LDLSolve( TRANSPOSE, info, frontTree, yNodal.localVec );
+
+  //DistNodalVector<double> yNodal;
+  //yNodal.Pull( inverseMap, info, y );
+  //Solve( info, frontTree, yNodal.localVec );
+  //yNodal.Push( inverseMap, info, y );
   PetscFunctionReturn(0);
 }
 
@@ -271,12 +276,24 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
   PetscInt numSeqSeps=1;  /* number of sequential separators to try */
   cliq::NestedDissection( graph, map, sepTree, cinfo, PETSC_TRUE, numDistSeps, numSeqSeps, cutoff);
   map.FormInverse( inverseMap );
+
   printf("nested dissection complete\n");
   cliq::DistSymmFrontTree<PetscCliqScalar> frontTree( cliq::TRANSPOSE, *cmat, map, sepTree, cinfo );
 
   cliq->matstruc      = DIFFERENT_NONZERO_PATTERN;
   cliq->CleanUpClique = PETSC_TRUE;
+#if defined(MV)
+  // Test cmat using Clique vectors
+  PetscInt N=A->cmap->N;
+  cliq::DistVector<double> xc1( N, cliq->cliq_comm), yc1( N, cliq->cliq_comm);
+  cliq::MakeUniform( xc1 );
+  const double xOrigNorm = cliq::Norm( xc1 );
+  cliq::MakeZeros( yc1 );
+  cliq::Multiply( 1., *cmat, xc1, 0., yc1 );
+  const double yOrigNorm = cliq::Norm( yc1 );
+  printf(" clique norm(xc1,yc1) %g %g\n",xOrigNorm,yOrigNorm);
 
+#endif
   PetscFunctionReturn(0);
 }
 

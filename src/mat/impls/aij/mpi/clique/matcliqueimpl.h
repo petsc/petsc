@@ -15,6 +15,8 @@ typedef struct {
   MatStructure   matstruc;
   PetscBool      CleanUpClique;  /* Boolean indicating if we call Clique clean step */
   MPI_Comm       cliq_comm;      /* Clique MPI communicator                         */
+  cliq::DistSymmInfo info;
+  cliq::DistSymmFrontTree<PetscCliqScalar> frontTree;
   PetscErrorCode (*Destroy)(Mat);
 } Mat_Clique;
 
