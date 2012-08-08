@@ -574,6 +574,7 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
       comp        += numBasisComps;
       fieldOffset += numBasisFuncs*numBasisComps;
     }
+    ierr = DMComplexVecRestoreClosure(user->dm, PETSC_NULL, localX, c, PETSC_NULL, &x);CHKERRQ(ierr);
     if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %d error %g\n", c, elemError);CHKERRQ(ierr);}
     localError += elemError;
   }
@@ -942,6 +943,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
     for(i = 0; i < cellDof; ++i) {
       u[c*cellDof+i] = x[i];
     }
+    ierr = DMComplexVecRestoreClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
   }
   for(field = 0; field < numFields; ++field) {
     const PetscInt numQuadPoints = user->q[field].numQuadPoints;
@@ -1233,10 +1235,12 @@ PetscErrorCode FormJacobianActionLocal(DM dm, Mat Jac, Vec X, Vec F, AppCtx *use
     for(i = 0; i < cellDof; ++i) {
       u[c*cellDof+i] = x[i];
     }
+    ierr = DMComplexVecRestoreClosure(dm, PETSC_NULL, jctx->u, c, PETSC_NULL, &x);CHKERRQ(ierr);
     ierr = DMComplexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
     for(i = 0; i < cellDof; ++i) {
       a[c*cellDof+i] = x[i];
     }
+    ierr = DMComplexVecRestoreClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
   }
   for(field = 0; field < numFields; ++field) {
     const PetscInt numQuadPoints = user->q[field].numQuadPoints;
@@ -1589,6 +1593,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, AppCtx *user)
     for(i = 0; i < cellDof; ++i) {
       u[c*cellDof+i] = x[i];
     }
+    ierr = DMComplexVecRestoreClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
   }
   ierr = PetscMemzero(elemMat, numCells*cellDof*cellDof * sizeof(PetscScalar));CHKERRQ(ierr);
   for(fieldI = 0; fieldI < numFields; ++fieldI) {
