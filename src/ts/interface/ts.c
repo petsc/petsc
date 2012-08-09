@@ -658,7 +658,7 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
   ierr = DMTSGetIJacobian(dm,&ijacobian,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  if (ijacobian) {
+  if (!ijacobian) {
     ierr = SNESSetJacobian(snes,A,B,SNESTSFormJacobian,ts);CHKERRQ(ierr);
   }
   if (A) {
