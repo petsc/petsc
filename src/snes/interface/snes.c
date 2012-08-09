@@ -2484,7 +2484,6 @@ PetscErrorCode  SNESSetUp(SNES snes)
   if (snes->ops->setup) {
     ierr = (*snes->ops->setup)(snes);CHKERRQ(ierr);
   }
-  ierr = DMShellSetMatrix(dm,snes->jacobian);CHKERRQ(ierr);
 
   snes->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);

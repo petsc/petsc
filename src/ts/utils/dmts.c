@@ -17,7 +17,7 @@ static PetscErrorCode DMCoarsenHook_TSDM(DM dm,DM dmc,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMRestrictHook_SNESDM"
+#define __FUNCT__ "DMRestrictHook_TSDM"
 /* This could restrict auxiliary information to the coarse level.
  */
 static PetscErrorCode DMRestrictHook_TSDM(DM dm,Mat Restrict,Vec rscale,Mat Inject,DM dmc,void *ctx)
@@ -80,6 +80,7 @@ PetscErrorCode DMTSGetContext(DM dm,TSDM *tsdm)
     ierr = PetscContainerSetPointer(container,tsdmnew);CHKERRQ(ierr);
     ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_TSDM);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"TSDM",(PetscObject)container);CHKERRQ(ierr);
+    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSDM,DMRestrictHook_TSDM,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscContainerGetPointer(container,(void**)tsdm);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
   }
