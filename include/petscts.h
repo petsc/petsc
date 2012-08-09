@@ -216,6 +216,15 @@ PETSC_EXTERN PetscErrorCode TSComputeIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Ma
 
 PETSC_EXTERN PetscErrorCode TSVISetVariableBounds(TS,Vec,Vec);
 
+PETSC_EXTERN PetscErrorCode DMTSSetRHSFunction(DM,TSRHSFunction,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetRHSFunction(DM,TSRHSFunction*,void**);
+PETSC_EXTERN PetscErrorCode DMTSSetRHSJacobian(DM,TSRHSJacobian,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetRHSJacobian(DM,TSRHSJacobian*,void**);
+PETSC_EXTERN PetscErrorCode DMTSSetIFunction(DM,TSIFunction,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetIFunction(DM,TSIFunction*,void**);
+PETSC_EXTERN PetscErrorCode DMTSSetIJacobian(DM,TSIJacobian,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetIJacobian(DM,TSIJacobian*,void**);
+
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFList TSList;
 PETSC_EXTERN PetscBool TSRegisterAllCalled;

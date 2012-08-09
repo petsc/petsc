@@ -44,8 +44,6 @@ struct _TSUserOps {
 
 struct _p_TS {
   PETSCHEADER(struct _TSOps);
-
-  struct _TSUserOps *userops;
   DM            dm;
   TSProblemType problem_type;
   Vec           vec_sol;
@@ -86,9 +84,6 @@ struct _p_TS {
 
   /* ---------------------Nonlinear Iteration------------------------------*/
   SNES  snes;
-  void *funP;
-  void *jacP;
-
 
   /* --- Data that is unique to each particular solver --- */
   PetscInt setupcalled;             /* true if setup has been called */
@@ -145,6 +140,38 @@ struct _p_TSAdapt {
   PetscReal   scale_solve_failed; /* Scale step by this factor if solver (linear or nonlinear) fails. */
   PetscViewer monitor;
 };
+
+typedef struct _n_TSDM *TSDM;
+struct _n_TSDM {
+  TSRHSFunction rhsfunction;
+  TSRHSJacobian rhsjacobian;
+
+  TSIFunction ifunction;
+  TSIJacobian ijacobian;
+
+  void *rhsfunctionctx;
+  void *rhsjacobianctx;
+
+  void *ifunctionctx;
+  void *ijacobianctx;
+
+  /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */
+  PetscErrorCode (*destroy)(TSDM);
+  void *data;
+
+  /* This is NOT reference counted. The SNES that originally created this context is cached here to implement copy-on-write.
+   * Fields in the TSDM should only be written if the SNES matches originalsnes.
+   */
+  DM originaldm;
+};
+
+PETSC_EXTERN PetscErrorCode DMTSGetContext(DM,TSDM*);
+PETSC_EXTERN PetscErrorCode DMTSGetContextWrite(DM,TSDM*);
+PETSC_EXTERN PetscErrorCode DMTSCopyContext(DM,DM);
+PETSC_EXTERN PetscErrorCode DMTSDuplicateContext(DM,DM);
+PETSC_EXTERN PetscErrorCode DMTSSetUpLegacy(DM);
+
+
 
 PETSC_EXTERN PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
