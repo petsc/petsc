@@ -430,6 +430,10 @@ PetscErrorCode  PCBJacobiSetUseTrueLocal(PC pc)
    
    You must call KSPSetUp() or PCSetUp() before calling PCBJacobiGetSubKSP().
 
+   Fortran Usage: You must pass in a KSP array that is large enough to contain all the local KSPs.
+      You can call PCBJacobiGetSubKSP(pc,nlocal,firstlocal,PETSC_NULL_OBJECT,ierr) to determine how large the
+      KSP array must be.
+
    Level: advanced
 
 .keywords:  block, Jacobi, get, sub, KSP, context

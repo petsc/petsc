@@ -6,7 +6,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     self.functions         = ['glutSetWindow']
     self.includes          = ['GLUT/glut.h']
-    self.liblist           = []
+    self.liblist           = [[]]
     self.complex           = 1   # 0 means cannot use complex
     self.lookforbydefault  = 0 
     self.double            = 0   # 1 means requires double precision 

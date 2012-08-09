@@ -1343,6 +1343,11 @@ PetscErrorCode  PCFieldSplitSetBlockSize(PC pc,PetscInt bs)
 
    You must call KSPSetUp() before calling PCFieldSplitGetSubKSP().
 
+   Fortran Usage: You must pass in a KSP array that is large enough to contain all the local KSPs.
+      You can call PCFieldSplitGetSubKSP(pc,n,PETSC_NULL_OBJECT,ierr) to determine how large the
+      KSP array must be.
+
+
    Level: advanced
 
 .seealso: PCFIELDSPLIT

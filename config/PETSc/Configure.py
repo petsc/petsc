@@ -228,6 +228,7 @@ class Configure(config.base.Configure):
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
       libs.extend(i.lib)
+      print i.lib, self.libraries.toStringNoDupes(i.lib)
       self.addMakeMacro(i.PACKAGE+'_LIB', self.libraries.toStringNoDupes(i.lib))
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
