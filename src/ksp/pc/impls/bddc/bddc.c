@@ -1886,25 +1886,24 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     }
     /* Precompute stuffs needed for preprocessing and application of BDDC*/
     if(n_constraints) {
-      /* some work vectors */
       ierr = MatCreate(PETSC_COMM_SELF,&pcbddc->local_auxmat2);CHKERRQ(ierr);
       ierr = MatSetSizes(pcbddc->local_auxmat2,n_R,n_constraints,n_R,n_constraints);CHKERRQ(ierr);
       ierr = MatSetType(pcbddc->local_auxmat2,impMatType);CHKERRQ(ierr);
       ierr = MatSeqDenseSetPreallocation(pcbddc->local_auxmat2,PETSC_NULL);CHKERRQ(ierr);
 
+      /* Create Constraint matrix on R nodes: C_{CR}  */
+      ierr = MatGetSubMatrix(pcbddc->ConstraintMatrix,is_C_local,is_R_local,MAT_INITIAL_MATRIX,&C_CR);CHKERRQ(ierr);
+      ierr = ISDestroy(&is_C_local);CHKERRQ(ierr);
+
       /* Assemble local_auxmat2 = - A_{RR}^{-1} C^T_{CR} needed by BDDC application */
       for(i=0;i<n_constraints;i++) {
-        ierr = VecSet(pcis->vec1_N,zero);CHKERRQ(ierr);
         ierr = VecSet(pcbddc->vec1_R,zero);CHKERRQ(ierr);
         /* Get row of constraint matrix in R numbering */
-        ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-        ierr = MatGetRow(pcbddc->ConstraintMatrix,n_vertices+i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,(const PetscScalar**)&row_cmat_values);CHKERRQ(ierr);
+        ierr = VecGetArray(pcbddc->vec1_R,&array);CHKERRQ(ierr);
+        ierr = MatGetRow(C_CR,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,(const PetscScalar**)&row_cmat_values);CHKERRQ(ierr);
         for(j=0;j<size_of_constraint;j++) { array[ row_cmat_indices[j] ] = - row_cmat_values[j]; }
-        ierr = MatRestoreRow(pcbddc->ConstraintMatrix,n_vertices+i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,(const PetscScalar**)&row_cmat_values);CHKERRQ(ierr);
-        ierr = VecGetArray(pcbddc->vec1_R,&array2);CHKERRQ(ierr);
-        for(j=0;j<n_R;j++) { array2[j] = array[ idx_R_local[j] ]; }
-        ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-        ierr = VecRestoreArray(pcbddc->vec1_R,&array2);CHKERRQ(ierr);
+        ierr = MatRestoreRow(C_CR,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,(const PetscScalar**)&row_cmat_values);CHKERRQ(ierr);
+        ierr = VecRestoreArray(pcbddc->vec1_R,&array);CHKERRQ(ierr);
         /* Solve for row of constraint matrix in R numbering */
         ierr = KSPSolve(pcbddc->ksp_R,pcbddc->vec1_R,pcbddc->vec2_R);CHKERRQ(ierr);
         /* Set values */
@@ -1914,10 +1913,6 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
       }
       ierr = MatAssemblyBegin(pcbddc->local_auxmat2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(pcbddc->local_auxmat2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-      /* Create Constraint matrix on R nodes: C_{CR}  */
-      ierr = MatGetSubMatrix(pcbddc->ConstraintMatrix,is_C_local,is_R_local,MAT_INITIAL_MATRIX,&C_CR);CHKERRQ(ierr);
-      ierr = ISDestroy(&is_C_local);CHKERRQ(ierr);
 
       /* Assemble AUXMAT = ( LUFactor )( -C_{CR} A_{RR}^{-1} C^T_{CR} )^{-1} */
       ierr = MatMatMult(C_CR,pcbddc->local_auxmat2,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AUXMAT);CHKERRQ(ierr);
