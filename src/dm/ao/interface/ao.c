@@ -196,6 +196,8 @@ PetscErrorCode  AOApplicationToPetscIS(AO ao,IS is)
    allows one to convert, for example, neighbor lists that use negative
    entries to indicate nonexistent neighbors due to boundary conditions, etc.
 
+   Integers that are out of range are mapped to -1
+
 .keywords: application ordering, mapping
 
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(),
@@ -234,6 +236,8 @@ PetscErrorCode  AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
    Any integers in ia[] that are negative are left unchanged. This 
    allows one to convert, for example, neighbor lists that use negative
    entries to indicate nonexistent neighbors due to boundary conditions, etc.
+
+   Integers that are out of range are mapped to -1
 
 .keywords: application ordering, mapping
 
