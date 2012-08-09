@@ -1261,6 +1261,11 @@ PetscErrorCode  TSGetProblemType(TS ts, TSProblemType *type)
 PetscErrorCode  TSSetUp(TS ts)
 {
   PetscErrorCode ierr;
+  DM             dm;
+  PetscErrorCode (*func)(SNES,Vec,Vec,void*);
+  PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  TSIJacobian    ijac;
+  TSRHSJacobian  rhsjac;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1279,6 +1284,23 @@ PetscErrorCode  TSSetUp(TS ts)
     ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
   }
 
+  /* in the case where we've set a DMTSFunction or what have you, we need the default SNESFunction
+   to be set right but can't do it elsewhere due to the overreliance on ctx=ts.
+   */
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMSNESGetFunction(dm,&func,PETSC_NULL);CHKERRQ(ierr);
+  if (!func) {
+    ierr =DMSNESSetFunction(dm,SNESTSFormFunction,ts);CHKERRQ(ierr);
+  }
+  /* if the SNES doesn't have a jacobian set and the TS has an ijacobian or rhsjacobian set, set the SNES to use it.
+     Otherwise, the SNES will use coloring internally to form the Jacobian.
+   */
+  ierr = DMSNESGetJacobian(dm,&jac,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMTSGetIJacobian(dm,&ijac,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMTSGetRHSJacobian(dm,&rhsjac,PETSC_NULL);CHKERRQ(ierr);
+  if (!jac && (ijac || rhsjac)) {
+    ierr = DMSNESSetJacobian(dm,SNESTSFormJacobian,ts);CHKERRQ(ierr);
+  }
   ts->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -1396,6 +1418,7 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
   PetscValidPointer(snes,2);
   if (!ts->snes) {
     ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
+    ierr = SNESSetFunction(ts->snes,PETSC_NULL,SNESTSFormFunction,ts);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(ts,ts->snes);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
     if (ts->dm) {ierr = SNESSetDM(ts->snes,ts->dm);CHKERRQ(ierr);}

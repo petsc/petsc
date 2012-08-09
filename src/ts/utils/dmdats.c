@@ -262,7 +262,7 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat 
 
 .seealso: DMTSSetFunction(), DMDATSSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
 @*/
-PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm,InsertMode imode,PetscErrorCode (*func)(DMDALocalInfo*,PetscReal,void*,void*,void*),void *ctx)
+PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm,InsertMode imode,DMDATSRHSFunctionLocal func,void *ctx)
 {
   PetscErrorCode ierr;
   TSDM         sdm;
@@ -301,7 +301,7 @@ PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm,InsertMode imode,PetscErrorCode (
 
 .seealso: DMTSSetJacobian(), DMDATSSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
 @*/
-PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,PetscErrorCode (*func)(DMDALocalInfo*,PetscReal,void*,Mat,Mat,MatStructure*,void*),void *ctx)
+PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,DMDATSRHSJacobianLocal func,void *ctx)
 {
   PetscErrorCode ierr;
   TSDM         sdm;
@@ -341,7 +341,7 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,PetscErrorCode (*func)(DMDALocalI
 
 .seealso: DMTSSetFunction(), DMDATSSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
 @*/
-PetscErrorCode DMDATSSetIFunctionLocal(DM dm,InsertMode imode,PetscErrorCode (*func)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*),void *ctx)
+PetscErrorCode DMDATSSetIFunctionLocal(DM dm,InsertMode imode,DMDATSIFunctionLocal func,void *ctx)
 {
   PetscErrorCode ierr;
   TSDM         sdm;
@@ -380,7 +380,7 @@ PetscErrorCode DMDATSSetIFunctionLocal(DM dm,InsertMode imode,PetscErrorCode (*f
 
 .seealso: DMTSSetJacobian(), DMDATSSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
 @*/
-PetscErrorCode DMDATSSetIJacobianLocal(DM dm,PetscErrorCode (*func)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,MatStructure*,void*),void *ctx)
+PetscErrorCode DMDATSSetIJacobianLocal(DM dm,DMDATSIJacobianLocal func,void *ctx)
 {
   PetscErrorCode ierr;
   TSDM         sdm;
