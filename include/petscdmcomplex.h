@@ -41,10 +41,12 @@ PETSC_EXTERN PetscErrorCode DMComplexStratify(DM);
 PETSC_EXTERN PetscErrorCode DMComplexHasLabel(DM, const char [], PetscBool *);
 PETSC_EXTERN PetscErrorCode DMComplexGetLabelValue(DM, const char[], PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexSetLabelValue(DM, const char[], PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode DMComplexClearLabelValue(DM, const char[], PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMComplexGetLabelSize(DM, const char[], PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexGetLabelIdIS(DM, const char[], IS *);
 PETSC_EXTERN PetscErrorCode DMComplexGetStratumSize(DM, const char [], PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexGetStratumIS(DM, const char [], PetscInt, IS *);
+PETSC_EXTERN PetscErrorCode DMComplexClearLabelStratum(DM, const char[], PetscInt);
 
 PETSC_EXTERN PetscErrorCode DMComplexMeetPoints(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
 PETSC_EXTERN PetscErrorCode DMComplexJoinPoints(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
@@ -73,6 +75,7 @@ PETSC_EXTERN PetscErrorCode DMComplexCreateConeSection(DM, PetscSection *);
 /* FEM Support */
 PETSC_EXTERN PetscErrorCode DMComplexComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMComplexVecGetClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, const PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode DMComplexVecRestoreClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, const PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode DMComplexVecSetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode DMComplexMatSetClosure(DM, PetscSection, PetscSection, Mat, PetscInt, PetscScalar[], InsertMode);
 

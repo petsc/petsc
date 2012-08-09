@@ -61,23 +61,20 @@ PetscErrorCode MatMult_IS(Mat A,Vec x,Vec y)
 #define __FUNCT__ "MatMultAdd_IS"
 static PetscErrorCode MatMultAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
 {
+  Vec            temp_vec; 
   PetscErrorCode ierr;
-  Mat_IS         *is = (Mat_IS*)A->data;
-
+ 
   PetscFunctionBegin; /*  v3 = v2 + A * v1.*/
-  /*  scatter the global vector v1 into the local work vector */
-  ierr = VecScatterBegin(is->ctx,v1,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (is->ctx,v1,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterBegin(is->ctx,v2,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (is->ctx,v2,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
-  /* multiply the local matrix */
-  ierr = MatMultAdd(is->A,is->x,is->y,is->y);CHKERRQ(ierr);
-
-  /* scatter result back into global vector */
-  ierr = VecSet(v3,0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(is->ctx,is->y,v3,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (is->ctx,is->y,v3,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  if(v3 != v2) {
+    ierr = MatMult(A,v1,v3);CHKERRQ(ierr);
+    ierr = VecAXPY(v3,1.0,v2);CHKERRQ(ierr);
+  } else {
+    ierr = VecDuplicate(v2,&temp_vec);CHKERRQ(ierr);
+    ierr = MatMult(A,v1,temp_vec);CHKERRQ(ierr);
+    ierr = VecAXPY(temp_vec,1.0,v2);CHKERRQ(ierr);
+    ierr = VecCopy(temp_vec,v3);CHKERRQ(ierr);
+    ierr = VecDestroy(&temp_vec);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -107,23 +104,20 @@ PetscErrorCode MatMultTranspose_IS(Mat A,Vec x,Vec y)
 #define __FUNCT__ "MatMultTransposeAdd_IS"
 PetscErrorCode MatMultTransposeAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
 {
-  Mat_IS         *is = (Mat_IS*)A->data;
+  Vec            temp_vec; 
   PetscErrorCode ierr;
 
   PetscFunctionBegin; /*  v3 = v2 + A' * v1.*/
-  /*  scatter the global vectors v1 and v2  into the local work vectors */
-  ierr = VecScatterBegin(is->ctx,v1,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (is->ctx,v1,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterBegin(is->ctx,v2,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (is->ctx,v2,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
-  /* multiply the local matrix */
-  ierr = MatMultTransposeAdd(is->A,is->x,is->y,is->y);CHKERRQ(ierr);
-
-  /* scatter result back into global vector */
-  ierr = VecSet(v3,0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(is->ctx,is->y,v3,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (is->ctx,is->y,v3,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  if(v3 != v2) {
+    ierr = MatMultTranspose(A,v1,v3);CHKERRQ(ierr);
+    ierr = VecAXPY(v3,1.0,v2);CHKERRQ(ierr);
+  } else {
+    ierr = VecDuplicate(v2,&temp_vec);CHKERRQ(ierr);
+    ierr = MatMultTranspose(A,v1,temp_vec);CHKERRQ(ierr);
+    ierr = VecAXPY(temp_vec,1.0,v2);CHKERRQ(ierr);
+    ierr = VecCopy(temp_vec,v3);CHKERRQ(ierr);
+    ierr = VecDestroy(&temp_vec);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

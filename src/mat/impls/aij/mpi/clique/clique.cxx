@@ -14,35 +14,148 @@
 */
 
 #undef __FUNCT__
-#define __FUNCT__ "MatConvertToClique"
-PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, cliq::DistSparseMatrix<double> **cmat)
+#define __FUNCT__ "PetscCliqueFinalizePackage"
+PetscErrorCode PetscCliqueFinalizePackage(void)
 {
-  PetscErrorCode    ierr;
-  PetscInt          i,rstart,rend,ncols;
-  const PetscInt    *cols;
-  const PetscScalar *vals;
-  MPI_Comm          comm=((PetscObject)A)->comm;
-  cliq::DistSparseMatrix<PetscScalar> *cmat_ptr;
- 
+  PetscFunctionBegin;
+  cliq::Finalize();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscCliqueInitializePackage"
+PetscErrorCode PetscCliqueInitializePackage(const char *path)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (cliq::Initialized()) PetscFunctionReturn(0);
+  { /* We have already initialized MPI, so this song and dance is just to pass these variables (which won't be used by Clique) through the interface that needs references */
+    int zero = 0;
+    char **nothing = 0;
+    cliq::Initialize(zero,nothing);
+  }
+  ierr = PetscRegisterFinalize(PetscCliqueFinalizePackage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatConvertToClique"
+PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, Mat_Clique *cliq)
+{
+  PetscErrorCode        ierr;
+  PetscInt              i,j,rstart,rend,ncols;
+  const PetscInt        *cols;
+  const PetscCliqScalar *vals;
+  cliq::DistSparseMatrix<PetscCliqScalar> *cmat_ptr;
+  
   PetscFunctionBegin;
   printf("MatConvertToClique ...\n");
   if (!valOnly){ 
+    printf("  create cmat...\n");
     /* create Clique matrix */
     cliq::mpi::Comm cxxcomm(((PetscObject)A)->comm);
-    cmat_ptr = new cliq::DistSparseMatrix<double>(A->rmap->N,cxxcomm);
-    cmat = &cmat_ptr;
+    ierr = PetscCommDuplicate(cxxcomm,&(cliq->cliq_comm),PETSC_NULL);CHKERRQ(ierr);
+    cmat_ptr = new cliq::DistSparseMatrix<PetscCliqScalar>(A->rmap->N,cliq->cliq_comm);
+    cliq->cmat = cmat_ptr;
   } else {
-    cmat_ptr = *cmat;
+    cmat_ptr = cliq->cmat;
   }
   /* fill matrix values */
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  const int firstLocalRow = cmat_ptr->FirstLocalRow();
+  const int localHeight = cmat_ptr->LocalHeight();
+  //printf("rstar,end: %d %d; firstLocalRow,localHeight: %d %d\n",rstart,rend,firstLocalRow,localHeight);
+  if (rstart != firstLocalRow || rend-rstart != localHeight) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix rowblock distribution does not match");
+
   cmat_ptr->StartAssembly();
-  for (i=rstart; i<rend; i++){
+  //cmat_ptr->Reserve( 7*localHeight ); ???
+  for (i=rstart; i<rend; i++){ 
     ierr = MatGetRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr); 
-    //cmat.Update();
+    //printf("row %d, ncols %d\n",i,ncols);
+    for (j=0; j<ncols; j++){
+      cmat_ptr->Update(i,cols[j],vals[j]);
+    }
     ierr = MatRestoreRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr); 
   }
   cmat_ptr->StopAssembly();
+
+  // Test cmat using Clique vectors
+  /*
+  PetscInt N=A->cmap->N;
+  cliq::DistVector<double> xc1( N, cliq->cliq_comm), yc1( N, cliq->cliq_comm);
+  cliq::MakeUniform( xc1 );
+  const double xOrigNorm = cliq::Norm( xc1 );
+  cliq::MakeZeros( yc1 );
+  cliq::Multiply( 1., *cliq->cmat, xc1, 0., yc1 );
+  const double yOrigNorm = cliq::Norm( yc1 );
+  printf(" clique norm(xc1,yc1) %g %g\n",xOrigNorm,yOrigNorm);
+  */
+
+  // Test cmat using petsc vectors - fail!
+  /* Vec X,Y;
+  i=0;
+  PetscScalar zero=0.0,one=1.0;
+  const PetscCliqScalar *x;
+  PetscCliqScalar       *y;
+ 
+  ierr = MatGetVecs(A,&X,&Y);CHKERRQ(ierr); 
+  ierr = VecSet(X,zero);CHKERRQ(ierr);
+  ierr = VecSetValues(X,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
+  printf("X:\n");
+  //ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
+  ierr = VecGetArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
+
+  // must pass x to xc, y to yc!
+  cliq::DistVector<PetscCliqScalar> xc(A->cmap->N,cliq->cliq_comm);
+  cliq::DistVector<PetscCliqScalar> yc(A->rmap->N,cliq->cliq_comm);
+  for (i=0; i< A->cmap->n; i++) {
+    xc.SetLocal(i,x[i]);
+  }
+  const double xOrigNorm = cliq::Norm( xc );
+  cliq::Multiply(1.0,*cliq->cmat,xc,0.0,yc);
+  const double yOrigNorm = cliq::Norm( yc );
+  printf(" clique norm(xc1,yc1) %g %g\n",xOrigNorm,yOrigNorm);
+  ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
+  printf("Y = A*X:\n");
+  //ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y);CHKERRQ(ierr);*/
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMult_Clique"
+static PetscErrorCode MatMult_Clique(Mat A,Vec X,Vec Y)
+{
+  PetscErrorCode        ierr;
+  PetscInt              i;
+  const PetscCliqScalar *x;
+  PetscCliqScalar       *y;
+  Mat_Clique            *cliq=(Mat_Clique*)A->spptr;
+  cliq::DistSparseMatrix<PetscCliqScalar> *cmat=cliq->cmat;
+  cliq::mpi::Comm cxxcomm(((PetscObject)A)->comm);
+
+  PetscFunctionBegin;
+  if (!cmat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Clique matrix cmat is not created yet");
+  ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
+  ierr = VecGetArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
+  //ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
+  //ierr = VecGetLocalSize(Y,&m);CHKERRQ(ierr);
+  //ierr = VecGetSize(X,&N);CHKERRQ(ierr);
+  //ierr = VecGetSize(Y,&M);CHKERRQ(ierr);
+  cliq::DistVector<PetscCliqScalar> xc(A->cmap->N,cxxcomm);
+  cliq::DistVector<PetscCliqScalar> yc(A->rmap->N,cxxcomm);
+  for (i=0; i<A->cmap->n; i++) {
+    xc.SetLocal(i,x[i]);
+  }
+  cliq::Multiply(1.0,*cmat,xc,0.0,yc);
+  ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -50,7 +163,27 @@ PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, cliq::DistSparseMatri
 #define __FUNCT__ "MatView_Clique"
 PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
 {
+  PetscErrorCode ierr;
+  PetscBool      iascii;
+
   PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    PetscViewerFormat format;
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_INFO) {
+      SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Info viewer not implemented yet");
+    } else if (format == PETSC_VIEWER_DEFAULT) {
+      Mat Aaij;
+      ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)viewer)->comm,"Clique matrix\n");CHKERRQ(ierr);
+      ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
+      ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      ierr = MatDestroy(&Aaij);CHKERRQ(ierr);     
+    } else SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Format");
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by Clique matrices",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 
@@ -58,7 +191,26 @@ PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatDestroy_Clique"
 PetscErrorCode MatDestroy_Clique(Mat A)
 {
+  PetscErrorCode ierr;
+  Mat_Clique     *cliq=(Mat_Clique*)A->spptr;
+
   PetscFunctionBegin;
+  printf("MatDestroy_Clique ...\n");
+  if (cliq && cliq->CleanUpClique) { 
+    /* Terminate instance, deallocate memories */
+    printf("MatDestroy_Clique ... destroy clique struct \n");
+    ierr = PetscCommDestroy(&(cliq->cliq_comm));CHKERRQ(ierr);
+    // free cmat here
+    delete cliq->cmat;
+  }
+  if (cliq && cliq->Destroy) {
+    ierr = cliq->Destroy(A);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
+
+  /* clear composed functions */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0);
 }
 
@@ -67,6 +219,12 @@ PetscErrorCode MatDestroy_Clique(Mat A)
 PetscErrorCode MatSolve_Clique(Mat A,Vec b,Vec x)
 {
   PetscFunctionBegin;
+  //LDLSolve( TRANSPOSE, info, frontTree, yNodal.localVec );
+
+  //DistNodalVector<double> yNodal;
+  //yNodal.Pull( inverseMap, info, y );
+  //Solve( info, frontTree, yNodal.localVec );
+  //yNodal.Push( inverseMap, info, y );
   PetscFunctionReturn(0);
 }
 
@@ -75,14 +233,22 @@ PetscErrorCode MatSolve_Clique(Mat A,Vec b,Vec x)
 PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *info)
 {
   PetscErrorCode    ierr;
-  cliq::DistSparseMatrix<PetscScalar> *cmat;
+  Mat_Clique        *cliq=(Mat_Clique*)F->spptr;
+  cliq::DistSparseMatrix<PetscCliqScalar> *cmat;
 
   PetscFunctionBegin;
-  /* Convert A to Aclique */
-  ierr = MatConvertToClique(A,PETSC_FALSE,&cmat);CHKERRQ(ierr);
+  printf("MatCholeskyFactorNumeric_Clique \n");
+  cmat = cliq->cmat;
+  if (cliq->matstruc == SAME_NONZERO_PATTERN){ /* successing numerical factorization */
+    /* Update cmat */
+    ierr = MatConvertToClique(A,PETSC_TRUE,cliq);CHKERRQ(ierr);
+  }
 
   /* Numeric factorization */
+  //LDL( TRANSPOSE, info, frontTree );
 
+  cliq->matstruc = SAME_NONZERO_PATTERN;
+  F->assembled   = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -91,9 +257,43 @@ PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *
 PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactorInfo *info)
 {
   PetscErrorCode    ierr;
-  cliq::DistSparseMatrix<PetscScalar> *cmat;
+  Mat_Clique        *cliq=(Mat_Clique*)F->spptr;
+  cliq::DistSparseMatrix<PetscCliqScalar> *cmat;
 
   PetscFunctionBegin;
+  printf("MatCholeskyFactorSymbolic_Clique \n");
+  /* Convert A to Aclique */
+  ierr = MatConvertToClique(A,PETSC_FALSE,cliq);CHKERRQ(ierr);
+  cmat = cliq->cmat;
+
+  //NestedDissection
+  const cliq::DistGraph& graph = cmat->Graph();
+  cliq::DistSymmInfo cinfo;
+  cliq::DistSeparatorTree sepTree;
+  cliq::DistMap map, inverseMap;
+  PetscInt cutoff=128;  /* maximum size of leaf node */
+  PetscInt numDistSeps=1; /* number of distributed separators to try */
+  PetscInt numSeqSeps=1;  /* number of sequential separators to try */
+  cliq::NestedDissection( graph, map, sepTree, cinfo, PETSC_TRUE, numDistSeps, numSeqSeps, cutoff);
+  map.FormInverse( inverseMap );
+
+  printf("nested dissection complete\n");
+  cliq::DistSymmFrontTree<PetscCliqScalar> frontTree( cliq::TRANSPOSE, *cmat, map, sepTree, cinfo );
+
+  cliq->matstruc      = DIFFERENT_NONZERO_PATTERN;
+  cliq->CleanUpClique = PETSC_TRUE;
+#if defined(MV)
+  // Test cmat using Clique vectors
+  PetscInt N=A->cmap->N;
+  cliq::DistVector<double> xc1( N, cliq->cliq_comm), yc1( N, cliq->cliq_comm);
+  cliq::MakeUniform( xc1 );
+  const double xOrigNorm = cliq::Norm( xc1 );
+  cliq::MakeZeros( yc1 );
+  cliq::Multiply( 1., *cmat, xc1, 0., yc1 );
+  const double yOrigNorm = cliq::Norm( yc1 );
+  printf(" clique norm(xc1,yc1) %g %g\n",xOrigNorm,yOrigNorm);
+
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -114,10 +314,11 @@ EXTERN_C_BEGIN
 PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
-  Mat_Clique     *Acliq;
+  Mat_Clique     *cliq;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
+  ierr = PetscCliqueInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
@@ -128,14 +329,20 @@ PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
     B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_Clique;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported");
 
-  B->ops->destroy = MatDestroy_Clique;
+  ierr = PetscNewLog(B,Mat_Clique,&cliq);CHKERRQ(ierr);
+  B->spptr            = (void*)cliq;
+  cliq->CleanUpClique = PETSC_FALSE;
+  cliq->Destroy       = B->ops->destroy;
+
   B->ops->view    = MatView_Clique;
-  B->factortype   = ftype; 
-  B->assembled    = PETSC_FALSE;  
-  
-  ierr = PetscNewLog(B,Mat_Clique,&Acliq);CHKERRQ(ierr);
-  B->spptr = Acliq;
-  *F       = B;
+  B->ops->mult    = MatMult_Clique; //???
+  B->ops->solve   = MatSolve_Clique;
+
+  B->ops->destroy = MatDestroy_Clique;
+  B->factortype   = ftype;
+  B->assembled    = PETSC_FALSE;  /* required by -ksp_view */
+
+  *F = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

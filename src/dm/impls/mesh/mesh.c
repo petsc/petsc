@@ -4129,7 +4129,7 @@ PetscErrorCode DMMeshVecGetClosure(DM dm, Vec v, PetscInt point, const PetscScal
     ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
     const PetscInt size = mesh->sizeWithBC(section, point); /* OPT: This can be precomputed */
-    ierr = DMGetWorkArray(dm, 2*size+numFields+1, &array);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(dm, 2*size+numFields+1, PETSC_SCALAR, &array);CHKERRQ(ierr);
     visitor_type rV(v, section, size, array, (PetscInt *) &array[2*size], (PetscInt *) &array[size]);
     if (mesh->depth() == 1) {
       rV.visitPoint(point, 0);
@@ -4147,6 +4147,16 @@ PetscErrorCode DMMeshVecGetClosure(DM dm, Vec v, PetscInt point, const PetscScal
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
   }
 #endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshVecRestoreClosure"
+PetscErrorCode DMMeshVecRestoreClosure(DM dm, Vec v, PetscInt point, const PetscScalar *values[]) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMRestoreWorkArray(dm, 0, PETSC_SCALAR, values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4170,7 +4180,7 @@ PetscErrorCode DMMeshVecSetClosure(DM dm, Vec v, PetscInt point, const PetscScal
 
     ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-    ierr = DMGetWorkArray(dm, numFields, (PetscScalar **) &fieldSize);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(dm, numFields, PETSC_INT, &fieldSize);CHKERRQ(ierr);
     mesh->sizeWithBC(section, point, fieldSize); /* OPT: This can be precomputed */
     visitor_type uV(v, section, values, mode, numFields, fieldSize);
     if (mesh->depth() == 1) {
@@ -4182,6 +4192,7 @@ PetscErrorCode DMMeshVecSetClosure(DM dm, Vec v, PetscInt point, const PetscScal
 
       ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*mesh->getSieve(), point, pV);
     }
+    ierr = DMRestoreWorkArray(dm, numFields, PETSC_INT, &fieldSize);CHKERRQ(ierr);
   } catch(ALE::Exception e) {
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
   }
@@ -4212,12 +4223,15 @@ PetscErrorCode DMMeshMatSetClosure(DM dm, Mat A, PetscInt point, PetscScalar val
     ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
     if (numFields) {
-      ierr = DMGetWorkArray(dm, numFields, (PetscScalar **) &fieldSize);CHKERRQ(ierr);
+      ierr = DMGetWorkArray(dm, numFields, PETSC_INT, &fieldSize);CHKERRQ(ierr);
       mesh->sizeWithBC(section, point, fieldSize); /* OPT: This can be precomputed */
     }
     visitor_type iV(section, *globalOrder, (int) pow((double) mesh->getSieve()->getMaxConeSize(), mesh->depth())*mesh->getMaxDof(), mesh->depth() > 1, fieldSize);
 
     ierr = updateOperator(A, *mesh->getSieve(), iV, point, values, mode);CHKERRQ(ierr);
+    if (numFields) {
+      ierr = DMRestoreWorkArray(dm, numFields, PETSC_INT, &fieldSize);CHKERRQ(ierr);
+    }
   } catch(ALE::Exception e) {
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
   }

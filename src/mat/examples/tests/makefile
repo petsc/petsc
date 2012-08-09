@@ -658,7 +658,9 @@ ex167: ex167.o chkopts
 	-${CLINKER} -o ex167 ex167.o ${PETSC_MAT_LIB}
 	${RM} ex167.o
 
-
+ex168: ex168.o chkopts
+	-${CLINKER} -o ex168 ex168.o ${PETSC_MAT_LIB}
+	${RM} ex168.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B

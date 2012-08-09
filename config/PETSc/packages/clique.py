@@ -5,7 +5,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     #self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/elemental-dev-072512.tar.gz']
     self.download   = ['/home/xzhou/temp/clique.tgz']
-    self.liblist    = [['libclique.a','libcmake-dummy-lib.a','libelemental.a','libmetis.s','libparmetis.a','libplcg.a']]
+    self.liblist    = [['libclique.a','libparmetis','libmetis.a']]
     self.includes   = ['clique.hpp']
     self.cxx              = 1
     self.requires32bitint = 0
@@ -18,14 +18,15 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.cmake           = framework.require('PETSc.packages.cmake',self)
-    self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.deps       = [self.mpi,self.blasLapack]
+    self.blasLapack      = framework.require('config.packages.BlasLapack',self)
+    self.elemental       = framework.require('PETSc.packages.elemental',self)
+    #self.parmetis        = framework.require('PETSc.packages.parmetis',self)
+    #self.deps            = [self.cmake,self.blasLapack,self.elemental,self.parmetis]
+    self.deps            = [self.cmake,self.blasLapack,self.elemental]
     return
 
   def Install(self):
     import os
-    if not self.cmake.found:
-      raise RuntimeError('CMake 2.8.5 or above is needed to build Elemental')
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
     args.append('-DCMAKE_VERBOSE_MAKEFILE=1')
     args.append('-DMATH_LIBS:STRING="'+self.libraries.toString(self.blasLapack.dlib)+'"')
@@ -33,6 +34,7 @@ class Configure(PETSc.package.NewPackage):
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
     cflags = self.setCompilers.getCompilerFlags()
+    print 'cflags',cflags
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     self.framework.popLanguage()
 

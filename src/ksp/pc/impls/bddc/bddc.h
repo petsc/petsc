@@ -75,6 +75,7 @@ typedef struct {
   PetscBool     usechangeonfaces;
   Mat           ChangeOfBasisMatrix;
   Vec           original_rhs;
+  Vec           temp_solution;
   Mat           local_mat;
   /* Some defaults on selecting vertices and constraints*/
   PetscBool     vertices_flag;
@@ -97,6 +98,7 @@ typedef struct {
   PetscBool                  dbg_flag;
   PetscViewer                dbg_viewer;
 } PC_BDDC;
+
 
 /* In case of multilevel BDDC, this is the minimum number of procs for which it will be allowed */
 #define MIN_PROCS_FOR_BDDC 5 
