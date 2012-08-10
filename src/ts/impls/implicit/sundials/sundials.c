@@ -81,6 +81,9 @@ PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,N_Vector r,N
 int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 {
   TS              ts = (TS) ctx;
+  DM              dm;
+  TSDM            tsdm;
+  TSIFunction     ifunction;
   MPI_Comm        comm = ((PetscObject)ts)->comm;
   TS_Sundials     *cvode = (TS_Sundials*)ts->data;
   Vec             yy = cvode->w1,yyd = cvode->w2,yydot = cvode->ydot;
@@ -94,8 +97,11 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
   ierr = VecPlaceArray(yy,y_data);CHKERRABORT(comm,ierr);
   ierr = VecPlaceArray(yyd,ydot_data); CHKERRABORT(comm,ierr);
 
-  /* now compute the right hand side function */
-  if (!ts->userops->ifunction) {
+  /* Now compute the right hand side function, via IFunction unless only the more efficient RHSFunction is set */
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSGetContext(dm,&tsdm);CHKERRQ(ierr);
+  ierr = DMTSGetIFunction(dm,&ifunction,PETSC_NULL);CHKERRQ(ierr);
+  if (!ifunction) {
     ierr = TSComputeRHSFunction(ts,t,yy,yyd);CHKERRQ(ierr);
   } else {                      /* If rhsfunction is also set, this computes both parts and shifts them to the right */
     ierr = VecZeroEntries(yydot);CHKERRQ(ierr);
