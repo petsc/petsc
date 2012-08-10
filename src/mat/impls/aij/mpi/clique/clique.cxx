@@ -3,16 +3,6 @@
  Provides an interface to the Clique sparse solver (http://poulson.github.com/Clique/)
 */
 
-/*
-  Convert Petsc aij matrix to Clique matrix C
-
-  input:
-    A       - matrix in seqaij or mpiaij format
-    valOnly - FALSE: spaces are allocated and values are set for the Clique matrix C
-              TRUE:  Only fill values
-  output:
-*/
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscCliqueFinalizePackage"
 PetscErrorCode PetscCliqueFinalizePackage(void)
@@ -39,9 +29,20 @@ PetscErrorCode PetscCliqueInitializePackage(const char *path)
   PetscFunctionReturn(0);
 }
 
+/*
+  MatConvertToClique: Convert Petsc aij matrix to Clique matrix 
+
+  input:
++   A     - matrix in seqaij or mpiaij format
+-   reuse - denotes if the destination matrix is to be created or reused. Currently
+            MAT_REUSE_MATRIX is only supported for inplace conversion, otherwise use MAT_INITIAL_MATRIX.
+
+  output:   
+.   cliq - Clique context 
+*/
 #undef __FUNCT__
 #define __FUNCT__ "MatConvertToClique"
-PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, Mat_Clique *cliq)
+PetscErrorCode MatConvertToClique(Mat A,MatReuse reuse,Mat_Clique *cliq)
 {
   PetscErrorCode        ierr;
   PetscInt              i,j,rstart,rend,ncols;
@@ -51,7 +52,7 @@ PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, Mat_Clique *cliq)
   
   PetscFunctionBegin;
   printf("MatConvertToClique ...\n");
-  if (!valOnly){ 
+  if (reuse == MAT_INITIAL_MATRIX){ 
     printf("  create cmat...\n");
     /* create Clique matrix */
     cliq::mpi::Comm cxxcomm(((PetscObject)A)->comm);
@@ -65,32 +66,18 @@ PetscErrorCode MatConvertToClique(Mat A,PetscBool valOnly, Mat_Clique *cliq)
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   const int firstLocalRow = cmat_ptr->FirstLocalRow();
   const int localHeight = cmat_ptr->LocalHeight();
-  //printf("rstar,end: %d %d; firstLocalRow,localHeight: %d %d\n",rstart,rend,firstLocalRow,localHeight);
   if (rstart != firstLocalRow || rend-rstart != localHeight) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix rowblock distribution does not match");
 
   cmat_ptr->StartAssembly();
   //cmat_ptr->Reserve( 7*localHeight ); ???
   for (i=rstart; i<rend; i++){ 
     ierr = MatGetRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr); 
-    //printf("row %d, ncols %d\n",i,ncols);
     for (j=0; j<ncols; j++){
       cmat_ptr->Update(i,cols[j],vals[j]);
     }
     ierr = MatRestoreRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr); 
   }
   cmat_ptr->StopAssembly();
-
-  // Test cmat using Clique vectors
-  /*
-  PetscInt N=A->cmap->N;
-  cliq::DistVector<double> xc1( N, cliq->cliq_comm), yc1( N, cliq->cliq_comm);
-  cliq::MakeUniform( xc1 );
-  const double xOrigNorm = cliq::Norm( xc1 );
-  cliq::MakeZeros( yc1 );
-  cliq::Multiply( 1., *cliq->cmat, xc1, 0., yc1 );
-  const double yOrigNorm = cliq::Norm( yc1 );
-  printf(" clique norm(xc1,yc1) %g %g\n",xOrigNorm,yOrigNorm);
-  */
 
   // Test cmat using petsc vectors - fail!
   /* Vec X,Y;
@@ -172,8 +159,9 @@ PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
     PetscViewerFormat format;
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Info viewer not implemented yet");
-    } else if (format == PETSC_VIEWER_DEFAULT) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Clique run parameters:\n");CHKERRQ(ierr);
+      //SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Info viewer not implemented yet");
+    } else if (format == PETSC_VIEWER_DEFAULT) { /* matrix A is factored matrix, remove this block */
       Mat Aaij;
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
       ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
@@ -241,7 +229,7 @@ PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *
   cmat = cliq->cmat;
   if (cliq->matstruc == SAME_NONZERO_PATTERN){ /* successing numerical factorization */
     /* Update cmat */
-    ierr = MatConvertToClique(A,PETSC_TRUE,cliq);CHKERRQ(ierr);
+    ierr = MatConvertToClique(A,MAT_REUSE_MATRIX,cliq);CHKERRQ(ierr);
   }
 
   /* Numeric factorization */
@@ -259,22 +247,19 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
   PetscErrorCode    ierr;
   Mat_Clique        *cliq=(Mat_Clique*)F->spptr;
   cliq::DistSparseMatrix<PetscCliqScalar> *cmat;
+  cliq::DistSymmInfo      cinfo;
+  cliq::DistSeparatorTree sepTree;
+  cliq::DistMap           map, inverseMap;
 
   PetscFunctionBegin;
   printf("MatCholeskyFactorSymbolic_Clique \n");
   /* Convert A to Aclique */
-  ierr = MatConvertToClique(A,PETSC_FALSE,cliq);CHKERRQ(ierr);
+  ierr = MatConvertToClique(A,MAT_INITIAL_MATRIX,cliq);CHKERRQ(ierr);
   cmat = cliq->cmat;
 
   //NestedDissection
   const cliq::DistGraph& graph = cmat->Graph();
-  cliq::DistSymmInfo cinfo;
-  cliq::DistSeparatorTree sepTree;
-  cliq::DistMap map, inverseMap;
-  PetscInt cutoff=128;  /* maximum size of leaf node */
-  PetscInt numDistSeps=1; /* number of distributed separators to try */
-  PetscInt numSeqSeps=1;  /* number of sequential separators to try */
-  cliq::NestedDissection( graph, map, sepTree, cinfo, PETSC_TRUE, numDistSeps, numSeqSeps, cutoff);
+  cliq::NestedDissection( graph, map, sepTree, cinfo, PETSC_TRUE, cliq->numDistSeps, cliq->numSeqSeps, cliq->cutoff);
   map.FormInverse( inverseMap );
 
   printf("nested dissection complete\n");
@@ -282,6 +267,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
 
   cliq->matstruc      = DIFFERENT_NONZERO_PATTERN;
   cliq->CleanUpClique = PETSC_TRUE;
+
 #if defined(MV)
   // Test cmat using Clique vectors
   PetscInt N=A->cmap->N;
@@ -296,6 +282,22 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
 #endif
   PetscFunctionReturn(0);
 }
+
+/*MC
+     MATSOLVERCLIQUE  - A solver package providing direct solvers for distributed
+  and sequential matrices via the external package Clique.
+
+  Use ./configure --download-clique to have PETSc installed with Clique
+
+  Options Database Keys:
++ -mat_clique_    - 
+- -mat_clique_ <integer> - 
+
+  Level: beginner
+
+.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage
+
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -335,12 +337,21 @@ PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
   cliq->Destroy       = B->ops->destroy;
 
   B->ops->view    = MatView_Clique;
-  B->ops->mult    = MatMult_Clique; //???
+  B->ops->mult    = MatMult_Clique; /* for cliq->cmat */
   B->ops->solve   = MatSolve_Clique;
 
   B->ops->destroy = MatDestroy_Clique;
   B->factortype   = ftype;
-  B->assembled    = PETSC_FALSE;  /* required by -ksp_view */
+  B->assembled    = PETSC_FALSE;  
+
+  /* Set Clique options */
+  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"Clique Options","Mat");CHKERRQ(ierr);
+
+  cliq->cutoff=128;  /* maximum size of leaf node */
+  cliq->numDistSeps=1; /* number of distributed separators to try */
+  cliq->numSeqSeps=1;  /* number of sequential separators to try */
+
+  PetscOptionsEnd();
 
   *F = B;
   PetscFunctionReturn(0);

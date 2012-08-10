@@ -77,7 +77,6 @@ typedef struct {
 } Field;
 
 PetscErrorCode FormIFunctionLocal(DMDALocalInfo*,PetscReal,Field**,Field**,Field**,void*);
-PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 
 typedef struct {
   PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
@@ -142,7 +141,7 @@ int main(int argc,char **argv)
      Create time integration context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunction,&user);CHKERRQ(ierr);
+  ierr = DMDATSSetIFunctionLocal(da,INSERT_VALUES,(DMDATSIFunctionLocal)FormIFunctionLocal,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,10000,1e12);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,user.cfl_initial/(user.lidvelocity*mx));CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
@@ -383,35 +382,3 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,
   ierr = PetscLogFlops(84.0*info->ym*info->xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "FormIFunction"
-PetscErrorCode FormIFunction(TS ts,PetscReal ptime,Vec X,Vec Xdot,Vec F,void *user)
-{
-  DMDALocalInfo  info;
-  Field          **u,**udot,**fu;
-  PetscErrorCode ierr;
-  Vec            localX;
-  DM             da;
-
-  PetscFunctionBegin;
-  ierr = TSGetDM(ts,(DM*)&da);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
-  /*
-     Scatter ghost points to local vector, using the 2-step process
-        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
-  */
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,localX,&u);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,Xdot,&udot);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,F,&fu);CHKERRQ(ierr);
-  ierr = FormIFunctionLocal(&info,ptime,u,udot,fu,user);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,Xdot,&udot);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,F,&fu);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-

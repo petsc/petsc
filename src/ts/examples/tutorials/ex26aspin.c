@@ -473,7 +473,7 @@ PetscErrorCode FormIFunctionASPIN(TS ts,PetscReal ptime,Vec X,Vec Xdot,Vec F,voi
   ierr = SNESSolve(sneslocal,PETSC_NULL,Xlocal);CHKERRQ(ierr);
 
   /* copy the local solution back over and redistribute */
-  ierr = VecAYPX(Xgloballoc,-1.0,Xlocal);CHKERRQ(ierr);
+  ierr = VecAXPY(Xgloballoc,-1.0,Xlocal);CHKERRQ(ierr);
 
   /* restrict and subtract */
   ierr = VecSet(F,0);CHKERRQ(ierr);
