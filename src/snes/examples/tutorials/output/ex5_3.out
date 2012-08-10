@@ -6,7 +6,7 @@ SNES Object: 2 MPI processes
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=10
-  total number of function evaluations=112
+  total number of function evaluations=114
   total number of grid sequence refinements=2
   KSP Object:   2 MPI processes
     type: gmres
@@ -67,7 +67,7 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object:      (mg_levels_1_)       2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.131185, max = 1.44304
+          Chebyshev: eigenvalue estimates:  min = 0.130358, max = 1.43394
           Chebyshev: estimated using:  [0 0.1; 0 1.1]
           KSP Object:           2 MPI processes
             type: gmres
@@ -105,7 +105,7 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object:      (mg_levels_2_)       2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.128679, max = 1.41547
+          Chebyshev: eigenvalue estimates:  min = 0.128039, max = 1.40843
           Chebyshev: estimated using:  [0 0.1; 0 1.1]
           KSP Object:           2 MPI processes
             type: gmres

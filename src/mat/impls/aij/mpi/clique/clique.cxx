@@ -56,6 +56,7 @@ PetscErrorCode MatConvertToClique(Mat A,MatReuse reuse,Mat_Clique *cliq)
     printf("  create cmat...\n");
     /* create Clique matrix */
     cliq::mpi::Comm cxxcomm(((PetscObject)A)->comm);
+    
     ierr = PetscCommDuplicate(cxxcomm,&(cliq->cliq_comm),PETSC_NULL);CHKERRQ(ierr);
     cmat_ptr = new cliq::DistSparseMatrix<PetscCliqScalar>(A->rmap->N,cliq->cliq_comm);
     cliq->cmat = cmat_ptr;
@@ -188,7 +189,6 @@ PetscErrorCode MatDestroy_Clique(Mat A)
     /* Terminate instance, deallocate memories */
     printf("MatDestroy_Clique ... destroy clique struct \n");
     ierr = PetscCommDestroy(&(cliq->cliq_comm));CHKERRQ(ierr);
-    // free cmat here
     delete cliq->cmat;
   }
   if (cliq && cliq->Destroy) {
@@ -198,7 +198,6 @@ PetscErrorCode MatDestroy_Clique(Mat A)
 
   /* clear composed functions */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -259,10 +258,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
 
   //NestedDissection
   const cliq::DistGraph& graph = cmat->Graph();
-  cliq::NestedDissection( graph, map, sepTree, cinfo, PETSC_TRUE, cliq->numDistSeps, cliq->numSeqSeps, cliq->cutoff);
+  cliq::NestedDissection( graph, map, sepTree, cinfo, PETSC_TRUE, cliq->numDistSeps, cliq->numSeqSeps, cliq->cutoff);  // mem leak - reported
   map.FormInverse( inverseMap );
-
-  printf("nested dissection complete\n");
   cliq::DistSymmFrontTree<PetscCliqScalar> frontTree( cliq::TRANSPOSE, *cmat, map, sepTree, cinfo );
 
   cliq->matstruc      = DIFFERENT_NONZERO_PATTERN;
