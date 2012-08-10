@@ -1,66 +1,28 @@
       0 SNES Function norm 0.207564 
-        0 KSP Residual norm 0.118086 
-        1 KSP Residual norm 0.00627467 
-        2 KSP Residual norm < 1.e-11
       Linear solve converged due to CONVERGED_RTOL iterations 2
       1 SNES Function norm 0.0148968 
-        0 KSP Residual norm 0.00854464 
-        1 KSP Residual norm 0.000539766 
-        2 KSP Residual norm < 1.e-11
       Linear solve converged due to CONVERGED_RTOL iterations 2
       2 SNES Function norm 0.000113967 
-        0 KSP Residual norm 7.23812e-05 
-        1 KSP Residual norm 4.50548e-06 
-        2 KSP Residual norm < 1.e-11
       Linear solve converged due to CONVERGED_RTOL iterations 2
       3 SNES Function norm 6.92417e-09 
-        0 KSP Residual norm 4.40671e-09 
-        1 KSP Residual norm 2.741e-10 
-        2 KSP Residual norm < 1.e-11
       Linear solve converged due to CONVERGED_RTOL iterations 2
       4 SNES Function norm < 1.e-11
     Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
     0 SNES Function norm 0.937398 
-      0 KSP Residual norm 0.422873 
-      1 KSP Residual norm 0.00815939 
-      2 KSP Residual norm 0.000291602 
-      3 KSP Residual norm 9.61686e-06 
-      4 KSP Residual norm 2.89216e-07 
     Linear solve converged due to CONVERGED_RTOL iterations 4
     1 SNES Function norm 0.00645553 
-      0 KSP Residual norm 0.0204134 
-      1 KSP Residual norm 0.000109075 
-      2 KSP Residual norm 2.91594e-06 
-      3 KSP Residual norm 1.21266e-07 
     Linear solve converged due to CONVERGED_RTOL iterations 3
-    2 SNES Function norm 1.84327e-05 
-      0 KSP Residual norm 7.25513e-05 
-      1 KSP Residual norm 3.30254e-07 
-      2 KSP Residual norm 9.74836e-09 
-      3 KSP Residual norm 3.225e-10 
+    2 SNES Function norm 1.84332e-05 
     Linear solve converged due to CONVERGED_RTOL iterations 3
-    3 SNES Function norm 1.28767e-09 
+    3 SNES Function norm 1.2672e-09 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
   0 SNES Function norm 0.517003 
-    0 KSP Residual norm 0.238111 
-    1 KSP Residual norm 0.0048574 
-    2 KSP Residual norm 0.000724042 
-    3 KSP Residual norm 8.98044e-06 
-    4 KSP Residual norm 2.08071e-07 
   Linear solve converged due to CONVERGED_RTOL iterations 4
   1 SNES Function norm 0.000279815 
-    0 KSP Residual norm 0.00334403 
-    1 KSP Residual norm 1.2075e-05 
-    2 KSP Residual norm 4.37272e-07 
-    3 KSP Residual norm 1.89695e-08 
   Linear solve converged due to CONVERGED_RTOL iterations 3
-  2 SNES Function norm 9.05271e-08 
-    0 KSP Residual norm 9.5408e-07 
-    1 KSP Residual norm 3.39027e-09 
-    2 KSP Residual norm 1.057e-10 
-    3 KSP Residual norm < 1.e-11
+  2 SNES Function norm 9.40606e-08 
   Linear solve converged due to CONVERGED_RTOL iterations 3
-  3 SNES Function norm 1.767e-11 
+  3 SNES Function norm 1.945e-11 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 SNES Object: 2 MPI processes
   type: ls
@@ -128,7 +90,7 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object:      (mg_levels_1_)       2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.131186, max = 1.44304
+          Chebyshev: eigenvalue estimates:  min = 0.130358, max = 1.43394
           Chebyshev: estimated using:  [0 0.1; 0 1.1]
           KSP Object:           2 MPI processes
             type: gmres
@@ -166,7 +128,7 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object:      (mg_levels_2_)       2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.128678, max = 1.41546
+          Chebyshev: eigenvalue estimates:  min = 0.128039, max = 1.40843
           Chebyshev: estimated using:  [0 0.1; 0 1.1]
           KSP Object:           2 MPI processes
             type: gmres
