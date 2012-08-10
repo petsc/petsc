@@ -392,6 +392,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptSetFromOptions(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptDestroy(TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetMonitor(TSAdapt,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode TSAdaptSetCheckStage(TSAdapt,PetscErrorCode(*)(TSAdapt,TS,PetscBool*));
 
 /*S
    TSGLAdapt - Abstract object that manages time-step adaptivity
