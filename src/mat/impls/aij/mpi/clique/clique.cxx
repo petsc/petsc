@@ -58,9 +58,7 @@ PetscErrorCode MatConvertToClique(Mat A,MatReuse reuse,Mat_Clique *cliq)
     cliq::mpi::Comm cxxcomm(((PetscObject)A)->comm);
     
     ierr = PetscCommDuplicate(cxxcomm,&(cliq->cliq_comm),PETSC_NULL);CHKERRQ(ierr);
-    //cmat_ptr = new cliq::DistSparseMatrix<PetscCliqScalar>(A->rmap->N,cliq->cliq_comm);
-    /* tere is a memory leak in Clique, use 'MPI_COMM_WORLD' until Jack fixes the leak */
-    cmat_ptr = new cliq::DistSparseMatrix<PetscCliqScalar>(A->rmap->N,MPI_COMM_WORLD);
+    cmat_ptr = new cliq::DistSparseMatrix<PetscCliqScalar>(A->rmap->N,cliq->cliq_comm);
     cliq->cmat = cmat_ptr;
   } else {
     cmat_ptr = cliq->cmat;
