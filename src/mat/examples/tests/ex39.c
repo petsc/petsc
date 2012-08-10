@@ -90,6 +90,10 @@ int main(int argc,char **args)
   ierr = VecSetSizes(d,m>n?n:m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(d);CHKERRQ(ierr);
   ierr = MatGetDiagonal(C,d);CHKERRQ(ierr);
+  if (mats_view) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Diagonal of C:\n");CHKERRQ(ierr);
+    ierr = VecView(d,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   if (m>n) {
     ierr = MatDiagonalScale(C,PETSC_NULL,d);CHKERRQ(ierr);
   } else {
