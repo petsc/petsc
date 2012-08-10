@@ -155,9 +155,9 @@ PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,void 
 PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnorm,void *ctx) {
 
 #if defined(PETSC_MISSING_LAPACK_GEEV)
-  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
+  SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
 #elif defined(PETSC_HAVE_ESSL)
-  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GEEV - No support for ESSL Lapack Routines");
+  SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_SUP,"GEEV - No support for ESSL Lapack Routines");
 #else
   Vec            X;
   Mat            J,dJ,dJdense;
