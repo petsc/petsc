@@ -94,25 +94,37 @@ class Configure(config.base.Configure):
 
   def toString(self,libs):
     '''Converts a list of libraries to a string suitable for a linker'''
-    return ' '.join([self.getLibArgument(lib) for lib in libs])
+    newlibs = []
+    frame = 0
+    for lib in libs:
+      if frame:
+        newlibs += [lib]
+        frame   = 0
+      elif lib == '-framework':
+        newlibs += [lib]
+        frame = 1
+      else:
+        newlibs += self.getLibArgumentList(lib)
+    return ' '.join(newlibs)
 
   def toStringNoDupes(self,libs):
     '''Converts a list of libraries to a string suitable for a linker, removes duplicates'''
     newlibs = []
+    frame = 0
     for lib in libs:
-      newlibs += self.getLibArgumentList(lib)
+      if frame:
+        newlibs += [lib]
+        frame   = 0
+      elif lib == '-framework':
+        newlibs += [lib]
+        frame = 1
+      else:
+        newlibs += self.getLibArgumentList(lib)
     libs = newlibs
     newlibs = []
-    removedashl = 0
     for j in libs:
       # do not remove duplicate -l, because there is a tiny chance that order may matter
       if j in newlibs and not ( j.startswith('-l') or j == '-framework') : continue
-      # handle special case of -framework frameworkname
-      if j == '-framework': removedashl = 1
-      elif removedashl:
-        j = j[2:]
-        removedashl = 0
-        
       newlibs.append(j)
     return ' '.join(newlibs)
 
