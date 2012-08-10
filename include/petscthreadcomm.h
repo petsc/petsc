@@ -31,7 +31,7 @@ typedef struct _p_PetscThreadCommRedCtx *PetscThreadCommRedCtx;
 
 PETSC_EXTERN PetscFList PetscThreadCommList;
 
-typedef enum {THREADCOMM_SUM,THREADCOMM_PROD} PetscThreadCommReductionOp;
+typedef enum {THREADCOMM_SUM,THREADCOMM_PROD,THREADCOMM_MAX} PetscThreadCommReductionOp;
 PETSC_EXTERN const char *const PetscThreadCommReductionOps[];
 
 PETSC_EXTERN PetscErrorCode PetscGetNCores(PetscInt*);
@@ -43,7 +43,13 @@ PETSC_EXTERN PetscErrorCode PetscThreadCommGetNThreads(MPI_Comm,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscThreadCommGetAffinities(MPI_Comm,PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscThreadCommView(MPI_Comm,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscThreadCommGetScalars(MPI_Comm,PetscScalar**,PetscScalar**,PetscScalar**);
+PETSC_EXTERN PetscErrorCode PetscThreadCommGetInts(MPI_Comm,PetscInt**,PetscInt**,PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscThreadCommRunKernel(MPI_Comm,PetscErrorCode (*)(PetscInt,...),PetscInt,...);
+PETSC_EXTERN PetscErrorCode PetscThreadCommRunKernel1(MPI_Comm,PetscErrorCode (*)(PetscInt,...),void*);
+PETSC_EXTERN PetscErrorCode PetscThreadCommRunKernel2(MPI_Comm,PetscErrorCode (*)(PetscInt,...),void*,void*);
+PETSC_EXTERN PetscErrorCode PetscThreadCommRunKernel3(MPI_Comm,PetscErrorCode (*)(PetscInt,...),void*,void*,void*);
+PETSC_EXTERN PetscErrorCode PetscThreadCommRunKernel4(MPI_Comm,PetscErrorCode (*)(PetscInt,...),void*,void*,void*,void*);
+PETSC_EXTERN PetscErrorCode PetscThreadCommRunKernel6(MPI_Comm,PetscErrorCode (*)(PetscInt,...),void*,void*,void*,void*,void*,void*);
 PETSC_EXTERN PetscErrorCode PetscThreadCommBarrier(MPI_Comm);
 PETSC_EXTERN PetscErrorCode PetscThreadCommGetOwnershipRanges(MPI_Comm,PetscInt,PetscInt*[]);
 PETSC_EXTERN PetscErrorCode PetscThreadCommRegisterDestroy(void);

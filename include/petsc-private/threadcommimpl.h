@@ -77,6 +77,7 @@ struct  _p_PetscThreadCommJobCtx{
   PetscThreadKernel pfunc;                         /* Kernel function */
   void              *args[PETSC_KERNEL_NARGS_MAX]; /* Array of void* to hold the arguments */
   PetscScalar       scalars[3];                    /* Array to hold three scalar values */
+  PetscInt          ints[3];                       /* Array to hold three integer values */
   PetscInt          *job_status;                   /* Thread job status */
 };
 

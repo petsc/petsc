@@ -125,7 +125,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
   switch(red->op) {
   case THREADCOMM_SUM:
     if(red->type == PETSC_REAL) {
-      PetscReal red_sum=*(PetscReal*)outdata;
+      PetscReal red_sum=0.0;
       for(i=0; i < red->tcomm->nworkThreads;i++) {
 	red_sum += ((PetscReal*)red->local_red)[i];
       }
@@ -133,7 +133,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
       break;
     }
     if(red->type == PETSC_SCALAR) {
-      PetscScalar red_sum=*(PetscScalar*)outdata;
+      PetscScalar red_sum=0.0;
       for(i=0; i < red->tcomm->nworkThreads;i++) {
 	red_sum += ((PetscScalar*)red->local_red)[i];
       }
@@ -141,7 +141,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
       break;
     }
     if(red->type == PETSC_INT) {
-      PetscInt red_sum=*(PetscInt*)outdata;
+      PetscInt red_sum=0;
       for(i=0; i < red->tcomm->nworkThreads;i++) {
 	red_sum += ((PetscInt*)red->local_red)[i];
       }
@@ -151,7 +151,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
     break;
   case THREADCOMM_PROD:
     if(red->type == PETSC_REAL) {
-      PetscReal red_prod=*(PetscReal*)outdata;
+      PetscReal red_prod=0.0;
       for(i=0; i < red->tcomm->nworkThreads;i++) {
 	red_prod *= ((PetscReal*)red->local_red)[i];
       }
@@ -159,7 +159,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
       break;
     }
     if(red->type == PETSC_SCALAR) {
-      PetscScalar red_prod=*(PetscScalar*)outdata;
+      PetscScalar red_prod=0.0;
       for(i=0; i < red->tcomm->nworkThreads;i++) {
 	red_prod *= ((PetscScalar*)red->local_red)[i];
       }
@@ -167,11 +167,29 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
       break;
     }
     if(red->type == PETSC_INT) {
-      PetscInt red_prod=*(PetscInt*)outdata;
+      PetscInt red_prod=0.0;
       for(i=0; i < red->tcomm->nworkThreads;i++) {
 	red_prod *= ((PetscInt*)red->local_red)[i];
       }
       PetscMemcpy(outdata,&red_prod,sizeof(PetscInt));
+      break;
+    }
+    break;
+  case THREADCOMM_MAX:
+    if(red->type == PETSC_REAL) {
+      PetscReal max = ((PetscReal*)red->local_red)[0];
+      for(i=1; i < red->tcomm->nworkThreads;i++) {
+        if(((PetscReal*)red->local_red)[i] > max) max = ((PetscReal*)red->local_red)[i];
+      }
+      PetscMemcpy(outdata,&max,sizeof(PetscReal));
+      break;
+    }
+    if(red->type == PETSC_INT) {
+      PetscInt max = ((PetscInt*)red->local_red)[0];
+      for(i=1; i < red->tcomm->nworkThreads;i++) {
+        if(((PetscInt*)red->local_red)[i] > max) max = ((PetscInt*)red->local_red)[i];
+      }
+      PetscMemcpy(outdata,&max,sizeof(PetscInt));
       break;
     }
     break;
