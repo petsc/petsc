@@ -341,7 +341,17 @@ EXTERN_C_END
 
    Level: beginner
 
+   Options Database:
+      -ts_theta_theta <Theta> - Location of stage (0<Theta<=1);  Theta = 1.0 (
+      -ts_theta_extrapolate <flg> Extrapolate stage solution from previous solution (sometimes unstable)
+      -ts_theta_endpoint <flag> - Use the endpoint instead of midpoint form of the Theta method
+
    Notes:
+$  -ts_type theta -ts_theta 1.0 corresponds to backward Euler (TSBEULER)
+$  -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint corresponds to Crank-Nicholson (TSCN)
+
+
+
    This method can be applied to DAE.
 
    This method is cast as a 1-stage implicit Runge-Kutta method.
@@ -369,7 +379,7 @@ EXTERN_C_END
 
 $  Y_i = X + h sum_j a_ij Y'_j
 
-   is interpreted as a formula for Y'_i in terms of Y_i and known stuff (Y'_j, j<i)
+   is interpreted as a formula for Y'_i in terms of Y_i and known values (Y'_j, j<i)
 
 .seealso:  TSCreate(), TS, TSSetType(), TSCN, TSBEULER, TSThetaSetTheta(), TSThetaSetEndpoint()
 
@@ -542,6 +552,11 @@ static PetscErrorCode TSView_BEuler(TS ts,PetscViewer viewer)
       TSBEULER - ODE solver using the implicit backward Euler method
 
   Level: beginner
+
+  Notes:
+  TSCN is equivalent to TSTHETA with Theta=1.0 
+
+$  -ts_type theta -ts_theta_theta 1.
 
 .seealso:  TSCreate(), TS, TSSetType(), TSEULER, TSCN, TSTHETA
 

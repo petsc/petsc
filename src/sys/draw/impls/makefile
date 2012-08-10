@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = x win32
+DIRS     = x win32 opengl
 LOCDIR   = src/sys/draw/impls/
 
 include ${PETSC_DIR}/conf/variables
