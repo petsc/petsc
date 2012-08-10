@@ -23,6 +23,7 @@ struct _TSOps {
   PetscErrorCode (*snesfunction)(SNES,Vec,Vec,TS);
   PetscErrorCode (*snesjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,TS);
   PetscErrorCode (*prestep)(TS);
+  PetscErrorCode (*prestage)(TS,PetscReal);
   PetscErrorCode (*poststep)(TS);
   PetscErrorCode (*setup)(TS);
   PetscErrorCode (*step)(TS);

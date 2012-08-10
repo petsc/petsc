@@ -132,6 +132,8 @@ PetscErrorCode TSStep_Sundials(TS ts)
   ierr = TSPreStep(ts);CHKERRQ(ierr);
 
   if (cvode->monitorstep) {
+    /* We would like to call TSPreStep() when starting each step (including rejections) and TSPreStage() before each
+     * stage solve, but CVode does not appear to support this. */
     flag = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);
   } else {
     flag = CVode(mem,tout,cvode->y,&t,CV_NORMAL);

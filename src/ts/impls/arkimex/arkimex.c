@@ -640,6 +640,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
 
   for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
     PetscReal h = ts->time_step;
+    ierr = TSPreStep(ts);CHKERRQ(ierr);
     for (i=0; i<s; i++) {
       if (At[i*s+i] == 0) {           /* This stage is explicit */
         ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
@@ -650,6 +651,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       } else {
         ark->stage_time = t + h*ct[i];
         ark->shift = 1./(h*At[i*s+i]);
+        ierr = TSPreStage(ts,ark->stage_time);CHKERRQ(ierr);
         /* Affine part */
         ierr = VecZeroEntries(W);CHKERRQ(ierr);
         for (j=0; j<i; j++) w[j] = h*A[i*s+j];
