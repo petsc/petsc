@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   ierr = PetscDrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   for (i=0; i<256; i++) {
-    //  ierr = PetscDrawLine(draw,0.0,((PetscReal)i)/256.,1.0,((PetscReal)i)/256.,i);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,0.0,((PetscReal)i)/256.,1.0,((PetscReal)i)/256.,i);CHKERRQ(ierr);
   }
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscSleep(2);CHKERRQ(ierr);

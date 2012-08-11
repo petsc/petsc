@@ -8,8 +8,17 @@
 /*
      These macros transform from the users coordinates to the  OpenGL coordinates.
 */
-#define XTRANS(draw,xwin,x)  (int)(((xwin)->w)*((draw)->port_xl + (((x - (draw)->coor_xl)*((draw)->port_xr - (draw)->port_xl))/((draw)->coor_xr - (draw)->coor_xl))))
-#define YTRANS(draw,xwin,y)  (int)(((xwin)->h)*(1.0-(draw)->port_yl - (((y - (draw)->coor_yl)*((draw)->port_yr - (draw)->port_yl))/((draw)->coor_yr - (draw)->coor_yl))))
+#define XTRANS(draw,xwin,x)  (-1.0 + 2.0*((draw)->port_xl + (((x - (draw)->coor_xl)*((draw)->port_xr - (draw)->port_xl))/((draw)->coor_xr - (draw)->coor_xl))))
+#define YTRANS(draw,xwin,y)  (-1.0 + 2.0*((draw)->port_yl + (((y - (draw)->coor_yl)*((draw)->port_yr - (draw)->port_yl))/((draw)->coor_yr - (draw)->coor_yl))))
+
+static float rcolor[256],gcolor[256],bcolor[256];
+
+PETSC_STATIC_INLINE PetscErrorCode OpenGLColor(icolor){
+  if (icolor >= 256 || icolor < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Color value out of range");
+  glColor3f(rcolor[icolor],gcolor[icolor],bcolor[icolor]);
+  return 0;
+}
+   
 
 
 #undef __FUNCT__  
@@ -42,13 +51,12 @@ static PetscErrorCode PetscDrawSynchronizedFlush_OpenGL(PetscDraw draw)
 static PetscErrorCode PetscDrawClear_OpenGL(PetscDraw draw)
 {
   PetscDraw_OpenGL* XiWin = (PetscDraw_OpenGL*)draw->data;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   /* currently clear entire window, need to only clear single port */
   glutSetWindow(XiWin->win);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glutSwapBuffers();
   PetscFunctionReturn(0);
 }
 
@@ -78,9 +86,32 @@ PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLine_OpenGL" 
+PetscErrorCode PetscDrawLine_OpenGL(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
+{
+  float             x1,y_1,x2,y2;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  x1 = XTRANS(draw,XiWin,xl);   x2  = XTRANS(draw,XiWin,xr); 
+  y_1 = YTRANS(draw,XiWin,yl);   y2  = YTRANS(draw,XiWin,yr); 
+  if (x1 == x2 && y_1 == y2) PetscFunctionReturn(0);
+
+  ierr = OpenGLColor(cl);CHKERRQ(ierr);
+  glBegin(GL_LINES);
+  glVertex3f(x1,y_1,0.0);
+  glVertex3f(x2,y2,0.0);
+  glEnd();
+  PetscFunctionReturn(0);
+}
+
+
+
+
 static struct _PetscDrawOps DvOps = { 0,
                                  PetscDrawFlush_OpenGL,
-                                      0, /*PetscDrawLine_OpenGL, */
+                                 PetscDrawLine_OpenGL,
                                  0,
                                  0,
                                       0, /* PetscDrawPoint_OpenGL,*/
@@ -112,6 +143,9 @@ static struct _PetscDrawOps DvOps = { 0,
                                  0,
                                  0,
                                  0};
+
+/* dummy display required by GLUT */
+static void display(void) {;}
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -222,13 +256,23 @@ PetscErrorCode  PetscDrawCreate_OpenGL(PetscDraw draw)
   Xwin->h      = h;
 
   if (!initialized) {
+    PetscInt i;
     ierr = PetscGetArgs(&argc,&argv);CHKERRQ(ierr);
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
     initialized = PETSC_TRUE;
+    for (i=0; i<256; i++) {
+      rcolor[i] = gcolor[i] = bcolor[i] = 0.0;
+    }
   }
   glutInitWindowSize(w, h);
   Xwin->win = glutCreateWindow("GLUT Program");
+  glutDisplayFunc(display);
+  glClearColor(1.0,1.0,1.0,1.00);
+  /*   glClearIndex();*/
+
+  draw->data = Xwin;
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   glutCheckLoop();
   PetscFunctionReturn(0);
 }
