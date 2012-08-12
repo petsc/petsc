@@ -48,10 +48,13 @@ void PETSC_STDCALL pcasmgetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_loca
   PetscInt  i,nloc;
   CHKFORTRANNULLINTEGER(n_local);
   CHKFORTRANNULLINTEGER(first_local);
+  CHKFORTRANNULLOBJECT(ksp);
   *ierr = PCASMGetSubKSP(*pc,&nloc,first_local,&tksp);
   if (n_local) *n_local = nloc;
-  for (i=0; i<nloc; i++){
-    ksp[i] = tksp[i];
+  if (ksp) {
+    for (i=0; i<nloc; i++){
+      ksp[i] = tksp[i];
+    }
   }
 }
 

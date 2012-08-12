@@ -40,8 +40,8 @@ M*/
 M*/
 
 #undef __FUNCT__
-#define __FUNCT__ "MatFindNonZeroRows_MPIAIJ"
-PetscErrorCode MatFindNonZeroRows_MPIAIJ(Mat M,IS *keptrows)
+#define __FUNCT__ "MatFindNonzeroRows_MPIAIJ"
+PetscErrorCode MatFindNonzeroRows_MPIAIJ(Mat M,IS *keptrows)
 {
   PetscErrorCode  ierr;
   Mat_MPIAIJ      *mat = (Mat_MPIAIJ*)M->data;
@@ -99,6 +99,23 @@ PetscErrorCode MatFindNonZeroRows_MPIAIJ(Mat M,IS *keptrows)
     ok2:;
   }
   ierr = ISCreateGeneral(((PetscObject)M)->comm,cnt,rows,PETSC_OWN_POINTER,keptrows);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFindZeroDiagonals_MPIAIJ"
+PetscErrorCode MatFindZeroDiagonals_MPIAIJ(Mat M,IS *zrows)
+{
+  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)M->data;
+  PetscErrorCode ierr;
+  PetscInt       i,rstart,nrows,*rows;
+
+  PetscFunctionBegin;
+  *zrows = PETSC_NULL;
+  ierr = MatFindZeroDiagonals_SeqAIJ_Private(aij->A,&nrows,&rows);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(M,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  for (i=0; i<nrows; i++) rows[i] += rstart;
+  ierr = ISCreateGeneral(((PetscObject)M)->comm,nrows,rows,PETSC_OWN_POINTER,zrows);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3090,7 +3107,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
        0,
-       0,
+       MatFindZeroDiagonals_MPIAIJ,
 /*80*/ 0,
        0,
        0,
@@ -3135,7 +3152,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
        MatGetMultiProcBlock_MPIAIJ, 
-/*124*/MatFindNonZeroRows_MPIAIJ,
+/*124*/MatFindNonzeroRows_MPIAIJ,
        MatGetColumnNorms_MPIAIJ,
        MatInvertBlockDiagonal_MPIAIJ,
        0,

@@ -382,22 +382,31 @@ static PetscErrorCode MatMatTransposeMult_Elemental(Mat A,Mat B,MatReuse scall,P
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonal_Elemental"
-static PetscErrorCode MatGetDiagonal_Elemental(Mat X,Vec D)
+static PetscErrorCode MatGetDiagonal_Elemental(Mat A,Vec D)
 {
-  Mat_Elemental   *x = (Mat_Elemental*)X->data;
+  PetscInt        i,nrows,ncols,nD,rrank,ridx,crank,cidx;
+  Mat_Elemental   *a = (Mat_Elemental*)A->data;
   PetscElemScalar *d;
   PetscErrorCode  ierr;
+  PetscElemScalar v;
+  MPI_Comm        comm=((PetscObject)A)->comm;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(D,(PetscScalar **)&d);CHKERRQ(ierr);
-  if (X->rmap->N > X->cmap->N) {
-    elem::DistMatrix<PetscElemScalar,elem::MD,elem::STAR> de(X->cmap->N,1,0,d,X->cmap->n,*x->grid);
-    x->emat->GetDiagonal(de,0);
-  } else {
-    elem::DistMatrix<PetscElemScalar,elem::MD,elem::STAR> de(X->rmap->N,1,0,d,X->rmap->n,*x->grid);
-    x->emat->GetDiagonal(de,0);
+  ierr = MatGetSize(A,&nrows,&ncols);CHKERRQ(ierr);
+  nD = nrows>ncols ? ncols : nrows;
+  for (i=0; i<nD; i++) {
+    PetscInt erow,ecol;
+    P2RO(A,0,i,&rrank,&ridx);
+    RO2E(A,0,rrank,ridx,&erow);
+    if (rrank < 0 || ridx < 0 || erow < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect row translation");
+    P2RO(A,1,i,&crank,&cidx);
+    RO2E(A,1,crank,cidx,&ecol);
+    if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect col translation");
+    v = a->emat->Get(erow,ecol);
+    ierr = VecSetValue(D,i,(PetscScalar)v,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(D,(PetscScalar **)&d);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(D);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

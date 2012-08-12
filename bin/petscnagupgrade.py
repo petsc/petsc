@@ -51,7 +51,12 @@ def currentversion(petscdir):
 #
 #
 if __name__ ==  '__main__': 
-  petscdir = os.environ['PETSC_DIR']
+  if os.environ.has_key('PETSC_DIR'):
+    petscdir = os.environ['PETSC_DIR']
+  elif os.path.exists(os.path.join('.', 'include', 'petscversion.h')):
+    petscdir  = '.'
+  else:
+    sys.exit(0)
   file     = os.path.join(petscdir,'.nagged')
   if not naggedtoday(file):
     currentversion(petscdir)

@@ -45,8 +45,8 @@ PetscErrorCode MatGetColumnNorms_SeqAIJ(Mat A,NormType type,PetscReal *norms)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatFindZeroDiagonals_SeqAIJ"
-PetscErrorCode MatFindZeroDiagonals_SeqAIJ(Mat A,IS *zrows)
+#define __FUNCT__ "MatFindZeroDiagonals_SeqAIJ_Private"
+PetscErrorCode MatFindZeroDiagonals_SeqAIJ_Private(Mat A,PetscInt *nrows,PetscInt **zrows)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   const MatScalar   *aa = a->a;
@@ -70,7 +70,22 @@ PetscErrorCode MatFindZeroDiagonals_SeqAIJ(Mat A,IS *zrows)
       rows[cnt++] = i;
     }
   }
-  ierr = ISCreateGeneral(((PetscObject)A)->comm,cnt,rows,PETSC_OWN_POINTER,zrows);CHKERRQ(ierr);
+  *nrows = cnt;
+  *zrows = rows;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatFindZeroDiagonals_SeqAIJ"
+PetscErrorCode MatFindZeroDiagonals_SeqAIJ(Mat A,IS *zrows)
+{
+  PetscInt       nrows,*rows;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *zrows = PETSC_NULL;
+  ierr = MatFindZeroDiagonals_SeqAIJ_Private(A,&nrows,&rows);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject)A)->comm,nrows,rows,PETSC_OWN_POINTER,zrows);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
