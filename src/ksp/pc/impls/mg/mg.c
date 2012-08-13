@@ -1076,7 +1076,7 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 .  -pc_mg_cycles v or w
 .  -pc_mg_smoothup <n> - number of smoothing steps after interpolation
 .  -pc_mg_smoothdown <n> - number of smoothing steps before applying restriction operator
-.  -pc_mg_type <additive,multiplicative,full,cascade> - multiplicative is the default
+.  -pc_mg_type <additive,multiplicative,full,kaskade> - multiplicative is the default
 .  -pc_mg_log - log information about time spent on each level of the solver
 .  -pc_mg_monitor - print information on the multigrid convergence
 .  -pc_mg_galerkin - use Galerkin process to compute coarser operators, i.e. Acoarse = R A R'

@@ -20,7 +20,7 @@ static char help[] ="Tests ML interface. Modified from ~src/ksp/ksp/examples/tes
     system of equations.
 
     Usage: ./ex29 -ksp_type gmres -ksp_monitor 
-           -pc_mg_type <multiplicative> (one of) additive multiplicative full cascade kascade
+           -pc_mg_type <multiplicative> (one of) additive multiplicative full kascade
            -mg_coarse_ksp_max_it 10 -mg_levels_3_ksp_max_it 10 -mg_levels_2_ksp_max_it 10 
            -mg_levels_1_ksp_max_it 10 -mg_fine_ksp_max_it 10
 */
