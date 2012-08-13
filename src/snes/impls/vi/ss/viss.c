@@ -304,8 +304,12 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
     }
  
     /* Solve J Y = Phi, where J is the semismooth jacobian */
-    /* Get the nonlinear function jacobian */
+
+    /* Get the jacobian -- note that the function must be the original function for snes_fd and snes_fd_color to work for this*/
+    sdm->computefunction = vi->computeuserfunction;
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+    sdm->computefunction = SNESVIComputeFunction;
+
     /* Get the diagonal shift and row scaling vectors */
     ierr = SNESVIComputeBsubdifferentialVectors(snes,X,F,snes->jacobian,vi->Da,vi->Db);CHKERRQ(ierr);
     /* Compute the semismooth jacobian */

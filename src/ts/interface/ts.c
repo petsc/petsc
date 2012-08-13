@@ -999,7 +999,7 @@ PetscErrorCode  TSGetApplicationContext(TS ts,void *usrP)
 #undef __FUNCT__
 #define __FUNCT__ "TSGetTimeStepNumber"
 /*@
-   TSGetTimeStepNumber - Gets the current number of timesteps.
+   TSGetTimeStepNumber - Gets the number of time steps completed.
 
    Not Collective
 
@@ -1007,11 +1007,12 @@ PetscErrorCode  TSGetApplicationContext(TS ts,void *usrP)
 .  ts - the TS context obtained from TSCreate()
 
    Output Parameter:
-.  iter - number steps so far
+.  iter - number of steps completed so far
 
    Level: intermediate
 
 .keywords: TS, timestep, get, iteration, number
+.seealso: TSGetTime(), TSGetTimeStep(), TSSetPreStep(), TSSetPreStage(), TSSetPostStep()
 @*/
 PetscErrorCode  TSGetTimeStepNumber(TS ts,PetscInt* iter)
 {
@@ -1591,7 +1592,13 @@ PetscErrorCode  TSSetSolution(TS ts,Vec x)
 
   Level: intermediate
 
+  Note:
+  If a step is rejected, TSStep() will call this routine again before each attempt.
+  The last completed time step number can be queried using TSGetTimeStepNumber(), the
+  size of the step being attempted can be obtained using TSGetTimeStep().
+
 .keywords: TS, timestep
+.seealso: TSSetPreStage(), TSSetPostStep(), TSStep()
 @*/
 PetscErrorCode  TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
 {
@@ -1618,6 +1625,7 @@ PetscErrorCode  TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
   Level: developer
 
 .keywords: TS, timestep
+.seealso: TSSetPreStep(), TSPreStage(), TSPostStep()
 @*/
 PetscErrorCode  TSPreStep(TS ts)
 {
@@ -1628,6 +1636,72 @@ PetscErrorCode  TSPreStep(TS ts)
   if (ts->ops->prestep) {
     PetscStackPush("TS PreStep function");
     ierr = (*ts->ops->prestep)(ts);CHKERRQ(ierr);
+    PetscStackPop;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetPreStage"
+/*@C
+  TSSetPreStage - Sets the general-purpose function
+  called once at the beginning of each stage.
+
+  Logically Collective on TS
+
+  Input Parameters:
++ ts   - The TS context obtained from TSCreate()
+- func - The function
+
+  Calling sequence of func:
+. PetscErrorCode func(TS ts, PetscReal stagetime);
+
+  Level: intermediate
+
+  Note:
+  There may be several stages per time step. If the solve for a given stage fails, the step may be rejected and retried.
+  The time step number being computed can be queried using TSGetTimeStepNumber() and the total size of the step being
+  attempted can be obtained using TSGetTimeStep(). The time at the start of the step is available via TSGetTime().
+
+.keywords: TS, timestep
+.seealso: TSSetPreStep(), TSSetPostStep(), TSGetApplicationContext()
+@*/
+PetscErrorCode  TSSetPreStage(TS ts, PetscErrorCode (*func)(TS,PetscReal))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+  ts->ops->prestage = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSPreStage"
+/*@
+  TSPreStage - Runs the user-defined pre-stage function set using TSSetPreStage()
+
+  Collective on TS
+
+  Input Parameters:
+. ts   - The TS context obtained from TSCreate()
+
+  Notes:
+  TSPreStage() is typically used within time stepping implementations,
+  most users would not generally call this routine themselves.
+
+  Level: developer
+
+.keywords: TS, timestep
+.seealso: TSSetPreStep(), TSPreStep(), TSPostStep()
+@*/
+PetscErrorCode  TSPreStage(TS ts, PetscReal stagetime)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->ops->prestage) {
+    PetscStackPush("TS PreStage function");
+    ierr = (*ts->ops->prestage)(ts,stagetime);CHKERRQ(ierr);
     PetscStackPop;
   }
   PetscFunctionReturn(0);
@@ -1646,11 +1720,12 @@ PetscErrorCode  TSPreStep(TS ts)
 - func - The function
 
   Calling sequence of func:
-. func (TS ts);
+$ func (TS ts);
 
   Level: intermediate
 
 .keywords: TS, timestep
+.seealso: TSSetPreStep(), TSSetPreStage(), TSGetTimeStep(), TSGetTimeStepNumber(), TSGetTime()
 @*/
 PetscErrorCode  TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
 {
@@ -1878,9 +1953,13 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec X)
 
    Level: intermediate
 
+   Notes:
+   The hook set using TSSetPreStep() is called before each attempt to take the step. In general, the time step size may
+   be changed due to adaptive error controller or solve failures. Note that steps may contain multiple stages.
+
 .keywords: TS, timestep, solve
 
-.seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve()
+.seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve(), TSSetPreStep(), TSSetPreStage()
 @*/
 PetscErrorCode  TSStep(TS ts)
 {
@@ -2018,7 +2097,6 @@ PetscErrorCode TSSolve(TS ts,Vec x,PetscReal *ftime)
     else if (ts->ptime >= ts->max_time)
       ts->reason = TS_CONVERGED_TIME;
     while (!ts->reason) {
-      ierr = TSPreStep(ts);CHKERRQ(ierr);
       ierr = TSStep(ts);CHKERRQ(ierr);
       ierr = TSPostStep(ts);CHKERRQ(ierr);
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
@@ -2179,7 +2257,7 @@ PetscErrorCode  TSMonitorLGDestroy(PetscDrawLG *drawlg)
 #undef __FUNCT__
 #define __FUNCT__ "TSGetTime"
 /*@
-   TSGetTime - Gets the current time.
+   TSGetTime - Gets the time of the most recently completed step.
 
    Not Collective
 
@@ -2190,6 +2268,10 @@ PetscErrorCode  TSMonitorLGDestroy(PetscDrawLG *drawlg)
 .  t  - the current time
 
    Level: beginner
+
+   Note:
+   When called during time step evaluation (e.g. during residual evaluation or via hooks set using TSSetPreStep(),
+   TSSetPreStage(), or TSSetPostStep()), the time is the time at the start of the step being evaluated.
 
 .seealso: TSSetInitialTimeStep(), TSGetTimeStep()
 

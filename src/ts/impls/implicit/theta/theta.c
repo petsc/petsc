@@ -99,6 +99,8 @@ static PetscErrorCode TSStep_Theta(TS ts)
   next_time_step = ts->time_step;
   th->stage_time = ts->ptime + (th->endpoint ? 1. : th->Theta)*ts->time_step;
   th->shift = 1./(th->Theta*ts->time_step);
+  ierr = TSPreStep(ts);CHKERRQ(ierr);
+  ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
 
   if (th->endpoint) {           /* This formulation assumes linear time-independent mass matrix */
     ierr = VecZeroEntries(th->Xdot);CHKERRQ(ierr);

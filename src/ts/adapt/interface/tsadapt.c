@@ -219,6 +219,37 @@ PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt,PetscBool flg)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSAdaptSetCheckStage"
+/*@C
+   TSAdaptSetCheckStage - set a callback to check convergence for a stage
+
+   Logically collective on TSAdapt
+
+   Input Arguments:
++  adapt - adaptive controller context
+-  func - stage check function
+
+   Arguments of func:
+$  PetscErrorCode func(TSAdapt adapt,TS ts,PetscBool *accept)
+
++  adapt - adaptive controller context
+.  ts - time stepping context
+-  accept - pending choice of whether to accept, can be modified by this routine
+
+   Level: advanced
+
+.seealso: TSAdaptChoose()
+@*/
+PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt,TS,PetscBool*))
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
+  adapt->ops->checkstage = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSAdaptSetStepLimits"
 /*@
    TSAdaptSetStepLimits - Set minimum and maximum step sizes to be considered by the controller
@@ -501,8 +532,11 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscBool *accept)
       }
     }
   }
+  if (adapt->ops->checkstage) {ierr = (*adapt->ops->checkstage)(adapt,ts,accept);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
+
+
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptCreate"

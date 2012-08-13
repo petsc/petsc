@@ -45,7 +45,7 @@ typedef struct {
 } ObsCtx;
 
 
-extern PetscErrorCode FormPsiAndInitialGuess(DM,Vec);
+extern PetscErrorCode FormPsiAndInitialGuess(DM,Vec,PetscBool);
 extern PetscErrorCode FormBounds(SNES,Vec,Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,
                         PetscScalar**,PetscScalar**,ObsCtx*);
@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   DM             da;
   ObsCtx         user;
   PetscReal      dx,dy,error1,errorinf;
-  PetscBool      fdflg = PETSC_FALSE;
+  PetscBool      feasible = PETSC_FALSE,fdflg = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -85,15 +85,14 @@ int main(int argc,char **argv)
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","options to obstacle problem","");CHKERRQ(ierr);
   {
     ierr = PetscOptionsBool("-fd","use coloring to compute Jacobian by finite differences",PETSC_NULL,fdflg,&fdflg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-feasible","use feasible initial guess",PETSC_NULL,feasible,&feasible,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  /* there should be an API call for this but I do not see it: */
-  ierr = PetscOptionsSetValue("-snes_vi_ignore_function_sign","");CHKERRQ(ierr);
 
   ierr = DMDASetUniformCoordinates(da,-2.0,2.0,-2.0,2.0,0.0,1.0);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
 
-  ierr = FormPsiAndInitialGuess(da,u);CHKERRQ(ierr);
+  ierr = FormPsiAndInitialGuess(da,u,feasible);CHKERRQ(ierr);
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
@@ -146,7 +145,6 @@ int main(int argc,char **argv)
 
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
-
   ierr = PetscFinalize();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -155,7 +153,7 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormPsiAndInitialGuess"
-PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0) {
+PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible) {
   ObsCtx *user;
   PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
@@ -195,11 +193,15 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0) {
       } else {
         uexact[j][i] = - A * log(r) + B;   /* solves the laplace eqn */
       }
-      if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
-        u0[j][i] = uexact[j][i];
+      if (feasible) {
+        if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
+          u0[j][i] = uexact[j][i];
+        } else {
+          /* initial guess is admissible: it is above the obstacle */
+          u0[j][i] = uexact[j][i] + cos(pi * x / 4) * cos(pi * y / 4);
+        }
       } else {
-        /* initial guess is admissible: it is above the obstacle */
-        u0[j][i] = uexact[j][i] + cos(pi * x / 4) * cos(pi * y / 4);
+        u0[j][i] = 0.;
       }
     }
   }
@@ -249,7 +251,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,
       } else {
         uxx     = (x[j][i-1] - 2.0 * x[j][i] + x[j][i+1]) / (dx*dx);
         uyy     = (x[j-1][i] - 2.0 * x[j][i] + x[j+1][i]) / (dy*dy);
-        f[j][i] = uxx + uyy;
+        f[j][i] = -uxx - uyy;
       }
     }
   }
@@ -283,11 +285,11 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,
         v[0] = 1.0;
         ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
       } else { /* interior grid points */
-        v[0] = oyy;                 col[0].j = j - 1;  col[0].i = i;
-        v[1] = oxx;                 col[1].j = j;      col[1].i = i - 1;
-        v[2] = -2.0 * (oxx + oyy);  col[2].j = j;      col[2].i = i;
-        v[3] = oxx;                 col[3].j = j;      col[3].i = i + 1;
-        v[4] = oyy;                 col[4].j = j + 1;  col[4].i = i;
+        v[0] = -oyy;                 col[0].j = j - 1;  col[0].i = i;
+        v[1] = -oxx;                 col[1].j = j;      col[1].i = i - 1;
+        v[2] = 2.0 * (oxx + oyy);    col[2].j = j;      col[2].i = i;
+        v[3] = -oxx;                 col[3].j = j;      col[3].i = i + 1;
+        v[4] = -oyy;                 col[4].j = j + 1;  col[4].i = i;
         ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
       }
     }

@@ -505,6 +505,22 @@ runex8_3:
            if (${DIFF} output/ex8_3.out ex8_3.tmp) then true; \
            else  echo  ${PWD} "\nPossible problem with with ex8_3, diffs above \n========================================="; fi; \
            ${RM} -f ex8_3.tmp
+runex9:
+	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type virs -feasible 1 > ex9_1.tmp 2>&1; \
+           ${DIFF} output/ex9_1.out ex9_1.tmp || printf  "${PWD}\nPossible problem with with ex9_1, diffs above \n=========================================\n"; \
+           ${RM} -f ex9_1.tmp
+runex9_2:
+	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type viss -feasible 1 > ex9_2.tmp 2>&1; \
+           ${DIFF} output/ex9_2.out ex9_2.tmp || printf  "${PWD}\nPossible problem with with ex9_2, diffs above \n=========================================\n"; \
+           ${RM} -f ex9_2.tmp
+runex9_3:
+	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type virs -feasible 0 > ex9_3.tmp 2>&1; \
+           ${DIFF} output/ex9_3.out ex9_3.tmp || printf  "${PWD}\nPossible problem with with ex9_3, diffs above \n=========================================\n"; \
+           ${RM} -f ex9_3.tmp
+runex9_4:
+	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type viss -feasible 0 > ex9_4.tmp 2>&1; \
+           ${DIFF} output/ex9_4.out ex9_4.tmp || printf  "${PWD}\nPossible problem with with ex9_4, diffs above \n=========================================\n"; \
+           ${RM} -f ex9_4.tmp
 runex14:
 	-@${MPIEXEC} -n 4 ./ex14 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex14_1.tmp 2>&1; \
 	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \
@@ -859,6 +875,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex5_5_fas runex5_5_ngmres_fas runex5_5_fas_additive \
                                  runex5_6 ex5.rm\
                                  ex6.PETSc runex6 runex6_2 ex6.rm\
+                                 ex9.PETSc runex9 runex9_2 runex9_3 runex9_4 ex9.rm\
                                  ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc runex15 runex15_3 ex15.rm ex18.PETSc runex18 ex18.rm \
                                  ex19.PETSc runex19 runex19_5 \
                                  runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 \
