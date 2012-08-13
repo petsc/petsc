@@ -49,6 +49,8 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     ts->time_step = next_time_step;
     th->stage_time = ts->ptime + th->Alpha_f*ts->time_step;
     th->shift = th->Alpha_m/(th->Alpha_f*th->Gamma*ts->time_step);
+    ierr = TSPreStep(ts);CHKERRQ(ierr);
+    ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
     /* predictor */
     ierr = VecCopy(th->X0,th->X1);CHKERRQ(ierr);
     /* solve R(X,V) = 0 */
