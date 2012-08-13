@@ -74,8 +74,8 @@ static PetscErrorCode PetscDrawUtilityHlsToRgb(int h,int l,int s,unsigned char *
 PetscErrorCode  PetscDrawUtilitySetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,int mapsize)
 {
   PetscErrorCode ierr;
-  int        i,hue,lightness,saturation;
-  PetscReal  igamma = 1.0 / Gamma;
+  int            i,hue,lightness,saturation;
+  PetscReal      igamma = 1.0 / Gamma;
 
   PetscFunctionBegin;
   red[0]      = 0;
