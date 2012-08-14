@@ -6,7 +6,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionCreate"
-/*@C
+/*@
   PetscSectionCreate - Allocates PetscSection space and sets the map contents to the default.
 
   Collective on MPI_Comm
@@ -27,9 +27,6 @@
 
        The PetscSection object and methods are intended to be used in the PETSc Vec and Mat implementions; it is
        recommended they not be used in user codes unless you really gain something in their use.
-
-  Fortran Notes:
-      Not available from Fortran
 
 .seealso: PetscSection, PetscSectionDestroy()
 @*/
@@ -56,6 +53,21 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetNumFields"
+/*@
+  PetscSectionGetNumFields - Returns the number of fields, or 0 if no fields were defined.
+
+  Not collective
+
+  Input Parameter:
+. s - the PetscSection
+
+  Output Parameter:
+. numFields - the number of fields defined, or 0 if none were defined
+
+  Level: intermediate
+
+.seealso: PetscSectionSetNumFields()
+@*/
 PetscErrorCode PetscSectionGetNumFields(PetscSection s, PetscInt *numFields)
 {
   PetscFunctionBegin;
@@ -66,6 +78,19 @@ PetscErrorCode PetscSectionGetNumFields(PetscSection s, PetscInt *numFields)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetNumFields"
+/*@
+  PetscSectionSetNumFields - Sets the number of fields.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+- numFields - the number of fields
+
+  Level: intermediate
+
+.seealso: PetscSectionGetNumFields()
+@*/
 PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
 {
   PetscInt       f;
@@ -151,6 +176,22 @@ PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const ch
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetFieldComponents"
+/*@
+  PetscSectionGetFieldComponents - Returns the number of field components for the given field.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+- field - the field number
+
+  Output Parameter:
+. numComp - the number of field components
+
+  Level: intermediate
+
+.seealso: PetscSectionSetNumFieldComponents(), PetscSectionGetNumFields()
+@*/
 PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, PetscInt *numComp)
 {
   PetscFunctionBegin;
@@ -164,6 +205,20 @@ PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetFieldComponents"
+/*@
+  PetscSectionSetFieldComponents - Sets the number of field components for the given field.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. field - the field number
+- numComp - the number of field components
+
+  Level: intermediate
+
+.seealso: PetscSectionGetNumFieldComponents(), PetscSectionGetNumFields()
+@*/
 PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, PetscInt numComp)
 {
   PetscFunctionBegin;
@@ -190,6 +245,22 @@ PetscErrorCode PetscSectionCheckConstraints(PetscSection s)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetChart"
+/*@
+  PetscSectionGetChart - Returns the range [pStart, pEnd) in which points in the lie.
+
+  Not collective
+
+  Input Parameter:
+. s - the PetscSection
+
+  Output Parameters:
++ pStart - the first point
+- pEnd - one past the last point
+
+  Level: intermediate
+
+.seealso: PetscSectionSetChart(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *pEnd)
 {
   PetscFunctionBegin;
@@ -200,6 +271,20 @@ PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetChart"
+/*@
+  PetscSectionSetChart - Sets the range [pStart, pEnd) in which points in the lie.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. pStart - the first point
+- pEnd - one past the last point
+
+  Level: intermediate
+
+.seealso: PetscSectionSetChart(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pEnd)
 {
   PetscInt       f;
@@ -219,6 +304,22 @@ PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pE
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetDof"
+/*@
+  PetscSectionGetDof - Return the number of degrees of freedom associated with a given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+- point - the point
+
+  Output Parameter:
+. numDof - the number of dof
+
+  Level: intermediate
+
+.seealso: PetscSectionSetDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numDof)
 {
   PetscFunctionBegin;
@@ -231,6 +332,20 @@ PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numD
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetDof"
+/*@
+  PetscSectionSetDof - Sets the number of degrees of freedom associated with a given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+- numDof - the number of dof
+
+  Level: intermediate
+
+.seealso: PetscSectionGetDof(), PetscSectionAddDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionSetDof(PetscSection s, PetscInt point, PetscInt numDof)
 {
   PetscFunctionBegin;
@@ -243,6 +358,20 @@ PetscErrorCode PetscSectionSetDof(PetscSection s, PetscInt point, PetscInt numDo
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionAddDof"
+/*@
+  PetscSectionAddDof - Adds to the number of degrees of freedom associated with a given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+- numDof - the number of additional dof
+
+  Level: intermediate
+
+.seealso: PetscSectionGetDof(), PetscSectionSetDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionAddDof(PetscSection s, PetscInt point, PetscInt numDof)
 {
   PetscFunctionBegin;
@@ -255,6 +384,23 @@ PetscErrorCode PetscSectionAddDof(PetscSection s, PetscInt point, PetscInt numDo
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetFieldDof"
+/*@
+  PetscSectionGetFieldDof - Return the number of degrees of freedom associated with a field on a given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+- field - the field
+
+  Output Parameter:
+. numDof - the number of dof
+
+  Level: intermediate
+
+.seealso: PetscSectionSetFieldDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt field, PetscInt *numDof)
 {
   PetscErrorCode ierr;
@@ -269,6 +415,21 @@ PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetFieldDof"
+/*@
+  PetscSectionSetDof - Sets the number of degrees of freedom associated with a field on a given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+. field - the field
+- numDof - the number of dof
+
+  Level: intermediate
+
+.seealso: PetscSectionGetFieldDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionSetFieldDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof)
 {
   PetscErrorCode ierr;
@@ -370,6 +531,18 @@ PetscErrorCode PetscSectionSetUpBC(PetscSection s)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetUp"
+/*@
+  PetscSectionSetUp - Calculate offsets based upon the number of degrees of freedom for each point.
+
+  Not collective
+
+  Input Parameter:
+. s - the PetscSection
+
+  Level: intermediate
+
+.seealso: PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionSetUp(PetscSection s)
 {
   PetscInt       offset = 0, p, f;
@@ -402,6 +575,22 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetStorageSize"
+/*@
+  PetscSectionGetStorageSize - Return the size of an arary or local Vec capable of holding all the degrees of freedom.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+- point - the point
+
+  Output Parameter:
+. size - the size of an array which can hold all the dofs
+
+  Level: intermediate
+
+.seealso: PetscSectionGetOffset(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
 {
   PetscInt p, n = 0;
@@ -630,6 +819,22 @@ PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLa
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetOffset"
+/*@
+  PetscSectionGetOffset - Return the offset into an arary or local Vec for the dof associated with the given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+- point - the point
+
+  Output Parameter:
+. offset - the offset
+
+  Level: intermediate
+
+.seealso: PetscSectionGetFieldOffset(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *offset)
 {
   PetscFunctionBegin;
@@ -642,6 +847,23 @@ PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *o
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetFieldOffset"
+/*@
+  PetscSectionGetOffset - Return the offset into an arary or local Vec for the dof associated with the given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+- field - the field
+
+  Output Parameter:
+. offset - the offset
+
+  Level: intermediate
+
+.seealso: PetscSectionGetOffset(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt *offset)
 {
   PetscErrorCode ierr;
@@ -674,6 +896,22 @@ PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection s, PetscInt point, P
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetOffsetRange"
+/*@
+  PetscSectionGetOffsetRange - Return the full range of offsets [start, end)
+
+  Not collective
+
+  Input Parameter:
+. s - the PetscSection
+
+  Output Parameters:
++ start - the minimum offset
+- end   - one more than the maximum offset
+
+  Level: intermediate
+
+.seealso: PetscSectionGetOffset(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, PetscInt *end)
 {
   PetscInt       os = s->atlasOff[0], oe = s->atlasOff[0], pStart, pEnd, p;
@@ -849,10 +1087,12 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*@C
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionDestroy"
+/*@
   PetscSectionDestroy - Frees a section object and frees its range if that exists.
 
-  Collective on MPI_Comm
+  Not collective
 
   Input Parameters:
 . s - the PetscSection
@@ -862,13 +1102,8 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
     The PetscSection object and methods are intended to be used in the PETSc Vec and Mat implementions; it is
     recommended they not be used in user codes unless you really gain something in their use.
 
-  Fortran Notes:
-    Not available from Fortran
-
 .seealso: PetscSection, PetscSectionCreate()
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionDestroy"
 PetscErrorCode  PetscSectionDestroy(PetscSection *s)
 {
   PetscErrorCode ierr;
@@ -922,6 +1157,24 @@ PetscErrorCode VecIntGetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSetValuesSection"
+/*@C
+  VecSetValuesSection - Sets all the values associated with a given point, accoridng to the section, in the given Vec
+
+  Not collective
+
+  Input Parameters:
++ v - the Vec
+. s - the organizing PetscSection
+. point - the point
+. values - the array of input values
+- mode - the insertion mode, either ADD_VALUES or INSERT_VALUES
+
+  Level: developer
+
+  Note: This is similar to MatSetValuesStencil()
+
+.seealso: PetscSection, PetscSectionCreate()
+@*/
 PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar values[], InsertMode mode)
 {
   PetscScalar    *baseArray, *array;

@@ -14,6 +14,8 @@
 #define dmcomplexvecgetclosure_            DMCOMPLEXVECGETCLOSURE
 #define dmcomplexvecrestoreclosure_        DMCOMPLEXVECRESTORECLOSURE
 #define dmcomplexvecsetclosure_            DMCOMPLEXVECSETCLOSURE
+#define dmcomplexcreatesection_            DMCOMPLEXCREATESECTION
+#define dmcomplexcomputecellgeometry_      DMCOMPLEXCOMPUTECELLGEOMETRY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dmcomplexgetcone_                  dmcomplexgetcone
 #define dmcomplexrestorecone_              dmcomplexrestorecone
@@ -26,6 +28,8 @@
 #define dmcomplexvecgetclosure_            dmcomplexvecgetclosure
 #define dmcomplexvecrestoreclosure_        dmcomplexvecrestoreclosure
 #define dmcomplexvecsetclosure_            dmcomplexvecsetclosure
+#define dmcomplexcreatesection_            dmcomplexcreatesection
+#define dmcomplexcomputecellgeometry_      dmcomplexcomputecellgeometry
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -110,6 +114,32 @@ void PETSC_STDCALL dmcomplexvecsetclosure_(DM *dm, PetscSection *section, Vec *v
 
   *__ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void **) &array PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   *__ierr = DMComplexVecSetClosure(*dm, *section, *v, *point, array, *mode);
+}
+
+void PETSC_STDCALL dmcomplexcreatesection_(DM *dm, PetscInt *dim, PetscInt *numFields, F90Array1d *ptrC, F90Array1d *ptrD, PetscInt *numBC, F90Array1d *ptrF, F90Array1d *ptrP, PetscSection *section, int *__ierr PETSC_F90_2PTR_PROTO(ptrCd) PETSC_F90_2PTR_PROTO(ptrDd) PETSC_F90_2PTR_PROTO(ptrFd) PETSC_F90_2PTR_PROTO(ptrPd))
+{
+  PetscInt *numComp;
+  PetscInt *numDof;
+  PetscInt *bcField;
+  IS       *bcPoints;
+
+  *__ierr = F90Array1dAccess(ptrC, PETSC_INT, (void **) &numComp PETSC_F90_2PTR_PARAM(ptrCd));if (*__ierr) return;
+  *__ierr = F90Array1dAccess(ptrD, PETSC_INT, (void **) &numDof  PETSC_F90_2PTR_PARAM(ptrDd));if (*__ierr) return;
+  *__ierr = F90Array1dAccess(ptrF, PETSC_INT, (void **) &bcField PETSC_F90_2PTR_PARAM(ptrFd));if (*__ierr) return;
+  *__ierr = F90Array1dAccess(ptrP, PETSC_FORTRANADDR, (void **) &bcPoints PETSC_F90_2PTR_PARAM(ptrPd));if (*__ierr) return;
+  *__ierr = DMComplexCreateSection(*dm, *dim, *numFields, numComp, numDof, *numBC, bcField, bcPoints, section);
+}
+
+void PETSC_STDCALL dmcomplexcomputecellgeometry_(DM *dm, PetscInt *cell, F90Array1d *ptrV, F90Array1d *ptrJ, F90Array1d *ptrIJ, PetscReal *detJ, int *__ierr PETSC_F90_2PTR_PROTO(ptrVd) PETSC_F90_2PTR_PROTO(ptrJd) PETSC_F90_2PTR_PROTO(ptrIJd))
+{
+  PetscReal *v0;
+  PetscReal *J;
+  PetscReal *invJ;
+
+  *__ierr = F90Array1dAccess(ptrV,  PETSC_REAL, (void **) &v0   PETSC_F90_2PTR_PARAM(ptrVd));if (*__ierr) return;
+  *__ierr = F90Array1dAccess(ptrJ,  PETSC_REAL, (void **) &J    PETSC_F90_2PTR_PARAM(ptrJd));if (*__ierr) return;
+  *__ierr = F90Array1dAccess(ptrIJ, PETSC_REAL, (void **) &invJ PETSC_F90_2PTR_PARAM(ptrIJd));if (*__ierr) return;
+  *__ierr = DMComplexComputeCellGeometry(*dm, *cell, v0, J, invJ, detJ);
 }
 
 EXTERN_C_END
