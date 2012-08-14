@@ -416,7 +416,7 @@ PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetFieldDof"
 /*@
-  PetscSectionSetDof - Sets the number of degrees of freedom associated with a field on a given point.
+  PetscSectionSetFieldDof - Sets the number of degrees of freedom associated with a field on a given point.
 
   Not collective
 
@@ -848,7 +848,7 @@ PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *o
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetFieldOffset"
 /*@
-  PetscSectionGetOffset - Return the offset into an arary or local Vec for the dof associated with the given point.
+  PetscSectionGetFieldOffset - Return the offset into an arary or local Vec for the dof associated with the given point.
 
   Not collective
 

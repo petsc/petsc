@@ -3296,18 +3296,18 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
         const PetscInt *cone;
 
         ierr = DMComplexGetCone(idm, f, &cone);CHKERRQ(ierr);
-        if (((faces[f*faceSize+0] == cone[0]) && (faces[f*faceSize+1] == cone[1]) && (faces[f*faceSize+2] == cone[2])) ||
-            ((faces[f*faceSize+0] == cone[1]) && (faces[f*faceSize+1] == cone[2]) && (faces[f*faceSize+2] == cone[0])) ||
-            ((faces[f*faceSize+0] == cone[2]) && (faces[f*faceSize+1] == cone[0]) && (faces[f*faceSize+2] == cone[1])) ||
-            ((faces[f*faceSize+0] == cone[0]) && (faces[f*faceSize+1] == cone[2]) && (faces[f*faceSize+2] == cone[1])) ||
-            ((faces[f*faceSize+0] == cone[2]) && (faces[f*faceSize+1] == cone[1]) && (faces[f*faceSize+2] == cone[0])) ||
-            ((faces[f*faceSize+0] == cone[1]) && (faces[f*faceSize+1] == cone[0]) && (faces[f*faceSize+2] == cone[2]))) {
+        if (((cellFaces[f*faceSize+0] == cone[0]) && (cellFaces[f*faceSize+1] == cone[1]) && (cellFaces[f*faceSize+2] == cone[2])) ||
+            ((cellFaces[f*faceSize+0] == cone[1]) && (cellFaces[f*faceSize+1] == cone[2]) && (cellFaces[f*faceSize+2] == cone[0])) ||
+            ((cellFaces[f*faceSize+0] == cone[2]) && (cellFaces[f*faceSize+1] == cone[0]) && (cellFaces[f*faceSize+2] == cone[1])) ||
+            ((cellFaces[f*faceSize+0] == cone[0]) && (cellFaces[f*faceSize+1] == cone[2]) && (cellFaces[f*faceSize+2] == cone[1])) ||
+            ((cellFaces[f*faceSize+0] == cone[2]) && (cellFaces[f*faceSize+1] == cone[1]) && (cellFaces[f*faceSize+2] == cone[0])) ||
+            ((cellFaces[f*faceSize+0] == cone[1]) && (cellFaces[f*faceSize+1] == cone[0]) && (cellFaces[f*faceSize+2] == cone[2]))) {
           found = PETSC_TRUE;
           break;
         }
       }
       if (!found) {
-        ierr = DMComplexSetCone(idm, face, &faces[f*faceSize]);CHKERRQ(ierr);
+        ierr = DMComplexSetCone(idm, face, &cellFaces[f*faceSize]);CHKERRQ(ierr);
         ++face;
       }
       ierr = DMComplexInsertCone(idm, c, cf, f);CHKERRQ(ierr);
