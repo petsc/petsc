@@ -3010,6 +3010,20 @@ PetscErrorCode  MatInvertBlockDiagonal_MPIAIJ(Mat A,const PetscScalar **values)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetRandom_MPIAIJ"
+static PetscErrorCode  MatSetRandom_MPIAIJ(Mat x,PetscRandom rctx)
+{
+  PetscErrorCode ierr;
+  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)x->data;
+
+  PetscFunctionBegin;
+  ierr = MatSetRandom(aij->A,rctx);CHKERRQ(ierr);
+  ierr = MatSetRandom(aij->B,rctx);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
@@ -3073,7 +3087,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
        MatZeroRowsColumns_MPIAIJ,
-/*49*/ 0,
+/*49*/ MatSetRandom_MPIAIJ,
        0,
        0,
        0,

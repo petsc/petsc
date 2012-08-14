@@ -5032,7 +5032,7 @@ final \trl{ierr} argument.
 
 Since Fortran 77 does not allow arrays to be returned in routine
 arguments, all PETSc routines that return arrays, such as 
-VecGetArray(), MatGetArray(), 
+VecGetArray(), MatSeqDenseGetArray(), 
 ISGetIndices(), and DMDAGetGlobalIndices()
 are defined slightly differently in Fortran than in C.  
 Instead of returning the array itself, these routines
@@ -5050,7 +5050,7 @@ The Fortran interface for several routines is as follows:
    DM  d \\
  
    call VecGetArray(x,xx\_v,xx\_i,ierr)\\
-   call MatGetArray(A,aa\_v,aa\_i,ierr)\\
+   call MatSeqDenseGetArray(A,aa\_v,aa\_i,ierr)\\
    call ISGetIndices(s,ss\_v,ss\_i,ierr)\\
    call DMDAGetGlobalIndices(d,nloc,dd\_v,dd\_i,ierr)
 \end{tabbing}
@@ -5084,7 +5084,7 @@ indexing begins with 1, not 0 (unless the array is declared as \trl{xx_v(0:1)}).
 This is different from the use of VecSetValues()
 where, indexing always starts with 0.
 
-{\em Note}: If using VecGetArray(), MatGetArray(), ISGetIndices(),
+{\em Note}: If using VecGetArray(), MatSeqDenseGetArray(), ISGetIndices(),
 or DMDAGetGlobalIndices()
 from Fortran, the user {\em must not} compile the Fortran code with options 
 to check for ``array entries out of bounds'' (e.g., on the IBM RS/6000 this 
@@ -5204,7 +5204,7 @@ manual pages and previous discussion in this chapter for details:
 \begin{tabbing}
  PetscInitialize(char *filename,int \trl{ierr)}\\
  PetscError(MPI\_COMM,int err,char *message,int \trl{ierr)}\\
- VecGetArray(), MatGetArray()\\
+ VecGetArray(), MatSeqDenseGetArray()\\
  ISGetIndices(), DMDAGetGlobalIndices()\\
  VecDuplicateVecs(), VecDestroyVecs()\\
  PetscOptionsGetString()

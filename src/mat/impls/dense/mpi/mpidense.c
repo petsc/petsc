@@ -190,7 +190,7 @@ PetscErrorCode MatGetArray_MPIDense(Mat A,PetscScalar *array[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatGetArray(a->A,array);CHKERRQ(ierr);
+  ierr = MatSeqDenseGetArray(a->A,array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -262,7 +262,11 @@ static PetscErrorCode MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,MatReuse 
 #define __FUNCT__ "MatRestoreArray_MPIDense"
 PetscErrorCode MatRestoreArray_MPIDense(Mat A,PetscScalar *array[])
 {
+  Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = MatSeqDenseRestoreArray(a->A,array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1529,6 +1533,25 @@ PetscErrorCode MatGetColumnNorms_MPIDense(Mat A,NormType type,PetscReal *norms)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetRandom_MPIDense"
+static PetscErrorCode  MatSetRandom_MPIDense(Mat x,PetscRandom rctx)
+{
+  Mat_MPIDense   *d = (Mat_MPIDense*)x->data;
+  PetscErrorCode ierr;
+  PetscScalar    *a;
+  PetscInt       m,n,i;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(d->A,&m,&n);CHKERRQ(ierr);
+  ierr = MatSeqDenseGetArray(d->A,&a);CHKERRQ(ierr);
+  for (i=0; i<m*n; i++) {
+    ierr = PetscRandomGetValue(rctx,a+i);CHKERRQ(ierr);
+  }
+  ierr = MatSeqDenseRestoreArray(d->A,&a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        MatGetRow_MPIDense,
@@ -1579,7 +1602,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        0,
        0,
        0,
-/*49*/ 0,
+/*49*/ MatSetRandom_MPIDense,
        0,
        0,
        0,

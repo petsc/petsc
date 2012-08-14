@@ -44,14 +44,14 @@ int main(int argc,char **argv)
   
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-  ierr = MatGetArray(RHS,&array);CHKERRQ(ierr);
+  ierr = MatSeqDenseGetArray(RHS,&array);CHKERRQ(ierr);
   for (j=0; j<nrhs; j++){
     for (i=0; i<n; i++){
       ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
       array[n*j+i] = rval; 
     }
   }
-  ierr = MatRestoreArray(RHS,&array);CHKERRQ(ierr);
+  ierr = MatSeqDenseRestoreArray(RHS,&array);CHKERRQ(ierr);
   
   ierr = MatDuplicate(RHS,MAT_DO_NOT_COPY_VALUES,&SOLU);CHKERRQ(ierr);
 
@@ -111,8 +111,8 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
   }
   ierr = MatMatSolve(F,RHS,SOLU);CHKERRQ(ierr);
-  ierr = MatGetArray(SOLU,&solu_array);CHKERRQ(ierr);
-  ierr = MatGetArray(RHS,&rhs_array);CHKERRQ(ierr);
+  ierr = MatSeqDenseGetArray(SOLU,&solu_array);CHKERRQ(ierr);
+  ierr = MatSeqDenseGetArray(RHS,&rhs_array);CHKERRQ(ierr);
   for (j=0; j<nrhs; j++){
     ierr = VecPlaceArray(y,solu_array+j*m);CHKERRQ(ierr);
     ierr = VecPlaceArray(b,rhs_array+j*m);CHKERRQ(ierr);
@@ -127,8 +127,8 @@ int main(int argc,char **argv)
     ierr = VecResetArray(b);CHKERRQ(ierr);
     ierr = VecResetArray(y);CHKERRQ(ierr);
   }
-  ierr = MatRestoreArray(RHS,&rhs_array);CHKERRQ(ierr);
-  ierr = MatRestoreArray(SOLU,&solu_array);CHKERRQ(ierr);
+  ierr = MatSeqDenseRestoreArray(RHS,&rhs_array);CHKERRQ(ierr);
+  ierr = MatSeqDenseRestoreArray(SOLU,&solu_array);CHKERRQ(ierr);
 
   ierr = MatDestroy(&F);CHKERRQ(ierr);
 

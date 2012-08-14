@@ -25,14 +25,14 @@ int main(int argc,char **argv) {
   ierr = MatSeqDenseSetPreallocation(A,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
-  ierr = MatGetArray(A,&array);CHKERRQ(ierr);
+  ierr = MatSeqDenseGetArray(A,&array);CHKERRQ(ierr);
   k = 0;
   for (i=0; i<M; i++){
     for (j=0; j<N; j++){
       ierr = PetscRandomGetValue(r,&array[k++]);CHKERRQ(ierr);
     }
   }
-  ierr = MatRestoreArray(A,&array);CHKERRQ(ierr);
+  ierr = MatSeqDenseRestoreArray(A,&array);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

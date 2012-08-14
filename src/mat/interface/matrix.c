@@ -34,6 +34,62 @@ PetscLogEvent  MAT_Merge;
 
 const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT","MatFactorType","MAT_FACTOR_",0};
 
+#undef __FUNCT__
+#define __FUNCT__ "MatSetRandom"
+/*@
+   MatSetRandom - Sets all components of a matrix to random numbers. For sparse matrices that have been preallocated it randomly selects appropriate locations
+
+   Logically Collective on Vec
+
+   Input Parameters:
++  x  - the vector
+-  rctx - the random number context, formed by PetscRandomCreate(), or PETSC_NULL and
+          it will create one internally.
+
+   Output Parameter:
+.  x  - the vector
+
+   Example of Usage:
+.vb
+     PetscRandomCreate(PETSC_COMM_WORLD,&rctx);
+     VecSetRandom(x,rctx);
+     PetscRandomDestroy(rctx);
+.ve
+
+   Level: intermediate
+
+   Concepts: vector^setting to random
+   Concepts: random^vector
+
+.seealso: MatZeroEntries(), MatSetValues(), PetscRandomCreate(), PetscRandomDestroy()
+@*/
+PetscErrorCode  MatSetRandom(Mat x,PetscRandom rctx)
+{
+  PetscErrorCode ierr;
+  PetscRandom    randObj = PETSC_NULL;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,MAT_CLASSID,1);
+  if (rctx) PetscValidHeaderSpecific(rctx,PETSC_RANDOM_CLASSID,2);
+  PetscValidType(x,1);
+
+  if (!rctx) {
+    MPI_Comm    comm;
+    ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
+    ierr = PetscRandomCreate(comm,&randObj);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(randObj);CHKERRQ(ierr);
+    rctx = randObj;
+  }
+
+  ierr = PetscLogEventBegin(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
+  ierr = (*x->ops->setrandom)(x,rctx);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
+
+  ierr = PetscRandomDestroy(&randObj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatFindNonzeroRows"
 /*@

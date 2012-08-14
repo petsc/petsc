@@ -186,7 +186,7 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
   ierr = PetscMalloc(n*sizeof(PetscReal),&eigr);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscReal),&eigi);CHKERRQ(ierr);
   ierr = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
-  ierr = MatGetArray(dJdense,&a);CHKERRQ(ierr);
+  ierr = MatSeqDenseGetArray(dJdense,&a);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   {
     PetscBLASInt lierr;
@@ -202,7 +202,7 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
   for (i=0;i<n;i++) {
     PetscPrintf(((PetscObject)snes)->comm,"%5d: %20.5g + %20.5gi\n",i,eigr[i],eigi[i]);CHKERRQ(ierr);
   }
-  ierr = MatRestoreArray(dJdense,&a);CHKERRQ(ierr); 
+  ierr = MatSeqDenseRestoreArray(dJdense,&a);CHKERRQ(ierr); 
   ierr = MatDestroy(&dJ);CHKERRQ(ierr);
   ierr = MatDestroy(&dJdense);CHKERRQ(ierr);
   ierr = PetscFree(eigr);CHKERRQ(ierr);

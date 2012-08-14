@@ -1043,8 +1043,8 @@ PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat A,Mat B,Mat X)
   ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQDENSE,&xisdense);CHKERRQ(ierr);
   if (!xisdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"X matrix must be a SeqDense matrix");
 
-  ierr = MatGetArray(B,&b);CHKERRQ(ierr); 
-  ierr = MatGetArray(X,&x);CHKERRQ(ierr);
+  ierr = MatSeqDenseGetArray(B,&b);CHKERRQ(ierr); 
+  ierr = MatSeqDenseGetArray(X,&x);CHKERRQ(ierr);
   
   tmp  = a->solve_work;
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -1077,8 +1077,8 @@ PetscErrorCode MatMatSolve_SeqAIJ_inplace(Mat A,Mat B,Mat X)
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = MatRestoreArray(B,&b);CHKERRQ(ierr); 
-  ierr = MatRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = MatSeqDenseRestoreArray(B,&b);CHKERRQ(ierr); 
+  ierr = MatSeqDenseRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(B->cmap->n*(2.0*a->nz - n));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  
@@ -1105,8 +1105,8 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
   ierr = PetscObjectTypeCompare((PetscObject)X,MATSEQDENSE,&xisdense);CHKERRQ(ierr);
   if (!xisdense) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"X matrix must be a SeqDense matrix");
 
-  ierr = MatGetArray(B,&b);CHKERRQ(ierr); 
-  ierr = MatGetArray(X,&x);CHKERRQ(ierr);
+  ierr = MatSeqDenseGetArray(B,&b);CHKERRQ(ierr); 
+  ierr = MatSeqDenseGetArray(X,&x);CHKERRQ(ierr);
   
   tmp  = a->solve_work;
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -1140,8 +1140,8 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = MatRestoreArray(B,&b);CHKERRQ(ierr); 
-  ierr = MatRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = MatSeqDenseRestoreArray(B,&b);CHKERRQ(ierr); 
+  ierr = MatSeqDenseRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(B->cmap->n*(2.0*a->nz - n));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  

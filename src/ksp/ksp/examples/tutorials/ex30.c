@@ -33,13 +33,13 @@ int main(int argc,char **argv)
   ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(A,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = MatGetArray(A,&a);CHKERRQ(ierr);
+  ierr = MatSeqDenseGetArray(A,&a);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     for (j=0; j<size; j++) {
       a[i+j*size] = b[i+j*lda];
     }
   }
-  ierr = MatRestoreArray(A,&a);CHKERRQ(ierr);
+  ierr = MatSeqDenseRestoreArray(A,&a);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 

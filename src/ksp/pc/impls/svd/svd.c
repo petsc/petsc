@@ -70,9 +70,9 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   nb    = PetscBLASIntCast(n);
   lwork = 5*nb;
   ierr  = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr); 
-  ierr  = MatGetArray(jac->A,&a);CHKERRQ(ierr); 
-  ierr  = MatGetArray(jac->U,&u);CHKERRQ(ierr); 
-  ierr  = MatGetArray(jac->Vt,&v);CHKERRQ(ierr); 
+  ierr  = MatSeqDenseGetArray(jac->A,&a);CHKERRQ(ierr); 
+  ierr  = MatSeqDenseGetArray(jac->U,&u);CHKERRQ(ierr); 
+  ierr  = MatSeqDenseGetArray(jac->Vt,&v);CHKERRQ(ierr); 
   ierr  = VecGetArray(jac->diag,&d);CHKERRQ(ierr); 
 #if !defined(PETSC_USE_COMPLEX)
   {
@@ -85,9 +85,9 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for complex");
 #endif
-  ierr  = MatRestoreArray(jac->A,&a);CHKERRQ(ierr); 
-  ierr  = MatRestoreArray(jac->U,&u);CHKERRQ(ierr); 
-  ierr  = MatRestoreArray(jac->Vt,&v);CHKERRQ(ierr);
+  ierr  = MatSeqDenseRestoreArray(jac->A,&a);CHKERRQ(ierr); 
+  ierr  = MatSeqDenseRestoreArray(jac->U,&u);CHKERRQ(ierr); 
+  ierr  = MatSeqDenseRestoreArray(jac->Vt,&v);CHKERRQ(ierr);
   for (i=n-1; i>=0; i--) if (PetscRealPart(d[i]) > jac->zerosing) break;
   jac->nzero = n-1-i;
   if (jac->monitor) {

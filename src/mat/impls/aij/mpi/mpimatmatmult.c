@@ -460,7 +460,7 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
   rvalues   = contents->rvalues;
 
   ierr = MatGetArray(B,&b);CHKERRQ(ierr);
-  ierr = MatGetArray(workB,&w);CHKERRQ(ierr);
+  ierr = MatSeqDenseGetArray(workB,&w);CHKERRQ(ierr);
 
   for (i=0; i<from->n; i++) {
     ierr = MPI_Irecv(rvalues+ncols*rstarts[i],ncols*(rstarts[i+1]-rstarts[i]),MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);CHKERRQ(ierr);
@@ -494,7 +494,7 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
   if (to->n) {ierr = MPI_Waitall(to->n,swaits,to->sstatus);CHKERRQ(ierr);}
 
   ierr = MatRestoreArray(B,&b);CHKERRQ(ierr);
-  ierr = MatRestoreArray(workB,&w);CHKERRQ(ierr);
+  ierr = MatSeqDenseRestoreArray(workB,&w);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(workB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(workB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

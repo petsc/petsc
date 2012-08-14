@@ -312,6 +312,7 @@ PETSC_EXTERN PetscErrorCode MatSetValuesBlocked(Mat,PetscInt,const PetscInt[],Pe
 PETSC_EXTERN PetscErrorCode MatSetValuesRow(Mat,PetscInt,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatSetValuesRowLocal(Mat,PetscInt,const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatSetValuesBatch(Mat,PetscInt,PetscInt,PetscInt[],const PetscScalar[]);
+PETSC_EXTERN PetscErrorCode MatSetRandom(Mat,PetscRandom);
 
 /*S
      MatStencil - Data structure (C struct) for storing information about a single row or
@@ -390,7 +391,9 @@ PETSC_EXTERN PetscErrorCode MatGetColumn(Mat,PetscInt,PetscInt *,const PetscInt 
 PETSC_EXTERN PetscErrorCode MatRestoreColumn(Mat,PetscInt,PetscInt *,const PetscInt *[],const PetscScalar*[]);
 PETSC_EXTERN PetscErrorCode MatGetColumnVector(Mat,Vec,PetscInt);
 PETSC_EXTERN PetscErrorCode MatGetArray(Mat,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatSeqDenseGetArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatRestoreArray(Mat,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatSeqDenseRestoreArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatGetBlockSize(Mat,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSetBlockSize(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatGetBlockSizes(Mat,PetscInt *,PetscInt *);

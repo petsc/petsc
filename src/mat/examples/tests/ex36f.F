@@ -60,12 +60,12 @@
       call MatSetUp(A,ierr)
 
 !  Access array storage
-      call MatGetArray(A,aa,ia,ierr)
+      call MatSeqDenseGetArray(A,aa,ia,ierr)
 
 !  Set matrix values directly
       call FillUpMatrix(m,n,aa(ia+1))
 
-      call MatRestoreArray(A,aa,ia,ierr)
+      call MatSeqDenseRestoreArray(A,aa,ia,ierr)
 
 !  Finalize matrix assembly
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)

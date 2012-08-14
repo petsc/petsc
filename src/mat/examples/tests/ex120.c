@@ -130,7 +130,7 @@ PetscInt main(PetscInt argc,char **args)
   bn    = PetscBLASIntCast(n);
   ierr = PetscMalloc(n*sizeof(PetscReal),&evals);CHKERRQ(ierr);
   ierr = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
-  ierr = MatGetArray(A_dense,&arrayA);CHKERRQ(ierr);
+  ierr = MatSeqDenseGetArray(A_dense,&arrayA);CHKERRQ(ierr);
 
   if (TestZHEEV){ /* test zheev() */
     printf(" LAPACKsyev: compute all %d eigensolutions...\n",m);
@@ -159,12 +159,12 @@ PetscInt main(PetscInt argc,char **args)
   if (TestZHEGV){
     printf(" LAPACKsygv: compute all %d eigensolutions...\n",m);
     ierr = PetscMalloc((3*n+1)*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
-    ierr = MatGetArray(B,&arrayB);CHKERRQ(ierr);
+    ierr = MatSeqDenseGetArray(B,&arrayB);CHKERRQ(ierr);
     LAPACKsygv_(&one,"V","U",&bn,arrayA,&bn,arrayB,&bn,evals,work,&lwork,rwork,&lierr); 
     evecs_array = arrayA;
     nevs = m;
     il=1; iu=m;
-    ierr = MatRestoreArray(B,&arrayB);CHKERRQ(ierr);
+    ierr = MatSeqDenseRestoreArray(B,&arrayB);CHKERRQ(ierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
   }
   if (TestZHEGVX){
@@ -174,14 +174,14 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscMalloc((6*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);     
     ifail = iwork + 5*n;
     ierr = PetscMalloc((7*n+1)*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
-    ierr = MatGetArray(B,&arrayB);CHKERRQ(ierr);
+    ierr = MatSeqDenseGetArray(B,&arrayB);CHKERRQ(ierr);
     vl = 0.0; vu = 8.0;
     LAPACKsygvx_(&one,"V","I","U",&bn,arrayA,&bn,arrayB,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,rwork,iwork,ifail,&lierr);
-    ierr = MatRestoreArray(B,&arrayB);CHKERRQ(ierr);
+    ierr = MatSeqDenseRestoreArray(B,&arrayB);CHKERRQ(ierr);
     ierr = PetscFree(iwork);CHKERRQ(ierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
   }
-  ierr = MatRestoreArray(A_dense,&arrayA);CHKERRQ(ierr);
+  ierr = MatSeqDenseRestoreArray(A_dense,&arrayA);CHKERRQ(ierr);
   if (nevs <= 0 ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
 
   /* View evals */

@@ -3030,6 +3030,31 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,const PetscScalar **values)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetRandom_SeqAIJ"
+static PetscErrorCode  MatSetRandom_SeqAIJ(Mat x,PetscRandom rctx)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)x->data;
+  PetscScalar    a;
+  PetscInt       m,n,i,j,col;
+
+  PetscFunctionBegin;
+  if (!x->assembled) {
+    ierr = MatGetSize(x,&m,&n);CHKERRQ(ierr);
+    for (i=0; i<m; i++) { 
+      for (j=0; j<aij->imax[i]; j++) {
+        ierr  = PetscRandomGetValue(rctx,&a);CHKERRQ(ierr);
+        col   = (PetscInt)(n*PetscRealPart(a));
+        ierr  = MatSetValues(x,1,&i,1,&col,&a,ADD_VALUES);CHKERRQ(ierr);
+      }
+    }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet coded");
+  ierr = MatAssemblyBegin(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(x,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 extern PetscErrorCode  MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
@@ -3081,7 +3106,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        MatDiagonalSet_SeqAIJ,
        MatZeroRowsColumns_SeqAIJ,
-/*49*/ 0,
+/*49*/ MatSetRandom_SeqAIJ,
        MatGetRowIJ_SeqAIJ,
        MatRestoreRowIJ_SeqAIJ,
        MatGetColumnIJ_SeqAIJ,

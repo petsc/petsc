@@ -166,9 +166,9 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
 
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatGetArray(A,&array);CHKERRQ(ierr);
+    ierr = MatSeqDenseGetArray(A,&array);CHKERRQ(ierr);
   } else {
-    ierr = MatGetArray(BA,&array);CHKERRQ(ierr);
+    ierr = MatSeqDenseGetArray(BA,&array);CHKERRQ(ierr);
   }
 
 #if defined(PETSC_HAVE_ESSL)
@@ -300,10 +300,10 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
   }
 #endif  
   if (size > 1) {
-    ierr = MatRestoreArray(A,&array);CHKERRQ(ierr);
+    ierr = MatSeqDenseRestoreArray(A,&array);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   } else {
-    ierr = MatRestoreArray(BA,&array);CHKERRQ(ierr);
+    ierr = MatSeqDenseRestoreArray(BA,&array);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&BA);CHKERRQ(ierr);
   PetscFunctionReturn(0);

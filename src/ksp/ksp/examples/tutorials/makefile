@@ -623,6 +623,8 @@ runex10_17:
 	   if (${DIFF} output/ex10_17.out ex10_17.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_17, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_17.tmp
+#
+#   The following leaves memory unfreed. It appears to be Euclid does something improper with its MPI_Comm
 runex10_18:
 	-@${MPIEXEC} -n 3 ./ex10 -pc_type hypre -pc_hypre_type euclid -f0 ${DATAFILESPATH}/matrices/medium > ex10_18.tmp 2>&1;\
 	   if (${DIFF} output/ex10_18.out ex10_18.tmp) then true; \
