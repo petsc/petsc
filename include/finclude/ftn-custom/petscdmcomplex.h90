@@ -99,3 +99,17 @@
           DM_HIDE m
         End Subroutine
       End Interface
+
+      Interface
+        Subroutine DMComplexCreateSection(m,dim,numFields,numComp,numDof,numBC,bcField,bcPoints,section,ierr)
+          USE_DMCOMPLEX_HIDE
+          PETSCSECTION_HIDE section
+          PetscInt     dim, numFields, numBC
+          PetscInt, pointer :: numComp(:)
+          PetscInt, pointer :: numDof(:)
+          PetscInt, pointer :: bcFields(:)
+          IS_HIDE,  pointer :: bcPoints(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface

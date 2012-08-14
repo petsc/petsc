@@ -21,6 +21,18 @@
         End Subroutine
       End Interface
 
+      Interface 
+        Subroutine VecSetValuesSection(v,section,point,values,mode,ierr)
+          USE_VEC_HIDE
+          PetscScalar, pointer :: values(:)
+          PetscErrorCode ierr
+          VEC_HIDE     v
+          PETSCSECTION_HIDE section
+          PetscInt point
+          InsertMode mode
+        End Subroutine
+      End Interface
+
 ! -------------------------------------------------------------
 
       Interface 

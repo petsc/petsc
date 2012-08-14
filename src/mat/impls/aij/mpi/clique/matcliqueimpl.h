@@ -18,8 +18,9 @@ typedef struct {
   PetscInt       cutoff;         /* maximum size of leaf node */
   PetscInt       numDistSeps;    /* number of distributed separators to try */
   PetscInt       numSeqSeps;     /* number of sequential separators to try */
-  cliq::DistSymmInfo info;
-  cliq::DistSymmFrontTree<PetscCliqScalar> frontTree;
+  cliq::DistMap  *inverseMap;
+  cliq::DistSymmInfo *info;
+  cliq::DistSymmFrontTree<PetscCliqScalar> *frontTree;
   PetscErrorCode (*Destroy)(Mat);
 } Mat_Clique;
 

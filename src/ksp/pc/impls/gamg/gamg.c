@@ -1435,7 +1435,7 @@ PetscErrorCode PCSetFromOptions_GAMG( PC pc )
 +  -pc_mg_cycles <1>: 1 for V cycle, 2 for W-cycle (PCMGSetCycleType)
 .  -pc_mg_smoothup <1>: Number of post-smoothing steps (PCMGSetNumberSmoothUp)
 .  -pc_mg_smoothdown <1>: Number of pre-smoothing steps (PCMGSetNumberSmoothDown)
--  -pc_mg_type <multiplicative>: (one of) additive multiplicative full cascade kascade
+-  -pc_mg_type <multiplicative>: (one of) additive multiplicative full kascade
 
   Level: intermediate
 
