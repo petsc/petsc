@@ -3171,7 +3171,7 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
     numEdges += 3*numCells - off[numCells];
   }
   /* Check Euler characteristic V - E + F = 1 */
-  if (numVertices-numEdges+numCells != 1) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Euler characteristic of mesh is %d  != 1", numVertices-numEdges+numCells);
+  if (numVertices && (numVertices-numEdges+numCells != 1)) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Euler characteristic of mesh is %d  != 1", numVertices-numEdges+numCells);
   /* Create interpolated mesh */
   ierr = DMCreate(((PetscObject) dm)->comm, &idm);CHKERRQ(ierr);
   ierr = DMSetType(idm, DMCOMPLEX);CHKERRQ(ierr);
@@ -3217,28 +3217,29 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
   ierr = DMComplexSymmetrize(idm);CHKERRQ(ierr);
   ierr = DMComplexStratify(idm);CHKERRQ(ierr);
   mesh = (DM_Complex *) (idm)->data;
+  /* Orient edges */
   for(c = 0; c < numCells; ++c) {
-    const PetscInt *cone, *faces;
-    PetscInt        coneSize, coff, numFaces, faceSize, f;
+    const PetscInt *cone, *cellFaces;
+    PetscInt        coneSize, coff, numCellFaces, faceSize, cf;
 
     ierr = DMComplexGetConeSize(idm, c, &coneSize);CHKERRQ(ierr);
     ierr = DMComplexGetCone(idm, c, &cone);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(mesh->coneSection, c, &coff);CHKERRQ(ierr);
-    ierr = DMComplexGetFaces(dm, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
-    if (coneSize != numFaces) SETERRQ3(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D for cell %D should be %D", coneSize, c, numFaces);
-    for(f = 0; f < numFaces; ++f) {
+    ierr = DMComplexGetFaces(dm, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
+    if (coneSize != numCellFaces) SETERRQ3(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D for cell %D should be %D", coneSize, c, numCellFaces);
+    for(cf = 0; cf < numCellFaces; ++cf) {
       const PetscInt *econe;
       PetscInt        esize;
 
-      ierr = DMComplexGetConeSize(idm, cone[f], &esize);CHKERRQ(ierr);
-      ierr = DMComplexGetCone(idm, cone[f], &econe);CHKERRQ(ierr);
-      if (esize != 2) SETERRQ2(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid number of edge endpoints %D for edge %D should be 2", esize, cone[f]);
-      if ((faces[f*faceSize+0] == econe[0]) && (faces[f*faceSize+1] == econe[1])) {
+      ierr = DMComplexGetConeSize(idm, cone[cf], &esize);CHKERRQ(ierr);
+      ierr = DMComplexGetCone(idm, cone[cf], &econe);CHKERRQ(ierr);
+      if (esize != 2) SETERRQ2(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid number of edge endpoints %D for edge %D should be 2", esize, cone[cf]);
+      if ((cellFaces[cf*faceSize+0] == econe[0]) && (cellFaces[cf*faceSize+1] == econe[1])) {
         /* Correctly oriented */
-        mesh->coneOrientations[coff+f] = 0;
-      } else if ((faces[f*faceSize+0] == econe[1]) && (faces[f*faceSize+1] == econe[0])) {
+        mesh->coneOrientations[coff+cf] = 0;
+      } else if ((cellFaces[cf*faceSize+0] == econe[1]) && (cellFaces[cf*faceSize+1] == econe[0])) {
         /* Start at index 1, and reverse orientation */
-        mesh->coneOrientations[coff+f] = -(1+1);
+        mesh->coneOrientations[coff+cf] = -(1+1);
       }
     }
   }
@@ -3250,7 +3251,7 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
 #define __FUNCT__ "DMComplexInterpolate_3D"
 PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
 {
-  DM             idm;
+  DM             idm, fdm;
   DM_Complex    *mesh;
   PetscInt      *off;
   const PetscInt numCorners = 3;
@@ -3292,6 +3293,13 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
   }
   ierr = DMSetUp(idm);CHKERRQ(ierr);
   /* Get face cones from subsets of cell vertices */
+  ierr = DMCreate(((PetscObject) dm)->comm, &fdm);CHKERRQ(ierr);
+  ierr = DMSetType(fdm, DMCOMPLEX);CHKERRQ(ierr);
+  ierr = DMComplexSetDimension(fdm, dim);CHKERRQ(ierr);
+  ierr = DMComplexSetChart(fdm, firstFace, firstFace+numFaces);CHKERRQ(ierr);
+  for(f = firstFace; f < firstFace+numFaces; ++f) {
+    ierr = DMComplexSetConeSize(fdm, f, 3);CHKERRQ(ierr);
+  }
   for(c = 0, face = firstFace; c < numCells; ++c) {
     const PetscInt *cellFaces;
     PetscInt        numCellFaces, faceSize, cf;
@@ -3318,6 +3326,8 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
       }
       if (!found) {
         ierr = DMComplexSetCone(idm, face, &cellFaces[cf*faceSize]);CHKERRQ(ierr);
+        /* Save the vertices for orientation calculation */
+        ierr = DMComplexSetCone(fdm, face, &cellFaces[cf*faceSize]);CHKERRQ(ierr);
         ++face;
       }
       ierr = DMComplexInsertCone(idm, c, cf, f);CHKERRQ(ierr);
@@ -3329,7 +3339,7 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
     const PetscInt *cellFaces;
     PetscInt        numCellFaces, faceSize, cf;
 
-    ierr = DMComplexGetFaces(dm, f, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
+    ierr = DMComplexGetFaces(idm, f, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
     if (faceSize != 2) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Triangles cannot have face of size %D", faceSize);
     for(cf = 0; cf < numCellFaces; ++cf) {
       PetscBool found = PETSC_FALSE;
@@ -3357,29 +3367,71 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
   ierr = DMComplexSymmetrize(idm);CHKERRQ(ierr);
   ierr = DMComplexStratify(idm);CHKERRQ(ierr);
   mesh = (DM_Complex *) (idm)->data;
-  /* TODO fix orientation code */
+  /* Orient edges */
+  for(f = firstFace; f < firstFace+numFaces; ++f) {
+    const PetscInt *cone, *cellFaces;
+    PetscInt        coneSize, coff, numCellFaces, faceSize, cf;
+
+    ierr = DMComplexGetConeSize(idm, f, &coneSize);CHKERRQ(ierr);
+    ierr = DMComplexGetCone(idm, f, &cone);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(mesh->coneSection, f, &coff);CHKERRQ(ierr);
+    ierr = DMComplexGetFaces(fdm, f, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
+    if (coneSize != numCellFaces) SETERRQ3(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D for face %D should be %D", coneSize, f, numCellFaces);
+    for(cf = 0; cf < numCellFaces; ++cf) {
+      const PetscInt *econe;
+      PetscInt        esize;
+
+      ierr = DMComplexGetConeSize(idm, cone[cf], &esize);CHKERRQ(ierr);
+      ierr = DMComplexGetCone(idm, cone[cf], &econe);CHKERRQ(ierr);
+      if (esize != 2) SETERRQ2(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid number of edge endpoints %D for edge %D should be 2", esize, cone[cf]);
+      if ((cellFaces[cf*faceSize+0] == econe[0]) && (cellFaces[cf*faceSize+1] == econe[1])) {
+        /* Correctly oriented */
+        mesh->coneOrientations[coff+cf] = 0;
+      } else if ((cellFaces[cf*faceSize+0] == econe[1]) && (cellFaces[cf*faceSize+1] == econe[0])) {
+        /* Start at index 1, and reverse orientation */
+        mesh->coneOrientations[coff+cf] = -(1+1);
+      }
+    }
+  }
+  ierr = DMDestroy(&fdm);CHKERRQ(ierr);
+  /* Orient faces */
   for(c = 0; c < numCells; ++c) {
-    const PetscInt *cone, *faces;
-    PetscInt        coneSize, coff, numFaces, faceSize, f;
+    const PetscInt *cone, *cellFaces;
+    PetscInt        coneSize, coff, numCellFaces, faceSize, cf;
 
     ierr = DMComplexGetConeSize(idm, c, &coneSize);CHKERRQ(ierr);
     ierr = DMComplexGetCone(idm, c, &cone);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(mesh->coneSection, c, &coff);CHKERRQ(ierr);
-    ierr = DMComplexGetFaces(dm, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
-    if (coneSize != numFaces) SETERRQ3(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D for cell %D should be %D", coneSize, c, numFaces);
-    for(f = 0; f < numFaces; ++f) {
-      const PetscInt *econe;
-      PetscInt        esize;
+    ierr = DMComplexGetFaces(dm, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
+    if (coneSize != numCellFaces) SETERRQ3(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D for cell %D should be %D", coneSize, c, numCellFaces);
+    for(cf = 0; cf < numCellFaces; ++cf) {
+      PetscInt *closure = PETSC_NULL;
+      PetscInt  closureSize, i;
 
-      ierr = DMComplexGetConeSize(idm, cone[f], &esize);CHKERRQ(ierr);
-      ierr = DMComplexGetCone(idm, cone[f], &econe);CHKERRQ(ierr);
-      if (esize != 2) SETERRQ2(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid number of edge endpoints %D for edge %D should be 2", esize, cone[f]);
-      if ((faces[f*faceSize+0] == econe[0]) && (faces[f*faceSize+1] == econe[1])) {
+      ierr = DMComplexGetTransitiveClosure(idm, cone[cf], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      if (closureSize != 7) SETERRQ2(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid closure size %D for face %D should be 7", closureSize, cone[cf]);
+      for(i = 4; i < 7; ++i) {
+        if ((closure[i] < vStart) || (closure[i] >= vEnd)) SETERRQ3(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid closure point %D should be a vertex in [%D, %D)", closure[i], vStart, vEnd);
+      }
+      closure = &closure[4];
+      if ((cellFaces[cf*faceSize+0] == closure[0]) && (cellFaces[cf*faceSize+1] == closure[1]) && (cellFaces[cf*faceSize+1] == closure[2])) {
         /* Correctly oriented */
-        mesh->coneOrientations[coff+f] = 0;
-      } else if ((faces[f*faceSize+0] == econe[1]) && (faces[f*faceSize+1] == econe[0])) {
+        mesh->coneOrientations[coff+cf] = 0;
+      } else if ((cellFaces[cf*faceSize+0] == closure[1]) && (cellFaces[cf*faceSize+1] == closure[2]) && (cellFaces[cf*faceSize+1] == closure[0])) {
+        /* Shifted by 1 */
+        mesh->coneOrientations[coff+cf] = 1;
+      } else if ((cellFaces[cf*faceSize+0] == closure[2]) && (cellFaces[cf*faceSize+1] == closure[0]) && (cellFaces[cf*faceSize+1] == closure[1])) {
+        /* Shifted by 2 */
+        mesh->coneOrientations[coff+cf] = 2;
+      } else if ((cellFaces[cf*faceSize+0] == closure[2]) && (cellFaces[cf*faceSize+1] == closure[1]) && (cellFaces[cf*faceSize+1] == closure[0])) {
+        /* Start at index 0, and reverse orientation */
+        mesh->coneOrientations[coff+cf] = -(2+1);
+      } else if ((cellFaces[cf*faceSize+0] == closure[1]) && (cellFaces[cf*faceSize+1] == closure[0]) && (cellFaces[cf*faceSize+1] == closure[2])) {
         /* Start at index 1, and reverse orientation */
-        mesh->coneOrientations[coff+f] = -(1+1);
+        mesh->coneOrientations[coff+cf] = -(1+1);
+      } else if ((cellFaces[cf*faceSize+0] == closure[0]) && (cellFaces[cf*faceSize+1] == closure[2]) && (cellFaces[cf*faceSize+1] == closure[1])) {
+        /* Start at index 0, and reverse orientation */
+        mesh->coneOrientations[coff+cf] = -(0+1);
       }
     }
   }
