@@ -63,7 +63,7 @@ int main(int argc,char **args)
     if (testMatSolve){
       ierr = MatSolve(F,b,x);CHKERRQ(ierr);
     
-      /* Check the residual */
+    /* Check the residual */
       ierr = MatMult(A,x,u);CHKERRQ(ierr);
       ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
       ierr = VecNorm(u,NORM_INFINITY,&norm);CHKERRQ(ierr);

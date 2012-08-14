@@ -194,6 +194,7 @@ PetscErrorCode MatDestroy_Clique(Mat A)
     delete cliq->cmat;
     delete cliq->frontTree;
     delete cliq->info;
+    delete cliq->inverseMap;
   }
   if (cliq && cliq->Destroy) {
     ierr = cliq->Destroy(A);CHKERRQ(ierr);
@@ -211,14 +212,14 @@ PetscErrorCode MatDestroy_Clique(Mat A)
 PetscErrorCode MatSolve_Clique(Mat A,Vec B,Vec X)
 {
   PetscErrorCode        ierr;
-  PetscInt              i;
+  PetscInt              i,rank;
   const PetscCliqScalar *b;
-  PetscCliqScalar       *x;
   Mat_Clique            *cliq=(Mat_Clique*)A->spptr;
   //cliq::DistSparseMatrix<PetscCliqScalar> *cmat=cliq->cmat;
   cliq::mpi::Comm cxxcomm(((PetscObject)A)->comm);
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_rank(((PetscObject)A)->comm,&rank);CHKERRQ(ierr);
   ierr = VecGetArrayRead(B,(const PetscScalar **)&b);CHKERRQ(ierr);
   //ierr = VecGetArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
   cliq::DistVector<PetscCliqScalar> bc(A->rmap->N,cxxcomm);
@@ -232,8 +233,8 @@ PetscErrorCode MatSolve_Clique(Mat A,Vec B,Vec X)
   cliq::Solve( *cliq->info, *cliq->frontTree, xNodal.localVec );
   xNodal.Push( *cliq->inverseMap, *cliq->info, bc );
 
-  for (i=0; i<A->cmap->n; i++) {
-    ierr = VecSetValueLocal(X,i,bc.GetLocal(i),INSERT_VALUES);CHKERRQ(ierr);
+  for (i=0; i<bc.LocalHeight(); i++) {
+    VecSetValue(X,rank*bc.Blocksize()+i,bc.GetLocal(i),INSERT_VALUES);
   }
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
