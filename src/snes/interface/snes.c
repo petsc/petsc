@@ -3894,9 +3894,11 @@ PetscErrorCode  SNESSetOptionsPrefix(SNES snes,const char prefix[])
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)snes,prefix);CHKERRQ(ierr);
   if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
-  if (!snes->linesearch) {ierr = SNESGetSNESLineSearch(snes,&snes->linesearch);CHKERRQ(ierr);}
+  if (snes->linesearch) {
+    ierr = SNESGetSNESLineSearch(snes,&snes->linesearch);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)snes->linesearch,prefix);CHKERRQ(ierr);
+  }
   ierr = KSPSetOptionsPrefix(snes->ksp,prefix);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)snes->linesearch,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3930,9 +3932,11 @@ PetscErrorCode  SNESAppendOptionsPrefix(SNES snes,const char prefix[])
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)snes,prefix);CHKERRQ(ierr);
   if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
-  if (!snes->linesearch) {ierr = SNESGetSNESLineSearch(snes,&snes->linesearch);CHKERRQ(ierr);}
+  if (snes->linesearch) {
+    ierr = SNESGetSNESLineSearch(snes,&snes->linesearch);CHKERRQ(ierr);
+    ierr = PetscObjectAppendOptionsPrefix((PetscObject)snes->linesearch,prefix);CHKERRQ(ierr);
+  }
   ierr = KSPAppendOptionsPrefix(snes->ksp,prefix);CHKERRQ(ierr);
-  ierr = PetscObjectAppendOptionsPrefix((PetscObject)snes->linesearch,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
