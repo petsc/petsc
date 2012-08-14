@@ -56,9 +56,9 @@ PetscErrorCode MatConvertToClique(Mat A,MatReuse reuse,Mat_Clique *cliq)
     printf("  create cmat...\n");
     /* create Clique matrix */
     cliq::mpi::Comm cxxcomm(((PetscObject)A)->comm);
-    
     ierr = PetscCommDuplicate(cxxcomm,&(cliq->cliq_comm),PETSC_NULL);CHKERRQ(ierr);
     cmat_ptr = new cliq::DistSparseMatrix<PetscCliqScalar>(A->rmap->N,cliq->cliq_comm);
+    //cmat_ptr = new cliq::DistSparseMatrix<PetscCliqScalar>(A->rmap->N,cxxcomm);
     cliq->cmat = cmat_ptr;
   } else {
     cmat_ptr = cliq->cmat;
@@ -131,11 +131,7 @@ static PetscErrorCode MatMult_Clique(Mat A,Vec X,Vec Y)
   PetscFunctionBegin;
   if (!cmat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Clique matrix cmat is not created yet");
   ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
-  //ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
-  //ierr = VecGetLocalSize(Y,&m);CHKERRQ(ierr);
-  //ierr = VecGetSize(X,&N);CHKERRQ(ierr);
-  //ierr = VecGetSize(Y,&M);CHKERRQ(ierr);
+  //ierr = VecGetArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
   cliq::DistVector<PetscCliqScalar> xc(A->cmap->N,cxxcomm);
   cliq::DistVector<PetscCliqScalar> yc(A->rmap->N,cxxcomm);
   for (i=0; i<A->cmap->n; i++) {
@@ -143,7 +139,12 @@ static PetscErrorCode MatMult_Clique(Mat A,Vec X,Vec Y)
   }
   cliq::Multiply(1.0,*cmat,xc,0.0,yc);
   ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
+  //ierr = VecRestoreArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
+  for (i=0; i<A->cmap->n; i++) {
+    ierr = VecSetValueLocal(Y,i,yc.GetLocal(i),INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = VecAssemblyBegin(Y);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -189,7 +190,10 @@ PetscErrorCode MatDestroy_Clique(Mat A)
     /* Terminate instance, deallocate memories */
     printf("MatDestroy_Clique ... destroy clique struct \n");
     ierr = PetscCommDestroy(&(cliq->cliq_comm));CHKERRQ(ierr);
+    // free cmat here
     delete cliq->cmat;
+    delete cliq->frontTree;
+    delete cliq->info;
   }
   if (cliq && cliq->Destroy) {
     ierr = cliq->Destroy(A);CHKERRQ(ierr);
@@ -198,20 +202,41 @@ PetscErrorCode MatDestroy_Clique(Mat A)
 
   /* clear composed functions */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolve_Clique"
-PetscErrorCode MatSolve_Clique(Mat A,Vec b,Vec x)
+PetscErrorCode MatSolve_Clique(Mat A,Vec B,Vec X)
 {
-  PetscFunctionBegin;
-  //LDLSolve( TRANSPOSE, info, frontTree, yNodal.localVec );
+  PetscErrorCode        ierr;
+  PetscInt              i;
+  const PetscCliqScalar *b;
+  PetscCliqScalar       *x;
+  Mat_Clique            *cliq=(Mat_Clique*)A->spptr;
+  //cliq::DistSparseMatrix<PetscCliqScalar> *cmat=cliq->cmat;
+  cliq::mpi::Comm cxxcomm(((PetscObject)A)->comm);
 
-  //DistNodalVector<double> yNodal;
-  //yNodal.Pull( inverseMap, info, y );
-  //Solve( info, frontTree, yNodal.localVec );
-  //yNodal.Push( inverseMap, info, y );
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(B,(const PetscScalar **)&b);CHKERRQ(ierr);
+  //ierr = VecGetArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
+  cliq::DistVector<PetscCliqScalar> bc(A->rmap->N,cxxcomm);
+  for (i=0; i<A->rmap->n; i++) {
+    bc.SetLocal(i,b[i]);
+  }
+  ierr = VecRestoreArrayRead(B,(const PetscScalar **)&b);CHKERRQ(ierr);
+  //ierr = VecRestoreArray(Y,(PetscScalar **)&y);CHKERRQ(ierr);
+  cliq::DistNodalVector<PetscCliqScalar> xNodal;
+  xNodal.Pull( *cliq->inverseMap, *cliq->info, bc );
+  cliq::Solve( *cliq->info, *cliq->frontTree, xNodal.localVec );
+  xNodal.Push( *cliq->inverseMap, *cliq->info, bc );
+
+  for (i=0; i<A->cmap->n; i++) {
+    ierr = VecSetValueLocal(X,i,bc.GetLocal(i),INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -232,7 +257,7 @@ PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *
   }
 
   /* Numeric factorization */
-  //LDL( TRANSPOSE, info, frontTree );
+  cliq::LDL( *cliq->info, *cliq->frontTree, cliq::LDL_1D );
 
   cliq->matstruc = SAME_NONZERO_PATTERN;
   F->assembled   = PETSC_TRUE;
@@ -244,26 +269,25 @@ PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *
 PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactorInfo *info)
 {
   PetscErrorCode    ierr;
-  Mat_Clique        *cliq=(Mat_Clique*)F->spptr;
+  Mat_Clique        *Acliq=(Mat_Clique*)F->spptr;
   cliq::DistSparseMatrix<PetscCliqScalar> *cmat;
-  cliq::DistSymmInfo      cinfo;
+  //cliq::DistSymmInfo      cinfo;
   cliq::DistSeparatorTree sepTree;
-  cliq::DistMap           map, inverseMap;
+  cliq::DistMap           map;
 
   PetscFunctionBegin;
   printf("MatCholeskyFactorSymbolic_Clique \n");
   /* Convert A to Aclique */
-  ierr = MatConvertToClique(A,MAT_INITIAL_MATRIX,cliq);CHKERRQ(ierr);
-  cmat = cliq->cmat;
+  ierr = MatConvertToClique(A,MAT_INITIAL_MATRIX,Acliq);CHKERRQ(ierr);
+  cmat = Acliq->cmat;
 
   //NestedDissection
-  const cliq::DistGraph& graph = cmat->Graph();
-  cliq::NestedDissection( graph, map, sepTree, cinfo, PETSC_TRUE, cliq->numDistSeps, cliq->numSeqSeps, cliq->cutoff);  // mem leak - reported
-  map.FormInverse( inverseMap );
-  cliq::DistSymmFrontTree<PetscCliqScalar> frontTree( cliq::TRANSPOSE, *cmat, map, sepTree, cinfo );
+  cliq::NestedDissection( cmat->Graph(), map, sepTree, *Acliq->info, PETSC_TRUE, Acliq->numDistSeps, Acliq->numSeqSeps, Acliq->cutoff);
+  map.FormInverse( *Acliq->inverseMap );
+  Acliq->frontTree = new cliq::DistSymmFrontTree<PetscCliqScalar>( cliq::TRANSPOSE, *cmat, map, sepTree, *Acliq->info );
 
-  cliq->matstruc      = DIFFERENT_NONZERO_PATTERN;
-  cliq->CleanUpClique = PETSC_TRUE;
+  Acliq->matstruc      = DIFFERENT_NONZERO_PATTERN;
+  Acliq->CleanUpClique = PETSC_TRUE;
 
 #if defined(MV)
   // Test cmat using Clique vectors
@@ -330,6 +354,8 @@ PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
 
   ierr = PetscNewLog(B,Mat_Clique,&cliq);CHKERRQ(ierr);
   B->spptr            = (void*)cliq;
+  cliq->info          = new cliq::DistSymmInfo;
+  cliq->inverseMap    = new cliq::DistMap;
   cliq->CleanUpClique = PETSC_FALSE;
   cliq->Destroy       = B->ops->destroy;
 

@@ -53,7 +53,7 @@ int main(int argc,char **args)
   ierr = MatCholeskyFactorSymbolic(F,A,perm,&info);CHKERRQ(ierr);
 
   for (nfact = 0; nfact < 1; nfact++){
-    if (!rank) printf(" %d-the LU numfactorization \n",nfact);
+    if (!rank) printf(" %d-the Cholesky numfactorization \n",nfact);
     ierr = MatCholeskyFactorNumeric(F,A,&info);CHKERRQ(ierr);
 
     /* Test MatMult_Clique() */
@@ -61,19 +61,19 @@ int main(int argc,char **args)
 
     /* Test MatSolve() */
     if (testMatSolve){
-      ierr = MatSolve(F,b,x);CHKERRQ(ierr); 
+      ierr = MatSolve(F,b,x);CHKERRQ(ierr);
     
       /* Check the residual */
       ierr = MatMult(A,x,u);CHKERRQ(ierr);
       ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
       ierr = VecNorm(u,NORM_INFINITY,&norm);CHKERRQ(ierr);
-      if (norm > tol){ 
+      if (norm > tol){
         if (!rank){
           ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve: rel residual %g/%g = %g, LU numfact %d\n",norm,Anorm,norm/Anorm,nfact);CHKERRQ(ierr);
         }
       }
     }
-  } 
+  }
   
   /* Free data structures */
   ierr = MatDestroy(&A);CHKERRQ(ierr); 
