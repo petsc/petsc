@@ -671,7 +671,7 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
 .  viewer - must be an PETSCVIEWERASCII viewer
 
    Options Database Key:
-.  -optionstable - Activates PetscOptionsView() within PetscFinalize()
+.  -options_table - Activates PetscOptionsView() within PetscFinalize()
 
    Level: advanced
 
