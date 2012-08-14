@@ -3170,6 +3170,8 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
     /* Account for boundary edges: \sum_c 3 - neighbors = 3*numCells - totalNeighbors */
     numEdges += 3*numCells - off[numCells];
   }
+  /* Check Euler characteristic V - E + F = 1 */
+  if (numVertices-numEdges+numCells != 1) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Euler characteristic of mesh is %d  != 1", numVertices-numEdges+numCells);
   /* Create interpolated mesh */
   ierr = DMCreate(((PetscObject) dm)->comm, &idm);CHKERRQ(ierr);
   ierr = DMSetType(idm, DMCOMPLEX);CHKERRQ(ierr);
@@ -3182,13 +3184,14 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
     ierr = DMComplexSetConeSize(idm, e, 2);CHKERRQ(ierr);
   }
   ierr = DMSetUp(idm);CHKERRQ(ierr);
+  /* Get edge cones from subsets of cell vertices */
   for(c = 0, edge = firstEdge; c < numCells; ++c) {
-    const PetscInt *faces;
-    PetscInt        numFaces, faceSize, f;
+    const PetscInt *cellFaces;
+    PetscInt        numCellFaces, faceSize, cf;
 
-    ierr = DMComplexGetFaces(dm, c, &numFaces, &faceSize, &faces);CHKERRQ(ierr);
+    ierr = DMComplexGetFaces(dm, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
     if (faceSize != 2) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Triangles cannot have face of size %D", faceSize);
-    for(f = 0; f < numFaces; ++f) {
+    for(cf = 0; cf < numCellFaces; ++cf) {
       PetscBool found = PETSC_FALSE;
 
       /* TODO Need join of vertices to check for existence of edges, which needs support (could set edge support), so just brute force for now */
@@ -3196,17 +3199,17 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
         const PetscInt *cone;
 
         ierr = DMComplexGetCone(idm, e, &cone);CHKERRQ(ierr);
-        if (((faces[f*faceSize+0] == cone[0]) && (faces[f*faceSize+1] == cone[1])) ||
-            ((faces[f*faceSize+0] == cone[1]) && (faces[f*faceSize+1] == cone[0]))) {
+        if (((cellFaces[cf*faceSize+0] == cone[0]) && (cellFaces[cf*faceSize+1] == cone[1])) ||
+            ((cellFaces[cf*faceSize+0] == cone[1]) && (cellFaces[cf*faceSize+1] == cone[0]))) {
           found = PETSC_TRUE;
           break;
         }
       }
       if (!found) {
-        ierr = DMComplexSetCone(idm, edge, &faces[f*faceSize]);CHKERRQ(ierr);
+        ierr = DMComplexSetCone(idm, edge, &cellFaces[cf*faceSize]);CHKERRQ(ierr);
         ++edge;
       }
-      ierr = DMComplexInsertCone(idm, c, f, e);CHKERRQ(ierr);
+      ierr = DMComplexInsertCone(idm, c, cf, e);CHKERRQ(ierr);
     }
   }
   if (edge != firstEdge+numEdges) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D should be %D", edge-firstEdge, numEdges);
@@ -3270,6 +3273,9 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
     /* Account for boundary faces: \sum_c 4 - neighbors = 4*numCells - totalNeighbors */
     numFaces += 4*numCells - off[numCells];
   }
+  /* Use Euler characteristic to get edges V - E + F - C = 1 */
+  firstEdge = firstFace + numFaces;
+  numEdges  = numVertices + numFaces - numCells - 1;
   /* Create interpolated mesh */
   ierr = DMCreate(((PetscObject) dm)->comm, &idm);CHKERRQ(ierr);
   ierr = DMSetType(idm, DMCOMPLEX);CHKERRQ(ierr);
@@ -3281,7 +3287,11 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
   for(f = firstFace; f < firstFace+numFaces; ++f) {
     ierr = DMComplexSetConeSize(idm, f, 3);CHKERRQ(ierr);
   }
+  for(e = firstEdge; e < firstEdge+numEdges; ++e) {
+    ierr = DMComplexSetConeSize(idm, e, 2);CHKERRQ(ierr);
+  }
   ierr = DMSetUp(idm);CHKERRQ(ierr);
+  /* Get face cones from subsets of cell vertices */
   for(c = 0, face = firstFace; c < numCells; ++c) {
     const PetscInt *cellFaces;
     PetscInt        numCellFaces, faceSize, cf;
@@ -3296,28 +3306,58 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
         const PetscInt *cone;
 
         ierr = DMComplexGetCone(idm, f, &cone);CHKERRQ(ierr);
-        if (((faces[f*faceSize+0] == cone[0]) && (faces[f*faceSize+1] == cone[1]) && (faces[f*faceSize+2] == cone[2])) ||
-            ((faces[f*faceSize+0] == cone[1]) && (faces[f*faceSize+1] == cone[2]) && (faces[f*faceSize+2] == cone[0])) ||
-            ((faces[f*faceSize+0] == cone[2]) && (faces[f*faceSize+1] == cone[0]) && (faces[f*faceSize+2] == cone[1])) ||
-            ((faces[f*faceSize+0] == cone[0]) && (faces[f*faceSize+1] == cone[2]) && (faces[f*faceSize+2] == cone[1])) ||
-            ((faces[f*faceSize+0] == cone[2]) && (faces[f*faceSize+1] == cone[1]) && (faces[f*faceSize+2] == cone[0])) ||
-            ((faces[f*faceSize+0] == cone[1]) && (faces[f*faceSize+1] == cone[0]) && (faces[f*faceSize+2] == cone[2]))) {
+        if (((cellFaces[cf*faceSize+0] == cone[0]) && (cellFaces[cf*faceSize+1] == cone[1]) && (cellFaces[cf*faceSize+2] == cone[2])) ||
+            ((cellFaces[cf*faceSize+0] == cone[1]) && (cellFaces[cf*faceSize+1] == cone[2]) && (cellFaces[cf*faceSize+2] == cone[0])) ||
+            ((cellFaces[cf*faceSize+0] == cone[2]) && (cellFaces[cf*faceSize+1] == cone[0]) && (cellFaces[cf*faceSize+2] == cone[1])) ||
+            ((cellFaces[cf*faceSize+0] == cone[0]) && (cellFaces[cf*faceSize+1] == cone[2]) && (cellFaces[cf*faceSize+2] == cone[1])) ||
+            ((cellFaces[cf*faceSize+0] == cone[2]) && (cellFaces[cf*faceSize+1] == cone[1]) && (cellFaces[cf*faceSize+2] == cone[0])) ||
+            ((cellFaces[cf*faceSize+0] == cone[1]) && (cellFaces[cf*faceSize+1] == cone[0]) && (cellFaces[cf*faceSize+2] == cone[2]))) {
           found = PETSC_TRUE;
           break;
         }
       }
       if (!found) {
-        ierr = DMComplexSetCone(idm, face, &faces[f*faceSize]);CHKERRQ(ierr);
+        ierr = DMComplexSetCone(idm, face, &cellFaces[cf*faceSize]);CHKERRQ(ierr);
         ++face;
       }
       ierr = DMComplexInsertCone(idm, c, cf, f);CHKERRQ(ierr);
     }
   }
   if (face != firstFace+numFaces) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Invalid number of faces %D should be %D", face-firstFace, numFaces);
+  /* Get edge cones from subsets of face vertices */
+  for(f = firstFace, edge = firstEdge; f < firstFace+numFaces; ++f) {
+    const PetscInt *cellFaces;
+    PetscInt        numCellFaces, faceSize, cf;
+
+    ierr = DMComplexGetFaces(dm, f, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
+    if (faceSize != 2) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Triangles cannot have face of size %D", faceSize);
+    for(cf = 0; cf < numCellFaces; ++cf) {
+      PetscBool found = PETSC_FALSE;
+
+      /* TODO Need join of vertices to check for existence of edges, which needs support (could set edge support), so just brute force for now */
+      for(e = firstEdge; e < edge; ++e) {
+        const PetscInt *cone;
+
+        ierr = DMComplexGetCone(idm, e, &cone);CHKERRQ(ierr);
+        if (((cellFaces[cf*faceSize+0] == cone[0]) && (cellFaces[cf*faceSize+1] == cone[1])) ||
+            ((cellFaces[cf*faceSize+0] == cone[1]) && (cellFaces[cf*faceSize+1] == cone[0]))) {
+          found = PETSC_TRUE;
+          break;
+        }
+      }
+      if (!found) {
+        ierr = DMComplexSetCone(idm, edge, &cellFaces[cf*faceSize]);CHKERRQ(ierr);
+        ++edge;
+      }
+      ierr = DMComplexInsertCone(idm, f, cf, e);CHKERRQ(ierr);
+    }
+  }
+  if (edge != firstEdge+numEdges) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D should be %D", edge-firstEdge, numEdges);
   ierr = PetscFree(off);CHKERRQ(ierr);
   ierr = DMComplexSymmetrize(idm);CHKERRQ(ierr);
   ierr = DMComplexStratify(idm);CHKERRQ(ierr);
   mesh = (DM_Complex *) (idm)->data;
+  /* TODO fix orientation code */
   for(c = 0; c < numCells; ++c) {
     const PetscInt *cone, *faces;
     PetscInt        coneSize, coff, numFaces, faceSize, f;
