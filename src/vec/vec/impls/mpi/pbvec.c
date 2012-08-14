@@ -280,6 +280,7 @@ EXTERN_C_END
 
    Input Parameters:
 +  comm  - the MPI communicator to use
+.  bs    - block size, same meaning as VecSetBlockSize()
 .  n     - local vector length, cannot be PETSC_DECIDE
 .  N     - global vector length (or PETSC_DECIDE to have calculated)
 -  array - the user provided array to store the vector values
