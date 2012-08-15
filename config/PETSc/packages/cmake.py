@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download          = ['http://www.cmake.org/files/v2.8/cmake-2.8.7.tar.gz']
+    self.download          = ['http://www.cmake.org/files/v2.8/cmake-2.8.9.tar.gz']
     self.complex           = 1
     self.double            = 0
     self.requires32bitint  = 0
