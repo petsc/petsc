@@ -103,7 +103,9 @@ cdef extern from * nogil:
     int TSSetDM(PetscTS,PetscDM)
 
     int TSComputeRHSFunction(PetscTS,PetscReal,PetscVec,PetscVec)
+    int TSComputeRHSFunctionLinear(PetscTS,PetscReal,PetscVec,PetscVec,void*)
     int TSComputeRHSJacobian(PetscTS,PetscReal,PetscVec,PetscMat*,PetscMat*,PetscMatStructure*)
+    int TSComputeRHSJacobianConstant(PetscTS,PetscReal,PetscVec,PetscMat*,PetscMat*,PetscMatStructure*,void*)
     int TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscBool)
     int TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat*,PetscMat*,PetscMatStructure*,PetscBool)
 

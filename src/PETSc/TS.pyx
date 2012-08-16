@@ -139,6 +139,10 @@ cdef class TS(Object):
         cdef PetscReal time = asReal(t)
         CHKERR( TSComputeRHSFunction(self.ts, time, x.vec, f.vec) )
 
+    def computeRHSFunctionLinear(self, t, Vec x not None, Vec f not None):
+        cdef PetscReal time = asReal(t)
+        CHKERR( TSComputeRHSFunctionLinear(self.ts, time, x.vec, f.vec, NULL) )
+
     def computeRHSJacobian(self, t, Vec x not None, Mat J not None, Mat P=None):
         cdef PetscReal time = asReal(t)
         cdef PetscMat *jmat = &J.mat, *pmat = &J.mat
@@ -146,6 +150,15 @@ cdef class TS(Object):
         cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
         CHKERR( TSComputeRHSJacobian(self.ts, time, x.vec,
                                      jmat, pmat, &flag) )
+        return flag
+
+    def computeRHSJacobianConstant(self, t, Vec x not None, Mat J not None, Mat P=None):
+        cdef PetscReal time = asReal(t)
+        cdef PetscMat *jmat = &J.mat, *pmat = &J.mat
+        if P is not None: pmat = &P.mat
+        cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
+        CHKERR( TSComputeRHSJacobianConstant(self.ts, time, x.vec,
+                                             jmat, pmat, &flag, NULL) )
         return flag
 
     def getRHSFunction(self):
