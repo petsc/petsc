@@ -3,7 +3,7 @@
      Defines the basic matrix operations for sequential dense.
 */
 
-#include <../src/mat/impls/dense/seq/dense.h>
+#include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
 #include <petscblaslapack.h>
 
 #include <../src/mat/impls/aij/seq/aij.h>
@@ -1477,7 +1477,7 @@ PetscErrorCode MatSeqDenseRestoreArray_SeqDense(Mat A,PetscScalar *array[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqDenseGetArray"
-/*@
+/*@C
    MatSeqDenseGetArray - gives access to the array where the data for a SeqDense matrix is stored
 
    Not Collective
@@ -1503,7 +1503,7 @@ PetscErrorCode  MatSeqDenseGetArray(Mat A,PetscScalar **array)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqDenseRestoreArray"
-/*@
+/*@C
    MatSeqDenseRestoreArray - returns access to the array where the data for a SeqDense matrix is stored obtained by MatSeqDenseGetArray()
 
    Not Collective
