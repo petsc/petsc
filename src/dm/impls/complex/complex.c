@@ -1114,7 +1114,7 @@ PetscErrorCode DMComplexSetCone(DM dm, PetscInt p, const PetscInt cone[])
   ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
   if ((p < pStart) || (p >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %D is not in the valid range [%D, %D)", p, pStart, pEnd);
   for(c = 0; c < dof; ++c) {
-    if ((cone[c] < pStart) || (cone[c] >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone point %D is not in the valid range [%D. %D)", cone[c], pStart, pEnd);
+    if ((cone[c] < pStart) || (cone[c] >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone point %D is not in the valid range [%D, %D)", cone[c], pStart, pEnd);
     mesh->cones[off+c] = cone[c];
   }
   PetscFunctionReturn(0);
@@ -1222,7 +1222,7 @@ PetscErrorCode DMComplexInsertCone(DM dm, PetscInt p, PetscInt conePos, PetscInt
   ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
   if ((p < pStart) || (p >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %D is not in the valid range [%D, %D)", p, pStart, pEnd);
   if ((conePoint < pStart) || (conePoint >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone point %D is not in the valid range [%D, %D)", conePoint, pStart, pEnd);
-  if (conePos >= dof) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone position %D is not in the valid range [0, %D)", conePos, dof);
+  if (conePos >= dof) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone position %D of point %D is not in the valid range [0, %D)", conePos, p, dof);
   mesh->cones[off+conePos] = conePoint;
   PetscFunctionReturn(0);
 }
@@ -1427,11 +1427,26 @@ PetscErrorCode DMComplexGetFaces(DM dm, PetscInt p, PetscInt *numFaces, PetscInt
       *faces    = mesh->facesTmp;
       break;
     default:
-      SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %", coneSize, dim);
+      SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
+    }
+    break;
+  case 3:
+    switch(coneSize) {
+    case 4:
+      mesh->facesTmp[0] = cone[0]; mesh->facesTmp[1]  = cone[1]; mesh->facesTmp[2]  = cone[2];
+      mesh->facesTmp[3] = cone[0]; mesh->facesTmp[4]  = cone[2]; mesh->facesTmp[5]  = cone[3];
+      mesh->facesTmp[6] = cone[0]; mesh->facesTmp[7]  = cone[3]; mesh->facesTmp[8]  = cone[1];
+      mesh->facesTmp[9] = cone[1]; mesh->facesTmp[10] = cone[3]; mesh->facesTmp[11] = cone[2];
+      *numFaces = 4;
+      *faceSize = 3;
+      *faces    = mesh->facesTmp;
+      break;
+    default:
+      SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
     }
     break;
   default:
-    SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Dimension % not supported", dim);
+    SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %D not supported", dim);
   }
   PetscFunctionReturn(0);
 }
@@ -3254,7 +3269,7 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
   DM             idm, fdm;
   DM_Complex    *mesh;
   PetscInt      *off;
-  const PetscInt numCorners = 3;
+  const PetscInt numCorners = 4;
   PetscInt       dim, numCells, cStart, cEnd, c, numVertices, vStart, vEnd;
   PetscInt       numFaces, firstFace, face, f, numEdges, firstEdge, edge, e;
   PetscErrorCode ierr;
@@ -3281,7 +3296,7 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
   ierr = DMCreate(((PetscObject) dm)->comm, &idm);CHKERRQ(ierr);
   ierr = DMSetType(idm, DMCOMPLEX);CHKERRQ(ierr);
   ierr = DMComplexSetDimension(idm, dim);CHKERRQ(ierr);
-  ierr = DMComplexSetChart(idm, 0, numCells+numVertices+numFaces);CHKERRQ(ierr);
+  ierr = DMComplexSetChart(idm, 0, numCells+numVertices+numFaces+numEdges);CHKERRQ(ierr);
   for(c = 0; c < numCells; ++c) {
     ierr = DMComplexSetConeSize(idm, c, numCorners);CHKERRQ(ierr);
   }
@@ -3296,10 +3311,11 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
   ierr = DMCreate(((PetscObject) dm)->comm, &fdm);CHKERRQ(ierr);
   ierr = DMSetType(fdm, DMCOMPLEX);CHKERRQ(ierr);
   ierr = DMComplexSetDimension(fdm, dim);CHKERRQ(ierr);
-  ierr = DMComplexSetChart(fdm, firstFace, firstFace+numFaces);CHKERRQ(ierr);
+  ierr = DMComplexSetChart(fdm, numCells, firstFace+numFaces);CHKERRQ(ierr);
   for(f = firstFace; f < firstFace+numFaces; ++f) {
     ierr = DMComplexSetConeSize(fdm, f, 3);CHKERRQ(ierr);
   }
+  ierr = DMSetUp(fdm);CHKERRQ(ierr);
   for(c = 0, face = firstFace; c < numCells; ++c) {
     const PetscInt *cellFaces;
     PetscInt        numCellFaces, faceSize, cf;
