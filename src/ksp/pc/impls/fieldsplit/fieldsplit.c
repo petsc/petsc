@@ -14,6 +14,7 @@ struct _PC_FieldSplitLink {
   PetscInt          *fields,*fields_col;
   VecScatter        sctx;
   IS                is,is_col;
+  DM                dm;
   PC_FieldSplitLink next,previous;
 };
 
@@ -263,6 +264,13 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       if(dms) {
         ierr = PetscInfo(pc,"Setting up physics based fieldsplit preconditioner using the embedded DM\n");CHKERRQ(ierr);
         for (ilink=jac->head,i=0; ilink; ilink=ilink->next,i++) {
+          /* 
+           HACK: 
+           keep a handle to DM here without increfing it: may need the DM to set up the Schur solvers; 
+           can't rely on KSPGetDM() since it will create a DMShell if none was set;
+           can't use ilink->ksp->dm without creating a dependence on dmimpl.h.
+           */
+          ilink->dm = dms[i]; 
           ierr = KSPSetDM(ilink->ksp, dms[i]);CHKERRQ(ierr);
           ierr = KSPSetDMActive(ilink->ksp, PETSC_FALSE);CHKERRQ(ierr);
           ierr = DMDestroy(&dms[i]); CHKERRQ(ierr);
@@ -569,30 +577,50 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = MatCreateSchurComplement(jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],&jac->schur);CHKERRQ(ierr);
       ierr  = MatGetNullSpace(jac->pmat[1], &sp);CHKERRQ(ierr);
       if (sp) {ierr  = MatSetNullSpace(jac->schur, sp);CHKERRQ(ierr);}
-      /* set tabbing and options prefix of KSP inside the MatSchur */
+      /* set tabbing, options prefix and DM of KSP inside the MatSchur */
       ierr  = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
       ierr  = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,2);CHKERRQ(ierr);
+      {
+        PC pcinner;
+        ierr           = KSPGetPC(ksp, &pcinner); CHKERRQ(ierr);
+        ierr           = PetscObjectIncrementTabLevel((PetscObject)pcinner,(PetscObject)pc,2);CHKERRQ(ierr);
+      }
       ierr  = PetscSNPrintf(schurprefix,sizeof schurprefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",jac->head->splitname);CHKERRQ(ierr);
       ierr  = KSPSetOptionsPrefix(ksp,schurprefix);CHKERRQ(ierr);
+      /* Can't do KSPGetDM(jac->head->ksp,&dminner); KSPSetDM(ksp,dminner): KSPGetDM() will create DMShell, if the DM hasn't been set - not what we want. */
+      ierr = KSPSetDM(ksp,jac->head->dm);       CHKERRQ(ierr);
+      ierr = KSPSetDMActive(ksp, PETSC_FALSE);  CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(ksp); CHKERRQ(ierr);
+      ierr = KSPSetUp(ksp);          CHKERRQ(ierr);
       /* Need to call this everytime because new matrix is being created */
       ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
       ierr  = MatSetUp(jac->schur);CHKERRQ(ierr);
-
+      /* Create and set up the KSP for the Schur complement; forward the second split's DM and set up tabbing, including for the contained PC. */
       ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);CHKERRQ(ierr);
       ierr  = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
       ierr  = PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1);CHKERRQ(ierr);
+      {
+        PC pcschur;
+        ierr           = KSPGetPC(jac->kspschur, &pcschur); CHKERRQ(ierr);
+        ierr           = PetscObjectIncrementTabLevel((PetscObject)pcschur,(PetscObject)pc,1);CHKERRQ(ierr);
+      }
+      /* Can't do KSPGetDM(ilink->ksp,&dmschur); KSPSetDM(kspshur,dmschur): KSPGetDM() will create DMShell, if the DM hasn't been set - not what we want. */
+      ierr = KSPSetDM(jac->kspschur,ilink->dm);           CHKERRQ(ierr);
+      ierr = KSPSetDMActive(jac->kspschur, PETSC_FALSE);  CHKERRQ(ierr);
+
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELF) {
-        PC pc;
-        ierr = KSPGetPC(jac->kspschur,&pc);CHKERRQ(ierr);
-        ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+        PC pcschur;
+        ierr = KSPGetPC(jac->kspschur,&pcschur);CHKERRQ(ierr);
+        ierr = PCSetType(pcschur,PCNONE);CHKERRQ(ierr);
         /* Note: This is bad if there exist preconditioners for MATSCHURCOMPLEMENT */
       }
-      ierr = PetscSNPrintf(schurprefix,sizeof schurprefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",ilink->splitname);CHKERRQ(ierr);
-      ierr  = KSPSetOptionsPrefix(jac->kspschur,schurprefix);CHKERRQ(ierr);
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
       /* need to call this every time, since the jac->kspschur is freshly created, otherwise its options never get set */
-      ierr = KSPSetFromOptions(jac->kspschur);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(schurprefix,sizeof schurprefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",ilink->splitname);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(jac->kspschur,schurprefix);CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(jac->kspschur); CHKERRQ(ierr);
+      ierr = KSPSetUp(jac->kspschur);          CHKERRQ(ierr);
     }
 
     /* HACK: special support to forward L and Lp matrices that might be used by PCLSC */
@@ -604,18 +632,17 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     ierr = PetscObjectQuery((PetscObject)pc->pmat,lscname,(PetscObject*)&LSC_L);CHKERRQ(ierr);
     if (!LSC_L) {ierr = PetscObjectQuery((PetscObject)pc->mat,lscname,(PetscObject*)&LSC_L);CHKERRQ(ierr);}
     if (LSC_L) {ierr = PetscObjectCompose((PetscObject)jac->schur,"LSC_Lp",(PetscObject)LSC_L);CHKERRQ(ierr);}
-  } else {
-    /* set up the individual PCs */
-    i    = 0;
-    ilink = jac->head;
-    while (ilink) {
-      ierr = KSPSetOperators(ilink->ksp,jac->mat[i],jac->pmat[i],flag);CHKERRQ(ierr);
-      /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
-      if (!jac->suboptionsset) {ierr = KSPSetFromOptions(ilink->ksp);CHKERRQ(ierr);}
-      ierr = KSPSetUp(ilink->ksp);CHKERRQ(ierr);
-      i++;
-      ilink = ilink->next;
-    }
+  } 
+  /* set up the individual PCs */
+  i    = 0;
+  ilink = jac->head;
+  while (ilink) {
+    ierr = KSPSetOperators(ilink->ksp,jac->mat[i],jac->pmat[i],flag); CHKERRQ(ierr);
+    /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
+    if (!jac->suboptionsset) {ierr = KSPSetFromOptions(ilink->ksp);   CHKERRQ(ierr);}
+    ierr = KSPSetUp(ilink->ksp);CHKERRQ(ierr);
+    i++;
+    ilink = ilink->next;
   }
 
   jac->suboptionsset = PETSC_TRUE;
@@ -1108,6 +1135,11 @@ PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[],IS is)
   ilink->next    = PETSC_NULL;
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
   ierr           = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
+  { 
+    PC ilinkpc;
+    ierr           = KSPGetPC(ilink->ksp, &ilinkpc); CHKERRQ(ierr);
+    ierr           = PetscObjectIncrementTabLevel((PetscObject)ilinkpc,(PetscObject)pc,1);CHKERRQ(ierr);
+  }
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr           = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->ksp);CHKERRQ(ierr);
 
