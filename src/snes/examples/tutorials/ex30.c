@@ -239,10 +239,11 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
   /* Isoviscous solve */
   if (param->ivisc == VISC_CONST && !param->stop_solve) {
     param->ivisc = VISC_CONST;
-    ierr = SNESSolve(snes,0,user->x);CHKERRQ(ierr); 
-    ierr = VecCopy(user->x,user->Xguess);CHKERRQ(ierr);
-    ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,0,user->x);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
+    ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     *nits +=its;
+    ierr = VecCopy(user->x,user->Xguess);CHKERRQ(ierr);
     if (param->stop_solve) goto done;
   }
 
