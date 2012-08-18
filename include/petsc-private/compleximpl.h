@@ -32,10 +32,8 @@ typedef struct {
   Vec                  coordinates;      /* Coordinate values */
   PetscReal            refinementLimit;  /* Maximum volume for refined cell */
 
-  PetscInt            *meetTmpA,    *meetTmpB;    /* Work space for meet operation */
-  PetscInt            *joinTmpA,    *joinTmpB;    /* Work space for join operation */
-  PetscInt            *closureTmpA, *closureTmpB; /* Work space for closure operation */
-  PetscInt            *facesTmp;                  /* Work space for faces operation */
+  PetscInt            *meetTmpA, *meetTmpB; /* Work space for meet operation */
+  PetscInt            *facesTmp;            /* Work space for faces operation */
 
   /* Labels */
   SieveLabel           labels;         /* Linked list of labels */
