@@ -3110,8 +3110,8 @@ PetscErrorCode  MatMatSolve_Basic(Mat A,Mat B,Mat X)
   ierr = PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
 
-  ierr = MatGetArray(B,&bb);CHKERRQ(ierr); 
-  ierr = MatGetArray(X,&xx);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(B,&bb);CHKERRQ(ierr); 
+  ierr = MatDenseGetArray(X,&xx);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&m,PETSC_NULL);CHKERRQ(ierr);  /* number local rows */
   ierr = MatGetSize(B,PETSC_NULL,&N);CHKERRQ(ierr);       /* total columns in dense matrix */
   ierr = MatGetVecs(A,&x,&b);CHKERRQ(ierr);
@@ -3124,8 +3124,8 @@ PetscErrorCode  MatMatSolve_Basic(Mat A,Mat B,Mat X)
   }
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = MatRestoreArray(B,&bb);CHKERRQ(ierr);
-  ierr = MatRestoreArray(X,&xx);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(B,&bb);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(X,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3890,7 +3890,7 @@ PetscErrorCode  MatFactorGetSolverPackage(Mat mat, const MatSolverPackage *type)
 
    Input Parameters:
 +  mat - the matrix
-.  type - name of solver type, for example, spooles, superlu, plapack, petsc (to use PETSc's default)
+.  type - name of solver type, for example, spooles, superlu, petsc (to use PETSc's default)
 -  ftype - factor type, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ICC, MAT_FACTOR_ILU, 
 
    Output Parameters:
@@ -3947,7 +3947,7 @@ PetscErrorCode  MatGetFactor(Mat mat, const MatSolverPackage type,MatFactorType 
 
    Input Parameters:
 +  mat - the matrix
-.  type - name of solver type, for example, spooles, superlu, plapack, petsc (to use PETSc's default)
+.  type - name of solver type, for example, spooles, superlu, petsc (to use PETSc's default)
 -  ftype - factor type, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ICC, MAT_FACTOR_ILU, 
 
    Output Parameter:
@@ -6292,119 +6292,6 @@ PetscErrorCode  MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInf
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetArray"
-/*@C
-   MatGetArray - Returns a pointer to the element values in the matrix.
-   The result of this routine is dependent on the underlying matrix data
-   structure, and may not even work for certain matrix types.  You MUST
-   call MatRestoreArray() when you no longer need to access the array.
-
-   Not Collective
-
-   Input Parameter:
-.  mat - the matrix
-
-   Output Parameter:
-.  v - the location of the values
-
-
-   Fortran Note:
-   This routine is used differently from Fortran, e.g.,
-.vb
-        Mat         mat
-        PetscScalar mat_array(1)
-        PetscOffset i_mat
-        PetscErrorCode ierr
-        call MatGetArray(mat,mat_array,i_mat,ierr)
-
-  C  Access first local entry in matrix; note that array is
-  C  treated as one dimensional
-        value = mat_array(i_mat + 1)
-
-        [... other code ...]
-        call MatRestoreArray(mat,mat_array,i_mat,ierr)
-.ve
-
-   See the <a href="../../docs/manual.pdf#ch_fortran">Fortran chapter of the users manual</a> and 
-   src/mat/examples/tests for details.
-
-   Level: advanced
-
-   Concepts: matrices^access array
-
-.seealso: MatRestoreArray(), MatGetArrayF90(), MatGetRowIJ()
-@*/
-PetscErrorCode  MatGetArray(Mat mat,PetscScalar *v[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  PetscValidPointer(v,2);
-  if (!mat->ops->getarray) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  MatCheckPreallocated(mat,1);
-  ierr = (*mat->ops->getarray)(mat,v);CHKERRQ(ierr);
-  CHKMEMQ;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatRestoreArray"
-/*@C
-   MatRestoreArray - Restores the matrix after MatGetArray() has been called.
-
-   Not Collective
-
-   Input Parameter:
-+  mat - the matrix
--  v - the location of the values
-
-   Fortran Note:
-   This routine is used differently from Fortran, e.g.,
-.vb
-        Mat         mat
-        PetscScalar mat_array(1)
-        PetscOffset i_mat
-        PetscErrorCode ierr
-        call MatGetArray(mat,mat_array,i_mat,ierr)
-
-  C  Access first local entry in matrix; note that array is
-  C  treated as one dimensional
-        value = mat_array(i_mat + 1)
-
-        [... other code ...]
-        call MatRestoreArray(mat,mat_array,i_mat,ierr)
-.ve
-
-   See the <a href="../../docs/manual.pdf#ch_fortran">Fortran chapter of the users manual</a>
-   src/mat/examples/tests for details
-
-   Level: advanced
-
-.seealso: MatGetArray(), MatRestoreArrayF90()
-@*/
-PetscErrorCode  MatRestoreArray(Mat mat,PetscScalar *v[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidType(mat,1);
-  PetscValidPointer(v,2);
-  CHKMEMQ;
-  if (!mat->ops->restorearray) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  ierr = (*mat->ops->restorearray)(mat,v);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUSP)
-  if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
-    mat->valid_GPU_matrix = PETSC_CUSP_CPU;
-  }
-#endif
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices"
 /*@C
    MatGetSubMatrices - Extracts several submatrices from a matrix. If submat
@@ -6878,7 +6765,7 @@ $    call  MatGetRowIJF90(mat,shift,symmetric,inodecompressed,n,ia,ja,done,ierr)
  
        Acess the ith and jth entries via ia(iia + i) and ja(jja + j)
 
-.seealso: MatGetColumnIJ(), MatRestoreRowIJ(), MatGetArray()
+.seealso: MatGetColumnIJ(), MatRestoreRowIJ(), MatSeqAIJGetArray()
 @*/
 PetscErrorCode  MatGetRowIJ(Mat mat,PetscInt shift,PetscBool  symmetric,PetscBool  inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscBool  *done)
 {
@@ -7140,10 +7027,10 @@ PetscErrorCode  MatSetUnfactored(Mat mat)
 }
 
 /*MC
-    MatGetArrayF90 - Accesses a matrix array from Fortran90.
+    MatDenseGetArrayF90 - Accesses a matrix array from Fortran90.
 
     Synopsis:
-    MatGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:,:)},integer ierr)
+    MatDenseGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:,:)},integer ierr)
 
     Not collective
 
@@ -7158,28 +7045,25 @@ PetscErrorCode  MatSetUnfactored(Mat mat)
 .vb
       PetscScalar, pointer xx_v(:,:)
       ....
-      call MatGetArrayF90(x,xx_v,ierr)
+      call MatDenseGetArrayF90(x,xx_v,ierr)
       a = xx_v(3)
-      call MatRestoreArrayF90(x,xx_v,ierr)
+      call MatDenseRestoreArrayF90(x,xx_v,ierr)
 .ve
-
-    Notes:
-    Not yet supported for all F90 compilers
 
     Level: advanced
 
-.seealso:  MatRestoreArrayF90(), MatGetArray(), MatRestoreArray()
+.seealso:  MatDenseRestoreArrayF90(), MatDenseGetArray(), MatDenseRestoreArray()
 
     Concepts: matrices^accessing array
 
 M*/
 
 /*MC
-    MatRestoreArrayF90 - Restores a matrix array that has been
+    MatDenseRestoreArrayF90 - Restores a matrix array that has been
     accessed with MatGetArrayF90().
 
     Synopsis:
-    MatRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
+    MatDenseRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
     Not collective
 
@@ -7194,17 +7078,14 @@ M*/
 .vb
        PetscScalar, pointer xx_v(:)
        ....
-       call MatGetArrayF90(x,xx_v,ierr)
+       call MatDenseGetArrayF90(x,xx_v,ierr)
        a = xx_v(3)
-       call MatRestoreArrayF90(x,xx_v,ierr)
+       call MatDenseRestoreArrayF90(x,xx_v,ierr)
 .ve
    
-    Notes:
-    Not yet supported for all F90 compilers
-
     Level: advanced
 
-.seealso:  MatGetArrayF90(), MatGetArray(), MatRestoreArray()
+.seealso:  MatDenseGetArrayF90(), MatDenseGetArray(), MatDenseRestoreArray()
 
 M*/
 

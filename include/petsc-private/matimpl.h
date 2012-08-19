@@ -54,8 +54,8 @@ struct _MatOps {
   PetscErrorCode (*setup)(Mat);
   PetscErrorCode (*ilufactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
   PetscErrorCode (*iccfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
-  PetscErrorCode (*getarray)(Mat,PetscScalar**);
-  PetscErrorCode (*restorearray)(Mat,PetscScalar**);
+  PetscErrorCode (*dummy29)(Mat);
+  PetscErrorCode (*dummy210)(Mat);
   /*34*/
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
   PetscErrorCode (*forwardsolve)(Mat,Vec,Vec);

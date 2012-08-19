@@ -155,8 +155,8 @@ PetscInt main(PetscInt argc,char **args)
     bn    = PetscBLASIntCast(n);
     ierr = PetscMalloc(n*sizeof(PetscScalar),&evals);CHKERRQ(ierr);
     ierr = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
-    ierr = MatSeqDenseGetArray(A_dense,&arrayA);CHKERRQ(ierr);
-    ierr = MatSeqDenseGetArray(B_dense,&arrayB);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(A_dense,&arrayA);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(B_dense,&arrayB);CHKERRQ(ierr);
 
     if (!TestSYGVX){ /* test sygv()  */
       evecs_array = arrayA;
@@ -174,8 +174,8 @@ PetscInt main(PetscInt argc,char **args)
       if(PetscPreLoadIt){ierr = PetscLogStagePop();}
       ierr = PetscFree(iwork);CHKERRQ(ierr);
     }
-    ierr = MatSeqDenseRestoreArray(A,&arrayA);CHKERRQ(ierr);
-    ierr = MatSeqDenseRestoreArray(B,&arrayB);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArray(A,&arrayA);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArray(B,&arrayB);CHKERRQ(ierr);
 
     if (nevs <= 0 ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
     /* View evals */

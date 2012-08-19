@@ -66,7 +66,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   Nsurf = Nface + Nwire;
   ierr = MatCreateSeqDense(MPI_COMM_SELF,Nint,26,PETSC_NULL,&Xint);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(MPI_COMM_SELF,Nsurf,26,PETSC_NULL,&Xsurf);CHKERRQ(ierr);
-  ierr = MatSeqDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
 
   /*
      Require that all 12 edges and 6 faces have at least one grid point. Otherwise some of the columns of 
@@ -99,7 +99,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
     if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %G",i,PetscAbsScalar(tmp));
   }
 #endif
-  ierr = MatSeqDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
   /* ierr = MatView(Xsurf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
 
@@ -168,9 +168,9 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
     Vec         b,x;
     PetscScalar *xint_tmp;
 
-    ierr = MatSeqDenseGetArray(Xint,&xint);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(Xint,&xint);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&x);CHKERRQ(ierr);
-    ierr = MatSeqDenseGetArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&b);CHKERRQ(ierr);
     ierr = KSPSetOperators(exotic->ksp,Aii,Aii,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     for (i=0; i<26; i++) {
@@ -180,15 +180,15 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
       ierr = VecResetArray(x);CHKERRQ(ierr);
       ierr = VecResetArray(b);CHKERRQ(ierr);
     }
-    ierr = MatSeqDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
-    ierr = MatSeqDenseRestoreArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&Xint_tmp);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG_foo)
-  ierr = MatSeqDenseGetArray(Xint,&xint);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(Xint,&xint);CHKERRQ(ierr);
   for (i=0; i<Nint; i++) {
     tmp = 0.0;
     for (j=0; j<26; j++) {
@@ -196,7 +196,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
     }
     if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %G",i,PetscAbsScalar(tmp));
   }
-  ierr = MatSeqDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
   /* ierr =MatView(Xint,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 #endif
 
@@ -251,12 +251,12 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
     ierr = MatZeroEntries(*P);CHKERRQ(ierr);
   }
   ierr = MatSetOption(*P,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseGetArray(Xint,&xint);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(Xint,&xint);CHKERRQ(ierr);
   ierr = MatSetValues(*P,Nint,IIint,26,gl,xint,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatSeqDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
-  ierr = MatSeqDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
   ierr = MatSetValues(*P,Nsurf,IIsurf,26,gl,xsurf,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatSeqDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree2(IIint,IIsurf);CHKERRQ(ierr);
@@ -344,7 +344,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   Nsurf = Nface + Nwire;
   ierr = MatCreateSeqDense(MPI_COMM_SELF,Nint,6,PETSC_NULL,&Xint);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(MPI_COMM_SELF,Nsurf,6,PETSC_NULL,&Xsurf);CHKERRQ(ierr);
-  ierr = MatSeqDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
 
   /*
      Require that all 12 edges and 6 faces have at least one grid point. Otherwise some of the columns of 
@@ -372,7 +372,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
     if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %G",i,PetscAbsScalar(tmp));
   }
 #endif
-  ierr = MatSeqDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
   /* ierr = MatView(Xsurf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
 
@@ -443,9 +443,9 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
     Vec         b,x;
     PetscScalar *xint_tmp;
 
-    ierr = MatSeqDenseGetArray(Xint,&xint);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(Xint,&xint);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&x);CHKERRQ(ierr);
-    ierr = MatSeqDenseGetArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
+    ierr = MatDenseGetArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,Nint,0,&b);CHKERRQ(ierr);
     ierr = KSPSetOperators(exotic->ksp,Aii,Aii,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     for (i=0; i<6; i++) {
@@ -455,15 +455,15 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
       ierr = VecResetArray(x);CHKERRQ(ierr);
       ierr = VecResetArray(b);CHKERRQ(ierr);
     }
-    ierr = MatSeqDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
-    ierr = MatSeqDenseRestoreArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
+    ierr = MatDenseRestoreArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&Xint_tmp);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG_foo)
-  ierr = MatSeqDenseGetArray(Xint,&xint);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(Xint,&xint);CHKERRQ(ierr);
   for (i=0; i<Nint; i++) {
     tmp = 0.0;
     for (j=0; j<6; j++) {
@@ -471,7 +471,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
     }
     if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %G",i,PetscAbsScalar(tmp));
   }
-  ierr = MatSeqDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
   /* ierr =MatView(Xint,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 #endif
 
@@ -522,12 +522,12 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
     ierr = MatZeroEntries(*P);CHKERRQ(ierr);
   }
   ierr = MatSetOption(*P,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseGetArray(Xint,&xint);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(Xint,&xint);CHKERRQ(ierr);
   ierr = MatSetValues(*P,Nint,IIint,6,gl,xint,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatSeqDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
-  ierr = MatSeqDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(Xint,&xint);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
   ierr = MatSetValues(*P,Nsurf,IIsurf,6,gl,xsurf,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatSeqDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree2(IIint,IIsurf);CHKERRQ(ierr);

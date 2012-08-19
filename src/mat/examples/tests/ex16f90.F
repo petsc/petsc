@@ -1,6 +1,6 @@
 !
 !
-!  Tests MatGetArray() on a dense matrix
+!  Tests MatDenseGetArray() 
 !
 
       program main
@@ -67,7 +67,7 @@
 !
 !      Print the local portion of the matrix to the screen
 !
-      call MatGetArrayF90(A,array,ierr) 
+      call MatDenseGetArrayF90(A,array,ierr) 
       call MatGetOwnershipRange(A,rstart,rend,ierr)
       call PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1,ierr)
 !
@@ -80,7 +80,7 @@
 
       call PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr)
 
-      call MatRestoreArrayF90(A,array,ierr)   
+      call MatDenseRestoreArrayF90(A,array,ierr)   
 !
 !      Free the space used by the matrix
 !

@@ -232,9 +232,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer,char**
 PETSC_EXTERN PetscErrorCode PetscViewerFileSetName(PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerFileGetName(PetscViewer,const char**);
 
-PETSC_EXTERN PetscErrorCode PetscPLAPACKInitializePackage(MPI_Comm com);
-PETSC_EXTERN PetscErrorCode PetscPLAPACKFinalizePackage(void);
-
 PETSC_EXTERN PetscErrorCode PetscViewerVUGetPointer(PetscViewer, FILE**);
 PETSC_EXTERN PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer, PetscBool );
 PETSC_EXTERN PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer, PetscBool  *);

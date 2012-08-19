@@ -227,7 +227,7 @@ PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
   ierr = MatGetSize(B_mpi,PETSC_NULL,&nrhs);CHKERRQ(ierr);
   
   PStatInit(&stat);        /* Initialize the statistics variables. */
-  ierr = MatGetArray(X,&bptr);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(X,&bptr);CHKERRQ(ierr);
   if (lu->MatInputMode == GLOBAL) { /* size == 1 */
 #if defined(PETSC_USE_COMPLEX)
     pzgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,(doublecomplex*)bptr, M, nrhs, 
@@ -246,7 +246,7 @@ PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
 #endif
   }
   if (info) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
-  ierr = MatRestoreArray(X,&bptr);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(X,&bptr);CHKERRQ(ierr);
 
   if (lu->options.PrintStat) {
      PStatPrint(&lu->options, &stat, &lu->grid); /* Print the statistics. */

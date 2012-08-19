@@ -1196,8 +1196,8 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   if (bm != A->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in A %D not equal rows in B %D\n",A->cmap->n,bm);
   if (A->rmap->n != C->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in C %D not equal rows in A %D\n",C->rmap->n,A->rmap->n);
   if (B->cmap->n != C->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in B %D not equal columns in C %D\n",B->cmap->n,C->cmap->n);
-  ierr = MatSeqDenseGetArray(B,&b);CHKERRQ(ierr);
-  ierr = MatSeqDenseGetArray(C,&c);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(C,&c);CHKERRQ(ierr);
   b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
   for (col=0; col<cn-4; col += 4){  /* over columns of C */
     colam = col*am;
@@ -1237,8 +1237,8 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
     b1 += bm;
   }
   ierr = PetscLogFlops(cn*(2.0*a->nz));CHKERRQ(ierr);
-  ierr = MatSeqDenseRestoreArray(B,&b);CHKERRQ(ierr);
-  ierr = MatSeqDenseRestoreArray(C,&c);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(C,&c);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1260,8 +1260,8 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 
   PetscFunctionBegin;
   if (!cm || !cn) PetscFunctionReturn(0);
-  ierr = MatSeqDenseGetArray(B,&b);CHKERRQ(ierr);
-  ierr = MatSeqDenseGetArray(C,&c);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(C,&c);CHKERRQ(ierr);
   b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
 
   if (a->compressedrow.use){ /* use compressed row format */
@@ -1349,8 +1349,8 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
     }
   }
   ierr = PetscLogFlops(cn*2.0*a->nz);CHKERRQ(ierr);
-  ierr = MatSeqDenseRestoreArray(B,&b);CHKERRQ(ierr);
-  ierr = MatSeqDenseRestoreArray(C,&c);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(C,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1398,7 +1398,7 @@ PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring matcolor
  
   PetscFunctionBegin;    
   ierr = MatGetLocalSize(Csp,&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetArray(Cden,&ca_den);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArray(Cden,&ca_den);CHKERRQ(ierr);
   cp_den = ca_den;
   for (k=0; k<ncolors; k++) { 
     nrows = matcoloring->nrows[k];
@@ -1409,7 +1409,7 @@ PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring matcolor
     }
     cp_den += m;
   }
-  ierr = MatRestoreArray(Cden,&ca_den);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArray(Cden,&ca_den);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

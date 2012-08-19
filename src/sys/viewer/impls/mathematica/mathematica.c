@@ -43,7 +43,7 @@ PetscErrorCode  PetscViewerMathematicaFinalizePackage(void)
 
   Level: developer
 
-.keywords: Petsc, initialize, package, PLAPACK
+.keywords: Petsc, initialize, package
 .seealso: PetscSysInitializePackage(), PetscInitialize()
 @*/
 PetscErrorCode  PetscViewerMathematicaInitializePackage(const char path[])

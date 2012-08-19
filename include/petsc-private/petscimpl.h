@@ -408,8 +408,8 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PETSC_UNUSED Pet
 
    This routine is mostly for internal use by PETSc; a developer need only
    call it after explicit access to an object's internals. Routines such
-   as VecSet or MatScale already call this routine. It is also called, as a 
-   precaution, in VecRestoreArray, MatRestoreRow, MatRestoreArray.
+   as VecSet() or MatScale() already call this routine. It is also called, as a 
+   precaution, in VecRestoreArray(), MatRestoreRow(), MatDenseRestoreArray().
 
    Level: developer
 

@@ -53,13 +53,13 @@ int main(int argc,char **args)
   ierr = MatSetType(U,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetUp(U);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(U,&rstart,&rend);CHKERRQ(ierr);
-  ierr = MatGetArray(U,&u);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(U,&u);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     u[i-rstart]          = (PetscReal)i;
     u[i+rend-2*rstart]   = (PetscReal)1000*i;
     u[i+2*rend-3*rstart] = (PetscReal)100000*i;
   }
-  ierr = MatRestoreArray(U,&u);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(U,&u);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(U,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(U,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -69,13 +69,13 @@ int main(int argc,char **args)
   ierr = MatSetType(V,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetUp(V);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(U,&rstart,&rend);CHKERRQ(ierr);
-  ierr = MatGetArray(V,&u);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(V,&u);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     u[i-rstart]          = (PetscReal)i;
     u[i+rend-2*rstart]   = (PetscReal)1.2*i;
     u[i+2*rend-3*rstart] = (PetscReal)1.67*i+2;
   }
-  ierr = MatRestoreArray(V,&u);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(V,&u);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(V,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(V,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

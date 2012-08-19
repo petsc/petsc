@@ -1,7 +1,7 @@
 
 ALL: lib
 
-CFLAGS   = ${PLAPACK_INCLUDE}
+CFLAGS   = 
 FFLAGS   =
 SOURCEC  = mpidense.c mmdense.c
 SOURCEF  =

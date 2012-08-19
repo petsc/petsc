@@ -2505,8 +2505,8 @@ PetscErrorCode MatSetUp_SeqAIJ(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetArray_SeqAIJ"
-PetscErrorCode MatGetArray_SeqAIJ(Mat A,PetscScalar *array[])
+#define __FUNCT__ "MatSeqAIJGetArray_SeqAIJ"
+PetscErrorCode MatSeqAIJGetArray_SeqAIJ(Mat A,PetscScalar *array[])
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data; 
   PetscFunctionBegin;
@@ -2515,8 +2515,8 @@ PetscErrorCode MatGetArray_SeqAIJ(Mat A,PetscScalar *array[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRestoreArray_SeqAIJ"
-PetscErrorCode MatRestoreArray_SeqAIJ(Mat A,PetscScalar *array[])
+#define __FUNCT__ "MatSeqAIJRestoreArray_SeqAIJ"
+PetscErrorCode MatSeqAIJRestoreArray_SeqAIJ(Mat A,PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -3089,8 +3089,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 /*29*/ MatSetUp_SeqAIJ,
        0,
        0,
-       MatGetArray_SeqAIJ,
-       MatRestoreArray_SeqAIJ,
+       0,
+       0,
 /*34*/ MatDuplicate_SeqAIJ,
        0,
        0,
@@ -3870,6 +3870,56 @@ extern PetscErrorCode MatGetFactor_aij_clique(Mat,MatFactorType,Mat*);
 EXTERN_C_END
 
 
+#undef __FUNCT__
+#define __FUNCT__ "MatSeqAIJGetArray"
+/*@C
+   MatSeqAIJGetArray - gives access to the array where the data for a SeqSeqAIJ matrix is stored
+
+   Not Collective
+
+   Input Parameter:
+.  mat - a MATSEQDENSE matrix
+
+   Output Parameter:
+.   array - pointer to the data
+
+   Level: intermediate
+
+.seealso: MatSeqAIJRestoreArray()
+@*/
+PetscErrorCode  MatSeqAIJGetArray(Mat A,PetscScalar **array)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(A,"MatSeqAIJGetArray_C",(Mat,PetscScalar**),(A,array));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSeqAIJRestoreArray"
+/*@C
+   MatSeqAIJRestoreArray - returns access to the array where the data for a SeqSeqAIJ matrix is stored obtained by MatSeqAIJGetArray()
+
+   Not Collective
+
+   Input Parameters:
+.  mat - a MATSEQDENSE matrix
+.  array - pointer to the data
+
+   Level: intermediate
+
+.seealso: MatSeqAIJGetArray()
+@*/
+PetscErrorCode  MatSeqAIJRestoreArray(Mat A,PetscScalar **array)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(A,"MatSeqAIJRestoreArray_C",(Mat,PetscScalar**),(A,array));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_SeqAIJ"
@@ -3910,6 +3960,9 @@ PetscErrorCode  MatCreate_SeqAIJ(Mat B)
   B->same_nonzero          = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJGetArray_C","MatSeqAIJGetArray_SeqAIJ",MatSeqAIJGetArray_SeqAIJ);CHKERRQ(ierr);  
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJRestoreArray_C","MatSeqAIJRestoreArray_SeqAIJ",MatSeqAIJRestoreArray_SeqAIJ);CHKERRQ(ierr);  
+
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_matlab_C","MatGetFactor_seqaij_matlab",MatGetFactor_seqaij_matlab);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C","MatlabEnginePut_SeqAIJ",MatlabEnginePut_SeqAIJ);CHKERRQ(ierr);

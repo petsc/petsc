@@ -106,9 +106,9 @@ int main(int argc,char **argv)
   if (size == 1){
     ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);
     if (flg){
-      ierr = MatGetArray(A,&array);CHKERRQ(ierr);
+      ierr = MatSeqAIJGetArray(A,&array);CHKERRQ(ierr);
       for (i=0; i<ia[nrows]; i++) array[i] = one;
-      ierr = MatRestoreArray(A,&array);CHKERRQ(ierr);
+      ierr = MatSeqAIJRestoreArray(A,&array);CHKERRQ(ierr);
     }
     ierr = MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);
   } else {

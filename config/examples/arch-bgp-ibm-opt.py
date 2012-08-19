@@ -41,7 +41,6 @@ configure_options = [
   '--known-level1-dcache-size=32768',
 
   '--download-hypre=1',
-  '--download-plapack=1',
   '--download-cmake=1',
   '--download-metis=1',
   '--download-parmetis=1',

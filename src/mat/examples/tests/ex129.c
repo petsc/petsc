@@ -198,7 +198,7 @@ PetscErrorCode ComputeRHSMatrix(PetscInt m,PetscInt nrhs,Mat* C)
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-  ierr = MatSeqDenseGetArray(RHS,&array);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(RHS,&array);CHKERRQ(ierr);
   for (i=0; i<m; i++){
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
     array[i] = rval; 
@@ -210,7 +210,7 @@ PetscErrorCode ComputeRHSMatrix(PetscInt m,PetscInt nrhs,Mat* C)
       }
     }
   }
-  ierr = MatSeqDenseRestoreArray(RHS,&array);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(RHS,&array);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(RHS,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(RHS,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *C = RHS;

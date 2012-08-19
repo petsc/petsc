@@ -14,10 +14,10 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c ex74.c ex75.c \
                 ex76.c ex77.c ex78.c ex80.c ex81.c ex86.c ex87.c ex88.c \
                 ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex97.c ex98.c \
-                ex99.c ex100.c ex101.c ex102.c ex103.c ex104.c ex106.c \
-                ex107.c ex108.c ex109.c ex110.c ex111.c ex112.c ex113.c \
-                ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c \
-                ex121.c ex122.c ex123.c ex124.c ex125.c ex127.c ex128.c \
+                ex99.c ex100.c ex101.c ex102.c  ex104.c ex106.c \
+                ex108.c ex109.c ex110.c ex111.c ex112.c ex113.c \
+                ex114.c ex116.c ex117.c ex118.c ex119.c ex120.c \
+                ex121.c ex122.c ex124.c ex125.c ex127.c ex128.c \
                 ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c \
                 ex136.c ex137.c ex138.c ex139.c ex140.c ex141.c ex142.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
@@ -1479,33 +1479,11 @@ runex102:
 	   else echo ${PWD} ; echo "Possible problem with ex102, diffs above \n========================================="; fi; \
 	   ${RM} -f ex102.tmp
 
-runex103:
-	-@${MPIEXEC} -n 1 ./ex103 > ex103.tmp 2>&1; \
-	   if (${DIFF} output/ex103.out ex103.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with ex103, diffs above \n========================================="; fi; \
-	   ${RM} -f ex103.tmp
-runex103_2:
-	-@${MPIEXEC} -n 3 ./ex103 > ex103.tmp 2>&1; \
-	   if (${DIFF} output/ex103.out ex103.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with ex103_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex103.tmp
-
 runex104:
 	-@${MPIEXEC} -n 1 ./ex104 > ex104.tmp 2>&1; \
 	   if (${DIFF} output/ex104.out ex104.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with ex104, diffs above \n========================================="; fi; \
 	   ${RM} -f ex104.tmp
-
-runex107:
-	-@${MPIEXEC} -n 4 ./ex107 -M 50 -mat_plapack_nprows 2 -mat_plapack_npcols 2 -mat_plapack_nb 1 > ex107.tmp 2>&1; \
-	   if (${DIFF} output/ex107.out ex107.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with ex107, diffs above \n========================================="; fi; \
-	   ${RM} -f ex107.tmp
-runex107_2:
-	-@${MPIEXEC} -n 4 ./ex107 -M 50 -mat_plapack_nprows 4 -mat_plapack_npcols 1 -mat_plapack_nb 1 > ex107.tmp 2>&1; \
-	   if (${DIFF} output/ex107.out ex107.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with ex107, diffs above \n========================================="; fi; \
-	   ${RM} -f ex107.tmp
 
 runex109:
 	-@${MPIEXEC} -n 1 ./ex109 > ex109.tmp 2>&1; \
@@ -1849,8 +1827,6 @@ TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm 
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
 TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm
-TESTEXAMPLES_PLAPACK 	       = ex103.PETSc runex103_2 ex103.rm ex107.PETSc runex107 runex107_2 ex107.rm \
-                                 ex115.PETSc ex115.rm ex123.PETSc ex123.rm
 TESTEXAMPLES_FFTW_REAL         = ex142.PETSc ex142.rm ex144.PETSc runex144 runex144_2 ex144.rm \
                                  ex158.PETsc runex158 runex158_3 ex158.rm
 TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc ex121.rm \

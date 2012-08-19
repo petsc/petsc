@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatGetArray() and MatView_SeqDense_Binary(), MatView_MPIDense_Binary().\n\n";
+static char help[] = "Tests MatDenseGetArray() and MatView_SeqDense_Binary(), MatView_MPIDense_Binary().\n\n";
 
 #include <petscmat.h>
 #include <petscviewer.h>
@@ -41,7 +41,7 @@ int main(int argc,char **args)
   /*
       Print the local portion of the matrix to the screen
   */
-  ierr = MatGetArray(A,&array);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(A,&array);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     for (j=0; j<n; j++) {
@@ -50,7 +50,7 @@ int main(int argc,char **args)
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n");
   }
   PetscSynchronizedFlush(PETSC_COMM_WORLD);
-  ierr = MatRestoreArray(A,&array);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(A,&array);CHKERRQ(ierr);
 
   /*
       Store the binary matrix to a file

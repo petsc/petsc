@@ -11,10 +11,10 @@
 #define matrestorerow_                   MATRESTOREROW
 #define matload_                         MATLOAD
 #define matview_                         MATVIEW
-#define matgetarray_                     MATGETARRAY
-#define matrestorearray_                 MATRESTOREARRAY
-#define matseqdensegetarray_             MATSEQDENSEGETARRAY
-#define matseqdenserestorearray_         MATSEQDENSERESTOREARRAY
+#define matseqaijgetarray_               MATSEQAIJGETARRAY
+#define matseqaijrestorearray            MATSEQAIJRESTOREARRAY
+#define matdensegetarray_                MATDENSEGETARRAY
+#define matdenserestorearray_            MATDENSERESTOREARRAY
 #define matconvert_                      MATCONVERT
 #define matgetsubmatrices_               MATGETSUBMATRICES
 #define matzerorowscolumns_              MATZEROROWSCOLUMNS
@@ -54,10 +54,10 @@
 #define matrestorerow_                   matrestorerow
 #define matview_                         matview
 #define matload_                         matload
-#define matgetarray_                     matgetarray
-#define matrestorearray_                 matrestorearray
-#define matseqdensegetarray_             matseqdensegetarray
-#define matseqdenserestorearray_         matseqdenserestorearray
+#define matseqaijgetarray_               matseqaijgetarray
+#define matseqaijrestorearray_                 matseqaijrestorearray
+#define matdensegetarray_             matdensegetarray
+#define matdenserestorearray_         matdenserestorearray
 #define matconvert_                      matconvert
 #define matgetsubmatrices_               matgetsubmatrices
 #define matzerorowscolumns_              matzerorowscolumns
@@ -192,44 +192,44 @@ void PETSC_STDCALL matload_(Mat *mat,PetscViewer *vin,PetscErrorCode *ierr)
   *ierr = MatLoad(*mat,v);
 }
 
-void PETSC_STDCALL matgetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL matseqaijgetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscScalar *mm;
   PetscInt    m,n;
 
-  *ierr = MatGetArray(*mat,&mm); if (*ierr) return;
+  *ierr = MatSeqAIJGetArray(*mat,&mm); if (*ierr) return;
   *ierr = MatGetSize(*mat,&m,&n);  if (*ierr) return;
   *ierr = PetscScalarAddressToFortran((PetscObject)*mat,1,fa,mm,m*n,ia); if (*ierr) return;
 }
 
-void PETSC_STDCALL matrestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL matseqaijrestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscScalar          *lx;
   PetscInt                  m,n;
 
   *ierr = MatGetSize(*mat,&m,&n); if (*ierr) return;
   *ierr = PetscScalarAddressFromFortran((PetscObject)*mat,fa,*ia,m*n,&lx);if (*ierr) return;
-  *ierr = MatRestoreArray(*mat,&lx);if (*ierr) return;
+  *ierr = MatSeqAIJRestoreArray(*mat,&lx);if (*ierr) return;
 }
 
-void PETSC_STDCALL matseqdensegetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL matdensegetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscScalar *mm;
   PetscInt    m,n;
 
-  *ierr = MatSeqDenseGetArray(*mat,&mm); if (*ierr) return;
+  *ierr = MatDenseGetArray(*mat,&mm); if (*ierr) return;
   *ierr = MatGetSize(*mat,&m,&n);  if (*ierr) return;
   *ierr = PetscScalarAddressToFortran((PetscObject)*mat,1,fa,mm,m*n,ia); if (*ierr) return;
 }
 
-void PETSC_STDCALL matseqdenserestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL matdenserestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscScalar          *lx;
   PetscInt                  m,n;
 
   *ierr = MatGetSize(*mat,&m,&n); if (*ierr) return;
   *ierr = PetscScalarAddressFromFortran((PetscObject)*mat,fa,*ia,m*n,&lx);if (*ierr) return;
-  *ierr = MatSeqDenseRestoreArray(*mat,&lx);if (*ierr) return;
+  *ierr = MatDenseRestoreArray(*mat,&lx);if (*ierr) return;
 }
 
 void PETSC_STDCALL matfactorgetsolverpackage_(Mat *mat,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))

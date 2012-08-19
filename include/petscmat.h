@@ -109,7 +109,6 @@ J*/
 #define MATSOLVERPASTIX       "pastix"
 #define MATSOLVERMATLAB       "matlab"
 #define MATSOLVERPETSC        "petsc"
-#define MATSOLVERPLAPACK      "plapack"
 #define MATSOLVERBAS          "bas"
 #define MATSOLVERCUSPARSE     "cusparse"
 #define MATSOLVERBSTRM        "bstrm"
@@ -390,10 +389,10 @@ PETSC_EXTERN PetscErrorCode MatRestoreRowUpperTriangular(Mat);
 PETSC_EXTERN PetscErrorCode MatGetColumn(Mat,PetscInt,PetscInt *,const PetscInt *[],const PetscScalar*[]);
 PETSC_EXTERN PetscErrorCode MatRestoreColumn(Mat,PetscInt,PetscInt *,const PetscInt *[],const PetscScalar*[]);
 PETSC_EXTERN PetscErrorCode MatGetColumnVector(Mat,Vec,PetscInt);
-PETSC_EXTERN PetscErrorCode MatGetArray(Mat,PetscScalar *[]);
-PETSC_EXTERN PetscErrorCode MatSeqDenseGetArray(Mat,PetscScalar *[]);
-PETSC_EXTERN PetscErrorCode MatRestoreArray(Mat,PetscScalar *[]);
-PETSC_EXTERN PetscErrorCode MatSeqDenseRestoreArray(Mat,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatSeqAIJGetArray(Mat,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatSeqAIJRestoreArray(Mat,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatDenseGetArray(Mat,PetscScalar *[]);
+PETSC_EXTERN PetscErrorCode MatDenseRestoreArray(Mat,PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatGetBlockSize(Mat,PetscInt *);
 PETSC_EXTERN PetscErrorCode MatSetBlockSize(Mat,PetscInt);
 PETSC_EXTERN PetscErrorCode MatGetBlockSizes(Mat,PetscInt *,PetscInt *);

@@ -2595,8 +2595,8 @@ PetscErrorCode MatSetUp_SeqBAIJ(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetArray_SeqBAIJ"
-PetscErrorCode MatGetArray_SeqBAIJ(Mat A,PetscScalar *array[])
+#define __FUNCT__ "MatSeqBAIJGetArray_SeqBAIJ"
+PetscErrorCode MatSeqBAIJGetArray_SeqBAIJ(Mat A,PetscScalar *array[])
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data; 
   PetscFunctionBegin;
@@ -2605,8 +2605,8 @@ PetscErrorCode MatGetArray_SeqBAIJ(Mat A,PetscScalar *array[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRestoreArray_SeqBAIJ"
-PetscErrorCode MatRestoreArray_SeqBAIJ(Mat A,PetscScalar *array[])
+#define __FUNCT__ "MatSeqBAIJRestoreArray_SeqBAIJ"
+PetscErrorCode MatSeqBAIJRestoreArray_SeqBAIJ(Mat A,PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -2943,8 +2943,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
 /*29*/ MatSetUp_SeqBAIJ,
        0,
        0,
-       MatGetArray_SeqBAIJ,
-       MatRestoreArray_SeqBAIJ,
+       0,
+       0,
 /*34*/ MatDuplicate_SeqBAIJ,
        0,
        0,

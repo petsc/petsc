@@ -408,8 +408,8 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat
   if (R->rmap->n != RAB->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in RAB %D not equal rows in R %D\n",RAB->rmap->n,R->rmap->n);
   if (B->cmap->n != RAB->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in RAB %D not equal columns in B %D\n",RAB->cmap->n,B->cmap->n);
 
-  ierr = MatSeqDenseGetArray(B,&b);CHKERRQ(ierr);
-  ierr = MatSeqDenseGetArray(RAB,&d);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(RAB,&d);CHKERRQ(ierr);
   b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
   c = work; c2 = c + am; c3 = c2 + am; c4 = c3 + am;
   for (col=0; col<cn-4; col += 4){  /* over columns of C */
@@ -479,8 +479,8 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat
   }
   ierr = PetscLogFlops(cn*2.0*(a->nz + r->nz));CHKERRQ(ierr);
 
-  ierr = MatSeqDenseRestoreArray(B,&b);CHKERRQ(ierr);
-  ierr = MatSeqDenseRestoreArray(RAB,&d);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(RAB,&d);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(RAB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(RAB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

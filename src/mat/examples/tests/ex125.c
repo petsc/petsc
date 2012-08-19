@@ -52,21 +52,7 @@ int main(int argc,char **args)
   
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-  ierr = MatGetArray(C,&array);CHKERRQ(ierr);
-  for (i=0; i<m; i++){
-    ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-    array[i] = rval; 
-  }
-  if (nrhs > 1){
-    for (k=1; k<nrhs; k++){
-      for (i=0; i<m; i++){
-        array[m*k+i] = array[i]; 
-      }
-    }
-  }
-  ierr = MatRestoreArray(C,&array);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetRandom(C,rand);CHKERRQ(ierr);
   ierr = MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&X);CHKERRQ(ierr);
   
   /* Create vectors */

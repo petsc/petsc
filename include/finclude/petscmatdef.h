@@ -136,7 +136,6 @@
 #define MATSOLVERPASTIX       'pastix'
 #define MATSOLVERMATLAB       'matlab'
 #define MATSOLVERPETSC        'petsc'
-#define MATSOLVERPLAPACK      'plapack'
 #define MATSOLVERBAS          'bas'
 #define MATSOLVERCUSPARSE     'cusparse'
 #define MATSOLVERBSTRM        'bstrm'
