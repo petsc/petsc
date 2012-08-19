@@ -235,7 +235,7 @@ PetscErrorCode DMView_Complex(DM dm, PetscViewer viewer)
 PetscErrorCode DMDestroy_Complex(DM dm)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
-  SieveLabel     next = mesh->labels;
+  DMLabel        next = mesh->labels;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -250,7 +250,7 @@ PetscErrorCode DMDestroy_Complex(DM dm)
   ierr = PetscFree2(mesh->meetTmpA,mesh->meetTmpB);CHKERRQ(ierr);
   ierr = PetscFree(mesh->facesTmp);CHKERRQ(ierr);
   while(next) {
-    SieveLabel tmp;
+    DMLabel tmp;
 
     ierr = PetscFree(next->name);CHKERRQ(ierr);
     ierr = PetscFree(next->stratumValues);CHKERRQ(ierr);
@@ -1814,7 +1814,7 @@ PetscErrorCode DMComplexStratify(DM dm)
 PetscErrorCode DMComplexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
-  SieveLabel     next = mesh->labels;
+  DMLabel        next = mesh->labels;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1853,7 +1853,7 @@ PetscErrorCode DMComplexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, PetscInt *value)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
-  SieveLabel     next = mesh->labels;
+  DMLabel        next = mesh->labels;
   PetscBool      flg;
   PetscInt       v, p;
   PetscErrorCode ierr;
@@ -1905,7 +1905,7 @@ PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, 
 PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
-  SieveLabel     next = mesh->labels;
+  DMLabel        next = mesh->labels;
   PetscBool      flg  = PETSC_FALSE;
   PetscInt       v, p;
   PetscErrorCode ierr;
@@ -1920,8 +1920,8 @@ PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, 
     next = next->next;
   }
   if (!flg) {
-    SieveLabel tmpLabel = mesh->labels;
-    ierr = PetscNew(struct Sieve_Label, &mesh->labels);CHKERRQ(ierr);
+    DMLabel tmpLabel = mesh->labels;
+    ierr = PetscNew(struct _n_DMLabel, &mesh->labels);CHKERRQ(ierr);
     mesh->labels->next = tmpLabel;
     next = mesh->labels;
     ierr = PetscStrallocpy(name, &next->name);CHKERRQ(ierr);
@@ -2010,7 +2010,7 @@ PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, 
 PetscErrorCode DMComplexClearLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
-  SieveLabel     next = mesh->labels;
+  DMLabel        next = mesh->labels;
   PetscBool      flg  = PETSC_FALSE;
   PetscInt       v, p;
   PetscErrorCode ierr;
@@ -2068,7 +2068,7 @@ PetscErrorCode DMComplexClearLabelValue(DM dm, const char name[], PetscInt point
 PetscErrorCode DMComplexClearLabelStratum(DM dm, const char name[], PetscInt value)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
-  SieveLabel     next = mesh->labels;
+  DMLabel        next = mesh->labels;
   PetscBool      flg  = PETSC_FALSE;
   PetscInt       v;
   PetscErrorCode ierr;
@@ -2114,7 +2114,7 @@ PetscErrorCode DMComplexClearLabelStratum(DM dm, const char name[], PetscInt val
 PetscErrorCode DMComplexGetLabelSize(DM dm, const char name[], PetscInt *size)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
-  SieveLabel     next = mesh->labels;
+  DMLabel        next = mesh->labels;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -2156,7 +2156,7 @@ PetscErrorCode DMComplexGetLabelSize(DM dm, const char name[], PetscInt *size)
 PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
-  SieveLabel     next = mesh->labels;
+  DMLabel        next = mesh->labels;
   PetscInt      *values;
   PetscInt       size=-1, i = 0;
   PetscBool      flg;
@@ -2206,7 +2206,7 @@ PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
 PetscErrorCode DMComplexGetStratumSize(DM dm, const char name[], PetscInt value, PetscInt *size)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
-  SieveLabel     next = mesh->labels;
+  DMLabel        next = mesh->labels;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -2255,7 +2255,7 @@ PetscErrorCode DMComplexGetStratumSize(DM dm, const char name[], PetscInt value,
 @*/
 PetscErrorCode DMComplexGetStratumIS(DM dm, const char name[], PetscInt value, IS *is) {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
-  SieveLabel     next = mesh->labels;
+  DMLabel        next = mesh->labels;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -3136,7 +3136,7 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParall
   }
   /* Distribute labels */
   {
-    SieveLabel next      = mesh->labels, newNext = PETSC_NULL;
+    DMLabel    next      = mesh->labels, newNext = PETSC_NULL;
     PetscInt   numLabels = 0, l;
 
     /* Bcast number of labels */
@@ -3144,14 +3144,14 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParall
     ierr = MPI_Bcast(&numLabels, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
     next = mesh->labels;
     for(l = 0; l < numLabels; ++l) {
-      SieveLabel      newLabel;
+      DMLabel         newLabel;
       const PetscInt *partArray;
       PetscInt       *stratumSizes = PETSC_NULL, *points = PETSC_NULL;
       PetscMPIInt    *sendcnts = PETSC_NULL, *offsets = PETSC_NULL, *displs = PETSC_NULL;
       PetscInt        nameSize, s, p;
       size_t          len = 0;
 
-      ierr = PetscNew(struct Sieve_Label, &newLabel);CHKERRQ(ierr);
+      ierr = PetscNew(struct _n_DMLabel, &newLabel);CHKERRQ(ierr);
       /* Bcast name (could filter for no points) */
       if (!rank) {ierr = PetscStrlen(next->name, &len);CHKERRQ(ierr);}
       nameSize = len;
@@ -5102,7 +5102,7 @@ PetscErrorCode DMComplexGetDepth(DM dm, PetscInt *depth) {
 @*/
 PetscErrorCode DMComplexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end) {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
-  SieveLabel     next = mesh->labels;
+  DMLabel        next = mesh->labels;
   PetscBool      flg  = PETSC_FALSE;
   PetscInt       depth;
   PetscErrorCode ierr;
@@ -5162,7 +5162,7 @@ PetscErrorCode DMComplexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *
 @*/
 PetscErrorCode DMComplexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end) {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
-  SieveLabel     next = mesh->labels;
+  DMLabel        next = mesh->labels;
   PetscBool      flg  = PETSC_FALSE;
   PetscInt       depth;
   PetscErrorCode ierr;
