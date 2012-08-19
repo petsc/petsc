@@ -1,5 +1,8 @@
 #include <petsc-private/compleximpl.h>   /*I      "petscdmcomplex.h"   I*/
 
+/* Logging support */
+PetscLogEvent DMCOMPLEX_Distribute;
+
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexView_Ascii"
 PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
@@ -47,7 +50,8 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
       }
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscSectionVecView(mesh->coordSection, mesh->coordinates, viewer);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(mesh->coordSection, &pStart, PETSC_NULL);CHKERRQ(ierr);
+    if (pStart >= 0) {ierr = PetscSectionVecView(mesh->coordSection, mesh->coordinates, viewer);CHKERRQ(ierr);}
     ierr = DMComplexHasLabel(dm, "marker", &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
       const char     *name = "marker";
@@ -146,6 +150,7 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
       }
       /* Why doesn't this work? ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- cycle;\n");CHKERRQ(ierr); */
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, " -- (%D_%D);\n", firstPoint, rank);CHKERRQ(ierr);
+      ierr = DMComplexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "\\end{tikzpicture}\n\\end{center}\n");CHKERRQ(ierr);
@@ -243,8 +248,6 @@ PetscErrorCode DMDestroy_Complex(DM dm)
   ierr = PetscSectionDestroy(&mesh->coordSection);CHKERRQ(ierr);
   ierr = VecDestroy(&mesh->coordinates);CHKERRQ(ierr);
   ierr = PetscFree2(mesh->meetTmpA,mesh->meetTmpB);CHKERRQ(ierr);
-  ierr = PetscFree2(mesh->joinTmpA,mesh->joinTmpB);CHKERRQ(ierr);
-  ierr = PetscFree2(mesh->closureTmpA,mesh->closureTmpB);CHKERRQ(ierr);
   ierr = PetscFree(mesh->facesTmp);CHKERRQ(ierr);
   while(next) {
     SieveLabel tmp;
@@ -330,6 +333,7 @@ PetscErrorCode DMComplexGetAdjacency_Private(DM dm, PetscInt p, PetscBool useClo
       }
       if (numAdj > maxAdjSize) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid mesh exceeded adjacency allocation (%D)", maxAdjSize);
     }
+    ierr = DMComplexRestoreTransitiveClosure(dm, star[s], (PetscBool)!useClosure, &closureSize, (PetscInt **) &closure);CHKERRQ(ierr);
   }
   *adjSize = numAdj;
   PetscFunctionReturn(0);
@@ -1311,7 +1315,7 @@ PetscErrorCode DMComplexGetSupport(DM dm, PetscInt p, const PetscInt *support[])
 
   Level: beginner
 
-.seealso: DMComplexCreate(), DMComplexSetCone(), DMComplexSetChart(), DMComplexGetCone()
+.seealso: DMComplexRestoreTransitiveClosure(), DMComplexCreate(), DMComplexSetCone(), DMComplexSetChart(), DMComplexGetCone()
 @*/
 PetscErrorCode DMComplexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
 {
@@ -1319,20 +1323,20 @@ PetscErrorCode DMComplexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCon
   PetscInt       *closure, *fifo;
   const PetscInt *tmp, *tmpO = PETSC_NULL;
   PetscInt        tmpSize, t;
+  PetscInt        depth, maxSize;
   PetscInt        closureSize = 2, fifoSize = 0, fifoStart = 0;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!mesh->closureTmpA) {
-    PetscInt depth, maxSize;
-
-    ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
-    maxSize = (PetscInt) (2*PetscMax(pow((PetscReal) mesh->maxConeSize, depth)+1, pow((PetscReal) mesh->maxSupportSize, depth)+1));
-    ierr = PetscMalloc2(maxSize,PetscInt,&mesh->closureTmpA,maxSize,PetscInt,&mesh->closureTmpB);CHKERRQ(ierr);
+  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
+  maxSize = (PetscInt) (2*PetscMax(pow((PetscReal) mesh->maxConeSize, depth)+1, pow((PetscReal) mesh->maxSupportSize, depth)+1));
+  ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &fifo);CHKERRQ(ierr);
+  if (*points) {
+    closure = *points;
+  } else {
+    ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &closure);CHKERRQ(ierr);
   }
-  closure = *points ? *points : mesh->closureTmpA;
-  fifo    = mesh->closureTmpB;
   closure[0] = p; closure[1] = 0;
   /* This is only 1-level */
   if (useCone) {
@@ -1390,6 +1394,41 @@ PetscErrorCode DMComplexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCon
   }
   if (numPoints) *numPoints = closureSize/2;
   if (points)    *points    = closure;
+  ierr = DMRestoreWorkArray(dm, maxSize, PETSC_INT, &fifo);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexRestoreTransitiveClosure"
+/*@C
+  DMComplexRestoreTransitiveClosure - Restore the array of points on the transitive closure of the in-edges or out-edges for this point in the Sieve DAG
+
+  Not collective
+
+  Input Parameters:
++ mesh - The DMComplex
+. p - The Sieve point, which must lie in the chart set with DMComplexSetChart()
+. useCone - PETSC_TRUE for in-edges,  otherwise use out-edges
+- points - If points is PETSC_NULL on input, internal storage will be returned, otherwise the provided array is used
+
+  Output Parameters:
++ numPoints - The number of points in the closure, so points[] is of size 2*numPoints
+- points - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...]
+
+  Note:
+  If not using internal storage (points is not PETSC_NULL on input), this call is unnecessary
+
+  Level: beginner
+
+.seealso: DMComplexGetTransitiveClosure(), DMComplexCreate(), DMComplexSetCone(), DMComplexSetChart(), DMComplexGetCone()
+@*/
+PetscErrorCode DMComplexRestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, PetscInt *numPoints, PetscInt *points[])
+{
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, points);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1412,7 +1451,7 @@ PetscErrorCode DMComplexGetFaces(DM dm, PetscInt p, PetscInt *numFaces, PetscInt
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
   if (depth > 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Faces can only be returned for cell-vertex meshes.");
-  if (!mesh->facesTmp) {ierr = PetscMalloc(mesh->maxConeSize*mesh->maxSupportSize * sizeof(PetscInt), &mesh->facesTmp);CHKERRQ(ierr);}
+  if (!mesh->facesTmp) {ierr = PetscMalloc(PetscSqr(PetscMax(mesh->maxConeSize, mesh->maxSupportSize)) * sizeof(PetscInt), &mesh->facesTmp);CHKERRQ(ierr);}
   ierr = DMComplexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
   ierr = DMComplexGetCone(dm, p, &cone);CHKERRQ(ierr);
   switch(dim) {
@@ -1432,6 +1471,14 @@ PetscErrorCode DMComplexGetFaces(DM dm, PetscInt p, PetscInt *numFaces, PetscInt
     break;
   case 3:
     switch(coneSize) {
+    case 3:
+      mesh->facesTmp[0] = cone[0]; mesh->facesTmp[1] = cone[1];
+      mesh->facesTmp[2] = cone[1]; mesh->facesTmp[3] = cone[2];
+      mesh->facesTmp[4] = cone[2]; mesh->facesTmp[5] = cone[0];
+      *numFaces = 3;
+      *faceSize = 2;
+      *faces    = mesh->facesTmp;
+      break;
     case 4:
       mesh->facesTmp[0] = cone[0]; mesh->facesTmp[1]  = cone[1]; mesh->facesTmp[2]  = cone[2];
       mesh->facesTmp[3] = cone[0]; mesh->facesTmp[4]  = cone[2]; mesh->facesTmp[5]  = cone[3];
@@ -2236,9 +2283,29 @@ PetscErrorCode DMComplexGetStratumIS(DM dm, const char name[], PetscInt value, I
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexJoinPoints"
-/* This is a 1-level join */
-PetscErrorCode DMComplexJoinPoints(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
+#define __FUNCT__ "DMComplexGetJoin"
+/*@C
+  DMComplexGetJoin - Get an array for the join of the set of points
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DMComplex object
+. numPoints - The number of input points for the join
+- points - The input points
+
+  Output Parameters:
++ numCoveredPoints - The number of points in the join
+- coveredPoints - The points in the join
+
+  Level: intermediate
+
+  Note: Currently, this is restricted to a single level join
+
+.keywords: mesh
+.seealso: DMComplexRestoreJoin(), DMComplexGetMeet()
+@*/
+PetscErrorCode DMComplexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
   PetscInt      *join[2];
@@ -2251,8 +2318,8 @@ PetscErrorCode DMComplexJoinPoints(DM dm, PetscInt numPoints, const PetscInt poi
   PetscValidPointer(points, 2);
   PetscValidPointer(numCoveredPoints, 3);
   PetscValidPointer(coveredPoints, 4);
-  if (!mesh->joinTmpA) {ierr = PetscMalloc2(mesh->maxSupportSize,PetscInt,&mesh->joinTmpA,mesh->maxSupportSize,PetscInt,&mesh->joinTmpB);CHKERRQ(ierr);}
-  join[0] = mesh->joinTmpA; join[1] = mesh->joinTmpB;
+  ierr = DMGetWorkArray(dm, mesh->maxSupportSize, PETSC_INT, &join[0]);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, mesh->maxSupportSize, PETSC_INT, &join[1]);CHKERRQ(ierr);
   /* Copy in support of first point */
   ierr = PetscSectionGetDof(mesh->supportSection, points[0], &dof);CHKERRQ(ierr);
   ierr = PetscSectionGetOffset(mesh->supportSection, points[0], &off);CHKERRQ(ierr);
@@ -2280,13 +2347,149 @@ PetscErrorCode DMComplexJoinPoints(DM dm, PetscInt numPoints, const PetscInt poi
   }
   *numCoveredPoints = joinSize;
   *coveredPoints    = join[i];
+  ierr = DMRestoreWorkArray(dm, mesh->maxSupportSize, PETSC_INT, &join[1-i]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexMeetPoints"
+#define __FUNCT__ "DMComplexRestoreJoin"
+/*@C
+  DMComplexRestoreJoin - Get an array for the join of the set of points
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DMComplex object
+. numPoints - The number of input points for the join
+- points - The input points
+
+  Output Parameters:
++ numCoveredPoints - The number of points in the join
+- coveredPoints - The points in the join
+
+  Level: intermediate
+
+  Note: Currently, this is restricted to a single level join
+
+.keywords: mesh
+.seealso: DMComplexGetJoin(), DMComplexGetMeet()
+@*/
+PetscErrorCode DMComplexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(coveredPoints, 4);
+  ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, coveredPoints);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetFullJoin"
+/*@C
+  DMComplexGetFullJoin - Get an array for the join of the set of points
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DMComplex object
+. numPoints - The number of input points for the join
+- points - The input points
+
+  Output Parameters:
++ numCoveredPoints - The number of points in the join
+- coveredPoints - The points in the join
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMComplexGetJoin(), DMComplexRestoreJoin(), DMComplexGetMeet()
+@*/
+PetscErrorCode DMComplexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscInt      *offsets, **closures;
+  PetscInt      *join[2];
+  PetscInt       depth, maxSize, joinSize, i = 0;
+  PetscInt       p, d, c, m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(points, 2);
+  PetscValidPointer(numCoveredPoints, 3);
+  PetscValidPointer(coveredPoints, 4);
+
+  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = PetscMalloc(numPoints * sizeof(PetscInt *), &closures);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, numPoints*(depth+2), PETSC_INT, &offsets);CHKERRQ(ierr);
+  maxSize = (PetscInt) (pow((PetscReal) mesh->maxSupportSize, depth)+1);
+  ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &join[0]);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &join[1]);CHKERRQ(ierr);
+
+  for(p = 0; p < numPoints; ++p) {
+    PetscInt closureSize;
+
+    ierr = DMComplexGetTransitiveClosure(dm, points[p], PETSC_FALSE, &closureSize, &closures[p]);CHKERRQ(ierr);
+    offsets[p*(depth+2)+0] = 0;
+    for(d = 0; d < depth+1; ++d) {
+      PetscInt pStart, pEnd, i;
+
+      ierr = DMComplexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
+      for(i = offsets[p*(depth+2)+d]; i < closureSize; ++i) {
+        if ((pStart > closures[p][i*2]) || (pEnd <= closures[p][i*2])) {
+          offsets[p*(depth+2)+d+1] = i;
+          break;
+        }
+      }
+      if (i == closureSize) offsets[p*(depth+2)+d+1] = i;
+    }
+    if (offsets[p*(depth+2)+depth+1] != closureSize) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Total size of closure %D should be %D", offsets[p*(depth+2)+depth+1], closureSize);
+  }
+  for(d = 0; d < depth+1; ++d) {
+    PetscInt dof;
+
+    /* Copy in support of first point */
+    dof = offsets[d+1] - offsets[d];
+    for(joinSize = 0; joinSize < dof; ++joinSize) {
+      join[i][joinSize] = closures[0][(offsets[d]+joinSize)*2];
+    }
+    /* Check each successive cone */
+    for(p = 1; p < numPoints && joinSize; ++p) {
+      PetscInt newJoinSize = 0;
+
+      dof = offsets[p*(depth+2)+d+1] - offsets[p*(depth+2)+d];
+      for(c = 0; c < dof; ++c) {
+        const PetscInt point = closures[p][(offsets[p*(depth+2)+d]+c)*2];
+
+        for(m = 0; m < joinSize; ++m) {
+          if (point == join[i][m]) {
+            join[1-i][newJoinSize++] = point;
+            break;
+          }
+        }
+      }
+      joinSize = newJoinSize;
+      i = 1-i;
+    }
+    if (joinSize) break;
+  }
+  *numCoveredPoints = joinSize;
+  *coveredPoints    = join[i];
+  for(p = 0; p < numPoints; ++p) {
+    ierr = DMComplexRestoreTransitiveClosure(dm, points[p], PETSC_FALSE, PETSC_NULL, &closures[p]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(closures);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, numPoints*(depth+2), PETSC_INT, &offsets);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, mesh->maxSupportSize, PETSC_INT, &join[1-i]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetMeet"
 /* This is a 1-level meet */
-PetscErrorCode DMComplexMeetPoints(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveringPoints, const PetscInt **coveringPoints)
+PetscErrorCode DMComplexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveringPoints, const PetscInt **coveringPoints)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
   PetscInt      *meet[2];
@@ -2427,7 +2630,7 @@ PetscErrorCode DMComplexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt
 
       if (cellPair[0] == cellPair[1]) continue;
       if (!found) {
-        ierr = DMComplexMeetPoints(dm, 2, cellPair, &meetSize, &meet);CHKERRQ(ierr);
+        ierr = DMComplexGetMeet(dm, 2, cellPair, &meetSize, &meet);CHKERRQ(ierr);
         if (meetSize) {
           PetscInt f;
 
@@ -2465,7 +2668,7 @@ PetscErrorCode DMComplexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt
 
         if (cellPair[0] == cellPair[1]) continue;
         if (!found) {
-          ierr = DMComplexMeetPoints(dm, 2, cellPair, &meetSize, &meet);CHKERRQ(ierr);
+          ierr = DMComplexGetMeet(dm, 2, cellPair, &meetSize, &meet);CHKERRQ(ierr);
           if (meetSize) {
             PetscInt f;
 
@@ -2718,6 +2921,7 @@ PetscErrorCode DMComplexCreatePartitionClosure(DM dm, PetscSection pointSection,
       }
       partSize += closureSize;
       ierr = PetscSortRemoveDupsInt(&partSize, partPoints);CHKERRQ(ierr);
+      ierr = DMComplexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
     ierr = PetscSectionSetDof(*section, rank, partSize);CHKERRQ(ierr);
   }
@@ -2743,6 +2947,7 @@ PetscErrorCode DMComplexCreatePartitionClosure(DM dm, PetscSection pointSection,
       }
       partSize += closureSize;
       ierr = PetscSortRemoveDupsInt(&partSize, partPoints);CHKERRQ(ierr);
+      ierr = DMComplexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
     ierr = PetscSectionGetOffset(*section, rank, &newOffset);CHKERRQ(ierr);
     ierr = PetscMemcpy(&allPoints[newOffset], partPoints, partSize * sizeof(PetscInt));CHKERRQ(ierr);
@@ -2831,6 +3036,7 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParall
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(dmParallel,3);
+  ierr = PetscLogEventBegin(DMCOMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   if (numProcs == 1) PetscFunctionReturn(0);
@@ -3099,6 +3305,7 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParall
   /* Cleanup */
   ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dmParallel);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMCOMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3275,6 +3482,10 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  {
+    ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
+    ierr = DMView(dm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
@@ -3421,35 +3632,40 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
     ierr = DMComplexGetFaces(dm, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
     if (coneSize != numCellFaces) SETERRQ3(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D for cell %D should be %D", coneSize, c, numCellFaces);
     for(cf = 0; cf < numCellFaces; ++cf) {
-      PetscInt *closure = PETSC_NULL;
+      PetscInt *origClosure = PETSC_NULL, *closure;
       PetscInt  closureSize, i;
 
-      ierr = DMComplexGetTransitiveClosure(idm, cone[cf], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      ierr = DMComplexGetTransitiveClosure(idm, cone[cf], PETSC_TRUE, &closureSize, &origClosure);CHKERRQ(ierr);
       if (closureSize != 7) SETERRQ2(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid closure size %D for face %D should be 7", closureSize, cone[cf]);
       for(i = 4; i < 7; ++i) {
-        if ((closure[i] < vStart) || (closure[i] >= vEnd)) SETERRQ3(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid closure point %D should be a vertex in [%D, %D)", closure[i], vStart, vEnd);
+        if ((origClosure[i*2] < vStart) || (origClosure[i*2] >= vEnd)) SETERRQ3(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid closure point %D should be a vertex in [%D, %D)", origClosure[i*2], vStart, vEnd);
       }
-      closure = &closure[4];
-      if ((cellFaces[cf*faceSize+0] == closure[0]) && (cellFaces[cf*faceSize+1] == closure[1]) && (cellFaces[cf*faceSize+1] == closure[2])) {
+      closure = &origClosure[4*2];
+      if ((cellFaces[cf*faceSize+0] == closure[0*2]) && (cellFaces[cf*faceSize+1] == closure[1*2]) && (cellFaces[cf*faceSize+1] == closure[2*2])) {
         /* Correctly oriented */
         mesh->coneOrientations[coff+cf] = 0;
-      } else if ((cellFaces[cf*faceSize+0] == closure[1]) && (cellFaces[cf*faceSize+1] == closure[2]) && (cellFaces[cf*faceSize+1] == closure[0])) {
+      } else if ((cellFaces[cf*faceSize+0] == closure[1*2]) && (cellFaces[cf*faceSize+1] == closure[2*2]) && (cellFaces[cf*faceSize+1] == closure[0*2])) {
         /* Shifted by 1 */
         mesh->coneOrientations[coff+cf] = 1;
-      } else if ((cellFaces[cf*faceSize+0] == closure[2]) && (cellFaces[cf*faceSize+1] == closure[0]) && (cellFaces[cf*faceSize+1] == closure[1])) {
+      } else if ((cellFaces[cf*faceSize+0] == closure[2*2]) && (cellFaces[cf*faceSize+1] == closure[0*2]) && (cellFaces[cf*faceSize+1] == closure[1*2])) {
         /* Shifted by 2 */
         mesh->coneOrientations[coff+cf] = 2;
-      } else if ((cellFaces[cf*faceSize+0] == closure[2]) && (cellFaces[cf*faceSize+1] == closure[1]) && (cellFaces[cf*faceSize+1] == closure[0])) {
+      } else if ((cellFaces[cf*faceSize+0] == closure[2*2]) && (cellFaces[cf*faceSize+1] == closure[1*2]) && (cellFaces[cf*faceSize+1] == closure[0*2])) {
         /* Start at index 0, and reverse orientation */
         mesh->coneOrientations[coff+cf] = -(2+1);
-      } else if ((cellFaces[cf*faceSize+0] == closure[1]) && (cellFaces[cf*faceSize+1] == closure[0]) && (cellFaces[cf*faceSize+1] == closure[2])) {
+      } else if ((cellFaces[cf*faceSize+0] == closure[1*2]) && (cellFaces[cf*faceSize+1] == closure[0*2]) && (cellFaces[cf*faceSize+1] == closure[2*2])) {
         /* Start at index 1, and reverse orientation */
         mesh->coneOrientations[coff+cf] = -(1+1);
-      } else if ((cellFaces[cf*faceSize+0] == closure[0]) && (cellFaces[cf*faceSize+1] == closure[2]) && (cellFaces[cf*faceSize+1] == closure[1])) {
+      } else if ((cellFaces[cf*faceSize+0] == closure[0*2]) && (cellFaces[cf*faceSize+1] == closure[2*2]) && (cellFaces[cf*faceSize+1] == closure[1*2])) {
         /* Start at index 0, and reverse orientation */
         mesh->coneOrientations[coff+cf] = -(0+1);
       }
+      ierr = DMComplexRestoreTransitiveClosure(idm, cone[cf], PETSC_TRUE, &closureSize, &origClosure);CHKERRQ(ierr);
     }
+  }
+  {
+    ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
+    ierr = DMView(idm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   *dmInt  = idm;
   PetscFunctionReturn(0);
@@ -3602,9 +3818,10 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
           const PetscInt *edges;
           PetscInt        numEdges;
 
-          ierr = DMComplexJoinPoints(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
+          ierr = DMComplexGetJoin(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
           if (numEdges != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
           ierr = DMComplexSetLabelValue(*dm, "marker", edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);
+          ierr = DMComplexRestoreJoin(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
         }
       }
     }
@@ -3671,6 +3888,7 @@ PetscErrorCode DMComplexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined
       for(v = 0; v < 3; ++v) {
         in.trianglelist[idx*in.numberofcorners + v] = closure[(v+closureSize-3)*2] - vStart;
       }
+      ierr = DMComplexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
   }
   /* TODO: Segment markers are missing on input */
@@ -3763,9 +3981,10 @@ PetscErrorCode DMComplexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined
           const PetscInt *edges;
           PetscInt        numEdges;
 
-          ierr = DMComplexJoinPoints(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
+          ierr = DMComplexGetJoin(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
           if (numEdges != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
           ierr = DMComplexSetLabelValue(*dmRefined, "marker", edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);
+          ierr = DMComplexRestoreJoin(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
         }
       }
     }
@@ -3845,6 +4064,7 @@ PetscErrorCode DMComplexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *
         poly->vertexlist[v] = vIdx;
       }
       ierr = DMComplexGetLabelValue(boundary, "marker", f, &in.facetmarkerlist[idx]);CHKERRQ(ierr);
+      ierr = DMComplexRestoreTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
     }
   }
   if (!rank) {
@@ -3999,9 +4219,10 @@ PetscErrorCode DMComplexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *
           const PetscInt *edges;
           PetscInt        numEdges;
 
-          ierr = DMComplexJoinPoints(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
+          ierr = DMComplexGetJoin(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
           if (numEdges != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
           ierr = DMComplexSetLabelValue(*dm, "marker", edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);
+          ierr = DMComplexRestoreJoin(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
         }
       }
       for(f = 0; f < out.numberoftrifaces; f++) {
@@ -4010,9 +4231,10 @@ PetscErrorCode DMComplexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *
           const PetscInt *faces;
           PetscInt        numFaces;
 
-          ierr = DMComplexJoinPoints(*dm, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
+          ierr = DMComplexGetJoin(*dm, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
           if (numFaces != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
           ierr = DMComplexSetLabelValue(*dm, "marker", faces[0], out.trifacemarkerlist[f]);CHKERRQ(ierr);
+          ierr = DMComplexRestoreJoin(*dm, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
         }
       }
     }
@@ -4073,6 +4295,7 @@ PetscErrorCode DMComplexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
       for(v = 0; v < 4; ++v) {
         in.tetrahedronlist[idx*in.numberofcorners + v] = closure[(v+closureSize-4)*2] - vStart;
       }
+      ierr = DMComplexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
   }
   // TODO: Put in boundary faces with markers
@@ -4227,9 +4450,10 @@ PetscErrorCode DMComplexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
           const PetscInt *edges;
           PetscInt        numEdges;
 
-          ierr = DMComplexJoinPoints(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
+          ierr = DMComplexGetJoin(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
           if (numEdges != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
           ierr = DMComplexSetLabelValue(*dmRefined, "marker", edges[0], out.edgemarkerlist[e]);CHKERRQ(ierr);
+          ierr = DMComplexRestoreJoin(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
         }
       }
       for(f = 0; f < out.numberoftrifaces; f++) {
@@ -4238,9 +4462,10 @@ PetscErrorCode DMComplexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
           const PetscInt *faces;
           PetscInt        numFaces;
 
-          ierr = DMComplexJoinPoints(*dmRefined, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
+          ierr = DMComplexGetJoin(*dmRefined, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
           if (numFaces != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
           ierr = DMComplexSetLabelValue(*dmRefined, "marker", faces[0], out.trifacemarkerlist[f]);CHKERRQ(ierr);
+          ierr = DMComplexRestoreJoin(*dmRefined, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
         }
       }
     }
@@ -4322,6 +4547,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
       }
       ierr = DMComplexGetLabelValue(boundary, "marker", f, &m);CHKERRQ(ierr);
       in->facetmarkerlist[idx] = (int) m;
+      ierr = DMComplexRestoreTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
     }
   }
   if (!rank) {
@@ -4401,9 +4627,10 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
           const PetscInt *edges;
           PetscInt        numEdges;
 
-          ierr = DMComplexJoinPoints(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
+          ierr = DMComplexGetJoin(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
           if (numEdges != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
           ierr = DMComplexSetLabelValue(*dm, "marker", edges[0], out->edgemarkerlist[e]);CHKERRQ(ierr);
+          ierr = DMComplexRestoreJoin(*dm, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
         }
       }
       for(f = 0; f < out->numberoftrifaces; f++) {
@@ -4412,9 +4639,10 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
           const PetscInt *faces;
           PetscInt        numFaces;
 
-          ierr = DMComplexJoinPoints(*dm, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
+          ierr = DMComplexGetFullJoin(*dm, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
           if (numFaces != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
           ierr = DMComplexSetLabelValue(*dm, "marker", faces[0], out->trifacemarkerlist[f]);CHKERRQ(ierr);
+          ierr = DMComplexRestoreJoin(*dm, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
         }
       }
     }
@@ -4481,6 +4709,7 @@ PetscErrorCode DMComplexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefin
       for(v = 0; v < 4; ++v) {
         in->tetrahedronlist[idx*in->numberofcorners + v] = closure[(v+closureSize-4)*2] - vStart;
       }
+      ierr = DMComplexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
   }
   if (!rank) {
@@ -4641,9 +4870,10 @@ PetscErrorCode DMComplexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefin
           const PetscInt *edges;
           PetscInt        numEdges;
 
-          ierr = DMComplexJoinPoints(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
+          ierr = DMComplexGetJoin(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
           if (numEdges != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two vertices must cover only one edge, not %D", numEdges);
           ierr = DMComplexSetLabelValue(*dmRefined, "marker", edges[0], out->edgemarkerlist[e]);CHKERRQ(ierr);
+          ierr = DMComplexRestoreJoin(*dmRefined, 2, vertices, &numEdges, &edges);CHKERRQ(ierr);
         }
       }
       for(f = 0; f < out->numberoftrifaces; f++) {
@@ -4652,9 +4882,10 @@ PetscErrorCode DMComplexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefin
           const PetscInt *faces;
           PetscInt        numFaces;
 
-          ierr = DMComplexJoinPoints(*dmRefined, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
+          ierr = DMComplexGetFullJoin(*dmRefined, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
           if (numFaces != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Three vertices must cover only one face, not %D", numFaces);
           ierr = DMComplexSetLabelValue(*dmRefined, "marker", faces[0], out->trifacemarkerlist[f]);CHKERRQ(ierr);
+          ierr = DMComplexRestoreJoin(*dmRefined, 3, vertices, &numFaces, &faces);CHKERRQ(ierr);
         }
       }
     }
@@ -5335,6 +5566,7 @@ PetscErrorCode DMComplexVecGetClosure(DM dm, PetscSection section, Vec v, PetscI
       }
     }
   }
+  ierr = DMComplexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
   ierr = VecRestoreArray(v, &vArray);CHKERRQ(ierr);
   if (csize) *csize = size;
   *values = array;
@@ -5580,6 +5812,7 @@ PetscErrorCode DMComplexVecSetClosure(DM dm, PetscSection section, Vec v, PetscI
       SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insert mode %D", mode);
     }
   }
+  ierr = DMComplexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
   ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -5803,6 +6036,7 @@ PetscErrorCode DMComplexMatSetClosure(DM dm, PetscSection section, PetscSection 
     ierr2 = DMRestoreWorkArray(dm, numIndices, PETSC_INT, &indices);CHKERRQ(ierr);
     CHKERRQ(ierr);
   }
+  ierr = DMComplexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
   ierr = DMRestoreWorkArray(dm, numIndices, PETSC_INT, &indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

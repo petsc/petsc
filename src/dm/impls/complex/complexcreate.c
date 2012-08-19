@@ -513,10 +513,6 @@ PetscErrorCode DMCreate_Complex(DM dm)
 
   mesh->meetTmpA         = PETSC_NULL;
   mesh->meetTmpB         = PETSC_NULL;
-  mesh->joinTmpA         = PETSC_NULL;
-  mesh->joinTmpB         = PETSC_NULL;
-  mesh->closureTmpA      = PETSC_NULL;
-  mesh->closureTmpB      = PETSC_NULL;
   mesh->facesTmp         = PETSC_NULL;
 
   mesh->labels               = PETSC_NULL;

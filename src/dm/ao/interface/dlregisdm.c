@@ -1,6 +1,7 @@
 
 #include <../src/dm/ao/aoimpl.h>
 #include <petsc-private/daimpl.h>
+#include <petsc-private/compleximpl.h>
 #ifdef PETSC_HAVE_SIEVE
 #include <petsc-private/meshimpl.h>
 #endif
@@ -156,6 +157,7 @@ PetscErrorCode  DMInitializePackage(const char path[])
 
   ierr = PetscLogEventRegister("DMDALocalADFunc",        DM_CLASSID,&DMDA_LocalADFunction);CHKERRQ(ierr);
 
+  ierr = PetscLogEventRegister("DMComplexDistribute",    DM_CLASSID,&DMCOMPLEX_Distribute);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
   ierr = PetscLogEventRegister("DMMeshView",             DM_CLASSID,&DMMesh_View);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMMeshGetGlobalScatter", DM_CLASSID,&DMMesh_GetGlobalScatter);CHKERRQ(ierr);

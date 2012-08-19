@@ -48,9 +48,12 @@ PETSC_EXTERN PetscErrorCode DMComplexGetStratumSize(DM, const char [], PetscInt,
 PETSC_EXTERN PetscErrorCode DMComplexGetStratumIS(DM, const char [], PetscInt, IS *);
 PETSC_EXTERN PetscErrorCode DMComplexClearLabelStratum(DM, const char[], PetscInt);
 
-PETSC_EXTERN PetscErrorCode DMComplexMeetPoints(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
-PETSC_EXTERN PetscErrorCode DMComplexJoinPoints(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
+PETSC_EXTERN PetscErrorCode DMComplexGetMeet(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
+PETSC_EXTERN PetscErrorCode DMComplexGetJoin(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
+PETSC_EXTERN PetscErrorCode DMComplexGetFullJoin(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
+PETSC_EXTERN PetscErrorCode DMComplexRestoreJoin(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
 PETSC_EXTERN PetscErrorCode DMComplexGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt *[]);
+PETSC_EXTERN PetscErrorCode DMComplexRestoreTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt *[]);
 
 PETSC_EXTERN PetscErrorCode DMComplexCreatePartition(DM, PetscSection *, IS *, PetscInt);
 PETSC_EXTERN PetscErrorCode DMComplexCreatePartitionClosure(DM, PetscSection, IS, PetscSection *, IS *);

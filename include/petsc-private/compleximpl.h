@@ -5,6 +5,8 @@
 #include <petscdmcomplex.h> /*I      "petscdmcomplex.h"    I*/
 #include "petsc-private/dmimpl.h"
 
+PETSC_EXTERN PetscLogEvent DMCOMPLEX_Distribute;
+
 typedef struct Sieve_Label *SieveLabel;
 struct Sieve_Label {
   char      *name;           /* Label name */
@@ -32,10 +34,8 @@ typedef struct {
   Vec                  coordinates;      /* Coordinate values */
   PetscReal            refinementLimit;  /* Maximum volume for refined cell */
 
-  PetscInt            *meetTmpA,    *meetTmpB;    /* Work space for meet operation */
-  PetscInt            *joinTmpA,    *joinTmpB;    /* Work space for join operation */
-  PetscInt            *closureTmpA, *closureTmpB; /* Work space for closure operation */
-  PetscInt            *facesTmp;                  /* Work space for faces operation */
+  PetscInt            *meetTmpA, *meetTmpB; /* Work space for meet operation */
+  PetscInt            *facesTmp;            /* Work space for faces operation */
 
   /* Labels */
   SieveLabel           labels;         /* Linked list of labels */
