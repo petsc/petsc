@@ -34,6 +34,7 @@ PetscErrorCode  PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl
   PetscValidCharPointer(text,5);
   ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
+  if (!draw->ops->stringvertical) SETERRQ(((PetscObject)draw)->comm,PETSC_ERR_SUP,"No support for vertical strings");
   ierr = (*draw->ops->stringvertical)(draw,xl,yl,cl,text);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

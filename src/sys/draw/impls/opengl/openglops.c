@@ -30,8 +30,9 @@ static PetscErrorCode PetscDrawFlush_OpenGL(PetscDraw draw)
 
   PetscFunctionBegin;
   glutSetWindow(XiWin->win);
-  glutSwapBuffers();
+  /* glutSwapBuffers(); */
   glutCheckLoop();
+  glFinish();
   PetscFunctionReturn(0);
 }
 
@@ -95,8 +96,10 @@ PetscErrorCode PetscDrawLine_OpenGL(PetscDraw draw,PetscReal xl,PetscReal yl,Pet
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  x1 = XTRANS(draw,XiWin,xl);   x2  = XTRANS(draw,XiWin,xr); 
-  y_1 = YTRANS(draw,XiWin,yl);   y2  = YTRANS(draw,XiWin,yr); 
+  x1  = XTRANS(draw,XiWin,xl);   
+  x2  = XTRANS(draw,XiWin,xr); 
+  y_1 = YTRANS(draw,XiWin,yl);   
+  y2  = YTRANS(draw,XiWin,yr); 
   if (x1 == x2 && y_1 == y2) PetscFunctionReturn(0);
 
   ierr = OpenGLColor(cl);CHKERRQ(ierr);
@@ -107,7 +110,115 @@ PetscErrorCode PetscDrawLine_OpenGL(PetscDraw draw,PetscReal xl,PetscReal yl,Pet
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawTriangle_OpenGL" 
+static PetscErrorCode PetscDrawTriangle_OpenGL(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscReal X2,PetscReal Y2,PetscReal X3,PetscReal Y3,int c1,int c2,int c3)
+{
+  PetscErrorCode    ierr;
+  float             x1,y_1,x2,y2,x3,y3;
 
+  PetscFunctionBegin;
+  x1   = XTRANS(draw,XiWin,X1);
+  y_1  = YTRANS(draw,XiWin,Y_1); 
+  x2   = XTRANS(draw,XiWin,X2);
+  y2   = YTRANS(draw,XiWin,Y2); 
+  x3   = XTRANS(draw,XiWin,X3);
+  y3   = YTRANS(draw,XiWin,Y3); 
+
+  glBegin(GL_TRIANGLES);
+  ierr = OpenGLColor(c1);CHKERRQ(ierr);
+  glVertex3f(x1,y_1,0.0);
+  ierr = OpenGLColor(c2);CHKERRQ(ierr);
+  glVertex3f(x2,y2,0.0);
+  ierr = OpenGLColor(c3);CHKERRQ(ierr);
+  glVertex3f(x3,y3,0.0);
+  glEnd();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "OpenGLString" 
+static PetscErrorCode OpenGLString(float x,float y, const char *str,size_t len)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  glRasterPos2f(x, y);
+  for (i = 0; i < len; i++) {
+    glutBitmapCharacter(GLUT_BITMAP_9_BY_15, str[i]);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawStringGetSize_OpenGL" 
+PetscErrorCode PetscDrawStringGetSize_OpenGL(PetscDraw draw,PetscReal *x,PetscReal  *y)
+{
+  PetscDraw_OpenGL* XiWin = (PetscDraw_OpenGL*)draw->data;
+  PetscInt     w,h;
+
+  PetscFunctionBegin;
+  w = glutBitmapWidth(GLUT_BITMAP_9_BY_15,'W');
+  *x = w*(draw->coor_xr - draw->coor_xl)/((XiWin->w)*(draw->port_xr - draw->port_xl));
+  *y = 9*(*x);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawString_OpenGL" 
+static PetscErrorCode PetscDrawString_OpenGL(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
+{
+  PetscErrorCode   ierr;
+  float            xx,yy;
+  size_t           len;
+  PetscDraw_OpenGL *XiWin = (PetscDraw_OpenGL*)draw->data;
+  char             *substr;
+  PetscToken       token;
+
+  PetscFunctionBegin;
+  xx = XTRANS(draw,XiWin,x); 
+  yy = YTRANS(draw,XiWin,y);
+  ierr = OpenGLColor(c);CHKERRQ(ierr);
+  
+  ierr = PetscTokenCreate(chrs,'\n',&token);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&substr);CHKERRQ(ierr);
+  ierr = PetscStrlen(substr,&len);CHKERRQ(ierr);
+  ierr = OpenGLString(xx,yy,substr,len);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&substr);CHKERRQ(ierr);
+  while (substr) {
+    yy  += 16;
+    ierr = PetscStrlen(substr,&len);CHKERRQ(ierr);
+    ierr = OpenGLString(xx,yy,substr,len);CHKERRQ(ierr);
+    ierr = PetscTokenFind(token,&substr);CHKERRQ(ierr);
+  }
+  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawStringVertical_OpenGL" 
+PetscErrorCode PetscDrawStringVertical_OpenGL(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
+{
+  PetscErrorCode   ierr;
+  float            xx,yy;
+  PetscDraw_OpenGL *XiWin = (PetscDraw_OpenGL*)draw->data;
+  PetscReal        tw,th;
+  size_t           i,n;
+
+  PetscFunctionBegin;
+  ierr = OpenGLColor(c);CHKERRQ(ierr);
+  ierr = PetscStrlen(chrs,&n);CHKERRQ(ierr);
+  ierr = PetscDrawStringGetSize_OpenGL(draw,&tw,&th);CHKERRQ(ierr);
+  xx = XTRANS(draw,XiWin,x);
+  for (i=0; i<n; i++) {
+    yy = YTRANS(draw,XiWin,y-th*i);
+    ierr = OpenGLString(xx,yy,chrs+i,1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 
 static struct _PetscDrawOps DvOps = { 0,
@@ -117,15 +228,15 @@ static struct _PetscDrawOps DvOps = { 0,
                                  0,
                                       0, /* PetscDrawPoint_OpenGL,*/
                                  0,
-                                      0, /* PetscDrawString_OpenGL,*/
-                                      0,  /*PetscDrawStringVertical_OpenGL, */
+                                      PetscDrawString_OpenGL,
+                                      PetscDrawStringVertical_OpenGL,
                                       0, /* PetscDrawStringSetSize_OpenGL,*/
-                                      0, /* PetscDrawStringGetSize_OpenGL,*/
+                                      PetscDrawStringGetSize_OpenGL,
                                       0, /* PetscDrawSetViewport_OpenGL,*/
                                  PetscDrawClear_OpenGL,
                                  PetscDrawSynchronizedFlush_OpenGL,
                                       0, /*PetscDrawRectangle_OpenGL, */
-                                      0, /*PetscDrawTriangle_OpenGL, */
+                                 PetscDrawTriangle_OpenGL,
                                       0, /* PetscDrawEllipse_OpenGL,*/
                                       0, /*PetscDrawGetMouseButton_OpenGL,*/
                                       0, /*PetscDrawPause_OpenGL,*/
@@ -259,7 +370,7 @@ PetscErrorCode  PetscDrawCreate_OpenGL(PetscDraw draw)
   if (!initialized) {
     ierr = PetscGetArgs(&argc,&argv);CHKERRQ(ierr);
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_RGBA /* | GLUT_DOUBLE */| GLUT_DEPTH);
     initialized = PETSC_TRUE;
 
     rcolor[PETSC_DRAW_WHITE] =           255;
