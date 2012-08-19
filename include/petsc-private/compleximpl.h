@@ -5,6 +5,8 @@
 #include <petscdmcomplex.h> /*I      "petscdmcomplex.h"    I*/
 #include "petsc-private/dmimpl.h"
 
+PETSC_EXTERN PetscLogEvent DMCOMPLEX_Distribute;
+
 typedef struct Sieve_Label *SieveLabel;
 struct Sieve_Label {
   char      *name;           /* Label name */

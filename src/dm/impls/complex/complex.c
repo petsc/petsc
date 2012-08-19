@@ -1,5 +1,8 @@
 #include <petsc-private/compleximpl.h>   /*I      "petscdmcomplex.h"   I*/
 
+/* Logging support */
+PetscLogEvent DMCOMPLEX_Distribute;
+
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexView_Ascii"
 PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
@@ -3033,6 +3036,7 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParall
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(dmParallel,3);
+  ierr = PetscLogEventBegin(DMCOMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   if (numProcs == 1) PetscFunctionReturn(0);
@@ -3301,6 +3305,7 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParall
   /* Cleanup */
   ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dmParallel);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMCOMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
