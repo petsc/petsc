@@ -90,34 +90,39 @@ static PetscErrorCode DMRestrictHook_TSTheta(DM fine,Mat restrct,Vec rscale,Mat 
 static PetscErrorCode TSStep_Theta(TS ts)
 {
   TS_Theta            *th = (TS_Theta*)ts->data;
-  PetscInt            its,lits;
+  PetscInt            its,lits,reject;
   PetscReal           next_time_step;
   SNESConvergedReason snesreason;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  next_time_step = ts->time_step;
-  th->stage_time = ts->ptime + (th->endpoint ? 1. : th->Theta)*ts->time_step;
-  th->shift = 1./(th->Theta*ts->time_step);
-  ierr = TSPreStep(ts);CHKERRQ(ierr);
-  ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
+  for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
+    next_time_step = ts->time_step;
+    th->stage_time = ts->ptime + (th->endpoint ? 1. : th->Theta)*ts->time_step;
+    th->shift = 1./(th->Theta*ts->time_step);
+    ierr = TSPreStep(ts);CHKERRQ(ierr);
+    ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
 
-  if (th->endpoint) {           /* This formulation assumes linear time-independent mass matrix */
-    ierr = VecZeroEntries(th->Xdot);CHKERRQ(ierr);
-    if (!th->affine) {ierr = VecDuplicate(ts->vec_sol,&th->affine);CHKERRQ(ierr);}
-    ierr = TSComputeIFunction(ts,ts->ptime,ts->vec_sol,th->Xdot,th->affine,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = VecScale(th->affine,(th->Theta-1.)/th->Theta);CHKERRQ(ierr);
+    if (th->endpoint) {           /* This formulation assumes linear time-independent mass matrix */
+      ierr = VecZeroEntries(th->Xdot);CHKERRQ(ierr);
+      if (!th->affine) {ierr = VecDuplicate(ts->vec_sol,&th->affine);CHKERRQ(ierr);}
+      ierr = TSComputeIFunction(ts,ts->ptime,ts->vec_sol,th->Xdot,th->affine,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = VecScale(th->affine,(th->Theta-1.)/th->Theta);CHKERRQ(ierr);
+    }
+    if (th->extrapolate) {
+      ierr = VecWAXPY(th->X,1./th->shift,th->Xdot,ts->vec_sol);CHKERRQ(ierr);
+    } else {
+      ierr = VecCopy(ts->vec_sol,th->X);CHKERRQ(ierr);
+    }
+    ierr = SNESSolve(ts->snes,th->affine,th->X);CHKERRQ(ierr);
+    ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
+    ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
+    ts->snes_its += its; ts->ksp_its += lits;
+    if (snesreason > 0) break;
+    ierr = PetscInfo3(ts,"Step=%D, Cutting time-step from %g to %g\n",ts->steps,(double)ts->time_step,(double).5*ts->time_step);CHKERRQ(ierr);
+    ts->time_step = .5*ts->time_step;
   }
-  if (th->extrapolate) {
-    ierr = VecWAXPY(th->X,1./th->shift,th->Xdot,ts->vec_sol);CHKERRQ(ierr);
-  } else {
-    ierr = VecCopy(ts->vec_sol,th->X);CHKERRQ(ierr);
-  }
-  ierr = SNESSolve(ts->snes,th->affine,th->X);CHKERRQ(ierr);
-  ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
-  ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
-  ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
-  ts->snes_its += its; ts->ksp_its += lits;
   if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
     ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
     ierr = PetscInfo2(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
