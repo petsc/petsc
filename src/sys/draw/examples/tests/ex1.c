@@ -22,7 +22,8 @@ int main(int argc,char **argv)
   ierr = PetscDrawString(draw,.2,.2,PETSC_DRAW_BLUE,"Some Text");CHKERRQ(ierr);
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscSleep(2);CHKERRQ(ierr);
-  ierr = PetscDrawClear(draw);CHKERRQ(ierr); ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr); 
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawResizeWindow(draw,600,600);CHKERRQ(ierr);
   ierr = PetscSleep(2);CHKERRQ(ierr);
   ierr = PetscDrawLine(draw,0.0,1.0,1.0,0.0,PETSC_DRAW_BLUE);
