@@ -549,6 +549,13 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     /* When extracting off-diagonal submatrices, we take complements from this range */
     ierr  = MatGetOwnershipRangeColumn(pc->mat,&rstart,&rend);CHKERRQ(ierr);
 
+    /* 
+     Set from options only the A00 split.  The other split's solver won't be used with Schur. 
+     Should it be destroyed?  Should KSPCreate() be moved here from PCFieldSplitSetIS() and invoked 
+     only when necessary? 
+     */
+    ierr = KSPSetFromOptions(jac->head->ksp);CHKERRQ(ierr);
+
     /* need to handle case when one is resetting up the preconditioner */
     if (jac->schur) {
       ilink = jac->head;
@@ -599,7 +606,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr = KSPSetDM(ksp,jac->head->dm);       CHKERRQ(ierr);
       ierr = KSPSetDMActive(ksp, PETSC_FALSE);  CHKERRQ(ierr);
       ierr = KSPSetFromOptions(ksp); CHKERRQ(ierr);
-      ierr = KSPSetUp(ksp);          CHKERRQ(ierr);
       /* Need to call this everytime because new matrix is being created */
       ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
       ierr  = MatSetUp(jac->schur);CHKERRQ(ierr);
@@ -628,7 +634,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr = PetscSNPrintf(schurprefix,sizeof schurprefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",ilink->splitname);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(jac->kspschur,schurprefix);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(jac->kspschur); CHKERRQ(ierr);
-      ierr = KSPSetUp(jac->kspschur);          CHKERRQ(ierr);
     }
 
     /* HACK: special support to forward L and Lp matrices that might be used by PCLSC */
@@ -641,16 +646,19 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     if (!LSC_L) {ierr = PetscObjectQuery((PetscObject)pc->mat,lscname,(PetscObject*)&LSC_L);CHKERRQ(ierr);}
     if (LSC_L) {ierr = PetscObjectCompose((PetscObject)jac->schur,"LSC_Lp",(PetscObject)LSC_L);CHKERRQ(ierr);}
   } 
-  /* set up the individual PCs */
-  i    = 0;
-  ilink = jac->head;
-  while (ilink) {
-    ierr = KSPSetOperators(ilink->ksp,jac->mat[i],jac->pmat[i],flag); CHKERRQ(ierr);
-    /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
-    if (!jac->suboptionsset) {ierr = KSPSetFromOptions(ilink->ksp);   CHKERRQ(ierr);}
-    ierr = KSPSetUp(ilink->ksp);CHKERRQ(ierr);
-    i++;
-    ilink = ilink->next;
+  else {
+    /* set up the individual splits' PCs */
+    i    = 0;
+    ilink = jac->head;
+    while (ilink) {
+      ierr = KSPSetOperators(ilink->ksp,jac->mat[i],jac->pmat[i],flag); CHKERRQ(ierr);
+      /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
+      if (!jac->suboptionsset) {
+        ierr = KSPSetFromOptions(ilink->ksp);CHKERRQ(ierr);
+      }
+      i++;
+      ilink = ilink->next;
+    }
   }
 
   jac->suboptionsset = PETSC_TRUE;
