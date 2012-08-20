@@ -151,7 +151,7 @@ static PetscErrorCode OpenGLString(float x,float y, const char *str,size_t len)
   PetscFunctionBegin;
   glRasterPos2f(x, y);
   for (i = 0; i < len; i++) {
-    glutBitmapCharacter(GLUT_BITMAP_9_BY_15, str[i]);
+    glutBitmapCharacter(GLUT_BITMAP_8_BY_13, str[i]);
   }
   PetscFunctionReturn(0);
 }
@@ -165,9 +165,9 @@ PetscErrorCode PetscDrawStringGetSize_OpenGL(PetscDraw draw,PetscReal *x,PetscRe
 
   PetscFunctionBegin;
   glutSetWindow(XiWin->win);
-  w = glutBitmapWidth(GLUT_BITMAP_9_BY_15,'W');
+  w = glutBitmapWidth(GLUT_BITMAP_8_BY_13,'W');
   *x = w*(draw->coor_xr - draw->coor_xl)/((XiWin->w)*(draw->port_xr - draw->port_xl));
-  *y = 9*(*x);
+  *y = (13./8.0)*w*(draw->coor_yr - draw->coor_yl)/((XiWin->h)*(draw->port_yr - draw->port_yl));
   PetscFunctionReturn(0);
 }
 
