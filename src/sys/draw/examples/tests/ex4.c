@@ -25,8 +25,6 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
-
-  /* ierr = PetscDrawOpenX(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);*/
   ierr = PetscDrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawZoom(draw,zoomfunction,PETSC_NULL);CHKERRQ(ierr);

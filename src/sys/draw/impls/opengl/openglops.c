@@ -243,6 +243,8 @@ static PetscErrorCode PetscDrawResizeWindow_OpenGL(PetscDraw draw,int w,int h)
   PetscFunctionReturn(0);
 }
 
+static PetscBool resized = PETSC_FALSE;
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawCheckResizedWindow_OpenGL" 
 static PetscErrorCode PetscDrawCheckResizedWindow_OpenGL(PetscDraw draw)
@@ -250,7 +252,61 @@ static PetscErrorCode PetscDrawCheckResizedWindow_OpenGL(PetscDraw draw)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  if (!resized) PetscFunctionReturn(0);
+  resized = PETSC_FALSE;
   ierr = PetscDrawClear_OpenGL(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawPause_OpenGL" 
+static PetscErrorCode PetscDrawPause_OpenGL(PetscDraw draw)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (draw->pause > 0) PetscSleep(draw->pause);
+  else if (draw->pause < 0) {
+    PetscDrawButton button;
+    PetscMPIInt     rank;
+    ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PetscDrawGetMouseButton(draw,&button,0,0,0,0);CHKERRQ(ierr);
+      if (button == PETSC_BUTTON_CENTER) draw->pause = 0;
+    }
+    ierr = MPI_Bcast(&draw->pause,1,MPI_INT,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+typedef struct {
+  int button,x,y;
+} OpenGLButton;
+OpenGLButton Mouse;
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawGetMouseButton_OpenGL" 
+static PetscErrorCode PetscDrawGetMouseButton_OpenGL(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
+{
+  PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
+  int              px,py;
+
+  PetscFunctionBegin;
+  while (Mouse.button == -1) {glutCheckLoop();}
+  *button = (PetscDrawButton)(Mouse.button + 1);
+  px      = Mouse.x;
+  py      = Mouse.y;
+  Mouse.button = -1;
+
+  /* XQueryPointer(win->disp,report.xmotion.window,&root,&child,&root_x,&root_y,&px,&py,&keys_button); */
+
+  if (x_phys) *x_phys = ((double)px)/((double)win->w);
+  if (y_phys) *y_phys = 1.0 - ((double)py)/((double)win->h);
+
+  if (x_user) *x_user = draw->coor_xl + ((((double)px)/((double)win->w)-draw->port_xl))*(draw->coor_xr - draw->coor_xl)/(draw->port_xr - draw->port_xl);
+  if (y_user) *y_user = draw->coor_yl + ((1.0 - ((double)py)/((double)win->h)-draw->port_yl))*(draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
+
+  printf("%g %g\n",*x_user,*y_user);
   PetscFunctionReturn(0);
 }
 
@@ -271,8 +327,8 @@ static struct _PetscDrawOps DvOps = { 0,
                                       0, /*PetscDrawRectangle_OpenGL, */
                                  PetscDrawTriangle_OpenGL,
                                       0, /* PetscDrawEllipse_OpenGL,*/
-                                      0, /*PetscDrawGetMouseButton_OpenGL,*/
-                                      0, /*PetscDrawPause_OpenGL,*/
+                                      PetscDrawGetMouseButton_OpenGL,
+                                      PetscDrawPause_OpenGL,
                                  PetscDrawSynchronizedClear_OpenGL,
 				 0,
                                  0,
@@ -293,7 +349,16 @@ static struct _PetscDrawOps DvOps = { 0,
 static void display(void) {;}
 static void reshape(int width, int height)
 {
-    glViewport(0, 0, width, height);
+  glViewport(0, 0, width, height);
+  resized = PETSC_TRUE;
+}
+static void mouse(int button, int state,int x, int y)
+{
+  if (state == GLUT_UP) {
+    Mouse.button = button;
+    Mouse.x      = x;
+    Mouse.y      = y;
+  }
 }
 
 EXTERN_C_BEGIN
@@ -516,11 +581,17 @@ PetscErrorCode  PetscDrawCreate_OpenGL(PetscDraw draw)
   Xwin->win = glutCreateWindow("GLUT Program");
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
+  Mouse.button = -1;
+  Mouse.x      = -1;
+  Mouse.y      = -1;
+  glutMouseFunc(mouse);
+
   glClearColor(1.0,1.0,1.0,1.0);
   /*   glClearIndex();*/
 
   draw->data = Xwin;
   ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+  resized = PETSC_FALSE; /* opening the window triggers OpenGL call to reshape so need to cancel that resized flag */
   glutCheckLoop();
   PetscFunctionReturn(0);
 }

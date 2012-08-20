@@ -62,6 +62,7 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
       ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
 
       ierr = (*func)(draw,ctx);CHKERRQ(ierr);
+      ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
       ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
       ierr = PetscDrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
     }
