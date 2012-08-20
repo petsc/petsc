@@ -458,19 +458,20 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       /* compute scatter contexts needed by multiplicative versions and non-default splits */
       ierr = VecScatterCreate(xtmp,ilink->is,jac->x[i],PETSC_NULL,&ilink->sctx);CHKERRQ(ierr);
       /* HACK: Check for the constant null space */
-      /* 
-       This replaces a previous test that checked whether the split's constants are injected into the ambient problem's nullspace.
-       That can create false negatives (declaring constants not in the nullspace, when they are) as in Stokes or A = [1, 1; 1, 0].
-       */
+      ierr = MatGetNullSpace(pc->pmat, &sp);CHKERRQ(ierr);
       if (sp) {
         MatNullSpace subsp;
         Vec          ftmp, gtmp;
         PetscReal    norm;
         PetscInt     N;
-        ierr = MatGetVecs(jac->pmat[i], &ftmp, &gtmp);CHKERRQ(ierr);
+
+        ierr = MatGetVecs(pc->pmat,     &gtmp, PETSC_NULL);CHKERRQ(ierr);
+        ierr = MatGetVecs(jac->pmat[i], &ftmp, PETSC_NULL);CHKERRQ(ierr);
         ierr = VecGetSize(ftmp, &N);CHKERRQ(ierr);
         ierr = VecSet(ftmp, 1.0/N);CHKERRQ(ierr);
-        ierr = MatMult(jac->pmat[i],ftmp,gtmp); CHKERRQ(ierr);
+        ierr = VecScatterBegin(ilink->sctx, ftmp, gtmp, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
+        ierr = VecScatterEnd(ilink->sctx, ftmp, gtmp, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
+        ierr = MatNullSpaceRemove(sp, gtmp, PETSC_NULL);CHKERRQ(ierr);
         ierr = VecNorm(gtmp, NORM_2, &norm);CHKERRQ(ierr);
         if (norm < 1.0e-10) {
           ierr  = MatNullSpaceCreate(((PetscObject)pc)->comm, PETSC_TRUE, 0, PETSC_NULL, &subsp);CHKERRQ(ierr);
