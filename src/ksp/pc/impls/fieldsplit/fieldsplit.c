@@ -264,13 +264,11 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       if(dms) {
         ierr = PetscInfo(pc,"Setting up physics based fieldsplit preconditioner using the embedded DM\n");CHKERRQ(ierr);
         for (ilink=jac->head,i=0; ilink; ilink=ilink->next,i++) {
-          /* 
-           HACK: 
-           keep a handle to DM here without increfing it: may need the DM to set up the Schur solvers; 
-           can't rely on KSPGetDM() since it will create a DMShell if none was set;
-           can't use ilink->ksp->dm without creating a dependence on dmimpl.h.
-           */
-          ilink->dm = dms[i]; 
+          ierr = DMDestroy(&ilink->dm);CHKERRQ(ierr);
+          ilink->dm = dms[i];
+          if(ilink->dm) {
+            ierr = PetscObjectReference((PetscObject)ilink->dm);CHKERRQ(ierr);
+          }
           ierr = KSPSetDM(ilink->ksp, dms[i]);CHKERRQ(ierr);
           ierr = KSPSetDMActive(ilink->ksp, PETSC_FALSE);CHKERRQ(ierr);
           ierr = DMDestroy(&dms[i]); CHKERRQ(ierr);
@@ -344,6 +342,11 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         ierr = PetscMalloc(nDM*sizeof(DM),&dms);CHKERRQ(ierr);
         ierr = DMCompositeGetEntriesArray(pc->dm,dms);CHKERRQ(ierr);
         for (i=0; i<nDM; i++) {
+          ierr = DMDestroy(&ilink->dm);CHKERRQ(ierr);
+          ilink->dm = dms[i];
+          if(ilink->dm) {
+            ierr = PetscObjectReference((PetscObject)ilink->dm);CHKERRQ(ierr);
+          }
           ierr = KSPSetDM(ilink->ksp,dms[i]);CHKERRQ(ierr);
           ierr = KSPSetDMActive(ilink->ksp,PETSC_FALSE);CHKERRQ(ierr);
           ilink->is = fields[i];
@@ -894,6 +897,7 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
   PetscFunctionBegin;
   while (ilink) {
     ierr = KSPReset(ilink->ksp);CHKERRQ(ierr);
+    ierr = DMDestroy(&ilink->dm);CHKERRQ(ierr);
     ierr = VecDestroy(&ilink->x);CHKERRQ(ierr);
     ierr = VecDestroy(&ilink->y);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&ilink->sctx);CHKERRQ(ierr);
