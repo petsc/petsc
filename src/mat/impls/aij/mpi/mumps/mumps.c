@@ -1056,6 +1056,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
   F->ops->choleskyfactornumeric = MatFactorNumeric_MUMPS;
   F->ops->solve                 = MatSolve_MUMPS;
   F->ops->solvetranspose        = MatSolve_MUMPS;
+  F->ops->matsolve              = MatMatSolve_MUMPS;
 #if !defined(PETSC_USE_COMPLEX)
   F->ops->getinertia            = MatGetInertia_SBAIJMUMPS;
 #else
