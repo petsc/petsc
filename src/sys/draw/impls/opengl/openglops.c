@@ -203,11 +203,23 @@ static PetscErrorCode PetscDrawClear_OpenGL(PetscDraw draw)
 {
   PetscDraw_OpenGL* XiWin = (PetscDraw_OpenGL*)draw->data;
   PetscErrorCode    ierr;
+  float             xl,yl,xr,yr;
 
   PetscFunctionBegin;
-  /* currently clear entire window, need to only clear single port */
   ierr = OpenGLWindow(XiWin);CHKERRQ(ierr);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  /*   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); */
+  xl = -1.0 + 2.0*((draw)->port_xl);
+  xr = -1.0 + 2.0*((draw)->port_xr);
+  yl = -1.0 + 2.0*((draw)->port_yl);
+  yr = -1.0 + 2.0*((draw)->port_yr);
+
+  ierr = OpenGLColor(PETSC_DRAW_WHITE);CHKERRQ(ierr);
+  glBegin(GL_QUADS);
+  glVertex2f(xl,yl);
+  glVertex2f(xr,yl);
+  glVertex2f(xr,yr);
+  glVertex2f(xl,yr);
+  glEnd();
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -445,7 +457,7 @@ static struct _PetscDrawOps DvOps = { 0,
                                  0,
                                  0,
                                  0,
-                                 0};
+                                 PetscDrawLine_OpenGL};
 
 #if defined(PETSC_USE_GLUT)
 /* callbacks required by GLUT */
