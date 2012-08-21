@@ -267,10 +267,12 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
     if (!nox) def = PETSC_DRAW_WIN32;
 #elif defined(PETSC_HAVE_X)
     if (!nox) def = PETSC_DRAW_X;
+#elif defined(PETSC_HAVE_OPENGL)
+    if (!nox) def = PETSC_DRAW_OPENGL;
 #else
     ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&warn);CHKERRQ(ierr);
     if (!nox && !warn) {
-      (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
+      (*PetscErrorPrintf)("PETSc installed without X windows, Microsoft Graphics, or OpenGL on this machine\nproceeding without graphics\n");
     }
 #endif
   }
@@ -282,11 +284,13 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
       ierr = PetscDrawSetType(draw,def);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-nox","Run without graphics","None",&nox);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-draw_save_movie","Make a movie from the images saved","PetscDrawSetSave",movie,&movie,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-draw_save","Save graphics to file","PetscDrawSetSave",filename,filename,PETSC_MAX_PATH_LEN,&save);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_X)
+    ierr = PetscOptionsBool("-draw_save_movie","Make a movie from the images saved (X Windows only)","PetscDrawSetSave",movie,&movie,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-draw_save","Save graphics to file (X Windows only)","PetscDrawSetSave",filename,filename,PETSC_MAX_PATH_LEN,&save);CHKERRQ(ierr);
     if (save) {
       ierr = PetscDrawSetSave(draw,filename,movie);CHKERRQ(ierr);
     }
+#endif
 
     /* process any options handlers added with PetscObjectAddOptionsHandler() */
     ierr = PetscObjectProcessOptionsHandlers((PetscObject)draw);CHKERRQ(ierr);
