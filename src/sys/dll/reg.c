@@ -474,7 +474,7 @@ PetscErrorCode  PetscFListView(PetscFList list,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFListGet"
-/*@
+/*@C
    PetscFListGet - Gets an array the contains the entries in PetscFList, this is used
          by help etc.
 
@@ -495,7 +495,7 @@ PetscErrorCode  PetscFListView(PetscFList list,PetscViewer viewer)
 
 .seealso: PetscFListAddDynamic(), PetscFList
 @*/
-PetscErrorCode  PetscFListGet(PetscFList list,char ***array,int *n)
+PetscErrorCode  PetscFListGet(PetscFList list,const char ***array,int *n)
 {
   PetscErrorCode ierr;
   PetscInt       count = 0;

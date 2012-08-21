@@ -427,7 +427,7 @@ PetscErrorCode PetscOptionsAMSInput()
 	ierr = PetscStrcpy(ldefault,"DEFAULT:");CHKERRQ(ierr);
 	ierr = PetscStrcat(ldefault,next->text);CHKERRQ(ierr);
 	ierr = AMS_Memory_add_field(amem,ldefault,next->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,ldefault);
-	ierr = PetscFListGet(next->flist,(char***)&next->edata,&ntext);CHKERRQ(ierr);
+	ierr = PetscFListGet(next->flist,(const char***)&next->edata,&ntext);CHKERRQ(ierr);
 	ierr = AMS_Memory_add_field(amem,next->text,next->edata,ntext-1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
         break;}
       case OPTION_ELIST: 

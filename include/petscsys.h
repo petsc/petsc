@@ -1461,7 +1461,7 @@ PETSC_EXTERN PetscErrorCode PetscFListPrintTypes(MPI_Comm,FILE*,const char[],con
 PETSC_EXTERN PetscErrorCode PetscFListDuplicate(PetscFList,PetscFList *);
 PETSC_EXTERN PetscErrorCode PetscFListView(PetscFList,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscFListConcat(const char [],const char [],char []);
-PETSC_EXTERN PetscErrorCode PetscFListGet(PetscFList,char ***,int*);
+PETSC_EXTERN PetscErrorCode PetscFListGet(PetscFList,const char ***,int*);
 
 /*
     Multiple dispatch operation function lists. Lists of names of routines with corresponding
