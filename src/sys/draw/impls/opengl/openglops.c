@@ -85,10 +85,11 @@ static PetscErrorCode PetscDrawSetTitle_OpenGL(PetscDraw draw,const char title[]
 static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw->popup);CHKERRQ(ierr);
   glutDestroyWindow(win->win);
   ierr = PetscFree(win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
