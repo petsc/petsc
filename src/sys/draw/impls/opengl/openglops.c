@@ -479,99 +479,6 @@ PetscErrorCode  PetscDrawCreate_OpenGL(PetscDraw draw)
   char             **argv;
 
   PetscFunctionBegin;
-
-  /*
-      Initialize the display size
-  */
-  if (!xmax) {
-    xmax = glutGet(GLUT_SCREEN_WIDTH);
-    ymax = glutGet(GLUT_SCREEN_HEIGHT);
-  }
-
-  if (w == PETSC_DECIDE) w = draw->w = 300;
-  if (h == PETSC_DECIDE) h = draw->h = 300; 
-  switch (w) {
-    case PETSC_DRAW_FULL_SIZE: w = draw->w = xmax - 10;
-                         break;
-    case PETSC_DRAW_HALF_SIZE: w = draw->w = (xmax - 20)/2;
-                         break;
-    case PETSC_DRAW_THIRD_SIZE: w = draw->w = (xmax - 30)/3;
-                         break;
-    case PETSC_DRAW_QUARTER_SIZE: w = draw->w = (xmax - 40)/4;
-                         break;
-  }
-  switch (h) {
-    case PETSC_DRAW_FULL_SIZE: h = draw->h = ymax - 10;
-                         break;
-    case PETSC_DRAW_HALF_SIZE: h = draw->h = (ymax - 20)/2;
-                         break;
-    case PETSC_DRAW_THIRD_SIZE: h = draw->h = (ymax - 30)/3;
-                         break;
-    case PETSC_DRAW_QUARTER_SIZE: h = draw->h = (ymax - 40)/4;
-                         break;
-  }
-
-  /* allow user to set location and size of window */
-  xywh[0] = x; xywh[1] = y; xywh[2] = w; xywh[3] = h;
-  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-geometry",xywh,&osize,PETSC_NULL);CHKERRQ(ierr);
-  x = (int) xywh[0]; y = (int) xywh[1]; w = (int) xywh[2]; h = (int) xywh[3];
-
-
-  if (draw->x == PETSC_DECIDE || draw->y == PETSC_DECIDE) {
-    /*
-       PETSc tries to place windows starting in the upper left corner and 
-       moving across to the right. 
-    
-              --------------------------------------------
-              |  Region used so far +xavailable,yavailable |
-              |                     +                      |
-              |                     +                      |
-              |++++++++++++++++++++++ybottom               |
-              |                                            |
-              |                                            |
-              |--------------------------------------------|
-    */
-    /*  First: can we add it to the right? */
-    if (xavailable+w+10 <= xmax) {
-      x       = xavailable;
-      y       = yavailable;
-      ybottom = PetscMax(ybottom,y + h + 30);
-    } else {
-      /* No, so add it below on the left */
-      xavailable = 0;
-      x          = 0;
-      yavailable = ybottom;    
-      y          = ybottom;
-      ybottom    = ybottom + h + 30;
-    }
-  }
-  /* update available region */
-  xavailable = PetscMax(xavailable,x + w + 10);
-  if (xavailable >= xmax) {
-    xavailable = 0;
-    yavailable = yavailable + h + 30;
-    ybottom    = yavailable;
-  }
-  if (yavailable >= ymax) {
-    y          = 0;
-    yavailable = 0;
-    ybottom    = 0;
-  }
-
-  ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-
-  /* actually create and open the window */
-  ierr = PetscNew(PetscDraw_OpenGL,&Xwin);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
-
-  if (x < 0 || y < 0)   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative corner of window");
-  if (w <= 0 || h <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
-
-  Xwin->x      = x;
-  Xwin->y      = y;
-  Xwin->w      = w;
-  Xwin->h      = h;
-
   if (!initialized) {
     ierr = PetscGetArgs(&argc,&argv);CHKERRQ(ierr);
     glutInit(&argc, argv);
@@ -680,7 +587,101 @@ PetscErrorCode  PetscDrawCreate_OpenGL(PetscDraw draw)
 
     ierr    = PetscDrawUtilitySetCmapHue(rcolor+PETSC_DRAW_BASIC_COLORS,gcolor+PETSC_DRAW_BASIC_COLORS,bcolor+PETSC_DRAW_BASIC_COLORS,256-PETSC_DRAW_BASIC_COLORS);CHKERRQ(ierr);
   }
+
+  /*
+      Initialize the display size
+  */
+  if (!xmax) {
+    xmax = glutGet(GLUT_SCREEN_WIDTH);
+    ymax = glutGet(GLUT_SCREEN_HEIGHT);
+  }
+
+  if (w == PETSC_DECIDE) w = draw->w = 300;
+  if (h == PETSC_DECIDE) h = draw->h = 300; 
+  switch (w) {
+    case PETSC_DRAW_FULL_SIZE: w = draw->w = xmax - 10;
+                         break;
+    case PETSC_DRAW_HALF_SIZE: w = draw->w = (xmax - 20)/2;
+                         break;
+    case PETSC_DRAW_THIRD_SIZE: w = draw->w = (xmax - 30)/3;
+                         break;
+    case PETSC_DRAW_QUARTER_SIZE: w = draw->w = (xmax - 40)/4;
+                         break;
+  }
+  switch (h) {
+    case PETSC_DRAW_FULL_SIZE: h = draw->h = ymax - 10;
+                         break;
+    case PETSC_DRAW_HALF_SIZE: h = draw->h = (ymax - 20)/2;
+                         break;
+    case PETSC_DRAW_THIRD_SIZE: h = draw->h = (ymax - 30)/3;
+                         break;
+    case PETSC_DRAW_QUARTER_SIZE: h = draw->h = (ymax - 40)/4;
+                         break;
+  }
+
+  /* allow user to set location and size of window */
+  xywh[0] = x; xywh[1] = y; xywh[2] = w; xywh[3] = h;
+  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-geometry",xywh,&osize,PETSC_NULL);CHKERRQ(ierr);
+  x = (int) xywh[0]; y = (int) xywh[1]; w = (int) xywh[2]; h = (int) xywh[3];
+
+
+  if (draw->x == PETSC_DECIDE || draw->y == PETSC_DECIDE) {
+    /*
+       PETSc tries to place windows starting in the upper left corner and 
+       moving across to the right. 
+    
+              --------------------------------------------
+              |  Region used so far +xavailable,yavailable |
+              |                     +                      |
+              |                     +                      |
+              |++++++++++++++++++++++ybottom               |
+              |                                            |
+              |                                            |
+              |--------------------------------------------|
+    */
+    /*  First: can we add it to the right? */
+    if (xavailable+w+10 <= xmax) {
+      x       = xavailable;
+      y       = yavailable;
+      ybottom = PetscMax(ybottom,y + h + 30);
+    } else {
+      /* No, so add it below on the left */
+      xavailable = 0;
+      x          = 0;
+      yavailable = ybottom;    
+      y          = ybottom;
+      ybottom    = ybottom + h + 30;
+    }
+  }
+  /* update available region */
+  xavailable = PetscMax(xavailable,x + w + 10);
+  if (xavailable >= xmax) {
+    xavailable = 0;
+    yavailable = yavailable + h + 30;
+    ybottom    = yavailable;
+  }
+  if (yavailable >= ymax) {
+    y          = 0;
+    yavailable = 0;
+    ybottom    = 0;
+  }
+
+  ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
+
+  /* actually create and open the window */
+  ierr = PetscNew(PetscDraw_OpenGL,&Xwin);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
+
+  if (x < 0 || y < 0)   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative corner of window");
+  if (w <= 0 || h <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
+
+  Xwin->x      = x;
+  Xwin->y      = y;
+  Xwin->w      = w;
+  Xwin->h      = h;
+
   glutInitWindowSize(w, h);
+  glutInitWindowPosition(x,y);
   Xwin->win = glutCreateWindow(draw->title);
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
