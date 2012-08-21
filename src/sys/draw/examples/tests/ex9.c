@@ -31,7 +31,6 @@ int main(int argc,char **argv)
   if (flg) {
     xlabel = (char *)0; toplabel = (char *)0;
   }
-  /* ierr = PetscDrawOpenX(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);*/
   ierr = PetscDrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawHGCreate(draw,bins,&hist);CHKERRQ(ierr);

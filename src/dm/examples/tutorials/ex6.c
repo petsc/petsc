@@ -594,8 +594,9 @@ PetscErrorCode DrawFA(FA fa,Vec v)
   xmax = xmaxt + .2*(xmaxt - xmint);
   ymin = ymint - .2*(ymaxt - ymint);
   ymax = ymaxt + .2*(ymaxt - ymint);
-#if defined(PETSC_HAVE_X)
-  ierr = PetscDrawOpenX(PETSC_COMM_WORLD,0,"meshes",PETSC_DECIDE,PETSC_DECIDE,700,700,&draw);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_X) || defined(PETSC_HAVE_OPENGL)
+  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"meshes",PETSC_DECIDE,PETSC_DECIDE,700,700,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
   ierr = PetscDrawZoom(draw,DrawPatch,&zctx);CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);

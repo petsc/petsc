@@ -750,9 +750,10 @@
 !-----------------------------------------------------------------------
 !     draw it.
 !-----------------------------------------------------------------------
-#if defined(PETSC_HAVE_X)
-      CALL PetscDrawOpenX(PETSC_COMM_WORLD,0,"meshes",PETSC_DECIDE,                  &
+#if defined(PETSC_HAVE_X) || defined(PETSC_HAVE_OPENGL)
+      CALL PetscDrawCreate(PETSC_COMM_WORLD,0,"meshes",PETSC_DECIDE,                  &
      &     PETSC_DECIDE,700,700,draw,ierr)
+      CALL PetscDrawSetFromOptions(draw,ierr)
       CALL PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax,ierr)
       CALL PetscDrawZoom(draw,barry_draw_patch,patch,ierr)
 #endif

@@ -255,11 +255,9 @@
 
 !  PetscDraw contour plot of solution
 
-!      call PetscDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',  
-!                   300,0,300,300,draw,ierr)
       call PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,          &
      &     'Solution',300,0,300,300,draw,ierr)
-      call PetscDrawSetType(draw,PETSC_DRAW_X,ierr)
+      call PetscDrawSetFromOptions(draw,ierr)
 
       call VecGetArray(x,lx_v,lx_i,ierr)
       call PetscDrawTensorContour(draw,mx,my,PETSC_NULL_DOUBLE,              &

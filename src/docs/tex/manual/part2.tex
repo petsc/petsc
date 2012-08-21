@@ -6913,11 +6913,12 @@ colormap can be used via the option \trl{-draw_x_shared_colormap}.
 \subsection{Simple PetscDrawing}
 
 One can open a window that is not associated with a viewer directly 
-under the X11 Window System with the
-command \sindex{X windows}
+under the X11 Window System or OpenGL with the
+command \sindex{X windows} \sindex{OpenGL}
 \begin{tabbing}
-  PetscDrawOpenX(MPI\_Comm comm,char *display,char *title,int x,\\
+  PetscDrawCreate(MPI\_Comm comm,char *display,char *title,int x,\\
                  int y,int w,int h,PetscDraw *win);
+  PetscDrawSetFromOptions(win);
 \end{tabbing}
 All drawing routines are done relative to the windows coordinate system 
 and viewport. By default the drawing coordinates are from \trl{(0,0)} to 

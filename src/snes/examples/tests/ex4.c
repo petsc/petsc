@@ -65,9 +65,8 @@ int main(int argc, char **argv)
   PetscScalar    *xvalues;
 
   PetscInitialize(&argc, &argv,(char *)0,help);
-  /* ierr = PetscDrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRQ(ierr); */
   ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetType(draw,PETSC_DRAW_X);CHKERRQ(ierr);
+  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
 
   user.mx    = 4;
   user.my    = 4;

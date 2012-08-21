@@ -4915,7 +4915,7 @@ PetscErrorCode MatView_Private(Mat mat)
 
    Level: beginner
 
-.seealso: MatAssemblyBegin(), MatSetValues(), PetscDrawOpenX(), MatView(), MatAssembled(), PetscViewerSocketOpen()
+.seealso: MatAssemblyBegin(), MatSetValues(), PetscDrawOpenX(), PetscDrawCreate(), MatView(), MatAssembled(), PetscViewerSocketOpen()
 @*/
 PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
 {

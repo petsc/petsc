@@ -213,7 +213,7 @@ PetscErrorCode  PetscDrawRegister(const char *sname,const char *path,const char 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawSetFromOptions" 
-/*@C
+/*@
    PetscDrawSetFromOptions - Sets the graphics type from the options database.
       Defaults to a PETSc X windows graphics.
 

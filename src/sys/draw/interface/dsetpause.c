@@ -20,7 +20,7 @@
 
    Note:
    By default the pause time is zero unless the -draw_pause option is given 
-   during PetscDrawOpenX().
+   during PetscDrawCreate().
 
    Concepts: drawing^waiting
 

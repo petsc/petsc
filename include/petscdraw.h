@@ -131,6 +131,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawSetSave(PetscDraw,const char*,PetscBool);
 #define PETSC_DRAW_PLUM            32
 
 PETSC_EXTERN PetscErrorCode PetscDrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
+PETSC_EXTERN PetscErrorCode PetscDrawOpenOpenGL(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
 
 #define PETSC_DRAW_FULL_SIZE    -3
 #define PETSC_DRAW_HALF_SIZE    -4

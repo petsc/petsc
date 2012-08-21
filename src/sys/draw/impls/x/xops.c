@@ -553,7 +553,8 @@ PetscErrorCode PetscDrawSave_X(PetscDraw);
 PetscErrorCode PetscDrawSetSave_X(PetscDraw,const char*);
 
 static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
-                                 PetscDrawFlush_X,PetscDrawLine_X,
+                                 PetscDrawFlush_X,
+                                 PetscDrawLine_X,
                                  0,
                                  0,
                                  PetscDrawPoint_X,
