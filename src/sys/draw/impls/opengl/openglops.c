@@ -91,6 +91,26 @@ PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscDrawPoint_OpenGL" 
+PetscErrorCode PetscDrawPoint_OpenGL(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
+{
+  PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
+  float             x1,y_1;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  x1  = XTRANS(draw,XiWin,xl);   
+  y_1 = YTRANS(draw,XiWin,yl);   
+
+  glutSetWindow(win->win);
+  ierr = OpenGLColor(cl);CHKERRQ(ierr);
+  glBegin(GL_POINTS);
+  glVertex2f(x1,y_1);
+  glEnd();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscDrawLine_OpenGL" 
 PetscErrorCode PetscDrawLine_OpenGL(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
@@ -108,8 +128,8 @@ PetscErrorCode PetscDrawLine_OpenGL(PetscDraw draw,PetscReal xl,PetscReal yl,Pet
   glutSetWindow(win->win);
   ierr = OpenGLColor(cl);CHKERRQ(ierr);
   glBegin(GL_LINES);
-  glVertex3f(x1,y_1,0.0);
-  glVertex3f(x2,y2,0.0);
+  glVertex2f(x1,y_1);
+  glVertex2f(x2,y2);
   glEnd();
   PetscFunctionReturn(0);
 }
@@ -133,11 +153,37 @@ static PetscErrorCode PetscDrawTriangle_OpenGL(PetscDraw draw,PetscReal X1,Petsc
   glutSetWindow(win->win);
   glBegin(GL_TRIANGLES);
   ierr = OpenGLColor(c1);CHKERRQ(ierr);
-  glVertex3f(x1,y_1,0.0);
+  glVertex2f(x1,y_1);
   ierr = OpenGLColor(c2);CHKERRQ(ierr);
-  glVertex3f(x2,y2,0.0);
+  glVertex2f(x2,y2);
   ierr = OpenGLColor(c3);CHKERRQ(ierr);
-  glVertex3f(x3,y3,0.0);
+  glVertex2f(x3,y3);
+  glEnd();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawRectangle_OpenGL" 
+static PetscErrorCode PetscDrawRectangle_OpenGL(PetscDraw draw,PetscReal Xl,PetscReal Yl,PetscReal Xr,PetscReal Yr,int c1,int c2,int c3,int c4)
+{
+  PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
+  PetscErrorCode    ierr;
+  float             x1,y_1,x2,y2;
+  int               c = (c1 + c2 + c3 + c4)/4;
+
+  PetscFunctionBegin;
+  x1   = XTRANS(draw,XiWin,Xl);
+  y_1  = YTRANS(draw,XiWin,Yl); 
+  x2   = XTRANS(draw,XiWin,Xr);
+  y2   = YTRANS(draw,XiWin,Yr); 
+
+  glutSetWindow(win->win);
+  ierr = OpenGLColor(c);CHKERRQ(ierr);
+  glBegin(GL_QUADS);
+  glVertex2f(x1,y_1);
+  glVertex2f(x2,y_1);
+  glVertex2f(x2,y2);
+  glVertex2f(x1,y2);
   glEnd();
   PetscFunctionReturn(0);
 }
@@ -298,15 +344,12 @@ static PetscErrorCode PetscDrawGetMouseButton_OpenGL(PetscDraw draw,PetscDrawBut
   py      = Mouse.y;
   Mouse.button = -1;
 
-  /* XQueryPointer(win->disp,report.xmotion.window,&root,&child,&root_x,&root_y,&px,&py,&keys_button); */
-
   if (x_phys) *x_phys = ((double)px)/((double)win->w);
   if (y_phys) *y_phys = 1.0 - ((double)py)/((double)win->h);
 
   if (x_user) *x_user = draw->coor_xl + ((((double)px)/((double)win->w)-draw->port_xl))*(draw->coor_xr - draw->coor_xl)/(draw->port_xr - draw->port_xl);
   if (y_user) *y_user = draw->coor_yl + ((1.0 - ((double)py)/((double)win->h)-draw->port_yl))*(draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
 
-  printf("%g %g\n",*x_user,*y_user);
   PetscFunctionReturn(0);
 }
 
@@ -315,7 +358,7 @@ static struct _PetscDrawOps DvOps = { 0,
                                  PetscDrawLine_OpenGL,
                                  0,
                                  0,
-                                      0, /* PetscDrawPoint_OpenGL,*/
+                                 PetscDrawPoint_OpenGL,
                                  0,
                                       PetscDrawString_OpenGL,
                                       PetscDrawStringVertical_OpenGL,
@@ -324,7 +367,7 @@ static struct _PetscDrawOps DvOps = { 0,
                                       0, /* PetscDrawSetViewport_OpenGL,*/
                                  PetscDrawClear_OpenGL,
                                  PetscDrawSynchronizedFlush_OpenGL,
-                                      0, /*PetscDrawRectangle_OpenGL, */
+                                 PetscDrawRectangle_OpenGL, 
                                  PetscDrawTriangle_OpenGL,
                                       0, /* PetscDrawEllipse_OpenGL,*/
                                       PetscDrawGetMouseButton_OpenGL,

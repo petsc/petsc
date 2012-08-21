@@ -35,7 +35,7 @@
 
       call PetscDrawCreate(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,        &
      &               PETSC_NULL_CHARACTER,x,y,width,height,draw,ierr)
-      call PetscDrawSetType(draw,PETSC_DRAW_X,ierr)
+      call PetscDrawSetFromOptions(draw,ierr)
 
       call PetscDrawLGCreate(draw,1,lg,ierr)
       call PetscDrawLGGetAxis(lg,axis,ierr)
