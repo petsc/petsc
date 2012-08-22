@@ -586,12 +586,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       /* Use mat[0] (diagonal block of the real matrix) preconditioned by pmat[0] */
       ierr  = MatCreateSchurComplement(jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],&jac->schur);CHKERRQ(ierr);
       ierr  = MatGetNullSpace(jac->pmat[1], &sp);CHKERRQ(ierr);
-      /* 
-       Do we really want to attach the A11-block's nullspace to S? Note that this may generate
-       "false positives", when the A11's nullspace isn't S's: Stokes or A = [1, 1; 1, 0].
-       Using a false nullspace may prevent KSP(S) from converging, since  it might force an inconsistent rhs. 
-       */
-      /* if (sp) {ierr  = MatSetNullSpace(jac->schur, sp);CHKERRQ(ierr);} */
+      /* Do we really want to attach the A11-block's nullspace to S? */
+      if (sp) {ierr  = MatSetNullSpace(jac->schur, sp);CHKERRQ(ierr);}
       /* set tabbing, options prefix and DM of KSP inside the MatSchurComplement */
       ierr  = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
       ierr  = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,2);CHKERRQ(ierr);
@@ -645,17 +641,14 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     ierr = PetscObjectQuery((PetscObject)pc->pmat,lscname,(PetscObject*)&LSC_L);CHKERRQ(ierr);
     if (!LSC_L) {ierr = PetscObjectQuery((PetscObject)pc->mat,lscname,(PetscObject*)&LSC_L);CHKERRQ(ierr);}
     if (LSC_L) {ierr = PetscObjectCompose((PetscObject)jac->schur,"LSC_Lp",(PetscObject)LSC_L);CHKERRQ(ierr);}
-  } 
-  else {
+  } else {
     /* set up the individual splits' PCs */
     i    = 0;
     ilink = jac->head;
     while (ilink) {
       ierr = KSPSetOperators(ilink->ksp,jac->mat[i],jac->pmat[i],flag); CHKERRQ(ierr);
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
-      if (!jac->suboptionsset) {
-        ierr = KSPSetFromOptions(ilink->ksp);CHKERRQ(ierr);
-      }
+      if (!jac->suboptionsset){ierr = KSPSetFromOptions(ilink->ksp);CHKERRQ(ierr);}
       i++;
       ilink = ilink->next;
     }
