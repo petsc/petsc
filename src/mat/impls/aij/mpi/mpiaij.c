@@ -3365,9 +3365,9 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
 
   /* First process needs enough room for process with most rows */
   if (!rank) {
-    mmax       = rowners[1];
-    for (i=2; i<size; i++) {
-      mmax = PetscMax(mmax,rowners[i]);
+    mmax = rowners[1];
+    for(i=2; i<=size; i++) {
+      mmax = PetscMax(mmax, rowners[i] - rowners[i-1]);
     }
   } else mmax = m;
 
@@ -3382,7 +3382,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   ierr    = PetscMalloc2(mmax,PetscInt,&ourlens,mmax,PetscInt,&offlens);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscBinaryRead(fd,ourlens,m,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscMalloc(m*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
+    ierr = PetscMalloc(mmax*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
     ierr = PetscMalloc(size*sizeof(PetscInt),&procsnz);CHKERRQ(ierr);
     ierr = PetscMemzero(procsnz,size*sizeof(PetscInt));CHKERRQ(ierr);
     for (j=0; j<m; j++) {
