@@ -3367,7 +3367,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   if (!rank) {
     mmax = rowners[1];
     for(i=2; i<=size; i++) {
-      mmax = PetscMax(mmax, rowners[i] - rowners[i-1]);
+      mmax = PetscMax(mmax, rowners[i]);
     }
   } else mmax = m;
 

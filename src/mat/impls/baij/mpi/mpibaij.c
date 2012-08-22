@@ -3699,7 +3699,7 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
   /* process 0 needs enough room for process with most rows */
   if (!rank) {
     mmax = rowners[1];
-    for (i=2; i<size; i++) {
+    for (i=2; i<=size; i++) {
       mmax = PetscMax(mmax,rowners[i]);
     }
     mmax*=bs;
