@@ -44,7 +44,8 @@ PetscErrorCode  PetscStrToArray(const char s[],int *argc,char ***args)
   int        i,n,*lens,cnt = 0;
   PetscBool  flg = PETSC_FALSE;
 
-  n = strlen(s);
+  if (!s) n = 0;
+  else    n = strlen(s);
   *argc = 0;
   for (i=0; i<n; i++) {
     if (s[i] != ' ') break;
