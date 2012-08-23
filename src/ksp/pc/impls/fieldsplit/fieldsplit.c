@@ -588,21 +588,27 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr = ISDestroy(&ccis);CHKERRQ(ierr);
-      /* Use mat[0] (diagonal block of the real matrix) preconditioned by pmat[0] */
-      ierr = MatCreateSchurComplement(jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],&jac->schur);CHKERRQ(ierr);
+
+      /* Use mat[0] (diagonal block of the real matrix) preconditioned by pmat[0] to define Schur complement */
+      ierr = MatCreate(((PetscObject)jac->mat[0])->comm,&jac->schur);CHKERRQ(ierr);
+      ierr = MatSetType(jac->schur,MATSCHURCOMPLEMENT);CHKERRQ(ierr);
+      ierr = MatSchurComplementGetKSP(jac->schur, &ksp);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(schurprefix, sizeof(schurprefix), "%sfieldsplit_%s_inner_", ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", ilink->splitname);CHKERRQ(ierr);
+      /* Indent this deeper to emphasize the "inner" nature of this solver. */
+      ierr = PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject) pc, 2);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(ksp, schurprefix);CHKERRQ(ierr);
+      ierr = MatSchurComplementSet(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1]);CHKERRQ(ierr);
+
       ierr = MatGetNullSpace(jac->pmat[1], &sp);CHKERRQ(ierr);
-      if (sp) {ierr  = MatSetNullSpace(jac->schur, sp);CHKERRQ(ierr);}
-      /* set tabbing, options prefix and DM of KSP inside the MatSchur */
-      ierr = PetscSNPrintf(schurtestoption, sizeof schurtestoption, "-fieldsplit_%s_inner_", ilink->splitname);CHKERRQ(ierr);
+      if (sp) {
+        ierr  = MatSetNullSpace(jac->schur, sp);CHKERRQ(ierr);
+      }
+
+      ierr = PetscSNPrintf(schurtestoption, sizeof(schurtestoption), "-fieldsplit_%s_inner_", ilink->splitname);CHKERRQ(ierr);
       ierr = PetscOptionsFindPairPrefix_Private(((PetscObject)pc)->prefix, schurtestoption, PETSC_NULL, &flg);CHKERRQ(ierr);
       if (flg) {
         DM dmInner;
 
-        ierr = PetscSNPrintf(schurprefix, sizeof schurprefix, "%sfieldsplit_%s_inner_", ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", ilink->splitname);CHKERRQ(ierr);
-        ierr  = MatSchurComplementGetKSP(jac->schur, &ksp);CHKERRQ(ierr);
-        /* Indent this deeper to emphasize the "inner" nature of this solver. */
-        ierr  = KSPIncrementTabLevel(ksp, (PetscObject) pc, 2);CHKERRQ(ierr);
-        ierr  = KSPSetOptionsPrefix(ksp, schurprefix);CHKERRQ(ierr);
         /* Set DM for new solver */
         ierr = KSPGetDM(jac->head->ksp, &dmInner);CHKERRQ(ierr);
         ierr = KSPSetDM(ksp, dmInner);CHKERRQ(ierr);
@@ -611,13 +617,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr = MatSchurComplementSetKSP(jac->schur, jac->head->ksp);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject) jac->head->ksp);CHKERRQ(ierr);
       }
-      /* Need to call this everytime because new matrix is being created */
       ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
-      ierr  = MatSetUp(jac->schur);   CHKERRQ(ierr);
 
       ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);               CHKERRQ(ierr);
       ierr  = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
-      ierr  = KSPIncrementTabLevel(jac->kspschur,(PetscObject)pc,1);           CHKERRQ(ierr);
+      ierr  = PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1);           CHKERRQ(ierr);
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELF) {
         PC pc;
@@ -1055,7 +1059,7 @@ PetscErrorCode  PCFieldSplitSetFields_FieldSplit(PC pc,const char splitname[],Pe
   ilink->nfields = n;
   ilink->next    = PETSC_NULL;
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
-  ierr           = KSPIncrementTabLevel(ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
+  ierr           = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr           = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->ksp);CHKERRQ(ierr);
 
@@ -1146,7 +1150,7 @@ PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[],IS is)
   ilink->is_col  = is;
   ilink->next    = PETSC_NULL;
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
-  ierr           = KSPIncrementTabLevel(ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
+  ierr           = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr           = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->ksp);CHKERRQ(ierr);
 

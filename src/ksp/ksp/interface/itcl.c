@@ -105,7 +105,7 @@ PetscErrorCode  KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
     Notes: this is used in conjunction with KSPSetTabLevel() to manage the output from the KSP and its PC coherently.
 
 
-.seealso:  KSPSetTabLevel(), KSPIncrementTabLevel()
+.seealso:  KSPSetTabLevel()
 
 @*/
 PetscErrorCode  KSPGetTabLevel(KSP ksp,PetscInt *tab)
@@ -136,7 +136,7 @@ PetscErrorCode  KSPGetTabLevel(KSP ksp,PetscInt *tab)
            automatically receives the same tab level, so that whatever objects the pc might create are tabbed
            appropriately, too.
 
-.seealso:  KSPGetTabLevel(), KSPIncrementTabLevel()
+.seealso:  KSPGetTabLevel()
 @*/
 PetscErrorCode  KSPSetTabLevel(KSP ksp, PetscInt tab)
 {
@@ -147,43 +147,6 @@ PetscErrorCode  KSPSetTabLevel(KSP ksp, PetscInt tab)
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);                      CHKERRQ(ierr);}
   /* Do we need a PCSetTabLevel()? */
   ierr = PetscObjectSetTabLevel((PetscObject)ksp->pc, tab);          CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "KSPIncrementTabLevel"
-/*@
-   KSPIncrementTabLevel - Sets the number of tabs that ASCII output will use  the ksp and its pc based on
-         the tablevel of another object. This should be called immediately after the ksp is created.
-
-   Not Collective
-
-   Input Parameter:
-+  ksp - a KSP object
-.  obj - the object providing the reference tab level
--  tab - the increment that is added to the  tab
-
-
-   Level: developer
-
-    Notes: this is used to manage the output from options that are imbedded in other objects, for example
-      the KSP object inside a SNES object. By indenting each lower level further the heirarchy of objects
-      is very clear. By setting the KSP object's relative tab level with KSPIncrementTabLevel(), its PC object
-      automatically receives the same tab level, so that whatever objects the pc might create are tabbed
-      appropriately, too.
-
-.seealso:   KSPSetLabLevel(),  KSPGetTabLevel()
-
-@*/
-PetscErrorCode  KSPIncrementTabLevel(KSP ksp,PetscObject obj,PetscInt tab)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectIncrementTabLevel((PetscObject)ksp, obj, tab);     CHKERRQ(ierr);
-  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);                        CHKERRQ(ierr);}
-  /* Do we need PCIncrementTabLevel()? */
-  ierr = PetscObjectIncrementTabLevel((PetscObject)ksp->pc, obj,tab);  CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
