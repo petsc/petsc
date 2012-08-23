@@ -1,4 +1,3 @@
-
 /*
  * Implementation of BiCGstab(L) the paper by D.R. Fokkema,
  * "Enhanced implementation of BiCGStab(L) for solving linear systems
@@ -160,7 +159,11 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       PetscBLASInt ione = 1,bell = PetscBLASIntCast(bcgsl->ell);
 
       AY0c[0] = -1;
+#if defined(PETSC_MISSING_LAPACK_POTRF)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"POTRF - Lapack routine is unavailable.");
+#else
       LAPACKpotrf_("Lower", &bell, &MZa[1+ldMZ], &ldMZ, &bierr);
+#endif
       if (ierr!=0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         PetscFunctionReturn(0);
@@ -172,7 +175,11 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       PetscScalar aone = 1.0, azero = 0.0;
       PetscBLASInt neqs = PetscBLASIntCast(bcgsl->ell-1);
 
+#if defined(PETSC_MISSING_LAPACK_POTRF)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"POTRF - Lapack routine is unavailable.");
+#else
       LAPACKpotrf_("Lower", &neqs, &MZa[1+ldMZ], &ldMZ, &bierr);
+#endif
       if (ierr!=0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         PetscFunctionReturn(0);
