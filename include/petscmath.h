@@ -75,6 +75,8 @@ typedef __float128 PetscReal;
 typedef complexlib::complex<float> PetscScalar;
 #elif defined(PETSC_USE_REAL_DOUBLE)
 typedef complexlib::complex<double> PetscScalar;
+#elif defined(PETSC_USE_REAL___FLOAT128)
+typedef complexlib::complex<__float128> PetscScalar;
 #endif  /* PETSC_USE_REAL_ */
 
 #else /* PETSC_CLANGUAGE_CXX */
@@ -109,6 +111,23 @@ typedef double complex PetscScalar;
 #define PetscLogScalar(a)     clog(a)
 #define PetscSinScalar(a)     csin(a)
 #define PetscCosScalar(a)     ccos(a)
+
+#elif defined(PETSC_USE_REAL___FLOAT128)
+typedef __complex128 PetscScalar;
+PETSC_EXTERN MPI_Datatype MPIU___FLOAT128;
+PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
+#define MPIU_SCALAR MPIU___COMPLEX128
+
+#define PetscRealPart(a)      crealq(a)
+#define PetscImaginaryPart(a) cimagq(a)
+#define PetscAbsScalar(a)     cabsq(a)
+#define PetscConj(a)          conjq(a)
+#define PetscSqrtScalar(a)    csqrtq(a)
+#define PetscPowScalar(a,b)   cpowq(a,b)
+#define PetscExpScalar(a)     cexpq(a)
+#define PetscLogScalar(a)     clogq(a)
+#define PetscSinScalar(a)     csinq(a)
+#define PetscCosScalar(a)     ccosq(a)
 
 #endif /* PETSC_USE_REAL_* */
 #endif /* PETSC_CLANGUAGE_CXX */

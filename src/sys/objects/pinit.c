@@ -322,17 +322,22 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscMax_Local"
 void  PetscMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
-  PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;
 
   PetscFunctionBegin;
-  if (*datatype != MPIU_SCALAR) {
-    (*PetscErrorPrintf)("Can only handle MPIU_SCALAR data (i.e. double or complex) types");
+  if (*datatype == MPIU_SCALAR) {
+    PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
+    for (i=0; i<count; i++) {
+      xout[i] = PetscRealPart(xout[i])<PetscRealPart(xin[i])? xin[i]: xout[i];
+    }
+  } else if (*datatype == MPIU_REAL) {
+    PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
+    for (i=0; i<count; i++) {
+      xout[i] = PetscMax(xout[i],xin[i]);
+    }
+  } else {
+    (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_SCALAR data (i.e. double or complex) types");
     MPI_Abort(MPI_COMM_WORLD,1);
-  }
-
-  for (i=0; i<count; i++) {
-    xout[i] = PetscMax(xout[i],xin[i]); 
   }
   PetscFunctionReturnVoid();
 }
@@ -343,17 +348,22 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscMin_Local"
 void  PetscMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
-  PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;
 
   PetscFunctionBegin;
-  if (*datatype != MPIU_SCALAR) {
-    (*PetscErrorPrintf)("Can only handle MPIU_SCALAR data (i.e. double or complex) types");
+  if (*datatype == MPIU_SCALAR) {
+    PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
+    for (i=0; i<count; i++) {
+      xout[i] = PetscRealPart(xout[i])>PetscRealPart(xin[i])? xin[i]: xout[i];
+    }
+  } else if (*datatype == MPIU_REAL) {
+    PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
+    for (i=0; i<count; i++) {
+      xout[i] = PetscMin(xout[i],xin[i]);
+    }
+  } else {
+    (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_SCALAR data (i.e. double or complex) types");
     MPI_Abort(MPI_COMM_WORLD,1);
-  }
-
-  for (i=0; i<count; i++) {
-    xout[i] = PetscMin(xout[i],xin[i]); 
   }
   PetscFunctionReturnVoid();
 }
@@ -715,6 +725,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #if defined(PETSC_USE_REAL___FLOAT128)
   ierr = MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU___FLOAT128);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU___FLOAT128);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  ierr = MPI_Type_contiguous(4,MPI_DOUBLE,&MPIU___COMPLEX128);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(&MPIU___COMPLEX128);CHKERRQ(ierr);
+#endif
   ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscMax_Local,1,&MPIU_MAX);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscMin_Local,1,&MPIU_MIN);CHKERRQ(ierr);
@@ -1147,6 +1161,9 @@ PetscErrorCode  PetscFinalize(void)
 
 #if defined(PETSC_USE_REAL___FLOAT128)
   ierr = MPI_Type_free(&MPIU___FLOAT128);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  ierr = MPI_Type_free(&MPIU___COMPLEX128);CHKERRQ(ierr);
+#endif
   ierr = MPI_Op_free(&MPIU_SUM);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_MAX);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_MIN);CHKERRQ(ierr);
