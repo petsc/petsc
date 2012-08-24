@@ -496,6 +496,6 @@ PETSC_EXTERN PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC,PetscInt,PetscInt[],
 #endif
 
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainScalingFactor(PC,PetscScalar);
-
+PETSC_EXTERN PetscErrorCode PCISSetSubdomainDiagonalScaling(PC,Vec);
 
 #endif /* __PETSCPC_H */
