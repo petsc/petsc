@@ -472,6 +472,16 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
       ierr = KSPMonitorSet(ksp,KSPMonitorRange,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
     /*
+      A hack to using dynamic tolerence in preconditioner
+    */
+    ierr = PetscOptionsString("-ksp_monitor_dynamic_tolerance","Use dynamic tolerance for PC if PC is a KSP","KSPMonitorDynamicTolerance","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscReal *coef = NULL;
+      ierr = PetscMalloc(1*sizeof(PetscReal),&coef);
+      ierr = PetscOptionsReal("-ksp_monitor_dynamic_tolerance_param","Parameter of dynamic tolerance for PC if PC is a KSP","KSPMonitorDynamicToleranceParam",1.0,coef,&flg);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorDynamicTolerance,coef,KSPMonitorDynamicToleranceDestroy);CHKERRQ(ierr);
+    }
+    /*
       Plots the vector solution 
     */
     flg  = PETSC_FALSE;

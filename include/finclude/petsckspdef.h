@@ -37,6 +37,7 @@
 #define KSPIBCGS 'ibcgs'
 #define KSPFBCGS  'fbcgs'
 #define KSPIFBCGS 'ifbcgs'
+#define KSPTFIBCGS 'tfibcgs'
 #define KSPBCGSL 'bcgsl'
 #define KSPCGS 'cgs'
 #define KSPTFQMR 'tfqmr'

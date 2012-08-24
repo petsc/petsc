@@ -330,6 +330,42 @@ PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,void *dummy)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitorDynamicTolerance"
+/*
+ A hack to using dynamic tolerence in preconditioner
+ */
+PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy) {
+  PetscErrorCode ierr;
+  PetscReal *coef = (PetscReal*)dummy;
+  PC pcksp;
+  KSP kspinner;
+  PetscReal outer_rtol, outer_abstol, outer_dtol, inner_rtol;
+  PetscInt outer_maxits;
+  PetscFunctionBegin;
+  ierr = KSPGetPC(ksp,&pcksp);CHKERRQ(ierr);
+  kspinner = NULL;
+  ierr = PCKSPGetKSP(pcksp,&kspinner);CHKERRQ(ierr);
+  if (kspinner) {
+    ierr = KSPGetTolerances(ksp, &outer_rtol, &outer_abstol, &outer_dtol, &outer_maxits);CHKERRQ(ierr);
+    inner_rtol = (*coef) * outer_rtol / fnorm;
+    ierr = KSPSetTolerances(kspinner, outer_rtol, outer_abstol, outer_dtol, outer_maxits);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitorDynamicToleranceDestroy"
+/*
+ A hack to using dynamic tolerence in preconditioner
+ */
+PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy) {
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscFree(*dummy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "KSPMonitorDefaultShort"
 /*
