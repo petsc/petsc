@@ -16,7 +16,6 @@
       numCells = 5
       call DMComplexSetChart(dm, 0, numCells, ierr)
       do c=firstCell,numCells-1
-         write(*,*) 'c',c
          call DMComplexSetConeSize(dm, c, 4, ierr)
       end do
       call DMSetUp(dm, ierr)
@@ -26,8 +25,8 @@
       EC(3) = 3
       EC(4) = 4
       pEC => EC
-      write(*,*) 'cell',c,pEC
       c = 0
+      write(*,*) 'cell',c,pEC
       call DMComplexSetCone(dm, c , pEC, ierr)
       CHKERRQ(ierr)
       call DMComplexGetCone(dm, c , pEC, ierr)
