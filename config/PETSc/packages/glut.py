@@ -4,9 +4,9 @@ import os
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.functions         = ['glFlush']
-    self.includes          = ['OpenGL/gl.h']
-    self.liblist           = [['-framework opengl']]
+    self.functions         = ['glutSetWindow']
+    self.includes          = ['GLUT/glut.h']
+    self.liblist           = [['-framework glut']]
     self.complex           = 1   # 0 means cannot use complex
     self.lookforbydefault  = 0 
     self.double            = 0   # 1 means requires double precision 
@@ -16,7 +16,8 @@ class Configure(PETSc.package.NewPackage):
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
-    self.deps = []
+    self.opengl  = framework.require('PETSc.packages.opengl',self)
+    self.deps = [self.opengl]
     return
 
   def getSearchDirectories(self):

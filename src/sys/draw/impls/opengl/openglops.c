@@ -39,8 +39,7 @@ PETSC_STATIC_INLINE PetscErrorCode OpenGLColor(int icolor)
   return 0;
 }
 
-#define PETSC_USE_GLUT
-#if defined(PETSC_USE_GLUT)
+#if defined(PETSC_HAVE_GLUT)
 #include <GLUT/glut.h>
 typedef struct {
   int  win;          /* OpenGL GLUT window identifier */
@@ -419,7 +418,8 @@ static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
 
   PetscFunctionBegin;
-  ierr = PetscDrawOpenOpenGL(((PetscObject)draw)->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+36,220,220,popup);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(((PetscObject)draw)->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+36,220,220,popup);CHKERRQ(ierr);
+  ierr = PetscDrawSetType(*popup,((PetscObject)draw)->type_name);CHKERRQ(ierr);
   draw->popup = *popup;
   PetscFunctionReturn(0);
 }
@@ -459,7 +459,7 @@ static struct _PetscDrawOps DvOps = { 0,
                                  0,
                                  PetscDrawLine_OpenGL};
 
-#if defined(PETSC_USE_GLUT)
+#if defined(PETSC_HAVE_GLUT)
 /* callbacks required by GLUT */
 static void display(void) {;}
 static void reshape(int width, int height)
@@ -478,8 +478,8 @@ static void mouse(int button, int state,int x, int y)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscDrawCreate_OpenGL" 
-PetscErrorCode  PetscDrawCreate_OpenGL(PetscDraw draw)
+#define __FUNCT__ "PetscDrawCreate_GLUT" 
+PetscErrorCode  PetscDrawCreate_GLUT(PetscDraw draw)
 {
   PetscDraw_OpenGL *Xwin;
   PetscErrorCode   ierr;
@@ -715,9 +715,9 @@ EXTERN_C_END
 #endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscDrawOpenOpenGL" 
+#define __FUNCT__ "PetscDrawOpenGLUT" 
 /*@C
-   PetscDrawOpenOpenGL - Opens an OpenGL for use with the PetscDraw routines.
+   PetscDrawOpenGLUT - Opens an OpenGL window based on GLUT for use with the PetscDraw routines.
 
    Collective on MPI_Comm
 
@@ -756,13 +756,13 @@ EXTERN_C_END
 
 .seealso: PetscDrawSynchronizedFlush(), PetscDrawDestroy(), PetscDrawOpenX(), PetscDrawCreate()
 @*/
-PetscErrorCode  PetscDrawOpenOpenGL(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw* draw)
+PetscErrorCode  PetscDrawOpenGLUT(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw* draw)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDrawCreate(comm,display,title,x,y,w,h,draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetType(*draw,PETSC_DRAW_OPENGL);CHKERRQ(ierr);
+  ierr = PetscDrawSetType(*draw,PETSC_DRAW_GLUT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

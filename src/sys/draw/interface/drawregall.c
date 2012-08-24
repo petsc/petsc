@@ -9,7 +9,7 @@ EXTERN_C_BEGIN
 extern PetscErrorCode PetscDrawCreate_X(PetscDraw);
 #endif
 #if defined(PETSC_HAVE_OPENGL)
-extern PetscErrorCode PetscDrawCreate_OpenGL(PetscDraw);
+extern PetscErrorCode PetscDrawCreate_GLUT(PetscDraw);
 #endif
 extern PetscErrorCode PetscDrawCreate_Null(PetscDraw);
 #if defined(PETSC_USE_WINDOWS_GRAPHICS)
@@ -34,8 +34,8 @@ PetscErrorCode  PetscDrawRegisterAll(const char *path)
 
   PetscFunctionBegin;
   
-#if defined(PETSC_HAVE_OPENGL)
-  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_OPENGL,  path,"PetscDrawCreate_OpenGL",     PetscDrawCreate_OpenGL);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_GLUT)
+  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_GLUT,  path,"PetscDrawCreate_GLUT",  PetscDrawCreate_GLUT);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_X)
   ierr = PetscDrawRegisterDynamic(PETSC_DRAW_X,     path,"PetscDrawCreate_X",     PetscDrawCreate_X);CHKERRQ(ierr);

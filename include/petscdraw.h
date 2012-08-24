@@ -15,10 +15,11 @@ PETSC_EXTERN PetscClassId PETSC_DRAW_CLASSID;
 .seealso: PetscDrawSetType(), PetscDraw, PetscViewer
 J*/
 #define PetscDrawType  char*
-#define PETSC_DRAW_X      "x"
-#define PETSC_DRAW_OPENGL "opengl"
-#define PETSC_DRAW_NULL   "null"
-#define PETSC_DRAW_WIN32  "win32"
+#define PETSC_DRAW_X          "x"
+#define PETSC_DRAW_GLUT       "glut"
+#define PETSC_DRAW_OPENGLES   "opengles"
+#define PETSC_DRAW_NULL       "null"
+#define PETSC_DRAW_WIN32      "win32"
  
 /*S
      PetscDraw - Abstract PETSc object for graphics
@@ -131,7 +132,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawSetSave(PetscDraw,const char*,PetscBool);
 #define PETSC_DRAW_PLUM            32
 
 PETSC_EXTERN PetscErrorCode PetscDrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
-PETSC_EXTERN PetscErrorCode PetscDrawOpenOpenGL(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
+PETSC_EXTERN PetscErrorCode PetscDrawOpenGLUT(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
 
 #define PETSC_DRAW_FULL_SIZE    -3
 #define PETSC_DRAW_HALF_SIZE    -4
