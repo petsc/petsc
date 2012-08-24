@@ -3,6 +3,50 @@
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCISSetSubdomainDiagonalScaling_IS"
+static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_factors)
+{
+  PetscErrorCode ierr;
+  PC_IS  *pcis = (PC_IS*)pc->data;
+
+  PetscFunctionBegin;
+  ierr = VecDestroy(&pcis->D);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)scaling_factors);CHKERRQ(ierr);
+  pcis->D = scaling_factors; 
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCISSetSubdomainDiagonalScaling"
+/*@
+ PCISSetSubdomainDiagonalScaling - Set diagonal scaling for PCIS.
+
+   Not collective
+
+   Input Parameters:
++  pc - the preconditioning context
+-  scaling_factors - scaling factors for the subdomain
+
+   Level: intermediate
+
+   Notes:
+   Intended to use with jumping coefficients cases.
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode PCISSetSubdomainDiagonalScaling(PC pc, Vec scaling_factors)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCISSetSubdomainDiagonalScaling_C",(PC,Vec),(pc,scaling_factors));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCISSetSubdomainScalingFactor_IS"
 static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
 {
@@ -149,17 +193,22 @@ PetscErrorCode  PCISSetUp(PC pc)
 
   /* Creating scaling "matrix" D */
   if( !pcis->D ) {
-    ierr = VecSet(counter,0.0);CHKERRQ(ierr);
-    ierr = VecSet(pcis->vec1_N,pcis->scaling_factor);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterBegin(matis->ctx,counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (matis->ctx,counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecSet(pcis->vec1_B,pcis->scaling_factor);CHKERRQ(ierr);
+  } else {
+    ierr = VecCopy(pcis->D,pcis->vec1_B);CHKERRQ(ierr);
+  }
+  ierr = VecSet(counter,0.0);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_B,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_B,counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->global_to_B,counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  if( !pcis->D ) {
     ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
-    ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecCopy(pcis->vec1_B,pcis->D);CHKERRQ(ierr);
     ierr = VecReciprocal(pcis->D);CHKERRQ(ierr);
     ierr = VecScale(pcis->D,pcis->scaling_factor);CHKERRQ(ierr); 
+  } else {
+    ierr = VecPointwiseDivide(pcis->D,pcis->D,pcis->vec1_B);CHKERRQ(ierr);
   } 
 
   /* See historical note 01, at the bottom of this file. */
@@ -331,6 +380,8 @@ PetscErrorCode  PCISCreate(PC pc)
   /* composing functions */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetSubdomainScalingFactor_C","PCISSetSubdomainScalingFactor_IS",
                     PCISSetSubdomainScalingFactor_IS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetSubdomainDiagonalScaling_C","PCISSetSubdomainDiagonalScaling_IS",
+                    PCISSetSubdomainDiagonalScaling_IS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
