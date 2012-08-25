@@ -128,7 +128,10 @@ class PETScMaker(script.Script):
      for i in cnames:
        j = i[l+1:]
        if not os.path.islink(os.path.join(basedir,i)):
-         os.symlink(os.path.join(dirname,i),os.path.join(basedir,i))
+         if i.endswith('openglops.c'):
+           os.symlink(os.path.join(dirname,i),os.path.join(basedir,'openglops.m'))
+         else:
+           os.symlink(os.path.join(dirname,i),os.path.join(basedir,i))
    # do not need to link these because xcode project points to original source code directory
    #if hnames:
    #  if self.verbose: print 'Linking h files',hnames
@@ -144,7 +147,6 @@ class PETScMaker(script.Script):
    - Excludes contrib directory
    - Excludes tutorials directory
    - Excludes benchmarks directory
-   - Checks whether fortran bindings are necessary
    - Checks makefile to see if compiler is allowed to visit this directory for this configuration'''
 #   print self.functions.functions
 #   print self.base.defines
@@ -152,12 +154,11 @@ class PETScMaker(script.Script):
 
    if base == 'examples': return False
    if base == 'projects': return False
-   if not hasattr(self.compilers, 'FC'):
-     if base.startswith('ftn-') or base.startswith('f90-'): return False
+   if base.startswith('ftn-') or base.startswith('f90-'): return False
    if base == 'contrib':  return False
    if base == 'tutorials':  return False
    if base == 'benchmarks':  return False
-   if base == 'xcode':  return False
+   if base == 'systems':  return False
    if base.startswith('arch-'):  return False     
 
    import re
