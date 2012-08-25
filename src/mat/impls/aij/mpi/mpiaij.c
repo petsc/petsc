@@ -1615,13 +1615,13 @@ PetscErrorCode MatSOR_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,Pe
   PetscBool      hasop;
 
   PetscFunctionBegin;
-  if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS || flag & SOR_EISENSTAT) {
-    ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
-  }
-
   if (flag == SOR_APPLY_UPPER) {
     ierr = (*mat->A->ops->sor)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
+  }
+
+  if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS || flag & SOR_EISENSTAT) {
+    ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
   }
 
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
