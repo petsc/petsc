@@ -15,7 +15,7 @@
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>
 #import <OpenGLES/EAGLDrawable.h>
-#else
+#elif defined(PETSC_HAVE_GLUT)
 #if defined(__APPLE__) || defined(MACOSX)
 #include <AvailabilityMacros.h>
 #include <OpenGL/gl.h>
@@ -34,6 +34,114 @@
 #define YTRANS(draw,xwin,y)  (-1.0 + 2.0*((draw)->port_yl + (((y - (draw)->coor_yl)*((draw)->port_yr - (draw)->port_yl))/((draw)->coor_yr - (draw)->coor_yl))))
 
 static unsigned char rcolor[256],gcolor[256],bcolor[256];
+PETSC_STATIC_INLINE PetscErrorCode InitializeColors(void)
+{
+  PetscErrorCode ierr;
+
+  rcolor[PETSC_DRAW_WHITE] =           255;
+  gcolor[PETSC_DRAW_WHITE] =  255;
+  bcolor[PETSC_DRAW_WHITE] =    255;
+  rcolor[PETSC_DRAW_BLACK] =           0;
+  gcolor[PETSC_DRAW_BLACK] = 0;
+  bcolor[PETSC_DRAW_BLACK] = 0;
+  rcolor[PETSC_DRAW_RED] =             255;
+  gcolor[PETSC_DRAW_RED] =  0;
+  bcolor[PETSC_DRAW_RED] =  0;
+  rcolor[PETSC_DRAW_GREEN] =           0;
+  gcolor[PETSC_DRAW_GREEN] =128;
+  bcolor[PETSC_DRAW_GREEN] =  0;
+  rcolor[PETSC_DRAW_CYAN] =            0;
+  gcolor[PETSC_DRAW_CYAN] = 139;
+  bcolor[PETSC_DRAW_CYAN] =    139;
+  rcolor[PETSC_DRAW_BLUE] =            0;
+  gcolor[PETSC_DRAW_BLUE] = 0;
+  bcolor[PETSC_DRAW_BLUE] =     255;
+  rcolor[PETSC_DRAW_MAGENTA] =         255;
+  gcolor[PETSC_DRAW_MAGENTA] =    0;
+  bcolor[PETSC_DRAW_MAGENTA] =    255;
+  rcolor[PETSC_DRAW_AQUAMARINE] =      127;
+  gcolor[PETSC_DRAW_AQUAMARINE] = 255;
+  bcolor[PETSC_DRAW_AQUAMARINE] =   212;
+  rcolor[PETSC_DRAW_FORESTGREEN] =     34;
+  gcolor[PETSC_DRAW_FORESTGREEN] = 139;
+  bcolor[PETSC_DRAW_FORESTGREEN] =  34;
+  rcolor[PETSC_DRAW_ORANGE] =          255;
+  gcolor[PETSC_DRAW_ORANGE] = 165;
+  bcolor[PETSC_DRAW_ORANGE] = 0;
+  rcolor[PETSC_DRAW_VIOLET] =          238;
+  gcolor[PETSC_DRAW_VIOLET] =  130;
+  bcolor[PETSC_DRAW_VIOLET] =  238;
+  rcolor[PETSC_DRAW_BROWN] =           165;
+  gcolor[PETSC_DRAW_BROWN] = 42;
+  bcolor[PETSC_DRAW_BROWN] = 42;
+  rcolor[PETSC_DRAW_PINK] =            255;
+  gcolor[PETSC_DRAW_PINK] = 192;
+  bcolor[PETSC_DRAW_PINK] = 203;
+  rcolor[PETSC_DRAW_CORAL] =           255;
+  gcolor[PETSC_DRAW_CORAL] = 127;
+  bcolor[PETSC_DRAW_CORAL] = 80;
+  rcolor[PETSC_DRAW_GRAY] =            128;
+  gcolor[PETSC_DRAW_GRAY] = 128;
+  bcolor[PETSC_DRAW_GRAY] = 128;
+  rcolor[PETSC_DRAW_YELLOW] =          255;
+  gcolor[PETSC_DRAW_YELLOW] = 255;
+  bcolor[PETSC_DRAW_YELLOW] =   0;
+  rcolor[PETSC_DRAW_GOLD] =            255;
+  gcolor[PETSC_DRAW_GOLD] =   215;
+  bcolor[PETSC_DRAW_GOLD] =   0;
+  rcolor[PETSC_DRAW_LIGHTPINK] =       255;
+  gcolor[PETSC_DRAW_LIGHTPINK] = 182;
+  bcolor[PETSC_DRAW_LIGHTPINK] = 193;
+  rcolor[PETSC_DRAW_MEDIUMTURQUOISE] = 72;
+  gcolor[PETSC_DRAW_MEDIUMTURQUOISE] =  209;
+  bcolor[PETSC_DRAW_MEDIUMTURQUOISE] = 204;
+  rcolor[PETSC_DRAW_KHAKI] =           240;
+  gcolor[PETSC_DRAW_KHAKI] =230;
+  bcolor[PETSC_DRAW_KHAKI] =140;
+  rcolor[PETSC_DRAW_DIMGRAY] =         105;
+  gcolor[PETSC_DRAW_DIMGRAY] = 105;
+  bcolor[PETSC_DRAW_DIMGRAY] = 105;
+  rcolor[PETSC_DRAW_YELLOWGREEN] =     54;
+  gcolor[PETSC_DRAW_YELLOWGREEN] =   205;
+  bcolor[PETSC_DRAW_YELLOWGREEN] =  50;
+  rcolor[PETSC_DRAW_SKYBLUE] =         135;
+  gcolor[PETSC_DRAW_SKYBLUE] =   206;
+  bcolor[PETSC_DRAW_SKYBLUE] = 235;
+  rcolor[PETSC_DRAW_DARKGREEN] =       0;
+  gcolor[PETSC_DRAW_DARKGREEN] =    100;
+  bcolor[PETSC_DRAW_DARKGREEN] = 0;
+  rcolor[PETSC_DRAW_NAVYBLUE] =       0;
+  gcolor[PETSC_DRAW_NAVYBLUE] =    0;
+  bcolor[PETSC_DRAW_NAVYBLUE] = 128;
+  rcolor[PETSC_DRAW_SANDYBROWN] =      244;
+  gcolor[PETSC_DRAW_SANDYBROWN] =  164;
+  bcolor[PETSC_DRAW_SANDYBROWN] =   96;
+  rcolor[PETSC_DRAW_CADETBLUE] =      95;
+  gcolor[PETSC_DRAW_CADETBLUE] =  158;
+  bcolor[PETSC_DRAW_CADETBLUE] =  160;
+  rcolor[PETSC_DRAW_POWDERBLUE] =     176;
+  gcolor[PETSC_DRAW_POWDERBLUE] =  224;
+  bcolor[PETSC_DRAW_POWDERBLUE] =  230;
+  rcolor[PETSC_DRAW_DEEPPINK] =       255;
+  gcolor[PETSC_DRAW_DEEPPINK] =    20;
+  bcolor[PETSC_DRAW_DEEPPINK] =    147;
+  rcolor[PETSC_DRAW_THISTLE] =        216;
+  gcolor[PETSC_DRAW_THISTLE] =  191;
+  bcolor[PETSC_DRAW_THISTLE] =   216;
+  rcolor[PETSC_DRAW_LIMEGREEN] =      50;
+  gcolor[PETSC_DRAW_LIMEGREEN] =   205;
+  bcolor[PETSC_DRAW_LIMEGREEN] =   50;
+  rcolor[PETSC_DRAW_LAVENDERBLUSH] =  255;
+  gcolor[PETSC_DRAW_LAVENDERBLUSH] =     240;
+  bcolor[PETSC_DRAW_LAVENDERBLUSH] =    245;
+  rcolor[PETSC_DRAW_PLUM] =           221;
+  gcolor[PETSC_DRAW_PLUM] =  160;
+  bcolor[PETSC_DRAW_PLUM] =   221;
+
+    ierr    = PetscDrawUtilitySetCmapHue(rcolor+PETSC_DRAW_BASIC_COLORS,gcolor+PETSC_DRAW_BASIC_COLORS,bcolor+PETSC_DRAW_BASIC_COLORS,256-PETSC_DRAW_BASIC_COLORS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+} 
+
 
 
 #if defined(PETSC_HAVE_GLUT)
@@ -180,9 +288,9 @@ static PetscErrorCode PetscDrawGetMouseButton_OpenGL(PetscDraw draw,PetscDrawBut
 
   PetscFunctionReturn(0);
 }
-#else
+#elif defined(PETSC_HAVE_OPENGLES)
 typedef struct {
-  int  win;          /* OpenGL GLUT window identifier */
+  int  win;          
   int  x,y,w,h;      /* Size and location of window */
 } PetscDraw_OpenGL;
 PETSC_STATIC_INLINE PetscErrorCode OpenGLWindow(PetscDraw_OpenGL *win)
@@ -596,108 +704,7 @@ PetscErrorCode  PetscDrawCreate_GLUT(PetscDraw draw)
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA /* | GLUT_DOUBLE */| GLUT_DEPTH);
     initialized = PETSC_TRUE;
-
-    rcolor[PETSC_DRAW_WHITE] =           255;
-    gcolor[PETSC_DRAW_WHITE] =  255;
-    bcolor[PETSC_DRAW_WHITE] =    255;
-    rcolor[PETSC_DRAW_BLACK] =           0;
-    gcolor[PETSC_DRAW_BLACK] = 0;
-    bcolor[PETSC_DRAW_BLACK] = 0;
-    rcolor[PETSC_DRAW_RED] =             255;
-    gcolor[PETSC_DRAW_RED] =  0;
-    bcolor[PETSC_DRAW_RED] =  0;
-    rcolor[PETSC_DRAW_GREEN] =           0;
-    gcolor[PETSC_DRAW_GREEN] =128;
-    bcolor[PETSC_DRAW_GREEN] =  0;
-    rcolor[PETSC_DRAW_CYAN] =            0;
-    gcolor[PETSC_DRAW_CYAN] = 139;
-    bcolor[PETSC_DRAW_CYAN] =    139;
-    rcolor[PETSC_DRAW_BLUE] =            0;
-    gcolor[PETSC_DRAW_BLUE] = 0;
-    bcolor[PETSC_DRAW_BLUE] =     255;
-    rcolor[PETSC_DRAW_MAGENTA] =         255;
-    gcolor[PETSC_DRAW_MAGENTA] =    0;
-    bcolor[PETSC_DRAW_MAGENTA] =    255;
-    rcolor[PETSC_DRAW_AQUAMARINE] =      127;
-    gcolor[PETSC_DRAW_AQUAMARINE] = 255;
-    bcolor[PETSC_DRAW_AQUAMARINE] =   212;
-    rcolor[PETSC_DRAW_FORESTGREEN] =     34;
-    gcolor[PETSC_DRAW_FORESTGREEN] = 139;
-    bcolor[PETSC_DRAW_FORESTGREEN] =  34;
-    rcolor[PETSC_DRAW_ORANGE] =          255;
-    gcolor[PETSC_DRAW_ORANGE] = 165;
-    bcolor[PETSC_DRAW_ORANGE] = 0;
-    rcolor[PETSC_DRAW_VIOLET] =          238;
-    gcolor[PETSC_DRAW_VIOLET] =  130;
-    bcolor[PETSC_DRAW_VIOLET] =  238;
-    rcolor[PETSC_DRAW_BROWN] =           165;
-    gcolor[PETSC_DRAW_BROWN] = 42;
-    bcolor[PETSC_DRAW_BROWN] = 42;
-    rcolor[PETSC_DRAW_PINK] =            255;
-    gcolor[PETSC_DRAW_PINK] = 192;
-    bcolor[PETSC_DRAW_PINK] = 203;
-    rcolor[PETSC_DRAW_CORAL] =           255;
-    gcolor[PETSC_DRAW_CORAL] = 127;
-    bcolor[PETSC_DRAW_CORAL] = 80;
-    rcolor[PETSC_DRAW_GRAY] =            128;
-    gcolor[PETSC_DRAW_GRAY] = 128;
-    bcolor[PETSC_DRAW_GRAY] = 128;
-    rcolor[PETSC_DRAW_YELLOW] =          255;
-    gcolor[PETSC_DRAW_YELLOW] = 255;
-    bcolor[PETSC_DRAW_YELLOW] =   0;
-    rcolor[PETSC_DRAW_GOLD] =            255;
-    gcolor[PETSC_DRAW_GOLD] =   215;
-    bcolor[PETSC_DRAW_GOLD] =   0;
-    rcolor[PETSC_DRAW_LIGHTPINK] =       255;
-    gcolor[PETSC_DRAW_LIGHTPINK] = 182;
-    bcolor[PETSC_DRAW_LIGHTPINK] = 193;
-    rcolor[PETSC_DRAW_MEDIUMTURQUOISE] = 72;
-    gcolor[PETSC_DRAW_MEDIUMTURQUOISE] =  209;
-    bcolor[PETSC_DRAW_MEDIUMTURQUOISE] = 204;
-    rcolor[PETSC_DRAW_KHAKI] =           240;
-    gcolor[PETSC_DRAW_KHAKI] =230;
-    bcolor[PETSC_DRAW_KHAKI] =140;
-    rcolor[PETSC_DRAW_DIMGRAY] =         105;
-    gcolor[PETSC_DRAW_DIMGRAY] = 105;
-    bcolor[PETSC_DRAW_DIMGRAY] = 105;
-    rcolor[PETSC_DRAW_YELLOWGREEN] =     54;
-    gcolor[PETSC_DRAW_YELLOWGREEN] =   205;
-    bcolor[PETSC_DRAW_YELLOWGREEN] =  50;
-    rcolor[PETSC_DRAW_SKYBLUE] =         135;
-    gcolor[PETSC_DRAW_SKYBLUE] =   206;
-    bcolor[PETSC_DRAW_SKYBLUE] = 235;
-    rcolor[PETSC_DRAW_DARKGREEN] =       0;
-    gcolor[PETSC_DRAW_DARKGREEN] =    100;
-    bcolor[PETSC_DRAW_DARKGREEN] = 0;
-    rcolor[PETSC_DRAW_NAVYBLUE] =       0;
-    gcolor[PETSC_DRAW_NAVYBLUE] =    0;
-    bcolor[PETSC_DRAW_NAVYBLUE] = 128;
-    rcolor[PETSC_DRAW_SANDYBROWN] =      244;
-    gcolor[PETSC_DRAW_SANDYBROWN] =  164;
-    bcolor[PETSC_DRAW_SANDYBROWN] =   96;
-    rcolor[PETSC_DRAW_CADETBLUE] =      95;
-    gcolor[PETSC_DRAW_CADETBLUE] =  158;
-    bcolor[PETSC_DRAW_CADETBLUE] =  160;
-    rcolor[PETSC_DRAW_POWDERBLUE] =     176;
-    gcolor[PETSC_DRAW_POWDERBLUE] =  224;
-    bcolor[PETSC_DRAW_POWDERBLUE] =  230;
-    rcolor[PETSC_DRAW_DEEPPINK] =       255;
-    gcolor[PETSC_DRAW_DEEPPINK] =    20;
-    bcolor[PETSC_DRAW_DEEPPINK] =    147;
-    rcolor[PETSC_DRAW_THISTLE] =        216;
-    gcolor[PETSC_DRAW_THISTLE] =  191;
-    bcolor[PETSC_DRAW_THISTLE] =   216;
-    rcolor[PETSC_DRAW_LIMEGREEN] =      50;
-    gcolor[PETSC_DRAW_LIMEGREEN] =   205;
-    bcolor[PETSC_DRAW_LIMEGREEN] =   50;
-    rcolor[PETSC_DRAW_LAVENDERBLUSH] =  255;
-    gcolor[PETSC_DRAW_LAVENDERBLUSH] =     240;
-    bcolor[PETSC_DRAW_LAVENDERBLUSH] =    245;
-    rcolor[PETSC_DRAW_PLUM] =           221;
-    gcolor[PETSC_DRAW_PLUM] =  160;
-    bcolor[PETSC_DRAW_PLUM] =   221;
-
-    ierr    = PetscDrawUtilitySetCmapHue(rcolor+PETSC_DRAW_BASIC_COLORS,gcolor+PETSC_DRAW_BASIC_COLORS,bcolor+PETSC_DRAW_BASIC_COLORS,256-PETSC_DRAW_BASIC_COLORS);CHKERRQ(ierr);
+    ierr = InitializeColors();CHKERRQ(ierr);
   }
 
   /*
@@ -812,7 +819,6 @@ PetscErrorCode  PetscDrawCreate_GLUT(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawOpenGLUT" 
@@ -865,6 +871,42 @@ PetscErrorCode  PetscDrawOpenGLUT(MPI_Comm comm,const char display[],const char 
   ierr = PetscDrawSetType(*draw,PETSC_DRAW_GLUT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#elif defined(PETSC_HAVE_OPENGLES)
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawCreate_OpenGLES" 
+PetscErrorCode  PetscDrawCreate_OpenGLES(PetscDraw draw)
+{
+  PetscDraw_OpenGL *Xwin;
+  PetscErrorCode   ierr;
+  PetscInt         xywh[4],osize = 4;
+  int              x = draw->x,y = draw->y,w = draw->w,h = draw->h;
+  static PetscBool initialized = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  if (!initialized) {
+    initialized = PETSC_TRUE;
+    ierr = InitializeColors();CHKERRQ(ierr);
+  }
+
+  ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
+  ierr = PetscNew(PetscDraw_OpenGL,&Xwin);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
+  draw->data = Xwin;
+
+  if (x < 0 || y < 0)   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative corner of window");
+  if (w <= 0 || h <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
+
+  Xwin->x      = x;
+  Xwin->y      = y;
+  Xwin->w      = w;
+  Xwin->h      = h;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+#endif
 
 
 
