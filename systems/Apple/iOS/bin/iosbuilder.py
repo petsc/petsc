@@ -63,6 +63,7 @@ class PETScMaker(script.Script):
    help = script.Script.setupHelp(self, help)
    help.addArgument('RepManager', '-rootDir', nargs.ArgDir(None, os.environ['PETSC_DIR'], 'The root directory for this build', isTemporary = 1))
    help.addArgument('RepManager', '-dryRun',  nargs.ArgBool(None, False, 'Only output what would be run', isTemporary = 1))
+   help.addArgument('RepManager', '-skipXCode',  nargs.ArgBool(None, False, 'Do not run XCode application/files have not been added/removed', isTemporary = 1))
    help.addArgument('RepManager', '-verbose', nargs.ArgInt(None, 0, 'The verbosity level', min = 0, isTemporary = 1))
    return help
 
@@ -76,6 +77,11 @@ class PETScMaker(script.Script):
  def verbose(self):
    '''The verbosity level'''
    return self.argDB['verbose']
+
+ @property
+ def skipXCode(self):
+   '''Skip XCode application'''
+   return self.argDB['skipXCode']
 
  @property
  def dryRun(self):
@@ -127,8 +133,8 @@ class PETScMaker(script.Script):
      if self.verbose: print 'Linking C files',cnames
      for i in cnames:
        j = i[l+1:]
-       if not os.path.islink(os.path.join(basedir,i)):
-         if i.endswith('openglops.c'):
+       if not os.path.islink(os.path.join(basedir,i)) and not i.startswith('.'):
+         if i.endswith('openglops.c') and not os.path.islink(os.path.join(basedir,'openglops.m')):
            os.symlink(os.path.join(dirname,i),os.path.join(basedir,'openglops.m'))
          else:
            os.symlink(os.path.join(dirname,i),os.path.join(basedir,i))
@@ -254,16 +260,18 @@ class PETScMaker(script.Script):
      for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
        dirs.remove(badDir)
 
-   print 'In Xcode mouse click on xcode-links and the delete key, then'
-   print 'control mouse click on "Other Sources" and select "Add files to PETSc ...", then'
-   print 'in the finder window locate ${PETSC_DIR}/arch-ios/xcode-links and select it. Now'
-   print 'exit Xcode'
+   if not self.skipXCode:
 
-   try:
-     import subprocess
-     subprocess.call('cd '+os.path.join(os.environ['PETSC_DIR'],'systems','Apple','iOS','PETSc')+';open -W PETSc.xcodeproj', shell=True)
-   except RuntimeError, e:
-     raise RuntimeError('Error opening xcode project '+str(e))
+     print 'In Xcode mouse click on xcode-links and the delete key, then'
+     print 'control mouse click on "Other Sources" and select "Add files to PETSc ...", then'
+     print 'in the finder window locate ${PETSC_DIR}/arch-ios/xcode-links and select it. Now'
+     print 'exit Xcode'
+
+     try:
+       import subprocess
+       subprocess.call('cd '+os.path.join(os.environ['PETSC_DIR'],'systems','Apple','iOS','PETSc')+';open -W PETSc.xcodeproj', shell=True)
+     except RuntimeError, e:
+       raise RuntimeError('Error opening xcode project '+str(e))
 
 
    sdk         = ' -sdk iphonesimulator5.1 '

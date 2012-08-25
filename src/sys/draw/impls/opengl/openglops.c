@@ -15,6 +15,7 @@
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>
 #import <OpenGLES/EAGLDrawable.h>
+#import <OpenGLES/ES2/gl.h>
 #elif defined(PETSC_HAVE_GLUT)
 #if defined(__APPLE__) || defined(MACOSX)
 #include <AvailabilityMacros.h>
@@ -290,9 +291,9 @@ static PetscErrorCode PetscDrawGetMouseButton_OpenGL(PetscDraw draw,PetscDrawBut
 }
 #elif defined(PETSC_HAVE_OPENGLES)
 typedef struct {
-  int  win;          
-  int  x,y,w,h;      /* Size and location of window */
+  int  win;
 } PetscDraw_OpenGL;
+extern GLKView *globalGLKView;
 PETSC_STATIC_INLINE PetscErrorCode OpenGLWindow(PetscDraw_OpenGL *win)
 {
   return 0;
@@ -317,6 +318,14 @@ static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
 #define __FUNCT__ "PetscDrawFlush_OpenGL" 
 static PetscErrorCode PetscDrawFlush_OpenGL(PetscDraw draw)
 {
+  GLenum err;
+  glFlush();
+  err = glGetError();
+  if (err != GL_NO_ERROR) {
+    NSLog(@"GL error detected glFlush()");
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to flush OpenGL Error Code %d",err);
+  }
+  [globalGLKView display];
   return 0;
 }
 #undef __FUNCT__  
@@ -452,24 +461,32 @@ static PetscErrorCode PetscDrawLine_OpenGL(PetscDraw draw,PetscReal xl,PetscReal
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
   GLfloat           linevertices[4],colors[6];
   PetscErrorCode    ierr;
+  GLenum            err;
 
   PetscFunctionBegin;
   linevertices[0]  = XTRANS(draw,XiWin,xl);
   linevertices[2]  = XTRANS(draw,XiWin,xr);
   linevertices[1]  = YTRANS(draw,XiWin,yl);
   linevertices[3]  = YTRANS(draw,XiWin,yr);
-  if (linevertices[0] == linevertices[2] && linevertices[1] == linevertices[4]) PetscFunctionReturn(0);
+  if (linevertices[0] == linevertices[2] && linevertices[1] == linevertices[3]) PetscFunctionReturn(0);
   colors[0] = rcolor[cl]/255.0;  colors[1] = gcolor[cl]/255.0; colors[2] = bcolor[cl]/255.0;
   colors[3] = rcolor[cl]/255.0;  colors[4] = gcolor[cl]/255.0; colors[5] = bcolor[cl]/255.0;
 
   ierr = OpenGLWindow(win);CHKERRQ(ierr);
   glEnableClientState(GL_VERTEX_ARRAY);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
   glEnableClientState(GL_COLOR_ARRAY);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
   glVertexPointer(2, GL_FLOAT, 0, linevertices);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
   glColorPointer(3, GL_FLOAT, 0, colors);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
   glDrawArrays(GL_LINES, 0, 2);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
   glDisableClientState(GL_VERTEX_ARRAY);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
   glDisableClientState(GL_COLOR_ARRAY);
+   err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
   PetscFunctionReturn(0);
 }
 
@@ -623,10 +640,9 @@ static PetscErrorCode PetscDrawPause_OpenGL(PetscDraw draw)
 static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
 {
   PetscErrorCode   ierr;
-  PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
 
   PetscFunctionBegin;
-  ierr = PetscDrawCreate(((PetscObject)draw)->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+36,220,220,popup);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(((PetscObject)draw)->comm,PETSC_NULL,PETSC_NULL,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,popup);CHKERRQ(ierr);
   ierr = PetscDrawSetType(*popup,((PetscObject)draw)->type_name);CHKERRQ(ierr);
   draw->popup = *popup;
   PetscFunctionReturn(0);
@@ -881,9 +897,8 @@ PetscErrorCode  PetscDrawCreate_OpenGLES(PetscDraw draw)
 {
   PetscDraw_OpenGL *Xwin;
   PetscErrorCode   ierr;
-  PetscInt         xywh[4],osize = 4;
-  int              x = draw->x,y = draw->y,w = draw->w,h = draw->h;
   static PetscBool initialized = PETSC_FALSE;
+  GLenum           err;
 
   PetscFunctionBegin;
   if (!initialized) {
@@ -896,13 +911,16 @@ PetscErrorCode  PetscDrawCreate_OpenGLES(PetscDraw draw)
   ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
   draw->data = Xwin;
 
-  if (x < 0 || y < 0)   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative corner of window");
-  if (w <= 0 || h <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
+  ierr = PetscDrawLine_OpenGL(draw,0.0,0.0,1.0,1.0,PETSC_DRAW_BLACK);CHKERRQ(ierr); 
+  glFlush();
+  err = glGetError();
+  if (err != GL_NO_ERROR) {
+    NSLog(@"GL error detected glFlush()");
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to flush OpenGL Error Code %d",err);
+  }
+  [globalGLKView display];
+  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to flush OpenGL Error Code %d",err);
 
-  Xwin->x      = x;
-  Xwin->y      = y;
-  Xwin->w      = w;
-  Xwin->h      = h;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
