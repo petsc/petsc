@@ -163,7 +163,7 @@ PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
     /* scalar updates */
     omega = xi2 / xi3;
     beta = - xi4 / sigma;
-    rho = sqrt(fabs(xi1 - omega * xi2)); /* residual norm */
+    rho = PetscSqrtReal(PetscAbsScalar(xi1 - omega * xi2)); /* residual norm */
 
     /* vector updates */
     ierr = VecAXPBYPCZ(X,alpha,omega,1.0,P2,S2);CHKERRQ(ierr); /* x <- alpha * p2 + omega * s2 + x */

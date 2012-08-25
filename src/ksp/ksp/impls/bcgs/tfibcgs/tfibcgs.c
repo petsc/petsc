@@ -161,7 +161,7 @@ PetscErrorCode  KSPSolve_TFIBCGS(KSP ksp)
     /* scalar updates */
     omega = xi2 / xi3;
     beta = - xi4 / sigma;
-    rho = sqrt(fabs(xi1 - omega * xi2)); /* residual norm */
+    rho = PetscSqrtReal(PetscAbsScalar(xi1 - omega * xi2)); /* residual norm */ 
     tau = xi5 - omega * xi4;
     sigma = - omega * (xi6 + beta * xi7);
 
@@ -220,6 +220,9 @@ PetscErrorCode  KSPCreate_TFIBCGS(KSP ksp)
   KSP_BCGS       *bcgs;
 
   PetscFunctionBegin;
+#if defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"TFIBCGS is only correct for the real case... Need to modify for complex numbers...");
+#endif
   ierr = PetscNewLog(ksp,KSP_BCGS,&bcgs);CHKERRQ(ierr);
   ksp->data                 = bcgs;
   ksp->ops->setup           = KSPSetUp_TFIBCGS;

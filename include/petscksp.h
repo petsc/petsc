@@ -274,12 +274,8 @@ PETSC_EXTERN PetscErrorCode KSPMonitorSingularValue(KSP,PetscInt,PetscReal,void 
 PETSC_EXTERN PetscErrorCode KSPMonitorDefault(KSP,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode KSPLSQRMonitorDefault(KSP,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode KSPMonitorRange(KSP,PetscInt,PetscReal,void *);
-
-
 PETSC_EXTERN PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy);
 PETSC_EXTERN PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy);
-
-
 PETSC_EXTERN PetscErrorCode KSPMonitorTrueResidualNorm(KSP,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode KSPMonitorDefaultShort(KSP,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode KSPMonitorSolution(KSP,PetscInt,PetscReal,void *);
