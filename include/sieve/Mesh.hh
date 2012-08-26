@@ -1699,6 +1699,16 @@ namespace ALE {
     };
     int getMaxDof() const {return this->_maxDof;};
     void setMaxDof(const int maxDof) {this->_maxDof = maxDof;};
+    void copy(const Obj<IMesh>& m) {
+      this->setSieve(m->getSieve());
+      this->setLabel("height", m->getLabel("height"));
+      this->_maxHeight = m->height();
+      this->setLabel("depth", m->getLabel("depth"));
+      this->_maxDepth  = m->depth();
+      this->setLabel("marker", m->getLabel("marker"));
+      this->setRealSection("coordinates", m->getRealSection("coordinates"));
+      this->setArrowSection("orientation", m->getArrowSection("orientation"));
+    };
   public: // Sizes
     template<typename Section>
     int size(const Obj<Section>& section, const point_type& p) {
