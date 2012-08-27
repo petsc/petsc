@@ -226,7 +226,7 @@ PetscErrorCode  SNESLineSearchGetPreCheck(SNESLineSearch linesearch, SNESLineSea
                 function evaluation routine (may be PETSC_NULL)
 
    Calling sequence of func:
-$    func (SNESLineSearch linesearch,Vec x, Vec w, Vec y, PetscBool *changed_w, *changed_y);
+$    func (SNESLineSearch linesearch,Vec x,Vec y,  Vec w, *changed_y, PetscBool *changed_w);
 
 +  x - old solution vector
 .  y - search direction vector
