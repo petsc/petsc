@@ -8,8 +8,10 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.liblist   = [['libcholmod.a','libamd.a','libcolamd.a','libcamd.a','libccolamd.a'],
-                      ['libcholmod.a','libamd.a','libcolamd.a','libcamd.a','libccolamd.a','libmetis.a']]
-    self.functions = ['cholmod_l_solve'] 
+                      ['libcholmod.a','libamd.a','libcolamd.a','libcamd.a','libccolamd.a','libsuitesparseconfig.a'],
+                      ['libcholmod.a','libamd.a','libcolamd.a','libcamd.a','libccolamd.a','libmetis.a'],
+                      ['libcholmod.a','libamd.a','libcolamd.a','libcamd.a','libccolamd.a','libmetis.a','libsuitesparseconfig.a']]
+    self.functions = ['cholmod_l_solve']
     self.includes  = ['cholmod.h']
     self.complex   = 1
     return
@@ -47,7 +49,7 @@ class Configure(config.package.Package):
     g.write('CHOLMOD_CONFIG   = '+flg+'\n')
     g.write('CLEAN = *.o *.obj *.ln *.bb *.bbg *.da *.tcov *.gcov gmon.out *.bak *.d\n')
     g.close()
-    
+
     # Build CHOLMOD
     if self.installNeeded(mkfile):
       try:
