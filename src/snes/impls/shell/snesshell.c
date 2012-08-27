@@ -88,7 +88,7 @@ PetscErrorCode SNESView_Shell(SNES snes, PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESShellGetContext"
-/*@C
+/*@
     SNESShellGetContext - Returns the user-provided context associated with a shell SNES
 
     Not Collective
