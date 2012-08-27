@@ -586,16 +586,16 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,2);CHKERRQ(ierr);
       {
         PC pcinner;
-        ierr           = KSPGetPC(ksp, &pcinner); CHKERRQ(ierr);
-        ierr           = PetscObjectIncrementTabLevel((PetscObject)pcinner,(PetscObject)pc,2);CHKERRQ(ierr);
+        ierr = KSPGetPC(ksp,&pcinner);CHKERRQ(ierr);
+        ierr = PetscObjectIncrementTabLevel((PetscObject)pcinner,(PetscObject)pc,2);CHKERRQ(ierr);
       }
       ierr  = PetscSNPrintf(schurprefix,sizeof schurprefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",jac->head->splitname);CHKERRQ(ierr);
       ierr  = KSPSetOptionsPrefix(ksp,schurprefix);CHKERRQ(ierr);
       /* Can't do KSPGetDM(jac->head->ksp,&dminner); KSPSetDM(ksp,dminner): KSPGetDM() will create DMShell, if the DM hasn't been set - not what we want. */
       /* i.e. Dmitry says that something in petsc-3.3 misbehaves if a DMShell is passed instead of no DM at all. Such behavior is incorrect. */
-      ierr = KSPSetDM(ksp,jac->head->dm);       CHKERRQ(ierr);
-      ierr = KSPSetDMActive(ksp, PETSC_FALSE);  CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(ksp); CHKERRQ(ierr);
+      ierr = KSPSetDM(ksp,jac->head->dm);CHKERRQ(ierr);
+      ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
       /* Need to call this everytime because new matrix is being created */
       ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
       ierr  = MatSetUp(jac->schur);CHKERRQ(ierr);
@@ -604,8 +604,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
       ierr  = PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1);CHKERRQ(ierr);
       /* Can't do KSPGetDM(ilink->ksp,&dmschur); KSPSetDM(kspshur,dmschur): KSPGetDM() will create DMShell, if the DM hasn't been set - not what we want. */
-      ierr = KSPSetDM(jac->kspschur,ilink->dm);           CHKERRQ(ierr);
-      ierr = KSPSetDMActive(jac->kspschur, PETSC_FALSE);  CHKERRQ(ierr);
+      ierr = KSPSetDM(jac->kspschur,ilink->dm);CHKERRQ(ierr);
+      ierr = KSPSetDMActive(jac->kspschur,PETSC_FALSE);CHKERRQ(ierr);
 
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELF) {
@@ -614,11 +614,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr = PCSetType(pcschur,PCNONE);CHKERRQ(ierr);
         /* Note: This is bad if there exist preconditioners for MATSCHURCOMPLEMENT */
       }
-      /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
-      /* need to call this every time, since the jac->kspschur is freshly created, otherwise its options never get set */
       ierr = PetscSNPrintf(schurprefix,sizeof schurprefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",ilink->splitname);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(jac->kspschur,schurprefix);CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(jac->kspschur); CHKERRQ(ierr);
+      /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
+      /* need to call this every time, since the jac->kspschur is freshly created, otherwise its options never get set */
+      ierr = KSPSetFromOptions(jac->kspschur);CHKERRQ(ierr);
     }
 
     /* HACK: special support to forward L and Lp matrices that might be used by PCLSC */
@@ -635,9 +635,9 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     i    = 0;
     ilink = jac->head;
     while (ilink) {
-      ierr = KSPSetOperators(ilink->ksp,jac->mat[i],jac->pmat[i],flag); CHKERRQ(ierr);
+      ierr = KSPSetOperators(ilink->ksp,jac->mat[i],jac->pmat[i],flag);CHKERRQ(ierr);
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
-      if (!jac->suboptionsset){ierr = KSPSetFromOptions(ilink->ksp);CHKERRQ(ierr);}
+      if (!jac->suboptionsset) {ierr = KSPSetFromOptions(ilink->ksp);CHKERRQ(ierr);}
       i++;
       ilink = ilink->next;
     }
