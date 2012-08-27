@@ -549,13 +549,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     /* When extracting off-diagonal submatrices, we take complements from this range */
     ierr  = MatGetOwnershipRangeColumn(pc->mat,&rstart,&rend);CHKERRQ(ierr);
 
-    /* 
-     Set from options only the A00 split.  The other split's solver won't be used with Schur. 
-     Should it be destroyed?  Should KSPCreate() be moved here from PCFieldSplitSetIS() and invoked 
-     only when necessary? 
-     */
-    ierr = KSPSetFromOptions(jac->head->ksp);CHKERRQ(ierr);
-
     /* need to handle case when one is resetting up the preconditioner */
     if (jac->schur) {
       ilink = jac->head;
@@ -586,7 +579,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       /* Use mat[0] (diagonal block of the real matrix) preconditioned by pmat[0] */
       ierr  = MatCreateSchurComplement(jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],&jac->schur);CHKERRQ(ierr);
       ierr  = MatGetNullSpace(jac->pmat[1], &sp);CHKERRQ(ierr);
-      /* Do we really want to attach the A11-block's nullspace to S? */
+      /* FIXME: Attaching the A11-block's nullspace to S in lieu of a composable way to provide a null space for S  */
       if (sp) {ierr  = MatSetNullSpace(jac->schur, sp);CHKERRQ(ierr);}
       /* set tabbing, options prefix and DM of KSP inside the MatSchurComplement */
       ierr  = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
@@ -599,21 +592,17 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = PetscSNPrintf(schurprefix,sizeof schurprefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",jac->head->splitname);CHKERRQ(ierr);
       ierr  = KSPSetOptionsPrefix(ksp,schurprefix);CHKERRQ(ierr);
       /* Can't do KSPGetDM(jac->head->ksp,&dminner); KSPSetDM(ksp,dminner): KSPGetDM() will create DMShell, if the DM hasn't been set - not what we want. */
+      /* i.e. Dmitry says that something in petsc-3.3 misbehaves if a DMShell is passed instead of no DM at all. Such behavior is incorrect. */
       ierr = KSPSetDM(ksp,jac->head->dm);       CHKERRQ(ierr);
       ierr = KSPSetDMActive(ksp, PETSC_FALSE);  CHKERRQ(ierr);
       ierr = KSPSetFromOptions(ksp); CHKERRQ(ierr);
       /* Need to call this everytime because new matrix is being created */
       ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
       ierr  = MatSetUp(jac->schur);CHKERRQ(ierr);
-      /* Create and set up the KSP for the Schur complement; forward the second split's DM and set up tabbing, including for the contained PC. */
+      /* Create and set up the KSP for the Schur complement; forward the second split's DM and set up tabbingn. */
       ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);CHKERRQ(ierr);
       ierr  = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
       ierr  = PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1);CHKERRQ(ierr);
-      {
-        PC pcschur;
-        ierr           = KSPGetPC(jac->kspschur, &pcschur); CHKERRQ(ierr);
-        ierr           = PetscObjectIncrementTabLevel((PetscObject)pcschur,(PetscObject)pc,1);CHKERRQ(ierr);
-      }
       /* Can't do KSPGetDM(ilink->ksp,&dmschur); KSPSetDM(kspshur,dmschur): KSPGetDM() will create DMShell, if the DM hasn't been set - not what we want. */
       ierr = KSPSetDM(jac->kspschur,ilink->dm);           CHKERRQ(ierr);
       ierr = KSPSetDMActive(jac->kspschur, PETSC_FALSE);  CHKERRQ(ierr);
@@ -1145,11 +1134,6 @@ PetscErrorCode  PCFieldSplitSetIS_FieldSplit(PC pc,const char splitname[],IS is)
   ilink->next    = PETSC_NULL;
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
   ierr           = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-  { 
-    PC ilinkpc;
-    ierr           = KSPGetPC(ilink->ksp, &ilinkpc); CHKERRQ(ierr);
-    ierr           = PetscObjectIncrementTabLevel((PetscObject)ilinkpc,(PetscObject)pc,1);CHKERRQ(ierr);
-  }
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
   ierr           = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->ksp);CHKERRQ(ierr);
 
