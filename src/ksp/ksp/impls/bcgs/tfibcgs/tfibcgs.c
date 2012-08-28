@@ -25,7 +25,8 @@ PetscErrorCode  KSPSolve_TFIBCGS(KSP ksp)
 {
   PetscErrorCode    ierr;
   PetscInt          i,j,N;
-  PetscScalar       tau,sigma,rho,alpha,omega,beta;
+  PetscReal         rho;
+  PetscScalar       tau,sigma,alpha,omega,beta;
   PetscScalar       xi1,xi2,xi3,xi4,xi5,xi6,xi7;
   Vec               X,B,R,V2,S2,T2,P2,RP,V,S,T,Q,U;
   PetscScalar       *PETSC_RESTRICT rp, *PETSC_RESTRICT r, *PETSC_RESTRICT s, *PETSC_RESTRICT t, *PETSC_RESTRICT q;
