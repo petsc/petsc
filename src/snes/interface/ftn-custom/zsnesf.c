@@ -72,7 +72,7 @@ snes->fortran_func_pointers usage:
 9: unused
 10: ourdestroy
 11: oursnestest ctx
-12: oursnesshell
+12: unused
 13: oursnesgs
 
  */
