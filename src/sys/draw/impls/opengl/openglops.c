@@ -35,10 +35,13 @@
 #define YTRANS(draw,xwin,y)  (-1.0 + 2.0*((draw)->port_yl + (((y - (draw)->coor_yl)*((draw)->port_yr - (draw)->port_yl))/((draw)->coor_yr - (draw)->coor_yl))))
 
 static unsigned char rcolor[256],gcolor[256],bcolor[256];
-PETSC_STATIC_INLINE PetscErrorCode InitializeColors(void)
+#undef __FUNCT__  
+#define __FUNCT__ "InitializeColors" 
+static PetscErrorCode InitializeColors(void)
 {
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   rcolor[PETSC_DRAW_WHITE] =           255;
   gcolor[PETSC_DRAW_WHITE] =  255;
   bcolor[PETSC_DRAW_WHITE] =    255;
@@ -143,7 +146,138 @@ PETSC_STATIC_INLINE PetscErrorCode InitializeColors(void)
   PetscFunctionReturn(0);
 } 
 
+static GLuint        vertexshader,fragmentshader,shaderprogram;
+#undef __FUNCT__  
+#define __FUNCT__ "InitializeShader" 
+static PetscErrorCode InitializeShader(void)
+{
+  const char     *vertexsource = "attribute vec2 position;\
+                                  attribute vec3 color; \
+                                  varying vec4 vColor;\
+                                  void main(void)\
+                                 {\
+                                   vColor = vec4(color,0.50);\
+                                   gl_Position = vec4(position,0.0,1.0);\
+                                 }\n";
+  const char    *fragmentsource = "varying vec4 vColor;\
+                                   void main (void)\
+                                   {\
+                                     gl_FragColor = vColor; \
+                                   }\n";
+  int           isCompiled_VS, isCompiled_FS;
+  int           isLinked;
+  GLenum        err;
 
+  /* vec4 (0.0, 1.0, 0.0, 1.0) */
+
+  PetscFunctionBegin;
+  /*  http://www.opengl.org/wiki/OpenGL_Shading_Language */
+  /* Create an empty vertex shader handle */
+  vertexshader = glCreateShader(GL_VERTEX_SHADER);
+ 
+  /* Send the vertex shader source code to GL */
+  /* Note that the source code is NULL character terminated. */
+  /* GL will automatically detect that therefore the length info can be 0 in this case (the last parameter) */
+  glShaderSource(vertexshader, 1, (const GLchar**)&vertexsource, 0);
+ 
+  /* Compile the vertex shader */
+  glCompileShader(vertexshader);
+  glGetShaderiv(vertexshader, GL_COMPILE_STATUS, &isCompiled_VS);
+  if(isCompiled_VS == GL_FALSE) {
+    PetscErrorCode ierr;
+    int            maxLength;
+    char           *vertexInfoLog;
+    glGetShaderiv(vertexshader, GL_INFO_LOG_LENGTH, &maxLength);
+    ierr = PetscMalloc(maxLength*sizeof(char),&vertexInfoLog);CHKERRQ(ierr);
+    glGetShaderInfoLog(vertexshader, maxLength, &maxLength, vertexInfoLog);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Failed to compile vertex shader %s",vertexInfoLog);
+  }
+ 
+  /* Create an empty fragment shader handle */
+  fragmentshader = glCreateShader(GL_FRAGMENT_SHADER);
+ 
+  /* Send the fragment shader source code to GL */
+  /* Note that the source code is NULL character terminated. */
+  /* GL will automatically detect that therefore the length info can be 0 in this case (the last parameter) */
+  glShaderSource(fragmentshader, 1, (const GLchar**)&fragmentsource, 0);
+ 
+  /* Compile the fragment shader */
+  glCompileShader(fragmentshader);
+  glGetShaderiv(fragmentshader, GL_COMPILE_STATUS, &isCompiled_FS);
+  if(isCompiled_FS == GL_FALSE) {
+    /*
+    char          *fragmentInfoLog;
+    glGetShaderiv(fragmentshader, GL_INFO_LOG_LENGTH, &maxLength);
+    fragmentInfoLog = new char[maxLength];
+    glGetShaderInfoLog(fragmentshader, maxLength, &maxLength, fragmentInfoLog);
+    delete [] fragmentInfoLog;
+    */
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Failed to compile fragment shader");
+  }
+ 
+  /* If we reached this point it means the vertex and fragment shaders compiled and are syntax error free. */
+  /* We must link them together to make a GL shader program */
+  /* GL shader programs are monolithic. It is a single piece made of 1 vertex shader and 1 fragment shader. */
+  /* Assign our program handle a "name" */
+  shaderprogram = glCreateProgram();
+ 
+  /* Attach our shaders to our program */
+  glAttachShader(shaderprogram, vertexshader);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
+  glAttachShader(shaderprogram, fragmentshader);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
+ 
+  glBindAttribLocation(shaderprogram,0,"position");
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
+  glBindAttribLocation(shaderprogram,1,"color");
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
+
+  /* Link our program */
+  /* At this stage, the vertex and fragment programs are inspected, optimized and a binary code is generated for the shader. */
+  /* The binary code is uploaded to the GPU, if there is no error. */
+  glLinkProgram(shaderprogram);
+ 
+  /* Again, we must check and make sure that it linked. If it fails, it would mean either there is a mismatch between the vertex */
+  /* and fragment shaders. It might be that you have surpassed your GPU's abilities. Perhaps too many ALU operations or */
+  /* too many texel fetch instructions or too many interpolators or dynamic loops. */
+ 
+  glGetProgramiv(shaderprogram, GL_LINK_STATUS, &isLinked);
+  if(isLinked == GL_FALSE) {
+    /* 
+    char          *shaderProgramInfoLog;
+    glGetProgramiv(shaderprogram, GL_INFO_LOG_LENGTH, &maxLength);
+    shaderProgramInfoLog = new char[maxLength];
+    glGetProgramInfoLog(shaderprogram, maxLength, &maxLength, shaderProgramInfoLog);
+    free(shaderProgramInfoLog);
+    */
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Failed to compile fragment shader");
+  }
+ 
+  /* In your rendering code, you just need to call glUseProgram, call the various glUniform** to update your uniforms */
+  /* and then render. */
+  /* Load the shader into the rendering pipeline */
+  glUseProgram(shaderprogram);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "FinalizeShader" 
+static PetscErrorCode FinalizeShader(void)
+{
+  PetscFunctionBegin;
+  /* When the user shuts down your program, you should deallocate all your GL resources. */
+  /* Unbind your shader. */
+  glUseProgram(0);
+  /* Let's detach */
+  glDetachShader(shaderprogram, vertexshader);
+  glDetachShader(shaderprogram, fragmentshader);
+  /* Delete the shaders */
+  glDeleteShader(vertexshader);
+  glDeleteShader(fragmentshader);
+  /* Delete the shader object */
+  glDeleteProgram(shaderprogram);
+  PetscFunctionReturn(0);
+} 
 
 #if defined(PETSC_HAVE_GLUT)
 #include <GLUT/glut.h>
@@ -379,7 +513,7 @@ static PetscErrorCode PetscDrawClear_OpenGL(PetscDraw draw)
 
   PetscFunctionBegin;
   ierr = OpenGLWindow(XiWin);CHKERRQ(ierr);
-  xl = -1.0 + 2.0*((draw)->port_xl);
+  /*  xl = -1.0 + 2.0*((draw)->port_xl);
   xr = -1.0 + 2.0*((draw)->port_xr);
   yl = -1.0 + 2.0*((draw)->port_yl);
   yr = -1.0 + 2.0*((draw)->port_yr);
@@ -413,7 +547,7 @@ static PetscErrorCode PetscDrawClear_OpenGL(PetscDraw draw)
   glColorPointer(3, GL_FLOAT, 0, colors);
   glDrawArrays(GL_TRIANGLES, 0, 6);
   glDisableClientState(GL_VERTEX_ARRAY);
-  glDisableClientState(GL_COLOR_ARRAY);
+   glDisableClientState(GL_COLOR_ARRAY);*/
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -462,6 +596,9 @@ static PetscErrorCode PetscDrawLine_OpenGL(PetscDraw draw,PetscReal xl,PetscReal
   GLfloat           linevertices[4],colors[6];
   PetscErrorCode    ierr;
   GLenum            err;
+  GLuint            positionBufferObject;
+  GLuint            colorBufferObject;
+
 
   PetscFunctionBegin;
   linevertices[0]  = XTRANS(draw,XiWin,xl);
@@ -473,7 +610,38 @@ static PetscErrorCode PetscDrawLine_OpenGL(PetscDraw draw,PetscReal xl,PetscReal
   colors[3] = rcolor[cl]/255.0;  colors[4] = gcolor[cl]/255.0; colors[5] = bcolor[cl]/255.0;
 
   ierr = OpenGLWindow(win);CHKERRQ(ierr);
-  glEnableClientState(GL_VERTEX_ARRAY);
+  /*  glColor3ub(rcolor[PETSC_DRAW_BLACK],gcolor[PETSC_DRAW_BLACK],bcolor[PETSC_DRAW_BLACK]); */
+
+  /* http://arcsynthesis.org/gltut/Basics/Tutorial%2001.html */
+  glGenBuffers(1, &positionBufferObject);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
+  glBindBuffer(GL_ARRAY_BUFFER, positionBufferObject);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(linevertices), linevertices, GL_STATIC_DRAW);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
+  glEnableVertexAttribArray(0);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
+
+  glGenBuffers(1, &colorBufferObject);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
+  glBindBuffer(GL_ARRAY_BUFFER, colorBufferObject);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
+  glEnableVertexAttribArray(1);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
+
+  glDrawArrays(GL_LINES, 0, 2);
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(1);
+  glDeleteBuffers(1, &positionBufferObject);
+  glDeleteBuffers(1, &colorBufferObject);
+
+  /*glEnableClientState(GL_VERTEX_ARRAY);
   err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
   glEnableClientState(GL_COLOR_ARRAY);
   err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
@@ -486,7 +654,7 @@ static PetscErrorCode PetscDrawLine_OpenGL(PetscDraw draw,PetscReal xl,PetscReal
   glDisableClientState(GL_VERTEX_ARRAY);
   err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
   glDisableClientState(GL_COLOR_ARRAY);
-   err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
+   err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);*/
   PetscFunctionReturn(0);
 }
 
@@ -719,7 +887,6 @@ PetscErrorCode  PetscDrawCreate_GLUT(PetscDraw draw)
     ierr = PetscGetArgs(&argc,&argv);CHKERRQ(ierr);
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA /* | GLUT_DOUBLE */| GLUT_DEPTH);
-    initialized = PETSC_TRUE;
     ierr = InitializeColors();CHKERRQ(ierr);
   }
 
@@ -829,6 +996,10 @@ PetscErrorCode  PetscDrawCreate_GLUT(PetscDraw draw)
 
   draw->data = Xwin;
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  if (!initialized) {
+    initialized = PETSC_TRUE;
+    ierr = InitializeShader();CHKERRQ(ierr);
+  }
   ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   resized = PETSC_FALSE; /* opening the window triggers OpenGL call to reshape so need to cancel that resized flag */
   glutCheckLoop();
