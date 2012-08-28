@@ -10,14 +10,17 @@
 static PetscErrorCode oursnesshellsolve(SNES snes,Vec x)
 {
   PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(SNES*,Vec*,PetscErrorCode*))(((PetscObject)snes)->fortran_func_pointers[12]))(&snes,&x,&ierr);CHKERRQ(ierr);
+  void (PETSC_STDCALL *func)(SNES*,Vec*,PetscErrorCode*);
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESShellSolve_C",(PetscVoidFunction*)&func);CHKERRQ(ierr);
+  if (!func) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_USER,"SNESShellSetSolve() must be called before SNESSolve()");
+  func(&snes,&x,&ierr);CHKERRQ(ierr);
   return 0;
 }
+
+EXTERN_C_BEGIN
 void PETSC_STDCALL snesshellsetsolve_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*snes,14);
-  ((PetscObject)*snes)->fortran_func_pointers[12] = (PetscVoidFunction)func;
+  PetscObjectComposeFunctionDynamic((PetscObject)*snes,"SNESShellSolve_C",PETSC_NULL,(PetscVoidFunction)func);
   *ierr = SNESShellSetSolve(*snes,oursnesshellsolve);
 }
-
-
+EXTERN_C_END
