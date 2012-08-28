@@ -1705,7 +1705,9 @@ namespace ALE {
       this->_maxHeight = m->height();
       this->setLabel("depth", m->getLabel("depth"));
       this->_maxDepth  = m->depth();
-      this->setLabel("marker", m->getLabel("marker"));
+      if (m->hasLabel("marker")) {
+        this->setLabel("marker", m->getLabel("marker"));
+      }
       this->setRealSection("coordinates", m->getRealSection("coordinates"));
       this->setArrowSection("orientation", m->getArrowSection("orientation"));
     };
@@ -2828,7 +2830,9 @@ namespace ALE {
       this->_maxHeight = m->height();
       this->setLabel("depth", m->getLabel("depth"));
       this->_maxDepth  = m->depth();
-      this->setLabel("marker", m->getLabel("marker"));
+      if (m->hasLabel("marker")) {
+        this->setLabel("marker", m->getLabel("marker"));
+      }
       this->setRealSection("coordinates", m->getRealSection("coordinates"));
       this->setArrowSection("orientation", m->getArrowSection("orientation"));
     };

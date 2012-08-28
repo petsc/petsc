@@ -4546,7 +4546,6 @@ inline void ExpandInterval_New(ALE::Point interval, PetscInt indices[], PetscInt
 PetscErrorCode DMMeshClone(DM dm, DM *newdm)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
-  ALE::Obj<PETSC_MESH_TYPE> newm;
   void          *ctx;
   PetscErrorCode ierr;
 
@@ -4556,8 +4555,9 @@ PetscErrorCode DMMeshClone(DM dm, DM *newdm)
   ierr = DMCreate(((PetscObject) dm)->comm, newdm);CHKERRQ(ierr);
   ierr = DMSetType(*newdm, DMMESH);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
-  ierr = DMMeshGetMesh(*newdm, newm);CHKERRQ(ierr);
+  ALE::Obj<PETSC_MESH_TYPE> newm = new PETSC_MESH_TYPE(m->comm(), m->getDimension(), m->debug());
   newm->copy(m);
+  ierr = DMMeshSetMesh(*newdm, newm);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(*newdm, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
