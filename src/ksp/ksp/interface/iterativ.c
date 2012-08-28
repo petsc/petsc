@@ -349,7 +349,7 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,v
   if (kspinner) {
     ierr = KSPGetTolerances(ksp, &outer_rtol, &outer_abstol, &outer_dtol, &outer_maxits);CHKERRQ(ierr);
     inner_rtol = (*coef) * outer_rtol / fnorm;
-    ierr = KSPSetTolerances(kspinner, outer_rtol, outer_abstol, outer_dtol, outer_maxits);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(kspinner, inner_rtol, outer_abstol, outer_dtol, outer_maxits);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
