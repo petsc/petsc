@@ -14,7 +14,6 @@ struct _PC_FieldSplitLink {
   PetscInt          *fields,*fields_col;
   VecScatter        sctx;
   IS                is,is_col;
-  DM                dm;
   PC_FieldSplitLink next,previous;
 };
 
@@ -264,11 +263,6 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       if(dms) {
         ierr = PetscInfo(pc,"Setting up physics based fieldsplit preconditioner using the embedded DM\n");CHKERRQ(ierr);
         for (ilink=jac->head,i=0; ilink; ilink=ilink->next,i++) {
-          ierr = DMDestroy(&ilink->dm);CHKERRQ(ierr);
-          ilink->dm = dms[i];
-          if(ilink->dm) {
-            ierr = PetscObjectReference((PetscObject)ilink->dm);CHKERRQ(ierr);
-          }
           ierr = KSPSetDM(ilink->ksp, dms[i]);CHKERRQ(ierr);
           ierr = KSPSetDMActive(ilink->ksp, PETSC_FALSE);CHKERRQ(ierr);
           ierr = DMDestroy(&dms[i]); CHKERRQ(ierr);
@@ -342,11 +336,6 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         ierr = PetscMalloc(nDM*sizeof(DM),&dms);CHKERRQ(ierr);
         ierr = DMCompositeGetEntriesArray(pc->dm,dms);CHKERRQ(ierr);
         for (i=0; i<nDM; i++) {
-          ierr = DMDestroy(&ilink->dm);CHKERRQ(ierr);
-          ilink->dm = dms[i];
-          if(ilink->dm) {
-            ierr = PetscObjectReference((PetscObject)ilink->dm);CHKERRQ(ierr);
-          }
           ierr = KSPSetDM(ilink->ksp,dms[i]);CHKERRQ(ierr);
           ierr = KSPSetDMActive(ilink->ksp,PETSC_FALSE);CHKERRQ(ierr);
           ilink->is = fields[i];
@@ -561,7 +550,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ierr  = MatSchurComplementUpdate(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],pc->flag);CHKERRQ(ierr);
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),pc->flag);CHKERRQ(ierr);
-
      } else {
       KSP ksp;
       char schurprefix[256];
@@ -591,10 +579,12 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       }
       ierr  = PetscSNPrintf(schurprefix,sizeof schurprefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",jac->head->splitname);CHKERRQ(ierr);
       ierr  = KSPSetOptionsPrefix(ksp,schurprefix);CHKERRQ(ierr);
-      /* Can't do KSPGetDM(jac->head->ksp,&dminner); KSPSetDM(ksp,dminner): KSPGetDM() will create DMShell, if the DM hasn't been set - not what we want. */
-      /* i.e. Dmitry says that something in petsc-3.3 misbehaves if a DMShell is passed instead of no DM at all. Such behavior is incorrect. */
-      ierr = KSPSetDM(ksp,jac->head->dm);CHKERRQ(ierr);
-      ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
+      {
+        DM dminner;
+        ierr = KSPGetDM(jac->head->ksp,&dminner);CHKERRQ(ierr);
+        ierr = KSPSetDM(ksp,dminner);CHKERRQ(ierr);
+        ierr = KSPSetDMActive(ksp, PETSC_FALSE);CHKERRQ(ierr);
+      }
       ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
       /* Need to call this everytime because new matrix is being created */
       ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
@@ -603,10 +593,12 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);CHKERRQ(ierr);
       ierr  = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
       ierr  = PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1);CHKERRQ(ierr);
-      /* Can't do KSPGetDM(ilink->ksp,&dmschur); KSPSetDM(kspshur,dmschur): KSPGetDM() will create DMShell, if the DM hasn't been set - not what we want. */
-      ierr = KSPSetDM(jac->kspschur,ilink->dm);CHKERRQ(ierr);
-      ierr = KSPSetDMActive(jac->kspschur,PETSC_FALSE);CHKERRQ(ierr);
-
+      {
+        DM dmschur;
+        ierr = KSPGetDM(ilink->ksp,&dmschur);CHKERRQ(ierr);
+        ierr = KSPSetDM(jac->kspschur,dmschur);CHKERRQ(ierr);
+        ierr = KSPSetDMActive(jac->kspschur, PETSC_FALSE);CHKERRQ(ierr);
+      }
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELF) {
         PC pcschur;
@@ -887,7 +879,6 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
   PetscFunctionBegin;
   while (ilink) {
     ierr = KSPReset(ilink->ksp);CHKERRQ(ierr);
-    ierr = DMDestroy(&ilink->dm);CHKERRQ(ierr);
     ierr = VecDestroy(&ilink->x);CHKERRQ(ierr);
     ierr = VecDestroy(&ilink->y);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&ilink->sctx);CHKERRQ(ierr);
