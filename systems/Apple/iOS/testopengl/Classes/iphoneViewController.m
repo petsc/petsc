@@ -151,21 +151,7 @@ PetscErrorCode PetscVFPrintfiPhone(FILE *fd,const char *format,va_list Argp)
  
     
     [globalGLKView bindDrawable];
-    GLenum err;
     
-    glClearColor(1.0,1.0,1.0, 1.0);
-    err = glGetError();if (err != GL_NO_ERROR) NSLog(@"GL error detected glclearColor()");
-    
-    glClear(GL_COLOR_BUFFER_BIT);
-    err = glGetError();if (err != GL_NO_ERROR) NSLog(@"GL error detected glClear()");
-    
-    glFlush();
-    err = glGetError();if (err != GL_NO_ERROR) NSLog(@"GL error detected glFlush()");
-    
-    /*[globalGLKView display];
-    [globalGLKView bindDrawable];*/
-
-
   const char *str = [textField.text UTF8String];
   char **args;
   int argc;
@@ -174,10 +160,10 @@ PetscErrorCode PetscVFPrintfiPhone(FILE *fd,const char *format,va_list Argp)
   PetscErrorCode ierr = PetscStrToArray(str,&argc,&args);
   ierr = PetscStrncmp(str, "./ex19", 6, &flg1);
   ierr = PetscStrncmp(str, "./ex48", 6, &flg2);
-  ierr = PetscStrncmp(str, "./ex4", 6, &flg3);
-  ierr = PetscStrncmp(str, "./ex3", 6, &flg4);
+  ierr = PetscStrncmp(str, "./ex4", 5, &flg3);
+  ierr = PetscStrncmp(str, "./ex3", 5, &flg4);
   if (flg1) {
-    ex19(argc,args);
+    ex19(argc,args);
   } else if (flg2) {
     ex48(argc,args);
   } else if (flg3) {

@@ -27,6 +27,7 @@
 PetscErrorCode  PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (xl < 0.0 || xr > 1.0 || yl < 0.0 || yr > 1.0 || xr <= xl || yr <= yl) {
@@ -124,10 +125,10 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
 @*/
 PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDrawViewPorts **ports)
 {
-  int        i,n;
+  PetscInt       i,n;
   PetscErrorCode ierr;
-  PetscBool  isnull;
-  PetscReal  *xl,*xr,*yl,*yr,h;
+  PetscBool      isnull;
+  PetscReal      *xl,*xr,*yl,*yr,h;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -305,9 +306,7 @@ PetscErrorCode  PetscDrawViewPortsSet(PetscDrawViewPorts *ports,PetscInt port)
 
   PetscFunctionBegin;
   if (ports) { 
-    if (port < 0 || port > ports->nports-1) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Port is out of range requested %d from 0 to %d\n",port,ports->nports);
-    }
+    if (port < 0 || port > ports->nports-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Port is out of range requested %d from 0 to %d\n",port,ports->nports);
     ierr = PetscDrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
