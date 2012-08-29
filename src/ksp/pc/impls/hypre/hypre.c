@@ -70,6 +70,16 @@ typedef struct {
   PetscInt           nodal_relax_levels;
 } PC_HYPRE;
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCHYPREGetSolver"
+PetscErrorCode PCHYPREGetSolver(PC pc,HYPRE_Solver *hsolver)
+{
+  PC_HYPRE           *jac = (PC_HYPRE*)pc->data;
+
+  PetscFunctionBegin;
+  *hsolver = jac->hsolver;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_HYPRE"
