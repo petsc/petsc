@@ -8,6 +8,7 @@
 #include "finclude/petscmat.h90"
 #include "finclude/petscdm.h90"
 #include "finclude/petscdmda.h90"
+#include "finclude/petscdmcomplex.h90"
 #include "finclude/petscdmadda.h90"
 #include "finclude/petscdmcomposite.h90"
 #include "finclude/petscdmredundant.h90"
