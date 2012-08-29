@@ -26,6 +26,7 @@ PetscErrorCode PetscThreadCommFinalizePackage(void)
 
   ierr = MPI_Keyval_free(&Petsc_ThreadComm_keyval);CHKERRQ(ierr);
   PetscThreadCommPackageInitialized = PETSC_FALSE;
+  PetscThreadCommList = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
