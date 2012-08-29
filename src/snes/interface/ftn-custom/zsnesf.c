@@ -54,7 +54,7 @@
 #define snesmonitorsolution_             snesmonitorsolution
 #define snesmonitorsolutionupdate_       snesmonitorsolutionupdate
 #define snesmonitorset_                  snesmonitorset
-#define snesgetsneslinesearch            snesgetsneslinesearch
+#define snesgetsneslinesearch_           snesgetsneslinesearch
 #endif
 
 /*
