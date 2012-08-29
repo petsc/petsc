@@ -434,7 +434,9 @@ typedef struct {
   GLint   win;
   GLKView *view;
 } PetscDraw_OpenGL;
-static GLKView *globalGLKView;
+
+static GLKView  *globalGLKView[10] = {0,0,0,0,0,0,0,0,0,0};
+
 PETSC_STATIC_INLINE PetscErrorCode OpenGLWindow(PetscDraw_OpenGL *win)
 {
   return 0;
@@ -455,9 +457,17 @@ static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
 {
   PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
   PetscErrorCode   ierr;
+  PetscInt         i;
 
   PetscFunctionBegin;
-  ierr = PetscFree(win);CHKERRQ(ierr);
+  for (i=0; i<10; i++) {
+    if (!globalGLKView[i]) {
+      globalGLKView[i] = win->view;
+      ierr = PetscFree(win);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not locate available GLKView slot");
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
@@ -1154,11 +1164,20 @@ PetscErrorCode  PetscDrawOpenGLUT(MPI_Comm comm,const char display[],const char 
 #elif defined(PETSC_HAVE_OPENGLES)
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscDrawOpenGLESSetGLKView" 
-PetscErrorCode  PetscDrawOpenGLESSetGLKView(GLKView *view)
+#define __FUNCT__ "PetscDrawOpenGLESRegisterGLKView" 
+PetscErrorCode  PetscDrawOpenGLESRegisterGLKView(GLKView *view)
 {
+  PetscInt i;
+
   PetscFunctionBegin;
-  globalGLKView = view;
+  for (i=0; i<10; i++) {
+    if (view == globalGLKView[i]) PetscFunctionReturn(0);  /* already registered */
+    if (!globalGLKView[i]) {
+      globalGLKView[i] = view;
+      PetscFunctionReturn(0);
+    }
+  }
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Out of GLKView slots");
   PetscFunctionReturn(0);
 }
 
@@ -1170,21 +1189,30 @@ PetscErrorCode  PetscDrawCreate_OpenGLES(PetscDraw draw)
   PetscDraw_OpenGL *Xwin;
   PetscErrorCode   ierr;
   static PetscBool initialized = PETSC_FALSE;
-  GLenum           err;
+  PetscInt         i;
 
   PetscFunctionBegin;
   NSLog(@"Beginning PetscDrawCreate_OpenGLES()");
-  if (!initialized) {
-    initialized = PETSC_TRUE;
-    ierr = InitializeColors();CHKERRQ(ierr);
-    ierr = InitializeShader();CHKERRQ(ierr);
-  }
 
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   ierr = PetscNew(PetscDraw_OpenGL,&Xwin);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
   draw->data = Xwin;
-  Xwin->view = globalGLKView;
+  for (i=0; i<10; i++) {
+    if (globalGLKView[i]) {
+      Xwin->view = globalGLKView[i];
+      [Xwin->view bindDrawable];
+      globalGLKView[i] = 0;
+      break;
+    }
+  }
+  if (!Xwin->view) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Requested more OpenGL ES windows then provided with PetscDrawOpenGLRegisterGLKView()");
+
+  if (!initialized) {
+    initialized = PETSC_TRUE;
+    ierr = InitializeColors();CHKERRQ(ierr);
+    ierr = InitializeShader();CHKERRQ(ierr);
+  }
 
   ierr = PetscDrawClear(draw);CHKERRQ(ierr); 
   NSLog(@"Ending PetscDrawCreate_OpenGLES()");
