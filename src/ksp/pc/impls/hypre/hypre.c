@@ -344,9 +344,13 @@ static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc,Vec b,Vec x)
 
 static const char *HYPREBoomerAMGCycleType[]   = {"","V","W"};
 static const char *HYPREBoomerAMGCoarsenType[] = {"CLJP","Ruge-Stueben","","modifiedRuge-Stueben","","","Falgout", "", "PMIS", "", "HMIS"};                                 
-static const char *HYPREBoomerAMGMeasureType[] = {"local","global"};                                                                                                        
-static const char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","","SOR/Jacobi","backward-SOR/Jacobi","","symmetric-SOR/Jacobi",
-                                                  "","","Gaussian-elimination"};                                                                                            
+static const char *HYPREBoomerAMGMeasureType[] = {"local","global"};
+/* The following corresponds to HYPRE_BoomerAMGSetRelaxType which has many missing numbers in the enum */
+static const char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","seqboundary-Gauss-Seidel","SOR/Jacobi","backward-SOR/Jacobi",
+                                                  "" /* [5] hybrid chaotic Gauss-Seidel (works only with OpenMP) */,"symmetric-SOR/Jacobi",
+                                                  "" /* 7 */,"l1scaled-SOR/Jacobi","Gaussian-elimination",
+                                                  "" /* 10 */, "" /* 11 */, "" /* 12 */, "" /* 13 */, "" /* 14 */,
+                                                  "CG" /* non-stationary */,"Chebyshev","FCF-Jacobi","l1scaled-Jacobi"};
 static const char *HYPREBoomerAMGInterpType[]  = {"classical", "", "", "direct", "multipass", "multipass-wts", "ext+i",
                                                   "ext+i-cc", "standard", "standard-wts", "", "", "FF", "FF1"};                                                             
 #undef __FUNCT__  
