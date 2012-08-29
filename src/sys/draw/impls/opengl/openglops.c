@@ -142,7 +142,7 @@ static PetscErrorCode InitializeColors(void)
   gcolor[PETSC_DRAW_PLUM] =  160;
   bcolor[PETSC_DRAW_PLUM] =   221;
 
-    ierr    = PetscDrawUtilitySetCmapHue(rcolor+PETSC_DRAW_BASIC_COLORS,gcolor+PETSC_DRAW_BASIC_COLORS,bcolor+PETSC_DRAW_BASIC_COLORS,256-PETSC_DRAW_BASIC_COLORS);CHKERRQ(ierr);
+  ierr    = PetscDrawUtilitySetCmapHue(rcolor+PETSC_DRAW_BASIC_COLORS,gcolor+PETSC_DRAW_BASIC_COLORS,bcolor+PETSC_DRAW_BASIC_COLORS,256-PETSC_DRAW_BASIC_COLORS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -159,12 +159,20 @@ static PetscErrorCode InitializeShader(void)
                                    vColor = vec4(color,0.50);\
                                    gl_Position = vec4(position,0.0,1.0);\
                                  }\n";
+#if defined(PETSC_HAVE_GLUT)
+  const char    *fragmentsource = "varying vec4 vColor;\
+                                   void main (void)\
+                                   {\
+                                     gl_FragColor = vColor; \
+                                   }\n";
+#else
   const char    *fragmentsource = "precision mediump float;\
                                    varying vec4 vColor;\
                                    void main (void)\
                                    {\
                                      gl_FragColor = vColor; \
                                    }\n";
+#endif
   int           isCompiled_VS, isCompiled_FS;
   int           isLinked;
   GLenum        err;
@@ -423,9 +431,10 @@ static PetscErrorCode PetscDrawGetMouseButton_OpenGL(PetscDraw draw,PetscDrawBut
 }
 #elif defined(PETSC_HAVE_OPENGLES)
 typedef struct {
-  int  win;
+  GLint   win;
+  GLKView *view;
 } PetscDraw_OpenGL;
-extern GLKView *globalGLKView;
+static GLKView *globalGLKView;
 PETSC_STATIC_INLINE PetscErrorCode OpenGLWindow(PetscDraw_OpenGL *win)
 {
   return 0;
@@ -444,12 +453,19 @@ static PetscErrorCode PetscDrawSetTitle_OpenGL(PetscDraw draw,const char title[]
 #define __FUNCT__ "PetscDrawDestroy_OpenGL" 
 static PetscErrorCode PetscDrawDestroy_OpenGL(PetscDraw draw)
 {
-  return 0;
+  PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(win);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawFlush_OpenGL" 
 static PetscErrorCode PetscDrawFlush_OpenGL(PetscDraw draw)
 {
+  PetscDraw_OpenGL* XiWin = (PetscDraw_OpenGL*)draw->data;
+
   GLenum err;
   glFlush();
   err = glGetError();
@@ -457,7 +473,7 @@ static PetscErrorCode PetscDrawFlush_OpenGL(PetscDraw draw)
     NSLog(@"GL error detected glFlush()");
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to flush OpenGL Error Code %d",err);
   }
-  [globalGLKView display];
+  [XiWin->view display];
   NSLog(@"Completed display in PetscDrawFlush()");
   return 0;
 }
@@ -572,15 +588,6 @@ static PetscErrorCode PetscDrawClear_OpenGL(PetscDraw draw)
   glDisableVertexAttribArray(1);
   glDeleteBuffers(1, &positionBufferObject);
   glDeleteBuffers(1, &colorBufferObject);
-
-
-  /*glEnableClientState(GL_VERTEX_ARRAY);
-  glEnableClientState(GL_COLOR_ARRAY);
-  glVertexPointer(2, GL_FLOAT, 0, vertices);
-  glColorPointer(3, GL_FLOAT, 0, colors);
-  glDrawArrays(GL_TRIANGLES, 0, 6);
-  glDisableClientState(GL_VERTEX_ARRAY);
-   glDisableClientState(GL_COLOR_ARRAY);*/
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -641,15 +648,6 @@ static PetscErrorCode PetscDrawPoint_OpenGL(PetscDraw draw,PetscReal xl,PetscRea
   glDisableVertexAttribArray(1);
   glDeleteBuffers(1, &positionBufferObject);
   glDeleteBuffers(1, &colorBufferObject);
-
-
-  /*  glEnableClientState(GL_VERTEX_ARRAY);
-  glEnableClientState(GL_COLOR_ARRAY);
-  glVertexPointer(2, GL_FLOAT, 0, pointvertices);
-  glColorPointer(3, GL_FLOAT, 0, colors);
-  glDrawArrays(GL_POINTS, 0, 2);
-  glDisableClientState(GL_VERTEX_ARRAY);
-   glDisableClientState(GL_COLOR_ARRAY);*/
   PetscFunctionReturn(0);
 }
 
@@ -703,21 +701,6 @@ static PetscErrorCode PetscDrawLine_OpenGL(PetscDraw draw,PetscReal xl,PetscReal
   glDisableVertexAttribArray(1);
   glDeleteBuffers(1, &positionBufferObject);
   glDeleteBuffers(1, &colorBufferObject);
-
-  /*glEnableClientState(GL_VERTEX_ARRAY);
-  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
-  glEnableClientState(GL_COLOR_ARRAY);
-  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
-  glVertexPointer(2, GL_FLOAT, 0, linevertices);
-  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
-  glColorPointer(3, GL_FLOAT, 0, colors);
-  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
-  glDrawArrays(GL_LINES, 0, 2);
-  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
-  glDisableClientState(GL_VERTEX_ARRAY);
-  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
-  glDisableClientState(GL_COLOR_ARRAY);
-   err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);*/
   PetscFunctionReturn(0);
 }
 
@@ -771,15 +754,6 @@ static PetscErrorCode PetscDrawTriangle_OpenGL(PetscDraw draw,PetscReal X1,Petsc
   glDisableVertexAttribArray(1);
   glDeleteBuffers(1, &positionBufferObject);
   glDeleteBuffers(1, &colorBufferObject);
-
-  /*
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glEnableClientState(GL_COLOR_ARRAY);
-  glVertexPointer(2, GL_FLOAT, 0, vertices);
-  glColorPointer(3, GL_FLOAT, 0, colors);
-  glDrawArrays(GL_TRIANGLES, 0, 3);
-  glDisableClientState(GL_VERTEX_ARRAY);
-   glDisableClientState(GL_COLOR_ARRAY); */
   PetscFunctionReturn(0);
 }
 
@@ -843,14 +817,6 @@ static PetscErrorCode PetscDrawRectangle_OpenGL(PetscDraw draw,PetscReal Xl,Pets
   glDisableVertexAttribArray(1);
   glDeleteBuffers(1, &positionBufferObject);
   glDeleteBuffers(1, &colorBufferObject);
-
-  /*  glEnableClientState(GL_VERTEX_ARRAY);
-  glEnableClientState(GL_COLOR_ARRAY);
-  glVertexPointer(2, GL_FLOAT, 0, vertices);
-  glColorPointer(3, GL_FLOAT, 0, colors);
-  glDrawArrays(GL_TRIANGLES, 0, 6);
-  glDisableClientState(GL_VERTEX_ARRAY);
-   glDisableClientState(GL_COLOR_ARRAY);*/
   PetscFunctionReturn(0);
 }
 
@@ -1187,6 +1153,15 @@ PetscErrorCode  PetscDrawOpenGLUT(MPI_Comm comm,const char display[],const char 
 
 #elif defined(PETSC_HAVE_OPENGLES)
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawOpenGLESSetGLKView" 
+PetscErrorCode  PetscDrawOpenGLESSetGLKView(GLKView *view)
+{
+  PetscFunctionBegin;
+  globalGLKView = view;
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawCreate_OpenGLES" 
@@ -1209,6 +1184,7 @@ PetscErrorCode  PetscDrawCreate_OpenGLES(PetscDraw draw)
   ierr = PetscNew(PetscDraw_OpenGL,&Xwin);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
   draw->data = Xwin;
+  Xwin->view = globalGLKView;
 
   ierr = PetscDrawClear(draw);CHKERRQ(ierr); 
   NSLog(@"Ending PetscDrawCreate_OpenGLES()");

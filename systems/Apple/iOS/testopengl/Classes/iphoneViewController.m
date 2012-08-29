@@ -136,6 +136,8 @@ PetscErrorCode PetscVFPrintfiPhone(FILE *fd,const char *format,va_list Argp)
 #define help help3
 #include <../src/sys/draw/examples/tests/ex3.c>
 
+extern PetscErrorCode  PetscDrawOpenGLESSetGLKView(GLKView *);
+
 /*
     This is called each time one hits return in the TextField.
 
@@ -147,6 +149,7 @@ PetscErrorCode PetscVFPrintfiPhone(FILE *fd,const char *format,va_list Argp)
 
   globalTextView = textView;   /* we make this class member a global so can use in PetscVFPrintfiPhone() */
   globalGLKView = glkView;
+  PetscDrawOpenGLESSetGLKView(glkView);
   textView.font = [UIFont fontWithName:@"Courier" size:8.0]; /* make the font size in the UITextView a more reasonable size  and use fixed width*/
  
     
