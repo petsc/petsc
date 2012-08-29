@@ -458,12 +458,16 @@ static PetscErrorCode PetscDrawFlush_OpenGL(PetscDraw draw)
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to flush OpenGL Error Code %d",err);
   }
   [globalGLKView display];
+  NSLog(@"Completed display in PetscDrawFlush()");
   return 0;
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawStringGetSize_OpenGL" 
 static PetscErrorCode PetscDrawStringGetSize_OpenGL(PetscDraw draw,PetscReal *x,PetscReal  *y)
 {
+  float w = .02;
+  *x = w*(draw->coor_xr - draw->coor_xl)/(draw->port_xr - draw->port_xl);
+  *y = (13./8.0)*w*(draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
   return 0;
 }
 #undef __FUNCT__  
@@ -1194,6 +1198,7 @@ PetscErrorCode  PetscDrawCreate_OpenGLES(PetscDraw draw)
   GLenum           err;
 
   PetscFunctionBegin;
+  NSLog(@"Beginning PetscDrawCreate_OpenGLES()");
   if (!initialized) {
     initialized = PETSC_TRUE;
     ierr = InitializeColors();CHKERRQ(ierr);
@@ -1205,16 +1210,8 @@ PetscErrorCode  PetscDrawCreate_OpenGLES(PetscDraw draw)
   ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
   draw->data = Xwin;
 
-  NSLog(@"PetscDrawCreate_OpenGLES()");
-  ierr = PetscDrawLine_OpenGL(draw,0.0,0.0,1.0,1.0,PETSC_DRAW_BLACK);CHKERRQ(ierr); 
-  glFlush();
-  err = glGetError();
-  if (err != GL_NO_ERROR) {
-    NSLog(@"GL error detected glFlush()");
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to flush OpenGL Error Code %d",err);
-  }
-  [globalGLKView display];
-
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr); 
+  NSLog(@"Ending PetscDrawCreate_OpenGLES()");
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
