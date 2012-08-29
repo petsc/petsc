@@ -105,7 +105,7 @@ PetscErrorCode PetscThreadCommBarrier_PThread_LockFree(PetscThreadComm tcomm)
       job_status = job->job_status[ptcomm->granks[i]];
       active_threads += job_status;
     }
-    if(PetscReadOnce(int,active_threads)) active_threads = 0;
+    if(PetscReadOnce(int,active_threads) > 0) active_threads = 0;
     else wait=PETSC_FALSE;
   }
   PetscFunctionReturn(0);
