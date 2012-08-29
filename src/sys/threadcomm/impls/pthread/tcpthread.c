@@ -95,6 +95,7 @@ PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
     ierr = PetscFree(ptcomm->cpuset);CHKERRQ(ierr);
 #endif
     ierr = PetscFree(ptcomm->attr);CHKERRQ(ierr);
+    PetscPThreadCommInitializeCalled = PETSC_FALSE;
   }
   ierr = PetscFree(ptcomm->granks);CHKERRQ(ierr);
   ierr = PetscFree(ptcomm);CHKERRQ(ierr);
