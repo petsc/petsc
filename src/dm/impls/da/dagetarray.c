@@ -30,7 +30,7 @@
   Fortran Notes: From Fortran use DMDAVecGetArrayF90() and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate 
        dimension. For a DMDA created with a dof of 1 use the dimension of the DMDA, for a DMDA created with a dof greater than 1 use one more than the 
        dimension of the DMDA. The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
-       array(1:dof,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from 
+       array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from 
        DMDAGetCorners() for a global array or DMDAGetGhostCorners() for a local array. Include finclude/petscdmda.h90 to access this routine.
 
   Due to bugs in the compiler DMDAVecGetArrayF90() does not work with gfortran versions before 4.5
