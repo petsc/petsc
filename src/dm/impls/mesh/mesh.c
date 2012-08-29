@@ -4525,3 +4525,40 @@ inline void ExpandInterval_New(ALE::Point interval, PetscInt indices[], PetscInt
     indices[(*indx)++] = -1;
   }
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshClone"
+/*@
+  DMMeshClone - Creates a DMMesh object with the same mesh as the original.
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The original DMMesh object
+
+  Output Parameter:
+. newdm  - The new DMMesh object
+
+  Level: beginner
+
+.keywords: DMMesh, create
+@*/
+PetscErrorCode DMMeshClone(DM dm, DM *newdm)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  void          *ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(newdm,2);
+  ierr = DMCreate(((PetscObject) dm)->comm, newdm);CHKERRQ(ierr);
+  ierr = DMSetType(*newdm, DMMESH);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  ALE::Obj<PETSC_MESH_TYPE> newm = new PETSC_MESH_TYPE(m->comm(), m->getDimension(), m->debug());
+  newm->copy(m);
+  ierr = DMMeshSetMesh(*newdm, newm);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(*newdm, ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

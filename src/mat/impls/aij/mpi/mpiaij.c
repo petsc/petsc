@@ -1622,13 +1622,13 @@ PetscErrorCode MatSOR_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,Pe
   PetscBool      hasop;
 
   PetscFunctionBegin;
-  if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS || flag & SOR_EISENSTAT) {
-    ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
-  }
-
   if (flag == SOR_APPLY_UPPER) {
     ierr = (*mat->A->ops->sor)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
+  }
+
+  if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS || flag & SOR_EISENSTAT) {
+    ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
   }
 
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
@@ -3391,9 +3391,9 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
 
   /* First process needs enough room for process with most rows */
   if (!rank) {
-    mmax       = rowners[1];
-    for (i=2; i<size; i++) {
-      mmax = PetscMax(mmax,rowners[i]);
+    mmax = rowners[1];
+    for(i=2; i<=size; i++) {
+      mmax = PetscMax(mmax, rowners[i]);
     }
   } else mmax = m;
 
@@ -3408,7 +3408,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   ierr    = PetscMalloc2(mmax,PetscInt,&ourlens,mmax,PetscInt,&offlens);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscBinaryRead(fd,ourlens,m,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscMalloc(m*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
+    ierr = PetscMalloc(mmax*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
     ierr = PetscMalloc(size*sizeof(PetscInt),&procsnz);CHKERRQ(ierr);
     ierr = PetscMemzero(procsnz,size*sizeof(PetscInt));CHKERRQ(ierr);
     for (j=0; j<m; j++) {

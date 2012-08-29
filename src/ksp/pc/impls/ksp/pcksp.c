@@ -256,6 +256,7 @@ PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
+  *ksp = PETSC_NULL;
   ierr = PetscTryMethod(pc,"PCKSPGetKSP_C",(PC,KSP*),(pc,ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

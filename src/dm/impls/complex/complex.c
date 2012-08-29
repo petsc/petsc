@@ -1374,7 +1374,8 @@ PetscErrorCode DMComplexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCon
     for(t = 0; t < tmpSize; ++t) {
       const PetscInt i  = ((rev ? tmpSize-t : t) + off)%tmpSize;
       const PetscInt cp = tmp[i];
-      const PetscInt co = tmpO ? tmpO[i] : 0;
+      /* Must propogate orientation */
+      const PetscInt co = tmpO ? (rev ? -(tmpO[i]+1) : tmpO[i]) : 0;
       PetscInt       c;
 
       /* Check for duplicate */
@@ -3483,8 +3484,9 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
 
   PetscFunctionBegin;
   {
-    ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
     ierr = DMView(dm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -3641,31 +3643,33 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
         if ((origClosure[i*2] < vStart) || (origClosure[i*2] >= vEnd)) SETERRQ3(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid closure point %D should be a vertex in [%D, %D)", origClosure[i*2], vStart, vEnd);
       }
       closure = &origClosure[4*2];
-      if ((cellFaces[cf*faceSize+0] == closure[0*2]) && (cellFaces[cf*faceSize+1] == closure[1*2]) && (cellFaces[cf*faceSize+1] == closure[2*2])) {
+      /* Remember that this is the orientation for edges, not vertices */
+      if        ((cellFaces[cf*faceSize+0] == closure[0*2]) && (cellFaces[cf*faceSize+1] == closure[1*2]) && (cellFaces[cf*faceSize+2] == closure[2*2])) {
         /* Correctly oriented */
         mesh->coneOrientations[coff+cf] = 0;
-      } else if ((cellFaces[cf*faceSize+0] == closure[1*2]) && (cellFaces[cf*faceSize+1] == closure[2*2]) && (cellFaces[cf*faceSize+1] == closure[0*2])) {
+      } else if ((cellFaces[cf*faceSize+0] == closure[1*2]) && (cellFaces[cf*faceSize+1] == closure[2*2]) && (cellFaces[cf*faceSize+2] == closure[0*2])) {
         /* Shifted by 1 */
         mesh->coneOrientations[coff+cf] = 1;
-      } else if ((cellFaces[cf*faceSize+0] == closure[2*2]) && (cellFaces[cf*faceSize+1] == closure[0*2]) && (cellFaces[cf*faceSize+1] == closure[1*2])) {
+      } else if ((cellFaces[cf*faceSize+0] == closure[2*2]) && (cellFaces[cf*faceSize+1] == closure[0*2]) && (cellFaces[cf*faceSize+2] == closure[1*2])) {
         /* Shifted by 2 */
         mesh->coneOrientations[coff+cf] = 2;
-      } else if ((cellFaces[cf*faceSize+0] == closure[2*2]) && (cellFaces[cf*faceSize+1] == closure[1*2]) && (cellFaces[cf*faceSize+1] == closure[0*2])) {
-        /* Start at index 0, and reverse orientation */
-        mesh->coneOrientations[coff+cf] = -(2+1);
-      } else if ((cellFaces[cf*faceSize+0] == closure[1*2]) && (cellFaces[cf*faceSize+1] == closure[0*2]) && (cellFaces[cf*faceSize+1] == closure[2*2])) {
-        /* Start at index 1, and reverse orientation */
+      } else if ((cellFaces[cf*faceSize+0] == closure[2*2]) && (cellFaces[cf*faceSize+1] == closure[1*2]) && (cellFaces[cf*faceSize+2] == closure[0*2])) {
+        /* Start at edge 1, and reverse orientation */
         mesh->coneOrientations[coff+cf] = -(1+1);
-      } else if ((cellFaces[cf*faceSize+0] == closure[0*2]) && (cellFaces[cf*faceSize+1] == closure[2*2]) && (cellFaces[cf*faceSize+1] == closure[1*2])) {
+      } else if ((cellFaces[cf*faceSize+0] == closure[1*2]) && (cellFaces[cf*faceSize+1] == closure[0*2]) && (cellFaces[cf*faceSize+2] == closure[2*2])) {
         /* Start at index 0, and reverse orientation */
         mesh->coneOrientations[coff+cf] = -(0+1);
-      }
+      } else if ((cellFaces[cf*faceSize+0] == closure[0*2]) && (cellFaces[cf*faceSize+1] == closure[2*2]) && (cellFaces[cf*faceSize+2] == closure[1*2])) {
+        /* Start at index 2, and reverse orientation */
+        mesh->coneOrientations[coff+cf] = -(2+1);
+      } else SETERRQ3(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Face %D did not match local face %D in cell %D for any orientation", cone[cf], cf, c);
       ierr = DMComplexRestoreTransitiveClosure(idm, cone[cf], PETSC_TRUE, &closureSize, &origClosure);CHKERRQ(ierr);
     }
   }
   {
-    ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
     ierr = DMView(idm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   *dmInt  = idm;
   PetscFunctionReturn(0);

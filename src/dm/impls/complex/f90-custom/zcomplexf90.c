@@ -82,15 +82,19 @@ void PETSC_STDCALL dmcomplexrestoresupport_(DM *dm, PetscInt *p, F90Array1d *ptr
 
 void PETSC_STDCALL dmcomplexgettransitiveclosure_(DM *dm, PetscInt *p, PetscBool *useCone, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  PetscInt *v;
+  PetscInt *v = PETSC_NULL;
   PetscInt  n;
 
   *__ierr = DMComplexGetTransitiveClosure(*dm, *p, *useCone, &n, &v);if (*__ierr) return;
-  *__ierr = F90Array1dCreate((void *) v, PETSC_INT, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
+  *__ierr = F90Array1dCreate((void *) v, PETSC_INT, 1, n*2, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-void PETSC_STDCALL dmcomplexrestoretransitiveclosure_(DM *dm, PetscInt *p, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+void PETSC_STDCALL dmcomplexrestoretransitiveclosure_(DM *dm, PetscInt *p, PetscBool *useCone, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
+  PetscInt *array;
+
+  *__ierr = F90Array1dAccess(ptr, PETSC_INT, (void **) &array PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
+  *__ierr = DMComplexRestoreTransitiveClosure(*dm, *p, *useCone, PETSC_NULL, &array);if (*__ierr) return;
   *__ierr = F90Array1dDestroy(ptr, PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
 }
 
@@ -105,7 +109,11 @@ void PETSC_STDCALL dmcomplexvecgetclosure_(DM *dm, PetscSection *section, Vec *x
 
 void PETSC_STDCALL dmcomplexvecrestoreclosure_(DM *dm, PetscSection *section, Vec *v, PetscInt *point, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  *__ierr = F90Array1dDestroy(ptr, PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
+  PetscScalar *array;
+
+  *__ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void **) &array PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
+  *__ierr = DMComplexVecRestoreClosure(*dm, *section, *v, *point, PETSC_NULL, &array);if (*__ierr) return;
+  *__ierr = F90Array1dDestroy(ptr, PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
 }
 
 void PETSC_STDCALL dmcomplexvecsetclosure_(DM *dm, PetscSection *section, Vec *v, PetscInt *point, F90Array1d *ptr, InsertMode *mode, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))

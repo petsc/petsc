@@ -573,6 +573,7 @@ PetscErrorCode  MatGetSchurComplement(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS i
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_SchurComplement"
 PetscErrorCode  MatCreate_SchurComplement(Mat N)
@@ -595,3 +596,4 @@ PetscErrorCode  MatCreate_SchurComplement(Mat N)
   ierr = PetscObjectChangeTypeName((PetscObject)N,MATSCHURCOMPLEMENT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

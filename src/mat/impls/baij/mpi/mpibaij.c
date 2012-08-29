@@ -2687,13 +2687,13 @@ PetscErrorCode MatSOR_MPIBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,P
   Vec            bb1 = 0;
 
   PetscFunctionBegin;
-  if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS) {
-    ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
-  }
-
   if (flag == SOR_APPLY_UPPER) {
     ierr = (*mat->A->ops->sor)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
+  }
+
+  if (its > 1 || ~flag & SOR_ZERO_INITIAL_GUESS) {
+    ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
   }
 
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
@@ -3699,7 +3699,7 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
   /* process 0 needs enough room for process with most rows */
   if (!rank) {
     mmax = rowners[1];
-    for (i=2; i<size; i++) {
+    for (i=2; i<=size; i++) {
       mmax = PetscMax(mmax,rowners[i]);
     }
     mmax*=bs;

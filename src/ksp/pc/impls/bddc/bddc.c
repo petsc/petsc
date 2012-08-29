@@ -1820,7 +1820,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     ierr = KSPSetUp(pcbddc->ksp_R);CHKERRQ(ierr);
     if(pcbddc->dbg_flag) ierr = KSPView(pcbddc->ksp_R,PETSC_VIEWER_STDOUT_SELF);
     /* check Dirichlet and Neumann solvers */
-    if(pcbddc->dbg_flag) {
+    if(dbg_flag) {
       Vec temp_vec;
       PetscScalar value;
 
@@ -3519,6 +3519,9 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
     j=mat_graph->cptr[i+1]-mat_graph->cptr[i];
     if( j > k) {
       k=j;
+    } 
+    if(j<=vertex_size) {
+      k+=vertex_size;
     }
   }
   ierr = PetscMalloc(k*sizeof(PetscInt),&auxis);CHKERRQ(ierr);

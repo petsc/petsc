@@ -5,8 +5,9 @@ configure_options = [
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
 
-  '--download-mpich=1',
-  #'--with-mpi-dir=/export/home/petsc/soft/mpich2-1.2.1p1',
+  # mpich does not build with -g - compiler bug? So revert this build to a pre-built mpich
+  #'--download-mpich=1',
+  '--with-mpi-dir=/export/home/petsc/soft/mpich2-1.2.1p1',
   '--with-c2html=0',
 
   #'-download-f-blas-lapack=1',

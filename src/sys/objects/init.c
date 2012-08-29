@@ -46,6 +46,9 @@ PetscScalar    PETSC_i = 0.0;
 #endif
 #if defined(PETSC_USE_REAL___FLOAT128)
 MPI_Datatype   MPIU___FLOAT128 = 0;
+#if defined(PETSC_USE_COMPLEX)
+MPI_Datatype   MPIU___COMPLEX128 = 0;
+#endif
 #endif
 MPI_Datatype   MPIU_2SCALAR = 0;
 MPI_Datatype   MPIU_2INT = 0;

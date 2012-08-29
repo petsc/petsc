@@ -182,6 +182,10 @@ ex40: ex40.o  chkopts
 	-${CLINKER} -o ex40 ex40.o ${PETSC_VEC_LIB}
 	${RM} -f ex40.o
 
+ex40f90: ex40f90.o  chkopts
+	-${FLINKER} -o ex40f90 ex40f90.o ${PETSC_VEC_LIB}
+	${RM} -f ex40f90.o
+
 ex41: ex41.o  chkopts 
 	-${CLINKER} -o ex41 ex41.o ${PETSC_VEC_LIB}
 	${RM} -f ex41.o
@@ -405,6 +409,11 @@ runex38:
 	-@${MPIEXEC} -n 3 ./ex38 > ex38_1.tmp 2>&1;\
 	   ${DIFF} output/ex38_1.out ex38_1.tmp || echo  ${PWD} "\nPossible problem with ex38, diffs above \n========================================="; \
 	   ${RM} -f ex38_1.tmp
+
+runex40f90:
+	-@${MPIEXEC} -n 1 ./ex40f90 > ex40f90_0.tmp 2>&1;\
+	   ${DIFF} output/ex40f90_0.out ex40f90_0.tmp || echo  ${PWD} "\nPossible problem with ex40f90, diffs above \n========================================="; \
+	   ${RM} -f ex40f90_0.tmp
 
 runex43:
 	-@${MPIEXEC} -n 1 ./ex43 > ex43_1.tmp 2>&1;\

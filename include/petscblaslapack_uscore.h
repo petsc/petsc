@@ -155,7 +155,7 @@
 #  define LAPACKhseqr_ chseqr_
 #  define LAPACKgges_  cgges_
 #  define LAPACKtrsen_ ctrsen_
-# else
+# elif defined(PETSC_USE_REAL_DOUBLE)
 /* Complex double precision with no character string arguments */
 #  define LAPACKgeqrf_ zgeqrf_
 #  define LAPACKungqr_ zungqr_
@@ -192,6 +192,43 @@
 #  define LAPACKhseqr_ zhseqr_
 #  define LAPACKgges_  zgges_
 #  define LAPACKtrsen_ ztrsen_
+# else
+/* Complex quad precision with no character string arguments */
+#  define LAPACKgeqrf_ wgeqrf_
+#  define LAPACKungqr_ wungqr_
+#  define LAPACKgetrf_ wgetrf_
+/* #  define BLASdot_     wdotc_ */
+/* #  define BLASdotu_    wdotu_ */
+#  define BLASnrm2_    qwnrm2_
+#  define BLASscal_    wscal_
+#  define BLAScopy_    wcopy_
+#  define BLASswap_    wswap_
+#  define BLASaxpy_    waxpy_
+#  define BLASasum_    qwasum_
+#  define LAPACKpttrf_ wpttrf_
+#  define LAPACKstein_ wstein_
+#  define LAPACKgesv_  wgesv_
+#  define LAPACKgelss_ wgelss_
+#  define LAPACKgerfs_ wgerfs_
+#  define LAPACKtgsen_ wtgsen_
+/* Complex quad precision with character string arguments */
+#  define LAPACKpotrf_ wpotrf_
+#  define LAPACKpotrs_ wpotrs_
+#  define BLASgemv_    wgemv_
+#  define LAPACKgetrs_ wgetrs_
+#  define BLAStrmv_    wtrmv_
+#  define BLASgemm_    wgemm_
+#  define LAPACKgesvd_ wgesvd_
+#  define LAPACKgeev_  wgeev_
+#  define LAPACKsyev_  wheev_
+#  define LAPACKsyevx_ wheevx_
+#  define LAPACKsygv_  whegv_
+#  define LAPACKsygvx_ whegvx_
+#  define LAPACKpttrs_ wpttrs_ 
+/* LAPACKstebz_ does not exist for complex. */
+#  define LAPACKhseqr_ whseqr_
+#  define LAPACKgges_  wgges_
+#  define LAPACKtrsen_ wtrsen_
 # endif
 #endif
 

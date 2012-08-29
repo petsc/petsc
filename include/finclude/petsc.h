@@ -1,3 +1,4 @@
+
 !
 !  Single Fortran include file for all of PETSc
 !
@@ -14,6 +15,7 @@
 #include "finclude/petscsnes.h"
 #include "finclude/petscdm.h"
 #include "finclude/petscdmda.h"
+#include "finclude/petscdmcomplex.h"
 !#include "finclude/petscdmadda.h"
 !#include "finclude/petscdmcomposite.h"
 #include "finclude/petscdmmesh.h"

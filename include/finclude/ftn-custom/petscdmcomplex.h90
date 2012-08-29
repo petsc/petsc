@@ -22,10 +22,10 @@
       End Interface
 
       Interface
-        Subroutine DMComplexGetConeOrientation(m,p,coneOrientation,ierr)
+        Subroutine DMComplexGetConeOrientation(m,p,coneOrient,ierr)
           USE_DMCOMPLEX_HIDE
           PetscInt     p
-          PetscInt, pointer :: coneOrientation(:)
+          PetscInt, pointer :: coneOrient(:)
           PetscErrorCode ierr
           DM_HIDE m
         End Subroutine
@@ -42,7 +42,8 @@
       End Interface
 
       Interface
-        Subroutine DMComplexGetTransitiveClosure(m,p,useCone,points,ierr)
+        Subroutine DMComplexGetTransitiveClosure(m,p,useCone,points,    &
+     &  ierr)
           USE_DMCOMPLEX_HIDE
           PetscInt     p
           PetscBool    useCone
@@ -53,7 +54,8 @@
       End Interface
 
       Interface
-        Subroutine DMComplexRestoreTransitiveClosure(m,p,useCone,points,ierr)
+        Subroutine DMComplexRestoreTransitiveClosure(m,p,useCone,points,&
+     &  ierr)
           USE_DMCOMPLEX_HIDE
           PetscInt     p
           PetscBool    useCone
@@ -76,7 +78,8 @@
       End Interface
 
       Interface
-        Subroutine DMComplexVecRestoreClosure(m,section,v,point,values,ierr)
+        Subroutine DMComplexVecRestoreClosure(m,section,v,point,values, &
+     &  ierr)
           USE_DMCOMPLEX_HIDE
           PETSCSECTION_HIDE section
           VEC_HIDE     v
@@ -88,7 +91,8 @@
       End Interface
 
       Interface
-        Subroutine DMComplexVecSetClosure(m,section,v,point,values,mode,ierr)
+        Subroutine DMComplexVecSetClosure(m,section,v,point,values,mode,&
+     &  ierr)
           USE_DMCOMPLEX_HIDE
           PETSCSECTION_HIDE section
           VEC_HIDE     v
@@ -101,7 +105,8 @@
       End Interface
 
       Interface
-        Subroutine DMComplexCreateSection(m,dim,numFields,numComp,numDof,numBC,bcField,bcPoints,section,ierr)
+        Subroutine DMComplexCreateSection(m,dim,numFields,numComp,      &
+     &  numDof,numBC,bcField,bcPoints,section,ierr)
           USE_DMCOMPLEX_HIDE
           PETSCSECTION_HIDE section
           PetscInt     dim, numFields, numBC

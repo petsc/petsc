@@ -964,7 +964,20 @@ PetscErrorCode  PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionView"
-PetscErrorCode  PetscSectionView(PetscSection s, PetscViewer viewer)
+/*@C
+  PetscSectionView - Views a PetscSection
+
+  Collective on PetscSection
+
+  Input Parameters:
++ s - the PetscSection object to view
+- v - the viewer
+
+  Level: developer
+
+.seealso PetscSectionCreate(), PetscSectionDestroy()
+@*/
+PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
 {
   PetscBool      isascii;
   PetscInt       f;

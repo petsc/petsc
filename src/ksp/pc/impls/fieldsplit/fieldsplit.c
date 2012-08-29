@@ -624,9 +624,9 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1);           CHKERRQ(ierr);
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_SELF) {
-        PC pc;
-        ierr = KSPGetPC(jac->kspschur,&pc);CHKERRQ(ierr);
-        ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+        PC pcschur;
+        ierr = KSPGetPC(jac->kspschur,&pcschur);CHKERRQ(ierr);
+        ierr = PCSetType(pcschur,PCNONE);CHKERRQ(ierr);
         /* Note: This is bad if there exist preconditioners for MATSCHURCOMPLEMENT */
       }
       ierr  = KSPGetOptionsPrefix(jac->head->next->ksp, &Dprefix); CHKERRQ(ierr);
@@ -646,14 +646,13 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     if (!LSC_L) {ierr = PetscObjectQuery((PetscObject)pc->mat,lscname,(PetscObject*)&LSC_L);CHKERRQ(ierr);}
     if (LSC_L) {ierr = PetscObjectCompose((PetscObject)jac->schur,"LSC_Lp",(PetscObject)LSC_L);CHKERRQ(ierr);}
   } else {
-    /* set up the individual PCs */
+    /* set up the individual splits' PCs */
     i    = 0;
     ilink = jac->head;
     while (ilink) {
       ierr = KSPSetOperators(ilink->ksp,jac->mat[i],jac->pmat[i],flag);CHKERRQ(ierr);
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
       if (!jac->suboptionsset) {ierr = KSPSetFromOptions(ilink->ksp);CHKERRQ(ierr);}
-      ierr = KSPSetUp(ilink->ksp);CHKERRQ(ierr);
       i++;
       ilink = ilink->next;
     }

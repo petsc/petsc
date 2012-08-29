@@ -562,7 +562,7 @@ class Configure(config.base.Configure):
 
   def configureUnused(self):
     '''Sees if __attribute((unused)) is supported'''
-    if self.framework.argDB['with-ios'] or self.framework.argDB['with-cuda']:
+    if self.framework.argDB['with-ios']:
       self.addDefine('UNUSED', ' ')
       return
     self.pushLanguage(self.languages.clanguage)      
