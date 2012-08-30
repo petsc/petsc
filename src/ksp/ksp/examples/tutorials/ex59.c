@@ -1047,6 +1047,12 @@ int main(int argc,char **args)
   /* assemble fetidp solution on physical domain */
   ierr = PCBDDCMatFETIDPGetSolution(F,fetidp_solution,fetidp_solution_all);CHKERRQ(ierr);
   /* check FETIDP sol */
+  if(dd.pure_neumann) {
+    ierr = VecSum(fetidp_solution_all,&norm);CHKERRQ(ierr);
+    ierr = VecGetSize(fetidp_solution_all,&ndofs);
+    norm = -norm/(PetscScalar)ndofs;
+    ierr = VecShift(fetidp_solution_all,norm);CHKERRQ(ierr);
+  }
   ierr = VecAXPY(fetidp_solution_all,-1.0,exact_solution);CHKERRQ(ierr);
   ierr = VecNorm(fetidp_solution_all,NORM_INFINITY,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and FETI-DP solutions: % 1.14e\n",norm);CHKERRQ(ierr);
