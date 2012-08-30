@@ -2426,7 +2426,9 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
     /* Change of basis matrix is evaluated as the FIRST APPROACH in */
     /* Klawonn and Widlund, Dual-primal FETI-DP methods for linear elasticity, (6.2.1) */
     temp_constraints = 0;
-    temp_start_ptr = temp_indices_to_constraint_B[temp_indices[pcbddc->n_vertices]];
+    if(pcbddc->n_vertices < local_primal_size) {
+      temp_start_ptr = temp_indices_to_constraint_B[temp_indices[pcbddc->n_vertices]];
+    }
     for(i=pcbddc->n_vertices;i<local_primal_size;i++) {
       if(change_basis[i]) {
         compute_submatrix = PETSC_FALSE;
