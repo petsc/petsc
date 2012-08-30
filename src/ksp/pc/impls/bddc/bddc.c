@@ -1,9 +1,7 @@
 /* TODOLIST
    DofSplitting and DM attached to pc?
    Change SetNeumannBoundaries to SetNeumannBoundariesLocal and provide new SetNeumannBoundaries (same Dirichlet)
-   Exact solvers: Solve local saddle point directly
      - change prec_type to switch_inexact_prec_type
-     - add bool solve_exact_saddle_point slot to pdbddc data
    Inexact solvers: global preconditioner application is ready, ask to developers (Jed?) on how to best implement Dohrmann's approach (PCSHELL?)
    change how to deal with the coarse problem (PCBDDCSetCoarseEnvironment):
      - mind the problem with coarsening_factor 
@@ -431,20 +429,6 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   }
   /* store the original rhs */
   ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
-  if(pcbddc->usechangeofbasis) {
-    /* swap pointers for local matrices */
-    temp_mat = matis->A;
-    matis->A = pcbddc->local_mat;
-    pcbddc->local_mat = temp_mat;
-    /* Get local rhs and apply transformation of basis */
-    ierr = VecScatterBegin(pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    /* from original basis to modified basis */
-    ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,pcis->vec1_B,pcis->vec2_B);CHKERRQ(ierr);
-    /* put back modified values into the global vec using INSERT_VALUES copy mode */
-    ierr = VecScatterBegin(pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  }
 
   /* Take into account zeroed rows -> change rhs and store solution removed */    
   ierr = MatGetDiagonal(pc->pmat,pcis->vec1_global);CHKERRQ(ierr);
@@ -468,16 +452,44 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   }
   ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+
   /* remove the computed solution from the rhs */
   ierr = VecScale(used_vec,-1.0);CHKERRQ(ierr);
   ierr = MatMultAdd(pc->pmat,used_vec,rhs,rhs);CHKERRQ(ierr);
   ierr = VecScale(used_vec,-1.0);CHKERRQ(ierr);
+
+  /* store partially computed solution and set initial guess */
   if(x) {
-    /* store partially computed solution and set initial guess to 0 */
     ierr = VecCopy(used_vec,pcbddc->temp_solution);CHKERRQ(ierr);
     ierr = VecSet(used_vec,0.0);CHKERRQ(ierr);
+    if(pcbddc->use_exact_dirichlet) {
+      ierr = VecScatterBegin(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd  (pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+      ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd  (pcis->global_to_D,pcis->vec2_D,used_vec,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      if(ksp) {
+        ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+      }
+    }
   }
   ierr = VecDestroy(&used_vec);CHKERRQ(ierr);
+
+  /* rhs change of basis */
+  if(pcbddc->usechangeofbasis) {
+    /* swap pointers for local matrices */
+    temp_mat = matis->A;
+    matis->A = pcbddc->local_mat;
+    pcbddc->local_mat = temp_mat;
+    /* Get local rhs and apply transformation of basis */
+    ierr = VecScatterBegin(pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    /* from original basis to modified basis */
+    ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,pcis->vec1_B,pcis->vec2_B);CHKERRQ(ierr);
+    /* put back modified values into the global vec using INSERT_VALUES copy mode */
+    ierr = VecScatterBegin(pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -612,26 +624,32 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
    Added support for M_3 preconditioenr in the reference article (code is active if pcbddc->prec_type = PETSC_TRUE) */
 
   PetscFunctionBegin;
-  /* First Dirichlet solve */
-  ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
-  /*
-    Assembling right hand side for BDDC operator
-    - vec1_D for the Dirichlet part (if needed, i.e. prec_flag=PETSC_TRUE)
-    - the interface part of the global vector z
-  */
-  ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
-  ierr = MatMult(pcis->A_BI,pcis->vec2_D,pcis->vec1_B);CHKERRQ(ierr);
-  if(pcbddc->prec_type) { ierr = MatMultAdd(pcis->A_II,pcis->vec2_D,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
-  ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
-  ierr = VecCopy(r,z);CHKERRQ(ierr);
-  ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  if(!pcbddc->use_exact_dirichlet) {
+    /* First Dirichlet solve */
+    ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
+    /*
+      Assembling right hand side for BDDC operator
+      - vec1_D for the Dirichlet part (if needed, i.e. prec_flag=PETSC_TRUE)
+      - the interface part of the global vector z
+    */
+    ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
+    ierr = MatMult(pcis->A_BI,pcis->vec2_D,pcis->vec1_B);CHKERRQ(ierr);
+    if(pcbddc->prec_type) { ierr = MatMultAdd(pcis->A_II,pcis->vec2_D,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
+    ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
+    ierr = VecCopy(r,z);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  } else {
+    ierr = VecScatterBegin(pcis->global_to_B,r,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (pcis->global_to_B,r,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecSet(pcis->vec2_D,zero);CHKERRQ(ierr);
+  }
 
-  /* Get Local boundary and apply partition of unity */
-  ierr = VecScatterBegin(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  /* Apply partition of unity */
   ierr = VecPointwiseMult(pcis->vec1_B,pcis->D,pcis->vec1_B);CHKERRQ(ierr);
 
   /* Apply interface preconditioner
@@ -1047,6 +1065,7 @@ PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->coarse_loc_to_glob         = 0;
   pcbddc->dbg_flag                   = PETSC_FALSE;
   pcbddc->coarsening_ratio           = 8;
+  pcbddc->use_exact_dirichlet        = PETSC_TRUE;
 
   /* allocate and initialize needed graph structure */
   ierr = PetscMalloc(sizeof(*mat_graph),&pcbddc->mat_graph);CHKERRQ(ierr);
@@ -2495,10 +2514,10 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
           /* prepare for the next cycle */
           temp_constraints = 0;
           if(i != local_primal_size -1 ) { 
-            temp_start_ptr = temp_indices_to_constraint_B[temp_indices[i+1]];
-          }
+          temp_start_ptr = temp_indices_to_constraint_B[temp_indices[i+1]];
         }
       }
+    }
     }
     /* assembling */
     ierr = MatAssemblyBegin(pcbddc->ChangeOfBasisMatrix,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2767,7 +2786,6 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     ierr = KSPDestroy(&pcis->ksp_D);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)pcbddc->ksp_D);CHKERRQ(ierr);
     pcis->ksp_D = pcbddc->ksp_D;
-    if(pcbddc->dbg_flag) ierr = KSPView(pcbddc->ksp_D,PETSC_VIEWER_STDOUT_SELF);
     /* Matrix for Neumann problem is A_RR -> we need to create it */
     ierr = MatGetSubMatrix(pcbddc->local_mat,is_R_local,is_R_local,MAT_INITIAL_MATRIX,&A_RR);CHKERRQ(ierr);
     ierr = KSPCreate(PETSC_COMM_SELF,&pcbddc->ksp_R);CHKERRQ(ierr);
@@ -2782,11 +2800,11 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     ierr = KSPSetFromOptions(pcbddc->ksp_R);CHKERRQ(ierr);
     /* Set Up KSP for Neumann problem of BDDC */
     ierr = KSPSetUp(pcbddc->ksp_R);CHKERRQ(ierr);
-    if(pcbddc->dbg_flag) ierr = KSPView(pcbddc->ksp_R,PETSC_VIEWER_STDOUT_SELF);
     /* check Dirichlet and Neumann solvers */
-    if(dbg_flag) {
-      Vec temp_vec;
-      PetscScalar value;
+    {
+      Vec         temp_vec;
+      PetscReal   value;
+      PetscMPIInt use_exact,use_exact_reduced;
 
       ierr = VecDuplicate(pcis->vec1_D,&temp_vec);CHKERRQ(ierr);
       ierr = VecSetRandom(pcis->vec1_D,PETSC_NULL);CHKERRQ(ierr);
@@ -2794,20 +2812,28 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
       ierr = KSPSolve(pcbddc->ksp_D,pcis->vec2_D,temp_vec);CHKERRQ(ierr);
       ierr = VecAXPY(temp_vec,m_one,pcis->vec1_D);CHKERRQ(ierr);
       ierr = VecNorm(temp_vec,NORM_INFINITY,&value);CHKERRQ(ierr);
+      use_exact = 1;
+      if(PetscAbsReal(value) > 1.e-4) {
+        use_exact = 0;
+      }
+      ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_INT,MPI_LAND,((PetscObject)pc)->comm);CHKERRQ(ierr);
+      pcbddc->use_exact_dirichlet = (PetscBool) use_exact_reduced;
       ierr = VecDestroy(&temp_vec);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"Checking solution of Dirichlet and Neumann problems\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d infinity error for Dirichlet solve = % 1.14e \n",PetscGlobalRank,value);CHKERRQ(ierr);
-      ierr = VecDuplicate(pcbddc->vec1_R,&temp_vec);CHKERRQ(ierr);
-      ierr = VecSetRandom(pcbddc->vec1_R,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatMult(A_RR,pcbddc->vec1_R,pcbddc->vec2_R);CHKERRQ(ierr);
-      ierr = KSPSolve(pcbddc->ksp_R,pcbddc->vec2_R,temp_vec);CHKERRQ(ierr);
-      ierr = VecAXPY(temp_vec,m_one,pcbddc->vec1_R);CHKERRQ(ierr);
-      ierr = VecNorm(temp_vec,NORM_INFINITY,&value);CHKERRQ(ierr);
-      ierr = VecDestroy(&temp_vec);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d infinity error for  Neumann  solve = % 1.14e \n",PetscGlobalRank,value);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      if(dbg_flag) {
+        ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Checking solution of Dirichlet and Neumann problems\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d infinity error for Dirichlet solve = % 1.14e \n",PetscGlobalRank,value);CHKERRQ(ierr);
+        ierr = VecDuplicate(pcbddc->vec1_R,&temp_vec);CHKERRQ(ierr);
+        ierr = VecSetRandom(pcbddc->vec1_R,PETSC_NULL);CHKERRQ(ierr);
+        ierr = MatMult(A_RR,pcbddc->vec1_R,pcbddc->vec2_R);CHKERRQ(ierr);
+        ierr = KSPSolve(pcbddc->ksp_R,pcbddc->vec2_R,temp_vec);CHKERRQ(ierr);
+        ierr = VecAXPY(temp_vec,m_one,pcbddc->vec1_R);CHKERRQ(ierr);
+        ierr = VecNorm(temp_vec,NORM_INFINITY,&value);CHKERRQ(ierr);
+        ierr = VecDestroy(&temp_vec);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d infinity error for  Neumann  solve = % 1.14e \n",PetscGlobalRank,value);CHKERRQ(ierr);
+        ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      }
     }
     /* free Neumann problem's matrix */
     ierr = MatDestroy(&A_RR);CHKERRQ(ierr);

@@ -77,6 +77,7 @@ typedef struct {
   Vec           original_rhs;
   Vec           temp_solution;
   Mat           local_mat;
+  PetscBool     use_exact_dirichlet;
   /* Some defaults on selecting vertices and constraints*/
   PetscBool     vertices_flag;
   PetscBool     constraints_flag;
