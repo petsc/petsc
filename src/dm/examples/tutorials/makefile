@@ -63,6 +63,10 @@ ex11f90: ex11f90.o   chkopts
 ex12: ex12.o   chkopts
 	-${CLINKER} -o ex12 ex12.o  ${PETSC_DM_LIB}
 	${RM} -f ex12.o
+
+ex19: ex19.o   chkopts
+	-${CLINKER} -o ex19 ex19.o  ${PETSC_DM_LIB}
+	${RM} -f ex19.o
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 2 ./ex1 -nox

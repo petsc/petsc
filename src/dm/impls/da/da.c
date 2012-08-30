@@ -156,6 +156,35 @@ PetscErrorCode  DMDASetDof(DM da, PetscInt dof)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMDASetOverlap"
+/*@
+  DMDASetOverlap - Sets the size of the per-processor overlap.
+
+  Not collective
+
+  Input Parameter:
++ da  - The DMDA
+- dof - Number of degrees of freedom
+
+  Level: intermediate
+
+.keywords:  distributed array, degrees of freedom
+.seealso: DMDACreate(), DMDestroy(), DMDA
+@*/
+PetscErrorCode  DMDASetOverlap(DM da, PetscInt overlap)
+{
+  DM_DA *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidLogicalCollectiveInt(da,overlap,2);
+  if (da->setupcalled) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  dd->overlap = overlap;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMDASetStencilType"
 /*@
   DMDASetStencilType - Sets the type of the communication stencil
