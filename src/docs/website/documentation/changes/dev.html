@@ -109,6 +109,10 @@
       <h4>PC:</h4>
       <ul>
         <li>Added <tt>PCISSetSubdomainDiagonalScaling()</tt> if a user wants to set a custom scaling at the interface.</li>
+        <li>Added initial version of FETI-DP in PCBDDC code.</li>
+        <li>Added <tt>PCBDDCCreateFETIDPOperators()</tt> for creation of FETI-DP mat and the related Dirichlet preconditioner using an already existing PCBDDC object.</li>
+        <li>Added <tt>PCBDDCMatFETIDPGetRHS()</tt> for assembling of right-hand side of FETI-DP linear system.</li>
+        <li>Added <tt>PCBDDCMatFETIDPGetSolution()</tt> for assembling of physical solution from FETI-DP solution.</li>
       </ul>
       <h4>KSP:</h4>
       <h4>SNES:</h4>
