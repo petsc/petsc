@@ -1248,12 +1248,15 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
   ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
   for(i=0;i<pcis->n;i++){
     j = mat_graph->count[i]; /* RECALL: mat_graph->count[i] does not count myself */
-    k = (mat_graph->neighbours_set[i][0] == -1 ?  1 : 0);
+    k = 0;
+    if(j > 0) { 
+      k = (mat_graph->neighbours_set[i][0] == -1 ?  1 : 0);
+    }
     j = j - k ;
     if( j > 0 ) { n_boundary_dofs++; }
 
     skip_node = PETSC_FALSE;
-    if(vertex_indices[s]==i) { /* it works for a sorted set of vertices */
+    if( s < n_vertices && vertex_indices[s]==i) { /* it works for a sorted set of vertices */
       skip_node = PETSC_TRUE;
       s++;
     }
