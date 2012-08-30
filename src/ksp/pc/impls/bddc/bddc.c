@@ -2514,10 +2514,10 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
           /* prepare for the next cycle */
           temp_constraints = 0;
           if(i != local_primal_size -1 ) { 
-          temp_start_ptr = temp_indices_to_constraint_B[temp_indices[i+1]];
+            temp_start_ptr = temp_indices_to_constraint_B[temp_indices[i+1]];
+          }
         }
       }
-    }
     }
     /* assembling */
     ierr = MatAssemblyBegin(pcbddc->ChangeOfBasisMatrix,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
