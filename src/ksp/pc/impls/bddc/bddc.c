@@ -3299,7 +3299,6 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
     PetscMPIInt    *auxlocal_primal;
     PetscMPIInt    *auxglobal_primal;
     PetscMPIInt    *all_auxglobal_primal;
-    PetscMPIInt    *all_auxglobal_primal_dummy;
     PetscMPIInt    mpi_local_primal_size = (PetscMPIInt)pcbddc->local_primal_size;
     PetscInt       *row_cmat_indices;
     PetscInt       size_of_constraint;
@@ -3327,7 +3326,6 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
     if(rank_prec_comm == 0) {
       /* allocate some auxiliary space */
       ierr = PetscMalloc(pcbddc->replicated_primal_size*sizeof(*all_auxglobal_primal),&all_auxglobal_primal);CHKERRQ(ierr);
-      ierr = PetscMalloc(pcbddc->replicated_primal_size*sizeof(*all_auxglobal_primal_dummy),&all_auxglobal_primal_dummy);CHKERRQ(ierr);
     }
     ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscMPIInt),&auxlocal_primal);CHKERRQ(ierr);
     ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscMPIInt),&auxglobal_primal);CHKERRQ(ierr);
@@ -3373,19 +3371,9 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
     ierr = MPI_Gatherv(&auxglobal_primal[0],pcbddc->local_primal_size,MPIU_INT,&all_auxglobal_primal[0],pcbddc->local_primal_sizes,pcbddc->local_primal_displacements,MPIU_INT,0,prec_comm);CHKERRQ(ierr);
 
     /* After this block all_auxglobal_primal should contains one copy of each primal node's indices in global nodes numbering */
-    /* It implements a function similar to PetscSortRemoveDupsInt */
     if(rank_prec_comm==0) {
-      /* dummy argument since PetscSortMPIInt doesn't exist! */
-      ierr = PetscSortMPIIntWithArray(pcbddc->replicated_primal_size,all_auxglobal_primal,all_auxglobal_primal_dummy);CHKERRQ(ierr);
-      k=1;
-      j=all_auxglobal_primal[0];  /* first dof in global numbering */
-      for(i=1;i< pcbddc->replicated_primal_size ;i++) {
-        if(j != all_auxglobal_primal[i] ) {
-          all_auxglobal_primal[k]=all_auxglobal_primal[i];
-          k++;
-          j=all_auxglobal_primal[i];
-        }
-      }
+      j=pcbddc->replicated_primal_size;
+      ierr = PetscSortRemoveDupsMPIInt(&j,all_auxglobal_primal);CHKERRQ(ierr);
     } else {
       ierr = PetscMalloc(pcbddc->coarse_size*sizeof(PetscMPIInt),&all_auxglobal_primal);CHKERRQ(ierr);
     }
@@ -3407,9 +3395,6 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
     ierr = PetscFree(auxlocal_primal);CHKERRQ(ierr);
     ierr = PetscFree(auxglobal_primal);CHKERRQ(ierr);
     ierr = PetscFree(all_auxglobal_primal);CHKERRQ(ierr);
-    if(rank_prec_comm == 0) {
-      ierr = PetscFree(all_auxglobal_primal_dummy);CHKERRQ(ierr);
-    }
   }
 
   switch(pcbddc->coarse_problem_type){
