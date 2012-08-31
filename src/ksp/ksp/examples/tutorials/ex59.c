@@ -887,9 +887,6 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP* ksp)
   ierr = ISDestroy(&dirichletIS);CHKERRQ(ierr);
   ierr = ISDestroy(&neumannIS);CHKERRQ(ierr);
 
-  ierr = KSPSetFromOptions(temp_ksp);CHKERRQ(ierr);
-  ierr = KSPSetUp(temp_ksp);CHKERRQ(ierr);
-  *ksp = temp_ksp;
   PetscFunctionReturn(0);
 }
 
