@@ -2004,6 +2004,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
   Vec            temp_vec;
   Mat            temp_mat;
   KSP            temp_ksp;
+  PC             temp_pc;
   PetscInt       s,start_constraint,dual_dofs;
   PetscBool      compute_submatrix,useksp=PETSC_FALSE;
   PetscInt       *aux_primal_permutation,*aux_primal_numbering;
@@ -2490,6 +2491,8 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
             ierr = KSPCreate(PETSC_COMM_SELF,&temp_ksp);CHKERRQ(ierr);
             ierr = KSPSetOperators(temp_ksp,temp_mat,temp_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
             ierr = KSPSetType(temp_ksp,KSPPREONLY);CHKERRQ(ierr);
+            ierr = KSPGetPC(temp_ksp,&temp_pc);CHKERRQ(ierr);
+            ierr = PCSetType(temp_pc,PCLU);CHKERRQ(ierr);
             ierr = KSPSetUp(temp_ksp);CHKERRQ(ierr);
             for(s=0;s<temp_constraints;s++) {
               ierr = VecSet(temp_vec,0.0);CHKERRQ(ierr);
@@ -3285,6 +3288,10 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
   ierr = MPI_Comm_rank(prec_comm,&rank_prec_comm);CHKERRQ(ierr);
   ierr = MatGetBlockSize(matis->A,&bs);CHKERRQ(ierr);
   
+  /* adapt coarse problem type */
+  if(pcbddc->coarse_problem_type == MULTILEVEL_BDDC && pcbddc->active_procs < MIN_PROCS_FOR_BDDC )
+    pcbddc->coarse_problem_type = PARALLEL_BDDC;
+  
   /* Assign global numbering to coarse dofs */
   {
     PetscScalar    one=1.,zero=0.;
@@ -3300,12 +3307,20 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
 
     /* Construct needed data structures for message passing */
     ierr = PetscMalloc(mpi_local_primal_size*sizeof(PetscMPIInt),&pcbddc->local_primal_indices);CHKERRQ(ierr);
-    ierr = PetscMalloc(size_prec_comm*sizeof(PetscMPIInt),&pcbddc->local_primal_sizes);CHKERRQ(ierr);
-    ierr = PetscMalloc(size_prec_comm*sizeof(PetscMPIInt),&pcbddc->local_primal_displacements);CHKERRQ(ierr);
+    j = 0;
+    if(rank_prec_comm == 0 || pcbddc->coarse_problem_type == REPLICATED_BDDC) {
+      j = size_prec_comm;
+    } 
+    ierr = PetscMalloc(j*sizeof(PetscMPIInt),&pcbddc->local_primal_sizes);CHKERRQ(ierr);
+    ierr = PetscMalloc(j*sizeof(PetscMPIInt),&pcbddc->local_primal_displacements);CHKERRQ(ierr);
     /* Gather local_primal_size information for all processes  */
-    ierr = MPI_Allgather(&mpi_local_primal_size,1,MPIU_INT,&pcbddc->local_primal_sizes[0],1,MPIU_INT,prec_comm);CHKERRQ(ierr);
+    if(pcbddc->coarse_problem_type == REPLICATED_BDDC) {
+      ierr = MPI_Allgather(&mpi_local_primal_size,1,MPIU_INT,&pcbddc->local_primal_sizes[0],1,MPIU_INT,prec_comm);CHKERRQ(ierr);
+    } else {
+      ierr = MPI_Gather(&mpi_local_primal_size,1,MPIU_INT,&pcbddc->local_primal_sizes[0],1,MPIU_INT,0,prec_comm);CHKERRQ(ierr);
+    }
     pcbddc->replicated_primal_size = 0;
-    for (i=0; i<size_prec_comm; i++) {
+    for (i=0; i<j; i++) {
       pcbddc->local_primal_displacements[i] = pcbddc->replicated_primal_size ;
       pcbddc->replicated_primal_size += pcbddc->local_primal_sizes[i];
     }
@@ -3396,10 +3411,6 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       ierr = PetscFree(all_auxglobal_primal_dummy);CHKERRQ(ierr);
     }
   }
-
-  /* adapt coarse problem type */
-  if(pcbddc->coarse_problem_type == MULTILEVEL_BDDC && pcbddc->active_procs < MIN_PROCS_FOR_BDDC )
-    pcbddc->coarse_problem_type = PARALLEL_BDDC;
 
   switch(pcbddc->coarse_problem_type){
 
