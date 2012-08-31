@@ -275,6 +275,111 @@ PetscErrorCode  PetscSortIntWithArrayPair(PetscInt n,PetscInt *L,PetscInt *J, Pe
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortMPIInt_Private"
+/* 
+   A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
+   Assumes 0 origin for v, number of elements = right+1 (right is index of
+   right-most member). 
+*/
+static void PetscSortMPIInt_Private(PetscMPIInt *v,PetscInt right)
+{
+  PetscInt          i,j;
+  PetscMPIInt       pivot,tmp;
+
+  if (right <= 1) {
+    if (right == 1) {
+      if (v[0] > v[1]) SWAP(v[0],v[1],tmp);
+    }
+    return;
+  }
+  i = MEDIAN(v,right);          /* Choose a pivot */
+  SWAP(v[0],v[i],tmp);          /* Move it out of the way */
+  pivot = v[0];
+  for (i=0,j=right+1;;) {
+    while (++i < j && v[i] <= pivot); /* Scan from the left */
+    while (v[--j] > pivot);           /* Scan from the right */
+    if (i >= j) break;
+    SWAP(v[i],v[j],tmp);
+  }
+  SWAP(v[0],v[j],tmp);          /* Put pivot back in place. */
+  PetscSortMPIInt_Private(v,j-1);
+  PetscSortMPIInt_Private(v+j+1,right-(j+1));
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortMPIInt" 
+/*@
+   PetscSortMPIInt - Sorts an array of MPI integers in place in increasing order.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+-  i  - array of integers
+
+   Level: intermediate
+
+   Concepts: sorting^ints
+
+.seealso: PetscSortReal(), PetscSortIntWithPermutation()
+@*/
+PetscErrorCode  PetscSortMPIInt(PetscInt n,PetscMPIInt i[])
+{
+  PetscInt       j,k;
+  PetscMPIInt    tmp,ik;
+
+  PetscFunctionBegin;
+  if (n<8) {
+    for (k=0; k<n; k++) {
+      ik = i[k];
+      for (j=k+1; j<n; j++) {
+	if (ik > i[j]) {
+	  SWAP(i[k],i[j],tmp);
+	  ik = i[k];
+	}
+      }
+    }
+  } else {
+    PetscSortMPIInt_Private(i,n-1);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortRemoveDupsMPIInt" 
+/*@
+   PetscSortRemoveDupsMPIInt - Sorts an array of MPI integers in place in increasing order removes all duplicate entries
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+-  ii  - array of integers
+
+   Output Parameter:
+.  n - number of non-redundant values
+
+   Level: intermediate
+
+   Concepts: sorting^ints
+
+.seealso: PetscSortReal(), PetscSortIntWithPermutation(), PetscSortInt()
+@*/
+PetscErrorCode  PetscSortRemoveDupsMPIInt(PetscInt *n,PetscMPIInt ii[])
+{
+  PetscErrorCode ierr;
+  PetscInt       i,s = 0,N = *n, b = 0;
+
+  PetscFunctionBegin;
+  ierr = PetscSortMPIInt(N,ii);CHKERRQ(ierr);
+  for (i=0; i<N-1; i++) {
+    if (ii[b+s+1] != ii[b]) {ii[b+1] = ii[b+s+1]; b++;}
+    else s++;
+  }
+  *n = N - s;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSortMPIIntWithArray_Private"

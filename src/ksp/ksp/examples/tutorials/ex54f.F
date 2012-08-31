@@ -78,6 +78,7 @@
       endif
       call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-out_matlab',
      $     out_matlab,flg,ierr)
+      if(.not.flg) out_matlab = PETSC_FALSE;
 
       ev(1) = 1.d0
       ev(2) = eps*ev(1)

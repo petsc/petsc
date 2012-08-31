@@ -40,9 +40,15 @@ PetscErrorCode PCReset_GAMG(PC pc)
 
   PetscFunctionBegin;
   if( pc_gamg->data ) { /* this should not happen, cleaned up in SetUp */
+    PetscPrintf(((PetscObject)pc)->comm,"***[%d]%s this should not happen, cleaned up in SetUp\n",0,__FUNCT__);
     ierr = PetscFree( pc_gamg->data ); CHKERRQ(ierr);
   }
   pc_gamg->data = PETSC_NULL; pc_gamg->data_sz = 0;
+
+  if( pc_gamg->orig_data ) { 
+    ierr = PetscFree( pc_gamg->orig_data ); CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -72,7 +78,6 @@ static PetscErrorCode GAMGKKTMatCreate( Mat A, PetscBool iskkt, GAMGKKTMat *out 
     ierr = MatGetSubMatrix( A, is_prime, is_prime,      MAT_INITIAL_MATRIX, &out->A11); CHKERRQ(ierr);
     ierr = MatGetSubMatrix( A, is_prime, is_constraint, MAT_INITIAL_MATRIX, &out->A12); CHKERRQ(ierr);
     ierr = MatGetSubMatrix( A, is_constraint, is_prime, MAT_INITIAL_MATRIX, &out->A21); CHKERRQ(ierr);
-PetscPrintf(((PetscObject)A)->comm,"[%d]%s N=%d N_11=%d\n",0,__FUNCT__,A->rmap->N,out->A11->rmap->N);
   }
   else {
     out->A11 = A;
@@ -554,61 +559,86 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   GAMGKKTMat       kktMatsArr[GAMG_MAXLEVELS];
   PetscLogDouble   nnz0=0.,nnztot=0.;
   MatInfo          info;
-  PetscBool        stokes = PETSC_FALSE;
-  
+  PetscBool        stokes = PETSC_FALSE, redo_mesh_setup = PETSC_FALSE;
+
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
   if (pc_gamg->verbose>2) PetscPrintf(wcomm,"[%d]%s pc_gamg->setup_count=%d pc->setupcalled=%d\n",mype,__FUNCT__,pc_gamg->setup_count,pc->setupcalled);
-  if( pc_gamg->setup_count++ > 0 ) {
-    PC_MG_Levels **mglevels = mg->levels;
-    /* just do Galerkin grids */
-    Mat B,dA,dB;
-    assert(pc->setupcalled);
+  if( pc_gamg->setup_count++ > 0 ) { 
+    if( redo_mesh_setup ) { 
+      /* reset everything */
+      ierr = PCReset_MG( pc ); CHKERRQ(ierr);
+      pc->setupcalled = 0;
+    }
+    else {
+      PC_MG_Levels **mglevels = mg->levels;
+      /* just do Galerkin grids */
+      Mat B,dA,dB;
+      assert(pc->setupcalled);
 
-    if( pc_gamg->Nlevels > 1 ) {
-      /* currently only handle case where mat and pmat are the same on coarser levels */
-      ierr = KSPGetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,&dA,&dB,PETSC_NULL);CHKERRQ(ierr);
-      /* (re)set to get dirty flag */
-      ierr = KSPSetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,dA,dB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-       
-      for (level=pc_gamg->Nlevels-2; level>-1; level--) {
-        /* the first time through the matrix structure has changed from repartitioning */
-        if( pc_gamg->setup_count==2 /*&& (pc_gamg->repart || level==0)*/) {
-          ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
-          ierr = MatDestroy(&mglevels[level]->A);CHKERRQ(ierr);
-          mglevels[level]->A = B;
-        }
-        else {
-          ierr = KSPGetOperators(mglevels[level]->smoothd,PETSC_NULL,&B,PETSC_NULL);CHKERRQ(ierr);
-          ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
-        }
+      if( pc_gamg->Nlevels > 1 ) {
+        /* currently only handle case where mat and pmat are the same on coarser levels */
+        ierr = KSPGetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,&dA,&dB,PETSC_NULL);CHKERRQ(ierr);
+        /* (re)set to get dirty flag */
+        ierr = KSPSetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,dA,dB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        
+        for (level=pc_gamg->Nlevels-2; level>-1; level--) {
+          /* the first time through the matrix structure has changed from repartitioning */
+          if( pc_gamg->setup_count==2 /*&& (pc_gamg->repart || level==0)*/) {
+            ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
+            ierr = MatDestroy(&mglevels[level]->A);CHKERRQ(ierr);
+            mglevels[level]->A = B;
+          }
+          else {
+            ierr = KSPGetOperators(mglevels[level]->smoothd,PETSC_NULL,&B,PETSC_NULL);CHKERRQ(ierr);
+            ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
+          }
         ierr = KSPSetOperators(mglevels[level]->smoothd,B,B,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
         dB = B;
+        }
       }
+
+      ierr = PCSetUp_MG( pc );CHKERRQ( ierr );
+
+      /* PCSetUp_MG seems to insists on setting this to GMRES */
+      ierr = KSPSetType( mglevels[0]->smoothd, KSPPREONLY ); CHKERRQ(ierr);
+
+      PetscFunctionReturn(0);
     }
-
-    ierr = PCSetUp_MG( pc );CHKERRQ( ierr );
-
-    /* PCSetUp_MG seems to insists on setting this to GMRES */
-    ierr = KSPSetType( mglevels[0]->smoothd, KSPPREONLY ); CHKERRQ(ierr);
-
-    PetscFunctionReturn(0);
   }
-  assert(pc->setupcalled == 0);
 
   ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = GAMGKKTMatCreate( Pmat, stokes, &kktMatsArr[0] ); CHKERRQ(ierr);
 
-  if( pc_gamg->data == 0 ) {
-    if( !pc_gamg->createdefaultdata ){
-      SETERRQ(wcomm,PETSC_ERR_PLIB,"'createdefaultdata' not set(?) need to support NULL data");
+  if( !pc_gamg->data ) {
+    if( pc_gamg->orig_data ) {
+      ierr = MatGetBlockSize( Pmat, &bs ); CHKERRQ(ierr);
+      ierr = MatGetLocalSize( Pmat, &qq, PETSC_NULL ); CHKERRQ(ierr);
+      pc_gamg->data_sz = (qq/bs)*pc_gamg->orig_data_cell_rows*pc_gamg->orig_data_cell_cols;
+      pc_gamg->data_cell_rows = pc_gamg->orig_data_cell_rows;
+      pc_gamg->data_cell_cols = pc_gamg->orig_data_cell_cols;
+      ierr = PetscMalloc( pc_gamg->data_sz*sizeof(PetscReal), &pc_gamg->data ); CHKERRQ(ierr);
+      for(qq=0;qq<pc_gamg->data_sz;qq++) pc_gamg->data[qq] = pc_gamg->orig_data[qq];
     }
-    if( stokes ) {
-      SETERRQ(wcomm,PETSC_ERR_PLIB,"Need data (eg, PCSetCoordinates) for Stokes problems");
+    else {
+      if( !pc_gamg->createdefaultdata ){
+        SETERRQ(wcomm,PETSC_ERR_PLIB,"'createdefaultdata' not set(?) need to support NULL data");
+      }
+      if( stokes ) {
+        SETERRQ(wcomm,PETSC_ERR_PLIB,"Need data (eg, PCSetCoordinates) for Stokes problems");
+      }
+      ierr = pc_gamg->createdefaultdata( pc, kktMatsArr[0].A11 ); CHKERRQ(ierr);
     }
-    ierr = pc_gamg->createdefaultdata( pc, kktMatsArr[0].A11 ); CHKERRQ(ierr);
+  }
+
+  /* cache original data for reuse */
+  if( !pc_gamg->orig_data && redo_mesh_setup ) {
+    ierr = PetscMalloc( pc_gamg->data_sz*sizeof(PetscReal), &pc_gamg->orig_data ); CHKERRQ(ierr);
+    for(qq=0;qq<pc_gamg->data_sz;qq++) pc_gamg->orig_data[qq] = pc_gamg->data[qq];
+    pc_gamg->orig_data_cell_rows = pc_gamg->data_cell_rows;
+    pc_gamg->orig_data_cell_cols = pc_gamg->data_cell_cols;
   }
 
   /* get basic dims */
@@ -618,7 +648,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   else {
     ierr = MatGetBlockSize( Pmat, &bs ); CHKERRQ(ierr);
   }
-  
+
   ierr = MatGetSize( Pmat, &M, &qq );CHKERRQ(ierr);
   if (pc_gamg->verbose) {
     if(pc_gamg->verbose==1) ierr =  MatGetInfo(Pmat,MAT_LOCAL,&info); 
@@ -984,7 +1014,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     }
 
     ierr = PCSetUp_MG( pc );CHKERRQ( ierr );
-    
+
     if( PETSC_FALSE ){
       KSP smoother;  /* PCSetUp_MG seems to insists on setting this to GMRES on coarse grid */
       ierr = PCMGGetSmoother( pc, 0, &smoother ); CHKERRQ(ierr);

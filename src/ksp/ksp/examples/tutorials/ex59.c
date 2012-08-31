@@ -1,4 +1,4 @@
-static char help[] =  "ex57: This example illustrates the use of PCBDDC and its customization.\n\n\
+static char help[] =  "ex59: This example illustrates the use of PCBDDC/FETI-DP and its customization.\n\n\
 Discrete system: 1D, 2D or 3D laplacian, discretized with spectral elements.\n\
 Spectral degree can be specified by passing values to -p option.\n\
 Global problem either with dirichlet boundary conditions on one side or in the pure neumann case (depending on runtime parameters).\n\
@@ -14,6 +14,7 @@ Pure Neumann case can be requested by passing in -pureneumann.\n\
 In the latter case, in order to avoid runtime errors during factorization, please specify also -coarse_pc_factor_zeropivot 0\n\n";
 
 #include <petscksp.h>
+#include <petscpc.h>
 #define DEBUG 0
 
 /* lapack functions needed by gll computations */
@@ -61,6 +62,8 @@ typedef struct {
   PetscBool pure_neumann;
   /* Dirichlet BC implementation */
   PetscBool DBC_zerorows;
+  /* Scaling factor for subdomain */
+  PetscScalar scalingfactor;
 } DomainData;
 
 /* structure holding GLL data */
@@ -445,7 +448,7 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   ierr = PetscFree(colsg);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(temp_local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (temp_local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#ifdef DEBUG
+#if DEBUG
   {
     Vec lvec,rvec;
     PetscReal norm;
@@ -479,6 +482,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
 
   /* Gauss-Lobatto-Legendre nodes zGL on [-1,1] */
   ierr = PetscMalloc((p+1)*sizeof(PetscScalar),&glldata->zGL);CHKERRQ(ierr);
+  ierr = PetscMemzero(glldata->zGL,(p+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   glldata->zGL[0]=-1.0;
   glldata->zGL[p]= 1.0;
   if(p > 1) {
@@ -633,7 +637,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
   }
   ierr = MatAssemblyBegin(glldata->elem_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (glldata->elem_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#ifdef DEBUG
+#if DEBUG
   {
     Vec lvec,rvec;
     PetscReal norm;
@@ -749,6 +753,7 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat* A)
   /* Create MATIS object needed by BDDC */ 
   ierr = MatCreateIS(dd.gcomm,1,PETSC_DECIDE,PETSC_DECIDE,dd.xm*dd.ym*dd.zm,dd.xm*dd.ym*dd.zm,matis_map,&temp_A);CHKERRQ(ierr);
   /* Set local subdomain matrices into MATIS object */ 
+  ierr = MatScale(local_mat,dd.scalingfactor);CHKERRQ(ierr);
   ierr = MatISSetLocalMat(temp_A,local_mat);CHKERRQ(ierr);
   /* Call assembly functions */
   ierr = MatAssemblyBegin(temp_A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -760,7 +765,7 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat* A)
     ierr = ISDestroy(&dirichletIS);CHKERRQ(ierr);
   }
 
-#ifdef DEBUG
+#if DEBUG
   {
     Vec lvec,rvec;
     PetscReal norm;
@@ -786,8 +791,34 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat* A)
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
-#define __FUNCT__ "ComputeKSP"
-static PetscErrorCode ComputeKSP(DomainData dd,Mat A,KSP* ksp)
+#define __FUNCT__ "ComputeKSPFETIDP"
+static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP* ksp_fetidp)
+{
+  PetscErrorCode ierr;
+  KSP            temp_ksp;
+  PC             pc,D;
+  Mat            F;
+
+  PetscFunctionBegin;
+  ierr = KSPGetPC(ksp_bddc,&pc);CHKERRQ(ierr);
+  ierr = PCBDDCCreateFETIDPOperators(pc,&F,&D);CHKERRQ(ierr);
+  ierr = KSPCreate(((PetscObject)F)->comm,&temp_ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(temp_ksp,F,F,SAME_PRECONDITIONER);CHKERRQ(ierr);
+  ierr = KSPSetType(temp_ksp,KSPCG);CHKERRQ(ierr);
+  ierr = KSPSetTolerances(temp_ksp,1.0e-8,1.0e-8,1.0e15,10000);CHKERRQ(ierr);
+  ierr = KSPSetPC(temp_ksp,D);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(temp_ksp);CHKERRQ(ierr);
+  ierr = KSPSetUp(temp_ksp);CHKERRQ(ierr);
+  *ksp_fetidp = temp_ksp;
+  ierr = MatDestroy(&F);CHKERRQ(ierr);
+  ierr = PCDestroy(&D);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "ComputeKSPBDDC"
+static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP* ksp)
 {
   PetscErrorCode ierr;
   KSP            temp_ksp;
@@ -809,6 +840,9 @@ static PetscErrorCode ComputeKSP(DomainData dd,Mat A,KSP* ksp)
   localsize = dd.xm_l*dd.ym_l*dd.zm_l;
 
   /* BDDC customization */
+
+  /* jumping coefficients case */
+  ierr = PCISSetSubdomainScalingFactor(pc,dd.scalingfactor);CHKERRQ(ierr);
 
   /* Dofs splitting
      Simple stride-1 IS 
@@ -847,12 +881,12 @@ static PetscErrorCode ComputeKSP(DomainData dd,Mat A,KSP* ksp)
       ierr = PCBDDCSetNeumannBoundaries(pc,neumannIS);CHKERRQ(ierr);
     }
   }
-  ierr = ISDestroy(&dirichletIS);CHKERRQ(ierr);
-  ierr = ISDestroy(&neumannIS);CHKERRQ(ierr);
-
   ierr = KSPSetFromOptions(temp_ksp);CHKERRQ(ierr);
   ierr = KSPSetUp(temp_ksp);CHKERRQ(ierr);
   *ksp = temp_ksp;
+  ierr = ISDestroy(&dirichletIS);CHKERRQ(ierr);
+  ierr = ISDestroy(&neumannIS);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -861,11 +895,13 @@ static PetscErrorCode ComputeKSP(DomainData dd,Mat A,KSP* ksp)
 static PetscErrorCode InitializeDomainData(DomainData* dd)
 {
   PetscErrorCode ierr;
-  PetscMPIInt nprocs;
+  PetscMPIInt nprocs,rank;
+  PetscInt factor;
   PetscFunctionBegin;
 
   dd->gcomm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(dd->gcomm,&nprocs);
+  ierr = MPI_Comm_rank(dd->gcomm,&rank);
   /* test data passed in */
   if(nprocs<2) {
     SETERRQ(dd->gcomm,PETSC_ERR_USER,"This is not a uniprocessor test");
@@ -904,6 +940,11 @@ static PetscErrorCode InitializeDomainData(DomainData* dd)
   if(dd->pure_neumann) {
     dd->DBC_zerorows = PETSC_FALSE;
   }
+  dd->scalingfactor = 1.0;
+  factor = 0.0;
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-jump",&factor,PETSC_NULL);CHKERRQ(ierr);
+  /* checkerboard pattern */
+  dd->scalingfactor = PetscPowScalar(10,(PetscScalar)factor*PetscPowScalar(-1.0,(PetscScalar)rank));
   /* test data passed in */
   if(dd->dim==1) {
     if(nprocs!=dd->npx) {
@@ -938,9 +979,10 @@ int main(int argc,char **args)
   DomainData     dd;
   PetscReal      norm;
   PetscInt       ndofs;
-  Mat            A;
-  KSP            testksp;
-  Vec            bddc_solution,bddc_rhs,exact_solution;
+  Mat            A=0,F=0;
+  KSP            KSPwithBDDC=0,KSPwithFETIDP=0;
+  Vec            fetidp_solution_all=0,bddc_solution=0,bddc_rhs=0;
+  Vec            exact_solution=0,fetidp_solution=0,fetidp_rhs=0;
 
   /* Init PETSc */
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
@@ -962,11 +1004,13 @@ int main(int argc,char **args)
   /* get work vectors */
   ierr = MatGetVecs(A,&bddc_solution,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecDuplicate(bddc_solution,&bddc_rhs);CHKERRQ(ierr);
+  ierr = VecDuplicate(bddc_solution,&fetidp_solution_all);CHKERRQ(ierr);
   ierr = VecDuplicate(bddc_solution,&exact_solution);CHKERRQ(ierr);
   /* create and customize KSP/PC for BDDC */ 
-  ierr = ComputeKSP(dd,A,&testksp);CHKERRQ(ierr);
-
-  /* assemble exact solution */
+  ierr = ComputeKSPBDDC(dd,A,&KSPwithBDDC);CHKERRQ(ierr);
+  /* create KSP/PC for FETIDP */ 
+  ierr = ComputeKSPFETIDP(dd,KSPwithBDDC,&KSPwithFETIDP);CHKERRQ(ierr);
+  /* create random exact solution */
   ierr = VecSetRandom(exact_solution,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecShift(exact_solution,-0.5);CHKERRQ(ierr);
   ierr = VecScale(exact_solution,100.0);CHKERRQ(ierr);
@@ -980,7 +1024,7 @@ int main(int argc,char **args)
   ierr = MatMult(A,exact_solution,bddc_rhs);CHKERRQ(ierr);
   /* test ksp with BDDC */
   ierr = VecSet(bddc_solution,0.0);CHKERRQ(ierr);
-  ierr = KSPSolve(testksp,bddc_rhs,bddc_solution);CHKERRQ(ierr);
+  ierr = KSPSolve(KSPwithBDDC,bddc_rhs,bddc_solution);CHKERRQ(ierr);
   if(dd.pure_neumann) {
     ierr = VecSum(bddc_solution,&norm);CHKERRQ(ierr);
     ierr = VecGetSize(bddc_solution,&ndofs);
@@ -990,13 +1034,36 @@ int main(int argc,char **args)
   /* check exact_solution and BDDC solultion */
   ierr = VecAXPY(bddc_solution,-1.0,exact_solution);CHKERRQ(ierr);
   ierr = VecNorm(bddc_solution,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  printf("Error betweeen exact and BDDC solutions: % 1.14e\n",norm);
+  ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and BDDC solutions: % 1.14e\n",norm);CHKERRQ(ierr);
+  /* assemble fetidp rhs on the space of Lagrange multipliers */
+  ierr = KSPGetOperators(KSPwithFETIDP,&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetVecs(F,&fetidp_solution,&fetidp_rhs);CHKERRQ(ierr);
+  ierr = PCBDDCMatFETIDPGetRHS(F,bddc_rhs,fetidp_rhs);CHKERRQ(ierr);
+  ierr = VecSet(fetidp_solution,0.0);CHKERRQ(ierr);
+  /* test ksp with FETIDP */
+  ierr = KSPSolve(KSPwithFETIDP,fetidp_rhs,fetidp_solution);CHKERRQ(ierr);
+  /* assemble fetidp solution on physical domain */
+  ierr = PCBDDCMatFETIDPGetSolution(F,fetidp_solution,fetidp_solution_all);CHKERRQ(ierr);
+  /* check FETIDP sol */
+  if(dd.pure_neumann) {
+    ierr = VecSum(fetidp_solution_all,&norm);CHKERRQ(ierr);
+    ierr = VecGetSize(fetidp_solution_all,&ndofs);
+    norm = -norm/(PetscScalar)ndofs;
+    ierr = VecShift(fetidp_solution_all,norm);CHKERRQ(ierr);
+  }
+  ierr = VecAXPY(fetidp_solution_all,-1.0,exact_solution);CHKERRQ(ierr);
+  ierr = VecNorm(fetidp_solution_all,NORM_INFINITY,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(dd.gcomm,"Error betweeen exact and FETI-DP solutions: % 1.14e\n",norm);CHKERRQ(ierr);
   /* Free workspace */
   ierr = VecDestroy(&exact_solution);CHKERRQ(ierr);
   ierr = VecDestroy(&bddc_solution);CHKERRQ(ierr);
+  ierr = VecDestroy(&fetidp_solution);CHKERRQ(ierr);
+  ierr = VecDestroy(&fetidp_solution_all);CHKERRQ(ierr);
   ierr = VecDestroy(&bddc_rhs);CHKERRQ(ierr);
+  ierr = VecDestroy(&fetidp_rhs);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = KSPDestroy(&testksp);CHKERRQ(ierr);
+  ierr = KSPDestroy(&KSPwithBDDC);CHKERRQ(ierr);
+  ierr = KSPDestroy(&KSPwithFETIDP);CHKERRQ(ierr);
   /* Quit PETSc */
   ierr = PetscFinalize();CHKERRQ(ierr);
 

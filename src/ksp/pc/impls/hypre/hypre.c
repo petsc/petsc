@@ -342,11 +342,18 @@ static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
+/* static array length */
+#define ALEN(a) (sizeof(a)/sizeof((a)[0]))
+
 static const char *HYPREBoomerAMGCycleType[]   = {"","V","W"};
 static const char *HYPREBoomerAMGCoarsenType[] = {"CLJP","Ruge-Stueben","","modifiedRuge-Stueben","","","Falgout", "", "PMIS", "", "HMIS"};                                 
-static const char *HYPREBoomerAMGMeasureType[] = {"local","global"};                                                                                                        
-static const char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","","SOR/Jacobi","backward-SOR/Jacobi","","symmetric-SOR/Jacobi",
-                                                  "","","Gaussian-elimination"};                                                                                            
+static const char *HYPREBoomerAMGMeasureType[] = {"local","global"};
+/* The following corresponds to HYPRE_BoomerAMGSetRelaxType which has many missing numbers in the enum */
+static const char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","seqboundary-Gauss-Seidel","SOR/Jacobi","backward-SOR/Jacobi",
+                                                  "" /* [5] hybrid chaotic Gauss-Seidel (works only with OpenMP) */,"symmetric-SOR/Jacobi",
+                                                  "" /* 7 */,"l1scaled-SOR/Jacobi","Gaussian-elimination",
+                                                  "" /* 10 */, "" /* 11 */, "" /* 12 */, "" /* 13 */, "" /* 14 */,
+                                                  "CG" /* non-stationary */,"Chebyshev","FCF-Jacobi","l1scaled-Jacobi"};
 static const char *HYPREBoomerAMGInterpType[]  = {"classical", "", "", "direct", "multipass", "multipass-wts", "ext+i",
                                                   "ext+i-cc", "standard", "standard-wts", "", "", "FF", "FF1"};                                                             
 #undef __FUNCT__  
@@ -450,7 +457,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   }
 
   /* Relax type */
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_all","Relax type for the up and down cycles","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[6],&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_all","Relax type for the up and down cycles","None",HYPREBoomerAMGRelaxType,ALEN(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     jac->relaxtype[0] = jac->relaxtype[1]  = indx;
     PetscStackCallHypre(0,HYPRE_BoomerAMGSetRelaxType,(jac->hsolver, indx)); 
@@ -458,17 +465,17 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     jac->relaxtype[2] = 9;
     
   }
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_down","Relax type for the down cycles","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[6],&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_down","Relax type for the down cycles","None",HYPREBoomerAMGRelaxType,ALEN(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     jac->relaxtype[0] = indx;
     PetscStackCallHypre(0,HYPRE_BoomerAMGSetCycleRelaxType,(jac->hsolver, indx, 1)); 
   }
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_up","Relax type for the up cycles","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[6],&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_up","Relax type for the up cycles","None",HYPREBoomerAMGRelaxType,ALEN(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[6],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     jac->relaxtype[1] = indx;
     PetscStackCallHypre(0,HYPRE_BoomerAMGSetCycleRelaxType,(jac->hsolver, indx, 2)); 
   }
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_coarse","Relax type on coarse grid","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[9],&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_coarse","Relax type on coarse grid","None",HYPREBoomerAMGRelaxType,ALEN(HYPREBoomerAMGRelaxType),HYPREBoomerAMGRelaxType[9],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     jac->relaxtype[2] = indx;
     PetscStackCallHypre(0,HYPRE_BoomerAMGSetCycleRelaxType,(jac->hsolver, indx, 3)); 
@@ -519,20 +526,20 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     jac->relaxorder = 0;
     PetscStackCallHypre(0,HYPRE_BoomerAMGSetRelaxOrder,(jac->hsolver, jac->relaxorder)); 
   }
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_measure_type","Measure type","None",HYPREBoomerAMGMeasureType,2,HYPREBoomerAMGMeasureType[0],&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_hypre_boomeramg_measure_type","Measure type","None",HYPREBoomerAMGMeasureType,ALEN(HYPREBoomerAMGMeasureType),HYPREBoomerAMGMeasureType[0],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     jac->measuretype = indx;
     PetscStackCallHypre(0,HYPRE_BoomerAMGSetMeasureType,(jac->hsolver,jac->measuretype)); 
   }
   /* update list length 3/07 */
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,11,HYPREBoomerAMGCoarsenType[6],&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,ALEN(HYPREBoomerAMGCoarsenType),HYPREBoomerAMGCoarsenType[6],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     jac->coarsentype = indx;
     PetscStackCallHypre(0,HYPRE_BoomerAMGSetCoarsenType,(jac->hsolver,jac->coarsentype)); 
   }
  
   /* new 3/07 */
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_interp_type","Interpolation type","None",HYPREBoomerAMGInterpType,14,HYPREBoomerAMGInterpType[0],&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_hypre_boomeramg_interp_type","Interpolation type","None",HYPREBoomerAMGInterpType,ALEN(HYPREBoomerAMGInterpType),HYPREBoomerAMGInterpType[0],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     jac->interptype = indx;
     PetscStackCallHypre(0,HYPRE_BoomerAMGSetInterpType,(jac->hsolver,jac->interptype)); 
@@ -691,7 +698,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PC pc)
     PetscStackCallHypre(0,HYPRE_ParaSailsSetReuse,(jac->hsolver,jac->ruse));
   }
 
-  ierr = PetscOptionsEList("-pc_hypre_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,3,symtlist[0],&indx,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_hypre_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,ALEN(symtlist),symtlist[0],&indx,&flag);CHKERRQ(ierr);
   if (flag) {
     jac->symt = indx;
     PetscStackCallHypre(0,HYPRE_ParaSailsSetSym,(jac->hsolver,jac->symt));
@@ -1117,9 +1124,9 @@ PetscErrorCode PCSetFromOptions_PFMG(PC pc)
 
   ierr = PetscOptionsReal("-pc_pfmg_tol","Tolerance of PFMG","HYPRE_StructPFMGSetTol",ex->tol,&ex->tol,PETSC_NULL);CHKERRQ(ierr);
   PetscStackCallHypre(0,HYPRE_StructPFMGSetTol,(ex->hsolver,ex->tol)); 
-  ierr = PetscOptionsEList("-pc_pfmg_relax_type","Relax type for the up and down cycles","HYPRE_StructPFMGSetRelaxType",PFMGRelaxType,4,PFMGRelaxType[ex->relax_type],&ex->relax_type,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_pfmg_relax_type","Relax type for the up and down cycles","HYPRE_StructPFMGSetRelaxType",PFMGRelaxType,ALEN(PFMGRelaxType),PFMGRelaxType[ex->relax_type],&ex->relax_type,PETSC_NULL);CHKERRQ(ierr);
   PetscStackCallHypre(0,HYPRE_StructPFMGSetRelaxType,(ex->hsolver, ex->relax_type)); 
-  ierr = PetscOptionsEList("-pc_pfmg_rap_type","RAP type","HYPRE_StructPFMGSetRAPType",PFMGRAPType,2,PFMGRAPType[ex->rap_type],&ex->rap_type,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_pfmg_rap_type","RAP type","HYPRE_StructPFMGSetRAPType",PFMGRAPType,ALEN(PFMGRAPType),PFMGRAPType[ex->rap_type],&ex->rap_type,PETSC_NULL);CHKERRQ(ierr);
   PetscStackCallHypre(0,HYPRE_StructPFMGSetRAPType,(ex->hsolver, ex->rap_type)); 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

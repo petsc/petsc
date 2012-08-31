@@ -133,6 +133,7 @@ PETSC_EXTERN PetscErrorCode DMDAGetFieldName(DM,PetscInt,const char**);
 
 PETSC_EXTERN PetscErrorCode DMDASetBoundaryType(DM,DMDABoundaryType,DMDABoundaryType,DMDABoundaryType);
 PETSC_EXTERN PetscErrorCode DMDASetDof(DM, PetscInt);
+PETSC_EXTERN PetscErrorCode DMDASetOverlap(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMDASetStencilWidth(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMDASetOwnershipRanges(DM,const PetscInt[],const PetscInt[],const PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMDAGetOwnershipRanges(DM,const PetscInt**,const PetscInt**,const PetscInt**);

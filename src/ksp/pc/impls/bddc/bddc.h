@@ -77,6 +77,7 @@ typedef struct {
   Vec           original_rhs;
   Vec           temp_solution;
   Mat           local_mat;
+  PetscBool     use_exact_dirichlet;
   /* Some defaults on selecting vertices and constraints*/
   PetscBool     vertices_flag;
   PetscBool     constraints_flag;
@@ -113,5 +114,33 @@ static PetscErrorCode PCBDDCSolveSaddlePoint(PC);
 static PetscErrorCode PCBDDCScatterCoarseDataBegin(PC,Vec,Vec,InsertMode,ScatterMode);
 static PetscErrorCode PCBDDCScatterCoarseDataEnd(PC,Vec,Vec,InsertMode,ScatterMode);
 static PetscErrorCode PCBDDCCreateConstraintMatrix(PC);
+
+/* feti-dp */
+typedef struct {
+  PetscInt   n_lambda;
+  Vec        lambda_local;
+  Vec        temp_solution_B;
+  Vec        temp_solution_D;
+  Mat        B_delta;
+  Mat        B_Ddelta;
+  VecScatter l2g_lambda;
+  PC         pc;
+} FETIDPMat_ctx;
+
+typedef struct {
+  Vec        lambda_local;
+  Mat        B_Ddelta;
+  VecScatter l2g_lambda;
+  PC         pc;
+} FETIDPPC_ctx;
+
+static PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx**);
+static PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
+static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx*);
+static PetscErrorCode PCBDDCCreateFETIDPPCContext(PC,FETIDPPC_ctx**);
+static PetscErrorCode PCBDDCDestroyFETIDPPC(PC);
+static PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat,FETIDPPC_ctx*);
+static PetscErrorCode FETIDPPCApply(PC,Vec,Vec);
+static PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
 
 #endif /* __pcbddc_h */
