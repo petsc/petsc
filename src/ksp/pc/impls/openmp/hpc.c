@@ -281,6 +281,7 @@ PetscErrorCode  PCCreate_HMPI(PC pc)
   PetscFunctionBegin;
   ierr      = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_SIZ,"HMPI preconditioner only works for sequential solves");
+  if (!PETSC_COMM_LOCAL_WORLD) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PETSc not initialized for PCMPI see the manual pages for PetscHMPISpawn() and PetscHMPIMerge()");
   /* caste the struct length to a PetscInt for easier MPI calls */
 
   ierr      = PetscHMPIMalloc(PETSC_COMM_LOCAL_WORLD,(PetscInt)sizeof(PC_HMPI),(void**)&red);CHKERRQ(ierr);

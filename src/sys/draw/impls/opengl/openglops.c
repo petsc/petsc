@@ -269,11 +269,16 @@ static PetscErrorCode InitializeShader(void)
   /* and then render. */
   /* Load the shader into the rendering pipeline */
   glUseProgram(shaderprogram);
+  err = glGetError(); if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"OpenGL error %d\n",err);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "FinalizeShader" 
+/*
+    This is currently all wrong, there is actually a separate shader for each window
+   so they cannot be stored as global
+*/
 static PetscErrorCode FinalizeShader(void)
 {
   PetscFunctionBegin;
@@ -317,6 +322,19 @@ PETSC_STATIC_INLINE PetscErrorCode OpenGLString(float x,float y, const char *str
     glutBitmapCharacter(GLUT_BITMAP_8_BY_13, str[i]);
   }
   return 0;
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawGetPopup_OpenGL" 
+static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
+{
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDrawCreate(((PetscObject)draw)->comm,PETSC_NULL,PETSC_NULL,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,popup);CHKERRQ(ierr);
+  ierr = PetscDrawSetType(*popup,((PetscObject)draw)->type_name);CHKERRQ(ierr);
+  draw->popup = *popup;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -500,6 +518,17 @@ static GLKView  *globalGLKView[10] = {0,0,0,0,0,0,0,0,0,0};
 PETSC_STATIC_INLINE PetscErrorCode OpenGLWindow(PetscDraw_OpenGL *win)
 {
   return 0;
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawGetPopup_OpenGL" 
+static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
+{
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  *popup = PETSC_NULL;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -965,18 +994,6 @@ static PetscErrorCode PetscDrawPause_OpenGL(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawGetPopup_OpenGL" 
-static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
-{
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscDrawCreate(((PetscObject)draw)->comm,PETSC_NULL,PETSC_NULL,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,popup);CHKERRQ(ierr);
-  ierr = PetscDrawSetType(*popup,((PetscObject)draw)->type_name);CHKERRQ(ierr);
-  draw->popup = *popup;
-  PetscFunctionReturn(0);
-}
 
 static struct _PetscDrawOps DvOps = { 0,
                                  PetscDrawFlush_OpenGL,
@@ -1158,10 +1175,8 @@ PetscErrorCode  PetscDrawCreate_GLUT(PetscDraw draw)
 
   draw->data = win;
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  if (!initialized) {
-    initialized = PETSC_TRUE;
-    ierr = InitializeShader();CHKERRQ(ierr);
-  }
+  ierr = InitializeShader();CHKERRQ(ierr);
+
   ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   resized = PETSC_FALSE; /* opening the window triggers OpenGL call to reshape so need to cancel that resized flag */
   glutCheckLoop();
@@ -1273,8 +1288,8 @@ PetscErrorCode  PetscDrawCreate_OpenGLES(PetscDraw draw)
   if (!initialized) {
     initialized = PETSC_TRUE;
     ierr = InitializeColors();CHKERRQ(ierr);
-    ierr = InitializeShader();CHKERRQ(ierr);
   }
+  ierr = InitializeShader();CHKERRQ(ierr);
 
   ierr = PetscDrawClear(draw);CHKERRQ(ierr); 
   NSLog(@"Ending PetscDrawCreate_OpenGLES()");

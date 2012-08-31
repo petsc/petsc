@@ -30,14 +30,45 @@ PetscErrorCode  PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (xl < 0.0 || xr > 1.0 || yl < 0.0 || yr > 1.0 || xr <= xl || yr <= yl) {
-    SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ViewPort values must be >= 0 and <= 1: Instead %G %G %G %G",xl,yl,xr,yr); 
-  }
+  if (xl < 0.0 || xr > 1.0 || yl < 0.0 || yr > 1.0 || xr <= xl || yr <= yl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ViewPort values must be >= 0 and <= 1: Instead %G %G %G %G",xl,yl,xr,yr); 
   draw->port_xl = xl; draw->port_yl = yl;
   draw->port_xr = xr; draw->port_yr = yr;
   if (draw->ops->setviewport) {
     ierr = (*draw->ops->setviewport)(draw,xl,yl,xr,yr);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawGetViewPort" 
+/*@
+   PetscDrawGetViewPort - Gets the portion of the window (page) to which draw
+   routines will write.
+
+   Collective on PetscDraw
+
+   Input Parameter:
+.  draw - the drawing context
+
+   Output Parameter:
+.  xl,yl,xr,yr - upper right and lower left corners of subwindow
+                 These numbers must always be between 0.0 and 1.0.
+                 Lower left corner is (0,0).
+
+   Level: advanced
+
+   Concepts: drawing^in subset of window
+   Concepts: graphics^in subset of window
+
+@*/
+PetscErrorCode  PetscDrawGetViewPort(PetscDraw draw,PetscReal *xl,PetscReal *yl,PetscReal *xr,PetscReal *yr)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  *xl = draw->port_xl; 
+  *yl = draw->port_yl;
+  *xr = draw->port_xr;
+  *yr = draw->port_yr;
   PetscFunctionReturn(0);
 }
 
@@ -171,8 +202,9 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
     yl[i] += .1*h;
     yr[i] -= .1*h;
   }
+  /* save previous drawport of window */
+  ierr = PetscDrawGetViewPort(draw,&(*ports)->port_xl,&(*ports)->port_yl,&(*ports)->port_xr,&(*ports)->port_yr);CHKERRQ(ierr);
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -209,9 +241,7 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if ((nx < 1) || (ny < 1)) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Number of divisions must be positive: %d x %d", nx, ny);
-  }
+  if ((nx < 1) || (ny < 1)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Number of divisions must be positive: %d x %d", nx, ny);
   ierr = PetscObjectTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);CHKERRQ(ierr);
   if (isnull) {
     *ports = PETSC_NULL;
@@ -248,6 +278,7 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
       yr[k] -= .01*hy;
     }
   }
+  ierr = PetscDrawGetViewPort(draw,&(*ports)->port_xl,&(*ports)->port_yl,&(*ports)->port_xr,&(*ports)->port_yr);CHKERRQ(ierr);
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -272,7 +303,9 @@ PetscErrorCode  PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!ports) PetscFunctionReturn(0);  
+  if (!ports) PetscFunctionReturn(0);
+  /* reset Drawport of Window back to previous value */
+  ierr = PetscDrawSetViewPort(ports->draw,ports->port_xl,ports->port_yl,ports->port_xr,ports->port_yr);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&ports->draw);CHKERRQ(ierr);
   ierr = PetscFree(ports->xl);CHKERRQ(ierr);
   ierr = PetscFree(ports->xr);CHKERRQ(ierr);
