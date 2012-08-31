@@ -1028,6 +1028,7 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC a_pc,
   nloc = n/bs;
 
   if( pc_gamg_agg->square_graph ) {
+    /* ierr = MatMatTransposeMult( Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 ); */
     ierr = MatTransposeMatMult( Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
     CHKERRQ(ierr);
   }
