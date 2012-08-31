@@ -296,6 +296,8 @@ static PetscErrorCode FinalizeShader(void)
   PetscFunctionReturn(0);
 } 
 
+extern PetscErrorCode PetscDrawClear_OpenGL_Base(PetscDraw);
+
 #if defined(PETSC_HAVE_GLUT)
 #include <GLUT/glut.h>
 typedef struct {
@@ -322,6 +324,17 @@ PETSC_STATIC_INLINE PetscErrorCode OpenGLString(float x,float y, const char *str
     glutBitmapCharacter(GLUT_BITMAP_8_BY_13, str[i]);
   }
   return 0;
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawClear_OpenGL" 
+PetscErrorCode PetscDrawClear_OpenGL(PetscDraw draw)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDrawClear_OpenGL_Base(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -521,6 +534,20 @@ PETSC_STATIC_INLINE PetscErrorCode OpenGLWindow(PetscDraw_OpenGL *win)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscDrawClear_OpenGL" 
+static PetscErrorCode PetscDrawClear_OpenGL(PetscDraw draw)
+{
+  PetscErrorCode   ierr;
+  PetscDraw_OpenGL *win = (PetscDraw_OpenGL*)draw->data;
+
+  PetscFunctionBegin;
+  /* remove all UIText added to window */
+  for (UIView *view in [win->view subviews]) {[view removeFromSuperview];}
+  ierr = PetscDrawClear_OpenGL_Base(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscDrawGetPopup_OpenGL" 
 static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
 {
@@ -672,8 +699,8 @@ static PetscErrorCode PetscDrawSynchronizedFlush_OpenGL(PetscDraw draw)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscDrawClear_OpenGL" 
-static PetscErrorCode PetscDrawClear_OpenGL(PetscDraw draw)
+#define __FUNCT__ "PetscDrawClear_OpenGL_Base" 
+PetscErrorCode PetscDrawClear_OpenGL_Base(PetscDraw draw)
 {
   PetscDraw_OpenGL* win = (PetscDraw_OpenGL*)draw->data;
   PetscErrorCode    ierr;
