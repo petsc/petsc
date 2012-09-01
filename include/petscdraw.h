@@ -169,7 +169,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawStringSetSize(PetscDraw,PetscReal,PetscReal
 PETSC_EXTERN PetscErrorCode PetscDrawStringGetSize(PetscDraw,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode PetscDrawSetViewPort(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
-PETSC_EXTERN PetscErrorCode PetscDrawSetViewPort(PetscDraw,PetscReal*,PetscReal*,PetscReal*,PetscReal*)
+PETSC_EXTERN PetscErrorCode PetscDrawGetViewPort(PetscDraw,PetscReal*,PetscReal*,PetscReal*,PetscReal*)
 PETSC_EXTERN PetscErrorCode PetscDrawSplitViewPort(PetscDraw);
 
 PETSC_EXTERN PetscErrorCode PetscDrawSetCoordinates(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
