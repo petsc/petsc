@@ -936,7 +936,7 @@ PetscErrorCode PCMGSetGalerkin(PC pc,PetscBool use)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  mg->galerkin = (PetscInt)use;
+  mg->galerkin = use ? 1 : 0;
   PetscFunctionReturn(0);
 }
 
