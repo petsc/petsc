@@ -1505,10 +1505,17 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   PetscSF         embedSF;
   const PetscInt *ilocal, *indices;
   IS              selected;
-  PetscInt        nleaves, rpStart, rpEnd, lpStart = PETSC_MAX_INT, lpEnd = -1, i;
+  PetscInt        numFields, nleaves, rpStart, rpEnd, lpStart = PETSC_MAX_INT, lpEnd = -1, i, f;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscSectionGetNumFields(rootSection, &numFields);CHKERRQ(ierr);
+  if (numFields) {ierr = PetscSectionSetNumFields(leafSection, numFields);CHKERRQ(ierr);}
+  for(f = 0; f < numFields; ++f) {
+    PetscInt numComp;
+    ierr = PetscSectionGetFieldComponents(rootSection, f, &numComp);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(leafSection, f, numComp);CHKERRQ(ierr);
+  }
   ierr = PetscSectionGetChart(rootSection, &rpStart, &rpEnd);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected);CHKERRQ(ierr);
   ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
@@ -1530,6 +1537,10 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   /* Could fuse these at the cost of a copy and extra allocation */
   ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasDof[-rpStart], &leafSection->atlasDof[-lpStart]);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasDof[-rpStart], &leafSection->atlasDof[-lpStart]);CHKERRQ(ierr);
+  for(f = 0; f < numFields; ++f) {
+    ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->field[f]->atlasDof[-rpStart], &leafSection->field[f]->atlasDof[-lpStart]);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->field[f]->atlasDof[-rpStart], &leafSection->field[f]->atlasDof[-lpStart]);CHKERRQ(ierr);
+  }
   if (remoteOffsets) {
     ierr = PetscMalloc((lpEnd - lpStart) * sizeof(PetscInt), remoteOffsets);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
