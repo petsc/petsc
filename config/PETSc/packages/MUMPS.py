@@ -57,7 +57,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('IPORD      = -I$(topdir)/PORD/include/\n')
     g.write('LPORD      = -L$(LPORDDIR) -lpord\n')
     orderingsc = '-Dpord'
-    orderingsf = self.compilers.FortranDefineCompilerOption+'prod'
+    orderingsf = self.compilers.FortranDefineCompilerOption+'pord'
     # Disable threads on BGL
     if self.libraryOptions.isBGL():
       orderingsc += ' -DWITHOUT_PTHREAD'
