@@ -4228,7 +4228,7 @@ PetscErrorCode DMComplexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
       }
     }
     if (interpolate) {
-      PetscInt f;
+      PetscInt e, f;
 
       for(e = 0; e < out.numberofedges; e++) {
         if (out.edgemarkerlist[e]) {
