@@ -3705,16 +3705,49 @@ PetscErrorCode DMComplexBuildFromCellList_Private(DM dm, PetscInt numCells, Pets
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexCreateFromCellList_Private"
+#define __FUNCT__ "DMComplexBuildCoordinates_Private"
 /*
-  This takes as input the common mesh generator output, a list of the vertices for each cell
+  This takes as input the coordinates for each vertex
 */
-PetscErrorCode DMComplexCreateFromCellList_Private(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const int cells[], const double vertexCoords[], DM *dm)
+PetscErrorCode DMComplexBuildCoordinates_Private(DM dm, PetscInt spaceDim, PetscInt numCells, PetscInt numVertices, const double vertexCoords[])
 {
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar   *coords;
   PetscInt       coordSize, v, d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMComplexGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSection, 0, spaceDim);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
+  for(v = numCells; v < numCells+numVertices; ++v) {
+    ierr = PetscSectionSetDof(coordSection, v, spaceDim);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(coordSection, v, 0, spaceDim);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
+  ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  for(v = 0; v < numVertices; ++v) {
+    for(d = 0; d < spaceDim; ++d) {
+      coords[v*spaceDim+d] = vertexCoords[v*spaceDim+d];
+    }
+  }
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexCreateFromCellList"
+/*
+  This takes as input the common mesh generator output, a list of the vertices for each cell
+*/
+PetscErrorCode DMComplexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt numCorners, PetscBool interpolate, const int cells[], const double vertexCoords[], DM *dm)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3736,26 +3769,7 @@ PetscErrorCode DMComplexCreateFromCellList_Private(MPI_Comm comm, PetscInt dim, 
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
   }
-  ierr = DMComplexGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
-  ierr = DMComplexGetCoordinateVec(*dm, &coordinates);CHKERRQ(ierr);
-  ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldComponents(coordSection, 0, dim);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
-  for(v = numCells; v < numCells+numVertices; ++v) {
-    ierr = PetscSectionSetDof(coordSection, v, dim);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldDof(coordSection, v, 0, dim);CHKERRQ(ierr);
-  }
-  ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
-  ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
-  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  for(v = 0; v < numVertices; ++v) {
-    for(d = 0; d < dim; ++d) {
-      coords[v*dim+d] = vertexCoords[v*dim+d];
-    }
-  }
-  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMComplexBuildCoordinates_Private(*dm, dim, numCells, numVertices, vertexCoords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3853,7 +3867,7 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
     const int     *cells       = out.trianglelist;
     const double  *meshCoords  = out.pointlist;
 
-    ierr = DMComplexCreateFromCellList_Private(comm, dim, numCells, numVertices, numCorners, interpolate, cells, meshCoords, dm);CHKERRQ(ierr);
+    ierr = DMComplexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, meshCoords, dm);CHKERRQ(ierr);
     /* Set labels */
     for(v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
@@ -3976,7 +3990,7 @@ PetscErrorCode DMComplexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined
     const double  *meshCoords  = out.pointlist;
     PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
 
-    ierr = DMComplexCreateFromCellList_Private(comm, dim, numCells, numVertices, numCorners, interpolate, cells, meshCoords, dmRefined);CHKERRQ(ierr);
+    ierr = DMComplexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, meshCoords, dmRefined);CHKERRQ(ierr);
     /* Set labels */
     for(v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
@@ -4092,7 +4106,7 @@ PetscErrorCode DMComplexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *
     const int     *cells       = out.tetrahedronlist;
     const double  *meshCoords  = out.pointlist;
 
-    ierr = DMComplexCreateFromCellList_Private(comm, dim, numCells, numVertices, numCorners, interpolate, cells, meshCoords, dm);CHKERRQ(ierr);
+    ierr = DMComplexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, meshCoords, dm);CHKERRQ(ierr);
     /* Set labels */
     for(v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
@@ -4206,7 +4220,7 @@ PetscErrorCode DMComplexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
     const double  *meshCoords  = out.pointlist;
     PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
 
-    ierr = DMComplexCreateFromCellList_Private(comm, dim, numCells, numVertices, numCorners, interpolate, cells, meshCoords, dmRefined);CHKERRQ(ierr);
+    ierr = DMComplexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, meshCoords, dmRefined);CHKERRQ(ierr);
     /* Set labels */
     for(v = 0; v < numVertices; ++v) {
       if (out.pointmarkerlist[v]) {
@@ -4343,7 +4357,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
     const int     *cells       = out->tetrahedronlist;
     const double  *meshCoords  = out->pointlist;
 
-    ierr = DMComplexCreateFromCellList_Private(comm, dim, numCells, numVertices, numCorners, interpolate, cells, meshCoords, dm);CHKERRQ(ierr);
+    ierr = DMComplexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, meshCoords, dm);CHKERRQ(ierr);
     /* Set labels */
     for(v = 0; v < numVertices; ++v) {
       if (out->pointmarkerlist[v]) {
@@ -4467,7 +4481,7 @@ PetscErrorCode DMComplexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefin
     const double  *meshCoords  = out->pointlist;
     PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
 
-    ierr = DMComplexCreateFromCellList_Private(comm, dim, numCells, numVertices, numCorners, interpolate, cells, meshCoords, dmRefined);CHKERRQ(ierr);
+    ierr = DMComplexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, meshCoords, dmRefined);CHKERRQ(ierr);
     /* Set labels */
     for(v = 0; v < numVertices; ++v) {
       if (out->pointmarkerlist[v]) {
