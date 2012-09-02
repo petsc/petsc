@@ -333,31 +333,56 @@ PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,void *dummy)
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorDynamicTolerance"
 /*
- A hack to using dynamic tolerence in preconditioner
+ A hack to using dynamic tolerance in preconditioner
  */
-PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy) {
+PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy) 
+{
   PetscErrorCode ierr;
-  PetscReal *coef = (PetscReal*)dummy;
-  PC pcksp;
-  KSP kspinner;
-  PetscReal outer_rtol, outer_abstol, outer_dtol, inner_rtol;
-  PetscInt outer_maxits;
+  PC             pc;
+  PetscReal      outer_rtol, outer_abstol, outer_dtol, inner_rtol;
+  PetscInt       outer_maxits,nksp,first,i;
+  KSPDynTolCtx   *scale = (KSPDynTolCtx*)dummy;
+  KSP            kspinner = NULL, *subksp = NULL;
+
   PetscFunctionBegin;
-  ierr = KSPGetPC(ksp,&pcksp);CHKERRQ(ierr);
-  kspinner = NULL;
-  ierr = PCKSPGetKSP(pcksp,&kspinner);CHKERRQ(ierr);
-  if (kspinner) {
-    ierr = KSPGetTolerances(ksp, &outer_rtol, &outer_abstol, &outer_dtol, &outer_maxits);CHKERRQ(ierr);
-    inner_rtol = (*coef) * outer_rtol / fnorm;
-    ierr = KSPSetTolerances(kspinner, inner_rtol, outer_abstol, outer_dtol, outer_maxits);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+
+  /* compute inner_rtol */
+  if (scale->bnrm < 0.0) {
+    Vec b;
+    ierr = KSPGetRhs(ksp, &b);CHKERRQ(ierr);
+    ierr = VecNorm(b, NORM_2, &(scale->bnrm));CHKERRQ(ierr);
   }
+  ierr = KSPGetTolerances(ksp, &outer_rtol, &outer_abstol, &outer_dtol, &outer_maxits);CHKERRQ(ierr);
+  inner_rtol = PetscMin( scale->coef * scale->bnrm * outer_rtol / fnorm, 0.999 );
+
+  /* force printing. will remove later */
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "        Inner rtol = %G\n", inner_rtol);CHKERRQ(ierr);
+
+  /* if pc is ksp */
+  ierr = PCKSPGetKSP(pc, &kspinner);CHKERRQ(ierr);
+  if (kspinner) {
+    ierr = KSPSetTolerances(kspinner, inner_rtol, outer_abstol, outer_dtol, outer_maxits);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  /* if pc is bjacobi */
+  ierr = PCBJacobiGetSubKSP(pc, &nksp, &first, &subksp);CHKERRQ(ierr);
+  if (subksp) {
+    for (i=0; i<nksp; i++) {
+      ierr = KSPSetTolerances(subksp[i], inner_rtol, outer_abstol, outer_dtol, outer_maxits);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  }
+
+  /* todo: dynamic tolerance may apply to other types of pc too */
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorDynamicToleranceDestroy"
 /*
- A hack to using dynamic tolerence in preconditioner
+ A hack to using dynamic tolerance in preconditioner
  */
 PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy) {
   PetscErrorCode ierr;

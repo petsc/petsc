@@ -66,7 +66,7 @@ PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
 
   /* Compute initial residual */
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  if (pc->setupcalled < 2) { ierr = PCSetUp(pc);CHKERRQ(ierr); } /* really needed? */
+  ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
     ierr = MatMult(pc->mat,X,P2);CHKERRQ(ierr); /* P2 is used as temporary storage */
     ierr = VecCopy(B,R);CHKERRQ(ierr);
@@ -97,7 +97,6 @@ PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
   for (i=0; i<ksp->max_it; i++) {
 
     /* matmult and pc */
-    if (pc->setupcalled < 2) { ierr = PCSetUp(pc);CHKERRQ(ierr); } /* really needed? */
     ierr = PCApply(pc,P,P2);CHKERRQ(ierr); /* p2 <- K p */
     ierr = MatMult(pc->mat,P2,V);CHKERRQ(ierr); /* v <- A p2 */
 

@@ -111,6 +111,11 @@ struct _p_KSP {
   MatNullSpace nullsp;      /* Null space of the operator, removed from Krylov space */
 };
 
+typedef struct { /* dummy data structure used in KSPMonitorDynamicTolerance() */
+  PetscReal coef;
+  PetscReal bnrm;
+} KSPDynTolCtx;
+
 typedef struct {
   PetscBool  initialrtol;    /* default relative residual decrease is computing from initial residual, not rhs */
   PetscBool  mininitialrtol; /* default relative residual decrease is computing from min of initial residual and rhs */

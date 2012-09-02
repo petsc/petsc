@@ -75,9 +75,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 
   /* Compute initial residual */
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  if (pc->setupcalled < 2) {
-    ierr = PCSetUp(pc);CHKERRQ(ierr);
-  }
+  ierr = PCSetUp(pc);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
     ierr = MatMult(pc->mat,X,S2);CHKERRQ(ierr);
     ierr = VecCopy(B,R);CHKERRQ(ierr);
@@ -114,9 +112,6 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     beta = (rho/rhoold) * (alpha/omegaold);
     ierr = VecAXPBYPCZ(P,1.0,-omegaold*beta,beta,R,V);CHKERRQ(ierr); /* p <- r - omega * beta* v + beta * p */
 
-    if (pc->setupcalled < 2) {
-      ierr = PCSetUp(pc);CHKERRQ(ierr);
-    }
     ierr = PCApply(pc,P,P2);CHKERRQ(ierr); /* p2 <- K p */
     ierr = MatMult(pc->mat,P2,V);CHKERRQ(ierr); /* v <- A p2 */
     
@@ -125,9 +120,6 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     alpha = rho / d1; /* alpha <- rho / (v,rp) */
     ierr = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr);  /* s <- r - alpha v */
 
-    if (pc->setupcalled < 2) {
-      ierr = PCSetUp(pc);CHKERRQ(ierr);
-    }
     ierr = PCApply(pc,S,S2);CHKERRQ(ierr); /* s2 <- K s */
     ierr = MatMult(pc->mat,S2,T);CHKERRQ(ierr); /* t <- A s2 */
 
