@@ -750,6 +750,8 @@ class Configure(config.package.Package):
         self.addDefine('HAVE_MPI_INIT_THREAD',1)
     if self.libraries.check(self.dlib, "MPIX_Iallreduce"):
       self.addDefine('HAVE_MPIX_IALLREDUCE',1)
+    if self.libraries.check(self.dlib, "MPI_Iallreduce"):
+      self.addDefine('HAVE_MPI_IALLREDUCE',1)
     if self.libraries.check(self.dlib, "MPI_Finalized"):
       self.addDefine('HAVE_MPI_FINALIZED',1)
     if self.libraries.check(self.dlib, "MPI_Exscan"):
