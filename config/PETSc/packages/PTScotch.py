@@ -26,6 +26,8 @@ class Configure(PETSc.package.NewPackage):
 
     self.programs.getExecutable('bison',   getFullPath = 1)
     if not hasattr(self.programs, 'bison'): raise RuntimeError('PTScotch needs bison installed')
+    self.programs.getExecutable('flex',   getFullPath = 1)
+    if not hasattr(self.programs, 'flex'): raise RuntimeError('PTScotch needs flex installed')
 
     g = open(os.path.join(self.packageDir,'src','Makefile.inc'),'w')
 
@@ -68,7 +70,7 @@ class Configure(PETSc.package.NewPackage):
     if self.libraries.add('-lrt','timer_create'): ldflags += ' -lrt'
     g.write('LDFLAGS	= '+ldflags+'\n')
     g.write('CP         = '+self.programs.cp+'\n')
-    g.write('LEX	= flex\n')
+    g.write('LEX	= '+self.programs.flex+'\n')
     g.write('LN	        = ln\n')
     g.write('MKDIR      = '+self.programs.mkdir+'\n')
     g.write('MV         = '+self.programs.mv+'\n')
