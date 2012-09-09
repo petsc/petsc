@@ -9,6 +9,7 @@ extern PetscErrorCode  DMCreate_ADDA(DM);
 extern PetscErrorCode  DMCreate_IGA(DM);
 extern PetscErrorCode  DMCreate_Redundant(DM);
 extern PetscErrorCode  DMCreate_Complex(DM);
+extern PetscErrorCode  DMCreate_Patch(DM);
 #ifdef PETSC_HAVE_SIEVE
 extern PetscErrorCode  DMCreate_Mesh(DM);
 extern PetscErrorCode  DMCreate_Cartesian(DM);
@@ -44,6 +45,7 @@ PetscErrorCode  DMRegisterAll(const char path[])
   ierr = DMRegisterDynamic(DMIGA,       path, "DMCreate_IGA",       DMCreate_IGA);CHKERRQ(ierr);
   ierr = DMRegisterDynamic(DMREDUNDANT, path, "DMCreate_Redundant", DMCreate_Redundant);CHKERRQ(ierr);
   ierr = DMRegisterDynamic(DMCOMPLEX,   path, "DMCreate_Complex",   DMCreate_Complex);CHKERRQ(ierr);
+  ierr = DMRegisterDynamic(DMPATCH,     path, "DMCreate_Patch",     DMCreate_Patch);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
   ierr = DMRegisterDynamic(DMMESH,      path, "DMCreate_Mesh",      DMCreate_Mesh);CHKERRQ(ierr);
   ierr = DMRegisterDynamic(DMCARTESIAN, path, "DMCreate_Cartesian", DMCreate_Cartesian);CHKERRQ(ierr);

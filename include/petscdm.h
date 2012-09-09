@@ -46,6 +46,7 @@ J*/
 #define DMIGA       "iga"
 #define DMREDUNDANT "redundant"
 #define DMAKKT      "akkt"
+#define DMPATCH     "patch"
 
 PETSC_EXTERN PetscFList DMList;
 PETSC_EXTERN PetscBool DMRegisterAllCalled;
