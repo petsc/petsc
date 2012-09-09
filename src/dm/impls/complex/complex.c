@@ -2331,7 +2331,7 @@ PetscErrorCode DMComplexGetJoin(DM dm, PetscInt numPoints, const PetscInt points
   for(joinSize = 0; joinSize < dof; ++joinSize) {
     join[i][joinSize] = mesh->supports[off+joinSize];
   }
-  /* Check each successive cone */
+  /* Check each successive support */
   for(p = 1; p < numPoints; ++p) {
     PetscInt newJoinSize = 0;
 
@@ -2359,7 +2359,7 @@ PetscErrorCode DMComplexGetJoin(DM dm, PetscInt numPoints, const PetscInt points
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexRestoreJoin"
 /*@C
-  DMComplexRestoreJoin - Get an array for the join of the set of points
+  DMComplexRestoreJoin - Restore an array for the join of the set of points
 
   Not Collective
 
@@ -2374,10 +2374,8 @@ PetscErrorCode DMComplexGetJoin(DM dm, PetscInt numPoints, const PetscInt points
 
   Level: intermediate
 
-  Note: Currently, this is restricted to a single level join
-
 .keywords: mesh
-.seealso: DMComplexGetJoin(), DMComplexGetMeet()
+.seealso: DMComplexGetJoin(), DMComplexGetFullJoin(), DMComplexGetMeet()
 @*/
 PetscErrorCode DMComplexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
 {
@@ -2493,7 +2491,27 @@ PetscErrorCode DMComplexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt po
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexGetMeet"
-/* This is a 1-level meet */
+/*@C
+  DMComplexGetMeet - Get an array for the meet of the set of points
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DMComplex object
+. numPoints - The number of input points for the meet
+- points - The input points
+
+  Output Parameters:
++ numCoveredPoints - The number of points in the meet
+- coveredPoints - The points in the meet
+
+  Level: intermediate
+
+  Note: Currently, this is restricted to a single level meet
+
+.keywords: mesh
+.seealso: DMComplexRestoreMeet(), DMComplexGetJoin()
+@*/
 PetscErrorCode DMComplexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveringPoints, const PetscInt **coveringPoints)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
@@ -2536,6 +2554,139 @@ PetscErrorCode DMComplexGetMeet(DM dm, PetscInt numPoints, const PetscInt points
   }
   *numCoveringPoints = meetSize;
   *coveringPoints    = meet[i];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexRestoreMeet"
+/*@C
+  DMComplexRestoreMeet - Restore an array for the meet of the set of points
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DMComplex object
+. numPoints - The number of input points for the meet
+- points - The input points
+
+  Output Parameters:
++ numCoveredPoints - The number of points in the meet
+- coveredPoints - The points in the meet
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMComplexGetMeet(), DMComplexGetFullMeet(), DMComplexGetJoin()
+@*/
+PetscErrorCode DMComplexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(coveredPoints, 4);
+  ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, coveredPoints);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetFullMeet"
+/*@C
+  DMComplexGetFullMeet - Get an array for the meet of the set of points
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DMComplex object
+. numPoints - The number of input points for the meet
+- points - The input points
+
+  Output Parameters:
++ numCoveredPoints - The number of points in the meet
+- coveredPoints - The points in the meet
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMComplexGetMeet(), DMComplexRestoreMeet(), DMComplexGetJoin()
+@*/
+PetscErrorCode DMComplexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt **coveredPoints)
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscInt      *offsets, **closures;
+  PetscInt      *meet[2];
+  PetscInt       height, maxSize, meetSize, i = 0;
+  PetscInt       p, h, c, m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(points, 2);
+  PetscValidPointer(numCoveredPoints, 3);
+  PetscValidPointer(coveredPoints, 4);
+
+  ierr = DMComplexGetDepth(dm, &height);CHKERRQ(ierr);
+  ierr = PetscMalloc(numPoints * sizeof(PetscInt *), &closures);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, numPoints*(height+2), PETSC_INT, &offsets);CHKERRQ(ierr);
+  maxSize = (PetscInt) (pow((PetscReal) mesh->maxConeSize, height)+1);
+  ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &meet[0]);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &meet[1]);CHKERRQ(ierr);
+
+  for(p = 0; p < numPoints; ++p) {
+    PetscInt closureSize;
+
+    ierr = DMComplexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closures[p]);CHKERRQ(ierr);
+    offsets[p*(height+2)+0] = 0;
+    for(h = 0; h < height+1; ++h) {
+      PetscInt pStart, pEnd, i;
+
+      ierr = DMComplexGetHeightStratum(dm, h, &pStart, &pEnd);CHKERRQ(ierr);
+      for(i = offsets[p*(height+2)+h]; i < closureSize; ++i) {
+        if ((pStart > closures[p][i*2]) || (pEnd <= closures[p][i*2])) {
+          offsets[p*(height+2)+h+1] = i;
+          break;
+        }
+      }
+      if (i == closureSize) offsets[p*(height+2)+h+1] = i;
+    }
+    if (offsets[p*(height+2)+height+1] != closureSize) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Total size of closure %D should be %D", offsets[p*(height+2)+height+1], closureSize);
+  }
+  for(h = 0; h < height+1; ++h) {
+    PetscInt dof;
+
+    /* Copy in cone of first point */
+    dof = offsets[h+1] - offsets[h];
+    for(meetSize = 0; meetSize < dof; ++meetSize) {
+      meet[i][meetSize] = closures[0][(offsets[h]+meetSize)*2];
+    }
+    /* Check each successive cone */
+    for(p = 1; p < numPoints && meetSize; ++p) {
+      PetscInt newMeetSize = 0;
+
+      dof = offsets[p*(height+2)+h+1] - offsets[p*(height+2)+h];
+      for(c = 0; c < dof; ++c) {
+        const PetscInt point = closures[p][(offsets[p*(height+2)+h]+c)*2];
+
+        for(m = 0; m < meetSize; ++m) {
+          if (point == meet[i][m]) {
+            meet[1-i][newMeetSize++] = point;
+            break;
+          }
+        }
+      }
+      meetSize = newMeetSize;
+      i = 1-i;
+    }
+    if (meetSize) break;
+  }
+  *numCoveredPoints = meetSize;
+  *coveredPoints    = meet[i];
+  for(p = 0; p < numPoints; ++p) {
+    ierr = DMComplexRestoreTransitiveClosure(dm, points[p], PETSC_TRUE, PETSC_NULL, &closures[p]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(closures);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, numPoints*(height+2), PETSC_INT, &offsets);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, mesh->maxConeSize, PETSC_INT, &meet[1-i]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

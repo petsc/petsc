@@ -14,6 +14,12 @@
 #define dmcomplexvecgetclosure_            DMCOMPLEXVECGETCLOSURE
 #define dmcomplexvecrestoreclosure_        DMCOMPLEXVECRESTORECLOSURE
 #define dmcomplexvecsetclosure_            DMCOMPLEXVECSETCLOSURE
+#define dmcomplexgetjoin_                  DMCOMPLEXGETJOIN
+#define dmcomplexgetfulljoin_              DMCOMPLEXGETFULLJOIN
+#define dmcomplexrestorejoin_              DMCOMPLEXRESTOREJOIN
+#define dmcomplexgetmeet_                  DMCOMPLEXGETMEET
+#define dmcomplexgetfullmeet_              DMCOMPLEXGETFULLMEET
+#define dmcomplexrestoremeet_              DMCOMPLEXRESTOREMEET
 #define dmcomplexcreatesection_            DMCOMPLEXCREATESECTION
 #define dmcomplexcomputecellgeometry_      DMCOMPLEXCOMPUTECELLGEOMETRY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
@@ -28,6 +34,12 @@
 #define dmcomplexvecgetclosure_            dmcomplexvecgetclosure
 #define dmcomplexvecrestoreclosure_        dmcomplexvecrestoreclosure
 #define dmcomplexvecsetclosure_            dmcomplexvecsetclosure
+#define dmcomplexgetjoin_                  dmcomplexgetjoin
+#define dmcomplexgetfulljoin_              dmcomplexgetfulljoin
+#define dmcomplexrestorejoin_              dmcomplexrestorejoin
+#define dmcomplexgetmeet_                  dmcomplexgetmeet
+#define dmcomplexgetfullmeet_              dmcomplexgetfullmeet
+#define dmcomplexrestoremeet_              dmcomplexrestoremeet
 #define dmcomplexcreatesection_            dmcomplexcreatesection
 #define dmcomplexcomputecellgeometry_      dmcomplexcomputecellgeometry
 #endif
@@ -122,6 +134,68 @@ void PETSC_STDCALL dmcomplexvecsetclosure_(DM *dm, PetscSection *section, Vec *v
 
   *__ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void **) &array PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   *__ierr = DMComplexVecSetClosure(*dm, *section, *v, *point, array, *mode);
+}
+
+void PETSC_STDCALL dmcomplexgetjoin_(DM *dm, PetscInt *numPoints, F90Array1d *pptr, F90Array1d *cptr, int *__ierr PETSC_F90_2PTR_PROTO(pptrd) PETSC_F90_2PTR_PROTO(cptrd))
+{
+  PetscInt       *points;
+  const PetscInt *coveredPoints;
+  PetscInt        numCoveredPoints;
+
+  *__ierr = F90Array1dAccess(pptr, PETSC_INT, (void **) &points PETSC_F90_2PTR_PARAM(pptrd));if (*__ierr) return;
+  *__ierr = DMComplexGetJoin(*dm, *numPoints, points, &numCoveredPoints, &coveredPoints);if (*__ierr) return;
+  *__ierr = F90Array1dCreate((void *) coveredPoints, PETSC_INT, 1, numCoveredPoints, cptr PETSC_F90_2PTR_PARAM(cptrd));
+}
+
+void PETSC_STDCALL dmcomplexgetfulljoin_(DM *dm, PetscInt *numPoints, F90Array1d *pptr, F90Array1d *cptr, int *__ierr PETSC_F90_2PTR_PROTO(pptrd) PETSC_F90_2PTR_PROTO(cptrd))
+{
+  PetscInt       *points;
+  const PetscInt *coveredPoints;
+  PetscInt        numCoveredPoints;
+
+  *__ierr = F90Array1dAccess(pptr, PETSC_INT, (void **) &points PETSC_F90_2PTR_PARAM(pptrd));if (*__ierr) return;
+  *__ierr = DMComplexGetFullJoin(*dm, *numPoints, points, &numCoveredPoints, &coveredPoints);if (*__ierr) return;
+  *__ierr = F90Array1dCreate((void *) coveredPoints, PETSC_INT, 1, numCoveredPoints, cptr PETSC_F90_2PTR_PARAM(cptrd));
+}
+
+void PETSC_STDCALL dmcomplexrestorejoin_(DM *dm, PetscInt *numPoints, F90Array1d *pptr, F90Array1d *cptr, int *__ierr PETSC_F90_2PTR_PROTO(pptrd) PETSC_F90_2PTR_PROTO(cptrd))
+{
+  PetscInt *coveredPoints;
+
+  *__ierr = F90Array1dAccess(cptr, PETSC_INT, (void **) &coveredPoints PETSC_F90_2PTR_PARAM(cptrd));if (*__ierr) return;
+  *__ierr = DMComplexRestoreJoin(*dm, 0, PETSC_NULL, PETSC_NULL, (const PetscInt**) &coveredPoints);if (*__ierr) return;
+  *__ierr = F90Array1dDestroy(cptr, PETSC_INT PETSC_F90_2PTR_PARAM(cptrd));if (*__ierr) return;
+}
+
+void PETSC_STDCALL dmcomplexgetmeet_(DM *dm, PetscInt *numPoints, F90Array1d *pptr, F90Array1d *cptr, int *__ierr PETSC_F90_2PTR_PROTO(pptrd) PETSC_F90_2PTR_PROTO(cptrd))
+{
+  PetscInt       *points;
+  const PetscInt *coveredPoints;
+  PetscInt        numCoveredPoints;
+
+  *__ierr = F90Array1dAccess(pptr, PETSC_INT, (void **) &points PETSC_F90_2PTR_PARAM(pptrd));if (*__ierr) return;
+  *__ierr = DMComplexGetMeet(*dm, *numPoints, points, &numCoveredPoints, &coveredPoints);if (*__ierr) return;
+  *__ierr = F90Array1dCreate((void *) coveredPoints, PETSC_INT, 1, numCoveredPoints, cptr PETSC_F90_2PTR_PARAM(cptrd));
+}
+
+void PETSC_STDCALL dmcomplexgetfullmeet_(DM *dm, PetscInt *numPoints, F90Array1d *pptr, F90Array1d *cptr, int *__ierr PETSC_F90_2PTR_PROTO(pptrd) PETSC_F90_2PTR_PROTO(cptrd))
+{
+  PetscInt       *points;
+  const PetscInt *coveredPoints;
+  PetscInt        numCoveredPoints;
+
+  *__ierr = F90Array1dAccess(pptr, PETSC_INT, (void **) &points PETSC_F90_2PTR_PARAM(pptrd));if (*__ierr) return;
+  *__ierr = DMComplexGetFullMeet(*dm, *numPoints, points, &numCoveredPoints, &coveredPoints);if (*__ierr) return;
+  *__ierr = F90Array1dCreate((void *) coveredPoints, PETSC_INT, 1, numCoveredPoints, cptr PETSC_F90_2PTR_PARAM(cptrd));
+}
+
+void PETSC_STDCALL dmcomplexrestoremeet_(DM *dm, PetscInt *numPoints, F90Array1d *pptr, F90Array1d *cptr, int *__ierr PETSC_F90_2PTR_PROTO(pptrd) PETSC_F90_2PTR_PROTO(cptrd))
+{
+  PetscInt *coveredPoints;
+
+  *__ierr = F90Array1dAccess(cptr, PETSC_INT, (void **) &coveredPoints PETSC_F90_2PTR_PARAM(cptrd));if (*__ierr) return;
+  *__ierr = DMComplexRestoreMeet(*dm, 0, PETSC_NULL, PETSC_NULL, (const PetscInt**) &coveredPoints);if (*__ierr) return;
+  *__ierr = F90Array1dDestroy(cptr, PETSC_INT PETSC_F90_2PTR_PARAM(cptrd));if (*__ierr) return;
 }
 
 void PETSC_STDCALL dmcomplexcreatesection_(DM *dm, PetscInt *dim, PetscInt *numFields, F90Array1d *ptrC, F90Array1d *ptrD, PetscInt *numBC, F90Array1d *ptrF, F90Array1d *ptrP, PetscSection *section, int *__ierr PETSC_F90_2PTR_PROTO(ptrCd) PETSC_F90_2PTR_PROTO(ptrDd) PETSC_F90_2PTR_PROTO(ptrFd) PETSC_F90_2PTR_PROTO(ptrPd))

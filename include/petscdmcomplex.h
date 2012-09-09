@@ -50,6 +50,8 @@ PETSC_EXTERN PetscErrorCode DMComplexGetStratumIS(DM, const char [], PetscInt, I
 PETSC_EXTERN PetscErrorCode DMComplexClearLabelStratum(DM, const char[], PetscInt);
 
 PETSC_EXTERN PetscErrorCode DMComplexGetMeet(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
+PETSC_EXTERN PetscErrorCode DMComplexGetFullMeet(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
+PETSC_EXTERN PetscErrorCode DMComplexRestoreMeet(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
 PETSC_EXTERN PetscErrorCode DMComplexGetJoin(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
 PETSC_EXTERN PetscErrorCode DMComplexGetFullJoin(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
 PETSC_EXTERN PetscErrorCode DMComplexRestoreJoin(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
