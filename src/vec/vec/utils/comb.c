@@ -32,7 +32,9 @@ static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIIn
 {
   PETSC_UNUSED PetscErrorCode ierr;
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_MPIX_IALLREDUCE)
+#if defined(PETSC_HAVE_MPI_IALLREDUCE)
+  ierr = MPI_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_MPIX_IALLREDUCE)
   ierr = MPIX_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRQ(ierr);
 #elif defined(PETSC_HAVE_PAMI)
   ierr = MPIPetsc_Iallreduce_PAMI(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRQ(ierr);
@@ -96,7 +98,7 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
   (*sr)->request     = MPI_REQUEST_NULL;
   ierr               = PetscMalloc(32*sizeof(PetscInt),&(*sr)->reducetype);CHKERRQ(ierr);
   (*sr)->async = PETSC_FALSE;
-#if defined(PETSC_HAVE_MPIX_IALLREDUCE) || defined(PETSC_HAVE_PAMI) || defined(PETSC_HAVE_DCMF)
+#if defined(PETSC_HAVE_MPI_IALLREDUCE) || defined(PETSC_HAVE_MPIX_IALLREDUCE) || defined(PETSC_HAVE_PAMI) || defined(PETSC_HAVE_DCMF)
   (*sr)->async = PETSC_TRUE;    /* Enable by default */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-splitreduction_async",&(*sr)->async,PETSC_NULL);CHKERRQ(ierr);
 #endif
