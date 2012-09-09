@@ -95,7 +95,7 @@ PetscErrorCode DMCreateGlobalVector_Patch(DM dm, Vec *g)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMCreateGlobalVector(mesh->activePatch, g);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(mesh->patches[mesh->activePatch], g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -109,7 +109,7 @@ PetscErrorCode DMCreateLocalVector_Patch(DM dm, Vec *l)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMCreateLocalVector(mesh->activePatch, l);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(mesh->patches[mesh->activePatch], l);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
