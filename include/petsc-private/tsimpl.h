@@ -96,6 +96,15 @@ struct _p_TS {
   PetscReal max_time;               /* max time allowed */
   PetscReal time_step;              /* current/completed time increment */
   PetscReal time_step_prev;         /* previous time step  */
+
+  /* 
+     these are temporary to support increasing the time step if nonlinear solver convergence remains good 
+     and time_step was previously cut due to failed nonlinear solver
+  */
+  PetscReal time_step_orig;            /* original time step requested by user */
+  PetscInt  time_steps_since_decrease; /* number of timesteps since timestep was decreased due to lack of convergence */
+  /* ----------------------------------------------------------------------------------------------------------------*/
+
   PetscInt  steps;                  /* steps taken so far */
   PetscReal ptime;                  /* time at the start of the current step (stage time is internal if it exists) */
   PetscInt  ksp_its;                /* total number of linear solver iterations */

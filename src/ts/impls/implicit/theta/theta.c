@@ -96,6 +96,11 @@ static PetscErrorCode TSStep_Theta(TS ts)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  if (ts->time_steps_since_decrease > 3 && ts->time_step < ts->time_step_orig) {
+    /* smaller time step has worked successfully for three time-steps, try increasing time step*/
+    ts->time_step = 2.0*ts->time_step;
+    ts->time_steps_since_decrease = 0; /* don't want to increase time step two time steps in a row */
+  }
   for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
     next_time_step = ts->time_step;
     th->stage_time = ts->ptime + (th->endpoint ? 1. : th->Theta)*ts->time_step;
@@ -119,9 +124,12 @@ static PetscErrorCode TSStep_Theta(TS ts)
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
     ts->snes_its += its; ts->ksp_its += lits;
+    if (its < 10) ts->time_steps_since_decrease++;
+    else ts->time_steps_since_decrease = 0;
     if (snesreason > 0) break;
     ierr = PetscInfo3(ts,"Step=%D, Cutting time-step from %g to %g\n",ts->steps,(double)ts->time_step,(double).5*ts->time_step);CHKERRQ(ierr);
     ts->time_step = .5*ts->time_step;
+    ts->time_steps_since_decrease = 0;
   }
   if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
     ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;

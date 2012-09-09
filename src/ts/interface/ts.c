@@ -77,6 +77,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   char           monfilename[PETSC_MAX_PATH_LEN];
   SNES           snes;
   TSAdapt        adapt;
+  PetscReal      time_step;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -88,7 +89,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_final_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetTimeStep",ts->time_step,&ts->time_step,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetTimeStep",ts->time_step,&time_step,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
+    }
     opt = ts->exact_final_time == PETSC_DECIDE ? PETSC_FALSE : (PetscBool)ts->exact_final_time;
     ierr = PetscOptionsBool("-ts_exact_final_time","Interpolate output to stop exactly at the final time","TSSetExactFinalTime",opt,&opt,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSSetExactFinalTime(ts,opt);CHKERRQ(ierr);}
@@ -1077,6 +1081,7 @@ PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveReal(ts,time_step,2);
   ts->time_step = time_step;
+  ts->time_step_orig = time_step;
   PetscFunctionReturn(0);
 }
 

@@ -63,6 +63,7 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   t->user               = PETSC_NULL;
   t->ptime              = 0.0;
   t->time_step          = 0.1;
+  t->time_step_orig     = 0.1;
   t->max_time           = 5.0;
   t->steps              = 0;
   t->max_steps          = 5000;
