@@ -40,6 +40,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   (*s)->atlasLayout.pStart = -1;
   (*s)->atlasLayout.pEnd   = -1;
   (*s)->atlasLayout.numDof = 1;
+  (*s)->maxDof             = 0;
   (*s)->atlasDof           = PETSC_NULL;
   (*s)->atlasOff           = PETSC_NULL;
   (*s)->bc                 = PETSC_NULL;
@@ -628,6 +629,7 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
   for(p = 0; p < s->atlasLayout.pEnd - s->atlasLayout.pStart; ++p) {
     s->atlasOff[p] = offset;
     offset += s->atlasDof[p];
+    s->maxDof = PetscMax(s->maxDof, s->atlasDof[p]);
   }
   ierr = PetscSectionSetUpBC(s);CHKERRQ(ierr);
   /* Assume that all fields have the same chart */
@@ -644,6 +646,30 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
   for(f = 0; f < s->numFields; ++f) {
     ierr = PetscSectionSetUpBC(s->field[f]);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetMaxDof"
+/*@
+  PetscSectionGetMaxDof - Return the maximum number of degrees of freedom on any point in the chart
+
+  Not collective
+
+  Input Parameters:
+. s - the PetscSection
+
+  Output Parameter:
+. maxDof - the maximum dof
+
+  Level: intermediate
+
+.seealso: PetscSectionGetDof(), PetscSectionSetDof(), PetscSectionCreate()
+@*/
+PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
+{
+  PetscFunctionBegin;
+  *maxDof = s->maxDof;
   PetscFunctionReturn(0);
 }
 
