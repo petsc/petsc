@@ -623,6 +623,8 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     for(q = 0; q < numAdj; ++q) {
       PetscInt ndof, ncdof, noff;
 
+      /* Adjacent points may not be in the section chart */
+      if ((q < pStart) || (q >= pEnd)) continue;
       ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
       ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ncdof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(section, tmpAdj[q], &noff);CHKERRQ(ierr);
@@ -675,6 +677,8 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
         PetscInt  ndof, ncdof, ngoff, nd;
         PetscInt *ncind;
 
+        /* Adjacent points may not be in the section chart */
+        if ((q < pStart) || (q >= pEnd)) continue;
         ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
         ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ncdof);CHKERRQ(ierr);
         ierr = PetscSectionGetConstraintIndices(section, tmpAdj[q], &ncind);CHKERRQ(ierr);
@@ -1810,7 +1814,7 @@ PetscErrorCode DMComplexStratify(DM dm)
   Level: intermediate
 
 .keywords: mesh
-.seealso: DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetLabelStratum()
+.seealso: DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
 @*/
 PetscErrorCode DMComplexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 {
@@ -1849,7 +1853,7 @@ PetscErrorCode DMComplexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
   Level: beginner
 
 .keywords: mesh
-.seealso: DMComplexSetLabelValue(), DMComplexGetLabelStratum()
+.seealso: DMComplexSetLabelValue(), DMComplexGetStratumIS()
 @*/
 PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, PetscInt *value)
 {
@@ -1901,7 +1905,7 @@ PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, 
   Level: beginner
 
 .keywords: mesh
-.seealso: DMComplexGetLabelStratum(), DMComplexClearLabelValue()
+.seealso: DMComplexGetStratumIS(), DMComplexClearLabelValue()
 @*/
 PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
 {
@@ -2006,7 +2010,7 @@ PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, 
   Level: beginner
 
 .keywords: mesh
-.seealso: DMComplexSetLabelValue(), DMComplexGetLabelStratum()
+.seealso: DMComplexSetLabelValue(), DMComplexGetStratumIS()
 @*/
 PetscErrorCode DMComplexClearLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
 {
@@ -2064,7 +2068,7 @@ PetscErrorCode DMComplexClearLabelValue(DM dm, const char name[], PetscInt point
   Level: beginner
 
 .keywords: mesh
-.seealso: DMComplexSetLabelValue(), DMComplexGetLabelStratum(), DMComplexClearLabelValue()
+.seealso: DMComplexSetLabelValue(), DMComplexGetStratumIS(), DMComplexClearLabelValue()
 @*/
 PetscErrorCode DMComplexClearLabelStratum(DM dm, const char name[], PetscInt value)
 {
