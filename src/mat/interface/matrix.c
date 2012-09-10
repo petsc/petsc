@@ -3890,7 +3890,7 @@ PetscErrorCode  MatFactorGetSolverPackage(Mat mat, const MatSolverPackage *type)
 
    Input Parameters:
 +  mat - the matrix
-.  type - name of solver type, for example, spooles, superlu, petsc (to use PETSc's default)
+.  type - name of solver type, for example, superlu, petsc (to use PETSc's default)
 -  ftype - factor type, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ICC, MAT_FACTOR_ILU, 
 
    Output Parameters:
@@ -3898,7 +3898,7 @@ PetscErrorCode  MatFactorGetSolverPackage(Mat mat, const MatSolverPackage *type)
 
    Notes:
       Some PETSc matrix formats have alternative solvers available that are contained in alternative packages
-     such as pastix, superlu, mumps, spooles etc. 
+     such as pastix, superlu, mumps etc. 
 
       PETSc must have been ./configure to use the external solver, using the option --download-package
 
@@ -3947,7 +3947,7 @@ PetscErrorCode  MatGetFactor(Mat mat, const MatSolverPackage type,MatFactorType 
 
    Input Parameters:
 +  mat - the matrix
-.  type - name of solver type, for example, spooles, superlu, petsc (to use PETSc's default)
+.  type - name of solver type, for example, superlu, petsc (to use PETSc's default)
 -  ftype - factor type, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ICC, MAT_FACTOR_ILU, 
 
    Output Parameter:
@@ -3955,7 +3955,7 @@ PetscErrorCode  MatGetFactor(Mat mat, const MatSolverPackage type,MatFactorType 
 
    Notes:
       Some PETSc matrix formats have alternative solvers available that are contained in alternative packages
-     such as pastix, superlu, mumps, spooles etc. 
+     such as pastix, superlu, mumps etc. 
 
       PETSc must have been ./configure to use the external solver, using the option --download-package
 
