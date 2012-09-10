@@ -11,7 +11,7 @@ SOURCEH	 = mpisbaij.h
 OBJSC	 = mpisbaij.o mmsbaij.o sbaijov.o mpiaijsbaij.o
 OBJSF	 = 
 LIBBASE	 = libpetscmat
-DIRS	 = sbstream spooles
+DIRS	 = sbstream
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/sbaij/mpi/
 
