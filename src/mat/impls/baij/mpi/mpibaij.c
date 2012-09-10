@@ -240,7 +240,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
 #else
             col = baij->colmap[in[j]/bs] - 1;
 #endif
-            if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
+            if (col < 0 && !((Mat_SeqBAIJ*)(baij->B->data))->nonew) {
               ierr = MatDisAssemble_MPIBAIJ(mat);CHKERRQ(ierr); 
               col =  in[j];
               /* Reinitialize the variables required by MatSetValues_SeqBAIJ_B_Private() */
@@ -248,7 +248,8 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
               b = (Mat_SeqBAIJ*)(B)->data; 
               bimax=b->imax;bi=b->i;bilen=b->ilen;bj=b->j; 
               ba=b->a;
-            } else col += in[j]%bs;
+            } else if (col < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", im[i], in[j]);
+            else col += in[j]%bs;
           } else col = in[j];
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
           MatSetValues_SeqBAIJ_B_Private(row,col,value,addv);
