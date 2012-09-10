@@ -13,7 +13,6 @@ configure_options = [
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-triangle=1',
-  '--download-spooles=1',
   '--download-superlu=1',
   '--download-superlu_dist=1',
   '--download-blacs=1',

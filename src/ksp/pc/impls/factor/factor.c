@@ -260,10 +260,10 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
    
    Input Parameters:
 +  pc - the preconditioner context
--  stype - for example, spooles, superlu, superlu_dist
+-  stype - for example, superlu, superlu_dist
 
    Options Database Key:
-.  -pc_factor_mat_solver_package <stype> - spooles, petsc, superlu, superlu_dist, mumps, cusparse
+.  -pc_factor_mat_solver_package <stype> - petsc, superlu, superlu_dist, mumps, cusparse
 
    Level: intermediate
 
@@ -297,7 +297,7 @@ PetscErrorCode  PCFactorSetMatSolverPackage(PC pc,const MatSolverPackage stype)
 .  pc - the preconditioner context
 
    Output Parameter:
-.   stype - for example, spooles, superlu, superlu_dist (PETSC_NULL if the PC does not have a solver package)
+.   stype - for example, superlu, superlu_dist (PETSC_NULL if the PC does not have a solver package)
 
    Level: intermediate
 
