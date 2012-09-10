@@ -98,7 +98,6 @@ J*/
 .seealso: MatGetFactor(), Mat, MatSetType(), MatType
 J*/
 #define MatSolverPackage char*
-#define MATSOLVERSPOOLES      "spooles"
 #define MATSOLVERSUPERLU      "superlu"
 #define MATSOLVERSUPERLU_DIST "superlu_dist"
 #define MATSOLVERUMFPACK      "umfpack"

@@ -5543,9 +5543,6 @@ extern PetscErrorCode MatGetFactor_mpiaij_pastix(Mat,MatFactorType,Mat*);
 #if defined(PETSC_HAVE_SUPERLU_DIST)
 extern PetscErrorCode MatGetFactor_mpiaij_superlu_dist(Mat,MatFactorType,Mat*);
 #endif
-#if defined(PETSC_HAVE_SPOOLES)
-extern PetscErrorCode MatGetFactor_mpiaij_spooles(Mat,MatFactorType,Mat*);
-#endif
 #if defined(PETSC_HAVE_CLIQUE)
 extern PetscErrorCode MatGetFactor_aij_clique(Mat,MatFactorType,Mat*);
 #endif
@@ -5599,11 +5596,7 @@ PetscErrorCode  MatCreate_MPIAIJ(Mat B)
   
   /* flexible pointer used in CUSP/CUSPARSE classes */
   b->spptr        = PETSC_NULL;
-#if defined(PETSC_HAVE_SPOOLES)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_spooles_C",
-                                     "MatGetFactor_mpiaij_spooles",
-                                     MatGetFactor_mpiaij_spooles);CHKERRQ(ierr);
-#endif
+
 #if defined(PETSC_HAVE_MUMPS)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C",
                                      "MatGetFactor_aij_mumps",
