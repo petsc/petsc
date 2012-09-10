@@ -181,6 +181,7 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
   ierr = PetscCheckDebugger_Private("workshop", string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("pgdbg",    string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("pathdb",   string, &debugger);CHKERRQ(ierr);
+  ierr = PetscCheckDebugger_Private("lldb",     string, &debugger);CHKERRQ(ierr);
 
   ierr = PetscSetDebugger(debugger, xterm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -246,7 +247,7 @@ PetscErrorCode  PetscAttachDebugger(void)
     const char *args[10];
     char       pid[10];
     PetscInt   j,jj;
-    PetscBool  isdbx,isidb,isxldb,isxxgdb,isups,isxdb,isworkshop,isddd,iskdbg;
+    PetscBool  isdbx,isidb,isxldb,isxxgdb,isups,isxdb,isworkshop,isddd,iskdbg,islldb;
 
     ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
     /*
@@ -267,6 +268,7 @@ PetscErrorCode  PetscAttachDebugger(void)
     ierr = PetscStrcmp(Debugger,"dbx",&isdbx);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"idb",&isidb);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"workshop",&isworkshop);CHKERRQ(ierr);
+    ierr = PetscStrcmp(Debugger,"lldb",&islldb);CHKERRQ(ierr);
 
     if (isxxgdb || isups || isddd ) {
       args[1] = program; args[2] = pid; args[3] = "-display";
@@ -329,6 +331,12 @@ PetscErrorCode  PetscAttachDebugger(void)
         args[j++] = pid;
         args[j++] = "-gdb";
         args[j++] = program;
+        args[j++] = 0;
+      }
+      if (islldb) {
+        j = jj;
+        args[j++] = "-p";
+        args[j++] = pid;
         args[j++] = 0;
       }
 #if defined(PETSC_USE_P_FOR_DEBUGGER)

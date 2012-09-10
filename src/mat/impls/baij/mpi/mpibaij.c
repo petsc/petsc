@@ -352,10 +352,10 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[
 #else
             col = (baij->colmap[in[j]] - 1)/bs;
 #endif
-            if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
+            if (col < 0 && !((Mat_SeqBAIJ*)(baij->B->data))->nonew) {
               ierr = MatDisAssemble_MPIBAIJ(mat);CHKERRQ(ierr); 
               col =  in[j];              
-            }
+            } else if (col < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", bs*im[i], bs*in[j]);
           }
           else col = in[j];
           ierr = MatSetValuesBlocked_SeqBAIJ(baij->B,1,&row,1,&col,barray,addv);CHKERRQ(ierr);

@@ -543,7 +543,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
 #else
             col = aij->colmap[in[j]] - 1;
 #endif
-            if (col < 0 && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
+            if (col < 0 && !((Mat_SeqAIJ*)(aij->B->data))->nonew) {
               ierr = MatDisAssemble_MPIAIJ(mat);CHKERRQ(ierr);
               col =  in[j];
               /* Reinitialize the variables required by MatSetValues_SeqAIJ_B_Private() */
@@ -558,7 +558,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
               high2    = nrow2;
               bm       = aij->B->rmap->n;
               ba = b->a;
-            }
+            } else if (col < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", im[i], in[j]);
           } else col = in[j];
           nonew = b->nonew;
           MatSetValues_SeqAIJ_B_Private(row,col,value,addv);
