@@ -31,7 +31,7 @@ typedef struct _p_PetscThreadCommRedCtx *PetscThreadCommRedCtx;
 
 PETSC_EXTERN PetscFList PetscThreadCommList;
 
-typedef enum {THREADCOMM_SUM,THREADCOMM_PROD,THREADCOMM_MAX} PetscThreadCommReductionOp;
+typedef enum {THREADCOMM_SUM,THREADCOMM_PROD,THREADCOMM_MAX,THREADCOMM_MIN,THREADCOMM_MAXLOC,THREADCOMM_MINLOC} PetscThreadCommReductionOp;
 PETSC_EXTERN const char *const PetscThreadCommReductionOps[];
 
 PETSC_EXTERN PetscErrorCode PetscGetNCores(PetscInt*);

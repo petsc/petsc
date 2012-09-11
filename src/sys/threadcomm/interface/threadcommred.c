@@ -83,21 +83,43 @@ PetscErrorCode PetscThreadReductionKernelBegin(PetscInt trank,PetscThreadCommRed
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Did not call PetscThreadReductionBegin() before calling PetscThreadCommRunKernel()");
   }
 
-  switch(red->type) {
-  case PETSC_INT:
-    ((PetscInt*)red->local_red)[trank] = *(PetscInt*)lred;
-    break;
+  if(red->op == THREADCOMM_MAXLOC || red->op == THREADCOMM_MINLOC) {
+    switch(red->type) {
+    case PETSC_INT:
+      ((PetscInt*)red->local_red)[trank] = ((PetscInt*)lred)[0];
+      ((PetscInt*)red->local_red)[red->tcomm->nworkThreads+trank] = ((PetscInt*)lred)[1];
+      break;
 #if defined(PETSC_USE_COMPLEX)
-  case PETSC_REAL:
-    ((PetscReal*)red->local_red)[trank] = *(PetscReal*)lred;
-    break;
+    case PETSC_REAL:
+      ((PetscReal*)red->local_red)[trank] = ((PetscReal*)lred)[0];
+      ((PetscReal*)red->local_red)[red->tcomm->nworkThreads+trank] = ((PetscReal*)lred)[1];
+      break;
 #endif
-  case PETSC_SCALAR:
-    ((PetscScalar*)red->local_red)[trank] = *(PetscScalar*)lred;
-    break;
-  default:
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown datatype provided for kernel reduction");
-    break;
+    case PETSC_SCALAR:
+      ((PetscScalar*)red->local_red)[trank] = ((PetscScalar*)lred)[0];
+      ((PetscScalar*)red->local_red)[red->tcomm->nworkThreads+trank] = ((PetscScalar*)lred)[1];
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown datatype provided for kernel reduction");
+      break;
+    }
+  } else {
+    switch(red->type) {
+    case PETSC_INT:
+      ((PetscInt*)red->local_red)[trank] = *(PetscInt*)lred;
+      break;
+#if defined(PETSC_USE_COMPLEX)
+    case PETSC_REAL:
+      ((PetscReal*)red->local_red)[trank] = *(PetscReal*)lred;
+      break;
+#endif
+    case PETSC_SCALAR:
+      ((PetscScalar*)red->local_red)[trank] = *(PetscScalar*)lred;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown datatype provided for kernel reduction");
+      break;
+    }
   }
   red->thread_status[trank] = THREADCOMM_THREAD_POSTED_LOCALRED;
   return 0;
@@ -146,7 +168,6 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
 	red_sum += ((PetscInt*)red->local_red)[i];
       }
       PetscMemcpy(outdata,&red_sum,sizeof(PetscInt));
-      break;
     }
     break;
   case THREADCOMM_PROD:
@@ -172,10 +193,37 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
 	red_prod *= ((PetscInt*)red->local_red)[i];
       }
       PetscMemcpy(outdata,&red_prod,sizeof(PetscInt));
+    }
+    break;
+  case THREADCOMM_MIN:
+#if defined(PETSC_USE_COMPLEX)
+    if(red->type == PETSC_REAL) {
+      PetscReal min = ((PetscReal*)red->local_red)[0];
+      for(i=1; i < red->tcomm->nworkThreads;i++) {
+        if(((PetscReal*)red->local_red)[i] < min) min = ((PetscReal*)red->local_red)[i];
+      }
+      PetscMemcpy(outdata,&min,sizeof(PetscReal));
       break;
+    }
+#endif
+    if(red->type == PETSC_SCALAR) {
+      PetscScalar min = ((PetscScalar*)red->local_red)[0];
+      for(i=1; i < red->tcomm->nworkThreads;i++) {
+        if(PetscRealPart(((PetscScalar*)red->local_red)[i]) < PetscRealPart(min)) min = ((PetscScalar*)red->local_red)[i];
+      }
+      PetscMemcpy(outdata,&min,sizeof(PetscScalar));
+      break;
+    }
+    if(red->type == PETSC_INT) {
+      PetscInt min = ((PetscInt*)red->local_red)[0];
+      for(i=1; i < red->tcomm->nworkThreads;i++) {
+        if(((PetscInt*)red->local_red)[i] < min) min = ((PetscInt*)red->local_red)[i];
+      }
+      PetscMemcpy(outdata,&min,sizeof(PetscInt));
     }
     break;
   case THREADCOMM_MAX:
+#if defined(PETSC_USE_COMPLEX)
     if(red->type == PETSC_REAL) {
       PetscReal max = ((PetscReal*)red->local_red)[0];
       for(i=1; i < red->tcomm->nworkThreads;i++) {
@@ -184,13 +232,105 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
       PetscMemcpy(outdata,&max,sizeof(PetscReal));
       break;
     }
+#endif
+    if(red->type == PETSC_SCALAR) {
+      PetscScalar max = ((PetscScalar*)red->local_red)[0];
+      for(i=1; i < red->tcomm->nworkThreads;i++) {
+        if(PetscRealPart(((PetscScalar*)red->local_red)[i]) > PetscRealPart(max)) max = ((PetscScalar*)red->local_red)[i];
+      }
+      PetscMemcpy(outdata,&max,sizeof(PetscScalar));
+      break;
+    }
     if(red->type == PETSC_INT) {
       PetscInt max = ((PetscInt*)red->local_red)[0];
       for(i=1; i < red->tcomm->nworkThreads;i++) {
         if(((PetscInt*)red->local_red)[i] > max) max = ((PetscInt*)red->local_red)[i];
       }
       PetscMemcpy(outdata,&max,sizeof(PetscInt));
+    }
+    break;
+  case THREADCOMM_MAXLOC:
+#if defined(PETSC_USE_COMPLEX)
+    if(red->type == PETSC_REAL) {
+      PetscReal maxloc[2];
+      maxloc[0] = ((PetscReal*)red->local_red)[0];
+      maxloc[1] = ((PetscReal*)red->local_red)[red->tcomm->nworkThreads];
+      for(i=1; i < red->tcomm->nworkThreads;i++) {
+        if(((PetscReal*)red->local_red)[i] > maxloc[0]) { 
+          maxloc[0] = ((PetscReal*)red->local_red)[i];
+          maxloc[1] = ((PetscReal*)red->local_red)[red->tcomm->nworkThreads+i];
+        }
+      }
+      PetscMemcpy(outdata,maxloc,2*sizeof(PetscReal));
       break;
+    }
+#endif
+    if(red->type == PETSC_SCALAR) {
+      PetscScalar maxloc[2];
+      maxloc[0] = ((PetscScalar*)red->local_red)[0];
+      maxloc[1] = ((PetscScalar*)red->local_red)[red->tcomm->nworkThreads];
+      for(i=1; i < red->tcomm->nworkThreads;i++) {
+        if(PetscRealPart(((PetscScalar*)red->local_red)[i]) > PetscRealPart(maxloc[0])) { 
+          maxloc[0] = ((PetscScalar*)red->local_red)[i];
+          maxloc[1] = ((PetscScalar*)red->local_red)[red->tcomm->nworkThreads+i];
+        }
+      }
+      PetscMemcpy(outdata,maxloc,2*sizeof(PetscScalar));
+      break;
+    }
+    if(red->type == PETSC_INT) {
+      PetscInt maxloc[2];
+      maxloc[0] = ((PetscInt*)red->local_red)[0];
+      maxloc[1] = ((PetscInt*)red->local_red)[red->tcomm->nworkThreads];
+      for(i=1; i < red->tcomm->nworkThreads;i++) {
+        if(((PetscInt*)red->local_red)[i] > maxloc[0]) { 
+          maxloc[0] = ((PetscInt*)red->local_red)[i];
+          maxloc[1] = ((PetscInt*)red->local_red)[red->tcomm->nworkThreads+i];
+        }
+      }
+      PetscMemcpy(outdata,maxloc,2*sizeof(PetscInt));
+    }
+    break;
+  case THREADCOMM_MINLOC:
+#if defined(PETSC_USE_COMPLEX)
+    if(red->type == PETSC_REAL) {
+      PetscReal minloc[2];
+      minloc[0] = ((PetscReal*)red->local_red)[0];
+      minloc[1] = ((PetscReal*)red->local_red)[red->tcomm->nworkThreads];
+      for(i=1; i < red->tcomm->nworkThreads;i++) {
+        if(((PetscReal*)red->local_red)[i] < minloc[0]) { 
+          minloc[0] = ((PetscReal*)red->local_red)[i];
+          minloc[1] = ((PetscReal*)red->local_red)[red->tcomm->nworkThreads+i];
+        }
+      }
+      PetscMemcpy(outdata,minloc,2*sizeof(PetscReal));
+      break;
+    }
+#endif
+    if(red->type == PETSC_SCALAR) {
+      PetscScalar minloc[2];
+      minloc[0] = ((PetscScalar*)red->local_red)[0];
+      minloc[1] = ((PetscScalar*)red->local_red)[red->tcomm->nworkThreads];
+      for(i=1; i < red->tcomm->nworkThreads;i++) {
+        if(PetscRealPart(((PetscScalar*)red->local_red)[i]) < PetscRealPart(minloc[0])) { 
+          minloc[0] = ((PetscScalar*)red->local_red)[i];
+          minloc[1] = ((PetscScalar*)red->local_red)[red->tcomm->nworkThreads+i];
+        }
+      }
+      PetscMemcpy(outdata,minloc,2*sizeof(PetscScalar));
+      break;
+    }
+    if(red->type == PETSC_INT) {
+      PetscInt minloc[2];
+      minloc[0] = ((PetscInt*)red->local_red)[0];
+      minloc[1] = ((PetscInt*)red->local_red)[red->tcomm->nworkThreads];
+      for(i=1; i < red->tcomm->nworkThreads;i++) {
+        if(((PetscInt*)red->local_red)[i] < minloc[0]) { 
+          minloc[0] = ((PetscInt*)red->local_red)[i];
+          minloc[1] = ((PetscInt*)red->local_red)[red->tcomm->nworkThreads+i];
+        }
+      }
+      PetscMemcpy(outdata,minloc,2*sizeof(PetscInt));
     }
     break;
   default:
@@ -275,7 +415,10 @@ PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm tcomm,PetscThreadC
   PetscFunctionBegin;
   ierr = PetscNew(struct _p_PetscThreadCommRedCtx,&redout);CHKERRQ(ierr);
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&redout->thread_status);CHKERRQ(ierr);
-  ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscScalar),&redout->local_red);CHKERRQ(ierr);
+  /* Note that the size of local_red is twice the number of threads. The first half holds the local reductions
+     from each thread while the second half is used only for maxloc and minloc operations to hold the local max and min locations
+  */
+  ierr = PetscMalloc(2*tcomm->nworkThreads*sizeof(PetscScalar),&redout->local_red);CHKERRQ(ierr);
   redout->nworkThreads = tcomm->nworkThreads;
   redout->red_status = THREADCOMM_REDUCTION_NONE;
   for(i=0;i<redout->nworkThreads;i++) redout->thread_status[i] = THREADCOMM_THREAD_WAITING_FOR_NEWRED;
