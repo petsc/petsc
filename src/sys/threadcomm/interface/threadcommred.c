@@ -366,7 +366,7 @@ PetscErrorCode PetscThreadReductionEnd(PetscThreadCommRedCtx red,void *outdata)
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadReductionKernelEnd"
 /*
-   PetscThreadReductionKernelBegin - Finishes a reduction operation
+   PetscThreadReductionKernelEnd - Finishes a reduction operation
 
    Input Parameters:
 +  trank   - Rank of the calling thread
