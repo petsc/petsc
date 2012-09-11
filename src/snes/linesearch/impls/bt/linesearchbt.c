@@ -155,7 +155,7 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
 
   if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   ierr = PetscInfo2(snes,"Initial fnorm %14.12e gnorm %14.12e\n", (double)fnorm, (double)gnorm);CHKERRQ(ierr);
-  if (.5*gnorm*gnorm <= .5*fnorm*fnorm + lambda*alpha*initslope || ynorm < stol*xnorm) { /* Sufficient reduction or step tolerance convergence */
+  if (.5*gnorm*gnorm <= .5*fnorm*fnorm + lambda*alpha*initslope) { /* Sufficient reduction or step tolerance convergence */
     if (monitor) {
       ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(monitor,"    Line search: Using full step: fnorm %14.12e gnorm %14.12e\n", (double)fnorm, (double)gnorm);CHKERRQ(ierr);
