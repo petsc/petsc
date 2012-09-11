@@ -28,7 +28,7 @@ PetscErrorCode reduce_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommRedCt
 
   for(i=trstarts[myrank];i < trstarts[myrank+1];i++) my_sum += a[i];
 
-  PetscThreadReductionKernelBegin(myrank,red,&my_sum);
+  PetscThreadReductionKernelPost(myrank,red,&my_sum);
   
   return 0;
 }
@@ -42,7 +42,7 @@ PetscErrorCode max_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommRedCtx r
     if(PetscRealPart(a[i]) > PetscRealPart(my_max)) my_max = a[i];
   }
 
-  PetscThreadReductionKernelBegin(myrank,red,&my_max);
+  PetscThreadReductionKernelPost(myrank,red,&my_max);
   
   return 0;
 }
@@ -56,7 +56,7 @@ PetscErrorCode min_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommRedCtx r
     if(PetscRealPart(a[i]) < PetscRealPart(my_min)) my_min = a[i];
   }
 
-  PetscThreadReductionKernelBegin(myrank,red,&my_min);
+  PetscThreadReductionKernelPost(myrank,red,&my_min);
   
   return 0;
 }
@@ -72,7 +72,7 @@ PetscErrorCode maxloc_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommRedCt
     if(PetscRealPart(a[i]) > PetscRealPart(my_maxloc[0])) { my_maxloc[0] = a[i]; my_maxloc[1] = i;}
   }
 
-  PetscThreadReductionKernelBegin(myrank,red,my_maxloc);
+  PetscThreadReductionKernelPost(myrank,red,my_maxloc);
   
   return 0;
 }
@@ -88,7 +88,7 @@ PetscErrorCode minloc_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommRedCt
     if(PetscRealPart(a[i]) < PetscRealPart(my_minloc[0])) { my_minloc[0] = a[i]; my_minloc[1] = i;}
   }
 
-  PetscThreadReductionKernelBegin(myrank,red,my_minloc);
+  PetscThreadReductionKernelPost(myrank,red,my_minloc);
   
   return 0;
 }

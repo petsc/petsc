@@ -20,7 +20,7 @@
 
    To be called from the main thread before calling PetscThreadCommRunKernel
 
-.seealso: PetscThreadCommReductionKernelBegin(), PetscThreadCommReductionKernelEnd(), PetscThreadCommReductionEnd()
+.seealso: PetscThreadCommReductionKernelPost(), PetscThreadCommReductionKernelEnd(), PetscThreadCommReductionEnd()
 @*/
 PetscErrorCode PetscThreadReductionBegin(MPI_Comm comm,PetscThreadCommReductionOp op, PetscDataType type,PetscThreadCommRedCtx *red)
 {
@@ -60,9 +60,9 @@ PetscErrorCode PetscThreadCommReductionDestroy(PetscThreadCommRedCtx red)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscThreadReductionKernelBegin"
+#define __FUNCT__ "PetscThreadReductionKernelPost"
 /*
-   PetscThreadReductionKernelBegin - Begins a threaded reduction operation
+   PetscThreadReductionKernelPost - Begins a threaded reduction operation
 
    Input Parameters:
 +  trank   - Rank of the calling thread
@@ -77,7 +77,7 @@ PetscErrorCode PetscThreadCommReductionDestroy(PetscThreadCommRedCtx red)
 
    Must call PetscThreadReductionBegin before launching the kernel.
 */
-PetscErrorCode PetscThreadReductionKernelBegin(PetscInt trank,PetscThreadCommRedCtx red,void* lred)
+PetscErrorCode PetscThreadReductionKernelPost(PetscInt trank,PetscThreadCommRedCtx red,void* lred)
 {
   if(PetscReadOnce(int,red->red_status) != THREADCOMM_REDUCTION_NEW) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Did not call PetscThreadReductionBegin() before calling PetscThreadCommRunKernel()");
