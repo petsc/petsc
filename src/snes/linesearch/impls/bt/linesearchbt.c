@@ -162,6 +162,12 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
       ierr = PetscViewerASCIISubtractTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
     }
   } else {
+    /* Since the full step didn't work and the step is tiny, quit */
+    if (stol*xnorm > ynorm) {
+      ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscInfo2(monitor,"Aborted due to ynorm < stol*xnorm (%14.12e < %14.12e) and inadequate full step.\n",ynorm,stol*xnorm);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
     /* Fit points with quadratic */
     lambdatemp = -initslope/(gnorm*gnorm - fnorm*fnorm - 2.0*lambda*initslope);
     lambdaprev = lambda;
