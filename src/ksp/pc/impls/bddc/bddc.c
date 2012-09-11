@@ -4214,7 +4214,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   }
   ierr = MPI_Allreduce(&adapt_interface,&adapt_interface_reduced,1,MPIU_INT,MPI_LOR,interface_comm);CHKERRQ(ierr);
   if(pcbddc->dbg_flag && adapt_interface_reduced) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Interface adapted\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Adapting interface\n");CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   }
   if(where_values && adapt_interface_reduced) {
@@ -4245,14 +4245,12 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
     cum_recv_counts[0]=0;
     for(i=1;i<where_values+1;i++){
       j=0;
-      while(mat_graph->where[j] != i) j++;
+      while(mat_graph->where[j] != i) { j++; }
       where_to_nodes_indices[i-1]=j;
       if(mat_graph->neighbours_set[j][0]!=-1) { cum_recv_counts[i]=cum_recv_counts[i-1]+mat_graph->count[j]; } /* We don't want sends/recvs_to/from_self -> here I don't count myself  */
       else { cum_recv_counts[i]=cum_recv_counts[i-1]+mat_graph->count[j]-1; }
     }
-    buffer_size=2*cum_recv_counts[where_values]+mat_graph->nvtxs;
     ierr = PetscMalloc(2*cum_recv_counts[where_values]*sizeof(PetscMPIInt),&recv_buffer_where);CHKERRQ(ierr);
-    ierr = PetscMalloc(buffer_size*sizeof(PetscMPIInt),&send_buffer);CHKERRQ(ierr);
     ierr = PetscMalloc(cum_recv_counts[where_values]*sizeof(MPI_Request),&send_requests);CHKERRQ(ierr);
     ierr = PetscMalloc(cum_recv_counts[where_values]*sizeof(MPI_Request),&recv_requests);CHKERRQ(ierr);
     for(i=0;i<cum_recv_counts[where_values];i++) { 
@@ -4283,6 +4281,17 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
         }
       }
     }
+    buffer_size = 0;
+    for(i=0;i<where_values;i++) {
+      if(where_cc_adapt[i]) {
+        for(j=i;j<mat_graph->ncmps;j++) {
+          if(mat_graph->where[mat_graph->queue[mat_graph->cptr[j]]] == i+1) { /* WARNING -> where values goes from 1 to where_values included */
+            buffer_size += 1 + mat_graph->cptr[j+1]-mat_graph->cptr[j];
+          }
+        }
+      }
+    }  
+    ierr = PetscMalloc(buffer_size*sizeof(PetscMPIInt),&send_buffer);CHKERRQ(ierr);
     /* now get from neighbours their ccs (in global numbering) and adapt them (in case it is needed) */
     /* first determine how much data to send (size of each queue plus the global indices) and communicate it to neighbours */
     ierr = PetscMalloc(where_values*sizeof(PetscInt),&sizes_of_sends);CHKERRQ(ierr);
