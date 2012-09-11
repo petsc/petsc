@@ -511,8 +511,6 @@ PetscErrorCode DMCreate_Complex(DM dm)
   ierr = PetscObjectSetName((PetscObject) mesh->coordinates, "coordinates");CHKERRQ(ierr);
   mesh->refinementLimit  = -1.0;
 
-  mesh->meetTmpA         = PETSC_NULL;
-  mesh->meetTmpB         = PETSC_NULL;
   mesh->facesTmp         = PETSC_NULL;
 
   mesh->labels               = PETSC_NULL;
