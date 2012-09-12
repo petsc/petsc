@@ -90,7 +90,6 @@ PetscErrorCode DMSetUp_Patch(DM dm)
 PetscErrorCode DMCreateGlobalVector_Patch(DM dm, Vec *g)
 {
   DM_Patch      *mesh = (DM_Patch *) dm->data;
-  PetscInt       p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -104,7 +103,6 @@ PetscErrorCode DMCreateGlobalVector_Patch(DM dm, Vec *g)
 PetscErrorCode DMCreateLocalVector_Patch(DM dm, Vec *l)
 {
   DM_Patch      *mesh = (DM_Patch *) dm->data;
-  PetscInt       p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -34,7 +34,6 @@ typedef struct {
   Vec                  coordinates;      /* Coordinate values */
   PetscReal            refinementLimit;  /* Maximum volume for refined cell */
 
-  PetscInt            *meetTmpA, *meetTmpB; /* Work space for meet operation */
   PetscInt            *facesTmp;            /* Work space for faces operation */
 
   /* Labels */

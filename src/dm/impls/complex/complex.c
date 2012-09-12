@@ -247,7 +247,6 @@ PetscErrorCode DMDestroy_Complex(DM dm)
   ierr = PetscFree(mesh->supports);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&mesh->coordSection);CHKERRQ(ierr);
   ierr = VecDestroy(&mesh->coordinates);CHKERRQ(ierr);
-  ierr = PetscFree2(mesh->meetTmpA,mesh->meetTmpB);CHKERRQ(ierr);
   ierr = PetscFree(mesh->facesTmp);CHKERRQ(ierr);
   while(next) {
     DMLabel tmp;
@@ -1610,7 +1609,7 @@ PetscErrorCode DMCreateSubDM_Complex(DM dm, PetscInt numFields, PetscInt fields[
   if (subdm) {
     PetscSection subsection;
     PetscBool    haveNull = PETSC_FALSE;
-    PetscInt     f, nf;
+    PetscInt     f, nf = 0;
 
     ierr = DMComplexClone(dm, subdm);CHKERRQ(ierr);
     ierr = PetscSectionCreateSubsection(section, numFields, fields, &subsection);CHKERRQ(ierr);
@@ -2414,7 +2413,7 @@ PetscErrorCode DMComplexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt po
   DM_Complex    *mesh = (DM_Complex *) dm->data;
   PetscInt      *offsets, **closures;
   PetscInt      *join[2];
-  PetscInt       depth, maxSize, joinSize, i = 0;
+  PetscInt       depth, maxSize, joinSize = 0, i = 0;
   PetscInt       p, d, c, m;
   PetscErrorCode ierr;
 
@@ -2525,8 +2524,8 @@ PetscErrorCode DMComplexGetMeet(DM dm, PetscInt numPoints, const PetscInt points
   PetscValidPointer(points, 2);
   PetscValidPointer(numCoveringPoints, 3);
   PetscValidPointer(coveringPoints, 4);
-  if (!mesh->meetTmpA) {ierr = PetscMalloc2(mesh->maxConeSize,PetscInt,&mesh->meetTmpA,mesh->maxConeSize,PetscInt,&mesh->meetTmpB);CHKERRQ(ierr);}
-  meet[0] = mesh->meetTmpA; meet[1] = mesh->meetTmpB;
+  ierr = DMGetWorkArray(dm, mesh->maxConeSize, PETSC_INT, &meet[0]);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, mesh->maxConeSize, PETSC_INT, &meet[1]);CHKERRQ(ierr);
   /* Copy in cone of first point */
   ierr = PetscSectionGetDof(mesh->coneSection, points[0], &dof);CHKERRQ(ierr);
   ierr = PetscSectionGetOffset(mesh->coneSection, points[0], &off);CHKERRQ(ierr);
@@ -2554,6 +2553,7 @@ PetscErrorCode DMComplexGetMeet(DM dm, PetscInt numPoints, const PetscInt points
   }
   *numCoveringPoints = meetSize;
   *coveringPoints    = meet[i];
+  ierr = DMRestoreWorkArray(dm, mesh->maxConeSize, PETSC_INT, &meet[1-i]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2615,7 +2615,7 @@ PetscErrorCode DMComplexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt po
   DM_Complex    *mesh = (DM_Complex *) dm->data;
   PetscInt      *offsets, **closures;
   PetscInt      *meet[2];
-  PetscInt       height, maxSize, meetSize, i = 0;
+  PetscInt       height, maxSize, meetSize = 0, i = 0;
   PetscInt       p, h, c, m;
   PetscErrorCode ierr;
 

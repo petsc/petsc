@@ -1430,9 +1430,9 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *new
        The roots correspond to the dnnz and onnz entries; thus, there are two roots per row.
        */
       for(br = 0; br < bm; ++br) {
-        PetscInt row = bmindices[br], rowowner, brncols, col, colowner;
+        PetscInt row = bmindices[br], rowowner = 0, brncols, col, colowner = 0;
         const PetscInt *brcols;
-        PetscInt rowrel;    /* row's relative index on its owner rank */
+        PetscInt rowrel = 0;/* row's relative index on its owner rank */
         PetscInt rowownerm; /* local row size on row's owning rank. */
         ierr = PetscLayoutFindOwnerIndex(A->rmap,row,&rowowner,&rowrel); CHKERRQ(ierr);
         rowownerm = A->rmap->range[rowowner+1]-A->rmap->range[rowowner];

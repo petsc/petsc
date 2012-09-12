@@ -230,6 +230,10 @@ PetscErrorCode SNESSolve_LS(SNES snes)
       PetscFunctionReturn(0);
     }
     if (!lssucceed) {
+      if (snes->stol*xnorm > ynorm) {
+        snes->reason = SNES_CONVERGED_SNORM_RELATIVE;
+        PetscFunctionReturn(0);
+      }
       if (++snes->numFailures >= snes->maxFailures) {
         PetscBool  ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;

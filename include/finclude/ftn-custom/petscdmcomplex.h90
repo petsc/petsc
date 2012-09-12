@@ -66,6 +66,72 @@
       End Interface
 
       Interface
+        Subroutine DMComplexGetJoin(m,numPoints,points,join,ierr)
+          USE_DMCOMPLEX_HIDE
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: join(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMComplexGetFullJoin(m,numPoints,points,join,ierr)
+          USE_DMCOMPLEX_HIDE
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: join(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMComplexRestoreJoin(m,numPoints,points,join,ierr)
+          USE_DMCOMPLEX_HIDE
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: join(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMComplexGetMeet(m,numPoints,points,meet,ierr)
+          USE_DMCOMPLEX_HIDE
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: meet(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMComplexGetFullMeet(m,numPoints,points,meet,ierr)
+          USE_DMCOMPLEX_HIDE
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: meet(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMComplexRestoreMeet(m,numPoints,points,meet,ierr)
+          USE_DMCOMPLEX_HIDE
+          PetscInt     numPoints
+          PetscInt, pointer :: points(:)
+          PetscInt, pointer :: meet(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
         Subroutine DMComplexVecGetClosure(m,section,v,point,values,ierr)
           USE_DMCOMPLEX_HIDE
           PETSCSECTION_HIDE section

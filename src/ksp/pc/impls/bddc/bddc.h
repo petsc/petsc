@@ -100,10 +100,6 @@ typedef struct {
   PetscViewer                dbg_viewer;
 } PC_BDDC;
 
-
-/* In case of multilevel BDDC, this is the minimum number of procs for which it will be allowed */
-#define MIN_PROCS_FOR_BDDC 5 
-
 /* prototypes for functions contained in bddc.c */
 static PetscErrorCode PCBDDCCoarseSetUp(PC);
 static PetscErrorCode PCBDDCFindConnectedComponents(PCBDDCGraph,PetscInt);
