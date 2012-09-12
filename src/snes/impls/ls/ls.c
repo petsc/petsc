@@ -135,10 +135,11 @@ PetscErrorCode SNESSolve_LS(SNES snes)
   PetscBool          lssucceed;
   MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal          fnorm,gnorm,xnorm,ynorm;
-  Vec                Y,X,F,G,W;
+  Vec                Y,X,F,G,W,FPC;
   KSPConvergedReason kspreason;
   PetscBool          domainerror;
   SNESLineSearch    linesearch;
+  SNESConvergedReason reason;
 
   PetscFunctionBegin;
   snes->numFailures            = 0;
@@ -192,6 +193,21 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     /* Call general purpose update function */
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
+    }
+
+    /* apply the nonlinear preconditioner if it's right preconditioned */
+    if (snes->pc && snes->pcside == PC_RIGHT) {
+      //ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
+      //ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
+      ierr = SNESSolve(snes->pc, snes->vec_rhs, X);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+        snes->reason = SNES_DIVERGED_INNER;
+        PetscFunctionReturn(0);
+      }
+      ierr = SNESGetFunction(snes->pc, &FPC, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+      ierr = VecCopy(FPC, F);CHKERRQ(ierr);
+      ierr = SNESGetFunctionNorm(snes->pc, &fnorm);CHKERRQ(ierr);
     }
 
     /* Solve J Y = F, where J is Jacobian matrix */

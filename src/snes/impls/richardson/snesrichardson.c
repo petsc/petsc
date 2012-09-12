@@ -164,7 +164,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    else if (snes->pc) {
+    if (snes->pc && snes->pcside == PC_RIGHT) {
       ierr = VecCopy(X,Y);CHKERRQ(ierr);
       ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
       ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);

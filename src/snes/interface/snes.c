@@ -535,6 +535,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   char                    type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewer             monviewer;
   PetscErrorCode          ierr;
+  PCSide                  pcside;
   const char              *optionsprefix;
 
   PetscFunctionBegin;
@@ -679,6 +680,11 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsBool("-snes_mf","Use a Matrix-Free Jacobian with no preconditioner matrix","MatCreateSNESMF",PETSC_FALSE,&snes->mf,&flg);CHKERRQ(ierr);
     if (!flg && snes->mf_operator) snes->mf = PETSC_TRUE;
     ierr = PetscOptionsInt("-snes_mf_version","Matrix-Free routines version 1 or 2","None",snes->mf_version,&snes->mf_version,0);CHKERRQ(ierr);
+
+    flg = PETSC_FALSE;
+    ierr = SNESGetPCSide(snes,&pcside);
+    ierr = PetscOptionsEnum("-snes_npc_side","SNES nonlinear preconditioner side","SNESSetPCSide",PCSides,(PetscEnum)pcside,(PetscEnum*)&pcside,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESSetPCSide(snes,pcside);CHKERRQ(ierr);}
 
     /* GS Options */
     ierr = PetscOptionsInt("-snes_gs_sweeps","Number of sweeps of GS to apply","SNESComputeGS",snes->gssweeps,&snes->gssweeps,PETSC_NULL);CHKERRQ(ierr);
@@ -1347,6 +1353,8 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->reason            = SNES_CONVERGED_ITERATING;
   snes->gssweeps          = 1;
 
+  snes->pcside            = PC_RIGHT;
+
   snes->mf                = PETSC_FALSE;
   snes->mf_operator       = PETSC_FALSE;
   snes->mf_version        = 1;
@@ -1910,7 +1918,11 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
-  if (sdm->computefunction) {
+  if (snes->pc && snes->pcside == PC_LEFT) {
+    ierr = VecCopy(x,y);CHKERRQ(ierr);
+    ierr = SNESSolve(snes->pc,snes->vec_rhs,y);CHKERRQ(ierr);
+    ierr = VecAYPX(y,-1.0,x);CHKERRQ(ierr);
+  } else if (sdm->computefunction) {
     PetscStackPush("SNES user function");
     ierr = (*sdm->computefunction)(snes,x,y,sdm->functionctx);CHKERRQ(ierr);
     PetscStackPop;
@@ -2440,6 +2452,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
 
   if (!snes->linesearch) {ierr = SNESGetSNESLineSearch(snes, &snes->linesearch);}
 
+  if (snes->pc && (snes->pcside == PC_LEFT)) snes->mf = PETSC_TRUE;
 
   if (snes->mf) { ierr = SNESSetUpMatrixFree_Private(snes, snes->mf_operator, snes->mf_version);CHKERRQ(ierr); }
 
@@ -4408,6 +4421,7 @@ PetscErrorCode  SNESSetDM(SNES snes,DM dm)
   ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
   if (snes->pc) {
     ierr = SNESSetDM(snes->pc, snes->dm);CHKERRQ(ierr);
+    ierr = SNESSetPCSide(snes,snes->pcside);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -4513,6 +4527,74 @@ PetscErrorCode SNESGetPC(SNES snes, SNES *pc)
     ierr = SNESAppendOptionsPrefix(snes->pc,"npc_");CHKERRQ(ierr);
   }
   *pc = snes->pc;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetPCSide"
+/*@
+    SNESSetPCSide - Sets the preconditioning side.
+
+    Logically Collective on SNES
+
+    Input Parameter:
+.   snes - iterative context obtained from SNESCreate()
+
+    Output Parameter:
+.   side - the preconditioning side, where side is one of
+.vb
+      PC_LEFT - left preconditioning (default)
+      PC_RIGHT - right preconditioning
+.ve
+
+    Options Database Keys:
+.   -snes_pc_side <right,left>
+
+    Level: intermediate
+
+.keywords: SNES, set, right, left, side, preconditioner, flag
+
+.seealso: SNESGetPCSide(), KSPSetPCSide()
+@*/
+PetscErrorCode  SNESSetPCSide(SNES snes,PCSide side)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(snes,side,2);
+  snes->pcside = side;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESGetPCSide"
+/*@
+    SNESGetPCSide - Gets the preconditioning side.
+
+    Not Collective
+
+    Input Parameter:
+.   snes - iterative context obtained from SNESCreate()
+
+    Output Parameter:
+.   side - the preconditioning side, where side is one of
+.vb
+      PC_LEFT - left preconditioning (default)
+      PC_RIGHT - right preconditioning
+.ve
+
+    Level: intermediate
+
+.keywords: SNES, get, right, left, side, preconditioner, flag
+
+.seealso: SNESSetPCSide(), KSPGetPCSide()
+@*/
+PetscErrorCode  SNESGetPCSide(SNES snes,PCSide *side)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidPointer(side,2);
+  *side = snes->pcside;
   PetscFunctionReturn(0);
 }
 

@@ -32,8 +32,9 @@ struct _SNESOps {
 
 struct _p_SNES {
   PETSCHEADER(struct _SNESOps);
-  DM   dm;
-  SNES pc;
+  DM        dm;
+  SNES      pc;
+  PCSide    pcside;
   PetscBool usespc;
 
   /*  ------------------------ User-provided stuff -------------------------------*/

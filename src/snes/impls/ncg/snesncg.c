@@ -330,7 +330,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
 
   /* first update -- just use the (preconditioned) residual direction for the initial conjugate direction */
 
-  if (snes->pc) {
+  if (snes->pc && snes->pcside == PC_RIGHT) {
     ierr = VecCopy(X, dX);CHKERRQ(ierr);
     ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
     ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
@@ -390,7 +390,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    if (snes->pc) {
+    if (snes->pc && snes->pcside == PC_RIGHT) {
       ierr = VecCopy(X,dX);CHKERRQ(ierr);
       ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
       ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
