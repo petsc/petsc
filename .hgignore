@@ -1,15 +1,17 @@
 syntax: glob
 *~
-*#
+*\#
 BROWSE
 TAGS*
 lib/*
+ftn-auto/*
 *.o
 *.html
 *.pdf
 *.aux
 *.dvi
 *.log
+*.pyc
 
 syntax: regexp
 test_(.*)[0-9]$
