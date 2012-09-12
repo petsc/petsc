@@ -3984,7 +3984,6 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
     ierr = KSPSetOperators(pcbddc->coarse_ksp,pcbddc->coarse_mat,pcbddc->coarse_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
     ierr = KSPSetTolerances(pcbddc->coarse_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,max_it_coarse_ksp);CHKERRQ(ierr);
     ierr = KSPSetType(pcbddc->coarse_ksp,coarse_ksp_type);CHKERRQ(ierr);
-    ierr = KSPSetInitialGuessNonzero(pcbddc->coarse_ksp,PETSC_FALSE);CHKERRQ(ierr);
     ierr = KSPGetPC(pcbddc->coarse_ksp,&pc_temp);CHKERRQ(ierr);
     ierr = PCSetType(pc_temp,coarse_pc_type);CHKERRQ(ierr);
     /* Allow user's customization */
@@ -3997,6 +3996,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
         ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       }
       ierr = PCBDDCSetCoarseProblemType(pc_temp,MULTILEVEL_BDDC);CHKERRQ(ierr);
+      ierr = KSPSetNormType(pcbddc->coarse_ksp,KSP_NORM_NONE);CHKERRQ(ierr);
     }
     ierr = KSPSetUp(pcbddc->coarse_ksp);CHKERRQ(ierr);
 
