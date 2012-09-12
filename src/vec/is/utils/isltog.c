@@ -828,7 +828,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
     starts3[i+1] = starts3[i] + lens2[i];
     nt          += lens2[i];
   }
-  nt += lens2[nrecvs2-1];
+  if(nrecvs2) nt += lens2[nrecvs2-1];
 
   ierr = PetscMalloc((nt+1)*sizeof(PetscInt),&recvs2);CHKERRQ(ierr);
   ierr = PetscMalloc((nrecvs2+1)*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);
@@ -885,6 +885,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
   ierr = PetscMalloc((nt+1)*sizeof(PetscInt),procs);CHKERRQ(ierr);
   ierr = PetscMalloc((nt+1)*sizeof(PetscInt),numprocs);CHKERRQ(ierr);
   ierr = PetscMalloc((nt+1)*sizeof(PetscInt*),indices);CHKERRQ(ierr);
+  for(i=0;i<nt+1;i++) { (*indices)[i]=PETSC_NULL; }
   ierr = PetscMalloc(size*sizeof(PetscInt),&bprocs);CHKERRQ(ierr);
   cnt       = 0;
   for (i=0; i<size; i++) {
