@@ -1609,7 +1609,7 @@ PetscErrorCode DMCreateSubDM_Complex(DM dm, PetscInt numFields, PetscInt fields[
   if (subdm) {
     PetscSection subsection;
     PetscBool    haveNull = PETSC_FALSE;
-    PetscInt     f, nf;
+    PetscInt     f, nf = 0;
 
     ierr = DMComplexClone(dm, subdm);CHKERRQ(ierr);
     ierr = PetscSectionCreateSubsection(section, numFields, fields, &subsection);CHKERRQ(ierr);
@@ -2413,7 +2413,7 @@ PetscErrorCode DMComplexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt po
   DM_Complex    *mesh = (DM_Complex *) dm->data;
   PetscInt      *offsets, **closures;
   PetscInt      *join[2];
-  PetscInt       depth, maxSize, joinSize, i = 0;
+  PetscInt       depth, maxSize, joinSize = 0, i = 0;
   PetscInt       p, d, c, m;
   PetscErrorCode ierr;
 
@@ -2615,7 +2615,7 @@ PetscErrorCode DMComplexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt po
   DM_Complex    *mesh = (DM_Complex *) dm->data;
   PetscInt      *offsets, **closures;
   PetscInt      *meet[2];
-  PetscInt       height, maxSize, meetSize, i = 0;
+  PetscInt       height, maxSize, meetSize = 0, i = 0;
   PetscInt       p, h, c, m;
   PetscErrorCode ierr;
 
