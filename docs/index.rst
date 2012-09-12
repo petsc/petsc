@@ -42,5 +42,6 @@ Acknowledgments
 ---------------
 
 This project was partially supported by the Center for Numerical
-Porous Media, Mathematics and Computational Science and Engineering
-Division, King Abdullah University of Science and Technology (KAUST).
+Porous Media, Division of Computer, Electrical, and Mathematical
+Sciences & Engineering, King Abdullah University of Science and
+Technology (KAUST).
