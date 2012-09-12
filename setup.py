@@ -282,7 +282,6 @@ Topic :: Software Development :: Libraries
 """
 
 bootstrap()
-print tarball()
 setup(name='tao',
       version=version(),
       description=description.pop(0),
