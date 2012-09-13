@@ -234,8 +234,8 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "VecCopy_Seq"
-static PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
+#define __FUNCT__ "VecCopy_SeqCUSP_Private"
+static PetscErrorCode VecCopy_SeqCUSP_Private(Vec xin,Vec yin)
 {
   PetscScalar       *ya;
   const PetscScalar *xa;
@@ -253,8 +253,8 @@ static PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecSetRandom_Seq"
-static PetscErrorCode VecSetRandom_Seq(Vec xin,PetscRandom r)
+#define __FUNCT__ "VecSetRandom_SeqCUSP_Private"
+static PetscErrorCode VecSetRandom_SeqCUSP_Private(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
   PetscInt       n = xin->map->n,i;
@@ -268,8 +268,8 @@ static PetscErrorCode VecSetRandom_Seq(Vec xin,PetscRandom r)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecDestroy_Seq"
-static PetscErrorCode VecDestroy_Seq(Vec v)
+#define __FUNCT__ "VecDestroy_SeqCUSP_Private"
+static PetscErrorCode VecDestroy_SeqCUSP_Private(Vec v)
 {
   Vec_Seq        *vs = (Vec_Seq*)v->data;
   PetscErrorCode ierr;
@@ -286,8 +286,8 @@ static PetscErrorCode VecDestroy_Seq(Vec v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecResetArray_Seq"
-static PetscErrorCode VecResetArray_Seq(Vec vin)
+#define __FUNCT__ "VecResetArray_SeqCUSP_Private"
+static PetscErrorCode VecResetArray_SeqCUSP_Private(Vec vin)
 {
   Vec_Seq *v = (Vec_Seq *)vin->data;
 
@@ -1379,12 +1379,12 @@ PetscErrorCode VecCopy_SeqCUSP(Vec xin,Vec yin)
 
     } else if (xin->valid_GPU_array == PETSC_CUSP_CPU) {
       /* copy in CPU if we are on the CPU*/
-      ierr = VecCopy_Seq(xin,yin);CHKERRQ(ierr);
+      ierr = VecCopy_SeqCUSP_Private(xin,yin);CHKERRQ(ierr);
     } else if (xin->valid_GPU_array == PETSC_CUSP_BOTH) {
       /* if xin is valid in both places, see where yin is and copy there (because it's probably where we'll want to next use it) */
       if (yin->valid_GPU_array == PETSC_CUSP_CPU) {
 	/* copy in CPU */
-	ierr = VecCopy_Seq(xin,yin);CHKERRQ(ierr);
+	ierr = VecCopy_SeqCUSP_Private(xin,yin);CHKERRQ(ierr);
 
       } else if (yin->valid_GPU_array == PETSC_CUSP_GPU) {
 	/* copy in GPU */
@@ -1412,7 +1412,7 @@ PetscErrorCode VecCopy_SeqCUSP(Vec xin,Vec yin)
         ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
         ierr = VecCUSPRestoreArrayWrite(yin,&yarray);CHKERRQ(ierr);
       } else {
-	ierr = VecCopy_Seq(xin,yin);CHKERRQ(ierr);
+	ierr = VecCopy_SeqCUSP_Private(xin,yin);CHKERRQ(ierr);
       }
     }
   }
@@ -1708,7 +1708,7 @@ PetscErrorCode VecSetRandom_SeqCUSP(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecSetRandom_Seq(xin,r);CHKERRQ(ierr);
+  ierr = VecSetRandom_SeqCUSP_Private(xin,r);CHKERRQ(ierr);
   xin->valid_GPU_array = PETSC_CUSP_CPU;
   PetscFunctionReturn(0);
 }
@@ -1720,7 +1720,7 @@ PetscErrorCode VecResetArray_SeqCUSP(Vec vin)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = VecCUSPCopyFromGPU(vin);CHKERRQ(ierr);
-  ierr = VecResetArray_Seq(vin);CHKERRQ(ierr);
+  ierr = VecResetArray_SeqCUSP_Private(vin);CHKERRQ(ierr);
   vin->valid_GPU_array = PETSC_CUSP_CPU;
   PetscFunctionReturn(0);
 }
@@ -1895,7 +1895,7 @@ PetscErrorCode VecDestroy_SeqCUSP(Vec v)
   } catch(char* ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
-  ierr = VecDestroy_Seq(v);CHKERRQ(ierr);
+  ierr = VecDestroy_SeqCUSP_Private(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
