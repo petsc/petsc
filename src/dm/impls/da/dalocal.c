@@ -323,7 +323,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
         const PetscInt xp = xn-1, yp = dim > 1 ? yn-1 : 0, zp = dim > 2 ? zn-1 : 0;
         const PetscInt neighbor = neighbors[(zn*3+yn)*3+xn];
 
-        if (neighbor >= 0 && neighbor != rank) {
+        if (neighbor >= 0 && neighbor < rank) {
           nleaves += (!xp ? nVx : 1) * (!yp ? nVy : 1) * (!zp ? nVz : 1); /* vertices */
           if (xp && !yp && !zp) {
             nleaves += nxF; /* x faces */
@@ -344,7 +344,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
         const PetscInt neighbor = neighbors[(zn*3+yn)*3+xn];
         PetscInt       xv, yv, zv;
 
-        if (neighbor >= 0 && neighbor != rank) {
+        if (neighbor >= 0 && neighbor < rank) {
           if (xp < 0) { /* left */
             if (yp < 0) { /* bottom */
               if (zp < 0) { /* back */
@@ -700,6 +700,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
       }
     }
   }
+  /* TODO: Remove duplication in leaf determination */
   if (nleaves != nleavesCheck) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "The number of leaves %d did not match the number of remote leaves %d", nleaves, nleavesCheck);
   ierr = PetscSFCreate(((PetscObject) dm)->comm, &sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf, pEnd, nleaves, localPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
