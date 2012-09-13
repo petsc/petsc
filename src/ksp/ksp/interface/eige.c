@@ -308,3 +308,84 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
   ierr = MatDestroy(&BA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PolyEval"
+static PetscErrorCode PolyEval(PetscInt nroots,const PetscReal *r,const PetscReal *c,PetscReal x,PetscReal y,PetscReal *px,PetscReal *py)
+{
+  PetscInt i;
+  PetscReal rprod = 1,iprod = 0;
+
+  PetscFunctionBegin;
+  for (i=0; i<nroots; i++) {
+    PetscReal rnew = rprod*(x - r[i]) - iprod*(y - c[i]);
+    PetscReal inew = rprod*(y - c[i]) + iprod*(x - r[i]);
+    rprod = rnew;
+    iprod = inew;
+  }
+  *px = rprod;
+  *py = iprod;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPPlotEigenContours_Private"
+/* collective on KSP */
+PetscErrorCode KSPPlotEigenContours_Private(KSP ksp,PetscInt neig,const PetscReal *r,const PetscReal *c)
+{
+  PetscErrorCode      ierr;
+  PetscReal           xmin,xmax,ymin,ymax,*xloc,*yloc,*value,px0,py0,rscale,iscale;
+  PetscInt            M,N,i,j;
+  PetscMPIInt         rank;
+  PetscViewer         viewer;
+  PetscDraw           draw;
+  PetscDrawAxis       drawaxis;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(((PetscObject)ksp)->comm,&rank);CHKERRQ(ierr);
+  if (rank) PetscFunctionReturn(0);
+  M = 80;
+  N = 80;
+  xmin = r[0]; xmax = r[0];
+  ymin = c[0]; ymax = c[0];
+  for (i=1; i<neig; i++) {
+    xmin = PetscMin(xmin,r[i]);
+    xmax = PetscMax(xmax,r[i]);
+    ymin = PetscMin(ymin,c[i]);
+    ymax = PetscMax(ymax,c[i]);
+  }
+  ierr = PetscMalloc3(M,PetscReal,&xloc,N,PetscReal,&yloc,M*N,PetscReal,&value);CHKERRQ(ierr);
+  for (i=0; i<M; i++) xloc[i] = xmin - 0.1*(xmax-xmin) + 1.2*(xmax-xmin)*i/(M-1);
+  for (i=0; i<N; i++) yloc[i] = ymin - 0.1*(ymax-ymin) + 1.2*(ymax-ymin)*i/(N-1);
+  ierr = PolyEval(neig,r,c,0,0,&px0,&py0);CHKERRQ(ierr);
+  rscale = px0/(PetscSqr(px0)+PetscSqr(py0));
+  iscale = -py0/(PetscSqr(px0)+PetscSqr(py0));
+  for (j=0; j<N; j++) {
+    for (i=0; i<M; i++) {
+      PetscReal px,py,tx,ty,tmod;
+      ierr = PolyEval(neig,r,c,xloc[i],yloc[j],&px,&py);
+      tx = px*rscale - py*iscale;
+      ty = py*rscale + px*iscale;
+      tmod = PetscSqr(tx) + PetscSqr(ty); /* modulus of the complex polynomial */
+      if (tmod > 1) tmod = 1.0;
+      if (tmod > 0.5 && tmod < 1) tmod = 0.5;
+      if (tmod > 0.2 && tmod < 0.5) tmod = 0.2;
+      if (tmod > 0.05 && tmod < 0.2) tmod = 0.05;
+      if (tmod < 1e-3) tmod = 1e-3;
+      value[i+j*M] = PetscLogScalar(tmod) / PetscLogScalar(10);
+    }
+  }
+  ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigen-contours",PETSC_DECIDE,PETSC_DECIDE,450,450,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawTensorContour(draw,M,N,PETSC_NULL,PETSC_NULL,value);CHKERRQ(ierr);
+  if (0) {
+    ierr = PetscDrawAxisCreate(draw,&drawaxis);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLimits(drawaxis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(drawaxis,"Eigen-counters","real","imag");CHKERRQ(ierr);
+    ierr = PetscDrawAxisDraw(drawaxis);CHKERRQ(ierr);
+    ierr = PetscDrawAxisDestroy(&drawaxis);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = PetscFree3(xloc,yloc,value);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
