@@ -2781,8 +2781,8 @@ PetscErrorCode DMComplexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt
     for(n = 0; n < numNeighbors; ++n) {
       PetscInt        cellPair[2] = {cell, neighborCells[n]};
       PetscBool       found       = depth > 1 ? PETSC_TRUE : PETSC_FALSE;
-      PetscInt        meetSize;
-      const PetscInt *meet;
+      PetscInt        meetSize    = 0;
+      const PetscInt *meet        = PETSC_NULL;
 
       if (cellPair[0] == cellPair[1]) continue;
       if (!found) {
@@ -2797,6 +2797,7 @@ PetscErrorCode DMComplexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt
             }
           }
         }
+        ierr = DMComplexRestoreMeet(dm, 2, cellPair, &meetSize, &meet);CHKERRQ(ierr);
       }
       if (found) {
         ++off[cell-cStart+1];
@@ -2819,8 +2820,8 @@ PetscErrorCode DMComplexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt
       for(n = 0; n < numNeighbors; ++n) {
         PetscInt        cellPair[2] = {cell, neighborCells[n]};
         PetscBool       found       = depth > 1 ? PETSC_TRUE : PETSC_FALSE;
-        PetscInt        meetSize;
-        const PetscInt *meet;
+        PetscInt        meetSize    = 0;
+        const PetscInt *meet        = PETSC_NULL;
 
         if (cellPair[0] == cellPair[1]) continue;
         if (!found) {
@@ -2835,6 +2836,7 @@ PetscErrorCode DMComplexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt
               }
             }
           }
+          ierr = DMComplexRestoreMeet(dm, 2, cellPair, &meetSize, &meet);CHKERRQ(ierr);
         }
         if (found) {
           adj[off[cell-cStart]+cellOffset] = neighborCells[n];

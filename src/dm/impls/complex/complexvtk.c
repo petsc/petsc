@@ -84,7 +84,7 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, PetscSection globalConeSection, FIL
   MPI_Comm       comm = ((PetscObject) dm)->comm;
   PetscInt       dim;
   PetscInt       numCorners = 0, maxCorners;
-  PetscInt       numCells   = 0, totCells, cellType;
+  PetscInt       numCells   = 0, totCells = 0, cellType;
   PetscInt       numLabelCells, cMax, cStart, cEnd, c, vStart, vEnd, v;
   PetscMPIInt    numProcs, rank, proc, tag = 1;
   PetscBool      hasLabel;
