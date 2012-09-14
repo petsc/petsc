@@ -49,8 +49,6 @@ int main(int argc,char *argv[])
   ghosts[0] = (N+rstart-1)%N;
   ghosts[1] = (rstart+n)%N;
 
-  ierr = DMSlicedCreate(comm,&slice);CHKERRQ(ierr);
-  ierr = DMSlicedSetGhosts(slice,bs,n,2,ghosts);CHKERRQ(ierr);
   ierr = PetscMalloc2(n,PetscInt,&d_nnz,n,PetscInt,&o_nnz);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (size > 1 && (i==0 || i==n-1)) {
@@ -61,7 +59,7 @@ int main(int argc,char *argv[])
       o_nnz[i] = 0;
     }
   }
-  ierr = DMSlicedSetPreallocation(slice,0,d_nnz,0,o_nnz);CHKERRQ(ierr); /* Currently does not copy X_nnz so we can't free them until after DMSlicedGetMatrix */
+  ierr = DMSlicedCreate(comm,bs,n,2,ghosts,d_nnz,o_nnz,&slice);CHKERRQ(ierr); /* Currently does not copy X_nnz so we can't free them until after DMSlicedGetMatrix */
 
   if (!useblock) {ierr = DMSlicedSetBlockFills(slice,dfill,ofill);CHKERRQ(ierr);} /* Irrelevant for baij formats */
   ierr = DMCreateMatrix(slice,mat_type,&A);CHKERRQ(ierr);
