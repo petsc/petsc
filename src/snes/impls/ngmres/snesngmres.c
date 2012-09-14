@@ -252,7 +252,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ivec = k_restart % ngmres->msize; /* replace the last used part of the subspace */
 
     /* Computation of x^M */
-    if (snes->pc) {
+    if (snes->pc && snes->pcside == PC_RIGHT) {
       ierr = VecCopy(X, XM);CHKERRQ(ierr);
       ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
       ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);

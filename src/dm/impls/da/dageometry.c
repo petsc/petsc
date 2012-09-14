@@ -522,7 +522,7 @@ PetscErrorCode DMDAConvertToCell(DM dm, MatStencil s, PetscInt *cell)
 {
   DM_DA         *da  = (DM_DA *) dm->data;
   const PetscInt dim = da->dim;
-  const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
+  const PetscInt mx  = (da->Xe - da->Xs)/da->w, my = da->Ye - da->Ys/*, mz = da->Ze - da->Zs*/;
   const PetscInt il  = s.i - da->Xs/da->w, jl = dim > 1 ? s.j - da->Ys : 0, kl = dim > 2 ? s.k - da->Zs : 0;
 
   PetscFunctionBegin;

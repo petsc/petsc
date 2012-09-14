@@ -624,6 +624,8 @@ PETSC_EXTERN PetscErrorCode SNESSetDM(SNES,DM);
 PETSC_EXTERN PetscErrorCode SNESGetDM(SNES,DM*);
 PETSC_EXTERN PetscErrorCode SNESSetPC(SNES,SNES);
 PETSC_EXTERN PetscErrorCode SNESGetPC(SNES,SNES*);
+PETSC_EXTERN PetscErrorCode SNESSetPCSide(SNES,PCSide);
+PETSC_EXTERN PetscErrorCode SNESGetPCSide(SNES,PCSide*);
 PETSC_EXTERN PetscErrorCode SNESSetSNESLineSearch(SNES,SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESGetSNESLineSearch(SNES,SNESLineSearch*);
 PETSC_EXTERN PetscErrorCode SNESRestrictHookAdd(SNES,PetscErrorCode (*)(SNES,SNES,void*),void*);

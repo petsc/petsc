@@ -402,7 +402,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   if (snes->reason) PetscFunctionReturn(0);
 
   /* composed solve -- either sequential or composed */
-  if (snes->pc) {
+  if (snes->pc && snes->pcside == PC_RIGHT) {
     if (qn->composition_type == SNES_QN_SEQUENTIAL) {
       ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
       ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
@@ -485,7 +485,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     if (snes->reason) PetscFunctionReturn(0);
 
 
-    if (snes->pc) {
+    if (snes->pc && snes->pcside == PC_RIGHT) {
       if (qn->composition_type == SNES_QN_SEQUENTIAL) {
         ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
         ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);

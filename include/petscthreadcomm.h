@@ -56,7 +56,7 @@ PETSC_EXTERN PetscErrorCode PetscThreadCommRegisterDestroy(void);
 PETSC_EXTERN PetscInt  PetscThreadCommGetRank(PetscThreadComm);
 
 /* Reduction operations */
-PETSC_EXTERN PetscErrorCode PetscThreadReductionKernelBegin(PetscInt,PetscThreadCommRedCtx,void*);
+PETSC_EXTERN PetscErrorCode PetscThreadReductionKernelPost(PetscInt,PetscThreadCommRedCtx,void*);
 PETSC_EXTERN PetscErrorCode PetscThreadReductionKernelEnd(PetscInt,PetscThreadCommRedCtx,void*);
 PETSC_EXTERN PetscErrorCode PetscThreadReductionBegin(MPI_Comm,PetscThreadCommReductionOp,PetscDataType,PetscThreadCommRedCtx*);
 PETSC_EXTERN PetscErrorCode PetscThreadReductionEnd(PetscThreadCommRedCtx,void*);

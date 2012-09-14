@@ -28,7 +28,7 @@ PetscErrorCode VecDot_kernel(PetscInt thread_id,Vec xin,Vec yin,PetscThreadCommR
   /* arguments ya, xa are reversed because BLAS complex conjugates the first argument, PETSc the second */
   z_loc = BLASdot_(&bn,ya+start,&one,xa+start,&one);
 
-  ierr = PetscThreadReductionKernelBegin(thread_id,red,(void*)&z_loc);CHKERRQ(ierr);
+  ierr = PetscThreadReductionKernelPost(thread_id,red,(void*)&z_loc);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(yin,&ya);CHKERRQ(ierr);
