@@ -19,7 +19,7 @@
 PetscErrorCode PCGAMGCreateGraph( const Mat Amat, Mat *a_Gmat )
 {
   PetscErrorCode ierr;
-  PetscInt       Istart,Iend,Ii,jj,ncols,nloc,NN,MM,bs;
+  PetscInt       Istart,Iend,Ii,jj,kk,ncols,nloc,NN,MM,bs;
   PetscMPIInt    mype, npe;
   MPI_Comm       wcomm = ((PetscObject)Amat)->comm;
   Mat            Gmat;
@@ -43,12 +43,17 @@ PetscErrorCode PCGAMGCreateGraph( const Mat Amat, Mat *a_Gmat )
     ierr = PetscMalloc( nloc*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
     ierr = PetscMalloc( nloc*sizeof(PetscInt), &o_nnz ); CHKERRQ(ierr);
     for ( Ii = Istart, jj = 0 ; Ii < Iend ; Ii += bs, jj++ ) {
-      ierr = MatGetRow(Amat,Ii,&ncols,0,0); CHKERRQ(ierr);
-      d_nnz[jj] = ncols; /* very pessimistic */
-      o_nnz[jj] = ncols;
-      if( d_nnz[jj] > nloc ) d_nnz[jj] = nloc;
-      if( o_nnz[jj] > (NN/bs-nloc) ) o_nnz[jj] = NN/bs-nloc;
-      ierr = MatRestoreRow(Amat,Ii,&ncols,0,0); CHKERRQ(ierr);
+      d_nnz[jj] = 0;
+      for(kk=0;kk<bs;kk++) {
+        ierr = MatGetRow(Amat,Ii+kk,&ncols,0,0); CHKERRQ(ierr);
+        if( ncols > d_nnz[jj] ) {
+          d_nnz[jj] = ncols; /* very pessimistic but could be too low in theory */
+          o_nnz[jj] = ncols;
+          if( d_nnz[jj] > nloc ) d_nnz[jj] = nloc;
+          if( o_nnz[jj] > (NN/bs-nloc) ) o_nnz[jj] = NN/bs-nloc;
+        }
+        ierr = MatRestoreRow(Amat,Ii+kk,&ncols,0,0); CHKERRQ(ierr);
+      }
     }
 
     /* get scalar copy (norms) of matrix -- AIJ specific!!! */
