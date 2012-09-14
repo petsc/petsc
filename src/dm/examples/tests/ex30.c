@@ -1,4 +1,4 @@
-static char help[] = "Tests DMSliced operations\n\n";
+static char help[] = "Tests DMSLICED operations\n\n";
 
 #include <petscdmsliced.h>
 

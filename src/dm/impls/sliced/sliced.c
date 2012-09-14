@@ -277,6 +277,16 @@ static PetscErrorCode  DMGlobalToLocalEnd_Sliced(DM da,Vec g,InsertMode mode,Vec
   PetscFunctionReturn(0);
 }
 
+/*MC
+   DMSLICED = "sliced" - A DM object that is used to manage data for a general graph. Uses VecCreateGhost() ghosted vectors for storing the fields
+
+   See DMCreateSliced() for details.
+
+  Level: intermediate
+
+.seealso: DMType, DMCOMPOSITE, DMCreateSliced(), DMCreate()
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreate_Sliced"
@@ -327,7 +337,8 @@ EXTERN_C_END
 
     Level: advanced
 
-.seealso DMDestroy(), DMCreateGlobalVector(), DMSetType(), DMSLICED, DMSlicedSetGhosts(), DMSlicedSetPreallocation()
+.seealso DMDestroy(), DMCreateGlobalVector(), DMSetType(), DMSLICED, DMSlicedSetGhosts(), DMSlicedSetPreallocation(), VecGhostUpdateBegin(), VecGhostUpdateEnd(),
+         VecGhostGetLocalForm(), VecGhostRestoreLocalForm()
 
 @*/
 PetscErrorCode  DMSlicedCreate(MPI_Comm comm,PetscInt bs,PetscInt nlocal,PetscInt Nghosts,const PetscInt ghosts[], const PetscInt d_nnz[],const PetscInt o_nnz[],DM *dm)
