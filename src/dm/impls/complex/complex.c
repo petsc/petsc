@@ -849,7 +849,7 @@ PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J)
       if (isBlock || isSeqBlock || isMPIBlock || isSymBlock || isSymSeqBlock || isSymMPIBlock) {
         PetscInt pStart, pEnd, p, dof;
 
-        ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+        ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
         for(p = pStart; p < pEnd; ++p) {
           ierr = PetscSectionGetDof(sectionGlobal, p, &dof);CHKERRQ(ierr);
           if (dof) {
