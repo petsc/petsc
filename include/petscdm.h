@@ -7,7 +7,7 @@
 
 PETSC_EXTERN PetscErrorCode DMInitializePackage(const char[]);
 /*S
-     DM - Abstract PETSc object that manages an abstract grid object
+     DM - Abstract PETSc object that manages an abstract grid object and its interactions with the algebraic solvers
 
    Level: intermediate
 
@@ -15,11 +15,7 @@ PETSC_EXTERN PetscErrorCode DMInitializePackage(const char[]);
 
    Notes: The DMDACreate() based object and the DMCompositeCreate() based object are examples of DMs
 
-          Though the DM objects require the petscsnes.h include files the DM library is
-    NOT dependent on the SNES or KSP library. In fact, the KSP and SNES libraries depend on
-    DM. (This is not great design, but not trivial to fix).
-
-.seealso:  DMCompositeCreate(), DMDACreate()
+.seealso:  DMCompositeCreate(), DMDACreate(), DMSetType(), DMType
 S*/
 typedef struct _p_DM* DM;
 
@@ -28,7 +24,7 @@ PETSC_EXTERN PetscClassId DM_CLASSID;
 /*J
     DMType - String with the name of a PETSc DM or the creation function
        with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:myveccreate()
+       http://www.mcs.anl.gov/petsc/lib.a:mydmcreate()
 
    Level: beginner
 
