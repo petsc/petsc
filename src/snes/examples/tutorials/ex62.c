@@ -704,13 +704,13 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
 #undef __FUNCT__
 #define __FUNCT__ "CreatePressureNullSpace"
 PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSpace) {
-  Vec            pressure, localP;
+  Vec            vec, localVec;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetGlobalVector(dm, &pressure);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &localP);CHKERRQ(ierr);
-  ierr = VecSet(pressure, 0.0);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dm, &vec);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &localVec);CHKERRQ(ierr);
+  ierr = VecSet(vec,  0.0);CHKERRQ(ierr);
   /* Put a constant in for all pressures
      Could change this to project the constant function onto the pressure space (when that is finished) */
   {
@@ -720,7 +720,7 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSp
 
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = VecGetArray(localP, &a);CHKERRQ(ierr);
+    ierr = VecGetArray(localVec, &a);CHKERRQ(ierr);
     for(p = pStart; p < pEnd; ++p) {
       PetscInt fDim, off, d;
 
@@ -730,18 +730,28 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSp
         a[off+d] = 1.0;
       }
     }
-    ierr = VecRestoreArray(localP, &a);CHKERRQ(ierr);
+    ierr = VecRestoreArray(localVec, &a);CHKERRQ(ierr);
   }
-  ierr = DMLocalToGlobalBegin(dm, localP, INSERT_VALUES, pressure);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm, localP, INSERT_VALUES, pressure);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &localP);CHKERRQ(ierr);
-  ierr = VecNormalize(pressure, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(dm, localVec, INSERT_VALUES, vec);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm, localVec, INSERT_VALUES, vec);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &localVec);CHKERRQ(ierr);
+  ierr = VecNormalize(vec, PETSC_NULL);CHKERRQ(ierr);
   if (user->debug) {
     ierr = PetscPrintf(((PetscObject) dm)->comm, "Pressure Null Space\n");CHKERRQ(ierr);
-    ierr = VecView(pressure, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = VecView(vec, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  ierr = MatNullSpaceCreate(((PetscObject) dm)->comm, PETSC_FALSE, 1, &pressure, nullSpace);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &pressure);CHKERRQ(ierr);
+  ierr = MatNullSpaceCreate(((PetscObject) dm)->comm, PETSC_FALSE, 1, &vec, nullSpace);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &vec);CHKERRQ(ierr);
+  /* New style for field null spaces */
+  {
+    PetscObject  pressure;
+    MatNullSpace nullSpacePres;
+
+    ierr = DMGetField(dm, 1, &pressure);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(pressure->comm, PETSC_TRUE, 0, PETSC_NULL, &nullSpacePres);CHKERRQ(ierr);
+    ierr = PetscObjectCompose(pressure, "nullspace", nullSpacePres);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullSpacePres);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
