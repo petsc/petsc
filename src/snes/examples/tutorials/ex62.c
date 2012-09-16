@@ -749,7 +749,7 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSp
 
     ierr = DMGetField(dm, 1, &pressure);CHKERRQ(ierr);
     ierr = MatNullSpaceCreate(pressure->comm, PETSC_TRUE, 0, PETSC_NULL, &nullSpacePres);CHKERRQ(ierr);
-    ierr = PetscObjectCompose(pressure, "nullspace", nullSpacePres);CHKERRQ(ierr);
+    ierr = PetscObjectCompose(pressure, "nullspace", (PetscObject) nullSpacePres);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullSpacePres);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
