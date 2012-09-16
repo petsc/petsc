@@ -25,6 +25,9 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 /* Max. number of arguments for kernel */
 #define PETSC_KERNEL_NARGS_MAX 10
 
+/* Max. number of reductions */
+#define PETSC_REDUCTIONS_MAX 32
+
 /* Max. number of kernels */
 #define PETSC_KERNELS_MAX 32
 
@@ -60,6 +63,7 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 #define PetscWriteMemoryBarrier()
 #endif
 
+typedef struct _p_PetscThreadCommRedCtx *PetscThreadCommRedCtx;
 struct _p_PetscThreadCommRedCtx{
   PetscThreadComm               tcomm;          /* The associated threadcomm */
   PetscInt                      red_status;     /* Reduction status */
@@ -68,6 +72,12 @@ struct _p_PetscThreadCommRedCtx{
   void                          *local_red;     /* Array to hold local reduction contribution from each thread */
   PetscThreadCommReductionOp    op;             /* The reduction operation */
   PetscDataType                 type;           /* The reduction data type */
+};
+
+struct _p_PetscThreadCommReduction{
+  PetscInt              nreductions;   /* Number of reductions */
+  PetscThreadCommRedCtx redctx[PETSC_REDUCTIONS_MAX];       /* Reduction objects */
+  PetscInt               ctr;          /* Reduction counter */
 };
 
 typedef struct _p_PetscThreadCommJobCtx *PetscThreadCommJobCtx;
@@ -110,7 +120,7 @@ struct _p_PetscThreadComm{
   PetscInt                leader;       /* Rank of the leader thread. This thread manages
                                            the synchronization for collective operatons like reductions.
 					*/
-  PetscThreadCommRedCtx   red;          /* Reduction context */
+  PetscThreadCommReduction red;          /* Reduction context */
   PetscInt                job_ctr;      /* which job is this threadcomm running in the job queue */
   PetscBool               isnothread;   /* No threading model used */
 };
@@ -166,8 +176,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscRunKernel(PetscInt trank,PetscInt nargs,
   return 0;
 }
 
-PETSC_EXTERN PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm,PetscThreadCommRedCtx*);
-PETSC_EXTERN PetscErrorCode PetscThreadCommReductionDestroy(PetscThreadCommRedCtx);
+PETSC_EXTERN PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm,PetscThreadCommReduction*);
+PETSC_EXTERN PetscErrorCode PetscThreadCommReductionDestroy(PetscThreadCommReduction);
 
 PETSC_EXTERN PetscLogEvent ThreadComm_RunKernel, ThreadComm_Barrier;
 #endif

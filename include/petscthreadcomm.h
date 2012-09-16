@@ -15,14 +15,14 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscThreadKernel)(PetscInt,...);
 
 .seealso: PetscThreadCommCreate(), PetscThreadCommDestroy
 */
-typedef struct _p_PetscThreadComm* PetscThreadComm;
+typedef struct _p_PetscThreadComm *PetscThreadComm;
 
 /*
-   PetscThreadCommRedCtx - Context used for doing threaded reductions
+   PetscThreadCommReduction - Context used for managing threaded reductions
 
    Level: developer
 */
-typedef struct _p_PetscThreadCommRedCtx *PetscThreadCommRedCtx;
+typedef struct _p_PetscThreadCommReduction *PetscThreadCommReduction;
 
 #define PetscThreadCommType char*
 #define PTHREAD             "pthread"
@@ -56,11 +56,9 @@ PETSC_EXTERN PetscErrorCode PetscThreadCommRegisterDestroy(void);
 PETSC_EXTERN PetscInt  PetscThreadCommGetRank(PetscThreadComm);
 
 /* Reduction operations */
-PETSC_EXTERN PetscErrorCode PetscThreadReductionKernelPost(PetscInt,PetscThreadCommRedCtx,void*);
-PETSC_EXTERN PetscErrorCode PetscThreadReductionKernelEnd(PetscInt,PetscThreadCommRedCtx,void*);
-PETSC_EXTERN PetscErrorCode PetscThreadReductionBegin(MPI_Comm,PetscThreadCommReductionOp,PetscDataType,PetscThreadCommRedCtx*);
-PETSC_EXTERN PetscErrorCode PetscThreadReductionEnd(PetscThreadCommRedCtx,void*);
-
-
+PETSC_EXTERN PetscErrorCode PetscThreadReductionKernelPost(PetscInt,PetscThreadCommReduction,void*);
+PETSC_EXTERN PetscErrorCode PetscThreadReductionKernelEnd(PetscInt,PetscThreadCommReduction,void*);
+PETSC_EXTERN PetscErrorCode PetscThreadReductionBegin(MPI_Comm,PetscThreadCommReductionOp,PetscDataType,PetscInt,PetscThreadCommReduction*);
+PETSC_EXTERN PetscErrorCode PetscThreadReductionEnd(PetscThreadCommReduction,void*);
 
 #endif

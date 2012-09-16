@@ -10,7 +10,7 @@
 #include <petscthreadcomm.h>
 
 #if defined(PETSC_THREADCOMM_ACTIVE)
-PetscErrorCode VecDot_kernel(PetscInt thread_id,Vec xin,Vec yin,PetscThreadCommRedCtx red)
+PetscErrorCode VecDot_kernel(PetscInt thread_id,Vec xin,Vec yin,PetscThreadCommReduction red)
 {
   PetscErrorCode       ierr;
   PetscInt             *trstarts=xin->map->trstarts;
@@ -39,11 +39,11 @@ PetscErrorCode VecDot_kernel(PetscInt thread_id,Vec xin,Vec yin,PetscThreadCommR
 #define __FUNCT__ "VecDot_Seq"
 PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
-  PetscErrorCode        ierr;
-  PetscThreadCommRedCtx red;
+  PetscErrorCode           ierr;
+  PetscThreadCommReduction red;
 
   PetscFunctionBegin;
-  ierr = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_SUM,PETSC_SCALAR,&red);CHKERRQ(ierr);
+  ierr = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_SUM,PETSC_SCALAR,1,&red);CHKERRQ(ierr);
   ierr = PetscThreadCommRunKernel(((PetscObject)xin)->comm,(PetscThreadKernel)VecDot_kernel,3,xin,yin,red);CHKERRQ(ierr);
   ierr = PetscThreadReductionEnd(red,z);CHKERRQ(ierr);
   if (xin->map->n > 0) {
