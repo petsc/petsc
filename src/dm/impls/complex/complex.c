@@ -677,7 +677,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
         PetscInt *ncind;
 
         /* Adjacent points may not be in the section chart */
-        if ((q < pStart) || (q >= pEnd)) continue;
+        if ((tmpAdj[q] < pStart) || (tmpAdj[q] >= pEnd)) continue;
         ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
         ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ncdof);CHKERRQ(ierr);
         ierr = PetscSectionGetConstraintIndices(section, tmpAdj[q], &ncind);CHKERRQ(ierr);
