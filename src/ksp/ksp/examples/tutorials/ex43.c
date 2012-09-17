@@ -1,5 +1,4 @@
-static char help[] =
-  "Solves the incompressible, variable viscosity stokes equation in 2d on the unit domain \n\
+static char help[] = "Solves the incompressible, variable viscosity stokes equation in 2d on the unit domain \n\
 using Q1Q1 elements, stabilized with Bochev's polynomial projection method. \n\
 The models defined utilise free slip boundary conditions on all sides. \n\
 Options: \n\

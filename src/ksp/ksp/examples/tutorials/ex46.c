@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec -n <procs> ex46 [-help] [all PETSc options] */
-
 static char help[] = "Solves a linear system in parallel with KSP and DM.\n\
 Compare this to ex2 which solves the same problem without a DM.\n\n";
 

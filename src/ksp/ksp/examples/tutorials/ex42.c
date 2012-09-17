@@ -1,5 +1,4 @@
-static char help[] =
-  "Solves the incompressible, variable viscosity stokes equation in 3d using Q1Q1 elements, \n\
+static char help[] = "Solves the incompressible, variable viscosity stokes equation in 3d using Q1Q1 elements, \n\
 stabilized with Bochev's polynomial projection method. Note that implementation here assumes \n\
 all boundaries are free-slip, i.e. zero normal flow and zero tangential stress \n\
      -mx : number elements in x-direction \n\

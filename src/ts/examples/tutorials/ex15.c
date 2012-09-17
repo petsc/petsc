@@ -15,9 +15,7 @@ static char help[] = "Time-dependent PDE in 2d. Modified from ex13.c for illustr
    At x=0, x=1: du(x,y,t)/dx = 0
    At y=0, y=1: du(x,y,t)/dy = 0
 
-Program usage:  
-   mpiexec -n <procs> ./ex15 [-help] [all PETSc options] 
-   e.g., mpiexec -n 2 ./ex15 -da_grid_x 40 -da_grid_y 40 -ts_max_steps 2 -snes_monitor -ksp_monitor 
+   mpiexec -n 2 ./ex15 -da_grid_x 40 -da_grid_y 40 -ts_max_steps 2 -snes_monitor -ksp_monitor 
          ./ex15 -da_grid_x 40 -da_grid_y 40 -drawcontours -draw_pause .1 -boundary 1 
          ./ex15 -da_grid_x 40 -da_grid_y 40 -drawcontours -draw_pause .1 -boundary 1 -Jtype 2 -nstencilpts 9
         

@@ -1,5 +1,4 @@
-static char help[] =
-  "   Solves the compressible plane strain elasticity equations in 2d on the unit domain using Q1 finite elements. \n\
+static char help[] =  "   Solves the compressible plane strain elasticity equations in 2d on the unit domain using Q1 finite elements. \n\
    Material properties E (Youngs moduls) and nu (Poisson ratio) may vary as a function of space. \n\
    The model utilisse boundary conditions which produce compression in the x direction. \n\
 Options: \n\

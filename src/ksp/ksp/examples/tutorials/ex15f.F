@@ -3,7 +3,6 @@
 !   use of a user-provided preconditioner.  Input parameters include:
 !      -user_defined_pc : Activate a user-defined preconditioner
 !
-!  Program usage: mpiexec ex15f [-help] [all PETSc options]
 !
 !/*T
 !   Concepts: KSP^basic parallel example

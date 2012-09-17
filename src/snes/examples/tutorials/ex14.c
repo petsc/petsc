@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec -n <procs> ex14 [-help] [all PETSc options] */
-
 static char help[] = "Bratu nonlinear PDE in 3d.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 3D rectangular\n\
 domain, using distributed arrays (DMDAs) to partition the parallel grid.\n\

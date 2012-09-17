@@ -1,5 +1,3 @@
-/* Program usage:  mpiexec -n 2 ex1 [-help] [all PETSc options] */
-
 static char help[] = "Introductory example that illustrates running PETSc on a subset of processes.\n\n";
 
 /*T

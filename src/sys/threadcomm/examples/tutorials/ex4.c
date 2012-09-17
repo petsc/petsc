@@ -1,4 +1,4 @@
-static char help[] = "Test Basic vector routines.\n\n";
+static char help[] = "Tests basic vector routines.\n\n";
 
 /*
   Include "petscthreadcomm.h" so that we can use the PetscThreadComm interface.

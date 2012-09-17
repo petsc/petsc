@@ -1,7 +1,4 @@
-/* Program usage:  mpiexec -n <procs> ex5 [-help] [all PETSc options] */
-
-static char help[] = "Nonlinear PDE in 2d.\n\
-We solve the Lane-Emden equation in a 2D rectangular\n\
+static char help[] = "Solves the Lane-Emden equation in a 2D rectangular\n\
 domain, using distributed arrays (DMDAs) to partition the parallel grid.\n\n";
 
 /*T

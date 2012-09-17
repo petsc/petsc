@@ -31,8 +31,6 @@ The command line options include:\n\
 F*/
 
 /*
-    Program usage:  mpiexec -n <procs> ./pbratu [-help] [all PETSc options]
-     e.g.,
       mpiexec -n 2 ./ex15 -snes_monitor -ksp_monitor log_summary
 */
 

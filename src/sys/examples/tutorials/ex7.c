@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec ex1 [-help] [all PETSc options] */
-
 static char help[] = "Demonstrates using PetscWebServe().\nRun with -ams_publish_objects\n\n";
 
 /*T

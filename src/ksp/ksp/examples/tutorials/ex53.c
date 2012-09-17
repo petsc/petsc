@@ -1,6 +1,4 @@
 
-/* Program usage:  ./ex53 [-help] [all PETSc options] */
-
 static char help[] = "Solves a tridiagonal linear system with KSP. \n\
                       Modified from ex1.c to illustrate reuse of preconditioner \n\
                       Written as requested by [petsc-maint #63875] \n\n";

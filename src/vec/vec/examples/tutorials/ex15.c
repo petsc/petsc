@@ -1,4 +1,3 @@
-/*$Id: ex15.c,v 1.50 2002/09/04 07:43:58 knepley Exp $*/
 
 static char help[] = "Tests Mathematica I/O of vectors and illustrates the use of user-defined event logging.\n\n";
 

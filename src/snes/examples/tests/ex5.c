@@ -1,6 +1,5 @@
 
-static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
-We solve the modified Bratu problem in a 2D rectangular domain,\n\
+static char help[] = "Solves the modified Bratu problem in a 2D rectangular domain,\n\
 using distributed arrays (DMDAs) to partition the parallel grid.\n\
 The command line options include:\n\
   -lambda <parameter>, where <parameter> indicates the problem's nonlinearity\n\

@@ -1,5 +1,5 @@
       
-static char help[] = "VecView() with a DA1d vector and draw viewer.\n\n";
+static char help[] = "VecView() with a DMDA1d vector and draw viewer.\n\n";
 
 #include <petscdmda.h>
 #include <petscao.h>

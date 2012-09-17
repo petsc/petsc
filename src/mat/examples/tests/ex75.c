@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec -n <procs> ex75 [-help] [all PETSc options] */ 
-
 static char help[] = "Tests the vatious routines in MatMPISBAIJ format.\n";
 
 #include <petscmat.h>

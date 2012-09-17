@@ -6,9 +6,7 @@ static char help[] = "Time-dependent PDE in 2d. Simplified from ex7.c for illust
    At t=0: u(x,y) = exp(c*r*r*r), if r=PetscSqrtReal((x-.5)*(x-.5) + (y-.5)*(y-.5)) < .125
            u(x,y) = 0.0           if r >= .125
 
-Program usage:  
-   mpiexec -n <procs> ./ex13 [-help] [all PETSc options] 
-   e.g., mpiexec -n 2 ./ex13 -da_grid_x 40 -da_grid_y 40 -ts_max_steps 2 -use_coloring -snes_monitor -ksp_monitor 
+    mpiexec -n 2 ./ex13 -da_grid_x 40 -da_grid_y 40 -ts_max_steps 2 -use_coloring -snes_monitor -ksp_monitor 
          ./ex13 -use_coloring -drawcontours 
          ./ex13 -use_coloring -drawcontours -draw_pause -1
          mpiexec -n 2 ./ex13 -drawcontours -ts_type sundials -ts_sundials_monitor_steps

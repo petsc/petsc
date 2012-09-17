@@ -1,5 +1,5 @@
  
-static char help[] = "Tests C=A^T*B via MatTranspose()and MatMatMult(). \n\
+static char help[] = "Tests C=A^T*B via MatTranspose() and MatMatMult(). \n\
                      Contributed by Alexander Grayver, Jan. 2012 \n\n";
 /* Example: 
   mpiexec -n <np> ./ex165 -fA A.dat -fB B.dat -view_C

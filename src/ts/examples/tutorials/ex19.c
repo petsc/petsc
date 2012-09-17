@@ -1,6 +1,4 @@
 
-/* Program usage:  ./ex19 [-help] [all PETSc options] */
-
 static char help[] = "Solves the van der Pol DAE.\n\
 Input parameters include:\n";
 

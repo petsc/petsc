@@ -1,4 +1,4 @@
-static char help[] = "Nonlinear, time-dependent. Developed from radiative_surface_balance.c - work with petsc-dev \n";
+static char help[] = "Nonlinear, time-dependent. Developed from radiative_surface_balance.c \n";
 /*
   Contributed by Steve Froehlich, Illinois Institute of Technology
 

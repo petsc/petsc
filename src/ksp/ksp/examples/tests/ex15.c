@@ -1,5 +1,5 @@
 
-static char help[] = "KSP on an operator with a null space.\n\n";
+static char help[] = "KSP linear solver on an operator with a null space.\n\n";
 
 #include <petscksp.h>
 

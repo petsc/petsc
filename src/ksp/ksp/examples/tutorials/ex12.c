@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec -n <procs> ex12 [-help] [all PETSc options] */
-
 static char help[] = "Solves a linear system in parallel with KSP.\n\
 Input parameters include:\n\
   -m <mesh_x>       : number of mesh points in x-direction\n\

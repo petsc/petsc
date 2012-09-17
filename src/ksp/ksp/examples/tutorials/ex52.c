@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec -n <procs> ex52 [-help] [all PETSc options] */ 
-
 static char help[] = "Solves a linear system in parallel with KSP. Modified from ex2.c \n\
                       Illustrate how to use external packages MUMPS and SUPERLU \n\
 Input parameters include:\n\

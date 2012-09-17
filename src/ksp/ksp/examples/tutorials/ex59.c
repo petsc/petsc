@@ -1,4 +1,4 @@
-static char help[] =  "ex59: This example illustrates the use of PCBDDC/FETI-DP and its customization.\n\n\
+static char help[] =  "This example illustrates the use of PCBDDC/FETI-DP and its customization.\n\n\
 Discrete system: 1D, 2D or 3D laplacian, discretized with spectral elements.\n\
 Spectral degree can be specified by passing values to -p option.\n\
 Global problem either with dirichlet boundary conditions on one side or in the pure neumann case (depending on runtime parameters).\n\

@@ -1,6 +1,5 @@
 
-static char help[] = \
-"Sets up two PetscShell objects -- Field and Viz -- and attaches their backends to them.\n\
+static char help[] = "Sets up two PetscShell objects -- Field and Viz -- and attaches their backends to them.\n\
  * Field's backend is implemented in Python (field.py); in response to an \"init\" call\n\
   it sets up a DMDA and a Vec over that DMDA that needs to be plotted.\n\
  * Viz's backend is implemented in Python (viz1.py).  It does nothing in response to \"init\"\n\

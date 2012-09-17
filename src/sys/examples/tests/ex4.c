@@ -1,4 +1,4 @@
-static char help[] = "Tests PetscHeap\n\n";
+static char help[] = "Tests PetscHeapCreate)_\n\n";
 
 #include <../src/mat/utils/petscheap.h>
 

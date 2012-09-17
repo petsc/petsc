@@ -1,7 +1,5 @@
 !
 !
-! Program usage:  mpiexec ex1 [-help] [all PETSc options] 
-!
 !
 !/*T
 !   Concepts: vectors^norms of sub-vectors;

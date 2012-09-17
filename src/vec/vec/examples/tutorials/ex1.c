@@ -1,4 +1,3 @@
-/* Program usage:  mpiexec ex1 [-help] [all PETSc options] */
 
 static char help[] = "Basic vector routines.\n\n";
 

@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec ex23 [-help] [all PETSc options] */
-
 static char help[] = "Solves a tridiagonal linear system.\n\n";
 
 /*T

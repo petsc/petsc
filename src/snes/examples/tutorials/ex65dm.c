@@ -1,4 +1,4 @@
-static char help[] = "coarsening with DM.\n";
+static char help[] = "Tests coarsening with DM.\n";
 
 
 

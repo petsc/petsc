@@ -28,8 +28,6 @@ T*/
     is used to discretize the boundary value problem to obtain a nonlinear 
     system of equations.
 
-    Program usage:  mpiexec -n <procs> ex5 [-help] [all PETSc options] 
-     e.g.,
      
       This example shows how geometric multigrid can be run transparently with a nonlinear solver so long
       as SNESSetDM() is provided. Example usage

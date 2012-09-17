@@ -1,5 +1,5 @@
 
-static char help[] = "Demonstrates opening and drawing a window\n";
+static char help[] = "Demonstrates opening and drawing in a window\n";
 
 #include <petscsys.h>
 

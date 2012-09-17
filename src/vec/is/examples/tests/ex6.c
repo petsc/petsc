@@ -1,8 +1,5 @@
-/*
-       Formatted test for ISGeneral routines.
-*/
 
-static char help[] = "Tests ISComplement.\n\n";
+static char help[] = "Tests ISComplement().\n\n";
 
 #include <petscis.h>
 

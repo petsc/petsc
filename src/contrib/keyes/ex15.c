@@ -1,10 +1,6 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.11 1999/10/07 19:09:21 bsmith Exp bsmith $";
-#endif
 
-static char help[] =
-"This program demonstrates use of the SNES package to solve systems of\n\
-nonlinear equations in parallel, using 2-dimensional distributed arrays.\n\
+static char help[] = "Nonlinear Radiation transport solution in 2d\n\
+using 2-dimensional distributed arrays.\n\
 A 2-dim simplified RT test problem is used, with analytic Jacobian. \n\
 \n\
   Solves the linear systems via 2 level additive Schwarz \n\

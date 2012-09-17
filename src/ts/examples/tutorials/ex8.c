@@ -1,8 +1,5 @@
 
-/* Program usage:  ./ex8 [-help] [all PETSc options] */
-
 static char help[] = "Nonlinear DAE benchmark problems.\n";
-
 
 /*
    Include "petscts.h" so that we can use TS solvers.  Note that this

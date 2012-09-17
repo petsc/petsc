@@ -1,5 +1,5 @@
 
-static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors.\n\
+static char help[] = "Tests VecSetValues() and VecSetValuesBlocked() on MPI vectors.\n\
 Where atleast a couple of mallocs will occur in the stash code.\n\n";
 
 #include <petscvec.h>

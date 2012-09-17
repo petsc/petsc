@@ -1,5 +1,5 @@
 
-static char help[] = "Demonstrates us of color map\n";
+static char help[] = "Demonstrates use of color map\n";
 
 #include <petscsys.h>
 

@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec ex1 [-help] [all PETSc options] */
-
 static char help[] = "Demonstrates VecStrideScatter() and VecStrideGather().\n\n";
 
 /*T

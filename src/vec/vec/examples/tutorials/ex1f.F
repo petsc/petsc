@@ -1,5 +1,4 @@
 !
-!   Program usage:  mpiexec ex1f [-help] [all PETSc options] 
 !
 !/*T
 !   Concepts: vectors^basic routines
