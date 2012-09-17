@@ -1,3 +1,4 @@
+static char help[] = "Test file for the PCFactorSetShiftType()\n";
 /*
  * Test file for the PCFactorSetShiftType() routine or -pc_factor_shift_type POSITIVE_DEFINITE option.
  * The test matrix is the example from Kershaw's paper [J.Comp.Phys 1978]
@@ -30,7 +31,7 @@ int main(int argc,char **argv)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-options_left",PETSC_NULL);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
   

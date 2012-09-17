@@ -1,3 +1,5 @@
+static char help[] = "Tests DMDA ghost coordinates\n\n";
+
 #include <petscdmda.h>
 
 #undef __FUNCT__  
@@ -65,7 +67,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,0);
+  ierr = PetscInitialize(&argc,&argv,0,help);
   ierr = TestQ2Q1DA();CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

@@ -1,6 +1,6 @@
-/*
-      Tests the signal handler.
-*/
+
+static char help[] = "Tests the signal handler.\n";
+
 #include <petscsys.h>
 
 #undef __FUNCT__
@@ -19,7 +19,7 @@ int CreateError(int n)
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInitialize(&argc,&argv,(char *)0,0);
+  PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates how PETSc can trap error interrupts\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error below is contrived to test the code!\n");CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);

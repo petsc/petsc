@@ -1,7 +1,5 @@
 
-/* 
-   Demonstrates PetscMatlabEngineXXX()
-*/
+static char help[] = "Demonstrates PetscMatlabEngineXXX()\n";
 
 #include <petscsys.h>
 
@@ -14,7 +12,7 @@ int main(int argc,char **argv)
   char           buffer[256],*output,user[256];
   PetscBool      userhappy = PETSC_FALSE;
 
-  PetscInitialize(&argc,&argv,(char *)0,0);
+  PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
   ierr = PetscMatlabEngineGetOutput(PETSC_MATLAB_ENGINE_(PETSC_COMM_WORLD),&output);CHKERRQ(ierr);

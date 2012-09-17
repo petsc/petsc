@@ -1,6 +1,4 @@
-/*
- * Test file for norm caching
- */
+static char help[] = "Tests for norm caching\n";
 
 #include <petscvec.h>
 
@@ -16,7 +14,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
   
   ierr = VecCreateSeq(comm,10,&V);CHKERRQ(ierr);

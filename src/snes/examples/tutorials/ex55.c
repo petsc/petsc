@@ -45,101 +45,101 @@ PetscErrorCode Update_u(Vec,Vec,Vec,Vec);
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-	PetscErrorCode ierr;
-	Vec            x,r;  /* Solution and residual vectors */
-	SNES           snes; /* Nonlinear solver context */
-	AppCtx         user; /* Application context */
-	Vec            xl,xu; /* Upper and lower bounds on variables */
-	Mat            J;
-	PetscScalar    t=0.0;
-	PetscViewer view_out, view_q, view1;
-
-	PetscInitialize(&argc,&argv, (char*)0, help);
-	
-	/* Get physics and time parameters */
-	ierr = GetParams(&user);CHKERRQ(ierr);
-	/* Create a 2D DA with dof = 2 */
-	ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
-	/* Set Element type (triangular) */
-	ierr = DMDASetElementType(user.da,DMDA_ELEMENT_P1);CHKERRQ(ierr);
-	
-	/* Set x and y coordinates */
-	ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,0.0,1.0);CHKERRQ(ierr);
-	
-	/* Get global vector x from DM and duplicate vectors r,xl,xu */
-	ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
-	ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
-	ierr = VecDuplicate(x,&xl);CHKERRQ(ierr);
-	ierr = VecDuplicate(x,&xu);CHKERRQ(ierr);
-	ierr = VecDuplicate(x,&user.q);CHKERRQ(ierr);
-	
-	/* Get Jacobian matrix structure from the da */
-	ierr = DMCreateMatrix(user.da,MATAIJ,&user.M);CHKERRQ(ierr);
-	/* Form the jacobian matrix and M_0 */
-	ierr = SetUpMatrices(&user);CHKERRQ(ierr);
-	ierr = MatDuplicate(user.M,MAT_DO_NOT_COPY_VALUES,&J);CHKERRQ(ierr);
-	
-	/* Create nonlinear solver context */
-	ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-        ierr = SNESSetDM(snes,user.da);CHKERRQ(ierr);
-	
-	/* Set Function evaluation and jacobian evaluation routines */
-	ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
-	ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
-	
-	/* Set the boundary conditions */
-	ierr = SetVariableBounds(user.da,xl,xu);CHKERRQ(ierr);
-	ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
-	ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-	
-	ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
-	ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
-	ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_q",FILE_MODE_WRITE,&view_q);CHKERRQ(ierr);
-	ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file1",FILE_MODE_WRITE,&view1);CHKERRQ(ierr);
-	/* Begin time loop */
-	while(t < user.T) {
-		ierr = VecView(user.u1,view1);CHKERRQ(ierr);
-		ierr = VecView(user.u2,view1);CHKERRQ(ierr);
-		ierr = VecView(user.u3,view1);CHKERRQ(ierr);
-
-		ierr = Update_q(user.q,user.u1,user.u2,user.u3,user.M_0,&user);
-		ierr = VecView(user.q,view_q);CHKERRQ(ierr);		
-		ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
-		PetscInt its;
-		ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-		ierr = PetscPrintf(PETSC_COMM_WORLD,"SNESVI solver converged at t = %5.4f in %d iterations\n",t,its);CHKERRQ(ierr);
-		ierr = Update_u(user.u1,user.u2,user.u3,x);CHKERRQ(ierr);
-		t = t + user.dt;
-		ierr = VecView(user.u1,view_out);CHKERRQ(ierr);
-		ierr = VecView(user.u2,view_out);CHKERRQ(ierr);
-		ierr = VecView(user.u3,view_out);CHKERRQ(ierr);
-	}
-	
-	
-	
-	PetscViewerDestroy(&view_out);
-	PetscViewerDestroy(&view_q);
-	PetscViewerDestroy(&view1);
-	
-	ierr = VecDestroy(&x);CHKERRQ(ierr);
-	ierr = VecDestroy(&r);CHKERRQ(ierr);
-	ierr = VecDestroy(&xl);CHKERRQ(ierr);
-	ierr = VecDestroy(&xu);CHKERRQ(ierr);
-	ierr = VecDestroy(&user.q);CHKERRQ(ierr);
-	ierr = VecDestroy(&user.u1);CHKERRQ(ierr);
-	ierr = VecDestroy(&user.u2);CHKERRQ(ierr);
-	ierr = VecDestroy(&user.u3);CHKERRQ(ierr);
-	ierr = VecDestroy(&user.work1);CHKERRQ(ierr);
-	ierr = VecDestroy(&user.work2);CHKERRQ(ierr);
-	ierr = VecDestroy(&user.work3);CHKERRQ(ierr);
-	ierr = VecDestroy(&user.work4);CHKERRQ(ierr);
-	ierr = MatDestroy(&user.M);CHKERRQ(ierr);
-	ierr = MatDestroy(&user.M_0);CHKERRQ(ierr);
-	ierr = MatDestroy(&J);CHKERRQ(ierr);
-	ierr = DMDestroy(&user.da);CHKERRQ(ierr);
-	ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-	PetscFinalize();
-	return 0;
+  PetscErrorCode ierr;
+  Vec            x,r;  /* Solution and residual vectors */
+  SNES           snes; /* Nonlinear solver context */
+  AppCtx         user; /* Application context */
+  Vec            xl,xu; /* Upper and lower bounds on variables */
+  Mat            J;
+  PetscScalar    t=0.0;
+  PetscViewer view_out, view_q, view1;
+  
+  PetscInitialize(&argc,&argv, (char*)0, help);
+  
+  /* Get physics and time parameters */
+  ierr = GetParams(&user);CHKERRQ(ierr);
+  /* Create a 2D DA with dof = 2 */
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  /* Set Element type (triangular) */
+  ierr = DMDASetElementType(user.da,DMDA_ELEMENT_P1);CHKERRQ(ierr);
+  
+  /* Set x and y coordinates */
+  ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,0.0,1.0);CHKERRQ(ierr);
+  
+  /* Get global vector x from DM and duplicate vectors r,xl,xu */
+  ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&xl);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&xu);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&user.q);CHKERRQ(ierr);
+  
+  /* Get Jacobian matrix structure from the da */
+  ierr = DMCreateMatrix(user.da,MATAIJ,&user.M);CHKERRQ(ierr);
+  /* Form the jacobian matrix and M_0 */
+  ierr = SetUpMatrices(&user);CHKERRQ(ierr);
+  ierr = MatDuplicate(user.M,MAT_DO_NOT_COPY_VALUES,&J);CHKERRQ(ierr);
+  
+  /* Create nonlinear solver context */
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+  ierr = SNESSetDM(snes,user.da);CHKERRQ(ierr);
+  
+  /* Set Function evaluation and jacobian evaluation routines */
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
+  
+  /* Set the boundary conditions */
+  ierr = SetVariableBounds(user.da,xl,xu);CHKERRQ(ierr);
+  ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  
+  ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_q",FILE_MODE_WRITE,&view_q);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file1",FILE_MODE_WRITE,&view1);CHKERRQ(ierr);
+  /* Begin time loop */
+  while(t < user.T) {
+    ierr = VecView(user.u1,view1);CHKERRQ(ierr);
+    ierr = VecView(user.u2,view1);CHKERRQ(ierr);
+    ierr = VecView(user.u3,view1);CHKERRQ(ierr);
+    
+    ierr = Update_q(user.q,user.u1,user.u2,user.u3,user.M_0,&user);
+    ierr = VecView(user.q,view_q);CHKERRQ(ierr);            
+    ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+    PetscInt its;
+    ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"SNESVI solver converged at t = %5.4f in %d iterations\n",t,its);CHKERRQ(ierr);
+    ierr = Update_u(user.u1,user.u2,user.u3,x);CHKERRQ(ierr);
+    t = t + user.dt;
+    ierr = VecView(user.u1,view_out);CHKERRQ(ierr);
+    ierr = VecView(user.u2,view_out);CHKERRQ(ierr);
+    ierr = VecView(user.u3,view_out);CHKERRQ(ierr);
+  }
+  
+  
+  
+  PetscViewerDestroy(&view_out);
+  PetscViewerDestroy(&view_q);
+  PetscViewerDestroy(&view1);
+  
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = VecDestroy(&xl);CHKERRQ(ierr);
+  ierr = VecDestroy(&xu);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.q);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.u1);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.u2);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.u3);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.work1);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.work2);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.work3);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.work4);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.M);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.M_0);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  PetscFinalize();
+  return 0;
 }
 
 #undef __FUNCT__
@@ -175,18 +175,18 @@ PetscErrorCode Update_q(Vec q,Vec u1,Vec u2,Vec u3,Mat M_0,AppCtx *user)
   PetscErrorCode ierr;
   PetscScalar    *q_arr,*w_arr;
   PetscInt       i,n;
-  //PetscViewer	   view_q;
+  //PetscViewer    view_q;
   
   PetscFunctionBegin;
   ierr = VecSet(user->work1,user->dt/3);CHKERRQ(ierr);
-  //	ierr = VecView(user->work1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //    ierr = VecView(user->work1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatMult(M_0,user->work1,user->work2);CHKERRQ(ierr);
-  //	ierr = VecView(user->work2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //    ierr = VecView(user->work2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   
   ierr = MatMult(M_0,u1,user->work1);CHKERRQ(ierr);
   ierr = MatMult(M_0,u1,user->work4);CHKERRQ(ierr);
-  //	ierr = VecView(u1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);	
-  //	ierr = VecView(user->work4,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //    ierr = VecView(u1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);     
+  //    ierr = VecView(user->work4,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecScale(user->work1,-1.0-(user->dt));CHKERRQ(ierr);
   ierr = VecAXPY(user->work1,1.0,user->work2);CHKERRQ(ierr);
 
@@ -230,115 +230,115 @@ PetscErrorCode Update_q(Vec q,Vec u1,Vec u2,Vec u3,Mat M_0,AppCtx *user)
 #define __FUNCT__ "SetInitialGuess"
 PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
 {
-	PetscErrorCode    ierr;
-	PetscInt          nele,nen,n,i;
-	const PetscInt    *ele;
-	Vec               coords, rand1, rand2;
-	const PetscScalar *_coords;
-	PetscScalar       x[3],y[3];
-	PetscInt          idx[3];
-	PetscScalar	   *xx,*w1,*w2,*u1,*u2,*u3;
-	PetscViewer		  view_out;
+        PetscErrorCode    ierr;
+        PetscInt          nele,nen,n,i;
+        const PetscInt    *ele;
+        Vec               coords, rand1, rand2;
+        const PetscScalar *_coords;
+        PetscScalar       x[3],y[3];
+        PetscInt          idx[3];
+        PetscScalar        *xx,*w1,*w2,*u1,*u2,*u3;
+        PetscViewer               view_out;
 
-	PetscFunctionBegin;
-	/* Get ghosted coordinates */
-	ierr = DMDAGetGhostedCoordinates(user->da,&coords);CHKERRQ(ierr);
-	ierr = VecDuplicate(user->u1,&rand1);
-	ierr = VecDuplicate(user->u1,&rand2);
-	ierr = VecSetRandom(rand1,PETSC_NULL);
-	ierr = VecSetRandom(rand2,PETSC_NULL);
-	
-	ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
-	ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
-	ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
-	ierr = VecGetArray(user->work1,&w1);
-	ierr = VecGetArray(user->work2,&w2);
-	ierr = VecGetArray(user->u1,&u1);
-	ierr = VecGetArray(user->u2,&u2);
-	ierr = VecGetArray(user->u3,&u3);
-	
-	/* Get local element info */
-	ierr = DMDAGetElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
-	for(i=0;i < nele;i++) {
-		idx[0] = ele[3*i]; idx[1] = ele[3*i+1]; idx[2] = ele[3*i+2];
-		x[0] = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
-		x[1] = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
-		x[2] = _coords[2*idx[2]]; y[2] = _coords[2*idx[2]+1];
-		
-		PetscScalar vals1[3],vals2[3],valsrand[3];
-		PetscInt r;
-		for(r=0;r<3;r++) {
-			valsrand[r]=5*x[r]*(1-x[r])*y[r]*(1-y[r]);
-			if (x[r]>=0.5 && y[r]>=0.5){
-				vals1[r]=0.75;
-				vals2[r]=0.0;
-			}
-			if (x[r]>=0.5 && y[r]<0.5){
-				vals1[r]=0.0;
-				vals2[r]=0.0;
-			}
-			if (x[r]<0.5 && y[r]>=0.5){
-				vals1[r]=0.0;
-				vals2[r]=0.75;
-			}
-			if (x[r]<0.5 && y[r]<0.5){
-				vals1[r]=0.75;
-				vals2[r]=0.0;
-			}
-		}
-		
-		ierr = VecSetValues(user->work1,3,idx,vals1,INSERT_VALUES);CHKERRQ(ierr);
-		ierr = VecSetValues(user->work2,3,idx,vals2,INSERT_VALUES);CHKERRQ(ierr);
-		ierr = VecSetValues(user->work3,3,idx,valsrand,INSERT_VALUES);CHKERRQ(ierr);
-	}
-	
-	ierr = VecAssemblyBegin(user->work1);CHKERRQ(ierr);
-	ierr = VecAssemblyEnd(user->work1);CHKERRQ(ierr);
-	ierr = VecAssemblyBegin(user->work2);CHKERRQ(ierr);
-	ierr = VecAssemblyEnd(user->work2);CHKERRQ(ierr);
-	ierr = VecAssemblyBegin(user->work3);CHKERRQ(ierr);
-	ierr = VecAssemblyEnd(user->work3);CHKERRQ(ierr);
-	
-	ierr = VecAXPY(user->work1,1.0,user->work3);CHKERRQ(ierr);
-	ierr = VecAXPY(user->work2,1.0,user->work3);CHKERRQ(ierr);
-	
-	for (i=0;i<n/4;i++) {
-		xx[4*i] = w1[i];
-		if (xx[4*i]>1) {
-			xx[4*i]=1;
-		}
-		xx[4*i+1] = w2[i];
-		if (xx[4*i+1]>1) {
-			xx[4*i+1]=1;
-		}
-		if (xx[4*i]+xx[4*i+1]>1){
-			xx[4*i+1] = 1.0 - xx[4*i];
-		}
-		xx[4*i+2] = 1.0 - xx[4*i] - xx[4*i+1];
-		xx[4*i+3] = 0.0;
-		
-		u1[i] = xx[4*i];
-		u2[i] = xx[4*i+1];
-		u3[i] = xx[4*i+2];
-	}
-	
-	ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_initial",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
-	ierr = VecView(user->u1,view_out);CHKERRQ(ierr);
-	ierr = VecView(user->u2,view_out);CHKERRQ(ierr);
-	ierr = VecView(user->u3,view_out);CHKERRQ(ierr);
-	PetscViewerDestroy(&view_out);
-	
-	ierr = DMDARestoreElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
-	ierr = VecRestoreArrayRead(coords,&_coords);CHKERRQ(ierr);
-	ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
-	ierr = VecRestoreArray(user->work2,&w1);CHKERRQ(ierr);
-	ierr = VecRestoreArray(user->work4,&w2);CHKERRQ(ierr);
-	ierr = VecRestoreArray(user->u1,&u1);CHKERRQ(ierr);
-	ierr = VecRestoreArray(user->u2,&u2);CHKERRQ(ierr);
-	ierr = VecRestoreArray(user->u3,&u3);CHKERRQ(ierr);
+        PetscFunctionBegin;
+        /* Get ghosted coordinates */
+        ierr = DMDAGetGhostedCoordinates(user->da,&coords);CHKERRQ(ierr);
+        ierr = VecDuplicate(user->u1,&rand1);
+        ierr = VecDuplicate(user->u1,&rand2);
+        ierr = VecSetRandom(rand1,PETSC_NULL);
+        ierr = VecSetRandom(rand2,PETSC_NULL);
+        
+        ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
+        ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
+        ierr = VecGetArray(user->work1,&w1);
+        ierr = VecGetArray(user->work2,&w2);
+        ierr = VecGetArray(user->u1,&u1);
+        ierr = VecGetArray(user->u2,&u2);
+        ierr = VecGetArray(user->u3,&u3);
+        
+        /* Get local element info */
+        ierr = DMDAGetElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
+        for(i=0;i < nele;i++) {
+                idx[0] = ele[3*i]; idx[1] = ele[3*i+1]; idx[2] = ele[3*i+2];
+                x[0] = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
+                x[1] = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
+                x[2] = _coords[2*idx[2]]; y[2] = _coords[2*idx[2]+1];
+                
+                PetscScalar vals1[3],vals2[3],valsrand[3];
+                PetscInt r;
+                for(r=0;r<3;r++) {
+                        valsrand[r]=5*x[r]*(1-x[r])*y[r]*(1-y[r]);
+                        if (x[r]>=0.5 && y[r]>=0.5){
+                                vals1[r]=0.75;
+                                vals2[r]=0.0;
+                        }
+                        if (x[r]>=0.5 && y[r]<0.5){
+                                vals1[r]=0.0;
+                                vals2[r]=0.0;
+                        }
+                        if (x[r]<0.5 && y[r]>=0.5){
+                                vals1[r]=0.0;
+                                vals2[r]=0.75;
+                        }
+                        if (x[r]<0.5 && y[r]<0.5){
+                                vals1[r]=0.75;
+                                vals2[r]=0.0;
+                        }
+                }
+                
+                ierr = VecSetValues(user->work1,3,idx,vals1,INSERT_VALUES);CHKERRQ(ierr);
+                ierr = VecSetValues(user->work2,3,idx,vals2,INSERT_VALUES);CHKERRQ(ierr);
+                ierr = VecSetValues(user->work3,3,idx,valsrand,INSERT_VALUES);CHKERRQ(ierr);
+        }
+        
+        ierr = VecAssemblyBegin(user->work1);CHKERRQ(ierr);
+        ierr = VecAssemblyEnd(user->work1);CHKERRQ(ierr);
+        ierr = VecAssemblyBegin(user->work2);CHKERRQ(ierr);
+        ierr = VecAssemblyEnd(user->work2);CHKERRQ(ierr);
+        ierr = VecAssemblyBegin(user->work3);CHKERRQ(ierr);
+        ierr = VecAssemblyEnd(user->work3);CHKERRQ(ierr);
+        
+        ierr = VecAXPY(user->work1,1.0,user->work3);CHKERRQ(ierr);
+        ierr = VecAXPY(user->work2,1.0,user->work3);CHKERRQ(ierr);
+        
+        for (i=0;i<n/4;i++) {
+                xx[4*i] = w1[i];
+                if (xx[4*i]>1) {
+                        xx[4*i]=1;
+                }
+                xx[4*i+1] = w2[i];
+                if (xx[4*i+1]>1) {
+                        xx[4*i+1]=1;
+                }
+                if (xx[4*i]+xx[4*i+1]>1){
+                        xx[4*i+1] = 1.0 - xx[4*i];
+                }
+                xx[4*i+2] = 1.0 - xx[4*i] - xx[4*i+1];
+                xx[4*i+3] = 0.0;
+                
+                u1[i] = xx[4*i];
+                u2[i] = xx[4*i+1];
+                u3[i] = xx[4*i+2];
+        }
+        
+        ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_initial",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
+        ierr = VecView(user->u1,view_out);CHKERRQ(ierr);
+        ierr = VecView(user->u2,view_out);CHKERRQ(ierr);
+        ierr = VecView(user->u3,view_out);CHKERRQ(ierr);
+        PetscViewerDestroy(&view_out);
+        
+        ierr = DMDARestoreElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(coords,&_coords);CHKERRQ(ierr);
+        ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
+        ierr = VecRestoreArray(user->work2,&w1);CHKERRQ(ierr);
+        ierr = VecRestoreArray(user->work4,&w2);CHKERRQ(ierr);
+        ierr = VecRestoreArray(user->u1,&u1);CHKERRQ(ierr);
+        ierr = VecRestoreArray(user->u2,&u2);CHKERRQ(ierr);
+        ierr = VecRestoreArray(user->u3,&u3);CHKERRQ(ierr);
         ierr = VecDestroy(&rand1);CHKERRQ(ierr);
         ierr = VecDestroy(&rand2);CHKERRQ(ierr);
-	PetscFunctionReturn(0);
+        PetscFunctionReturn(0);
 }
 
 
@@ -441,7 +441,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   PetscScalar       eM_0[3][3],eM_2_odd[3][3],eM_2_even[3][3];
   Mat               M=user->M;
   PetscScalar       epsilon=user->epsilon;
-  PetscScalar		  hx;
+  PetscScalar             hx;
   PetscInt n,Mda,Nda;
   DM               da;
   
@@ -529,14 +529,14 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
         cols[2] = 4*idx[2];     vals[2] = eM_0[r][2]+dt*epsilon*epsilon*eM_2_even[r][2];
         /* Insert values in matrix M for 1st dof */
         ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-	
+        
         row = 4*idx[r]+1;
         cols[0] = 4*idx[0]+1;   vals[0] = eM_0[r][0]+dt*epsilon*epsilon*eM_2_even[r][0];
         cols[1] = 4*idx[1]+1;   vals[1] = eM_0[r][1]+dt*epsilon*epsilon*eM_2_even[r][1];
         cols[2] = 4*idx[2]+1;   vals[2] = eM_0[r][2]+dt*epsilon*epsilon*eM_2_even[r][2];
         /* Insert values in matrix M for 2nd dof */
         ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);  
-	
+        
         row = 4*idx[r]+2;
         cols[0] = 4*idx[0]+2;   vals[0] = eM_0[r][0]+dt*epsilon*epsilon*eM_2_even[r][0];
         cols[1] = 4*idx[1]+2;   vals[1] = eM_0[r][1]+dt*epsilon*epsilon*eM_2_even[r][1];
@@ -566,10 +566,10 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     PetscInt   r,rows[3],cols[3];
     for(r=0;r<3;r++) {
       
-      rows[0] = 4*idx[0]+r;	cols[0] = 4*idx[0]+3;
+      rows[0] = 4*idx[0]+r;     cols[0] = 4*idx[0]+3;
       rows[1] = 4*idx[1]+r;   cols[1] = 4*idx[1]+3;
       rows[2] = 4*idx[2]+r;   cols[2] = 4*idx[2]+3;
-      ierr = MatSetValuesLocal(M,3,rows,3,cols,vals,INSERT_VALUES);CHKERRQ(ierr);	
+      ierr = MatSetValuesLocal(M,3,rows,3,cols,vals,INSERT_VALUES);CHKERRQ(ierr);       
       ierr = MatSetValuesLocal(M,3,cols,3,rows,vals,INSERT_VALUES);CHKERRQ(ierr);
       
     }

@@ -1,3 +1,4 @@
+static char help[] = "Tests DMDAVecGetArrayDOF()\n";
 #include <petscsnes.h>
 #include <petscdmda.h>
 
@@ -15,7 +16,7 @@ int main(int argc, char *argv[]) {
   PetscMPIInt     rank, subsize, subrank;
   PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   /* Create 2D DMDA */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, M, N, PETSC_DECIDE, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);

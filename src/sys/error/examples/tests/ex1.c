@@ -1,4 +1,3 @@
-/*$Id: ex1.c,v 1.18 2003/08/08 21:30:50 knepley Exp $*/
 
 static char help[] = "Tests signal handling.\n\n";
 

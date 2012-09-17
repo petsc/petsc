@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
   int          i, m = 10, rank, size, low, high, ldim, iglobal;
   int          ierr;
 
-  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);                                                 CHKERRQ(ierr);
+  PetscInitialize(&argc, &argv, PETSC_NULL, help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);                                                          CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);                                                          CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL, "-m", &m, PETSC_NULL);                                            CHKERRQ(ierr);

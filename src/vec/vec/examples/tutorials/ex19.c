@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr); 
+  PetscInitialize(&argc, &argv, (char *) 0, help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL, "-n", &n, PETSC_NULL);CHKERRQ(ierr);
 

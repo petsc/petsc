@@ -1,3 +1,4 @@
+static const char help[] = "Tests PetscShell usage\n";
 #include <petsc.h>
 
 #undef  __FUNCT__ 
@@ -57,7 +58,7 @@ PetscErrorCode main(int argc, char *argv[]) {
   const char    *conf;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help); CHKERRQ(ierr);
   ierr = PetscShellCreate(PETSC_COMM_WORLD, &shell); CHKERRQ(ierr);
   ierr = PetscShellRegisterComponentURL(shell, "TestIA", "${PETSC_DIR}/${PETSC_ARCH}/lib/libtestcomponents.so:TestIA");   CHKERRQ(ierr);
   ierr = PetscShellRegisterComponentURL(shell, "TestIB", "${PETSC_DIR}/${PETSC_ARCH}/lib/libtestcomponents.so:TestIB");   CHKERRQ(ierr);
