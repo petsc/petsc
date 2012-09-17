@@ -1,7 +1,5 @@
-/* Program usage:  mpiexec -n <procs> ex7 [-help] [all PETSc options] */
 
-static char help[] = "Nonlinear PDE in 2d.\n\
-We solve the Stokes equation in a 2D rectangular\n\
+static char help[] = "Solves the Stokes equation in a 2D rectangular\n\
 domain, using distributed arrays (DMDAs) to partition the parallel grid.\n\n";
 
 /*T
@@ -126,9 +124,7 @@ int main(int argc,char **argv)
   ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&user->alpha,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-lambda",&user->lambda,PETSC_NULL);CHKERRQ(ierr);
-  if (user->lambda > lambda_max || user->lambda < lambda_min) {
-    SETERRQ3(PETSC_COMM_SELF,1,"Lambda %G is out of range [%G, %G]", user->lambda, lambda_min, lambda_max);
-  }
+  if (user->lambda > lambda_max || user->lambda < lambda_min) SETERRQ3(PETSC_COMM_SELF,1,"Lambda %G is out of range [%G, %G]", user->lambda, lambda_min, lambda_max);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create multilevel DM data structure (SNES) to manage hierarchical solvers
@@ -138,8 +134,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-3,-3,PETSC_DECIDE,PETSC_DECIDE,
-                    3,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-3,-3,PETSC_DECIDE,PETSC_DECIDE,3,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da, 0, "ooblek");CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes, (DM) da);CHKERRQ(ierr);
@@ -241,8 +236,7 @@ PetscErrorCode FormInitialGuess(DM da,Vec X)
 
   PetscFunctionBegin;
   ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   lambda = user->lambda;
   hx     = 1.0/(PetscReal)(Mx-1);
@@ -345,7 +339,7 @@ PetscErrorCode nonlinearResidual(PetscReal lambda, Field u[], Field r[]) {
   Field       rLocal[3] = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
   PetscScalar phi[3] = {0.0, 0.0, 0.0};
   Field       res;
-  PetscInt q;
+  PetscInt    q;
 
   PetscFunctionBegin;
   for(q = 0; q < 4; q++) {
@@ -562,7 +556,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, AppC
 
 #undef __FUNCT__
 #define __FUNCT__ "nonlinearJacobian"
-PetscErrorCode nonlinearJacobian(PetscReal lambda, Field u[], PetscScalar J[]) {
+PetscErrorCode nonlinearJacobian(PetscReal lambda, Field u[], PetscScalar J[]) 
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -863,12 +858,12 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat jac, AppCtx
 */
 PetscErrorCode L_2Error(DM da, Vec fVec, double *error, AppCtx *user)
 {
-  DMDALocalInfo info;
-  Vec fLocalVec;
-  Field **f;
-  Field u, uExact, uLocal[4];
-  PetscScalar hx, hy, hxhy, x, y, phi[3];
-  PetscInt i, j, q;
+  DMDALocalInfo  info;
+  Vec            fLocalVec;
+  Field          **f;
+  Field          u, uExact, uLocal[4];
+  PetscScalar    hx, hy, hxhy, x, y, phi[3];
+  PetscInt       i, j, q;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

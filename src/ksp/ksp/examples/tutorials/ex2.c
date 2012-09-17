@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec -n <procs> ex2 [-help] [all PETSc options] */ 
-
 static char help[] = "Solves a linear system in parallel with KSP.\n\
 Input parameters include:\n\
   -random_exact_sol : use a random exact solution vector\n\

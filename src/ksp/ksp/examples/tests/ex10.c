@@ -1,7 +1,6 @@
 
-static char help[] = "This example calculates the stiffness matrix for a brick in three\n\
-dimensions using 20 node serendipity elements and the equations of linear\n\
-elasticity. This also demonstrates use of  block\n\
+static char help[] = "Linear elastiticty with dimensions using 20 node serendipity elements.\n\
+This also demonstrates use of  block\n\
 diagonal data structure.  Input arguments are:\n\
   -m : problem size\n\n";
 

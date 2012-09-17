@@ -1,4 +1,4 @@
-
+static char help[] = "Tests VecMDot() and VecDot()\n";
 #include "petscvec.h"
 
 #undef __FUNCT__
@@ -12,7 +12,7 @@ int main( int argc, char **argv )
   PetscScalar    *val;
   PetscBool      mdot;
 
-  PetscInitialize(&argc,&argv,(char*)0,"");
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-k",&k,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mdot",&mdot);CHKERRQ(ierr);

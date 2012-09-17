@@ -1,4 +1,4 @@
-static const char help[] = "Test DMCreateInjection for mapping coordinates in 3D";
+static const char help[] = "Test DMCreateInjection() for mapping coordinates in 3D";
 
 #include <petscvec.h>
 #include <petscmat.h>
@@ -107,7 +107,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt mx,my,mz;
 
-  ierr = PetscInitialize(&argc,&argv,0,0);
+  ierr = PetscInitialize(&argc,&argv,0,help);
   mx = 2;
   my = 2;
   mz = 2;

@@ -1,5 +1,5 @@
 
-static char help[] = "Creates a matrix using simple quadirlateral finite elements, and uses it to test GAMG\n\
+static char help[] = "Creates a matrix using simple quadrilateral finite elements, and uses it to test GAMG\n\
   -ne <size>       : problem size\n                                      \
   -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
 

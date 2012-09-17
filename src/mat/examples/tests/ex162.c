@@ -1,4 +1,4 @@
-static char help[] = "Test MatMatMult dual dispatch.\n\n";
+static char help[] = "Test MatMatMult() dual dispatch.\n\n";
 
 #include <petscmat.h>
 #include <petsc-private/matimpl.h>                  /* Need MatOpRegister for this test. */

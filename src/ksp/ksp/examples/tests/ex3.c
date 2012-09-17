@@ -1,6 +1,5 @@
 
-static char help[] = "This example solves a linear system in parallel with KSP.  The matrix\n\
-uses simple bilinear elements on the unit square.  To test the parallel\n\
+static char help[] = "Bilinear elements on the unit square for Laplacian.  To test the parallel\n\
 matrix assembly, the matrix is intentionally laid out across processors\n\
 differently from the way it is assembled.  Input arguments are:\n\
   -m <size> : problem size\n\n";

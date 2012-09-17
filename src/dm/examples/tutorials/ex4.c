@@ -1,7 +1,5 @@
 
-/* Program usage:  mpiexec ex1 [-help] [all PETSc options] */
-
-static char help[] = "Demonstrates various vector routines.\n\n";
+static char help[] = "Demonstrates various vector routines for DMDA.\n\n";
 
 /*T
    Concepts: mathematical functions

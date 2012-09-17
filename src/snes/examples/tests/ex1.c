@@ -1,8 +1,5 @@
 
-/* Program usage:  ex4 [-help] [all PETSc options] */
-
-static char help[] = "Solves a nonlinear system on 1 processor with SNES. We\n\
-solve the Bratu (SFI - solid fuel ignition) problem in a 2D rectangular domain.\n\
+static char help[] = "Solves the nonlinear system, the Bratu (SFI - solid fuel ignition) problem in a 2D rectangular domain.\n\
 This example also illustrates the use of matrix coloring.  Runtime options include:\n\
   -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
      problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\

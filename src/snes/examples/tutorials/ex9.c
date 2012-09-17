@@ -47,23 +47,22 @@ typedef struct {
 
 extern PetscErrorCode FormPsiAndInitialGuess(DM,Vec,PetscBool);
 extern PetscErrorCode FormBounds(SNES,Vec,Vec);
-extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,
-                        PetscScalar**,PetscScalar**,ObsCtx*);
+extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,ObsCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,ObsCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
-  SNES snes;
-  Vec            u, r;   /* solution, residual vector */
-  PetscInt       Mx,My,its;
+  PetscErrorCode      ierr;
+  SNES                snes;
+  Vec                 u, r;   /* solution, residual vector */
+  PetscInt            Mx,My,its;
   SNESConvergedReason reason;
-  DM             da;
-  ObsCtx         user;
-  PetscReal      dx,dy,error1,errorinf;
-  PetscBool      feasible = PETSC_FALSE,fdflg = PETSC_FALSE;
+  DM                  da;
+  ObsCtx              user;
+  PetscReal           dx,dy,error1,errorinf;
+  PetscBool           feasible = PETSC_FALSE,fdflg = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -83,10 +82,8 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(u,&(user.psi));CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","options to obstacle problem","");CHKERRQ(ierr);
-  {
     ierr = PetscOptionsBool("-fd","use coloring to compute Jacobian by finite differences",PETSC_NULL,fdflg,&fdflg,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-feasible","use feasible initial guess",PETSC_NULL,feasible,&feasible,PETSC_NULL);CHKERRQ(ierr);
-  }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = DMDASetUniformCoordinates(da,-2.0,2.0,-2.0,2.0,0.0,1.0);CHKERRQ(ierr);
@@ -132,10 +129,7 @@ int main(int argc,char **argv)
   ierr = VecNorm(r,NORM_1,&error1);CHKERRQ(ierr);
   error1 /= (PetscReal)Mx * (PetscReal)My;
   ierr = VecNorm(r,NORM_INFINITY,&errorinf);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,
-    "errors:    av |u-uexact|  = %.3e\n"
-    "           |u-uexact|_inf = %.3e\n",
-    error1,errorinf);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"errors:    av |u-uexact|  = %.3e\n           |u-uexact|_inf = %.3e\n",error1,errorinf);CHKERRQ(ierr);
 
   /* Free work space.  */
   ierr = VecDestroy(&u);CHKERRQ(ierr);
@@ -146,15 +140,15 @@ int main(int argc,char **argv)
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 
 #undef __FUNCT__
 #define __FUNCT__ "FormPsiAndInitialGuess"
-PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible) {
-  ObsCtx *user;
+PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible) 
+{
+  ObsCtx         *user;
   PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   DM             coordDA;
@@ -218,9 +212,11 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible) {
 #define __FUNCT__ "FormBounds"
 /*  FormBounds() for call-back: tell SNESVI (variational inequality)
   that we want u >= psi */
-PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu) {
+PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu) 
+{
   PetscErrorCode ierr;
   ObsCtx         *user;
+
   PetscFunctionBegin;
   ierr = SNESGetApplicationContext(snes,&user);CHKERRQ(ierr);
   ierr = VecCopy(user->psi,Xl);CHKERRQ(ierr);  /* u >= psi */
@@ -232,8 +228,8 @@ PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu) {
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal"
 /* FormFunctionLocal - Evaluates nonlinear function, F(x) on local process patch */
-PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,
-                                 PetscScalar **x,PetscScalar **f,ObsCtx *user) {
+PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,ObsCtx *user) 
+{
   PetscErrorCode ierr;
   PetscInt       i,j;
   PetscReal      dx,dy,uxx,uyy,
@@ -265,8 +261,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal"
 /* FormJacobianLocal - Evaluates Jacobian matrix on local process patch */
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,
-                                 ObsCtx *user) {
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac, ObsCtx *user) 
+{
   PetscErrorCode ierr;
   PetscInt       i,j;
   MatStencil     col[5],row;

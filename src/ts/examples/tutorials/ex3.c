@@ -1,6 +1,4 @@
 
-/* Program usage:  ex3 [-help] [all PETSc options] */
-
 static char help[] ="Solves a simple time-dependent linear PDE (the heat equation).\n\
 Input parameters include:\n\
   -m <points>, where <points> = number of grid points\n\

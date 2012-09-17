@@ -1,10 +1,10 @@
+static char help[] = "testing SeqDense matrices with an LDA (leading dimension of the user-allocated arrray) larger than M.\n";
 /*
  * Example code testing SeqDense matrices with an LDA (leading dimension
  * of the user-allocated arrray) larger than M.
- * This example tests the functionality of MatInsertValues, MatMult,
- * and MatMultTranspose.
+ * This example tests the functionality of MatInsertValues(), MatMult(),
+ * and MatMultTranspose().
  */
-#include <stdlib.h>
 #include <petscmat.h>
 
 #undef __FUNCT__
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       size=8,size1=6,size2=2, i,j;
 
-  PetscInitialize(&argc,&argv,0,0);
+  PetscInitialize(&argc,&argv,0,help);
 
   /*
    * Create matrix and three vectors: these are all normal

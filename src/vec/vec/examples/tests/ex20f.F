@@ -21,7 +21,7 @@
        n            = 5
        vecclassid(1) = 1211211 + 3
 
-       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)                  
+       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
        do 10, i=1,5
          array(i) = i

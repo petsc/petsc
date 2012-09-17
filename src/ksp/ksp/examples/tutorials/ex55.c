@@ -1,5 +1,4 @@
-static char help[] = 
-"ex55: 2D, bi-linear quadrilateral (Q1), displacement finite element formulation\n\
+static char help[] = "2D, bi-linear quadrilateral (Q1), displacement finite element formulation\n\
 of plain strain linear elasticity, that uses the GAMG PC.  E=1.0, nu=0.25.\n\
 Unit square domain with Dirichelet boundary condition on the y=0 side only.\n\
 Load of 1.0 in x direction on all nodes (not a true uniform load).\n\

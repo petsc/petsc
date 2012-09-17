@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec -n <procs> ex14 [-help] [all PETSc options] */
-
 static char help[] = "Solves a nonlinear system in parallel with a user-defined Newton method.\n\
 Uses KSP to solve the linearized Newton sytems.  This solver\n\
 is a very simplistic inexact Newton method.  The intent of this code is to\n\

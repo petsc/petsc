@@ -1,4 +1,4 @@
-static const char help[] = "Test VecGetSubVector\n\n";
+static const char help[] = "Test VecGetSubVector()\n\n";
 
 #include <petscvec.h>
 

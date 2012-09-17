@@ -46,6 +46,7 @@ PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
 PetscErrorCode PreCheck(SNESLineSearch,Vec,Vec,PetscBool*,void*);
 PetscErrorCode PostCheck(SNESLineSearch,Vec,Vec,Vec,PetscBool*,PetscBool*,void*);
 PetscErrorCode PostSetSubKSP(SNESLineSearch,Vec,Vec,Vec,PetscBool*,PetscBool*,void*);
+PetscErrorCode MatrixFreePreconditioner(PC,Vec,Vec);
 
 /* 
    User-defined application context
@@ -91,12 +92,13 @@ int main(int argc,char **argv)
   MonitorCtx     monP;                 /* monitoring context */
   StepCheckCtx   checkP;               /* step-checking context */
   SetSubKSPCtx   checkP1;
-  PetscBool      pre_check,post_check,post_setsubksp; /* flag indicating whether we're checking
-                                          candidate iterates */
+  PetscBool      pre_check,post_check,post_setsubksp; /* flag indicating whether we're checking candidate iterates */
   PetscScalar    xp,*FF,*UU,none = -1.0;
   PetscErrorCode ierr;
   PetscInt       its,N = 5,i,maxit,maxf,xs,xm;
   PetscReal      abstol,rtol,stol,norm;
+  PetscBool      flg;
+
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);CHKERRQ(ierr);
@@ -157,6 +159,19 @@ int main(int argc,char **argv)
         Jacobian evaluation routine.
   */
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,&ctx);CHKERRQ(ierr);
+
+  /*
+     Optional allow user provided preconditioner
+   */
+  ierr = PetscOptionsHasName(PETSC_NULL,"-user_precond",&flg);CHKERRQ(ierr);
+  if (flg) {
+    KSP ksp;
+    PC  pc;
+    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);
+    ierr = PCShellSetApply(pc,MatrixFreePreconditioner);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -658,6 +673,25 @@ PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,
   PetscFunctionReturn(0);
 }
 
+/* ------------------------------------------------------------------- */
+/*
+   MatrixFreePreconditioner - This routine demonstrates the use of a
+   user-provided preconditioner.  This code implements just the null
+   preconditioner, which of course is not recommended for general use.
+
+   Input Parameters:
++  pc - preconditioner
+-  x - input vector
+
+   Output Parameter:
+.  y - preconditioned vector
+*/
+PetscErrorCode MatrixFreePreconditioner(PC pc,Vec x,Vec y)
+{
+  PetscErrorCode ierr;
+  ierr = VecCopy(x,y);CHKERRQ(ierr);  
+  return 0;
+}
 
 
 

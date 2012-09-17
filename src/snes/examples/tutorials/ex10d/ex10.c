@@ -1,6 +1,3 @@
-/* 
-  Program usage:  mpiexec -n <procs> usg [-help] [all PETSc options] 
-*/
 
 #if !defined(PETSC_USE_COMPLEX)
 

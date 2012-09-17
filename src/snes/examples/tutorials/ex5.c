@@ -28,8 +28,6 @@ T*/
     is used to discretize the boundary value problem to obtain a nonlinear 
     system of equations.
 
-    Program usage:  mpiexec -n <procs> ex5 [-help] [all PETSc options] 
-     e.g.,
      
       This example shows how geometric multigrid can be run transparently with a nonlinear solver so long
       as SNESSetDM() is provided. Example usage
@@ -85,7 +83,10 @@ int main(int argc,char **argv)
   PetscReal              bratu_lambda_min = 0.;
   PetscBool              flg = PETSC_FALSE;
   DM                     da;
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+  Vec                    r = PETSC_NULL;
   PetscBool              matlab_function = PETSC_FALSE;
+#endif 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -128,11 +129,8 @@ int main(int argc,char **argv)
     ierr = DMDASetLocalJacobian(da,(DMDALocalFunction1)FormJacobianLocal);CHKERRQ(ierr); 
   }
 
-  /* Decide which FormFunction to use */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-matlab_function",&matlab_function,0);CHKERRQ(ierr);
-
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  Vec r;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-matlab_function",&matlab_function,0);CHKERRQ(ierr);
   if (matlab_function) {
     ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,r,FormFunctionMatlab,&user);CHKERRQ(ierr);
@@ -160,7 +158,7 @@ int main(int argc,char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  if (r){ierr = VecDestroy(&r);CHKERRQ(ierr);}
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
 #endif
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);

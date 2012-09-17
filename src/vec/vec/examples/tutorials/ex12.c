@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec ex1 [-help] [all PETSc options] */
-
 static char help[] = "Demonstrates VecStrideScatter() and VecStrideGather().\n\n";
 
 /*T
@@ -26,7 +24,7 @@ int main(int argc,char **argv)
   PetscInt       n = 20;
   PetscScalar    one = 1.0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   /* 

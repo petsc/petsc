@@ -1,6 +1,5 @@
-/* 
-   Tests PetscMemmove()
-*/
+
+static char help[] = "Tests PetscMemmove()\n";
 
 #include <petscsys.h>
 
@@ -9,7 +8,7 @@
 int main(int argc,char **argv)
 {
   int i,*a,*b,ierr;
-  PetscInitialize(&argc,&argv,(char *)0,0);
+  PetscInitialize(&argc,&argv,(char *)0,help);
 
   ierr = PetscMalloc(10*sizeof(int),&a);CHKERRQ(ierr);
   ierr = PetscMalloc(20*sizeof(int),&b);CHKERRQ(ierr);

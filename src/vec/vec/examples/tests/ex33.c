@@ -1,4 +1,3 @@
-/*$Id: ex33.c,v 1.1 2001/09/24 21:04:45 balay Exp $*/
 
 static char help[] = "Tests the routines VecScatterCreateToAll(), VecScatterCreateToZero()\n\n";
 

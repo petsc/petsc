@@ -16,11 +16,6 @@ T*/
 */
 #include <petscsnes.h>
 
-typedef struct {
-  Vec         xloc,rloc;    /* local solution, residual vectors */
-  VecScatter  scatter;
-} AppCtx;
-
 /* 
    User-defined routines
 */
@@ -40,15 +35,13 @@ int main(int argc,char **argv)
   Mat            J;            /* Jacobian matrix */
   PetscErrorCode ierr;
   PetscInt       its;
-  PetscMPIInt    size,rank;
+  PetscMPIInt    size;
   PetscScalar    pfive = .5,*xx;
   PetscBool      flg;
-  AppCtx         user;         /* user-defined work context */
-  IS             isglobal,islocal;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Example is only for sequential runs");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -66,18 +59,6 @@ int main(int argc,char **argv)
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
-  if (size > 1){
-    ierr = VecCreateSeq(PETSC_COMM_SELF,2,&user.xloc);CHKERRQ(ierr);
-    ierr = VecDuplicate(user.xloc,&user.rloc);CHKERRQ(ierr);
-
-    /* Create the scatter between the global x and local xloc */
-    ierr = ISCreateStride(MPI_COMM_SELF,2,0,1,&islocal);CHKERRQ(ierr);
-    ierr = ISCreateStride(MPI_COMM_SELF,2,0,1,&isglobal);CHKERRQ(ierr);
-    ierr = VecScatterCreate(x,isglobal,user.xloc,islocal,&user.scatter);CHKERRQ(ierr);
-    ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
-    ierr = ISDestroy(&islocal);CHKERRQ(ierr);
-  }
-
   /*
      Create Jacobian matrix data structure
   */
@@ -91,14 +72,13 @@ int main(int argc,char **argv)
     /* 
      Set function evaluation routine and vector.
     */
-    ierr = SNESSetFunction(snes,r,FormFunction1,&user);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction1,PETSC_NULL);CHKERRQ(ierr);
 
     /* 
      Set Jacobian matrix data structure and Jacobian evaluation routine
     */
     ierr = SNESSetJacobian(snes,J,J,FormJacobian1,PETSC_NULL);CHKERRQ(ierr);
   } else {
-    if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This case is a uniprocessor example only!");
     ierr = SNESSetFunction(snes,r,FormFunction2,PETSC_NULL);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian2,PETSC_NULL);CHKERRQ(ierr);
   }
@@ -108,8 +88,8 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /* 
      Set linear solver defaults for this problem. By extracting the
-     KSP, KSP, and PC contexts from the SNES context, we can then
-     directly call any KSP, KSP, and PC routines to set various options.
+     KSP and PC contexts from the SNES context, we can then
+     directly call any KSP and PC routines to set various options.
   */
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -151,7 +131,7 @@ int main(int argc,char **argv)
     ierr = VecView(r,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"number of SNES iterations = %D\n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -160,11 +140,6 @@ int main(int argc,char **argv)
 
   ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr); ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  if (size > 1){
-    ierr = VecDestroy(&user.xloc);CHKERRQ(ierr); 
-    ierr = VecDestroy(&user.rloc);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&user.scatter);CHKERRQ(ierr);
-  }
   ierr = PetscFinalize();
   return 0;
 }
@@ -187,56 +162,24 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
   PetscErrorCode    ierr;
   const PetscScalar *xx;
   PetscScalar       *ff;
-  AppCtx            *user = (AppCtx*)ctx;
-  Vec               xloc=user->xloc,floc=user->rloc;
-  VecScatter        scatter=user->scatter;
-  MPI_Comm          comm;
-  PetscMPIInt       size,rank;
-  PetscInt          rstart,rend;
 
-  ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (size > 1){
-    /* 
-       This is a ridiculous case for testing intermidiate steps from sequential
-           code development to parallel implementation.
-       (1) scatter x into a sequetial vector;
-       (2) each process evaluates all values of floc; 
-       (3) scatter floc back to the parallel f.
-     */
-    ierr = VecScatterBegin(scatter,x,xloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scatter,x,xloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  /*
+   Get pointers to vector data.
+      - For default PETSc vectors, VecGetArray() returns a pointer to
+        the data array.  Otherwise, the routine is implementation dependent.
+      - You MUST call VecRestoreArray() when you no longer need access to
+        the array.
+   */
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
 
-    ierr = VecGetOwnershipRange(f,&rstart,&rend);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(xloc,&xx);CHKERRQ(ierr);
-    ierr = VecGetArray(floc,&ff);CHKERRQ(ierr);
-    ff[0] = xx[0]*xx[0] + xx[0]*xx[1] - 3.0;
-    ff[1] = xx[0]*xx[1] + xx[1]*xx[1] - 6.0;
-    ierr = VecRestoreArray(floc,&ff);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(xloc,&xx);CHKERRQ(ierr);
+  /* Compute function */
+  ff[0] = xx[0]*xx[0] + xx[0]*xx[1] - 3.0;
+  ff[1] = xx[0]*xx[1] + xx[1]*xx[1] - 6.0;
 
-    ierr = VecScatterBegin(scatter,floc,f,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scatter,floc,f,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  } else {
-    /*
-     Get pointers to vector data.
-       - For default PETSc vectors, VecGetArray() returns a pointer to
-         the data array.  Otherwise, the routine is implementation dependent.
-       - You MUST call VecRestoreArray() when you no longer need access to
-         the array.
-    */
-    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
-    ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
-
-    /* Compute function */
-    ff[0] = xx[0]*xx[0] + xx[0]*xx[1] - 3.0;
-    ff[1] = xx[0]*xx[1] + xx[1]*xx[1] - 6.0;
-
-    /* Restore vectors */
-    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
-    ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr); 
-  }
+  /* Restore vectors */
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr); 
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -257,14 +200,15 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
 */
 PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
-  PetscScalar    *xx,A[4];
-  PetscErrorCode ierr;
-  PetscInt       idx[2] = {0,1};
+  const PetscScalar *xx;
+  PetscScalar       A[4];
+  PetscErrorCode    ierr;
+  PetscInt          idx[2] = {0,1};
 
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
 
   /*
      Compute Jacobian entries and insert into matrix.
@@ -279,7 +223,7 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
 
   /* 
      Assemble matrix
@@ -298,8 +242,9 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
 #define __FUNCT__ "FormFunction2"
 PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
 {
-  PetscErrorCode ierr;
-  PetscScalar    *xx,*ff;
+  PetscErrorCode    ierr;
+  const PetscScalar *xx;
+  PetscScalar       *ff;
 
   /*
      Get pointers to vector data.
@@ -308,7 +253,7 @@ PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
 
   /*
@@ -320,7 +265,7 @@ PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr); 
   return 0;
 }
@@ -329,14 +274,15 @@ PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
 #define __FUNCT__ "FormJacobian2"
 PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
-  PetscScalar    *xx,A[4];
-  PetscErrorCode ierr;
-  PetscInt       idx[2] = {0,1};
+  const PetscScalar *xx;
+  PetscScalar       A[4];
+  PetscErrorCode    ierr;
+  PetscInt          idx[2] = {0,1};
 
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
 
   /*
      Compute Jacobian entries and insert into matrix.
@@ -351,7 +297,7 @@ PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
 
   /*
      Assemble matrix

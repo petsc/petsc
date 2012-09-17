@@ -1,5 +1,5 @@
 
-static char help[] = "Tests ContainerCreate and ContainerDestroy.\n\n";
+static char help[] = "Tests PetscContainerCreate() and PetscContainerDestroy().\n\n";
 
 #include <petscsys.h>
 

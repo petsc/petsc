@@ -9,7 +9,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
-EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5s.c ex6.c ex7.c ex8.c \
+EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5s.c ex7.c ex8.c \
                 ex10.c ex12.c ex14.c ex15.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                 ex25.c ex28.c ex30.c \
                 ex35.c ex38.c ex42.c ex43.c ex44.c ex45.c ex46.c ex48.c \
@@ -265,11 +265,6 @@ runex1_X:
 	   if (${DIFF} output/ex1_X.out ex1_X.tmp) then true; \
 	   else echo  ${PWD} "\nPossible problem with with ex1_X, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_X.tmp
-runex1_2:
-	-@${MPIEXEC} -n 2 ./ex1 -snes_mf_operator -snes_fd -snes_monitor_short > ex1_2.tmp 2>&1;   \
-	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex1_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex1_2.tmp
 runex1f:
 	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex1f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1f_1.out ex1f_1.tmp) then true; \
@@ -482,16 +477,6 @@ runex5f90t:
 	   if (${DIFF} output/ex5f90_1.out ex5f90t_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5f90t_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5f90t_1.tmp
-runex6:
-	-@${MPIEXEC} -n 1 ./ex6 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex6_1.tmp 2>&1;   \
-	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex6_1, diffs above \n========================================="; fi; \
-	   ${RM} -f ex6_1.tmp
-runex6_2:
-	-@${MPIEXEC} -n 1 ./ex6 -snes_mf -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex6_2.tmp 2>&1;   \
-	   if (${DIFF} output/ex6_2.out ex6_2.tmp) then true; \
-	   else  echo  ${PWD} "\nPossible problem with with ex6_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex6_2.tmp
 runex8:
 	-@${MPIEXEC} -n 2 ./ex8  -mx 16 -my 16 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always \
                     -lidvelocity 0. -grashof 1000. > ex8_1.tmp 2>&1; \
@@ -874,7 +859,6 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex5_5_ngmres_ngs runex5_5_qn runex5_5_ls \
                                  runex5_5_fas runex5_5_ngmres_fas runex5_5_fas_additive \
                                  runex5_6 ex5.rm\
-                                 ex6.PETSc runex6 runex6_2 ex6.rm\
                                  ex9.PETSc runex9 runex9_2 runex9_3 runex9_4 ex9.rm\
                                  ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc runex15 runex15_3 ex15.rm ex18.PETSc runex18 ex18.rm \
                                  ex19.PETSc runex19 runex19_5 \
@@ -895,8 +879,7 @@ TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f9
 TESTEXAMPLES_C_NOCOMPLEX       = ex30.PETSc ex30.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex5f.PETSc runex5f runex5f_3 ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
-TESTEXAMPLES_C_X_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex6.PETSc \
-                                 runex6 runex6_2 ex6.rm  ex14.PETSc ex14.rm 
+TESTEXAMPLES_C_X_MPIUNI        = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm  ex14.PETSc ex14.rm 
 TESTEXAMPLES_F90	       = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 runex5f90_4 runex5f90_5 ex5f90.rm
 TESTEXAMPLES_13		       = 
 TESTEXAMPLES_MATLAB_ENGINE     = 

@@ -2,7 +2,6 @@
 !   Solves a linear system in parallel with KSP.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
 !
-!  Program usage: mpiexec ex21f [-help] [all PETSc options]
 !
 !/*T
 !   Concepts: KSP^basic parallel example

@@ -2,7 +2,6 @@
       implicit none
 !
 #include <finclude/petsc.h90>
-#include <finclude/petscdmcomplex.h90>
 !
       DM dm
       PetscInt, target, dimension(4) :: EC

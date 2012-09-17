@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec -n <np> ./ex28 [-help] [all PETSc options] */
-
 static char help[] = "Test procedural KSPSetFromOptions() or at runtime.\n\n";
 
 /*T

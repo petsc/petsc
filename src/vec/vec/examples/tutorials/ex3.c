@@ -1,4 +1,4 @@
-\
+
 static char help[] = "Parallel vector layout.\n\n";
 
 /*T
@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   Vec            x;
   PetscViewer    viewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

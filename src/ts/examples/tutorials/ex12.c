@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec -n <procs> ex12 [-help] [all PETSc options] */
-
 static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 
 /*

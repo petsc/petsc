@@ -1,3 +1,6 @@
+static char help[] = "Poiseuille flow problem. Viscous, laminar flow in a 2D channel with parabolic velocity\n\
+                      profile and linear pressure drop, exact solution of the 2D Stokes\n";
+
 //----------------------------------------------------------------------------
 // M A R I T I M E  R E S E A R C H  I N S T I T U T E  N E T H E R L A N D S
 //----------------------------------------------------------------------------
@@ -661,7 +664,7 @@ int main(int argc, char **argv) {
   KSP            ksp;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
   s.nx = 4;
   s.ny = 6;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-nx", &s.nx, PETSC_NULL);CHKERRQ(ierr);

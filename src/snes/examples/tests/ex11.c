@@ -1,8 +1,5 @@
 
-static char help[] =
-"This program demonstrates use of the SNES package to solve systems of\n\
-nonlinear equations in parallel, using 2-dimensional distributed arrays.\n\
-The 2-dim Bratu (SFI - solid fuel ignition) test problem is used, where\n\
+static char help[] ="Solves the 2-dim Bratu (SFI - solid fuel ignition) test problem, where\n\
 analytic formation of the Jacobian is the default.  \n\
 \n\
   Solves the linear systems via 2 level additive Schwarz \n\

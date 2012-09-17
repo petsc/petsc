@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  PetscInitialize(&argc,&argv,0,help);
 
   ierr = PetscPythonInitialize(PYTHON_EXE,PYTHON_LIB);CHKERRQ(ierr);
 

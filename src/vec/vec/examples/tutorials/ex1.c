@@ -1,4 +1,3 @@
-/* Program usage:  mpiexec ex1 [-help] [all PETSc options] */
 
 static char help[] = "Basic vector routines.\n\n";
 
@@ -27,7 +26,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscScalar    one = 1.0,two = 2.0,three = 3.0,dots[3],dot;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   /* 

@@ -1,13 +1,11 @@
 /*
-  Program usage:  mpiexec -n <procs> ex39 [-help] [all PETSc options]
-  Example:
+
 mpiexec -n 8 ./ex39 -ksp_type fbcgs -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -ksp_monitor -n1 32 -n2 32 -n3 32
 
   Contributed by Jie Chen for testing flexible BiCGStab algorithm
 */
 
-static char help[] = "This example solves the PDE (in 3D)\n\
-    - laplacian(u) + gamma x dot grad(u) + beta u = 1\n\
+static char help[] = "Solves the PDE (in 3D) - laplacian(u) + gamma x dot grad(u) + beta u = 1\n\
 with zero Dirichlet condition. The discretization is standard centered\n\
 difference. Input parameters include:\n\
   -n1        : number of mesh points in 1st dimension (default 32)\n\

@@ -26,8 +26,6 @@ T*/
     is used to discretize the boundary value problem to obtain a nonlinear
     system of equations.
 
-    Program usage:  mpiexec -n <procs> ex5 [-help] [all PETSc options]
-     e.g.,
       ./ex5 -draw_pause -1
       mpiexec -n 2 ./ex5 -log_summary
 

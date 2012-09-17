@@ -1,6 +1,5 @@
 
-static char help[] = "Solves a linear system with KSP.  The matrix uses simple\n\
-bilinear elements on the unit square. Input arguments are:\n\
+static char help[] = "Bilinear elements on the unit square for the Laplacian. Input arguments are:\n\
   -m <size> : problem size\n\n";
 
 #include <petscksp.h>

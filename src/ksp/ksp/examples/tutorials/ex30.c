@@ -1,8 +1,5 @@
-/*
- * Example code testing SeqDense matrices with an LDA (leading dimension
- * of the user-allocated arrray) larger than M.
- * This example tests the functionality of MatSolve.
- */
+static char help[] = " * Example code testing SeqDense matrices with an LDA (leading dimension of the user-allocated arrray) larger than M.\n";
+
 #include <stdlib.h>
 #include <petscmat.h>
 #include <petscksp.h>
@@ -20,7 +17,7 @@ int main(int argc,char **argv)
   PetscReal   nrm;
   PetscErrorCode ierr,size=8,lda=10, i,j;
 
-  PetscInitialize(&argc,&argv,0,0);
+  PetscInitialize(&argc,&argv,0,help);
   /* Create matrix and three vectors: these are all normal */
   ierr = PetscMalloc(lda*size*sizeof(PetscScalar),&b);CHKERRQ(ierr);
   for (i=0; i<size; i++) {

@@ -1,6 +1,4 @@
 
-/* Program usage:  ./ex16 [-help] [all PETSc options] */
-
 static char help[] = "Solves the van der Pol equation.\n\
 Input parameters include:\n\
       -mu : stiffness parameter\n\n";

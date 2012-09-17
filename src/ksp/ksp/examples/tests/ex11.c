@@ -224,7 +224,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,PETSC_NULL);
+  ierr = PetscInitialize(&argc,&argv,0,help);
   ierr = port_lsd_bfbt();CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

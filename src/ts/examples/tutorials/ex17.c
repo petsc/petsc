@@ -13,9 +13,7 @@ static const char help[] = "Time-dependent PDE in 1d. Simplified from ex15.c for
    Neumann BC:
    At x=0, x=1: du(x,t)/dx = 0
 
-Program usage:
-   mpiexec -n <procs> ./ex17 [-help] [all PETSc options]
-   e.g., mpiexec -n 2 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor -ksp_monitor
+   mpiexec -n 2 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor -ksp_monitor
          ./ex17 -da_grid_x 40 -drawcontours -draw_pause .1
          ./ex17 -da_grid_x 100 -drawcontours -draw_pause .1 -ts_type theta -ts_theta_theta 0.5 # Midpoint is not L-stable
          ./ex17 -jac_type fd_coloring -drawcontours -draw_pause .1 -da_grid_x 500 -boundary 1 

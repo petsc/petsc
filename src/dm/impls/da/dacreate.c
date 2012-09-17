@@ -222,6 +222,20 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
   PetscFunctionReturn(0);
 }
 
+/*MC
+   DMDA = "da" - A DM object that is used to manage data for a structured grid in 1, 2, or 3 dimensions.
+         In the global representation of the vector each process stores a non-overlapping rectangular (or slab in 3d) portion of the grid points.
+         In the local representation these rectangular regions (slabs) are extended in all directions by a stencil width. 
+
+         The vectors can be thought of as either cell centered or vertex centered on the mesh. But some variables cannot be cell centered and others
+         vertex centered.
+
+
+  Level: intermediate
+
+.seealso: DMType, DMCOMPOSITE, DMDACreate(), DMCreate(), DMSetType()
+M*/
+
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

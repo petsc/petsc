@@ -100,6 +100,48 @@ PetscErrorCode  VecGhostGetLocalForm(Vec g,Vec *l)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecGhostIsLocalForm"
+/*@
+    VecGhostIsLocalForm - Checks if a given vector is the local form of a global vector
+
+    Not Collective
+
+    Input Parameter:
++   g - the global vector
+-   l - the local vector
+
+    Output Parameter:
+.   flg - PETSC_TRUE if local vector is local form
+
+    Level: advanced
+
+   Concepts: vectors^ghost point access
+
+.seealso: VecCreateGhost(), VecGhostRestoreLocalForm(), VecCreateGhostWithArray(), VecGhostGetLocalForm()
+
+@*/
+PetscErrorCode VecGhostIsLocalForm(Vec g,Vec l,PetscBool *flg)
+{
+  PetscErrorCode ierr;
+  PetscBool      isseq,ismpi;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(g,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(l,VEC_CLASSID,1);
+
+  *flg = PETSC_FALSE;
+  ierr = PetscObjectTypeCompare((PetscObject)g,VECSEQ,&isseq);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)g,VECMPI,&ismpi);CHKERRQ(ierr);
+  if (ismpi) {
+    Vec_MPI *v  = (Vec_MPI*)g->data;
+    if (l == v->localrep) *flg = PETSC_TRUE;
+  } else if (isseq) {
+    if (l == g) *flg = PETSC_TRUE;
+  } else SETERRQ(((PetscObject)g)->comm,PETSC_ERR_ARG_WRONG,"Global vector is not ghosted");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "VecGhostRestoreLocalForm"
 /*@
     VecGhostRestoreLocalForm - Restores the local ghosted representation of 

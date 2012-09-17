@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec ex2 [-help] [all PETSc options] */
-
 static char help[] = "Synchronized printing.\n\n";
 
 /*T

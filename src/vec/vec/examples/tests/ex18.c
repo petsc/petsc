@@ -1,6 +1,4 @@
 
-/* np = 1 */
-
 static char help[] = "Compares BLAS dots on different machines. Input\n\
 arguments are\n\
   -n <length> : local vector length\n\n";
