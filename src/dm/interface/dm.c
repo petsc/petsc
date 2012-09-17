@@ -58,6 +58,8 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
       v->nullspaceConstructors[i] = PETSC_NULL;
     }
   }
+  v->numFields = 0;
+  v->fields    = PETSC_NULL;
 
   *dm = v;
   PetscFunctionReturn(0);
@@ -170,7 +172,7 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
 @*/
 PetscErrorCode  DMDestroy(DM *dm)
 {
-  PetscInt       i, cnt = 0;
+  PetscInt       i, cnt = 0, f;
   DMNamedVecLink nlink,nnext;
   PetscErrorCode ierr;
 
@@ -255,6 +257,11 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = PetscSectionDestroy(&(*dm)->defaultGlobalSection);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->defaultSF);CHKERRQ(ierr);
+
+  for(f = 0; f < (*dm)->numFields; ++f) {
+    ierr = PetscObjectDestroy(&(*dm)->fields[f]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree((*dm)->fields);CHKERRQ(ierr);
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(*dm);CHKERRQ(ierr);
 
@@ -3009,6 +3016,8 @@ PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *section) {
 .seealso: DMSetDefaultSection(), DMGetDefaultGlobalSection()
 @*/
 PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section) {
+  PetscInt       numFields;
+  PetscInt       f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3016,6 +3025,16 @@ PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section) {
   ierr = PetscSectionDestroy(&dm->defaultSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&dm->defaultGlobalSection);CHKERRQ(ierr);
   dm->defaultSection = section;
+  ierr = PetscSectionGetNumFields(dm->defaultSection, &numFields);CHKERRQ(ierr);
+  if (numFields) {
+    ierr = DMSetNumFields(dm, numFields);CHKERRQ(ierr);
+    for(f = 0; f < numFields; ++f) {
+      const char *name;
+
+      ierr = PetscSectionGetFieldName(dm->defaultSection, f, &name);CHKERRQ(ierr);
+      ierr = PetscObjectSetName(dm->fields[f], name);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -3197,5 +3216,50 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
   }
   ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(dm->defaultSF, nroots, nleaves, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetNumFields"
+PetscErrorCode DMGetNumFields(DM dm, PetscInt *numFields)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(numFields, 2);
+  *numFields = dm->numFields;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetNumFields"
+PetscErrorCode DMSetNumFields(DM dm, PetscInt numFields)
+{
+  PetscInt       f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  for(f = 0; f < dm->numFields; ++f) {
+    ierr = PetscObjectDestroy(&dm->fields[f]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(dm->fields);CHKERRQ(ierr);
+  dm->numFields = numFields;
+  ierr = PetscMalloc(dm->numFields * sizeof(PetscObject), &dm->fields);CHKERRQ(ierr);
+  for(f = 0; f < dm->numFields; ++f) {
+    ierr = PetscContainerCreate(((PetscObject) dm)->comm, (PetscContainer *) &dm->fields[f]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetField"
+PetscErrorCode DMGetField(DM dm, PetscInt f, PetscObject *field)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(field, 2);
+  if (!dm->fields) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Fields have not been setup in this DM. Call DMSetNumFields()");
+  if ((f < 0) || (f >= dm->numFields)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Field %d should be in [%d,%d)", f, 0, dm->numFields);
+  *field = dm->fields[f];
   PetscFunctionReturn(0);
 }

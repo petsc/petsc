@@ -115,7 +115,11 @@ struct _p_DM {
   PetscSection           defaultSection;       /* Layout for local vectors */
   PetscSection           defaultGlobalSection; /* Layout for global vectors */
   /* Null spaces -- of course I should make this have a variable number of fields */
+  /*   I now believe this might not be the right way: see below */
   NullSpaceFunc          nullspaceConstructors[10];
+  /* Fields are represented by objects */
+  PetscInt               numFields;
+  PetscObject           *fields;
 };
 
 PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;

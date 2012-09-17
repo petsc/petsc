@@ -203,6 +203,10 @@ PETSC_EXTERN PetscErrorCode DMGetDefaultSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetDefaultSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMCreateDefaultSF(DM, PetscSection, PetscSection);
 
+PETSC_EXTERN PetscErrorCode DMGetNumFields(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMSetNumFields(DM, PetscInt);
+PETSC_EXTERN PetscErrorCode DMGetField(DM, PetscInt, PetscObject *);
+
 typedef struct {
   PetscInt         numQuadPoints; /* The number of quadrature points on an element */
   const PetscReal *quadPoints;    /* The quadrature point coordinates */

@@ -466,30 +466,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ilink->x = jac->x[i]; ilink->y = jac->y[i];
       /* compute scatter contexts needed by multiplicative versions and non-default splits */
       ierr = VecScatterCreate(xtmp,ilink->is,jac->x[i],PETSC_NULL,&ilink->sctx);CHKERRQ(ierr);
-      /* HACK: Check for the constant null space */
-      ierr = MatGetNullSpace(pc->pmat, &sp);CHKERRQ(ierr);
-      if (sp) {
-        MatNullSpace subsp;
-        Vec          ftmp, gtmp;
-        PetscReal    norm;
-        PetscInt     N;
-
-        ierr = MatGetVecs(pc->pmat,     &gtmp, PETSC_NULL);CHKERRQ(ierr);
-        ierr = MatGetVecs(jac->pmat[i], &ftmp, PETSC_NULL);CHKERRQ(ierr);
-        ierr = VecGetSize(ftmp, &N);CHKERRQ(ierr);
-        ierr = VecSet(ftmp, 1.0/N);CHKERRQ(ierr);
-        ierr = VecScatterBegin(ilink->sctx, ftmp, gtmp, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-        ierr = VecScatterEnd(ilink->sctx, ftmp, gtmp, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-        ierr = MatNullSpaceRemove(sp, gtmp, PETSC_NULL);CHKERRQ(ierr);
-        ierr = VecNorm(gtmp, NORM_2, &norm);CHKERRQ(ierr);
-        if (norm < 1.0e-10) {
-          ierr  = MatNullSpaceCreate(((PetscObject)pc)->comm, PETSC_TRUE, 0, PETSC_NULL, &subsp);CHKERRQ(ierr);
-          ierr  = MatSetNullSpace(jac->pmat[i], subsp);CHKERRQ(ierr);
-          ierr  = MatNullSpaceDestroy(&subsp);CHKERRQ(ierr);
-        }
-        ierr = VecDestroy(&ftmp);CHKERRQ(ierr);
-        ierr = VecDestroy(&gtmp);CHKERRQ(ierr);
-      }
       /* Check for null space attached to IS */
       ierr = PetscObjectQuery((PetscObject) ilink->is, "nullspace", (PetscObject *) &sp);CHKERRQ(ierr);
       if (sp) {
