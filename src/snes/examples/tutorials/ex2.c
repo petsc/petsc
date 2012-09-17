@@ -52,7 +52,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   h = 1.0/(n-1);
 
@@ -224,10 +224,11 @@ PetscErrorCode FormInitialGuess(Vec x)
 
 PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
-   Vec            g = (Vec)ctx;
-   PetscScalar    *xx,*ff,*gg,d;
-   PetscErrorCode ierr;
-   PetscInt       i,n;
+   Vec               g = (Vec)ctx;
+   const PetscScalar *xx,*gg;
+   PetscScalar       *ff,d;
+   PetscErrorCode    ierr;
+   PetscInt          i,n;
 
   /*
      Get pointers to vector data.
@@ -236,9 +237,9 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+   ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
    ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
-   ierr = VecGetArray(g,&gg);CHKERRQ(ierr);
+   ierr = VecGetArrayRead(g,&gg);CHKERRQ(ierr);
 
   /*
      Compute function
@@ -254,9 +255,9 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   /*
      Restore vectors
   */
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
-  ierr = VecRestoreArray(g,&gg);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(g,&gg);CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -278,14 +279,15 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 
 PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
-  PetscScalar    *xx,A[3],d;
-  PetscErrorCode ierr;
-  PetscInt       i,n,j[3];
+  const PetscScalar *xx;
+  PetscScalar       A[3],d;
+  PetscErrorCode    ierr;
+  PetscInt          i,n,j[3];
 
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
 
   /*
      Compute Jacobian entries and insert into matrix.
@@ -315,14 +317,17 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,vo
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
 
   /*
      Assemble matrix
   */
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
+  if (*jac != *B){
+    ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
   return 0;
 }
 /* ------------------------------------------------------------------- */
