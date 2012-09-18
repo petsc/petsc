@@ -67,7 +67,6 @@ typedef struct _p_PetscThreadCommRedCtx *PetscThreadCommRedCtx;
 struct _p_PetscThreadCommRedCtx{
   PetscThreadComm               tcomm;          /* The associated threadcomm */
   PetscInt                      red_status;     /* Reduction status */
-  PetscInt                      nworkThreads;   /* Number of threads doing the reduction */
   PetscInt                      *thread_status; /* Reduction status of each thread */
   void                          *local_red;     /* Array to hold local reduction contribution from each thread */
   PetscThreadCommReductionOp    op;             /* The reduction operation */
@@ -75,9 +74,10 @@ struct _p_PetscThreadCommRedCtx{
 };
 
 struct _p_PetscThreadCommReduction{
-  PetscInt              nreductions;   /* Number of reductions */
+  PetscInt              nreds;                              /* Number of reductions in operation */
   PetscThreadCommRedCtx redctx[PETSC_REDUCTIONS_MAX];       /* Reduction objects */
-  PetscInt               ctr;          /* Reduction counter */
+  PetscInt               ctr;                               /* Global Reduction counter */
+  PetscInt              *thread_ctr;                        /* Reduction counter for each thread */
 };
 
 typedef struct _p_PetscThreadCommJobCtx *PetscThreadCommJobCtx;

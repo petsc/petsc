@@ -21,7 +21,7 @@ PetscErrorCode set_kernel(PetscInt myrank,PetscScalar *a,PetscScalar *alphap)
   return 0;
 }
 
-PetscErrorCode reduce_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommReduction red)
+PetscErrorCode sum_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommReduction red)
 {
   PetscScalar my_sum=0.0;
   PetscInt    i;
@@ -93,6 +93,13 @@ PetscErrorCode minloc_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommReduc
   return 0;
 }
 
+PetscErrorCode mult_reds_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommReduction red)
+{
+  minloc_kernel(myrank,a,red);
+  maxloc_kernel(myrank,a,red);
+  return 0;
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -119,7 +126,7 @@ int main(int argc,char **argv)
   ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)set_kernel,2,a,scalar);CHKERRQ(ierr);
 
   ierr = PetscThreadReductionBegin(PETSC_COMM_WORLD,THREADCOMM_SUM,PETSC_SCALAR,1,&red);CHKERRQ(ierr);
-  ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)reduce_kernel,2,a,red);CHKERRQ(ierr);
+  ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)sum_kernel,2,a,red);CHKERRQ(ierr);
   ierr = PetscThreadReductionEnd(red,&sum);CHKERRQ(ierr);
 
   ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -142,7 +149,7 @@ int main(int argc,char **argv)
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Min = %f\n",PetscRealPart(min));CHKERRQ(ierr);
 
-  ierr = PetscThreadReductionBegin(PETSC_COMM_WORLD,THREADCOMM_MAXLOC,PETSC_SCALAR,1,&red);CHKERRQ(ierr);
+  /*  ierr = PetscThreadReductionBegin(PETSC_COMM_WORLD,THREADCOMM_MAXLOC,PETSC_SCALAR,1,&red);CHKERRQ(ierr);
   ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)maxloc_kernel,2,a,red);CHKERRQ(ierr);
   ierr = PetscThreadReductionEnd(red,maxloc);CHKERRQ(ierr);
 
@@ -157,6 +164,20 @@ int main(int argc,char **argv)
   ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Min = %f, location = %d\n",PetscRealPart(minloc[0]),(PetscInt)minloc[1]);CHKERRQ(ierr);
+*/
+  ierr = PetscThreadReductionBegin(PETSC_COMM_WORLD,THREADCOMM_MINLOC,PETSC_SCALAR,1,&red);CHKERRQ(ierr);
+  ierr = PetscThreadReductionBegin(PETSC_COMM_WORLD,THREADCOMM_MAXLOC,PETSC_SCALAR,1,&red);CHKERRQ(ierr);
+
+  ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)mult_reds_kernel,2,a,red);CHKERRQ(ierr);
+
+  ierr = PetscThreadReductionEnd(red,minloc);CHKERRQ(ierr);
+  ierr = PetscThreadReductionEnd(red,maxloc);CHKERRQ(ierr);
+
+  ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Min = %f, location = %d\n",PetscRealPart(minloc[0]),(PetscInt)minloc[1]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Max = %f, location = %d\n",PetscRealPart(maxloc[0]),(PetscInt)maxloc[1]);CHKERRQ(ierr);
+
 
   ierr = PetscFree(a);CHKERRQ(ierr);
   ierr = PetscFree(trstarts);CHKERRQ(ierr);
