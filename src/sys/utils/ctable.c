@@ -54,7 +54,7 @@ PetscErrorCode  PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
   ta->tablesize = intable->tablesize;
   ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->keytable);CHKERRQ(ierr);
   ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->table);CHKERRQ(ierr);
-  for(i = 0; i < ta->tablesize ; i++){
+  for (i = 0; i < ta->tablesize ; i++){
     ta->keytable[i] = intable->keytable[i]; 
     ta->table[i]    = intable->table[i];
 #if defined(PETSC_USE_DEBUG)    

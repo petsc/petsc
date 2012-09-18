@@ -129,8 +129,8 @@ PetscErrorCode StokesWriteSolution(Stokes *s) {
     ierr = VecGetArray(s->x, &array); CHKERRQ(ierr);
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "solution.dat", &viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "# x, y, u, v, p\n");CHKERRQ(ierr);
-    for(j = 0; j < s->ny; j++) {
-      for(i = 0; i < s->nx; i++) {
+    for (j = 0; j < s->ny; j++) {
+      for (i = 0; i < s->nx; i++) {
         n = j*s->nx+i;
         ierr = PetscViewerASCIIPrintf(viewer, "%.12g %.12g %.12g %.12g %.12g\n", i*s->hx+s->hx/2, j*s->hy+s->hy/2, array[n], array[n+s->nx*s->ny], array[n+2*s->nx*s->ny]);CHKERRQ(ierr);
       }
@@ -196,7 +196,7 @@ PetscErrorCode StokesExactSolution(Stokes *s) {
   // velocity part
   ierr = VecGetSubVector(s->y, s->isg[0], &y0); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(y0, &start, &end); CHKERRQ(ierr);
-  for(row = start; row < end; row++) {
+  for (row = start; row < end; row++) {
     ierr = StokesGetPosition(s, row,&i,&j); CHKERRQ(ierr);
     if (row < s->nx*s->ny) {
       val = StokesExactVelocityX(j*s->hy+s->hy/2);
@@ -210,7 +210,7 @@ PetscErrorCode StokesExactSolution(Stokes *s) {
   // pressure part
   ierr = VecGetSubVector(s->y, s->isg[1], &y1); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(y1, &start, &end); CHKERRQ(ierr);
-  for(row = start; row < end; row++) {
+  for (row = start; row < end; row++) {
     ierr = StokesGetPosition(s, row, &i, &j); CHKERRQ(ierr);
     val  = StokesExactPressure(i*s->hx+s->hx/2);
     ierr = VecSetValue(y1, row, val, INSERT_VALUES); CHKERRQ(ierr);
@@ -229,7 +229,7 @@ PetscErrorCode StokesRhs(Stokes *s) {
   // velocity part
   ierr = VecGetSubVector(s->b, s->isg[0], &b0); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(b0, &start, &end); CHKERRQ(ierr);
-  for(row = start; row < end; row++) {
+  for (row = start; row < end; row++) {
     ierr = StokesGetPosition(s, row, &i, &j); CHKERRQ(ierr);
     if (row < s->nx*s->ny) {
       ierr = StokesRhsMomX(s, i, j, &val); CHKERRQ(ierr);
@@ -243,7 +243,7 @@ PetscErrorCode StokesRhs(Stokes *s) {
   // pressure part
   ierr = VecGetSubVector(s->b, s->isg[1], &b1); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(b1, &start, &end); CHKERRQ(ierr);
-  for(row = start; row < end; row++) {
+  for (row = start; row < end; row++) {
     ierr = StokesGetPosition(s, row, &i, &j); CHKERRQ(ierr);
     ierr = StokesRhsMass(s, i, j, &val); CHKERRQ(ierr);
     ierr = VecSetValue(b1, row, val, INSERT_VALUES); CHKERRQ(ierr);
@@ -267,15 +267,15 @@ PetscErrorCode StokesSetupMatBlock00(Stokes *s) {
   ierr = MatMPIAIJSetPreallocation(s->subA[0],5,PETSC_NULL,5,PETSC_NULL); CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(s->subA[0], &start, &end); CHKERRQ(ierr);
 
-  for(row = start; row < end; row++) {
+  for (row = start; row < end; row++) {
     ierr = StokesGetPosition(s, row, &i, &j); CHKERRQ(ierr);
     // first part: rows 0 to (nx*ny-1)
     ierr = StokesStencilLaplacian(s, i, j, &size, cols, vals);CHKERRQ(ierr);
     // second part: rows (nx*ny) to (2*nx*ny-1)
     if (row >= s->nx*s->ny) {
-      for(i = 0; i < 5; i++) {cols[i] = cols[i] + s->nx*s->ny;}
+      for (i = 0; i < 5; i++) {cols[i] = cols[i] + s->nx*s->ny;}
     }
-    for(i = 0; i < 5; i++) {vals[i] = -1.0*vals[i];} // dynamic viscosity coef mu=-1
+    for (i = 0; i < 5; i++) {vals[i] = -1.0*vals[i];} // dynamic viscosity coef mu=-1
     ierr = MatSetValues(s->subA[0], 1, &row, size, cols, vals, INSERT_VALUES); CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(s->subA[0], MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -300,7 +300,7 @@ PetscErrorCode StokesSetupMatBlock01(Stokes *s) {
 
   ierr = MatSetOption(s->subA[1],MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE); CHKERRQ(ierr);
 
-  for(row = start; row < end; row++) {
+  for (row = start; row < end; row++) {
     ierr = StokesGetPosition(s, row, &i, &j); CHKERRQ(ierr);
     // first part: rows 0 to (nx*ny-1)
     if (row < s->nx*s->ny) {

@@ -57,7 +57,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B,Mat A,const MatFactorInfo *inf
     /* elimination */
     bjtmp = bj + bi[i];
     nzL   = bi[i+1] - bi[i];
-    for(k=0;k < nzL;k++) {
+    for (k=0;k < nzL;k++) {
       row = bjtmp[k];
       pc = rtmp + bs2*row;
       for (flg=0,j=0; j<bs2; j++) { if (pc[j] != (PetscScalar)0.0) { flg = 1; break; }}
@@ -163,7 +163,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B,Mat A,const Ma
     /* elimination */
     bjtmp = bj + bi[i];
     nzL   = bi[i+1] - bi[i];
-    for(k=0;k < nzL;k++) {
+    for (k=0;k < nzL;k++) {
       row = bjtmp[k];
       pc = rtmp + bs2*row;
       for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=(PetscScalar)0.0) { flg = 1; break; }}
@@ -489,7 +489,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B,Mat A,const MatFactorInfo *inf
       bjtmp = bj + bi[i];
       row   = *bjtmp++;
       nzL   = bi[i+1] - bi[i];
-      for(k=0; k < nzL;k++) {
+      for (k=0; k < nzL;k++) {
         pc = rtmp + row;
         if (*pc != (PetscScalar)0.0) {
           pv         = b->a + bdiag[row];
@@ -525,7 +525,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B,Mat A,const MatFactorInfo *inf
       sctx.rs  = rs;
       sctx.pv  = rtmp[i];
       ierr = MatPivotCheck(A,info,&sctx,i);CHKERRQ(ierr);
-      if(sctx.newshift) break; /* break for-loop */
+      if (sctx.newshift) break; /* break for-loop */
       rtmp[i] = sctx.pv; /* sctx.pv might be updated in the case of MAT_SHIFT_INBLOCKS */
 
       /* Mark diagonal and invert diagonal for simplier triangular solves */
@@ -1374,7 +1374,7 @@ PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering(Mat A,Vec bb,Vec xx)
     nz = ai[i+1] - ai[i];
     s = t + bs*i;
     ierr = PetscMemcpy(s,b+bs*i,bs*sizeof(PetscScalar));CHKERRQ(ierr); /* copy i_th block of b to t */
-    for(k=0;k<nz;k++){
+    for (k=0;k<nz;k++){
       PetscKernel_v_gets_v_minus_A_times_w(bs,s,v,t+bs*vi[k]);
       v += bs2;
     }
@@ -1387,7 +1387,7 @@ PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering(Mat A,Vec bb,Vec xx)
     vi = aj + adiag[i+1]+1;
     nz = adiag[i] - adiag[i+1]-1;
     ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
-    for(k=0;k<nz;k++){
+    for (k=0;k<nz;k++){
       PetscKernel_v_gets_v_minus_A_times_w(bs,ls,v,t+bs*vi[k]);
       v += bs2;
     }
@@ -1430,7 +1430,7 @@ PetscErrorCode MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
     nz = ai[i+1] - ai[i];
     s = t + bs*i;
     ierr = PetscMemcpy(s,b+bs*r[i],bs*sizeof(PetscScalar));CHKERRQ(ierr);
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       PetscKernel_v_gets_v_minus_A_times_w(bs,s,v,t+bs*vi[m]);
       v += bs2;
     }
@@ -1443,7 +1443,7 @@ PetscErrorCode MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
     vi = aj + adiag[i+1]+1;
     nz = adiag[i] - adiag[i+1] - 1;
     ierr = PetscMemcpy(ls,t+i*bs,bs*sizeof(PetscScalar));CHKERRQ(ierr);
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       PetscKernel_v_gets_v_minus_A_times_w(bs,ls,v,t+bs*vi[m]);
       v += bs2;
     }

@@ -135,7 +135,7 @@ PetscErrorCode Update_q(Vec q,Vec u,Mat M_0,AppCtx *user)
   ierr = VecGetLocalSize(u,&n);CHKERRQ(ierr);
   ierr = VecGetArray(q,&q_arr);CHKERRQ(ierr);
   ierr = VecGetArray(user->work1,&w_arr);CHKERRQ(ierr);
-  for(i=0;i<n;i++) {
+  for (i=0;i<n;i++) {
     q_arr[2*i]=q_arr[2*i+1] = w_arr[i];
   }
   ierr = VecRestoreArray(q,&q_arr);CHKERRQ(ierr);
@@ -168,7 +168,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(user->u,&u);CHKERRQ(ierr);
   /* Set initial guess, only set value for 2nd dof */
-  for(i=0;i<n/2;i++) {
+  for (i=0;i<n/2;i++) {
     x[2*i+1] = u[i];
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
@@ -224,8 +224,8 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
-  for(j=ys; j < ys+ym; j++) {
-    for(i=xs; i < xs+xm;i++) {
+  for (j=ys; j < ys+ym; j++) {
+    for (i=xs; i < xs+xm;i++) {
       l[j][i][0] = -SNES_VI_INF;
       l[j][i][1] = -1.0;
       u[j][i][0] = SNES_VI_INF;
@@ -336,7 +336,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
   /* Get local element info */
   ierr = DMDAGetElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
-  for(i=0;i < nele;i++) {
+  for (i=0;i < nele;i++) {
     idx[0] = ele[3*i]; idx[1] = ele[3*i+1]; idx[2] = ele[3*i+2];
     x[0] = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
     x[1] = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
@@ -354,7 +354,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     eM_2[2][0]=eM_2[2][1]=eM_2[2][2]=0.0;
 
 
-    for(m=0;m<3;m++) {
+    for (m=0;m<3;m++) {
       ierr = PetscMemzero(phi,3*sizeof(PetscScalar));CHKERRQ(ierr);
       phider[0][0]=phider[0][1]=0.0;
       phider[1][0]=phider[1][1]=0.0;
@@ -362,15 +362,15 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
       
       ShapefunctionsT3(phi,phider,xx[m],yy[m],x,y);
 
-      for(j=0;j<3;j++) {
-	for(k=0;k<3;k++) {
+      for (j=0;j<3;j++) {
+	for (k=0;k<3;k++) {
 	  eM_0[k][j] += phi[j]*phi[k]*w;
 	  eM_2[k][j] += phider[j][0]*phider[k][0]*w + phider[j][1]*phider[k][1]*w;
 	}
       }
     }
 
-    for(r=0;r<3;r++) {
+    for (r=0;r<3;r++) {
       row = 2*idx[r];
       cols[0] = 2*idx[0];     vals[0] = dt*eM_2[r][0];
       cols[1] = 2*idx[0]+1;   vals[1] = eM_0[r][0];

@@ -234,7 +234,7 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
   ierr = VecGetArray(user->eta,&eta_p);CHKERRQ(ierr);
 
 
-  for(i=0;i<n;i++) {
+  for (i=0;i<n;i++) {
     wv_p[i] = xx[5*i];
     cv_p[i] = xx[5*i+1];
     wi_p[i] = xx[5*i+2];
@@ -539,7 +539,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
   
   for (j=ys; j<ys+ym; j++) {
-    for(i=xs; i < xs+xm;i++) {
+    for (i=xs; i < xs+xm;i++) {
       l[j][i][0] = -SNES_VI_INF;
       l[j][i][1] = 0.0;
       l[j][i][2] = -SNES_VI_INF;
@@ -681,7 +681,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   eM_2_even[0][2] = eM_2_even[2][0] = 0.0;
 
 
-  for(k=0;k < Mda*Nda*2;k++) {
+  for (k=0;k < Mda*Nda*2;k++) {
     idx[0] = connect[k*3];
     idx[1] = connect[k*3+1];
     idx[2] = connect[k*3+2];
@@ -689,7 +689,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     PetscInt    row,cols[6],r,row_M_0,cols3[3];
     PetscScalar vals[6],vals_M_0[3],vals3[3];
     
-    for(r=0;r<3;r++) {
+    for (r=0;r<3;r++) {
       row_M_0 = connect[k*3+r];
       
       vals_M_0[0]=eM_0[r][0];
@@ -899,7 +899,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
     }
   }
       
-  for(k=0;k < Mda*Nda*2;k++) {
+  for (k=0;k < Mda*Nda*2;k++) {
     idx[0] = connect[k*3];
     idx[1] = connect[k*3+1];
     idx[2] = connect[k*3+2];
@@ -940,7 +940,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
 
     
   /* Get local element info */
-  for(k=0;k < Mda*Nda*2;k++) {
+  for (k=0;k < Mda*Nda*2;k++) {
     idx[0] = connect[k*3];
       idx[1] = connect[k*3+1];
       idx[2] = connect[k*3+2];
@@ -948,7 +948,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
       PetscInt    row,cols[3],r;     
       PetscScalar vals[3];
     
-      for(r=0;r<3;r++) {
+      for (r=0;r<3;r++) {
                       
         // cv_sum = (1.0e-3+cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
         //ci_sum = (1.0e-3+ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);

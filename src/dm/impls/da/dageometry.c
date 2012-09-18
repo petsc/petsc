@@ -9,16 +9,16 @@ PETSC_STATIC_INLINE PetscErrorCode FillClosureArray_Private(DM dm, PetscSection 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for(i = 0; i < nP; ++i) {
+  for (i = 0; i < nP; ++i) {
     ierr = PetscSectionGetDof(section, points[i], &dof);CHKERRQ(ierr);
     size += dof;
   }
   ierr = DMGetWorkArray(dm, size, PETSC_SCALAR, &a);CHKERRQ(ierr);
-  for(i = 0, k = 0; i < nP; ++i) {
+  for (i = 0, k = 0; i < nP; ++i) {
     ierr = PetscSectionGetDof(section, points[i], &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, points[i], &off);CHKERRQ(ierr);
 
-    for(d = 0; d < dof; ++d, ++k) {
+    for (d = 0; d < dof; ++d, ++k) {
       a[k] = vArray[off+d];
     }
   }
@@ -35,20 +35,20 @@ PETSC_STATIC_INLINE PetscErrorCode FillClosureVec_Private(DM dm, PetscSection se
 
   PetscFunctionBegin;
   if ((mode == INSERT_VALUES) || (mode == INSERT_ALL_VALUES)) {
-    for(i = 0, k = 0; i < nP; ++i) {
+    for (i = 0, k = 0; i < nP; ++i) {
       ierr = PetscSectionGetDof(section, points[i], &dof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(section, points[i], &off);CHKERRQ(ierr);
 
-      for(d = 0; d < dof; ++d, ++k) {
+      for (d = 0; d < dof; ++d, ++k) {
         vArray[off+d] = array[k];
       }
     }
   } else {
-    for(i = 0, k = 0; i < nP; ++i) {
+    for (i = 0, k = 0; i < nP; ++i) {
       ierr = PetscSectionGetDof(section, points[i], &dof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(section, points[i], &off);CHKERRQ(ierr);
 
-      for(d = 0; d < dof; ++d, ++k) {
+      for (d = 0; d < dof; ++d, ++k) {
         vArray[off+d] += array[k];
       }
     }
@@ -585,12 +585,12 @@ PetscErrorCode DMDAComputeCellGeometry(DM dm, PetscInt cell, PetscQuadrature *qu
   ierr = DMDAGetCoordinates(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMDAGetCoordinateDA(dm, &cdm);CHKERRQ(ierr);
   ierr = DMDAVecGetClosure(cdm, PETSC_NULL, coordinates, cell, &vertices);CHKERRQ(ierr);
-  for(d = 0; d < dim; ++d) {
+  for (d = 0; d < dim; ++d) {
     v0[d] = PetscRealPart(vertices[d]);
   }
   switch(dim) {
   case 2:
-    for(q = 0; q < quad->numQuadPoints; ++q) {
+    for (q = 0; q < quad->numQuadPoints; ++q) {
       ierr = DMDAComputeCellGeometry_2D(dm, vertices, &quad->quadPoints[q*dim], J, invJ, detJ);CHKERRQ(ierr);
     }
     break;

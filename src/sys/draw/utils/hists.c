@@ -299,7 +299,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
     /* Calculate number of points in each bin */
     bins    = hist->bins;
     bins[0] = 0.;
-    for(p = 0; p < numValues; p++) {
+    for (p = 0; p < numValues; p++) {
       if (values[p] == xmin) bins[0]++;
       mean += values[p];
       var  += values[p]*values[p];
@@ -347,7 +347,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
     for (i = 0; i < numBins; i++) {
       binLeft   = xmin + binSize*i;
       binRight  = xmin + binSize*(i+1);
-      for(p = 0; p < numValues; p++) {
+      for (p = 0; p < numValues; p++) {
         if ((values[p] >= binLeft) && (values[p] < binRight)) bins[i]++;
         /* Handle last bin separately */
         if ((i == numBins-1) && (values[p] == binRight)) bins[i]++;
@@ -425,7 +425,7 @@ PetscErrorCode  PetscDrawHGPrint(PetscDrawHG hist)
     /* Calculate number of points in the bin */
     bins    = hist->bins;
     bins[0] = 0.;
-    for(p = 0; p < numValues; p++) {
+    for (p = 0; p < numValues; p++) {
       if (values[p] == xmin) bins[0]++;
       mean += values[p];
       var  += values[p]*values[p];
@@ -451,7 +451,7 @@ PetscErrorCode  PetscDrawHGPrint(PetscDrawHG hist)
     for (i = 0; i < numBins; i++) {
       binLeft   = xmin + binSize*i;
       binRight  = xmin + binSize*(i+1);
-      for(p = 0; p < numValues; p++) {
+      for (p = 0; p < numValues; p++) {
         if ((values[p] >= binLeft) && (values[p] < binRight)) bins[i]++;
         /* Handle last bin separately */
         if ((i == numBins-1) && (values[p] == binRight)) bins[i]++;

@@ -547,10 +547,10 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
 
   PetscFunctionBegin;
   /* Currently, unsorted column indices will result in inverted column indices in the resulting submatrices. */
-  for(i = 0; i < ismax; ++i) {
+  for (i = 0; i < ismax; ++i) {
     PetscBool sorted;
     ierr = ISSorted(iscol[i], &sorted); CHKERRQ(ierr);
-    if(!sorted) SETERRQ1(((PetscObject)iscol[i])->comm, PETSC_ERR_SUP, "Column index set %D not sorted", i);
+    if (!sorted) SETERRQ1(((PetscObject)iscol[i])->comm, PETSC_ERR_SUP, "Column index set %D not sorted", i);
   }
   /* The compression and expansion should be avoided. Doesn't point
      out errors, might change the indices, hence buggey */
@@ -1377,7 +1377,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
 #if defined (PETSC_USE_CTABLE)
 	  ierr = PetscTableFind(rmap_i,row+1,&row);CHKERRQ(ierr); 
           row--; 
-          if(row < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table"); }
+          if (row < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row not found in table"); }
 #else
           row   = rmap_i[row];
 #endif

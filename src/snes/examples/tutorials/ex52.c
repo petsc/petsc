@@ -215,7 +215,7 @@ PetscErrorCode FormInitialGuess(Vec X, void (*guessFunc)(const PetscReal [], Pet
   ierr = DMComplexGetDefaultSection(user->dm, &section);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateSection(user->dm, &cSection);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateVec(user->dm, &coordinates);CHKERRQ(ierr);
-  for(v = vStart; v < vEnd; ++v) {
+  for (v = vStart; v < vEnd; ++v) {
     PetscScalar  values[3];
     PetscScalar *coords;
 
@@ -259,7 +259,7 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = PetscMalloc3(dim,PetscScalar,&realSpaceDer,dim,PetscScalar,&fieldGrad,numBasisFuncs,PetscScalar,&elemVec);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
     PetscInt           q, f, d, e;
 
@@ -269,43 +269,43 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
     ierr = DMComplexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
     if (debug > 1) {ierr = DMPrintCellVector(c, "Solution", numBasisFuncs, x);CHKERRQ(ierr);}
 
-    for(q = 0; q < numQuadPoints; ++q) {
+    for (q = 0; q < numQuadPoints; ++q) {
       PetscScalar fieldVal = 0.0;
 
       if (debug > 1) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      for(d = 0; d < dim; ++d) {
+      for (d = 0; d < dim; ++d) {
         fieldGrad[d] = 0.0;
         coords[d] = v0[d];
-        for(e = 0; e < dim; ++e) {
+        for (e = 0; e < dim; ++e) {
           coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
         }
         if (debug > 1) {ierr = PetscPrintf(PETSC_COMM_SELF, "    coords[%d] %g\n", d, coords[d]);CHKERRQ(ierr);}
       }
-      for(f = 0; f < numBasisFuncs; ++f) {
+      for (f = 0; f < numBasisFuncs; ++f) {
         fieldVal += x[f]*basis[q*numBasisFuncs+f];
 
-        for(d = 0; d < dim; ++d) {
+        for (d = 0; d < dim; ++d) {
           realSpaceDer[d] = 0.0;
-          for(e = 0; e < dim; ++e) {
+          for (e = 0; e < dim; ++e) {
             realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
           }
           fieldGrad[d] += realSpaceDer[d]*x[f];
         }
       }
       if (debug > 1) {
-        for(d = 0; d < dim; ++d) {
+        for (d = 0; d < dim; ++d) {
           PetscPrintf(PETSC_COMM_SELF, "    fieldGrad[%d] %g\n", d, fieldGrad[d]);
         }
       }
       const PetscScalar funcVal = 0.0; //(*rhsFunc)(coords);
-      for(f = 0; f < numBasisFuncs; ++f) {
+      for (f = 0; f < numBasisFuncs; ++f) {
         /* Constant term: -f(x) */
         elemVec[f] -= basis[q*numBasisFuncs+f]*funcVal*quadWeights[q]*detJ;
         /* Linear term: -\Delta u */
         PetscScalar product = 0.0;
-        for(d = 0; d < dim; ++d) {
+        for (d = 0; d < dim; ++d) {
           realSpaceDer[d] = 0.0;
-          for(e = 0; e < dim; ++e) {
+          for (e = 0; e < dim; ++e) {
             realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
           }
           product += realSpaceDer[d]*fieldGrad[d];
@@ -323,7 +323,7 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual:\n");CHKERRQ(ierr);
-  for(p = 0; p < user->numProcs; ++p) {
+  for (p = 0; p < user->numProcs; ++p) {
     if (p == user->rank) {ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
     ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
   }
@@ -361,7 +361,7 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = PetscMalloc3(dim,PetscScalar,&realSpaceDer,dim*numBasisComps,PetscScalar,&fieldGrad,numBasisFuncs*numBasisComps,PetscScalar,&elemVec);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
     PetscInt           q, d, e, f, comp;
 
@@ -371,29 +371,29 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
     ierr = DMComplexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
     if (debug > 1) {ierr = DMPrintCellVector(c, "Solution", numBasisFuncs*numBasisComps, x);CHKERRQ(ierr);}
 
-    for(q = 0; q < numQuadPoints; ++q) {
+    for (q = 0; q < numQuadPoints; ++q) {
       PetscScalar fieldVal[3] = {0.0,0.0,0.0};
 
       if (debug > 1) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      for(d = 0; d < dim; ++d) {
-        for(comp = 0; comp < numBasisComps; ++comp) {
+      for (d = 0; d < dim; ++d) {
+        for (comp = 0; comp < numBasisComps; ++comp) {
           fieldGrad[comp*dim+d] = 0.0;
         }
         coords[d] = v0[d];
-        for(e = 0; e < dim; ++e) {
+        for (e = 0; e < dim; ++e) {
           coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
         }
         if (debug > 1) {ierr = PetscPrintf(PETSC_COMM_SELF, "    coords[%d] %g\n", d, coords[d]);CHKERRQ(ierr);}
       }
-      for(f = 0; f < numBasisFuncs; ++f) {
-        for(comp = 0; comp < numBasisComps; ++comp) {
+      for (f = 0; f < numBasisFuncs; ++f) {
+        for (comp = 0; comp < numBasisComps; ++comp) {
           const PetscInt cidx = f*numBasisComps+comp;
 
           fieldVal[comp] += x[cidx]*basis[q*numBasisFuncs*numBasisComps+cidx];
 
-          for(d = 0; d < dim; ++d) {
+          for (d = 0; d < dim; ++d) {
             realSpaceDer[d] = 0.0;
-            for(e = 0; e < dim; ++e) {
+            for (e = 0; e < dim; ++e) {
               realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs*numBasisComps+cidx)*dim+e];
             }
             fieldGrad[comp*dim+d] += realSpaceDer[d]*x[cidx];
@@ -401,24 +401,24 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
         }
       }
       if (debug > 1) {
-        for(comp = 0; comp < numBasisComps; ++comp) {
-          for(d = 0; d < dim; ++d) {
+        for (comp = 0; comp < numBasisComps; ++comp) {
+          for (d = 0; d < dim; ++d) {
             PetscPrintf(PETSC_COMM_SELF, "    field %d gradient[%d] %g\n", comp, d, fieldGrad[comp*dim+d]);
           }
         }
       }
       const PetscScalar funcVal[3] = {0.0, 0.0, 0.0}; //(*rhsFunc)(coords);
-      for(f = 0; f < numBasisFuncs; ++f) {
-        for(comp = 0; comp < numBasisComps; ++comp) {
+      for (f = 0; f < numBasisFuncs; ++f) {
+        for (comp = 0; comp < numBasisComps; ++comp) {
           const PetscInt cidx = f*numBasisComps+comp;
 
           /* Constant term: -f(x) */
           elemVec[cidx] -= basis[q*numBasisFuncs*numBasisComps+cidx]*funcVal[comp]*quadWeights[q]*detJ;
           /* Linear term: -\Delta u */
           PetscScalar product = 0.0;
-          for(d = 0; d < dim; ++d) {
+          for (d = 0; d < dim; ++d) {
             realSpaceDer[d] = 0.0;
-            for(e = 0; e < dim; ++e) {
+            for (e = 0; e < dim; ++e) {
               realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs*numBasisComps+cidx)*dim+e];
             }
             product += realSpaceDer[d]*0.5*(fieldGrad[comp*dim+d] + fieldGrad[d*dim+comp]);
@@ -437,7 +437,7 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual:\n");CHKERRQ(ierr);
-  for(p = 0; p < user->numProcs; ++p) {
+  for (p = 0; p < user->numProcs; ++p) {
     if (p == user->rank) {ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
     ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
   }
@@ -453,7 +453,7 @@ void f1_laplacian(PetscScalar u, const PetscScalar gradU[], PetscScalar f1[]) {
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
-  for(d = 0; d < dim; ++d) {
+  for (d = 0; d < dim; ++d) {
     f1[d] = gradU[d];
   }
   return;
@@ -469,7 +469,7 @@ PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscS
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->integrateBatchCPUEvent,0,0,0,0);CHKERRQ(ierr);
-  for(e = 0; e < Ne; ++e) {
+  for (e = 0; e < Ne; ++e) {
     const PetscReal  detJ = jacobianDeterminants[e];
     const PetscReal *invJ = &jacobianInverses[e*dim*dim];
     PetscScalar      f1[SPATIAL_DIM_0/*1*/]; // Nq = 1
@@ -479,19 +479,19 @@ PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscS
       ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF, "  invJ: %g %g %g %g\n", invJ[0], invJ[1], invJ[2], invJ[3]);CHKERRQ(ierr);
     }
-    for(q = 0; q < Nq; ++q) {
+    for (q = 0; q < Nq; ++q) {
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       PetscScalar u = 0.0;
       PetscScalar gradU[SPATIAL_DIM_0];
 
-      for(d = 0; d < dim; ++d) {gradU[d] = 0.0;}
-      for(b = 0; b < Nb; ++b) {
+      for (d = 0; d < dim; ++d) {gradU[d] = 0.0;}
+      for (b = 0; b < Nb; ++b) {
         PetscScalar realSpaceDer[SPATIAL_DIM_0];
 
         u += coefficients[e*Nb+b]*basisTabulation[q*Nb+b];
-        for(d = 0; d < dim; ++d) {
+        for (d = 0; d < dim; ++d) {
           realSpaceDer[d] = 0.0;
-          for(f = 0; f < dim; ++f) {
+          for (f = 0; f < dim; ++f) {
             realSpaceDer[d] += invJ[f*dim+d]*basisDerTabulation[(q*Nb+b)*dim+f];
           }
           gradU[d] += coefficients[e*Nb+b]*realSpaceDer[d];
@@ -505,14 +505,14 @@ PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscS
         ierr = PetscPrintf(PETSC_COMM_SELF, "    f1[%d]: %g\n", 1, f1[q*dim+1]);CHKERRQ(ierr);
       }
     }
-    for(b = 0; b < Nb; ++b) {
+    for (b = 0; b < Nb; ++b) {
       elemVec[e*Nb+b] = 0.0;
-      for(q = 0; q < Nq; ++q) {
+      for (q = 0; q < Nq; ++q) {
         PetscScalar realSpaceDer[SPATIAL_DIM_0];
 
-        for(d = 0; d < dim; ++d) {
+        for (d = 0; d < dim; ++d) {
           realSpaceDer[d] = 0.0;
-          for(f = 0; f < dim; ++f) {
+          for (f = 0; f < dim; ++f) {
             realSpaceDer[d] += invJ[f*dim+d]*basisDerTabulation[(q*Nb+b)*dim+f];
           }
           elemVec[e*Nb+b] += realSpaceDer[d]*f1[q*dim+d];
@@ -530,8 +530,8 @@ void f1_elasticity(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[])
   const PetscInt Ncomp = dim;
   PetscInt       comp, d;
 
-  for(comp = 0; comp < Ncomp; ++comp) {
-    for(d = 0; d < dim; ++d) {
+  for (comp = 0; comp < Ncomp; ++comp) {
+    for (d = 0; d < dim; ++d) {
       f1[comp*dim+d] = 0.5*(gradU[comp*dim+d] + gradU[d*dim+comp]);
     }
   }
@@ -548,7 +548,7 @@ PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Nc
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->integrateBatchCPUEvent,0,0,0,0);CHKERRQ(ierr);
-  for(e = 0; e < Ne; ++e) {
+  for (e = 0; e < Ne; ++e) {
     const PetscReal  detJ = jacobianDeterminants[e];
     const PetscReal *invJ = &jacobianInverses[e*dim*dim];
     PetscScalar      f1[SPATIAL_DIM_0*SPATIAL_DIM_0/*1*/]; // Nq = 1
@@ -557,28 +557,28 @@ PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Nc
     if (debug > 1) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF, "  invJ:");CHKERRQ(ierr);
-      for(i = 0; i < dim*dim; ++i) {
+      for (i = 0; i < dim*dim; ++i) {
         ierr = PetscPrintf(PETSC_COMM_SELF, " %g", invJ[i]);CHKERRQ(ierr);
       }
       ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
     }
-    for(q = 0; q < Nq; ++q) {
+    for (q = 0; q < Nq; ++q) {
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       PetscScalar u[SPATIAL_DIM_0];
       PetscScalar gradU[SPATIAL_DIM_0*SPATIAL_DIM_0];
 
-      for(i = 0; i < dim; ++i) {u[i] = 0.0;}
-      for(i = 0; i < dim*dim; ++i) {gradU[i] = 0.0;}
-      for(b = 0; b < Nb; ++b) {
-        for(comp = 0; comp < Ncomp; ++comp) {
+      for (i = 0; i < dim; ++i) {u[i] = 0.0;}
+      for (i = 0; i < dim*dim; ++i) {gradU[i] = 0.0;}
+      for (b = 0; b < Nb; ++b) {
+        for (comp = 0; comp < Ncomp; ++comp) {
           const PetscInt cidx = b*Ncomp+comp;
           PetscScalar    realSpaceDer[SPATIAL_DIM_0];
           PetscInt       d, f;
 
           u[comp] += coefficients[e*Nb*Ncomp+cidx]*basisTabulation[q*Nb*Ncomp+cidx];
-          for(d = 0; d < dim; ++d) {
+          for (d = 0; d < dim; ++d) {
             realSpaceDer[d] = 0.0;
-            for(f = 0; f < dim; ++f) {
+            for (f = 0; f < dim; ++f) {
               realSpaceDer[d] += invJ[f*dim+d]*basisDerTabulation[(q*Nb*Ncomp+cidx)*dim+f];
             }
             gradU[comp*dim+d] += coefficients[e*Nb*Ncomp+cidx]*realSpaceDer[d];
@@ -586,30 +586,30 @@ PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Nc
         }
       }
       f1_elasticity(u, gradU, &f1[q*Ncomp*dim]);
-      for(i = 0; i < Ncomp*dim; ++i) {
+      for (i = 0; i < Ncomp*dim; ++i) {
         f1[q*Ncomp*dim+i] *= detJ*quadWeights[q];
       }
       if (debug > 1) {
         PetscInt c, d;
-        for(c = 0; c < Ncomp; ++c) {
-          for(d = 0; d < dim; ++d) {
+        for (c = 0; c < Ncomp; ++c) {
+          for (d = 0; d < dim; ++d) {
             ierr = PetscPrintf(PETSC_COMM_SELF, "    gradU[%d]_%c: %g f1[%d]_%c: %g\n", c, 'x'+d, gradU[c*dim+d], c, 'x'+d, f1[(q*Ncomp + c)*dim+d]);CHKERRQ(ierr);
           }
         }
       }
     }
-    for(b = 0; b < Nb; ++b) {
-      for(comp = 0; comp < Ncomp; ++comp) {
+    for (b = 0; b < Nb; ++b) {
+      for (comp = 0; comp < Ncomp; ++comp) {
         const PetscInt cidx = b*Ncomp+comp;
         PetscInt       q, d, f;
 
         elemVec[e*Nb*Ncomp+cidx] = 0.0;
-        for(q = 0; q < Nq; ++q) {
+        for (q = 0; q < Nq; ++q) {
           PetscScalar realSpaceDer[SPATIAL_DIM_0];
 
-          for(d = 0; d < dim; ++d) {
+          for (d = 0; d < dim; ++d) {
             realSpaceDer[d] = 0.0;
-            for(f = 0; f < dim; ++f) {
+            for (f = 0; f < dim; ++f) {
               realSpaceDer[d] += invJ[f*dim+d]*basisDerTabulation[(q*Nb*Ncomp+cidx)*dim+f];
             }
             elemVec[e*Nb*Ncomp+cidx] += realSpaceDer[d]*f1[(q*Ncomp+comp)*dim+d];
@@ -657,14 +657,14 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   PetscScalar   *u;
 
   ierr = PetscMalloc4(numCells*numBasisFuncs*numBasisComps,PetscScalar,&u,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*numBasisFuncs*numBasisComps,PetscScalar,&elemVec);CHKERRQ(ierr);
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
     PetscInt           f;
 
     ierr = DMComplexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
     ierr = DMComplexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
 
-    for(f = 0; f < numBasisFuncs*numBasisComps; ++f) {
+    for (f = 0; f < numBasisFuncs*numBasisComps; ++f) {
       u[c*numBasisFuncs*numBasisComps+f] = x[f];
     }
   }
@@ -702,7 +702,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user->op);
   }
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     if (debug) {ierr = DMPrintCellVector(c, "Residual", numBasisFuncs*numBasisComps, &elemVec[c*numBasisFuncs*numBasisComps]);CHKERRQ(ierr);}
     ierr = DMComplexVecSetClosure(dm, PETSC_NULL, F, c, &elemVec[c*numBasisFuncs*numBasisComps], ADD_VALUES);CHKERRQ(ierr);
   }
@@ -711,7 +711,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   if (user->showResidual) {
     PetscInt p;
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual:\n");CHKERRQ(ierr);
-    for(p = 0; p < user->numProcs; ++p) {
+    for (p = 0; p < user->numProcs; ++p) {
       if (p == user->rank) {ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
       ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
     }
@@ -747,7 +747,7 @@ PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, Mat JacPre, App
   ierr = PetscMalloc3(dim,PetscScalar,&realSpaceTestDer,dim,PetscScalar,&realSpaceBasisDer,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
     PetscInt           q;
 
@@ -756,30 +756,30 @@ PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, Mat JacPre, App
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMComplexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
 
-    for(q = 0; q < numQuadPoints; ++q) {
+    for (q = 0; q < numQuadPoints; ++q) {
       PetscScalar fieldVal = 0.0;
       PetscInt    f, g, d, e;
 
-      for(f = 0; f < numBasisFuncs; ++f) {
+      for (f = 0; f < numBasisFuncs; ++f) {
         fieldVal += x[f]*basis[q*numBasisFuncs+f];
       }
-      for(f = 0; f < numBasisFuncs; ++f) {
-        for(d = 0; d < dim; ++d) {
+      for (f = 0; f < numBasisFuncs; ++f) {
+        for (d = 0; d < dim; ++d) {
           realSpaceTestDer[d] = 0.0;
-          for(e = 0; e < dim; ++e) {
+          for (e = 0; e < dim; ++e) {
             realSpaceTestDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
           }
         }
-        for(g = 0; g < numBasisFuncs; ++g) {
-          for(d = 0; d < dim; ++d) {
+        for (g = 0; g < numBasisFuncs; ++g) {
+          for (d = 0; d < dim; ++d) {
             realSpaceBasisDer[d] = 0.0;
-            for(e = 0; e < dim; ++e) {
+            for (e = 0; e < dim; ++e) {
               realSpaceBasisDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
             }
           }
           /* Linear term: -\Delta u */
           PetscScalar product = 0.0;
-          for(d = 0; d < dim; ++d) product += realSpaceTestDer[d]*realSpaceBasisDer[d];
+          for (d = 0; d < dim; ++d) product += realSpaceTestDer[d]*realSpaceBasisDer[d];
           elemMat[f*numBasisFuncs+g] += product*quadWeights[q]*detJ;
           /* Nonlinear term: -\lambda e^{u} */
           elemMat[f*numBasisFuncs+g] -= basis[q*numBasisFuncs+f]*basis[q*numBasisFuncs+g]*0.0*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
@@ -831,7 +831,7 @@ PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, Ap
   ierr = PetscMalloc3(dim,PetscScalar,&realSpaceTestDer,dim,PetscScalar,&realSpaceBasisDer,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
     PetscInt           q;
 
@@ -840,30 +840,30 @@ PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, Ap
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMComplexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
 
-    for(q = 0; q < numQuadPoints; ++q) {
+    for (q = 0; q < numQuadPoints; ++q) {
       PetscScalar fieldVal = 0.0;
       PetscInt    f, g, d, e;
 
-      for(f = 0; f < numBasisFuncs; ++f) {
+      for (f = 0; f < numBasisFuncs; ++f) {
         fieldVal += x[f]*basis[q*numBasisFuncs+f];
       }
-      for(f = 0; f < numBasisFuncs; ++f) {
-        for(d = 0; d < dim; ++d) {
+      for (f = 0; f < numBasisFuncs; ++f) {
+        for (d = 0; d < dim; ++d) {
           realSpaceTestDer[d] = 0.0;
-          for(e = 0; e < dim; ++e) {
+          for (e = 0; e < dim; ++e) {
             realSpaceTestDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
           }
         }
-        for(g = 0; g < numBasisFuncs; ++g) {
-          for(d = 0; d < dim; ++d) {
+        for (g = 0; g < numBasisFuncs; ++g) {
+          for (d = 0; d < dim; ++d) {
             realSpaceBasisDer[d] = 0.0;
-            for(e = 0; e < dim; ++e) {
+            for (e = 0; e < dim; ++e) {
               realSpaceBasisDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
             }
           }
           /* Linear term: -\Delta u */
           PetscScalar product = 0.0;
-          for(d = 0; d < dim; ++d) product += realSpaceTestDer[d]*realSpaceBasisDer[d];
+          for (d = 0; d < dim; ++d) product += realSpaceTestDer[d]*realSpaceBasisDer[d];
           elemMat[f*numBasisFuncs+g] += product*quadWeights[q]*detJ;
           /* Nonlinear term: -\lambda e^{u} */
           elemMat[f*numBasisFuncs+g] -= basis[q*numBasisFuncs+f]*basis[q*numBasisFuncs+g]*0.0*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
@@ -915,7 +915,7 @@ PetscErrorCode FormJacobianLocalBatch(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx 
   ierr = PetscMalloc3(dim,PetscScalar,&realSpaceTestDer,dim,PetscScalar,&realSpaceBasisDer,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
     PetscInt           q;
 
@@ -924,30 +924,30 @@ PetscErrorCode FormJacobianLocalBatch(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx 
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMComplexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
 
-    for(q = 0; q < numQuadPoints; ++q) {
+    for (q = 0; q < numQuadPoints; ++q) {
       PetscScalar fieldVal = 0.0;
       PetscInt    f, g, d, e;
 
-      for(f = 0; f < numBasisFuncs; ++f) {
+      for (f = 0; f < numBasisFuncs; ++f) {
         fieldVal += x[f]*basis[q*numBasisFuncs+f];
       }
-      for(f = 0; f < numBasisFuncs; ++f) {
-        for(d = 0; d < dim; ++d) {
+      for (f = 0; f < numBasisFuncs; ++f) {
+        for (d = 0; d < dim; ++d) {
           realSpaceTestDer[d] = 0.0;
-          for(e = 0; e < dim; ++e) {
+          for (e = 0; e < dim; ++e) {
             realSpaceTestDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
           }
         }
-        for(g = 0; g < numBasisFuncs; ++g) {
-          for(d = 0; d < dim; ++d) {
+        for (g = 0; g < numBasisFuncs; ++g) {
+          for (d = 0; d < dim; ++d) {
             realSpaceBasisDer[d] = 0.0;
-            for(e = 0; e < dim; ++e) {
+            for (e = 0; e < dim; ++e) {
               realSpaceBasisDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
             }
           }
           /* Linear term: -\Delta u */
           PetscScalar product = 0.0;
-          for(d = 0; d < dim; ++d) product += realSpaceTestDer[d]*realSpaceBasisDer[d];
+          for (d = 0; d < dim; ++d) product += realSpaceTestDer[d]*realSpaceBasisDer[d];
           elemMat[f*numBasisFuncs+g] += product*quadWeights[q]*detJ;
           /* Nonlinear term: -\lambda e^{u} */
           elemMat[f*numBasisFuncs+g] -= basis[q*numBasisFuncs+f]*basis[q*numBasisFuncs+g]*0.0*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;

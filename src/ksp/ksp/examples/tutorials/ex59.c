@@ -91,33 +91,33 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt** xadj, PetscInt** a
 
   /* first count dimension of adjncy */
   count_adj=0;
-  for(k=0;k<dd.zm_l;k++) {
+  for (k=0;k<dd.zm_l;k++) {
     internal_node = PETSC_TRUE;
     kstart_csr=1;
     kend_csr=dd.zm_l-1;
-    if(k == 0 || k == dd.zm_l-1) {
+    if (k == 0 || k == dd.zm_l-1) {
       internal_node = PETSC_FALSE;
       kstart_csr=k;
       kend_csr=k+1;
     }
-    for(j=0;j<dd.ym_l;j++) {
+    for (j=0;j<dd.ym_l;j++) {
       jstart_csr=1;
       jend_csr=dd.ym_l-1;
-      if(j == 0 || j == dd.ym_l-1) {
+      if (j == 0 || j == dd.ym_l-1) {
         internal_node = PETSC_FALSE;
         jstart_csr=j;
         jend_csr=j+1;
       }
-      for(i=0;i<dd.xm_l;i++) {
+      for (i=0;i<dd.xm_l;i++) {
         istart_csr=1;
         iend_csr=dd.xm_l-1;
-        if(i == 0 || i == dd.xm_l-1) {
+        if (i == 0 || i == dd.xm_l-1) {
           internal_node = PETSC_FALSE;
           istart_csr=i;
           iend_csr=i+1;
         }
         iindex=k*dd.xm_l*dd.ym_l+j*dd.xm_l+i;
-        if(internal_node) {
+        if (internal_node) {
           istart_csr=i;
           iend_csr=i+1;
           jstart_csr=j;
@@ -125,9 +125,9 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt** xadj, PetscInt** a
           kstart_csr=k;
           kend_csr=k+1;
         }
-        for(kk=kstart_csr;kk<kend_csr;kk++) {
-          for(jj=jstart_csr;jj<jend_csr;jj++) {
-            for(ii=istart_csr;ii<iend_csr;ii++) {
+        for (kk=kstart_csr;kk<kend_csr;kk++) {
+          for (jj=jstart_csr;jj<jend_csr;jj++) {
+            for (ii=istart_csr;ii<iend_csr;ii++) {
               count_adj=count_adj+1;
             }
           }
@@ -140,34 +140,34 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt** xadj, PetscInt** a
 
   /* now fill CSR data structure */
   count_adj=0;
-  for(k=0;k<dd.zm_l;k++) {
+  for (k=0;k<dd.zm_l;k++) {
     internal_node = PETSC_TRUE;
     kstart_csr=1;
     kend_csr=dd.zm_l-1;
-    if(k == 0 || k == dd.zm_l-1) {
+    if (k == 0 || k == dd.zm_l-1) {
       internal_node = PETSC_FALSE;
       kstart_csr=k;
       kend_csr=k+1;
     }
-    for(j=0;j<dd.ym_l;j++) {
+    for (j=0;j<dd.ym_l;j++) {
       jstart_csr=1;
       jend_csr=dd.ym_l-1;
-      if(j == 0 || j == dd.ym_l-1) {
+      if (j == 0 || j == dd.ym_l-1) {
         internal_node = PETSC_FALSE;
         jstart_csr=j;
         jend_csr=j+1;
       }
-      for(i=0;i<dd.xm_l;i++) {
+      for (i=0;i<dd.xm_l;i++) {
         istart_csr=1;
         iend_csr=dd.xm_l-1;
-        if(i == 0 || i == dd.xm_l-1) {
+        if (i == 0 || i == dd.xm_l-1) {
           internal_node = PETSC_FALSE;
           istart_csr=i;
           iend_csr=i+1;
         }
         iindex=k*dd.xm_l*dd.ym_l+j*dd.xm_l+i;
         xadj_temp[iindex]=count_adj;
-        if(internal_node) {
+        if (internal_node) {
           istart_csr=i;
           iend_csr=i+1;
           jstart_csr=j;
@@ -175,9 +175,9 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt** xadj, PetscInt** a
           kstart_csr=k;
           kend_csr=k+1;
         }
-        for(kk=kstart_csr;kk<kend_csr;kk++) {
-          for(jj=jstart_csr;jj<jend_csr;jj++) {
-            for(ii=istart_csr;ii<iend_csr;ii++) {
+        for (kk=kstart_csr;kk<kend_csr;kk++) {
+          for (jj=jstart_csr;jj<jend_csr;jj++) {
+            for (ii=istart_csr;ii<iend_csr;ii++) {
               iindex=kk*dd.xm_l*dd.ym_l+jj*dd.xm_l+ii;
               adjncy_temp[count_adj]=iindex;
               count_adj=count_adj+1;
@@ -206,13 +206,13 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS* dirichlet,
   localsize = dd.xm_l*dd.ym_l*dd.zm_l;
   ierr = PetscMalloc(localsize*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   ierr = PetscMalloc(localsize*sizeof(PetscBool),&touched);CHKERRQ(ierr);
-  for(i=0;i<localsize;i++) { touched[i]=PETSC_FALSE; }
+  for (i=0;i<localsize;i++) { touched[i]=PETSC_FALSE; }
   i=0;
-  if(dirichlet) {
+  if (dirichlet) {
     /* west boundary */
-    if(dd.ipx == 0) {
-      for(k=0;k<dd.zm_l;k++) {
-        for(j=0;j<dd.ym_l;j++) {
+    if (dd.ipx == 0) {
+      for (k=0;k<dd.zm_l;k++) {
+        for (j=0;j<dd.ym_l;j++) {
           indices[i]=k*dd.ym_l*dd.xm_l+j*dd.xm_l;
           touched[indices[i]]=PETSC_TRUE;
           i++;
@@ -222,13 +222,13 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS* dirichlet,
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,i,indices,PETSC_COPY_VALUES,&temp_dirichlet);CHKERRQ(ierr);
   i=0;
-  if(neumann) {
+  if (neumann) {
     /* west boundary */
-    if(dd.ipx == 0) {
-      for(k=0;k<dd.zm_l;k++) {
-        for(j=0;j<dd.ym_l;j++) {
+    if (dd.ipx == 0) {
+      for (k=0;k<dd.zm_l;k++) {
+        for (j=0;j<dd.ym_l;j++) {
           indices[i]=k*dd.ym_l*dd.xm_l+j*dd.xm_l;
-          if(!touched[indices[i]]) {
+          if (!touched[indices[i]]) {
             touched[indices[i]]=PETSC_TRUE;
             i++;
           }
@@ -236,11 +236,11 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS* dirichlet,
       }
     }
     /* east boundary */
-    if(dd.ipx == dd.npx-1) {
-      for(k=0;k<dd.zm_l;k++) {
-        for(j=0;j<dd.ym_l;j++) {
+    if (dd.ipx == dd.npx-1) {
+      for (k=0;k<dd.zm_l;k++) {
+        for (j=0;j<dd.ym_l;j++) {
           indices[i]=k*dd.ym_l*dd.xm_l+j*dd.xm_l+dd.xm_l-1;
-          if(!touched[indices[i]]) {
+          if (!touched[indices[i]]) {
             touched[indices[i]]=PETSC_TRUE;
             i++;
           }
@@ -248,11 +248,11 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS* dirichlet,
       }
     }
     /* south boundary */
-    if(dd.ipy == 0 && dd.dim > 1) {
-      for(k=0;k<dd.zm_l;k++) {
-        for(j=0;j<dd.xm_l;j++) {
+    if (dd.ipy == 0 && dd.dim > 1) {
+      for (k=0;k<dd.zm_l;k++) {
+        for (j=0;j<dd.xm_l;j++) {
           indices[i]=k*dd.ym_l*dd.xm_l+j;
-          if(!touched[indices[i]]) {
+          if (!touched[indices[i]]) {
             touched[indices[i]]=PETSC_TRUE;
             i++;
           }
@@ -260,11 +260,11 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS* dirichlet,
       }
     }
     /* north boundary */
-    if(dd.ipy == dd.npy-1 && dd.dim > 1) {
-      for(k=0;k<dd.zm_l;k++) {
-        for(j=0;j<dd.xm_l;j++) {
+    if (dd.ipy == dd.npy-1 && dd.dim > 1) {
+      for (k=0;k<dd.zm_l;k++) {
+        for (j=0;j<dd.xm_l;j++) {
           indices[i]=k*dd.ym_l*dd.xm_l+(dd.ym_l-1)*dd.xm_l+j;
-          if(!touched[indices[i]]) {
+          if (!touched[indices[i]]) {
             touched[indices[i]]=PETSC_TRUE;
             i++;
           }
@@ -272,11 +272,11 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS* dirichlet,
       }
     }
     /* bottom boundary */
-    if(dd.ipz == 0 && dd.dim > 2) {
-      for(k=0;k<dd.ym_l;k++) {
-        for(j=0;j<dd.xm_l;j++) {
+    if (dd.ipz == 0 && dd.dim > 2) {
+      for (k=0;k<dd.ym_l;k++) {
+        for (j=0;j<dd.xm_l;j++) {
           indices[i]=k*dd.xm_l+j;
-          if(!touched[indices[i]]) {
+          if (!touched[indices[i]]) {
             touched[indices[i]]=PETSC_TRUE;
             i++;
           }
@@ -284,11 +284,11 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS* dirichlet,
       }
     }
     /* top boundary */
-    if(dd.ipz == dd.npz-1 && dd.dim > 2) {
-      for(k=0;k<dd.ym_l;k++) {
-        for(j=0;j<dd.xm_l;j++) {
+    if (dd.ipz == dd.npz-1 && dd.dim > 2) {
+      for (k=0;k<dd.ym_l;k++) {
+        for (j=0;j<dd.xm_l;j++) {
           indices[i]=(dd.zm_l-1)*dd.ym_l*dd.xm_l+k*dd.xm_l+j;
-          if(!touched[indices[i]]) {
+          if (!touched[indices[i]]) {
             touched[indices[i]]=PETSC_TRUE;
             i++;
           }
@@ -297,12 +297,12 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS* dirichlet,
     }
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,i,indices,PETSC_COPY_VALUES,&temp_neumann);
-  if(dirichlet) {
+  if (dirichlet) {
     *dirichlet = temp_dirichlet;
   } else {
     ierr = ISDestroy(&temp_dirichlet);CHKERRQ(ierr);
   }
-  if(neumann) {
+  if (neumann) {
     *neumann   = temp_neumann;
   } else {
     ierr = ISDestroy(&temp_neumann);CHKERRQ(ierr);
@@ -328,11 +328,11 @@ static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping* isg2l
      just to illustrate the creation of a MATIS object */
   localsize = dd.xm_l*dd.ym_l*dd.zm_l;
   ierr = PetscMalloc(localsize*sizeof(PetscInt),&global_indices);CHKERRQ(ierr);
-  for(k=0;k<dd.zm_l;k++) {
+  for (k=0;k<dd.zm_l;k++) {
     kg=dd.startz+k;
-    for(j=0;j<dd.ym_l;j++) {
+    for (j=0;j<dd.ym_l;j++) {
       jg=dd.starty+j;
-      for(i=0;i<dd.xm_l;i++) {
+      for (i=0;i<dd.xm_l;i++) {
         ig=dd.startx+i;
         lindex=k*dd.xm_l*dd.ym_l+j*dd.xm_l+i;
         gindex=kg*dd.xm*dd.ym+jg*dd.xm+ig;
@@ -363,16 +363,16 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   ierr = PetscMalloc(i*sizeof(PetscInt),&indexg);CHKERRQ(ierr);
   ierr = PetscMalloc(i*sizeof(PetscInt),&colsg);CHKERRQ(ierr);
   /* get submatrix of elem_mat without dirichlet nodes */
-  if(!dd.pure_neumann && !dd.DBC_zerorows && !dd.ipx) {
+  if (!dd.pure_neumann && !dd.DBC_zerorows && !dd.ipx) {
     xloc = dd.p+1;
     yloc = 1;
     zloc = 1;
-    if(dd.dim>1) { yloc = dd.p+1; }
-    if(dd.dim>2) { zloc = dd.p+1; }
+    if (dd.dim>1) { yloc = dd.p+1; }
+    if (dd.dim>2) { zloc = dd.p+1; }
     ii=0;
-    for(k=0;k<zloc;k++) { 
-      for(j=0;j<yloc;j++) { 
-        for(i=1;i<xloc;i++) { 
+    for (k=0;k<zloc;k++) { 
+      for (j=0;j<yloc;j++) { 
+        for (i=1;i<xloc;i++) { 
           indexg[ii]=k*xloc*yloc+j*xloc+i;
           ii++;
         }
@@ -394,27 +394,27 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
 
   yloc = dd.p+1;
   zloc = dd.p+1;
-  if(dd.dim < 3) {
+  if (dd.dim < 3) {
     zloc = 1;
   }
-  if(dd.dim < 2) {
+  if (dd.dim < 2) {
     yloc = 1;
   }
   auxnez = dd.nez_l;
   auxney = dd.ney_l;
   auxnex = dd.nex_l;
-  if(dd.dim < 3) { auxnez = 1; }
-  if(dd.dim < 2) { auxney = 1; }
+  if (dd.dim < 3) { auxnez = 1; }
+  if (dd.dim < 2) { auxney = 1; }
 
-  for(ke=0;ke<auxnez;ke++) {
-    for(je=0;je<auxney;je++) {
-      for(ie=0;ie<auxnex;ie++) {
+  for (ke=0;ke<auxnez;ke++) {
+    for (je=0;je<auxney;je++) {
+      for (ie=0;ie<auxnex;ie++) {
         /* customize element accounting for BC */
         xloc = dd.p+1;
         ming = 0;
         usedmat = &glldata.elem_mat;
-        if(!dd.pure_neumann && !dd.DBC_zerorows && !dd.ipx) {
-          if(ie == 0) {
+        if (!dd.pure_neumann && !dd.DBC_zerorows && !dd.ipx) {
+          if (ie == 0) {
             xloc = dd.p;
             usedmat = &elem_mat_DBC;
           } else {
@@ -423,11 +423,11 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
           }
         }
         /* local to the element/global to the subdomain indexing */
-        for(k=0;k<zloc;k++) {
+        for (k=0;k<zloc;k++) {
           kg = ke*dd.p+k;
-          for(j=0;j<yloc;j++) {
+          for (j=0;j<yloc;j++) {
             jg = je*dd.p+j;
-            for(i=0;i<xloc;i++) {
+            for (i=0;i<xloc;i++) {
               ig = ie*dd.p+i+ming;
               ii = k*xloc*yloc+j*xloc+i;
               indexg[ii]=kg*dd.xm_l*dd.ym_l+jg*dd.xm_l+ig;
@@ -435,9 +435,9 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
           }
         }
         /* Set values */
-        for(i=0;i<xloc*yloc*zloc;i++) {
+        for (i=0;i<xloc*yloc*zloc;i++) {
           ierr = MatGetRow(*usedmat,i,&j,(const PetscInt**)&cols,(const PetscScalar**)&vals);CHKERRQ(ierr);
-          for(k=0;k<j;k++) { colsg[k] = indexg[cols[k]]; }
+          for (k=0;k<j;k++) { colsg[k] = indexg[cols[k]]; }
           ierr = MatSetValues(temp_local_mat,1,&indexg[i],j,colsg,vals,ADD_VALUES);CHKERRQ(ierr);
           ierr = MatRestoreRow(*usedmat,i,&j,(const PetscInt**)&cols,(const PetscScalar**)&vals);CHKERRQ(ierr);
         } 
@@ -485,12 +485,12 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
   ierr = PetscMemzero(glldata->zGL,(p+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   glldata->zGL[0]=-1.0;
   glldata->zGL[p]= 1.0;
-  if(p > 1) {
-    if(p == 2) {
+  if (p > 1) {
+    if (p == 2) {
       glldata->zGL[1]=0.0;
     } else {
       ierr = PetscMalloc((p-1)*sizeof(PetscScalar),&M);CHKERRQ(ierr);
-      for(i=0;i<p-1;i++) {
+      for (i=0;i<p-1;i++) {
         si = (PetscScalar)(i+1.0);
         M[i]=0.5*PetscSqrtReal((PetscReal)(si*(si+2.0)/((si+0.5)*(si+1.5))));
       }
@@ -507,11 +507,11 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
   ierr = PetscMalloc((p+1)*sizeof(PetscScalar),&glldata->rhoGL);CHKERRQ(ierr);
   glldata->rhoGL[0]=2.0/(PetscScalar)(p*(p+1.0));
   glldata->rhoGL[p]=glldata->rhoGL[0];
-  for(i=1;i<p;i++) {
+  for (i=1;i<p;i++) {
     x=glldata->zGL[i];
     z0=1.0;
     z1=x;
-    for(n=1;n<p;n++) {
+    for (n=1;n<p;n++) {
       z2=x*z1*(2.0*n+1.0)/(n+1.0)-z0*n/(n+1.0);
       z0=z1;
       z1=z2;
@@ -522,27 +522,27 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
   /* Auxiliary mat for laplacian */
   ierr = PetscMalloc((p+1)*sizeof(PetscScalar*),&glldata->A);CHKERRQ(ierr);
   ierr = PetscMalloc((p+1)*(p+1)*sizeof(PetscScalar),&glldata->A[0]);CHKERRQ(ierr);
-  for(i=1;i<p+1;i++) {
+  for (i=1;i<p+1;i++) {
     glldata->A[i]=glldata->A[i-1]+p+1;
   }
-  for(j=1;j<p;j++) {
+  for (j=1;j<p;j++) {
     x=glldata->zGL[j]; 
     z0=1.0;
     z1=x;
-    for(n=1;n<p;n++) {
+    for (n=1;n<p;n++) {
       z2=x*z1*(2.0*n+1.0)/(n+1.0)-z0*n/(n+1.0);
       z0=z1;
       z1=z2;
     }
     Lpj=z2;
-    for(r=1;r<p;r++) {
-      if(r == j) {
+    for (r=1;r<p;r++) {
+      if (r == j) {
         glldata->A[j][j]=2.0/(3.0*(1.0-glldata->zGL[j]*glldata->zGL[j])*Lpj*Lpj);
       } else {
         x=glldata->zGL[r];
         z0=1.0;
         z1=x;
-        for(n=1;n<p;n++) {
+        for (n=1;n<p;n++) {
           z2=x*z1*(2.0*n+1.0)/(n+1.0)-z0*n/(n+1.0);
           z0=z1;
           z1=z2;
@@ -552,11 +552,11 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
       }
     }
   }
-  for(j=1;j<p+1;j++) {
+  for (j=1;j<p+1;j++) {
     x=glldata->zGL[j]; 
     z0=1.0;
     z1=x;
-    for(n=1;n<p;n++) {
+    for (n=1;n<p;n++) {
       z2=x*z1*(2.0*n+1.0)/(n+1.0)-z0*n/(n+1.0);
       z0=z1;
       z1=z2;
@@ -565,11 +565,11 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
     glldata->A[j][0]=4.0*PetscPowScalar(-1.0,p)/(p*(p+1.0)*Lpj*(1.0+glldata->zGL[j])*(1.0+glldata->zGL[j]));
     glldata->A[0][j]=glldata->A[j][0];
   }
-  for(j=0;j<p;j++) {
+  for (j=0;j<p;j++) {
     x=glldata->zGL[j]; 
     z0=1.0;
     z1=x;
-    for(n=1;n<p;n++) {
+    for (n=1;n<p;n++) {
       z2=x*z1*(2.0*n+1.0)/(n+1.0)-z0*n/(n+1.0);
       z0=z1;
       z1=z2;
@@ -585,8 +585,8 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
   xloc=p+1;
   yloc=p+1;
   zloc=p+1;
-  if(dd.dim<2) { yloc=1; }
-  if(dd.dim<3) { zloc=1; }
+  if (dd.dim<2) { yloc=1; }
+  if (dd.dim<3) { zloc=1; }
   xyloc=xloc*yloc;
   xyzloc=xloc*yloc*zloc;
   ierr = MatCreate(PETSC_COMM_SELF,&glldata->elem_mat);
@@ -596,38 +596,38 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
   ierr = MatZeroEntries(glldata->elem_mat);CHKERRQ(ierr);
   ierr = MatSetOption(glldata->elem_mat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
 
-  for(k=0;k<zloc;k++) {
-    if(dd.dim>2) {
+  for (k=0;k<zloc;k++) {
+    if (dd.dim>2) {
       rhoGLk=glldata->rhoGL[k];
     } else {
       rhoGLk=1.0;
     }
-    for(j=0;j<yloc;j++) {
-      if(dd.dim>1) {
+    for (j=0;j<yloc;j++) {
+      if (dd.dim>1) {
         rhoGLj=glldata->rhoGL[j];
       } else {
         rhoGLj=1.0;
       }
-      for(i=0;i<xloc;i++) {
+      for (i=0;i<xloc;i++) {
         ii = k*xyloc+j*xloc+i;
         s=k;
         r=j;
-        for(q=0;q<xloc;q++) {
+        for (q=0;q<xloc;q++) {
           jj = s*xyloc+r*xloc+q;
           ierr = MatSetValue(glldata->elem_mat,jj,ii,glldata->A[i][q]*rhoGLj*rhoGLk,ADD_VALUES);CHKERRQ(ierr);
         }
-        if(dd.dim>1) {
+        if (dd.dim>1) {
           s=k;
           q=i;
-          for(r=0;r<yloc;r++) {
+          for (r=0;r<yloc;r++) {
             jj = s*xyloc+r*xloc+q;
             ierr = MatSetValue(glldata->elem_mat,jj,ii,glldata->A[j][r]*glldata->rhoGL[i]*rhoGLk,ADD_VALUES);CHKERRQ(ierr);
           }
         }
-        if(dd.dim>2) {
+        if (dd.dim>2) {
           r=j;
           q=i;
-          for(s=0;s<zloc;s++) {
+          for (s=0;s<zloc;s++) {
             jj = s*xyloc+r*xloc+q;
             ierr = MatSetValue(glldata->elem_mat,jj,ii,glldata->A[k][s]*rhoGLj*glldata->rhoGL[i],ADD_VALUES);CHKERRQ(ierr);
           }
@@ -664,7 +664,7 @@ static PetscErrorCode DomainDecomposition(DomainData* dd)
   /* Subdomain index in cartesian coordinates */
   MPI_Comm_rank(dd->gcomm,&rank);
   dd->ipx = rank%dd->npx;
-  if(dd->dim>1) {
+  if (dd->dim>1) {
     dd->ipz = rank/(dd->npx*dd->npy);
   } else {
     dd->ipz = 0;
@@ -672,16 +672,16 @@ static PetscErrorCode DomainDecomposition(DomainData* dd)
   dd->ipy = rank/dd->npx-dd->ipz*dd->npy;
   /* number of local elements */
   dd->nex_l = dd->nex/dd->npx;
-  if(dd->ipx < dd->nex%dd->npx) { dd->nex_l++; }
-  if(dd->dim>1) {
+  if (dd->ipx < dd->nex%dd->npx) { dd->nex_l++; }
+  if (dd->dim>1) {
     dd->ney_l = dd->ney/dd->npy;
-    if(dd->ipy < dd->ney%dd->npy) { dd->ney_l++; }
+    if (dd->ipy < dd->ney%dd->npy) { dd->ney_l++; }
   } else {
     dd->ney_l = 0;
   }
-  if(dd->dim>2) {
+  if (dd->dim>2) {
     dd->nez_l = dd->nez/dd->npz;
-    if(dd->ipz < dd->nez%dd->npz) { dd->nez_l++; }
+    if (dd->ipz < dd->nez%dd->npz) { dd->nez_l++; }
   } else {
     dd->nez_l = 0;
   }
@@ -692,40 +692,40 @@ static PetscErrorCode DomainDecomposition(DomainData* dd)
   dd->ym = dd->ney*dd->p+1;
   dd->zm_l = dd->nez_l*dd->p+1;
   dd->zm = dd->nez*dd->p+1;
-  if(!dd->pure_neumann) {
-    if(!dd->DBC_zerorows && !dd->ipx) { dd->xm_l--; }
-    if(!dd->DBC_zerorows) { dd->xm--; }
+  if (!dd->pure_neumann) {
+    if (!dd->DBC_zerorows && !dd->ipx) { dd->xm_l--; }
+    if (!dd->DBC_zerorows) { dd->xm--; }
   }
   /* starting global index for local dofs (simple lexicographic order) */
   dd->startx = 0;
   j = dd->nex/dd->npx;
-  for(i=0;i<dd->ipx;i++) {
+  for (i=0;i<dd->ipx;i++) {
     k = j;
-    if(i<dd->nex%dd->npx) {
+    if (i<dd->nex%dd->npx) {
       k++;
     }
     dd->startx = dd->startx+k*dd->p;
   }
-  if(!dd->pure_neumann && !dd->DBC_zerorows && dd->ipx) {
+  if (!dd->pure_neumann && !dd->DBC_zerorows && dd->ipx) {
     dd->startx--;
   }
   dd->starty = 0;
-  if(dd->dim > 1) {
+  if (dd->dim > 1) {
     j = dd->ney/dd->npy;
-    for(i=0;i<dd->ipy;i++) {
+    for (i=0;i<dd->ipy;i++) {
       k = j;
-      if(i<dd->ney%dd->npy) {
+      if (i<dd->ney%dd->npy) {
         k++;
       }
       dd->starty = dd->starty+k*dd->p;
     }
   }
   dd->startz = 0;
-  if(dd->dim > 2) {
+  if (dd->dim > 2) {
     j = dd->nez/dd->npz;
-    for(i=0;i<dd->ipz;i++) {
+    for (i=0;i<dd->ipz;i++) {
       k = j;
-      if(i<dd->nez%dd->npz) {
+      if (i<dd->nez%dd->npz) {
         k++;
       }
       dd->startz = dd->startz+k*dd->p;
@@ -759,7 +759,7 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat* A)
   ierr = MatAssemblyBegin(temp_A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (temp_A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if(dd.DBC_zerorows) {
+  if (dd.DBC_zerorows) {
     ierr = ComputeSpecialBoundaryIndices(dd,&dirichletIS,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatZeroRowsLocalIS(temp_A,dirichletIS,1.0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = ISDestroy(&dirichletIS);CHKERRQ(ierr);
@@ -867,13 +867,13 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP* ksp)
   ierr = PCBDDCSetLocalAdjacencyGraph(pc,localsize,xadj,adjncy,PETSC_OWN_POINTER);CHKERRQ(ierr);
 
   /* Neumann/Dirichlet indices on the global boundary */
-  if(dd.DBC_zerorows) { 
+  if (dd.DBC_zerorows) { 
     /* Only in case you eliminate some rows matrix with zerorows function, you need to set dirichlet indices into PCBDDC data */
     ierr = ComputeSpecialBoundaryIndices(dd,&dirichletIS,&neumannIS);CHKERRQ(ierr);
     ierr = PCBDDCSetNeumannBoundaries(pc,neumannIS);CHKERRQ(ierr);
     ierr = PCBDDCSetDirichletBoundaries(pc,dirichletIS);CHKERRQ(ierr);
   } else {
-    if(dd.pure_neumann) { 
+    if (dd.pure_neumann) { 
       /* In such a case, all interface nodes lying on the global boundary are neumann nodes */
       ierr = ComputeSpecialBoundaryIndices(dd,PETSC_NULL,&neumannIS);CHKERRQ(ierr);
       ierr = PCBDDCSetNeumannBoundaries(pc,neumannIS);CHKERRQ(ierr);
@@ -908,7 +908,7 @@ static PetscErrorCode InitializeDomainData(DomainData* dd)
   ierr = MPI_Comm_size(dd->gcomm,&nprocs);
   ierr = MPI_Comm_rank(dd->gcomm,&rank);
   /* test data passed in */
-  if(nprocs<2) {
+  if (nprocs<2) {
     SETERRQ(dd->gcomm,PETSC_ERR_USER,"This is not a uniprocessor test");
   }
   /* Get informations from command line */
@@ -921,8 +921,8 @@ static PetscErrorCode InitializeDomainData(DomainData* dd)
   ierr = PetscOptionsGetInt (PETSC_NULL,"-npx",&dd->npx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt (PETSC_NULL,"-npy",&dd->npy,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt (PETSC_NULL,"-npz",&dd->npz,PETSC_NULL);CHKERRQ(ierr);
-  if(dd->npy) { dd->dim++; }
-  if(dd->npz) { dd->dim++; }
+  if (dd->npy) { dd->dim++; }
+  if (dd->npz) { dd->dim++; }
   /* Number of elements per dimension */
   /* Default is one element per subdomain */
   dd->nex = dd->npx;
@@ -931,8 +931,8 @@ static PetscErrorCode InitializeDomainData(DomainData* dd)
   ierr = PetscOptionsGetInt (PETSC_NULL,"-nex",&dd->nex,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt (PETSC_NULL,"-ney",&dd->ney,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt (PETSC_NULL,"-nez",&dd->nez,PETSC_NULL);CHKERRQ(ierr);
-  if(!dd->npy) { dd->ney=0; dd->nez=0; }
-  if(!dd->npz) { dd->nez=0; }
+  if (!dd->npy) { dd->ney=0; dd->nez=0; }
+  if (!dd->npz) { dd->nez=0; }
   /* Spectral degree */
   dd->p   = 3;
   ierr = PetscOptionsGetInt (PETSC_NULL,"-p"  ,&dd->p  ,PETSC_NULL);CHKERRQ(ierr);
@@ -942,7 +942,7 @@ static PetscErrorCode InitializeDomainData(DomainData* dd)
   /* How to enforce dirichlet boundary conditions (in case pureneumann has not been requested explicitly) */
   dd->DBC_zerorows = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-usezerorows",&dd->DBC_zerorows,PETSC_NULL);CHKERRQ(ierr);
-  if(dd->pure_neumann) {
+  if (dd->pure_neumann) {
     dd->DBC_zerorows = PETSC_FALSE;
   }
   dd->scalingfactor = 1.0;
@@ -951,25 +951,25 @@ static PetscErrorCode InitializeDomainData(DomainData* dd)
   /* checkerboard pattern */
   dd->scalingfactor = PetscPowScalar(10,(PetscScalar)factor*PetscPowScalar(-1.0,(PetscScalar)rank));
   /* test data passed in */
-  if(dd->dim==1) {
-    if(nprocs!=dd->npx) {
+  if (dd->dim==1) {
+    if (nprocs!=dd->npx) {
       SETERRQ(dd->gcomm,PETSC_ERR_USER,"Number of mpi procs in 1D must be equal to npx");
     }
-    if(dd->nex<dd->npx) {
+    if (dd->nex<dd->npx) {
       SETERRQ(dd->gcomm,PETSC_ERR_USER,"Number of elements per dim must be greater/equal than number of procs per dim");
     }
-  } else if(dd->dim==2) {
-    if(nprocs!=dd->npx*dd->npy) {
+  } else if (dd->dim==2) {
+    if (nprocs!=dd->npx*dd->npy) {
       SETERRQ(dd->gcomm,PETSC_ERR_USER,"Number of mpi procs in 2D must be equal to npx*npy");
     }
-    if(dd->nex<dd->npx || dd->ney<dd->npy ) {
+    if (dd->nex<dd->npx || dd->ney<dd->npy ) {
       SETERRQ(dd->gcomm,PETSC_ERR_USER,"Number of elements per dim must be greater/equal than number of procs per dim");
     }
   } else {
-    if(nprocs!=dd->npx*dd->npy*dd->npz) {
+    if (nprocs!=dd->npx*dd->npy*dd->npz) {
       SETERRQ(dd->gcomm,PETSC_ERR_USER,"Number of mpi procs in 3D must be equal to npx*npy*npz");
     }
-    if(dd->nex<dd->npx || dd->ney<dd->npy || dd->nez<dd->npz ) {
+    if (dd->nex<dd->npx || dd->ney<dd->npy || dd->nez<dd->npz ) {
       SETERRQ(dd->gcomm,PETSC_ERR_USER,"Number of elements per dim must be greater/equal than number of procs per dim");
     }
   }
@@ -1019,7 +1019,7 @@ int main(int argc,char **args)
   ierr = VecSetRandom(exact_solution,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecShift(exact_solution,-0.5);CHKERRQ(ierr);
   ierr = VecScale(exact_solution,100.0);CHKERRQ(ierr);
-  if(dd.pure_neumann) {
+  if (dd.pure_neumann) {
     ierr = VecSum(exact_solution,&norm);CHKERRQ(ierr);
     ierr = VecGetSize(exact_solution,&ndofs);
     norm = -norm/(PetscScalar)ndofs;
@@ -1032,7 +1032,7 @@ int main(int argc,char **args)
   ierr = KSPSolve(KSPwithBDDC,bddc_rhs,bddc_solution);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(KSPwithBDDC,&its);CHKERRQ(ierr);
   ierr = KSPComputeExtremeSingularValues(KSPwithBDDC,&maxeig,&mineig);CHKERRQ(ierr);
-  if(dd.pure_neumann) {
+  if (dd.pure_neumann) {
     ierr = VecSum(bddc_solution,&norm);CHKERRQ(ierr);
     ierr = VecGetSize(bddc_solution,&ndofs);
     norm = -norm/(PetscScalar)ndofs;
@@ -1056,7 +1056,7 @@ int main(int argc,char **args)
   /* assemble fetidp solution on physical domain */
   ierr = PCBDDCMatFETIDPGetSolution(F,fetidp_solution,fetidp_solution_all);CHKERRQ(ierr);
   /* check FETIDP sol */
-  if(dd.pure_neumann) {
+  if (dd.pure_neumann) {
     ierr = VecSum(fetidp_solution_all,&norm);CHKERRQ(ierr);
     ierr = VecGetSize(fetidp_solution_all,&ndofs);
     norm = -norm/(PetscScalar)ndofs;

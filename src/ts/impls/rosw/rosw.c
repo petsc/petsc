@@ -1359,7 +1359,7 @@ static PetscErrorCode TSSetFromOptions_RosW(TS ts)
     const char **namelist;
     SNES snes;
 
-    ierr = PetscStrncpy(rostype,TSRosWDefault,sizeof rostype);CHKERRQ(ierr);
+    ierr = PetscStrncpy(rostype,TSRosWDefault,sizeof(rostype));CHKERRQ(ierr);
     for (link=RosWTableauList,count=0; link; link=link->next,count++) ;
     ierr = PetscMalloc(count*sizeof(char*),&namelist);CHKERRQ(ierr);
     for (link=RosWTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
@@ -1419,10 +1419,10 @@ static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
     char buf[512];
     ierr = TSRosWGetType(ts,&rostype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Rosenbrock-W %s\n",rostype);CHKERRQ(ierr);
-    ierr = PetscFormatRealArray(buf,sizeof buf,"% 8.6f",tab->s,tab->ASum);CHKERRQ(ierr);
+    ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->ASum);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa of A       = %s\n",buf);CHKERRQ(ierr);
     for (i=0; i<tab->s; i++) abscissa[i] = tab->ASum[i] + tab->Gamma[i];
-    ierr = PetscFormatRealArray(buf,sizeof buf,"% 8.6f",tab->s,abscissa);CHKERRQ(ierr);
+    ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,abscissa);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa of A+Gamma = %s\n",buf);CHKERRQ(ierr);
   }
   ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);

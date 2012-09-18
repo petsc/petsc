@@ -221,7 +221,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B,Mat A,const MatFactorInfo *inf
     /* elimination */
     bjtmp = bj + bi[i];
     nzL   = bi[i+1] - bi[i];
-    for(k=0;k < nzL;k++) {
+    for (k=0;k < nzL;k++) {
       row = bjtmp[k];
       pc = rtmp + bs2*row;
       for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
@@ -477,7 +477,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B,Mat A,const Ma
     /* elimination */
     bjtmp = bj + bi[i];
     nzL   = bi[i+1] - bi[i];
-    for(k=0;k < nzL;k++) {
+    for (k=0;k < nzL;k++) {
       row = bjtmp[k];
       pc = rtmp + bs2*row;
       for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}

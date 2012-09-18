@@ -798,8 +798,8 @@ PetscErrorCode  PetscOptionsPrefixPush(const char prefix[])
   PetscValidCharPointer(prefix,1);
   /* Want to check validity of the key using PetscOptionsValidKey(), which requires that the first character is a '-' */
   buf[0] = '-';
-  ierr = PetscStrncpy(buf+1,prefix,sizeof buf - 1);
-  buf[sizeof buf - 1] = 0;
+  ierr = PetscStrncpy(buf+1,prefix,sizeof(buf) - 1);
+  buf[sizeof(buf) - 1] = 0;
   ierr = PetscOptionsValidKey(buf,&key);CHKERRQ(ierr);
   if (!key) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Given prefix \"%s\" not valid (the first character must be a letter, do not include leading '-')",prefix);
 
@@ -933,8 +933,8 @@ PetscErrorCode  PetscOptionsSetValue(const char iname[],const char value[])
 
   name++; /* skip starting hyphen */
   if (options->prefixind > 0) {
-    ierr = PetscStrncpy(fullname,options->prefix,sizeof fullname);CHKERRQ(ierr);
-    ierr = PetscStrncat(fullname,name,sizeof fullname);CHKERRQ(ierr);
+    ierr = PetscStrncpy(fullname,options->prefix,sizeof(fullname));CHKERRQ(ierr);
+    ierr = PetscStrncat(fullname,name,sizeof(fullname));CHKERRQ(ierr);
     name = fullname;
   }
 
@@ -1123,19 +1123,19 @@ static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char n
       *ptr++ = '-';
       namep++;
     }
-    ierr = PetscStrncpy(ptr,pre,tmp+sizeof tmp-ptr);CHKERRQ(ierr);
-    tmp[sizeof tmp-1] = 0;
+    ierr = PetscStrncpy(ptr,pre,tmp+sizeof(tmp)-ptr);CHKERRQ(ierr);
+    tmp[sizeof(tmp)-1] = 0;
     ierr = PetscStrlen(tmp,&len);CHKERRQ(ierr);
-    ierr = PetscStrncat(tmp,namep+1,sizeof tmp-len-1);CHKERRQ(ierr);
+    ierr = PetscStrncat(tmp,namep+1,sizeof(tmp)-len-1);CHKERRQ(ierr);
   } else {
-    ierr = PetscStrncpy(tmp,name+1,sizeof tmp);CHKERRQ(ierr);
-    tmp[sizeof tmp-1] = 0;
+    ierr = PetscStrncpy(tmp,name+1,sizeof(tmp));CHKERRQ(ierr);
+    tmp[sizeof(tmp)-1] = 0;
   }
 #if defined(PETSC_USE_DEBUG)
   {
     PetscBool valid;
-    char key[sizeof tmp+1] = "-";
-    ierr = PetscMemcpy(key+1,tmp,sizeof tmp);CHKERRQ(ierr);
+    char key[sizeof(tmp)+1] = "-";
+    ierr = PetscMemcpy(key+1,tmp,sizeof(tmp));CHKERRQ(ierr);
     ierr = PetscOptionsValidKey(key,&valid);CHKERRQ(ierr);
     if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid option '%s' obtained from pre='%s' and name='%s'",key,pre?pre:"",name);
   }
@@ -1209,19 +1209,19 @@ PetscErrorCode PetscOptionsFindPairPrefix_Private(const char pre[], const char n
       *ptr++ = '-';
       namep++;
     }
-    ierr = PetscStrncpy(ptr,pre,tmp+sizeof tmp-ptr);CHKERRQ(ierr);
-    tmp[sizeof tmp-1] = 0;
+    ierr = PetscStrncpy(ptr,pre,tmp+sizeof(tmp)-ptr);CHKERRQ(ierr);
+    tmp[sizeof(tmp)-1] = 0;
     ierr = PetscStrlen(tmp,&len);CHKERRQ(ierr);
-    ierr = PetscStrncat(tmp,namep+1,sizeof tmp-len-1);CHKERRQ(ierr);
+    ierr = PetscStrncat(tmp,namep+1,sizeof(tmp)-len-1);CHKERRQ(ierr);
   } else {
-    ierr = PetscStrncpy(tmp,name+1,sizeof tmp);CHKERRQ(ierr);
-    tmp[sizeof tmp-1] = 0;
+    ierr = PetscStrncpy(tmp,name+1,sizeof(tmp));CHKERRQ(ierr);
+    tmp[sizeof(tmp)-1] = 0;
   }
 #if defined(PETSC_USE_DEBUG)
   {
     PetscBool valid;
-    char key[sizeof tmp+1] = "-";
-    ierr = PetscMemcpy(key+1,tmp,sizeof tmp);CHKERRQ(ierr);
+    char key[sizeof(tmp)+1] = "-";
+    ierr = PetscMemcpy(key+1,tmp,sizeof(tmp));CHKERRQ(ierr);
     ierr = PetscOptionsValidKey(key,&valid);CHKERRQ(ierr);
     if (!valid) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid option '%s' obtained from pre='%s' and name='%s'",key,pre?pre:"",name);
   }
@@ -1230,7 +1230,7 @@ PetscErrorCode PetscOptionsFindPairPrefix_Private(const char pre[], const char n
   /* slow search */
   *flg = PETSC_FALSE;
   ierr = PetscStrlen(tmp,&len);CHKERRQ(ierr);
-  for(i = 0; i < N; ++i) {
+  for (i = 0; i < N; ++i) {
     ierr = PetscStrncmp(names[i], tmp, len, &match);CHKERRQ(ierr);
     if (match) {
       if (value) *value = options->values[i];
@@ -1867,7 +1867,7 @@ PetscErrorCode  PetscOptionsGetIntArray(const char pre[],const char name[],Petsc
         ierr     = PetscOptionsStringToInt(value,&start);CHKERRQ(ierr);
 	inc = 1;
 	j = i+1;
-	for(;j<(int)len; j++) {
+	for (;j<(int)len; j++) {
 	  if (value[j] == ':') {
 	    value[j] = 0;
 	    ierr = PetscOptionsStringToInt(value+j+1,&inc);CHKERRQ(ierr);

@@ -79,20 +79,20 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, DM *dm)
     /* Read the cell set connectivity table and build mesh topology
        EXO standard requires that cells in cell sets be numbered sequentially and be pairwise disjoint. */
     /* First set sizes */
-    for(cs = 0, c = 0; cs < num_cs; cs++) {
+    for (cs = 0, c = 0; cs < num_cs; cs++) {
       ierr = ex_get_elem_block(exoid, cs_id[cs], buffer, &num_cell_in_set, &num_vertex_per_cell, &num_attr);CHKERRQ(ierr);
-      for(c_loc = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
+      for (c_loc = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
         ierr = DMComplexSetConeSize(*dm, c, num_vertex_per_cell);CHKERRQ(ierr);
       }
     }
     ierr = DMSetUp(*dm);CHKERRQ(ierr);
-    for(cs = 0, c = 0; cs < num_cs; cs++) {
+    for (cs = 0, c = 0; cs < num_cs; cs++) {
       ierr = ex_get_elem_block(exoid, cs_id[cs], buffer, &num_cell_in_set, &num_vertex_per_cell, &num_attr);CHKERRQ(ierr);
       ierr = PetscMalloc2(num_vertex_per_cell*num_cell_in_set,int,&cs_connect,num_vertex_per_cell,PetscInt,&cone);CHKERRQ(ierr);
       ierr = ex_get_elem_conn(exoid, cs_id[cs], cs_connect);CHKERRQ(ierr);
       /* EXO uses Fortran-based indexing, sieve uses C-style and numbers cell first then vertices. */
-      for(c_loc = 0, v = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
-        for(v_loc = 0; v_loc < num_vertex_per_cell; ++v_loc, ++v) {
+      for (c_loc = 0, v = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
+        for (v_loc = 0; v_loc < num_vertex_per_cell; ++v_loc, ++v) {
           cone[v_loc] = cs_connect[v]+numCells-1;
         }
         ierr = DMComplexSetCone(*dm, c, cone);CHKERRQ(ierr);
@@ -118,11 +118,11 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, DM *dm)
     /* Get vertex set ids */
     ierr = PetscMalloc(num_vs * sizeof(int), &vs_id);CHKERRQ(ierr);
     ierr = ex_get_node_set_ids(exoid, vs_id);CHKERRQ(ierr);
-    for(vs = 0; vs < num_vs; vs++) {
+    for (vs = 0; vs < num_vs; vs++) {
       ierr = ex_get_node_set_param(exoid, vs_id[vs], &num_vertex_in_set, &num_attr);CHKERRQ(ierr);
       ierr = PetscMalloc(num_vertex_in_set * sizeof(int), &vs_vertex_list);CHKERRQ(ierr);
       ierr = ex_get_node_set(exoid, vs_id[vs], vs_vertex_list);CHKERRQ(ierr);
-      for(v = 0; v < num_vertex_in_set; v++) {
+      for (v = 0; v < num_vertex_in_set; v++) {
         ierr = DMComplexSetLabelValue(*dm, "Vertex Sets", vs_vertex_list[v]+numCells-1, vs_id[vs]);CHKERRQ(ierr);
       }
       ierr = PetscFree(vs_vertex_list);CHKERRQ(ierr);
@@ -131,7 +131,7 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, DM *dm)
   }
   /* Read coordinates */
   ierr = PetscSectionSetChart(mesh->coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
-  for(v = numCells; v < numCells+numVertices; ++v) {
+  for (v = numCells; v < numCells+numVertices; ++v) {
     ierr = PetscSectionSetDof(mesh->coordSection, v, dim);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);

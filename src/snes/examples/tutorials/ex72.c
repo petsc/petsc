@@ -128,7 +128,7 @@ void f0_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
   PetscInt       comp;
 
-  for(comp = 0; comp < Ncomp; ++comp) {
+  for (comp = 0; comp < Ncomp; ++comp) {
     f0[comp] = 3.0;
   }
 }
@@ -140,8 +140,8 @@ void f1_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
   PetscInt       comp, d;
 
-  for(comp = 0; comp < Ncomp; ++comp) {
-    for(d = 0; d < dim; ++d) {
+  for (comp = 0; comp < Ncomp; ++comp) {
+    for (d = 0; d < dim; ++d) {
       /* f1[comp*dim+d] = 0.5*(gradU[comp*dim+d] + gradU[d*dim+comp]); */
       f1[comp*dim+d] = gradU[comp*dim+d];
     }
@@ -155,7 +155,7 @@ void f0_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
   PetscInt       d;
 
   f0[0] = 0.0;
-  for(d = 0; d < dim; ++d) {
+  for (d = 0; d < dim; ++d) {
     f0[0] += gradU[d*dim+d];
   }
 }
@@ -164,7 +164,7 @@ void f1_p(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
-  for(d = 0; d < dim; ++d) {
+  for (d = 0; d < dim; ++d) {
     f1[d] = 0.0;
   }
 }
@@ -175,7 +175,7 @@ void g1_pu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g1[]) {
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
-  for(d = 0; d < dim; ++d) {
+  for (d = 0; d < dim; ++d) {
     g1[d*dim+d] = 1.0; /* \frac{\partial\phi^{u_d}}{\partial x_d} */
   }
 }
@@ -186,7 +186,7 @@ void g2_up(PetscScalar u[], const PetscScalar gradU[], PetscScalar g2[]) {
   const PetscInt dim = SPATIAL_DIM_0;
   PetscInt       d;
 
-  for(d = 0; d < dim; ++d) {
+  for (d = 0; d < dim; ++d) {
     g2[d*dim+d] = -1.0; /* \frac{\partial\psi^{u_d}}{\partial x_d} */
   }
 }
@@ -198,8 +198,8 @@ void g3_uu(PetscScalar u[], const PetscScalar gradU[], PetscScalar g3[]) {
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
   PetscInt       compI, d;
 
-  for(compI = 0; compI < Ncomp; ++compI) {
-    for(d = 0; d < dim; ++d) {
+  for (compI = 0; compI < Ncomp; ++compI) {
+    for (d = 0; d < dim; ++d) {
       g3[((compI*Ncomp+compI)*dim+d)*dim+d] = 1.0;
     }
   }
@@ -303,7 +303,7 @@ PetscErrorCode VecChop(Vec v, PetscReal tol)
   PetscFunctionBegin;
   ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
-  for(i = 0; i < n; ++i) {
+  for (i = 0; i < n; ++i) {
     if (PetscAbsScalar(a[i]) < tol) a[i] = 0.0;
   }
   ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
@@ -321,7 +321,7 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
 
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(A, &rStart, &rEnd);CHKERRQ(ierr);
-  for(r = rStart; r < rEnd; ++r) {
+  for (r = rStart; r < rEnd; ++r) {
     PetscInt ncols;
 
     ierr = MatGetRow(A, r, &ncols, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
@@ -331,14 +331,14 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
   numRows = rEnd - rStart;
   ierr = MPI_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscMalloc2(colMax,PetscInt,&newCols,colMax,PetscScalar,&newVals);CHKERRQ(ierr);
-  for(r = rStart; r < rStart+maxRows; ++r) {
+  for (r = rStart; r < rStart+maxRows; ++r) {
     const PetscScalar *vals;
     const PetscInt    *cols;
     PetscInt           ncols, c;
 
     if (r < rEnd) {
       ierr = MatGetRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
-      for(c = 0; c < ncols; ++c) {
+      for (c = 0; c < ncols; ++c) {
         newCols[c] = cols[c];
         newVals[c] = PetscAbsScalar(vals[c]) < tol ? 0.0 : vals[c];
       }
@@ -425,12 +425,12 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscFunctionBegin;
   if (dim != SPATIAL_DIM_0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);
   if (dim != SPATIAL_DIM_1) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_1);
-  for(d = 0; d <= dim; ++d) {
+  for (d = 0; d <= dim; ++d) {
     numDof[0*(dim+1)+d] = numDof_0[d];
     numDof[1*(dim+1)+d] = numDof_1[d];
   }
-  for(f = 0; f < numFields; ++f) {
-    for(d = 1; d < dim; ++d) {
+  for (f = 0; f < numFields; ++f) {
+    for (d = 1; d < dim; ++d) {
       if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
     }
   }
@@ -508,7 +508,7 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
   ierr = DMGlobalToLocalEnd(user->dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(user->dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
     PetscReal          elemError = 0.0;
 
@@ -516,7 +516,7 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
     ierr = DMComplexVecGetClosure(user->dm, PETSC_NULL, localX, c, PETSC_NULL, &x);CHKERRQ(ierr);
 
-    for(field = 0, comp = 0, fieldOffset = 0; field < numFields; ++field) {
+    for (field = 0, comp = 0, fieldOffset = 0; field < numFields; ++field) {
       const PetscInt   numQuadPoints = user->q[field].numQuadPoints;
       const PetscReal *quadPoints    = user->q[field].quadPoints;
       const PetscReal *quadWeights   = user->q[field].quadWeights;
@@ -530,17 +530,17 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
         ierr = PetscSNPrintf(title, 1023, "Solution for Field %d", field);CHKERRQ(ierr);
         ierr = DMPrintCellVector(c, title, numBasisFuncs*numBasisComps, &x[fieldOffset]);CHKERRQ(ierr);
       }
-      for(q = 0; q < numQuadPoints; ++q) {
-        for(d = 0; d < dim; d++) {
+      for (q = 0; q < numQuadPoints; ++q) {
+        for (d = 0; d < dim; d++) {
           coords[d] = v0[d];
-          for(e = 0; e < dim; e++) {
+          for (e = 0; e < dim; e++) {
             coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
           }
         }
-        for(fc = 0; fc < numBasisComps; ++fc) {
+        for (fc = 0; fc < numBasisComps; ++fc) {
           const PetscScalar funcVal     = (*exactFuncs[comp+fc])(coords);
           PetscReal         interpolant = 0.0;
-          for(f = 0; f < numBasisFuncs; ++f) {
+          for (f = 0; f < numBasisFuncs; ++f) {
             const PetscInt fidx = f*numBasisComps+fc;
             interpolant += x[fieldOffset+fidx]*basis[q*numBasisFuncs*numBasisComps+fidx];
           }
@@ -590,11 +590,11 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
   ierr = DMComplexGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
   ierr = PetscMalloc(numComp * sizeof(PetscScalar), &values);CHKERRQ(ierr);
-  for(v = vStart; v < vEnd; ++v) {
+  for (v = vStart; v < vEnd; ++v) {
     PetscScalar *coords;
 
     ierr = VecGetValuesSection(coordinates, cSection, v, &coords);CHKERRQ(ierr);
-    for(c = 0; c < numComp; ++c) {
+    for (c = 0; c < numComp; ++c) {
       values[c] = (*funcs[c])(coords);
     }
     ierr = VecSetValuesSection(localX, section, v, values, mode);CHKERRQ(ierr);
@@ -609,7 +609,7 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
     --depth;
     if (depth > 1) {ierr = DMComplexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);}
     ierr = PetscMalloc(dim * sizeof(PetscScalar),&coordsE);CHKERRQ(ierr);
-    for(e = eStart; e < eEnd; ++e) {
+    for (e = eStart; e < eEnd; ++e) {
       const PetscInt *cone;
       PetscInt        coneSize, d;
       PetscScalar    *coordsA, *coordsB;
@@ -619,10 +619,10 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
       if (coneSize != 2) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Cone size %d for point %d should be 2", coneSize, e);
       ierr = VecGetValuesSection(coordinates, cSection, cone[0], &coordsA);CHKERRQ(ierr);
       ierr = VecGetValuesSection(coordinates, cSection, cone[1], &coordsB);CHKERRQ(ierr);
-      for(d = 0; d < dim; ++d) {
+      for (d = 0; d < dim; ++d) {
         coordsE[d] = 0.5*(coordsA[d] + coordsB[d]);
       }
-      for(c = 0; c < numComp; ++c) {
+      for (c = 0; c < numComp; ++c) {
         values[c] = (*funcs[c])(coordsE);
       }
       ierr = VecSetValuesSection(localX, section, e, values, mode);CHKERRQ(ierr);
@@ -635,7 +635,7 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
     PetscInt p;
 
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Local function\n");CHKERRQ(ierr);
-    for(p = 0; p < user->numProcs; ++p) {
+    for (p = 0; p < user->numProcs; ++p) {
       if (p == user->rank) {ierr = VecView(localX, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
       ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
     }
@@ -651,19 +651,19 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
   ierr = PetscMalloc2(dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
   ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(this->_mesh->getSieve()->getMaxConeSize(), dim+1)+1, true);
 
-  for(PetscInt c = cStart; c < cEnd; ++c) {
+  for (PetscInt c = cStart; c < cEnd; ++c) {
     ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*this->_mesh->getSieve(), c, pV);
     const PETSC_MESH_TYPE::point_type *oPoints = pV.getPoints();
     const int                          oSize   = pV.getSize();
     int                                v       = 0;
 
     ierr = DMComplexComputeCellGeometry(dm, c, v0, J, PETSC_NULL, &detJ);CHKERRQ(ierr);
-    for(PetscInt cl = 0; cl < oSize; ++cl) {
+    for (PetscInt cl = 0; cl < oSize; ++cl) {
       const PetscInt fDim;
 
       ierr = PetscSectionGetDof(oPoints[cl], &fDim);CHKERRQ(ierr);
       if (pointDim) {
-        for(PetscInt d = 0; d < fDim; ++d, ++v) {
+        for (PetscInt d = 0; d < fDim; ++d, ++v) {
           values[v] = (*this->_options.integrate)(v0, J, v, initFunc);
         }
       }
@@ -697,12 +697,12 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSp
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = VecGetArray(localP, &a);CHKERRQ(ierr);
-    for(p = pStart; p < pEnd; ++p) {
+    for (p = pStart; p < pEnd; ++p) {
       PetscInt fDim, off, d;
 
       ierr = PetscSectionGetFieldDof(section, p, 1, &fDim);CHKERRQ(ierr);
       ierr = PetscSectionGetFieldOffset(section, p, 1, &off);CHKERRQ(ierr);
-      for(d = 0; d < fDim; ++d) {
+      for (d = 0; d < fDim; ++d) {
         a[off+d] = 1.0;
       }
     }
@@ -732,7 +732,7 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->integrateResCPUEvent,0,0,0,0);CHKERRQ(ierr);
-  for(e = 0; e < Ne; ++e) {
+  for (e = 0; e < Ne; ++e) {
     const PetscReal  detJ = jacobianDeterminants[e];
     const PetscReal *invJ = &jacobianInverses[e*dim*dim];
     const PetscInt   Nq   = quad[field].numQuadPoints;
@@ -745,7 +745,7 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
       ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
       ierr = DMPrintCellMatrix(e, "invJ", dim, dim, invJ);CHKERRQ(ierr);
     }
-    for(q = 0; q < Nq; ++q) {
+    for (q = 0; q < Nq; ++q) {
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       PetscScalar      u[NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1];
       PetscScalar      gradU[dim*(NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1)];
@@ -755,25 +755,25 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
       const PetscReal *quadWeights = quad[field].quadWeights;
       PetscInt         d, f, i;
 
-      for(d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
-      for(d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
-      for(f = 0; f < numFields; ++f) {
+      for (d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
+      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
+      for (f = 0; f < numFields; ++f) {
         const PetscInt   Nb       = quad[f].numBasisFuncs;
         const PetscInt   Ncomp    = quad[f].numComponents;
         const PetscReal *basis    = quad[f].basis;
         const PetscReal *basisDer = quad[f].basisDer;
         PetscInt         b, comp;
 
-        for(b = 0; b < Nb; ++b) {
-          for(comp = 0; comp < Ncomp; ++comp) {
+        for (b = 0; b < Nb; ++b) {
+          for (comp = 0; comp < Ncomp; ++comp) {
             const PetscInt cidx = b*Ncomp+comp;
             PetscScalar    realSpaceDer[dim];
             PetscInt       d, g;
 
             u[fOffset+comp] += coefficients[dOffset+cidx]*basis[q*Nb*Ncomp+cidx];
-            for(d = 0; d < dim; ++d) {
+            for (d = 0; d < dim; ++d) {
               realSpaceDer[d] = 0.0;
-              for(g = 0; g < dim; ++g) {
+              for (g = 0; g < dim; ++g) {
                 realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb*Ncomp+cidx)*dim+g];
               }
               gradU[(fOffset+comp)*dim+d] += coefficients[dOffset+cidx]*realSpaceDer[d];
@@ -782,9 +782,9 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
         }
         if (debug > 1) {
           PetscInt d;
-          for(comp = 0; comp < Ncomp; ++comp) {
+          for (comp = 0; comp < Ncomp; ++comp) {
             ierr = PetscPrintf(PETSC_COMM_SELF, "    u[%d,%d]: %g\n", f, comp, u[fOffset+comp]);CHKERRQ(ierr);
-            for(d = 0; d < dim; ++d) {
+            for (d = 0; d < dim; ++d) {
               ierr = PetscPrintf(PETSC_COMM_SELF, "    gradU[%d,%d]_%c: %g\n", f, comp, 'x'+d, gradU[(fOffset+comp)*dim+d]);CHKERRQ(ierr);
             }
           }
@@ -794,25 +794,25 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
       }
 
       f0_func(u, gradU, &f0[q*Ncomp]);
-      for(i = 0; i < Ncomp; ++i) {
+      for (i = 0; i < Ncomp; ++i) {
         f0[q*Ncomp+i] *= detJ*quadWeights[q];
       }
       f1_func(u, gradU, &f1[q*Ncomp*dim]);
-      for(i = 0; i < Ncomp*dim; ++i) {
+      for (i = 0; i < Ncomp*dim; ++i) {
         f1[q*Ncomp*dim+i] *= detJ*quadWeights[q];
       }
       if (debug > 1) {
         PetscInt c,d;
-        for(c = 0; c < Ncomp; ++c) {
+        for (c = 0; c < Ncomp; ++c) {
           ierr = PetscPrintf(PETSC_COMM_SELF, "    f0[%d]: %g\n", c, f0[q*Ncomp+c]);CHKERRQ(ierr);
-          for(d = 0; d < dim; ++d) {
+          for (d = 0; d < dim; ++d) {
             ierr = PetscPrintf(PETSC_COMM_SELF, "    f1[%d]_%c: %g\n", c, 'x'+d, f1[(q*Ncomp + c)*dim+d]);CHKERRQ(ierr);
           }
         }
       }
       if (q == Nq-1) {cOffset = dOffset;}
     }
-    for(f = 0; f < numFields; ++f) {
+    for (f = 0; f < numFields; ++f) {
       const PetscInt   Nq       = quad[f].numQuadPoints;
       const PetscInt   Nb       = quad[f].numBasisFuncs;
       const PetscInt   Ncomp    = quad[f].numComponents;
@@ -821,20 +821,20 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
       PetscInt         b, comp;
 
       if (f == field) {
-      for(b = 0; b < Nb; ++b) {
-        for(comp = 0; comp < Ncomp; ++comp) {
+      for (b = 0; b < Nb; ++b) {
+        for (comp = 0; comp < Ncomp; ++comp) {
           const PetscInt cidx = b*Ncomp+comp;
           PetscInt       q;
 
           elemVec[eOffset+cidx] = 0.0;
-          for(q = 0; q < Nq; ++q) {
+          for (q = 0; q < Nq; ++q) {
             PetscScalar realSpaceDer[dim];
             PetscInt    d, g;
 
             elemVec[eOffset+cidx] += basis[q*Nb*Ncomp+cidx]*f0[q*Ncomp+comp];
-            for(d = 0; d < dim; ++d) {
+            for (d = 0; d < dim; ++d) {
               realSpaceDer[d] = 0.0;
-              for(g = 0; g < dim; ++g) {
+              for (g = 0; g < dim; ++g) {
                 realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb*Ncomp+cidx)*dim+g];
               }
               elemVec[eOffset+cidx] += realSpaceDer[d]*f1[(q*Ncomp+comp)*dim+d];
@@ -845,8 +845,8 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
       if (debug > 1) {
         PetscInt b, comp;
 
-        for(b = 0; b < Nb; ++b) {
-          for(comp = 0; comp < Ncomp; ++comp) {
+        for (b = 0; b < Nb; ++b) {
+          for (comp = 0; comp < Ncomp; ++comp) {
             ierr = PetscPrintf(PETSC_COMM_SELF, "    elemVec[%d,%d]: %g\n", b, comp, elemVec[eOffset+b*Ncomp+comp]);CHKERRQ(ierr);
           }
         }
@@ -897,11 +897,11 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   PetscInt       cellDof  = 0;
   PetscScalar   *u;
 
-  for(field = 0; field < numFields; ++field) {
+  for (field = 0; field < numFields; ++field) {
     cellDof += user->q[field].numBasisFuncs*user->q[field].numComponents;
   }
   ierr = PetscMalloc4(numCells*cellDof,PetscScalar,&u,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
     PetscInt           i;
 
@@ -909,11 +909,11 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
     if (detJ[c] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);
     ierr = DMComplexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
 
-    for(i = 0; i < cellDof; ++i) {
+    for (i = 0; i < cellDof; ++i) {
       u[c*cellDof+i] = x[i];
     }
   }
-  for(field = 0; field < numFields; ++field) {
+  for (field = 0; field < numFields; ++field) {
     const PetscInt numQuadPoints = user->q[field].numQuadPoints;
     const PetscInt numBasisFuncs = user->q[field].numBasisFuncs;
     void (*f0)(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) = user->f0Funcs[field];
@@ -931,7 +931,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
     ierr = IntegrateResidualBatchCPU(numRemainder, numFields, field, &u[offset*cellDof], &invJ[offset*dim*dim], &detJ[offset],
                                      user->q, f0, f1, &elemVec[offset*cellDof], user);CHKERRQ(ierr);
   }
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     if (debug) {ierr = DMPrintCellVector(c, "Residual", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
     ierr = DMComplexVecSetClosure(dm, PETSC_NULL, F, c, &elemVec[c*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
@@ -941,7 +941,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
     PetscInt p;
 
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual:\n");CHKERRQ(ierr);
-    for(p = 0; p < user->numProcs; ++p) {
+    for (p = 0; p < user->numProcs; ++p) {
       if (p == user->rank) {
         Vec f;
 
@@ -983,29 +983,29 @@ PetscErrorCode IntegrateJacobianActionBatchCPU(PetscInt Ne, PetscInt numFields, 
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  for(field = 0; field < numFields; ++field) {
+  for (field = 0; field < numFields; ++field) {
     if (field == fieldI) {offsetI = cellDof;}
     cellDof += quad[field].numBasisFuncs*quad[field].numComponents;
   }
   ierr = PetscLogEventBegin(user->integrateJacActionCPUEvent,0,0,0,0);CHKERRQ(ierr);
-  for(e = 0; e < Ne; ++e) {
+  for (e = 0; e < Ne; ++e) {
     const PetscReal  detJ    = jacobianDeterminants[e];
     const PetscReal *invJ    = &jacobianInverses[e*dim*dim];
     const PetscInt   Nb_i    = quad[fieldI].numBasisFuncs;
     const PetscInt   Ncomp_i = quad[fieldI].numComponents;
     PetscInt         f, fc, g, gc;
 
-    for(f = 0; f < Nb_i; ++f) {
+    for (f = 0; f < Nb_i; ++f) {
       const PetscInt   Nq          = quad[fieldI].numQuadPoints;
       const PetscReal *quadWeights = quad[fieldI].quadWeights;
       PetscInt         q;
 
-      for(fc = 0; fc < Ncomp_i; ++fc) {
+      for (fc = 0; fc < Ncomp_i; ++fc) {
         const PetscInt fidx = f*Ncomp_i+fc; /* Test function basis index */
         const PetscInt i    = offsetI+fidx; /* Element vector row */
         elemVec[cOffset+i] = 0.0;
       }
-      for(q = 0; q < Nq; ++q) {
+      for (q = 0; q < Nq; ++q) {
         PetscScalar u[NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1];
         PetscScalar gradU[dim*(NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1)];
         PetscInt    fOffset            = 0;       /* Offset into u[] for field_q (like offsetI) */
@@ -1018,25 +1018,25 @@ PetscErrorCode IntegrateJacobianActionBatchCPU(PetscInt Ne, PetscInt numFields, 
         PetscInt    c;
 
         if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-        for(d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
-        for(d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
-        for(field_q = 0; field_q < numFields; ++field_q) {
+        for (d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
+        for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
+        for (field_q = 0; field_q < numFields; ++field_q) {
           const PetscInt   Nb          = quad[field_q].numBasisFuncs;
           const PetscInt   Ncomp       = quad[field_q].numComponents;
           const PetscReal *basis       = quad[field_q].basis;
           const PetscReal *basisDer    = quad[field_q].basisDer;
           PetscInt         b, comp;
 
-          for(b = 0; b < Nb; ++b) {
-            for(comp = 0; comp < Ncomp; ++comp) {
+          for (b = 0; b < Nb; ++b) {
+            for (comp = 0; comp < Ncomp; ++comp) {
               const PetscInt cidx = b*Ncomp+comp;
               PetscScalar    realSpaceDer[dim];
               PetscInt       d1, d2;
 
               u[fOffset+comp] += coefficients[dOffset+cidx]*basis[q*Nb*Ncomp+cidx];
-              for(d1 = 0; d1 < dim; ++d1) {
+              for (d1 = 0; d1 < dim; ++d1) {
                 realSpaceDer[d1] = 0.0;
-                for(d2 = 0; d2 < dim; ++d2) {
+                for (d2 = 0; d2 < dim; ++d2) {
                   realSpaceDer[d1] += invJ[d2*dim+d1]*basisDer[(q*Nb*Ncomp+cidx)*dim+d2];
                 }
                 gradU[(fOffset+comp)*dim+d1] += coefficients[dOffset+cidx]*realSpaceDer[d1];
@@ -1044,9 +1044,9 @@ PetscErrorCode IntegrateJacobianActionBatchCPU(PetscInt Ne, PetscInt numFields, 
             }
           }
           if (debug > 1) {
-            for(comp = 0; comp < Ncomp; ++comp) {
+            for (comp = 0; comp < Ncomp; ++comp) {
               ierr = PetscPrintf(PETSC_COMM_SELF, "    u[%d,%d]: %g\n", f, comp, u[fOffset+comp]);CHKERRQ(ierr);
-              for(d = 0; d < dim; ++d) {
+              for (d = 0; d < dim; ++d) {
                 ierr = PetscPrintf(PETSC_COMM_SELF, "    gradU[%d,%d]_%c: %g\n", f, comp, 'x'+d, gradU[(fOffset+comp)*dim+d]);CHKERRQ(ierr);
               }
             }
@@ -1055,13 +1055,13 @@ PetscErrorCode IntegrateJacobianActionBatchCPU(PetscInt Ne, PetscInt numFields, 
           dOffset += Nb*Ncomp;
         }
 
-        for(fieldJ = 0, offsetJ = 0; fieldJ < numFields; offsetJ += quad[fieldJ].numBasisFuncs*quad[fieldJ].numComponents,  ++fieldJ) {
+        for (fieldJ = 0, offsetJ = 0; fieldJ < numFields; offsetJ += quad[fieldJ].numBasisFuncs*quad[fieldJ].numComponents,  ++fieldJ) {
           const PetscReal *basisJ    = quad[fieldJ].basis;
           const PetscReal *basisDerJ = quad[fieldJ].basisDer;
           const PetscInt   Nb_j      = quad[fieldJ].numBasisFuncs;
           const PetscInt   Ncomp_j   = quad[fieldJ].numComponents;
 
-          for(g = 0; g < Nb_j; ++g) {
+          for (g = 0; g < Nb_j; ++g) {
             if ((Ncomp_i > dim) || (Ncomp_j > dim)) SETERRQ3(PETSC_COMM_WORLD, PETSC_ERR_LIB, "Number of components %d and %d should be <= %d", Ncomp_i, Ncomp_j, dim);
             ierr = PetscMemzero(g0, Ncomp_i*Ncomp_j         * sizeof(PetscScalar));CHKERRQ(ierr);
             ierr = PetscMemzero(g1, Ncomp_i*Ncomp_j*dim     * sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1069,33 +1069,33 @@ PetscErrorCode IntegrateJacobianActionBatchCPU(PetscInt Ne, PetscInt numFields, 
             ierr = PetscMemzero(g3, Ncomp_i*Ncomp_j*dim*dim * sizeof(PetscScalar));CHKERRQ(ierr);
             if (g0_func[fieldI*numFields+fieldJ]) {
               g0_func[fieldI*numFields+fieldJ](u, gradU, g0);
-              for(c = 0; c < Ncomp_i*Ncomp_j; ++c) {
+              for (c = 0; c < Ncomp_i*Ncomp_j; ++c) {
                 g0[c] *= detJ*quadWeights[q];
               }
             }
             if (g1_func[fieldI*numFields+fieldJ]) {
               g1_func[fieldI*numFields+fieldJ](u, gradU, g1);
-              for(c = 0; c < Ncomp_i*Ncomp_j*dim; ++c) {
+              for (c = 0; c < Ncomp_i*Ncomp_j*dim; ++c) {
                 g1[c] *= detJ*quadWeights[q];
               }
             }
             if (g2_func[fieldI*numFields+fieldJ]) {
               g2_func[fieldI*numFields+fieldJ](u, gradU, g2);
-              for(c = 0; c < Ncomp_i*Ncomp_j*dim; ++c) {
+              for (c = 0; c < Ncomp_i*Ncomp_j*dim; ++c) {
                 g2[c] *= detJ*quadWeights[q];
               }
             }
             if (g3_func[fieldI*numFields+fieldJ]) {
               g3_func[fieldI*numFields+fieldJ](u, gradU, g3);
-              for(c = 0; c < Ncomp_i*Ncomp_j*dim*dim; ++c) {
+              for (c = 0; c < Ncomp_i*Ncomp_j*dim*dim; ++c) {
                 g3[c] *= detJ*quadWeights[q];
               }
             }
 
-            for(fc = 0; fc < Ncomp_i; ++fc) {
+            for (fc = 0; fc < Ncomp_i; ++fc) {
               const PetscInt fidx = f*Ncomp_i+fc; /* Test function basis index */
               const PetscInt i    = offsetI+fidx; /* Element matrix row */
-              for(gc = 0; gc < Ncomp_j; ++gc) {
+              for (gc = 0; gc < Ncomp_j; ++gc) {
                 const PetscInt gidx  = g*Ncomp_j+gc; /* Trial function basis index */
                 const PetscInt j     = offsetJ+gidx; /* Element matrix column */
                 PetscScalar    entry = 0.0;          /* The (i,j) entry in the element matrix */
@@ -1103,19 +1103,19 @@ PetscErrorCode IntegrateJacobianActionBatchCPU(PetscInt Ne, PetscInt numFields, 
                 PetscScalar    realSpaceDerJ[dim];
                 PetscInt       d, d2;
 
-                for(d = 0; d < dim; ++d) {
+                for (d = 0; d < dim; ++d) {
                   realSpaceDerI[d] = 0.0;
                   realSpaceDerJ[d] = 0.0;
-                  for(d2 = 0; d2 < dim; ++d2) {
+                  for (d2 = 0; d2 < dim; ++d2) {
                     realSpaceDerI[d] += invJ[d2*dim+d]*basisDerI[(q*Nb_i*Ncomp_i+fidx)*dim+d2];
                     realSpaceDerJ[d] += invJ[d2*dim+d]*basisDerJ[(q*Nb_j*Ncomp_j+gidx)*dim+d2];
                   }
                 }
                 entry += basisI[q*Nb_i*Ncomp_i+fidx]*g0[fc*Ncomp_j+gc]*basisJ[q*Nb_j*Ncomp_j+gidx];
-                for(d = 0; d < dim; ++d) {
+                for (d = 0; d < dim; ++d) {
                   entry += basisI[q*Nb_i*Ncomp_i+fidx]*g1[(fc*Ncomp_j+gc)*dim+d]*realSpaceDerJ[d];
                   entry += realSpaceDerI[d]*g2[(fc*Ncomp_j+gc)*dim+d]*basisJ[q*Nb_j*Ncomp_j+gidx];
-                  for(d2 = 0; d2 < dim; ++d2) {
+                  for (d2 = 0; d2 < dim; ++d2) {
                     entry += realSpaceDerI[d]*g3[((fc*Ncomp_j+gc)*dim+d)*dim+d2]*realSpaceDerJ[d2];
                   }
                 }
@@ -1130,14 +1130,14 @@ PetscErrorCode IntegrateJacobianActionBatchCPU(PetscInt Ne, PetscInt numFields, 
       PetscInt fc, f;
 
       ierr = PetscPrintf(PETSC_COMM_SELF, "Element %d action vector for field %d\n", e, fieldI);CHKERRQ(ierr);
-      for(fc = 0; fc < Ncomp_i; ++fc) {
-        for(f = 0; f < Nb_i; ++f) {
+      for (fc = 0; fc < Ncomp_i; ++fc) {
+        for (f = 0; f < Nb_i; ++f) {
           const PetscInt i = offsetI + f*Ncomp_i+fc;
           ierr = PetscPrintf(PETSC_COMM_SELF, "    argCoef[%d,%d]: %g\n", f, fc, argCoefficients[cOffset+i]);CHKERRQ(ierr);
         }
       }
-      for(fc = 0; fc < Ncomp_i; ++fc) {
-        for(f = 0; f < Nb_i; ++f) {
+      for (fc = 0; fc < Ncomp_i; ++fc) {
+        for (f = 0; f < Nb_i; ++f) {
           const PetscInt i = offsetI + f*Ncomp_i+fc;
           ierr = PetscPrintf(PETSC_COMM_SELF, "    elemVec[%d,%d]: %g\n", f, fc, elemVec[cOffset+i]);CHKERRQ(ierr);
         }
@@ -1189,26 +1189,26 @@ PetscErrorCode FormJacobianActionLocal(DM dm, Mat Jac, Vec X, Vec F, AppCtx *use
   PetscInt       cellDof  = 0;
   PetscScalar   *u, *a;
 
-  for(field = 0; field < numFields; ++field) {
+  for (field = 0; field < numFields; ++field) {
     cellDof += user->q[field].numBasisFuncs*user->q[field].numComponents;
   }
   ierr = PetscMalloc5(numCells*cellDof,PetscScalar,&u,numCells*cellDof,PetscScalar,&a,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
     PetscInt           i;
 
     ierr = DMComplexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
     if (detJ[c] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);
     ierr = DMComplexVecGetClosure(dm, PETSC_NULL, jctx->u, c, PETSC_NULL, &x);CHKERRQ(ierr);
-    for(i = 0; i < cellDof; ++i) {
+    for (i = 0; i < cellDof; ++i) {
       u[c*cellDof+i] = x[i];
     }
     ierr = DMComplexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
-    for(i = 0; i < cellDof; ++i) {
+    for (i = 0; i < cellDof; ++i) {
       a[c*cellDof+i] = x[i];
     }
   }
-  for(field = 0; field < numFields; ++field) {
+  for (field = 0; field < numFields; ++field) {
     const PetscInt numQuadPoints = user->q[field].numQuadPoints;
     const PetscInt numBasisFuncs = user->q[field].numBasisFuncs;
     /* Conforming batches */
@@ -1224,7 +1224,7 @@ PetscErrorCode FormJacobianActionLocal(DM dm, Mat Jac, Vec X, Vec F, AppCtx *use
     ierr = IntegrateJacobianActionBatchCPU(numRemainder, numFields, field, &u[offset*cellDof], &a[offset*cellDof], &invJ[offset*dim*dim], &detJ[offset],
                                            user->q, user->g0Funcs, user->g1Funcs, user->g2Funcs, user->g3Funcs, &elemVec[offset*cellDof], user);CHKERRQ(ierr);
   }
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     if (debug) {ierr = DMPrintCellVector(c, "Residual", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
     ierr = DMComplexVecSetClosure(dm, PETSC_NULL, F, c, &elemVec[c*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
@@ -1234,7 +1234,7 @@ PetscErrorCode FormJacobianActionLocal(DM dm, Mat Jac, Vec X, Vec F, AppCtx *use
     PetscInt p;
 
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Jacobian Action:\n");CHKERRQ(ierr);
-    for(p = 0; p < user->numProcs; ++p) {
+    for (p = 0; p < user->numProcs; ++p) {
       if (p == user->rank) {ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
       ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
     }
@@ -1337,13 +1337,13 @@ PetscErrorCode IntegrateJacobianBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  for(field = 0; field < numFields; ++field) {
+  for (field = 0; field < numFields; ++field) {
     if (field == fieldI) {offsetI = cellDof;}
     if (field == fieldJ) {offsetJ = cellDof;}
     cellDof += quad[field].numBasisFuncs*quad[field].numComponents;
   }
   ierr = PetscLogEventBegin(user->integrateJacCPUEvent,0,0,0,0);CHKERRQ(ierr);
-  for(e = 0; e < Ne; ++e) {
+  for (e = 0; e < Ne; ++e) {
     const PetscReal  detJ    = jacobianDeterminants[e];
     const PetscReal *invJ    = &jacobianInverses[e*dim*dim];
     const PetscInt   Nb_i    = quad[fieldI].numBasisFuncs;
@@ -1352,13 +1352,13 @@ PetscErrorCode IntegrateJacobianBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
     const PetscInt   Ncomp_j = quad[fieldJ].numComponents;
     PetscInt         f, g;
 
-    for(f = 0; f < Nb_i; ++f) {
-      for(g = 0; g < Nb_j; ++g) {
+    for (f = 0; f < Nb_i; ++f) {
+      for (g = 0; g < Nb_j; ++g) {
         const PetscInt   Nq          = quad[fieldI].numQuadPoints;
         const PetscReal *quadWeights = quad[fieldI].quadWeights;
         PetscInt         q;
 
-        for(q = 0; q < Nq; ++q) {
+        for (q = 0; q < Nq; ++q) {
           PetscScalar u[dim+1];
           PetscScalar gradU[dim*(dim+1)];
           PetscInt    fOffset            = 0;       /* Offset into u[] for field_q (like offsetI) */
@@ -1371,25 +1371,25 @@ PetscErrorCode IntegrateJacobianBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
           PetscInt    fc, gc, c;
 
           if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-          for(d = 0; d <= dim; ++d)        {u[d]     = 0.0;}
-          for(d = 0; d < dim*(dim+1); ++d) {gradU[d] = 0.0;}
-          for(field_q = 0; field_q < numFields; ++field_q) {
+          for (d = 0; d <= dim; ++d)        {u[d]     = 0.0;}
+          for (d = 0; d < dim*(dim+1); ++d) {gradU[d] = 0.0;}
+          for (field_q = 0; field_q < numFields; ++field_q) {
             const PetscInt   Nb          = quad[field_q].numBasisFuncs;
             const PetscInt   Ncomp       = quad[field_q].numComponents;
             const PetscReal *basis       = quad[field_q].basis;
             const PetscReal *basisDer    = quad[field_q].basisDer;
             PetscInt         b, comp;
 
-            for(b = 0; b < Nb; ++b) {
-              for(comp = 0; comp < Ncomp; ++comp) {
+            for (b = 0; b < Nb; ++b) {
+              for (comp = 0; comp < Ncomp; ++comp) {
                 const PetscInt cidx = b*Ncomp+comp;
                 PetscScalar    realSpaceDer[dim];
                 PetscInt       d1, d2;
 
                 u[fOffset+comp] += coefficients[dOffset+cidx]*basis[q*Nb*Ncomp+cidx];
-                for(d1 = 0; d1 < dim; ++d1) {
+                for (d1 = 0; d1 < dim; ++d1) {
                   realSpaceDer[d1] = 0.0;
-                  for(d2 = 0; d2 < dim; ++d2) {
+                  for (d2 = 0; d2 < dim; ++d2) {
                     realSpaceDer[d1] += invJ[d2*dim+d1]*basisDer[(q*Nb*Ncomp+cidx)*dim+d2];
                   }
                   gradU[(fOffset+comp)*dim+d1] += coefficients[dOffset+cidx]*realSpaceDer[d1];
@@ -1397,9 +1397,9 @@ PetscErrorCode IntegrateJacobianBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
               }
             }
             if (debug > 1) {
-              for(comp = 0; comp < Ncomp; ++comp) {
+              for (comp = 0; comp < Ncomp; ++comp) {
                 ierr = PetscPrintf(PETSC_COMM_SELF, "    u[%d,%d]: %g\n", f, comp, u[fOffset+comp]);CHKERRQ(ierr);
-                for(d = 0; d < dim; ++d) {
+                for (d = 0; d < dim; ++d) {
                   ierr = PetscPrintf(PETSC_COMM_SELF, "    gradU[%d,%d]_%c: %g\n", f, comp, 'x'+d, gradU[(fOffset+comp)*dim+d]);CHKERRQ(ierr);
                 }
               }
@@ -1415,52 +1415,52 @@ PetscErrorCode IntegrateJacobianBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
           ierr = PetscMemzero(g3, Ncomp_i*Ncomp_j*dim*dim * sizeof(PetscScalar));CHKERRQ(ierr);
           if (g0_func) {
             g0_func(u, gradU, g0);
-            for(c = 0; c < Ncomp_i*Ncomp_j; ++c) {
+            for (c = 0; c < Ncomp_i*Ncomp_j; ++c) {
               g0[c] *= detJ*quadWeights[q];
             }
           }
           if (g1_func) {
             g1_func(u, gradU, g1);
-            for(c = 0; c < Ncomp_i*Ncomp_j*dim; ++c) {
+            for (c = 0; c < Ncomp_i*Ncomp_j*dim; ++c) {
               g1[c] *= detJ*quadWeights[q];
             }
           }
           if (g2_func) {
             g2_func(u, gradU, g2);
-            for(c = 0; c < Ncomp_i*Ncomp_j*dim; ++c) {
+            for (c = 0; c < Ncomp_i*Ncomp_j*dim; ++c) {
               g2[c] *= detJ*quadWeights[q];
             }
           }
           if (g3_func) {
             g3_func(u, gradU, g3);
-            for(c = 0; c < Ncomp_i*Ncomp_j*dim*dim; ++c) {
+            for (c = 0; c < Ncomp_i*Ncomp_j*dim*dim; ++c) {
               g3[c] *= detJ*quadWeights[q];
             }
           }
 
-          for(fc = 0; fc < Ncomp_i; ++fc) {
+          for (fc = 0; fc < Ncomp_i; ++fc) {
             const PetscInt fidx = f*Ncomp_i+fc; /* Test function basis index */
             const PetscInt i    = offsetI+fidx; /* Element matrix row */
-            for(gc = 0; gc < Ncomp_j; ++gc) {
+            for (gc = 0; gc < Ncomp_j; ++gc) {
               const PetscInt gidx = g*Ncomp_j+gc; /* Trial function basis index */
               const PetscInt j    = offsetJ+gidx; /* Element matrix column */
               PetscScalar    realSpaceDerI[dim];
               PetscScalar    realSpaceDerJ[dim];
               PetscInt       d, d2;
 
-              for(d = 0; d < dim; ++d) {
+              for (d = 0; d < dim; ++d) {
                 realSpaceDerI[d] = 0.0;
                 realSpaceDerJ[d] = 0.0;
-                for(d2 = 0; d2 < dim; ++d2) {
+                for (d2 = 0; d2 < dim; ++d2) {
                   realSpaceDerI[d] += invJ[d2*dim+d]*basisDerI[(q*Nb_i*Ncomp_i+fidx)*dim+d2];
                   realSpaceDerJ[d] += invJ[d2*dim+d]*basisDerJ[(q*Nb_j*Ncomp_j+gidx)*dim+d2];
                 }
               }
               elemMat[eOffset+i*cellDof+j] += basisI[q*Nb_i*Ncomp_i+fidx]*g0[fc*Ncomp_j+gc]*basisJ[q*Nb_j*Ncomp_j+gidx];
-              for(d = 0; d < dim; ++d) {
+              for (d = 0; d < dim; ++d) {
                 elemMat[eOffset+i*cellDof+j] += basisI[q*Nb_i*Ncomp_i+fidx]*g1[(fc*Ncomp_j+gc)*dim+d]*realSpaceDerJ[d];
                 elemMat[eOffset+i*cellDof+j] += realSpaceDerI[d]*g2[(fc*Ncomp_j+gc)*dim+d]*basisJ[q*Nb_j*Ncomp_j+gidx];
-                for(d2 = 0; d2 < dim; ++d2) {
+                for (d2 = 0; d2 < dim; ++d2) {
                   elemMat[eOffset+i*cellDof+j] += realSpaceDerI[d]*g3[((fc*Ncomp_j+gc)*dim+d)*dim+d2]*realSpaceDerJ[d2];
                 }
               }
@@ -1473,11 +1473,11 @@ PetscErrorCode IntegrateJacobianBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
       PetscInt fc, f, gc, g;
 
       ierr = PetscPrintf(PETSC_COMM_SELF, "Element matrix for fields %d and %d\n", fieldI, fieldJ);CHKERRQ(ierr);
-      for(fc = 0; fc < Ncomp_i; ++fc) {
-        for(f = 0; f < Nb_i; ++f) {
+      for (fc = 0; fc < Ncomp_i; ++fc) {
+        for (f = 0; f < Nb_i; ++f) {
           const PetscInt i = offsetI + f*Ncomp_i+fc;
-          for(gc = 0; gc < Ncomp_j; ++gc) {
-            for(g = 0; g < Nb_j; ++g) {
+          for (gc = 0; gc < Ncomp_j; ++gc) {
+            for (g = 0; g < Nb_j; ++g) {
               const PetscInt j = offsetJ + g*Ncomp_j+gc;
               ierr = PetscPrintf(PETSC_COMM_SELF, "    elemMat[%d,%d,%d,%d]: %g\n", f, fc, g, gc, elemMat[eOffset+i*cellDof+j]);CHKERRQ(ierr);
             }
@@ -1528,11 +1528,11 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, AppCtx *user)
   ierr = PetscMalloc2(dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   numCells = cEnd - cStart;
-  for(field = 0; field < numFields; ++field) {
+  for (field = 0; field < numFields; ++field) {
     cellDof += user->q[field].numBasisFuncs*user->q[field].numComponents;
   }
   ierr = PetscMalloc4(numCells*cellDof,PetscScalar,&u,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof*cellDof,PetscScalar,&elemMat);CHKERRQ(ierr);
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
     PetscInt           i;
 
@@ -1540,17 +1540,17 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, AppCtx *user)
     if (detJ[c] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);
     ierr = DMComplexVecGetClosure(dm, PETSC_NULL, X, c, PETSC_NULL, &x);CHKERRQ(ierr);
 
-    for(i = 0; i < cellDof; ++i) {
+    for (i = 0; i < cellDof; ++i) {
       u[c*cellDof+i] = x[i];
     }
   }
   ierr = PetscMemzero(elemMat, numCells*cellDof*cellDof * sizeof(PetscScalar));CHKERRQ(ierr);
-  for(fieldI = 0; fieldI < numFields; ++fieldI) {
+  for (fieldI = 0; fieldI < numFields; ++fieldI) {
     const PetscInt numQuadPoints = user->q[fieldI].numQuadPoints;
     const PetscInt numBasisFuncs = user->q[fieldI].numBasisFuncs;
     PetscInt       fieldJ;
 
-    for(fieldJ = 0; fieldJ < numFields; ++fieldJ) {
+    for (fieldJ = 0; fieldJ < numFields; ++fieldJ) {
       void (*g0)(PetscScalar u[], const PetscScalar gradU[], PetscScalar g0[]) = user->g0Funcs[fieldI*numFields+fieldJ];
       void (*g1)(PetscScalar u[], const PetscScalar gradU[], PetscScalar g1[]) = user->g1Funcs[fieldI*numFields+fieldJ];
       void (*g2)(PetscScalar u[], const PetscScalar gradU[], PetscScalar g2[]) = user->g2Funcs[fieldI*numFields+fieldJ];
@@ -1569,7 +1569,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, AppCtx *user)
                                        user->q, g0, g1, g2, g3, &elemMat[offset*cellDof*cellDof], user);CHKERRQ(ierr);
     }
   }
-  for(c = cStart; c < cEnd; ++c) {
+  for (c = cStart; c < cEnd; ++c) {
     if (debug) {ierr = DMPrintCellMatrix(c, "Jacobian", cellDof, cellDof, &elemMat[c*cellDof*cellDof]);CHKERRQ(ierr);}
     ierr = DMComplexMatSetClosure(dm, PETSC_NULL, PETSC_NULL, JacP, c, &elemMat[c*cellDof*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
@@ -1664,10 +1664,10 @@ int main(int argc, char **argv)
     ierr = KSPGetPC( ksp, &pc ); CHKERRQ(ierr);
     ierr = DMComplexGetCoordinateVec( user.dm, &crd_vec ); CHKERRQ(ierr);
     ierr = VecGetLocalSize(crd_vec,&mlocal);     CHKERRQ(ierr);
-    ierr = PetscMalloc(SPATIAL_DIM_0*mlocal*sizeof *coords,&coords);CHKERRQ(ierr);
+    ierr = PetscMalloc(SPATIAL_DIM_0*mlocal*sizeof(*coords),&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(crd_vec,&v);CHKERRQ(ierr);
-    for(k=j=0; j<mlocal; j++) 
-      for(i=0; i<SPATIAL_DIM_0; i++,k++) 
+    for (k=j=0; j<mlocal; j++) 
+      for (i=0; i<SPATIAL_DIM_0; i++,k++) 
         coords[k] = PetscRealPart(v[k]);
     ierr = VecRestoreArrayRead(crd_vec,&v);CHKERRQ(ierr);
     ierr = PCSetCoordinates( pc, SPATIAL_DIM_0, mlocal, coords ); CHKERRQ(ierr);
@@ -1679,7 +1679,7 @@ int main(int argc, char **argv)
     PetscScalar (*initialGuess[numComponents])(const PetscReal x[]);
     PetscInt c;
 
-    for(c = 0; c < numComponents; ++c) {initialGuess[c] = zero;}
+    for (c = 0; c < numComponents; ++c) {initialGuess[c] = zero;}
     ierr = DMComputeVertexFunction(user.dm, INSERT_VALUES, u, numComponents, initialGuess, &user);CHKERRQ(ierr);
     if (user.debug) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);

@@ -27,7 +27,7 @@ PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
   ierr = PetscMalloc2(lm,PetscInt,&d_nnz,lm,PetscInt,&o_nnz);CHKERRQ(ierr);
 
   ierr = MatMarkDiagonal_SeqAIJ(mpimat->A);CHKERRQ(ierr);
-  for(i=0;i<lm;i++){
+  for (i=0;i<lm;i++){
     d_nnz[i] = Aa->i[i+1] - Aa->diag[i];
     o_nnz[i] = Ba->i[i+1] - Ba->i[i];
   }
@@ -41,7 +41,7 @@ PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  for(i=rstart;i<rend;i++){
+  for (i=rstart;i<rend;i++){
     ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
     j = 0;
     while (cwork[j] < i){ j++; nz--;}
@@ -81,7 +81,7 @@ PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
   ierr = PetscMalloc2(lm/bs,PetscInt,&d_nnz,lm/bs,PetscInt,&o_nnz);CHKERRQ(ierr);
   
   ierr = MatMarkDiagonal_SeqBAIJ(mpimat->A);CHKERRQ(ierr);
-  for(i=0;i<lm/bs;i++){
+  for (i=0;i<lm/bs;i++){
     d_nnz[i] = Aa->i[i+1] - Aa->diag[i]; 
     o_nnz[i] = Ba->i[i+1] - Ba->i[i];
   }
@@ -96,7 +96,7 @@ PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
 
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr); 
   ierr = MatSetOption(M,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr); 
-  for(i=rstart;i<rend;i++){
+  for (i=rstart;i<rend;i++){
     ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
     j = 0;
     ierr = MatSetValues(M,1,&i,nz,cwork+j,vwork+j,INSERT_VALUES);CHKERRQ(ierr); 

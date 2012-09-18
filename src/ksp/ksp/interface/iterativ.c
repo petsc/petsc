@@ -244,7 +244,7 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,vo
   ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
   ierr = VecDestroy(&work);CHKERRQ(ierr);
   ierr = VecNorm(ksp->vec_rhs,NORM_2,&bnorm);CHKERRQ(ierr);
-  ierr = PetscStrncpy(normtype,KSPNormTypes[ksp->normtype],sizeof normtype);CHKERRQ(ierr);
+  ierr = PetscStrncpy(normtype,KSPNormTypes[ksp->normtype],sizeof(normtype));CHKERRQ(ierr);
   ierr = PetscStrtolower(normtype);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP %s resid norm %14.12e true resid norm %14.12e ||r(i)||/||b|| %14.12e\n",n,normtype,(double)rnorm,(double)scnorm,(double)(scnorm/bnorm));CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);

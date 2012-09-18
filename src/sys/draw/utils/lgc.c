@@ -491,9 +491,9 @@ PetscErrorCode  PetscDrawLGPrint(PetscDrawLG lg)
   if (nopts < 1)                  PetscFunctionReturn(0);
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
 
-  for(i = 0; i < dim; i++) {
+  for (i = 0; i < dim; i++) {
     PetscPrintf(((PetscObject)lg)->comm, "Line %d>\n", i);
-    for(j = 0; j < nopts; j++) {
+    for (j = 0; j < nopts; j++) {
       PetscPrintf(((PetscObject)lg)->comm, "  X: %g Y: %g\n", (double)lg->x[j*dim+i], (double)lg->y[j*dim+i]);
     }
   }

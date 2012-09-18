@@ -227,7 +227,7 @@ PetscErrorCode constantResidual(PetscReal lambda, PetscBool  isLower, int i, int
   PetscInt    q, k;
 
   PetscFunctionBegin;
-  for(q = 0; q < 4; q++) {
+  for (q = 0; q < 4; q++) {
     phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
     phi[1] = quadPoints[q*2];
     phi[2] = quadPoints[q*2+1];
@@ -235,11 +235,11 @@ PetscErrorCode constantResidual(PetscReal lambda, PetscBool  isLower, int i, int
     x      = xI + quadPoints[q*2]*hx;
     y      = yI + quadPoints[q*2+1]*hy;
     res    = quadWeights[q]*(2.0);
-    for(k = 0; k < 3; k++) {
+    for (k = 0; k < 3; k++) {
       rLocal[k] += phi[k]*res;
     }
   }
-  for(k = 0; k < 3; k++) {
+  for (k = 0; k < 3; k++) {
     printf("  constLocal[%d] = %g\n", k, lambda*hxhy*rLocal[k]);
     r[k] += lambda*hxhy*rLocal[k];
   }
@@ -256,7 +256,7 @@ PetscErrorCode nonlinearResidual(PetscReal lambda, PetscScalar u[], PetscScalar 
   PetscInt    q;
 
   PetscFunctionBegin;
-  for(q = 0; q < 4; q++) {
+  for (q = 0; q < 4; q++) {
     phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
     phi[1] = quadPoints[q*2];
     phi[2] = quadPoints[q*2+1];
@@ -307,7 +307,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   G[1] = 0.0;
   G[2] = G[1];
   G[3] = (1.0/(hy*hy)) * detJInv;
-  for(k = 0; k < 4; k++) {
+  for (k = 0; k < 4; k++) {
     printf("G[%d] = %g\n", k, G[k]);
   }
 
@@ -328,35 +328,35 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
 
      and therefore we do not loop over the last vertex in each dimension.
   */
-  for(j = info->ys; j < info->ys+info->ym-1; j++) {
-    for(i = info->xs; i < info->xs+info->xm-1; i++) {
+  for (j = info->ys; j < info->ys+info->ym-1; j++) {
+    for (i = info->xs; i < info->xs+info->xm-1; i++) {
       /* Lower element */
       uLocal[0] = x[j][i];
       uLocal[1] = x[j][i+1];
       uLocal[2] = x[j+1][i];
       printf("Solution ElementVector for (%d, %d)\n", i, j);
-      for(k = 0; k < 3; k++) {
+      for (k = 0; k < 3; k++) {
         printf("  uLocal[%d] = %g\n", k, uLocal[k]);
       }
-      for(k = 0; k < 3; k++) {
+      for (k = 0; k < 3; k++) {
         rLocal[k] = 0.0;
-        for(l = 0; l < 3; l++) {
+        for (l = 0; l < 3; l++) {
           rLocal[k] += (G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1])*uLocal[l];
         }
         rLocal[k] *= alpha;
       }
       printf("Laplacian ElementVector for (%d, %d)\n", i, j);
-      for(k = 0; k < 3; k++) {
+      for (k = 0; k < 3; k++) {
         printf("  rLocal[%d] = %g\n", k, rLocal[k]);
       }
       ierr = constantResidual(1.0, PETSC_TRUE, i, j, hx, hy, rLocal);CHKERRQ(ierr);
       printf("Laplacian+Constant ElementVector for (%d, %d)\n", i, j);
-      for(k = 0; k < 3; k++) {
+      for (k = 0; k < 3; k++) {
         printf("  rLocal[%d] = %g\n", k, rLocal[k]);
       }
       ierr = nonlinearResidual(0.0*sc, uLocal, rLocal);CHKERRQ(ierr);
       printf("Full nonlinear ElementVector for (%d, %d)\n", i, j);
-      for(k = 0; k < 3; k++) {
+      for (k = 0; k < 3; k++) {
         printf("  rLocal[%d] = %g\n", k, rLocal[k]);
       }
       f[j][i]   += rLocal[0];
@@ -367,28 +367,28 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
       uLocal[1] = x[j+1][i];
       uLocal[2] = x[j][i+1];
       printf("Solution ElementVector for (%d, %d)\n", i, j);
-      for(k = 0; k < 3; k++) {
+      for (k = 0; k < 3; k++) {
         printf("  uLocal[%d] = %g\n", k, uLocal[k]);
       }
-      for(k = 0; k < 3; k++) {
+      for (k = 0; k < 3; k++) {
         rLocal[k] = 0.0;
-        for(l = 0; l < 3; l++) {
+        for (l = 0; l < 3; l++) {
           rLocal[k] += (G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1])*uLocal[l];
         }
         rLocal[k] *= alpha;
       }
       printf("Laplacian ElementVector for (%d, %d)\n", i, j);
-      for(k = 0; k < 3; k++) {
+      for (k = 0; k < 3; k++) {
         printf("  rLocal[%d] = %g\n", k, rLocal[k]);
       }
       ierr = constantResidual(1.0, PETSC_BOOL, i, j, hx, hy, rLocal);CHKERRQ(ierr);
       printf("Laplacian+Constant ElementVector for (%d, %d)\n", i, j);
-      for(k = 0; k < 3; k++) {
+      for (k = 0; k < 3; k++) {
         printf("  rLocal[%d] = %g\n", k, rLocal[k]);
       }
       ierr = nonlinearResidual(0.0*sc, uLocal, rLocal);CHKERRQ(ierr);
       printf("Full nonlinear ElementVector for (%d, %d)\n", i, j);
-      for(k = 0; k < 3; k++) {
+      for (k = 0; k < 3; k++) {
         printf("  rLocal[%d] = %g\n", k, rLocal[k]);
       }
       f[j+1][i+1] += rLocal[0];
@@ -414,8 +414,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
     }
   }
 
-  for(j = info->ys+info->ym-1; j >= info->ys; j--) {
-    for(i = info->xs; i < info->xs+info->xm; i++) {
+  for (j = info->ys+info->ym-1; j >= info->ys; j--) {
+    for (i = info->xs; i < info->xs+info->xm; i++) {
       printf("f[%d][%d] = %g ", j, i, f[j][i]);
     }
     printf("\n");
@@ -460,7 +460,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
   G[1] = 0.0;
   G[2] = G[1];
   G[3] = (1.0/(hy*hy)) * detJInv;
-  for(k = 0; k < 4; k++) {
+  for (k = 0; k < 4; k++) {
     printf("G[%d] = %g\n", k, G[k]);
   }
 
@@ -556,16 +556,16 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
       cols[3].i = i; cols[3].j = j+1;
 
       /* Lower Element */
-      for(k = 0; k < 3; k++) {
+      for (k = 0; k < 3; k++) {
         if (!hasLower[k]) continue;
-        for(l = 0; l < 3; l++) {
+        for (l = 0; l < 3; l++) {
           JLocal[localRows[lowerRow[k]]*4 + lowerRow[l]] += alpha*(G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1]);
         }
       }
       /* Upper Element */
-      for(k = 0; k < 3; k++) {
+      for (k = 0; k < 3; k++) {
         if (!hasUpper[k]) continue;
-        for(l = 0; l < 3; l++) {
+        for (l = 0; l < 3; l++) {
           JLocal[localRows[upperRow[k]]*4 + upperRow[l]] += alpha*(G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1]);
         }
       }
@@ -573,13 +573,13 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
       ierr = nonlinearJacobian(-1.0*sc, uLocal, JLocal);CHKERRQ(ierr);
       printf("Element matrix for (%d, %d)\n", i, j);
       printf("   col  ");
-      for(l = 0; l < 4; l++) {
+      for (l = 0; l < 4; l++) {
         printf("(%d, %d) ", cols[l].i, cols[l].j);
       }
       printf("\n");
-      for(k = 0; k < numRows; k++) {
+      for (k = 0; k < numRows; k++) {
         printf("row (%d, %d): ", rows[k].i, rows[k].j);
-        for(l = 0; l < 4; l++) {
+        for (l = 0; l < 4; l++) {
           printf("%8.6g ", JLocal[k*4 + l]);
         }
         printf("\n");
@@ -628,14 +628,14 @@ PetscErrorCode L_2Error(DM da, Vec fVec, double *error, AppCtx *user)
   hx     = 1.0/(PetscReal)(info.mx-1);
   hy     = 1.0/(PetscReal)(info.my-1);
   hxhy   = hx*hy;
-  for(j = info.ys; j < info.ys+info.ym-1; j++) {
-    for(i = info.xs; i < info.xs+info.xm-1; i++) {
+  for (j = info.ys; j < info.ys+info.ym-1; j++) {
+    for (i = info.xs; i < info.xs+info.xm-1; i++) {
       uLocal[0] = f[j][i];
       uLocal[1] = f[j][i+1];
       uLocal[2] = f[j+1][i+1];
       uLocal[3] = f[j+1][i];
       /* Lower element */
-      for(q = 0; q < 4; q++) {
+      for (q = 0; q < 4; q++) {
         phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
         phi[1] = quadPoints[q*2];
         phi[2] = quadPoints[q*2+1];
@@ -652,7 +652,7 @@ PetscErrorCode L_2Error(DM da, Vec fVec, double *error, AppCtx *user)
         / x_U \ = / -1  0 \ / x_L \ + / hx \
         \ y_U /   \  0 -1 / \ y_L /   \ hy /
        */
-      for(q = 0; q < 4; q++) {
+      for (q = 0; q < 4; q++) {
         phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
         phi[1] = quadPoints[q*2];
         phi[2] = quadPoints[q*2+1];

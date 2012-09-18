@@ -224,7 +224,7 @@ PetscErrorCode DMSNESGetContextWrite(DM dm,SNESDM *snesdm)
     ierr = PetscInfo(dm,"Copying SNESDM due to write\n");CHKERRQ(ierr);
     ierr = PetscContainerCreate(((PetscObject)dm)->comm,&container);CHKERRQ(ierr);
     ierr = PetscNewLog(dm,struct _n_SNESDM,&sdm);CHKERRQ(ierr);
-    ierr = PetscMemcpy(sdm,oldsdm,sizeof *sdm);CHKERRQ(ierr);
+    ierr = PetscMemcpy(sdm,oldsdm,sizeof(*sdm));CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(container,sdm);CHKERRQ(ierr);
     ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_SNESDM);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"SNESDM",(PetscObject)container);CHKERRQ(ierr);

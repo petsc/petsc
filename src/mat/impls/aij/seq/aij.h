@@ -319,14 +319,14 @@ xv  += 4; xi += 4; nnz -= 4; }}}
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
 #define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) {\
 PetscInt __i,__i1,__i2;\
-for(__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
+for (__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
 sum -= (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);}\
 if (nnz & 0x1) sum -= xv[__i] * r[xi[__i]];}
 
 #else
 #define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) {\
 PetscInt __i;\
-for(__i=0;__i<nnz;__i++) sum -= xv[__i] * r[xi[__i]];}
+for (__i=0;__i<nnz;__i++) sum -= xv[__i] * r[xi[__i]];}
 #endif
 
 
@@ -366,14 +366,14 @@ xv  += 4; xi += 4; nnz -= 4; }}}
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
 #define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) {\
 PetscInt __i,__i1,__i2;\
-for(__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
+for (__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
 sum += (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);}\
 if (nnz & 0x1) sum += xv[__i] * r[xi[__i]];}
 
 #else
 #define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) {\
  PetscInt __i;\
-for(__i=0;__i<nnz;__i++) sum += xv[__i] * r[xi[__i]];}
+for (__i=0;__i<nnz;__i++) sum += xv[__i] * r[xi[__i]];}
 #endif
 
 #endif

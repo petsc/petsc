@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = PetscMalloc(nthreads*sizeof(PetscInt),&ranks);CHKERRQ(ierr);
   ierr = PetscMalloc(nthreads*sizeof(PetscScalar),&values);CHKERRQ(ierr);
 
-  for(i=0;i < nthreads;i++) {
+  for (i=0;i < nthreads;i++) {
     ranks[i] = i; values[i] = i;
   }
 

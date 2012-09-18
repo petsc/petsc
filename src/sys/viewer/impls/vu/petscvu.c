@@ -352,7 +352,7 @@ PetscErrorCode  PetscViewerVUFlushDeferred(PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for(i = 0; i < vu->queueLength; i++) {
+  for (i = 0; i < vu->queueLength; i++) {
     PetscFPrintf(((PetscObject)viewer)->comm, vu->fd, "%s", next->string);
     previous = next; 
     next     = next->next;

@@ -716,15 +716,15 @@ PetscErrorCode DMCreateFieldIS_Composite(DM dm, PetscInt *numFields,char ***fiel
         ierr = PetscObjectGetOptionsPrefix((PetscObject)dms[i],&splitname);CHKERRQ(ierr);
         if (splitname) {
           size_t len;
-          ierr = PetscStrncpy(buf,splitname,sizeof buf);CHKERRQ(ierr);
-          buf[sizeof buf - 1] = 0;
+          ierr = PetscStrncpy(buf,splitname,sizeof(buf));CHKERRQ(ierr);
+          buf[sizeof(buf) - 1] = 0;
           ierr = PetscStrlen(buf,&len);CHKERRQ(ierr);
           if (buf[len-1] == '_') buf[len-1] = 0; /* Remove trailing underscore if it was used */
           splitname = buf;
         }
       }
       if (!splitname) {
-        ierr = PetscSNPrintf(buf,sizeof buf,"%D",i);CHKERRQ(ierr);
+        ierr = PetscSNPrintf(buf,sizeof(buf),"%D",i);CHKERRQ(ierr);
         splitname = buf;
       }
       ierr = PetscStrallocpy(splitname,&(*fieldNames)[i]);CHKERRQ(ierr);
@@ -749,7 +749,7 @@ PetscErrorCode DMCreateFieldDecomposition_Composite(DM dm, PetscInt *len,char **
 
   PetscFunctionBegin;
   ierr = DMCreateFieldIS_Composite(dm, len, namelist, islist); CHKERRQ(ierr);
-  if(dmlist) {
+  if (dmlist) {
     ierr = DMCompositeGetNumberDM(dm, &nDM);    CHKERRQ(ierr);
     ierr = PetscMalloc(nDM*sizeof(DM), dmlist); CHKERRQ(ierr);
     ierr = DMCompositeGetEntriesArray(dm, *dmlist);CHKERRQ(ierr);

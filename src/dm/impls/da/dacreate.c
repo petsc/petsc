@@ -180,7 +180,7 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
   PetscInt       dof = dd->w;
 
   PetscFunctionBegin;
-  if(len) *len = dof;
+  if (len) *len = dof;
   if (islist) {
     Vec      v;
     PetscInt rstart,n;

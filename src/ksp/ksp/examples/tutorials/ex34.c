@@ -90,7 +90,7 @@ int main(int argc,char **argv)
 
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){
-      for(i=xs; i<xs+xm; i++){
+      for (i=xs; i<xs+xm; i++){
 	array[k][j][i] -= 
 	  PetscCosScalar(2*PETSC_PI*(((PetscReal)i+0.5)*Hx))*
 	  PetscCosScalar(2*PETSC_PI*(((PetscReal)j+0.5)*Hy))*
@@ -137,7 +137,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   ierr = DMDAVecGetArray(da, b, &array);CHKERRQ(ierr);
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){
-      for(i=xs; i<xs+xm; i++){
+      for (i=xs; i<xs+xm; i++){
 	array[k][j][i] = 12*PETSC_PI*PETSC_PI
 	  *PetscCosScalar(2*PETSC_PI*(((PetscReal)i+0.5)*Hx))
 	  *PetscCosScalar(2*PETSC_PI*(((PetscReal)j+0.5)*Hy))
@@ -188,7 +188,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac,MatStructure *str, void *ctx
     {
       for (j=ys; j<ys+ym; j++)
 	{
-	  for(i=xs; i<xs+xm; i++)
+	  for (i=xs; i<xs+xm; i++)
 	    {
 	      row.i = i; row.j = j; row.k = k;
 	      if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1) 

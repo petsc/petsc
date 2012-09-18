@@ -236,12 +236,12 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const Ma
     ierr = ISGetIndices(r,&ra);CHKERRQ(ierr);
     ierr = PetscMalloc(m*sizeof(PetscInt),&lu->perm_c);CHKERRQ(ierr);  
     /* we cannot simply memcpy on 64 bit archs */
-    for(i = 0; i < m; i++) lu->perm_c[i] = ra[i];
+    for (i = 0; i < m; i++) lu->perm_c[i] = ra[i];
     ierr = ISRestoreIndices(r,&ra);CHKERRQ(ierr);
   }
 
   /* print the control parameters */
-  if(lu->Control[UMFPACK_PRL] > 1) umfpack_UMF_report_control(lu->Control);
+  if (lu->Control[UMFPACK_PRL] > 1) umfpack_UMF_report_control(lu->Control);
 
   /* symbolic factorization of A' */
   /* ---------------------------------------------------------------------- */
@@ -428,7 +428,7 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
     case 2: lu->Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_SYMMETRIC; break;
     }
   }
-  ierr = PetscOptionsEList("-mat_umfpack_ordering","Internal ordering method","None",UmfpackOrderingTypes,sizeof UmfpackOrderingTypes/sizeof UmfpackOrderingTypes[0],UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]],&idx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-mat_umfpack_ordering","Internal ordering method","None",UmfpackOrderingTypes,sizeof(UmfpackOrderingTypes)/sizeof(UmfpackOrderingTypes[0]),UmfpackOrderingTypes[(int)lu->Control[UMFPACK_ORDERING]],&idx,&flg);CHKERRQ(ierr);
   if (flg) lu->Control[UMFPACK_ORDERING] = (int)idx;
   ierr = PetscOptionsReal("-mat_umfpack_dense_col","Control[UMFPACK_DENSE_COL]","None",lu->Control[UMFPACK_DENSE_COL],&lu->Control[UMFPACK_DENSE_COL],PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_umfpack_dense_row","Control[UMFPACK_DENSE_ROW]","None",lu->Control[UMFPACK_DENSE_ROW],&lu->Control[UMFPACK_DENSE_ROW],PETSC_NULL);CHKERRQ(ierr);

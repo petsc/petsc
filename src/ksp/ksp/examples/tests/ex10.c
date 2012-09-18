@@ -311,13 +311,13 @@ PetscErrorCode paulsetup20(void)
 
   /* Assign integration points and weights for
        Gaussian quadrature formulae. */
-  if(n_int == 2)  {
+  if (n_int == 2)  {
 		x[0] = (-0.577350269189626);
 		x[1] = (0.577350269189626);
 		w[0] = 1.0000000;
 		w[1] = 1.0000000;
   }
-  else if(n_int == 3) {
+  else if (n_int == 3) {
 		x[0] = (-0.774596669241483);
 		x[1] = 0.0000000;
 		x[2] = 0.774596669241483;
@@ -325,7 +325,7 @@ PetscErrorCode paulsetup20(void)
 		w[1] = 0.888888888888888;
 		w[2] = 0.555555555555555;
   }
-  else if(n_int == 4) {
+  else if (n_int == 4) {
 		x[0] = (-0.861136311594053);
 		x[1] = (-0.339981043584856);
 		x[2] = 0.339981043584856;

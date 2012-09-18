@@ -292,12 +292,12 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
     ierr = PetscObjectGetOptionsPrefix((PetscObject)J, &prefix); CHKERRQ(ierr);
     
     ierr = PetscOptionsHasName(prefix, "-mat_mffd_view_base", &viewbase); CHKERRQ(ierr);
-    if(viewbase) {
+    if (viewbase) {
       ierr = PetscViewerASCIIPrintf(viewer, "Base:\n");     CHKERRQ(ierr);
       ierr = VecView(ctx->current_u, viewer);                 CHKERRQ(ierr);
     }
     ierr = PetscOptionsHasName(prefix, "-mat_mffd_view_function", &viewfunction); CHKERRQ(ierr);
-    if(viewfunction) {
+    if (viewfunction) {
       ierr = PetscViewerASCIIPrintf(viewer, "Function:\n"); CHKERRQ(ierr);
       ierr = VecView(ctx->current_f, viewer);                 CHKERRQ(ierr);
     }
@@ -1263,7 +1263,7 @@ PetscErrorCode  MatMFFDCheckPositivity(void* dummy,Vec U,Vec a,PetscScalar *h)
   ierr = VecGetArray(a,&a_vec);CHKERRQ(ierr);  
   ierr = VecGetLocalSize(U,&n);CHKERRQ(ierr);
   minval = PetscAbsScalar(*h*1.01);
-  for(i=0;i<n;i++) {
+  for (i=0;i<n;i++) {
     if (PetscRealPart(u_vec[i] + *h*a_vec[i]) <= 0.0) {
       val = PetscAbsScalar(u_vec[i]/a_vec[i]);
       if (val < minval) minval = val;

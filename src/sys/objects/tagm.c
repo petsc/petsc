@@ -247,7 +247,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
 
   /* Only the main thread updates counter->refcount */
   ierr = MPI_Attr_get(icomm,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
-  if(flg) {
+  if (flg) {
     PetscInt trank;
     trank = PetscThreadCommGetRank(tcomm);
     /* Only thread rank 0 updates the counter */
@@ -312,11 +312,11 @@ PetscErrorCode  PetscObjectsGetGlobalNumbering(MPI_Comm comm, PetscInt len, Pets
   ierr = MPI_Comm_size(comm, &size);                   CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);                   CHKERRQ(ierr);
   roots = 0;
-  for(i = 0; i < len; ++i) {
+  for (i = 0; i < len; ++i) {
     PetscMPIInt srank;
     ierr = MPI_Comm_rank(objlist[i]->comm, &srank);         CHKERRQ(ierr);
     /* Am I the root of the i-th subcomm? */
-    if(!srank) ++roots;
+    if (!srank) ++roots;
   }
   /* Obtain the sum of all roots -- the global number of distinct subcomms. */
   ierr   = MPI_Allreduce((void*)&roots,(void*)count,1,MPIU_INT,MPI_SUM,comm); CHKERRQ(ierr);
@@ -333,12 +333,12 @@ PetscErrorCode  PetscObjectsGetGlobalNumbering(MPI_Comm comm, PetscInt len, Pets
      broadcast is collective on the subcomm. 
    */
   roots = 0;
-  for(i = 0; i < len; ++i) {
+  for (i = 0; i < len; ++i) {
     PetscMPIInt srank;
     numbering[i] = offset + roots; /* only meaningful if !srank. */
     ierr = MPI_Comm_rank(objlist[i]->comm, &srank);      CHKERRQ(ierr);
     ierr = MPI_Bcast(numbering+i,1,MPIU_INT,0,objlist[i]->comm); CHKERRQ(ierr);
-    if(!srank) ++roots;
+    if (!srank) ++roots;
   }
 
   PetscFunctionReturn(0);

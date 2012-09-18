@@ -149,7 +149,7 @@ PetscErrorCode  MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt d
   if (ndim < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER, "ndim %d must be > 0", ndim);
   ierr = MatCreate(comm, A);CHKERRQ(ierr);
   m = 1;
-  for(d = 0; d < ndim; ++d){
+  for (d = 0; d < ndim; ++d){
     if (dim[d] < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_USER, "dim[%d]=%d must be > 0", d, dim[d]);
     m *= dim[d];
   }

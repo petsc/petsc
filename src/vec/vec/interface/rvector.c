@@ -1447,7 +1447,7 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
   PetscValidHeaderSpecific(*x,VEC_CLASSID,1);
   PetscValidPointer(a,3);
 
-  for(i=0;i<n;++i) {
+  for (i=0;i<n;++i) {
     ierr = VecRestoreArray(x[i],&q[i]);CHKERRQ(ierr);
  }
   ierr = PetscFree(q);CHKERRQ(ierr);

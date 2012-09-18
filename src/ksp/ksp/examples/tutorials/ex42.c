@@ -816,17 +816,17 @@ static void FormContinuityRhsQ13D(PetscScalar Fe[],PetscScalar coords[],PetscSca
 #define _ZERO_ROWCOL_i(A,i) {                   \
     PetscInt KK;                                \
     PetscScalar tmp = A[24*(i)+(i)];            \
-    for(KK=0;KK<24;KK++){A[24*(i)+KK]=0.0;}     \
-    for(KK=0;KK<24;KK++){A[24*KK+(i)]=0.0;}     \
+    for (KK=0;KK<24;KK++){A[24*(i)+KK]=0.0;}     \
+    for (KK=0;KK<24;KK++){A[24*KK+(i)]=0.0;}     \
     A[24*(i)+(i)] = tmp;}                       \
 
 #define _ZERO_ROW_i(A,i) {                      \
     PetscInt KK;                                \
-    for(KK=0;KK<8;KK++){A[8*(i)+KK]=0.0;}}
+    for (KK=0;KK<8;KK++){A[8*(i)+KK]=0.0;}}
 
 #define _ZERO_COL_i(A,i) {                      \
     PetscInt KK;                                \
-    for(KK=0;KK<8;KK++){A[24*KK+(i)]=0.0;}}
+    for (KK=0;KK<8;KK++){A[24*KK+(i)]=0.0;}}
 
 #undef __FUNCT__
 #define __FUNCT__ "AssembleA_Stokes"
@@ -1431,7 +1431,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   /* create file name */
   PetscObjectGetComm((PetscObject)da,&comm);
   MPI_Comm_rank(comm,&rank);
-  ierr = PetscSNPrintf(vtk_filename,sizeof vtk_filename,"subdomain-%s-p%1.4d.vts",file_prefix,rank);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(vtk_filename,sizeof(vtk_filename),"subdomain-%s-p%1.4d.vts",file_prefix,rank);CHKERRQ(ierr);
 
   /* open file and write header */
   vtk_fp = fopen(vtk_filename,"w");
@@ -1605,7 +1605,7 @@ PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM
       for (i=0; i<pM; i++) {
         char name[PETSC_MAX_PATH_LEN];
         PetscInt procid = i + j*pM + k*pM*pN; /* convert proc(i,j,k) to pid */
-        ierr = PetscSNPrintf(name,sizeof name,"subdomain-%s-p%1.4d.vts",local_file_prefix,procid);CHKERRQ(ierr);
+        ierr = PetscSNPrintf(name,sizeof(name),"subdomain-%s-p%1.4d.vts",local_file_prefix,procid);CHKERRQ(ierr);
         for (II=0; II<indent_level; II++) {
           PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"  ");
         }
@@ -1649,7 +1649,7 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const
   if (rank != 0) { PetscFunctionReturn(0); }
 
   /* create file name */
-  ierr = PetscSNPrintf(vtk_filename,sizeof vtk_filename,"%s.pvts",file_prefix);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(vtk_filename,sizeof(vtk_filename),"%s.pvts",file_prefix);CHKERRQ(ierr);
   vtk_fp = fopen(vtk_filename,"w");
   if (!vtk_fp) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"Cannot open file = %s \n",vtk_filename); }
 
@@ -1706,10 +1706,10 @@ PetscErrorCode DAView3DPVTS(DM da, Vec x,const char NAME[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSNPrintf(vts_filename,sizeof vts_filename,"%s-mesh",NAME);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(vts_filename,sizeof(vts_filename),"%s-mesh",NAME);CHKERRQ(ierr);
   ierr = DAView_3DVTK_StructuredGrid_appended(da,x,vts_filename);CHKERRQ(ierr);
 
-  ierr = PetscSNPrintf(pvts_filename,sizeof pvts_filename,"%s-mesh",NAME);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(pvts_filename,sizeof(pvts_filename),"%s-mesh",NAME);CHKERRQ(ierr);
   ierr = DAView_3DVTK_PStructuredGrid(da,pvts_filename,vts_filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2048,7 +2048,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   {
     PetscBool flg = PETSC_FALSE;
     char filename[PETSC_MAX_PATH_LEN];
-    ierr = PetscOptionsGetString(PETSC_NULL,"-write_binary",filename,sizeof filename,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-write_binary",filename,sizeof(filename),&flg);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
       //ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename[0]?filename:"ex42-binaryoutput",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);

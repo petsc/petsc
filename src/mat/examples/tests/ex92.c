@@ -178,7 +178,7 @@ int main(int argc,char **args)
 
   /* Test MatGetSubmatrices */
   if (TestSubMat){
-    for(i = 0; i < nd; ++i) {
+    for (i = 0; i < nd; ++i) {
       ierr = ISSort(is1[i]); CHKERRQ(ierr);
       ierr = ISSort(is2[i]); CHKERRQ(ierr);
     }

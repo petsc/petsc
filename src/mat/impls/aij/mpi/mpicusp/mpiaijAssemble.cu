@@ -266,12 +266,12 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   ierr = PetscMemzero(procSendSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(procRecvSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
   numNonlocalRows = 0;
-  for(size_t i = 0; i < N; ++i) {
+  for (size_t i = 0; i < N; ++i) {
     const PetscInt row = elemRows[i];
 
     if ((row < firstRow) || (row >= lastRow)) {
       numNonlocalRows++;
-      for(IndexType p = 0; p < numProcs; ++p) {
+      for (IndexType p = 0; p < numProcs; ++p) {
         if ((row >= rowRanges[p]) && (row < rowRanges[p+1])) {
           procSendSizes[p] += Nl;
           break;
@@ -283,7 +283,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   ierr = PetscInfo2(J, "Nonlocal rows %d total entries %d\n", numNonlocalRows, No);CHKERRQ(ierr);
   ierr = MPI_Alltoall(procSendSizes, 1, MPIU_INT, procRecvSizes, 1, MPIU_INT, comm);CHKERRQ(ierr);
   numRecvEntries = 0;
-  for(PetscInt p = 0; p < numProcs; ++p) {
+  for (PetscInt p = 0; p < numProcs; ++p) {
     numRecvEntries += procRecvSizes[p];
   }
   ierr = PetscInfo2(j->A, "Send entries %d Recv Entries %d\n", numSendEntries, numRecvEntries);CHKERRQ(ierr);
@@ -333,7 +333,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   ierr = PetscMalloc3(numSendEntries, PetscInt, &sendRows, numSendEntries, PetscInt, &sendCols, numSendEntries, PetscScalar, &sendVals);CHKERRQ(ierr);
   ierr = PetscMalloc3(numRecvEntries, PetscInt, &recvRows, numRecvEntries, PetscInt, &recvCols, numRecvEntries, PetscScalar, &recvVals);CHKERRQ(ierr);
   procSendDispls[0] = procRecvDispls[0] = 0;
-  for(PetscInt p = 1; p < numProcs; ++p) {
+  for (PetscInt p = 1; p < numProcs; ++p) {
     procSendDispls[p] = procSendDispls[p-1] + procSendSizes[p-1];
     procRecvDispls[p] = procRecvDispls[p-1] + procRecvSizes[p-1];
   }
@@ -461,7 +461,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   thrust::unique_copy(B.column_indices.begin(), B.column_indices.end(), d_colmap.begin());
   IndexHostArray colmap(d_colmap.begin(), d_colmap.end());
   IndexType      newCol = 0;
-  for(IndexHostArray::iterator c_iter = colmap.begin(); c_iter != colmap.end(); ++c_iter, ++newCol) {
+  for (IndexHostArray::iterator c_iter = colmap.begin(); c_iter != colmap.end(); ++c_iter, ++newCol) {
     thrust::replace(B.column_indices.begin(), B.column_indices.end(), *c_iter, newCol);
   }
 #endif
@@ -495,7 +495,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
     ierr = PetscFree(j->garray);CHKERRQ(ierr);
     ierr = PetscMalloc(Nc * sizeof(PetscInt), &j->garray);CHKERRQ(ierr);
     PetscInt c = 0;
-    for(IndexHostArray::iterator c_iter = colmap.begin(); c_iter != colmap.end(); ++c_iter, ++c) {
+    for (IndexHostArray::iterator c_iter = colmap.begin(); c_iter != colmap.end(); ++c_iter, ++c) {
       j->garray[c] = *c_iter;
     }
 #endif

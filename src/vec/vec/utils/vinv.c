@@ -1115,7 +1115,7 @@ PetscErrorCode  VecExp(Vec v)
   } else {
     ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
     ierr = VecGetArray(v, &x);CHKERRQ(ierr);
-    for(i = 0; i < n; i++) {
+    for (i = 0; i < n; i++) {
       x[i] = PetscExpScalar(x[i]);
     }
     ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
@@ -1155,7 +1155,7 @@ PetscErrorCode  VecLog(Vec v)
   } else {
     ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
     ierr = VecGetArray(v, &x);CHKERRQ(ierr);
-    for(i = 0; i < n; i++) {
+    for (i = 0; i < n; i++) {
       x[i] = PetscLogScalar(x[i]);
     }
     ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
@@ -1197,7 +1197,7 @@ PetscErrorCode  VecSqrtAbs(Vec v)
   } else {
     ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
     ierr = VecGetArray(v, &x);CHKERRQ(ierr);
-    for(i = 0; i < n; i++) {
+    for (i = 0; i < n; i++) {
       x[i] = PetscSqrtReal(PetscAbsScalar(x[i]));
     }
     ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
@@ -1420,16 +1420,16 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool  inv)
   ierr = VecGetArray(x, &array);CHKERRQ(ierr);
   ierr = PetscMalloc(x->map->n*sizeof(PetscScalar), &newArray);CHKERRQ(ierr);
 #ifdef PETSC_USE_DEBUG
-  for(i = 0; i < x->map->n; i++) {
+  for (i = 0; i < x->map->n; i++) {
     if ((idx[i] < 0) || (idx[i] >= x->map->n)) {
       SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "Permutation index %D is out of bounds: %D", i, idx[i]);
     }
   }
 #endif
   if (!inv) {
-    for(i = 0; i < x->map->n; i++) newArray[i]      = array[idx[i]];
+    for (i = 0; i < x->map->n; i++) newArray[i]      = array[idx[i]];
   } else {
-    for(i = 0; i < x->map->n; i++) newArray[idx[i]] = array[i];
+    for (i = 0; i < x->map->n; i++) newArray[idx[i]] = array[i];
   }
   ierr = VecRestoreArray(x, &array);CHKERRQ(ierr);
   ierr = ISRestoreIndices(row, &idx);CHKERRQ(ierr);

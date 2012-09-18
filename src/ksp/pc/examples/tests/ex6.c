@@ -67,7 +67,7 @@ int main(int argc,char **args)
     ierr = PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,ol,&Nsub2,&is2);CHKERRQ(ierr);
     
     ierr = PetscPrintf(PETSC_COMM_SELF,"flg == 1 => both index sets are same\n");CHKERRQ(ierr);
-    if(Nsub1 != Nsub2){
+    if (Nsub1 != Nsub2){
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: No of indes sets don't match\n");CHKERRQ(ierr);
     }
     

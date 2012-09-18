@@ -57,7 +57,7 @@ PetscInt PCTFS_ct_bits( char *ptr, PetscInt n)
    PetscInt i, tmp=0;
 
    PetscFunctionBegin;
-  for(i=0;i<n;i++)
+  for (i=0;i<n;i++)
     {
       if (*ptr&128) {tmp++;}
       if (*ptr&64)  {tmp++;}

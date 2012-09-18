@@ -350,7 +350,7 @@ static PetscErrorCode DMDACoordViewGnuplot2d(DM da,const char prefix[])
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(fname,sizeof fname,"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp);CHKERRQ(ierr);
   if (fp == PETSC_NULL) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
@@ -395,7 +395,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
 
   PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  ierr = PetscSNPrintf(fname,sizeof fname,"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp);CHKERRQ(ierr);
   if (fp == PETSC_NULL) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
@@ -463,7 +463,7 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char 
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(fname,sizeof fname,"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp);CHKERRQ(ierr);
   if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
 
@@ -1329,7 +1329,7 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
     PetscReal val;
 
     val = PetscRealPart(_x[i]);
-    if( fabs(val) < 0.1 ) {
+    if ( fabs(val) < 0.1 ) {
       unconstrained[cnt] = start + i;
       cnt++;
     }

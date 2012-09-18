@@ -65,9 +65,9 @@ PetscErrorCode SeqSBSTRM_convert_sbstrm(Mat A)
 
   ierr  = PetscMalloc(rbs*sizeof(MatScalar *), &asp);CHKERRQ(ierr);
    
-  for(i=0;i<rbs;i++) asp[i] = sbstrm->as + i*slen; 
+  for (i=0;i<rbs;i++) asp[i] = sbstrm->as + i*slen; 
 
-  for(j=0;j<blen;j++) {
+  for (j=0;j<blen;j++) {
      for (jb=0; jb<cbs; jb++){ 
      for (ib=0; ib<rbs; ib++){ 
          asp[ib][j*cbs+jb] = aa[j*bs2+jb*rbs+ib];
@@ -517,7 +517,7 @@ PetscErrorCode SeqSBSTRM_create_sbstrm(Mat A)
 
   ierr  = PetscMalloc(rbs*sizeof(PetscScalar *), &asp);CHKERRQ(ierr);
    
-  for(i=0;i<rbs;i++) asp[i] = sbstrm->as + i*slen; 
+  for (i=0;i<rbs;i++) asp[i] = sbstrm->as + i*slen; 
    
   for (k=0; k<blen; k++) {
     for (j=0; j<cbs; j++) 

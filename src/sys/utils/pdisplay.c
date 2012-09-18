@@ -112,11 +112,11 @@ PetscErrorCode  PetscSetDisplay(void)
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscBool      flag,singlehost=PETSC_FALSE;
-  char           display[sizeof PetscDisplay];
+  char           display[sizeof(PetscDisplay)];
   const char     *str;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetString(PETSC_NULL,"-display",PetscDisplay,sizeof PetscDisplay,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-display",PetscDisplay,sizeof(PetscDisplay),&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -127,18 +127,18 @@ PetscErrorCode  PetscSetDisplay(void)
   str = getenv("DISPLAY");
   if (!str) str = ":0.0";
   if (str[0] != ':' || singlehost) {
-    ierr = PetscStrncpy(display,str,sizeof display);CHKERRQ(ierr);
+    ierr = PetscStrncpy(display,str,sizeof(display));CHKERRQ(ierr);
   } else {
     if (!rank) {
       size_t len;
-      ierr = PetscGetHostName(display,sizeof display);CHKERRQ(ierr);
+      ierr = PetscGetHostName(display,sizeof(display));CHKERRQ(ierr);
       ierr = PetscStrlen(display,&len);CHKERRQ(ierr);
-      ierr = PetscStrncat(display,str,sizeof display-len-1);CHKERRQ(ierr);
+      ierr = PetscStrncat(display,str,sizeof(display)-len-1);CHKERRQ(ierr);
     }
   }
-  ierr = MPI_Bcast(display,sizeof display,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = PetscMemcpy(PetscDisplay,display,sizeof PetscDisplay);CHKERRQ(ierr);
-  PetscDisplay[sizeof PetscDisplay-1] = 0;
+  ierr = MPI_Bcast(display,sizeof(display),MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscMemcpy(PetscDisplay,display,sizeof(PetscDisplay));CHKERRQ(ierr);
+  PetscDisplay[sizeof(PetscDisplay)-1] = 0;
   PetscFunctionReturn(0);
 }
 

@@ -114,7 +114,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-cfl_max",&tsCtx.cfl_max,PETSC_NULL);CHKERRQ(ierr);
   tsCtx.print_freq = tsCtx.max_steps; 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-print_freq",&tsCtx.print_freq,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-pvtu",pvtu_fname,sizeof pvtu_fname,&write_pvtu);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-pvtu",pvtu_fname,sizeof(pvtu_fname),&write_pvtu);CHKERRQ(ierr);
   pvtu_base64 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-pvtu_base64",&pvtu_base64,PETSC_NULL);CHKERRQ(ierr);
 
@@ -127,7 +127,7 @@ int main(int argc,char **args)
    
   c_runge->nitfo = 0;
 
-  ierr = PetscMemzero(&f_pntr,sizeof f_pntr);CHKERRQ(ierr);
+  ierr = PetscMemzero(&f_pntr,sizeof(f_pntr));CHKERRQ(ierr);
   f_pntr.jvisc   = c_info->ivisc;
   f_pntr.ileast  = 4;
   ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&c_info->alpha,PETSC_NULL);CHKERRQ(ierr);
@@ -2267,8 +2267,8 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
 #if defined(PETSC_USE_COMPLEX) || !defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_64BIT_INDICES)
   SETERRQ(comm,PETSC_ERR_SUP,"This function is only implemented for scalar-type=real precision=double, 32-bit indices");
 #endif
-  ierr = PetscSNPrintf(pvtu_fname,sizeof pvtu_fname,"%s-%D.pvtu",fname,tsCtx->itstep);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(vtu_fname,sizeof vtu_fname,"%s-%D-%D.vtu",fname,tsCtx->itstep,rank);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(pvtu_fname,sizeof(pvtu_fname),"%s-%D.pvtu",fname,tsCtx->itstep);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(vtu_fname,sizeof(vtu_fname),"%s-%D-%D.vtu",fname,tsCtx->itstep,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(comm,pvtu_fname,"w",&pvtu);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,pvtu,"<?xml version=\"1.0\"?>\n");CHKERRQ(ierr);
 #ifdef PETSC_WORDS_BIGENDIAN
@@ -2679,7 +2679,7 @@ int set_up_grid(GRID *grid)
    jalloc = 0;
    kvisc  = grid->jvisc;*/
 
-   /*if(ilu0 >=1 && ifcn == 1)jalloc=0;*/
+   /*if (ilu0 >=1 && ifcn == 1) jalloc=0;*/
 
 /*
  * stuff to read in dave's grids
@@ -2811,8 +2811,8 @@ PetscPrintf(PETSC_COMM_WORLD," nbface= %d\n",nbface);*/
  * If using GMRES (nsrch>0) allocate memory
  */
 /* NoEq = 0;
-*  if(nsrch > 0)NoEq = 4*nnodes;
-*  if(nsrch < 0)NoEq = nnodes;
+*  if (nsrch > 0)NoEq = 4*nnodes;
+*  if (nsrch < 0)NoEq = nnodes;
 *  FCALLOC(NoEq,          &grid->AP);
 *  FCALLOC(NoEq,          &grid->Xgm);
 *  FCALLOC(NoEq,          &grid->temr);

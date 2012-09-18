@@ -57,7 +57,7 @@ PetscErrorCode PetscClassRegLogDestroy(PetscClassRegLog classLog)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for(c = 0; c < classLog->numClasses; c++) {
+  for (c = 0; c < classLog->numClasses; c++) {
     ierr = PetscClassRegInfoDestroy(&classLog->classInfo[c]);CHKERRQ(ierr);
   }
   ierr = PetscFree(classLog->classInfo);CHKERRQ(ierr);
@@ -274,7 +274,7 @@ PetscErrorCode PetscClassRegLogGetClass(PetscClassRegLog classLog, PetscClassId 
 
   PetscFunctionBegin;
   PetscValidIntPointer(oclass,3);
-  for(c = 0; c < classLog->numClasses; c++) {
+  for (c = 0; c < classLog->numClasses; c++) {
     /* Could do bisection here */
     if (classLog->classInfo[c].classid == classid) break;
   }

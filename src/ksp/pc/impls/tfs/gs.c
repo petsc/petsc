@@ -614,7 +614,7 @@ static PetscErrorCode get_ngh_buf(PCTFS_gs_id *gs)
 
       /* unload buffer into ngh_buf */
       ptr2=(elms+i_start);
-      for(ptr3=buf1,j=start; j<end; ptr3+=p_mask_size,j++)
+      for (ptr3=buf1,j=start; j<end; ptr3+=p_mask_size,j++)
         {
           /* I own it ... may have to pairwise it */
           if (j==*ptr2)

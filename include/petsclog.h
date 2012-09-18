@@ -331,7 +331,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogD
 
   _myierr = MPI_Comm_size(comm,&commsize);CHKERRQ(_myierr);
   _myierr = MPI_Type_size(type,&mysize);CHKERRQ(_myierr);
-  for(p = 0; p < commsize; ++p) {
+  for (p = 0; p < commsize; ++p) {
     *buff += (PetscLogDouble) (counts[p]*mysize);
   }
   return 0;

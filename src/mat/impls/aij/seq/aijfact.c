@@ -301,7 +301,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
   /*
   PetscBool          olddatastruct=PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-lu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
-  if(olddatastruct){
+  if (olddatastruct){
     ierr = MatLUFactorSymbolic_SeqAIJ_inplace(B,A,isrow,iscol,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -532,7 +532,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
       bjtmp = bj + bi[i];
       row   = *bjtmp++;
       nzL   = bi[i+1] - bi[i];
-      for(k=0; k < nzL;k++) {
+      for (k=0; k < nzL;k++) {
         pc = rtmp + row;
         if (*pc != 0.0) {
           pv         = b->a + bdiag[row];
@@ -568,7 +568,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
       sctx.rs  = rs;
       sctx.pv  = rtmp[i];
       ierr = MatPivotCheck(A,info,&sctx,i);CHKERRQ(ierr);
-      if(sctx.newshift) break; /* break for-loop */
+      if (sctx.newshift) break; /* break for-loop */
       rtmp[i] = sctx.pv; /* sctx.pv might be updated in the case of MAT_SHIFT_INBLOCKS */
 
       /* Mark diagonal and invert diagonal for simplier triangular solves */
@@ -1729,7 +1729,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   /*
   PetscBool          olddatastruct=PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-ilu_old",&olddatastruct,PETSC_NULL);CHKERRQ(ierr);
-  if(olddatastruct){
+  if (olddatastruct){
     ierr = MatILUFactorSymbolic_SeqAIJ_inplace(fact,A,isrow,iscol,info);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -2187,7 +2187,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
       sctx.rs  = rs;
       sctx.pv  = dk;
       ierr = MatPivotCheck(A,info,&sctx,i);CHKERRQ(ierr);
-      if(sctx.newshift) break;
+      if (sctx.newshift) break;
       dk = sctx.pv;
  
       ba[bdiag[k]] = 1.0/dk; /* U(k,k) */

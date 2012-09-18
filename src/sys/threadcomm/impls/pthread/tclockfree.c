@@ -25,8 +25,8 @@ PetscBool CheckThreadCommMembership(PetscInt myrank,PetscThreadComm tcomm)
 
   ptcomm = (PetscThreadComm_PThread)tcomm->data;
 
-  for(i=0;i<tcomm->nworkThreads;i++) {
-    if(myrank == ptcomm->granks[i])
+  for (i=0;i<tcomm->nworkThreads;i++) {
+    if (myrank == ptcomm->granks[i])
        return PETSC_TRUE;
   }
   return PETSC_FALSE;
@@ -40,7 +40,7 @@ void SparkThreads_LockFree(PetscInt myrank,PetscThreadComm tcomm,PetscThreadComm
   
   switch(ptcomm->spark) {
   case PTHREADPOOLSPARK_SELF:
-    if(CheckThreadCommMembership(myrank,tcomm)) {
+    if (CheckThreadCommMembership(myrank,tcomm)) {
       job_lockfree.data[myrank] = job;
       job->job_status[myrank]   = THREAD_JOB_RECIEVED;
     }
@@ -66,11 +66,11 @@ void* PetscPThreadCommFunc_LockFree(void* arg)
   /* Spin loop */
   while(PetscReadOnce(int,job_lockfree.my_job_status[PetscPThreadRank]) != THREAD_TERMINATE) {
     glob_kernel_ctr = PetscReadOnce(int,PetscJobQueue->kernel_ctr);
-    if(my_kernel_ctr < glob_kernel_ctr) {
+    if (my_kernel_ctr < glob_kernel_ctr) {
       job = PetscJobQueue->jobs[my_job_counter];
       /* Spark the thread pool */
       SparkThreads_LockFree(PetscPThreadRank,job->tcomm,job);
-      if(job->job_status[PetscPThreadRank] == THREAD_JOB_RECIEVED) {
+      if (job->job_status[PetscPThreadRank] == THREAD_JOB_RECIEVED) {
 	/* Do own job */
 	PetscRunKernel(PetscPThreadRank,job_lockfree.data[PetscPThreadRank]->nargs,job_lockfree.data[PetscPThreadRank]);
 	/* Post job completed status */
@@ -96,16 +96,16 @@ PetscErrorCode PetscThreadCommBarrier_PThread_LockFree(PetscThreadComm tcomm)
   PetscInt job_status;
 
   PetscFunctionBegin;
-  if(tcomm->nworkThreads == 1 && ptcomm->ismainworker) {
+  if (tcomm->nworkThreads == 1 && ptcomm->ismainworker) {
     PetscFunctionReturn(0);
   }
   /* Loop till all threads signal that they have done their job */
   while(wait) {
-    for(i=0;i<tcomm->nworkThreads;i++) { 
+    for (i=0;i<tcomm->nworkThreads;i++) { 
       job_status = job->job_status[ptcomm->granks[i]];
       active_threads += job_status;
     }
-    if(PetscReadOnce(int,active_threads) > 0) active_threads = 0;
+    if (PetscReadOnce(int,active_threads) > 0) active_threads = 0;
     else wait=PETSC_FALSE;
   }
   PetscFunctionReturn(0);
@@ -130,19 +130,19 @@ PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm tcomm)
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&job_lockfree.my_job_status);CHKERRQ(ierr);
 #endif
   /* Create threads */
-  for(i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
+  for (i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
     job_lockfree.my_job_status[i] = THREAD_CREATED;
     ierr = pthread_create(&ptcomm->tid[i],&ptcomm->attr[i],&PetscPThreadCommFunc_LockFree,&ptcomm->granks[i]);CHKERRQ(ierr);
   }
 
-  if(ptcomm->ismainworker) job_lockfree.my_job_status[0] = THREAD_INITIALIZED;
+  if (ptcomm->ismainworker) job_lockfree.my_job_status[0] = THREAD_INITIALIZED;
 
   PetscInt  threads_initialized=0;
   /* Wait till all threads have been initialized */
   while(threads_initialized != tcomm->nworkThreads) {
     threads_initialized=0;
-    for(i=0;i<tcomm->nworkThreads;i++) {
-      if(!job_lockfree.my_job_status[ptcomm->granks[i]])
+    for (i=0;i<tcomm->nworkThreads;i++) {
+      if (!job_lockfree.my_job_status[ptcomm->granks[i]])
 	break;
       threads_initialized++;
     }
@@ -160,7 +160,7 @@ PetscErrorCode PetscPThreadCommFinalize_LockFree(PetscThreadComm tcomm)
   PetscInt                 i;
   PetscFunctionBegin;
   ierr = PetscThreadCommBarrier_PThread_LockFree(tcomm);CHKERRQ(ierr);
-  for(i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
+  for (i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
     job_lockfree.my_job_status[i] = THREAD_TERMINATE;
     ierr = pthread_join(ptcomm->tid[i],&jstatus);CHKERRQ(ierr);
   }
@@ -185,13 +185,13 @@ PetscErrorCode PetscThreadCommRunKernel_PThread_LockFree(MPI_Comm comm,PetscThre
   PetscFunctionBegin;
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
   ptcomm = (PetscThreadComm_PThread)tcomm->data;
-  if(ptcomm->ismainworker) {
+  if (ptcomm->ismainworker) {
     job->job_status[0] = THREAD_JOB_RECIEVED;
     job_lockfree.data[0]  = job;
     PetscRunKernel(0,job->nargs, job_lockfree.data[0]);
     job->job_status[0]    = THREAD_JOB_COMPLETED;
   }
-  if(ptcomm->synchronizeafter) {
+  if (ptcomm->synchronizeafter) {
     ierr = PetscThreadCommBarrier(comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

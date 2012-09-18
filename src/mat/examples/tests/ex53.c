@@ -144,7 +144,7 @@ int main(int argc,char **args)
 
 
     for (j=0; j<4; j++) {
-      if(vals1[j] != vals2[j])
+      if (vals1[j] != vals2[j])
         ierr = PetscPrintf(PETSC_COMM_SELF,"[%d]: Error: MatGetValues rstart = %2d  row = %2d col = %2d val1 = %e val2 = %e bs = %D\n",rank,rstart,rows[j/2],cols[j%2],PetscRealPart(vals1[j]),PetscRealPart(vals2[j]),bs);CHKERRQ(ierr);
     }
   }

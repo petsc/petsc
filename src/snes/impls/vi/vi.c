@@ -71,7 +71,7 @@ PetscErrorCode SNESVIComputeInactiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS* in
   ierr = PetscMalloc(nloc_isact*sizeof(PetscInt),&idx_act);CHKERRQ(ierr);
 
   /* Set inactive set indices */
-  for(i=0; i < nlocal; i++) {
+  for (i=0; i < nlocal; i++) {
     if (((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) idx_act[i1++] = ilow+i;
   }
 
@@ -130,7 +130,7 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   fnorm = PetscSqrtReal(fnorm);
   
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  if(snes->ntruebounds) tmp = ((double)(fact[0]+fact[1]))/((double)snes->ntruebounds);
+  if (snes->ntruebounds) tmp = ((double)(fact[0]+fact[1]))/((double)snes->ntruebounds);
   else tmp = 0.0;
   ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES VI Function norm %14.12e Active lower constraints %D/%D upper constraints %D/%D Percent of total %g Percent of bounded %g\n",its,(double)fnorm,fact[0],fact_bound[0],fact[1],fact_bound[1],((double)(fact[0]+fact[1]))/((double)N),tmp);CHKERRQ(ierr);
   
@@ -279,7 +279,7 @@ PetscErrorCode SNESVIProjectOntoBounds(SNES snes,Vec X)
   ierr = VecGetArrayRead(snes->xl,&xl);CHKERRQ(ierr);
   ierr = VecGetArrayRead(snes->xu,&xu);CHKERRQ(ierr);
 
-  for(i = 0;i<n;i++) {
+  for (i = 0;i<n;i++) {
     if (PetscRealPart(x[i]) < PetscRealPart(xl[i])) x[i] = xl[i];
     else if (PetscRealPart(x[i]) > PetscRealPart(xu[i])) x[i] = xu[i];
   }
@@ -325,7 +325,7 @@ PetscErrorCode SNESVIGetActiveSetIS(SNES snes,Vec X,Vec F,IS* ISact)
   ierr = PetscMalloc(nloc_isact*sizeof(PetscInt),&idx_act);CHKERRQ(ierr);
 
   /* Set active set indices */
-  for(i=0; i < nlocal; i++) {
+  for (i=0; i < nlocal; i++) {
     if (!((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) idx_act[i1++] = ilow+i;
   }
 
@@ -418,18 +418,18 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
   ierr = SNESDefaultGetWork(snes,1);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
 
-  if(!snes->ops->computevariablebounds && snes->dm) {
+  if (!snes->ops->computevariablebounds && snes->dm) {
     PetscBool flag;
     ierr = DMHasVariableBounds(snes->dm, &flag); CHKERRQ(ierr);
     snes->ops->computevariablebounds = SNESVIDMComputeVariableBounds;
   }
-  if(!snes->usersetbounds) {
+  if (!snes->usersetbounds) {
     if (snes->ops->computevariablebounds) {
       if (!snes->xl) {ierr = VecDuplicate(snes->vec_sol,&snes->xl);CHKERRQ(ierr);}
       if (!snes->xu) {ierr = VecDuplicate(snes->vec_sol,&snes->xu);CHKERRQ(ierr);}
       ierr = (*snes->ops->computevariablebounds)(snes,snes->xl,snes->xu);CHKERRQ(ierr);
     } 
-    else if(!snes->xl && !snes->xu) {
+    else if (!snes->xl && !snes->xu) {
       /* If the lower and upper bound on variables are not set, set it to -Inf and Inf */
       ierr = VecDuplicate(snes->vec_sol, &snes->xl);CHKERRQ(ierr);
       ierr = VecSet(snes->xl,SNES_VI_NINF);CHKERRQ(ierr);

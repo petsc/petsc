@@ -261,7 +261,7 @@ PetscErrorCode PCTFS_ivec_sort( PetscInt *ar,  PetscInt size)
 
 	  /* partition about pivot_value ...  	                    */
 	  /* note lists of length 2 are not guaranteed to be sorted */
-	  for(;;)
+	  for (;;)
 	    {
 	      /* walk up ... and down ... swap if equal to pivot! */
 	      do pi++; while (*pi<*ar);
@@ -368,7 +368,7 @@ PetscErrorCode PCTFS_ivec_sort_companion( PetscInt *ar,  PetscInt *ar2,  PetscIn
 
 	  /* partition about pivot_value ...  	                    */
 	  /* note lists of length 2 are not guaranteed to be sorted */
-	  for(;;)
+	  for (;;)
 	    {
 	      /* walk up ... and down ... swap if equal to pivot! */
 	      do {pi++; pi2++;} while (*pi<*ar);
@@ -483,7 +483,7 @@ PetscErrorCode PCTFS_ivec_sort_companion_hack( PetscInt *ar,  PetscInt **ar2, Pe
 
 	  /* partition about pivot_value ...  	                    */
 	  /* note lists of length 2 are not guaranteed to be sorted */
-	  for(;;)
+	  for (;;)
 	    {
 	      /* walk up ... and down ... swap if equal to pivot! */
 	      do {pi++; pi2++;} while (*pi<*ar);

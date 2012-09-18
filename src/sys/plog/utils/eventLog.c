@@ -60,7 +60,7 @@ PetscErrorCode EventRegLogDestroy(PetscEventRegLog eventLog)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for(e = 0; e < eventLog->numEvents; e++) {
+  for (e = 0; e < eventLog->numEvents; e++) {
     ierr = PetscFree(eventLog->eventInfo[e].name);CHKERRQ(ierr);
   }
   ierr = PetscFree(eventLog->eventInfo);CHKERRQ(ierr);
@@ -398,7 +398,7 @@ PetscErrorCode EventPerfLogActivateClass(PetscEventPerfLog eventLog, PetscEventR
   int e;
 
   PetscFunctionBegin;
-  for(e = 0; e < eventLog->numEvents; e++) {
+  for (e = 0; e < eventLog->numEvents; e++) {
     int c = eventRegLog->eventInfo[e].classid;
     if (c == classid) eventLog->eventInfo[e].active = PETSC_TRUE;
   }
@@ -426,7 +426,7 @@ PetscErrorCode EventPerfLogDeactivateClass(PetscEventPerfLog eventLog, PetscEven
   int e;
 
   PetscFunctionBegin;
-  for(e = 0; e < eventLog->numEvents; e++) {
+  for (e = 0; e < eventLog->numEvents; e++) {
     int c = eventRegLog->eventInfo[e].classid;
     if (c == classid) eventLog->eventInfo[e].active = PETSC_FALSE;
   }
@@ -463,7 +463,7 @@ PetscErrorCode  EventRegLogGetEvent(PetscEventRegLog eventLog, const char name[]
   PetscValidCharPointer(name,2);
   PetscValidIntPointer(event,3);
   *event = -1;
-  for(e = 0; e < eventLog->numEvents; e++) {
+  for (e = 0; e < eventLog->numEvents; e++) {
     ierr = PetscStrcasecmp(eventLog->eventInfo[e].name, name, &match);CHKERRQ(ierr);
     if (match) break;
   }

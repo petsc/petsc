@@ -631,13 +631,13 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
           mmax = PetscMax(mmax,mat->rmap->range[i+1] - mat->rmap->range[i]);
         }
         ierr = PetscMalloc(mmax*N*sizeof(PetscScalar),&vv);CHKERRQ(ierr);
-        for(k = 1; k < size; k++) {
+        for (k = 1; k < size; k++) {
           v    = vv;
           m    = mat->rmap->range[k+1] - mat->rmap->range[k];
           ierr = MPIULong_Recv(v,m*N,MPIU_SCALAR,k,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
 
-          for(j = 0; j < N; j++) {
-            for(i = 0; i < m; i++) {
+          for (j = 0; j < N; j++) {
+            for (i = 0; i < m; i++) {
               work[j + i*N] = *v++;
             }
           }

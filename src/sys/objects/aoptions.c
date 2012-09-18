@@ -65,9 +65,9 @@ PetscErrorCode PetscObjectOptionsBegin_Private(PetscObject obj)
   PetscOptionsObject.alreadyprinted = obj->optionsprinted;
   ierr = PetscStrcmp(obj->description,obj->class_name,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscSNPrintf(title,sizeof title,"%s options",obj->class_name);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(title,sizeof(title),"%s options",obj->class_name);CHKERRQ(ierr);
   } else {
-    ierr = PetscSNPrintf(title,sizeof title,"%s (%s) options",obj->description,obj->class_name);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(title,sizeof(title),"%s (%s) options",obj->description,obj->class_name);CHKERRQ(ierr);
   }
   ierr = PetscOptionsBegin_Private(obj->comm,obj->prefix,title,obj->mansec);CHKERRQ(ierr);
   PetscFunctionReturn(0);

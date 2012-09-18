@@ -527,7 +527,7 @@ PetscErrorCode  SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
   if (fnorm != fnorm) {
     ierr = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FNORM_NAN;
-  } else if(it == snes->max_its) {
+  } else if (it == snes->max_its) {
     *reason = SNES_CONVERGED_ITS;
   }
   PetscFunctionReturn(0);

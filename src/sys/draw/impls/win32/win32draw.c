@@ -112,7 +112,7 @@ static PetscErrorCode deletemouselist_Win32(WindowNode deletelist)
   
   while(deletelist->MouseListHead != NULL) {       
     node = deletelist->MouseListHead;
-    if(deletelist->MouseListHead->mnext != NULL) {
+    if (deletelist->MouseListHead->mnext != NULL) {
       deletelist->MouseListHead = deletelist->MouseListHead->mnext;
     }
     PetscFree(node);
@@ -142,7 +142,7 @@ static PetscErrorCode PetscDrawGetMouseButton_Win32(PetscDraw draw, PetscDrawBut
   /* Look for the node that matches the window you are using */
   current = WindowListHead;
   while (current != NULL) {
-    if(current->hWnd == windraw->hWnd) {       
+    if (current->hWnd == windraw->hWnd) {       
       current->IsGetMouseOn = TRUE;
       break;
     } else {
@@ -245,7 +245,7 @@ static PetscErrorCode PetscDrawRectangle_Win32(PetscDraw draw,PetscReal xl,Petsc
   }
   hbrush = CreateSolidBrush(windraw->currentcolor);
   
-  if(windraw->node->DoubleBuffered) {
+  if (windraw->node->DoubleBuffered) {
     hdc = windraw->node->DoubleBuffer;
   } else {
     hdc = windraw->node->Buffer;
@@ -271,7 +271,7 @@ static PetscErrorCode PetscDrawLine_Win32(PetscDraw draw,PetscReal xl,PetscReal 
   x1   = XTRANS(draw,windraw,xl);x2  = XTRANS(draw,windraw,xr); 
   yone   = YTRANS(draw,windraw,yl);y2  = YTRANS(draw,windraw,yr); 
   hpen = CreatePen (PS_SOLID, windraw->linewidth, windraw->currentcolor);
-  if(windraw->node->DoubleBuffered) {
+  if (windraw->node->DoubleBuffered) {
     hdc = windraw->node->DoubleBuffer;
   } else {
     hdc = windraw->node->Buffer;
@@ -331,7 +331,7 @@ static PetscErrorCode PetscDrawPoint_Win32(PetscDraw draw,PetscReal x,PetscReal 
   x1     = XTRANS(draw,windraw,x);   
   yone     = YTRANS(draw,windraw,y);
   hbrush = CreateSolidBrush(windraw->currentcolor);
-  if(windraw->node->DoubleBuffered) {
+  if (windraw->node->DoubleBuffered) {
     hdc = windraw->node->DoubleBuffer;
   } else {
     hdc = windraw->node->Buffer;
@@ -401,7 +401,7 @@ static PetscErrorCode PetscDrawString_Win32(PetscDraw draw,PetscReal x,PetscReal
   logfont.lfWeight         = FW_NORMAL;
   hfont = CreateFontIndirect(&logfont); 
   TranslateColor_Win32(draw,color);
-  if(windraw->node->DoubleBuffered) {
+  if (windraw->node->DoubleBuffered) {
     hdc = windraw->node->DoubleBuffer;
   } else {
     hdc = windraw->node->Buffer;
@@ -449,7 +449,7 @@ static PetscErrorCode PetscDrawStringVertical_Win32(PetscDraw draw,PetscReal x,P
   logfont.lfWeight         = FW_NORMAL;
   hfont = CreateFontIndirect(&logfont);
   TranslateColor_Win32(draw,color);
-  if(windraw->node->DoubleBuffered) {
+  if (windraw->node->DoubleBuffered) {
     hdc = windraw->node->DoubleBuffer;
   } else {
     hdc = windraw->node->Buffer;
@@ -509,7 +509,7 @@ static PetscErrorCode PetscDrawResizeWindow_Win32(PetscDraw draw,int w,int h)
   windraw->node->bitwidth  = windraw->w = draw->w = w;
   /* set up graphic buffers with the new size of window */
   SetBitmapDimensionEx(windraw->node->BufferBit,w,h,NULL);
-  if(windraw->node->DoubleBuffered) {
+  if (windraw->node->DoubleBuffered) {
     SetBitmapDimensionEx(windraw->node->DoubleBufferBit,w,h,NULL);
   }
   windraw->haveresized = PETSC_TRUE;
@@ -552,7 +552,7 @@ static PetscErrorCode PetscDrawClear_Win32(PetscDraw draw)
   /* clear primary buffer */
   ExtFloodFill(windraw->node->Buffer,0,0,COLOR_WINDOW,FLOODFILLBORDER);
   /* if exists clear secondary buffer */
-  if(windraw->node->DoubleBuffered) {
+  if (windraw->node->DoubleBuffered) {
     ExtFloodFill(windraw->node->DoubleBuffer,0,0,COLOR_WINDOW,FLOODFILLBORDER);
   }
   /* force WM_PAINT message so cleared buffer will show */
@@ -583,7 +583,7 @@ static PetscErrorCode PetscDrawTriangle_Win32(PetscDraw draw,PetscReal x1,PetscR
   p2y = YTRANS(draw,windraw,y2);
   p3y = YTRANS(draw,windraw,y3);
   
-  if(windraw->node->DoubleBuffered) {
+  if (windraw->node->DoubleBuffered) {
     bit = windraw->node->DoubleBuffer;
   } else {
     bit = windraw->node->Buffer;
@@ -653,7 +653,7 @@ void PopMessageLoopThread_Win32(PetscDraw popdraw)
   pop->w = width;
   pop->h = height;
   
-  if(!hWnd) {
+  if (!hWnd) {
     lpMsgBuf = (LPVOID)"Window Not Succesfully Created";
     MessageBox( NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION );
     LocalFree( lpMsgBuf );
@@ -812,7 +812,7 @@ static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popdraw)
   (*popdraw)->data = pop;
   
   /* the following is temporary fix for initializing a global datastructure */
-  if(!g_hWindowListMutex) {
+  if (!g_hWindowListMutex) {
     g_hWindowListMutex = CreateMutex(NULL,FALSE,NULL);
   }
   ierr = PetscMemcpy((*popdraw)->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
@@ -831,7 +831,7 @@ static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popdraw)
   newnode->wnext          = WindowListHead;
   newnode->wprev          = NULL;
   newnode->hWnd           = pop->hWnd;
-  if(WindowListHead != NULL) {
+  if (WindowListHead != NULL) {
     WindowListHead->wprev = newnode;
   }
   WindowListHead          = newnode;
@@ -876,7 +876,7 @@ PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
   draw->data  = windraw;
   
   /* the following is temporary fix for initializing a global datastructure */
-  if(!g_hWindowListMutex) {
+  if (!g_hWindowListMutex) {
     g_hWindowListMutex = CreateMutex(NULL,FALSE,NULL);
   }
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
@@ -895,7 +895,7 @@ PetscErrorCode  PetscDrawCreate_Win32(PetscDraw draw)
   newnode->wnext          = WindowListHead;
   newnode->wprev          = NULL;
   newnode->hWnd           = windraw->hWnd;
-  if(WindowListHead != NULL) {
+  if (WindowListHead != NULL) {
     WindowListHead->wprev = newnode;
   }
   WindowListHead          = newnode;
@@ -1027,11 +1027,11 @@ static PetscErrorCode MouseRecord_Win32(HWND hWnd,PetscDrawButton button)
   PetscFunctionBegin;
   WaitForSingleObject(g_hWindowListMutex, INFINITE);
   current = WindowListHead;
-  if(current->IsGetMouseOn == TRUE) {
+  if (current->IsGetMouseOn == TRUE) {
     
     SetEvent(current->event);
     while (current != NULL) {   
-      if(current->hWnd == hWnd) {       
+      if (current->hWnd == hWnd) {       
         
         ierr            = PetscNew(struct _p_MouseNode,&newnode);CHKERRQ(ierr);
         newnode->Button = button;
@@ -1072,13 +1072,13 @@ static void OnDestroy_Win32(HWND hWnd)
   
   SetEvent(current->event);
   while (current != NULL) { 
-    if(current->hWnd == hWnd) {
-      if(current->wprev != NULL) {
+    if (current->hWnd == hWnd) {
+      if (current->wprev != NULL) {
         current->wprev->wnext = current->wnext;
       } else {
         WindowListHead = current->wnext;
       }
-      if(current->MouseListHead) {
+      if (current->MouseListHead) {
         deletemouselist_Win32(current);
       } else {
         PetscFree(current);

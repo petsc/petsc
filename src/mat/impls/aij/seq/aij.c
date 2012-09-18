@@ -1171,7 +1171,7 @@ PetscErrorCode MatMult_SeqAIJ_Kernel(PetscInt thread_id,Mat A,Vec xx,Vec yy)
   aj    = a->j;
   aa    = a->a;
   ai    = a->i;
-  for(i=start;i<end;i++) {
+  for (i=start;i<end;i++) {
     n = ai[i+1] - ai[i];
     aj = a->j + ai[i];
     aa = a->a + ai[i];
@@ -2398,7 +2398,7 @@ PetscErrorCode MatIncreaseOverlap_SeqAIJ(Mat A,PetscInt is_max,IS is[],PetscInt 
     
     /* Enter these into the temp arrays. I.e., mark table[row], enter row into new index */
     for (j=0; j<n ; ++j){
-      if(!PetscBTLookupSet(table,idx[j])) { nidx[isz++] = idx[j];}
+      if (!PetscBTLookupSet(table,idx[j])) { nidx[isz++] = idx[j];}
     }
     ierr = ISRestoreIndices(is[i],&idx);CHKERRQ(ierr);
     ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
@@ -2679,7 +2679,7 @@ PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat Y,Mat X,PetscInt* nnz)
 
   PetscFunctionBegin;
   /* Set the number of nonzeros in the new matrix */
-  for(i=0; i<m; i++) {
+  for (i=0; i<m; i++) {
     PetscInt j,k,nzx = xi[i+1] - xi[i],nzy = yi[i+1] - yi[i];
     const PetscInt *xj = x->j+xi[i],*yj = y->j+yi[i];
     nnz[i] = 0;
@@ -2863,7 +2863,7 @@ PetscErrorCode MatGetRowMinAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
     ncols = ai[1] - ai[0]; ai++;
     if (ncols) {
       /* Get first nonzero */
-      for(j = 0; j < ncols; j++) {
+      for (j = 0; j < ncols; j++) {
         atmp = PetscAbsScalar(aa[j]);
         if (atmp > 1.0e-12) {x[i] = atmp; if (idx) idx[i] = aj[j]; break;}
       }
@@ -2871,7 +2871,7 @@ PetscErrorCode MatGetRowMinAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
     } else {
       x[i] = 0.0; if (idx) idx[i] = 0;
     }
-    for(j = 0; j < ncols; j++) {
+    for (j = 0; j < ncols; j++) {
       atmp = PetscAbsScalar(*aa);
       if (atmp > 1.0e-12 && PetscAbsScalar(x[i]) > atmp) {x[i] = atmp; if (idx) idx[i] = *aj;}
       aa++; aj++;
@@ -3660,7 +3660,7 @@ PetscErrorCode  MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,const PetscInt Ii[],co
 
   ierr = MatGetSize(B, &m, &n);CHKERRQ(ierr);
   ierr = PetscMalloc((m+1) * sizeof(PetscInt), &nnz);CHKERRQ(ierr);
-  for(i = 0; i < m; i++) {
+  for (i = 0; i < m; i++) {
     nz     = Ii[i+1]- Ii[i];
     nz_max = PetscMax(nz_max, nz);
     if (nz < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Local row %D has a negative number of columns %D", i, nnz);
@@ -3676,7 +3676,7 @@ PetscErrorCode  MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,const PetscInt Ii[],co
     ierr = PetscMemzero(values, nz_max*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
-  for(i = 0; i < m; i++) {
+  for (i = 0; i < m; i++) {
     nz  = Ii[i+1] - Ii[i];
     ierr = MatSetValues_SeqAIJ(B, 1, &i, nz, J+Ii[i], values + (v ? Ii[i] : 0), INSERT_VALUES);CHKERRQ(ierr);
   }

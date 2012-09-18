@@ -605,7 +605,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
     ierr = PetscOptionsList("-thi_mat_type","Matrix type","MatSetType",MatList,mtype,(char*)mtype,sizeof(mtype),NULL);CHKERRQ(ierr);
     ierr = PetscStrallocpy(mtype,&thi->mattype);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-thi_verbose","Enable verbose output (like matrix sizes and statistics)","",thi->verbose,&thi->verbose,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-thi_monitor","Basename to write state files to",NULL,monitor_basename,monitor_basename,sizeof monitor_basename,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-thi_monitor","Basename to write state files to",NULL,monitor_basename,monitor_basename,sizeof(monitor_basename),&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscStrallocpy(monitor_basename,&thi->monitor_basename);CHKERRQ(ierr);
       thi->monitor_interval = 1;
@@ -1569,8 +1569,8 @@ static PetscErrorCode THITSMonitor(TS ts,PetscInt step,PetscReal t,Vec X,void *c
   ierr = PetscPrintf(((PetscObject)ts)->comm,"%3D: t=%G\n",step,t);CHKERRQ(ierr);
   if (thi->monitor_interval && step % thi->monitor_interval) PetscFunctionReturn(0);
   ierr = TSGetDM(ts,&pack);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(filename3,sizeof filename3,"%s-3d-%03d.vts",thi->monitor_basename,step);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(filename2,sizeof filename2,"%s-2d-%03d.vts",thi->monitor_basename,step);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename3,sizeof(filename3),"%s-3d-%03d.vts",thi->monitor_basename,step);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename2,sizeof(filename2),"%s-2d-%03d.vts",thi->monitor_basename,step);CHKERRQ(ierr);
   ierr = THIDAVecView_VTK_XML(thi,pack,X,filename3,filename2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

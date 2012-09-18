@@ -139,7 +139,7 @@ PetscErrorCode tuned_STREAM_2A_Kernel(PetscInt myrank)
 {
   int         i;
   
-  for(i=trstarts[myrank];i<trstarts[myrank+1];i++)
+  for (i=trstarts[myrank];i<trstarts[myrank+1];i++)
     a[i] = 2.0E0*a[i];
   
   return(0);
@@ -148,7 +148,7 @@ PetscErrorCode tuned_STREAM_2A_Kernel(PetscInt myrank)
 PetscErrorCode tuned_STREAM_Initialize_Kernel(PetscInt myrank) {
   int        i;
 
-  for(i=trstarts[myrank];i<trstarts[myrank+1];i++) {
+  for (i=trstarts[myrank];i<trstarts[myrank+1];i++) {
     a[i] = 1.0;
     b[i] = 2.0;
     c[i] = 0.0;
@@ -238,7 +238,7 @@ int main(int argc,char *argv[])
   Q = (N+OFFSET)/nworkThreads;
   R = (N+OFFSET) - Q*nworkThreads;
   trstarts[0] = 0;
-  for(j=0;j < nworkThreads;j++) {
+  for (j=0;j < nworkThreads;j++) {
     S = (PetscBool)(j < R);
     nloc = S?Q+1:Q;
     trstarts[j+1] = trstarts[j]+nloc;

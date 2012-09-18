@@ -59,7 +59,7 @@ PetscInt main(PetscInt argc,char **args)
 
     /* Set the vector with random data */
     ierr = VecSet(fin,zero);CHKERRQ(ierr);
-//    for(i=0;i<N0*N1;i++)
+//    for (i=0;i<N0*N1;i++)
 //       {
 //       VecSetValues(fin,1,&i,&one,INSERT_VALUES);
 //     }

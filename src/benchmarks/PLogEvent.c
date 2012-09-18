@@ -43,10 +43,14 @@ int main(int argc,char **argv)
   ierr = PetscGetTime(&y);CHKERRQ(ierr);
   fprintf(stderr,"%-15s : %e sec, with options : ","PetscLogEvent",(y-x)/10.0);
 
-  if(PetscOptionsHasName(PETSC_NULL,"-log",&flg),flg) fprintf(stderr,"-log ");
-  if(PetscOptionsHasName(PETSC_NULL,"-log_all",&flg),flg) fprintf(stderr,"-log_all ");
-  if(PetscOptionsHasName(PETSC_NULL,"-log_summary",&flg),flg) fprintf(stderr,"-log_summary ");
-  if(PetscOptionsHasName(PETSC_NULL,"-log_mpe",&flg),flg) fprintf(stderr,"-log_mpe ");
+  ierr = PetscOptionsHasName(PETSC_NULL,"-log",&flg);CHKERRQ(ierr);
+  if (flg) fprintf(stderr,"-log ");
+  ierr = PetscOptionsHasName(PETSC_NULL,"-log_all",&flg);CHKERRQ(ierr);
+  if (flg) fprintf(stderr,"-log_all ");
+  ierr = PetscOptionsHasName(PETSC_NULL,"-log_summary",&flg);CHKERRQ(ierr);
+  if (flg) fprintf(stderr,"-log_summary ");
+  ierr = PetscOptionsHasName(PETSC_NULL,"-log_mpe",&flg);CHKERRQ(ierr);
+  if (flg) fprintf(stderr,"-log_mpe ");
   
   fprintf(stderr,"\n");
 

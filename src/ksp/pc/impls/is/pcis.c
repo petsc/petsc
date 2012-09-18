@@ -192,7 +192,7 @@ PetscErrorCode  PCISSetUp(PC pc)
   ierr = VecScatterCreate(pcis->vec1_global,pcis->is_B_global,pcis->vec1_B,(IS)0,&pcis->global_to_B);CHKERRQ(ierr);
 
   /* Creating scaling "matrix" D */
-  if( !pcis->D ) {
+  if ( !pcis->D ) {
     ierr = VecSet(pcis->vec1_B,pcis->scaling_factor);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(pcis->D,pcis->vec1_B);CHKERRQ(ierr);
@@ -202,7 +202,7 @@ PetscErrorCode  PCISSetUp(PC pc)
   ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_B,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->global_to_B,counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->global_to_B,counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  if( !pcis->D ) {
+  if ( !pcis->D ) {
     ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
     ierr = VecCopy(pcis->vec1_B,pcis->D);CHKERRQ(ierr);
     ierr = VecReciprocal(pcis->D);CHKERRQ(ierr);

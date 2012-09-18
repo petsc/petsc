@@ -281,7 +281,7 @@ PetscErrorCode DMGetNamedGlobalVector(DM dm,const char *name,Vec *X)
   }
 
   /* Create the Vec */
-  ierr = PetscMalloc(sizeof *link,&link);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dm,&link->X);CHKERRQ(ierr);
   link->next = dm->namedglobal;

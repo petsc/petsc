@@ -39,7 +39,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
     for (j=0; j<n ; ++j){
       brow = idx[j]/bs; /* convert the indices into block indices */
       if (brow >= mbs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
-      if(!PetscBTLookupSet(table_out,brow)) { 
+      if (!PetscBTLookupSet(table_out,brow)) { 
         nidx[isz++] = brow;
         if (bcol_max < brow) bcol_max = brow;
       }

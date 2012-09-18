@@ -423,7 +423,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
   }
 
-  for(i = 0, i_r = 0; i < snes->max_its; i++, i_r++) {
+  for (i = 0, i_r = 0; i < snes->max_its; i++, i_r++) {
     switch(qn->type) {
     case SNES_QN_BADBROYDEN:
       ierr = SNESQNApply_BadBroyden(snes,i_r,Y,X,Xold,D,Dold);CHKERRQ(ierr);

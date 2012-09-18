@@ -283,7 +283,7 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
   ierr = VecGetArray(user->eta,&eta_p);CHKERRQ(ierr);
   
  
-  for(i=0;i<n;i++) {
+  for (i=0;i<n;i++) {
     wv_p[i] = xx[5*i];
     cv_p[i] = xx[5*i+1];
     wi_p[i] = xx[5*i+2];
@@ -677,7 +677,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 	{
 		for (j=ys; j<ys+ym; j++) 
 		{
-			for(i=xs; i < xs+xm;i++)
+			for (i=xs; i < xs+xm;i++)
 			{
 				l[k][j][i][0] = -SNES_VI_INF;
 				l[k][j][i][1] = 0.0;
@@ -866,14 +866,14 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   PetscScalar vals[16],vals_M_0[8],vals3[8];
 	
 	
-  for(i=0;i < nele;i++) 
+  for (i=0;i < nele;i++) 
   {
 	  for (j=0; j<8; j++)
 	  {
 		  idx[j] = ele[8*i + j];
 	  }
     
-	  for(r=0;r<8;r++) 
+	  for (r=0;r<8;r++) 
 	  {
 		  row_M_0 = idx[r];
 		  for (j=0; j<8; j++)
@@ -897,7 +897,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 		  ci_sum = tp_ci * user->Di/user->kBT;
 		  
 		  row = 5*idx[r];
-		  for(j = 0; j < 8; j++)
+		  for (j = 0; j < 8; j++)
 		  {
 			  cols[j] = 5 * idx[j];
 			  vals[j] = dt*eM_2[r][j]*cv_sum;
@@ -911,7 +911,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 		  
 		  
 		  row = 5*idx[r]+1;
-		  for(j = 0; j < 8; j++)
+		  for (j = 0; j < 8; j++)
 		  {
 			  cols[j] = 5 * idx[j];
 			  vals[j] = -eM_0[r][j];
@@ -923,7 +923,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 		  ierr = MatSetValuesLocal(M,1,&row,16,cols,vals,ADD_VALUES);CHKERRQ(ierr);  
 		  
 		  row = 5*idx[r]+2;
-		  for(j = 0; j < 8; j++)
+		  for (j = 0; j < 8; j++)
 		  {
 			  cols[j] = 5 * idx[j] + 2;
 			  vals[j] = dt*eM_2[r][j]*ci_sum;
@@ -936,7 +936,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 		  
 		  
 		  row = 5*idx[r]+3;
-		  for(j = 0; j < 8; j++)
+		  for (j = 0; j < 8; j++)
 		  {
 			  cols[j] = 5 * idx[j] + 2;
 			  vals[j] = -eM_0[r][j];
@@ -948,7 +948,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 		  ierr = MatSetValuesLocal(M,1,&row,16,cols,vals,ADD_VALUES);CHKERRQ(ierr); 	
 		  
 		  row = 5*idx[r]+4;
-		  for(j = 0; j < 8; j++)
+		  for (j = 0; j < 8; j++)
 		  {
 			  cols3[j] = 5 * idx[j] + 4;
 			  vals3[j] = eM_0[r][j]/dt + user->L*user->kaeta*eM_2[r][j];
@@ -1023,7 +1023,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
   /* Get local element info */
   ierr = DMDAGetElements(user->da1,&nele,&nen,&ele);CHKERRQ(ierr);
   
-  for(i=0;i<nele;i++) {
+  for (i=0;i<nele;i++) {
 	  for (j=0; j<8; j++)
 	  {
 		  idx[j] = ele[8*i + j];
@@ -1034,7 +1034,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
 
     for (r=0;r<8;r++) {
       row = 5*idx[r];
-	  for(j = 0; j < 8; j++)
+	  for (j = 0; j < 8; j++)
 	  {
 			cols[j] = 5*idx[j];     vals[j] = 0.0;
 			
@@ -1044,7 +1044,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
       ierr = MatSetValuesLocal(M,1,&row,8,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
         
       row = 5*idx[r]+2;
-	  for(j = 0; j < 8; j++)
+	  for (j = 0; j < 8; j++)
 	  {
 		 cols[j] = 5*idx[j]+2;   vals[j] = 0.0;
 	   }
@@ -1093,7 +1093,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
 		}
 	}
 	
-  for(i=0;i<nele;i++) {
+  for (i=0;i<nele;i++) {
 	  for (j=0; j<8; j++)
 	  {
 		  idx[j] = ele[8*i + j];
@@ -1102,7 +1102,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
     PetscInt    row,cols[8],r;
     PetscScalar vals[8];
 
-    for(r=0;r<8;r++) {
+    for (r=0;r<8;r++) {
 
       if (user->degenerate) {
         cv_sum = (2.0*user->smallnumber + cv_p[idx[0]] + cv_p[idx[1]])*user->Dv/(2.0*user->kBT);

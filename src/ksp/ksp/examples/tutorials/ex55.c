@@ -48,7 +48,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_coordinates",&use_coords,PETSC_NULL); CHKERRQ(ierr);
   M = 2*(ne+1)*(ne+1); /* global number of equations */
   m = (ne+1)*(ne+1)/npe;
-  if(mype==npe-1) m = (ne+1)*(ne+1) - (npe-1)*m;
+  if (mype==npe-1) m = (ne+1)*(ne+1) - (npe-1)*m;
   m *= 2;
   /* create stiffness matrix */
   ierr = MatCreate(wcomm,&Amat);CHKERRQ(ierr);
@@ -145,8 +145,8 @@ int main(int argc,char **args)
       DD[7][7] =  0.53333333333333321     ;
     }
     else {
-      for(i=0;i<8;i++) {
-        for(j=0;j<8;j++) {
+      for (i=0;i<8;i++) {
+        for (j=0;j<8;j++) {
           double val;
           fscanf(file, "%le", &val);
           DD1[i][j] = val;
@@ -154,10 +154,10 @@ int main(int argc,char **args)
       }
     }
     /* BC version of element */
-    for(i=0;i<8;i++)
-      for(j=0;j<8;j++)
-        if(i<4 || j < 4)
-          if(i==j) DD2[i][j] = .1*DD1[i][j];
+    for (i=0;i<8;i++)
+      for (j=0;j<8;j++)
+        if (i<4 || j < 4)
+          if (i==j) DD2[i][j] = .1*DD1[i][j];
           else DD2[i][j] = 0.0;
         else DD2[i][j] = DD1[i][j];
   }
@@ -170,26 +170,26 @@ int main(int argc,char **args)
       /* coords */
       x = h*(Ii % (ne+1)); y = h*(Ii/(ne+1));
       coords[2*ix] = x; coords[2*ix+1] = y;
-      if( i<ne && j<ne ) {
+      if ( i<ne && j<ne ) {
         PetscInt jj,ii,idx[4] = {Ii, Ii+1, Ii + (ne+1) + 1, Ii + (ne+1)};
         /* radius */
         PetscReal radius = PetscSqrtScalar( (x-.5+h/2)*(x-.5+h/2) + (y-.5+h/2)*(y-.5+h/2) );
         PetscReal alpha = 1.0;
-        if( radius < 0.25 ){
+        if ( radius < 0.25 ){
           alpha = soft_alpha;
         }
-        for(ii=0;ii<8;ii++)for(jj=0;jj<8;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
+        for (ii=0;ii<8;ii++)for (jj=0;jj<8;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
         ierr = MatSetValuesBlocked(Pmat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
-        if( j>0 ) {
+        if ( j>0 ) {
           ierr = MatSetValuesBlocked(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
         }
         else {
           /* a BC */
-          for(ii=0;ii<8;ii++)for(jj=0;jj<8;jj++) DD[ii][jj] = alpha*DD2[ii][jj];
+          for (ii=0;ii<8;ii++)for (jj=0;jj<8;jj++) DD[ii][jj] = alpha*DD2[ii][jj];
           ierr = MatSetValuesBlocked(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
         }
       }
-      if( j>0 ) {
+      if ( j>0 ) {
         PetscScalar v = h*h;
         PetscInt jj = 2*Ii; /* load in x direction */
         ierr = VecSetValues(bb,1,&jj,&v,INSERT_VALUES);      CHKERRQ(ierr);
@@ -211,13 +211,13 @@ int main(int argc,char **args)
     
     /* finish KSP/PC setup */
     ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
-    if( use_coords ) {
+    if ( use_coords ) {
       ierr = PCSetCoordinates( pc, 2, m/2, coords );                   CHKERRQ(ierr);
     }
     ierr = PetscFree(coords);CHKERRQ(ierr);
   }
 
-  if( !PETSC_TRUE ) {
+  if ( !PETSC_TRUE ) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIOpen(wcomm, "Amat.m", &viewer);  CHKERRQ(ierr);
     ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
@@ -248,7 +248,7 @@ int main(int argc,char **args)
 
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
-  if( !PETSC_TRUE ) {
+  if ( !PETSC_TRUE ) {
     PetscReal norm,norm2;
     PetscViewer viewer;
     Vec res;

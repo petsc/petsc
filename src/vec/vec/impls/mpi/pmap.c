@@ -150,7 +150,7 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
   ierr = MPI_Allgather(&map->n, 1, MPIU_INT, map->range+1, 1, MPIU_INT, map->comm);CHKERRQ(ierr);
 
   map->range[0] = 0;
-  for(p = 2; p <= size; p++) {
+  for (p = 2; p <= size; p++) {
     map->range[p] += map->range[p-1];
   }
 

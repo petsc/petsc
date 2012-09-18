@@ -83,7 +83,7 @@ PetscErrorCode MatFindNonzeroRows_MPIAIJ(Mat M,IS *keptrows)
     nb = ib[i+1] - ib[i];
     if (!na && !nb) continue;
     aa = a->a + ia[i];
-    for(j=0; j<na;j++) {
+    for (j=0; j<na;j++) {
       if (aa[j] != 0.0) {
         rows[cnt++] = rstart + i;
         goto ok2;
@@ -2221,7 +2221,7 @@ static PetscErrorCode MatAXPYGetPreallocation_MPIAIJ(Mat Y,const PetscInt *yltog
 
   PetscFunctionBegin;
   /* Set the number of nonzeros in the new matrix */
-  for(i=0; i<m; i++) {
+  for (i=0; i<m; i++) {
     PetscInt j,k,nzx = xi[i+1] - xi[i],nzy = yi[i+1] - yi[i];
     const PetscInt *xj = x->j+xi[i],*yj = y->j+yi[i];
     nnz[i] = 0;
@@ -2928,7 +2928,7 @@ PetscErrorCode MatGetRowMin_MPIAIJ(Mat A, Vec v, PetscInt idx[])
   ierr = VecGetArray(v,        &a);CHKERRQ(ierr);
   ierr = VecGetArray(diagV,    &diagA);CHKERRQ(ierr);
   ierr = VecGetArray(offdiagV, &offdiagA);CHKERRQ(ierr);
-  for(r = 0; r < n; ++r) {
+  for (r = 0; r < n; ++r) {
     if (PetscAbsScalar(diagA[r]) <= PetscAbsScalar(offdiagA[r])) {
       a[r]   = diagA[r];
       idx[r] = cstart + diagIdx[r];
@@ -2969,7 +2969,7 @@ PetscErrorCode MatGetRowMax_MPIAIJ(Mat A, Vec v, PetscInt idx[])
   ierr = VecGetArray(v,        &a);CHKERRQ(ierr);
   ierr = VecGetArray(diagV,    &diagA);CHKERRQ(ierr);
   ierr = VecGetArray(offdiagV, &offdiagA);CHKERRQ(ierr);
-  for(r = 0; r < n; ++r) {
+  for (r = 0; r < n; ++r) {
     if (PetscAbsScalar(diagA[r]) >= PetscAbsScalar(offdiagA[r])) {
       a[r]   = diagA[r];
       idx[r] = cstart + diagIdx[r];
@@ -3387,7 +3387,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   if (sizesset && newMat->cmap->N != gcols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of cols:Matrix in file has (%d) and input matrix has (%d)",N,gcols);
 
   /* determine ownership of all (block) rows */
-  if( M%bs ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows (%d) and block size (%d)",M,bs);
+  if ( M%bs ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Inconsistent # of rows (%d) and block size (%d)",M,bs);
   if (newMat->rmap->n < 0 ) m    = bs*((M/bs)/size + (((M/bs) % size) > rank)); /* PETSC_DECIDE */
   else m = newMat->rmap->n; /* Set by user */
 
@@ -3397,7 +3397,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
   /* First process needs enough room for process with most rows */
   if (!rank) {
     mmax = rowners[1];
-    for(i=2; i<=size; i++) {
+    for (i=2; i<=size; i++) {
       mmax = PetscMax(mmax, rowners[i]);
     }
   } else mmax = m;

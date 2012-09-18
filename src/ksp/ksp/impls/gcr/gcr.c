@@ -70,12 +70,12 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
     KSPLogResidualHistory(ksp,res);
     ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
 		
-    if( ksp->its > ksp->chknorm  ) {
+    if ( ksp->its > ksp->chknorm  ) {
       ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;
     }
     
-    if( ksp->its >= ksp->max_it ) {
+    if ( ksp->its >= ksp->max_it ) {
       ksp->reason = KSP_CONVERGED_ITS;
       break;
     }
@@ -117,7 +117,7 @@ PetscErrorCode KSPSolve_GCR( KSP ksp )
     ierr = KSPSolve_GCR_cycle( ksp );CHKERRQ(ierr);
     if (ksp->reason) break; /* catch case when convergence occurs inside the cycle */
   } while( ksp->its < ksp->max_it );CHKERRQ(ierr);
-  if( ksp->its >= ksp->max_it) {
+  if ( ksp->its >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
   PetscFunctionReturn(0);

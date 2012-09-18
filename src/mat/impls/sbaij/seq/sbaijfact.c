@@ -91,7 +91,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const 
     jmax = ai[rip[k]+1];
     for (j=jmin; j<jmax; j++){
       vj = rip[aj[j]]; /* col. value */
-      if(vj > k){
+      if (vj > k){
         qm = k; 
         do {
           m  = qm; qm = q[m];
@@ -100,7 +100,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const 
         nzk++;
         q[m]  = vj;
         q[vj] = qm;  
-      } /* if(vj > k) */
+      } /* if (vj > k) */
     } /* for (j=jmin; j<jmax; j++) */
 
     /* modify nonzero structure of k-th row by computing fill-in
@@ -1409,7 +1409,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B,Mat A,c
       sctx.rs  = rs;
       sctx.pv  = dk;
       ierr = MatPivotCheck(A,info,&sctx,k);CHKERRQ(ierr);
-      if(sctx.newshift) break;
+      if (sctx.newshift) break;
       dk = sctx.pv;
  
       ba[bdiag[k]] = 1.0/dk; /* U(k,k) */

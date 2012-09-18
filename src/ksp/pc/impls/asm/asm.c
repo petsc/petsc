@@ -46,8 +46,8 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
     char overlaps[256] = "user-defined overlap",blocks[256] = "total subdomain blocks not yet set";
-    if (osm->overlap >= 0) {ierr = PetscSNPrintf(overlaps,sizeof overlaps,"amount of overlap = %D",osm->overlap);CHKERRQ(ierr);}
-    if (osm->n > 0) {ierr = PetscSNPrintf(blocks,sizeof blocks,"total subdomain blocks = %D",osm->n);CHKERRQ(ierr);}
+    if (osm->overlap >= 0) {ierr = PetscSNPrintf(overlaps,sizeof(overlaps),"amount of overlap = %D",osm->overlap);CHKERRQ(ierr);}
+    if (osm->n > 0) {ierr = PetscSNPrintf(blocks,sizeof(blocks),"total subdomain blocks = %D",osm->n);CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: %s, %s\n",blocks,overlaps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: restriction/interpolation type - %s\n",PCASMTypes[osm->type]);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
@@ -116,7 +116,7 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
   if (fname[0] == 0) { ierr = PetscStrcpy(fname,"stdout");CHKERRQ(ierr); };
   ierr = PetscViewerASCIIOpen(((PetscObject)pc)->comm,fname,&viewer);CHKERRQ(ierr);
   for (i=0;i<osm->n_local;i++) {
-    if(i < osm->n_local_true) {
+    if (i < osm->n_local_true) {
       ierr = ISGetLocalSize(osm->is[i],&nidx);CHKERRQ(ierr);
       ierr = ISGetIndices(osm->is[i],&idx);CHKERRQ(ierr);
       /* Print to a string viewer; no more than 15 characters per index plus 512 char for the header.*/
@@ -160,7 +160,7 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
       ierr = PetscViewerFlush(viewer);                               CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_FALSE); CHKERRQ(ierr);
       /* Assume either all ranks have is_local or none do. */
-      if(osm->is_local) {
+      if (osm->is_local) {
         ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);  CHKERRQ(ierr);
         ierr = PetscViewerFlush(viewer);                               CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_FALSE); CHKERRQ(ierr);
@@ -200,7 +200,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     if (osm->n_local_true == PETSC_DECIDE) { 
       /* no subdomains given */
       /* try pc->dm first */
-      if(pc->dm) {     
+      if (pc->dm) {     
         char      ddm_name[1024];
         DM        ddm;
         PetscBool flg;
@@ -210,22 +210,22 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         /* Allow the user to request a decomposition DM by name */
         ierr = PetscStrncpy(ddm_name, "", 1024); CHKERRQ(ierr);
         ierr = PetscOptionsString("-pc_asm_decomposition", "Name of the DM defining the composition", "PCSetDM", ddm_name, ddm_name,1024,&flg); CHKERRQ(ierr);
-        if(flg) {
+        if (flg) {
           ierr = DMCreateDomainDecompositionDM(pc->dm, ddm_name, &ddm); CHKERRQ(ierr);
-          if(!ddm) {
+          if (!ddm) {
             SETERRQ1(((PetscObject)pc)->comm, PETSC_ERR_ARG_WRONGSTATE, "Uknown DM decomposition name %s", ddm_name);
           }
           ierr = PetscInfo(pc,"Using domain decomposition DM defined using options database\n");CHKERRQ(ierr);
           ierr = PCSetDM(pc,ddm); CHKERRQ(ierr);
         }
         ierr = DMCreateDomainDecomposition(pc->dm, &num_domains, &domain_names, &inner_domain_is, &outer_domain_is, &domain_dm);    CHKERRQ(ierr);
-        if(num_domains) {
+        if (num_domains) {
           ierr = PCASMSetLocalSubdomains(pc, num_domains, outer_domain_is, inner_domain_is);CHKERRQ(ierr);
         }
-        for(d = 0; d < num_domains; ++d) {
-          if(domain_names)    {ierr = PetscFree(domain_names[d]);       CHKERRQ(ierr);}
-          if(inner_domain_is) {ierr = ISDestroy(&inner_domain_is[d]);   CHKERRQ(ierr);}
-          if(outer_domain_is) {ierr = ISDestroy(&outer_domain_is[d]);   CHKERRQ(ierr);}
+        for (d = 0; d < num_domains; ++d) {
+          if (domain_names)    {ierr = PetscFree(domain_names[d]);       CHKERRQ(ierr);}
+          if (inner_domain_is) {ierr = ISDestroy(&inner_domain_is[d]);   CHKERRQ(ierr);}
+          if (outer_domain_is) {ierr = ISDestroy(&outer_domain_is[d]);   CHKERRQ(ierr);}
         }
         ierr = PetscFree(domain_names);    CHKERRQ(ierr);
         ierr = PetscFree(inner_domain_is); CHKERRQ(ierr);
@@ -342,7 +342,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     if (!osm->ksp) {
       /* Create the local solvers */
       ierr = PetscMalloc(osm->n_local_true*sizeof(KSP *),&osm->ksp);CHKERRQ(ierr);
-      if(domain_dm) {
+      if (domain_dm) {
         ierr = PetscInfo(pc,"Setting up ASM subproblems using the embedded DM\n");CHKERRQ(ierr);
       }
       for (i=0; i<osm->n_local_true; i++) {
@@ -354,14 +354,14 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
         ierr = KSPSetOptionsPrefix(ksp,prefix);CHKERRQ(ierr);
         ierr = KSPAppendOptionsPrefix(ksp,"sub_");CHKERRQ(ierr);
-        if(domain_dm){
+        if (domain_dm){
           ierr = KSPSetDM(ksp, domain_dm[i]);CHKERRQ(ierr);
           ierr = KSPSetDMActive(ksp, PETSC_FALSE);CHKERRQ(ierr);
           ierr = DMDestroy(&domain_dm[i]); CHKERRQ(ierr);
         }
         osm->ksp[i] = ksp;
       }
-      if(domain_dm) {
+      if (domain_dm) {
         ierr = PetscFree(domain_dm);CHKERRQ(ierr);
       }
     }
@@ -649,7 +649,7 @@ PetscErrorCode  PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,IS is[],IS is_local
     if (is_local) {
       ierr = PetscMalloc(n*sizeof(IS),&osm->is_local);CHKERRQ(ierr);
       for (i=0; i<n; i++) { osm->is_local[i] = is_local[i]; }
-      if(!is) {
+      if (!is) {
         ierr = PetscMalloc(osm->n_local_true*sizeof(IS),&osm->is);CHKERRQ(ierr);
         for (i=0; i<osm->n_local_true; i++) {
           if (osm->overlap > 0) { /* With positive overlap, osm->is[i] will be modified */
@@ -1337,7 +1337,7 @@ PetscErrorCode  PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (n <= 0) PetscFunctionReturn(0);
-  if(is) {
+  if (is) {
     PetscValidPointer(is,2);
     for (i=0; i<n; i++) { ierr = ISDestroy(&is[i]);CHKERRQ(ierr); }
     ierr = PetscFree(is);CHKERRQ(ierr);

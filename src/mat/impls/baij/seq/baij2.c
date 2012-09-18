@@ -40,7 +40,7 @@ PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,PetscInt is_max,IS is[],PetscInt
     for (j=0; j<n ; ++j){
       ival = idx[j]/bs; /* convert the indices into block indices */
       if (ival>=m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
-      if(!PetscBTLookupSet(table,ival)) { nidx[isz++] = ival;}
+      if (!PetscBTLookupSet(table,ival)) { nidx[isz++] = ival;}
     }
     ierr = ISRestoreIndices(is[i],&idx);CHKERRQ(ierr);
     ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
@@ -648,7 +648,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver1(Mat A,Vec xx,Vec zz)
     for (j=0; j<n; j++) {
       xb = x + 15*(idx[j]);
 
-      for(k=0;k<15;k++){
+      for (k=0;k<15;k++){
         xv    =  xb[k];
 	sum1  += v[0]*xv;
         sum2  += v[1]*xv;

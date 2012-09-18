@@ -1050,10 +1050,10 @@ PetscErrorCode MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
   if (format != PETSC_VIEWER_DRAW_CONTOUR) {
     /* Blue for negative and Red for positive */
     color = PETSC_DRAW_BLUE;
-    for(j = 0; j < n; j++) {
+    for (j = 0; j < n; j++) {
       x_l = j;
       x_r = x_l + 1.0;
-      for(i = 0; i < m; i++) {
+      for (i = 0; i < m; i++) {
         y_l = m - i - 1.0;
         y_r = y_l + 1.0;
 #if defined(PETSC_USE_COMPLEX)
@@ -1079,16 +1079,16 @@ PetscErrorCode MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
   } else {
     /* use contour shading to indicate magnitude of values */
     /* first determine max of all nonzero values */
-    for(i = 0; i < m*n; i++) {
+    for (i = 0; i < m*n; i++) {
       if (PetscAbsScalar(v[i]) > maxv) maxv = PetscAbsScalar(v[i]);
     }
     scale = (245.0 - PETSC_DRAW_BASIC_COLORS)/maxv; 
     ierr  = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
     if (popup) {ierr  = PetscDrawScalePopup(popup,0.0,maxv);CHKERRQ(ierr);}
-    for(j = 0; j < n; j++) {
+    for (j = 0; j < n; j++) {
       x_l = j;
       x_r = x_l + 1.0;
-      for(i = 0; i < m; i++) {
+      for (i = 0; i < m; i++) {
         y_l   = m - i - 1.0;
         y_r   = y_l + 1.0;
         color = PETSC_DRAW_BASIC_COLORS + (int)(scale*PetscAbsScalar(v[j*m+i]));
@@ -2184,7 +2184,7 @@ PetscErrorCode  MatSeqDenseSetPreallocation_SeqDense(Mat B,PetscScalar *data)
   b       = (Mat_SeqDense*)B->data;
   b->Mmax = B->rmap->n;
   b->Nmax = B->cmap->n;
-  if(b->lda <= 0 || b->changelda) b->lda = B->rmap->n;
+  if (b->lda <= 0 || b->changelda) b->lda = B->rmap->n;
 
   if (!data) { /* petsc-allocated storage */
     if (!b->user_alloc) { ierr = PetscFree(b->v);CHKERRQ(ierr); }

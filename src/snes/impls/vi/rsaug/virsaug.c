@@ -64,7 +64,7 @@ PetscErrorCode SNESVIComputeInactiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS* in
   ierr = PetscMalloc(nloc_isact*sizeof(PetscInt),&idx_act);CHKERRQ(ierr);
 
   /* Set inactive set indices */
-  for(i=0; i < nlocal; i++) {
+  for (i=0; i < nlocal; i++) {
     if (((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) idx_act[i1++] = ilow+i;
   }
 
@@ -703,7 +703,7 @@ PetscErrorCode SNESVIRSAUGProjectOntoBounds(SNES snes,Vec X)
   ierr = VecGetArrayRead(vi->xl,&xl);CHKERRQ(ierr);
   ierr = VecGetArrayRead(vi->xu,&xu);CHKERRQ(ierr);
 
-  for(i = 0;i<n;i++) {
+  for (i = 0;i<n;i++) {
     if (PetscRealPart(x[i]) < PetscRealPart(xl[i])) x[i] = xl[i];
     else if (PetscRealPart(x[i]) > PetscRealPart(xu[i])) x[i] = xu[i];
   }
@@ -915,7 +915,7 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
   }
   if (i == maxits) {
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
-    if(!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
+    if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   sdm->computefunction = vi->computeuserfunction;
   PetscFunctionReturn(0);
@@ -962,7 +962,7 @@ PetscErrorCode SNESVIGetActiveSetIS(SNES snes,Vec X,Vec F,IS* ISact)
   ierr = PetscMalloc(nloc_isact*sizeof(PetscInt),&idx_act);CHKERRQ(ierr);
 
   /* Set active set indices */
-  for(i=0; i < nlocal; i++) {
+  for (i=0; i < nlocal; i++) {
     if (!vi->ignorefunctionsign) {
       if (!((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) idx_act[i1++] = ilow+i;
     } else {
@@ -1379,7 +1379,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
   ierr = DMDestroyVIRSAUG(snes->dm);CHKERRQ(ierr);
   if (i == maxits) {
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
-    if(!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
+    if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   PetscFunctionReturn(0);
 }
@@ -1547,16 +1547,16 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
     if (nis_act) {
       ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
       IS_redact  = PETSC_NULL;
-      if(vi->checkredundancy) {
+      if (vi->checkredundancy) {
 	(*vi->checkredundancy)(snes,IS_act,&IS_redact,vi->ctxP);
       }
 
-      if(!IS_redact) {
+      if (!IS_redact) {
 	/* User called checkredundancy function but didn't create IS_redact because
            there were no redundant active set variables */
 	/* Copy over all active set indices to the list */
 	ierr = PetscMalloc(nis_act*sizeof(PetscInt),&idx_actkept);CHKERRQ(ierr);
-	for(k=0;k < nis_act;k++) idx_actkept[k] = idx_act[k];
+	for (k=0;k < nis_act;k++) idx_actkept[k] = idx_act[k];
 	nkept = nis_act;
       } else {
 	ierr = ISGetLocalSize(IS_redact,&nis_redact);CHKERRQ(ierr);
@@ -1566,8 +1566,8 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
 	ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
 	ierr = ISGetIndices(IS_redact,&idx_redact);CHKERRQ(ierr);
 	j1 = 0;nkept = 0;
-	for(k=0;k<nis_act;k++) {
-	  if(j1 < nis_redact && idx_act[k] == idx_redact[j1]) j1++;
+	for (k=0;k<nis_act;k++) {
+	  if (j1 < nis_redact && idx_act[k] == idx_redact[j1]) j1++;
 	  else idx_actkept[nkept++] = idx_act[k];
 	}
 	ierr = ISRestoreIndices(IS_act,&idx_act);CHKERRQ(ierr);
@@ -1606,13 +1606,13 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
       value[0] = 1.0; value[1] = 0.0;
       ierr = PetscMalloc((X->map->n+nkept)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
       ierr = PetscMemzero(d_nnz,(X->map->n+nkept)*sizeof(PetscInt));CHKERRQ(ierr);
-      for(row=0;row<snes->jacobian->rmap->n;row++) {
+      for (row=0;row<snes->jacobian->rmap->n;row++) {
         ierr = MatGetRow(snes->jacobian,row,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
         d_nnz[row] += ncols;
         ierr = MatRestoreRow(snes->jacobian,row,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       }
 
-      for(k=0;k<nkept;k++) {
+      for (k=0;k<nkept;k++) {
         d_nnz[idx_actkept[k]] += 1;
         d_nnz[snes->jacobian->rmap->n+k] += 2;
       }
@@ -1621,13 +1621,13 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
       ierr = PetscFree(d_nnz);CHKERRQ(ierr);
 
       /* Set the original jacobian matrix in J_aug */
-      for(row=0;row<snes->jacobian->rmap->n;row++) {
+      for (row=0;row<snes->jacobian->rmap->n;row++) {
 	ierr = MatGetRow(snes->jacobian,row,&ncols,&cols,&vals);CHKERRQ(ierr);
 	ierr = MatSetValues(J_aug,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
 	ierr = MatRestoreRow(snes->jacobian,row,&ncols,&cols,&vals);CHKERRQ(ierr);
       }
       /* Add the augmented part */
-      for(k=0;k<nkept;k++) {
+      for (k=0;k<nkept;k++) {
 	row = snes->jacobian->rmap->n+k;
 	col[0] = idx_actkept[k]; col[1] = snes->jacobian->rmap->n+k;
 	ierr = MatSetValues(J_aug,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
@@ -1689,14 +1689,14 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
       }
     }
 
-    if(nis_act) {
+    if (nis_act) {
       PetscScalar *y1,*y2;
       ierr = VecGetArray(Y,&y1);CHKERRQ(ierr);
       ierr = VecGetArray(Y_aug,&y2);CHKERRQ(ierr);
       /* Copy over inactive Y_aug to Y */
       j1 = 0;
-      for(i1=Y->map->rstart;i1 < Y->map->rend;i1++) {
-	if(j1 < nkept && idx_actkept[j1] == i1) j1++;
+      for (i1=Y->map->rstart;i1 < Y->map->rend;i1++) {
+	if (j1 < nkept && idx_actkept[j1] == i1) j1++;
 	else y1[i1-Y->map->rstart] = y2[i1-Y->map->rstart];
       }
       ierr = VecRestoreArray(Y,&y1);CHKERRQ(ierr);
@@ -1767,7 +1767,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
   }
   if (i == maxits) {
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
-    if(!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
+    if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   PetscFunctionReturn(0);
 }
@@ -1827,7 +1827,7 @@ PetscErrorCode SNESSetUp_VIRSAUG(SNES snes)
     ierr = VecGetOwnershipRange(snes->vec_sol,&rstart,&rend);CHKERRQ(ierr);
     ierr = VecGetLocalSize(snes->vec_sol,&n);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-    for(i=0;i < n; i++) indices[i] = rstart + i;
+    for (i=0;i < n; i++) indices[i] = rstart + i;
     ierr = ISCreateGeneral(((PetscObject)snes)->comm,n,indices,PETSC_OWN_POINTER,&vi->IS_inact_prev);
   }
 

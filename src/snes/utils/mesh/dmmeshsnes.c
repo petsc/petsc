@@ -114,7 +114,7 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, Pets
     /* Communicate all points to all processes */
     ierr = PetscMalloc3(N*ctx->dim,PetscReal,&globalPoints,size,PetscMPIInt,&counts,size,PetscMPIInt,&displs);CHKERRQ(ierr);
     ierr = PetscLayoutGetRanges(layout, &ranges);CHKERRQ(ierr);
-    for(p = 0; p < size; ++p) {
+    for (p = 0; p < size; ++p) {
       counts[p] = (ranges[p+1] - ranges[p])*ctx->dim;
       displs[p] = ranges[p]*ctx->dim;
     }
@@ -124,7 +124,7 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, Pets
     globalPoints = ctx->points;
   }
   ierr = PetscMalloc3(N,PetscInt,&foundCells,N,PetscMPIInt,&foundProcs,N,PetscMPIInt,&globalProcs);CHKERRQ(ierr);
-  for(p = 0; p < N; ++p) {
+  for (p = 0; p < N; ++p) {
     foundCells[p] = m->locatePoint(&globalPoints[p*ctx->dim]);
     if (foundCells[p] >= 0) {
       foundProcs[p] = rank;
@@ -135,7 +135,7 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, Pets
   /* Let the lowest rank process own each point */
   ierr = MPI_Allreduce(foundProcs, globalProcs, N, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
   ctx->n = 0;
-  for(p = 0; p < N; ++p) {
+  for (p = 0; p < N; ++p) {
     if (globalProcs[p] == size) {
       SETERRQ4(comm, PETSC_ERR_PLIB, "Point %d: %g %g %g not located in mesh", p, globalPoints[p*ctx->dim+0], ctx->dim > 1 ? globalPoints[p*ctx->dim+1] : 0.0, ctx->dim > 2 ? globalPoints[p*ctx->dim+2] : 0.0);
     } else if (globalProcs[p] == rank) {
@@ -149,11 +149,11 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, Pets
   ierr = VecSetBlockSize(ctx->coords, ctx->dim);CHKERRQ(ierr);
   ierr = VecSetFromOptions(ctx->coords);CHKERRQ(ierr);
   ierr = VecGetArray(ctx->coords, &a);CHKERRQ(ierr);
-  for(p = 0, q = 0, i = 0; p < N; ++p) {
+  for (p = 0, q = 0, i = 0; p < N; ++p) {
     if (globalProcs[p] == rank) {
       PetscInt d;
 
-      for(d = 0; d < ctx->dim; ++d, ++i) {
+      for (d = 0; d < ctx->dim; ++d, ++i) {
         a[i] = globalPoints[p*ctx->dim+d];
       }
       ctx->cells[q++] = foundCells[p];
@@ -227,7 +227,7 @@ PetscErrorCode DMMeshInterpolate_Simplex_Private(DM dm, SectionReal x, Vec v, DM
   ierr = PetscMalloc3(ctx->dim,PetscReal,&v0,ctx->dim*ctx->dim,PetscReal,&J,ctx->dim*ctx->dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
-  for(p = 0; p < ctx->n; ++p) {
+  for (p = 0; p < ctx->n; ++p) {
     PetscInt  e = ctx->cells[p];
     PetscReal xi[4];
     PetscInt  d, f, comp;
@@ -235,15 +235,15 @@ PetscErrorCode DMMeshInterpolate_Simplex_Private(DM dm, SectionReal x, Vec v, DM
     if ((ctx->dim+1)*ctx->dof != m->sizeWithBC(s, e)) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Invalid restrict size %d should be %d", m->sizeWithBC(s, e), (ctx->dim+1)*ctx->dof);}
     m->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
     const PetscScalar *c = m->restrictClosure(s, e); /* Must come after geom, since it uses closure temp space*/
-    for(comp = 0; comp < ctx->dof; ++comp) {
+    for (comp = 0; comp < ctx->dof; ++comp) {
       a[p*ctx->dof+comp] = c[0*ctx->dof+comp];
     }
-    for(d = 0; d < ctx->dim; ++d) {
+    for (d = 0; d < ctx->dim; ++d) {
       xi[d] = 0.0;
-      for(f = 0; f < ctx->dim; ++f) {
+      for (f = 0; f < ctx->dim; ++f) {
         xi[d] += invJ[d*ctx->dim+f]*0.5*(coords[p*ctx->dim+f] - v0[f]);
       }
-      for(comp = 0; comp < ctx->dof; ++comp) {
+      for (comp = 0; comp < ctx->dof; ++comp) {
         a[p*ctx->dof+comp] += (c[(d+1)*ctx->dof+comp] - c[0*ctx->dof+comp])*xi[d];
       }
     }
@@ -372,7 +372,7 @@ PetscErrorCode DMMeshInterpolate_Quad_Private(DM dm, SectionReal x, Vec v, DMMes
 
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
-  for(p = 0; p < ctx->n; ++p) {
+  for (p = 0; p < ctx->n; ++p) {
     PetscScalar *xi;
     PetscInt     e = ctx->cells[p], comp;
 
@@ -380,7 +380,7 @@ PetscErrorCode DMMeshInterpolate_Quad_Private(DM dm, SectionReal x, Vec v, DMMes
     /* Can make this do all points at once */
     {
       const PetscReal *v = m->restrictClosure(coordinates, e);
-      for(PetscInt i = 0; i < 8; ++i) vertices[i] = v[i];
+      for (PetscInt i = 0; i < 8; ++i) vertices[i] = v[i];
     }
     const PetscScalar *c = m->restrictClosure(s, e); /* Must come after geom, since it uses closure temp space*/
     ierr = VecGetArray(real, &xi);CHKERRQ(ierr);
@@ -389,7 +389,7 @@ PetscErrorCode DMMeshInterpolate_Quad_Private(DM dm, SectionReal x, Vec v, DMMes
     ierr = VecRestoreArray(real, &xi);CHKERRQ(ierr);
     ierr = SNESSolve(snes, real, ref);CHKERRQ(ierr);
     ierr = VecGetArray(ref, &xi);CHKERRQ(ierr);
-    for(comp = 0; comp < ctx->dof; ++comp) {
+    for (comp = 0; comp < ctx->dof; ++comp) {
       a[p*ctx->dof+comp] = c[0*ctx->dof+comp]*(1 - xi[0])*(1 - xi[1]) + c[1*ctx->dof+comp]*xi[0]*(1 - xi[1]) + c[2*ctx->dof+comp]*xi[0]*xi[1] + c[3*ctx->dof+comp]*(1 - xi[0])*xi[1];
     }
     ierr = VecRestoreArray(ref, &xi);CHKERRQ(ierr);
@@ -591,7 +591,7 @@ PetscErrorCode DMMeshInterpolate_Hex_Private(DM dm, SectionReal x, Vec v, DMMesh
 
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
-  for(p = 0; p < ctx->n; ++p) {
+  for (p = 0; p < ctx->n; ++p) {
     PetscScalar *xi;
     PetscInt     e = ctx->cells[p], comp;
 
@@ -599,7 +599,7 @@ PetscErrorCode DMMeshInterpolate_Hex_Private(DM dm, SectionReal x, Vec v, DMMesh
     /* Can make this do all points at once */
     {
       const PetscReal *v = m->restrictClosure(coordinates, e);
-      for(PetscInt i = 0; i < 24; ++i) vertices[i] = v[i];
+      for (PetscInt i = 0; i < 24; ++i) vertices[i] = v[i];
     }
     const PetscScalar *c = m->restrictClosure(s, e); /* Must come after geom, since it uses closure temp space*/
     ierr = VecGetArray(real, &xi);CHKERRQ(ierr);
@@ -609,7 +609,7 @@ PetscErrorCode DMMeshInterpolate_Hex_Private(DM dm, SectionReal x, Vec v, DMMesh
     ierr = VecRestoreArray(real, &xi);CHKERRQ(ierr);
     ierr = SNESSolve(snes, real, ref);CHKERRQ(ierr);
     ierr = VecGetArray(ref, &xi);CHKERRQ(ierr);
-    for(comp = 0; comp < ctx->dof; ++comp) {
+    for (comp = 0; comp < ctx->dof; ++comp) {
       a[p*ctx->dof+comp] =
         c[0*ctx->dof+comp]*(1-xi[0])*(1-xi[1])*(1-xi[2]) +
         c[1*ctx->dof+comp]*    xi[0]*(1-xi[1])*(1-xi[2]) +

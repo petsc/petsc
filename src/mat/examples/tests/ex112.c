@@ -38,14 +38,14 @@ PetscInt main(PetscInt argc,char **args)
     function = (FuncType) func;
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  for(DIM = 0; DIM < ndim; DIM++){
+  for (DIM = 0; DIM < ndim; DIM++){
     dim[DIM] = n;  /* size of transformation in DIM-dimension */
   }
   ierr = PetscRandomCreate(PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
 
-  for(DIM = 1; DIM < 5; DIM++){
-    for(i = 0, N = 1; i < DIM; i++) N *= dim[i];
+  for (DIM = 1; DIM < 5; DIM++){
+    for (i = 0, N = 1; i < DIM; i++) N *= dim[i];
     ierr = PetscPrintf(PETSC_COMM_SELF, "\n %d-D: FFTW on vector of size %d \n",DIM,N);CHKERRQ(ierr);
 
     /* create FFTW object */
@@ -66,7 +66,7 @@ PetscInt main(PetscInt argc,char **args)
     } else if (function == TANH) {
       PetscScalar *a;
       ierr = VecGetArray(x, &a);CHKERRQ(ierr);
-      for(i = 0; i < N; ++i) {
+      for (i = 0; i < N; ++i) {
         a[i] = tanh((i - N/2.0)*(10.0/N));
       }
       ierr = VecRestoreArray(x, &a);CHKERRQ(ierr);

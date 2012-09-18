@@ -676,7 +676,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
       ierr = MatGetSize(A,&M,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatGetLocalSize(Aloc,&mlocal,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatNullSpaceGetVecs(mnull,&has_const,&nvec,&vecs);CHKERRQ(ierr);
-      ierr = PetscMalloc((nvec+!!has_const)*mlocal*sizeof *nullvec,&nullvec);CHKERRQ(ierr);
+      ierr = PetscMalloc((nvec+!!has_const)*mlocal*sizeof(*nullvec),&nullvec);CHKERRQ(ierr);
       if (has_const) for (i=0; i<mlocal; i++) nullvec[i] = 1.0/M;
       for (i=0; i<nvec; i++) {
         ierr = VecGetArrayRead(vecs[i],&v);CHKERRQ(ierr);

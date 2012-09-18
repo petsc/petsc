@@ -1550,16 +1550,16 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
   /* allocate entire send scatter context */
   ierr = PetscNewLog(ctx,VecScatter_MPI_General,&to);CHKERRQ(ierr);
   to->n = nsends; 
-  for(n = 0, sendSize = 0; n < to->n; n++) {sendSize += sendSizes[n];}
+  for (n = 0, sendSize = 0; n < to->n; n++) {sendSize += sendSizes[n];}
   ierr = PetscMalloc(to->n*sizeof(MPI_Request),&to->requests);CHKERRQ(ierr);
   ierr = PetscMalloc4(bs*sendSize,PetscScalar,&to->values,sendSize,PetscInt,&to->indices,to->n+1,PetscInt,&to->starts,to->n,PetscMPIInt,&to->procs);CHKERRQ(ierr);
   ierr = PetscMalloc2(PetscMax(to->n,nrecvs),MPI_Status,&to->sstatus,PetscMax(to->n,nrecvs),MPI_Status,&to->rstatus);CHKERRQ(ierr);
   to->starts[0] = 0;
-  for(n = 0; n < to->n; n++) {
+  for (n = 0; n < to->n; n++) {
     if (sendSizes[n] <=0 ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"sendSizes[n=%D] = %D cannot be less than 1",n,sendSizes[n]);
     to->starts[n+1] = to->starts[n] + sendSizes[n];
     to->procs[n] = sendProcs[n];
-    for(i = to->starts[n]; i < to->starts[n]+sendSizes[n]; i++) {
+    for (i = to->starts[n]; i < to->starts[n]+sendSizes[n]; i++) {
       to->indices[i] = sendIdx[i];
     }
   }
@@ -1568,15 +1568,15 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
   /* allocate entire receive scatter context */
   ierr = PetscNewLog(ctx,VecScatter_MPI_General,&from);CHKERRQ(ierr);
   from->n = nrecvs;
-  for(n = 0, recvSize = 0; n < from->n; n++) {recvSize += recvSizes[n];}
+  for (n = 0, recvSize = 0; n < from->n; n++) {recvSize += recvSizes[n];}
   ierr = PetscMalloc(from->n*sizeof(MPI_Request),&from->requests);CHKERRQ(ierr);
   ierr = PetscMalloc4(bs*recvSize,PetscScalar,&from->values,recvSize,PetscInt,&from->indices,from->n+1,PetscInt,&from->starts,from->n,PetscMPIInt,&from->procs);CHKERRQ(ierr);
   from->starts[0] = 0;
-  for(n = 0; n < from->n; n++) {
+  for (n = 0; n < from->n; n++) {
     if (recvSizes[n] <=0 ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"recvSizes[n=%D] = %D cannot be less than 1",n,recvSizes[n]);
     from->starts[n+1] = from->starts[n] + recvSizes[n];
     from->procs[n] = recvProcs[n];
-    for(i = from->starts[n]; i < from->starts[n]+recvSizes[n]; i++) {
+    for (i = from->starts[n]; i < from->starts[n]+recvSizes[n]; i++) {
       from->indices[i] = recvIdx[i];
     }
   }
@@ -2033,7 +2033,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
 #if defined(PETSC_USE_DEBUG)
   ierr = MPI_Allreduce(&bs,&i,1,MPIU_INT,MPI_MIN,((PetscObject)ctx)->comm); CHKERRQ(ierr);
   ierr = MPI_Allreduce(&bs,&n,1,MPIU_INT,MPI_MAX,((PetscObject)ctx)->comm); CHKERRQ(ierr);
-  if(bs!=i || bs!=n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Blocks size %D != %D or %D",bs,i,n);
+  if (bs!=i || bs!=n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Blocks size %D != %D or %D",bs,i,n);
 #endif
 
   switch (bs) {

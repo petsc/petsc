@@ -434,7 +434,7 @@ PetscErrorCode DMIGAInitializeUniform3d(DM dm,PetscBool IsRational,PetscInt NumD
 
   PetscFunctionBegin;
   /* Test C < p */
-  if(px <= Cx || py <= Cy || pz <= Cz){
+  if (px <= Cx || py <= Cy || pz <= Cz){
     SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Discretization inconsistent: polynomial order must be greater than degree of continuity");
   }
 
@@ -464,19 +464,19 @@ PetscErrorCode DMIGAInitializeUniform3d(DM dm,PetscBool IsRational,PetscInt NumD
   ierr = PetscMalloc(iga->my*sizeof(PetscReal), &iga->Uy);CHKERRQ(ierr);
   ierr = PetscMalloc(iga->mz*sizeof(PetscReal), &iga->Uz);CHKERRQ(ierr);
 
-  if(IsPeriodicX){
+  if (IsPeriodicX){
     ierr = CreatePeriodicKnotVector(iga->Nx,iga->px,iga->Cx,iga->mx,iga->Ux,Ux0,Uxf);CHKERRQ(ierr);
     iga->nbx -= iga->px;
   }else{
     ierr = CreateKnotVector(iga->Nx,iga->px,iga->Cx,iga->mx,iga->Ux,Ux0,Uxf);CHKERRQ(ierr);
   }
-  if(IsPeriodicY){
+  if (IsPeriodicY){
     ierr = CreatePeriodicKnotVector(iga->Ny,iga->py,iga->Cy,iga->my,iga->Uy,Uy0,Uyf);CHKERRQ(ierr);
     iga->nby -= iga->py;
   }else{
     ierr = CreateKnotVector(iga->Ny,iga->py,iga->Cy,iga->my,iga->Uy,Uy0,Uyf);CHKERRQ(ierr);
   }
-  if(IsPeriodicZ){
+  if (IsPeriodicZ){
     ierr = CreatePeriodicKnotVector(iga->Nz,iga->pz,iga->Cz,iga->mz,iga->Uz,Uz0,Uzf);CHKERRQ(ierr);
     iga->nbz -= iga->pz;
   }else{
@@ -541,7 +541,7 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
 
   if (fscanf(fp, "%d", &ival) != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"Failed to read spatial dimension from %s",FunctionSpaceFile);
   spatial_dim = ival;
-  if(spatial_dim != 3){
+  if (spatial_dim != 3){
     SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Geometry dimension != problem dimension");
   }
 
@@ -565,50 +565,50 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
   ierr = PetscMalloc(iga->mz*sizeof(PetscReal), &iga->Uz);CHKERRQ(ierr);
 
   Umax = 0.0;
-  for(i=0;i<iga->mx;i++) {
+  for (i=0;i<iga->mx;i++) {
     if (fscanf(fp, "%lf ", &dval) != 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SYS,"Failed to read X coordinate at %D from %s",i,FunctionSpaceFile);
     iga->Ux[i] = dval;
-    if(iga->Ux[i] > Umax) Umax = iga->Ux[i];
+    if (iga->Ux[i] > Umax) Umax = iga->Ux[i];
   }
-  for(i=0;i<iga->mx;i++) iga->Ux[i] /= Umax;
+  for (i=0;i<iga->mx;i++) iga->Ux[i] /= Umax;
 
   Umax = 0.0;
-  for(i=0;i<iga->my;i++) {
+  for (i=0;i<iga->my;i++) {
     if (fscanf(fp, "%lf ", &dval) != 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SYS,"Failed to read Y coordinate at %D from %s",i,FunctionSpaceFile);
     iga->Uy[i] = dval;
-    if(iga->Uy[i] > Umax) Umax = iga->Uy[i];
+    if (iga->Uy[i] > Umax) Umax = iga->Uy[i];
   }
-  for(i=0;i<iga->my;i++) iga->Uy[i] /= Umax;
+  for (i=0;i<iga->my;i++) iga->Uy[i] /= Umax;
 
   Umax = 0.0;
-  for(i=0;i<iga->mz;i++) {
+  for (i=0;i<iga->mz;i++) {
     if (fscanf(fp, "%lf ", &dval) != 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SYS,"Failed to read Z coordinate at %D from %s",i,FunctionSpaceFile);
     iga->Uz[i] = dval;
-    if(iga->Uz[i] > Umax) Umax = iga->Uz[i];
+    if (iga->Uz[i] > Umax) Umax = iga->Uz[i];
   }
-  for(i=0;i<iga->mz;i++) iga->Uz[i] /= Umax;
+  for (i=0;i<iga->mz;i++) iga->Uz[i] /= Umax;
 
   fclose(fp);
 
   /* count the number of elements */
   numEl = 0;
-  for(i = 0; i < iga->mx-1; ++i) {
+  for (i = 0; i < iga->mx-1; ++i) {
     PetscReal du = (iga->Ux[i+1]-iga->Ux[i]);
-    if(du > 1.0e-13) numEl++;
+    if (du > 1.0e-13) numEl++;
   }
   iga->Nx = numEl;
 
   numEl = 0;
-  for(i = 0; i < iga->my-1; ++i) {
+  for (i = 0; i < iga->my-1; ++i) {
     PetscReal du = (iga->Uy[i+1]-iga->Uy[i]);
-    if(du > 1.0e-13) numEl++;
+    if (du > 1.0e-13) numEl++;
   }
   iga->Ny = numEl;
 
   numEl = 0;
-  for(i = 0; i < iga->mz-1; ++i) {
+  for (i = 0; i < iga->mz-1; ++i) {
     PetscReal du = (iga->Uz[i+1]-iga->Uz[i]);
-    if(du > 1.0e-13) numEl++;
+    if (du > 1.0e-13) numEl++;
   }
   iga->Nz = numEl;
 
@@ -681,7 +681,7 @@ PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscI
 
   PetscFunctionBegin;
   /* Test C < p */
-  if(px <= Cx || py <= Cy){
+  if (px <= Cx || py <= Cy){
     SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Discretization inconsistent: polynomial order must be greater than degree of continuity");
   }
 
@@ -707,7 +707,7 @@ PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscI
   ierr = PetscMalloc(iga->mx*sizeof(PetscReal), &iga->Ux);CHKERRQ(ierr);
   ierr = PetscMalloc(iga->my*sizeof(PetscReal), &iga->Uy);CHKERRQ(ierr);
 
-  if(IsPeriodicX){
+  if (IsPeriodicX){
 
     SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Initialization routine for tapered meshes does not yet support periodicity");
     ierr = CreatePeriodicKnotVector(iga->Nx,iga->px,iga->Cx,iga->mx,iga->Ux,Ux0,Uxf);CHKERRQ(ierr);
@@ -728,16 +728,16 @@ PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscI
 
     ierr = PetscMalloc((Nx+1)*sizeof(PetscReal),&X);CHKERRQ(ierr);
 
-    if( Nx % 2 == 0){
+    if ( Nx % 2 == 0){
 
-      for(i=0;i<Nx/2+1;i++) {
+      for (i=0;i<Nx/2+1;i++) {
 	X[i]=X1[i];
 	X[Nx/2+i]=X2[Nx/2-i];
       }
 
     }else{
 
-      for(i=0;i<Nx/2+1;i++) {
+      for (i=0;i<Nx/2+1;i++) {
 	X[i]=X1[i];
 	X[Nx/2+1+i]=X2[Nx/2-i];
       }
@@ -773,16 +773,16 @@ PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscI
 
     ierr = PetscMalloc((Ny+1)*sizeof(PetscReal),&X);CHKERRQ(ierr);
 
-    if( Ny % 2 == 0){
+    if ( Ny % 2 == 0){
 
-      for(i=0;i<Ny/2+1;i++) {
+      for (i=0;i<Ny/2+1;i++) {
 	X[i]=X1[i];
 	X[Ny/2+i]=X2[Ny/2-i];
       }
 
     }else{
 
-      for(i=0;i<Ny/2+1;i++) {
+      for (i=0;i<Ny/2+1;i++) {
 	X[i]=X1[i];
 	X[Ny/2+1+i]=X2[Ny/2-i];
       }
@@ -843,7 +843,7 @@ PetscErrorCode DMIGAInitializeUniform2d(DM dm,PetscBool IsRational,PetscInt NumD
 
   PetscFunctionBegin;
   /* Test C < p */
-  if(px <= Cx || py <= Cy){
+  if (px <= Cx || py <= Cy){
     SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Discretization inconsistent: polynomial order must be greater than degree of continuity");
   }
 
@@ -869,13 +869,13 @@ PetscErrorCode DMIGAInitializeUniform2d(DM dm,PetscBool IsRational,PetscInt NumD
   ierr = PetscMalloc(iga->mx*sizeof(PetscReal), &iga->Ux);CHKERRQ(ierr);
   ierr = PetscMalloc(iga->my*sizeof(PetscReal), &iga->Uy);CHKERRQ(ierr);
 
-  if(IsPeriodicX){
+  if (IsPeriodicX){
     ierr = CreatePeriodicKnotVector(iga->Nx,iga->px,iga->Cx,iga->mx,iga->Ux,Ux0,Uxf);CHKERRQ(ierr);
     iga->nbx -= iga->px;
   }else{
     ierr = CreateKnotVector(iga->Nx,iga->px,iga->Cx,iga->mx,iga->Ux,Ux0,Uxf);CHKERRQ(ierr);
   }
-  if(IsPeriodicY){
+  if (IsPeriodicY){
     ierr = CreatePeriodicKnotVector(iga->Ny,iga->py,iga->Cy,iga->my,iga->Uy,Uy0,Uyf);CHKERRQ(ierr);
     iga->nby -= iga->py;
   }else{
@@ -922,7 +922,7 @@ PetscErrorCode DMIGAInitializeUniform1d(DM dm,PetscBool IsRational,PetscInt NumD
 
   PetscFunctionBegin;
   /* Test C < p */
-  if(px <= Cx){
+  if (px <= Cx){
     SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Discretization inconsistent: polynomial order must be greater than degree of continuity");
   }
 
@@ -944,7 +944,7 @@ PetscErrorCode DMIGAInitializeUniform1d(DM dm,PetscBool IsRational,PetscInt NumD
   /* compute knot vectors */
   ierr = PetscMalloc(iga->mx*sizeof(PetscReal), &iga->Ux);CHKERRQ(ierr);
 
-  if(IsPeriodicX){
+  if (IsPeriodicX){
     ierr = CreatePeriodicKnotVector(iga->Nx,iga->px,iga->Cx,iga->mx,iga->Ux,Ux0,Uxf);CHKERRQ(ierr);
     iga->nbx -= iga->px;
   }else{
@@ -1017,8 +1017,8 @@ PetscErrorCode BDCreate(BD *bd,PetscInt numD,PetscInt p,PetscInt numGP,PetscInt 
   bdd = *bd;
 
   ierr = PetscMalloc(numEl*numGP*sizeof(GP),&(bdd->data));CHKERRQ(ierr);
-  for(i=0;i<numEl;i++){
-    for(j=0;j<numGP;j++){
+  for (i=0;i<numEl;i++){
+    for (j=0;j<numGP;j++){
       ierr = PetscMalloc((p+1)*(numD+1)*sizeof(PetscReal),&(bdd->data[i*numGP+j].basis));CHKERRQ(ierr);
     }
   }
@@ -1042,8 +1042,8 @@ PetscErrorCode BDDestroy(BD *bd)
   PetscFunctionBegin;
   PetscValidPointer(bd,1);
   if (!(*bd)) PetscFunctionReturn(0);
-  for(i=0;i<(*bd)->numEl;i++) {
-    for(j=0;j<(*bd)->numGP;j++) {
+  for (i=0;i<(*bd)->numEl;i++) {
+    for (j=0;j<(*bd)->numGP;j++) {
       ierr = PetscFree((*bd)->data[i*(*bd)->numGP+j].basis);CHKERRQ(ierr);
     }
   }
@@ -1160,18 +1160,18 @@ PetscErrorCode BDSetElementOwnership(BD bd,PetscInt nel,PetscInt dof_b,PetscInt 
   PetscFunctionBegin;
   bd->cont_b = nel; bd->cont_e = -1;
   bd->own_b = nel; bd->own_e = -1;
-  for(i=0;i<nel;i++){ /* loop thru elements */
+  for (i=0;i<nel;i++){ /* loop thru elements */
 
     BDGetBasisOffset(bd,i,&boffset); /* left-most dof */
 
-    if(boffset >= dof_b && boffset <= dof_e){ /* I own this element */
-      if(i < bd->own_b) bd->own_b = i;
-      if(i > bd->own_e) bd->own_e = i;
+    if (boffset >= dof_b && boffset <= dof_e){ /* I own this element */
+      if (i < bd->own_b) bd->own_b = i;
+      if (i > bd->own_e) bd->own_e = i;
     }
 
-    if((boffset >= dof_b && boffset <= dof_e)||(boffset+p >= dof_b && boffset+p <= dof_e)){ /* This element contributes to me */
-      if(i < bd->cont_b) bd->cont_b = i;
-      if(i > bd->cont_e) bd->cont_e = i;
+    if ((boffset >= dof_b && boffset <= dof_e)||(boffset+p >= dof_b && boffset+p <= dof_e)){ /* This element contributes to me */
+      if (i < bd->cont_b) bd->cont_b = i;
+      if (i > bd->cont_e) bd->cont_e = i;
     }
 
   }
@@ -1204,28 +1204,28 @@ PetscErrorCode Compute1DBasisFunctions(PetscInt numGP, PetscInt numD, PetscReal 
 
   /* create space to get basis functions */
   ierr = PetscMalloc((numD+1)*sizeof(PetscReal *), &Nu);CHKERRQ(ierr);
-  for(i = 0; i <= numD; ++i) {
+  for (i = 0; i <= numD; ++i) {
     ierr = PetscMalloc((porder+1)*sizeof(PetscReal), &Nu[i]);CHKERRQ(ierr);
   }
 
   /* count the number of elements */
-  for(i = 0; i < m-1; ++i) {
+  for (i = 0; i < m-1; ++i) {
     PetscReal du = (U[i+1]-U[i]);
-    if(du > 1.0e-13) numEl++;
+    if (du > 1.0e-13) numEl++;
   }
 
   /* initialize the bd */
   ierr = BDCreate(&bd,numD,porder,numGP,numEl);CHKERRQ(ierr);
 
   /* precompute the basis */
-  for(i = 0; i < numEl; ++i) {
+  for (i = 0; i < numEl; ++i) {
     PetscInt uspan = FindSpan(U,m,i,porder);
     PetscReal du = (U[uspan+1]-U[uspan]);
 
     /* here I am storing the first global basis number in 1d */
     ierr = BDSetBasisOffset(bd,i,uspan-porder);CHKERRQ(ierr);
 
-    for(k = 0; k < numGP; ++k) {
+    for (k = 0; k < numGP; ++k) {
       PetscReal u = (X[k]+1.0)*0.5*du + U[uspan];
 
       /* and also storing the gauss point and its weight (sneaky and flagrant abuse of DAs) */
@@ -1234,8 +1234,8 @@ PetscErrorCode Compute1DBasisFunctions(PetscInt numGP, PetscInt numD, PetscReal 
       ierr = GetDersBasisFuns(uspan,u,porder,U,Nu,numD);CHKERRQ(ierr);
 
       /* load values */
-      for(j = 0; j < porder+1; ++j) {
-	for(l = 0; l <= numD; ++l) {
+      for (j = 0; j < porder+1; ++j) {
+	for (l = 0; l <= numD; ++l) {
           ierr = BDSetBasis(bd,i,k,j,l,Nu[l][j]);CHKERRQ(ierr);
 	}
       }
@@ -1246,7 +1246,7 @@ PetscErrorCode Compute1DBasisFunctions(PetscInt numGP, PetscInt numD, PetscReal 
   *bd1D = bd;
 
   /* Cleanup */
-  for(i = 0; i <= numD; ++i) {
+  for (i = 0; i <= numD; ++i) {
     ierr = PetscFree(Nu[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(Nu);CHKERRQ(ierr);
@@ -1259,11 +1259,11 @@ PetscInt FindSpan(PetscReal *U,PetscInt m,PetscInt j,PetscInt p)
   /* i is the span not counting zero spans, return the span including */
 
   PetscInt i,id = -1;
-  for(i=p;i<m-p-1;i++)
-    if(fabs(U[i+1]-U[i]) > 1.0e-14)
+  for (i=p;i<m-p-1;i++)
+    if (fabs(U[i+1]-U[i]) > 1.0e-14)
       {
 	id += 1;
-	if(id == j) return i;
+	if (id == j) return i;
       }
 
   return -1;
@@ -1294,23 +1294,20 @@ PetscErrorCode GetDersBasisFuns(PetscInt i,PetscReal u,PetscInt p,PetscReal *U, 
   ierr = PetscMalloc2((p+1),PetscReal,&left,(p+1),PetscReal,&right);CHKERRQ(ierr);
 
   PetscFunctionBegin;
-  for(j=0;j<(p+1);j++)
-  {
+  for (j=0;j<(p+1);j++) {
     ierr = PetscMalloc((p+1)*sizeof(PetscReal), &ndu[j]);CHKERRQ(ierr);
-    for(k=0;k<p+1;k++) {
+    for (k=0;k<p+1;k++) {
       ndu[j][k] = 0.0;
     }
   }
-  for(j=0;j<2;j++)
-  {
+  for (j=0;j<2;j++) {
     ierr = PetscMalloc((p+1)*sizeof(PetscReal), &a[j]);CHKERRQ(ierr);
     for(k=0;k<(p+1);k++) {
       a[j][k] = 0.0;
     }
   }
   ndu[0][0] = 1.0;
-  for (j = 1; j <= p; j++)
-  {
+  for (j = 1; j <= p; j++) {
     left[j] = u - U[i + 1 - j];
     right[j] = U[i + j] - u;
     saved = 0.0;
@@ -1369,16 +1366,17 @@ PetscErrorCode GetDersBasisFuns(PetscInt i,PetscReal u,PetscInt p,PetscReal *U, 
 
   /* Multiply through by correct factors */
   r = p;
-  for(k = 1; k <= nd; k++)
-  {
-    for(j = 0; j <= p; j++) N[k][j] *=r;
+  for (k = 1; k <= nd; k++) {
+    for (j = 0; j <= p; j++) N[k][j] *=r;
     r *= (p-k);
   }
 
-  for(j=0;j<(p+1);j++)
+  for (j=0;j<(p+1);j++) {
     ierr = PetscFree(ndu[j]);CHKERRQ(ierr);
-  for(j=0;j<2;j++)
+  }
+  for (j=0;j<2;j++) {
     ierr = PetscFree(a[j]);CHKERRQ(ierr);
+  }
   ierr = PetscFree(a);CHKERRQ(ierr);
   ierr = PetscFree(ndu);CHKERRQ(ierr);
   ierr = PetscFree2(left, right);CHKERRQ(ierr);
@@ -1563,11 +1561,11 @@ PetscErrorCode CreateKnotVector(PetscInt N,PetscInt p,PetscInt C,PetscInt m, Pet
   PetscFunctionBegin;
 
   dU = (Uf-U0)/N;
-  for(i=0;i<(N-1);i++) /* insert N-1 knots */
-    for(j=0;j<(p-C);j++) /* p-C times */
+  for (i=0;i<(N-1);i++) /* insert N-1 knots */
+    for (j=0;j<(p-C);j++) /* p-C times */
       U[(p+1) + i*(p-C) + j] = U0 + (i+1)*dU;
 
-  for(i=0;i<(p+1);i++) /* open part */
+  for (i=0;i<(p+1);i++) /* open part */
   {
     U[i] = U0;
     U[m-i-1] = Uf;
@@ -1586,11 +1584,11 @@ PetscErrorCode CreatePeriodicKnotVector(PetscInt N,PetscInt p,PetscInt C,PetscIn
   PetscFunctionBegin;
 
   dU = (Uf-U0)/N;
-  for(i=0;i<(N+1);i++) /* insert N+1 knots */
-    for(j=0;j<(p-C);j++) /* p-C times */
+  for (i=0;i<(N+1);i++) /* insert N+1 knots */
+    for (j=0;j<(p-C);j++) /* p-C times */
       U[(C+1) + i*(p-C) + j] = U0 + i*dU;
 
-  for(i=0;i<(C+1);i++) /* periodic part */
+  for (i=0;i<(C+1);i++) /* periodic part */
   {
     U[i] = U0 - (Uf - U[(m-1-p)-(C+1)+i]);
     U[m-(C+1)+i] = Uf + (U[p+1+i] - U0);
@@ -1606,15 +1604,15 @@ PetscErrorCode CreateKnotVectorFromMesh(PetscInt N,PetscInt p,PetscInt C,PetscIn
   PetscInt i,j,countU=0;
 
   PetscFunctionBegin;
-  for(i=0;i<nX;i++){
+  for (i=0;i<nX;i++){
 
-    if(i==0 || i==nX-1){
-      for(j=0;j<p+1;j++) {
+    if (i==0 || i==nX-1){
+      for (j=0;j<p+1;j++) {
 	U[countU] = X[i];
 	countU += 1;
       }
     }else{
-      for(j=0;j<p-C;j++) {
+      for (j=0;j<p-C;j++) {
 	U[countU] = X[i];
 	countU += 1;
       }
@@ -1635,13 +1633,13 @@ PetscErrorCode CreateTaperSetOfPoints(PetscReal Xbegin,PetscReal Xend,PetscReal 
   PetscReal dX;
 
   PetscFunctionBegin;
-  for(i=0;i<Ns;i++){
+  for (i=0;i<Ns;i++){
     sum += pow(f,(PetscReal)i);
   }
 
   dX = (Xend-Xbegin)/sum;
   X[0] = Xbegin;
-  for(i=1;i<N;i++){
+  for (i=1;i<N;i++){
     X[i] = X[i-1] + dX*pow(f,(PetscReal)i-1.0);
   }
 
@@ -1658,8 +1656,8 @@ PetscErrorCode CheckKnots(PetscInt m,PetscReal *U,PetscInt k,PetscReal *Uadd)
   PetscInt j;
 
   PetscFunctionBegin;
-  for(j=0;j<k;j++)
-    if(Uadd[j] < U[0] || Uadd[j] > U[m-1])
+  for (j=0;j<k;j++)
+    if (Uadd[j] < U[0] || Uadd[j] > U[m-1])
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserted knots beyond original knot vector limits");
 
   /* 2) I am lazy so I am not thinking about more that could go wrong */

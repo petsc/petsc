@@ -45,17 +45,17 @@ PetscInt main(PetscInt argc,char **args)
     function = (FuncType) func;
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  for(DIM = 0; DIM < ndim; DIM++){
+  for (DIM = 0; DIM < ndim; DIM++){
     dim[DIM]  = n; /* size of real space vector in DIM-dimension */
   }
   ierr = PetscRandomCreate(PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
 
-  for(DIM = 1; DIM < 5; DIM++){
+  for (DIM = 1; DIM < 5; DIM++){
     /* create vectors of length N=dim[0]*dim[1]* ...*dim[DIM-1] */
     /*----------------------------------------------------------*/
     N = Ny = 1;
-    for(i = 0; i < DIM-1; i++) {
+    for (i = 0; i < DIM-1; i++) {
       N *= dim[i]; 
     }
     Ny = N; Ny *= 2*(dim[DIM-1]/2 + 1); /* add padding elements to output vector y */
@@ -117,7 +117,7 @@ PetscInt main(PetscInt argc,char **args)
       ierr = VecSet(x, 1.0);CHKERRQ(ierr);
     } else if (function == TANH) {
       ierr = VecGetArray(x, &x_array);CHKERRQ(ierr);
-      for(i = 0; i < N; ++i) {
+      for (i = 0; i < N; ++i) {
         x_array[i] = tanh((i - N/2.0)*(10.0/N));
       }
       ierr = VecRestoreArray(x, &x_array);CHKERRQ(ierr);

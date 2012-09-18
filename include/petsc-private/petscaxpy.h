@@ -88,26 +88,26 @@
 #elif defined(PETSC_USE_FOR_KERNELS)
 
 #define PetscAXPY(U,a1,p1,n)  {PetscInt __i;PetscScalar __s1,__s2; \
-  for(__i=0;__i<n-1;__i+=2){__s1=a1*p1[__i];__s2=a1*p1[__i+1];\
+  for (__i=0;__i<n-1;__i+=2){__s1=a1*p1[__i];__s2=a1*p1[__i+1];\
   __s1+=U[__i];__s2+=U[__i+1];U[__i]=__s1;U[__i+1]=__s2;}\
   if (n & 0x1) U[__i] += a1 * p1[__i];}
 #define PetscAXPY2(U,a1,a2,p1,p2,n) {PetscInt __i;\
-  for(__i=0;__i<n;__i++)U[__i] += a1 * p1[__i] + a2 * p2[__i];}
+  for (__i=0;__i<n;__i++)U[__i] += a1 * p1[__i] + a2 * p2[__i];}
 #define PetscAXPY3(U,a1,a2,a3,p1,p2,p3,n){PetscInt __i;\
-  for(__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i];}
+  for (__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i];}
 #define PetscAXPY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){PetscInt __i;\
-  for(__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i]+a4*p4[__i];}
+  for (__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i]+a4*p4[__i];}
 
 #else
 
 #define PetscAXPY(U,a1,p1,n)  {PetscInt __i;PetscScalar _a1=a1;\
-  for(__i=0;__i<n;__i++)U[__i]+=_a1 * p1[__i];}
+  for (__i=0;__i<n;__i++)U[__i]+=_a1 * p1[__i];}
 #define PetscAXPY2(U,a1,a2,p1,p2,n) {PetscInt __i;\
-  for(__i=0;__i<n;__i++)U[__i] += a1 * p1[__i] + a2 * p2[__i];}
+  for (__i=0;__i<n;__i++)U[__i] += a1 * p1[__i] + a2 * p2[__i];}
 #define PetscAXPY3(U,a1,a2,a3,p1,p2,p3,n){PetscInt __i;\
-  for(__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i];}
+  for (__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i];}
 #define PetscAXPY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){PetscInt __i;\
-  for(__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i]+a4*p4[__i];}
+  for (__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i]+a4*p4[__i];}
 
 #endif
 

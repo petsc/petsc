@@ -186,10 +186,10 @@ PetscErrorCode gen_test_vector( MPI_Comm comm, PetscInt length, PetscInt start_v
 
   ierr = VecCreate( comm, &v );CHKERRQ(ierr);
   ierr = VecSetSizes( v, PETSC_DECIDE, length );CHKERRQ(ierr);
-  if( nproc == 1 ) { ierr = VecSetType( v, VECSEQ );CHKERRQ(ierr); }
+  if ( nproc == 1 ) { ierr = VecSetType( v, VECSEQ );CHKERRQ(ierr); }
   else { ierr = VecSetType( v, VECMPI );CHKERRQ(ierr); }
 
-  for( i=0; i<length; i++ ) {
+  for ( i=0; i<length; i++ ) {
     vx = (PetscScalar)( start_value + i * stride );
     ierr = VecSetValue( v, i, vx, INSERT_VALUES );CHKERRQ(ierr);
   }

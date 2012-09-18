@@ -11,7 +11,7 @@ PetscErrorCode  TestIACall(PetscShell component, const char* message) {
   PetscFunctionBegin;
   ierr = PetscPrintf(comm, "%s: running '%s'\n", __FUNCT__, message); CHKERRQ(ierr);
   ierr = PetscStrcmp(message, "initialize", &init); CHKERRQ(ierr);
-  if(init) {
+  if (init) {
     PetscShell shell;
     ierr = PetscShellGetVisitor(component, &shell); CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "%s: registering dependence: TestIB --> %s\n", __FUNCT__, ((PetscObject)component)->name); CHKERRQ(ierr);

@@ -126,12 +126,12 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 #if defined(PETSC_USE_DEBUG)
   i = (PetscInt)useblockis;
   ierr = MPI_Allreduce(&i,&j,1,MPIU_INT,MPI_MIN,((PetscObject)mat)->comm); CHKERRQ(ierr);
-  if(j!=i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Use of blocked not consistant (I am usning blocked)");
+  if (j!=i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Use of blocked not consistant (I am usning blocked)");
 #endif
 
   if (useblockis) {
     PetscInt *ga,bs = mat->cmap->bs,iec = ec/bs;
-    if(ec%bs)SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ec=%D bs=%D",ec,bs);
+    if (ec%bs)SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ec=%D bs=%D",ec,bs);
     ierr = PetscInfo(mat,"Using block index set to define scatter\n");
     ierr = PetscMalloc(iec*sizeof(PetscInt),&ga);CHKERRQ(ierr);
     for (i=0; i<iec; i++) ga[i] = garray[i*bs]/bs;

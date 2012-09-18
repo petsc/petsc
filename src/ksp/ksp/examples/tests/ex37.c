@@ -70,7 +70,7 @@ int main(int argc,char **args)
     ierr = PetscSubcommSetTypeGeneral(psubcomm,color,subrank,duprank);CHKERRQ(ierr);
   } else if (type == PETSC_SUBCOMM_CONTIGUOUS){
     ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
-  } else if(type == PETSC_SUBCOMM_INTERLACED){
+  } else if (type == PETSC_SUBCOMM_INTERLACED){
     ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
   } else {
     SETERRQ1(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",type);

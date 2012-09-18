@@ -94,7 +94,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   //printf(" M N: %d %d; xm ym: %d %d; xs ys: %d %d\n",M,N,xm,ym,xs,ys);
   ierr = DMDAVecGetArray(da, b, &array); CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++){
-    for(i=xs; i<xs+xm; i++){
+    for (i=xs; i<xs+xm; i++){
       array[j][i] = -PetscCosScalar(uu*pi*((PetscReal)i+0.5)*Hx)*cos(tt*pi*((PetscReal)j+0.5)*Hy)*Hx*Hy;
     }
   }
@@ -134,7 +134,7 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ct
   HydHx = Hy/Hx;
   ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++){
-    for(i=xs; i<xs+xm; i++){
+    for (i=xs; i<xs+xm; i++){
       row.i = i; row.j = j;
       
       if (i==0 || j==0 || i==M-1 || j==N-1) {

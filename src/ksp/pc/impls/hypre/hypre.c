@@ -267,7 +267,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PC pc)
   ierr = PetscOptionsInt("-pc_hypre_euclid_levels","Number of levels of fill ILU(k)","None",jac->levels,&jac->levels,&flag);CHKERRQ(ierr);
   if (flag) {
     if (jac->levels < 0) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Number of levels %d must be nonegative",jac->levels);
-    ierr = PetscSNPrintf(levels,sizeof levels,"%D",jac->levels);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(levels,sizeof(levels),"%D",jac->levels);CHKERRQ(ierr);
     args[cnt++] = (char*)"-level"; args[cnt++] = levels;
   } 
   ierr = PetscOptionsBool("-pc_hypre_euclid_bj","Use block Jacobi ILU(k)","None",jac->bjilu,&jac->bjilu,PETSC_NULL);CHKERRQ(ierr);

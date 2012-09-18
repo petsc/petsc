@@ -34,7 +34,7 @@ PetscErrorCode MatStashSeqIJSetMultivalued_Private(MatStashSeqIJ stash, PetscBoo
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if(stash->n) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot change multivaluedness of an non-empty MatStash");
+  if (stash->n) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot change multivaluedness of an non-empty MatStash");
   stash->multivalued = multivalued;
   ierr = PetscHashIJSetMultivalued(stash->h,multivalued); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -48,7 +48,7 @@ PetscErrorCode MatStashSeqIJExtend_Private(MatStashSeqIJ stash, PetscInt len, co
   PetscInt       i;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  for(i = 0; i < len; ++i) {
+  for (i = 0; i < len; ++i) {
     key.i = ixidx[i];
     key.j = iyidx[i];
     ierr = PetscHashIJAdd(stash->h,key,stash->n); CHKERRQ(ierr);
@@ -65,21 +65,21 @@ PetscErrorCode MatStashSeqIJGetIndices_Private(MatStashSeqIJ stash, PetscInt *_l
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if(!_len && !_ixidx && !_iyidx) PetscFunctionReturn(0);
+  if (!_len && !_ixidx && !_iyidx) PetscFunctionReturn(0);
 
   len = stash->n;
-  if(_len) *_len = len;
+  if (_len) *_len = len;
 
-  if(!_ixidx && !_iyidx) PetscFunctionReturn(0);
+  if (!_ixidx && !_iyidx) PetscFunctionReturn(0);
 
-  if(_ixidx) {
-    if(!*_ixidx) {
+  if (_ixidx) {
+    if (!*_ixidx) {
       ierr = PetscMalloc(len*sizeof(PetscInt), _ixidx); CHKERRQ(ierr);
     }
     ixidx = *_ixidx;
   }
-  if(_iyidx) {
-    if(!*_iyidx) {
+  if (_iyidx) {
+    if (!*_iyidx) {
       ierr = PetscMalloc(len*sizeof(PetscInt), _iyidx); CHKERRQ(ierr);
     }
     iyidx = *_iyidx;
@@ -134,7 +134,7 @@ PetscErrorCode MatStashSeqIJSetPreallocation_Private(MatStashSeqIJ stash, PetscI
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscHashIJKeySize(stash->h,&s); CHKERRQ(ierr);
-  if(size < (PetscInt) s)
+  if (size < (PetscInt) s)
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot resize stash of size %D down to %D", s, size);
   ierr = PetscHashIJResize(stash->h,size); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -222,10 +222,10 @@ PetscErrorCode MatStashMPIIJExtend_Private(MatStashMPIIJ stash, PetscInt len, co
   PetscErrorCode ierr;
   PetscInt       i;
   PetscFunctionBegin;
-  for(i = 0; i < len; ++i) {
-    if(ixidx[i] >= stash->rmap->rstart && ixidx[i] < stash->rmap->rend) {
+  for (i = 0; i < len; ++i) {
+    if (ixidx[i] >= stash->rmap->rstart && ixidx[i] < stash->rmap->rend) {
       ierr = MatStashSeqIJExtend_Private(stash->astash,1,ixidx+i,iyidx+i); CHKERRQ(ierr);
-    } else if(ixidx[i] && ixidx[i] < stash->rmap->N) {
+    } else if (ixidx[i] && ixidx[i] < stash->rmap->N) {
       ierr = MatStashSeqIJExtend_Private(stash->bstash,1,ixidx+i,iyidx+i); CHKERRQ(ierr);      
     } else SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "I index %D at position %D is out of range [0,%D)", ixidx[i],i,stash->rmap->N);
   }
@@ -239,7 +239,7 @@ PetscErrorCode MatStashMPIIJGetIndices_Private(MatStashMPIIJ stash, PetscInt *_a
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if(!stash->assembled) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Indices requested from an unassembled stash");
+  if (!stash->assembled) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Indices requested from an unassembled stash");
   ierr = MatStashSeqIJGetIndices_Private(stash->astash, _alen,_aixidx, _aiyidx); CHKERRQ(ierr);
   ierr = MatStashSeqIJGetIndices_Private(stash->bstash, _blen,_bixidx, _biyidx); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -253,21 +253,21 @@ PetscErrorCode MatStashMPIIJGetIndicesMerged_Private(MatStashMPIIJ stash, PetscI
   PetscInt       len, alen, *aixidx = PETSC_NULL, *aiyidx = PETSC_NULL, blen, *bixidx = PETSC_NULL, *biyidx = PETSC_NULL;
 
   PetscFunctionBegin;
-  if(!stash->assembled) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Indices requested from an unassembled stash");
-  if(!_len && !_ixidx && !_iyidx) PetscFunctionReturn(0);
+  if (!stash->assembled) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Indices requested from an unassembled stash");
+  if (!_len && !_ixidx && !_iyidx) PetscFunctionReturn(0);
 
   ierr = MatStashMPIIJGetIndices_Private(stash, &alen, PETSC_NULL, PETSC_NULL, &blen, PETSC_NULL, PETSC_NULL); CHKERRQ(ierr);
   len = alen + blen;
-  if(_len) *_len = len;
+  if (_len) *_len = len;
 
-  if((!_ixidx && !_iyidx) || (!alen && !blen)) PetscFunctionReturn(0);
+  if ((!_ixidx && !_iyidx) || (!alen && !blen)) PetscFunctionReturn(0);
   
-  if(!_ixidx || !_iyidx) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Output arrays must be null or non-null together");
+  if (!_ixidx || !_iyidx) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Output arrays must be null or non-null together");
 
-  if(!alen) {
+  if (!alen) {
     /* Nothing to merge from the left, so get all of the indices from the right. */
     ierr = MatStashMPIIJGetIndices_Private(stash,PETSC_NULL,PETSC_NULL,PETSC_NULL,_len,_ixidx,_iyidx); CHKERRQ(ierr);
-  } else if(!blen) {
+  } else if (!blen) {
     /* Nothing to merge from the right, so get all of the indices from the left. */
     ierr = MatStashMPIIJGetIndices_Private(stash,_len,_ixidx,_iyidx,PETSC_NULL,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
   } else {
@@ -298,7 +298,7 @@ PetscErrorCode MatStashMPIIJAssemble_Private(MatStashMPIIJ stash)
   PetscInt       low, high, idx, lastidx, count, i, j;
 
   PetscFunctionBegin;
-  if(stash->assembled) PetscFunctionReturn(0);
+  if (stash->assembled) PetscFunctionReturn(0);
 
   /* Comm parameters */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -314,11 +314,11 @@ PetscErrorCode MatStashMPIIJAssemble_Private(MatStashMPIIJ stash)
   count   = 0;
   p       = 0;
   low = 0; high = size-1;
-  for(i = 0; i < len; ++i) {
+  for (i = 0; i < len; ++i) {
     idx = ixidx[i];
-    if(idx < 0 || idx >= stash->rmap->range[size]) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %D out of range [0,%D)", idx, stash->rmap->range[size]);
-    if(i) {
-      if(idx > lastidx) {
+    if (idx < 0 || idx >= stash->rmap->range[size]) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %D out of range [0,%D)", idx, stash->rmap->range[size]);
+    if (i) {
+      if (idx > lastidx) {
         /* lower bound is still valid, but the upper bound might not be.*/
         /*
          range is ordered, hence, is a subsequence of the integers.
@@ -333,7 +333,7 @@ PetscErrorCode MatStashMPIIJAssemble_Private(MatStashMPIIJ stash)
          */
         low = p; 
       }
-      if(idx < lastidx) {
+      if (idx < lastidx) {
         /* upper bound is still valid, but the lower bound might not be.*/
         /*
          range is ordered, hence, is a subsequence of the integers.
@@ -346,11 +346,11 @@ PetscErrorCode MatStashMPIIJAssemble_Private(MatStashMPIIJ stash)
          since idx < lastidx, idx is located no higher than p within range */
         high = p;
       }
-    }/* if(i) */
+    }/* if (i) */
     lastidx = idx;
     while((high) - (low) > 1) {
       p = (high+low)/2;
-      if(i < stash->rmap->range[p]) {
+      if (i < stash->rmap->range[p]) {
         high = p;
       }
       else {
@@ -359,7 +359,7 @@ PetscErrorCode MatStashMPIIJAssemble_Private(MatStashMPIIJ stash)
     }
     plengths[p]++; 
     owner[i] = p; 
-  }/* for(i=0; i < len; ++i) */
+  }/* for (i=0; i < len; ++i) */
 
   nsends = 0;  for (p=0; p<size; ++p) { nsends += (plengths[p] > 0);} 
     
@@ -397,7 +397,7 @@ PetscErrorCode MatStashMPIIJAssemble_Private(MatStashMPIIJ stash)
 
   /* Now pack the indices into the appropriate buffer segments. */
   count = 0;
-  for(i = 0; i < len; ++i) {
+  for (i = 0; i < len; ++i) {
     p = owner[count];
     /* All ixidx indices first, then all iyidx: a remnant of the code that handled both 1- and 2-index cases.*/
     sindices[2*sstarts[p]+plengths[p]]                           = ixidx[i];
@@ -421,7 +421,7 @@ PetscErrorCode MatStashMPIIJAssemble_Private(MatStashMPIIJ stash)
   /* Compute the offsets of the individual received segments in the unified index/value arrays. */
   ierr = PetscMalloc(sizeof(PetscMPIInt)*(nrecvs+1), &rstarts); CHKERRQ(ierr);
   rstarts[0] = 0;
-  for(j = 0; j < nrecvs; ++j) rstarts[j+1] = rstarts[j] + rlengths[j];
+  for (j = 0; j < nrecvs; ++j) rstarts[j+1] = rstarts[j] + rlengths[j];
 
 
   /*  Wait on index receives and insert them the received indices into the local stash, as necessary. */

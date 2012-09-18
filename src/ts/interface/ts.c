@@ -3232,7 +3232,7 @@ PetscErrorCode TSMonitorSolutionVTK(TS ts,PetscInt step,PetscReal ptime,Vec x,vo
   PetscViewer    viewer;
 
   PetscFunctionBegin;
-  ierr = PetscSNPrintf(filename,sizeof filename,(const char*)filenametemplate,step);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof(filename),(const char*)filenametemplate,step);CHKERRQ(ierr);
   ierr = PetscViewerVTKOpen(((PetscObject)ts)->comm,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = VecView(x,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

@@ -69,16 +69,16 @@
       ki = 2
       call PetscOptionsGetRealArray(PETSC_NULL_CHARACTER,'-blob_center',
      $     blb,ki,flg,ierr)
-      if( .not. flg ) then
+      if ( .not. flg ) then
          blb(1) = 0.d0
          blb(2) = 0.d0
-      else if( ki .ne. 2 ) then
+      else if ( ki .ne. 2 ) then
          print *, 'error: ', ki,
      $        ' arguments read for -blob_center.  Needs to be two.'
       endif
       call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-out_matlab',
      $     out_matlab,flg,ierr)
-      if(.not.flg) out_matlab = PETSC_FALSE;
+      if (.not.flg) out_matlab = PETSC_FALSE;
 
       ev(1) = 1.d0
       ev(2) = eps*ev(1)
@@ -90,7 +90,7 @@
 !  be specified at runtime.
       call MatCreate(PETSC_COMM_WORLD,Amat,ierr)
       call MatSetSizes( Amat,PETSC_DECIDE, PETSC_DECIDE, M, M, ierr )
-      if( npe == 1 ) then
+      if ( npe == 1 ) then
          call MatSetType( Amat, MATAIJ, ierr )
       else
          call MatSetType( Amat, MATMPIAIJ, ierr )
@@ -117,7 +117,7 @@
       do geq=Istart,Iend-1,1
          qj = geq/(ne+1); qi = mod(geq,(ne+1))
          x = h*qi - 1.d0; y = h*qj - 1.d0 ! lower left corner (-1,-1)
-         if( qi < ne .and. qj < ne ) then
+         if ( qi < ne .and. qj < ne ) then
             coord(1,1) = x;   coord(2,1) = y 
             coord(1,2) = x+h; coord(2,2) = y 
             coord(1,3) = x+h; coord(2,3) = y+h 
@@ -146,13 +146,13 @@ c     Compute tangent
 
             idx(1) = geq; idx(2) = geq+1; idx(3) = geq+(ne+1)+1
             idx(4) = geq+(ne+1)
-            if( qj > 0 ) then
+            if ( qj > 0 ) then
                call MatSetValues(Amat,4,idx,4,idx,ss,ADD_VALUES,ierr)
             else                !     a BC 
                do ki=1,4,1
                   do kj=1,4,1
-                     if(ki<3 .or. kj<3 ) then
-                        if( ki==kj ) then
+                     if (ki<3 .or. kj<3 ) then
+                        if ( ki==kj ) then
                            ss(ki,kj) = .1d0*ss(ki,kj)
                         else
                            ss(ki,kj) = 0.d0
@@ -163,7 +163,7 @@ c     Compute tangent
                call MatSetValues(Amat,4,idx,4,idx,ss,ADD_VALUES,ierr)
             endif               ! BC
          endif                  ! add element
-         if( qj > 0 ) then      ! set rhs
+         if ( qj > 0 ) then      ! set rhs
 
             val = h*h*exp(-1.d2*((x+h/2)-blb(1))**2)*
      $           exp(-1.d2*((y+h/2)-blb(2))**2)
@@ -206,7 +206,7 @@ c     Compute tangent
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                      output
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-      if( out_matlab ) then
+      if ( out_matlab ) then
          call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Amat',
      $        FILE_MODE_WRITE,viewer,ierr)
          call MatView(Amat,viewer,ierr)
@@ -230,7 +230,7 @@ c     Compute tangent
          call VecView(uvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
 
-         if( mype == 0 ) then
+         if ( mype == 0 ) then
             open(1,file="ex54f.m", FORM="formatted")
             write (1,*) "A = PetscBinaryRead('Amat');"
             write (1,*) "[m n] = size(A);"
@@ -362,7 +362,7 @@ c     Compute jacobian (times 16)
 c     Divide jacobian by 16 (multiply by .0625)
 
       xsj = 0.0625d0*xsj1
-      if(xsj1.eq.0.0d0) then
+      if (xsj1.eq.0.0d0) then
          xsj1 = 1.0d0
       else
          xsj1 = 1.0d0/xsj1
@@ -441,8 +441,8 @@ c     2x2 integration
       PetscReal x,y,theta
       common /ex54_theta/ theta 
       ex54_psi = theta
-      if( theta < 0. ) then     ! circular
-         if(y==0) then
+      if ( theta < 0. ) then     ! circular
+         if (y==0) then
             ex54_psi = 2.d0*atan(1.d0)
          else
             ex54_psi = atan(-x/y)

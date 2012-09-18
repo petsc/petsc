@@ -321,7 +321,7 @@ static PetscErrorCode MatNestGetRow(Mat A,PetscInt row,Mat *B)
 
   PetscFunctionBegin;
   *B = PETSC_NULL;
-  ierr = PetscSNPrintf(keyname,sizeof keyname,"NestRow_%D",row);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(keyname,sizeof(keyname),"NestRow_%D",row);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)A,keyname,(PetscObject*)B);CHKERRQ(ierr);
   if (*B) PetscFunctionReturn(0);
 
@@ -607,8 +607,8 @@ static PetscErrorCode MatView_Nest(Mat A,PetscViewer viewer)
         }
         ierr = MatGetSize(bA->m[i][j],&NR,&NC);CHKERRQ(ierr);
         ierr = MatGetType( bA->m[i][j], &type );CHKERRQ(ierr);
-        if (((PetscObject)bA->m[i][j])->name) {ierr = PetscSNPrintf(name,sizeof name,"name=\"%s\", ",((PetscObject)bA->m[i][j])->name);CHKERRQ(ierr);}
-        if (((PetscObject)bA->m[i][j])->prefix) {ierr = PetscSNPrintf(prefix,sizeof prefix,"prefix=\"%s\", ",((PetscObject)bA->m[i][j])->prefix);CHKERRQ(ierr);}
+        if (((PetscObject)bA->m[i][j])->name) {ierr = PetscSNPrintf(name,sizeof(name),"name=\"%s\", ",((PetscObject)bA->m[i][j])->name);CHKERRQ(ierr);}
+        if (((PetscObject)bA->m[i][j])->prefix) {ierr = PetscSNPrintf(prefix,sizeof(prefix),"prefix=\"%s\", ",((PetscObject)bA->m[i][j])->prefix);CHKERRQ(ierr);}
         ierr = PetscObjectTypeCompare((PetscObject)bA->m[i][j],MATNEST,&isNest);CHKERRQ(ierr);
 
         ierr = PetscViewerASCIIPrintf(viewer,"(%D,%D) : %s%stype=%s, rows=%D, cols=%D \n",i,j,name,prefix,type,NR,NC);CHKERRQ(ierr);
@@ -1116,7 +1116,7 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
       union {char padding[sizeof(PetscScalar)]; PetscInt integer;} *x;
       Mat sub;
 
-      if (sizeof (*x) != sizeof(PetscScalar)) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"No support when scalars smaller than integers");
+      if (sizeof(*x) != sizeof(PetscScalar)) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"No support when scalars smaller than integers");
       if (colflg) {
         ierr = MatNestFindNonzeroSubMatRow(A,i,&sub);CHKERRQ(ierr);
       } else {
@@ -1422,14 +1422,14 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *new
       ierr = PetscSFCreate(((PetscObject)A)->comm, &bmsf);       CHKERRQ(ierr);
       ierr = PetscMalloc(2*bm*sizeof(PetscSFNode),&bmedges);     CHKERRQ(ierr);
       ierr = PetscMalloc(2*bm*sizeof(PetscInt),&bmdnnz);         CHKERRQ(ierr);
-      for(k = 0; k < 2*bm; ++k) bmdnnz[k] = 0;
+      for (k = 0; k < 2*bm; ++k) bmdnnz[k] = 0;
       bmonnz = bmdnnz+bm;
       /*
        Locate the owners for all of the locally-owned global row indices for this row block.
        These determine the roots of PetscSF used to communicate preallocation data to row owners.
        The roots correspond to the dnnz and onnz entries; thus, there are two roots per row.
        */
-      for(br = 0; br < bm; ++br) {
+      for (br = 0; br < bm; ++br) {
         PetscInt row = bmindices[br], rowowner = 0, brncols, col, colowner = 0;
         const PetscInt *brcols;
         PetscInt rowrel = 0;/* row's relative index on its owner rank */
@@ -1481,7 +1481,7 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *new
       if (!B) continue;
       ierr = ISGetLocalSize(nest->isglobal.row[i],&bm);      CHKERRQ(ierr);
       ierr = ISGetIndices(nest->isglobal.row[i],&bmindices); CHKERRQ(ierr);
-      for(br = 0; br < bm; ++br) {
+      for (br = 0; br < bm; ++br) {
         PetscInt row = bmindices[br], brncols,  *cols;
         const PetscInt *brcols;
         const PetscScalar *brcoldata;

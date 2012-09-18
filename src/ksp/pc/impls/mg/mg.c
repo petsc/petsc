@@ -421,7 +421,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
 
         PetscFunctionBegin;
         ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-        for(st = 0; st < stageLog->numStages; ++st) {
+        for (st = 0; st < stageLog->numStages; ++st) {
           PetscBool same;
 
           ierr = PetscStrcmp(stageLog->stageInfo[st].name, sname, &same);CHKERRQ(ierr);

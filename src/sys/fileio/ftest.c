@@ -47,7 +47,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   }
 #else
   if (m == X_OK) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Unable to check execute permission for file %s", fname);
-  if(!_access(fname, m)) *flg = PETSC_TRUE;
+  if (!_access(fname, m)) *flg = PETSC_TRUE;
 #endif
   PetscFunctionReturn(0);
 }
@@ -92,7 +92,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   } else {
     int g;
 
-    for(g = 0; g <= numGroups; g++) {
+    for (g = 0; g <= numGroups; g++) {
       if (fgid == gid[g]) {
         rbit = S_IRGRP;
         wbit = S_IWGRP;

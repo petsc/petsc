@@ -265,7 +265,7 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im
   PetscInt        cend=baij->rendbs,bs=mat->rmap->bs,bs2=baij->bs2;
 
   PetscFunctionBegin;  
-  if(!barray) {
+  if (!barray) {
     ierr         = PetscMalloc(bs2*sizeof(MatScalar),&barray);CHKERRQ(ierr);
     baij->barray = barray;
   }
@@ -290,7 +290,7 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im
         /* If NumCol = 1 then a copy is not required */
         if ((roworiented) && (n == 1)) {
           barray = (MatScalar*) v + i*bs2;
-        } else if((!roworiented) && (m == 1)) {
+        } else if ((!roworiented) && (m == 1)) {
           barray = (MatScalar*) v + j*bs2;
         } else { /* Here a copy is required */
           if (roworiented) { 
@@ -390,7 +390,7 @@ PetscErrorCode MatGetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt idxm[],Pe
 #else
           data = baij->colmap[idxn[j]/bs]-1;
 #endif
-          if((data < 0) || (baij->garray[data/bs] != idxn[j]/bs)) *(v+i*n+j) = 0.0;
+          if ((data < 0) || (baij->garray[data/bs] != idxn[j]/bs)) *(v+i*n+j) = 0.0;
           else {
             col  = data + idxn[j]%bs;
             ierr = MatGetValues_SeqBAIJ(baij->B,1,&row,1,&col,v+i*n+j);CHKERRQ(ierr);

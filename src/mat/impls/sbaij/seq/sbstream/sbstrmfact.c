@@ -571,7 +571,7 @@ PetscErrorCode SeqSBSTRM_convertFact_sbstrm(Mat F)
   blen = ai[m]-ai[0];
   slen = blen*cbs;
 
-  if(sbstrm->as) {
+  if (sbstrm->as) {
       ierr = PetscFree(sbstrm->as);CHKERRQ(ierr);
   }
   ierr = PetscMalloc(bs2*ai[m]*sizeof(MatScalar), &sbstrm->as);CHKERRQ(ierr);
@@ -583,9 +583,9 @@ PetscErrorCode SeqSBSTRM_convertFact_sbstrm(Mat F)
   asu = sbstrm->as + ai[0]*bs2;
   aau = aa         + ai[0]*bs2;
 
-  for(i=0;i<rbs;i++) asp[i] = asu + i*slen;
+  for (i=0;i<rbs;i++) asp[i] = asu + i*slen;
 
-  for(j=0;j<blen;j++) {
+  for (j=0;j<blen;j++) {
      for (jb=0; jb<cbs; jb++){
      for (ib=0; ib<rbs; ib++){
          asp[ib][j*cbs+jb] = aau[j*bs2+jb*rbs+ib];

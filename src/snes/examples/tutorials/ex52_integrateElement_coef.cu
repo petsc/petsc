@@ -127,15 +127,15 @@ __global__ void integrateElementCoefQuadrature(int N_cb, realType *coefficients,
     phiDer_i[tidx] = BasisDerivatives_0[tidx];
   }
 
-  for(int batch = 0; batch < N_cb; ++batch) {
+  for (int batch = 0; batch < N_cb; ++batch) {
     /* Load geometry */
     detJ[tidx] = jacobianDeterminants[Goffset+batch*N_bc+tidx];
-    for(int n = 0; n < dim*dim; ++n) {
+    for (int n = 0; n < dim*dim; ++n) {
       const int offset = n*N_t;
       invJ[offset+tidx] = jacobianInverses[(Goffset+batch*N_bc)*dim*dim+offset+tidx];
     }
     /* Load coefficients u_i for this cell */
-    for(int n = 0; n < N_bt; ++n) {
+    for (int n = 0; n < N_bt; ++n) {
       const int offset = n*N_t;
       u_i[offset+tidx] = coefficients[Coffset+batch*N_t*N_b+offset+tidx];
     }
@@ -143,14 +143,14 @@ __global__ void integrateElementCoefQuadrature(int N_cb, realType *coefficients,
     kappa = physCoefficients[Poffset+batch*N_t*N_q+tidx];
 
     /* Map coefficients to values at quadrature points */
-    for(int c = 0; c < N_sqc; ++c) {
+    for (int c = 0; c < N_sqc; ++c) {
       realType  u[N_comp];     // $u(x_q)$, Value of the field at $x_q$
       vecType   gradU[N_comp]; // $\nabla u(x_q)$, Value of the field gradient at $x_q$
    // vecType   x             = {0.0, 0.0};           // Quadrature point $x_q$
       const int cell          = c*N_bl*N_b + blqidx;
       const int fidx          = (cell*N_q + qidx)*N_comp + cidx;
 
-      for(int comp = 0; comp < N_comp; ++comp) {
+      for (int comp = 0; comp < N_comp; ++comp) {
         //u[comp] = 0.0;
 #if SPATIAL_DIM_0 == 2
         gradU[comp].x = 0.0; gradU[comp].y = 0.0;
@@ -159,8 +159,8 @@ __global__ void integrateElementCoefQuadrature(int N_cb, realType *coefficients,
 #endif
       }
       /* Get field and derivatives at this quadrature point */
-      for(int i = 0; i < N_b; ++i) {
-        for(int comp = 0; comp < N_comp; ++comp) {
+      for (int i = 0; i < N_b; ++i) {
+        for (int comp = 0; comp < N_comp; ++comp) {
           const int b     = i*N_comp+comp;
           const int pidx  = qidx*N_bt + b;
           const int uidx  = cell*N_bt + b;
@@ -195,11 +195,11 @@ __global__ void integrateElementCoefQuadrature(int N_cb, realType *coefficients,
     __syncthreads();
 
     /* Map values at quadrature points to coefficients */
-    for(int c = 0; c < N_sbc; ++c) {
+    for (int c = 0; c < N_sbc; ++c) {
       const int cell = c*N_bl*N_q + blbidx;
 
       e_i = 0.0;
-      for(int q = 0; q < N_q; ++q) {
+      for (int q = 0; q < N_q; ++q) {
         const int pidx = q*N_bt + bidx;
         const int fidx = (cell*N_q + q)*N_comp + cidx;
         vecType realSpaceDer;
@@ -260,7 +260,7 @@ PetscErrorCode calculateGridCoef(const int N, const int blockSize, unsigned int&
   z = 1;
   if (N % blockSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid block size %d for %d elements", blockSize, N);
   const int Nblocks = N/blockSize;
-  for(x = (int) (sqrt(Nblocks) + 0.5); x > 0; --x) {
+  for (x = (int) (sqrt(Nblocks) + 0.5); x > 0; --x) {
     y = Nblocks/x;
     if (x*y == Nblocks) break;
   }
@@ -341,10 +341,10 @@ PetscErrorCode IntegrateElementCoefBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt 
     PetscInt  i;
 
     ierr = PetscMalloc4(Ne*N_bt,realType,&c,Ne*N_q,realType,&pc,Ne*dim*dim,realType,&jI,Ne,realType,&jD);CHKERRQ(ierr);
-    for(i = 0; i < Ne*N_bt;    ++i) {c[i]  = coefficients[i];}
-    for(i = 0; i < Ne*N_q;     ++i) {pc[i] = physCoefficients[i];}
-    for(i = 0; i < Ne*dim*dim; ++i) {jI[i] = jacobianInverses[i];}
-    for(i = 0; i < Ne;         ++i) {jD[i] = jacobianDeterminants[i];}
+    for (i = 0; i < Ne*N_bt;    ++i) {c[i]  = coefficients[i];}
+    for (i = 0; i < Ne*N_q;     ++i) {pc[i] = physCoefficients[i];}
+    for (i = 0; i < Ne*dim*dim; ++i) {jI[i] = jacobianInverses[i];}
+    for (i = 0; i < Ne;         ++i) {jD[i] = jacobianDeterminants[i];}
     ierr = cudaMemcpy(d_coefficients,         c,  Ne*N_bt    * sizeof(realType), cudaMemcpyHostToDevice);CHKERRQ(ierr);
     ierr = cudaMemcpy(d_physCoefficients,     pc, Ne*N_q     * sizeof(realType), cudaMemcpyHostToDevice);CHKERRQ(ierr);
     ierr = cudaMemcpy(d_jacobianInverses,     jI, Ne*dim*dim * sizeof(realType), cudaMemcpyHostToDevice);CHKERRQ(ierr);
@@ -382,7 +382,7 @@ PetscErrorCode IntegrateElementCoefBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt 
 
     ierr = PetscMalloc(Ne*N_bt * sizeof(realType), &eV);CHKERRQ(ierr);
     ierr = cudaMemcpy(eV, d_elemVec, Ne*N_bt * sizeof(realType), cudaMemcpyDeviceToHost);CHKERRQ(ierr);
-    for(i = 0; i < Ne*N_bt; ++i) {elemVec[i] = eV[i];}
+    for (i = 0; i < Ne*N_bt; ++i) {elemVec[i] = eV[i];}
     ierr = PetscFree(eV);CHKERRQ(ierr);
   }
   ierr = cudaFree(d_coefficients);CHKERRQ(ierr);

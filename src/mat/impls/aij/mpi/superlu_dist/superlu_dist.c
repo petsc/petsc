@@ -548,7 +548,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
   
     lu->MatInputMode = DISTRIBUTED;
     ierr = PetscOptionsEnum("-mat_superlu_dist_matinput","Matrix input mode (global or distributed)","None",SuperLU_MatInputModes,(PetscEnum)lu->MatInputMode,(PetscEnum*)&lu->MatInputMode,PETSC_NULL);CHKERRQ(ierr);
-    if(lu->MatInputMode == DISTRIBUTED && size == 1) lu->MatInputMode = GLOBAL;
+    if (lu->MatInputMode == DISTRIBUTED && size == 1) lu->MatInputMode = GLOBAL;
 
     ierr = PetscOptionsBool("-mat_superlu_dist_equil","Equilibrate matrix","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr); 
     if (!flg) {

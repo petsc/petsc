@@ -1207,7 +1207,7 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
     ierr = PetscOptionsBool("-ts_gl_extrapolate","Extrapolate stage solution from previous solution (sometimes unstable)","TSGLSetExtrapolate",gl->extrapolate,&gl->extrapolate,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_gl_atol","Absolute tolerance","TSGLSetTolerances",gl->wrms_atol,&gl->wrms_atol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_gl_rtol","Relative tolerance","TSGLSetTolerances",gl->wrms_rtol,&gl->wrms_rtol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-ts_gl_complete","Method to use for completing the step","none",completef,completef,sizeof completef,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-ts_gl_complete","Method to use for completing the step","none",completef,completef,sizeof(completef),&flg);CHKERRQ(ierr);
     if (flg) {
       PetscBool  match1,match2;
       ierr = PetscStrcmp(completef,"rescale",&match1);CHKERRQ(ierr);
@@ -1218,7 +1218,7 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
     }
     {
       char type[256] = TSGLACCEPT_ALWAYS;
-      ierr = PetscOptionsList("-ts_gl_accept_type","Method to use for determining whether to accept a step","TSGLSetAcceptType",TSGLAcceptList,gl->accept_name[0]?gl->accept_name:type,type,sizeof type,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsList("-ts_gl_accept_type","Method to use for determining whether to accept a step","TSGLSetAcceptType",TSGLAcceptList,gl->accept_name[0]?gl->accept_name:type,type,sizeof(type),&flg);CHKERRQ(ierr);
       if (flg || !gl->accept_name[0]) {
         ierr = TSGLSetAcceptType(ts,type);CHKERRQ(ierr);
       }

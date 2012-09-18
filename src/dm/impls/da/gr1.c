@@ -71,7 +71,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
     else                              hz_ = (zmax-zmin)/(P ? P : 1);
     switch (dim) {
     case 1:
-      for(i = 0; i < isize+1; ++i) {
+      for (i = 0; i < isize+1; ++i) {
         PetscInt v = i+vStart, dof, off;
 
         ierr = PetscSectionGetDof(csection, v, &dof);CHKERRQ(ierr);
@@ -82,8 +82,8 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
       }
       break;
     case 2:
-      for(j = 0; j < jsize+1; ++j) {
-        for(i = 0; i < isize+1; ++i) {
+      for (j = 0; j < jsize+1; ++j) {
+        for (i = 0; i < isize+1; ++i) {
           PetscInt v = j*(isize+1)+i+vStart, dof, off;
 
           ierr = PetscSectionGetDof(csection, v, &dof);CHKERRQ(ierr);
@@ -96,9 +96,9 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
       }
       break;
     case 3:
-      for(k = 0; k < ksize+1; ++k) {
-        for(j = 0; j < jsize+1; ++j) {
-          for(i = 0; i < isize+1; ++i) {
+      for (k = 0; k < ksize+1; ++k) {
+        for (j = 0; j < jsize+1; ++j) {
+          for (i = 0; i < isize+1; ++i) {
             PetscInt v = (k*(jsize+1)+j)*(isize+1)+i+vStart, dof, off;
 
             ierr = PetscSectionGetDof(csection, v, &dof);CHKERRQ(ierr);

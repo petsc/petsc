@@ -467,7 +467,7 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
   ierr = cudaEventCreate( &stop );CHKERRQ(ierr);  /* gpu timer facility */
 
   scalar=3.0f;
-  for(k = 0; k < NTIMES; ++k) {
+  for (k = 0; k < NTIMES; ++k) {
     PetscTimeSubtract(cpuTimer);
     ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
     STREAM_Copy<<<dimGrid,dimBlock>>>(d_a, d_c, N);
@@ -736,7 +736,7 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
   ierr = cudaEventCreate( &stop );CHKERRQ(ierr);  /* gpu timer facility */
 
   scalar=3.0;
-  for(k = 0; k < NTIMES; ++k) {
+  for (k = 0; k < NTIMES; ++k) {
     PetscTimeSubtract(cpuTimer);
     ierr = cudaEventRecord( start, 0 );CHKERRQ(ierr);
     STREAM_Copy_double<<<dimGrid,dimBlock>>>(d_a, d_c, N);
@@ -991,8 +991,8 @@ PetscErrorCode printResultsReadable(float times[][NTIMES]) {
 
   PetscFunctionBegin;
   /* --- SUMMARY --- */
-  for(k = 1; k < NTIMES; ++k) { /* note -- skip first iteration */
-    for(j = 0; j < 8; ++j) {
+  for (k = 1; k < NTIMES; ++k) { /* note -- skip first iteration */
+    for (j = 0; j < 8; ++j) {
       avgtime[j] = avgtime[j] + (1.e-03f * times[j][k]);
       mintime[j] = MIN(mintime[j], (1.e-03f * times[j][k]));
       maxtime[j] = MAX(maxtime[j], (1.e-03f * times[j][k]));
@@ -1001,7 +1001,7 @@ PetscErrorCode printResultsReadable(float times[][NTIMES]) {
 
   ierr = PetscPrintf(PETSC_COMM_SELF, "Function    Rate (MB/s)    Avg time      Min time      Max time\n");CHKERRQ(ierr);
 
-  for(j = 0; j < 8; ++j) {
+  for (j = 0; j < 8; ++j) {
      avgtime[j] = avgtime[j]/(float)(NTIMES-1);
      ierr = PetscPrintf(PETSC_COMM_SELF, "%s%11.4f  %11.6f  %12.6f  %12.6f\n", label[j], 1.0E-06 * bytes_per_kernel[j]/mintime[j], avgtime[j], mintime[j], maxtime[j]);CHKERRQ(ierr);
   }

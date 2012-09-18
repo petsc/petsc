@@ -81,10 +81,10 @@ PetscErrorCode MatConvertToTriples_seqaij_seqaij(Mat A,int shift,MatReuse reuse,
     col  = row + nz;
 
     nz = 0;
-    for(i=0; i<M; i++) {
+    for (i=0; i<M; i++) {
       rnz = ai[i+1] - ai[i];
       ajj = aj + ai[i];
-      for(j=0; j<rnz; j++) {
+      for (j=0; j<rnz; j++) {
 	row[nz] = i+shift; col[nz++] = ajj[j] + shift;
       }
     } 
@@ -112,12 +112,12 @@ PetscErrorCode MatConvertToTriples_seqbaij_seqaij(Mat A,int shift,MatReuse reuse
     ierr = PetscMalloc(2*nz*sizeof(PetscInt), &row);CHKERRQ(ierr);
     col  = row + nz;
 
-    for(i=0; i<M; i++) {
+    for (i=0; i<M; i++) {
       ajj = aj + ai[i];
       rnz = ai[i+1] - ai[i];
-      for(k=0; k<rnz; k++) {
-	for(j=0; j<bs; j++) {
-	  for(m=0; m<bs; m++) {
+      for (k=0; k<rnz; k++) {
+	for (j=0; j<bs; j++) {
+	  for (m=0; m<bs; m++) {
 	    row[idx]     = i*bs + m + shift;
 	    col[idx++]   = bs*(ajj[k]) + j + shift;
 	  }
@@ -148,10 +148,10 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,int shift,MatReuse re
     col  = row + nz;
 
     nz = 0;
-    for(i=0; i<M; i++) {
+    for (i=0; i<M; i++) {
       rnz = ai[i+1] - ai[i];
       ajj = aj + ai[i];
-      for(j=0; j<rnz; j++) {
+      for (j=0; j<rnz; j++) {
 	row[nz] = i+shift; col[nz++] = ajj[j] + shift;
       }
     } 
@@ -183,22 +183,22 @@ PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A,int shift,MatReuse reus
     val  = (PetscScalar*)(col + nz);
 
     nz = 0;
-    for(i=0; i<M; i++) {
+    for (i=0; i<M; i++) {
       rnz = ai[i+1] - adiag[i];
       ajj  = aj + adiag[i];
       v1   = av + adiag[i];
-      for(j=0; j<rnz; j++) {
+      for (j=0; j<rnz; j++) {
 	row[nz] = i+shift; col[nz] = ajj[j] + shift; val[nz++] = v1[j];
       }
     } 
     *r = row; *c = col; *v = val;
   } else {
     nz = 0; val = *v;
-    for(i=0; i <M; i++) {
+    for (i=0; i <M; i++) {
       rnz = ai[i+1] - adiag[i];
       ajj = aj + adiag[i];
       v1  = av + adiag[i];
-      for(j=0; j<rnz; j++) {
+      for (j=0; j<rnz; j++) {
 	val[nz++] = v1[j];
       }
     }
@@ -255,7 +255,7 @@ PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij(Mat A,int shift,MatReuse re
     }
 
     /* B-part */
-    for(j=0; j < countB; j++){
+    for (j=0; j < countB; j++){
       if (reuse == MAT_INITIAL_MATRIX) {
 	row[jj] = irow + shift; col[jj] = garray[bjj[j]] + shift;
       }
@@ -315,7 +315,7 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpiaij(Mat A,int shift,MatReuse reuse,
     }
 
     /* B-part */
-    for(j=0; j < countB; j++){
+    for (j=0; j < countB; j++){
       if (reuse == MAT_INITIAL_MATRIX){
 	row[jj] = irow + shift; col[jj] = garray[bjj[j]] + shift;
       }
@@ -381,7 +381,7 @@ PetscErrorCode MatConvertToTriples_mpibaij_mpiaij(Mat A,int shift,MatReuse reuse
 
     idx = 0;
     /* B-part */
-    for(k=0; k<countB; k++){
+    for (k=0; k<countB; k++){
       for (j=0; j<bs; j++) {
 	for (n=0; n<bs; n++) {
 	  if (reuse == MAT_INITIAL_MATRIX){
@@ -420,7 +420,7 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A,int shift,MatReuse reus
   if (reuse == MAT_INITIAL_MATRIX) {
     nza = 0;    /* num of upper triangular entries in mat->A, including diagonals */
     nzb = 0;    /* num of upper triangular entries in mat->B */ 
-    for(i=0; i<m; i++){
+    for (i=0; i<m; i++){
       nza    += (ai[i+1] - adiag[i]); 
       countB  = bi[i+1] - bi[i]; 
       bjj     = bj + bi[i];
@@ -458,7 +458,7 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A,int shift,MatReuse reus
     }
 
     /* B-part */
-    for(j=0; j < countB; j++){
+    for (j=0; j < countB; j++){
       if (garray[bjj[j]] > rstart) {
 	if (reuse == MAT_INITIAL_MATRIX) {
 	  row[jj] = irow + shift; col[jj] = garray[bjj[j]] + shift;
@@ -645,7 +645,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
   /* numerical factorization phase */
   /*-------------------------------*/
   lu->id.job = JOB_FACTNUMERIC;
-  if(!lu->id.ICNTL(18)) { 
+  if (!lu->id.ICNTL(18)) { 
     if (!lu->myid) {
 #if defined(PETSC_USE_COMPLEX)
       lu->id.a = (mumps_double_complex*)lu->val; 
@@ -673,7 +673,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
 
   if (lu->size > 1){
     ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isMPIAIJ);CHKERRQ(ierr);
-    if(isMPIAIJ) {
+    if (isMPIAIJ) {
       F_diag = ((Mat_MPIAIJ *)(F)->data)->A;
     } else {
       F_diag = ((Mat_MPISBAIJ *)(F)->data)->A;
@@ -1361,7 +1361,7 @@ PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   PetscFunctionBegin;
   if (ftype != MAT_FACTOR_CHOLESKY) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with MUMPS LU, use AIJ matrix");
-  if(A->rmap->bs > 1) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with block size > 1 with MUMPS Cholesky, use AIJ matrix instead"); 
+  if (A->rmap->bs > 1) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with block size > 1 with MUMPS Cholesky, use AIJ matrix instead"); 
   ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
   /* Create the factorization matrix */ 
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);

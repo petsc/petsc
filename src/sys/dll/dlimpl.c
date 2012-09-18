@@ -273,7 +273,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
 #if defined(PETSC_HAVE_RTLD_LOCAL)
       dlflags2 = RTLD_LOCAL;
 #endif
-      if(!dlflags2) {
+      if (!dlflags2) {
 #if defined(PETSC_HAVE_RTLD_GLOBAL)
         dlflags2 = RTLD_GLOBAL;
 #endif

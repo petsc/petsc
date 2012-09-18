@@ -196,7 +196,7 @@ static PetscErrorCode InitializeShader(void)
   /* Compile the vertex shader */
   glCompileShader(vertexshader);
   glGetShaderiv(vertexshader, GL_COMPILE_STATUS, &isCompiled_VS);
-  if(isCompiled_VS == GL_FALSE) {
+  if (isCompiled_VS == GL_FALSE) {
     PetscErrorCode ierr;
     int            maxLength;
     char           *vertexInfoLog;
@@ -217,7 +217,7 @@ static PetscErrorCode InitializeShader(void)
   /* Compile the fragment shader */
   glCompileShader(fragmentshader);
   glGetShaderiv(fragmentshader, GL_COMPILE_STATUS, &isCompiled_FS);
-  if(isCompiled_FS == GL_FALSE) {
+  if (isCompiled_FS == GL_FALSE) {
     PetscErrorCode ierr;
     int            maxLength;
     char          *fragmentInfoLog;
@@ -254,7 +254,7 @@ static PetscErrorCode InitializeShader(void)
   /* too many texel fetch instructions or too many interpolators or dynamic loops. */
  
   glGetProgramiv(shaderprogram, GL_LINK_STATUS, &isLinked);
-  if(isLinked == GL_FALSE) {
+  if (isLinked == GL_FALSE) {
     /* 
     char          *shaderProgramInfoLog;
     glGetProgramiv(shaderprogram, GL_INFO_LOG_LENGTH, &maxLength);

@@ -433,7 +433,7 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
   ierr = MPI_Allgather(&napp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
 
   N = 0;
-  for(i = 0; i < size; i++) {
+  for (i = 0; i < size; i++) {
     disp[i] = N;
     N      += lens[i];
   } 

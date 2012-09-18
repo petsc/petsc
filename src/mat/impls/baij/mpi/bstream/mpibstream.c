@@ -43,7 +43,7 @@ PetscErrorCode MatMPIBSTRM_create_bstrm(Mat A)
 
   ierr  = PetscMalloc(rbs*sizeof(PetscScalar *), &asp);CHKERRQ(ierr);
 
-  for(i=0;i<rbs;i++) asp[i] = bstrmA->as + i*slen;
+  for (i=0;i<rbs;i++) asp[i] = bstrmA->as + i*slen;
 
   for (k=0; k<blen; k++) {
     for (j=0; j<cbs; j++)
@@ -75,7 +75,7 @@ PetscErrorCode MatMPIBSTRM_create_bstrm(Mat A)
 
   ierr  = PetscMalloc(rbs*sizeof(PetscScalar *), &bsp);CHKERRQ(ierr);
 
-  for(i=0;i<rbs;i++) bsp[i] = bstrmB->as + i*slen;
+  for (i=0;i<rbs;i++) bsp[i] = bstrmB->as + i*slen;
 
   for (k=0; k<blen; k++) {
     for (j=0; j<cbs; j++)

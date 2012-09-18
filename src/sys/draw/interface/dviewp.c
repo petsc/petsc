@@ -258,8 +258,8 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
   ierr = PetscMalloc(n*sizeof(PetscReal), &xr);CHKERRQ(ierr);(*ports)->xr = xr; 
   ierr = PetscMalloc(n*sizeof(PetscReal), &yl);CHKERRQ(ierr);(*ports)->yl = yl; 
   ierr = PetscMalloc(n*sizeof(PetscReal), &yr);CHKERRQ(ierr);(*ports)->yr = yr; 
-  for(i = 0; i < nx; i++) {
-    for(j = 0; j < ny; j++) {
+  for (i = 0; i < nx; i++) {
+    for (j = 0; j < ny; j++) {
       PetscInt k = j*nx+i;
 
       xl[k] = i*hx;

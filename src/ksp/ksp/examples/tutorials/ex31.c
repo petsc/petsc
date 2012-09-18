@@ -196,10 +196,10 @@ PetscErrorCode CalculateElementVelocity(DM da, UserContext *user)
   ierr = VecGetArray(user->sol_n.v, &v_n);CHKERRQ(ierr);
   ierr = PetscMalloc(ne*sizeof(PetscScalar),&u_phi);CHKERRQ(ierr);
   ierr = PetscMalloc(ne*sizeof(PetscScalar),&v_phi);CHKERRQ(ierr);
-  for(e = 0; e < ne; e++) {
+  for (e = 0; e < ne; e++) {
     u_phi[e] = 0.0;
     v_phi[e] = 0.0;
-    for(j = 0; j < 3; j++) {
+    for (j = 0; j < 3; j++) {
       u_phi[e] += u_n[necon[3*e+j]];
       v_phi[e] += v_n[necon[3*e+j]];
     }
@@ -262,9 +262,9 @@ PetscErrorCode TaylorGalerkinStepI(DM da, UserContext *user)
   ierr = VecGetArray(user->sol_phi.rho_u, &rho_u_phi);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_phi.rho_v, &rho_v_phi);CHKERRQ(ierr);
   ierr = DMDAGetElements(da, &ne, &nc, &necon);CHKERRQ(ierr);
-  for(e = 0; e < ne; e++) {
+  for (e = 0; e < ne; e++) {
     /* Average the existing fields over the element */
-    for(j = 0; j < 3; j++) {
+    for (j = 0; j < 3; j++) {
       idx[j] = necon[3*e+j];
       rho_phi[e]   += rho_n[idx[j]];
       rho_u_phi[e] += rho_u_n[idx[j]];
@@ -283,21 +283,21 @@ PetscErrorCode TaylorGalerkinStepI(DM da, UserContext *user)
     }
     /* Determine the convective fluxes for \rho^{n+\phi} */
     Fx_x = 0.0; Fy_y = 0.0;
-    for(j = 0; j < 3; j++) {
+    for (j = 0; j < 3; j++) {
       Fx_x += psi_x[j]*rho_u_n[idx[j]];
       Fy_y += psi_y[j]*rho_v_n[idx[j]];
     }
     rho_phi[e] -= phi_dt*(Fx_x + Fy_y);
     /* Determine the convective fluxes for (\rho u)^{n+\phi} */
     Fx_x = 0.0; Fy_y = 0.0;
-    for(j = 0; j < 3; j++) {
+    for (j = 0; j < 3; j++) {
       Fx_x += psi_x[j]*rho_u_n[idx[j]]*u_n[idx[j]];
       Fy_y += psi_y[j]*rho_v_n[idx[j]]*u_n[idx[j]];
     }
     rho_u_phi[e] -= phi_dt*(Fx_x + Fy_y);
     /* Determine the convective fluxes for (\rho v)^{n+\phi} */
     Fx_x = 0.0; Fy_y = 0.0;
-    for(j = 0; j < 3; j++) {
+    for (j = 0; j < 3; j++) {
       Fx_x += psi_x[j]*rho_u_n[idx[j]]*v_n[idx[j]];
       Fy_y += psi_y[j]*rho_v_n[idx[j]]*v_n[idx[j]];
     }
@@ -368,8 +368,8 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
   ierr = VecGetArray(user->sol_phi.rho_u, &rho_u_phi);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_phi.rho_v, &rho_v_phi);CHKERRQ(ierr);
   ierr = DMDAGetElements(da, &ne, &nc, &necon);CHKERRQ(ierr);
-  for(e = 0; e < ne; e++) {
-    for(j = 0; j < 3; j++) {
+  for (e = 0; e < ne; e++) {
+    for (j = 0; j < 3; j++) {
       idx[j] = necon[3*e+j];
       values_u[j] = 0.0;
       values_v[j] = 0.0;
@@ -383,12 +383,12 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
       psi_y[0] =  hx; psi_y[1] = 0.0; psi_y[2] = -hx;
     }
     /*  <\nabla\psi, F^{n+\phi}_e>: Divergence of the element-averaged convective fluxes */
-    for(j = 0; j < 3; j++) {
+    for (j = 0; j < 3; j++) {
       values_u[j] += psi_x[j]*rho_u_phi[e]*u_phi[e] + psi_y[j]*rho_u_phi[e]*v_phi[e];
       values_v[j] += psi_x[j]*rho_v_phi[e]*u_phi[e] + psi_y[j]*rho_v_phi[e]*v_phi[e];
     }
     /*  -<\nabla\psi, F^n_v>: Divergence of the viscous fluxes */
-    for(j = 0; j < 3; j++) {
+    for (j = 0; j < 3; j++) {
       /* \tau_{xx} = 2/3 \mu(T) (2 {\partial u\over\partial x} - {\partial v\over\partial y}) */
       /* \tau_{xy} =     \mu(T) (  {\partial u\over\partial y} + {\partial v\over\partial x}) */
       /* \tau_{yy} = 2/3 \mu(T) (2 {\partial v\over\partial y} - {\partial u\over\partial x}) */
@@ -396,7 +396,7 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
       tau_xx = 0.0;
       tau_xy = 0.0;
       tau_yy = 0.0;
-      for(k = 0; k < 3; k++) {
+      for (k = 0; k < 3; k++) {
         mu     += mu_n[idx[k]];
         tau_xx += 2.0*psi_x[k]*u_n[idx[k]] - psi_y[k]*v_n[idx[k]];
         tau_xy +=     psi_y[k]*u_n[idx[k]] + psi_x[k]*v_n[idx[k]];
@@ -505,8 +505,8 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
   ierr = VecGetArray(user->sol_np1.rho_u, &rho_u_np1);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_np1.rho_v, &rho_v_np1);CHKERRQ(ierr);
   ierr = DMDAGetElements(da, &ne, &nc, &necon);CHKERRQ(ierr);
-  for(e = 0; e < ne; e++) {
-    for(j = 0; j < 3; j++) {
+  for (e = 0; e < ne; e++) {
+    for (j = 0; j < 3; j++) {
       idx[j] = necon[3*e+j];
       values_m[j] = 0.0;
       values_e[j] = 0.0;
@@ -520,12 +520,12 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
       psi_y[0] =  hx; psi_y[1] = 0.0; psi_y[2] = -hx;
     }
     /*  <\nabla\psi, F^*>: Divergence of the predicted convective fluxes */
-    for(j = 0; j < 3; j++) {
+    for (j = 0; j < 3; j++) {
       values_m[j] += (psi_x[j]*(phi*rho_u_np1[idx[j]] + rho_u_n[idx[j]]) + psi_y[j]*(rho_v_np1[idx[j]] + rho_v_n[idx[j]]))/3.0;
       values_e[j] += values_m[j]*((rho_e_n[idx[j]] + p_n[idx[j]]) / rho_n[idx[j]]);
     }
     /*  -<\nabla\psi, F^n_v>: Divergence of the viscous fluxes */
-    for(j = 0; j < 3; j++) {
+    for (j = 0; j < 3; j++) {
       /* \tau_{xx} = 2/3 \mu(T) (2 {\partial u\over\partial x} - {\partial v\over\partial y}) */
       /* \tau_{xy} =     \mu(T) (  {\partial u\over\partial y} + {\partial v\over\partial x}) */
       /* \tau_{yy} = 2/3 \mu(T) (2 {\partial v\over\partial y} - {\partial u\over\partial x}) */
@@ -540,7 +540,7 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
       tau_xx = 0.0;
       tau_xy = 0.0;
       tau_yy = 0.0;
-      for(k = 0; k < 3; k++) {
+      for (k = 0; k < 3; k++) {
         mu     += mu_n[idx[k]];
         kappa  += kappa_n[idx[k]];
         tau_xx += 2.0*psi_x[k]*u_n[idx[k]] - psi_y[k]*v_n[idx[k]];

@@ -353,7 +353,7 @@ PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscIn
   /* since the xs, xe ... have all been multiplied by the number of degrees 
      of freedom per cell, w = dd->w, we divide that out before returning.*/
   w = dd->w;  
-  if (x) *x = dd->xs/w; if(m) *m = (dd->xe - dd->xs)/w;
+  if (x) *x = dd->xs/w; if (m) *m = (dd->xe - dd->xs)/w;
   /* the y and z have NOT been multiplied by w */
   if (y) *y = dd->ys;   if (n) *n = (dd->ye - dd->ys);
   if (z) *z = dd->zs;   if (p) *p = (dd->ze - dd->zs); 

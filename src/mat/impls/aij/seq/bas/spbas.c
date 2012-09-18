@@ -646,7 +646,7 @@ PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val)
    }
 
    ierr = PetscFree(ialloc);CHKERRQ(ierr);
-   if(val){ierr = PetscFree(valloc);CHKERRQ(ierr);}
+   if (val){ierr = PetscFree(valloc);CHKERRQ(ierr);}
    PetscFunctionReturn(0);
 }
 

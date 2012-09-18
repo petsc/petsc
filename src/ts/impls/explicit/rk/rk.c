@@ -216,7 +216,7 @@ static PetscErrorCode TSSetUp_RK(TS ts)
 
   /* making b2 -> e=b1-b2 */
   /*
-    for(i=0;i<rk->s;i++){
+    for (i=0;i<rk->s;i++){
      rk->b2[i] = (rk->b1[i]) - (rk->b2[i]);
   }
   */
@@ -257,12 +257,12 @@ PetscErrorCode TSRKqs(TS ts,PetscReal t,PetscReal h)
   ierr = TSComputeRHSFunction(ts,t,rk->y1,rk->k[0]);CHKERRQ(ierr);
   /* looping over runge-kutta variables */
   /* building the k - array of vectors */
-  for(j = 1 ; j < rk->s ; j++){
+  for (j = 1 ; j < rk->s ; j++){
 
      /* rk->tmp = 0 */
      ierr = VecSet(rk->tmp,0.0);CHKERRQ(ierr);
 
-     for(l=0;l<j;l++){
+     for (l=0;l<j;l++){
         /* tmp += a(j,l)*k[l] */
        ierr = VecAXPY(rk->tmp,rk->a[j][l],rk->k[l]);CHKERRQ(ierr);
      }
@@ -289,7 +289,7 @@ PetscErrorCode TSRKqs(TS ts,PetscReal t,PetscReal h)
   ierr = VecSet(rk->tmp,0.0);CHKERRQ(ierr);
   ierr = VecSet(rk->tmp_y,0.0);CHKERRQ(ierr);
 
-  for(j = 0 ; j < rk->s ; j++){
+  for (j = 0 ; j < rk->s ; j++){
      /* tmp=b1[j]*k[j]+tmp  */
     ierr = VecAXPY(rk->tmp,rk->b1[j],rk->k[j]);CHKERRQ(ierr);
      /* tmp_y=b2[j]*k[j]+tmp_y */

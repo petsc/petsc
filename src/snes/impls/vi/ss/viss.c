@@ -383,7 +383,7 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
   }
   if (i == maxits) {
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
-    if(!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
+    if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   sdm->computefunction = vi->computeuserfunction;
   PetscFunctionReturn(0);

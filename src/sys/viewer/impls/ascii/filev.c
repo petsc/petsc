@@ -820,7 +820,7 @@ PetscErrorCode PetscViewerGetSubcomm_ASCII(PetscViewer viewer,MPI_Comm subcomm,P
      will return the current viewer, having increfed it.
    */
   ierr         = PetscViewerASCIIOpen(subcomm,vascii->filename, outviewer);CHKERRQ(ierr);
-  if(*outviewer == viewer) PetscFunctionReturn(0);
+  if (*outviewer == viewer) PetscFunctionReturn(0);
   ovascii      = (PetscViewer_ASCII*)(*outviewer)->data;
 
   ovascii->tab = vascii->tab;

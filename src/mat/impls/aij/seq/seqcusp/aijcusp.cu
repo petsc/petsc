@@ -297,7 +297,7 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
           if (a->imax) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
           ierr = PetscMalloc2(m,PetscInt,&a->imax,m,PetscInt,&a->ilen);CHKERRQ(ierr);
           ierr = PetscLogObjectMemory(A, 2*m*sizeof(PetscInt));CHKERRQ(ierr);
-          for(i = 0; i < m; ++i) {
+          for (i = 0; i < m; ++i) {
             a->imax[i] = a->ilen[i] = a->i[i+1] - a->i[i];
           }
           /* a->diag?*/

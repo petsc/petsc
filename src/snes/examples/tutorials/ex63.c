@@ -259,7 +259,7 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
   ierr = VecGetArray(user->eta,&eta_p);CHKERRQ(ierr);
   
  
-  for(i=0;i<n;i++) {
+  for (i=0;i<n;i++) {
     wv_p[i] = xx[5*i];
     cv_p[i] = xx[5*i+1];
     wi_p[i] = xx[5*i+2];
@@ -661,7 +661,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   
  
-  for(i=xs; i < xs+xm;i++) {
+  for (i=xs; i < xs+xm;i++) {
     l[i][0] = -SNES_VI_INF;
     l[i][1] = 0.0;
     l[i][2] = -SNES_VI_INF;
@@ -772,8 +772,8 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
   /* Get local element info */
   ierr = DMDAGetElements(user->da1,&nele,&nen,&ele);CHKERRQ(ierr);
-  //for(i=0;i < nele + 1;i++) {
-  for(i=0;i < nele;i++) {
+  //for (i=0;i < nele + 1;i++) {
+  for (i=0;i < nele;i++) {
 
       idx[0] = ele[2*i]; idx[1] = ele[2*i+1]; 
 
@@ -790,7 +790,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     //PetscScalar vals[4],vals_M_0[1],vals2[2];
     PetscScalar vals[4],vals_M_0[2],vals2[2];
     
-    for(r=0;r<2;r++) {
+    for (r=0;r<2;r++) {
       row_M_0 = idx[r];
       
       vals_M_0[0]=eM_0[r][0];
@@ -907,7 +907,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
   /* Get local element info */
   ierr = DMDAGetElements(user->da1,&nele,&nen,&ele);CHKERRQ(ierr);
   
-  for(i=0;i<nele;i++) {
+  for (i=0;i<nele;i++) {
     idx[0] = ele[2*i]; idx[1] = ele[2*i+1]; 
      
     PetscInt     r,row,cols[2];
@@ -937,13 +937,13 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
   eM_2[0][0]=eM_2[1][1]=1.0/h;
   eM_2[0][1]=eM_2[1][0]=-1.0/h;
 
-  for(i=0;i<nele;i++) {
+  for (i=0;i<nele;i++) {
     idx[0] = ele[2*i]; idx[1] = ele[2*i+1]; 
    
     PetscInt    row,cols[2],r;
     PetscScalar vals[2];
 
-    for(r=0;r<2;r++) {
+    for (r=0;r<2;r++) {
 
       if (user->degenerate) {
         cv_sum = (2.0*user->smallnumber + cv_p[idx[0]] + cv_p[idx[1]])*user->Dv/(2.0*user->kBT);
@@ -1021,15 +1021,15 @@ PetscErrorCode CheckRedundancy(SNES snes, IS act, IS *outact, DM da)
   
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  for(i=xs; i < xs+xm;i++) {
+  for (i=xs; i < xs+xm;i++) {
     if (uout[i-1][1] && uout[i][1] && uout[i+1][1])
              uout[i][0] = 1.0;
     if (uout[i-1][3] && uout[i][3] && uout[i+1][3])
              uout[i][2] = 1.0;
   }
 
-  for(i=xs; i < xs+xm;i++) {
-    for(l=0;l<5;l++) {
+  for (i=xs; i < xs+xm;i++) {
+    for (l=0;l<5;l++) {
       if (uout[i][l])
         cnt++;
     }
@@ -1041,8 +1041,8 @@ PetscErrorCode CheckRedundancy(SNES snes, IS act, IS *outact, DM da)
   ierr = PetscMalloc(cnt*sizeof(PetscInt),&outindex);CHKERRQ(ierr);
   cnt = 0;
  
-  for(i=xs; i < xs+xm;i++) {
-    for(l=0;l<5;l++) {
+  for (i=xs; i < xs+xm;i++) {
+    for (l=0;l<5;l++) {
       if (uout[i][l])
         outindex[cnt++] = 5*(i)+l;
     }

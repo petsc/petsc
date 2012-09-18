@@ -3250,7 +3250,7 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B,PetscInt bs,const Pet
 
   if (ii[0] != 0) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "ii[0] must be 0 but it is %D",ii[0]); }
   ierr = PetscMalloc((m+1) * sizeof(PetscInt), &nnz);CHKERRQ(ierr);
-  for(i=0; i<m; i++) {
+  for (i=0; i<m; i++) {
     nz = ii[i+1]- ii[i];
     if (nz < 0) { SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Local row %D has a negative number of columns %D",i,nz); }
     nz_max = PetscMax(nz_max, nz);

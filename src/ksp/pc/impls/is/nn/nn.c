@@ -281,7 +281,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   }
 
   /* Set DZ_IN[0][] (recall that neigh[0]==rank, always) */
-  for(j=0; j<n_shared[0]; j++) {
+  for (j=0; j<n_shared[0]; j++) {
     DZ_IN[0][j] = pcis->work_N[shared[0][j]];
   }
 

@@ -73,7 +73,7 @@ PetscErrorCode  MatConvert_SeqAIJPERM_SeqAIJ(Mat A,MatType type,MatReuse reuse,M
   /* Free everything in the Mat_SeqAIJPERM data structure. 
    * We don't free the Mat_SeqAIJPERM struct itself, as this will 
    * cause problems later when MatDestroy() tries to free it. */
-  if(aijperm->CleanUpAIJPERM) {
+  if (aijperm->CleanUpAIJPERM) {
     ierr = PetscFree(aijperm->xgroup);CHKERRQ(ierr);
     ierr = PetscFree(aijperm->nzgroup);CHKERRQ(ierr);
     ierr = PetscFree(aijperm->iperm);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ PetscErrorCode MatDestroy_SeqAIJPERM(Mat A)
   /* Free everything in the Mat_SeqAIJPERM data structure.
    * Note that we don't need to free the Mat_SeqAIJPERM struct
    * itself, as MatDestroy() will do so. */
-  if(aijperm && aijperm->CleanUpAIJPERM) {
+  if (aijperm && aijperm->CleanUpAIJPERM) {
     ierr = PetscFree(aijperm->xgroup);CHKERRQ(ierr);
     ierr = PetscFree(aijperm->nzgroup);CHKERRQ(ierr);
     ierr = PetscFree(aijperm->iperm);CHKERRQ(ierr);
@@ -389,7 +389,7 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A,Vec xx,Vec yy)
          * worthwhile to vectorize across the rows, that is, to do the 
          * matvec by operating with "columns" of the chunk. */
           for (j=0; j<nz; j++) {
-            for(i=0; i<isize; i++) {
+            for (i=0; i<isize; i++) {
               ipos = ip[i] + j;
               yp[i] += aa[ipos] * x[aj[ipos]];
             }
@@ -484,7 +484,7 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
   fortranmultaddaijperm_(&m,x,ii,aj,aa,y,w);
 #else
 
-  for(igroup=0; igroup<ngroup; igroup++) {
+  for (igroup=0; igroup<ngroup; igroup++) {
     jstart = xgroup[igroup];
     jend = xgroup[igroup+1] - 1;
 
@@ -492,14 +492,14 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
 
     /* Handle the special cases where the number of nonzeros per row 
      * in the group is either 0 or 1. */
-    if(nz == 0) {
-      for(i=jstart; i<=jend; i++) {
+    if (nz == 0) {
+      for (i=jstart; i<=jend; i++) {
         iold = iperm[i];
         y[iold] = w[iold];
       }
     }
-    else if(nz == 1) {
-      for(i=jstart; i<=jend; i++) {
+    else if (nz == 1) {
+      for (i=jstart; i<=jend; i++) {
         iold = iperm[i];
         ipos = ai[iold];
         y[iold] = w[iold] + aa[ipos] * x[aj[ipos]];
@@ -511,17 +511,17 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
       /* We work our way through the current group in chunks of NDIM rows 
        * at a time. */
 
-      for(istart=jstart; istart<=jend; istart+=NDIM) {
+      for (istart=jstart; istart<=jend; istart+=NDIM) {
         /* Figure out where the chunk of 'isize' rows ends in iperm.
          * 'isize may of course be less than NDIM for the last chunk. */
         iend = istart + (NDIM - 1);
-        if(iend > jend) { iend = jend; }
+        if (iend > jend) { iend = jend; }
         isize = iend - istart + 1;
 
         /* Initialize the yp[] array that will be used to hold part of 
          * the permuted results vector, and figure out where in aa each 
          * row of the chunk will begin. */
-        for(i=0; i<isize; i++) {
+        for (i=0; i<isize; i++) {
           iold = iperm[istart + i];
             /* iold is a row number from the matrix A *before* reordering. */
           ip[i] = ai[iold];
@@ -532,15 +532,15 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
         /* If the number of zeros per row exceeds the number of rows in 
          * the chunk, we should vectorize along nz, that is, perform the 
          * mat-vec one row at a time as in the usual CSR case. */
-        if(nz > isize) {
+        if (nz > isize) {
 #if defined(PETSC_HAVE_CRAY_VECTOR)
 #pragma _CRI preferstream
 #endif
-          for(i=0; i<isize; i++) {
+          for (i=0; i<isize; i++) {
 #if defined(PETSC_HAVE_CRAY_VECTOR)
 #pragma _CRI prefervector
 #endif
-            for(j=0; j<nz; j++) {
+            for (j=0; j<nz; j++) {
               ipos = ip[i] + j;
               yp[i] += aa[ipos] * x[aj[ipos]];
             }
@@ -550,8 +550,8 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
          * worthwhile to vectorize across the rows, that is, to do the 
          * matvec by operating with "columns" of the chunk. */
         else {
-          for(j=0; j<nz; j++) {
-            for(i=0; i<isize; i++) {
+          for (j=0; j<nz; j++) {
+            for (i=0; i<isize; i++) {
               ipos = ip[i] + j;
               yp[i] += aa[ipos] * x[aj[ipos]];
             }
@@ -562,7 +562,7 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
 #pragma _CRI ivdep
 #endif
         /* Put results from yp[] into non-permuted result vector y. */
-        for(i=0; i<isize; i++) {
+        for (i=0; i<isize; i++) {
           y[iperm[istart+i]] = yp[i];
         }
       } /* End processing chunk of isize rows of a group. */

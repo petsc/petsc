@@ -250,7 +250,7 @@ PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMemzero(ksp->normsupporttable,sizeof ksp->normsupporttable);CHKERRQ(ierr);
+  ierr = PetscMemzero(ksp->normsupporttable,sizeof(ksp->normsupporttable));CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
   PetscFunctionReturn(0);

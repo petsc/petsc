@@ -209,7 +209,7 @@ PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
         thrust::stable_sort_by_key(temp.begin(), temp.end(), permutation.begin());
         ierr = PetscInfo(J, "    Sorted columns\n");CHKERRQ(ierr);
         if (PetscLogPrintInfo) {
-          for(IndexArrayIterator t_iter = temp.begin(), p_iter = permutation.begin(); t_iter != temp.end(); ++t_iter, ++p_iter) {
+          for (IndexArrayIterator t_iter = temp.begin(), p_iter = permutation.begin(); t_iter != temp.end(); ++t_iter, ++p_iter) {
             ierr = PetscInfo2(J, "%d(%d)\n", *t_iter, *p_iter);CHKERRQ(ierr);
           }
         }

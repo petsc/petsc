@@ -234,7 +234,7 @@ PetscErrorCode  MatCoarsenDestroy( MatCoarsen *agg )
     ierr = (*(*agg)->ops->destroy)((*agg));CHKERRQ(ierr);
   }
 
-  if( (*agg)->agg_lists ) {
+  if ( (*agg)->agg_lists ) {
     ierr = PetscCDDestroy( (*agg)->agg_lists );  CHKERRQ(ierr); 
   }
 
@@ -447,7 +447,7 @@ PetscErrorCode MatCoarsenGetData( MatCoarsen coarser, PetscCoarsenData **llist )
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
 
-  if( !coarser->agg_lists ) {
+  if ( !coarser->agg_lists ) {
     SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"No linked list - generate it or call ApplyCoarsen");
   }
   *llist = coarser->agg_lists;

@@ -41,7 +41,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1_Hermitian(Mat A,Vec xx,Vec zz)
     x1   = x[i];
     sum = 0.0;
     jmin = 0;
-    if(ib[0] == i) {
+    if (ib[0] == i) {
       sum  = v[0]*x1;          /* diagonal term */
       jmin++;
     }
@@ -101,7 +101,7 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
     sum = 0.0;
     jmin = 0;
     x1   = x[i];
-    if(ib[0] == i) {
+    if (ib[0] == i) {
       sum  = v[0]*x1;                /* diagonal term */
       jmin++;
     }
@@ -216,7 +216,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
 	for (i=m-1; i>=0; i--){
           sum = b[i];
 	  nz  = ai[i+1] - ai[i] - 1;
-          {PetscInt __i;for(__i=0;__i<nz;__i++) sum -= v[-__i] * x[vj[-__i]];}
+          {PetscInt __i;for (__i=0;__i<nz;__i++) sum -= v[-__i] * x[vj[-__i]];}
 #else
 	v  = aa + ai[m-1] + 1;
 	vj = aj + ai[m-1] + 1;

@@ -15,7 +15,7 @@ PetscErrorCode DMSetFromOptions_Patch(DM dm)
     /* Handle associated vectors */
     /* Handle viewing */
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  for(p = 0; p < mesh->numPatches; ++p) {
+  for (p = 0; p < mesh->numPatches; ++p) {
     ierr = DMSetFromOptions(mesh->patches[p]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -137,7 +137,7 @@ PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSi
   }
   mesh->numPatches = gridSize.i*gridSize.j*gridSize.k;
   ierr = PetscMalloc(mesh->numPatches * sizeof(DM), &mesh->patches);CHKERRQ(ierr);
-  for(p = 0; p < mesh->numPatches; ++p) {
+  for (p = 0; p < mesh->numPatches; ++p) {
     /* Patches are overlapping: Right now we do not account for boundaries */
     DM da;
     PetscInt dof = 1, width = 1;

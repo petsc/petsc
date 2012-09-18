@@ -49,7 +49,7 @@ PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
   struct PetscFPTrapLink *link;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof *link,&link);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
   link->trapmode = _trapmode;
   link->next = _trapstack;
   _trapstack = link;

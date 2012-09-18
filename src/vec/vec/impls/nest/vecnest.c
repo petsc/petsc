@@ -575,8 +575,8 @@ static PetscErrorCode VecView_Nest(Vec x,PetscViewer viewer)
 
       ierr = VecGetSize(bx->v[i],&NR);CHKERRQ(ierr);
       ierr = VecGetType(bx->v[i],&type);CHKERRQ(ierr);
-      if (((PetscObject)bx->v[i])->name) {ierr = PetscSNPrintf(name,sizeof name,"name=\"%s\", ",((PetscObject)bx->v[i])->name);CHKERRQ(ierr);}
-      if (((PetscObject)bx->v[i])->prefix) {ierr = PetscSNPrintf(prefix,sizeof prefix,"prefix=\"%s\", ",((PetscObject)bx->v[i])->prefix);CHKERRQ(ierr);}
+      if (((PetscObject)bx->v[i])->name) {ierr = PetscSNPrintf(name,sizeof(name),"name=\"%s\", ",((PetscObject)bx->v[i])->name);CHKERRQ(ierr);}
+      if (((PetscObject)bx->v[i])->prefix) {ierr = PetscSNPrintf(prefix,sizeof(prefix),"prefix=\"%s\", ",((PetscObject)bx->v[i])->prefix);CHKERRQ(ierr);}
 
       ierr = PetscViewerASCIIPrintf(viewer,"(%D) : %s%stype=%s, rows=%D \n",i,name,prefix,type,NR);CHKERRQ(ierr);
 

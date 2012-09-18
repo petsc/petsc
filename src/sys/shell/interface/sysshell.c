@@ -19,10 +19,10 @@ PetscShellPythonCallFunction            PetscShellPythonCall            = PETSC_
 EXTERN_C_END
 
 #define PETSC_SHELL_CHECKINIT_PYTHON()					\
-  if(PetscShellPythonLoadVTable == PETSC_NULL) {		        	\
+  if (PetscShellPythonLoadVTable == PETSC_NULL) {		        	\
     PetscErrorCode ierr;						\
     ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);	\
-    if(PetscShellPythonLoadVTable == PETSC_NULL) {			        \
+    if (PetscShellPythonLoadVTable == PETSC_NULL) {			        \
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,				\
 	      "Couldn't initialize Python support for PetscShell");	\
     }									\
@@ -116,7 +116,7 @@ PetscErrorCode PetscShellGraphAddVertex(PetscShellGraph graph, PetscInt *v) {
   PetscInt ii;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if(graph->vcount >= graph->vmax) {
+  if (graph->vcount >= graph->vmax) {
     /* Add rows */
     PetscInt   *new_i=0, *new_outdegree=0, *new_indegree;                            
     
@@ -145,7 +145,7 @@ PetscErrorCode PetscShellGraphAddVertex(PetscShellGraph graph, PetscInt *v) {
     graph->vmax += CHUNKSIZE; 
     graph->rowreallocs++; 
   }
-  if(v) {*v = graph->vcount;}
+  if (v) {*v = graph->vcount;}
   ++(graph->vcount);
   PetscFunctionReturn(0);
 }/* PetscShellGraphAddVertex() */
@@ -157,10 +157,10 @@ PetscErrorCode PetscShellGraphAddEdge(PetscShellGraph graph, PetscInt row, Petsc
   PetscInt              *rp,low,high,t,ii,i;
   PetscFunctionBegin;
 
-  if(row < 0 || row >= graph->vcount) {
+  if (row < 0 || row >= graph->vcount) {
     SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Source vertex %D out of range: min %D max %D",row, 0, graph->vcount);
   }
-  if(col < 0 || col >= graph->vcount) {
+  if (col < 0 || col >= graph->vcount) {
     SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Target vertex %D out of range: min %D max %D",col, 0, graph->vcount);
   }
   rp   = graph->j + graph->i[row];
@@ -206,28 +206,28 @@ PetscErrorCode PetscShellGraphTopologicalSort(PetscShellGraph graph, PetscInt *n
   PetscBool  progress;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if(!n || !queue) {
+  if (!n || !queue) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid return argument pointers n or vertices");
   }
   *n = graph->vcount;
   ierr = PetscMalloc(sizeof(PetscInt)*graph->vcount, queue); CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscBool)*graph->vcount, &queued); CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*graph->vcount, &indegree); CHKERRQ(ierr);
-  for(ii = 0; ii < graph->vcount; ++ii) {
+  for (ii = 0; ii < graph->vcount; ++ii) {
     queued[ii]   = PETSC_FALSE;
     indegree[ii] = graph->indegree[ii];
   }
   while(Nqueued < graph->vcount) {
     progress = PETSC_FALSE;
-    for(ii = 0; ii < graph->vcount; ++ii) {
+    for (ii = 0; ii < graph->vcount; ++ii) {
       /* If ii is not queued yet, and the indegree is 0, queue it. */ 
-      if(!queued[ii] && !indegree[ii]) {
+      if (!queued[ii] && !indegree[ii]) {
         (*queue)[Nqueued] = ii;
         queued[ii] = PETSC_TRUE;
         ++Nqueued;
         progress = PETSC_TRUE;
         /* Reduce the indegree of all vertices in row ii */
-        for(k = 0; k < graph->outdegree[ii]; ++k) {
+        for (k = 0; k < graph->outdegree[ii]; ++k) {
           jj = graph->j[graph->i[ii]+k];
           --(indegree[jj]);
           /* 
@@ -235,11 +235,11 @@ PetscErrorCode PetscShellGraphTopologicalSort(PetscShellGraph graph, PetscInt *n
              with the jj in place of ii, but we use a simple-minded algorithm instead, since the graphs
              we anticipate encountering are tiny. 
           */
-        }/* for(k) */
-      }/* if(!queued) */
-    }/* for(ii) */
+        }/* for (k) */
+      }/* if (!queued) */
+    }/* for (ii) */
     /* If no progress was made during this iteration, the graph must have a cycle */
-    if(!progress) {
+    if (!progress) {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Cycle detected in the dependency graph");
     }
   }/* while(Nqueued) */
@@ -325,26 +325,26 @@ PetscErrorCode PetscShellCall_SO(PetscShell shell, const char* path, const char*
   msgfunclen = namelen + messagelen;
   ierr = PetscMalloc(sizeof(char)*(msgfunclen+1), &msgfunc); CHKERRQ(ierr);
   msgfunc[0] = '\0';
-  if(namelen){
+  if (namelen){
     ierr = PetscStrcat(msgfunc, name); CHKERRQ(ierr);
   }
   ierr = PetscStrcat(msgfunc, message); CHKERRQ(ierr);
-  if(namelen) {
+  if (namelen) {
     /* HACK: is 'toupper' part of the C standard? Looks like starting with C89. */
     msgfunc[namelen] = toupper(msgfunc[namelen]);
   }
   ierr = PetscDLLibrarySym(((PetscObject)shell)->comm, &PetscShellDLLibrariesLoaded, path, msgfunc, (void **)(&msg)); CHKERRQ(ierr);
   ierr = PetscFree(msgfunc); CHKERRQ(ierr);
-  if(msg) {
+  if (msg) {
     ierr = (*msg)(shell); CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   callfunclen        = namelen+4;
   ierr = PetscMalloc(sizeof(char)*(callfunclen+1), &callfunc); CHKERRQ(ierr);
-  if(namelen) {
+  if (namelen) {
     ierr = PetscStrcpy(callfunc, name); CHKERRQ(ierr);
   }
-  if(namelen){
+  if (namelen){
     ierr = PetscStrcat(callfunc, "Call"); CHKERRQ(ierr);
   }
   else {
@@ -352,7 +352,7 @@ PetscErrorCode PetscShellCall_SO(PetscShell shell, const char* path, const char*
   }
   ierr = PetscDLLibrarySym(((PetscObject)shell)->comm, &PetscShellDLLibrariesLoaded, path, callfunc, (void**)(&call)); CHKERRQ(ierr);
   ierr = PetscFree(callfunc); CHKERRQ(ierr);
-  if(call) {
+  if (call) {
     ierr = (*call)(shell, message); CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }  
@@ -369,12 +369,12 @@ PetscErrorCode PetscShellCall_NONE(PetscShell shell, const char* message) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscFListFind(((PetscObject)shell)->qlist, ((PetscObject)shell)->comm, message,PETSC_FALSE, (QueryFunction*)(&msg)); CHKERRQ(ierr);
-  if(msg) {
+  if (msg) {
     ierr = (*msg)(shell); CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = PetscFListFind(((PetscObject)shell)->qlist, ((PetscObject)shell)->comm, "call",PETSC_FALSE, (QueryFunction*)(&call)); CHKERRQ(ierr);
-  if(call) {
+  if (call) {
     ierr = (*call)(shell, message); CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -406,7 +406,7 @@ PetscErrorCode PetscShellCall(PetscShell shell, const char* message) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   PetscValidCharPointer(message,2);
-  if(!message || !message[0]) {
+  if (!message || !message[0]) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Null or empty message string");
   }
   switch(shell->vtable_type) {
@@ -451,7 +451,7 @@ PetscErrorCode  PetscShellParseURL_Private(const char inurl[], char **outpath, c
   /* Split url <path>:<name> into <path> and <name> */
   ierr = PetscStrrchr(path,':',&n); CHKERRQ(ierr);
   /* Make sure it's not the ":/" of the "://" separator */
-  if(!n[0] || n[0] == '/') {
+  if (!n[0] || n[0] == '/') {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, 
            "Could not locate component name within the URL.\n"
            "Must have url = [<path/><library>:]<name>.\n"
@@ -462,7 +462,7 @@ PetscErrorCode  PetscShellParseURL_Private(const char inurl[], char **outpath, c
   /* Copy n to name */
   ierr = PetscStrcpy(name, n); CHKERRQ(ierr);
   /* If n isn't the whole path (i.e., there is a ':' separator), end 'path' right before the located ':' */
-  if(n == path) {
+  if (n == path) {
     /* 
        No library is provided, so the component is assumed to be "local", that is
        defined in an already loaded executable. So we set type to .so, path to "",
@@ -477,8 +477,8 @@ PetscErrorCode  PetscShellParseURL_Private(const char inurl[], char **outpath, c
     /* Find the library suffix and determine the component library type: .so or .py */
     ierr = PetscStrrchr(path,'.',&s);CHKERRQ(ierr);
     /* FIX: we should really be using PETSc's internally defined suffices */
-    if(s != path && s[-1] == '.') {
-      if((s[0] == 'a' && s[1] == '\0') || (s[0] == 's' && s[1] == 'o' && s[2] == '\0')){
+    if (s != path && s[-1] == '.') {
+      if ((s[0] == 'a' && s[1] == '\0') || (s[0] == 's' && s[1] == 'o' && s[2] == '\0')){
         type = PETSC_SHELL_VTABLE_SO;
       }
       else if (s[0] == 'p' && s[1] == 'y' && s[2] == '\0'){
@@ -566,7 +566,7 @@ PetscErrorCode  PetscShellSetURL(PetscShell shell, const char url[]) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   PetscValidCharPointer(url,2);
-  if(shell->vtable) {
+  if (shell->vtable) {
     ierr = PetscShellClearURL_Private(shell); CHKERRQ(ierr);
   }
   ierr = PetscStrallocpy(url,  &(shell->url));  CHKERRQ(ierr);
@@ -638,17 +638,17 @@ PetscErrorCode PetscShellView_Private(PetscShell shell, const char *key, PetscIn
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "PetscShell can only be viewed with an ASCII viewer");
   }
   else {
-    if(!key) {
+    if (!key) {
       ierr = PetscViewerASCIIPrintf(viewer, "Shell name: %s,\turl: %s\n", ((PetscObject)shell)->name, shell->url);                CHKERRQ(ierr);
     }
     else {
       ierr = PetscViewerASCIIPrintf(viewer, "Component: %D,\tkey: %s, \tname: %s,\turl: %s\n", rank, key, ((PetscObject)shell)->name, shell->url); CHKERRQ(ierr);
     }
     ierr = PetscShellGraphTopologicalSort(shell->dep_graph, &N, &vertices); CHKERRQ(ierr);
-    if(N) {
+    if (N) {
       ierr = PetscViewerASCIIPrintf(viewer, "Component shells in the topological order of the dependence graph:\n");
       ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
-      for(i = 0; i < N; ++i) {
+      for (i = 0; i < N; ++i) {
         id = vertices[i];
         ierr = PetscShellView_Private(shell->component[id], shell->key[id], id, viewer); CHKERRQ(ierr);
       }
@@ -746,7 +746,7 @@ PetscErrorCode PetscShellVisit(PetscShell shell, const char* message){
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   PetscValidCharPointer(message,2);
   ierr = PetscShellGraphTopologicalSort(shell->dep_graph, &N, &vertices); CHKERRQ(ierr);
-  for(i = 0; i < N; ++i) {
+  for (i = 0; i < N; ++i) {
     id = vertices[i];
     component = shell->component[id];
     /* Save the component's visitor */
@@ -768,12 +768,12 @@ PetscErrorCode  PetscShellGetKeyID_Private(PetscShell shell, const char key[], P
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* Check whether a component with the given key has already been registered. */
-  if(_found){*_found = PETSC_FALSE;}
-  for(i = 0; i < shell->N; ++i) {
+  if (_found){*_found = PETSC_FALSE;}
+  for (i = 0; i < shell->N; ++i) {
     ierr = PetscStrcmp(key, shell->key[i], &eq); CHKERRQ(ierr);
-    if(eq) {
-      if(_id) {*_id = i;}
-      if(_found){*_found = PETSC_TRUE;}
+    if (eq) {
+      if (_id) {*_id = i;}
+      if (_found){*_found = PETSC_TRUE;}
     }
   }
   PetscFunctionReturn(0);
@@ -788,21 +788,21 @@ PetscErrorCode  PetscShellRegisterKey_Private(PetscShell shell, const char key[]
   PetscFunctionBegin;
   /* Check whether a component with the given key has already been registered. */
   ierr = PetscShellGetKeyID_Private(shell, key, &id, &found); CHKERRQ(ierr);
-  if(found) {
-    if(component) {
+  if (found) {
+    if (component) {
       /* Replace the component with the new one. */
       shell->component[id] = component;
     }
-    if(_id) *_id = id;
+    if (_id) *_id = id;
     PetscFunctionReturn(0);
   }
   /* No such key found. */
-  if(!component) {
+  if (!component) {
     /* Create a new component for this key. */
     ierr = PetscShellCreate(((PetscObject)shell)->comm, &component); CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)component, key);          CHKERRQ(ierr);
   }
-  if(shell->N >= shell->maxN) {
+  if (shell->N >= shell->maxN) {
     /* No more empty component slots, therefore, expand the component array */
     PetscShell *new_components;
     char **new_keys;
@@ -827,10 +827,10 @@ PetscErrorCode  PetscShellRegisterKey_Private(PetscShell shell, const char key[]
   /* Add a new vertex to the dependence graph.  This vertex will correspond to the newly registered component. */
   ierr = PetscShellGraphAddVertex(shell->dep_graph, &v); CHKERRQ(ierr);
   /* v must equal id */
-  if(v != id) {
+  if (v != id) {
     SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "New dependence graph vertex %d for key %s not the same as component id %d", v, key, id); 
   }
-  if(_id) *_id = id;
+  if (_id) *_id = id;
   PetscFunctionReturn(0);
 }/* PetscShellRegisterKey_Private() */
 
@@ -970,7 +970,7 @@ PetscErrorCode  PetscShellDestroy(PetscShell *shell)
   if (!*shell) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*shell,PETSC_SHELL_CLASSID,1);
   if (--((PetscObject)(*shell))->refct > 0) PetscFunctionReturn(0);
-  for(i = 0; i < (*shell)->N; ++i){
+  for (i = 0; i < (*shell)->N; ++i){
     ierr = PetscObjectDestroy((PetscObject*)&(*shell)->component[i]); CHKERRQ(ierr);
   }
   ierr = PetscFree((*shell)->component); CHKERRQ(ierr);
@@ -1055,10 +1055,10 @@ PetscErrorCode  PetscShellGetComponent(PetscShell shell, const char key[], Petsc
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   PetscValidCharPointer(key,2);
   ierr = PetscShellGetKeyID_Private(shell, key, &id, &found_); CHKERRQ(ierr);
-  if(found_ && component) {
+  if (found_ && component) {
     *component = shell->component[id];
   }
-  if(found) {*found = found_;}
+  if (found) {*found = found_;}
   PetscFunctionReturn(0);
 }/* PetscShellGetComponent() */
 
@@ -1079,7 +1079,7 @@ PetscErrorCode PetscShellFinalizePackage(void)
 PetscErrorCode PetscShellInitializePackage(const char path[]){
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if(PetscShellPackageInitialized) PetscFunctionReturn(0);
+  if (PetscShellPackageInitialized) PetscFunctionReturn(0);
   PetscShellPackageInitialized = PETSC_TRUE;
   /* Register classes */
   ierr = PetscClassIdRegister(PETSC_SHELL_CLASS_NAME, &PETSC_SHELL_CLASSID); CHKERRQ(ierr);

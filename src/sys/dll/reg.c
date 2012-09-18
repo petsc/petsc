@@ -13,8 +13,8 @@ PetscErrorCode  PetscFListGetPathAndFunction(const char name[],char *path[],char
   char           work[PETSC_MAX_PATH_LEN],*lfunction;
 
   PetscFunctionBegin;
-  ierr = PetscStrncpy(work,name,sizeof work);CHKERRQ(ierr);
-  work[sizeof work - 1] = 0;
+  ierr = PetscStrncpy(work,name,sizeof(work));CHKERRQ(ierr);
+  work[sizeof(work) - 1] = 0;
   ierr = PetscStrchr(work,':',&lfunction);CHKERRQ(ierr);
   if (lfunction != work && lfunction && lfunction[1] != ':') {
     lfunction[0] = 0;
@@ -700,9 +700,9 @@ PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
     entry->name    = fname;
     entry->routine = fnc;
     entry->numArgs = numArgs;
-    if(numArgs) {
+    if (numArgs) {
       ierr = PetscMalloc(sizeof(char*)*numArgs, &(entry->argTypes));    CHKERRQ(ierr);
-      for(i = 0; i < numArgs; ++i) {
+      for (i = 0; i < numArgs; ++i) {
         ierr = PetscStrallocpy(argTypes[i], &(entry->argTypes[i]));         CHKERRQ(ierr);
       }
     }
@@ -725,27 +725,27 @@ PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
     while (ne) {
       PetscBool  match;
       ierr = PetscStrcmp(ne->op,op,&match);CHKERRQ(ierr);
-      if(!match) goto next;
-      if(numArgs == ne->numArgs) 
+      if (!match) goto next;
+      if (numArgs == ne->numArgs) 
         match = PETSC_TRUE;
       else 
         match = PETSC_FALSE;
-      if(!match) goto next;
-      if(numArgs) {
-        for(i = 0; i < numArgs; ++i) {
+      if (!match) goto next;
+      if (numArgs) {
+        for (i = 0; i < numArgs; ++i) {
           ierr = PetscStrcmp(argTypes[i], ne->argTypes[i], &match);  CHKERRQ(ierr);
-          if(!match) goto next;
+          if (!match) goto next;
         }
       }
-      if(!url && !fnc) {
+      if (!url && !fnc) {
         /* remove this record */
-        if(e) e->next = ne->next;
+        if (e) e->next = ne->next;
         ierr = PetscFree(ne->op);    CHKERRQ(ierr);
         ierr = PetscFree(ne->url);   CHKERRQ(ierr);
         ierr = PetscFree(ne->path);  CHKERRQ(ierr);
         ierr = PetscFree(ne->name);  CHKERRQ(ierr);
-        if(numArgs) {
-          for(i = 0; i < numArgs; ++i) {
+        if (numArgs) {
+          for (i = 0; i < numArgs; ++i) {
             ierr = PetscFree(ne->argTypes[i]);  CHKERRQ(ierr);
           }
           ierr = PetscFree(ne->argTypes);       CHKERRQ(ierr);
@@ -769,9 +769,9 @@ PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
     ierr           = PetscNew(struct _n_PetscOpFList,&entry);           CHKERRQ(ierr);
     ierr           = PetscStrallocpy(op,&entry->op);                    CHKERRQ(ierr);
     entry->numArgs = numArgs;
-    if(numArgs) {
+    if (numArgs) {
       ierr = PetscMalloc(sizeof(char*)*numArgs, &(entry->argTypes));    CHKERRQ(ierr);
-      for(i = 0; i < numArgs; ++i) {
+      for (i = 0; i < numArgs; ++i) {
         ierr = PetscStrallocpy(argTypes[i], &(entry->argTypes[i]));         CHKERRQ(ierr);
       }
     }
@@ -831,7 +831,7 @@ PetscErrorCode  PetscOpFListDestroy(PetscOpFList *fl)
   while (entry) {
     next = entry->next;
     ierr = PetscFree(entry->op);  CHKERRQ(ierr);
-    for(i = 0; i < entry->numArgs; ++i) {
+    for (i = 0; i < entry->numArgs; ++i) {
       ierr = PetscFree(entry->argTypes[i]); CHKERRQ(ierr);
     }
     ierr = PetscFree(entry->argTypes);  CHKERRQ(ierr);
@@ -901,16 +901,16 @@ PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,PetscVoidFunctio
   entry = fl;
   while (entry) {
     ierr = PetscStrcmp(entry->op,op,&match); CHKERRQ(ierr);
-    if(!match) goto next;
-    if(numArgs == entry->numArgs) 
+    if (!match) goto next;
+    if (numArgs == entry->numArgs) 
       match = PETSC_TRUE;
     else
       match = PETSC_FALSE;
-    if(!match) goto next;
-    if(numArgs) {
-      for(i = 0; i < numArgs; ++i) {
+    if (!match) goto next;
+    if (numArgs) {
+      for (i = 0; i < numArgs; ++i) {
         ierr = PetscStrcmp(argTypes[i], entry->argTypes[i], &match);  CHKERRQ(ierr);
-        if(!match) goto next;
+        if (!match) goto next;
       }
     }
     break;
@@ -966,8 +966,8 @@ PetscErrorCode  PetscOpFListView(PetscOpFList list,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer," %s: ",list->url); CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer, "%s(", list->op);    CHKERRQ(ierr);
-    for(i = 0; i < list->numArgs;++i) {
-      if(i > 0) {
+    for (i = 0; i < list->numArgs;++i) {
+      if (i > 0) {
         ierr = PetscViewerASCIIPrintf(viewer, ", "); CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer, "%s", list->argTypes[i]);    CHKERRQ(ierr);

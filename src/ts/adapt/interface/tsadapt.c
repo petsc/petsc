@@ -311,7 +311,7 @@ PetscErrorCode  TSAdaptSetFromOptions(TSAdapt adapt)
   * function can only be called from inside TSSetFromOptions_GL()  */
   ierr = PetscOptionsHead("TS Adaptivity options");CHKERRQ(ierr);
   ierr = PetscOptionsList("-ts_adapt_type","Algorithm to use for adaptivity","TSAdaptSetType",TSAdaptList,
-                          ((PetscObject)adapt)->type_name?((PetscObject)adapt)->type_name:type,type,sizeof type,&flg);CHKERRQ(ierr);
+                          ((PetscObject)adapt)->type_name?((PetscObject)adapt)->type_name:type,type,sizeof(type),&flg);CHKERRQ(ierr);
   if (flg || !((PetscObject)adapt)->type_name) {
     ierr = TSAdaptSetType(adapt,type);CHKERRQ(ierr);
   }

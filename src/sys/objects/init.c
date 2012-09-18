@@ -525,7 +525,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     int device;
 
     ierr = cudaGetDeviceCount(&devCount);CHKERRQ(ierr);
-    for(device = 0; device < devCount; ++device) {
+    for (device = 0; device < devCount; ++device) {
       ierr = cudaGetDeviceProperties(&prop, device);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "CUDA device %d: %s\n", device, prop.name);CHKERRQ(ierr);
     }

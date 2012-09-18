@@ -1179,7 +1179,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
     } else {
       ierr = KSPSetOperators(jac->ksp[i],bjac->pmat[i],bjac->pmat[i],pc->flag);CHKERRQ(ierr);
     }
-    if(pc->setfromoptionscalled){
+    if (pc->setfromoptionscalled){
       ierr = KSPSetFromOptions(jac->ksp[i]);CHKERRQ(ierr);
     }
   }

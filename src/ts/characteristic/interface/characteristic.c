@@ -370,8 +370,8 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     ierr = DMDAVecGetArray(c->velocityDA, velocityLocalOld, &velocityArrayOld);CHKERRQ(ierr);
   }
   ierr = PetscInfo(PETSC_NULL, "Calculating position at t_{n - 1/2}\n");CHKERRQ(ierr);
-  for(Qi.j = js; Qi.j < je; Qi.j++) {
-    for(Qi.i = is; Qi.i < ie; Qi.i++) {
+  for (Qi.j = js; Qi.j < je; Qi.j++) {
+    for (Qi.i = is; Qi.i < ie; Qi.i++) {
       interpIndices[0] = Qi.i;
       interpIndices[1] = Qi.j;
       if (c->velocityInterpLocal) {
@@ -399,7 +399,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   ierr = PetscLogEventBegin(CHARACTERISTIC_HalfTimeLocal,0,0,0,0);CHKERRQ(ierr);
   /* Calculate velocity at t_n+1/2 (local values) */
   ierr = PetscInfo(PETSC_NULL, "Calculating local velocities at t_{n - 1/2}\n");CHKERRQ(ierr);
-  for(n = 0; n < c->queueSize; n++) {
+  for (n = 0; n < c->queueSize; n++) {
     Qi = c->queue[n];
     if (c->neighbors[Qi.proc] == rank) {
       interpIndices[0] = Qi.x;
@@ -426,7 +426,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   /* Calculate velocity at t_n+1/2 (fill remote requests) */
   ierr = PetscLogEventBegin(CHARACTERISTIC_HalfTimeRemote,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscInfo1(PETSC_NULL, "Calculating %d remote velocities at t_{n - 1/2}\n", c->queueRemoteSize);CHKERRQ(ierr);
-  for(n = 0; n < c->queueRemoteSize; n++) {
+  for (n = 0; n < c->queueRemoteSize; n++) {
     Qi = c->queueRemote[n];
     interpIndices[0] = Qi.x;
     interpIndices[1] = Qi.y;
@@ -460,7 +460,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   /* GET POSITION AT t_n (local values) */
   ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeLocal,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscInfo(PETSC_NULL, "Calculating position at t_{n}\n");CHKERRQ(ierr);
-  for(n = 0; n < c->queueSize; n++) {
+  for (n = 0; n < c->queueSize; n++) {
     Qi = c->queue[n];
     Qi.x = Qi.i - Qi.x*dt;
     Qi.y = Qi.j - Qi.y*dt;
@@ -488,7 +488,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     ierr = DMDAVecGetArray(c->fieldDA, fieldLocal, &fieldArray);CHKERRQ(ierr);
   }
   ierr = PetscInfo(PETSC_NULL, "Calculating local field at t_{n}\n");CHKERRQ(ierr);
-  for(n = 0; n < c->queueSize; n++) {
+  for (n = 0; n < c->queueSize; n++) {
     if (c->neighbors[c->queue[n].proc] == rank) {
       interpIndices[0] = c->queue[n].x;
       interpIndices[1] = c->queue[n].y;
@@ -497,7 +497,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
       } else {
         c->fieldInterp(c->field, interpIndices, c->numFieldComp, c->fieldComp, fieldValues, c->fieldCtx);
       }
-      for(comp = 0; comp < c->numFieldComp; comp++) {
+      for (comp = 0; comp < c->numFieldComp; comp++) {
         c->queue[n].field[comp] = fieldValues[comp];
       }
     }
@@ -511,7 +511,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   /* GET VALUE AT FULL TIME IN THE PAST (REMOTE REQUESTS) */
   ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeRemote,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscInfo1(PETSC_NULL, "Calculating %d remote field points at t_{n}\n", c->queueRemoteSize);CHKERRQ(ierr);
-  for(n = 0; n < c->queueRemoteSize; n++) {
+  for (n = 0; n < c->queueRemoteSize; n++) {
     interpIndices[0] = c->queueRemote[n].x;
     interpIndices[1] = c->queueRemote[n].y;
 
@@ -529,7 +529,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     } else {
       c->fieldInterp(c->field, interpIndices, c->numFieldComp, c->fieldComp, fieldValues, c->fieldCtx);
     }
-    for(comp = 0; comp < c->numFieldComp; comp++) {
+    for (comp = 0; comp < c->numFieldComp; comp++) {
       c->queueRemote[n].field[comp] = fieldValues[comp];
     }
   }
@@ -548,9 +548,9 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   ierr = PetscLogEventBegin(CHARACTERISTIC_DAUpdate,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(c->fieldDA,0,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(c->fieldDA, solution, &solArray);CHKERRQ(ierr);
-  for(n = 0; n < c->queueSize; n++) {
+  for (n = 0; n < c->queueSize; n++) {
     Qi = c->queue[n];
-    for(comp = 0; comp < c->numFieldComp; comp++) {
+    for (comp = 0; comp < c->numFieldComp; comp++) {
       solArray[Qi.j][Qi.i*dof+c->fieldComp[comp]] = Qi.field[comp];
     }
   }
@@ -604,28 +604,28 @@ int CharacteristicSendCoordinatesBegin(Characteristic c)
   ierr = MPI_Comm_rank(((PetscObject)c)->comm, &rank);CHKERRQ(ierr);
   ierr = CharacteristicHeapSort(c, c->queue, c->queueSize);CHKERRQ(ierr);
   ierr = PetscMemzero(c->needCount, c->numNeighbors * sizeof(PetscInt));CHKERRQ(ierr);
-  for(i = 0;  i < c->queueSize; i++) {
+  for (i = 0;  i < c->queueSize; i++) {
     c->needCount[c->queue[i].proc]++;
   }
   c->fillCount[0] = 0;
-  for(n = 1; n < c->numNeighbors; n++) {
+  for (n = 1; n < c->numNeighbors; n++) {
     ierr = MPI_Irecv(&(c->fillCount[n]), 1, MPIU_INT, c->neighbors[n], tag, ((PetscObject)c)->comm, &(c->request[n-1]));CHKERRQ(ierr);
   }
-  for(n = 1; n < c->numNeighbors; n++) {
+  for (n = 1; n < c->numNeighbors; n++) {
     ierr = MPI_Send(&(c->needCount[n]), 1, MPIU_INT, c->neighbors[n], tag, ((PetscObject)c)->comm);CHKERRQ(ierr);
   }
   ierr = MPI_Waitall(c->numNeighbors-1, c->request, c->status);CHKERRQ(ierr);
   /* Initialize the remote queue */
   c->queueLocalMax  = c->localOffsets[0]  = 0;
   c->queueRemoteMax = c->remoteOffsets[0] = 0; 
-  for(n = 1; n < c->numNeighbors; n++) {
+  for (n = 1; n < c->numNeighbors; n++) {
     c->remoteOffsets[n] = c->queueRemoteMax;
     c->queueRemoteMax  += c->fillCount[n];
     c->localOffsets[n]  = c->queueLocalMax;
     c->queueLocalMax   += c->needCount[n];
   }
   /* HACK BEGIN */
-  for(n = 1; n < c->numNeighbors; n++) {
+  for (n = 1; n < c->numNeighbors; n++) {
     c->localOffsets[n] += c->needCount[0];
   }
   c->needCount[0] = 0;
@@ -638,11 +638,11 @@ int CharacteristicSendCoordinatesBegin(Characteristic c)
   c->queueRemoteSize = c->queueRemoteMax;
 
   /* Send and Receive requests for values at t_n+1/2, giving the coordinates for interpolation */
-  for(n = 1; n < c->numNeighbors; n++) {
+  for (n = 1; n < c->numNeighbors; n++) {
     ierr = PetscInfo2(PETSC_NULL, "Receiving %d requests for values from proc %d\n", c->fillCount[n], c->neighbors[n]);CHKERRQ(ierr);
     ierr = MPI_Irecv(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, ((PetscObject)c)->comm, &(c->request[n-1]));CHKERRQ(ierr);
   }
-  for(n = 1; n < c->numNeighbors; n++) {
+  for (n = 1; n < c->numNeighbors; n++) {
     ierr = PetscInfo2(PETSC_NULL, "Sending %d requests for values from proc %d\n", c->needCount[n], c->neighbors[n]);CHKERRQ(ierr);
     ierr = MPI_Send(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, ((PetscObject)c)->comm);CHKERRQ(ierr);
   }
@@ -663,7 +663,7 @@ PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic c)
   ierr = MPI_Waitall(c->numNeighbors-1, c->request, c->status);CHKERRQ(ierr);
 #if 0
   ierr = MPI_Comm_rank(((PetscObject)c)->comm, &rank);CHKERRQ(ierr);
-  for(n = 0; n < c->queueRemoteSize; n++) {
+  for (n = 0; n < c->queueRemoteSize; n++) {
     if (c->neighbors[c->queueRemote[n].proc] == rank) {
       SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "This is fucked up, n = %d proc = %d", n, c->queueRemote[n].proc);
     }
@@ -682,10 +682,10 @@ PetscErrorCode CharacteristicGetValuesBegin(Characteristic c)
 
   PetscFunctionBegin;
   /* SEND AND RECIEVE FILLED REQUESTS for velocities at t_n+1/2 */
-  for(n = 1; n < c->numNeighbors; n++) {
+  for (n = 1; n < c->numNeighbors; n++) {
     ierr = MPI_Irecv(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, ((PetscObject)c)->comm, &(c->request[n-1]));CHKERRQ(ierr);
   }
-  for(n = 1; n < c->numNeighbors; n++) {
+  for (n = 1; n < c->numNeighbors; n++) {
     ierr = MPI_Send(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, ((PetscObject)c)->comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -835,7 +835,7 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
     if (pj==PJ-1) neighbors[2]=neighbors[3]=neighbors[4]=neighbors[0];
   }
 
-  for(pj = 0; pj < PJ; pj++) {
+  for (pj = 0; pj < PJ; pj++) {
     ierr = PetscFree(procs[pj]);CHKERRQ(ierr);
   }
   ierr = PetscFree(procs);CHKERRQ(ierr);

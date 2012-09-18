@@ -49,7 +49,7 @@ int main(int argc,char **args)
   if (!loadA) { /* Matrix A is copied from slepc-3.0.0-p6/src/examples/ex13.c. */
     ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,&flag);CHKERRQ(ierr);
-    if( flag==PETSC_FALSE ) m=n;
+    if ( flag==PETSC_FALSE ) m=n;
     N = n*m;
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
@@ -59,12 +59,12 @@ int main(int argc,char **args)
 
     ierr = MatSetOption(A,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
-    for( II=Istart; II<Iend; II++ ) { 
+    for ( II=Istart; II<Iend; II++ ) { 
       v = -1.0; i = II/n; j = II-i*n;  
-      if(i>0) { J=II-n; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
-      if(i<m-1) { J=II+n; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
-      if(j>0) { J=II-1; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
-      if(j<n-1) { J=II+1; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
+      if (i>0) { J=II-n; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
+      if (i<m-1) { J=II+n; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
+      if (j>0) { J=II-1; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
+      if (j<n-1) { J=II+1; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
       v=4.0; MatSetValues(A,1,&II,1,&II,&v,INSERT_VALUES);CHKERRQ(ierr);
     
     }
@@ -83,7 +83,7 @@ int main(int argc,char **args)
     ierr = MatSetOption(B,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
  
-    for( II=Istart; II<Iend; II++ ) { 
+    for ( II=Istart; II<Iend; II++ ) { 
       /* v=4.0; MatSetValues(B,1,&II,1,&II,&v,INSERT_VALUES);CHKERRQ(ierr); */
       v=1.0; MatSetValues(B,1,&II,1,&II,&v,INSERT_VALUES);CHKERRQ(ierr); 
     }

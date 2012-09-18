@@ -54,7 +54,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->defaultGlobalSection = PETSC_NULL;
   {
     PetscInt i;
-    for(i = 0; i < 10; ++i) {
+    for (i = 0; i < 10; ++i) {
       v->nullspaceConstructors[i] = PETSC_NULL;
     }
   }
@@ -258,7 +258,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = PetscSFDestroy(&(*dm)->sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->defaultSF);CHKERRQ(ierr);
 
-  for(f = 0; f < (*dm)->numFields; ++f) {
+  for (f = 0; f < (*dm)->numFields; ++f) {
     ierr = PetscObjectDestroy(&(*dm)->fields[f]);CHKERRQ(ierr);
   }
   ierr = PetscFree((*dm)->fields);CHKERRQ(ierr);
@@ -339,7 +339,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
     if (flg) {
       ierr = DMSetVecType(dm,typeName);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsList("-dm_mat_type","Matrix type used for created matrices","DMSetMatType",MatList,dm->mattype?dm->mattype:typeName,typeName,sizeof typeName,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-dm_mat_type","Matrix type used for created matrices","DMSetMatType",MatList,dm->mattype?dm->mattype:typeName,typeName,sizeof(typeName),&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = DMSetMatType(dm,typeName);CHKERRQ(ierr);
     }
@@ -538,13 +538,13 @@ PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
       ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
       ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
       ierr = PetscMalloc(size * sizeof(PetscInt), &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
-      for(p = pStart, l = 0; p < pEnd; ++p) {
+      for (p = pStart, l = 0; p < pEnd; ++p) {
         PetscInt dof, off, c;
 
         /* Should probably use constrained dofs */
         ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(sectionGlobal, p, &off);CHKERRQ(ierr);
-        for(c = 0; c < dof; ++c, ++l) {
+        for (c = 0; c < dof; ++c, ++l) {
           ltog[l] = off+c;
         }
       }
@@ -953,15 +953,15 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
     ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
     ierr = PetscMalloc2(nF,PetscInt,&fieldSizes,nF,PetscInt *,&fieldIndices);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
-    for(f = 0; f < nF; ++f) {
+    for (f = 0; f < nF; ++f) {
       fieldSizes[f] = 0;
     }
-    for(p = pStart; p < pEnd; ++p) {
+    for (p = pStart; p < pEnd; ++p) {
       PetscInt gdof;
 
       ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
       if (gdof > 0) {
-        for(f = 0; f < nF; ++f) {
+        for (f = 0; f < nF; ++f) {
           PetscInt fdof, fcdof;
 
           ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
@@ -970,22 +970,22 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
         }
       }
     }
-    for(f = 0; f < nF; ++f) {
+    for (f = 0; f < nF; ++f) {
       ierr = PetscMalloc(fieldSizes[f] * sizeof(PetscInt), &fieldIndices[f]);CHKERRQ(ierr);
       fieldSizes[f] = 0;
     }
-    for(p = pStart; p < pEnd; ++p) {
+    for (p = pStart; p < pEnd; ++p) {
       PetscInt gdof, goff;
 
       ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
       if (gdof > 0) {
         ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
-        for(f = 0; f < nF; ++f) {
+        for (f = 0; f < nF; ++f) {
           PetscInt fdof, fcdof, fc;
 
           ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
           ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
-          for(fc = 0; fc < fdof-fcdof; ++fc, ++fieldSizes[f]) {
+          for (fc = 0; fc < fdof-fcdof; ++fc, ++fieldSizes[f]) {
             fieldIndices[f][fieldSizes[f]] = goff++;
           }
         }
@@ -994,7 +994,7 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
     if (numFields) {*numFields = nF;}
     if (fieldNames) {
       ierr = PetscMalloc(nF * sizeof(char *), fieldNames);CHKERRQ(ierr);
-      for(f = 0; f < nF; ++f) {
+      for (f = 0; f < nF; ++f) {
         const char *fieldName;
 
         ierr = PetscSectionGetFieldName(section, f, &fieldName);CHKERRQ(ierr);
@@ -1003,13 +1003,13 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
     }
     if (fields) {
       ierr = PetscMalloc(nF * sizeof(IS), fields);CHKERRQ(ierr);
-      for(f = 0; f < nF; ++f) {
+      for (f = 0; f < nF; ++f) {
         ierr = ISCreateGeneral(((PetscObject) dm)->comm, fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &(*fields)[f]);CHKERRQ(ierr);
       }
     }
     ierr = PetscFree2(fieldSizes,fieldIndices);CHKERRQ(ierr);
   } else {
-    if(dm->ops->createfieldis) {ierr = (*dm->ops->createfieldis)(dm, numFields, fieldNames, fields);CHKERRQ(ierr);}
+    if (dm->ops->createfieldis) {ierr = (*dm->ops->createfieldis)(dm, numFields, fieldNames, fields);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -1041,7 +1041,7 @@ PetscErrorCode DMCreateFieldDecompositionDM(DM dm, const char* name, DM *ddm)
   PetscValidCharPointer(name,2);
   PetscValidPointer(ddm,3);
   *ddm = PETSC_NULL;
-  if(dm->ops->createfielddecompositiondm) {
+  if (dm->ops->createfielddecompositiondm) {
     ierr = (*dm->ops->createfielddecompositiondm)(dm,name,ddm); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1094,7 +1094,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
     if (section && numFields && dm->ops->createsubdm) {
       *len = numFields;
       ierr = PetscMalloc3(numFields,char*,namelist,numFields,IS,islist,numFields,DM,dmlist);CHKERRQ(ierr);
-      for(f = 0; f < numFields; ++f) {
+      for (f = 0; f < numFields; ++f) {
         const char *fieldName;
 
         ierr = DMCreateSubDM(dm, 1, &f, &(*islist)[f], &(*dmlist)[f]);CHKERRQ(ierr);
@@ -1104,7 +1104,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
     } else {
       ierr = DMCreateFieldIS(dm, len, namelist, islist);CHKERRQ(ierr);
       /* By default there are no DMs associated with subproblems. */
-      if(dmlist) *dmlist = PETSC_NULL;
+      if (dmlist) *dmlist = PETSC_NULL;
     }
   }
   else {
@@ -1176,7 +1176,7 @@ PetscErrorCode DMCreateDomainDecompositionDM(DM dm, const char* name, DM *ddm)
   PetscValidCharPointer(name,2);
   PetscValidPointer(ddm,3);
   *ddm = PETSC_NULL;
-  if(dm->ops->createdomaindecompositiondm) {
+  if (dm->ops->createdomaindecompositiondm) {
     ierr = (*dm->ops->createdomaindecompositiondm)(dm,name,ddm); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1223,7 +1223,7 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
   if (innerislist)   {PetscValidPointer(innerislist,4);    *innerislist = PETSC_NULL;}
   if (outerislist)   {PetscValidPointer(outerislist,5);    *outerislist = PETSC_NULL;}
   if (dmlist)        {PetscValidPointer(dmlist,6);         *dmlist      = PETSC_NULL;}
-  if(dm->ops->createdomaindecomposition) {
+  if (dm->ops->createdomaindecomposition) {
     ierr = (*dm->ops->createdomaindecomposition)(dm,len,namelist,innerislist,outerislist,dmlist); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -2127,7 +2127,7 @@ PetscErrorCode  DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(xl,VEC_CLASSID,2); 
   PetscValidHeaderSpecific(xu,VEC_CLASSID,2); 
-  if(dm->ops->computevariablebounds) {
+  if (dm->ops->computevariablebounds) {
     ierr = (*dm->ops->computevariablebounds)(dm, xl,xu); CHKERRQ(ierr);
   }
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "This DM is incapable of computing variable bounds.");
@@ -2290,7 +2290,7 @@ PetscErrorCode  DMSetVec(DM dm,Vec x)
     }
     ierr = VecCopy(x,dm->x);CHKERRQ(ierr);
   }
-  else if(dm->x) {
+  else if (dm->x) {
     ierr = VecDestroy(&dm->x);  CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -2821,7 +2821,7 @@ PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, co
 
   PetscFunctionBegin;
   ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %D Element %s\n", c, name);CHKERRQ(ierr);
-  for(f = 0; f < len; ++f) {
+  for (f = 0; f < len; ++f) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "  | %G |\n", PetscRealPart(x[f]));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -2835,9 +2835,9 @@ PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, P
 
   PetscFunctionBegin;
   ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %D Element %s\n", c, name);CHKERRQ(ierr);
-  for(f = 0; f < rows; ++f) {
+  for (f = 0; f < rows; ++f) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "  |");CHKERRQ(ierr);
-    for(g = 0; g < cols; ++g) {
+    for (g = 0; g < cols; ++g) {
       ierr = PetscPrintf(PETSC_COMM_SELF, " % 9.5G", PetscRealPart(A[f*cols+g]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(PETSC_COMM_SELF, " |\n");CHKERRQ(ierr);
@@ -3028,7 +3028,7 @@ PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section) {
   ierr = PetscSectionGetNumFields(dm->defaultSection, &numFields);CHKERRQ(ierr);
   if (numFields) {
     ierr = DMSetNumFields(dm, numFields);CHKERRQ(ierr);
-    for(f = 0; f < numFields; ++f) {
+    for (f = 0; f < numFields; ++f) {
       const char *name;
 
       ierr = PetscSectionGetFieldName(dm->defaultSection, f, &name);CHKERRQ(ierr);
@@ -3173,7 +3173,7 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
   ierr = PetscLayoutSetLocalSize(layout, nroots);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
   ierr = PetscLayoutGetRanges(layout, &ranges);CHKERRQ(ierr);
-  for(p = pStart, nleaves = 0; p < pEnd; ++p) {
+  for (p = pStart, nleaves = 0; p < pEnd; ++p) {
     PetscInt dof, cdof;
 
     ierr = PetscSectionGetDof(globalSection, p, &dof);CHKERRQ(ierr);
@@ -3182,7 +3182,7 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
   }
   ierr = PetscMalloc(nleaves * sizeof(PetscInt), &local);CHKERRQ(ierr);
   ierr = PetscMalloc(nleaves * sizeof(PetscSFNode), &remote);CHKERRQ(ierr);
-  for(p = pStart, l = 0; p < pEnd; ++p) {
+  for (p = pStart, l = 0; p < pEnd; ++p) {
     PetscInt *cind;
     PetscInt  dof, gdof, cdof, dim, off, goff, d, c;
 
@@ -3193,22 +3193,22 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
     ierr = PetscSectionGetDof(globalSection, p, &gdof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(globalSection, p, &goff);CHKERRQ(ierr);
     dim  = dof-cdof;
-    for(d = 0, c = 0; d < dof; ++d) {
+    for (d = 0, c = 0; d < dof; ++d) {
       if ((c < cdof) && (cind[c] == d)) {++c; continue;}
       local[l+d-c] = off+d;
     }
     if (gdof < 0) {
-      for(d = 0; d < dim; ++d, ++l) {
+      for (d = 0; d < dim; ++d, ++l) {
         PetscInt offset = -(goff+1) + d, r;
 
-        for(r = 0; r < size; ++r) {
+        for (r = 0; r < size; ++r) {
           if ((offset >= ranges[r]) && (offset < ranges[r+1])) break;
         }
         remote[l].rank  = r;
         remote[l].index = offset - ranges[r];
       }
     } else {
-      for(d = 0; d < dim; ++d, ++l) {
+      for (d = 0; d < dim; ++d, ++l) {
         remote[l].rank  = rank;
         remote[l].index = goff+d - ranges[rank];
       }
@@ -3239,13 +3239,13 @@ PetscErrorCode DMSetNumFields(DM dm, PetscInt numFields)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  for(f = 0; f < dm->numFields; ++f) {
+  for (f = 0; f < dm->numFields; ++f) {
     ierr = PetscObjectDestroy(&dm->fields[f]);CHKERRQ(ierr);
   }
   ierr = PetscFree(dm->fields);CHKERRQ(ierr);
   dm->numFields = numFields;
   ierr = PetscMalloc(dm->numFields * sizeof(PetscObject), &dm->fields);CHKERRQ(ierr);
-  for(f = 0; f < dm->numFields; ++f) {
+  for (f = 0; f < dm->numFields; ++f) {
     ierr = PetscContainerCreate(((PetscObject) dm)->comm, (PetscContainer *) &dm->fields[f]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

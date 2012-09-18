@@ -104,7 +104,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
       ierr = KSP_MatMult(ksp,Amat,lcd->P[it+1],Z);CHKERRQ(ierr);
       ierr = KSP_PCApply(ksp,Z,lcd->Q[it+1]);CHKERRQ(ierr);
       
-      for( j = 0; j <= it; j++)	{
+      for ( j = 0; j <= it; j++)	{
         ierr = VecDot(lcd->P[j],lcd->Q[it+1],&num);CHKERRQ(ierr);
         ierr = VecDot(lcd->P[j],lcd->Q[j],&den);CHKERRQ(ierr); 
         beta = - num/den;
@@ -193,7 +193,7 @@ PetscErrorCode KSPSetFromOptions_LCD(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP LCD options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_lcd_restart","Number of vectors conjugate","KSPLCDSetRestart",lcd->restart,&lcd->restart,&flg);CHKERRQ(ierr);
-  if(flg && lcd->restart < 1) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Restart must be positive");
+  if (flg && lcd->restart < 1) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Restart must be positive");
   ierr = PetscOptionsReal("-ksp_lcd_haptol","Tolerance for exact convergence (happy ending)","KSPLCDSetHapTol",lcd->haptol,&lcd->haptol,&flg);CHKERRQ(ierr);
   if (flg && lcd->haptol < 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
   PetscFunctionReturn(0);

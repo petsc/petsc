@@ -65,7 +65,7 @@ static PetscErrorCode MatMultAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
   PetscErrorCode ierr;
  
   PetscFunctionBegin; /*  v3 = v2 + A * v1.*/
-  if(v3 != v2) {
+  if (v3 != v2) {
     ierr = MatMult(A,v1,v3);CHKERRQ(ierr);
     ierr = VecAXPY(v3,1.0,v2);CHKERRQ(ierr);
   } else {
@@ -108,7 +108,7 @@ PetscErrorCode MatMultTransposeAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
   PetscErrorCode ierr;
 
   PetscFunctionBegin; /*  v3 = v2 + A' * v1.*/
-  if(v3 != v2) {
+  if (v3 != v2) {
     ierr = MatMultTranspose(A,v1,v3);CHKERRQ(ierr);
     ierr = VecAXPY(v3,1.0,v2);CHKERRQ(ierr);
   } else {
@@ -374,10 +374,10 @@ PetscErrorCode  MatISSetLocalMat_IS(Mat mat,Mat local)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if(is->A) {
+  if (is->A) {
     ierr = MatGetSize(is->A,&orows,&ocols);CHKERRQ(ierr);
     ierr = MatGetSize(local,&nrows,&ncols);CHKERRQ(ierr);
-    if(orows != nrows || ocols != ncols ) {
+    if (orows != nrows || ocols != ncols ) {
       SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local MATIS matrix should be of size %dx%d (you passed a %dx%d matrix)\n",orows,ocols,nrows,ncols);
     }
   }

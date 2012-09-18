@@ -60,7 +60,7 @@ PetscErrorCode  PetscStageLogDestroy(PetscStageLog stageLog)
   ierr = PetscIntStackDestroy(stageLog->stack);CHKERRQ(ierr);
   ierr = EventRegLogDestroy(stageLog->eventLog);CHKERRQ(ierr);
   ierr = PetscClassRegLogDestroy(stageLog->classLog);CHKERRQ(ierr);
-  for(stage = 0; stage < stageLog->numStages; stage++) {
+  for (stage = 0; stage < stageLog->numStages; stage++) {
     ierr = PetscStageInfoDestroy(&stageLog->stageInfo[stage]);CHKERRQ(ierr);
   }
   ierr = PetscFree(stageLog->stageInfo);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[]
   PetscFunctionBegin;
   PetscValidCharPointer(sname,2);
   PetscValidIntPointer(stage,3);
-  for(st = 0; st < stageLog->numStages; ++st) {
+  for (st = 0; st < stageLog->numStages; ++st) {
     PetscBool  same;
 
     ierr = PetscStrcmp(stageLog->stageInfo[st].name, sname, &same);CHKERRQ(ierr);
@@ -506,7 +506,7 @@ PetscErrorCode  PetscStageLogGetStage(PetscStageLog stageLog, const char name[],
   PetscValidCharPointer(name,2);
   PetscValidIntPointer(stage,3);
   *stage = -1;
-  for(s = 0; s < stageLog->numStages; s++) {
+  for (s = 0; s < stageLog->numStages; s++) {
     ierr = PetscStrcasecmp(stageLog->stageInfo[s].name, name, &match);CHKERRQ(ierr);
     if (match) break;
   }

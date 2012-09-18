@@ -131,7 +131,7 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDADirection dir, MPI_Comm *subc
   ierr = PetscMalloc2(size, PetscInt, &firstPoints, size, PetscMPIInt, &subgroupRanks);CHKERRQ(ierr);
   ierr = MPI_Allgather(&firstPoint, 1, MPIU_INT, firstPoints, 1, MPIU_INT, comm);CHKERRQ(ierr);
   ierr = PetscInfo2(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",dd->dim,(int)dir);CHKERRQ(ierr);
-  for(p = 0; p < size; ++p) {
+  for (p = 0; p < size; ++p) {
     if (firstPoints[p] == firstPoint) {
       subgroupRanks[subgroupSize++] = p;
       ierr = PetscInfo1(da, "%D ", p);CHKERRQ(ierr);

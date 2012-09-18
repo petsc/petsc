@@ -220,16 +220,16 @@ PetscErrorCode  MatRegisterOp(MPI_Comm comm, const char url[], PetscVoidFunction
   char **argTypes = PETSC_NULL;
   PetscFunctionBegin;
   va_start(ap,numArgs);
-  if(numArgs) {
+  if (numArgs) {
     ierr = PetscMalloc(sizeof(char*)*numArgs, &argTypes); CHKERRQ(ierr);
   }
-  for(i = 0; i < numArgs; ++i) {
+  for (i = 0; i < numArgs; ++i) {
     argType = va_arg(ap,const char*);
     ierr = PetscStrallocpy(argType, argTypes+i); CHKERRQ(ierr);
   }
   va_end(ap);
   ierr = PetscOpFListAdd(comm, &MatOpList, url, function, op, numArgs, argTypes); CHKERRQ(ierr);
-  for(i = 0; i < numArgs; ++i) {
+  for (i = 0; i < numArgs; ++i) {
     ierr = PetscFree(argTypes[i]); CHKERRQ(ierr);
   }
   ierr = PetscFree(argTypes); CHKERRQ(ierr);
@@ -263,16 +263,16 @@ PetscErrorCode  MatQueryOp(MPI_Comm comm, PetscVoidFunction* function, const cha
   char **argTypes = PETSC_NULL;
   PetscFunctionBegin;
   va_start(ap,numArgs);
-  if(numArgs) {
+  if (numArgs) {
     ierr = PetscMalloc(sizeof(char*)*numArgs, &argTypes); CHKERRQ(ierr);
   }
-  for(i = 0; i < numArgs; ++i) {
+  for (i = 0; i < numArgs; ++i) {
     argType = va_arg(ap,const char*);
     ierr = PetscStrallocpy(argType, argTypes+i); CHKERRQ(ierr);
   }
   va_end(ap);
   ierr = PetscOpFListFind(comm, MatOpList, function, op, numArgs, argTypes); CHKERRQ(ierr);
-  for(i = 0; i < numArgs; ++i) {
+  for (i = 0; i < numArgs; ++i) {
     ierr = PetscFree(argTypes[i]); CHKERRQ(ierr);
   }
   ierr = PetscFree(argTypes); CHKERRQ(ierr);

@@ -525,7 +525,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C,PetscInt *data,Pet
     for (j=0; j<n; j++){
       col = idx_i[j]; 
       if (col >= Mbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index col %D >= Mbs %D",col,Mbs);
-      if(!PetscBTLookupSet(table_i,col)) { 
+      if (!PetscBTLookupSet(table_i,col)) { 
         ierr = PetscBTSet(table0,col);CHKERRQ(ierr);
         if (whose == MINE) {nidx_i[isz0] = col;}
         if (col_max < col) col_max = col;

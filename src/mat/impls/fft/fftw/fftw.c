@@ -1158,7 +1158,7 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   fftw->ndim_fftw   = (ptrdiff_t)ndim; /* This is dimension of fft */
   fftw->partial_dim = partial_dim;
   ierr = PetscMalloc(ndim*sizeof(ptrdiff_t), (ptrdiff_t *)&(fftw->dim_fftw));CHKERRQ(ierr); 
-  for(ctr=0;ctr<ndim;ctr++) (fftw->dim_fftw)[ctr]=dim[ctr];
+  for (ctr=0;ctr<ndim;ctr++) (fftw->dim_fftw)[ctr]=dim[ctr];
    
   fftw->p_forward  = 0;
   fftw->p_backward = 0;

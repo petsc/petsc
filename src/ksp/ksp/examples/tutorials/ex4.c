@@ -79,8 +79,8 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elem
   //  18  onproc rows containing 54 element matrix entries
   //   3 offproc columns in 8 element matrix entries
   //   so we should have 46 diagonal matrix entries
-  for(j = info.ys; j < info.ys+nye; ++j) {
-    for(i = info.xs; i < info.xs+nxe; ++i) {
+  for (j = info.ys; j < info.ys+nye; ++j) {
+    for (i = info.xs; i < info.xs+nxe; ++i) {
       PetscInt rowA = j*X     + i, rowB = j*X     + i+1;
       PetscInt rowC = (j+1)*X + i, rowD = (j+1)*X + i+1;
 

@@ -44,8 +44,8 @@ PetscErrorCode test_solve( void )
   ierr = MatSeqAIJSetPreallocation( A12, np, PETSC_NULL );CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation( A12, np, PETSC_NULL,np, PETSC_NULL );CHKERRQ(ierr);
 
-  for( i=0; i<n; i++ ) {
-    for( j=0; j<np; j++ ) {
+  for ( i=0; i<n; i++ ) {
+    for ( j=0; j<np; j++ ) {
       ierr = MatSetValue( A12, i,j, (double)(i+j*n), INSERT_VALUES );CHKERRQ(ierr);
     }
   }
@@ -160,8 +160,8 @@ PetscErrorCode test_solve_matgetvecs( void )
   ierr = MatSeqAIJSetPreallocation( A12, np, PETSC_NULL );CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation( A12, np, PETSC_NULL,np, PETSC_NULL );CHKERRQ(ierr);
 
-  for( i=0; i<n; i++ ) {
-    for( j=0; j<np; j++ ) {
+  for ( i=0; i<n; i++ ) {
+    for ( j=0; j<np; j++ ) {
       ierr = MatSetValue( A12, i,j, (double)(i+j*n), INSERT_VALUES );CHKERRQ(ierr);
     }
   }

@@ -98,7 +98,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
       ierr = PetscViewerASCIIPrintf(jac->monitor,"    SVD: largest singular values : %14.12e %14.12e %14.12e %14.12e %14.12e\n",(double)PetscRealPart(d[4]),(double)PetscRealPart(d[3]),(double)PetscRealPart(d[2]),(double)PetscRealPart(d[1]),(double)PetscRealPart(d[0]));CHKERRQ(ierr);
     } else {                    /* print all singular values */
       char buf[256],*p;
-      size_t left = sizeof buf,used;
+      size_t left = sizeof(buf),used;
       PetscInt thisline;
       for (p=buf,i=n-1,thisline=1; i>=0; i--,thisline++) {
         ierr = PetscSNPrintfCount(p,left," %14.12e",&used,(double)PetscRealPart(d[i]));CHKERRQ(ierr);

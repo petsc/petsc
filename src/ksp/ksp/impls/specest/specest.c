@@ -127,9 +127,9 @@ static PetscErrorCode KSPSetFromOptions_SpecEst(KSP ksp)
   ierr = KSPSetPC(spec->kspest,spec->pcnone);CHKERRQ(ierr);
   ierr = KSPSetPC(spec->kspcheap,spec->pcnone);CHKERRQ(ierr);
 
-  ierr = PetscSNPrintf(prefix,sizeof prefix,"%sspecest_",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
+  ierr = PetscSNPrintf(prefix,sizeof(prefix),"%sspecest_",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(spec->kspest,prefix);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(prefix,sizeof prefix,"%sspeccheap_",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
+  ierr = PetscSNPrintf(prefix,sizeof(prefix),"%sspeccheap_",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(spec->kspcheap,prefix);CHKERRQ(ierr);
 
   if (!((PetscObject)spec->kspest)->type_name) {

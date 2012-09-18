@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)F,"F");CHKERRQ(ierr);
-  for(i=0;i < N;i++) {
+  for (i=0;i < N;i++) {
     value = i;
     ierr = VecSetValues(X,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
     value = 100 + i;

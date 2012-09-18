@@ -98,9 +98,9 @@ c
 #endif
 !
       cw1 = cb1/vkar/vkar + (1. + cb2)/sig
-      if(ivisc.gt.4)turbinf = 1.341946
-!      if(ivisc.gt.4)turbinf = 0.5
-      if(ivisc.gt.4.and.itran.eq.1)turbinf = 0.1
+      if (ivisc.gt.4) turbinf = 1.341946
+!      if (ivisc.gt.4) turbinf = 0.5
+      if (ivisc.gt.4.and.itran.eq.1) turbinf = 0.1
 !
 ! Note that for Spalarts model, I use turbinf as the freestream value of
 ! the dependent variable just as in the Baldwin-Barth model.
@@ -288,7 +288,7 @@ c============================================================================
       if (irank .eq. 0) write(10,27)cfl2,dt,irest
 
       if (irank .eq. 0) then
-       if(ivisc.eq.5.or.ivisc.eq.6) write(10,123)itran,nbtran
+       if (ivisc.eq.5.or.ivisc.eq.6) write(10,123) itran,nbtran
       endif
 
    10 format(20a4)
@@ -1199,8 +1199,8 @@ c
       enddo
  
 c
-c     if(ntt.eq.ncyc) then
-c       if(nnbound.gt.0) then
+c     if (ntt.eq.ncyc) then
+c       if (nnbound.gt.0) then
 c         write(16,*) 'Inviscid bodies:'
 c       endif
 c     endif
@@ -1322,8 +1322,8 @@ c Viscous boundary
 c
 c     nstart=1
 c
-c     if(ntt.eq.ncyc) then
-c       if(nvbound.gt.0) then
+c     if (ntt.eq.ncyc) then
+c       if (nvbound.gt.0) then
 c         write(16,*) 'Viscous bodies:'
 c       endif
 c     endif
@@ -2022,7 +2022,7 @@ c Loop over all the faces and calculate a flux
 c
        flops = 0.0
        second = 1.0
-       if(ntt.le.nitfo)second = 0.0
+       if (ntt.le.nitfo) second = 0.0
 c      print *, 'Second is' , second
        do 1010 n = 1, nedge
         node1 = eptr(n,1)
@@ -2072,7 +2072,7 @@ c
           ubp2a = -ubar + 2.*c
 	  flops = flops + 61.0
 c
-          if(abs(fmach).lt.1.0)then
+          if (abs(fmach).lt.1.0) then
            fluxp1 = area*0.25*rho*c*(fmach + 1)**2
            fluxp2 = fluxp1*(xnorm*ubp2a/gamma + u)
            fluxp3 = fluxp1*(ynorm*ubp2a/gamma + v)
@@ -2081,7 +2081,7 @@ c
      &                  + 2.*gm1*ubar*c + 2.*c*c)/(gamma*gamma - 1)
      &                  + 0.5*q2)
            flops = flops + 34.0
-          else if(fmach.ge.1.0)then
+          else if (fmach.ge.1.0) then
            fluxp1 = area*rho*ubar
            fluxp2 = area*(rho*u*ubar + xnorm*press)
            fluxp3 = area*(rho*v*ubar + ynorm*press)
@@ -2130,7 +2130,7 @@ c
           ubm2a = -ubar - 2.*c
 	  flops = flops + 55.0
 c
-          if(abs(fmach).lt.1.0)then
+          if (abs(fmach).lt.1.0) then
            fluxm1 = -area*0.25*rho*c*(fmach - 1)**2
            fluxm2 = fluxm1*(xnorm*ubm2a/gamma + u)
            fluxm3 = fluxm1*(ynorm*ubm2a/gamma + v)
@@ -2140,7 +2140,7 @@ c
      &                  + 0.5*q2)
            flops = flops + 35.0
 c
-          else if(fmach.le.-1.0)then
+          else if (fmach.le.-1.0) then
            fluxm1 = area*rho*ubar
            fluxm2 = area*(rho*u*ubar + xnorm*press)
            fluxm3 = area*(rho*v*ubar + ynorm*press)
@@ -2414,7 +2414,7 @@ c
 c If unorm > 0 this is outflow: take variables from inside
 c If unorm < 0 this is inflow:  take variables from outside
 c
-         if(unorm.gt.0.0)then
+         if (unorm.gt.0.0) then
           u = qnode(2,inode) + xnorm*(unorm - unormi)
           v = qnode(3,inode) + ynorm*(unorm - unormi)
           w = qnode(4,inode) + znorm*(unorm - unormi)
@@ -2979,7 +2979,7 @@ c
 c If unorm > 0 this is outflow: take variables from inside
 c If unorm < 0 this is inflow:  take variables from outside
 c
-         if(unorm.gt.0.0)then
+         if (unorm.gt.0.0) then
           u = qnode(2,inode) + xnorm*(unorm - unormi)
           v = qnode(3,inode) + ynorm*(unorm - unormi)
           w = qnode(4,inode) + znorm*(unorm - unormi)
@@ -3378,7 +3378,7 @@ c
 c If second order, loop over all the faces accumulate sums
 c
 c     nitfo = 0
-c     if(ntt.gt.nitfo.or.ivisc.gt.0)then
+c     if (ntt.gt.nitfo.or.ivisc.gt.0) then
 c     if (1 .gt. 0) then
        do 1020 n = 1, nedge
          node1 = eptr(n,1)
@@ -3636,7 +3636,7 @@ c--------------------------
 c'*/
 c Calculate the time step
 c
-      if(ires.eq.1) goto 888
+      if (ires.eq.1) goto 888
 c     call PLogEventBegin(delta2_event,0,0,0,0,ierr)
       call DELTAT2(nnodes,nedge,qvec,cdt,
      &             x,y,z,area,xn,yn,zn,rl,evec,
@@ -3691,7 +3691,7 @@ c
 c /*'
 c If not doing Newton-Krylov and iflim=1 call the Flux Limiter
 c
-c     if(iflim.eq.1.and.ifcn.ne.1)then
+c     if (iflim.eq.1.and.ifcn.ne.1) then
 c     if (iflim.ne.2) then
 c      call TIMLIM(nnodes,nedge,qnode,res,dq,phiv,ncolor,ncount,
 c    &             gradx,grady,gradz,x,y,z,eptr)
@@ -3734,7 +3734,7 @@ c    &               ncount,qvec,x,y,resvec,xn,yn,rl,
 c    &               nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
 c    &               sxn,syn,vxn,vyn,fxn,fyn,phiv)
 c '*/
-      else if(ihane.eq.0)then
+      else if (ihane.eq.0) then
          call SPLIT(nnodes,ncell,nedge,nsface,nvface,nfface,
      &             isface,ivface,ifface,nsnode,nvnode,nfnode,
      &             isnode,ivnode,ifnode,
@@ -3748,7 +3748,7 @@ c '*/
      &             xn,yn,zn,rl,
      &             sxn,syn,szn,vxn,vyn,vzn,
      &             fxn,fyn,fzn,phiv,irank,nvertices)
-      else if(ihane.eq.3)then
+      else if (ihane.eq.3) then
          write (6,*) "SPLITS not implemented"
          stop
 c
@@ -3759,7 +3759,7 @@ c    &              ncount,qvec,x,y,resvec,xn,yn,rl,
 c    &              nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
 c    &              sxn,syn,vxn,vyn,fxn,fyn,phiv)
 c '*/
-      else if(ihane.eq.4)then
+      else if (ihane.eq.4) then
          write (6,*) "AUSM not implemented"
          stop
 c
@@ -3991,7 +3991,7 @@ c       idiag = iau(node1)
 c
 c If the offdiagonal term is ordered later in the ja array 
 c
-c       if(node2.gt.node1)then
+c       if (node2.gt.node1) then
 c        jstart = idiag + 1
 c        jend   = ia(node1+1) - 1
 c       else
@@ -4000,7 +4000,7 @@ c        jend   = idiag -1
 c       end if
 c
 c        do 1070 j = jstart,jend
-c          if(ja(j).eq.node2)fhelp(i,1) = j
+c          if (ja(j).eq.node2) fhelp(i,1) = j
 c1070    continue
 c
 c
@@ -4010,7 +4010,7 @@ c       idiag = iau(node2)
 c
 c If the offdiagonal term is ordered later in the ja array 
 c
-c       if(node1.gt.node2)then
+c       if (node1.gt.node2) then
 c        jstart = idiag + 1
 c        jend   = ia(node2+1) - 1
 c       else
@@ -4019,7 +4019,7 @@ c        jend   = idiag -1
 c       end if
 c
 c       do 1080 j = jstart,jend
-c         if(ja(j).eq.node1)fhelp(i,2) = j
+c         if (ja(j).eq.node1) fhelp(i,2) = j
 c1080   continue
 c       write(90,*) i,fhelp(i,1),fhelp(i,2)
 c1060 continue
@@ -4043,14 +4043,14 @@ c
         minsave = ja(i)
         jsave = i
         do 1010 j = i+1,iend
-          if(ja(j).lt.min)then
+          if (ja(j).lt.min) then
             min = ja(j)
             jsave = j
           end if
  1010   continue
         ja(i) = min
         ja(jsave) = minsave
-c       if(ja(i).eq.inode)iau(inode) = i
+c       if (ja(i).eq.inode) iau(inode) = i
  1000 continue
 c
       return

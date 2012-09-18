@@ -618,7 +618,7 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
   ierr = DMDestroyVI(snes->dm);CHKERRQ(ierr);
   if (i == maxits) {
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
-    if(!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
+    if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   PetscFunctionReturn(0);
 }
@@ -733,7 +733,7 @@ PetscErrorCode SNESSetUp_VIRS(SNES snes)
   ierr = VecGetOwnershipRange(snes->vec_sol,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetLocalSize(snes->vec_sol,&n);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-  for(i=0;i < n; i++) indices[i] = rstart + i;
+  for (i=0;i < n; i++) indices[i] = rstart + i;
   ierr = ISCreateGeneral(((PetscObject)snes)->comm,n,indices,PETSC_OWN_POINTER,&vi->IS_inact_prev);
 
   /* set the line search functions */

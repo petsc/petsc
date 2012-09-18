@@ -281,7 +281,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool  hasOpera
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
-  if(!snes->vec_func && (snes->jacobian || snes->jacobian_pre)) {
+  if (!snes->vec_func && (snes->jacobian || snes->jacobian_pre)) {
     Mat A = snes->jacobian, B = snes->jacobian_pre;
     ierr = MatGetVecs(A ? A : B, PETSC_NULL,&snes->vec_func);CHKERRQ(ierr);
   }
@@ -689,7 +689,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     /* GS Options */
     ierr = PetscOptionsInt("-snes_gs_sweeps","Number of sweeps of GS to apply","SNESComputeGS",snes->gssweeps,&snes->gssweeps,PETSC_NULL);CHKERRQ(ierr);
 
-    for(i = 0; i < numberofsetfromoptions; i++) {
+    for (i = 0; i < numberofsetfromoptions; i++) {
       ierr = (*othersetfromoptions[i])(snes);CHKERRQ(ierr);
     }
 
@@ -1979,7 +1979,7 @@ PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,3);
   PetscCheckSameComm(snes,1,x,2);
-  if(b) PetscCheckSameComm(snes,1,b,3);
+  if (b) PetscCheckSameComm(snes,1,b,3);
   if (b) VecValidValues(b,2,PETSC_TRUE);
   ierr = PetscLogEventBegin(SNES_GSEval,snes,x,b,0);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
@@ -4289,13 +4289,13 @@ PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rt
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   kctx = (SNESKSPEW*)snes->kspconvctx;
   if (!kctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context existing");
-  if(version)   *version   = kctx->version;
-  if(rtol_0)    *rtol_0    = kctx->rtol_0;
-  if(rtol_max)  *rtol_max  = kctx->rtol_max;
-  if(gamma)     *gamma     = kctx->gamma;
-  if(alpha)     *alpha     = kctx->alpha;
-  if(alpha2)    *alpha2    = kctx->alpha2;
-  if(threshold) *threshold = kctx->threshold;
+  if (version)   *version   = kctx->version;
+  if (rtol_0)    *rtol_0    = kctx->rtol_0;
+  if (rtol_max)  *rtol_max  = kctx->rtol_max;
+  if (gamma)     *gamma     = kctx->gamma;
+  if (alpha)     *alpha     = kctx->alpha;
+  if (alpha2)    *alpha2    = kctx->alpha2;
+  if (threshold) *threshold = kctx->threshold;
   PetscFunctionReturn(0);
 }
 

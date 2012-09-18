@@ -555,7 +555,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     if (flg) {
       char amscommname[256];
       void *ctx;
-      ierr = PetscSNPrintf(amscommname,sizeof amscommname,"%sksp_monitor_ams",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
+      ierr = PetscSNPrintf(amscommname,sizeof(amscommname),"%sksp_monitor_ams",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
       ierr = KSPMonitorAMSCreate(ksp,amscommname,&ctx);CHKERRQ(ierr);
       ierr = KSPMonitorSet(ksp,KSPMonitorAMS,ctx,KSPMonitorAMSDestroy);CHKERRQ(ierr);
       ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);

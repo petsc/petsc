@@ -158,7 +158,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
 
-  for(i = 0; i < maxits; i++) {
+  for (i = 0; i < maxits; i++) {
     lsSuccess = PETSC_TRUE;
     /* Call general purpose update function */
     if (snes->ops->update) {

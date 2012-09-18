@@ -50,7 +50,7 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   if (iascii) {
     PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %D\n", aomap->N);
     PetscViewerASCIIPrintf(viewer, "   App.   PETSc\n");
-    for(i = 0; i < aomap->N; i++) {
+    for (i = 0; i < aomap->N; i++) {
       PetscViewerASCIIPrintf(viewer, "%D   %D    %D\n", i, aomap->app[i], aomap->petsc[aomap->appPerm[i]]);
     }
   }
@@ -76,7 +76,7 @@ PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
      better running times if indices are clustered.
   */
   PetscFunctionBegin;
-  for(i = 0; i < n; i++) {
+  for (i = 0; i < n; i++) {
     idex = ia[i];
     if (idex < 0) continue;
     /* Use bisection since the array is sorted */
@@ -117,7 +117,7 @@ PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
      better running times if indices are clustered.
   */
   PetscFunctionBegin;
-  for(i = 0; i < n; i++) {
+  for (i = 0; i < n; i++) {
     idex = ia[i];
     if (idex < 0) continue;
     /* Use bisection since the array is sorted */
@@ -306,7 +306,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   nnapp = napp;
   ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N    = 0;
-  for(i = 0; i < size; i++) {
+  for (i = 0; i < size; i++) {
     disp[i] = N;
     N += lens[i];
   }
@@ -318,7 +318,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   if (!mypetsc) {
     start = disp[rank];
     ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
-    for(i = 0; i < napp; i++) {
+    for (i = 0; i < napp; i++) {
       petsc[i] = start + i;
     }
   } else {
@@ -334,36 +334,36 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   /* generate a list of application and PETSc node numbers */
   ierr = PetscMalloc4(N,PetscInt, &aomap->app,N,PetscInt,&aomap->appPerm,N,PetscInt,&aomap->petsc,N,PetscInt,&aomap->petscPerm);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ao, 4*N * sizeof(PetscInt));CHKERRQ(ierr);
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     appPerm[i]   = i;
     petscPerm[i] = i;
   }
   ierr = PetscSortIntWithPermutation(N, allpetsc, petscPerm);CHKERRQ(ierr);
   ierr = PetscSortIntWithPermutation(N, allapp,   appPerm);CHKERRQ(ierr);
   /* Form sorted arrays of indices */
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     aomap->app[i]   = allapp[appPerm[i]];
     aomap->petsc[i] = allpetsc[petscPerm[i]];
   }
   /* Invert petscPerm[] into aomap->petscPerm[] */
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     aomap->petscPerm[petscPerm[i]] = i;
   }
   /* Form map between aomap->app[] and aomap->petsc[] */
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     aomap->appPerm[i] = aomap->petscPerm[appPerm[i]];
   }
   /* Invert appPerm[] into allapp[] */
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     allapp[appPerm[i]] = i;
   }
   /* Form map between aomap->petsc[] and aomap->app[] */
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     aomap->petscPerm[i] = allapp[petscPerm[i]];
   }
 #ifdef PETSC_USE_DEBUG
   /* Check that the permutations are complementary */
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     if (i != aomap->appPerm[aomap->petscPerm[i]]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid ordering");
   }
 #endif

@@ -13,7 +13,7 @@
 PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact,PetscBool  natural)
 {
   PetscFunctionBegin;
-  if(natural){
+  if (natural){
     switch (fact->rmap->bs){
     case 1:
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;

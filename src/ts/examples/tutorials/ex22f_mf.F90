@@ -187,7 +187,7 @@ program main
   call TSSolve(ts,X,ftime,ierr)
   call TSGetTimeStepNumber(ts,steps,ierr)
 
-  if(OptionSaveToDisk) then
+  if (OptionSaveToDisk) then
      call GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
      dof=i2*(xe-xs+1)
      gdof=i2*(gxe-gxs+1)

@@ -489,11 +489,11 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
   ierr = MPI_Comm_size(((PetscObject)is)->comm, &size); CHKERRQ(ierr);
-  if(size == 1) {
+  if (size == 1) {
     ierr = (*is->ops->getindices)(is,indices);CHKERRQ(ierr);
   }
   else {
-    if(!is->total) {
+    if (!is->total) {
       ierr = ISGatherTotal_Private(is); CHKERRQ(ierr);
     }
     *indices = is->total;
@@ -526,11 +526,11 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
   ierr = MPI_Comm_size(((PetscObject)is)->comm, &size); CHKERRQ(ierr);
-  if(size == 1) {
+  if (size == 1) {
     ierr = (*is->ops->restoreindices)(is,indices);CHKERRQ(ierr);
   }
   else {
-    if(is->total != *indices) {
+    if (is->total != *indices) {
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
     }
   }
@@ -571,11 +571,11 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
   ierr = MPI_Comm_size(((PetscObject)is)->comm, &size); CHKERRQ(ierr);
-  if(size == 1) {
+  if (size == 1) {
       *indices = PETSC_NULL;
   }
   else {
-    if(!is->total) {
+    if (!is->total) {
       ierr = ISGatherTotal_Private(is); CHKERRQ(ierr);
     }
     ierr = ISGetLocalSize(is,&n); CHKERRQ(ierr);
@@ -611,7 +611,7 @@ PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
-  if(is->nonlocal != *indices) {
+  if (is->nonlocal != *indices) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
   }
   PetscFunctionReturn(0);
@@ -650,7 +650,7 @@ PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(complement,2);
   /* Check if the complement exists already. */
-  if(is->complement) {
+  if (is->complement) {
     *complement = is->complement;
     ierr = PetscObjectReference((PetscObject)(is->complement)); CHKERRQ(ierr);
   }
@@ -694,11 +694,11 @@ PetscErrorCode  ISRestoreNonlocalIS(IS is, IS *complement)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(complement,2);
-  if(*complement != is->complement) {
+  if (*complement != is->complement) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Complement IS being restored was not obtained with ISGetNonlocalIS()");
   }
   ierr = PetscObjectGetReference((PetscObject)(is->complement), &refcnt); CHKERRQ(ierr);
-  if(refcnt <= 1) {
+  if (refcnt <= 1) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Duplicate call to ISRestoreNonlocalIS() detected");
   }
   ierr = PetscObjectDereference((PetscObject)(is->complement));  CHKERRQ(ierr);
@@ -1006,7 +1006,7 @@ PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
   PetscFunctionBegin;
   ierr = ISGetSize(is,&len); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ptr); CHKERRQ(ierr);
-  for(i=0;i<len;i++) idx[i] = ptr[i];
+  for (i=0;i<len;i++) idx[i] = ptr[i];
   ierr = ISRestoreIndices(is,&ptr); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

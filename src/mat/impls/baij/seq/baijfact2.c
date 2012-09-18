@@ -187,7 +187,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
     vi    = aj + diag[i] - 1;
     nz    = diag[i] - diag[i+1] - 1;
-    for(j=0;j>-nz;j--){
+    for (j=0;j>-nz;j--){
       oidx = bs*vi[j];
       x[oidx]   -= v[0]*s1  +  v[1]*s2;
       x[oidx+1] -= v[2]*s1  +  v[3]*s2;
@@ -203,7 +203,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
     nz   = ai[i+1] - ai[i];
     idt  = bs*i;
     s1   = x[idt];  s2 = x[1+idt];
-    for(j=0;j<nz;j++){
+    for (j=0;j<nz;j++){
       idx   = bs*vi[j];
       x[idx]   -=  v[0]*s1 +  v[1]*s2;
       x[idx+1] -=  v[2]*s1 +  v[3]*s2;
@@ -303,7 +303,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
     vi    = aj + diag[i] - 1;
     nz    = diag[i] - diag[i+1] - 1;
-    for(j=0;j>-nz;j--){
+    for (j=0;j>-nz;j--){
       oidx = bs*vi[j];
       x[oidx]   -= v[0]*s1  +  v[1]*s2  + v[2]*s3;
       x[oidx+1] -= v[3]*s1  +  v[4]*s2  + v[5]*s3;
@@ -320,7 +320,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
     nz   = ai[i+1] - ai[i];
     idt  = bs*i;
     s1   = x[idt];  s2 = x[1+idt];  s3 = x[2+idt];
-    for(j=0;j<nz;j++){
+    for (j=0;j<nz;j++){
       idx   = bs*vi[j];
       x[idx]   -= v[0]*s1  +  v[1]*s2  + v[2]*s3;
       x[idx+1] -= v[3]*s1  +  v[4]*s2  + v[5]*s3;
@@ -425,7 +425,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
     vi    = aj + diag[i] - 1;
     nz    = diag[i] - diag[i+1] - 1;
-    for(j=0;j>-nz;j--){
+    for (j=0;j>-nz;j--){
       oidx = bs*vi[j];
       x[oidx]   -=  v[0]*s1  +  v[1]*s2  + v[2]*s3  + v[3]*s4;
       x[oidx+1] -=  v[4]*s1  +  v[5]*s2  + v[6]*s3  + v[7]*s4;
@@ -443,7 +443,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
     nz   = ai[i+1] - ai[i];
     idt  = bs*i;
     s1   = x[idt];  s2 = x[1+idt];  s3 = x[2+idt];  s4 = x[3+idt];
-    for(j=0;j<nz;j++){
+    for (j=0;j<nz;j++){
       idx   = bs*vi[j];
       x[idx]   -=  v[0]*s1  +  v[1]*s2  + v[2]*s3  + v[3]*s4;
       x[idx+1] -=  v[4]*s1  +  v[5]*s2  + v[6]*s3  + v[7]*s4;
@@ -554,7 +554,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
     vi    = aj + diag[i] - 1;
     nz    = diag[i] - diag[i+1] - 1;
-    for(j=0;j>-nz;j--){
+    for (j=0;j>-nz;j--){
       oidx = bs*vi[j];
       x[oidx]   -=  v[0]*s1   +  v[1]*s2   + v[2]*s3   + v[3]*s4   + v[4]*s5;
       x[oidx+1] -=  v[5]*s1   +  v[6]*s2   + v[7]*s3   + v[8]*s4   + v[9]*s5;
@@ -573,7 +573,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
     nz   = ai[i+1] - ai[i];
     idt  = bs*i;
     s1   = x[idt];  s2 = x[1+idt];  s3 = x[2+idt];  s4 = x[3+idt];  s5 = x[4+idt];
-    for(j=0;j<nz;j++){
+    for (j=0;j<nz;j++){
       idx   = bs*vi[j];
       x[idx]   -=  v[0]*s1   +  v[1]*s2   + v[2]*s3   + v[3]*s4   + v[4]*s5;
       x[idx+1] -=  v[5]*s1   +  v[6]*s2   + v[7]*s3   + v[8]*s4   + v[9]*s5;
@@ -692,7 +692,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
     vi    = aj + diag[i] - 1;
     nz    = diag[i] - diag[i+1] - 1;
-    for(j=0;j>-nz;j--){
+    for (j=0;j>-nz;j--){
       oidx = bs*vi[j];
       x[oidx]   -= v[0]*s1  +  v[1]*s2 +  v[2]*s3 +  v[3]*s4 +  v[4]*s5 +  v[5]*s6;
       x[oidx+1] -= v[6]*s1  +  v[7]*s2 +  v[8]*s3 +  v[9]*s4 + v[10]*s5 + v[11]*s6;
@@ -714,7 +714,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
     idt  = bs*i;
     s1   = x[idt];  s2 = x[1+idt];  s3 = x[2+idt];  s4 = x[3+idt];  s5 = x[4+idt];
     s6   = x[5+idt];
-    for(j=0;j<nz;j++){
+    for (j=0;j<nz;j++){
       idx   = bs*vi[j];
       x[idx]   -= v[0]*s1  +  v[1]*s2 +  v[2]*s3 +  v[3]*s4 +  v[4]*s5 +  v[5]*s6;
       x[idx+1] -= v[6]*s1  +  v[7]*s2 +  v[8]*s3 +  v[9]*s4 + v[10]*s5 + v[11]*s6;
@@ -836,7 +836,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
     v -= bs2;
     vi    = aj + diag[i] - 1;
     nz    = diag[i] - diag[i+1] - 1;
-    for(j=0;j>-nz;j--){
+    for (j=0;j>-nz;j--){
       oidx = bs*vi[j];
       x[oidx]   -= v[0]*s1  +  v[1]*s2 +  v[2]*s3 +  v[3]*s4 +  v[4]*s5 +  v[5]*s6 +  v[6]*s7;
       x[oidx+1] -= v[7]*s1  +  v[8]*s2 +  v[9]*s3 + v[10]*s4 + v[11]*s5 + v[12]*s6 + v[13]*s7;
@@ -859,7 +859,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
     idt  = bs*i;
     s1   = x[idt];    s2 = x[1+idt];  s3 = x[2+idt];  s4 = x[3+idt];  s5 = x[4+idt];
     s6   = x[5+idt];  s7 = x[6+idt];
-    for(j=0;j<nz;j++){
+    for (j=0;j<nz;j++){
       idx   = bs*vi[j];
       x[idx]   -= v[0]*s1  +  v[1]*s2 +  v[2]*s3 +  v[3]*s4 +  v[4]*s5 +  v[5]*s6 +  v[6]*s7;
       x[idx+1] -= v[7]*s1  +  v[8]*s2 +  v[9]*s3 + v[10]*s4 + v[11]*s5 + v[12]*s6 + v[13]*s7;
@@ -1107,7 +1107,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
 
   /* copy b into temp work space according to permutation */
-  for(i=0;i<n;i++){
+  for (i=0;i<n;i++){
     ii = bs*i; ic = bs*c[i];
     t[ii] = b[ic]; t[ii+1] = b[ic+1];
   }
@@ -1124,7 +1124,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
 
     vi    = aj + diag[i] - 1;
     nz    = diag[i] - diag[i+1] - 1;
-    for(j=0;j>-nz;j--){
+    for (j=0;j>-nz;j--){
       oidx = bs*vi[j];
       t[oidx]   -= v[0]*s1  +  v[1]*s2;
       t[oidx+1] -= v[2]*s1  +  v[3]*s2;
@@ -1140,7 +1140,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
     nz   = ai[i+1] - ai[i];
     idt  = bs*i;
     s1   = t[idt];  s2 = t[1+idt];
-    for(j=0;j<nz;j++){
+    for (j=0;j<nz;j++){
       idx   = bs*vi[j];
       t[idx]   -=  v[0]*s1 +  v[1]*s2;
       t[idx+1] -=  v[2]*s1 +  v[3]*s2;
@@ -1149,7 +1149,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   }
 
   /* copy t into x according to permutation */
-  for(i=0;i<n;i++){
+  for (i=0;i<n;i++){
     ii = bs*i;  ir = bs*r[i];
     x[ir] = t[ii];  x[ir+1] = t[ii+1];
   }
@@ -1276,7 +1276,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
 
   /* copy b into temp work space according to permutation */
-  for(i=0;i<n;i++){
+  for (i=0;i<n;i++){
     ii = bs*i; ic = bs*c[i];
     t[ii] = b[ic]; t[ii+1] = b[ic+1]; t[ii+2] = b[ic+2];
   }
@@ -1294,7 +1294,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
 
     vi    = aj + diag[i] - 1;
     nz    = diag[i] - diag[i+1] - 1;
-    for(j=0;j>-nz;j--){
+    for (j=0;j>-nz;j--){
       oidx = bs*vi[j];
       t[oidx]   -= v[0]*s1  +  v[1]*s2 +  v[2]*s3;
       t[oidx+1] -= v[3]*s1  +  v[4]*s2 +  v[5]*s3;
@@ -1311,7 +1311,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
     nz   = ai[i+1] - ai[i];
     idt  = bs*i;
     s1   = t[idt];  s2 = t[1+idt];  s3 = t[2+idt];
-    for(j=0;j<nz;j++){
+    for (j=0;j<nz;j++){
       idx   = bs*vi[j];
       t[idx]   -= v[0]*s1  +  v[1]*s2 +  v[2]*s3;
       t[idx+1] -= v[3]*s1  +  v[4]*s2 +  v[5]*s3;
@@ -1321,7 +1321,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   }
 
   /* copy t into x according to permutation */
-  for(i=0;i<n;i++){
+  for (i=0;i<n;i++){
     ii = bs*i;  ir = bs*r[i];
     x[ir] = t[ii];  x[ir+1] = t[ii+1]; x[ir+2] = t[ii+2];
   }
@@ -1453,7 +1453,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
 
   /* copy b into temp work space according to permutation */
-  for(i=0;i<n;i++){
+  for (i=0;i<n;i++){
     ii = bs*i; ic = bs*c[i];
     t[ii] = b[ic]; t[ii+1] = b[ic+1]; t[ii+2] = b[ic+2]; t[ii+3] = b[ic+3];
   }
@@ -1472,7 +1472,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
 
     vi    = aj + diag[i] - 1;
     nz    = diag[i] - diag[i+1] - 1;
-    for(j=0;j>-nz;j--){
+    for (j=0;j>-nz;j--){
       oidx = bs*vi[j];
       t[oidx]   -= v[0]*s1  +  v[1]*s2 +  v[2]*s3 +  v[3]*s4;
       t[oidx+1] -= v[4]*s1  +  v[5]*s2 +  v[6]*s3 +  v[7]*s4;
@@ -1490,7 +1490,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
     nz   = ai[i+1] - ai[i];
     idt  = bs*i;
     s1   = t[idt];  s2 = t[1+idt];  s3 = t[2+idt];  s4 = t[3+idt];
-    for(j=0;j<nz;j++){
+    for (j=0;j<nz;j++){
       idx   = bs*vi[j];
       t[idx]   -=  v[0]*s1 +  v[1]*s2 +  v[2]*s3  +  v[3]*s4;
       t[idx+1] -=  v[4]*s1 +  v[5]*s2 +  v[6]*s3  +  v[7]*s4;
@@ -1501,7 +1501,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   }
 
   /* copy t into x according to permutation */
-  for(i=0;i<n;i++){
+  for (i=0;i<n;i++){
     ii = bs*i;  ir = bs*r[i];
     x[ir] = t[ii];  x[ir+1] = t[ii+1]; x[ir+2] = t[ii+2];  x[ir+3] = t[ii+3];
   }
@@ -1638,7 +1638,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
   ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
 
   /* copy b into temp work space according to permutation */
-  for(i=0;i<n;i++){
+  for (i=0;i<n;i++){
     ii = bs*i; ic = bs*c[i];
     t[ii] = b[ic]; t[ii+1] = b[ic+1]; t[ii+2] = b[ic+2]; t[ii+3] = b[ic+3];
     t[ii+4] = b[ic+4];
@@ -1659,7 +1659,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
 
     vi    = aj + diag[i] - 1;
     nz    = diag[i] - diag[i+1] - 1;
-    for(j=0;j>-nz;j--){
+    for (j=0;j>-nz;j--){
       oidx = bs*vi[j];
       t[oidx]   -= v[0]*s1  +  v[1]*s2 +  v[2]*s3 +  v[3]*s4 +  v[4]*s5;
       t[oidx+1] -= v[5]*s1  +  v[6]*s2 +  v[7]*s3 +  v[8]*s4 +  v[9]*s5;
@@ -1678,7 +1678,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
     nz   = ai[i+1] - ai[i];
     idt  = bs*i;
     s1   = t[idt];  s2 = t[1+idt];  s3 = t[2+idt];  s4 = t[3+idt]; s5 = t[4+idt];
-    for(j=0;j<nz;j++){
+    for (j=0;j<nz;j++){
       idx   = bs*vi[j];
       t[idx]   -= v[0]*s1  +  v[1]*s2 +  v[2]*s3 +  v[3]*s4 +  v[4]*s5;
       t[idx+1] -= v[5]*s1  +  v[6]*s2 +  v[7]*s3 +  v[8]*s4 +  v[9]*s5;
@@ -1690,7 +1690,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
   }
 
   /* copy t into x according to permutation */
-  for(i=0;i<n;i++){
+  for (i=0;i<n;i++){
     ii = bs*i;  ir = bs*r[i];
     x[ir] = t[ii];  x[ir+1] = t[ii+1]; x[ir+2] = t[ii+2];  x[ir+3] = t[ii+3];
     x[ir+4] = t[ii+4];
@@ -1836,7 +1836,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
   ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
 
   /* copy b into temp work space according to permutation */
-  for(i=0;i<n;i++){
+  for (i=0;i<n;i++){
     ii = bs*i; ic = bs*c[i];
     t[ii] = b[ic]; t[ii+1] = b[ic+1]; t[ii+2] = b[ic+2]; t[ii+3] = b[ic+3];
     t[ii+4] = b[ic+4];  t[ii+5] = b[ic+5];
@@ -1859,7 +1859,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
 
     vi    = aj + diag[i] - 1;
     nz    = diag[i] - diag[i+1] - 1;
-    for(j=0;j>-nz;j--){
+    for (j=0;j>-nz;j--){
       oidx = bs*vi[j];
       t[oidx]   -= v[0]*s1  +  v[1]*s2 +  v[2]*s3 +  v[3]*s4 +  v[4]*s5 +  v[5]*s6;
       t[oidx+1] -= v[6]*s1  +  v[7]*s2 +  v[8]*s3 +  v[9]*s4 + v[10]*s5 + v[11]*s6;
@@ -1881,7 +1881,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
     idt  = bs*i;
     s1   = t[idt];  s2 = t[1+idt];  s3 = t[2+idt];  s4 = t[3+idt]; s5 = t[4+idt];
     s6   = t[5+idt];
-   for(j=0;j<nz;j++){
+   for (j=0;j<nz;j++){
       idx   = bs*vi[j];
       t[idx]   -= v[0]*s1  +  v[1]*s2 +  v[2]*s3 +  v[3]*s4 +  v[4]*s5 +  v[5]*s6;
       t[idx+1] -= v[6]*s1  +  v[7]*s2 +  v[8]*s3 +  v[9]*s4 + v[10]*s5 + v[11]*s6;
@@ -1894,7 +1894,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
   }
 
   /* copy t into x according to permutation */
-  for(i=0;i<n;i++){
+  for (i=0;i<n;i++){
     ii = bs*i;  ir = bs*r[i];
     x[ir] = t[ii];  x[ir+1] = t[ii+1]; x[ir+2] = t[ii+2];  x[ir+3] = t[ii+3];
     x[ir+4] = t[ii+4];  x[ir+5] = t[ii+5];
@@ -2044,7 +2044,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
   ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
 
   /* copy b into temp work space according to permutation */
-  for(i=0;i<n;i++){
+  for (i=0;i<n;i++){
     ii = bs*i; ic = bs*c[i];
     t[ii] = b[ic]; t[ii+1] = b[ic+1]; t[ii+2] = b[ic+2]; t[ii+3] = b[ic+3];
     t[ii+4] = b[ic+4];  t[ii+5] = b[ic+5];  t[ii+6] = b[ic+6];
@@ -2068,7 +2068,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
 
     vi    = aj + diag[i] - 1;
     nz    = diag[i] - diag[i+1] - 1;
-    for(j=0;j>-nz;j--){
+    for (j=0;j>-nz;j--){
       oidx = bs*vi[j];
       t[oidx]   -= v[0]*s1  +  v[1]*s2 +  v[2]*s3 +  v[3]*s4 +  v[4]*s5 +  v[5]*s6 +  v[6]*s7;
       t[oidx+1] -= v[7]*s1  +  v[8]*s2 +  v[9]*s3 + v[10]*s4 + v[11]*s5 + v[12]*s6 + v[13]*s7;
@@ -2091,7 +2091,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
     idt  = bs*i;
     s1   = t[idt];  s2 = t[1+idt];  s3 = t[2+idt];  s4 = t[3+idt]; s5 = t[4+idt];
     s6   = t[5+idt];  s7 = t[6+idt];
-   for(j=0;j<nz;j++){
+   for (j=0;j<nz;j++){
       idx   = bs*vi[j];
       t[idx]   -=  v[0]*s1 +  v[1]*s2 +  v[2]*s3 +  v[3]*s4 +  v[4]*s5 +  v[5]*s6 +  v[6]*s7;
       t[idx+1] -=  v[7]*s1 +  v[8]*s2 +  v[9]*s3 + v[10]*s4 + v[11]*s5 + v[12]*s6 + v[13]*s7;
@@ -2105,7 +2105,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
   }
 
   /* copy t into x according to permutation */
-  for(i=0;i<n;i++){
+  for (i=0;i<n;i++){
     ii = bs*i;  ir = bs*r[i];
     x[ir] = t[ii];  x[ir+1] = t[ii+1]; x[ir+2] = t[ii+2];  x[ir+3] = t[ii+3];
     x[ir+4] = t[ii+4];  x[ir+5] = t[ii+5];  x[ir+6] = t[ii+6];
@@ -2288,7 +2288,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
     v   = aa + bs2*(diag[i] - 1);
     vi  = aj + diag[i] - 1;
     nz  = diag[i] - diag[i+1] - 1;
-    for(j=0;j>-nz;j--){
+    for (j=0;j>-nz;j--){
       PetscKernel_v_gets_v_minus_transA_times_w(bs,t+bs*(vi[j]),v,t+i*bs);
       v -= bs2;
     }
@@ -2299,7 +2299,7 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
     v   = aa + bs2*ai[i];
     vi  = aj + ai[i];
     nz  = ai[i+1] - ai[i];
-    for(j=0;j<nz;j++){
+    for (j=0;j<nz;j++){
       PetscKernel_v_gets_v_minus_transA_times_w(bs,t+bs*(vi[j]),v,t+i*bs);
       v += bs2;
     }
@@ -2354,7 +2354,7 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver2(Mat A,Vec bb,Vec xx)
     s1   = b[idt];    s2  = b[1+idt];  s3  = b[2+idt];  s4  = b[3+idt];  s5  = b[4+idt];
     s6   = b[5+idt];  s7  = b[6+idt];  s8  = b[7+idt];  s9  = b[8+idt];  s10 = b[9+idt];
     s11  = b[10+idt]; s12 = b[11+idt]; s13 = b[12+idt]; s14 = b[13+idt]; s15 = b[14+idt];
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       idx   = bs*vi[m];
       x1   = x[idx];     x2  = x[1+idx];  x3  = x[2+idx];  x4  = x[3+idx];  x5  = x[4+idx];
       x6   = x[5+idx];   x7  = x[6+idx];  x8  = x[7+idx];  x9  = x[8+idx];  x10 = x[9+idx];
@@ -2394,7 +2394,7 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver2(Mat A,Vec bb,Vec xx)
     s6   = x[5+idt];   s7  = x[6+idt];  s8  = x[7+idt];  s9  = x[8+idt];  s10 = x[9+idt];
     s11  = x[10+idt]; s12  = x[11+idt]; s13 = x[12+idt]; s14 = x[13+idt]; s15 = x[14+idt];
  
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       idx   = bs*vi[m];
       x1   = x[idx];     x2  = x[1+idx];  x3  = x[2+idx];  x4  = x[3+idx];  x5  = x[4+idx];
       x6   = x[5+idx];   x7  = x[6+idx];  x8  = x[7+idx];  x9  = x[8+idx];  x10 = x[9+idx];
@@ -2472,9 +2472,9 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver1(Mat A,Vec bb,Vec xx)
     x[idt]   = b[idt];    x[1+idt]  = b[1+idt];  x[2+idt]  = b[2+idt];  x[3+idt]  = b[3+idt];  x[4+idt]  = b[4+idt];
     x[5+idt]   = b[5+idt];  x[6+idt]  = b[6+idt];  x[7+idt]  = b[7+idt];  x[8+idt]  = b[8+idt];  x[9+idt] = b[9+idt];
     x[10+idt]  = b[10+idt]; x[11+idt] = b[11+idt]; x[12+idt] = b[12+idt]; x[13+idt] = b[13+idt]; x[14+idt] = b[14+idt];
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       idx   = bs*vi[m];
-      for(k=0;k<15;k++){
+      for (k=0;k<15;k++){
 	xv        = x[k + idx];
 	x[idt]    -= v[0]*xv;
 	x[1+idt]  -= v[1]*xv;
@@ -2505,9 +2505,9 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver1(Mat A,Vec bb,Vec xx)
     s[5]   = x[5+idt];  s[6]  = x[6+idt];  s[7]  = x[7+idt];  s[8]  = x[8+idt];  s[9]  = x[9+idt];
     s[10]  = x[10+idt]; s[11] = x[11+idt]; s[12] = x[12+idt]; s[13] = x[13+idt]; s[14] = x[14+idt];
  
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       idx   = bs*vi[m];
-      for(k=0;k<15;k++){
+      for (k=0;k<15;k++){
 	xv = x[k + idx];
 	s[0]  -= v[0]*xv;
 	s[1]  -= v[1]*xv;
@@ -2528,7 +2528,7 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver1(Mat A,Vec bb,Vec xx)
       }
     }
     ierr = PetscMemzero(x+idt,bs*sizeof(MatScalar));CHKERRQ(ierr);
-    for(k=0;k<15;k++){
+    for (k=0;k<15;k++){
       x[idt]    += v[0]*s[k];
       x[1+idt]  += v[1]*s[k];
       x[2+idt]  += v[2]*s[k];
@@ -2692,7 +2692,7 @@ PetscErrorCode MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
     idx   = 7*r[i]; 
     s1  = b[idx];s2 = b[1+idx];s3 = b[2+idx];s4 = b[3+idx];
     s5  = b[4+idx];s6 = b[5+idx];s7 = b[6+idx];
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       idx   = 7*vi[m];
       x1    = t[idx];  x2 = t[1+idx];x3 = t[2+idx];
       x4    = t[3+idx];x5 = t[4+idx];
@@ -2720,7 +2720,7 @@ PetscErrorCode MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
     s1 = t[idt];  s2 = t[1+idt]; 
     s3 = t[2+idt];s4 = t[3+idt]; s5 = t[4+idt];
     s6 = t[5+idt];s7 = t[6+idt]; 
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       idx   = 7*vi[m];
       x1    = t[idx];   x2 = t[1+idx];
       x3    = t[2+idx]; x4 = t[3+idx]; x5 = t[4+idx];
@@ -2884,7 +2884,7 @@ PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
       idx   = bs*i;
        s1   = b[idx];s2 = b[1+idx];s3 = b[2+idx];s4 = b[3+idx];
        s5   = b[4+idx];s6 = b[5+idx];s7 = b[6+idx];
-       for(k=0;k<nz;k++) {
+       for (k=0;k<nz;k++) {
           jdx   = bs*vi[k];
           x1    = x[jdx];x2 = x[1+jdx]; x3 =x[2+jdx];x4 =x[3+jdx];
 	  x5    = x[4+jdx]; x6 = x[5+jdx];x7 = x[6+jdx];
@@ -2915,7 +2915,7 @@ PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
      idt = bs*i;
      s1 = x[idt];  s2 = x[1+idt];s3 = x[2+idt];s4 = x[3+idt];
      s5 = x[4+idt];s6 = x[5+idt];s7 = x[6+idt];	
-    for(k=0;k<nz;k++) {
+    for (k=0;k<nz;k++) {
       idx   = bs*vi[k];
        x1    = x[idx];   x2 = x[1+idx]; x3 = x[2+idx];x4 = x[3+idx];
        x5    = x[4+idx];x6 = x[5+idx];x7 = x[6+idx];
@@ -3075,7 +3075,7 @@ PetscErrorCode MatSolve_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
     idx   = 6*r[i]; 
     s1  = b[idx];s2 = b[1+idx];s3 = b[2+idx];s4 = b[3+idx];
     s5  = b[4+idx]; s6 = b[5+idx];
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       idx   = 6*vi[m];
       x1    = t[idx];   x2 = t[1+idx]; x3 = t[2+idx];
       x4    = t[3+idx]; x5 = t[4+idx]; x6 = t[5+idx];
@@ -3101,7 +3101,7 @@ PetscErrorCode MatSolve_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
     s1 = t[idt];  s2 = t[1+idt]; 
     s3 = t[2+idt];s4 = t[3+idt]; 
     s5 = t[4+idt];s6 = t[5+idt];
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       idx   = 6*vi[m];
       x1    = t[idx];   x2 = t[1+idx];
       x3    = t[2+idx]; x4 = t[3+idx]; 
@@ -3246,7 +3246,7 @@ PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
       idx   = bs*i;
        s1   = b[idx];s2 = b[1+idx];s3 = b[2+idx];s4 = b[3+idx];
        s5   = b[4+idx];s6 = b[5+idx];
-       for(k=0;k<nz;k++){
+       for (k=0;k<nz;k++){
           jdx   = bs*vi[k];
           x1    = x[jdx];x2 = x[1+jdx]; x3 =x[2+jdx];x4 =x[3+jdx];
 	  x5    = x[4+jdx]; x6 = x[5+jdx];
@@ -3275,7 +3275,7 @@ PetscErrorCode MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
      idt = bs*i;
      s1 = x[idt];  s2 = x[1+idt];s3 = x[2+idt];s4 = x[3+idt];
      s5 = x[4+idt];s6 = x[5+idt];	
-     for(k=0;k<nz;k++){
+     for (k=0;k<nz;k++){
       idx   = bs*vi[k];
        x1    = x[idx];   x2 = x[1+idx]; x3 = x[2+idx];x4 = x[3+idx];
        x5    = x[4+idx];x6 = x[5+idx];
@@ -3424,7 +3424,7 @@ PetscErrorCode MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
     idx   = 5*r[i]; 
     s1  = b[idx];s2 = b[1+idx];s3 = b[2+idx];s4 = b[3+idx];
     s5  = b[4+idx];
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       idx   = 5*vi[m];
       x1    = t[idx];  x2 = t[1+idx];x3 = t[2+idx];
       x4    = t[3+idx];x5 = t[4+idx];
@@ -3447,7 +3447,7 @@ PetscErrorCode MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
     idt  = 5*i;
     s1 = t[idt];  s2 = t[1+idt]; 
     s3 = t[2+idt];s4 = t[3+idt]; s5 = t[4+idt];
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       idx   = 5*vi[m];
       x1    = t[idx];   x2 = t[1+idx];
       x3    = t[2+idx]; x4 = t[3+idx]; x5 = t[4+idx];
@@ -3575,7 +3575,7 @@ PetscErrorCode MatSolve_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
     nz  = ai[i+1] - ai[i];
     idx = 5*i;
     s1  = b[idx];s2 = b[1+idx];s3 = b[2+idx];s4 = b[3+idx];s5 = b[4+idx];
-    for(k=0;k<nz;k++) {
+    for (k=0;k<nz;k++) {
       jdx   = 5*vi[k];
       x1    = x[jdx];x2 = x[1+jdx];x3 = x[2+jdx];x4 = x[3+jdx];x5 = x[4+jdx];
       s1 -= v[0]*x1 + v[5]*x2 + v[10]*x3  + v[15]*x4 + v[20]*x5;
@@ -3600,7 +3600,7 @@ PetscErrorCode MatSolve_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
     idt = 5*i;
     s1 = x[idt];  s2 = x[1+idt];
     s3 = x[2+idt];s4 = x[3+idt]; s5 = x[4+idt];
-    for(k=0;k<nz;k++){
+    for (k=0;k<nz;k++){
       idx   = 5*vi[k];
       x1    = x[idx];   x2 = x[1+idx];x3    = x[2+idx]; x4 = x[3+idx]; x5 = x[4+idx];
       s1 -= v[0]*x1 + v[5]*x2 + v[10]*x3  + v[15]*x4 + v[20]*x5;
@@ -3735,7 +3735,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
     nz    = ai[i+1] - ai[i];
     idx   = 4*r[i]; 
     s1  = b[idx];s2 = b[1+idx];s3 = b[2+idx];s4 = b[3+idx];
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       idx   = 4*vi[m];
       x1    = t[idx];x2 = t[1+idx];x3 = t[2+idx];x4 = t[3+idx];
       s1 -= v[0]*x1 + v[4]*x2 + v[8]*x3  + v[12]*x4;
@@ -3756,7 +3756,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
     idt  = 4*i;
     s1 = t[idt];  s2 = t[1+idt]; 
     s3 = t[2+idt];s4 = t[3+idt];
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       idx   = 4*vi[m];
       x1    = t[idx];   x2 = t[1+idx];
       x3    = t[2+idx]; x4 = t[3+idx];
@@ -4226,7 +4226,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
        nz   = ai[i+1] - ai[i];
       idx   = bs*i;
        s1   = b[idx];s2 = b[1+idx];s3 = b[2+idx];s4 = b[3+idx];
-      for(k=0;k<nz;k++) {
+      for (k=0;k<nz;k++) {
           jdx   = bs*vi[k];
           x1    = x[jdx];x2 = x[1+jdx]; x3 =x[2+jdx];x4 =x[3+jdx];
           s1   -= v[0]*x1 + v[4]*x2 + v[8]*x3 + v[12]*x4;
@@ -4251,7 +4251,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
      idt = bs*i;
      s1 = x[idt];  s2 = x[1+idt];s3 = x[2+idt];s4 = x[3+idt];
 	
-    for(k=0;k<nz;k++){
+    for (k=0;k<nz;k++){
       idx   = bs*vi[k];
        x1    = x[idx];   x2 = x[1+idx]; x3 = x[2+idx];x4 = x[3+idx];
        s1   -= v[0]*x1 + v[4]*x2 + v[8]*x3 + v[12]*x4;
@@ -4870,7 +4870,7 @@ PetscErrorCode MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
     nz    = ai[i+1] - ai[i];
     idx   = 3*r[i]; 
     s1  = b[idx]; s2 = b[1+idx]; s3 = b[2+idx];
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       idx   = 3*vi[m];
       x1    = t[idx]; x2 = t[1+idx]; x3 = t[2+idx];
       s1 -= v[0]*x1 + v[3]*x2 + v[6]*x3;
@@ -4888,7 +4888,7 @@ PetscErrorCode MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
     nz   = adiag[i] - adiag[i+1] - 1;
     idt  = 3*i;
     s1 = t[idt]; s2 = t[1+idt]; s3 = t[2+idt];
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       idx   = 3*vi[m];
       x1    = t[idx]; x2 = t[1+idx]; x3 = t[2+idx];
       s1 -= v[0]*x1 + v[3]*x2 + v[6]*x3;
@@ -5005,7 +5005,7 @@ PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
        nz   = ai[i+1] - ai[i];
       idx   = bs*i;
        s1   = b[idx];s2 = b[1+idx];s3 = b[2+idx];
-      for(k=0;k<nz;k++){
+      for (k=0;k<nz;k++){
          jdx   = bs*vi[k];
           x1    = x[jdx];x2 = x[1+jdx]; x3 =x[2+jdx];
           s1   -= v[0]*x1 + v[3]*x2 + v[6]*x3;
@@ -5028,7 +5028,7 @@ PetscErrorCode MatSolve_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
      idt = bs*i;
      s1 = x[idt];  s2 = x[1+idt];s3 = x[2+idt];
 	
-     for(k=0;k<nz;k++){
+     for (k=0;k<nz;k++){
        idx   = bs*vi[k];
        x1    = x[idx];   x2 = x[1+idx]; x3 = x[2+idx];
        s1 -= v[0]*x1 + v[3]*x2 + v[6]*x3;
@@ -5149,7 +5149,7 @@ PetscErrorCode MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
     nz    = ai[i+1] - ai[i];
     idx   = 2*r[i]; 
     s1  = b[idx]; s2 = b[1+idx];
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       jdx   = 2*vi[m];
       x1    = t[jdx]; x2 = t[1+jdx];
       s1 -= v[0]*x1 + v[2]*x2;
@@ -5166,7 +5166,7 @@ PetscErrorCode MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
     nz   = adiag[i] - adiag[i+1] - 1;
     idt  = 2*i;
     s1 = t[idt]; s2 = t[1+idt];
-    for(m=0;m<nz;m++){
+    for (m=0;m<nz;m++){
       idx   = 2*vi[m];
       x1    = t[idx]; x2 = t[1+idx];
       s1 -= v[0]*x1 + v[2]*x2;
@@ -5275,7 +5275,7 @@ PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
        s1   = b[idx];s2 = b[1+idx];
        PetscPrefetchBlock(vi+nz,nz,0,PETSC_PREFETCH_HINT_NTA);
        PetscPrefetchBlock(v+4*nz,4*nz,0,PETSC_PREFETCH_HINT_NTA);
-      for(k=0;k<nz;k++){
+      for (k=0;k<nz;k++){
          jdx   = 2*vi[k];
           x1    = x[jdx];x2 = x[1+jdx];
           s1   -= v[0]*x1 + v[2]*x2;
@@ -5295,7 +5295,7 @@ PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
      s1 = x[idt];  s2 = x[1+idt];
      PetscPrefetchBlock(vi+nz,nz,0,PETSC_PREFETCH_HINT_NTA);
      PetscPrefetchBlock(v+4*nz,4*nz,0,PETSC_PREFETCH_HINT_NTA);
-     for(k=0;k<nz;k++){	     
+     for (k=0;k<nz;k++){	     
       idx   = 2*vi[k];
        x1    = x[idx];   x2 = x[1+idx];
        s1 -= v[0]*x1 + v[2]*x2;
@@ -5586,7 +5586,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering(Mat B,Mat A,const M
     /* elimination */
     bjtmp = bj + bi[i];
     nzL   = bi[i+1] - bi[i];
-    for(k=0;k < nzL;k++) {
+    for (k=0;k < nzL;k++) {
       row = bjtmp[k];
       pc = rtmp + bs2*row;
       for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
@@ -5693,7 +5693,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat B,Mat A,const MatFactorInfo *inf
     /* elimination */
     bjtmp = bj + bi[i];
     nzL   = bi[i+1] - bi[i];
-    for(k=0;k < nzL;k++) {
+    for (k=0;k < nzL;k++) {
       row = bjtmp[k];
       pc = rtmp + bs2*row;
       for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}

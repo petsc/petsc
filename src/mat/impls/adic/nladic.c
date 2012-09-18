@@ -177,7 +177,7 @@ PetscErrorCode NLFNewton_DAAD9(NLF A,DMDALocalInfo *info,MatStencil *stencil,voi
       i-1,j-1 --- i,j-1--- i+1,j-1
        (1)       (2)         (3)
   */
-  if( (*stencil).i==0 || (*stencil).i==1||(*stencil).i==(*info).gxs+(*info).gxm-1 || (*stencil).i==(*info).gxs+(*info).gxm-2  || (*stencil).j==0 ||  (*stencil).j==1 ||(*stencil).j==(*info).gys+(*info).gym-1 || (*stencil).j==(*info).gys+(*info).gym -2) {
+  if ( (*stencil).i==0 || (*stencil).i==1||(*stencil).i==(*info).gxs+(*info).gxm-1 || (*stencil).i==(*info).gxs+(*info).gxm-2  || (*stencil).j==0 ||  (*stencil).j==1 ||(*stencil).j==(*info).gys+(*info).gym-1 || (*stencil).j==(*info).gys+(*info).gym -2) {
 
   ad_vustart[1+10*gI] = 1.0;
  
@@ -206,7 +206,7 @@ PetscErrorCode NLFNewton_DAAD9(NLF A,DMDALocalInfo *info,MatStencil *stencil,voi
   ngI[8]  =  ngI[7] + 1;
  
 
-  for(j=0 ; j<9; j++){
+  for (j=0 ; j<9; j++){
     ad_vustart[ngI[j]*10+j+1] = 1.0;
   }
   
@@ -215,8 +215,8 @@ PetscErrorCode NLFNewton_DAAD9(NLF A,DMDALocalInfo *info,MatStencil *stencil,voi
     
     ierr = (*A->da->adicmf_lfi)(info,stencil,ad_vu,ad_f,A->ctx);CHKERRQ(ierr);
  
-    for(i=0; i<9; i++){
-      for(j=0; j<9; j++){
+    for (i=0; i<9; i++){
+      for (j=0; j<9; j++){
         J[i*9+j] = -ad_f[i*10+j+1];
       }
       f[i]= -ad_f[i*10] + residual[ngI[i]];
@@ -225,8 +225,8 @@ PetscErrorCode NLFNewton_DAAD9(NLF A,DMDALocalInfo *info,MatStencil *stencil,voi
     PetscKernel_A_gets_inverse_A_9(J,0.0);
  
     res =0 ;
-    for(i=0; i<9; i++){
-      for(j=0;j<9;j++){
+    for (i=0; i<9; i++){
+      for (j=0;j<9;j++){
         ad_vustart[10*ngI[i]]= ad_vustart[10*ngI[i]] - J[i*9 +j]*f[j];
       }
       res = res + f[i]*f[i];
@@ -234,7 +234,7 @@ PetscErrorCode NLFNewton_DAAD9(NLF A,DMDALocalInfo *info,MatStencil *stencil,voi
     res = sqrt(res); 
   } while(--cnt>0 && res>1.e-14);
 
-  for(j=0; j<9; j++){
+  for (j=0; j<9; j++){
     ad_vustart[10*ngI[j]+j+1]=0.0;
   }
 

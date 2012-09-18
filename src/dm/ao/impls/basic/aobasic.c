@@ -112,8 +112,8 @@ PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, Petsc
 
   PetscFunctionBegin;
   ierr = PetscMalloc(ao->N*block * sizeof(PetscInt), &temp);CHKERRQ(ierr);
-  for(i = 0; i < ao->N; i++) {
-    for(j = 0; j < block; j++) temp[i*block+j] = array[aobasic->petsc[i]*block+j];
+  for (i = 0; i < ao->N; i++) {
+    for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->petsc[i]*block+j];
   }
   ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
@@ -131,8 +131,8 @@ PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, Petsc
 
   PetscFunctionBegin;
   ierr = PetscMalloc(ao->N*block * sizeof(PetscInt), &temp);CHKERRQ(ierr);
-  for(i = 0; i < ao->N; i++) {
-    for(j = 0; j < block; j++) temp[i*block+j] = array[aobasic->app[i]*block+j];
+  for (i = 0; i < ao->N; i++) {
+    for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->app[i]*block+j];
   }
   ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
@@ -150,8 +150,8 @@ PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, Pets
 
   PetscFunctionBegin;
   ierr = PetscMalloc(ao->N*block * sizeof(PetscReal), &temp);CHKERRQ(ierr);
-  for(i = 0; i < ao->N; i++) {
-    for(j = 0; j < block; j++) temp[i*block+j] = array[aobasic->petsc[i]*block+j];
+  for (i = 0; i < ao->N; i++) {
+    for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->petsc[i]*block+j];
   }
   ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
@@ -169,8 +169,8 @@ PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, Pets
 
   PetscFunctionBegin;
   ierr = PetscMalloc(ao->N*block * sizeof(PetscReal), &temp);CHKERRQ(ierr);
-  for(i = 0; i < ao->N; i++) {
-    for(j = 0; j < block; j++) temp[i*block+j] = array[aobasic->app[i]*block+j];
+  for (i = 0; i < ao->N; i++) {
+    for (j = 0; j < block; j++) temp[i*block+j] = array[aobasic->app[i]*block+j];
   }
   ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
@@ -219,7 +219,7 @@ PetscErrorCode  AOCreate_Basic(AO ao)
   ierr  = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
   ierr  = MPI_Allgather(&count, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N    =  0;
-  for(i = 0; i < size; i++) {
+  for (i = 0; i < size; i++) {
     disp[i] = PetscMPIIntCast(N); /* = sum(lens[j]), j< i */
     N += lens[i];
   }
@@ -270,7 +270,7 @@ PetscErrorCode  AOCreate_Basic(AO ao)
   ierr = PetscLogObjectMemory(ao,2*N*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(aobasic->app, N*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(aobasic->petsc, N*sizeof(PetscInt));CHKERRQ(ierr);
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     ip = allpetsc[i];
     ia = allapp[i];
     /* check there are no duplicates */
@@ -284,7 +284,7 @@ PetscErrorCode  AOCreate_Basic(AO ao)
   }
   ierr = PetscFree2(allpetsc,allapp);CHKERRQ(ierr);
   /* shift indices down by one */
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     aobasic->app[i]--;
     aobasic->petsc[i]--;
   }

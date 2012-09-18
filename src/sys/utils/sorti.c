@@ -565,17 +565,17 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
 
   n_ = an + bn;
   *n = n_;
-  if(!L_) {
+  if (!L_) {
     ierr = PetscMalloc(n_*sizeof(PetscInt), L); CHKERRQ(ierr);
     L_ = *L;
   }
-  if(!J_){
+  if (!J_){
     ierr = PetscMalloc(n_*sizeof(PetscInt), &J_); CHKERRQ(ierr);
     J_ = *J;
   }
   k = ak = bk = 0;
   while(ak < an && bk < bn) {
-    if(aI[ak] <= bI[bk]) {
+    if (aI[ak] <= bI[bk]) {
       L_[k] = aI[ak]; 
       J_[k] = aJ[ak];
       ++ak;
@@ -588,12 +588,12 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
       ++k;
     }
   }
-  if(ak < an) {
+  if (ak < an) {
     ierr = PetscMemcpy(L_+k,aI+ak,(an-ak)*sizeof(PetscInt)); CHKERRQ(ierr);
     ierr = PetscMemcpy(J_+k,aJ+ak,(an-ak)*sizeof(PetscInt)); CHKERRQ(ierr);
     k += (an-ak);
   }
-  if(bk < bn) {
+  if (bk < bn) {
     ierr = PetscMemcpy(L_+k,bI+bk,(bn-bk)*sizeof(PetscInt)); CHKERRQ(ierr);
     ierr = PetscMemcpy(J_+k,bJ+bk,(bn-bk)*sizeof(PetscInt)); CHKERRQ(ierr);
     k += (bn-bk);

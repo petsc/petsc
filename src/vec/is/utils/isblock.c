@@ -64,7 +64,7 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
       }
 #else
       if (ival>Nbs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
-      if(!PetscBTLookupSet(table,ival)) { nidx[isz++] = ival;}
+      if (!PetscBTLookupSet(table,ival)) { nidx[isz++] = ival;}
 #endif
     }
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);

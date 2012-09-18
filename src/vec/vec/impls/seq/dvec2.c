@@ -792,7 +792,7 @@ PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
   ierr = VecGetArrayRead(yin,&yy);CHKERRQ(ierr);
-  for(i = 0; i < n; i++) {
+  for (i = 0; i < n; i++) {
     if (yy[i] != (PetscScalar)0.0) {
       m = PetscMax(PetscAbsScalar(xx[i]/yy[i]), m);
     } else {
