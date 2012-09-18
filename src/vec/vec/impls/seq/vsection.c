@@ -763,10 +763,25 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionCreateGlobalSection"
-/*
-  This gives negative offsets to points not owned by this process
-*/
-PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscSection *gsection)
+/*@
+  PetscSectionCreateGlobalSection - Create a section describing the global field layout using
+  the local section and an SF describing the section point overlap.
+
+  Input Parameters:
+  + lsection - The PetscSection for the global field layout
+  . sf - The SF describing parallel layout of the section points
+  - includeConstraints - By default this is PETSC_FALSE, meaning that the global field vector will not posses constrained dofs
+
+  Output Parameter:
+  . gsection - The PetscSection for the global field layout
+
+  Note: This gives negative sizes and offsets to points not owned by this process
+
+  Level: developer
+
+.seealso: PetscSectionCreate()
+@*/
+PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscBool includeConstraints, PetscSection *gsection)
 {
   PetscInt      *neg;
   PetscInt       pStart, pEnd, p, dof, cdof, off, globalOff = 0, nroots;
@@ -782,7 +797,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionSetDof(*gsection, p, dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
-    if (cdof > 0) {ierr = PetscSectionSetConstraintDof(*gsection, p, cdof);CHKERRQ(ierr);}
+    if (!includeConstraints && cdof > 0) {ierr = PetscSectionSetConstraintDof(*gsection, p, cdof);CHKERRQ(ierr);}
     neg[p-pStart] = -(dof+1);
   }
   ierr = PetscSectionSetUpBC(*gsection);CHKERRQ(ierr);
@@ -805,7 +820,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   }
   /* Calculate new sizes, get proccess offset, and calculate point offsets */
   for (p = 0, off = 0; p < pEnd-pStart; ++p) {
-    cdof = s->bc ? s->bc->atlasDof[p] : 0;
+    cdof = (!includeConstraints && s->bc) ? s->bc->atlasDof[p] : 0;
     (*gsection)->atlasOff[p] = off;
     off += (*gsection)->atlasDof[p] > 0 ? (*gsection)->atlasDof[p]-cdof : 0;
   }

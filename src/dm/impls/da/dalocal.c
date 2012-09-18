@@ -705,7 +705,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   ierr = PetscSFCreate(((PetscObject) dm)->comm, &sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf, pEnd, nleaves, localPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
   /* Create global section */
-  ierr = PetscSectionCreateGlobalSection(dm->defaultSection, sf, &dm->defaultGlobalSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreateGlobalSection(dm->defaultSection, sf, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   /* Create default SF */
   ierr = DMCreateDefaultSF(dm, dm->defaultSection, dm->defaultGlobalSection);CHKERRQ(ierr);

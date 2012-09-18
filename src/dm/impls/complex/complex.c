@@ -5778,7 +5778,7 @@ PetscErrorCode DMComplexMatSetClosure(DM dm, PetscSection section, PetscSection 
     if (useDefault) {
       ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);
     } else {
-      ierr = PetscSectionCreateGlobalSection(section, dm->sf, &globalSection);CHKERRQ(ierr);
+      ierr = PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
     }
   }
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
