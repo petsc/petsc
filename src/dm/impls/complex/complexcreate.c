@@ -578,6 +578,9 @@ PetscErrorCode DMComplexClone(DM dm, DM *newdm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(newdm,2);
   ierr = DMCreate(((PetscObject) dm)->comm, newdm);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&(*newdm)->sf);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) dm->sf);CHKERRQ(ierr);
+  (*newdm)->sf = dm->sf;
   mesh = (DM_Complex *) dm->data;
   mesh->refct++;
   (*newdm)->data = mesh;
