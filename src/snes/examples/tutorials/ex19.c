@@ -23,11 +23,11 @@ T*/
 
     This problem is modeled by the partial differential equation system
 
-\begin{eqnarray}  
-	- \triangle U - \nabla_y \Omega & = & 0  \\
-	- \triangle V + \nabla_x\Omega & = & 0  \\
-	- \triangle \Omega + \nabla \cdot ([U*\Omega,V*\Omega]) - GR* \nabla_x T & = & 0  \\
-	- \triangle T + PR* \nabla \cdot ([U*T,V*T]) & = & 0  
+\begin{eqnarray}
+        - \triangle U - \nabla_y \Omega & = & 0  \\
+        - \triangle V + \nabla_x\Omega & = & 0  \\
+        - \triangle \Omega + \nabla \cdot ([U*\Omega,V*\Omega]) - GR* \nabla_x T & = & 0  \\
+        - \triangle T + PR* \nabla \cdot ([U*T,V*T]) & = & 0
 \end{eqnarray}
 
     in the unit square, which is uniformly discretized in each of x and y in this simple encoding.
@@ -38,22 +38,22 @@ T*/
     constant coordinate boundary, the tangential derivative is zero.
     Dirichlet conditions are used for T on the left and right walls,
     and insulation homogeneous Neumann conditions are used for T on
-    the top and bottom walls. 
+    the top and bottom walls.
 
-    A finite difference approximation with the usual 5-point stencil 
-    is used to discretize the boundary value problem to obtain a 
+    A finite difference approximation with the usual 5-point stencil
+    is used to discretize the boundary value problem to obtain a
     nonlinear system of equations.  Upwinding is used for the divergence
     (convective) terms and central for the gradient (source) terms.
-    
+
     The Jacobian can be either
       * formed via finite differencing using coloring (the default), or
-      * applied matrix-free via the option -snes_mf 
-        (for larger grid problems this variant may not converge 
+      * applied matrix-free via the option -snes_mf
+        (for larger grid problems this variant may not converge
         without a preconditioner due to ill-conditioning).
 
   ------------------------------------------------------------------------F*/
 
-/* 
+/*
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
@@ -61,7 +61,7 @@ T*/
      petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers 
+     petscksp.h   - linear solvers
 */
 #if defined(PETSC_APPLE_FRAMEWORK)
 #import <PETSc/petscsnes.h>
@@ -71,7 +71,7 @@ T*/
 #include <petscdmda.h>
 #endif
 
-/* 
+/*
    User-defined routines and data structures
 */
 typedef struct {
@@ -82,11 +82,11 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field**,Field**,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 
 typedef struct {
-   PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
-   PetscBool    draw_contours;                /* flag - 1 indicates drawing contours */
+  PassiveReal lidvelocity,prandtl,grashof;  /* physical parameters */
+  PetscBool   draw_contours;                /* flag - 1 indicates drawing contours */
 } AppCtx;
 
-PetscErrorCode FormInitialGuess(AppCtx*,DM,Vec);
+extern PetscErrorCode FormInitialGuess(AppCtx*,DM,Vec);
 extern PetscErrorCode NonlinearGS(SNES,Vec,Vec,void*);
 
 #undef __FUNCT__
@@ -105,7 +105,7 @@ int main(int argc,char **argv)
   comm = PETSC_COMM_WORLD;
 
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
-  
+
   /*
       Create distributed array object to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
@@ -115,8 +115,8 @@ int main(int argc,char **argv)
   ierr = SNESSetGS(snes, NonlinearGS, (void *)&user);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-		   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
-  /* 
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  /*
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
   */
   user.lidvelocity = 1.0/(mx*my);
@@ -181,7 +181,7 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-/* 
+/*
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
@@ -190,7 +190,7 @@ int main(int argc,char **argv)
 
    Output Parameter:
    X - vector
- */
+*/
 PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
 {
   PetscInt       i,j,mx,xs,ys,xm,ym;
@@ -238,11 +238,11 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   return 0;
 }
- 
+
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal"
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *ptr)
- {
+{
   AppCtx         *user = (AppCtx*)ptr;
   PetscErrorCode ierr;
   PetscInt       xints,xinte,yints,yinte,i,j;
@@ -251,17 +251,17 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   PetscScalar    u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
 
   PetscFunctionBegin;
-  grashof = user->grashof;  
+  grashof = user->grashof;
   prandtl = user->prandtl;
   lid     = user->lidvelocity;
 
-  /* 
+  /*
      Define mesh intervals ratios for uniform grid.
 
      Note: FD formulae below are normalized by multiplying through by
      local volume element (i.e. hx*hy) to obtain coefficients O(1) in two dimensions.
 
-     
+
   */
   dhx = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);
   hx = 1.0/dhx;                   hy = 1.0/dhy;
@@ -277,7 +277,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
     for (i=info->xs; i<info->xs+info->xm; i++) {
       f[j][i].u     = x[j][i].u;
       f[j][i].v     = x[j][i].v;
-      f[j][i].omega = x[j][i].omega + (x[j+1][i].u - x[j][i].u)*dhy; 
+      f[j][i].omega = x[j][i].omega + (x[j+1][i].u - x[j][i].u)*dhy;
       f[j][i].temp  = x[j][i].temp-x[j+1][i].temp;
     }
   }
@@ -288,10 +288,11 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
     yinte = yinte - 1;
     /* top edge */
     for (i=info->xs; i<info->xs+info->xm; i++) {
-        f[j][i].u     = x[j][i].u - lid;
-        f[j][i].v     = x[j][i].v;
-        f[j][i].omega = x[j][i].omega + (x[j][i].u - x[j-1][i].u)*dhy; 
-	f[j][i].temp  = x[j][i].temp-x[j-1][i].temp;
+      f[j][i].u     = x[j][i].u - lid;
+      f[j][i].v     = x[j][i].v;
+      f[j][i].omega = x[j][i].omega + (x[j][i].u - x[j-1][i].u)*dhy;
+
+      f[j][i].temp  = x[j][i].temp-x[j-1][i].temp;
     }
   }
 
@@ -303,7 +304,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
     for (j=info->ys; j<info->ys+info->ym; j++) {
       f[j][i].u     = x[j][i].u;
       f[j][i].v     = x[j][i].v;
-      f[j][i].omega = x[j][i].omega - (x[j][i+1].v - x[j][i].v)*dhx; 
+      f[j][i].omega = x[j][i].omega - (x[j][i+1].v - x[j][i].v)*dhx;
       f[j][i].temp  = x[j][i].temp;
     }
   }
@@ -312,11 +313,11 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   if (xinte == info->mx) {
     i = info->mx - 1;
     xinte = xinte - 1;
-    /* right edge */ 
+    /* right edge */
     for (j=info->ys; j<info->ys+info->ym; j++) {
       f[j][i].u     = x[j][i].u;
       f[j][i].v     = x[j][i].v;
-      f[j][i].omega = x[j][i].omega - (x[j][i].v - x[j][i-1].v)*dhx; 
+      f[j][i].omega = x[j][i].omega - (x[j][i].v - x[j][i-1].v)*dhx;
       f[j][i].temp  = x[j][i].temp - (PetscReal)(grashof>0);
     }
   }
@@ -325,46 +326,40 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
 
-	/*
-	  convective coefficients for upwinding
-        */
-	vx = x[j][i].u; avx = PetscAbsScalar(vx);
-        vxp = .5*(vx+avx); vxm = .5*(vx-avx);
-	vy = x[j][i].v; avy = PetscAbsScalar(vy);
-        vyp = .5*(vy+avy); vym = .5*(vy-avy);
+      /*
+       convective coefficients for upwinding
+      */
+      vx = x[j][i].u; avx = PetscAbsScalar(vx);
+      vxp = .5*(vx+avx); vxm = .5*(vx-avx);
+      vy = x[j][i].v; avy = PetscAbsScalar(vy);
+      vyp = .5*(vy+avy); vym = .5*(vy-avy);
 
-	/* U velocity */
-        u          = x[j][i].u;
-        uxx        = (2.0*u - x[j][i-1].u - x[j][i+1].u)*hydhx;
-        uyy        = (2.0*u - x[j-1][i].u - x[j+1][i].u)*hxdhy;
-        f[j][i].u  = uxx + uyy - .5*(x[j+1][i].omega-x[j-1][i].omega)*hx;
+      /* U velocity */
+      u          = x[j][i].u;
+      uxx        = (2.0*u - x[j][i-1].u - x[j][i+1].u)*hydhx;
+      uyy        = (2.0*u - x[j-1][i].u - x[j+1][i].u)*hxdhy;
+      f[j][i].u  = uxx + uyy - .5*(x[j+1][i].omega-x[j-1][i].omega)*hx;
 
-	/* V velocity */
-        u          = x[j][i].v;
-        uxx        = (2.0*u - x[j][i-1].v - x[j][i+1].v)*hydhx;
-        uyy        = (2.0*u - x[j-1][i].v - x[j+1][i].v)*hxdhy;
-        f[j][i].v  = uxx + uyy + .5*(x[j][i+1].omega-x[j][i-1].omega)*hy;
+      /* V velocity */
+      u          = x[j][i].v;
+      uxx        = (2.0*u - x[j][i-1].v - x[j][i+1].v)*hydhx;
+      uyy        = (2.0*u - x[j-1][i].v - x[j+1][i].v)*hxdhy;
+      f[j][i].v  = uxx + uyy + .5*(x[j][i+1].omega-x[j][i-1].omega)*hy;
 
-	/* Omega */
-        u          = x[j][i].omega;
-        uxx        = (2.0*u - x[j][i-1].omega - x[j][i+1].omega)*hydhx;
-        uyy        = (2.0*u - x[j-1][i].omega - x[j+1][i].omega)*hxdhy;
-	f[j][i].omega = uxx + uyy + 
-			(vxp*(u - x[j][i-1].omega) +
-			  vxm*(x[j][i+1].omega - u)) * hy +
-			(vyp*(u - x[j-1][i].omega) +
-			  vym*(x[j+1][i].omega - u)) * hx -
-			.5 * grashof * (x[j][i+1].temp - x[j][i-1].temp) * hy;
+      /* Omega */
+      u          = x[j][i].omega;
+      uxx        = (2.0*u - x[j][i-1].omega - x[j][i+1].omega)*hydhx;
+      uyy        = (2.0*u - x[j-1][i].omega - x[j+1][i].omega)*hxdhy;
+      f[j][i].omega = uxx + uyy + (vxp*(u - x[j][i-1].omega) + vxm*(x[j][i+1].omega - u))*hy +
+                      (vyp*(u - x[j-1][i].omega) + vym*(x[j+1][i].omega - u))*hx -
+                      .5*grashof*(x[j][i+1].temp - x[j][i-1].temp)*hy;
 
-        /* Temperature */
-        u             = x[j][i].temp;
-        uxx           = (2.0*u - x[j][i-1].temp - x[j][i+1].temp)*hydhx;
-        uyy           = (2.0*u - x[j-1][i].temp - x[j+1][i].temp)*hxdhy;
-	f[j][i].temp =  uxx + uyy  + prandtl * (
-			(vxp*(u - x[j][i-1].temp) +
-			  vxm*(x[j][i+1].temp - u)) * hy +
-		        (vyp*(u - x[j-1][i].temp) +
-		       	  vym*(x[j+1][i].temp - u)) * hx);
+      /* Temperature */
+      u             = x[j][i].temp;
+      uxx           = (2.0*u - x[j][i-1].temp - x[j][i+1].temp)*hydhx;
+      uyy           = (2.0*u - x[j-1][i].temp - x[j+1][i].temp)*hxdhy;
+      f[j][i].temp =  uxx + uyy  + prandtl*((vxp*(u - x[j][i-1].temp) + vxm*(x[j][i+1].temp - u))*hy +
+                                            (vyp*(u - x[j-1][i].temp) + vym*(x[j+1][i].temp - u))*hx);
     }
   }
 
@@ -373,7 +368,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   */
   ierr = PetscLogFlops(84.0*info->ym*info->xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
 
 
 #undef __FUNCT__
@@ -402,7 +397,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *user)
   ierr = DMDAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&fu);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -430,8 +425,8 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   PetscBool      ptconverged;
   PetscScalar    pfnorm, pfnorm0;
   AppCtx         *user = (AppCtx*)ctx;
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   grashof = user->grashof;
   prandtl = user->prandtl;
   lid     = user->lidvelocity;
@@ -456,9 +451,9 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
     ierr = DMDAVecGetArray(da,localB,&b);CHKERRQ(ierr);
   }
   /* looks like a combination of the formfunction / formjacobian routines */
-  dhx = (PetscReal)(info.mx-1);  dhy = (PetscReal)(info.my-1);
-  hx = 1.0/dhx;                   hy = 1.0/dhy;
-  hxdhy = hx*dhy;                 hydhx = hy*dhx;
+  dhx   = (PetscReal)(info.mx-1);dhy   = (PetscReal)(info.my-1);
+  hx    = 1.0/dhx;               hy    = 1.0/dhy;
+  hxdhy = hx*dhy;                hydhx = hy*dhx;
 
   xints = info.xs; xinte = info.xs+info.xm; yints = info.ys; yinte = info.ys+info.ym;
 
@@ -583,12 +578,9 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
             u          = x[j][i].omega;
             uxx        = (2.0*u - x[j][i-1].omega - x[j][i+1].omega)*hydhx;
             uyy        = (2.0*u - x[j-1][i].omega - x[j+1][i].omega)*hxdhy;
-            fomega = uxx + uyy +
-              (vxp*(u - x[j][i-1].omega) +
-               vxm*(x[j][i+1].omega - u)) * hy +
-              (vyp*(u - x[j-1][i].omega) +
-               vym*(x[j+1][i].omega - u)) * hx -
-              .5 * grashof * (x[j][i+1].temp - x[j][i-1].temp) * hy - bjiomega;
+            fomega = uxx + uyy +  (vxp*(u - x[j][i-1].omega) + vxm*(x[j][i+1].omega - u))*hy +
+                     (vyp*(u - x[j-1][i].omega) + vym*(x[j+1][i].omega - u))*hx -
+                     .5*grashof*(x[j][i+1].temp - x[j][i-1].temp)*hy - bjiomega;
             /* convective coefficient derivatives */
             dfodo = 2.0*(hydhx + hxdhy) + ((vxp - vxm)*hy + (vyp - vym)*hx);
             if (PetscRealPart(vx) > 0.0) {
@@ -605,11 +597,8 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
             u             = x[j][i].temp;
             uxx           = (2.0*u - x[j][i-1].temp - x[j][i+1].temp)*hydhx;
             uyy           = (2.0*u - x[j-1][i].temp - x[j+1][i].temp)*hxdhy;
-            ftemp =  uxx + uyy  + prandtl * (
-              (vxp*(u - x[j][i-1].temp) +
-               vxm*(x[j][i+1].temp - u)) * hy +
-              (vyp*(u - x[j-1][i].temp) +
-               vym*(x[j+1][i].temp - u)) * hx) - bjitemp;
+            ftemp =  uxx + uyy  + prandtl*((vxp*(u - x[j][i-1].temp) + vxm*(x[j][i+1].temp - u))*hy +
+                                           (vyp*(u - x[j-1][i].temp) + vym*(x[j+1][i].temp - u))*hx) - bjitemp;
             dftdt = 2.0*(hydhx + hxdhy) + prandtl*((vxp - vxm)*hy + (vyp - vym)*hx);
             if (PetscRealPart(vx) > 0.0) {
               dftdu = prandtl*(u - x[j][i-1].temp)*hy;
@@ -687,5 +676,5 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   if (B) {
     ierr = DMRestoreLocalVector(da,&localB);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0); 
+  PetscFunctionReturn(0);
 }

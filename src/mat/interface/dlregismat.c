@@ -21,7 +21,7 @@ const char *const MPChacoEigenTypes[] = {"LANCZOS","RQI","MPChacoEigenType","MP_
 
 extern PetscErrorCode  MatMFFDInitializePackage(const char[]);
 static PetscBool  MatPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFinalizePackage"
 /*@C
   MatFinalizePackage - This function destroys everything in the Petsc interface to the Mat package. It is
@@ -61,7 +61,7 @@ PetscErrorCode  MatFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatInitializePackage"
 /*@C
   MatInitializePackage - This function initializes everything in the Mat package. It is called
@@ -76,7 +76,7 @@ PetscErrorCode  MatFinalizePackage(void)
 .keywords: Mat, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  MatInitializePackage(const char path[]) 
+PetscErrorCode  MatInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
@@ -220,7 +220,7 @@ PetscErrorCode  MatInitializePackage(const char path[])
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscmat"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.

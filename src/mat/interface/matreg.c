@@ -12,7 +12,7 @@ PetscBool  MatRegisterAllCalled = PETSC_FALSE;
 */
 PetscFList MatList = 0;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSetType"
 /*@C
    MatSetType - Builds matrix object for a particular matrix type
@@ -24,10 +24,10 @@ PetscFList MatList = 0;
 -  matype   - matrix type
 
    Options Database Key:
-.  -mat_type  <method> - Sets the type; use -help for a list 
+.  -mat_type  <method> - Sets the type; use -help for a list
     of available methods (for instance, seqaij)
 
-   Notes:  
+   Notes:
    See "${PETSC_DIR}/include/petscmat.h" for available methods
 
   Level: intermediate
@@ -62,7 +62,7 @@ PetscErrorCode  MatSetType(Mat mat, const MatType matype)
 
   ierr =  PetscFListFind(MatList,((PetscObject)mat)->comm,matype,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown Mat type given: %s",matype);
-  
+
   /* free the old data structure if it existed */
   if (mat->ops->destroy) {
     ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
@@ -81,7 +81,7 @@ PetscErrorCode  MatSetType(Mat mat, const MatType matype)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatRegisterDestroy"
 /*@C
    MatRegisterDestroy - Frees the list of matrix types that were
@@ -105,7 +105,7 @@ PetscErrorCode  MatRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetType"
 /*@C
    MatGetType - Gets the matrix type as a string from the matrix object.
@@ -134,7 +134,7 @@ PetscErrorCode  MatGetType(Mat mat,const MatType *type)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatRegister"
 /*@C
   MatRegister - See MatRegisterDynamic()
@@ -154,7 +154,7 @@ PetscErrorCode  MatRegister(const char sname[],const char path[],const char name
 
 MatBaseName MatBaseNameList = 0;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatRegisterBaseName"
 /*@C
       MatRegisterBaseName - Registers a name that can be used for either a sequential or its corresponding parallel matrix type.
@@ -193,7 +193,7 @@ PetscErrorCode  MatRegisterBaseName(const char bname[],const char sname[],const 
 */
 PetscOpFList MatOpList = 0;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatRegisterOp"
 /*@C
       MatRegisterOp - Registers a function via a pointer or a dynamic library url,
@@ -236,7 +236,7 @@ PetscErrorCode  MatRegisterOp(MPI_Comm comm, const char url[], PetscVoidFunction
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatQueryOp"
 /*@C
       MatQueryOp - Finds the function that implements a polymorphic operation that is dispatched

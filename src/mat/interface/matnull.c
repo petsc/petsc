@@ -7,7 +7,7 @@
 
 PetscClassId  MAT_NULLSPACE_CLASSID;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatNullSpaceSetFunction"
 /*@C
    MatNullSpaceSetFunction - set a function that removes a null space from a vector
@@ -156,7 +156,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatNullSpaceView"
 /*@C
    MatNullSpaceView - Visualizes a null space object.
@@ -204,10 +204,10 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatNullSpaceCreate"
 /*@
-   MatNullSpaceCreate - Creates a data structure used to project vectors 
+   MatNullSpaceCreate - Creates a data structure used to project vectors
    out of null spaces.
 
    Collective on MPI_Comm
@@ -218,7 +218,7 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
 .  n - number of vectors (excluding constant vector) in null space
 -  vecs - the vectors that span the null space (excluding the constant vector);
           these vectors must be orthonormal. These vectors are NOT copied, so do not change them
-          after this call. You should free the array that you pass in and destroy the vectors (this will reduce the reference count 
+          after this call. You should free the array that you pass in and destroy the vectors (this will reduce the reference count
           for them by one).
 
    Output Parameter:
@@ -228,7 +228,7 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
 
    Notes: See MatNullSpaceSetFunction() as an alternative way of providing the null space information instead of setting vecs.
 
-      If has_cnst is PETSC_TRUE you do not need to pass a constant vector in as a fourth argument to this routine, nor do you 
+      If has_cnst is PETSC_TRUE you do not need to pass a constant vector in as a fourth argument to this routine, nor do you
        need to pass in a function that eliminates the constant function into MatNullSpaceSetFunction().
 
   Users manual sections:
@@ -248,12 +248,12 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool  has_cnst,PetscInt n,
   if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",n);
   if (n) PetscValidPointer(vecs,4);
   for (i=0; i<n; i++) PetscValidHeaderSpecific(vecs[i],VEC_CLASSID,4);
-  PetscValidPointer(SP,5); 
- 
-  *SP = PETSC_NULL; 
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES 
-  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr); 
-#endif 
+  PetscValidPointer(SP,5);
+
+  *SP = PETSC_NULL;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
 
   ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_CLASSID,0,"MatNullSpace","Null space","Mat",comm,MatNullSpaceDestroy,MatNullSpaceView);CHKERRQ(ierr);
 
@@ -279,10 +279,10 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool  has_cnst,PetscInt n,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatNullSpaceDestroy"
 /*@
-   MatNullSpaceDestroy - Destroys a data structure used to project vectors 
+   MatNullSpaceDestroy - Destroys a data structure used to project vectors
    out of null spaces.
 
    Collective on MatNullSpace
@@ -302,17 +302,17 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
 
   PetscFunctionBegin;
   if (!*sp) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific((*sp),MAT_NULLSPACE_CLASSID,1); 
+  PetscValidHeaderSpecific((*sp),MAT_NULLSPACE_CLASSID,1);
   if (--((PetscObject)(*sp))->refct > 0) {*sp = 0; PetscFunctionReturn(0);}
 
-  ierr = VecDestroy(&(*sp)->vec);CHKERRQ(ierr); 
-  ierr = VecDestroyVecs((*sp)->n,&(*sp)->vecs);CHKERRQ(ierr); 
+  ierr = VecDestroy(&(*sp)->vec);CHKERRQ(ierr);
+  ierr = VecDestroyVecs((*sp)->n,&(*sp)->vecs);CHKERRQ(ierr);
   ierr = PetscFree((*sp)->alpha);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatNullSpaceRemove"
 /*@C
    MatNullSpaceRemove - Removes all the components of a null space from a vector.
@@ -321,7 +321,7 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
 
    Input Parameters:
 +  sp - the null space context
-.  vec - the vector from which the null space is to be removed 
+.  vec - the vector from which the null space is to be removed
 -  out - if this is requested (not PETSC_NULL) then this is a vector with the null space removed otherwise
          the removal is done in-place (in vec)
 
@@ -340,19 +340,19 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1); 
-  PetscValidHeaderSpecific(vec,VEC_CLASSID,2); 
+  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
+  PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
 
   if (out) {
-    PetscValidPointer(out,3); 
-    if (!sp->vec) { 
-      ierr = VecDuplicate(vec,&sp->vec);CHKERRQ(ierr); 
+    PetscValidPointer(out,3);
+    if (!sp->vec) {
+      ierr = VecDuplicate(vec,&sp->vec);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(sp,sp->vec);CHKERRQ(ierr);
     }
     ierr = VecCopy(vec,sp->vec);CHKERRQ(ierr);
     vec = *out = sp->vec;
   }
-  
+
   if (sp->has_cnst) {
     ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
     if (N > 0) {
@@ -361,7 +361,7 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
       ierr = VecShift(vec,sum);CHKERRQ(ierr);
     }
   }
-  
+
   if (sp->n) {
     ierr = VecMDot(vec,sp->n,sp->vecs,sp->alpha);CHKERRQ(ierr);
     for (i=0; i<sp->n; i++) sp->alpha[i] = -sp->alpha[i];
@@ -374,7 +374,7 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatNullSpaceTest"
 /*@
    MatNullSpaceTest  - Tests if the claimed null space is really a
