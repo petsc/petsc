@@ -3262,9 +3262,6 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
 .seealso: DMGetDefaultSF(), DMSetDefaultSF(), DMCreateDefaultSF()
 @*/
 PetscErrorCode DMGetPointSF(DM dm, PetscSF *sf) {
-  PetscInt       nroots;
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(sf, 2);

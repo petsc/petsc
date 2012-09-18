@@ -779,8 +779,8 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
 
   Level: developer
 
-,seealso: PetscSectionCreate()
-*/
+.seealso: PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscBool includeConstraints, PetscSection *gsection)
 {
   PetscInt      *neg;

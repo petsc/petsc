@@ -199,7 +199,7 @@ PETSC_EXTERN PetscErrorCode DMPrintCellMatrix(PetscInt, const char [], PetscInt,
 PETSC_EXTERN PetscErrorCode DMGetDefaultSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMSetDefaultSection(DM, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetDefaultGlobalSection(DM, PetscSection *);
-PETSC_EXTERN PetscErrorCode DMSetDefaultGlobalSection(DM, PetscSection *);
+PETSC_EXTERN PetscErrorCode DMSetDefaultGlobalSection(DM, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetDefaultSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetDefaultSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMCreateDefaultSF(DM, PetscSection, PetscSection);
