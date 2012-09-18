@@ -11,7 +11,7 @@ Subdomain decomposition can be specified with -np_ parameters.\n\
 Dirichlet boundaries on one side by default:\n\
 it does not iterate on dirichlet nodes by default: if -usezerorows is passed in, it also iterates on Dirichlet nodes.\n\
 Pure Neumann case can be requested by passing in -pureneumann.\n\
-In the latter case, in order to avoid runtime errors during factorization, please specify also -coarse_pc_factor_zeropivot 0\n\n";
+In the latter case, in order to avoid runtime errors during factorization, please specify also -coarse_redundant_pc_factor_zeropivot 0\n\n";
 
 #include <petscksp.h>
 #include <petscpc.h>
@@ -857,7 +857,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP* ksp)
   ierr = PetscFree(bddc_dofs_splitting);CHKERRQ(ierr);
 
   /* Primal constraints implemented by using a near null space attached to A -> now it passes in only the constants
-    (which in practice is not needed since, by default, PCBDDC build the primal space using constants */
+    (which in practice is not needed since, by default, PCBDDC build the primal space using constants for quadrature formulas */
   ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,0,PETSC_NULL,&near_null_space);CHKERRQ(ierr);
   ierr = MatSetNearNullSpace(A,near_null_space);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&near_null_space);CHKERRQ(ierr);
@@ -884,10 +884,17 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP* ksp)
       ierr = PCBDDCSetNeumannBoundaries(pc,neumannIS);CHKERRQ(ierr);
     }
   }
+ 
+  /* Pass null space information to BDDC (don't pass it via MatSetNullSpace!) */
+  if(dd.pure_neumann) {
+    MatNullSpace nsp;
+    ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,0,PETSC_NULL,&nsp);CHKERRQ(ierr);
+    ierr = PCBDDCSetNullSpace(pc,nsp);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
+  }
   ierr = KSPSetComputeSingularValues(temp_ksp,PETSC_TRUE);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(temp_ksp);CHKERRQ(ierr);
   ierr = KSPSetUp(temp_ksp);CHKERRQ(ierr);
-  ierr = KSPSetNormType(temp_ksp,KSP_NORM_NATURAL);CHKERRQ(ierr);
   *ksp = temp_ksp;
   ierr = ISDestroy(&dirichletIS);CHKERRQ(ierr);
   ierr = ISDestroy(&neumannIS);CHKERRQ(ierr);
@@ -990,7 +997,7 @@ int main(int argc,char **args)
   Vec            exact_solution=0,fetidp_solution=0,fetidp_rhs=0;
 
   /* Init PETSc */
-  ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
+  PetscInitialize(&argc,&args,(char *)0,help);
   /* Initialize DomainData */
   ierr = InitializeDomainData(&dd);CHKERRQ(ierr);
   /* Decompose domain */
