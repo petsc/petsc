@@ -8,11 +8,11 @@
 #include <stdlib.h>
 #endif
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscAbortErrorHandler" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscAbortErrorHandler"
 /*@C
-   PetscAbortErrorHandler - Error handler that calls abort on error. 
-   This routine is very useful when running in the debugger, because the 
+   PetscAbortErrorHandler - Error handler that calls abort on error.
+   This routine is very useful when running in the debugger, because the
    user can look directly at the stack frames and the variables.
 
    Not Collective
@@ -31,13 +31,13 @@
    Options Database Keys:
 +  -on_error_abort - Activates aborting when an error is encountered
 -  -start_in_debugger [noxterm,dbx,xxgdb]  [-display name] - Starts all
-    processes in the debugger and uses PetscAbortErrorHandler().  By default the 
+    processes in the debugger and uses PetscAbortErrorHandler().  By default the
     debugger is gdb; alternatives are dbx and xxgdb.
 
    Level: developer
 
    Notes:
-   Most users need not directly employ this routine and the other error 
+   Most users need not directly employ this routine and the other error
    handlers, but can instead use the simplified interface SETERRQ, which
    has the calling sequence
 $     SETERRQ(comm,number,mess)
@@ -52,14 +52,14 @@ $     SETERRQ(comm,number,mess)
    Concepts: error handler^aborting
    Concepts: aborting on error
 
-.seealso: PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
+.seealso: PetscPushErrorHandler(), PetscTraceBackErrorHandler(),
           PetscAttachDebuggerErrorHandler()
 @*/
 PetscErrorCode  PetscAbortErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char* dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscFunctionBegin;
   (*PetscErrorPrintf)("%s() line %d in %s%s %s\n",fun,line,dir,file,mess);
-  abort(); 
+  abort();
   PetscFunctionReturn(0);
 }
 

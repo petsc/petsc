@@ -1,7 +1,7 @@
 
-/* 
+/*
    This file contains simple binary input routines for vectors.  The
-   analogous output routines are within each vector implementation's 
+   analogous output routines are within each vector implementation's
    VecView (with viewer types PETSCVIEWERBINARY)
  */
 
@@ -10,7 +10,7 @@
 #include <petsc-private/vecimpl.h>
 #include <petscmat.h> /* so that MAT_FILE_CLASSID is defined */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryReadVecHeader_Private"
 static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,PetscInt *rows)
 {
@@ -70,8 +70,8 @@ static PetscErrorCode VecLoad_Binary_MPIIO(Vec vec, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 #endif
-    
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "VecLoad_Binary"
 PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 {
@@ -92,7 +92,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  
+
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscViewerBinaryReadVecHeader_Private(viewer,&rows);CHKERRQ(ierr);
   /* Set Vec sizes,blocksize,and type if not already set. Block size first so that local sizes will be compatible. */
@@ -116,7 +116,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   }
 #endif
 
-  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr); 
+  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
   ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
   if (!rank) {
@@ -150,7 +150,7 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 }
 
 #if defined(PETSC_HAVE_HDF5)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5OpenGroup"
 PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t *groupId) {
   hid_t          file_id, group;
@@ -188,7 +188,7 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecLoad_HDF5"
 /*
      This should handle properly the cases where PetscInt is 32 or 64 and hsize_t is 32 or 64. These means properly casting with
@@ -337,7 +337,7 @@ PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
 
 #if defined(PETSC_HAVE_HDF5)
   if (ishdf5) {
-    if (!((PetscObject)newvec)->name) { 
+    if (!((PetscObject)newvec)->name) {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Since HDF5 format gives ASCII name for each object in file; must use VecLoad() after setting name of Vec with PetscObjectSetName()");
      ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
     }

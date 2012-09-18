@@ -1,6 +1,6 @@
 
 /*
-       Index sets of evenly space integers, defined by a 
+       Index sets of evenly space integers, defined by a
     start, stride and length.
 */
 #include <petsc-private/isimpl.h>             /*I   "petscis.h"   I*/
@@ -10,8 +10,8 @@ typedef struct {
   PetscInt N,n,first,step;
 } IS_Stride;
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISIdentity_Stride" 
+#undef __FUNCT__
+#define __FUNCT__ "ISIdentity_Stride"
 PetscErrorCode ISIdentity_Stride(IS is,PetscBool  *ident)
 {
   IS_Stride *is_stride = (IS_Stride*)is->data;
@@ -26,7 +26,7 @@ PetscErrorCode ISIdentity_Stride(IS is,PetscBool  *ident)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISCopy_Stride"
 static PetscErrorCode ISCopy_Stride(IS is,IS isy)
 {
@@ -38,8 +38,8 @@ static PetscErrorCode ISCopy_Stride(IS is,IS isy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISDuplicate_Stride" 
+#undef __FUNCT__
+#define __FUNCT__ "ISDuplicate_Stride"
 PetscErrorCode ISDuplicate_Stride(IS is,IS *newIS)
 {
   PetscErrorCode ierr;
@@ -50,8 +50,8 @@ PetscErrorCode ISDuplicate_Stride(IS is,IS *newIS)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISInvertPermutation_Stride" 
+#undef __FUNCT__
+#define __FUNCT__ "ISInvertPermutation_Stride"
 PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
 {
   IS_Stride      *isstride = (IS_Stride*)is->data;
@@ -72,11 +72,11 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
   }
   PetscFunctionReturn(0);
 }
-    
-#undef __FUNCT__  
-#define __FUNCT__ "ISStrideGetInfo" 
+
+#undef __FUNCT__
+#define __FUNCT__ "ISStrideGetInfo"
 /*@
-   ISStrideGetInfo - Returns the first index in a stride index set and 
+   ISStrideGetInfo - Returns the first index in a stride index set and
    the stride width.
 
    Not Collective
@@ -109,13 +109,13 @@ PetscErrorCode  ISStrideGetInfo(IS is,PetscInt *first,PetscInt *step)
   if (step) PetscValidIntPointer(step,3);
 
   sub = (IS_Stride*)is->data;
-  if (first) *first = sub->first; 
+  if (first) *first = sub->first;
   if (step)  *step  = sub->step;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISDestroy_Stride" 
+#undef __FUNCT__
+#define __FUNCT__ "ISDestroy_Stride"
 PetscErrorCode ISDestroy_Stride(IS is)
 {
   PetscErrorCode ierr;
@@ -126,8 +126,8 @@ PetscErrorCode ISDestroy_Stride(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISToGeneral_Stride" 
+#undef __FUNCT__
+#define __FUNCT__ "ISToGeneral_Stride"
 PetscErrorCode  ISToGeneral_Stride(IS inis)
 {
   PetscErrorCode ierr;
@@ -144,11 +144,11 @@ PetscErrorCode  ISToGeneral_Stride(IS inis)
 
 
 /*
-     Returns a legitimate index memory even if 
+     Returns a legitimate index memory even if
    the stride index set is empty.
 */
-#undef __FUNCT__  
-#define __FUNCT__ "ISGetIndices_Stride" 
+#undef __FUNCT__
+#define __FUNCT__ "ISGetIndices_Stride"
 PetscErrorCode ISGetIndices_Stride(IS in,const PetscInt *idx[])
 {
   IS_Stride      *sub = (IS_Stride*)in->data;
@@ -164,8 +164,8 @@ PetscErrorCode ISGetIndices_Stride(IS in,const PetscInt *idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISRestoreIndices_Stride" 
+#undef __FUNCT__
+#define __FUNCT__ "ISRestoreIndices_Stride"
 PetscErrorCode ISRestoreIndices_Stride(IS in,const PetscInt *idx[])
 {
   PetscErrorCode ierr;
@@ -175,30 +175,30 @@ PetscErrorCode ISRestoreIndices_Stride(IS in,const PetscInt *idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISGetSize_Stride" 
+#undef __FUNCT__
+#define __FUNCT__ "ISGetSize_Stride"
 PetscErrorCode ISGetSize_Stride(IS is,PetscInt *size)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
 
   PetscFunctionBegin;
-  *size = sub->N; 
+  *size = sub->N;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISGetLocalSize_Stride" 
+#undef __FUNCT__
+#define __FUNCT__ "ISGetLocalSize_Stride"
 PetscErrorCode ISGetLocalSize_Stride(IS is,PetscInt *size)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
 
   PetscFunctionBegin;
-  *size = sub->n; 
+  *size = sub->n;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISView_Stride" 
+#undef __FUNCT__
+#define __FUNCT__ "ISView_Stride"
 PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
 {
   IS_Stride      *sub = (IS_Stride *)is->data;
@@ -209,7 +209,7 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (iascii) { 
+  if (iascii) {
     ierr = MPI_Comm_rank(((PetscObject)is)->comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(((PetscObject)is)->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
@@ -222,7 +222,7 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
       }
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);      
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
       if (is->isperm) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
       }
@@ -231,14 +231,14 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D %D\n",rank,i,sub->first + i*sub->step);CHKERRQ(ierr);
       }
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);      
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
     }
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
-  
-#undef __FUNCT__  
-#define __FUNCT__ "ISSort_Stride" 
+
+#undef __FUNCT__
+#define __FUNCT__ "ISSort_Stride"
 PetscErrorCode ISSort_Stride(IS is)
 {
   IS_Stride *sub = (IS_Stride*)is->data;
@@ -250,8 +250,8 @@ PetscErrorCode ISSort_Stride(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISSorted_Stride" 
+#undef __FUNCT__
+#define __FUNCT__ "ISSorted_Stride"
 PetscErrorCode ISSorted_Stride(IS is,PetscBool * flg)
 {
   IS_Stride *sub = (IS_Stride*)is->data;
@@ -262,7 +262,7 @@ PetscErrorCode ISSorted_Stride(IS is,PetscBool * flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISOnComm_Stride"
 static PetscErrorCode ISOnComm_Stride(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
 {
@@ -274,7 +274,7 @@ static PetscErrorCode ISOnComm_Stride(IS is,MPI_Comm comm,PetscCopyMode mode,IS 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISSetBlockSize_Stride"
 static PetscErrorCode ISSetBlockSize_Stride(IS is,PetscInt bs)
 {
@@ -286,7 +286,7 @@ static PetscErrorCode ISSetBlockSize_Stride(IS is,PetscInt bs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISContiguousLocal_Stride"
 static PetscErrorCode ISContiguousLocal_Stride(IS is,PetscInt gstart,PetscInt gend,PetscInt *start,PetscBool *contig)
 {
@@ -323,8 +323,8 @@ static struct _ISOps myops = { ISGetSize_Stride,
 };
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISStrideSetStride" 
+#undef __FUNCT__
+#define __FUNCT__ "ISStrideSetStride"
 /*@
    ISStrideSetStride - Sets the stride information for a stride index set.
 
@@ -354,8 +354,8 @@ PetscErrorCode  ISStrideSetStride(IS is,PetscInt n,PetscInt first,PetscInt step)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "ISStrideSetStride_Stride" 
+#undef __FUNCT__
+#define __FUNCT__ "ISStrideSetStride_Stride"
 PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscInt step)
 {
   PetscErrorCode ierr;
@@ -383,10 +383,10 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISCreateStride" 
+#undef __FUNCT__
+#define __FUNCT__ "ISCreateStride"
 /*@
-   ISCreateStride - Creates a data structure for an index set 
+   ISCreateStride - Creates a data structure for an index set
    containing a list of evenly spaced integers.
 
    Collective on MPI_Comm
@@ -400,10 +400,10 @@ EXTERN_C_END
    Output Parameter:
 .  is - the new index set
 
-   Notes: 
+   Notes:
    When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
-   conceptually the same as MPI_Group operations. The IS are the 
-   distributed sets of indices and thus certain operations on them are collective. 
+   conceptually the same as MPI_Group operations. The IS are the
+   distributed sets of indices and thus certain operations on them are collective.
 
    Level: beginner
 
@@ -425,8 +425,8 @@ PetscErrorCode  ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt 
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "ISCreate_Stride" 
+#undef __FUNCT__
+#define __FUNCT__ "ISCreate_Stride"
 PetscErrorCode  ISCreate_Stride(IS is)
 {
   PetscErrorCode ierr;

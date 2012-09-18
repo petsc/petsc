@@ -10,11 +10,11 @@ extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal *,PetscRea
 
 
 /*
-     KSPSetUp_CGNE - Sets up the workspace needed by the CGNE method. 
+     KSPSetUp_CGNE - Sets up the workspace needed by the CGNE method.
 
      IDENTICAL TO THE CG ONE EXCEPT for one extra work vector!
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_CGNE"
 PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 {
@@ -39,18 +39,18 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 }
 
 /*
-       KSPSolve_CGNE - This routine actually applies the conjugate gradient 
+       KSPSolve_CGNE - This routine actually applies the conjugate gradient
     method
 
    Input Parameter:
-.     ksp - the Krylov space object that was set to use conjugate gradient, by, for 
+.     ksp - the Krylov space object that was set to use conjugate gradient, by, for
             example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPCG);
 
 
     Virtually identical to the KSPSolve_CG, it should definitely reuse the same code.
 
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_CGNE"
 PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 {
@@ -90,7 +90,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     ierr = KSP_MatMult(ksp,Amat,X,P);CHKERRQ(ierr);
     ierr = KSP_MatMultTranspose(ksp,Amat,P,R);CHKERRQ(ierr);
     ierr = VecAYPX(R,-1.0,T);CHKERRQ(ierr);
-  } else { 
+  } else {
     ierr = VecCopy(T,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
   ierr = KSP_PCApply(ksp,R,T);CHKERRQ(ierr);
@@ -138,7 +138,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 	 if (ksp->max_it != stored_max_it) {
 	   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
 	 }
-	 e[i] = PetscSqrtReal(PetscAbsScalar(b))/a;  
+	 e[i] = PetscSqrtReal(PetscAbsScalar(b))/a;
        }
        ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
      }
@@ -188,7 +188,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 }
 
 /*
-    KSPCreate_CGNE - Creates the data structure for the Krylov method CGNE and sets the 
+    KSPCreate_CGNE - Creates the data structure for the Krylov method CGNE and sets the
        function pointers for all the routines it needs to call (KSPSolve_CGNE() etc)
 
     It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
@@ -213,7 +213,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
    iterations (see Nachtigal, Reddy, and Trefethen, "How fast are nonsymmetric matrix iterations", 1992). If you intend
    to solve least squares problems, use KSPLSQR.
 
-   This is NOT a different algorithm then used with KSPCG, it merely uses that algorithm with the 
+   This is NOT a different algorithm then used with KSPCG, it merely uses that algorithm with the
    matrix defined by A^t*A and preconditioner defined by B^t*B where B is the preconditioner for A.
 
    This method requires that one be able to apply the transpose of the preconditioner and operator
@@ -238,7 +238,7 @@ extern PetscErrorCode  KSPCGSetType_CG(KSP,KSPCGType);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_CGNE"
 PetscErrorCode  KSPCreate_CGNE(KSP ksp)
 {
@@ -258,7 +258,7 @@ PetscErrorCode  KSPCreate_CGNE(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
 
   /*
-       Sets the functions that are associated with this data structure 
+       Sets the functions that are associated with this data structure
        (in C++ this is the same as defining virtual functions)
   */
   ksp->ops->setup                = KSPSetUp_CGNE;
@@ -270,7 +270,7 @@ PetscErrorCode  KSPCreate_CGNE(KSP ksp)
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
 
   /*
-      Attach the function KSPCGSetType_CGNE() to this object. The routine 
+      Attach the function KSPCGSetType_CGNE() to this object. The routine
       KSPCGSetType() checks for this attached function and calls it if it finds
       it. (Sort of like a dynamic member function that can be added at run time
   */

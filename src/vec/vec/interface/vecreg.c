@@ -4,7 +4,7 @@
 PetscFList VecList                       = PETSC_NULL;
 PetscBool  VecRegisterAllCalled          = PETSC_FALSE;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetType"
 /*@C
   VecSetType - Builds a vector, for a particular vector implementation.
@@ -16,7 +16,7 @@ PetscBool  VecRegisterAllCalled          = PETSC_FALSE;
 - method - The name of the vector type
 
   Options Database Key:
-. -vec_type <type> - Sets the vector type; use -help for a list 
+. -vec_type <type> - Sets the vector type; use -help for a list
                      of available types
 
   Notes:
@@ -46,7 +46,7 @@ PetscErrorCode  VecSetType(Vec vec, const VecType method)
     ierr = (*vec->ops->destroy)(vec);CHKERRQ(ierr);
     vec->ops->destroy = PETSC_NULL;
   }
-  if (vec->map->n < 0 && vec->map->N < 0) { 
+  if (vec->map->n < 0 && vec->map->N < 0) {
     vec->ops->create = r;
     vec->ops->load   = VecLoad_Default;
   } else {
@@ -55,7 +55,7 @@ PetscErrorCode  VecSetType(Vec vec, const VecType method)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGetType"
 /*@C
   VecGetType - Gets the vector type name (as a string) from the Vec.
@@ -90,7 +90,7 @@ PetscErrorCode  VecGetType(Vec vec, const VecType *type)
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecRegister"
 /*@C
   VecRegister - See VecRegisterDynamic()
@@ -112,7 +112,7 @@ PetscErrorCode  VecRegister(const char sname[], const char path[], const char na
 
 
 /*--------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecRegisterDestroy"
 /*@C
    VecRegisterDestroy - Frees the list of Vec methods that were registered by VecRegister()/VecRegisterDynamic().

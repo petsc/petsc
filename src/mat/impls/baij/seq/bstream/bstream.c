@@ -17,19 +17,19 @@ PetscErrorCode MatDestroy_SeqBSTRM(Mat A)
   ierr = MatDestroy_SeqBAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/*=========================================================*/ 
-PetscErrorCode MatDuplicate_SeqBSTRM(Mat A, MatDuplicateOption op, Mat *M) 
+/*=========================================================*/
+PetscErrorCode MatDuplicate_SeqBSTRM(Mat A, MatDuplicateOption op, Mat *M)
 {
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot duplicate STRM matrices yet");    
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot duplicate STRM matrices yet");
   PetscFunctionReturn(0);
 }
-/*=========================================================*/ 
+/*=========================================================*/
 extern PetscErrorCode MatSolve_SeqBSTRM_4(Mat A,Vec bb,Vec xx);
 extern PetscErrorCode MatSolve_SeqBSTRM_5(Mat A,Vec bb,Vec xx);
 
 
-/*=========================================================*/ 
+/*=========================================================*/
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqBSTRM_convert_bstrm"
 PetscErrorCode MatSeqBSTRM_convert_bstrm(Mat A)
@@ -50,7 +50,7 @@ PetscErrorCode MatSeqBSTRM_convert_bstrm(Mat A)
 
 
   rbs = cbs = bs;
-  bs2 = rbs*cbs; 
+  bs2 = rbs*cbs;
   blen = ai[m]-ai[0]+diag[0] - diag[m];
   slen = blen*cbs;
 
@@ -58,12 +58,12 @@ PetscErrorCode MatSeqBSTRM_convert_bstrm(Mat A)
   ierr = PetscMalloc(bs2*blen*sizeof(MatScalar), &bstrm->as);CHKERRQ(ierr);
 
   ierr  = PetscMalloc(rbs*sizeof(MatScalar *), &asp);CHKERRQ(ierr);
-   
-  for (i=0;i<rbs;i++) asp[i] = bstrm->as + i*slen; 
+
+  for (i=0;i<rbs;i++) asp[i] = bstrm->as + i*slen;
 
   for (j=0;j<blen;j++) {
-     for (jb=0; jb<cbs; jb++){ 
-     for (ib=0; ib<rbs; ib++){ 
+     for (jb=0; jb<cbs; jb++){
+     for (ib=0; ib<rbs; ib++){
          asp[ib][j*cbs+jb] = aa[j*bs2+jb*rbs+ib];
      }}
   }
@@ -72,17 +72,17 @@ PetscErrorCode MatSeqBSTRM_convert_bstrm(Mat A)
   switch (bs){
     case 4:
        A->ops->solve   = MatSolve_SeqBSTRM_4;
-       break; 
+       break;
     case 5:
        A->ops->solve   = MatSolve_SeqBSTRM_5;
-       break;  
+       break;
     default:
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D",bs);
   }
   PetscFunctionReturn(0);
 }
 
-/*=========================================================*/ 
+/*=========================================================*/
 extern PetscErrorCode MatSeqBSTRM_create_bstrm(Mat);
 
 #undef __FUNCT__
@@ -98,7 +98,7 @@ PetscErrorCode MatAssemblyEnd_SeqBSTRM(Mat A, MatAssemblyType mode)
   ierr = MatSeqBSTRM_create_bstrm(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/*=========================================================*/ 
+/*=========================================================*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqBAIJ_SeqBSTRM"
@@ -112,7 +112,7 @@ PetscErrorCode  MatConvert_SeqBAIJ_SeqBSTRM(Mat A,const MatType type,MatReuse re
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
-  
+
 
   ierr = PetscNewLog(B,Mat_SeqBSTRM,&bstrm);CHKERRQ(ierr);
   B->spptr = (void *) bstrm;
@@ -164,10 +164,10 @@ PetscErrorCode MatCreate_SeqBSTRM(Mat A)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-/*=========================================================*/ 
+/*=========================================================*/
 
-/*=========================================================*/ 
-#undef __FUNCT__  
+/*=========================================================*/
+#undef __FUNCT__
 #define __FUNCT__ "MatSOR_SeqBSTRM_4"
 PetscErrorCode MatSOR_SeqBSTRM_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
@@ -223,12 +223,12 @@ PetscErrorCode MatSOR_SeqBSTRM_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
 	s1    = b[i2]; s2 = b[i2+1]; s3 = b[i2+2]; s4 = b[i2+3];
 	while (nz--) {
 	  idx  = 4*(*vi++);
-	  x1   = x[idx]; x2 = x[1+idx]; x3 = x[2+idx]; x4 = x[3+idx]; 
+	  x1   = x[idx]; x2 = x[1+idx]; x3 = x[2+idx]; x4 = x[3+idx];
 	  s1  -= v1[0]*x1 + v1[1]*x2 + v1[2]*x3 + v1[3]*x4;
 	  s2  -= v2[0]*x1 + v2[1]*x2 + v2[2]*x3 + v2[3]*x4;
 	  s3  -= v3[0]*x1 + v3[1]*x2 + v3[2]*x3 + v3[3]*x4;
 	  s4  -= v4[0]*x1 + v4[1]*x2 + v4[2]*x3 + v4[3]*x4;
-	  v1 += 4; v2 += 4; v3 += 4; v4 += 4; 
+	  v1 += 4; v2 += 4; v3 += 4; v4 += 4;
 	}
         x[i2]   = idiag[0]*s1 + idiag[4]*s2 + idiag[8]*s3  + idiag[12]*s4;
         x[i2+1] = idiag[1]*s1 + idiag[5]*s2 + idiag[9]*s3  + idiag[13]*s4;
@@ -240,7 +240,7 @@ PetscErrorCode MatSOR_SeqBSTRM_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
       /* for logging purposes assume number of nonzero in lower half is 1/2 of total */
       ierr = PetscLogFlops(16.0*(a->nz));CHKERRQ(ierr);
     }
-    if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
+    if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) &&
         (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
       i2    = 0;
       mdiag = a->idiag+16*a->mbs;
@@ -277,12 +277,12 @@ PetscErrorCode MatSOR_SeqBSTRM_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
 	s1    = x[i2]; s2 = x[i2+1]; s3 = x[i2+2]; s4 = x[i2+3];
 	while (nz--) {
 	  idx  = 4*(*vi--);
-	  x1   = x[idx]; x2 = x[1+idx]; x3 = x[2+idx]; x4 = x[3+idx]; 
+	  x1   = x[idx]; x2 = x[1+idx]; x3 = x[2+idx]; x4 = x[3+idx];
 	  s1  -= v1[3]*x4 + v1[2]*x3 + v1[1]*x2 + v1[0]*x1;
 	  s2  -= v2[3]*x4 + v2[2]*x3 + v2[1]*x2 + v2[0]*x1;
 	  s3  -= v3[3]*x4 + v3[2]*x3 + v3[1]*x2 + v3[0]*x1;
 	  s4  -= v4[3]*x4 + v4[2]*x3 + v4[1]*x2 + v4[0]*x1;
-	  v1 -= 4; v2 -= 4; v3 -= 4; v4 -= 4; 
+	  v1 -= 4; v2 -= 4; v3 -= 4; v4 -= 4;
 	}
         x[i2]   = idiag[0]*s1 + idiag[4]*s2 + idiag[8]*s3  + idiag[12]*s4;
         x[i2+1] = idiag[1]*s1 + idiag[5]*s2 + idiag[9]*s3  + idiag[13]*s4;
@@ -299,10 +299,10 @@ PetscErrorCode MatSOR_SeqBSTRM_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
-/*=========================================================*/ 
-/*=========================================================*/ 
-#undef __FUNCT__  
+}
+/*=========================================================*/
+/*=========================================================*/
+#undef __FUNCT__
 #define __FUNCT__ "MatSOR_SeqBSTRM_5"
 PetscErrorCode MatSOR_SeqBSTRM_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
@@ -380,7 +380,7 @@ PetscErrorCode MatSOR_SeqBSTRM_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
       /* for logging purposes assume number of nonzero in lower half is 1/2 of total */
       ierr = PetscLogFlops(25.0*(a->nz));CHKERRQ(ierr);
     }
-    if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
+    if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) &&
         (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
       i2    = 0;
       mdiag = a->idiag+25*a->mbs;
@@ -444,10 +444,10 @@ PetscErrorCode MatSOR_SeqBSTRM_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
-/*=========================================================*/ 
-/*=========================================================*/ 
-#undef __FUNCT__  
+}
+/*=========================================================*/
+/*=========================================================*/
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqBSTRM_4"
 PetscErrorCode MatMult_SeqBSTRM_4(Mat A,Vec xx,Vec zz)
 {
@@ -476,7 +476,7 @@ PetscErrorCode MatMult_SeqBSTRM_4(Mat A,Vec xx,Vec zz)
     ii  = a->i;
     z   = zarray;
   }
-  
+
   slen = 4*(ii[mbs]-ii[0]);
   v1 = bstrm->as;
   v2 = v1 + slen;
@@ -505,8 +505,8 @@ PetscErrorCode MatMult_SeqBSTRM_4(Mat A,Vec xx,Vec zz)
   ierr = PetscLogFlops(32*a->nz - 4*nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/*=========================================================*/ 
-#undef __FUNCT__  
+/*=========================================================*/
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqBSTRM_5"
 PetscErrorCode MatMult_SeqBSTRM_5(Mat A,Vec xx,Vec zz)
 {
@@ -535,7 +535,7 @@ PetscErrorCode MatMult_SeqBSTRM_5(Mat A,Vec xx,Vec zz)
     ii  = a->i;
     z   = zarray;
   }
-  
+
   slen = 5*(ii[mbs]-ii[0]);
   v1 = bstrm->as;
   v2 = v1 + slen;
@@ -574,16 +574,16 @@ PetscErrorCode MatMult_SeqBSTRM_5(Mat A,Vec xx,Vec zz)
   ierr = PetscLogFlops(50.0*a->nz - 5.0*nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/*=========================================================*/ 
+/*=========================================================*/
 
-/*=========================================================*/ 
-#undef __FUNCT__  
+/*=========================================================*/
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_SeqBSTRM_4"
 PetscErrorCode MatMultTranspose_SeqBSTRM_4(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ      *a = (Mat_SeqBAIJ*)A->data;
   Mat_SeqBSTRM     *sbstrm = (Mat_SeqBSTRM *)A->spptr;
-  PetscScalar       zero = 0.0;  
+  PetscScalar       zero = 0.0;
   PetscScalar       x1,x2,x3,x4;
   PetscScalar       *x, *xb, *z;
   MatScalar         *v1, *v2, *v3, *v4;
@@ -605,11 +605,11 @@ PetscErrorCode MatMultTranspose_SeqBSTRM_4(Mat A,Vec xx,Vec zz)
   xb = x;
 
   for (i=0; i<mbs; i++) {
-    n  = ai[i+1] - ai[i]; 
+    n  = ai[i+1] - ai[i];
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];  xb += 4;
     nonzerorow += (n>0);
     ib = aj + ai[i];
-    
+
     for (j=0; j<n; j++) {
       cval       = ib[j]*4;
       z[cval]     += v1[0]*x1 + v2[0]*x2 + v3[0]*x3 + v4[0]*x4;
@@ -618,21 +618,21 @@ PetscErrorCode MatMultTranspose_SeqBSTRM_4(Mat A,Vec xx,Vec zz)
       z[cval+3]   += v1[3]*x1 + v2[3]*x2 + v3[3]*x3 + v4[3]*x4;
       v1 += 4; v2 += 4; v3 += 4; v4 += 4;
     }
-    
+
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   ierr = PetscLogFlops(32*a->nz - 4*nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/*=========================================================*/ 
-#undef __FUNCT__  
+/*=========================================================*/
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_SeqBSTRM_5"
 PetscErrorCode MatMultTranspose_SeqBSTRM_5(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
   Mat_SeqBSTRM      *sbstrm = (Mat_SeqBSTRM *)A->spptr;
-  PetscScalar       zero = 0.0;  
+  PetscScalar       zero = 0.0;
   PetscScalar       *z = 0;
   PetscScalar       *x,*xb;
   const MatScalar   *v1, *v2, *v3, *v4, *v5;
@@ -671,7 +671,7 @@ PetscErrorCode MatMultTranspose_SeqBSTRM_5(Mat A,Vec xx,Vec zz)
     PetscPrefetchBlock(v4+5*n,5*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     PetscPrefetchBlock(v5+5*n,5*n,0,PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
 
-    
+
     for (j=0; j<n; j++) {
       cval       = ib[j]*5;
       z[cval]   += v1[0]*x1 + v2[0]*x2 + v3[0]*x3 + v4[0]*x4 + v5[0]*x5;
@@ -687,8 +687,8 @@ PetscErrorCode MatMultTranspose_SeqBSTRM_5(Mat A,Vec xx,Vec zz)
   ierr = PetscLogFlops(50.0*a->nz - 5.0*nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/*=========================================================*/ 
-#undef __FUNCT__  
+/*=========================================================*/
+#undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_SeqBSTRM_4"
 PetscErrorCode MatMultAdd_SeqBSTRM_4(Mat A,Vec xx,Vec yy,Vec zz)
 {
@@ -720,9 +720,9 @@ PetscErrorCode MatMultAdd_SeqBSTRM_4(Mat A,Vec xx,Vec yy,Vec zz)
     ridx = a->compressedrow.rindex;
   } else {
     ii  = a->i;
-    y   = yarray; 
+    y   = yarray;
     z   = zarray;
-  }  
+  }
 
   slen = 4*(ii[mbs]-ii[0]);
   v1 = bstrm->as;
@@ -731,7 +731,7 @@ PetscErrorCode MatMultAdd_SeqBSTRM_4(Mat A,Vec xx,Vec yy,Vec zz)
   v4 = v3 + slen;
 
   for (i=0; i<mbs; i++) {
-    n  = ii[1] - ii[0]; ii++; 
+    n  = ii[1] - ii[0]; ii++;
     if (usecprow){
       z = zarray + 4*ridx[i];
       y = yarray + 4*ridx[i];
@@ -760,8 +760,8 @@ PetscErrorCode MatMultAdd_SeqBSTRM_4(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-/*=========================================================*/ 
-#undef __FUNCT__  
+/*=========================================================*/
+#undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_SeqBSTRM_5"
 PetscErrorCode MatMultAdd_SeqBSTRM_5(Mat A,Vec xx,Vec yy,Vec zz)
 {
@@ -795,7 +795,7 @@ PetscErrorCode MatMultAdd_SeqBSTRM_5(Mat A,Vec xx,Vec yy,Vec zz)
     ridx = a->compressedrow.rindex;
   } else {
     ii  = a->i;
-    y   = yarray; 
+    y   = yarray;
     z   = zarray;
   }
 
@@ -808,7 +808,7 @@ PetscErrorCode MatMultAdd_SeqBSTRM_5(Mat A,Vec xx,Vec yy,Vec zz)
 
 
   for (i=0; i<mbs; i++) {
-    n  = ii[1] - ii[0]; ii++; 
+    n  = ii[1] - ii[0]; ii++;
     if (usecprow){
       z = zarray + 5*ridx[i];
       y = yarray + 5*ridx[i];
@@ -846,7 +846,7 @@ PetscErrorCode MatMultAdd_SeqBSTRM_5(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-/*=========================================================*/ 
+/*=========================================================*/
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqBSTRM_create_bstrm"
 PetscErrorCode MatSeqBSTRM_create_bstrm(Mat A)
@@ -865,46 +865,46 @@ PetscErrorCode MatSeqBSTRM_create_bstrm(Mat A)
   bstrm->rbs = bstrm->cbs = bs;
 
   rbs = cbs = bs;
-  bs2 = rbs*cbs; 
+  bs2 = rbs*cbs;
   blen = ai[MROW]-ai[0];
   slen = blen*cbs;
 
   ierr  = PetscMalloc(bs2*blen*sizeof(PetscScalar), &bstrm->as);CHKERRQ(ierr);
 
   ierr  = PetscMalloc(rbs*sizeof(PetscScalar *), &asp);CHKERRQ(ierr);
-   
-  for (i=0;i<rbs;i++) asp[i] = bstrm->as + i*slen; 
-   
+
+  for (i=0;i<rbs;i++) asp[i] = bstrm->as + i*slen;
+
   for (k=0; k<blen; k++) {
-    for (j=0; j<cbs; j++) 
-    for (i=0; i<rbs; i++) 
+    for (j=0; j<cbs; j++)
+    for (i=0; i<rbs; i++)
         asp[i][k*cbs+j] = aa[k*bs2+j*rbs+i];
   }
 
-  ierr = PetscFree(asp);CHKERRQ(ierr); 
+  ierr = PetscFree(asp);CHKERRQ(ierr);
 
   switch (bs){
     case 4:
        A->ops->mult          = MatMult_SeqBSTRM_4;
        A->ops->multadd       = MatMultAdd_SeqBSTRM_4;
        A->ops->multtranspose = MatMultTranspose_SeqBSTRM_4;
-       A->ops->sor           = MatSOR_SeqBSTRM_4; 
-       break; 
+       A->ops->sor           = MatSOR_SeqBSTRM_4;
+       break;
     case 5:
        A->ops->mult          = MatMult_SeqBSTRM_5;
        A->ops->multadd       = MatMultAdd_SeqBSTRM_5;
        A->ops->multtranspose = MatMultTranspose_SeqBSTRM_5;
-       A->ops->sor           = MatSOR_SeqBSTRM_5; 
-       break; 
+       A->ops->sor           = MatSOR_SeqBSTRM_5;
+       break;
     default:
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D",bs);
   }
   PetscFunctionReturn(0);
 }
-/*=========================================================*/ 
-/*=========================================================*/ 
+/*=========================================================*/
+/*=========================================================*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSeqBSTRMTransform"
 PetscErrorCode MatSeqBSTRMTransform(Mat A)
 {

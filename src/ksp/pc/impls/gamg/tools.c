@@ -8,7 +8,7 @@
 /* -------------------------------------------------------------------------- */
 /*
    PCGAMGCreateGraph - create simple scaled scalar graph from matrix
- 
+
  Input Parameter:
  . Amat - matrix
  Output Parameter:
@@ -30,8 +30,8 @@ PetscErrorCode PCGAMGCreateGraph( const Mat Amat, Mat *a_Gmat )
   ierr = MatGetOwnershipRange( Amat, &Istart, &Iend ); CHKERRQ(ierr);
   ierr = MatGetSize( Amat, &MM, &NN ); CHKERRQ(ierr);
   ierr = MatGetBlockSize( Amat, &bs ); CHKERRQ(ierr);
-  nloc = (Iend-Istart)/bs; 
- 
+  nloc = (Iend-Istart)/bs;
+
 #if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
 #endif
@@ -65,7 +65,7 @@ PetscErrorCode PCGAMGCreateGraph( const Mat Amat, Mat *a_Gmat )
     ierr = PetscFree( o_nnz ); CHKERRQ(ierr);
 
     for ( Ii = Istart; Ii < Iend ; Ii++ ) {
-      PetscInt dest_row = Ii/bs; 
+      PetscInt dest_row = Ii/bs;
       ierr = MatGetRow(Amat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
       for (jj=0;jj<ncols;jj++){
         PetscInt dest_col = idx[jj]/bs;
@@ -94,7 +94,7 @@ PetscErrorCode PCGAMGCreateGraph( const Mat Amat, Mat *a_Gmat )
 /* -------------------------------------------------------------------------- */
 /*
    PCGAMGFilterGraph - filter graph and symetrize if needed
- 
+
  Input Parameter:
  . vfilter - threshold paramter [0,1)
  . symm - symetrize?
@@ -155,8 +155,8 @@ PetscErrorCode PCGAMGFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pe
   }
   ierr = MatCreateAIJ( wcomm, nloc, nloc, MM, MM, 0, d_nnz, 0, o_nnz, &tGmat );
   CHKERRQ(ierr);
-  ierr = PetscFree( d_nnz ); CHKERRQ(ierr); 
-  ierr = PetscFree( o_nnz ); CHKERRQ(ierr); 
+  ierr = PetscFree( d_nnz ); CHKERRQ(ierr);
+  ierr = PetscFree( o_nnz ); CHKERRQ(ierr);
   if ( symm ) {
     ierr = MatDestroy( &matTrans );  CHKERRQ(ierr);
   }
@@ -174,7 +174,7 @@ PetscErrorCode PCGAMGFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pe
         }
         else {
           ierr = MatSetValues(tGmat,1,&Ii,1,&idx[jj],&sv,ADD_VALUES); CHKERRQ(ierr);
-        }        
+        }
       }
     }
     ierr = MatRestoreRow(Gmat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
@@ -198,7 +198,7 @@ PetscErrorCode PCGAMGFilterGraph( Mat *a_Gmat, const PetscReal vfilter, const Pe
                   100.*(double)out[1]/(double)out[0],vfilter,(double)out[0]/(double)MM,MM);
     }
   }
-  
+
   ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
 
   *a_Gmat = tGmat;
@@ -240,7 +240,7 @@ PetscErrorCode PCGAMGGetDataWithGhosts( const Mat Gmat,
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare( (PetscObject)Gmat, MATMPIAIJ, &isMPIAIJ ); CHKERRQ(ierr);
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr); 
+  ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange( Gmat, &my0, &Iend );    CHKERRQ(ierr);
   nloc = Iend - my0;
   ierr = VecGetLocalSize( mpimat->lvec, &num_ghosts );   CHKERRQ(ierr);
@@ -314,11 +314,11 @@ PetscErrorCode GAMGTableAdd( GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_da
       a_tab->data[idx] = a_data;
       break;
     }
-    else if ( a_tab->table[idx] == -1 ) { 
+    else if ( a_tab->table[idx] == -1 ) {
       /* add */
       a_tab->table[idx] = a_key;
       a_tab->data[idx] = a_data;
-      break;              
+      break;
     }
   }
   if (kk==a_tab->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Table size %d too small.",a_tab->size);
@@ -334,7 +334,7 @@ PetscErrorCode GAMGTableFind( GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_
       *a_data = a_tab->data[idx];
       break;
     }
-    else if ( a_tab->table[idx] == -1 ) { 
+    else if ( a_tab->table[idx] == -1 ) {
       /* not here */
       *a_data = -1;
       break;

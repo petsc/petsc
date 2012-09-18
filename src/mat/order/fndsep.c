@@ -33,9 +33,9 @@ extern PetscErrorCode SPARSEPACKfnroot(PetscInt*, PetscInt *, PetscInt *, PetscI
 /*       FNROOT.                                                 */
 /*                                                               */
 /*****************************************************************/
-#undef __FUNCT__  
-#define __FUNCT__ "SPARSEPACKfndsep" 
-PetscErrorCode SPARSEPACKfndsep(PetscInt *root, PetscInt *xadj, PetscInt *adjncy, 
+#undef __FUNCT__
+#define __FUNCT__ "SPARSEPACKfndsep"
+PetscErrorCode SPARSEPACKfndsep(PetscInt *root, PetscInt *xadj, PetscInt *adjncy,
 	                        PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *xls, PetscInt *ls)
 {
     /* System generated locals */
@@ -113,4 +113,4 @@ L500:
 	xadj[node] = -xadj[node];
     }
     PetscFunctionReturn(0);
-} 
+}

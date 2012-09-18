@@ -2,7 +2,7 @@
 
    This file defines part of the initialization of PETSc
 
-  This file uses regular malloc and free because it cannot known 
+  This file uses regular malloc and free because it cannot known
   what malloc is being used until it has already processed the input.
 */
 
@@ -23,7 +23,7 @@
 
 /* ------------------------Nasty global variables -------------------------------*/
 /*
-     Indicates if PETSc started up MPI, or it was 
+     Indicates if PETSc started up MPI, or it was
    already started before PETSc was initialized.
 */
 PetscBool    PetscBeganMPI         = PETSC_FALSE;
@@ -64,7 +64,7 @@ PetscErrorCode  (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintf_
 PetscErrorCode  (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDefault;
 #endif
 /*
-  This is needed to turn on/off cusp synchronization 
+  This is needed to turn on/off cusp synchronization
 */
 PetscBool   PetscCUSPSynchronize = PETSC_FALSE;
 
@@ -74,12 +74,12 @@ pthread_key_t petscstack_key;
 #endif
 
 /* ------------------------------------------------------------------------------*/
-/* 
+/*
    Optional file where all PETSc output from various prints is saved
 */
 FILE *petsc_history = PETSC_NULL;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscOpenHistoryFile"
 PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
 {
@@ -117,12 +117,12 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
     err = fflush(*fd);
-    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
+    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   }
-  PetscFunctionReturn(0); 
+  PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscCloseHistoryFile"
 PetscErrorCode  PetscCloseHistoryFile(FILE **fd)
 {
@@ -139,36 +139,36 @@ PetscErrorCode  PetscCloseHistoryFile(FILE **fd)
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"Finished at %s\n",date);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
     err = fflush(*fd);
-    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
+    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     err = fclose(*fd);
-    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");        
+    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
   }
-  PetscFunctionReturn(0); 
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------------------*/
 
-/* 
-   This is ugly and probably belongs somewhere else, but I want to 
+/*
+   This is ugly and probably belongs somewhere else, but I want to
   be able to put a true MPI abort error handler with command line args.
 
-    This is so MPI errors in the debugger will leave all the stack 
+    This is so MPI errors in the debugger will leave all the stack
   frames. The default MP_Abort() cleans up and exits thus providing no useful information
   in the debugger hence we call abort() instead of MPI_Abort().
 */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "Petsc_MPI_AbortOnError"
-void Petsc_MPI_AbortOnError(MPI_Comm *comm,PetscMPIInt *flag) 
+void Petsc_MPI_AbortOnError(MPI_Comm *comm,PetscMPIInt *flag)
 {
   PetscFunctionBegin;
   (*PetscErrorPrintf)("MPI error %d\n",*flag);
   abort();
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "Petsc_MPI_DebuggerOnError"
-void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag) 
+void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag)
 {
   PetscErrorCode ierr;
 
@@ -180,10 +180,10 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag)
   }
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscEnd"
-/*@C 
-   PetscEnd - Calls PetscFinalize() and then ends the program. This is useful if one 
+/*@C
+   PetscEnd - Calls PetscFinalize() and then ends the program. This is useful if one
      wishes a clean exit somewhere deep in the program.
 
    Collective on PETSC_COMM_WORLD
@@ -213,9 +213,9 @@ static char       emacsmachinename[256];
 PetscErrorCode (*PetscExternalVersionFunction)(MPI_Comm) = 0;
 PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSetHelpVersionFunctions"
-/*@C 
+/*@C
    PetscSetHelpVersionFunctions - Sets functions that print help and version information
    before the PETSc help and version information is printed. Must call BEFORE PetscInitialize().
    This routine enables a "higher-level" package that uses PETSc to print its messages first.
@@ -241,7 +241,7 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
 #include <cublas.h>
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscOptionsCheckInitial_Private"
 PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 {
@@ -261,7 +261,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /*
-      Setup the memory management; support for tracing malloc() usage 
+      Setup the memory management; support for tracing malloc() usage
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_log",&flg3);CHKERRQ(ierr);
   logthreshold = 0.0;
@@ -272,7 +272,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   if ((!flg2 || flg1) && !petscsetmallocvisited) {
     if (flg2 || !(PETSC_RUNNING_ON_VALGRIND)) {
       /* turn off default -malloc if valgrind is being used */
-      ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr); 
+      ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
     }
   }
 #else
@@ -285,7 +285,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   }
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_debug",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  if (flg1) { 
+  if (flg1) {
     ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
     ierr = PetscMallocDebug(PETSC_TRUE);CHKERRQ(ierr);
   }
@@ -323,7 +323,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   if (flg1 || flg2 || flg3){
 
     /*
-       Print "higher-level" package version message 
+       Print "higher-level" package version message
     */
     if (PetscExternalVersionFunction) {
       ierr = (*PetscExternalVersionFunction)(comm);CHKERRQ(ierr);
@@ -343,7 +343,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   }
 
   /*
-       Print "higher-level" package help message 
+       Print "higher-level" package help message
   */
   if (flg3){
     if (PetscExternalHelpFunction) {
@@ -397,10 +397,10 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     PetscInt       lsize,*nodes;
     MPI_Errhandler err_handler;
     /*
-       we have to make sure that all processors have opened 
-       connections to all other processors, otherwise once the 
+       we have to make sure that all processors have opened
+       connections to all other processors, otherwise once the
        debugger has stated it is likely to receive a SIGUSR1
-       and kill the program. 
+       and kill the program.
     */
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     if (size > 2) {
@@ -456,13 +456,13 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
         Setup profiling and logging
   */
 #if defined (PETSC_USE_INFO)
-  { 
+  {
     char logname[PETSC_MAX_PATH_LEN]; logname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-info",logname,250,&flg1);CHKERRQ(ierr);
     if (flg1 && logname[0]) {
       ierr = PetscInfoAllow(PETSC_TRUE,logname);CHKERRQ(ierr);
     } else if (flg1) {
-      ierr = PetscInfoAllow(PETSC_TRUE,PETSC_NULL);CHKERRQ(ierr); 
+      ierr = PetscInfoAllow(PETSC_TRUE,PETSC_NULL);CHKERRQ(ierr);
     }
   }
 #endif
@@ -490,15 +490,15 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-log_summary_python",&flg4);CHKERRQ(ierr);
   if (flg1)                      {  ierr = PetscLogAllBegin();CHKERRQ(ierr); }
   else if (flg2 || flg3 || flg4) {  ierr = PetscLogBegin();CHKERRQ(ierr);}
-    
+
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_trace",mname,250,&flg1);CHKERRQ(ierr);
-  if (flg1) { 
+  if (flg1) {
     char name[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN];
     FILE *file;
     if (mname[0]) {
       sprintf(name,"%s.%d",mname,rank);
       ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
-      file = fopen(fname,"w"); 
+      file = fopen(fname,"w");
       if (!file) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
     } else {
       file = PETSC_STDOUT;
@@ -538,7 +538,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       ierr = cudaGetDeviceCount(&devCount);CHKERRQ(ierr);
       ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
       device = rank % devCount;
-      ierr = cudaSetDevice(device);CHKERRQ(ierr);        
+      ierr = cudaSetDevice(device);CHKERRQ(ierr);
     }
     else {
       int device;

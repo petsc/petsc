@@ -1,5 +1,5 @@
 
-#include <petsc-private/viewerimpl.h>  /*I "petscsys.h" I*/  
+#include <petsc-private/viewerimpl.h>  /*I "petscsys.h" I*/
 
 const char *const PetscViewerFormats[] = {
   "DEFAULT",
@@ -30,8 +30,8 @@ const char *const PetscViewerFormats[] = {
   "NOFORMAT"
 };
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerSetFormat" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerSetFormat"
 /*@C
    PetscViewerSetFormat - Sets the format for PetscViewers.
 
@@ -73,7 +73,7 @@ const char *const PetscViewerFormats[] = {
    If a format (for example PETSC_VIEWER_DRAW_CONTOUR) was applied to a viewer
   where it didn't apply (PETSC_VIEWER_STDOUT_WORLD) it cause the default behavior
   for that viewer to be used.
- 
+
    Concepts: PetscViewer^setting format
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(), PetscViewerType,
@@ -89,8 +89,8 @@ PetscErrorCode  PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerPushFormat" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerPushFormat"
 /*@C
    PetscViewerPushFormat - Sets the format for file PetscViewers.
 
@@ -143,8 +143,8 @@ PetscErrorCode  PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat forma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerPopFormat" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerPopFormat"
 /*@C
    PetscViewerPopFormat - Resets the format for file PetscViewers.
 
@@ -170,8 +170,8 @@ PetscErrorCode  PetscViewerPopFormat(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerGetFormat" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerGetFormat"
 PetscErrorCode  PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormat *format)
 {
   PetscFunctionBegin;

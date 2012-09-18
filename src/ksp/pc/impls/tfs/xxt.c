@@ -26,7 +26,7 @@ typedef struct xxt_solver_info {
   PetscInt n, m, n_global, m_global;
   PetscInt nnz, max_nnz, msg_buf_sz;
   PetscInt *nsep, *lnsep, *fo, nfo, *stages;
-  PetscInt *col_sz, *col_indices; 
+  PetscInt *col_sz, *col_indices;
   PetscScalar **col_vals, *x, *solve_uu, *solve_w;
   PetscInt nsolves;
   PetscScalar tot_solve_time;
@@ -178,7 +178,7 @@ PetscInt XXT_stats(xxt_ADT xxt_handle)
     =xxt_handle->info->tot_solve_time/xxt_handle->info->nsolves++;
   PCTFS_grop(fvals,fwork,sizeof(fop)/sizeof(fop[0])-1,fop);
 
-  if (!PCTFS_my_id) 
+  if (!PCTFS_my_id)
     {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xxt_nnz=%D\n",PCTFS_my_id,vals[0]);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xxt_nnz=%D\n",PCTFS_my_id,vals[1]);CHKERRQ(ierr);
@@ -203,12 +203,12 @@ PetscInt XXT_stats(xxt_ADT xxt_handle)
 
 /*************************************xxt.c************************************
 
-Description: get A_local, local portion of global coarse matrix which 
+Description: get A_local, local portion of global coarse matrix which
 is a row dist. nxm matrix w/ n<m.
    o my_ml holds address of ML struct associated w/A_local and coarse grid
    o local2global holds global number of column i (i=0,...,m-1)
    o local2global holds global number of row    i (i=0,...,n-1)
-   o mylocmatvec performs A_local . vec_local (note that gs is performed using 
+   o mylocmatvec performs A_local . vec_local (note that gs is performed using
    PCTFS_gs_init/gop).
 
 mylocmatvec = my_ml->Amat[grid_tag].matvec->external;
@@ -240,7 +240,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
   PetscInt level;
   PetscInt xxt_nnz=0, xxt_max_nnz=0;
   PetscInt n, m;
-  PetscInt *col_sz, *col_indices, *stages; 
+  PetscInt *col_sz, *col_indices, *stages;
   PetscScalar **col_vals, *x;
   PetscInt n_global;
   PetscInt xxt_zero_nnz=0;
@@ -249,8 +249,8 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
   PetscScalar dm1 = -1.0;
   PetscErrorCode ierr;
 
-  n=xxt_handle->mvi->n; 
-  nsep=xxt_handle->info->nsep; 
+  n=xxt_handle->mvi->n;
+  nsep=xxt_handle->info->nsep;
   lnsep=xxt_handle->info->lnsep;
   fo=xxt_handle->info->fo;
   end=lnsep[0];
@@ -311,7 +311,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
     {
       /* time to move to the next level? */
       while (i==segs[dim]) {
-        if (dim==level) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim about to exceed level\n"); 
+        if (dim==level) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim about to exceed level\n");
         stages[dim++]=i;
         end+=lnsep[dim];
       }
@@ -321,7 +321,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
       /* i.e. set v_l */
       /* use new seps and do global min across hc to determine which one to fire */
       (start<end) ? (col=fo[start]) : (col=INT_MAX);
-      PCTFS_giop_hc(&col,&work,1,op2,dim); 
+      PCTFS_giop_hc(&col,&work,1,op2,dim);
 
       /* shouldn't need this */
       if (col==INT_MAX)
@@ -436,7 +436,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 	      x = x_ptr;
 	      x_ptr+=xxt_nnz;
 	    }
-	  xxt_nnz += len;      
+	  xxt_nnz += len;
 	  PCTFS_rvec_copy(x_ptr,v+off,len);
 
           /* keep track of number of zeros */
@@ -486,7 +486,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
   xxt_handle->info->x=x;
   xxt_handle->info->col_vals=col_vals;
   xxt_handle->info->col_sz=col_sz;
-  xxt_handle->info->col_indices=col_indices;  
+  xxt_handle->info->col_indices=col_indices;
   xxt_handle->info->stages=stages;
   xxt_handle->info->nsolves=0;
   xxt_handle->info->tot_solve_time=0.0;
@@ -563,7 +563,7 @@ static PetscErrorCode check_handle(xxt_ADT xxt_handle)
 static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 {
   PetscInt i, ct, id;
-  PetscInt mask, edge, *iptr; 
+  PetscInt mask, edge, *iptr;
   PetscInt *dir, *used;
   PetscInt sum[4], w[4];
   PetscScalar rsum[4], rw[4];
@@ -575,7 +575,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
   PetscInt  n=xxt_handle->mvi->n;
   PetscInt  m=xxt_handle->mvi->m;
   PetscInt level=xxt_handle->level;
-  PetscInt shared=0; 
+  PetscInt shared=0;
 
   PetscFunctionBegin;
   dir  = (PetscInt*)malloc(sizeof(PetscInt)*(level+1));
@@ -621,11 +621,11 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 	  /* set rsh of hc, fire, and collect lhs responses */
 	  (id<mask) ? PCTFS_rvec_zero(lhs,m) : PCTFS_rvec_set(lhs,1.0,m);
 	  PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",edge);
-	  
+	
 	  /* set lsh of hc, fire, and collect rhs responses */
 	  (id<mask) ? PCTFS_rvec_set(rhs,1.0,m) : PCTFS_rvec_zero(rhs,m);
 	  PCTFS_gs_gop_hc(PCTFS_gs_handle,rhs,"+\0",edge);
-	  
+	
 	  for (i=0;i<n;i++)
 	    {
 	      if (id< mask)
@@ -649,7 +649,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 	  PCTFS_rvec_zero(rsum,4);
 	  for (PCTFS_ivec_zero(sum,4),ct=i=0;i<n;i++)
 	    {
-	      if (!used[i]) 
+	      if (!used[i])
 		{
 		  /* number of unmarked dofs on node */
 		  ct++;
@@ -742,7 +742,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 	  /* count number of dofs I own that have signal and not in sep set */
 	  for (PCTFS_ivec_zero(sum,4),ct=i=0;i<n;i++)
 	    {
-	      if (!used[i]) 
+	      if (!used[i])
 		{
 		  /* number of unmarked dofs on node */
 		  ct++;
@@ -812,7 +812,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
   /* level 0 is on processor case - so mark the remainder */
   for (ct=i=0;i<n;i++)
     {
-      if (!used[i]) 
+      if (!used[i])
 	{
 	  ct++; nfo++;
 	  *--iptr = local2global[i];

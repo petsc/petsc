@@ -16,7 +16,7 @@
 #include <sys/utsname.h>
 #endif
 #include <fcntl.h>
-#include <time.h>  
+#include <time.h>
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
@@ -38,7 +38,7 @@
 #include <fcntl.h>
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscMemoryGetCurrentUsage"
 /*@
    PetscMemoryGetCurrentUsage - Returns the current resident set size (memory used)
@@ -56,7 +56,7 @@
    Level: intermediate
 
    Notes:
-   The memory usage reported here includes all Fortran arrays 
+   The memory usage reported here includes all Fortran arrays
    (that may be used in application-defined sections of code).
    This routine thus provides a more complete picture of memory
    usage than PetscMallocGetCurrentUsage() for codes that employ Fortran with
@@ -76,8 +76,8 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   char                   proc[PETSC_MAX_PATH_LEN];
   prpsinfo_t             prusage;
 #elif defined(PETSC_USE_SBREAK_FOR_SIZE)
-  long                   *ii = sbreak(0); 
-  int                    fd = ii - (long*)0; 
+  long                   *ii = sbreak(0);
+  int                    fd = ii - (long*)0;
 #elif defined(PETSC_USE_PROC_FOR_SIZE) && defined(PETSC_HAVE_GETPAGESIZE)
   FILE                   *file;
   char                   proc[PETSC_MAX_PATH_LEN];
@@ -85,10 +85,10 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 #elif defined(PETSC_HAVE_TASK_INFO)
   /*  task_basic_info_data_t ti;
       unsigned int           count; */
-  /* 
-     The next line defined variables that are not used; but if they 
+  /*
+     The next line defined variables that are not used; but if they
      are not included the code crashes. Something must be wrong
-     with either the task_info() command or compiler corrupting the 
+     with either the task_info() command or compiler corrupting the
      stack.
   */
   /* kern_return_t          kerr; */
@@ -104,7 +104,7 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to access system file %s to get memory usage data",file);
   }
   if (ioctl(fd,PIOCPSINFO,&prusage) == -1) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to access system file %s to get memory usage data",file); 
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"Unable to access system file %s to get memory usage data",file);
   }
   *mem = (PetscLogDouble)prusage.pr_byrssize;
   close(fd);
@@ -121,13 +121,13 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   if (fscanf(file,"%d %d",&mm,&rss) != 2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"Failed to read two integers (mm and rss) from %s",proc);
   *mem = ((PetscLogDouble)rss) * ((PetscLogDouble)getpagesize());
   err = fclose(file);
-  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
+  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
 
 #elif defined(PETSC_HAVE_TASK_INFO)
   *mem = 0;
   /* if ((kerr = task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&ti,&count)) != KERN_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mach system call failed: kern_return_t ",kerr);
    *mem = (PetscLogDouble) ti.resident_size; */
-  
+
 #elif defined(PETSC_HAVE_GETRUSAGE)
   getrusage(RUSAGE_SELF,&temp);
 #if defined(PETSC_USE_KBYTES_FOR_SIZE)
@@ -147,7 +147,7 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 PetscBool      PetscMemoryCollectMaximumUsage = PETSC_FALSE;
 PetscLogDouble PetscMemoryMaximumUsage = 0;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscMemoryGetMaximumUsage"
 /*@
    PetscMemoryGetMaximumUsage - Returns the maximum resident set size (memory used)
@@ -165,7 +165,7 @@ PetscLogDouble PetscMemoryMaximumUsage = 0;
    Level: intermediate
 
    Notes:
-   The memory usage reported here includes all Fortran arrays 
+   The memory usage reported here includes all Fortran arrays
    (that may be used in application-defined sections of code).
    This routine thus provides a more complete picture of memory
    usage than PetscMallocGetCurrentUsage() for codes that employ Fortran with
@@ -186,7 +186,7 @@ PetscErrorCode  PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscMemorySetGetMaximumUsage"
 /*@C
    PetscMemorySetGetMaximumUsage - Tells PETSc to monitor the maximum memory usage so that

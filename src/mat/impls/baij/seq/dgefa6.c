@@ -2,7 +2,7 @@
 /*
       Inverts 6 by 6 matrix using partial pivoting.
 
-       Used by the sparse factorization routines in 
+       Used by the sparse factorization routines in
      src/mat/impls/baij/seq
 
        This is a combination of the Linpack routines
@@ -11,7 +11,7 @@
 */
 #include <petscsys.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscKernel_A_gets_inverse_A_6"
 PetscErrorCode PetscKernel_A_gets_inverse_A_6(MatScalar *a,PetscReal shift)
 {
@@ -65,14 +65,14 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_6(MatScalar *a,PetscReal shift)
 
 	stmp = -1. / a[k4];
 	i__2 = 6 - k;
-        aa = &a[1 + k4]; 
+        aa = &a[1 + k4];
         for (ll=0; ll<i__2; ll++) {
           aa[ll] *= stmp;
         }
 
 /*           row elimination with column indexing */
 
-	ax = &a[k4+1]; 
+	ax = &a[k4+1];
         for (j = kp1; j <= 6; ++j) {
             j3   = 6*j;
 	    stmp = a[l + j3];
@@ -92,7 +92,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_6(MatScalar *a,PetscReal shift)
     if (a[42] == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",5);
 
     /*
-         Now form the inverse 
+         Now form the inverse
     */
 
    /*     compute inverse(u) */
@@ -103,7 +103,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_6(MatScalar *a,PetscReal shift)
 	a[k4] = 1.0 / a[k4];
 	stmp  = -a[k4];
 	i__2  = k - 1;
-        aa    = &a[k3 + 1]; 
+        aa    = &a[k3 + 1];
         for (ll=0; ll<i__2; ll++) aa[ll] *= stmp;
 	kp1 = k + 1;
 	if (6 < kp1) continue;
@@ -143,7 +143,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_6(MatScalar *a,PetscReal shift)
 	}
 	l = ipvt[k-1];
 	if (l != k) {
-            ax = &a[k3 + 1]; 
+            ax = &a[k3 + 1];
             ay = &a[6*l + 1];
             stmp = ax[0]; ax[0] = ay[0]; ay[0] = stmp;
             stmp = ax[1]; ax[1] = ay[1]; ay[1] = stmp;

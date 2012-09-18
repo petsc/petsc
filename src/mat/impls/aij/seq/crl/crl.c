@@ -1,9 +1,9 @@
 
 /*
   Defines a matrix-vector product for the MATSEQAIJCRL matrix class.
-  This class is derived from the MATSEQAIJ class and retains the 
-  compressed row storage (aka Yale sparse matrix format) but augments 
-  it with a column oriented storage that is more efficient for 
+  This class is derived from the MATSEQAIJ class and retains the
+  compressed row storage (aka Yale sparse matrix format) but augments
+  it with a column oriented storage that is more efficient for
   matrix vector products on Vector machines.
 
   CRL stands for constant row length (that is the same number of columns
@@ -28,10 +28,10 @@ PetscErrorCode MatDestroy_SeqAIJCRL(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDuplicate_AIJCRL(Mat A, MatDuplicateOption op, Mat *M) 
+PetscErrorCode MatDuplicate_AIJCRL(Mat A, MatDuplicateOption op, Mat *M)
 {
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot duplicate AIJCRL matrices yet");    
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot duplicate AIJCRL matrices yet");
   PetscFunctionReturn(0);
 }
 
@@ -91,7 +91,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode)
 
 #include <../src/mat/impls/aij/seq/crl/ftn-kernels/fmultcrl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_AIJCRL"
 /*
     Shared by both sequential and parallel versions of CRL matrix: MATMPIAIJCRL and MATSEQAIJCRL
@@ -132,7 +132,7 @@ PetscErrorCode MatMult_AIJCRL(Mat A,Vec xx,Vec yy)
 #else
 
   /* first column */
-  for (j=0; j<m; j++) { 
+  for (j=0; j<m; j++) {
     y[j] = acols[j]*x[icols[j]];
   }
 
@@ -145,7 +145,7 @@ PetscErrorCode MatMult_AIJCRL(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_HAVE_CRAY_VECTOR)
 #pragma _CRI prefervector
 #endif
-    for (j=0; j<m; j++) { 
+    for (j=0; j<m; j++) {
       y[j] = y[j] + acols[ii+j]*x[icols[ii+j]];
     }
   }
@@ -161,9 +161,9 @@ PetscErrorCode MatMult_AIJCRL(Mat A,Vec xx,Vec yy)
 }
 
 
-/* MatConvert_SeqAIJ_SeqAIJCRL converts a SeqAIJ matrix into a 
- * SeqAIJCRL matrix.  This routine is called by the MatCreate_SeqAIJCRL() 
- * routine, but can also be used to convert an assembled SeqAIJ matrix 
+/* MatConvert_SeqAIJ_SeqAIJCRL converts a SeqAIJ matrix into a
+ * SeqAIJCRL matrix.  This routine is called by the MatCreate_SeqAIJCRL()
+ * routine, but can also be used to convert an assembled SeqAIJ matrix
  * into a SeqAIJCRL one. */
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -204,14 +204,14 @@ EXTERN_C_END
 /*@C
    MatCreateSeqAIJCRL - Creates a sparse matrix of type SEQAIJCRL.
    This type inherits from AIJ, but stores some additional
-   information that is used to allow better vectorization of 
-   the matrix-vector product. At the cost of increased storage, the AIJ formatted 
-   matrix can be copied to a format in which pieces of the matrix are 
-   stored in ELLPACK format, allowing the vectorized matrix multiply 
-   routine to use stride-1 memory accesses.  As with the AIJ type, it is 
-   important to preallocate matrix storage in order to get good assembly 
+   information that is used to allow better vectorization of
+   the matrix-vector product. At the cost of increased storage, the AIJ formatted
+   matrix can be copied to a format in which pieces of the matrix are
+   stored in ELLPACK format, allowing the vectorized matrix multiply
+   routine to use stride-1 memory accesses.  As with the AIJ type, it is
+   important to preallocate matrix storage in order to get good assembly
    performance.
-   
+
    Collective on MPI_Comm
 
    Input Parameters:
@@ -219,11 +219,11 @@ EXTERN_C_END
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
--  nnz - array containing the number of nonzeros in the various rows 
+-  nnz - array containing the number of nonzeros in the various rows
          (possibly different for each row) or PETSC_NULL
 
    Output Parameter:
-.  A - the matrix 
+.  A - the matrix
 
    Notes:
    If nnz is given then nz is ignored

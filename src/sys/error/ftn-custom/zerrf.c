@@ -50,9 +50,9 @@ static PetscErrorCode ourerrorhandler(MPI_Comm comm,int line,const char *fun,con
 EXTERN_C_BEGIN
 
 /*
-        These are not usually called from Fortran but allow Fortran users 
+        These are not usually called from Fortran but allow Fortran users
    to transparently set these monitors from .F code
-   
+
    functions, hence no STDCALL
 */
 void petsctracebackerrorhandler_(MPI_Comm *comm,int *line,const char *fun,const char *file,const char *dir,PetscErrorCode *n,PetscErrorType *p,const char *mess,void *ctx,PetscErrorCode *ierr)

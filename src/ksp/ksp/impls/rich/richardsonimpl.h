@@ -1,5 +1,5 @@
 /*
-      Private data structure for Richardson Iteration 
+      Private data structure for Richardson Iteration
 */
 
 #if !defined(__RICHARDSONIMPL_H)

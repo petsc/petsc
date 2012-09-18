@@ -1,4 +1,4 @@
-/* 
+/*
  * $Header: /home/tv/src/debugger/src/datadisp/tv_data_display.h,v 1.3 2010-04-21 15:32:50 tringali Exp $
  * $Locker:  $
 
@@ -51,7 +51,7 @@ extern int TV_add_row(const char *field_name,
                       const char *type_name,
                       const void *value);
 
-/* 
+/*
        0: Success
    EPERM: Called with no active callback to TV_display_type
   EINVAL: field_name or type_name has illegal characters

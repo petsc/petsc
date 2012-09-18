@@ -8,7 +8,7 @@
 #include <../src/ksp/ksp/impls/lsqr/lsqr.h>
 
 typedef struct {
-  PetscInt   nwork_n,nwork_m; 
+  PetscInt   nwork_n,nwork_m;
   Vec        *vwork_m;  /* work vectors of length m, where the system is size m x n */
   Vec        *vwork_n;  /* work vectors of length n */
   Vec        se;        /* Optional standard error vector */
@@ -20,7 +20,7 @@ typedef struct {
 
 extern PetscErrorCode  VecSquare(Vec);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_LSQR"
 static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
 {
@@ -55,7 +55,7 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_LSQR"
 static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 {
@@ -68,7 +68,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   MatStructure   pflag;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscBool      diagonalscale,nopreconditioner;
-  
+
   PetscFunctionBegin;
   ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
@@ -104,14 +104,14 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     ierr = VecGetSize(SE,&size1);CHKERRQ(ierr);
     ierr = VecGetSize(X ,&size2);CHKERRQ(ierr);
     if (size1 != size2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Standard error vector (size %d) does not match solution vector (size %d)",size1,size2);
-    ierr = VecSet(SE,0.0);CHKERRQ(ierr); 
+    ierr = VecSet(SE,0.0);CHKERRQ(ierr);
   }
 
   /* Compute initial residual, temporarily use work vector u */
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,U);CHKERRQ(ierr);       /*   u <- b - Ax     */
     ierr = VecAYPX(U,-1.0,B);CHKERRQ(ierr);
-  } else { 
+  } else {
     ierr = VecCopy(B,U);CHKERRQ(ierr);            /*   u <- b (x is 0) */
   }
 
@@ -162,7 +162,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     }
     ierr = VecAXPY(U1,-alpha,U);CHKERRQ(ierr);
     ierr = VecNorm(U1,NORM_2,&beta);CHKERRQ(ierr);
-    if (beta == 0.0){ 
+    if (beta == 0.0){
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
       break;
     }
@@ -201,10 +201,10 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
       ierr = VecAXPY(SE, 1.0, W2);CHKERRQ(ierr); /* SE <- SE + (w^2/rho^2) */
     }
     if (nopreconditioner) {
-       ierr = VecAYPX(W,-theta/rho,V1);CHKERRQ(ierr); /* w <- v - (theta/rho) w */  
+       ierr = VecAYPX(W,-theta/rho,V1);CHKERRQ(ierr); /* w <- v - (theta/rho) w */
     } else {
-       ierr = VecAYPX(W,-theta/rho,Z);CHKERRQ(ierr);  /* w <- z - (theta/rho) w */  
-    } 
+       ierr = VecAYPX(W,-theta/rho,Z);CHKERRQ(ierr);  /* w <- z - (theta/rho) w */
+    }
 
     lsqr->arnorm = alpha*PetscAbsScalar(tau);
     rnorm = PetscRealPart(phibar);
@@ -240,8 +240,8 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy_LSQR" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPDestroy_LSQR"
 PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
@@ -312,7 +312,7 @@ PetscErrorCode  KSPLSQRGetArnorm( KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPLSQRMonitorDefault"
 /*@C
    KSPLSQRMonitorDefault - Print the residual norm at each iteration of the LSQR method and the norm of the residual of the normal equations A'*A x = A' b
@@ -322,8 +322,8 @@ PetscErrorCode  KSPLSQRGetArnorm( KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm
    Input Parameters:
 +  ksp   - iterative context
 .  n     - iteration number
-.  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
--  dummy - unused monitor context 
+.  rnorm - 2-norm (preconditioned) residual value (may be estimated).
+-  dummy - unused monitor context
 
    Level: intermediate
 
@@ -351,7 +351,7 @@ PetscErrorCode  KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *d
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_LSQR"
 PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp)
 {
@@ -373,8 +373,8 @@ PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPView_LSQR" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPView_LSQR"
 PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
 {
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
@@ -394,10 +394,10 @@ PetscErrorCode KSPView_LSQR(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPLSQRDefaultConverged"
 /*@C
-   KSPLSQRDefaultConverged - Determines convergence of the LSQR Krylov method. This calls KSPDefaultConverged() and if that does not determine convergence then checks 
+   KSPLSQRDefaultConverged - Determines convergence of the LSQR Krylov method. This calls KSPDefaultConverged() and if that does not determine convergence then checks
       convergence for the least squares problem.
 
    Collective on KSP
@@ -452,23 +452,23 @@ PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
 
    Level: beginner
 
-   Notes:  
+   Notes:
      This varient, when applied with no preconditioning is identical to the original algorithm in exact arithematic; however, in practice, with no preconditioning
      due to inexact arithematic, it can converge differently. Hence when no preconditioner is used (PCType PCNONE) it automatically reverts to the original algorithm.
 
-     With the PETSc built-in preconditioners, such as ICC, one should call KSPSetOperators(ksp,A,A'*A,...) since the preconditioner needs to work 
+     With the PETSc built-in preconditioners, such as ICC, one should call KSPSetOperators(ksp,A,A'*A,...) since the preconditioner needs to work
      for the normal equations A'*A.
 
      Supports only left preconditioning.
 
-   References:The original unpreconditioned algorithm can be found in Paige and Saunders, ACM Transactions on Mathematical Software, Vol 8, pp 43-71, 1982. 
+   References:The original unpreconditioned algorithm can be found in Paige and Saunders, ACM Transactions on Mathematical Software, Vol 8, pp 43-71, 1982.
      In exact arithmetic the LSQR method (with no preconditioning) is identical to the KSPCG algorithm applied to the normal equations.
      The preconditioned varient was implemented by Bas van't Hof and is essentially a left preconditioning for the Normal Equations. It appears the implementation with preconditioner
      track the true norm of the residual and uses that in the convergence test.
 
    Developer Notes: How is this related to the KSPCGNE implementation? One difference is that KSPCGNE applies
             the preconditioner transpose times the preconditioner,  so one does not need to pass A'*A as the third argument to KSPSetOperators().
-            
+
 
    For least squares problems without a zero to A*x = b, there are additional convergence tests for the residual of the normal equations, A'*(b - Ax), see KSPLSQRDefaultConverged()
 
@@ -476,7 +476,7 @@ PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__ 
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_LSQR"
 PetscErrorCode  KSPCreate_LSQR(KSP ksp)
 {

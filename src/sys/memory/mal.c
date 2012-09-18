@@ -13,14 +13,14 @@
 /*
         We want to make sure that all mallocs of double or complex numbers are complex aligned.
     1) on systems with memalign() we call that routine to get an aligned memory location
-    2) on systems without memalign() we 
+    2) on systems without memalign() we
        - allocate one sizeof(PetscScalar) extra space
        - we shift the pointer up slightly if needed to get PetscScalar aligned
        - if shifted we store at ptr[-1] the amount of shift (plus a classid)
 */
 #define SHIFT_CLASSID 456123
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscMallocAlign"
 PetscErrorCode  PetscMallocAlign(size_t mem,int line,const char func[],const char file[],const char dir[],void** result)
 {
@@ -46,11 +46,11 @@ PetscErrorCode  PetscMallocAlign(size_t mem,int line,const char func[],const cha
     }
   }
 #endif
-  if (!*result)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"Memory requested %.0f",(PetscLogDouble)mem); 
+  if (!*result)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MEM,"Memory requested %.0f",(PetscLogDouble)mem);
   return 0;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFreeAlign"
 PetscErrorCode  PetscFreeAlign(void *ptr,int line,const char func[],const char file[],const char dir[])
 {
@@ -60,37 +60,37 @@ PetscErrorCode  PetscFreeAlign(void *ptr,int line,const char func[],const char f
        Previous int tells us how many ints the pointer has been shifted from
     the original address provided by the system malloc().
   */
-  shift = *(((int*)ptr)-1) - SHIFT_CLASSID;   
+  shift = *(((int*)ptr)-1) - SHIFT_CLASSID;
   if (shift > PETSC_MEMALIGN-1) return PetscError(PETSC_COMM_SELF,line,func,file,dir,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Likely memory corruption in heap");
   if (shift < 0) return PetscError(PETSC_COMM_SELF,line,func,file,dir,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"Likely memory corruption in heap");
   ptr   = (void*)(((int*)ptr) - shift);
 #endif
 
 #if defined(PETSC_HAVE_FREE_RETURN_INT)
-  int err = free(ptr); 
+  int err = free(ptr);
   if (err) {
     return PetscError(PETSC_COMM_SELF,line,func,file,dir,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"System free returned error %d\n",err);
   }
-#else 
+#else
   free(ptr);
 #endif
   return 0;
 }
 
 /*
-        We never use the system free directly because on many machines it 
+        We never use the system free directly because on many machines it
     does not return an error code.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFreeDefault"
 PetscErrorCode  PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
 {
 #if defined(PETSC_HAVE_FREE_RETURN_INT)
-  int err = free(ptr); 
+  int err = free(ptr);
   if (err) {
     return PetscError(PETSC_COMM_SELF,line,func,file,dir,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL,"System free returned error %d\n",err);
   }
-#else 
+#else
   free(ptr);
 #endif
   return 0;
@@ -101,7 +101,7 @@ PetscErrorCode   (*PetscTrFree)(void*,int,const char[],const char[],const char[]
 
 PetscBool  petscsetmallocvisited = PETSC_FALSE;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscMallocSet"
 /*@C
    PetscMallocSet - Sets the routines used to do mallocs and frees.
@@ -117,7 +117,7 @@ PetscBool  petscsetmallocvisited = PETSC_FALSE;
    Level: developer
 
    Concepts: malloc
-   Concepts: memory^allocation 
+   Concepts: memory^allocation
 
 @*/
 PetscErrorCode  PetscMallocSet(PetscErrorCode (*imalloc)(size_t,int,const char[],const char[],const char[],void**),
@@ -131,10 +131,10 @@ PetscErrorCode  PetscMallocSet(PetscErrorCode (*imalloc)(size_t,int,const char[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscMallocClear"
 /*@C
-   PetscMallocClear - Resets the routines used to do mallocs and frees to the 
+   PetscMallocClear - Resets the routines used to do mallocs and frees to the
         defaults.
 
    Not Collective
@@ -142,8 +142,8 @@ PetscErrorCode  PetscMallocSet(PetscErrorCode (*imalloc)(size_t,int,const char[]
    Level: developer
 
    Notes:
-    In general one should never run a PETSc program with different malloc() and 
-    free() settings for different parts; this is because one NEVER wants to 
+    In general one should never run a PETSc program with different malloc() and
+    free() settings for different parts; this is because one NEVER wants to
     free() an address that was malloced by a different memory management system
 
 @*/

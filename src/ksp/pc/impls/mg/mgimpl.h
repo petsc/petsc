@@ -15,14 +15,14 @@ typedef struct {
   PetscInt       cycles;                       /* Type of cycle to run: 1 V 2 W */
   PetscInt       level;                        /* level = 0 coarsest level */
   PetscInt       levels;                       /* number of active levels used */
-  Vec            b;                            /* Right hand side */ 
+  Vec            b;                            /* Right hand side */
   Vec            x;                            /* Solution */
   Vec            r;                            /* Residual */
   PetscErrorCode (*residual)(Mat,Vec,Vec,Vec);
-  Mat            A;                            /* matrix used in forming residual*/ 
+  Mat            A;                            /* matrix used in forming residual*/
   KSP            smoothd;                      /* pre smoother */
   KSP            smoothu;                      /* post smoother */
-  Mat            interpolate; 
+  Mat            interpolate;
   Mat            restrct;                      /* restrict is a reserved word in C99 and on Cray */
   Vec            rscale;                       /* scaling of restriction matrix */
   PetscLogEvent  eventsmoothsetup;             /* if logging times for each level */

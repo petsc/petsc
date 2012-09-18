@@ -4,7 +4,7 @@
 PetscFList AOList                       = PETSC_NULL;
 PetscBool  AORegisterAllCalled          = PETSC_FALSE;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOSetType"
 /*@C
   AOSetType - Builds an application ordering for a particular implementation.
@@ -44,12 +44,12 @@ PetscErrorCode  AOSetType(AO ao, const AOType method)
     ierr = (*ao->ops->destroy)(ao);CHKERRQ(ierr);
     ao->ops->destroy = PETSC_NULL;
   }
-  
+
   ierr = (*r)(ao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOGetType"
 /*@C
   AOGetType - Gets the AO type name (as a string) from the AO.
@@ -84,7 +84,7 @@ PetscErrorCode  AOGetType(AO ao, const AOType *type)
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AORegister"
 /*@C
   AORegister - See AORegisterDynamic()
@@ -106,7 +106,7 @@ PetscErrorCode  AORegister(const char sname[], const char path[], const char nam
 
 
 /*--------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AORegisterDestroy"
 /*@C
    AORegisterDestroy - Frees the list of AO methods that were registered by AORegister()/AORegisterDynamic().

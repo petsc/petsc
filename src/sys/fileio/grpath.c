@@ -19,7 +19,7 @@
 #include <sys/systeminfo.h>
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetRealPath"
 /*@C
    PetscGetRealPath - Get the path without symbolic links etc. and in absolute form.
@@ -34,7 +34,7 @@
 
    Level: developer
 
-   Notes: 
+   Notes:
    rpath is assumed to be of length PETSC_MAX_PATH_LEN.
 
    Systems that use the automounter often generate absolute paths
@@ -93,7 +93,7 @@ PetscErrorCode  PetscGetRealPath(const char path[],char rpath[])
         ierr = PetscStrncat(rpath,path+N,PETSC_MAX_PATH_LEN - len);CHKERRQ(ierr);
       }
       PetscFunctionReturn(0);
-    }  
+    }
     ierr = PetscStrchr(tmp1,'/',&tmp2);CHKERRQ(ierr);
     if (tmp2) {
       ierr = PetscStrlen(tmp1,&len1);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ PetscErrorCode  PetscGetRealPath(const char path[],char rpath[])
 #endif
 
   /* remove garbage some automounters put at the beginning of the path */
-  ierr = PetscStrncmp("/tmp_mnt/",rpath,9,&flg);CHKERRQ(ierr); 
+  ierr = PetscStrncmp("/tmp_mnt/",rpath,9,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscStrcpy(tmp3,rpath + 8);CHKERRQ(ierr);
     ierr = PetscStrcpy(rpath,tmp3);CHKERRQ(ierr);

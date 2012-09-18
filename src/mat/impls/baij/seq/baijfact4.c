@@ -1,12 +1,12 @@
 
 /*
-    Factorization code for BAIJ format. 
+    Factorization code for BAIJ format.
 */
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <../src/mat/blockinvert.h>
 
 /* ----------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_N_inplace"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
@@ -51,14 +51,14 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C,Mat A,const MatFactorI
       if (flg) {
         pv = ba + bs2*diag_offset[row];
         pj = bj + diag_offset[row] + 1;
-        PetscKernel_A_gets_A_times_B(bs,pc,pv,multiplier); 
+        PetscKernel_A_gets_A_times_B(bs,pc,pv,multiplier);
         nz = bi[row+1] - diag_offset[row] - 1;
         pv += bs2;
         for (j=0; j<nz; j++) {
           PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j);
         }
         ierr = PetscLogFlops(bslog*(nz+1.0)-bs);CHKERRQ(ierr);
-      } 
+      }
         row = *ajtmp++;
     }
     /* finished row so stick it into b->a */
@@ -70,7 +70,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C,Mat A,const MatFactorI
     }
     diag = diag_offset[i] - bi[i];
     /* invert diagonal block */
-    w = pv + bs2*diag; 
+    w = pv + bs2*diag;
     ierr = PetscKernel_A_gets_inverse_A(bs,w,v_pivots,v_work);CHKERRQ(ierr);
   }
 

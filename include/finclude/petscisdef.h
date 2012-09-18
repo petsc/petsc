@@ -7,7 +7,7 @@
 
 #include "finclude/petscsysdef.h"
 
-#if !defined(PETSC_USE_FORTRAN_DATATYPES) 
+#if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define IS PetscFortranAddr
 #define ISColoring PetscFortranAddr
 #endif

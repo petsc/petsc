@@ -1,7 +1,7 @@
 
 #include <petsc-private/matimpl.h>  /*I   "petscmat.h"  I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultEqual"
 /*@
    MatMultEqual - Compares matrix-vector products of two matrices.
@@ -30,7 +30,7 @@ PetscErrorCode  MatMultEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscScalar    none = -1.0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1); 
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
@@ -45,12 +45,12 @@ PetscErrorCode  MatMultEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   ierr = VecCreate(((PetscObject)A)->comm,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,an,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  
+
   ierr = VecCreate(((PetscObject)A)->comm,&s1);CHKERRQ(ierr);
   ierr = VecSetSizes(s1,am,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(s1);CHKERRQ(ierr);
   ierr = VecDuplicate(s1,&s2);CHKERRQ(ierr);
-  
+
   *flg = PETSC_TRUE;
   for (k=0; k<n; k++) {
     ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
@@ -68,7 +68,7 @@ PetscErrorCode  MatMultEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
       *flg = PETSC_FALSE;
       ierr = PetscInfo2(A,"Error: %D-th MatMult() %G\n",k,r1);CHKERRQ(ierr);
       break;
-    } 
+    }
   }
   ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -77,7 +77,7 @@ PetscErrorCode  MatMultEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultAddEqual"
 /*@
    MatMultAddEqual - Compares matrix-vector products of two matrices.
@@ -120,8 +120,8 @@ PetscErrorCode  MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   ierr = VecSetSizes(s1,am,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(s1);CHKERRQ(ierr);
   ierr = VecDuplicate(s1,&s2);CHKERRQ(ierr);
-  ierr = VecDuplicate(s1,&y);CHKERRQ(ierr); 
-  
+  ierr = VecDuplicate(s1,&y);CHKERRQ(ierr);
+
   *flg = PETSC_TRUE;
   for (k=0; k<n; k++) {
     ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
@@ -150,7 +150,7 @@ PetscErrorCode  MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTransposeEqual"
 /*@
    MatMultTransposeEqual - Compares matrix-vector products of two matrices.
@@ -188,12 +188,12 @@ PetscErrorCode  MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   ierr = VecCreate(((PetscObject)A)->comm,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,am,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  
+
   ierr = VecCreate(((PetscObject)A)->comm,&s1);CHKERRQ(ierr);
   ierr = VecSetSizes(s1,an,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(s1);CHKERRQ(ierr);
   ierr = VecDuplicate(s1,&s2);CHKERRQ(ierr);
-  
+
   *flg = PETSC_TRUE;
   for (k=0; k<n; k++) {
     ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
@@ -211,7 +211,7 @@ PetscErrorCode  MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
       *flg = PETSC_FALSE;
       ierr = PetscInfo2(A,"Error: %d-th MatMultTranspose() %G\n",k,r1);CHKERRQ(ierr);
       break;
-    } 
+    }
   }
   ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -220,7 +220,7 @@ PetscErrorCode  MatMultTransposeEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTransposeAddEqual"
 /*@
    MatMultTransposeAddEqual - Compares matrix-vector products of two matrices.
@@ -263,8 +263,8 @@ PetscErrorCode  MatMultTransposeAddEqual(Mat A,Mat B,PetscInt n,PetscBool  *flg)
   ierr = VecSetSizes(s1,an,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(s1);CHKERRQ(ierr);
   ierr = VecDuplicate(s1,&s2);CHKERRQ(ierr);
-  ierr = VecDuplicate(s1,&y);CHKERRQ(ierr); 
-  
+  ierr = VecDuplicate(s1,&y);CHKERRQ(ierr);
+
   *flg = PETSC_TRUE;
   for (k=0; k<n; k++) {
     ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);

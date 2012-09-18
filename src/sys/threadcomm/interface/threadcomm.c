@@ -18,7 +18,7 @@ PetscLogEvent ThreadComm_RunKernel, ThreadComm_Barrier;
 #define __FUNCT__ "PetscGetNCores"
 /*@
   PetscGetNCores - Gets the number of available cores on the system
-		   
+		
   Level: developer
 
   Notes
@@ -53,13 +53,13 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
   if (ncores) *ncores = N_CORES;
   PetscFunctionReturn(0);
 }
-			    
+			
 #undef __FUNCT__
 #define __FUNCT__ "PetscCommGetThreadComm"
 /*@C
   PetscCommGetThreadComm - Gets the thread communicator
                            associated with the MPI communicator
-  
+
   Input Parameters:
 . comm - the MPI communicator
 
@@ -98,7 +98,7 @@ PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
 #define __FUNCT__ "PetscThreadCommCreate"
 /*
    PetscThreadCommCreate - Allocates a thread communicator object
- 
+
    Input Parameters:
 .  comm - the MPI communicator
 
@@ -154,7 +154,7 @@ PetscErrorCode PetscThreadCommDestroy(PetscThreadComm *tcomm)
     /* Destroy the implementation specific data struct */
     if ((*tcomm)->ops->destroy) {
       (*(*tcomm)->ops->destroy)(*tcomm);
-    } 
+    }
     ierr = PetscFree((*tcomm)->affinities);CHKERRQ(ierr);
     ierr = PetscFree((*tcomm)->ops);CHKERRQ(ierr);
     for (i=0;i<PETSC_KERNELS_MAX;i++) {
@@ -249,7 +249,7 @@ PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm tcomm,PetscInt nthread
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Thread comm - setting number of threads",PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-threadcomm_nthreads","number of threads to use in the thread communicator","PetscThreadCommSetNThreads",1,&nthr,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    if (flg){ 
+    if (flg){
       if (nthr == PETSC_DECIDE) {
       tcomm->nworkThreads = N_CORES;
       } else tcomm->nworkThreads = nthr;
@@ -268,7 +268,7 @@ PetscErrorCode PetscThreadCommSetNThreads(PetscThreadComm tcomm,PetscInt nthread
 
    Input Parameters:
 .  comm - the MPI communicator
- 
+
    Output Parameters:
 .  nthreads - number of threads
 
@@ -292,7 +292,7 @@ PetscErrorCode PetscThreadCommGetNThreads(MPI_Comm comm,PetscInt *nthreads)
 /*
    PetscThreadCommSetAffinities - Sets the core affinity for threads
                                   (which threads run on which cores)
-   
+
    Not collective
 
    Input Parameters:
@@ -300,13 +300,13 @@ PetscErrorCode PetscThreadCommGetNThreads(MPI_Comm comm,PetscInt *nthreads)
 .  affinities - array of core affinity for threads
 
    Options Database keys:
-   -thread_affinities <list of thread affinities> 
+   -thread_affinities <list of thread affinities>
 
    Level: developer
 
    Notes:
    Use affinities = PETSC_NULL for PETSc to decide the affinities.
-   If PETSc decides affinities, then each thread has affinity to 
+   If PETSc decides affinities, then each thread has affinity to
    a unique core with the main thread on Core 0, thread0 on core 1,
    and so on. If the thread count is more the number of available
    cores then multiple threads share a core.
@@ -322,7 +322,7 @@ PetscErrorCode PetscThreadCommGetNThreads(MPI_Comm comm,PetscInt *nthreads)
    There must be no intervening spaces between the values.
 
 .seealso: PetscThreadCommGetAffinities(), PetscThreadCommSetNThreads()
-*/				  
+*/				
 PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt affinities[])
 {
   PetscErrorCode ierr;
@@ -386,7 +386,7 @@ PetscErrorCode PetscThreadCommGetAffinities(MPI_Comm comm,PetscInt affinities[])
   ierr = PetscMemcpy(affinities,tcomm->affinities,tcomm->nworkThreads*sizeof(PetscInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-  
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommSetType"
 /*
@@ -464,7 +464,7 @@ PetscErrorCode PetscThreadCommBarrier(MPI_Comm comm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommRegisterDestroy"
 /*@C
    PetscThreadCommRegisterDestroy - Frees the list of thread communicator models that were
@@ -488,7 +488,7 @@ PetscErrorCode  PetscThreadCommRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommRegister"
 /*@C
   PetscThreadCommRegister - See PetscThreadCommRegisterDynamic()
@@ -522,10 +522,10 @@ PetscErrorCode  PetscThreadCommRegister(const char sname[],const char path[],con
    Level: developer
 
    Notes:
-   This is a utility function to ensure that any scalars passed to PetscThreadCommRunKernel remain 
-   valid even after the main thread exits the calling function. If any scalars need to passed to 
+   This is a utility function to ensure that any scalars passed to PetscThreadCommRunKernel remain
+   valid even after the main thread exits the calling function. If any scalars need to passed to
    PetscThreadCommRunKernel then these should be first stored in the locations provided by PetscThreadCommGetScalars()
-   
+
    Pass PETSC_NULL if any pointers are not needed.
 
    Called by the main thread only, not from within kernels
@@ -554,7 +554,7 @@ PetscErrorCode PetscThreadCommGetScalars(MPI_Comm comm,PetscScalar **val1, Petsc
   if (val1) *val1 = &job->scalars[0];
   if (val2) *val2 = &job->scalars[1];
   if (val3) *val3 = &job->scalars[2];
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -574,10 +574,10 @@ PetscErrorCode PetscThreadCommGetScalars(MPI_Comm comm,PetscScalar **val1, Petsc
    Level: developer
 
    Notes:
-   This is a utility function to ensure that any scalars passed to PetscThreadCommRunKernel remain 
-   valid even after the main thread exits the calling function. If any scalars need to passed to 
+   This is a utility function to ensure that any scalars passed to PetscThreadCommRunKernel remain
+   valid even after the main thread exits the calling function. If any scalars need to passed to
    PetscThreadCommRunKernel then these should be first stored in the locations provided by PetscThreadCommGetInts()
-   
+
    Pass PETSC_NULL if any pointers are not needed.
 
    Called by the main thread only, not from within kernels
@@ -606,10 +606,10 @@ PetscErrorCode PetscThreadCommGetInts(MPI_Comm comm,PetscInt **val1, PetscInt **
   if (val1) *val1 = &job->ints[0];
   if (val2) *val2 = &job->ints[1];
   if (val3) *val3 = &job->ints[2];
-  
+
   PetscFunctionReturn(0);
 }
-  
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommRunKernel"
 /*@C
@@ -651,12 +651,12 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
   ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
   job = PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
-    for (i=0;i<tcomm->nworkThreads;i++) { 
+    for (i=0;i<tcomm->nworkThreads;i++) {
       while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
 	;
     }
   }
-  
+
   job->tcomm = tcomm;
   job->tcomm->job_ctr = PetscJobQueue->ctr;
   job->nargs = nargs;
@@ -724,12 +724,12 @@ PetscErrorCode PetscThreadCommRunKernel1(MPI_Comm comm,PetscErrorCode (*func)(Pe
 
   job = PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
-    for (i=0;i<tcomm->nworkThreads;i++) { 
+    for (i=0;i<tcomm->nworkThreads;i++) {
       while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
 	;
     }
   }
-  
+
   job->tcomm = tcomm;
   job->tcomm->job_ctr = PetscJobQueue->ctr;
   job->nargs = 1;
@@ -792,12 +792,12 @@ PetscErrorCode PetscThreadCommRunKernel2(MPI_Comm comm,PetscErrorCode (*func)(Pe
 
   job = PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
-    for (i=0;i<tcomm->nworkThreads;i++) { 
+    for (i=0;i<tcomm->nworkThreads;i++) {
       while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
 	;
     }
   }
-  
+
   job->tcomm = tcomm;
   job->tcomm->job_ctr = PetscJobQueue->ctr;
   job->nargs = 2;
@@ -862,12 +862,12 @@ PetscErrorCode PetscThreadCommRunKernel3(MPI_Comm comm,PetscErrorCode (*func)(Pe
 
   job = PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
-    for (i=0;i<tcomm->nworkThreads;i++) { 
+    for (i=0;i<tcomm->nworkThreads;i++) {
       while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
 	;
     }
   }
-  
+
   job->tcomm = tcomm;
   job->tcomm->job_ctr = PetscJobQueue->ctr;
   job->nargs = 3;
@@ -934,12 +934,12 @@ PetscErrorCode PetscThreadCommRunKernel4(MPI_Comm comm,PetscErrorCode (*func)(Pe
 
   job = PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
-    for (i=0;i<tcomm->nworkThreads;i++) { 
+    for (i=0;i<tcomm->nworkThreads;i++) {
       while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
 	;
     }
   }
-  
+
   job->tcomm = tcomm;
   job->tcomm->job_ctr = PetscJobQueue->ctr;
   job->nargs = 4;
@@ -1009,12 +1009,12 @@ PetscErrorCode PetscThreadCommRunKernel6(MPI_Comm comm,PetscErrorCode (*func)(Pe
 
   job = PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
-    for (i=0;i<tcomm->nworkThreads;i++) { 
+    for (i=0;i<tcomm->nworkThreads;i++) {
       while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
 	;
     }
   }
-  
+
   job->tcomm = tcomm;
   job->tcomm->job_ctr = PetscJobQueue->ctr;
   job->nargs = 6;
@@ -1085,7 +1085,7 @@ EXTERN_C_END
    Detaches the thread communicator from the MPI communicator if it exists
 */
 #undef __FUNCT__
-#define __FUNCT__ "PetscThreadCommDetach" 
+#define __FUNCT__ "PetscThreadCommDetach"
 PetscErrorCode PetscThreadCommDetach(MPI_Comm comm)
 {
   PetscErrorCode ierr;
@@ -1106,7 +1106,7 @@ PetscErrorCode PetscThreadCommDetach(MPI_Comm comm)
   PetscFunctionReturn(0);
 }
 
-/* 
+/*
    This routine attaches the thread communicator to the MPI communicator if it does not
    exist already.
 */
@@ -1132,9 +1132,9 @@ PetscErrorCode PetscThreadCommAttach(MPI_Comm comm,PetscThreadComm tcomm)
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommInitialize"
 /*
-  PetscThreadCommInitialize - Initializes the thread communicator object 
+  PetscThreadCommInitialize - Initializes the thread communicator object
                               and stashes it inside PETSC_COMM_WORLD
-                              
+
   PetscThreadCommInitialize() defaults to using the nonthreaded communicator.
 */
 PetscErrorCode PetscThreadCommInitialize(void)

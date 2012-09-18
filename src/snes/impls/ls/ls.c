@@ -4,10 +4,10 @@
 /*
      Checks if J^T F = 0 which implies we've found a local minimum of the norm of the function,
     || F(u) ||_2 but not a zero, F(u) = 0. In the case when one cannot compute J^T F we use the fact that
-    0 = (J^T F)^T W = F^T J W iff W not in the null space of J. Thanks for Jorge More 
+    0 = (J^T F)^T W = F^T J W iff W not in the null space of J. Thanks for Jorge More
     for this trick. One assumes that the probability that W is in the null space of J is very, very small.
-*/ 
-#undef __FUNCT__  
+*/
+#undef __FUNCT__
 #define __FUNCT__ "SNESLSCheckLocalMin_Private"
 PetscErrorCode SNESLSCheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,PetscReal fnorm,PetscBool  *ismin)
 {
@@ -43,9 +43,9 @@ PetscErrorCode SNESLSCheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,PetscReal
 }
 
 /*
-     Checks if J^T(F - J*X) = 0 
-*/ 
-#undef __FUNCT__  
+     Checks if J^T(F - J*X) = 0
+*/
+#undef __FUNCT__
 #define __FUNCT__ "SNESLSCheckResidual_Private"
 PetscErrorCode SNESLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Vec W2)
 {
@@ -70,11 +70,11 @@ PetscErrorCode SNESLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Ve
   PetscFunctionReturn(0);
 }
 
-/*  -------------------------------------------------------------------- 
+/*  --------------------------------------------------------------------
 
      This file implements a truncated Newton method with a line search,
-     for solving a system of nonlinear equations, using the KSP, Vec, 
-     and Mat interfaces for linear solvers, vectors, and matrices, 
+     for solving a system of nonlinear equations, using the KSP, Vec,
+     and Mat interfaces for linear solvers, vectors, and matrices,
      respectively.
 
      The following basic routines are required for each nonlinear solver:
@@ -86,8 +86,8 @@ PetscErrorCode SNESLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Ve
      we use _LS (e.g., SNESCreate_LS, SNESSolve_LS) for solving
      systems of nonlinear equations with a line search (LS) method.
      These routines are actually called via the common user interface
-     routines SNESCreate(), SNESSetFromOptions(), SNESSolve(), and 
-     SNESDestroy(), so the application code interface remains identical 
+     routines SNESCreate(), SNESSetFromOptions(), SNESSolve(), and
+     SNESDestroy(), so the application code interface remains identical
      for all nonlinear solvers.
 
      Another key routine is:
@@ -104,7 +104,7 @@ PetscErrorCode SNESLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Ve
 
      The various types of solvers (preconditioners, Krylov subspace methods,
      nonlinear solvers, timesteppers) are all organized similarly, so the
-     above description applies to these categories also.  
+     above description applies to these categories also.
 
     -------------------------------------------------------------------- */
 /*
@@ -292,7 +292,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
    SNESSetUp(), since these actions will automatically occur during
    the call to SNESSolve().
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetUp_LS"
 PetscErrorCode SNESSetUp_LS(SNES snes)
 {
@@ -345,7 +345,7 @@ PetscErrorCode SNESDestroy_LS(SNES snes)
 
    Application Interface Routine: SNESView()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESView_LS"
 static PetscErrorCode SNESView_LS(SNES snes,PetscViewer viewer)
 {
@@ -368,7 +368,7 @@ static PetscErrorCode SNESView_LS(SNES snes,PetscViewer viewer)
 
    Application Interface Routine: SNESSetFromOptions()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_LS"
 static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
 {
@@ -409,7 +409,7 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESCreate_LS"
 PetscErrorCode  SNESCreate_LS(SNES snes)
 {

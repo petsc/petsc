@@ -5,7 +5,7 @@
 
 #include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetGhostCorners"
 /*@
    DMDAGetGhostCorners - Returns the global (x,y,z) indices of the lower left
@@ -25,7 +25,7 @@
    Level: beginner
 
    Note:
-   The corner information is independent of the number of degrees of 
+   The corner information is independent of the number of degrees of
    freedom per node set with the DMDACreateXX() routine. Thus the x, y, z, and
    m, n, p can be thought of as coordinates on a logical grid, where each
    grid point has (potentially) several degrees of freedom.
@@ -43,12 +43,12 @@ PetscErrorCode  DMDAGetGhostCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  /* since the xs, xe ... have all been multiplied by the number of degrees 
+  /* since the xs, xe ... have all been multiplied by the number of degrees
      of freedom per cell, w = dd->w, we divide that out before returning.*/
-  w = dd->w;  
+  w = dd->w;
   if (x) *x = dd->Xs/w; if (m) *m = (dd->Xe - dd->Xs)/w;
   if (y) *y = dd->Ys;   if (n) *n = (dd->Ye - dd->Ys);
-  if (z) *z = dd->Zs;   if (p) *p = (dd->Ze - dd->Zs); 
+  if (z) *z = dd->Zs;   if (p) *p = (dd->Ze - dd->Zs);
   PetscFunctionReturn(0);
 }
 

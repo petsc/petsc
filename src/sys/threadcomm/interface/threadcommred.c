@@ -36,10 +36,10 @@ PetscErrorCode PetscThreadReductionBegin(MPI_Comm comm,PetscThreadCommReductionO
   *red = tcomm->red;
   PetscFunctionReturn(0);
 }
-  
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommReductionDestroy"
-/* 
+/*
    PetscThreadCommReductionDestroy - Destroys the reduction context
 
    Input Parameters:
@@ -66,14 +66,14 @@ PetscErrorCode PetscThreadCommReductionDestroy(PetscThreadCommRedCtx red)
 
    Input Parameters:
 +  trank   - Rank of the calling thread
-.  red     - the reduction context 
+.  red     - the reduction context
 .  lred    - local contribution from the thread
 
    Level: developer
 
    Notes:
    This routine posts the local reduction of each thread in the reduction context and
-   updates its reduction status. 
+   updates its reduction status.
 
    Must call PetscThreadReductionBegin before launching the kernel.
 */
@@ -134,7 +134,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
   PetscBool wait=PETSC_TRUE;
   PetscInt  i;
   while(wait) {
-    for (i=0;i < red->tcomm->nworkThreads;i++) { 
+    for (i=0;i < red->tcomm->nworkThreads;i++) {
       if (PetscReadOnce(int,red->thread_status[i]) != THREADCOMM_THREAD_POSTED_LOCALRED) {
 	wait = PETSC_TRUE;
 	break;
@@ -142,7 +142,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
       wait = PETSC_FALSE;
     }
   }
-  
+
   /* Apply the reduction operation */
   switch(red->op) {
   case THREADCOMM_SUM:
@@ -256,7 +256,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
       maxloc[0] = ((PetscReal*)red->local_red)[0];
       maxloc[1] = ((PetscReal*)red->local_red)[red->tcomm->nworkThreads];
       for (i=1; i < red->tcomm->nworkThreads;i++) {
-        if (((PetscReal*)red->local_red)[i] > maxloc[0]) { 
+        if (((PetscReal*)red->local_red)[i] > maxloc[0]) {
           maxloc[0] = ((PetscReal*)red->local_red)[i];
           maxloc[1] = ((PetscReal*)red->local_red)[red->tcomm->nworkThreads+i];
         }
@@ -270,7 +270,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
       maxloc[0] = ((PetscScalar*)red->local_red)[0];
       maxloc[1] = ((PetscScalar*)red->local_red)[red->tcomm->nworkThreads];
       for (i=1; i < red->tcomm->nworkThreads;i++) {
-        if (PetscRealPart(((PetscScalar*)red->local_red)[i]) > PetscRealPart(maxloc[0])) { 
+        if (PetscRealPart(((PetscScalar*)red->local_red)[i]) > PetscRealPart(maxloc[0])) {
           maxloc[0] = ((PetscScalar*)red->local_red)[i];
           maxloc[1] = ((PetscScalar*)red->local_red)[red->tcomm->nworkThreads+i];
         }
@@ -283,7 +283,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
       maxloc[0] = ((PetscInt*)red->local_red)[0];
       maxloc[1] = ((PetscInt*)red->local_red)[red->tcomm->nworkThreads];
       for (i=1; i < red->tcomm->nworkThreads;i++) {
-        if (((PetscInt*)red->local_red)[i] > maxloc[0]) { 
+        if (((PetscInt*)red->local_red)[i] > maxloc[0]) {
           maxloc[0] = ((PetscInt*)red->local_red)[i];
           maxloc[1] = ((PetscInt*)red->local_red)[red->tcomm->nworkThreads+i];
         }
@@ -298,7 +298,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
       minloc[0] = ((PetscReal*)red->local_red)[0];
       minloc[1] = ((PetscReal*)red->local_red)[red->tcomm->nworkThreads];
       for (i=1; i < red->tcomm->nworkThreads;i++) {
-        if (((PetscReal*)red->local_red)[i] < minloc[0]) { 
+        if (((PetscReal*)red->local_red)[i] < minloc[0]) {
           minloc[0] = ((PetscReal*)red->local_red)[i];
           minloc[1] = ((PetscReal*)red->local_red)[red->tcomm->nworkThreads+i];
         }
@@ -312,7 +312,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
       minloc[0] = ((PetscScalar*)red->local_red)[0];
       minloc[1] = ((PetscScalar*)red->local_red)[red->tcomm->nworkThreads];
       for (i=1; i < red->tcomm->nworkThreads;i++) {
-        if (PetscRealPart(((PetscScalar*)red->local_red)[i]) < PetscRealPart(minloc[0])) { 
+        if (PetscRealPart(((PetscScalar*)red->local_red)[i]) < PetscRealPart(minloc[0])) {
           minloc[0] = ((PetscScalar*)red->local_red)[i];
           minloc[1] = ((PetscScalar*)red->local_red)[red->tcomm->nworkThreads+i];
         }
@@ -325,7 +325,7 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
       minloc[0] = ((PetscInt*)red->local_red)[0];
       minloc[1] = ((PetscInt*)red->local_red)[red->tcomm->nworkThreads];
       for (i=1; i < red->tcomm->nworkThreads;i++) {
-        if (((PetscInt*)red->local_red)[i] < minloc[0]) { 
+        if (((PetscInt*)red->local_red)[i] < minloc[0]) {
           minloc[0] = ((PetscInt*)red->local_red)[i];
           minloc[1] = ((PetscInt*)red->local_red)[red->tcomm->nworkThreads+i];
         }
@@ -339,10 +339,10 @@ PetscErrorCode PetscThreadReductionEnd_Private(PetscThreadCommRedCtx red,void * 
   }
   return 0;
 }
-  
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadReductionEnd"
-/*@C 
+/*@C
    PetscThreadReductionEnd - Completes the given reduction
 
    Input Parameters:
@@ -371,11 +371,11 @@ PetscErrorCode PetscThreadReductionEnd(PetscThreadCommRedCtx red,void *outdata)
    Input Parameters:
 +  trank   - Rank of the calling thread
 .  red     - the reduction context
--  outdata - the reduction result 
+-  outdata - the reduction result
 
    Level: developer
 
-   Notes: This should be called only from kernels only if the reduction needs to 
+   Notes: This should be called only from kernels only if the reduction needs to
    be completed while in the kernel for some future operation.
 
 */
@@ -389,7 +389,7 @@ PetscErrorCode PetscThreadReductionKernelEnd(PetscInt trank,PetscThreadCommRedCt
 
   /* Wait till the leader performs the reduction so that the other threads
      can also see the reduction result */
-  while(PetscReadOnce(int,red->red_status) != THREADCOMM_REDUCTION_COMPLETE) 
+  while(PetscReadOnce(int,red->red_status) != THREADCOMM_REDUCTION_COMPLETE)
     ;
   red->thread_status[trank] = THREADCOMM_THREAD_WAITING_FOR_NEWRED;
   return 0;
@@ -411,7 +411,7 @@ PetscErrorCode PetscThreadCommReductionCreate(PetscThreadComm tcomm,PetscThreadC
   PetscErrorCode        ierr;
   PetscThreadCommRedCtx redout;
   PetscInt              i;
-  
+
   PetscFunctionBegin;
   ierr = PetscNew(struct _p_PetscThreadCommRedCtx,&redout);CHKERRQ(ierr);
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&redout->thread_status);CHKERRQ(ierr);

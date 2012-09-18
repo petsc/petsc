@@ -1,11 +1,11 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatToSymmetricIJ_SeqAIJ"
 /*
   MatToSymmetricIJ_SeqAIJ - Convert a (generally nonsymmetric) sparse AIJ matrix
-           to IJ format (ignore the "A" part) Allocates the space needed. Uses only 
+           to IJ format (ignore the "A" part) Allocates the space needed. Uses only
            the lower triangular part of the matrix.
 
     Description:
@@ -25,8 +25,8 @@
 
     Notes:
     Both ia and ja may be freed with PetscFree();
-    This routine is provided for ordering routines that require a 
-    symmetric structure.  It is required since those routines call 
+    This routine is provided for ordering routines that require a
+    symmetric structure.  It is required since those routines call
     SparsePak routines that expect a symmetric  matrix.
 */
 PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,PetscInt shiftin,PetscInt shiftout,PetscInt **iia,PetscInt **jja)
@@ -66,7 +66,7 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m,PetscInt *ai,PetscInt *aj,Pets
   ierr = PetscMalloc(nz*sizeof(PetscInt),&ja);CHKERRQ(ierr);
   *jja = ja;
 
-  /* loop over lower triangular part putting into ja */ 
+  /* loop over lower triangular part putting into ja */
   for (row = 0; row < m; row++) {
     nz = ai[row+1] - ai[row];
     j  = aj + ai[row] + shiftin;

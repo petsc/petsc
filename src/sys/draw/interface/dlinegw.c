@@ -4,12 +4,12 @@
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawLineGetWidth" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawLineGetWidth"
 /*@
    PetscDrawLineGetWidth - Gets the line width for future draws.  The width is
    relative to the user coordinates of the window; 0.0 denotes the natural
-   width; 1.0 denotes the interior viewport. 
+   width; 1.0 denotes the interior viewport.
 
    Not collective
 

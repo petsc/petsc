@@ -1,18 +1,18 @@
 
 #include <petsc-private/snesimpl.h>    /*I  "petscsnes.h"  I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESDefaultComputeJacobianColor"
 /*@C
     SNESDefaultComputeJacobianColor - Computes the Jacobian using
-    finite differences and coloring to exploit matrix sparsity. 
-  
+    finite differences and coloring to exploit matrix sparsity.
+
     Collective on SNES
 
     Input Parameters:
 +   snes - nonlinear solver object
 .   x1 - location at which to evaluate Jacobian
--   ctx - coloring context, where ctx must have type MatFDColoring, 
+-   ctx - coloring context, where ctx must have type MatFDColoring,
           as created via MatFDColoringCreate()
 
     Output Parameters:

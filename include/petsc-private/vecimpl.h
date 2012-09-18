@@ -1,5 +1,5 @@
 
-/* 
+/*
    This private file should not be included in users' code.
    Defines the fields shared by all vector implementations.
 
@@ -98,7 +98,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt
 
    Output Parameter:
 +    owner - the owning rank
--    lidx  - local index used by the owner for idx 
+-    lidx  - local index used by the owner for idx
 
    Level: developer
 
@@ -277,10 +277,10 @@ struct _VecOps {
   PetscErrorCode (*restoresubvector)(Vec,IS,Vec*);
 };
 
-/* 
-    The stash is used to temporarily store inserted vec values that 
-  belong to another processor. During the assembly phase the stashed 
-  values are moved to the correct processor and 
+/*
+    The stash is used to temporarily store inserted vec values that
+  belong to another processor. During the assembly phase the stashed
+  values are moved to the correct processor and
 */
 
 typedef struct {
@@ -289,7 +289,7 @@ typedef struct {
   PetscInt      oldnmax;                /* the nmax value used previously */
   PetscInt      n;                      /* stash size */
   PetscInt      bs;                     /* block size of the stash */
-  PetscInt      reallocs;               /* preserve the no of mallocs invoked */           
+  PetscInt      reallocs;               /* preserve the no of mallocs invoked */
   PetscInt      *idx;                   /* global row numbers in stash */
   PetscScalar   *array;                 /* array to hold stashed values */
   /* The following variables are used for communication */
@@ -428,7 +428,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
 
 
 /*
-     Common header shared by array based vectors, 
+     Common header shared by array based vectors,
    currently Vec_Seq and Vec_MPI
 */
 #define VECHEADER                          \
@@ -452,7 +452,7 @@ typedef enum { VEC_SCATTER_SEQ_GENERAL,VEC_SCATTER_SEQ_STRIDE,
                VEC_SCATTER_MPI_GENERAL,VEC_SCATTER_MPI_TOALL,
                VEC_SCATTER_MPI_TOONE} VecScatterType;
 
-/* 
+/*
    These scatters are for the purely local case.
 */
 typedef struct {
@@ -460,9 +460,9 @@ typedef struct {
   PetscInt       n;                    /* number of components to scatter */
   PetscInt       *vslots;              /* locations of components */
   /*
-       The next three fields are used in parallel scatters, they contain 
-       optimization in the special case that the "to" vector and the "from" 
-       vector are the same, so one only needs copy components that truly 
+       The next three fields are used in parallel scatters, they contain
+       optimization in the special case that the "to" vector and the "from"
+       vector are the same, so one only needs copy components that truly
        copies instead of just y[idx[i]] = y[jdx[i]] where idx[i] == jdx[i].
   */
   PetscBool      nonmatching_computed;
@@ -477,7 +477,7 @@ typedef struct {
   VecScatterType type;
   PetscInt       n;
   PetscInt       first;
-  PetscInt       step;           
+  PetscInt       step;
 } VecScatter_Seq_Stride;
 
 /*
@@ -486,18 +486,18 @@ typedef struct {
 typedef struct {
   VecScatterType type;
   PetscMPIInt    *count;        /* elements of vector on each processor */
-  PetscMPIInt    *displx;        
+  PetscMPIInt    *displx;
   PetscScalar    *work1;
-  PetscScalar    *work2;        
+  PetscScalar    *work2;
 } VecScatter_MPI_ToAll;
 
 /*
    This is the general parallel scatter
 */
-typedef struct { 
+typedef struct {
   VecScatterType         type;
   PetscInt               n;        /* number of processors to send/receive */
-  PetscInt               *starts;  /* starting point in indices and values for each proc*/ 
+  PetscInt               *starts;  /* starting point in indices and values for each proc*/
   PetscInt               *indices; /* list of all components sent or received */
   PetscMPIInt            *procs;   /* processors we are communicating with in scatter */
   MPI_Request            *requests,*rev_requests;
@@ -572,14 +572,14 @@ PETSC_STATIC_INLINE PetscErrorCode VecStashValue_Private(VecStash *stash,PetscIn
 }
 
 /*
-  VecStashValuesBlocked_Private - inserts 1 block of values into the stash. 
+  VecStashValuesBlocked_Private - inserts 1 block of values into the stash.
 
   Input Parameters:
   stash  - the stash
   idx    - the global block index
   values - the values inserted
 */
-PETSC_STATIC_INLINE PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash,PetscInt row,PetscScalar *values) 
+PETSC_STATIC_INLINE PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash,PetscInt row,PetscScalar *values)
 {
   PetscInt       jj,stash_bs=(stash)->bs;
   PetscScalar    *array;

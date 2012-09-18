@@ -3,7 +3,7 @@
       Split phase global vector reductions with support for combining the
    communication portion of several operations. Using MPI-1.1 support only
 
-      The idea for this and much of the initial code is contributed by 
+      The idea for this and much of the initial code is contributed by
    Victor Eijkhout.
 
        Usage:
@@ -13,9 +13,9 @@
              VecDotEnd(Vec,Vec,PetscScalar *);
              VecNormEnd(Vec,NormType,PetscReal *);
 
-       Limitations: 
+       Limitations:
          - The order of the xxxEnd() functions MUST be in the same order
-           as the xxxBegin(). There is extensive error checking to try to 
+           as the xxxBegin(). There is extensive error checking to try to
            insure that the user calls the routines in the correct order
 */
 
@@ -68,7 +68,7 @@ typedef struct {
 } PetscSplitReduction;
 /*
    Note: the lvalues and gvalues are twice as long as maxops, this is to allow the second half of
-the entries to have a flag indicating if they are REDUCE_SUM, REDUCE_MAX, or REDUCE_MIN these are used by 
+the entries to have a flag indicating if they are REDUCE_SUM, REDUCE_MAX, or REDUCE_MIN these are used by
 the custom reduction operation that replaces MPI_SUM, MPI_MAX, or MPI_MIN in the case when a reduction involves
 some of each.
 */
@@ -106,9 +106,9 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
 }
 
 /*
-       This function is the MPI reduction operation used when there is 
-   a combination of sums and max in the reduction. The call below to 
-   MPI_Op_create() converts the function PetscSplitReduction_Local() to the 
+       This function is the MPI reduction operation used when there is
+   a combination of sums and max in the reduction. The call below to
+   MPI_Op_create() converts the function PetscSplitReduction_Local() to the
    MPI operator PetscSplitReduction_Op.
 */
 MPI_Op PetscSplitReduction_Op = 0;
@@ -128,10 +128,10 @@ PETSC_EXTERN_C void  MPIAPI PetscSplitReduction_Local(void *in,void *out,PetscMP
 #if defined(PETSC_USE_COMPLEX)
   count = count/2;
 #endif
-  count = count/2; 
+  count = count/2;
   for (i=0; i<count; i++) {
     if (((int)PetscRealPart(xin[count+i])) == REDUCE_SUM) { /* second half of xin[] is flags for reduction type */
-      xout[i] += xin[i]; 
+      xout[i] += xin[i];
     } else if ((PetscInt)PetscRealPart(xin[count+i]) == REDUCE_MAX) {
       xout[i] = PetscMax(*(PetscReal *)(xout+i),*(PetscReal *)(xin+i));
     } else if ((PetscInt)PetscRealPart(xin[count+i]) == REDUCE_MIN) {
@@ -192,7 +192,7 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
         } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
       }
       if (sum_flg + max_flg + min_flg > 1) {
-        /* 
+        /*
          after all the entires in lvalues we store the reducetype flags to indicate
          to the reduction operations what are sums and what are max
          */
@@ -206,7 +206,7 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
 #endif
       } else if (max_flg) {
 #if defined(PETSC_USE_COMPLEX)
-        /* 
+        /*
          complex case we max both the real and imaginary parts, the imaginary part
          is just ignored later
          */
@@ -216,7 +216,7 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
 #endif
       } else if (min_flg) {
 #if defined(PETSC_USE_COMPLEX)
-        /* 
+        /*
          complex case we min both the real and imaginary parts, the imaginary part
          is just ignored later
          */
@@ -279,7 +279,7 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
   PetscFunctionBegin;
   if (sr->numopsend > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Cannot call this after VecxxxEnd() has been called");
   ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,comm);CHKERRQ(ierr);
-  ierr  = MPI_Comm_size(sr->comm,&size);CHKERRQ(ierr); 
+  ierr  = MPI_Comm_size(sr->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscMemcpy(gvalues,lvalues,numops*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
@@ -294,7 +294,7 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
     }
     if (sum_flg + max_flg + min_flg > 1) {
-      /* 
+      /*
          after all the entires in lvalues we store the reducetype flags to indicate
          to the reduction operations what are sums and what are max
       */
@@ -308,7 +308,7 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
 #endif
     } else if (max_flg) {
 #if defined(PETSC_USE_COMPLEX)
-      /* 
+      /*
         complex case we max both the real and imaginary parts, the imaginary part
         is just ignored later
       */
@@ -318,7 +318,7 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
 #endif
     } else if (min_flg) {
 #if defined(PETSC_USE_COMPLEX)
-      /* 
+      /*
         complex case we min both the real and imaginary parts, the imaginary part
         is just ignored later
       */
@@ -382,14 +382,14 @@ PetscErrorCode  PetscSplitReductionDestroy(PetscSplitReduction *sr)
 
 static PetscMPIInt Petsc_Reduction_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNCT__  
-#define __FUNCT__ "Petsc_DelReduction" 
+#undef __FUNCT__
+#define __FUNCT__ "Petsc_DelReduction"
 /*
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
 
   The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
-  it was MPI_Comm *comm.  
+  it was MPI_Comm *comm.
 */
 PETSC_EXTERN_C int  MPIAPI Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
 {
@@ -402,7 +402,7 @@ PETSC_EXTERN_C int  MPIAPI Petsc_DelReduction(MPI_Comm comm,int keyval,void* att
 }
 
 /*
-     PetscSplitReductionGet - Gets the split reduction object from a 
+     PetscSplitReductionGet - Gets the split reduction object from a
         PETSc vector, creates if it does not exit.
 
 */
@@ -415,10 +415,10 @@ static PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction *
 
   PetscFunctionBegin;
   if (Petsc_Reduction_keyval == MPI_KEYVAL_INVALID) {
-    /* 
+    /*
        The calling sequence of the 2nd argument to this function changed
-       between MPI Standard 1.0 and the revisions 1.1 Here we match the 
-       new standard, if you are using an MPI implementation that uses 
+       between MPI Standard 1.0 and the revisions 1.1 Here we match the
+       new standard, if you are using an MPI implementation that uses
        the older version you will get a warning message about the next line;
        it is only a warning message and should do no harm.
     */
@@ -450,10 +450,10 @@ static PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction *
    Notes:
    Each call to VecDotBegin() should be paired with a call to VecDotEnd().
 
-seealso: VecDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+seealso: VecDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
          VecTDotBegin(), VecTDotEnd(), PetscCommSplitReductionBegin()
 @*/
-PetscErrorCode  VecDotBegin(Vec x,Vec y,PetscScalar *result) 
+PetscErrorCode  VecDotBegin(Vec x,Vec y,PetscScalar *result)
 {
   PetscErrorCode      ierr;
   PetscSplitReduction *sr;
@@ -490,11 +490,11 @@ PetscErrorCode  VecDotBegin(Vec x,Vec y,PetscScalar *result)
    Notes:
    Each call to VecDotBegin() should be paired with a call to VecDotEnd().
 
-.seealso: VecDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+.seealso: VecDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
          VecTDotBegin(),VecTDotEnd(), PetscCommSplitReductionBegin()
 
 @*/
-PetscErrorCode  VecDotEnd(Vec x,Vec y,PetscScalar *result) 
+PetscErrorCode  VecDotEnd(Vec x,Vec y,PetscScalar *result)
 {
   PetscErrorCode      ierr;
   PetscSplitReduction *sr;
@@ -536,11 +536,11 @@ PetscErrorCode  VecDotEnd(Vec x,Vec y,PetscScalar *result)
    Notes:
    Each call to VecTDotBegin() should be paired with a call to VecTDotEnd().
 
-.seealso: VecTDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+.seealso: VecTDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
          VecDotBegin(), VecDotEnd(), PetscCommSplitReductionBegin()
 
 @*/
-PetscErrorCode  VecTDotBegin(Vec x,Vec y,PetscScalar *result) 
+PetscErrorCode  VecTDotBegin(Vec x,Vec y,PetscScalar *result)
 {
   PetscErrorCode      ierr;
   PetscSplitReduction *sr;
@@ -577,10 +577,10 @@ PetscErrorCode  VecTDotBegin(Vec x,Vec y,PetscScalar *result)
    Notes:
    Each call to VecTDotBegin() should be paired with a call to VecTDotEnd().
 
-seealso: VecTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+seealso: VecTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
          VecDotBegin(), VecDotEnd()
 @*/
-PetscErrorCode  VecTDotEnd(Vec x,Vec y,PetscScalar *result) 
+PetscErrorCode  VecTDotEnd(Vec x,Vec y,PetscScalar *result)
 {
   PetscErrorCode ierr;
 
@@ -612,7 +612,7 @@ PetscErrorCode  VecTDotEnd(Vec x,Vec y,PetscScalar *result)
 .seealso: VecNormEnd(), VecNorm(), VecDot(), VecMDot(), VecDotBegin(), VecDotEnd(), PetscCommSplitReductionBegin()
 
 @*/
-PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result) 
+PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
 {
   PetscErrorCode      ierr;
   PetscSplitReduction *sr;
@@ -626,7 +626,7 @@ PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
   if (sr->numopsbegin >= sr->maxops || (sr->numopsbegin == sr->maxops-1 && ntype == NORM_1_AND_2)) {
     ierr = PetscSplitReductionExtend(sr);CHKERRQ(ierr);
   }
-  
+
   sr->invecs[sr->numopsbegin]     = (void*)x;
   if (!x->ops->norm_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local norms");
   ierr = PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
@@ -639,8 +639,8 @@ PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
   sr->lvalues[sr->numopsbegin++] = lresult[0];
   if (ntype == NORM_1_AND_2) {
     sr->reducetype[sr->numopsbegin] = REDUCE_SUM;
-    sr->lvalues[sr->numopsbegin++]  = lresult[1]; 
-  }   
+    sr->lvalues[sr->numopsbegin++]  = lresult[1];
+  }
   PetscFunctionReturn(0);
 }
 
@@ -662,7 +662,7 @@ PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
 .seealso: VecNormBegin(), VecNorm(), VecDot(), VecMDot(), VecDotBegin(), VecDotEnd(), PetscCommSplitReductionBegin()
 
 @*/
-PetscErrorCode  VecNormEnd(Vec x,NormType ntype,PetscReal *result) 
+PetscErrorCode  VecNormEnd(Vec x,NormType ntype,PetscReal *result)
 {
   PetscErrorCode      ierr;
   PetscSplitReduction *sr;
@@ -721,10 +721,10 @@ PetscErrorCode  VecNormEnd(Vec x,NormType ntype,PetscReal *result)
    Notes:
    Each call to VecMDotBegin() should be paired with a call to VecMDotEnd().
 
-.seealso: VecMDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+.seealso: VecMDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
          VecTDotBegin(), VecTDotEnd(), VecMTDotBegin(), VecMTDotEnd(), PetscCommSplitReductionBegin()
 @*/
-PetscErrorCode  VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[]) 
+PetscErrorCode  VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
 {
   PetscErrorCode      ierr;
   PetscSplitReduction *sr;
@@ -768,11 +768,11 @@ PetscErrorCode  VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[
    Notes:
    Each call to VecMDotBegin() should be paired with a call to VecMDotEnd().
 
-.seealso: VecMDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+.seealso: VecMDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
          VecTDotBegin(),VecTDotEnd(), VecMTDotBegin(), VecMTDotEnd(), PetscCommSplitReductionBegin()
 
 @*/
-PetscErrorCode  VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[]) 
+PetscErrorCode  VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
 {
   PetscErrorCode      ierr;
   PetscSplitReduction *sr;
@@ -790,7 +790,7 @@ PetscErrorCode  VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
   for (i=0;i<nv;i++) {
     result[i] = sr->gvalues[sr->numopsend++];
   }
-  
+
   /*
      We are finished getting all the results so reset to no outstanding requests
   */
@@ -818,11 +818,11 @@ PetscErrorCode  VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
    Notes:
    Each call to VecMTDotBegin() should be paired with a call to VecMTDotEnd().
 
-.seealso: VecMTDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+.seealso: VecMTDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
          VecDotBegin(), VecDotEnd(), VecMDotBegin(), VecMDotEnd(), PetscCommSplitReductionBegin()
 
 @*/
-PetscErrorCode  VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[]) 
+PetscErrorCode  VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
 {
   PetscErrorCode      ierr;
   PetscSplitReduction *sr;
@@ -866,10 +866,10 @@ PetscErrorCode  VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result
    Notes:
    Each call to VecTDotBegin() should be paired with a call to VecTDotEnd().
 
-.seealso: VecMTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+.seealso: VecMTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(),
          VecDotBegin(), VecDotEnd(), VecMDotBegin(), VecMDotEnd(), PetscCommSplitReductionBegin()
 @*/
-PetscErrorCode  VecMTDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[]) 
+PetscErrorCode  VecMTDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[])
 {
   PetscErrorCode ierr;
 

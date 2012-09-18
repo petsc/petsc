@@ -22,7 +22,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateFFT"
 /*@
       MatCreateFFT - Creates a matrix object that provides FFT via an external package
@@ -42,7 +42,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
 + -mat_fft_type - set FFT type
 
    Level: intermediate
-   
+
 @*/
 PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],const MatType mattype,Mat* A)
 {
@@ -72,10 +72,10 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],con
   fft->n    = PETSC_DECIDE;
   fft->N    = N;
   fft->data = PETSC_NULL;
-  
-  ierr = MatSetType(FFT,mattype);CHKERRQ(ierr); 
+
+  ierr = MatSetType(FFT,mattype);CHKERRQ(ierr);
   FFT->ops->destroy = MatDestroy_FFT;
- 
+
   /* get runtime options */
   ierr = PetscOptionsBegin(((PetscObject)FFT)->comm,((PetscObject)FFT)->prefix,"FFT Options","Mat");CHKERRQ(ierr);
   PetscOptionsEnd();

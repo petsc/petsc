@@ -12,7 +12,7 @@ typedef struct {
   PetscReal richfactor;
 } KSP_SpecEst;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_SpecEst"
 static PetscErrorCode KSPSetUp_SpecEst(KSP ksp)
 {
@@ -32,7 +32,7 @@ static PetscErrorCode KSPSetUp_SpecEst(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSpecEstPropagateUp"
 static PetscErrorCode KSPSpecEstPropagateUp(KSP ksp,KSP subksp)
 {
@@ -44,7 +44,7 @@ static PetscErrorCode KSPSpecEstPropagateUp(KSP ksp,KSP subksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_SpecEst"
 static PetscErrorCode  KSPSolve_SpecEst(KSP ksp)
 {
@@ -81,7 +81,7 @@ static PetscErrorCode  KSPSolve_SpecEst(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPView_SpecEst"
 static PetscErrorCode KSPView_SpecEst(KSP ksp,PetscViewer viewer)
 {
@@ -108,7 +108,7 @@ static PetscErrorCode KSPView_SpecEst(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_SpecEst"
 static PetscErrorCode KSPSetFromOptions_SpecEst(KSP ksp)
 {
@@ -148,7 +148,7 @@ static PetscErrorCode KSPSetFromOptions_SpecEst(KSP ksp)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_SpecEst"
 static PetscErrorCode KSPDestroy_SpecEst(KSP ksp)
 {
@@ -164,7 +164,7 @@ static PetscErrorCode KSPDestroy_SpecEst(KSP ksp)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_SpecEst"
 /*MC
      KSPSPECEST - Estimate the spectrum on the first KSPSolve, then use cheaper smoother for subsequent solves.

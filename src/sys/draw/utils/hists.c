@@ -28,8 +28,8 @@ struct _p_PetscDrawHG {
 
 #define CHUNKSIZE 100
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawHGCreate" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawHGCreate"
 /*@C
    PetscDrawHGCreate - Creates a histogram data structure.
 
@@ -89,8 +89,8 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawHGSetNumberBins" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawHGSetNumberBins"
 /*@
    PetscDrawHGSetNumberBins - Change the number of bins that are to be drawn.
 
@@ -121,8 +121,8 @@ PetscErrorCode  PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawHGReset" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawHGReset"
 /*@
   PetscDrawHGReset - Clears histogram to allow for reuse with new data.
 
@@ -147,8 +147,8 @@ PetscErrorCode  PetscDrawHGReset(PetscDrawHG hist)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawHGDestroy" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawHGDestroy"
 /*@C
   PetscDrawHGDestroy - Frees all space taken up by histogram data structure.
 
@@ -178,8 +178,8 @@ PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG *hist)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawHGAddValue" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawHGAddValue"
 /*@
   PetscDrawHGAddValue - Adds another value to the histogram.
 
@@ -187,7 +187,7 @@ PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG *hist)
 
   Input Parameters:
 + hist  - The histogram
-- value - The value 
+- value - The value
 
   Level: intermediate
 
@@ -217,7 +217,7 @@ PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
     hist->xmin = value;
     hist->xmax = value;
 #if 1
-  } else { 
+  } else {
     /* Update limits */
     if (value > hist->xmax)
       hist->xmax = value;
@@ -248,8 +248,8 @@ PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawHGDraw" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawHGDraw"
 /*@
   PetscDrawHGDraw - Redraws a histogram.
 
@@ -283,7 +283,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
   if (rank) PetscFunctionReturn(0);
 #endif
 
-  color     = hist->color; 
+  color     = hist->color;
   if (color == PETSC_DRAW_ROTATE) {bcolor = 2;} else {bcolor = color;}
   xmin      = hist->xmin;
   xmax      = hist->xmax;
@@ -293,7 +293,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
   values    = hist->values;
   mean      = 0.0;
   var       = 0.0;
- 
+
   ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   if (xmin == xmax) {
     /* Calculate number of points in each bin */
@@ -388,9 +388,9 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawHGPrint"
 /*@
   PetscDrawHGPrint - Prints the histogram information.
@@ -481,10 +481,10 @@ PetscErrorCode  PetscDrawHGPrint(PetscDrawHG hist)
     PetscPrintf(((PetscObject)hist)->comm, "Total: %d\n", numValues);
   }
   PetscFunctionReturn(0);
-} 
- 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawHGSetColor" 
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawHGSetColor"
 /*@
   PetscDrawHGSetColor - Sets the color the bars will be drawn with.
 
@@ -492,7 +492,7 @@ PetscErrorCode  PetscDrawHGPrint(PetscDrawHG hist)
 
   Input Parameters:
 + hist - The histogram context
-- color - one of the colors defined in petscdraw.h or PETSC_DRAW_ROTATE to make each bar a 
+- color - one of the colors defined in petscdraw.h or PETSC_DRAW_ROTATE to make each bar a
           different color
 
   Level: intermediate
@@ -506,8 +506,8 @@ PetscErrorCode  PetscDrawHGSetColor(PetscDrawHG hist, int color)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawHGSetLimits" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawHGSetLimits"
 /*@
   PetscDrawHGSetLimits - Sets the axis limits for a histogram. If more
   points are added after this call, the limits will be adjusted to
@@ -527,14 +527,14 @@ PetscErrorCode  PetscDrawHGSetLimits(PetscDrawHG hist, PetscReal x_min, PetscRea
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID,1);
-  hist->xmin = x_min; 
-  hist->xmax = x_max; 
-  hist->ymin = y_min; 
+  hist->xmin = x_min;
+  hist->xmax = x_max;
+  hist->ymin = y_min;
   hist->ymax = y_max;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawHGCalcStats"
 /*@
   PetscDrawHGCalcStats - Turns on calculation of descriptive statistics
@@ -558,7 +558,7 @@ PetscErrorCode  PetscDrawHGCalcStats(PetscDrawHG hist, PetscBool  calc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawHGIntegerBins"
 /*@
   PetscDrawHGIntegerBins - Turns on integer width bins
@@ -581,8 +581,8 @@ PetscErrorCode  PetscDrawHGIntegerBins(PetscDrawHG hist, PetscBool  ints)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawHGGetAxis" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawHGGetAxis"
 /*@C
   PetscDrawHGGetAxis - Gets the axis context associated with a histogram.
   This is useful if one wants to change some axis property, such as
@@ -609,8 +609,8 @@ PetscErrorCode  PetscDrawHGGetAxis(PetscDrawHG hist, PetscDrawAxis *axis)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawHGGetDraw" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawHGGetDraw"
 /*@C
   PetscDrawHGGetDraw - Gets the draw context associated with a histogram.
 

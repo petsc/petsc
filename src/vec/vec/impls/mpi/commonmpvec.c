@@ -1,7 +1,7 @@
 
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGhostStateSync_Private"
 /*
   This is used in VecGhostGetLocalForm and VecGhostRestoreLocalForm to ensure
@@ -31,7 +31,7 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g,Vec l)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGhostGetLocalForm"
 /*@
     VecGhostGetLocalForm - Obtains the local ghosted representation of
@@ -52,9 +52,9 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g,Vec l)
     values and their current values. The returned vector and the original
     vector passed in share the same array that contains the actual vector data.
 
-    To update the ghost values from the locations on the other processes one must call 
+    To update the ghost values from the locations on the other processes one must call
     VecGhostUpdateBegin() and VecGhostUpdateEnd() before accessing the ghost values. Thus normal
-    usage is 
+    usage is
 $     VecGhostUpdateBegin(x,INSERT_VALUES,SCATTER_FORWARD);
 $     VecGhostUpdateEnd(x,INSERT_VALUES,SCATTER_FORWARD);
 $     VecGhostGetLocalForm(x,&xlocal);
@@ -99,7 +99,7 @@ PetscErrorCode  VecGhostGetLocalForm(Vec g,Vec *l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGhostIsLocalForm"
 /*@
     VecGhostIsLocalForm - Checks if a given vector is the local form of a global vector
@@ -141,10 +141,10 @@ PetscErrorCode VecGhostIsLocalForm(Vec g,Vec l,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGhostRestoreLocalForm"
 /*@
-    VecGhostRestoreLocalForm - Restores the local ghosted representation of 
+    VecGhostRestoreLocalForm - Restores the local ghosted representation of
     a parallel vector obtained with VecGhostGetLocalForm().
 
     Not Collective
@@ -174,7 +174,7 @@ PetscErrorCode  VecGhostRestoreLocalForm(Vec g,Vec *l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGhostUpdateBegin"
 /*@
    VecGhostUpdateBegin - Begins the vector scatter to update the vector from
@@ -214,7 +214,7 @@ PetscErrorCode  VecGhostRestoreLocalForm(Vec g,Vec *l)
 .seealso: VecCreateGhost(), VecGhostUpdateEnd(), VecGhostGetLocalForm(),
           VecGhostRestoreLocalForm(),VecCreateGhostWithArray()
 
-@*/ 
+@*/
 PetscErrorCode  VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scattermode)
 {
   Vec_MPI        *v;
@@ -240,7 +240,7 @@ PetscErrorCode  VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGhostUpdateEnd"
 /*@
    VecGhostUpdateEnd - End the vector scatter to update the vector from
@@ -281,7 +281,7 @@ PetscErrorCode  VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scat
 .seealso: VecCreateGhost(), VecGhostUpdateBegin(), VecGhostGetLocalForm(),
           VecGhostRestoreLocalForm(),VecCreateGhostWithArray()
 
-@*/ 
+@*/
 PetscErrorCode  VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
 {
   Vec_MPI        *v;
@@ -304,7 +304,7 @@ PetscErrorCode  VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scatte
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetOption_MPI"
 PetscErrorCode VecSetOption_MPI(Vec v,VecOption op,PetscBool  flag)
 {
@@ -318,7 +318,7 @@ PetscErrorCode VecSetOption_MPI(Vec v,VecOption op,PetscBool  flag)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecResetArray_MPI"
 PetscErrorCode VecResetArray_MPI(Vec vin)
 {

@@ -6,10 +6,10 @@ typedef struct {
 } SNES_Test;
 
 /*
-     SNESSolve_Test - Tests whether a hand computed Jacobian 
+     SNESSolve_Test - Tests whether a hand computed Jacobian
      matches one compute via finite differences.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSolve_Test"
 PetscErrorCode SNESSolve_Test(SNES snes)
 {
@@ -91,7 +91,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
 }
 /* ------------------------------------------------------------ */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESDestroy_Test"
 PetscErrorCode SNESDestroy_Test(SNES snes)
 {
@@ -101,7 +101,7 @@ PetscErrorCode SNESDestroy_Test(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Test"
 static PetscErrorCode SNESSetFromOptions_Test(SNES snes)
 {
@@ -129,7 +129,7 @@ static PetscErrorCode SNESSetFromOptions_Test(SNES snes)
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESCreate_Test"
 PetscErrorCode  SNESCreate_Test(SNES  snes)
 {

@@ -171,13 +171,13 @@ namespace ALE {
 #ifdef ALE_MEM_LOGGING
     malloc_allocator() : numAllocs(0) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
     malloc_allocator(const malloc_allocator&) : numAllocs(0) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
-    template <class U> 
+    template <class U>
     malloc_allocator(const malloc_allocator<U>&) : numAllocs(0) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
     ~malloc_allocator() {ALE::MemoryLogger::restoreClassName(className);}
 #else
     malloc_allocator() : numAllocs(0) {sz = sizeof(value_type);}
     malloc_allocator(const malloc_allocator&) : numAllocs(0) {sz = sizeof(value_type);}
-    template <class U> 
+    template <class U>
     malloc_allocator(const malloc_allocator<U>&) : numAllocs(0) {sz = sizeof(value_type);}
     ~malloc_allocator() {}
 #endif
@@ -241,7 +241,7 @@ namespace ALE {
     typedef void*       pointer;
     typedef const void* const_pointer;
 
-    template <class U> 
+    template <class U>
     struct rebind {typedef malloc_allocator<U> other;};
   };
 
@@ -295,7 +295,7 @@ namespace ALE {
 
   // This UNIVERSAL allocator class is static and provides allocation/deallocation services to all allocators defined below.
   class universal_allocator {
-  public: 
+  public:
     typedef std::size_t size_type;
     static char*     allocate(const size_type& sz);
     static void      deallocate(char *p, const size_type& sz);
@@ -323,9 +323,9 @@ namespace ALE {
     static Alloc alloc;                            // The underlying specific allocator
     static typename Alloc::size_type sz;           // The size of T universal units of char
 
-    polymorphic_allocator()                                    {};    
+    polymorphic_allocator()                                    {};
     polymorphic_allocator(const polymorphic_allocator& a)      {};
-    template <class TT> 
+    template <class TT>
     polymorphic_allocator(const polymorphic_allocator<TT>& aa){}
     ~polymorphic_allocator() {};
 
@@ -340,7 +340,7 @@ namespace ALE {
     // conversion typedef
     template <class TT>
     struct rebind { typedef polymorphic_allocator<TT> other;};
-    
+
     T*  create(const T& _val = T());
     void del(T* _p);
     template<class TT> void del(TT* _p, size_type _sz);
@@ -351,10 +351,10 @@ namespace ALE {
 
   //IMPORTANT: allocator 'sz' calculation takes place here
   template <class T>
-  typename polymorphic_allocator<T>::size_type polymorphic_allocator<T>::sz = 
+  typename polymorphic_allocator<T>::size_type polymorphic_allocator<T>::sz =
     (typename polymorphic_allocator<T>::size_type)(ceil(sizeof(T)/sizeof(char)));
 
-  template <class T> 
+  template <class T>
   T* polymorphic_allocator<T>::create(const T& _val) {
     // First, allocate space for a single object
     T* _p = (T*)universal_allocator::allocate(sz);
@@ -396,7 +396,7 @@ namespace ALE {
     // FIX: should PETSc memory logging machinery be wrapped by ALE_log like the rest of the logging stuff?
     PetscObject _petscObj; // this object is used to log memory in PETSc
 #endif
-    void __alloc_initialize(); 
+    void __alloc_initialize();
     void __alloc_finalize();
   public:
     // Present the correct allocator interface
@@ -408,9 +408,9 @@ namespace ALE {
     typedef typename polymorphic_allocator<T>::const_reference const_reference;
     typedef typename polymorphic_allocator<T>::value_type      value_type;
     //
-    logged_allocator()                                   : polymorphic_allocator<T>()  {__log_initialize(); __alloc_initialize();};    
+    logged_allocator()                                   : polymorphic_allocator<T>()  {__log_initialize(); __alloc_initialize();};
     logged_allocator(const logged_allocator& a)          : polymorphic_allocator<T>(a) {__log_initialize(); __alloc_initialize();};
-    template <class TT> 
+    template <class TT>
     logged_allocator(const logged_allocator<TT>& aa)    : polymorphic_allocator<T>(aa){__log_initialize(); __alloc_initialize();}
     ~logged_allocator() {__alloc_finalize();};
     // conversion typedef
@@ -423,7 +423,7 @@ namespace ALE {
     void destroy(T* _p);
 
     T*  create(const T& _val = T());
-    void del(T*  _p);    
+    void del(T*  _p);
     template <class TT> void del(TT* _p, size_type _sz);
   };
 
@@ -443,7 +443,7 @@ namespace ALE {
   int logged_allocator<T, O>::_create_event(0);
   template <class T, bool O>
   int logged_allocator<T, O>::_del_event(0);
-  
+
   template <class T, bool O>
   void logged_allocator<T, O>::__log_initialize() {
     if(!logged_allocator::_log_initialized) {
@@ -458,7 +458,7 @@ namespace ALE {
       const char *id_name = ALE::getClassName<T>();
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
       // Use id_name to register a cookie and events.
-      logged_allocator::_cookie = LogCookieRegister(id_name); 
+      logged_allocator::_cookie = LogCookieRegister(id_name);
       // Register the basic allocator methods' invocations as events; use the mangled class name.
       logged_allocator::_allocate_event   = logged_allocator::__log_event_register(id_name, "allocate");
       logged_allocator::_deallocate_event = logged_allocator::__log_event_register(id_name, "deallocate");
@@ -486,7 +486,7 @@ namespace ALE {
 #endif
   }// logged_allocator<T,O>::__alloc_finalize
 
-  template <class T, bool O> 
+  template <class T, bool O>
   LogEvent logged_allocator<T, O>::__log_event_register(const char *class_name, const char *event_name){
     // This routine assumes a cookie has been obtained.
     ostringstream txt;
@@ -505,17 +505,17 @@ namespace ALE {
   template <class T, bool O>
   T*  logged_allocator<T, O>::allocate(size_type _n) {
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
-    LogEventBegin(logged_allocator::_allocate_event); 
+    LogEventBegin(logged_allocator::_allocate_event);
 #endif
     T* _p = polymorphic_allocator<T>::allocate(_n);
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
-//     PetscErrorCode ierr = PetscLogObjectMemory(this->_petscObj, _n*polymorphic_allocator<T>::sz); 
+//     PetscErrorCode ierr = PetscLogObjectMemory(this->_petscObj, _n*polymorphic_allocator<T>::sz);
 //     CHKERROR(ierr, "Error in PetscLogObjectMemory");
-    LogEventEnd(logged_allocator::_allocate_event); 
+    LogEventEnd(logged_allocator::_allocate_event);
 #endif
     return _p;
   }
-  
+
   template <class T, bool O>
   void logged_allocator<T, O>::deallocate(T* _p, size_type _n) {
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
@@ -526,7 +526,7 @@ namespace ALE {
     LogEventEnd(logged_allocator::_deallocate_event);
 #endif
   }
-  
+
   template <class T, bool O>
   void logged_allocator<T, O>::construct(T* _p, const T& _val) {
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
@@ -537,7 +537,7 @@ namespace ALE {
     LogEventEnd(logged_allocator::_construct_event);
 #endif
   }
-  
+
   template <class T, bool O>
   void logged_allocator<T, O>::destroy(T* _p) {
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
@@ -548,15 +548,15 @@ namespace ALE {
     LogEventEnd(logged_allocator::_destroy_event);
 #endif
   }
-  
+
   template <class T, bool O>
   T* logged_allocator<T, O>::create(const T& _val) {
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
-    LogEventBegin(logged_allocator::_create_event); 
+    LogEventBegin(logged_allocator::_create_event);
 #endif
     T* _p = polymorphic_allocator<T>::create(_val);
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
-//     PetscErrorCode ierr = PetscLogObjectMemory(this->_petscObj, polymorphic_allocator<T>::sz); 
+//     PetscErrorCode ierr = PetscLogObjectMemory(this->_petscObj, polymorphic_allocator<T>::sz);
 //     CHKERROR(ierr, "Error in PetscLogObjectMemory");
     LogEventEnd(logged_allocator::_create_event);
 #endif
@@ -596,7 +596,7 @@ namespace ALE {
 #endif
 
   //
-  // The following classes define smart pointer behavior.  
+  // The following classes define smart pointer behavior.
   // They rely on allocators for memory pooling and logging (if logging is on).
   //
 
@@ -605,13 +605,13 @@ namespace ALE {
   public:
     explicit BadCast(const string&        msg) : Exception(msg) {};
     explicit BadCast(const ostringstream& txt) : Exception(txt) {};
-    //  It actually looks like passing txt as an argument to Exception(ostringstream) performs a copy of txt, 
+    //  It actually looks like passing txt as an argument to Exception(ostringstream) performs a copy of txt,
     //  which is disallowed due to the ostringstream constructor being private; must use a string constructor.
     BadCast(const BadCast& e)        : Exception(e) {};
   };
 
   // This is the main smart pointer class.
-  template<class X, typename A = malloc_allocator<X> > 
+  template<class X, typename A = malloc_allocator<X> >
   class Obj {
   public:
     // Types
@@ -665,7 +665,7 @@ namespace ALE {
     // comparison operators
     bool operator==(const Obj& obj) { return (this->objPtr == obj.objPtr);};
     bool operator!=(const Obj& obj) { return (this->objPtr != obj.objPtr);};
-    
+
     // assignment/conversion operators
     Obj& operator=(const Obj& obj);
     template <class Y> operator Obj<Y> const();
@@ -673,13 +673,13 @@ namespace ALE {
 
     // dereference operators
     X*   operator->() const {return objPtr;};
-    
+
     // "exposure" methods: expose the underlying object or object pointer
     operator X*() {return objPtr;};
     X& operator*() const {assertNull(false); return *objPtr;};
     operator X()  {assertNull(false); return *objPtr;};
     template<class Y> Obj& copy(const Obj<Y>& obj); // this operator will copy the underlying objects: USE WITH CAUTION
-    
+
 
     // depricated methods/operators
     X* ptr() const     {return objPtr;};
@@ -690,25 +690,25 @@ namespace ALE {
     void addRef() {if (refCnt) {(*refCnt)++;}}
   };// class Obj<X>
 
-  // Constructors 
+  // Constructors
   // New reference
   template <class X, typename A>
   Obj<X,A>::Obj(const X& x) {
     this->refCnt = NULL;
     this->create(x);
   }
-  
+
   // Stolen reference
   template <class X, typename A>
-  Obj<X,A>::Obj(X *xx){// such an object will be destroyed by calling 'delete' on its pointer 
+  Obj<X,A>::Obj(X *xx){// such an object will be destroyed by calling 'delete' on its pointer
                      // (e.g., we assume the pointer was obtained with new)
     if (xx) {
-      this->objPtr = xx; 
+      this->objPtr = xx;
       this->refCnt = int_allocator().create(1);
       //this->refCnt   = new int(1);
       this->sz = 0;
     } else {
-      this->objPtr = NULL; 
+      this->objPtr = NULL;
       this->refCnt = NULL;
       this->sz = 0;
     }
@@ -718,16 +718,16 @@ namespace ALE {
   template <class X, typename A>
   Obj<X,A>::Obj(X *xx, size_type sz){// such an object will be destroyed by the allocator
     if (xx) {
-      this->objPtr = xx; 
+      this->objPtr = xx;
       this->refCnt = int_allocator().create(1);
       this->sz     = sz;
     } else {
-      this->objPtr = NULL; 
+      this->objPtr = NULL;
       this->refCnt = NULL;
       this->sz = 0;
     }
   }
-  
+
   template <class X, typename A>
   Obj<X,A>::Obj(X *_xx, int *_refCnt, size_type _sz) {  // This is intended to be private.
     if (!_xx) {
@@ -741,7 +741,7 @@ namespace ALE {
     //  throw ALE::Exception("Making an Obj with zero size");
     //}
   }
-  
+
   template <class X, typename A>
   Obj<X,A>::Obj(const Obj& obj) {
     this->objPtr = obj.objPtr;
@@ -766,7 +766,7 @@ namespace ALE {
     // Destroy the old state
     this->destroy();
     // Create the new state
-    this->objPtr = allocator().create(x); 
+    this->objPtr = allocator().create(x);
     this->refCnt = int_allocator().create(1);
     this->sz     = allocator().sz;
     if (!this->sz) {
@@ -841,7 +841,7 @@ namespace ALE {
   }
 
   // conversion operator, preserves 'this'
-  template<class X, typename A> template<class Y> 
+  template<class X, typename A> template<class Y>
   Obj<X,A>::operator Obj<Y> const() {
     // We attempt to cast X* objPtr to Y* using dynamic_
 #ifdef ALE_USE_DEBUGGING
@@ -863,12 +863,12 @@ namespace ALE {
       ALE::restoreClassName<X>(Yname);
       throw BadCast(msg.c_str());
     }
-    // Okay, we can proceed 
+    // Okay, we can proceed
     return Obj<Y>(yObjPtr, this->refCnt, this->sz);
   }
 
   // assignment-conversion operator
-  template<class X, typename A> template<class Y> 
+  template<class X, typename A> template<class Y>
   Obj<X,A>& Obj<X,A>::operator=(const Obj<Y>& obj) {
     // We attempt to cast Y* obj.objPtr to X* using dynamic_cast
     X* xObjPtr = dynamic_cast<X*>(obj.objPtr);
@@ -896,9 +896,9 @@ namespace ALE {
     this->sz = obj.sz;
     return *this;
   }
- 
+
   // copy operator (USE WITH CAUTION)
-  template<class X, typename A> template<class Y> 
+  template<class X, typename A> template<class Y>
   Obj<X,A>& Obj<X,A>::copy(const Obj<Y>& obj) {
     if(this->isNull() || obj.isNull()) {
       throw(Exception("Copying to or from a null Obj"));

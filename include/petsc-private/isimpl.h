@@ -1,6 +1,6 @@
 /*
     Index sets for scatter-gather type operations in vectors
-and matrices. 
+and matrices.
 
 */
 

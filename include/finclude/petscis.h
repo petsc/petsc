@@ -15,7 +15,7 @@
       parameter (IS_GENERAL = 0,IS_STRIDE = 1,IS_BLOCK = 2)
 
       PetscEnum IS_GTOLM_MASK
-      PetscEnum IS_GTOLM_DROP 
+      PetscEnum IS_GTOLM_DROP
       parameter (IS_GTOLM_MASK =0,IS_GTOLM_DROP = 1)
 
 !

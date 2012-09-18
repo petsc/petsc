@@ -5,8 +5,8 @@
 
 #include <../src/sys/draw/impls/x/ximpl.h>         /*I  "petscsys.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawOpenX" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawOpenX"
 /*@C
    PetscDrawOpenX - Opens an X-window for use with the PetscDraw routines.
 
@@ -17,7 +17,7 @@
 .  display - the X display on which to open,or null for the local machine
 .  title - the title to put in the title bar,or null for no title
 .  x,y - the screen coordinates of the upper left corner of window
-          may use PETSC_DECIDE for these two arguments, then PETSc places the 
+          may use PETSC_DECIDE for these two arguments, then PETSc places the
           window
 -  w, h - the screen width and height in pixels,  or PETSC_DRAW_HALF_SIZE, PETSC_DRAW_FULL_SIZE,
           or PETSC_DRAW_THIRD_SIZE or PETSC_DRAW_QUARTER_SIZE
@@ -32,8 +32,8 @@
        program pauses after PetscDrawPause() has been called
        (0 is default, -1 implies until user input).
 .  -draw_x_shared_colormap - Causes PETSc to use a shared
-       colormap. By default PETSc creates a separate color 
-       for its windows, you must put the mouse into the graphics 
+       colormap. By default PETSc creates a separate color
+       for its windows, you must put the mouse into the graphics
        window to see  the correct colors. This options forces
        PETSc to use the default colormap which will usually result
        in bad contour plots.

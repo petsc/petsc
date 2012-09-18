@@ -381,7 +381,7 @@ $     -ts_adapt_type my_scheme
    Level: advanced
 
    Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be 
+          and others of the form ${any_environmental_variable} occuring in pathname will be
           replaced with appropriate values.
 
 .keywords: TSAdapt, register
@@ -475,7 +475,7 @@ $     -ts_adapt_type my_scheme
    Level: advanced
 
    Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be 
+          and others of the form ${any_environmental_variable} occuring in pathname will be
           replaced with appropriate values.
 
 .keywords: TSGLAdapt, register
@@ -550,7 +550,7 @@ $     -ts_gl_accept_type my_scheme
    Level: advanced
 
    Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be 
+          and others of the form ${any_environmental_variable} occuring in pathname will be
           replaced with appropriate values.
 
 .keywords: TSGL, TSGLAcceptType, register
@@ -607,7 +607,7 @@ $     -ts_gl_type my_scheme
    Level: advanced
 
    Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be 
+          and others of the form ${any_environmental_variable} occuring in pathname will be
           replaced with appropriate values.
 
 .keywords: TSGL, register

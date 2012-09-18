@@ -4,8 +4,8 @@
   and sequential vectors.
 */
 
-#include <petsc-private/vecimpl.h> 
-#include <../src/vec/vec/impls/dvecimpl.h> 
+#include <petsc-private/vecimpl.h>
+#include <../src/vec/vec/impls/dvecimpl.h>
 #include <petscblaslapack.h>
 #include <petscthreadcomm.h>
 
@@ -33,9 +33,9 @@ PetscErrorCode VecDot_kernel(PetscInt thread_id,Vec xin,Vec yin,PetscThreadCommR
   ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(yin,&ya);CHKERRQ(ierr);
   return 0;
-}  
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDot_Seq"
 PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
@@ -52,7 +52,7 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 #else
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDot_Seq"
 PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
@@ -74,7 +74,7 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 }
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecTDot_Seq"
 PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
@@ -94,7 +94,7 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__ 
+#undef __FUNCT__
 #define __FUNCT__ "VecScale_Seq"
 PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
 {
@@ -136,7 +136,7 @@ PetscErrorCode VecAXPY_kernel(PetscInt thread_id,Vec yin,PetscScalar *alpha_p,Ve
 
   return 0;
 }
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecAXPY_Seq"
 PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
 {
@@ -154,7 +154,7 @@ PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
   PetscFunctionReturn(0);
 }
 #else
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecAXPY_Seq"
 PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
 {
@@ -177,7 +177,7 @@ PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
 }
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecAXPBY_Seq"
 PetscErrorCode VecAXPBY_Seq(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
 {
@@ -215,7 +215,7 @@ PetscErrorCode VecAXPBY_Seq(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecAXPBYPCZ_Seq"
 PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscScalar gamma,Vec xin,Vec yin)
 {
@@ -247,7 +247,7 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscS
     for (i=0; i<n; i++) {
       zz[i] = alpha*xx[i] + beta*yy[i] + gamma*zz[i];
     }
-    ierr = PetscLogFlops(5.0*n);CHKERRQ(ierr);    
+    ierr = PetscLogFlops(5.0*n);CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(yin,&yy);CHKERRQ(ierr);

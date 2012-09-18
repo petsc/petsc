@@ -28,7 +28,7 @@ typedef void* dlhandle_t;
 typedef void* dlsymbol_t;
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLOpen"
 /*@C
    PetscDLOpen - opens dynamic library
@@ -59,9 +59,9 @@ PetscErrorCode  PetscDLOpen(const char name[],int flags,PetscDLHandle *handle)
   dlhandle = (dlhandle_t) 0;
   *handle  = (PetscDLHandle) 0;
 
-  /* 
+  /*
      --- LoadLibrary ---
-  */  
+  */
 #if defined(PETSC_HAVE_WINDOWS_H) && defined(PETSC_HAVE_LOADLIBRARY)
   dlhandle = LoadLibrary(name);
   if (!dlhandle) {
@@ -81,12 +81,12 @@ PetscErrorCode  PetscDLOpen(const char name[],int flags,PetscDLHandle *handle)
 #endif
   }
 
-  /* 
+  /*
      --- dlopen ---
-  */  
+  */
 #elif defined(PETSC_HAVE_DLFCN_H) && defined(PETSC_HAVE_DLOPEN)
   /*
-      Mode indicates symbols required by symbol loaded with dlsym() 
+      Mode indicates symbols required by symbol loaded with dlsym()
      are only loaded when required (not all together) also indicates
      symbols required can be contained in other libraries also opened
      with dlopen()
@@ -118,9 +118,9 @@ PetscErrorCode  PetscDLOpen(const char name[],int flags,PetscDLHandle *handle)
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open dynamic library:\n  %s\n  Error message from dlopen() %s\n",name,errmsg);
   }
 
-  /* 
+  /*
      --- unimplemented ---
-  */  
+  */
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS, "Cannot use dynamic libraries on this platform");
 #endif
@@ -131,7 +131,7 @@ PetscErrorCode  PetscDLOpen(const char name[],int flags,PetscDLHandle *handle)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLClose"
 /*@C
    PetscDLClose -  closes a dynamic library
@@ -149,9 +149,9 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
   PetscFunctionBegin;
   PetscValidPointer(handle,1);
 
-  /* 
+  /*
      --- FreeLibrary ---
-  */  
+  */
 #if defined(PETSC_HAVE_WINDOWS_H)
 #if defined(PETSC_HAVE_FREELIBRARY)
   if (FreeLibrary((dlhandle_t)*handle) == 0) {
@@ -168,9 +168,9 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
   }
 #endif /* !PETSC_HAVE_FREELIBRARY */
 
-  /* 
-     --- dclose --- 
-  */  
+  /*
+     --- dclose ---
+  */
 #elif defined(PETSC_HAVE_DLFCN_H)
 #if defined(PETSC_HAVE_DLCLOSE)
 #if defined(PETSC_HAVE_DLERROR)
@@ -186,9 +186,9 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
   }
 #endif /* !PETSC_HAVE_DLCLOSE */
 
-  /* 
-     --- unimplemented --- 
-  */  
+  /*
+     --- unimplemented ---
+  */
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS, "Cannot use dynamic libraries on this platform");
 #endif
@@ -198,7 +198,7 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLSym"
 /*@C
    PetscDLSym - finds a symbol in a dynamic library
@@ -216,7 +216,7 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
 
   Notes:
    If handle is PETSC_NULL, the symbol is looked for in the main executable's dynamic symbol table.
-   In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like 
+   In order to be dynamically loadable, the symbol has to be exported as such.  On many UNIX-like
    systems this requires platform-specific linker flags.
 
 @*/
@@ -234,10 +234,10 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
 
   *value   = (void *) 0;
 
-  /* 
+  /*
      --- GetProcAddress ---
-  */  
-#if defined(PETSC_HAVE_WINDOWS_H) 
+  */
+#if defined(PETSC_HAVE_WINDOWS_H)
 #if defined(PETSC_HAVE_GETPROCADDRESS)
   if (handle)
     dlhandle = (dlhandle_t) handle;
@@ -249,16 +249,16 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
 #endif
 #endif /* !PETSC_HAVE_GETPROCADDRESS */
 
-  /* 
+  /*
      --- dlsym ---
-  */  
+  */
 #elif defined(PETSC_HAVE_DLFCN_H)
 #if defined(PETSC_HAVE_DLSYM)
   if (handle) {
     dlhandle = (dlhandle_t) handle;
   } else {
 
-    
+
 #if defined(PETSC_HAVE_DLOPEN) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
     /* Attempt to retrieve the main executable's dlhandle. */
     { int dlflags1 = 0, dlflags2 = 0;
@@ -287,7 +287,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
 #if defined(PETSC_HAVE_RTDL_DEFAULT)
       dlhandle = RTLD_DEFAULT;
 #else
-      dlhandle = dlopen(0, dlflags1|dlflags2); 
+      dlhandle = dlopen(0, dlflags1|dlflags2);
 #if defined(PETSC_HAVE_DLERROR)
       { const char *e = (const char*) dlerror();
         if (e) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'\n", e);
@@ -302,9 +302,9 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
   dlerror(); /* clear any previous error */
 #endif
   dlsymbol = (dlsymbol_t) dlsym(dlhandle,symbol);
-  /* 
-     --- unimplemented --- 
-  */  
+  /*
+     --- unimplemented ---
+  */
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS, "Cannot use dynamic libraries on this platform");
 #endif

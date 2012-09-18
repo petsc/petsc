@@ -4,8 +4,8 @@
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawStringVertical" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawStringVertical"
 /*@C
    PetscDrawStringVertical - PetscDraws text onto a drawable.
 

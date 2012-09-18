@@ -1015,5 +1015,12 @@ shared_nomesg:
 	    echo "========================================="; \
 	  fi
 
+#
+#  Remove trailing blanks from source code
+rmtrailingblanks: 
+	@for i in ${SOURCEF} ${SOURCEC} ${SOURCEH}; do \
+	  sed -i '' s"/[ ]*$$//"g $$i; \
+	done
+
 include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscrules
 

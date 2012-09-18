@@ -1,4 +1,4 @@
-/* 
+/*
    Private data structure for LU preconditioner.
 */
 #if !defined(__LU_H)

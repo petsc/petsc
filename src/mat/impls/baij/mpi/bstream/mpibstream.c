@@ -53,11 +53,11 @@ PetscErrorCode MatMPIBSTRM_create_bstrm(Mat A)
   switch (bs){
     case 4:
       a->A->ops->mult  = MatMult_SeqBSTRM_4;
-      a->A->ops->sor   = MatSOR_SeqBSTRM_4; 
+      a->A->ops->sor   = MatSOR_SeqBSTRM_4;
       break;
     case 5:
       a->A->ops->mult  = MatMult_SeqBSTRM_5;
-      a->A->ops->sor   = MatSOR_SeqBSTRM_5; 
+      a->A->ops->sor   = MatSOR_SeqBSTRM_5;
       break;
     default:
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D yet",bs);
@@ -109,7 +109,7 @@ PetscErrorCode MatAssemblyEnd_MPIBSTRM(Mat A, MatAssemblyType mode)
   /*
     Aij->inode.use = PETSC_FALSE;
     Bij->inode.use = PETSC_FALSE;
-  */ 
+  */
   ierr = MatAssemblyEnd_MPIBAIJ(A,mode);CHKERRQ(ierr);
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
 
@@ -119,7 +119,7 @@ PetscErrorCode MatAssemblyEnd_MPIBSTRM(Mat A, MatAssemblyType mode)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateMPIBSTRM"
 PetscErrorCode MatCreateMPIBSTRM(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
@@ -146,7 +146,7 @@ extern PetscErrorCode MatMPIBAIJSetPreallocation_MPIBAIJ(Mat,PetscInt,PetscInt,c
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMPIBAIJSetPreallocation_MPIBSTRM"
 PetscErrorCode MatMPIBAIJSetPreallocation_MPIBSTRM(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {

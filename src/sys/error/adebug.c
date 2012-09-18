@@ -3,10 +3,10 @@
 */
 
 #include <petscsys.h>               /*I   "petscsys.h"   I*/
-#include <signal.h> 
+#include <signal.h>
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
-#endif 
+#endif
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -40,7 +40,7 @@ static PetscBool  Xterm = PETSC_TRUE;
      mpirun -n 4 ./myapp -start_in_debugger -debug_terminal "screen -X -S debug screen"
 
    will open 4 windows in the session named "debug".
-     
+
    Fortran Note:
    This routine is not supported in Fortran.
 
@@ -57,8 +57,8 @@ PetscErrorCode  PetscSetDebugTerminal(const char terminal[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSetDebugger" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSetDebugger"
 /*@C
    PetscSetDebugger - Sets options associated with the debugger.
 
@@ -95,7 +95,7 @@ PetscErrorCode  PetscSetDebugger(const char debugger[],PetscBool  xterm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSetDefaultDebugger"
 /*@
     PetscSetDefaultDebugger - Causes PETSc to use its default  debugger.
@@ -113,9 +113,9 @@ PetscErrorCode  PetscSetDefaultDebugger(void)
   PetscFunctionBegin;
 #if defined(PETSC_USE_DBX_DEBUGGER)
   ierr = PetscSetDebugger("dbx",PETSC_TRUE);CHKERRQ(ierr);
-#elif defined(PETSC_USE_XDB_DEBUGGER) 
+#elif defined(PETSC_USE_XDB_DEBUGGER)
   ierr = PetscSetDebugger("xdb",PETSC_TRUE);CHKERRQ(ierr);
-#elif defined(PETSC_USE_IDB_DEBUGGER) 
+#elif defined(PETSC_USE_IDB_DEBUGGER)
   ierr = PetscSetDebugger("idb",PETSC_TRUE);CHKERRQ(ierr);
 #else  /* Default is gdb */
   ierr = PetscSetDebugger("gdb",PETSC_TRUE);CHKERRQ(ierr);
@@ -124,7 +124,7 @@ PetscErrorCode  PetscSetDefaultDebugger(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscCheckDebugger_Private"
 static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const char string[], const char *debugger[])
 {
@@ -145,14 +145,14 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSetDebuggerFromString" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSetDebuggerFromString"
 /*@C
     PetscSetDebuggerFromString - Set the complete path for the
        debugger for PETSc to use.
 
    Not collective
- 
+
    Level: developer
 
 .seealso: PetscSetDebugger(), PetscSetDefaultDebugger()
@@ -188,8 +188,8 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscAttachDebugger" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscAttachDebugger"
 /*@
    PetscAttachDebugger - Attaches the debugger to the running process.
 
@@ -205,7 +205,7 @@ PetscErrorCode  PetscSetDebuggerFromString(const char *string)
 @*/
 PetscErrorCode  PetscAttachDebugger(void)
 {
-#if !defined(PETSC_CANNOT_START_DEBUGGER) 
+#if !defined(PETSC_CANNOT_START_DEBUGGER)
   int            child=0;
   PetscReal      sleeptime=0;
   PetscErrorCode ierr;
@@ -230,7 +230,7 @@ PetscErrorCode  PetscAttachDebugger(void)
     (*PetscErrorPrintf)("Cannot determine program name\n");
     PetscFunctionReturn(1);
   }
-  child = (int)fork(); 
+  child = (int)fork();
   if (child < 0) {
     (*PetscErrorPrintf)("Error in fork() attaching debugger\n");
     PetscFunctionReturn(1);
@@ -251,13 +251,13 @@ PetscErrorCode  PetscAttachDebugger(void)
 
     ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
     /*
-         We need to send a continue signal to the "child" process on the 
+         We need to send a continue signal to the "child" process on the
        alpha, otherwise it just stays off forever
     */
 #if defined (PETSC_NEED_KILL_FOR_DEBUGGER)
     kill(child,SIGCONT);
 #endif
-    sprintf(pid,"%d",child); 
+    sprintf(pid,"%d",child);
 
     ierr = PetscStrcmp(Debugger,"xxgdb",&isxxgdb);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"ddd",&isddd);CHKERRQ(ierr);
@@ -399,7 +399,7 @@ PetscErrorCode  PetscAttachDebugger(void)
     /*
         HP cannot attach process to sleeping debugger, hence count instead
     */
-    { 
+    {
       PetscReal x = 1.0;
       int i=10000000;
       while (i--) x++ ; /* cannot attach to sleeper */
@@ -420,12 +420,12 @@ PetscErrorCode  PetscAttachDebugger(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscAttachDebuggerErrorHandler" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscAttachDebuggerErrorHandler"
 /*@C
    PetscAttachDebuggerErrorHandler - Error handler that attaches
    a debugger to a running process when an error is detected.
-   This routine is useful for examining variables, etc. 
+   This routine is useful for examining variables, etc.
 
    Not Collective
 
@@ -450,8 +450,8 @@ PetscErrorCode  PetscAttachDebugger(void)
    By default the GNU debugger, gdb, is used.  Alternatives are dbx and
    xxgdb,xldb (on IBM rs6000), xdb (on HP-UX).
 
-   Most users need not directly employ this routine and the other error 
-   handlers, but can instead use the simplified interface SETERR, which has 
+   Most users need not directly employ this routine and the other error
+   handlers, but can instead use the simplified interface SETERR, which has
    the calling sequence
 $     SETERRQ(PETSC_COMM_SELF,number,p,message)
 
@@ -466,7 +466,7 @@ $    PetscAbortErrorHandler()
    Concepts: debugger^error handler
    Concepts: error handler^attach debugger
 
-.seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
+.seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(),
            PetscAbortErrorHandler()
 @*/
 PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const char* fun,const char *file,const char* dir,PetscErrorCode num,PetscErrorType p,const char* mess,void *ctx)
@@ -487,11 +487,11 @@ PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const cha
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscStopForDebugger" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscStopForDebugger"
 /*@C
    PetscStopForDebugger - Prints a message to the screen indicating how to
-         attach to the process with the debugger and then waits for the 
+         attach to the process with the debugger and then waits for the
          debugger to attach.
 
    Not Collective
@@ -508,7 +508,7 @@ PetscErrorCode  PetscStopForDebugger(void)
 {
   PetscErrorCode ierr;
   PetscInt       sleeptime=0;
-#if !defined(PETSC_CANNOT_START_DEBUGGER) 
+#if !defined(PETSC_CANNOT_START_DEBUGGER)
   int            ppid;
   PetscMPIInt    rank;
   char           program[PETSC_MAX_PATH_LEN],hostname[256];
@@ -516,7 +516,7 @@ PetscErrorCode  PetscStopForDebugger(void)
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_CANNOT_START_DEBUGGER) 
+#if defined(PETSC_CANNOT_START_DEBUGGER)
   (*PetscErrorPrintf)("System cannot start debugger; just continuing program\n");
 #else
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
@@ -571,7 +571,7 @@ PetscErrorCode  PetscStopForDebugger(void)
   else if (isdbx) {
     (*PetscErrorPrintf)("[%d]%s>>%s -pid %d %s\n",rank,hostname,Debugger,ppid,program);
   }
-#else 
+#else
   else {
     (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
   }
@@ -587,7 +587,7 @@ PetscErrorCode  PetscStopForDebugger(void)
   /*
       HP cannot attach process to sleeping debugger, hence count instead
   */
-  { 
+  {
     PetscReal x = 1.0;
     int i=10000000;
     while (i--) x++ ; /* cannot attach to sleeper */

@@ -519,7 +519,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     KSPLogResidualHistory(ksp, norm_r);
     ierr = KSPMonitor(ksp, ksp->its, norm_r);CHKERRQ(ierr);
     ksp->rnorm = norm_r;
-  
+
     ierr = (*ksp->converged)(ksp, ksp->its, norm_r, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) {
       /***********************************************************************/
@@ -715,7 +715,7 @@ PetscErrorCode KSPSetFromOptions_NASH(KSP ksp)
    where
 
      delta is the trust region radius,
-     g is the gradient vector, 
+     g is the gradient vector,
      H is the Hessian approximation, and
      M is the positive definite preconditioner matrix.
 

@@ -16,9 +16,9 @@
 #include "finclude/petscdrawdef.h"
 
 !
-! The real*8,complex*16 notatiton is used so that the 
-! PETSc double/complex variables are not affected by 
-! compiler options like -r4,-r8, sometimes invoked 
+! The real*8,complex*16 notatiton is used so that the
+! PETSc double/complex variables are not affected by
+! compiler options like -r4,-r8, sometimes invoked
 ! by the user. NAG compiler does not like integer*4,real*8
 
 #if defined(PETSC_USE_FORTRANKIND)
@@ -75,7 +75,7 @@
 #define PetscVoid PetscFortranAddr
 !
 #if defined(PETSC_FORTRAN_PETSCTRUTH_INT)
-#undef PetscBool 
+#undef PetscBool
 #define PetscBool  PetscEnum
 #endif
 !
@@ -166,7 +166,7 @@
 !    Allows the matrix Fortran Kernels to work with single precision
 !    matrix data structures
 !
-#define MatScalar PetscScalar 
+#define MatScalar PetscScalar
 !
 !     PetscLogDouble variables are used to contain double precision numbers
 !     that are not used in the numerical computations, but rather in logging,

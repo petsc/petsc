@@ -2,10 +2,10 @@
 /*
      Code for some of the parallel vector primatives.
 */
-#include <../src/vec/vec/impls/mpi/pvecimpl.h> 
+#include <../src/vec/vec/impls/mpi/pvecimpl.h>
 #include <petscblaslapack.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecMDot_MPI"
 PetscErrorCode VecMDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 {
@@ -24,7 +24,7 @@ PetscErrorCode VecMDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecMTDot_MPI"
 PetscErrorCode VecMTDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 {
@@ -44,7 +44,7 @@ PetscErrorCode VecMTDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 }
 
 #include <../src/vec/vec/impls/seq/ftn-kernels/fnorm.h>
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecNorm_MPI"
 PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 {
@@ -85,7 +85,7 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 
 /*
        These two functions are the MPI reduction operation used for max and min with index
-   The call below to MPI_Op_create() converts the function Vec[Max,Min]_Local() to the 
+   The call below to MPI_Op_create() converts the function Vec[Max,Min]_Local() to the
    MPI operator Vec[Max,Min]_Local_Op.
 */
 MPI_Op VecMax_Local_Op = 0;
@@ -135,7 +135,7 @@ void  MPIAPI VecMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *data
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecMax_MPI"
 PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
 {
@@ -162,7 +162,7 @@ PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecMin_MPI"
 PetscErrorCode VecMin_MPI(Vec xin,PetscInt *idx,PetscReal *z)
 {

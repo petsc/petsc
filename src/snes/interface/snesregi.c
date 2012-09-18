@@ -28,13 +28,13 @@ const char *SNESNormTypes_Shifted[]        = {"DEFAULT","NONE","FUNCTION","INITI
 const char *const*const SNESNormTypes = SNESNormTypes_Shifted + 1;
 
 /*
-      This is used by SNESSetType() to make sure that at least one 
+      This is used by SNESSetType() to make sure that at least one
     SNESRegisterAll() is called. In general, if there is more than one
     DLL then SNESRegisterAll() may be called several times.
 */
 extern PetscBool  SNESRegisterAllCalled;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESRegisterAll"
 /*@C
    SNESRegisterAll - Registers all of the nonlinear solver methods in the SNES package.

@@ -12,8 +12,8 @@ PetscErrorCode KSPMonitorLSQR(KSP solksp, PetscInt iter, PetscReal rnorm, void *
   Vec              x_sol;
   PetscReal        xnorm;
   PetscErrorCode   ierr;
-  MPI_Comm         comm;      
-  
+  MPI_Comm         comm;
+
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)solksp,&comm);CHKERRQ(ierr);
   ierr = KSPGetTolerances( solksp, &rtol, &atol, &dtol, &mxiter );CHKERRQ(ierr);

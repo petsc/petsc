@@ -325,7 +325,7 @@ PetscErrorCode  TSAdaptSetFromOptions(TSAdapt adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSAdaptCandidatesClear"
 /*@
    TSAdaptCandidatesClear - clear any previously set candidate schemes
@@ -348,7 +348,7 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSAdaptCandidateAdd"
 /*@C
    TSAdaptCandidateAdd - add a candidate scheme for the adaptive controller to select from

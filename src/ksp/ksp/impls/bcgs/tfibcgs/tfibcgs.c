@@ -2,24 +2,24 @@
 /*
     This file implements transpose-free improved BiCGStab contributed by Jie Chen.
     It does not require matrix transpose as in ibcgs.c.
-    Only right preconditioning is supported. 
+    Only right preconditioning is supported.
     This code is only correct for the real case... Need to modify for complex numbers...
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_TFIBCGS"
 PetscErrorCode KSPSetUp_TFIBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
-  ierr = KSPDefaultGetWork(ksp,11);CHKERRQ(ierr); 
+  ierr = KSPDefaultGetWork(ksp,11);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #include <petsc-private/pcimpl.h>            /*I "petscksp.h" I*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_TFIBCGS"
 PetscErrorCode  KSPSolve_TFIBCGS(KSP ksp)
 {
@@ -56,7 +56,7 @@ PetscErrorCode  KSPSolve_TFIBCGS(KSP ksp)
   P2  = ksp->work[10]; ierr = VecGetArray(P2,(PetscScalar**)&p2);CHKERRQ(ierr);  ierr = VecRestoreArray(P2,PETSC_NULL);CHKERRQ(ierr);
 
   /* Only supports right preconditioning */
-  if (ksp->pc_side != PC_RIGHT) 
+  if (ksp->pc_side != PC_RIGHT)
     SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP tfibcgs does not support %s",PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
     if (!bcgs->guess) {
@@ -158,7 +158,7 @@ PetscErrorCode  KSPSolve_TFIBCGS(KSP ksp)
     /* scalar updates */
     omega = xi2 / xi3;
     beta = - xi4 / sigma;
-    rho = PetscSqrtReal(PetscAbsScalar(xi1 - omega * xi2)); /* residual norm */ 
+    rho = PetscSqrtReal(PetscAbsScalar(xi1 - omega * xi2)); /* residual norm */
     tau = xi5 - omega * xi4;
     sigma = - omega * (xi6 + beta * xi7);
 
@@ -204,12 +204,12 @@ PetscErrorCode  KSPSolve_TFIBCGS(KSP ksp)
 
    Level: beginner
 
-   Notes: Only supports right preconditioning 
+   Notes: Only supports right preconditioning
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_TFIBCGS"
 PetscErrorCode  KSPCreate_TFIBCGS(KSP ksp)
 {
@@ -231,7 +231,7 @@ PetscErrorCode  KSPCreate_TFIBCGS(KSP ksp)
   ksp->ops->setfromoptions  = KSPSetFromOptions_BCGS;
   ksp->ops->view            = KSPView_BCGS;
   ksp->pc_side              = PC_RIGHT; /* set default PC side */
- 
+
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
   PetscFunctionReturn(0);

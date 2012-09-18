@@ -1,4 +1,4 @@
- 
+
 #include <petsc-private/threadcommimpl.h>     /*I    "petscthreadcomm.h"  I*/
 
 EXTERN_C_BEGIN

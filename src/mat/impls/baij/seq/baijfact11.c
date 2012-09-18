@@ -1,6 +1,6 @@
 
 /*
-    Factorization code for BAIJ format. 
+    Factorization code for BAIJ format.
 */
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <../src/mat/blockinvert.h>
@@ -9,7 +9,7 @@
 /*
       Version for when blocks are 4 by 4
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_inplace"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
@@ -38,7 +38,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C,Mat A,const MatFactorI
     nz    = bi[i+1] - bi[i];
     ajtmp = bj + bi[i];
     for  (j=0; j<nz; j++) {
-      x = rtmp+16*ajtmp[j]; 
+      x = rtmp+16*ajtmp[j];
       x[0]  = x[1]  = x[2]  = x[3]  = x[4]  = x[5]  = x[6] = x[7] = x[8] = x[9] = 0.0;
       x[10] = x[11] = x[12] = x[13] = x[14] = x[15] = 0.0;
     }
@@ -52,7 +52,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C,Mat A,const MatFactorI
       x[0]  = v[0];  x[1]  = v[1];  x[2]  = v[2];  x[3]  = v[3];
       x[4]  = v[4];  x[5]  = v[5];  x[6]  = v[6];  x[7]  = v[7];  x[8]  = v[8];
       x[9]  = v[9];  x[10] = v[10]; x[11] = v[11]; x[12] = v[12]; x[13] = v[13];
-      x[14] = v[14]; x[15] = v[15]; 
+      x[14] = v[14]; x[15] = v[15];
       v    += 16;
     }
     row = *ajtmp++;
@@ -61,7 +61,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C,Mat A,const MatFactorI
       p1  = pc[0];  p2  = pc[1];  p3  = pc[2];  p4  = pc[3];
       p5  = pc[4];  p6  = pc[5];  p7  = pc[6];  p8  = pc[7];  p9  = pc[8];
       p10 = pc[9];  p11 = pc[10]; p12 = pc[11]; p13 = pc[12]; p14 = pc[13];
-      p15 = pc[14]; p16 = pc[15]; 
+      p15 = pc[14]; p16 = pc[15];
       if (p1 != 0.0 || p2 != 0.0 || p3 != 0.0 || p4 != 0.0 || p5 != 0.0 ||
           p6 != 0.0 || p7 != 0.0 || p8 != 0.0 || p9 != 0.0 || p10 != 0.0 ||
           p11 != 0.0 || p12 != 0.0 || p13 != 0.0 || p14 != 0.0 || p15 != 0.0
@@ -71,7 +71,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C,Mat A,const MatFactorI
         x1  = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
         x5  = pv[4];  x6  = pv[5];  x7  = pv[6];  x8  = pv[7];  x9  = pv[8];
         x10 = pv[9];  x11 = pv[10]; x12 = pv[11]; x13 = pv[12]; x14 = pv[13];
-        x15 = pv[14]; x16 = pv[15]; 
+        x15 = pv[14]; x16 = pv[15];
         pc[0] = m1 = p1*x1 + p5*x2  + p9*x3  + p13*x4;
         pc[1] = m2 = p2*x1 + p6*x2  + p10*x3 + p14*x4;
         pc[2] = m3 = p3*x1 + p7*x2  + p11*x3 + p15*x4;
@@ -157,14 +157,14 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C,Mat A,const MatFactorI
   PetscFunctionReturn(0);
 }
 
-/* MatLUFactorNumeric_SeqBAIJ_4 - 
-     copied from MatLUFactorNumeric_SeqBAIJ_N_inplace() and manually re-implemented 
+/* MatLUFactorNumeric_SeqBAIJ_4 -
+     copied from MatLUFactorNumeric_SeqBAIJ_N_inplace() and manually re-implemented
        PetscKernel_A_gets_A_times_B()
        PetscKernel_A_gets_A_minus_B_times_C()
        PetscKernel_A_gets_inverse_A()
 */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B,Mat A,const MatFactorInfo *info)
 {
@@ -204,12 +204,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B,Mat A,const MatFactorInfo *inf
     }
 
     /* U part */
-    nz = bdiag[i]-bdiag[i+1]; 
-    bjtmp = bj + bdiag[i+1]+1; 
+    nz = bdiag[i]-bdiag[i+1];
+    bjtmp = bj + bdiag[i+1]+1;
     for  (j=0; j<nz; j++){
       ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
- 
+
     /* load in initial (unfactored row) */
     nz    = ai[r[i]+1] - ai[r[i]];
     ajtmp = aj + ai[r[i]];
@@ -226,19 +226,19 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B,Mat A,const MatFactorInfo *inf
       pc = rtmp + bs2*row;
       for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
       if (flg) {
-        pv = b->a + bs2*bdiag[row];      
+        pv = b->a + bs2*bdiag[row];
         /* PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */
         ierr = PetscKernel_A_gets_A_times_B_4(pc,pv,mwork);CHKERRQ(ierr);
-  
+
         pj = b->j + bdiag[row+1]+1; /* begining of U(row,:) */
-        pv = b->a + bs2*(bdiag[row+1]+1); 
+        pv = b->a + bs2*(bdiag[row+1]+1);
         nz = bdiag[row] - bdiag[row+1] - 1; /* num of entries inU(row,:), excluding diag */
         for (j=0; j<nz; j++) {
           /* PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); */
           /* rtmp+bs2*pj[j] = rtmp+bs2*pj[j] - (*pc)*(pv+bs2*j) */
           v    = rtmp + bs2*pj[j];
           ierr = PetscKernel_A_gets_A_minus_B_times_C_4(v,pc,pv);CHKERRQ(ierr);
-          pv  += bs2;          
+          pv  += bs2;
         }
         ierr = PetscLogFlops(128*nz+112);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
       }
@@ -256,13 +256,13 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B,Mat A,const MatFactorInfo *inf
     /* Mark diagonal and invert diagonal for simplier triangular solves */
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
-    ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);   
+    ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     ierr = PetscKernel_A_gets_inverse_A_4(pv,shift);CHKERRQ(ierr);
-      
+
     /* U part */
     pv = b->a + bs2*(bdiag[i+1]+1);
     pj = b->j + bdiag[i+1]+1;
-    nz = bdiag[i] - bdiag[i+1] - 1; 
+    nz = bdiag[i] - bdiag[i+1] - 1;
     for (j=0; j<nz; j++){
       ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
@@ -278,7 +278,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B,Mat A,const MatFactorInfo *inf
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C,Mat A,const MatFactorInfo *info)
 {
@@ -306,7 +306,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C,Mat A,
     nz    = bi[i+1] - bi[i];
     ajtmp = bj + bi[i];
     for  (j=0; j<nz; j++) {
-      x = rtmp+16*ajtmp[j]; 
+      x = rtmp+16*ajtmp[j];
       x[0]  = x[1]  = x[2]  = x[3]  = x[4]  = x[5]  = x[6] = x[7] = x[8] = x[9] = 0.0;
       x[10] = x[11] = x[12] = x[13] = x[14] = x[15] = 0.0;
     }
@@ -319,7 +319,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C,Mat A,
       x[0]  = v[0];  x[1]  = v[1];  x[2]  = v[2];  x[3]  = v[3];
       x[4]  = v[4];  x[5]  = v[5];  x[6]  = v[6];  x[7]  = v[7];  x[8]  = v[8];
       x[9]  = v[9];  x[10] = v[10]; x[11] = v[11]; x[12] = v[12]; x[13] = v[13];
-      x[14] = v[14]; x[15] = v[15]; 
+      x[14] = v[14]; x[15] = v[15];
       v    += 16;
     }
     row = *ajtmp++;
@@ -328,7 +328,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C,Mat A,
       p1  = pc[0];  p2  = pc[1];  p3  = pc[2];  p4  = pc[3];
       p5  = pc[4];  p6  = pc[5];  p7  = pc[6];  p8  = pc[7];  p9  = pc[8];
       p10 = pc[9];  p11 = pc[10]; p12 = pc[11]; p13 = pc[12]; p14 = pc[13];
-      p15 = pc[14]; p16 = pc[15]; 
+      p15 = pc[14]; p16 = pc[15];
       if (p1 != 0.0 || p2 != 0.0 || p3 != 0.0 || p4 != 0.0 || p5 != 0.0 ||
           p6 != 0.0 || p7 != 0.0 || p8 != 0.0 || p9 != 0.0 || p10 != 0.0 ||
           p11 != 0.0 || p12 != 0.0 || p13 != 0.0 || p14 != 0.0 || p15 != 0.0
@@ -338,7 +338,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C,Mat A,
         x1  = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
         x5  = pv[4];  x6  = pv[5];  x7  = pv[6];  x8  = pv[7];  x9  = pv[8];
         x10 = pv[9];  x11 = pv[10]; x12 = pv[11]; x13 = pv[12]; x14 = pv[13];
-        x15 = pv[14]; x16 = pv[15]; 
+        x15 = pv[14]; x16 = pv[15];
         pc[0] = m1 = p1*x1 + p5*x2  + p9*x3  + p13*x4;
         pc[1] = m2 = p2*x1 + p6*x2  + p10*x3 + p14*x4;
         pc[2] = m3 = p3*x1 + p7*x2  + p11*x3 + p15*x4;
@@ -389,7 +389,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C,Mat A,
           pv   += 16;
         }
         ierr = PetscLogFlops(128.0*nz+112.0);CHKERRQ(ierr);
-      } 
+      }
       row = *ajtmp++;
     }
     /* finished row so stick it into b->a */
@@ -425,7 +425,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C,Mat A,
   MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering -
     copied from MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B,Mat A,const MatFactorInfo *info)
 {
@@ -460,12 +460,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B,Mat A,const Ma
     }
 
     /* U part */
-    nz = bdiag[i] - bdiag[i+1]; 
-    bjtmp = bj + bdiag[i+1]+1; 
+    nz = bdiag[i] - bdiag[i+1];
+    bjtmp = bj + bdiag[i+1]+1;
     for  (j=0; j<nz; j++){
       ierr = PetscMemzero(rtmp+bs2*bjtmp[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
- 
+
     /* load in initial (unfactored row) */
     nz    = ai[i+1] - ai[i];
     ajtmp = aj + ai[i];
@@ -482,19 +482,19 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B,Mat A,const Ma
       pc = rtmp + bs2*row;
       for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
       if (flg) {
-        pv = b->a + bs2*bdiag[row];      
+        pv = b->a + bs2*bdiag[row];
         /* PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */
         ierr = PetscKernel_A_gets_A_times_B_4(pc,pv,mwork);CHKERRQ(ierr);
-  
+
         pj = b->j + bdiag[row+1]+1; /* begining of U(row,:) */
-        pv = b->a + bs2*(bdiag[row+1]+1); 
+        pv = b->a + bs2*(bdiag[row+1]+1);
         nz = bdiag[row] - bdiag[row+1] - 1; /* num of entries inU(row,:), excluding diag */
         for (j=0; j<nz; j++) {
           /* PetscKernel_A_gets_A_minus_B_times_C(bs,rtmp+bs2*pj[j],pc,pv+bs2*j); */
           /* rtmp+bs2*pj[j] = rtmp+bs2*pj[j] - (*pc)*(pv+bs2*j) */
           v    = rtmp + bs2*pj[j];
           ierr = PetscKernel_A_gets_A_minus_B_times_C_4(v,pc,pv);CHKERRQ(ierr);
-          pv  += bs2;          
+          pv  += bs2;
         }
         ierr = PetscLogFlops(128*nz+112);CHKERRQ(ierr); /* flops = 2*bs^3*nz + 2*bs^3 - bs2) */
       }
@@ -512,13 +512,13 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B,Mat A,const Ma
     /* Mark diagonal and invert diagonal for simplier triangular solves */
     pv   = b->a + bs2*bdiag[i];
     pj   = b->j + bdiag[i];
-    ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);   
+    ierr = PetscMemcpy(pv,rtmp+bs2*pj[0],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     ierr = PetscKernel_A_gets_inverse_A_4(pv,shift);CHKERRQ(ierr);
-      
+
     /* U part */
     pv = b->a + bs2*(bdiag[i+1]+1);
     pj = b->j + bdiag[i+1]+1;
-    nz = bdiag[i] - bdiag[i+1] - 1; 
+    nz = bdiag[i] - bdiag[i+1] - 1;
     for (j=0; j<nz; j++){
       ierr = PetscMemcpy(pv+bs2*j,rtmp+bs2*pj[j],bs2*sizeof(MatScalar));CHKERRQ(ierr);
     }
@@ -536,7 +536,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B,Mat A,const Ma
 #include PETSC_HAVE_SSE
 
 /* SSE Version for when blocks are 4 by 4 Using natural ordering */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,const MatFactorInfo *info)
 {
@@ -568,7 +568,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
     nz    = bi[i+1] - bi[i];
     bjtmp = bj + bi[i];
     /* zero out the 4x4 block accumulators */
-    /* zero out one register */ 
+    /* zero out one register */
     XOR_PS(XMM7,XMM7);
     for  (j=0; j<nz; j++) {
       x = rtmp+16*bjtmp[j];
@@ -593,7 +593,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
     for (j=0; j<nz; j++) {
       x = rtmp+16*ajtmpold[j];
 /*        x = rtmp+colscale*ajtmpold[j]; */
-      /* Copy v block into x block */ 
+      /* Copy v block into x block */
       SSE_INLINE_BEGIN_2(v,x)
         /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
         SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM0)
@@ -628,7 +628,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
     while (row < i) {
       pc  = rtmp + 16*row;
       SSE_INLINE_BEGIN_1(pc)
-        /* Load block from lower triangle */ 
+        /* Load block from lower triangle */
         /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
         SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM0)
         SSE_LOADH_PS(SSE_ARG_1,FLOAT_2,XMM0)
@@ -642,7 +642,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
         SSE_LOADL_PS(SSE_ARG_1,FLOAT_12,XMM3)
         SSE_LOADH_PS(SSE_ARG_1,FLOAT_14,XMM3)
 
-        /* Compare block to zero block */ 
+        /* Compare block to zero block */
 
         SSE_COPY_PS(XMM4,XMM7)
         SSE_CMPNEQ_PS(XMM4,XMM0)
@@ -672,12 +672,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
         pj = bj + diag_offset[row] + 1;
 
         /* Form Multiplier, one column at a time (Matrix-Matrix Product) */
-        /* L_ij^(k+1) = L_ij^(k)*inv(L_jj^(k)) */ 
+        /* L_ij^(k+1) = L_ij^(k)*inv(L_jj^(k)) */
         /* but the diagonal was inverted already */
         /* and, L_ij^(k) is already loaded into registers XMM0-XMM3 columnwise */
 
         SSE_INLINE_BEGIN_2(pv,pc)
-          /* Column 0, product is accumulated in XMM4 */ 
+          /* Column 0, product is accumulated in XMM4 */
           SSE_LOAD_SS(SSE_ARG_1,FLOAT_0,XMM4)
           SSE_SHUFFLE(XMM4,XMM4,0x00)
           SSE_MULT_PS(XMM4,XMM0)
@@ -744,7 +744,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
           SSE_SHUFFLE(XMM7,XMM7,0x00)
           SSE_MULT_PS(XMM7,XMM3)
           SSE_ADD_PS(XMM6,XMM7)
-  
+
           SSE_STOREL_PS(SSE_ARG_2,FLOAT_8,XMM6)
           SSE_STOREH_PS(SSE_ARG_2,FLOAT_10,XMM6)
 
@@ -775,7 +775,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
           /* Simplify Bookkeeping -- Completely Unnecessary Instructions */
           /* This is code to be maintained and read by humans afterall. */
           /* Copy Multiplier Col 3 into XMM3 */
-          SSE_COPY_PS(XMM3,XMM0) 
+          SSE_COPY_PS(XMM3,XMM0)
           /* Copy Multiplier Col 2 into XMM2 */
           SSE_COPY_PS(XMM2,XMM6)
           /* Copy Multiplier Col 1 into XMM1 */
@@ -795,7 +795,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
           /* X:=X-M*PV, One column at a time */
           /* Note: M is already loaded columnwise into registers XMM0-XMM3 */
           SSE_INLINE_BEGIN_2(x,pv)
-            /* Load First Column of X*/ 
+            /* Load First Column of X*/
             SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM4)
             SSE_LOADH_PS(SSE_ARG_1,FLOAT_2,XMM4)
 
@@ -825,7 +825,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
 
             /* Second Column */
             SSE_LOADL_PS(SSE_ARG_1,FLOAT_4,XMM5)
-            SSE_LOADH_PS(SSE_ARG_1,FLOAT_6,XMM5)          
+            SSE_LOADH_PS(SSE_ARG_1,FLOAT_6,XMM5)
 
             /* Matrix-Vector Product: */
             SSE_LOAD_SS(SSE_ARG_2,FLOAT_4,XMM6)
@@ -847,7 +847,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
             SSE_SHUFFLE(XMM6,XMM6,0x00)
             SSE_MULT_PS(XMM6,XMM3)
             SSE_SUB_PS(XMM5,XMM6)
-          
+
             SSE_STOREL_PS(SSE_ARG_1,FLOAT_4,XMM5)
             SSE_STOREH_PS(SSE_ARG_1,FLOAT_6,XMM5)
 
@@ -877,10 +877,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
             SSE_SHUFFLE(XMM7,XMM7,0x00)
             SSE_MULT_PS(XMM7,XMM3)
             SSE_SUB_PS(XMM6,XMM7)
-          
+
             SSE_STOREL_PS(SSE_ARG_1,FLOAT_8,XMM6)
             SSE_STOREH_PS(SSE_ARG_1,FLOAT_10,XMM6)
-          
+
             /* Fourth Column */
             SSE_LOADL_PS(SSE_ARG_1,FLOAT_12,XMM4)
             SSE_LOADH_PS(SSE_ARG_1,FLOAT_14,XMM4)
@@ -905,14 +905,14 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
             SSE_SHUFFLE(XMM5,XMM5,0x00)
             SSE_MULT_PS(XMM5,XMM3)
             SSE_SUB_PS(XMM4,XMM5)
-          
+
             SSE_STOREL_PS(SSE_ARG_1,FLOAT_12,XMM4)
             SSE_STOREH_PS(SSE_ARG_1,FLOAT_14,XMM4)
           SSE_INLINE_END_2;
           pv   += 16;
         }
         ierr = PetscLogFlops(128.0*nz+112.0);CHKERRQ(ierr);
-      } 
+      }
       row = *bjtmp++;
 /*        row = (*bjtmp++)/4; */
     }
@@ -962,7 +962,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
       ierr = PetscKernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }
 /*      ierr = PetscKernel_A_gets_inverse_A_4_SSE(w);CHKERRQ(ierr); */
-    /* Note: Using Kramer's rule, flop count below might be infairly high or low? */ 
+    /* Note: Using Kramer's rule, flop count below might be infairly high or low? */
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
@@ -970,12 +970,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,cons
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering_SSE;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.333333333333*bs*bs2*b->mbs);CHKERRQ(ierr);
-  /* Flop Count from inverting diagonal blocks */ 
+  /* Flop Count from inverting diagonal blocks */
   SSE_SCOPE_END;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat C)
 {
@@ -1005,12 +1005,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
 /*    if ((unsigned long)bj==(unsigned long)aj) { */
 /*      colscale = 4; */
 /*    } */
-  
+
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
     bjtmp = bj + bi[i];
     /* zero out the 4x4 block accumulators */
-    /* zero out one register */ 
+    /* zero out one register */
     XOR_PS(XMM7,XMM7);
     for  (j=0; j<nz; j++) {
       x = rtmp+16*((unsigned int)bjtmp[j]);
@@ -1035,7 +1035,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
     for (j=0; j<nz; j++) {
       x = rtmp+16*((unsigned int)ajtmp[j]);
 /*        x = rtmp+colscale*ajtmp[j]; */
-      /* Copy v block into x block */ 
+      /* Copy v block into x block */
       SSE_INLINE_BEGIN_2(v,x)
         /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
         SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM0)
@@ -1070,7 +1070,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
     while (row < i) {
       pc  = rtmp + 16*row;
       SSE_INLINE_BEGIN_1(pc)
-        /* Load block from lower triangle */ 
+        /* Load block from lower triangle */
         /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
         SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM0)
         SSE_LOADH_PS(SSE_ARG_1,FLOAT_2,XMM0)
@@ -1084,7 +1084,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
         SSE_LOADL_PS(SSE_ARG_1,FLOAT_12,XMM3)
         SSE_LOADH_PS(SSE_ARG_1,FLOAT_14,XMM3)
 
-        /* Compare block to zero block */ 
+        /* Compare block to zero block */
 
         SSE_COPY_PS(XMM4,XMM7)
         SSE_CMPNEQ_PS(XMM4,XMM0)
@@ -1114,12 +1114,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
         pj = bj + diag_offset[row] + 1;
 
         /* Form Multiplier, one column at a time (Matrix-Matrix Product) */
-        /* L_ij^(k+1) = L_ij^(k)*inv(L_jj^(k)) */ 
+        /* L_ij^(k+1) = L_ij^(k)*inv(L_jj^(k)) */
         /* but the diagonal was inverted already */
         /* and, L_ij^(k) is already loaded into registers XMM0-XMM3 columnwise */
 
         SSE_INLINE_BEGIN_2(pv,pc)
-          /* Column 0, product is accumulated in XMM4 */ 
+          /* Column 0, product is accumulated in XMM4 */
           SSE_LOAD_SS(SSE_ARG_1,FLOAT_0,XMM4)
           SSE_SHUFFLE(XMM4,XMM4,0x00)
           SSE_MULT_PS(XMM4,XMM0)
@@ -1186,7 +1186,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
           SSE_SHUFFLE(XMM7,XMM7,0x00)
           SSE_MULT_PS(XMM7,XMM3)
           SSE_ADD_PS(XMM6,XMM7)
-  
+
           SSE_STOREL_PS(SSE_ARG_2,FLOAT_8,XMM6)
           SSE_STOREH_PS(SSE_ARG_2,FLOAT_10,XMM6)
 
@@ -1217,7 +1217,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
           /* Simplify Bookkeeping -- Completely Unnecessary Instructions */
           /* This is code to be maintained and read by humans afterall. */
           /* Copy Multiplier Col 3 into XMM3 */
-          SSE_COPY_PS(XMM3,XMM0) 
+          SSE_COPY_PS(XMM3,XMM0)
           /* Copy Multiplier Col 2 into XMM2 */
           SSE_COPY_PS(XMM2,XMM6)
           /* Copy Multiplier Col 1 into XMM1 */
@@ -1237,7 +1237,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
           /* X:=X-M*PV, One column at a time */
           /* Note: M is already loaded columnwise into registers XMM0-XMM3 */
           SSE_INLINE_BEGIN_2(x,pv)
-            /* Load First Column of X*/ 
+            /* Load First Column of X*/
             SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM4)
             SSE_LOADH_PS(SSE_ARG_1,FLOAT_2,XMM4)
 
@@ -1267,7 +1267,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
 
             /* Second Column */
             SSE_LOADL_PS(SSE_ARG_1,FLOAT_4,XMM5)
-            SSE_LOADH_PS(SSE_ARG_1,FLOAT_6,XMM5)          
+            SSE_LOADH_PS(SSE_ARG_1,FLOAT_6,XMM5)
 
             /* Matrix-Vector Product: */
             SSE_LOAD_SS(SSE_ARG_2,FLOAT_4,XMM6)
@@ -1289,7 +1289,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
             SSE_SHUFFLE(XMM6,XMM6,0x00)
             SSE_MULT_PS(XMM6,XMM3)
             SSE_SUB_PS(XMM5,XMM6)
-          
+
             SSE_STOREL_PS(SSE_ARG_1,FLOAT_4,XMM5)
             SSE_STOREH_PS(SSE_ARG_1,FLOAT_6,XMM5)
 
@@ -1319,10 +1319,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
             SSE_SHUFFLE(XMM7,XMM7,0x00)
             SSE_MULT_PS(XMM7,XMM3)
             SSE_SUB_PS(XMM6,XMM7)
-          
+
             SSE_STOREL_PS(SSE_ARG_1,FLOAT_8,XMM6)
             SSE_STOREH_PS(SSE_ARG_1,FLOAT_10,XMM6)
-          
+
             /* Fourth Column */
             SSE_LOADL_PS(SSE_ARG_1,FLOAT_12,XMM4)
             SSE_LOADH_PS(SSE_ARG_1,FLOAT_14,XMM4)
@@ -1347,14 +1347,14 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
             SSE_SHUFFLE(XMM5,XMM5,0x00)
             SSE_MULT_PS(XMM5,XMM3)
             SSE_SUB_PS(XMM4,XMM5)
-          
+
             SSE_STOREL_PS(SSE_ARG_1,FLOAT_12,XMM4)
             SSE_STOREH_PS(SSE_ARG_1,FLOAT_14,XMM4)
           SSE_INLINE_END_2;
           pv   += 16;
         }
         ierr = PetscLogFlops(128.0*nz+112.0);CHKERRQ(ierr);
-      } 
+      }
       row = (unsigned int)(*bjtmp++);
 /*        row = (*bjtmp++)/4; */
 /*        bjtmp++; */
@@ -1405,7 +1405,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
       ierr = PetscKernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }
 /*      ierr = PetscKernel_A_gets_inverse_A_4_SSE(w);CHKERRQ(ierr); */
-    /* Note: Using Kramer's rule, flop count below might be infairly high or low? */ 
+    /* Note: Using Kramer's rule, flop count below might be infairly high or low? */
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
@@ -1413,12 +1413,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering_SSE;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.333333333333*bs*bs2*b->mbs);CHKERRQ(ierr);
-  /* Flop Count from inverting diagonal blocks */ 
+  /* Flop Count from inverting diagonal blocks */
   SSE_SCOPE_END;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj"
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,const MatFactorInfo *info)
 {
@@ -1449,12 +1449,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
   if ((unsigned long)bj==(unsigned long)aj) {
     return(MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(C));
   }
-  
+
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
     bjtmp = bj + bi[i];
     /* zero out the 4x4 block accumulators */
-    /* zero out one register */ 
+    /* zero out one register */
     XOR_PS(XMM7,XMM7);
     for  (j=0; j<nz; j++) {
       x = rtmp+16*((unsigned int)bjtmp[j]);
@@ -1479,7 +1479,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
     for (j=0; j<nz; j++) {
       x = rtmp+16*ajtmpold[j];
 /*        x = rtmp+colscale*ajtmpold[j]; */
-      /* Copy v block into x block */ 
+      /* Copy v block into x block */
       SSE_INLINE_BEGIN_2(v,x)
         /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
         SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM0)
@@ -1514,7 +1514,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
     while (row < i) {
       pc  = rtmp + 16*row;
       SSE_INLINE_BEGIN_1(pc)
-        /* Load block from lower triangle */ 
+        /* Load block from lower triangle */
         /* Note: on future SSE architectures, STORE might be more efficient than STOREL/H */
         SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM0)
         SSE_LOADH_PS(SSE_ARG_1,FLOAT_2,XMM0)
@@ -1528,7 +1528,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
         SSE_LOADL_PS(SSE_ARG_1,FLOAT_12,XMM3)
         SSE_LOADH_PS(SSE_ARG_1,FLOAT_14,XMM3)
 
-        /* Compare block to zero block */ 
+        /* Compare block to zero block */
 
         SSE_COPY_PS(XMM4,XMM7)
         SSE_CMPNEQ_PS(XMM4,XMM0)
@@ -1558,12 +1558,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
         pj = bj + diag_offset[row] + 1;
 
         /* Form Multiplier, one column at a time (Matrix-Matrix Product) */
-        /* L_ij^(k+1) = L_ij^(k)*inv(L_jj^(k)) */ 
+        /* L_ij^(k+1) = L_ij^(k)*inv(L_jj^(k)) */
         /* but the diagonal was inverted already */
         /* and, L_ij^(k) is already loaded into registers XMM0-XMM3 columnwise */
 
         SSE_INLINE_BEGIN_2(pv,pc)
-          /* Column 0, product is accumulated in XMM4 */ 
+          /* Column 0, product is accumulated in XMM4 */
           SSE_LOAD_SS(SSE_ARG_1,FLOAT_0,XMM4)
           SSE_SHUFFLE(XMM4,XMM4,0x00)
           SSE_MULT_PS(XMM4,XMM0)
@@ -1630,7 +1630,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
           SSE_SHUFFLE(XMM7,XMM7,0x00)
           SSE_MULT_PS(XMM7,XMM3)
           SSE_ADD_PS(XMM6,XMM7)
-  
+
           SSE_STOREL_PS(SSE_ARG_2,FLOAT_8,XMM6)
           SSE_STOREH_PS(SSE_ARG_2,FLOAT_10,XMM6)
 
@@ -1661,7 +1661,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
           /* Simplify Bookkeeping -- Completely Unnecessary Instructions */
           /* This is code to be maintained and read by humans afterall. */
           /* Copy Multiplier Col 3 into XMM3 */
-          SSE_COPY_PS(XMM3,XMM0) 
+          SSE_COPY_PS(XMM3,XMM0)
           /* Copy Multiplier Col 2 into XMM2 */
           SSE_COPY_PS(XMM2,XMM6)
           /* Copy Multiplier Col 1 into XMM1 */
@@ -1681,7 +1681,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
           /* X:=X-M*PV, One column at a time */
           /* Note: M is already loaded columnwise into registers XMM0-XMM3 */
           SSE_INLINE_BEGIN_2(x,pv)
-            /* Load First Column of X*/ 
+            /* Load First Column of X*/
             SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM4)
             SSE_LOADH_PS(SSE_ARG_1,FLOAT_2,XMM4)
 
@@ -1711,7 +1711,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
 
             /* Second Column */
             SSE_LOADL_PS(SSE_ARG_1,FLOAT_4,XMM5)
-            SSE_LOADH_PS(SSE_ARG_1,FLOAT_6,XMM5)          
+            SSE_LOADH_PS(SSE_ARG_1,FLOAT_6,XMM5)
 
             /* Matrix-Vector Product: */
             SSE_LOAD_SS(SSE_ARG_2,FLOAT_4,XMM6)
@@ -1733,7 +1733,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
             SSE_SHUFFLE(XMM6,XMM6,0x00)
             SSE_MULT_PS(XMM6,XMM3)
             SSE_SUB_PS(XMM5,XMM6)
-          
+
             SSE_STOREL_PS(SSE_ARG_1,FLOAT_4,XMM5)
             SSE_STOREH_PS(SSE_ARG_1,FLOAT_6,XMM5)
 
@@ -1763,10 +1763,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
             SSE_SHUFFLE(XMM7,XMM7,0x00)
             SSE_MULT_PS(XMM7,XMM3)
             SSE_SUB_PS(XMM6,XMM7)
-          
+
             SSE_STOREL_PS(SSE_ARG_1,FLOAT_8,XMM6)
             SSE_STOREH_PS(SSE_ARG_1,FLOAT_10,XMM6)
-          
+
             /* Fourth Column */
             SSE_LOADL_PS(SSE_ARG_1,FLOAT_12,XMM4)
             SSE_LOADH_PS(SSE_ARG_1,FLOAT_14,XMM4)
@@ -1791,14 +1791,14 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
             SSE_SHUFFLE(XMM5,XMM5,0x00)
             SSE_MULT_PS(XMM5,XMM3)
             SSE_SUB_PS(XMM4,XMM5)
-          
+
             SSE_STOREL_PS(SSE_ARG_1,FLOAT_12,XMM4)
             SSE_STOREH_PS(SSE_ARG_1,FLOAT_14,XMM4)
           SSE_INLINE_END_2;
           pv   += 16;
         }
         ierr = PetscLogFlops(128.0*nz+112.0);CHKERRQ(ierr);
-      } 
+      }
       row = (unsigned int)(*bjtmp++);
 /*        row = (*bjtmp++)/4; */
 /*        bjtmp++; */
@@ -1849,7 +1849,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
       ierr = PetscKernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }
 /*      ierr = PetscKernel_A_gets_inverse_A_4_SSE(w);CHKERRQ(ierr); */
-    /* Note: Using Kramer's rule, flop count below might be infairly high or low? */ 
+    /* Note: Using Kramer's rule, flop count below might be infairly high or low? */
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
@@ -1857,7 +1857,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,
   C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering_SSE;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.333333333333*bs*bs2*b->mbs);CHKERRQ(ierr);
-  /* Flop Count from inverting diagonal blocks */ 
+  /* Flop Count from inverting diagonal blocks */
   SSE_SCOPE_END;
   PetscFunctionReturn(0);
 }

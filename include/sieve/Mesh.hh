@@ -4018,14 +4018,14 @@ namespace ALE {
 
         coords[2] = lower[0];
         coords[3] = lower[1];
-        
+
         coords[4] = lower[0];
         coords[5] = notchpercent[1]*lower[1] + (1 - notchpercent[1])*upper[1];
-        
+
         coords[6] = notchpercent[0]*upper[0] + (1 - notchpercent[0])*lower[0];
         coords[7] = notchpercent[1]*lower[1] + (1 - notchpercent[1])*upper[1];
-        
-        
+
+
         coords[8] = notchpercent[0]*upper[0] + (1 - notchpercent[0])*lower[0];
         coords[9] = upper[1];
 
@@ -4355,8 +4355,8 @@ namespace ALE {
       /       \
      /   v12   \
   v6|\   /|\   /|v5
-    | \v8 | v7/ |          z  
-    |  |7 |8 |  |          | 
+    | \v8 | v7/ |          z
+    |  |7 |8 |  |          |
     |  |v13\ |  |  <-v4   / \
     | v9/ 9 \v10|        x   y
  v1 | 5 \   / 6 |v2
@@ -4422,7 +4422,7 @@ namespace ALE {
       coords[13*3+1] = ilower[1];
       coords[13*3+2] = ilower[2];
 
- 
+
       const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
       mesh->setSieve(sieve);
       typename Mesh::point_type p[nVertices];
@@ -4435,26 +4435,26 @@ namespace ALE {
       for (int i = 0; i < nFaces; i++) {
         f[i] = typename Mesh::point_type(i);
       }
-      int order = 0; 
+      int order = 0;
      //assemble the larger square sides
       sieve->addArrow(p[0], f[0], order++);
       sieve->addArrow(p[5], f[0], order++);
       sieve->addArrow(p[2], f[0], order++);
       sieve->addArrow(p[4], f[0], order++);
-      mesh->setValue(markers, f[0], 1);      
+      mesh->setValue(markers, f[0], 1);
 
       sieve->addArrow(p[0], f[1], order++);
       sieve->addArrow(p[4], f[1], order++);
       sieve->addArrow(p[1], f[1], order++);
       sieve->addArrow(p[6], f[1], order++);
-      mesh->setValue(markers, f[1], 1);      
+      mesh->setValue(markers, f[1], 1);
 
       sieve->addArrow(p[4], f[2], order++);
       sieve->addArrow(p[1], f[2], order++);
       sieve->addArrow(p[3], f[2], order++);
       sieve->addArrow(p[2], f[2], order++);
       mesh->setValue(markers, f[2], 1);
-     
+
       //assemble the L-shaped sides
 
       sieve->addArrow(p[0], f[3], order++);
@@ -4524,7 +4524,7 @@ namespace ALE {
     #undef __FUNCT__
     #define __FUNCT__ "createSphereBoundary"
     /*
-      //"sphere" out a cube 
+      //"sphere" out a cube
 
     */
 #if 0
@@ -4660,7 +4660,7 @@ namespace ALE {
 	coords[3*(8+12*refinement+0*refinement*refinement+i*refinement+j)+1] = -1. + delta*j;
         coords[3*(8+12*refinement+0*refinement*refinement+i*refinement+j)+2] = -1. + delta*i;
       }
-      //hxx 
+      //hxx
       for (int i = 0; i < refinement; i++) for (int j = 0; j < refinement; j++) {
         coords[3*(8+12*refinement+1*refinement*refinement+i*refinement+j)+0] = 1.;
 	coords[3*(8+12*refinement+1*refinement*refinement+i*refinement+j)+1] = -1. + delta*j;
@@ -4691,7 +4691,7 @@ namespace ALE {
         coords[3*(8+12*refinement+5*refinement*refinement+i*refinement+j)+2] = -1. + delta*i;
       }
       //stitch the corners up with the edges and the faces
-      
+
       //stitch the edges to the faces
       //fill in the faces
       int face_offset = 8 + 12*refinement;
@@ -5193,7 +5193,7 @@ namespace ALE {
           break;
 	case LINE_LAGRANGE:
           getEdges_LINE_LAGRANGE(coneSize, cone, &numEdges, &edges);
-          break;	  
+          break;	
         case TETRAHEDRON:
           getEdges_TETRAHEDRON(coneSize, cone, &numEdges, &edges);
           break;

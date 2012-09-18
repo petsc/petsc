@@ -4,8 +4,8 @@
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSynchronizedClear" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSynchronizedClear"
 /*@
    PetscDrawSynchronizedClear - Clears graphical output. All processors must call this routine.
    Does not return until the draw in context is clear.

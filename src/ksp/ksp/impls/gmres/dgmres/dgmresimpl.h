@@ -22,7 +22,7 @@ typedef struct {
   PetscInt		force; /* Force the use of the deflation at the restart */
   PetscInt		matvecs; /* Total number of matrix-vectors */
   PetscInt		GreatestEig; /* Extract the greatest eigenvalues instead */
-  
+
   /* Work spaces */
   Vec			*mu;	/* Save the product M^{-1}AU */
   PetscScalar	*Sr; 	/* Schur vectors to extract */
@@ -36,13 +36,13 @@ typedef struct {
   PetscScalar 	*Sr2; 	/* Schur vectors at the improvement step */
   PetscScalar	*auau; 	/* product of (M*A*U)^T*M*A*U */
   PetscScalar	*auu; 	/* product of (M*A*U)^T*U */
-  
+
   PetscScalar 	*work; 	/* work space for LAPACK functions */
   PetscInt		*iwork;	/* work space for LAPACK functions */
   PetscReal		*orth; 	/* Coefficients for the orthogonalization */
-  
+
   PetscInt		improve; /* 0 = do not improve the eigenvalues; This is an experimental option */
-  
+
 } KSP_DGMRES;
 
 PetscLogEvent KSP_DGMRESComputeDeflationData, KSP_DGMRESApplyDeflation;

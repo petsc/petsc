@@ -1,10 +1,10 @@
 
-/* 
+/*
    Plots vectors obtained with DMDACreate2d()
 */
 
 #include <petsc-private/daimpl.h>      /*I  "petscdmda.h"   I*/
-#include <petsc-private/vecimpl.h> 
+#include <petsc-private/vecimpl.h>
 
 /*
         The data that is passed into the graphics callback
@@ -17,11 +17,11 @@ typedef struct {
 } ZoomCtx;
 
 /*
-       This does the drawing for one particular field 
+       This does the drawing for one particular field
     in one particular set of coordinates. It is a callback
     called from PetscDrawZoom()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecView_MPI_Draw_DA2d_Zoom"
 PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 {
@@ -31,7 +31,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
   PetscReal      s,min,x1,x2,x3,x4,y_1,y2,y3,y4;
   PetscScalar   *v,*xy;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
   m    = zctx->m;
   n    = zctx->n;
   step = zctx->step;
@@ -40,7 +40,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
   xy   = zctx->xy;
   s    = zctx->scale;
   min  = zctx->min;
-   
+
   /* PetscDraw the contour plot patch */
   for (j=0; j<n-1; j++) {
     for (i=0; i<m-1; i++) {
@@ -68,7 +68,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecView_MPI_Draw_DA2d"
 PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 {
@@ -107,19 +107,19 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = DMDAGetInfo(da,0,&M,&N,0,&zctx.m,&zctx.n,0,&w,&s,&bx,&by,0,&st);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,&ly,PETSC_NULL);CHKERRQ(ierr);
 
-  /* 
-        Obtain a sequential vector that is going to contain the local values plus ONE layer of 
+  /*
+        Obtain a sequential vector that is going to contain the local values plus ONE layer of
      ghosted values to draw the graphics from. We also need its corresponding DMDA (dac) that will
-     update the local values pluse ONE layer of ghost values. 
+     update the local values pluse ONE layer of ghost values.
   */
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsGhosted",(PetscObject*)&xlocal);CHKERRQ(ierr);
   if (!xlocal) {
     if (bx !=  DMDA_BOUNDARY_NONE || by !=  DMDA_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) {
-      /* 
+      /*
          if original da is not of stencil width one, or periodic or not a box stencil then
          create a special DMDA to handle one level of ghost points for graphics
       */
-      ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,w,1,lx,ly,&dac);CHKERRQ(ierr); 
+      ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,w,1,lx,ly,&dac);CHKERRQ(ierr);
       ierr = PetscInfo(da,"Creating auxilary DMDA for managing graphics ghost points\n");CHKERRQ(ierr);
     } else {
       /* otherwise we can use the da we already have */
@@ -132,7 +132,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
       ierr = PetscObjectDereference((PetscObject)dac);CHKERRQ(ierr);
     } else {
       /* remove association between xlocal and da, because below we compose in the opposite
-         direction and if we left this connect we'd get a loop, so the objects could 
+         direction and if we left this connect we'd get a loop, so the objects could
          never be destroyed */
       ierr = PetscObjectRemoveReference((PetscObject)xlocal,"DM");CHKERRQ(ierr);
     }
@@ -161,7 +161,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   }
 
   /*
-      Determine the min and max  coordinates in plot 
+      Determine the min and max  coordinates in plot
   */
   ierr = VecStrideMin(xcoor,0,PETSC_NULL,&xmin);CHKERRQ(ierr);
   ierr = VecStrideMax(xcoor,0,PETSC_NULL,&xmax);CHKERRQ(ierr);
@@ -172,12 +172,12 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = PetscInfo4(da,"Preparing DMDA 2d contour plot coordinates %G %G %G %G\n",coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
 
   /*
-       get local ghosted version of coordinates 
+       get local ghosted version of coordinates
   */
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject*)&xcoorl);CHKERRQ(ierr);
   if (!xcoorl) {
     /* create DMDA to get local version of graphics */
-    ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr); 
+    ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr);
     ierr = PetscInfo(dag,"Creating auxilary DMDA for managing graphics coordinates ghost points\n");CHKERRQ(ierr);
     ierr = DMCreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
@@ -189,7 +189,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = DMGlobalToLocalBegin(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
   ierr = VecGetArray(xcoorl,&zctx.xy);CHKERRQ(ierr);
-  
+
   /*
         Get information about size of area each processor must do graphics for
   */
@@ -223,14 +223,14 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     }
 
     /*
-        Determine the min and max color in plot 
+        Determine the min and max color in plot
     */
     ierr = VecStrideMin(xin,zctx.k,PETSC_NULL,&zctx.min);CHKERRQ(ierr);
     ierr = VecStrideMax(xin,zctx.k,PETSC_NULL,&zctx.max);CHKERRQ(ierr);
     if (zctx.k < nbounds) {
       zctx.min = PetscMin(zctx.min,bounds[2*zctx.k]);
       zctx.max = PetscMax(zctx.max,bounds[2*zctx.k+1]);
-    }      
+    }
     if (zctx.min == zctx.max) {
       zctx.min -= 1.e-12;
       zctx.max += 1.e-12;
@@ -264,7 +264,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 
 
 #if defined(PETSC_HAVE_HDF5)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecView_MPI_HDF5_DA"
 PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 {
@@ -341,7 +341,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
     ++dim;
 #endif
   for (i=0; i < dim; ++i)
-  filespace = H5Screate_simple(dim, dims, maxDims); 
+  filespace = H5Screate_simple(dim, dims, maxDims);
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -359,7 +359,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
     chunkspace = H5Pcreate(H5P_DATASET_CREATE);
     if (chunkspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Pcreate()");
     status = H5Pset_chunk(chunkspace, dim, chunkDims); CHKERRQ(status);
-    
+
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
     dset_id = H5Dcreate2(group, vecname, scalartype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT);
 #else
@@ -373,7 +373,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   status = H5Sclose(filespace);CHKERRQ(status);
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
-  dim = 0; 
+  dim = 0;
   if (timestep >= 0) {
     offset[dim] = timestep;
     ++dim;
@@ -385,7 +385,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 #if defined(PETSC_USE_COMPLEX)
   offset[dim++] = 0;
 #endif
-  dim = 0; 
+  dim = 0;
   if (timestep >= 0) {
     count[dim] = 1;
     ++dim;
@@ -433,7 +433,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 extern PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 
 #if defined(PETSC_HAVE_MPIIO)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAArrayMPIIO"
 static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool  write)
 {
@@ -468,7 +468,7 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
   lstarts[0] = 0;  lstarts[1] = PetscMPIIntCast(dd->xs/dof); lstarts[2] = PetscMPIIntCast(dd->ys); lstarts[3] = PetscMPIIntCast(dd->zs);
   ierr = MPI_Type_create_subarray(dd->dim+1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
-  
+
   ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
   ierr = MPI_File_set_view(mfdes,off,MPIU_SCALAR,view,(char *)"native",MPI_INFO_NULL);CHKERRQ(ierr);
@@ -488,7 +488,7 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
 #endif
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecView_MPI_DA"
 PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
 {
@@ -546,7 +546,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
       }
     }
 #endif
-    
+
     /* call viewer on natural ordering */
     ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
     ierr = DMDACreateNaturalVector(da,&natural);CHKERRQ(ierr);
@@ -563,7 +563,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
 EXTERN_C_END
 
 #if defined(PETSC_HAVE_HDF5)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecLoad_HDF5_DA"
 PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 {
@@ -605,7 +605,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   filespace = H5Dget_space(dset_id);
 
   /* Each process defines a dataset and reads it from the hyperslab in the file */
-  cnt = 0; 
+  cnt = 0;
   if (dd->dim == 3) offset[cnt++] = PetscHDF5IntCast(dd->zs);
   if (dd->dim > 1)  offset[cnt++] = PetscHDF5IntCast(dd->ys);
   offset[cnt++] = PetscHDF5IntCast(dd->xs/dd->w);
@@ -613,7 +613,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 #if defined(PETSC_USE_COMPLEX)
   offset[cnt++] = 0;
 #endif
-  cnt = 0; 
+  cnt = 0;
   if (dd->dim == 3) count[cnt++] = PetscHDF5IntCast(dd->ze - dd->zs);
   if (dd->dim > 1)  count[cnt++] = PetscHDF5IntCast(dd->ye - dd->ys);
   count[cnt++] = PetscHDF5IntCast((dd->xe - dd->xs)/dd->w);
@@ -647,7 +647,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 }
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecLoad_Binary_DA"
 PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
 {

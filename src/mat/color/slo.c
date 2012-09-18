@@ -3,8 +3,8 @@
 
 #include <../src/mat/color/color.h>
 
-#undef __FUNCT__  
-#define __FUNCT__ "MINPACKslo" 
+#undef __FUNCT__
+#define __FUNCT__ "MINPACKslo"
 PetscErrorCode MINPACKslo(PetscInt *n,PetscInt * indrow,PetscInt * jpntr,PetscInt * indcol, PetscInt *ipntr, PetscInt *ndeg,PetscInt * list,
                           PetscInt * maxclq,PetscInt *iwa1,PetscInt * iwa2,PetscInt * iwa3,PetscInt * iwa4)
 {

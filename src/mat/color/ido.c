@@ -4,8 +4,8 @@
 
 static PetscInt c_n1 = -1;
 
-#undef __FUNCT__  
-#define __FUNCT__ "MINPACKido" 
+#undef __FUNCT__
+#define __FUNCT__ "MINPACKido"
 PetscErrorCode MINPACKido(PetscInt *m,PetscInt * n,PetscInt * indrow,PetscInt * jpntr,PetscInt * indcol,PetscInt * ipntr,PetscInt * ndeg,
                PetscInt *list,PetscInt *maxclq, PetscInt *iwa1, PetscInt *iwa2, PetscInt *iwa3, PetscInt *iwa4)
 {

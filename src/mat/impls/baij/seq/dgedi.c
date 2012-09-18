@@ -1,21 +1,21 @@
 
-/*  
-              This file creating by running f2c 
-            linpack. this version dated 08/14/78 
+/*
+              This file creating by running f2c
+            linpack. this version dated 08/14/78
       cleve moler, university of new mexico, argonne national lab.
 
       Computes the inverse of a matrix given its factors and pivots
     calculated by PetscLINPACKgefa(). Performed in-place for an n by n
     dense matrix.
 
-       Used by the sparse factorization routines in 
+       Used by the sparse factorization routines in
      src/mat/impls/baij/seq
 
 */
 
 #include <petscsys.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLINPACKgedi"
 PetscErrorCode PetscLINPACKgedi(MatScalar *a,PetscInt n,PetscInt *ipvt,MatScalar *work)
 {
@@ -36,7 +36,7 @@ PetscErrorCode PetscLINPACKgedi(MatScalar *a,PetscInt n,PetscInt *ipvt,MatScalar
 	a[knp1]      = 1.0 / a[knp1];
 	t            = -a[knp1];
 	i__2         = k - 1;
-        aa           = &a[1 + kn]; 
+        aa           = &a[1 + kn];
         for (ll=0; ll<i__2; ll++) aa[ll] *= t;
 	kp1 = k + 1;
 	if (n < kp1) continue;
@@ -77,7 +77,7 @@ PetscErrorCode PetscLINPACKgedi(MatScalar *a,PetscInt n,PetscInt *ipvt,MatScalar
 	}
 	l = ipvt[k];
 	if (l != k) {
-            ax = &a[kn + 1]; 
+            ax = &a[kn + 1];
             ay = &a[l * n + 1];
             for (ll=0; ll<n; ll++) {
               tmp    = ax[ll];

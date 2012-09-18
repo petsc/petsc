@@ -1,6 +1,6 @@
 
 /*
-      Defines the internal data structures for the X-windows 
+      Defines the internal data structures for the X-windows
    implementation of the graphics functionality in PETSc.
 */
 

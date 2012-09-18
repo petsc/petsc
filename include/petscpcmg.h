@@ -1,5 +1,5 @@
 /*
-      Structure used for Multigrid preconditioners 
+      Structure used for Multigrid preconditioners
 */
 #if !defined(__PETSCPCMG_H)
 #define __PETSCPCMG_H
@@ -13,9 +13,9 @@
    Values:
 +  PC_MG_MULTIPLICATIVE (default) - traditional V or W cycle as determined by PCMGSetCycles()
 .  PC_MG_ADDITIVE - the additive multigrid preconditioner where all levels are
-                smoothed before updating the residual. This only uses the 
+                smoothed before updating the residual. This only uses the
                 down smoother, in the preconditioner the upper smoother is ignored
-.  PC_MG_FULL - same as multiplicative except one also performs grid sequencing, 
+.  PC_MG_FULL - same as multiplicative except one also performs grid sequencing,
             that is starts on the coarsest grid, performs a cycle, interpolates
             to the next, performs a cycle etc. This is much like the F-cycle presented in "Multigrid" by Trottenberg, Oosterlee, Schuller page 49, but that
             algorithm supports smoothing on before the restriction on each level in the initial restriction to the coarsest stage. In addition that algorithm
@@ -83,7 +83,7 @@ PETSC_EXTERN PetscErrorCode PCMGDefaultResidual(Mat,Vec,Vec,Vec);
    Level: beginner
 
 .seealso: PCExoticSetType(), PCEXOTIC
-E*/ 
+E*/
 typedef enum { PC_EXOTIC_FACE,PC_EXOTIC_WIREBASKET } PCExoticType;
 PETSC_EXTERN const char *const PCExoticTypes[];
 PETSC_EXTERN PetscErrorCode PCExoticSetType(PC,PCExoticType);

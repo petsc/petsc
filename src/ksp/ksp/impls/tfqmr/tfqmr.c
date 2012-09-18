@@ -1,7 +1,7 @@
 
 #include <petsc-private/kspimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_TFQMR"
 static PetscErrorCode KSPSetUp_TFQMR(KSP ksp)
 {
@@ -13,7 +13,7 @@ static PetscErrorCode KSPSetUp_TFQMR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_TFQMR"
 static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 {
@@ -130,7 +130,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 }
 
 /*MC
-     KSPTFQMR - A transpose free QMR (quasi minimal residual), 
+     KSPTFQMR - A transpose free QMR (quasi minimal residual),
 
    Options Database Keys:
 .   see KSPSolve()
@@ -140,7 +140,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
    Notes: Supports left and right preconditioning, but not symmetric
 
           The "residual norm" computed in this algorithm is actually just an upper bound on the actual residual norm.
-          That is for left preconditioning it is a bound on the preconditioned residual and for right preconditioning 
+          That is for left preconditioning it is a bound on the preconditioned residual and for right preconditioning
           it is a bound on the true residual.
 
    References: Freund, 1993
@@ -148,7 +148,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPTCQMR
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_TFQMR"
 PetscErrorCode  KSPCreate_TFQMR(KSP ksp)
 {

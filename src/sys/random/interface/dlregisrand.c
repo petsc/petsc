@@ -5,7 +5,7 @@
 #endif
 
 static PetscBool  PetscRandomPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomFinalizePackage"
 /*@C
   PetscRandomFinalizePackage - This function destroys everything in the Petsc interface to the Random package. It is
@@ -25,7 +25,7 @@ PetscErrorCode  PetscRandomFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomInitializePackage"
 /*@C
   PetscRandomInitializePackage - This function initializes everything in the PetscRandom package. It is called

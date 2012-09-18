@@ -1,7 +1,7 @@
 
 #include <../src/ksp/pc/impls/factor/icc/icc.h>   /*I "petscpc.h" I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetup_ICC"
 static PetscErrorCode PCSetup_ICC(PC pc)
 {
@@ -32,7 +32,7 @@ static PetscErrorCode PCSetup_ICC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCReset_ICC"
 static PetscErrorCode PCReset_ICC(PC pc)
 {
@@ -44,7 +44,7 @@ static PetscErrorCode PCReset_ICC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_ICC"
 static PetscErrorCode PCDestroy_ICC(PC pc)
 {
@@ -59,7 +59,7 @@ static PetscErrorCode PCDestroy_ICC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_ICC"
 static PetscErrorCode PCApply_ICC(PC pc,Vec x,Vec y)
 {
@@ -68,10 +68,10 @@ static PetscErrorCode PCApply_ICC(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   ierr = MatSolve(((PC_Factor*)icc)->fact,x,y);CHKERRQ(ierr);
-  PetscFunctionReturn(0);  
+  PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplySymmetricLeft_ICC"
 static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 {
@@ -83,7 +83,7 @@ static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplySymmetricRight_ICC"
 static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 {
@@ -95,7 +95,7 @@ static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_ICC"
 static PetscErrorCode PCSetFromOptions_ICC(PC pc)
 {
@@ -122,12 +122,12 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_ICC"
 static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PCView_Factor(pc,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -168,14 +168,14 @@ EXTERN_C_END
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
-           PCFactorSetZeroPivot(), PCFactorSetShiftType(), PCFactorSetShiftAmount(), 
-           PCFactorSetFill(), PCFactorSetMatOrderingType(), PCFactorSetReuseOrdering(), 
+           PCFactorSetZeroPivot(), PCFactorSetShiftType(), PCFactorSetShiftAmount(),
+           PCFactorSetFill(), PCFactorSetMatOrderingType(), PCFactorSetReuseOrdering(),
            PCFactorSetLevels()
 
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_ICC"
 PetscErrorCode  PCCreate_ICC(PC pc)
 {

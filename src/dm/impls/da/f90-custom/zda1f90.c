@@ -172,7 +172,7 @@ void PETSC_STDCALL dmdavecgetarrayf904_(DM *da,Vec *v,F90Array4d *a,PetscErrorCo
 void PETSC_STDCALL dmdavecrestorearrayf904_(DM *da,Vec *v,F90Array4d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
-  /* 
+  /*
     F90Array4dAccess is not implemented, so the following call would fail
   */
   *ierr = F90Array4dAccess(a,PETSC_SCALAR,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));

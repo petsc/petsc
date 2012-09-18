@@ -31,17 +31,17 @@
 /*              REACHABLE SETS.                                  */
 /*                                                               */
 /*****************************************************************/
-#undef __FUNCT__  
-#define __FUNCT__ "SPARSEPACKqmdmrg" 
-PetscErrorCode SPARSEPACKqmdmrg(PetscInt *xadj, PetscInt *adjncy, PetscInt *deg, 
-	PetscInt *qsize, PetscInt *qlink, PetscInt *marker, PetscInt *deg0, 
+#undef __FUNCT__
+#define __FUNCT__ "SPARSEPACKqmdmrg"
+PetscErrorCode SPARSEPACKqmdmrg(PetscInt *xadj, PetscInt *adjncy, PetscInt *deg,
+	PetscInt *qsize, PetscInt *qlink, PetscInt *marker, PetscInt *deg0,
 	PetscInt *nhdsze, PetscInt *nbrhd, PetscInt *rchset, PetscInt *ovrlp)
 {
     /* System generated locals */
     PetscInt i__1, i__2, i__3;
 
     /* Local variables */
-    PetscInt head, inhd, irch, node, mark, ilink, root, j, lnode, nabor, 
+    PetscInt head, inhd, irch, node, mark, ilink, root, j, lnode, nabor,
 	    jstop, jstrt, rchsze, mrgsze, novrlp, iov, deg1;
 
     PetscFunctionBegin;

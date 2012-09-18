@@ -10,15 +10,15 @@ EXTERN_C_BEGIN
 extern int gettimeofday(struct timeval *,struct timezone *);
 EXTERN_C_END
 #endif
-   
+
 /*
   This function is called once during the initialize stage.
-  It stashes the timestamp, and uses it when needed. This is so that 
+  It stashes the timestamp, and uses it when needed. This is so that
   error handlers may report the date without generating possible
   additional system errors during the call to get the date.
 
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetDate"
 /*@C
     PetscGetDate - Gets the current date.
@@ -34,7 +34,7 @@ EXTERN_C_END
   Level: beginner
 
     This function DOES make a system call and thus SHOULD NOT be called
-    from an error handler. 
+    from an error handler.
 
 @*/
 PetscErrorCode  PetscGetDate(char date[],size_t len)

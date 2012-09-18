@@ -7,7 +7,7 @@ struct _Mat_CompositeLink {
   Vec               work;
   Mat_CompositeLink next,prev;
 };
-  
+
 typedef struct {
   MatCompositeType  type;
   Mat_CompositeLink head,tail;
@@ -44,11 +44,11 @@ PetscErrorCode MatDestroy_Composite(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_Composite_Multiplicative"
 PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
 {
-  Mat_Composite     *shell = (Mat_Composite*)A->data;  
+  Mat_Composite     *shell = (Mat_Composite*)A->data;
   Mat_CompositeLink next = shell->head;
   PetscErrorCode    ierr;
   Vec               in,out;
@@ -80,11 +80,11 @@ PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_Composite_Multiplicative"
 PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
 {
-  Mat_Composite     *shell = (Mat_Composite*)A->data;  
+  Mat_Composite     *shell = (Mat_Composite*)A->data;
   Mat_CompositeLink tail = shell->tail;
   PetscErrorCode    ierr;
   Vec               in,out;
@@ -116,11 +116,11 @@ PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_Composite"
 PetscErrorCode MatMult_Composite(Mat A,Vec x,Vec y)
 {
-  Mat_Composite     *shell = (Mat_Composite*)A->data;  
+  Mat_Composite     *shell = (Mat_Composite*)A->data;
   Mat_CompositeLink next = shell->head;
   PetscErrorCode    ierr;
   Vec               in;
@@ -146,11 +146,11 @@ PetscErrorCode MatMult_Composite(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_Composite"
 PetscErrorCode MatMultTranspose_Composite(Mat A,Vec x,Vec y)
 {
-  Mat_Composite     *shell = (Mat_Composite*)A->data;  
+  Mat_Composite     *shell = (Mat_Composite*)A->data;
   Mat_CompositeLink next = shell->head;
   PetscErrorCode    ierr;
   Vec               in;
@@ -176,11 +176,11 @@ PetscErrorCode MatMultTranspose_Composite(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonal_Composite"
 PetscErrorCode MatGetDiagonal_Composite(Mat A,Vec v)
 {
-  Mat_Composite     *shell = (Mat_Composite*)A->data;  
+  Mat_Composite     *shell = (Mat_Composite*)A->data;
   Mat_CompositeLink next = shell->head;
   PetscErrorCode    ierr;
 
@@ -200,7 +200,7 @@ PetscErrorCode MatGetDiagonal_Composite(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_Composite"
 PetscErrorCode MatAssemblyEnd_Composite(Mat Y,MatAssemblyType t)
 {
@@ -215,7 +215,7 @@ PetscErrorCode MatAssemblyEnd_Composite(Mat Y,MatAssemblyType t)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatScale_Composite"
 PetscErrorCode MatScale_Composite(Mat inA,PetscScalar alpha)
 {
@@ -226,7 +226,7 @@ PetscErrorCode MatScale_Composite(Mat inA,PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDiagonalScale_Composite"
 PetscErrorCode MatDiagonalScale_Composite(Mat inA,Vec left,Vec right)
 {
@@ -363,7 +363,7 @@ static struct _MatOps MatOps_Values = {0,
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreate_Composite"
 PetscErrorCode  MatCreate_Composite(Mat A)
 {
@@ -387,7 +387,7 @@ PetscErrorCode  MatCreate_Composite(Mat A)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateComposite"
 /*@C
    MatCreateComposite - Creates a matrix as the sum of zero or more matrices
@@ -405,7 +405,7 @@ EXTERN_C_END
    Level: advanced
 
    Notes:
-     Alternative construction 
+     Alternative construction
 $       MatCreate(comm,&mat);
 $       MatSetSizes(mat,m,n,M,N);
 $       MatSetType(mat,MATCOMPOSITE);
@@ -424,7 +424,7 @@ PetscErrorCode  MatCreateComposite(MPI_Comm comm,PetscInt nmat,const Mat *mats,M
 {
   PetscErrorCode ierr;
   PetscInt       m,n,M,N,i;
-  
+
   PetscFunctionBegin;
   if (nmat < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must pass in at least one matrix");
   PetscValidPointer(mat,3);
@@ -442,7 +442,7 @@ PetscErrorCode  MatCreateComposite(MPI_Comm comm,PetscInt nmat,const Mat *mats,M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCompositeAddMat"
 /*@
     MatCompositeAddMat - add another matrix to a composite matrix
@@ -486,7 +486,7 @@ PetscErrorCode  MatCompositeAddMat(Mat mat,Mat smat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCompositeSetType"
 /*@C
    MatCompositeSetType - Indicates if the matrix is defined as the sum of a set of matrices or the product
@@ -508,7 +508,7 @@ PetscErrorCode  MatCompositeAddMat(Mat mat,Mat smat)
 @*/
 PetscErrorCode  MatCompositeSetType(Mat mat,MatCompositeType type)
 {
-  Mat_Composite  *b = (Mat_Composite*)mat->data;  
+  Mat_Composite  *b = (Mat_Composite*)mat->data;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -530,7 +530,7 @@ PetscErrorCode  MatCompositeSetType(Mat mat,MatCompositeType type)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCompositeMerge"
 /*@C
    MatCompositeMerge - Given a composite matrix, replaces it with a "regular" matrix
@@ -556,7 +556,7 @@ PetscErrorCode  MatCompositeSetType(Mat mat,MatCompositeType type)
 @*/
 PetscErrorCode  MatCompositeMerge(Mat mat)
 {
-  Mat_Composite     *shell = (Mat_Composite*)mat->data;  
+  Mat_Composite     *shell = (Mat_Composite*)mat->data;
   Mat_CompositeLink next = shell->head, prev = shell->tail;
   PetscErrorCode    ierr;
   Mat               tmat,newmat;

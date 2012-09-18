@@ -19,10 +19,10 @@
 #include <sys/systeminfo.h>
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetFileFromPath"
 /*@C
-   PetscGetFileFromPath - Finds a file from a name and a path string.  A 
+   PetscGetFileFromPath - Finds a file from a name and a path string.  A
                           default can be provided.
 
    Not Collective
@@ -67,7 +67,7 @@ PetscErrorCode  PetscGetFileFromPath(char *path,char *defname,char *name,char *f
       ierr = PetscStrcpy(fname,path);CHKERRQ(ierr);
       PetscFunctionReturn(1);
     }
-    
+
     /* Make a local copy of path and mangle it */
     ierr = PetscStrallocpy(path,&senv);CHKERRQ(ierr);
     env  = senv;

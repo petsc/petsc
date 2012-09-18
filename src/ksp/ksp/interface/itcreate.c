@@ -14,9 +14,9 @@ PetscLogEvent  KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 PetscFList KSPList = 0;
 PetscBool  KSPRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPView"
-/*@C 
+/*@C
    KSPView - Prints the KSP data structure.
 
    Collective on KSP
@@ -33,8 +33,8 @@ PetscBool  KSPRegisterAllCalled = PETSC_FALSE;
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
 -     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
+         the file.  All other processors send their
+         data to the first processor to print.
 
    The user can open an alternative visualization context with
    PetscViewerASCIIOpen() - output to a specified file.
@@ -87,7 +87,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetNormType"
 /*@
    KSPSetNormType - Sets the norm that is used for convergence testing.
@@ -96,7 +96,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 
    Input Parameter:
 +  ksp - Krylov solver context
--  normtype - one of 
+-  normtype - one of
 $   KSP_NORM_NONE - skips computing the norm, this should only be used if you are using
 $                 the Krylov method as a smoother with a fixed small number of iterations.
 $                 Implicitly sets KSPSkipConverged as KSP convergence test.
@@ -104,7 +104,7 @@ $                 Supported only by CG, Richardson, Bi-CG-stab, CR, and CGS meth
 $   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
 $                 of the preconditioned residual
 $   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual, supported only by
-$                 CG, CHEBYSHEV, and RICHARDSON, automatically true for right (see KSPSetPCSide()) 
+$                 CG, CHEBYSHEV, and RICHARDSON, automatically true for right (see KSPSetPCSide())
 $                 preconditioning..
 $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 
@@ -112,7 +112,7 @@ $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
    Options Database Key:
 .   -ksp_norm_type <none,preconditioned,unpreconditioned,natural>
 
-   Notes: 
+   Notes:
    Currently only works with the CG, Richardson, Bi-CG-stab, CR, and CGS methods.
 
    Level: advanced
@@ -137,11 +137,11 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetCheckNormIteration"
 /*@
-   KSPSetCheckNormIteration - Sets the first iteration at which the norm of the residual will be 
-     computed and used in the convergence test. 
+   KSPSetCheckNormIteration - Sets the first iteration at which the norm of the residual will be
+     computed and used in the convergence test.
 
    Logically Collective on KSP
 
@@ -149,7 +149,7 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
 +  ksp - Krylov solver context
 -  it  - use -1 to check at all iterations
 
-   Notes: 
+   Notes:
    Currently only works with KSPCG, KSPBCGS and KSPIBCGS
 
    Use KSPSetNormType(ksp,KSP_NORM_NONE) to never check the norm
@@ -160,7 +160,7 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetNormType()                               
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetNormType()
 @*/
 PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 {
@@ -171,11 +171,11 @@ PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetLagNorm"
 /*@
-   KSPSetLagNorm - Lags the residual norm calculation so that it is computed as part of the MPI_Allreduce() for 
-   computing the inner products for the next iteration.  This can reduce communication costs at the expense of doing 
+   KSPSetLagNorm - Lags the residual norm calculation so that it is computed as part of the MPI_Allreduce() for
+   computing the inner products for the next iteration.  This can reduce communication costs at the expense of doing
    one additional iteration.
 
 
@@ -188,7 +188,7 @@ PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
    Options Database Keys:
 .  -ksp_lag_norm - lag the calculated residual norm
 
-   Notes: 
+   Notes:
    Currently only works with KSPIBCGS.
 
    Use KSPSetNormType(ksp,KSP_NORM_NONE) to never check the norm
@@ -209,7 +209,7 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool  flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetSupportedNorm"
 /*@
    KSPSetSupportedNorm - Sets a norm and preconditioner side supported by a KSP
@@ -243,7 +243,7 @@ PetscErrorCode KSPSetSupportedNorm(KSP ksp,KSPNormType normtype,PCSide pcside,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPNormSupportTableReset_Private"
 PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
 {
@@ -256,7 +256,7 @@ PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUpNorms_Private"
 PetscErrorCode KSPSetUpNorms_Private(KSP ksp,KSPNormType *normtype,PCSide *pcside)
 {
@@ -288,7 +288,7 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp,KSPNormType *normtype,PCSide *pcsid
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetNormType"
 /*@
    KSPGetNormType - Gets the norm that is used for convergence testing.
@@ -320,7 +320,7 @@ PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
 }
 
 #if defined(PETSC_HAVE_AMS)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPPublish_Petsc"
 static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
 {
@@ -333,11 +333,11 @@ static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
 }
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetOperators"
 /*@
    KSPSetOperators - Sets the matrix associated with the linear system
-   and a (possibly) different one associated with the preconditioner. 
+   and a (possibly) different one associated with the preconditioner.
 
    Collective on KSP and Mat
 
@@ -345,14 +345,14 @@ static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
 +  ksp - the KSP context
 .  Amat - the matrix associated with the linear system
 .  Pmat - the matrix to be used in constructing the preconditioner, usually the
-          same as Amat. 
+          same as Amat.
 -  flag - flag indicating information about the preconditioner matrix structure
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear
    system.
 
-   Notes: 
-   The flag can be used to eliminate unnecessary work in the preconditioner 
+   Notes:
+   The flag can be used to eliminate unnecessary work in the preconditioner
    during the repeated solution of linear systems of the same size.  The
    available options are
 $    SAME_PRECONDITIONER -
@@ -364,7 +364,7 @@ $      saves work by not recomputing incomplete factorization
 $      for ILU/ICC preconditioners.
 $    SAME_NONZERO_PATTERN -
 $      Pmat has the same nonzero structure during
-$      successive linear solves. 
+$      successive linear solves.
 $    DIFFERENT_NONZERO_PATTERN -
 $      Pmat does not have the same nonzero structure.
 
@@ -417,9 +417,9 @@ $         PetscObjectDereference((PetscObject)pmat);
 $           set size, type, etc of mat and pmat
 
     The rational for this support is so that when creating a TS, SNES, or KSP the hierarchy
-    of underlying objects (i.e. SNES, KSP, PC, Mat) and their livespans can be completely 
+    of underlying objects (i.e. SNES, KSP, PC, Mat) and their livespans can be completely
     managed by the top most level object (i.e. the TS, SNES, or KSP). Another way to look
-    at this is when you create a SNES you do not NEED to create a KSP and attach it to 
+    at this is when you create a SNES you do not NEED to create a KSP and attach it to
     the SNES object (the SNES object manages it for you). Similarly when you create a KSP
     you do not need to attach a PC to it (the KSP object manages the PC object for you).
     Thus, why should YOU have to create the Mat and attach it to the SNES/KSP/PC, when
@@ -455,11 +455,11 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetOperators"
 /*@
    KSPGetOperators - Gets the matrix associated with the linear system
-   and a (possibly) different one associated with the preconditioner. 
+   and a (possibly) different one associated with the preconditioner.
 
    Collective on KSP and Mat
 
@@ -468,7 +468,7 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
 
    Output Parameters:
 +  Amat - the matrix associated with the linear system
-.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat. 
+.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 -  flag - flag indicating information about the preconditioner matrix structure
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear
@@ -493,7 +493,7 @@ PetscErrorCode  KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,MatStructure *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetOperatorsSet"
 /*@C
    KSPGetOperatorsSet - Determines if the matrix associated with the linear system and
@@ -525,7 +525,7 @@ PetscErrorCode  KSPGetOperatorsSet(KSP ksp,PetscBool  *mat,PetscBool  *pmat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate"
 /*@
    KSPCreate - Creates the default KSP context.
@@ -604,11 +604,11 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   *inksp = ksp;
   PetscFunctionReturn(0);
 }
- 
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetType"
 /*@C
-   KSPSetType - Builds KSP for a particular solver. 
+   KSPSetType - Builds KSP for a particular solver.
 
    Logically Collective on KSP
 
@@ -617,10 +617,10 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
 -  type - a known method
 
    Options Database Key:
-.  -ksp_type  <method> - Sets the method; use -help for a list 
+.  -ksp_type  <method> - Sets the method; use -help for a list
     of available methods (for instance, cg or gmres)
 
-   Notes:  
+   Notes:
    See "petsc/include/petscksp.h" for available methods (for instance,
    KSPCG or KSPGMRES).
 
@@ -679,7 +679,7 @@ PetscErrorCode  KSPSetType(KSP ksp, const KSPType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPRegisterDestroy"
 /*@
    KSPRegisterDestroy - Frees the list of KSP methods that were
@@ -703,7 +703,7 @@ PetscErrorCode  KSPRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetType"
 /*@C
    KSPGetType - Gets the KSP type as a string from the KSP object.
@@ -711,10 +711,10 @@ PetscErrorCode  KSPRegisterDestroy(void)
    Not Collective
 
    Input Parameter:
-.  ksp - Krylov context 
+.  ksp - Krylov context
 
    Output Parameter:
-.  name - name of KSP method 
+.  name - name of KSP method
 
    Level: intermediate
 
@@ -731,7 +731,7 @@ PetscErrorCode  KSPGetType(KSP ksp,const KSPType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPRegister"
 /*@C
   KSPRegister - See KSPRegisterDynamic()
@@ -749,7 +749,7 @@ PetscErrorCode  KSPRegister(const char sname[],const char path[],const char name
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetNullSpace"
 /*@
   KSPSetNullSpace - Sets the null space of the operator
@@ -777,7 +777,7 @@ PetscErrorCode  KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetNullSpace"
 /*@
   KSPGetNullSpace - Gets the null space of the operator

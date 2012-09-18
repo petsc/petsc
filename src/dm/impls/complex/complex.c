@@ -1439,7 +1439,7 @@ PetscErrorCode DMComplexRestoreTransitiveClosure(DM dm, PetscInt p, PetscBool us
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexGetFaces"
 /*
-  DMComplexGetFaces - 
+  DMComplexGetFaces -
 
   Note: This will only work for cell-vertex meshes.
 */

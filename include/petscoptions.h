@@ -74,18 +74,18 @@ PETSC_EXTERN PetscInt PetscOptionsPublishCount;
   Notes: Needs to be ended by a call the PetscOptionsEnd()
          Can add subheadings with PetscOptionsHead()
 
-  Developer notes: PetscOptionsPublish is set in PetscOptionsCheckInitial_Private() with -options_gui. When PetscOptionsPublish is set the 
+  Developer notes: PetscOptionsPublish is set in PetscOptionsCheckInitial_Private() with -options_gui. When PetscOptionsPublish is set the
 $             loop between PetscOptionsBegin() and PetscOptionsEnd() is run THREE times with PetscOptionsPublishCount of values -1,0,1 otherwise
 $             the loop is run ONCE with a PetscOptionsPublishCount of 1.
 $             = -1 : The PetscOptionsInt() etc just call the PetscOptionsGetInt() etc
 $             = 0  : The GUI objects are created in PetscOptionsInt() etc and displayed in PetscOptionsEnd() and the options
 $                    database updated updated with user changes; PetscOptionsGetInt() etc are also called
-$             = 1 : The PetscOptionsInt() etc again call the PetscOptionsGetInt() etc (possibly getting new values), in addition the help message and 
+$             = 1 : The PetscOptionsInt() etc again call the PetscOptionsGetInt() etc (possibly getting new values), in addition the help message and
 $                   default values are printed if -help was given.
 $           When PetscOptionsObject.changedmethod is set this causes PetscOptionsPublishCount to be reset to -2 (so in the next loop iteration it is -1)
-$           and the whole process is repeated. This is to handle when, for example, the KSPType is changed thus changing the list of 
-$           options available so they need to be redisplayed so the user can change the. Chaning PetscOptionsObjects.changedmethod is never 
-$           currently set.       
+$           and the whole process is repeated. This is to handle when, for example, the KSPType is changed thus changing the list of
+$           options available so they need to be redisplayed so the user can change the. Chaning PetscOptionsObjects.changedmethod is never
+$           currently set.
 
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
@@ -180,7 +180,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsHead(const char[]);
 
    Concepts: options database^subheading
 
-.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
+.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
@@ -209,8 +209,8 @@ PETSC_EXTERN PetscErrorCode PetscOptionsBoolArray(const char[],const char[],cons
 PETSC_EXTERN PetscErrorCode PetscOptionsSetFromOptions(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsAMSDestroy(void);
 
-/* 
-    See manual page for PetscOptionsBegin() 
+/*
+    See manual page for PetscOptionsBegin()
 */
 typedef enum {OPTION_INT,OPTION_LOGICAL,OPTION_REAL,OPTION_LIST,OPTION_STRING,OPTION_REAL_ARRAY,OPTION_HEAD,OPTION_INT_ARRAY,OPTION_ELIST,OPTION_LOGICAL_ARRAY,OPTION_STRING_ARRAY} PetscOptionType;
 typedef struct _n_PetscOptions* PetscOptions;
@@ -232,7 +232,7 @@ struct _n_PetscOptions {
 
 typedef struct {
   PetscOptions     next;
-  char             *prefix,*pprefix;  
+  char             *prefix,*pprefix;
   char             *title;
   MPI_Comm         comm;
   PetscBool        printhelp,changedmethod,alreadyprinted;

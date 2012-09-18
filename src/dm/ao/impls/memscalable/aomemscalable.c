@@ -1,6 +1,6 @@
 
 /*
-    The memory scalable AO application ordering routines. These store the 
+    The memory scalable AO application ordering routines. These store the
   local orderings on each processor.
 */
 
@@ -15,8 +15,8 @@ typedef struct {
 /*
        All processors have the same data so processor 1 prints it
 */
-#undef __FUNCT__  
-#define __FUNCT__ "AOView_MemoryScalable" 
+#undef __FUNCT__
+#define __FUNCT__ "AOView_MemoryScalable"
 PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -34,7 +34,7 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
 
   ierr = MPI_Comm_rank(((PetscObject)ao)->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)ao)->comm,&size);CHKERRQ(ierr);
-  
+
   ierr   = PetscObjectGetNewTag((PetscObject)ao,&tag_app);CHKERRQ(ierr);
   ierr   = PetscObjectGetNewTag((PetscObject)ao,&tag_petsc);CHKERRQ(ierr);
 
@@ -55,15 +55,15 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
       len = map->range[i+1] - map->range[i];
       app_loc   = app  + map->range[i];
       petsc_loc = petsc+ map->range[i];
-      ierr = MPI_Recv(app_loc,(PetscMPIInt)len,MPIU_INT,i,tag_app,((PetscObject)ao)->comm,&status);CHKERRQ(ierr);   
+      ierr = MPI_Recv(app_loc,(PetscMPIInt)len,MPIU_INT,i,tag_app,((PetscObject)ao)->comm,&status);CHKERRQ(ierr);
       ierr = MPI_Recv(petsc_loc,(PetscMPIInt)len,MPIU_INT,i,tag_petsc,((PetscObject)ao)->comm,&status);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"Process [%D]\n",i);
-      for (j=0; j<len; j++) {       
+      for (j=0; j<len; j++) {
         ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",map->range[i]+j,app_loc[j],map->range[i]+j,petsc_loc[j]);CHKERRQ(ierr);
       }
     }
     ierr = PetscFree2(app,petsc);CHKERRQ(ierr);
-    
+
   } else {
     /* send values */
     ierr = MPI_Send((void*)aomems->app_loc,map->n,MPIU_INT,0,tag_app,((PetscObject)ao)->comm);CHKERRQ(ierr);
@@ -73,8 +73,8 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AODestroy_MemoryScalable" 
+#undef __FUNCT__
+#define __FUNCT__ "AODestroy_MemoryScalable"
 PetscErrorCode AODestroy_MemoryScalable(AO ao)
 {
   AO_MemoryScalable *aomems = (AO_MemoryScalable*)ao->data;
@@ -92,13 +92,13 @@ PetscErrorCode AODestroy_MemoryScalable(AO ao)
 +   ao - the application ordering context
 .   n  - the number of integers in ia[]
 .   ia - the integers; these are replaced with their mapped value
--   maploc - app_loc or petsc_loc in struct "AO_MemoryScalable" 
+-   maploc - app_loc or petsc_loc in struct "AO_MemoryScalable"
 
    Output Parameter:
 .   ia - the mapped interges
  */
-#undef __FUNCT__  
-#define __FUNCT__ "AOMap_MemoryScalable_private"  
+#undef __FUNCT__
+#define __FUNCT__ "AOMap_MemoryScalable_private"
 PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscInt *maploc)
 {
   PetscErrorCode    ierr;
@@ -113,7 +113,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   PetscMPIInt       nindices,source,widx;
   PetscInt          *rbuf,*sbuf;
   MPI_Status        *send_status,*send_status2;
-  
+
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -123,7 +123,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   ierr   = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
   ierr   = PetscMalloc(n*sizeof(PetscInt),&owner);CHKERRQ(ierr);
   ierr   = PetscMemzero(owner,n*sizeof(PetscInt));CHKERRQ(ierr);
-  
+
   j       = 0;
   lastidx = -1;
   for (i=0; i<n; i++) {
@@ -134,39 +134,39 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
       if (idx >= owners[j] && idx < owners[j+1]) {
         nprocs[2*j]++;     /* num of indices to be sent */
         nprocs[2*j+1] = 1; /* send to proc[j] */
-        owner[i] = j; 
+        owner[i] = j;
         break;
       }
     }
   }
   nprocs[2*rank]=nprocs[2*rank+1]=0; /* do not receive from self! */
-  nsends = 0;  
+  nsends = 0;
   for (i=0; i<size; i++) nsends += nprocs[2*i+1];
 
   /* inform other processors of number of messages and max length*/
   ierr = PetscMaxSum(comm,nprocs,&nmax,&nreceives);CHKERRQ(ierr);
-  
+
   /* allocate arrays */
   ierr = PetscObjectGetNewTag((PetscObject)ao,&tag1);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)ao,&tag2);CHKERRQ(ierr);
 
   ierr = PetscMalloc2(nreceives*nmax,PetscInt,&rindices,nreceives,MPI_Request,&recv_waits);CHKERRQ(ierr);
   ierr = PetscMalloc2(nsends*nmax,PetscInt,&rindices2,nsends,MPI_Request,&recv_waits2);CHKERRQ(ierr);
- 
+
   ierr = PetscMalloc3(n,PetscInt,&sindices,nsends,MPI_Request,&send_waits,nsends,MPI_Status,&send_status);CHKERRQ(ierr);
   ierr = PetscMalloc3(n,PetscInt,&sindices2,nreceives,MPI_Request,&send_waits2,nreceives,MPI_Status,&send_status2);CHKERRQ(ierr);
 
   /* post 1st receives: receive others requests
-     since we don't know how long each individual message is we 
-     allocate the largest needed buffer for each receive. Potentially 
+     since we don't know how long each individual message is we
+     allocate the largest needed buffer for each receive. Potentially
      this is a lot of wasted space.
   */
-  for (i=0,count=0; i<nreceives; i++) {  
+  for (i=0,count=0; i<nreceives; i++) {
     ierr = MPI_Irecv(rindices+nmax*i,nmax,MPIU_INT,MPI_ANY_SOURCE,tag1,comm,recv_waits+count++);CHKERRQ(ierr);
   }
 
-  /* do 1st sends: 
-      1) starts[i] gives the starting index in svalues for stuff going to 
+  /* do 1st sends:
+      1) starts[i] gives the starting index in svalues for stuff going to
          the ith processor
   */
   start[0] = 0;
@@ -185,7 +185,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   }
 
   start[0] = 0;
-  for (i=1; i<size; i++) { start[i] = start[i-1] + nprocs[2*i-2];} 
+  for (i=1; i<size; i++) { start[i] = start[i-1] + nprocs[2*i-2];}
   for (i=0,count=0; i<size; i++) {
     if (nprocs[2*i+1]) {
       /* send my request to others */
@@ -201,20 +201,20 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   if (nsends) {
     ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
   }
-  
+
   /* 1st recvs: other's requests */
   for (j=0; j< nreceives; j++){
     ierr = MPI_Waitany(nreceives,recv_waits,&widx,&recv_status);CHKERRQ(ierr); /* idx: index of handle for operation that completed */
     ierr = MPI_Get_count(&recv_status,MPIU_INT,&nindices);CHKERRQ(ierr);
     rbuf = rindices+nmax*widx; /* global index */
     source = recv_status.MPI_SOURCE;
-    
+
     /* compute mapping */
     sbuf = rbuf;
     for (i=0; i<nindices; i++)sbuf[i] = maploc[rbuf[i]-owners[rank]];
 
-    /* send mapping back to the sender */ 
-    ierr = MPI_Isend(sbuf,nindices,MPIU_INT,source,tag2,comm,send_waits2+widx);CHKERRQ(ierr);  
+    /* send mapping back to the sender */
+    ierr = MPI_Isend(sbuf,nindices,MPIU_INT,source,tag2,comm,send_waits2+widx);CHKERRQ(ierr);
   }
 
   /* wait on 2nd sends */
@@ -231,22 +231,22 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
     rbuf=sindices2+start[source];
     count=0;
     for (i=0; i<n; i++){
-      if (source == owner[i]) ia[i] = rbuf[count++]; 
-    }    
+      if (source == owner[i]) ia[i] = rbuf[count++];
+    }
   }
 
   /* free arrays */
   ierr = PetscFree2(nprocs,start);CHKERRQ(ierr);
   ierr = PetscFree(owner);CHKERRQ(ierr);
-  ierr = PetscFree2(rindices,recv_waits);CHKERRQ(ierr);  
-  ierr = PetscFree2(rindices2,recv_waits2);CHKERRQ(ierr); 
-  ierr = PetscFree3(sindices,send_waits,send_status);CHKERRQ(ierr);  
+  ierr = PetscFree2(rindices,recv_waits);CHKERRQ(ierr);
+  ierr = PetscFree2(rindices2,recv_waits2);CHKERRQ(ierr);
+  ierr = PetscFree3(sindices,send_waits,send_status);CHKERRQ(ierr);
   ierr = PetscFree3(sindices2,send_waits2,send_status2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOPetscToApplication_MemoryScalable"  
+#undef __FUNCT__
+#define __FUNCT__ "AOPetscToApplication_MemoryScalable"
 PetscErrorCode AOPetscToApplication_MemoryScalable(AO ao,PetscInt n,PetscInt *ia)
 {
   PetscErrorCode    ierr;
@@ -258,8 +258,8 @@ PetscErrorCode AOPetscToApplication_MemoryScalable(AO ao,PetscInt n,PetscInt *ia
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOApplicationToPetsc_MemoryScalable" 
+#undef __FUNCT__
+#define __FUNCT__ "AOApplicationToPetsc_MemoryScalable"
 PetscErrorCode AOApplicationToPetsc_MemoryScalable(AO ao,PetscInt n,PetscInt *ia)
 {
   PetscErrorCode    ierr;
@@ -282,8 +282,8 @@ static struct _AOOps AOOps_MemoryScalable = {
        0
 };
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOCreateMemoryScalable_private" 
+#undef __FUNCT__
+#define __FUNCT__ "AOCreateMemoryScalable_private"
 PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const PetscInt from_array[],const PetscInt to_array[],AO ao, PetscInt *aomap_loc)
 {
   PetscErrorCode    ierr;
@@ -306,30 +306,30 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  
+
   /*  first count number of contributors (of from_array[]) to each processor */
   ierr = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
   ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscInt),&owner);CHKERRQ(ierr);
- 
+
   j       = 0;
   lastidx = -1;
   for (i=0; i<n; i++) {
     /* if indices are NOT locally sorted, need to start search at the beginning */
-    if (lastidx > (idx = from_array[i])) j = 0; 
+    if (lastidx > (idx = from_array[i])) j = 0;
     lastidx = idx;
     for (; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
         nprocs[2*j]  += 2; /* num of indices to be sent - in pairs (ip,ia) */
         nprocs[2*j+1] = 1; /* send to proc[j] */
-        owner[i] = j; 
+        owner[i] = j;
         break;
       }
     }
   }
   nprocs[2*rank]=nprocs[2*rank+1]=0; /* do not receive from self! */
-  nsends = 0;  
-  for (i=0; i<size; i++) nsends += nprocs[2*i+1];  
+  nsends = 0;
+  for (i=0; i<size; i++) nsends += nprocs[2*i+1];
 
   /* inform other processors of number of messages and max length*/
   ierr = PetscMaxSum(comm,nprocs,&nmax,&nreceives);CHKERRQ(ierr);
@@ -339,14 +339,14 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
   ierr = PetscMalloc2(nreceives*nmax,PetscInt,&rindices,nreceives,MPI_Request,&recv_waits);CHKERRQ(ierr);
   ierr = PetscMalloc3(2*n,PetscInt,&sindices,nsends,MPI_Request,&send_waits,nsends,MPI_Status,&send_status);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscInt),&start);CHKERRQ(ierr);
- 
+
   /* post receives: */
-  for (i=0; i<nreceives; i++) {  
+  for (i=0; i<nreceives; i++) {
     ierr = MPI_Irecv(rindices+nmax*i,nmax,MPIU_INT,MPI_ANY_SOURCE,tag,comm,recv_waits+i);CHKERRQ(ierr);
   }
 
   /* do sends:
-      1) starts[i] gives the starting index in svalues for stuff going to 
+      1) starts[i] gives the starting index in svalues for stuff going to
          the ith processor
   */
   start[0] = 0;
@@ -356,16 +356,16 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
     if (j != rank){
       ip = from_array[i];
       ia = to_array[i];
-      sindices[start[j]++]  = ip; sindices[start[j]++]  = ia; 
+      sindices[start[j]++]  = ip; sindices[start[j]++]  = ia;
     } else { /* compute my own map */
       ip = from_array[i] -owners[rank];
       ia = to_array[i];
-      aomap_loc[ip] = ia; 
+      aomap_loc[ip] = ia;
     }
   }
 
   start[0] = 0;
-  for (i=1; i<size; i++) { start[i] = start[i-1] + nprocs[2*i-2];} 
+  for (i=1; i<size; i++) { start[i] = start[i-1] + nprocs[2*i-2];}
   for (i=0,count=0; i<size; i++) {
     if (nprocs[2*i+1]) {
       ierr = MPI_Isend(sindices+start[i],nprocs[2*i],MPIU_INT,i,tag,comm,send_waits+count);CHKERRQ(ierr);
@@ -385,7 +385,7 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
     ierr = MPI_Waitany(nreceives,recv_waits,&widx,&recv_status);CHKERRQ(ierr);
     ierr = MPI_Get_count(&recv_status,MPIU_INT,&nindices);CHKERRQ(ierr);
     rbuf = rindices+nmax*widx; /* global index */
-  
+
     /* compute local mapping */
     for (i=0; i<nindices; i+=2){ /* pack aomap_loc */
       ip = rbuf[i] - owners[rank]; /* local index */
@@ -404,8 +404,8 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "AOCreate_MemoryScalable" 
+#undef __FUNCT__
+#define __FUNCT__ "AOCreate_MemoryScalable"
 PetscErrorCode AOCreate_MemoryScalable(AO ao)
 {
   PetscErrorCode    ierr;
@@ -416,7 +416,7 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
   AO_MemoryScalable *aomems;
   PetscLayout       map;
   PetscMPIInt       *lens,size,rank,*disp;
-  
+
   PetscFunctionBegin;
   /* create special struct aomems */
   ierr = PetscNewLog(ao, AO_MemoryScalable, &aomems);CHKERRQ(ierr);
@@ -436,7 +436,7 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
   for (i = 0; i < size; i++) {
     disp[i] = N;
     N      += lens[i];
-  } 
+  }
 
   /* If ispetsc is 0 then use "natural" numbering */
   if (napp) {
@@ -449,7 +449,7 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
       petsc = (PetscInt*)mypetsc;
     }
   }
-  
+
   /* create a map with global size N - used to determine the local sizes of ao - shall we use local napp instead of N? */
   ierr = PetscLayoutCreate(comm,&map);CHKERRQ(ierr);
   map->bs = 1;
@@ -484,8 +484,8 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOCreateMemoryScalable" 
+#undef __FUNCT__
+#define __FUNCT__ "AOCreateMemoryScalable"
 /*@C
    AOCreateMemoryScalable - Creates a memory scalable application ordering using two integer arrays.
 
@@ -495,7 +495,7 @@ EXTERN_C_END
 +  comm - MPI communicator that is to share AO
 .  napp - size of integer arrays
 .  myapp - integer array that defines an ordering
--  mypetsc - integer array that defines another ordering (may be PETSC_NULL to 
+-  mypetsc - integer array that defines another ordering (may be PETSC_NULL to
              indicate the natural ordering, that is 0,1,2,3,...)
 
    Output Parameter:
@@ -503,7 +503,7 @@ EXTERN_C_END
 
    Level: beginner
 
-    Notes: The arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"  
+    Notes: The arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
            in the indices. Use AOCreateMapping() or AOCreateMappingIS() if you wish to have "holes" in the indices.
            Comparing with AOCreateBasic(), this routine trades memory with message communication.
 
@@ -532,8 +532,8 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm,PetscInt napp,const PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOCreateMemoryScalableIS" 
+#undef __FUNCT__
+#define __FUNCT__ "AOCreateMemoryScalableIS"
 /*@C
    AOCreateMemoryScalableIS - Creates a memory scalable application ordering using two index sets.
 
@@ -549,7 +549,7 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm,PetscInt napp,const PetscInt
 
    Level: beginner
 
-    Notes: The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates; 
+    Notes: The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
            that is there cannot be any "holes".
            Comparing with AOCreateBasicIS(), this routine trades memory with message communication.
 .keywords: AO, create

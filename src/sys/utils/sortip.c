@@ -10,7 +10,7 @@
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortIntWithPermutation_Private"
 static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[],PetscInt vdx[],PetscInt right)
 {
@@ -36,10 +36,10 @@ static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[],Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortIntWithPermutation"
 /*@
-   PetscSortIntWithPermutation - Computes the permutation of values that gives 
+   PetscSortIntWithPermutation - Computes the permutation of values that gives
    a sorted sequence.
 
    Not Collective
@@ -51,7 +51,7 @@ static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[],Pet
 
    Level: intermediate
 
-   Notes: 
+   Notes:
    i is unchanged on output.
 
    Concepts: sorting^ints with permutation
@@ -82,7 +82,7 @@ PetscErrorCode  PetscSortIntWithPermutation(PetscInt n,const PetscInt i[],PetscI
 
 /* ---------------------------------------------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortRealWithPermutation_Private"
 static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[],PetscInt vdx[],PetscInt right)
 {
@@ -109,10 +109,10 @@ static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[],P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortRealWithPermutation"
 /*@
-   PetscSortRealWithPermutation - Computes the permutation of values that gives 
+   PetscSortRealWithPermutation - Computes the permutation of values that gives
    a sorted sequence.
 
    Not Collective
@@ -124,7 +124,7 @@ static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[],P
 
    Level: intermediate
 
-   Notes: 
+   Notes:
    i is unchanged on output.
 
    Concepts: sorting^doubles with permutation
@@ -154,7 +154,7 @@ PetscErrorCode  PetscSortRealWithPermutation(PetscInt n,const PetscReal i[],Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortStrWithPermutation_Private"
 static PetscErrorCode PetscSortStrWithPermutation_Private(const char* v[],PetscInt vdx[],PetscInt right)
 {
@@ -184,10 +184,10 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char* v[],PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortStrWithPermutation"
 /*@C
-   PetscSortStrWithPermutation - Computes the permutation of values that gives 
+   PetscSortStrWithPermutation - Computes the permutation of values that gives
    a sorted sequence.
 
    Not Collective
@@ -199,7 +199,7 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char* v[],PetscI
 
    Level: intermediate
 
-   Notes: 
+   Notes:
    i is unchanged on output.
 
    Concepts: sorting^ints with permutation

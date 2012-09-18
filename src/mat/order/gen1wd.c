@@ -30,9 +30,9 @@ extern PetscErrorCode SPARSEPACKrevrse(PetscInt*,PetscInt*),SPARSEPACKrootls(Pet
 /*    PROGRAM SUBROUTINES -*/
 /*       FN1WD, REVRSE, ROOTLS.*/
 /****************************************************************/
-#undef __FUNCT__  
-#define __FUNCT__ "SPARSEPACKgen1wd" 
-PetscErrorCode SPARSEPACKgen1wd(PetscInt *neqns, PetscInt *xadj, PetscInt *adjncy, 
+#undef __FUNCT__
+#define __FUNCT__ "SPARSEPACKgen1wd"
+PetscErrorCode SPARSEPACKgen1wd(PetscInt *neqns, PetscInt *xadj, PetscInt *adjncy,
 	                        PetscInt *mask, PetscInt *nblks, PetscInt *xblk, PetscInt *perm, PetscInt *xls, PetscInt *ls)
 {
     /* System generated locals */

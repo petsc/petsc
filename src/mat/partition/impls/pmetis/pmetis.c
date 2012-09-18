@@ -1,7 +1,7 @@
- 
+
 #include <../src/mat/impls/adj/mpi/mpiadj.h>    /*I "petscmat.h" I*/
 
-/* 
+/*
    Currently using ParMetis-4.0.2
 */
 
@@ -26,8 +26,8 @@ typedef struct {
 /*
    Uses the ParMETIS parallel matrix partitioner to partition the matrix in parallel
 */
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningApply_Parmetis" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningApply_Parmetis"
 static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
@@ -43,7 +43,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     amat = mat;
     PetscObjectReference((PetscObject)amat);CHKERRQ(ierr);
   } else {
-    /* bs indicates if the converted matrix is "reduced" from the original and hence the 
+    /* bs indicates if the converted matrix is "reduced" from the original and hence the
        resulting partition results need to be stretched to match the original matrix */
     ierr = MatConvert(mat,MATMPIADJ,MAT_INITIAL_MATRIX,&amat);CHKERRQ(ierr);
     if (mat->rmap->n > 0) bs = amat->rmap->n/mat->rmap->n;
@@ -125,8 +125,8 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningView_Parmetis" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningView_Parmetis"
 PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer viewer)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
@@ -153,10 +153,10 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningParmetisSetCoarseSequential"
 /*@
-     MatPartitioningParmetisSetCoarseSequential - Use the sequential code to 
+     MatPartitioningParmetisSetCoarseSequential - Use the sequential code to
          do the partitioning of the coarse grid.
 
   Logically Collective on MatPartitioning
@@ -176,7 +176,7 @@ PetscErrorCode  MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningParmetisGetEdgeCut"
 /*@
   MatPartitioningParmetisGetEdgeCut - Returns the number of edge cuts in the vertex partition.
@@ -199,8 +199,8 @@ PetscErrorCode  MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningSetFromOptions_Parmetis" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningSetFromOptions_Parmetis"
 PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
 {
   PetscErrorCode ierr;
@@ -217,8 +217,8 @@ PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningDestroy_Parmetis" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningDestroy_Parmetis"
 PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
@@ -252,8 +252,8 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningCreate_Parmetis" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningCreate_Parmetis"
 PetscErrorCode  MatPartitioningCreate_Parmetis(MatPartitioning part)
 {
   PetscErrorCode ierr;
@@ -277,11 +277,11 @@ PetscErrorCode  MatPartitioningCreate_Parmetis(MatPartitioning part)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMeshToVertexGraph"
 /*@
  MatMeshToVertexGraph -   This routine does not exist because ParMETIS does not provide the functionality.  Uses the ParMETIS package to
-                       convert a Mat that represents a mesh to a Mat the represents the graph of the coupling 
+                       convert a Mat that represents a mesh to a Mat the represents the graph of the coupling
                        between vertices of the cells and is suitable for partitioning with the MatPartitioning object. Use this to partition
                        vertices of a mesh. More likely you should use MatMeshToCellGraph()
 
@@ -289,7 +289,7 @@ EXTERN_C_END
 
    Input Parameter:
 +     mesh - the graph that represents the mesh
--     ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangules and 
+-     ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangules and
                      quadralaterials, 3 for tetrahedrals and 4 for hexahedrals
 
    Output Parameter:
@@ -298,13 +298,13 @@ EXTERN_C_END
    Notes:
      Currently requires ParMetis to be installed and uses ParMETIS_V3_Mesh2Dual()
 
-     The columns of each row of the Mat mesh are the global vertex numbers of the vertices of that rows cell. The number of rows in mesh is 
+     The columns of each row of the Mat mesh are the global vertex numbers of the vertices of that rows cell. The number of rows in mesh is
      number of cells, the number of columns is the number of vertices.
 
    Level: advanced
 
 .seealso: MatMeshToCellGraph(), MatCreateMPIAdj(), MatPartitioningCreate()
-   
+
 @*/
 PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
 {
@@ -313,10 +313,10 @@ PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMeshToCellGraph"
 /*@
-     MatMeshToCellGraph -   Uses the ParMETIS package to convert a Mat that represents a mesh to a Mat the represents the graph of the coupling 
+     MatMeshToCellGraph -   Uses the ParMETIS package to convert a Mat that represents a mesh to a Mat the represents the graph of the coupling
                        between cells (the "dual" graph) and is suitable for partitioning with the MatPartitioning object. Use this to partition
                        cells of a mesh.
 
@@ -324,7 +324,7 @@ PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
 
    Input Parameter:
 +     mesh - the graph that represents the mesh
--     ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangules and 
+-     ncommonnodes - mesh elements that share this number of common nodes are considered neighbors, use 2 for triangules and
                      quadralaterials, 3 for tetrahedrals and 4 for hexahedrals
 
    Output Parameter:
@@ -333,9 +333,9 @@ PetscErrorCode MatMeshToVertexGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
    Notes:
      Currently requires ParMetis to be installed and uses ParMETIS_V3_Mesh2Dual()
 
-     The columns of each row of the Mat mesh are the global vertex numbers of the vertices of that rows cell. The number of rows in mesh is 
+     The columns of each row of the Mat mesh are the global vertex numbers of the vertices of that rows cell. The number of rows in mesh is
      number of cells, the number of columns is the number of vertices.
-   
+
 
    Level: advanced
 

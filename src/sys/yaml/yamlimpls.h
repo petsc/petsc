@@ -43,7 +43,7 @@ options_list_populate(char *filename, options_list_t *options_list);
  * The application is responsible for freeing any buffers assiciated with the produced
  * options_list object using the options_list_delete function.
  *
- * @param[in]   str            A string containing the YAML file. 
+ * @param[in]   str            A string containing the YAML file.
  * @param[out]  options_list   An empty options_list object.
  *
  * returns 1 if the function succeeded, 0 on error.

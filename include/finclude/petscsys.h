@@ -12,7 +12,7 @@
 
 ! ------------------------------------------------------------------------
 !     Non Common block Stuff declared first
-!    
+!
 !     Flags
 !
       PetscBool  PETSC_TRUE
@@ -33,7 +33,7 @@
 
       PetscEnum PETSC_FP_TRAP_OFF
       PetscEnum PETSC_FP_TRAP_ON
-      parameter (PETSC_FP_TRAP_OFF = 0,PETSC_FP_TRAP_ON = 1) 
+      parameter (PETSC_FP_TRAP_OFF = 0,PETSC_FP_TRAP_ON = 1)
 
 
 
@@ -54,10 +54,10 @@
       PetscFortranAddr PETSC_VIEWER_MATLAB_SELF
 
 !
-!     The numbers used below should match those in 
+!     The numbers used below should match those in
 !     petsc-private/fortranimpl.h
 !
-      parameter (PETSC_VIEWER_DRAW_WORLD   = 4) 
+      parameter (PETSC_VIEWER_DRAW_WORLD   = 4)
       parameter (PETSC_VIEWER_DRAW_SELF    = 5)
       parameter (PETSC_VIEWER_SOCKET_WORLD = 6)
       parameter (PETSC_VIEWER_SOCKET_SELF  = 7)
@@ -109,7 +109,7 @@
       parameter (PETSC_USE_POINTER = 2)
 !
 ! ------------------------------------------------------------------------
-!     PETSc mathematics include file. Defines certain basic mathematical 
+!     PETSc mathematics include file. Defines certain basic mathematical
 !    constants and functions for working with single and double precision
 !    floating point numbers as well as complex and integers.
 !
@@ -119,7 +119,7 @@
       parameter (PETSC_i = (0.0d0,1.0d0))
 !
 !     Basic constants
-! 
+!
       PetscFortranDouble PETSC_PI
       PetscFortranDouble PETSC_MAX_REAL
       PetscFortranDouble PETSC_MIN_REAL
@@ -144,7 +144,7 @@
 ! ----------------------------------------------------------------------------
 !    BEGIN PETSc aliases for MPI_ constants
 !
-      integer MPIU_SCALAR 
+      integer MPIU_SCALAR
 #if defined(PETSC_USE_COMPLEX)
 #if defined (PETSC_USE_REAL_SINGLE)
       parameter(MPIU_SCALAR = MPI_COMPLEX)
@@ -196,7 +196,7 @@
 !
 !
 !     A string should be in a different common block
-!  
+!
       common /petscfortran1/ PETSC_NULL_CHARACTER
       common /petscfortran2/ PETSC_NULL_INTEGER
       common /petscfortran3/ PETSC_NULL
@@ -221,7 +221,7 @@
       PetscBool  PetscIsInfOrNanScalar
       PetscBool  PetscIsInfOrNanReal
 
-  
+
 !    END COMMON-BLOCK VARIABLES
 ! ----------------------------------------------------------------------------
 !
@@ -230,7 +230,7 @@
 !
 #define PETSCRAND 'rand'
 #define PETSCRAND48 'rand48'
-#define PETSCSPRNG 'sprng'          
+#define PETSCSPRNG 'sprng'
 !
 !
 !

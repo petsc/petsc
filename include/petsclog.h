@@ -4,7 +4,7 @@
 
 #if !defined(__PetscLog_H)
 #define __PetscLog_H
-#include "petscsys.h"  
+#include "petscsys.h"
 
 /*MC
     PetscLogEvent - id used to identify PETSc or user events which timed portions (blocks of executable)
@@ -43,7 +43,7 @@ PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[],void*,const char[],..
 #define PetscInfo5(A,S,a1,a2,a3,a4,a5)       PetscInfo_Private(PETSC_FUNCTION_NAME,A,S,a1,a2,a3,a4,a5)
 #define PetscInfo6(A,S,a1,a2,a3,a4,a5,a6)    PetscInfo_Private(PETSC_FUNCTION_NAME,A,S,a1,a2,a3,a4,a5,a6)
 #define PetscInfo7(A,S,a1,a2,a3,a4,a5,a6,a7) PetscInfo_Private(PETSC_FUNCTION_NAME,A,S,a1,a2,a3,a4,a5,a6,a7)
-#else 
+#else
 #define PetscInfo(A,S)                       0
 #define PetscInfo1(A,S,a1)                   0
 #define PetscInfo2(A,S,a1,a2)                0
@@ -60,13 +60,13 @@ PETSC_EXTERN PetscBool PetscLogPrintInfo;  /* if true, indicates PetscInfo() is 
 /* We must make the following structures available to access the event
      activation flags in the PetscLogEventBegin/End() macros. These are not part of the PETSc public
      API and are not intended to be used by other parts of PETSc or by users.
-  
+
      The code that manipulates these structures is in src/sys/plog/utils.
 */
 typedef struct _n_PetscIntStack *PetscIntStack;
 
 /*
-    PetscClassRegInfo, PetscClassPerfInfo - Each class has two data structures associated with it. The first has 
+    PetscClassRegInfo, PetscClassPerfInfo - Each class has two data structures associated with it. The first has
        static information about it, the second collects statistics on how many objects of the class are created,
        how much memory they use, etc.
 
@@ -100,8 +100,8 @@ struct _n_PetscClassPerfLog {
 };
 /* -----------------------------------------------------------------------------------------------------*/
 /*
-    PetscEventRegInfo, PetscEventPerfInfo - Each event has two data structures associated with it. The first has 
-       static information about it, the second collects statistics on how many times the event is used, how 
+    PetscEventRegInfo, PetscEventPerfInfo - Each event has two data structures associated with it. The first has
+       static information about it, the second collects statistics on how many times the event is used, how
        much time it takes, etc.
 
     PetscEventRegLog, PetscEventPerfLog - an array of all PetscEventRegInfo and PetscEventPerfInfo for all events. There is one
@@ -171,7 +171,7 @@ struct _n_PetscStageLog {
 
 #if defined(PETSC_USE_LOG)  /* --- Logging is turned on --------------------------------*/
 
-/* 
+/*
    Flop counting:  We count each arithmetic operation (e.g., addition, multiplication) separately.
 
    For the complex numbers version, note that
@@ -211,8 +211,8 @@ PETSC_EXTERN PetscBool UseMPE;
   ((UseMPE && petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
    MPE_Log_event(petsc_stageLog->eventLog->eventInfo[e].mpe_id_end,0,NULL) : 0)
 
-#else 
-#define PETSC_LOG_EVENT_MPE_BEGIN(e) 0 
+#else
+#define PETSC_LOG_EVENT_MPE_BEGIN(e) 0
 #define PETSC_LOG_EVENT_MPE_END(e)   0
 #endif
 
@@ -303,14 +303,14 @@ PETSC_EXTERN PetscErrorCode PetscLogEventGetFlops(PetscLogEvent, PetscLogDouble*
 PETSC_EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
 
 /*
-     These are used internally in the PETSc routines to keep a count of MPI messages and 
+     These are used internally in the PETSc routines to keep a count of MPI messages and
    their sizes.
 
      This does not work for MPI-Uni because our include/mpiuni/mpi.h file
-   uses macros to defined the MPI operations. 
+   uses macros to defined the MPI operations.
 
-     It does not work correctly from HP-UX because it processes the 
-   macros in a way that sometimes it double counts, hence 
+     It does not work correctly from HP-UX because it processes the
+   macros in a way that sometimes it double counts, hence
    PETSC_HAVE_BROKEN_RECURSIVE_MACRO
 
      It does not work with Windows because winmpich lacks MPI_Type_size()
@@ -319,12 +319,12 @@ PETSC_EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
 /*
    Logging of MPI activities
 */
-PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSize(PetscLogDouble *buff,PetscMPIInt count,MPI_Datatype type) 
+PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSize(PetscLogDouble *buff,PetscMPIInt count,MPI_Datatype type)
 {
   PetscMPIInt mysize; return  (MPI_Type_size(type,&mysize) || ((*buff += (PetscLogDouble) (count*mysize)),0));
 }
 
-PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogDouble *buff,PetscMPIInt *counts,MPI_Datatype type) 
+PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogDouble *buff,PetscMPIInt *counts,MPI_Datatype type)
 {
   PetscMPIInt mysize, commsize, p;
   PetscErrorCode _myierr;
@@ -360,7 +360,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogD
 
 #define MPI_Wait(request,status) \
  ((petsc_wait_ct++,petsc_sum_of_waits_ct++,0) || MPI_Wait(request,status))
-  
+
 #define MPI_Waitany(a,b,c,d) \
  ((petsc_wait_any_ct++,petsc_sum_of_waits_ct++,0) || MPI_Waitany(a,b,c,d))
 
@@ -476,7 +476,7 @@ PETSC_EXTERN PetscErrorCode PetscIntStackPop(PetscIntStack, int *);
 PETSC_EXTERN PetscErrorCode PetscIntStackTop(PetscIntStack, int *);
 PETSC_EXTERN PetscErrorCode PetscIntStackEmpty(PetscIntStack, PetscBool  *);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLogGetStageLog"
 /*@C
   PetscLogGetStageLog - This function returns the default stage logging object.
@@ -505,7 +505,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscLogGetStageLog(PetscStageLog *stageLog)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageLogGetCurrent"
 /*@C
   PetscStageLogGetCurrent - This function returns the stage from the top of the stack.
@@ -546,7 +546,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscStageLogGetCurrent(PetscStageLog stageL
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageLogGetEventPerfLog"
 /*@C
   PetscStageLogGetEventPerfLog - This function returns the PetscEventPerfLog for the given stage.

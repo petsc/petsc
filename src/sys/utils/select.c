@@ -1,7 +1,7 @@
 
 #include <petscsys.h>              /*I  "petscsys.h"  I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscPopUpSelect"
 /*@C
      PetscPopUpSelect - Pops up a windows with a list of choices; allows one to be chosen
@@ -9,7 +9,7 @@
      Collective on MPI_Comm
 
      Input Parameters:
-+    comm - MPI communicator, all processors in communicator must call this but input 
++    comm - MPI communicator, all processors in communicator must call this but input
             from first communicator is the only one that is used
 .    machine - location to run popup program or PETSC_NULL
 .    title - text to display above choices
@@ -24,7 +24,7 @@
      Notes:
        Uses DISPLAY variable or -display option to determine where it opens the window
 
-       Currently this uses a file ~username/.popuptmp to pass the value back from the 
+       Currently this uses a file ~username/.popuptmp to pass the value back from the
        xterm; hence this program must share a common file system with the machine
        parameter passed in below.
 

@@ -19,7 +19,7 @@ static PetscErrorCode JacMatMultCompare(SNES,Vec,Vec,double);
 extern PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat,double,double,double);
 extern PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESDiffParameterCreate_More"
 PetscErrorCode SNESDiffParameterCreate_More(SNES snes,Vec x,void **outneP)
 {
@@ -52,8 +52,8 @@ PetscErrorCode SNESDiffParameterCreate_More(SNES snes,Vec x,void **outneP)
 
   /* Open output file */
   ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_mf_noise_file",noise_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) neP->fp = fopen(noise_file,"w"); 
-  else     neP->fp = fopen("noise.out","w"); 
+  if (flg) neP->fp = fopen(noise_file,"w");
+  else     neP->fp = fopen("noise.out","w");
   if (!neP->fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file");
   ierr = PetscInfo(snes,"Creating Jorge's differencing parameter context\n");CHKERRQ(ierr);
 
@@ -61,7 +61,7 @@ PetscErrorCode SNESDiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESDiffParameterDestroy_More"
 PetscErrorCode SNESDiffParameterDestroy_More(void *nePv)
 {
@@ -73,12 +73,12 @@ PetscErrorCode SNESDiffParameterDestroy_More(void *nePv)
   /* Destroy work vectors and close output file */
   ierr = VecDestroyVecs(3,&neP->workv);CHKERRQ(ierr);
   err = fclose(neP->fp);
-  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
+  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
   ierr = PetscFree(neP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESDiffParameterCompute_More"
 PetscErrorCode SNESDiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double *fnoise,double *hopt)
 {
@@ -216,12 +216,12 @@ PetscErrorCode SNESDiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,do
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-noise_test",&noise_test,PETSC_NULL);CHKERRQ(ierr);
   if (noise_test) {
-    ierr = JacMatMultCompare(snes,x,p,*hopt);CHKERRQ(ierr); 
+    ierr = JacMatMultCompare(snes,x,p,*hopt);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "JacMatMultCompare"
 PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
 {
@@ -266,7 +266,7 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   }
 
   /* Test Jacobian-vector product computation */
-  alpha = -1.0;  
+  alpha = -1.0;
   h = 0.01 * hopt;
   for (i=0; i<5; i++) {
     /* Set differencing parameter for matrix-free multiplication */

@@ -4,17 +4,17 @@
 */
 #include <petscsys.h>  /*I   "petscsys.h"    I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectSetOptionsPrefix"
 /*
-   PetscObjectSetOptionsPrefix - Sets the prefix used for searching for all 
-   options of PetscObjectType in the database. 
+   PetscObjectSetOptionsPrefix - Sets the prefix used for searching for all
+   options of PetscObjectType in the database.
 
    Input Parameters:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
 .  prefix - the prefix string to prepend to option requests of the object.
 
-   Notes: 
+   Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.
@@ -38,17 +38,17 @@ PetscErrorCode  PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectAppendOptionsPrefix"
 /*
-   PetscObjectAppendOptionsPrefix - Sets the prefix used for searching for all 
-   options of PetscObjectType in the database. 
+   PetscObjectAppendOptionsPrefix - Sets the prefix used for searching for all
+   options of PetscObjectType in the database.
 
    Input Parameters:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
 .  prefix - the prefix string to prepend to option requests of the object.
 
-   Notes: 
+   Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.
@@ -80,7 +80,7 @@ PetscErrorCode  PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectGetOptionsPrefix"
 /*
    PetscObjectGetOptionsPrefix - Gets the prefix of the PetscObject.
@@ -103,17 +103,17 @@ PetscErrorCode  PetscObjectGetOptionsPrefix(PetscObject obj,const char *prefix[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectPrependOptionsPrefix"
 /*
-   PetscObjectPrependOptionsPrefix - Sets the prefix used for searching for all 
-   options of PetscObjectType in the database. 
+   PetscObjectPrependOptionsPrefix - Sets the prefix used for searching for all
+   options of PetscObjectType in the database.
 
    Input Parameters:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
 .  prefix - the prefix string to prepend to option requests of the object.
 
-   Notes: 
+   Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
    The first character of all runtime options is AUTOMATICALLY the
    hyphen.

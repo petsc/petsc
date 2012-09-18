@@ -1,8 +1,8 @@
 
 /*
     Creates a matrix class for using the Neumann-Neumann type preconditioners.
-   This stores the matrices in globally unassembled form. Each processor 
-   assembles only its local Neumann problem and the parallel matrix vector 
+   This stores the matrices in globally unassembled form. Each processor
+   assembles only its local Neumann problem and the parallel matrix vector
    product is handled "implicitly".
 
      We provide:
@@ -14,8 +14,8 @@
 
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_IS" 
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_IS"
 PetscErrorCode MatDestroy_IS(Mat A)
 {
   PetscErrorCode ierr;
@@ -33,8 +33,8 @@ PetscErrorCode MatDestroy_IS(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMult_IS" 
+#undef __FUNCT__
+#define __FUNCT__ "MatMult_IS"
 PetscErrorCode MatMult_IS(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -57,13 +57,13 @@ PetscErrorCode MatMult_IS(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_IS"
 static PetscErrorCode MatMultAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
 {
-  Vec            temp_vec; 
+  Vec            temp_vec;
   PetscErrorCode ierr;
- 
+
   PetscFunctionBegin; /*  v3 = v2 + A * v1.*/
   if (v3 != v2) {
     ierr = MatMult(A,v1,v3);CHKERRQ(ierr);
@@ -78,8 +78,8 @@ static PetscErrorCode MatMultAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMultTranspose_IS" 
+#undef __FUNCT__
+#define __FUNCT__ "MatMultTranspose_IS"
 PetscErrorCode MatMultTranspose_IS(Mat A,Vec x,Vec y)
 {
   Mat_IS         *is = (Mat_IS*)A->data;
@@ -100,11 +100,11 @@ PetscErrorCode MatMultTranspose_IS(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTransposeAdd_IS"
 PetscErrorCode MatMultTransposeAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
 {
-  Vec            temp_vec; 
+  Vec            temp_vec;
   PetscErrorCode ierr;
 
   PetscFunctionBegin; /*  v3 = v2 + A' * v1.*/
@@ -121,7 +121,7 @@ PetscErrorCode MatMultTransposeAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatView_IS"
 PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
 {
@@ -136,8 +136,8 @@ PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetLocalToGlobalMapping_IS" 
+#undef __FUNCT__
+#define __FUNCT__ "MatSetLocalToGlobalMapping_IS"
 PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping)
 {
   PetscErrorCode ierr;
@@ -151,7 +151,7 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
   PetscCheckSameComm(A,1,rmapping,2);
   if (rmapping != cmapping) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MATIS requires the row and column mappings to be identical");
   ierr = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&is->mapping);CHKERRQ(ierr); 
+  ierr = ISLocalToGlobalMappingDestroy(&is->mapping);CHKERRQ(ierr);
   is->mapping = rmapping;
 
   /* Create the local matrix A */
@@ -198,7 +198,7 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
     }\
   }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSetValues_IS"
 PetscErrorCode MatSetValues_IS(Mat mat, PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols, const PetscScalar *values, InsertMode addv)
 {
@@ -207,7 +207,7 @@ PetscErrorCode MatSetValues_IS(Mat mat, PetscInt m,const PetscInt *rows, PetscIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_DEBUG) 
+#if defined(PETSC_USE_DEBUG)
   if (m > 2048 || n > 2048) {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of row/column indices must be <= 2048: they are %D %D",m,n);
   }
@@ -221,8 +221,8 @@ PetscErrorCode MatSetValues_IS(Mat mat, PetscInt m,const PetscInt *rows, PetscIn
 #undef ISG2LMapSetUp
 #undef ISG2LMapApply
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetValuesLocal_IS" 
+#undef __FUNCT__
+#define __FUNCT__ "MatSetValuesLocal_IS"
 PetscErrorCode MatSetValuesLocal_IS(Mat A,PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols,const PetscScalar *values,InsertMode addv)
 {
   PetscErrorCode ierr;
@@ -233,8 +233,8 @@ PetscErrorCode MatSetValuesLocal_IS(Mat A,PetscInt m,const PetscInt *rows, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatZeroRows_IS" 
+#undef __FUNCT__
+#define __FUNCT__ "MatZeroRows_IS"
 PetscErrorCode MatZeroRows_IS(Mat A,PetscInt n,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   Mat_IS         *is = (Mat_IS*)A->data;
@@ -248,12 +248,12 @@ PetscErrorCode MatZeroRows_IS(Mat A,PetscInt n,const PetscInt rows[],PetscScalar
     ierr = ISGlobalToLocalMappingApply(is->mapping,IS_GTOLM_DROP,n,rows,&n_l,rows_l);CHKERRQ(ierr);
   }
   ierr = MatZeroRowsLocal(A,n_l,rows_l,diag,x,b);CHKERRQ(ierr);
-  ierr = PetscFree(rows_l);CHKERRQ(ierr); 
+  ierr = PetscFree(rows_l);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatZeroRowsLocal_IS" 
+#undef __FUNCT__
+#define __FUNCT__ "MatZeroRowsLocal_IS"
 PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscScalar diag,Vec x,Vec b)
 {
   Mat_IS         *is = (Mat_IS*)A->data;
@@ -296,8 +296,8 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatAssemblyBegin_IS" 
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyBegin_IS"
 PetscErrorCode MatAssemblyBegin_IS(Mat A,MatAssemblyType type)
 {
   Mat_IS         *is = (Mat_IS*)A->data;
@@ -308,8 +308,8 @@ PetscErrorCode MatAssemblyBegin_IS(Mat A,MatAssemblyType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatAssemblyEnd_IS" 
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_IS"
 PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 {
   Mat_IS         *is = (Mat_IS*)A->data;
@@ -321,19 +321,19 @@ PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatISGetLocalMat_IS"
 PetscErrorCode  MatISGetLocalMat_IS(Mat mat,Mat *local)
 {
   Mat_IS *is = (Mat_IS *)mat->data;
-  
+
   PetscFunctionBegin;
   *local = is->A;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatISGetLocalMat"
 /*@
     MatISGetLocalMat - Gets the local matrix stored inside a MATIS matrix.
@@ -347,12 +347,12 @@ EXTERN_C_END
   Level: advanced
 
   Notes:
-    This can be called if you have precomputed the nonzero structure of the 
+    This can be called if you have precomputed the nonzero structure of the
   matrix and want to provide it to the inner matrix object to improve the performance
   of the MatSetValues() operation.
 
 .seealso: MATIS
-@*/ 
+@*/
 PetscErrorCode  MatISGetLocalMat(Mat mat,Mat *local)
 {
   PetscErrorCode ierr;
@@ -365,7 +365,7 @@ PetscErrorCode  MatISGetLocalMat(Mat mat,Mat *local)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatISSetLocalMat_IS"
 PetscErrorCode  MatISSetLocalMat_IS(Mat mat,Mat local)
 {
@@ -389,7 +389,7 @@ PetscErrorCode  MatISSetLocalMat_IS(Mat mat,Mat local)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatISSetLocalMat"
 /*@
     MatISSetLocalMat - Set the local matrix stored inside a MATIS matrix.
@@ -403,7 +403,7 @@ EXTERN_C_END
   Level: advanced
 
   Notes:
-    This can be called if you have precomputed the local matrix and 
+    This can be called if you have precomputed the local matrix and
   want to provide it to the matrix object MATIS.
 
 .seealso: MATIS
@@ -418,19 +418,19 @@ PetscErrorCode  MatISSetLocalMat(Mat mat,Mat local)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatZeroEntries_IS"
 PetscErrorCode MatZeroEntries_IS(Mat A)
 {
-  Mat_IS         *a = (Mat_IS*)A->data; 
+  Mat_IS         *a = (Mat_IS*)A->data;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;  
+  PetscFunctionBegin;
   ierr = MatZeroEntries(a->A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatScale_IS"
 PetscErrorCode MatScale_IS(Mat A,PetscScalar a)
 {
@@ -460,22 +460,22 @@ PetscErrorCode MatGetDiagonal_IS(Mat A, Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSetOption_IS"
 PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool  flg)
 {
-  Mat_IS         *a = (Mat_IS*)A->data; 
+  Mat_IS         *a = (Mat_IS*)A->data;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;  
+  PetscFunctionBegin;
   ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatCreateIS" 
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateIS"
 /*@
-    MatCreateIS - Creates a "process" unassmembled matrix, it is assembled on each 
+    MatCreateIS - Creates a "process" unassmembled matrix, it is assembled on each
        process but not across processes.
 
    Input Parameters:
@@ -491,7 +491,7 @@ PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscBool  flg)
 
    Notes: See MATIS for more details
           m and n are NOT related to the size of the map, they are the size of the part of the vector owned
-          by that process. m + nghosts (or n + nghosts) is the length of map since map maps all local points 
+          by that process. m + nghosts (or n + nghosts) is the length of map since map maps all local points
           plus the ghost points to global indices.
 
 .seealso: MATIS, MatSetLocalToGlobalMapping()
@@ -512,8 +512,8 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 
 /*MC
    MATIS - MATIS = "is" - A matrix type to be used for using the Neumann-Neumann type preconditioners.
-   This stores the matrices in globally unassembled form. Each processor 
-   assembles only its local Neumann problem and the parallel matrix vector 
+   This stores the matrices in globally unassembled form. Each processor
+   assembles only its local Neumann problem and the parallel matrix vector
    product is handled "implicitly".
 
    Operations Provided:
@@ -535,10 +535,10 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 . -mat_type is - sets the matrix type to "is" during a call to MatSetFromOptions()
 
    Notes: Options prefix for the inner matrix are given by -is_mat_xxx
-    
+
           You must call MatSetLocalToGlobalMapping() before using this matrix type.
 
-          You can do matrix preallocation on the local matrix after you obtain it with 
+          You can do matrix preallocation on the local matrix after you obtain it with
           MatISGetLocalMat()
 
   Level: advanced
@@ -548,8 +548,8 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatCreate_IS" 
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_IS"
 PetscErrorCode  MatCreate_IS(Mat A)
 {
   PetscErrorCode ierr;
@@ -583,8 +583,8 @@ PetscErrorCode  MatCreate_IS(Mat A)
 
   b->A          = 0;
   b->ctx        = 0;
-  b->x          = 0;  
-  b->y          = 0;  
+  b->x          = 0;
+  b->y          = 0;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatISGetLocalMat_C","MatISGetLocalMat_IS",MatISGetLocalMat_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatISSetLocalMat_C","MatISSetLocalMat_IS",MatISSetLocalMat_IS);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATIS);CHKERRQ(ierr);

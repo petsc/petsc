@@ -18,7 +18,7 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
 {
   Mat_MPISBAIJ     *a = (Mat_MPISBAIJ *)A->data;
   Mat_SeqSBAIJ     *Aij = (Mat_SeqSBAIJ*)(a->A->data), *Bij = (Mat_SeqSBAIJ*)(a->B->data);
-  /* 
+  /*
   */
   Mat_SeqSBSTRM   *sbstrmA, *sbstrmB;
   PetscInt       MROW = Aij->mbs, bs = a->A->rmap->bs;
@@ -41,7 +41,7 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
   bs2 = bs*bs;
   blen = ai[MROW]-ai[0];
   slen = blen*bs;
-  
+
   /* printf(" --- blen=%d, slen=%d\n", blen, slen);  */
 
   ierr = PetscNewLog(a->A,Mat_SeqSBSTRM,&sbstrmA);CHKERRQ(ierr);
@@ -127,7 +127,7 @@ PetscErrorCode MatAssemblyEnd_MPISBSTRM(Mat A, MatAssemblyType mode)
   /*
     Aij->inode.use = PETSC_FALSE;
     Bij->inode.use = PETSC_FALSE;
-  */ 
+  */
   ierr = MatAssemblyEnd_MPISBAIJ(A,mode);CHKERRQ(ierr);
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
 
@@ -137,7 +137,7 @@ PetscErrorCode MatAssemblyEnd_MPISBSTRM(Mat A, MatAssemblyType mode)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateMPISBSTRM"
 PetscErrorCode MatCreateMPISBSTRM(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
@@ -164,7 +164,7 @@ extern PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat,PetscInt,PetscInt
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMPISBAIJSetPreallocation_MPISBSTRM"
 PetscErrorCode   MatMPISBAIJSetPreallocation_MPISBSTRM(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {

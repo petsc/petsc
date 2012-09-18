@@ -1,6 +1,6 @@
 
 /*
-    This file implements GMRES (a Generalized Minimal Residual) method.  
+    This file implements GMRES (a Generalized Minimal Residual) method.
     Reference:  Saad and Schultz, 1986.
 
 
@@ -9,13 +9,13 @@
     If right preconditioning is chosen, then the problem being solved
     by gmres is actually
        My =  AB^-1 y = f
-    so the initial residual is 
+    so the initial residual is
           r = f - Mx
     Note that B^-1 y = x or y = B x, and if x is non-zero, the initial
     residual is
           r = f - A x
     The final solution is then
-          x = B^-1 y 
+          x = B^-1 y
 
     If left preconditioning is chosen, then the problem being solved is
        My = B^-1 A x = B^-1 f,
@@ -104,16 +104,16 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
 
     output parameters:
 .        nres    - residuals (from preconditioned system) at each step.
-                  If restarting, consider passing nres+it.  If null, 
+                  If restarting, consider passing nres+it.  If null,
                   ignored
 .        itcount - number of iterations used.  nres[0] to nres[itcount]
                   are defined.  If null, ignored.
-		  
+		
     Notes:
     On entry, the value in vector VEC_VV(0) should be the initial residual
     (this allows shortcuts where the initial preconditioned residual is 0).
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGMRESCycle"
 PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
 {
@@ -208,7 +208,7 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_GMRES"
 PetscErrorCode KSPSolve_GMRES(KSP ksp)
 {
@@ -229,7 +229,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
   while (!ksp->reason) {
     ierr     = KSPInitialResidual(ksp,ksp->vec_sol,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),ksp->vec_rhs);CHKERRQ(ierr);
     ierr     = KSPGMRESCycle(&its,ksp);CHKERRQ(ierr);
-    itcount += its;  
+    itcount += its;
     if (itcount >= ksp->max_it) {
       if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
       break;
@@ -240,8 +240,8 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPReset_GMRES" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPReset_GMRES"
 PetscErrorCode KSPReset_GMRES(KSP ksp)
 {
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
@@ -272,8 +272,8 @@ PetscErrorCode KSPReset_GMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy_GMRES" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPDestroy_GMRES"
 PetscErrorCode KSPDestroy_GMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -304,7 +304,7 @@ PetscErrorCode KSPDestroy_GMRES(KSP ksp)
 
      This is an internal routine that knows about the GMRES internals.
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGMRESBuildSoln"
 static PetscErrorCode KSPGMRESBuildSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,PetscInt it)
 {
@@ -336,7 +336,7 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ks
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
       ierr = PetscInfo1(ksp,"Likely your matrix or preconditioner is singular. HH(k,k) is identically zero; k = %D",k);
       PetscFunctionReturn(0);
-    } 
+    }
     nrs[k]   = tt / *HH(k,k);
   }
 
@@ -355,7 +355,7 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ks
 /*
    Do the scalar work for the orthogonalization.  Return new residual norm.
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGMRESUpdateHessenberg"
 static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  hapend,PetscReal *res)
 {
@@ -409,13 +409,13 @@ static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  ha
 #endif
     *res      = PetscAbsScalar(*GRS(it+1));
   } else {
-    /* happy breakdown: HH(it+1, it) = 0, therfore we don't need to apply 
-            another rotation matrix (so RH doesn't change).  The new residual is 
-            always the new sine term times the residual from last time (GRS(it)), 
+    /* happy breakdown: HH(it+1, it) = 0, therfore we don't need to apply
+            another rotation matrix (so RH doesn't change).  The new residual is
+            always the new sine term times the residual from last time (GRS(it)),
             but now the new sine rotation would be zero...so the residual should
             be zero...so we will multiply "zero" by the last residual.  This might
             not be exactly what we want to do here -could just return "zero". */
- 
+
     *res = 0.0;
   }
   PetscFunctionReturn(0);
@@ -423,8 +423,8 @@ static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  ha
 /*
    This routine allocates more work vectors, starting from VEC_VV(it).
  */
-#undef __FUNCT__  
-#define __FUNCT__ "KSPGMRESGetNewVectors" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGMRESGetNewVectors"
 PetscErrorCode KSPGMRESGetNewVectors(KSP ksp,PetscInt it)
 {
   KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data;
@@ -451,11 +451,11 @@ PetscErrorCode KSPGMRESGetNewVectors(KSP ksp,PetscInt it)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPBuildSolution_GMRES"
 PetscErrorCode KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result)
 {
-  KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data; 
+  KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -477,11 +477,11 @@ PetscErrorCode KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPView_GMRES" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPView_GMRES"
 PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
 {
-  KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data; 
+  KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data;
   const char     *cstr;
   PetscErrorCode ierr;
   PetscBool      iascii,isstring;
@@ -519,10 +519,10 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGMRESMonitorKrylov"
 /*@C
-   KSPGMRESMonitorKrylov - Calls VecView() for each direction in the 
+   KSPGMRESMonitorKrylov - Calls VecView() for each direction in the
    GMRES accumulated Krylov space.
 
    Collective on KSP
@@ -562,7 +562,7 @@ PetscErrorCode  KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GMRES"
 PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
 {
@@ -586,8 +586,8 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
     ierr = PetscOptionsBoolGroupEnd("-ksp_gmres_modifiedgramschmidt","Modified Gram-Schmidt (slow,more stable)","KSPGMRESSetOrthogonalization",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
     ierr = PetscOptionsEnum("-ksp_gmres_cgs_refinement_type","Type of iterative refinement for classical (unmodified) Gram-Schmidt","KSPGMRESSetCGSRefinementType",
-                            KSPGMRESCGSRefinementTypes,(PetscEnum)gmres->cgstype,(PetscEnum*)&gmres->cgstype,&flg);CHKERRQ(ierr);   
-    flg  = PETSC_FALSE; 
+                            KSPGMRESCGSRefinementTypes,(PetscEnum)gmres->cgstype,(PetscEnum*)&gmres->cgstype,&flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ksp_gmres_krylov_monitor","Plot the Krylov directions","KSPMonitorSet",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       PetscViewers viewers;
@@ -603,8 +603,8 @@ extern PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal *,Petsc
 
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "KSPGMRESSetHapTol_GMRES" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGMRESSetHapTol_GMRES"
 PetscErrorCode  KSPGMRESSetHapTol_GMRES(KSP ksp,PetscReal tol)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
@@ -617,8 +617,8 @@ PetscErrorCode  KSPGMRESSetHapTol_GMRES(KSP ksp,PetscReal tol)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "KSPGMRESGetRestart_GMRES" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGMRESGetRestart_GMRES"
 PetscErrorCode  KSPGMRESGetRestart_GMRES(KSP ksp,PetscInt *max_k)
 {
   KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data;
@@ -630,8 +630,8 @@ PetscErrorCode  KSPGMRESGetRestart_GMRES(KSP ksp,PetscInt *max_k)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "KSPGMRESSetRestart_GMRES" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGMRESSetRestart_GMRES"
 PetscErrorCode  KSPGMRESSetRestart_GMRES(KSP ksp,PetscInt max_k)
 {
   KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data;
@@ -652,8 +652,8 @@ PetscErrorCode  KSPGMRESSetRestart_GMRES(KSP ksp,PetscInt max_k)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "KSPGMRESSetOrthogonalization_GMRES" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGMRESSetOrthogonalization_GMRES"
 PetscErrorCode  KSPGMRESSetOrthogonalization_GMRES(KSP ksp,FCN fcn)
 {
   PetscFunctionBegin;
@@ -663,8 +663,8 @@ PetscErrorCode  KSPGMRESSetOrthogonalization_GMRES(KSP ksp,FCN fcn)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "KSPGMRESGetOrthogonalization_GMRES" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGMRESGetOrthogonalization_GMRES"
 PetscErrorCode  KSPGMRESGetOrthogonalization_GMRES(KSP ksp,FCN *fcn)
 {
   PetscFunctionBegin;
@@ -674,8 +674,8 @@ PetscErrorCode  KSPGMRESGetOrthogonalization_GMRES(KSP ksp,FCN *fcn)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "KSPGMRESSetPreAllocateVectors_GMRES" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGMRESSetPreAllocateVectors_GMRES"
 PetscErrorCode  KSPGMRESSetPreAllocateVectors_GMRES(KSP ksp)
 {
   KSP_GMRES *gmres;
@@ -688,7 +688,7 @@ PetscErrorCode  KSPGMRESSetPreAllocateVectors_GMRES(KSP ksp)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGMRESSetCGSRefinementType_GMRES"
 PetscErrorCode  KSPGMRESSetCGSRefinementType_GMRES(KSP ksp,KSPGMRESCGSRefinementType type)
 {
@@ -701,7 +701,7 @@ PetscErrorCode  KSPGMRESSetCGSRefinementType_GMRES(KSP ksp,KSPGMRESCGSRefinement
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGMRESGetCGSRefinementType_GMRES"
 PetscErrorCode  KSPGMRESGetCGSRefinementType_GMRES(KSP ksp,KSPGMRESCGSRefinementType *type)
 {
@@ -713,7 +713,7 @@ PetscErrorCode  KSPGMRESGetCGSRefinementType_GMRES(KSP ksp,KSPGMRESCGSRefinement
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGMRESSetCGSRefinementType"
 /*@
    KSPGMRESSetCGSRefinementType - Sets the type of iterative refinement to use
@@ -746,7 +746,7 @@ PetscErrorCode  KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType t
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGMRESGetCGSRefinementType"
 /*@
    KSPGMRESGetCGSRefinementType - Gets the type of iterative refinement to use
@@ -803,7 +803,7 @@ PetscErrorCode  KSPGMRESGetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType *
 
 .seealso: KSPSetTolerances(), KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors(), KSPGMRESGetRestart()
 @*/
-PetscErrorCode  KSPGMRESSetRestart(KSP ksp, PetscInt restart) 
+PetscErrorCode  KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 {
   PetscErrorCode ierr;
 
@@ -835,7 +835,7 @@ PetscErrorCode  KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 
 .seealso: KSPSetTolerances(), KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetRestart()
 @*/
-PetscErrorCode  KSPGMRESGetRestart(KSP ksp, PetscInt *restart) 
+PetscErrorCode  KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 {
   PetscErrorCode ierr;
 
@@ -859,7 +859,7 @@ PetscErrorCode  KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 .  -ksp_gmres_haptol <positive real value>
 
    Note: Happy breakdown is the rare case in GMRES where an 'exact' solution is obtained after
-         a certain number of iterations. If you attempt more iterations after this point unstable 
+         a certain number of iterations. If you attempt more iterations after this point unstable
          things can happen hence very occasionally you may need to set this value to detect this condition
 
    Level: intermediate
@@ -879,18 +879,18 @@ PetscErrorCode  KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
 }
 
 /*MC
-     KSPGMRES - Implements the Generalized Minimal Residual method.  
+     KSPGMRES - Implements the Generalized Minimal Residual method.
                 (Saad and Schultz, 1986) with restart
 
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
 .   -ksp_gmres_haptol <tol> - sets the tolerance for "happy ending" (exact convergence)
-.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of 
+.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of
                              vectors are allocated as needed)
 .   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
 .   -ksp_gmres_modifiedgramschmidt - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
-.   -ksp_gmres_cgs_refinement_type <never,ifneeded,always> - determine if iterative refinement is used to increase the 
+.   -ksp_gmres_cgs_refinement_type <never,ifneeded,always> - determine if iterative refinement is used to increase the
                                    stability of the classical Gram-Schmidt  orthogonalization.
 -   -ksp_gmres_krylov_monitor - plot the Krylov space generated
 
@@ -910,7 +910,7 @@ PetscErrorCode  KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_GMRES"
 PetscErrorCode  KSPCreate_GMRES(KSP ksp)
 {

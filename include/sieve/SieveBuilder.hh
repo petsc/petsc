@@ -288,16 +288,16 @@ namespace ALE {
         if (debug > 1) {std::cout << "  Added cell " << cell << " dim " << dim << std::endl;}
       }
     };
-    static void buildQuadraticTetFaces(Obj<sieve_type> sieve, Obj<arrow_section_type> orientation, 
-				       int dim, 
-				       std::map<int, int*>& curElement, 
-				       std::map<int,PointArray>& bdVertices, 
-				       std::map<int,oPointArray>& faces, 
-				       typename sieve_type::point_type& cell, 
+    static void buildQuadraticTetFaces(Obj<sieve_type> sieve, Obj<arrow_section_type> orientation,
+				       int dim,
+				       std::map<int, int*>& curElement,
+				       std::map<int,PointArray>& bdVertices,
+				       std::map<int,oPointArray>& faces,
+				       typename sieve_type::point_type& cell,
 				       int& cellOrientation) {
       int debug = sieve->debug();
 
-      if (debug > 1) 
+      if (debug > 1)
 	std::cout << "  Building tet faces for cell " << cell << " (size " << bdVertices[dim].size() << "), dim " << dim << std::endl;
 
       switch (dim) {
@@ -363,7 +363,7 @@ namespace ALE {
 	sieve->addArrow(vertexB, edge, color++);
 	if (debug > 1)
 	  std::cout << "    Adding vertices " << vertexA << " and " << vertexB << std::endl;
-	  
+	
 	// Vertices on right edge
 	color = 0;
 	edge = bdVertices[dim][1];
@@ -373,7 +373,7 @@ namespace ALE {
 	sieve->addArrow(vertexB, edge, color++);
 	if (debug > 1)
 	  std::cout << "    Adding vertices " << vertexA << " and " << vertexB << std::endl;
-	  
+	
 	// Vertices on left edge
 	color = 0;
 	edge = bdVertices[dim][2];
@@ -383,7 +383,7 @@ namespace ALE {
 	sieve->addArrow(vertexB, edge, color++);
 	if (debug > 1)
 	  std::cout << "    Adding vertices " << vertexA << " and " << vertexB << std::endl;
-	  
+	
 	break;
       } // case 2
       case 3: {

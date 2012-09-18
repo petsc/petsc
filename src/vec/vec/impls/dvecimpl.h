@@ -1,17 +1,17 @@
-/* 
+/*
    This should not be included in users code.
 
   Includes definition of structure for seqential vectors
 
-  These are shared by dvec1.c dvec2.c dvec3.c bvec1.c bvec2.c pvec.c pbvec.c 
+  These are shared by dvec1.c dvec2.c dvec3.c bvec1.c bvec2.c pvec.c pbvec.c
 */
 
-#ifndef __DVECIMPL 
+#ifndef __DVECIMPL
 #define __DVECIMPL
 
 #include <petsc-private/vecimpl.h>
 
-typedef struct { 
+typedef struct {
   VECHEADER
 } Vec_Seq;
 

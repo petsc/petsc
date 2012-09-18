@@ -4,12 +4,12 @@
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqSBAIJ_SeqAIJ"
-PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat) 
+PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   Mat_SeqAIJ     *b;
   PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj=a->j,m=A->rmap->N,n=A->cmap->n,i,j,k,*bi,*bj,*rowlengths,nz,*rowstart,itmp;
@@ -19,7 +19,7 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
   PetscFunctionBegin;
   /* compute rowlengths of newmat */
   ierr = PetscMalloc2(m,PetscInt,&rowlengths,m+1,PetscInt,&rowstart);CHKERRQ(ierr);
-  
+
   for (i=0; i<mbs; i++) rowlengths[i*bs] = 0;
   aj = a->j;
   k = 0;
@@ -39,7 +39,7 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
     k += bs;
     /* printf(" rowlengths[%d]: %d\n",i, rowlengths[i]); */
   }
-  
+
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
@@ -49,8 +49,8 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
 
   b  = (Mat_SeqAIJ*)(B->data);
   bi = b->i;
-  bj = b->j; 
-  bv = b->a; 
+  bj = b->j;
+  bv = b->a;
 
   /* set b->i */
   bi[0] = 0; rowstart[0] = 0;
@@ -59,7 +59,7 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
       b->ilen[i*bs+j]    = rowlengths[i*bs];
       rowstart[i*bs+j+1] = rowstart[i*bs+j] + rowlengths[i*bs];
     }
-    bi[i+1]     = bi[i] + rowlengths[i*bs]/bs; 
+    bi[i+1]     = bi[i] + rowlengths[i*bs]/bs;
   }
   if (bi[mbs] != 2*a->nz - diagcnt) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bi[mbs]: %D != 2*a->nz-diagcnt: %D\n",bi[mbs],2*a->nz - diagcnt);
 
@@ -74,20 +74,20 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
 	itmp = i*bs+j;
 	for (k=0; k<bs; k++){ /* col i*bs+k */
 	  *(bj + rowstart[itmp]) = (*aj)*bs+k;
-	  *(bv + rowstart[itmp]) = *(av+k*bs+j); 
+	  *(bv + rowstart[itmp]) = *(av+k*bs+j);
 	  rowstart[itmp]++;
 	}
       }
-      aj++; av += bs2; 
+      aj++; av += bs2;
     }
-    
+
     while (nz--){
       /* lower triangular blocks */
       for (j=0; j<bs; j++){   /* row (*aj)*bs+j */
         itmp = (*aj)*bs+j;
         for (k=0; k<bs; k++){ /* col i*bs+k */
           *(bj + rowstart[itmp]) = i*bs+k;
-          *(bv + rowstart[itmp]) = *(av+j*bs+k); 
+          *(bv + rowstart[itmp]) = *(av+j*bs+k);
           rowstart[itmp]++;
         }
       }
@@ -96,7 +96,7 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
         itmp = i*bs+j;
         for (k=0; k<bs; k++){ /* col (*aj)*bs+k */
           *(bj + rowstart[itmp]) = (*aj)*bs+k;
-          *(bv + rowstart[itmp]) = *(av+k*bs+j); 
+          *(bv + rowstart[itmp]) = *(av+k*bs+j);
           rowstart[itmp]++;
         }
       }
@@ -117,11 +117,11 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqSBAIJ"
 PetscErrorCode  MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat) {
   Mat            B;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ   *b;
   PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj,m=A->rmap->N,n=A->cmap->N,i,j,*bi,*bj,*rowlengths;
@@ -141,7 +141,7 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,MatReuse 
   ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,1,0,rowlengths);CHKERRQ(ierr);
 
   ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
-  
+
   b  = (Mat_SeqSBAIJ*)(B->data);
   bi = b->i;
   bj = b->j;
@@ -150,7 +150,7 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,MatReuse 
   bi[0] = 0;
   for (i=0; i<m; i++) {
     aj = a->j + a->diag[i];
-    av = a->a + a->diag[i];    
+    av = a->a + a->diag[i];
     for (j=0; j<rowlengths[i]; j++){
       *bj = *aj; bj++; aj++;
       *bv = *av; bv++; av++;
@@ -158,7 +158,7 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,MatReuse 
     bi[i+1]    = bi[i] + rowlengths[i];
     b->ilen[i] = rowlengths[i];
   }
- 
+
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -173,12 +173,12 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,MatReuse 
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqSBAIJ_SeqBAIJ"
-PetscErrorCode  MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat) 
+PetscErrorCode  MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   Mat_SeqBAIJ    *b;
   PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj=a->j,m=A->rmap->N,n=A->cmap->n,i,k,*bi,*bj,*browlengths,nz,*browstart,itmp;
@@ -198,27 +198,27 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reus
     }
     browlengths[i] += nz;   /* no. of upper triangular blocks */
   }
-  
+
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQBAIJ);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(B,bs,0,browlengths);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
-  
+
   b  = (Mat_SeqBAIJ*)(B->data);
   bi = b->i;
-  bj = b->j; 
-  bv = b->a; 
+  bj = b->j;
+  bv = b->a;
 
   /* set b->i */
   bi[0] = 0;
   for (i=0; i<mbs; i++){
     b->ilen[i]   = browlengths[i];
-    bi[i+1]      = bi[i] + browlengths[i]; 
+    bi[i+1]      = bi[i] + browlengths[i];
     browstart[i] = bi[i];
   }
   if (bi[mbs] != 2*a->nz - mbs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bi[mbs]: %D != 2*a->nz - mbs: %D\n",bi[mbs],2*a->nz - mbs);
-  
+
   /* set b->j and b->a */
   aj = a->j; av = a->a;
   for (i=0; i<mbs; i++) {
@@ -226,13 +226,13 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reus
     *(bj + browstart[i]) = *aj; aj++;
     itmp = bs2*browstart[i];
     for (k=0; k<bs2; k++){
-      *(bv + itmp + k) = *av; av++; 
-    } 
+      *(bv + itmp + k) = *av; av++;
+    }
     browstart[i]++;
-    
+
     nz = ai[i+1] - ai[i] -1;
     while (nz--){
-      /* lower triangular blocks - transpose blocks of A */   
+      /* lower triangular blocks - transpose blocks of A */
       *(bj + browstart[*aj]) = i; /* block col index */
       itmp = bs2*browstart[*aj];  /* row index */
       for (col=0; col<bs; col++){
@@ -245,9 +245,9 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reus
 
       /* upper triangular blocks */
       *(bj + browstart[i]) = *aj; aj++;
-      itmp = bs2*browstart[i]; 
+      itmp = bs2*browstart[i];
       for (k=0; k<bs2; k++){
-        bv[itmp + k] = av[k]; 
+        bv[itmp + k] = av[k];
       }
       av += bs2;
       browstart[i]++;

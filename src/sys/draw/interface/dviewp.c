@@ -4,8 +4,8 @@
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSetViewPort" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSetViewPort"
 /*@
    PetscDrawSetViewPort - Sets the portion of the window (page) to which draw
    routines will write.
@@ -30,7 +30,7 @@ PetscErrorCode  PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (xl < 0.0 || xr > 1.0 || yl < 0.0 || yr > 1.0 || xr <= xl || yr <= yl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ViewPort values must be >= 0 and <= 1: Instead %G %G %G %G",xl,yl,xr,yr); 
+  if (xl < 0.0 || xr > 1.0 || yl < 0.0 || yr > 1.0 || xr <= xl || yr <= yl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ViewPort values must be >= 0 and <= 1: Instead %G %G %G %G",xl,yl,xr,yr);
   draw->port_xl = xl; draw->port_yl = yl;
   draw->port_xr = xr; draw->port_yr = yr;
   if (draw->ops->setviewport) {
@@ -39,8 +39,8 @@ PetscErrorCode  PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawGetViewPort" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawGetViewPort"
 /*@
    PetscDrawGetViewPort - Gets the portion of the window (page) to which draw
    routines will write.
@@ -65,18 +65,18 @@ PetscErrorCode  PetscDrawGetViewPort(PetscDraw draw,PetscReal *xl,PetscReal *yl,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  *xl = draw->port_xl; 
+  *xl = draw->port_xl;
   *yl = draw->port_yl;
   *xr = draw->port_xr;
   *yr = draw->port_yr;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSplitViewPort" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSplitViewPort"
 /*@
    PetscDrawSplitViewPort - Splits a window shared by several processes into smaller
-   view ports. One for each process. 
+   view ports. One for each process.
 
    Collective on PetscDraw
 
@@ -132,8 +132,8 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawViewPortsCreate" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawViewPortsCreate"
 /*@C
    PetscDrawViewPortsCreate - Splits a window into smaller
        view ports. Each processor shares all the viewports.
@@ -178,11 +178,11 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
 
   n = (int)(.1 + sqrt((double)nports));
   while (n*n < nports) {n++;}
-  
-  ierr = PetscMalloc(n*n*sizeof(PetscReal),&xl);CHKERRQ(ierr);(*ports)->xl = xl; 
-  ierr = PetscMalloc(n*n*sizeof(PetscReal),&xr);CHKERRQ(ierr);(*ports)->xr = xr; 
-  ierr = PetscMalloc(n*n*sizeof(PetscReal),&yl);CHKERRQ(ierr);(*ports)->yl = yl; 
-  ierr = PetscMalloc(n*n*sizeof(PetscReal),&yr);CHKERRQ(ierr);(*ports)->yr = yr; 
+
+  ierr = PetscMalloc(n*n*sizeof(PetscReal),&xl);CHKERRQ(ierr);(*ports)->xl = xl;
+  ierr = PetscMalloc(n*n*sizeof(PetscReal),&xr);CHKERRQ(ierr);(*ports)->xr = xr;
+  ierr = PetscMalloc(n*n*sizeof(PetscReal),&yl);CHKERRQ(ierr);(*ports)->yl = yl;
+  ierr = PetscMalloc(n*n*sizeof(PetscReal),&yr);CHKERRQ(ierr);(*ports)->yr = yr;
 
   h  = 1.0/n;
 
@@ -208,8 +208,8 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawViewPortsCreateRect" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawViewPortsCreateRect"
 /*@C
    PetscDrawViewPortsCreateRect - Splits a window into smaller
        view ports. Each processor shares all the viewports. The number
@@ -254,10 +254,10 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
   (*ports)->draw   = draw;
   (*ports)->nports = n;
   ierr = PetscObjectReference((PetscObject) draw);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscReal), &xl);CHKERRQ(ierr);(*ports)->xl = xl; 
-  ierr = PetscMalloc(n*sizeof(PetscReal), &xr);CHKERRQ(ierr);(*ports)->xr = xr; 
-  ierr = PetscMalloc(n*sizeof(PetscReal), &yl);CHKERRQ(ierr);(*ports)->yl = yl; 
-  ierr = PetscMalloc(n*sizeof(PetscReal), &yr);CHKERRQ(ierr);(*ports)->yr = yr; 
+  ierr = PetscMalloc(n*sizeof(PetscReal), &xl);CHKERRQ(ierr);(*ports)->xl = xl;
+  ierr = PetscMalloc(n*sizeof(PetscReal), &xr);CHKERRQ(ierr);(*ports)->xr = xr;
+  ierr = PetscMalloc(n*sizeof(PetscReal), &yl);CHKERRQ(ierr);(*ports)->yl = yl;
+  ierr = PetscMalloc(n*sizeof(PetscReal), &yr);CHKERRQ(ierr);(*ports)->yr = yr;
   for (i = 0; i < nx; i++) {
     for (j = 0; j < ny; j++) {
       PetscInt k = j*nx+i;
@@ -283,8 +283,8 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawViewPortsDestroy" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawViewPortsDestroy"
 /*@C
    PetscDrawViewPortsDestroy - frees a PetscDrawViewPorts object
 
@@ -315,8 +315,8 @@ PetscErrorCode  PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawViewPortsSet" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawViewPortsSet"
 /*@C
    PetscDrawViewPortsSet - sets a draw object to use a particular subport
 
@@ -338,7 +338,7 @@ PetscErrorCode  PetscDrawViewPortsSet(PetscDrawViewPorts *ports,PetscInt port)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ports) { 
+  if (ports) {
     if (port < 0 || port > ports->nports-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Port is out of range requested %d from 0 to %d\n",port,ports->nports);
     ierr = PetscDrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]);CHKERRQ(ierr);
   }

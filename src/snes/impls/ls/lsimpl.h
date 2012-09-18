@@ -1,4 +1,4 @@
-/* 
+/*
    Private context for a Newton line search method for solving
    systems of nonlinear equations
  */

@@ -4,8 +4,8 @@
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawTriangle" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawTriangle"
 /*@
    PetscDrawTriangle - PetscDraws a triangle  onto a drawable.
 
@@ -38,10 +38,10 @@ PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,Pets
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawScalePopup" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawScalePopup"
 /*@
-       PetscDrawScalePopup - PetscDraws a contour scale window. 
+       PetscDrawScalePopup - PetscDraws a contour scale window.
 
      Collective on PetscDraw
 
@@ -92,8 +92,8 @@ typedef struct {
   PetscBool  showgrid;
 } ZoomCtx;
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawTensorContour_Zoom" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawTensorContour_Zoom"
 static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
 {
   PetscErrorCode ierr;
@@ -113,8 +113,8 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawTensorContour" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawTensorContour"
 /*@C
    PetscDrawTensorContour - PetscDraws a contour plot for a two-dimensional array
    that is stored as a PETSc vector.
@@ -181,7 +181,7 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
 
   /* fill up x and y coordinates */
   if (!xi) {
-    xin      = 0; 
+    xin      = 0;
     ierr     = PetscMalloc(ctx.m*sizeof(PetscReal),&ctx.x);CHKERRQ(ierr);
     h        = 1.0/(ctx.m-1);
     ctx.x[0] = 0.0;
@@ -190,7 +190,7 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
     ctx.x = (PetscReal*)xi;
   }
   if (!yi) {
-    yin      = 0; 
+    yin      = 0;
     ierr     = PetscMalloc(ctx.n*sizeof(PetscReal),&ctx.y);CHKERRQ(ierr);
     h        = 1.0/(ctx.n-1);
     ctx.y[0] = 0.0;
@@ -200,17 +200,17 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
   }
 
   ierr = PetscDrawZoom(win,(PetscErrorCode (*)(PetscDraw,void *))PetscDrawTensorContour_Zoom,&ctx);CHKERRQ(ierr);
-    
+
   if (!xin) {ierr = PetscFree(ctx.x);CHKERRQ(ierr);}
   if (!yin) {ierr = PetscFree(ctx.y);CHKERRQ(ierr);}
 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawTensorContourPatch" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawTensorContourPatch"
 /*@
-   PetscDrawTensorContourPatch - PetscDraws a rectangular patch of a contour plot 
+   PetscDrawTensorContourPatch - PetscDraws a rectangular patch of a contour plot
    for a two-dimensional array.
 
    Not Collective
@@ -227,9 +227,9 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal
 
    Level: advanced
 
-   Note: 
+   Note:
    This is a lower level support routine, usually the user will call
-   PetscDrawTensorContour(). 
+   PetscDrawTensorContour().
 
    Concepts: contour plot
 

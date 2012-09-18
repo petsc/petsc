@@ -1,20 +1,20 @@
 
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_BCGS"
 PetscErrorCode KSPSetFromOptions_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP BCGS Options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPView_BCGS" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPView_BCGS"
 PetscErrorCode KSPView_BCGS(KSP ksp,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -28,19 +28,19 @@ PetscErrorCode KSPView_BCGS(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_BCGS"
 PetscErrorCode KSPSetUp_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultGetWork(ksp,6);CHKERRQ(ierr); 
+  ierr = KSPDefaultGetWork(ksp,6);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_BCGS"
 PetscErrorCode KSPSolve_BCGS(KSP ksp)
 {
@@ -71,7 +71,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
     }
     ierr = VecCopy(X,bcgs->guess);CHKERRQ(ierr);
     ierr = VecSet(X,0.0);CHKERRQ(ierr);
-  } 
+  }
 
   /* Test for nothing to do */
   if (ksp->normtype != KSP_NORM_NONE) {
@@ -142,7 +142,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
     KSPLogResidualHistory(ksp,dp);
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-    if (ksp->reason) break;    
+    if (ksp->reason) break;
     if (rho == 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
       break;
@@ -161,7 +161,7 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPBuildSolution_BCGS"
 PetscErrorCode KSPBuildSolution_BCGS(KSP ksp,Vec v,Vec *V)
 {
@@ -171,7 +171,7 @@ PetscErrorCode KSPBuildSolution_BCGS(KSP ksp,Vec v,Vec *V)
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {
     if (v) {
-      ierr = KSP_PCApply(ksp,ksp->vec_sol,v);CHKERRQ(ierr); 
+      ierr = KSP_PCApply(ksp,ksp->vec_sol,v);CHKERRQ(ierr);
       if (bcgs->guess) {
         ierr = VecAXPY(v,1.0,bcgs->guess);CHKERRQ(ierr);
       }
@@ -184,8 +184,8 @@ PetscErrorCode KSPBuildSolution_BCGS(KSP ksp,Vec v,Vec *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPReset_BCGS" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPReset_BCGS"
 PetscErrorCode KSPReset_BCGS(KSP ksp)
 {
   KSP_BCGS       *cg = (KSP_BCGS*)ksp->data;
@@ -196,8 +196,8 @@ PetscErrorCode KSPReset_BCGS(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy_BCGS" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPDestroy_BCGS"
 PetscErrorCode KSPDestroy_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -224,7 +224,7 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp)
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPFBICG, KSPSetPCSide()
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_BCGS"
 PetscErrorCode  KSPCreate_BCGS(KSP ksp)
 {
@@ -242,7 +242,7 @@ PetscErrorCode  KSPCreate_BCGS(KSP ksp)
   ksp->ops->buildresidual   = KSPDefaultBuildResidual;
   ksp->ops->setfromoptions  = KSPSetFromOptions_BCGS;
   ksp->ops->view            = KSPView_BCGS;
-  
+
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
   PetscFunctionReturn(0);

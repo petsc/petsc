@@ -32,7 +32,7 @@ struct _p_MatMFFD {    /* context for default matrix-free SNES */
   PetscReal        error_rel;              /* square root of relative error in computing function */
   PetscScalar      currenth;               /* last differencing parameter h used */
   PetscScalar      *historyh;              /* history of differencing parameter h */
-  PetscInt         ncurrenth,maxcurrenth; 
+  PetscInt         ncurrenth,maxcurrenth;
   void             *hctx;
   Mat              mat;                    /* back reference to shell matrix that contains this */
   PetscInt         recomputeperiod;        /* how often the h is recomputed; default to 1 */

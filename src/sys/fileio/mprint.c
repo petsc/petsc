@@ -26,9 +26,9 @@ FILE *PETSC_STDERR = 0;
 */
 #define PETSC_MAX_LENGTH_FORMAT(l) (l+l/8)
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFormatConvert"
-/*@C 
+/*@C
      PetscFormatConvert - Takes a PETSc format string and converts it to a reqular C format string
 
    Input Parameters:
@@ -91,11 +91,11 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
   newformat[j] = 0;
   PetscFunctionReturn(0);
 }
- 
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscVSNPrintf"
-/*@C 
-     PetscVSNPrintf - The PETSc version of vsnprintf(). Converts a PETSc format string into a standard C format string and then puts all the 
+/*@C
+     PetscVSNPrintf - The PETSc version of vsnprintf(). Converts a PETSc format string into a standard C format string and then puts all the
        function arguments into a string using the format statement.
 
    Input Parameters:
@@ -118,7 +118,7 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
   int            fullLengthInt;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
   ierr = PetscStrlen(format, &oldLength);CHKERRQ(ierr);
   if (oldLength < 8*1024) {
     newformat = formatbuf;
@@ -151,11 +151,11 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscVFPrintfDefault"
-/*@C 
+/*@C
      PetscVFPrintf -  All PETSc standard out and error messages are sent through this function; so, in theory, this can
-        can be replaced with something that does not simply write to a file. 
+        can be replaced with something that does not simply write to a file.
 
       To use, write your own function for example,
 $PetscErrorCode mypetscvfprintf(FILE *fd,const char format[],va_list Argp)
@@ -163,13 +163,13 @@ ${
 $  PetscErrorCode ierr;
 $
 $  PetscFunctionBegin;
-$   if (fd != stdout && fd != stderr) {  handle regular files 
+$   if (fd != stdout && fd != stderr) {  handle regular files
 $      ierr = PetscVFPrintfDefault(fd,format,Argp); CHKERR(ierr);
 $  } else {
 $     char   buff[BIG];
 $     size_t length;
 $     ierr = PetscVSNPrintf(buff,BIG,format,&length,Argp);CHKERRQ(ierr);
-$     now send buff to whatever stream or whatever you want 
+$     now send buff to whatever stream or whatever you want
 $ }
 $ PetscFunctionReturn(0);
 $}
@@ -179,7 +179,7 @@ $    PetscVFPrintf = mypetscvfprintf;
       Notes: For error messages this may be called by any process, for regular standard out it is
           called only by process 0 of a given communicator
 
-      Developer Notes: this could be called by an error handler, if that happens then a recursion of the error handler may occur 
+      Developer Notes: this could be called by an error handler, if that happens then a recursion of the error handler may occur
                        and a crash
 
   Level:  developer
@@ -217,8 +217,8 @@ PetscErrorCode  PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSNPrintf" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSNPrintf"
 /*@C
     PetscSNPrintf - Prints to a string of given length
 
@@ -227,7 +227,7 @@ PetscErrorCode  PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
     Input Parameters:
 +   str - the string to print to
 .   len - the length of str
-.   format - the usual printf() format string 
+.   format - the usual printf() format string
 -   any arguments
 
    Level: intermediate
@@ -247,7 +247,7 @@ PetscErrorCode  PetscSNPrintf(char *str,size_t len,const char format[],...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSNPrintfCount"
 /*@C
     PetscSNPrintfCount - Prints to a string of given length, returns count
@@ -283,8 +283,8 @@ PrintfQueue petsc_printfqueue = 0,petsc_printfqueuebase = 0;
 int         petsc_printfqueuelength = 0;
 FILE        *petsc_printfqueuefile  = PETSC_NULL;
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSynchronizedPrintf" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSynchronizedPrintf"
 /*@C
     PetscSynchronizedPrintf - Prints synchronized output from several processors.
     Output of the first processor is followed by that of the second, etc.
@@ -293,19 +293,19 @@ FILE        *petsc_printfqueuefile  = PETSC_NULL;
 
     Input Parameters:
 +   comm - the communicator
--   format - the usual printf() format string 
+-   format - the usual printf() format string
 
    Level: intermediate
 
     Notes:
-    REQUIRES a intervening call to PetscSynchronizedFlush() for the information 
+    REQUIRES a intervening call to PetscSynchronizedFlush() for the information
     from all the processors to be printed.
 
     Fortran Note:
-    The call sequence is PetscSynchronizedPrintf(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran. 
+    The call sequence is PetscSynchronizedPrintf(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran.
     That is, you can only pass a single character string from Fortran.
 
-.seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), 
+.seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(),
           PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
 @*/
 PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
@@ -315,7 +315,7 @@ PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  
+
   /* First processor prints immediately to stdout */
   if (!rank) {
     va_list Argp;
@@ -345,15 +345,15 @@ PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
       va_end(Argp);
     }
   }
-    
+
   PetscFunctionReturn(0);
 }
- 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSynchronizedFPrintf" 
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSynchronizedFPrintf"
 /*@C
     PetscSynchronizedFPrintf - Prints synchronized output to the specified file from
-    several processors.  Output of the first processor is followed by that of the 
+    several processors.  Output of the first processor is followed by that of the
     second, etc.
 
     Not Collective
@@ -361,12 +361,12 @@ PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     Input Parameters:
 +   comm - the communicator
 .   fd - the file pointer
--   format - the usual printf() format string 
+-   format - the usual printf() format string
 
     Level: intermediate
 
     Notes:
-    REQUIRES a intervening call to PetscSynchronizedFlush() for the information 
+    REQUIRES a intervening call to PetscSynchronizedFlush() for the information
     from all the processors to be printed.
 
 .seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(), PetscFPrintf(),
@@ -380,7 +380,7 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char forma
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  
+
   /* First processor prints immediately to fp */
   if (!rank) {
     va_list Argp;
@@ -413,10 +413,10 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char forma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSynchronizedFlush" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSynchronizedFlush"
 /*@
-    PetscSynchronizedFlush - Flushes to the screen output from all processors 
+    PetscSynchronizedFlush - Flushes to the screen output from all processors
     involved in previous PetscSynchronizedPrintf() calls.
 
     Collective on MPI_Comm
@@ -476,7 +476,7 @@ PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
     for (i=0; i<petsc_printfqueuelength; i++) {
       ierr     = MPI_Send(&next->size,1,MPI_INT,0,tag,comm);CHKERRQ(ierr);
       ierr     = MPI_Send(next->string,next->size,MPI_CHAR,0,tag,comm);CHKERRQ(ierr);
-      previous = next; 
+      previous = next;
       next     = next->next;
       ierr     = PetscFree(previous->string);CHKERRQ(ierr);
       ierr     = PetscFree(previous);CHKERRQ(ierr);
@@ -490,8 +490,8 @@ PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
 
 /* ---------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscFPrintf" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscFPrintf"
 /*@C
     PetscFPrintf - Prints to a file, only from the first
     processor in the communicator.
@@ -501,7 +501,7 @@ PetscErrorCode  PetscSynchronizedFlush(MPI_Comm comm)
     Input Parameters:
 +   comm - the communicator
 .   fd - the file pointer
--   format - the usual printf() format string 
+-   format - the usual printf() format string
 
     Level: intermediate
 
@@ -534,8 +534,8 @@ PetscErrorCode  PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscPrintf" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscPrintf"
 /*@C
     PetscPrintf - Prints to standard out, only from the first
     processor in the communicator. Calls from other processes are ignored.
@@ -544,12 +544,12 @@ PetscErrorCode  PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 
     Input Parameters:
 +   comm - the communicator
--   format - the usual printf() format string 
+-   format - the usual printf() format string
 
    Level: intermediate
 
     Fortran Note:
-    The call sequence is PetscPrintf(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran. 
+    The call sequence is PetscPrintf(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran.
     That is, you can only pass a single character string from Fortran.
 
    Concepts: printing^in parallel
@@ -579,11 +579,11 @@ PetscErrorCode  PetscPrintf(MPI_Comm comm,const char format[],...)
 }
 
 /* ---------------------------------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "PetscHelpPrintfDefault" 
-/*@C 
-     PetscHelpPrintf -  All PETSc help messages are passing through this function. You can change how help messages are printed by 
-        replacinng it  with something that does not simply write to a stdout. 
+#undef __FUNCT__
+#define __FUNCT__ "PetscHelpPrintfDefault"
+/*@C
+     PetscHelpPrintf -  All PETSc help messages are passing through this function. You can change how help messages are printed by
+        replacinng it  with something that does not simply write to a stdout.
 
       To use, write your own function for example,
 $PetscErrorCode mypetschelpprintf(MPI_Comm comm,const char format[],....)
@@ -623,8 +623,8 @@ PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 /* ---------------------------------------------------------------------------------------*/
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSynchronizedFGets" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSynchronizedFGets"
 /*@C
     PetscSynchronizedFGets - Several processors all get the same line from a file.
 
@@ -674,7 +674,7 @@ PetscErrorCode  PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (fd != stdout && fd != stderr) { /* handle regular files */ 
+  if (fd != stdout && fd != stderr) { /* handle regular files */
     ierr = PetscVFPrintfDefault(fd,format,Argp); CHKERRQ(ierr);
   } else {
     size_t len=8*1024,length;
@@ -687,9 +687,9 @@ PetscErrorCode  PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
 }
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFormatStrip"
-/*@C 
+/*@C
      PetscFormatStrip - Takes a PETSc format string and removes all numerical modifiers to % operations
 
    Input Parameters:
@@ -707,7 +707,7 @@ PetscErrorCode  PetscFormatStrip(char *format)
     if (format[loc2] == '%') {
       format[loc1++] = format[loc2++];
       while (format[loc2] && ((format[loc2] >= '0' && format[loc2] <= '9') || format[loc2] == '.')) loc2++;
-    } 
+    }
     format[loc1++] = format[loc2++];
   }
   PetscFunctionReturn(0);

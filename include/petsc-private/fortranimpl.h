@@ -13,7 +13,7 @@
 PETSC_EXTERN PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscInt,PetscScalar*,PetscScalar*,PetscInt,size_t*);
 PETSC_EXTERN PetscErrorCode PetscScalarAddressFromFortran(PetscObject,PetscScalar*,size_t,PetscInt,PetscScalar **);
 PETSC_EXTERN size_t         PetscIntAddressToFortran(PetscInt*,PetscInt*);
-PETSC_EXTERN PetscInt        *PetscIntAddressFromFortran(PetscInt*,size_t); 
+PETSC_EXTERN PetscInt        *PetscIntAddressFromFortran(PetscInt*,size_t);
 PETSC_EXTERN void    *PETSC_NULL_Fortran;
 PETSC_EXTERN char   *PETSC_NULL_CHARACTER_Fortran;
 PETSC_EXTERN void    *PETSC_NULL_INTEGER_Fortran;
@@ -124,7 +124,7 @@ PETSC_EXTERN void  *PETSCNULLPOINTERADDRESS;
     PetscError(PETSC_COMM_SELF,__LINE__,"fortran_interface_unknown_file",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONG,PETSC_ERROR_INITIAL, \
     "Use PETSC_NULL_FUNCTION"); *ierr = 1; return; } \
   else if (FORTRANNULLFUNCTION(a)) { a = PETSC_NULL; }
-  
+
 
 
 /*
@@ -133,18 +133,18 @@ PETSC_EXTERN void  *PETSCNULLPOINTERADDRESS;
 typedef size_t PetscFortranAddr;
 
 /*
-    These are used to support the default viewers that are 
+    These are used to support the default viewers that are
   created at run time, in C using the , trick.
 
     The numbers here must match the numbers in include/finclude/petscsys.h
 */
 #define PETSC_VIEWER_DRAW_WORLD_FORTRAN     4
 #define PETSC_VIEWER_DRAW_SELF_FORTRAN      5
-#define PETSC_VIEWER_SOCKET_WORLD_FORTRAN   6 
+#define PETSC_VIEWER_SOCKET_WORLD_FORTRAN   6
 #define PETSC_VIEWER_SOCKET_SELF_FORTRAN    7
-#define PETSC_VIEWER_STDOUT_WORLD_FORTRAN   8 
+#define PETSC_VIEWER_STDOUT_WORLD_FORTRAN   8
 #define PETSC_VIEWER_STDOUT_SELF_FORTRAN    9
-#define PETSC_VIEWER_STDERR_WORLD_FORTRAN   10 
+#define PETSC_VIEWER_STDERR_WORLD_FORTRAN   10
 #define PETSC_VIEWER_STDERR_SELF_FORTRAN    11
 #define PETSC_VIEWER_BINARY_WORLD_FORTRAN   12
 #define PETSC_VIEWER_BINARY_SELF_FORTRAN    13

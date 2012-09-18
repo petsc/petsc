@@ -4,10 +4,10 @@
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSynchronizedFlush" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSynchronizedFlush"
 /*@
-   PetscDrawSynchronizedFlush - Flushes graphical output. This waits until all 
+   PetscDrawSynchronizedFlush - Flushes graphical output. This waits until all
    processors have arrived and flushed, then does a global flush.
    This is usually done to change the frame for double buffered graphics.
 

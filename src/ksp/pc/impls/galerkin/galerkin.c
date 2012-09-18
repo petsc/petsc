@@ -1,6 +1,6 @@
 
 /*
-      Defines a preconditioner defined by R^T S R 
+      Defines a preconditioner defined by R^T S R
 */
 #include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <petscksp.h>         /*I "petscksp.h" I*/
@@ -11,7 +11,7 @@ typedef struct {
   Vec  b,x;
 } PC_Galerkin;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_Galerkin"
 static PetscErrorCode PCApply_Galerkin(PC pc,Vec x,Vec y)
 {
@@ -27,7 +27,7 @@ static PetscErrorCode PCApply_Galerkin(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Galerkin"
 static PetscErrorCode PCSetUp_Galerkin(PC pc)
 {
@@ -40,7 +40,7 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
   if (!jac->x) {
     ierr = KSPGetOperatorsSet(jac->ksp,&a,PETSC_NULL);CHKERRQ(ierr);
     if (!a) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set operator of PCGALERKIN KSP with PCGalerkinGetKSP()/KSPSetOperators()");
-    ierr   = KSPGetVecs(jac->ksp,1,&xx,1,&yy);CHKERRQ(ierr);    
+    ierr   = KSPGetVecs(jac->ksp,1,&xx,1,&yy);CHKERRQ(ierr);
     jac->x = *xx;
     jac->b = *yy;
     ierr   = PetscFree(xx);CHKERRQ(ierr);
@@ -51,7 +51,7 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCReset_Galerkin"
 static PetscErrorCode PCReset_Galerkin(PC pc)
 {
@@ -67,7 +67,7 @@ static PetscErrorCode PCReset_Galerkin(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_Galerkin"
 static PetscErrorCode PCDestroy_Galerkin(PC pc)
 {
@@ -81,7 +81,7 @@ static PetscErrorCode PCDestroy_Galerkin(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_Galerkin"
 static PetscErrorCode PCView_Galerkin(PC pc,PetscViewer viewer)
 {
@@ -103,7 +103,7 @@ static PetscErrorCode PCView_Galerkin(PC pc,PetscViewer viewer)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGalerkinGetKSP_Galerkin"
 PetscErrorCode  PCGalerkinGetKSP_Galerkin(PC pc,KSP *ksp)
 {
@@ -116,7 +116,7 @@ PetscErrorCode  PCGalerkinGetKSP_Galerkin(PC pc,KSP *ksp)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGalerkinSetRestriction_Galerkin"
 PetscErrorCode  PCGalerkinSetRestriction_Galerkin(PC pc,Mat R)
 {
@@ -132,7 +132,7 @@ PetscErrorCode  PCGalerkinSetRestriction_Galerkin(PC pc,Mat R)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGalerkinSetInterpolation_Galerkin"
 PetscErrorCode  PCGalerkinSetInterpolation_Galerkin(PC pc,Mat P)
 {
@@ -148,11 +148,11 @@ PetscErrorCode  PCGalerkinSetInterpolation_Galerkin(PC pc,Mat P)
 EXTERN_C_END
 
 /* -------------------------------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGalerkinSetRestriction"
 /*@
    PCGalerkinSetRestriction - Sets the restriction operator for the "Galerkin-type" preconditioner
-   
+
    Logically Collective on PC
 
    Input Parameter:
@@ -179,11 +179,11 @@ PetscErrorCode  PCGalerkinSetRestriction(PC pc,Mat R)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGalerkinSetInterpolation"
 /*@
    PCGalerkinSetInterpolation - Sets the interpolation operator for the "Galerkin-type" preconditioner
-   
+
    Logically Collective on PC
 
    Input Parameter:
@@ -210,11 +210,11 @@ PetscErrorCode  PCGalerkinSetInterpolation(PC pc,Mat P)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGalerkinGetKSP"
 /*@
    PCGalerkinGetKSP - Gets the KSP object in the Galerkin PC.
-   
+
    Not Collective
 
    Input Parameter:
@@ -248,7 +248,7 @@ PetscErrorCode  PCGalerkinGetKSP(PC pc,KSP *ksp)
 /*MC
      PCGALERKIN - Build (part of) a preconditioner by P S R (where P is often R^T)
 
-$   Use PCGalerkinSetRestriction(pc,R) and/or PCGalerkinSetInterpolation(pc,P) followed by 
+$   Use PCGalerkinSetRestriction(pc,R) and/or PCGalerkinSetInterpolation(pc,P) followed by
 $   PCGalerkinGetKSP(pc,&ksp); KSPSetOperators(ksp,A,....)
 
    Level: intermediate
@@ -264,7 +264,7 @@ $   PCGalerkinGetKSP(pc,&ksp); KSPSetOperators(ksp,A,....)
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_Galerkin"
 PetscErrorCode  PCCreate_Galerkin(PC pc)
 {

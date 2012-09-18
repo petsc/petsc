@@ -4,8 +4,8 @@
 PetscFList ISList                       = PETSC_NULL;
 PetscBool  ISRegisterAllCalled          = PETSC_FALSE;
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISCreate" 
+#undef __FUNCT__
+#define __FUNCT__ "ISCreate"
 /*@
    ISCreate - Creates an index set object.
 
@@ -44,7 +44,7 @@ PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISSetType"
 /*@C
   ISSetType - Builds a index set, for a particular implementation.
@@ -91,7 +91,7 @@ PetscErrorCode  ISSetType(IS is, const ISType method)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISGetType"
 /*@C
   ISGetType - Gets the index set type name (as a string) from the IS.
@@ -125,7 +125,7 @@ PetscErrorCode  ISGetType(IS is, const ISType *type)
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISRegister"
 /*@C
   ISRegister - See ISRegisterDynamic()
@@ -147,7 +147,7 @@ PetscErrorCode  ISRegister(const char sname[], const char path[], const char nam
 
 
 /*--------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISRegisterDestroy"
 /*@C
    ISRegisterDestroy - Frees the list of IS methods that were registered by ISRegister()/ISRegisterDynamic().

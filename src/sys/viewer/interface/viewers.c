@@ -7,8 +7,8 @@ struct _n_PetscViewers {
    int         n;
 } ;
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewersDestroy" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewersDestroy"
 /*@C
    PetscViewersDestroy - Destroys a set of PetscViewers created with PetscViewersCreate().
 
@@ -37,8 +37,8 @@ PetscErrorCode  PetscViewersDestroy(PetscViewers *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewersCreate" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewersCreate"
 /*@C
    PetscViewersCreate - Creates a container to hold a set of PetscViewers.
 
@@ -70,8 +70,8 @@ PetscErrorCode  PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewersGetViewer" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewersGetViewer"
 /*@C
    PetscViewersGetViewer - Gets a PetscViewer from a PetscViewer collection
 
@@ -100,7 +100,7 @@ PetscErrorCode  PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewe
   if (n >= viewers->n) {
     PetscViewer *v;
     int    newn = n + 64; /* add 64 new ones at a time */
-     
+
     ierr = PetscMalloc(newn*sizeof(PetscViewer),&v);CHKERRQ(ierr);
     ierr = PetscMemzero(v,newn*sizeof(PetscViewer));CHKERRQ(ierr);
     ierr = PetscMemcpy(v,viewers->viewer,viewers->n*sizeof(PetscViewer));CHKERRQ(ierr);

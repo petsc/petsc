@@ -26,8 +26,8 @@ PetscErrorCode SNESVIGetInactiveSet(SNES snes,IS* inact)
 }
 
 /*
-    Provides a wrapper to a DM to allow it to be used to generated the interpolation/restriction from the DM for the smaller matrices and vectors 
-  defined by the reduced space method. 
+    Provides a wrapper to a DM to allow it to be used to generated the interpolation/restriction from the DM for the smaller matrices and vectors
+  defined by the reduced space method.
 
     Simple calls the regular DM interpolation and restricts it to operation on the variables not associated with active constraints.
 
@@ -36,12 +36,12 @@ typedef struct {
   PetscInt       n;                                        /* size of vectors in the reduced DM space */
   IS             inactive;
   PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);    /* DM's original routines */
-  PetscErrorCode (*coarsen)(DM, MPI_Comm, DM*); 
+  PetscErrorCode (*coarsen)(DM, MPI_Comm, DM*);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
   DM             dm;                                      /* when destroying this object we need to reset the above function into the base DM */
 } DM_SNESVI;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateGlobalVector_SNESVI"
 /*
      DMCreateGlobalVector_SNESVI - Creates global vector of the size of the reduced space
@@ -61,7 +61,7 @@ PetscErrorCode  DMCreateGlobalVector_SNESVI(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation_SNESVI"
 /*
      DMCreateInterpolation_SNESVI - Modifieds the interpolation obtained from the DM by removing all rows and columns associated with active constraints.
@@ -81,7 +81,7 @@ PetscErrorCode  DMCreateInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
   ierr = PetscObjectQuery((PetscObject)dm2,"VI",(PetscObject *)&isnes);CHKERRQ(ierr);
   if (!isnes) SETERRQ(((PetscObject)dm2)->comm,PETSC_ERR_PLIB,"Composed VI data structure is missing");
   ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi2);CHKERRQ(ierr);
-  
+
   ierr = (*dmsnesvi1->createinterpolation)(dm1,dm2,&interp,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(interp,dmsnesvi2->inactive,dmsnesvi1->inactive,MAT_INITIAL_MATRIX,mat);CHKERRQ(ierr);
   ierr = MatDestroy(&interp);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ PetscErrorCode  DMCreateInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
 
 extern PetscErrorCode  DMSetVI(DM,IS);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCoarsen_SNESVI"
 /*
      DMCoarsen_SNESVI - Computes the regular coarsened DM then computes additional information about its inactive set
@@ -113,7 +113,7 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   ierr = PetscObjectQuery((PetscObject)dm1,"VI",(PetscObject *)&isnes);CHKERRQ(ierr);
   if (!isnes) SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_PLIB,"Composed VI data structure is missing");
   ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi1);CHKERRQ(ierr);
-  
+
   /* get the original coarsen */
   ierr = (*dmsnesvi1->coarsen)(dm1,comm,dm2);CHKERRQ(ierr);
 
@@ -170,12 +170,12 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy_SNESVI"
 PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   /* reset the base methods in the DM object that were changed when the DM_SNESVI was reset */
   dmsnesvi->dm->ops->createinterpolation   = dmsnesvi->createinterpolation;
@@ -190,10 +190,10 @@ PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetVI"
 /*
-     DMSetVI - Marks a DM as associated with a VI problem. This causes the interpolation/restriction operators to 
+     DMSetVI - Marks a DM as associated with a VI problem. This causes the interpolation/restriction operators to
                be restricted to only those variables NOT associated with active constraints.
 
 */
@@ -233,11 +233,11 @@ PetscErrorCode  DMSetVI(DM dm,IS inactive)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroyVI"
 /*
-     DMDestroyVI - Frees the DM_SNESVI object contained in the DM 
-         - also resets the function pointers in the DM for createinterpolation() etc to use the original DM 
+     DMDestroyVI - Frees the DM_SNESVI object contained in the DM
+         - also resets the function pointers in the DM for createinterpolation() etc to use the original DM
 */
 PetscErrorCode  DMDestroyVI(DM dm)
 {
@@ -322,10 +322,10 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
 /* Variational Inequality solver using reduce space method. No semismooth algorithm is
    implemented in this algorithm. It basically identifies the active constraints and does
    a linear solve on the other variables (those not associated with the active constraints). */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSolve_VIRS"
 PetscErrorCode SNESSolve_VIRS(SNES snes)
-{ 
+{
   SNES_VIRS         *vi = (SNES_VIRS*)snes->data;
   PetscErrorCode    ierr;
   PetscInt          maxits,i,lits;
@@ -397,12 +397,12 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
 
 
         /* Create active and inactive index sets */
-    
+
     /*original
     ierr = SNESVICreateIndexSets_RS(snes,X,F,&IS_act,&IS_inact);CHKERRQ(ierr);
      */
     ierr = SNESVIGetActiveSetIS(snes,X,F,&IS_act);CHKERRQ(ierr);
-    
+
     if (vi->checkredundancy) {
       (*vi->checkredundancy)(snes,IS_act,&IS_redact,vi->ctxP);CHKERRQ(ierr);
       if (IS_redact){
@@ -416,11 +416,11 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
     } else {
       ierr = ISComplement(IS_act,X->map->rstart,X->map->rend,&IS_inact);CHKERRQ(ierr);
     }
-    
+
 
     /* Create inactive set submatrix */
     ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
-    
+
     if (0) {                    /* Dead code (temporary developer hack) */
       IS keptrows;
       ierr = MatFindNonzeroRows(jac_inact_inact,&keptrows);CHKERRQ(ierr);
@@ -482,7 +482,7 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
 
     ierr = VecScatterBegin(scat_inact,Y,Y_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(scat_inact,Y,Y_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    
+
     /* Active set direction = 0 */
     ierr = VecSet(Y_act,0);CHKERRQ(ierr);
     if (snes->jacobian != snes->jacobian_pre) {
@@ -494,13 +494,13 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
       ierr = SNESVIResetPCandKSP(snes,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
       flg  = DIFFERENT_NONZERO_PATTERN;
     }
-    
+
     /*      ierr = ISView(IS_inact,0);CHKERRQ(ierr); */
     /*      ierr = ISView(IS_act,0);CHKERRQ(ierr);*/
     /*      ierr = MatView(snes->jacobian_pre,0); */
 
-   
-   
+
+
     ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact,flg);CHKERRQ(ierr);
     ierr = KSPSetUp(snes->ksp);CHKERRQ(ierr);
     {
@@ -575,9 +575,9 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
       ierr = SNESVICheckResidual_Private(snes,snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
     }
     */
-    /* Compute a (scaled) negative update in the line search routine: 
-         Y <- X - lambda*Y 
-       and evaluate G = function(Y) (depends on the line search). 
+    /* Compute a (scaled) negative update in the line search routine:
+         Y <- X - lambda*Y
+       and evaluate G = function(Y) (depends on the line search).
     */
     ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = fnorm;
@@ -695,7 +695,7 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char* func,mxArray
   ierr = SNESVISetRedundancyCheck(snes,SNESVIRedundancyCheck_Matlab,sctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-  
+
 #endif
 
 /* -------------------------------------------------------------------------- */
@@ -714,7 +714,7 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char* func,mxArray
    SNESSetUp(), since these actions will automatically occur during
    the call to SNESSolve().
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetUp_VIRS"
 PetscErrorCode SNESSetUp_VIRS(SNES snes)
 {
@@ -727,7 +727,7 @@ PetscErrorCode SNESSetUp_VIRS(SNES snes)
   PetscFunctionBegin;
   ierr = SNESSetUp_VI(snes);CHKERRQ(ierr);
 
-  /* Set up previous active index set for the first snes solve 
+  /* Set up previous active index set for the first snes solve
    vi->IS_inact_prev = 0,1,2,....N */
 
   ierr = VecGetOwnershipRange(snes->vec_sol,&rstart,&rend);CHKERRQ(ierr);
@@ -744,7 +744,7 @@ PetscErrorCode SNESSetUp_VIRS(SNES snes)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESReset_VIRS"
 PetscErrorCode SNESReset_VIRS(SNES snes)
 {
@@ -768,16 +768,16 @@ PetscErrorCode SNESReset_VIRS(SNES snes)
    Level: beginner
 
    References:
-   - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large-Scale 
+   - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large-Scale
      Applications, Optimization Methods and Software, 21 (2006).
 
 .seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVIRS, SNESVISS, SNESTR, SNESLineSearchSet(),
-           SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(), 
+           SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(),
            SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESCreate_VIRS"
 PetscErrorCode  SNESCreate_VIRS(SNES snes)
 {

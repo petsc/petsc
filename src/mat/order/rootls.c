@@ -21,16 +21,16 @@
 /*       NLVL - IS THE NUMBER OF LEVELS IN THE LEVEL STRUCTURE.*/
 /*       (XLS, LS) - ARRAY PAIR FOR THE ROOTED LEVEL STRUCTURE.*/
 /*****************************************************************/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SPARSEPACKrootls"
-PetscErrorCode SPARSEPACKrootls(PetscInt *root, PetscInt *xadj, PetscInt *adjncy, 
+PetscErrorCode SPARSEPACKrootls(PetscInt *root, PetscInt *xadj, PetscInt *adjncy,
 	PetscInt *mask, PetscInt *nlvl, PetscInt *xls, PetscInt *ls)
 {
     /* System generated locals */
     PetscInt i__1, i__2;
 
     /* Local variables */
-    PetscInt node, i, j, jstop, jstrt, lbegin, ccsize, lvlend, lvsize, 
+    PetscInt node, i, j, jstop, jstrt, lbegin, ccsize, lvlend, lvsize,
 	    nbr;
 
 /*       INITIALIZATION ...*/

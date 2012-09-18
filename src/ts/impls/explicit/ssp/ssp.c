@@ -253,7 +253,7 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSSPSetType"
 /*@C
    TSSSPSetType - set the SSP time integration scheme to use
@@ -282,7 +282,7 @@ PetscErrorCode TSSSPSetType(TS ts,const TSSSPType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSSPGetType"
 /*@C
    TSSSPGetType - get the SSP time integration scheme
@@ -309,7 +309,7 @@ PetscErrorCode TSSSPGetType(TS ts,const TSSSPType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSSPSetNumStages"
 /*@
    TSSSPSetNumStages - set the number of stages to use with the SSP method
@@ -338,7 +338,7 @@ PetscErrorCode TSSSPSetNumStages(TS ts,PetscInt nstages)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSSPGetNumStages"
 /*@
    TSSSPGetNumStages - get the number of stages in the SSP time integration scheme

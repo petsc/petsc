@@ -9,7 +9,7 @@ PETSC_PTHREAD_LOCAL PetscStack  *petscstack = 0;
 PetscStack *petscstack = 0;
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStackPublish"
 PetscErrorCode  PetscStackPublish(void)
 {
@@ -17,15 +17,15 @@ PetscErrorCode  PetscStackPublish(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStackDepublish"
 PetscErrorCode  PetscStackDepublish(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-  
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscStackCreate"
 PetscErrorCode  PetscStackCreate(void)
 {
@@ -33,7 +33,7 @@ PetscErrorCode  PetscStackCreate(void)
 
   PetscStack *petscstack_in;
   if (petscstack) return 0;
-  
+
   ierr = PetscNew(PetscStack,&petscstack_in);CHKERRQ(ierr);
   petscstack_in->currentsize = 0;
   petscstack = petscstack_in;
@@ -41,7 +41,7 @@ PetscErrorCode  PetscStackCreate(void)
   return 0;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStackView"
 PetscErrorCode  PetscStackView(PetscViewer viewer)
 {
@@ -78,7 +78,7 @@ PetscErrorCode  PetscStackView(PetscViewer viewer)
   return 0;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStackDestroy"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 PetscErrorCode  PetscStackDestroy(void)
@@ -93,7 +93,7 @@ PetscErrorCode  PetscStackDestroy(void)
   return 0;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStackCopy"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 PetscErrorCode  PetscStackCopy(PetscStack* sint,PetscStack* sout)
@@ -114,7 +114,7 @@ PetscErrorCode  PetscStackCopy(PetscStack* sint,PetscStack* sout)
   return 0;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStackPrint"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 PetscErrorCode  PetscStackPrint(PetscStack* sint,FILE *fp)
@@ -129,35 +129,35 @@ PetscErrorCode  PetscStackPrint(PetscStack* sint,FILE *fp)
 }
 
 #else
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStackPublish"
 PetscErrorCode  PetscStackPublish(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStackDepublish"
 PetscErrorCode  PetscStackDepublish(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStackCreate"
 PetscErrorCode  PetscStackCreate(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStackView"
 PetscErrorCode  PetscStackView(PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStackDestroy"
 PetscErrorCode  PetscStackDestroy(void)
 {

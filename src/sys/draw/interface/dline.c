@@ -3,9 +3,9 @@
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
-  
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawLine" 
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawLine"
 /*@
    PetscDrawLine - PetscDraws a line onto a drawable.
 
@@ -36,8 +36,8 @@ PetscErrorCode  PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawArrow" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawArrow"
 /*@
    PetscDrawArrow - PetscDraws a line with arrow head at end if the line is long enough
 

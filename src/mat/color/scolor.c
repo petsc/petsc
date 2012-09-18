@@ -1,4 +1,4 @@
- 
+
 #include <petscmat.h>
 #include <../src/mat/color/color.h>
 
@@ -9,8 +9,8 @@ extern PetscErrorCode  MatGetColoring_LF_Minpack(Mat,MatColoringType,ISColoring*
 extern PetscErrorCode  MatGetColoring_ID_Minpack(Mat,MatColoringType,ISColoring*);
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatColoringRegisterAll" 
+#undef __FUNCT__
+#define __FUNCT__ "MatColoringRegisterAll"
 /*@C
   MatColoringRegisterAll - Registers all of the matrix coloring routines in PETSc.
 
@@ -19,8 +19,8 @@ EXTERN_C_END
   Level: developer
 
   Adding new methods:
-  To add a new method to the registry. Copy this routine and 
-  modify it to incorporate a call to MatColoringRegisterDynamic() for 
+  To add a new method to the registry. Copy this routine and
+  modify it to incorporate a call to MatColoringRegisterDynamic() for
   the new method, after the current list.
 
   Restricting the choices: To prevent all of the methods from being
@@ -38,7 +38,7 @@ PetscErrorCode MatColoringRegisterAll(const char path[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  MatColoringRegisterAllCalled = PETSC_TRUE;  
+  MatColoringRegisterAllCalled = PETSC_TRUE;
   ierr = MatColoringRegisterDynamic(MATCOLORINGNATURAL,path,"MatGetColoring_Natural",   MatGetColoring_Natural);CHKERRQ(ierr);
   ierr = MatColoringRegisterDynamic(MATCOLORINGSL,     path,"MatGetColoring_SL_Minpack",MatGetColoring_SL_Minpack);CHKERRQ(ierr);
   ierr = MatColoringRegisterDynamic(MATCOLORINGLF,     path,"MatGetColoring_LF_Minpack",MatGetColoring_LF_Minpack);CHKERRQ(ierr);

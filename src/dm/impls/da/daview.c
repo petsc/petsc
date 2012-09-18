@@ -8,7 +8,7 @@
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <mat.h>   /* MATLAB include file */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMView_DA_Matlab"
 PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
 {
@@ -43,7 +43,7 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
 }
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMView_DA_Binary"
 PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
 {
@@ -78,7 +78,7 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
     ierr = PetscViewerBinaryWrite(viewer,&stencil,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
     if (dd->coordinates) coors = PETSC_TRUE;
     ierr = PetscViewerBinaryWrite(viewer,&coors,1,PETSC_BOOL,PETSC_FALSE);CHKERRQ(ierr);
-  } 
+  }
 
   /* save the coordinates if they exist to disk (in the natural ordering) */
   if (dd->coordinates) {
@@ -87,7 +87,7 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMView_DA_VTK"
 PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 {
@@ -123,7 +123,7 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetInfo"
 /*@C
    DMDAGetInfo - Gets information about a given distributed array.
@@ -139,12 +139,12 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 .  m, n, p  - corresponding number of procs in each dimension
 .  dof      - number of degrees of freedom per node
 .  s        - stencil width
-.  bx,by,bz - type of ghost nodes at boundary, one of DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, 
+.  bx,by,bz - type of ghost nodes at boundary, one of DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED,
               DMDA_BOUNDARY_MIRROR, DMDA_BOUNDARY_PERIODIC
 -  st       - stencil type, either DMDA_STENCIL_STAR or DMDA_STENCIL_BOX
 
    Level: beginner
-  
+
    Note:
    Use PETSC_NULL (PETSC_NULL_INTEGER in Fortran) in place of any output parameter that is not of interest.
 
@@ -172,9 +172,9 @@ PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt
   if (bz) *bz = dd->bz;
   if (st)   *st   = dd->stencil_type;
   PetscFunctionReturn(0);
-}  
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetLocalInfo"
 /*@C
    DMDAGetLocalInfo - Gets information about a given distributed array and this processors location in it
@@ -188,7 +188,7 @@ PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt
 .  dainfo - structure containing the information
 
    Level: beginner
-  
+
 .keywords: distributed array, get, information
 
 .seealso: DMDAGetInfo(), DMDAGetCorners()
@@ -213,24 +213,24 @@ PetscErrorCode  DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
   info->bz   = dd->bz;
   info->st   = dd->stencil_type;
 
-  /* since the xs, xe ... have all been multiplied by the number of degrees 
+  /* since the xs, xe ... have all been multiplied by the number of degrees
      of freedom per cell, w = dd->w, we divide that out before returning.*/
-  w = dd->w;  
-  info->xs = dd->xs/w; 
+  w = dd->w;
+  info->xs = dd->xs/w;
   info->xm = (dd->xe - dd->xs)/w;
   /* the y and z have NOT been multiplied by w */
   info->ys = dd->ys;
   info->ym = (dd->ye - dd->ys);
   info->zs = dd->zs;
-  info->zm = (dd->ze - dd->zs); 
+  info->zm = (dd->ze - dd->zs);
 
-  info->gxs = dd->Xs/w; 
+  info->gxs = dd->Xs/w;
   info->gxm = (dd->Xe - dd->Xs)/w;
   /* the y and z have NOT been multiplied by w */
   info->gys = dd->Ys;
   info->gym = (dd->Ye - dd->Ys);
   info->gzs = dd->Zs;
-  info->gzm = (dd->Ze - dd->Zs); 
+  info->gzm = (dd->Ze - dd->Zs);
   PetscFunctionReturn(0);
-}  
+}
 

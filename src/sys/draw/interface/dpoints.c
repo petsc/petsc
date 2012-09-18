@@ -4,12 +4,12 @@
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawPointSetSize" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawPointSetSize"
 /*@
    PetscDrawPointSetSize - Sets the point size for future draws.  The size is
    relative to the user coordinates of the window; 0.0 denotes the natural
-   width, 1.0 denotes the entire viewport. 
+   width, 1.0 denotes the entire viewport.
 
    Not collective
 
@@ -19,7 +19,7 @@
 
    Level: advanced
 
-   Note: 
+   Note:
    Even a size of zero insures that a single pixel is colored.
 
    Concepts: point^drawing size

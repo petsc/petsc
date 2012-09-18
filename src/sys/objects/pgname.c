@@ -1,7 +1,7 @@
 
 #include <petscsys.h>        /*I    "petscsys.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectGetName"
 /*@C
    PetscObjectGetName - Gets a string name associated with a PETSc object.
@@ -10,7 +10,7 @@
 
    Input Parameters:
 +  obj - the Petsc variable
-         Thus must be cast with a (PetscObject), for example, 
+         Thus must be cast with a (PetscObject), for example,
          PetscObjectGetName((PetscObject)mat,&name);
 -  name - the name associated with obj
 

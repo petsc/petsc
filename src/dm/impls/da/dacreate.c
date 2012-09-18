@@ -1,7 +1,7 @@
 
 #include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_DA"
 PetscErrorCode  DMSetFromOptions_DA(DM da)
 {
@@ -123,7 +123,7 @@ extern PetscErrorCode  DMView_DA(DM,PetscViewer);
 extern PetscErrorCode  DMSetUp_DA(DM);
 extern PetscErrorCode  DMDestroy_DA(DM);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMLoad_DA"
 PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
 {
@@ -136,7 +136,7 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
   DM               dac;
   Vec              c;
 
-  PetscFunctionBegin;  
+  PetscFunctionBegin;
   ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
   if (classid != DM_FILE_CLASSID) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Not DM next in file");
   ierr = PetscViewerBinaryRead(viewer,&subclassid,1,PETSC_INT);CHKERRQ(ierr);
@@ -188,7 +188,7 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
     ierr = DMGetGlobalVector(dm,&v);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(v,&rstart,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(dm,&v);CHKERRQ(ierr);    
+    ierr = DMRestoreGlobalVector(dm,&v);CHKERRQ(ierr);
     ierr = PetscMalloc(dof*sizeof(IS),islist);CHKERRQ(ierr);
     for (i=0; i<dof; i++) {
       ierr = ISCreateStride(((PetscObject)dm)->comm,n/dof,rstart+i,dof,&(*islist)[i]);CHKERRQ(ierr);
@@ -225,7 +225,7 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
 /*MC
    DMDA = "da" - A DM object that is used to manage data for a structured grid in 1, 2, or 3 dimensions.
          In the global representation of the vector each process stores a non-overlapping rectangular (or slab in 3d) portion of the grid points.
-         In the local representation these rectangular regions (slabs) are extended in all directions by a stencil width. 
+         In the local representation these rectangular regions (slabs) are extended in all directions by a stencil width.
 
          The vectors can be thought of as either cell centered or vertex centered on the mesh. But some variables cannot be cell centered and others
          vertex centered.
@@ -238,7 +238,7 @@ M*/
 
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreate_DA"
 PetscErrorCode  DMCreate_DA(DM da)
 {
@@ -318,10 +318,10 @@ PetscErrorCode  DMCreate_DA(DM da)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDACreate"
 /*@
-  DMDACreate - Creates a DMDA object. 
+  DMDACreate - Creates a DMDA object.
 
   Collective on MPI_Comm
 

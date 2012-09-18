@@ -16,7 +16,7 @@ static PetscErrorCode    KSPDGMRESBuildSoln (PetscScalar*,Vec,Vec,KSP,PetscInt);
 
 #undef __FUNCT__
 #define __FUNCT__  "KSPDGMRESSetEigen"
-PetscErrorCode  KSPDGMRESSetEigen (KSP ksp,PetscInt nb_eig) 
+PetscErrorCode  KSPDGMRESSetEigen (KSP ksp,PetscInt nb_eig)
 {
     PetscErrorCode ierr;
 
@@ -26,7 +26,7 @@ PetscErrorCode  KSPDGMRESSetEigen (KSP ksp,PetscInt nb_eig)
 }
 #undef __FUNCT__
 #define __FUNCT__  "KSPDGMRESSetMaxEigen"
-PetscErrorCode  KSPDGMRESSetMaxEigen (KSP ksp,PetscInt max_neig) 
+PetscErrorCode  KSPDGMRESSetMaxEigen (KSP ksp,PetscInt max_neig)
 {
     PetscErrorCode ierr;
 
@@ -46,7 +46,7 @@ PetscErrorCode  KSPDGMRESForce (KSP ksp,PetscInt force)
 }
 #undef __FUNCT__
 #define __FUNCT__  "KSPDGMRESSetMaxEigen"
-PetscErrorCode  KSPDGMRESSetRatio (KSP ksp,PetscReal ratio) 
+PetscErrorCode  KSPDGMRESSetRatio (KSP ksp,PetscReal ratio)
 {
         PetscErrorCode ierr;
 
@@ -66,7 +66,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm (KSP ksp,PetscInt *neig)
 }
 #undef __FUNCT__
 #define __FUNCT__  "KSPDGMRESComputeDeflationData"
-PetscErrorCode  KSPDGMRESComputeDeflationData (KSP ksp) 
+PetscErrorCode  KSPDGMRESComputeDeflationData (KSP ksp)
 {
     PetscErrorCode ierr;
 
@@ -76,7 +76,7 @@ PetscErrorCode  KSPDGMRESComputeDeflationData (KSP ksp)
 }
 #undef __FUNCT__
 #define __FUNCT__  "KSPDGMRESApplyDeflation"
-PetscErrorCode  KSPDGMRESApplyDeflation (KSP ksp, Vec x, Vec y) 
+PetscErrorCode  KSPDGMRESApplyDeflation (KSP ksp, Vec x, Vec y)
 {
     PetscErrorCode ierr;
 
@@ -87,7 +87,7 @@ PetscErrorCode  KSPDGMRESApplyDeflation (KSP ksp, Vec x, Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDGMRESImproveEig"
-PetscErrorCode  KSPDGMRESImproveEig (KSP ksp, PetscInt neig) 
+PetscErrorCode  KSPDGMRESImproveEig (KSP ksp, PetscInt neig)
 {
     PetscErrorCode ierr;
 
@@ -97,7 +97,7 @@ PetscErrorCode  KSPDGMRESImproveEig (KSP ksp, PetscInt neig)
 }
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_DGMRES"
-PetscErrorCode    KSPSetUp_DGMRES (KSP ksp) 
+PetscErrorCode    KSPSetUp_DGMRES (KSP ksp)
 {
     PetscErrorCode    ierr;
     KSP_DGMRES        *dgmres   = (KSP_DGMRES *) ksp->data;
@@ -150,7 +150,7 @@ PetscErrorCode    KSPSetUp_DGMRES (KSP ksp)
  */
 #undef __FUNCT__
 #define __FUNCT__ "KSPDGMRESCycle"
-PetscErrorCode KSPDGMRESCycle (PetscInt *itcount,KSP ksp) 
+PetscErrorCode KSPDGMRESCycle (PetscInt *itcount,KSP ksp)
 {
     KSP_DGMRES      *dgmres = (KSP_DGMRES *) (ksp->data);
     PetscReal       res_norm,res,hapbnd,tt;
@@ -697,7 +697,7 @@ PetscErrorCode KSPSetFromOptions_DGMRES (KSP ksp) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPDGMRESComputeDeflationData_DGMRES"
-PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES (KSP ksp) 
+PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES (KSP ksp)
 {
     KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
     PetscErrorCode ierr;
@@ -710,7 +710,7 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES (KSP ksp)
     PetscInt	   N = dgmres->max_k+1;
     PetscInt       n = dgmres->it+1;
     PetscReal	   alpha;
-#if !defined(PETSC_MISSING_LAPACK_GETRF) 
+#if !defined(PETSC_MISSING_LAPACK_GETRF)
     PetscBLASInt info;
 #endif
 
@@ -849,7 +849,7 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES (KSP ksp)
         ierr=PetscMalloc (bmax*sizeof(PetscBLASInt), &INVP);
         CHKERRQ(ierr);
     }
-#if defined(PETSC_MISSING_LAPACK_GETRF) 
+#if defined(PETSC_MISSING_LAPACK_GETRF)
     SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GETRF - Lapack routine is unavailable.");
 #else
     LAPACKgetrf_ (&nr, &nr, TTF, &bmax, INVP, &info);
@@ -897,7 +897,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig) {
     PetscBLASInt *select;
     PetscBLASInt *iwork;
     PetscBLASInt liwork;
-#if !defined(PETSC_MISSING_LAPACK_HSEQR) 
+#if !defined(PETSC_MISSING_LAPACK_HSEQR)
     PetscBLASInt 	ilo=1;
     PetscBLASInt        info;
     PetscReal 		CondEig; /* lower bound on the reciprocal condition number for the selected cluster of eigenvalues */
@@ -926,7 +926,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig) {
     /* copy the Hessenberg matrix to work space */
     ierr = PetscMemcpy (A, dgmres->hes_origin, ldA*ldA*sizeof(PetscReal));    CHKERRQ(ierr);
     /* Compute eigenvalues with the Schur form */
-#if defined(PETSC_MISSING_LAPACK_HSEQR) 
+#if defined(PETSC_MISSING_LAPACK_HSEQR)
     SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"HSEQR - Lapack routine is unavailable.");
 #else
     LAPACKhseqr_ ("S", "I", &bn, &ilo, &ihi, A, &ldA, wr, wi, Q, &ldQ, work, &lwork, &info);
@@ -975,7 +975,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig) {
 	liwork = PetscMax(1, 2 * NbrEig * (bn-NbrEig));
 	ierr = PetscMalloc(lwork * sizeof(PetscScalar), &work);	CHKERRQ(ierr);
 	ierr = PetscMalloc(liwork * sizeof(PetscBLASInt), &iwork);	CHKERRQ(ierr);
-#if defined(PETSC_MISSING_LAPACK_TRSEN) 
+#if defined(PETSC_MISSING_LAPACK_TRSEN)
         SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"TRSEN - Lapack routine is unavailable.");
 #else
 	LAPACKtrsen_("B", "V", select, &bn, A, &ldA, Q, &ldQ, wr, wi, &NbrEig, &CondEig, &CondSub, work, &lwork, iwork, &liwork, &info);
@@ -1014,7 +1014,7 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES (KSP ksp, Vec x, Vec y) {
     PetscInt	max_neig = dgmres->max_neig;
     PetscBLASInt	br,bmax;
     PetscInt	lambda = dgmres->lambdaN;
-#if !defined(PETSC_MISSING_LAPACK_GETRS) 
+#if !defined(PETSC_MISSING_LAPACK_GETRS)
     PetscReal	berr, ferr;
     PetscBLASInt info;
 #endif
@@ -1036,7 +1036,7 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES (KSP ksp, Vec x, Vec y) {
 
     /* Solve T*X1=X2 for X1*/
     ierr = PetscMemcpy (X2, X1, br*sizeof(PetscReal));    CHKERRQ(ierr);
-#if defined(PETSC_MISSING_LAPACK_GETRS) 
+#if defined(PETSC_MISSING_LAPACK_GETRS)
     SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
 #else
     LAPACKgetrs_ ("N", &br, &nrhs, TTF, &bmax, INVP, X1, &bmax, &info);
@@ -1047,7 +1047,7 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES (KSP ksp, Vec x, Vec y) {
         ierr=PetscMalloc (3*bmax*sizeof(PetscReal), &WORK);        CHKERRQ(ierr);
         ierr=PetscMalloc (bmax*sizeof(PetscInt), &IWORK);        CHKERRQ(ierr);
     }
-#if defined(PETSC_MISSING_LAPACK_GERFS) 
+#if defined(PETSC_MISSING_LAPACK_GERFS)
     SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GERFS - Lapack routine is unavailable.");
 #else
     LAPACKgerfs_ ("N", &br, &nrhs, TT, &bmax, TTF, &bmax, INVP, X2, &bmax,
@@ -1077,7 +1077,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPDGMRESImproveEig_DGMRES"
-PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig) 
+PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 {
 	KSP_DGMRES		*dgmres = (KSP_DGMRES*) ksp->data;
 	PetscInt		j,r_old, r = dgmres->r;
@@ -1098,7 +1098,7 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 	PetscInt		ierr;
 	PetscBLASInt NbrEig = 0,nr,bm;
 	PetscBLASInt *select;
-	PetscBLASInt liwork, *iwork; 
+	PetscBLASInt liwork, *iwork;
 #if !defined(PETSC_MISSING_LAPACK_TGSEN)
         PetscReal Dif[2];
 	PetscBLASInt ijob = 2;
@@ -1162,7 +1162,7 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 	ierr = PetscMalloc (N*N*sizeof(PetscReal), &Q);    CHKERRQ(ierr);
 	ierr = PetscMalloc (N*N*sizeof(PetscReal), &Z);    CHKERRQ(ierr);
 	ierr = PetscMalloc (lwork*sizeof(PetscReal), &work);    CHKERRQ(ierr);
-#if defined(PETSC_MISSING_LAPACK_GGES) 
+#if defined(PETSC_MISSING_LAPACK_GGES)
         SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GGES - Lapack routine is unavailable.");
 #else
 	LAPACKgges_ ("V", "V", "N", NULL, &N, AUAU, &ldA, AUU, &ldA, &i, wr, wi, beta, Q, &N, Z, &N, work, &lwork, NULL, &info);
@@ -1248,10 +1248,10 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 	ierr=PetscMemcpy (TTF, TT, bmax*r*sizeof(PetscReal));    CHKERRQ(ierr);
 	nr = PetscBLASIntCast (r);
 	bm = PetscBLASIntCast (bmax);
-#if defined(PETSC_MISSING_LAPACK_GETRF) 
+#if defined(PETSC_MISSING_LAPACK_GETRF)
         SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GETRF - Lapack routine is unavailable.");
 #else
-	LAPACKgetrf_ (&nr, &nr, TTF, &bm, INVP, &info);    
+	LAPACKgetrf_ (&nr, &nr, TTF, &bm, INVP, &info);
 	if (info) SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_LIB,"Error in LAPACK routine XGETRF INFO=%d", (int) info);
 #endif
 	/* Free Memory */

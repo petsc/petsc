@@ -1,6 +1,6 @@
 
 /*
-  This is to allow one to measure CPU time usage of their job, 
+  This is to allow one to measure CPU time usage of their job,
   NOT real time usage. Do not use this for reported timings, speedup etc.
 */
 
@@ -25,7 +25,7 @@
 
 #include <sys/times.h>
 #include <limits.h>
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetCPUTime"
 PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
 {
@@ -42,14 +42,14 @@ PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
 #include <time.h>
 #include <sys/types.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetCPUTime"
 PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
 {
   PetscFunctionBegin;
   *t = ((double)clock()) / ((double)CLOCKS_PER_SEC);
   PetscFunctionReturn(0);
-}  
+}
 
 #else
 
@@ -57,7 +57,7 @@ PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
 #include <sys/time.h>
 #include <sys/resource.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetCPUTime"
 /*@
     PetscGetCPUTime - Returns the CPU time in seconds used by the process.
@@ -72,7 +72,7 @@ PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
     #include <petscsys.h>
     ...
     PetscLogDouble t1, t2;
- 
+
     ierr = PetscGetCPUTime(&t1);CHKERRQ(ierr);
     ... code to time ...
     ierr = PetscGetCPUTime(&t2);CHKERRQ(ierr);
@@ -82,7 +82,7 @@ PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
     Level: intermediate
 
     Notes:
-    One should use PetscGetTime() or the -log_summary option of 
+    One should use PetscGetTime() or the -log_summary option of
     PETSc for profiling. The CPU time is NOT a realistic number to
     use since it does not include the time for message passing etc.
     Also on many systems the accuracy is only on the order of microseconds.

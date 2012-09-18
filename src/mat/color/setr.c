@@ -3,8 +3,8 @@
 
 #include <../src/mat/color/color.h>
 
-#undef __FUNCT__  
-#define __FUNCT__ "MINPACKsetr" 
+#undef __FUNCT__
+#define __FUNCT__ "MINPACKsetr"
 PetscErrorCode MINPACKsetr(PetscInt*m,PetscInt* n,PetscInt* indrow,PetscInt* jpntr,PetscInt* indcol, PetscInt*ipntr,PetscInt* iwa)
 {
     /* System generated locals */

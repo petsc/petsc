@@ -9,7 +9,7 @@
 PetscClassId  ADDA_CLASSID;
 PetscLogEvent DMDA_LocalADFunction;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Private"
 /*
    DMDestroy_Private - handles the work vectors created by DMGetGlobalVector() and DMGetLocalVector()
@@ -32,8 +32,8 @@ PetscErrorCode  DMDestroy_Private(DM dm,PetscBool  *done)
   if (--((PetscObject)dm)->refct - cnt > 0) PetscFunctionReturn(0);
 
   /*
-         Need this test because the dm references the vectors that 
-     reference the dm, so destroying the dm calls destroy on the 
+         Need this test because the dm references the vectors that
+     reference the dm, so destroying the dm calls destroy on the
      vectors that cause another destroy on the dm
   */
   if (((PetscObject)dm)->refct < 0) PetscFunctionReturn(0);
@@ -52,7 +52,7 @@ PetscErrorCode  DMDestroy_Private(DM dm,PetscBool  *done)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy_DA"
 PetscErrorCode  DMDestroy_DA(DM da)
 {

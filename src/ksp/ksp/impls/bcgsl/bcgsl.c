@@ -6,7 +6,7 @@
  *
  * This has not been completely cleaned up into PETSc style.
  *
- * All the BLAS and LAPACK calls below should be removed and replaced with 
+ * All the BLAS and LAPACK calls below should be removed and replaced with
  * loops and the macros for block solvers converted from LINPACK; there is no way
  * calls to BLAS/LAPACK make sense for size 2, 3, 4, etc.
  */

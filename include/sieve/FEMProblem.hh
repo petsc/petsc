@@ -2,10 +2,10 @@
 #define __FEMProblem
 
 /*
-  
+
   Framework for solving a FEM problem using sieve.
-  
-  The Discretization objects are WAY too embedded into the way things are done; we will have to create ways of 
+
+  The Discretization objects are WAY too embedded into the way things are done; we will have to create ways of
 
 This includes derived types doing what indicesExcluded does for all things marked with a boundary marker.
 
@@ -13,7 +13,7 @@ This includes derived types doing what indicesExcluded does for all things marke
 
 #include <sieve/Mesh.hh>
 
-namespace ALE { 
+namespace ALE {
   namespace Problem {
 
     /*
@@ -32,7 +32,7 @@ namespace ALE {
     class SubProblem : public ParallelObject {
     public:
 
-      typedef std::string name_type;      
+      typedef std::string name_type;
 
       SubProblem(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {};
       virtual ~SubProblem() {};
@@ -108,7 +108,7 @@ namespace ALE {
       virtual void setLabelName(const std::string& name) {this->_labelName = name;};
       virtual int getMarker() const {return this->_marker;};
       virtual void setMarker(const int marker) {this->_marker = marker;};
-      
+
     public:
 
       virtual double integrateDual(unsigned int dof) {
@@ -117,7 +117,7 @@ namespace ALE {
 	throw Exception("GeneralBoundaryCondition->integrateDual: Nonimplemented base-class version called.");
 	return 3.;
       };
-      
+
       virtual void setReorder(int * reorder) {
 	throw Exception("GeneralBoundaryCondition->setReorder(): Unimplemented base class version called.");
       }
@@ -128,7 +128,7 @@ namespace ALE {
       }
 
     };
-    
+
     /*
       Include at least counts of all the part of the triple, as well as all the information for the cell.
      */
@@ -139,7 +139,7 @@ namespace ALE {
     private:
     public:
       virtual double integrateDual(unsigned int dof) {
-	//evaluate a degree of freedom 
+	//evaluate a degree of freedom
 	return 0.;
       }
       virtual int closureIndex(unsigned int dof) {
@@ -157,7 +157,7 @@ namespace ALE {
     class GeneralIntegral : public ParallelObject {
     public:
       typedef std::string name_type;
-    private: 
+    private:
       //the integral should only apply to the labeled points in some way, probably over the closure(support(point));
 
 
@@ -176,7 +176,7 @@ namespace ALE {
       int * _closure2data;  //if there is some API-level data storage, this maps the unknowns for the WHOLE CLOSURE onto the unknowns for the API
 
     public:
-      
+
       GeneralIntegral (MPI_Comm comm, int debug = 0) : ParallelObject(comm, debug) {
 	_tensor_rank = 0;
 	_space_dimension = 0;
@@ -217,12 +217,12 @@ namespace ALE {
       void setLabelMarker(int newMarker) {
 	_label_marker = newMarker;
       }
-      
+
 
       virtual void setSpaceDimension(int dim) {
 	_space_dimension = dim;
       }
-      
+
       virtual int getSpaceDimension() {
 	return _space_dimension;
       }
@@ -230,13 +230,13 @@ namespace ALE {
       virtual void setTensorRank(int rank) {
 	_tensor_rank = rank;
       }
-      
+
       virtual int getTensorRank() {
-	return _tensor_rank; 
+	return _tensor_rank;
       }
 
-      
-      
+
+
       virtual const int * getReorder() {
 	return _closure2data;
       }
@@ -313,7 +313,7 @@ namespace ALE {
       /*
 	
       Functions for interacting with external libraries for handling finite element assembly that might have different cell layout.
-      
+
        */
 
       virtual void createReorder() {
@@ -367,22 +367,22 @@ namespace ALE {
       ~GenericFormSubProblem(){};
 
     private:
-      
+
       name_type _solutionSectionName;
       name_type _forcingSectionName;
       discretizations_type _discretizations;
       integral_type _integrals;
       Obj<GeneralBoundaryCondition> _exactSolution; //evaluates a function over all unknowns on the form containing an exact solution.  Per discretization later.
-      int * _closure2data;                          //a mapping from closure indices to data indices for the overall element 
+      int * _closure2data;                          //a mapping from closure indices to data indices for the overall element
 
 
       //helper functions, stolen directly from Mesh.hh with slight modifications to remove FIAT dependence and instead use stuff from GeneralDiscretization
 
-    public: 
-      
+    public:
+
       const Obj<GeneralDiscretization>& getDiscretization() {return this->getDiscretization("default");};
       const Obj<GeneralDiscretization>& getDiscretization(const std::string& name) {return this->_discretizations[name];};
-      
+
       void setDiscretization(const Obj<GeneralDiscretization>& disc) {this->setDiscretization("default", disc);};
       void setDiscretization(const std::string& name, const Obj<GeneralDiscretization>& disc) {this->_discretizations[name] = disc;};
 
@@ -427,7 +427,7 @@ namespace ALE {
 	throw Exception("GeneralDiscretization->localSpaceDimension(): using the unimplemented base class version.");
 	return 0;
       }
-      
+
       /*
 	Functions handling the creation and application of reordering from element libraries and sieve.
        */
@@ -459,11 +459,11 @@ namespace ALE {
 	for(int d = 0; d <= mesh->getDimension(); ++d) {
 	  int numDof = 0;
 	  int f      = 0;
-	  
+	
 	  for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
 	    const Obj<GeneralDiscretization>& disc = this->getDiscretization(*f_iter);
 	    const int                       sDof = disc->getNumDof(d);
-	    
+	
 	    numDof += sDof;
 	    if (sDof) s->setFiberDimension(mesh->depthStratum(d), sDof, f);
 	  }
@@ -479,18 +479,18 @@ namespace ALE {
 	  std::string                     labelName = "exclude-"+*f_iter;
 	  std::set<PETSC_MESH_TYPE::point_type>            seen;
 	  Visitor pV((int) pow(mesh->getSieve()->getMaxConeSize(), mesh->depth()), true);
-	  
+	
 	  if (mesh->hasLabel(labelName)) {
 	    const Obj<PETSC_MESH_TYPE::label_type>&         label     = mesh->getLabel(labelName);
 	    const Obj<PETSC_MESH_TYPE::label_sequence>&     exclusion = mesh->getLabelStratum(labelName, 1);
 	    const PETSC_MESH_TYPE::label_sequence::iterator end       = exclusion->end();
 	    if (debug > 1) {label->view(labelName.c_str());}
-	    
+	
 	    for(PETSC_MESH_TYPE::label_sequence::iterator e_iter = exclusion->begin(); e_iter != end; ++e_iter) {
 	      ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*mesh->getSieve(), *e_iter, pV);
 	      const Visitor::point_type *oPoints = pV.getPoints();
 	      const int                  oSize   = pV.getSize();
-	      
+	
 	      for(int cl = 0; cl < oSize; ++cl) {
 		if (seen.find(oPoints[cl]) != seen.end()) continue;
 		if (mesh->getValue(label, oPoints[cl]) == 1) {
@@ -510,19 +510,19 @@ namespace ALE {
 	  const Obj<GeneralDiscretization>&    disc        = this->getDiscretization(*f_iter);
 	  const Obj<std::set<std::string> >  bcs         = disc->getBoundaryConditions();
 	  std::string                        excludeName = "exclude-"+*f_iter;
-	  
+	
 	  for(std::set<std::string>::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter) {
 	    const Obj<GeneralBoundaryCondition>& bc       = disc->getBoundaryCondition(*bc_iter);
 	    const Obj<PETSC_MESH_TYPE::label_sequence>&         boundary = mesh->getLabelStratum(bc->getLabelName(), bc->getMarker());
-	    
+	
 	    bcLabels.insert(bc->getLabelName());
 	    if (mesh->hasLabel(excludeName)) {
 	      const Obj<PETSC_MESH_TYPE::label_type>& label = mesh->getLabel(excludeName);
-	      
+	
 	      for(PETSC_MESH_TYPE::label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
 		if (!mesh->getValue(label, *e_iter)) {
 		  const int numDof = disc->getNumDof(mesh->depth(*e_iter));
-		  
+		
 		  if (numDof) s->addConstraintDimension(*e_iter, numDof);
 		  if (numDof) s->setConstraintDimension(*e_iter, numDof, f);
 		}
@@ -561,12 +561,12 @@ namespace ALE {
 	if (debug > 1) {std::cout << "Closure for first element" << std::endl;}
 	for(int cl = 0; cl < oSize; ++cl) {
 	  const int dim = mesh->depth(oPoints[cl]);
-	  
+	
 	  if (debug > 1) {std::cout << "  point " << oPoints[cl] << " depth " << dim << std::endl;}
 	  for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
 	    const Obj<GeneralDiscretization>& disc = this->getDiscretization(*d_iter);
 	    const int                  num  = disc->getNumDof(dim);
-	    
+	
 	    //if (debug > 1) {std::cout << "    disc " << disc->getName() << " numDof " << num << std::endl;}
 	    for(int o = 0; o < num; ++o) {
 	      indices[*d_iter].second[indices[*d_iter].first++] = offset++;
@@ -577,7 +577,7 @@ namespace ALE {
 	if (debug > 1) {
 	  for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
 	    //const Obj<GeneralDiscretization>& disc = this->getDiscretization(*d_iter);
-	    
+	
 	    //std::cout << "Discretization " << disc->getName() << " indices:";
 	    for(int i = 0; i < indices[*d_iter].first; ++i) {
 	      std::cout << " " << indices[*d_iter].second[i];
@@ -600,7 +600,7 @@ namespace ALE {
 	for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
 	  const Obj<GeneralDiscretization>& disc = this->getDiscretization(*d_iter);
 	  const int                  size = disc->size();
-	  
+	
 	  indices[*d_iter].second.resize(size);
 	}
 	const names_type::const_iterator dBegin = discs->begin();
@@ -610,11 +610,11 @@ namespace ALE {
 	
 	for(names_type::const_iterator f_iter = dBegin; f_iter != dEnd; ++f_iter, ++f) {
 	  std::string labelName = "exclude-"+*f_iter;
-	  
+	
 	  if (mesh->hasLabel(labelName)) {
 	    const Obj<PETSC_MESH_TYPE::label_sequence>&     exclusion = mesh->getLabelStratum(labelName, 1);
 	    const PETSC_MESH_TYPE::label_sequence::iterator end       = exclusion->end();
-	    
+	
 	    if (debug > 1) {std::cout << "Processing exclusion " << labelName << std::endl;}
 	    for(PETSC_MESH_TYPE::label_sequence::iterator e_iter = exclusion->begin(); e_iter != end; ++e_iter) {
 	      if (mesh->height(*e_iter)) continue;
@@ -622,7 +622,7 @@ namespace ALE {
 	      const Visitor::point_type *oPoints = pV.getPoints();
 	      const int                  oSize   = pV.getSize();
 	      int                        offset  = 0;
-	      
+	
 	      if (debug > 1) {std::cout << "  Closure for cell " << *e_iter << std::endl;}
 	      for(int cl = 0; cl < oSize; ++cl) {
 		int g = 0;
@@ -630,7 +630,7 @@ namespace ALE {
 		if (debug > 1) {std::cout << "    point " << oPoints[cl] << std::endl;}
 		for(names_type::const_iterator g_iter = dBegin; g_iter != dEnd; ++g_iter, ++g) {
 		  const int fDim = s->getFiberDimension(oPoints[cl], g);
-		  
+		
 		  if (debug > 1) {std::cout << "      disc " << *g_iter << " numDof " << fDim << std::endl;}
 		  for(int d = 0; d < fDim; ++d) {
 		    indices[*g_iter].second[indices[*g_iter].first++] = offset++;
@@ -639,7 +639,7 @@ namespace ALE {
 	      }
 	      pV.clear();
 	      const std::map<indices_type, int>::iterator entry = indexMap.find(indices);
-	      
+	
 	      if (debug > 1) {
 		for(std::map<indices_type, int>::iterator i_iter = indexMap.begin(); i_iter != indexMap.end(); ++i_iter) {
 		  for(names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
@@ -682,7 +682,7 @@ namespace ALE {
 	    const indexSet  indSet   = ((indices_type) i_iter->first)[*g_iter].second;
 	    const int       size     = indSet.size();
 	    int            *_indices = new int[size];
-	    
+	
 	    if (debug > 1) {std::cout << "  field " << *g_iter << std::endl;}
 	    for(int i = 0; i < size; ++i) {
 	      _indices[i] = indSet[i];
@@ -720,12 +720,12 @@ namespace ALE {
 	  int                           *dofs          = new int[maxDof];
 	  int                           *v             = new int[numFields];
 	  Visitor pV((int) pow(mesh->getSieve()->getMaxConeSize(), mesh->depth())+1, true);
-	  
+	
 	  for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = boundaryCells->begin(); c_iter != boundaryCells->end(); ++c_iter) {
 	    ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*mesh->getSieve(), *c_iter, pV);
 	    const Visitor::point_type *oPoints = pV.getPoints();
 	    const int                  oSize   = pV.getSize();
-	    
+	
 	    if (debug > 1) {std::cout << "  Boundary cell " << *c_iter << std::endl;}
 	    //mesh->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
 	    this->setCell(mesh, *c_iter);
@@ -736,7 +736,7 @@ namespace ALE {
 	      int       off  = 0;
 	      int       f    = 0;
 	      int       i    = -1;
-	      
+	
 	      if (debug > 1) {std::cout << "    point " << oPoints[cl] << std::endl;}
 	      if (cDim || setAll) {
 		if (debug > 1) {std::cout << "      constrained excMarker: " << mesh->getValue(cellExclusion, *c_iter) << std::endl;}
@@ -746,7 +746,7 @@ namespace ALE {
 		  const int                       fDim    = s->getFiberDimension(oPoints[cl], f);//disc->getNumDof(this->depth(oPoints[cl]));
 		  const int                      *indices = disc->getIndices(mesh->getValue(cellExclusion, *c_iter));
 		  int                             b       = 0;
-		  
+		
 		  for(names_type::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter, ++b) {
 		    const Obj<GeneralBoundaryCondition>& bc    = disc->getBoundaryCondition(*bc_iter);
 		    const int                          value = mesh->getValue(mesh->getLabel(bc->getLabelName()), oPoints[cl]);
@@ -794,7 +794,7 @@ namespace ALE {
 		  const Obj<GeneralDiscretization>& disc    = this->getDiscretization(*f_iter);
 		  const int                       fDim    = s->getFiberDimension(oPoints[cl], f);//disc->getNumDof(this->depth(oPoints[cl]));
 		  const int                      *indices = disc->getIndices(mesh->getValue(cellExclusion, *c_iter));
-		  
+		
 		  if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
 		  for(int d = 0; d < fDim; ++d, ++v[f]) {
 		    values[indices[v[f]]] = 0.0;
@@ -811,7 +811,7 @@ namespace ALE {
 		  const Obj<GeneralDiscretization>& disc    = this->getDiscretization(*f_iter);
 		  const int                       fDim    = s->getFiberDimension(oPoints[cl], f);
 		  const int                      *indices = disc->getIndices(mesh->getValue(cellExclusion, *c_iter));
-		  
+		
 		  for(int d = 0; d < fDim; ++d, ++v[f]) {
 		    std::cout << "    "<<*f_iter<<"-value["<<indices[v[f]]<<"] " << values[indices[v[f]]] << std::endl;
 		  }
@@ -831,7 +831,7 @@ namespace ALE {
     };
     /*
 
-    
+
 
     */
 
@@ -842,7 +842,7 @@ namespace ALE {
       GenericFormSubProblem * subproblem = (GenericFormSubProblem *)ctx;
       Obj<PETSC_MESH_TYPE> m;
       PetscErrorCode ierr;
-      
+
       PetscFunctionBegin;
       ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
       ierr = SectionRealZero(section);CHKERRQ(ierr);
@@ -850,7 +850,7 @@ namespace ALE {
       ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
       // Loop over cells
       //loop over integrals;
-      
+
       GenericFormSubProblem::names_type integral_names = subproblem->getIntegrals();
       GenericFormSubProblem::names_type::const_iterator n_iter = integral_names.begin();
       GenericFormSubProblem::names_type::const_iterator n_iter_end = integral_names.end();
@@ -858,7 +858,7 @@ namespace ALE {
       while (n_iter != n_iter_end) {
 	Obj<GeneralIntegral> cur_integral = subproblem->getIntegral(*n_iter);
 	//get the integral's topological objects.
-	std::string cur_marker_name = cur_integral->getLabelName(); 
+	std::string cur_marker_name = cur_integral->getLabelName();
 	int cur_marker_num = cur_integral->getLabelMarker();
 	int cur_rank = cur_integral->getTensorRank();
 	int cur_dimension = cur_integral->getSpaceDimension();
@@ -868,7 +868,7 @@ namespace ALE {
 	if (cur_rank == 1) {
 	  PetscScalar * values;
 	  PetscMalloc(cur_dimension*sizeof(PetscScalar), &values);
-	  PetscScalar * elemVec;	  
+	  PetscScalar * elemVec;	
 	  PetscMalloc(cur_dimension*sizeof(PetscScalar), &elemVec);
 	  Obj<GenericFormSubProblem::names_type> discs = subproblem->getDiscretizations();
 	  //loop over cells
@@ -894,7 +894,7 @@ namespace ALE {
 	  //cancel out BCs if necessary... this doesn't require any knowledge of the discretization form (if handled right).
 	  PetscScalar * full_tensor;
 	  PetscMalloc(cur_dimension*cur_dimension*sizeof(PetscScalar), &full_tensor);
-	  PetscScalar * elemVec;	  
+	  PetscScalar * elemVec;	
 	  PetscMalloc(cur_dimension*sizeof(PetscScalar), &elemVec);
 	  while (ic_iter != ic_iter_end) {
 	    subproblem->setCell(m, *ic_iter);
@@ -907,7 +907,7 @@ namespace ALE {
 	      for(int g = 0; g < cur_dimension; g++) {
 		elemVec[f] += full_tensor[f*cur_dimension+g]*xValues[g];
 	      }
-	    } 
+	    }
 	    ierr = SectionRealUpdateAdd(section, *ic_iter, elemVec);CHKERRQ(ierr);
 	    ic_iter++;
 	  }
@@ -958,7 +958,7 @@ namespace ALE {
       while (n_iter != n_iter_end) {
 	Obj<GeneralIntegral> cur_integral = subproblem->getIntegral(*n_iter);
 	//get the integral's topological objects.
-	std::string cur_marker_name = cur_integral->getLabelName(); 
+	std::string cur_marker_name = cur_integral->getLabelName();
 	int cur_marker_num = cur_integral->getLabelMarker();
 	int cur_rank = cur_integral->getTensorRank();
 	int cur_dimension = cur_integral->getSpaceDimension();
@@ -993,7 +993,7 @@ namespace ALE {
     PetscErrorCode SubProblemView(SectionReal section, std::string name, PetscViewer viewer, int firstField = 0, int lastField = 0) {
       //"vectorize" takes the first n discretizations and writes them out as a vector
       PetscErrorCode ierr;
-      
+
       PetscFunctionBegin;
       Obj<PETSC_MESH_TYPE> m;
       Obj<PETSC_MESH_TYPE::real_section_type> field;
@@ -1001,7 +1001,7 @@ namespace ALE {
       ierr = SectionRealGetSection(section, field);
       const ALE::Obj<PETSC_MESH_TYPE::numbering_type>& numbering = m->getFactory()->getNumbering(m, 0);
       ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
-      
+
       if (lastField - firstField > 0) {
 	ierr = PetscViewerASCIIPrintf(viewer, "VECTORS %s double\n", name.c_str());CHKERRQ(ierr);
 	
@@ -1029,7 +1029,7 @@ namespace ALE {
 	  const value_type *array = field->restrictPoint(*p_iter);
 	  const int&        dim   = field->getFiberDimension(*p_iter);
 	  ostringstream     line;
-	  
+	
 	  // Perhaps there should be a flag for excluding boundary values
 	  if (dim != 0) {
 	    for(int d = firstField; d <= lastField; d++) {
@@ -1050,12 +1050,12 @@ namespace ALE {
 	  int         numLocalElementsAndFiberDim[2];
 	  int         size;
 	  MPI_Status  status;
-	  
+	
 	  ierr = MPI_Recv(numLocalElementsAndFiberDim, 2, MPI_INT, p, 1, field->comm(), &status);CHKERRQ(ierr);
 	  size = numLocalElementsAndFiberDim[0]*numLocalElementsAndFiberDim[1];
 	  ierr = PetscMalloc(size * sizeof(value_type), &remoteValues);CHKERRQ(ierr);
 	  ierr = MPI_Recv(remoteValues, size, mpiType, p, 1, field->comm(), &status);CHKERRQ(ierr);
-	  
+	
 	  for(int e = 0; e < numLocalElementsAndFiberDim[0]; e++) {
 	    for(int d = 0; d < fiberDim; d++) {
 	      if (mpiType == MPI_INT) {
@@ -1083,7 +1083,7 @@ namespace ALE {
 	  if (numbering->isLocal(*p_iter)) {
 	    const value_type *array = field->restrictPoint(*p_iter);
 	    //const int&        dim   = field->getFiberDimension(*p_iter);
-	    
+	
 	    for(int i = firstField; i <= lastField; ++i) {
 	      localValues[k++] = array[i];
 	    }

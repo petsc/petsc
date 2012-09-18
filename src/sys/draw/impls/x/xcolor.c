@@ -2,7 +2,7 @@
 /*
     Code for managing color the X implementation of the PetscDraw routines.
 
-    Currently we default to using cmapping[0 to PETSC_DRAW_BASIC_COLORS-1] for the basic colors and 
+    Currently we default to using cmapping[0 to PETSC_DRAW_BASIC_COLORS-1] for the basic colors and
   cmapping[DRAW_BASIC_COLORS to 255] for a uniform hue of all the colors. But in the contour
   plot we only use from PETSC_DRAW_BASIC_COLORS to 240 since the ones beyond that are too dark.
 
@@ -49,18 +49,18 @@ extern PetscErrorCode PetscDrawXiGetVisualClass(PetscDraw_X *);
 
 /*
    Sets up a color map for a display. This is shared by all the windows
-  opened on that display; this is to save time when windows are open so 
+  opened on that display; this is to save time when windows are open so
   each one does not have to create its own color map which can take 15 to 20 seconds
 
      This is new code written 2/26/1999 Barry Smith,I hope it can replace
   some older,rather confusing code.
 
-     The calls to XAllocNamedColor() and XAllocColor() are very slow 
+     The calls to XAllocNamedColor() and XAllocColor() are very slow
      because we have to request from the X server for each
      color. Could not figure out a way to request a large number at the
      same time.
 
-   IMPORTANT: this code will fail if user opens windows on two different 
+   IMPORTANT: this code will fail if user opens windows on two different
   displays: should add error checking to detect this. This is because all windows
   share the same gColormap and gCmapping.
 
@@ -68,8 +68,8 @@ extern PetscErrorCode PetscDrawXiGetVisualClass(PetscDraw_X *);
 static Colormap  gColormap  = 0;
 static PetscDrawXiPixVal    gCmapping[256];
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSetUpColormap_Shared" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSetUpColormap_Shared"
 PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   XColor         colordef,ecolordef;
@@ -84,7 +84,7 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
 
   /* set the basic colors into the color map */
   for (i=0; i<PETSC_DRAW_BASIC_COLORS; i++) {
-    XAllocNamedColor(display,gColormap,colornames[i],&colordef,&ecolordef); 
+    XAllocNamedColor(display,gColormap,colornames[i],&colordef,&ecolordef);
     gCmapping[i] = colordef.pixel;
   }
 
@@ -99,7 +99,7 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
       colordef.green  = ((int)green[i-PETSC_DRAW_BASIC_COLORS] * 65535) / 255;
       colordef.blue   = ((int)blue[i-PETSC_DRAW_BASIC_COLORS]  * 65535) / 255;
       colordef.flags  = DoRed | DoGreen | DoBlue;
-      XAllocColor(display,gColormap,&colordef); 
+      XAllocColor(display,gColormap,&colordef);
       gCmapping[i]   = colordef.pixel;
     }
   }
@@ -109,18 +109,18 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
 }
 
 /*
-    Keep a record of which pixel numbers in the cmap have been 
+    Keep a record of which pixel numbers in the cmap have been
   used so far; this is to allow us to try to reuse as much of the current
   colormap as possible.
 */
 static PetscBool  cmap_pixvalues_used[256];
 static int        cmap_base = 0;
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSetUpColormap_Private" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSetUpColormap_Private"
 PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colormap colormap)
 {
-  Colormap       defaultmap = DefaultColormap(display,screen); 
+  Colormap       defaultmap = DefaultColormap(display,screen);
   PetscErrorCode ierr;
   int            found,i,ncolors;
   XColor         colordef;
@@ -139,17 +139,17 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
   for (i=0; i<PETSC_DRAW_BASIC_COLORS; i++) {
     XParseColor(display,gColormap,colornames[i],&colordef);
     /* try to allocate the color in the default-map */
-    found = XAllocColor(display,defaultmap,&colordef); 
+    found = XAllocColor(display,defaultmap,&colordef);
     /* use it, if it it exists and is not already used in the new colormap */
     if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
-      cmap_pixvalues_used[colordef.pixel] = PETSC_TRUE; 
+      cmap_pixvalues_used[colordef.pixel] = PETSC_TRUE;
     /* otherwise search for the next available slot */
     } else {
       while (cmap_pixvalues_used[cmap_base]) cmap_base++;
       colordef.pixel                   = cmap_base;
       cmap_pixvalues_used[cmap_base++] = PETSC_TRUE;
     }
-    XStoreColor(display,gColormap,&colordef); 
+    XStoreColor(display,gColormap,&colordef);
     gCmapping[i] = colordef.pixel;
   }
 
@@ -165,17 +165,17 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
       colordef.blue   = ((int)blue[i-PETSC_DRAW_BASIC_COLORS]  * 65535) / 255;
       colordef.flags  = DoRed | DoGreen | DoBlue;
       /* try to allocate the color in the default-map */
-      found = XAllocColor(display,defaultmap,&colordef); 
+      found = XAllocColor(display,defaultmap,&colordef);
       /* use it, if it it exists and is not already used in the new colormap */
       if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
-        cmap_pixvalues_used[colordef.pixel] = PETSC_TRUE; 
+        cmap_pixvalues_used[colordef.pixel] = PETSC_TRUE;
         /* otherwise search for the next available slot */
       } else {
         while (cmap_pixvalues_used[cmap_base]) cmap_base++;
         colordef.pixel                   = cmap_base;
         cmap_pixvalues_used[cmap_base++] = PETSC_TRUE;
       }
-      XStoreColor(display,gColormap,&colordef); 
+      XStoreColor(display,gColormap,&colordef);
       gCmapping[i]   = colordef.pixel;
     }
   }
@@ -184,8 +184,8 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSetUpColormap_X" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSetUpColormap_X"
 PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   PetscErrorCode ierr;
@@ -201,7 +201,7 @@ PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visu
       XMatchVisualInfo(display,screen,24,TrueColor,&vinfo)   ||
       XMatchVisualInfo(display,screen,16,StaticColor,&vinfo) ||
       XMatchVisualInfo(display,screen,16,TrueColor,&vinfo)   ||
-      XMatchVisualInfo(display,screen,15,StaticColor,&vinfo) ||                 
+      XMatchVisualInfo(display,screen,15,StaticColor,&vinfo) ||
       XMatchVisualInfo(display,screen,15,TrueColor,&vinfo)) {
     sharedcolormap = PETSC_TRUE;
   }
@@ -215,8 +215,8 @@ PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visu
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSetColormap_X" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSetColormap_X"
 PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X* XiWin,char *host,Colormap colormap)
 {
   PetscErrorCode ierr;
@@ -260,8 +260,8 @@ PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X* XiWin,char *host,Colormap col
 	GrayScale
 	StaticGray
  */
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawXiSetVisualClass" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiSetVisualClass"
 PetscErrorCode PetscDrawXiSetVisualClass(PetscDraw_X* XiWin)
 {
   XVisualInfo vinfo;
@@ -280,8 +280,8 @@ PetscErrorCode PetscDrawXiSetVisualClass(PetscDraw_X* XiWin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawXiGetVisualClass" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiGetVisualClass"
 PetscErrorCode PetscDrawXiGetVisualClass(PetscDraw_X* XiWin)
 {
   PetscFunctionBegin;
@@ -293,8 +293,8 @@ PetscErrorCode PetscDrawXiGetVisualClass(PetscDraw_X* XiWin)
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawXiSetColormap" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiSetColormap"
 PetscErrorCode PetscDrawXiSetColormap(PetscDraw_X* XiWin)
 {
   PetscFunctionBegin;
@@ -302,8 +302,8 @@ PetscErrorCode PetscDrawXiSetColormap(PetscDraw_X* XiWin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawXiGetBaseColor" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiGetBaseColor"
 PetscErrorCode PetscDrawXiGetBaseColor(PetscDraw_X* XiWin,PetscDrawXiPixVal* white_pix,PetscDrawXiPixVal* black_pix)
 {
   PetscFunctionBegin;
@@ -316,8 +316,8 @@ PetscErrorCode PetscDrawXiGetBaseColor(PetscDraw_X* XiWin,PetscDrawXiPixVal* whi
     This routine returns the pixel value for the specified color
     Returns 0 on failure,<>0 otherwise.
  */
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawXiFindColor" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiFindColor"
 PetscErrorCode PetscDrawXiFindColor(PetscDraw_X *XiWin,char *name,PetscDrawXiPixVal *pixval)
 {
   XColor   colordef;
@@ -340,8 +340,8 @@ PetscErrorCode PetscDrawXiFindColor(PetscDraw_X *XiWin,char *name,PetscDrawXiPix
     In the monchrome case (or if the color is otherwise unavailable),
     the "background" or "foreground" colors will be chosen
  */
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawXiGetColor" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiGetColor"
 PetscDrawXiPixVal PetscDrawXiGetColor(PetscDraw_X* XiWin,char *name,int is_fore)
 {
   PetscDrawXiPixVal pixval;

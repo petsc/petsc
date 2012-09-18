@@ -4,7 +4,7 @@
 PetscFList PetscRandomList              = PETSC_NULL;
 PetscBool  PetscRandomRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomSetType"
 /*@C
   PetscRandomSetType - Builds a context for generating particular type of random numbers.
@@ -16,7 +16,7 @@ PetscBool  PetscRandomRegisterAllCalled = PETSC_FALSE;
 - type - The name of the random type
 
   Options Database Key:
-. -random_type <type> - Sets the random type; use -help for a list 
+. -random_type <type> - Sets the random type; use -help for a list
                      of available types
 
   Notes:
@@ -39,14 +39,14 @@ PetscErrorCode  PetscRandomSetType(PetscRandom rnd, const PetscRandomType type)
   ierr = PetscObjectTypeCompare((PetscObject)rnd, type, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFListFind(PetscRandomList,((PetscObject)rnd)->comm,  type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr); 
+  ierr = PetscFListFind(PetscRandomList,((PetscObject)rnd)->comm,  type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown random type: %s", type);
 
   if (rnd->ops->destroy) {
     ierr = (*rnd->ops->destroy)(rnd);CHKERRQ(ierr);
     rnd->ops->destroy = PETSC_NULL;
   }
-  ierr = (*r)(rnd);CHKERRQ(ierr); 
+  ierr = (*r)(rnd);CHKERRQ(ierr);
   ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)rnd, type);CHKERRQ(ierr);
@@ -58,7 +58,7 @@ PetscErrorCode  PetscRandomSetType(PetscRandom rnd, const PetscRandomType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomGetType"
 /*@C
   PetscRandomGetType - Gets the type name (as a string) from the PetscRandom.
@@ -85,7 +85,7 @@ PetscErrorCode  PetscRandomGetType(PetscRandom rnd, const PetscRandomType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomRegister"
 /*@C
   PetscRandomRegister - See PetscRandomRegisterDynamic()
@@ -105,7 +105,7 @@ PetscErrorCode  PetscRandomRegister(const char sname[], const char path[], const
 
 
 /*--------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomRegisterDestroy"
 /*@C
    PetscRandomRegisterDestroy - Frees the list of Random types that were registered by PetscRandomRegister()/PetscRandomRegisterDynamic().
@@ -139,7 +139,7 @@ extern PetscErrorCode  PetscRandomCreate_Sprng(PetscRandom);
 #endif
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomRegisterAll"
 /*@C
   PetscRandomRegisterAll - Registers all of the components in the PetscRandom package.

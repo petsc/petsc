@@ -5,7 +5,7 @@
 #include <../src/ksp/pc/impls/mg/mgimpl.h>                    /*I "petscpcmg.h" I*/
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCMGMCycle_Private"
 PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonConvergedReason *reason)
 {
@@ -46,7 +46,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonCo
     if (mglevels->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = VecSet(mgc->x,0.0);CHKERRQ(ierr);
     while (cycles--) {
-      ierr = PCMGMCycle_Private(pc,mglevelsin-1,reason);CHKERRQ(ierr); 
+      ierr = PCMGMCycle_Private(pc,mglevelsin-1,reason);CHKERRQ(ierr);
     }
     if (mglevels->eventinterprestrict) {ierr = PetscLogEventBegin(mglevels->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = MatInterpolateAdd(mglevels->interpolate,mgc->x,mglevels->x,mglevels->x);CHKERRQ(ierr);
@@ -58,7 +58,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG_Levels **mglevelsin,PCRichardsonCo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyRichardson_MG"
 static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscBool  zeroguess,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
@@ -68,7 +68,7 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
   PetscInt       levels = mglevels[0]->levels,i;
 
   PetscFunctionBegin;
-  mglevels[levels-1]->b    = b; 
+  mglevels[levels-1]->b    = b;
   mglevels[levels-1]->x    = x;
 
   mg->rtol = rtol;
@@ -90,9 +90,9 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
     mg->ttol = 0.0;
   }
 
-  /* since smoother is applied to full system, not just residual we need to make sure that smoothers don't 
+  /* since smoother is applied to full system, not just residual we need to make sure that smoothers don't
      stop prematurely due to small residual */
-  for (i=1; i<levels; i++) {  
+  for (i=1; i<levels; i++) {
     ierr = KSPSetTolerances(mglevels[i]->smoothu,0,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
     if (mglevels[i]->smoothu != mglevels[i]->smoothd) {
       ierr = KSPSetTolerances(mglevels[i]->smoothd,0,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCReset_MG"
 PetscErrorCode PCReset_MG(PC pc)
 {
@@ -141,7 +141,7 @@ PetscErrorCode PCReset_MG(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCMGSetLevels"
 /*@C
    PCMGSetLevels - Sets the number of levels to use with MG.
@@ -251,7 +251,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
     mg->abstol              = 0.0;
     mg->dtol                = 0.0;
     mg->ttol                = 0.0;
-    mg->cyclesperpcapply    = 1; 
+    mg->cyclesperpcapply    = 1;
   }
   mg->am          = PC_MG_MULTIPLICATIVE;
   mg->levels      = mglevels;
@@ -260,7 +260,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_MG"
 PetscErrorCode PCDestroy_MG(PC pc)
 {
@@ -294,12 +294,12 @@ extern PetscErrorCode PCMGKCycle_Private(PC,PC_MG_Levels**);
 
 /*
    PCApply_MG - Runs either an additive, multiplicative, Kaskadic
-             or full cycle of multigrid. 
+             or full cycle of multigrid.
 
-  Note: 
-  A simple wrapper which calls PCMGMCycle(),PCMGACycle(), or PCMGFCycle(). 
-*/ 
-#undef __FUNCT__  
+  Note:
+  A simple wrapper which calls PCMGMCycle(),PCMGACycle(), or PCMGFCycle().
+*/
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_MG"
 static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 {
@@ -340,7 +340,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_MG"
 PetscErrorCode PCSetFromOptions_MG(PC pc)
 {
@@ -439,7 +439,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
 const char *const PCMGTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE","PCMGType","PC_MG",0};
 const char *const PCMGCycleTypes[] = {"invalid","v","w","PCMGCycleType","PC_MG_CYCLE",0};
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_MG"
 PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
 {
@@ -489,7 +489,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
 /*
     Calls setup for the KSP on each level
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_MG"
 PetscErrorCode PCSetUp_MG(PC pc)
 {
@@ -582,7 +582,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       for (i=n-2; i>-1; i--) {
         ierr = MatPtAP(dB,mglevels[i+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
         ierr = KSPSetOperators(mglevels[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
-	if (i != n-2) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);} 
+	if (i != n-2) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);}
         dB   = B;
       }
       if (n > 1) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);}
@@ -708,7 +708,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   }
 
   /*
-      If coarse solver is not direct method then DO NOT USE preonly 
+      If coarse solver is not direct method then DO NOT USE preonly
   */
   ierr = PetscObjectTypeCompare((PetscObject)mglevels[0]->smoothd,KSPPREONLY,&preonly);CHKERRQ(ierr);
   if (preonly) {
@@ -730,8 +730,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
   if (mglevels[0]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[0]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
 
   /*
-     Dump the interpolation/restriction matrices plus the 
-   Jacobian/stiffness on each level. This allows MATLAB users to 
+     Dump the interpolation/restriction matrices plus the
+   Jacobian/stiffness on each level. This allows MATLAB users to
    easily check if the Galerkin condition A_c = R A_f R^T is satisfied.
 
    Only support one or the other at the same time.
@@ -762,7 +762,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
 /* -------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCMGGetLevels"
 /*@
    PCMGGetLevels - Gets the number of levels to use with MG.
@@ -792,7 +792,7 @@ PetscErrorCode  PCMGGetLevels(PC pc,PetscInt *levels)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCMGSetType"
 /*@
    PCMGSetType - Determines the form of multigrid to use:
@@ -807,7 +807,7 @@ PetscErrorCode  PCMGGetLevels(PC pc,PetscInt *levels)
 
    Options Database Key:
 .  -pc_mg_type <form> - Sets <form>, one of multiplicative,
-   additive, full, kaskade   
+   additive, full, kaskade
 
    Level: advanced
 
@@ -828,16 +828,16 @@ PetscErrorCode  PCMGSetType(PC pc,PCMGType form)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCMGSetCycleType"
 /*@
-   PCMGSetCycleType - Sets the type cycles to use.  Use PCMGSetCycleTypeOnLevel() for more 
+   PCMGSetCycleType - Sets the type cycles to use.  Use PCMGSetCycleTypeOnLevel() for more
    complicated cycling.
 
    Logically Collective on PC
 
    Input Parameters:
-+  pc - the multigrid context 
++  pc - the multigrid context
 -  PC_MG_CYCLE_V or PC_MG_CYCLE_W
 
    Options Database Key:
@@ -850,7 +850,7 @@ $  -pc_mg_cycle_type v or w
 .seealso: PCMGSetCycleTypeOnLevel()
 @*/
 PetscErrorCode  PCMGSetCycleType(PC pc,PCMGCycleType n)
-{ 
+{
   PC_MG        *mg = (PC_MG*)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   PetscInt     i,levels;
@@ -861,22 +861,22 @@ PetscErrorCode  PCMGSetCycleType(PC pc,PCMGCycleType n)
   PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 
-  for (i=0; i<levels; i++) {  
-    mglevels[i]->cycles  = n; 
+  for (i=0; i<levels; i++) {
+    mglevels[i]->cycles  = n;
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCMGMultiplicativeSetCycles"
 /*@
-   PCMGMultiplicativeSetCycles - Sets the number of cycles to use for each preconditioner step 
+   PCMGMultiplicativeSetCycles - Sets the number of cycles to use for each preconditioner step
          of multigrid when PCMGType of PC_MG_MULTIPLICATIVE is used
 
    Logically Collective on PC
 
    Input Parameters:
-+  pc - the multigrid context 
++  pc - the multigrid context
 -  n - number of cycles (default is 1)
 
    Options Database Key:
@@ -891,7 +891,7 @@ $  -pc_mg_multiplicative_cycles n
 .seealso: PCMGSetCycleTypeOnLevel(), PCMGSetCycleType()
 @*/
 PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
-{ 
+{
   PC_MG        *mg = (PC_MG*)pc->data;
   PC_MG_Levels **mglevels = mg->levels;
   PetscInt     i,levels;
@@ -902,13 +902,13 @@ PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
   PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 
-  for (i=0; i<levels; i++) {  
-    mg->cyclesperpcapply  = n; 
+  for (i=0; i<levels; i++) {
+    mg->cyclesperpcapply  = n;
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCMGSetGalerkin"
 /*@
    PCMGSetGalerkin - Causes the coarser grid matrices to be computed from the
@@ -931,7 +931,7 @@ $  -pc_mg_galerkin
 
 @*/
 PetscErrorCode PCMGSetGalerkin(PC pc,PetscBool use)
-{ 
+{
   PC_MG        *mg = (PC_MG*)pc->data;
 
   PetscFunctionBegin;
@@ -940,7 +940,7 @@ PetscErrorCode PCMGSetGalerkin(PC pc,PetscBool use)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCMGGetGalerkin"
 /*@
    PCMGGetGalerkin - Checks if Galerkin multigrid is being used, i.e.
@@ -949,7 +949,7 @@ PetscErrorCode PCMGSetGalerkin(PC pc,PetscBool use)
    Not Collective
 
    Input Parameter:
-.  pc - the multigrid context 
+.  pc - the multigrid context
 
    Output Parameter:
 .  gelerkin - PETSC_TRUE or PETSC_FALSE
@@ -965,7 +965,7 @@ $  -pc_mg_galerkin
 
 @*/
 PetscErrorCode  PCMGGetGalerkin(PC pc,PetscBool  *galerkin)
-{ 
+{
   PC_MG        *mg = (PC_MG*)pc->data;
 
   PetscFunctionBegin;
@@ -974,17 +974,17 @@ PetscErrorCode  PCMGGetGalerkin(PC pc,PetscBool  *galerkin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCMGSetNumberSmoothDown"
 /*@
    PCMGSetNumberSmoothDown - Sets the number of pre-smoothing steps to
-   use on all levels. Use PCMGGetSmootherDown() to set different 
+   use on all levels. Use PCMGGetSmootherDown() to set different
    pre-smoothing steps on different levels.
 
    Logically Collective on PC
 
    Input Parameters:
-+  mg - the multigrid context 
++  mg - the multigrid context
 -  n - the number of smoothing steps
 
    Options Database Key:
@@ -997,7 +997,7 @@ PetscErrorCode  PCMGGetGalerkin(PC pc,PetscBool  *galerkin)
 .seealso: PCMGSetNumberSmoothUp()
 @*/
 PetscErrorCode  PCMGSetNumberSmoothDown(PC pc,PetscInt n)
-{ 
+{
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
   PetscErrorCode ierr;
@@ -1009,7 +1009,7 @@ PetscErrorCode  PCMGSetNumberSmoothDown(PC pc,PetscInt n)
   PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 
-  for (i=1; i<levels; i++) {  
+  for (i=1; i<levels; i++) {
     /* make sure smoother up and down are different */
     ierr = PCMGGetSmootherUp(pc,i,PETSC_NULL);CHKERRQ(ierr);
     ierr = KSPSetTolerances(mglevels[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
@@ -1018,17 +1018,17 @@ PetscErrorCode  PCMGSetNumberSmoothDown(PC pc,PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCMGSetNumberSmoothUp"
 /*@
-   PCMGSetNumberSmoothUp - Sets the number of post-smoothing steps to use 
-   on all levels. Use PCMGGetSmootherUp() to set different numbers of 
+   PCMGSetNumberSmoothUp - Sets the number of post-smoothing steps to use
+   on all levels. Use PCMGGetSmootherUp() to set different numbers of
    post-smoothing steps on different levels.
 
    Logically Collective on PC
 
    Input Parameters:
-+  mg - the multigrid context 
++  mg - the multigrid context
 -  n - the number of smoothing steps
 
    Options Database Key:
@@ -1044,7 +1044,7 @@ PetscErrorCode  PCMGSetNumberSmoothDown(PC pc,PetscInt n)
 .seealso: PCMGSetNumberSmoothDown()
 @*/
 PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
-{ 
+{
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
   PetscErrorCode ierr;
@@ -1056,7 +1056,7 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
   PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 
-  for (i=1; i<levels; i++) {  
+  for (i=1; i<levels; i++) {
     /* make sure smoother up and down are different */
     ierr = PCMGGetSmootherUp(pc,i,PETSC_NULL);CHKERRQ(ierr);
     ierr = KSPSetTolerances(mglevels[i]->smoothu,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
@@ -1098,11 +1098,11 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
            PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), PCMGSetCycleType(), PCMGSetNumberSmoothDown(),
            PCMGSetNumberSmoothUp(), PCMGGetCoarseSolve(), PCMGSetResidual(), PCMGSetInterpolation(),
            PCMGSetRestriction(), PCMGGetSmoother(), PCMGGetSmootherUp(), PCMGGetSmootherDown(),
-           PCMGSetCycleTypeOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()           
+           PCMGSetCycleTypeOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_MG"
 PetscErrorCode  PCCreate_MG(PC pc)
 {

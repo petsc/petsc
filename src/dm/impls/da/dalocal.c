@@ -12,7 +12,7 @@
 #include <engine.h>   /* MATLAB include file */
 #include <mex.h>      /* MATLAB include file */
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecMatlabEnginePut_DA2d"
 PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
 {
@@ -37,7 +37,7 @@ PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
   ierr = PetscMemcpy(mxGetPr(mat),array,n*m*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
   engPutVariable((Engine *)mengine,obj->name,mat);
-  
+
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -45,7 +45,7 @@ EXTERN_C_END
 #endif
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateLocalVector_DA"
 PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec* g)
 {
@@ -737,7 +737,7 @@ EXTERN_C_END
        The vector values are NOT initialized and may have garbage in them, so you may need
        to zero them.
 
-       Returns the same type of object as the DMDAVecGetArray() except its elements are 
+       Returns the same type of object as the DMDAVecGetArray() except its elements are
            derivative types instead of PetscScalars
 
      Level: advanced
@@ -763,7 +763,7 @@ PetscErrorCode  DMDAGetAdicArray(DM da,PetscBool  ghosted,void *vptr,void *array
         itdof                   = dd->ghostedtdof;
         dd->adarrayghostedin[i] = PETSC_NULL;
         dd->adstartghostedin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -781,7 +781,7 @@ PetscErrorCode  DMDAGetAdicArray(DM da,PetscBool  ghosted,void *vptr,void *array
         itdof            = dd->tdof;
         dd->adarrayin[i] = PETSC_NULL;
         dd->adstartin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -802,7 +802,7 @@ PetscErrorCode  DMDAGetAdicArray(DM da,PetscBool  ghosted,void *vptr,void *array
       ierr  = PetscMalloc(xm*deriv_type_size,&iarray_start);CHKERRQ(ierr);
 
       ptr   = (void*)(iarray_start - xs*deriv_type_size);
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 2: {
       void **ptr;
@@ -814,7 +814,7 @@ PetscErrorCode  DMDAGetAdicArray(DM da,PetscBool  ghosted,void *vptr,void *array
       for (j=ys;j<ys+ym;j++) {
         ptr[j] = iarray_start + deriv_type_size*(xm*(j-ys) - xs);
       }
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 3: {
       void ***ptr,**bptr;
@@ -834,7 +834,7 @@ PetscErrorCode  DMDAGetAdicArray(DM da,PetscBool  ghosted,void *vptr,void *array
         }
       }
 
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     default:
       SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
@@ -871,7 +871,7 @@ PetscErrorCode  DMDAGetAdicArray(DM da,PetscBool  ghosted,void *vptr,void *array
 #define __FUNCT__ "DMDARestoreAdicArray"
 /*@C
      DMDARestoreAdicArray - Restores an array of derivative types for a DMDA
-          
+
     Input Parameter:
 +    da - information about my local patch
 -    ghosted - do you want arrays for the ghosted or nonghosted patch
@@ -890,7 +890,7 @@ PetscErrorCode  DMDARestoreAdicArray(DM da,PetscBool  ghosted,void *ptr,void *ar
 {
   PetscInt  i;
   void      **iptr = (void**)ptr,iarray_start = 0;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
@@ -990,7 +990,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
         iarray_start          = (char*)dd->startghostedin[i];
         dd->arrayghostedin[i] = PETSC_NULL;
         dd->startghostedin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1007,7 +1007,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
         iarray_start   = (char*)dd->startin[i];
         dd->arrayin[i] = PETSC_NULL;
         dd->startin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1026,7 +1026,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
       ierr  = PetscMalloc(xm*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
       ptr   = (void*)(iarray_start - xs*sizeof(PetscScalar));
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 2: {
       void **ptr;
@@ -1037,7 +1037,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
       for (j=ys;j<ys+ym;j++) {
         ptr[j] = iarray_start + sizeof(PetscScalar)*(xm*(j-ys) - xs);
       }
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 3: {
       void ***ptr,**bptr;
@@ -1055,7 +1055,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
         }
       }
 
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     default:
       SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
@@ -1087,7 +1087,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
 #define __FUNCT__ "DMDARestoreArray"
 /*@C
      DMDARestoreArray - Restores an array of derivative types for a DMDA
-          
+
     Input Parameter:
 +    da - information about my local patch
 .    ghosted - do you want arrays for the ghosted or nonghosted patch
@@ -1103,7 +1103,7 @@ PetscErrorCode  DMDARestoreArray(DM da,PetscBool  ghosted,void *vptr)
   PetscInt  i;
   void      **iptr = (void**)vptr,*iarray_start = 0;
   DM_DA     *dd = (DM_DA*)da->data;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
@@ -1146,7 +1146,7 @@ PetscErrorCode  DMDARestoreArray(DM da,PetscBool  ghosted,void *vptr)
 #define __FUNCT__ "DMDAGetAdicMFArray"
 /*@C
      DMDAGetAdicMFArray - Gets an array of derivative types for a DMDA for matrix-free ADIC.
-          
+
      Input Parameter:
 +    da - information about my local patch
 -    ghosted - do you want arrays for the ghosted or nonghosted patch?
@@ -1156,7 +1156,7 @@ PetscErrorCode  DMDARestoreArray(DM da,PetscBool  ghosted,void *vptr)
 .    array_start - actual start of 1d array of all values that adiC can access directly (may be null)
 -    tdof - total number of degrees of freedom represented in array_start (may be null)
 
-     Notes: 
+     Notes:
      The vector values are NOT initialized and may have garbage in them, so you may need
      to zero them.
 
@@ -1186,7 +1186,7 @@ PetscErrorCode  DMDAGetAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *arr
         itdof                     = dd->ghostedtdof;
         dd->admfarrayghostedin[i] = PETSC_NULL;
         dd->admfstartghostedin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1204,7 +1204,7 @@ PetscErrorCode  DMDAGetAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *arr
         itdof              = dd->tdof;
         dd->admfarrayin[i] = PETSC_NULL;
         dd->admfstartin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1224,7 +1224,7 @@ PetscErrorCode  DMDAGetAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *arr
       ierr  = PetscMalloc(xm*2*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
       ptr   = (void*)(iarray_start - xs*2*sizeof(PetscScalar));
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 2: {
       void **ptr;
@@ -1236,7 +1236,7 @@ PetscErrorCode  DMDAGetAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *arr
       for (j=ys;j<ys+ym;j++) {
         ptr[j] = iarray_start + 2*sizeof(PetscScalar)*(xm*(j-ys) - xs);
       }
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 3: {
       void ***ptr,**bptr;
@@ -1255,7 +1255,7 @@ PetscErrorCode  DMDAGetAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *arr
         }
       }
 
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     default:
       SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
@@ -1308,7 +1308,7 @@ PetscErrorCode  DMDAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *ar
         itdof                     = dd->ghostedtdof;
         dd->admfarrayghostedin[i] = PETSC_NULL;
         dd->admfstartghostedin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1324,7 +1324,7 @@ PetscErrorCode  DMDAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *ar
         itdof              = dd->tdof;
         dd->admfarrayin[i] = PETSC_NULL;
         dd->admfstartin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1345,7 +1345,7 @@ PetscErrorCode  DMDAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *ar
       for (j=ys;j<ys+ym;j++) {
         ptr[j] = iarray_start + 5*sizeof(PetscScalar)*(xm*(j-ys) - xs);
       }
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     default:
       SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
@@ -1398,7 +1398,7 @@ PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *ar
         itdof                     = dd->ghostedtdof;
         dd->admfarrayghostedin[i] = PETSC_NULL;
         dd->admfstartghostedin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1414,7 +1414,7 @@ PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *ar
         itdof              = dd->tdof;
         dd->admfarrayin[i] = PETSC_NULL;
         dd->admfstartin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1435,7 +1435,7 @@ PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *ar
       for (j=ys;j<ys+ym;j++) {
         ptr[j] = iarray_start + 10*sizeof(PetscScalar)*(xm*(j-ys) - xs);
       }
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     default:
       SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
@@ -1472,7 +1472,7 @@ PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *ar
 #define __FUNCT__ "DMDAGetAdicMFArrayb"
 /*@C
      DMDAGetAdicMFArrayb - Gets an array of derivative types for a DMDA for matrix-free ADIC.
-          
+
      Input Parameter:
 +    da - information about my local patch
 -    ghosted - do you want arrays for the ghosted or nonghosted patch?
@@ -1482,7 +1482,7 @@ PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *ar
 .    array_start - actual start of 1d array of all values that adiC can access directly (may be null)
 -    tdof - total number of degrees of freedom represented in array_start (may be null)
 
-     Notes: 
+     Notes:
      The vector values are NOT initialized and may have garbage in them, so you may need
      to zero them.
 
@@ -1513,7 +1513,7 @@ PetscErrorCode  DMDAGetAdicMFArrayb(DM da,PetscBool  ghosted,void *vptr,void *ar
         itdof                     = dd->ghostedtdof;
         dd->admfarrayghostedin[i] = PETSC_NULL;
         dd->admfstartghostedin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1531,7 +1531,7 @@ PetscErrorCode  DMDAGetAdicMFArrayb(DM da,PetscBool  ghosted,void *vptr,void *ar
         itdof              = dd->tdof;
         dd->admfarrayin[i] = PETSC_NULL;
         dd->admfstartin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1551,7 +1551,7 @@ PetscErrorCode  DMDAGetAdicMFArrayb(DM da,PetscBool  ghosted,void *vptr,void *ar
       ierr  = PetscMalloc(xm*bs1*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
       ptr   = (void*)(iarray_start - xs*bs1*sizeof(PetscScalar));
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 2: {
       void **ptr;
@@ -1563,7 +1563,7 @@ PetscErrorCode  DMDAGetAdicMFArrayb(DM da,PetscBool  ghosted,void *vptr,void *ar
       for (j=ys;j<ys+ym;j++) {
         ptr[j] = iarray_start + bs1*sizeof(PetscScalar)*(xm*(j-ys) - xs);
       }
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 3: {
       void ***ptr,**bptr;
@@ -1582,7 +1582,7 @@ PetscErrorCode  DMDAGetAdicMFArrayb(DM da,PetscBool  ghosted,void *vptr,void *ar
         }
       }
 
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     default:
       SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
@@ -1619,7 +1619,7 @@ PetscErrorCode  DMDAGetAdicMFArrayb(DM da,PetscBool  ghosted,void *vptr,void *ar
 #define __FUNCT__ "DMDARestoreAdicMFArray"
 /*@C
      DMDARestoreAdicMFArray - Restores an array of derivative types for a DMDA.
-          
+
      Input Parameter:
 +    da - information about my local patch
 -    ghosted - do you want arrays for the ghosted or nonghosted patch?
@@ -1639,7 +1639,7 @@ PetscErrorCode  DMDARestoreAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void 
   PetscInt  i;
   void      **iptr = (void**)vptr,*iarray_start = 0;
   DM_DA     *dd = (DM_DA*)da->data;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {

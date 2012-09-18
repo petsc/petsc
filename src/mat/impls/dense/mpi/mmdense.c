@@ -5,7 +5,7 @@
 #include <../src/mat/impls/dense/mpi/mpidense.h>
 #include <petscblaslapack.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSetUpMultiply_MPIDense"
 PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
 {
@@ -42,10 +42,10 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
 }
 
 extern PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*);
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetSubMatrices_MPIDense" 
+#undef __FUNCT__
+#define __FUNCT__ "MatGetSubMatrices_MPIDense"
 PetscErrorCode MatGetSubMatrices_MPIDense(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
-{ 
+{
   PetscErrorCode ierr;
   PetscInt           nmax,nstages_local,nstages,i,pos,max_no;
 
@@ -73,10 +73,10 @@ PetscErrorCode MatGetSubMatrices_MPIDense(Mat C,PetscInt ismax,const IS isrow[],
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetSubMatrices_MPIDense_Local" 
+#undef __FUNCT__
+#define __FUNCT__ "MatGetSubMatrices_MPIDense_Local"
 PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
-{ 
+{
   Mat_MPIDense   *c = (Mat_MPIDense*)C->data;
   Mat            A = c->A;
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data,*mat;
@@ -101,7 +101,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   size   = c->size;
   rank   = c->rank;
   m      = C->rmap->N;
-  
+
   /* Get some new tags to keep the communication clean */
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
 
@@ -114,7 +114,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   }
 
   ierr = PetscMalloc5(ismax,const PetscInt*,&irow,ismax,const PetscInt*,&icol,ismax,PetscInt,&nrow,ismax,PetscInt,&ncol,m,PetscInt,&rtable);CHKERRQ(ierr);
-  for (i=0; i<ismax; i++) { 
+  for (i=0; i<ismax; i++) {
     ierr = ISGetIndices(isrow[i],&irow[i]);CHKERRQ(ierr);
     ierr = ISGetIndices(iscol[i],&icol[i]);CHKERRQ(ierr);
     ierr = ISGetLocalSize(isrow[i],&nrow[i]);CHKERRQ(ierr);
@@ -134,7 +134,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   ierr   = PetscMalloc3(2*size,PetscInt,&w1,size,PetscInt,&w3,size,PetscInt,&w4);CHKERRQ(ierr);
   ierr = PetscMemzero(w1,size*2*sizeof(PetscInt));CHKERRQ(ierr); /* initialize work vector*/
   ierr = PetscMemzero(w3,size*sizeof(PetscInt));CHKERRQ(ierr); /* initialize work vector*/
-  for (i=0; i<ismax; i++) { 
+  for (i=0; i<ismax; i++) {
     ierr   = PetscMemzero(w4,size*sizeof(PetscInt));CHKERRQ(ierr); /* initialize work vector*/
     jmax   = nrow[i];
     irow_i = irow[i];
@@ -143,11 +143,11 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
       proc = rtable[row];
       w4[proc]++;
     }
-    for (j=0; j<size; j++) { 
-      if (w4[j]) { w1[2*j] += w4[j];  w3[j]++;} 
+    for (j=0; j<size; j++) {
+      if (w4[j]) { w1[2*j] += w4[j];  w3[j]++;}
     }
   }
-  
+
   nrqs       = 0;              /* no of outgoing messages */
   msz        = 0;              /* total mesg length (for all procs) */
   w1[2*rank] = 0;              /* no mesg sent to self */
@@ -158,13 +158,13 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   ierr = PetscMalloc((nrqs+1)*sizeof(PetscInt),&pa);CHKERRQ(ierr); /*(proc -array)*/
   for (i=0,j=0; i<size; i++) {
     if (w1[2*i]) { pa[j] = i; j++; }
-  } 
+  }
 
   /* Each message would have a header = 1 + 2*(no of IS) + data */
   for (i=0; i<nrqs; i++) {
     j       = pa[i];
-    w1[2*j] += w1[2*j+1] + 2* w3[j];   
-    msz     += w1[2*j];  
+    w1[2*j] += w1[2*j+1] + 2* w3[j];
+    msz     += w1[2*j];
   }
   /* Do a global reduction to determine how many messages to expect*/
   ierr = PetscMaxSum(comm,w1,&bsz,&nrqr);CHKERRQ(ierr);
@@ -173,7 +173,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   ierr = PetscMalloc((nrqr+1)*sizeof(PetscInt*),&rbuf1);CHKERRQ(ierr);
   ierr = PetscMalloc(nrqr*bsz*sizeof(PetscInt),&rbuf1[0]);CHKERRQ(ierr);
   for (i=1; i<nrqr; ++i) rbuf1[i] = rbuf1[i-1] + bsz;
-  
+
   /* Post the receives */
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Request),&r_waits1);CHKERRQ(ierr);
   for (i=0; i<nrqr; ++i) {
@@ -202,7 +202,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
     ierr        = PetscMemzero(sbuf1[j]+1,2*w3[j]*sizeof(PetscInt));CHKERRQ(ierr);
     ptr[j]      = sbuf1[j] + 2*w3[j] + 1;
   }
-  
+
   /* Parse the isrow and copy data into outbuf */
   for (i=0; i<ismax; i++) {
     ierr = PetscMemzero(ctr,size*sizeof(PetscInt));CHKERRQ(ierr);
@@ -251,7 +251,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Request),&s_waits2);CHKERRQ(ierr);
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Status),&r_status1);CHKERRQ(ierr);
   ierr = PetscMalloc((nrqr+1)*sizeof(PetscScalar*),&sbuf2);CHKERRQ(ierr);
- 
+
   {
     PetscScalar *sbuf2_i,*v_start;
     PetscInt         s_proc;
@@ -303,12 +303,12 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
       ierr = MatSeqDenseSetPreallocation(submats[i],PETSC_NULL);CHKERRQ(ierr);
     }
   }
-  
+
   /* Assemble the matrices */
   {
     PetscInt         col;
     PetscScalar *imat_v,*mat_v,*imat_vi,*mat_vi;
-  
+
     for (i=0; i<ismax; i++) {
       mat       = (Mat_SeqDense*)submats[i]->data;
       mat_v     = a->v;
@@ -326,7 +326,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
             col = icol[i][k];
             imat_vi[k*m] = mat_vi[col*C->rmap->n];
           }
-        } 
+        }
       }
     }
   }
@@ -341,17 +341,17 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
     rmap_i = rmap[i];
     irow_i = irow[i];
     jmax   = nrow[i];
-    for (j=0; j<jmax; j++) { 
-      rmap_i[irow_i[j]] = j; 
+    for (j=0; j<jmax; j++) {
+      rmap_i[irow_i[j]] = j;
     }
   }
- 
+
   /* Now Receive the row_values and assemble the rest of the matrix */
   ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Status),&r_status2);CHKERRQ(ierr);
   {
     PetscInt    is_max,tmp1,col,*sbuf1_i,is_sz;
     PetscScalar *rbuf2_i,*imat_v,*imat_vi;
-  
+
     for (tmp1=0; tmp1<nrqs; tmp1++) { /* For each message */
       ierr = MPI_Waitany(nrqs,r_waits2,&i,r_status2+tmp1);CHKERRQ(ierr);
       /* Now dig out the corresponding sbuf1, which contains the IS data_structure */
@@ -421,7 +421,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatScale_MPIDense"
 PetscErrorCode MatScale_MPIDense(Mat inA,PetscScalar alpha)
 {

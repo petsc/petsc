@@ -6,7 +6,7 @@
 
 #include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringSetF"
 PetscErrorCode  MatFDColoringSetF(MatFDColoring fd,Vec F)
 {
@@ -21,7 +21,7 @@ PetscErrorCode  MatFDColoringSetF(MatFDColoring fd,Vec F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringView_Draw_Zoom"
 static PetscErrorCode MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
 {
@@ -43,7 +43,7 @@ static PetscErrorCode MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringView_Draw"
 static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer)
 {
@@ -58,7 +58,7 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer
 
   ierr = PetscObjectCompose((PetscObject)fd,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
 
-  xr  = fd->N; yr = fd->M; h = yr/10.0; w = xr/10.0; 
+  xr  = fd->N; yr = fd->M; h = yr/10.0; w = xr/10.0;
   xr += w;     yr += h;    xl = -w;     yl = -h;
   ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
   ierr = PetscDrawZoom(draw,MatFDColoringView_Draw_Zoom,fd);CHKERRQ(ierr);
@@ -66,7 +66,7 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringView"
 /*@C
    MatFDColoringView - Views a finite difference coloring context.
@@ -84,8 +84,8 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
 .     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
         output where only the first processor opens
-        the file.  All other processors send their 
-        data to the first processor to print. 
+        the file.  All other processors send their
+        data to the first processor to print.
 -     PETSC_VIEWER_DRAW_WORLD - graphical display of nonzero structure
 
    Notes:
@@ -109,12 +109,12 @@ PetscErrorCode  MatFDColoringView(MatFDColoring c,PetscViewer viewer)
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)c)->comm,&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2); 
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(c,1,viewer,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (isdraw) { 
+  if (isdraw) {
     ierr = MatFDColoringView_Draw(c,viewer);CHKERRQ(ierr);
   } else if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)c,viewer,"MatFDColoring Object");CHKERRQ(ierr);
@@ -143,7 +143,7 @@ PetscErrorCode  MatFDColoringView(MatFDColoring c,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringSetParameters"
 /*@
    MatFDColoringSetParameters - Sets the parameters for the sparse approximation of
@@ -184,7 +184,7 @@ PetscErrorCode  MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,P
 
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringGetFunction"
 /*@C
    MatFDColoringGetFunction - Gets the function to use for computing the Jacobian.
@@ -214,7 +214,7 @@ PetscErrorCode  MatFDColoringGetFunction(MatFDColoring matfd,PetscErrorCode (**f
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringSetFunction"
 /*@C
    MatFDColoringSetFunction - Sets the function to use for computing the Jacobian.
@@ -254,10 +254,10 @@ PetscErrorCode  MatFDColoringSetFunction(MatFDColoring matfd,PetscErrorCode (*f)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringSetFromOptions"
 /*@
-   MatFDColoringSetFromOptions - Sets coloring finite difference parameters from 
+   MatFDColoringSetFromOptions - Sets coloring finite difference parameters from
    the options database.
 
    Collective on MatFDColoring
@@ -318,7 +318,7 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringView_Private"
 PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
 {
@@ -348,10 +348,10 @@ PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatFDColoringCreate" 
+#undef __FUNCT__
+#define __FUNCT__ "MatFDColoringCreate"
 /*@
-   MatFDColoringCreate - Creates a matrix coloring context for finite difference 
+   MatFDColoringCreate - Creates a matrix coloring context for finite difference
    computation of Jacobians.
 
    Collective on Mat
@@ -362,7 +362,7 @@ PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
 
     Output Parameter:
 .   color - the new coloring context
-   
+
     Level: intermediate
 
 .seealso: MatFDColoringDestroy(),SNESDefaultComputeJacobianColor(), ISColoringCreate(),
@@ -406,7 +406,7 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringDestroy"
 /*@
     MatFDColoringDestroy - Destroys a matrix coloring context that was created
@@ -434,7 +434,7 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
     ierr = PetscFree((*c)->columns[i]);CHKERRQ(ierr);
     ierr = PetscFree((*c)->rows[i]);CHKERRQ(ierr);
     ierr = PetscFree((*c)->columnsforrow[i]);CHKERRQ(ierr);
-    if ((*c)->vscaleforrow) {ierr = PetscFree((*c)->vscaleforrow[i]);CHKERRQ(ierr);} 
+    if ((*c)->vscaleforrow) {ierr = PetscFree((*c)->vscaleforrow[i]);CHKERRQ(ierr);}
   }
   ierr = PetscFree((*c)->ncolumns);CHKERRQ(ierr);
   ierr = PetscFree((*c)->columns);CHKERRQ(ierr);
@@ -450,7 +450,7 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringGetPerturbedColumns"
 /*@C
     MatFDColoringGetPerturbedColumns - Returns the indices of the columns that
@@ -483,10 +483,10 @@ PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring coloring,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringApply"
 /*@
-    MatFDColoringApply - Given a matrix for which a MatFDColoring context 
+    MatFDColoringApply - Given a matrix for which a MatFDColoring context
     has been created, computes the Jacobian for a function via finite differences.
 
     Collective on MatFDColoring
@@ -513,7 +513,7 @@ PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStruct
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;    
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_CLASSID,1);
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,2);
   PetscValidHeaderSpecific(x1,VEC_CLASSID,3);
@@ -523,7 +523,7 @@ PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStruct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringApply_AIJ"
 PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
@@ -532,14 +532,14 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   PetscInt       k,start,end,l,row,col,srow,**vscaleforrow;
   PetscScalar    dx,*y,*xx,*w3_array;
   PetscScalar    *vscale_array;
-  PetscReal      epsilon = coloring->error_rel,umin = coloring->umin,unorm; 
+  PetscReal      epsilon = coloring->error_rel,umin = coloring->umin,unorm;
   Vec            w1=coloring->w1,w2=coloring->w2,w3;
   void           *fctx = coloring->fctx;
   PetscBool      flg = PETSC_FALSE;
   PetscInt       ctype=coloring->ctype,N,col_start=0,col_end=0;
   Vec            x1_tmp;
 
-  PetscFunctionBegin;    
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_CLASSID,1);
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,2);
   PetscValidHeaderSpecific(x1,VEC_CLASSID,3);
@@ -558,8 +558,8 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
     }
   }
 
-  x1_tmp = x1; 
-  if (!coloring->vscale){ 
+  x1_tmp = x1;
+  if (!coloring->vscale){
     ierr = VecDuplicate(x1_tmp,&coloring->vscale);CHKERRQ(ierr);
   }
 
@@ -594,8 +594,8 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
     vscale_array = vscale_array - start;
     col_start = start; col_end = N + start;
   }
-  for (col=col_start; col<col_end; col++){ 
-    /* Loop over each local column, vscale[col] = 1./(epsilon*dx[col]) */      
+  for (col=col_start; col<col_end; col++){
+    /* Loop over each local column, vscale[col] = 1./(epsilon*dx[col]) */
     if (coloring->htype[0] == 'w') {
       dx = 1.0 + unorm;
     } else {
@@ -611,14 +611,14 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
 #endif
     dx               *= epsilon;
     vscale_array[col] = (PetscScalar)1.0/dx;
-  } 
-  if (ctype == IS_COLORING_GLOBAL)  vscale_array = vscale_array + start;      
+  }
+  if (ctype == IS_COLORING_GLOBAL)  vscale_array = vscale_array + start;
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   if (ctype == IS_COLORING_GLOBAL){
     ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
-    
+
   if (coloring->vscaleforrow) {
     vscaleforrow = coloring->vscaleforrow;
   } else SETERRQ(((PetscObject)J)->comm,PETSC_ERR_ARG_NULL,"Null Object: coloring->vscaleforrow");
@@ -627,13 +627,13 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
     Loop over each color
   */
   ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  for (k=0; k<coloring->ncolors; k++) { 
+  for (k=0; k<coloring->ncolors; k++) {
     coloring->currentcolor = k;
     ierr = VecCopy(x1_tmp,w3);CHKERRQ(ierr);
     ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
     if (ctype == IS_COLORING_GLOBAL) w3_array = w3_array - start;
     /*
-      Loop over each column associated with color 
+      Loop over each column associated with color
       adding the perturbation to the vector w3.
     */
     for (l=0; l<coloring->ncolumns[k]; l++) {
@@ -654,7 +654,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
       dx            *= epsilon;
       if (!PetscAbsScalar(dx)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed 0 differencing parameter");
       w3_array[col] += dx;
-    } 
+    }
     if (ctype == IS_COLORING_GLOBAL) w3_array = w3_array + start;
     ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
 
@@ -663,10 +663,10 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
                            w2 = F(x1 + dx) - F(x1)
     */
     ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-    ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);        
+    ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-    ierr = VecAXPY(w2,-1.0,w1);CHKERRQ(ierr); 
-        
+    ierr = VecAXPY(w2,-1.0,w1);CHKERRQ(ierr);
+
     /*
       Loop over rows of vector, putting results into Jacobian matrix
     */
@@ -680,10 +680,10 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
     }
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
   } /* endof for each color */
-  if (ctype == IS_COLORING_GLOBAL) xx = xx + start; 
+  if (ctype == IS_COLORING_GLOBAL) xx = xx + start;
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x1_tmp,&xx);CHKERRQ(ierr);
-   
+
   coloring->currentcolor = -1;
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

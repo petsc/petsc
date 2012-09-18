@@ -1,10 +1,10 @@
 
 #include <petsc-private/snesimpl.h>    /*I  "petscsnes.h"  I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESDefaultComputeJacobian"
 /*@C
-   SNESDefaultComputeJacobian - Computes the Jacobian using finite differences. 
+   SNESDefaultComputeJacobian - Computes the Jacobian using finite differences.
 
    Collective on SNES
 
@@ -82,7 +82,7 @@ PetscErrorCode  SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStr
   if (use_wp) {
     ierr = VecNorm(x1,NORM_2,&unorm);CHKERRQ(ierr);
   }
-  /* Compute Jacobian approximation, 1 column at a time. 
+  /* Compute Jacobian approximation, 1 column at a time.
       x1 = current iterate, j1a = F(x1)
       x2 = perturbed iterate, j2a = F(x2)
    */

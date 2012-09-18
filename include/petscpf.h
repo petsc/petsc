@@ -1,5 +1,5 @@
 /*
-      mathematical function module. 
+      mathematical function module.
 */
 #if !defined(__PETSCPF_H)
 #define __PETSCPF_H

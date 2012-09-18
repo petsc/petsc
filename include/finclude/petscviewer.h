@@ -3,7 +3,7 @@
 !
 #include "finclude/petscviewerdef.h"
 
-#if !defined(PETSC_USE_FORTRAN_DATATYPES) 
+#if !defined(PETSC_USE_FORTRAN_DATATYPES)
       PetscViewer PETSC_VIEWER_STDOUT_
       external PETSC_VIEWER_STDOUT_
 #endif

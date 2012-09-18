@@ -10,7 +10,7 @@ Division of Applied Mathematics
 Brown University
 Providence, RI 02912
 
-Last Modification: 
+Last Modification:
 11.21.97
 ***********************************comm.c*************************************/
 #include <../src/ksp/pc/impls/tfs/tfs.h>
@@ -47,11 +47,11 @@ PetscErrorCode PCTFS_comm_init (void)
   while (PCTFS_floor_num_nodes <= PCTFS_num_nodes)
     {
       edge_node[PCTFS_i_log2_num_nodes] = PCTFS_my_id ^ PCTFS_floor_num_nodes;
-      PCTFS_floor_num_nodes <<= 1; 
+      PCTFS_floor_num_nodes <<= 1;
       PCTFS_i_log2_num_nodes++;
     }
 
-  PCTFS_i_log2_num_nodes--;  
+  PCTFS_i_log2_num_nodes--;
   PCTFS_floor_num_nodes >>= 1;
   modfl_num_nodes = (PCTFS_num_nodes - PCTFS_floor_num_nodes);
 
@@ -111,7 +111,7 @@ PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *
     {
       if (PCTFS_my_id >= PCTFS_floor_num_nodes)
 	{ierr = MPI_Send(vals,n,MPIU_INT,edge_not_pow_2,MSGTAG0+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
-      else 
+      else
 	{
 	  ierr = MPI_Recv(work,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2, MPI_COMM_WORLD,&status);CHKERRQ(ierr);
 	  (*fp)(vals,work,n,oprs);
@@ -138,7 +138,7 @@ PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *
 	{
 	  if (PCTFS_my_id%mask)
 	    {continue;}
-      
+
 	  dest = PCTFS_my_id^mask;
 	  if (PCTFS_my_id < dest)
 	    {ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG4+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
@@ -160,7 +160,7 @@ PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *
 	{ierr = MPI_Send(vals,n,MPIU_INT,edge_not_pow_2,MSGTAG5+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
     }
         PetscFunctionReturn(0);
-}  
+}
 
 /***********************************comm.c*************************************/
 PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs)
@@ -204,7 +204,7 @@ PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, Pets
     {
       if (PCTFS_my_id >= PCTFS_floor_num_nodes)
 	{ierr = MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG0+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
-      else 
+      else
 	{
 	  ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
 	  (*fp)(vals,work,n,oprs);
@@ -231,7 +231,7 @@ PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, Pets
 	{
 	  if (PCTFS_my_id%mask)
 	    {continue;}
-      
+
 	  dest = PCTFS_my_id^mask;
 	  if (PCTFS_my_id < dest)
 	    {ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
@@ -253,7 +253,7 @@ PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, Pets
 	{ierr = MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG5+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
     }
         PetscFunctionReturn(0);
-}  
+}
 
 /***********************************comm.c*************************************/
 PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs, PetscInt dim)
@@ -318,7 +318,7 @@ PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, P
     {
       if (PCTFS_my_id%mask)
 	{continue;}
-      
+
       dest = PCTFS_my_id^mask;
       if (PCTFS_my_id < dest)
 	{ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
@@ -328,7 +328,7 @@ PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, P
 	}
     }
         PetscFunctionReturn(0);
-}  
+}
 
 /******************************************************************************/
 PetscErrorCode PCTFS_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level, PetscInt *segs)
@@ -358,8 +358,8 @@ PetscErrorCode PCTFS_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt
 	  else
 	    {
 	      type =  type - PCTFS_my_id + dest;
-              ierr = MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);CHKERRQ(ierr);              
-	      PCTFS_rvec_add(vals+segs[edge], work, stage_n); 
+              ierr = MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
+	      PCTFS_rvec_add(vals+segs[edge], work, stage_n);
 	    }
 	}
       mask <<= 1;
@@ -377,7 +377,7 @@ PetscErrorCode PCTFS_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt
 	  else
 	    {
 	      type =  type - PCTFS_my_id + dest;
-              ierr = MPI_Recv(vals+segs[level-1-edge],stage_n,MPIU_SCALAR, MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);CHKERRQ(ierr);              
+              ierr = MPI_Recv(vals+segs[level-1-edge],stage_n,MPIU_SCALAR, MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
 	    }
 	}
       mask >>= 1;
@@ -448,7 +448,7 @@ PetscErrorCode PCTFS_giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscIn
     {
       if (PCTFS_my_id%mask)
 	{continue;}
-      
+
       dest = PCTFS_my_id^mask;
       if (PCTFS_my_id < dest)
 	{ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG4+PCTFS_my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
@@ -458,4 +458,4 @@ PetscErrorCode PCTFS_giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscIn
 	}
     }
   PetscFunctionReturn(0);
-}  
+}

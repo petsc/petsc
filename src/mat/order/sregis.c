@@ -15,10 +15,10 @@ extern PetscErrorCode  MatGetOrdering_AMD(Mat,const MatOrderingType,IS*,IS*);
 
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatOrderingRegisterAll"
 /*@C
-  MatOrderingRegisterAll - Registers all of the matrix 
+  MatOrderingRegisterAll - Registers all of the matrix
   reordering routines in PETSc.
 
   Not Collective
@@ -26,8 +26,8 @@ EXTERN_C_END
   Level: developer
 
   Adding new methods:
-  To add a new method to the registry. Copy this routine and 
-  modify it to incorporate a call to MatReorderRegister() for 
+  To add a new method to the registry. Copy this routine and
+  modify it to incorporate a call to MatReorderRegister() for
   the new method, after the current list.
 
   Restricting the choices: To prevent all of the methods from being

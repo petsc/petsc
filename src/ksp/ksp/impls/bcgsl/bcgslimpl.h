@@ -1,4 +1,4 @@
-/*  
+/*
     Private data structure for BiCGStab(L) solver.
     Allocation takes place before each solve.
 */
@@ -10,7 +10,7 @@ typedef struct {
   PetscInt        ell;		/* Number of search directions. */
   PetscReal	delta;		/* Threshold for recomputing exact residual norm */
   PetscBool 	bConvex;	/* Compute Enhanced BiCGstab polynomial when set to PETSC_TRUE */
-  
+
   /* Workspace Vectors */
   Vec	vB;
   Vec	vRt;

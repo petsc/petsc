@@ -8,10 +8,10 @@ typedef struct _KSPOps *KSPOps;
 
 struct _KSPOps {
   PetscErrorCode (*buildsolution)(KSP,Vec,Vec*);       /* Returns a pointer to the solution, or
-                                                calculates the solution in a 
+                                                calculates the solution in a
 				                user-provided area. */
   PetscErrorCode (*buildresidual)(KSP,Vec,Vec,Vec*);   /* Returns a pointer to the residual, or
-				                calculates the residual in a 
+				                calculates the residual in a
 				                user-provided area.  */
   PetscErrorCode (*solve)(KSP);                        /* actual solver */
   PetscErrorCode (*setup)(KSP);
@@ -29,7 +29,7 @@ typedef struct {PetscInt model,curl,maxl;Mat mat; KSP ksp;}* KSPGuessFischer;
 /*
      Maximum number of monitors you can run with a single KSP
 */
-#define MAXKSPMONITORS 5 
+#define MAXKSPMONITORS 5
 typedef enum {KSP_SETUP_NEW, KSP_SETUP_NEWMATRIX, KSP_SETUP_NEWRHS} KSPSetUpStage;
 
 /*
@@ -53,14 +53,14 @@ struct _p_KSP {
                   divtol;                   /* divergence tolerance */
   PetscReal       rnorm0;                   /* initial residual norm (used for divergence testing) */
   PetscReal       rnorm;                    /* current residual norm */
-  KSPConvergedReason reason;     
+  KSPConvergedReason reason;
   PetscBool          printreason;     /* prints converged reason after solve */
   PetscBool          errorifnotconverged;    /* create an error if the KSPSolve() does not converge */
 
-  Vec vec_sol,vec_rhs;            /* pointer to where user has stashed 
-                                      the solution and rhs, these are 
-                                      never touched by the code, only 
-                                      passed back to the user */ 
+  Vec vec_sol,vec_rhs;            /* pointer to where user has stashed
+                                      the solution and rhs, these are
+                                      never touched by the code, only
+                                      passed back to the user */
   PetscReal     *res_hist;            /* If !0 stores residual at iterations*/
   PetscReal     *res_hist_alloc;      /* If !0 means user did not provide buffer, needs deallocation */
   PetscInt      res_hist_len;         /* current size of residual history array */
@@ -68,8 +68,8 @@ struct _p_KSP {
   PetscBool     res_hist_reset;       /* reset history to size zero for each new solve */
 
   PetscInt      chknorm;             /* only compute/check norm if iterations is great than this */
-  PetscBool     lagnorm;             /* Lag the residual norm calculation so that it is computed as part of the 
-                                        MPI_Allreduce() for computing the inner products for the next iteration. */ 
+  PetscBool     lagnorm;             /* Lag the residual norm calculation so that it is computed as part of the
+                                        MPI_Allreduce() for computing the inner products for the next iteration. */
   /* --------User (or default) routines (most return -1 on error) --------*/
   PetscErrorCode (*monitor[MAXKSPMONITORS])(KSP,PetscInt,PetscReal,void*); /* returns control to user after */
   PetscErrorCode (*monitordestroy[MAXKSPMONITORS])(void**);         /* */
@@ -84,7 +84,7 @@ struct _p_KSP {
 
   PC         pc;
 
-  void       *data;                      /* holder for misc stuff associated 
+  void       *data;                      /* holder for misc stuff associated
                                    with a particular iterative solver */
 
   /* ----------------Default work-area management -------------------- */
@@ -99,7 +99,7 @@ struct _p_KSP {
 
   KSPNormType    normtype;          /* type of norm used for convergence tests */
 
-  /*   Allow diagonally scaling the matrix before computing the preconditioner or using 
+  /*   Allow diagonally scaling the matrix before computing the preconditioner or using
        the Krylov method. Note this is NOT just Jacobi preconditioning */
 
   PetscBool    dscale;       /* diagonal scale system; used with KSPSetDiagonalScale() */
@@ -167,10 +167,10 @@ PETSC_EXTERN PetscErrorCode DMKSPDuplicateContext(DM,DM);
 */
 #define KSP_RemoveNullSpace(ksp,y) ((ksp->nullsp && ksp->pc_side == PC_LEFT) ? MatNullSpaceRemove(ksp->nullsp,y,PETSC_NULL) : 0)
 
-#define KSP_MatMult(ksp,A,x,y)          (!ksp->transpose_solve) ? MatMult(A,x,y)                                                            : MatMultTranspose(A,x,y) 
-#define KSP_MatMultTranspose(ksp,A,x,y) (!ksp->transpose_solve) ? MatMultTranspose(A,x,y)                                                   : MatMult(A,x,y) 
-#define KSP_PCApply(ksp,x,y)            (!ksp->transpose_solve) ? (PCApply(ksp->pc,x,y) || KSP_RemoveNullSpace(ksp,y))                      : PCApplyTranspose(ksp->pc,x,y) 
-#define KSP_PCApplyTranspose(ksp,x,y)   (!ksp->transpose_solve) ? PCApplyTranspose(ksp->pc,x,y)                                             : (PCApply(ksp->pc,x,y) || KSP_RemoveNullSpace(ksp,y)) 
+#define KSP_MatMult(ksp,A,x,y)          (!ksp->transpose_solve) ? MatMult(A,x,y)                                                            : MatMultTranspose(A,x,y)
+#define KSP_MatMultTranspose(ksp,A,x,y) (!ksp->transpose_solve) ? MatMultTranspose(A,x,y)                                                   : MatMult(A,x,y)
+#define KSP_PCApply(ksp,x,y)            (!ksp->transpose_solve) ? (PCApply(ksp->pc,x,y) || KSP_RemoveNullSpace(ksp,y))                      : PCApplyTranspose(ksp->pc,x,y)
+#define KSP_PCApplyTranspose(ksp,x,y)   (!ksp->transpose_solve) ? PCApplyTranspose(ksp->pc,x,y)                                             : (PCApply(ksp->pc,x,y) || KSP_RemoveNullSpace(ksp,y))
 #define KSP_PCApplyBAorAB(ksp,x,y,w)    (!ksp->transpose_solve) ? (PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w) || KSP_RemoveNullSpace(ksp,y)) : PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w)
 #define KSP_PCApplyBAorABTranspose(ksp,x,y,w)    (!ksp->transpose_solve) ? (PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w) || KSP_RemoveNullSpace(ksp,y)) : PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w)
 

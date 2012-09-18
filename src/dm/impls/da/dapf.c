@@ -1,8 +1,8 @@
- 
+
 #include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDACreatePF"
 /*@C
    DMDACreatePF - Creates an appropriately dimensioned PF mathematical function object
@@ -34,5 +34,5 @@ PetscErrorCode  DMDACreatePF(DM da,PF *pf)
   ierr = PFCreate(((PetscObject)da)->comm,dd->dim,dd->w,pf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
- 
+
 

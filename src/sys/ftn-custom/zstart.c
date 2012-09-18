@@ -6,7 +6,7 @@
     This is to prevent the Cray T3D version of MPI (University of Edinburgh)
   from stupidly redefining MPI_INIT(). They put this in to detect errors
   in C code,but here I do want to be calling the Fortran version from a
-  C subroutine. 
+  C subroutine.
 */
 #define T3DMPI_FORTRAN
 #define T3EMPI_FORTRAN
@@ -77,7 +77,7 @@ extern PetscBool  PetscHMPIWorker;
 
 /*
     The extra _ is because the f2c compiler puts an
-  extra _ at the end if the original routine name 
+  extra _ at the end if the original routine name
   contained any _.
 */
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
@@ -150,7 +150,7 @@ extern int PetscGlobalArgc;
 extern char **PetscGlobalArgs;
 
 /*
-    Reads in Fortran command line argments and sends them to 
+    Reads in Fortran command line argments and sends them to
   all processors and adds them to Options database.
 */
 
@@ -195,8 +195,8 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
       GETARG(&i,(*argv)[i],warg,&flg);
 #else
       /*
-      Because the stupid #defines above define all kinds of things to getarg_ we cannot do this test 
-      #elif defined(PETSC_HAVE_GETARG) 
+      Because the stupid #defines above define all kinds of things to getarg_ we cannot do this test
+      #elif defined(PETSC_HAVE_GETARG)
       getarg_(&i,(*argv)[i],warg);
       #else
          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get Fortran command line arguments");
@@ -206,7 +206,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
       /* zero out garbage at end of each argument */
       p = (*argv)[i] + warg-1;
       while (p > (*argv)[i]) {
-        if (*p == ' ') *p = 0; 
+        if (*p == ' ') *p = 0;
         p--;
       }
     }
@@ -216,8 +216,8 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
     for (i=0; i<*argc; i++) {
       (*argv)[i+1] = (*argv)[i] + warg;
     }
-  } 
-  return 0;   
+  }
+  return 0;
 }
 
 /* -----------------------------------------------------------------------------------------------*/
@@ -236,7 +236,7 @@ EXTERN_C_BEGIN
 
     Notes:
       Since this is called from Fortran it does not return error codes
-      
+
 */
 void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
@@ -244,7 +244,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   short       flg,i;
 #else
   int         i;
-#if !defined(PETSC_HAVE_PXFGETARG_NEW) && !defined (PETSC_HAVE_PXFGETARG_NEW) 
+#if !defined(PETSC_HAVE_PXFGETARG_NEW) && !defined (PETSC_HAVE_PXFGETARG_NEW)
   int         j;
 #endif
 #endif
@@ -261,8 +261,8 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   /* this must be initialized in a routine, not as a constant declaration*/
   PETSC_STDOUT = stdout;
   PETSC_STDERR = stderr;
-  
-  *ierr = PetscOptionsCreate(); 
+
+  *ierr = PetscOptionsCreate();
   if (*ierr) return;
   i = 0;
 #if defined (PETSC_HAVE_PXFGETARG_NEW)
@@ -307,7 +307,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
       return;
     }
     PetscBeganMPI    = PETSC_TRUE;
-  } 
+  }
   if (f_petsc_comm_world) { /* User called MPI_INITIALIZE() and changed PETSC_COMM_WORLD */
     PETSC_COMM_WORLD = MPI_Comm_f2c(*(MPI_Fint *)&f_petsc_comm_world);
   } else {
@@ -322,8 +322,8 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   *ierr = MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Setting PetscGlobalSize\n");return;}
 #if defined(PETSC_USE_COMPLEX)
-  /* 
-     Initialized the global variable; this is because with 
+  /*
+     Initialized the global variable; this is because with
      shared libraries the constructors for global variables
      are not called; at least on IRIX.
   */
@@ -407,16 +407,16 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   PetscInitializeFortran();
   PETScParseFortranArgs_Private(&PetscGlobalArgc,&PetscGlobalArgs);
   FIXCHAR(filename,len,t1);
-  *ierr = PetscOptionsInsert(&PetscGlobalArgc,&PetscGlobalArgs,t1); 
+  *ierr = PetscOptionsInsert(&PetscGlobalArgc,&PetscGlobalArgs,t1);
   FREECHAR(filename,t1);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating options database\n");return;}
-  *ierr = PetscOptionsCheckInitial_Private(); 
+  *ierr = PetscOptionsCheckInitial_Private();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
 #if defined (PETSC_USE_LOG)
   *ierr = PetscLogBegin_Private();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: intializing logging\n");return;}
 #endif
-  *ierr = PetscInitialize_DynamicLibraries(); 
+  *ierr = PetscInitialize_DynamicLibraries();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Initializing dynamic libraries\n");return;}
 
   *ierr = PetscInitializeFortran();
@@ -429,8 +429,8 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   *ierr = PetscGetHostName(hostname,64);
   if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Getting hostname\n");return;}
   *ierr = PetscInfo1(0,"Running on machine: %s\n",hostname);
-  if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Calling PetscInfo()\n");return;}  
-  *ierr = PetscOptionsCheckInitial_Components(); 
+  if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Calling PetscInfo()\n");return;}
+  *ierr = PetscOptionsCheckInitial_Components();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
 
   *ierr = PetscThreadCommInitializePackage(PETSC_NULL);
@@ -451,7 +451,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
       if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscHMPIMerge()\n");return;}
       if (PetscHMPIWorker) { /* if worker then never enter user code */
         PetscInitializeCalled = PETSC_TRUE;
-        *ierr = PetscEnd(); 
+        *ierr = PetscEnd();
       }
     }
   }

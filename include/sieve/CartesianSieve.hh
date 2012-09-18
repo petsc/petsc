@@ -323,7 +323,7 @@ namespace ALE {
           ALE::CartesianSieveDef::getGrayCode(this->_pos, this->_dim, this->_code);
           while((this->_code[0] >= 0) && !this->validIndex(this->_indices, this->_code)) {
             ALE::CartesianSieveDef::getGrayCode(++this->_pos, this->_dim, this->_code);
-          } 
+          }
           this->_value = ALE::CartesianSieveDef::getValue(this->_dim, this->_sizes, this->_indices, this->_code, false);
         };
       public:
@@ -527,7 +527,7 @@ namespace ALE {
       Obj<capSequence>  cap  = this->cap();
       Obj<baseSequence> base = this->base();
       if(cap->empty()) {
-        txt << "[" << this->commRank() << "]: empty" << std::endl; 
+        txt << "[" << this->commRank() << "]: empty" << std::endl;
       }
       for(typename capSequence::iterator capi = cap->begin(); capi != cap->end(); ++capi) {
         const Obj<supportSequence>&              supp    = this->support(*capi);
@@ -545,7 +545,7 @@ namespace ALE {
         txt1 << "base --> cap:\n";
       }
       if(base->empty()) {
-        txt1 << "[" << this->commRank() << "]: empty" << std::endl; 
+        txt1 << "[" << this->commRank() << "]: empty" << std::endl;
       }
       for(typename baseSequence::iterator basei = base->begin(); basei != base->end(); ++basei) {
         const Obj<coneSequence>&              cone    = this->cone(*basei);

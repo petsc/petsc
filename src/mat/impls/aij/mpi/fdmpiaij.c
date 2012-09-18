@@ -3,7 +3,7 @@
 
 extern PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringCreate_MPIAIJ"
 PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
@@ -36,7 +36,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   c->ncolors       = nis;
   ierr             = PetscMalloc(nis*sizeof(PetscInt),&c->ncolumns);CHKERRQ(ierr);
-  ierr             = PetscMalloc(nis*sizeof(PetscInt*),&c->columns);CHKERRQ(ierr); 
+  ierr             = PetscMalloc(nis*sizeof(PetscInt*),&c->columns);CHKERRQ(ierr);
   ierr             = PetscMalloc(nis*sizeof(PetscInt),&c->nrows);CHKERRQ(ierr);
   ierr             = PetscMalloc(nis*sizeof(PetscInt*),&c->rows);CHKERRQ(ierr);
   ierr             = PetscMalloc(nis*sizeof(PetscInt*),&c->columnsforrow);CHKERRQ(ierr);
@@ -46,9 +46,9 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   if (!aij->colmap) {
     ierr = MatCreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
   }
-  ierr = MatGetColumnIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
-  ierr = MatGetColumnIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
-  
+  ierr = MatGetColumnIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr);
+  ierr = MatGetColumnIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr);
+
   ierr = PetscMalloc((M+1)*sizeof(PetscInt),&rowhit);CHKERRQ(ierr);
   ierr = PetscMalloc((M+1)*sizeof(PetscInt),&columnsforrow);CHKERRQ(ierr);
 
@@ -66,7 +66,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
     if (ctype == IS_COLORING_GLOBAL){
       /* Determine the total (parallel) number of columns of this color */
-      ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr); 
+      ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
       ierr = PetscMalloc2(size,PetscMPIInt,&ncolsonproc,size,PetscMPIInt,&disp);CHKERRQ(ierr);
 
       nn   = PetscMPIIntCast(n);
@@ -106,13 +106,13 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       /* loop over columns*/
       for (j=0; j<nctot; j++) {
         if (ctype == IS_COLORING_GHOSTED) {
-          col = ltog[cols[j]];       
+          col = ltog[cols[j]];
         } else {
           col  = cols[j];
         }
         if (col >= cstart && col < cend) {
           /* column is in diagonal block of matrix */
-          rows = A_cj + A_ci[col-cstart]; 
+          rows = A_cj + A_ci[col-cstart];
           m    = A_ci[col-cstart+1] - A_ci[col-cstart];
         } else {
 #if defined (PETSC_USE_CTABLE)
@@ -122,9 +122,9 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
           colb = aij->colmap[col] - 1;
 #endif
           if (colb == -1) {
-            m = 0; 
+            m = 0;
           } else {
-            rows = B_cj + B_ci[colb]; 
+            rows = B_cj + B_ci[colb];
             m    = B_ci[colb+1] - B_ci[colb];
           }
         }
@@ -165,7 +165,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
         }
         if (col >= cstart && col < cend) {
           /* column is in diagonal block of matrix */
-          rows = A_cj + A_ci[col-cstart]; 
+          rows = A_cj + A_ci[col-cstart];
           m    = A_ci[col-cstart+1] - A_ci[col-cstart];
         } else {
 #if defined (PETSC_USE_CTABLE)
@@ -175,9 +175,9 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
           colb = aij->colmap[col] - 1;
 #endif
           if (colb == -1) {
-            m = 0; 
+            m = 0;
           } else {
-            rows = B_cj + B_ci[colb]; 
+            rows = B_cj + B_ci[colb];
             m    = B_ci[colb+1] - B_ci[colb];
           }
         }
@@ -198,7 +198,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
             /* next three lines insert new entry into linked list */
             rowhit[mfm]               = currentcol;
             rowhit[currentcol]        = fm;
-            fm                        = currentcol; 
+            fm                        = currentcol;
             /* fm points to present position in list since we know the columns are sorted */
           } else {
             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid coloring of matrix detected");
@@ -228,7 +228,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   if (ctype == IS_COLORING_GLOBAL) {
     ierr = VecCreateGhost(((PetscObject)mat)->comm,aij->A->rmap->n,PETSC_DETERMINE,aij->B->cmap->n,aij->garray,&c->vscale);CHKERRQ(ierr);
     ierr = PetscMalloc(c->ncolors*sizeof(PetscInt*),&c->vscaleforrow);CHKERRQ(ierr);
-    for (k=0; k<c->ncolors; k++) { 
+    for (k=0; k<c->ncolors; k++) {
       ierr = PetscMalloc((c->nrows[k]+1)*sizeof(PetscInt),&c->vscaleforrow[k]);CHKERRQ(ierr);
       for (l=0; l<c->nrows[k]; l++) {
         col = c->columnsforrow[k][l];
@@ -247,17 +247,17 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
         }
         c->vscaleforrow[k][l] = colb;
       }
-    } 
+    }
   } else if (ctype == IS_COLORING_GHOSTED) {
     /* Get gtol mapping */
     PetscInt N = mat->cmap->N, *gtol;
     ierr = PetscMalloc((N+1)*sizeof(PetscInt),&gtol);CHKERRQ(ierr);
     for (i=0; i<N; i++) gtol[i] = -1;
     for (i=0; i<map->n; i++) gtol[ltog[i]] = i;
-   
+
     c->vscale = 0; /* will be created in MatFDColoringApply() */
     ierr = PetscMalloc(c->ncolors*sizeof(PetscInt*),&c->vscaleforrow);CHKERRQ(ierr);
-    for (k=0; k<c->ncolors; k++) { 
+    for (k=0; k<c->ncolors; k++) {
       ierr = PetscMalloc((c->nrows[k]+1)*sizeof(PetscInt),&c->vscaleforrow[k]);CHKERRQ(ierr);
       for (l=0; l<c->nrows[k]; l++) {
         col = c->columnsforrow[k][l];      /* global column index */
@@ -270,8 +270,8 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   ierr = PetscFree(rowhit);CHKERRQ(ierr);
   ierr = PetscFree(columnsforrow);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
-  ierr = MatRestoreColumnIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
+  ierr = MatRestoreColumnIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr);
+  ierr = MatRestoreColumnIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

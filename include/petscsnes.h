@@ -95,7 +95,7 @@ PETSC_EXTERN PetscErrorCode SNESRegister(const char[],const char[],const char[],
    is ignored.
 
    Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-   and others of the form ${any_environmental_variable} occuring in pathname will be 
+   and others of the form ${any_environmental_variable} occuring in pathname will be
    replaced with appropriate values.
 
    Sample usage:
@@ -197,13 +197,13 @@ PETSC_EXTERN PetscErrorCode SNESSetFunctionDomainError(SNES);
 PETSC_EXTERN PetscErrorCode SNESGetFunctionDomainError(SNES, PetscBool *);
 
 /*E
-    SNESConvergedReason - reason a SNES method was said to 
+    SNESConvergedReason - reason a SNES method was said to
          have converged or diverged
 
    Level: beginner
 
-   The two most common reasons for divergence are 
-$   1) an incorrectly coded or computed Jacobian or 
+   The two most common reasons for divergence are
+$   1) an incorrectly coded or computed Jacobian or
 $   2) failure or lack of convergence in the linear system (in this case we recommend
 $      testing with -pc_type lu to eliminate the linear solver as the cause of the problem).
 
@@ -215,7 +215,7 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
        Q'(0) = - ||F(x)||^2_2 which is always NEGATIVE if F'(x) is invertible. This means the Newton
        direction is a descent direction and the line search should succeed if alpha is small enough.
 
-       If F'(x) is NOT invertible AND F'(x)^T F(x) = 0 then Q'(0) = 0 and the Newton direction 
+       If F'(x) is NOT invertible AND F'(x)^T F(x) = 0 then Q'(0) = 0 and the Newton direction
        is NOT a descent direction so the line search will fail. All one can do at this point
        is change the initial guess and try again.
 
@@ -223,7 +223,7 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
        its linear approximation and minimizing the 2-norm of that. That is F(x+s) approx F(x) + F'(x)s
        so we minimize || F(x) + F'(x) s ||^2_2; do this using Least Squares. If F'(x) is invertible then
        s = - F'(x)^(-1)F(x) otherwise F'(x)^T F'(x) s = -F'(x)^T F(x). If F'(x)^T F(x) is NOT zero then there
-       exists a nontrival (that is F'(x)s != 0) solution to the equation and this direction is 
+       exists a nontrival (that is F'(x)s != 0) solution to the equation and this direction is
        s = - [F'(x)^T F'(x)]^(-1) F'(x)^T F(x) so Q'(0) = - F(x)^T F'(x) [F'(x)^T F'(x)]^(-T) F'(x)^T F(x)
        = - (F'(x)^T F(x)) [F'(x)^T F'(x)]^(-T) (F'(x)^T F(x)). Since we are assuming (F'(x)^T F(x)) != 0
        and F'(x)^T F'(x) has no negative eigenvalues Q'(0) < 0 so s is a descent direction and the line
@@ -231,12 +231,12 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
 
        Note that this RARELY happens in practice. Far more likely the linear system is not being solved
        (well enough?) or the Jacobian is wrong.
-     
+
    SNES_DIVERGED_MAX_IT means that the solver reached the maximum number of iterations without satisfying any
    convergence criteria. SNES_CONVERGED_ITS means that SNESSkipConverged() was chosen as the convergence test;
    thus the usual convergence criteria have not been checked and may or may not be satisfied.
 
-   Developer Notes: this must match finclude/petscsnes.h 
+   Developer Notes: this must match finclude/petscsnes.h
 
        The string versions of these are in SNESConvergedReason, if you change any value here you must
      also adjust that array.
@@ -253,11 +253,11 @@ typedef enum {/* converged */
               SNES_CONVERGED_TR_DELTA          =  7,
               /* diverged */
               SNES_DIVERGED_FUNCTION_DOMAIN     = -1, /* the new x location passed the function is not in the domain of F */
-              SNES_DIVERGED_FUNCTION_COUNT      = -2,  
+              SNES_DIVERGED_FUNCTION_COUNT      = -2,
               SNES_DIVERGED_LINEAR_SOLVE        = -3, /* the linear solve failed */
-              SNES_DIVERGED_FNORM_NAN           = -4, 
+              SNES_DIVERGED_FNORM_NAN           = -4,
               SNES_DIVERGED_MAX_IT              = -5,
-              SNES_DIVERGED_LINE_SEARCH         = -6, /* the line search failed */ 
+              SNES_DIVERGED_LINE_SEARCH         = -6, /* the line search failed */
               SNES_DIVERGED_INNER               = -7, /* inner solve failed */
               SNES_DIVERGED_LOCAL_MIN           = -8, /* || J^T b || is small, implies converged to local minimum of F() */
               SNES_CONVERGED_ITERATING          =  0} SNESConvergedReason;
@@ -333,7 +333,7 @@ M*/
 M*/
 
 /*MC
-     SNES_DIVERGED_LOCAL_MIN - the algorithm seems to have stagnated at a local minimum that is not zero. 
+     SNES_DIVERGED_LOCAL_MIN - the algorithm seems to have stagnated at a local minimum that is not zero.
         See the manual page for SNESConvergedReason for more details
 
    Level: beginner

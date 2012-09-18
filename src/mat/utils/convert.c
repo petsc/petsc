@@ -1,9 +1,9 @@
 
 #include <petsc-private/matimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_Basic"
-/* 
+/*
   MatConvert_Basic - Converts from any input format to another format. For
   parallel formats, the new matrix distribution is determined by PETSc.
 
@@ -23,7 +23,7 @@ PetscErrorCode MatConvert_Basic(Mat mat, const MatType newtype,MatReuse reuse,Ma
   ierr = MatGetLocalSize(mat,&lm,&ln);CHKERRQ(ierr);
 
   if (ln == n) ln = PETSC_DECIDE; /* try to preserve column ownership */
-  
+
   ierr = MatCreate(((PetscObject)mat)->comm,&M);CHKERRQ(ierr);
   ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
   ierr = MatSetBlockSize(M,mat->rmap->bs);CHKERRQ(ierr);

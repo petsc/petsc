@@ -11,7 +11,7 @@ const char *const TSConvergedReasons_Shifted[] = {
 const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 2;
 
 #if 0
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPublish_Petsc"
 static PetscErrorCode TSPublish_Petsc(PetscObject obj)
 {
@@ -23,7 +23,7 @@ static PetscErrorCode TSPublish_Petsc(PetscObject obj)
 #undef  __FUNCT__
 #define __FUNCT__ "TSCreate"
 /*@C
-  TSCreate - This function creates an empty timestepper. The problem type can then be set with TSSetProblemType() and the 
+  TSCreate - This function creates an empty timestepper. The problem type can then be set with TSSetProblemType() and the
        type of solver can then be set with TSSetType().
 
   Collective on MPI_Comm

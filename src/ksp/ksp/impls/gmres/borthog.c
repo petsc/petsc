@@ -9,7 +9,7 @@
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 
 /*@C
-     KSPGMRESModifiedGramSchmidtOrthogonalization -  This is the basic orthogonalization routine 
+     KSPGMRESModifiedGramSchmidtOrthogonalization -  This is the basic orthogonalization routine
                 using modified Gram-Schmidt.
 
      Collective on KSP
@@ -26,7 +26,7 @@
 .seealso:  KSPGMRESSetOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESGetOrthogonalization()
 
 @*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGMRESModifiedGramSchmidtOrthogonalization"
 PetscErrorCode  KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,PetscInt it)
 {

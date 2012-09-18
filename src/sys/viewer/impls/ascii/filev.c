@@ -18,7 +18,7 @@ static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
   if (!rank && vascii->fd != stderr && vascii->fd != PETSC_STDOUT) {
     if (vascii->fd && vascii->closefile) {
       err = fclose(vascii->fd);
-      if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
+      if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
     }
     if (vascii->storecompressed) {
       char par[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
@@ -41,8 +41,8 @@ static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
 }
 
 /* ----------------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerDestroy_ASCII" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerDestroy_ASCII"
 PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
 {
   PetscErrorCode    ierr;
@@ -79,8 +79,8 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerDestroy_ASCII_Singleton" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerDestroy_ASCII_Singleton"
 PetscErrorCode PetscViewerDestroy_ASCII_Singleton(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
@@ -90,19 +90,19 @@ PetscErrorCode PetscViewerDestroy_ASCII_Singleton(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerDestroy_ASCII_Subcomm" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerDestroy_ASCII_Subcomm"
 PetscErrorCode PetscViewerDestroy_ASCII_Subcomm(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
   PetscErrorCode    ierr;
   PetscFunctionBegin;
-  ierr = PetscViewerRestoreSubcomm(vascii->bviewer,((PetscObject)viewer)->comm,&viewer);CHKERRQ(ierr); 
+  ierr = PetscViewerRestoreSubcomm(vascii->bviewer,((PetscObject)viewer)->comm,&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFlush_ASCII_Singleton_0" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFlush_ASCII_Singleton_0"
 PetscErrorCode PetscViewerFlush_ASCII_Singleton_0(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
@@ -110,12 +110,12 @@ PetscErrorCode PetscViewerFlush_ASCII_Singleton_0(PetscViewer viewer)
 
   PetscFunctionBegin;
   err = fflush(vascii->fd);
-  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
-  PetscFunctionReturn(0);  
+  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+  PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFlush_ASCII" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFlush_ASCII"
 PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
 {
   PetscMPIInt       rank;
@@ -135,11 +135,11 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
     /* Also flush anything printed with PetscViewerASCIISynchronizedPrintf()  */
     ierr = PetscSynchronizedFlush(((PetscObject)viewer)->comm);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);  
+  PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerASCIIGetPointer" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIIGetPointer"
 /*@C
     PetscViewerASCIIGetPointer - Extracts the file pointer from an ASCII PetscViewer.
 
@@ -169,7 +169,7 @@ PetscErrorCode  PetscViewerASCIIGetPointer(PetscViewer viewer,FILE **fd)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileGetMode_ASCII"
 PetscErrorCode  PetscViewerFileGetMode_ASCII(PetscViewer viewer, PetscFileMode *mode)
 {
@@ -200,7 +200,7 @@ EXTERN_C_END
 @*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileSetMode_ASCII"
 PetscErrorCode  PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode mode)
 {
@@ -218,8 +218,8 @@ EXTERN_C_END
 */
 extern FILE *petsc_history;
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerASCIISetTab" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIISetTab"
 /*@
     PetscViewerASCIISetTab - Causes PetscViewer to tab in a number of times
 
@@ -256,8 +256,8 @@ PetscErrorCode  PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerASCIIGetTab" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIIGetTab"
 /*@
     PetscViewerASCIIGetTab - Return the number of tabs used by PetscViewer.
 
@@ -295,8 +295,8 @@ PetscErrorCode  PetscViewerASCIIGetTab(PetscViewer viewer,PetscInt *tabs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerASCIIAddTab" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIIAddTab"
 /*@
     PetscViewerASCIIAddTab - Add to the number of times an ASCII viewer tabs before printing
 
@@ -333,8 +333,8 @@ PetscErrorCode  PetscViewerASCIIAddTab(PetscViewer viewer,PetscInt tabs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerASCIISubtractTab" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIISubtractTab"
 /*@
     PetscViewerASCIISubtractTab - Subtracts from the number of times an ASCII viewer tabs before printing
 
@@ -371,8 +371,8 @@ PetscErrorCode  PetscViewerASCIISubtractTab(PetscViewer viewer,PetscInt tabs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerASCIISynchronizedAllow" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIISynchronizedAllow"
 /*@C
     PetscViewerASCIISynchronizedAllow - Allows calls to PetscViewerASCIISynchronizedPrintf() for this viewer
 
@@ -406,8 +406,8 @@ PetscErrorCode  PetscViewerASCIISynchronizedAllow(PetscViewer viewer,PetscBool a
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerASCIIPushTab" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIIPushTab"
 /*@
     PetscViewerASCIIPushTab - Adds one more tab to the amount that PetscViewerASCIIPrintf()
      lines are tabbed.
@@ -444,8 +444,8 @@ PetscErrorCode  PetscViewerASCIIPushTab(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerASCIIPopTab" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIIPopTab"
 /*@
     PetscViewerASCIIPopTab - Removes one tab from the amount that PetscViewerASCIIPrintf()
      lines are tabbed.
@@ -483,8 +483,8 @@ PetscErrorCode  PetscViewerASCIIPopTab(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerASCIIUseTabs" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIIUseTabs"
 /*@
     PetscViewerASCIIUseTabs - Turns on or off the use of tabs with the ASCII PetscViewer
 
@@ -530,8 +530,8 @@ PetscErrorCode  PetscViewerASCIIUseTabs(PetscViewer viewer,PetscBool  flg)
 
 #include <../src/sys/fileio/mprint.h> /* defines the queue datastructures and variables */
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerASCIIPrintf" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIIPrintf"
 /*@C
     PetscViewerASCIIPrintf - Prints to a file, only from the first
     processor in the PetscViewer
@@ -540,12 +540,12 @@ PetscErrorCode  PetscViewerASCIIUseTabs(PetscViewer viewer,PetscBool  flg)
 
     Input Parameters:
 +    viewer - optained with PetscViewerASCIIOpen()
--    format - the usual printf() format string 
+-    format - the usual printf() format string
 
     Level: developer
 
     Fortran Note:
-    The call sequence is PetscViewerASCIIPrintf(PetscViewer, character(*), int ierr) from Fortran. 
+    The call sequence is PetscViewerASCIIPrintf(PetscViewer, character(*), int ierr) from Fortran.
     That is, you can only pass a single character string from Fortran.
 
   Concepts: PetscViewerASCII^printing
@@ -585,22 +585,22 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
     va_start(Argp,format);
     ierr = (*PetscVFPrintf)(fd,format,Argp);CHKERRQ(ierr);
     err = fflush(fd);
-    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
+    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     if (petsc_history) {
       va_start(Argp,format);
       tab = ascii->tab;
       while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);}
       ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
       err = fflush(petsc_history);
-      if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
+      if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     }
     va_end(Argp);
-  } 
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFileSetName" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFileSetName"
 /*@C
      PetscViewerFileSetName - Sets the name of the file the PetscViewer uses.
 
@@ -627,8 +627,8 @@ PetscErrorCode  PetscViewerFileSetName(PetscViewer viewer,const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFileGetName" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFileGetName"
 /*@C
      PetscViewerFileGetName - Gets the name of the file the PetscViewer uses.
 
@@ -656,8 +656,8 @@ PetscErrorCode  PetscViewerFileGetName(PetscViewer viewer,const char **name)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFileGetName_ASCII" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFileGetName_ASCII"
 PetscErrorCode  PetscViewerFileGetName_ASCII(PetscViewer viewer,const char **name)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
@@ -670,8 +670,8 @@ EXTERN_C_END
 
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFileSetName_ASCII" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFileSetName_ASCII"
 PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[])
 {
   PetscErrorCode    ierr;
@@ -694,7 +694,7 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
     if (len == 3) {
       *gz = 0;
       vascii->storecompressed = PETSC_TRUE;
-    } 
+    }
   }
   ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
@@ -748,8 +748,8 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerGetSingleton_ASCII" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerGetSingleton_ASCII"
 PetscErrorCode PetscViewerGetSingleton_ASCII(PetscViewer viewer,PetscViewer *outviewer)
 {
   PetscMPIInt       rank;
@@ -784,8 +784,8 @@ PetscErrorCode PetscViewerGetSingleton_ASCII(PetscViewer viewer,PetscViewer *out
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerRestoreSingleton_ASCII" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerRestoreSingleton_ASCII"
 PetscErrorCode PetscViewerRestoreSingleton_ASCII(PetscViewer viewer,PetscViewer *outviewer)
 {
   PetscErrorCode    ierr;
@@ -804,8 +804,8 @@ PetscErrorCode PetscViewerRestoreSingleton_ASCII(PetscViewer viewer,PetscViewer 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerGetSubcomm_ASCII" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerGetSubcomm_ASCII"
 PetscErrorCode PetscViewerGetSubcomm_ASCII(PetscViewer viewer,MPI_Comm subcomm,PetscViewer *outviewer)
 {
   PetscErrorCode    ierr;
@@ -837,8 +837,8 @@ PetscErrorCode PetscViewerGetSubcomm_ASCII(PetscViewer viewer,MPI_Comm subcomm,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerRestoreSubcomm_ASCII" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerRestoreSubcomm_ASCII"
 PetscErrorCode PetscViewerRestoreSubcomm_ASCII(PetscViewer viewer,MPI_Comm subcomm,PetscViewer *outviewer)
 {
   PetscErrorCode    ierr;
@@ -851,15 +851,15 @@ PetscErrorCode PetscViewerRestoreSubcomm_ASCII(PetscViewer viewer,MPI_Comm subco
 
   ascii->sviewer             = 0;
   oascii->fd                 = PETSC_STDOUT;
-  (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII; 
+  (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII;
   ierr = PetscViewerDestroy(outviewer);CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerCreate_ASCII" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerCreate_ASCII"
 PetscErrorCode  PetscViewerCreate_ASCII(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii;
@@ -902,18 +902,18 @@ PetscErrorCode  PetscViewerCreate_ASCII(PetscViewer viewer)
 EXTERN_C_END
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerASCIISynchronizedPrintf" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIISynchronizedPrintf"
 /*@C
     PetscViewerASCIISynchronizedPrintf - Prints synchronized output to the specified file from
-    several processors.  Output of the first processor is followed by that of the 
+    several processors.  Output of the first processor is followed by that of the
     second, etc.
 
     Not Collective, must call collective PetscViewerFlush() to get the results out
 
     Input Parameters:
 +   viewer - the ASCII PetscViewer
--   format - the usual printf() format string 
+-   format - the usual printf() format string
 
     Level: intermediate
 
@@ -960,13 +960,13 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
     va_start(Argp,format);
     ierr = (*PetscVFPrintf)(fp,format,Argp);CHKERRQ(ierr);
     err = fflush(fp);
-    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
+    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     petsc_printfqueuefile = fp;
     if (petsc_history) {
       va_start(Argp,format);
       ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
       err = fflush(petsc_history);
-      if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
+      if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     }
     va_end(Argp);
   } else { /* other processors add to local queue */

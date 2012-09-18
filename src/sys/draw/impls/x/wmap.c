@@ -5,8 +5,8 @@
     This routine waits until the window is actually created or destroyed
     Returns 0 if window is mapped; 1 if window is destroyed.
  */
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawXi_wait_map" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXi_wait_map"
 PetscErrorCode PetscDrawXi_wait_map(PetscDraw_X *PetscDrawXiWin)
 {
   XEvent  event;

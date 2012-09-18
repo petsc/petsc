@@ -19,9 +19,9 @@ extern PetscErrorCode PetscDrawCreate_Null(PetscDraw);
 extern PetscErrorCode PetscDrawCreate_Win32(PetscDraw);
 #endif
 EXTERN_C_END
-  
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawRegisterAll" 
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawRegisterAll"
 /*@C
   PetscDrawRegisterAll - Registers all of the graphics methods in the PetscDraw package.
 
@@ -36,7 +36,7 @@ PetscErrorCode  PetscDrawRegisterAll(const char *path)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  
+
 #if defined(PETSC_HAVE_OPENGLES)
   ierr = PetscDrawRegisterDynamic(PETSC_DRAW_OPENGLES,  path,"PetscDrawCreate_OpenGLES",  PetscDrawCreate_OpenGLES);CHKERRQ(ierr);
 #endif

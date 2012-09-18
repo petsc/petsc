@@ -44,10 +44,10 @@ PETSC_STATIC_INLINE PetscScalar DPhi(PetscScalar a,PetscScalar b)
   else return .5;
 }
 
-/* 
-   SNESVIComputeFunction - Reformulates a system of nonlinear equations in mixed complementarity form to a system of nonlinear equations in semismooth form. 
+/*
+   SNESVIComputeFunction - Reformulates a system of nonlinear equations in mixed complementarity form to a system of nonlinear equations in semismooth form.
 
-   Input Parameters:  
+   Input Parameters:
 .  snes - the SNES context
 .  x - current iterate
 .  functx - user defined function context
@@ -88,7 +88,7 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void* functx
       phi_arr[i] = Phi(x_arr[i] - l[i],-Phi(u[i] - x_arr[i],-f_arr[i]));
     }
   }
-  
+
   ierr = VecRestoreArray(X,&x_arr);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f_arr);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xl,&l);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void* functx
   PetscFunctionReturn(0);
 }
 
-/* 
+/*
    SNESVIComputeBsubdifferentialVectors - Computes the diagonal shift (Da) and row scaling (Db) vectors needed for the
                                           the semismooth jacobian.
 */
@@ -118,10 +118,10 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
   ierr = VecGetArray(Da,&da);CHKERRQ(ierr);
   ierr = VecGetArray(Db,&db);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&nlocal);CHKERRQ(ierr);
-  
+
   for (i=0;i< nlocal;i++) {
     if ((PetscRealPart(l[i]) <= SNES_VI_NINF) && (PetscRealPart(u[i]) >= SNES_VI_INF)) {/* no constraints on variable */
-      da[i] = 0; 
+      da[i] = 0;
       db[i] = 1;
     } else if (PetscRealPart(l[i]) <= SNES_VI_NINF) {                     /* upper bound on variable only */
       da[i] = DPhi(u[i] - x[i], -f[i]);
@@ -156,7 +156,7 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
 
    Input Parameters:
 .  Da       - Diagonal shift vector for the semismooth jacobian.
-.  Db       - Row scaling vector for the semismooth jacobian. 
+.  Db       - Row scaling vector for the semismooth jacobian.
 
    Output Parameters:
 .  jac      - semismooth jacobian
@@ -167,14 +167,14 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
    jac = Da + Db*jacfun
    where Db is the row scaling matrix stored as a vector,
          Da is the diagonal perturbation matrix stored as a vector
-   and   jacfun is the jacobian of the original nonlinear function.	 
+   and   jacfun is the jacobian of the original nonlinear function.	
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIComputeJacobian"
 PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre,Vec Da, Vec Db)
 {
   PetscErrorCode ierr;
-  
+
   /* Do row scaling  and add diagonal perturbation */
   ierr = MatDiagonalScale(jac,Db,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatDiagonalSet(jac,Da,ADD_VALUES);CHKERRQ(ierr);
@@ -191,7 +191,7 @@ PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre,Vec Da, Vec Db)
    Input Parameters:
    phi - semismooth function.
    H   - semismooth jacobian
-   
+
    Output Parameters:
    dpsi - merit function gradient
 
@@ -204,7 +204,7 @@ PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre,Vec Da, Vec Db)
 PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
 {
   PetscErrorCode ierr;
-    
+
   PetscFunctionBegin;
   ierr = MatMultTranspose(H,phi,dpsi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -232,10 +232,10 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
    Developer Note: the code in this file should be slightly modified so that this routine need not exist and the SNESSolve_LS() routine is called directly with the appropriate wrapped function and Jacobian evaluations
 
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSolve_VISS"
 PetscErrorCode SNESSolve_VISS(SNES snes)
-{ 
+{
   SNES_VISS          *vi = (SNES_VISS*)snes->data;
   PetscErrorCode     ierr;
   PetscInt           maxits,i,lits;
@@ -302,7 +302,7 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
- 
+
     /* Solve J Y = Phi, where J is the semismooth jacobian */
 
     /* Get the jacobian -- note that the function must be the original function for snes_fd and snes_fd_color to work for this*/
@@ -340,9 +340,9 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
       ierr = SNESVICheckResidual_Private(snes,snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
     }
     */
-    /* Compute a (scaled) negative update in the line search routine: 
-         Y <- X - lambda*Y 
-       and evaluate G = function(Y) (depends on the line search). 
+    /* Compute a (scaled) negative update in the line search routine:
+         Y <- X - lambda*Y
+       and evaluate G = function(Y) (depends on the line search).
     */
     ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = vi->phinorm;
@@ -405,7 +405,7 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
    SNESSetUp(), since these actions will automatically occur during
    the call to SNESSolve().
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetUp_VISS"
 PetscErrorCode SNESSetUp_VISS(SNES snes)
 {
@@ -423,7 +423,7 @@ PetscErrorCode SNESSetUp_VISS(SNES snes)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESReset_VISS"
 PetscErrorCode SNESReset_VISS(SNES snes)
 {
@@ -450,7 +450,7 @@ PetscErrorCode SNESReset_VISS(SNES snes)
 
    Application Interface Routine: SNESSetFromOptions()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_VISS"
 static PetscErrorCode SNESSetFromOptions_VISS(SNES snes)
 {
@@ -487,12 +487,12 @@ static PetscErrorCode SNESSetFromOptions_VISS(SNES snes)
      algorithm for large scale complementarity problems. INFORMS Journal on Computing, 13 (2001).
 
 .seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVIRS, SNESVISS, SNESTR, SNESLineSearchSet(),
-           SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(), 
+           SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(),
            SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESCreate_VISS"
 PetscErrorCode  SNESCreate_VISS(SNES snes)
 {

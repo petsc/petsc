@@ -4,8 +4,8 @@
 
 static PetscErrorCode KSPQCGQuadraticRoots(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPQCGSetTrustRegionRadius" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPQCGSetTrustRegionRadius"
 /*@
     KSPQCGSetTrustRegionRadius - Sets the radius of the trust region.
 
@@ -72,7 +72,7 @@ PetscErrorCode  KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
 
     where
 
-     delta is the trust region radius, 
+     delta is the trust region radius,
      g is the gradient vector, and
      H is Hessian matrix,
      D is a scaling matrix.
@@ -97,13 +97,13 @@ PetscErrorCode  KSPQCGGetQuadratic(KSP ksp,PetscReal *quadratic)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_QCG"
 
 PetscErrorCode KSPSolve_QCG(KSP ksp)
 {
-/* 
-   Correpondence with documentation above:  
+/*
+   Correpondence with documentation above:
       B = g = gradient,
       X = s = step
    Note:  This is not coded correctly for complex arithmetic!
@@ -134,11 +134,11 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   maxit    = ksp->max_it;
   WA       = ksp->work[0];
   R        = ksp->work[1];
-  P        = ksp->work[2]; 
+  P        = ksp->work[2];
   ASP      = ksp->work[3];
   BS       = ksp->work[4];
   W        = ksp->work[5];
-  WA2      = ksp->work[6]; 
+  WA2      = ksp->work[6];
   X        = ksp->vec_sol;
   B        = ksp->vec_rhs;
 
@@ -232,9 +232,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
        } else {
          ierr = PetscInfo3(ksp,"negative curvature: step1=%G, step2=%G, delta=%G\n",step1,step2,pcgP->delta);CHKERRQ(ierr);
        }
-         
+
     } else {
- 
+
        /* Compute step along p */
 
        step = rtr/ptasp;
@@ -244,9 +244,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 
        if (pcgP->ltsnrm > pcgP->delta) {
 
-         /* Since the trial iterate is outside the trust region, 
-             evaluate a constrained step along p so that 
-                      ||w + step*p|| = delta 
+         /* Since the trial iterate is outside the trust region,
+             evaluate a constrained step along p so that
+                      ||w + step*p|| = delta
             The positive step is always better in this case. */
 
          if (!i) {
@@ -285,7 +285,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
          ierr = KSPMonitor(ksp,i+1,rnrm);CHKERRQ(ierr);
          ierr = (*ksp->converged)(ksp,i+1,rnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
          if (ksp->reason) {                 /* convergence for */
-#if defined(PETSC_USE_COMPLEX)               
+#if defined(PETSC_USE_COMPLEX)
            ierr = PetscInfo3(ksp,"truncated step: step=%G, rnrm=%G, delta=%G\n",PetscRealPart(step),rnrm,pcgP->delta);CHKERRQ(ierr);
 #else
            ierr = PetscInfo3(ksp,"truncated step: step=%G, rnrm=%G, delta=%G\n",step,rnrm,pcgP->delta);CHKERRQ(ierr);
@@ -324,7 +324,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_QCG"
 PetscErrorCode KSPSetUp_QCG(KSP ksp)
 {
@@ -336,8 +336,8 @@ PetscErrorCode KSPSetUp_QCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy_QCG" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPDestroy_QCG"
 PetscErrorCode KSPDestroy_QCG(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -389,7 +389,7 @@ PetscErrorCode  KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_QCG"
 PetscErrorCode KSPSetFromOptions_QCG(KSP ksp)
 {
@@ -417,8 +417,8 @@ PetscErrorCode KSPSetFromOptions_QCG(KSP ksp)
 
    Level: developer
 
-  Notes:  Use preconditioned conjugate gradient to compute 
-      an approximate minimizer of the quadratic function 
+  Notes:  Use preconditioned conjugate gradient to compute
+      an approximate minimizer of the quadratic function
 
             q(s) = g^T * s + .5 * s^T * H * s
 
@@ -426,14 +426,14 @@ PetscErrorCode KSPSetFromOptions_QCG(KSP ksp)
 
             || D * s || <= delta,
 
-   where 
+   where
 
-     delta is the trust region radius, 
+     delta is the trust region radius,
      g is the gradient vector, and
      H is Hessian matrix,
      D is a scaling matrix.
 
-   KSPConvergedReason may be 
+   KSPConvergedReason may be
 $  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
 $  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
 $  other KSP converged/diverged reasons
@@ -455,7 +455,7 @@ $  other KSP converged/diverged reasons
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_QCG"
 PetscErrorCode  KSPCreate_QCG(KSP ksp)
 {
@@ -484,17 +484,17 @@ PetscErrorCode  KSPCreate_QCG(KSP ksp)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",
                                     "KSPQCGSetTrustRegionRadius_QCG",
                                      KSPQCGSetTrustRegionRadius_QCG);CHKERRQ(ierr);
-  cgP->delta = PETSC_MAX_REAL; /* default trust region radius is infinite */ 
+  cgP->delta = PETSC_MAX_REAL; /* default trust region radius is infinite */
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 /* ---------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPQCGQuadraticRoots"
-/* 
+/*
   KSPQCGQuadraticRoots - Computes the roots of the quadratic,
-         ||s + step*p|| - delta = 0 
+         ||s + step*p|| - delta = 0
    such that step1 >= 0 >= step2.
    where
       delta:
@@ -510,7 +510,7 @@ EXTERN_C_END
    Argonne National Laboratory, Brett M. Averick and Richard G. Carter.
 */
 static PetscErrorCode KSPQCGQuadraticRoots(Vec s,Vec p,PetscReal *delta,PetscReal *step1,PetscReal *step2)
-{ 
+{
   PetscReal      dsq,ptp,pts,rad,sts;
   PetscErrorCode ierr;
 #if defined(PETSC_USE_COMPLEX)

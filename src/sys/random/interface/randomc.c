@@ -20,10 +20,10 @@
 /* Logging support */
 PetscClassId  PETSC_RANDOM_CLASSID;
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomDestroy" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscRandomDestroy"
 /*@
-   PetscRandomDestroy - Destroys a context that has been formed by 
+   PetscRandomDestroy - Destroys a context that has been formed by
    PetscRandomCreate().
 
    Collective on PetscRandom
@@ -47,7 +47,7 @@ PetscErrorCode  PetscRandomDestroy(PetscRandom *r)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomGetSeed"
 /*@
    PetscRandomGetSeed - Gets the random seed.
@@ -77,7 +77,7 @@ PetscErrorCode  PetscRandomGetSeed(PetscRandom r,unsigned long *seed)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomSetSeed"
 /*@
    PetscRandomSetSeed - Sets the random seed. You MUST call PetscRandomSeed() after this call to have the new seed used.
@@ -113,7 +113,7 @@ PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomSetTypeFromOptions_Private"
 /*
   PetscRandomSetTypeFromOptions_Private - Sets the type of random generator from user options. Defaults to type PETSCRAND48 or PETSCRAND.
@@ -139,7 +139,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd)
   if (((PetscObject)rnd)->type_name) {
     defaultType = ((PetscObject)rnd)->type_name;
   } else {
-#if defined(PETSC_HAVE_DRAND48)    
+#if defined(PETSC_HAVE_DRAND48)
     defaultType = PETSCRAND48;
 #elif defined(PETSC_HAVE_RAND)
     defaultType = PETSCRAND;
@@ -156,7 +156,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomSetFromOptions"
 /*@
   PetscRandomSetFromOptions - Configures the random number generator from the options database.
@@ -205,10 +205,10 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomView"
 /*@C
-   PetscRandomView - Views a random number generator object. 
+   PetscRandomView - Views a random number generator object.
 
    Collective on PetscRandom
 
@@ -221,10 +221,10 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
 -     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
+         the file.  All other processors send their
+         data to the first processor to print.
 
-   You can change the format the vector is printed using the 
+   You can change the format the vector is printed using the
    option PetscViewerSetFormat().
 
    Level: beginner
@@ -249,7 +249,7 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
     PetscMPIInt rank;
     ierr = MPI_Comm_rank(((PetscObject)rnd)->comm,&rank);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%D] Random type %s, seed %D\n",rank,((PetscObject)rnd)->type_name,rnd->seed);CHKERRQ(ierr); 
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%D] Random type %s, seed %D\n",rank,((PetscObject)rnd)->type_name,rnd->seed);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
   } else {
@@ -283,12 +283,12 @@ PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, char *title)
   char           typeName[1024];
   char           fileName[PETSC_MAX_PATH_LEN];
   size_t         len;
-  
+
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetBool(((PetscObject)rnd)->prefix, "-random_view", &opt,PETSC_NULL);CHKERRQ(ierr);
-  if (opt) {   
+  if (opt) {
     ierr = PetscOptionsGetString(((PetscObject)rnd)->prefix, "-random_view", typeName, 1024, &opt);CHKERRQ(ierr);
     ierr = PetscStrlen(typeName, &len);CHKERRQ(ierr);
     if (len > 0) {
@@ -303,17 +303,17 @@ PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, char *title)
       ierr = PetscRandomView(rnd, viewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    } else {    
+    } else {
       PetscViewer viewer;
       ierr = PetscViewerASCIIGetStdout(((PetscObject)rnd)->comm,&viewer);CHKERRQ(ierr);
       ierr = PetscRandomView(rnd, viewer);CHKERRQ(ierr);
-    } 
+    }
   }
   PetscFunctionReturn(0);
 }
 
 #if defined(PETSC_HAVE_AMS)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomPublish_Petsc"
 static PetscErrorCode PetscRandomPublish_Petsc(PetscObject obj)
 {
@@ -326,8 +326,8 @@ static PetscErrorCode PetscRandomPublish_Petsc(PetscObject obj)
 }
 #endif
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomCreate" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscRandomCreate"
 /*@
    PetscRandomCreate - Creates a context for generating random numbers,
    and initializes the random-number generator.
@@ -367,7 +367,7 @@ static PetscErrorCode PetscRandomPublish_Petsc(PetscObject obj)
 
    Concepts: random numbers^creating
 
-.seealso: PetscRandomSetType(), PetscRandomGetValue(), PetscRandomGetValueReal(), PetscRandomSetInterval(), 
+.seealso: PetscRandomSetType(), PetscRandomGetValue(), PetscRandomGetValueReal(), PetscRandomSetInterval(),
           PetscRandomDestroy(), VecSetRandom(), PetscRandomType
 @*/
 
@@ -399,7 +399,7 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomSeed"
 /*@
    PetscRandomSeed - Seed the generator.

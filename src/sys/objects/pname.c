@@ -1,16 +1,16 @@
 
 #include <petscsys.h>        /*I    "petscsys.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectSetName"
-/*@C 
+/*@C
    PetscObjectSetName - Sets a string name associated with a PETSc object.
 
    Not Collective
 
    Input Parameters:
 +  obj - the Petsc variable
-         Thus must be cast with a (PetscObject), for example, 
+         Thus must be cast with a (PetscObject), for example,
          PetscObjectSetName((PetscObject)mat,name);
 -  name - the name to give obj
 
@@ -31,7 +31,7 @@ PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectPrintClassNamePrefixType"
 /*@C
       PetscObjectPrintTypeNamePrefix - used in the XXXView() methods to display information about the class, name, prefix and type of an object
@@ -71,7 +71,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectName"
 /*@C
    PetscObjectName - Gives an object a name if it does not have one
@@ -80,15 +80,15 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer v
 
    Input Parameters:
 .  obj - the Petsc variable
-         Thus must be cast with a (PetscObject), for example, 
+         Thus must be cast with a (PetscObject), for example,
          PetscObjectName((PetscObject)mat,name);
 
    Level: developer
 
    Concepts: object name^setting default
 
-   Notes: This is used in a small number of places when an object NEEDS a name, for example when it is saved to MATLAB with that variable name. 
-          Use PetscObjectSetName() to set the name of an object to what you want. The AMS viewer requires that no two published objects 
+   Notes: This is used in a small number of places when an object NEEDS a name, for example when it is saved to MATLAB with that variable name.
+          Use PetscObjectSetName() to set the name of an object to what you want. The AMS viewer requires that no two published objects
           share the same name.
 
    Developer Note: this needs to generate the exact same string on all ranks that share the object. The current algorithm may not always work.
@@ -120,7 +120,7 @@ PetscErrorCode  PetscObjectName(PetscObject obj)
 
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectChangeTypeName"
 PetscErrorCode  PetscObjectChangeTypeName(PetscObject obj,const char type_name[])
 {

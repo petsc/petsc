@@ -5,7 +5,7 @@ typedef struct {
   PetscReal haptol;
 } KSP_SYMMLQ;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_SYMMLQ"
 PetscErrorCode KSPSetUp_SYMMLQ(KSP ksp)
 {
@@ -16,7 +16,7 @@ PetscErrorCode KSPSetUp_SYMMLQ(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_SYMMLQ"
 PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 {
@@ -46,19 +46,19 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
   UOLD    = ksp->work[5];
   VOLD    = ksp->work[6];
   Wbar    = ksp->work[7];
-  
+
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   ksp->its = 0;
 
   ierr = VecSet(UOLD,0.0);CHKERRQ(ierr);           /* u_old <- zeros;  */
   ierr = VecCopy(UOLD,VOLD);CHKERRQ(ierr);          /* v_old <- u_old;  */
-  ierr = VecCopy(UOLD,W);CHKERRQ(ierr);             /* w     <- u_old;  */ 
+  ierr = VecCopy(UOLD,W);CHKERRQ(ierr);             /* w     <- u_old;  */
   ierr = VecCopy(UOLD,Wbar);CHKERRQ(ierr);          /* w_bar <- u_old;  */
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr); /*     r <- b - A*x */
     ierr = VecAYPX(R,-1.0,B);CHKERRQ(ierr);
-  } else { 
+  } else {
     ierr = VecCopy(B,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
 
@@ -77,10 +77,10 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
     PetscFunctionReturn(0);
   }
 #endif
-  dp     = PetscSqrtScalar(dp); 
+  dp     = PetscSqrtScalar(dp);
   beta   = dp;                         /*  beta <- sqrt(r'*z)  */
   beta1  = beta;
-  s_prod = PetscAbsScalar(beta1); 
+  s_prod = PetscAbsScalar(beta1);
 
   ierr = VecCopy(R,V);CHKERRQ(ierr);  /* v <- r; */
   ierr = VecCopy(Z,U);CHKERRQ(ierr);  /* u <- z; */
@@ -91,7 +91,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
   ierr = VecNorm(Z,NORM_2,&np);CHKERRQ(ierr);      /*   np <- ||z||        */
   KSPLogResidualHistory(ksp,np);
   ierr = KSPMonitor(ksp,0,np);CHKERRQ(ierr);
-  ksp->rnorm = np;  
+  ksp->rnorm = np;
   ierr = (*ksp->converged)(ksp,0,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);  /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
 
@@ -101,9 +101,9 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 
     /*    Update    */
     if (ksp->its > 1){
-      ierr = VecCopy(V,VOLD);CHKERRQ(ierr);  /* v_old <- v; */     
+      ierr = VecCopy(V,VOLD);CHKERRQ(ierr);  /* v_old <- v; */
       ierr = VecCopy(U,UOLD);CHKERRQ(ierr);  /* u_old <- u; */
-     
+
       ierr = VecCopy(R,V);CHKERRQ(ierr);
       ierr = VecScale(V,1.0/beta);CHKERRQ(ierr); /* v <- ibeta*r; */
       ierr = VecCopy(Z,U);CHKERRQ(ierr);
@@ -121,7 +121,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
     }
 
     /*   Lanczos  */
-    ierr = KSP_MatMult(ksp,Amat,U,R);CHKERRQ(ierr);   /*  r     <- Amat*u; */  
+    ierr = KSP_MatMult(ksp,Amat,U,R);CHKERRQ(ierr);   /*  r     <- Amat*u; */
     ierr = VecDot(U,R,&alpha);CHKERRQ(ierr);          /*  alpha <- u'*r;   */
     ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /*      z <- B*r;    */
 
@@ -146,7 +146,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 
     /*    QR factorization    */
     coold = cold; cold = c; soold = sold; sold = s;
-    rho0 = cold * alpha - coold * sold * betaold;    /* gamma_bar */ 
+    rho0 = cold * alpha - coold * sold * betaold;    /* gamma_bar */
     rho1 = PetscSqrtScalar(rho0*rho0 + beta*beta);   /* gamma     */
     rho2 = sold * alpha + coold * cold * betaold;    /* delta     */
     rho3 = soold * betaold;                          /* epsilon   */
@@ -159,7 +159,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
     } else {
       ceta = -(rho2*ceta_old + rho3*ceta_oold)/rho1;
     }
-          
+
     s_prod = s_prod*PetscAbsScalar(s);
     if (c == 0.0){
       np = s_prod*1.e16;
@@ -189,14 +189,14 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 }
 
 /*MC
-     KSPSYMMLQ -  This code implements the SYMMLQ method. 
+     KSPSYMMLQ -  This code implements the SYMMLQ method.
 
    Options Database Keys:
 .   see KSPSolve()
 
    Level: beginner
 
-   Notes: The operator and the preconditioner must be symmetric for this method. The 
+   Notes: The operator and the preconditioner must be symmetric for this method. The
           preconditioner must be POSITIVE-DEFINITE.
 
           Supports only left preconditioning.
@@ -206,7 +206,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_SYMMLQ"
 PetscErrorCode  KSPCreate_SYMMLQ(KSP ksp)
 {
@@ -220,7 +220,7 @@ PetscErrorCode  KSPCreate_SYMMLQ(KSP ksp)
   ksp->data      = (void*)symmlq;
 
   /*
-       Sets the functions that are associated with this data structure 
+       Sets the functions that are associated with this data structure
        (in C++ this is the same as defining virtual functions)
   */
   ksp->ops->setup                = KSPSetUp_SYMMLQ;

@@ -27,7 +27,7 @@
 
 
 #if defined(PETSC_HAVE_GET_USER_NAME)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetUserName"
 PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
 {
@@ -37,7 +37,7 @@ PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
 }
 
 #elif defined(PETSC_HAVE_PWD_H)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetUserName"
 /*@C
     PetscGetUserName - Returns the name of the user.
@@ -72,7 +72,7 @@ PetscErrorCode  PetscGetUserName(char name[],size_t nlen)
 
 #else
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetUserName"
 PetscErrorCode  PetscGetUserName(char *name,size_t nlen)
 {

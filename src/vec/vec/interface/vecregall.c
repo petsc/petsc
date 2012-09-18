@@ -17,7 +17,7 @@ extern PetscErrorCode  VecCreate_Sieve(Vec);
 #endif
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecRegisterAll"
 /*@C
   VecRegisterAll - Registers all of the vector components in the Vec package.

@@ -5,15 +5,15 @@
 EXTERN_C_BEGIN
 /*
     MatGetOrdering_QMD - Find the Quotient Minimum Degree ordering of a given matrix.
-*/    
-#undef __FUNCT__  
+*/
+#undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_QMD"
-PetscErrorCode  MatGetOrdering_QMD(Mat mat,const MatOrderingType type,IS *row,IS *col) 
+PetscErrorCode  MatGetOrdering_QMD(Mat mat,const MatOrderingType type,IS *row,IS *col)
 {
   PetscInt       i,  *deg,*marker,*rchset,*nbrhd,*qsize,*qlink,nofsub,*iperm,nrow;
   PetscErrorCode ierr;
   PetscInt       *ia,*ja,*perm;
-  PetscBool       done; 
+  PetscBool       done;
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
@@ -22,7 +22,7 @@ PetscErrorCode  MatGetOrdering_QMD(Mat mat,const MatOrderingType type,IS *row,IS
   ierr = PetscMalloc(nrow * sizeof(PetscInt),&perm);CHKERRQ(ierr);
   ierr = PetscMalloc5(nrow,PetscInt,&iperm,nrow,PetscInt,&deg,nrow,PetscInt,&marker,nrow,PetscInt,&rchset,nrow,PetscInt,&nbrhd);CHKERRQ(ierr);
   ierr = PetscMalloc2(nrow,PetscInt,&qsize,nrow,PetscInt,&qlink);CHKERRQ(ierr);
-  /* WARNING - genqmd trashes ja */    
+  /* WARNING - genqmd trashes ja */
   SPARSEPACKgenqmd(&nrow,ia,ja,perm,iperm,deg,marker,rchset,nbrhd,qsize,qlink,&nofsub);
   ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
 

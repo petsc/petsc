@@ -1,4 +1,4 @@
-/* 
+/*
      This is the definition of the socket viewer structure. This starts the same as the PetscViewer_Binary() so the
    binary read/writes can be called directly on it.
 */

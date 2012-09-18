@@ -1,7 +1,7 @@
 
 #include <petsc-private/kspimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_IBCGS"
 static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
 {
@@ -15,7 +15,7 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-/* 
+/*
     The code below "cheats" from PETSc style
        1) VecRestoreArray() is called immediately after VecGetArray() and the array values are still accessed; the reason for the immediate
           restore is that Vec operations are done on some of the vectors during the solve and if we did not restore immediately it would
@@ -23,7 +23,7 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
        2) The vector operations on done directly on the arrays instead of with VecXXXX() calls
 
        For clarity in the code we name single VECTORS with two names, for example, Rn_1 and R, but they actually always
-     the exact same memory. We do this with macro defines so that compiler won't think they are 
+     the exact same memory. We do this with macro defines so that compiler won't think they are
      two different variables.
 
 */
@@ -39,7 +39,7 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
 #define qn_1 qn
 #define Zn_1 Zn
 #define zn_1 zn
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_IBCGS"
 static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 {
@@ -47,7 +47,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   PetscInt       i,N;
   PetscReal      rnorm,rnormin = 0.0;
 #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
-  /* Because of possible instabilities in the algorithm (as indicated by different residual histories for the same problem 
+  /* Because of possible instabilities in the algorithm (as indicated by different residual histories for the same problem
      on the same number of processes  with different runs) we support computing the inner products using Intel's 80 bit arithematic
      rather than just 64 bit. Thus we copy our double precision values into long doubles (hoping this keeps the 16 extra bits)
      and tell MPI to do its ALlreduces with MPI_LONG_DOUBLE.
@@ -93,14 +93,14 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
   ierr = VecNorm(Rn_1,NORM_2,&rnorm);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
-  ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);   
+  ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
 
   ierr = VecCopy(Rn_1,R0);CHKERRQ(ierr);
 
   /* un_1 = A*rn_1; */
   ierr = KSP_PCApplyBAorAB(ksp,Rn_1,Un_1,Tn);CHKERRQ(ierr);
-  
+
   /* f0   = A'*rn_1; */
   if (ksp->pc_side == PC_RIGHT) { /* B' A' */
     ierr = MatMultTranspose(A,R0,Tn);CHKERRQ(ierr);
@@ -118,10 +118,10 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   sigman_2 = pin_1 = taun_1 = 0.0;
 
   /* the paper says phin_1 should be initialized to zero, it is actually R0'R0 */
-  ierr = VecDot(R0,R0,&phin_1);CHKERRQ(ierr); 
+  ierr = VecDot(R0,R0,&phin_1);CHKERRQ(ierr);
 
   /* sigman_1 = rn_1'un_1  */
-  ierr = VecDot(R0,Un_1,&sigman_1);CHKERRQ(ierr); 
+  ierr = VecDot(R0,Un_1,&sigman_1);CHKERRQ(ierr);
 
   alphan_1 = omegan_1 = 1.0;
 
@@ -136,7 +136,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     alphan = rhon/taun;
     ierr = PetscLogFlops(15.0);
 
-    /*  
+    /*
         zn = alphan*rn_1 + (alphan/alphan_1)betan*zn_1 - alphan*deltan*vn_1
         vn = un_1 + betan*vn_1 - deltan*qn_1
         sn = rn_1 - alphan*vn
@@ -163,7 +163,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
         tn = un_1 - alphan*qn
     */
     ierr = VecWAXPY(Tn,-alphan,Qn,Un_1);CHKERRQ(ierr);
-      
+
 
     /*
         phin = r0'sn
@@ -240,15 +240,15 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
       ierr = MPI_Allreduce(&rnormin,&rnorm,1,MPIU_REAL,MPIU_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
       ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
       rnorm = PetscSqrtReal(rnorm);
-    } 
+    }
 
     /* Test for convergence */
     ierr = KSPMonitor(ksp,ksp->its,rnorm);CHKERRQ(ierr);
-    ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);   
+    ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;
- 
+
     /* un = A*rn */
-    ierr = KSP_PCApplyBAorAB(ksp,Rn,Un,Tn);CHKERRQ(ierr);   
+    ierr = KSP_PCApplyBAorAB(ksp,Rn,Un,Tn);CHKERRQ(ierr);
 
     /* Update n-1 locations with n locations */
     sigman_2 = sigman_1;
@@ -276,7 +276,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
    Level: beginner
 
-   Notes: Supports left and right preconditioning 
+   Notes: Supports left and right preconditioning
 
           See KSPBCGSL for additional stabilization
 
@@ -285,7 +285,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
           The paper has two errors in the algorithm presented, they are fixed in the code in KSPSolve_IBCGS()
 
-          For maximum reduction in the number of global reduction operations, this solver should be used with 
+          For maximum reduction in the number of global reduction operations, this solver should be used with
           KSPSetLagNorm().
 
           This is not supported for complex numbers.
@@ -297,7 +297,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPIBCGS, KSPSetLagNorm()
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_IBCGS"
 PetscErrorCode  KSPCreate_IBCGS(KSP ksp)
 {

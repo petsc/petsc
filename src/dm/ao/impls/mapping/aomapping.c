@@ -15,7 +15,7 @@ typedef struct {
   PetscInt *petscPerm;
 } AO_Mapping;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AODestroy_Mapping"
 PetscErrorCode AODestroy_Mapping(AO ao)
 {
@@ -28,7 +28,7 @@ PetscErrorCode AODestroy_Mapping(AO ao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOView_Mapping"
 PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
 {
@@ -43,7 +43,7 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   if (rank) PetscFunctionReturn(0);
 
   if (!viewer) {
-    viewer = PETSC_VIEWER_STDOUT_SELF; 
+    viewer = PETSC_VIEWER_STDOUT_SELF;
   }
 
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOPetscToApplication_Mapping"
 PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
 {
@@ -98,7 +98,7 @@ PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOApplicationToPetsc_Mapping"
 PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
 {
@@ -151,7 +151,7 @@ static struct _AOOps AOps = {AOView_Mapping,
                              PETSC_NULL,
                              PETSC_NULL};
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOMappingHasApplicationIndex"
 /*@C
   AOMappingHasApplicationIndex - Searches for the supplied application index.
@@ -200,7 +200,7 @@ PetscErrorCode  AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool  *h
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOMappingHasPetscIndex"
 /*@
   AOMappingHasPetscIndex - Searches for the supplied petsc index.
@@ -249,7 +249,7 @@ PetscErrorCode  AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool  *hasInde
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOCreateMapping"
 /*@C
   AOCreateMapping - Creates a basic application mapping using two integer arrays.
@@ -383,7 +383,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOCreateMappingIS"
 /*@C
   AOCreateMappingIS - Creates a basic application ordering using two index sets.

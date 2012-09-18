@@ -2,10 +2,10 @@
 #include <petsc-private/kspimpl.h>   /*I "petscksp.h" I*/
 #include <petscblaslapack.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPComputeExplicitOperator"
 /*@
-    KSPComputeExplicitOperator - Computes the explicit preconditioned operator.  
+    KSPComputeExplicitOperator - Computes the explicit preconditioned operator.
 
     Collective on KSP
 
@@ -16,7 +16,7 @@
 .   mat - the explict preconditioned operator
 
     Notes:
-    This computation is done by applying the operators to columns of the 
+    This computation is done by applying the operators to columns of the
     identity matrix.
 
     Currently, this routine uses a dense matrix format when 1 processor
@@ -24,7 +24,7 @@
     and is recommended for use only with relatively small systems.
 
     Level: advanced
-   
+
 .keywords: KSP, compute, explicit, operator
 
 .seealso: KSPComputeEigenvaluesExplicitly(), PCComputeExplicitOperator()
@@ -76,9 +76,9 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 
     ierr = KSP_MatMult(ksp,A,in,out);CHKERRQ(ierr);
     ierr = KSP_PCApply(ksp,out,in);CHKERRQ(ierr);
-    
+
     ierr = VecGetArray(in,&array);CHKERRQ(ierr);
-    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr); 
+    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecRestoreArray(in,&array);CHKERRQ(ierr);
 
   }
@@ -90,11 +90,11 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPComputeEigenvaluesExplicitly"
 /*@
-   KSPComputeEigenvaluesExplicitly - Computes all of the eigenvalues of the 
-   preconditioned operator using LAPACK.  
+   KSPComputeEigenvaluesExplicitly - Computes all of the eigenvalues of the
+   preconditioned operator using LAPACK.
 
    Collective on KSP
 
@@ -108,7 +108,7 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 
    Notes:
    This approach is very slow but will generally provide accurate eigenvalue
-   estimates.  This routine explicitly forms a dense matrix representing 
+   estimates.  This routine explicitly forms a dense matrix representing
    the preconditioned operator, and thus will run only for relatively small
    problems, say n < 500.
 
@@ -126,7 +126,7 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 
 .seealso: KSPComputeEigenvalues(), KSPMonitorSingularValue(), KSPComputeExtremeSingularValues(), KSPSetOperators(), KSPSolve()
 @*/
-PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c) 
+PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c)
 {
   Mat                BA;
   PetscErrorCode     ierr;
@@ -162,7 +162,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
       ierr = MatSetValues(A,1,&row,nz,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
       ierr = MatRestoreRow(BA,row,&nz,&cols,&vals);CHKERRQ(ierr);
       row++;
-    } 
+    }
 
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -236,7 +236,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     ierr     = PetscMalloc(2*n*sizeof(PetscReal),&realpart);CHKERRQ(ierr);
     imagpart = realpart + n;
     ierr     = PetscMalloc(5*n*sizeof(PetscReal),&work);CHKERRQ(ierr);
-#if defined(PETSC_MISSING_LAPACK_GEEV) 
+#if defined(PETSC_MISSING_LAPACK_GEEV)
     SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
 #else
     {
@@ -272,7 +272,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     ierr = PetscMalloc(5*n*sizeof(PetscScalar),&work);CHKERRQ(ierr);
     ierr = PetscMalloc(2*n*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(PetscScalar),&eigs);CHKERRQ(ierr);
-#if defined(PETSC_MISSING_LAPACK_GEEV) 
+#if defined(PETSC_MISSING_LAPACK_GEEV)
     SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
 #else
     {
@@ -298,7 +298,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     ierr = PetscFree(perm);CHKERRQ(ierr);
     ierr = PetscFree(eigs);CHKERRQ(ierr);
   }
-#endif  
+#endif
   if (size > 1) {
     ierr = MatDenseRestoreArray(A,&array);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);

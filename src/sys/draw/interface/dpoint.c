@@ -4,8 +4,8 @@
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawPoint" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawPoint"
 /*@
    PetscDrawPoint - PetscDraws a point onto a drawable.
 

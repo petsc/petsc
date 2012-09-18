@@ -5,10 +5,10 @@
 
 #include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDASetCoordinates"
 /*@
-   DMDASetCoordinates - Sets into the DMDA a vector that indicates the 
+   DMDASetCoordinates - Sets into the DMDA a vector that indicates the
       coordinates of the local nodes (NOT including ghost nodes).
 
    Collective on DMDA
@@ -45,10 +45,10 @@ PetscErrorCode  DMDASetCoordinates(DM da,Vec c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDASetGhostedCoordinates"
 /*@
-   DMDASetGhostedCoordinates - Sets into the DMDA a vector that indicates the 
+   DMDASetGhostedCoordinates - Sets into the DMDA a vector that indicates the
       coordinates of the local nodes, including ghost nodes.
 
    Collective on DMDA
@@ -87,7 +87,7 @@ PetscErrorCode  DMDASetGhostedCoordinates(DM da,Vec c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetCoordinates"
 /*@
    DMDAGetCoordinates - Gets the node coordinates associated with a DMDA.
@@ -123,7 +123,7 @@ PetscErrorCode  DMDAGetCoordinates(DM da,Vec *c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetCoordinateDA"
 /*@
    DMDAGetCoordinateDA - Gets the DMDA that scatters between global and local DMDA coordinates
@@ -201,7 +201,7 @@ PetscErrorCode  DMDAGetCoordinateDA(DM da,DM *cda)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetGhostedCoordinates"
 /*@
    DMDAGetGhostedCoordinates - Gets the node coordinates associated with a DMDA.
@@ -246,7 +246,7 @@ PetscErrorCode  DMDAGetGhostedCoordinates(DM da,Vec *c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDASetFieldName"
 /*@C
    DMDASetFieldName - Sets the names of individual field components in multicomponent
@@ -256,7 +256,7 @@ PetscErrorCode  DMDAGetGhostedCoordinates(DM da,Vec *c)
 
    Input Parameters:
 +  da - the distributed array
-.  nf - field number for the DMDA (0, 1, ... dof-1), where dof indicates the 
+.  nf - field number for the DMDA (0, 1, ... dof-1), where dof indicates the
         number of degrees of freedom per node within the DMDA
 -  names - the name of the field (component)
 
@@ -279,7 +279,7 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetFieldName"
 /*@C
    DMDAGetFieldName - Gets the names of individual field components in multicomponent
@@ -289,7 +289,7 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
 
    Input Parameter:
 +  da - the distributed array
--  nf - field number for the DMDA (0, 1, ... dof-1), where dof indicates the 
+-  nf - field number for the DMDA (0, 1, ... dof-1), where dof indicates the
         number of degrees of freedom per node within the DMDA
 
    Output Parameter:
@@ -313,7 +313,7 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetCorners"
 /*@
    DMDAGetCorners - Returns the global (x,y,z) indices of the lower left
@@ -331,7 +331,7 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
            these are used for 2D and 3D problems)
 
    Note:
-   The corner information is independent of the number of degrees of 
+   The corner information is independent of the number of degrees of
    freedom per node set with the DMDACreateXX() routine. Thus the x, y, z, and
    m, n, p can be thought of as coordinates on a logical grid, where each
    grid point has (potentially) several degrees of freedom.
@@ -350,17 +350,17 @@ PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscIn
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  /* since the xs, xe ... have all been multiplied by the number of degrees 
+  /* since the xs, xe ... have all been multiplied by the number of degrees
      of freedom per cell, w = dd->w, we divide that out before returning.*/
-  w = dd->w;  
+  w = dd->w;
   if (x) *x = dd->xs/w; if (m) *m = (dd->xe - dd->xs)/w;
   /* the y and z have NOT been multiplied by w */
   if (y) *y = dd->ys;   if (n) *n = (dd->ye - dd->ys);
-  if (z) *z = dd->zs;   if (p) *p = (dd->ze - dd->zs); 
+  if (z) *z = dd->zs;   if (p) *p = (dd->ze - dd->zs);
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetLocalBoundingBox"
 /*@
    DMDAGetLocalBoundingBox - Returns the local bounding box for the DMDA.
@@ -420,7 +420,7 @@ PetscErrorCode  DMDAGetLocalBoundingBox(DM da,PetscReal lmin[],PetscReal lmax[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetBoundingBox"
 /*@
    DMDAGetBoundingBox - Returns the global bounding box for the DMDA.
@@ -456,7 +456,7 @@ PetscErrorCode  DMDAGetBoundingBox(DM da,PetscReal gmin[],PetscReal gmax[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetReducedDA"
 /*@
    DMDAGetReducedDA - Gets the DMDA with the same layout but with fewer or more fields
@@ -485,7 +485,7 @@ PetscErrorCode  DMDAGetReducedDA(DM da,PetscInt nfields,DM *nda)
   const PetscInt   *lx,*ly,*lz;
   DMDABoundaryType  bx,by,bz;
   DMDAStencilType   stencil_type;
-  
+
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,&dim,&M,&N,&P,&m,&n,&p,0,&s,&bx,&by,&bz,&stencil_type);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);

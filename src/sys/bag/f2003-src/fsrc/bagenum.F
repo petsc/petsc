@@ -23,11 +23,11 @@
           goto 100
         endif
         if (len_trim(Farray(i)) .gt. 255) then
-          ierr = PETSC_ERR_ARG_OUTOFRANGE 
+          ierr = PETSC_ERR_ARG_OUTOFRANGE
           return
         endif
       enddo
-      ierr = PETSC_ERR_ARG_OUTOFRANGE 
+      ierr = PETSC_ERR_ARG_OUTOFRANGE
       return
 
  100  continue
@@ -42,4 +42,4 @@
       call PetscBagRegisterEnumPrivate(bag,addr,CArray,def,n,h,ierr)
       DeAllocate(CArray)
       DeAllocate(list1)
-      End Subroutine 
+      End Subroutine

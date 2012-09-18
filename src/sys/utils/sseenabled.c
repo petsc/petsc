@@ -21,7 +21,7 @@ PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)
   ierr = PetscMalloc(13*sizeof(char),&vendor);CHKERRQ(ierr);
   strcpy(vendor,"************");
   CPUID_GET_VENDOR(vendor);
-  if (!strcmp(vendor,Intel) || !strcmp(vendor,AMD)) { 
+  if (!strcmp(vendor,Intel) || !strcmp(vendor,AMD)) {
     /* Both Intel and AMD use bit 25 of CPUID_FEATURES */
     /* to denote availability of SSE Support */
     unsigned long myeax,myebx,myecx,myedx;
@@ -38,12 +38,12 @@ PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)
 
 #if defined(PETSC_HAVE_FORK)
 #include <signal.h>
-/* 
+/*
    Early versions of the Linux kernel disables SSE hardware because
    it does not know how to preserve the SSE state at a context switch.
-   To detect this feature, try an sse instruction in another process.  
+   To detect this feature, try an sse instruction in another process.
    If it works, great!  If not, an illegal instruction signal will be thrown,
-   so catch it and return an error code. 
+   so catch it and return an error code.
 */
 #define PetscSSEOSEnabledTest(arg) PetscSSEOSEnabledTest_Linux(arg)
 
@@ -77,12 +77,12 @@ PetscErrorCode  PetscSSEOSEnabledTest_Linux(PetscBool  *flag)
 }
 
 #else
-/* 
+/*
    Windows 95/98/NT4 should have a Windows Update/Service Patch which enables this hardware.
-   Windows ME/2000 doesn't disable SSE Hardware 
+   Windows ME/2000 doesn't disable SSE Hardware
 */
 #define PetscSSEOSEnabledTest(arg) PetscSSEOSEnabledTest_TRUE(arg)
-#endif 
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSEOSEnabledTest_TRUE"
@@ -116,7 +116,7 @@ PetscErrorCode  PetscSSEEnabledTest_FALSE(PetscBool  *flag)
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSEIsEnabled"
 /*@C
-     PetscSSEIsEnabled - Determines if Intel Streaming SIMD Extensions (SSE) to the x86 instruction 
+     PetscSSEIsEnabled - Determines if Intel Streaming SIMD Extensions (SSE) to the x86 instruction
      set can be used.  Some operating systems do not allow the use of these instructions despite
      hardware availability.
 

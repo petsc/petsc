@@ -2,8 +2,8 @@
 #include <petscsys.h>        /*I "petscsys.h" I*/
 #include <petscconfiginfo.h>
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscIgnoreErrorHandler" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscIgnoreErrorHandler"
 /*@C
    PetscIgnoreErrorHandler - Ignores the error, allows program to continue as if error did not occure
 
@@ -23,8 +23,8 @@
    Level: developer
 
    Notes:
-   Most users need not directly employ this routine and the other error 
-   handlers, but can instead use the simplified interface SETERRQ, which has 
+   Most users need not directly employ this routine and the other error
+   handlers, but can instead use the simplified interface SETERRQ, which has
    the calling sequence
 $     SETERRQ(comm,number,p,mess)
 
@@ -36,7 +36,7 @@ $     SETERRQ(comm,number,p,mess)
    Concepts: error handler^traceback
    Concepts: traceback^generating
 
-.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
+.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
 PetscErrorCode  PetscIgnoreErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)
@@ -51,7 +51,7 @@ static char  arch[10],hostname[64],username[16],pname[PETSC_MAX_PATH_LEN],date[6
 static PetscBool  PetscErrorPrintfInitializeCalled = PETSC_FALSE;
 static char version[256];
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscErrorPrintfInitialize"
 /*
    Initializes arch, hostname, username,date so that system calls do NOT need
@@ -82,15 +82,15 @@ PetscErrorCode  PetscErrorPrintfInitialize()
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscErrorPrintfNone" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscErrorPrintfNone"
 PetscErrorCode  PetscErrorPrintfNone(const char format[],...)
 {
   return 0;
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscErrorPrintfDefault" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscErrorPrintfDefault"
 PetscErrorCode  PetscErrorPrintfDefault(const char format[],...)
 {
   va_list           Argp;
@@ -108,7 +108,7 @@ PetscErrorCode  PetscErrorPrintfDefault(const char format[],...)
 
     /*
         On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
-      different processors, the messages are printed all jumbled up; to try to 
+      different processors, the messages are printed all jumbled up; to try to
       prevent this we have each processor wait based on their rank
     */
 #if defined(PETSC_CAN_SLEEP_AFTER_ERROR)
@@ -119,7 +119,7 @@ PetscErrorCode  PetscErrorPrintfDefault(const char format[],...)
     }
 #endif
   }
-    
+
   PetscFPrintf(PETSC_COMM_SELF,PETSC_STDERR,"[%d]PETSC ERROR: ",PetscGlobalRank);
   va_start(Argp,format);
   (*PetscVFPrintf)(PETSC_STDERR,format,Argp);
@@ -127,8 +127,8 @@ PetscErrorCode  PetscErrorPrintfDefault(const char format[],...)
   return 0;
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscTraceBackErrorHandler" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscTraceBackErrorHandler"
 /*@C
 
    PetscTraceBackErrorHandler - Default error handler routine that generates
@@ -150,8 +150,8 @@ PetscErrorCode  PetscErrorPrintfDefault(const char format[],...)
    Level: developer
 
    Notes:
-   Most users need not directly employ this routine and the other error 
-   handlers, but can instead use the simplified interface SETERRQ, which has 
+   Most users need not directly employ this routine and the other error
+   handlers, but can instead use the simplified interface SETERRQ, which has
    the calling sequence
 $     SETERRQ(comm,number,n,mess)
 
@@ -163,7 +163,7 @@ $     SETERRQ(comm,number,n,mess)
    Concepts: error handler^traceback
    Concepts: traceback^generating
 
-.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
+.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(),
           PetscAbortErrorHandler()
  @*/
 PetscErrorCode  PetscTraceBackErrorHandler(MPI_Comm comm,int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,PetscErrorType p,const char *mess,void *ctx)

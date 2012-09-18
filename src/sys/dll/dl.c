@@ -16,7 +16,7 @@ struct _n_PetscDLLibrary {
   char           libname[PETSC_MAX_PATH_LEN];
 };
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryPrintPath"
 PetscErrorCode  PetscDLLibraryPrintPath(PetscDLLibrary libs)
 {
@@ -28,7 +28,7 @@ PetscErrorCode  PetscDLLibraryPrintPath(PetscDLLibrary libs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRetrieve"
 /*@C
    PetscDLLibraryRetrieve - Copies a PETSc dynamic library from a remote location
@@ -41,7 +41,7 @@ PetscErrorCode  PetscDLLibraryPrintPath(PetscDLLibrary libs)
 -   libname - name of the library, can be relative or absolute
 
    Output Parameter:
-.   handle - library handle 
+.   handle - library handle
 
    Level: developer
 
@@ -58,7 +58,7 @@ PetscErrorCode  PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* 
+  /*
      make copy of library name and replace $PETSC_ARCH etc
      so we can add to the end of it to look for something like .so.1.0 etc.
   */
@@ -98,7 +98,7 @@ PetscErrorCode  PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryOpen"
 /*@C
    PetscDLLibraryOpen - Opens a PETSc dynamic link library
@@ -120,7 +120,7 @@ PetscErrorCode  PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *
    If the library has the symbol PetscDLLibraryRegister_basename() in it then that function is automatically run
    when the library is opened.
 
-   ${PETSC_ARCH} occuring in directoryname and filename 
+   ${PETSC_ARCH} occuring in directoryname and filename
    will be replaced with the appropriate value.
 
 .seealso: PetscLoadDynamicLibrary(), PetscDLLibraryAppend()
@@ -140,7 +140,7 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
   PetscValidPointer(entry,3);
 
   *entry = PETSC_NULL;
-  
+
   /* retrieve the library */
   ierr = PetscInfo1(0,"Retrieving %s\n",path);CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(comm,path,par2,PETSC_MAX_PATH_LEN,&foundlibrary);CHKERRQ(ierr);
@@ -173,10 +173,10 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
   ierr = PetscStrrchr(libname,'/',&basename);CHKERRQ(ierr); /* XXX Windows ??? */
   if (!basename) basename = libname;
   ierr = PetscStrncmp(basename,"lib",3,&match);CHKERRQ(ierr);
-  if (match) { 
-    basename = basename + 3; 
-  } else { 
-    ierr = PetscInfo1(0,"Dynamic library %s does not have lib prefix\n",libname);CHKERRQ(ierr); 
+  if (match) {
+    basename = basename + 3;
+  } else {
+    ierr = PetscInfo1(0,"Dynamic library %s does not have lib prefix\n",libname);CHKERRQ(ierr);
   }
   ierr = PetscStrlen(basename,&len);CHKERRQ(ierr);
   ierr = PetscStrcpy(registername,"PetscDLLibraryRegister_");CHKERRQ(ierr);
@@ -188,7 +188,7 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
   } else {
     ierr = PetscInfo2(0,"Dynamic library %s does not have symbol %s\n",libname,registername);CHKERRQ(ierr);
   }
-  
+
   ierr = PetscNew(struct _n_PetscDLLibrary,entry);CHKERRQ(ierr);
   (*entry)->next   = 0;
   (*entry)->handle = handle;
@@ -197,7 +197,7 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLLibrarySym"
 /*@C
    PetscDLLibrarySym - Load a symbol from the dynamic link libraries.
@@ -216,7 +216,7 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
    Level: developer
 
    Notes: Symbol can be of the form
-        [/path/libname[.so.1.0]:]functionname[()] where items in [] denote optional 
+        [/path/libname[.so.1.0]:]functionname[()] where items in [] denote optional
 
         Will attempt to (retrieve and) open the library if it is not yet been opened.
 
@@ -246,7 +246,7 @@ PetscErrorCode  PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *outlist,const ch
   if (s) s[0] = 0;
 
   /*
-       Function name does include library 
+       Function name does include library
        -------------------------------------
   */
   if (path && path[0] != '\0') {
@@ -303,7 +303,7 @@ PetscErrorCode  PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *outlist,const ch
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryAppend"
 /*@C
      PetscDLLibraryAppend - Appends another dynamic link library to the seach list, to the end
@@ -339,7 +339,7 @@ PetscErrorCode  PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary *outlist,const
 
   PetscFunctionBegin;
   PetscValidPointer(outlist,2);
-  
+
   /* is path a directory? */
   ierr = PetscTestDirectory(path,'r',&dir);CHKERRQ(ierr);
   if (dir) {
@@ -394,7 +394,7 @@ PetscErrorCode  PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary *outlist,const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryPrepend"
 /*@C
      PetscDLLibraryPrepend - Add another dynamic library to search for symbols to the beginning of
@@ -426,7 +426,7 @@ PetscErrorCode  PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrary *outlist,cons
 
   PetscFunctionBegin;
   PetscValidPointer(outlist,2);
- 
+
   /* is path a directory? */
   ierr = PetscTestDirectory(path,'r',&dir);CHKERRQ(ierr);
   if (dir) {
@@ -486,7 +486,7 @@ PetscErrorCode  PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrary *outlist,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryClose"
 /*@C
      PetscDLLibraryClose - Destroys the search path of dynamic libraries and closes the libraries.

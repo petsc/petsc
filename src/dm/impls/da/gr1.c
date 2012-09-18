@@ -1,11 +1,11 @@
 
-/* 
+/*
    Plots vectors obtained with DMDACreate1d()
 */
 
 #include <petscdmda.h>      /*I  "petscdmda.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDASetUniformCoordinates"
 /*@
     DMDASetUniformCoordinates - Sets a DMDA coordinates to be a uniform grid
@@ -169,7 +169,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecView_MPI_Draw_DA1d"
 PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 {
@@ -216,15 +216,15 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   ierr = VecGetArrayRead(xcoor,&xg);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /*
-      Determine the min and max x coordinate in plot 
+      Determine the min and max x coordinate in plot
   */
   if (!rank) {
     xmin = PetscRealPart(xg[0]);
-  } 
+  }
   if (rank == size-1) {
     xmax = PetscRealPart(xg[n-1]);
   }
@@ -242,7 +242,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
     ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
 
     /*
-        Determine the min and max y coordinate in plot 
+        Determine the min and max y coordinate in plot
     */
     min = 1.e20; max = -1.e20;
     for (i=0; i<n; i++) {

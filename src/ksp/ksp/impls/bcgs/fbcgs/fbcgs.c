@@ -1,18 +1,18 @@
 
 /*
     This file implements flexible BiCGStab contributed by Jie Chen.
-    Only right preconditioning is supported. 
+    Only right preconditioning is supported.
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
 
 /* copied from KSPBuildSolution_GCR() */
-#undef __FUNCT__  
-#define __FUNCT__ "KSPBuildSolution_FBCGS" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPBuildSolution_FBCGS"
 PetscErrorCode  KSPBuildSolution_FBCGS(KSP ksp, Vec v, Vec *V)
-{       
+{
   PetscErrorCode ierr;
   Vec            x;
-        
+
   PetscFunctionBegin;
   x = ksp->vec_sol;
   if (v) {
@@ -24,12 +24,12 @@ PetscErrorCode  KSPBuildSolution_FBCGS(KSP ksp, Vec v, Vec *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_FBCGS"
 static PetscErrorCode KSPSetUp_FBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = KSPDefaultGetWork(ksp,8);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -37,7 +37,7 @@ static PetscErrorCode KSPSetUp_FBCGS(KSP ksp)
 
 /* Only need a few hacks from KSPSolve_BCGS */
 #include <petsc-private/pcimpl.h>            /*I "petscksp.h" I*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_FBCGS"
 static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 {
@@ -56,13 +56,13 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   RP      = ksp->work[1];
   V       = ksp->work[2];
   T       = ksp->work[3];
-  S       = ksp->work[4]; 
+  S       = ksp->work[4];
   P       = ksp->work[5];
   S2      = ksp->work[6];
   P2      = ksp->work[7];
 
   /* Only supports right preconditioning */
-  if (ksp->pc_side != PC_RIGHT) 
+  if (ksp->pc_side != PC_RIGHT)
     SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP fbcgs does not support %s",PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
     if (!bcgs->guess) {
@@ -105,7 +105,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   omegaold = 1.0;
   ierr = VecSet(P,0.0);CHKERRQ(ierr);
   ierr = VecSet(V,0.0);CHKERRQ(ierr);
- 
+
   i=0;
   do {
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr); /* rho <- (r,rp) */
@@ -114,7 +114,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 
     ierr = PCApply(pc,P,P2);CHKERRQ(ierr); /* p2 <- K p */
     ierr = MatMult(pc->mat,P2,V);CHKERRQ(ierr); /* v <- A p2 */
-    
+
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     if (d1 == 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"Divide by zero");
     alpha = rho / d1; /* alpha <- rho / (v,rp) */
@@ -181,12 +181,12 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 
    Level: beginner
 
-   Notes: Only supports right preconditioning 
+   Notes: Only supports right preconditioning
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_FBCGS"
 PetscErrorCode  KSPCreate_FBCGS(KSP ksp)
 {
@@ -205,7 +205,7 @@ PetscErrorCode  KSPCreate_FBCGS(KSP ksp)
   ksp->ops->setfromoptions  = KSPSetFromOptions_BCGS;
   ksp->ops->view            = KSPView_BCGS;
   ksp->pc_side              = PC_RIGHT; /* set default PC side */
- 
+
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -4,17 +4,17 @@
 #include <stdlib.h>
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomSeed_Rand"
 PetscErrorCode  PetscRandomSeed_Rand(PetscRandom r)
 {
   PetscFunctionBegin;
-  srand(r->seed);  
+  srand(r->seed);
   PetscFunctionReturn(0);
 }
 
 #define RAND_WRAP ((PetscReal)((rand()/(double)((unsigned int)RAND_MAX+1))))
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomGetValue_Rand"
 PetscErrorCode  PetscRandomGetValue_Rand(PetscRandom r,PetscScalar *val)
 {
@@ -31,7 +31,7 @@ PetscErrorCode  PetscRandomGetValue_Rand(PetscRandom r,PetscScalar *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomGetValueReal_Rand"
 PetscErrorCode  PetscRandomGetValueReal_Rand(PetscRandom r,PetscReal *val)
 {
@@ -60,7 +60,7 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
    PETSCRAND - access to the basic Unix random number generator
 
    Options Database Keys:
-. -random_type <rand,rand48,sprng> 
+. -random_type <rand,rand48,sprng>
 
   Level: beginner
 
@@ -68,8 +68,8 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomCreate_Rand" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscRandomCreate_Rand"
 PetscErrorCode  PetscRandomCreate_Rand(PetscRandom r)
 {
   PetscErrorCode ierr;

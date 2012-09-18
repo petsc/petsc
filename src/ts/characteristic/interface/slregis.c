@@ -1,7 +1,7 @@
 #include <petsc-private/characteristicimpl.h>
 
 static PetscBool  CharacteristicPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "CharacteristicFinalizePackage"
 /*@C
   CharacteristicFinalizePackage - This function destroys everything in the Petsc interface to the characteristics package. It is
@@ -21,7 +21,7 @@ PetscErrorCode CharacteristicFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "CharacteristicInitializePackage"
 /*@C
   CharacteristicInitializePackage - This function initializes everything in the Characteristic package. It is called
@@ -36,7 +36,7 @@ PetscErrorCode CharacteristicFinalizePackage(void)
 .keywords: Characteristic, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode CharacteristicInitializePackage(const char path[]) 
+PetscErrorCode CharacteristicInitializePackage(const char path[])
 {
   char              logList[256];
   char             *className;
@@ -83,7 +83,7 @@ PetscErrorCode CharacteristicInitializePackage(const char path[])
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_characteristic"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.

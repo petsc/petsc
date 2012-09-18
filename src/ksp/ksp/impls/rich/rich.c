@@ -1,11 +1,11 @@
 
-/*          
-            This implements Richardson Iteration.       
+/*
+            This implements Richardson Iteration.
 */
 #include <petsc-private/kspimpl.h>              /*I "petscksp.h" I*/
 #include <../src/ksp/ksp/impls/rich/richardsonimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_Richardson"
 PetscErrorCode KSPSetUp_Richardson(KSP ksp)
 {
@@ -21,7 +21,7 @@ PetscErrorCode KSPSetUp_Richardson(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_Richardson"
 PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 {
@@ -84,7 +84,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   if (richardsonP->selfscale) {
     ierr = KSP_PCApply(ksp,r,z);CHKERRQ(ierr);         /*   z <- B r          */
     for (i=0; i<maxit; i++) {
-      
+
       if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
 	ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
 	ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
@@ -131,7 +131,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 	ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 	if (ksp->reason) break;
       }
-   
+
       ierr = VecAXPY(x,scale,z);CHKERRQ(ierr);    /*   x  <- x + scale z */
       ksp->its++;
 
@@ -155,7 +155,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
       if (ksp->normtype != KSP_NORM_NONE) {
 	ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 	if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
-      } else { 
+      } else {
 	ksp->reason = KSP_CONVERGED_ITS;
       }
     }
@@ -163,8 +163,8 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPView_Richardson" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPView_Richardson"
 PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
 {
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
@@ -185,7 +185,7 @@ PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_Richardson"
 PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp)
 {
@@ -204,7 +204,7 @@ PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_Richardson"
 PetscErrorCode KSPDestroy_Richardson(KSP ksp)
 {
@@ -217,7 +217,7 @@ PetscErrorCode KSPDestroy_Richardson(KSP ksp)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPRichardsonSetScale_Richardson"
 PetscErrorCode  KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
 {
@@ -231,7 +231,7 @@ PetscErrorCode  KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPRichardsonSetSelfScale_Richardson"
 PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool  selfscale)
 {
@@ -253,7 +253,7 @@ EXTERN_C_END
    Level: beginner
 
    Notes: x^{n+1} = x^{n} + scale*B(b - A x^{n})
- 
+
           Here B is the application of the preconditioner
 
           This method often (usually) will not converge unless scale is very small. It
@@ -261,7 +261,7 @@ is described in
 
 
    Notes: For some preconditioners, currently SOR, the convergence test is skipped to improve speed,
-    thus it always iterates the maximum number of iterations you've selected. When -ksp_monitor 
+    thus it always iterates the maximum number of iterations you've selected. When -ksp_monitor
     (or any other monitor) is turned on, the norm is computed at each iteration and so the convergence test is run unless
     you specifically call KSPSetNormType(ksp,KSP_NORM_NONE);
 
@@ -283,7 +283,7 @@ is described in
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_Richardson"
 PetscErrorCode  KSPCreate_Richardson(KSP ksp)
 {

@@ -404,7 +404,7 @@ EXTERN_C_END
    DMREDUNDANT = "redundant" - A DM object that is used to manage data for a small set of dense globally coupled variables.
          In the global representation of the vector the variables are all stored on a single MPI process (all the other MPI processes have
          no variables) in the local representation all the variables are stored on ALL the MPI processes (because they are all needed for each
-         processes local computations). 
+         processes local computations).
 
          This DM is generally used inside a DMCOMPOSITE object. For example, it may be used to store continuation parameters for a bifurcation problem.
 

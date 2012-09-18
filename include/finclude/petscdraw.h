@@ -79,7 +79,7 @@
       PetscEnum PETSC_BUTTON_CENTER_SHIFT
       PetscEnum PETSC_BUTTON_RIGHT_SHIFT
 
-      parameter (PETSC_BUTTON_NONE = 0,PETSC_BUTTON_LEFT = 1) 
+      parameter (PETSC_BUTTON_NONE = 0,PETSC_BUTTON_LEFT = 1)
       parameter (PETSC_BUTTON_CENTER = 2,PETSC_BUTTON_RIGHT = 3)
       parameter (PETSC_BUTTON_LEFT_SHIFT = 4)
       parameter (PETSC_BUTTON_CENTER_SHIFT = 5)

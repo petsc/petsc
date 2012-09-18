@@ -2,8 +2,8 @@
 
 #include <../src/mat/color/color.h>
 
-#undef __FUNCT__  
-#define __FUNCT__ "MINPACKnumsrt" 
+#undef __FUNCT__
+#define __FUNCT__ "MINPACKnumsrt"
 PetscErrorCode MINPACKnumsrt(PetscInt *n,PetscInt *nmax,PetscInt *num,PetscInt *mode,PetscInt *idex,PetscInt *last,PetscInt *next)
 {
     /* System generated locals */

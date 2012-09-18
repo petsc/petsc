@@ -13,7 +13,7 @@ Division of Applied Mathematics
 Brown University
 Providence, RI 02912
 
-Last Modification: 
+Last Modification:
 6.21.97
 ***********************************const.h************************************/
 
@@ -112,13 +112,13 @@ Division of Applied Mathematics
 Brown University
 Providence, RI 02912
 
-Last Modification: 
+Last Modification:
 6.21.97
 ***********************************types.h************************************/
 
 typedef PetscErrorCode (*vfp)(void*,void*,PetscInt,...);
 typedef PetscErrorCode (*rbfp)(PetscScalar *, PetscScalar *, PetscInt len);
-typedef PetscInt (*bfp)(void*, void *, PetscInt *len, MPI_Datatype *dt); 
+typedef PetscInt (*bfp)(void*, void *, PetscInt *len, MPI_Datatype *dt);
 
 /***********************************comm.h*************************************
 
@@ -131,7 +131,7 @@ Division of Applied Mathematics
 Brown University
 Providence, RI 02912
 
-Last Modification: 
+Last Modification:
 6.21.97
 ***********************************comm.h*************************************/
 extern PetscMPIInt PCTFS_my_id;
@@ -230,7 +230,7 @@ Division of Applied Mathematics
 Brown University
 Providence, RI 02912
 
-Last Modification: 
+Last Modification:
 6.21.97
 ************************************gs.h**************************************/
 
@@ -247,7 +247,7 @@ extern PetscErrorCode   PCTFS_gs_init_vec_sz(PetscInt size);
 
 /*************************************xxt.h************************************
 Module Name: xxt
-Module Info: need xxt.{c,h} gs.{c,h} comm.{c,h} ivec.{c,h} error.{c,h} 
+Module Info: need xxt.{c,h} gs.{c,h} comm.{c,h} ivec.{c,h} error.{c,h}
 
 author:  Henry M. Tufo III
 e-mail:  hmt@asci.uchicago.edu
@@ -292,10 +292,10 @@ Function: XXT_factor
 
 Input : ADT ptr,  and pointer to object
 Return: 0 on failure, 1 on success
-Description: This function sets the xxt solver 
+Description: This function sets the xxt solver
 
 xxt assumptions: given n rows of global coarse matrix (E_loc) where
-   o global dofs N = sum_p(n), p=0,P-1 
+   o global dofs N = sum_p(n), p=0,P-1
    (i.e. row dist. with no dof replication)
    (5.21.00 will handle dif replication case)
    o m is the number of columns in E_loc (m>=n)
@@ -311,10 +311,10 @@ ML beliefs/usage: move this to to ML_XXT_factor routine
    o my_ml holds address of ML struct associated w/E_loc, grid_data, grid_tag
    o grid_tag, grid_data, my_ml used in
       ML_Set_CSolve(my_ml, grid_tag, grid_data, ML_Do_CoarseDirect);
-   o grid_data used in 
+   o grid_data used in
       A_matvec(grid_data,v,u);
 
-Usage: 
+Usage:
 **************************************xxt.h***********************************/
 extern PetscInt XXT_factor(xxt_ADT xxt_handle,   /* prev. allocated xxt  handle */
                       PetscInt *local2global,    /* global column mapping       */
@@ -332,7 +332,7 @@ Input : ADT ptr, b (rhs)
 Output: x (soln)
 Return:
 Description: This function performs x = E^-1.b
-Usage: 
+Usage:
 XXT_solve(xxt_handle, double *x, double *b)
 XXT_solve(xxt_handle, double *x, NULL)
 assumes x has been initialized to be b
@@ -351,8 +351,8 @@ extern PetscInt XXT_stats(xxt_ADT xxt_handle);
 Function: XXT_sp_1()
 
 Input : pointer to ADT
-Output: 
-Return: 
+Output:
+Return:
 Description: sets xxt parameter 1 in xxt_handle
 Usage: implement later
 
@@ -362,7 +362,7 @@ void XXT_sp_1(xxt_handle,parameter 1 value)
 
 /*************************************xyt.h************************************
 Module Name: xyt
-Module Info: need xyt.{c,h} gs.{c,h} comm.{c,h} ivec.{c,h} error.{c,h} 
+Module Info: need xyt.{c,h} gs.{c,h} comm.{c,h} ivec.{c,h} error.{c,h}
 
 author:  Henry M. Tufo III
 e-mail:  hmt@asci.uchicago.edu
@@ -407,10 +407,10 @@ Function: XYT_factor
 Input : ADT ptr,  and pointer to object
 Output:
 Return: 0 on failure, 1 on success
-Description: This function sets the xyt solver 
+Description: This function sets the xyt solver
 
 xyt assumptions: given n rows of global coarse matrix (E_loc) where
-   o global dofs N = sum_p(n), p=0,P-1 
+   o global dofs N = sum_p(n), p=0,P-1
    (i.e. row dist. with no dof replication)
    (5.21.00 will handle dif replication case)
    o m is the number of columns in E_loc (m>=n)
@@ -426,10 +426,10 @@ ML beliefs/usage: move this to to ML_XYT_factor routine
    o my_ml holds address of ML struct associated w/E_loc, grid_data, grid_tag
    o grid_tag, grid_data, my_ml used in
       ML_Set_CSolve(my_ml, grid_tag, grid_data, ML_Do_CoarseDirect);
-   o grid_data used in 
+   o grid_data used in
       A_matvec(grid_data,v,u);
 
-Usage: 
+Usage:
 **************************************xyt.h***********************************/
 extern PetscInt XYT_factor(xyt_ADT xyt_handle,   /* prev. allocated xyt  handle */
                       PetscInt *local2global,    /* global column mapping       */
@@ -471,7 +471,7 @@ Division of Applied Mathematics
 Brown University
 Providence, RI 02912
 
-Last Modification: 
+Last Modification:
 11.21.97
 *********************************bit_mask.h***********************************/
 extern PetscInt PCTFS_div_ceil(PetscInt numin, PetscInt denom);

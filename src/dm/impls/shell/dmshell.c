@@ -208,7 +208,7 @@ PETSC_EXTERN_C PetscErrorCode  DMCreate_Shell(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMShellCreate"
 /*@
     DMShellCreate - Creates a shell DM object, used to manage user-defined problem data

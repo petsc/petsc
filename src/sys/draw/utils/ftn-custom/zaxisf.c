@@ -12,7 +12,7 @@ void PETSC_STDCALL petscdrawaxissetlabels_(PetscDrawAxis *axis,CHAR top PETSC_MI
                     PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3))
 {
   char *t1,*t2,*t3;
- 
+
   FIXCHAR(top,len1,t1);
   FIXCHAR(xlabel,len2,t2);
   FIXCHAR(ylabel,len3,t3);

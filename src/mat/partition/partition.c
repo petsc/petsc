@@ -7,8 +7,8 @@ PetscClassId  MAT_PARTITIONING_CLASSID;
 /*
    Simplest partitioning, keeps the current partitioning.
 */
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningApply_Current" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningApply_Current"
 static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *partitioning)
 {
   PetscErrorCode ierr;
@@ -29,8 +29,8 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *part
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningApply_Square" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningApply_Square"
 static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *partitioning)
 {
   PetscErrorCode ierr;
@@ -57,9 +57,9 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN  
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningCreate_Current" 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningCreate_Current"
 PetscErrorCode  MatPartitioningCreate_Current(MatPartitioning part)
 {
   PetscFunctionBegin;
@@ -70,9 +70,9 @@ PetscErrorCode  MatPartitioningCreate_Current(MatPartitioning part)
 }
 EXTERN_C_END
 
-EXTERN_C_BEGIN  
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningCreate_Square" 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningCreate_Square"
 PetscErrorCode  MatPartitioningCreate_Square(MatPartitioning part)
 {
   PetscFunctionBegin;
@@ -89,8 +89,8 @@ PetscFList MatPartitioningList = 0;
 PetscBool  MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningRegister" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningRegister"
 PetscErrorCode  MatPartitioningRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(MatPartitioning))
 {
   PetscErrorCode ierr;
@@ -102,8 +102,8 @@ PetscErrorCode  MatPartitioningRegister(const char sname[],const char path[],con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningRegisterDestroy" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningRegisterDestroy"
 /*@C
    MatPartitioningRegisterDestroy - Frees the list of partitioning routines.
 
@@ -125,10 +125,10 @@ PetscErrorCode  MatPartitioningRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningGetType"
 /*@C
-   MatPartitioningGetType - Gets the Partitioning method type and name (as a string) 
+   MatPartitioningGetType - Gets the Partitioning method type and name (as a string)
         from the partitioning context.
 
    Not collective
@@ -154,7 +154,7 @@ PetscErrorCode  MatPartitioningGetType(MatPartitioning partitioning,const MatPar
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetNParts"
 /*@C
    MatPartitioningSetNParts - Set how many partitions need to be created;
@@ -182,8 +182,8 @@ PetscErrorCode  MatPartitioningSetNParts(MatPartitioning part,PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningApply" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningApply"
 /*@
    MatPartitioningApply - Gets a partitioning for a matrix.
 
@@ -198,7 +198,7 @@ PetscErrorCode  MatPartitioningSetNParts(MatPartitioning part,PetscInt n)
 
    Options Database Keys:
    To specify the partitioning through the options database, use one of
-   the following 
+   the following
 $    -mat_partitioning_type parmetis, -mat_partitioning current
    To see the partitioning result
 $    -mat_partitioning_view
@@ -222,7 +222,7 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_CLASSID,1);
   PetscValidPointer(partitioning,2);
   if (!matp->adj->assembled) SETERRQ(((PetscObject)matp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (matp->adj->factortype) SETERRQ(((PetscObject)matp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (matp->adj->factortype) SETERRQ(((PetscObject)matp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!matp->ops->apply) SETERRQ(((PetscObject)matp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
   ierr = PetscLogEventBegin(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
   ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
@@ -237,8 +237,8 @@ PetscErrorCode  MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   }
   PetscFunctionReturn(0);
 }
- 
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetAdjacency"
 /*@
    MatPartitioningSetAdjacency - Sets the adjacency graph (matrix) of the thing to be
@@ -265,7 +265,7 @@ PetscErrorCode  MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningDestroy"
 /*@
    MatPartitioningDestroy - Destroys the partitioning context.
@@ -299,7 +299,7 @@ PetscErrorCode  MatPartitioningDestroy(MatPartitioning *part)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetVertexWeights"
 /*@C
    MatPartitioningSetVertexWeights - Sets the weights for vertices for a partitioning.
@@ -332,7 +332,7 @@ PetscErrorCode  MatPartitioningSetVertexWeights(MatPartitioning part,const Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetPartitionWeights"
 /*@C
    MatPartitioningSetPartitionWeights - Sets the weights for each partition.
@@ -370,7 +370,7 @@ PetscErrorCode  MatPartitioningSetPartitionWeights(MatPartitioning part,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate"
 /*@
    MatPartitioningCreate - Creates a partitioning context.
@@ -378,7 +378,7 @@ PetscErrorCode  MatPartitioningSetPartitionWeights(MatPartitioning part,const Pe
    Collective on MPI_Comm
 
    Input Parameter:
-.   comm - MPI communicator 
+.   comm - MPI communicator
 
    Output Parameter:
 .  newp - location to put the context
@@ -414,9 +414,9 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningView"
-/*@C 
+/*@C
    MatPartitioningView - Prints the partitioning data structure.
 
    Collective on MatPartitioning
@@ -432,8 +432,8 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
 -     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
+         the file.  All other processors send their
+         data to the first processor to print.
 
    The user can open alternative visualization contexts with
 .     PetscViewerASCIIOpen() - output to a specified file
@@ -474,7 +474,7 @@ PetscErrorCode  MatPartitioningView(MatPartitioning part,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetType"
 /*@C
    MatPartitioningSetType - Sets the type of partitioner to use
@@ -529,10 +529,10 @@ PetscErrorCode  MatPartitioningSetType(MatPartitioning part,const MatPartitionin
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions"
 /*@
-   MatPartitioningSetFromOptions - Sets various partitioning options from the 
+   MatPartitioningSetFromOptions - Sets various partitioning options from the
         options database.
 
    Collective on MatPartitioning

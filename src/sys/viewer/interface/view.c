@@ -1,10 +1,10 @@
 
-#include <petsc-private/viewerimpl.h>  /*I "petscsys.h" I*/  
+#include <petsc-private/viewerimpl.h>  /*I "petscsys.h" I*/
 
 PetscClassId PETSC_VIEWER_CLASSID;
 
 static PetscBool  PetscViewerPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerFinalizePackage"
 /*@C
   PetscViewerFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
@@ -23,8 +23,8 @@ PetscErrorCode  PetscViewerFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerInitializePackage" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerInitializePackage"
 /*@C
   PetscViewerInitializePackage - This function initializes everything in the main PetscViewer package.
 
@@ -75,8 +75,8 @@ PetscErrorCode  PetscViewerInitializePackage(const char path[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerDestroy" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerDestroy"
 /*@
    PetscViewerDestroy - Destroys a PetscViewer.
 
@@ -110,8 +110,8 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerGetType" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerGetType"
 /*@C
    PetscViewerGetType - Returns the type of a PetscViewer.
 
@@ -149,10 +149,10 @@ PetscErrorCode  PetscViewerGetType(PetscViewer viewer,const PetscViewerType *typ
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerSetOptionsPrefix"
 /*@C
-   PetscViewerSetOptionsPrefix - Sets the prefix used for searching for all 
+   PetscViewerSetOptionsPrefix - Sets the prefix used for searching for all
    PetscViewer options in the database.
 
    Logically Collective on PetscViewer
@@ -181,10 +181,10 @@ PetscErrorCode  PetscViewerSetOptionsPrefix(PetscViewer viewer,const char prefix
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerAppendOptionsPrefix"
 /*@C
-   PetscViewerAppendOptionsPrefix - Appends to the prefix used for searching for all 
+   PetscViewerAppendOptionsPrefix - Appends to the prefix used for searching for all
    PetscViewer options in the database.
 
    Logically Collective on PetscViewer
@@ -206,17 +206,17 @@ PetscErrorCode  PetscViewerSetOptionsPrefix(PetscViewer viewer,const char prefix
 PetscErrorCode  PetscViewerAppendOptionsPrefix(PetscViewer viewer,const char prefix[])
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)viewer,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerGetOptionsPrefix"
 /*@C
-   PetscViewerGetOptionsPrefix - Sets the prefix used for searching for all 
+   PetscViewerGetOptionsPrefix - Sets the prefix used for searching for all
    PetscViewer options in the database.
 
    Not Collective
@@ -246,7 +246,7 @@ PetscErrorCode  PetscViewerGetOptionsPrefix(PetscViewer viewer,const char *prefi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerSetUp"
 /*@
    PetscViewerSetUp - Sets up the internal viewer data structures for the later use.
@@ -273,7 +273,7 @@ PetscErrorCode  PetscViewerSetUp(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerView"
 /*@C
    PetscViewerView - Visualizes a viewer object.
@@ -289,13 +289,13 @@ PetscErrorCode  PetscViewerSetUp(PetscViewer viewer)
 +    PETSC_VIEWER_STDOUT_SELF - standard output (default)
 .    PETSC_VIEWER_STDOUT_WORLD - synchronized standard
         output where only the first processor opens
-        the file.  All other processors send their 
-        data to the first processor to print. 
+        the file.  All other processors send their
+        data to the first processor to print.
 -     PETSC_VIEWER_DRAW_WORLD - graphical display of nonzero structure
 
    Level: beginner
 
-.seealso: PetscViewerSetFormat(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), 
+.seealso: PetscViewerSetFormat(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(),
           PetscViewerSocketOpen(), PetscViewerBinaryOpen(), PetscViewerLoad()
 @*/
 PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
@@ -316,7 +316,7 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       ierr = PetscObjectPrintClassNamePrefixType((PetscObject)v,viewer,"PetscViewer Object");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -327,7 +327,7 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
   if (!iascii) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported",((PetscObject)viewer)->type_name);
   } else {
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }

@@ -1,10 +1,10 @@
 
 #include <petsc-private/viewerimpl.h>   /*I  "petsc.h"  */
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerAMSOpen" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerAMSOpen"
 /*@C
-    PetscViewerAMSOpen - Opens an AMS memory snooper PetscViewer. 
+    PetscViewerAMSOpen - Opens an AMS memory snooper PetscViewer.
 
     Collective on MPI_Comm
 
@@ -44,7 +44,7 @@
 PetscErrorCode PetscViewerAMSOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
   ierr = PetscViewerSetType(*lab,PETSCVIEWERAMS);CHKERRQ(ierr);

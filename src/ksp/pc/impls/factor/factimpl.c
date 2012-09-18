@@ -5,7 +5,7 @@
 
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetUpMatSolverPackage_Factor"
 PetscErrorCode PCFactorSetUpMatSolverPackage_Factor(PC pc)
 {
@@ -21,7 +21,7 @@ PetscErrorCode PCFactorSetUpMatSolverPackage_Factor(PC pc)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetZeroPivot_Factor"
 PetscErrorCode  PCFactorSetZeroPivot_Factor(PC pc,PetscReal z)
 {
@@ -34,7 +34,7 @@ PetscErrorCode  PCFactorSetZeroPivot_Factor(PC pc,PetscReal z)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetShiftType_Factor"
 PetscErrorCode  PCFactorSetShiftType_Factor(PC pc,MatFactorShiftType shifttype)
 {
@@ -42,7 +42,7 @@ PetscErrorCode  PCFactorSetShiftType_Factor(PC pc,MatFactorShiftType shifttype)
 
   PetscFunctionBegin;
   if (shifttype == (MatFactorShiftType)PETSC_DECIDE){
-    dir->info.shifttype = (PetscReal) MAT_SHIFT_NONE; 
+    dir->info.shifttype = (PetscReal) MAT_SHIFT_NONE;
   } else {
     dir->info.shifttype = (PetscReal) shifttype;
     if (shifttype == MAT_SHIFT_NONZERO && dir->info.shiftamount == 0.0){
@@ -52,7 +52,7 @@ PetscErrorCode  PCFactorSetShiftType_Factor(PC pc,MatFactorShiftType shifttype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetShiftAmount_Factor"
 PetscErrorCode  PCFactorSetShiftAmount_Factor(PC pc,PetscReal shiftamount)
 {
@@ -60,16 +60,16 @@ PetscErrorCode  PCFactorSetShiftAmount_Factor(PC pc,PetscReal shiftamount)
 
   PetscFunctionBegin;
   if (shiftamount == (PetscReal) PETSC_DECIDE){
-    dir->info.shiftamount = 1.e-12; 
+    dir->info.shiftamount = 1.e-12;
   } else {
-    dir->info.shiftamount = shiftamount; 
+    dir->info.shiftamount = shiftamount;
   }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetDropTolerance_Factor"
 PetscErrorCode  PCFactorSetDropTolerance_Factor(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
 {
@@ -85,11 +85,11 @@ PetscErrorCode  PCFactorSetDropTolerance_Factor(PC pc,PetscReal dt,PetscReal dtc
   ilu->info.dtcount = dtcount;
   ilu->info.fill    = PETSC_DEFAULT;
   PetscFunctionReturn(0);
-}  
+}
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetFill_Factor"
 PetscErrorCode  PCFactorSetFill_Factor(PC pc,PetscReal fill)
 {
@@ -102,14 +102,14 @@ PetscErrorCode  PCFactorSetFill_Factor(PC pc,PetscReal fill)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetMatOrderingType_Factor"
 PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC pc,const MatOrderingType ordering)
 {
   PC_Factor      *dir = (PC_Factor*)pc->data;
   PetscErrorCode ierr;
   PetscBool      flg;
- 
+
   PetscFunctionBegin;
   if (!pc->setupcalled) {
      ierr = PetscFree(dir->ordering);CHKERRQ(ierr);
@@ -123,7 +123,7 @@ PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC pc,const MatOrderingType or
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetLevels_Factor"
 PetscErrorCode  PCFactorSetLevels_Factor(PC pc,PetscInt levels)
 {
@@ -143,7 +143,7 @@ PetscErrorCode  PCFactorSetLevels_Factor(PC pc,PetscInt levels)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetAllowDiagonalFill_Factor"
 PetscErrorCode  PCFactorSetAllowDiagonalFill_Factor(PC pc)
 {
@@ -159,7 +159,7 @@ EXTERN_C_END
 /* ------------------------------------------------------------------------------------------*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetPivotInBlocks_Factor"
 PetscErrorCode  PCFactorSetPivotInBlocks_Factor(PC pc,PetscBool  pivot)
 {
@@ -171,7 +171,7 @@ PetscErrorCode  PCFactorSetPivotInBlocks_Factor(PC pc,PetscBool  pivot)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorGetMatrix_Factor"
 PetscErrorCode  PCFactorGetMatrix_Factor(PC pc,Mat *mat)
 {
@@ -184,7 +184,7 @@ PetscErrorCode  PCFactorGetMatrix_Factor(PC pc,Mat *mat)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetMatSolverPackage_Factor"
 PetscErrorCode  PCFactorSetMatSolverPackage_Factor(PC pc,const MatSolverPackage stype)
 {
@@ -207,7 +207,7 @@ PetscErrorCode  PCFactorSetMatSolverPackage_Factor(PC pc,const MatSolverPackage 
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorGetMatSolverPackage_Factor"
 PetscErrorCode  PCFactorGetMatSolverPackage_Factor(PC pc,const MatSolverPackage *stype)
 {
@@ -220,7 +220,7 @@ PetscErrorCode  PCFactorGetMatSolverPackage_Factor(PC pc,const MatSolverPackage 
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetColumnPivot_Factor"
 PetscErrorCode  PCFactorSetColumnPivot_Factor(PC pc,PetscReal dtcol)
 {
@@ -234,7 +234,7 @@ PetscErrorCode  PCFactorSetColumnPivot_Factor(PC pc,PetscReal dtcol)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Factor"
 PetscErrorCode  PCSetFromOptions_Factor(PC pc)
 {
@@ -259,7 +259,7 @@ PetscErrorCode  PCSetFromOptions_Factor(PC pc)
     ierr = PCFactorSetShiftType(pc,(MatFactorShiftType)etmp);CHKERRQ(ierr);
   }
   ierr = PetscOptionsReal("-pc_factor_shift_amount","Shift added to diagonal","PCFactorSetShiftAmount",((PC_Factor*)factor)->info.shiftamount,&((PC_Factor*)factor)->info.shiftamount,0);CHKERRQ(ierr);
-  
+
   ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",((PC_Factor*)factor)->info.zeropivot,&((PC_Factor*)factor)->info.zeropivot,0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_factor_column_pivot","Column pivot tolerance (used only for some factorization)","PCFactorSetColumnPivot",((PC_Factor*)factor)->info.dtcol,&((PC_Factor*)factor)->info.dtcol,&flg);CHKERRQ(ierr);
 
@@ -268,7 +268,7 @@ PetscErrorCode  PCSetFromOptions_Factor(PC pc)
   if (set) {
     ierr = PCFactorSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
   }
-  
+
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-pc_factor_reuse_fill","Use fill from previous factorization","PCFactorSetReuseFill",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
@@ -290,13 +290,13 @@ PetscErrorCode  PCSetFromOptions_Factor(PC pc)
   ierr = PetscOptionsString("-pc_factor_mat_solver_package","Specific direct solver to use","MatGetFactor",((PC_Factor*)factor)->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFactorSetMatSolverPackage(pc,solvertype);CHKERRQ(ierr);
-  }   
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_Factor"
 PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
 {
@@ -319,7 +319,7 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"  %D levels of fill\n",(PetscInt)factor->info.levels);CHKERRQ(ierr);
       }
     }
-    
+
     ierr = PetscViewerASCIIPrintf(viewer,"  tolerance for zero pivot %G\n",factor->info.zeropivot);CHKERRQ(ierr);
     if (factor->info.shifttype==(PetscReal)MAT_SHIFT_POSITIVE_DEFINITE) {
       ierr = PetscViewerASCIIPrintf(viewer,"  using Manteuffel shift\n");CHKERRQ(ierr);
@@ -330,9 +330,9 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     if (factor->info.shifttype==(PetscReal)MAT_SHIFT_INBLOCKS) {
       ierr = PetscViewerASCIIPrintf(viewer,"  using diagonal shift on blocks to prevent zero pivot\n");CHKERRQ(ierr);
     }
-    
+
     ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s\n",factor->ordering);CHKERRQ(ierr);
-    
+
     if (factor->fact) {
       MatInfo info;
       ierr = MatGetInfo(factor->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
@@ -348,7 +348,7 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    
+
   } else if (isstring) {
     MatFactorType t;
     ierr = MatGetFactorType(factor->fact,&t);CHKERRQ(ierr);

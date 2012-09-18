@@ -53,9 +53,9 @@ PETSC_EXTERN_C void PETSC_STDCALL dmkspsetcomputeoperators_(DM *dm,void (PETSC_S
 EXTERN_C_BEGIN
 
 /*
-        These are not usually called from Fortran but allow Fortran users 
+        These are not usually called from Fortran but allow Fortran users
    to transparently set these monitors from .F code
-   
+
    functions, hence no STDCALL
 */
 
@@ -80,7 +80,7 @@ void  kspmonitordefault_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscEr
 {
   *ierr = KSPMonitorDefault(*ksp,*it,*norm,ctx);
 }
- 
+
 void  kspmonitorsingularvalue_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPMonitorSingularValue(*ksp,*it,*norm,ctx);

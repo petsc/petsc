@@ -29,7 +29,7 @@ PetscErrorCode PetscFreeSpaceGet(PetscInt n,PetscFreeSpaceList *list)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFreeSpaceContiguous"
-PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head,PetscInt *space) 
+PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head,PetscInt *space)
 {
   PetscFreeSpaceList a;
   PetscErrorCode     ierr;
@@ -48,12 +48,12 @@ PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head,PetscInt *space
 
 /*
   PetscFreeSpaceContiguous_LU -
-    Copy a linket list obtained from matrix symbolic ILU or LU factorization into a contiguous array 
+    Copy a linket list obtained from matrix symbolic ILU or LU factorization into a contiguous array
   that enables an efficient matrix triangular solve.
 
    Input Parameters:
 +  head - linked list of column indices obtained from matrix symbolic ILU or LU factorization
-.  space - an allocated int array with length nnz of factored matrix. 
+.  space - an allocated int array with length nnz of factored matrix.
 .  n - order of the matrix
 .  bi - row pointer of factored matrix L with length n+1.
 -  bdiag - int array of length n+1. bdiag[i] points to diagonal of U(i,:), and bdiag[n] points to entry of U(n-1,0)-1.
@@ -65,7 +65,7 @@ PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head,PetscInt *space
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscFreeSpaceContiguous_LU"
-PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *space,PetscInt n,PetscInt *bi,PetscInt *bdiag) 
+PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *space,PetscInt n,PetscInt *bi,PetscInt *bdiag)
 {
   PetscFreeSpaceList a;
   PetscErrorCode     ierr;
@@ -74,40 +74,40 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *sp
 
   PetscFunctionBegin;
   bi_temp = bi[n];
-  row       = 0; 
-  total     = 0; 
+  row       = 0;
+  total     = 0;
   nnzL  = bdiag[0];
   while ((*head)) {
     total += (*head)->local_used;
     array  = (*head)->array_head;
-  
+
     while (row < n) {
       if (bi[row+1] > total) break;
-      /* copy array entries into bj for this row */  
+      /* copy array entries into bj for this row */
       nnz  = bi[row+1] - bi[row];
       /* set bi[row] for new datastruct */
       if (row == 0 ){
         bi[row] = 0;
       } else {
         bi[row] = bi[row-1] + nnzL; /* nnzL of previous row */
-      } 
+      }
 
       /* L part */
       nnzL = bdiag[row];
       bj   = space+bi[row];
       ierr = PetscMemcpy(bj,array,nnzL*sizeof(PetscInt));CHKERRQ(ierr);
-    
+
       /* diagonal entry */
       bdiag[row] = bi_temp - 1;
       space[bdiag[row]] = row;
 
       /* U part */
-      nnzU        = nnz - nnzL; 
+      nnzU        = nnz - nnzL;
       bi_temp = bi_temp - nnzU;
       nnzU --;      /* exclude diagonal */
       bj = space + bi_temp;
       ierr = PetscMemcpy(bj,array+nnzL+1,nnzU*sizeof(PetscInt));CHKERRQ(ierr);
-      array += nnz; 
+      array += nnz;
       row++;
     }
 
@@ -125,12 +125,12 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *sp
 
 /*
   PetscFreeSpaceContiguous_Cholesky -
-    Copy a linket list obtained from matrix symbolic ICC or Cholesky factorization into a contiguous array 
+    Copy a linket list obtained from matrix symbolic ICC or Cholesky factorization into a contiguous array
   that enables an efficient matrix triangular solve.
 
    Input Parameters:
 +  head - linked list of column indices obtained from matrix symbolic ICC or Cholesky factorization
-.  space - an allocated int array with length nnz of factored matrix. 
+.  space - an allocated int array with length nnz of factored matrix.
 .  n - order of the matrix
 .  ui - row pointer of factored matrix with length n+1. All entries are set based on the traditional layout U matrix.
 -  udiag - int array of length n.
@@ -144,27 +144,27 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head,PetscInt *sp
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFreeSpaceContiguous_Cholesky"
-PetscErrorCode PetscFreeSpaceContiguous_Cholesky(PetscFreeSpaceList *head,PetscInt *space,PetscInt n,PetscInt *ui,PetscInt *udiag) 
+PetscErrorCode PetscFreeSpaceContiguous_Cholesky(PetscFreeSpaceList *head,PetscInt *space,PetscInt n,PetscInt *ui,PetscInt *udiag)
 {
   PetscFreeSpaceList a;
   PetscErrorCode     ierr;
   PetscInt           row,nnz,*uj,*array,total;
 
   PetscFunctionBegin;
-  row   = 0; 
-  total = 0; 
+  row   = 0;
+  total = 0;
   while (*head) {
     total += (*head)->local_used;
     array  = (*head)->array_head;
-  
+
     while (row < n){
       if (ui[row+1] > total) break;
-      udiag[row] = ui[row+1] - 1;     /* points to the last entry of U(row,:) */     
+      udiag[row] = ui[row+1] - 1;     /* points to the last entry of U(row,:) */
       nnz  = ui[row+1] - ui[row] - 1; /* exclude diagonal */
       uj   = space + ui[row];
       ierr = PetscMemcpy(uj,array+1,nnz*sizeof(PetscInt));CHKERRQ(ierr);
       uj[nnz] = array[0]; /* diagonal */
-      array += nnz + 1; 
+      array += nnz + 1;
       row++;
     }
 
@@ -178,7 +178,7 @@ PetscErrorCode PetscFreeSpaceContiguous_Cholesky(PetscFreeSpaceList *head,PetscI
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFreeSpaceDestroy"
-PetscErrorCode PetscFreeSpaceDestroy(PetscFreeSpaceList head) 
+PetscErrorCode PetscFreeSpaceDestroy(PetscFreeSpaceList head)
 {
   PetscFreeSpaceList a;
   PetscErrorCode     ierr;

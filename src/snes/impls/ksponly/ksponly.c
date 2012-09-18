@@ -1,7 +1,7 @@
 
 #include <petsc-private/snesimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSolve_KSPONLY"
 static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
 {
@@ -49,7 +49,7 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetUp_KSPONLY"
 static PetscErrorCode SNESSetUp_KSPONLY(SNES snes)
 {
@@ -60,7 +60,7 @@ static PetscErrorCode SNESSetUp_KSPONLY(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESDestroy_KSPONLY"
 static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
 {
@@ -80,7 +80,7 @@ static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESCreate_KSPONLY"
 PetscErrorCode  SNESCreate_KSPONLY(SNES snes)
 {

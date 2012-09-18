@@ -36,7 +36,7 @@ J*/
 #define   KSPSTCG       "stcg"
 #define   KSPGLTR       "gltr"
 #define KSPGMRES      "gmres"
-#define   KSPFGMRES     "fgmres" 
+#define   KSPFGMRES     "fgmres"
 #define   KSPLGMRES     "lgmres"
 #define   KSPDGMRES     "dgmres"
 #define   KSPPGMRES     "pgmres"
@@ -113,7 +113,7 @@ $     -ksp_type my_solver
    Level: advanced
 
    Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be 
+          and others of the form ${any_environmental_variable} occuring in pathname will be
           replaced with appropriate values.
          If your function is not being put into a shared library then use KSPRegister() instead
 
@@ -204,7 +204,7 @@ PETSC_EXTERN PetscErrorCode KSPGCRSetModifyPC(KSP,PetscErrorCode (*)(KSP,PetscIn
 
    Level: advanced
 
-.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(), 
+.seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),
           KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSPGMRESModifiedGramSchmidtOrthogonalization()
 
 E*/
@@ -223,13 +223,13 @@ PETSC_EXTERN const char *const KSPGMRESCGSRefinementTypes[];
 M*/
 
 /*MC
-    KSP_GMRES_CGS_REFINE_IFNEEDED - Do the classical (unmodified) Gram-Schmidt process and one step of 
+    KSP_GMRES_CGS_REFINE_IFNEEDED - Do the classical (unmodified) Gram-Schmidt process and one step of
           iterative refinement if an estimate of the orthogonality of the resulting vectors indicates
           poor orthogonality.
 
    Level: advanced
 
-   Note: This is slower than KSP_GMRES_CGS_REFINE_NEVER because it requires an extra norm computation to 
+   Note: This is slower than KSP_GMRES_CGS_REFINE_NEVER because it requires an extra norm computation to
      estimate the orthogonality but is more stable.
 
 .seealso: KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),
@@ -320,7 +320,7 @@ PETSC_EXTERN PetscErrorCode PCRedistributeGetKSP(PC,KSP*);
    Each solver only supports a subset of these and some may support different ones
    depending on left or right preconditioning, see KSPSetPCSide()
 
-   Notes: this must match finclude/petscksp.h 
+   Notes: this must match finclude/petscksp.h
 
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
           KSPSetConvergenceTest(), KSPSetPCSide()
@@ -330,7 +330,7 @@ typedef enum {KSP_NORM_DEFAULT = -1,KSP_NORM_NONE = 0,KSP_NORM_PRECONDITIONED = 
 PETSC_EXTERN const char *const*const KSPNormTypes;
 
 /*MC
-    KSP_NORM_NONE - Do not compute a norm during the Krylov process. This will 
+    KSP_NORM_NONE - Do not compute a norm during the Krylov process. This will
           possibly save some computation but means the convergence test cannot
           be based on a norm of a residual etc.
 
@@ -342,7 +342,7 @@ PETSC_EXTERN const char *const*const KSPNormTypes;
 M*/
 
 /*MC
-    KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual and pass that to the 
+    KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual and pass that to the
        convergence test routine.
 
    Level: advanced
@@ -351,7 +351,7 @@ M*/
 M*/
 
 /*MC
-    KSP_NORM_UNPRECONDITIONED - Compute the norm of the true residual (b - A*x) and pass that to the 
+    KSP_NORM_UNPRECONDITIONED - Compute the norm of the true residual (b - A*x) and pass that to the
        convergence test routine.
 
    Level: advanced
@@ -360,7 +360,7 @@ M*/
 M*/
 
 /*MC
-    KSP_NORM_NATURAL - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the 
+    KSP_NORM_NATURAL - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the
        convergence test routine. This is only supported by  KSPCG, KSPCR, KSPCGNE, KSPCGS
 
    Level: advanced
@@ -375,14 +375,14 @@ PETSC_EXTERN PetscErrorCode KSPSetCheckNormIteration(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool );
 
 /*E
-    KSPConvergedReason - reason a Krylov method was said to 
+    KSPConvergedReason - reason a Krylov method was said to
          have converged or diverged
 
    Level: beginner
 
    Notes: See KSPGetConvergedReason() for explanation of each value
 
-   Developer notes: this must match finclude/petscksp.h 
+   Developer notes: this must match finclude/petscksp.h
 
       The string versions of these are KSPConvergedReasons; if you change
       any of the values here also change them that array of names.
@@ -409,7 +409,7 @@ typedef enum {/* converged */
               KSP_DIVERGED_INDEFINITE_PC       = -8,
               KSP_DIVERGED_NAN                 = -9,
               KSP_DIVERGED_INDEFINITE_MAT      = -10,
- 
+
               KSP_CONVERGED_ITERATING          =  0} KSPConvergedReason;
 PETSC_EXTERN const char *const*KSPConvergedReasons;
 
@@ -457,7 +457,7 @@ M*/
 M*/
 
 /*MC
-     KSP_DIVERGED_ITS - Ran out of iterations before any convergence criteria was 
+     KSP_DIVERGED_ITS - Ran out of iterations before any convergence criteria was
       reached
 
    Level: beginner
@@ -467,8 +467,8 @@ M*/
 M*/
 
 /*MC
-     KSP_CONVERGED_ITS - Used by the KSPPREONLY solver after the single iteration of 
-           the preconditioner is applied. Also used when the KSPSkipConverged() convergence 
+     KSP_CONVERGED_ITS - Used by the KSPPREONLY solver after the single iteration of
+           the preconditioner is applied. Also used when the KSPSkipConverged() convergence
            test routine is set in KSP.
 
 
@@ -519,7 +519,7 @@ M*/
 
    Level: beginner
 
-     Notes: This can happen with the PCICC preconditioner, use -pc_factor_shift_positive_definite to force 
+     Notes: This can happen with the PCICC preconditioner, use -pc_factor_shift_positive_definite to force
   the PCICC preconditioner to generate a positive definite preconditioner
 
 .seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()

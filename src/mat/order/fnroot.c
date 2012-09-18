@@ -31,9 +31,9 @@ extern PetscErrorCode SPARSEPACKrootls(PetscInt*, PetscInt *, PetscInt *, PetscI
 /*      ROOTLS.                                                 */
 /*                                                              */
 /****************************************************************/
-#undef __FUNCT__  
-#define __FUNCT__ "SPARSEPACKfnroot" 
-PetscErrorCode SPARSEPACKfnroot(PetscInt *root, PetscInt *xadj, PetscInt *adjncy,  
+#undef __FUNCT__
+#define __FUNCT__ "SPARSEPACKfnroot"
+PetscErrorCode SPARSEPACKfnroot(PetscInt *root, PetscInt *xadj, PetscInt *adjncy,
                                 PetscInt *mask, PetscInt *nlvl, PetscInt *xls, PetscInt *ls)
 {
     /* System generated locals */

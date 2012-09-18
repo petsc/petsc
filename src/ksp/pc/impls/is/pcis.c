@@ -2,7 +2,7 @@
 #include "../src/ksp/pc/impls/is/pcis.h" /*I "petscpc.h" I*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCISSetSubdomainDiagonalScaling_IS"
 static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_factors)
 {
@@ -12,12 +12,12 @@ static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_fact
   PetscFunctionBegin;
   ierr = VecDestroy(&pcis->D);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)scaling_factors);CHKERRQ(ierr);
-  pcis->D = scaling_factors; 
+  pcis->D = scaling_factors;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCISSetSubdomainDiagonalScaling"
 /*@
  PCISSetSubdomainDiagonalScaling - Set diagonal scaling for PCIS.
@@ -46,19 +46,19 @@ PetscErrorCode PCISSetSubdomainDiagonalScaling(PC pc, Vec scaling_factors)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCISSetSubdomainScalingFactor_IS"
 static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
 {
   PC_IS  *pcis = (PC_IS*)pc->data;
 
   PetscFunctionBegin;
-  pcis->scaling_factor = scal; 
+  pcis->scaling_factor = scal;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCISSetSubdomainScalingFactor"
 /*@
  PCISSetSubdomainScalingFactor - Set scaling factor for PCIS.
@@ -89,19 +89,19 @@ PetscErrorCode PCISSetSubdomainScalingFactor(PC pc, PetscScalar scal)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCISSetUp - 
+   PCISSetUp -
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCISSetUp"
 PetscErrorCode  PCISSetUp(PC pc)
 {
   PC_IS           *pcis = (PC_IS*)(pc->data);
-  Mat_IS          *matis = (Mat_IS*)pc->mat->data; 
+  Mat_IS          *matis = (Mat_IS*)pc->mat->data;
   PetscInt        i;
   PetscErrorCode  ierr;
   PetscBool       flg;
   Vec    counter;
-  
+
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->mat,MATIS,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Preconditioner type of Neumann Neumman requires matrix of type MATIS");
@@ -206,10 +206,10 @@ PetscErrorCode  PCISSetUp(PC pc)
     ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
     ierr = VecCopy(pcis->vec1_B,pcis->D);CHKERRQ(ierr);
     ierr = VecReciprocal(pcis->D);CHKERRQ(ierr);
-    ierr = VecScale(pcis->D,pcis->scaling_factor);CHKERRQ(ierr); 
+    ierr = VecScale(pcis->D,pcis->scaling_factor);CHKERRQ(ierr);
   } else {
     ierr = VecPointwiseDivide(pcis->D,pcis->D,pcis->vec1_B);CHKERRQ(ierr);
-  } 
+  }
 
   /* See historical note 01, at the bottom of this file. */
 
@@ -263,7 +263,7 @@ PetscErrorCode  PCISSetUp(PC pc)
 
       ierr = PetscOptionsGetBool(((PetscObject)pc_ctx)->prefix,"-pc_is_not_remove_nullspace_floating",&not_remove_nullspace_floating,PETSC_NULL);CHKERRQ(ierr);
 
-      if (pcis->pure_neumann) {  /* floating subdomain */ 
+      if (pcis->pure_neumann) {  /* floating subdomain */
 	if (!(not_damp_floating)) {
           ierr = PCFactorSetShiftType(pc_ctx,MAT_SHIFT_NONZERO);CHKERRQ(ierr);
           ierr = PCFactorSetShiftAmount(pc_ctx,floating_factor);CHKERRQ(ierr);
@@ -301,7 +301,7 @@ PetscErrorCode  PCISSetUp(PC pc)
 /*
    PCISDestroy -
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCISDestroy"
 PetscErrorCode  PCISDestroy(PC pc)
 {
@@ -343,9 +343,9 @@ PetscErrorCode  PCISDestroy(PC pc)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCISCreate - 
+   PCISCreate -
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCISCreate"
 PetscErrorCode  PCISCreate(PC pc)
 {
@@ -402,7 +402,7 @@ PetscErrorCode  PCISCreate(PC pc)
 .  vec2_D - garbage (used as work space)
 
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCISApplySchur"
 PetscErrorCode  PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
@@ -498,7 +498,7 @@ PetscErrorCode  PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
 
   PetscFunctionBegin;
   /*
-    Neumann solvers. 
+    Neumann solvers.
     Applying the inverse of the local Schur complement, i.e, solving a Neumann
     Problem with zero at the interior nodes of the RHS and extracting the interface
     part of the solution. inverse Schur complement is applied to b and the result

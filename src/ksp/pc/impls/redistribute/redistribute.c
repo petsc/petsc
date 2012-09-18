@@ -15,7 +15,7 @@ typedef struct {
   Vec          work;
 } PC_Redistribute;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_Redistribute"
 static PetscErrorCode PCView_Redistribute(PC pc,PetscViewer viewer)
 {
@@ -40,7 +40,7 @@ static PetscErrorCode PCView_Redistribute(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Redistribute"
 static PetscErrorCode PCSetUp_Redistribute(PC pc)
 {
@@ -76,7 +76,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
     /* count non-diagonal rows on process */
     ierr = MatGetOwnershipRange(pc->mat,&rstart,&rend);CHKERRQ(ierr);
-    cnt  = 0;  
+    cnt  = 0;
     for (i=rstart; i<rend; i++) {
       ierr = MatGetRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       if (nz > 1) cnt++;
@@ -86,7 +86,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = PetscMalloc((rend - rstart - cnt)*sizeof(PetscInt),&drows);CHKERRQ(ierr);
 
     /* list non-diagonal rows on process */
-    cnt  = 0; dcnt = 0;  
+    cnt  = 0; dcnt = 0;
     for (i=rstart; i<rend; i++) {
       ierr = MatGetRow(pc->mat,i,&nz,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       if (nz > 1) rows[cnt++] = i;
@@ -101,7 +101,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
     rstart = map->rstart;
     rend   = map->rend;
-    
+
     /* create PetscLayout for load-balanced non-diagonal rows on each process */
     ierr = PetscLayoutCreate(comm,&nmap);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&cnt,&ncnt,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
@@ -111,10 +111,10 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
     ierr = MatGetSize(pc->pmat,&NN,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscInfo2(pc,"Number of diagonal rows eliminated %d, percentage eliminated %g\n",NN-ncnt,((PetscReal)(NN-ncnt))/((PetscReal)(NN)));
-    /*  
-	this code is taken from VecScatterCreate_PtoS() 
-	Determines what rows need to be moved where to 
-	load balance the non-diagonal rows 
+    /*
+	this code is taken from VecScatterCreate_PtoS()
+	Determines what rows need to be moved where to
+	load balance the non-diagonal rows
     */
     /*  count number of contributors to each processor */
     ierr = PetscMalloc2(size,PetscMPIInt,&nprocs,cnt,PetscInt,&owner);CHKERRQ(ierr);
@@ -126,7 +126,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       for (; j<size; j++) {
 	if (i < nmap->range[j+1]) {
 	  if (!nprocs[j]++) nsends++;
-	  owner[i-rstart] = j; 
+	  owner[i-rstart] = j;
 	  break;
 	}
       }
@@ -136,7 +136,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = PetscGatherMessageLengths(comm,nsends,nrecvs,nprocs,&onodes1,&olengths1);CHKERRQ(ierr);
     ierr = PetscSortMPIIntWithArray(nrecvs,onodes1,olengths1);CHKERRQ(ierr);
     recvtotal = 0; for (i=0; i<nrecvs; i++) recvtotal += olengths1[i];
-    
+
     /* post receives:  rvalues - rows I will own; count - nu */
     ierr = PetscMalloc3(recvtotal,PetscInt,&rvalues,nrecvs,PetscInt,&source,nrecvs,MPI_Request,&recv_waits);CHKERRQ(ierr);
     count  = 0;
@@ -146,12 +146,12 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     }
 
     /* do sends:
-       1) starts[i] gives the starting index in svalues for stuff going to 
+       1) starts[i] gives the starting index in svalues for stuff going to
        the ith processor
     */
     ierr = PetscMalloc3(cnt,PetscInt,&svalues,nsends,MPI_Request,&send_waits,size,PetscInt,&starts);CHKERRQ(ierr);
-    starts[0]  = 0; 
-    for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
+    starts[0]  = 0;
+    for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];}
     for (i=0; i<cnt; i++) {
       svalues[starts[owner[i]]++] = rows[i];
     }
@@ -161,16 +161,16 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     ierr = PetscFree(rows);CHKERRQ(ierr);
 
     starts[0] = 0;
-    for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
+    for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];}
     count = 0;
     for (i=0; i<size; i++) {
       if (nprocs[i]) {
 	ierr = MPI_Isend(svalues+starts[i],nprocs[i],MPIU_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
       }
     }
-    
+
     /*  wait on receives */
-    count  = nrecvs; 
+    count  = nrecvs;
     slen   = 0;
     while (count) {
       ierr = MPI_Waitany(nrecvs,recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
@@ -180,9 +180,9 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       count--;
     }
     if (slen != recvtotal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Total message lengths %D not expected %D",slen,recvtotal);
-    
+
     ierr = ISCreateGeneral(comm,slen,rvalues,PETSC_COPY_VALUES,&red->is);CHKERRQ(ierr);
-    
+
     /* free up all work space */
     ierr = PetscFree(olengths1);CHKERRQ(ierr);
     ierr = PetscFree(onodes1);CHKERRQ(ierr);
@@ -221,7 +221,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_Redistribute"
 static PetscErrorCode PCApply_Redistribute(PC pc,Vec b,Vec x)
 {
@@ -258,7 +258,7 @@ static PetscErrorCode PCApply_Redistribute(PC pc,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_Redistribute"
 static PetscErrorCode PCDestroy_Redistribute(PC pc)
 {
@@ -278,7 +278,7 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Redistribute"
 static PetscErrorCode PCSetFromOptions_Redistribute(PC pc)
 {
@@ -290,7 +290,7 @@ static PetscErrorCode PCSetFromOptions_Redistribute(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCRedistributeGetKSP"
 /*@
    PCRedistributeGetKSP - Gets the KSP created by the PCREDISTRIBUTE
@@ -316,7 +316,7 @@ PetscErrorCode  PCRedistributeGetKSP(PC pc,KSP *innerksp)
   PetscValidPointer(innerksp,2);
   *innerksp = red->ksp;
   PetscFunctionReturn(0);
-}  
+}
 
 /* -------------------------------------------------------------------------------------*/
 /*MC
@@ -326,7 +326,7 @@ PetscErrorCode  PCRedistributeGetKSP(PC pc,KSP *innerksp)
 
      Notes:  Usually run this with -ksp_type preonly
 
-     If you have used MatZeroRows() to eliminate (for example, Dirichlet) boundary conditions for a symmetric problem then you can use, for example, -ksp_type preonly 
+     If you have used MatZeroRows() to eliminate (for example, Dirichlet) boundary conditions for a symmetric problem then you can use, for example, -ksp_type preonly
      -pc_type redistribute -redistribute_ksp_type cg -redistribute_pc_type bjacobi -redistribute_sub_pc_type icc to take advantage of the symmetry.
 
      This does NOT call a partitioner to reorder rows to lower communication; the ordering of the rows in the original matrix and redistributed matrix is the same.
@@ -339,31 +339,31 @@ PetscErrorCode  PCRedistributeGetKSP(PC pc,KSP *innerksp)
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_Redistribute"
 PetscErrorCode  PCCreate_Redistribute(PC pc)
 {
   PetscErrorCode  ierr;
   PC_Redistribute *red;
   const char      *prefix;
-  
+
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,PC_Redistribute,&red);CHKERRQ(ierr);
-  pc->data            = (void*)red; 
+  pc->data            = (void*)red;
 
   pc->ops->apply           = PCApply_Redistribute;
   pc->ops->applytranspose  = 0;
   pc->ops->setup           = PCSetUp_Redistribute;
   pc->ops->destroy         = PCDestroy_Redistribute;
   pc->ops->setfromoptions  = PCSetFromOptions_Redistribute;
-  pc->ops->view            = PCView_Redistribute;    
+  pc->ops->view            = PCView_Redistribute;
 
   ierr = KSPCreate(((PetscObject)pc)->comm,&red->ksp);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(pc,red->ksp);CHKERRQ(ierr);
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr); 
-  ierr = KSPAppendOptionsPrefix(red->ksp,"redistribute_");CHKERRQ(ierr); 
+  ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(red->ksp,"redistribute_");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

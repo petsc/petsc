@@ -1,6 +1,6 @@
 
 /*
-    The most basic AO application ordering routines. These store the 
+    The most basic AO application ordering routines. These store the
   entire orderings on each processor.
 */
 
@@ -14,8 +14,8 @@ typedef struct {
 /*
        All processors have the same data so processor 1 prints it
 */
-#undef __FUNCT__  
-#define __FUNCT__ "AOView_Basic" 
+#undef __FUNCT__
+#define __FUNCT__ "AOView_Basic"
 PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -28,7 +28,7 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
   ierr = MPI_Comm_rank(((PetscObject)ao)->comm,&rank);CHKERRQ(ierr);
   if (!rank){
     ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-    if (iascii) { 
+    if (iascii) {
       ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %D\n",ao->N);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,  "PETSc->App  App->PETSc\n");CHKERRQ(ierr);
       for (i=0; i<ao->N; i++) {
@@ -40,8 +40,8 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AODestroy_Basic" 
+#undef __FUNCT__
+#define __FUNCT__ "AODestroy_Basic"
 PetscErrorCode AODestroy_Basic(AO ao)
 {
   AO_Basic       *aobasic = (AO_Basic*)ao->data;
@@ -53,8 +53,8 @@ PetscErrorCode AODestroy_Basic(AO ao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOBasicGetIndices_Private" 
+#undef __FUNCT__
+#define __FUNCT__ "AOBasicGetIndices_Private"
 PetscErrorCode AOBasicGetIndices_Private(AO ao,PetscInt **app,PetscInt **petsc)
 {
   AO_Basic *basic = (AO_Basic*)ao->data;
@@ -65,8 +65,8 @@ PetscErrorCode AOBasicGetIndices_Private(AO ao,PetscInt **app,PetscInt **petsc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOPetscToApplication_Basic"  
+#undef __FUNCT__
+#define __FUNCT__ "AOPetscToApplication_Basic"
 PetscErrorCode AOPetscToApplication_Basic(AO ao,PetscInt n,PetscInt *ia)
 {
   PetscInt i,N=ao->N;
@@ -83,8 +83,8 @@ PetscErrorCode AOPetscToApplication_Basic(AO ao,PetscInt n,PetscInt *ia)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOApplicationToPetsc_Basic" 
+#undef __FUNCT__
+#define __FUNCT__ "AOApplicationToPetsc_Basic"
 PetscErrorCode AOApplicationToPetsc_Basic(AO ao,PetscInt n,PetscInt *ia)
 {
   PetscInt i,N=ao->N;
@@ -101,7 +101,7 @@ PetscErrorCode AOApplicationToPetsc_Basic(AO ao,PetscInt n,PetscInt *ia)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOPetscToApplicationPermuteInt_Basic"
 PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
 {
@@ -120,7 +120,7 @@ PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOApplicationToPetscPermuteInt_Basic"
 PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
 {
@@ -139,7 +139,7 @@ PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOPetscToApplicationPermuteReal_Basic"
 PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
 {
@@ -158,7 +158,7 @@ PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOApplicationToPetscPermuteReal_Basic"
 PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
 {
@@ -188,8 +188,8 @@ static struct _AOOps AOOps_Basic = {
        AOApplicationToPetscPermuteReal_Basic};
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "AOCreate_Basic" 
+#undef __FUNCT__
+#define __FUNCT__ "AOCreate_Basic"
 PetscErrorCode  AOCreate_Basic(AO ao)
 {
   AO_Basic       *aobasic;
@@ -236,7 +236,7 @@ PetscErrorCode  AOCreate_Basic(AO ao)
       ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
       petsc = (PetscInt*)mypetsc;
     }
-  } 
+  }
 
   /* get all indices on all processors */
   ierr   = PetscMalloc2(N,PetscInt,&allpetsc,N,PetscInt,&allapp);CHKERRQ(ierr);
@@ -301,8 +301,8 @@ PetscErrorCode  AOCreate_Basic(AO ao)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOCreateBasic" 
+#undef __FUNCT__
+#define __FUNCT__ "AOCreateBasic"
 /*@C
    AOCreateBasic - Creates a basic application ordering using two integer arrays.
 
@@ -312,7 +312,7 @@ EXTERN_C_END
 +  comm - MPI communicator that is to share AO
 .  napp - size of integer arrays
 .  myapp - integer array that defines an ordering
--  mypetsc - integer array that defines another ordering (may be PETSC_NULL to 
+-  mypetsc - integer array that defines another ordering (may be PETSC_NULL to
              indicate the natural ordering, that is 0,1,2,3,...)
 
    Output Parameter:
@@ -320,7 +320,7 @@ EXTERN_C_END
 
    Level: beginner
 
-    Notes: the arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"  
+    Notes: the arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
            in the indices. Use AOCreateMapping() or AOCreateMappingIS() if you wish to have "holes" in the indices.
 
 .keywords: AO, create
@@ -348,8 +348,8 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOCreateBasicIS" 
+#undef __FUNCT__
+#define __FUNCT__ "AOCreateBasicIS"
 /*@C
    AOCreateBasicIS - Creates a basic application ordering using two index sets.
 
@@ -365,8 +365,8 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
 
    Level: beginner
 
-    Notes: the index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates; 
-           that is there cannot be any "holes"  
+    Notes: the index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
+           that is there cannot be any "holes"
 
 .keywords: AO, create
 

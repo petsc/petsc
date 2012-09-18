@@ -1,10 +1,10 @@
- 
+
 #include <petsc-private/matimpl.h>    /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <assert.h>
 
-/* linked list methods 
+/* linked list methods
  *
  *  PetscCDCreate
  */
@@ -14,11 +14,11 @@ PetscErrorCode PetscCDCreate( PetscInt a_size, PetscCoarsenData **a_out )
   PetscCoarsenData *ail;
   PetscInt ii;
   /* alocate pool, partially */
-  ierr = PetscMalloc(sizeof(PetscCoarsenData), &ail); CHKERRQ(ierr); 
+  ierr = PetscMalloc(sizeof(PetscCoarsenData), &ail); CHKERRQ(ierr);
   *a_out = ail;
   ail->pool_list.next = PETSC_NULL;
   ail->pool_list.array = PETSC_NULL;
-  ail->chk_sz = 0; 
+  ail->chk_sz = 0;
   /* allocate array */
   ail->size = a_size;
   ierr = PetscMalloc(a_size*sizeof(PetscCDIntNd*), &ail->array );
@@ -38,7 +38,7 @@ PetscErrorCode PetscCDDestroy( PetscCoarsenData *ail )
   PetscCDArrNd *n = &ail->pool_list;
   n = n->next;
   while( n ){
-    PetscCDArrNd *lstn = n; 
+    PetscCDArrNd *lstn = n;
     n = n->next;
     ierr = PetscFree( lstn );  CHKERRQ(ierr);
   }
@@ -81,7 +81,7 @@ PetscErrorCode PetscCDGetNewNode( PetscCoarsenData *ail, PetscCDIntNd **a_out, P
       ail->new_left = ail->chk_sz;
       ail->new_node->next = PETSC_NULL;
     }
-    else if ( !ail->new_left ){      
+    else if ( !ail->new_left ){
       PetscCDArrNd *node;
       ierr = PetscMalloc(ail->chk_sz*sizeof(PetscCDIntNd) + sizeof(PetscCDArrNd), &node ); CHKERRQ(ierr);
       node->array = (PetscCDIntNd*)(node + 1);
@@ -203,7 +203,7 @@ PetscErrorCode PetscCDPrint( const PetscCoarsenData *ail, MPI_Comm comm )
     n = ail->array[ii];
     if (n)PetscPrintf(comm,"[%d]%s list %d:\n",mype,__FUNCT__,ii);
     while(n){
-      PetscPrintf(comm,"\t[%d] %d) id %d\n",mype,++kk,n->gid);  
+      PetscPrintf(comm,"\t[%d] %d) id %d\n",mype,++kk,n->gid);
       n = n->next;
     }
   }
@@ -321,7 +321,7 @@ PetscErrorCode PetscCDGetASMBlocks( const PetscCoarsenData *ail, const PetscInt 
   PetscCDIntNd *n;
   PetscInt lsz,ii,kk,*idxs,jj;
   IS *is_loc;
-  
+
   for (ii=kk=0;ii<ail->size;ii++){
     if (ail->array[ii]) kk++;
   }
@@ -329,7 +329,7 @@ PetscErrorCode PetscCDGetASMBlocks( const PetscCoarsenData *ail, const PetscInt 
 
   ierr = PetscMalloc( kk*sizeof(IS*), &is_loc ); CHKERRQ(ierr);
   *a_local_is = is_loc; /* out */
-  
+
   for (ii=kk=0;ii<ail->size;ii++){
     for ( lsz=0, n=ail->array[ii] ; n ; lsz++, n=n->next ) /* void */;
     if ( lsz ){
@@ -391,7 +391,7 @@ int gamg_hem_compare (const void *a, const void *b)
    Input Parameter:
    . perm - permutation
    . a_Gmat - glabal matrix of graph (data not defined)
-   . verbose - 
+   . verbose -
    Output Parameter:
    . a_locals_llist - array of list of local nodes rooted at local node
 */
@@ -399,7 +399,7 @@ int gamg_hem_compare (const void *a, const void *b)
 #define __FUNCT__ "heavyEdgeMatchAgg"
 PetscErrorCode heavyEdgeMatchAgg( const IS perm,
                                   const Mat a_Gmat,
-                                  const PetscInt verbose, 
+                                  const PetscInt verbose,
                                   PetscCoarsenData **a_locals_llist
                                   )
 {
@@ -445,7 +445,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
   ierr = MatDuplicate(a_Gmat,MAT_COPY_VALUES,&cMat);  CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare( (PetscObject)a_Gmat, MATMPIAIJ, &isMPI ); CHKERRQ(ierr);
   iter = 0;
-  while( iter++ < n_iter ) { 
+  while( iter++ < n_iter ) {
     PetscScalar *cpcol_gid,*cpcol_max_ew,*cpcol_max_pe,*lid_max_ew;
     PetscBool   *cpcol_matched;
     PetscMPIInt *cpcol_pe,proc;
@@ -454,7 +454,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
     Edge        *Edges;
     PetscInt     gid;
     const PetscInt *perm_ix, n_sub_its = 120;
-    
+
     /* get submatrices of cMat */
     if (isMPI) {
       mpimat = (Mat_MPIAIJ*)cMat->data;
@@ -473,7 +473,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
     /* set max edge on nodes */
     ierr = MatGetVecs( cMat, &locMaxEdge, 0 );         CHKERRQ(ierr);
     ierr = MatGetVecs( cMat, &locMaxPE, 0 );         CHKERRQ(ierr);
-    
+
     /* get 'cpcol_pe' & 'cpcol_gid' & init. 'cpcol_matched' using 'mpimat->lvec' */
     if ( mpimat ) {
       Vec vec; PetscScalar vval;
@@ -489,10 +489,10 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
       ierr = VecScatterBegin(mpimat->Mvctx,vec,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
       ierr =   VecScatterEnd(mpimat->Mvctx,vec,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
       ierr = VecGetArray( mpimat->lvec, &cpcol_gid ); CHKERRQ(ierr); /* get proc ID in 'cpcol_gid' */
-      ierr = VecGetLocalSize( mpimat->lvec, &n ); CHKERRQ(ierr); 
+      ierr = VecGetLocalSize( mpimat->lvec, &n ); CHKERRQ(ierr);
       ierr = PetscMalloc( n*sizeof(PetscInt), &cpcol_pe ); CHKERRQ(ierr);
       for (kk=0;kk<n;kk++) cpcol_pe[kk] = (PetscMPIInt)PetscRealPart(cpcol_gid[kk]);
-      ierr = VecRestoreArray( mpimat->lvec, &cpcol_gid ); CHKERRQ(ierr);         
+      ierr = VecRestoreArray( mpimat->lvec, &cpcol_gid ); CHKERRQ(ierr);
 
       /* cpcol_gid */
       for (kk=0,gid=my0;kk<nloc;kk++,gid++) {
@@ -507,7 +507,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
       ierr = VecGetArray( mpimat->lvec, &cpcol_gid ); CHKERRQ(ierr); /* get proc ID in 'cpcol_gid' */
 
       /* cpcol_matched */
-      ierr = VecGetLocalSize( mpimat->lvec, &n ); CHKERRQ(ierr); 
+      ierr = VecGetLocalSize( mpimat->lvec, &n ); CHKERRQ(ierr);
       ierr = PetscMalloc( n*sizeof(PetscBool), &cpcol_matched ); CHKERRQ(ierr);
       for (kk=0;kk<n;kk++) cpcol_matched[kk] = PETSC_FALSE;
     }
@@ -530,7 +530,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
         PetscInt nn,lid=kk;
         ii = matA->i; nn = ii[lid+1] - ii[lid];
         if ( (ix=lid_cprowID[lid]) != -1 ) { /* if I have any ghost neighbors */
-          ii = matB->compressedrow.i; 
+          ii = matB->compressedrow.i;
           nn += ii[ix+1] - ii[ix];
         }
         if ( nn < 2 ) {
@@ -547,7 +547,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
       PetscScalar vval;
       PetscInt lid = kk;
       PetscMPIInt max_pe=mype,pe;
-      ii = matA->i; n = ii[lid+1] - ii[lid]; idx = matA->j + ii[lid]; 
+      ii = matA->i; n = ii[lid+1] - ii[lid]; idx = matA->j + ii[lid];
       ap = matA->a + ii[lid];
       for (jj=0; jj<n; jj++) {
         PetscInt lidj = idx[jj];
@@ -566,9 +566,9 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
       }
       vval = max_e;
       ierr = VecSetValues( locMaxEdge, 1, &gid, &vval, INSERT_VALUES );  CHKERRQ(ierr);
-      
+
       vval = (PetscScalar)max_pe;
-      ierr = VecSetValues( locMaxPE, 1, &gid, &vval, INSERT_VALUES );  CHKERRQ(ierr); 
+      ierr = VecSetValues( locMaxPE, 1, &gid, &vval, INSERT_VALUES );  CHKERRQ(ierr);
     }
     ierr = VecAssemblyBegin( locMaxEdge ); CHKERRQ(ierr);
     ierr = VecAssemblyEnd( locMaxEdge ); CHKERRQ(ierr);
@@ -577,12 +577,12 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
 
     /* get 'cpcol_max_ew' & 'cpcol_max_pe' */
     if ( mpimat ) {
-      ierr = VecDuplicate( mpimat->lvec, &ghostMaxEdge ); CHKERRQ(ierr); 
+      ierr = VecDuplicate( mpimat->lvec, &ghostMaxEdge ); CHKERRQ(ierr);
       ierr = VecScatterBegin(mpimat->Mvctx,locMaxEdge,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr =   VecScatterEnd(mpimat->Mvctx,locMaxEdge,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecGetArray( ghostMaxEdge, &cpcol_max_ew ); CHKERRQ(ierr);
-      
-      ierr = VecDuplicate( mpimat->lvec, &ghostMaxPE ); CHKERRQ(ierr); 
+
+      ierr = VecDuplicate( mpimat->lvec, &ghostMaxPE ); CHKERRQ(ierr);
       ierr = VecScatterBegin(mpimat->Mvctx,locMaxPE,ghostMaxPE,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr =   VecScatterEnd(mpimat->Mvctx,locMaxPE,ghostMaxPE,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecGetArray( ghostMaxPE, &cpcol_max_pe ); CHKERRQ(ierr);
@@ -593,7 +593,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
     ierr = ISGetIndices( perm, &perm_ix );     CHKERRQ(ierr);
     for (nEdges=n_nz_row=kk=0;kk<nloc;kk++){
       PetscInt nn, lid = perm_ix[kk];
-      ii = matA->i; nn = n = ii[lid+1] - ii[lid]; idx = matA->j + ii[lid]; 
+      ii = matA->i; nn = n = ii[lid+1] - ii[lid]; idx = matA->j + ii[lid];
       ap = matA->a + ii[lid];
       for (jj=0; jj<n; jj++) {
         PetscInt lidj = idx[jj];        assert(PetscRealPart(ap[jj])>0.);
@@ -622,7 +622,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
       if ( nn > 1 ) n_nz_row++;
       else if ( iter == 1 ){
         /* should select this because it is technically in the MIS but lets not */
-        ierr = PetscCDRemoveAll( agg_llists, lid ); CHKERRQ(ierr);        
+        ierr = PetscCDRemoveAll( agg_llists, lid ); CHKERRQ(ierr);
       }
     }
     ierr = ISRestoreIndices(perm,&perm_ix);     CHKERRQ(ierr);
@@ -638,7 +638,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
     /* process - communicate - process */
     for (sub_it=0;sub_it<n_sub_its;sub_it++){
       PetscInt nactive_edges;
-      
+
       ierr = VecGetArray( locMaxEdge, &lid_max_ew );     CHKERRQ(ierr);
       for (kk=nactive_edges=0;kk<nEdges;kk++){
         /* HEM */
@@ -660,7 +660,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
         if ( PetscRealPart(lid_max_ew[lid0]) > e->weight + 1.e-12 ) {
           continue;
         }
-        
+
         if ( cpid1 == -1 ) {
           if ( PetscRealPart(lid_max_ew[lid1]) > e->weight + 1.e-12 ) {
             continue;
@@ -690,7 +690,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
               if ( cpcol_matched[lidj] ) continue;
               ew = PetscRealPart(ap[jj]); max_e = PetscRealPart(cpcol_max_ew[lidj]);
               /* check for max_e == to this edge and larger processor that will deal with this */
-              if ( ew > max_e - 1.e-12 && ew > PetscRealPart(lid_max_ew[lid0]) - 1.e-12 && 
+              if ( ew > max_e - 1.e-12 && ew > PetscRealPart(lid_max_ew[lid0]) - 1.e-12 &&
                   (PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]) > mype )
               {
                 isOK = PETSC_FALSE;
@@ -709,7 +709,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
                 if ( cpcol_matched[lidj] ) continue;
                 ew = PetscRealPart(ap[jj]); max_e = PetscRealPart(cpcol_max_ew[lidj]);
                 /* check for max_e == to this edge and larger processor that will deal with this */
-                if ( ew > max_e - 1.e-12 && ew > PetscRealPart(lid_max_ew[lid1]) - 1.e-12 && 
+                if ( ew > max_e - 1.e-12 && ew > PetscRealPart(lid_max_ew[lid1]) - 1.e-12 &&
                     (PetscMPIInt)PetscRealPart(cpcol_max_pe[lidj]) > mype ) {
                   isOK = PETSC_FALSE;
                 }
@@ -729,7 +729,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
             proc = cpcol_pe[cpid1];
             cpcol_matched[cpid1] = PETSC_TRUE; /* messing with VecGetArray array -- needed??? */
             ierr = PetscCDAppendID( deleted_list, proc, cpid1 ); CHKERRQ(ierr); /* cache to send messages */
-            ierr = PetscCDAppendID( deleted_list, proc, lid0 ); CHKERRQ(ierr); 
+            ierr = PetscCDAppendID( deleted_list, proc, lid0 ); CHKERRQ(ierr);
           }
           else {
             continue;
@@ -748,8 +748,8 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
 #define REQ_BF_SIZE 100
         MPI_Request *sreqs2[REQ_BF_SIZE],*rreqs2[REQ_BF_SIZE];
         MPI_Status status;
-        
-        /* send request */ 
+
+        /* send request */
         for (proc=0,nSend1=0;proc<npe;proc++){
           ierr = PetscCDEmptyAt(deleted_list,proc,&ise); CHKERRQ(ierr);
           if ( !ise ) nSend1++;
@@ -766,7 +766,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
             MPI_Request *request;
             assert(n%2==0);
             n /= 2;
-            ierr = PetscMalloc( (2 + 2*n + n*CHUNCK_SIZE)*sizeof(PetscInt) + 2*sizeof(MPI_Request), &sbuff ); 
+            ierr = PetscMalloc( (2 + 2*n + n*CHUNCK_SIZE)*sizeof(PetscInt) + 2*sizeof(MPI_Request), &sbuff );
             /* PetscMalloc4(2+2*n,PetscInt,sbuffs1[nSend1],n*CHUNCK_SIZE,PetscInt,rbuffs1[nSend1],1,MPI_Request,rreqs2[nSend1],1,MPI_Request,sreqs2[nSend1]); */
             CHKERRQ(ierr);
             /* save requests */
@@ -776,10 +776,10 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
             *pt++ = n; *pt++ = mype;
 
             ierr = PetscCDGetHeadPos(deleted_list,proc,&pos); CHKERRQ(ierr);
-            while(pos){              
-              PetscInt lid0, cpid, gid; 
+            while(pos){
+              PetscInt lid0, cpid, gid;
               ierr = PetscLLNGetID( pos, &cpid ); CHKERRQ(ierr);
-              gid = (PetscInt)PetscRealPart(cpcol_gid[cpid]); 
+              gid = (PetscInt)PetscRealPart(cpcol_gid[cpid]);
               ierr = PetscCDGetNextPos(deleted_list,proc,&pos); CHKERRQ(ierr);
               ierr = PetscLLNGetID( pos, &lid0 ); CHKERRQ(ierr);
               ierr = PetscCDGetNextPos(deleted_list,proc,&pos); CHKERRQ(ierr);
@@ -798,7 +798,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
           }
         }
         /* recieve requests, send response, clear lists */
-        kk = nactive_edges; 
+        kk = nactive_edges;
         ierr = MPI_Allreduce(&kk,&nactive_edges,1,MPIU_INT,MPI_SUM,wcomm); /* not correct syncronization and global */
         nSend2 = 0;
         while( 1 ){
@@ -815,7 +815,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
           ierr = MPI_Recv( rbuff, count, MPIU_INT, proc, tag1, wcomm, &status );
           /* count sends */
           pt = rbuff; count3 = count2 = 0;
-          n = *pt++; kk = *pt++;           assert(kk==proc); 
+          n = *pt++; kk = *pt++;           assert(kk==proc);
           while(n--){
             PetscInt gid1=*pt++, lid1=gid1-my0; kk=*pt++;  assert(lid1>=0 && lid1<nloc);
             if (lid_matched[lid1]){
@@ -831,7 +831,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
           assert(pt-rbuff==count);
           if (count2 > count3*CHUNCK_SIZE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Irecv will be too small: %d",count2);
           /* send tag2 *[lid0, n, n*[gid] ] */
-          ierr = PetscMalloc( count2*sizeof(PetscInt) + sizeof(MPI_Request), &sbuff ); 
+          ierr = PetscMalloc( count2*sizeof(PetscInt) + sizeof(MPI_Request), &sbuff );
           request = (MPI_Request*)sbuff;
           sreqs2[nSend2++] = request; /* cache request */
           if (nSend2==REQ_BF_SIZE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer too small for requests: %d",nSend2);
@@ -858,9 +858,9 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
           }
           assert(pt2-sbuff==count2); assert(pt-rbuff==count);
           /* send requested data tag2 *[lid0, n, n*[gid1] ] */
-          ierr = MPI_Isend(sbuff, count2, MPIU_INT, proc, tag2, wcomm, request);  CHKERRQ(ierr);        
+          ierr = MPI_Isend(sbuff, count2, MPIU_INT, proc, tag2, wcomm, request);  CHKERRQ(ierr);
         }
-        
+
         /* recieve tag2 *[lid0, n, n*[gid] ] */
         for (kk=0;kk<nSend1;kk++){
           PetscMPIInt count;
@@ -879,7 +879,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
           }
           assert(pt-pt2==count);
         }
-        
+
         /* wait for tag1 isends */
         while( nSend1-- ){
           MPI_Request *request;
@@ -888,14 +888,14 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
           ierr = PetscFree( request );  CHKERRQ(ierr);
         }
         ierr = PetscFree( sbuffs1 );  CHKERRQ(ierr);
-        
+
         /* wait for tag2 isends */
         while( nSend2-- ){
           MPI_Request *request = sreqs2[nSend2];
           ierr = MPI_Wait( request, &status );  CHKERRQ(ierr);
           ierr = PetscFree( request );  CHKERRQ(ierr);
         }
-       
+
         ierr = VecRestoreArray( ghostMaxEdge, &cpcol_max_ew ); CHKERRQ(ierr);
         ierr = VecRestoreArray( ghostMaxPE, &cpcol_max_pe ); CHKERRQ(ierr);
 
@@ -913,7 +913,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
         for (kk=0;kk<n;kk++) {
           cpcol_matched[kk] = (PetscBool)(PetscRealPart(cpcol_max_ew[kk]) != 0.0);
         }
-        
+
         ierr = VecRestoreArray( ghostMaxEdge, &cpcol_max_ew ); CHKERRQ(ierr);
       } /* npe > 1 */
 
@@ -923,9 +923,9 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
         PetscReal   max_e = 0.,tt;
         PetscScalar vval;
         PetscInt    lid = kk;
-        if ( lid_matched[lid] ) vval = 0.; 
+        if ( lid_matched[lid] ) vval = 0.;
         else {
-          ii = matA->i; n = ii[lid+1] - ii[lid]; idx = matA->j + ii[lid]; 
+          ii = matA->i; n = ii[lid+1] - ii[lid]; idx = matA->j + ii[lid];
           ap = matA->a + ii[lid];
           for (jj=0; jj<n; jj++) {
             PetscInt lidj = idx[jj];
@@ -948,9 +948,9 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
       }
       ierr = VecAssemblyBegin( locMaxEdge ); CHKERRQ(ierr);
       ierr = VecAssemblyEnd( locMaxEdge ); CHKERRQ(ierr);
-      
+
       if (npe>1 && sub_it != n_sub_its-1 ){
-        /* compute 'cpcol_max_ew' */  
+        /* compute 'cpcol_max_ew' */
         ierr = VecScatterBegin(mpimat->Mvctx,locMaxEdge,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
         ierr =   VecScatterEnd(mpimat->Mvctx,locMaxEdge,ghostMaxEdge,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
         ierr = VecGetArray( ghostMaxEdge, &cpcol_max_ew ); CHKERRQ(ierr);
@@ -977,7 +977,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
             }
             vval = (PetscScalar)max_pe;
           }
-          ierr = VecSetValues( locMaxPE, 1, &gid, &vval, INSERT_VALUES );  CHKERRQ(ierr); 
+          ierr = VecSetValues( locMaxPE, 1, &gid, &vval, INSERT_VALUES );  CHKERRQ(ierr);
         }
         ierr = VecAssemblyBegin( locMaxPE ); CHKERRQ(ierr);
         ierr = VecAssemblyEnd( locMaxPE ); CHKERRQ(ierr);
@@ -994,20 +994,20 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
 
     /* clean up iteration */
     ierr = PetscFree( Edges );  CHKERRQ(ierr);
-    if ( mpimat ){ 
+    if ( mpimat ){
       ierr = VecRestoreArray( ghostMaxEdge, &cpcol_max_ew ); CHKERRQ(ierr);
-      ierr = VecDestroy( &ghostMaxEdge ); CHKERRQ(ierr); 
+      ierr = VecDestroy( &ghostMaxEdge ); CHKERRQ(ierr);
       ierr = VecRestoreArray( ghostMaxPE, &cpcol_max_pe ); CHKERRQ(ierr);
-      ierr = VecDestroy( &ghostMaxPE ); CHKERRQ(ierr); 
+      ierr = VecDestroy( &ghostMaxPE ); CHKERRQ(ierr);
       ierr = PetscFree( cpcol_pe );  CHKERRQ(ierr);
       ierr = PetscFree( cpcol_matched );  CHKERRQ(ierr);
     }
 
-    ierr = VecDestroy( &locMaxEdge ); CHKERRQ(ierr); 
-    ierr = VecDestroy( &locMaxPE ); CHKERRQ(ierr); 
+    ierr = VecDestroy( &locMaxEdge ); CHKERRQ(ierr);
+    ierr = VecDestroy( &locMaxPE ); CHKERRQ(ierr);
 
-    if ( mpimat ){ 
-      ierr = VecRestoreArray( mpimat->lvec, &cpcol_gid ); CHKERRQ(ierr); 
+    if ( mpimat ){
+      ierr = VecRestoreArray( mpimat->lvec, &cpcol_gid ); CHKERRQ(ierr);
     }
 
     /* create next G if needed */
@@ -1051,8 +1051,8 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
     Mat mat;
     PetscCDPos pos;
     PetscInt gid, NN, MM, jj, mxsz = 0;
-    
-    for (kk=0;kk<nloc;kk++){      
+
+    for (kk=0;kk<nloc;kk++){
       ierr = PetscCDSizeAt( agg_llists, kk, &jj ); CHKERRQ(ierr);
       if ( jj > mxsz )  mxsz = jj;
     }
@@ -1068,8 +1068,8 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
     for (kk=0,gid=my0;kk<nloc;kk++,gid++){
       /* for (pos=PetscCDGetHeadPos(agg_llists,kk) ; pos ; pos=PetscCDGetNextPos(agg_llists,kk,pos)){ */
       ierr = PetscCDGetHeadPos(agg_llists,kk,&pos); CHKERRQ(ierr);
-      while(pos){              
-        PetscInt gid1; 
+      while(pos){
+        PetscInt gid1;
         ierr = PetscLLNGetID( pos, &gid1 ); CHKERRQ(ierr);
         ierr = PetscCDGetNextPos(agg_llists,kk,&pos); CHKERRQ(ierr);
 
@@ -1096,7 +1096,7 @@ typedef struct {
   int dummy;
 } MatCoarsen_HEM;
 /*
-   HEM coarsen, simple greedy. 
+   HEM coarsen, simple greedy.
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenApply_HEM"
@@ -1105,7 +1105,7 @@ static PetscErrorCode MatCoarsenApply_HEM( MatCoarsen coarse )
   /* MatCoarsen_HEM *HEM = (MatCoarsen_HEM*)coarse->subctx; */
   PetscErrorCode  ierr;
   Mat             mat = coarse->graph;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
   if (!coarse->perm) {
@@ -1124,8 +1124,8 @@ static PetscErrorCode MatCoarsenApply_HEM( MatCoarsen coarse )
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatCoarsenView_HEM" 
+#undef __FUNCT__
+#define __FUNCT__ "MatCoarsenView_HEM"
 PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
 {
   /* MatCoarsen_HEM *HEM = (MatCoarsen_HEM *)coarse->subctx; */
@@ -1141,15 +1141,15 @@ PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] HEM aggregator\n",rank);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE); CHKERRQ(ierr);
-  } 
+  }
   else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this HEM coarsener",
                 ((PetscObject)viewer)->type_name);
 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatCoarsenDestroy_HEM" 
+#undef __FUNCT__
+#define __FUNCT__ "MatCoarsenDestroy_HEM"
 PetscErrorCode MatCoarsenDestroy_HEM ( MatCoarsen coarse )
 {
   MatCoarsen_HEM *HEM = (MatCoarsen_HEM *)coarse->subctx;
@@ -1158,7 +1158,7 @@ PetscErrorCode MatCoarsenDestroy_HEM ( MatCoarsen coarse )
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
   ierr = PetscFree(HEM);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -1171,7 +1171,7 @@ PetscErrorCode MatCoarsenDestroy_HEM ( MatCoarsen coarse )
 .  coarse - the coarsen context
 
    Options Database Keys:
-+  -mat_coarsen_HEM_xxx - 
++  -mat_coarsen_HEM_xxx -
 
    Level: beginner
 
@@ -1182,8 +1182,8 @@ PetscErrorCode MatCoarsenDestroy_HEM ( MatCoarsen coarse )
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatCoarsenCreate_HEM" 
+#undef __FUNCT__
+#define __FUNCT__ "MatCoarsenCreate_HEM"
 PetscErrorCode  MatCoarsenCreate_HEM(MatCoarsen coarse)
 {
   PetscErrorCode ierr;

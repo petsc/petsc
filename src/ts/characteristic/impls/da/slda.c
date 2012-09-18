@@ -1,10 +1,10 @@
 #include <../src/ts/characteristic/impls/da/slda.h>       /*I  "petsccharacteristic.h"  I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "CharacteristicView_DA" 
+#undef __FUNCT__
+#define __FUNCT__ "CharacteristicView_DA"
 PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
 {
-  Characteristic_DA *da = (Characteristic_DA *) c->data; 
+  Characteristic_DA *da = (Characteristic_DA *) c->data;
   PetscBool          iascii, isstring;
   PetscErrorCode     ierr;
 
@@ -22,8 +22,8 @@ PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "CharacteristicDestroy_DA" 
+#undef __FUNCT__
+#define __FUNCT__ "CharacteristicDestroy_DA"
 PetscErrorCode CharacteristicDestroy_DA(Characteristic c)
 {
   Characteristic_DA *da = (Characteristic_DA*) c->data;
@@ -40,7 +40,7 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
 {
   PetscMPIInt    blockLen[2];
   MPI_Aint       indices[2];
-  MPI_Datatype   oldtypes[2]; 
+  MPI_Datatype   oldtypes[2];
   PetscInt       dim, numValues;
   PetscErrorCode ierr;
 
@@ -75,7 +75,7 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "CharacteristicCreate_DA"
 PetscErrorCode CharacteristicCreate_DA(Characteristic c)
 {
