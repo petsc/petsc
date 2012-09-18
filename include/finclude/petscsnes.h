@@ -95,16 +95,6 @@
 
 
 !
-! SNESQNCompositionType
-!
-
-      PetscEnum SNES_QN_SEQUENTIAL
-      PetscEnum SNES_QN_COMPOSED
-
-      parameter (SNES_QN_SEQUENTIAL = 0)
-      parameter (SNES_QN_COMPOSED   = 1)
-
-!
 ! SNESQNScaleType
 !
 

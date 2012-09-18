@@ -703,11 +703,6 @@ PETSC_EXTERN const char *const SNESNCGTypes[];
 
 PETSC_EXTERN PetscErrorCode SNESNCGSetType(SNES, SNESNCGType);
 
-/* routines for QN solver */
-
-typedef enum {SNES_QN_SEQUENTIAL = 0,
-              SNES_QN_COMPOSED   = 1} SNESQNCompositionType;
-PETSC_EXTERN const char *const SNESQNCompositionTypes[];
 typedef enum {SNES_QN_SCALE_NONE       = 0,
               SNES_QN_SCALE_SHANNO     = 1,
               SNES_QN_SCALE_LINESEARCH = 2,
@@ -718,7 +713,6 @@ typedef enum {SNES_QN_RESTART_NONE     = 0,
               SNES_QN_RESTART_PERIODIC = 2} SNESQNRestartType;
 PETSC_EXTERN const char *const SNESQNRestartTypes[];
 
-PETSC_EXTERN PetscErrorCode SNESQNSetCompositionType(SNES, SNESQNCompositionType);
 PETSC_EXTERN PetscErrorCode SNESQNSetScaleType(SNES, SNESQNScaleType);
 PETSC_EXTERN PetscErrorCode SNESQNSetRestartType(SNES, SNESQNRestartType);
 
