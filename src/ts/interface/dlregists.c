@@ -2,7 +2,7 @@
 #include <petsc-private/tsimpl.h>
 
 static PetscBool  TSPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSFinalizePackage"
 /*@C
   TSFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
@@ -22,7 +22,7 @@ PetscErrorCode  TSFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSInitializePackage"
 /*@C
   TSInitializePackage - This function initializes everything in the TS package. It is called
@@ -84,7 +84,7 @@ PetscErrorCode  TSInitializePackage(const char path[])
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscts"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.

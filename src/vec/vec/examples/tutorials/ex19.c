@@ -32,7 +32,7 @@ int main(int argc,char **argv)
 
   ierr = VecGetLocalSize(x1, &nlocal);CHKERRQ(ierr);
   ierr = VecGetArray(x1, &array);CHKERRQ(ierr);
-  for(i = 0; i < nlocal; i++) {
+  for (i = 0; i < nlocal; i++) {
     array[i] = rank + 1;
   }
   ierr = VecRestoreArray(x1, &array);CHKERRQ(ierr);

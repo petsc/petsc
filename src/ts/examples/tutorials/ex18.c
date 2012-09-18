@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
   user.Re = user.alpha/user.Ca; // Reynolds number (Eq. 39)
 
   // Test C < p
-  if(p <= C){
+  if (p <= C){
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Discretization inconsistent: polynomial order must be greater than degree of continuity");
   }
 
@@ -145,9 +145,9 @@ PetscErrorCode FormInitialCondition(AppCtx *user,Vec U)
   ierr = DMIGAGetLocalInfo(user->iga,&info);CHKERRQ(ierr);
   ierr = DMIGAVecGetArray(user->iga,U,&u);CHKERRQ(ierr);
 
-  for(i=info.xs;i<info.xs+info.xm;i++){
+  for (i=info.xs;i<info.xs+info.xm;i++){
     x = user->L0*( (PetscScalar)i/(PetscScalar)info.mx );
-    for(j=info.ys;j<info.ys+info.ym;j++){
+    for (j=info.ys;j<info.ys+info.ym;j++){
       y = user->L0*( (PetscScalar)j/(PetscScalar)info.my );
 
       d1 = PetscSqrtReal(SQ(x-user->C1x)+SQ(y-user->C1y));
@@ -246,7 +246,7 @@ PetscErrorCode FormResidualLocal(DMDALocalInfo *info,PetscReal t,Field **h,Field
   double **basis2D;
   ierr= PetscMalloc(numD*sizeof(double*), &basis2D);CHKERRQ(ierr);
   int i;
-  for(i=0;i<numD;i++) {
+  for (i=0;i<numD;i++) {
     ierr = PetscMalloc(Nl*sizeof(double), &basis2D[i]);CHKERRQ(ierr);
   }
 
@@ -271,15 +271,15 @@ PetscErrorCode FormResidualLocal(DMDALocalInfo *info,PetscReal t,Field **h,Field
   PetscScalar Ca2 = user->Ca*user->Ca;
   PetscScalar rRe = 1.0/user->Re;
 
-  for(ie=bex;ie<=eex;ie++) { // Loop over elements
-    for(je=bey;je<=eey;je++) {
+  for (ie=bex;ie<=eex;ie++) { // Loop over elements
+    for (je=bey;je<=eey;je++) {
 
       // get basis offsets used in the local-->global mapping
       ierr = BDGetBasisOffset(bdX,ie,&boffsetX);CHKERRQ(ierr);
       ierr = BDGetBasisOffset(bdY,je,&boffsetY);CHKERRQ(ierr);
 
-      for(ig=0;ig<ngx;ig++) { // Loop over gauss points
-	for(jg=0;jg<ngy;jg++) {
+      for (ig=0;ig<ngx;ig++) { // Loop over gauss points
+	for (jg=0;jg<ngy;jg++) {
 
 	  // Get gauss point locations and weights
 	  // NOTE: gauss point and weight already mapped to the parameter space
@@ -290,8 +290,8 @@ PetscErrorCode FormResidualLocal(DMDALocalInfo *info,PetscReal t,Field **h,Field
 
 	  wgt = wgtx*wgty;
 
-	  for(jba=0;jba<(py+1);jba++) { // Assemble the 2D basis
-	    for(iba=0;iba<(px+1);iba++) {
+	  for (jba=0;jba<(py+1);jba++) { // Assemble the 2D basis
+	    for (iba=0;iba<(px+1);iba++) {
 
 	      ierr = BDGetBasis(bdX,ie,ig,iba,0,&Nx);CHKERRQ(ierr);
 	      ierr = BDGetBasis(bdX,ie,ig,iba,1,&dNx);CHKERRQ(ierr);
@@ -329,8 +329,8 @@ PetscErrorCode FormResidualLocal(DMDALocalInfo *info,PetscReal t,Field **h,Field
 	  tau_yy = 2.0*uy_y - 2.0/3.0*(ux_x+uy_y);
 	  tau_yx = tau_xy;
 
-	  for(jba=0;jba<(py+1);jba++) { // loop over basis 1st time (a, matrix rows)
-	    for(iba=0;iba<(px+1);iba++) {
+	  for (jba=0;jba<(py+1);jba++) { // loop over basis 1st time (a, matrix rows)
+	    for (iba=0;iba<(px+1);iba++) {
 
 	      Ax = boffsetX+iba; // local to global map
 	      Ay = boffsetY+jba;
@@ -389,7 +389,7 @@ PetscErrorCode FormResidualLocal(DMDALocalInfo *info,PetscReal t,Field **h,Field
     }
   } // end element loop
 
-  for(i=0;i<numD;i++) {
+  for (i=0;i<numD;i++) {
     ierr = PetscFree(basis2D[i]); CHKERRQ(ierr);
   }
   ierr = PetscFree(basis2D); CHKERRQ(ierr);
@@ -475,8 +475,8 @@ PetscErrorCode InterpolateSolution(double **basis2D,Field **x,Field **xdot,Petsc
   (*uy) = 0.0; (*uy_x) = 0.0; (*uy_y) = 0.0; (*uy_t) = 0.0;
 
   int ipa,jpa,ind;
-  for(jpa=0;jpa<(py+1);jpa++) {
-    for(ipa=0;ipa<(px+1);ipa++) {
+  for (jpa=0;jpa<(py+1);jpa++) {
+    for (ipa=0;ipa<(px+1);ipa++) {
 
       ind = jpa*(px+1)+ipa;
       (*rho) += basis2D[0][ind] * x[boffsetY+jpa][boffsetX+ipa].rho;

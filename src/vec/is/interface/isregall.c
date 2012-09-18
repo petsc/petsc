@@ -6,7 +6,7 @@ extern PetscErrorCode  ISCreate_Stride(IS);
 extern PetscErrorCode  ISCreate_Block(IS);
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISRegisterAll"
 /*@C
   ISRegisterAll - Registers all of the index set components in the IS package.

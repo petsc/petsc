@@ -24,7 +24,7 @@ PetscErrorCode  TSGLAdaptCreate_Size(TSGLAdapt);
 PetscErrorCode  TSGLAdaptCreate_Both(TSGLAdapt);
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptRegister"
 /*@C
    TSGLAdaptRegister - see TSGLAdaptRegisterDynamic()
@@ -42,7 +42,7 @@ PetscErrorCode  TSGLAdaptRegister(const char sname[],const char path[],const cha
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptRegisterAll"
 /*@C
   TSGLAdaptRegisterAll - Registers all of the adaptivity schemes in TSGLAdapt
@@ -66,7 +66,7 @@ PetscErrorCode  TSGLAdaptRegisterAll(const char path[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptFinalizePackage"
 /*@C
   TSGLFinalizePackage - This function destroys everything in the TSGL package. It is
@@ -77,7 +77,7 @@ PetscErrorCode  TSGLAdaptRegisterAll(const char path[])
 .keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode  TSGLAdaptFinalizePackage(void) 
+PetscErrorCode  TSGLAdaptFinalizePackage(void)
 {
   PetscFunctionBegin;
   TSGLAdaptPackageInitialized = PETSC_FALSE;
@@ -86,7 +86,7 @@ PetscErrorCode  TSGLAdaptFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptInitializePackage"
 /*@C
   TSGLAdaptInitializePackage - This function initializes everything in the TSGLAdapt package. It is
@@ -114,7 +114,7 @@ PetscErrorCode  TSGLAdaptInitializePackage(const char path[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptRegisterDestroy"
 /*@C
    TSGLAdaptRegisterDestroy - Frees the list of adaptivity schemes that were registered by TSGLAdaptRegister()/TSGLAdaptRegisterDynamic().
@@ -137,7 +137,7 @@ PetscErrorCode  TSGLAdaptRegisterDestroy(void)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptSetType"
 PetscErrorCode  TSGLAdaptSetType(TSGLAdapt adapt,const TSGLAdaptType type)
 {
@@ -152,7 +152,7 @@ PetscErrorCode  TSGLAdaptSetType(TSGLAdapt adapt,const TSGLAdaptType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptSetOptionsPrefix"
 PetscErrorCode  TSGLAdaptSetOptionsPrefix(TSGLAdapt adapt,const char prefix[])
 {
@@ -163,7 +163,7 @@ PetscErrorCode  TSGLAdaptSetOptionsPrefix(TSGLAdapt adapt,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptView"
 PetscErrorCode  TSGLAdaptView(TSGLAdapt adapt,PetscViewer viewer)
 {
@@ -186,7 +186,7 @@ PetscErrorCode  TSGLAdaptView(TSGLAdapt adapt,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptDestroy"
 PetscErrorCode  TSGLAdaptDestroy(TSGLAdapt *adapt)
 {
@@ -201,7 +201,7 @@ PetscErrorCode  TSGLAdaptDestroy(TSGLAdapt *adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptSetFromOptions"
 PetscErrorCode  TSGLAdaptSetFromOptions(TSGLAdapt adapt)
 {
@@ -214,7 +214,7 @@ PetscErrorCode  TSGLAdaptSetFromOptions(TSGLAdapt adapt)
   * function can only be called from inside TSSetFromOptions_GL()  */
   ierr = PetscOptionsHead("TSGL Adaptivity options");CHKERRQ(ierr);
   ierr = PetscOptionsList("-ts_adapt_type","Algorithm to use for adaptivity","TSGLAdaptSetType",TSGLAdaptList,
-                          ((PetscObject)adapt)->type_name?((PetscObject)adapt)->type_name:type,type,sizeof type,&flg);CHKERRQ(ierr);
+                          ((PetscObject)adapt)->type_name?((PetscObject)adapt)->type_name:type,type,sizeof(type),&flg);CHKERRQ(ierr);
   if (flg || !((PetscObject)adapt)->type_name) {
     ierr = TSGLAdaptSetType(adapt,type);CHKERRQ(ierr);
   }
@@ -223,7 +223,7 @@ PetscErrorCode  TSGLAdaptSetFromOptions(TSGLAdapt adapt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptChoose"
 PetscErrorCode  TSGLAdaptChoose(TSGLAdapt adapt,PetscInt n,const PetscInt orders[],const PetscReal errors[],const PetscReal cost[],PetscInt cur,PetscReal h,PetscReal tleft,PetscInt *next_sc,PetscReal *next_h,PetscBool  *finish)
 {
@@ -241,7 +241,7 @@ PetscErrorCode  TSGLAdaptChoose(TSGLAdapt adapt,PetscInt n,const PetscInt orders
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptCreate"
 PetscErrorCode  TSGLAdaptCreate(MPI_Comm comm,TSGLAdapt *inadapt)
 {
@@ -260,7 +260,7 @@ PetscErrorCode  TSGLAdaptCreate(MPI_Comm comm,TSGLAdapt *inadapt)
 *  Implementations
 */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptDestroy_JustFree"
 static PetscErrorCode TSGLAdaptDestroy_JustFree(TSGLAdapt adapt)
 {
@@ -277,7 +277,7 @@ typedef struct {
   PetscReal h;
 } TSGLAdapt_None;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptChoose_None"
 static PetscErrorCode TSGLAdaptChoose_None(TSGLAdapt adapt,PetscInt n,const PetscInt orders[],const PetscReal errors[],const PetscReal cost[],PetscInt cur,PetscReal h,PetscReal tleft,PetscInt *next_sc,PetscReal *next_h,PetscBool  *finish)
 {
@@ -295,7 +295,7 @@ static PetscErrorCode TSGLAdaptChoose_None(TSGLAdapt adapt,PetscInt n,const Pets
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptCreate_None"
 PetscErrorCode  TSGLAdaptCreate_None(TSGLAdapt adapt)
 {
@@ -317,7 +317,7 @@ typedef struct {
 } TSGLAdapt_Size;
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptChoose_Size"
 static PetscErrorCode TSGLAdaptChoose_Size(TSGLAdapt adapt,PetscInt n,const PetscInt orders[],const PetscReal errors[],const PetscReal cost[],PetscInt cur,PetscReal h,PetscReal tleft,PetscInt *next_sc,PetscReal *next_h,PetscBool  *finish)
 {
@@ -346,7 +346,7 @@ static PetscErrorCode TSGLAdaptChoose_Size(TSGLAdapt adapt,PetscInt n,const Pets
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptCreate_Size"
 PetscErrorCode  TSGLAdaptCreate_Size(TSGLAdapt adapt)
 {
@@ -369,7 +369,7 @@ typedef struct {
 } TSGLAdapt_Both;
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptChoose_Both"
 static PetscErrorCode TSGLAdaptChoose_Both(TSGLAdapt adapt,PetscInt n,const PetscInt orders[],const PetscReal errors[],const PetscReal cost[],PetscInt cur,PetscReal h,PetscReal tleft,PetscInt *next_sc,PetscReal *next_h,PetscBool  *finish)
 {
@@ -418,7 +418,7 @@ static PetscErrorCode TSGLAdaptChoose_Both(TSGLAdapt adapt,PetscInt n,const Pets
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptCreate_Both"
 PetscErrorCode TSGLAdaptCreate_Both(TSGLAdapt adapt)
 {

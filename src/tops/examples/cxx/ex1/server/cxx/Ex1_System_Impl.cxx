@@ -160,7 +160,7 @@ Ex1::System_impl::setServices_impl (
   myServices = services;
 
   gov::cca::Port p = (*this);      //  Babel required casting
-  if(p._is_nil()) {
+  if (p._is_nil()) {
     fprintf(stderr, "Error:: %s:%d: Error casting (*this) to gov::cca::Port \n",
 	    __FILE__, __LINE__);
     return;

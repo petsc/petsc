@@ -1,11 +1,11 @@
 
-#include <petscsys.h>        
+#include <petscsys.h>
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscOptionsGetenv"
 /*@C
      PetscOptionsGetenv - Gets an environmental variable, broadcasts to all
@@ -26,8 +26,8 @@
 
    Notes:
     You can also "set" the environmental variable by setting the options database value
-    -name "stringvalue" (with name in lower case). If name begins with PETSC_ this is 
-    discarded before checking the database. For example, PETSC_VIEWER_SOCKET_PORT would 
+    -name "stringvalue" (with name in lower case). If name begins with PETSC_ this is
+    discarded before checking the database. For example, PETSC_VIEWER_SOCKET_PORT would
     be given as -viewer_socket_port 9000
 
     If comm does not contain the 0th process in the MPIEXEC it is likely on
@@ -41,12 +41,12 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
   PetscMPIInt    rank;
   char           *str,work[256];
   PetscBool      flg = PETSC_FALSE,spetsc;
-   
+
   PetscFunctionBegin;
 
   /* first check options database */
   ierr = PetscStrncmp(name,"PETSC_",6,&spetsc);CHKERRQ(ierr);
-  
+
   ierr = PetscStrcpy(work,"-");CHKERRQ(ierr);
   if (spetsc) {
     ierr = PetscStrcat(work,name+6);CHKERRQ(ierr);
@@ -70,7 +70,7 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
       ierr = MPI_Bcast(&flg,1,MPI_INT,0,comm);CHKERRQ(ierr);
       ierr = MPI_Bcast(env,len,MPI_CHAR,0,comm);CHKERRQ(ierr);
       if (flag) *flag = flg;
-    } 
+    }
   } else {
     ierr = PetscOptionsHasName(PETSC_NULL,work,flag);CHKERRQ(ierr);
   }
@@ -82,9 +82,9 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
                        The variable PetscDisplay contains the X windows display variable.
 
 */
-static char PetscDisplay[256]; 
+static char PetscDisplay[256];
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscWorldIsSingleHost"
 static PetscErrorCode PetscWorldIsSingleHost(PetscBool  *onehost)
 {
@@ -105,18 +105,18 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool  *onehost)
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSetDisplay" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSetDisplay"
 PetscErrorCode  PetscSetDisplay(void)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscBool      flag,singlehost=PETSC_FALSE;
-  char           display[sizeof PetscDisplay];
+  char           display[sizeof(PetscDisplay)];
   const char     *str;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetString(PETSC_NULL,"-display",PetscDisplay,sizeof PetscDisplay,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-display",PetscDisplay,sizeof(PetscDisplay),&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -127,23 +127,23 @@ PetscErrorCode  PetscSetDisplay(void)
   str = getenv("DISPLAY");
   if (!str) str = ":0.0";
   if (str[0] != ':' || singlehost) {
-    ierr = PetscStrncpy(display,str,sizeof display);CHKERRQ(ierr);
+    ierr = PetscStrncpy(display,str,sizeof(display));CHKERRQ(ierr);
   } else {
     if (!rank) {
       size_t len;
-      ierr = PetscGetHostName(display,sizeof display);CHKERRQ(ierr);
+      ierr = PetscGetHostName(display,sizeof(display));CHKERRQ(ierr);
       ierr = PetscStrlen(display,&len);CHKERRQ(ierr);
-      ierr = PetscStrncat(display,str,sizeof display-len-1);CHKERRQ(ierr);
+      ierr = PetscStrncat(display,str,sizeof(display)-len-1);CHKERRQ(ierr);
     }
   }
-  ierr = MPI_Bcast(display,sizeof display,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = PetscMemcpy(PetscDisplay,display,sizeof PetscDisplay);CHKERRQ(ierr);
-  PetscDisplay[sizeof PetscDisplay-1] = 0;
+  ierr = MPI_Bcast(display,sizeof(display),MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscMemcpy(PetscDisplay,display,sizeof(PetscDisplay));CHKERRQ(ierr);
+  PetscDisplay[sizeof(PetscDisplay)-1] = 0;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscGetDisplay" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscGetDisplay"
 /*
      PetscGetDisplay - Gets the display variable for all processors.
 
@@ -160,5 +160,5 @@ PetscErrorCode  PetscGetDisplay(char display[],size_t n)
 
   PetscFunctionBegin;
   ierr = PetscStrncpy(display,PetscDisplay,n);CHKERRQ(ierr);
-  PetscFunctionReturn(0);  
+  PetscFunctionReturn(0);
 }

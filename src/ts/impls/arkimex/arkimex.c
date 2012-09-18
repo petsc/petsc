@@ -948,7 +948,7 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts)
     PetscInt count,choice;
     PetscBool flg;
     const char **namelist;
-    ierr = PetscStrncpy(arktype,TSARKIMEXDefault,sizeof arktype);CHKERRQ(ierr);
+    ierr = PetscStrncpy(arktype,TSARKIMEXDefault,sizeof(arktype));CHKERRQ(ierr);
     for (link=ARKTableauList,count=0; link; link=link->next,count++) ;
     ierr = PetscMalloc(count*sizeof(char*),&namelist);CHKERRQ(ierr);
     for (link=ARKTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
@@ -1001,9 +1001,9 @@ static PetscErrorCode TSView_ARKIMEX(TS ts,PetscViewer viewer)
     char buf[512];
     ierr = TSARKIMEXGetType(ts,&arktype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  ARK IMEX %s\n",arktype);CHKERRQ(ierr);
-    ierr = PetscFormatRealArray(buf,sizeof buf,"% 8.6f",tab->s,tab->ct);CHKERRQ(ierr);
+    ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->ct);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Stiff abscissa       ct = %s\n",buf);CHKERRQ(ierr);
-    ierr = PetscFormatRealArray(buf,sizeof buf,"% 8.6f",tab->s,tab->c);CHKERRQ(ierr);
+    ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->c);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Nonstiff abscissa     c = %s\n",buf);CHKERRQ(ierr);
   }
   ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
@@ -1152,7 +1152,7 @@ EXTERN_C_END
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSARKIMEXSetType(), TSARKIMEXGetType(), TSARKIMEXSetFullyImplicit(), TSARKIMEX2D, TTSARKIMEX2E, TSARKIMEX3, 
+.seealso:  TSCreate(), TS, TSSetType(), TSARKIMEXSetType(), TSARKIMEXGetType(), TSARKIMEXSetFullyImplicit(), TSARKIMEX2D, TTSARKIMEX2E, TSARKIMEX3,
            TSARKIMEX4, TSARKIMEX5, TSARKIMEXPRSSP2, TSARKIMEXBPR3, TSARKIMEXType, TSARKIMEXRegister()
 
 M*/

@@ -569,7 +569,7 @@ static PetscErrorCode TSView_BEuler(TS ts,PetscViewer viewer)
   Level: beginner
 
   Notes:
-  TSCN is equivalent to TSTHETA with Theta=1.0 
+  TSCN is equivalent to TSTHETA with Theta=1.0
 
 $  -ts_type theta -ts_theta_theta 1.
 

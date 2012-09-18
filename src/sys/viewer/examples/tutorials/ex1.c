@@ -20,7 +20,7 @@ int main(int argc,char **args)
   ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer, FILE_MODE_APPEND);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer, "test.txt");CHKERRQ(ierr);
-  for(i = 0; i < 10; ++i) {
+  for (i = 0; i < 10; ++i) {
     ierr = PetscViewerASCIIPrintf(viewer, "test line %d\n", i);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();

@@ -169,7 +169,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSJacobian"
 /*@
@@ -252,7 +252,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatSt
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSFunction"
 /*@
-   TSComputeRHSFunction - Evaluates the right-hand-side function. 
+   TSComputeRHSFunction - Evaluates the right-hand-side function.
 
    Collective on TS and Vec
 
@@ -559,7 +559,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
 +   ts - the TS context obtained from TSCreate()
 .   r - vector to put the computed right hand side (or PETSC_NULL to have it created)
 .   f - routine for evaluating the right-hand-side function
--   ctx - [optional] user-defined context for private data for the 
+-   ctx - [optional] user-defined context for private data for the
           function evaluation routine (may be PETSC_NULL)
 
     Calling sequence of func:
@@ -568,7 +568,7 @@ $     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 +   t - current timestep
 .   u - input vector
 .   F - function vector
--   ctx - [optional] user-defined function context 
+-   ctx - [optional] user-defined function context
 
     Level: beginner
 
@@ -612,7 +612,7 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
 .  A   - Jacobian matrix
 .  B   - preconditioner matrix (usually same as A)
 .  f   - the Jacobian evaluation routine
--  ctx - [optional] user-defined context for private data for the 
+-  ctx - [optional] user-defined context for private data for the
          Jacobian evaluation routine (may be PETSC_NULL)
 
    Calling sequence of func:
@@ -626,18 +626,18 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
           structure (same as flag in KSPSetOperators())
 -  ctx - [optional] user-defined context for matrix evaluation routine
 
-   Notes: 
+   Notes:
    See KSPSetOperators() for important information about setting the flag
    output parameter in the routine func().  Be sure to read this information!
 
-   The routine func() takes Mat * as the matrix arguments rather than Mat.  
-   This allows the matrix evaluation routine to replace A and/or B with a 
+   The routine func() takes Mat * as the matrix arguments rather than Mat.
+   This allows the matrix evaluation routine to replace A and/or B with a
    completely new matrix structure (not just different matrix elements)
    when appropriate, for instance, if the nonzero structure is changing
    throughout the global iterations.
 
    Level: beginner
-   
+
 .keywords: TS, timestep, set, right-hand-side, Jacobian
 
 .seealso: SNESDefaultComputeJacobianColor(), TSSetRHSFunction()
@@ -811,7 +811,7 @@ PetscErrorCode TSGetRHSFunction(TS ts,Vec *r,TSRHSFunction *func,void **ctx)
 #define __FUNCT__ "TSSetIJacobian"
 /*@C
    TSSetIJacobian - Set the function to compute the matrix dF/dU + a*dF/dU_t where F(t,U,U_t) is the function
-        you provided with TSSetIFunction().  
+        you provided with TSSetIFunction().
 
    Logically Collective on TS
 
@@ -838,10 +838,10 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *A,Mat *B,MatStructure *fla
    Notes:
    The matrices A and B are exactly the matrices that are used by SNES for the nonlinear solve.
 
-   The matrix dF/dU + a*dF/dU_t you provide turns out to be 
+   The matrix dF/dU + a*dF/dU_t you provide turns out to be
    the Jacobian of G(U) = F(t,U,W+a*U) where F(t,U,U_t) = 0 is the DAE to be solved.
    The time integrator internally approximates U_t by W+a*U where the positive "shift"
-   a and vector W depend on the integration method, step size, and past states. For example with 
+   a and vector W depend on the integration method, step size, and past states. For example with
    the backward Euler method a = 1/dt and W = -a*U(previous timestep) so
    W + a*U = a*(U - U(previous timestep)) = (U - U(previous timestep))/dt
 
@@ -975,7 +975,7 @@ PetscErrorCode  TSSetApplicationContext(TS ts,void *usrP)
 #undef __FUNCT__
 #define __FUNCT__ "TSGetApplicationContext"
 /*@
-    TSGetApplicationContext - Gets the user-defined context for the 
+    TSGetApplicationContext - Gets the user-defined context for the
     timestepper.
 
     Not Collective
@@ -1183,9 +1183,9 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 + ts   - The TS
 - type - One of TS_LINEAR, TS_NONLINEAR where these types refer to problems of the forms
 .vb
-         U_t = A U    
-         U_t = A(t) U 
-         U_t = F(t,U) 
+         U_t = A U
+         U_t = A(t) U
+         U_t = F(t,U)
 .ve
 
    Level: beginner
@@ -1193,7 +1193,7 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 .keywords: TS, problem type
 .seealso: TSSetUp(), TSProblemType, TS
 @*/
-PetscErrorCode  TSSetProblemType(TS ts, TSProblemType type) 
+PetscErrorCode  TSSetProblemType(TS ts, TSProblemType type)
 {
   PetscErrorCode ierr;
 
@@ -1231,7 +1231,7 @@ PetscErrorCode  TSSetProblemType(TS ts, TSProblemType type)
 .keywords: TS, problem type
 .seealso: TSSetUp(), TSProblemType, TS
 @*/
-PetscErrorCode  TSGetProblemType(TS ts, TSProblemType *type) 
+PetscErrorCode  TSGetProblemType(TS ts, TSProblemType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -1244,7 +1244,7 @@ PetscErrorCode  TSGetProblemType(TS ts, TSProblemType *type)
 #define __FUNCT__ "TSSetUp"
 /*@
    TSSetUp - Sets up the internal data structures for the later use
-   of a timestepper.  
+   of a timestepper.
 
    Collective on TS
 
@@ -1256,7 +1256,7 @@ PetscErrorCode  TSGetProblemType(TS ts, TSProblemType *type)
    TSSetUp(), since these actions will automatically occur during
    the call to TSStep().  However, if one wishes to control this
    phase separately, TSSetUp() should be called after TSCreate()
-   and optional routines of the form TSSetXXX(), but before TSStep().  
+   and optional routines of the form TSSetXXX(), but before TSStep().
 
    Level: advanced
 
@@ -1392,7 +1392,7 @@ PetscErrorCode  TSDestroy(TS *ts)
 #undef __FUNCT__
 #define __FUNCT__ "TSGetSNES"
 /*@
-   TSGetSNES - Returns the SNES (nonlinear solver) associated with 
+   TSGetSNES - Returns the SNES (nonlinear solver) associated with
    a TS (timestepper) context. Valid only for nonlinear problems.
 
    Not Collective, but SNES is parallel if TS is parallel
@@ -1785,7 +1785,7 @@ PetscErrorCode  TSPostStep(TS ts)
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
 .  monitor - monitoring routine
-.  mctx - [optional] user-defined context for private data for the 
+.  mctx - [optional] user-defined context for private data for the
              monitor routine (use PETSC_NULL if no context is desired)
 -  monitordestroy - [optional] routine that frees monitor context
           (may be PETSC_NULL)
@@ -1800,7 +1800,7 @@ $    int monitor(TS ts,PetscInt steps,PetscReal time,Vec x,void *mctx)
 -    mctx - [optional] monitoring context
 
    Notes:
-   This routine adds an additional monitor to the list of monitors that 
+   This routine adds an additional monitor to the list of monitors that
    already has been loaded.
 
    Fortran notes: Only a single monitor function can be set for each TS object
@@ -1908,7 +1908,7 @@ PetscErrorCode TSSetRetainStages(TS ts,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSInterpolate"
 /*@
    TSInterpolate - Interpolate the solution computed during the previous step to an arbitrary location in the interval
@@ -1946,7 +1946,7 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSStep"
 /*@
    TSStep - Steps one time step
@@ -1999,7 +1999,7 @@ PetscErrorCode  TSStep(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSEvaluateStep"
 /*@
    TSEvaluateStep - Evaluate the solution at the end of a time step with a given order of accuracy.
@@ -2161,7 +2161,7 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec x)
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorLGCreate"
 /*@C
-   TSMonitorLGCreate - Creates a line graph context for use with 
+   TSMonitorLGCreate - Creates a line graph context for use with
    TS to monitor convergence of preconditioned residual norms.
 
    Collective on TS
@@ -2178,7 +2178,7 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec x)
    Options Database Key:
 .  -ts_monitor_draw - automatically sets line graph monitor
 
-   Notes: 
+   Notes:
    Use TSMonitorLGDestroy() to destroy this line graph, not PetscDrawLGDestroy().
 
    Level: intermediate
@@ -2228,12 +2228,12 @@ PetscErrorCode TSMonitorLG(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
-} 
+}
 
 #undef __FUNCT__
-#define __FUNCT__ "TSMonitorLGDestroy" 
+#define __FUNCT__ "TSMonitorLGDestroy"
 /*@C
-   TSMonitorLGDestroy - Destroys a line graph context that was created 
+   TSMonitorLGDestroy - Destroys a line graph context that was created
    with TSMonitorLGCreate().
 
    Collective on PetscDrawLG
@@ -2308,7 +2308,7 @@ PetscErrorCode  TSGetTime(TS ts,PetscReal* t)
 
 .keywords: TS, set, time
 @*/
-PetscErrorCode  TSSetTime(TS ts, PetscReal t) 
+PetscErrorCode  TSSetTime(TS ts, PetscReal t)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2318,7 +2318,7 @@ PetscErrorCode  TSSetTime(TS ts, PetscReal t)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetOptionsPrefix" 
+#define __FUNCT__ "TSSetOptionsPrefix"
 /*@C
    TSSetOptionsPrefix - Sets the prefix used for searching for all
    TS options in the database.
@@ -2356,7 +2356,7 @@ PetscErrorCode  TSSetOptionsPrefix(TS ts,const char prefix[])
 
 
 #undef __FUNCT__
-#define __FUNCT__ "TSAppendOptionsPrefix" 
+#define __FUNCT__ "TSAppendOptionsPrefix"
 /*@C
    TSAppendOptionsPrefix - Appends to the prefix used for searching for all
    TS options in the database.
@@ -2510,7 +2510,7 @@ typedef struct {
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorSolution"
 /*@C
-   TSMonitorSolution - Monitors progress of the TS solvers by calling 
+   TSMonitorSolution - Monitors progress of the TS solvers by calling
    VecView() for the solution at each timestep
 
    Collective on TS
@@ -2575,7 +2575,7 @@ PetscErrorCode  TSMonitorSolutionDestroy(void **ctx)
 {
   PetscErrorCode       ierr;
   TSMonitorSolutionCtx *ictx = *(TSMonitorSolutionCtx**)ctx;
- 
+
   PetscFunctionBegin;
   ierr = PetscViewerDestroy(&ictx->viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&ictx->initialsolution);CHKERRQ(ierr);
@@ -2606,7 +2606,7 @@ PetscErrorCode  TSMonitorSolutionCreate(TS ts,PetscViewer viewer,void **ctx)
 {
   PetscErrorCode       ierr;
   TSMonitorSolutionCtx *ictx;
- 
+
   PetscFunctionBegin;
   ierr = PetscNew(TSMonitorSolutionCtx,&ictx);CHKERRQ(ierr);
   *ctx = (void*)ictx;
@@ -2932,7 +2932,7 @@ PetscErrorCode TSComputeIJacobianConstant(TS ts,PetscReal t,Vec X,Vec Xdot,Petsc
 .  ts - the TS context
 
    Output Parameter:
-.  reason - negative value indicates diverged, positive value converged, see TSConvergedReason or the 
+.  reason - negative value indicates diverged, positive value converged, see TSConvergedReason or the
             manual pages for the individual convergence tests for complete lists
 
    Level: intermediate
@@ -2953,7 +2953,7 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetSNESIterations"
 /*@
    TSGetSNESIterations - Gets the total number of nonlinear iterations
@@ -2985,7 +2985,7 @@ PetscErrorCode TSGetSNESIterations(TS ts,PetscInt *nits)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetKSPIterations"
 /*@
    TSGetKSPIterations - Gets the total number of linear iterations
@@ -3232,7 +3232,7 @@ PetscErrorCode TSMonitorSolutionVTK(TS ts,PetscInt step,PetscReal ptime,Vec x,vo
   PetscViewer    viewer;
 
   PetscFunctionBegin;
-  ierr = PetscSNPrintf(filename,sizeof filename,(const char*)filenametemplate,step);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(filename,sizeof(filename),(const char*)filenametemplate,step);CHKERRQ(ierr);
   ierr = PetscViewerVTKOpen(((PetscObject)ts)->comm,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = VecView(x,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -3267,7 +3267,7 @@ PetscErrorCode TSMonitorSolutionVTKDestroy(void *filenametemplate)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetAdapt"
 /*@
    TSGetAdapt - Get the adaptive controller context for the current method
@@ -3517,7 +3517,7 @@ PetscErrorCode TSGetCFLTime(TS ts,PetscReal *cfltime)
 .  xu   - upper bound.
 
    Notes:
-   If this routine is not called then the lower and upper bounds are set to 
+   If this routine is not called then the lower and upper bounds are set to
    SNES_VI_NINF and SNES_VI_INF respectively during SNESSetUp().
 
    Level: advanced
@@ -3581,10 +3581,10 @@ PetscErrorCode  TSComputeFunction_Matlab(TS snes,PetscReal time,Vec x,Vec xdot,V
   PetscCheckSameComm(snes,1,x,3);
   PetscCheckSameComm(snes,1,y,5);
 
-  ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr); 
-  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
-  ierr = PetscMemcpy(&lxdot,&xdot,sizeof(xdot));CHKERRQ(ierr); 
-  ierr = PetscMemcpy(&ly,&y,sizeof(x));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&lxdot,&xdot,sizeof(xdot));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&ly,&y,sizeof(x));CHKERRQ(ierr);
   prhs[0] =  mxCreateDoubleScalar((double)ls);
   prhs[1] =  mxCreateDoubleScalar(time);
   prhs[2] =  mxCreateDoubleScalar((double)lx);
@@ -3778,8 +3778,8 @@ PetscErrorCode  TSMonitor_Matlab(TS ts,PetscInt it, PetscReal time,Vec x, void *
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,4);
 
-  ierr = PetscMemcpy(&ls,&ts,sizeof(ts));CHKERRQ(ierr); 
-  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&ls,&ts,sizeof(ts));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr);
   prhs[0] =  mxCreateDoubleScalar((double)ls);
   prhs[1] =  mxCreateDoubleScalar((double)it);
   prhs[2] =  mxCreateDoubleScalar((double)time);

@@ -39,7 +39,7 @@ static int setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMo
   }
 
   *env  = MLInitialize(0);
-  for(lerr = 0; lerr < argc; lerr++) {
+  for (lerr = 0; lerr < argc; lerr++) {
     printf("argv[%ld] = %s\n", lerr, argv[lerr]);
   }
   *link = MLOpenInEnv(*env, argc, argv, &lerr);
@@ -53,7 +53,7 @@ static int printIndent(int indent) {
   int i;
 
   PetscFunctionBegin;
-  for(i = 0; i < indent; i++) printf(" ");
+  for (i = 0; i < indent; i++) printf(" ");
   PetscFunctionReturn(0);
 }
 
@@ -82,7 +82,7 @@ static int processPacket(MLINK link, int indent) {
       isHead = 0;
       /* Process arguments */
       printf("  Arguments:\n");
-      for(arg = 0; arg < numArguments; arg++) {
+      for (arg = 0; arg < numArguments; arg++) {
         ierr = processPacket(link, indent+4);                                                             CHKERRQ(ierr);
       }
     }

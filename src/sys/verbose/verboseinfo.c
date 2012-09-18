@@ -1,6 +1,6 @@
 
 /*
-      PetscInfo() is contained in a different file from the other profiling to 
+      PetscInfo() is contained in a different file from the other profiling to
    allow it to be replaced at link time by an alternative routine.
 */
 #include <petscsys.h>        /*I    "petscsys.h"   I*/
@@ -15,7 +15,7 @@
 
 /*
   The next three variables determine which, if any, PetscInfo() calls are used.
-  If PetscLogPrintInfo is zero, no info messages are printed. 
+  If PetscLogPrintInfo is zero, no info messages are printed.
   If PetscLogPrintInfoNull is zero, no info messages associated with a null object are printed.
 
   If PetscInfoFlags[OBJECT_CLASSID - PETSC_SMALLEST_CLASSID] is zero, no messages related
@@ -28,7 +28,7 @@ int        PetscInfoFlags[]   = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
                                     1,1,1,1,1,1,1,1,1,1,1,1};
 FILE      *PetscInfoFile      = PETSC_NULL;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscInfoAllow"
 /*@C
     PetscInfoAllow - Causes PetscInfo() messages to be printed to standard output.
@@ -73,7 +73,7 @@ PetscErrorCode  PetscInfoAllow(PetscBool  flag, const char filename[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscInfoDeactivateClass"
 /*@
   PetscInfoDeactivateClass - Deactivates PlogInfo() messages for a PETSc object class.
@@ -96,13 +96,13 @@ PetscErrorCode  PetscInfoDeactivateClass(int objclass)
   PetscFunctionBegin;
   if (!objclass) {
     PetscLogPrintInfoNull = PETSC_FALSE;
-    PetscFunctionReturn(0); 
+    PetscFunctionReturn(0);
   }
   PetscInfoFlags[objclass - PETSC_SMALLEST_CLASSID - 1] = 0;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscInfoActivateClass"
 /*@
   PetscInfoActivateClass - Activates PlogInfo() messages for a PETSc object class.
@@ -132,13 +132,13 @@ PetscErrorCode  PetscInfoActivateClass(int objclass)
 }
 
 /*
-   If the option -history was used, then all printed PetscInfo() 
+   If the option -history was used, then all printed PetscInfo()
   messages are also printed to the history file, called by default
   .petschistory in ones home directory.
 */
 extern FILE *petsc_history;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscInfo_Private"
 /*MC
     PetscInfo - Logs informative data, which is printed to standard output
@@ -158,7 +158,7 @@ extern FILE *petsc_history;
 -   formatmessage - logging message using standard "printf" format
 
     Options Database Key:
-$    -info : activates printing of PetscInfo() messages 
+$    -info : activates printing of PetscInfo() messages
 
     Level: intermediate
 
@@ -202,12 +202,12 @@ PetscErrorCode  PetscInfo_Private(const char func[],void *vobj, const char messa
 
   ierr = MPI_Comm_rank(MPI_COMM_WORLD, &urank);CHKERRQ(ierr);
   va_start(Argp, message);
-  sprintf(string, "[%d] %s(): ", urank,func); 
+  sprintf(string, "[%d] %s(): ", urank,func);
   ierr = PetscStrlen(string, &len);CHKERRQ(ierr);
   ierr = PetscVSNPrintf(string+len, 8*1024-len,message,&fullLength, Argp);
   ierr = PetscFPrintf(PETSC_COMM_SELF,PetscInfoFile, "%s", string);CHKERRQ(ierr);
   err = fflush(PetscInfoFile);
-  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
+  if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   if (petsc_history) {
     va_start(Argp, message);
     (*PetscVFPrintf)(petsc_history, message, Argp);CHKERRQ(ierr);

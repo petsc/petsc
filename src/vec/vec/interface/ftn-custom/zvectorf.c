@@ -65,17 +65,17 @@ void PETSC_STDCALL vecview_(Vec *x,PetscViewer *vin,PetscErrorCode *ierr)
 
      Not Collective
 
-     Notes: Allows code such as 
+     Notes: Allows code such as
 
 $     type  :: Field
 $        PetscScalar :: p1
 $        PetscScalar :: p2
 $      end type Field
-$ 
+$
 $      type(Field)       :: lx_v(0:1)
 $
 $      call VecGetArray( localX, lx_v, lx_i, ierr )
-$      call InitialGuessLocal(lx_v(lx_i/2),ierr) 
+$      call InitialGuessLocal(lx_v(lx_i/2),ierr)
 $
 $      subroutine InitialGuessLocal(a,ierr)
 $      type(Field)     :: a(*)
@@ -121,8 +121,8 @@ void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,size_t *ia,PetscError
 }
 
 /*
-      vecduplicatevecs() and vecdestroyvecs() are slightly different from C since the 
-    Fortran provides the array to hold the vector objects,while in C that 
+      vecduplicatevecs() and vecdestroyvecs() are slightly different from C since the
+    Fortran provides the array to hold the vector objects,while in C that
     array is allocated by the VecDuplicateVecs()
 */
 void PETSC_STDCALL vecduplicatevecs_(Vec *v,PetscInt *m,Vec *newv,PetscErrorCode *ierr)
@@ -133,7 +133,7 @@ void PETSC_STDCALL vecduplicatevecs_(Vec *v,PetscInt *m,Vec *newv,PetscErrorCode
   for (i=0; i<*m; i++) {
     newv[i] = lV[i];
   }
-  *ierr = PetscFree(lV); 
+  *ierr = PetscFree(lV);
 }
 
 void PETSC_STDCALL vecdestroyvecs_(PetscInt *m,Vec *vecs,PetscErrorCode *ierr)

@@ -15,10 +15,10 @@ extern PetscErrorCode  TSCreate_ARKIMEX(TS);
 extern PetscErrorCode  TSCreate_RosW(TS);
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSRegisterAll"
 /*@C
-  TSRegisterAll - Registers all of the timesteppers in the TS package. 
+  TSRegisterAll - Registers all of the timesteppers in the TS package.
 
   Not Collective
 

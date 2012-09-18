@@ -11,8 +11,8 @@ typedef struct  {
   size_t       curlen,maxlen;
 } PetscViewer_String;
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerDestroy_String" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerDestroy_String"
 static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String *)viewer->data;
@@ -23,8 +23,8 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerStringSPrintf" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerStringSPrintf"
 /*@C
     PetscViewerStringSPrintf - Prints information to a PetscViewer string.
 
@@ -73,11 +73,11 @@ PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerStringOpen" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerStringOpen"
 /*@C
-    PetscViewerStringOpen - Opens a string as a PetscViewer. This is a very 
-    simple PetscViewer; information on the object is simply stored into 
+    PetscViewerStringOpen - Opens a string as a PetscViewer. This is a very
+    simple PetscViewer; information on the object is simply stored into
     the string in a fairly nice way.
 
     Collective on MPI_Comm
@@ -102,7 +102,7 @@ PetscErrorCode  PetscViewerStringSPrintf(PetscViewer viewer,const char format[],
 PetscErrorCode  PetscViewerStringOpen(MPI_Comm comm,char string[],PetscInt len,PetscViewer *lab)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
   ierr = PetscViewerSetType(*lab,PETSCVIEWERSTRING);CHKERRQ(ierr);
@@ -110,8 +110,8 @@ PetscErrorCode  PetscViewerStringOpen(MPI_Comm comm,char string[],PetscInt len,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerGetSingleton_String" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerGetSingleton_String"
 PetscErrorCode PetscViewerGetSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
@@ -122,8 +122,8 @@ PetscErrorCode PetscViewerGetSingleton_String(PetscViewer viewer,PetscViewer *sv
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerRestoreSingleton_String" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerRestoreSingleton_String"
 PetscErrorCode PetscViewerRestoreSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
 {
   PetscErrorCode     ierr;
@@ -131,15 +131,15 @@ PetscErrorCode PetscViewerRestoreSingleton_String(PetscViewer viewer,PetscViewer
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
 
   PetscFunctionBegin;
-  vstr->head    = iviewer->head;  
-  vstr->curlen += iviewer->curlen;  
+  vstr->head    = iviewer->head;
+  vstr->curlen += iviewer->curlen;
   ierr = PetscViewerDestroy(sviewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerCreate_String" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerCreate_String"
 PetscErrorCode  PetscViewerCreate_String(PetscViewer v)
 {
   PetscViewer_String *vstr;
@@ -158,8 +158,8 @@ PetscErrorCode  PetscViewerCreate_String(PetscViewer v)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerStringSetString" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerStringSetString"
 /*@C
 
    PetscViewerStringSetString - sets the string that a string viewer will print to

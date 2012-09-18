@@ -685,7 +685,7 @@ PetscErrorCode TSRosWFinalizePackage(void)
 .  Gamma - Table of coefficients in implicit stage equations (dimension s*s, row-major), lower triangular with nonzero diagonal
 .  b - Step completion table (dimension s)
 .  bembed - Step completion table for a scheme of order one less (dimension s, PETSC_NULL if no embedded scheme is available)
-.  pinterp - Order of the interpolation scheme, equal to the number of columns of binterpt 
+.  pinterp - Order of the interpolation scheme, equal to the number of columns of binterpt
 -  binterpt - Coefficients of the interpolation formula (dimension s*pinterp)
 
    Notes:
@@ -1028,19 +1028,19 @@ static PetscErrorCode TSStep_RosW(TS ts)
         Mat J,Jp;
         ierr = VecZeroEntries(Ydot);CHKERRQ(ierr); /* Evaluate Y[i]=G(t,Ydot=0,Zstage) */
         ierr = TSComputeIFunction(ts,ros->stage_time,Zstage,Ydot,Y[i],PETSC_FALSE);CHKERRQ(ierr);
-        ierr = VecScale(Y[i],-1.0);      
+        ierr = VecScale(Y[i],-1.0);
         ierr = VecAXPY(Y[i],-1.0,Zdot);CHKERRQ(ierr); /*Y[i]=F(Zstage)-Zdot[=GammaInv*Y]*/
-        
+
         ierr = VecZeroEntries(Zstage);CHKERRQ(ierr); /* Zstage = GammaExplicitCorr[i,j] * Y[j] */
         for (j=0; j<i; j++) w[j] = GammaExplicitCorr[i*s+j];
-        ierr = VecMAXPY(Zstage,i,w,Y);CHKERRQ(ierr); 
+        ierr = VecMAXPY(Zstage,i,w,Y);CHKERRQ(ierr);
         /*Y[i] += Y[i] + Jac*Zstage[=Jac*GammaExplicitCorr[i,j] * Y[j]] */
         str = SAME_NONZERO_PATTERN;
         ierr = TSGetIJacobian(ts,&J,&Jp,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-        ierr = TSComputeIJacobian(ts,ros->stage_time,ts->vec_sol,Ydot,0,&J,&Jp,&str,PETSC_FALSE);CHKERRQ(ierr);     
+        ierr = TSComputeIJacobian(ts,ros->stage_time,ts->vec_sol,Ydot,0,&J,&Jp,&str,PETSC_FALSE);CHKERRQ(ierr);
         ierr = MatMult(J,Zstage,Zdot);
 
-        ierr = VecAXPY(Y[i],-1.0,Zdot);CHKERRQ(ierr); 
+        ierr = VecAXPY(Y[i],-1.0,Zdot);CHKERRQ(ierr);
         ierr = VecScale(Y[i],h);
         ts->ksp_its += 1;
       }
@@ -1113,10 +1113,10 @@ static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec X)
   /* y(t+tt*h) = y(t) + Sum bt(tt) * GammaInv * Ydot */
   /*X<-0*/
   ierr = VecZeroEntries(X);CHKERRQ(ierr);
- 
+
   /*X<- Sum bt_i * GammaInv(i,1:i) * Y(1:i) */
   for (j=0; j<s; j++)  w[j]=0;
-  for (j=0; j<s; j++) {  
+  for (j=0; j<s; j++) {
     for (i=j; i<s; i++) {
       w[j] +=  bt[i]*GammaInv[i*s+j];
     }
@@ -1125,7 +1125,7 @@ static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec X)
 
   /*X<-y(t) + X*/
   ierr = VecAXPY(X,1.0,ros->VecSolPrev);CHKERRQ(ierr);
-  
+
   ierr = PetscFree(bt);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -1359,7 +1359,7 @@ static PetscErrorCode TSSetFromOptions_RosW(TS ts)
     const char **namelist;
     SNES snes;
 
-    ierr = PetscStrncpy(rostype,TSRosWDefault,sizeof rostype);CHKERRQ(ierr);
+    ierr = PetscStrncpy(rostype,TSRosWDefault,sizeof(rostype));CHKERRQ(ierr);
     for (link=RosWTableauList,count=0; link; link=link->next,count++) ;
     ierr = PetscMalloc(count*sizeof(char*),&namelist);CHKERRQ(ierr);
     for (link=RosWTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;
@@ -1419,10 +1419,10 @@ static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
     char buf[512];
     ierr = TSRosWGetType(ts,&rostype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Rosenbrock-W %s\n",rostype);CHKERRQ(ierr);
-    ierr = PetscFormatRealArray(buf,sizeof buf,"% 8.6f",tab->s,tab->ASum);CHKERRQ(ierr);
+    ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->ASum);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa of A       = %s\n",buf);CHKERRQ(ierr);
     for (i=0; i<tab->s; i++) abscissa[i] = tab->ASum[i] + tab->Gamma[i];
-    ierr = PetscFormatRealArray(buf,sizeof buf,"% 8.6f",tab->s,abscissa);CHKERRQ(ierr);
+    ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,abscissa);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa of A+Gamma = %s\n",buf);CHKERRQ(ierr);
   }
   ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);

@@ -1,19 +1,19 @@
 
 /* Routines to be used by MatIncreaseOverlap() for BAIJ and SBAIJ matrices */
-#include <petscis.h> 
+#include <petscis.h>
 #include <petscbt.h>
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISCompressIndicesGeneral"
 /*@C
    ISCompressIndicesGeneral - convert the indices into block indices
    Input Parameters:
 +  n - maximum possible length of the index set
 .  nkeys - expected number of keys when PETSC_USE_CTABLE
-.  bs - the size of block 
+.  bs - the size of block
 .  imax - the number of index sets
--  is_in - the non-blocked array of index sets 
+-  is_in - the non-blocked array of index sets
 
    Output Parameter:
 .  is_out - the blocked new index set
@@ -42,7 +42,7 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
   Nkbs = nkeys/bs;
   ierr = PetscTableCreate(Nkbs,Nbs,&gid1_lid1);CHKERRQ(ierr);
 #else
-  ierr = PetscMalloc(Nbs*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
+  ierr = PetscMalloc(Nbs*sizeof(PetscInt),&nidx);CHKERRQ(ierr);
   ierr = PetscBTCreate(Nbs,&table);CHKERRQ(ierr);
 #endif
   for (i=0; i<imax; i++) {
@@ -64,16 +64,16 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
       }
 #else
       if (ival>Nbs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
-      if(!PetscBTLookupSet(table,ival)) { nidx[isz++] = ival;}
+      if (!PetscBTLookupSet(table,ival)) { nidx[isz++] = ival;}
 #endif
     }
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
-    
+
 #if defined (PETSC_USE_CTABLE)
-    ierr = PetscMalloc(isz*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
-    ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
+    ierr = PetscMalloc(isz*sizeof(PetscInt),&nidx);CHKERRQ(ierr);
+    ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr);
     j = 0;
-    while (tpos) {  
+    while (tpos) {
       ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid1,&tt);CHKERRQ(ierr);
       if (tt-- > isz) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than array-dim"); }
       nidx[tt] = gid1 - 1;
@@ -94,7 +94,7 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISCompressIndicesSorted"
 PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
@@ -122,9 +122,9 @@ PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,con
     len = len/bs; /* The reduced index size */
     if (len > maxsz) maxsz = len;
   }
-  ierr = PetscMalloc(maxsz*sizeof(PetscInt),&nidx);CHKERRQ(ierr);   
+  ierr = PetscMalloc(maxsz*sizeof(PetscInt),&nidx);CHKERRQ(ierr);
 #else
-  ierr = PetscMalloc(Nbs*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
+  ierr = PetscMalloc(Nbs*sizeof(PetscInt),&nidx);CHKERRQ(ierr);
 #endif
   /* Now check if the indices are in block order */
   for (i=0; i<imax; i++) {
@@ -164,16 +164,16 @@ PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISExpandIndicesGeneral"
 /*@C
    ISExpandIndicesGeneral - convert the indices into non-block indices
    Input Parameters:
 +  n - the length of the index set   (not being used)
 .  nkeys - expected number of keys when PETSC_USE_CTABLE (not being used)
-.  bs - the size of block 
+.  bs - the size of block
 .  imax - the number of index sets
--  is_in - the blocked array of index sets 
+-  is_in - the blocked array of index sets
 
    Output Parameter:
 .  is_out - the non-blocked new index set
@@ -196,7 +196,7 @@ PetscErrorCode  ISExpandIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,Pet
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);
     if (len > maxsz) maxsz = len;
   }
-  ierr = PetscMalloc(maxsz*bs*sizeof(PetscInt),&nidx);CHKERRQ(ierr);   
+  ierr = PetscMalloc(maxsz*bs*sizeof(PetscInt),&nidx);CHKERRQ(ierr);
 
   for (i=0; i<imax; i++) {
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);

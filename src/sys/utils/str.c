@@ -1,7 +1,7 @@
 
 /*
-    We define the string operations here. The reason we just do not use 
-  the standard string routines in the PETSc code is that on some machines 
+    We define the string operations here. The reason we just do not use
+  the standard string routines in the PETSc code is that on some machines
   they are broken or have the wrong prototypes.
 
 */
@@ -13,7 +13,7 @@
 #include <strings.h>
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrToArray"
 /*@C
    PetscStrToArray - Seperates a string by its spaces and creates an array of strings
@@ -83,7 +83,7 @@ PetscErrorCode  PetscStrToArray(const char s[],int *argc,char ***args)
   return 0;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrToArrayDestroy"
 /*@C
    PetscStrToArrayDestroy - Frees array created with PetscStrToArray().
@@ -97,7 +97,7 @@ PetscErrorCode  PetscStrToArray(const char s[],int *argc,char ***args)
    Level: intermediate
 
    Concepts: command line arguments
-   
+
    Notes: This may be called before PetscInitialize() or after PetscFinalize()
 
    Not for use in Fortran
@@ -116,7 +116,7 @@ PetscErrorCode  PetscStrToArrayDestroy(int argc,char **args)
   return 0;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrlen"
 /*@C
    PetscStrlen - Gets length of a string
@@ -139,7 +139,7 @@ PetscErrorCode  PetscStrToArrayDestroy(int argc,char **args)
    Not for use in Fortran
 
   Concepts: string length
-  
+
 @*/
 PetscErrorCode  PetscStrlen(const char s[],size_t *len)
 {
@@ -152,7 +152,7 @@ PetscErrorCode  PetscStrlen(const char s[],size_t *len)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrallocpy"
 /*@C
    PetscStrallocpy - Allocates space to hold a copy of a string then copies the string
@@ -173,7 +173,7 @@ PetscErrorCode  PetscStrlen(const char s[],size_t *len)
       Not for use in Fortran
 
   Concepts: string copy
-  
+
 @*/
 PetscErrorCode  PetscStrallocpy(const char s[],char *t[])
 {
@@ -191,7 +191,7 @@ PetscErrorCode  PetscStrallocpy(const char s[],char *t[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrArrayallocpy"
 /*@C
    PetscStrArrayallocpy - Allocates space to hold a copy of an array of strings then copies the strings
@@ -212,7 +212,7 @@ PetscErrorCode  PetscStrallocpy(const char s[],char *t[])
   Concepts: string copy
 
 .seealso: PetscStrallocpy() PetscStrArrayDestroy()
- 
+
 @*/
 PetscErrorCode  PetscStrArrayallocpy(const char *const*list,char ***t)
 {
@@ -229,7 +229,7 @@ PetscErrorCode  PetscStrArrayallocpy(const char *const*list,char ***t)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrArrayDestroy"
 /*@C
    PetscStrArrayDestroy - Frees array of strings created with PetscStrArrayallocpy().
@@ -242,7 +242,7 @@ PetscErrorCode  PetscStrArrayallocpy(const char *const*list,char ***t)
    Level: intermediate
 
    Concepts: command line arguments
-   
+
    Notes: Not for use in Fortran
 
 .seealso: PetscStrArrayallocpy()
@@ -263,7 +263,7 @@ PetscErrorCode PetscStrArrayDestroy(char ***list)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrcpy"
 /*@C
    PetscStrcpy - Copies a string
@@ -284,7 +284,7 @@ PetscErrorCode PetscStrArrayDestroy(char ***list)
      Not for use in Fortran
 
   Concepts: string copy
-  
+
 .seealso: PetscStrncpy(), PetscStrcat(), PetscStrncat()
 
 @*/
@@ -298,7 +298,7 @@ PetscErrorCode  PetscStrcpy(char s[],const char t[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrncpy"
 /*@C
    PetscStrncpy - Copies a string up to a certain length
@@ -320,7 +320,7 @@ PetscErrorCode  PetscStrcpy(char s[],const char t[])
   Concepts: string copy
 
 .seealso: PetscStrcpy(), PetscStrcat(), PetscStrncat()
-  
+
 @*/
 PetscErrorCode  PetscStrncpy(char s[],const char t[],size_t n)
 {
@@ -331,7 +331,7 @@ PetscErrorCode  PetscStrncpy(char s[],const char t[],size_t n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrcat"
 /*@C
    PetscStrcat - Concatenates a string onto a given string
@@ -349,7 +349,7 @@ PetscErrorCode  PetscStrncpy(char s[],const char t[],size_t n)
   Concepts: string copy
 
 .seealso: PetscStrcpy(), PetscStrncpy(), PetscStrncat()
-  
+
 @*/
 PetscErrorCode  PetscStrcat(char s[],const char t[])
 {
@@ -359,7 +359,7 @@ PetscErrorCode  PetscStrcat(char s[],const char t[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrncat"
 /*@C
    PetscStrncat - Concatenates a string onto a given string, up to a given length
@@ -369,7 +369,7 @@ PetscErrorCode  PetscStrcat(char s[],const char t[])
    Input Parameters:
 +  s - pointer to string to be added to end
 .  t - string to be added to
-.  n - maximum length to copy 
+.  n - maximum length to copy
 
    Level: intermediate
 
@@ -378,7 +378,7 @@ PetscErrorCode  PetscStrcat(char s[],const char t[])
   Concepts: string copy
 
 .seealso: PetscStrcpy(), PetscStrncpy(), PetscStrcat()
-  
+
 @*/
 PetscErrorCode  PetscStrncat(char s[],const char t[],size_t n)
 {
@@ -387,7 +387,7 @@ PetscErrorCode  PetscStrncat(char s[],const char t[],size_t n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrcmp"
 /*@C
    PetscStrcmp - Compares two strings,
@@ -425,7 +425,7 @@ PetscErrorCode  PetscStrcmp(const char a[],const char b[],PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrgrt"
 /*@C
    PetscStrgrt - If first string is greater than the second
@@ -440,7 +440,7 @@ PetscErrorCode  PetscStrcmp(const char a[],const char b[],PetscBool  *flg)
 .  flg - if the first string is greater
 
    Notes:
-    Null arguments are ok, a null string is considered smaller than 
+    Null arguments are ok, a null string is considered smaller than
     all others
 
    Not for use in Fortran
@@ -458,9 +458,9 @@ PetscErrorCode  PetscStrgrt(const char a[],const char b[],PetscBool  *t)
   if (!a && !b) {
     *t = PETSC_FALSE;
   } else if (a && !b) {
-    *t = PETSC_TRUE; 
+    *t = PETSC_TRUE;
   } else if (!a && b) {
-    *t = PETSC_FALSE; 
+    *t = PETSC_FALSE;
   } else {
     c = strcmp(a,b);
     if (c > 0) *t = PETSC_TRUE;
@@ -469,7 +469,7 @@ PetscErrorCode  PetscStrgrt(const char a[],const char b[],PetscBool  *t)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrcasecmp"
 /*@C
    PetscStrcasecmp - Returns true if the two strings are the same
@@ -526,7 +526,7 @@ PetscErrorCode  PetscStrcasecmp(const char a[],const char b[],PetscBool  *t)
 
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrncmp"
 /*@C
    PetscStrncmp - Compares two strings, up to a certain length
@@ -559,7 +559,7 @@ PetscErrorCode  PetscStrncmp(const char a[],const char b[],size_t n,PetscBool  *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrchr"
 /*@C
    PetscStrchr - Locates first occurance of a character in a string
@@ -585,7 +585,7 @@ PetscErrorCode  PetscStrchr(const char a[],char b,char *c[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrrchr"
 /*@C
    PetscStrrchr - Locates one location past the last occurance of a character in a string,
@@ -613,7 +613,7 @@ PetscErrorCode  PetscStrrchr(const char a[],char b,char *tmp[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrtolower"
 /*@C
    PetscStrtolower - Converts string to lower case
@@ -638,7 +638,7 @@ PetscErrorCode  PetscStrtolower(char a[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrendswith"
 /*@C
    PetscStrendswith - Determines if a string ends with a certain string
@@ -674,7 +674,7 @@ PetscErrorCode  PetscStrendswith(const char a[],const char b[],PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrendswithwhich"
 /*@C
    PetscStrendswithwhich - Determines if a string ends with one of several possible strings
@@ -708,7 +708,7 @@ PetscErrorCode  PetscStrendswithwhich(const char a[],const char *const *bs,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrrstr"
 /*@C
    PetscStrrstr - Locates last occurance of string in another string
@@ -740,7 +740,7 @@ PetscErrorCode  PetscStrrstr(const char a[],const char b[],char *tmp[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrstr"
 /*@C
    PetscStrstr - Locates first occurance of string in another string
@@ -768,7 +768,7 @@ PetscErrorCode  PetscStrstr(const char haystack[],const char needle[],char *tmp[
 
 struct _p_PetscToken {char token;char *array;char *current;};
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscTokenFind"
 /*@C
    PetscTokenFind - Locates next "token" in a string
@@ -807,7 +807,7 @@ PetscErrorCode  PetscTokenFind(PetscToken a,char *result[])
   if (ptr && (*ptr == '"')) {token = '"';(*result)++;ptr++;}
   while (ptr) {
     if (*ptr == token) {
-      *ptr++ = 0; 
+      *ptr++ = 0;
       while (*ptr == a->token) ptr++;
       a->current = ptr;
       break;
@@ -821,7 +821,7 @@ PetscErrorCode  PetscTokenFind(PetscToken a,char *result[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscTokenCreate"
 /*@C
    PetscTokenCreate - Creates a PetscToken used to find tokens in a string
@@ -853,12 +853,12 @@ PetscErrorCode  PetscTokenCreate(const char a[],const char b,PetscToken *t)
   PetscFunctionBegin;
   ierr = PetscNew(struct _p_PetscToken,t);CHKERRQ(ierr);
   ierr = PetscStrallocpy(a,&(*t)->array);CHKERRQ(ierr);
-  (*t)->current = (*t)->array;   
+  (*t)->current = (*t)->array;
   (*t)->token   = b;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscTokenDestroy"
 /*@C
    PetscTokenDestroy - Destroys a PetscToken
@@ -886,7 +886,7 @@ PetscErrorCode  PetscTokenDestroy(PetscToken *a)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetPetscDir"
 /*@C
    PetscGetPetscDir - Gets the directory PETSc is installed in
@@ -908,7 +908,7 @@ PetscErrorCode  PetscGetPetscDir(const char *dir[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrreplace"
 /*@C
    PetscStrreplace - Replaces substrings in string with other substrings
@@ -928,9 +928,9 @@ PetscErrorCode  PetscGetPetscDir(const char *dir[])
 
       PETSC_LIB_DIR uses the environmental variable if it exists. PETSC_ARCH and PETSC_DIR use what
       PETSc was built with and do not use environmental variables.
-   
+
       Not for use in Fortran
-   
+
    Level: intermediate
 
 @*/
@@ -973,7 +973,7 @@ PetscErrorCode  PetscStrreplace(MPI_Comm comm,const char aa[],char b[],size_t le
   }
 
   /* replace the requested strings */
-  ierr = PetscStrncpy(b,a,len);CHKERRQ(ierr);  
+  ierr = PetscStrncpy(b,a,len);CHKERRQ(ierr);
   while (s[i]) {
     ierr = PetscStrlen(s[i],&l);CHKERRQ(ierr);
     ierr = PetscStrstr(b,s[i],&par);CHKERRQ(ierr);

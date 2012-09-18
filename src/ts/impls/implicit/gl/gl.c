@@ -104,7 +104,7 @@ static PetscErrorCode DMRestrictHook_TSGL(DM fine,Mat restrct,Vec rscale,Mat inj
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLSchemeCreate"
 static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt s,const PetscScalar *c,
                                        const PetscScalar *a,const PetscScalar *b,const PetscScalar *u,const PetscScalar *v,TSGLScheme *inscheme)
@@ -290,7 +290,7 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLSchemeDestroy"
 static PetscErrorCode TSGLSchemeDestroy(TSGLScheme sc)
 {
@@ -303,7 +303,7 @@ static PetscErrorCode TSGLSchemeDestroy(TSGLScheme sc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLDestroy_Default"
 static PetscErrorCode TSGLDestroy_Default(TS_GL *gl)
 {
@@ -320,7 +320,7 @@ static PetscErrorCode TSGLDestroy_Default(TS_GL *gl)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLViewTable_Private"
 static PetscErrorCode TSGLViewTable_Private(PetscViewer viewer,PetscInt m,PetscInt n,const PetscScalar a[],const char name[])
 {
@@ -348,7 +348,7 @@ static PetscErrorCode TSGLViewTable_Private(PetscViewer viewer,PetscInt m,PetscI
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLSchemeView"
 static PetscErrorCode TSGLSchemeView(TSGLScheme sc,PetscBool  view_details,PetscViewer viewer)
 {
@@ -382,7 +382,7 @@ static PetscErrorCode TSGLSchemeView(TSGLScheme sc,PetscBool  view_details,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLEstimateHigherMoments_Default"
 static PetscErrorCode TSGLEstimateHigherMoments_Default(TSGLScheme sc,PetscReal h,Vec Ydot[],Vec Xold[],Vec hm[])
 {
@@ -403,7 +403,7 @@ static PetscErrorCode TSGLEstimateHigherMoments_Default(TSGLScheme sc,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLCompleteStep_Rescale"
 static PetscErrorCode TSGLCompleteStep_Rescale(TSGLScheme sc,PetscReal h,TSGLScheme next_sc,PetscReal next_h,Vec Ydot[],Vec Xold[],Vec X[])
 {
@@ -425,7 +425,7 @@ static PetscErrorCode TSGLCompleteStep_Rescale(TSGLScheme sc,PetscReal h,TSGLSch
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLCompleteStep_RescaleAndModify"
 static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal h,TSGLScheme next_sc,PetscReal next_h,Vec Ydot[],Vec Xold[],Vec X[])
 {
@@ -469,7 +469,7 @@ static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal 
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLCreate_IRKS"
 PetscErrorCode  TSGLCreate_IRKS(TS ts)
 {
@@ -607,7 +607,7 @@ PetscErrorCode  TSGLCreate_IRKS(TS ts)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLSetType"
 /*@C
    TSGLSetType - sets the class of general linear method to use for time-stepping
@@ -651,7 +651,7 @@ PetscErrorCode  TSGLSetType(TS ts,const TSGLType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLSetAcceptType"
 /*@C
    TSGLSetAcceptType - sets the acceptance test
@@ -683,7 +683,7 @@ PetscErrorCode  TSGLSetAcceptType(TS ts,const TSGLAcceptType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLGetAdapt"
 /*@C
    TSGLGetAdapt - gets the TSGLAdapt object from the TS
@@ -716,7 +716,7 @@ PetscErrorCode  TSGLGetAdapt(TS ts,TSGLAdapt *adapt)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAccept_Always"
 PetscErrorCode  TSGLAccept_Always(TS ts,PetscReal tleft,PetscReal h,const PetscReal enorms[],PetscBool  *accept)
 {
@@ -773,7 +773,7 @@ static PetscErrorCode TSGLVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLSetType_GL"
 PetscErrorCode  TSGLSetType_GL(TS ts,const TSGLType type)
 {
@@ -795,7 +795,7 @@ PetscErrorCode  TSGLSetType_GL(TS ts,const TSGLType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLSetAcceptType_GL"
 PetscErrorCode  TSGLSetAcceptType_GL(TS ts,const TSGLAcceptType type)
 {
@@ -811,7 +811,7 @@ PetscErrorCode  TSGLSetAcceptType_GL(TS ts,const TSGLAcceptType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLGetAdapt_GL"
 PetscErrorCode  TSGLGetAdapt_GL(TS ts,TSGLAdapt *adapt)
 {
@@ -829,7 +829,7 @@ PetscErrorCode  TSGLGetAdapt_GL(TS ts,TSGLAdapt *adapt)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLChooseNextScheme"
 static PetscErrorCode TSGLChooseNextScheme(TS ts,PetscReal h,const PetscReal hmnorm[],PetscInt *next_scheme,PetscReal *next_h,PetscBool  *finish)
 {
@@ -865,7 +865,7 @@ static PetscErrorCode TSGLChooseNextScheme(TS ts,PetscReal h,const PetscReal hmn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLGetMaxSizes"
 static PetscErrorCode TSGLGetMaxSizes(TS ts,PetscInt *max_r,PetscInt *max_s)
 {
@@ -877,7 +877,7 @@ static PetscErrorCode TSGLGetMaxSizes(TS ts,PetscInt *max_r,PetscInt *max_s)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSolve_GL"
 static PetscErrorCode TSSolve_GL(TS ts)
 {
@@ -1101,7 +1101,7 @@ static PetscErrorCode TSDestroy_GL(TS ts)
     This defines the nonlinear equation that is to be solved with SNES
     g(x) = f(t,x,z+shift*x) = 0
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESTSFormFunction_GL"
 static PetscErrorCode SNESTSFormFunction_GL(SNES snes,Vec x,Vec f,TS ts)
 {
@@ -1122,7 +1122,7 @@ static PetscErrorCode SNESTSFormFunction_GL(SNES snes,Vec x,Vec f,TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_GL"
 static PetscErrorCode SNESTSFormJacobian_GL(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,TS ts)
 {
@@ -1143,7 +1143,7 @@ static PetscErrorCode SNESTSFormJacobian_GL(SNES snes,Vec x,Mat *A,Mat *B,MatStr
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetUp_GL"
 static PetscErrorCode TSSetUp_GL(TS ts)
 {
@@ -1183,7 +1183,7 @@ static PetscErrorCode TSSetUp_GL(TS ts)
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_GL"
 static PetscErrorCode TSSetFromOptions_GL(TS ts)
 {
@@ -1207,7 +1207,7 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
     ierr = PetscOptionsBool("-ts_gl_extrapolate","Extrapolate stage solution from previous solution (sometimes unstable)","TSGLSetExtrapolate",gl->extrapolate,&gl->extrapolate,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_gl_atol","Absolute tolerance","TSGLSetTolerances",gl->wrms_atol,&gl->wrms_atol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_gl_rtol","Relative tolerance","TSGLSetTolerances",gl->wrms_rtol,&gl->wrms_rtol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-ts_gl_complete","Method to use for completing the step","none",completef,completef,sizeof completef,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-ts_gl_complete","Method to use for completing the step","none",completef,completef,sizeof(completef),&flg);CHKERRQ(ierr);
     if (flg) {
       PetscBool  match1,match2;
       ierr = PetscStrcmp(completef,"rescale",&match1);CHKERRQ(ierr);
@@ -1218,7 +1218,7 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
     }
     {
       char type[256] = TSGLACCEPT_ALWAYS;
-      ierr = PetscOptionsList("-ts_gl_accept_type","Method to use for determining whether to accept a step","TSGLSetAcceptType",TSGLAcceptList,gl->accept_name[0]?gl->accept_name:type,type,sizeof type,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsList("-ts_gl_accept_type","Method to use for determining whether to accept a step","TSGLSetAcceptType",TSGLAcceptList,gl->accept_name[0]?gl->accept_name:type,type,sizeof(type),&flg);CHKERRQ(ierr);
       if (flg || !gl->accept_name[0]) {
         ierr = TSGLSetAcceptType(ts,type);CHKERRQ(ierr);
       }
@@ -1234,7 +1234,7 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSView_GL"
 static PetscErrorCode TSView_GL(TS ts,PetscViewer viewer)
 {
@@ -1270,7 +1270,7 @@ static PetscErrorCode TSView_GL(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLRegister"
 /*@C
    TSGLRegister - see TSGLRegisterDynamic()
@@ -1288,7 +1288,7 @@ PetscErrorCode  TSGLRegister(const char sname[],const char path[],const char nam
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLAcceptRegister"
 /*@C
    TSGLAcceptRegister - see TSGLAcceptRegisterDynamic()
@@ -1306,7 +1306,7 @@ PetscErrorCode  TSGLAcceptRegister(const char sname[],const char path[],const ch
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLRegisterAll"
 /*@C
   TSGLRegisterAll - Registers all of the general linear methods in TSGL
@@ -1332,7 +1332,7 @@ PetscErrorCode  TSGLRegisterAll(const char path[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLRegisterDestroy"
 /*@C
    TSGLRegisterDestroy - Frees the list of schemes that were registered by TSGLRegister()/TSGLRegisterDynamic().
@@ -1355,7 +1355,7 @@ PetscErrorCode  TSGLRegisterDestroy(void)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLInitializePackage"
 /*@C
   TSGLInitializePackage - This function initializes everything in the TSGL package. It is called
@@ -1382,7 +1382,7 @@ PetscErrorCode  TSGLInitializePackage(const char path[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGLFinalizePackage"
 /*@C
   TSGLFinalizePackage - This function destroys everything in the TSGL package. It is
@@ -1393,7 +1393,7 @@ PetscErrorCode  TSGLInitializePackage(const char path[])
 .keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode  TSGLFinalizePackage(void) 
+PetscErrorCode  TSGLFinalizePackage(void)
 {
   PetscFunctionBegin;
   TSGLPackageInitialized = PETSC_FALSE;
@@ -1498,7 +1498,7 @@ PetscErrorCode  TSGLFinalizePackage(void)
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSCreate_GL"
 PetscErrorCode  TSCreate_GL(TS ts)
 {

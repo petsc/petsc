@@ -4,7 +4,7 @@
  */
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDot_MPI"
 PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
@@ -18,7 +18,7 @@ PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecTDot_MPI"
 PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
@@ -36,7 +36,7 @@ EXTERN_C_BEGIN
 extern PetscErrorCode VecView_MPI_Draw(Vec,PetscViewer);
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecPlaceArray_MPI"
 PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
 {
@@ -55,7 +55,7 @@ PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
 
 extern PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt [],PetscScalar []);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDuplicate_MPI"
 static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 {
@@ -82,12 +82,12 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
     if (vw->localupdate) {
       ierr = PetscObjectReference((PetscObject)vw->localupdate);CHKERRQ(ierr);
     }
-  }    
+  }
 
   /* New vector should inherit stashing property of parent */
   (*v)->stash.donotstash = win->stash.donotstash;
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
-  
+
   ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist);CHKERRQ(ierr);
   (*v)->map->bs    = win->map->bs;
@@ -162,7 +162,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
    	    VecStrideScatter_Default
 };
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecCreate_MPI_Private"
 /*
     VecCreate_MPI_Private - Basic create routine called by VecCreate_MPI() (i.e. VecCreateMPI()),
@@ -201,12 +201,12 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool  alloc,PetscInt nghost,cons
   s->localupdate = 0;
 
   v->stash.insertmode  = NOT_SET_VALUES;
-  /* create the stashes. The block-size for bstash is set later when 
+  /* create the stashes. The block-size for bstash is set later when
      VecSetValuesBlocked is called.
   */
   ierr = VecStashCreate_Private(((PetscObject)v)->comm,1,&v->stash);CHKERRQ(ierr);
-  ierr = VecStashCreate_Private(((PetscObject)v)->comm,v->map->bs,&v->bstash);CHKERRQ(ierr); 
-                                                        
+  ierr = VecStashCreate_Private(((PetscObject)v)->comm,v->map->bs,&v->bstash);CHKERRQ(ierr);
+
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEngineGet_C","VecMatlabEngineGet_Default",VecMatlabEngineGet_Default);CHKERRQ(ierr);
@@ -227,7 +227,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool  alloc,PetscInt nghost,cons
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecCreate_MPI"
 PetscErrorCode  VecCreate_MPI(Vec vv)
 {
@@ -270,7 +270,7 @@ PetscErrorCode  VecCreate_Standard(Vec v)
 EXTERN_C_END
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecCreateMPIWithArray"
 /*@C
    VecCreateMPIWithArray - Creates a parallel, array-style vector,
@@ -287,7 +287,7 @@ EXTERN_C_END
 
    Output Parameter:
 .  vv - the vector
- 
+
    Notes:
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
@@ -305,7 +305,7 @@ EXTERN_C_END
 .seealso: VecCreateSeqWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
           VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 
-@*/ 
+@*/
 PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,const PetscScalar array[],Vec *vv)
 {
   PetscErrorCode ierr;
@@ -320,7 +320,7 @@ PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecCreateGhostWithArray"
 /*@C
    VecCreateGhostWithArray - Creates a parallel vector with ghost padding on each processor;
@@ -330,7 +330,7 @@ PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Petsc
 
    Input Parameters:
 +  comm - the MPI communicator to use
-.  n - local vector length 
+.  n - local vector length
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 .  nghost - number of local ghost points
 .  ghosts - global indices of ghost points (or PETSC_NULL if not needed)
@@ -338,9 +338,9 @@ PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Petsc
 
    Output Parameter:
 .  vv - the global vector representation (without ghost points as part of vector)
- 
+
    Notes:
-   Use VecGhostGetLocalForm() to access the local, ghosted representation 
+   Use VecGhostGetLocalForm() to access the local, ghosted representation
    of the vector.
 
    This also automatically sets the ISLocalToGlobalMapping() for this vector.
@@ -350,11 +350,11 @@ PetscErrorCode  VecCreateMPIWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,Petsc
    Concepts: vectors^creating with array
    Concepts: vectors^ghosted
 
-.seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), 
+.seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),
           VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray(),
           VecCreateGhostBlock(), VecCreateGhostBlockWithArray(), VecMPISetGhost()
 
-@*/ 
+@*/
 PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],const PetscScalar array[],Vec *vv)
 {
   PetscErrorCode         ierr;
@@ -383,9 +383,9 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
   ierr = VecRestoreArray(*vv,&larray);CHKERRQ(ierr);
 
   /*
-       Create scatter context for scattering (updating) ghost values 
+       Create scatter context for scattering (updating) ghost values
   */
-  ierr = ISCreateGeneral(comm,nghost,ghosts,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);   
+  ierr = ISCreateGeneral(comm,nghost,ghosts,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,nghost,n,1,&to);CHKERRQ(ierr);
   ierr = VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(*vv,w->localupdate);CHKERRQ(ierr);
@@ -407,7 +407,7 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecCreateGhost"
 /*@
    VecCreateGhost - Creates a parallel vector with ghost padding on each processor.
@@ -416,16 +416,16 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
 
    Input Parameters:
 +  comm - the MPI communicator to use
-.  n - local vector length 
+.  n - local vector length
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 .  nghost - number of local ghost points
 -  ghosts - global indices of ghost points
 
    Output Parameter:
 .  vv - the global vector representation (without ghost points as part of vector)
- 
+
    Notes:
-   Use VecGhostGetLocalForm() to access the local, ghosted representation 
+   Use VecGhostGetLocalForm() to access the local, ghosted representation
    of the vector.
 
    This also automatically sets the ISLocalToGlobalMapping() for this vector.
@@ -439,7 +439,7 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
           VecCreateGhostWithArray(), VecCreateMPIWithArray(), VecGhostUpdateEnd(),
           VecCreateGhostBlock(), VecCreateGhostBlockWithArray(), VecMPISetGhost()
 
-@*/ 
+@*/
 PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)
 {
   PetscErrorCode ierr;
@@ -449,7 +449,7 @@ PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt ngho
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecMPISetGhost"
 /*@
    VecMPISetGhost - Sets the ghost points for an MPI ghost vector
@@ -461,9 +461,9 @@ PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt ngho
 .  nghost - number of local ghost points
 -  ghosts - global indices of ghost points
 
- 
+
    Notes:
-   Use VecGhostGetLocalForm() to access the local, ghosted representation 
+   Use VecGhostGetLocalForm() to access the local, ghosted representation
    of the vector.
 
    This also automatically sets the ISLocalToGlobalMapping() for this vector.
@@ -479,7 +479,7 @@ PetscErrorCode  VecCreateGhost(MPI_Comm comm,PetscInt n,PetscInt N,PetscInt ngho
           VecCreateGhostWithArray(), VecCreateMPIWithArray(), VecGhostUpdateEnd(),
           VecCreateGhostBlock(), VecCreateGhostBlockWithArray()
 
-@*/ 
+@*/
 PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
 {
   PetscErrorCode ierr;
@@ -510,9 +510,9 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
     ierr = VecRestoreArray(vv,&larray);CHKERRQ(ierr);
 
     /*
-     Create scatter context for scattering (updating) ghost values 
+     Create scatter context for scattering (updating) ghost values
      */
-    ierr = ISCreateGeneral(comm,nghost,ghosts,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);   
+    ierr = ISCreateGeneral(comm,nghost,ghosts,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,nghost,n,1,&to);CHKERRQ(ierr);
     ierr = VecScatterCreate(vv,from,w->localrep,to,&w->localupdate);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(vv,w->localupdate);CHKERRQ(ierr);
@@ -530,7 +530,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
     }
     ierr = ISLocalToGlobalMappingCreate(comm,n+nghost,indices,PETSC_OWN_POINTER,&ltog);CHKERRQ(ierr);
     ierr = VecSetLocalToGlobalMapping(vv,ltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr); 
+    ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
   } else if (vv->ops->create == VecCreate_MPI) SETERRQ(((PetscObject)vv)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set local or global size before setting ghosting");
   else if (!((PetscObject)vv)->type_name) SETERRQ(((PetscObject)vv)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set type to VECMPI before ghosting");
   PetscFunctionReturn(0);
@@ -538,7 +538,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
 
 
 /* ------------------------------------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecCreateGhostBlockWithArray"
 /*@C
    VecCreateGhostBlockWithArray - Creates a parallel vector with ghost padding on each processor;
@@ -549,7 +549,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
    Input Parameters:
 +  comm - the MPI communicator to use
 .  bs - block size
-.  n - local vector length 
+.  n - local vector length
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 .  nghost - number of local ghost blocks
 .  ghosts - global indices of ghost blocks (or PETSC_NULL if not needed), counts are by block not by index
@@ -557,9 +557,9 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
 
    Output Parameter:
 .  vv - the global vector representation (without ghost points as part of vector)
- 
+
    Notes:
-   Use VecGhostGetLocalForm() to access the local, ghosted representation 
+   Use VecGhostGetLocalForm() to access the local, ghosted representation
    of the vector.
 
    n is the local vector size (total local size not the number of blocks) while nghost
@@ -571,11 +571,11 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
    Concepts: vectors^creating ghosted
    Concepts: vectors^creating with array
 
-.seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), 
+.seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),
           VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray(),
           VecCreateGhostWithArray(), VecCreateGhostBlock()
 
-@*/ 
+@*/
 PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],const PetscScalar array[],Vec *vv)
 {
   PetscErrorCode         ierr;
@@ -606,9 +606,9 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   ierr = VecRestoreArray(*vv,&larray);CHKERRQ(ierr);
 
   /*
-       Create scatter context for scattering (updating) ghost values 
+       Create scatter context for scattering (updating) ghost values
   */
-  ierr = ISCreateBlock(comm,bs,nghost,ghosts,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);   
+  ierr = ISCreateBlock(comm,bs,nghost,ghosts,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,bs*nghost,n,1,&to);CHKERRQ(ierr);
   ierr = VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(*vv,w->localupdate);CHKERRQ(ierr);
@@ -631,7 +631,7 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecCreateGhostBlock"
 /*@
    VecCreateGhostBlock - Creates a parallel vector with ghost padding on each processor.
@@ -642,16 +642,16 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
    Input Parameters:
 +  comm - the MPI communicator to use
 .  bs - the block size
-.  n - local vector length 
+.  n - local vector length
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 .  nghost - number of local ghost blocks
 -  ghosts - global indices of ghost blocks, counts are by block, not by individual index
 
    Output Parameter:
 .  vv - the global vector representation (without ghost points as part of vector)
- 
+
    Notes:
-   Use VecGhostGetLocalForm() to access the local, ghosted representation 
+   Use VecGhostGetLocalForm() to access the local, ghosted representation
    of the vector.
 
    n is the local vector size (total local size not the number of blocks) while nghost
@@ -666,7 +666,7 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
           VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),
           VecCreateGhostWithArray(), VecCreateMPIWithArray(), VecCreateGhostBlockWithArray()
 
-@*/ 
+@*/
 PetscErrorCode  VecCreateGhostBlock(MPI_Comm comm,PetscInt bs,PetscInt n,PetscInt N,PetscInt nghost,const PetscInt ghosts[],Vec *vv)
 {
   PetscErrorCode ierr;

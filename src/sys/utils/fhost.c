@@ -22,7 +22,7 @@
 #include <netdb.h>
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetHostName"
 /*@C
     PetscGetHostName - Returns the name of the host. This attempts to
@@ -66,7 +66,7 @@ PetscErrorCode  PetscGetHostName(char name[],size_t nlen)
     GetComputerName((LPTSTR)name,(LPDWORD)(&nnlen));
  }
 #elif defined(PETSC_HAVE_UNAME)
-  uname(&utname); 
+  uname(&utname);
   ierr = PetscStrncpy(name,utname.nodename,nlen);CHKERRQ(ierr);
 #elif defined(PETSC_HAVE_GETHOSTNAME)
   gethostname(name,nlen);

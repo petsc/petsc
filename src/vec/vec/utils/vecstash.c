@@ -4,8 +4,8 @@
 #define DEFAULT_STASH_SIZE   100
 
 /*
-  VecStashCreate_Private - Creates a stash,currently used for all the parallel 
-  matrix implementations. The stash is where elements of a matrix destined 
+  VecStashCreate_Private - Creates a stash,currently used for all the parallel
+  matrix implementations. The stash is where elements of a matrix destined
   to be stored on other processors are kept until matrix assembly is done.
 
   This is a simple minded stash. Simply adds entries to end of stash.
@@ -17,7 +17,7 @@
   Output Parameters:
   stash    - the newly created stash
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStashCreate_Private"
 PetscErrorCode VecStashCreate_Private(MPI_Comm comm,PetscInt bs,VecStash *stash)
 {
@@ -72,10 +72,10 @@ PetscErrorCode VecStashCreate_Private(MPI_Comm comm,PetscInt bs,VecStash *stash)
   PetscFunctionReturn(0);
 }
 
-/* 
+/*
    VecStashDestroy_Private - Destroy the stash
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStashDestroy_Private"
 PetscErrorCode VecStashDestroy_Private(VecStash *stash)
 {
@@ -87,7 +87,7 @@ PetscErrorCode VecStashDestroy_Private(VecStash *stash)
   PetscFunctionReturn(0);
 }
 
-/* 
+/*
    VecStashScatterEnd_Private - This is called as the fial stage of
    scatter. The final stages of message passing is done here, and
    all the memory used for message passing is cleanedu up. This
@@ -95,10 +95,10 @@ PetscErrorCode VecStashDestroy_Private(VecStash *stash)
    for the stash. It also keeps track of the current memory usage
    so that the same value can be used the next time through.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStashScatterEnd_Private"
 PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
-{ 
+{
   PetscErrorCode ierr;
   PetscInt       nsends=stash->nsends,oldnmax;
   MPI_Status     *send_status;
@@ -136,16 +136,16 @@ PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
   PetscFunctionReturn(0);
 }
 
-/* 
+/*
    VecStashGetInfo_Private - Gets the relavant statistics of the stash
 
    Input Parameters:
    stash    - the stash
    nstash   - the size of the stash
    reallocs - the number of additional mallocs incurred.
-   
+
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStashGetInfo_Private"
 PetscErrorCode VecStashGetInfo_Private(VecStash *stash,PetscInt *nstash,PetscInt *reallocs)
 {
@@ -160,16 +160,16 @@ PetscErrorCode VecStashGetInfo_Private(VecStash *stash,PetscInt *nstash,PetscInt
 }
 
 
-/* 
+/*
    VecStashSetInitialSize_Private - Sets the initial size of the stash
 
    Input Parameters:
    stash  - the stash
-   max    - the value that is used as the max size of the stash. 
+   max    - the value that is used as the max size of the stash.
             this value is used while allocating memory. It specifies
             the number of vals stored, even with the block-stash
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStashSetInitialSize_Private"
 PetscErrorCode VecStashSetInitialSize_Private(VecStash *stash,PetscInt max)
 {
@@ -181,18 +181,18 @@ PetscErrorCode VecStashSetInitialSize_Private(VecStash *stash,PetscInt max)
 /* VecStashExpand_Private - Expand the stash. This function is called
    when the space in the stash is not sufficient to add the new values
    being inserted into the stash.
-   
+
    Input Parameters:
    stash - the stash
    incr  - the minimum increase requested
-   
-   Notes: 
-   This routine doubles the currently used memory. 
+
+   Notes:
+   This routine doubles the currently used memory.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStashExpand_Private"
 PetscErrorCode VecStashExpand_Private(VecStash *stash,PetscInt incr)
-{ 
+{
   PetscErrorCode ierr;
   PetscInt       *n_idx,newnmax,bs=stash->bs;
   PetscScalar    *n_array;
@@ -200,9 +200,9 @@ PetscErrorCode VecStashExpand_Private(VecStash *stash,PetscInt incr)
   PetscFunctionBegin;
   /* allocate a larger stash. */
   if (!stash->oldnmax && !stash->nmax) { /* new stash */
-    if (stash->umax)                  newnmax = stash->umax/bs;             
+    if (stash->umax)                  newnmax = stash->umax/bs;
     else                              newnmax = DEFAULT_STASH_SIZE/bs;
-  } else if (!stash->nmax) { /* resuing stash */ 
+  } else if (!stash->nmax) { /* resuing stash */
     if (stash->umax > stash->oldnmax) newnmax = stash->umax/bs;
     else                              newnmax = stash->oldnmax/bs;
   } else                              newnmax = stash->nmax*2;
@@ -213,8 +213,8 @@ PetscErrorCode VecStashExpand_Private(VecStash *stash,PetscInt incr)
   ierr  = PetscMemcpy(n_array,stash->array,bs*stash->nmax*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr  = PetscMemcpy(n_idx,stash->idx,stash->nmax*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscFree2(stash->array,stash->idx);CHKERRQ(ierr);
-  stash->array   = n_array; 
-  stash->idx     = n_idx; 
+  stash->array   = n_array;
+  stash->idx     = n_idx;
   stash->nmax    = newnmax;
   stash->reallocs++;
   PetscFunctionReturn(0);
@@ -230,14 +230,14 @@ PetscErrorCode VecStashExpand_Private(VecStash *stash,PetscInt incr)
   owners - an array of size 'no-of-procs' which gives the ownership range
            for each node.
 
-  Notes: The 'owners' array in the cased of the blocked-stash has the 
+  Notes: The 'owners' array in the cased of the blocked-stash has the
   ranges specified blocked global indices, and for the regular stash in
   the proper global indices.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStashScatterBegin_Private"
 PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
-{ 
+{
   PetscErrorCode ierr;
   PetscMPIInt    size = stash->size,tag1=stash->tag1,tag2=stash->tag2;
   PetscInt       *owner,*start,*nprocs,nsends,nreceives;
@@ -265,14 +265,14 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
       }
     }
   }
-  nsends = 0;  for (i=0; i<size; i++) { nsends += nprocs[2*i+1];} 
-  
+  nsends = 0;  for (i=0; i<size; i++) { nsends += nprocs[2*i+1];}
+
   /* inform other processors of number of messages and max length*/
   ierr = PetscMaxSum(comm,nprocs,&nmax,&nreceives);CHKERRQ(ierr);
 
-  /* post receives: 
-     since we don't know how long each individual message is we 
-     allocate the largest needed buffer for each receive. Potentially 
+  /* post receives:
+     since we don't know how long each individual message is we
+     allocate the largest needed buffer for each receive. Potentially
      this is a lot of wasted space.
   */
   ierr     = PetscMalloc2(nreceives*nmax*bs,PetscScalar,&rvalues,nreceives*nmax,PetscInt,&rindices);CHKERRQ(ierr);
@@ -283,7 +283,7 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
   }
 
   /* do sends:
-      1) starts[i] gives the starting index in svalues for stuff going to 
+      1) starts[i] gives the starting index in svalues for stuff going to
          the ith processor
   */
   ierr = PetscMalloc2(stash->n*bs,PetscScalar,&svalues,stash->n,PetscInt,&sindices);CHKERRQ(ierr);
@@ -291,9 +291,9 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
   ierr = PetscMalloc(size*sizeof(PetscInt),&start);CHKERRQ(ierr);
   /* use 2 sends the first with all_v, the next with all_i */
   start[0] = 0;
-  for (i=1; i<size; i++) { 
+  for (i=1; i<size; i++) {
     start[i] = start[i-1] + nprocs[2*i-2];
-  } 
+  }
   for (i=0; i<stash->n; i++) {
     j = owner[i];
     if (bs == 1) {
@@ -305,7 +305,7 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
     start[j]++;
   }
   start[0] = 0;
-  for (i=1; i<size; i++) { start[i] = start[i-1] + nprocs[2*i-2];} 
+  for (i=1; i<size; i++) { start[i] = start[i-1] + nprocs[2*i-2];}
   for (i=0,count=0; i<size; i++) {
     if (nprocs[2*i+1]) {
       ierr = MPI_Isend(svalues+bs*start[i],bs*nprocs[2*i],MPIU_SCALAR,i,tag1,comm,send_waits+count++);CHKERRQ(ierr);
@@ -322,7 +322,7 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
   stash->sindices   = sindices;
   stash->rvalues    = rvalues;
   stash->rindices   = rindices;
-  stash->nsends     = nsends; 
+  stash->nsends     = nsends;
   stash->nrecvs     = nreceives;
   stash->send_waits = send_waits;
   stash->recv_waits = recv_waits;
@@ -330,9 +330,9 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
   PetscFunctionReturn(0);
 }
 
-/* 
-   VecStashScatterGetMesg_Private - This function waits on the receives posted 
-   in the function VecStashScatterBegin_Private() and returns one message at 
+/*
+   VecStashScatterGetMesg_Private - This function waits on the receives posted
+   in the function VecStashScatterBegin_Private() and returns one message at
    a time to the calling function. If no messages are left, it indicates this
    by setting flg = 0, else it sets flg = 1.
 
@@ -348,7 +348,7 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
            1 indicates that the current call successfully received a message, and the
              other output parameters nvals,rows,cols,vals are set appropriately.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStashScatterGetMesg_Private"
 PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscMPIInt *nvals,PetscInt **rows,PetscScalar **vals,PetscInt *flg)
 {
@@ -363,7 +363,7 @@ PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscMPIInt *nvals
 
   *flg = 0; /* When a message is discovered this is reset to 1 */
   /* Return if no more messages to process */
-  if (stash->nprocessed == stash->nrecvs) { PetscFunctionReturn(0); } 
+  if (stash->nprocessed == stash->nrecvs) { PetscFunctionReturn(0); }
 
   flg_v = stash->nprocs;
   /* If a matching pair of receieves are found, process them, and return the data to
@@ -371,15 +371,15 @@ PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscMPIInt *nvals
   while (!match_found) {
     ierr = MPI_Waitany(2*stash->nrecvs,stash->recv_waits,&i,&recv_status);CHKERRQ(ierr);
     /* Now pack the received message into a structure which is useable by others */
-    if (i % 2) { 
+    if (i % 2) {
       ierr = MPI_Get_count(&recv_status,MPIU_INT,nvals);CHKERRQ(ierr);
-      flg_v[2*recv_status.MPI_SOURCE+1] = i/2; 
-    } else { 
+      flg_v[2*recv_status.MPI_SOURCE+1] = i/2;
+    } else {
       ierr = MPI_Get_count(&recv_status,MPIU_SCALAR,nvals);CHKERRQ(ierr);
-      flg_v[2*recv_status.MPI_SOURCE] = i/2; 
-      *nvals = *nvals/bs; 
+      flg_v[2*recv_status.MPI_SOURCE] = i/2;
+      *nvals = *nvals/bs;
     }
-    
+
     /* Check if we have both the messages from this proc */
     i1 = flg_v[2*recv_status.MPI_SOURCE];
     i2 = flg_v[2*recv_status.MPI_SOURCE+1];

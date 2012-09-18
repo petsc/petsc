@@ -8,15 +8,15 @@
 #include <petscsys.h>                /*I  "petscsys.h"  I*/
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
-   
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortReal_Private"
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
 static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
 {
   PetscInt  i,last;
   PetscReal vl,tmp;
-  
+
   PetscFunctionBegin;
   if (right <= 1) {
     if (right == 1) {
@@ -36,7 +36,7 @@ static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortReal"
 /*@
    PetscSortReal - Sorts an array of doubles in place in increasing order.
@@ -75,7 +75,7 @@ PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortSplit"
 /*@
    PetscSortSplit - Quick-sort split of an array of PetscScalars in place.
@@ -90,8 +90,8 @@ PetscErrorCode  PetscSortReal(PetscInt n,PetscReal v[])
 
    Output Parameters:
 +  a     - permuted array of values such that its elements satisfy:
-           abs(a[i]) >= abs(a[ncut-1]) for i < ncut and 
-           abs(a[i]) <= abs(a[ncut-1]) for i >= ncut 
+           abs(a[i]) >= abs(a[ncut-1]) for i < ncut and
+           abs(a[i]) <= abs(a[ncut-1]) for i >= ncut
 -  idx   - permuted index of array a
 
    Level: intermediate
@@ -122,9 +122,9 @@ PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt
         tmp = a[mid];  itmp = idx[mid];
         a[mid] = a[j]; idx[mid] = idx[j];
         a[j] = tmp;    idx[j] = itmp;
-      } 
+      }
     }
-    
+
     /* interchange */
     tmp = a[mid];      itmp = idx[mid];
     a[mid] = a[first]; idx[mid] = idx[first];
@@ -138,11 +138,11 @@ PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt
     } else {
       first = mid + 1;
     }
-  } 
+  }
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSortSplitReal"
 /*@
    PetscSortSplitReal - Quick-sort split of an array of PetscReals in place.
@@ -157,8 +157,8 @@ PetscErrorCode  PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt
 
    Output Parameters:
 +  a     - permuted array of real values such that its elements satisfy:
-           abs(a[i]) >= abs(a[ncut-1]) for i < ncut and 
-           abs(a[i]) <= abs(a[ncut-1]) for i >= ncut 
+           abs(a[i]) >= abs(a[ncut-1]) for i < ncut and
+           abs(a[i]) <= abs(a[ncut-1]) for i >= ncut
 -  idx   - permuted index of array a
 
    Level: intermediate
@@ -189,9 +189,9 @@ PetscErrorCode  PetscSortSplitReal(PetscInt ncut,PetscInt n,PetscReal a[],PetscI
         tmp = a[mid];  itmp = idx[mid];
         a[mid] = a[j]; idx[mid] = idx[j];
         a[j] = tmp;    idx[j] = itmp;
-      } 
+      }
     }
-    
+
     /* interchange */
     tmp = a[mid];      itmp = idx[mid];
     a[mid] = a[first]; idx[mid] = idx[first];
@@ -205,7 +205,7 @@ PetscErrorCode  PetscSortSplitReal(PetscInt ncut,PetscInt n,PetscReal a[],PetscI
     } else {
       first = mid + 1;
     }
-  } 
+  }
   PetscFunctionReturn(0);
-} 
+}
 

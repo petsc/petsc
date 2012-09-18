@@ -24,7 +24,7 @@ void PETSC_STDCALL petscviewerfilesetname_(PetscViewer *viewer,CHAR name PETSC_M
   FREECHAR(name,c1);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFixSlashN"
 static PetscErrorCode PetscFixSlashN(const char *in, char **out)
 {

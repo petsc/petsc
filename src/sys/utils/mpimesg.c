@@ -2,7 +2,7 @@
 #include <petscsys.h>        /*I  "petscsys.h"  I*/
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGatherNumberOfMessages"
 /*@C
   PetscGatherNumberOfMessages -  Computes the number of messages a node expects to receive
@@ -11,7 +11,7 @@
 
   Input Parameters:
 + comm     - Communicator
-. iflags   - an array of integers of length sizeof(comm). A '1' in ilengths[i] represent a 
+. iflags   - an array of integers of length sizeof(comm). A '1' in ilengths[i] represent a
              message from current node to ith node. Optionally PETSC_NULL
 - ilengths - Non zero ilengths[i] represent a message to i of length ilengths[i].
              Optionally PETSC_NULL.
@@ -49,7 +49,7 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
   if (!iflags) {
     if (!ilengths) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Either iflags or ilengths should be provided");
     iflags_local = iflags_localm;
-    for (i=0; i<size; i++) { 
+    for (i=0; i<size; i++) {
       if (ilengths[i])  iflags_local[i] = 1;
       else iflags_local[i] = 0;
     }
@@ -66,10 +66,10 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGatherMessageLengths"
 /*@C
-  PetscGatherMessageLengths - Computes info about messages that a MPI-node will receive, 
+  PetscGatherMessageLengths - Computes info about messages that a MPI-node will receive,
   including (from-id,length) pairs for each message.
 
   Collective on MPI_Comm
@@ -79,7 +79,7 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
 . nsends    - number of messages that are to be sent.
 . nrecvs    - number of messages being received
 - ilengths  - an array of integers of length sizeof(comm)
-              a non zero ilengths[i] represent a message to i of length ilengths[i] 
+              a non zero ilengths[i] represent a message to i of length ilengths[i]
 
 
   Output Parameters:
@@ -131,7 +131,7 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
 
   /* Post waits on sends and receivs */
   if (nrecvs+nsends) {ierr = MPI_Waitall(nrecvs+nsends,r_waits,w_status);CHKERRQ(ierr);}
-  
+
   /* Pack up the received data */
   ierr = PetscMalloc(nrecvs*sizeof(PetscMPIInt),onodes);CHKERRQ(ierr);
   for (i=0; i<nrecvs; ++i) {
@@ -141,10 +141,10 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGatherMessageLengths2"
 /*@C
-  PetscGatherMessageLengths2 - Computes info about messages that a MPI-node will receive, 
+  PetscGatherMessageLengths2 - Computes info about messages that a MPI-node will receive,
   including (from-id,length) pairs for each message. Same functionality as PetscGatherMessageLengths()
   except it takes TWO ilenths and output TWO olengths.
 
@@ -155,7 +155,7 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
 . nsends    - number of messages that are to be sent.
 . nrecvs    - number of messages being received
 - ilengths1, ilengths2 - array of integers of length sizeof(comm)
-              a non zero ilengths[i] represent a message to i of length ilengths[i] 
+              a non zero ilengths[i] represent a message to i of length ilengths[i]
 
   Output Parameters:
 + onodes    - list of node-ids from which messages are expected
@@ -208,11 +208,11 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
       j++;
     }
   }
-  
+
   /* Post waits on sends and receivs */
   if (nrecvs+nsends) {ierr = MPI_Waitall(nrecvs+nsends,r_waits,w_status);CHKERRQ(ierr);}
 
-  
+
   /* Pack up the received data */
   ierr = PetscMalloc((nrecvs+1)*sizeof(PetscMPIInt),onodes);CHKERRQ(ierr);
   for (i=0; i<nrecvs; ++i) {
@@ -230,9 +230,9 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
 
   Allocate a bufffer sufficient to hold messages of size specified in olengths.
   And post Irecvs on these buffers using node info from onodes
-  
+
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscPostIrecvInt"
 PetscErrorCode  PetscPostIrecvInt(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt nrecvs,const PetscMPIInt onodes[],const PetscMPIInt olengths[],PetscInt ***rbuf,MPI_Request **r_waits)
 {
@@ -260,7 +260,7 @@ PetscErrorCode  PetscPostIrecvInt(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt nrec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscPostIrecvScalar"
 PetscErrorCode  PetscPostIrecvScalar(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt nrecvs,const PetscMPIInt onodes[],const PetscMPIInt olengths[],PetscScalar ***rbuf,MPI_Request **r_waits)
 {

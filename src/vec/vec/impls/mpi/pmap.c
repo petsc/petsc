@@ -5,7 +5,7 @@
 
 #include <petsc-private/vecimpl.h>   /*I  "petscvec.h"   I*/
 #include <petsc-private/threadcommimpl.h>
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLayoutCreate"
 /*@C
      PetscLayoutCreate - Allocates PetscLayout space and sets the map contents to the default.
@@ -28,10 +28,10 @@
           PetscLayoutGetRange(PetscLayout,PetscInt *rstart,PetscInt *rend); or PetscLayoutGetRanges(PetscLayout,const PetscInt *range[])
        PetscLayoutDestroy(PetscLayout);
 
-      The PetscLayout object and methods are intended to be used in the PETSc Vec and Mat implementions; it is often not needed in  
+      The PetscLayout object and methods are intended to be used in the PETSc Vec and Mat implementions; it is often not needed in
       user codes unless you really gain something in their use.
 
-    Fortran Notes: 
+    Fortran Notes:
       Not available from Fortran
 
 .seealso: PetscLayoutSetLocalSize(), PetscLayoutSetSize(), PetscLayoutGetSize(), PetscLayoutGetLocalSize(), PetscLayout, PetscLayoutDestroy(),
@@ -56,7 +56,7 @@ PetscErrorCode  PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
 }
 
 /*@C
-     PetscLayoutDestroy - Frees a map object and frees its range if that exists. 
+     PetscLayoutDestroy - Frees a map object and frees its range if that exists.
 
     Collective on MPI_Comm
 
@@ -65,17 +65,17 @@ PetscErrorCode  PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
 
    Level: developer
 
-      The PetscLayout object and methods are intended to be used in the PETSc Vec and Mat implementions; it is 
+      The PetscLayout object and methods are intended to be used in the PETSc Vec and Mat implementions; it is
       recommended they not be used in user codes unless you really gain something in their use.
 
-    Fortran Notes: 
+    Fortran Notes:
       Not available from Fortran
 
 .seealso: PetscLayoutSetLocalSize(), PetscLayoutSetSize(), PetscLayoutGetSize(), PetscLayoutGetLocalSize(), PetscLayout, PetscLayoutCreate(),
           PetscLayoutGetRange(), PetscLayoutGetRanges(), PetscLayoutSetBlockSize(), PetscLayoutGetBlockSize(), PetscLayoutSetUp()
 
 @*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLayoutDestroy"
 PetscErrorCode  PetscLayoutDestroy(PetscLayout *map)
 {
@@ -118,14 +118,14 @@ PetscErrorCode  PetscLayoutDestroy(PetscLayout *map)
 
        If the local size, global size are already set and range exists then this does nothing.
 
-    Fortran Notes: 
+    Fortran Notes:
       Not available from Fortran
 
 .seealso: PetscLayoutSetLocalSize(), PetscLayoutSetSize(), PetscLayoutGetSize(), PetscLayoutGetLocalSize(), PetscLayout, PetscLayoutDestroy(),
           PetscLayoutGetRange(), PetscLayoutGetRanges(), PetscLayoutSetBlockSize(), PetscLayoutGetBlockSize(), PetscLayoutCreate()
 
 @*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLayoutSetUp"
 PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
 {
@@ -138,7 +138,7 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
   if ((map->n >= 0) && (map->N >= 0) && (map->range)) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(map->comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(map->comm, &rank);CHKERRQ(ierr); 
+  ierr = MPI_Comm_rank(map->comm, &rank);CHKERRQ(ierr);
   if (map->n > 0) map->n = map->n/map->bs;
   if (map->N > 0) map->N = map->N/map->bs;
   ierr = PetscSplitOwnership(map->comm,&map->n,&map->N);CHKERRQ(ierr);
@@ -150,7 +150,7 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
   ierr = MPI_Allgather(&map->n, 1, MPIU_INT, map->range+1, 1, MPIU_INT, map->comm);CHKERRQ(ierr);
 
   map->range[0] = 0;
-  for(p = 2; p <= size; p++) {
+  for (p = 2; p <= size; p++) {
     map->range[p] += map->range[p-1];
   }
 
@@ -164,7 +164,7 @@ PetscErrorCode  PetscLayoutSetUp(PetscLayout map)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLayoutDuplicate"
 /*@C
 
@@ -202,11 +202,11 @@ PetscErrorCode  PetscLayoutDuplicate(PetscLayout in,PetscLayout *out)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLayoutReference"
 /*@C
 
-    PetscLayoutReference - Causes a PETSc Vec or Mat to share a PetscLayout with one that already exists. Used by Vec/MatDuplicate_XXX() 
+    PetscLayoutReference - Causes a PETSc Vec or Mat to share a PetscLayout with one that already exists. Used by Vec/MatDuplicate_XXX()
 
      Collective on PetscLayout
 
@@ -236,7 +236,7 @@ PetscErrorCode  PetscLayoutReference(PetscLayout in,PetscLayout *out)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLayoutSetISLocalToGlobalMapping"
 /*@C
 
@@ -269,7 +269,7 @@ PetscErrorCode  PetscLayoutSetISLocalToGlobalMapping(PetscLayout in,ISLocalToGlo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLayoutSetISLocalToGlobalMappingBlock"
 /*@C
 
@@ -316,14 +316,14 @@ PetscErrorCode  PetscLayoutSetISLocalToGlobalMappingBlock(PetscLayout in,ISLocal
     Notes:
        Call this after the call to PetscLayoutCreate()
 
-    Fortran Notes: 
+    Fortran Notes:
       Not available from Fortran
 
 .seealso: PetscLayoutCreate(), PetscLayoutSetSize(), PetscLayoutGetSize(), PetscLayoutGetLocalSize(), PetscLayoutSetUp()
           PetscLayoutGetRange(), PetscLayoutGetRanges(), PetscLayoutSetBlockSize(), PetscLayoutGetBlockSize()
 
 @*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLayoutSetLocalSize"
 PetscErrorCode  PetscLayoutSetLocalSize(PetscLayout map,PetscInt n)
 {
@@ -349,14 +349,14 @@ PetscErrorCode  PetscLayoutSetLocalSize(PetscLayout map,PetscInt n)
     Notes:
        Call this after the call to PetscLayoutSetUp()
 
-    Fortran Notes: 
+    Fortran Notes:
       Not available from Fortran
 
 .seealso: PetscLayoutCreate(), PetscLayoutSetSize(), PetscLayoutGetSize(), PetscLayoutGetLocalSize(), PetscLayoutSetUp()
           PetscLayoutGetRange(), PetscLayoutGetRanges(), PetscLayoutSetBlockSize(), PetscLayoutGetBlockSize()
 
 @*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLayoutGetLocalSize"
 PetscErrorCode  PetscLayoutGetLocalSize(PetscLayout map,PetscInt *n)
 {
@@ -379,14 +379,14 @@ PetscErrorCode  PetscLayoutGetLocalSize(PetscLayout map,PetscInt *n)
     Notes:
        Call this after the call to PetscLayoutCreate()
 
-    Fortran Notes: 
+    Fortran Notes:
       Not available from Fortran
 
 .seealso: PetscLayoutCreate(), PetscLayoutSetLocalSize(), PetscLayoutGetLocalSize(), PetscLayoutGetSize(), PetscLayoutSetUp()
           PetscLayoutGetRange(), PetscLayoutGetRanges(), PetscLayoutSetBlockSize(), PetscLayoutGetBlockSize()
 
 @*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLayoutSetSize"
 PetscErrorCode  PetscLayoutSetSize(PetscLayout map,PetscInt n)
 {
@@ -411,14 +411,14 @@ PetscErrorCode  PetscLayoutSetSize(PetscLayout map,PetscInt n)
     Notes:
        Call this after the call to PetscLayoutSetUp()
 
-    Fortran Notes: 
+    Fortran Notes:
       Not available from Fortran
 
 .seealso: PetscLayoutCreate(), PetscLayoutSetLocalSize(), PetscLayoutGetLocalSize(), PetscLayoutSetSize(), PetscLayoutSetUp()
           PetscLayoutGetRange(), PetscLayoutGetRanges(), PetscLayoutSetBlockSize(), PetscLayoutGetBlockSize()
 
 @*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLayoutGetSize"
 PetscErrorCode  PetscLayoutGetSize(PetscLayout map,PetscInt *n)
 {
@@ -441,14 +441,14 @@ PetscErrorCode  PetscLayoutGetSize(PetscLayout map,PetscInt *n)
     Notes:
        Call this after the call to PetscLayoutCreate()
 
-    Fortran Notes: 
+    Fortran Notes:
       Not available from Fortran
 
 .seealso: PetscLayoutCreate(), PetscLayoutSetLocalSize(), PetscLayoutGetLocalSize(), PetscLayoutGetBlockSize(),
           PetscLayoutGetRange(), PetscLayoutGetRanges(), PetscLayoutSetSize(), PetscLayoutGetSize(), PetscLayoutSetUp()
 
 @*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLayoutSetBlockSize"
 PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
 {
@@ -475,14 +475,14 @@ PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout map,PetscInt bs)
     Notes:
        Call this after the call to PetscLayoutSetUp()
 
-    Fortran Notes: 
+    Fortran Notes:
       Not available from Fortran
 
 .seealso: PetscLayoutCreate(), PetscLayoutSetLocalSize(), PetscLayoutGetLocalSize(), PetscLayoutSetSize(), PetscLayoutSetUp()
           PetscLayoutGetRange(), PetscLayoutGetRanges(), PetscLayoutSetBlockSize(), PetscLayoutGetSize()
 
 @*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLayoutGetBlockSize"
 PetscErrorCode  PetscLayoutGetBlockSize(PetscLayout map,PetscInt *bs)
 {
@@ -509,14 +509,14 @@ PetscErrorCode  PetscLayoutGetBlockSize(PetscLayout map,PetscInt *bs)
     Notes:
        Call this after the call to PetscLayoutSetUp()
 
-    Fortran Notes: 
+    Fortran Notes:
       Not available from Fortran
 
 .seealso: PetscLayoutCreate(), PetscLayoutSetLocalSize(), PetscLayoutGetLocalSize(), PetscLayoutSetSize(),
           PetscLayoutGetSize(), PetscLayoutGetRanges(), PetscLayoutSetBlockSize(), PetscLayoutGetSize(), PetscLayoutSetUp()
 
 @*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLayoutGetRange"
 PetscErrorCode  PetscLayoutGetRange(PetscLayout map,PetscInt *rstart,PetscInt *rend)
 {
@@ -543,14 +543,14 @@ PetscErrorCode  PetscLayoutGetRange(PetscLayout map,PetscInt *rstart,PetscInt *r
     Notes:
        Call this after the call to PetscLayoutSetUp()
 
-    Fortran Notes: 
+    Fortran Notes:
       Not available from Fortran
 
 .seealso: PetscLayoutCreate(), PetscLayoutSetLocalSize(), PetscLayoutGetLocalSize(), PetscLayoutSetSize(),
           PetscLayoutGetSize(), PetscLayoutGetRange(), PetscLayoutSetBlockSize(), PetscLayoutGetSize(), PetscLayoutSetUp()
 
 @*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLayoutGetRanges"
 PetscErrorCode  PetscLayoutGetRanges(PetscLayout map,const PetscInt *range[])
 {

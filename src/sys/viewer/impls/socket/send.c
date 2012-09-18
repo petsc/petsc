@@ -63,8 +63,8 @@ extern int connect(int,struct sockaddr *,int);
 EXTERN_C_END
 
 /*--------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerDestroy_Socket" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerDestroy_Socket"
 static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
@@ -84,7 +84,7 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 }
 
 /*--------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscOpenSocket"
 /*
     PetscSocketOpen - handles connected to an open port where someone is waiting.
@@ -101,7 +101,7 @@ PetscErrorCode  PetscOpenSocket(char *hostname,int portnum,int *t)
 
   PetscFunctionBegin;
   if (!(hp=gethostbyname(hostname))) {
-    perror("SEND: error gethostbyname: ");   
+    perror("SEND: error gethostbyname: ");
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"system error open connection to %s",hostname);
   }
   ierr = PetscMemzero(&sa,sizeof(sa));CHKERRQ(ierr);
@@ -121,7 +121,7 @@ PetscErrorCode  PetscOpenSocket(char *hostname,int portnum,int *t)
       } else if (ierr == WSAEALREADY) {
         (*PetscErrorPrintf)("SEND: socket is non-blocking \n");
       } else if (ierr == WSAEISCONN) {
-        (*PetscErrorPrintf)("SEND: socket already connected\n"); 
+        (*PetscErrorPrintf)("SEND: socket already connected\n");
         Sleep((unsigned) 1);
       } else if (ierr == WSAECONNREFUSED) {
         /* (*PetscErrorPrintf)("SEND: forcefully rejected\n"); */
@@ -135,7 +135,7 @@ PetscErrorCode  PetscOpenSocket(char *hostname,int portnum,int *t)
       } else if (errno == EALREADY) {
         (*PetscErrorPrintf)("SEND: socket is non-blocking \n");
       } else if (errno == EISCONN) {
-        (*PetscErrorPrintf)("SEND: socket already connected\n"); 
+        (*PetscErrorPrintf)("SEND: socket already connected\n");
         sleep((unsigned) 1);
       } else if (errno == ECONNREFUSED) {
         /* (*PetscErrorPrintf)("SEND: forcefully rejected\n"); */
@@ -151,7 +151,7 @@ PetscErrorCode  PetscOpenSocket(char *hostname,int portnum,int *t)
 #else
       close(s);
 #endif
-    } 
+    }
     else flg = PETSC_FALSE;
   }
   *t = s;
@@ -159,7 +159,7 @@ PetscErrorCode  PetscOpenSocket(char *hostname,int portnum,int *t)
 }
 
 #define MAXHOSTNAME 100
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSocketEstablish"
 /*
    PetscSocketEstablish - starts a listener on a socket
@@ -171,7 +171,7 @@ PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
   char               myname[MAXHOSTNAME+1];
   int                s;
   PetscErrorCode     ierr;
-  struct sockaddr_in sa;  
+  struct sockaddr_in sa;
   struct hostent     *hp;
 
   PetscFunctionBegin;
@@ -182,8 +182,8 @@ PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
   hp = gethostbyname(myname);
   if (!hp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to get hostent information from system");
 
-  sa.sin_family = hp->h_addrtype; 
-  sa.sin_port = htons((u_short)portnum); 
+  sa.sin_family = hp->h_addrtype;
+  sa.sin_port = htons((u_short)portnum);
 
   if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Error running socket() command");
 #if defined(PETSC_HAVE_SO_REUSEADDR)
@@ -198,7 +198,7 @@ PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
     ierr = WSAGetLastError();
     if (ierr != WSAEADDRINUSE) {
 #else
-    if (errno != EADDRINUSE) { 
+    if (errno != EADDRINUSE) {
 #endif
       close(s);
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Error from bind()");
@@ -209,7 +209,7 @@ PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
   return(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSocketListen"
 /*
    PetscSocketListens - Listens at a socket created with PetscSocketEstablish()
@@ -218,7 +218,7 @@ PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
 */
 PetscErrorCode PetscSocketListen(int listenport,int *t)
 {
-  struct sockaddr_in isa; 
+  struct sockaddr_in isa;
 #if defined(PETSC_HAVE_ACCEPT_SIZE_T)
   size_t             i;
 #else
@@ -232,8 +232,8 @@ PetscErrorCode PetscSocketListen(int listenport,int *t)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerSocketOpen" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerSocketOpen"
 /*@C
    PetscViewerSocketOpen - Opens a connection to a MATLAB or other socket
         based server.
@@ -252,7 +252,7 @@ PetscErrorCode PetscSocketListen(int listenport,int *t)
    Level: intermediate
 
    Notes:
-   Most users should employ the following commands to access the 
+   Most users should employ the following commands to access the
    MATLAB PetscViewers
 $
 $    PetscViewerSocketOpen(MPI_Comm comm, char *machine,int port,PetscViewer &viewer)
@@ -265,7 +265,7 @@ $    VecView(Vec vector,PetscViewer viewer)
 
    Options Database Keys:
    For use with  PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF,
-   PETSC_VIEWER_SOCKET_() or if 
+   PETSC_VIEWER_SOCKET_() or if
     PETSC_NULL is passed for machine or PETSC_DEFAULT is passed for port
 $    -viewer_socket_machine <machine>
 $    -viewer_socket_port <port>
@@ -274,7 +274,7 @@ $    -viewer_socket_port <port>
 +   PETSC_VIEWER_SOCKET_PORT portnumber
 -   PETSC_VIEWER_SOCKET_MACHINE machine name
 
-     Currently the only socket client available is MATLAB. See 
+     Currently the only socket client available is MATLAB. See
      src/dm/da/examples/tests/ex12.c and ex12.m for an example of usage.
 
    Notes: The socket viewer is in some sense a subclass of the binary viewer, to read and write to the socket
@@ -284,7 +284,7 @@ $    -viewer_socket_port <port>
    Concepts: sockets^sending data
 
 .seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerCreate(), PetscViewerSetType(),
-          PetscViewerSocketSetConnection(), PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, 
+          PetscViewerSocketSetConnection(), PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD,
           PETSC_VIEWER_SOCKET_SELF, PetscViewerBinaryWrite(), PetscViewerBinaryRead(), PetscViewerBinaryWriteStringArray(),
           PetscBinaryViewerGetDescriptor()
 @*/
@@ -299,8 +299,8 @@ PetscErrorCode  PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int por
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerSetFromOptions_Socket" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerSetFromOptions_Socket"
 PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
 {
   PetscErrorCode ierr;
@@ -332,8 +332,8 @@ PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerCreate_Socket" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerCreate_Socket"
 PetscErrorCode  PetscViewerCreate_Socket(PetscViewer v)
 {
   PetscViewer_Socket *vmatlab;
@@ -353,10 +353,10 @@ PetscErrorCode  PetscViewerCreate_Socket(PetscViewer v)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerSocketSetConnection"
 /*@C
-      PetscViewerSocketSetConnection - Sets the machine and port that a PETSc socket 
+      PetscViewerSocketSetConnection - Sets the machine and port that a PETSc socket
              viewer is to use
 
   Logically Collective on PetscViewer
@@ -370,7 +370,7 @@ EXTERN_C_END
     Level: advanced
 
 .seealso: PetscViewerSocketOpen()
-@*/ 
+@*/
 PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[],int port)
 {
   PetscErrorCode     ierr;
@@ -409,7 +409,7 @@ PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[
       ierr = PetscInfo1(v,"Waiting for connection from socket process on port %D\n",port);CHKERRQ(ierr);
       ierr = PetscSocketEstablish(port,&listenport);CHKERRQ(ierr);
       ierr = PetscSocketListen(listenport,&vmatlab->port);CHKERRQ(ierr);
-      close(listenport);  
+      close(listenport);
     } else {
       ierr = PetscInfo2(v,"Connecting to socket process on port %D machine %s\n",port,mach);CHKERRQ(ierr);
       ierr = PetscOpenSocket(mach,port,&vmatlab->port);CHKERRQ(ierr);
@@ -426,8 +426,8 @@ PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[
 static PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PETSC_VIEWER_SOCKET_"  
+#undef __FUNCT__
+#define __FUNCT__ "PETSC_VIEWER_SOCKET_"
 /*@C
      PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.
 
@@ -439,7 +439,7 @@ static PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
      Level: intermediate
 
    Options Database Keys:
-   For use with the default PETSC_VIEWER_SOCKET_WORLD or if 
+   For use with the default PETSC_VIEWER_SOCKET_WORLD or if
     PETSC_NULL is passed for machine or PETSC_DEFAULT is passed for port
 $    -viewer_socket_machine <machine>
 $    -viewer_socket_port <port>
@@ -449,16 +449,16 @@ $    -viewer_socket_port <port>
 -   PETSC_VIEWER_SOCKET_MACHINE machine name
 
      Notes:
-     Unlike almost all other PETSc routines, PetscViewer_SOCKET_ does not return 
+     Unlike almost all other PETSc routines, PetscViewer_SOCKET_ does not return
      an error code.  The socket PetscViewer is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
 
-     Currently the only socket client available is MATLAB. See 
+     Currently the only socket client available is MATLAB. See
      src/dm/da/examples/tests/ex12.c and ex12.m for an example of usage.
 
      Connects to a waiting socket and stays connected until PetscViewerDestroy() is called.
 
-     Use this for communicating with an interactive MATLAB session, see PETSC_VIEWER_MATLAB_() for communicating with the MATLAB engine. 
+     Use this for communicating with an interactive MATLAB session, see PETSC_VIEWER_MATLAB_() for communicating with the MATLAB engine.
 
 .seealso: PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF, PetscViewerSocketOpen(), PetscViewerCreate(),
           PetscViewerSocketSetConnection(), PetscViewerDestroy(), PETSC_VIEWER_SOCKET_(), PetscViewerBinaryWrite(), PetscViewerBinaryRead(),
@@ -480,13 +480,13 @@ PetscViewer  PETSC_VIEWER_SOCKET_(MPI_Comm comm)
   ierr = MPI_Attr_get(ncomm,Petsc_Viewer_Socket_keyval,(void **)&viewer,(int*)&flg);
   if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   if (!flg) { /* PetscViewer not yet created */
-    ierr = PetscViewerSocketOpen(ncomm,0,0,&viewer); 
+    ierr = PetscViewerSocketOpen(ncomm,0,0,&viewer);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
     ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Socket_keyval,(void*)viewer);
     if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
-  } 
+  }
   ierr = PetscCommDestroy(&ncomm);
   if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   PetscFunctionReturn(viewer);
@@ -499,7 +499,7 @@ PetscViewer  PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 #define PROTOCOL   "HTTP/1.1"
 #define RFC1123FMT "%a, %d %b %Y %H:%M:%S GMT"
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscWebSendHeader"
 PetscErrorCode PetscWebSendHeader(FILE *f, int status, const char *title, const char *extra, const char *mime, int length)
 {
@@ -520,7 +520,7 @@ PetscErrorCode PetscWebSendHeader(FILE *f, int status, const char *title, const 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscWebSendFooter"
 PetscErrorCode PetscWebSendFooter(FILE *fd)
 {
@@ -529,7 +529,7 @@ PetscErrorCode PetscWebSendFooter(FILE *fd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscWebSendError"
 PetscErrorCode PetscWebSendError(FILE *f, int status, const char *title, const char *extra, const char *text)
 {
@@ -545,7 +545,7 @@ PetscErrorCode PetscWebSendError(FILE *f, int status, const char *title, const c
 }
 
 #if defined(PETSC_HAVE_AMS)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscAMSDisplayList"
 PetscErrorCode PetscAMSDisplayList(FILE *fd)
 {
@@ -560,7 +560,7 @@ PetscErrorCode PetscAMSDisplayList(FILE *fd)
   AMS_Memory         memory;
   int                len;
   void               *addr;
-  
+
   ierr = PetscGetHostName(host,256);CHKERRQ(ierr);
   ierr = AMS_Connect(host, -1, &comm_list);CHKERRQ(ierr);
   ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
@@ -601,7 +601,7 @@ PetscErrorCode PetscAMSDisplayList(FILE *fd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscAMSDisplayTree"
 PetscErrorCode PetscAMSDisplayTree(FILE *fd)
 {
@@ -616,7 +616,7 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
   AMS_Memory         memory;
   int                len;
   void               *addr2,*addr3,*addr,*addr4;
-  
+
   ierr = PetscGetHostName(host,256);CHKERRQ(ierr);
   ierr = AMS_Connect(host, -1, &comm_list);CHKERRQ(ierr);
   ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
@@ -641,7 +641,7 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
         maxId = PetscMax(maxId,*Id);
 	i++;
       }
-      maxId++; 
+      maxId++;
 
       /* Gets everyone's parent ID and which nodes are masked */
       ierr = PetscMalloc4(maxId,PetscInt,&parentid,maxId,PetscBool ,&mask,maxId,char**,&classes,maxId,char**,&subclasses);CHKERRQ(ierr);
@@ -665,14 +665,14 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
         ierr = PetscStrallocpy(clas,classes+*Id);CHKERRQ(ierr);
         ierr = PetscStrallocpy(sclas,subclasses+*Id);CHKERRQ(ierr);
         i++;
-      } 
+      }
 
       /* if the parent is masked then relabel the parent as 0 since the true parent was deleted */
       for (i=0; i<maxId; i++) {
         if (!mask[i] && parentid[i] > 0 && mask[parentid[i]]) parentid[i] = 0;
       }
 
-      ierr = PetscProcessTree(maxId,mask,parentid,&Nlevels,&Level,&Levelcnt,&Idbylevel,&Column);CHKERRQ(ierr);   
+      ierr = PetscProcessTree(maxId,mask,parentid,&Nlevels,&Level,&Levelcnt,&Idbylevel,&Column);CHKERRQ(ierr);
 
       for (i=0; i<Nlevels; i++) {
         maxCol = PetscMax(maxCol,Levelcnt[i]);
@@ -684,8 +684,8 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       /* print all the top-level objects */
       fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE>\r\n");
       fprintf(fd, "<canvas width=800 height=600 id=\"tree\"></canvas>\r\n");
-      fprintf(fd, "<script type=\"text/javascript\">\r\n");  
-      fprintf(fd, "  function draw(){\r\n");  
+      fprintf(fd, "<script type=\"text/javascript\">\r\n");
+      fprintf(fd, "  function draw(){\r\n");
       fprintf(fd, "  var example = document.getElementById('tree');\r\n");
       fprintf(fd, "  var context = example.getContext('2d');\r\n");
       /* adjust font size based on how big a tree is printed */
@@ -700,7 +700,7 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       fprintf(fd, "  var yspace = example.height/%d;\r\n",(Nlevels+1));
       /* estimate the height of a string as twice the width of a character */
       fprintf(fd, "  var wheight = context.measureText(\"K\");\r\n");
-      fprintf(fd, "  var height = 1.6*wheight.width;\r\n");      
+      fprintf(fd, "  var height = 1.6*wheight.width;\r\n");
 
       cnt = 0;
       for (i=0; i<Nlevels; i++) {
@@ -712,18 +712,18 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
 	  fprintf(fd, "  var width = context.measureText(\"%s\");\r\n",clas);
 	  fprintf(fd, "  var swidth = context.measureText(\"%s\");\r\n",sclas);
 	  fprintf(fd, "  context.fillStyle = \"rgb(255,0,0)\";\r\n");
-	  fprintf(fd, "  context.fillRect((%d)*xspace-width.width/2, %d*yspace-height/2, width.width, height);\r\n",j+1,i+1);       
-	  fprintf(fd, "  context.fillRect((%d)*xspace-swidth.width/2, %d*yspace+height/2, swidth.width, height);\r\n",j+1,i+1);       
+	  fprintf(fd, "  context.fillRect((%d)*xspace-width.width/2, %d*yspace-height/2, width.width, height);\r\n",j+1,i+1);
+	  fprintf(fd, "  context.fillRect((%d)*xspace-swidth.width/2, %d*yspace+height/2, swidth.width, height);\r\n",j+1,i+1);
 	  fprintf(fd, "  context.fillStyle = \"rgb(0,0,0)\";\r\n");
-	  fprintf(fd, "  context.fillText(\"%s\",(%d)*xspace-width.width/2, %d*yspace-height/2);\r\n",clas,j+1,i+1);       
-	  fprintf(fd, "  context.fillText(\"%s\",(%d)*xspace-swidth.width/2, %d*yspace+height/2);\r\n",sclas,j+1,i+1);       
+	  fprintf(fd, "  context.fillText(\"%s\",(%d)*xspace-width.width/2, %d*yspace-height/2);\r\n",clas,j+1,i+1);
+	  fprintf(fd, "  context.fillText(\"%s\",(%d)*xspace-swidth.width/2, %d*yspace+height/2);\r\n",sclas,j+1,i+1);
           if (parentid[id]) {
 	    fprintf(fd, "  context.moveTo(%d*xspace,%d*yspace-height/2);\r\n",j+1,i+1);
 	    fprintf(fd, "  context.lineTo(%d*xspacep,%d*yspace+3*height/2);\r\n",Column[parentid[id]]+1,i);
 	    fprintf(fd, "  context.stroke();\r\n");
           }
 	}
-	fprintf(fd, "  xspacep = xspace;\r\n");        
+	fprintf(fd, "  xspacep = xspace;\r\n");
       }
       ierr = PetscFree(Level);CHKERRQ(ierr);
       ierr = PetscFree(Levelcnt);CHKERRQ(ierr);
@@ -736,10 +736,10 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
       ierr = PetscFree4(mask,parentid,classes,subclasses);CHKERRQ(ierr);
 
       ierr = AMS_Disconnect();CHKERRQ(ierr);
-      fprintf(fd, "}\r\n"); 
-      fprintf(fd, "</script>\r\n");  
-      fprintf(fd, "<body onload=\"draw();\">\r\n"); 
-      fprintf(fd, "</body></html>\r\n"); 
+      fprintf(fd, "}\r\n");
+      fprintf(fd, "</script>\r\n");
+      fprintf(fd, "<body onload=\"draw();\">\r\n");
+      fprintf(fd, "</body></html>\r\n");
     }
   }
   ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
@@ -1156,7 +1156,7 @@ PetscErrorCode PetscProcessYAMLRPC(const char* request,char **result)
 /*@C
       PetscWebServeRequest - serves a single web request
 
-    Not collective 
+    Not collective
 
   Input Parameters:
 .   port - the port
@@ -1164,7 +1164,7 @@ PetscErrorCode PetscProcessYAMLRPC(const char* request,char **result)
     Level: developer
 
 .seealso: PetscWebServe()
-@*/ 
+@*/
 PetscErrorCode  PetscWebServeRequest(int port)
 {
   PetscErrorCode ierr;
@@ -1181,7 +1181,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
 
   ierr = PetscInfo(PETSC_NULL,"Processing web request\n");CHKERRQ(ierr);
   if (!fgets(buf, sizeof(buf), fd)) {
-    ierr = PetscInfo(PETSC_NULL,"Cannot read web request, giving up\n");CHKERRQ(ierr); 
+    ierr = PetscInfo(PETSC_NULL,"Cannot read web request, giving up\n");CHKERRQ(ierr);
     goto theend;
   }
   ierr = PetscInfo1(PETSC_NULL,"Processing web request %s",buf);CHKERRQ(ierr);
@@ -1192,9 +1192,9 @@ PetscErrorCode  PetscWebServeRequest(int port)
   ierr = PetscTokenFind(tok,&protocol);CHKERRQ(ierr);
 
   if (!method || !path || !protocol) {
-    ierr = PetscInfo(PETSC_NULL,"Web request not well formatted, giving up\n");CHKERRQ(ierr); 
+    ierr = PetscInfo(PETSC_NULL,"Web request not well formatted, giving up\n");CHKERRQ(ierr);
     goto theend;
-  }   
+  }
 
   ierr = PetscStrcmp(method,"GET",&flg);
   if (!flg) {
@@ -1208,43 +1208,43 @@ PetscErrorCode  PetscWebServeRequest(int port)
       size_t elen;
       char   *fnd;
       while (cnt--) {
-        
+
         if (!fgets(buf, sizeof(buf), fd)) {
-          ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr); 
+          ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
           goto theend;
         }
-        ierr = PetscInfo1(PETSC_NULL,"POSTED data %s",buf);CHKERRQ(ierr); 
+        ierr = PetscInfo1(PETSC_NULL,"POSTED data %s",buf);CHKERRQ(ierr);
         ierr = PetscStrstr(buf,"Content-Type:",&fnd);CHKERRQ(ierr);
         if (fnd) {
           ierr = PetscStrstr(buf,"application/json-rpc",&fnd);CHKERRQ(ierr);
           if (!fnd) {
-            ierr = PetscInfo(PETSC_NULL,"POST content is not json-rpc, skipping post\n");CHKERRQ(ierr); 
+            ierr = PetscInfo(PETSC_NULL,"POST content is not json-rpc, skipping post\n");CHKERRQ(ierr);
             goto theend;
           }
         }
       }
       if (!fgets(buf, sizeof(buf), fd)) {
-        ierr = PetscInfo(PETSC_NULL,"Cannot read POST length data, giving up\n");CHKERRQ(ierr); 
+        ierr = PetscInfo(PETSC_NULL,"Cannot read POST length data, giving up\n");CHKERRQ(ierr);
         goto theend;
       }
-      ierr = PetscInfo1(PETSC_NULL,"POSTED length data %s",buf);CHKERRQ(ierr); 
+      ierr = PetscInfo1(PETSC_NULL,"POSTED length data %s",buf);CHKERRQ(ierr);
       sscanf(buf,"Content-Length: %d\n",&len);
-      ierr = PetscInfo1(PETSC_NULL,"Length of POSTED data %d\n",len);CHKERRQ(ierr); 
+      ierr = PetscInfo1(PETSC_NULL,"Length of POSTED data %d\n",len);CHKERRQ(ierr);
       if (!fgets(buf, sizeof(buf), fd)) {
-        ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr); 
+        ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
         goto theend;
       }
-      ierr = PetscInfo1(PETSC_NULL,"POSTED data %s",buf);CHKERRQ(ierr); 
+      ierr = PetscInfo1(PETSC_NULL,"POSTED data %s",buf);CHKERRQ(ierr);
       if (!fgets(buf, sizeof(buf), fd)) {
-        ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr); 
+        ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
         goto theend;
       }
-      ierr = PetscInfo1(PETSC_NULL,"POSTED data %s",buf);CHKERRQ(ierr); 
+      ierr = PetscInfo1(PETSC_NULL,"POSTED data %s",buf);CHKERRQ(ierr);
       if (!fgets(buf, len+1, fd)) { /* why is this len + 1? */
-        ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr); 
+        ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
         goto theend;
       }
-      ierr = PetscInfo1(PETSC_NULL,"POSTED data %s\n",buf);CHKERRQ(ierr); 
+      ierr = PetscInfo1(PETSC_NULL,"POSTED data %s\n",buf);CHKERRQ(ierr);
       fseek(fd, 0, SEEK_CUR); /* Force change of stream direction */
       ierr = PetscProcessYAMLRPC(buf,&result);CHKERRQ(ierr);
       ierr = PetscStrlen(result,&elen);CHKERRQ(ierr);
@@ -1254,7 +1254,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
     } else {
 #endif
       ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Method is not supported.");CHKERRQ(ierr);
-      ierr = PetscInfo(PETSC_NULL,"Web request not a GET or POST, giving up\n");CHKERRQ(ierr); 
+      ierr = PetscInfo(PETSC_NULL,"Web request not a GET or POST, giving up\n");CHKERRQ(ierr);
 #if defined(PETSC_HAVE_YAML)
     }
 #endif
@@ -1265,9 +1265,9 @@ PetscErrorCode  PetscWebServeRequest(int port)
     if (flg) {
       /* should have cool PETSc icon */;
       goto theend;
-    } 
+    }
     ierr = PetscStrcmp(path,"/",&flg);CHKERRQ(ierr);
-    if (flg) {      
+    if (flg) {
       char        program[128];
       PetscMPIInt size;
       PetscViewer viewer;
@@ -1296,13 +1296,13 @@ PetscErrorCode  PetscWebServeRequest(int port)
 
 #if defined(PETSC_HAVE_AMS)
     ierr = PetscStrcmp(path,"/ams-list",&flg);CHKERRQ(ierr);
-    if (flg) {      
+    if (flg) {
       ierr = PetscAMSDisplayList(fd);CHKERRQ(ierr);
       goto theend;
     }
     ierr = PetscInfo1(PETSC_NULL,"Browser path %s\n",path);
     ierr = PetscStrcmp(path,"/ams-tree",&flg);CHKERRQ(ierr);
-    if (flg) {      
+    if (flg) {
       ierr = PetscAMSDisplayTree(fd);CHKERRQ(ierr);
       goto theend;
     }
@@ -1311,8 +1311,8 @@ PetscErrorCode  PetscWebServeRequest(int port)
     ierr = PetscStrcat(fullpath,path);CHKERRQ(ierr);
     ierr = PetscInfo1(PETSC_NULL,"Checking for file %s\n",fullpath);CHKERRQ(ierr);
     ierr = PetscStrreplace(PETSC_COMM_SELF,fullpath,truefullpath,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-    fdo  = fopen(truefullpath,"r"); 
-    if (fdo) {      
+    fdo  = fopen(truefullpath,"r");
+    if (fdo) {
       PetscInt    length,index;
       char        data[4096];
       struct stat statbuf;
@@ -1326,7 +1326,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
       ierr = PetscWebSendHeader(fd, 200, "OK", NULL, type, length);CHKERRQ(ierr);
       while ((n = fread(data, 1, sizeof(data), fdo)) > 0) fwrite(data, 1, n, fd);
       fclose(fdo);
-      ierr = PetscInfo2(PETSC_NULL,"Sent file %s to browser using format %s\n",fullpath,type);CHKERRQ(ierr);       
+      ierr = PetscInfo2(PETSC_NULL,"Sent file %s to browser using format %s\n",fullpath,type);CHKERRQ(ierr);
       goto theend;
     }
     ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Unknown request.");CHKERRQ(ierr);
@@ -1334,12 +1334,12 @@ PetscErrorCode  PetscWebServeRequest(int port)
   theend:
   ierr = PetscTokenDestroy(&tok);CHKERRQ(ierr);
   fclose(fd);
-  ierr = PetscInfo(PETSC_NULL,"Finished processing request\n");CHKERRQ(ierr); 
+  ierr = PetscInfo(PETSC_NULL,"Finished processing request\n");CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscWebServeWait"
 /*@C
       PetscWebServeWait - waits for requests on a thread
@@ -1352,7 +1352,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
     Level: developer
 
 .seealso: PetscViewerSocketOpen(), PetscWebServe()
-@*/ 
+@*/
 void  *PetscWebServeWait(int *port)
 {
   PetscErrorCode ierr;
@@ -1370,7 +1370,7 @@ void  *PetscWebServeWait(int *port)
   return 0;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscWebServe"
 /*@C
       PetscWebServe - start up the PETSc web server and respond to requests
@@ -1383,7 +1383,7 @@ void  *PetscWebServeWait(int *port)
 
   Options Database Key:
 +  -server <port> - start PETSc webserver (default port is 8080)
--  -ams_publish_objects 
+-  -ams_publish_objects
 
 
    Notes: Point your browser to http://hostname:8080   to access the PETSc web server, where hostname is the name of your machine.
@@ -1396,7 +1396,7 @@ void  *PetscWebServeWait(int *port)
     Level: developer
 
 .seealso: PetscViewerSocketOpen()
-@*/ 
+@*/
 PetscErrorCode  PetscWebServe(MPI_Comm comm,int port)
 {
   PetscErrorCode ierr;

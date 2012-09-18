@@ -1,8 +1,8 @@
 
 #include <petsc-private/viewerimpl.h>  /*I "petscviewer.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerGetSingleton" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerGetSingleton"
 /*@
    PetscViewerGetSingleton - Creates a new PetscViewer (same type as the old)
     that lives on a single processor (with MPI_comm PETSC_COMM_SELF)
@@ -19,7 +19,7 @@
 
    Notes: Call PetscViewerRestoreSingleton() to return this PetscViewer, NOT PetscViewerDestroy()
 
-     This is most commonly used to view a sequential object that is part of a 
+     This is most commonly used to view a sequential object that is part of a
     parallel object. For example block Jacobi PC view could use this to obtain a
     PetscViewer that is used with the sequential KSP on one block of the preconditioner.
 
@@ -46,8 +46,8 @@ PetscErrorCode  PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerRestoreSingleton" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerRestoreSingleton"
 /*@
    PetscViewerRestoreSingleton - Restores a new PetscViewer obtained with PetscViewerGetSingleton().
 
@@ -77,16 +77,16 @@ PetscErrorCode  PetscViewerRestoreSingleton(PetscViewer viewer,PetscViewer *outv
     if (outviewer) *outviewer = 0;
   } else if (viewer->ops->restoresingleton) {
     ierr = (*viewer->ops->restoresingleton)(viewer,outviewer);CHKERRQ(ierr);
-  } 
+  }
   ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerGetSubcomm" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerGetSubcomm"
 /*@
    PetscViewerGetSubcomm - Creates a new PetscViewer (same type as the old)
-    that lives on a subgroup of processors 
+    that lives on a subgroup of processors
 
     Collective on PetscViewer
 
@@ -127,8 +127,8 @@ PetscErrorCode  PetscViewerGetSubcomm(PetscViewer viewer,MPI_Comm subcomm,PetscV
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerRestoreSubcomm" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerRestoreSubcomm"
 /*@
    PetscViewerRestoreSubcomm - Restores a new PetscViewer obtained with PetscViewerGetSubcomm().
 
@@ -159,7 +159,7 @@ PetscErrorCode  PetscViewerRestoreSubcomm(PetscViewer viewer,MPI_Comm subcomm,Pe
     if (outviewer) *outviewer = 0;
   } else if (viewer->ops->restoresubcomm) {
     ierr = (*viewer->ops->restoresubcomm)(viewer,subcomm,outviewer);CHKERRQ(ierr);
-  } 
+  }
   PetscFunctionReturn(0);
 }
 

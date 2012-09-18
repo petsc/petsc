@@ -8,10 +8,10 @@
 */
 static PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerASCIIGetStdout"
 /*@C
-   PetscViewerASCIIGetStdout - Creates a ASCII PetscViewer shared by all processors 
+   PetscViewerASCIIGetStdout - Creates a ASCII PetscViewer shared by all processors
                     in a communicator. Error returning version of PETSC_VIEWER_STDOUT_()
 
    Collective on MPI_Comm
@@ -21,7 +21,7 @@ static PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 
    Level: beginner
 
-   Notes: 
+   Notes:
      This should be used in all PETSc source code instead of PETSC_VIEWER_STDOUT_()
 
 .seealso: PETSC_VIEWER_DRAW_(), PetscViewerASCIIOpen(), PETSC_VIEWER_STDERR_, PETSC_VIEWER_STDOUT_WORLD,
@@ -44,15 +44,15 @@ PetscErrorCode  PetscViewerASCIIGetStdout(MPI_Comm comm,PetscViewer *viewer)
     ierr = PetscViewerASCIIOpen(ncomm,"stdout",viewer);CHKERRQ(ierr);
     ierr = PetscObjectRegisterDestroy((PetscObject)*viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Stdout_keyval,(void*)*viewer);CHKERRQ(ierr);
-  } 
+  }
   ierr = PetscCommDestroy(&ncomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PETSC_VIEWER_STDOUT_"  
+#undef __FUNCT__
+#define __FUNCT__ "PETSC_VIEWER_STDOUT_"
 /*@C
-   PETSC_VIEWER_STDOUT_ - Creates a ASCII PetscViewer shared by all processors 
+   PETSC_VIEWER_STDOUT_ - Creates a ASCII PetscViewer shared by all processors
                     in a communicator.
 
    Collective on MPI_Comm
@@ -62,8 +62,8 @@ PetscErrorCode  PetscViewerASCIIGetStdout(MPI_Comm comm,PetscViewer *viewer)
 
    Level: beginner
 
-   Notes: 
-   Unlike almost all other PETSc routines, this does not return 
+   Notes:
+   Unlike almost all other PETSc routines, this does not return
    an error code. Usually used in the form
 $      XXXView(XXX object,PETSC_VIEWER_STDOUT_(comm));
 
@@ -89,10 +89,10 @@ PetscViewer  PETSC_VIEWER_STDOUT_(MPI_Comm comm)
 */
 static PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerASCIIGetStderr"
 /*@C
-   PetscViewerASCIIGetStderr - Creates a ASCII PetscViewer shared by all processors 
+   PetscViewerASCIIGetStderr - Creates a ASCII PetscViewer shared by all processors
                     in a communicator. Error returning version of PETSC_VIEWER_STDERR_()
 
    Collective on MPI_Comm
@@ -102,7 +102,7 @@ static PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 
    Level: beginner
 
-   Notes: 
+   Notes:
      This should be used in all PETSc source code instead of PETSC_VIEWER_STDERR_()
 
 .seealso: PETSC_VIEWER_DRAW_(), PetscViewerASCIIOpen(), PETSC_VIEWER_STDERR_, PETSC_VIEWER_STDERR_WORLD,
@@ -125,15 +125,15 @@ PetscErrorCode  PetscViewerASCIIGetStderr(MPI_Comm comm,PetscViewer *viewer)
     ierr = PetscViewerASCIIOpen(ncomm,"stderr",viewer);CHKERRQ(ierr);
     ierr = PetscObjectRegisterDestroy((PetscObject)*viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Stderr_keyval,(void*)*viewer);CHKERRQ(ierr);
-  } 
+  }
   ierr = PetscCommDestroy(&ncomm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PETSC_VIEWER_STDERR_" 
+#undef __FUNCT__
+#define __FUNCT__ "PETSC_VIEWER_STDERR_"
 /*@C
-   PETSC_VIEWER_STDERR_ - Creates a ASCII PetscViewer shared by all processors 
+   PETSC_VIEWER_STDERR_ - Creates a ASCII PetscViewer shared by all processors
                     in a communicator.
 
    Collective on MPI_Comm
@@ -143,8 +143,8 @@ PetscErrorCode  PetscViewerASCIIGetStderr(MPI_Comm comm,PetscViewer *viewer)
 
    Level: beginner
 
-   Note: 
-   Unlike almost all other PETSc routines, this does not return 
+   Note:
+   Unlike almost all other PETSc routines, this does not return
    an error code. Usually used in the form
 $      XXXView(XXX object,PETSC_VIEWER_STDERR_(comm));
 
@@ -165,10 +165,10 @@ PetscViewer  PETSC_VIEWER_STDERR_(MPI_Comm comm)
 
 PetscMPIInt Petsc_Viewer_keyval = MPI_KEYVAL_INVALID;
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "Petsc_DelViewer" 
+#undef __FUNCT__
+#define __FUNCT__ "Petsc_DelViewer"
 /*
-   Called with MPI_Comm_free() is called on a communicator that has a viewer as an attribute. The viewer is not actually destroyed because that is managed by 
+   Called with MPI_Comm_free() is called on a communicator that has a viewer as an attribute. The viewer is not actually destroyed because that is managed by
    PetscObjectDestroyRegisterAll(). PetscViewerASCIIGetStdout() registers the viewer with PetscObjectDestroyRegister() to be destroyed when PetscFinalize() is called.
 
   This is called by MPI, not by users.
@@ -184,8 +184,8 @@ PetscMPIInt  MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval,void* attr_
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerASCIIOpen" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIIOpen"
 /*@C
    PetscViewerASCIIOpen - Opens an ASCII file as a PetscViewer.
 
@@ -203,14 +203,14 @@ EXTERN_C_END
    Notes:
    This PetscViewer can be destroyed with PetscViewerDestroy().
 
-   If a multiprocessor communicator is used (such as PETSC_COMM_WORLD), 
-   then only the first processor in the group opens the file.  All other 
-   processors send their data to the first processor to print. 
+   If a multiprocessor communicator is used (such as PETSC_COMM_WORLD),
+   then only the first processor in the group opens the file.  All other
+   processors send their data to the first processor to print.
 
    Each processor can instead write its own independent output by
    specifying the communicator PETSC_COMM_SELF.
 
-   As shown below, PetscViewerASCIIOpen() is useful in conjunction with 
+   As shown below, PetscViewerASCIIOpen() is useful in conjunction with
    MatView() and VecView()
 .vb
      PetscViewerASCIIOpen(PETSC_COMM_WORLD,"mat.output",&viewer);
@@ -225,7 +225,7 @@ EXTERN_C_END
 
 .seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerBinaryOpen(),
           PetscViewerASCIIGetPointer(), PetscViewerSetFormat(), PETSC_VIEWER_STDOUT_, PETSC_VIEWER_STDERR_,
-          PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF, 
+          PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF,
 @*/
 PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
 {
@@ -256,7 +256,7 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
         *lab = vlink->viewer;
         ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
         PetscFunctionReturn(0);
-      }            
+      }
       vlink = vlink->next;
     }
   }
@@ -283,8 +283,8 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerASCIIOpenWithFILE" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIIOpenWithFILE"
 /*@C
    PetscViewerASCIIOpenWithFILE - Given an open file creates an ASCII viewer that prints to it.
 
@@ -302,9 +302,9 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
    Notes:
    This PetscViewer can be destroyed with PetscViewerDestroy(), but the fd will NOT be closed.
 
-   If a multiprocessor communicator is used (such as PETSC_COMM_WORLD), 
-   then only the first processor in the group uses the file.  All other 
-   processors send their data to the first processor to print. 
+   If a multiprocessor communicator is used (such as PETSC_COMM_WORLD),
+   then only the first processor in the group uses the file.  All other
+   processors send their data to the first processor to print.
 
   Concepts: PetscViewerASCII^creating
   Concepts: printf
@@ -327,8 +327,8 @@ PetscErrorCode  PetscViewerASCIIOpenWithFILE(MPI_Comm comm,FILE *fd,PetscViewer 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerASCIISetFILE" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerASCIISetFILE"
 PetscErrorCode  PetscViewerASCIISetFILE(PetscViewer viewer,FILE *fd)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;

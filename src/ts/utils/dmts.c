@@ -119,7 +119,7 @@ PetscErrorCode DMTSGetContextWrite(DM dm,TSDM *tsdm)
     ierr = PetscInfo(dm,"Copying TSDM due to write\n");CHKERRQ(ierr);
     ierr = PetscContainerCreate(((PetscObject)dm)->comm,&container);CHKERRQ(ierr);
     ierr = PetscNewLog(dm,struct _n_TSDM,&sdm);CHKERRQ(ierr);
-    ierr = PetscMemcpy(sdm,oldsdm,sizeof *sdm);CHKERRQ(ierr);
+    ierr = PetscMemcpy(sdm,oldsdm,sizeof(*sdm));CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(container,sdm);CHKERRQ(ierr);
     ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_TSDM);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"TSDM",(PetscObject)container);CHKERRQ(ierr);

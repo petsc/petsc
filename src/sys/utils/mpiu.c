@@ -5,8 +5,8 @@
   generated below just for these routines.
 */
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSequentialPhaseBegin_Private" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSequentialPhaseBegin_Private"
 PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
 {
   PetscErrorCode ierr;
@@ -20,15 +20,15 @@ PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
   if (rank) {
     ierr = MPI_Recv(0,0,MPI_INT,rank-1,tag,comm,&status);CHKERRQ(ierr);
   }
-  /* Send to the next process in the group unless we are the last process */ 
+  /* Send to the next process in the group unless we are the last process */
   if ((rank % ng) < ng - 1 && rank != size - 1) {
     ierr = MPI_Send(0,0,MPI_INT,rank + 1,tag,comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSequentialPhaseEnd_Private" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSequentialPhaseEnd_Private"
 PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
 {
   PetscErrorCode ierr;
@@ -57,15 +57,15 @@ PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
 */
 static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSequentialPhaseBegin" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSequentialPhaseBegin"
 /*@
-   PetscSequentialPhaseBegin - Begins a sequential section of code.  
+   PetscSequentialPhaseBegin - Begins a sequential section of code.
 
    Collective on MPI_Comm
 
    Input Parameters:
-+  comm - Communicator to sequentialize.  
++  comm - Communicator to sequentialize.
 -  ng   - Number in processor group.  This many processes are allowed to execute
    at the same time (usually 1)
 
@@ -84,7 +84,7 @@ static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
    Often, the sequential code contains output statements (e.g., printf) to
    be executed.  Note that you may need to flush the I/O buffers before
    calling PetscSequentialPhaseEnd().  Also, note that some systems do
-   not propagate I/O in any order to the controling terminal (in other words, 
+   not propagate I/O in any order to the controling terminal (in other words,
    even if you flush the output, you may not get the data in the order
    that you want).
 
@@ -116,15 +116,15 @@ PetscErrorCode  PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSequentialPhaseEnd" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSequentialPhaseEnd"
 /*@
    PetscSequentialPhaseEnd - Ends a sequential section of code.
 
    Collective on MPI_Comm
 
    Input Parameters:
-+  comm - Communicator to sequentialize.  
++  comm - Communicator to sequentialize.
 -  ng   - Number in processor group.  This many processes are allowed to execute
    at the same time (usually 1)
 

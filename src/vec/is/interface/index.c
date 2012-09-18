@@ -1,14 +1,14 @@
 
-/*  
-   Defines the abstract operations on index sets, i.e. the public interface. 
+/*
+   Defines the abstract operations on index sets, i.e. the public interface.
 */
 #include <petsc-private/isimpl.h>      /*I "petscis.h" I*/
 
 /* Logging support */
 PetscClassId  IS_CLASSID;
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISIdentity" 
+#undef __FUNCT__
+#define __FUNCT__ "ISIdentity"
 /*@
    ISIdentity - Determines whether index set is the identity mapping.
 
@@ -42,8 +42,8 @@ PetscErrorCode  ISIdentity(IS is,PetscBool  *ident)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISSetIdentity" 
+#undef __FUNCT__
+#define __FUNCT__ "ISSetIdentity"
 /*@
    ISSetIdentity - Informs the index set that it is an identity.
 
@@ -67,7 +67,7 @@ PetscErrorCode  ISSetIdentity(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISContiguousLocal"
 /*@
    ISContiguousLocal - Locates an index set with contiguous range within a global range, if possible
@@ -106,10 +106,10 @@ PetscErrorCode  ISContiguousLocal(IS is,PetscInt gstart,PetscInt gend,PetscInt *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISPermutation" 
+#undef __FUNCT__
+#define __FUNCT__ "ISPermutation"
 /*@
-   ISPermutation - PETSC_TRUE or PETSC_FALSE depending on whether the 
+   ISPermutation - PETSC_TRUE or PETSC_FALSE depending on whether the
    index set has been declared to be a permutation.
 
    Logically Collective on IS
@@ -136,8 +136,8 @@ PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISSetPermutation" 
+#undef __FUNCT__
+#define __FUNCT__ "ISSetPermutation"
 /*@
    ISSetPermutation - Informs the index set that it is a permutation.
 
@@ -151,7 +151,7 @@ PetscErrorCode  ISPermutation(IS is,PetscBool  *perm)
   Concepts: permutation
   Concepts: index sets^permutation
 
-   The debug version of the libraries (./configure --with-debugging=1) checks if the 
+   The debug version of the libraries (./configure --with-debugging=1) checks if the
   index set is actually a permutation. The optimized version just believes you.
 
 .seealso: ISPermutation()
@@ -169,7 +169,7 @@ PetscErrorCode  ISSetPermutation(IS is)
     if (size == 1) {
       PetscInt       i,n,*idx;
       const PetscInt *iidx;
-    
+
       ierr = ISGetSize(is,&n);CHKERRQ(ierr);
       ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
       ierr = ISGetIndices(is,&iidx);CHKERRQ(ierr);
@@ -186,8 +186,8 @@ PetscErrorCode  ISSetPermutation(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISDestroy" 
+#undef __FUNCT__
+#define __FUNCT__ "ISDestroy"
 /*@
    ISDestroy - Destroys an index set.
 
@@ -224,10 +224,10 @@ PetscErrorCode  ISDestroy(IS *is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISInvertPermutation" 
+#undef __FUNCT__
+#define __FUNCT__ "ISInvertPermutation"
 /*@
-   ISInvertPermutation - Creates a new permutation that is the inverse of 
+   ISInvertPermutation - Creates a new permutation that is the inverse of
                          a given permutation.
 
    Collective on IS
@@ -242,7 +242,7 @@ PetscErrorCode  ISDestroy(IS *is)
 
    Level: intermediate
 
-   Notes: For parallel index sets this does the complete parallel permutation, but the 
+   Notes: For parallel index sets this does the complete parallel permutation, but the
     code is not efficient for huge index sets (10,000,000 indices).
 
    Concepts: inverse permutation
@@ -262,10 +262,10 @@ PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISGetSize" 
+#undef __FUNCT__
+#define __FUNCT__ "ISGetSize"
 /*@
-   ISGetSize - Returns the global length of an index set. 
+   ISGetSize - Returns the global length of an index set.
 
    Not Collective
 
@@ -292,10 +292,10 @@ PetscErrorCode  ISGetSize(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISGetLocalSize" 
+#undef __FUNCT__
+#define __FUNCT__ "ISGetLocalSize"
 /*@
-   ISGetLocalSize - Returns the local (processor) length of an index set. 
+   ISGetLocalSize - Returns the local (processor) length of an index set.
 
    Not Collective
 
@@ -310,7 +310,7 @@ PetscErrorCode  ISGetSize(IS is,PetscInt *size)
    Concepts: size^of index set
    Concepts: local size^of index set
    Concepts: index sets^local size
-  
+
 @*/
 PetscErrorCode  ISGetLocalSize(IS is,PetscInt *size)
 {
@@ -323,11 +323,11 @@ PetscErrorCode  ISGetLocalSize(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISGetIndices" 
+#undef __FUNCT__
+#define __FUNCT__ "ISGetIndices"
 /*@C
-   ISGetIndices - Returns a pointer to the indices.  The user should call 
-   ISRestoreIndices() after having looked at the indices.  The user should 
+   ISGetIndices - Returns a pointer to the indices.  The user should call
+   ISRestoreIndices() after having looked at the indices.  The user should
    NOT change the indices.
 
    Not Collective
@@ -352,7 +352,7 @@ $
 $      ...... other code
 $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
-   See the Fortran chapter of the users manual and 
+   See the Fortran chapter of the users manual and
    petsc/src/is/examples/[tutorials,tests] for details.
 
    Level: intermediate
@@ -371,12 +371,12 @@ PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
   PetscValidPointer(ptr,2);
   ierr = (*is->ops->getindices)(is,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISRestoreIndices" 
+#undef __FUNCT__
+#define __FUNCT__ "ISRestoreIndices"
 /*@C
-   ISRestoreIndices - Restores an index set to a usable state after a call 
+   ISRestoreIndices - Restores an index set to a usable state after a call
                       to ISGetIndices().
 
    Not Collective
@@ -399,7 +399,7 @@ $
 $      ...... other code
 $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
-   See the Fortran chapter of the users manual and 
+   See the Fortran chapter of the users manual and
    petsc/src/is/examples/[tutorials,tests] for details.
 
    Level: intermediate
@@ -419,8 +419,8 @@ PetscErrorCode  ISRestoreIndices(IS is,const PetscInt *ptr[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISGatherTotal_Private" 
+#undef __FUNCT__
+#define __FUNCT__ "ISGatherTotal_Private"
 static PetscErrorCode ISGatherTotal_Private(IS is)
 {
   PetscErrorCode ierr;
@@ -437,16 +437,16 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
-  
+
   nn   = PetscMPIIntCast(n);
   ierr = MPI_Allgather(&nn,1,MPIU_INT,sizes,1,MPIU_INT,comm);CHKERRQ(ierr);
   offsets[0] = 0;
   for (i=1;i<size; ++i) offsets[i] = offsets[i-1] + sizes[i-1];
   N = offsets[size-1] + sizes[size-1];
-  
+
   ierr = PetscMalloc(N*sizeof(PetscInt),&(is->total));CHKERRQ(ierr);
   ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv((void*)lindices,nn,MPIU_INT,is->total,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
+  ierr = MPI_Allgatherv((void*)lindices,nn,MPIU_INT,is->total,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
   is->local_offset = offsets[rank];
   ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
@@ -454,8 +454,8 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISGetTotalIndices" 
+#undef __FUNCT__
+#define __FUNCT__ "ISGetTotalIndices"
 /*@C
    ISGetTotalIndices - Retrieve an array containing all indices across the communicator.
 
@@ -465,7 +465,7 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
 .  is - the index set
 
    Output Parameter:
-.  indices - total indices with rank 0 indices first, and so on; total array size is 
+.  indices - total indices with rank 0 indices first, and so on; total array size is
              the same as returned with ISGetSize().
 
    Level: intermediate
@@ -489,11 +489,11 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
   ierr = MPI_Comm_size(((PetscObject)is)->comm, &size); CHKERRQ(ierr);
-  if(size == 1) {
+  if (size == 1) {
     ierr = (*is->ops->getindices)(is,indices);CHKERRQ(ierr);
   }
   else {
-    if(!is->total) {
+    if (!is->total) {
       ierr = ISGatherTotal_Private(is); CHKERRQ(ierr);
     }
     *indices = is->total;
@@ -501,8 +501,8 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISRestoreTotalIndices" 
+#undef __FUNCT__
+#define __FUNCT__ "ISRestoreTotalIndices"
 /*@C
    ISRestoreTotalIndices - Restore the index array obtained with ISGetTotalIndices().
 
@@ -526,18 +526,18 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
   ierr = MPI_Comm_size(((PetscObject)is)->comm, &size); CHKERRQ(ierr);
-  if(size == 1) {
+  if (size == 1) {
     ierr = (*is->ops->restoreindices)(is,indices);CHKERRQ(ierr);
   }
   else {
-    if(is->total != *indices) {
+    if (is->total != *indices) {
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
     }
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__  
-#define __FUNCT__ "ISGetNonlocalIndices" 
+#undef __FUNCT__
+#define __FUNCT__ "ISGetNonlocalIndices"
 /*@C
    ISGetNonlocalIndices - Retrieve an array of indices from remote processors
                        in this communicator.
@@ -548,14 +548,14 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
 .  is - the index set
 
    Output Parameter:
-.  indices - indices with rank 0 indices first, and so on,  omitting 
+.  indices - indices with rank 0 indices first, and so on,  omitting
              the current rank.  Total number of indices is the difference
              total and local, obtained with ISGetSize() and ISGetLocalSize(),
 	     respectively.
 
    Level: intermediate
 
-   Notes: restore the indices using ISRestoreNonlocalIndices().   
+   Notes: restore the indices using ISRestoreNonlocalIndices().
           The same scalability considerations as those for ISGetTotalIndices
           apply here.
 
@@ -571,11 +571,11 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
   ierr = MPI_Comm_size(((PetscObject)is)->comm, &size); CHKERRQ(ierr);
-  if(size == 1) {
+  if (size == 1) {
       *indices = PETSC_NULL;
   }
   else {
-    if(!is->total) {
+    if (!is->total) {
       ierr = ISGatherTotal_Private(is); CHKERRQ(ierr);
     }
     ierr = ISGetLocalSize(is,&n); CHKERRQ(ierr);
@@ -588,8 +588,8 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISRestoreNonlocalIndices" 
+#undef __FUNCT__
+#define __FUNCT__ "ISRestoreNonlocalIndices"
 /*@C
    ISRestoreTotalIndices - Restore the index array obtained with ISGetNonlocalIndices().
 
@@ -611,17 +611,17 @@ PetscErrorCode  ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
-  if(is->nonlocal != *indices) {
+  if (is->nonlocal != *indices) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index array pointer being restored does not point to the array obtained from the IS.");
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISGetNonlocalIS" 
+#undef __FUNCT__
+#define __FUNCT__ "ISGetNonlocalIS"
 /*@
-   ISGetNonlocalIS - Gather all nonlocal indices for this IS and present 
-                     them as another sequential index set.  
+   ISGetNonlocalIS - Gather all nonlocal indices for this IS and present
+                     them as another sequential index set.
 
 
    Collective on IS
@@ -650,7 +650,7 @@ PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(complement,2);
   /* Check if the complement exists already. */
-  if(is->complement) {
+  if (is->complement) {
     *complement = is->complement;
     ierr = PetscObjectReference((PetscObject)(is->complement)); CHKERRQ(ierr);
   }
@@ -663,13 +663,13 @@ PetscErrorCode  ISGetNonlocalIS(IS is, IS *complement)
     ierr = ISCreateGeneral(PETSC_COMM_SELF, N-n,idx, PETSC_USE_POINTER, &(is->complement)); CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)is->complement); CHKERRQ(ierr);
     *complement = is->complement;
-  }  
+  }
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISRestoreNonlocalIS" 
+#undef __FUNCT__
+#define __FUNCT__ "ISRestoreNonlocalIS"
 /*@
    ISRestoreNonlocalIS - Restore the IS obtained with ISGetNonlocalIS().
 
@@ -694,19 +694,19 @@ PetscErrorCode  ISRestoreNonlocalIS(IS is, IS *complement)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(complement,2);
-  if(*complement != is->complement) {
+  if (*complement != is->complement) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Complement IS being restored was not obtained with ISGetNonlocalIS()");
   }
   ierr = PetscObjectGetReference((PetscObject)(is->complement), &refcnt); CHKERRQ(ierr);
-  if(refcnt <= 1) {
+  if (refcnt <= 1) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Duplicate call to ISRestoreNonlocalIS() detected");
   }
   ierr = PetscObjectDereference((PetscObject)(is->complement));  CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISView" 
+#undef __FUNCT__
+#define __FUNCT__ "ISView"
 /*@C
    ISView - Displays an index set.
 
@@ -731,13 +731,13 @@ PetscErrorCode  ISView(IS is,PetscViewer viewer)
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(is,1,viewer,2);
-  
+
   ierr = (*is->ops->view)(is,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISSort" 
+#undef __FUNCT__
+#define __FUNCT__ "ISSort"
 /*@
    ISSort - Sorts the indices of an index set.
 
@@ -763,8 +763,8 @@ PetscErrorCode  ISSort(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISToGeneral" 
+#undef __FUNCT__
+#define __FUNCT__ "ISToGeneral"
 /*@
    ISToGeneral - Converts an IS object of any type to ISGENERAL type
 
@@ -792,8 +792,8 @@ PetscErrorCode  ISToGeneral(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISSorted" 
+#undef __FUNCT__
+#define __FUNCT__ "ISSorted"
 /*@
    ISSorted - Checks the indices to determine whether they have been sorted.
 
@@ -803,11 +803,11 @@ PetscErrorCode  ISToGeneral(IS is)
 .  is - the index set
 
    Output Parameter:
-.  flg - output flag, either PETSC_TRUE if the index set is sorted, 
+.  flg - output flag, either PETSC_TRUE if the index set is sorted,
          or PETSC_FALSE otherwise.
 
    Notes: For parallel IS objects this only indicates if the local part of the IS
-          is sorted. So some processors may return PETSC_TRUE while others may 
+          is sorted. So some processors may return PETSC_TRUE while others may
           return PETSC_FALSE.
 
    Level: intermediate
@@ -825,8 +825,8 @@ PetscErrorCode  ISSorted(IS is,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISDuplicate" 
+#undef __FUNCT__
+#define __FUNCT__ "ISDuplicate"
 /*@
    ISDuplicate - Creates a duplicate copy of an index set.
 
@@ -859,7 +859,7 @@ PetscErrorCode  ISDuplicate(IS is,IS *newIS)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISCopy"
 /*@
    ISCopy - Copies an index set.
@@ -895,7 +895,7 @@ PetscErrorCode  ISCopy(IS is,IS isy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISOnComm"
 /*@
    ISOnComm - Split a parallel IS on subcomms (usually self) or concatenate index sets on subcomms into a parallel index set
@@ -940,7 +940,7 @@ PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISSetBlockSize"
 /*@
    ISSetBlockSize - informs an index set that it has a given block size
@@ -967,7 +967,7 @@ PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISGetBlockSize"
 /*@
    ISGetBlockSize - Returns the number of elements in a block.
@@ -995,7 +995,7 @@ PetscErrorCode  ISGetBlockSize(IS is,PetscInt *size)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__ 
+#undef __FUNCT__
 #define __FUNCT__ "ISGetIndicesCopy"
 PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
 {
@@ -1006,7 +1006,7 @@ PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
   PetscFunctionBegin;
   ierr = ISGetSize(is,&len); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ptr); CHKERRQ(ierr);
-  for(i=0;i<len;i++) idx[i] = ptr[i];
+  for (i=0;i<len;i++) idx[i] = ptr[i];
   ierr = ISRestoreIndices(is,&ptr); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1029,7 +1029,7 @@ EXTERN_C_END
 +   xx_v - the Fortran90 pointer to the array
 -   ierr - error code
 
-    Example of Usage: 
+    Example of Usage:
 .vb
     PetscScalar, pointer xx_v(:)
     ....
@@ -1067,7 +1067,7 @@ M*/
 .   ierr - error code
 
 
-    Example of Usage: 
+    Example of Usage:
 .vb
     PetscScalar, pointer xx_v(:)
     ....
@@ -1075,7 +1075,7 @@ M*/
     a = xx_v(3)
     call ISRestoreIndicesF90(x,xx_v,ierr)
 .ve
-   
+
     Notes:
     Not yet supported for all F90 compilers.
 
@@ -1101,7 +1101,7 @@ M*/
     Output Parameters:
 +   xx_v - the Fortran90 pointer to the array
 -   ierr - error code
-    Example of Usage: 
+    Example of Usage:
 .vb
     PetscScalar, pointer xx_v(:)
     ....
@@ -1140,7 +1140,7 @@ M*/
     Output Parameter:
 .   ierr - error code
 
-    Example of Usage: 
+    Example of Usage:
 .vb
     PetscScalar, pointer xx_v(:)
     ....
@@ -1148,7 +1148,7 @@ M*/
     a = xx_v(3)
     call ISBlockRestoreIndicesF90(x,xx_v,ierr)
 .ve
-   
+
     Notes:
     Not yet supported for all F90 compilers
 

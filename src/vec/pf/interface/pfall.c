@@ -11,7 +11,7 @@ extern PetscErrorCode  PFCreate_Matlab(PF,void*);
 #endif
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFRegisterAll"
 /*@C
    PFRegisterAll - Registers all of the preconditioners in the PF package.

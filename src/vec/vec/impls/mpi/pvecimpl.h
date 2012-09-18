@@ -11,9 +11,9 @@ typedef struct {
   PetscInt    nsends,nrecvs;
   PetscScalar *svalues,*rvalues;
   PetscInt    rmax;
-  
+
   PetscInt    nghost;                   /* length of local portion including ghost padding */
-  
+
   Vec         localrep;                 /* local representation of vector */
   VecScatter  localupdate;              /* scatter to update ghost values */
 } Vec_MPI;

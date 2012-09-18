@@ -121,7 +121,7 @@ PetscErrorCode  VecSetLocalToGlobalMappingBlock(Vec x,ISLocalToGlobalMapping map
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGetLocalToGlobalMapping"
 /*@
    VecGetLocalToGlobalMapping - Gets the local-to-global numbering set by VecSetLocalToGlobalMapping()
@@ -151,7 +151,7 @@ PetscErrorCode VecGetLocalToGlobalMapping(Vec X,ISLocalToGlobalMapping *mapping)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGetLocalToGlobalMappingBlock"
 /*@
    VecGetLocalToGlobalMappingBlock - Gets the local-to-global numbering set by VecSetLocalToGlobalMappingBlock()
@@ -759,7 +759,7 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
   if (iascii) {
     PetscInt rows,bs;
 
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       ierr = PetscObjectPrintClassNamePrefixType((PetscObject)vec,viewer,"Vector Object");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -1050,11 +1050,11 @@ PetscErrorCode  VecResetArray(Vec vec)
   VecLoad - Loads a vector that has been stored in binary or HDF5 format
   with VecView().
 
-  Collective on PetscViewer 
+  Collective on PetscViewer
 
   Input Parameters:
 + newvec - the newly loaded vector, this needs to have been created with VecCreate() or
-           some related function before a call to VecLoad(). 
+           some related function before a call to VecLoad().
 - viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
            HDF5 file viewer, obtained from PetscViewerHDF5Open()
 
@@ -1067,8 +1067,8 @@ PetscErrorCode  VecResetArray(Vec vec)
   The input file must contain the full global vector, as
   written by the routine VecView().
 
-  If the type or size of newvec is not set before a call to VecLoad, PETSc 
-  sets the type and the local and global sizes.If type and/or 
+  If the type or size of newvec is not set before a call to VecLoad, PETSc
+  sets the type and the local and global sizes.If type and/or
   sizes are already set, then the same are used.
 
   IF using HDF5, you must assign the Vec the same name as was used in the Vec
@@ -1094,8 +1094,8 @@ and PetscBinaryWrite() to see how this may be done.
 
   Concepts: vector^loading from file
 
-.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad() 
-@*/  
+.seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoad()
+@*/
 PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -1351,9 +1351,9 @@ PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
 
   Level: beginner
 
-  Developer Note: This routine does not need to exist since the exact functionality is obtained with 
+  Developer Note: This routine does not need to exist since the exact functionality is obtained with
      VecSet(vec,0);  I guess someone added it to mirror the functionality of MatZeroEntries() but Mat is nothing
-     like a Vec (one is an operator and one is an element of a vector space, yeah yeah dual blah blah blah) so 
+     like a Vec (one is an operator and one is an element of a vector space, yeah yeah dual blah blah blah) so
      this routine should not exist.
 
 .keywords: Vec, set, options, database
@@ -1838,7 +1838,7 @@ PetscErrorCode  VecSwap(Vec x,Vec y)
   for (i=0; i<4; i++) {
     ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],normxs[i],flgxs[i]);CHKERRQ(ierr);
     ierr = PetscObjectComposedDataGetReal((PetscObject)y,NormIds[i],normys[i],flgys[i]);CHKERRQ(ierr);
-  } 
+  }
   ierr = (*x->ops->swap)(x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
@@ -1894,7 +1894,7 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
   s = &v->bstash;
 
   /* print block stash */
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);      
+  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %D block size %D\n",rank,s->n,s->bs);CHKERRQ(ierr);
   for (i=0; i<s->n; i++) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %D ",rank,s->idx[i]);CHKERRQ(ierr);
@@ -1923,7 +1923,7 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
 #endif
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);      
+  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
 
   ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);

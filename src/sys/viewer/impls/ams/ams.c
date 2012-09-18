@@ -12,8 +12,8 @@ typedef struct {
 } PetscViewer_AMS;
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerAMSSetCommName_AMS" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerAMSSetCommName_AMS"
 PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
 {
   PetscViewer_AMS *vams = (PetscViewer_AMS*)v->data;
@@ -60,8 +60,8 @@ PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerAMSGetAMSComm_AMS" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerAMSGetAMSComm_AMS"
 PetscErrorCode PetscViewerAMSGetAMSComm_AMS(PetscViewer lab,AMS_Comm *ams_comm)
 {
   PetscViewer_AMS *vams = (PetscViewer_AMS *)lab->data;
@@ -73,8 +73,8 @@ PetscErrorCode PetscViewerAMSGetAMSComm_AMS(PetscViewer lab,AMS_Comm *ams_comm)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerAMSSetCommName" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerAMSSetCommName"
 PetscErrorCode PetscViewerAMSSetCommName(PetscViewer v,const char name[])
 {
   PetscErrorCode ierr;
@@ -85,8 +85,8 @@ PetscErrorCode PetscViewerAMSSetCommName(PetscViewer v,const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerAMSGetAMSComm" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerAMSGetAMSComm"
 /*@C
     PetscViewerAMSGetAMSComm - Gets the AMS communicator associated with the PetscViewer.
 
@@ -126,10 +126,10 @@ PetscErrorCode PetscViewerAMSGetAMSComm(PetscViewer v,AMS_Comm *ams_comm)
 */
 static PetscMPIInt Petsc_Viewer_Ams_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNCT__  
-#define __FUNCT__ "PETSC_VIEWER_AMS_" 
+#undef __FUNCT__
+#define __FUNCT__ "PETSC_VIEWER_AMS_"
 /*@C
-     PETSC_VIEWER_AMS_ - Creates an AMS memory snooper PetscViewer shared by all processors 
+     PETSC_VIEWER_AMS_ - Creates an AMS memory snooper PetscViewer shared by all processors
                    in a communicator.
 
      Collective on MPI_Comm
@@ -140,11 +140,11 @@ static PetscMPIInt Petsc_Viewer_Ams_keyval = MPI_KEYVAL_INVALID;
      Level: developer
 
      Notes:
-     Unlike almost all other PETSc routines, PetscViewer_AMS_ does not return 
+     Unlike almost all other PETSc routines, PetscViewer_AMS_ does not return
      an error code.  The window PetscViewer is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_AMS_(comm));
 
-.seealso: PetscViewer_AMS_WORLD, PetscViewer_AMS_SELF, PetscViewerAMSOpen(), 
+.seealso: PetscViewer_AMS_WORLD, PetscViewer_AMS_SELF, PetscViewerAMSOpen(),
 @*/
 PetscViewer PETSC_VIEWER_AMS_(MPI_Comm comm)
 {
@@ -165,21 +165,21 @@ PetscViewer PETSC_VIEWER_AMS_(MPI_Comm comm)
   if (!flag) { /* PetscViewer not yet created */
     ierr = PetscStrcpy(name,"PETSc");
     if (ierr) {PetscError(ncomm,__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,PETSC_ERROR_INITIAL," "); viewer = 0;}
-    ierr = PetscViewerAMSOpen(ncomm,name,&viewer); 
+    ierr = PetscViewerAMSOpen(ncomm,name,&viewer);
     if (ierr) {PetscError(ncomm,__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,PETSC_ERROR_INITIAL," "); viewer = 0;}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
     if (ierr) {PetscError(ncomm,__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,PETSC_ERROR_INITIAL," "); viewer = 0;}
     ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Ams_keyval,(void*)viewer);
     if (ierr) {PetscError(ncomm,__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,PETSC_ERROR_INITIAL," "); viewer = 0;}
-  } 
+  }
   PetscFunctionReturn(viewer);
 }
 
 /*
        If there is a PetscViewer associated with this communicator, it is destroyed.
 */
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewer_AMS_Destroy" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewer_AMS_Destroy"
 PetscErrorCode PetscViewer_AMS_Destroy(MPI_Comm comm)
 {
   PetscErrorCode ierr;
@@ -191,15 +191,15 @@ PetscErrorCode PetscViewer_AMS_Destroy(MPI_Comm comm)
     PetscFunctionReturn(0);
   }
   ierr = MPI_Attr_get(comm,Petsc_Viewer_Ams_keyval,(void **)&viewer,&flag);CHKERRQ(ierr);
-  if (flag) { 
+  if (flag) {
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_delete(comm,Petsc_Viewer_Ams_keyval);CHKERRQ(ierr);
-  } 
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerDestroy_AMS" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerDestroy_AMS"
 static PetscErrorCode PetscViewerDestroy_AMS(PetscViewer viewer)
 {
   PetscViewer_AMS *vams = (PetscViewer_AMS*)viewer->data;
@@ -224,8 +224,8 @@ static PetscErrorCode PetscViewerDestroy_AMS(PetscViewer viewer)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerCreate_AMS" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerCreate_AMS"
 PetscErrorCode PetscViewerCreate_AMS(PetscViewer v)
 {
   PetscViewer_AMS *vams;

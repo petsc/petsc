@@ -1,11 +1,11 @@
 
 #include <petscsys.h>         /*I  "petscsys.h"  I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetArchType"
 /*@C
      PetscGetArchType - Returns a standardized architecture type for the machine
-     that is executing this routine. 
+     that is executing this routine.
 
      Not Collective
 
@@ -13,7 +13,7 @@
 .    slen - length of string buffer
 
      Output Parameter:
-.    str - string area to contain architecture name, should be at least 
+.    str - string area to contain architecture name, should be at least
            10 characters long. Name is truncated if string is not long enough.
 
      Level: developer

@@ -1,7 +1,7 @@
 
 /*
-    We define the memory operations here. The reason we just do not use 
-  the standard memory routines in the PETSc code is that on some machines 
+    We define the memory operations here. The reason we just do not use
+  the standard memory routines in the PETSc code is that on some machines
   they are broken.
 
 */
@@ -9,7 +9,7 @@
 #include <petscbt.h>
 #include <../src/sys/utils/ftn-kernels/fcopy.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscMemcmp"
 /*@
    PetscMemcmp - Compares two byte streams in memory.
@@ -27,7 +27,7 @@
 
    Level: intermediate
 
-   Note: 
+   Note:
    This routine is anologous to memcmp()
 @*/
 PetscErrorCode  PetscMemcmp(const void *str1,const void *str2,size_t len,PetscBool  *e)
@@ -43,7 +43,7 @@ PetscErrorCode  PetscMemcmp(const void *str1,const void *str2,size_t len,PetscBo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscMemmove"
 /*@
    PetscMemmove - Copies n bytes, beginning at location b, to the space

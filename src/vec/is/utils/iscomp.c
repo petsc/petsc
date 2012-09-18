@@ -1,7 +1,7 @@
 
 #include <petscis.h>    /*I "petscis.h"  I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISEqual"
 /*@
    ISEqual  - Compares if two index sets have the same set of indices.
@@ -13,17 +13,17 @@
 
    Output Parameters:
 .  flg - output flag, either PETSC_TRUE (if both index sets have the
-         same indices), or PETSC_FALSE if the index sets differ by size 
+         same indices), or PETSC_FALSE if the index sets differ by size
          or by the set of indices)
 
    Level: intermediate
 
-   Note: 
+   Note:
    This routine sorts the contents of the index sets before
    the comparision is made, so the order of the indices on a processor is immaterial.
 
    Each processor has to have the same indices in the two sets, for example,
-$           Processor 
+$           Processor
 $             0      1
 $    is1 = {0, 1} {2, 3}
 $    is2 = {2, 3} {0, 1}
@@ -50,7 +50,7 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
   if (is1 == is2) {
     *flg = PETSC_TRUE;
     PetscFunctionReturn(0);
-  }  
+  }
 
   ierr = MPI_Comm_compare(((PetscObject)is1)->comm,((PetscObject)is2)->comm,&mflg);CHKERRQ(ierr);
   if (mflg != MPI_CONGRUENT && mflg != MPI_IDENT) {
@@ -60,7 +60,7 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
 
   ierr = ISGetSize(is1,&sz1);CHKERRQ(ierr);
   ierr = ISGetSize(is2,&sz2);CHKERRQ(ierr);
-  if (sz1 != sz2) { 
+  if (sz1 != sz2) {
     *flg = PETSC_FALSE;
   } else {
     ierr = ISGetLocalSize(is1,&sz1);CHKERRQ(ierr);
@@ -71,7 +71,7 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
     } else {
       ierr = ISGetIndices(is1,&ptr1);CHKERRQ(ierr);
       ierr = ISGetIndices(is2,&ptr2);CHKERRQ(ierr);
-  
+
       ierr = PetscMalloc(sz1*sizeof(PetscInt),&a1);CHKERRQ(ierr);
       ierr = PetscMalloc(sz2*sizeof(PetscInt),&a2);CHKERRQ(ierr);
 
@@ -84,13 +84,13 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
 
       ierr = ISRestoreIndices(is1,&ptr1);CHKERRQ(ierr);
       ierr = ISRestoreIndices(is2,&ptr2);CHKERRQ(ierr);
-  
+
       ierr = PetscFree(a1);CHKERRQ(ierr);
       ierr = PetscFree(a2);CHKERRQ(ierr);
     }
-    ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);  
+    ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_MIN,comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
-  
+

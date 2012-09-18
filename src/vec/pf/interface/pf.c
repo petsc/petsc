@@ -9,7 +9,7 @@ PetscClassId PF_CLASSID = 0;
 PetscFList PFList         = PETSC_NULL; /* list of all registered PD functions */
 PetscBool  PFRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFSet"
 /*@C
    PFSet - Sets the C/C++/Fortran functions to be used by the PF function
@@ -44,7 +44,7 @@ PetscErrorCode  PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,const PetscSc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFDestroy"
 /*@C
    PFDestroy - Destroys PF context that was created with PFCreate().
@@ -85,7 +85,7 @@ PetscErrorCode  PFDestroy(PF *pf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFCreate"
 /*@C
    PFCreate - Creates a mathematical function context.
@@ -93,7 +93,7 @@ PetscErrorCode  PFDestroy(PF *pf)
    Collective on MPI_Comm
 
    Input Parameter:
-+  comm - MPI communicator 
++  comm - MPI communicator
 .  dimin - dimension of the space you are mapping from
 -  dimout - dimension of the space you are mapping to
 
@@ -115,7 +115,7 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
   PetscValidPointer(pf,1);
   *pf = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = PFInitializePackage(PETSC_NULL);CHKERRQ(ierr);   
+  ierr = PFInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_CLASSID,-1,"PF","Mathematical functions","Vec",comm,PFDestroy,PFView);CHKERRQ(ierr);
@@ -135,7 +135,7 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 
 /* -------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFApplyVec"
 /*@
    PFApplyVec - Applies the mathematical function to a vector
@@ -205,11 +205,11 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
   }
   if (nox) {
     ierr = VecDestroy(&x);CHKERRQ(ierr);
-  } 
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFApply"
 /*@
    PFApply - Applies the mathematical function to an array of values.
@@ -228,7 +228,7 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
 
    Level: beginner
 
-   Notes: 
+   Notes:
 
 .keywords: PF, apply
 
@@ -249,12 +249,12 @@ PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar* x,PetscScalar* y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFView"
-/*@ 
+/*@
    PFView - Prints information about a mathematical function
 
-   Collective on PF unless PetscViewer is PETSC_VIEWER_STDOUT_SELF  
+   Collective on PF unless PetscViewer is PETSC_VIEWER_STDOUT_SELF
 
    Input Parameters:
 +  PF - the PF context
@@ -265,8 +265,8 @@ PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar* x,PetscScalar* y)
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
 -     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
+         the file.  All other processors send their
+         data to the first processor to print.
 
    The user can open an alternative visualization contexts with
    PetscViewerASCIIOpen() (output to a specified file).
@@ -288,7 +288,7 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)pf)->comm,&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2); 
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(pf,1,viewer,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -347,7 +347,7 @@ $     -pf_type my_function
 .seealso: PFRegisterAll(), PFRegisterDestroy(), PFRegister()
 M*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFRegister"
 PetscErrorCode  PFRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PF,void*))
 {
@@ -360,7 +360,7 @@ PetscErrorCode  PFRegister(const char sname[],const char path[],const char name[
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFGetType"
 /*@C
    PFGetType - Gets the PF method type and name (as a string) from the PF
@@ -372,7 +372,7 @@ PetscErrorCode  PFRegister(const char sname[],const char path[],const char name[
 .  pf - the function context
 
    Output Parameter:
-.  type - name of function 
+.  type - name of function
 
    Level: intermediate
 
@@ -391,7 +391,7 @@ PetscErrorCode  PFGetType(PF pf,const PFType *type)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFSetType"
 /*@C
    PFSetType - Builds PF for a particular function
@@ -448,7 +448,7 @@ PetscErrorCode  PFSetType(PF pf,const PFType type,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFSetFromOptions"
 /*@
    PFSetFromOptions - Sets PF options from the options database.
@@ -460,7 +460,7 @@ PetscErrorCode  PFSetType(PF pf,const PFType type,void *ctx)
 
    Options Database Keys:
 
-   Notes:  
+   Notes:
    To see all options, run your program with the -help option
    or consult the users manual.
 
@@ -496,7 +496,7 @@ PetscErrorCode  PFSetFromOptions(PF pf)
 }
 
 static PetscBool  PFPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFFinalizePackage"
 /*@C
   PFFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
@@ -516,7 +516,7 @@ PetscErrorCode  PFFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFInitializePackage"
 /*@C
   PFInitializePackage - This function initializes everything in the PF package. It is called
@@ -531,7 +531,7 @@ PetscErrorCode  PFFinalizePackage(void)
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  PFInitializePackage(const char path[]) 
+PetscErrorCode  PFInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;

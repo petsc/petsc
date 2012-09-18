@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
   ierr = VecSetFromOptions(u);                                                                            CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(u, &low, &high);                                                            CHKERRQ(ierr);
   ierr = VecGetLocalSize(u, &ldim);                                                                       CHKERRQ(ierr);
-  for(i = 0; i < ldim; i++) {
+  for (i = 0; i < ldim; i++) {
     iglobal = i + low;
     v       = (PetscScalar) (i + 100*rank);
     ierr = VecSetValues(u, 1, &iglobal, &v, INSERT_VALUES);                                               CHKERRQ(ierr);

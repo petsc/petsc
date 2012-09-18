@@ -66,7 +66,7 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&xl);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&xu);CHKERRQ(ierr);
-  if(!user.implicit) {
+  if (!user.implicit) {
     ierr = VecDuplicate(x,&user.q);CHKERRQ(ierr);
   }
 
@@ -94,14 +94,14 @@ int main(int argc, char **argv)
 
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
 
-  if(!user.implicit) {
+  if (!user.implicit) {
     ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
     ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
     ierr = Update_q(ts);CHKERRQ(ierr);
     ierr = TSSetPostStep(ts,Update_q);
   }
 
-  if(user.tsmonitor) {
+  if (user.tsmonitor) {
     ierr = TSMonitorSet(ts,Monitor,&user,PETSC_NULL);CHKERRQ(ierr);
   }
 
@@ -117,7 +117,7 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = VecDestroy(&xl);CHKERRQ(ierr);
   ierr = VecDestroy(&xu);CHKERRQ(ierr);
-  if(!user.implicit) {
+  if (!user.implicit) {
     ierr = VecDestroy(&user.q);CHKERRQ(ierr);
     ierr = VecDestroy(&user.u);CHKERRQ(ierr);
     ierr = VecDestroy(&user.work1);CHKERRQ(ierr);
@@ -153,7 +153,7 @@ PetscErrorCode Update_q(TS ts)
   ierr = VecGetLocalSize(user->u,&n);CHKERRQ(ierr);
   ierr = VecGetArray(user->q,&q_arr);CHKERRQ(ierr);
   ierr = VecGetArray(user->work1,&w_arr);CHKERRQ(ierr);
-  for(i=0;i<n;i++) {
+  for (i=0;i<n;i++) {
     q_arr[2*i+1] = w_arr[i];
   }
   ierr = VecRestoreArray(user->q,&q_arr);CHKERRQ(ierr);
@@ -178,7 +178,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   /* Set initial guess, only set value for 2nd dof */
-  for(i=0;i<n/2;i++) {
+  for (i=0;i<n/2;i++) {
     ierr = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
     x[2*i+1] = -0.4 + 0.05*value*(value - 0.5);
   }
@@ -238,7 +238,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t, Vec X,Vec Xdot,Vec F,void* ctx)
   PetscFunctionBegin;
   ierr = MatMult(user->M,Xdot,F);CHKERRQ(ierr);
   ierr = MatMultAdd(user->S,X,F,F);CHKERRQ(ierr);
-  if(!user->implicit) {
+  if (!user->implicit) {
     ierr = VecAXPY(F,1.0,user->q);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -283,8 +283,8 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
-  for(j=ys; j < ys+ym; j++) {
-    for(i=xs; i < xs+xm;i++) {
+  for (j=ys; j < ys+ym; j++) {
+    for (i=xs; i < xs+xm;i++) {
       l[j][i][0] = -SNES_VI_INF;
       l[j][i][1] = -1.0;
       u[j][i][0] = SNES_VI_INF;
@@ -353,7 +353,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
   /* Get local element info */
   ierr = DMDAGetElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
-  for(i=0;i < nele;i++) {
+  for (i=0;i < nele;i++) {
     idx[0] = ele[3*i]; idx[1] = ele[3*i+1]; idx[2] = ele[3*i+2];
     x[0] = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
     x[1] = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
@@ -371,7 +371,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     eM_2[2][0]=eM_2[2][1]=eM_2[2][2]=0.0;
 
     PetscInt m;
-    for(m=0;m<3;m++) {
+    for (m=0;m<3;m++) {
       ierr = PetscMemzero(phi,3*sizeof(PetscScalar));CHKERRQ(ierr);
       phider[0][0]=phider[0][1]=0.0;
       phider[1][0]=phider[1][1]=0.0;
@@ -380,8 +380,8 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
       ShapefunctionsT3(phi,phider,xx[m],yy[m],x,y);
 
       PetscInt j,k;
-      for(j=0;j<3;j++) {
-	for(k=0;k<3;k++) {
+      for (j=0;j<3;j++) {
+	for (k=0;k<3;k++) {
 	  eM_0[k][j] += phi[j]*phi[k]*w;
 	  eM_2[k][j] += phider[j][0]*phider[k][0]*w + phider[j][1]*phider[k][1]*w;
 	}
@@ -390,7 +390,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     PetscInt    row,cols[6],r;
     PetscScalar vals[6];
 
-    for(r=0;r<3;r++) {
+    for (r=0;r<3;r++) {
       row = 2*idx[r];
       /* Insert values in the mass matrix */
       cols[0] = 2*idx[0]+1;     vals[0] = eM_0[r][0];
@@ -428,7 +428,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   ierr = MatAssemblyBegin(S,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(S,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if(!implicit) {
+  if (!implicit) {
     /* Create ISs to extract matrix M_0 from M */
     PetscInt n,rstart;
     IS       isrow,iscol;

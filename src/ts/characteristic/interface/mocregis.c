@@ -3,15 +3,15 @@
 EXTERN_C_BEGIN
 extern PetscErrorCode CharacteristicCreate_DA(Characteristic);
 EXTERN_C_END
-  
+
 /*
-    This is used by CharacteristicSetType() to make sure that at least one 
+    This is used by CharacteristicSetType() to make sure that at least one
     CharacteristicRegisterAll() is called. In general, if there is more than one
     DLL, then CharacteristicRegisterAll() may be called several times.
 */
 extern PetscBool  CharacteristicRegisterAllCalled;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "CharacteristicRegisterAll"
 /*@C
   CharacteristicRegisterAll - Registers all of the Krylov subspace methods in the Characteristic package.

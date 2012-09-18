@@ -5,7 +5,7 @@
 extern PetscLogEvent  PETSC_Barrier;
 
 static PetscBool  PetscSysPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSysFinalizePackage"
 /*@C
   PetscSysFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
@@ -23,8 +23,8 @@ PetscErrorCode  PetscSysFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSysInitializePackage" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSysInitializePackage"
 /*@C
   PetscSysInitializePackage - This function initializes everything in the main Petsc package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the call to PetscInitialize()
@@ -86,7 +86,7 @@ extern PetscErrorCode PetscDLLibraryRegister_petscsnes(const char[]);
 extern PetscErrorCode PetscDLLibraryRegister_petscts(const char[]);
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #if defined(PETSC_USE_SINGLE_LIBRARY)
 #define __FUNCT__ "PetscDLLibraryRegister_petsc"
 #else

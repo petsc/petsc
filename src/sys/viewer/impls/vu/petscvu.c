@@ -37,8 +37,8 @@ static PetscErrorCode PetscViewerFileClose_VU(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerDestroy_VU" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerDestroy_VU"
 PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
@@ -50,8 +50,8 @@ PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFlush_VU" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFlush_VU"
 PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
@@ -63,14 +63,14 @@ PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
   ierr = MPI_Comm_rank(((PetscObject)viewer)->comm, &rank);CHKERRQ(ierr);
   if (!rank) {
     err = fflush(vu->fd);
-    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");        
+    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   }
-  PetscFunctionReturn(0);  
+  PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFileGetName_VU" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFileGetName_VU"
 PetscErrorCode  PetscViewerFileGetName_VU(PetscViewer viewer, const char **name)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
@@ -82,8 +82,8 @@ PetscErrorCode  PetscViewerFileGetName_VU(PetscViewer viewer, const char **name)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFileSetName_VU" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFileSetName_VU"
 PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
@@ -139,8 +139,8 @@ PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerCreate_VU" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerCreate_VU"
 PetscErrorCode  PetscViewerCreate_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu;
@@ -174,8 +174,8 @@ PetscErrorCode  PetscViewerCreate_VU(PetscViewer viewer)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerVUGetPointer" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerVUGetPointer"
 /*@C
   PetscViewerVUGetPointer - Extracts the file pointer from a VU PetscViewer.
 
@@ -205,7 +205,7 @@ PetscErrorCode  PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerVUSetMode"
 /*@C
   PetscViewerVUSetMode - Sets the mode in which to open the file.
@@ -230,7 +230,7 @@ PetscErrorCode  PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerVUSetVecSeen"
 /*@C
   PetscViewerVUSetVecSeen - Sets the flag which indicates whether we have viewed
@@ -256,7 +256,7 @@ PetscErrorCode  PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool  vecSeen)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerVUGetVecSeen"
 /*@C
   PetscViewerVUGetVecSeen - Gets the flag which indicates whether we have viewed
@@ -286,7 +286,7 @@ PetscErrorCode  PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool  *vecSeen)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerVUPrintDeferred"
 /*@C
   PetscViewerVUPrintDeferred - Prints to the deferred write cache instead of the file.
@@ -328,7 +328,7 @@ PetscErrorCode  PetscViewerVUPrintDeferred(PetscViewer viewer, const char format
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerVUFlushDeferred"
 /*@C
   PetscViewerVUFlushDeferred - Flushes the deferred write cache to the file.
@@ -352,9 +352,9 @@ PetscErrorCode  PetscViewerVUFlushDeferred(PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for(i = 0; i < vu->queueLength; i++) {
+  for (i = 0; i < vu->queueLength; i++) {
     PetscFPrintf(((PetscObject)viewer)->comm, vu->fd, "%s", next->string);
-    previous = next; 
+    previous = next;
     next     = next->next;
     ierr     = PetscFree(previous);CHKERRQ(ierr);
   }
