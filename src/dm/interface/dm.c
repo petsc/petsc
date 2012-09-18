@@ -3062,9 +3062,34 @@ PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *section) {
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(section, 2);
   if (!dm->defaultGlobalSection) {
-    ierr = PetscSectionCreateGlobalSection(dm->defaultSection, dm->sf, &dm->defaultGlobalSection);CHKERRQ(ierr);
+    ierr = PetscSectionCreateGlobalSection(dm->defaultSection, dm->sf, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);
   }
   *section = dm->defaultGlobalSection;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetDefaultGlobalSection"
+/*@
+  DMSetDefaultGlobalSection - Set the PetscSection encoding the global data layout for the DM.
+
+  Input Parameters:
++ dm - The DM
+- section - The PetscSection
+
+  Level: intermediate
+
+  Note: Any existing Section will be destroyed
+
+.seealso: DMGetDefaultGlobalSection(), DMSetDefaultSection()
+@*/
+PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection section) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscSectionDestroy(&dm->defaultGlobalSection);CHKERRQ(ierr);
+  dm->defaultGlobalSection = section;
   PetscFunctionReturn(0);
 }
 
@@ -3216,6 +3241,34 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
   }
   ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(dm->defaultSF, nroots, nleaves, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetPointSF"
+/*@
+  DMGetPointSF - Get the PetscSF encoding the parallel section point overlap for the DM.
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. sf - The PetscSF
+
+  Level: intermediate
+
+  Note: This gets a borrowed reference, so the user should not destroy this PetscSF.
+
+.seealso: DMGetDefaultSF(), DMSetDefaultSF(), DMCreateDefaultSF()
+@*/
+PetscErrorCode DMGetPointSF(DM dm, PetscSF *sf) {
+  PetscInt       nroots;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(sf, 2);
+  *sf = dm->sf;
   PetscFunctionReturn(0);
 }
 
