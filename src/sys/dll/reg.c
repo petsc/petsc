@@ -5,7 +5,7 @@
 */
 #include <petscsys.h>           /*I "petscsys.h" I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFListGetPathAndFunction"
 PetscErrorCode  PetscFListGetPathAndFunction(const char name[],char *path[],char *function[])
 {
@@ -13,8 +13,8 @@ PetscErrorCode  PetscFListGetPathAndFunction(const char name[],char *path[],char
   char           work[PETSC_MAX_PATH_LEN],*lfunction;
 
   PetscFunctionBegin;
-  ierr = PetscStrncpy(work,name,sizeof work);CHKERRQ(ierr);
-  work[sizeof work - 1] = 0;
+  ierr = PetscStrncpy(work,name,sizeof(work));CHKERRQ(ierr);
+  work[sizeof(work) - 1] = 0;
   ierr = PetscStrchr(work,':',&lfunction);CHKERRQ(ierr);
   if (lfunction != work && lfunction && lfunction[1] != ':') {
     lfunction[0] = 0;
@@ -34,7 +34,7 @@ PetscDLLibrary PetscDLLibrariesLoaded = 0;
 
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLoadDynamicLibrary"
 static PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *found)
 {
@@ -60,12 +60,12 @@ static PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *foun
 
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscInitialize_DynamicLibraries"
 /*
-    PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the 
+    PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the
     search path.
-*/ 
+*/
 PetscErrorCode  PetscInitialize_DynamicLibraries(void)
 {
   char           *libname[32];
@@ -95,7 +95,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
 #if defined(PETSC_USE_SINGLE_LIBRARY)
   ierr = PetscLoadDynamicLibrary("",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
-#else 
+#else
   ierr = PetscLoadDynamicLibrary("sys",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("vec",&found);CHKERRQ(ierr);
@@ -128,11 +128,11 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFinalize_DynamicLibraries"
 /*
      PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries.
-*/ 
+*/
 PetscErrorCode PetscFinalize_DynamicLibraries(void)
 {
   PetscErrorCode ierr;
@@ -163,7 +163,7 @@ struct _n_PetscFList {
 */
 static PetscFList   dlallhead = 0;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFListAdd"
 /*@C
    PetscFListAdd - Given a routine and a string id, saves that routine in the
@@ -250,7 +250,7 @@ PetscErrorCode  PetscFListAdd(PetscFList *fl,const char name[],const char rname[
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFListDestroy"
 /*@
     PetscFListDestroy - Destroys a list of registered routines.
@@ -305,7 +305,7 @@ PetscErrorCode  PetscFListDestroy(PetscFList *fl)
 /*
    Destroys all the function lists that anyone has every registered, such as KSPList, VecList, etc.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFListDestroyAll"
 PetscErrorCode  PetscFListDestroyAll(void)
 {
@@ -322,7 +322,7 @@ PetscErrorCode  PetscFListDestroyAll(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFListFind"
 /*@C
     PetscFListFind - Given a name, finds the matching routine.
@@ -349,7 +349,7 @@ PetscErrorCode  PetscFListFind(PetscFList fl,MPI_Comm comm,const char name[],Pet
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
   char           *newpath;
 #endif
- 
+
   PetscFunctionBegin;
   if (!name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to find routine with null name");
 
@@ -412,7 +412,7 @@ PetscErrorCode  PetscFListFind(PetscFList fl,MPI_Comm comm,const char name[],Pet
         ierr = PetscFree(path);CHKERRQ(ierr);
         ierr = PetscFree(function);CHKERRQ(ierr);
         PetscFunctionReturn(0);
-      } 
+      }
 #endif
     }
     entry = entry->next;
@@ -432,7 +432,7 @@ PetscErrorCode  PetscFListFind(PetscFList fl,MPI_Comm comm,const char name[],Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFListView"
 /*@
    PetscFListView - prints out contents of an PetscFList
@@ -456,7 +456,7 @@ PetscErrorCode  PetscFListView(PetscFList list,PetscViewer viewer)
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
   PetscValidPointer(list,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  
+
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (!iascii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ASCII viewer supported");
 
@@ -472,7 +472,7 @@ PetscErrorCode  PetscFListView(PetscFList list,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFListGet"
 /*@C
    PetscFListGet - Gets an array the contains the entries in PetscFList, this is used
@@ -519,7 +519,7 @@ PetscErrorCode  PetscFListGet(PetscFList list,const char ***array,int *n)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFListPrintTypes"
 /*@C
    PetscFListPrintTypes - Prints the methods available.
@@ -563,7 +563,7 @@ PetscErrorCode  PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFListDuplicate"
 /*@
     PetscFListDuplicate - Creates a new list from a given object list.
@@ -593,7 +593,7 @@ PetscErrorCode  PetscFListDuplicate(PetscFList fl,PetscFList *nl)
       ierr = PetscStrcat(path,fl->name);CHKERRQ(ierr);
     } else {
       ierr = PetscStrcpy(path,fl->name);CHKERRQ(ierr);
-    }       
+    }
     ierr = PetscFListAdd(nl,path,fl->rname,fl->routine);CHKERRQ(ierr);
     fl   = fl->next;
   }
@@ -601,7 +601,7 @@ PetscErrorCode  PetscFListDuplicate(PetscFList fl,PetscFList *nl)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFListConcat"
 /*
     PetscFListConcat - joins name of a libary, and the path where it is located
@@ -654,7 +654,7 @@ struct _n_PetscOpFList {
 */
 static PetscOpFList   opallhead = 0;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscOpFListAdd"
 /*@C
    PetscOpFListAdd - Given a routine and a string id, saves that routine in the
@@ -674,7 +674,7 @@ static PetscOpFList   opallhead = 0;
    Notes:
    To remove a registered routine, pass in a PETSC_NULL url and fnc().
 
-   url can be of the form  [/path/libname[.so.1.0]:]functionname[()]  where items in [] denote optional 
+   url can be of the form  [/path/libname[.so.1.0]:]functionname[()]  where items in [] denote optional
 
    ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environment variable}
    occuring in url will be replaced with appropriate values.
@@ -700,9 +700,9 @@ PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
     entry->name    = fname;
     entry->routine = fnc;
     entry->numArgs = numArgs;
-    if(numArgs) {
+    if (numArgs) {
       ierr = PetscMalloc(sizeof(char*)*numArgs, &(entry->argTypes));    CHKERRQ(ierr);
-      for(i = 0; i < numArgs; ++i) {
+      for (i = 0; i < numArgs; ++i) {
         ierr = PetscStrallocpy(argTypes[i], &(entry->argTypes[i]));         CHKERRQ(ierr);
       }
     }
@@ -725,27 +725,27 @@ PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
     while (ne) {
       PetscBool  match;
       ierr = PetscStrcmp(ne->op,op,&match);CHKERRQ(ierr);
-      if(!match) goto next;
-      if(numArgs == ne->numArgs) 
+      if (!match) goto next;
+      if (numArgs == ne->numArgs)
         match = PETSC_TRUE;
-      else 
+      else
         match = PETSC_FALSE;
-      if(!match) goto next;
-      if(numArgs) {
-        for(i = 0; i < numArgs; ++i) {
+      if (!match) goto next;
+      if (numArgs) {
+        for (i = 0; i < numArgs; ++i) {
           ierr = PetscStrcmp(argTypes[i], ne->argTypes[i], &match);  CHKERRQ(ierr);
-          if(!match) goto next;
+          if (!match) goto next;
         }
       }
-      if(!url && !fnc) {
+      if (!url && !fnc) {
         /* remove this record */
-        if(e) e->next = ne->next;
+        if (e) e->next = ne->next;
         ierr = PetscFree(ne->op);    CHKERRQ(ierr);
         ierr = PetscFree(ne->url);   CHKERRQ(ierr);
         ierr = PetscFree(ne->path);  CHKERRQ(ierr);
         ierr = PetscFree(ne->name);  CHKERRQ(ierr);
-        if(numArgs) {
-          for(i = 0; i < numArgs; ++i) {
+        if (numArgs) {
+          for (i = 0; i < numArgs; ++i) {
             ierr = PetscFree(ne->argTypes[i]);  CHKERRQ(ierr);
           }
           ierr = PetscFree(ne->argTypes);       CHKERRQ(ierr);
@@ -769,9 +769,9 @@ PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
     ierr           = PetscNew(struct _n_PetscOpFList,&entry);           CHKERRQ(ierr);
     ierr           = PetscStrallocpy(op,&entry->op);                    CHKERRQ(ierr);
     entry->numArgs = numArgs;
-    if(numArgs) {
+    if (numArgs) {
       ierr = PetscMalloc(sizeof(char*)*numArgs, &(entry->argTypes));    CHKERRQ(ierr);
-      for(i = 0; i < numArgs; ++i) {
+      for (i = 0; i < numArgs; ++i) {
         ierr = PetscStrallocpy(argTypes[i], &(entry->argTypes[i]));         CHKERRQ(ierr);
       }
     }
@@ -786,7 +786,7 @@ PetscErrorCode  PetscOpFListAdd(MPI_Comm comm, PetscOpFList *fl,const char url[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscOpFListDestroy"
 /*@C
     PetscOpFListDestroy - Destroys a list of registered op routines.
@@ -831,7 +831,7 @@ PetscErrorCode  PetscOpFListDestroy(PetscOpFList *fl)
   while (entry) {
     next = entry->next;
     ierr = PetscFree(entry->op);  CHKERRQ(ierr);
-    for(i = 0; i < entry->numArgs; ++i) {
+    for (i = 0; i < entry->numArgs; ++i) {
       ierr = PetscFree(entry->argTypes[i]); CHKERRQ(ierr);
     }
     ierr = PetscFree(entry->argTypes);  CHKERRQ(ierr);
@@ -848,7 +848,7 @@ PetscErrorCode  PetscOpFListDestroy(PetscOpFList *fl)
 /*
    Destroys all the function lists that anyone has every registered, such as MatOpList, etc.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscOpFListDestroyAll"
 PetscErrorCode  PetscOpFListDestroyAll(void)
 {
@@ -865,7 +865,7 @@ PetscErrorCode  PetscOpFListDestroyAll(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscOpFListFind"
 /*@C
     PetscOpFListFind - Given a name, finds the matching op routine.
@@ -876,7 +876,7 @@ PetscErrorCode  PetscOpFListDestroyAll(void)
 .   fl       - pointer to list of known ops
 .   op       - operation name
 .   numArgs  - number of op arguments
--   argTypes - list of argument type names 
+-   argTypes - list of argument type names
 
 
     Output Parameters:
@@ -892,7 +892,7 @@ PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,PetscVoidFunctio
   PetscErrorCode ierr;
   PetscBool      match;
   PetscInt       i;
- 
+
   PetscFunctionBegin;
   PetscValidPointer(r,3);
   if (!op) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Attempting to find operation with null name");
@@ -901,16 +901,16 @@ PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,PetscVoidFunctio
   entry = fl;
   while (entry) {
     ierr = PetscStrcmp(entry->op,op,&match); CHKERRQ(ierr);
-    if(!match) goto next;
-    if(numArgs == entry->numArgs) 
+    if (!match) goto next;
+    if (numArgs == entry->numArgs)
       match = PETSC_TRUE;
     else
       match = PETSC_FALSE;
-    if(!match) goto next;
-    if(numArgs) {
-      for(i = 0; i < numArgs; ++i) {
+    if (!match) goto next;
+    if (numArgs) {
+      for (i = 0; i < numArgs; ++i) {
         ierr = PetscStrcmp(argTypes[i], entry->argTypes[i], &match);  CHKERRQ(ierr);
-        if(!match) goto next;
+        if (!match) goto next;
       }
     }
     break;
@@ -926,7 +926,7 @@ PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,PetscVoidFunctio
       ierr = PetscDLLibrarySym(comm,&PetscDLLibrariesLoaded,entry->path,entry->name,(void **)r);CHKERRQ(ierr);
       if (*r) {
         entry->routine = *r;
-      } 
+      }
     }
 #endif
   }
@@ -934,7 +934,7 @@ PetscErrorCode  PetscOpFListFind(MPI_Comm comm, PetscOpFList fl,PetscVoidFunctio
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscOpFListView"
 /*@C
    PetscOpFListView - prints out contents of a PetscOpFList
@@ -957,7 +957,7 @@ PetscErrorCode  PetscOpFListView(PetscOpFList list,PetscViewer viewer)
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
   PetscValidPointer(list,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  
+
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (!iascii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ASCII viewer supported");
 
@@ -966,8 +966,8 @@ PetscErrorCode  PetscOpFListView(PetscOpFList list,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer," %s: ",list->url); CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer, "%s(", list->op);    CHKERRQ(ierr);
-    for(i = 0; i < list->numArgs;++i) {
-      if(i > 0) {
+    for (i = 0; i < list->numArgs;++i) {
+      if (i > 0) {
         ierr = PetscViewerASCIIPrintf(viewer, ", "); CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer, "%s", list->argTypes[i]);    CHKERRQ(ierr);

@@ -58,7 +58,7 @@ int main(int Argc,char **Args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&comm_size);CHKERRQ(ierr);
 
   /* construct matrix */
-  if( comm_size == 1 ) {
+  if ( comm_size == 1 ) {
     ierr = DMCreateMatrix(da, MATSEQAIJ, &H);CHKERRQ(ierr);
   } else {
     ierr = DMCreateMatrix(da, MATMPIAIJ, &H);CHKERRQ(ierr);
@@ -68,8 +68,8 @@ int main(int Argc,char **Args)
   ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
 
   /* Assemble the matrix */
-  for( x=xs; x<xs+xm; x++ ) {
-    for( y=ys; y<ys+ym; y++ ) {
+  for ( x=xs; x<xs+xm; x++ ) {
+    for ( y=ys; y<ys+ym; y++ ) {
       /* each lattice point sets only the *forward* pointing parameters (right, down),
 	 i.e. Nabla_1^+ and Nabla_2^+.
 	 In this way we can use only local random number creation. That means
@@ -148,8 +148,8 @@ int main(int Argc,char **Args)
 /*   ierr = DMCreateMatrix(da, MATSEQAIJ, &perm);CHKERRQ(ierr); */
 /*   PetscInt row, col; */
 /*   PetscScalar one = 1.0; */
-/*   for(PetscInt i=0; i<n; i++) { */
-/*     for(PetscInt j=0; j<n; j++) { */
+/*   for (PetscInt i=0; i<n; i++) { */
+/*     for (PetscInt j=0; j<n; j++) { */
 /*       row = (i*n+j)*2; col = i*n+j; */
 /*       ierr = MatSetValues(perm, 1, &row, 1, &col, &one, INSERT_VALUES);CHKERRQ(ierr); */
 /*       row = (i*n+j)*2+1; col = i*n+j + n*n; */
@@ -241,7 +241,7 @@ PetscErrorCode computeMaxEigVal(Mat A, PetscInt its, PetscScalar *eig) {
   ierr = VecCopy(x, x0);CHKERRQ(ierr);
 
   ierr = MatMult(A, x, x_1);CHKERRQ(ierr);
-  for(i=0; i<its; i++) {
+  for (i=0; i<its; i++) {
     tmp = x; x = x_1; x_1 = tmp;
     ierr = MatMult(A, x, x_1);CHKERRQ(ierr);
   }

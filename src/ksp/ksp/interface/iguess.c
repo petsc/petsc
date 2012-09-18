@@ -17,8 +17,8 @@ typedef struct {
 } KSPFischerGuess_Method1;
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPFischerGuessCreate_Method1" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPFischerGuessCreate_Method1"
 PetscErrorCode  KSPFischerGuessCreate_Method1(KSP ksp,int  maxl,KSPFischerGuess_Method1 **ITG)
 {
   KSPFischerGuess_Method1 *itg;
@@ -40,8 +40,8 @@ PetscErrorCode  KSPFischerGuessCreate_Method1(KSP ksp,int  maxl,KSPFischerGuess_
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPFischerGuessDestroy_Method1" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPFischerGuessDestroy_Method1"
 PetscErrorCode  KSPFischerGuessDestroy_Method1(KSPFischerGuess_Method1 *itg)
 {
   PetscErrorCode ierr;
@@ -60,7 +60,7 @@ PetscErrorCode  KSPFischerGuessDestroy_Method1(KSPFischerGuess_Method1 *itg)
         Given a basis generated already this computes a new guess x from the new right hand side b
      Figures out the components of b in each btilde direction and adds them to x
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPFischerGuessFormGuess_Method1"
 PetscErrorCode  KSPFischerGuessFormGuess_Method1(KSPFischerGuess_Method1 *itg,Vec b,Vec x)
 {
@@ -69,7 +69,7 @@ PetscErrorCode  KSPFischerGuessFormGuess_Method1(KSPFischerGuess_Method1 *itg,Ve
 
   PetscFunctionBegin;
   PetscValidPointer(itg,2);
-  PetscValidHeaderSpecific(x,VEC_CLASSID,3);  
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
   ierr = VecMDot(b,itg->curl,itg->btilde,itg->alpha);CHKERRQ(ierr);
   if (itg->monitor) {
@@ -79,13 +79,13 @@ PetscErrorCode  KSPFischerGuessFormGuess_Method1(KSPFischerGuess_Method1 *itg,Ve
     }
     ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"\n");CHKERRQ(ierr);
   }
-  ierr = VecMAXPY(x,itg->curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);   
+  ierr = VecMAXPY(x,itg->curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);
   ierr = VecCopy(x,itg->guess);CHKERRQ(ierr);
   /* Note: do not change the b right hand side as is done in the publication */
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPFischerGuessUpdate_Method1"
 PetscErrorCode  KSPFischerGuessUpdate_Method1(KSPFischerGuess_Method1 *itg,Vec x)
 {
@@ -140,8 +140,8 @@ typedef struct {
   Vec         Ax,guess;
 } KSPFischerGuess_Method2;
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPFischerGuessCreate_Method2" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPFischerGuessCreate_Method2"
 PetscErrorCode  KSPFischerGuessCreate_Method2(KSP ksp,int  maxl,KSPFischerGuess_Method2 **ITG)
 {
   KSPFischerGuess_Method2 *itg;
@@ -163,8 +163,8 @@ PetscErrorCode  KSPFischerGuessCreate_Method2(KSP ksp,int  maxl,KSPFischerGuess_
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPFischerGuessDestroy_Method2" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPFischerGuessDestroy_Method2"
 PetscErrorCode  KSPFischerGuessDestroy_Method2(KSPFischerGuess_Method2 *itg)
 {
   PetscErrorCode ierr;
@@ -183,7 +183,7 @@ PetscErrorCode  KSPFischerGuessDestroy_Method2(KSPFischerGuess_Method2 *itg)
         Given a basis generated already this computes a new guess x from the new right hand side b
      Figures out the components of b in each btilde direction and adds them to x
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPFischerGuessFormGuess_Method2"
 PetscErrorCode  KSPFischerGuessFormGuess_Method2(KSPFischerGuess_Method2 *itg,Vec b,Vec x)
 {
@@ -192,7 +192,7 @@ PetscErrorCode  KSPFischerGuessFormGuess_Method2(KSPFischerGuess_Method2 *itg,Ve
 
   PetscFunctionBegin;
   PetscValidPointer(itg,2);
-  PetscValidHeaderSpecific(x,VEC_CLASSID,3);  
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
   ierr = VecMDot(b,itg->curl,itg->xtilde,itg->alpha);CHKERRQ(ierr);
   if (itg->monitor) {
@@ -202,13 +202,13 @@ PetscErrorCode  KSPFischerGuessFormGuess_Method2(KSPFischerGuess_Method2 *itg,Ve
     }
     ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"\n");CHKERRQ(ierr);
   }
-  ierr = VecMAXPY(x,itg->curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);   
+  ierr = VecMAXPY(x,itg->curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);
   ierr = VecCopy(x,itg->guess);CHKERRQ(ierr);
   /* Note: do not change the b right hand side as is done in the publication */
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPFischerGuessUpdate_Method2"
 PetscErrorCode  KSPFischerGuessUpdate_Method2(KSPFischerGuess_Method2 *itg,Vec x)
 {
@@ -223,7 +223,7 @@ PetscErrorCode  KSPFischerGuessUpdate_Method2(KSPFischerGuess_Method2 *itg,Vec x
     ierr = KSP_MatMult(itg->ksp,itg->mat,x,itg->Ax);CHKERRQ(ierr); /* norm = sqrt(x'Ax) */
     ierr = VecDot(x,itg->Ax,&norm);CHKERRQ(ierr);
     ierr = VecCopy(x,itg->xtilde[0]);CHKERRQ(ierr);
-    ierr = VecScale(itg->xtilde[0],1.0/PetscSqrtScalar(norm));CHKERRQ(ierr);          
+    ierr = VecScale(itg->xtilde[0],1.0/PetscSqrtScalar(norm));CHKERRQ(ierr);
     itg->curl = 1;
   } else {
     if (!curl) {
@@ -231,7 +231,7 @@ PetscErrorCode  KSPFischerGuessUpdate_Method2(KSPFischerGuess_Method2 *itg,Vec x
     } else {
       ierr = VecWAXPY(itg->xtilde[curl],-1.0,itg->guess,x);CHKERRQ(ierr);
     }
-    ierr = KSP_MatMult(itg->ksp,itg->mat,itg->xtilde[curl],itg->Ax);CHKERRQ(ierr); 
+    ierr = KSP_MatMult(itg->ksp,itg->mat,itg->xtilde[curl],itg->Ax);CHKERRQ(ierr);
     ierr = VecMDot(itg->Ax,curl,itg->xtilde,itg->alpha);CHKERRQ(ierr);
     for (i=0; i<curl; i++) itg->alpha[i] = -itg->alpha[i];
     ierr = VecMAXPY(itg->xtilde[curl],curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);
@@ -249,22 +249,22 @@ PetscErrorCode  KSPFischerGuessUpdate_Method2(KSPFischerGuess_Method2 *itg,Vec x
 }
 
 /* ---------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "KSPFischerGuessCreate" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPFischerGuessCreate"
 /*@C
     KSPFischerGuessCreate - Implements Paul Fischer's initial guess algorithm Method 1 and 2 for situations where
-    a linear system is solved repeatedly 
+    a linear system is solved repeatedly
 
   References:
       http://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19940020363_1994020363.pdf
 
-   Notes: the algorithm is different from the paper because we do not CHANGE the right hand side of the new 
+   Notes: the algorithm is different from the paper because we do not CHANGE the right hand side of the new
     problem and solve the problem with an initial guess of zero, rather we solve the original new problem
     with a nonzero initial guess (this is done so that the linear solver convergence tests are based on
     the original RHS.) But we use the xtilde = x - xguess as the new direction so that it is not
     mostly orthogonal to the previous solutions.
 
-    These are not intended to be used directly, they are called by KSP automatically when the 
+    These are not intended to be used directly, they are called by KSP automatically when the
     KSP option KSPSetFischerGuess(KSP,PetscInt,PetscInt) or -ksp_guess_fischer <int,int>
 
     Method 2 is only for positive definite matrices, since it uses the A norm.
@@ -294,7 +294,7 @@ PetscErrorCode  KSPFischerGuessCreate(KSP ksp,PetscInt method,PetscInt maxl,KSPF
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPFischerGuessSetFromOptions"
 PetscErrorCode  KSPFischerGuessSetFromOptions(KSPFischerGuess ITG)
 {
@@ -305,8 +305,8 @@ PetscErrorCode  KSPFischerGuessSetFromOptions(KSPFischerGuess ITG)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPFischerGuessDestroy" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPFischerGuessDestroy"
 PetscErrorCode  KSPFischerGuessDestroy(KSPFischerGuess *ITG)
 {
   PetscErrorCode  ierr;
@@ -324,7 +324,7 @@ PetscErrorCode  KSPFischerGuessDestroy(KSPFischerGuess *ITG)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPFischerGuessUpdate"
 PetscErrorCode  KSPFischerGuessUpdate(KSPFischerGuess itg,Vec x)
 {
@@ -339,7 +339,7 @@ PetscErrorCode  KSPFischerGuessUpdate(KSPFischerGuess itg,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPFischerGuessFormGuess"
 PetscErrorCode  KSPFischerGuessFormGuess(KSPFischerGuess itg,Vec b,Vec x)
 {
@@ -354,7 +354,7 @@ PetscErrorCode  KSPFischerGuessFormGuess(KSPFischerGuess itg,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPFischerGuessReset"
 /*
     KSPFischerGuessReset - This is called whenever KSPSetOperators() is called to tell the

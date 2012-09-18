@@ -110,7 +110,7 @@ PETSC_EXTERN PetscErrorCode ISStrideSetStride(IS,PetscInt,PetscInt,PetscInt);
 
 PETSC_EXTERN PetscErrorCode ISDestroy(IS*);
 PETSC_EXTERN PetscErrorCode ISSetPermutation(IS);
-PETSC_EXTERN PetscErrorCode ISPermutation(IS,PetscBool *); 
+PETSC_EXTERN PetscErrorCode ISPermutation(IS,PetscBool *);
 PETSC_EXTERN PetscErrorCode ISSetIdentity(IS);
 PETSC_EXTERN PetscErrorCode ISIdentity(IS,PetscBool *);
 PETSC_EXTERN PetscErrorCode ISContiguousLocal(IS,PetscInt,PetscInt,PetscInt*,PetscBool*);
@@ -160,7 +160,7 @@ PETSC_EXTERN PetscClassId IS_LTOGM_CLASSID;
 
 /*S
    ISLocalToGlobalMapping - mappings from an arbitrary
-      local ordering from 0 to n-1 to a global PETSc ordering 
+      local ordering from 0 to n-1 to a global PETSc ordering
       used by a vector or matrix.
 
    Level: intermediate
@@ -186,7 +186,7 @@ struct _p_ISLocalToGlobalMapping{
 typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
 
 /*E
-    ISGlobalToLocalMappingType - Indicates if missing global indices are 
+    ISGlobalToLocalMappingType - Indicates if missing global indices are
 
    IS_GTOLM_MASK - missing global indices are replaced with -1
    IS_GTOLM_DROP - missing global indices are dropped
@@ -236,12 +236,12 @@ PETSC_STATIC_INLINE PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMa
 
     Level: beginner
 
-$   IS_COLORING_GLOBAL - does not include the colors for ghost points, this is used when the function 
+$   IS_COLORING_GLOBAL - does not include the colors for ghost points, this is used when the function
 $                        is called synchronously in parallel. This requires generating a "parallel coloring".
 $   IS_COLORING_GHOSTED - includes colors for ghost points, this is used when the function can be called
 $                         seperately on individual processes with the ghost points already filled in. Does not
 $                         require a "parallel coloring", rather each process colors its local + ghost part.
-$                         Using this can result in much less parallel communication. In the paradigm of 
+$                         Using this can result in much less parallel communication. In the paradigm of
 $                         DMGetLocalVector() and DMGetGlobalVector() this could be called IS_COLORING_LOCAL
 
 .seealso: DMCreateColoring()
@@ -258,8 +258,8 @@ PETSC_EXTERN PetscErrorCode ISAllGatherColors(MPI_Comm,PetscInt,ISColoringValue*
    Level: intermediate
 
     Notes:
-        One should not access the *is records below directly because they may not yet 
-    have been created. One should use ISColoringGetIS() to make sure they are 
+        One should not access the *is records below directly because they may not yet
+    have been created. One should use ISColoringGetIS() to make sure they are
     created when needed.
 
     Developer Note: this is not a PetscObject

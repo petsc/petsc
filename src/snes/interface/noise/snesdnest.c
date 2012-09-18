@@ -200,7 +200,7 @@
     *info = 0;
     if (f_max == f_min) {
 	*info = 2;
-    } else /* if(complicated condition) */ {
+    } else /* if (complicated condition) */ {
 /* Computing MIN */
 	d__1 = PetscAbsScalar(f_max), d__2 = PetscAbsScalar(f_min);
 	if (f_max - f_min > PetscMin(d__1,d__2) * .1) {

@@ -25,7 +25,7 @@
 
 #if defined(PETSC_HAVE_PWD_H)
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetFullPath"
 /*@C
    PetscGetFullPath - Given a filename, returns the fully qualified file name.
@@ -113,7 +113,7 @@ PetscErrorCode  PetscGetFullPath(const char path[],char fullpath[],size_t flen)
   PetscFunctionReturn(0);
 }
 #elif defined(PETSC_HAVE__FULLPATH)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetFullPath"
 PetscErrorCode  PetscGetFullPath(const char path[],char fullpath[],size_t flen)
 {
@@ -122,7 +122,7 @@ PetscErrorCode  PetscGetFullPath(const char path[],char fullpath[],size_t flen)
   PetscFunctionReturn(0);
 }
 #else
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetFullPath"
 PetscErrorCode  PetscGetFullPath(const char path[],char fullpath[],size_t flen)
 {

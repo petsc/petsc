@@ -1,10 +1,10 @@
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
- solves. These are for block algorithms where the block sizes are on 
+ solves. These are for block algorithms where the block sizes are on
  the order of 2-6+.
 
-    There are TWO versions of the macros below. 
-    1) standard for MatScalar == PetscScalar use the standard BLAS for 
+    There are TWO versions of the macros below.
+    1) standard for MatScalar == PetscScalar use the standard BLAS for
        block size larger than 7 and
     2) handcoded Fortran single precision for the matrices, since BLAS
        does not have some arguments in single and some in double.
@@ -15,7 +15,7 @@
 #include <petscblaslapack.h>
 
 /*
-      These are C kernels,they are contained in 
+      These are C kernels,they are contained in
    src/mat/impls/baij/seq
 */
 
@@ -142,10 +142,10 @@ extern PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatS
 
 /*
 
-    A = A - B * C  A_gets_A_minus_B_times_C 
+    A = A - B * C  A_gets_A_minus_B_times_C
 
    A, B, C - square bs by bs arrays stored in column major order
-*/ 
+*/
 #define PetscKernel_A_gets_A_minus_B_times_C(bs,A,B,C) \
 { \
   PetscScalar  _mone = -1.0,_one = 1.0; \
@@ -155,10 +155,10 @@ extern PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatS
 
 /*
 
-    A = A + B^T * C  A_gets_A_plus_Btranspose_times_C 
+    A = A + B^T * C  A_gets_A_plus_Btranspose_times_C
 
    A, B, C - square bs by bs arrays stored in column major order
-*/ 
+*/
 #define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs,A,B,C) \
 { \
   PetscScalar  _one = 1.0; \
@@ -178,7 +178,7 @@ extern PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatS
   PetscScalar  _one = 1.0; \
   PetscBLASInt _ione = 1, _bbs = PetscBLASIntCast(bs);			\
   BLASgemv_("T",&(_bbs),&(_bbs),&_one,A,&(_bbs),w,&_ione,&_one,v,&_ione); \
-} 
+}
 
 /*
     v = v - A w  v_gets_v_minus_A_times_w
@@ -302,7 +302,7 @@ extern PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatS
   BLASgemv_("T",&_bbs,&_bncols,&_one,A,&_bbs,x,&_ione,&_one,z,&_ione); \
 }
 
-#else 
+#else
 /*
        Version that calls Fortran routines; can handle different precision
    of matrix (array) and vectors
@@ -310,9 +310,9 @@ extern PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatS
 /*
      These are Fortran kernels: They replace certain BLAS routines but
    have some arguments that may be single precision,rather than double
-   These routines are provided in src/fortran/kernels/sgemv.F 
-   They are pretty pitiful but get the job done. The intention is 
-   that for important block sizes (currently 1,2,3,4,5,6,7) custom inlined 
+   These routines are provided in src/fortran/kernels/sgemv.F
+   They are pretty pitiful but get the job done. The intention is
+   that for important block sizes (currently 1,2,3,4,5,6,7) custom inlined
    code is used.
 */
 
@@ -333,10 +333,10 @@ extern PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatS
 
 /*
 
-    A = A - B * C  A_gets_A_minus_B_times_C 
+    A = A - B * C  A_gets_A_minus_B_times_C
 
    A, B, C - square bs by bs arrays stored in column major order
-*/ 
+*/
 #define PetscKernel_A_gets_A_minus_B_times_C(bs,A,B,C) \
 { \
   msgemm_(&bs,A,B,C); \
@@ -389,7 +389,7 @@ extern PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatS
 {  \
   msgemv_(&bs,&bs,A,v,w);\
 }
-   
+
 /*
         z = A*x
 */
@@ -407,8 +407,8 @@ extern PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatS
 }
 
 /* These do not work yet */
-#define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs,A,B,C) 
-#define PetscKernel_v_gets_v_plus_Atranspose_times_w(bs,v,A,w) 
+#define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs,A,B,C)
+#define PetscKernel_v_gets_v_plus_Atranspose_times_w(bs,v,A,w)
 
 
 #endif

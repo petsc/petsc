@@ -86,7 +86,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){
-      for(i=xs; i<xs+xm; i++){
+      for (i=xs; i<xs+xm; i++){
 	if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){
           barray[k][j][i] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
 	} else {
@@ -129,7 +129,7 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,MatStructure *stflg,void *ctx
   
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){
-      for(i=xs; i<xs+xm; i++){
+      for (i=xs; i<xs+xm; i++){
         row.i = i; row.j = j; row.k = k;
 	if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){
           v[0] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);

@@ -1,9 +1,9 @@
 
 /*
   Defines a matrix-vector product for the MATMPIAIJCRL matrix class.
-  This class is derived from the MATMPIAIJ class and retains the 
-  compressed row storage (aka Yale sparse matrix format) but augments 
-  it with a column oriented storage that is more efficient for 
+  This class is derived from the MATMPIAIJ class and retains the
+  compressed row storage (aka Yale sparse matrix format) but augments
+  it with a column oriented storage that is more efficient for
   matrix vector products on Vector machines.
 
   CRL stands for constant row length (that is the same number of columns
@@ -114,11 +114,11 @@ PetscErrorCode MatAssemblyEnd_MPIAIJCRL(Mat A, MatAssemblyType mode)
 }
 
 extern PetscErrorCode MatMult_AIJCRL(Mat,Vec,Vec);
-extern PetscErrorCode MatDuplicate_AIJCRL(Mat,MatDuplicateOption,Mat*); 
+extern PetscErrorCode MatDuplicate_AIJCRL(Mat,MatDuplicateOption,Mat*);
 
-/* MatConvert_MPIAIJ_MPIAIJCRL converts a MPIAIJ matrix into a 
- * MPIAIJCRL matrix.  This routine is called by the MatCreate_MPIAIJCRL() 
- * routine, but can also be used to convert an assembled MPIAIJ matrix 
+/* MatConvert_MPIAIJ_MPIAIJCRL converts a MPIAIJ matrix into a
+ * MPIAIJCRL matrix.  This routine is called by the MatCreate_MPIAIJCRL()
+ * routine, but can also be used to convert an assembled MPIAIJ matrix
  * into a MPIAIJCRL one. */
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -159,14 +159,14 @@ EXTERN_C_END
 /*@C
    MatCreateMPIAIJCRL - Creates a sparse matrix of type MPIAIJCRL.
    This type inherits from AIJ, but stores some additional
-   information that is used to allow better vectorization of 
-   the matrix-vector product. At the cost of increased storage, the AIJ formatted 
-   matrix can be copied to a format in which pieces of the matrix are 
-   stored in ELLPACK format, allowing the vectorized matrix multiply 
-   routine to use stride-1 memory accesses.  As with the AIJ type, it is 
-   important to preallocate matrix storage in order to get good assembly 
+   information that is used to allow better vectorization of
+   the matrix-vector product. At the cost of increased storage, the AIJ formatted
+   matrix can be copied to a format in which pieces of the matrix are
+   stored in ELLPACK format, allowing the vectorized matrix multiply
+   routine to use stride-1 memory accesses.  As with the AIJ type, it is
+   important to preallocate matrix storage in order to get good assembly
    performance.
-   
+
    Collective on MPI_Comm
 
    Input Parameters:
@@ -174,11 +174,11 @@ EXTERN_C_END
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
--  nnz - array containing the number of nonzeros in the various rows 
+-  nnz - array containing the number of nonzeros in the various rows
          (possibly different for each row) or PETSC_NULL
 
    Output Parameter:
-.  A - the matrix 
+.  A - the matrix
 
    Notes:
    If nnz is given then nz is ignored

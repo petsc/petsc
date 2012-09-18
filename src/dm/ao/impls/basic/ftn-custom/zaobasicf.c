@@ -5,7 +5,7 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define aocreatebasic_   AOCREATEBASIC
 #define aocreatebasicis_ AOCREATEBASICIS
-#define aocreatememoryscalable_ AOCREATEMEMORYSCALABLE     
+#define aocreatememoryscalable_ AOCREATEMEMORYSCALABLE
 #define aocreatememoryscalableis_ AOCREATEMEMORYSCALABLEIS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define aocreatebasic_   aocreatebasic

@@ -83,14 +83,14 @@ c
 c Take care of the time step term on the diagonal
 c
 c     cfl = abs(dt)
-c     if(iramp.lt.0)then
+c     if (iramp.lt.0) then
 c       cfl = cfl1*res0/resc
-c       if(cfl.gt.cfl2)cfl=cfl2
-c       if(ntt.eq.1.and.irest.eq.0)cfl=10
+c       if (cfl.gt.cfl2) cfl=cfl2
+c       if (ntt.eq.1.and.irest.eq.0) cfl=10
 c     else
-c      if(dt.lt.0.0)cfl = cfl1
-c      if(dt.lt.0.0.and.iramp.gt.0.and.ntt.gt.iramp)cfl = cfl2
-c      if(dt.lt.0.0.and.iramp.gt.0.and.ntt.le.iramp)then
+c      if (dt.lt.0.0) cfl = cfl1
+c      if (dt.lt.0.0.and.iramp.gt.0.and.ntt.gt.iramp) cfl = cfl2
+c      if (dt.lt.0.0.and.iramp.gt.0.and.ntt.le.iramp) then
 c       cfl = cfl1 + (cfl2 - cfl1)*(ntt - 1)/iramp
 c      end if
 c     end if
@@ -130,7 +130,7 @@ c
       call ETOP(nvertices,qvec)
 c
       vconst = 1.0
-      if(ivisc.eq.0)vconst = 0.0
+      if (ivisc.eq.0) vconst = 0.0
       xmr = xmach/Re
       c512 = 5./12.*xmr*vconst
       flops = flops + 4.0
@@ -637,7 +637,7 @@ c
             eig3 = abs(ubar)
             flops = flops + 1521.0
 c
-            if(ubar+c.gt.0) then
+            if (ubar+c.gt.0) then
               eig1rL = ubarrL + crL
               eig1uL = ubaruL + cuL
               eig1vL = ubarvL + cvL
@@ -663,7 +663,7 @@ c
               flops = flops + 20.0
             endif
 c
-            if(ubar-c.gt.0) then
+            if (ubar-c.gt.0) then
               eig2rL = ubarrL - crL
               eig2uL = ubaruL - cuL
               eig2vL = ubarvL - cvL
@@ -689,7 +689,7 @@ c
               flops = flops + 20.0
             endif
 c
-            if(ubar.gt.0) then
+            if (ubar.gt.0) then
               eig3rL = ubarrL
               eig3uL = ubaruL
               eig3vL = ubarvL
@@ -2353,7 +2353,7 @@ c
 ! If this isn't the diagonal zero it out
 ! (This way we dont disturb the row for the continuity equation
 !
-!         if(j.ne.idiag)then
+!         if (j.ne.idiag) then
 !          A(j,1,1) = 0.0
 !          A(j,1,2) = 0.0
 !          A(j,1,3) = 0.0

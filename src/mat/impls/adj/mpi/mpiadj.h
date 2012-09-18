@@ -4,11 +4,11 @@
 #include <petsc-private/matimpl.h>
 
 
-/*  
+/*
   MATMPIAdj format - Compressed row storage for storing adjacency lists, and possibly weights
                      This is for grid reorderings (to reduce bandwidth)
                      grid partitionings, etc. This is NOT currently a dynamic data-structure.
-                     
+
 */
 
 typedef struct {

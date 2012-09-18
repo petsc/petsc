@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFOpen"
 /*@C
     PetscFOpen - Has the first process in the communicator open a file;
@@ -28,7 +28,7 @@
 
     Notes:
        PETSC_NULL (0), "stderr" or "stdout" may be passed in as the filename
-  
+
     Fortran Note:
     This routine is not supported in Fortran.
 
@@ -67,10 +67,10 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFClose"
 /*@
-    PetscFClose - Has the first processor in the communicator close a 
+    PetscFClose - Has the first processor in the communicator close a
     file; all others do nothing.
 
     Logically Collective on MPI_Comm
@@ -99,14 +99,14 @@ PetscErrorCode  PetscFClose(MPI_Comm comm,FILE *fd)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank && fd != PETSC_STDOUT && fd != PETSC_STDERR) {
     err = fclose(fd);
-    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
+    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
   }
   PetscFunctionReturn(0);
 }
 
 #if defined(PETSC_HAVE_POPEN)
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscPClose"
 /*@C
       PetscPClose - Closes (ends) a program on processor zero run with PetscPOpen()
@@ -147,10 +147,10 @@ PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd,PetscInt *rval)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscPOpen"
 /*@C
-      PetscPOpen - Runs a program on processor zero and sends either its input or output to 
+      PetscPOpen - Runs a program on processor zero and sends either its input or output to
           a file.
 
      Logically Collective on MPI_Comm, but only process 0 runs the command
@@ -192,7 +192,7 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
     ierr = PetscStrcat(command,machine);CHKERRQ(ierr);
     ierr = PetscStrcat(command," \" export DISPLAY=${DISPLAY}; ");CHKERRQ(ierr);
     /*
-        Copy program into command but protect the " with a \ in front of it 
+        Copy program into command but protect the " with a \ in front of it
     */
     ierr = PetscStrlen(command,&cnt);CHKERRQ(ierr);
     ierr = PetscStrlen(program,&len);CHKERRQ(ierr);
@@ -202,14 +202,14 @@ PetscErrorCode  PetscPOpen(MPI_Comm comm,const char machine[],const char program
       }
       command[cnt++] = program[i];
     }
-    command[cnt] = 0; 
+    command[cnt] = 0;
     ierr = PetscStrcat(command,"\"");CHKERRQ(ierr);
   } else {
     ierr = PetscStrcpy(command,program);CHKERRQ(ierr);
   }
 
   ierr = PetscStrreplace(comm,command,commandt,1024);CHKERRQ(ierr);
-    
+
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscInfo1(0,"Running command :%s\n",commandt);CHKERRQ(ierr);

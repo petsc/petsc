@@ -4,11 +4,11 @@
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSetPause" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSetPause"
 /*@
-   PetscDrawSetPause - Sets the amount of time that program pauses after 
-   a PetscDrawPause() is called. 
+   PetscDrawSetPause - Sets the amount of time that program pauses after
+   a PetscDrawPause() is called.
 
    Logically Collective on PetscDraw
 
@@ -19,7 +19,7 @@
    Level: intermediate
 
    Note:
-   By default the pause time is zero unless the -draw_pause option is given 
+   By default the pause time is zero unless the -draw_pause option is given
    during PetscDrawCreate().
 
    Concepts: drawing^waiting

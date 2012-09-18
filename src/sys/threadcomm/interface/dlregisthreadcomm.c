@@ -49,7 +49,7 @@ PetscErrorCode PetscThreadCommInitializePackage(const char *path)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if(PetscThreadCommPackageInitialized) PetscFunctionReturn(0);
+  if (PetscThreadCommPackageInitialized) PetscFunctionReturn(0);
   ierr = PetscLogEventRegister("ThreadCommRunKernel",  0, &ThreadComm_RunKernel);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("ThreadCommBarrier",    0, &ThreadComm_Barrier);CHKERRQ(ierr);
   ierr = PetscThreadCommInitialize();CHKERRQ(ierr);

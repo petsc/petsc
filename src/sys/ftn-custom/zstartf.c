@@ -1,5 +1,5 @@
 
-#include <petsc-private/fortranimpl.h> 
+#include <petsc-private/fortranimpl.h>
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscinitializefortran_       PETSCINITIALIZEFORTRAN
@@ -53,7 +53,7 @@ PetscErrorCode PetscInitializeFortran(void)
   petscsetcommonblock_(&c1,&c2);
   return 0;
 }
-  
+
 EXTERN_C_BEGIN
 
 void PETSC_STDCALL petscinitializefortran_(int *ierr)

@@ -13,8 +13,8 @@ typedef struct  {
   DMSlicedBlockFills *dfill,*ofill;
 } DM_Sliced;
 
-#undef __FUNCT__  
-#define __FUNCT__ "DMCreateMatrix_Sliced" 
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateMatrix_Sliced"
 PetscErrorCode  DMCreateMatrix_Sliced(DM dm, const MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
@@ -78,7 +78,7 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, const MatType mtype,Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSlicedSetGhosts"
 /*@C
     DMSlicedSetGhosts - Sets the global indices of other processes elements that will
@@ -114,7 +114,7 @@ PetscErrorCode  DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Ngh
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSlicedSetPreallocation"
 /*@C
     DMSlicedSetPreallocation - sets the matrix memory preallocation for matrices computed by DMSliced
@@ -127,7 +127,7 @@ PetscErrorCode  DMSlicedSetGhosts(DM dm,PetscInt bs,PetscInt nlocal,PetscInt Ngh
            submatrix  (same for all local rows)
 .    d_nnz - array containing the number of block nonzeros in the various block rows
            of the in diagonal portion of the local (possibly different for each block
-           row) or PETSC_NULL.  
+           row) or PETSC_NULL.
 .    o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
 -    o_nnz - array containing the number of nonzeros in the various block rows of the
@@ -157,7 +157,7 @@ PetscErrorCode  DMSlicedSetPreallocation(DM dm,PetscInt d_nz,const PetscInt d_nn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSlicedSetBlockFills_Private"
 static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *fill,DMSlicedBlockFills **inf)
 {
@@ -184,7 +184,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSlicedSetBlockFills"
 /*@C
     DMSlicedSetBlockFills - Sets the fill pattern in each block for a multi-component problem
@@ -217,7 +217,7 @@ PetscErrorCode  DMSlicedSetBlockFills(DM dm,const PetscInt *dfill,const PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Sliced"
 static PetscErrorCode  DMDestroy_Sliced(DM dm)
 {
@@ -233,7 +233,7 @@ static PetscErrorCode  DMDestroy_Sliced(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateGlobalVector_Sliced"
 static PetscErrorCode  DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)
 {
@@ -249,7 +249,7 @@ static PetscErrorCode  DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMGlobalToLocalBegin_Sliced"
 static PetscErrorCode  DMGlobalToLocalBegin_Sliced(DM da,Vec g,InsertMode mode,Vec l)
 {
@@ -263,7 +263,7 @@ static PetscErrorCode  DMGlobalToLocalBegin_Sliced(DM da,Vec g,InsertMode mode,V
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMGlobalToLocalEnd_Sliced"
 static PetscErrorCode  DMGlobalToLocalEnd_Sliced(DM da,Vec g,InsertMode mode,Vec l)
 {
@@ -288,7 +288,7 @@ static PetscErrorCode  DMGlobalToLocalEnd_Sliced(DM da,Vec g,InsertMode mode,Vec
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreate_Sliced"
 PetscErrorCode  DMCreate_Sliced(DM p)
 {
@@ -309,7 +309,7 @@ PetscErrorCode  DMCreate_Sliced(DM p)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSlicedCreate"
 /*@C
     DMSlicedCreate - Creates a DM object, used to manage data for a unstructured problem
@@ -321,8 +321,8 @@ EXTERN_C_END
 .   bs - the block size
 .   nlocal - number of vector entries on this process
 .   Nghosts - number of ghost points needed on this process
-.   ghosts - global indices of all ghost points for this process 
-.   d_nnz - matrix preallocation information representing coupling within this process 
+.   ghosts - global indices of all ghost points for this process
+.   d_nnz - matrix preallocation information representing coupling within this process
 -   o_nnz - matrix preallocation information representing coupling between this process and other processes
 
     Output Parameters:

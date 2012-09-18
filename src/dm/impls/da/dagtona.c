@@ -9,10 +9,10 @@
 
 #include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGlobalToNaturalAllCreate"
 /*@
-   DMDAGlobalToNaturalAllCreate - Creates a scatter context that maps from the 
+   DMDAGlobalToNaturalAllCreate - Creates a scatter context that maps from the
      global vector the entire vector to each processor in natural numbering
 
    Collective on DMDA
@@ -27,7 +27,7 @@
 
 .keywords: distributed array, global to local, begin, coarse problem
 
-.seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(), 
+.seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(),
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 @*/
 PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
@@ -52,14 +52,14 @@ PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
   ierr = ISCreateStride(((PetscObject)da)->comm,N,0,1,&from);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,N,0,&tmplocal);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,tmplocal,to,scatter);CHKERRQ(ierr);
-  ierr = VecDestroy(&tmplocal);CHKERRQ(ierr);  
-  ierr = VecDestroy(&global);CHKERRQ(ierr);  
+  ierr = VecDestroy(&tmplocal);CHKERRQ(ierr);
+  ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDANaturalAllToGlobalCreate"
 /*@
    DMDANaturalAllToGlobalCreate - Creates a scatter context that maps from a copy
@@ -77,7 +77,7 @@ PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
 
 .keywords: distributed array, global to local, begin, coarse problem
 
-.seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(), 
+.seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(),
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 @*/
 PetscErrorCode  DMDANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
@@ -103,8 +103,8 @@ PetscErrorCode  DMDANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
   ierr = ISCreateStride(((PetscObject)da)->comm,m,start,1,&to);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,M,0,&tmplocal);CHKERRQ(ierr);
   ierr = VecScatterCreate(tmplocal,from,global,to,scatter);CHKERRQ(ierr);
-  ierr = VecDestroy(&tmplocal);CHKERRQ(ierr);  
-  ierr = VecDestroy(&global);CHKERRQ(ierr);  
+  ierr = VecDestroy(&tmplocal);CHKERRQ(ierr);
+  ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   PetscFunctionReturn(0);

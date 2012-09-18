@@ -92,8 +92,8 @@ int main(int argc,char **args)
   /* Assemble matrix */
   for (i=start; i<end; i++) {
      indx = 0;
-     for(k=0;k<(p+1);++k) {
-       for(j=0;j<(p+1);++j) {
+     for (k=0;k<(p+1);++k) {
+       for (j=0;j<(p+1);++j) {
 	 idx[indx++] = p*(p*m+1)*(i/m) + p*(i % m) + k*(p*m+1) + j;
        }
      }
@@ -129,8 +129,8 @@ int main(int argc,char **args)
      x = h*(i % m);
      y = h*(i/m);
      indx = 0;
-     for(k=0;k<(p+1);++k) {
-       for(j=0;j<(p+1);++j) {
+     for (k=0;k<(p+1);++k) {
+       for (j=0;j<(p+1);++j) {
 	 idx[indx++] = p*(p*m+1)*(i/m) + p*(i % m) + k*(p*m+1) + j;
        }
      }
@@ -236,11 +236,11 @@ static PetscErrorCode Form1DElementMass(PetscReal H,PetscInt P,double* gqn,
   int indx;
 
   PetscFunctionBegin;
-  for(j=0;j<(P+1);++j) {
-    for(i=0;i<(P+1);++i) {
+  for (j=0;j<(P+1);++j) {
+    for (i=0;i<(P+1);++i) {
       indx = j*(P+1)+i;
       Me1D[indx] = 0.0;
-      for(k=0; k<(P+1);++k) {
+      for (k=0; k<(P+1);++k) {
 	Me1D[indx] += H*gqw[k]*polyBasisFunc(P,i,gqn,gqn[k])*polyBasisFunc(P,j,gqn,gqn[k]);
       }
     }
@@ -260,11 +260,11 @@ static PetscErrorCode Form1DElementStiffness(PetscReal H,PetscInt P,double* gqn,
   int indx;
 
   PetscFunctionBegin;
-  for(j=0;j<(P+1);++j) {
-    for(i=0;i<(P+1);++i) {
+  for (j=0;j<(P+1);++j) {
+    for (i=0;i<(P+1);++i) {
       indx = j*(P+1)+i;
       Ke1D[indx] = 0.0;
-      for(k=0; k<(P+1);++k) {
+      for (k=0; k<(P+1);++k) {
 	Ke1D[indx] += (1./H)*gqw[k]*derivPolyBasisFunc(P,i,gqn,gqn[k])*derivPolyBasisFunc(P,j,gqn,gqn[k]);
       }
     }
@@ -284,10 +284,10 @@ static PetscErrorCode Form2DElementMass(PetscInt P,PetscScalar *Me1D,PetscScalar
   int indx1,indx2,indx3;
 
   PetscFunctionBegin;;
-  for(j2=0;j2<(P+1);++j2) {
-    for(i2=0; i2<(P+1);++i2) {
-      for(j1=0;j1<(P+1);++j1) {
-	for(i1=0;i1<(P+1);++i1) {
+  for (j2=0;j2<(P+1);++j2) {
+    for (i2=0; i2<(P+1);++i2) {
+      for (j1=0;j1<(P+1);++j1) {
+	for (i1=0;i1<(P+1);++i1) {
 	  indx1 = j1*(P+1)+i1;
 	  indx2 = j2*(P+1)+i2;
 	  indx3 = (j2*(P+1)+j1)*(P+1)*(P+1)+(i2*(P+1)+i1);
@@ -311,10 +311,10 @@ static PetscErrorCode Form2DElementStiffness(PetscInt P,PetscScalar *Ke1D,PetscS
   int indx1,indx2,indx3;
 
   PetscFunctionBegin;
-  for(j2=0;j2<(P+1);++j2) {
-    for(i2=0; i2<(P+1);++i2) {
-      for(j1=0;j1<(P+1);++j1) {
-	for(i1=0;i1<(P+1);++i1) {
+  for (j2=0;j2<(P+1);++j2) {
+    for (i2=0; i2<(P+1);++i2) {
+      for (j1=0;j1<(P+1);++j1) {
+	for (i1=0;i1<(P+1);++i1) {
 	  indx1 = j1*(P+1)+i1;
 	  indx2 = j2*(P+1)+i2;
 	  indx3 = (j2*(P+1)+j1)*(P+1)*(P+1)+(i2*(P+1)+i1);
@@ -336,8 +336,8 @@ static PetscErrorCode FormNodalRhs(PetscInt P,PetscReal x,PetscReal y,PetscReal 
 
   PetscFunctionBegin;
   indx=0;
-  for(j=0;j<(P+1);++j) {
-    for(i=0;i<(P+1);++i) {
+  for (j=0;j<(P+1);++j) {
+    for (i=0;i<(P+1);++i) {
       r[indx] = src(x+H*nds[i],y+H*nds[j]);
       indx++;
     }
@@ -355,8 +355,8 @@ static PetscErrorCode FormNodalSoln(PetscInt P,PetscReal x,PetscReal y,PetscReal
 
   PetscFunctionBegin;
   indx=0;
-  for(j=0;j<(P+1);++j) {
-    for(i=0;i<(P+1);++i) {
+  for (j=0;j<(P+1);++j) {
+    for (i=0;i<(P+1);++i) {
       u[indx] = ubdy(x+H*nds[i],y+H*nds[j]);
       indx++;
     }
@@ -399,11 +399,11 @@ static PetscReal derivPolyBasisFunc(PetscInt order, PetscInt basis, PetscReal* x
     }
   }
   numerator = 0.;
-  for(j=0;j<(order+1);++j) {
-    if(j != basis) {
+  for (j=0;j<(order+1);++j) {
+    if (j != basis) {
       numtmp = 1.;
-      for(i=0;i<(order+1);++i) {
-	if(i!=basis && j!=i) {
+      for (i=0;i<(order+1);++i) {
+	if (i!=basis && j!=i) {
 	  numtmp *= (xval-xLocVal[i]);
 	}
       }
@@ -437,7 +437,7 @@ and weights of the Gauss-Lobatto-Legendre n-point quadrature formula.
   int j,m;
   double z1,z,xm,xl,q,qp,Ln,scale;
   double pi=3.1415926535897932385;
-  if(n==1) {
+  if (n==1) {
     x[0]=x1;   /* Scale the root to the desired interval, */
     x[1]=x2;   /* and put in its symmetric counterpart.   */
     w[0]=1.;   /* Compute the weight */
@@ -466,14 +466,14 @@ and weights of the Gauss-Lobatto-Legendre n-point quadrature formula.
       w[n-j]=w[j];                 /* and its symmetric counterpart. */
     }
   }
-  if(n%2==0) {
+  if (n%2==0) {
     qAndLEvaluation(n,0.0,&q,&qp,&Ln);
     x[n/2]=(x2-x1)/2.0;
     w[n/2]=2.0/(n*(n+1)*Ln*Ln);
   }
   /* scale the weights according to mapping from [-1,1] to [0,1] */
   scale = (x2-x1)/2.0;
-  for(j=0;j<=n;++j) w[j] = w[j]*scale;
+  for (j=0;j<=n;++j) w[j] = w[j]*scale;
 }
 
 
@@ -498,7 +498,7 @@ for Scientists and Engineers" by David A. Kopriva.
   Lnm1p = 0.0;
   Lnp = 1.0;
 
-  for(k=2; k<=n; ++k) {
+  for (k=2; k<=n; ++k) {
     Lnm2 = Lnm1;
     Lnm1 = *Ln;
     Lnm2p = Lnm1p;

@@ -201,7 +201,7 @@ namespace ALE {
             for (int fVertex=0; fVertex < faceSizeTri; ++fVertex)
               for (int cVertex=0; cVertex < faceSizeTri; ++cVertex)
                 if (indices[cVertex] == faceVerticesTri[ii+fVertex]) {
-                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  faceVertices->push_back((*origVertices)[cVertex]);
                   break;
                 } // if
             found = true;
@@ -244,7 +244,7 @@ namespace ALE {
             for (int fVertex=0; fVertex < faceSizeQuad; ++fVertex)
               for (int cVertex=0; cVertex < faceSizeQuad; ++cVertex)
                 if (indices[cVertex] == faceVerticesQuad[ii+fVertex]) {
-                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  faceVertices->push_back((*origVertices)[cVertex]);
                   break;
                 } // if
             found = true;
@@ -305,7 +305,7 @@ namespace ALE {
             for (int fVertex=0; fVertex < faceSizeHex; ++fVertex)
               for (int cVertex=0; cVertex < faceSizeHex; ++cVertex)
                 if (indices[cVertex] == faceVerticesHex[ii+fVertex]) {
-                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  faceVertices->push_back((*origVertices)[cVertex]);
                   break;
                 } // if
             found = true;
@@ -350,7 +350,7 @@ namespace ALE {
             for (int fVertex=0; fVertex < faceSizeTet; ++fVertex)
               for (int cVertex=0; cVertex < faceSizeTet; ++cVertex)
                 if (indices[cVertex] == faceVerticesTet[ii+fVertex]) {
-                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  faceVertices->push_back((*origVertices)[cVertex]);
                   break;
                 } // if
             found = true;
@@ -411,7 +411,7 @@ namespace ALE {
             for (int fVertex=0; fVertex < faceSizeQuadHex; ++fVertex)
               for (int cVertex=0; cVertex < faceSizeQuadHex; ++cVertex)
                 if (indices[cVertex] == faceVerticesQuadHex[ii+fVertex]) {
-                  faceVertices->push_back((*origVertices)[cVertex]); 
+                  faceVertices->push_back((*origVertices)[cVertex]);
                   break;
                 } // if
             found = true;
@@ -714,7 +714,7 @@ namespace ALE {
         const Obj<typename sieveAlg::supportArray>& faces = sieveAlg::nSupport(mesh, *sv_iter, depth-1);
         const typename sieveAlg::supportArray::iterator fBegin = faces->begin();
         const typename sieveAlg::supportArray::iterator fEnd   = faces->end();
-    
+
         if (debug) std::cout << "Checking submesh vertex " << *sv_iter << std::endl;
         for(typename sieveAlg::supportArray::iterator f_iter = fBegin; f_iter != fEnd; ++f_iter) {
           if (debug) std::cout << "  Checking face " << *f_iter << std::endl;
@@ -773,7 +773,7 @@ namespace ALE {
         sieve->support(*sv_iter, sV);
         const int         numCells = sV.getSize();
         const point_type *cells    = sV.getPoints();
-    
+
         if (debug) std::cout << "Checking submesh vertex " << *sv_iter << std::endl;
         for(int c = 0; c < numCells; ++c) {
           if (debug) std::cout << "  Checking cell " << cells[c] << std::endl;
@@ -958,7 +958,7 @@ namespace ALE {
         const typename sieve_type::traits::coneSequence::iterator vEnd     = vertices->end();
         //PointArray cell(vertices->begin(), vertices->end());
 
-        // For each vertex, gather 
+        // For each vertex, gather
         for(typename sieve_type::traits::coneSequence::iterator v_iter = vBegin; v_iter != vEnd; ++v_iter) {
           const Obj<typename sieve_type::traits::supportSequence>&     neighbors = sieve->support(*v_iter);
           const typename sieve_type::traits::supportSequence::iterator nBegin    = neighbors->begin();
@@ -973,7 +973,7 @@ namespace ALE {
         }
         // For each face
         // - determine if its legal
-        
+
         // - determine if its part of a neighboring cell
         // - if not, its a boundary face
         //subsets(cell, faceSize, inserter);
@@ -1003,7 +1003,7 @@ namespace ALE {
         const Obj<typename sieve_type::traits::supportSequence>&     support = sieveA->support(p);
         const typename sieve_type::traits::supportSequence::iterator begin   = support->begin();
         const typename sieve_type::traits::supportSequence::iterator end     = support->end();
-            
+
         for(typename sieve_type::traits::supportSequence::iterator s_iter = begin; s_iter != end; ++s_iter) {
           sieveB->addArrow(p, *s_iter, s_iter.color());
           next->insert(*s_iter);
@@ -1058,7 +1058,7 @@ namespace ALE {
 
         sieveA->support(p, sV);
         const typename SieveTypeA::point_type *support = sV.getPoints();
-            
+
         for(int s = 0; s < (int) sV.getSize(); ++s) {
           sieveB->addArrow(p, support[s]);
         }
@@ -1334,7 +1334,7 @@ namespace ALE {
 
       //int f = sieve->base()->size() + sieve->cap()->size();
       //ALE::Obj<PointSet> face = new PointSet();
-  
+
       // Create a sieve which captures the fault
       PetscLogEventBegin(CreateFaultMesh_Event,0,0,0,0);
       fault = ALE::Selection<ALE::Mesh>::submesh(mesh, groupField);
@@ -1360,7 +1360,7 @@ namespace ALE {
       const ALE::Obj<std::set<std::string> >& groupNames = mesh->getIntSections();
       Mesh::point_type newPoint = sieve->base()->size() + sieve->cap()->size();
       std::map<int,int> vertexRenumber;
-  
+
       for(Mesh::label_sequence::iterator v_iter = fVertices->begin(); v_iter != fVertices->end(); ++v_iter, ++newPoint) {
         vertexRenumber[*v_iter] = newPoint;
         if (debug) {std::cout << "Duplicating " << *v_iter << " to " << vertexRenumber[*v_iter] << std::endl;}

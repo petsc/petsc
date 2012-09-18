@@ -8,12 +8,12 @@ typedef struct { /* used by MatCreateMPIAIJSumSeqAIJ for reusing the merged matr
   PetscLayout    rowmap;
   PetscInt       **buf_ri,**buf_rj;
   PetscMPIInt    *len_s,*len_r,*id_r; /* array of length of comm->size, store send/recv matrix values */
-  PetscMPIInt    nsend,nrecv;  
+  PetscMPIInt    nsend,nrecv;
   PetscInt       *bi,*bj; /* i and j array of the local portion of mpi C (matrix product) - rename to ci, cj! */
   PetscInt       *owners_co,*coi,*coj; /* i and j array of (p->B)^T*A*P - used in the communication */
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
-} Mat_Merge_SeqsToMPI; 
+} Mat_Merge_SeqsToMPI;
 
 typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ() and MatMatMult_MPIAIJ_MPIAIJ() */
   PetscInt       *startsj_s,*startsj_r; /* used by MatGetBrowsOfAoCols_MPIAIJ */
@@ -35,7 +35,7 @@ typedef struct {
   Mat           A,B;                   /* local submatrices: A (diag part),
                                            B (off-diag part) */
   PetscMPIInt   size;                   /* size of communicator */
-  PetscMPIInt   rank;                   /* rank of proc in communicator */ 
+  PetscMPIInt   rank;                   /* rank of proc in communicator */
 
   /* The following variables are used for matrix assembly */
   PetscBool     donotstash;             /* PETSC_TRUE if off processor entries dropped */

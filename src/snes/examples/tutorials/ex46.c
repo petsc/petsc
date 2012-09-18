@@ -111,7 +111,7 @@ PetscScalar funcA(PetscScalar z, AppCtx *user)
   PetscScalar v = 1.0;
   PetscInt    i;
 
-  for(i = 0; i < user->m; ++i) {
+  for (i = 0; i < user->m; ++i) {
     v *= z;
   }
   return v;
@@ -124,7 +124,7 @@ PetscScalar funcADer(PetscScalar z, AppCtx *user)
   PetscScalar v = 1.0;
   PetscInt    i;
 
-  for(i = 0; i < user->m-1; ++i) {
+  for (i = 0; i < user->m-1; ++i) {
     v *= z;
   }
   return (PetscScalar)user->m*v;
@@ -234,7 +234,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
         v[2] = D*2.0*(hydhx + hxdhy) + K*(funcADer(x[j][i], user)*normGradZ - A/normGradZ)*hx*hy; col[2].j = row.j; col[2].i = row.i;
         v[3] = -D*hydhx + K*A*hx*hy/(2.0*normGradZ);                                              col[3].j = j;     col[3].i = i+1;
         v[4] = -D*hxdhy + K*A*hx*hy/(2.0*normGradZ);                                              col[4].j = j + 1; col[4].i = i;
-        for(k = 0; k < 5; ++k) {
+        for (k = 0; k < 5; ++k) {
           if (PetscIsInfOrNanScalar(v[k])) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FP, "Invalid residual: %g", PetscRealPart(v[k]));
         }
         ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);

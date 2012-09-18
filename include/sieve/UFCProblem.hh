@@ -28,9 +28,9 @@ namespace ALE {
       ufc::finite_element * _b_finite_element; //the thing upon which the cell integral is defined; however we want to crack it open for discretizations
       ufc::finite_element * _l_finite_element; //ditto
 
-      std::map<int, ufc::finite_element *> _b_sub_finite_elements; 
+      std::map<int, ufc::finite_element *> _b_sub_finite_elements;
       std::map<int, ufc::finite_element *> _l_sub_finite_elements;
-      
+
       ufc::shape _cell_shape;
 
       ufc::cell * _cell; //assume, for now, that the mesh has one cell type
@@ -51,7 +51,7 @@ namespace ALE {
       std::map<int, ufc::exterior_facet_integral *> _l_exterior_facet_integrals;
 
     public:
-      
+
       UFCHook(ufc::form * bform, ufc::form * lform) {
 
 	_bform = bform;
@@ -151,7 +151,7 @@ namespace ALE {
 	}
 	
       }
-      
+
       ~UFCHook() {
 	//remove all this stuff
 	delete _lform;
@@ -173,13 +173,13 @@ namespace ALE {
 	while (f_iter != f_iter_end) {
 	  delete f_iter->second;
 	  f_iter++;
-	}	 
+	}	
 	delete _cell->coordinates[0];
 	delete _cell->coordinates;
       }
 
       //accessors
-      
+
 
       void setCell(Obj<PETSC_MESH_TYPE> m, PETSC_MESH_TYPE::point_type c) {
 	//setup the cell object such that it contains the mesh cell given
@@ -205,7 +205,7 @@ namespace ALE {
 	      }
 	      vertex_index++;
 	  }
-	} 
+	}
       }
     };
 
@@ -238,7 +238,7 @@ namespace ALE {
 	} else throw Exception("UFCCell: Unsupported Shape");
       }
     };
-    
+
 #endif
 
     class UFCBoundaryCondition : public GeneralBoundaryCondition {
@@ -270,11 +270,11 @@ namespace ALE {
       void setFiniteElement(ufc::finite_element * finite_element) {
 	_finite_element = finite_element;
       }
-      
+
       ufc::finite_element * getFiniteElement() {
 	return _finite_element;
       }
-      
+
       void setCell(ufc::cell * cell) {
 	_cell = cell;
       }
@@ -310,7 +310,7 @@ namespace ALE {
 	return this->_finite_element->evaluate_dof(ufc_dof, *_function, *_cell);
       }
     };
-      
+
     class UFCDiscretization : public GeneralDiscretization {
       //implementation of the discretization class that provides UFC hooks.
     private:
@@ -322,7 +322,7 @@ namespace ALE {
       ufc::cell           * _cell;
       ufc::finite_element * _finite_element;  //this will typically be a subelement.
       ufc::function * _rhs_function;          //TODO: generalize this further
- 
+
     public:
       UFCDiscretization(MPI_Comm comm, int debug = 1) : GeneralDiscretization(comm, debug) {
       }
@@ -353,9 +353,9 @@ namespace ALE {
 	  offset += this->getNumDof(0);
 	  //we know the reorder; do it!
 	  int offset = 0;
-	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[1] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[2] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[0] + i] = offset; 
+	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[1] + i] = offset;
+	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[2] + i] = offset;
+	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[0] + i] = offset;
 	} else if (this->getFiniteElement()->cell_shape() == ufc::triangle) {
 	  closure_offsets[0] = 0;
 	  offset += this->getNumDof(2);
@@ -374,11 +374,11 @@ namespace ALE {
 	  //we know the reorder; do it!
 	  int offset = 0;
 	  //this order is checked -- and appears to be right
-	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[4] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[5] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[6] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[2] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[3] + i] = offset; 
+	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[4] + i] = offset;
+	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[5] + i] = offset;
+	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[6] + i] = offset;
+	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[2] + i] = offset;
+	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[3] + i] = offset;
 	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[1] + i] = offset;
  	  for (int i = 0; i < this->getNumDof(2); i++, offset++) reorder[closure_offsets[0] + i] = offset;
 	  //TET!
@@ -415,21 +415,21 @@ namespace ALE {
 	  offset += this->getNumDof(0);
 	  //we know the reorder; do it!
 	  int offset = 0;
-	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[11] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[12] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[13] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[14] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[10] + i] = offset; 
+	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[11] + i] = offset;
+	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[12] + i] = offset;
+	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[13] + i] = offset;
+	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[14] + i] = offset;
+	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[10] + i] = offset;
 	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[9] + i] = offset;
- 	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[6] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[8] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[7] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[5] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(2); i++, offset++) reorder[closure_offsets[4] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(2); i++, offset++) reorder[closure_offsets[3] + i] = offset; 
+ 	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[6] + i] = offset;
+	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[8] + i] = offset;
+	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[7] + i] = offset;
+	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[5] + i] = offset;
+	  for (int i = 0; i < this->getNumDof(2); i++, offset++) reorder[closure_offsets[4] + i] = offset;
+	  for (int i = 0; i < this->getNumDof(2); i++, offset++) reorder[closure_offsets[3] + i] = offset;
 	  for (int i = 0; i < this->getNumDof(2); i++, offset++) reorder[closure_offsets[2] + i] = offset;
- 	  for (int i = 0; i < this->getNumDof(2); i++, offset++) reorder[closure_offsets[1] + i] = offset; 
- 	  for (int i = 0; i < this->getNumDof(3); i++, offset++) reorder[closure_offsets[0] + i] = offset; 
+ 	  for (int i = 0; i < this->getNumDof(2); i++, offset++) reorder[closure_offsets[1] + i] = offset;
+ 	  for (int i = 0; i < this->getNumDof(3); i++, offset++) reorder[closure_offsets[0] + i] = offset;
 	} else {
 	  throw Exception("UFCDiscretization->createReordering(): unsupported cell geometry");
 	}
@@ -452,7 +452,7 @@ namespace ALE {
       virtual const int * getReorder() {
 	return _closure2data;
       }
- 
+
       void setRHSFunction(ufc::function * function) {
 	_rhs_function = function;
       }
@@ -463,12 +463,12 @@ namespace ALE {
 
       virtual double evaluateRHS(int dof) {
 
-	//our notion of a degree of freedom in this case is a little different from the one used by UFC; they have the whole dimension of the vector space as 
+	//our notion of a degree of freedom in this case is a little different from the one used by UFC; they have the whole dimension of the vector space as
 	//one DOF with multiple coefficients; for the sake of being able to loop independent of the vector space here we split it up.
 
 	int ufc_dof;
 	if (_cell == PETSC_NULL) throw Exception("UFCBoundaryCondition->integrateDual: cell is not initialized");
-	//TODO reordering 
+	//TODO reordering
 	ufc_dof = this->getReorder()[dof];
 	//switch the order
 
@@ -543,7 +543,7 @@ namespace ALE {
       virtual void setIntegral(ufc::cell_integral * integral) {
 	_integral = integral;
       }
-      
+
       virtual ufc::cell_integral * getIntegral () {
 	return _integral;
       }
@@ -583,7 +583,7 @@ namespace ALE {
     //TODO: interior; exterior integral forms; these will have their own reordering notion.
 
     class UFCFormSubProblem : public GenericFormSubProblem {
-      
+
       //Data and helper functions:
 
     private:
@@ -603,10 +603,10 @@ namespace ALE {
 	_cell = cell;  //yeargh!
 	_full_finite_element = finite_element;
       }
-      
+
       UFCFormSubProblem(MPI_Comm comm, ufc::form * b_form, ufc::form * l_form, int debug = 0) : GenericFormSubProblem(comm, debug){
 	//set up the discretizations, integrals, and other things; discretization-level things like boundary conditions must be set separately of course.
-	//set the main finite element, the sub-elements, and 
+	//set the main finite element, the sub-elements, and
       }
 
       ufc::cell * getCell() {
@@ -624,14 +624,14 @@ namespace ALE {
       virtual void createReorder () {
 	/*
 	  GOAL: keep all interface-level things (in the other file) in *closure* order.
-	  
+	
 
-	  The UFC ordering is assumed to go: 
+	  The UFC ordering is assumed to go:
 	  1. discretization 1 entry 0 reordered per-cell like UFC
 	     discretization 1 entry 1 ...
 	  2. discretization 2 reordered per-cell like UFC
 	  ... etc
-	  
+	
 	  So, we first pull apart each discretization and reorder (based upon the indices of that discretization and the rank of the form, then based upon the discretization
 
 	  Then pass the overall reorder to each integral to make all of this go smoothly.
@@ -683,7 +683,7 @@ namespace ALE {
       }
 
       ~UFCFormSubProblem(){};
-      
+
     };
   }
 }

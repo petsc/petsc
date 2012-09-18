@@ -9,10 +9,10 @@
 PetscBool  UseMPE = PETSC_FALSE;
 PetscBool  PetscBeganMPE = PETSC_FALSE;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLogMPEBegin"
 /*@C
-   PetscLogMPEBegin - Turns on MPE logging of events. This creates large log files 
+   PetscLogMPEBegin - Turns on MPE logging of events. This creates large log files
    and slows the program down.
 
    Collective over PETSC_COMM_WORLD
@@ -22,7 +22,7 @@ PetscBool  PetscBeganMPE = PETSC_FALSE;
              with PETSC_USE_LOG)
 
    Notes:
-   A related routine is PetscLogBegin (with the options key -log), which is 
+   A related routine is PetscLogBegin (with the options key -log), which is
    intended for production runs since it logs only flop rates and object
    creation (and should not significantly slow the programs).
 
@@ -38,7 +38,7 @@ PetscErrorCode  PetscLogMPEBegin(void)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-    
+
   PetscFunctionBegin;
   /* Do MPE initialization */
   if (!MPE_Initialized_logging()) { /* This function exists in mpich 1.1.2 and higher */
@@ -53,7 +53,7 @@ PetscErrorCode  PetscLogMPEBegin(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLogMPEDump"
 /*@C
    PetscLogMPEDump - Dumps the MPE logging info to file for later use with Upshot.
@@ -104,14 +104,14 @@ const char *(PetscRGBColor[PETSC_RGB_COLOR_MAX]) = {
   "DarkTurquoise:  ",
   "DeepPink:       ",
   "DarkKhaki:      ",
-  "DimGray:        ", 
+  "DimGray:        ",
   "DodgerBlue:     ",
   "GreenYellow:    ",
   "HotPink:        ",
   "IndianRed:      ",
   "LavenderBlush:  ",
   "LawnGreen:      ",
-  "LemonChiffon:   ", 
+  "LemonChiffon:   ",
   "LightCoral:     ",
   "LightCyan:      ",
   "LightPink:      ",
@@ -130,11 +130,11 @@ const char *(PetscRGBColor[PETSC_RGB_COLOR_MAX]) = {
   "OliveDrab:      "
 };
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLogGetRGBColor"
 /*@C
   PetscLogGetRGBColor - This routine returns a rgb color useable with PetscLogEventRegister()
-  
+
   Not collective. Maybe it should be?
 
   Output Parameter

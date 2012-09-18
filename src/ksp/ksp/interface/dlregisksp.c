@@ -11,7 +11,7 @@ const char *const PCPARMSGlobalTypes[] = {"RAS","SCHUR","BJ","PCPARMSGlobalType"
 const char *const PCPARMSLocalTypes[]  = {"ILU0","ILUK","ILUT","ARMS","PCPARMSLocalType","PC_PARMS_",0};
 
 static PetscBool  PCPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFinalizePackage"
 /*@C
   PCFinalizePackage - This function destroys everything in the Petsc interface to the characteristics package. It is
@@ -31,7 +31,7 @@ PetscErrorCode  PCFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCInitializePackage"
 /*@C
   PCInitializePackage - This function initializes everything in the PC package. It is called
@@ -46,7 +46,7 @@ PetscErrorCode  PCFinalizePackage(void)
 .keywords: PC, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  PCInitializePackage(const char path[]) 
+PetscErrorCode  PCInitializePackage(const char path[])
 {
   char              logList[256];
   char             *className;
@@ -104,7 +104,7 @@ const char *const KSPConvergedReasons_Shifted[] = {"DIVERGED_INDEFINITE_MAT","DI
 const char *const*KSPConvergedReasons = KSPConvergedReasons_Shifted + 10;
 
 static PetscBool  KSPPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPFinalizePackage"
 /*@C
   KSPFinalizePackage - This function destroys everything in the Petsc interface to the KSP package. It is
@@ -124,7 +124,7 @@ PetscErrorCode  KSPFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPInitializePackage"
 /*@C
   KSPInitializePackage - This function initializes everything in the KSP package. It is called
@@ -139,7 +139,7 @@ PetscErrorCode  KSPFinalizePackage(void)
 .keywords: KSP, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  KSPInitializePackage(const char path[]) 
+PetscErrorCode  KSPInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
@@ -179,7 +179,7 @@ PetscErrorCode  KSPInitializePackage(const char path[])
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscksp"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.

@@ -3,7 +3,7 @@
 #include <../src/mat/impls/mffd/mffdimpl.h>
 #include <petsc-private/matimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMFFDComputeJacobian"
 /*@C
    MatMFFDComputeJacobian - Tells the matrix-free Jacobian object the new location at which
@@ -22,8 +22,8 @@
 
    Level: developer
 
-   Warning: 
-      If MatMFFDSetBase() is ever called on jac then this routine will NO longer get 
+   Warning:
+      If MatMFFDSetBase() is ever called on jac then this routine will NO longer get
     the x from the SNES object and MatMFFDSetBase() must from that point on be used to
     change the base vector x.
 
@@ -52,10 +52,10 @@ EXTERN_C_BEGIN
 PetscErrorCode MatMFFDSetBase_MFFD(Mat,Vec,Vec);
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_SNESMF"
 /*
-   MatAssemblyEnd_SNESMF - Calls MatAssemblyEnd_MFFD() and then sets the 
+   MatAssemblyEnd_SNESMF - Calls MatAssemblyEnd_MFFD() and then sets the
     base from the SNES context
 
 */
@@ -80,7 +80,7 @@ EXTERN_C_BEGIN
     This routine resets the MatAssemblyEnd() for the MatMFFD created from MatCreateSNESMF() so that it NO longer
   uses the solution in the SNES object to update the base. See the warning in MatCreateSNESMF().
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetBase_SNESMF"
 PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
 {
@@ -93,7 +93,7 @@ PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateSNESMF"
 /*@
    MatCreateSNESMF - Creates a matrix-free matrix context for use with
@@ -111,8 +111,8 @@ EXTERN_C_END
 
    Level: advanced
 
-   Warning: 
-      If MatMFFDSetBase() is ever called on jac then this routine will NO longer get 
+   Warning:
+      If MatMFFDSetBase() is ever called on jac then this routine will NO longer get
     the x from the SNES object and MatMFFDSetBase() must from that point on be used to
     change the base vector x.
 
@@ -123,7 +123,7 @@ EXTERN_C_END
 .seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin()
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateMFFD(),
           MatMFFDGetH(), MatMFFDRegisterDynamic), MatMFFDComputeJacobian()
- 
+
 @*/
 PetscErrorCode  MatCreateSNESMF(SNES snes,Mat *J)
 {

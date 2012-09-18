@@ -50,7 +50,7 @@ int main(int argc,char **args) {
   ierr = PetscObjectCompose((PetscObject)viz, "mesh", mesh);   CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)viz, "rho",  rho);    CHKERRQ(ierr);
 
-  for(i = 0; i < numIter; ++i) {
+  for (i = 0; i < numIter; ++i) {
     ierr = PetscShellCall(viz, "viewRho");              CHKERRQ(ierr); 
   }
   /**/

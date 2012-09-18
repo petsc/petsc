@@ -1,14 +1,14 @@
 
-/* 
+/*
    Code for manipulating distributed regular 1d arrays in parallel.
-   This file was created by Peter Mell   6/30/95    
+   This file was created by Peter Mell   6/30/95
 */
 
 #include <petsc-private/daimpl.h>     /*I  "petscdmda.h"   I*/
 
 const char *const DMDABoundaryTypes[] = {"BOUNDARY_NONE","BOUNDARY_GHOSTED","BOUNDARY_PERIODIC","DMDA_",0};
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMView_DA_1d"
 PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
 {
@@ -61,7 +61,7 @@ PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
     if (!rank) {
       PetscInt xmin_tmp;
       ymin = 0.0; ymax = 0.3;
-      
+
       /* ADIC doesn't like doubles in a for loop */
       for (xmin_tmp =0; xmin_tmp < dd->M; xmin_tmp++) {
          ierr = PetscDrawLine(draw,(double)xmin_tmp,ymin,(double)xmin_tmp,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
@@ -101,7 +101,7 @@ PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMView_DA_Private"
 /*
     Processes command line options to determine if/how a DMDA
@@ -114,7 +114,7 @@ PetscErrorCode DMView_DA_Private(DM da)
   PetscViewer    view;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DMDA viewing options","DMDA");CHKERRQ(ierr); 
+  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DMDA viewing options","DMDA");CHKERRQ(ierr);
     ierr = PetscOptionsBool("-da_view","Print information about the DMDA's distribution","DMView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
     if (flg1) {
       ierr = PetscViewerASCIIGetStdout(((PetscObject)da)->comm,&view);CHKERRQ(ierr);
@@ -127,7 +127,7 @@ PetscErrorCode DMView_DA_Private(DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetUp_DA_1D"
 PetscErrorCode  DMSetUp_DA_1D(DM da)
 {
@@ -169,9 +169,9 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
     if ((M-1) < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array is too small for stencil! %D %D",M-1,s);
   }
 
-  /* 
-     Determine locally owned region 
-     xs is the first local node number, x is the number of local nodes 
+  /*
+     Determine locally owned region
+     xs is the first local node number, x is the number of local nodes
   */
   if (!lx) {
     ierr = PetscMalloc(m*sizeof(PetscInt), &dd->lx);CHKERRQ(ierr);
@@ -315,7 +315,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   dd->base      = xs;
   da->ops->view = DMView_DA_1d;
 
-  /* 
+  /*
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
@@ -332,23 +332,23 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDACreate1d"
 /*@C
-   DMDACreate1d - Creates an object that will manage the communication of  one-dimensional 
+   DMDACreate1d - Creates an object that will manage the communication of  one-dimensional
    regular array data that is distributed across some processors.
 
    Collective on MPI_Comm
 
    Input Parameters:
 +  comm - MPI communicator
-.  bx - type of ghost cells at the boundary the array should have, if any. Use 
+.  bx - type of ghost cells at the boundary the array should have, if any. Use
           DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, or DMDA_BOUNDARY_PERIODIC.
-.  M - global dimension of the array (use -M to indicate that it may be set to a different value 
+.  M - global dimension of the array (use -M to indicate that it may be set to a different value
             from the command line with -da_grid_x <M>)
 .  dof - number of degrees of freedom per node
 .  s - stencil width
--  lx - array containing number of nodes in the X direction on each processor, 
+-  lx - array containing number of nodes in the X direction on each processor,
         or PETSC_NULL. If non-null, must be of length as the number of processes in the MPI_Comm.
 
    Output Parameter:
@@ -357,7 +357,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
    Options Database Key:
 +  -da_view - Calls DMView() at the conclusion of DMDACreate1d()
 .  -da_grid_x <nx> - number of grid points in x direction; can set if M < 0
-.  -da_refine_x <rx> - refinement factor 
+.  -da_refine_x <rx> - refinement factor
 -  -da_refine <n> - refine the DMDA n times before creating it, if M < 0
 
    Level: beginner

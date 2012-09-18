@@ -76,9 +76,9 @@ PetscErrorCode Create1dLaplacian(PetscInt n,Mat *mat)
 
   ierr = MatGetOwnershipRange(*mat,&loc_start,&loc_end);CHKERRQ(ierr);
   for (i=loc_start; i<loc_end; i++) {
-    if(i>0)   { j=i-1; ierr = MatSetValues(*mat,1,&i,1,&j,&mone,INSERT_VALUES);CHKERRQ(ierr); }
+    if (i>0)   { j=i-1; ierr = MatSetValues(*mat,1,&i,1,&j,&mone,INSERT_VALUES);CHKERRQ(ierr); }
     ierr = MatSetValues(*mat,1,&i,1,&i,&two,INSERT_VALUES);CHKERRQ(ierr);
-    if(i<n-1) { j=i+1; ierr = MatSetValues(*mat,1,&i,1,&j,&mone,INSERT_VALUES);CHKERRQ(ierr); }
+    if (i<n-1) { j=i+1; ierr = MatSetValues(*mat,1,&i,1,&j,&mone,INSERT_VALUES);CHKERRQ(ierr); }
   }
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

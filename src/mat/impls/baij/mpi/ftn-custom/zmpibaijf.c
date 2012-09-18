@@ -6,7 +6,7 @@
 #define matcreatebaij_                   MATCREATEBAIJ
 #define matmpibaijsetpreallocation_      MATMPIBAIJSETPREALLOCATION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define matmpibaijgetseqbaij_            matmpibaijgetseqbaij          
+#define matmpibaijgetseqbaij_            matmpibaijgetseqbaij
 #define matcreatebaij_                   matcreatebaij
 #define matmpibaijsetpreallocation_      matmpibaijsetpreallocation
 #endif

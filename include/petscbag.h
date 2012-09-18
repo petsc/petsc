@@ -18,12 +18,12 @@ $      } MyParameters;
 $
 $      PetscBag     bag;
 $      MyParameters *params;
-$      
+$
 $      ierr = PetscBagCreate(PETSC_COMM_WORLD,sizeof(MyParameters),&bag);
 $      ierr = PetscBagGetData(bag,(void **)&params);
 $      ierr = PetscBagSetName(bag,"MyParameters");
 $      ierr = PetscBagRegisterInt(bag,&params.height,22,"height","Height of the water tower");
-$       
+$
 
 .seealso:  PetscBagSetName(), PetscBagGetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterBool(), PetscBagRegisterScalar()

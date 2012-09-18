@@ -1,6 +1,6 @@
 
-/*  
-   Defines the abstract operations on AO (application orderings) 
+/*
+   Defines the abstract operations on AO (application orderings)
 */
 #include <../src/dm/ao/aoimpl.h>      /*I "petscao.h" I*/
 
@@ -8,8 +8,8 @@
 PetscClassId  AO_CLASSID;
 PetscLogEvent  AO_PetscToApplication, AO_ApplicationToPetsc;
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOView" 
+#undef __FUNCT__
+#define __FUNCT__ "AOView"
 /*@C
    AOView - Displays an application ordering.
 
@@ -29,8 +29,8 @@ PetscLogEvent  AO_PetscToApplication, AO_ApplicationToPetsc;
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
 -     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
+         the file.  All other processors send their
+         data to the first processor to print.
 
    The user can open an alternative visualization context with
    PetscViewerASCIIOpen() - output to a specified file.
@@ -51,8 +51,8 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AODestroy" 
+#undef __FUNCT__
+#define __FUNCT__ "AODestroy"
 /*@C
    AODestroy - Destroys an application ordering.
 
@@ -88,10 +88,10 @@ PetscErrorCode  AODestroy(AO *ao)
 
 #include <../src/vec/is/impls/general/general.h>
 /* ---------------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "AOPetscToApplicationIS" 
+#undef __FUNCT__
+#define __FUNCT__ "AOPetscToApplicationIS"
 /*@
-   AOPetscToApplicationIS - Maps an index set in the PETSc ordering to 
+   AOPetscToApplicationIS - Maps an index set in the PETSc ordering to
    the application-defined ordering.
 
    Collective on AO and IS
@@ -104,8 +104,8 @@ PetscErrorCode  AODestroy(AO *ao)
 
    Notes:
    The index set cannot be of type stride or block
-   
-   Any integers in ia[] that are negative are left unchanged. This 
+
+   Any integers in ia[] that are negative are left unchanged. This
          allows one to convert, for example, neighbor lists that use negative
          entries to indicate nonexistent neighbors due to boundary conditions
          etc.
@@ -133,8 +133,8 @@ PetscErrorCode  AOPetscToApplicationIS(AO ao,IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOApplicationToPetscIS" 
+#undef __FUNCT__
+#define __FUNCT__ "AOApplicationToPetscIS"
 /*@
    AOApplicationToPetscIS - Maps an index set in the application-defined
    ordering to the PETSc ordering.
@@ -149,8 +149,8 @@ PetscErrorCode  AOPetscToApplicationIS(AO ao,IS is)
 
    Note:
    The index set cannot be of type stride or block
-   
-   Any integers in ia[] that are negative are left unchanged. This 
+
+   Any integers in ia[] that are negative are left unchanged. This
    allows one to convert, for example, neighbor lists that use negative
    entries to indicate nonexistent neighbors due to boundary conditions, etc.
 
@@ -176,10 +176,10 @@ PetscErrorCode  AOApplicationToPetscIS(AO ao,IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOPetscToApplication" 
+#undef __FUNCT__
+#define __FUNCT__ "AOPetscToApplication"
 /*@
-   AOPetscToApplication - Maps a set of integers in the PETSc ordering to 
+   AOPetscToApplication - Maps a set of integers in the PETSc ordering to
    the application-defined ordering.
 
    Collective on AO
@@ -192,7 +192,7 @@ PetscErrorCode  AOApplicationToPetscIS(AO ao,IS is)
    Level: beginner
 
    Note:
-   Any integers in ia[] that are negative are left unchanged. This 
+   Any integers in ia[] that are negative are left unchanged. This
    allows one to convert, for example, neighbor lists that use negative
    entries to indicate nonexistent neighbors due to boundary conditions, etc.
 
@@ -214,8 +214,8 @@ PetscErrorCode  AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOApplicationToPetsc" 
+#undef __FUNCT__
+#define __FUNCT__ "AOApplicationToPetsc"
 /*@
    AOApplicationToPetsc - Maps a set of integers in the application-defined
    ordering to the PETSc ordering.
@@ -233,7 +233,7 @@ PetscErrorCode  AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
    Level: beginner
 
    Note:
-   Any integers in ia[] that are negative are left unchanged. This 
+   Any integers in ia[] that are negative are left unchanged. This
    allows one to convert, for example, neighbor lists that use negative
    entries to indicate nonexistent neighbors due to boundary conditions, etc.
 
@@ -255,7 +255,7 @@ PetscErrorCode  AOApplicationToPetsc(AO ao,PetscInt n,PetscInt ia[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOPetscToApplicationPermuteInt"
 /*@
   AOPetscToApplicationPermuteInt - Permutes an array of blocks of integers
@@ -291,7 +291,7 @@ PetscErrorCode  AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt a
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOApplicationToPetscPermuteInt"
 /*@
   AOApplicationToPetscPermuteInt - Permutes an array of blocks of integers
@@ -328,7 +328,7 @@ PetscErrorCode  AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt a
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOPetscToApplicationPermuteReal"
 /*@
   AOPetscToApplicationPermuteReal - Permutes an array of blocks of reals
@@ -365,7 +365,7 @@ PetscErrorCode  AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOApplicationToPetscPermuteReal"
 /*@
   AOApplicationToPetscPermuteReal - Permutes an array of blocks of reals
@@ -402,8 +402,8 @@ PetscErrorCode  AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOSetFromOptions" 
+#undef __FUNCT__
+#define __FUNCT__ "AOSetFromOptions"
 /*@C
     AOSetFromOptions - Sets AO options from the options database.
 
@@ -434,17 +434,17 @@ PetscErrorCode AOSetFromOptions(AO ao)
       ierr = AOSetType(ao,type);CHKERRQ(ierr);
     } else if (!((PetscObject)ao)->type_name){
       ierr = AOSetType(ao,def);CHKERRQ(ierr);
-    } 
+    }
 
     /* not used here, but called so will go into help messaage */
     ierr = PetscOptionsName("-ao_view","Print detailed information on AO used","AOView",0);CHKERRQ(ierr);
- 
+
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOSetIS" 
+#undef __FUNCT__
+#define __FUNCT__ "AOSetIS"
 /*@C
    AOSetIS - Sets the IS associated with the application ordering.
 
@@ -456,7 +456,7 @@ PetscErrorCode AOSetFromOptions(AO ao)
 -  ispetsc - index set that defines another ordering (may be PETSC_NULL to use the
              natural ordering)
 
-   Notes: 
+   Notes:
    The index sets isapp and ispetsc are used only for creation of ao.
 
    Level: beginner
@@ -481,8 +481,8 @@ PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "AOCreate" 
+#undef __FUNCT__
+#define __FUNCT__ "AOCreate"
 /*@C
    AOCreate - Creates an application ordering.
 

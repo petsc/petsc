@@ -1,7 +1,7 @@
 
 #include <petsc-private/matimpl.h>  /*I   "petscmat.h"  I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatAXPY"
 /*@
    MatAXPY - Computes Y = a*X + Y.
@@ -12,7 +12,7 @@
 +  a - the scalar multiplier
 .  X - the first matrix
 .  Y - the second matrix
--  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN 
+-  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN
          or SUBSET_NONZERO_PATTERN (nonzeros of X is a subset of Y's)
 
    Level: intermediate
@@ -27,7 +27,7 @@ PetscErrorCode  MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscInt       m1,m2,n1,n2;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,MAT_CLASSID,3); 
+  PetscValidHeaderSpecific(X,MAT_CLASSID,3);
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
   PetscValidLogicalCollectiveScalar(Y,a,2);
   ierr = MatGetSize(X,&m1,&n1);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ PetscErrorCode  MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatAXPY_Basic"
 PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
@@ -85,7 +85,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatAXPY_BasicWithPreallocation"
 PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
@@ -129,7 +129,7 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatShift"
 /*@
    MatShift - Computes Y =  Y + a I, where a is a PetscScalar and I is the identity matrix.
@@ -138,7 +138,7 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B,Mat Y,PetscScalar a,Mat X,Ma
 
    Input Parameters:
 +  Y - the matrices
--  a - the PetscScalar 
+-  a - the PetscScalar
 
    Level: intermediate
 
@@ -154,7 +154,7 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
   if (!Y->assembled) SETERRQ(((PetscObject)Y)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (Y->factortype) SETERRQ(((PetscObject)Y)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (Y->factortype) SETERRQ(((PetscObject)Y)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(Y,1);
 
   if (Y->ops->shift) {
@@ -176,7 +176,7 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDiagonalSet_Default"
 PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
 {
@@ -198,7 +198,7 @@ PetscErrorCode  MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDiagonalSet"
 /*@
    MatDiagonalSet - Computes Y = Y + D, where D is a diagonal matrix
@@ -233,7 +233,7 @@ PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatAYPX"
 /*@
    MatAYPX - Computes Y = a*Y + X.
@@ -244,7 +244,7 @@ PetscErrorCode  MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 +  a - the PetscScalar multiplier
 .  Y - the first matrix
 .  X - the second matrix
--  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN or SUBSET_NONZERO_PATTERN 
+-  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN or SUBSET_NONZERO_PATTERN
 
    Level: intermediate
 
@@ -271,7 +271,7 @@ PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatComputeExplicitOperator"
 /*@
     MatComputeExplicitOperator - Computes the explicit matrix
@@ -285,7 +285,7 @@ PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
 .   mat - the explict preconditioned operator
 
     Notes:
-    This computation is done by applying the operators to columns of the 
+    This computation is done by applying the operators to columns of the
     identity matrix.
 
     Currently, this routine uses a dense matrix format when 1 processor
@@ -293,7 +293,7 @@ PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
     and is recommended for use only with relatively small systems.
 
     Level: advanced
-   
+
 .keywords: Mat, compute, explicit, operator
 
 @*/
@@ -354,7 +354,7 @@ PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
 }
 
 /* Get the map xtoy which is used by MatAXPY() in the case of SUBSET_NONZERO_PATTERN */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatAXPYGetxtoy_Private"
 PetscErrorCode MatAXPYGetxtoy_Private(PetscInt m,PetscInt *xi,PetscInt *xj,PetscInt *xgarray, PetscInt *yi,PetscInt *yj,PetscInt *ygarray, PetscInt **xtoy)
 {
@@ -363,24 +363,24 @@ PetscErrorCode MatAXPYGetxtoy_Private(PetscInt m,PetscInt *xi,PetscInt *xj,Petsc
 
   PetscFunctionBegin;
   ierr = PetscMalloc(xi[m]*sizeof(PetscInt),&x2y);CHKERRQ(ierr);
-  i = 0;    
+  i = 0;
   for (row=0; row<m; row++){
     nz = xi[1] - xi[0];
     jy = 0;
     for (jx=0; jx<nz; jx++,jy++){
       if (xgarray && ygarray){
         xcol = xgarray[xj[*xi + jx]];
-        ycol = ygarray[yj[*yi + jy]];  
+        ycol = ygarray[yj[*yi + jy]];
       } else {
         xcol = xj[*xi + jx];
         ycol = yj[*yi + jy];  /* col index for y */
       }
       while ( ycol < xcol ) {
-        jy++; 
+        jy++;
         if (ygarray){
-          ycol = ygarray[yj[*yi + jy]]; 
+          ycol = ygarray[yj[*yi + jy]];
         } else {
-          ycol = yj[*yi + jy]; 
+          ycol = yj[*yi + jy];
         }
       }
       if (xcol != ycol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"X matrix entry (%D,%D) is not in Y matrix",row,ycol);

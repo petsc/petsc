@@ -7,8 +7,8 @@ PetscClassId  MAT_COARSEN_CLASSID;
 PetscFList MatCoarsenList = 0;
 PetscBool  MatCoarsenRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatCoarsenRegister" 
+#undef __FUNCT__
+#define __FUNCT__ "MatCoarsenRegister"
 PetscErrorCode  MatCoarsenRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(MatCoarsen))
 {
   PetscErrorCode ierr;
@@ -20,8 +20,8 @@ PetscErrorCode  MatCoarsenRegister(const char sname[],const char path[],const ch
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatCoarsenRegisterDestroy" 
+#undef __FUNCT__
+#define __FUNCT__ "MatCoarsenRegisterDestroy"
 /*@C
    MatCoarsenRegisterDestroy - Frees the list of coarsen routines.
 
@@ -43,10 +43,10 @@ PetscErrorCode  MatCoarsenRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCoarsenGetType"
 /*@C
-   MatCoarsenGetType - Gets the Coarsen method type and name (as a string) 
+   MatCoarsenGetType - Gets the Coarsen method type and name (as a string)
         from the coarsen context.
 
    Not collective
@@ -72,8 +72,8 @@ PetscErrorCode  MatCoarsenGetType(MatCoarsen coarsen,const MatCoarsenType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatCoarsenApply" 
+#undef __FUNCT__
+#define __FUNCT__ "MatCoarsenApply"
 /*@
    MatCoarsenApply - Gets a coarsen for a matrix.
 
@@ -88,7 +88,7 @@ PetscErrorCode  MatCoarsenGetType(MatCoarsen coarsen,const MatCoarsenType *type)
 
    Options Database Keys:
    To specify the coarsen through the options database, use one of
-   the following 
+   the following
 $    -mat_coarsen_type mis
    To see the coarsen result
 $    -mat_coarsen_view
@@ -112,7 +112,7 @@ PetscErrorCode  MatCoarsenApply( MatCoarsen coarser )
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
   PetscValidPointer(coarser,2);
   if (!coarser->graph->assembled) SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (coarser->graph->factortype) SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (coarser->graph->factortype) SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   if (!coarser->ops->apply) SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatCoarsenSetFromOptions() or MatCoarsenSetType()");
   ierr = PetscLogEventBegin(MAT_Coarsen,coarser,0,0,0);CHKERRQ(ierr);
   ierr = (*coarser->ops->apply)(coarser);CHKERRQ(ierr);
@@ -127,8 +127,8 @@ PetscErrorCode  MatCoarsenApply( MatCoarsen coarser )
   }
   PetscFunctionReturn(0);
 }
- 
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "MatCoarsenSetAdjacency"
 /*@
    MatCoarsenSetAdjacency - Sets the adjacency graph (matrix) of the thing to be
@@ -155,10 +155,10 @@ PetscErrorCode  MatCoarsenSetAdjacency( MatCoarsen agg, Mat adj )
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCoarsenSetStrictAggs"
 /*@
-   MatCoarsenSetStrictAggs - 
+   MatCoarsenSetStrictAggs -
 
    Not Collective on MatCoarsen and Mat
 
@@ -180,10 +180,10 @@ PetscErrorCode MatCoarsenSetStrictAggs( MatCoarsen agg, PetscBool str )
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCoarsenSetVerbose"
 /*@
-   MatCoarsenSetVerbose - 
+   MatCoarsenSetVerbose -
 
    Not Collective on MatCoarsen and Mat
 
@@ -205,7 +205,7 @@ PetscErrorCode MatCoarsenSetVerbose( MatCoarsen agg, PetscInt vv )
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCoarsenDestroy"
 /*@
    MatCoarsenDestroy - Destroys the coarsen context.
@@ -234,15 +234,15 @@ PetscErrorCode  MatCoarsenDestroy( MatCoarsen *agg )
     ierr = (*(*agg)->ops->destroy)((*agg));CHKERRQ(ierr);
   }
 
-  if( (*agg)->agg_lists ) {
-    ierr = PetscCDDestroy( (*agg)->agg_lists );  CHKERRQ(ierr); 
+  if ( (*agg)->agg_lists ) {
+    ierr = PetscCDDestroy( (*agg)->agg_lists );  CHKERRQ(ierr);
   }
 
   ierr = PetscHeaderDestroy(agg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCoarsenCreate"
 /*@
    MatCoarsenCreate - Creates a coarsen context.
@@ -250,7 +250,7 @@ PetscErrorCode  MatCoarsenDestroy( MatCoarsen *agg )
    Collective on MPI_Comm
 
    Input Parameter:
-.   comm - MPI communicator 
+.   comm - MPI communicator
 
    Output Parameter:
 .  newcrs - location to put the context
@@ -282,9 +282,9 @@ PetscErrorCode  MatCoarsenCreate( MPI_Comm comm, MatCoarsen *newcrs )
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCoarsenView"
-/*@C 
+/*@C
    MatCoarsenView - Prints the coarsen data structure.
 
    Collective on MatCoarsen
@@ -300,8 +300,8 @@ PetscErrorCode  MatCoarsenCreate( MPI_Comm comm, MatCoarsen *newcrs )
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
 -     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
+         the file.  All other processors send their
+         data to the first processor to print.
 
    The user can open alternative visualization contexts with
 .     PetscViewerASCIIOpen() - output to a specified file
@@ -339,7 +339,7 @@ PetscErrorCode  MatCoarsenView(MatCoarsen agg,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCoarsenSetType"
 /*@C
    MatCoarsenSetType - Sets the type of aggregator to use
@@ -394,7 +394,7 @@ PetscErrorCode  MatCoarsenSetType( MatCoarsen coarser, const MatCoarsenType type
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCoarsenSetGreedyOrdering"
 /*@C
    MatCoarsenSetGreedyOrdering - Sets the weights for vertices for a coarsen.
@@ -403,7 +403,7 @@ PetscErrorCode  MatCoarsenSetType( MatCoarsen coarser, const MatCoarsenType type
 
    Input Parameters:
 +  coarser - the coarsen context
--  perm - vertex ordering of (greedy) algorithm 
+-  perm - vertex ordering of (greedy) algorithm
 
    Level: beginner
 
@@ -422,7 +422,7 @@ PetscErrorCode MatCoarsenSetGreedyOrdering( MatCoarsen coarser, const IS perm )
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCoarsenGetData"
 /*@C
    MatCoarsenGetData - Sets the weights for vertices for a coarsen.
@@ -447,19 +447,19 @@ PetscErrorCode MatCoarsenGetData( MatCoarsen coarser, PetscCoarsenData **llist )
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
 
-  if( !coarser->agg_lists ) {
+  if ( !coarser->agg_lists ) {
     SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"No linked list - generate it or call ApplyCoarsen");
   }
   *llist = coarser->agg_lists;
   coarser->agg_lists = 0; /* giving up ownership */
-  
+
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCoarsenSetFromOptions"
 /*@
-   MatCoarsenSetFromOptions - Sets various coarsen options from the 
+   MatCoarsenSetFromOptions - Sets various coarsen options from the
         options database.
 
    Collective on MatCoarsen
@@ -503,7 +503,7 @@ PetscErrorCode MatCoarsenSetFromOptions( MatCoarsen coarser )
   if (!((PetscObject)coarser)->type_name) {
     ierr = MatCoarsenSetType(coarser,def);CHKERRQ(ierr);
   }
-  
+
   if (coarser->ops->setfromoptions) {
     ierr = (*coarser->ops->setfromoptions)(coarser);CHKERRQ(ierr);
   }

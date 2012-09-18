@@ -98,7 +98,7 @@ PetscInt main(PetscInt argc,char **args)
     for (i=2; i<5; i++){
       DIM = i;
       ierr = PetscMalloc(i*sizeof(PetscInt),&dim);CHKERRQ(ierr);
-      for(k=0;k<i;k++){
+      for (k=0;k<i;k++){
         dim[k]=30;
       }
       N *= dim[i-1];

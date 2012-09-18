@@ -351,7 +351,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     ierr = SNESNCGComputeYtJtF_Private(snes, X, F, dX, W, G, &dXdotF);CHKERRQ(ierr);
   }
    */
-  for(i = 1; i < maxits + 1; i++) {
+  for (i = 1; i < maxits + 1; i++) {
     lsSuccess = PETSC_TRUE;
     /* some update types require the old update direction or conjugate direction */
     if (ncg->type != SNES_NCG_FR) {

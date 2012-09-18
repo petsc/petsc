@@ -4,7 +4,7 @@
 
 #include <petsc-private/matimpl.h>
 
-/*  
+/*
     Struct header shared by SeqAIJ, SeqBAIJ and SeqSBAIJ matrix formats
 */
 #define SEQAIJHEADER(datatype)	\
@@ -35,14 +35,14 @@
   PetscScalar       *solve_work;      /* work space used in MatSolve */                    \
   IS                row, col, icol;   /* index sets, used for reorderings */ \
   PetscBool         pivotinblocks;    /* pivot inside factorization of each diagonal block */ \
-  Mat               parent             /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....); 
+  Mat               parent             /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....);
                                          means that this shares some data structures with the parent including diag, ilen, imax, i, j */
 
 typedef struct {
   MatTransposeColoring      matcoloring;
   Mat                       Bt_den;  /* dense matrix of B^T */
   Mat                       ABt_den; /* dense matrix of A*B^T */
-  PetscBool                 usecoloring; 
+  PetscBool                 usecoloring;
   PetscErrorCode (*destroy)(Mat);
 } Mat_MatMatTransMult;
 
@@ -60,7 +60,7 @@ typedef struct {
   PetscErrorCode (*destroy)(Mat);
 } Mat_RARt;
 
-/*  
+/*
   MATSEQAIJ format - Compressed row storage (also called Yale sparse matrix
   format) or compressed sparse row (CSR).  The i[] and j[] arrays start at 0. For example,
   j[i[k]+p] is the pth column in row k.  Note that the diagonal
@@ -103,7 +103,7 @@ typedef struct {
   PetscScalar      fshift,omega;                   /* last used omega and fshift */
 
   ISColoring       coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
-  
+
   PetscScalar      *matmult_abdense;     /* used by MatMatMult() */
   Mat_PtAP         *ptap;                /* used by MatPtAP() */
 } Mat_SeqAIJ;
@@ -111,7 +111,7 @@ typedef struct {
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSeqXAIJFreeAIJ"
 PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j,PetscInt **i)
 {
@@ -319,14 +319,14 @@ xv  += 4; xi += 4; nnz -= 4; }}}
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
 #define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) {\
 PetscInt __i,__i1,__i2;\
-for(__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
+for (__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
 sum -= (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);}\
 if (nnz & 0x1) sum -= xv[__i] * r[xi[__i]];}
 
 #else
 #define PetscSparseDenseMinusDot(sum,r,xv,xi,nnz) {\
 PetscInt __i;\
-for(__i=0;__i<nnz;__i++) sum -= xv[__i] * r[xi[__i]];}
+for (__i=0;__i<nnz;__i++) sum -= xv[__i] * r[xi[__i]];}
 #endif
 
 
@@ -366,14 +366,14 @@ xv  += 4; xi += 4; nnz -= 4; }}}
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
 #define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) {\
 PetscInt __i,__i1,__i2;\
-for(__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
+for (__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
 sum += (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);}\
 if (nnz & 0x1) sum += xv[__i] * r[xi[__i]];}
 
 #else
 #define PetscSparseDensePlusDot(sum,r,xv,xi,nnz) {\
  PetscInt __i;\
-for(__i=0;__i<nnz;__i++) sum += xv[__i] * r[xi[__i]];}
+for (__i=0;__i<nnz;__i++) sum += xv[__i] * r[xi[__i]];}
 #endif
 
 #endif

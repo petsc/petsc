@@ -1,13 +1,13 @@
 
 /*
-   This provides a simple shell for Fortran (and C programmers) to 
+   This provides a simple shell for Fortran (and C programmers) to
   create their own preconditioner without writing much interface code.
 */
 
 #include <petsc-private/pcimpl.h>        /*I "petscpc.h" I*/
-#include <petsc-private/vecimpl.h>  
+#include <petsc-private/vecimpl.h>
 
-EXTERN_C_BEGIN 
+EXTERN_C_BEGIN
 typedef struct {
   void           *ctx;                     /* user provided contexts for preconditioner */
   PetscErrorCode (*destroy)(PC);
@@ -23,7 +23,7 @@ typedef struct {
 } PC_Shell;
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellGetContext"
 /*@C
     PCShellGetContext - Returns the user-provided context associated with a shell PC
@@ -40,7 +40,7 @@ EXTERN_C_END
 
     Notes:
     This routine is intended for use within various shell routines
-    
+
 .keywords: PC, shell, get, context
 
 .seealso: PCShellSetContext()
@@ -52,14 +52,14 @@ PetscErrorCode  PCShellGetContext(PC pc,void **ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidPointer(ctx,2); 
+  PetscValidPointer(ctx,2);
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCSHELL,&flg);CHKERRQ(ierr);
-  if (!flg) *ctx = 0; 
-  else      *ctx = ((PC_Shell*)(pc->data))->ctx; 
+  if (!flg) *ctx = 0;
+  else      *ctx = ((PC_Shell*)(pc->data))->ctx;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetContext"
 /*@
     PCShellSetContext - sets the context for a shell PC
@@ -93,7 +93,7 @@ PetscErrorCode  PCShellSetContext(PC pc,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Shell"
 static PetscErrorCode PCSetUp_Shell(PC pc)
 {
@@ -106,7 +106,7 @@ static PetscErrorCode PCSetUp_Shell(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_Shell"
 static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
 {
@@ -119,7 +119,7 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyBA_Shell"
 static PetscErrorCode PCApplyBA_Shell(PC pc,PCSide side,Vec x,Vec y,Vec w)
 {
@@ -132,7 +132,7 @@ static PetscErrorCode PCApplyBA_Shell(PC pc,PCSide side,Vec x,Vec y,Vec w)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPreSolve_Shell"
 static PetscErrorCode PCPreSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
 {
@@ -145,7 +145,7 @@ static PetscErrorCode PCPreSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPostSolve_Shell"
 static PetscErrorCode PCPostSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
 {
@@ -158,7 +158,7 @@ static PetscErrorCode PCPostSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyTranspose_Shell"
 static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 {
@@ -171,7 +171,7 @@ static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyRichardson_Shell"
 static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt it,PetscBool  guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
@@ -184,7 +184,7 @@ static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_Shell"
 static PetscErrorCode PCDestroy_Shell(PC pc)
 {
@@ -200,7 +200,7 @@ static PetscErrorCode PCDestroy_Shell(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_Shell"
 static PetscErrorCode PCView_Shell(PC pc,PetscViewer viewer)
 {
@@ -224,7 +224,7 @@ static PetscErrorCode PCView_Shell(PC pc,PetscViewer viewer)
 
 /* ------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetDestroy_Shell"
 PetscErrorCode  PCShellSetDestroy_Shell(PC pc, PetscErrorCode (*destroy)(PC))
 {
@@ -237,7 +237,7 @@ PetscErrorCode  PCShellSetDestroy_Shell(PC pc, PetscErrorCode (*destroy)(PC))
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetSetUp_Shell"
 PetscErrorCode  PCShellSetSetUp_Shell(PC pc, PetscErrorCode (*setup)(PC))
 {
@@ -252,7 +252,7 @@ PetscErrorCode  PCShellSetSetUp_Shell(PC pc, PetscErrorCode (*setup)(PC))
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetApply_Shell"
 PetscErrorCode  PCShellSetApply_Shell(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
 {
@@ -265,7 +265,7 @@ PetscErrorCode  PCShellSetApply_Shell(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetApplyBA_Shell"
 PetscErrorCode  PCShellSetApplyBA_Shell(PC pc,PetscErrorCode (*applyBA)(PC,PCSide,Vec,Vec,Vec))
 {
@@ -280,7 +280,7 @@ PetscErrorCode  PCShellSetApplyBA_Shell(PC pc,PetscErrorCode (*applyBA)(PC,PCSid
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetPreSolve_Shell"
 PetscErrorCode  PCShellSetPreSolve_Shell(PC pc,PetscErrorCode (*presolve)(PC,KSP,Vec,Vec))
 {
@@ -295,7 +295,7 @@ PetscErrorCode  PCShellSetPreSolve_Shell(PC pc,PetscErrorCode (*presolve)(PC,KSP
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetPostSolve_Shell"
 PetscErrorCode  PCShellSetPostSolve_Shell(PC pc,PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec))
 {
@@ -310,7 +310,7 @@ PetscErrorCode  PCShellSetPostSolve_Shell(PC pc,PetscErrorCode (*postsolve)(PC,K
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetView_Shell"
 PetscErrorCode  PCShellSetView_Shell(PC pc,PetscErrorCode (*view)(PC,PetscViewer))
 {
@@ -323,7 +323,7 @@ PetscErrorCode  PCShellSetView_Shell(PC pc,PetscErrorCode (*view)(PC,PetscViewer
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetApplyTranspose_Shell"
 PetscErrorCode  PCShellSetApplyTranspose_Shell(PC pc,PetscErrorCode (*applytranspose)(PC,Vec,Vec))
 {
@@ -338,7 +338,7 @@ PetscErrorCode  PCShellSetApplyTranspose_Shell(PC pc,PetscErrorCode (*applytrans
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetApplyRichardson_Shell"
 PetscErrorCode  PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*applyrich)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*))
 {
@@ -353,7 +353,7 @@ PetscErrorCode  PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*applyrich
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetName_Shell"
 PetscErrorCode  PCShellSetName_Shell(PC pc,const char name[])
 {
@@ -361,14 +361,14 @@ PetscErrorCode  PCShellSetName_Shell(PC pc,const char name[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(shell->name);CHKERRQ(ierr);    
+  ierr = PetscFree(shell->name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&shell->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellGetName_Shell"
 PetscErrorCode  PCShellGetName_Shell(PC pc,const char *name[])
 {
@@ -382,10 +382,10 @@ EXTERN_C_END
 
 /* -------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetDestroy"
 /*@C
-   PCShellSetDestroy - Sets routine to use to destroy the user-provided 
+   PCShellSetDestroy - Sets routine to use to destroy the user-provided
    application context.
 
    Logically Collective on PC
@@ -420,10 +420,10 @@ PetscErrorCode  PCShellSetDestroy(PC pc,PetscErrorCode (*destroy)(PC))
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetSetUp"
 /*@C
-   PCShellSetSetUp - Sets routine to use to "setup" the preconditioner whenever the 
+   PCShellSetSetUp - Sets routine to use to "setup" the preconditioner whenever the
    matrix operator is changed.
 
    Logically Collective on PC
@@ -458,7 +458,7 @@ PetscErrorCode  PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(PC))
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetView"
 /*@C
    PCShellSetView - Sets routine to use as viewer of shell preconditioner
@@ -495,7 +495,7 @@ PetscErrorCode  PCShellSetView(PC pc,PetscErrorCode (*view)(PC,PetscViewer))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetApply"
 /*@C
    PCShellSetApply - Sets routine to use as preconditioner.
@@ -535,7 +535,7 @@ PetscErrorCode  PCShellSetApply(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetApplyBA"
 /*@C
    PCShellSetApplyBA - Sets routine to use as preconditioner times operator.
@@ -573,7 +573,7 @@ PetscErrorCode  PCShellSetApplyBA(PC pc,PetscErrorCode (*applyBA)(PC,PCSide,Vec,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetApplyTranspose"
 /*@C
    PCShellSetApplyTranspose - Sets routine to use as preconditioner transpose.
@@ -597,7 +597,7 @@ PetscErrorCode  PCShellSetApplyBA(PC pc,PetscErrorCode (*applyBA)(PC,PCSide,Vec,
 
    Level: developer
 
-   Notes: 
+   Notes:
    Uses the same context variable as PCShellSetApply().
 
 .keywords: PC, shell, set, apply, user-provided
@@ -614,11 +614,11 @@ PetscErrorCode  PCShellSetApplyTranspose(PC pc,PetscErrorCode (*applytranspose)(
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetPreSolve"
 /*@C
    PCShellSetPreSolve - Sets routine to apply to the operators/vectors before a KSPSolve() is
-      applied. This usually does something like scale the linear system in some application 
+      applied. This usually does something like scale the linear system in some application
       specific way.
 
    Logically Collective on PC
@@ -654,11 +654,11 @@ PetscErrorCode  PCShellSetPreSolve(PC pc,PetscErrorCode (*presolve)(PC,KSP,Vec,V
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetPostSolve"
 /*@C
    PCShellSetPostSolve - Sets routine to apply to the operators/vectors before a KSPSolve() is
-      applied. This usually does something like scale the linear system in some application 
+      applied. This usually does something like scale the linear system in some application
       specific way.
 
    Logically Collective on PC
@@ -694,7 +694,7 @@ PetscErrorCode  PCShellSetPostSolve(PC pc,PetscErrorCode (*postsolve)(PC,KSP,Vec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetName"
 /*@C
    PCShellSetName - Sets an optional name to associate with a shell
@@ -722,7 +722,7 @@ PetscErrorCode  PCShellSetName(PC pc,const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellGetName"
 /*@C
    PCShellGetName - Gets an optional name that the user has set for a shell
@@ -753,7 +753,7 @@ PetscErrorCode  PCShellGetName(PC pc,const char *name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCShellSetApplyRichardson"
 /*@C
    PCShellSetApplyRichardson - Sets routine to use as preconditioner
@@ -798,7 +798,7 @@ PetscErrorCode  PCShellSetApplyRichardson(PC pc,PetscErrorCode (*apply)(PC,Vec,V
 }
 
 /*MC
-   PCSHELL - Creates a new preconditioner class for use with your 
+   PCSHELL - Creates a new preconditioner class for use with your
               own private data storage format.
 
    Level: advanced
@@ -822,13 +822,13 @@ $             PCShellSetSetUp(pc,setup);                   (optional)
 $             PCShellSetDestroy(pc,destroy);               (optional)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           MATSHELL, PCShellSetSetUp(), PCShellSetApply(), PCShellSetView(), 
-           PCShellSetApplyTranspose(), PCShellSetName(), PCShellSetApplyRichardson(), 
+           MATSHELL, PCShellSetSetUp(), PCShellSetApply(), PCShellSetView(),
+           PCShellSetApplyTranspose(), PCShellSetName(), PCShellSetApplyRichardson(),
            PCShellGetName(), PCShellSetContext(), PCShellGetContext(), PCShellSetApplyBA()
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_Shell"
 PetscErrorCode  PCCreate_Shell(PC pc)
 {

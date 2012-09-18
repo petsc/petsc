@@ -4,8 +4,8 @@
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawClear" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawClear"
 /*@
    PetscDrawClear - Clears graphical output.
 
@@ -32,8 +32,8 @@ PetscErrorCode  PetscDrawClear(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawBOP" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawBOP"
 /*@
    PetscDrawBOP - Begins a new page or frame on the selected graphical device.
 
@@ -57,8 +57,8 @@ PetscErrorCode  PetscDrawBOP(PetscDraw draw)
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawEOP" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawEOP"
 /*@
    PetscDrawEOP - Ends a page or frame on the selected graphical device.
 

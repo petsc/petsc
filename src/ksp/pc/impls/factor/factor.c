@@ -1,10 +1,10 @@
 
 #include <../src/ksp/pc/impls/factor/factor.h>  /*I "petscpc.h" I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetUpMatSolverPackage"
 /*@
-    PCFactorSetUpMatSolverPackage - Can be called after KSPSetOperators() or PCSetOperators(), causes MatGetFactor() to be called so then one may 
+    PCFactorSetUpMatSolverPackage - Can be called after KSPSetOperators() or PCSetOperators(), causes MatGetFactor() to be called so then one may
        set the options for that particular factorization object.
 
   Input Parameter:
@@ -27,13 +27,13 @@ PetscErrorCode PCFactorSetUpMatSolverPackage(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetZeroPivot"
 /*@
    PCFactorSetZeroPivot - Sets the size at which smaller pivots are declared to be zero
 
    Logically Collective on PC
-   
+
    Input Parameters:
 +  pc - the preconditioner context
 -  zero - all pivots smaller than this will be considered zero
@@ -58,24 +58,24 @@ PetscErrorCode  PCFactorSetZeroPivot(PC pc,PetscReal zero)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetShiftType"
 /*@
-   PCFactorSetShiftType - adds a particular type of quantity to the diagonal of the matrix during 
+   PCFactorSetShiftType - adds a particular type of quantity to the diagonal of the matrix during
      numerical factorization, thus the matrix has nonzero pivots
 
    Logically Collective on PC
-   
+
    Input Parameters:
 +  pc - the preconditioner context
--  shifttype - type of shift; one of MAT_SHIFT_NONE, MAT_SHIFT_NONZERO,  MAT_SHIFT_POSITIVE_DEFINITE, MAT_SHIFT_INBLOCKS 
+-  shifttype - type of shift; one of MAT_SHIFT_NONE, MAT_SHIFT_NONZERO,  MAT_SHIFT_POSITIVE_DEFINITE, MAT_SHIFT_INBLOCKS
 
    Options Database Key:
 .  -pc_factor_shift_type <shifttype> - Sets shift type or PETSC_DECIDE for the default; use '-help' for a list of available types
 
    Level: intermediate
 
-.keywords: PC, set, factorization, 
+.keywords: PC, set, factorization,
 
 .seealso: PCFactorSetZeroPivot(), PCFactorSetShiftAmount()
 @*/
@@ -90,24 +90,24 @@ PetscErrorCode  PCFactorSetShiftType(PC pc,MatFactorShiftType shifttype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetShiftAmount"
 /*@
-   PCFactorSetShiftAmount - adds a quantity to the diagonal of the matrix during 
+   PCFactorSetShiftAmount - adds a quantity to the diagonal of the matrix during
      numerical factorization, thus the matrix has nonzero pivots
 
    Logically Collective on PC
-   
+
    Input Parameters:
 +  pc - the preconditioner context
--  shiftamount - amount of shift 
+-  shiftamount - amount of shift
 
    Options Database Key:
 .  -pc_factor_shift_amount <shiftamount> - Sets shift amount or PETSC_DECIDE for the default
 
    Level: intermediate
 
-.keywords: PC, set, factorization, 
+.keywords: PC, set, factorization,
 
 .seealso: PCFactorSetZeroPivot(), PCFactorSetShiftType()
 @*/
@@ -122,10 +122,10 @@ PetscErrorCode  PCFactorSetShiftAmount(PC pc,PetscReal shiftamount)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetDropTolerance"
 /*
-   PCFactorSetDropTolerance - The preconditioner will use an ILU 
+   PCFactorSetDropTolerance - The preconditioner will use an ILU
    based on a drop tolerance. (Under development)
 
    Logically Collective on PC
@@ -157,9 +157,9 @@ PetscErrorCode  PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,Pets
   PetscValidLogicalCollectiveInt(pc,maxrowcount,3);
   ierr = PetscTryMethod(pc,"PCFactorSetDropTolerance_C",(PC,PetscReal,PetscReal,PetscInt),(pc,dt,dtcol,maxrowcount));CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}  
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetLevels"
 /*@
    PCFactorSetLevels - Sets the number of levels of fill to use.
@@ -189,10 +189,10 @@ PetscErrorCode  PCFactorSetLevels(PC pc,PetscInt levels)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetAllowDiagonalFill"
 /*@
-   PCFactorSetAllowDiagonalFill - Causes all diagonal matrix entries to be 
+   PCFactorSetAllowDiagonalFill - Causes all diagonal matrix entries to be
    treated as level 0 fill even if there is no non-zero location.
 
    Logically Collective on PC
@@ -220,13 +220,13 @@ PetscErrorCode  PCFactorSetAllowDiagonalFill(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorReorderForNonzeroDiagonal"
 /*@
    PCFactorReorderForNonzeroDiagonal - reorders rows/columns of matrix to remove zeros from diagonal
 
    Logically Collective on PC
-   
+
    Input Parameters:
 +  pc - the preconditioner context
 -  tol - diagonal entries smaller than this in absolute value are considered zero
@@ -251,13 +251,13 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetMatSolverPackage"
 /*@C
    PCFactorSetMatSolverPackage - sets the software that is used to perform the factorization
 
    Logically Collective on PC
-   
+
    Input Parameters:
 +  pc - the preconditioner context
 -  stype - for example, superlu, superlu_dist
@@ -269,7 +269,7 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
 
    Note:
      By default this will use the PETSc factorization if it exists
-     
+
 
 .keywords: PC, set, factorization, direct, fill
 
@@ -286,13 +286,13 @@ PetscErrorCode  PCFactorSetMatSolverPackage(PC pc,const MatSolverPackage stype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorGetMatSolverPackage"
 /*@C
    PCFactorGetMatSolverPackage - gets the software that is used to perform the factorization
 
    Not Collective
-   
+
    Input Parameter:
 .  pc - the preconditioner context
 
@@ -322,14 +322,14 @@ PetscErrorCode  PCFactorGetMatSolverPackage(PC pc,const MatSolverPackage *stype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetFill"
 /*@
    PCFactorSetFill - Indicate the amount of fill you expect in the factored matrix,
    fill = number nonzeros in factor/number nonzeros in original matrix.
 
    Not Collective, each process can expect a different amount of fill
-   
+
    Input Parameters:
 +  pc - the preconditioner context
 -  fill - amount of expected fill
@@ -340,13 +340,13 @@ PetscErrorCode  PCFactorGetMatSolverPackage(PC pc,const MatSolverPackage *stype)
    Level: intermediate
 
    Note:
-   For sparse matrix factorizations it is difficult to predict how much 
-   fill to expect. By running with the option -info PETSc will print the 
+   For sparse matrix factorizations it is difficult to predict how much
+   fill to expect. By running with the option -info PETSc will print the
    actual amount of fill used; allowing you to set the value accurately for
    future runs. Default PETSc uses a value of 5.0
 
    This parameter has NOTHING to do with the levels-of-fill of ILU(). That is set with PCFactorSetLevels() or -pc_factor_levels.
-    
+
 
 .keywords: PC, set, factorization, direct, fill
 
@@ -362,12 +362,12 @@ PetscErrorCode  PCFactorSetFill(PC pc,PetscReal fill)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetUseInPlace"
 /*@
    PCFactorSetUseInPlace - Tells the system to do an in-place factorization.
-   For dense matrices, this enables the solution of much larger problems. 
-   For sparse matrices the factorization cannot be done truly in-place 
+   For dense matrices, this enables the solution of much larger problems.
+   For sparse matrices the factorization cannot be done truly in-place
    so this does not save memory during the factorization, but after the matrix
    is factored, the original unfactored matrix is freed, thus recovering that
    space.
@@ -381,11 +381,11 @@ PetscErrorCode  PCFactorSetFill(PC pc,PetscReal fill)
 .  -pc_factor_in_place - Activates in-place factorization
 
    Notes:
-   PCFactorSetUseInplace() can only be used with the KSP method KSPPREONLY or when 
-   a different matrix is provided for the multiply and the preconditioner in 
+   PCFactorSetUseInplace() can only be used with the KSP method KSPPREONLY or when
+   a different matrix is provided for the multiply and the preconditioner in
    a call to KSPSetOperators().
-   This is because the Krylov space methods require an application of the 
-   matrix multiplication, which is not possible here because the matrix has 
+   This is because the Krylov space methods require an application of the
+   matrix multiplication, which is not possible here because the matrix has
    been factored in-place, replacing the original matrix.
 
    Level: intermediate
@@ -404,10 +404,10 @@ PetscErrorCode  PCFactorSetUseInPlace(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetMatOrderingType"
 /*@C
-    PCFactorSetMatOrderingType - Sets the ordering routine (to reduce fill) to 
+    PCFactorSetMatOrderingType - Sets the ordering routine (to reduce fill) to
     be used in the LU factorization.
 
     Logically Collective on PC
@@ -438,10 +438,10 @@ PetscErrorCode  PCFactorSetMatOrderingType(PC pc,const MatOrderingType ordering)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetColumnPivot"
 /*@
-    PCFactorSetColumnPivot - Determines when column pivoting is done during matrix factorization. 
+    PCFactorSetColumnPivot - Determines when column pivoting is done during matrix factorization.
       For PETSc dense matrices column pivoting is always done, for PETSc sparse matrices
       it is never done. For the MATLAB and SuperLU factorization this is used.
 
@@ -469,7 +469,7 @@ PetscErrorCode  PCFactorSetColumnPivot(PC pc,PetscReal dtcol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetPivotInBlocks"
 /*@
     PCFactorSetPivotInBlocks - Determines if pivoting is done while factoring each block
@@ -499,7 +499,7 @@ PetscErrorCode  PCFactorSetPivotInBlocks(PC pc,PetscBool  pivot)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetReuseFill"
 /*@
    PCFactorSetReuseFill - When matrices with same different nonzero structure are factored,

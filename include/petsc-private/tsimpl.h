@@ -97,8 +97,8 @@ struct _p_TS {
   PetscReal time_step;              /* current/completed time increment */
   PetscReal time_step_prev;         /* previous time step  */
 
-  /* 
-     these are temporary to support increasing the time step if nonlinear solver convergence remains good 
+  /*
+     these are temporary to support increasing the time step if nonlinear solver convergence remains good
      and time_step was previously cut due to failed nonlinear solver
   */
   PetscReal time_step_orig;            /* original time step requested by user */
@@ -166,7 +166,7 @@ struct _n_TSDM {
   void *ifunctionctx;
   void *ijacobianctx;
 
-  
+
 
   /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */
   PetscErrorCode (*destroy)(TSDM);

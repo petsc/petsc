@@ -1,5 +1,5 @@
 
-/*                       
+/*
       Code for calculating extreme eigenvalues via the Lanczo method
    running with CG. Note this only works for symmetric real and Hermitian
    matrices (not complex matrices that are symmetric).
@@ -7,7 +7,7 @@
 #include <../src/ksp/ksp/impls/cg/cgimpl.h>
 static PetscErrorCode LINPACKcgtql1(PetscInt*,PetscReal *,PetscReal *,PetscInt *);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPComputeEigenvalues_CG"
 PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c,PetscInt *neig)
 {
@@ -29,18 +29,18 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,PetscInt nmax,PetscReal *r,Petsc
   d = cgP->d; e = cgP->e; ee = cgP->ee;
 
   /* copy tridiagonal matrix to work space */
-  for (j=0; j<n ; j++) { 
+  for (j=0; j<n ; j++) {
     r[j]  = PetscRealPart(d[j]);
     ee[j] = PetscRealPart(e[j]);
   }
 
   LINPACKcgtql1(&n,r,ee,&j);
-  if (j != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error from tql1(); eispack eigenvalue routine");  
+  if (j != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error from tql1(); eispack eigenvalue routine");
   ierr = PetscSortReal(n,r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPComputeExtremeSingularValues_CG"
 PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
@@ -57,30 +57,30 @@ PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscR
   d = cgP->d; e = cgP->e; dd = cgP->dd; ee = cgP->ee;
 
   /* copy tridiagonal matrix to work space */
-  for (j=0; j<n ; j++) { 
+  for (j=0; j<n ; j++) {
     dd[j] = PetscRealPart(d[j]);
     ee[j] = PetscRealPart(e[j]);
   }
 
   LINPACKcgtql1(&n,dd,ee,&j);
-  if (j != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error from tql1(); eispack eigenvalue routine");  
+  if (j != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error from tql1(); eispack eigenvalue routine");
   *emin = dd[0]; *emax = dd[n-1];
   PetscFunctionReturn(0);
 }
 
 /* tql1.f -- translated by f2c (version of 25 March 1992  12:58:56).
-   By Barry Smith on March 27, 1994. 
-   Eispack routine to determine eigenvalues of symmetric 
-   tridiagonal matrix 
+   By Barry Smith on March 27, 1994.
+   Eispack routine to determine eigenvalues of symmetric
+   tridiagonal matrix
 
-  Note that this routine always uses real numbers (not complex) even if the underlying 
+  Note that this routine always uses real numbers (not complex) even if the underlying
   matrix is Hermitian. This is because the Lanczos process applied to Hermitian matrices
   always produces a real, symmetric tridiagonal matrix.
 */
 
 static PetscReal LINPACKcgpthy(PetscReal*,PetscReal*);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "LINPACKcgtql1"
 static PetscErrorCode LINPACKcgtql1(PetscInt *n,PetscReal *d,PetscReal *e,PetscInt *ierr)
 {
@@ -133,12 +133,12 @@ static PetscErrorCode LINPACKcgtql1(PetscInt *n,PetscReal *d,PetscReal *e,PetscI
 /*     CALLS CGPTHY FOR  DSQRT(A*A + B*B) . */
 
 /*     QUESTIONS AND COMMENTS SHOULD BE DIRECTED TO BURTON S. GARBOW, */
-/*     MATHEMATICS AND COMPUTER SCIENCE DIV, ARGONNE NATIONAL LABORATORY 
+/*     MATHEMATICS AND COMPUTER SCIENCE DIV, ARGONNE NATIONAL LABORATORY
 */
 
 /*     THIS VERSION DATED AUGUST 1983. */
 
-/*     ------------------------------------------------------------------ 
+/*     ------------------------------------------------------------------
 */
     PetscReal ds;
 
@@ -231,7 +231,7 @@ L145:
             p = c * d[i] - s * g;
             d[i + 1] = h + s * (c * g + s * d[i]);
         }
- 
+
         p = -s * s2 * c3 * el1 * e[l] / dl1;
         e[l] = s * p;
         d[l] = c * p;
@@ -270,13 +270,13 @@ L1001:
     PetscFunctionReturn(0);
 } /* cgtql1_ */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "LINPACKcgpthy"
 static PetscReal LINPACKcgpthy(PetscReal *a,PetscReal *b)
 {
     /* System generated locals */
     PetscReal ret_val,d__1,d__2,d__3;
- 
+
     /* Local variables */
     PetscReal p,r,s,t,u;
 

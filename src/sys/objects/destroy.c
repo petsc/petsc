@@ -5,11 +5,11 @@
 #include <petscsys.h>  /*I   "petscsys.h"    I*/
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscComposedQuantitiesDestroy"
 PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
 {
-  PetscErrorCode ierr; 
+  PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
@@ -43,16 +43,16 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectDestroy"
 /*@
-   PetscObjectDestroy - Destroys any PetscObject, regardless of the type. 
+   PetscObjectDestroy - Destroys any PetscObject, regardless of the type.
 
    Collective on PetscObject
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
-         This must be cast with a (PetscObject*), for example, 
+         This must be cast with a (PetscObject*), for example,
          PetscObjectDestroy((PetscObject*)&mat);
 
    Level: beginner
@@ -75,16 +75,16 @@ PetscErrorCode  PetscObjectDestroy(PetscObject *obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscObjectView" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectView"
 /*@C
-   PetscObjectView - Views any PetscObject, regardless of the type. 
+   PetscObjectView - Views any PetscObject, regardless of the type.
 
    Collective on PetscObject
 
    Input Parameters:
 +  obj - any PETSc object, for example a Vec, Mat or KSP.
-         This must be cast with a (PetscObject), for example, 
+         This must be cast with a (PetscObject), for example,
          PetscObjectView((PetscObject)mat,viewer);
 -  viewer - any PETSc viewer
 
@@ -110,7 +110,7 @@ PetscErrorCode  PetscObjectView(PetscObject obj,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectTypeCompare"
 /*@C
    PetscObjectTypeCompare - Determines whether a PETSc object is of a particular type.
@@ -119,13 +119,13 @@ PetscErrorCode  PetscObjectView(PetscObject obj,PetscViewer viewer)
 
    Input Parameters:
 +  obj - any PETSc object, for example a Vec, Mat or KSP.
-         This must be cast with a (PetscObject), for example, 
+         This must be cast with a (PetscObject), for example,
          PetscObjectTypeCompare((PetscObject)mat);
 -  type_name - string containing a type name
 
    Output Parameter:
 .  same - PETSC_TRUE if they are the same, else PETSC_FALSE
-  
+
    Level: intermediate
 
 .seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType()
@@ -155,7 +155,7 @@ PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectTypeCompareAny"
 /*@C
    PetscObjectTypeCompareAny - Determines whether a PETSc object is of any of a list of types.
@@ -204,7 +204,7 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const 
 static int         PetscObjectRegisterDestroy_Count = 0;
 static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectRegisterDestroy"
 /*@C
    PetscObjectRegisterDestroy - Registers a PETSc object to be destroyed when
@@ -214,7 +214,7 @@ static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
-         This must be cast with a (PetscObject), for example, 
+         This must be cast with a (PetscObject), for example,
          PetscObjectRegisterDestroy((PetscObject)mat);
 
    Level: developer
@@ -235,7 +235,7 @@ PetscErrorCode  PetscObjectRegisterDestroy(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectRegisterDestroyAll"
 /*@C
    PetscObjectRegisterDestroyAll - Frees all the PETSc objects that have been registered
@@ -265,7 +265,7 @@ PetscErrorCode  PetscObjectRegisterDestroyAll(void)
 static int         PetscRegisterFinalize_Count = 0;
 static PetscErrorCode ((*PetscRegisterFinalize_Functions[MAXREGFIN])(void));
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRegisterFinalize"
 /*@C
    PetscRegisterFinalize - Registers a function that is to be called in PetscFinalize()
@@ -273,7 +273,7 @@ static PetscErrorCode ((*PetscRegisterFinalize_Functions[MAXREGFIN])(void));
    Not Collective
 
    Input Parameter:
-.  PetscErrorCode (*fun)(void) - 
+.  PetscErrorCode (*fun)(void) -
 
    Level: developer
 
@@ -292,7 +292,7 @@ PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*f)(void))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRegisterFinalizeAll"
 /*@C
    PetscRegisterFinalizeAll - Runs all the finalize functions set with PetscRegisterFinalize()

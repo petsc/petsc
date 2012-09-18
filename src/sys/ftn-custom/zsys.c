@@ -7,7 +7,7 @@
 #define petscobjectstateincrease_  PETSCOBJECTSTATEINCREASE
 #define petscobjectstatedecrease_  PETSCOBJECTSTATEDECREASE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscoffsetfortran_        petscoffsetfortran     
+#define petscoffsetfortran_        petscoffsetfortran
 #define chkmemfortran_             chkmemfortran
 #define flush__                    flush_
 #define petscobjectstateincrease_  petscobjectstateincrease
@@ -41,7 +41,7 @@ void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,size_t *shi
 
 /* ---------------------------------------------------------------------------------*/
 /*
-        This version does not do a malloc 
+        This version does not do a malloc
 */
 static char FIXCHARSTRING[1024];
 

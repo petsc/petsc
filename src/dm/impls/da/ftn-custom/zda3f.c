@@ -10,7 +10,7 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL dmdacreate3d_(MPI_Comm *comm,DMDABoundaryType *bx,DMDABoundaryType *by,DMDABoundaryType *bz,DMDAStencilType 
+void PETSC_STDCALL dmdacreate3d_(MPI_Comm *comm,DMDABoundaryType *bx,DMDABoundaryType *by,DMDABoundaryType *bz,DMDAStencilType
                  *stencil_type,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,
                  PetscInt *w,PetscInt *s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DM *inra,PetscErrorCode *ierr)
 {

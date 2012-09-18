@@ -5,7 +5,7 @@ typedef struct {
   PetscReal haptol;
 } KSP_MINRES;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_MINRES"
 PetscErrorCode KSPSetUp_MINRES(KSP ksp)
 {
@@ -19,7 +19,7 @@ PetscErrorCode KSPSetUp_MINRES(KSP ksp)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_MINRES"
 PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 {
@@ -62,7 +62,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr); /*     r <- b - A*x    */
     ierr = VecAYPX(R,-1.0,B);CHKERRQ(ierr);
-  } else { 
+  } else {
     ierr = VecCopy(B,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
 
@@ -84,7 +84,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
     PetscFunctionReturn(0);
   }
 #endif
-  dp   = PetscSqrtScalar(dp); 
+  dp   = PetscSqrtScalar(dp);
   beta = dp;                                        /*  beta <- sqrt(r'*z  */
   eta  = beta;
 
@@ -98,7 +98,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
   KSPLogResidualHistory(ksp,np);
   ierr = KSPMonitor(ksp,0,np);CHKERRQ(ierr);
-  ksp->rnorm = np;  
+  ksp->rnorm = np;
   ierr = (*ksp->converged)(ksp,0,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);  /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
 
@@ -119,7 +119,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
      betaold = beta;
 
-     ierr = VecDot(R,Z,&dp);CHKERRQ(ierr); 
+     ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
      if (PetscAbsScalar(dp) < minres->haptol) {
        ierr = PetscInfo2(ksp,"Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),minres->haptol);CHKERRQ(ierr);
        dp = PetscAbsScalar(dp); /* tiny number, can we use 0.0? */
@@ -152,7 +152,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
      ierr = VecCopy(WOLD,WOOLD);CHKERRQ(ierr);     /*  w_oold <- w_old      */
      ierr = VecCopy(W,WOLD);CHKERRQ(ierr);         /*  w_old  <- w          */
-     
+
      ierr = VecCopy(U,W);CHKERRQ(ierr);            /*  w      <- u          */
      mrho2 = - rho2;
      ierr = VecAXPY(W,mrho2,WOLD);CHKERRQ(ierr);  /*  w <- w - rho2 w_old  */
@@ -162,7 +162,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
      ierr = VecScale(W,irho1);CHKERRQ(ierr);      /*  w <- w / rho1        */
 
      ceta = c * eta;
-     ierr = VecAXPY(X,ceta,W);CHKERRQ(ierr);      /*  x <- x + c eta w     */ 
+     ierr = VecAXPY(X,ceta,W);CHKERRQ(ierr);      /*  x <- x + c eta w     */
      eta = - s * eta;
 
      ierr = VecCopy(V,VOLD);CHKERRQ(ierr);
@@ -172,7 +172,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
      ibeta = 1.0 / beta;
      ierr = VecScale(V,ibeta);CHKERRQ(ierr);      /*  v <- r / beta       */
      ierr = VecScale(U,ibeta);CHKERRQ(ierr);      /*  u <- z / beta       */
-     
+
      np = ksp->rnorm * PetscAbsScalar(s);
 
      ksp->rnorm = np;
@@ -189,7 +189,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 }
 
 /*MC
-     KSPMINRES - This code implements the MINRES (Minimum Residual) method. 
+     KSPMINRES - This code implements the MINRES (Minimum Residual) method.
 
    Options Database Keys:
 .   see KSPSolve()
@@ -207,7 +207,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG, KSPCR
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_MINRES"
 PetscErrorCode  KSPCreate_MINRES(KSP ksp)
 {
@@ -221,7 +221,7 @@ PetscErrorCode  KSPCreate_MINRES(KSP ksp)
   ksp->data      = (void*)minres;
 
   /*
-       Sets the functions that are associated with this data structure 
+       Sets the functions that are associated with this data structure
        (in C++ this is the same as defining virtual functions)
   */
   ksp->ops->setup                = KSPSetUp_MINRES;

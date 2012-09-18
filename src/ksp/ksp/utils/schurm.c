@@ -9,7 +9,7 @@ typedef struct {
 } Mat_SchurComplement;
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatView_SchurComplement"
 PetscErrorCode MatView_SchurComplement(Mat N,PetscViewer viewer)
 {
@@ -43,9 +43,9 @@ PetscErrorCode MatView_SchurComplement(Mat N,PetscViewer viewer)
 
 
 /*
-           A11 - A10 ksp(A00,Ap00)  A01 
+           A11 - A10 ksp(A00,Ap00)  A01
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_SchurComplement"
 PetscErrorCode MatMult_SchurComplement(Mat N,Vec x,Vec y)
 {
@@ -93,7 +93,7 @@ PetscErrorCode MatMultAdd_SchurComplement(Mat N,Vec x,Vec y,Vec z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_SchurComplement"
 PetscErrorCode MatSetFromOptions_SchurComplement(Mat N)
 {
@@ -104,8 +104,8 @@ PetscErrorCode MatSetFromOptions_SchurComplement(Mat N)
   ierr = KSPSetFromOptions(Na->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
- 
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SchurComplement"
 PetscErrorCode MatDestroy_SchurComplement(Mat N)
 {
@@ -125,7 +125,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateSchurComplement"
 /*@
       MatCreateSchurComplement - Creates a new matrix object that behaves like the Schur complement of a matrix
@@ -140,7 +140,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 
    Level: intermediate
 
-   Notes: The Schur complement is NOT actually formed! Rather this 
+   Notes: The Schur complement is NOT actually formed! Rather this
           object performs the matrix-vector product by using the the formula for
           the Schur complement and a KSP solver to approximate the action of inv(A)
 
@@ -162,7 +162,7 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSchurComplementSet"
 /*@
       MatSchurComplementSet - Sets the matrices that define the Schur complement
@@ -175,7 +175,7 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
 
    Level: intermediate
 
-   Notes: The Schur complement is NOT actually formed! Rather this 
+   Notes: The Schur complement is NOT actually formed! Rather this
           object performs the matrix-vector product by using the the formula for
           the Schur complement and a KSP solver to approximate the action of inv(A)
 
@@ -190,7 +190,7 @@ PetscErrorCode  MatSchurComplementSet(Mat N,Mat A00,Mat Ap00,Mat A01,Mat A10,Mat
 {
   PetscErrorCode       ierr;
   PetscInt             m,n;
-  Mat_SchurComplement  *Na = (Mat_SchurComplement*)N->data;  
+  Mat_SchurComplement  *Na = (Mat_SchurComplement*)N->data;
 
   PetscFunctionBegin;
   if (N->assembled) SETERRQ(((PetscObject)N)->comm,PETSC_ERR_ARG_WRONGSTATE,"Use MatSchurComplementUpdate() for already used matrix");
@@ -280,7 +280,7 @@ PetscErrorCode MatSchurComplementGetKSP(Mat A, KSP *ksp)
 + A - matrix created with MatCreateSchurComplement()
 - ksp - the linear solver object
 
-  Level: developer 
+  Level: developer
 
   Developer Notes:
     There is likely no use case for this function.
@@ -302,7 +302,7 @@ PetscErrorCode MatSchurComplementSetKSP(Mat A, KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSchurComplementUpdate"
 /*@
       MatSchurComplementUpdate - Updates the Schur complement matrix object with new submatrices
@@ -314,7 +314,7 @@ PetscErrorCode MatSchurComplementSetKSP(Mat A, KSP ksp)
 .   A,B,C,D  - the four parts of the original matrix (D is optional)
 -   str - either SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
 
- 
+
    Level: intermediate
 
    Notes: All four matrices must have the same MPI communicator
@@ -330,7 +330,7 @@ PetscErrorCode MatSchurComplementSetKSP(Mat A, KSP ksp)
 PetscErrorCode  MatSchurComplementUpdate(Mat N,Mat A,Mat Ap,Mat B,Mat C,Mat D,MatStructure str)
 {
   PetscErrorCode       ierr;
-  Mat_SchurComplement  *Na = (Mat_SchurComplement*)N->data;  
+  Mat_SchurComplement  *Na = (Mat_SchurComplement*)N->data;
 
   PetscFunctionBegin;
  if (!N->assembled) SETERRQ(((PetscObject)N)->comm,PETSC_ERR_ARG_WRONGSTATE,"Use MatSchurComplementSet() for new matrix");
@@ -377,7 +377,7 @@ PetscErrorCode  MatSchurComplementUpdate(Mat N,Mat A,Mat Ap,Mat B,Mat C,Mat D,Ma
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSchurComplementGetSubmatrices"
 /*@C
   MatSchurComplementGetSubmatrices - Get the individual submatrices in the Schur complement
@@ -397,7 +397,7 @@ PetscErrorCode  MatSchurComplementUpdate(Mat N,Mat A,Mat Ap,Mat B,Mat C,Mat D,Ma
 @*/
 PetscErrorCode  MatSchurComplementGetSubmatrices(Mat N,Mat *A,Mat *Ap,Mat *B,Mat *C,Mat *D)
 {
-  Mat_SchurComplement *Na = (Mat_SchurComplement *) N->data;  
+  Mat_SchurComplement *Na = (Mat_SchurComplement *) N->data;
   PetscErrorCode       ierr;
   PetscBool            flg;
 
@@ -420,7 +420,7 @@ PetscErrorCode  MatSchurComplementGetSubmatrices(Mat N,Mat *A,Mat *Ap,Mat *B,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetSchurComplement_Basic"
 /* Developer Notes: This should be implemented with a MatCreate_SchurComplement() as that is the standard design for new Mat classes. */
 PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,MatReuse preuse,Mat *newpmat)
@@ -513,7 +513,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetSchurComplement"
 /*@
     MatGetSchurComplement - Obtain the Schur complement from eliminating part of the matrix in another part.
@@ -574,12 +574,12 @@ PetscErrorCode  MatGetSchurComplement(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS i
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreate_SchurComplement"
 PetscErrorCode  MatCreate_SchurComplement(Mat N)
 {
   PetscErrorCode       ierr;
-  Mat_SchurComplement  *Na;  
+  Mat_SchurComplement  *Na;
 
   PetscFunctionBegin;
   ierr      = PetscNewLog(N,Mat_SchurComplement,&Na);CHKERRQ(ierr);

@@ -4,10 +4,10 @@
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawPause" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawPause"
 /*@
-   PetscDrawPause - Waits n seconds or until user input, depending on input 
+   PetscDrawPause - Waits n seconds or until user input, depending on input
                to PetscDrawSetPause().
 
    Collective operation on PetscDraw object.

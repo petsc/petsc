@@ -6,7 +6,7 @@
  *
  * This has not been completely cleaned up into PETSc style.
  *
- * All the BLAS and LAPACK calls below should be removed and replaced with 
+ * All the BLAS and LAPACK calls below should be removed and replaced with
  * loops and the macros for block solvers converted from LINPACK; there is no way
  * calls to BLAS/LAPACK make sense for size 2, 3, 4, etc.
  */
@@ -143,12 +143,12 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     }
 
     /* Polynomial part */
-    for(i = 0; i <= bcgsl->ell; ++i) {
+    for (i = 0; i <= bcgsl->ell; ++i) {
       ierr = VecMDot(VVR[i], i+1, VVR, &MZa[i*ldMZ]);CHKERRQ(ierr);
     }
     /* Symmetrize MZa */
-    for(i = 0; i <= bcgsl->ell; ++i) {
-      for(j = i+1; j <= bcgsl->ell; ++j) {
+    for (i = 0; i <= bcgsl->ell; ++i) {
+      for (j = i+1; j <= bcgsl->ell; ++j) {
         MZa[i*ldMZ+j] = MZa[j*ldMZ+i] = PetscConj(MZa[j*ldMZ+i]);
       }
     }

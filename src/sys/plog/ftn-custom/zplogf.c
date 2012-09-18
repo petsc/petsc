@@ -23,11 +23,11 @@
 #define petsclogbegin_            petsclogbegin
 #define petsclogeventregister_    petsclogeventregister
 #define petsclogdump_             petsclogdump
-#define petsclogstagepop_         petsclogstagepop  
+#define petsclogstagepop_         petsclogstagepop
 #define petsclogstageregister_    petsclogstageregister
 #define petscclassidregister_     petscclassidregister
 #define petsclogstagepush_        petsclogstagepush
-#define petscgetflops_            petscgetflops 
+#define petscgetflops_            petscgetflops
 #define petsclogstagegetid_       petsclogstagegetid
 #endif
 

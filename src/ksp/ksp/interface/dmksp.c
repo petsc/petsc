@@ -105,7 +105,7 @@ PetscErrorCode DMKSPGetContextWrite(DM dm,KSPDM *snesdm)
     ierr = PetscInfo(dm,"Copying KSPDM due to write\n");CHKERRQ(ierr);
     ierr = PetscContainerCreate(((PetscObject)dm)->comm,&container);CHKERRQ(ierr);
     ierr = PetscNewLog(dm,struct _n_KSPDM,&kdm);CHKERRQ(ierr);
-    ierr = PetscMemcpy(kdm,oldsdm,sizeof *kdm);CHKERRQ(ierr);
+    ierr = PetscMemcpy(kdm,oldsdm,sizeof(*kdm));CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(container,kdm);CHKERRQ(ierr);
     ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_KSPDM);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"KSPDM",(PetscObject)container);CHKERRQ(ierr);

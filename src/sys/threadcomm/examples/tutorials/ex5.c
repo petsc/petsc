@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscThreadCommGetNThreads(PETSC_COMM_WORLD,&tsize);CHKERRQ(ierr);
-  ierr = PetscMalloc(tsize*sizeof *counters,&counters);CHKERRQ(ierr);
+  ierr = PetscMalloc(tsize*sizeof(*counters),&counters);CHKERRQ(ierr);
   ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)CounterInit_kernel,1,counters);CHKERRQ(ierr);
 
   for (i=0; i<10; i++) {

@@ -34,5 +34,5 @@
       call PetscOptionsGetEnumPrivate(pre,name,CArray,opt,set,ierr)
       DeAllocate(CArray)
       DeAllocate(list1)
-      End Subroutine 
+      End Subroutine
 

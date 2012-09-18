@@ -1,5 +1,5 @@
 /*
-    Context for using preconditioned CG to minimize a quadratic function 
+    Context for using preconditioned CG to minimize a quadratic function
  */
 
 #ifndef __QCG

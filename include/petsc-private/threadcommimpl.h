@@ -114,7 +114,7 @@ struct _p_PetscThreadComm{
   PetscInt                refct;
   PetscInt                nworkThreads; /* Number of threads in the pool */
   PetscInt                *affinities;  /* Thread affinity */
-  PetscThreadCommOps      ops;          /* Operations table */ 
+  PetscThreadCommOps      ops;          /* Operations table */
   void                    *data;        /* implementation specific data */
   char                    type[256];    /* Thread model type */
   PetscInt                leader;       /* Rank of the leader thread. This thread manages

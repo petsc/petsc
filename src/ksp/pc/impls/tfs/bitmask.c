@@ -10,7 +10,7 @@ Division of Applied Mathematics
 Brown University
 Providence, RI 02912
 
-Last Modification: 
+Last Modification:
 11.21.97
 *********************************bit_mask.c***********************************/
 #include <../src/ksp/pc/impls/tfs/tfs.h>
@@ -29,13 +29,13 @@ PetscErrorCode PCTFS_bm_to_proc( char *ptr, PetscInt p_mask,  PetscInt *msg_list
       for (i=p_mask-1;i>=0;i--)
 	{
 	  tmp = BYTE*(p_mask-i-1);
-	  if (*ptr&BIT_0) 
+	  if (*ptr&BIT_0)
 	    {*msg_list = tmp; msg_list++;}
-	  if (*ptr&BIT_1) 
+	  if (*ptr&BIT_1)
 	    {*msg_list = tmp+1; msg_list++;}
-	  if (*ptr&BIT_2) 
+	  if (*ptr&BIT_2)
 	    {*msg_list = tmp+2; msg_list++;}
-	  if (*ptr&BIT_3) 
+	  if (*ptr&BIT_3)
 	    {*msg_list = tmp+3; msg_list++;}
 	  if (*ptr&BIT_4)
 	    {*msg_list = tmp+4; msg_list++;}
@@ -43,7 +43,7 @@ PetscErrorCode PCTFS_bm_to_proc( char *ptr, PetscInt p_mask,  PetscInt *msg_list
 	    {*msg_list = tmp+5; msg_list++;}
 	  if (*ptr&BIT_6)
 	    {*msg_list = tmp+6; msg_list++;}
-	  if (*ptr&BIT_7) 
+	  if (*ptr&BIT_7)
 	    {*msg_list = tmp+7; msg_list++;}
 	  ptr --;
 	}
@@ -57,7 +57,7 @@ PetscInt PCTFS_ct_bits( char *ptr, PetscInt n)
    PetscInt i, tmp=0;
 
    PetscFunctionBegin;
-  for(i=0;i<n;i++)
+  for (i=0;i<n;i++)
     {
       if (*ptr&128) {tmp++;}
       if (*ptr&64)  {tmp++;}
@@ -73,7 +73,7 @@ PetscInt PCTFS_ct_bits( char *ptr, PetscInt n)
   return(tmp);
 }
 
-/*********************************bit_mask.c***********************************/ 
+/*********************************bit_mask.c***********************************/
 PetscInt
 PCTFS_div_ceil( PetscInt numer,  PetscInt denom)
 {
@@ -83,13 +83,13 @@ PCTFS_div_ceil( PetscInt numer,  PetscInt denom)
 
   /* if integer division remainder then increment */
   rt_val = numer/denom;
-  if (numer%denom) 
+  if (numer%denom)
     {rt_val++;}
-  
+
   return(rt_val);
 }
 
-/*********************************bit_mask.c***********************************/ 
+/*********************************bit_mask.c***********************************/
 PetscInt
 PCTFS_len_bit_mask( PetscInt num_items)
 {
@@ -99,11 +99,11 @@ PCTFS_len_bit_mask( PetscInt num_items)
 
   /* mod BYTE ceiling function */
   rt_val = num_items/BYTE;
-  if (num_items%BYTE) 
+  if (num_items%BYTE)
     {rt_val++;}
-  
+
   /* make mults of sizeof int */
-  if ((tmp=rt_val%sizeof(PetscInt))) 
+  if ((tmp=rt_val%sizeof(PetscInt)))
     {rt_val+=(sizeof(PetscInt)-tmp);}
 
   return(rt_val);

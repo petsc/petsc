@@ -55,7 +55,7 @@ PetscErrorCode SNESVIComputeInactiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS* in
   PetscErrorCode    ierr;
   const PetscScalar *x,*xl,*xu,*f;
   PetscInt          *idx_act,i,nlocal,nloc_isact=0,ilow,ihigh,i1=0;
-  
+
   PetscFunctionBegin;
   ierr = VecGetLocalSize(X,&nlocal);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(X,&ilow,&ihigh);CHKERRQ(ierr);
@@ -71,7 +71,7 @@ PetscErrorCode SNESVIComputeInactiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS* in
   ierr = PetscMalloc(nloc_isact*sizeof(PetscInt),&idx_act);CHKERRQ(ierr);
 
   /* Set inactive set indices */
-  for(i=0; i < nlocal; i++) {
+  for (i=0; i < nlocal; i++) {
     if (((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) idx_act[i1++] = ilow+i;
   }
 
@@ -87,7 +87,7 @@ PetscErrorCode SNESVIComputeInactiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS* in
 
 /* --------------------------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESMonitorVI"
 PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
@@ -107,7 +107,7 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   ierr = VecGetArrayRead(snes->xu,&xu);CHKERRQ(ierr);
   ierr = VecGetArrayRead(snes->vec_sol,&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(snes->vec_func,&f);CHKERRQ(ierr);
-  
+
   rnorm = 0.0;
   for (i=0; i<n; i++) {
     if (((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) rnorm += PetscRealPart(PetscConj(f[i])*f[i]);
@@ -117,7 +117,7 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   }
 
   for (i=0; i<n; i++) {
-    if (PetscRealPart(x[i]) <= PetscRealPart(xl[i]) + 1.e-8) act_bound[0]++; 
+    if (PetscRealPart(x[i]) <= PetscRealPart(xl[i]) + 1.e-8) act_bound[0]++;
     else if (PetscRealPart(x[i]) >= PetscRealPart(xu[i]) - 1.e-8) act_bound[1]++;
   }
   ierr = VecRestoreArrayRead(snes->vec_func,&f);CHKERRQ(ierr);
@@ -128,12 +128,12 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   ierr = MPI_Allreduce(act,fact,2,MPIU_INT,MPI_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(act_bound,fact_bound,2,MPIU_INT,MPI_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
   fnorm = PetscSqrtReal(fnorm);
-  
+
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  if(snes->ntruebounds) tmp = ((double)(fact[0]+fact[1]))/((double)snes->ntruebounds);
+  if (snes->ntruebounds) tmp = ((double)(fact[0]+fact[1]))/((double)snes->ntruebounds);
   else tmp = 0.0;
   ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES VI Function norm %14.12e Active lower constraints %D/%D upper constraints %D/%D Percent of total %g Percent of bounded %g\n",its,(double)fnorm,fact[0],fact_bound[0],fact[1],fact_bound[1],((double)(fact[0]+fact[1]))/((double)N),tmp);CHKERRQ(ierr);
-  
+
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -141,10 +141,10 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
 /*
      Checks if J^T F = 0 which implies we've found a local minimum of the norm of the function,
     || F(u) ||_2 but not a zero, F(u) = 0. In the case when one cannot compute J^T F we use the fact that
-    0 = (J^T F)^T W = F^T J W iff W not in the null space of J. Thanks for Jorge More 
+    0 = (J^T F)^T W = F^T J W iff W not in the null space of J. Thanks for Jorge More
     for this trick. One assumes that the probability that W is in the null space of J is very, very small.
-*/ 
-#undef __FUNCT__  
+*/
+#undef __FUNCT__
 #define __FUNCT__ "SNESVICheckLocalMin_Private"
 PetscErrorCode SNESVICheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,PetscReal fnorm,PetscBool *ismin)
 {
@@ -180,9 +180,9 @@ PetscErrorCode SNESVICheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,PetscReal
 }
 
 /*
-     Checks if J^T(F - J*X) = 0 
-*/ 
-#undef __FUNCT__  
+     Checks if J^T(F - J*X) = 0
+*/
+#undef __FUNCT__
 #define __FUNCT__ "SNESVICheckResidual_Private"
 PetscErrorCode SNESVICheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Vec W2)
 {
@@ -224,7 +224,7 @@ PetscErrorCode SNESDefaultConverged_VI(SNES snes,PetscInt it,PetscReal xnorm,Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(reason,6);
-  
+
   *reason = SNES_CONVERGED_ITERATING;
 
   if (!it) {
@@ -247,7 +247,7 @@ PetscErrorCode SNESDefaultConverged_VI(SNES snes,PetscInt it,PetscReal xnorm,Pet
       ierr = PetscInfo2(snes,"Converged due to function norm %g < %g (relative tolerance)\n",(double)fnorm,(double)snes->ttol);CHKERRQ(ierr);
       *reason = SNES_CONVERGED_FNORM_RELATIVE;
     }
-  } 
+  }
   PetscFunctionReturn(0);
 }
 
@@ -279,7 +279,7 @@ PetscErrorCode SNESVIProjectOntoBounds(SNES snes,Vec X)
   ierr = VecGetArrayRead(snes->xl,&xl);CHKERRQ(ierr);
   ierr = VecGetArrayRead(snes->xu,&xu);CHKERRQ(ierr);
 
-  for(i = 0;i<n;i++) {
+  for (i = 0;i<n;i++) {
     if (PetscRealPart(x[i]) < PetscRealPart(xl[i])) x[i] = xl[i];
     else if (PetscRealPart(x[i]) > PetscRealPart(xu[i])) x[i] = xu[i];
   }
@@ -309,7 +309,7 @@ PetscErrorCode SNESVIGetActiveSetIS(SNES snes,Vec X,Vec F,IS* ISact)
   Vec               Xl=snes->xl,Xu=snes->xu;
   const PetscScalar *x,*f,*xl,*xu;
   PetscInt          *idx_act,i,nlocal,nloc_isact=0,ilow,ihigh,i1=0;
-  
+
   PetscFunctionBegin;
   ierr = VecGetLocalSize(X,&nlocal);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(X,&ilow,&ihigh);CHKERRQ(ierr);
@@ -325,7 +325,7 @@ PetscErrorCode SNESVIGetActiveSetIS(SNES snes,Vec X,Vec F,IS* ISact)
   ierr = PetscMalloc(nloc_isact*sizeof(PetscInt),&idx_act);CHKERRQ(ierr);
 
   /* Set active set indices */
-  for(i=0; i < nlocal; i++) {
+  for (i=0; i < nlocal; i++) {
     if (!((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) idx_act[i1++] = ilow+i;
   }
 
@@ -406,7 +406,7 @@ PetscErrorCode SNESVIDMComputeVariableBounds(SNES snes,Vec xl, Vec xu)
    SNESSetUp(), since these actions will automatically occur during
    the call to SNESSolve().
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetUp_VI"
 PetscErrorCode SNESSetUp_VI(SNES snes)
 {
@@ -418,18 +418,18 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
   ierr = SNESDefaultGetWork(snes,1);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
 
-  if(!snes->ops->computevariablebounds && snes->dm) {
+  if (!snes->ops->computevariablebounds && snes->dm) {
     PetscBool flag;
     ierr = DMHasVariableBounds(snes->dm, &flag); CHKERRQ(ierr);
     snes->ops->computevariablebounds = SNESVIDMComputeVariableBounds;
   }
-  if(!snes->usersetbounds) {
+  if (!snes->usersetbounds) {
     if (snes->ops->computevariablebounds) {
       if (!snes->xl) {ierr = VecDuplicate(snes->vec_sol,&snes->xl);CHKERRQ(ierr);}
       if (!snes->xu) {ierr = VecDuplicate(snes->vec_sol,&snes->xu);CHKERRQ(ierr);}
       ierr = (*snes->ops->computevariablebounds)(snes,snes->xl,snes->xu);CHKERRQ(ierr);
-    } 
-    else if(!snes->xl && !snes->xu) {
+    }
+    else if (!snes->xl && !snes->xu) {
       /* If the lower and upper bound on variables are not set, set it to -Inf and Inf */
       ierr = VecDuplicate(snes->vec_sol, &snes->xl);CHKERRQ(ierr);
       ierr = VecSet(snes->xl,SNES_VI_NINF);CHKERRQ(ierr);
@@ -448,7 +448,7 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESReset_VI"
 PetscErrorCode SNESReset_VI(SNES snes)
 {
@@ -470,7 +470,7 @@ PetscErrorCode SNESReset_VI(SNES snes)
 
    Application Interface Routine: SNESDestroy()
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESDestroy_VI"
 PetscErrorCode SNESDestroy_VI(SNES snes)
 {
@@ -496,7 +496,7 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
 .  xu   - upper bound.
 
    Notes:
-   If this routine is not called then the lower and upper bounds are set to 
+   If this routine is not called then the lower and upper bounds are set to
    SNES_VI_INF and SNES_VI_NINF respectively during SNESSetUp().
 
    Level: advanced
@@ -551,7 +551,7 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes,Vec xl,Vec xu)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_VI"
 PetscErrorCode SNESSetFromOptions_VI(SNES snes)
 {

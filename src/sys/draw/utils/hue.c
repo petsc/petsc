@@ -7,14 +7,14 @@
     Values are "gamma" corrected.
  */
 
-/*  
-   Gamma is a monitor dependent value.  The value here is an 
+/*
+   Gamma is a monitor dependent value.  The value here is an
    approximate that gives somewhat better results than Gamma = 1.
  */
 static PetscReal Gamma = 2.0;
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawUtilitySetGamma"  
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawUtilitySetGamma"
 PetscErrorCode  PetscDrawUtilitySetGamma(PetscReal g)
 {
   PetscFunctionBegin;
@@ -32,8 +32,8 @@ PetscErrorCode  PetscDrawUtilitySetGamma(PetscReal g)
  *   (0:255, 0:255, 0:255)
  *      r       g      b
  */
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawUtilityHlsHelper" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawUtilityHlsHelper"
 static PetscErrorCode PetscDrawUtilityHlsHelper(int h,int n1,int n2)
 {
   PetscFunctionBegin;
@@ -45,8 +45,8 @@ static PetscErrorCode PetscDrawUtilityHlsHelper(int h,int n1,int n2)
   PetscFunctionReturn(n1);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawUtilityHlsToRgb" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawUtilityHlsToRgb"
 static PetscErrorCode PetscDrawUtilityHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,unsigned char *b)
 {
   int m1,m2;         /* in 0 to 100 */
@@ -69,8 +69,8 @@ static PetscErrorCode PetscDrawUtilityHlsToRgb(int h,int l,int s,unsigned char *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawUtilitySetCmapHue" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawUtilitySetCmapHue"
 PetscErrorCode  PetscDrawUtilitySetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,int mapsize)
 {
   PetscErrorCode ierr;

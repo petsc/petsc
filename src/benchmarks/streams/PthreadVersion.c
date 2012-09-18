@@ -404,7 +404,7 @@ PetscErrorCode tuned_STREAM_2A_Kernel(void* arg)
   double      *ai = data->a;
   int         nloc = data->nloc,i=0;
   
-  for(i=0;i<nloc;i++)
+  for (i=0;i<nloc;i++)
     ai[i] = 2.0E0*ai[i];
   
   return(0);
@@ -420,7 +420,7 @@ PetscErrorCode tuned_STREAM_Initialize_Kernel(void* arg) {
   double      *ai = data->a,*bi = data->b, *ci = data->c;
   int         nloc = data->nloc,i=0;
 
-  for(i=0;i<nloc;i++) {
+  for (i=0;i<nloc;i++) {
     ai[i] = 1.0;
     bi[i] = 2.0;
     ci[i] = 0.0;
@@ -440,7 +440,7 @@ void tuned_STREAM_Initialize(double scalar) {
   PetscMalloc(nWorkThreads*sizeof(Kernel_Data*),&pdata);
   Q = N/nWorkThreads;
   R = N - Q*nWorkThreads;
-  for(i=0;i<nWorkThreads;i++) {
+  for (i=0;i<nWorkThreads;i++) {
     kerneldatap[i].a = &a[istart];
     kerneldatap[i].b = &b[istart];
     kerneldatap[i].c = &c[istart];

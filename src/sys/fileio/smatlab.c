@@ -18,7 +18,7 @@
 
     Level: intermediate
 
-    Notes: 
+    Notes:
      This overwrites your matlab/startup.m file
 
      The script must be in your MATLAB path or current directory

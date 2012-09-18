@@ -22,8 +22,8 @@ struct _p_PetscDrawSP {
 
 #define CHUNCKSIZE 100
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSPCreate" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSPCreate"
 /*@C
     PetscDrawSPCreate - Creates a scatter plot data structure.
 
@@ -77,8 +77,8 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSPSetDimension" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSPSetDimension"
 /*@
    PetscDrawSPSetDimension - Change the number of sets of points  that are to be drawn.
 
@@ -110,8 +110,8 @@ PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSPReset" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSPReset"
 /*@
    PetscDrawSPReset - Clears line graph to allow for reuse with new data.
 
@@ -139,8 +139,8 @@ PetscErrorCode  PetscDrawSPReset(PetscDrawSP sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSPDestroy" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSPDestroy"
 /*@C
    PetscDrawSPDestroy - Frees all space taken up by scatter plot data structure.
 
@@ -172,8 +172,8 @@ PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP *sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSPAddPoint" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSPAddPoint"
 /*@
    PetscDrawSPAddPoint - Adds another point to each of the scatter plots.
 
@@ -181,7 +181,7 @@ PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP *sp)
 
    Input Parameters:
 +  sp - the scatter plot data structure
--  x, y - the points to two vectors containing the new x and y 
+-  x, y - the points to two vectors containing the new x and y
           point for each curve.
 
    Level: intermediate
@@ -206,14 +206,14 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
     ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
-    sp->x = tmpx; 
+    sp->x = tmpx;
     sp->y = tmpy;
     sp->len += sp->dim*CHUNCKSIZE;
   }
   for (i=0; i<sp->dim; i++) {
-    if (x[i] > sp->xmax) sp->xmax = x[i]; 
+    if (x[i] > sp->xmax) sp->xmax = x[i];
     if (x[i] < sp->xmin) sp->xmin = x[i];
-    if (y[i] > sp->ymax) sp->ymax = y[i]; 
+    if (y[i] > sp->ymax) sp->ymax = y[i];
     if (y[i] < sp->ymin) sp->ymin = y[i];
 
     sp->x[sp->loc]   = x[i];
@@ -224,8 +224,8 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSPAddPoints" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSPAddPoints"
 /*@C
    PetscDrawSPAddPoints - Adds several points to each of the scatter plots.
 
@@ -233,7 +233,7 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 
    Input Parameters:
 +  sp - the LineGraph data structure
-.  xx,yy - points to two arrays of pointers that point to arrays 
+.  xx,yy - points to two arrays of pointers that point to arrays
            containing the new x and y points for each curve.
 -  n - number of points being added
 
@@ -270,9 +270,9 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
     x = xx[j]; y = yy[j];
     k = sp->loc + j;
     for (i=0; i<n; i++) {
-      if (x[i] > sp->xmax) sp->xmax = x[i]; 
+      if (x[i] > sp->xmax) sp->xmax = x[i];
       if (x[i] < sp->xmin) sp->xmin = x[i];
-      if (y[i] > sp->ymax) sp->ymax = y[i]; 
+      if (y[i] > sp->ymax) sp->ymax = y[i];
       if (y[i] < sp->ymin) sp->ymin = y[i];
 
       sp->x[k] = x[i];
@@ -285,8 +285,8 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSPDraw" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSPDraw"
 /*@
    PetscDrawSPDraw - Redraws a scatter plot.
 
@@ -317,7 +317,7 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp)
   ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLimits(sp->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
   ierr = PetscDrawAxisDraw(sp->axis);CHKERRQ(ierr);
-  
+
   ierr = MPI_Comm_rank(((PetscObject)sp)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     for (i=0; i<dim; i++) {
@@ -329,10 +329,10 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp)
   ierr = PetscDrawFlush(sp->win);CHKERRQ(ierr);
   ierr = PetscDrawPause(sp->win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
- 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSPSetLimits" 
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSPSetLimits"
 /*@
    PetscDrawSPSetLimits - Sets the axis limits for a line graph. If more
    points are added after this call, the limits will be adjusted to
@@ -354,15 +354,15 @@ PetscErrorCode  PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_
   PetscFunctionBegin;
   if (sp && ((PetscObject)sp)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
-  sp->xmin = x_min; 
-  sp->xmax = x_max; 
-  sp->ymin = y_min; 
+  sp->xmin = x_min;
+  sp->xmax = x_max;
+  sp->ymin = y_min;
   sp->ymax = y_max;
   PetscFunctionReturn(0);
 }
- 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSPGetAxis" 
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSPGetAxis"
 /*@C
    PetscDrawSPGetAxis - Gets the axis context associated with a line graph.
    This is useful if one wants to change some axis property, such as
@@ -392,8 +392,8 @@ PetscErrorCode  PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSPGetDraw" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSPGetDraw"
 /*@C
    PetscDrawSPGetDraw - Gets the draw context associated with a line graph.
 

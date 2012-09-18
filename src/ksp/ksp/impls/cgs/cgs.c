@@ -1,5 +1,5 @@
 
-/*                       
+/*
 
     Note that for the complex numbers version, the VecDot() arguments
     within the code MUST remain in the order given for correct computation
@@ -7,7 +7,7 @@
 */
 #include <petsc-private/kspimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_CGS"
 static PetscErrorCode KSPSetUp_CGS(KSP ksp)
 {
@@ -18,7 +18,7 @@ static PetscErrorCode KSPSetUp_CGS(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_CGS"
 static PetscErrorCode  KSPSolve_CGS(KSP ksp)
 {
@@ -66,7 +66,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
   /* Make the initial Rp == R */
   ierr = VecCopy(R,RP);CHKERRQ(ierr);
   /*  added for Fidap */
-  /* Penalize Startup - Isaac Hasbani Trick for CGS 
+  /* Penalize Startup - Isaac Hasbani Trick for CGS
      Since most initial conditions result in a mostly 0 residual,
      we change all the 0 values in the vector RP to the maximum.
   */
@@ -133,7 +133,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
 }
 
 /*MC
-     KSPCGS - This code implements the CGS (Conjugate Gradient Squared) method. 
+     KSPCGS - This code implements the CGS (Conjugate Gradient Squared) method.
 
    Options Database Keys:
 .   see KSPSolve()
@@ -145,13 +145,13 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
    Notes: Does not require a symmetric matrix. Does not apply transpose of the matrix.
         Supports left and right preconditioning, but not symmetric.
 
-   Developer Notes: Has this weird support for doing the convergence test with the natural norm, I assume this works only with 
+   Developer Notes: Has this weird support for doing the convergence test with the natural norm, I assume this works only with
       no preconditioning and symmetric positive definite operator.
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS, KSPSetPCSide()
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_CGS"
 PetscErrorCode  KSPCreate_CGS(KSP ksp)
 {

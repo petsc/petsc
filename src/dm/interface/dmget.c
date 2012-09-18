@@ -1,6 +1,6 @@
 #include <petsc-private/dmimpl.h> /*I "petscdm.h" I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMGetLocalVector"
 /*@
    DMGetLocalVector - Gets a Seq PETSc vector that
@@ -20,7 +20,7 @@
    The vector values are NOT initialized and may have garbage in them, so you may need
    to zero them.
 
-   The output parameter, g, is a regular PETSc vector that should be returned with 
+   The output parameter, g, is a regular PETSc vector that should be returned with
    DMRestoreLocalVector() DO NOT call VecDestroy() on it.
 
    VecStride*() operations can be useful when using DM with dof > 1
@@ -36,7 +36,7 @@ PetscErrorCode  DMGetLocalVector(DM dm,Vec* g)
 {
   PetscErrorCode ierr,i;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(g,2);
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
@@ -58,7 +58,7 @@ PetscErrorCode  DMGetLocalVector(DM dm,Vec* g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMRestoreLocalVector"
 /*@
    DMRestoreLocalVector - Returns a Seq PETSc vector that
@@ -84,7 +84,7 @@ PetscErrorCode  DMRestoreLocalVector(DM dm,Vec* g)
   PetscErrorCode ierr;
   PetscInt       i,j;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(g,2);
   for (j=0; j<DM_MAX_WORK_VECTORS; j++) {
@@ -103,7 +103,7 @@ PetscErrorCode  DMRestoreLocalVector(DM dm,Vec* g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMGetGlobalVector"
 /*@
    DMGetGlobalVector - Gets a MPI PETSc vector that
@@ -123,7 +123,7 @@ PetscErrorCode  DMRestoreLocalVector(DM dm,Vec* g)
    The vector values are NOT initialized and may have garbage in them, so you may need
    to zero them.
 
-   The output parameter, g, is a regular PETSc vector that should be returned with 
+   The output parameter, g, is a regular PETSc vector that should be returned with
    DMRestoreGlobalVector() DO NOT call VecDestroy() on it.
 
    VecStride*() operations can be useful when using DM with dof > 1
@@ -141,7 +141,7 @@ PetscErrorCode  DMGetGlobalVector(DM dm,Vec* g)
   PetscErrorCode ierr;
   PetscInt       i;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(g,2);
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
@@ -163,7 +163,7 @@ PetscErrorCode  DMGetGlobalVector(DM dm,Vec* g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMClearGlobalVectors"
 /*@
    DMClearGlobalVectors - Destroys all the global vectors that have been stashed in this DM
@@ -188,7 +188,7 @@ PetscErrorCode  DMClearGlobalVectors(DM dm)
   PetscErrorCode ierr;
   PetscInt       i;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
     if (dm->globalout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Clearing DM of global vectors that has a global vector obtained with DMGetGlobalVector()");
@@ -197,7 +197,7 @@ PetscErrorCode  DMClearGlobalVectors(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMRestoreGlobalVector"
 /*@
    DMRestoreGlobalVector - Returns a Seq PETSc vector that
@@ -223,7 +223,7 @@ PetscErrorCode  DMRestoreGlobalVector(DM dm,Vec* g)
   PetscErrorCode ierr;
   PetscInt       i,j;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(g,2);
   for (j=0; j<DM_MAX_WORK_VECTORS; j++) {
@@ -281,7 +281,7 @@ PetscErrorCode DMGetNamedGlobalVector(DM dm,const char *name,Vec *X)
   }
 
   /* Create the Vec */
-  ierr = PetscMalloc(sizeof *link,&link);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dm,&link->X);CHKERRQ(ierr);
   link->next = dm->namedglobal;

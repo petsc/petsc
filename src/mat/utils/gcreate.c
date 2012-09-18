@@ -2,7 +2,7 @@
 #include <petsc-private/matimpl.h>       /*I "petscmat.h"  I*/
 
 #if 0
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPublish_Base"
 static PetscErrorCode MatPublish_Base(PetscObject obj)
 {
@@ -11,7 +11,7 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
 }
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreate"
 /*@
    MatCreate - Creates a matrix where the type is determined
@@ -19,14 +19,14 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
    with a call to MatSetFromOptions(). The default matrix type is
    AIJ, using the routines MatCreateSeqAIJ() or MatCreateAIJ()
    if you do not set a type in the options database. If you never
-   call MatSetType() or MatSetFromOptions() it will generate an 
+   call MatSetType() or MatSetFromOptions() it will generate an
    error when you try to use the matrix.
 
    Collective on MPI_Comm
 
    Input Parameter:
 .  comm - MPI communicator
- 
+
    Output Parameter:
 .  A - the matrix
 
@@ -52,8 +52,8 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
 
 .keywords: matrix, create
 
-.seealso: MatCreateSeqAIJ(), MatCreateAIJ(), 
-          MatCreateSeqDense(), MatCreateDense(), 
+.seealso: MatCreateSeqAIJ(), MatCreateAIJ(),
+          MatCreateSeqDense(), MatCreateDense(),
           MatCreateSeqBAIJ(), MatCreateBAIJ(),
           MatCreateSeqSBAIJ(), MatCreateSBAIJ(),
           MatConvert()
@@ -79,7 +79,7 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSetSizes"
 /*@
   MatSetSizes - Sets the local and global sizes, and checks to determine compatibility
@@ -99,8 +99,8 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
 
    If PETSC_DECIDE is not used for the arguments 'm' and 'n', then the
    user must ensure that they are chosen to be compatible with the
-   vectors. To do this, one first considers the matrix-vector product 
-   'y = A x'. The 'm' that is used in the above routine must match the 
+   vectors. To do this, one first considers the matrix-vector product
+   'y = A x'. The 'm' that is used in the above routine must match the
    local size used in the vector creation routine VecCreateMPI() for 'y'.
    Likewise, the 'n' used must match that used as the local size in
    VecCreateMPI() for 'x'.
@@ -116,7 +116,7 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
 PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1); 
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   if (M > 0 && m > M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %D cannot be larger than global column size %D",m,M);
   if (N > 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %D cannot be larger than global row size %D",n,N);
   if ((A->rmap->n >= 0 || A->rmap->N >= 0) && (A->rmap->n != m || A->rmap->N != M)) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->rmap->n,A->rmap->N);
@@ -128,7 +128,7 @@ PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions"
 /*@
    MatSetFromOptions - Creates a matrix where the type is determined
@@ -158,8 +158,8 @@ PetscErrorCode  MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt 
 
 .keywords: matrix, create
 
-.seealso: MatCreateSeqAIJ((), MatCreateAIJ(), 
-          MatCreateSeqDense(), MatCreateDense(), 
+.seealso: MatCreateSeqAIJ((), MatCreateAIJ(),
+          MatCreateSeqDense(), MatCreateDense(),
           MatCreateSeqBAIJ(), MatCreateBAIJ(),
           MatCreateSeqSBAIJ(), MatCreateSBAIJ(),
           MatConvert()
@@ -273,7 +273,7 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt *dnnz,co
 
         This is somewhat different from MatHeaderReplace() it would be nice to merge the code
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatHeaderMerge"
 PetscErrorCode MatHeaderMerge(Mat A,Mat C)
 {
@@ -331,7 +331,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
 
         This is somewhat different from MatHeaderMerge() it would be nice to merge the code
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatHeaderReplace"
 PetscErrorCode MatHeaderReplace(Mat A,Mat C)
 {

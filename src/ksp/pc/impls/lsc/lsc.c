@@ -10,7 +10,7 @@ typedef struct {
   Mat        L;            /* keep a copy to reuse when obtained with L = A10*A01 */
 } PC_LSC;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCLSCAllocate_Private"
 static PetscErrorCode PCLSCAllocate_Private(PC pc)
 {
@@ -36,7 +36,7 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_LSC"
 static PetscErrorCode PCSetUp_LSC(PC pc)
 {
@@ -69,7 +69,7 @@ static PetscErrorCode PCSetUp_LSC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_LSC"
 static PetscErrorCode PCApply_LSC(PC pc,Vec x,Vec y)
 {
@@ -93,7 +93,7 @@ static PetscErrorCode PCApply_LSC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCReset_LSC"
 static PetscErrorCode PCReset_LSC(PC pc)
 {
@@ -110,7 +110,7 @@ static PetscErrorCode PCReset_LSC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_LSC"
 static PetscErrorCode PCDestroy_LSC(PC pc)
 {
@@ -122,7 +122,7 @@ static PetscErrorCode PCDestroy_LSC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_LSC"
 static PetscErrorCode PCSetFromOptions_LSC(PC pc)
 {
@@ -138,7 +138,7 @@ static PetscErrorCode PCSetFromOptions_LSC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_LSC"
 static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
 {
@@ -221,7 +221,7 @@ static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_LSC"
 PetscErrorCode  PCCreate_LSC(PC pc)
 {

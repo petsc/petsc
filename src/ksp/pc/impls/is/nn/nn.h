@@ -4,8 +4,8 @@
 
 #include <../src/ksp/pc/impls/is/pcis.h>
 
-/* 
-   Private context (data structure) for the NN preconditioner.  
+/*
+   Private context (data structure) for the NN preconditioner.
 */
 typedef struct {
   /* First MUST come the folowing line, for the stuff that is common to FETI and Neumann-Neumann. */
@@ -23,7 +23,7 @@ extern PetscErrorCode PCNNCreateCoarseMatrix (PC);
 extern PetscErrorCode PCNNApplySchurToChunk(PC pc,PetscInt n,PetscInt* idx,PetscScalar *chunk,PetscScalar* array_N,Vec vec1_B,Vec vec2_B,Vec vec1_D,Vec vec2_D);
 extern PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc,Vec r,Vec z,PetscScalar* work_N,Vec vec1_B,Vec vec2_B,
                                              Vec vec3_B,Vec vec1_D,Vec vec2_D,Vec vec1_N,Vec vec2_N);
-extern PetscErrorCode PCNNBalancing(PC pc,Vec r,Vec u,Vec z,Vec vec1_B,Vec vec2_B,Vec vec3_B,Vec vec1_D,Vec vec2_D,PetscScalar *work_N); 
+extern PetscErrorCode PCNNBalancing(PC pc,Vec r,Vec u,Vec z,Vec vec1_B,Vec vec2_B,Vec vec3_B,Vec vec1_D,Vec vec2_D,PetscScalar *work_N);
 
 #endif /* __pcnn_h */
 

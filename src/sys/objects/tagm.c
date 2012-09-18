@@ -18,10 +18,10 @@
 */
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscObjectGetNewTag" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectGetNewTag"
 /*@C
-    PetscObjectGetNewTag - Gets a unique new tag from a PETSc object. All 
+    PetscObjectGetNewTag - Gets a unique new tag from a PETSc object. All
     processors that share the object MUST call this routine EXACTLY the same
     number of times.  This tag should only be used with the current objects
     communicator; do NOT use it with any other MPI communicator.
@@ -29,7 +29,7 @@
     Collective on PetscObject
 
     Input Parameter:
-.   obj - the PETSc object; this must be cast with a (PetscObject), for example, 
+.   obj - the PETSc object; this must be cast with a (PetscObject), for example,
          PetscObjectGetNewTag((PetscObject)mat,&tag);
 
     Output Parameter:
@@ -52,10 +52,10 @@ PetscErrorCode  PetscObjectGetNewTag(PetscObject obj,PetscMPIInt *tag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscCommGetNewTag"
 /*@
-    PetscCommGetNewTag - Gets a unique new tag from a PETSc communicator. All 
+    PetscCommGetNewTag - Gets a unique new tag from a PETSc communicator. All
     processors that share the communicator MUST call this routine EXACTLY the same
     number of times.  This tag should only be used with the current objects
     communicator; do NOT use it with any other MPI communicator.
@@ -97,7 +97,7 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
 
   *tag = counter->tag--;
 #if defined(PETSC_USE_DEBUG)
-  /* 
+  /*
      Hanging here means that some processes have called PetscCommGetNewTag() and others have not.
   */
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
@@ -105,8 +105,8 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscCommDuplicate" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscCommDuplicate"
 /*@C
   PetscCommDuplicate - Duplicates the communicator only if it is not already a PETSc communicator.
 
@@ -120,7 +120,7 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
 - first_tag - Tag available that has not already been used with this communicator (you may
               pass in PETSC_NULL if you do not need a tag)
 
-  PETSc communicators are just regular MPI communicators that keep track of which 
+  PETSc communicators are just regular MPI communicators that keep track of which
   tags have been used to prevent tag conflict. If you pass a non-PETSc communicator into
   a PETSc creation routine it will attach a private communicator for use in the objects communications.
   The internal MPI_Comm is used to perform all the MPI calls for PETSc, the outer MPI_Comm is a user
@@ -178,7 +178,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   }
 
 #if defined(PETSC_USE_DEBUG)
-  /* 
+  /*
      Hanging here means that some processes have called PetscCommDuplicate() and others have not.
      This likley means that a subset of processes in a MPI_Comm have attempted to create a PetscObject!
      ALL processes that share a communicator MUST shared objects created from that communicator.
@@ -208,8 +208,8 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscCommDestroy" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscCommDestroy"
 /*@C
    PetscCommDestroy - Frees communicator.  Use in conjunction with PetscCommDuplicate().
 
@@ -247,7 +247,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
 
   /* Only the main thread updates counter->refcount */
   ierr = MPI_Attr_get(icomm,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
-  if(flg) {
+  if (flg) {
     PetscInt trank;
     trank = PetscThreadCommGetRank(tcomm);
     /* Only thread rank 0 updates the counter */
@@ -312,33 +312,33 @@ PetscErrorCode  PetscObjectsGetGlobalNumbering(MPI_Comm comm, PetscInt len, Pets
   ierr = MPI_Comm_size(comm, &size);                   CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);                   CHKERRQ(ierr);
   roots = 0;
-  for(i = 0; i < len; ++i) {
+  for (i = 0; i < len; ++i) {
     PetscMPIInt srank;
     ierr = MPI_Comm_rank(objlist[i]->comm, &srank);         CHKERRQ(ierr);
     /* Am I the root of the i-th subcomm? */
-    if(!srank) ++roots;
+    if (!srank) ++roots;
   }
   /* Obtain the sum of all roots -- the global number of distinct subcomms. */
   ierr   = MPI_Allreduce((void*)&roots,(void*)count,1,MPIU_INT,MPI_SUM,comm); CHKERRQ(ierr);
   /* Now introduce a global numbering for subcomms, initially known only by subcomm roots. */
-  /* 
-   At the subcomm roots number the subcomms in the subcomm-root local manner, 
+  /*
+   At the subcomm roots number the subcomms in the subcomm-root local manner,
    and make it global by calculating the shift.
    */
   ierr = MPI_Scan((PetscMPIInt*)&roots,(PetscMPIInt*)&offset,1,MPIU_INT,MPI_SUM,comm); CHKERRQ(ierr);
   offset -= roots;
   /* Now we are ready to broadcast global subcomm numbers within each subcomm.*/
-  /* 
-     This is where the assumption of a deadlock-free ordering of the subcomms is assumed: 
-     broadcast is collective on the subcomm. 
+  /*
+     This is where the assumption of a deadlock-free ordering of the subcomms is assumed:
+     broadcast is collective on the subcomm.
    */
   roots = 0;
-  for(i = 0; i < len; ++i) {
+  for (i = 0; i < len; ++i) {
     PetscMPIInt srank;
     numbering[i] = offset + roots; /* only meaningful if !srank. */
     ierr = MPI_Comm_rank(objlist[i]->comm, &srank);      CHKERRQ(ierr);
     ierr = MPI_Bcast(numbering+i,1,MPIU_INT,0,objlist[i]->comm); CHKERRQ(ierr);
-    if(!srank) ++roots;
+    if (!srank) ++roots;
   }
 
   PetscFunctionReturn(0);

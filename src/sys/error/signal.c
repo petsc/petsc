@@ -1,6 +1,6 @@
 
 /*
-      Routines to handle signals the program will receive. 
+      Routines to handle signals the program will receive.
     Usually this will call the error handlers.
 */
 #include <petscsys.h>             /*I   "petscsys.h"   I*/
@@ -20,12 +20,12 @@ static PetscBool  SignalSet = PETSC_FALSE;
 
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSignalHandler_Private"
 /*
-    PetscSignalHandler_Private - This is the signal handler called by the system. This calls 
+    PetscSignalHandler_Private - This is the signal handler called by the system. This calls
              any signal handler set by PETSc or the application code.
- 
+
    Input Parameters: (depends on system)
 .    sig - integer code indicating the type of signal
 .    code - ??
@@ -56,7 +56,7 @@ static void PetscSignalHandler_Private(int sig)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDefaultSignalHandler"
 /*@
    PetscDefaultSignalHandler - Default signal handler.
@@ -83,7 +83,7 @@ PetscErrorCode  PetscDefaultSignalHandler(int sig,void *ptr)
   SIGNAME[SIGABRT] = "Abort";
 #endif
 #if !defined(PETSC_MISSING_SIGALRM)
-  SIGNAME[SIGALRM] = "Alarm"; 
+  SIGNAME[SIGALRM] = "Alarm";
 #endif
 #if !defined(PETSC_MISSING_SIGBUS)
   SIGNAME[SIGBUS]  = "BUS: Bus Error, possibly illegal memory access";
@@ -104,7 +104,7 @@ PetscErrorCode  PetscDefaultSignalHandler(int sig,void *ptr)
   SIGNAME[SIGILL]  = "Illegal instruction: Likely due to memory corruption";
 #endif
 #if !defined(PETSC_MISSING_SIGINT)
-  SIGNAME[SIGINT]  = "Interrupt"; 
+  SIGNAME[SIGINT]  = "Interrupt";
 #endif
 #if !defined(PETSC_MISSING_SIGKILL)
   SIGNAME[SIGKILL] = "Kill: Some other process (or the batch system) has told this process to end";
@@ -174,10 +174,10 @@ PetscErrorCode  PetscDefaultSignalHandler(int sig,void *ptr)
 #define PETSC_SIGNAL_CAST
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscPushSignalHandler"
 /*@C
-   PetscPushSignalHandler - Catches the usual fatal errors and 
+   PetscPushSignalHandler - Catches the usual fatal errors and
    calls a user-provided routine.
 
    Not Collective
@@ -316,7 +316,7 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
   if (sh) {
     if (sh->classid != SIGNAL_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Signal object has been corrupted");
     newsh->previous = sh;
-  } 
+  }
   else {newsh->previous = 0;}
   newsh->handler = routine;
   newsh->ctx     = ctx;
@@ -325,7 +325,7 @@ PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscPopSignalHandler"
 /*@
    PetscPopSignalHandler - Removes the most last signal handler that was pushed.
@@ -423,7 +423,7 @@ jmp_buf PetscSegvJumpBuf;
 */
 void PetscSegv_sigaction(int signal, siginfo_t *si, void *arg)
 {
-  longjmp(PetscSegvJumpBuf,1); 
+  longjmp(PetscSegvJumpBuf,1);
   return;
 }
 #endif

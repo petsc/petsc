@@ -1,5 +1,5 @@
 
-/* 
+/*
    This file contains simple binary read/write routines.
  */
 
@@ -15,7 +15,7 @@
 #include <petscbt.h>
 
 /* --------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscByteSwapEnum"
 /*
   PetscByteSwapEnum - Swap bytes in a  PETSc Enum
@@ -26,7 +26,7 @@ PetscErrorCode  PetscByteSwapEnum(PetscEnum *buff,PetscInt n)
   PetscInt   i,j;
   PetscEnum   tmp = ENUM_DUMMY;
   char       *ptr1,*ptr2 = (char*)&tmp;
-                                   
+
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
@@ -40,7 +40,7 @@ PetscErrorCode  PetscByteSwapEnum(PetscEnum *buff,PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscByteSwapBool"
 /*
   PetscByteSwapBool - Swap bytes in a  PETSc Bool
@@ -51,7 +51,7 @@ PetscErrorCode  PetscByteSwapBool(PetscBool *buff,PetscInt n)
   PetscInt    i,j;
   PetscBool   tmp = PETSC_FALSE;
   char        *ptr1,*ptr2 = (char*)&tmp;
-                                   
+
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
@@ -65,17 +65,17 @@ PetscErrorCode  PetscByteSwapBool(PetscBool *buff,PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscByteSwapInt"
 /*
-  PetscByteSwapInt - Swap bytes in a  PETSc integer (which may be 32 or 64 bits) 
+  PetscByteSwapInt - Swap bytes in a  PETSc integer (which may be 32 or 64 bits)
 
 */
 PetscErrorCode  PetscByteSwapInt(PetscInt *buff,PetscInt n)
 {
   PetscInt  i,j,tmp = 0;
   char       *ptr1,*ptr2 = (char*)&tmp;
-                                   
+
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
@@ -89,7 +89,7 @@ PetscErrorCode  PetscByteSwapInt(PetscInt *buff,PetscInt n)
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscByteSwapShort"
 /*
   PetscByteSwapShort - Swap bytes in a short
@@ -113,7 +113,7 @@ PetscErrorCode  PetscByteSwapShort(short *buff,PetscInt n)
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscByteSwapScalar"
 /*
   PetscByteSwapScalar - Swap bytes in a double
@@ -141,7 +141,7 @@ PetscErrorCode  PetscByteSwapScalar(PetscScalar *buff,PetscInt n)
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscByteSwapDouble"
 /*
   PetscByteSwapDouble - Swap bytes in a double
@@ -165,7 +165,7 @@ PetscErrorCode  PetscByteSwapDouble(double *buff,PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscByteSwapFloat"
 /*
   PetscByteSwapFloat - Swap bytes in a float
@@ -189,7 +189,7 @@ PetscErrorCode PetscByteSwapFloat(float *buff,PetscInt n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscByteSwap"
 PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
 {
@@ -197,7 +197,7 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
 
   PetscFunctionBegin;
   if      (pdtype == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt*)data,count);CHKERRQ(ierr);}
-  else if (pdtype == PETSC_ENUM)   {ierr = PetscByteSwapEnum((PetscEnum*)data,count);CHKERRQ(ierr);}        
+  else if (pdtype == PETSC_ENUM)   {ierr = PetscByteSwapEnum((PetscEnum*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_BOOL)   {ierr = PetscByteSwapBool((PetscBool*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)data,count);CHKERRQ(ierr);}
@@ -207,7 +207,7 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
 }
 
 /* --------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscBinaryRead"
 /*@
    PetscBinaryRead - Reads from a binary file.
@@ -216,7 +216,7 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
 
    Input Parameters:
 +  fd - the file
-.  n  - the number of items to read 
+.  n  - the number of items to read
 -  type - the type of items to read (PETSC_INT, PETSC_DOUBLE or PETSC_SCALAR)
 
    Output Parameters:
@@ -226,7 +226,7 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
 
    Level: developer
 
-   Notes: 
+   Notes:
    PetscBinaryRead() uses byte swapping to work on all machines; the files
    are written to file ALWAYS using big-endian ordering. On small-endian machines the numbers
    are converted to the small-endian format when they are read in from the file.
@@ -252,7 +252,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   PetscErrorCode    ierr;
 #endif
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  void              *ptmp = p; 
+  void              *ptmp = p;
 #endif
 
   PetscFunctionBegin;
@@ -268,7 +268,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   else if (type == PETSC_BOOL)   m *= sizeof(PetscBool);
   else if (type == PETSC_BIT_LOGICAL) m  = PetscBTLength(m)*sizeof(char);
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
-  
+
 #if defined(PETSC_USE_REAL___FLOAT128)
   /* If using __float128 precision we still read in doubles from file */
   if (type == PETSC_SCALAR) {
@@ -310,7 +310,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscBinaryWrite"
 /*@
    PetscBinaryWrite - Writes to a binary file.
@@ -326,7 +326,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 
    Level: advanced
 
-   Notes: 
+   Notes:
    PetscBinaryWrite() uses byte swapping to work on all machines; the files
    are written using big-endian ordering to the file. On small-endian machines the numbers
    are converted to the big-endian format when they are written to disk.
@@ -337,9 +337,9 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
    The Buffer p should be read-write buffer, and not static data.
    This way, byte-swapping is done in-place, and then the buffer is
    written to the file.
-   
-   This routine restores the original contents of the buffer, after 
-   it is written to the file. This is done by byte-swapping in-place 
+
+   This routine restores the original contents of the buffer, after
+   it is written to the file. This is done by byte-swapping in-place
    the second time. If the flag istemp is set to PETSC_TRUE, the second
    byte-swapping operation is not done, thus saving some computation,
    but the buffer is left corrupted.
@@ -349,7 +349,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
    Concepts: files^writing binary
    Concepts: binary files^writing
 
-.seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor(), PetscBinarySynchronizedWrite(), 
+.seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor(), PetscBinarySynchronizedWrite(),
           PetscBinarySynchronizedRead(), PetscBinarySynchronizedSeek()
 @*/
 PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,PetscBool  istemp)
@@ -359,7 +359,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
   size_t         m = (size_t)n,maxblock=65536;
 #if !defined(PETSC_WORDS_BIGENDIAN)
   PetscErrorCode ierr;
-  void           *ptmp = p; 
+  void           *ptmp = p;
 #endif
 
   PetscFunctionBegin;
@@ -398,8 +398,8 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscBinaryOpen" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscBinaryOpen"
 /*@C
    PetscBinaryOpen - Opens a PETSc binary file.
 
@@ -421,14 +421,14 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
    big-endian format. This means the file can be accessed using PetscBinaryOpen() and
    PetscBinaryRead() and PetscBinaryWrite() on any machine.
 
-.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscFileMode, PetscViewerFileSetMode(), PetscViewerBinaryGetDescriptor(), 
+.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscFileMode, PetscViewerFileSetMode(), PetscViewerBinaryGetDescriptor(),
           PetscBinarySynchronizedWrite(), PetscBinarySynchronizedRead(), PetscBinarySynchronizedSeek()
 
 @*/
 PetscErrorCode  PetscBinaryOpen(const char name[],PetscFileMode mode,int *fd)
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_O_BINARY) 
+#if defined(PETSC_HAVE_O_BINARY)
   if (mode == FILE_MODE_WRITE) {
     if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
@@ -460,8 +460,8 @@ PetscErrorCode  PetscBinaryOpen(const char name[],PetscFileMode mode,int *fd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscBinaryClose" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscBinaryClose"
 /*@
    PetscBinaryClose - Closes a PETSc binary file.
 
@@ -483,8 +483,8 @@ PetscErrorCode  PetscBinaryClose(int fd)
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscBinarySeek" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscBinarySeek"
 /*@
    PetscBinarySeek - Moves the file pointer on a PETSc binary file.
 
@@ -503,7 +503,7 @@ PetscErrorCode  PetscBinaryClose(int fd)
 
    Level: developer
 
-   Notes: 
+   Notes:
    Integers are stored on the file as 32 long, regardless of whether
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine. Hence you CANNOT use sizeof()
@@ -539,7 +539,7 @@ PetscErrorCode  PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscBinarySynchronizedRead"
 /*@C
    PetscBinarySynchronizedRead - Reads from a binary file.
@@ -547,22 +547,22 @@ PetscErrorCode  PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_
    Collective on MPI_Comm
 
    Input Parameters:
-+  comm - the MPI communicator 
++  comm - the MPI communicator
 .  fd - the file
-.  n  - the number of items to read 
+.  n  - the number of items to read
 -  type - the type of items to read (PETSC_INT, PETSC_DOUBLE or PETSC_SCALAR)
 
    Output Parameters:
 .  p - the buffer
 
    Options Database Key:
-.   -binary_longints - indicates the file was generated on a Cray vector 
-         machine (not the T3E/D) and the ints are stored as 64 bit 
+.   -binary_longints - indicates the file was generated on a Cray vector
+         machine (not the T3E/D) and the ints are stored as 64 bit
          quantities, otherwise they are stored as 32 bit
 
    Level: developer
 
-   Notes: 
+   Notes:
    Does a PetscBinaryRead() followed by an MPI_Bcast()
 
    PetscBinarySynchronizedRead() uses byte swapping to work on all machines.
@@ -573,7 +573,7 @@ PetscErrorCode  PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_
    Concepts: files^synchronized reading of binary files
    Concepts: binary files^reading, synchronized
 
-.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead(), PetscBinarySynchronizedWrite(), 
+.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead(), PetscBinarySynchronizedWrite(),
           PetscBinarySynchronizedSeek()
 @*/
 PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type)
@@ -592,7 +592,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscBinarySynchronizedWrite"
 /*@C
    PetscBinarySynchronizedWrite - writes to a binary file.
@@ -600,7 +600,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
    Collective on MPI_Comm
 
    Input Parameters:
-+  comm - the MPI communicator 
++  comm - the MPI communicator
 .  fd - the file
 .  n  - the number of items to write
 .  p - the buffer
@@ -609,7 +609,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
 
    Level: developer
 
-   Notes: 
+   Notes:
    Process 0 does a PetscBinaryWrite()
 
    PetscBinarySynchronizedWrite() uses byte swapping to work on all machines.
@@ -641,8 +641,8 @@ PetscErrorCode  PetscBinarySynchronizedWrite(MPI_Comm comm,int fd,void *p,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscBinarySynchronizedSeek" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscBinarySynchronizedSeek"
 /*@C
    PetscBinarySynchronizedSeek - Moves the file pointer on a PETSc binary file.
 
@@ -660,14 +660,14 @@ PetscErrorCode  PetscBinarySynchronizedWrite(MPI_Comm comm,int fd,void *p,PetscI
 
    Level: developer
 
-   Notes: 
+   Notes:
    Integers are stored on the file as 32 long, regardless of whether
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine. Hence you CANNOT use sizeof()
    to determine the offset or location.
 
    Concepts: binary files^seeking
-   Concepts: files^seeking in binary 
+   Concepts: files^seeking in binary
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen(), PetscBinarySynchronizedWrite(), PetscBinarySynchronizedRead(),
           PetscBinarySynchronizedSeek()
@@ -699,21 +699,21 @@ EXTERN_C_BEGIN
     The next three routines are not used because MPICH does not support their use
 
 */
-PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype datatype,MPI_Aint *file_extent,void *extra_state) 
+PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype datatype,MPI_Aint *file_extent,void *extra_state)
 {
   MPI_Aint    ub;
   PetscMPIInt ierr;
-  
+
   ierr = MPI_Type_get_extent(datatype,&ub,file_extent);
   return ierr;
 }
 
-PetscMPIInt PetscDataRep_read_conv_fn(void *userbuf, MPI_Datatype datatype,PetscMPIInt count,void *filebuf, MPI_Offset position,void *extra_state) 
+PetscMPIInt PetscDataRep_read_conv_fn(void *userbuf, MPI_Datatype datatype,PetscMPIInt count,void *filebuf, MPI_Offset position,void *extra_state)
 {
   PetscDataType pdtype;
   PetscMPIInt   ierr;
   size_t        dsize;
-  
+
   ierr = PetscMPIDataTypeToPetscDataType(datatype,&pdtype);CHKERRQ(ierr);
   ierr = PetscDataTypeGetSize(pdtype,&dsize);CHKERRQ(ierr);
 
@@ -725,12 +725,12 @@ PetscMPIInt PetscDataRep_read_conv_fn(void *userbuf, MPI_Datatype datatype,Petsc
   return ierr;
 }
 
-PetscMPIInt PetscDataRep_write_conv_fn(void *userbuf, MPI_Datatype datatype,PetscMPIInt count,void *filebuf, MPI_Offset position,void *extra_state) 
+PetscMPIInt PetscDataRep_write_conv_fn(void *userbuf, MPI_Datatype datatype,PetscMPIInt count,void *filebuf, MPI_Offset position,void *extra_state)
 {
   PetscDataType pdtype;
   PetscMPIInt   ierr;
   size_t        dsize;
-  
+
   ierr = PetscMPIDataTypeToPetscDataType(datatype,&pdtype);CHKERRQ(ierr);
   ierr = PetscDataTypeGetSize(pdtype,&dsize);CHKERRQ(ierr);
 
@@ -738,13 +738,13 @@ PetscMPIInt PetscDataRep_write_conv_fn(void *userbuf, MPI_Datatype datatype,Pets
   userbuf = ((char *)userbuf) + dsize*position;
 
   ierr = PetscMemcpy(filebuf,userbuf,count*dsize);CHKERRQ(ierr);
-  ierr = PetscByteSwap(filebuf,pdtype,count);CHKERRQ(ierr);  
+  ierr = PetscByteSwap(filebuf,pdtype,count);CHKERRQ(ierr);
   return ierr;
 }
 EXTERN_C_END
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MPIU_File_write_all"
 PetscErrorCode MPIU_File_write_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
 {
@@ -753,13 +753,13 @@ PetscErrorCode MPIU_File_write_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Da
 
   PetscFunctionBegin;
   ierr = PetscMPIDataTypeToPetscDataType(dtype,&pdtype);CHKERRQ(ierr);
-  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);  
+  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);
   ierr = MPI_File_write_all(fd,data,cnt,dtype,status);CHKERRQ(ierr);
-  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);  
+  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MPIU_File_read_all"
 PetscErrorCode MPIU_File_read_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
 {
@@ -769,7 +769,7 @@ PetscErrorCode MPIU_File_read_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Dat
   PetscFunctionBegin;
   ierr = PetscMPIDataTypeToPetscDataType(dtype,&pdtype);CHKERRQ(ierr);
   ierr = MPI_File_read_all(fd,data,cnt,dtype,status);CHKERRQ(ierr);
-  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);  
+  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

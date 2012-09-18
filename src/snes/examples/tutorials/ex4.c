@@ -160,8 +160,8 @@ PetscErrorCode PrintVector(DM da, Vec U)
   PetscFunctionBegin;
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  for(j = ys+ym-1; j >= ys; j--) {
-    for(i = xs; i < xs+xm; i++) {
+  for (j = ys+ym-1; j >= ys; j--) {
+    for (i = xs; i < xs+xm; i++) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"u[%d][%d] = %G ", j, i, PetscRealPart(u[j][i]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
@@ -265,7 +265,7 @@ PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, Pe
   PetscInt    q, k;
 
   PetscFunctionBegin;
-  for(q = 0; q < 4; q++) {
+  for (q = 0; q < 4; q++) {
     phi[0] = (1.0 - quadPoints[q*2])*(1.0 - quadPoints[q*2+1]);
     phi[1] =  quadPoints[q*2]       *(1.0 - quadPoints[q*2+1]);
     phi[2] =  quadPoints[q*2]       * quadPoints[q*2+1];
@@ -275,11 +275,11 @@ PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, Pe
      y      = yI + quadPoints[q*2+1]*hy;
      */
     res    = quadWeights[q]*(2.0);
-    for(k = 0; k < 4; k++) {
+    for (k = 0; k < 4; k++) {
       rLocal[k] += phi[k]*res;
     }
   }
-  for(k = 0; k < 4; k++) {
+  for (k = 0; k < 4; k++) {
     r[k] += lambda*hxhy*rLocal[k];
   }
   PetscFunctionReturn(0);
@@ -312,7 +312,7 @@ PetscErrorCode nonlinearResidualBratu(PetscReal lambda, PetscScalar u[], PetscSc
   PetscInt q;
 
   PetscFunctionBegin;
-  for(q = 0; q < 4; q++) {
+  for (q = 0; q < 4; q++) {
     phi[0] = (1.0 - quadPoints[q*2])*(1.0 - quadPoints[q*2+1]);
     phi[1] =  quadPoints[q*2]       *(1.0 - quadPoints[q*2+1]);
     phi[2] =  quadPoints[q*2]       * quadPoints[q*2+1];
@@ -395,15 +395,15 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
 
      and therefore we do not loop over the last vertex in each dimension.
   */
-  for(j = info->ys; j < info->ys+info->ym-1; j++) {
-    for(i = info->xs; i < info->xs+info->xm-1; i++) {
+  for (j = info->ys; j < info->ys+info->ym-1; j++) {
+    for (i = info->xs; i < info->xs+info->xm-1; i++) {
       uLocal[0] = x[j][i];
       uLocal[1] = x[j][i+1];
       uLocal[2] = x[j+1][i+1];
       uLocal[3] = x[j+1][i];
-      for(k = 0; k < 4; k++) {
+      for (k = 0; k < 4; k++) {
         rLocal[k] = 0.0;
-        for(l = 0; l < 4; l++) {
+        for (l = 0; l < 4; l++) {
           rLocal[k] += Kref[k*4 + l]*uLocal[l];
         }
         rLocal[k] *= hxhy*alpha;
@@ -539,8 +539,8 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
       }
       cols[3].i = i; cols[3].j = j+1;
       ierr = nonlinearJacobian(-1.0*sc, uLocal, ELocal);CHKERRQ(ierr);
-      for(k = 0; k < numRows; k++) {
-        for(l = 0; l < 4; l++) {
+      for (k = 0; k < numRows; k++) {
+        for (l = 0; l < 4; l++) {
           JLocal[k*4 + l] = (hxhy*alpha*Kref[localRows[k]*4 + l] + ELocal[localRows[k]*4 + l]);
         }
       }

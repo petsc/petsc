@@ -64,12 +64,12 @@ PetscErrorCode DMComplexCreateSquareBoundary(DM dm, const PetscReal lower[], con
     PetscInt e, ex, ey;
 
     ierr = DMComplexSetChart(dm, 0, numEdges+numVertices);CHKERRQ(ierr);
-    for(e = 0; e < numEdges; ++e) {
+    for (e = 0; e < numEdges; ++e) {
       ierr = DMComplexSetConeSize(dm, e, 2);CHKERRQ(ierr);
     }
     ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
-    for(vx = 0; vx <= edges[0]; vx++) {
-      for(ey = 0; ey < edges[1]; ey++) {
+    for (vx = 0; vx <= edges[0]; vx++) {
+      for (ey = 0; ey < edges[1]; ey++) {
         PetscInt edge    = vx*edges[1] + ey + edges[0]*(edges[1]+1);
         PetscInt vertex  = ey*(edges[0]+1) + vx + numEdges;
         PetscInt cone[2] = {vertex, vertex+edges[0]+1};
@@ -90,8 +90,8 @@ PetscErrorCode DMComplexCreateSquareBoundary(DM dm, const PetscReal lower[], con
         }
       }
     }
-    for(vy = 0; vy <= edges[1]; vy++) {
-      for(ex = 0; ex < edges[0]; ex++) {
+    for (vy = 0; vy <= edges[1]; vy++) {
+      for (ex = 0; ex < edges[0]; ex++) {
         PetscInt edge    = vy*edges[0]     + ex;
         PetscInt vertex  = vy*(edges[0]+1) + ex + numEdges;
         PetscInt cone[2] = {vertex, vertex+1};
@@ -117,7 +117,7 @@ PetscErrorCode DMComplexCreateSquareBoundary(DM dm, const PetscReal lower[], con
   ierr = DMComplexStratify(dm);CHKERRQ(ierr);
   /* Build coordinates */
   ierr = PetscSectionSetChart(mesh->coordSection, numEdges, numEdges + numVertices);CHKERRQ(ierr);
-  for(v = numEdges; v < numEdges+numVertices; ++v) {
+  for (v = numEdges; v < numEdges+numVertices; ++v) {
     ierr = PetscSectionSetDof(mesh->coordSection, v, 2);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
@@ -125,8 +125,8 @@ PetscErrorCode DMComplexCreateSquareBoundary(DM dm, const PetscReal lower[], con
   ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(mesh->coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
-  for(vy = 0; vy <= edges[1]; ++vy) {
-    for(vx = 0; vx <= edges[0]; ++vx) {
+  for (vy = 0; vy <= edges[1]; ++vy) {
+    for (vx = 0; vx <= edges[0]; ++vx) {
       coords[(vy*(edges[0]+1)+vx)*2+0] = lower[0] + ((upper[0] - lower[0])/edges[0])*vx;
       coords[(vy*(edges[0]+1)+vx)*2+1] = lower[1] + ((upper[1] - lower[1])/edges[1])*vy;
     }
@@ -168,11 +168,11 @@ PetscErrorCode DMComplexCreateCubeBoundary(DM dm, const PetscReal lower[], const
     PetscInt f;
 
     ierr = DMComplexSetChart(dm, 0, numFaces+numVertices);CHKERRQ(ierr);
-    for(f = 0; f < numFaces; ++f) {
+    for (f = 0; f < numFaces; ++f) {
       ierr = DMComplexSetConeSize(dm, f, 4);CHKERRQ(ierr);
     }
     ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
-    for(v = 0; v < numFaces+numVertices; ++v) {
+    for (v = 0; v < numFaces+numVertices; ++v) {
       ierr = DMComplexSetLabelValue(dm, "marker", v, 1);CHKERRQ(ierr);
     }
     { /* Side 0 (Front) */
@@ -204,7 +204,7 @@ PetscErrorCode DMComplexCreateCubeBoundary(DM dm, const PetscReal lower[], const
   ierr = DMComplexStratify(dm);CHKERRQ(ierr);
   /* Build coordinates */
   ierr = PetscSectionSetChart(mesh->coordSection, numFaces, numFaces + numVertices);CHKERRQ(ierr);
-  for(v = numFaces; v < numFaces+numVertices; ++v) {
+  for (v = numFaces; v < numFaces+numVertices; ++v) {
     ierr = PetscSectionSetDof(mesh->coordSection, v, 3);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
@@ -212,9 +212,9 @@ PetscErrorCode DMComplexCreateCubeBoundary(DM dm, const PetscReal lower[], const
   ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(mesh->coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
-  for(vz = 0; vz <= faces[2]; ++vz) {
-    for(vy = 0; vy <= faces[1]; ++vy) {
-      for(vx = 0; vx <= faces[0]; ++vx) {
+  for (vz = 0; vz <= faces[2]; ++vz) {
+    for (vy = 0; vy <= faces[1]; ++vy) {
+      for (vx = 0; vx <= faces[0]; ++vx) {
         coords[((vz*(faces[1]+1)+vy)*(faces[0]+1)+vx)*3+0] = lower[0] + ((upper[0] - lower[0])/faces[0])*vx;
         coords[((vz*(faces[1]+1)+vy)*(faces[0]+1)+vx)*3+1] = lower[1] + ((upper[1] - lower[1])/faces[1])*vy;
         coords[((vz*(faces[1]+1)+vy)*(faces[0]+1)+vx)*3+2] = lower[2] + ((upper[2] - lower[2])/faces[2])*vz;
@@ -279,16 +279,16 @@ PetscErrorCode DMComplexCreateSquareMesh(DM dm, const PetscReal lower[], const P
     PetscInt       f, fx, fy, e, ex, ey;
 
     ierr = DMComplexSetChart(dm, 0, numFaces+numEdges+numVertices);CHKERRQ(ierr);
-    for(f = 0; f < numFaces; ++f) {
+    for (f = 0; f < numFaces; ++f) {
       ierr = DMComplexSetConeSize(dm, f, 4);CHKERRQ(ierr);
     }
-    for(e = firstXEdge; e < firstXEdge+numEdges; ++e) {
+    for (e = firstXEdge; e < firstXEdge+numEdges; ++e) {
       ierr = DMComplexSetConeSize(dm, e, 2);CHKERRQ(ierr);
     }
     ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
     /* Build faces */
-    for(fy = 0; fy < numYEdges; fy++) {
-      for(fx = 0; fx < numXEdges; fx++) {
+    for (fy = 0; fy < numYEdges; fy++) {
+      for (fx = 0; fx < numXEdges; fx++) {
         const PetscInt face    = fy*numXEdges + fx;
         const PetscInt edgeL   = firstYEdge + fx*numYEdges + fy;
         const PetscInt edgeB   = firstXEdge + fy*numXEdges + fx;
@@ -298,8 +298,8 @@ PetscErrorCode DMComplexCreateSquareMesh(DM dm, const PetscReal lower[], const P
       }
     }
     /* Build Y edges*/
-    for(vx = 0; vx < numXVertices; vx++) {
-      for(ey = 0; ey < numYEdges; ey++) {
+    for (vx = 0; vx < numXVertices; vx++) {
+      for (ey = 0; ey < numYEdges; ey++) {
         const PetscInt edge    = firstYEdge  + vx*numYEdges + ey;
         const PetscInt vertex  = firstVertex + ey*numXVertices + vx;
         const PetscInt cone[2] = {vertex, vertex+numXVertices};
@@ -321,8 +321,8 @@ PetscErrorCode DMComplexCreateSquareMesh(DM dm, const PetscReal lower[], const P
       }
     }
     /* Build X edges*/
-    for(vy = 0; vy < numYVertices; vy++) {
-      for(ex = 0; ex < numXEdges; ex++) {
+    for (vy = 0; vy < numYVertices; vy++) {
+      for (ex = 0; ex < numXEdges; ex++) {
         const PetscInt edge    = firstXEdge  + vy*numXEdges + ex;
         const PetscInt vertex  = firstVertex + vy*numXVertices + ex;
         const PetscInt cone[2] = {vertex, vertex+1};
@@ -347,7 +347,7 @@ PetscErrorCode DMComplexCreateSquareMesh(DM dm, const PetscReal lower[], const P
     ierr = DMComplexStratify(dm);CHKERRQ(ierr);
     /* Build coordinates */
     ierr = PetscSectionSetChart(mesh->coordSection, firstVertex, firstVertex+numVertices);CHKERRQ(ierr);
-    for(v = firstVertex; v < firstVertex+numVertices; ++v) {
+    for (v = firstVertex; v < firstVertex+numVertices; ++v) {
       ierr = PetscSectionSetDof(mesh->coordSection, v, 2);CHKERRQ(ierr);
     }
     ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
@@ -355,8 +355,8 @@ PetscErrorCode DMComplexCreateSquareMesh(DM dm, const PetscReal lower[], const P
     ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(mesh->coordinates);CHKERRQ(ierr);
     ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
-    for(vy = 0; vy < numYVertices; ++vy) {
-      for(vx = 0; vx < numXVertices; ++vx) {
+    for (vy = 0; vy < numYVertices; ++vy) {
+      for (vx = 0; vx < numXVertices; ++vx) {
         coords[(vy*numXVertices+vx)*2+0] = lower[0] + ((upper[0] - lower[0])/numXEdges)*vx;
         coords[(vy*numXVertices+vx)*2+1] = lower[1] + ((upper[1] - lower[1])/numYEdges)*vy;
       }
@@ -578,6 +578,9 @@ PetscErrorCode DMComplexClone(DM dm, DM *newdm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(newdm,2);
   ierr = DMCreate(((PetscObject) dm)->comm, newdm);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&(*newdm)->sf);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) dm->sf);CHKERRQ(ierr);
+  (*newdm)->sf = dm->sf;
   mesh = (DM_Complex *) dm->data;
   mesh->refct++;
   (*newdm)->data = mesh;

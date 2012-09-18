@@ -4,10 +4,10 @@
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawStringGetSize" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawStringGetSize"
 /*@
-   PetscDrawStringGetSize - Gets the size for character text.  The width is 
+   PetscDrawStringGetSize - Gets the size for character text.  The width is
    relative to the user coordinates of the window.
 
    Not Collective

@@ -390,7 +390,7 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch,Vec X,Vec 
   PetscReal      angle = *(PetscReal*)linesearch->precheckctx;
   Vec            Ylast;
   PetscScalar    dot;
-  
+
   PetscInt       iter;
   PetscReal      ynorm,ylastnorm,theta,angle_radians;
   SNES           snes;

@@ -6,7 +6,7 @@ extern PetscErrorCode AOCreate_MemoryScalable(AO ao);
 EXTERN_C_END
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AORegisterAll"
 /*@C
   AORegisterAll - Registers all of the application ordering components in the AO package.

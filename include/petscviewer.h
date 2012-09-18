@@ -30,7 +30,7 @@ typedef struct _p_PetscViewer* PetscViewer;
 PETSC_EXTERN PetscClassId PETSC_VIEWER_CLASSID;
 
 /*
-    petscsys.h must be included AFTER the definition of PetscViewer for ADIC to 
+    petscsys.h must be included AFTER the definition of PetscViewer for ADIC to
    process correctly.
 */
 /*J
@@ -276,7 +276,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerVTKAddField(PetscViewer,PetscObject,Petsc
 PETSC_EXTERN PetscErrorCode PetscViewerVTKOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 
 /*
-     These are all the default viewers that do not have 
+     These are all the default viewers that do not have
    to be explicitly opened
 */
 PETSC_EXTERN PetscViewer    PETSC_VIEWER_STDOUT_(MPI_Comm);
@@ -362,7 +362,7 @@ M*/
 M*/
 #define PETSC_VIEWER_MATLAB_SELF  PETSC_VIEWER_MATLAB_(PETSC_COMM_SELF)
 
-#define PETSC_VIEWER_MATHEMATICA_WORLD (PetscViewerInitializeMathematicaWorld_Private(),PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) 
+#define PETSC_VIEWER_MATHEMATICA_WORLD (PetscViewerInitializeMathematicaWorld_Private(),PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE)
 
 #define PetscViewerFlowControlStart(viewer,mcnt,cnt)  (PetscViewerBinaryGetFlowControl(viewer,mcnt) || PetscViewerBinaryGetFlowControl(viewer,cnt))
 #define PetscViewerFlowControlStepMaster(viewer,i,mcnt,cnt) ((i >= mcnt) ?  (mcnt += cnt,MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm)) : 0)
@@ -384,7 +384,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerMatlabGetArray(PetscViewer,int,int,PetscS
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer,const char*,void*);
 
 /*S
-     PetscViewers - Abstract collection of PetscViewers. It is just an expandable array of viewers. 
+     PetscViewers - Abstract collection of PetscViewers. It is just an expandable array of viewers.
 
    Level: intermediate
 

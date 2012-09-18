@@ -5,8 +5,8 @@
  *      for interpreting PETSc binary files.
  *
  *	Note all "name" and "DMDAFieldName" variables must be MATLAB-Kosher
- *	i.e. no whitespace or illegal characters such as grouping 
- *	operators, quotations, math/boolean operators, etc. 
+ *	i.e. no whitespace or illegal characters such as grouping
+ *	operators, quotations, math/boolean operators, etc.
  * ----------------------------------------------------------------------*/
 #include <petscviewer.h>
 #include <petscdmda.h>
@@ -113,7 +113,7 @@ PetscErrorCode PetscViewerBinaryMatlabOutputBag(PetscViewer viewer, const char n
   ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinaryMatlabOutputBag ---%\n\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-  
+
 /*@C
   PetscViewerBinaryMatlabOutputVec - Output a Vec object to the viewer and write matlab code to
   the info file to read a (non-DA) Vec from binary.
@@ -183,12 +183,12 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer viewer, const char
   if (dim == 2) { ierr = PetscFPrintf(comm,info,"%%$$ tmp = reshape(tmp,%d,%d,%d);\n",dof,ni,nj);CHKERRQ(ierr); }
   if (dim == 3) { ierr = PetscFPrintf(comm,info,"%%$$ tmp = reshape(tmp,%d,%d,%d,%d);\n",dof,ni,nj,nk);CHKERRQ(ierr); }
 
-  for(n=0; n<dof; n++) {
+  for (n=0; n<dof; n++) {
     ierr = DMDAGetFieldName(da,n,&fieldname);CHKERRQ(ierr);
     ierr = PetscStrcmp(fieldname,"",&flg);CHKERRQ(ierr);
     if (!flg) {
       if (dim == 1) { ierr = PetscFPrintf(comm,info,"%%$$ Set.%s.%s = squeeze(tmp(%d,:))';\n",name,fieldname,n+1);CHKERRQ(ierr); }
-      if (dim == 2) { ierr = PetscFPrintf(comm,info,"%%$$ Set.%s.%s = squeeze(tmp(%d,:,:))';\n",name,fieldname,n+1);CHKERRQ(ierr); } 
+      if (dim == 2) { ierr = PetscFPrintf(comm,info,"%%$$ Set.%s.%s = squeeze(tmp(%d,:,:))';\n",name,fieldname,n+1);CHKERRQ(ierr); }
       if (dim == 3) { ierr = PetscFPrintf(comm,info,"%%$$ Set.%s.%s = permute(squeeze(tmp(%d,:,:,:)),[2 1 3]);\n",name,fieldname,n+1);CHKERRQ(ierr);}
     }
   }

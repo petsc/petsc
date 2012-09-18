@@ -15,7 +15,7 @@ struct _PCOps {
   PetscErrorCode (*applyBAtranspose)(PC,PetscInt,Vec,Vec,Vec);
   PetscErrorCode (*setfromoptions)(PC);
   PetscErrorCode (*presolve)(PC,KSP,Vec,Vec);
-  PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec);  
+  PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec);
   PetscErrorCode (*getfactoredmatrix)(PC,Mat*);
   PetscErrorCode (*applysymmetricleft)(PC,Vec,Vec);
   PetscErrorCode (*applysymmetricright)(PC,Vec,Vec);

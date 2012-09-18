@@ -13,7 +13,7 @@ extern PetscErrorCode PetscObjectQuery_Petsc(PetscObject,const char[],PetscObjec
 extern PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject,const char[],const char[],void (*)(void));
 extern PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],void (**)(void));
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscHeaderCreate_Private"
 /*
    PetscHeaderCreate_Private - Creates a base PETSc object header and fills
@@ -75,10 +75,10 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,Pet
 extern PetscBool      PetscMemoryCollectMaximumUsage;
 extern PetscLogDouble PetscMemoryMaximumUsage;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscHeaderDestroy_Private"
 /*
-    PetscHeaderDestroy_Private - Destroys a base PETSc object header. Called by 
+    PetscHeaderDestroy_Private - Destroys a base PETSc object header. Called by
     the macro PetscHeaderDestroy().
 */
 PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
@@ -164,7 +164,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectsView"
 /*@C
    PetscObjectsView - Prints the currently existing objects.
@@ -179,7 +179,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
    Concepts: options database^printing
 
 @*/
-PetscErrorCode  PetscObjectsView(PetscViewer viewer) 
+PetscErrorCode  PetscObjectsView(PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -200,7 +200,7 @@ PetscErrorCode  PetscObjectsView(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectsGetObject"
 /*@C
    PetscObjectsGetObject - Get a pointer to a named object
@@ -218,7 +218,7 @@ PetscErrorCode  PetscObjectsView(PetscViewer viewer)
    Concepts: options database^printing
 
 @*/
-PetscErrorCode  PetscObjectsGetObject(const char* name,PetscObject *obj,char **classname) 
+PetscErrorCode  PetscObjectsGetObject(const char* name,PetscObject *obj,char **classname)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -241,9 +241,9 @@ PetscErrorCode  PetscObjectsGetObject(const char* name,PetscObject *obj,char **c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectsGetObjectMatlab"
-char* PetscObjectsGetObjectMatlab(const char* name,PetscObject *obj) 
+char* PetscObjectsGetObjectMatlab(const char* name,PetscObject *obj)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -265,7 +265,7 @@ char* PetscObjectsGetObjectMatlab(const char* name,PetscObject *obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectAddOptionsHandler"
 /*@C
     PetscObjectAddOptionsHandler - Adds an additional function to check for options when XXXSetFromOptions() is called.
@@ -295,7 +295,7 @@ PetscErrorCode  PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*ha
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectProcessOptionsHandlers"
 /*@C
     PetscObjectProcessOptionsHandlers - Calls all the options handler attached to an object
@@ -324,7 +324,7 @@ PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectDestroyOptionsHandlers"
 /*@C
     PetscObjectDestroyOptionsHandlers - Destroys all the option handlers attached to an objeft
@@ -355,7 +355,7 @@ PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectReference"
 /*@
    PetscObjectReference - Indicates to any PetscObject that it is being
@@ -365,7 +365,7 @@ PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
    Logically Collective on PetscObject
 
    Input Parameter:
-.  obj - the PETSc object. This must be cast with (PetscObject), for example, 
+.  obj - the PETSc object. This must be cast with (PetscObject), for example,
          PetscObjectReference((PetscObject)mat);
 
    Level: advanced
@@ -380,16 +380,16 @@ PetscErrorCode  PetscObjectReference(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectGetReference"
 /*@
-   PetscObjectGetReference - Gets the current reference count for 
+   PetscObjectGetReference - Gets the current reference count for
    any PETSc object.
 
    Not Collective
 
    Input Parameter:
-.  obj - the PETSc object; this must be cast with (PetscObject), for example, 
+.  obj - the PETSc object; this must be cast with (PetscObject), for example,
          PetscObjectGetReference((PetscObject)mat,&cnt);
 
    Output Parameter:
@@ -408,7 +408,7 @@ PetscErrorCode  PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectDereference"
 /*@
    PetscObjectDereference - Indicates to any PetscObject that it is being
@@ -418,7 +418,7 @@ PetscErrorCode  PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
    Collective on PetscObject if reference reaches 0 otherwise Logically Collective
 
    Input Parameter:
-.  obj - the PETSc object; this must be cast with (PetscObject), for example, 
+.  obj - the PETSc object; this must be cast with (PetscObject), for example,
          PetscObjectDereference((PetscObject)mat);
 
    Notes: PetscObjectDestroy(PetscObject *obj)  sets the obj pointer to null after the call, this routine does not.
@@ -444,7 +444,7 @@ PetscErrorCode  PetscObjectDereference(PetscObject obj)
      The following routines are the versions private to the PETSc object
      data structures.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectGetComm_Petsc"
 PetscErrorCode PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
 {
@@ -454,7 +454,7 @@ PetscErrorCode PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectRemoveReference"
 PetscErrorCode PetscObjectRemoveReference(PetscObject obj,const char name[])
 {
@@ -466,7 +466,7 @@ PetscErrorCode PetscObjectRemoveReference(PetscObject obj,const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectCompose_Petsc"
 PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
 {
@@ -483,7 +483,7 @@ PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscO
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectQuery_Petsc"
 PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObject *ptr)
 {
@@ -495,7 +495,7 @@ PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObj
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposeFunction_Petsc"
 PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
 {
@@ -507,7 +507,7 @@ PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectQueryFunction_Petsc"
 PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void (**ptr)(void))
 {
@@ -519,18 +519,18 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectCompose"
 /*@C
-   PetscObjectCompose - Associates another PETSc object with a given PETSc object. 
-                       
+   PetscObjectCompose - Associates another PETSc object with a given PETSc object.
+
    Not Collective
 
    Input Parameters:
-+  obj - the PETSc object; this must be cast with (PetscObject), for example, 
++  obj - the PETSc object; this must be cast with (PetscObject), for example,
          PetscObjectCompose((PetscObject)mat,...);
-.  name - name associated with the child object 
--  ptr - the other PETSc object to associate with the PETSc object; this must also be 
+.  name - name associated with the child object
+-  ptr - the other PETSc object to associate with the PETSc object; this must also be
          cast with (PetscObject)
 
    Level: advanced
@@ -545,10 +545,10 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
    entry is removed from the obj.
 
    PetscObjectCompose() can be used with any PETSc object (such as
-   Mat, Vec, KSP, SNES, etc.) or any user-provided object.  See 
-   PetscContainerCreate() for info on how to create an object from a 
+   Mat, Vec, KSP, SNES, etc.) or any user-provided object.  See
+   PetscContainerCreate() for info on how to create an object from a
    user-provided pointer that may then be composed with PETSc objects.
-   
+
    Concepts: objects^composing
    Concepts: composing objects
 
@@ -566,15 +566,15 @@ PetscErrorCode  PetscObjectCompose(PetscObject obj,const char name[],PetscObject
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectSetPrecision"
 /*@C
    PetscObjectSetPrecision - sets the precision used within a given object.
-                       
+
    Collective on the PetscObject
 
    Input Parameters:
-+  obj - the PETSc object; this must be cast with (PetscObject), for example, 
++  obj - the PETSc object; this must be cast with (PetscObject), for example,
          PetscObjectCompose((PetscObject)mat,...);
 -  precision - the precision
 
@@ -590,19 +590,19 @@ PetscErrorCode  PetscObjectSetPrecision(PetscObject obj,PetscPrecision precision
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectQuery"
 /*@C
    PetscObjectQuery  - Gets a PETSc object associated with a given object.
-                       
+
    Not Collective
 
    Input Parameters:
 +  obj - the PETSc object
-         Thus must be cast with a (PetscObject), for example, 
+         Thus must be cast with a (PetscObject), for example,
          PetscObjectCompose((PetscObject)mat,...);
-.  name - name associated with child object 
--  ptr - the other PETSc object associated with the PETSc object, this must be 
+.  name - name associated with child object
+-  ptr - the other PETSc object associated with the PETSc object, this must be
          cast with (PetscObject *)
 
    Level: advanced
@@ -628,7 +628,7 @@ PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposeFunction"
 PetscErrorCode  PetscObjectComposeFunction(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
 {
@@ -641,15 +641,15 @@ PetscErrorCode  PetscObjectComposeFunction(PetscObject obj,const char name[],con
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectQueryFunction"
 /*@C
    PetscObjectQueryFunction - Gets a function associated with a given object.
-                       
+
    Logically Collective on PetscObject
 
    Input Parameters:
-+  obj - the PETSc object; this must be cast with (PetscObject), for example, 
++  obj - the PETSc object; this must be cast with (PetscObject), for example,
          PetscObjectQueryFunction((PetscObject)ksp,...);
 -  name - name associated with the child function
 
@@ -683,7 +683,7 @@ struct _p_PetscContainer {
   PetscErrorCode (*userdestroy)(void*);
 };
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscContainerGetPointer"
 /*@C
    PetscContainerGetPointer - Gets the pointer value contained in the container.
@@ -698,7 +698,7 @@ struct _p_PetscContainer {
 
    Level: advanced
 
-.seealso: PetscContainerCreate(), PetscContainerDestroy(), 
+.seealso: PetscContainerCreate(), PetscContainerDestroy(),
           PetscContainerSetPointer()
 @*/
 PetscErrorCode  PetscContainerGetPointer(PetscContainer obj,void **ptr)
@@ -711,7 +711,7 @@ PetscErrorCode  PetscContainerGetPointer(PetscContainer obj,void **ptr)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscContainerSetPointer"
 /*@C
    PetscContainerSetPointer - Sets the pointer value contained in the container.
@@ -724,7 +724,7 @@ PetscErrorCode  PetscContainerGetPointer(PetscContainer obj,void **ptr)
 
    Level: advanced
 
-.seealso: PetscContainerCreate(), PetscContainerDestroy(), 
+.seealso: PetscContainerCreate(), PetscContainerDestroy(),
           PetscContainerGetPointer()
 @*/
 PetscErrorCode  PetscContainerSetPointer(PetscContainer obj,void *ptr)
@@ -736,7 +736,7 @@ PetscErrorCode  PetscContainerSetPointer(PetscContainer obj,void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscContainerDestroy"
 /*@C
    PetscContainerDestroy - Destroys a PETSc container object.
@@ -762,7 +762,7 @@ PetscErrorCode  PetscContainerDestroy(PetscContainer *obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscContainerSetUserDestroy"
 /*@C
    PetscContainerSetUserDestroy - Sets name of the user destroy function.
@@ -787,7 +787,7 @@ PetscErrorCode  PetscContainerSetUserDestroy(PetscContainer obj, PetscErrorCode 
 
 PetscClassId  PETSC_CONTAINER_CLASSID;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscContainerCreate"
 /*@C
    PetscContainerCreate - Creates a PETSc object that has room to hold
@@ -819,7 +819,7 @@ PetscErrorCode  PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectSetFromOptions"
 /*@
    PetscObjectSetFromOptions - Sets generic parameters from user options.
@@ -843,10 +843,10 @@ PetscErrorCode  PetscObjectSetFromOptions(PetscObject obj)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  PetscFunctionReturn(0); 
+  PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectSetUp"
 /*@
    PetscObjectSetUp - Sets up the internal data structures for the later use.

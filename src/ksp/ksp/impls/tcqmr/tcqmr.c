@@ -9,12 +9,12 @@
 #include <petsc-private/kspimpl.h>
 #include <../src/ksp/ksp/impls/tcqmr/tcqmrimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_TCQMR"
 static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
 {
   PetscReal      rnorm0,rnorm,dp1,Gamma;
-  PetscScalar    theta,ep,cl1,sl1,cl,sl,sprod,tau_n1,f; 
+  PetscScalar    theta,ep,cl1,sl1,cl,sl,sprod,tau_n1,f;
   PetscScalar    deltmp,rho,beta,eptmp,ta,s,c,tau_n,delta;
   PetscScalar    dp11,dp2,rhom1,alpha,tmp;
   PetscErrorCode ierr;
@@ -38,16 +38,16 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
   ierr  = VecSet(pvec1,0.0);CHKERRQ(ierr);
   ierr  = VecSet(pvec2,0.0);CHKERRQ(ierr);
   ierr  = VecSet(p,0.0);CHKERRQ(ierr);
-  theta = 0.0; 
-  ep    = 0.0; 
-  cl1   = 0.0; 
-  sl1   = 0.0; 
-  cl    = 0.0; 
+  theta = 0.0;
+  ep    = 0.0;
+  cl1   = 0.0;
+  sl1   = 0.0;
+  cl    = 0.0;
   sl    = 0.0;
-  sprod = 1.0; 
+  sprod = 1.0;
   tau_n1= rnorm0;
-  f     = 1.0; 
-  Gamma = 1.0; 
+  f     = 1.0;
+  Gamma = 1.0;
   rhom1 = 1.0;
 
   /*
@@ -121,7 +121,7 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
     ierr = VecAXPY(pvec,-ep,pvec1);CHKERRQ(ierr);
     ierr = VecScale(pvec,1.0/delta);CHKERRQ(ierr);
     ierr   = VecAXPY(x,tau_n,pvec);CHKERRQ(ierr);
-    cl1    = cl; sl1 = sl; cl = c; sl = s;     
+    cl1    = cl; sl1 = sl; cl = c; sl = s;
 
     ierr = VecCopy(pvec1,pvec2);CHKERRQ(ierr);
     ierr = VecCopy(pvec,pvec1);CHKERRQ(ierr);
@@ -129,9 +129,9 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
     /* Compute the upper bound on the residual norm r (See QMR paper p. 13) */
     sprod = sprod*PetscAbsScalar(s);
 #if defined(PETSC_USE_COMPLEX)
-    rnorm = rnorm0 * PetscSqrtReal((PetscReal)ksp->its+2.0) * PetscRealPart(sprod);     
+    rnorm = rnorm0 * PetscSqrtReal((PetscReal)ksp->its+2.0) * PetscRealPart(sprod);
 #else
-    rnorm = rnorm0 * PetscSqrtReal((PetscReal)ksp->its+2.0) * sprod;     
+    rnorm = rnorm0 * PetscSqrtReal((PetscReal)ksp->its+2.0) * sprod;
 #endif
     ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->its >= ksp->max_it) {
@@ -145,7 +145,7 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_TCQMR"
 static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
 {
@@ -166,13 +166,13 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
    Level: beginner
 
   Notes: Supports either left or right preconditioning, but not symmetric
-  
+
           The "residual norm" computed in this algorithm is actually just an upper bound on the actual residual norm.
-          That is for left preconditioning it is a bound on the preconditioned residual and for right preconditioning 
+          That is for left preconditioning it is a bound on the preconditioned residual and for right preconditioning
           it is a bound on the true residual.
 
   References:
-  Transpose-free formulations of Lanczos-type methods for nonsymmetric linear systems, 
+  Transpose-free formulations of Lanczos-type methods for nonsymmetric linear systems,
   Tony F. Chan, Lisette de Pillis, and Henk van der Vorst, Numerical Algorithms, 	
   Volume 17, Numbers 1-2 / May, 1998 pp. 51-66.
 
@@ -181,7 +181,7 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_TCQMR"
 PetscErrorCode  KSPCreate_TCQMR(KSP ksp)
 {

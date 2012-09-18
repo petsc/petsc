@@ -1,6 +1,6 @@
 
 /*
-    This file implements FGMRES (a Generalized Minimal Residual) method.  
+    This file implements FGMRES (a Generalized Minimal Residual) method.
     Reference:  Saad, 1993.
 
     Preconditioning:  If the preconditioner is constant then this fgmres
@@ -9,7 +9,7 @@
     at each iteration.
 
     Restarts:  Restarts are basically solves with x0 not equal to zero.
- 
+
        Contributed by Allison Baker
 
 */
@@ -29,7 +29,7 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
     but can be called directly by KSPSetUp().
 
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_FGMRES"
 PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 {
@@ -50,15 +50,15 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
   ierr = PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
   for (k=0; k < fgmres->vv_allocated; k++) {
     fgmres->prevecs[k] = fgmres->prevecs_user_work[0][k];
-  } 
+  }
 
   PetscFunctionReturn(0);
 }
 
-/* 
-    KSPFGMRESResidual - This routine computes the initial residual (NOT PRECONDITIONED) 
+/*
+    KSPFGMRESResidual - This routine computes the initial residual (NOT PRECONDITIONED)
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPFGMRESResidual"
 static PetscErrorCode KSPFGMRESResidual(KSP ksp)
 {
@@ -79,7 +79,7 @@ static PetscErrorCode KSPFGMRESResidual(KSP ksp)
 
 /*
 
-    KSPFGMRESCycle - Run fgmres, possibly with restart.  Return residual 
+    KSPFGMRESCycle - Run fgmres, possibly with restart.  Return residual
                   history if requested.
 
     input parameters:
@@ -89,44 +89,44 @@ static PetscErrorCode KSPFGMRESResidual(KSP ksp)
 .        itcount - number of iterations used.  If null, ignored.
 .        converged - 0 if not converged
 
-		  
+		
     Notes:
-    On entry, the value in vector VEC_VV(0) should be 
+    On entry, the value in vector VEC_VV(0) should be
     the initial residual.
 
 
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPFGMRESCycle"
 PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
 {
 
   KSP_FGMRES     *fgmres = (KSP_FGMRES *)(ksp->data);
-  PetscReal      res_norm;             
+  PetscReal      res_norm;
   PetscReal      hapbnd,tt;
   PetscBool      hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
   PetscErrorCode ierr;
-  PetscInt       loc_it;                /* local count of # of dir. in Krylov space */ 
+  PetscInt       loc_it;                /* local count of # of dir. in Krylov space */
   PetscInt       max_k = fgmres->max_k; /* max # of directions Krylov space */
   Mat            Amat,Pmat;
   MatStructure   pflag;
 
   PetscFunctionBegin;
 
-  /* Number of pseudo iterations since last restart is the number 
+  /* Number of pseudo iterations since last restart is the number
      of prestart directions */
   loc_it = 0;
 
-  /* note: (fgmres->it) is always set one less than (loc_it) It is used in 
-     KSPBUILDSolution_FGMRES, where it is passed to KSPFGMRESBuildSoln.  
-     Note that when KSPFGMRESBuildSoln is called from this function, 
+  /* note: (fgmres->it) is always set one less than (loc_it) It is used in
+     KSPBUILDSolution_FGMRES, where it is passed to KSPFGMRESBuildSoln.
+     Note that when KSPFGMRESBuildSoln is called from this function,
      (loc_it -1) is passed, so the two are equivalent */
   fgmres->it = (loc_it - 1);
 
-  /* initial residual is in VEC_VV(0)  - compute its norm*/ 
+  /* initial residual is in VEC_VV(0)  - compute its norm*/
   ierr   = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
 
-  /* first entry in right-hand-side of hessenberg system is just 
+  /* first entry in right-hand-side of hessenberg system is just
      the initial residual norm */
   *RS(0) = res_norm;
 
@@ -142,10 +142,10 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
 
   /* scale VEC_VV (the initial residual) */
   ierr = VecScale(VEC_VV(0),1.0/res_norm);CHKERRQ(ierr);
-   
+
   /* MAIN ITERATION LOOP BEGINNING*/
   /* keep iterating until we have converged OR generated the max number
-     of directions OR reached the max number of iterations for the method */ 
+     of directions OR reached the max number of iterations for the method */
   while (!ksp->reason && loc_it < max_k && ksp->its < ksp->max_it) {
     if (loc_it) KSPLogResidualHistory(ksp,res_norm);
     fgmres->it = (loc_it - 1);
@@ -158,21 +158,21 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
          be allocated */
     }
 
-    /* CHANGE THE PRECONDITIONER? */ 
+    /* CHANGE THE PRECONDITIONER? */
     /* ModifyPC is the callback function that can be used to
        change the PC or its attributes before its applied */
     (*fgmres->modifypc)(ksp,ksp->its,loc_it,res_norm,fgmres->modifyctx);
-   
-  
-    /* apply PRECONDITIONER to direction vector and store with 
+
+
+    /* apply PRECONDITIONER to direction vector and store with
        preconditioned vectors in prevec */
     ierr = KSP_PCApply(ksp,VEC_VV(loc_it),PREVEC(loc_it));CHKERRQ(ierr);
-     
+
     ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
     /* Multiply preconditioned vector by operator - put in VEC_VV(loc_it+1) */
     ierr = MatMult(Amat,PREVEC(loc_it),VEC_VV(1+loc_it));CHKERRQ(ierr);
 
- 
+
     /* update hessenberg matrix and do Gram-Schmidt - new direction is in
        VEC_VV(1+loc_it)*/
     ierr = (*fgmres->orthog)(ksp,loc_it);CHKERRQ(ierr);
@@ -196,21 +196,21 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
           hapend = PETSC_TRUE;
     }
     /* note that for FGMRES we could get HES(loc_it+1, loc_it)  = 0 and the
-       current solution would not be exact if HES was singular.  Note that 
+       current solution would not be exact if HES was singular.  Note that
        HH non-singular implies that HES is no singular, and HES is guaranteed
-       to be nonsingular when PREVECS are linearly independent and A is 
-       nonsingular (in GMRES, the nonsingularity of A implies the nonsingularity 
+       to be nonsingular when PREVECS are linearly independent and A is
+       nonsingular (in GMRES, the nonsingularity of A implies the nonsingularity
        of HES). So we should really add a check to verify that HES is nonsingular.*/
 
- 
-    /* Now apply rotations to new col of hessenberg (and right side of system), 
+
+    /* Now apply rotations to new col of hessenberg (and right side of system),
        calculate new rotation, and get new residual norm at the same time*/
     ierr = KSPFGMRESUpdateHessenberg(ksp,loc_it,hapend,&res_norm);CHKERRQ(ierr);
     if (ksp->reason) break;
 
     loc_it++;
     fgmres->it  = (loc_it-1);  /* Add this here in case it has converged */
- 
+
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = res_norm;
@@ -243,7 +243,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
     columns, add the solution values together, and possibly unwind the
     preconditioning from the solution
    */
- 
+
   /* Form the solution (or the solution so far) */
   /* Note: must pass in (loc_it-1) for iteration count so that KSPFGMRESBuildSoln
      properly navigates */
@@ -253,7 +253,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
   PetscFunctionReturn(0);
 }
 
-/*  
+/*
     KSPSolve_FGMRES - This routine applies the FGMRES method.
 
 
@@ -264,7 +264,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
 .     outits - number of iterations used
 
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_FGMRES"
 
 PetscErrorCode KSPSolve_FGMRES(KSP ksp)
@@ -288,9 +288,9 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
   } else { /* guess is 0 so residual is F (which is in ksp->vec_rhs) */
     ierr = VecCopy(ksp->vec_rhs,VEC_VV(0));CHKERRQ(ierr);
   }
-  /* now the residual is in VEC_VV(0) - which is what 
+  /* now the residual is in VEC_VV(0) - which is what
      KSPFGMRESCycle expects... */
-  
+
   ierr    = KSPFGMRESCycle(&cycle_its,ksp);CHKERRQ(ierr);
   while (!ksp->reason) {
     ierr     = KSPFGMRESResidual(ksp);CHKERRQ(ierr);
@@ -309,8 +309,8 @@ extern PetscErrorCode KSPReset_FGMRES(KSP);
    KSPDestroy_FGMRES - Frees all memory space used by the Krylov method.
 
 */
-#undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy_FGMRES" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPDestroy_FGMRES"
 PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
@@ -331,11 +331,11 @@ PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
 	vguess  - index of initial guess
 	vdest - index of result.  Note that vguess may == vdest (replace
 	        guess with the solution).
-        it - HH upper triangular part is a block of size (it+1) x (it+1)  
+        it - HH upper triangular part is a block of size (it+1) x (it+1)
 
      This is an internal routine that knows about the FGMRES internals.
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPFGMRESBuildSoln"
 static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP ksp,PetscInt it)
 {
@@ -355,7 +355,7 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar* nrs,Vec vguess,Vec vdest,K
 
   /* so fgmres steps HAVE been performed */
 
-  /* solve the upper triangular system - RS is the right side and HH is 
+  /* solve the upper triangular system - RS is the right side and HH is
      the upper triangular matrix  - put soln in nrs */
   if (*HH(it,it) != 0.0) {
     nrs[it] = *RS(it) / *HH(it,it);
@@ -369,10 +369,10 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar* nrs,Vec vguess,Vec vdest,K
     nrs[k]   = tt / *HH(k,k);
   }
 
-  /* Accumulate the correction to the soln of the preconditioned prob. in 
+  /* Accumulate the correction to the soln of the preconditioned prob. in
      VEC_TEMP - note that we use the preconditioned vectors  */
   ierr = VecSet(VEC_TEMP,0.0);CHKERRQ(ierr); /* set VEC_TEMP components to 0 */
-  ierr = VecMAXPY(VEC_TEMP,it+1,nrs,&PREVEC(0));CHKERRQ(ierr); 
+  ierr = VecMAXPY(VEC_TEMP,it+1,nrs,&PREVEC(0));CHKERRQ(ierr);
 
   /* put updated solution into vdest.*/
   if (vdest != vguess) {
@@ -386,13 +386,13 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar* nrs,Vec vguess,Vec vdest,K
 
 /*
 
-    KSPFGMRESUpdateHessenberg - Do the scalar work for the orthogonalization.  
+    KSPFGMRESUpdateHessenberg - Do the scalar work for the orthogonalization.
                             Return new residual.
 
     input parameters:
 
 .        ksp -    Krylov space object
-.	 it  -    plane rotations are applied to the (it+1)th column of the 
+.	 it  -    plane rotations are applied to the (it+1)th column of the
                   modified hessenberg (i.e. HH(:,it))
 .        hapend - PETSC_FALSE not happy breakdown ending.
 
@@ -400,7 +400,7 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar* nrs,Vec vguess,Vec vdest,K
 .        res - the new residual
 	
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPFGMRESUpdateHessenberg"
 static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  hapend,PetscReal *res)
 {
@@ -409,9 +409,9 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  h
   KSP_FGMRES    *fgmres = (KSP_FGMRES *)(ksp->data);
 
   PetscFunctionBegin;
-  hh  = HH(0,it);  /* pointer to beginning of column to update - so 
-                      incrementing hh "steps down" the (it+1)th col of HH*/ 
-  cc  = CC(0);     /* beginning of cosine rotations */ 
+  hh  = HH(0,it);  /* pointer to beginning of column to update - so
+                      incrementing hh "steps down" the (it+1)th col of HH*/
+  cc  = CC(0);     /* beginning of cosine rotations */
   ss  = SS(0);     /* beginning of sine rotations */
 
   /* Apply all the previously computed plane rotations to the new column
@@ -436,8 +436,8 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  h
      1) the right-hand-side of the Hessenberg system (RS)
         note: it affects RS(it) and RS(it+1)
      2) the new column of the Hessenberg matrix
-        note: it affects HH(it,it) which is currently pointed to 
-        by hh and HH(it+1, it) (*(hh+1))  
+        note: it affects HH(it,it) which is currently pointed to
+        by hh and HH(it+1, it) (*(hh+1))
     thus obtaining the updated value of the residual...
   */
 
@@ -470,13 +470,13 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  h
     /* residual is the last element (it+1) of right-hand side! */
     *res      = PetscAbsScalar(*RS(it+1));
 
-  } else { /* happy breakdown: HH(it+1, it) = 0, therfore we don't need to apply 
-            another rotation matrix (so RH doesn't change).  The new residual is 
-            always the new sine term times the residual from last time (RS(it)), 
+  } else { /* happy breakdown: HH(it+1, it) = 0, therfore we don't need to apply
+            another rotation matrix (so RH doesn't change).  The new residual is
+            always the new sine term times the residual from last time (RS(it)),
             but now the new sine rotation would be zero...so the residual should
             be zero...so we will multiply "zero" by the last residual.  This might
             not be exactly what we want to do here -could just return "zero". */
- 
+
     *res = 0.0;
   }
   PetscFunctionReturn(0);
@@ -484,13 +484,13 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp,PetscInt it,PetscBool  h
 
 /*
 
-   KSPFGMRESGetNewVectors - This routine allocates more work vectors, starting from 
-                         VEC_VV(it), and more preconditioned work vectors, starting 
+   KSPFGMRESGetNewVectors - This routine allocates more work vectors, starting from
+                         VEC_VV(it), and more preconditioned work vectors, starting
                          from PREVEC(i).
 
 */
-#undef __FUNCT__  
-#define __FUNCT__ "KSPFGMRESGetNewVectors" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPFGMRESGetNewVectors"
 static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp,PetscInt it)
 {
   KSP_FGMRES     *fgmres = (KSP_FGMRES *)ksp->data;
@@ -498,9 +498,9 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp,PetscInt it)
   PetscInt       nalloc;                      /* number to allocate */
   PetscErrorCode ierr;
   PetscInt       k;
- 
+
   PetscFunctionBegin;
-  nalloc = fgmres->delta_allocate; /* number of vectors to allocate 
+  nalloc = fgmres->delta_allocate; /* number of vectors to allocate
                                       in a single chunk */
 
   /* Adjust the number to allocate to make sure that we don't exceed the
@@ -526,14 +526,14 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp,PetscInt it)
   ierr = PetscLogObjectParents(ksp,nalloc,fgmres->prevecs_user_work[nwork]);CHKERRQ(ierr);
   for (k=0; k < nalloc; k++) {
     fgmres->prevecs[it+VEC_OFFSET+k] = fgmres->prevecs_user_work[nwork][k];
-  } 
+  }
 
   /* increment the number of work vector chunks */
   fgmres->nwork_alloc++;
   PetscFunctionReturn(0);
 }
 
-/* 
+/*
 
    KSPBuildSolution_FGMRES
 
@@ -545,14 +545,14 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp,PetscInt it)
 .     result - the solution
 
    Note: this calls KSPFGMRESBuildSoln - the same function that KSPFGMRESCycle
-   calls directly.  
+   calls directly.
 
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPBuildSolution_FGMRES"
 PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
 {
-  KSP_FGMRES     *fgmres = (KSP_FGMRES *)ksp->data; 
+  KSP_FGMRES     *fgmres = (KSP_FGMRES *)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -568,14 +568,14 @@ PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
     ierr = PetscMalloc(fgmres->max_k*sizeof(PetscScalar),&fgmres->nrs);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(ksp,fgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
- 
+
   ierr = KSPFGMRESBuildSoln(fgmres->nrs,ksp->vec_sol,ptr,ksp,fgmres->it);CHKERRQ(ierr);
-  if (result) *result = ptr; 
-  
+  if (result) *result = ptr;
+
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_FGMRES"
 PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp)
 {
@@ -586,9 +586,9 @@ PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp)
   ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);
   ierr = PetscOptionsHead("KSP flexible GMRES Options");CHKERRQ(ierr);
     ierr = PetscOptionsBoolGroupBegin("-ksp_fgmres_modifypcnochange","do not vary the preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCNoChange,0,0);CHKERRQ(ierr);} 
+    if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCNoChange,0,0);CHKERRQ(ierr);}
     ierr = PetscOptionsBoolGroupEnd("-ksp_fgmres_modifypcksp","vary the KSP based preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCKSP,0,0);CHKERRQ(ierr);} 
+    if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCKSP,0,0);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -596,8 +596,8 @@ PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp)
 typedef PetscErrorCode (*FCN1)(KSP,PetscInt,PetscInt,PetscReal,void*); /* force argument to next function to not be extern C*/
 typedef PetscErrorCode (*FCN2)(void*);
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "KSPFGMRESSetModifyPC_FGMRES" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPFGMRESSetModifyPC_FGMRES"
 PetscErrorCode  KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
 {
   PetscFunctionBegin;
@@ -609,8 +609,8 @@ PetscErrorCode  KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPReset_FGMRES" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPReset_FGMRES"
 PetscErrorCode KSPReset_FGMRES(KSP ksp)
 {
   KSP_FGMRES     *fgmres = (KSP_FGMRES*)ksp->data;
@@ -631,8 +631,8 @@ PetscErrorCode KSPReset_FGMRES(KSP ksp)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "KSPGMRESSetRestart_FGMRES" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGMRESSetRestart_FGMRES"
 PetscErrorCode  KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max_k)
 {
   KSP_FGMRES     *gmres = (KSP_FGMRES *)ksp->data;
@@ -653,8 +653,8 @@ PetscErrorCode  KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max_k)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "KSPGMRESGetRestart_FGMRES" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGMRESGetRestart_FGMRES"
 PetscErrorCode  KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *max_k)
 {
   KSP_FGMRES     *gmres = (KSP_FGMRES *)ksp->data;
@@ -666,18 +666,18 @@ PetscErrorCode  KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *max_k)
 EXTERN_C_END
 
 /*MC
-     KSPFGMRES - Implements the Flexible Generalized Minimal Residual method.  
+     KSPFGMRES - Implements the Flexible Generalized Minimal Residual method.
                 developed by Saad with restart
 
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
 .   -ksp_gmres_haptol <tol> - sets the tolerance for "happy ending" (exact convergence)
-.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of 
+.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of
                              vectors are allocated as needed)
 .   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
 .   -ksp_gmres_modifiedgramschmidt - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
-.   -ksp_gmres_cgs_refinement_type <never,ifneeded,always> - determine if iterative refinement is used to increase the 
+.   -ksp_gmres_cgs_refinement_type <never,ifneeded,always> - determine if iterative refinement is used to increase the
                                    stability of the classical Gram-Schmidt  orthogonalization.
 .   -ksp_gmres_krylov_monitor - plot the Krylov space generated
 .   -ksp_fgmres_modifypcnochange - do not change the preconditioner between iterations
@@ -688,7 +688,7 @@ EXTERN_C_END
     Notes: See KSPFGMRESSetModifyPC() for how to vary the preconditioner between iterations
            Only right preconditioning is supported.
 
-    Notes: The following options -ksp_type fgmres -pc_type ksp -ksp_ksp_type bcgs -ksp_view -ksp_pc_type jacobi make the preconditioner (or inner solver) 
+    Notes: The following options -ksp_type fgmres -pc_type ksp -ksp_ksp_type bcgs -ksp_view -ksp_pc_type jacobi make the preconditioner (or inner solver)
            be bi-CG-stab with a preconditioner of Jacobi.
 
     Developer Notes: This object is subclassed off of KSPGMRES
@@ -702,7 +702,7 @@ EXTERN_C_END
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_FGMRES"
 PetscErrorCode  KSPCreate_FGMRES(KSP ksp)
 {

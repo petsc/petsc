@@ -1,7 +1,7 @@
 
 #include <petsc-private/kspimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_PREONLY"
 static PetscErrorCode KSPSetUp_PREONLY(KSP ksp)
 {
@@ -9,7 +9,7 @@ static PetscErrorCode KSPSetUp_PREONLY(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_PREONLY"
 static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
 {
@@ -31,8 +31,8 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
 
 /*MC
      KSPPREONLY - This implements a stub method that applies ONLY the preconditioner.
-                  This may be used in inner iterations, where it is desired to 
-                  allow multiple iterations as well as the "0-iteration" case. It is 
+                  This may be used in inner iterations, where it is desired to
+                  allow multiple iterations as well as the "0-iteration" case. It is
                   commonly used with the direct solver preconditioners like PCLU and PCCHOLESKY
 
    Options Database Keys:
@@ -45,7 +45,7 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_PREONLY"
 PetscErrorCode  KSPCreate_PREONLY(KSP ksp)
 {

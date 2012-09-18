@@ -106,9 +106,9 @@
 #endif
 !
       cw1 = cb1/vkar/vkar + (1.0d0 + cb2)/sig
-      if(ivisc.gt.4d0)turbinf = 1.341946d0
-!      if(ivisc.gt.4)turbinf = 0.5
-      if(ivisc.gt.4.and.itran.eq.1)turbinf = 0.1d0
+      if (ivisc.gt.4d0)turbinf = 1.341946d0
+!      if (ivisc.gt.4)turbinf = 0.5
+      if (ivisc.gt.4.and.itran.eq.1)turbinf = 0.1d0
 !
 ! Note that for Spalarts model, I use turbinf as the freestream value of
 ! the dependent variable just as in the Baldwin-Barth model.

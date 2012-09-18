@@ -4,7 +4,7 @@
 #include <petscmat.h>
 
 /*
-     Prototypes for Minpack coloring routines 
+     Prototypes for Minpack coloring routines
 */
 extern PetscErrorCode MINPACKdegr(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
 extern PetscErrorCode MINPACKdsm(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);

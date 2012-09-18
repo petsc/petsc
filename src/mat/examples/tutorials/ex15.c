@@ -28,7 +28,7 @@ int main(int argc, char **args)
 
   // Create a linear mesh
   ierr = MatGetOwnershipRange(A, &start, &end);CHKERRQ(ierr);
-  for(r = start; r < end; ++r) {
+  for (r = start; r < end; ++r) {
     if (r == 0) {
       PetscInt    cols[2];
       PetscScalar vals[2];

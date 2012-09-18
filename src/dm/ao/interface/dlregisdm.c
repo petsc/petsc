@@ -8,7 +8,7 @@
 
 static PetscBool  AOPackageInitialized = PETSC_FALSE;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOFinalizePackage"
 /*@C
   AOFinalizePackage - This function finalizes everything in the AO package. It is called
@@ -26,7 +26,7 @@ PetscErrorCode  AOFinalizePackage(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOInitializePackage"
 /*@C
   AOInitializePackage - This function initializes everything in the AO package. It is called
@@ -40,7 +40,7 @@ PetscErrorCode  AOFinalizePackage(void)
 .keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  AOInitializePackage(const char path[]) 
+PetscErrorCode  AOInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
@@ -78,7 +78,7 @@ PetscErrorCode  AOInitializePackage(const char path[])
 }
 
 static PetscBool  DMPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMFinalizePackage"
 /*@C
   DMFinalizePackage - This function finalizes everything in the DM package. It is called
@@ -111,7 +111,7 @@ extern PetscErrorCode  MatCreate_HYPREStruct(Mat);
 EXTERN_C_END
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMInitializePackage"
 /*@C
   DMInitializePackage - This function initializes everything in the DM package. It is called
@@ -126,7 +126,7 @@ EXTERN_C_END
 .keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  DMInitializePackage(const char path[]) 
+PetscErrorCode  DMInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
@@ -213,7 +213,7 @@ PetscErrorCode  DMInitializePackage(const char path[])
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscdm"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.

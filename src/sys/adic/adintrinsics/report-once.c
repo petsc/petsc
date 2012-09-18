@@ -116,8 +116,8 @@ reportonce_ehsfid ARG3(int*,g_ehfid, char *,routine, char *,filename)
           {
                allocated = initial_max_files;
 
-               filenames = (char **) xmalloc (allocated * sizeof (char**));
-               routine_names = (char **) xmalloc (allocated * sizeof (char**));
+               filenames = (char **) xmalloc (allocated * sizeof(char**));
+               routine_names = (char **) xmalloc (allocated * sizeof(char**));
           }
           else if ( used >= allocated ) /* Should never be strictly greater */
           {
@@ -181,16 +181,16 @@ reportonce_accumulate ARG3(int, file, int, line, int, exception)
                
                exception_info_store =
                     (exception_info ***) xcalloc ( initial_max_files,
-                                                   sizeof ( exception_info **) );
+                                                   sizeof( exception_info **) );
                
                line_numbers_count =
-                    (int*) xcalloc ( initial_max_files, sizeof (int));
+                    (int*) xcalloc ( initial_max_files, sizeof(int));
 
                for (i=0; i < initial_max_files; i++ )
                {
                     exception_info_store[i] =
                          (exception_info **) xcalloc (hash_size,
-                                                      sizeof (exception_info *));
+                                                      sizeof(exception_info *));
                }
 
                initial_store_created = 1;
@@ -206,12 +206,12 @@ reportonce_accumulate ARG3(int, file, int, line, int, exception)
                exception_info_store =
                     (exception_info ***) xrealloc ( exception_info_store, 
                                  (current_max_files + file_growth_increment ) * 
-                                 sizeof ( exception_info ** ) );
+                                 sizeof( exception_info ** ) );
 
                line_numbers_count =
                     (int*) xrealloc (line_numbers_count,
                                       (current_max_files + file_growth_increment)*
-                                      sizeof (int) );
+                                      sizeof(int) );
 
                for (i = current_max_files;
                     i < current_max_files + file_growth_increment;
@@ -219,7 +219,7 @@ reportonce_accumulate ARG3(int, file, int, line, int, exception)
                {
                     exception_info_store[i] =
                          (exception_info **) xcalloc (hash_size,
-                                                      sizeof (exception_info *));
+                                                      sizeof(exception_info *));
                     line_numbers_count[i] = 0;
                }
 

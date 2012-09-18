@@ -87,7 +87,7 @@ PetscInt main(PetscInt argc,char **args)
     
     /* Add a shift to A */
     ierr = PetscOptionsGetScalar(PETSC_NULL,"-mat_sigma",&sigma,&flg);CHKERRQ(ierr);
-    if(flg) {
+    if (flg) {
       ierr = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- sigma*B + A */  
     }
 
@@ -168,10 +168,10 @@ PetscInt main(PetscInt argc,char **args)
       ierr = PetscMalloc((m*n+1)*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
       ierr = PetscMalloc((6*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);
       ifail = iwork + 5*n;
-      if(PetscPreLoadIt){ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);}
+      if (PetscPreLoadIt){ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);}
       /* in the case "I", vl and vu are not referenced */
       LAPACKsygvx_(&lone,"V","I","U",&bn,arrayA,&bn,arrayB,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,iwork,ifail,&lierr);
-      if(PetscPreLoadIt){ierr = PetscLogStagePop();}
+      if (PetscPreLoadIt){ierr = PetscLogStagePop();}
       ierr = PetscFree(iwork);CHKERRQ(ierr);
     }
     ierr = MatDenseRestoreArray(A,&arrayA);CHKERRQ(ierr);
@@ -186,7 +186,7 @@ PetscInt main(PetscInt argc,char **args)
     }
 
     /* Check residuals and orthogonality */
-    if(PetscPreLoadIt){
+    if (PetscPreLoadIt){
       mats[0] = A; mats[1] = B;
       one = (PetscInt)one;
       ierr = PetscMalloc((nevs+1)*sizeof(Vec),&evecs);CHKERRQ(ierr);

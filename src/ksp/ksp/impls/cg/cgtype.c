@@ -1,8 +1,8 @@
 
 #include <../src/ksp/ksp/impls/cg/cgimpl.h>       /*I "petscksp.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPCGSetType" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPCGSetType"
 /*@
     KSPCGSetType - Sets the variant of the conjugate gradient method to
     use for solving a linear system with a complex coefficient matrix.
@@ -19,7 +19,7 @@
 .ve
 
     Level: intermediate
-    
+
     Options Database Keys:
 +   -ksp_cg_Hermitian - Indicates Hermitian matrix
 -   -ksp_cg_symmetric - Indicates symmetric matrix
@@ -39,8 +39,8 @@ PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPCGUseSingleReduction" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPCGUseSingleReduction"
 /*@
     KSPCGUseSingleReduction - Merge the two inner products needed in CG into a single MPI_Allreduce() call.
 
@@ -51,16 +51,16 @@ PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 -   flg - turn on or off the single reduction
 
     Options Database:
-.   -ksp_cg_single_reduction 
+.   -ksp_cg_single_reduction
 
     Level: intermediate
 
-     The algorithm used in this case is described as Method 1 in Lapack Working Note 56, "Conjugate Gradient Algorithms with Reduced Synchronization Overhead 
-     Distributed Memory Multiprocessors", by E. F. D'Azevedo, V. L. Eijkhout, and C. H. Romine, December 3, 1999. V. Eijkhout creates the algorithm 
+     The algorithm used in this case is described as Method 1 in Lapack Working Note 56, "Conjugate Gradient Algorithms with Reduced Synchronization Overhead
+     Distributed Memory Multiprocessors", by E. F. D'Azevedo, V. L. Eijkhout, and C. H. Romine, December 3, 1999. V. Eijkhout creates the algorithm
      initially to Chronopoulos and Gear.
 
-     It requires two extra work vectors than the conventional implementation in PETSc. 
-    
+     It requires two extra work vectors than the conventional implementation in PETSc.
+
 .keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
 @*/
 PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool  flg)

@@ -1,19 +1,19 @@
 
 /*
        This routine was converted by f2c from Linpack source
-             linpack. this version dated 08/14/78 
+             linpack. this version dated 08/14/78
       cleve moler, university of new mexico, argonne national lab.
 
         Does an LU factorization with partial pivoting of a dense
      n by n matrix.
 
-       Used by the sparse factorization routines in 
+       Used by the sparse factorization routines in
      src/mat/impls/baij/seq
 
 */
 #include <petscsys.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLINPACKgefa"
 PetscErrorCode PetscLINPACKgefa(MatScalar *a,PetscInt n,PetscInt *ipvt)
 {
@@ -62,7 +62,7 @@ PetscErrorCode PetscLINPACKgefa(MatScalar *a,PetscInt n,PetscInt *ipvt)
 
 	t = -1. / a[knp1];
 	i__2 = n - k;
-        aa = &a[1 + knp1]; 
+        aa = &a[1 + knp1];
         for (ll=0; ll<i__2; ll++) {
           aa[ll] *= t;
         }
@@ -88,5 +88,5 @@ PetscErrorCode PetscLINPACKgefa(MatScalar *a,PetscInt n,PetscInt *ipvt)
     ipvt[n] = n;
     if (a[n + n * n] == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",n-1);
     PetscFunctionReturn(0);
-} 
+}
 

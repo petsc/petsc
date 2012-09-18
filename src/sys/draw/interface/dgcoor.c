@@ -4,8 +4,8 @@
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawGetCoordinates" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawGetCoordinates"
 /*@
    PetscDrawGetCoordinates - Gets the application coordinates of the corners of
    the window (or page).

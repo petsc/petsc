@@ -15,7 +15,7 @@
 
 #define NormType PetscEnum
 #define InsertMode PetscEnum
-#define ScatterMode PetscEnum 
+#define ScatterMode PetscEnum
 #define VecOption PetscEnum
 #define VecType character*(80)1
 #define VecOperation PetscEnum

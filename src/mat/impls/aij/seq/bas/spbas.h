@@ -1,14 +1,14 @@
-/* 
+/*
    Define type spbas_matrix: sparse matrices using pointers
 
    Global matrix information
       nrows, ncols: dimensions
       nnz         : number of nonzeros (in whole matrix)
       col_idx_type: storage scheme for column numbers
-                    SPBAS_COLUMN_NUMBERS: 
+                    SPBAS_COLUMN_NUMBERS:
                         array icol contains column indices:
                            A(i,icol[i][j]) = values[i][j]
-                    SPBAS_DIAGONAL_OFFSETS: 
+                    SPBAS_DIAGONAL_OFFSETS:
                         array icol contains diagonal offsets:
                            A(i,i+icol[i][j]) = values[i][j]
                     SPBAS_OFFSET_ARRAY:
@@ -21,17 +21,17 @@
       icol0       : column index offset (when needed, otherwise NULL)
       icols       : array of diagonal offsets for each row, as descibed
                     for col_idx_type, above
-      values      : array of matrix entries for each row 
+      values      : array of matrix entries for each row
                     when values == NULL, this matrix is really
                     a sparseness pattern, not a matrix
 
    The other fields describe the way in which the data are stored
    in memory.
 
-      block_data  : The pointers icols[i] all point to places in a 
+      block_data  : The pointers icols[i] all point to places in a
                     single allocated array. Only for icols[0] was
                     malloc called. Freeing icols[0] will free
-                    all other icols=arrays as well. 
+                    all other icols=arrays as well.
                     Same for arrays values[i]
 */
 
@@ -43,7 +43,7 @@
 
 typedef struct {
  PetscInt    nrows;
- PetscInt    ncols; 
+ PetscInt    ncols;
  PetscInt    nnz;
  PetscInt    col_idx_type;
 

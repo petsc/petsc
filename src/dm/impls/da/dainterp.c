@@ -4,19 +4,19 @@
 */
 
 /*
-      For linear elements there are two branches of code to compute the interpolation. They should compute the same results but may not. The "new version" does 
+      For linear elements there are two branches of code to compute the interpolation. They should compute the same results but may not. The "new version" does
    not work for periodic domains, the old does. Change NEWVERSION to 1 to compile in the new version. Eventually when we are sure the two produce identical results
-   we will remove/merge the new version. Based on current tests, these both produce the same results. We are leaving NEWVERSION for now in the code since some 
+   we will remove/merge the new version. Based on current tests, these both produce the same results. We are leaving NEWVERSION for now in the code since some
    consider it cleaner, but old version is turned on since it handles periodic case.
 */
 #define NEWVERSION 0
 
 #include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolationScale"
 /*@
-    DMCreateInterpolationScale - Forms L = R*1/diag(R*1) - L.*v is like a coarse grid average of the 
+    DMCreateInterpolationScale - Forms L = R*1/diag(R*1) - L.*v is like a coarse grid average of the
       nearby fine grid points.
 
   Input Parameters:
@@ -48,7 +48,7 @@ PetscErrorCode  DMCreateInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation_DA_1D_Q1"
 PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
 {
@@ -60,7 +60,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   PetscScalar      v[2],x;
   Mat              mat;
   DMDABoundaryType bx;
-  
+
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&bx,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
@@ -71,35 +71,35 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
     ratio = (mx-1)/(Mx-1);
     if (ratio*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
   }
-  
+
   ierr = DMDAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,0,0,&m_ghost,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
-  
+
   ierr = DMDAGetCorners(dac,&i_start_c,0,0,&m_c,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,0,0,&m_ghost_c,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
-  
+
   /* create interpolation matrix */
   ierr = MatCreate(((PetscObject)dac)->comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,2,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,2,PETSC_NULL,1,PETSC_NULL);CHKERRQ(ierr);
-  
+
   /* loop over local fine grid nodes setting interpolation for those*/
   if (!NEWVERSION) {
 
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
       row    = idx_f[dof*(i-i_start_ghost)]/dof;
-      
+
       i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
       if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
                                           i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
-      
-      /* 
-       Only include those interpolation points that are truly 
+
+      /*
+       Only include those interpolation points that are truly
        nonzero. Note this is very important for final grid lines
        in x direction; since they have no right neighbor
        */
@@ -107,21 +107,21 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
       nc = 0;
       /* one left and below; or we are right on it */
       col      = dof*(i_c-i_start_ghost_c);
-      cols[nc] = idx_c[col]/dof; 
+      cols[nc] = idx_c[col]/dof;
       v[nc++]  = - x + 1.0;
       /* one right? */
-      if (i_c*ratio != i) { 
+      if (i_c*ratio != i) {
         cols[nc] = idx_c[col+dof]/dof;
         v[nc++]  = x;
       }
-      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
+      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
     }
-    
+
   } else {
     PetscScalar    *xi;
     PetscInt       li,nxi,n;
     PetscScalar    Ni[2];
-    
+
     /* compute local coordinate arrays */
     nxi   = ratio + 1;
     ierr = PetscMalloc(sizeof(PetscScalar)*nxi,&xi);CHKERRQ(ierr);
@@ -132,7 +132,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
       row    = idx_f[dof*(i-i_start_ghost)]/dof;
-      
+
       i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
       if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
                                           i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
@@ -140,20 +140,20 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
       /* remainders */
       li = i - ratio * (i/ratio);
       if (i==mx-1){ li = nxi-1; }
-      
+
       /* corners */
       col     = dof*(i_c-i_start_ghost_c);
-      cols[0] = idx_c[col]/dof; 
+      cols[0] = idx_c[col]/dof;
       Ni[0]   = 1.0;
       if ( (li==0) || (li==nxi-1) ) {
         ierr = MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES);CHKERRQ(ierr);
         continue;
       }
-      
+
       /* edges + interior */
       /* remainders */
       if (i==mx-1){ i_c--; }
-      
+
       col     = dof*(i_c-i_start_ghost_c);
       cols[0] = idx_c[col]/dof; /* one left and below; or we are right on it */
       cols[1] = idx_c[col+dof]/dof;
@@ -161,9 +161,9 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
       Ni[0] = 0.5*(1.0-xi[li]);
       Ni[1] = 0.5*(1.0+xi[li]);
       for (n=0; n<2; n++) {
-        if( PetscAbsScalar(Ni[n])<1.0e-32) { cols[n]=-1; }
+        if ( PetscAbsScalar(Ni[n])<1.0e-32) { cols[n]=-1; }
       }
-      ierr = MatSetValues(mat,1,&row,2,cols,Ni,INSERT_VALUES);CHKERRQ(ierr); 
+      ierr = MatSetValues(mat,1,&row,2,cols,Ni,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = PetscFree(xi);CHKERRQ(ierr);
   }
@@ -174,7 +174,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation_DA_1D_Q0"
 PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
 {
@@ -186,7 +186,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
   PetscScalar      v[2],x;
   Mat              mat;
   DMDABoundaryType bx;
-  
+
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&bx,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
@@ -220,8 +220,8 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
 
     i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
 
-    /* 
-         Only include those interpolation points that are truly 
+    /*
+         Only include those interpolation points that are truly
          nonzero. Note this is very important for final grid lines
          in x direction; since they have no right neighbor
     */
@@ -229,14 +229,14 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
     nc = 0;
       /* one left and below; or we are right on it */
     col      = dof*(i_c-i_start_ghost_c);
-    cols[nc] = idx_c[col]/dof; 
+    cols[nc] = idx_c[col]/dof;
     v[nc++]  = - x + 1.0;
     /* one right? */
-    if (i_c*ratio != i) { 
+    if (i_c*ratio != i) {
       cols[nc] = idx_c[col+dof]/dof;
       v[nc++]  = x;
     }
-    ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
+    ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -246,7 +246,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation_DA_2D_Q1"
 PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 {
@@ -259,7 +259,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   PetscScalar      v[4],x,y;
   Mat              mat;
   DMDABoundaryType bx,by;
-  
+
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&bx,&by,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
@@ -277,24 +277,24 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
     ratioj = (my-1)/(My-1);
     if (ratioj*(My-1) != my-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %D My %D",my,My);
   }
-  
-  
+
+
   ierr = DMDAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
   ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
-  
+
   ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
   ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
-  
+
   /*
    Used for handling a coarse DMDA that lives on 1/4 the processors of the fine DMDA.
-   The coarse vector is then duplicated 4 times (each time it lives on 1/4 of the 
+   The coarse vector is then duplicated 4 times (each time it lives on 1/4 of the
    processors). It's effective length is hence 4 times its normal length, this is
    why the col_scale is multiplied by the interpolation matrix column sizes.
    sol_shift allows each set of 1/4 processors do its own interpolation using ITS
    copy of the coarse vector. A bit of a hack but you do better.
-   
+
    In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
    */
   ierr = MPI_Comm_size(((PetscObject)dac)->comm,&size_c);CHKERRQ(ierr);
@@ -302,36 +302,36 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   ierr = MPI_Comm_rank(((PetscObject)daf)->comm,&rank_f);CHKERRQ(ierr);
   col_scale = size_f/size_c;
   col_shift = Mx*My*(rank_f/size_c);
-  
+
   ierr = MatPreallocateInitialize(((PetscObject)daf)->comm,m_f*n_f,col_scale*m_c*n_c,dnz,onz);CHKERRQ(ierr);
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
       row    = idx_f[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
-      
+
       i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratioj);    /* coarse grid node below fine grid node */
-      
+
       if (j_c < j_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
                                           j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
       if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
                                           i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
-      
-      /* 
-       Only include those interpolation points that are truly 
+
+      /*
+       Only include those interpolation points that are truly
        nonzero. Note this is very important for final grid lines
        in x and y directions; since they have no right/top neighbors
        */
       nc = 0;
       /* one left and below; or we are right on it */
       col        = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
-      cols[nc++] = col_shift + idx_c[col]/dof; 
+      cols[nc++] = col_shift + idx_c[col]/dof;
       /* one right and below */
-      if (i_c*ratioi != i) { 
+      if (i_c*ratioi != i) {
         cols[nc++] = col_shift + idx_c[col+dof]/dof;
       }
       /* one left and above */
-      if (j_c*ratioj != j) { 
+      if (j_c*ratioj != j) {
         cols[nc++] = col_shift + idx_c[col+m_ghost_c*dof]/dof;
       }
       /* one right and above */
@@ -347,55 +347,55 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  
+
   /* loop over local fine grid nodes setting interpolation for those*/
   if (!NEWVERSION) {
-    
+
     for (j=j_start; j<j_start+n_f; j++) {
       for (i=i_start; i<i_start+m_f; i++) {
         /* convert to local "natural" numbering and then to PETSc global numbering */
         row    = idx_f[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
-        
+
         i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
         j_c = (j/ratioj);    /* coarse grid node below fine grid node */
-        
-        /* 
-         Only include those interpolation points that are truly 
+
+        /*
+         Only include those interpolation points that are truly
          nonzero. Note this is very important for final grid lines
          in x and y directions; since they have no right/top neighbors
          */
         x  = ((double)(i - i_c*ratioi))/((double)ratioi);
         y  = ((double)(j - j_c*ratioj))/((double)ratioj);
-        
+
         nc = 0;
         /* one left and below; or we are right on it */
         col      = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
-        cols[nc] = col_shift + idx_c[col]/dof; 
+        cols[nc] = col_shift + idx_c[col]/dof;
         v[nc++]  = x*y - x - y + 1.0;
         /* one right and below */
-        if (i_c*ratioi != i) { 
+        if (i_c*ratioi != i) {
           cols[nc] = col_shift + idx_c[col+dof]/dof;
           v[nc++]  = -x*y + x;
         }
         /* one left and above */
-        if (j_c*ratioj != j) { 
+        if (j_c*ratioj != j) {
           cols[nc] = col_shift + idx_c[col+m_ghost_c*dof]/dof;
           v[nc++]  = -x*y + y;
         }
         /* one right and above */
-        if (j_c*ratioj != j && i_c*ratioi != i) { 
+        if (j_c*ratioj != j && i_c*ratioi != i) {
           cols[nc] = col_shift + idx_c[col+(m_ghost_c+1)*dof]/dof;
           v[nc++]  = x*y;
         }
-        ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
+        ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
-    
+
   } else {
     PetscScalar    Ni[4];
     PetscScalar    *xi,*eta;
     PetscInt       li,nxi,lj,neta;
-    
+
     /* compute local coordinate arrays */
     nxi  = ratioi + 1;
     neta = ratioj + 1;
@@ -413,27 +413,27 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
       for (i=i_start; i<i_start+m_f; i++) {
         /* convert to local "natural" numbering and then to PETSc global numbering */
         row    = idx_f[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
-        
+
         i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
         j_c = (j/ratioj);    /* coarse grid node below fine grid node */
-        
+
         /* remainders */
         li = i - ratioi * (i/ratioi);
         if (i==mx-1){ li = nxi-1; }
         lj = j - ratioj * (j/ratioj);
         if (j==my-1){ lj = neta-1; }
-        
+
         /* corners */
         col     = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
         cols[0] = col_shift + idx_c[col]/dof; /* left, below */
         Ni[0]   = 1.0;
         if ( (li==0) || (li==nxi-1) ) {
           if ( (lj==0) || (lj==neta-1) ) {
-            ierr = MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES);CHKERRQ(ierr); 
+            ierr = MatSetValue(mat,row,cols[0],Ni[0],INSERT_VALUES);CHKERRQ(ierr);
             continue;
           }
         }
-        
+
         /* edges + interior */
         /* remainders */
         if (i==mx-1){ i_c--; }
@@ -451,17 +451,17 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
         Ni[3] = 0.25*(1.0+xi[li])*(1.0+eta[lj]);
 
         nc = 0;
-        if( PetscAbsScalar(Ni[0])<1.0e-32) { cols[0]=-1; }
-        if( PetscAbsScalar(Ni[1])<1.0e-32) { cols[1]=-1; }
-        if( PetscAbsScalar(Ni[2])<1.0e-32) { cols[2]=-1; }
-        if( PetscAbsScalar(Ni[3])<1.0e-32) { cols[3]=-1; }
-        
-        ierr = MatSetValues(mat,1,&row,4,cols,Ni,INSERT_VALUES);CHKERRQ(ierr); 
+        if ( PetscAbsScalar(Ni[0])<1.0e-32) { cols[0]=-1; }
+        if ( PetscAbsScalar(Ni[1])<1.0e-32) { cols[1]=-1; }
+        if ( PetscAbsScalar(Ni[2])<1.0e-32) { cols[2]=-1; }
+        if ( PetscAbsScalar(Ni[3])<1.0e-32) { cols[3]=-1; }
+
+        ierr = MatSetValues(mat,1,&row,4,cols,Ni,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = PetscFree(xi);CHKERRQ(ierr);
     ierr = PetscFree(eta);CHKERRQ(ierr);
-  }  
+  }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
@@ -469,10 +469,10 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   PetscFunctionReturn(0);
 }
 
-/* 
+/*
        Contributed by Andrei Draganescu <aidraga@sandia.gov>
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation_DA_2D_Q0"
 PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 {
@@ -508,7 +508,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 
   /*
      Used for handling a coarse DMDA that lives on 1/4 the processors of the fine DMDA.
-     The coarse vector is then duplicated 4 times (each time it lives on 1/4 of the 
+     The coarse vector is then duplicated 4 times (each time it lives on 1/4 of the
      processors). It's effective length is hence 4 times its normal length, this is
      why the col_scale is multiplied by the interpolation matrix column sizes.
      sol_shift allows each set of 1/4 processors do its own interpolation using ITS
@@ -536,15 +536,15 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
       if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
 
-      /* 
-         Only include those interpolation points that are truly 
+      /*
+         Only include those interpolation points that are truly
          nonzero. Note this is very important for final grid lines
          in x and y directions; since they have no right/top neighbors
       */
       nc = 0;
       /* one left and below; or we are right on it */
       col        = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
-      cols[nc++] = col_shift + idx_c[col]/dof; 
+      cols[nc++] = col_shift + idx_c[col]/dof;
       ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
     }
   }
@@ -566,10 +566,10 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
       nc = 0;
       /* one left and below; or we are right on it */
       col      = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
-      cols[nc] = col_shift + idx_c[col]/dof; 
+      cols[nc] = col_shift + idx_c[col]/dof;
       v[nc++]  = 1.0;
-     
-      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
+
+      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -580,10 +580,10 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
   PetscFunctionReturn(0);
 }
 
-/* 
+/*
        Contributed by Jianming Yang <jianming-yang@uiowa.edu>
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation_DA_3D_Q0"
 PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 {
@@ -596,7 +596,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   PetscScalar      v[8];
   Mat              mat;
   DMDABoundaryType bx,by,bz;
-  
+
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&bx,&by,&bz,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
@@ -622,7 +622,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
   /*
      Used for handling a coarse DMDA that lives on 1/4 the processors of the fine DMDA.
-     The coarse vector is then duplicated 4 times (each time it lives on 1/4 of the 
+     The coarse vector is then duplicated 4 times (each time it lives on 1/4 of the
      processors). It's effective length is hence 4 times its normal length, this is
      why the col_scale is multiplied by the interpolation matrix column sizes.
      sol_shift allows each set of 1/4 processors do its own interpolation using ITS
@@ -645,7 +645,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 
 	i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
 	j_c = (j/ratioj);    /* coarse grid node below fine grid node */
-	l_c = (l/ratiol);   
+	l_c = (l/ratiol);
 
 	if (l_c < l_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     l_start %D l_c %D l_start_ghost_c %D",l_start,l_c,l_start_ghost_c);
@@ -654,15 +654,15 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 	if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
     i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
 
-	/* 
-	   Only include those interpolation points that are truly 
+	/*
+	   Only include those interpolation points that are truly
 	   nonzero. Note this is very important for final grid lines
 	   in x and y directions; since they have no right/top neighbors
 	*/
 	nc = 0;
 	/* one left and below; or we are right on it */
 	col        = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
-	cols[nc++] = col_shift + idx_c[col]/dof; 
+	cols[nc++] = col_shift + idx_c[col]/dof;
 	ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
       }
     }
@@ -683,14 +683,14 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 	
 	i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
 	j_c = (j/ratioj);    /* coarse grid node below fine grid node */
-	l_c = (l/ratiol);   
+	l_c = (l/ratiol);
 	nc = 0;
 	/* one left and below; or we are right on it */
 	col      = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
-	cols[nc] = col_shift + idx_c[col]/dof; 
+	cols[nc] = col_shift + idx_c[col]/dof;
 	v[nc++]  = 1.0;
-     
-	ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
+
+	ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }
@@ -702,7 +702,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation_DA_3D_Q1"
 PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
 {
@@ -716,7 +716,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   PetscScalar      v[8],x,y,z;
   Mat              mat;
   DMDABoundaryType bx,by,bz;
-  
+
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&bx,&by,&bz,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
@@ -747,15 +747,15 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
     ratiok = (mz-1)/(Mz-1);
     if (ratiok*(Mz-1) != mz-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mz - 1)/(Mz - 1) must be integer: mz %D Mz %D",mz,Mz);
   }
-  
+
   ierr = DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
   ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
-  
+
   ierr = DMDAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
   ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
-  
+
   /* create interpolation matrix, determining exact preallocation */
   ierr = MatPreallocateInitialize(((PetscObject)dac)->comm,m_f*n_f*p_f,m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
   /* loop over local fine grid nodes counting interpolating points */
@@ -773,34 +773,34 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
                                             j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
         if (i_c < i_start_ghost_c) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
                                             i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
-        
-        /* 
-         Only include those interpolation points that are truly 
+
+        /*
+         Only include those interpolation points that are truly
          nonzero. Note this is very important for final grid lines
          in x and y directions; since they have no right/top neighbors
          */
         nc       = 0;
         col      = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
-        cols[nc++] = idx_c[col]/dof; 
-        if (i_c*ratioi != i) { 
+        cols[nc++] = idx_c[col]/dof;
+        if (i_c*ratioi != i) {
           cols[nc++] = idx_c[col+dof]/dof;
         }
-        if (j_c*ratioj != j) { 
+        if (j_c*ratioj != j) {
           cols[nc++] = idx_c[col+m_ghost_c*dof]/dof;
         }
-        if (l_c*ratiok != l) { 
+        if (l_c*ratiok != l) {
           cols[nc++] = idx_c[col+m_ghost_c*n_ghost_c*dof]/dof;
         }
-        if (j_c*ratioj != j && i_c*ratioi != i) { 
+        if (j_c*ratioj != j && i_c*ratioi != i) {
           cols[nc++] = idx_c[col+(m_ghost_c+1)*dof]/dof;
         }
-        if (j_c*ratioj != j && l_c*ratiok != l) { 
+        if (j_c*ratioj != j && l_c*ratiok != l) {
           cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c)*dof]/dof;
         }
-        if (i_c*ratioi != i && l_c*ratiok != l) { 
+        if (i_c*ratioi != i && l_c*ratiok != l) {
           cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+1)*dof]/dof;
         }
-        if (i_c*ratioi != i && l_c*ratiok != l && j_c*ratioj != j) { 
+        if (i_c*ratioi != i && l_c*ratiok != l && j_c*ratioj != j) {
           cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)*dof]/dof;
         }
         ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
@@ -813,7 +813,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  
+
   /* loop over local fine grid nodes setting interpolation for those*/
   if (!NEWVERSION) {
 
@@ -822,13 +822,13 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
         for (i=i_start; i<i_start+m_f; i++) {
           /* convert to local "natural" numbering and then to PETSc global numbering */
           row = idx_f[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
-          
+
           i_c = (i/ratioi);
           j_c = (j/ratioj);
           l_c = (l/ratiok);
-          
-        /* 
-         Only include those interpolation points that are truly 
+
+        /*
+         Only include those interpolation points that are truly
          nonzero. Note this is very important for final grid lines
          in x and y directions; since they have no right/top neighbors
          */
@@ -839,54 +839,54 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
           nc = 0;
           /* one left and below; or we are right on it */
           col      = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c)+m_ghost_c*(j_c-j_start_ghost_c)+(i_c-i_start_ghost_c));
-          
-          cols[nc] = idx_c[col]/dof; 
+
+          cols[nc] = idx_c[col]/dof;
           v[nc++]  = .125*(1. - (2.0*x-1.))*(1. - (2.0*y-1.))*(1. - (2.0*z-1.));
-          
-          if (i_c*ratioi != i) { 
+
+          if (i_c*ratioi != i) {
             cols[nc] = idx_c[col+dof]/dof;
             v[nc++]  = .125*(1. + (2.0*x-1.))*(1. - (2.0*y-1.))*(1. - (2.0*z-1.));
           }
-          
-          if (j_c*ratioj != j) { 
+
+          if (j_c*ratioj != j) {
             cols[nc] = idx_c[col+m_ghost_c*dof]/dof;
             v[nc++]  = .125*(1. - (2.0*x-1.))*(1. + (2.0*y-1.))*(1. - (2.0*z-1.));
           }
-          
-          if (l_c*ratiok != l) { 
+
+          if (l_c*ratiok != l) {
             cols[nc] = idx_c[col+m_ghost_c*n_ghost_c*dof]/dof;
             v[nc++]  = .125*(1. - (2.0*x-1.))*(1. - (2.0*y-1.))*(1. + (2.0*z-1.));
           }
-          
-          if (j_c*ratioj != j && i_c*ratioi != i) { 
+
+          if (j_c*ratioj != j && i_c*ratioi != i) {
             cols[nc] = idx_c[col+(m_ghost_c+1)*dof]/dof;
             v[nc++]  = .125*(1. + (2.0*x-1.))*(1. + (2.0*y-1.))*(1. - (2.0*z-1.));
           }
-          
-          if (j_c*ratioj != j && l_c*ratiok != l) { 
+
+          if (j_c*ratioj != j && l_c*ratiok != l) {
             cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c)*dof]/dof;
             v[nc++]  = .125*(1. - (2.0*x-1.))*(1. + (2.0*y-1.))*(1. + (2.0*z-1.));
           }
-          
-          if (i_c*ratioi != i && l_c*ratiok != l) { 
+
+          if (i_c*ratioi != i && l_c*ratiok != l) {
             cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+1)*dof]/dof;
             v[nc++]  = .125*(1. + (2.0*x-1.))*(1. - (2.0*y-1.))*(1. + (2.0*z-1.));
           }
-          
-          if (i_c*ratioi != i && l_c*ratiok != l && j_c*ratioj != j) { 
+
+          if (i_c*ratioi != i && l_c*ratiok != l && j_c*ratioj != j) {
             cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)*dof]/dof;
             v[nc++]  = .125*(1. + (2.0*x-1.))*(1. + (2.0*y-1.))*(1. + (2.0*z-1.));
           }
-          ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
+          ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
         }
       }
     }
-    
+
   } else {
     PetscScalar    *xi,*eta,*zeta;
     PetscInt       li,nxi,lj,neta,lk,nzeta,n;
     PetscScalar    Ni[8];
-    
+
     /* compute local coordinate arrays */
     nxi   = ratioi + 1;
     neta  = ratioj + 1;
@@ -903,13 +903,13 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
     for (lk=0; lk<nzeta; lk++) {
       zeta[lk] = -1.0 + (PetscScalar)lk*(2.0/(PetscScalar)(nzeta-1));
     }
-    
+
     for (l=l_start; l<l_start+p_f; l++) {
       for (j=j_start; j<j_start+n_f; j++) {
         for (i=i_start; i<i_start+m_f; i++) {
           /* convert to local "natural" numbering and then to PETSc global numbering */
           row = idx_f[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
-          
+
           i_c = (i/ratioi);
           j_c = (j/ratioj);
           l_c = (l/ratiok);
@@ -921,10 +921,10 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
           if (j==my-1){ lj = neta-1; }
           lk = l - ratiok * (l/ratiok);
           if (l==mz-1){ lk = nzeta-1; }
-          
+
           /* corners */
           col     = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c)+m_ghost_c*(j_c-j_start_ghost_c)+(i_c-i_start_ghost_c));
-          cols[0] = idx_c[col]/dof; 
+          cols[0] = idx_c[col]/dof;
           Ni[0]   = 1.0;
           if ( (li==0) || (li==nxi-1) ) {
             if ( (lj==0) || (lj==neta-1) ) {
@@ -934,13 +934,13 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
               }
             }
           }
-          
+
           /* edges + interior */
           /* remainders */
           if (i==mx-1){ i_c--; }
           if (j==my-1){ j_c--; }
           if (l==mz-1){ l_c--; }
-          
+
           col      = dof*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
           cols[0] = idx_c[col]/dof; /* one left and below; or we are right on it */
           cols[1] = idx_c[col+dof]/dof; /* one right and below */
@@ -963,10 +963,10 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
           Ni[7] = 0.125*(1.0+xi[li])*(1.0+eta[lj])*(1.0+zeta[lk]);
 
           for (n=0; n<8; n++) {
-            if( PetscAbsScalar(Ni[n])<1.0e-32) { cols[n]=-1; }
+            if ( PetscAbsScalar(Ni[n])<1.0e-32) { cols[n]=-1; }
           }
-          ierr = MatSetValues(mat,1,&row,8,cols,Ni,INSERT_VALUES);CHKERRQ(ierr); 
-          
+          ierr = MatSetValues(mat,1,&row,8,cols,Ni,INSERT_VALUES);CHKERRQ(ierr);
+
         }
       }
     }
@@ -974,16 +974,16 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
     ierr = PetscFree(eta);CHKERRQ(ierr);
     ierr = PetscFree(zeta);CHKERRQ(ierr);
   }
-  
+
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
+
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
   ierr = MatDestroy(&mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation_DA"
 PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
 {
@@ -1031,9 +1031,9 @@ PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
     ierr = DMCreateInterpolationScale((DM)dac,(DM)daf,*A,scale);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInjection_DA_1D"
 PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
 {
@@ -1046,7 +1046,7 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
     DMDABoundaryType bx;
     Vec              vecf,vecc;
     IS               isf;
-    
+
     PetscFunctionBegin;
     ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&bx,0,0,0);CHKERRQ(ierr);
     ierr = DMDAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
@@ -1057,21 +1057,21 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
         ratioi = (mx-1)/(Mx-1);
         if (ratioi*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
     }
-   
+
     ierr = DMDAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
     ierr = DMDAGetGhostCorners(daf,&i_start_ghost,0,0,&m_ghost,0,0);CHKERRQ(ierr);
     ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
-    
+
     ierr = DMDAGetCorners(dac,&i_start_c,0,0,&m_c,0,0);CHKERRQ(ierr);
     ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,0,0,&m_ghost_c,0,0);CHKERRQ(ierr);
     ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
-    
-    
+
+
     /* loop over local fine grid nodes setting interpolation for those*/
     nc = 0;
     ierr = PetscMalloc(m_f*sizeof(PetscInt),&cols);CHKERRQ(ierr);
-   
-   
+
+
     for (i=i_start_c; i<i_start_c+m_c; i++) {
         PetscInt i_f = i*ratioi;
 
@@ -1080,7 +1080,7 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
             row = idx_f[dof*(i_f-i_start_ghost)];
             cols[nc++] = row/dof;
     }
-   
+
 
     ierr = ISCreateBlock(((PetscObject)daf)->comm,dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
@@ -1092,7 +1092,7 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInjection_DA_2D"
 PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
 {
@@ -1158,7 +1158,7 @@ PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInjection_DA_3D"
 PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
 {
@@ -1241,7 +1241,7 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInjection_DA"
 PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,VecScatter *inject)
 {
@@ -1276,7 +1276,7 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,VecScatter *inject)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateAggregates_DA"
 PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
 {
@@ -1313,9 +1313,9 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
   if (bxc != bxf || byc != byf || bzc != bzf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");CHKERRQ(ierr);
   if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");CHKERRQ(ierr);
 
-  if( Mf < Mc ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Mc %D, Mf %D", Mc, Mf);
-  if( Nf < Nc ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Nc %D, Nf %D", Nc, Nf);
-  if( Pf < Pc ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Pc %D, Pf %D", Pc, Pf);
+  if ( Mf < Mc ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Mc %D, Mf %D", Mc, Mf);
+  if ( Nf < Nc ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Nc %D, Nf %D", Nc, Nf);
+  if ( Pf < Pc ) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Pc %D, Pf %D", Pc, Pf);
 
   if (Pc < 0) Pc = 1;
   if (Pf < 0) Pf = 1;
@@ -1330,7 +1330,7 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
   ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
   ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
-  /* 
+  /*
      Basic idea is as follows. Here's a 2D example, suppose r_x, r_y are the ratios
      for dimension 1 and 2 respectively.
      Let (i,j) be a coarse grid node. All the fine grid nodes between r_x*i and r_x*(i+1)
@@ -1346,13 +1346,13 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
 
   /* store nodes in the fine grid here */
   ierr = PetscMalloc2(max_agg_size,PetscScalar, &one_vec,max_agg_size,PetscInt, &fine_nodes);CHKERRQ(ierr);
-  for(i=0; i<max_agg_size; i++) one_vec[i] = 1.0;  
-  
+  for (i=0; i<max_agg_size; i++) one_vec[i] = 1.0;
+
   /* loop over all coarse nodes */
   for (l_c=l_start_c; l_c<l_start_c+p_c; l_c++) {
     for (j_c=j_start_c; j_c<j_start_c+n_c; j_c++) {
       for (i_c=i_start_c; i_c<i_start_c+m_c; i_c++) {
-	for(d=0; d<dofc; d++) {
+	for (d=0; d<dofc; d++) {
 	  /* convert to local "natural" numbering and then to PETSc global numbering */
 	  a = idx_c[dofc*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c))] + d;
 
@@ -1379,4 +1379,4 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
   ierr = MatAssemblyBegin(*rest, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*rest, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}

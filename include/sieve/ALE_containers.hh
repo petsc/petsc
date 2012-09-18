@@ -96,7 +96,7 @@ namespace ALE {
     }
     // Comparisons
     class less_than {
-    public: 
+    public:
       bool operator()(const MinimalArrow& p, const MinimalArrow& q) const {
         return((p.source < q.source) || ((p.source == q.source) && (p.target < q.target)));
       };
@@ -116,7 +116,7 @@ namespace ALE {
   //
   // This is a set of classes and class templates describing an interface to point containers.
   //
-  
+
   // Basic object
   class Point {
   public:
@@ -132,13 +132,13 @@ namespace ALE {
     Point(const Point& p) : prefix(p.prefix), index(p.index){};
     // Comparisons
     class less_than {
-    public: 
+    public:
       bool operator()(const Point& p, const Point& q) const {
         return( (p.prefix < q.prefix) || ((p.prefix == q.prefix) && (p.index < q.index)));
       };
     };
     typedef less_than Cmp;
-    
+
     bool operator==(const Point& q) const {
       return ( (this->prefix == q.prefix) && (this->index == q.index) );
     };
@@ -186,13 +186,13 @@ namespace ALE {
     Pair(const Pair& p) : first(p.first), second(p.second) {};
     // Comparisons
     class less_than {
-    public: 
+    public:
       bool operator()(const Pair& p, const Pair& q) const {
         return( (p.first < q.first) || ((p.first == q.first) && (p.second < q.second)));
       };
     };
     typedef less_than Cmp;
-    
+
     bool operator==(const Pair& q) const {
       return((this->first == q.first) && (this->second == q.second));
     };
@@ -232,7 +232,7 @@ namespace ALE {
         os << e;
       }
       os << " ]" << std::endl;
-      
+
     }
   };
 
@@ -256,28 +256,28 @@ namespace ALE {
     //
     template<typename ElementSequence_>
     set(const ElementSequence_& eseq) : super(eseq.begin(), eseq.end()){}
-    // 
+    //
     // Standard interface
-    // 
-    // Redirection: 
+    //
+    // Redirection:
     // FIX: it is a little weird that 'insert' methods aren't inherited
     //      but perhaps can be fixed by calling insert<Element_> (i.e., insert<Point> etc)?
-        std::pair<iterator, bool> 
+        std::pair<iterator, bool>
     inline insert(const Element_& e) { return super::insert(e); };
     //
-    iterator 
+    iterator
     inline insert(iterator position, const Element_& e) {return super::insert(position,e);};
     //
     template <class InputIterator>
-    void 
+    void
     inline insert(InputIterator b, InputIterator e) { return super::insert(b,e);}
-    // 
+    //
     // Extended interface
     //
     inline iterator last() {
       return this->rbegin();
     };// last()
-    //    
+    //
     inline bool contains(const Element_& e) {return (this->find(e) != this->end());};
     //
     inline void join(Obj<set> s) {
@@ -350,9 +350,9 @@ namespace ALE {
     };
   };// struct pair
 
-  // 
+  //
   // Arrow definitions
-  // 
+  //
   template<typename Source_, typename Target_, typename Color_>
   struct  Arrow { //: public ALE::def::Arrow<Source_, Target_, Color_> {
     typedef Arrow   arrow_type;
@@ -369,7 +369,7 @@ namespace ALE {
     private:
       source_type _newSource;
     };
-    
+
     struct targetChanger {
       targetChanger(const target_type& newTarget) : _newTarget(newTarget) {};
       void operator()(arrow_type& a) { a.target = this->_newTarget;}
@@ -425,7 +425,7 @@ namespace ALE {
     protected:
       // Parent sequence
       sequence_type&  _sequence;
-      // Underlying iterator 
+      // Underlying iterator
       itor_type      _itor;
       // Member extractor
       extractor_type _ex;
@@ -465,14 +465,14 @@ namespace ALE {
     void view(ostream_type& os, const char* label = NULL){
       if(label != NULL) {
         os << "Viewing " << label << " sequence:" << std::endl;
-      } 
+      }
       os << "[";
       for(iterator<> i = this->_index.begin(); i != this->_index.end(); i++) {
         os << " "<< *i;
       }
       os << " ]" << std::endl;
     }
-  };// class IndexSequence    
+  };// class IndexSequence
 
 } // namespace ALE
 

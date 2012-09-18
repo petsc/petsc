@@ -42,7 +42,7 @@ int main(int argc,char **args)
   isplit = iblock + n;
 
   /* Set symmetric tridiagonal matrix */
-  for(i=0; i<n; i++){
+  for (i=0; i<n; i++){
     D[i] = 2.0;
     E[i] = 1.0;
   } 

@@ -2,8 +2,8 @@
 #include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <petscblaslapack.h>
 
-/* 
-   Private context (data structure) for the SVD preconditioner.  
+/*
+   Private context (data structure) for the SVD preconditioner.
 */
 typedef struct {
   Vec         diag,work;
@@ -21,7 +21,7 @@ typedef enum {READ=1, WRITE=2, READ_WRITE=3} AccessMode;
 /* -------------------------------------------------------------------------- */
 /*
    PCSetUp_SVD - Prepares for the use of the SVD preconditioner
-                    by setting data structures and options.   
+                    by setting data structures and options.
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -32,7 +32,7 @@ typedef enum {READ=1, WRITE=2, READ_WRITE=3} AccessMode;
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_SVD"
 static PetscErrorCode PCSetUp_SVD(PC pc)
 {
@@ -69,11 +69,11 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   ierr = MatGetSize(pc->pmat,&n,PETSC_NULL);CHKERRQ(ierr);
   nb    = PetscBLASIntCast(n);
   lwork = 5*nb;
-  ierr  = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr); 
-  ierr  = MatDenseGetArray(jac->A,&a);CHKERRQ(ierr); 
-  ierr  = MatDenseGetArray(jac->U,&u);CHKERRQ(ierr); 
-  ierr  = MatDenseGetArray(jac->Vt,&v);CHKERRQ(ierr); 
-  ierr  = VecGetArray(jac->diag,&d);CHKERRQ(ierr); 
+  ierr  = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+  ierr  = MatDenseGetArray(jac->A,&a);CHKERRQ(ierr);
+  ierr  = MatDenseGetArray(jac->U,&u);CHKERRQ(ierr);
+  ierr  = MatDenseGetArray(jac->Vt,&v);CHKERRQ(ierr);
+  ierr  = VecGetArray(jac->diag,&d);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   {
     PetscBLASInt lierr;
@@ -85,8 +85,8 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not coded for complex");
 #endif
-  ierr  = MatDenseRestoreArray(jac->A,&a);CHKERRQ(ierr); 
-  ierr  = MatDenseRestoreArray(jac->U,&u);CHKERRQ(ierr); 
+  ierr  = MatDenseRestoreArray(jac->A,&a);CHKERRQ(ierr);
+  ierr  = MatDenseRestoreArray(jac->U,&u);CHKERRQ(ierr);
   ierr  = MatDenseRestoreArray(jac->Vt,&v);CHKERRQ(ierr);
   for (i=n-1; i>=0; i--) if (PetscRealPart(d[i]) > jac->zerosing) break;
   jac->nzero = n-1-i;
@@ -98,7 +98,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
       ierr = PetscViewerASCIIPrintf(jac->monitor,"    SVD: largest singular values : %14.12e %14.12e %14.12e %14.12e %14.12e\n",(double)PetscRealPart(d[4]),(double)PetscRealPart(d[3]),(double)PetscRealPart(d[2]),(double)PetscRealPart(d[1]),(double)PetscRealPart(d[0]));CHKERRQ(ierr);
     } else {                    /* print all singular values */
       char buf[256],*p;
-      size_t left = sizeof buf,used;
+      size_t left = sizeof(buf),used;
       PetscInt thisline;
       for (p=buf,i=n-1,thisline=1; i>=0; i--,thisline++) {
         ierr = PetscSNPrintfCount(p,left," %14.12e",&used,(double)PetscRealPart(d[i]));CHKERRQ(ierr);
@@ -216,7 +216,7 @@ static PetscErrorCode PCSVDRestoreVec(PC pc,PCSide side,AccessMode amode,Vec x,V
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_SVD"
 static PetscErrorCode PCApply_SVD(PC pc,Vec x,Vec y)
 {
@@ -235,7 +235,7 @@ static PetscErrorCode PCApply_SVD(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyTranspose_SVD"
 static PetscErrorCode PCApplyTranspose_SVD(PC pc,Vec x,Vec y)
 {
@@ -254,7 +254,7 @@ static PetscErrorCode PCApplyTranspose_SVD(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCReset_SVD"
 static PetscErrorCode PCReset_SVD(PC pc)
 {
@@ -284,7 +284,7 @@ static PetscErrorCode PCReset_SVD(PC pc)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_SVD"
 static PetscErrorCode PCDestroy_SVD(PC pc)
 {
@@ -298,7 +298,7 @@ static PetscErrorCode PCDestroy_SVD(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SVD"
 static PetscErrorCode PCSetFromOptions_SVD(PC pc)
 {
@@ -324,8 +324,8 @@ static PetscErrorCode PCSetFromOptions_SVD(PC pc)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCCreate_SVD - Creates a SVD preconditioner context, PC_SVD, 
-   and sets this as the private data within the generic preconditioning 
+   PCCreate_SVD - Creates a SVD preconditioner context, PC_SVD,
+   and sets this as the private data within the generic preconditioning
    context, PC, that was created within PCCreate().
 
    Input Parameter:
@@ -349,7 +349,7 @@ static PetscErrorCode PCSetFromOptions_SVD(PC pc)
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_SVD"
 PetscErrorCode PCCreate_SVD(PC pc)
 {

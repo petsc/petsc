@@ -37,9 +37,9 @@
 /*       DEGREE.                                                */
 /*                                                              */
 /****************************************************************/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SPARSEPACKrcm"
-PetscErrorCode SPARSEPACKrcm(PetscInt *root, PetscInt *xadj, PetscInt *adjncy, 
+PetscErrorCode SPARSEPACKrcm(PetscInt *root, PetscInt *xadj, PetscInt *adjncy,
 	PetscInt *mask, PetscInt *perm, PetscInt *ccsize, PetscInt *deg)
 {
     /* System generated locals */
@@ -47,7 +47,7 @@ PetscErrorCode SPARSEPACKrcm(PetscInt *root, PetscInt *xadj, PetscInt *adjncy,
 
     /* Local variables */
     PetscInt node, fnbr, lnbr, i, j, k, l, lperm, jstop, jstrt;
-    extern PetscErrorCode SPARSEPACKdegree(PetscInt*, PetscInt *, PetscInt *, 
+    extern PetscErrorCode SPARSEPACKdegree(PetscInt*, PetscInt *, PetscInt *,
 	    PetscInt *, PetscInt *, PetscInt *, PetscInt *);
     PetscInt lbegin, lvlend, nbr;
 

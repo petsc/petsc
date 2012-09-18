@@ -1,12 +1,12 @@
 
 /*
-   This provides a simple shell for Fortran (and C programmers) to 
-  create a very simple matrix class for use with KSP without coding 
+   This provides a simple shell for Fortran (and C programmers) to
+  create a very simple matrix class for use with KSP without coding
   much of anything.
 */
 
 #include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
-#include <petsc-private/vecimpl.h>  
+#include <petsc-private/vecimpl.h>
 
 typedef struct {
   PetscErrorCode (*destroy)(Mat);
@@ -56,7 +56,7 @@ static PetscErrorCode MatMult_Shell(Mat,Vec,Vec);
 static PetscErrorCode MatMultTranspose_Shell(Mat,Vec,Vec);
 static PetscErrorCode MatGetDiagonal_Shell(Mat,Vec);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatShellUseScaledMethods"
 static PetscErrorCode MatShellUseScaledMethods(Mat Y)
 {
@@ -78,7 +78,7 @@ static PetscErrorCode MatShellUseScaledMethods(Mat Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatShellPreScaleLeft"
 static PetscErrorCode MatShellPreScaleLeft(Mat A,Vec x,Vec *xx)
 {
@@ -97,7 +97,7 @@ static PetscErrorCode MatShellPreScaleLeft(Mat A,Vec x,Vec *xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatShellPreScaleRight"
 static PetscErrorCode MatShellPreScaleRight(Mat A,Vec x,Vec *xx)
 {
@@ -116,7 +116,7 @@ static PetscErrorCode MatShellPreScaleRight(Mat A,Vec x,Vec *xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatShellPostScaleLeft"
 static PetscErrorCode MatShellPostScaleLeft(Mat A,Vec x)
 {
@@ -128,7 +128,7 @@ static PetscErrorCode MatShellPostScaleLeft(Mat A,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatShellPostScaleRight"
 static PetscErrorCode MatShellPostScaleRight(Mat A,Vec x)
 {
@@ -140,7 +140,7 @@ static PetscErrorCode MatShellPostScaleRight(Mat A,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatShellShiftAndScale"
 static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
 {
@@ -168,7 +168,7 @@ static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatShellGetContext"
 /*@
     MatShellGetContext - Returns the user-provided context associated with a shell matrix.
@@ -186,7 +186,7 @@ static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
     Notes:
     This routine is intended for use within various shell matrix routines,
     as set with MatShellSetOperation().
-    
+
 .keywords: matrix, shell, get, context
 
 .seealso: MatCreateShell(), MatShellSetOperation(), MatShellSetContext()
@@ -205,7 +205,7 @@ PetscErrorCode  MatShellGetContext(Mat mat,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_Shell"
 PetscErrorCode MatDestroy_Shell(Mat mat)
 {
@@ -225,7 +225,7 @@ PetscErrorCode MatDestroy_Shell(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_Shell"
 PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
 {
@@ -241,7 +241,7 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_Shell"
 PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
 {
@@ -257,7 +257,7 @@ PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonal_Shell"
 PetscErrorCode MatGetDiagonal_Shell(Mat A,Vec v)
 {
@@ -277,7 +277,7 @@ PetscErrorCode MatGetDiagonal_Shell(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatShift_Shell"
 PetscErrorCode MatShift_Shell(Mat Y,PetscScalar a)
 {
@@ -298,7 +298,7 @@ PetscErrorCode MatShift_Shell(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatScale_Shell"
 PetscErrorCode MatScale_Shell(Mat Y,PetscScalar a)
 {
@@ -313,7 +313,7 @@ PetscErrorCode MatScale_Shell(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDiagonalScale_Shell"
 static PetscErrorCode MatDiagonalScale_Shell(Mat Y,Vec left,Vec right)
 {
@@ -341,11 +341,11 @@ static PetscErrorCode MatDiagonalScale_Shell(Mat Y,Vec left,Vec right)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_Shell"
 PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
 {
-  Mat_Shell *shell = (Mat_Shell*)Y->data;  
+  Mat_Shell *shell = (Mat_Shell*)Y->data;
 
   PetscFunctionBegin;
   if (t == MAT_FINAL_ASSEMBLY) {
@@ -481,7 +481,7 @@ static struct _MatOps MatOps_Values = {0,
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreate_Shell"
 PetscErrorCode  MatCreate_Shell(Mat A)
 {
@@ -510,11 +510,11 @@ PetscErrorCode  MatCreate_Shell(Mat A)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateShell"
 /*@C
    MatCreateShell - Creates a new matrix class for use with a user-defined
-   private data storage format. 
+   private data storage format.
 
   Collective on MPI_Comm
 
@@ -589,7 +589,7 @@ PetscErrorCode  MatCreateShell(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatShellSetContext"
 /*@
     MatShellSetContext - sets the context for a shell matrix
@@ -622,7 +622,7 @@ PetscErrorCode  MatShellSetContext(Mat mat,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatShellSetOperation"
 /*@C
     MatShellSetOperation - Allows user to set a matrix operation for
@@ -651,10 +651,10 @@ $      ierr = MatShellSetOperation(A,MATOP_MULT,(void(*)(void))usermult);
     All user-provided functions (execept for MATOP_DESTROY) should have the same calling
     sequence as the usual matrix interface routines, since they
     are intended to be accessed via the usual matrix interface
-    routines, e.g., 
+    routines, e.g.,
 $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
-    In particular each function MUST return an error code of 0 on success and 
+    In particular each function MUST return an error code of 0 on success and
     nonzero on failure.
 
     Within each user-defined routine, the user should call
@@ -681,14 +681,14 @@ PetscErrorCode  MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
        Mat_Shell *shell = (Mat_Shell*)mat->data;
        shell->destroy                 = (PetscErrorCode (*)(Mat)) f;
     } else mat->ops->destroy          = (PetscErrorCode (*)(Mat)) f;
-  } 
+  }
   else if (op == MATOP_VIEW) mat->ops->view  = (PetscErrorCode (*)(Mat,PetscViewer)) f;
   else                       (((void(**)(void))mat->ops)[op]) = f;
 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatShellGetOperation"
 /*@C
     MatShellGetOperation - Gets a matrix function for a shell matrix.
@@ -713,7 +713,7 @@ PetscErrorCode  MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
     All user-provided functions have the same calling
     sequence as the usual matrix interface routines, since they
     are intended to be accessed via the usual matrix interface
-    routines, e.g., 
+    routines, e.g.,
 $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
     Within each user-defined routine, the user should call

@@ -2,7 +2,7 @@
 /*
      Inverts 2 by 2 matrix using partial pivoting.
 
-       Used by the sparse factorization routines in 
+       Used by the sparse factorization routines in
      src/mat/impls/baij/seq
 
 
@@ -12,7 +12,7 @@
 */
 #include <petscsys.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscKernel_A_gets_inverse_A_2"
 PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
 {
@@ -29,7 +29,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
     a       -= 3;
 
     /*for (k = 1; k <= 1; ++k) {*/
-        k   = 1; 
+        k   = 1;
 	kp1 = k + 1;
         k3  = 2*k;
         k4  = k3 + k;
@@ -46,7 +46,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
         l       += k - 1;
 	ipvt[k-1] = l;
 
-	if (a[l + k3] == 0.0) { 
+	if (a[l + k3] == 0.0) {
 	  if (shift == 0.0) {
 	    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
 	  } else {
@@ -66,14 +66,14 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
 
 	stmp = -1. / a[k4];
 	i__2 = 2 - k;
-        aa = &a[1 + k4]; 
+        aa = &a[1 + k4];
         for (ll=0; ll<i__2; ll++) {
           aa[ll] *= stmp;
         }
 
 /*           row elimination with column indexing */
 
-	ax = &a[k4+1]; 
+	ax = &a[k4+1];
         for (j = kp1; j <= 2; ++j) {
             j3   = 2*j;
 	    stmp = a[l + j3];
@@ -93,7 +93,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
     if (a[6] == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",1);
 
     /*
-         Now form the inverse 
+         Now form the inverse
     */
 
    /*     compute inverse(u) */
@@ -104,7 +104,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
 	a[k4] = 1.0 / a[k4];
 	stmp  = -a[k4];
 	i__2  = k - 1;
-        aa    = &a[k3 + 1]; 
+        aa    = &a[k3 + 1];
         for (ll=0; ll<i__2; ll++) aa[ll] *= stmp;
 	kp1 = k + 1;
 	if (2 < kp1) continue;
@@ -123,7 +123,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
    /*    form inverse(u)*inverse(l) */
 
     /*for (kb = 1; kb <= 1; ++kb) {*/
-        
+
 	k   = 1;
         k3  = 2*k;
 	kp1 = k + 1;
@@ -141,16 +141,16 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
 	}
 	l = ipvt[k-1];
 	if (l != k) {
-            ax = &a[k3 + 1]; 
+            ax = &a[k3 + 1];
             ay = &a[2*l + 1];
             stmp = ax[0]; ax[0] = ay[0]; ay[0] = stmp;
             stmp = ax[1]; ax[1] = ay[1]; ay[1] = stmp;
 	}
-    
+
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscKernel_A_gets_inverse_A_9"
 PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
 {
@@ -196,14 +196,14 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
 
 	stmp = -1. / a[k4];
 	i__2 = 9 - k;
-        aa = &a[1 + k4]; 
+        aa = &a[1 + k4];
         for (ll=0; ll<i__2; ll++) {
           aa[ll] *= stmp;
         }
 
 /*           row elimination with column indexing */
 
-	ax = &a[k4+1]; 
+	ax = &a[k4+1];
         for (j = kp1; j <= 9; ++j) {
             j3   = 9*j;
 	    stmp = a[l + j3];
@@ -223,7 +223,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
     if (a[90] == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",6);
 
     /*
-         Now form the inverse 
+         Now form the inverse
     */
 
    /*     compute inverse(u) */
@@ -234,7 +234,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
 	a[k4] = 1.0 / a[k4];
 	stmp  = -a[k4];
 	i__2  = k - 1;
-        aa    = &a[k3 + 1]; 
+        aa    = &a[k3 + 1];
         for (ll=0; ll<i__2; ll++) aa[ll] *= stmp;
 	kp1 = k + 1;
 	if (9 < kp1) continue;
@@ -277,7 +277,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
 	}
 	l = ipvt[k-1];
 	if (l != k) {
-            ax = &a[k3 + 1]; 
+            ax = &a[k3 + 1];
             ay = &a[9*l + 1];
             stmp = ax[0]; ax[0] = ay[0]; ay[0] = stmp;
             stmp = ax[1]; ax[1] = ay[1]; ay[1] = stmp;
@@ -296,7 +296,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
 /*
       Inverts 15 by 15 matrix using partial pivoting.
 
-       Used by the sparse factorization routines in 
+       Used by the sparse factorization routines in
      src/mat/impls/baij/seq
 
        This is a combination of the Linpack routines
@@ -304,7 +304,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
 
 */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscKernel_A_gets_inverse_A_15"
 PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *a,PetscInt *ipvt,MatScalar *work,PetscReal shift)
 {
@@ -350,14 +350,14 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *a,PetscInt *ipvt,MatSc
 
 	stmp = -1. / a[k4];
 	i__2 = 15 - k;
-        aa = &a[1 + k4]; 
+        aa = &a[1 + k4];
         for (ll=0; ll<i__2; ll++) {
           aa[ll] *= stmp;
         }
 
 /*           row elimination with column indexing */
 
-	ax = &a[k4+1]; 
+	ax = &a[k4+1];
         for (j = kp1; j <= 15; ++j) {
             j3   = 15*j;
 	    stmp = a[l + j3];
@@ -377,7 +377,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *a,PetscInt *ipvt,MatSc
     if (a[240] == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",6);
 
     /*
-         Now form the inverse 
+         Now form the inverse
     */
 
    /*     compute inverse(u) */
@@ -388,7 +388,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *a,PetscInt *ipvt,MatSc
 	a[k4] = 1.0 / a[k4];
 	stmp  = -a[k4];
 	i__2  = k - 1;
-        aa    = &a[k3 + 1]; 
+        aa    = &a[k3 + 1];
         for (ll=0; ll<i__2; ll++) aa[ll] *= stmp;
 	kp1 = k + 1;
 	if (15 < kp1) continue;
@@ -437,7 +437,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *a,PetscInt *ipvt,MatSc
 	}
 	l = ipvt[k-1];
 	if (l != k) {
-            ax = &a[k3 + 1]; 
+            ax = &a[k3 + 1];
             ay = &a[15*l + 1];
             stmp = ax[0];  ax[0]  = ay[0];  ay[0]  = stmp;
             stmp = ax[1];  ax[1]  = ay[1];  ay[1]  = stmp;

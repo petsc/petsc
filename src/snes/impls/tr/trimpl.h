@@ -1,6 +1,6 @@
 
 /*
-   Context for a Newton trust region method for solving a system 
+   Context for a Newton trust region method for solving a system
    of nonlinear equations
  */
 

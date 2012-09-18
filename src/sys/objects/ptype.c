@@ -4,7 +4,7 @@
 */
 #include <petscsys.h>  /*I   "petscsys.h"    I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDataTypeToMPIDataType"
 /*@C
      PetscDataTypeToMPIDataType - Converts the PETSc name of a datatype to its MPI name.
@@ -18,7 +18,7 @@
 .     mtype - the MPI datatype (for example MPI_DOUBLE, ...)
 
     Level: advanced
-   
+
 .seealso: PetscDataType, PetscMPIDataTypeToPetscDataType()
 @*/
 PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
@@ -59,7 +59,7 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mty
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscMPIDataTypeToPetscDataType"
 /*@C
      PetscMPIDataTypeToPetscDataType Finds the PETSc name of a datatype from its MPI name
@@ -73,7 +73,7 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mty
 .     ptype - the PETSc datatype name (for example PETSC_DOUBLE)
 
     Level: advanced
-   
+
 .seealso: PetscDataType, PetscMPIDataTypeToPetscDataType()
 @*/
 PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType *ptype)
@@ -114,10 +114,10 @@ typedef enum {PETSC_INT_SIZE = sizeof(PetscInt),PETSC_DOUBLE_SIZE = sizeof(doubl
               PETSC_COMPLEX_SIZE = sizeof(PetscScalar),PETSC_LONG_SIZE=sizeof(long),
               PETSC_SHORT_SIZE = sizeof(short),PETSC_FLOAT_SIZE = sizeof(float),
               PETSC_CHAR_SIZE = sizeof(char),PETSC_BIT_LOGICAL_SIZE = sizeof(char),
-              PETSC_ENUM_SIZE = sizeof(PetscBool), PETSC_BOOL_SIZE = sizeof(PetscBool), 
+              PETSC_ENUM_SIZE = sizeof(PetscBool), PETSC_BOOL_SIZE = sizeof(PetscBool),
               PETSC___FLOAT128_SIZE = sizeof(long double)} PetscDataTypeSize;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscDataTypeGetSize"
 /*@
      PetscDataTypeGetSize - Gets the size (in bytes) of a PETSc datatype
@@ -131,7 +131,7 @@ typedef enum {PETSC_INT_SIZE = sizeof(PetscInt),PETSC_DOUBLE_SIZE = sizeof(doubl
 .     size - the size in bytes (for example the size of PETSC_DOUBLE is 8)
 
     Level: advanced
-   
+
 .seealso: PetscDataType, PetscDataTypeToMPIDataType()
 @*/
 PetscErrorCode  PetscDataTypeGetSize(PetscDataType ptype,size_t *size)

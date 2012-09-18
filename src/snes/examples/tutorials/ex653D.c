@@ -249,7 +249,7 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->eta,&eta_p);CHKERRQ(ierr);
   
-  for(i=0;i<n;i++) 
+  for (i=0;i<n;i++) 
   {
     wv_p[i] = xx[3*i];
     cv_p[i] = xx[3*i+1];
@@ -550,7 +550,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 	{
 		for (j=ys; j< ys+ym; j++) 
 		{
-			for(i=xs; i < xs+xm;i++)
+			for (i=xs; i < xs+xm;i++)
 			{
 				l[k][j][i][0] = -SNES_VI_INF;
 				l[k][j][i][1] = 0.0;
@@ -721,7 +721,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   PetscInt    row,cols[16],r,row_M_0,cols3[8];
   PetscScalar vals[16],vals_M_0[8],vals3[8];	
 	
-  for(i=0;i < nele;i++) 
+  for (i=0;i < nele;i++) 
   {
     
 	  for (j=0; j<8; j++)
@@ -729,7 +729,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 		  idx[j] = ele[8*i + j];
 	  }
 	  
-	  for(r=0;r<8;r++) 
+	  for (r=0;r<8;r++) 
 	  {
 		  row_M_0 = idx[r];
 		  for (j=0; j<8; j++)
@@ -740,7 +740,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
           ierr = MatSetValuesLocal(M_0,1,&row_M_0,8,idx,vals_M_0,ADD_VALUES);CHKERRQ(ierr);
 		  
 		  row = 3*idx[r];
-		  for(j = 0; j < 8; j++)
+		  for (j = 0; j < 8; j++)
 		  {
 			  cols[j] = 3 * idx[j];
 			  vals[j] = user->dt*eM_2[r][j]*user->Mv;
@@ -753,7 +753,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
           ierr = MatSetValuesLocal(M,1,&row,16,cols,vals,ADD_VALUES);CHKERRQ(ierr);
 		  
 		  row = 3*idx[r]+1;
-		  for(j = 0; j < 8; j++)
+		  for (j = 0; j < 8; j++)
 		  {
 			  cols[j] = 3 * idx[j];
 			  vals[j] = -eM_0[r][j];
@@ -766,7 +766,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 		  ierr = MatSetValuesLocal(M,1,&row,16,cols,vals,ADD_VALUES);CHKERRQ(ierr);  
 		  
 		  row = 3*idx[r]+2;
-		  for(j = 0; j < 8; j++)
+		  for (j = 0; j < 8; j++)
 		  {
 			  cols3[j] = 3 * idx[j] + 2;
 			  vals3[j] = eM_0[r][j] + user->dt*2.0*user->L*user->kaeta*eM_2[r][j];

@@ -25,7 +25,7 @@ typedef enum { DMDA_STENCIL_STAR,DMDA_STENCIL_BOX } DMDAStencilType;
 M*/
 
 /*MC
-     DMDA_STENCIL_BOX - "Box"-type stencil. In logical grid coordinates, any of (i,j,k), (i+s,j+r,k+t) may 
+     DMDA_STENCIL_BOX - "Box"-type stencil. In logical grid coordinates, any of (i,j,k), (i+s,j+r,k+t) may
                       be in the stencil.
 
      Level: beginner
@@ -38,12 +38,12 @@ M*/
 
    Level: beginner
 
-   A boundary may be of type DMDA_BOUNDARY_NONE (no ghost nodes), DMDA_BOUNDARY_GHOST (ghost nodes 
+   A boundary may be of type DMDA_BOUNDARY_NONE (no ghost nodes), DMDA_BOUNDARY_GHOST (ghost nodes
    exist but aren't filled, you can put values into them and then apply a stencil that uses those ghost locations),
    DMDA_BOUNDARY_MIRROR (not yet implemented), or DMDA_BOUNDARY_PERIODIC
    (ghost nodes filled by the opposite edge of the domain).
 
-   Note: This is information for the boundary of the __PHYSICAL__ domain. It has nothing to do with boundaries between 
+   Note: This is information for the boundary of the __PHYSICAL__ domain. It has nothing to do with boundaries between
      processes, that width is always determined by the stencil width, see DMDASetStencilWidth().
 
 .seealso: DMDASetBoundaryType(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate()
@@ -53,7 +53,7 @@ typedef enum { DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_MIRROR, 
 PETSC_EXTERN const char *const DMDABoundaryTypes[];
 
 /*E
-    DMDAInterpolationType - Defines the type of interpolation that will be returned by 
+    DMDAInterpolationType - Defines the type of interpolation that will be returned by
        DMCreateInterpolation.
 
    Level: beginner
@@ -66,12 +66,12 @@ PETSC_EXTERN PetscErrorCode DMDASetInterpolationType(DM,DMDAInterpolationType);
 PETSC_EXTERN PetscErrorCode DMDAGetInterpolationType(DM,DMDAInterpolationType*);
 
 /*E
-    DMDAElementType - Defines the type of elements that will be returned by 
+    DMDAElementType - Defines the type of elements that will be returned by
        DMDAGetElements()
 
    Level: beginner
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateInterpolation(), DMDASetInterpolationType(), 
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateInterpolation(), DMDASetInterpolationType(),
           DMDASetElementType(), DMDAGetElements(), DMDARestoreElements(), DMDACreate()
 E*/
 typedef enum { DMDA_ELEMENT_P1, DMDA_ELEMENT_Q1 } DMDAElementType;
@@ -178,7 +178,7 @@ typedef struct {
 
    Synopsis:
    void  DMDAForEachPointBegin2d(DALocalInfo *info,PetscInt i,PetscInt j);
-   
+
    Not Collective
 
    Level: intermediate
@@ -195,7 +195,7 @@ M*/
 
    Synopsis:
    void  DMDAForEachPointEnd2d;
-   
+
    Not Collective
 
    Level: intermediate
@@ -212,9 +212,9 @@ M*/
     Sample Usage:
       DMDACoor2d **coors;
       Vec      vcoors;
-      DM       cda;     
+      DM       cda;
 
-      DMDAGetCoordinates(da,&vcoors); 
+      DMDAGetCoordinates(da,&vcoors);
       DMDAGetCoordinateDA(da,&cda);
       DMDAVecGetArray(cda,vcoors,&coors);
       DMDAGetCorners(cda,&mstart,&nstart,0,&m,&n,0)
@@ -239,9 +239,9 @@ typedef struct {PetscScalar x,y;} DMDACoor2d;
     Sample Usage:
       DMDACoor3d ***coors;
       Vec      vcoors;
-      DM       cda;     
+      DM       cda;
 
-      DMDAGetCoordinates(da,&vcoors); 
+      DMDAGetCoordinates(da,&vcoors);
       DMDAGetCoordinateDA(da,&cda);
       DMDAVecGetArray(cda,vcoors,&coors);
       DMDAGetCorners(cda,&mstart,&nstart,&pstart,&m,&n,&p)
@@ -259,7 +259,7 @@ typedef struct {PetscScalar x,y;} DMDACoor2d;
 .seealso: DMDACoor2d, DMDAForEachPointBegin(), DMDAGetCoordinateDA(), DMDAGetCoordinates(), DMDAGetGhostCoordinates()
 M*/
 typedef struct {PetscScalar x,y,z;} DMDACoor3d;
-    
+
 PETSC_EXTERN PetscErrorCode DMDAGetLocalInfo(DM,DMDALocalInfo*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDALocalFunction1)(DMDALocalInfo*,void*,void*,void*);
 PETSC_EXTERN PetscErrorCode DMDAComputeFunctionLocal(DM, DMDALocalFunction1, Vec, Vec, void *);
@@ -293,7 +293,7 @@ PETSC_EXTERN PetscErrorCode MatCreateSeqUSFFT(Vec,DM,Mat*);
 
    Synopsis:
    PetscErrorCode DMDASetLocalAdicFunction(DM da,DMDALocalFunction1 ad_lf)
-   
+
    Logically Collective on DM
 
    Input Parameter:

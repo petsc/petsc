@@ -1,7 +1,7 @@
 
 #include <petsc-private/kspimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_BiCG"
 PetscErrorCode KSPSetUp_BiCG(KSP ksp)
 {
@@ -15,14 +15,14 @@ PetscErrorCode KSPSetUp_BiCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_BiCG"
 PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;
   PetscBool      diagonalscale;
-  PetscScalar    dpi,a=1.0,beta,betaold=1.0,b,ma; 
+  PetscScalar    dpi,a=1.0,beta,betaold=1.0,b,ma;
   PetscReal      dp;
   Vec            X,B,Zl,Zr,Rl,Rr,Pl,Pr;
   Mat            Amat,Pmat;
@@ -46,7 +46,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,Rr);CHKERRQ(ierr);      /*   r <- b - Ax       */
     ierr = VecAYPX(Rr,-1.0,B);CHKERRQ(ierr);
-  } else { 
+  } else {
     ierr = VecCopy(B,Rr);CHKERRQ(ierr);           /*     r <- b (x is 0) */
   }
   ierr = VecCopy(Rr,Rl);CHKERRQ(ierr);
@@ -144,14 +144,14 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
          as well as the operator and preconditioner.
          Supports only left preconditioning
 
-         See KSPCGNE for code that EXACTLY runs the preconditioned conjugate gradient method on the 
+         See KSPCGNE for code that EXACTLY runs the preconditioned conjugate gradient method on the
          normal equations
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS, KSPCGNE
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_BiCG"
 PetscErrorCode  KSPCreate_BiCG(KSP ksp)
 {

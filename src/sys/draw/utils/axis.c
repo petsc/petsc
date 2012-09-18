@@ -1,8 +1,8 @@
 
 #include <../src/sys/draw/utils/axisimpl.h>
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRint" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscRint"
 static PetscErrorCode PetscRint(PetscReal x,PetscReal *result)
 {
   PetscFunctionBegin;
@@ -11,11 +11,11 @@ static PetscErrorCode PetscRint(PetscReal x,PetscReal *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawAxisSetLimits" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawAxisSetLimits"
 /*@
     PetscDrawAxisSetLimits -  Sets the limits (in user coords) of the axis
-    
+
     Not Collective (ignored on all processors except processor 0 of PetscDrawAxis)
 
     Input Parameters:
@@ -40,11 +40,11 @@ PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscADefLabel" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscADefLabel"
 /*
    val is the label value.  sep is the separation to the next (or previous)
-   label; this is useful in determining how many significant figures to   
+   label; this is useful in determining how many significant figures to
    keep.
  */
 PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
@@ -89,7 +89,7 @@ PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
     } else {
 	/* The code used here is inappropriate for a val of 0, which
 	   tends to print with an excessive numer of digits.  In this
-	   case, we should look at the next/previous values and 
+	   case, we should look at the next/previous values and
 	   use those widths */
 	if (w > 0) sprintf(fmat,"%%%d.%dlf",w + 1,d);
 	else {ierr = PetscStrcpy(fmat,"%lf");CHKERRQ(ierr);}
@@ -111,8 +111,8 @@ PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscADefTicks" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscADefTicks"
 /* Finds "nice" locations for the ticks */
 PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal * tickloc,int  maxtick)
 {
@@ -154,8 +154,8 @@ PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,Pe
 
 #define EPS 1.e-6
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscExp10" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscExp10"
 PetscErrorCode PetscExp10(PetscReal d,PetscReal *result)
 {
   PetscFunctionBegin;
@@ -163,8 +163,8 @@ PetscErrorCode PetscExp10(PetscReal d,PetscReal *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscMod" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscMod"
 PetscErrorCode PetscMod(PetscReal x,PetscReal y,PetscReal *result)
 {
   int     i;
@@ -181,8 +181,8 @@ PetscErrorCode PetscMod(PetscReal x,PetscReal y,PetscReal *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscCopysign" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscCopysign"
 PetscErrorCode PetscCopysign(PetscReal a,PetscReal b,PetscReal *result)
 {
   PetscFunctionBegin;
@@ -191,8 +191,8 @@ PetscErrorCode PetscCopysign(PetscReal a,PetscReal b,PetscReal *result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscAGetNice" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscAGetNice"
 /*
     Given a value "in" and a "base", return a nice value.
     based on "sign", extend up (+1) or down (-1)
@@ -214,8 +214,8 @@ PetscErrorCode PetscAGetNice(PetscReal in,PetscReal base,int sign,PetscReal *res
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscAGetBase" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscAGetBase"
 PetscErrorCode PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscReal*Base,int*power)
 {
   PetscReal        base,ftemp,e10;

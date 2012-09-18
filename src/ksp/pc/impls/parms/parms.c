@@ -75,7 +75,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
     maptmp[i] = i+1;
 
   /* if created, destroy the previous map */
-  if(parms->map) {
+  if (parms->map) {
     parms_MapFree(&parms->map);
     parms->map = PETSC_NULL;
   }
@@ -84,7 +84,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   parms_MapCreateFromPtr(&parms->map,(int)n,maptmp,mapptr,((PetscObject)pmat)->comm,1,NONINTERLACED);
 
   /* if created, destroy the previous pARMS matrix */
-  if(parms->A) {
+  if (parms->A) {
     parms_MatFree(&parms->A);
     parms->A = PETSC_NULL;
   }
@@ -126,7 +126,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   ierr = PetscMemcpy(im,&maptmp[mapptr[rank]-1],lsize*sizeof(int));CHKERRQ(ierr);
 
   /* 1-based indexing */
-  for(i=0; i<ia[lsize]-1; i++)
+  for (i=0; i<ia[lsize]-1; i++)
     ja[i] = ja[i]+1;
 
   /* Now copy csr matrix to parms_mat object */
@@ -144,7 +144,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   parms_MatSetup(parms->A);
 
   /* if created, destroy the previous pARMS pc */
-  if(parms->pc) {
+  if (parms->pc) {
     parms_PCFree(&parms->pc);
     parms->pc = PETSC_NULL;
   }
@@ -171,7 +171,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   parms_PCSetTolInd(parms->pc, parms->indtol);
   parms_PCSetInnerKSize(parms->pc, parms->maxdim);
   parms_PCSetInnerMaxits(parms->pc, parms->maxits);
-  for(i=0; i<8; i++) meth[i] = parms->meth[i]?1:0;
+  for (i=0; i<8; i++) meth[i] = parms->meth[i]?1:0;
   parms_PCSetPermScalOptions(parms->pc, &meth[0], 1);
   parms_PCSetPermScalOptions(parms->pc, &meth[4], 0);
   parms_PCSetFill(parms->pc, parms->lfil);
@@ -258,19 +258,19 @@ static PetscErrorCode PCDestroy_PARMS(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if(parms->map) {
+  if (parms->map) {
     parms_MapFree(&parms->map);
   }
-   if(parms->A) {
+   if (parms->A) {
     parms_MatFree(&parms->A);
   }
-  if(parms->pc) {
+  if (parms->pc) {
     parms_PCFree(&parms->pc);
   }
-  if(parms->lvec0) {
+  if (parms->lvec0) {
     ierr = PetscFree(parms->lvec0); CHKERRQ(ierr);
   }
-  if(parms->lvec1) {
+  if (parms->lvec1) {
     ierr = PetscFree(parms->lvec1); CHKERRQ(ierr);
   }
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
@@ -317,15 +317,15 @@ static PetscErrorCode PCSetFromOptions_PARMS(PC pc)
   ierr = PetscOptionsBool("-pc_parms_last_row_scaling","row scaling for last level blocks","None",parms->meth[6],&parms->meth[6],&flag);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_parms_last_column_scaling","column scaling for last level blocks","None",parms->meth[7],&parms->meth[7],&flag);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_parms_lfil_ilu_arms","amount of fill-in for ilut, iluk and arms","PCPARMSSetFill",parms->lfil[0],&parms->lfil[0],&flag);CHKERRQ(ierr);
-  if(flag) parms->lfil[1] = parms->lfil[2] = parms->lfil[3] = parms->lfil[0];
+  if (flag) parms->lfil[1] = parms->lfil[2] = parms->lfil[3] = parms->lfil[0];
   ierr = PetscOptionsInt("-pc_parms_lfil_schur","amount of fill-in for schur","PCPARMSSetFill",parms->lfil[4],&parms->lfil[4],&flag);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_parms_lfil_ilut_L_U","amount of fill-in for ILUT L and U","PCPARMSSetFill",parms->lfil[5],&parms->lfil[5],&flag);CHKERRQ(ierr);
-  if(flag) parms->lfil[6] = parms->lfil[5]; 
+  if (flag) parms->lfil[6] = parms->lfil[5]; 
   ierr = PetscOptionsReal("-pc_parms_droptol_factors","drop tolerance for L, U, L^{-1}F and EU^{-1}","None",parms->droptol[0],&parms->droptol[0],&flag);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-pc_parms_droptol_schur_compl","drop tolerance for schur complement at each level","None",parms->droptol[4],&parms->droptol[4],&flag);CHKERRQ(ierr);
-  if(flag) parms->droptol[1] = parms->droptol[2] = parms->droptol[3] = parms->droptol[0];
+  if (flag) parms->droptol[1] = parms->droptol[2] = parms->droptol[3] = parms->droptol[0];
   ierr = PetscOptionsReal("-pc_parms_droptol_last_schur","drop tolerance for ILUT in last level schur complement","None",parms->droptol[5],&parms->droptol[5],&flag);CHKERRQ(ierr);
-  if(flag) parms->droptol[6] = parms->droptol[5];
+  if (flag) parms->droptol[6] = parms->droptol[5];
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

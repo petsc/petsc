@@ -12,7 +12,7 @@
 #include <engine.h>   /* MATLAB include file */
 #include <mex.h>      /* MATLAB include file */
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecMatlabEnginePut_DA2d"
 PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
 {
@@ -37,7 +37,7 @@ PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
   ierr = PetscMemcpy(mxGetPr(mat),array,n*m*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
   engPutVariable((Engine *)mengine,obj->name,mat);
-  
+
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -45,7 +45,7 @@ EXTERN_C_END
 #endif
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateLocalVector_DA"
 PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec* g)
 {
@@ -255,7 +255,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   if (zfEnd != fEnd) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Invalid face end %d, should be %d", zfEnd, fEnd);
   /* Create local section */
   ierr = DMDAGetInfo(dm, 0,0,0,0,0,0,0, &numFields, 0,0,0,0,0);CHKERRQ(ierr);
-  for(f = 0; f < numFields; ++f) {
+  for (f = 0; f < numFields; ++f) {
     if (numVertexDof) {numVertexTotDof  += numVertexDof[f];}
     if (numCellDof)   {numCellTotDof    += numCellDof[f];}
     if (numFaceDof)   {numFaceTotDof[0] += numFaceDof[f*dim+0];
@@ -265,7 +265,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &dm->defaultSection);CHKERRQ(ierr);
   if (numFields > 1) {
     ierr = PetscSectionSetNumFields(dm->defaultSection, numFields);CHKERRQ(ierr);
-    for(f = 0; f < numFields; ++f) {
+    for (f = 0; f < numFields; ++f) {
       const char *name;
 
       ierr = DMDAGetFieldName(dm, f, &name);CHKERRQ(ierr);
@@ -279,36 +279,36 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   }
   ierr = PetscSectionSetChart(dm->defaultSection, pStart, pEnd);CHKERRQ(ierr);
   if (numVertexDof) {
-    for(v = vStart; v < vEnd; ++v) {
-      for(f = 0; f < numFields; ++f) {
+    for (v = vStart; v < vEnd; ++v) {
+      for (f = 0; f < numFields; ++f) {
         ierr = PetscSectionSetFieldDof(dm->defaultSection, v, f, numVertexDof[f]);CHKERRQ(ierr);
       }
       ierr = PetscSectionSetDof(dm->defaultSection, v, numVertexTotDof);CHKERRQ(ierr);
     }
   }
   if (numFaceDof) {
-    for(xf = xfStart; xf < xfEnd; ++xf) {
-      for(f = 0; f < numFields; ++f) {
+    for (xf = xfStart; xf < xfEnd; ++xf) {
+      for (f = 0; f < numFields; ++f) {
         ierr = PetscSectionSetFieldDof(dm->defaultSection, xf, f, numFaceDof[f*dim+0]);CHKERRQ(ierr);
       }
       ierr = PetscSectionSetDof(dm->defaultSection, xf, numFaceTotDof[0]);CHKERRQ(ierr);
     }
-    for(yf = yfStart; yf < yfEnd; ++yf) {
-      for(f = 0; f < numFields; ++f) {
+    for (yf = yfStart; yf < yfEnd; ++yf) {
+      for (f = 0; f < numFields; ++f) {
         ierr = PetscSectionSetFieldDof(dm->defaultSection, yf, f, numFaceDof[f*dim+1]);CHKERRQ(ierr);
       }
       ierr = PetscSectionSetDof(dm->defaultSection, yf, numFaceTotDof[1]);CHKERRQ(ierr);
     }
-    for(zf = zfStart; zf < zfEnd; ++zf) {
-      for(f = 0; f < numFields; ++f) {
+    for (zf = zfStart; zf < zfEnd; ++zf) {
+      for (f = 0; f < numFields; ++f) {
         ierr = PetscSectionSetFieldDof(dm->defaultSection, zf, f, numFaceDof[f*dim+2]);CHKERRQ(ierr);
       }
       ierr = PetscSectionSetDof(dm->defaultSection, zf, numFaceTotDof[2]);CHKERRQ(ierr);
     }
   }
   if (numCellDof) {
-    for(c = cStart; c < cEnd; ++c) {
-      for(f = 0; f < numFields; ++f) {
+    for (c = cStart; c < cEnd; ++c) {
+      for (f = 0; f < numFields; ++f) {
         ierr = PetscSectionSetFieldDof(dm->defaultSection, c, f, numCellDof[f]);CHKERRQ(ierr);
       }
       ierr = PetscSectionSetDof(dm->defaultSection, c, numCellTotDof);CHKERRQ(ierr);
@@ -317,9 +317,9 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   ierr = PetscSectionSetUp(dm->defaultSection);CHKERRQ(ierr);
   /* Create mesh point SF */
   ierr = DMDAGetNeighbors(dm, &neighbors);CHKERRQ(ierr);
-  for(zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
-    for(yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
-      for(xn = 0; xn < 3; ++xn) {
+  for (zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
+    for (yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
+      for (xn = 0; xn < 3; ++xn) {
         const PetscInt xp = xn-1, yp = dim > 1 ? yn-1 : 0, zp = dim > 2 ? zn-1 : 0;
         const PetscInt neighbor = neighbors[(zn*3+yn)*3+xn];
 
@@ -337,9 +337,9 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
     }
   }
   ierr = PetscMalloc2(nleaves,PetscInt,&localPoints,nleaves,PetscSFNode,&remotePoints);CHKERRQ(ierr);
-  for(zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
-    for(yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
-      for(xn = 0; xn < 3; ++xn) {
+  for (zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
+    for (yn = 0; yn < (dim > 1 ? 3 : 1); ++yn) {
+      for (xn = 0; xn < 3; ++xn) {
         const PetscInt xp = xn-1, yp = dim > 1 ? yn-1 : 0, zp = dim > 2 ? zn-1 : 0;
         const PetscInt neighbor = neighbors[(zn*3+yn)*3+xn];
         PetscInt       xv, yv, zv;
@@ -348,18 +348,18 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
           if (xp < 0) { /* left */
             if (yp < 0) { /* bottom */
               if (zp < 0) { /* back */
-                nleavesCheck += 1; /* left bottom back vertex */
                 const PetscInt localVertex  = (      0*nVy +     0)*nVx +     0 + nC;
                 const PetscInt remoteVertex = ((nVz-1)*nVy + nVy-1)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
+                nleavesCheck += 1; /* left bottom back vertex */
 
                 localPoints[nL]        = localVertex;
                 remotePoints[nL].rank  = neighbor;
                 remotePoints[nL].index = remoteVertex;
                 ++nL;
               } else if (zp > 0) { /* front */
-                nleavesCheck += 1; /* left bottom front vertex */
                 const PetscInt localVertex  = ((nVz-1)*nVy +     0)*nVx +     0 + nC;
                 const PetscInt remoteVertex = (      0*nVy + nVy-1)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
+                nleavesCheck += 1; /* left bottom front vertex */
 
                 localPoints[nL]        = localVertex;
                 remotePoints[nL].rank  = neighbor;
@@ -367,7 +367,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                 ++nL;
               } else {
                 nleavesCheck += nVz; /* left bottom vertices */
-                for(zv = 0; zv < nVz; ++zv, ++nL) {
+                for (zv = 0; zv < nVz; ++zv, ++nL) {
                   const PetscInt localVertex  = (zv*nVy +     0)*nVx +     0 + nC;
                   const PetscInt remoteVertex = (zv*nVy + nVy-1)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -378,18 +378,18 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
               }
             } else if (yp > 0) { /* top */
               if (zp < 0) { /* back */
-                nleavesCheck += 1; /* left top back vertex */
                 const PetscInt localVertex  = (      0*nVy + nVy-1)*nVx +     0 + nC;
                 const PetscInt remoteVertex = ((nVz-1)*nVy +     0)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
+                nleavesCheck += 1; /* left top back vertex */
 
                 localPoints[nL]        = localVertex;
                 remotePoints[nL].rank  = neighbor;
                 remotePoints[nL].index = remoteVertex;
                 ++nL;
               } else if (zp > 0) { /* front */
-                nleavesCheck += 1; /* left top front vertex */
                 const PetscInt localVertex  = ((nVz-1)*nVy + nVy-1)*nVx +     0 + nC;
                 const PetscInt remoteVertex = (      0*nVy +     0)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
+                nleavesCheck += 1; /* left top front vertex */
 
                 localPoints[nL]        = localVertex;
                 remotePoints[nL].rank  = neighbor;
@@ -397,7 +397,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                 ++nL;
               } else {
                 nleavesCheck += nVz; /* left top vertices */
-                for(zv = 0; zv < nVz; ++zv, ++nL) {
+                for (zv = 0; zv < nVz; ++zv, ++nL) {
                   const PetscInt localVertex  = (zv*nVy + nVy-1)*nVx +     0 + nC;
                   const PetscInt remoteVertex = (zv*nVy +     0)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -409,7 +409,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
             } else {
               if (zp < 0) { /* back */
                 nleavesCheck += nVy; /* left back vertices */
-                for(yv = 0; yv < nVy; ++yv, ++nL) {
+                for (yv = 0; yv < nVy; ++yv, ++nL) {
                   const PetscInt localVertex  = (      0*nVy + yv)*nVx +     0 + nC;
                   const PetscInt remoteVertex = ((nVz-1)*nVy + yv)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -419,7 +419,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                 }
               } else if (zp > 0) { /* front */
                 nleavesCheck += nVy; /* left front vertices */
-                for(yv = 0; yv < nVy; ++yv, ++nL) {
+                for (yv = 0; yv < nVy; ++yv, ++nL) {
                   const PetscInt localVertex  = ((nVz-1)*nVy + yv)*nVx +     0 + nC;
                   const PetscInt remoteVertex = (      0*nVy + yv)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -429,8 +429,8 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                 }
               } else {
                 nleavesCheck += nVy*nVz; /* left vertices */
-                for(zv = 0; zv < nVz; ++zv) {
-                  for(yv = 0; yv < nVy; ++yv, ++nL) {
+                for (zv = 0; zv < nVz; ++zv) {
+                  for (yv = 0; yv < nVy; ++yv, ++nL) {
                     const PetscInt localVertex  = (zv*nVy + yv)*nVx +     0 + nC;
                     const PetscInt remoteVertex = (zv*nVy + yv)*nVx + nVx-1 + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -440,7 +440,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                   }
                 }
                 nleavesCheck += nxF;     /* left faces */
-                for(xf = 0; xf < nxF; ++xf, ++nL) {
+                for (xf = 0; xf < nxF; ++xf, ++nL) {
                   /* THIS IS WRONG */
                   const PetscInt localFace  = 0 + nC+nV;
                   const PetscInt remoteFace = 0 + nC+nV;
@@ -454,18 +454,18 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
           } else if (xp > 0) { /* right */
             if (yp < 0) { /* bottom */
               if (zp < 0) { /* back */
-                nleavesCheck += 1; /* right bottom back vertex */
                 const PetscInt localVertex  = (      0*nVy +     0)*nVx + nVx-1 + nC;
                 const PetscInt remoteVertex = ((nVz-1)*nVy + nVy-1)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
+                nleavesCheck += 1; /* right bottom back vertex */
 
                 localPoints[nL]        = localVertex;
                 remotePoints[nL].rank  = neighbor;
                 remotePoints[nL].index = remoteVertex;
                 ++nL;
               } else if (zp > 0) { /* front */
-                nleavesCheck += 1; /* right bottom front vertex */
                 const PetscInt localVertex  = ((nVz-1)*nVy +     0)*nVx + nVx-1 + nC;
                 const PetscInt remoteVertex = (      0*nVy + nVy-1)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
+                nleavesCheck += 1; /* right bottom front vertex */
 
                 localPoints[nL]        = localVertex;
                 remotePoints[nL].rank  = neighbor;
@@ -473,7 +473,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                 ++nL;
               } else {
                 nleavesCheck += nVz; /* right bottom vertices */
-                for(zv = 0; zv < nVz; ++zv, ++nL) {
+                for (zv = 0; zv < nVz; ++zv, ++nL) {
                   const PetscInt localVertex  = (zv*nVy +     0)*nVx + nVx-1 + nC;
                   const PetscInt remoteVertex = (zv*nVy + nVy-1)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -484,18 +484,18 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
               }
             } else if (yp > 0) { /* top */
               if (zp < 0) { /* back */
-                nleavesCheck += 1; /* right top back vertex */
                 const PetscInt localVertex  = (      0*nVy + nVy-1)*nVx + nVx-1 + nC;
                 const PetscInt remoteVertex = ((nVz-1)*nVy +     0)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
+                nleavesCheck += 1; /* right top back vertex */
 
                 localPoints[nL]        = localVertex;
                 remotePoints[nL].rank  = neighbor;
                 remotePoints[nL].index = remoteVertex;
                 ++nL;
               } else if (zp > 0) { /* front */
-                nleavesCheck += 1; /* right top front vertex */
                 const PetscInt localVertex  = ((nVz-1)*nVy + nVy-1)*nVx + nVx-1 + nC;
                 const PetscInt remoteVertex = (      0*nVy +     0)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
+                nleavesCheck += 1; /* right top front vertex */
 
                 localPoints[nL]        = localVertex;
                 remotePoints[nL].rank  = neighbor;
@@ -503,7 +503,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                 ++nL;
               } else {
                 nleavesCheck += nVz; /* right top vertices */
-                for(zv = 0; zv < nVz; ++zv, ++nL) {
+                for (zv = 0; zv < nVz; ++zv, ++nL) {
                   const PetscInt localVertex  = (zv*nVy + nVy-1)*nVx + nVx-1 + nC;
                   const PetscInt remoteVertex = (zv*nVy +     0)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -515,7 +515,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
             } else {
               if (zp < 0) { /* back */
                 nleavesCheck += nVy; /* right back vertices */
-                for(yv = 0; yv < nVy; ++yv, ++nL) {
+                for (yv = 0; yv < nVy; ++yv, ++nL) {
                   const PetscInt localVertex  = (      0*nVy + yv)*nVx + nVx-1 + nC;
                   const PetscInt remoteVertex = ((nVz-1)*nVy + yv)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -525,7 +525,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                 }
               } else if (zp > 0) { /* front */
                 nleavesCheck += nVy; /* right front vertices */
-                for(yv = 0; yv < nVy; ++yv, ++nL) {
+                for (yv = 0; yv < nVy; ++yv, ++nL) {
                   const PetscInt localVertex  = ((nVz-1)*nVy + yv)*nVx + nVx-1 + nC;
                   const PetscInt remoteVertex = (      0*nVy + yv)*nVx +     0 + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -535,8 +535,8 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                 }
               } else {
                 nleavesCheck += nVy*nVz; /* right vertices */
-                for(zv = 0; zv < nVz; ++zv) {
-                  for(yv = 0; yv < nVy; ++yv, ++nL) {
+                for (zv = 0; zv < nVz; ++zv) {
+                  for (yv = 0; yv < nVy; ++yv, ++nL) {
                     const PetscInt localVertex  = (zv*nVy + yv)*nVx + nVx-1 + nC;
                     const PetscInt remoteVertex = (zv*nVy + yv)*nVx + 0     + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -546,7 +546,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                   }
                 }
                 nleavesCheck += nxF;     /* right faces */
-                for(xf = 0; xf < nxF; ++xf, ++nL) {
+                for (xf = 0; xf < nxF; ++xf, ++nL) {
                   /* THIS IS WRONG */
                   const PetscInt localFace  = 0 + nC+nV;
                   const PetscInt remoteFace = 0 + nC+nV;
@@ -561,7 +561,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
             if (yp < 0) { /* bottom */
               if (zp < 0) { /* back */
                 nleavesCheck += nVx; /* bottom back vertices */
-                for(xv = 0; xv < nVx; ++xv, ++nL) {
+                for (xv = 0; xv < nVx; ++xv, ++nL) {
                   const PetscInt localVertex  = (      0*nVy +     0)*nVx + xv + nC;
                   const PetscInt remoteVertex = ((nVz-1)*nVy + nVy-1)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -571,7 +571,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                 }
               } else if (zp > 0) { /* front */
                 nleavesCheck += nVx; /* bottom front vertices */
-                for(xv = 0; xv < nVx; ++xv, ++nL) {
+                for (xv = 0; xv < nVx; ++xv, ++nL) {
                   const PetscInt localVertex  = ((nVz-1)*nVy +     0)*nVx + xv + nC;
                   const PetscInt remoteVertex = (      0*nVy + nVy-1)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -581,8 +581,8 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                 }
               } else {
                 nleavesCheck += nVx*nVz; /* bottom vertices */
-                for(zv = 0; zv < nVz; ++zv) {
-                  for(xv = 0; xv < nVx; ++xv, ++nL) {
+                for (zv = 0; zv < nVz; ++zv) {
+                  for (xv = 0; xv < nVx; ++xv, ++nL) {
                     const PetscInt localVertex  = (zv*nVy +     0)*nVx + xv + nC;
                     const PetscInt remoteVertex = (zv*nVy + nVy-1)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -592,7 +592,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                   }
                 }
                 nleavesCheck += nyF;     /* bottom faces */
-                for(yf = 0; yf < nyF; ++yf, ++nL) {
+                for (yf = 0; yf < nyF; ++yf, ++nL) {
                   /* THIS IS WRONG */
                   const PetscInt localFace  = 0 + nC+nV;
                   const PetscInt remoteFace = 0 + nC+nV;
@@ -605,7 +605,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
             } else if (yp > 0) { /* top */
               if (zp < 0) { /* back */
                 nleavesCheck += nVx; /* top back vertices */
-                for(xv = 0; xv < nVx; ++xv, ++nL) {
+                for (xv = 0; xv < nVx; ++xv, ++nL) {
                   const PetscInt localVertex  = (      0*nVy + nVy-1)*nVx + xv + nC;
                   const PetscInt remoteVertex = ((nVz-1)*nVy +     0)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -615,7 +615,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                 }
               } else if (zp > 0) { /* front */
                 nleavesCheck += nVx; /* top front vertices */
-                for(xv = 0; xv < nVx; ++xv, ++nL) {
+                for (xv = 0; xv < nVx; ++xv, ++nL) {
                   const PetscInt localVertex  = ((nVz-1)*nVy + nVy-1)*nVx + xv + nC;
                   const PetscInt remoteVertex = (      0*nVy +     0)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -625,8 +625,8 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                 }
               } else {
                 nleavesCheck += nVx*nVz; /* top vertices */
-                for(zv = 0; zv < nVz; ++zv) {
-                  for(xv = 0; xv < nVx; ++xv, ++nL) {
+                for (zv = 0; zv < nVz; ++zv) {
+                  for (xv = 0; xv < nVx; ++xv, ++nL) {
                     const PetscInt localVertex  = (zv*nVy + nVy-1)*nVx + xv + nC;
                     const PetscInt remoteVertex = (zv*nVy +     0)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -636,7 +636,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                   }
                 }
                 nleavesCheck += nyF;     /* top faces */
-                for(yf = 0; yf < nyF; ++yf, ++nL) {
+                for (yf = 0; yf < nyF; ++yf, ++nL) {
                   /* THIS IS WRONG */
                   const PetscInt localFace  = 0 + nC+nV;
                   const PetscInt remoteFace = 0 + nC+nV;
@@ -649,8 +649,8 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
             } else {
               if (zp < 0) { /* back */
                 nleavesCheck += nVx*nVy; /* back vertices */
-                for(yv = 0; yv < nVy; ++yv) {
-                  for(xv = 0; xv < nVx; ++xv, ++nL) {
+                for (yv = 0; yv < nVy; ++yv) {
+                  for (xv = 0; xv < nVx; ++xv, ++nL) {
                     const PetscInt localVertex  = (      0*nVy + yv)*nVx + xv + nC;
                     const PetscInt remoteVertex = ((nVz-1)*nVy + yv)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -660,7 +660,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                   }
                 }
                 nleavesCheck += nzF;     /* back faces */
-                for(zf = 0; zf < nzF; ++zf, ++nL) {
+                for (zf = 0; zf < nzF; ++zf, ++nL) {
                   /* THIS IS WRONG */
                   const PetscInt localFace  = 0 + nC+nV;
                   const PetscInt remoteFace = 0 + nC+nV;
@@ -671,8 +671,8 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                 }
               } else if (zp > 0) { /* front */
                 nleavesCheck += nVx*nVy; /* front vertices */
-                for(yv = 0; yv < nVy; ++yv) {
-                  for(xv = 0; xv < nVx; ++xv, ++nL) {
+                for (yv = 0; yv < nVy; ++yv) {
+                  for (xv = 0; xv < nVx; ++xv, ++nL) {
                     const PetscInt localVertex  = ((nVz-1)*nVy + yv)*nVx + xv + nC;
                     const PetscInt remoteVertex = (      0*nVy + yv)*nVx + xv + nC; /* TODO: Correct this for neighbor sizes */
 
@@ -682,7 +682,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
                   }
                 }
                 nleavesCheck += nzF;     /* front faces */
-                for(zf = 0; zf < nzF; ++zf, ++nL) {
+                for (zf = 0; zf < nzF; ++zf, ++nL) {
                   /* THIS IS WRONG */
                   const PetscInt localFace  = 0 + nC+nV;
                   const PetscInt remoteFace = 0 + nC+nV;
@@ -705,7 +705,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   ierr = PetscSFCreate(((PetscObject) dm)->comm, &sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf, pEnd, nleaves, localPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
   /* Create global section */
-  ierr = PetscSectionCreateGlobalSection(dm->defaultSection, sf, &dm->defaultGlobalSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreateGlobalSection(dm->defaultSection, sf, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
   /* Create default SF */
   ierr = DMCreateDefaultSF(dm, dm->defaultSection, dm->defaultGlobalSection);CHKERRQ(ierr);
@@ -737,7 +737,7 @@ EXTERN_C_END
        The vector values are NOT initialized and may have garbage in them, so you may need
        to zero them.
 
-       Returns the same type of object as the DMDAVecGetArray() except its elements are 
+       Returns the same type of object as the DMDAVecGetArray() except its elements are
            derivative types instead of PetscScalars
 
      Level: advanced
@@ -763,7 +763,7 @@ PetscErrorCode  DMDAGetAdicArray(DM da,PetscBool  ghosted,void *vptr,void *array
         itdof                   = dd->ghostedtdof;
         dd->adarrayghostedin[i] = PETSC_NULL;
         dd->adstartghostedin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -781,7 +781,7 @@ PetscErrorCode  DMDAGetAdicArray(DM da,PetscBool  ghosted,void *vptr,void *array
         itdof            = dd->tdof;
         dd->adarrayin[i] = PETSC_NULL;
         dd->adstartin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -802,7 +802,7 @@ PetscErrorCode  DMDAGetAdicArray(DM da,PetscBool  ghosted,void *vptr,void *array
       ierr  = PetscMalloc(xm*deriv_type_size,&iarray_start);CHKERRQ(ierr);
 
       ptr   = (void*)(iarray_start - xs*deriv_type_size);
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 2: {
       void **ptr;
@@ -811,10 +811,10 @@ PetscErrorCode  DMDAGetAdicArray(DM da,PetscBool  ghosted,void *vptr,void *array
       ierr  = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*deriv_type_size,&iarray_start);CHKERRQ(ierr);
 
       ptr  = (void**)(iarray_start + xm*ym*deriv_type_size - ys*sizeof(void*));
-      for(j=ys;j<ys+ym;j++) {
+      for (j=ys;j<ys+ym;j++) {
         ptr[j] = iarray_start + deriv_type_size*(xm*(j-ys) - xs);
       }
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 3: {
       void ***ptr,**bptr;
@@ -825,7 +825,7 @@ PetscErrorCode  DMDAGetAdicArray(DM da,PetscBool  ghosted,void *vptr,void *array
       ptr  = (void***)(iarray_start + xm*ym*zm*deriv_type_size - zs*sizeof(void*));
       bptr = (void**)(iarray_start + xm*ym*zm*deriv_type_size + zm*sizeof(void**));
 
-      for(i=zs;i<zs+zm;i++) {
+      for (i=zs;i<zs+zm;i++) {
         ptr[i] = bptr + ((i-zs)*ym - ys);
       }
       for (i=zs; i<zs+zm; i++) {
@@ -834,7 +834,7 @@ PetscErrorCode  DMDAGetAdicArray(DM da,PetscBool  ghosted,void *vptr,void *array
         }
       }
 
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     default:
       SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
@@ -871,7 +871,7 @@ PetscErrorCode  DMDAGetAdicArray(DM da,PetscBool  ghosted,void *vptr,void *array
 #define __FUNCT__ "DMDARestoreAdicArray"
 /*@C
      DMDARestoreAdicArray - Restores an array of derivative types for a DMDA
-          
+
     Input Parameter:
 +    da - information about my local patch
 -    ghosted - do you want arrays for the ghosted or nonghosted patch
@@ -890,7 +890,7 @@ PetscErrorCode  DMDARestoreAdicArray(DM da,PetscBool  ghosted,void *ptr,void *ar
 {
   PetscInt  i;
   void      **iptr = (void**)ptr,iarray_start = 0;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
@@ -990,7 +990,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
         iarray_start          = (char*)dd->startghostedin[i];
         dd->arrayghostedin[i] = PETSC_NULL;
         dd->startghostedin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1007,7 +1007,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
         iarray_start   = (char*)dd->startin[i];
         dd->arrayin[i] = PETSC_NULL;
         dd->startin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1026,7 +1026,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
       ierr  = PetscMalloc(xm*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
       ptr   = (void*)(iarray_start - xs*sizeof(PetscScalar));
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 2: {
       void **ptr;
@@ -1034,10 +1034,10 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
       ierr  = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
       ptr  = (void**)(iarray_start + xm*ym*sizeof(PetscScalar) - ys*sizeof(void*));
-      for(j=ys;j<ys+ym;j++) {
+      for (j=ys;j<ys+ym;j++) {
         ptr[j] = iarray_start + sizeof(PetscScalar)*(xm*(j-ys) - xs);
       }
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 3: {
       void ***ptr,**bptr;
@@ -1046,7 +1046,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
 
       ptr  = (void***)(iarray_start + xm*ym*zm*sizeof(PetscScalar) - zs*sizeof(void*));
       bptr = (void**)(iarray_start + xm*ym*zm*sizeof(PetscScalar) + zm*sizeof(void**));
-      for(i=zs;i<zs+zm;i++) {
+      for (i=zs;i<zs+zm;i++) {
         ptr[i] = bptr + ((i-zs)*ym - ys);
       }
       for (i=zs; i<zs+zm; i++) {
@@ -1055,7 +1055,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
         }
       }
 
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     default:
       SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
@@ -1087,7 +1087,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool  ghosted,void *vptr)
 #define __FUNCT__ "DMDARestoreArray"
 /*@C
      DMDARestoreArray - Restores an array of derivative types for a DMDA
-          
+
     Input Parameter:
 +    da - information about my local patch
 .    ghosted - do you want arrays for the ghosted or nonghosted patch
@@ -1103,7 +1103,7 @@ PetscErrorCode  DMDARestoreArray(DM da,PetscBool  ghosted,void *vptr)
   PetscInt  i;
   void      **iptr = (void**)vptr,*iarray_start = 0;
   DM_DA     *dd = (DM_DA*)da->data;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {
@@ -1146,7 +1146,7 @@ PetscErrorCode  DMDARestoreArray(DM da,PetscBool  ghosted,void *vptr)
 #define __FUNCT__ "DMDAGetAdicMFArray"
 /*@C
      DMDAGetAdicMFArray - Gets an array of derivative types for a DMDA for matrix-free ADIC.
-          
+
      Input Parameter:
 +    da - information about my local patch
 -    ghosted - do you want arrays for the ghosted or nonghosted patch?
@@ -1156,7 +1156,7 @@ PetscErrorCode  DMDARestoreArray(DM da,PetscBool  ghosted,void *vptr)
 .    array_start - actual start of 1d array of all values that adiC can access directly (may be null)
 -    tdof - total number of degrees of freedom represented in array_start (may be null)
 
-     Notes: 
+     Notes:
      The vector values are NOT initialized and may have garbage in them, so you may need
      to zero them.
 
@@ -1186,7 +1186,7 @@ PetscErrorCode  DMDAGetAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *arr
         itdof                     = dd->ghostedtdof;
         dd->admfarrayghostedin[i] = PETSC_NULL;
         dd->admfstartghostedin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1204,7 +1204,7 @@ PetscErrorCode  DMDAGetAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *arr
         itdof              = dd->tdof;
         dd->admfarrayin[i] = PETSC_NULL;
         dd->admfstartin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1224,7 +1224,7 @@ PetscErrorCode  DMDAGetAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *arr
       ierr  = PetscMalloc(xm*2*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
       ptr   = (void*)(iarray_start - xs*2*sizeof(PetscScalar));
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 2: {
       void **ptr;
@@ -1233,10 +1233,10 @@ PetscErrorCode  DMDAGetAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *arr
       ierr  = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*2*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
       ptr  = (void**)(iarray_start + xm*ym*2*sizeof(PetscScalar) - ys*sizeof(void*));
-      for(j=ys;j<ys+ym;j++) {
+      for (j=ys;j<ys+ym;j++) {
         ptr[j] = iarray_start + 2*sizeof(PetscScalar)*(xm*(j-ys) - xs);
       }
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 3: {
       void ***ptr,**bptr;
@@ -1246,7 +1246,7 @@ PetscErrorCode  DMDAGetAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *arr
 
       ptr  = (void***)(iarray_start + xm*ym*zm*2*sizeof(PetscScalar) - zs*sizeof(void*));
       bptr = (void**)(iarray_start + xm*ym*zm*2*sizeof(PetscScalar) + zm*sizeof(void**));
-      for(i=zs;i<zs+zm;i++) {
+      for (i=zs;i<zs+zm;i++) {
         ptr[i] = bptr + ((i-zs)*ym* - ys)*sizeof(void*);
       }
       for (i=zs; i<zs+zm; i++) {
@@ -1255,7 +1255,7 @@ PetscErrorCode  DMDAGetAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *arr
         }
       }
 
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     default:
       SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
@@ -1308,7 +1308,7 @@ PetscErrorCode  DMDAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *ar
         itdof                     = dd->ghostedtdof;
         dd->admfarrayghostedin[i] = PETSC_NULL;
         dd->admfstartghostedin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1324,7 +1324,7 @@ PetscErrorCode  DMDAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *ar
         itdof              = dd->tdof;
         dd->admfarrayin[i] = PETSC_NULL;
         dd->admfstartin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1342,10 +1342,10 @@ PetscErrorCode  DMDAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *ar
       ierr  = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*5*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
       ptr  = (void**)(iarray_start + xm*ym*5*sizeof(PetscScalar) - ys*sizeof(void*));
-      for(j=ys;j<ys+ym;j++) {
+      for (j=ys;j<ys+ym;j++) {
         ptr[j] = iarray_start + 5*sizeof(PetscScalar)*(xm*(j-ys) - xs);
       }
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     default:
       SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
@@ -1398,7 +1398,7 @@ PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *ar
         itdof                     = dd->ghostedtdof;
         dd->admfarrayghostedin[i] = PETSC_NULL;
         dd->admfstartghostedin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1414,7 +1414,7 @@ PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *ar
         itdof              = dd->tdof;
         dd->admfarrayin[i] = PETSC_NULL;
         dd->admfstartin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1432,10 +1432,10 @@ PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *ar
       ierr  = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*10*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
       ptr  = (void**)(iarray_start + xm*ym*10*sizeof(PetscScalar) - ys*sizeof(void*));
-      for(j=ys;j<ys+ym;j++) {
+      for (j=ys;j<ys+ym;j++) {
         ptr[j] = iarray_start + 10*sizeof(PetscScalar)*(xm*(j-ys) - xs);
       }
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     default:
       SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
@@ -1472,7 +1472,7 @@ PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *ar
 #define __FUNCT__ "DMDAGetAdicMFArrayb"
 /*@C
      DMDAGetAdicMFArrayb - Gets an array of derivative types for a DMDA for matrix-free ADIC.
-          
+
      Input Parameter:
 +    da - information about my local patch
 -    ghosted - do you want arrays for the ghosted or nonghosted patch?
@@ -1482,7 +1482,7 @@ PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *ar
 .    array_start - actual start of 1d array of all values that adiC can access directly (may be null)
 -    tdof - total number of degrees of freedom represented in array_start (may be null)
 
-     Notes: 
+     Notes:
      The vector values are NOT initialized and may have garbage in them, so you may need
      to zero them.
 
@@ -1513,7 +1513,7 @@ PetscErrorCode  DMDAGetAdicMFArrayb(DM da,PetscBool  ghosted,void *vptr,void *ar
         itdof                     = dd->ghostedtdof;
         dd->admfarrayghostedin[i] = PETSC_NULL;
         dd->admfstartghostedin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1531,7 +1531,7 @@ PetscErrorCode  DMDAGetAdicMFArrayb(DM da,PetscBool  ghosted,void *vptr,void *ar
         itdof              = dd->tdof;
         dd->admfarrayin[i] = PETSC_NULL;
         dd->admfstartin[i] = PETSC_NULL;
-        
+
         goto done;
       }
     }
@@ -1551,7 +1551,7 @@ PetscErrorCode  DMDAGetAdicMFArrayb(DM da,PetscBool  ghosted,void *vptr,void *ar
       ierr  = PetscMalloc(xm*bs1*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
       ptr   = (void*)(iarray_start - xs*bs1*sizeof(PetscScalar));
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 2: {
       void **ptr;
@@ -1560,10 +1560,10 @@ PetscErrorCode  DMDAGetAdicMFArrayb(DM da,PetscBool  ghosted,void *vptr,void *ar
       ierr  = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*bs1*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
       ptr  = (void**)(iarray_start + xm*ym*bs1*sizeof(PetscScalar) - ys*sizeof(void*));
-      for(j=ys;j<ys+ym;j++) {
+      for (j=ys;j<ys+ym;j++) {
         ptr[j] = iarray_start + bs1*sizeof(PetscScalar)*(xm*(j-ys) - xs);
       }
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     case 3: {
       void ***ptr,**bptr;
@@ -1573,7 +1573,7 @@ PetscErrorCode  DMDAGetAdicMFArrayb(DM da,PetscBool  ghosted,void *vptr,void *ar
 
       ptr  = (void***)(iarray_start + xm*ym*zm*2*sizeof(PetscScalar) - zs*sizeof(void*));
       bptr = (void**)(iarray_start + xm*ym*zm*2*sizeof(PetscScalar) + zm*sizeof(void**));
-      for(i=zs;i<zs+zm;i++) {
+      for (i=zs;i<zs+zm;i++) {
         ptr[i] = bptr + ((i-zs)*ym* - ys)*sizeof(void*);
       }
       for (i=zs; i<zs+zm; i++) {
@@ -1582,7 +1582,7 @@ PetscErrorCode  DMDAGetAdicMFArrayb(DM da,PetscBool  ghosted,void *vptr,void *ar
         }
       }
 
-      *iptr = (void*)ptr; 
+      *iptr = (void*)ptr;
       break;}
     default:
       SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
@@ -1619,7 +1619,7 @@ PetscErrorCode  DMDAGetAdicMFArrayb(DM da,PetscBool  ghosted,void *vptr,void *ar
 #define __FUNCT__ "DMDARestoreAdicMFArray"
 /*@C
      DMDARestoreAdicMFArray - Restores an array of derivative types for a DMDA.
-          
+
      Input Parameter:
 +    da - information about my local patch
 -    ghosted - do you want arrays for the ghosted or nonghosted patch?
@@ -1639,7 +1639,7 @@ PetscErrorCode  DMDARestoreAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void 
   PetscInt  i;
   void      **iptr = (void**)vptr,*iarray_start = 0;
   DM_DA     *dd = (DM_DA*)da->data;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (ghosted) {

@@ -20,7 +20,7 @@ PetscErrorCode PetscThreadCommCreate_OpenMP(PetscThreadComm tcomm)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-   
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommRunKernel_OpenMP"
 PetscErrorCode PetscThreadCommRunKernel_OpenMP(MPI_Comm comm,PetscThreadCommJobCtx job)

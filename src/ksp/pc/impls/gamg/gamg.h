@@ -19,9 +19,9 @@ typedef struct gamg_TAG{
   PetscInt       emax_id; /* stashing places */
   /* these 4 are all related to the method data and should be in the subctx */
   PetscInt       data_sz; /* nloc*data_rows*data_cols */
-  PetscInt       data_cell_rows; 
+  PetscInt       data_cell_rows;
   PetscInt       data_cell_cols;
-  PetscInt       orig_data_cell_rows; 
+  PetscInt       orig_data_cell_rows;
   PetscInt       orig_data_cell_cols;
   PetscReal      eigtarget[2];
   PetscReal     *data;      /* [data_sz] blocked vector of vertex data on fine grid (coordinates/nullspace) */
@@ -57,7 +57,7 @@ PetscErrorCode PCGAMGGetDataWithGhosts( const Mat a_Gmat, const PetscInt a_data_
 #if defined PETSC_USE_LOG
 /* #define PETSC_GAMG_USE_LOG */
 enum tag {SET1,SET2,GRAPH,GRAPH_MAT,GRAPH_FILTER,GRAPH_SQR,SET4,SET5,SET6,FIND_V,SET7,SET8,SET9,SET10,SET11,SET12,SET13,SET14,SET15,SET16,NUM_SET};
-#if defined PETSC_GAMG_USE_LOG 
+#if defined PETSC_GAMG_USE_LOG
 extern PetscLogEvent petsc_gamg_setup_events[NUM_SET];
 #endif
 extern PetscLogEvent PC_GAMGGgraph_AGG;

@@ -519,7 +519,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     KSPLogResidualHistory(ksp, norm_r);
     ierr = KSPMonitor(ksp, ksp->its, norm_r);CHKERRQ(ierr);
     ksp->rnorm = norm_r;
-  
+
     ierr = (*ksp->converged)(ksp, ksp->its, norm_r, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) {
       /***********************************************************************/

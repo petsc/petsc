@@ -2051,7 +2051,7 @@ static void evaluate_solCx(
 	/****************************************************************************************/
 	/****************************************************************************************/
 	
-	if(x>xc) {
+	if (x>xc) {
 		_C1=_C1B; _C2=_C2B; _C3=_C3B; _C4=_C4B; Z=ZB;
 	}
 	else {
@@ -2261,20 +2261,20 @@ static void evaluate_solCx(
         }
 	
 	/* Output */
-	if( vel != NULL ) {
+	if ( vel != NULL ) {
 		vel[0] = sum1;
 		vel[1] = sum2;
 	}
-	if( presssure != NULL ) {
+	if ( presssure != NULL ) {
 		(*presssure) = sum5;
 	}
-	if( total_stress != NULL ) {
+	if ( total_stress != NULL ) {
 		total_stress[0] = sum3;
 		total_stress[1] = sum6;
 		total_stress[2] = sum4;
 	}
-	if( strain_rate != NULL ) {
-		if( x>xc ) {
+	if ( strain_rate != NULL ) {
+		if ( x>xc ) {
 			Z = ZB;
 		}
 		else {

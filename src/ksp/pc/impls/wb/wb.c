@@ -13,7 +13,7 @@ typedef struct {
 const char *const PCExoticTypes[] = {"face","wirebasket","PCExoticType","PC_Exotic",0};
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetWireBasketInterpolation"
 /*
       DMDAGetWireBasketInterpolation - Gets the interpolation for a wirebasket based coarse space
@@ -46,22 +46,22 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   jstart = jstart ? -1 : 0;
   kstart = kstart ? -1 : 0;
 
-  /* 
-    the columns of P are the interpolation of each coarse grid point (one for each vertex and edge) 
+  /*
+    the columns of P are the interpolation of each coarse grid point (one for each vertex and edge)
     to all the local degrees of freedom (this includes the vertices, edges and faces).
 
     Xint are the subset of the interpolation into the interior
 
-    Xface are the interpolation onto faces but not into the interior 
+    Xface are the interpolation onto faces but not into the interior
 
-    Xsurf are the interpolation onto the vertices and edges (the surfbasket) 
+    Xsurf are the interpolation onto the vertices and edges (the surfbasket)
                                         Xint
     Symbolically one could write P = (  Xface  ) after interchanging the rows to match the natural ordering on the domain
                                         Xsurf
   */
   N     = (m - istart)*(n - jstart)*(p - kstart);
   Nint  = (m-2-istart)*(n-2-jstart)*(p-2-kstart);
-  Nface = 2*( (m-2-istart)*(n-2-jstart) + (m-2-istart)*(p-2-kstart) + (n-2-jstart)*(p-2-kstart) ); 
+  Nface = 2*( (m-2-istart)*(n-2-jstart) + (m-2-istart)*(p-2-kstart) + (n-2-jstart)*(p-2-kstart) );
   Nwire = 4*( (m-2-istart) + (n-2-jstart) + (p-2-kstart) ) + 8;
   Nsurf = Nface + Nwire;
   ierr = MatCreateSeqDense(MPI_COMM_SELF,Nint,26,PETSC_NULL,&Xint);CHKERRQ(ierr);
@@ -69,8 +69,8 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   ierr = MatDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
 
   /*
-     Require that all 12 edges and 6 faces have at least one grid point. Otherwise some of the columns of 
-     Xsurf will be all zero (thus making the coarse matrix singular). 
+     Require that all 12 edges and 6 faces have at least one grid point. Otherwise some of the columns of
+     Xsurf will be all zero (thus making the coarse matrix singular).
   */
   if (m-istart < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of grid points per process in X direction must be at least 3");
   if (n-jstart < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of grid points per process in Y direction must be at least 3");
@@ -103,10 +103,10 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   /* ierr = MatView(Xsurf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
 
-  /* 
+  /*
        I are the indices for all the needed vertices (in global numbering)
        Iint are the indices for the interior values, I surf for the surface values
-            (This is just for the part of the global matrix obtained with MatGetSubMatrix(), it 
+            (This is just for the part of the global matrix obtained with MatGetSubMatrix(), it
              is NOT the local DMDA ordering.)
        IIint and IIsurf are the same as the Iint, Isurf except they are in the global numbering
   */
@@ -116,15 +116,15 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   for (k=0; k<p-kstart; k++) {
     for (j=0; j<n-jstart; j++) {
       for (i=0; i<m-istart; i++) {
-        II[c++] = i + j*mwidth + k*mwidth*nwidth; 
+        II[c++] = i + j*mwidth + k*mwidth*nwidth;
 
         if (!Endpoint(i,istart,m) && !Endpoint(j,jstart,n) && !Endpoint(k,kstart,p)) {
-          IIint[cint]  = i + j*mwidth + k*mwidth*nwidth; 
+          IIint[cint]  = i + j*mwidth + k*mwidth*nwidth;
           Iint[cint++] = i + j*(m-istart) + k*(m-istart)*(n-jstart);
         } else {
-          IIsurf[csurf]  = i + j*mwidth + k*mwidth*nwidth; 
+          IIsurf[csurf]  = i + j*mwidth + k*mwidth*nwidth;
           Isurf[csurf++] = i + j*(m-istart) + k*(m-istart)*(n-jstart);
-        } 
+        }
       }
     }
   }
@@ -149,7 +149,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   ierr = MatGetSubMatrix(A,isint,issurf,MAT_INITIAL_MATRIX,&Ais);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(A,issurf,isint,MAT_INITIAL_MATRIX,&Asi);CHKERRQ(ierr);
 
-  /* 
+  /*
      Solve for the interpolation onto the interior Xint
   */
   ierr = MatMatMult(Ais,Xsurf,MAT_INITIAL_MATRIX,PETSC_DETERMINE,&Xint_tmp);CHKERRQ(ierr);
@@ -205,7 +205,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   Ntotal = (mp + 1)*(np + 1)*(pp + 1) + mp*np*(pp+1) + mp*pp*(np+1) + np*pp*(mp+1) + mp*(np+1)*(pp+1) + np*(mp+1)*(pp+1) +  pp*(mp+1)*(np+1);
 
   /*
-      For each vertex, edge, face on process (in the same orderings as used above) determine its local number including ghost points 
+      For each vertex, edge, face on process (in the same orderings as used above) determine its local number including ghost points
   */
   cnt = 0;
   gl[cnt++] = 0;  { gl[cnt++] = 1;} gl[cnt++] = m-istart-1;
@@ -229,7 +229,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
 
   /* Number the coarse grid points from 0 to Ntotal */
   ierr = MatGetSize(Aglobal,&Nt,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscTableCreate(Ntotal/3,Nt+1,&ht);CHKERRQ(ierr); 
+  ierr = PetscTableCreate(Ntotal/3,Nt+1,&ht);CHKERRQ(ierr);
   for (i=0; i<26*mp*np*pp; i++){
     ierr = PetscTableAddCount(ht,globals[i]+1);CHKERRQ(ierr);
   }
@@ -278,7 +278,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
     ierr = VecDestroy(y);CHKERRQ(ierr);
   }
 #endif
-    
+
   ierr = MatDestroy(&Aii);CHKERRQ(ierr);
   ierr = MatDestroy(&Ais);CHKERRQ(ierr);
   ierr = MatDestroy(&Asi);CHKERRQ(ierr);
@@ -291,7 +291,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetFaceInterpolation"
 /*
       DMDAGetFaceInterpolation - Gets the interpolation for a face based coarse space
@@ -324,22 +324,22 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   jstart = jstart ? -1 : 0;
   kstart = kstart ? -1 : 0;
 
-  /* 
-    the columns of P are the interpolation of each coarse grid point (one for each vertex and edge) 
+  /*
+    the columns of P are the interpolation of each coarse grid point (one for each vertex and edge)
     to all the local degrees of freedom (this includes the vertices, edges and faces).
 
     Xint are the subset of the interpolation into the interior
 
-    Xface are the interpolation onto faces but not into the interior 
+    Xface are the interpolation onto faces but not into the interior
 
-    Xsurf are the interpolation onto the vertices and edges (the surfbasket) 
+    Xsurf are the interpolation onto the vertices and edges (the surfbasket)
                                         Xint
     Symbolically one could write P = (  Xface  ) after interchanging the rows to match the natural ordering on the domain
                                         Xsurf
   */
   N     = (m - istart)*(n - jstart)*(p - kstart);
   Nint  = (m-2-istart)*(n-2-jstart)*(p-2-kstart);
-  Nface = 2*( (m-2-istart)*(n-2-jstart) + (m-2-istart)*(p-2-kstart) + (n-2-jstart)*(p-2-kstart) ); 
+  Nface = 2*( (m-2-istart)*(n-2-jstart) + (m-2-istart)*(p-2-kstart) + (n-2-jstart)*(p-2-kstart) );
   Nwire = 4*( (m-2-istart) + (n-2-jstart) + (p-2-kstart) ) + 8;
   Nsurf = Nface + Nwire;
   ierr = MatCreateSeqDense(MPI_COMM_SELF,Nint,6,PETSC_NULL,&Xint);CHKERRQ(ierr);
@@ -347,8 +347,8 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   ierr = MatDenseGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
 
   /*
-     Require that all 12 edges and 6 faces have at least one grid point. Otherwise some of the columns of 
-     Xsurf will be all zero (thus making the coarse matrix singular). 
+     Require that all 12 edges and 6 faces have at least one grid point. Otherwise some of the columns of
+     Xsurf will be all zero (thus making the coarse matrix singular).
   */
   if (m-istart < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of grid points per process in X direction must be at least 3");
   if (n-jstart < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of grid points per process in Y direction must be at least 3");
@@ -357,9 +357,9 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   cnt = 0;
   for (j=1;j<n-1-jstart;j++) {  for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 0*Nsurf] = 1;} }
    for (k=1;k<p-1-kstart;k++) {
-    for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 1*Nsurf] = 1;} 
+    for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 1*Nsurf] = 1;}
     for (j=1;j<n-1-jstart;j++) { xsurf[cnt++ + 2*Nsurf] = 1; /* these are the interior nodes */ xsurf[cnt++ + 3*Nsurf] = 1;}
-    for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 4*Nsurf] = 1;} 
+    for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 4*Nsurf] = 1;}
   }
   for (j=1;j<n-1-jstart;j++) {for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 5*Nsurf] = 1;} }
 
@@ -376,10 +376,10 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   /* ierr = MatView(Xsurf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
 
-  /* 
+  /*
        I are the indices for all the needed vertices (in global numbering)
        Iint are the indices for the interior values, I surf for the surface values
-            (This is just for the part of the global matrix obtained with MatGetSubMatrix(), it 
+            (This is just for the part of the global matrix obtained with MatGetSubMatrix(), it
              is NOT the local DMDA ordering.)
        IIint and IIsurf are the same as the Iint, Isurf except they are in the global numbering
   */
@@ -389,15 +389,15 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   for (k=0; k<p-kstart; k++) {
     for (j=0; j<n-jstart; j++) {
       for (i=0; i<m-istart; i++) {
-        II[c++] = i + j*mwidth + k*mwidth*nwidth; 
+        II[c++] = i + j*mwidth + k*mwidth*nwidth;
 
         if (!Endpoint(i,istart,m) && !Endpoint(j,jstart,n) && !Endpoint(k,kstart,p)) {
-          IIint[cint]  = i + j*mwidth + k*mwidth*nwidth; 
+          IIint[cint]  = i + j*mwidth + k*mwidth*nwidth;
           Iint[cint++] = i + j*(m-istart) + k*(m-istart)*(n-jstart);
         } else {
-          IIsurf[csurf]  = i + j*mwidth + k*mwidth*nwidth; 
+          IIsurf[csurf]  = i + j*mwidth + k*mwidth*nwidth;
           Isurf[csurf++] = i + j*(m-istart) + k*(m-istart)*(n-jstart);
-        } 
+        }
       }
     }
   }
@@ -423,7 +423,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   ierr = MatGetSubMatrix(A,isint,issurf,MAT_INITIAL_MATRIX,&Ais);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(A,issurf,isint,MAT_INITIAL_MATRIX,&Asi);CHKERRQ(ierr);
 
-  /* 
+  /*
      Solve for the interpolation onto the interior Xint
   */
   ierr = MatMatMult(Ais,Xsurf,MAT_INITIAL_MATRIX,PETSC_DETERMINE,&Xint_tmp);CHKERRQ(ierr);
@@ -480,16 +480,16 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   Ntotal =  mp*np*(pp+1) + mp*pp*(np+1) + np*pp*(mp+1);
 
   /*
-      For each vertex, edge, face on process (in the same orderings as used above) determine its local number including ghost points 
+      For each vertex, edge, face on process (in the same orderings as used above) determine its local number including ghost points
   */
   cnt = 0;
   { gl[cnt++] = mwidth+1;}
   {
-    { gl[cnt++] = mwidth*nwidth+1;}  
+    { gl[cnt++] = mwidth*nwidth+1;}
     { gl[cnt++] = mwidth*nwidth + mwidth; /* these are the interior nodes */ gl[cnt++] = mwidth*nwidth + mwidth+m-istart-1;}
     { gl[cnt++] = mwidth*nwidth+mwidth*(n-jstart-1)+1;}
   }
-  { gl[cnt++] = mwidth*nwidth*(p-kstart-1) + mwidth+1;} 
+  { gl[cnt++] = mwidth*nwidth*(p-kstart-1) + mwidth+1;}
 
   /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
   /* convert that to global numbering and get them on all processes */
@@ -500,12 +500,12 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
 
   /* Number the coarse grid points from 0 to Ntotal */
   ierr = MatGetSize(Aglobal,&Nt,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscTableCreate(Ntotal/3,Nt+1,&ht);CHKERRQ(ierr); 
+  ierr = PetscTableCreate(Ntotal/3,Nt+1,&ht);CHKERRQ(ierr);
   for (i=0; i<6*mp*np*pp; i++){
     ierr = PetscTableAddCount(ht,globals[i]+1);CHKERRQ(ierr);
   }
   ierr = PetscTableGetCount(ht,&cnt);CHKERRQ(ierr);
-  if (cnt != Ntotal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hash table size %D not equal to total number coarse grid points %D",cnt,Ntotal); 
+  if (cnt != Ntotal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hash table size %D not equal to total number coarse grid points %D",cnt,Ntotal);
   ierr = PetscFree(globals);CHKERRQ(ierr);
   for (i=0; i<6; i++) {
     ierr = PetscTableFind(ht,gl[i]+1,&gl[i]);CHKERRQ(ierr);
@@ -550,7 +550,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
     ierr = VecDestroy(y);CHKERRQ(ierr);
   }
 #endif
-    
+
   ierr = MatDestroy(&Aii);CHKERRQ(ierr);
   ierr = MatDestroy(&Ais);CHKERRQ(ierr);
   ierr = MatDestroy(&Asi);CHKERRQ(ierr);
@@ -564,7 +564,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCExoticSetType"
 /*@
    PCExoticSetType - Sets the type of coarse grid interpolation to use
@@ -575,15 +575,15 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
 +  pc - the preconditioner context
 -  type - either PC_EXOTIC_FACE or PC_EXOTIC_WIREBASKET (defaults to face)
 
-   Notes: The face based interpolation has 1 degree of freedom per face and ignores the 
+   Notes: The face based interpolation has 1 degree of freedom per face and ignores the
      edge and vertex values completely in the coarse problem. For any seven point
      stencil the interpolation of a constant on all faces into the interior is that constant.
 
-     The wirebasket interpolation has 1 degree of freedom per vertex, per edge and 
+     The wirebasket interpolation has 1 degree of freedom per vertex, per edge and
      per face. A constant on the subdomain boundary is interpolated as that constant
-     in the interior of the domain. 
+     in the interior of the domain.
 
-     The coarse grid matrix is obtained via the Galerkin computation A_c = R A R^T, hence 
+     The coarse grid matrix is obtained via the Galerkin computation A_c = R A R^T, hence
      if A is nonsingular A_c is also nonsingular.
 
      Both interpolations are suitable for only scalar problems.
@@ -604,7 +604,7 @@ PetscErrorCode  PCExoticSetType(PC pc,PCExoticType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCExoticSetType_Exotic"
 PetscErrorCode  PCExoticSetType_Exotic(PC pc,PCExoticType type)
 {
@@ -657,7 +657,7 @@ PetscErrorCode PCDestroy_Exotic(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_Exotic"
 PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
 {
@@ -677,7 +677,7 @@ PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
       PetscMPIInt rank;
 
       ierr = PetscViewerASCIIPrintf(viewer,"      Using iterative solver to construct interpolation\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr); 
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);  /* should not need to push this twice? */
       ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
       ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
@@ -693,7 +693,7 @@ PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Exotic"
 PetscErrorCode PCSetFromOptions_Exotic(PC pc)
 {
@@ -731,7 +731,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc)
      PCEXOTIC - Two level overlapping Schwarz preconditioner with exotic (non-standard) coarse grid spaces
 
      This uses the PCMG infrastructure restricted to two levels and the face and wirebasket based coarse
-   grid spaces. 
+   grid spaces.
 
    Notes: By default this uses GMRES on the fine grid smoother so this should be used with KSPFGMRES or the smoother changed to not use GMRES
 
@@ -739,10 +739,10 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc)
    of Preconditioners for Elliptic Problems by Substructing IV", Mathematics of Computation, volume 53 pages 1--24, 1989.
    They were generalized slightly in "Domain Decomposition Method for Linear Elasticity", Ph. D. thesis, Barry Smith,
    New York University, 1990. They were then explored in great detail in Dryja, Smith, Widlund, "Schwarz Analysis
-   of Iterative Substructuring Methods for Elliptic Problems in Three Dimensions, SIAM Journal on Numerical 
+   of Iterative Substructuring Methods for Elliptic Problems in Three Dimensions, SIAM Journal on Numerical
    Analysis, volume 31. pages 1662-1694, 1994. These were developed in the context of iterative substructuring preconditioners.
    They were then ingeniously applied as coarse grid spaces for overlapping Schwarz methods by Dohrmann and Widlund.
-   They refer to them as GDSW (generalized Dryja, Smith, Widlund preconditioners). See, for example, 
+   They refer to them as GDSW (generalized Dryja, Smith, Widlund preconditioners). See, for example,
    Clark R. Dohrmann, Axel Klawonn, and Olof B. Widlund. Extending theory for domain decomposition algorithms to irregular subdomains. In Ulrich Langer, Marco
    Discacciati, David Keyes, Olof Widlund, and Walter Zulehner, editors, Proceedings
    of the 17th International Conference on Domain Decomposition Methods in
@@ -772,7 +772,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc)
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_Exotic"
 PetscErrorCode  PCCreate_Exotic(PC pc)
 {

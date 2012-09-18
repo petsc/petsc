@@ -5,7 +5,7 @@
 
 #include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetProcessorSubset"
 /*@C
    DMDAGetProcessorSubset - Returns a communicator consisting only of the
@@ -43,7 +43,7 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  flag = 0; 
+  flag = 0;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)da)->comm,&size);CHKERRQ(ierr);
   if (dir == DMDA_Z) {
@@ -77,9 +77,9 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDADirection dir,PetscInt gp,MPI_C
   ierr = MPI_Group_free(&group);CHKERRQ(ierr);
   ierr = PetscFree2(owners,ranks);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetProcessorSubsets"
 /*@C
    DMDAGetProcessorSubsets - Returns communicators consisting only of the
@@ -131,7 +131,7 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDADirection dir, MPI_Comm *subc
   ierr = PetscMalloc2(size, PetscInt, &firstPoints, size, PetscMPIInt, &subgroupRanks);CHKERRQ(ierr);
   ierr = MPI_Allgather(&firstPoint, 1, MPIU_INT, firstPoints, 1, MPIU_INT, comm);CHKERRQ(ierr);
   ierr = PetscInfo2(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",dd->dim,(int)dir);CHKERRQ(ierr);
-  for(p = 0; p < size; ++p) {
+  for (p = 0; p < size; ++p) {
     if (firstPoints[p] == firstPoint) {
       subgroupRanks[subgroupSize++] = p;
       ierr = PetscInfo1(da, "%D ", p);CHKERRQ(ierr);
@@ -145,4 +145,4 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDADirection dir, MPI_Comm *subc
   ierr = MPI_Group_free(&group);CHKERRQ(ierr);
   ierr = PetscFree2(firstPoints, subgroupRanks);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}

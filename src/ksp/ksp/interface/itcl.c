@@ -7,10 +7,10 @@
 
 extern PetscBool  KSPRegisterAllCalled;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetOptionsPrefix"
 /*@C
-   KSPSetOptionsPrefix - Sets the prefix used for searching for all 
+   KSPSetOptionsPrefix - Sets the prefix used for searching for all
    KSP options in the database.
 
    Logically Collective on KSP
@@ -51,13 +51,13 @@ PetscErrorCode  KSPSetOptionsPrefix(KSP ksp,const char prefix[])
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetOptionsPrefix(ksp->pc,prefix);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)ksp,prefix);CHKERRQ(ierr);
-  PetscFunctionReturn(0);  
+  PetscFunctionReturn(0);
 }
- 
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPAppendOptionsPrefix"
 /*@C
-   KSPAppendOptionsPrefix - Appends to the prefix used for searching for all 
+   KSPAppendOptionsPrefix - Appends to the prefix used for searching for all
    KSP options in the database.
 
    Logically Collective on KSP
@@ -87,7 +87,7 @@ PetscErrorCode  KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetTabLevel"
 /*@
    KSPGetTabLevel - Gets the number of tabs that ASCII output used by ksp.
@@ -130,8 +130,8 @@ PetscErrorCode  KSPGetTabLevel(KSP ksp,PetscInt *tab)
 
    Level: developer
 
-    Notes: this is used to manage the output from KSP and PC objects that are imbedded in other objects, 
-           for example, the KSP object inside a SNES object. By indenting each lower level further the heirarchy 
+    Notes: this is used to manage the output from KSP and PC objects that are imbedded in other objects,
+           for example, the KSP object inside a SNES object. By indenting each lower level further the heirarchy
            of objects is very clear.  By setting the KSP object's tab level with KSPSetTabLevel() its PC object
            automatically receives the same tab level, so that whatever objects the pc might create are tabbed
            appropriately, too.
@@ -150,7 +150,7 @@ PetscErrorCode  KSPSetTabLevel(KSP ksp, PetscInt tab)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUseFischerGuess"
 /*@C
    KSPSetUseFischerGuess - Use the Paul Fischer algorithm, see KSPFischerGuessCreate()
@@ -186,7 +186,7 @@ PetscErrorCode  KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetFischerGuess"
 /*@C
    KSPSetFischerGuess - Use the Paul Fischer algorithm created by KSPFischerGuessCreate()
@@ -220,7 +220,7 @@ PetscErrorCode  KSPSetFischerGuess(KSP ksp,KSPFischerGuess guess)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetFischerGuess"
 /*@C
    KSPGetFischerGuess - Gets the initial guess generator set with either KSPSetFischerGuess() or KSPCreateFischerGuess()/KSPSetFischerGuess()
@@ -246,10 +246,10 @@ PetscErrorCode  KSPGetFischerGuess(KSP ksp,KSPFischerGuess *guess)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetOptionsPrefix"
 /*@C
-   KSPGetOptionsPrefix - Gets the prefix used for searching for all 
+   KSPGetOptionsPrefix - Gets the prefix used for searching for all
    KSP options in the database.
 
    Not Collective
@@ -278,12 +278,12 @@ PetscErrorCode  KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions"
 /*@
    KSPSetFromOptions - Sets KSP options from the options database.
-   This routine must be called before KSPSetUp() if the user is to be 
-   allowed to set the Krylov type. 
+   This routine must be called before KSPSetUp() if the user is to be
+   allowed to set the Krylov type.
 
    Collective on KSP
 
@@ -294,15 +294,15 @@ PetscErrorCode  KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
 +   -ksp_max_it - maximum number of linear iterations
 .   -ksp_rtol rtol - relative tolerance used in default determination of convergence, i.e.
                 if residual norm decreases by this factor than convergence is declared
-.   -ksp_atol abstol - absolute tolerance used in default convergence test, i.e. if residual 
+.   -ksp_atol abstol - absolute tolerance used in default convergence test, i.e. if residual
                 norm is less than this then convergence is declared
 .   -ksp_divtol tol - if residual norm increases by this factor than divergence is declared
 .   -ksp_converged_use_initial_residual_norm - see KSPDefaultConvergedSetUIRNorm()
 .   -ksp_converged_use_min_initial_residual_norm - see KSPDefaultConvergedSetUMIRNorm()
-.   -ksp_norm_type - none - skip norms used in convergence tests (useful only when not using 
-$                       convergence test (say you always want to run with 5 iterations) to 
+.   -ksp_norm_type - none - skip norms used in convergence tests (useful only when not using
+$                       convergence test (say you always want to run with 5 iterations) to
 $                       save on communication overhead
-$                    preconditioned - default for left preconditioning 
+$                    preconditioned - default for left preconditioning
 $                    unpreconditioned - see KSPSetNormType()
 $                    natural - see KSPSetNormType()
 .   -ksp_check_norm_iteration it - do not compute residual norm until iteration number it (does compute at 0th iteration)
@@ -320,7 +320,7 @@ $       This will require 1 more iteration of the solver than usual.
 .   -ksp_monitor_solution - plot solution at each iteration
 -   -ksp_monitor_singular_value - monitor extremem singular values at each iteration
 
-   Notes:  
+   Notes:
    To see all options, run your program with the -help option
    or consult <A href="../../docs/manual.pdf#nameddest=ch_ksp">KSP chapter of the users manual</A>.
 
@@ -391,9 +391,9 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsEList("-ksp_convergence_test","Convergence test","KSPSetConvergenceTest",convtests,2,"default",&indx,&flg);CHKERRQ(ierr);
     if (flg) {
       switch (indx) {
-      case 0: 
+      case 0:
         ierr = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
-        ierr = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr); 
+        ierr = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
         break;
       case 1: ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);    break;
       }
@@ -485,7 +485,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
       ierr = KSPMonitorSet(ksp,KSPMonitorDynamicTolerance,scale,KSPMonitorDynamicToleranceDestroy);CHKERRQ(ierr);
     }
     /*
-      Plots the vector solution 
+      Plots the vector solution
     */
     flg  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ksp_monitor_solution","Monitor solution graphically","KSPMonitorSet",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
@@ -555,7 +555,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     if (flg) {
       char amscommname[256];
       void *ctx;
-      ierr = PetscSNPrintf(amscommname,sizeof amscommname,"%sksp_monitor_ams",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
+      ierr = PetscSNPrintf(amscommname,sizeof(amscommname),"%sksp_monitor_ams",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
       ierr = KSPMonitorAMSCreate(ksp,amscommname,&ctx);CHKERRQ(ierr);
       ierr = KSPMonitorSet(ksp,KSPMonitorAMS,ctx,KSPMonitorAMSDestroy);CHKERRQ(ierr);
       ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);

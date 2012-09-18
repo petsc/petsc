@@ -7,7 +7,7 @@
 struct _PetscViewerOps {
    PetscErrorCode (*destroy)(PetscViewer);
    PetscErrorCode (*view)(PetscViewer,PetscViewer);
-   PetscErrorCode (*flush)(PetscViewer); 
+   PetscErrorCode (*flush)(PetscViewer);
    PetscErrorCode (*getsingleton)(PetscViewer,PetscViewer*);
    PetscErrorCode (*restoresingleton)(PetscViewer,PetscViewer*);
    PetscErrorCode (*getsubcomm)(PetscViewer,MPI_Comm,PetscViewer*);

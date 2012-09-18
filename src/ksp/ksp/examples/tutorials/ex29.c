@@ -105,7 +105,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da, b, &array);CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++){
-    for(i=xs; i<xs+xm; i++){
+    for (i=xs; i<xs+xm; i++){
       array[j][i] = PetscExpScalar(-((PetscReal)i*Hx)*((PetscReal)i*Hx)/user->nu)*PetscExpScalar(-((PetscReal)j*Hy)*((PetscReal)j*Hy)/user->nu)*Hx*Hy;
     }
   }
@@ -162,7 +162,7 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
   HydHx = Hy/Hx;
   ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++){
-    for(i=xs; i<xs+xm; i++){
+    for (i=xs; i<xs+xm; i++){
       row.i = i; row.j = j;
       ierr = ComputeRho(i, j, mx, my, centerRho, &rho);CHKERRQ(ierr);
       if (i==0 || j==0 || i==mx-1 || j==my-1) {

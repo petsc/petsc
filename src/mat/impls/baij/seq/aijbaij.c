@@ -2,12 +2,12 @@
 #include <../src/mat/impls/baij/seq/baij.h>
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqBAIJ_SeqAIJ"
-PetscErrorCode  MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat) 
+PetscErrorCode  MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data; 
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       bs = A->rmap->bs,*ai = a->i,*aj = a->j,n = A->rmap->N/bs,i,j,k;
   PetscInt       *rowlengths,*rows,*cols,maxlen = 0,ncols;
@@ -48,7 +48,7 @@ PetscErrorCode  MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,
   ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
+
   B->rmap->bs = A->rmap->bs;
 
   if (reuse == MAT_REUSE_MATRIX) {
@@ -63,12 +63,12 @@ EXTERN_C_END
 #include <../src/mat/impls/aij/seq/aij.h>
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqBAIJ"
-PetscErrorCode  MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat) 
+PetscErrorCode  MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqBAIJ    *b;
   PetscErrorCode ierr;
   PetscInt       *ai=a->i,m=A->rmap->N,n=A->cmap->N,i,*rowlengths;
@@ -87,14 +87,14 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,MatReuse r
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
 
   ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
-  
+
   b  = (Mat_SeqBAIJ*)(B->data);
 
   ierr = PetscMemcpy(b->i,a->i,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(b->ilen,a->ilen,m*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(b->j,a->j,a->nz*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(b->a,a->a,a->nz*sizeof(MatScalar));CHKERRQ(ierr);
- 
+
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 

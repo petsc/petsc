@@ -9,7 +9,7 @@ PetscClassId   PC_CLASSID;
 PetscLogEvent  PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
 PetscLogEvent  PC_ApplySymmetricRight, PC_ModifySubMatrices, PC_ApplyOnBlocks, PC_ApplyTransposeOnBlocks, PC_ApplyOnMproc;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGetDefaultType_Private"
 PetscErrorCode PCGetDefaultType_Private(PC pc,const char* type[])
 {
@@ -52,7 +52,7 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char* type[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCReset"
 /*@
    PCReset - Resets a PC context to the pcsetupcalled = 0 state and removes any allocated Vecs and Mats
@@ -87,7 +87,7 @@ PetscErrorCode  PCReset(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy"
 /*@
    PCDestroy - Destroys PC context that was created with PCCreate().
@@ -122,7 +122,7 @@ PetscErrorCode  PCDestroy(PC *pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGetDiagonalScale"
 /*@C
    PCGetDiagonalScale - Indicates if the preconditioner applies an additional left and right
@@ -155,7 +155,7 @@ PetscErrorCode  PCGetDiagonalScale(PC pc,PetscBool  *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetDiagonalScale"
 /*@
    PCSetDiagonalScale - Indicates the left scaling to use to apply an additional left and right
@@ -196,7 +196,7 @@ PetscErrorCode  PCSetDiagonalScale(PC pc,Vec s)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDiagonalScaleLeft"
 /*@
    PCDiagonalScaleLeft - Scales a vector by the left scaling as needed by certain time-stepping codes.
@@ -238,7 +238,7 @@ PetscErrorCode  PCDiagonalScaleLeft(PC pc,Vec in,Vec out)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDiagonalScaleRight"
 /*@
    PCDiagonalScaleRight - Scales a vector by the right scaling as needed by certain time-stepping codes.
@@ -281,7 +281,7 @@ PetscErrorCode  PCDiagonalScaleRight(PC pc,Vec in,Vec out)
 }
 
 #if 0
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPublish_Petsc"
 static PetscErrorCode PCPublish_Petsc(PetscObject obj)
 {
@@ -290,7 +290,7 @@ static PetscErrorCode PCPublish_Petsc(PetscObject obj)
 }
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate"
 /*@
    PCCreate - Creates a preconditioner context.
@@ -298,13 +298,13 @@ static PetscErrorCode PCPublish_Petsc(PetscObject obj)
    Collective on MPI_Comm
 
    Input Parameter:
-.  comm - MPI communicator 
+.  comm - MPI communicator
 
    Output Parameter:
 .  pc - location to put the preconditioner context
 
    Notes:
-   The default preconditioner for sparse matrices is PCILU or PCICC with 0 fill on one process and block Jacobi with PCILU or ICC 
+   The default preconditioner for sparse matrices is PCILU or PCICC with 0 fill on one process and block Jacobi with PCILU or ICC
    in parallel. For dense matrices it is always PCNONE.
 
    Level: developer
@@ -346,7 +346,7 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
 
 /* -------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply"
 /*@
    PCApply - Applies the preconditioner to a vector.
@@ -387,7 +387,7 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplySymmetricLeft"
 /*@
    PCApplySymmetricLeft - Applies the left part of a symmetric preconditioner to a vector.
@@ -431,7 +431,7 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplySymmetricRight"
 /*@
    PCApplySymmetricRight - Applies the right part of a symmetric preconditioner to a vector.
@@ -475,7 +475,7 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyTranspose"
 /*@
    PCApplyTranspose - Applies the transpose of preconditioner to a vector.
@@ -520,7 +520,7 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyTransposeExists"
 /*@
    PCApplyTransposeExists - Test whether the preconditioner has a transpose apply operation
@@ -549,7 +549,7 @@ PetscErrorCode  PCApplyTransposeExists(PC pc,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyBAorAB"
 /*@
    PCApplyBAorAB - Applies the preconditioner and operator to a vector. y = B*A*x or y = A*B*x.
@@ -567,7 +567,7 @@ PetscErrorCode  PCApplyTransposeExists(PC pc,PetscBool  *flg)
 
    Level: developer
 
-   Notes: If the PC has had PCSetDiagonalScale() set then D M A D^{-1} for left preconditioning or  D A M D^{-1} is actually applied. Note that the 
+   Notes: If the PC has had PCSetDiagonalScale() set then D M A D^{-1} for left preconditioning or  D A M D^{-1} is actually applied. Note that the
    specific KSPSolve() method must also be written to handle the post-solve "correction" for the diagonal scaling.
 
 .keywords: PC, apply, operator
@@ -632,9 +632,9 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyBAorABTranspose"
-/*@ 
+/*@
    PCApplyBAorABTranspose - Applies the transpose of the preconditioner
    and operator to a vector. That is, applies tr(B) * tr(A) with left preconditioning,
    NOT tr(B*A) = tr(A)*tr(B).
@@ -652,8 +652,8 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
 
 
    Notes: this routine is used internally so that the same Krylov code can be used to solve A x = b and A' x = b, with a preconditioner
-      defined by B'. This is why this has the funny form that it computes tr(B) * tr(A) 
-          
+      defined by B'. This is why this has the funny form that it computes tr(B) * tr(A)
+
     Level: developer
 
 .keywords: PC, apply, operator, transpose
@@ -691,15 +691,15 @@ PetscErrorCode  PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
   }
   /* add support for PC_SYMMETRIC */
   VecValidValues(y,4,PETSC_FALSE);
-  PetscFunctionReturn(0); 
+  PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyRichardsonExists"
 /*@
-   PCApplyRichardsonExists - Determines whether a particular preconditioner has a 
+   PCApplyRichardsonExists - Determines whether a particular preconditioner has a
    built-in fast application of Richardson's method.
 
    Not Collective
@@ -721,16 +721,16 @@ PetscErrorCode  PCApplyRichardsonExists(PC pc,PetscBool  *exists)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidIntPointer(exists,2);
-  if (pc->ops->applyrichardson) *exists = PETSC_TRUE; 
+  if (pc->ops->applyrichardson) *exists = PETSC_TRUE;
   else                          *exists = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyRichardson"
 /*@
-   PCApplyRichardson - Applies several steps of Richardson iteration with 
-   the particular preconditioner. This routine is usually used by the 
+   PCApplyRichardson - Applies several steps of Richardson iteration with
+   the particular preconditioner. This routine is usually used by the
    Krylov solvers and not the application code directly.
 
    Collective on PC
@@ -750,13 +750,13 @@ PetscErrorCode  PCApplyRichardsonExists(PC pc,PetscBool  *exists)
 .  reason - the reason the apply terminated
 -  y - the solution (also contains initial guess if guesszero is PETSC_FALSE
 
-   Notes: 
+   Notes:
    Most preconditioners do not support this function. Use the command
    PCApplyRichardsonExists() to determine if one does.
 
    Except for the multigrid PC this routine ignores the convergence tolerances
    and always runs for the number of iterations
- 
+
    Level: developer
 
 .keywords: PC, apply, Richardson
@@ -781,12 +781,12 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
   PetscFunctionReturn(0);
 }
 
-/* 
-      a setupcall of 0 indicates never setup, 
+/*
+      a setupcall of 0 indicates never setup,
                      1 needs to be resetup,
                      2 does not need any changes.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp"
 /*@
    PCSetUp - Prepares for the use of a preconditioner.
@@ -836,11 +836,11 @@ PetscErrorCode  PCSetUp(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUpOnBlocks"
 /*@
    PCSetUpOnBlocks - Sets up the preconditioner for each block in
-   the block Jacobi, block Gauss-Seidel, and overlapping Schwarz 
+   the block Jacobi, block Gauss-Seidel, and overlapping Schwarz
    methods.
 
    Collective on PC
@@ -867,7 +867,7 @@ PetscErrorCode  PCSetUpOnBlocks(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetModifySubMatrices"
 /*@C
    PCSetModifySubMatrices - Sets a user-defined routine for modifying the
@@ -891,7 +891,7 @@ $     func (PC pc,PetscInt nsub,IS *row,IS *col,Mat *submat,void *ctx);
 .  col - an array of index sets that contain the global column numbers
          that comprise each local submatrix
 .  submat - array of local submatrices
--  ctx - optional user-defined context for private data for the 
+-  ctx - optional user-defined context for private data for the
          user-defined func routine (may be null)
 
    Notes:
@@ -917,10 +917,10 @@ PetscErrorCode  PCSetModifySubMatrices(PC pc,PetscErrorCode (*func)(PC,PetscInt,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCModifySubMatrices"
 /*@C
-   PCModifySubMatrices - Calls an optional user-defined routine within 
+   PCModifySubMatrices - Calls an optional user-defined routine within
    certain preconditioners if one has been set with PCSetModifySubMarices().
 
    Collective on PC
@@ -933,7 +933,7 @@ PetscErrorCode  PCSetModifySubMatrices(PC pc,PetscErrorCode (*func)(PC,PetscInt,
 .  col - an array of index sets that contain the global column numbers
          that comprise each local submatrix
 .  submat - array of local submatrices
--  ctx - optional user-defined context for private data for the 
+-  ctx - optional user-defined context for private data for the
          user-defined routine (may be null)
 
    Output Parameter:
@@ -969,10 +969,10 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetOperators"
 /*@
-   PCSetOperators - Sets the matrix associated with the linear system and 
+   PCSetOperators - Sets the matrix associated with the linear system and
    a (possibly) different one associated with the preconditioner.
 
    Logically Collective on PC and Mat
@@ -981,15 +981,15 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
 +  pc - the preconditioner context
 .  Amat - the matrix associated with the linear system
 .  Pmat - the matrix to be used in constructing the preconditioner, usually
-          the same as Amat. 
+          the same as Amat.
 -  flag - flag indicating information about the preconditioner matrix structure
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear
    system.
 
-   Notes: 
-   The flag can be used to eliminate unnecessary work in the preconditioner 
-   during the repeated solution of linear systems of the same size.  The 
+   Notes:
+   The flag can be used to eliminate unnecessary work in the preconditioner
+   during the repeated solution of linear systems of the same size.  The
    available options are
 +    SAME_PRECONDITIONER -
        Pmat is identical during successive linear solves.
@@ -1000,7 +1000,7 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
        for ILU/ICC preconditioners.
 .     SAME_NONZERO_PATTERN -
        Pmat has the same nonzero structure during
-       successive linear solves. 
+       successive linear solves.
 -     DIFFERENT_NONZERO_PATTERN -
        Pmat does not have the same nonzero structure.
 
@@ -1067,7 +1067,7 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGetOperators"
 /*@C
    PCGetOperators - Gets the matrix associated with the linear system and
@@ -1081,7 +1081,7 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
    Output Parameters:
 +  mat - the matrix associated with the linear system
 .  pmat - matrix associated with the preconditioner, usually the same
-          as mat. 
+          as mat.
 -  flag - flag indicating information about the preconditioner
           matrix structure.  See PCSetOperators() for details.
 
@@ -1118,14 +1118,14 @@ $         PetscObjectDereference((PetscObject)pmat);
 $           set size, type, etc of mat and pmat
 
     The rational for this support is so that when creating a TS, SNES, or KSP the hierarchy
-    of underlying objects (i.e. SNES, KSP, PC, Mat) and their livespans can be completely 
+    of underlying objects (i.e. SNES, KSP, PC, Mat) and their livespans can be completely
     managed by the top most level object (i.e. the TS, SNES, or KSP). Another way to look
-    at this is when you create a SNES you do not NEED to create a KSP and attach it to 
+    at this is when you create a SNES you do not NEED to create a KSP and attach it to
     the SNES object (the SNES object manages it for you). Similarly when you create a KSP
     you do not need to attach a PC to it (the KSP object manages the PC object for you).
     Thus, why should YOU have to create the Mat and attach it to the SNES/KSP/PC, when
     it can be created for you?
-     
+
 
 .keywords: PC, get, operators, matrix, linear system
 
@@ -1151,7 +1151,7 @@ PetscErrorCode  PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
       }
     }
     *mat  = pc->mat;
-  }  
+  }
   if (pmat) {
     if (!pc->pmat) {
       if (pc->mat && !mat) {    /* mat has been set but was not requested, so use for pmat */
@@ -1171,7 +1171,7 @@ PetscErrorCode  PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGetOperatorsSet"
 /*@C
    PCGetOperatorsSet - Determines if the matrix associated with the linear system and
@@ -1201,11 +1201,11 @@ PetscErrorCode  PCGetOperatorsSet(PC pc,PetscBool  *mat,PetscBool  *pmat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorGetMatrix"
 /*@
    PCFactorGetMatrix - Gets the factored matrix from the
-   preconditioner context.  This routine is valid only for the LU, 
+   preconditioner context.  This routine is valid only for the LU,
    incomplete LU, Cholesky, and incomplete Cholesky methods.
 
    Not Collective on PC though Mat is parallel if PC is parallel
@@ -1237,10 +1237,10 @@ PetscErrorCode  PCFactorGetMatrix(PC pc,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetOptionsPrefix"
 /*@C
-   PCSetOptionsPrefix - Sets the prefix used for searching for all 
+   PCSetOptionsPrefix - Sets the prefix used for searching for all
    PC options in the database.
 
    Logically Collective on PC
@@ -1270,10 +1270,10 @@ PetscErrorCode  PCSetOptionsPrefix(PC pc,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCAppendOptionsPrefix"
 /*@C
-   PCAppendOptionsPrefix - Appends to the prefix used for searching for all 
+   PCAppendOptionsPrefix - Appends to the prefix used for searching for all
    PC options in the database.
 
    Logically Collective on PC
@@ -1303,10 +1303,10 @@ PetscErrorCode  PCAppendOptionsPrefix(PC pc,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGetOptionsPrefix"
 /*@C
-   PCGetOptionsPrefix - Gets the prefix used for searching for all 
+   PCGetOptionsPrefix - Gets the prefix used for searching for all
    PC options in the database.
 
    Not Collective
@@ -1337,11 +1337,11 @@ PetscErrorCode  PCGetOptionsPrefix(PC pc,const char *prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPreSolve"
 /*@
    PCPreSolve - Optional pre-solve phase, intended for any
-   preconditioner-specific actions that must be performed before 
+   preconditioner-specific actions that must be performed before
    the iterative solve itself.
 
    Collective on PC
@@ -1387,7 +1387,7 @@ PetscErrorCode  PCPreSolve(PC pc,KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPostSolve"
 /*@
    PCPostSolve - Optional post-solve phase, intended for any
@@ -1433,7 +1433,7 @@ PetscErrorCode  PCPostSolve(PC pc,KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView"
 /*@C
    PCView - Prints the PC data structure.
@@ -1449,8 +1449,8 @@ PetscErrorCode  PCPostSolve(PC pc,KSP ksp)
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
 -     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
+         the file.  All other processors send their
+         data to the first processor to print.
 
    The user can open an alternative visualization contexts with
    PetscViewerASCIIOpen() (output to a specified file).
@@ -1473,7 +1473,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)pc)->comm,&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2); 
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(pc,1,viewer,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -1517,10 +1517,10 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetInitialGuessNonzero"
 /*@
-   PCSetInitialGuessNonzero - Tells the iterative solver that the 
+   PCSetInitialGuessNonzero - Tells the iterative solver that the
    initial guess is nonzero; otherwise PC assumes the initial guess
    is to be zero (and thus zeros it out before solving).
 
@@ -1551,7 +1551,7 @@ PetscErrorCode  PCSetInitialGuessNonzero(PC pc,PetscBool  flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCRegister"
 /*@C
   PCRegister - See PCRegisterDynamic()
@@ -1570,10 +1570,10 @@ PetscErrorCode  PCRegister(const char sname[],const char path[],const char name[
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCComputeExplicitOperator"
 /*@
-    PCComputeExplicitOperator - Computes the explicit preconditioned operator.  
+    PCComputeExplicitOperator - Computes the explicit preconditioned operator.
 
     Collective on PC
 
@@ -1584,7 +1584,7 @@ PetscErrorCode  PCRegister(const char sname[],const char path[],const char name[
 .   mat - the explict preconditioned operator
 
     Notes:
-    This computation is done by applying the operators to columns of the 
+    This computation is done by applying the operators to columns of the
     identity matrix.
 
     Currently, this routine uses a dense matrix format when 1 processor
@@ -1592,7 +1592,7 @@ PetscErrorCode  PCRegister(const char sname[],const char path[],const char name[
     and is recommended for use only with relatively small systems.
 
     Level: advanced
-   
+
 .keywords: PC, compute, explicit, operator
 
 .seealso: KSPComputeExplicitOperator()
@@ -1606,7 +1606,7 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
   PetscMPIInt    size;
   MPI_Comm       comm;
   PetscScalar    *array,one = 1.0;
-  
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(mat,2);
@@ -1642,9 +1642,9 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
 
     /* should fix, allowing user to choose side */
     ierr = PCApply(pc,in,out);CHKERRQ(ierr);
-    
+
     ierr = VecGetArray(out,&array);CHKERRQ(ierr);
-    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr); 
+    ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecRestoreArray(out,&array);CHKERRQ(ierr);
 
   }

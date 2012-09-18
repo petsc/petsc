@@ -10,14 +10,14 @@ typedef struct {
 
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_LRC"
 PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
 {
   Mat_LRC        *Na = (Mat_LRC*)N->data;
   PetscErrorCode ierr;
   PetscScalar    *w1,*w2;
-  
+
   PetscFunctionBegin;
   ierr = MatMult(Na->A,x,y);CHKERRQ(ierr);
 
@@ -58,7 +58,7 @@ PetscErrorCode MatDestroy_LRC(Mat N)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateLRC"
 /*@
       MatCreateLRC - Creates a new matrix object that behaves like A + U*V'
@@ -82,14 +82,14 @@ PetscErrorCode  MatCreateLRC(Mat A,Mat U, Mat V,Mat *N)
 {
   PetscErrorCode ierr;
   PetscInt       m,n;
-  Mat_LRC        *Na;  
+  Mat_LRC        *Na;
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject)A)->comm,N);CHKERRQ(ierr);
   ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATLRC);CHKERRQ(ierr);
-  
+
   ierr       = PetscNewLog(*N,Mat_LRC,&Na);CHKERRQ(ierr);
   (*N)->data = (void*) Na;
   Na->A      = A;

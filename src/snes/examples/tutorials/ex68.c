@@ -46,7 +46,7 @@ PetscErrorCode ConstructProblem1(Mat A, Vec b)
   PetscFunctionBegin;
   ierr = VecSet(b, -3.0);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A, &rStart, &rEnd);CHKERRQ(ierr);
-  for(row = rStart; row < rEnd; ++row) {
+  for (row = rStart; row < rEnd; ++row) {
     PetscScalar val = 1.0;
 
     ierr = MatSetValues(A, 1, &row, 1, &row, &val, INSERT_VALUES);CHKERRQ(ierr);
@@ -84,18 +84,18 @@ PetscErrorCode ConstructProblem2(Mat A, Vec b)
 
   PetscFunctionBegin;
   ierr = VecSet(b, -3.0);CHKERRQ(ierr);
-  for(row = 0; row < constraintSize; ++row) {
+  for (row = 0; row < constraintSize; ++row) {
     PetscInt    cols[2] = {row, row + N - constraintSize};
     PetscScalar vals[2] = {1.0, 1.0};
 
     ierr = MatSetValues(A, 1, &row, 2, &cols, vals, INSERT_VALUES);CHKERRQ(ierr);
   }
-  for(row = constraintSize; row < N - constraintSize; ++row) {
+  for (row = constraintSize; row < N - constraintSize; ++row) {
     PetscScalar val = 1.0;
 
     ierr = MatSetValues(A, 1, &row, 1, &row, &val, INSERT_VALUES);CHKERRQ(ierr);
   }
-  for(row = N - constraintSize; row < N; ++row) {
+  for (row = N - constraintSize; row < N; ++row) {
     PetscInt    col = row - (N - constraintSize);
     PetscScalar val = 1.0;
 
@@ -120,17 +120,17 @@ PetscErrorCode CheckProblem2(Mat A, Vec b, Vec u)
   ierr = VecGetArray(u, &uArray);CHKERRQ(ierr);
   ierr = VecGetArray(b, &bArray);CHKERRQ(ierr);
   error = 0.0;
-  for(r = 0; r < constraintSize; ++r) {
+  for (r = 0; r < constraintSize; ++r) {
     error += PetscSqr(uArray[r] - bArray[r + N-constraintSize]);
   }
   if (error/norm > 1e-12) SETERRQ1(((PetscObject) A)->comm, PETSC_ERR_ARG_WRONG, "Relative error %g is too large", error/norm);
   error = 0.0;
-  for(r = constraintSize; r < N - constraintSize; ++r) {
+  for (r = constraintSize; r < N - constraintSize; ++r) {
     error += PetscSqr(uArray[r] - bArray[r]);
   }
   if (error/norm > 1e-12) SETERRQ1(((PetscObject) A)->comm, PETSC_ERR_ARG_WRONG, "Relative error %g is too large", error/norm);
   error = 0.0;
-  for(r = N - constraintSize; r < N; ++r) {
+  for (r = N - constraintSize; r < N; ++r) {
     error += PetscSqr(uArray[r] - (bArray[r - (N-constraintSize)] - bArray[r]));
   }
   if (error/norm > 1e-12) SETERRQ1(((PetscObject) A)->comm, PETSC_ERR_ARG_WRONG, "Relative error %g is too large", error/norm);

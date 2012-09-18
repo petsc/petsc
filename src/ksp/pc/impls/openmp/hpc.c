@@ -4,7 +4,7 @@
 
 typedef struct {
   MatStructure flag;               /* pc->flag */
-  PetscInt     setupcalled;        /* pc->setupcalled */  
+  PetscInt     setupcalled;        /* pc->setupcalled */
   PetscInt     n;
   MPI_Comm     comm;                 /* local world used by this preconditioner */
   KSP          ksp;                  /* actual solver used across local world */
@@ -12,15 +12,15 @@ typedef struct {
   Mat          gmat;                 /* matrix known only to process 0 in the local world */
   Vec          x,y,xdummy,ydummy;
   VecScatter   scatter;
-  PetscBool    nonzero_guess; 
+  PetscBool    nonzero_guess;
 } PC_HMPI;
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_HMPI_MP"
 /*
     Would like to have this simply call PCView() on the inner PC. The problem is
-  that the outer comm does not live on the inside so cannot do this. Instead 
+  that the outer comm does not live on the inside so cannot do this. Instead
   handle the special case when the viewer is stdout, construct a new one just
   for this call.
 */
@@ -39,7 +39,7 @@ static PetscErrorCode PCView_HMPI_MP(MPI_Comm comm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_HMPI"
 static PetscErrorCode PCView_HMPI(PC pc,PetscViewer viewer)
 {
@@ -64,7 +64,7 @@ static PetscErrorCode PCView_HMPI(PC pc,PetscViewer viewer)
 
 extern PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_HMPI_1"
 static PetscErrorCode PCApply_HMPI_1(PC pc,Vec x,Vec y)
 {
@@ -77,7 +77,7 @@ static PetscErrorCode PCApply_HMPI_1(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_HMPI_MP"
 static PetscErrorCode PCSetUp_HMPI_MP(MPI_Comm comm,void *ctx)
 {
@@ -130,7 +130,7 @@ static PetscErrorCode PCSetUp_HMPI_MP(MPI_Comm comm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_HMPI"
 static PetscErrorCode PCSetUp_HMPI(PC pc)
 {
@@ -158,13 +158,13 @@ static PetscErrorCode PCSetUp_HMPI(PC pc)
     pc->ops->apply = PCApply_HMPI_1;
     PetscFunctionReturn(0);
   } else {
-    ierr = MatGetSize(pc->mat,&red->n,PETSC_IGNORE);CHKERRQ(ierr); 
+    ierr = MatGetSize(pc->mat,&red->n,PETSC_IGNORE);CHKERRQ(ierr);
     ierr = PetscHMPIRun(red->comm,PCSetUp_HMPI_MP,red);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_HMPI_MP"
 static PetscErrorCode PCApply_HMPI_MP(MPI_Comm comm,void *ctx)
 {
@@ -188,7 +188,7 @@ static PetscErrorCode PCApply_HMPI_MP(MPI_Comm comm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_HMPI"
 static PetscErrorCode PCApply_HMPI(PC pc,Vec x,Vec y)
 {
@@ -203,7 +203,7 @@ static PetscErrorCode PCApply_HMPI(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_HMPI_MP"
 static PetscErrorCode PCDestroy_HMPI_MP(MPI_Comm comm,void *ctx)
 {
@@ -225,7 +225,7 @@ static PetscErrorCode PCDestroy_HMPI_MP(MPI_Comm comm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_HMPI"
 static PetscErrorCode PCDestroy_HMPI(PC pc)
 {
@@ -238,7 +238,7 @@ static PetscErrorCode PCDestroy_HMPI(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_HMPI"
 static PetscErrorCode PCSetFromOptions_HMPI(PC pc)
 {
@@ -270,7 +270,7 @@ $     -hmpi_pc_type hypre -hmpi_pc_hypre_type boomeramg
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_HMPI"
 PetscErrorCode  PCCreate_HMPI(PC pc)
 {

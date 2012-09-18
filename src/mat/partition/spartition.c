@@ -10,8 +10,8 @@ extern PetscErrorCode  MatPartitioningCreate_Party(MatPartitioning);
 extern PetscErrorCode  MatPartitioningCreate_PTScotch(MatPartitioning);
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningRegisterAll" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningRegisterAll"
 /*@C
   MatPartitioningRegisterAll - Registers all of the matrix Partitioning routines in PETSc.
 
@@ -20,8 +20,8 @@ EXTERN_C_END
   Level: developer
 
   Adding new methods:
-  To add a new method to the registry. Copy this routine and 
-  modify it to incorporate a call to MatPartitioningRegisterDynamic() for 
+  To add a new method to the registry. Copy this routine and
+  modify it to incorporate a call to MatPartitioningRegisterDynamic() for
   the new method, after the current list.
 
   Restricting the choices: To prevent all of the methods from being

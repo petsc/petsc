@@ -8,18 +8,18 @@
 
 #define SWAP(a,b) {PetscInt _t; _t = a; a = b; b = _t; }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatReorderForNonzeroDiagonal"
 /*@
     MatReorderForNonzeroDiagonal - Changes matrix ordering to remove
-    zeros from diagonal. This may help in the LU factorization to 
+    zeros from diagonal. This may help in the LU factorization to
     prevent a zero pivot.
 
     Collective on Mat
 
     Input Parameters:
 +   mat  - matrix to reorder
--   rmap,cmap - row and column permutations.  Usually obtained from 
+-   rmap,cmap - row and column permutations.  Usually obtained from
                MatGetOrdering().
 
     Level: intermediate
@@ -27,7 +27,7 @@
     Notes:
     This is not intended as a replacement for pivoting for matrices that
     have ``bad'' structure. It is only a stop-gap measure. Should be called
-    after a call to MatGetOrdering(), this routine changes the column 
+    after a call to MatGetOrdering(), this routine changes the column
     ordering defined in cis.
 
     Only works for SeqAIJ matrices
@@ -36,16 +36,16 @@
 .      -pc_factor_nonzeros_along_diagonal
 
     Algorithm Notes:
-    Column pivoting is used. 
+    Column pivoting is used.
 
     1) Choice of column is made by looking at the
-       non-zero elements in the troublesome row for columns that are not yet 
+       non-zero elements in the troublesome row for columns that are not yet
        included (moving from left to right).
- 
+
     2) If (1) fails we check all the columns to the left of the current row
        and see if one of them has could be swapped. It can be swapped if
-       its corresponding row has a non-zero in the column it is being 
-       swapped with; to make sure the previous nonzero diagonal remains 
+       its corresponding row has a non-zero in the column it is being
+       swapped with; to make sure the previous nonzero diagonal remains
        nonzero
 
 
@@ -65,7 +65,7 @@ extern PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,Pet
 #include <../src/vec/is/impls/general/general.h>
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatReorderForNonzeroDiagonal_SeqAIJ"
 PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal abstol,IS ris,IS cis)
 {
@@ -95,16 +95,16 @@ PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal abstol,IS 
       for (k=0; k<nz; k++) {
 	if (icol[j[k]] > prow && PetscAbsScalar(v[k]) > repla) {
           /* found a suitable later column */
-	  repl  = icol[j[k]];   
-          SWAP(icol[col[prow]],icol[col[repl]]); 
-          SWAP(col[prow],col[repl]); 
+	  repl  = icol[j[k]];
+          SWAP(icol[col[prow]],icol[col[repl]]);
+          SWAP(col[prow],col[repl]);
           goto found;
         }
       }
-      /* 
+      /*
            Did not find a suitable later column so look for an earlier column
 	   We need to be sure that we don't introduce a zero in a previous
-	   diagonal 
+	   diagonal
       */
       for (k=0; k<nz; k++) {
         if (icol[j[k]] < prow && PetscAbsScalar(v[k]) > repla) {
@@ -114,17 +114,17 @@ PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal abstol,IS 
           for (kk=0; kk<nnz; kk++) {
             if (icol[jj[kk]] == prow && PetscAbsScalar(vv[kk]) > abstol) {
               ierr = MatRestoreRow_SeqAIJ(mat,row[repl],&nnz,&jj,&vv);CHKERRQ(ierr);
-              SWAP(icol[col[prow]],icol[col[repl]]); 
-              SWAP(col[prow],col[repl]); 
+              SWAP(icol[col[prow]],icol[col[repl]]);
+              SWAP(col[prow],col[repl]);
               goto found;
 	    }
           }
           ierr = MatRestoreRow_SeqAIJ(mat,row[repl],&nnz,&jj,&vv);CHKERRQ(ierr);
         }
       }
-      /* 
-          No column  suitable; instead check all future rows 
-          Note: this will be very slow 
+      /*
+          No column  suitable; instead check all future rows
+          Note: this will be very slow
       */
       for (k=prow+1; k<n; k++) {
         ierr = MatGetRow_SeqAIJ(mat,row[k],&nnz,&jj,&vv);CHKERRQ(ierr);

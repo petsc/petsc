@@ -28,7 +28,7 @@ PetscErrorCode MatView_SeqAIJ_Inode(Mat A,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"not using I-node routines\n");CHKERRQ(ierr);
       }
     }
-  } 
+  }
   PetscFunctionReturn(0);
 }
 

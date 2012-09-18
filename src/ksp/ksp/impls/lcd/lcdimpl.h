@@ -1,8 +1,8 @@
 
-/*  
-    Private Krylov Context Structure (KSP) for LCD 
+/*
+    Private Krylov Context Structure (KSP) for LCD
 
-    This one is very simple. It contains a flag indicating the symmetry 
+    This one is very simple. It contains a flag indicating the symmetry
    structure of the matrix and work space for (optionally) computing
    eigenvalues.
 

@@ -456,7 +456,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   /* apply conformal mappings */
   map_id = 0;
   ierr = PetscOptionsGetInt( PETSC_NULL,"-cmap", &map_id,PETSC_NULL ); CHKERRQ(ierr);
-  if( map_id >= 1 ) {
+  if (map_id >= 1) {
     ierr = DAApplyConformalMapping(dac,map_id);CHKERRQ(ierr);
   }
   
@@ -559,7 +559,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   /* apply conformal mappings */
   map_id = 0;
   ierr = PetscOptionsGetInt( PETSC_NULL,"-cmap", &map_id,PETSC_NULL ); CHKERRQ(ierr);
-  if( map_id >= 1 ) {
+  if (map_id >= 1) {
     ierr = DAApplyConformalMapping(dac,map_id);CHKERRQ(ierr);
   }
   

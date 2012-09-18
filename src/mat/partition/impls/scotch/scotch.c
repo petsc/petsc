@@ -44,8 +44,8 @@ PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning part,PetscRea
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningPTScotchSetImbalance_PTScotch" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningPTScotchSetImbalance_PTScotch"
 PetscErrorCode MatPartitioningPTScotchSetImbalance_PTScotch(MatPartitioning part,PetscReal imb)
 {
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch*)part->data;
@@ -90,8 +90,8 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning part,PetscRea
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningPTScotchGetImbalance_PTScotch" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningPTScotchGetImbalance_PTScotch"
 PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part,PetscReal *imb)
 {
   MatPartitioning_PTScotch *scotch = (MatPartitioning_PTScotch*)part->data;
@@ -102,7 +102,7 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPTScotchSetStrategy"
 /*@
    MatPartitioningPTScotchSetStrategy - Sets the strategy to be used in PTScotch.
@@ -121,8 +121,8 @@ EXTERN_C_END
 .ve
 
    Options Database:
-.  -mat_partitioning_ptscotch_strategy [quality,speed,balance,safety,scalability] - strategy 
- 
+.  -mat_partitioning_ptscotch_strategy [quality,speed,balance,safety,scalability] - strategy
+
    Level: advanced
 
    Notes:
@@ -142,7 +142,7 @@ PetscErrorCode MatPartitioningPTScotchSetStrategy(MatPartitioning part,MPPTScotc
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPTScotchSetStrategy_PTScotch"
 PetscErrorCode MatPartitioningPTScotchSetStrategy_PTScotch(MatPartitioning part,MPPTScotchStrategyType strategy)
 {
@@ -160,7 +160,7 @@ PetscErrorCode MatPartitioningPTScotchSetStrategy_PTScotch(MatPartitioning part,
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPTScotchGetStrategy"
 /*@
    MatPartitioningPTScotchGetStrategy - Gets the strategy used in PTScotch.
@@ -172,7 +172,7 @@ EXTERN_C_END
 
    Output Parameter:
 .  strategy - the strategy
- 
+
    Level: advanced
 
 .seealso: MatPartitioningPTScotchSetStrategy()
@@ -189,7 +189,7 @@ PetscErrorCode MatPartitioningPTScotchGetStrategy(MatPartitioning part,MPPTScotc
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPTScotchGetStrategy_PTScotch"
 PetscErrorCode MatPartitioningPTScotchGetStrategy_PTScotch(MatPartitioning part,MPPTScotchStrategyType *strategy)
 {
@@ -215,7 +215,7 @@ PetscErrorCode MatPartitioningView_PTScotch(MatPartitioning part, PetscViewer vi
   PetscErrorCode           ierr;
   PetscBool                isascii;
   const char               *str=0;
-  
+
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
@@ -276,7 +276,7 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
   ierr = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (!flg) {
-    /* bs indicates if the converted matrix is "reduced" from the original and hence the 
+    /* bs indicates if the converted matrix is "reduced" from the original and hence the
        resulting partition results need to be stretched to match the original matrix */
     nold = mat->rmap->n;
     ierr = MatConvert(mat,MATMPIADJ,MAT_INITIAL_MATRIX,&mat);CHKERRQ(ierr);

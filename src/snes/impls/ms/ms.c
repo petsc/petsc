@@ -438,7 +438,7 @@ static PetscErrorCode SNESSetFromOptions_MS(SNES snes)
     const char **namelist;
     char mstype[256];
 
-    ierr = PetscStrncpy(mstype,SNESMSDefault,sizeof mstype);CHKERRQ(ierr);
+    ierr = PetscStrncpy(mstype,SNESMSDefault,sizeof(mstype));CHKERRQ(ierr);
     for (link=SNESMSTableauList,count=0; link; link=link->next,count++) ;
     ierr = PetscMalloc(count*sizeof(char*),&namelist);CHKERRQ(ierr);
     for (link=SNESMSTableauList,count=0; link; link=link->next,count++) namelist[count] = link->tab.name;

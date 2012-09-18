@@ -8,7 +8,7 @@
 !
       PetscEnum PC_LEFT
       PetscEnum PC_RIGHT
-      PetscEnum PC_SYMMETRIC 
+      PetscEnum PC_SYMMETRIC
       parameter (PC_LEFT=0,PC_RIGHT=1,PC_SYMMETRIC=2)
 
       PetscEnum USE_PRECONDITIONER_MATRIX

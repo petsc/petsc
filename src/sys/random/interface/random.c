@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomGetValue"
 /*@
    PetscRandomGetValue - Generates a random number.  Call this after first calling
@@ -39,8 +39,8 @@
    When PETSc is compiled for complex numbers this returns a complex number with random real and complex parts.
    Use PetscGetValueReal() to get a random real number.
 
-   To get a complex number with only a random real part, first call PetscRandomSetInterval() with a equal 
-   low and high imaginary part. Similarly to get a complex number with only a random imaginary part call 
+   To get a complex number with only a random real part, first call PetscRandomSetInterval() with a equal
+   low and high imaginary part. Similarly to get a complex number with only a random imaginary part call
    PetscRandomSetInterval() with a equal low and high real part.
 
    Example of Usage:
@@ -70,7 +70,7 @@ PetscErrorCode  PetscRandomGetValue(PetscRandom r,PetscScalar *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomGetValueReal"
 /*@
    PetscRandomGetValueReal - Generates a purely real random number.  Call this after first calling
@@ -116,7 +116,7 @@ PetscErrorCode  PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomGetInterval"
 /*@
    PetscRandomGetInterval - Gets the interval over which the random numbers
@@ -152,7 +152,7 @@ PetscErrorCode  PetscRandomGetInterval(PetscRandom r,PetscScalar *low,PetscScala
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRandomSetInterval"
 /*@
    PetscRandomSetInterval - Sets the interval over which the random numbers

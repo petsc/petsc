@@ -2,7 +2,7 @@
 
 typedef struct {PetscErrorCode (*solve)(SNES,Vec);void *ctx;} SNES_Shell;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESShellSetSolve"
 /*@C
    SNESShellSetSolve - Sets routine to apply as solver
@@ -72,7 +72,7 @@ PetscErrorCode SNESSetUp_Shell(SNES snes)
 PetscErrorCode SNESSetFromOptions_Shell(SNES snes)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES Shell options");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -86,7 +86,7 @@ PetscErrorCode SNESView_Shell(SNES snes, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESShellGetContext"
 /*@
     SNESShellGetContext - Returns the user-provided context associated with a shell SNES
@@ -103,7 +103,7 @@ PetscErrorCode SNESView_Shell(SNES snes, PetscViewer viewer)
 
     Notes:
     This routine is intended for use within various shell routines
-    
+
 .keywords: SNES, shell, get, context
 
 .seealso: SNESCreateShell(), SNESShellSetContext()
@@ -115,14 +115,14 @@ PetscErrorCode  SNESShellGetContext(SNES snes,void **ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(ctx,2); 
+  PetscValidPointer(ctx,2);
   ierr = PetscObjectTypeCompare((PetscObject)snes,SNESSHELL,&flg);CHKERRQ(ierr);
-  if (!flg) *ctx = 0; 
-  else      *ctx = ((SNES_Shell*)(snes->data))->ctx; 
+  if (!flg) *ctx = 0;
+  else      *ctx = ((SNES_Shell*)(snes->data))->ctx;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESShellSetContext"
 /*@
     SNESShellSetContext - sets the context for a shell SNES
@@ -171,7 +171,7 @@ PetscErrorCode SNESSolve_Shell(SNES snes)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESShellSetSolve_Shell"
 PetscErrorCode  SNESShellSetSolve_Shell(SNES snes,PetscErrorCode (*solve)(SNES,Vec))
 {
@@ -184,7 +184,7 @@ PetscErrorCode  SNESShellSetSolve_Shell(SNES snes,PetscErrorCode (*solve)(SNES,V
 EXTERN_C_END
 
 /*MC
-  SNESSHELL - a user provided nonlinear solver 
+  SNESSHELL - a user provided nonlinear solver
 
    Level: advanced
 

@@ -11,7 +11,7 @@
 
 /*
    Defines the directory where the compiled source is located; used
-   in printing error messages. Each makefile has an entry 
+   in printing error messages. Each makefile has an entry
    LOCDIR	  =  thedirectory
    and bmake/common_variables includes in CCPPFLAGS -D__SDIR__=${LOCDIR}
    which is a flag passed to the C/C++ compilers. This declaration below
@@ -22,7 +22,7 @@
 #endif
 
 /*
-   Defines the function where the compiled source is located; used 
+   Defines the function where the compiled source is located; used
    in printing error messages. This is defined here in case the user
    does not declare it.
 */
@@ -30,7 +30,7 @@
 #define __FUNCT__ "User provided function"
 #endif
 
-/* 
+/*
      These are the generic error codes. These error codes are used
      many different places in the PETSc source code. The string versions are
      at src/sys/error/err.c any changes here must also be made there
@@ -90,7 +90,7 @@
 #if defined(PETSC_USE_ERRORCHECKING)
 
 /*MC
-   SETERRQ - Macro that is called when an error has been detected, 
+   SETERRQ - Macro that is called when an error has been detected,
 
    Synopsis:
    PetscErrorCode SETERRQ(MPI_Comm comm,PetscErrorCode errorcode,char *message)
@@ -119,7 +119,7 @@ M*/
 #define SETERRQ(comm,n,s)              return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s)
 
 /*MC
-   SETERRQ1 - Macro that is called when an error has been detected, 
+   SETERRQ1 - Macro that is called when an error has been detected,
 
    Synopsis:
    PetscErrorCode SETERRQ1(MPI_Comm comm,PetscErrorCode errorcode,char *formatmessage,arg)
@@ -145,7 +145,7 @@ M*/
 #define SETERRQ1(comm,n,s,a1)          return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1)
 
 /*MC
-   SETERRQ2 - Macro that is called when an error has been detected, 
+   SETERRQ2 - Macro that is called when an error has been detected,
 
    Synopsis:
    PetscErrorCode SETERRQ2(PetscErrorCode errorcode,char *formatmessage,arg1,arg2)
@@ -172,7 +172,7 @@ M*/
 #define SETERRQ2(comm,n,s,a1,a2)       return PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,n,PETSC_ERROR_INITIAL,s,a1,a2)
 
 /*MC
-   SETERRQ3 - Macro that is called when an error has been detected, 
+   SETERRQ3 - Macro that is called when an error has been detected,
 
    Synopsis:
    PetscErrorCode SETERRQ3(PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
@@ -233,7 +233,7 @@ M*/
     highly inappropriate to use it in this manner as it invokes return(PetscErrorCode). In particular,
     it cannot be used in functions which return(void) or any other datatype.  In these types of functions,
     you can use CHKERRV() which returns without an error code (bad idea since the error is ignored or
-         if (n) {PetscError(....); return(YourReturnType);} 
+         if (n) {PetscError(....); return(YourReturnType);}
     where you may pass back a PETSC_NULL to indicate an error. You can also call CHKERRABORT(comm,n) to have
     MPI_Abort() returned immediately.
 
@@ -299,7 +299,7 @@ M*/
 
    Concepts: memory corruption
 
-.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(),
           PetscMallocValidate()
 M*/
 #define CHKMEMQ do {PetscErrorCode _7_ierr = PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__);CHKERRQ(_7_ierr);} while(0)
@@ -308,20 +308,20 @@ M*/
 
 #else /* PETSC_USE_ERRORCHECKING */
 
-/* 
+/*
     These are defined to be empty for when error checking is turned off, with ./configure --with-errorchecking=0
 */
 
-#define SETERRQ(c,n,s) 
-#define SETERRQ1(c,n,s,a1) 
-#define SETERRQ2(c,n,s,a1,a2) 
-#define SETERRQ3(c,n,s,a1,a2,a3) 
-#define SETERRQ4(c,n,s,a1,a2,a3,a4) 
-#define SETERRQ5(c,n,s,a1,a2,a3,a4,a5) 
-#define SETERRQ6(c,n,s,a1,a2,a3,a4,a5,a6) 
-#define SETERRQ7(c,n,s,a1,a2,a3,a4,a5,a6,a7) 
-#define SETERRQ8(c,n,s,a1,a2,a3,a4,a5,a6,a7,a8) 
-#define SETERRABORT(comm,n,s) 
+#define SETERRQ(c,n,s)
+#define SETERRQ1(c,n,s,a1)
+#define SETERRQ2(c,n,s,a1,a2)
+#define SETERRQ3(c,n,s,a1,a2,a3)
+#define SETERRQ4(c,n,s,a1,a2,a3,a4)
+#define SETERRQ5(c,n,s,a1,a2,a3,a4,a5)
+#define SETERRQ6(c,n,s,a1,a2,a3,a4,a5,a6)
+#define SETERRQ7(c,n,s,a1,a2,a3,a4,a5,a6,a7)
+#define SETERRQ8(c,n,s,a1,a2,a3,a4,a5,a6,a7,a8)
+#define SETERRABORT(comm,n,s)
 
 #define CHKERRQ(n)     ;
 #define CHKERRABORT(comm,n) ;
@@ -545,7 +545,7 @@ M*/
     return;} while (0)
 #else
 
-#define PetscFunctionBegin 
+#define PetscFunctionBegin
 #define PetscFunctionReturn(a)  return(a)
 #define PetscFunctionReturnVoid() return
 #define PetscStackPop     CHKMEMQ

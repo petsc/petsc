@@ -44,7 +44,7 @@
 //    Create section on interface (uses previous sizer)
 //    Communicate values on interface (uses custom filler)
 //      Same stuff as above
-//    
+//
 // 4) Update new section with old local values (can be done in between the communication?)
 //    Loop over patches in new topology
 //      Loop over chart from patch in old atlas
@@ -362,7 +362,7 @@ namespace ALE {
         for(std::set<std::string>::const_iterator n_iter = names->begin(); n_iter != names->end(); ++n_iter) {
           const Obj<typename Mesh::int_section_type>& section    = mesh->getIntSection(*n_iter);
           const Obj<typename Mesh::int_section_type>& newSection = newMesh->getIntSection(*n_iter);
-          
+
           // We assume all integer sections are complete sections
           newSection->setChart(newMesh->getSieve()->getChart());
           distributeSection(section, partition, renumbering, sendMeshOverlap, recvMeshOverlap, newSection);

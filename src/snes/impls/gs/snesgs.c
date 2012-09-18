@@ -161,7 +161,7 @@ PetscErrorCode SNESSolve_GS(SNES snes)
   if (normtype == SNES_NORM_FUNCTION) {
     if (i == snes->max_its) {
       ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",snes->max_its);CHKERRQ(ierr);
-      if(!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
+      if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
     }
   } else {
     if (!snes->reason) snes->reason = SNES_CONVERGED_ITS; /* GS is meant to be used as a preconditioner */

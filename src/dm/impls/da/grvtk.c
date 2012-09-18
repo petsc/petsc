@@ -160,7 +160,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
         const char *fieldname;
         ierr = DMDAGetFieldName(da,i,&fieldname);CHKERRQ(ierr);
         if (!fieldname) {
-          ierr = PetscSNPrintf(buf,sizeof buf,"Unnamed%D",i);CHKERRQ(ierr);
+          ierr = PetscSNPrintf(buf,sizeof(buf),"Unnamed%D",i);CHKERRQ(ierr);
           fieldname = buf;
         }
         ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,boffset);CHKERRQ(ierr);

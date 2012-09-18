@@ -1092,7 +1092,7 @@ namespace ALE {
         while(current->size()) {
           for(typename Sieve::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
             const Obj<typename Sieve::traits::coneSequence>& cone = sieve->cone(*p_iter);
-            
+
             for(typename Sieve::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
               localSieve->addArrow(renumbering[*c_iter], renumbering[*p_iter], c_iter.color());
               next->insert(*c_iter);
@@ -1106,7 +1106,7 @@ namespace ALE {
           while(current->size()) {
             for(typename Sieve::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
               const Obj<typename Sieve::traits::supportSequence>& support = sieve->support(*p_iter);
-            
+
               for(typename Sieve::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
                 localSieve->addArrow(renumbering[*p_iter], renumbering[*s_iter], s_iter.color());
                 next->insert(*s_iter);
@@ -1297,7 +1297,7 @@ namespace ALE {
           while(current->size()) {
             for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
               const Obj<typename Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*p_iter);
-            
+
               for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
                 closure.insert(*c_iter);
                 next->insert(*c_iter);
@@ -1311,7 +1311,7 @@ namespace ALE {
             while(current->size()) {
               for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
                 const Obj<typename Mesh::sieve_type::traits::supportSequence>& support = sieve->support(*p_iter);
-            
+
                 for(typename Mesh::sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
                   closure.insert(*s_iter);
                   next->insert(*s_iter);
@@ -1344,7 +1344,7 @@ namespace ALE {
           while(current->size()) {
             for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
               const Obj<typename Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*p_iter);
-            
+
               for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
                 closure.insert(*c_iter);
                 next->insert(*c_iter);
@@ -1358,7 +1358,7 @@ namespace ALE {
             while(current->size()) {
               for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
                 const Obj<typename Mesh::sieve_type::traits::supportSequence>& support = sieve->support(*p_iter);
-            
+
                 for(typename Mesh::sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
                   closure.insert(*s_iter);
                   next->insert(*s_iter);

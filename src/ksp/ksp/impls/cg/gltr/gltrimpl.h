@@ -20,7 +20,7 @@
 
 typedef struct {
   PetscReal *diag;		/* Diagonal part of Lanczos matrix           */
-  PetscReal *offd;		/* Off-diagonal part of Lanczos matrix       */ 
+  PetscReal *offd;		/* Off-diagonal part of Lanczos matrix       */
   PetscReal *alpha;		/* Record of alpha values from CG            */
   PetscReal *beta;		/* Record of beta values from CG             */
   PetscReal *norm_r;		/* Record of residual values from CG         */

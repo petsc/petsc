@@ -86,7 +86,7 @@ PetscErrorCode KSPMonitorAMSDestroy(void **ctx)
    Input Parameters:
 +  ksp   - iterative context
 .  n     - iteration number
-.  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
+.  rnorm - 2-norm (preconditioned) residual value (may be estimated).
 -  ctx -  PetscViewer of type AMS
 
    Level: advanced

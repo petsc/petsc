@@ -1,4 +1,4 @@
-/* 
+/*
    Private data structure for ILU preconditioner.
 */
 #if !defined(__ILU_H)

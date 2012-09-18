@@ -14,7 +14,7 @@
 #define TSAdaptType character*(80)
 #define TSConvergedReason PetscEnum
 #define TSSundialsType PetscEnum
-#define TSProblemType PetscEnum 
+#define TSProblemType PetscEnum
 #define TSSundialsGramSchmidtType PetscEnum
 #define TSSundialsLmmType PetscEnum
 

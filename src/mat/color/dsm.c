@@ -4,8 +4,8 @@
 
 static PetscInt c_n1 = -1;
 
-#undef __FUNCT__  
-#define __FUNCT__ "MINPACKdsm" 
+#undef __FUNCT__
+#define __FUNCT__ "MINPACKdsm"
 PetscErrorCode MINPACKdsm(PetscInt *m,PetscInt *n,PetscInt *npairs,PetscInt *indrow,PetscInt *indcol,PetscInt *ngrp,PetscInt *maxgrp,
                           PetscInt *mingrp,PetscInt *info,PetscInt *ipntr,PetscInt *jpntr,PetscInt *iwa,PetscInt *liwa)
 {
@@ -133,7 +133,7 @@ PetscErrorCode MINPACKdsm(PetscInt *m,PetscInt *n,PetscInt *npairs,PetscInt *ind
 /*     with the incidence-degree (ID) ordering. */
 
     MINPACKido(m,n,&indrow[1],&jpntr[1],&indcol[1],&ipntr[1],&iwa[*n * 5 + 1],
-	     &iwa[(*n << 2) + 1],&maxclq,&iwa[1],&iwa[*n + 1],&iwa[(*n << 
+	     &iwa[(*n << 2) + 1],&maxclq,&iwa[1],&iwa[*n + 1],&iwa[(*n <<
 	    1) + 1],&iwa[*n * 3 + 1]);
     MINPACKseq(n,&indrow[1],&jpntr[1],&indcol[1],&ipntr[1],&iwa[(*n << 2) + 1],
 	     &iwa[1],&numgrp,&iwa[*n + 1]);
@@ -159,7 +159,7 @@ PetscErrorCode MINPACKdsm(PetscInt *m,PetscInt *n,PetscInt *npairs,PetscInt *ind
 /*     with the largest-first (LF) ordering. */
 
     i__1 = *n - 1;
-    MINPACKnumsrt(n,&i__1,&iwa[*n * 5 + 1],&c_n1,&iwa[(*n << 2) + 1],&iwa[(*n 
+    MINPACKnumsrt(n,&i__1,&iwa[*n * 5 + 1],&c_n1,&iwa[(*n << 2) + 1],&iwa[(*n
 	    << 1) + 1],&iwa[*n + 1]);
     MINPACKseq(n,&indrow[1],&jpntr[1],&indcol[1],&ipntr[1],&iwa[(*n << 2) + 1],
 	     &iwa[1],&numgrp,&iwa[*n + 1]);

@@ -1,4 +1,4 @@
- 
+
 #include <../src/snes/impls/tr/trimpl.h>                /*I   "petscsnes.h"   I*/
 
 typedef struct {
@@ -7,10 +7,10 @@ typedef struct {
 } SNES_TR_KSPConverged_Ctx;
 
 /*
-   This convergence test determines if the two norm of the 
+   This convergence test determines if the two norm of the
    solution lies outside the trust region, if so it halts.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNES_TR_KSPConverged_Private"
 PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *cctx)
 {
@@ -36,7 +36,7 @@ PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,K
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNES_TR_KSPConverged_Destroy"
 PetscErrorCode SNES_TR_KSPConverged_Destroy(void *cctx)
 {
@@ -50,10 +50,10 @@ PetscErrorCode SNES_TR_KSPConverged_Destroy(void *cctx)
 }
 
 /* ---------------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNES_TR_Converged_Private"
 /*
-   SNES_TR_Converged_Private -test convergence JUST for 
+   SNES_TR_Converged_Private -test convergence JUST for
    the trust region tolerance.
 
 */
@@ -76,12 +76,12 @@ static PetscErrorCode SNES_TR_Converged_Private(SNES snes,PetscInt it,PetscReal 
 
 
 /*
-   SNESSolve_TR - Implements Newton's Method with a very simple trust 
-   region approach for solving systems of nonlinear equations. 
+   SNESSolve_TR - Implements Newton's Method with a very simple trust
+   region approach for solving systems of nonlinear equations.
 
- 
+
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSolve_TR"
 static PetscErrorCode SNESSolve_TR(SNES snes)
 {
@@ -131,7 +131,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  delta = neP->delta0*fnorm;         
+  delta = neP->delta0*fnorm;
   neP->delta = delta;
   SNESLogConvHistory(snes,fnorm,0);
   ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
@@ -153,7 +153,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
     ierr = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,ctx,SNES_TR_KSPConverged_Destroy);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Using Krylov convergence test SNES_TR_KSPConverged_Private\n");CHKERRQ(ierr);
   }
- 
+
   for (i=0; i<maxits; i++) {
 
     /* Call general purpose update function */
@@ -193,7 +193,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
       ierr = SNESComputeFunction(snes,Y,G);CHKERRQ(ierr); /*  F(X) */
       ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);      /* gnorm <- || g || */
       if (fnorm == gpnorm) rho = 0.0;
-      else rho = (fnorm*fnorm - gnorm*gnorm)/(fnorm*fnorm - gpnorm*gpnorm); 
+      else rho = (fnorm*fnorm - gnorm*gnorm)/(fnorm*fnorm - gpnorm*gpnorm);
 
       /* Update size of trust region */
       if      (rho < neP->mu)  delta *= neP->delta1;
@@ -247,7 +247,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetUp_TR"
 static PetscErrorCode SNESSetUp_TR(SNES snes)
 {
@@ -268,7 +268,7 @@ PetscErrorCode SNESReset_TR(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESDestroy_TR"
 static PetscErrorCode SNESDestroy_TR(SNES snes)
 {
@@ -281,7 +281,7 @@ static PetscErrorCode SNESDestroy_TR(SNES snes)
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_TR"
 static PetscErrorCode SNESSetFromOptions_TR(SNES snes)
 {
@@ -302,7 +302,7 @@ static PetscErrorCode SNESSetFromOptions_TR(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESView_TR"
 static PetscErrorCode SNESView_TR(SNES snes,PetscViewer viewer)
 {
@@ -332,13 +332,13 @@ static PetscErrorCode SNESView_TR(SNES snes,PetscViewer viewer)
 .    -snes_tr_delta2 <delta2>
 -    -snes_tr_delta3 <delta3>
 
-   The basic algorithm is taken from "The Minpack Project", by More', 
-   Sorensen, Garbow, Hillstrom, pages 88-111 of "Sources and Development 
+   The basic algorithm is taken from "The Minpack Project", by More',
+   Sorensen, Garbow, Hillstrom, pages 88-111 of "Sources and Development
    of Mathematical Software", Wayne Cowell, editor.
 
-   This is intended as a model implementation, since it does not 
-   necessarily have many of the bells and whistles of other 
-   implementations.  
+   This is intended as a model implementation, since it does not
+   necessarily have many of the bells and whistles of other
+   implementations.
 
    Level: intermediate
 
@@ -346,7 +346,7 @@ static PetscErrorCode SNESView_TR(SNES snes,PetscViewer viewer)
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESCreate_TR"
 PetscErrorCode  SNESCreate_TR(SNES snes)
 {

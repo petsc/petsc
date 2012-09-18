@@ -4,17 +4,17 @@
 */
 #include <petscsys.h>  /*I   "petscsys.h"    I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectStateQuery"
 /*@C
-   PetscObjectStateQuery - Gets the state of any PetscObject, 
+   PetscObjectStateQuery - Gets the state of any PetscObject,
    regardless of the type.
 
    Not Collective
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
-         cast with a (PetscObject), for example, 
+         cast with a (PetscObject), for example,
          PetscObjectStateQuery((PetscObject)mat,&state);
 
    Output Parameter:
@@ -41,23 +41,23 @@ PetscErrorCode  PetscObjectStateQuery(PetscObject obj,PetscInt *state)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectSetState"
 /*@C
-   PetscObjectSetState - Sets the state of any PetscObject, 
+   PetscObjectSetState - Sets the state of any PetscObject,
    regardless of the type.
 
    Not Collective
 
    Input Parameter:
 +  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
-         cast with a (PetscObject), for example, 
+         cast with a (PetscObject), for example,
          PetscObjectSetState((PetscObject)mat,state);
 -  state - the object state
 
-   Notes: This function should be used with extreme caution. There is 
+   Notes: This function should be used with extreme caution. There is
    essentially only one use for it: if the user calls Mat(Vec)GetRow(Array),
-   which increases the state, but does not alter the data, then this 
+   which increases the state, but does not alter the data, then this
    routine can be used to reset the state.
 
    Level: advanced
@@ -77,10 +77,10 @@ PetscErrorCode  PetscObjectSetState(PetscObject obj,PetscInt state)
 
 PetscInt  PetscObjectComposedDataMax = 10;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposedDataRegister"
 /*@C
-   PetscObjectComposedDataRegister - Get an available id for 
+   PetscObjectComposedDataRegister - Get an available id for
    composed data
 
    Not Collective
@@ -103,7 +103,7 @@ PetscErrorCode  PetscObjectComposedDataRegister(PetscInt *id)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposedDataIncreaseInt"
 PetscErrorCode  PetscObjectComposedDataIncreaseInt(PetscObject obj)
 {
@@ -129,7 +129,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseInt(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposedDataIncreaseIntstar"
 PetscErrorCode  PetscObjectComposedDataIncreaseIntstar(PetscObject obj)
 {
@@ -155,7 +155,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseIntstar(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposedDataIncreaseReal"
 PetscErrorCode  PetscObjectComposedDataIncreaseReal(PetscObject obj)
 {
@@ -181,7 +181,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseReal(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposedDataIncreaseRealstar"
 PetscErrorCode  PetscObjectComposedDataIncreaseRealstar(PetscObject obj)
 {
@@ -207,7 +207,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseRealstar(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposedDataIncreaseScalar"
 PetscErrorCode  PetscObjectComposedDataIncreaseScalar(PetscObject obj)
 {
@@ -233,7 +233,7 @@ PetscErrorCode  PetscObjectComposedDataIncreaseScalar(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposedDataIncreaseScalarStar"
 PetscErrorCode  PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
 {

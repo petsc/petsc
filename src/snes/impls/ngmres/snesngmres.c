@@ -299,7 +299,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       }
     }
 
-    if(l == 1) {
+    if (l == 1) {
       /* simply set alpha[0] = beta[0] / H[0, 0] */
       if (H(0, 0) != 0.) {
         beta[0] = beta[0] / H(0, 0);
@@ -379,7 +379,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
         dminnorm = -1.0;
         ierr=VecCopy(XA, D);CHKERRQ(ierr);
         ierr=VecAXPY(D, -1.0, XM);CHKERRQ(ierr);
-        for(i=0;i<l;i++) {
+        for (i=0;i<l;i++) {
           ierr=VecAXPY(Xdot[i],-1.0,XA);CHKERRQ(ierr);
         }
         ierr = VecNormBegin(FA, NORM_2, &fAnorm);CHKERRQ(ierr);
@@ -392,7 +392,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
         for (i=0;i<l;i++) {
           ierr = VecNormEnd(Xdot[i], NORM_2, &ngmres->xnorms[i]);CHKERRQ(ierr);
         }
-        for(i=0;i<l;i++) {
+        for (i=0;i<l;i++) {
           dcurnorm = ngmres->xnorms[i];
           if ((dcurnorm < dminnorm) || (dminnorm < 0.0)) dminnorm = dcurnorm;
           ierr=VecAXPY(Xdot[i],1.0,XA);CHKERRQ(ierr);
@@ -405,11 +405,11 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
         ierr=VecNormEnd(D, NORM_2, &dnorm);CHKERRQ(ierr);
         ierr=VecNormEnd(FA, NORM_2, &fAnorm);CHKERRQ(ierr);
         dminnorm = -1.0;
-        for(i=0;i<l;i++) {
+        for (i=0;i<l;i++) {
           ierr=VecCopy(XA, D);CHKERRQ(ierr);
           ierr=VecAXPY(D, -1.0, Xdot[i]);CHKERRQ(ierr);
           ierr=VecNorm(D, NORM_2, &dcurnorm);CHKERRQ(ierr);
-          if((dcurnorm < dminnorm) || (dminnorm < 0.0)) dminnorm = dcurnorm;
+          if ((dcurnorm < dminnorm) || (dminnorm < 0.0)) dminnorm = dcurnorm;
         }
       }
     } else {
@@ -480,7 +480,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     selectRestart = PETSC_FALSE;
     if (ngmres->restart_type == SNES_NGMRES_RESTART_DIFFERENCE) {
       /* difference stagnation restart */
-      if((ngmres->epsilonB*dnorm > dminnorm) && (PetscSqrtReal(fAnorm) > ngmres->deltaB*PetscSqrtReal(fminnorm))) {
+      if ((ngmres->epsilonB*dnorm > dminnorm) && (PetscSqrtReal(fAnorm) > ngmres->deltaB*PetscSqrtReal(fminnorm))) {
         if (ngmres->monitor) {
           ierr = PetscViewerASCIIPrintf(ngmres->monitor, "difference restart: %e > %e\n", ngmres->epsilonB*dnorm, dminnorm);CHKERRQ(ierr);
         }

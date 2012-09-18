@@ -21,7 +21,7 @@ typedef struct {
 } Mat_USFFT;
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatApply_USFFT_Private"
 PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec x,Vec y)
 {
@@ -40,17 +40,17 @@ PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec
   ierr = VecGetArray(usfft->resample,&r_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!*plan){ /* create a plan then execute it*/
-    if(usfft->dof == 1) {
+    if (usfft->dof == 1) {
 #ifdef PETSC_DEBUG_USFFT
       ierr = PetscPrintf(((PetscObject)A)->comm, "direction = %d, usfft->ndim = %d\n", direction, usfft->ndim);CHKERRQ(ierr);
-      for(int ii = 0; ii < usfft->ndim; ++ii) {
+      for (int ii = 0; ii < usfft->ndim; ++ii) {
         ierr = PetscPrintf(((PetscObject)A)->comm, "usfft->outdim[%d] = %d\n", ii, usfft->outdim[ii]);CHKERRQ(ierr);
       }
-#endif 
+#endif
 
       switch (usfft->dim){
       case 1:
-        *plan = fftw_plan_dft_1d(usfft->outdim[0],(fftw_complex*)x_array,(fftw_complex*)y_array,direction,usfft->p_flag);   
+        *plan = fftw_plan_dft_1d(usfft->outdim[0],(fftw_complex*)x_array,(fftw_complex*)y_array,direction,usfft->p_flag);
         break;
       case 2:
         *plan = fftw_plan_dft_2d(usfft->outdim[0],usfft->outdim[1],(fftw_complex*)x_array,(fftw_complex*)y_array,direction,usfft->p_flag);
@@ -63,16 +63,16 @@ PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec
         break;
       }
       fftw_execute(*plan);
-    }/* if(dof == 1) */
-    else { /* if(dof > 1) */
+    }/* if (dof == 1) */
+    else { /* if (dof > 1) */
       *plan = fftw_plan_many_dft(/*rank*/usfft->ndim, /*n*/usfft->outdim, /*howmany*/usfft->dof,
                                  (fftw_complex*)x_array, /*nembed*/usfft->outdim, /*stride*/usfft->dof, /*dist*/1,
                                  (fftw_complex*)y_array, /*nembed*/usfft->outdim, /*stride*/usfft->dof, /*dist*/1,
-                                 /*sign*/direction, /*flags*/usfft->p_flag); 
+                                 /*sign*/direction, /*flags*/usfft->p_flag);
       fftw_execute(*plan);
-    }/* if(dof > 1) */
-  }/* if(!*plan) */ 
-  else { /* if(*plan) */
+    }/* if (dof > 1) */
+  }/* if (!*plan) */
+  else { /* if (*plan) */
     /* use existing plan */
     fftw_execute_dft(*plan,(fftw_complex*)x_array,(fftw_complex*)y_array);
   }
@@ -83,7 +83,7 @@ PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec
 }/* MatApply_USFFT_Private() */
 
 #if 0
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "Mat_USFFT_BattleLemarie_Private"
 PetscErrorCode Mat_USFFT_ProjectOnBattleLemarie_Private(Vec x,double *r)
 /* Project onto the Battle-Lemarie function centered around r */
@@ -95,7 +95,7 @@ PetscErrorCode Mat_USFFT_ProjectOnBattleLemarie_Private(Vec x,double *r)
   PetscFunctionReturn(0);
 }/* Mat_USFFT_ProjectOnBattleLemarie_Private() */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatInterpolate_USFFT_Private"
 PetscErrorCode MatInterpolate_USFFT_Private(Vec x,Vec y)
 {
@@ -107,7 +107,7 @@ PetscErrorCode MatInterpolate_USFFT_Private(Vec x,Vec y)
 }/* MatInterpolate_USFFT_Private() */
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqUSFFT"
 PetscErrorCode MatMult_SeqUSFFT(Mat A,Vec x,Vec y)
 {
@@ -132,14 +132,14 @@ PetscErrorCode MatMultTranspose_SeqUSFFT(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqUSFFT"
 PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
 {
   Mat_USFFT       *usfft = (Mat_USFFT*)A->data;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;  
+  PetscFunctionBegin;
   fftw_destroy_plan(usfft->p_forward);
   fftw_destroy_plan(usfft->p_backward);
   ierr = PetscFree(usfft->indim);CHKERRQ(ierr);
@@ -150,7 +150,7 @@ PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
 }/* MatDestroy_SeqUSFFT() */
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateSeqUSFFT"
 /*@C
       MatCreateSeqUSFFT - Creates a matrix object that provides sequential USFFT
@@ -168,7 +168,7 @@ PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
 + -mat_usfft_plannerflags - set the FFTW planner flags
 
    Level: intermediate
-   
+
 @*/
 PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat* A)
 {
@@ -185,10 +185,10 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat* A)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)inda, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(comm,PETSC_ERR_USER, "Parallel DMDA (in) not yet supported by USFFT"); 
+  if (size > 1) SETERRQ(comm,PETSC_ERR_USER, "Parallel DMDA (in) not yet supported by USFFT");
   ierr = PetscObjectGetComm((PetscObject)outda, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(comm,PETSC_ERR_USER, "Parallel DMDA (out) not yet supported by USFFT"); 
+  if (size > 1) SETERRQ(comm,PETSC_ERR_USER, "Parallel DMDA (out) not yet supported by USFFT");
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
   ierr = PetscNewLog(*A,Mat_USFFT,&usfft);CHKERRQ(ierr);
   (*A)->data = (void*)usfft;
@@ -201,10 +201,10 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat* A)
   usfft->ndim = ndim;
   usfft->dof = dof;
   usfft->freqDA     = freqDA;
-  /* NB: we reverse the freq and resample DMDA sizes, since the DMDA ordering (natural on x-y-z, with x varying the fastest) 
+  /* NB: we reverse the freq and resample DMDA sizes, since the DMDA ordering (natural on x-y-z, with x varying the fastest)
      is the order opposite of that assumed by FFTW: z varying the fastest */
   ierr = PetscMalloc((usfft->ndim+1)*sizeof(PetscInt),&usfft->indim);CHKERRQ(ierr);
-  for(i = usfft->ndim; i > 0; --i) {
+  for (i = usfft->ndim; i > 0; --i) {
     usfft->indim[usfft->ndim-i] = dim[i-1];
   }
   /* outda */
@@ -212,10 +212,10 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat* A)
   if (ndim != usfft->ndim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"in and out DMDA dimensions must match: %d != %d",usfft->ndim, ndim);
   if (dof != usfft->dof) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"in and out DMDA dof must match: %d != %d",usfft->dof, dof);
   /* Store output dimensions */
-  /* NB: we reverse the DMDA dimensions, since the DMDA ordering (natural on x-y-z, with x varying the fastest) 
+  /* NB: we reverse the DMDA dimensions, since the DMDA ordering (natural on x-y-z, with x varying the fastest)
      is the order opposite of that assumed by FFTW: z varying the fastest */
   ierr = PetscMalloc((usfft->ndim+1)*sizeof(PetscInt),&usfft->outdim);CHKERRQ(ierr);
-  for(i = usfft->ndim; i > 0; --i) {
+  for (i = usfft->ndim; i > 0; --i) {
     usfft->outdim[usfft->ndim-i] = dim[i-1];
   }
 

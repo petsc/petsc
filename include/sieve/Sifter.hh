@@ -35,11 +35,11 @@ namespace ALE {
         typedef int                                    difference_type;
         typedef value_type*                            pointer;
         typedef value_type&                            reference;
-        
+
         // Underlying iterator type
         typedef typename index_type::iterator          itor_type;
       protected:
-        // Underlying iterator 
+        // Underlying iterator
         itor_type      _itor;
         // Member extractor
         extractor_type _ex;
@@ -72,7 +72,7 @@ namespace ALE {
         virtual iterator   operator++(int n) {iterator tmp(this->_itor); ++this->_itor; return tmp;};
       };// class iterator
     }; // struct IndexSequenceTraits
-    
+
     template <typename Index_, typename ValueExtractor_>
     struct ReversibleIndexSequenceTraits {
       typedef IndexSequenceTraits<Index_, ValueExtractor_> base_traits;
@@ -105,7 +105,7 @@ namespace ALE {
     //
     // Rec & RecContainer definitions.
     // Rec is intended to denote a graph point record.
-    // 
+    //
     template <typename Point_>
     struct Rec {
       typedef Point_ point_type;
@@ -125,7 +125,7 @@ namespace ALE {
         os << "<" << p.point << ", "<< p.degree << ">";
         return os;
       };
-      
+
       struct degreeAdjuster {
         degreeAdjuster(int newDegree) : _newDegree(newDegree) {};
         void operator()(Rec& r) { r.degree = this->_newDegree; }
@@ -149,7 +149,7 @@ namespace ALE {
           >
         >,
         ALE_ALLOCATOR<rec_type>
-      > set_type; 
+      > set_type;
       //
       // Return types
       //
@@ -162,20 +162,20 @@ namespace ALE {
       protected:
         const typename traits::index_type& _index;
       public:
-        
+
        // Need to extend the inherited iterator to be able to extract the degree
        class iterator : public traits::iterator {
        public:
          iterator(const typename traits::iterator::itor_type& itor) : traits::iterator(itor) {};
          virtual const int& degree() const {return this->_itor->degree;};
        };
-       
+
        PointSequence(const PointSequence& seq)            : _index(seq._index) {};
        PointSequence(typename traits::index_type& index) : _index(index)     {};
        virtual ~PointSequence(){};
-       
+
        virtual bool empty(){return this->_index.empty();};
-       
+
        virtual typename traits::index_type::size_type size() {return this->_index.size();};
 
        virtual iterator begin() {
@@ -206,7 +206,7 @@ namespace ALE {
       set_type set;
       //
       void removePoint(const typename traits::rec_type::point_type& p) {
-        /*typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index = 
+        /*typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index =
           ::boost::multi_index::get<typename traits::pointTag>(this->set);
         typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type::iterator i = index.find(p);
         if (i != index.end()) { // Point exists
@@ -216,7 +216,7 @@ namespace ALE {
       };
       //
       void adjustDegree(const typename traits::rec_type::point_type& p, int delta) {
-        typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index = 
+        typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index =
           ::boost::multi_index::get<typename traits::pointTag>(this->set);
         typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type::iterator i = index.find(p);
         if (i == index.end()) { // No such point exists
@@ -253,9 +253,9 @@ namespace ALE {
       }; // adjustDegree()
     }; // struct RecContainer
 
-    // 
+    //
     // Arrow & ArrowContainer definitions
-    // 
+    //
     template<typename Source_, typename Target_, typename Color_>
     struct  Arrow { //: public ALE::def::Arrow<Source_, Target_, Color_> {
       typedef Arrow   arrow_type;
@@ -297,7 +297,7 @@ namespace ALE {
         const target_type _newTarget;
       };
     };// struct Arrow
-    
+
 
     template<typename Source_, typename Target_, typename Color_, typename SupportCompare_>
     struct ArrowContainerTraits {
@@ -313,7 +313,7 @@ namespace ALE {
       // Index tags
       struct                                   sourceColorTag{};
       struct                                   targetColorTag{};
-      struct                                   sourceTargetTag{};      
+      struct                                   sourceTargetTag{};
 
       // Sequence traits and sequence types
       template <typename Index_, typename Key_, typename SubKey_, typename ValueExtractor_>
@@ -356,16 +356,16 @@ namespace ALE {
         // Basic ArrowSequence interface
         //
         ArrowSequence(const ArrowSequence& seq) : _index(seq._index), key(seq.key), subkey(seq.subkey), useSubkey(seq.useSubkey) {};
-        ArrowSequence(typename traits::index_type& index, const key_type& k) : 
+        ArrowSequence(typename traits::index_type& index, const key_type& k) :
           _index(index), key(k), subkey(subkey_type()), useSubkey(0) {};
-        ArrowSequence(typename traits::index_type& index, const key_type& k, const subkey_type& kk) : 
+        ArrowSequence(typename traits::index_type& index, const key_type& k, const subkey_type& kk) :
           _index(index), key(k), subkey(kk), useSubkey(1){};
         virtual ~ArrowSequence() {};
 
         void setKey(const key_type& key) {this->key = key;};
         void setSubkey(const subkey_type& subkey) {this->subkey = subkey;};
         void setUseSubkey(const bool& useSubkey) {this->useSubkey = useSubkey;};
-        
+
         virtual bool         empty() {return this->_index.empty();};
 
         virtual typename traits::index_type::size_type  size()  {
@@ -383,7 +383,7 @@ namespace ALE {
             return iterator(this->_index.lower_bound(::boost::make_tuple(this->key)));
           }
         };
-        
+
         virtual iterator end() {
           if (this->useSubkey) {
             return iterator(this->_index.upper_bound(::boost::make_tuple(this->key,this->subkey)));
@@ -391,7 +391,7 @@ namespace ALE {
             return iterator(this->_index.upper_bound(::boost::make_tuple(this->key)));
           }
         };
-        
+
         virtual reverse_iterator rbegin() {
           if (this->useSubkey) {
             return reverse_iterator(--this->_index.upper_bound(::boost::make_tuple(this->key,this->subkey)));
@@ -399,7 +399,7 @@ namespace ALE {
             return reverse_iterator(--this->_index.upper_bound(::boost::make_tuple(this->key)));
           }
         };
-        
+
         virtual reverse_iterator rend() {
           if (this->useSubkey) {
             return reverse_iterator(--this->_index.lower_bound(::boost::make_tuple(this->key,this->subkey)));
@@ -412,7 +412,7 @@ namespace ALE {
         void view(ostream_type& os, const bool& useColor = false, const char* label = NULL){
           if(label != NULL) {
             os << "Viewing " << label << " sequence:" << std::endl;
-          } 
+          }
           os << "[";
           for(iterator i = this->begin(); i != this->end(); i++) {
             os << " (" << *i;
@@ -423,23 +423,23 @@ namespace ALE {
           }
           os << " ]" << std::endl;
         }
-      };// class ArrowSequence    
+      };// class ArrowSequence
     };// class ArrowContainerTraits
-  
 
-    // The specialized ArrowContainer types distinguish the cases of unique and multiple colors of arrows on 
+
+    // The specialized ArrowContainer types distinguish the cases of unique and multiple colors of arrows on
     // for each (source,target) pair (i.e., a single arrow, or multiple arrows between each pair of points).
     typedef enum {multiColor, uniColor} ColorMultiplicity;
 
-    template<typename Source_, typename Target_, typename Color_, ColorMultiplicity colorMultiplicity, typename SupportCompare_> 
+    template<typename Source_, typename Target_, typename Color_, ColorMultiplicity colorMultiplicity, typename SupportCompare_>
     struct ArrowContainer {};
-    
+
     template<typename Source_, typename Target_, typename Color_, typename SupportCompare_>
     struct ArrowContainer<Source_, Target_, Color_, multiColor, SupportCompare_> {
       // Define container's encapsulated types
       typedef ArrowContainerTraits<Source_, Target_, Color_, SupportCompare_>      traits;
       // need to def arrow_type locally, since BOOST_MULTI_INDEX_MEMBER barfs when first template parameter starts with 'typename'
-      typedef typename traits::arrow_type                         arrow_type; 
+      typedef typename traits::arrow_type                         arrow_type;
       // Container set type
       typedef ::boost::multi_index::multi_index_container<
         typename traits::arrow_type,
@@ -447,8 +447,8 @@ namespace ALE {
           ::boost::multi_index::ordered_non_unique<
             ::boost::multi_index::tag<typename traits::sourceTargetTag>,
             ::boost::multi_index::composite_key<
-              typename traits::arrow_type, 
-              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::source_type, source), 
+              typename traits::arrow_type,
+              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::source_type, source),
               BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::target_type, target),
               BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::color_type,  color)
             >
@@ -456,8 +456,8 @@ namespace ALE {
           ::boost::multi_index::ordered_non_unique<
             ::boost::multi_index::tag<typename traits::sourceColorTag>,
             ::boost::multi_index::composite_key<
-              typename traits::arrow_type, 
-              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::source_type, source), 
+              typename traits::arrow_type,
+              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::source_type, source),
               BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::color_type,  color),
               BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::target_type, target)
             >
@@ -465,25 +465,25 @@ namespace ALE {
           ::boost::multi_index::ordered_non_unique<
             ::boost::multi_index::tag<typename traits::targetColorTag>,
             ::boost::multi_index::composite_key<
-              typename traits::arrow_type, 
-              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::target_type, target), 
+              typename traits::arrow_type,
+              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::target_type, target),
               BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::color_type,  color),
               BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::source_type, source)
             >
           >
         >,
         ALE_ALLOCATOR<typename traits::arrow_type>
-      > set_type;      
+      > set_type;
      // multi-index set of multicolor arrows
       set_type set;
     }; // class ArrowContainer<multiColor>
-    
+
     template<typename Source_, typename Target_, typename Color_, typename SupportCompare_>
     struct ArrowContainer<Source_, Target_, Color_, uniColor, SupportCompare_> {
       // Define container's encapsulated types
       typedef ArrowContainerTraits<Source_, Target_, Color_, SupportCompare_> traits;
       // need to def arrow_type locally, since BOOST_MULTI_INDEX_MEMBER barfs when first template parameter starts with 'typename'
-      typedef typename traits::arrow_type                                   arrow_type; 
+      typedef typename traits::arrow_type                                   arrow_type;
 
       // multi-index set type -- arrow set
       typedef ::boost::multi_index::multi_index_container<
@@ -492,8 +492,8 @@ namespace ALE {
           ::boost::multi_index::ordered_unique<
             ::boost::multi_index::tag<typename traits::sourceTargetTag>,
             ::boost::multi_index::composite_key<
-              typename traits::arrow_type, 
-              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::source_type, source), 
+              typename traits::arrow_type,
+              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::source_type, source),
               BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::target_type, target),
               BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::color_type,  color)
             >
@@ -501,8 +501,8 @@ namespace ALE {
           ::boost::multi_index::ordered_non_unique<
             ::boost::multi_index::tag<typename traits::sourceColorTag>,
             ::boost::multi_index::composite_key<
-              typename traits::arrow_type, 
-              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::source_type, source), 
+              typename traits::arrow_type,
+              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::source_type, source),
               BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::color_type,  color),
               BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::target_type, target)
             >,
@@ -511,25 +511,25 @@ namespace ALE {
           ::boost::multi_index::ordered_non_unique<
             ::boost::multi_index::tag<typename traits::targetColorTag>,
             ::boost::multi_index::composite_key<
-              typename traits::arrow_type, 
-              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::target_type, target), 
+              typename traits::arrow_type,
+              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::target_type, target),
               BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::color_type,  color),
               BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::source_type, source)
             >
           >
         >,
         ALE_ALLOCATOR<typename traits::arrow_type>
-      > set_type;      
-      // multi-index set of unicolor arrow records 
+      > set_type;
+      // multi-index set of unicolor arrow records
       set_type set;
     }; // class ArrowContainer<uniColor>
   }; // namespace SifterDef
 
   //
-  // ASifter (short for Abstract Sifter, structurally a bipartite graph with colored arrows) implements a sequential interface 
-  // similar to that of Sieve, except the source and target points may have different types and iterated operations (e.g., nCone, 
+  // ASifter (short for Abstract Sifter, structurally a bipartite graph with colored arrows) implements a sequential interface
+  // similar to that of Sieve, except the source and target points may have different types and iterated operations (e.g., nCone,
   // closure) are not available.
-  // 
+  //
 template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMultiplicity colorMultiplicity, typename SupportCompare_ = ::boost::multi_index::composite_key_compare<std::less<Source_>, std::less<Color_>, std::less<Target_> >, typename SourceCtnr_ = SifterDef::RecContainer<Source_, SifterDef::Rec<Source_> >, typename TargetCtnr_ = SifterDef::RecContainer<Target_, SifterDef::Rec<Target_> > >
   class ASifter { // class ASifter
   public:
@@ -557,7 +557,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       // Return types
       //
       typedef typename
-      arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type,arrowInd>::type, source_type, target_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, color_type, color)> 
+      arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type,arrowInd>::type, source_type, target_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, color_type, color)>
       arrowSequence;
 
       // FIX: This is a temp fix to include addArrow into the interface; should probably be pushed up to ArrowSequence
@@ -565,7 +565,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       protected:
         graph_type& _graph;
       public:
-        typedef typename 
+        typedef typename
           arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type,coneInd>::type, target_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, source_type, source)> base_type;
         // Encapsulated types
         typedef typename base_type::traits traits;
@@ -576,7 +576,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
           coneSequence(graph_type& graph, typename traits::index_type& index, const typename base_type::key_type& k) : base_type(index, k), _graph(graph){};
             coneSequence(graph_type& graph, typename traits::index_type& index, const typename base_type::key_type& k, const typename base_type::subkey_type& kk) : base_type(index, k, kk), _graph(graph) {};
               virtual ~coneSequence() {};
-              
+
         // Extended interface
         void addArrow(const arrow_type& a) {
           // if(a.target != this->key) {
@@ -587,20 +587,20 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         void addArrow(const source_type& s, const color_type& c){
           this->_graph.addArrow(arrow_type(s,this->key,c));
         };
-        
+
         virtual bool contains(const source_type& s) {
           // Check whether a given point is in the index
           typename ::boost::multi_index::index<typename ASifter::traits::arrow_container_type::set_type,typename ASifter::traits::arrowInd>::type& index = ::boost::multi_index::get<typename ASifter::traits::arrowInd>(this->_graph._arrows.set);
           return (index.find(::boost::make_tuple(s,this->key)) != index.end());
         };
       };// struct coneSequence
-      
+
       // FIX: This is a temp fix to include addArrow into the interface; should probably be pushed up to ArrowSequence
       struct supportSequence : public arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type,supportInd>::type, source_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, target_type, target)> {
       protected:
         graph_type& _graph;
       public:
-        typedef typename 
+        typedef typename
           arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type,supportInd>::type, source_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, target_type, target)> base_type;
         // Encapsulated types
         typedef typename base_type::traits traits;
@@ -611,8 +611,8 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         supportSequence(graph_type& graph, typename traits::index_type& index, const typename base_type::key_type& k) : base_type(index, k), _graph(graph){};
         supportSequence(graph_type& graph, typename traits::index_type& index, const typename base_type::key_type& k, const typename base_type::subkey_type& kk) : base_type(index, k, kk), _graph(graph) {};
         virtual ~supportSequence() {};
-        
-        // FIX: WARNING: (or a HACK?): we flip the arrow on addition here. 
+
+        // FIX: WARNING: (or a HACK?): we flip the arrow on addition here.
         // Fancy interface
         void addArrow(const typename arrow_type::flip::type& af) {
           this->_graph.addArrow(af.target, af.source, af.color);
@@ -622,7 +622,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         };
       };// struct supportSequence
 
-     
+
       typedef typename base_container_type::traits::PointSequence baseSequence;
       typedef typename cap_container_type::traits::PointSequence  capSequence;
       typedef std::set<source_type>   coneSet;
@@ -633,7 +633,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
 
     template <typename OtherSource_, typename OtherTarget_, typename OtherColor_, SifterDef::ColorMultiplicity otherColorMultiplicity,
               typename OtherSupportCompare_  = ::boost::multi_index::composite_key_compare<std::less<OtherSource_>, std::less<OtherColor_>, std::less<OtherTarget_> >,
-              typename OtherSourceCtnr_ = SifterDef::RecContainer<OtherSource_, SifterDef::Rec<OtherSource_> >, 
+              typename OtherSourceCtnr_ = SifterDef::RecContainer<OtherSource_, SifterDef::Rec<OtherSource_> >,
               typename OtherTargetCtnr_ = SifterDef::RecContainer<OtherTarget_, SifterDef::Rec<OtherTarget_> > >
     struct rebind {
       typedef ASifter<OtherSource_, OtherTarget_, OtherColor_, otherColorMultiplicity, OtherSupportCompare_, OtherSourceCtnr_, OtherTargetCtnr_> type;
@@ -658,11 +658,11 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       PetscErrorCode     ierr;
 
       if (sifterType < 0) {
-        ierr = PetscClassIdRegister(id_name,&sifterType);CHKERROR(ierr, "Error in MPI_Comm_rank"); 
+        ierr = PetscClassIdRegister(id_name,&sifterType);CHKERROR(ierr, "Error in MPI_Comm_rank");
       }
       this->_comm = comm;
       ierr = MPI_Comm_rank(this->_comm, &this->_commRank);CHKERROR(ierr, "Error in MPI_Comm_rank");
-      ierr = MPI_Comm_size(this->_comm, &this->_commSize);CHKERROR(ierr, "Error in MPI_Comm_rank"); 
+      ierr = MPI_Comm_size(this->_comm, &this->_commSize);CHKERROR(ierr, "Error in MPI_Comm_rank");
 #ifdef USE_PETSC_OBJ
       ierr = PetscObjectCreateGeneric(this->_comm, sifterType, id_name, &this->_petscObj);CHKERROR(ierr, "Error in PetscObjectCreate");
 #endif
@@ -672,12 +672,12 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     Obj<typename traits::coneSequence> _coneSeq;
     Obj<typename traits::supportSequence> _supportSeq;
   public:
-    // 
+    //
     // Basic interface
     //
     ASifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : _debug(debug), _petscObj(NULL) {
       __init(comm);
-      this->_coneSeq    = new typename traits::coneSequence(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), typename traits::target_type()); 
+      this->_coneSeq    = new typename traits::coneSequence(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), typename traits::target_type());
       this->_supportSeq = new typename traits::supportSequence(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), typename traits::source_type());
    }
     virtual ~ASifter() {
@@ -739,16 +739,16 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       return base.contains(p);
     };
     // FIX: should probably have cone and const_cone etc, since arrows can be modified through an iterator (modifyColor).
-    Obj<typename traits::arrowSequence> 
+    Obj<typename traits::arrowSequence>
     arrows(const typename traits::source_type& s, const typename traits::target_type& t) {
       return typename traits::arrowSequence(::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set), s, t);
     };
-    Obj<typename traits::arrowSequence> 
+    Obj<typename traits::arrowSequence>
     arrows(const typename traits::source_type& s) {
       return typename traits::arrowSequence(::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set), s);
     };
 #ifdef SLOW
-    Obj<typename traits::coneSequence> 
+    Obj<typename traits::coneSequence>
     cone(const typename traits::target_type& p) {
       return typename traits::coneSequence(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), p);
     };
@@ -769,13 +769,13 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     };
     void setConeSize(const typename traits::target_type& p, int size) {};
 #endif
-    template<class InputSequence> 
-    Obj<typename traits::coneSet> 
+    template<class InputSequence>
+    Obj<typename traits::coneSet>
     cone(const Obj<InputSequence>& points) {
       return this->cone(points, typename traits::color_type(), false);
     }
 #ifdef SLOW
-    Obj<typename traits::coneSequence> 
+    Obj<typename traits::coneSequence>
     cone(const typename traits::target_type& p, const typename traits::color_type& color) {
       return typename traits::coneSequence(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), p, color);
     }
@@ -789,7 +789,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     };
 #endif
     template<class InputSequence>
-    Obj<typename traits::coneSet> 
+    Obj<typename traits::coneSet>
     cone(const Obj<InputSequence>& points, const typename traits::color_type& color, bool useColor = true) {
       Obj<typename traits::coneSet> cone = typename traits::coneSet();
       for(typename InputSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
@@ -824,7 +824,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       return this->cone(p)->size();
     }
 #ifdef SLOW
-    Obj<typename traits::supportSequence> 
+    Obj<typename traits::supportSequence>
     support(const typename traits::source_type& p) {
       return typename traits::supportSequence(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), p);
     }
@@ -854,7 +854,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     void setSupportSize(const typename traits::source_type& p, int size) {};
 #endif
 #ifdef SLOW
-    Obj<typename traits::supportSequence> 
+    Obj<typename traits::supportSequence>
     support(const typename traits::source_type& p, const typename traits::color_type& color) {
       return typename traits::supportSequence(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), p, color);
     };
@@ -868,12 +868,12 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     };
 #endif
     template<class InputSequence>
-    Obj<typename traits::supportSet>      
+    Obj<typename traits::supportSet>
     support(const Obj<InputSequence>& sources) {
       return this->support(sources, typename traits::color_type(), false);
     }
     template<class InputSequence>
-    Obj<typename traits::supportSet>      
+    Obj<typename traits::supportSet>
     support(const Obj<InputSequence>& points, const typename traits::color_type& color, bool useColor = true){
       Obj<typename traits::supportSet> supp = typename traits::supportSet();
       for(typename InputSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
@@ -917,7 +917,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
 
       if(label != NULL) {
         os << "["<<rank<<"]Viewing Sifter '" << label << "':" << std::endl;
-      } 
+      }
       else {
         os << "["<<rank<<"]Viewing a Sifter:" << std::endl;
       }
@@ -957,13 +957,13 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
           os << arr << std::endl;
         }
         os << "'raw' base set:" << std::endl;
-        for(typename traits::base_container_type::set_type::iterator bi = _base.set.begin(); bi != _base.set.end(); bi++) 
+        for(typename traits::base_container_type::set_type::iterator bi = _base.set.begin(); bi != _base.set.end(); bi++)
         {
           typename traits::base_container_type::traits::rec_type bp = *bi;
           os << bp << std::endl;
         }
         os << "'raw' cap set:" << std::endl;
-        for(typename traits::cap_container_type::set_type::iterator ci = _cap.set.begin(); ci != _cap.set.end(); ci++) 
+        for(typename traits::cap_container_type::set_type::iterator ci = _cap.set.begin(); ci != _cap.set.end(); ci++)
         {
           typename traits::cap_container_type::traits::rec_type cp = *ci;
           os << cp << std::endl;
@@ -993,7 +993,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         typename traits::capSequence cap   = this->cap();
         typename traits::baseSequence base = this->base();
         if(cap.empty()) {
-          txt << "[" << this->commRank() << "]: empty" << std::endl; 
+          txt << "[" << this->commRank() << "]: empty" << std::endl;
         }
         for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
           const Obj<typename traits::supportSequence>& supp = this->support(*capi);
@@ -1054,7 +1054,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         if(this->commRank() == 0) {
           txt1 << "'raw' base set:" << std::endl;
         }
-        for(typename traits::base_container_type::set_type::iterator bi = _base.set.begin(); bi != _base.set.end(); bi++) 
+        for(typename traits::base_container_type::set_type::iterator bi = _base.set.begin(); bi != _base.set.end(); bi++)
         {
           typename traits::base_container_type::traits::rec_type bp = *bi;
           txt1 << "[" << this->commRank() << "]: " << bp << std::endl;
@@ -1066,7 +1066,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         if(this->commRank() == 0) {
           txt2 << "'raw' cap set:" << std::endl;
         }
-        for(typename traits::cap_container_type::set_type::iterator ci = _cap.set.begin(); ci != _cap.set.end(); ci++) 
+        for(typename traits::cap_container_type::set_type::iterator ci = _cap.set.begin(); ci != _cap.set.end(); ci++)
         {
           typename traits::cap_container_type::traits::rec_type cp = *ci;
           txt2 << "[" << this->commRank() << "]: " << cp << std::endl;
@@ -1074,7 +1074,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         ierr = PetscSynchronizedPrintf(this->comm(), txt2.str().c_str());CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         ierr = PetscSynchronizedFlush(this->comm()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
       }// if(raw)
-      
+
       PetscFunctionReturn(0);
     };
   public:
@@ -1100,16 +1100,16 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     //
     // Lattice queries
     //
-    template<class targetInputSequence> 
+    template<class targetInputSequence>
     Obj<typename traits::coneSequence> meet(const Obj<targetInputSequence>& targets);
     // unimplemented
-    template<class targetInputSequence> 
+    template<class targetInputSequence>
     Obj<typename traits::coneSequence> meet(const Obj<targetInputSequence>& targets, const typename traits::color_type& color);
     // unimplemented
-    template<class sourceInputSequence> 
+    template<class sourceInputSequence>
     Obj<typename traits::coneSequence> join(const Obj<sourceInputSequence>& sources);
     // unimplemented
-    template<class sourceInputSequence> 
+    template<class sourceInputSequence>
     Obj<typename traits::coneSequence> join(const Obj<sourceInputSequence>& sources, const typename traits::color_type& color);
   public:
     //
@@ -1169,7 +1169,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     };
     virtual void removeArrow(const typename traits::arrow_type& a) {
       // First, produce an arrow sequence for the given source, target combination.
-      typename traits::arrowSequence::traits::index_type& arrowIndex = 
+      typename traits::arrowSequence::traits::index_type& arrowIndex =
         ::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set);
       typename traits::arrowSequence::traits::index_type::iterator i,ii,j;
       i = arrowIndex.lower_bound(::boost::make_tuple(a.source,a.target));
@@ -1197,15 +1197,15 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     void addCone(const typename traits::source_type& source, const typename traits::target_type& target){
       this->addArrow(source, target);
     }
-    template<class sourceInputSequence> 
+    template<class sourceInputSequence>
     void addCone(const Obj<sourceInputSequence>& sources, const typename traits::target_type& target) {
       this->addCone(sources, target, typename traits::color_type());
     }
     void addCone(const typename traits::source_type& source, const typename traits::target_type& target, const typename traits::color_type& color) {
       this->addArrow(source, target, color);
     }
-    template<class sourceInputSequence> 
-    void 
+    template<class sourceInputSequence>
+    void
     addCone(const Obj<sourceInputSequence>& sources, const typename traits::target_type& target, const typename traits::color_type& color){
       if (this->_debug > 1) {std::cout << "Adding a cone " << std::endl;}
       for(typename sourceInputSequence::iterator iter = sources->begin(); iter != sources->end(); ++iter) {
@@ -1219,7 +1219,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
 
     void clearCone(const typename traits::target_type& t, const typename traits::color_type&  color, bool useColor = true) {
       // Use the cone sequence types to clear the cone
-      typename traits::coneSequence::traits::index_type& coneIndex = 
+      typename traits::coneSequence::traits::index_type& coneIndex =
         ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set);
       typename traits::coneSequence::traits::index_type::iterator i, ii, j;
       if (this->_debug > 20) {
@@ -1250,7 +1250,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         i = coneIndex.lower_bound(::boost::make_tuple(t));
         ii = coneIndex.upper_bound(::boost::make_tuple(t));
       }
-      for(j = i; j != ii; j++){          
+      for(j = i; j != ii; j++){
         // Adjust the degrees before removing the arrow; use a different iterator, since we'll need i,ii to do the arrow erasing.
         if (this->_debug) {
           std::cout << "clearCone: adjusting degrees for endpoints of arrow: " << *j << std::endl;
@@ -1266,7 +1266,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     restrictBase(const Obj<InputSequence>& points) {
       typename traits::baseSequence base = this->base();
       typename std::set<typename traits::target_type> remove;
-      
+
       for(typename traits::baseSequence::iterator bi = base.begin(); bi != base.end(); bi++) {
         // Check whether *bi is in points, if it is NOT, remove it
         //           if (!points->contains(*bi)) {
@@ -1314,7 +1314,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     };
     void clearSupport(const typename traits::source_type& s, const typename traits::color_type&  color, bool useColor = true) {
       // Use the cone sequence types to clear the cone
-      typename 
+      typename
         traits::supportSequence::traits::index_type& suppIndex = ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set);
       typename traits::supportSequence::traits::index_type::iterator i, ii, j;
       if (useColor) {
@@ -1334,22 +1334,22 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     void setCone(const typename traits::source_type& source, const typename traits::target_type& target){
       this->clearCone(target, typename traits::color_type(), false); this->addCone(source, target);
     }
-    template<class sourceInputSequence> 
+    template<class sourceInputSequence>
     void setCone(const Obj<sourceInputSequence>& sources, const typename traits::target_type& target) {
       this->clearCone(target, typename traits::color_type(), false); this->addCone(sources, target, typename traits::color_type());
     }
     void setCone(const typename traits::source_type& source, const typename traits::target_type& target, const typename traits::color_type& color) {
       this->clearCone(target, color, true); this->addCone(source, target, color);
     }
-    template<class sourceInputSequence> 
+    template<class sourceInputSequence>
     void setCone(const Obj<sourceInputSequence>& sources, const typename traits::target_type& target, const typename traits::color_type& color){
       this->clearCone(target, color, true); this->addCone(sources, target, color);
     }
-    template<class targetInputSequence> 
+    template<class targetInputSequence>
     void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence >& targets) {
       this->addSupport(source, targets, typename traits::color_type());
     }
-    template<class targetInputSequence> 
+    template<class targetInputSequence>
     void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence>& targets, const typename traits::color_type& color) {
       const typename targetInputSequence::iterator end = targets->end();
 
@@ -1360,18 +1360,18 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     template<typename Sifter_>
     void add(const Obj<Sifter_>& cbg, bool noNewPoints = false) {
       typename ::boost::multi_index::index<typename Sifter_::traits::arrow_container_type::set_type, typename Sifter_::traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename Sifter_::traits::arrowInd>(cbg->_arrows.set);
-      
+
       for(typename ::boost::multi_index::index<typename Sifter_::traits::arrow_container_type::set_type, typename Sifter_::traits::arrowInd>::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
         this->addArrow(*a_iter, noNewPoints);
       }
       if (!noNewPoints) {
         typename ::boost::multi_index::index<typename Sifter_::traits::base_container_type::set_type, typename Sifter_::traits::baseInd>::type& bInd = ::boost::multi_index::get<typename Sifter_::traits::baseInd>(this->_base.set);
-        
+
         for(typename ::boost::multi_index::index<typename Sifter_::traits::base_container_type::set_type, typename Sifter_::traits::baseInd>::type::iterator b_iter = bInd.begin(); b_iter != bInd.end(); ++b_iter) {
           this->addBasePoint(*b_iter);
         }
         typename ::boost::multi_index::index<typename Sifter_::traits::cap_container_type::set_type, typename Sifter_::traits::capInd>::type& cInd = ::boost::multi_index::get<typename Sifter_::traits::capInd>(this->_cap.set);
-        
+
         for(typename ::boost::multi_index::index<typename Sifter_::traits::cap_container_type::set_type, typename Sifter_::traits::capInd>::type::iterator c_iter = cInd.begin(); c_iter != cInd.end(); ++c_iter) {
           this->addCapPoint(*c_iter);
         }
@@ -1380,15 +1380,15 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
   }; // class ASifter
 
   // A UniSifter aka Sifter
-  template <typename Source_, typename Target_, typename Color_, 
-            typename SupportCompare_ = ::boost::multi_index::composite_key_compare<std::less<Source_>, std::less<Color_>, std::less<Target_> >, 
+  template <typename Source_, typename Target_, typename Color_,
+            typename SupportCompare_ = ::boost::multi_index::composite_key_compare<std::less<Source_>, std::less<Color_>, std::less<Target_> >,
             typename SourceCtnr_ = SifterDef:: RecContainer<Source_, SifterDef::Rec<Source_> >, typename TargetCtnr_= SifterDef::RecContainer<Target_, SifterDef::Rec<Target_> > >
   class Sifter : public ASifter<Source_, Target_, Color_, SifterDef::uniColor, SupportCompare_, SourceCtnr_, TargetCtnr_> {
   public:
       typedef typename ASifter<Source_, Target_, Color_, SifterDef::uniColor, SupportCompare_, SourceCtnr_, TargetCtnr_>::traits       traits;
-    template <typename OtherSource_, typename OtherTarget_, typename OtherColor_, 
+    template <typename OtherSource_, typename OtherTarget_, typename OtherColor_,
               typename OtherSupportCompare_  = ::boost::multi_index::composite_key_compare<std::less<OtherSource_>, std::less<OtherColor_>, std::less<OtherTarget_> >,
-              typename OtherSourceCtnr_ = SifterDef::RecContainer<OtherSource_, SifterDef::Rec<OtherSource_> >, 
+              typename OtherSourceCtnr_ = SifterDef::RecContainer<OtherSource_, SifterDef::Rec<OtherSource_> >,
               typename OtherTargetCtnr_ = SifterDef::RecContainer<OtherTarget_, SifterDef::Rec<OtherTarget_> >      >
     struct rebind {
       typedef Sifter<OtherSource_, OtherTarget_, OtherColor_, OtherSupportCompare_, OtherSourceCtnr_, OtherTargetCtnr_> type;
@@ -1403,7 +1403,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     typedef typename traits::baseSequence                                           baseSequence;
     typedef typename traits::capSequence                                            capSequence;
     // Basic interface
-    Sifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : 
+    Sifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) :
       ASifter<Source_, Target_, Color_, SifterDef::uniColor, SupportCompare_, SourceCtnr_, TargetCtnr_>(comm, debug) {};
 
     const typename traits::color_type&
@@ -1439,9 +1439,9 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
 
     template<typename ColorChanger>
     void modifyColor(const typename traits::source_type& s, const typename traits::target_type& t, const ColorChanger& changeColor) {
-      typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& index = 
+      typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& index =
         ::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set);
-      typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type::iterator i = 
+      typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type::iterator i =
         index.find(::boost::make_tuple(s,t));
       if (i != index.end()) {
         index.modify(i, changeColor);
@@ -1453,19 +1453,19 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     }
 
     struct ColorSetter {
-      ColorSetter(const typename traits::color_type& color) : _color(color) {}; 
-      void operator()(typename traits::arrow_type& p) const { 
+      ColorSetter(const typename traits::color_type& color) : _color(color) {};
+      void operator()(typename traits::arrow_type& p) const {
         p.color = _color;
-      } 
+      }
     private:
       const typename traits::color_type& _color;
     };
 
     void setColor(const typename traits::source_type& s, const typename traits::target_type& t, const typename traits::color_type& color) {
       ColorSetter colorSetter(color);
-      typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& index = 
+      typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& index =
         ::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set);
-      typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type::iterator i = 
+      typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type::iterator i =
         index.find(::boost::make_tuple(s,t));
       if (i != index.end()) {
         index.modify(i, colorSetter);

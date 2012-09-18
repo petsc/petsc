@@ -8,7 +8,7 @@
 #include <../src/dm/impls/adda/addaimpl.h>                          /*I "petscdmadda.h" I*/
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy_ADDA"
 PetscErrorCode  DMDestroy_ADDA(DM dm)
 {
@@ -31,18 +31,18 @@ PetscErrorCode  DMDestroy_ADDA(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMView_ADDA"
-PetscErrorCode  DMView_ADDA(DM dm, PetscViewer v) 
+PetscErrorCode  DMView_ADDA(DM dm, PetscViewer v)
 {
   PetscFunctionBegin;
   SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateGlobalVector_ADDA"
-PetscErrorCode  DMCreateGlobalVector_ADDA(DM dm, Vec *vec) 
+PetscErrorCode  DMCreateGlobalVector_ADDA(DM dm, Vec *vec)
 {
   PetscErrorCode ierr;
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
@@ -54,18 +54,18 @@ PetscErrorCode  DMCreateGlobalVector_ADDA(DM dm, Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateColoring_ADDA"
-PetscErrorCode  DMCreateColoring_ADDA(DM dm, ISColoringType ctype,const MatType mtype,ISColoring *coloring) 
+PetscErrorCode  DMCreateColoring_ADDA(DM dm, ISColoringType ctype,const MatType mtype,ISColoring *coloring)
 {
   PetscFunctionBegin;
   SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_ADDA"
-PetscErrorCode  DMCreateMatrix_ADDA(DM dm, const MatType mtype, Mat *mat) 
+PetscErrorCode  DMCreateMatrix_ADDA(DM dm, const MatType mtype, Mat *mat)
 {
   PetscErrorCode ierr;
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
@@ -78,7 +78,7 @@ PetscErrorCode  DMCreateMatrix_ADDA(DM dm, const MatType mtype, Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMADDAGetMatrixNS"
 /*@
    DMADDAGetMatrixNS - Creates matrix compatiable with two distributed arrays
@@ -92,7 +92,7 @@ PetscErrorCode  DMCreateMatrix_ADDA(DM dm, const MatType mtype, Mat *mat)
            any type which inherits from one of these (such as MATAIJ, MATLUSOL, etc.).
 
    Output Parameter:
-.  mat - the empty Jacobian 
+.  mat - the empty Jacobian
 
    Level: beginner
 
@@ -100,7 +100,7 @@ PetscErrorCode  DMCreateMatrix_ADDA(DM dm, const MatType mtype, Mat *mat)
 
 .seealso: DMCreateMatrix()
 @*/
-PetscErrorCode  DMADDAGetMatrixNS(DM dm, DM dmc, const MatType mtype, Mat *mat) 
+PetscErrorCode  DMADDAGetMatrixNS(DM dm, DM dmc, const MatType mtype, Mat *mat)
 {
   PetscErrorCode ierr;
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
@@ -116,25 +116,25 @@ PetscErrorCode  DMADDAGetMatrixNS(DM dm, DM dmc, const MatType mtype, Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation_ADDA"
-PetscErrorCode  DMCreateInterpolation_ADDA(DM dm1,DM dm2,Mat *mat,Vec *vec) 
+PetscErrorCode  DMCreateInterpolation_ADDA(DM dm1,DM dm2,Mat *mat,Vec *vec)
 {
   PetscFunctionBegin;
   SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMRefine_ADDA"
-PetscErrorCode  DMRefine_ADDA(DM dm, MPI_Comm comm, DM *dmf) 
+PetscErrorCode  DMRefine_ADDA(DM dm, MPI_Comm comm, DM *dmf)
 {
   PetscFunctionBegin;
   SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCoarsen_ADDA"
 PetscErrorCode  DMCoarsen_ADDA(DM dm, MPI_Comm comm,DM *dmc)
 {
@@ -148,7 +148,7 @@ PetscErrorCode  DMCoarsen_ADDA(DM dm, MPI_Comm comm,DM *dmc)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(dmc, 3);
   ierr = PetscMalloc(dd->dim*sizeof(PetscInt), &nodesc);CHKERRQ(ierr);
-  for(i=0; i<dd->dim; i++) {
+  for (i=0; i<dd->dim; i++) {
     nodesc[i] = (dd->nodes[i] % dd->refine[i]) ? dd->nodes[i] / dd->refine[i] + 1 : dd->nodes[i] / dd->refine[i];
   }
   dofc = (dd->dof % dd->dofrefine) ? dd->dof / dd->dofrefine + 1 : dd->dof / dd->dofrefine;
@@ -159,7 +159,7 @@ PetscErrorCode  DMCoarsen_ADDA(DM dm, MPI_Comm comm,DM *dmc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInjection_ADDA"
 PetscErrorCode  DMCreateInjection_ADDA(DM dm1,DM dm2, VecScatter *ctx)
 {
@@ -174,7 +174,7 @@ PetscErrorCode  DMCreateInjection_ADDA(DM dm1,DM dm2, VecScatter *ctx)
   This function sets idx to lc and then checks, whether the lower corner (lc) is less
   than thre upper corner (uc). If lc "<=" uc in all coordinates, it returns PETSC_TRUE,
   and PETSC_FALSE otherwise.
-  
+
   Input Parameters:
 + dim - the number of dimension
 . lc - the "lower" corner
@@ -192,12 +192,12 @@ PetscBool  ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const
   PetscInt i;
 
   ierr = PetscMemcpy(idx, lc, sizeof(PetscInt)*dim);
-  if(ierr) {
+  if (ierr) {
     PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,ierr,PETSC_ERROR_REPEAT," ");
     return PETSC_FALSE;
   }
-  for(i=0; i<dim; i++) {
-    if( lc[i] > uc[i] ) {
+  for (i=0; i<dim; i++) {
+    if (lc[i] > uc[i]) {
       return PETSC_FALSE;
     }
   }
@@ -210,14 +210,14 @@ PetscBool  ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const
   This function return PETSC_FALSE, if idx exceeds uc, PETSC_TRUE otherwise.
   There are no guarantees on what happens if idx is not in the hypercube
   spanned by lc, uc, this should be checked with ADDAHCiterStartup.
-  
+
   Use this code as follows:
-  if( ADDAHCiterStartup(dim, lc, uc, idx) ) {
+  if ( ADDAHCiterStartup(dim, lc, uc, idx) ) {
     do {
       ...
     } while( ADDAHCiter(dim, lc, uc, idx) );
   }
-  
+
   Input Parameters:
 + dim - the number of dimension
 . lc - the "lower" corner
@@ -230,7 +230,7 @@ PetscBool  ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const
 @*/
 PetscBool  ADDAHCiter(const PetscInt dim, const PetscInt *const lc, const PetscInt *const uc, PetscInt *const idx) {
   PetscInt i;
-  for(i=dim-1; i>=0; i--) {
+  for (i=dim-1; i>=0; i--) {
     idx[i] += 1;
     if( uc[i] > idx[i] ) {
       return PETSC_TRUE;
@@ -241,7 +241,7 @@ PetscBool  ADDAHCiter(const PetscInt dim, const PetscInt *const lc, const PetscI
   return PETSC_FALSE;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateAggregates_ADDA"
 PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
 {
@@ -274,10 +274,10 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
 
   ierr = DMADDAGetCorners(dmc, &lcs_c, &lce_c);CHKERRQ(ierr);
   ierr = DMADDAGetCorners(dmf, &lcs_f, &lce_f);CHKERRQ(ierr);
-  
+
   /* compute maximum size of aggregate */
   max_agg_size = 1;
-  for(i=0; i<dim; i++) {
+  for (i=0; i<dim; i++) {
     max_agg_size *= ddf->nodes[i] / ddc->nodes[i] + 1;
   }
   max_agg_size *= doff / dofc + 1;
@@ -286,7 +286,7 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&comm_size);CHKERRQ(ierr);
 
   /* construct matrix */
-  if( comm_size == 1 ) {
+  if ( comm_size == 1 ) {
     ierr = DMADDAGetMatrixNS(dmc, dmf, MATSEQAIJ, rest);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(*rest, max_agg_size, PETSC_NULL);CHKERRQ(ierr);
   } else {
@@ -298,7 +298,7 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
   /* these are the values to set to, a collection of 1's */
   ierr = PetscMalloc(sizeof(PetscScalar)*max_agg_size, &one_vec);CHKERRQ(ierr);
   /* initialize */
-  for(i=0; i<max_agg_size; i++) {
+  for (i=0; i<max_agg_size; i++) {
     ierr = PetscMalloc(sizeof(PetscInt)*dim, &(fine_nodes[i].x));CHKERRQ(ierr);
     one_vec[i] = 1.0;
   }
@@ -313,25 +313,25 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
 
   /* loop over all coarse nodes */
   ierr = PetscMemcpy(iter_c.x, lcs_c, sizeof(PetscInt)*dim);CHKERRQ(ierr);
-  if( ADDAHCiterStartup(dim, lcs_c, lce_c, iter_c.x) ) {
+  if ( ADDAHCiterStartup(dim, lcs_c, lce_c, iter_c.x) ) {
     do {
       /* find corresponding fine grid nodes */
-      for(i=0; i<dim; i++) {
+      for (i=0; i<dim; i++) {
 	fgs[i] = iter_c.x[i]*ddf->nodes[i]/ddc->nodes[i];
 	fge[i] = PetscMin((iter_c.x[i]+1)*ddf->nodes[i]/ddc->nodes[i], ddf->nodes[i]);
       }
       /* treat all dof of the coarse grid */
-      for(iter_c.d=0; iter_c.d<dofc; iter_c.d++) {
+      for (iter_c.d=0; iter_c.d<dofc; iter_c.d++) {
 	/* find corresponding fine grid dof's */
 	fgdofs = iter_c.d*doff/dofc;
 	fgdofe = PetscMin((iter_c.d+1)*doff/dofc, doff);
 	/* we now know the "box" of all the fine grid nodes that are mapped to one coarse grid node */
 	fn_idx = 0;
 	/* loop over those corresponding fine grid nodes */
-	if( ADDAHCiterStartup(dim, fgs, fge, iter_f.x) ) {
+	if ( ADDAHCiterStartup(dim, fgs, fge, iter_f.x) ) {
 	  do {
 	    /* loop over all corresponding fine grid dof */
-	    for(iter_f.d=fgdofs; iter_f.d<fgdofe; iter_f.d++) {
+	    for (iter_f.d=fgdofs; iter_f.d<fgdofe; iter_f.d++) {
 	      ierr = PetscMemcpy(fine_nodes[fn_idx].x, iter_f.x, sizeof(PetscInt)*dim);CHKERRQ(ierr);
 	      fine_nodes[fn_idx].d = iter_f.d;
 	      fn_idx++;
@@ -354,7 +354,7 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
   ierr = PetscFree(lcs_f);CHKERRQ(ierr);
   ierr = PetscFree(lce_f);CHKERRQ(ierr);
   ierr = PetscFree(one_vec);CHKERRQ(ierr);
-  for(i=0; i<max_agg_size; i++) {
+  for (i=0; i<max_agg_size; i++) {
     ierr = PetscFree(fine_nodes[i].x);CHKERRQ(ierr);
   }
   ierr = PetscFree(fine_nodes);CHKERRQ(ierr);
@@ -364,7 +364,7 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMADDASetRefinement"
 /*@
    DMADDASetRefinement - Sets the refinement factors of the distributed arrays.
@@ -380,7 +380,7 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
 
 .keywords: distributed array, refinement
 @*/
-PetscErrorCode  DMADDASetRefinement(DM dm, PetscInt *refine, PetscInt dofrefine) 
+PetscErrorCode  DMADDASetRefinement(DM dm, PetscInt *refine, PetscInt dofrefine)
 {
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
   PetscErrorCode ierr;
@@ -393,7 +393,7 @@ PetscErrorCode  DMADDASetRefinement(DM dm, PetscInt *refine, PetscInt dofrefine)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMADDAGetCorners"
 /*@
    DMADDAGetCorners - Gets the corners of the local area
@@ -414,7 +414,7 @@ PetscErrorCode  DMADDASetRefinement(DM dm, PetscInt *refine, PetscInt dofrefine)
 
 .keywords: distributed array, refinement
 @*/
-PetscErrorCode  DMADDAGetCorners(DM dm, PetscInt **lcorner, PetscInt **ucorner) 
+PetscErrorCode  DMADDAGetCorners(DM dm, PetscInt **lcorner, PetscInt **ucorner)
 {
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
   PetscErrorCode ierr;
@@ -430,7 +430,7 @@ PetscErrorCode  DMADDAGetCorners(DM dm, PetscInt **lcorner, PetscInt **ucorner)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMADDAGetGhostCorners"
 /*@
    DMADDAGetGhostCorners - Gets the ghost corners of the local area
@@ -451,7 +451,7 @@ PetscErrorCode  DMADDAGetCorners(DM dm, PetscInt **lcorner, PetscInt **ucorner)
 
 .keywords: distributed array, refinement
 @*/
-PetscErrorCode  DMADDAGetGhostCorners(DM dm, PetscInt **lcorner, PetscInt **ucorner) 
+PetscErrorCode  DMADDAGetGhostCorners(DM dm, PetscInt **lcorner, PetscInt **ucorner)
 {
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
   PetscErrorCode ierr;
@@ -469,12 +469,12 @@ PetscErrorCode  DMADDAGetGhostCorners(DM dm, PetscInt **lcorner, PetscInt **ucor
 
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMADDAMatSetValues"
-/*@C 
+/*@C
    DMADDAMatSetValues - Inserts or adds a block of values into a matrix. The values
    are indexed geometrically with the help of the ADDA data structure.
-   These values may be cached, so MatAssemblyBegin() and MatAssemblyEnd() 
+   These values may be cached, so MatAssemblyBegin() and MatAssemblyEnd()
    MUST be called after all calls to ADDAMatSetValues() have been completed.
 
    Not Collective
@@ -496,7 +496,7 @@ PetscErrorCode  DMADDAGetGhostCorners(DM dm, PetscInt **lcorner, PetscInt **ucor
    By default the values, v, are row-oriented and unsorted.
    See MatSetOption() for other options.
 
-   Calls to ADDAMatSetValues() (and MatSetValues()) with the INSERT_VALUES and ADD_VALUES 
+   Calls to ADDAMatSetValues() (and MatSetValues()) with the INSERT_VALUES and ADD_VALUES
    options cannot be mixed without intervening calls to the assembly
    routines.
 
@@ -512,7 +512,7 @@ PetscErrorCode  DMADDAGetGhostCorners(DM dm, PetscInt **lcorner, PetscInt **ucor
           InsertMode, INSERT_VALUES, ADD_VALUES
 @*/
 PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx idxm[],DM dmn, PetscInt n, const ADDAIdx idxn[],
-						  const PetscScalar v[], InsertMode addv) 
+						  const PetscScalar v[], InsertMode addv)
 {
   DM_ADDA        *ddm = (DM_ADDA*)dmm->data;
   DM_ADDA        *ddn = (DM_ADDA*)dmn->data;
@@ -527,25 +527,25 @@ PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx id
   /* find correct multiplying factors */
   ierr = PetscMalloc(ddm->dim*sizeof(PetscInt), &nodemult);CHKERRQ(ierr);
   nodemult[ddm->dim-1] = 1;
-  for(j=ddm->dim-2; j>=0; j--) {
+  for (j=ddm->dim-2; j>=0; j--) {
     nodemult[j] = nodemult[j+1]*(ddm->nodes[j+1]);
   }
   /* convert each coordinate in idxm to the matrix row index */
   ierr = PetscMalloc(m*sizeof(PetscInt), &matidxm);CHKERRQ(ierr);
-  for(i=0; i<m; i++) {
+  for (i=0; i<m; i++) {
     x = idxm[i].x; d = idxm[i].d;
     idx = 0;
-    for(j=ddm->dim-1; j>=0; j--) {
-      if( x[j] < 0 ) { /* "left", "below", etc. of boundary */
-	if( ddm->periodic[j] ) { /* periodic wraps around */
+    for (j=ddm->dim-1; j>=0; j--) {
+      if ( x[j] < 0 ) { /* "left", "below", etc. of boundary */
+	if ( ddm->periodic[j] ) { /* periodic wraps around */
 	  x[j] += ddm->nodes[j];
 	} else { /* non-periodic get discarded */
 	  matidxm[i] = -1; /* entries with -1 are ignored by MatSetValues() */
 	  goto endofloop_m;
 	}
       }
-      if( x[j] >= ddm->nodes[j] ) { /* "right", "above", etc. of boundary */
-	if( ddm->periodic[j] ) { /* periodic wraps around */
+      if ( x[j] >= ddm->nodes[j] ) { /* "right", "above", etc. of boundary */
+	if ( ddm->periodic[j] ) { /* periodic wraps around */
 	  x[j] -= ddm->nodes[j];
 	} else { /* non-periodic get discarded */
 	  matidxm[i] = -1; /* entries with -1 are ignored by MatSetValues() */
@@ -563,25 +563,25 @@ PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx id
   /* find correct multiplying factors */
   ierr = PetscMalloc(ddn->dim*sizeof(PetscInt), &nodemult);CHKERRQ(ierr);
   nodemult[ddn->dim-1] = 1;
-  for(j=ddn->dim-2; j>=0; j--) {
+  for (j=ddn->dim-2; j>=0; j--) {
     nodemult[j] = nodemult[j+1]*(ddn->nodes[j+1]);
   }
   /* convert each coordinate in idxn to the matrix colum index */
   ierr = PetscMalloc(n*sizeof(PetscInt), &matidxn);CHKERRQ(ierr);
-  for(i=0; i<n; i++) {
+  for (i=0; i<n; i++) {
     x = idxn[i].x; d = idxn[i].d;
     idx = 0;
-    for(j=ddn->dim-1; j>=0; j--) {
-      if( x[j] < 0 ) { /* "left", "below", etc. of boundary */
-	if( ddn->periodic[j] ) { /* periodic wraps around */
+    for (j=ddn->dim-1; j>=0; j--) {
+      if ( x[j] < 0 ) { /* "left", "below", etc. of boundary */
+	if ( ddn->periodic[j] ) { /* periodic wraps around */
 	  x[j] += ddn->nodes[j];
 	} else { /* non-periodic get discarded */
 	  matidxn[i] = -1; /* entries with -1 are ignored by MatSetValues() */
 	  goto endofloop_n;
 	}
       }
-      if( x[j] >= ddn->nodes[j] ) { /* "right", "above", etc. of boundary */
-	if( ddn->periodic[j] ) { /* periodic wraps around */
+      if ( x[j] >= ddn->nodes[j] ) { /* "right", "above", etc. of boundary */
+	if ( ddn->periodic[j] ) { /* periodic wraps around */
 	  x[j] -= ddn->nodes[j];
 	} else { /* non-periodic get discarded */
 	  matidxn[i] = -1; /* entries with -1 are ignored by MatSetValues() */
@@ -603,7 +603,7 @@ PetscErrorCode  DMADDAMatSetValues(Mat mat, DM dmm, PetscInt m, const ADDAIdx id
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMADDASetParameters"
 PetscErrorCode  DMADDASetParameters(DM dm,PetscInt dim, PetscInt *nodes,PetscInt *procs,PetscInt dof,PetscBool *periodic)
 {
@@ -618,12 +618,12 @@ PetscErrorCode  DMADDASetParameters(DM dm,PetscInt dim, PetscInt *nodes,PetscInt
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* total number of nodes */
   nodes_total = 1;
-  for(i=0; i<dim; i++) nodes_total *= nodes[i];
+  for (i=0; i<dim; i++) nodes_total *= nodes[i];
   dd->dim = dim;
   dd->dof = dof;
   dd->periodic = periodic;
@@ -634,20 +634,20 @@ PetscErrorCode  DMADDASetParameters(DM dm,PetscInt dim, PetscInt *nodes,PetscInt
   /* procs */
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->procs));CHKERRQ(ierr);
   /* create distribution of nodes to processors */
-  if(procs == PETSC_NULL) {
+  if (procs == PETSC_NULL) {
     procs = dd->procs;
     nodesleft = nodes_total;
     procsleft = size;
     /* figure out a good way to split the array to several processors */
-    for(i=0; i<dim; i++) {
-      if(i==dim-1) {
+    for (i=0; i<dim; i++) {
+      if (i==dim-1) {
 	procs[i] = procsleft;
       } else {
 	/* calculate best partition */
 	procs[i] = (PetscInt)(((double) nodes[i])*pow(((double) procsleft)/((double) nodesleft),1./((double)(dim-i)))+0.5);
-	if(procs[i]<1) procs[i]=1;
+	if (procs[i]<1) procs[i]=1;
 	while( procs[i] > 0 ) {
-	  if( procsleft % procs[i] )
+	  if ( procsleft % procs[i] )
 	    procs[i]--;
 	  else
 	    break;
@@ -663,7 +663,7 @@ PetscErrorCode  DMADDASetParameters(DM dm,PetscInt dim, PetscInt *nodes,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetUp_ADDA"
 PetscErrorCode  DMSetUp_ADDA(DM dm)
 {
@@ -682,8 +682,8 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   procs = dd->procs;
   nodes = dd->nodes;
   dim   = dd->dim;
@@ -692,25 +692,25 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
 
   /* check for validity */
   procsleft = 1;
-  for(i=0; i<dim; i++) {
+  for (i=0; i<dim; i++) {
     if (nodes[i] < procs[i]) SETERRQ3(comm,PETSC_ERR_ARG_OUTOFRANGE,"Partition in direction %d is too fine! %D nodes, %D processors", i, nodes[i], procs[i]);
     procsleft *= procs[i];
   }
   if (procsleft != size) SETERRQ(comm,PETSC_ERR_PLIB, "Created or was provided with inconsistent distribution of processors");
 
-  
+
   /* find out local region */
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->lcs));CHKERRQ(ierr);
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->lce));CHKERRQ(ierr);
   procsdimi=size;
   ranki=rank;
-  for(i=0; i<dim; i++) {
+  for (i=0; i<dim; i++) {
     /* What is the number of processor for dimensions i+1, ..., dim-1? */
     procsdimi /= procs[i];
     /* these are all nodes that come before our region */
     rpq = ranki / procsdimi;
     dd->lcs[i] = rpq * (nodes[i]/procs[i]);
-    if( rpq + 1 < procs[i] ) {
+    if ( rpq + 1 < procs[i] ) {
       dd->lce[i] = (rpq + 1) * (nodes[i]/procs[i]);
     } else {
       /* last one gets all the rest */
@@ -718,10 +718,10 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
     }
     ranki = ranki - rpq*procsdimi;
   }
-  
+
   /* compute local size */
   dd->lsize=1;
-  for(i=0; i<dim; i++) {
+  for (i=0; i<dim; i++) {
     dd->lsize *= (dd->lce[i]-dd->lcs[i]);
   }
   dd->lsize *= dof;
@@ -729,8 +729,8 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
   /* find out ghost points */
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->lgs));CHKERRQ(ierr);
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->lge));CHKERRQ(ierr);
-  for(i=0; i<dim; i++) {
-    if( periodic[i] ) {
+  for (i=0; i<dim; i++) {
+    if ( periodic[i] ) {
       dd->lgs[i] = dd->lcs[i] - s;
       dd->lge[i] = dd->lce[i] + s;
     } else {
@@ -738,10 +738,10 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
       dd->lge[i] = PetscMin(dd->lce[i] + s, nodes[i]);
     }
   }
-  
+
   /* compute local size with ghost points */
   dd->lgsize=1;
-  for(i=0; i<dim; i++) {
+  for (i=0; i<dim; i++) {
     dd->lgsize *= (dd->lge[i]-dd->lgs[i]);
   }
   dd->lgsize *= dof;
@@ -754,13 +754,13 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
 #endif
 
   ierr = PetscMalloc(dim*sizeof(PetscInt), &(dd->refine));CHKERRQ(ierr);
-  for(i=0; i<dim; i++) dd->refine[i] = 3;
+  for (i=0; i<dim; i++) dd->refine[i] = 3;
   dd->dofrefine = 1;
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreate_ADDA"
 PetscErrorCode  DMCreate_ADDA(DM dm)
 {
@@ -787,7 +787,7 @@ PetscErrorCode  DMCreate_ADDA(DM dm)
 EXTERN_C_END
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMADDACreate"
 /*@C
   DMADDACreate - Creates and ADDA object that translate between coordinates
@@ -814,7 +814,7 @@ EXTERN_C_END
 PetscErrorCode  DMADDACreate(MPI_Comm comm, PetscInt dim, PetscInt *nodes,PetscInt *procs,PetscInt dof, PetscBool  *periodic,DM *dm_p)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = DMCreate(comm,dm_p);CHKERRQ(ierr);
   ierr = DMSetType(*dm_p,DMADDA);CHKERRQ(ierr);

@@ -112,7 +112,7 @@ namespace ALE {
             while(current->size()) {
               for(typename sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
                 const Obj<typename sieve_type::traits::coneSequence>& cone = sieve->cone(*p_iter);
-            
+
                 for(typename sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
                   sieveNew->addArrow(*c_iter, *p_iter, c_iter.color());
                   next->insert(*c_iter);
@@ -126,7 +126,7 @@ namespace ALE {
               while(current->size()) {
                 for(typename sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
                   const Obj<typename sieve_type::traits::supportSequence>& support = sieve->support(*p_iter);
-            
+
                   for(typename sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
                     sieveNew->addArrow(*p_iter, *s_iter, s_iter.color());
                     next->insert(*s_iter);

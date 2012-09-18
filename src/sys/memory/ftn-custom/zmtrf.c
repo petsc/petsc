@@ -17,7 +17,7 @@
 
 EXTERN_C_BEGIN
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFixSlashN"
 static PetscErrorCode PetscFixSlashN(const char *in, char **out)
 {

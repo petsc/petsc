@@ -25,7 +25,7 @@ void PETSC_STDCALL dmdagetneighbors_(DM *da,PetscMPIInt *ranks,PetscErrorCode *i
 
   *ierr = DMDAGetNeighbors(*da,&r);if (*ierr) return;
   if (dd->dim == 2) n = 9; else n = 27;
-  *ierr = PetscMemcpy(ranks,r,n*sizeof(PetscMPIInt));  
+  *ierr = PetscMemcpy(ranks,r,n*sizeof(PetscMPIInt));
 }
 
 
@@ -125,7 +125,7 @@ void PETSC_STDCALL dmdagetownershipranges_(DM *da,PetscInt lx[],PetscInt ly[],Pe
 {
   const PetscInt *gx,*gy,*gz;
   PetscInt       M,N,P,i;
-  
+
   CHKFORTRANNULLINTEGER(lx);
   CHKFORTRANNULLINTEGER(ly);
   CHKFORTRANNULLINTEGER(lz);

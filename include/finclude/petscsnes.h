@@ -21,7 +21,7 @@
       PetscEnum SNES_DIVERGED_INNER
       PetscEnum SNES_DIVERGED_LOCAL_MIN
       PetscEnum SNES_CONVERGED_ITERATING
-   
+
       parameter (SNES_CONVERGED_FNORM_ABS         =  2)
       parameter (SNES_CONVERGED_FNORM_RELATIVE    =  3)
       parameter (SNES_CONVERGED_SNORM_RELATIVE    =  4)
@@ -29,9 +29,9 @@
       parameter (SNES_CONVERGED_TR_DELTA          =  7)
 
       parameter (SNES_DIVERGED_FUNCTION_DOMAIN    = -1)
-      parameter (SNES_DIVERGED_FUNCTION_COUNT     = -2)  
-      parameter (SNES_DIVERGED_LINEAR_SOLVE       = -3)  
-      parameter (SNES_DIVERGED_FNORM_NAN          = -4) 
+      parameter (SNES_DIVERGED_FUNCTION_COUNT     = -2)
+      parameter (SNES_DIVERGED_LINEAR_SOLVE       = -3)
+      parameter (SNES_DIVERGED_FNORM_NAN          = -4)
       parameter (SNES_DIVERGED_MAX_IT             = -5)
       parameter (SNES_DIVERGED_LINE_SEARCH        = -6)
       parameter (SNES_DIVERGED_INNER              = -7)
@@ -93,16 +93,6 @@
       parameter (SNES_NGMRES_SELECT_DIFFERENCE = 1)
       parameter (SNES_NGMRES_SELECT_LINESEARCH = 2)
 
-
-!
-! SNESQNCompositionType
-!
-
-      PetscEnum SNES_QN_SEQUENTIAL
-      PetscEnum SNES_QN_COMPOSED
-
-      parameter (SNES_QN_SEQUENTIAL = 0)
-      parameter (SNES_QN_COMPOSED   = 1)
 
 !
 ! SNESQNScaleType

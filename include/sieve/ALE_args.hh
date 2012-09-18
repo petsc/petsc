@@ -18,7 +18,7 @@ namespace ALE {
     virtual ~AnyArg(){};
   };
   //
-  // Arg<T> is the type of object that can be added to ArgDB and 
+  // Arg<T> is the type of object that can be added to ArgDB and
   // ultimately holds an argument of type T.
   //
   template<typename T>
@@ -29,10 +29,10 @@ namespace ALE {
     ::boost::program_options::typed_value<T>* _dtor;
   public:
     Arg(T* storage = NULL) : _dtor(new ::boost::program_options::typed_value<T>(storage)){};
-    virtual ~Arg() {} // we do not delete _dtor since it's destroyed 
+    virtual ~Arg() {} // we do not delete _dtor since it's destroyed
     //when the ::boost::program_options::options_description container is destroyed
     //
-    // cast operator 
+    // cast operator
     virtual operator value_semantic_ptr() const {
       return this->_dtor;
     };
@@ -57,7 +57,7 @@ namespace ALE {
   //
   // The return type of ArgDB dereference:
   //   ArgValue val = argDB["arg"];
-  // ArgValue val can be cast to the type compatible with Arg<T>, 
+  // ArgValue val can be cast to the type compatible with Arg<T>,
   // if the following description of "arg" was used:
   //   argDB("arg", "arg help", Arg<T>);
   //
@@ -76,7 +76,7 @@ namespace ALE {
       return super::as<T>();
     }
   };// struct ArgValue
-  
+
     //
   class ArgDB : public ::boost::program_options::variables_map {
   protected:
@@ -85,11 +85,11 @@ namespace ALE {
     ALE::Obj< ::boost::program_options::options_description> _descs;
   public:
     // Basic
-    ArgDB(const string& name)                        : 
+    ArgDB(const string& name)                        :
       _name(name), _descs(new ::boost::program_options::options_description(name))
     {};
     //
-    ArgDB(const ArgDB& argDB, int argc, char **argv) : 
+    ArgDB(const ArgDB& argDB, int argc, char **argv) :
       _name(argDB.name()),_descs(new ::boost::program_options::options_description(_name))
     {
       (*this)(argDB);
@@ -142,7 +142,7 @@ namespace ALE {
       this->_descs->add(tmp);
       return *this;
     };
-  };// class ArgDB    
+  };// class ArgDB
 
 } // namespace ALE
 

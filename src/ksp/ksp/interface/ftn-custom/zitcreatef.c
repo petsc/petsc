@@ -3,7 +3,7 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define kspgettype_                KSPGETTYPE
-#define kspsettype_                KSPSETTYPE           
+#define kspsettype_                KSPSETTYPE
 #define kspview_                   KSPVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define kspgettype_                kspgettype

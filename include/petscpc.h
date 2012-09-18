@@ -1,5 +1,5 @@
 /*
-      Preconditioner module. 
+      Preconditioner module.
 */
 #if !defined(__PETSCPC_H)
 #define __PETSCPC_H
@@ -91,7 +91,7 @@ PETSC_EXTERN PetscClassId PC_CLASSID;
 
    Level: beginner
 
-.seealso: 
+.seealso:
 E*/
 typedef enum { PC_SIDE_DEFAULT=-1,PC_LEFT,PC_RIGHT,PC_SYMMETRIC} PCSide;
 #define PC_SIDE_MAX (PC_SYMMETRIC + 1)
@@ -203,8 +203,8 @@ PETSC_EXTERN PetscErrorCode PCGetOptionsPrefix(PC,const char*[]);
 PETSC_EXTERN PetscErrorCode PCComputeExplicitOperator(PC,Mat*);
 
 /*
-      These are used to provide extra scaling of preconditioned 
-   operator for time-stepping schemes like in SUNDIALS 
+      These are used to provide extra scaling of preconditioned
+   operator for time-stepping schemes like in SUNDIALS
 */
 PETSC_EXTERN PetscErrorCode PCGetDiagonalScale(PC,PetscBool *);
 PETSC_EXTERN PetscErrorCode PCDiagonalScaleLeft(PC,Vec,Vec);
@@ -231,8 +231,8 @@ PETSC_EXTERN PetscErrorCode PCBJacobiSetLocalBlocks(PC,PetscInt,const PetscInt[]
 
 PETSC_EXTERN PetscErrorCode PCKSPSetUseTrue(PC);
 
-PETSC_EXTERN PetscErrorCode PCShellSetApply(PC,PetscErrorCode (*)(PC,Vec,Vec)); 
-PETSC_EXTERN PetscErrorCode PCShellSetApplyBA(PC,PetscErrorCode (*)(PC,PCSide,Vec,Vec,Vec)); 
+PETSC_EXTERN PetscErrorCode PCShellSetApply(PC,PetscErrorCode (*)(PC,Vec,Vec));
+PETSC_EXTERN PetscErrorCode PCShellSetApplyBA(PC,PetscErrorCode (*)(PC,PCSide,Vec,Vec,Vec));
 PETSC_EXTERN PetscErrorCode PCShellSetApplyTranspose(PC,PetscErrorCode (*)(PC,Vec,Vec));
 PETSC_EXTERN PetscErrorCode PCShellSetSetUp(PC,PetscErrorCode (*)(PC));
 PETSC_EXTERN PetscErrorCode PCShellSetApplyRichardson(PC,PetscErrorCode (*)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*));
@@ -245,8 +245,8 @@ PETSC_EXTERN PetscErrorCode PCShellGetName(PC,const char*[]);
 
 PETSC_EXTERN PetscErrorCode PCFactorSetZeroPivot(PC,PetscReal);
 
-PETSC_EXTERN PetscErrorCode PCFactorSetShiftType(PC,MatFactorShiftType); 
-PETSC_EXTERN PetscErrorCode PCFactorSetShiftAmount(PC,PetscReal); 
+PETSC_EXTERN PetscErrorCode PCFactorSetShiftType(PC,MatFactorShiftType);
+PETSC_EXTERN PetscErrorCode PCFactorSetShiftAmount(PC,PetscReal);
 
 PETSC_EXTERN PetscErrorCode PCFactorSetMatSolverPackage(PC,const MatSolverPackage);
 PETSC_EXTERN PetscErrorCode PCFactorGetMatSolverPackage(PC,const MatSolverPackage*);
@@ -275,14 +275,14 @@ PETSC_EXTERN PetscErrorCode PCASMSetSortIndices(PC,PetscBool );
     PCASMType - Type of additive Schwarz method to use
 
 $  PC_ASM_BASIC        - Symmetric version where residuals from the ghost points are used
-$                        and computed values in ghost regions are added together. 
+$                        and computed values in ghost regions are added together.
 $                        Classical standard additive Schwarz.
 $  PC_ASM_RESTRICT     - Residuals from ghost points are used but computed values in ghost
-$                        region are discarded. 
+$                        region are discarded.
 $                        Default.
 $  PC_ASM_INTERPOLATE  - Residuals from ghost points are not used, computed values in ghost
 $                        region are added back in.
-$  PC_ASM_NONE         - Residuals from ghost points are not used, computed ghost values are 
+$  PC_ASM_NONE         - Residuals from ghost points are not used, computed ghost values are
 $                        discarded.
 $                        Not very good.
 
@@ -303,22 +303,22 @@ PETSC_EXTERN PetscErrorCode PCASMGetLocalSubmatrices(PC,PetscInt*,Mat*[]);
 /*E
     PCGASMType - Type of generalized additive Schwarz method to use (differs from ASM in allowing multiple processors per subdomain).
 
-   Each subdomain has nested inner and outer parts.  The inner subdomains are assumed to form a non-overlapping covering of the computational 
+   Each subdomain has nested inner and outer parts.  The inner subdomains are assumed to form a non-overlapping covering of the computational
    domain, while the outer subdomains contain the inner subdomains and overlap with each other.  This preconditioner will compute
    a subdomain correction over each *outer* subdomain from a residual computed there, but its different variants will differ in
    (a) how the outer subdomain residual is computed, and (b) how the outer subdomain correction is computed.
 
 $  PC_GASM_BASIC       - Symmetric version where the full from the outer subdomain is used, and the resulting correction is applied
-$                        over the outer subdomains.  As a result, points in the overlap will receive the sum of the corrections 
+$                        over the outer subdomains.  As a result, points in the overlap will receive the sum of the corrections
 $                        from neighboring subdomains.
 $                        Classical standard additive Schwarz.
 $  PC_GASM_RESTRICT    - Residual from the outer subdomain is used but the correction is restricted to the inner subdomain only
-$                        (i.e., zeroed out over the overlap portion of the outer subdomain before being applied).  As a result, 
-$                        each point will receive a correction only from the unique inner subdomain containing it (nonoverlapping covering 
+$                        (i.e., zeroed out over the overlap portion of the outer subdomain before being applied).  As a result,
+$                        each point will receive a correction only from the unique inner subdomain containing it (nonoverlapping covering
 $                        assumption).
 $                        Default.
-$  PC_GASM_INTERPOLATE - Residual is zeroed out over the overlap portion of the outer subdomain, but the resulting correction is 
-$                        applied over the outer subdomain. As a result, points in the overlap will receive the sum of the corrections 
+$  PC_GASM_INTERPOLATE - Residual is zeroed out over the overlap portion of the outer subdomain, but the resulting correction is
+$                        applied over the outer subdomain. As a result, points in the overlap will receive the sum of the corrections
 $                        from neighboring subdomains.
 $
 $  PC_GASM_NONE        - Residuals and corrections are zeroed out outside the local subdomains.
@@ -349,7 +349,7 @@ PETSC_EXTERN PetscErrorCode PCGASMGetSubmatrices(PC,PetscInt*,Mat*[]);
 $  PC_COMPOSITE_ADDITIVE - results from application of all preconditioners are added together
 $  PC_COMPOSITE_MULTIPLICATIVE - preconditioners are applied sequentially to the residual freshly
 $                                computed after the previous preconditioner application
-$  PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE - preconditioners are applied sequentially to the residual freshly 
+$  PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE - preconditioners are applied sequentially to the residual freshly
 $                                computed from first preconditioner to last and then back (Use only for symmetric matrices and preconditions)
 $  PC_COMPOSITE_SPECIAL - This is very special for a matrix of the form alpha I + R + S
 $                         where first preconditioner is built from alpha I + S and second from
@@ -486,6 +486,7 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
 #if defined(PETSC_HAVE_PCBDDC)
 /* Enum defining how to treat the coarse problem */
 typedef enum {SEQUENTIAL_BDDC,REPLICATED_BDDC,PARALLEL_BDDC,MULTILEVEL_BDDC} CoarseProblemType;
+PETSC_EXTERN PetscErrorCode PCBDDCSetNullSpace(PC,MatNullSpace);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundaries(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCGetDirichletBoundaries(PC,IS*);
 PETSC_EXTERN PetscErrorCode PCBDDCSetNeumannBoundaries(PC,IS);

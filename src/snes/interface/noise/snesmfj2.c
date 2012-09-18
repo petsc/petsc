@@ -24,7 +24,7 @@ typedef struct {  /* default context for matrix-free SNES */
   void         *data;            /* implementation-specific data */
 } MFCtx_Private;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESMatrixFreeDestroy2_Private" /* ADIC Ignore */
 PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
 {
@@ -40,7 +40,7 @@ PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESMatrixFreeView2_Private" /* ADIC Ignore */
 /*
    SNESMatrixFreeView2_Private - Views matrix-free parameters.
@@ -70,12 +70,12 @@ PetscErrorCode SNESMatrixFreeView2_Private(Mat J,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESMatrixFreeMult2_Private"
 /*
   SNESMatrixFreeMult2_Private - Default matrix-free form for Jacobian-vector
   product, y = F'(u)*a:
-        y = (F(u + ha) - F(u)) /h, 
+        y = (F(u + ha) - F(u)) /h,
   where F = nonlinear function, as set by SNESSetFunction()
         u = current iterate
         h = difference interval
@@ -117,7 +117,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
       ierr = SNESDiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h);CHKERRQ(ierr);
 
     /* Use the Brown/Saad method to compute h */
-    } else { 
+    } else {
       /* Compute error if desired */
       ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
       if ((ctx->need_err) || ((ctx->compute_err_freq) && (ctx->compute_err_iter != iter) && (!((iter-1)%ctx->compute_err_freq)))) {
@@ -165,7 +165,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESDefaultMatrixFreeCreate2"
 /*@C
    SNESMatrixFreeCreate2 - Creates a matrix-free matrix
@@ -195,7 +195,7 @@ $        error_rel = square root of relative error in
 $                    function evaluation
 $        umin = minimum iterate parameter
 $   Alternatively, the differencing parameter, h, can be set using
-$   Jorge's nifty new strategy if one specifies the option 
+$   Jorge's nifty new strategy if one specifies the option
 $          -snes_mf_jorge
 
    The user can set these parameters via MatMFFDSetFunctionError().
@@ -245,7 +245,7 @@ PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   ierr = PetscOptionsGetInt(((PetscObject)snes)->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg);CHKERRQ(ierr);
   if (flg) {
     if (mfctx->compute_err_freq < 0) mfctx->compute_err_freq = 0;
-    mfctx->compute_err = PETSC_TRUE; 
+    mfctx->compute_err = PETSC_TRUE;
   }
   if (mfctx->compute_err) mfctx->need_err = PETSC_TRUE;
   if (mfctx->jorge || mfctx->compute_err) {
@@ -281,7 +281,7 @@ PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESDefaultMatrixFreeSetParameters2"
 /*@C
    SNESDefaultMatrixFreeSetParameters2 - Sets the parameters for the approximation of
@@ -342,4 +342,4 @@ PetscErrorCode  SNESUnSetMatrixFreeParameter(SNES snes)
   if (ctx) ctx->need_h = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-     
+

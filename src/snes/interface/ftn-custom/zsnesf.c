@@ -20,8 +20,8 @@
 #define snesgetconvergencehistory_       SNESGETCONVERGENCEHISTORY
 #define snesgetjacobian_                 SNESGETJACOBIAN
 #define snessettype_                     SNESSETTYPE
-#define snesappendoptionsprefix_         SNESAPPENDOPTIONSPREFIX 
-#define snessetoptionsprefix_            SNESSETOPTIONSPREFIX 
+#define snesappendoptionsprefix_         SNESAPPENDOPTIONSPREFIX
+#define snessetoptionsprefix_            SNESSETOPTIONSPREFIX
 #define snesmonitordefault_              SNESMONITORDEFAULT
 #define snesmonitorsolution_             SNESMONITORSOLUTION
 #define snesmonitorlg_                   SNESMONITORLG
@@ -134,7 +134,7 @@ EXTERN_C_BEGIN
 /* ---------------------------------------------------------*/
 /*
      snesdefaultcomputejacobian() and snesdefaultcomputejacobiancolor()
-  These can be used directly from Fortran but are mostly so that 
+  These can be used directly from Fortran but are mostly so that
   Fortran SNESSetJacobian() will properly handle the defaults being passed in.
 
   functions, hence no STDCALL

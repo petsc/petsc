@@ -1,18 +1,18 @@
 
 /*
-   spbas_cholesky_row_alloc: 
+   spbas_cholesky_row_alloc:
       in the data arrays, find a place where another row may be stored.
-      Return PETSC_ERR_MEM if there is insufficient space to store the 
+      Return PETSC_ERR_MEM if there is insufficient space to store the
       row, so garbage collection and/or re-allocation may be done.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "spbas_cholesky_row_alloc"
 PetscErrorCode spbas_cholesky_row_alloc(spbas_matrix retval, PetscInt k, PetscInt r_nnz,PetscInt * n_alloc_used)
 {
    PetscFunctionBegin;
    retval.icols[k]  = &retval.alloc_icol[*n_alloc_used];
    retval.values[k] = &retval.alloc_val[*n_alloc_used];
-   *n_alloc_used   += r_nnz; 
+   *n_alloc_used   += r_nnz;
    if (*n_alloc_used > retval.n_alloc_icol) PetscFunctionReturn(PETSC_ERR_MEM);
    PetscFunctionReturn(0);
 }
@@ -20,28 +20,28 @@ PetscErrorCode spbas_cholesky_row_alloc(spbas_matrix retval, PetscInt k, PetscIn
 
 /*
   spbas_cholesky_garbage_collect:
-     move the rows which have been calculated so far, as well as 
-     those currently under construction, to the front of the 
+     move the rows which have been calculated so far, as well as
+     those currently under construction, to the front of the
      array, while putting them in the proper order.
      When it seems necessary, enlarge the current arrays.
 
-     NB: re-allocation is being simulated using 
+     NB: re-allocation is being simulated using
          PetscMalloc, memcpy, PetscFree, because
          PetscRealloc does not seem to exist.
 
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "spbas_cholesky_garbage_collect"
-PetscErrorCode spbas_cholesky_garbage_collect( 
+PetscErrorCode spbas_cholesky_garbage_collect(
       spbas_matrix *result, /* I/O: the Cholesky factor matrix being constructed.
-                                   Only the storage, not the contents of this matrix 
+                                   Only the storage, not the contents of this matrix
                                    is changed in this function */
-      PetscInt     i_row,             /* I  : Number of rows for which the final contents are 
+      PetscInt     i_row,             /* I  : Number of rows for which the final contents are
 				     known */
-      PetscInt     *n_row_alloc_ok,   /* I/O: Number of rows which are already in their final  
+      PetscInt     *n_row_alloc_ok,   /* I/O: Number of rows which are already in their final
 				     places in the arrays: they need not be moved any more */
       PetscInt     *n_alloc_used,     /* I/O:  */
-      PetscInt     *max_row_nnz       /* I  : Over-estimate of the number of nonzeros needed to 
+      PetscInt     *max_row_nnz       /* I  : Over-estimate of the number of nonzeros needed to
 				    store each row */
      )
 {
@@ -65,9 +65,9 @@ PetscErrorCode spbas_cholesky_garbage_collect(
    PetscInt        n_alloc_now = result->n_alloc_icol;
    PetscInt        *alloc_icol_old = result->alloc_icol;
    PetscScalar     *alloc_val_old  = result->alloc_val;
-   PetscInt        *icol_rescue; 
-   PetscScalar     *val_rescue; 
-   PetscInt        n_rescue; 
+   PetscInt        *icol_rescue;
+   PetscScalar     *val_rescue;
+   PetscInt        n_rescue;
    PetscInt        n_row_rescue;
    PetscInt        i_here, i_last, n_copy;
    const PetscReal xtra_perc = 20;
@@ -77,17 +77,17 @@ PetscErrorCode spbas_cholesky_garbage_collect(
    /*********************************************************
     1. Choose appropriate array size
     Count number of rows and memory usage which is already final */
-   for (i=0;i<i_row; i++)  { 
-      n_alloc_ok += result->row_nnz[i]; 
+   for (i=0;i<i_row; i++)  {
+      n_alloc_ok += result->row_nnz[i];
       n_alloc_ok_max += max_row_nnz[i];
    }
- 
+
    /* Count currently needed memory usage and future memory requirements
       (max, predicted)*/
-   for (i=i_row; i<nrows; i++) { 
-     if (!result->row_nnz[i]) { 
-         max_need_extra  += max_row_nnz[i]; 
-      } else { 
+   for (i=i_row; i<nrows; i++) {
+     if (!result->row_nnz[i]) {
+         max_need_extra  += max_row_nnz[i];
+      } else {
          need_already    += max_row_nnz[i];
          n_rows_ahead++;
       }
@@ -115,7 +115,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(
    else if (n_alloc_now >= n_alloc_est) { ierr = PetscInfo(PETSC_NULL,"the current size, which seems enough\n");CHKERRQ(ierr); }
    else if (n_alloc_max < n_alloc_est * (1+xtra_perc/100.0)) { ierr = PetscInfo(PETSC_NULL,"the maximum estimate\n");CHKERRQ(ierr); }
    else { ierr = PetscInfo1(PETSC_NULL,"%6.2f %% more than the estimate\n",xtra_perc);CHKERRQ(ierr); }
-   
+
 
    /**********************************************************
     2. Rescue arrays which would be lost
@@ -136,9 +136,9 @@ PetscErrorCode spbas_cholesky_garbage_collect(
             n_rescue += result->row_nnz[i];
             n_row_rescue++;
          }
-        
+
          if (i<i_row) {  *n_alloc_used += result->row_nnz[i];}
-         else         {  *n_alloc_used += max_row_nnz[i];} 
+         else         {  *n_alloc_used += max_row_nnz[i];}
       }
    }
 
@@ -164,15 +164,15 @@ PetscErrorCode spbas_cholesky_garbage_collect(
             n_rescue += result->row_nnz[i];
             n_row_rescue++;
          }
-        
+
          if (i<i_row) {  *n_alloc_used += result->row_nnz[i];}
-         else         {  *n_alloc_used += max_row_nnz[i];} 
+         else         {  *n_alloc_used += max_row_nnz[i];}
       }
    }
 
    /**********************************************************
     3. Reallocate and correct administration */
-   
+
    if (n_alloc != result->n_alloc_icol)  {
       n_copy = PetscMin(n_alloc,result->n_alloc_icol);
 
@@ -187,10 +187,10 @@ PetscErrorCode spbas_cholesky_garbage_collect(
       for (i=0; i<nrows; i++) {
           result->icols[i] =  result->alloc_icol + (result->icols[i]  - alloc_icol_old);
           result->values[i] =  result->alloc_val + (result->icols[i]  - result->alloc_icol);
-      } 
+      }
 
       /* Delete old array */
-      ierr = PetscFree(alloc_icol_old);CHKERRQ(ierr); 
+      ierr = PetscFree(alloc_icol_old);CHKERRQ(ierr);
 
       /* Allocate new value-data, copy old contents */
       ierr = PetscMalloc(  n_alloc * sizeof(PetscScalar), &result->alloc_val);CHKERRQ(ierr);
@@ -200,7 +200,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(
       result->n_alloc_val  = n_alloc;
       for (i=0; i<nrows; i++) {
           result->values[i] =  result->alloc_val + (result->icols[i]  - result->alloc_icol);
-      } 
+      }
 
       /* Delete old array */
       ierr = PetscFree(alloc_val_old);CHKERRQ(ierr);
@@ -236,7 +236,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(
             }
          }
          if (i<i_row) {  *n_alloc_used += result->row_nnz[i];}
-         else         {  *n_alloc_used += max_row_nnz[i];} 
+         else         {  *n_alloc_used += max_row_nnz[i];}
       }
    }
 
@@ -249,15 +249,15 @@ PetscErrorCode spbas_cholesky_garbage_collect(
 
 /*
   spbas_incomplete_cholesky:
-     incomplete Cholesky decomposition of a square, symmetric, 
-     positive definite matrix. 
+     incomplete Cholesky decomposition of a square, symmetric,
+     positive definite matrix.
 
      In case negative diagonals are encountered, function returns
      NEGATIVE_DIAGONAL. When this happens, call this function again
-     with a larger epsdiag_in, a less sparse pattern, and/or a smaller 
+     with a larger epsdiag_in, a less sparse pattern, and/or a smaller
      droptol
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "spbas_incomplete_cholesky"
 PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const PetscInt *riip, spbas_matrix pattern, PetscReal droptol, PetscReal epsdiag_in, spbas_matrix * matrix_L)
 {
@@ -281,7 +281,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
    PetscInt         r_nnz;
    PetscScalar      *r_val;
    PetscInt         * A_icol;
-   PetscInt         A_nnz; 
+   PetscInt         A_nnz;
    PetscScalar      *A_val;
    PetscInt         * p_icol;
    PetscInt         p_nnz;
@@ -314,7 +314,7 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
    ierr = PetscMalloc(nrows*sizeof(PetscScalar), &val);CHKERRQ(ierr);
    ierr = PetscMalloc(nrows*sizeof(PetscScalar), &lvec);CHKERRQ(ierr);
    ierr = PetscMalloc(nrows*sizeof(int), &max_row_nnz);CHKERRQ(ierr);
-   if (!(diag && val && lvec && max_row_nnz))  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEM, "Allocation error in spbas_incomplete_cholesky\n"); 
+   if (!(diag && val && lvec && max_row_nnz))  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEM, "Allocation error in spbas_incomplete_cholesky\n");
 
    ierr = PetscMemzero((void*) val, nrows*sizeof(PetscScalar));CHKERRQ(ierr);
    ierr = PetscMemzero((void*) lvec, nrows*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -342,10 +342,10 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
       r_val  = retval.values[i];
       A_nnz  = ai[rip[i]+1] - ai[rip[i]];
       A_icol = &aj[ai[rip[i]]];
-      A_val  = &aa[ai[rip[i]]]; 
+      A_val  = &aa[ai[rip[i]]];
 
       /* Calculate  val += A(i,i:n)'; */
-      for (j=0; j<A_nnz; j++) { 
+      for (j=0; j<A_nnz; j++) {
          k = riip[A_icol[j]];
          if (k>=i) { val[k] = A_val[j]; }
       }

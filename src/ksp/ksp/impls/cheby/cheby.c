@@ -2,7 +2,7 @@
 #include <petsc-private/kspimpl.h>                    /*I "petscksp.h" I*/
 #include <../src/ksp/ksp/impls/cheby/chebyshevimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPReset_Chebyshev"
 PetscErrorCode KSPReset_Chebyshev(KSP ksp)
 {
@@ -14,7 +14,7 @@ PetscErrorCode KSPReset_Chebyshev(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_Chebyshev"
 PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
 {
@@ -29,7 +29,7 @@ PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPChebyshevSetEigenvalues_Chebyshev"
 PETSC_EXTERN_C PetscErrorCode KSPChebyshevSetEigenvalues_Chebyshev(KSP ksp,PetscReal emax,PetscReal emin)
 {
@@ -45,7 +45,7 @@ PETSC_EXTERN_C PetscErrorCode KSPChebyshevSetEigenvalues_Chebyshev(KSP ksp,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPChebyshevSetEstimateEigenvalues_Chebyshev"
 PETSC_EXTERN_C PetscErrorCode KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
 {
@@ -97,7 +97,7 @@ PETSC_EXTERN_C PetscErrorCode  KSPChebyshevSetNewMatrix_Chebyshev(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPChebyshevSetEigenvalues"
 /*@
    KSPChebyshevSetEigenvalues - Sets estimates for the extreme eigenvalues
@@ -112,7 +112,7 @@ PETSC_EXTERN_C PetscErrorCode  KSPChebyshevSetNewMatrix_Chebyshev(KSP ksp)
   Options Database:
 .  -ksp_chebyshev_eigenvalues emin,emax
 
-   Note: If you run with the Krylov method of KSPCG with the option -ksp_monitor_singular_value it will 
+   Note: If you run with the Krylov method of KSPCG with the option -ksp_monitor_singular_value it will
     for that given matrix and preconditioner an estimate of the extreme eigenvalues.
 
    Level: intermediate
@@ -131,7 +131,7 @@ PetscErrorCode  KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPChebyshevSetEstimateEigenvalues"
 /*@
    KSPChebyshevSetEstimateEigenvalues - Automatically estimate the eigenvalues to use for Chebyshev
@@ -205,7 +205,7 @@ PetscErrorCode KSPChebyshevSetNewMatrix(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_Chebyshev"
 PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp)
 {
@@ -234,9 +234,9 @@ PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp)
     }
   }
 
-  /* 
-   Use hybrid Chebyshev. 
-   Ref: "A hybrid Chebyshev Krylov-subspace algorithm for solving nonsymmetric systems of linear equations", 
+  /*
+   Use hybrid Chebyshev.
+   Ref: "A hybrid Chebyshev Krylov-subspace algorithm for solving nonsymmetric systems of linear equations",
          Howard Elman and Y. Saad and P. E. Saylor, SIAM Journal on Scientific and Statistical Computing, 1986.
    */
   ierr = PetscOptionsBool("-ksp_chebyshev_hybrid","Use hybrid Chebyshev","",cheb->hybrid,&cheb->hybrid,PETSC_NULL);CHKERRQ(ierr);
@@ -277,10 +277,10 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
-  if (cheb->kspest && !cheb->estimate_current) { 
+  if (cheb->kspest && !cheb->estimate_current) {
     PetscReal max,min;
     Vec       X;
-    
+
     if (hybrid && purification){
       X = ksp->vec_sol;
     } else {
@@ -294,7 +294,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       if (ksp->guess_zero) {
         ierr = VecZeroEntries(X);CHKERRQ(ierr);
       }
-    } 
+    }
     ierr = KSPComputeExtremeSingularValues(cheb->kspest,&max,&min);CHKERRQ(ierr);
     cheb->emin = cheb->tform[0]*min + cheb->tform[1]*max;
     cheb->emax = cheb->tform[2]*min + cheb->tform[3]*max;
@@ -319,9 +319,9 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   scale  = 2.0/(cheb->emax + cheb->emin);
 
   /*   -alpha <=  scale*lambda(B^{-1}A) <= alpha   */
-  alpha  = 1.0 - scale*(cheb->emin); 
+  alpha  = 1.0 - scale*(cheb->emin);
   Gamma  = 1.0;
-  mu     = 1.0/alpha; 
+  mu     = 1.0/alpha;
   omegaprod = 2.0/alpha;
 
   c[km1] = 1.0;
@@ -333,9 +333,9 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   } else {
     ierr = VecCopy(b,r);CHKERRQ(ierr);
   }
-                  
+
   ierr = KSP_PCApply(ksp,r,p[k]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + p[km1] */
-  ierr = VecAYPX(p[k],scale,p[km1]);CHKERRQ(ierr);   
+  ierr = VecAYPX(p[k],scale,p[km1]);CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -343,13 +343,13 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       /* Adaptive step: update eigenvalue estimate - does not seem to improve convergence */
       PetscReal max,min;
       Vec       X = ksp->vec_sol; /* = previous p[k] */
-      
+
       if (purification <= 1){ /* no purification here */
         X = p[km1]; /* a tmp vector, != ksp->vec_sol */
-      } 
+      }
 
       ierr = VecCopy(p[k],X);CHKERRQ(ierr); /* p[k] = previous p[kp1] */
-      ierr = KSPSolve(cheb->kspest,ksp->vec_rhs,X);CHKERRQ(ierr); 
+      ierr = KSPSolve(cheb->kspest,ksp->vec_rhs,X);CHKERRQ(ierr);
       ierr = KSPComputeExtremeSingularValues(cheb->kspest,&max,&min);CHKERRQ(ierr);
       cheb->emin = cheb->tform[0]*min + cheb->tform[1]*max;
       cheb->emax = cheb->tform[2]*min + cheb->tform[3]*max;
@@ -360,19 +360,19 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       }
 
       b      = ksp->vec_rhs;
-      p[km1] = X; 
+      p[km1] = X;
       scale  = 2.0/(cheb->emax + cheb->emin);
-      alpha  = 1.0 - scale*(cheb->emin); 
-      mu     = 1.0/alpha; 
+      alpha  = 1.0 - scale*(cheb->emin);
+      mu     = 1.0/alpha;
       omegaprod = 2.0/alpha;
-    
+
       c[km1] = 1.0;
-      c[k]   = mu; 
+      c[k]   = mu;
       ierr = KSP_MatMult(ksp,Amat,p[km1],r);CHKERRQ(ierr);     /*  r = b - A*p[km1]    */
       ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
 
       ierr = KSP_PCApply(ksp,r,p[k]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + p[km1] */
-      ierr = VecAYPX(p[k],scale,p[km1]);CHKERRQ(ierr);    
+      ierr = VecAYPX(p[k],scale,p[km1]);CHKERRQ(ierr);
     }
 
     ksp->its++;
@@ -382,7 +382,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     omega = omegaprod*c[k]/c[kp1];
 
     ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);                 /*  r = b - Ap[k]    */
-    ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);                       
+    ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
     ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}r  */
 
     /* calculate residual norm if requested */
@@ -392,7 +392,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm                              = rnorm;
       ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-      ksp->vec_sol = p[k]; 
+      ksp->vec_sol = p[k];
       KSPLogResidualHistory(ksp,rnorm);
       ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -422,7 +422,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm = rnorm;
       ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-      ksp->vec_sol = p[k]; 
+      ksp->vec_sol = p[k];
       KSPLogResidualHistory(ksp,rnorm);
       ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
     }
@@ -430,7 +430,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       if (ksp->normtype != KSP_NORM_NONE) {
 	ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 	if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
-      } else { 
+      } else {
 	ksp->reason = KSP_CONVERGED_ITS;
       }
     }
@@ -444,8 +444,8 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPView_Chebyshev" 
+#undef __FUNCT__
+#define __FUNCT__ "KSPView_Chebyshev"
 PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
@@ -471,7 +471,7 @@ PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_Chebyshev"
 PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
 {
@@ -500,7 +500,7 @@ PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
 
    Level: beginner
 
-   Notes: The Chebyshev method requires both the matrix and preconditioner to 
+   Notes: The Chebyshev method requires both the matrix and preconditioner to
           be symmetric positive (semi) definite.
           Only support for left preconditioning.
 
@@ -512,7 +512,7 @@ PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
 
 M*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_Chebyshev"
 PETSC_EXTERN_C PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
 {

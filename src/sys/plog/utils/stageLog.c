@@ -9,7 +9,7 @@
 
 PetscStageLog  petsc_stageLog = 0;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageInfoDestroy"
 /*@C
   PetscStageInfoDestroy - This destroys a PetscStageInfo object.
@@ -35,7 +35,7 @@ PetscErrorCode  PetscStageInfoDestroy(PetscStageInfo *stageInfo)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageLogDestroy"
 /*@C
   PetscStageLogDestroy - This destroys a PetscStageLog object.
@@ -60,7 +60,7 @@ PetscErrorCode  PetscStageLogDestroy(PetscStageLog stageLog)
   ierr = PetscIntStackDestroy(stageLog->stack);CHKERRQ(ierr);
   ierr = EventRegLogDestroy(stageLog->eventLog);CHKERRQ(ierr);
   ierr = PetscClassRegLogDestroy(stageLog->classLog);CHKERRQ(ierr);
-  for(stage = 0; stage < stageLog->numStages; stage++) {
+  for (stage = 0; stage < stageLog->numStages; stage++) {
     ierr = PetscStageInfoDestroy(&stageLog->stageInfo[stage]);CHKERRQ(ierr);
   }
   ierr = PetscFree(stageLog->stageInfo);CHKERRQ(ierr);
@@ -68,7 +68,7 @@ PetscErrorCode  PetscStageLogDestroy(PetscStageLog stageLog)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageLogRegister"
 /*@C
   PetscStageLogRegister - Registers a stage name for logging operations in an application code.
@@ -97,7 +97,7 @@ PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[]
   PetscFunctionBegin;
   PetscValidCharPointer(sname,2);
   PetscValidIntPointer(stage,3);
-  for(st = 0; st < stageLog->numStages; ++st) {
+  for (st = 0; st < stageLog->numStages; ++st) {
     PetscBool  same;
 
     ierr = PetscStrcmp(stageLog->stageInfo[st].name, sname, &same);CHKERRQ(ierr);
@@ -129,7 +129,7 @@ PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageLogPush"
 /*@C
   PetscStageLogPush - This function pushes a stage on the stack.
@@ -144,17 +144,17 @@ PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[]
 . -log_summary - Activates logging
 
   Usage:
-  If the option -log_sumary is used to run the program containing the 
+  If the option -log_sumary is used to run the program containing the
   following code, then 2 sets of summary data will be printed during
   PetscFinalize().
 .vb
       PetscInitialize(int *argc,char ***args,0,0);
-      [stage 0 of code]   
+      [stage 0 of code]
       PetscStageLogPush(stageLog,1);
       [stage 1 of code]
       PetscStageLogPop(stageLog);
       PetscBarrier(...);
-      [more stage 0 of code]   
+      [more stage 0 of code]
       PetscFinalize();
 .ve
 
@@ -206,7 +206,7 @@ PetscErrorCode  PetscStageLogPush(PetscStageLog stageLog, int stage)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageLogPop"
 /*@C
   PetscStageLogPop - This function pops a stage from the stack.
@@ -217,17 +217,17 @@ PetscErrorCode  PetscStageLogPush(PetscStageLog stageLog, int stage)
 . stageLog - The PetscStageLog
 
   Usage:
-  If the option -log_sumary is used to run the program containing the 
+  If the option -log_sumary is used to run the program containing the
   following code, then 2 sets of summary data will be printed during
   PetscFinalize().
 .vb
       PetscInitialize(int *argc,char ***args,0,0);
-      [stage 0 of code]   
+      [stage 0 of code]
       PetscStageLogPush(stageLog,1);
       [stage 1 of code]
       PetscStageLogPop(stageLog);
       PetscBarrier(...);
-      [more stage 0 of code]   
+      [more stage 0 of code]
       PetscFinalize();
 .ve
 
@@ -274,7 +274,7 @@ PetscErrorCode  PetscStageLogPop(PetscStageLog stageLog)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageLogGetClassRegLog"
 /*@C
   PetscStageLogGetClassRegLog - This function returns the PetscClassRegLog for the given stage.
@@ -300,7 +300,7 @@ PetscErrorCode  PetscStageLogGetClassRegLog(PetscStageLog stageLog, PetscClassRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageLogGetEventRegLog"
 /*@C
   PetscStageLogGetEventRegLog - This function returns the PetscEventRegLog.
@@ -326,7 +326,7 @@ PetscErrorCode  PetscStageLogGetEventRegLog(PetscStageLog stageLog, PetscEventRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageLogGetClassPerfLog"
 /*@C
   PetscStageLogGetClassPerfLog - This function returns the ClassPerfLog for the given stage.
@@ -357,7 +357,7 @@ PetscErrorCode  PetscStageLogGetClassPerfLog(PetscStageLog stageLog, int stage, 
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageLogSetActive"
 /*@C
   PetscStageLogSetActive - This function determines whether events will be logged during this state.
@@ -384,7 +384,7 @@ PetscErrorCode  PetscStageLogSetActive(PetscStageLog stageLog, int stage, PetscB
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageLogGetActive"
 /*@C
   PetscStageLogGetActive - This function returns whether events will be logged suring this stage.
@@ -414,7 +414,7 @@ PetscErrorCode  PetscStageLogGetActive(PetscStageLog stageLog, int stage, PetscB
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageLogSetVisible"
 /*@C
   PetscStageLogSetVisible - This function determines whether a stage is printed during PetscLogView()
@@ -444,7 +444,7 @@ PetscErrorCode  PetscStageLogSetVisible(PetscStageLog stageLog, int stage, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageLogGetVisible"
 /*@C
   PetscStageLogGetVisible - This function returns whether a stage is printed during PetscLogView()
@@ -477,7 +477,7 @@ PetscErrorCode  PetscStageLogGetVisible(PetscStageLog stageLog, int stage, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageLogGetStage"
 /*@C
   PetscStageLogGetStage - This function returns the stage id given the stage name.
@@ -491,7 +491,7 @@ PetscErrorCode  PetscStageLogGetVisible(PetscStageLog stageLog, int stage, Petsc
   Output Parameter:
 . stage    - The stage id
 
-  Level: developer 
+  Level: developer
 
 .keywords: log, stage
 .seealso: PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
@@ -506,7 +506,7 @@ PetscErrorCode  PetscStageLogGetStage(PetscStageLog stageLog, const char name[],
   PetscValidCharPointer(name,2);
   PetscValidIntPointer(stage,3);
   *stage = -1;
-  for(s = 0; s < stageLog->numStages; s++) {
+  for (s = 0; s < stageLog->numStages; s++) {
     ierr = PetscStrcasecmp(stageLog->stageInfo[s].name, name, &match);CHKERRQ(ierr);
     if (match) break;
   }
@@ -515,7 +515,7 @@ PetscErrorCode  PetscStageLogGetStage(PetscStageLog stageLog, const char name[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscStageLogCreate"
 /*@C
   PetscStageLogCreate - This creates a PetscStageLog object.

@@ -1,8 +1,8 @@
 
 #include <petscdraw.h>     /*I "petscdraw.h"  I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawZoom" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawZoom"
 /*@C
     PetscDrawZoom - Allows one to create a graphic that users may zoom into.
 
@@ -19,7 +19,7 @@
   Concepts: drawing^zooming
   Concepts: zooming^in graphics
 
-.seealso:  
+.seealso:
 @*/
 PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,void *),void *ctx)
 {
@@ -37,13 +37,13 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
   ierr = PetscDrawGetPause(draw,&dpause);CHKERRQ(ierr);
-  if (dpause >= 0) { 
+  if (dpause >= 0) {
     ierr = PetscSleep(dpause);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr); 
+  ierr = PetscDrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
   ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
   w    = xr - xl; xmin = xl; ymin = yl; xmax = xr; ymax = yr;
   h    = yr - yl;

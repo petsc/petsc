@@ -36,7 +36,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if(size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only\n");
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only\n");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
 
@@ -265,7 +265,7 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){
-      for(i=xs; i<xs+xm; i++){
+      for (i=xs; i<xs+xm; i++){
         row.i = i; row.j = j; row.k = k;
 	if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){ /* boudary points */	 
 	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);

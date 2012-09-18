@@ -6,8 +6,8 @@
 #include <../src/mat/impls/is/matis.h>
 #include <petscksp.h>
 
-/* 
-   Context (data structure) common for all Iterative Substructuring preconditioners.  
+/*
+   Context (data structure) common for all Iterative Substructuring preconditioners.
 */
 
 typedef struct {
@@ -52,7 +52,7 @@ typedef struct {
   PetscInt   n_neigh;    /* number of neighbours this subdomain has (by now, INCLUDING OR NOT the subdomain itself). */
                          /* Once this is definitively decided, the code can be simplifies and some if's eliminated.  */
   PetscInt   *neigh;     /* list of neighbouring subdomains                                                          */
-  PetscInt   *n_shared;  /* n_shared[j] is the number of nodes shared with subdomain neigh[j]                        */ 
+  PetscInt   *n_shared;  /* n_shared[j] is the number of nodes shared with subdomain neigh[j]                        */
   PetscInt   **shared;   /* shared[j][i] is the local index of the i-th node shared with subdomain neigh[j]          */
                   /* It is necessary some consistency in the                                                  */
                   /* numbering of the shared edges from each side.                                            */

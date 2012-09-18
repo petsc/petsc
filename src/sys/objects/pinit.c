@@ -47,10 +47,10 @@ PetscBool  PetscPreLoadingUsed = PETSC_FALSE;
 PetscBool  PetscPreLoadingOn   = PETSC_FALSE;
 
 /*
-       Checks the options database for initializations related to the 
+       Checks the options database for initializations related to the
     PETSc components
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscOptionsCheckInitial_Components"
 PetscErrorCode  PetscOptionsCheckInitial_Components(void)
 {
@@ -73,17 +73,17 @@ PetscErrorCode  PetscOptionsCheckInitial_Components(void)
 
 extern PetscBool PetscBeganMPI;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscInitializeNoPointers"
 /*
       PetscInitializeNoPointers - Calls PetscInitialize() from C/C++ without the pointers to argc and args
 
    Collective
-  
+
    Level: advanced
 
-    Notes: this is called only by the PETSc MATLAB and Julia interface. Even though it might start MPI it sets the flag to 
-     indicate that it did NOT start MPI so that the PetscFinalize() does not end MPI, thus allowing PetscInitialize() to 
+    Notes: this is called only by the PETSc MATLAB and Julia interface. Even though it might start MPI it sets the flag to
+     indicate that it did NOT start MPI so that the PetscFinalize() does not end MPI, thus allowing PetscInitialize() to
      be called multiple times from MATLAB and Julia without the problem of trying to initialize MPI more than once.
 
      Turns off PETSc signal handling because that can interact with MATLAB's signal handling causing random crashes.
@@ -103,7 +103,7 @@ PetscErrorCode  PetscInitializeNoPointers(int argc,char **args,const char *filen
   PetscFunctionReturn(ierr);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetPETSC_COMM_SELF"
 /*
       Used by MATLAB and Julia interface to get communicator
@@ -115,14 +115,14 @@ PetscErrorCode  PetscGetPETSC_COMM_SELF(MPI_Comm *comm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscInitializeNoArguments"
 /*@C
       PetscInitializeNoArguments - Calls PetscInitialize() from C/C++ without
         the command line arguments.
 
    Collective
-  
+
    Level: advanced
 
 .seealso: PetscInitialize(), PetscInitializeFortran()
@@ -138,11 +138,11 @@ PetscErrorCode  PetscInitializeNoArguments(void)
   PetscFunctionReturn(ierr);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscInitialized"
 /*@
       PetscInitialized - Determine whether PETSc is initialized.
-  
+
 7   Level: beginner
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
@@ -155,11 +155,11 @@ PetscErrorCode  PetscInitialized(PetscBool  *isInitialized)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFinalized"
 /*@
       PetscFinalized - Determine whether PetscFinalize() has been called yet
-  
+
    Level: developer
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
@@ -176,7 +176,7 @@ extern PetscErrorCode        PetscOptionsCheckInitial_Private(void);
 extern PetscBool  PetscBeganMPI;
 
 /*
-       This function is the MPI reduction operation used to compute the sum of the 
+       This function is the MPI reduction operation used to compute the sum of the
    first half of the datatype and the max of the second half.
 */
 MPI_Op PetscMaxSum_Op = 0;
@@ -195,8 +195,8 @@ void  MPIAPI PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatyp
   }
 
   for (i=0; i<count; i++) {
-    xout[2*i]    = PetscMax(xout[2*i],xin[2*i]); 
-    xout[2*i+1] += xin[2*i+1]; 
+    xout[2*i]    = PetscMax(xout[2*i],xin[2*i]);
+    xout[2*i+1] += xin[2*i+1];
   }
   PetscFunctionReturnVoid();
 }
@@ -224,7 +224,7 @@ PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[],PetscInt *max,
   ierr   = PetscMalloc(2*size*sizeof(PetscInt),&work);CHKERRQ(ierr);
   ierr   = MPI_Allreduce((void*)nprocs,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
   *max   = work[2*rank];
-  *sum   = work[2*rank+1]; 
+  *sum   = work[2*rank+1];
   ierr   = PetscFree(work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -297,12 +297,12 @@ void  PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
   if (*datatype == MPIU_SCALAR) {
     PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
     for (i=0; i<count; i++) {
-      xout[i] += xin[i]; 
+      xout[i] += xin[i];
     }
   } else if (*datatype == MPIU_REAL) {
     PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
     for (i=0; i<count; i++) {
-      xout[i] += xin[i]; 
+      xout[i] += xin[i];
     }
   } else {
     (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_SCALAR data (i.e. double or complex) types");
@@ -371,7 +371,7 @@ EXTERN_C_END
 #endif
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "Petsc_DelCounter"
 /*
    Private routine to delete internal tag/name counter storage when a communicator is freed.
@@ -393,7 +393,7 @@ PetscMPIInt  MPIAPI Petsc_DelCounter(MPI_Comm comm,PetscMPIInt keyval,void *coun
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "Petsc_DelComm"
 /*
   This does not actually free anything, it simply marks when a reference count to an internal or external MPI_Comm reaches zero and the
@@ -430,9 +430,9 @@ EXTERN_C_END
 #if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
 #if !defined(PETSC_WORDS_BIGENDIAN)
 EXTERN_C_BEGIN
-extern PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype,MPI_Aint*,void*); 
+extern PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype,MPI_Aint*,void*);
 extern PetscMPIInt PetscDataRep_read_conv_fn(void*, MPI_Datatype,PetscMPIInt,void*,MPI_Offset,void*);
-extern PetscMPIInt PetscDataRep_write_conv_fn(void*, MPI_Datatype,PetscMPIInt,void*,MPI_Offset,void*); 
+extern PetscMPIInt PetscDataRep_write_conv_fn(void*, MPI_Datatype,PetscMPIInt,void*,MPI_Offset,void*);
 EXTERN_C_END
 #endif
 #endif
@@ -440,7 +440,7 @@ EXTERN_C_END
 int  PetscGlobalArgc   = 0;
 char **PetscGlobalArgs = 0;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetArgs"
 /*@C
    PetscGetArgs - Allows you to access the raw command line arguments anywhere
@@ -461,7 +461,7 @@ char **PetscGlobalArgs = 0;
       The first argument contains the program name as is normal for C arguments.
 
    Concepts: command line arguments
-   
+
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArguments()
 
 @*/
@@ -474,7 +474,7 @@ PetscErrorCode  PetscGetArgs(int *argc,char ***args)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetArguments"
 /*@C
    PetscGetArguments - Allows you to access the  command line arguments anywhere
@@ -491,7 +491,7 @@ PetscErrorCode  PetscGetArgs(int *argc,char ***args)
       This does NOT start with the program name and IS null terminated (final arg is void)
 
    Concepts: command line arguments
-   
+
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscFreeArguments()
 
 @*/
@@ -511,7 +511,7 @@ PetscErrorCode  PetscGetArguments(char ***args)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFreeArguments"
 /*@C
    PetscFreeArguments - Frees the memory obtained with PetscGetArguments()
@@ -519,12 +519,12 @@ PetscErrorCode  PetscGetArguments(char ***args)
    Not Collective
 
    Output Parameters:
-.  args - the command line arguments 
+.  args - the command line arguments
 
    Level: intermediate
 
    Concepts: command line arguments
-   
+
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscGetArguments()
 
 @*/
@@ -543,13 +543,13 @@ PetscErrorCode  PetscFreeArguments(char **args)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscInitialize"
 /*@C
-   PetscInitialize - Initializes the PETSc database and MPI. 
+   PetscInitialize - Initializes the PETSc database and MPI.
    PetscInitialize() calls MPI_Init() if that has yet to be called,
-   so this routine should always be called near the beginning of 
-   your program -- usually the very first line! 
+   so this routine should always be called near the beginning of
+   your program -- usually the very first line!
 
    Collective on MPI_COMM_WORLD or PETSC_COMM_WORLD if it has been set
 
@@ -561,7 +561,7 @@ PetscErrorCode  PetscFreeArguments(char **args)
 -  help - [optional] Help message to print, use PETSC_NULL for no message
 
    If you wish PETSc code to run ONLY on a subcommunicator of MPI_COMM_WORLD, create that
-   communicator first and assign it to PETSC_COMM_WORLD BEFORE calling PetscInitialize(). Thus if you are running a 
+   communicator first and assign it to PETSC_COMM_WORLD BEFORE calling PetscInitialize(). Thus if you are running a
    four process job and two processes will run PETSc and have PetscInitialize() and PetscFinalize() and two process will not,
    then do this. If ALL processes in the job are using PetscInitialize() and PetscFinalize() then you don't need to do this, even
    if different subcommunicators of the job are doing different things with PETSc.
@@ -576,7 +576,7 @@ PetscErrorCode  PetscFreeArguments(char **args)
 .  -error_output_none does not print the error messages (but handles errors in the same way as if this was not called)
 .  -debugger_nodes [node1,node2,...] - Indicates nodes to start in debugger
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
-.  -stop_for_debugger - Print message on how to attach debugger manually to 
+.  -stop_for_debugger - Print message on how to attach debugger manually to
                         process and wait (-debugger_pause) seconds for attachment
 .  -malloc - Indicates use of PETSc error-checking malloc (on by default for debug version of libraries)
 .  -malloc no - Indicates not to use error-checking malloc
@@ -621,17 +621,17 @@ $       call PetscInitialize(file,ierr)
 +   ierr - error return code
 -  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use PETSC_NULL_CHARACTER to not check for
           code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
-           
+
    Important Fortran Note:
    In Fortran, you MUST use PETSC_NULL_CHARACTER to indicate a
-   null character string; you CANNOT just use PETSC_NULL as 
+   null character string; you CANNOT just use PETSC_NULL as
    in the C version. See the <a href="../../docs/manual.pdf">users manual</a> for details.
 
-   If your main program is C but you call Fortran code that also uses PETSc you need to call PetscInitializeFortran() soon after 
+   If your main program is C but you call Fortran code that also uses PETSc you need to call PetscInitializeFortran() soon after
    calling PetscInitialize().
 
    Concepts: initializing PETSc
-   
+
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscInitializeNoArguments()
 
 @*/
@@ -653,7 +653,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscOptionsCreate();CHKERRQ(ierr);
 
   /*
-     We initialize the program name here (before MPI_Init()) because MPICH has a bug in 
+     We initialize the program name here (before MPI_Init()) because MPICH has a bug in
      it that it sets args[0] on all processors to be args[0] on the first processor.
   */
   if (argc && *argc) {
@@ -693,15 +693,15 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
-  /* 
-     Initialized the global complex variable; this is because with 
+  /*
+     Initialized the global complex variable; this is because with
      shared libraries the constructors for global variables
      are not called; at least on IRIX.
   */
   {
 #if defined(PETSC_CLANGUAGE_CXX)
     PetscScalar ic(0.0,1.0);
-    PETSC_i = ic; 
+    PETSC_i = ic;
 #else
     PETSC_i = I;
 #endif
@@ -754,7 +754,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   */
   ierr = PetscOptionsInsert(argc,args,file);CHKERRQ(ierr);
 
-  
+
   /*
      Print main application help message
   */
@@ -762,8 +762,8 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   if (help && flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr); 
- 
+  ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr);
+
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogBegin_Private();CHKERRQ(ierr);
@@ -785,14 +785,14 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscOptionsSetFromOptions();CHKERRQ(ierr);
 
 #if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
-  /* 
+  /*
       Tell MPI about our own data representation converter, this would/should be used if extern32 is not supported by the MPI
 
       Currently not used because it is not supported by MPICH.
   */
 #if !defined(PETSC_WORDS_BIGENDIAN)
   ierr = MPI_Register_datarep((char *)"petsc",PetscDataRep_read_conv_fn,PetscDataRep_write_conv_fn,PetscDataRep_extent_fn,PETSC_NULL);CHKERRQ(ierr);
-#endif  
+#endif
 #endif
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-hmpi_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
@@ -805,10 +805,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   } else {
     ierr = PetscOptionsGetInt(PETSC_NULL,"-hmpi_merge_size",&nodesize,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscHMPIMerge((PetscMPIInt) nodesize,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
+      ierr = PetscHMPIMerge((PetscMPIInt) nodesize,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       if (PetscHMPIWorker) { /* if worker then never enter user code */
         PetscInitializeCalled = PETSC_TRUE;
-        ierr = PetscEnd(); 
+        ierr = PetscEnd();
       }
     }
   }
@@ -842,9 +842,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 extern PetscObject *PetscObjects;
 extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFinalize"
-/*@C 
+/*@C
    PetscFinalize - Checks for options to be called at the conclusion
    of the program. MPI_Finalize() is called only if the user had not
    called MPI_Init() before calling PetscInitialize().
@@ -868,11 +868,11 @@ extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
 .  -log_summary_python [filename] - Prints data on of flop and timing usage to a file or screen.
         See PetscLogPrintSViewPython().
 .  -log_all [filename] - Logs extensive profiling information
-        See PetscLogDump(). 
+        See PetscLogDump().
 .  -log [filename] - Logs basic profiline information  See PetscLogDump().
 .  -log_sync - Log the synchronization in scatters, inner products
         and norms
--  -log_mpe [filename] - Creates a logfile viewable by the 
+-  -log_mpe [filename] - Creates a logfile viewable by the
       utility Upshot/Nupshot (in MPICH distribution)
 
    Level: beginner
@@ -894,7 +894,7 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_USE_LOG)
   char           mname[PETSC_MAX_PATH_LEN];
 #endif
-  
+
   PetscFunctionBegin;
 
   if (!PetscInitializeCalled) {
@@ -907,7 +907,7 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-options_gui",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscOptionsAMSDestroy();CHKERRQ(ierr);
-  }  
+  }
 #endif
 
   ierr = PetscHMPIFinalize();CHKERRQ(ierr);
@@ -944,7 +944,7 @@ PetscErrorCode  PetscFinalize(void)
 #endif
   mname[0] = 0;
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  if (flg1) { 
+  if (flg1) {
     PetscViewer viewer;
     if (mname[0])  {
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
@@ -955,10 +955,10 @@ PetscErrorCode  PetscFinalize(void)
       ierr = PetscLogView(viewer);CHKERRQ(ierr);
     }
   }
-  
+
   mname[0] = 0;
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary_python",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  if (flg1) { 
+  if (flg1) {
     PetscViewer viewer;
     if (mname[0])  {
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
@@ -969,18 +969,18 @@ PetscErrorCode  PetscFinalize(void)
       ierr = PetscLogViewPython(viewer);CHKERRQ(ierr);
     }
   }
-  
+
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_detailed",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  if (flg1) { 
+  if (flg1) {
     if (mname[0])  {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,mname);CHKERRQ(ierr);}
     else           {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,0);CHKERRQ(ierr);}
   }
-  
+
   mname[0] = 0;
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-log",mname,PETSC_MAX_PATH_LEN,&flg2);CHKERRQ(ierr);
   if (flg1 || flg2){
-    if (mname[0]) PetscLogDump(mname); 
+    if (mname[0]) PetscLogDump(mname);
     else          PetscLogDump(0);
   }
 #endif
@@ -1022,21 +1022,21 @@ PetscErrorCode  PetscFinalize(void)
       if (!flg2) { /* have not yet printed the options */
 	ierr = PetscOptionsView(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       }
-      if (!nopt) { 
+      if (!nopt) {
 	ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);
       } else if (nopt == 1) {
 	ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);
       } else {
 	ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %D unused database options. They are:\n",nopt);CHKERRQ(ierr);
       }
-    } 
+    }
 #if defined(PETSC_USE_DEBUG)
     if (nopt && !flg3 && !flg1) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");CHKERRQ(ierr);
       ierr = PetscOptionsLeft();CHKERRQ(ierr);
     } else if (nopt && flg3) {
-#else 
+#else
     if (nopt && flg3) {
 #endif
       ierr = PetscOptionsLeft();CHKERRQ(ierr);
@@ -1046,10 +1046,10 @@ PetscErrorCode  PetscFinalize(void)
   /*
      Free all objects registered with PetscObjectRegisterDestroy() such as PETSC_VIEWER_XXX_().
   */
-  ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);  
+  ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);
 
-  /* 
-       List all objects the user may have forgot to free 
+  /*
+       List all objects the user may have forgot to free
   */
   if (objects_left && PetscObjectsCounts) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The following objects %D were never freed\n",PetscObjectsCounts);
@@ -1074,15 +1074,15 @@ PetscErrorCode  PetscFinalize(void)
   /*
        Free all the registered create functions, such as KSPList, VecList, SNESList, etc
   */
-  ierr = PetscFListDestroyAll();CHKERRQ(ierr); 
+  ierr = PetscFListDestroyAll();CHKERRQ(ierr);
 
   /*
        Free all the registered op functions, such as MatOpList, etc
   */
-  ierr = PetscOpFListDestroyAll();CHKERRQ(ierr); 
+  ierr = PetscOpFListDestroyAll();CHKERRQ(ierr);
 
-  /* 
-     Destroy any packages that registered a finalize 
+  /*
+     Destroy any packages that registered a finalize
   */
   ierr = PetscRegisterFinalizeAll();CHKERRQ(ierr);
 
@@ -1119,7 +1119,7 @@ PetscErrorCode  PetscFinalize(void)
       fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       ierr = PetscMallocDump(fd);CHKERRQ(ierr);
       err = fclose(fd);
-      if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
+      if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
     } else if (flg1 || flg2) {
       MPI_Comm local_comm;
 
@@ -1150,7 +1150,7 @@ PetscErrorCode  PetscFinalize(void)
         if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
       }
     } else if (flg1 || flg2) {
-      ierr = PetscMallocDumpLog(stdout);CHKERRQ(ierr); 
+      ierr = PetscMallocDumpLog(stdout);CHKERRQ(ierr);
     }
   }
   /* Can be destroyed only after all the options are used */
@@ -1182,11 +1182,11 @@ PetscErrorCode  PetscFinalize(void)
   ierr = MPI_Op_free(&PetscADMax_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscADMin_Op);CHKERRQ(ierr);
 
-  /* 
+  /*
      Destroy any known inner MPI_Comm's and attributes pointing to them
      Note this will not destroy any new communicators the user has created.
 
-     If all PETSc objects were not destroyed those left over objects will have hanging references to 
+     If all PETSc objects were not destroyed those left over objects will have hanging references to
      the MPI_Comms that were freed; but that is ok because those PETSc objects will never be used again
  */
   {
@@ -1237,9 +1237,9 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 /*
 
-     Note: In certain cases PETSC_COMM_WORLD is never MPI_Comm_free()ed because 
-   the communicator has some outstanding requests on it. Specifically if the 
-   flag PETSC_HAVE_BROKEN_REQUEST_FREE is set (for IBM MPI implementation). See 
+     Note: In certain cases PETSC_COMM_WORLD is never MPI_Comm_free()ed because
+   the communicator has some outstanding requests on it. Specifically if the
+   flag PETSC_HAVE_BROKEN_REQUEST_FREE is set (for IBM MPI implementation). See
    src/vec/utils/vpscat.c. Due to this the memory allocated in PetscCommDuplicate()
    is never freed as it should be. Thus one may obtain messages of the form
    [ 1] 8 bytes PetscCommDuplicate() line 645 in src/sys/mpiu.c indicating the

@@ -57,14 +57,14 @@ PetscInt main(PetscInt argc,char **args)
   ierr = DMDAGetCoordinateDA(da, &coordsda);
   ierr = DMGetGlobalVector(coordsda, &coords);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coords, "Grid coordinates");CHKERRQ(ierr);  
-  for(i = 0, N = 1; i < 3; i++) {
+  for (i = 0, N = 1; i < 3; i++) {
     h[i] = 1.0/dim[i];
     PetscScalar *a;
     ierr = VecGetArray(coords, &a);CHKERRQ(ierr);
     PetscInt j,k,n = 0;
-    for(i = 0; i < 3; ++i) {
-      for(j = 0; j < dim[i]; ++j){
-        for(k = 0; k < 3; ++k) {
+    for (i = 0; i < 3; ++i) {
+      for (j = 0; j < dim[i]; ++j){
+        for (k = 0; k < 3; ++k) {
           a[n] = j*h[i]; // coordinate along the j-th point in the i-th dimension
           ++n;
         }
@@ -90,7 +90,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscObjectSetName((PetscObject) zz, "FFTW reconstructed vector");CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF, "%3-D: USFFT on vector of ");CHKERRQ(ierr);
-  for(i = 0, N = 1; i < 3; i++) {
+  for (i = 0, N = 1; i < 3; i++) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "dim[%d] = %d ",i,dim[i]);CHKERRQ(ierr);
     N *= dim[i];
   }
@@ -110,15 +110,15 @@ PetscInt main(PetscInt argc,char **args)
     PetscScalar *a;
     ierr = VecGetArray(x, &a);CHKERRQ(ierr);
     PetscInt j,k = 0;
-    for(i = 0; i < 3; ++i) {
-      for(j = 0; j < dim[i]; ++j) {
+    for (i = 0; i < 3; ++i) {
+      for (j = 0; j < dim[i]; ++j) {
         a[k] = tanh((j - dim[i]/2.0)*(10.0/dim[i]));
         ++k;
       }
     }
     ierr = VecRestoreArray(x, &a);CHKERRQ(ierr);
   }
-  if(view_x) {
+  if (view_x) {
     ierr = VecView(x, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = VecCopy(x,xx);CHKERRQ(ierr);
@@ -142,14 +142,14 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatMultTranspose(AA,yy,zz);CHKERRQ(ierr);
   }
 
-  if(view_y) {
+  if (view_y) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "y = \n");CHKERRQ(ierr);
     ierr = VecView(y, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "yy = \n");CHKERRQ(ierr);
     ierr = VecView(yy, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   
-  if(view_z) {
+  if (view_z) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "z = \n");CHKERRQ(ierr);
     ierr = VecView(z, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "zz = \n");CHKERRQ(ierr);

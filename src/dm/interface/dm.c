@@ -1,10 +1,10 @@
-#include <petscsnes.h> 
+#include <petscsnes.h>
 #include <petsc-private/dmimpl.h>     /*I      "petscdm.h"     I*/
 
 PetscClassId  DM_CLASSID;
 PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreate"
 /*@
   DMCreate - Creates an empty DM object. The type can then be set with DMSetType().
@@ -54,7 +54,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->defaultGlobalSection = PETSC_NULL;
   {
     PetscInt i;
-    for(i = 0; i < 10; ++i) {
+    for (i = 0; i < 10; ++i) {
       v->nullspaceConstructors[i] = PETSC_NULL;
     }
   }
@@ -66,7 +66,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetVecType"
 /*@C
        DMSetVecType - Sets the type of vector created with DMCreateLocalVector() and DMCreateGlobalVector()
@@ -95,7 +95,7 @@ PetscErrorCode  DMSetVecType(DM da,const VecType ctype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetMatType"
 /*@C
        DMSetMatType - Sets the type of matrix created with DMCreateMatrix()
@@ -123,10 +123,10 @@ PetscErrorCode  DMSetMatType(DM dm,const MatType ctype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetOptionsPrefix"
 /*@C
-   DMSetOptionsPrefix - Sets the prefix used for searching for all 
+   DMSetOptionsPrefix - Sets the prefix used for searching for all
    DMDA options in the database.
 
    Logically Collective on DMDA
@@ -155,7 +155,7 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy"
 /*@
     DMDestroy - Destroys a vector packer or DMDA.
@@ -258,7 +258,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = PetscSFDestroy(&(*dm)->sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->defaultSF);CHKERRQ(ierr);
 
-  for(f = 0; f < (*dm)->numFields; ++f) {
+  for (f = 0; f < (*dm)->numFields; ++f) {
     ierr = PetscObjectDestroy(&(*dm)->fields[f]);CHKERRQ(ierr);
   }
   ierr = PetscFree((*dm)->fields);CHKERRQ(ierr);
@@ -271,7 +271,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetUp"
 /*@
     DMSetUp - sets up the data structures inside a DM object
@@ -300,7 +300,7 @@ PetscErrorCode  DMSetUp(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions"
 /*@
     DMSetFromOptions - sets parameters in a DM from the options database
@@ -314,7 +314,7 @@ PetscErrorCode  DMSetUp(DM dm)
 +   -dm_preallocate_only: Only preallocate the matrix for DMCreateMatrix(), but do not fill it with zeros
 .   -dm_vec_type <type>  type of vector to create inside DM
 .   -dm_mat_type <type>  type of matrix to create inside DM
--   -dm_coloring_type <global or ghosted> 
+-   -dm_coloring_type <global or ghosted>
 
     Level: developer
 
@@ -339,7 +339,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
     if (flg) {
       ierr = DMSetVecType(dm,typeName);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsList("-dm_mat_type","Matrix type used for created matrices","DMSetMatType",MatList,dm->mattype?dm->mattype:typeName,typeName,sizeof typeName,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-dm_mat_type","Matrix type used for created matrices","DMSetMatType",MatList,dm->mattype?dm->mattype:typeName,typeName,sizeof(typeName),&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = DMSetMatType(dm,typeName);CHKERRQ(ierr);
     }
@@ -385,7 +385,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMView"
 /*@C
     DMView - Views a vector packer or DMDA.
@@ -416,7 +416,7 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateGlobalVector"
 /*@
     DMCreateGlobalVector - Creates a global vector from a DMDA or DMComposite object
@@ -460,7 +460,7 @@ PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateLocalVector"
 /*@
     DMCreateLocalVector - Creates a local vector from a DMDA or DMComposite object
@@ -498,7 +498,7 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMGetLocalToGlobalMapping"
 /*@
    DMGetLocalToGlobalMapping - Accesses the local-to-global mapping in a DM.
@@ -538,13 +538,13 @@ PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
       ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
       ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
       ierr = PetscMalloc(size * sizeof(PetscInt), &ltog);CHKERRQ(ierr); /* We want the local+overlap size */
-      for(p = pStart, l = 0; p < pEnd; ++p) {
+      for (p = pStart, l = 0; p < pEnd; ++p) {
         PetscInt dof, off, c;
 
         /* Should probably use constrained dofs */
         ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(sectionGlobal, p, &off);CHKERRQ(ierr);
-        for(c = 0; c < dof; ++c, ++l) {
+        for (c = 0; c < dof; ++c, ++l) {
           ltog[l] = off+c;
         }
       }
@@ -559,7 +559,7 @@ PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMGetLocalToGlobalMappingBlock"
 /*@
    DMGetLocalToGlobalMappingBlock - Accesses the blocked local-to-global mapping in a DM.
@@ -602,7 +602,7 @@ PetscErrorCode  DMGetLocalToGlobalMappingBlock(DM dm,ISLocalToGlobalMapping *lto
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMGetBlockSize"
 /*@
    DMGetBlockSize - Gets the inherent block size associated with a DM
@@ -629,7 +629,7 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation"
 /*@
     DMCreateInterpolation - Gets interpolation matrix between two DMDA or DMComposite objects
@@ -646,12 +646,12 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
 
     Level: developer
 
-    Notes:  For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by 
+    Notes:  For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by
         DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the interpolation.
 
         For DMDA objects you can use this interpolation (more precisely the interpolation from the DMDAGetCoordinateDA()) to interpolate the mesh coordinate vectors
         EXCEPT in the periodic case where it does not make sense since the coordinate vectors are not periodic.
-   
+
 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMRefine(), DMCoarsen()
 
@@ -667,7 +667,7 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInjection"
 /*@
     DMCreateInjection - Gets injection matrix between two DMDA or DMComposite objects
@@ -683,7 +683,7 @@ PetscErrorCode  DMCreateInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 
     Level: developer
 
-   Notes:  For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by 
+   Notes:  For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by
         DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the injection.
 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateColoring(), DMCreateMatrix(), DMCreateInterpolation()
@@ -700,7 +700,7 @@ PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,VecScatter *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateColoring"
 /*@C
     DMCreateColoring - Gets coloring for a DMDA or DMComposite
@@ -731,7 +731,7 @@ PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,const MatType mtype,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix"
 /*@C
     DMCreateMatrix - Gets empty Jacobian for a DMDA or DMComposite
@@ -744,20 +744,20 @@ PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,const MatType mtype,
             any type which inherits from one of these (such as MATAIJ)
 
     Output Parameter:
-.   mat - the empty Jacobian 
+.   mat - the empty Jacobian
 
     Level: beginner
 
-    Notes: This properly preallocates the number of nonzeros in the sparse matrix so you 
-       do not need to do it yourself. 
+    Notes: This properly preallocates the number of nonzeros in the sparse matrix so you
+       do not need to do it yourself.
 
-       By default it also sets the nonzero structure and puts in the zero entries. To prevent setting 
+       By default it also sets the nonzero structure and puts in the zero entries. To prevent setting
        the nonzero pattern call DMDASetMatPreallocateOnly()
 
        For structured grid problems, when you call MatView() on this matrix it is displayed using the global natural ordering, NOT in the ordering used
        internally by PETSc.
 
-       For structured grid problems, in general it is easiest to use MatSetValuesStencil() or MatSetValuesLocal() to put values into the matrix because MatSetValues() requires 
+       For structured grid problems, in general it is easiest to use MatSetValuesStencil() or MatSetValuesLocal() to put values into the matrix because MatSetValues() requires
        the indices for the global numbering for DMDAs which is complicated.
 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation()
@@ -901,7 +901,7 @@ PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateFieldIS"
 /*@C
   DMCreateFieldIS - Creates a set of IS objects with the global indices of dofs for each field
@@ -953,15 +953,15 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
     ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
     ierr = PetscMalloc2(nF,PetscInt,&fieldSizes,nF,PetscInt *,&fieldIndices);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
-    for(f = 0; f < nF; ++f) {
+    for (f = 0; f < nF; ++f) {
       fieldSizes[f] = 0;
     }
-    for(p = pStart; p < pEnd; ++p) {
+    for (p = pStart; p < pEnd; ++p) {
       PetscInt gdof;
 
       ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
       if (gdof > 0) {
-        for(f = 0; f < nF; ++f) {
+        for (f = 0; f < nF; ++f) {
           PetscInt fdof, fcdof;
 
           ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
@@ -970,22 +970,22 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
         }
       }
     }
-    for(f = 0; f < nF; ++f) {
+    for (f = 0; f < nF; ++f) {
       ierr = PetscMalloc(fieldSizes[f] * sizeof(PetscInt), &fieldIndices[f]);CHKERRQ(ierr);
       fieldSizes[f] = 0;
     }
-    for(p = pStart; p < pEnd; ++p) {
+    for (p = pStart; p < pEnd; ++p) {
       PetscInt gdof, goff;
 
       ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
       if (gdof > 0) {
         ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
-        for(f = 0; f < nF; ++f) {
+        for (f = 0; f < nF; ++f) {
           PetscInt fdof, fcdof, fc;
 
           ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
           ierr = PetscSectionGetFieldConstraintDof(section, p, f, &fcdof);CHKERRQ(ierr);
-          for(fc = 0; fc < fdof-fcdof; ++fc, ++fieldSizes[f]) {
+          for (fc = 0; fc < fdof-fcdof; ++fc, ++fieldSizes[f]) {
             fieldIndices[f][fieldSizes[f]] = goff++;
           }
         }
@@ -994,7 +994,7 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
     if (numFields) {*numFields = nF;}
     if (fieldNames) {
       ierr = PetscMalloc(nF * sizeof(char *), fieldNames);CHKERRQ(ierr);
-      for(f = 0; f < nF; ++f) {
+      for (f = 0; f < nF; ++f) {
         const char *fieldName;
 
         ierr = PetscSectionGetFieldName(section, f, &fieldName);CHKERRQ(ierr);
@@ -1003,13 +1003,13 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
     }
     if (fields) {
       ierr = PetscMalloc(nF * sizeof(IS), fields);CHKERRQ(ierr);
-      for(f = 0; f < nF; ++f) {
+      for (f = 0; f < nF; ++f) {
         ierr = ISCreateGeneral(((PetscObject) dm)->comm, fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &(*fields)[f]);CHKERRQ(ierr);
       }
     }
     ierr = PetscFree2(fieldSizes,fieldIndices);CHKERRQ(ierr);
   } else {
-    if(dm->ops->createfieldis) {ierr = (*dm->ops->createfieldis)(dm, numFields, fieldNames, fields);CHKERRQ(ierr);}
+    if (dm->ops->createfieldis) {ierr = (*dm->ops->createfieldis)(dm, numFields, fieldNames, fields);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -1041,17 +1041,17 @@ PetscErrorCode DMCreateFieldDecompositionDM(DM dm, const char* name, DM *ddm)
   PetscValidCharPointer(name,2);
   PetscValidPointer(ddm,3);
   *ddm = PETSC_NULL;
-  if(dm->ops->createfielddecompositiondm) {
+  if (dm->ops->createfielddecompositiondm) {
     ierr = (*dm->ops->createfielddecompositiondm)(dm,name,ddm); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateFieldDecomposition"
 /*@C
-  DMCreateFieldDecomposition - Returns a list of IS objects defining a decomposition of a problem into subproblems 
-                          corresponding to different fields: each IS contains the global indices of the dofs of the 
+  DMCreateFieldDecomposition - Returns a list of IS objects defining a decomposition of a problem into subproblems
+                          corresponding to different fields: each IS contains the global indices of the dofs of the
                           corresponding field. The optional list of DMs define the DM for each subproblem.
                           Generalizes DMCreateFieldIS().
 
@@ -1094,7 +1094,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
     if (section && numFields && dm->ops->createsubdm) {
       *len = numFields;
       ierr = PetscMalloc3(numFields,char*,namelist,numFields,IS,islist,numFields,DM,dmlist);CHKERRQ(ierr);
-      for(f = 0; f < numFields; ++f) {
+      for (f = 0; f < numFields; ++f) {
         const char *fieldName;
 
         ierr = DMCreateSubDM(dm, 1, &f, &(*islist)[f], &(*dmlist)[f]);CHKERRQ(ierr);
@@ -1104,7 +1104,7 @@ PetscErrorCode DMCreateFieldDecomposition(DM dm, PetscInt *len, char ***namelist
     } else {
       ierr = DMCreateFieldIS(dm, len, namelist, islist);CHKERRQ(ierr);
       /* By default there are no DMs associated with subproblems. */
-      if(dmlist) *dmlist = PETSC_NULL;
+      if (dmlist) *dmlist = PETSC_NULL;
     }
   }
   else {
@@ -1176,17 +1176,17 @@ PetscErrorCode DMCreateDomainDecompositionDM(DM dm, const char* name, DM *ddm)
   PetscValidCharPointer(name,2);
   PetscValidPointer(ddm,3);
   *ddm = PETSC_NULL;
-  if(dm->ops->createdomaindecompositiondm) {
+  if (dm->ops->createdomaindecompositiondm) {
     ierr = (*dm->ops->createdomaindecompositiondm)(dm,name,ddm); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateDomainDecomposition"
 /*@C
-  DMCreateDomainDecomposition - Returns lists of IS objects defining a decomposition of a problem into subproblems 
-                          corresponding to restrictions to pairs nested subdomains: each IS contains the global 
+  DMCreateDomainDecomposition - Returns lists of IS objects defining a decomposition of a problem into subproblems
+                          corresponding to restrictions to pairs nested subdomains: each IS contains the global
                           indices of the dofs of the corresponding subdomains.  The inner subdomains conceptually
                           define a nonoverlapping covering, while outer subdomains can overlap.
                           The optional list of DMs define the DM for each subproblem.
@@ -1223,13 +1223,13 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
   if (innerislist)   {PetscValidPointer(innerislist,4);    *innerislist = PETSC_NULL;}
   if (outerislist)   {PetscValidPointer(outerislist,5);    *outerislist = PETSC_NULL;}
   if (dmlist)        {PetscValidPointer(dmlist,6);         *dmlist      = PETSC_NULL;}
-  if(dm->ops->createdomaindecomposition) {
+  if (dm->ops->createdomaindecomposition) {
     ierr = (*dm->ops->createdomaindecomposition)(dm,len,namelist,innerislist,outerislist,dmlist); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMRefine"
 /*@
   DMRefine - Refines a DM object
@@ -1359,7 +1359,7 @@ PetscErrorCode DMInterpolate(DM coarse,Mat interp,DM fine)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMGetRefineLevel"
 /*@
     DMGetRefineLevel - Get's the number of refinements that have generated this DM.
@@ -1385,7 +1385,7 @@ PetscErrorCode  DMGetRefineLevel(DM dm,PetscInt *level)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMGlobalToLocalBegin"
 /*@
     DMGlobalToLocalBegin - Begins updating local vectors from global vector
@@ -1427,7 +1427,7 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMGlobalToLocalEnd"
 /*@
     DMGlobalToLocalEnd - Ends updating local vectors from global vector
@@ -1469,7 +1469,7 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMLocalToGlobalBegin"
 /*@
     DMLocalToGlobalBegin - updates global vectors from local vectors
@@ -1529,7 +1529,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMLocalToGlobalEnd"
 /*@
     DMLocalToGlobalEnd - updates global vectors from local vectors
@@ -1585,7 +1585,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMComputeJacobianDefault"
 /*@
     DMComputeJacobianDefault - computes the Jacobian using the DMComputeFunction() if Jacobian computer is not provided
@@ -1593,14 +1593,14 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
     Collective on DM
 
     Input Parameter:
-+   dm - the DM object 
++   dm - the DM object
 .   x - location to compute Jacobian at; may be ignored for linear problems
 .   A - matrix that defines the operator for the linear solve
 -   B - the matrix used to construct the preconditioner
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
          DMSetFunction()
 
 @*/
@@ -1619,7 +1619,7 @@ PetscErrorCode  DMComputeJacobianDefault(DM dm,Vec x,Mat A,Mat B,MatStructure *s
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCoarsen"
 /*@
     DMCoarsen - Coarsens a DM object
@@ -1780,7 +1780,7 @@ PetscErrorCode  DMGetCoarsenLevel(DM dm,PetscInt *level)
 
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMRefineHierarchy"
 /*@C
     DMRefineHierarchy - Refines a DM object, all levels at once
@@ -1822,7 +1822,7 @@ PetscErrorCode  DMRefineHierarchy(DM dm,PetscInt nlevels,DM dmf[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCoarsenHierarchy"
 /*@C
     DMCoarsenHierarchy - Coarsens a DM object, all levels at once
@@ -1865,10 +1865,10 @@ PetscErrorCode  DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateAggregates"
 /*@
-   DMCreateAggregates - Gets the aggregates that map between 
+   DMCreateAggregates - Gets the aggregates that map between
    grids associated with two DMs.
 
    Collective on DM
@@ -1882,11 +1882,11 @@ PetscErrorCode  DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
 
    Level: intermediate
 
-.keywords: interpolation, restriction, multigrid 
+.keywords: interpolation, restriction, multigrid
 
 .seealso: DMRefine(), DMCreateInjection(), DMCreateInterpolation()
 @*/
-PetscErrorCode  DMCreateAggregates(DM dmc, DM dmf, Mat *rest) 
+PetscErrorCode  DMCreateAggregates(DM dmc, DM dmf, Mat *rest)
 {
   PetscErrorCode ierr;
 
@@ -1897,7 +1897,7 @@ PetscErrorCode  DMCreateAggregates(DM dmc, DM dmf, Mat *rest)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetApplicationContextDestroy"
 /*@C
     DMSetApplicationContextDestroy - Sets a user function that will be called to destroy the application context when the DM is destroyed
@@ -1905,7 +1905,7 @@ PetscErrorCode  DMCreateAggregates(DM dmc, DM dmf, Mat *rest)
     Not Collective
 
     Input Parameters:
-+   dm - the DM object 
++   dm - the DM object
 -   destroy - the destroy function
 
     Level: intermediate
@@ -1921,7 +1921,7 @@ PetscErrorCode  DMSetApplicationContextDestroy(DM dm,PetscErrorCode (*destroy)(v
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetApplicationContext"
 /*@
     DMSetApplicationContext - Set a user context into a DM object
@@ -1929,7 +1929,7 @@ PetscErrorCode  DMSetApplicationContextDestroy(DM dm,PetscErrorCode (*destroy)(v
     Not Collective
 
     Input Parameters:
-+   dm - the DM object 
++   dm - the DM object
 -   ctx - the user context
 
     Level: intermediate
@@ -1945,7 +1945,7 @@ PetscErrorCode  DMSetApplicationContext(DM dm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMGetApplicationContext"
 /*@
     DMGetApplicationContext - Gets a user context from a DM object
@@ -1953,7 +1953,7 @@ PetscErrorCode  DMSetApplicationContext(DM dm,void *ctx)
     Not Collective
 
     Input Parameter:
-.   dm - the DM object 
+.   dm - the DM object
 
     Output Parameter:
 .   ctx - the user context
@@ -1971,7 +1971,7 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetInitialGuess"
 /*@C
     DMSetInitialGuess - sets a function to compute an initial guess vector entries for the solvers
@@ -1995,7 +1995,7 @@ PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetFunction"
 /*@C
     DMSetFunction - sets a function to compute the right hand side vector entries for the KSP solver or nonlinear function for SNES
@@ -2003,12 +2003,12 @@ PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
     Logically Collective on DM
 
     Input Parameter:
-+   dm - the DM object 
++   dm - the DM object
 -   f - the function to compute (use PETSC_NULL to cancel a previous function that was set)
 
     Level: intermediate
 
-    Notes: This sets both the function for function evaluations and the function used to compute Jacobians via finite differences if no Jacobian 
+    Notes: This sets both the function for function evaluations and the function used to compute Jacobians via finite differences if no Jacobian
            computer is provided with DMSetJacobian(). Canceling cancels the function, but not the function used to compute the Jacobian.
 
 .seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
@@ -2026,7 +2026,7 @@ PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetJacobian"
 /*@C
     DMSetJacobian - sets a function to compute the matrix entries for the KSP solver or Jacobian for SNES
@@ -2039,7 +2039,7 @@ PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
          DMSetFunction()
 
 @*/
@@ -2051,7 +2051,7 @@ PetscErrorCode  DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,Mat,Mat,MatStruct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetVariableBounds"
 /*@C
     DMSetVariableBounds - sets a function to compute the the lower and upper bound vectors for SNESVI.
@@ -2059,7 +2059,7 @@ PetscErrorCode  DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,Mat,Mat,MatStruct
     Logically Collective on DM
 
     Input Parameter:
-+   dm - the DM object 
++   dm - the DM object
 -   f - the function that computes variable bounds used by SNESVI (use PETSC_NULL to cancel a previous function that was set)
 
     Level: intermediate
@@ -2075,7 +2075,7 @@ PetscErrorCode  DMSetVariableBounds(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMHasVariableBounds"
 /*@
     DMHasVariableBounds - does the DM object have a variable bounds function?
@@ -2100,7 +2100,7 @@ PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMComputeVariableBounds"
 /*@C
     DMComputeVariableBounds - compute variable bounds used by SNESVI.
@@ -2117,7 +2117,7 @@ PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
          DMSetFunction(), DMSetVariableBounds()
 
 @*/
@@ -2125,9 +2125,9 @@ PetscErrorCode  DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(xl,VEC_CLASSID,2); 
-  PetscValidHeaderSpecific(xu,VEC_CLASSID,2); 
-  if(dm->ops->computevariablebounds) {
+  PetscValidHeaderSpecific(xl,VEC_CLASSID,2);
+  PetscValidHeaderSpecific(xu,VEC_CLASSID,2);
+  if (dm->ops->computevariablebounds) {
     ierr = (*dm->ops->computevariablebounds)(dm, xl,xu); CHKERRQ(ierr);
   }
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "This DM is incapable of computing variable bounds.");
@@ -2160,7 +2160,7 @@ PetscErrorCode  DMComputeInitialGuess(DM dm,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMHasInitialGuess"
 /*@
     DMHasInitialGuess - does the DM object have an initial guess function
@@ -2186,7 +2186,7 @@ PetscErrorCode  DMHasInitialGuess(DM dm,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMHasFunction"
 /*@
     DMHasFunction - does the DM object have a function
@@ -2212,7 +2212,7 @@ PetscErrorCode  DMHasFunction(DM dm,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMHasJacobian"
 /*@
     DMHasJacobian - does the DM object have a matrix function
@@ -2271,16 +2271,16 @@ PetscErrorCode  DMHasColoring(DM dm,PetscBool  *flg)
     Collective on DM
 
     Input Parameter:
-+   dm - the DM object 
++   dm - the DM object
 -   x - location to compute residual and Jacobian, if PETSC_NULL is passed to those routines; will be PETSC_NULL for linear problems.
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
          DMSetFunction(), DMSetJacobian(), DMSetVariableBounds()
 
 @*/
-PetscErrorCode  DMSetVec(DM dm,Vec x) 
+PetscErrorCode  DMSetVec(DM dm,Vec x)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -2290,14 +2290,14 @@ PetscErrorCode  DMSetVec(DM dm,Vec x)
     }
     ierr = VecCopy(x,dm->x);CHKERRQ(ierr);
   }
-  else if(dm->x) {
+  else if (dm->x) {
     ierr = VecDestroy(&dm->x);  CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMComputeFunction"
 /*@
     DMComputeFunction - computes the right hand side vector entries for the KSP solver or nonlinear function for SNES
@@ -2329,7 +2329,7 @@ PetscErrorCode  DMComputeFunction(DM dm,Vec x,Vec b)
 
 
 
-#undef __FUNCT__ 
+#undef __FUNCT__
 #define __FUNCT__ "DMComputeJacobian"
 /*@
     DMComputeJacobian - compute the matrix entries for the solver
@@ -2337,14 +2337,14 @@ PetscErrorCode  DMComputeFunction(DM dm,Vec x,Vec b)
     Collective on DM
 
     Input Parameter:
-+   dm - the DM object 
++   dm - the DM object
 .   x - location to compute Jacobian at; will be PETSC_NULL for linear problems, for nonlinear problems if not provided then pulled from DM
 .   A - matrix that defines the operator for the linear solve
 -   B - the matrix used to construct the preconditioner
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
          DMSetFunction()
 
 @*/
@@ -2358,7 +2358,7 @@ PetscErrorCode  DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
     ISColoring     coloring;
     MatFDColoring  fd;
     const MatType  mtype;
-    
+
     ierr = PetscObjectGetType((PetscObject)B,&mtype);CHKERRQ(ierr);
     ierr = DMCreateColoring(dm,dm->coloringtype,mtype,&coloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(B,coloring,&fd);CHKERRQ(ierr);
@@ -2394,7 +2394,7 @@ PetscErrorCode  DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
 PetscFList DMList                       = PETSC_NULL;
 PetscBool  DMRegisterAllCalled          = PETSC_FALSE;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetType"
 /*@C
   DMSetType - Builds a DM, for a particular DM implementation.
@@ -2434,13 +2434,13 @@ PetscErrorCode  DMSetType(DM dm, const DMType method)
   if (dm->ops->destroy) {
     ierr = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
     dm->ops->destroy = PETSC_NULL;
-  } 
+  }
   ierr = (*r)(dm);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)dm,method);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMGetType"
 /*@C
   DMGetType - Gets the DM type name (as a string) from the DM.
@@ -2570,7 +2570,7 @@ PetscErrorCode DMConvert(DM dm, const DMType newtype, DM *M)
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMRegister"
 /*@C
   DMRegister - See DMRegisterDynamic()
@@ -2592,7 +2592,7 @@ PetscErrorCode  DMRegister(const char sname[], const char path[], const char nam
 
 
 /*--------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMRegisterDestroy"
 /*@C
    DMRegisterDestroy - Frees the list of DM methods that were registered by DMRegister()/DMRegisterDynamic().
@@ -2619,14 +2619,14 @@ PetscErrorCode  DMRegisterDestroy(void)
 
 typedef struct {char *funcname; char *jacname; mxArray *ctx;} DMMatlabContext;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMComputeFunction_Matlab"
 /*
    DMComputeFunction_Matlab - Calls the function that has been set with
-                         DMSetFunctionMatlab().  
+                         DMSetFunctionMatlab().
 
    For linear problems x is null
-   
+
 .seealso: DMSetFunction(), DMGetFunction()
 */
 PetscErrorCode  DMComputeFunction_Matlab(DM dm,Vec x,Vec y)
@@ -2636,7 +2636,7 @@ PetscErrorCode  DMComputeFunction_Matlab(DM dm,Vec x,Vec y)
   int               nlhs = 1,nrhs = 4;
   mxArray	    *plhs[1],*prhs[4];
   long long int     lx = 0,ly = 0,ls = 0;
-      
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
@@ -2644,9 +2644,9 @@ PetscErrorCode  DMComputeFunction_Matlab(DM dm,Vec x,Vec y)
 
   /* call Matlab function in ctx with arguments x and y */
   ierr = DMGetApplicationContext(dm,&sctx);CHKERRQ(ierr);
-  ierr = PetscMemcpy(&ls,&dm,sizeof(dm));CHKERRQ(ierr); 
-  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
-  ierr = PetscMemcpy(&ly,&y,sizeof(y));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&ls,&dm,sizeof(dm));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&ly,&y,sizeof(y));CHKERRQ(ierr);
   prhs[0] =  mxCreateDoubleScalar((double)ls);
   prhs[1] =  mxCreateDoubleScalar((double)lx);
   prhs[2] =  mxCreateDoubleScalar((double)ly);
@@ -2662,10 +2662,10 @@ PetscErrorCode  DMComputeFunction_Matlab(DM dm,Vec x,Vec y)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetFunctionMatlab"
 /*
-   DMSetFunctionMatlab - Sets the function evaluation routine 
+   DMSetFunctionMatlab - Sets the function evaluation routine
 
 */
 PetscErrorCode  DMSetFunctionMatlab(DM dm,const char *func)
@@ -2686,14 +2686,14 @@ PetscErrorCode  DMSetFunctionMatlab(DM dm,const char *func)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMComputeJacobian_Matlab"
 /*
    DMComputeJacobian_Matlab - Calls the function that has been set with
-                         DMSetJacobianMatlab().  
+                         DMSetJacobianMatlab().
 
    For linear problems x is null
-   
+
 .seealso: DMSetFunction(), DMGetFunction()
 */
 PetscErrorCode  DMComputeJacobian_Matlab(DM dm,Vec x,Mat A,Mat B,MatStructure *str)
@@ -2703,17 +2703,17 @@ PetscErrorCode  DMComputeJacobian_Matlab(DM dm,Vec x,Mat A,Mat B,MatStructure *s
   int               nlhs = 2,nrhs = 5;
   mxArray	    *plhs[2],*prhs[5];
   long long int     lx = 0,lA = 0,lB = 0,ls = 0;
-      
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(A,MAT_CLASSID,3);
 
   /* call MATLAB function in ctx with arguments x, A, and B */
   ierr = DMGetApplicationContext(dm,&sctx);CHKERRQ(ierr);
-  ierr = PetscMemcpy(&ls,&dm,sizeof(dm));CHKERRQ(ierr); 
-  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
-  ierr = PetscMemcpy(&lA,&A,sizeof(A));CHKERRQ(ierr); 
-  ierr = PetscMemcpy(&lB,&B,sizeof(B));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&ls,&dm,sizeof(dm));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&lA,&A,sizeof(A));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&lB,&B,sizeof(B));CHKERRQ(ierr);
   prhs[0] =  mxCreateDoubleScalar((double)ls);
   prhs[1] =  mxCreateDoubleScalar((double)lx);
   prhs[2] =  mxCreateDoubleScalar((double)lA);
@@ -2733,10 +2733,10 @@ PetscErrorCode  DMComputeJacobian_Matlab(DM dm,Vec x,Mat A,Mat B,MatStructure *s
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMSetJacobianMatlab"
 /*
-   DMSetJacobianMatlab - Sets the Jacobian function evaluation routine 
+   DMSetJacobianMatlab - Sets the Jacobian function evaluation routine
 
 */
 PetscErrorCode  DMSetJacobianMatlab(DM dm,const char *func)
@@ -2764,11 +2764,11 @@ PetscErrorCode  DMSetJacobianMatlab(DM dm,const char *func)
   DMLoad - Loads a DM that has been stored in binary or HDF5 format
   with DMView().
 
-  Collective on PetscViewer 
+  Collective on PetscViewer
 
   Input Parameters:
 + newdm - the newly loaded DM, this needs to have been created with DMCreate() or
-           some related function before a call to DMLoad(). 
+           some related function before a call to DMLoad().
 - viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
            HDF5 file viewer, obtained from PetscViewerHDF5Open()
 
@@ -2781,7 +2781,7 @@ PetscErrorCode  DMSetJacobianMatlab(DM dm,const char *func)
   Most users should not need to know the details of the binary storage
   format, since DMLoad() and DMView() completely hide these details.
   But for anyone who's interested, the standard binary matrix storage
-  format is  
+  format is
 .vb
      has not yet been determined
 .ve
@@ -2794,8 +2794,8 @@ and PetscBinaryWrite() to see how this may be done.
 
   Concepts: vector^loading from file
 
-.seealso: PetscViewerBinaryOpen(), DMView(), MatLoad(), VecLoad() 
-@*/  
+.seealso: PetscViewerBinaryOpen(), DMView(), MatLoad(), VecLoad()
+@*/
 PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -2821,7 +2821,7 @@ PetscErrorCode DMPrintCellVector(PetscInt c, const char name[], PetscInt len, co
 
   PetscFunctionBegin;
   ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %D Element %s\n", c, name);CHKERRQ(ierr);
-  for(f = 0; f < len; ++f) {
+  for (f = 0; f < len; ++f) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "  | %G |\n", PetscRealPart(x[f]));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -2835,9 +2835,9 @@ PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, P
 
   PetscFunctionBegin;
   ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %D Element %s\n", c, name);CHKERRQ(ierr);
-  for(f = 0; f < rows; ++f) {
+  for (f = 0; f < rows; ++f) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "  |");CHKERRQ(ierr);
-    for(g = 0; g < cols; ++g) {
+    for (g = 0; g < cols; ++g) {
       ierr = PetscPrintf(PETSC_COMM_SELF, " % 9.5G", PetscRealPart(A[f*cols+g]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(PETSC_COMM_SELF, " |\n");CHKERRQ(ierr);
@@ -3028,7 +3028,7 @@ PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section) {
   ierr = PetscSectionGetNumFields(dm->defaultSection, &numFields);CHKERRQ(ierr);
   if (numFields) {
     ierr = DMSetNumFields(dm, numFields);CHKERRQ(ierr);
-    for(f = 0; f < numFields; ++f) {
+    for (f = 0; f < numFields; ++f) {
       const char *name;
 
       ierr = PetscSectionGetFieldName(dm->defaultSection, f, &name);CHKERRQ(ierr);
@@ -3062,9 +3062,34 @@ PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *section) {
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(section, 2);
   if (!dm->defaultGlobalSection) {
-    ierr = PetscSectionCreateGlobalSection(dm->defaultSection, dm->sf, &dm->defaultGlobalSection);CHKERRQ(ierr);
+    ierr = PetscSectionCreateGlobalSection(dm->defaultSection, dm->sf, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);
   }
   *section = dm->defaultGlobalSection;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetDefaultGlobalSection"
+/*@
+  DMSetDefaultGlobalSection - Set the PetscSection encoding the global data layout for the DM.
+
+  Input Parameters:
++ dm - The DM
+- section - The PetscSection
+
+  Level: intermediate
+
+  Note: Any existing Section will be destroyed
+
+.seealso: DMGetDefaultGlobalSection(), DMSetDefaultSection()
+@*/
+PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection section) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscSectionDestroy(&dm->defaultGlobalSection);CHKERRQ(ierr);
+  dm->defaultGlobalSection = section;
   PetscFunctionReturn(0);
 }
 
@@ -3173,7 +3198,7 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
   ierr = PetscLayoutSetLocalSize(layout, nroots);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
   ierr = PetscLayoutGetRanges(layout, &ranges);CHKERRQ(ierr);
-  for(p = pStart, nleaves = 0; p < pEnd; ++p) {
+  for (p = pStart, nleaves = 0; p < pEnd; ++p) {
     PetscInt dof, cdof;
 
     ierr = PetscSectionGetDof(globalSection, p, &dof);CHKERRQ(ierr);
@@ -3182,7 +3207,7 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
   }
   ierr = PetscMalloc(nleaves * sizeof(PetscInt), &local);CHKERRQ(ierr);
   ierr = PetscMalloc(nleaves * sizeof(PetscSFNode), &remote);CHKERRQ(ierr);
-  for(p = pStart, l = 0; p < pEnd; ++p) {
+  for (p = pStart, l = 0; p < pEnd; ++p) {
     PetscInt *cind;
     PetscInt  dof, gdof, cdof, dim, off, goff, d, c;
 
@@ -3193,22 +3218,22 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
     ierr = PetscSectionGetDof(globalSection, p, &gdof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(globalSection, p, &goff);CHKERRQ(ierr);
     dim  = dof-cdof;
-    for(d = 0, c = 0; d < dof; ++d) {
+    for (d = 0, c = 0; d < dof; ++d) {
       if ((c < cdof) && (cind[c] == d)) {++c; continue;}
       local[l+d-c] = off+d;
     }
     if (gdof < 0) {
-      for(d = 0; d < dim; ++d, ++l) {
+      for (d = 0; d < dim; ++d, ++l) {
         PetscInt offset = -(goff+1) + d, r;
 
-        for(r = 0; r < size; ++r) {
+        for (r = 0; r < size; ++r) {
           if ((offset >= ranges[r]) && (offset < ranges[r+1])) break;
         }
         remote[l].rank  = r;
         remote[l].index = offset - ranges[r];
       }
     } else {
-      for(d = 0; d < dim; ++d, ++l) {
+      for (d = 0; d < dim; ++d, ++l) {
         remote[l].rank  = rank;
         remote[l].index = goff+d - ranges[rank];
       }
@@ -3216,6 +3241,31 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
   }
   ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(dm->defaultSF, nroots, nleaves, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetPointSF"
+/*@
+  DMGetPointSF - Get the PetscSF encoding the parallel section point overlap for the DM.
+
+  Input Parameter:
+. dm - The DM
+
+  Output Parameter:
+. sf - The PetscSF
+
+  Level: intermediate
+
+  Note: This gets a borrowed reference, so the user should not destroy this PetscSF.
+
+.seealso: DMGetDefaultSF(), DMSetDefaultSF(), DMCreateDefaultSF()
+@*/
+PetscErrorCode DMGetPointSF(DM dm, PetscSF *sf) {
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(sf, 2);
+  *sf = dm->sf;
   PetscFunctionReturn(0);
 }
 
@@ -3239,13 +3289,13 @@ PetscErrorCode DMSetNumFields(DM dm, PetscInt numFields)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  for(f = 0; f < dm->numFields; ++f) {
+  for (f = 0; f < dm->numFields; ++f) {
     ierr = PetscObjectDestroy(&dm->fields[f]);CHKERRQ(ierr);
   }
   ierr = PetscFree(dm->fields);CHKERRQ(ierr);
   dm->numFields = numFields;
   ierr = PetscMalloc(dm->numFields * sizeof(PetscObject), &dm->fields);CHKERRQ(ierr);
-  for(f = 0; f < dm->numFields; ++f) {
+  for (f = 0; f < dm->numFields; ++f) {
     ierr = PetscContainerCreate(((PetscObject) dm)->comm, (PetscContainer *) &dm->fields[f]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -11,7 +11,7 @@ struct _PC_CompositeLink {
   PC_CompositeLink next;
   PC_CompositeLink previous;
 };
-  
+
 typedef struct {
   PC_CompositeLink head;
   PCCompositeType  type;
@@ -21,7 +21,7 @@ typedef struct {
   PetscBool        use_true_matrix;
 } PC_Composite;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_Composite_Multiplicative"
 static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 {
@@ -58,7 +58,7 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyTranspose_Composite_Multiplicative"
 static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc,Vec x,Vec y)
 {
@@ -105,7 +105,7 @@ static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc,Vec x,Vec 
 where first preconditioner is built from alpha I + S and second from
 alpha I + R
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_Composite_Special"
 static PetscErrorCode PCApply_Composite_Special(PC pc,Vec x,Vec y)
 {
@@ -122,7 +122,7 @@ static PetscErrorCode PCApply_Composite_Special(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_Composite_Additive"
 static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 {
@@ -135,14 +135,14 @@ static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
   ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
     next = next->next;
-    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */        
+    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
     ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
     ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyTranspose_Composite_Additive"
 static PetscErrorCode PCApplyTranspose_Composite_Additive(PC pc,Vec x,Vec y)
 {
@@ -155,14 +155,14 @@ static PetscErrorCode PCApplyTranspose_Composite_Additive(PC pc,Vec x,Vec y)
   ierr = PCApplyTranspose(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
     next = next->next;
-    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */        
+    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
     ierr = PCApplyTranspose(next->pc,x,jac->work1);CHKERRQ(ierr);
     ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Composite"
 static PetscErrorCode PCSetUp_Composite(PC pc)
 {
@@ -181,7 +181,7 @@ static PetscErrorCode PCSetUp_Composite(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCReset_Composite"
 static PetscErrorCode PCReset_Composite(PC pc)
 {
@@ -199,7 +199,7 @@ static PetscErrorCode PCReset_Composite(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_Composite"
 static PetscErrorCode PCDestroy_Composite(PC pc)
 {
@@ -219,7 +219,7 @@ static PetscErrorCode PCDestroy_Composite(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Composite"
 static PetscErrorCode PCSetFromOptions_Composite(PC pc)
 {
@@ -241,7 +241,7 @@ static PetscErrorCode PCSetFromOptions_Composite(PC pc)
     if (flg) {
       ierr = PCCompositeSetUseTrue(pc);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsStringArray("-pc_composite_pcs","List of composite solvers","PCCompositeAddPC",pcs,&nmax,&flg);CHKERRQ(ierr); 
+    ierr = PetscOptionsStringArray("-pc_composite_pcs","List of composite solvers","PCCompositeAddPC",pcs,&nmax,&flg);CHKERRQ(ierr);
     if (flg) {
       for (i=0; i<nmax; i++) {
         ierr = PCCompositeAddPC(pc,pcs[i]);CHKERRQ(ierr);
@@ -258,7 +258,7 @@ static PetscErrorCode PCSetFromOptions_Composite(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_Composite"
 static PetscErrorCode PCView_Composite(PC pc,PetscViewer viewer)
 {
@@ -293,7 +293,7 @@ static PetscErrorCode PCView_Composite(PC pc,PetscViewer viewer)
 /* ------------------------------------------------------------------------------*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCompositeSpecialSetAlpha_Composite"
 PetscErrorCode  PCCompositeSpecialSetAlpha_Composite(PC pc,PetscScalar alpha)
 {
@@ -305,7 +305,7 @@ PetscErrorCode  PCCompositeSpecialSetAlpha_Composite(PC pc,PetscScalar alpha)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCompositeSetType_Composite"
 PetscErrorCode  PCCompositeSetType_Composite(PC pc,PCCompositeType type)
 {
@@ -328,7 +328,7 @@ PetscErrorCode  PCCompositeSetType_Composite(PC pc,PCCompositeType type)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCompositeAddPC_Composite"
 PetscErrorCode  PCCompositeAddPC_Composite(PC pc,const PCType type)
 {
@@ -370,7 +370,7 @@ PetscErrorCode  PCCompositeAddPC_Composite(PC pc,const PCType type)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCompositeGetPC_Composite"
 PetscErrorCode  PCCompositeGetPC_Composite(PC pc,PetscInt n,PC *subpc)
 {
@@ -391,7 +391,7 @@ PetscErrorCode  PCCompositeGetPC_Composite(PC pc,PetscInt n,PC *subpc)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCompositeSetUseTrue_Composite"
 PetscErrorCode  PCCompositeSetUseTrue_Composite(PC pc)
 {
@@ -405,11 +405,11 @@ PetscErrorCode  PCCompositeSetUseTrue_Composite(PC pc)
 EXTERN_C_END
 
 /* -------------------------------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCompositeSetType"
 /*@
    PCCompositeSetType - Sets the type of composite preconditioner.
-   
+
    Logically Collective on PC
 
    Input Parameter:
@@ -434,12 +434,12 @@ PetscErrorCode  PCCompositeSetType(PC pc,PCCompositeType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCompositeSpecialSetAlpha"
 /*@
    PCCompositeSpecialSetAlpha - Sets alpha for the special composite preconditioner
      for alphaI + R + S
-   
+
    Logically Collective on PC
 
    Input Parameter:
@@ -461,11 +461,11 @@ PetscErrorCode  PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCompositeAddPC"
 /*@C
    PCCompositeAddPC - Adds another PC to the composite PC.
-   
+
    Collective on PC
 
    Input Parameters:
@@ -486,11 +486,11 @@ PetscErrorCode  PCCompositeAddPC(PC pc,const PCType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCompositeGetPC"
 /*@
    PCCompositeGetPC - Gets one of the PC objects in the composite PC.
-   
+
    Not Collective
 
    Input Parameter:
@@ -517,7 +517,7 @@ PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCompositeSetUseTrue"
 /*@
    PCCompositeSetUseTrue - Sets a flag to indicate that the true matrix (rather than
@@ -533,7 +533,7 @@ PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 .  -pc_composite_true - Activates PCCompositeSetUseTrue()
 
    Note:
-   For the common case in which the preconditioning and linear 
+   For the common case in which the preconditioning and linear
    system matrices are identical, this routine is unnecessary.
 
    Level: Developer
@@ -555,7 +555,7 @@ PetscErrorCode  PCCompositeSetUseTrue(PC pc)
 /* -------------------------------------------------------------------------------------------*/
 
 /*MC
-     PCCOMPOSITE - Build a preconditioner by composing together several preconditioners 
+     PCCOMPOSITE - Build a preconditioner by composing together several preconditioners
 
    Options Database Keys:
 +  -pc_composite_type <type: one of multiplicative, additive, symmetric_multiplicative, special> - Sets composite preconditioner type
@@ -567,7 +567,7 @@ PetscErrorCode  PCCompositeSetUseTrue(PC pc)
    Concepts: composing solvers
 
    Notes: To use a Krylov method inside the composite preconditioner, set the PCType of one or more
-          inner PCs to be PCKSP. 
+          inner PCs to be PCKSP.
           Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
           the incorrect answer) unless you use KSPFGMRES as the outer Krylov method
 
@@ -579,7 +579,7 @@ PetscErrorCode  PCCompositeSetUseTrue(PC pc)
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_Composite"
 PetscErrorCode  PCCreate_Composite(PC pc)
 {

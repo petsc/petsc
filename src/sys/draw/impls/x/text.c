@@ -12,12 +12,12 @@ PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X*,PetscDrawXiFont*);
 /*
     PetscDrawXiFontFixed - Return a pointer to the selected font.
 
-    Warning: Loads a new font for each window. This should be 
+    Warning: Loads a new font for each window. This should be
    ok because there will never be many windows and the graphics
    are not intended to be high performance.
 */
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawXiFontFixed" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiFontFixed"
 PetscErrorCode PetscDrawXiFontFixed(PetscDraw_X *XBWin,int w,int h,PetscDrawXiFont **outfont)
 {
   static PetscDrawXiFont *curfont = 0,*font;
@@ -45,8 +45,8 @@ static int act_nfonts = 0;
   and load it if necessary
 */
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawXiLoadFont" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiLoadFont"
 PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X *XBWin,PetscDrawXiFont *font)
 {
   char        font_name[100];
@@ -68,13 +68,13 @@ PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X *XBWin,PetscDrawXiFont *font)
 
   /* Set the current font in the CG */
   values.font = font->fnt ;
-  XChangeGC(XBWin->disp,XBWin->gc.set,GCFont,&values); 
+  XChangeGC(XBWin->disp,XBWin->gc.set,GCFont,&values);
   PetscFunctionReturn(0);
 }
 
 /* Code to find fonts and their characteristics */
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawXiInitFonts" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiInitFonts"
 PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X *XBWin)
 {
   char         **names;
@@ -124,8 +124,8 @@ PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X *XBWin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawXiMatchFontSize" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawXiMatchFontSize"
 PetscErrorCode PetscDrawXiMatchFontSize(PetscDrawXiFont *font,int w,int h)
 {
   int i,max,imax,tmp;

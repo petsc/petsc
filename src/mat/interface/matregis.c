@@ -55,15 +55,15 @@ extern PetscErrorCode  MatCreate_FFTW(Mat);
 #endif
 extern PetscErrorCode  MatCreate_Elemental(Mat);
 EXTERN_C_END
-  
+
 /*
-    This is used by MatSetType() to make sure that at least one 
+    This is used by MatSetType() to make sure that at least one
     MatRegisterAll() is called. In general, if there is more than one
     DLL, then MatRegisterAll() may be called several times.
 */
 extern PetscBool  MatRegisterAllCalled;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatRegisterAll"
 /*@C
   MatRegisterAll - Registers all of the matrix types in PETSc

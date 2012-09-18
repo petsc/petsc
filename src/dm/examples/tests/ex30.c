@@ -36,7 +36,7 @@ int main(int argc,char *argv[])
       ierr = PetscOptionsReal("-sigma","Width of Gaussian density perturbation","",sigma,&sigma,PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsBool("-block","Use block matrix assembly","",useblock,&useblock,PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsString("-sliced_mat_type","Matrix type to use (aij or baij)","",mat_type,mat_type,sizeof mat_type,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-sliced_mat_type","Matrix type to use (aij or baij)","",mat_type,mat_type,sizeof(mat_type),PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 

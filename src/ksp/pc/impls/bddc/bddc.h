@@ -85,6 +85,8 @@ typedef struct {
   PetscBool     edges_flag;
   /* Some customization is possible */
   PCBDDCGraph                mat_graph;
+  MatNullSpace               NullSpace;
+  MatNullSpace               CoarseNullSpace;
   PetscBool                  use_nnsp_true;
   PetscInt                   n_ISForDofs;
   IS                         *ISForDofs;
@@ -101,6 +103,7 @@ typedef struct {
 } PC_BDDC;
 
 /* prototypes for functions contained in bddc.c */
+static PetscErrorCode PCBDDCAdaptNullSpace(PC);
 static PetscErrorCode PCBDDCCoarseSetUp(PC);
 static PetscErrorCode PCBDDCFindConnectedComponents(PCBDDCGraph,PetscInt);
 static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC,PetscScalar*);

@@ -26,15 +26,15 @@ typedef struct xyt_solver_info {
   PetscInt n, m, n_global, m_global;
   PetscInt nnz, max_nnz, msg_buf_sz;
   PetscInt *nsep, *lnsep, *fo, nfo, *stages;
-  PetscInt *xcol_sz, *xcol_indices; 
+  PetscInt *xcol_sz, *xcol_indices;
   PetscScalar **xcol_vals, *x, *solve_uu, *solve_w;
-  PetscInt *ycol_sz, *ycol_indices; 
+  PetscInt *ycol_sz, *ycol_indices;
   PetscScalar **ycol_vals, *y;
   PetscInt nsolves;
   PetscScalar tot_solve_time;
 } xyt_info;
 
- 
+
 typedef struct matvec_info {
   PetscInt n, m, n_global, m_global;
   PetscInt *local2global;
@@ -151,7 +151,7 @@ PetscInt XYT_free(xyt_ADT xyt_handle)
   free(xyt_handle->mvi);
   free(xyt_handle);
 
- 
+
   /* if the check fails we nuke */
   /* if NULL pointer passed to free we nuke */
   /* if the calls to free fail that's not my problem */
@@ -209,12 +209,12 @@ PetscInt XYT_stats(xyt_ADT xyt_handle)
 
 /*************************************xyt.c************************************
 
-Description: get A_local, local portion of global coarse matrix which 
+Description: get A_local, local portion of global coarse matrix which
 is a row dist. nxm matrix w/ n<m.
    o my_ml holds address of ML struct associated w/A_local and coarse grid
    o local2global holds global number of column i (i=0,...,m-1)
    o local2global holds global number of row    i (i=0,...,n-1)
-   o mylocmatvec performs A_local . vec_local (note that gs is performed using 
+   o mylocmatvec performs A_local . vec_local (note that gs is performed using
    PCTFS_gs_init/gop).
 
 mylocmatvec = my_ml->Amat[grid_tag].matvec->external;
@@ -245,7 +245,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
   PetscInt *a_local2global=xyt_handle->mvi->local2global;
   PetscInt level;
   PetscInt n, m;
-  PetscInt *xcol_sz, *xcol_indices, *stages; 
+  PetscInt *xcol_sz, *xcol_indices, *stages;
   PetscScalar **xcol_vals, *x;
   PetscInt *ycol_sz, *ycol_indices;
   PetscScalar **ycol_vals, *y;
@@ -260,8 +260,8 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
   PetscScalar dm1 = -1.0;
   PetscErrorCode ierr;
 
-  n=xyt_handle->mvi->n; 
-  nsep=xyt_handle->info->nsep; 
+  n=xyt_handle->mvi->n;
+  nsep=xyt_handle->info->nsep;
   lnsep=xyt_handle->info->lnsep;
   fo=xyt_handle->info->fo;
   end=lnsep[0];
@@ -346,7 +346,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
       /* i.e. set v_l */
       /* use new seps and do global min across hc to determine which one to fire */
       (start<end) ? (col=fo[start]) : (col=INT_MAX);
-      PCTFS_giop_hc(&col,&work,1,op2,dim); 
+      PCTFS_giop_hc(&col,&work,1,op2,dim);
 
       /* shouldn't need this */
       if (col==INT_MAX)
@@ -461,7 +461,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
 	      x = x_ptr;
 	      x_ptr+=xt_nnz;
 	    }
-	  xt_nnz += len;      
+	  xt_nnz += len;
 	  PCTFS_rvec_copy(x_ptr,v+off,len);
 
           /* keep track of number of zeros */
@@ -520,7 +520,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
 	      y = y_ptr;
 	      y_ptr+=yt_nnz;
 	    }
-	  yt_nnz += len;      
+	  yt_nnz += len;
 	  PCTFS_rvec_copy(y_ptr,u+off,len);
 
           /* keep track of number of zeros */
@@ -570,12 +570,12 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
   xyt_handle->info->x=x;
   xyt_handle->info->xcol_vals=xcol_vals;
   xyt_handle->info->xcol_sz=xcol_sz;
-  xyt_handle->info->xcol_indices=xcol_indices;  
+  xyt_handle->info->xcol_indices=xcol_indices;
   xyt_handle->info->stages=stages;
   xyt_handle->info->y=y;
   xyt_handle->info->ycol_vals=ycol_vals;
   xyt_handle->info->ycol_sz=ycol_sz;
-  xyt_handle->info->ycol_indices=ycol_indices;  
+  xyt_handle->info->ycol_indices=ycol_indices;
 
   free(segs);
   free(u);
@@ -651,7 +651,7 @@ static PetscErrorCode check_handle(xyt_ADT xyt_handle)
 static PetscErrorCode det_separators(xyt_ADT xyt_handle)
 {
   PetscInt i, ct, id;
-  PetscInt mask, edge, *iptr; 
+  PetscInt mask, edge, *iptr;
   PetscInt *dir, *used;
   PetscInt sum[4], w[4];
   PetscScalar rsum[4], rw[4];
@@ -663,7 +663,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
   PetscInt  n=xyt_handle->mvi->n;
   PetscInt  m=xyt_handle->mvi->m;
   PetscInt level=xyt_handle->level;
-  PetscInt shared=0; 
+  PetscInt shared=0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -713,17 +713,17 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
       /* pick the sub-hc with the most free dofs and do a mat-vec   */
       /* and pick up the responses on the other sub-hc from the     */
       /* initial separator set obtained from the symm. shared case  */
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"shared dof separator determination not ready ... see hmt!!!\n"); 
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"shared dof separator determination not ready ... see hmt!!!\n");
       for (iptr=fo+n,id=PCTFS_my_id,mask=PCTFS_num_nodes>>1,edge=level;edge>0;edge--,mask>>=1)
 	{
 	  /* set rsh of hc, fire, and collect lhs responses */
 	  (id<mask) ? PCTFS_rvec_zero(lhs,m) : PCTFS_rvec_set(lhs,1.0,m);
 	  PCTFS_gs_gop_hc(PCTFS_gs_handle,lhs,"+\0",edge);
-	  
+	
 	  /* set lsh of hc, fire, and collect rhs responses */
 	  (id<mask) ? PCTFS_rvec_set(rhs,1.0,m) : PCTFS_rvec_zero(rhs,m);
 	  PCTFS_gs_gop_hc(PCTFS_gs_handle,rhs,"+\0",edge);
-	  
+	
 	  for (i=0;i<n;i++)
 	    {
 	      if (id< mask)
@@ -747,7 +747,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
 	  PCTFS_rvec_zero(rsum,4);
 	  for (PCTFS_ivec_zero(sum,4),ct=i=0;i<n;i++)
 	    {
-	      if (!used[i]) 
+	      if (!used[i])
 		{
 		  /* number of unmarked dofs on node */
 		  ct++;
@@ -840,7 +840,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
 	  /* count number of dofs I own that have signal and not in sep set */
 	  for (PCTFS_ivec_zero(sum,4),ct=i=0;i<n;i++)
 	    {
-	      if (!used[i]) 
+	      if (!used[i])
 		{
 		  /* number of unmarked dofs on node */
 		  ct++;
@@ -903,7 +903,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
   /* level 0 is on processor case - so mark the remainder */
   for (ct=i=0;i<n;i++)
     {
-      if (!used[i]) 
+      if (!used[i])
 	{
 	  ct++; nfo++;
 	  *--iptr = local2global[i];

@@ -3,8 +3,8 @@
 
 #include <petscsys.h>
 
-#undef __FUNCT__  
-#define __FUNCT__ "SPARSEPACKrevrse" 
+#undef __FUNCT__
+#define __FUNCT__ "SPARSEPACKrevrse"
 PetscErrorCode SPARSEPACKrevrse(PetscInt *n,PetscInt *perm)
 {
     /* System generated locals */
@@ -54,8 +54,8 @@ PetscErrorCode SPARSEPACKrevrse(PetscInt *n,PetscInt *perm)
 /*       FNDSEP, REVRSE.*/
 /*****************************************************************/
 
-#undef __FUNCT__  
-#define __FUNCT__ "SPARSEPACKgennd" 
+#undef __FUNCT__
+#define __FUNCT__ "SPARSEPACKgennd"
 PetscErrorCode SPARSEPACKgennd(PetscInt *neqns,PetscInt *xadj,PetscInt *adjncy,PetscInt *mask,PetscInt *perm,PetscInt *xls,PetscInt *ls)
 {
     /* System generated locals */

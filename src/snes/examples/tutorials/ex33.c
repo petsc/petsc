@@ -46,7 +46,7 @@ PetscErrorCode FormPermeability(DM da, Vec Kappa, AppCtx *user)
   ierr = DMDAGetCorners(da, &xs,PETSC_NULL,PETSC_NULL, &xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da, Kappa, &K);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda, c, &coords);CHKERRQ(ierr);
-  for(i = xs; i < xs+xm; ++i) {
+  for (i = xs; i < xs+xm; ++i) {
 #if 1
     K[i] = 1.0;
 #else
@@ -89,7 +89,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx
   ierr = DMDAVecGetArray(info->da, user->uold,  &uold);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->cda, user->Kappa, &Kappa);CHKERRQ(ierr);
   /* Compute residual over the locally owned part of the grid */
-  for(i = info->xs; i < info->xs+info->xm; ++i) {
+  for (i = info->xs; i < info->xs+info->xm; ++i) {
     if (i == 0) {
       f[i].s = u[i].s - user->sl;
       f[i].v = u[i].v - user->vl;
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
   user.kappaNoWet = 0.3;
   /* Time Loop */
   user.dt = 0.1;
-  for(PetscInt n = 0; n < 100; ++n, t += user.dt) {
+  for (PetscInt n = 0; n < 100; ++n, t += user.dt) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting time %g\n", t);CHKERRQ(ierr);
     ierr = VecView(u, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     /* Solve */

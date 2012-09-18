@@ -53,7 +53,7 @@ PetscErrorCode PetscThreadCommSetPThreadAttributes(PetscThreadComm tcomm)
   PetscGetNCores(&ncores);
 #endif
 
-  for(i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
+  for (i=ptcomm->thread_num_start; i < tcomm->nworkThreads;i++) {
     ierr = pthread_attr_init(&attr[i]);CHKERRQ(ierr);
     /* CPU affinity */
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
@@ -66,7 +66,7 @@ PetscErrorCode PetscThreadCommSetPThreadAttributes(PetscThreadComm tcomm)
     break;
   case PTHREADAFFPOLICY_ALL:
     CPU_ZERO(&cpuset[i]);
-    for(j=0;j<ncores;j++) CPU_SET(j,&cpuset[i]);
+    for (j=0;j<ncores;j++) CPU_SET(j,&cpuset[i]);
     pthread_attr_setaffinity_np(&attr[i],sizeof(cpu_set_t),&cpuset[i]);
     break;
     case PTHREADAFFPOLICY_NONE:
@@ -85,9 +85,9 @@ PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  if(!ptcomm) PetscFunctionReturn(0);
+  if (!ptcomm) PetscFunctionReturn(0);
   ptcommcrtct--;
-  if(!ptcommcrtct) {
+  if (!ptcommcrtct) {
     /* Terminate the thread pool */
     ierr = (*ptcomm->finalize)(tcomm);CHKERRQ(ierr);
     ierr = PetscFree(ptcomm->tid);CHKERRQ(ierr);
@@ -129,7 +129,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
 
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&ptcomm->granks);CHKERRQ(ierr);
 
-  if(!PetscPThreadCommInitializeCalled) { /* Only done for PETSC_THREAD_COMM_WORLD */
+  if (!PetscPThreadCommInitializeCalled) { /* Only done for PETSC_THREAD_COMM_WORLD */
     PetscPThreadCommInitializeCalled = PETSC_TRUE;
     PetscBool               flg1,flg2,flg3,flg4;
 
@@ -141,7 +141,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     ierr = PetscOptionsBool("-threadcomm_pthread_synchronizeafter","Puts a barrier after every kernel call",PETSC_NULL,PETSC_TRUE,&ptcomm->synchronizeafter,&flg1);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-    if(ptcomm->ismainworker) {
+    if (ptcomm->ismainworker) {
       ptcomm->nthreads = tcomm->nworkThreads-1;
       ptcomm->thread_num_start = 1;
     } else {
@@ -160,9 +160,9 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only Lock-free synchronization scheme supported currently");
     }
     /* Set up thread ranks */
-    for(i=0;i< tcomm->nworkThreads;i++) ptcomm->granks[i] = i;
+    for (i=0;i< tcomm->nworkThreads;i++) ptcomm->granks[i] = i;
 
-    if(ptcomm->ismainworker) {
+    if (ptcomm->ismainworker) {
 #if defined(PETSC_PTHREAD_LOCAL)
       PetscPThreadRank=0; /* Main thread rank */
 #else
@@ -171,8 +171,8 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
 #endif
     }
     /* Set the leader thread rank */
-    if(ptcomm->nthreads) {
-      if(ptcomm->ismainworker) tcomm->leader = ptcomm->granks[1];
+    if (ptcomm->nthreads) {
+      if (ptcomm->ismainworker) tcomm->leader = ptcomm->granks[1];
       else tcomm->leader = ptcomm->granks[0];
     }
   
@@ -181,7 +181,7 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     /* Create thread attributes */
     ierr = PetscMalloc(tcomm->nworkThreads*sizeof(pthread_attr_t),&ptcomm->attr);CHKERRQ(ierr);
     ierr = PetscThreadCommSetPThreadAttributes(tcomm);CHKERRQ(ierr);
-    if(ptcomm->ismainworker) {
+    if (ptcomm->ismainworker) {
       /* Pin main thread */
 #if defined(PETSC_HAVE_SCHED_CPU_SET_T)
     cpu_set_t mset;
@@ -214,9 +214,9 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
     tcomm->ops->runkernel    = gtcomm->ops->runkernel;
     tcomm->ops->barrier      = gtcomm->ops->barrier;
     
-    for(i=0; i < tcomm->nworkThreads;i++) {
-      for(j=0;j < gtcomm->nworkThreads; j++) {
-	if(tcomm->affinities[i] == gaffinities[j]) {
+    for (i=0; i < tcomm->nworkThreads;i++) {
+      for (j=0;j < gtcomm->nworkThreads; j++) {
+	if (tcomm->affinities[i] == gaffinities[j]) {
 	  ptcomm->granks[i] = granks[j];
 	}
       }

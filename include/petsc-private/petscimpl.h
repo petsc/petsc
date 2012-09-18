@@ -5,23 +5,23 @@
 
 #if !defined(_PETSCHEAD_H)
 #define _PETSCHEAD_H
-#include <petscsys.h>  
+#include <petscsys.h>
 
 /*
-   All major PETSc data structures have a common core; this is defined 
-   below by PETSCHEADER. 
+   All major PETSc data structures have a common core; this is defined
+   below by PETSCHEADER.
 
    PetscHeaderCreate() should be used whenever creating a PETSc structure.
 */
 
 /*
    PetscOps: structure of core operations that all PETSc objects support.
-   
+
       getcomm()         - Gets the object's communicator.
       view()            - Is the routine for viewing the entire PETSc object; for
                           example, MatView() is the general matrix viewing routine.
-      destroy()         - Is the routine for destroying the entire PETSc object; 
-                          for example,MatDestroy() is the general matrix 
+      destroy()         - Is the routine for destroying the entire PETSc object;
+                          for example,MatDestroy() is the general matrix
                           destruction routine.
       compose()         - Associates a PETSc object with another PETSc object.
       query()           - Returns a different PETSc object that has been associated
@@ -44,46 +44,46 @@ typedef struct {
 
 /*
    All PETSc objects begin with the fields defined in PETSCHEADER.
-   The PetscObject is a way of examining these fields regardless of 
+   The PetscObject is a way of examining these fields regardless of
    the specific object. In C++ this could be a base abstract class
    from which all objects are derived.
 */
 #define PETSC_MAX_OPTIONS_HANDLER 5
 typedef struct _p_PetscObject {
-  PetscClassId   classid;                                        
-  PetscOps       *bops;                                         
-  MPI_Comm       comm;                                          
-  PetscInt       type;                                          
-  PetscLogDouble flops,time,mem;                                
-  PetscInt       id;                                            
-  PetscInt       refct;                                         
-  PetscMPIInt    tag;                                           
-  PetscFList     qlist;                                         
-  PetscOList     olist;                                         
+  PetscClassId   classid;
+  PetscOps       *bops;
+  MPI_Comm       comm;
+  PetscInt       type;
+  PetscLogDouble flops,time,mem;
+  PetscInt       id;
+  PetscInt       refct;
+  PetscMPIInt    tag;
+  PetscFList     qlist;
+  PetscOList     olist;
   char           *class_name;
   char           *description;
   char           *mansec;
-  char           *type_name;                                    
-  PetscObject    parent;                                        
-  PetscInt       parentid;                                      
-  char*          name;                                          
-  char           *prefix;                                       
-  PetscInt       tablevel;                                      
-  void           *cpp;                                          
-  PetscInt       amem;                                          
-  PetscInt       state;                                         
-  PetscInt       int_idmax,        intstar_idmax;               
-  PetscInt       *intcomposedstate,*intstarcomposedstate;       
-  PetscInt       *intcomposeddata, **intstarcomposeddata;       
-  PetscInt       real_idmax,        realstar_idmax;             
-  PetscInt       *realcomposedstate,*realstarcomposedstate;     
-  PetscReal      *realcomposeddata, **realstarcomposeddata;     
-  PetscInt       scalar_idmax,        scalarstar_idmax;         
-  PetscInt       *scalarcomposedstate,*scalarstarcomposedstate; 
-  PetscScalar    *scalarcomposeddata, **scalarstarcomposeddata; 
+  char           *type_name;
+  PetscObject    parent;
+  PetscInt       parentid;
+  char*          name;
+  char           *prefix;
+  PetscInt       tablevel;
+  void           *cpp;
+  PetscInt       amem;
+  PetscInt       state;
+  PetscInt       int_idmax,        intstar_idmax;
+  PetscInt       *intcomposedstate,*intstarcomposedstate;
+  PetscInt       *intcomposeddata, **intstarcomposeddata;
+  PetscInt       real_idmax,        realstar_idmax;
+  PetscInt       *realcomposedstate,*realstarcomposedstate;
+  PetscReal      *realcomposeddata, **realstarcomposeddata;
+  PetscInt       scalar_idmax,        scalarstar_idmax;
+  PetscInt       *scalarcomposedstate,*scalarstarcomposedstate;
+  PetscScalar    *scalarcomposeddata, **scalarstarcomposeddata;
   void           (**fortran_func_pointers)(void);                  /* used by Fortran interface functions to stash user provided Fortran functions */
   PetscInt       num_fortran_func_pointers;                        /* number of Fortran function pointers allocated */
-  void           *python_context;                               
+  void           *python_context;
   PetscErrorCode (*python_destroy)(void*);
 
   PetscInt       noptionhandler;
@@ -101,7 +101,7 @@ typedef struct _p_PetscObject {
 #define  PETSCFREEDHEADER -1
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectFunction)(PetscObject*); /* force cast in next macro to NEVER use extern "C" style */
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer); 
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
 
 /*@C
     PetscHeaderCreate - Creates a PETSc object
@@ -123,7 +123,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscOb
 
 .seealso: PetscHeaderDestroy(), PetscClassIdRegister()
 
-@*/ 
+@*/
 #define PetscHeaderCreate(h,tp,pops,cook,t,class_name,descr,mansec,com,des,vie) \
   (PetscNew(struct tp,&(h)) ||						\
    PetscNew(PetscOps,&(((PetscObject)(h))->bops)) ||			\
@@ -144,7 +144,7 @@ PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,P
     Level: developer
 
 .seealso: PetscHeaderCreate()
-@*/ 
+@*/
 #define PetscHeaderDestroy(h)			   \
   (PetscLogObjectDestroy((PetscObject)(*h)) ||	   \
    PetscComposedQuantitiesDestroy((PetscObject)*h) || \
@@ -234,7 +234,7 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PETSC_UNUSED Pet
 }
 #endif
 
-/* 
+/*
     Macros to test if a PETSc object is valid and if pointers are valid
 */
 #if !defined(PETSC_USE_DEBUG)
@@ -315,11 +315,11 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PETSC_UNUSED Pet
 
 /*
     For example, in the dot product between two vectors,
-  both vectors must be either Seq or MPI, not one of each 
+  both vectors must be either Seq or MPI, not one of each
 */
 #define PetscCheckSameType(a,arga,b,argb) \
   if (((PetscObject)a)->type != ((PetscObject)b)->type) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Objects not of same type: Argument # %d and %d",arga,argb);
-/* 
+/*
    Use this macro to check if the type is set
 */
 #define PetscValidType(a,arg) \
@@ -388,7 +388,7 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PETSC_UNUSED Pet
 #endif
 
 /*MC
-   PetscObjectStateIncrease - Increases the state of any PetscObject, 
+   PetscObjectStateIncrease - Increases the state of any PetscObject,
    regardless of the type.
 
    Synopsis:
@@ -398,7 +398,7 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PETSC_UNUSED Pet
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
-         cast with a (PetscObject), for example, 
+         cast with a (PetscObject), for example,
          PetscObjectStateIncrease((PetscObject)mat);
 
    Notes: object state is an integer which gets increased every time
@@ -408,7 +408,7 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PETSC_UNUSED Pet
 
    This routine is mostly for internal use by PETSc; a developer need only
    call it after explicit access to an object's internals. Routines such
-   as VecSet() or MatScale() already call this routine. It is also called, as a 
+   as VecSet() or MatScale() already call this routine. It is also called, as a
    precaution, in VecRestoreArray(), MatRestoreRow(), MatDenseRestoreArray().
 
    Level: developer
@@ -421,7 +421,7 @@ M*/
 #define PetscObjectStateIncrease(obj) ((obj)->state++,0)
 
 /*MC
-   PetscObjectStateDecrease - Decreases the state of any PetscObject, 
+   PetscObjectStateDecrease - Decreases the state of any PetscObject,
    regardless of the type.
 
    Synopsis:
@@ -431,7 +431,7 @@ M*/
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
-         cast with a (PetscObject), for example, 
+         cast with a (PetscObject), for example,
          PetscObjectStateIncrease((PetscObject)mat);
 
    Notes: object state is an integer which gets increased every time
@@ -529,7 +529,7 @@ M*/
    ((obj)->intstarcomposeddata[id] = data,(obj)->intstarcomposedstate[id] = (obj)->state, 0))
 
 /*MC
-   PetscObjectComposedDataGetIntstar - retrieve integer array data 
+   PetscObjectComposedDataGetIntstar - retrieve integer array data
    attached to an object
 
    Synopsis:
@@ -705,7 +705,7 @@ M*/
 #endif
 
 /*MC
-   PetscObjectComposedDataSetScalarstar - attach scalar array data to a PetscObject 
+   PetscObjectComposedDataSetScalarstar - attach scalar array data to a PetscObject
 
    Synopsis:
    PetscErrorCode PetscObjectComposedDataSetScalarstar(PetscObject obj,int id,PetscScalar *data)

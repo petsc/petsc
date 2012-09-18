@@ -41,7 +41,7 @@ typedef struct {
   PetscMPIInt            *neighbors;         /* ranks of all neighbors and self */
 
   ISColoring             localcoloring;       /* set by DMCreateColoring() */
-  ISColoring             ghostedcoloring;  
+  ISColoring             ghostedcoloring;
 
   DMDAElementType          elementtype;
   PetscInt               ne;                  /* number of elements */
@@ -51,22 +51,22 @@ typedef struct {
   PetscInt               coarsen_x,coarsen_y,coarsen_z; /* ratio used for coarsening */
 
 #define DMDA_MAX_AD_ARRAYS 2 /* work arrays for holding derivative type data, via DMDAGetAdicArray() */
-  void                   *adarrayin[DMDA_MAX_AD_ARRAYS],*adarrayout[DMDA_MAX_AD_ARRAYS]; 
+  void                   *adarrayin[DMDA_MAX_AD_ARRAYS],*adarrayout[DMDA_MAX_AD_ARRAYS];
   void                   *adarrayghostedin[DMDA_MAX_AD_ARRAYS],*adarrayghostedout[DMDA_MAX_AD_ARRAYS];
-  void                   *adstartin[DMDA_MAX_AD_ARRAYS],*adstartout[DMDA_MAX_AD_ARRAYS]; 
+  void                   *adstartin[DMDA_MAX_AD_ARRAYS],*adstartout[DMDA_MAX_AD_ARRAYS];
   void                   *adstartghostedin[DMDA_MAX_AD_ARRAYS],*adstartghostedout[DMDA_MAX_AD_ARRAYS];
   PetscInt                    tdof,ghostedtdof;
 
                             /* work arrays for holding derivative type data, via DMDAGetAdicMFArray() */
-  void                   *admfarrayin[DMDA_MAX_AD_ARRAYS],*admfarrayout[DMDA_MAX_AD_ARRAYS]; 
+  void                   *admfarrayin[DMDA_MAX_AD_ARRAYS],*admfarrayout[DMDA_MAX_AD_ARRAYS];
   void                   *admfarrayghostedin[DMDA_MAX_AD_ARRAYS],*admfarrayghostedout[DMDA_MAX_AD_ARRAYS];
-  void                   *admfstartin[DMDA_MAX_AD_ARRAYS],*admfstartout[DMDA_MAX_AD_ARRAYS]; 
+  void                   *admfstartin[DMDA_MAX_AD_ARRAYS],*admfstartout[DMDA_MAX_AD_ARRAYS];
   void                   *admfstartghostedin[DMDA_MAX_AD_ARRAYS],*admfstartghostedout[DMDA_MAX_AD_ARRAYS];
 
 #define DMDA_MAX_WORK_ARRAYS 2 /* work arrays for holding work via DMDAGetArray() */
-  void                   *arrayin[DMDA_MAX_WORK_ARRAYS],*arrayout[DMDA_MAX_WORK_ARRAYS]; 
+  void                   *arrayin[DMDA_MAX_WORK_ARRAYS],*arrayout[DMDA_MAX_WORK_ARRAYS];
   void                   *arrayghostedin[DMDA_MAX_WORK_ARRAYS],*arrayghostedout[DMDA_MAX_WORK_ARRAYS];
-  void                   *startin[DMDA_MAX_WORK_ARRAYS],*startout[DMDA_MAX_WORK_ARRAYS]; 
+  void                   *startin[DMDA_MAX_WORK_ARRAYS],*startout[DMDA_MAX_WORK_ARRAYS];
   void                   *startghostedin[DMDA_MAX_WORK_ARRAYS],*startghostedout[DMDA_MAX_WORK_ARRAYS];
 
   DMDALocalFunction1       lf;
@@ -94,7 +94,7 @@ typedef struct {
   Vectors:
      Global has on each processor the interior degrees of freedom and
          no ghost points. This vector is what the solvers usually see.
-     Local has on each processor the ghost points as well. This is 
+     Local has on each processor the ghost points as well. This is
           what code to calculate Jacobians, etc. usually sees.
   Vector scatters:
      gtol - Global representation to local

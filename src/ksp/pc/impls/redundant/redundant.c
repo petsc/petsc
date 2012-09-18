@@ -13,11 +13,11 @@ typedef struct {
   Mat          pmats;                /* matrix and optional preconditioner matrix belong to a subcommunicator */
   VecScatter   scatterin,scatterout; /* scatter used to move all values to each processor group (subcommunicator) */
   PetscBool    useparallelmat;
-  PetscSubcomm psubcomm;          
+  PetscSubcomm psubcomm;
   PetscInt     nsubcomm;           /* num of data structure PetscSubcomm */
 } PC_Redundant;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_Redundant"
 static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
 {
@@ -42,7 +42,7 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
       }
       ierr = PetscViewerRestoreSubcomm(viewer,((PetscObject)red->pc)->comm,&subviewer);CHKERRQ(ierr);
     }
-  } else if (isstring) { 
+  } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
   } else {
     SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PC redundant",((PetscObject)viewer)->type_name);
@@ -50,7 +50,7 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Redundant"
 static PetscErrorCode PCSetUp_Redundant(PC pc)
 {
@@ -87,40 +87,40 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
 
       ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr); 
-      ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr); 
+      ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr);
     } else {
        subcomm = red->psubcomm->comm;
     }
 
     /* create working vectors xsub/ysub and xdup/ydup */
-    ierr = VecGetLocalSize(vec,&mlocal);CHKERRQ(ierr);  
+    ierr = VecGetLocalSize(vec,&mlocal);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(vec,&mstart,&mend);CHKERRQ(ierr);
 
-    /* get local size of xsub/ysub */    
+    /* get local size of xsub/ysub */
     ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(subcomm,&subrank);CHKERRQ(ierr);
     ierr = MatGetOwnershipRanges(pc->pmat,&range);CHKERRQ(ierr);
-    rstart_sub = range[red->psubcomm->n*subrank]; /* rstart in xsub/ysub */    
+    rstart_sub = range[red->psubcomm->n*subrank]; /* rstart in xsub/ysub */
     if (subrank+1 < subsize){
       rend_sub = range[red->psubcomm->n*(subrank+1)];
     } else {
-      rend_sub = m; 
+      rend_sub = m;
     }
     mloc_sub = rend_sub - rstart_sub;
     ierr = VecCreateMPI(subcomm,mloc_sub,PETSC_DECIDE,&red->ysub);CHKERRQ(ierr);
     /* create xsub with empty local arrays, because xdup's arrays will be placed into it */
     ierr = VecCreateMPIWithArray(subcomm,1,mloc_sub,PETSC_DECIDE,PETSC_NULL,&red->xsub);CHKERRQ(ierr);
 
-    /* create xdup and ydup. ydup has empty local arrays because ysub's arrays will be place into it. 
-       Note: we use communicator dupcomm, not ((PetscObject)pc)->comm! */      
+    /* create xdup and ydup. ydup has empty local arrays because ysub's arrays will be place into it.
+       Note: we use communicator dupcomm, not ((PetscObject)pc)->comm! */
     ierr = VecCreateMPI(red->psubcomm->dupparent,mloc_sub,PETSC_DECIDE,&red->xdup);CHKERRQ(ierr);
     ierr = VecCreateMPIWithArray(red->psubcomm->dupparent,1,mloc_sub,PETSC_DECIDE,PETSC_NULL,&red->ydup);CHKERRQ(ierr);
-  
+
     /* create vec scatters */
     if (!red->scatterin){
       IS       is1,is2;
-      PetscInt *idx1,*idx2,i,j,k; 
+      PetscInt *idx1,*idx2,i,j,k;
 
       ierr = PetscMalloc2(red->psubcomm->n*mlocal,PetscInt,&idx1,red->psubcomm->n*mlocal,PetscInt,&idx2);CHKERRQ(ierr);
       j = 0;
@@ -131,14 +131,14 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
         }
       }
       ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx1,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
-      ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx2,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);      
+      ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx2,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
       ierr = VecScatterCreate(vec,is1,red->xdup,is2,&red->scatterin);CHKERRQ(ierr);
       ierr = ISDestroy(&is1);CHKERRQ(ierr);
       ierr = ISDestroy(&is2);CHKERRQ(ierr);
 
       ierr = ISCreateStride(comm,mlocal,mstart+ red->psubcomm->color*m,1,&is1);CHKERRQ(ierr);
       ierr = ISCreateStride(comm,mlocal,mstart,1,&is2);CHKERRQ(ierr);
-      ierr = VecScatterCreate(red->xdup,is1,vec,is2,&red->scatterout);CHKERRQ(ierr);      
+      ierr = VecScatterCreate(red->xdup,is1,vec,is2,&red->scatterout);CHKERRQ(ierr);
       ierr = ISDestroy(&is1);CHKERRQ(ierr);
       ierr = ISDestroy(&is2);CHKERRQ(ierr);
       ierr = PetscFree2(idx1,idx2);CHKERRQ(ierr);
@@ -160,10 +160,10 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       reuse = MAT_REUSE_MATRIX;
       str   = SAME_NONZERO_PATTERN;
     }
-       
-    /* grab the parallel matrix and put it into processors of a subcomminicator */ 
+
+    /* grab the parallel matrix and put it into processors of a subcomminicator */
     /*--------------------------------------------------------------------------*/
-    ierr = VecGetLocalSize(red->ysub,&mlocal_sub);CHKERRQ(ierr);  
+    ierr = VecGetLocalSize(red->ysub,&mlocal_sub);CHKERRQ(ierr);
     ierr = MatGetRedundantMatrix(pc->pmat,red->psubcomm->n,red->psubcomm->comm,mlocal_sub,reuse,&red->pmats);CHKERRQ(ierr);
     /* tell PC of the subcommunicator its operators */
     ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats,str);CHKERRQ(ierr);
@@ -171,13 +171,13 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
   if (pc->setfromoptionscalled){
-    ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr); 
+    ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
   }
   ierr = KSPSetUp(red->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_Redundant"
 static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
 {
@@ -189,7 +189,7 @@ static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
   /* scatter x to xdup */
   ierr = VecScatterBegin(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  
+
   /* place xdup's local array into xsub */
   ierr = VecGetArray(red->xdup,&array);CHKERRQ(ierr);
   ierr = VecPlaceArray(red->xsub,(const PetscScalar*)array);CHKERRQ(ierr);
@@ -198,7 +198,7 @@ static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
   ierr = KSPSolve(red->ksp,red->xsub,red->ysub);CHKERRQ(ierr);
   ierr = VecResetArray(red->xsub);CHKERRQ(ierr);
   ierr = VecRestoreArray(red->xdup,&array);CHKERRQ(ierr);
- 
+
   /* place ysub's local array into ydup */
   ierr = VecGetArray(red->ysub,&array);CHKERRQ(ierr);
   ierr = VecPlaceArray(red->ydup,(const PetscScalar*)array);CHKERRQ(ierr);
@@ -211,7 +211,7 @@ static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCReset_Redundant"
 static PetscErrorCode PCReset_Redundant(PC pc)
 {
@@ -230,7 +230,7 @@ static PetscErrorCode PCReset_Redundant(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_Redundant"
 static PetscErrorCode PCDestroy_Redundant(PC pc)
 {
@@ -245,7 +245,7 @@ static PetscErrorCode PCDestroy_Redundant(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Redundant"
 static PetscErrorCode PCSetFromOptions_Redundant(PC pc)
 {
@@ -260,19 +260,19 @@ static PetscErrorCode PCSetFromOptions_Redundant(PC pc)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCRedundantSetNumber_Redundant"
 PetscErrorCode  PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
 
   PetscFunctionBegin;
-  red->nsubcomm = nreds; 
+  red->nsubcomm = nreds;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCRedundantSetNumber"
 /*@
    PCRedundantSetNumber - Sets the number of redundant preconditioner contexts.
@@ -297,10 +297,10 @@ PetscErrorCode  PCRedundantSetNumber(PC pc,PetscInt nredundant)
   if (nredundant <= 0) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "num of redundant pc %D must be positive",nredundant);
   ierr = PetscTryMethod(pc,"PCRedundantSetNumber_C",(PC,PetscInt),(pc,nredundant));CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}  
+}
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCRedundantSetScatter_Redundant"
 PetscErrorCode  PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 {
@@ -309,8 +309,8 @@ PetscErrorCode  PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter o
 
   PetscFunctionBegin;
   ierr = PetscObjectReference((PetscObject)in);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&red->scatterin);CHKERRQ(ierr); 
-  red->scatterin  = in; 
+  ierr = VecScatterDestroy(&red->scatterin);CHKERRQ(ierr);
+  red->scatterin  = in;
   ierr = PetscObjectReference((PetscObject)out);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&red->scatterout);CHKERRQ(ierr);
   red->scatterout = out;
@@ -318,7 +318,7 @@ PetscErrorCode  PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter o
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCRedundantSetScatter"
 /*@
    PCRedundantSetScatter - Sets the scatter used to copy values into the
@@ -346,10 +346,10 @@ PetscErrorCode  PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
   PetscValidHeaderSpecific(out,VEC_SCATTER_CLASSID,3);
   ierr = PetscTryMethod(pc,"PCRedundantSetScatter_C",(PC,VecScatter,VecScatter),(pc,in,out));CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}  
+}
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCRedundantGetKSP_Redundant"
 PetscErrorCode  PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
 {
@@ -376,15 +376,15 @@ PetscErrorCode  PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
     ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
 
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr); 
-    ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr); 
+    ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr);
+    ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr);
   }
   *innerksp = red->ksp;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCRedundantGetKSP"
 /*@
    PCRedundantGetKSP - Gets the less parallel KSP created by the redundant PC.
@@ -410,10 +410,10 @@ PetscErrorCode  PCRedundantGetKSP(PC pc,KSP *innerksp)
   PetscValidPointer(innerksp,2);
   ierr = PetscTryMethod(pc,"PCRedundantGetKSP_C",(PC,KSP*),(pc,innerksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}  
+}
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCRedundantGetOperators_Redundant"
 PetscErrorCode  PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
 {
@@ -426,7 +426,7 @@ PetscErrorCode  PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCRedundantGetOperators"
 /*@
    PCRedundantGetOperators - gets the sequential matrix and preconditioner matrix
@@ -451,10 +451,10 @@ PetscErrorCode  PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (mat)  PetscValidPointer(mat,2);
-  if (pmat) PetscValidPointer(pmat,3); 
+  if (pmat) PetscValidPointer(pmat,3);
   ierr = PetscTryMethod(pc,"PCRedundantGetOperators_C",(PC,Mat*,Mat*),(pc,mat,pmat));CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}  
+}
 
 /* -------------------------------------------------------------------------------------*/
 /*MC
@@ -477,20 +477,20 @@ PetscErrorCode  PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_Redundant"
 PetscErrorCode  PCCreate_Redundant(PC pc)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red;
   PetscMPIInt    size;
-  
+
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,PC_Redundant,&red);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   red->nsubcomm       = size;
   red->useparallelmat = PETSC_TRUE;
-  pc->data            = (void*)red; 
+  pc->data            = (void*)red;
 
   pc->ops->apply           = PCApply_Redundant;
   pc->ops->applytranspose  = 0;
@@ -498,7 +498,7 @@ PetscErrorCode  PCCreate_Redundant(PC pc)
   pc->ops->destroy         = PCDestroy_Redundant;
   pc->ops->reset           = PCReset_Redundant;
   pc->ops->setfromoptions  = PCSetFromOptions_Redundant;
-  pc->ops->view            = PCView_Redundant;    
+  pc->ops->view            = PCView_Redundant;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantSetScatter_C","PCRedundantSetScatter_Redundant",
                     PCRedundantSetScatter_Redundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantSetNumber_C","PCRedundantSetNumber_Redundant",

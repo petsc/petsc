@@ -15,7 +15,7 @@ typedef struct {
   PetscInt *petscPerm;
 } AO_Mapping;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AODestroy_Mapping"
 PetscErrorCode AODestroy_Mapping(AO ao)
 {
@@ -28,7 +28,7 @@ PetscErrorCode AODestroy_Mapping(AO ao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOView_Mapping"
 PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
 {
@@ -43,21 +43,21 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   if (rank) PetscFunctionReturn(0);
 
   if (!viewer) {
-    viewer = PETSC_VIEWER_STDOUT_SELF; 
+    viewer = PETSC_VIEWER_STDOUT_SELF;
   }
 
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %D\n", aomap->N);
     PetscViewerASCIIPrintf(viewer, "   App.   PETSc\n");
-    for(i = 0; i < aomap->N; i++) {
+    for (i = 0; i < aomap->N; i++) {
       PetscViewerASCIIPrintf(viewer, "%D   %D    %D\n", i, aomap->app[i], aomap->petsc[aomap->appPerm[i]]);
     }
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOPetscToApplication_Mapping"
 PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
 {
@@ -76,7 +76,7 @@ PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
      better running times if indices are clustered.
   */
   PetscFunctionBegin;
-  for(i = 0; i < n; i++) {
+  for (i = 0; i < n; i++) {
     idex = ia[i];
     if (idex < 0) continue;
     /* Use bisection since the array is sorted */
@@ -98,7 +98,7 @@ PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOApplicationToPetsc_Mapping"
 PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
 {
@@ -117,7 +117,7 @@ PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
      better running times if indices are clustered.
   */
   PetscFunctionBegin;
-  for(i = 0; i < n; i++) {
+  for (i = 0; i < n; i++) {
     idex = ia[i];
     if (idex < 0) continue;
     /* Use bisection since the array is sorted */
@@ -151,7 +151,7 @@ static struct _AOOps AOps = {AOView_Mapping,
                              PETSC_NULL,
                              PETSC_NULL};
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOMappingHasApplicationIndex"
 /*@C
   AOMappingHasApplicationIndex - Searches for the supplied application index.
@@ -200,7 +200,7 @@ PetscErrorCode  AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool  *h
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOMappingHasPetscIndex"
 /*@
   AOMappingHasPetscIndex - Searches for the supplied petsc index.
@@ -249,7 +249,7 @@ PetscErrorCode  AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool  *hasInde
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOCreateMapping"
 /*@C
   AOCreateMapping - Creates a basic application mapping using two integer arrays.
@@ -306,7 +306,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   nnapp = napp;
   ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N    = 0;
-  for(i = 0; i < size; i++) {
+  for (i = 0; i < size; i++) {
     disp[i] = N;
     N += lens[i];
   }
@@ -318,7 +318,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   if (!mypetsc) {
     start = disp[rank];
     ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
-    for(i = 0; i < napp; i++) {
+    for (i = 0; i < napp; i++) {
       petsc[i] = start + i;
     }
   } else {
@@ -334,36 +334,36 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   /* generate a list of application and PETSc node numbers */
   ierr = PetscMalloc4(N,PetscInt, &aomap->app,N,PetscInt,&aomap->appPerm,N,PetscInt,&aomap->petsc,N,PetscInt,&aomap->petscPerm);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ao, 4*N * sizeof(PetscInt));CHKERRQ(ierr);
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     appPerm[i]   = i;
     petscPerm[i] = i;
   }
   ierr = PetscSortIntWithPermutation(N, allpetsc, petscPerm);CHKERRQ(ierr);
   ierr = PetscSortIntWithPermutation(N, allapp,   appPerm);CHKERRQ(ierr);
   /* Form sorted arrays of indices */
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     aomap->app[i]   = allapp[appPerm[i]];
     aomap->petsc[i] = allpetsc[petscPerm[i]];
   }
   /* Invert petscPerm[] into aomap->petscPerm[] */
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     aomap->petscPerm[petscPerm[i]] = i;
   }
   /* Form map between aomap->app[] and aomap->petsc[] */
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     aomap->appPerm[i] = aomap->petscPerm[appPerm[i]];
   }
   /* Invert appPerm[] into allapp[] */
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     allapp[appPerm[i]] = i;
   }
   /* Form map between aomap->petsc[] and aomap->app[] */
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     aomap->petscPerm[i] = allapp[petscPerm[i]];
   }
 #ifdef PETSC_USE_DEBUG
   /* Check that the permutations are complementary */
-  for(i = 0; i < N; i++) {
+  for (i = 0; i < N; i++) {
     if (i != aomap->appPerm[aomap->petscPerm[i]]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid ordering");
   }
 #endif
@@ -383,7 +383,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOCreateMappingIS"
 /*@C
   AOCreateMappingIS - Creates a basic application ordering using two index sets.

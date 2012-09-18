@@ -7,19 +7,19 @@
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_IFBCGS"
 PetscErrorCode KSPSetUp_IFBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
-  ierr = KSPDefaultGetWork(ksp,8);CHKERRQ(ierr); 
+  ierr = KSPDefaultGetWork(ksp,8);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #include <petsc-private/pcimpl.h>            /*I "petscksp.h" I*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_IFBCGS"
 PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
 {
@@ -53,7 +53,7 @@ PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
   S2  = ksp->work[7]; ierr = VecGetArray(S2,(PetscScalar**)&s2);CHKERRQ(ierr); ierr = VecRestoreArray(S2,PETSC_NULL);CHKERRQ(ierr);
 
   /* Only supports right preconditioning */
-  if (ksp->pc_side != PC_RIGHT) 
+  if (ksp->pc_side != PC_RIGHT)
     SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP ifbcgs does not support %s",PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
     if (!bcgs->guess) {
@@ -204,12 +204,12 @@ PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
 
    Level: beginner
 
-   Notes: Only supports right preconditioning 
+   Notes: Only supports right preconditioning
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_IFBCGS"
 PetscErrorCode  KSPCreate_IFBCGS(KSP ksp)
 {
@@ -228,7 +228,7 @@ PetscErrorCode  KSPCreate_IFBCGS(KSP ksp)
   ksp->ops->setfromoptions  = KSPSetFromOptions_BCGS;
   ksp->ops->view            = KSPView_BCGS;
   ksp->pc_side              = PC_RIGHT; /* set default PC side */
- 
+
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
   PetscFunctionReturn(0);

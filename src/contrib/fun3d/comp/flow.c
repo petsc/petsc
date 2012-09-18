@@ -2623,7 +2623,6 @@ int set_up_grid(GRID *grid)
   ifcn   = c_gmcom->ifcn;
   
   jalloc = 0;
-  /*if(ilu0 >=1 && ifcn == 1)jalloc=0;*/
   
   /*
    * stuff to read in dave's grids

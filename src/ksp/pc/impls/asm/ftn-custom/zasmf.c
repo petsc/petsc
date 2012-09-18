@@ -29,7 +29,7 @@ void PETSC_STDCALL pcasmcreatesubdomains_(Mat *mat,PetscInt *n,IS *subs,PetscErr
   for (i=0; i<*n; i++) {
     subs[i] = insubs[i];
   }
-  *ierr = PetscFree(insubs); 
+  *ierr = PetscFree(insubs);
 }
 
 

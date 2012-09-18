@@ -156,7 +156,7 @@ int main(int Argc,char **Args)
   for (i=0; i<levels; i++) {
     ierr = VecDestroy(&X[i]);CHKERRQ(ierr);
     ierr = VecDestroy(&B[i]);CHKERRQ(ierr);
-    if(i){ierr = VecDestroy(&R[i]);CHKERRQ(ierr);}
+    if (i){ierr = VecDestroy(&R[i]);CHKERRQ(ierr);}
   }
   for (i=0; i<levels-1; i++) {
     ierr = MatDestroy(&mat[i]);CHKERRQ(ierr);

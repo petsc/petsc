@@ -14,7 +14,7 @@
 !
 !
 !
-      PetscEnum MAT_FACTOR_NONE 
+      PetscEnum MAT_FACTOR_NONE
       PetscEnum MAT_FACTOR_LU
       PetscEnum MAT_FACTOR_CHOLESKY
       PetscEnum MAT_FACTOR_ILU
@@ -28,7 +28,7 @@
       PetscEnum MAT_DO_NOT_GET_VALUES
       PetscEnum MAT_GET_VALUES
       parameter(MAT_DO_NOT_GET_VALUES=0,MAT_GET_VALUES=1)
- 
+
 !
 !  Matrix options; must match those in include/petscmat.h
 !
@@ -59,12 +59,12 @@
       PetscEnum MAT_CSR
       PetscEnum MAT_DIAGBLOCK_DIA
       PetscEnum MAT_OFFDIAGBLOCK_DIA
-      PetscEnum MAT_DIA 
+      PetscEnum MAT_DIA
       PetscEnum MAT_DIAGBLOCK_ELL
       PetscEnum MAT_OFFDIAGBLOCK_ELL
       PetscEnum MAT_ELL
       PetscEnum MAT_DIAGBLOCK_HYB
-      PetscEnum MAT_OFFDIAGBLOCK_HYB 
+      PetscEnum MAT_OFFDIAGBLOCK_HYB
       PetscEnum MAT_HYB
       PetscEnum NUM_MAT_OPTIONS
 
@@ -321,7 +321,7 @@
       PetscEnum MATOP_PTAP_NUMERIC_MPIAIJ
       PetscEnum MATOP_CONJUGATE
       PetscEnum MATOP_SET_SIZES
-      PetscEnum MATOP_SET_VALUES_ROW 
+      PetscEnum MATOP_SET_VALUES_ROW
       PetscEnum MATOP_REAL_PART
       PetscEnum MATOP_IMAGINARY_PART
       PetscEnum MATOP_GET_ROW_UPPER_TRIANGULAR
@@ -538,7 +538,7 @@
       parameter(MAT_CUSP_MULT=2)
       parameter(MAT_CUSP_SOLVE=3)
       parameter(MAT_CUSP_ALL=4)
-#endif      
+#endif
 
 
 !
@@ -560,8 +560,8 @@
       parameter(MAT_CUSPARSE_MULT=2)
       parameter(MAT_CUSPARSE_SOLVE=3)
       parameter(MAT_CUSPARSE_ALL=4)
-#endif      
-		     
+#endif
+		
 !
 !  End of Fortran include file for the Mat package in PETSc
 !

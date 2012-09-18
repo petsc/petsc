@@ -4,8 +4,8 @@
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawStringSetSize" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawStringSetSize"
 /*@
    PetscDrawStringSetSize - Sets the size for character text.
 

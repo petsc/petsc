@@ -6,10 +6,10 @@
 #include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
 extern PetscErrorCode DMDALocalToLocalCreate(DM);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetScatter"
 /*@C
-   DMDAGetScatter - Gets the local-to-global, local-to-global, and 
+   DMDAGetScatter - Gets the local-to-global, local-to-global, and
    local-to-local vector scatter contexts for a distributed array.
 
    Collective on DMDA
@@ -19,7 +19,7 @@ extern PetscErrorCode DMDALocalToLocalCreate(DM);
 
    Output Parameters:
 +  ltog - local-to-global scatter context (may be PETSC_NULL)
-.  gtol - global-to-local scatter context (may be PETSC_NULL) 
+.  gtol - global-to-local scatter context (may be PETSC_NULL)
 -  ltol - local-to-local scatter context (may be PETSC_NULL)
 
    Level: developer
@@ -50,4 +50,4 @@ PetscErrorCode  DMDAGetScatter(DM da,VecScatter *ltog,VecScatter *gtol,VecScatte
   }
   PetscFunctionReturn(0);
 }
- 
+

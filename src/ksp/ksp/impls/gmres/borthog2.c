@@ -9,7 +9,7 @@
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 
 /*@C
-     KSPGMRESClassicalGramSchmidtOrthogonalization -  This is the basic orthogonalization routine 
+     KSPGMRESClassicalGramSchmidtOrthogonalization -  This is the basic orthogonalization routine
                 using classical Gram-Schmidt with possible iterative refinement to improve the stability
 
      Collective on KSP
@@ -20,18 +20,18 @@
 
    Options Database Keys:
 +   -ksp_gmres_classicalgramschmidt - Activates KSPGMRESClassicalGramSchmidtOrthogonalization()
--   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is 
+-   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is
                                    used to increase the stability of the classical Gram-Schmidt  orthogonalization.
 
     Notes: Use KSPGMRESSetCGSRefinementType() to determine if iterative refinement is to be used
 
    Level: intermediate
 
-.seelaso:  KSPGMRESSetOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetCGSRefinementType(), 
+.seelaso:  KSPGMRESSetOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetCGSRefinementType(),
            KSPGMRESGetCGSRefinementType(), KSPGMRESGetOrthogonalization()
 
 @*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGMRESClassicalGramSchmidtOrthogonalization"
 PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,PetscInt it)
 {
@@ -48,7 +48,7 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,PetscInt 
     ierr = PetscMalloc((gmres->max_k + 2)*sizeof(PetscScalar),&gmres->orthogwork);CHKERRQ(ierr);
   }
   lhh = gmres->orthogwork;
-  
+
   /* update Hessenberg matrix and do unmodified Gram-Schmidt */
   hh  = HH(0,it);
   hes = HES(0,it);
@@ -59,9 +59,9 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,PetscInt 
     hes[j] = 0.0;
   }
 
-  /* 
+  /*
      This is really a matrix-vector product, with the matrix stored
-     as pointer to rows 
+     as pointer to rows
   */
   ierr = VecMDot(VEC_VV(it+1),it+1,&(VEC_VV(0)),lhh);CHKERRQ(ierr); /* <v,vnew> */
   for (j=0; j<=it; j++) {
@@ -69,7 +69,7 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,PetscInt 
   }
 
   /*
-         This is really a matrix vector product: 
+         This is really a matrix vector product:
          [h[0],h[1],...]*[ v[0]; v[1]; ...] subtracted from v[it+1].
   */
   ierr = VecMAXPY(VEC_VV(it+1),it+1,lhh,&VEC_VV(0));CHKERRQ(ierr);

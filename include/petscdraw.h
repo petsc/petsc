@@ -8,7 +8,7 @@
 PETSC_EXTERN PetscClassId PETSC_DRAW_CLASSID;
 
 /*J
-    PetscDrawType - String with the name of a PetscDraw 
+    PetscDrawType - String with the name of a PetscDraw
 
    Level: beginner
 
@@ -20,7 +20,7 @@ J*/
 #define PETSC_DRAW_OPENGLES   "opengles"
 #define PETSC_DRAW_NULL       "null"
 #define PETSC_DRAW_WIN32      "win32"
- 
+
 /*S
      PetscDraw - Abstract PETSc object for graphics
 
@@ -99,7 +99,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawSetSave(PetscDraw,const char*,PetscBool);
 #define PETSC_DRAW_WHITE            0
 #define PETSC_DRAW_BLACK            1
 #define PETSC_DRAW_RED              2
-#define PETSC_DRAW_GREEN            3 
+#define PETSC_DRAW_GREEN            3
 #define PETSC_DRAW_CYAN             4
 #define PETSC_DRAW_BLUE             5
 #define PETSC_DRAW_MAGENTA          6

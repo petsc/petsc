@@ -332,7 +332,7 @@ namespace ALE {
             for (int j = 0; j < dim; j++) {
               if (j != i) cornerdist += (centerCoords[j] - singularity[j])*(centerCoords[j] - singularity[j]);
             }
-            if (cornerdist < dist || dist == 0.) dist = cornerdist; 
+            if (cornerdist < dist || dist == 0.) dist = cornerdist;
           }
         }
         //patch up AROUND the corner by minimizing between the distance from the relevant axis and the singular vertex

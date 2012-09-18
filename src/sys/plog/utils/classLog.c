@@ -7,7 +7,7 @@
 */
 #include <petsc-private/logimpl.h> /*I    "petscsys.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscClassRegLogCreate"
 /*@C
   PetscClassRegLogCreate - This creates a PetscClassRegLog object.
@@ -57,7 +57,7 @@ PetscErrorCode PetscClassRegLogDestroy(PetscClassRegLog classLog)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for(c = 0; c < classLog->numClasses; c++) {
+  for (c = 0; c < classLog->numClasses; c++) {
     ierr = PetscClassRegInfoDestroy(&classLog->classInfo[c]);CHKERRQ(ierr);
   }
   ierr = PetscFree(classLog->classInfo);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ PetscErrorCode PetscClassRegLogDestroy(PetscClassRegLog classLog)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscClassRegInfoDestroy"
 /*@C
   PetscClassRegInfoDestroy - This destroys a PetscClassRegInfo object.
@@ -89,7 +89,7 @@ PetscErrorCode PetscClassRegInfoDestroy(PetscClassRegInfo *c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ClassPerfLogCreate"
 /*@C
   ClassPerfLogCreate - This creates a PetscClassPerfLog object.
@@ -144,7 +144,7 @@ PetscErrorCode ClassPerfLogDestroy(PetscClassPerfLog classLog)
 }
 
 /*------------------------------------------------ General Functions -------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ClassPerfInfoClear"
 /*@C
   ClassPerfInfoClear - This clears a PetscClassPerfInfo object.
@@ -159,7 +159,7 @@ PetscErrorCode ClassPerfLogDestroy(PetscClassPerfLog classLog)
 .keywords: log, class, destroy
 .seealso: ClassPerfLogCreate()
 @*/
-PetscErrorCode ClassPerfInfoClear(PetscClassPerfInfo *classInfo) 
+PetscErrorCode ClassPerfInfoClear(PetscClassPerfInfo *classInfo)
 {
   PetscFunctionBegin;
   classInfo->id           = -1;
@@ -170,7 +170,7 @@ PetscErrorCode ClassPerfInfoClear(PetscClassPerfInfo *classInfo)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ClassPerfLogEnsureSize"
 /*@C
   ClassPerfLogEnsureSize - This ensures that a PetscClassPerfLog is at least of a certain size.
@@ -186,7 +186,7 @@ PetscErrorCode ClassPerfInfoClear(PetscClassPerfInfo *classInfo)
 .keywords: log, class, size, ensure
 .seealso: ClassPerfLogCreate()
 @*/
-PetscErrorCode ClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size) 
+PetscErrorCode ClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
 {
   PetscClassPerfInfo  *classInfo;
   PetscErrorCode ierr;
@@ -206,7 +206,7 @@ PetscErrorCode ClassPerfLogEnsureSize(PetscClassPerfLog classLog, int size)
 }
 
 /*--------------------------------------------- Registration Functions ----------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscClassRegLogRegister"
 /*@C
   PetscClassRegLogRegister - Registers a class for logging operations in an application code.
@@ -249,7 +249,7 @@ PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog classLog, const char cn
 }
 
 /*------------------------------------------------ Query Functions --------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscClassRegLogGetClass"
 /*@C
   PetscClassRegLogGetClass - This function returns the class corresponding to a given classid.
@@ -259,7 +259,7 @@ PetscErrorCode PetscClassRegLogRegister(PetscClassRegLog classLog, const char cn
   Input Parameters:
 + classLog - The PetscClassRegLog
 - cookie   - The cookie
-            
+
   Output Parameter:
 . oclass   - The class id
 
@@ -274,7 +274,7 @@ PetscErrorCode PetscClassRegLogGetClass(PetscClassRegLog classLog, PetscClassId 
 
   PetscFunctionBegin;
   PetscValidIntPointer(oclass,3);
-  for(c = 0; c < classLog->numClasses; c++) {
+  for (c = 0; c < classLog->numClasses; c++) {
     /* Could do bisection here */
     if (classLog->classInfo[c].classid == classid) break;
   }
@@ -287,9 +287,9 @@ PetscErrorCode PetscClassRegLogGetClass(PetscClassRegLog classLog, PetscClassId 
 
 /*----------------------------------------------- Logging Functions -------------------------------------------------*/
 /* Default object create logger */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLogObjCreateDefault"
-PetscErrorCode PetscLogObjCreateDefault(PetscObject obj) 
+PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
 {
   PetscStageLog       stageLog;
   PetscClassRegLog    classRegLog;
@@ -359,7 +359,7 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
 }
 
 /* Default object destroy logger */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLogObjDestroyDefault"
 PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
 {

@@ -56,11 +56,11 @@
       PetscEnum KSP_NORM_PRECONDITIONED
       PetscEnum KSP_NORM_UNPRECONDITIONED
       PetscEnum KSP_NORM_NATURAL
-      
+
       parameter (KSP_NORM_NONE=0)
       parameter (KSP_NORM_PRECONDITIONED=1)
       parameter (KSP_NORM_UNPRECONDITIONED=2)
-      parameter (KSP_NORM_NATURAL=3) 
+      parameter (KSP_NORM_NATURAL=3)
 !
 !   Possible arguments to KSPMonitorSet()
 !

@@ -4,8 +4,8 @@
 */
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawRectangle" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawRectangle"
 /*@
    PetscDrawRectangle - PetscDraws a rectangle  onto a drawable.
 
@@ -36,8 +36,8 @@ PetscErrorCode  PetscDrawRectangle(PetscDraw draw,PetscReal xl,PetscReal yl,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDrawSave" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSave"
 /*@
    PetscDrawSave - Saves a drawn image
 
@@ -48,7 +48,7 @@ PetscErrorCode  PetscDrawRectangle(PetscDraw draw,PetscReal xl,PetscReal yl,Pets
 
    Level: advanced
 
-   Notes: this is not normally called by the user, it is called by PetscDrawClear_X() to save a sequence of images. 
+   Notes: this is not normally called by the user, it is called by PetscDrawClear_X() to save a sequence of images.
 
 .seealso: PetscDrawSetSave()
 
