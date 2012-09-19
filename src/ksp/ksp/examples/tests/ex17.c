@@ -113,7 +113,7 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
     ierr = MatSetValues(A,1,&i,2,col,val,INSERT_VALUES);CHKERRQ(ierr);
     i = 0; col[0] = 0; col[1] = 1; val[0] = 4.0; val[1] = -2.0;
     ierr = MatSetValues(A,1,&i,2,col,val,INSERT_VALUES);CHKERRQ(ierr);
-  } 
+  }
   else if (type == TEST_2) {
     val[0] = 1.0; val[1] = 0.0; val[2] = 2.0; val[3] = 1.0;
     for (i=2; i<n-1; i++) {
@@ -126,7 +126,7 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
     ierr = MatSetValues(A,1,&i,3,col,&val[1],INSERT_VALUES);CHKERRQ(ierr);
     i = 0;
     ierr = MatSetValues(A,1,&i,2,col,&val[2],INSERT_VALUES);CHKERRQ(ierr);
-  } 
+  }
   else if (type == TEST_3) {
     val[0] = PETSC_i * 2.0;
     val[1] = 4.0; val[2] = 0.0; val[3] = 1.0; val[4] = 0.7;
@@ -142,11 +142,11 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
     ierr = MatSetValues(A,1,&i,2,col,val,INSERT_VALUES);CHKERRQ(ierr);
     i = 0; col[0] = 0; col[1] = 1; col[2] = 2; col[3] = 3;
     ierr = MatSetValues(A,1,&i,4,col,&val[1],INSERT_VALUES);CHKERRQ(ierr);
-  } 
+  }
   else if (type == HELMHOLTZ_1) {
     /* Problem domain: unit square: (0,1) x (0,1)
        Solve Helmholtz equation:
-          -delta u - sigma1*u + i*sigma2*u = f, 
+          -delta u - sigma1*u + i*sigma2*u = f,
            where delta = Laplace operator
        Dirichlet b.c.'s on all sides
      */
@@ -158,8 +158,8 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetInterval(rctx,0.0,PETSC_i);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
-    for (Ii=Istart; Ii<Iend; Ii++) { 
-      *val = -1.0; i = Ii/n; j = Ii - i*n;  
+    for (Ii=Istart; Ii<Iend; Ii++) {
+      *val = -1.0; i = Ii/n; j = Ii - i*n;
       if (i>0) {
         J = Ii-n; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
       if (i<n-1) {
@@ -177,7 +177,7 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
   else if (type == HELMHOLTZ_2) {
     /* Problem domain: unit square: (0,1) x (0,1)
        Solve Helmholtz equation:
-          -delta u - sigma1*u = f, 
+          -delta u - sigma1*u = f,
            where delta = Laplace operator
        Dirichlet b.c.'s on 3 sides
        du/dn = i*alpha*u on (1,y), 0<y<1
@@ -187,8 +187,8 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
     ierr = PetscOptionsGetReal(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
     alpha_h = (PETSC_i * 10.0) / (PetscReal)(n+1);  /* alpha_h = alpha * h */
-    for (Ii=Istart; Ii<Iend; Ii++) { 
-      *val = -1.0; i = Ii/n; j = Ii - i*n;  
+    for (Ii=Istart; Ii<Iend; Ii++) {
+      *val = -1.0; i = Ii/n; j = Ii - i*n;
       if (i>0) {
         J = Ii-n; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
       if (i<n-1) {

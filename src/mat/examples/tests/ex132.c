@@ -36,8 +36,8 @@ int main(int argc,char **args)
   ierr = MatSeqAIJSetPreallocation(C,5,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRQ(ierr);
-  for (Ii=Istart; Ii<Iend; Ii++) { 
-    v = -1.0; i = Ii/n; j = Ii - i*n;  
+  for (Ii=Istart; Ii<Iend; Ii++) {
+    v = -1.0; i = Ii/n; j = Ii - i*n;
     if (i>0)   {J = Ii - n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     if (i<m-1) {J = Ii + n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     if (j>0)   {J = Ii - 1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
@@ -47,7 +47,7 @@ int main(int argc,char **args)
 
   /* Make the matrix nonsymmetric if desired */
   if (mat_nonsymmetric) {
-    for (Ii=Istart; Ii<Iend; Ii++) { 
+    for (Ii=Istart; Ii<Iend; Ii++) {
       v = -1.5; i = Ii/n;
       if (i>1)   {J = Ii-n-1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     }
@@ -64,7 +64,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(C1,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C1);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(C1,1,PETSC_NULL);CHKERRQ(ierr);
-  for (Ii=Istart; Ii<Iend; Ii++) { 
+  for (Ii=Istart; Ii<Iend; Ii++) {
     ierr = MatSetValues(C1,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(C1,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -83,7 +83,7 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(C2);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(C2,5,PETSC_NULL);CHKERRQ(ierr);
   */
-  for (Ii=Istart; Ii<Iend; Ii++) { 
+  for (Ii=Istart; Ii<Iend; Ii++) {
     v = 1.0;
     ierr = MatSetValues(C2,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
   }

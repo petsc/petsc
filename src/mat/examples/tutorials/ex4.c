@@ -2,12 +2,12 @@
 static char help[] = "Reads U and V matrices from a file and performs y = V*U'*x.\n\
   -f <input_file> : file to load \n\n";
 
-/* 
+/*
   Include "petscmat.h" so that we can use matrices.
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h    - vectors
      petscmat.h    - matrices
-     petscis.h     - index sets            petscviewer.h - viewers               
+     petscis.h     - index sets            petscviewer.h - viewers
 */
 #include <petscmat.h>
 extern PetscErrorCode LowRankUpdate(Mat,Mat,Vec,Vec,Vec,Vec,PetscInt);
@@ -28,7 +28,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  /* 
+  /*
      Determine file from which we read the matrix
 
   */
@@ -36,7 +36,7 @@ int main(int argc,char **args)
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
 
 
-  /* 
+  /*
      Open binary file.  Note that we use FILE_MODE_READ to indicate
      reading from this file.
   */
@@ -44,7 +44,7 @@ int main(int argc,char **args)
 
   /*
     Load the matrix; then destroy the viewer.
-    Note both U and V are stored as tall skinny matrices 
+    Note both U and V are stored as tall skinny matrices
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&U);CHKERRQ(ierr);
   ierr = MatSetType(U,MATMPIDENSE);CHKERRQ(ierr);
@@ -74,7 +74,7 @@ int main(int argc,char **args)
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  /* 
+  /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
@@ -91,10 +91,10 @@ int main(int argc,char **args)
 
 #include <../src/mat/impls/dense/mpi/mpidense.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "LowRankUpdate"
 /*
-     Computes y = V*U'*x where U and V are  N by n (N >> n). 
+     Computes y = V*U'*x where U and V are  N by n (N >> n).
 
      U and V are stored as PETSc MPIDENSE (parallel) dense matrices with their rows partitioned the
      same way as x and y are partitioned

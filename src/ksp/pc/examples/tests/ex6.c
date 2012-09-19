@@ -19,7 +19,7 @@ PetscErrorCode FormElementStiffness(PetscReal H,PetscScalar *Ke)
 #define __FUNCT__ "FormElementRhs"
 PetscErrorCode FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
 {
-  r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 
+  r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0;
   return 0;
 }
 
@@ -27,7 +27,7 @@ PetscErrorCode FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C; 
+  Mat            C;
   PetscErrorCode ierr;
   PetscInt       i,m = 2,N,M,idx[4],Nsub1,Nsub2,ol=1,x1,x2;
   PetscScalar    Ke[16];
@@ -51,7 +51,7 @@ int main(int argc,char **args)
   ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);
   for (i=0; i<M; i++) {
      /* location of lower left corner of element */
-     x = h*(i % m); y = h*(i/m); 
+     x = h*(i % m); y = h*(i/m);
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + (i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
@@ -65,25 +65,25 @@ int main(int argc,char **args)
     ierr = PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,0,&Nsub1,&is1);CHKERRQ(ierr);
     ierr = MatIncreaseOverlap(C,Nsub1,is1,ol);CHKERRQ(ierr);
     ierr = PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,ol,&Nsub2,&is2);CHKERRQ(ierr);
-    
+
     ierr = PetscPrintf(PETSC_COMM_SELF,"flg == 1 => both index sets are same\n");CHKERRQ(ierr);
     if (Nsub1 != Nsub2){
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: No of indes sets don't match\n");CHKERRQ(ierr);
     }
-    
+
     for (i=0; i<Nsub1; ++i) {
       ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF,"i =  %D,flg = %d \n",i,(int)flg);CHKERRQ(ierr);
-      
+
     }
     for (i=0; i<Nsub1; ++i) {ierr = ISDestroy(&&is1[i]);CHKERRQ(ierr);}
     for (i=0; i<Nsub2; ++i) {ierr = ISDestroy(&&is2[i]);CHKERRQ(ierr);}
-  
+
 
     ierr = PetscFree(is1);CHKERRQ(ierr);
     ierr = PetscFree(is2);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(&C);CHKERRQ(ierr);  
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

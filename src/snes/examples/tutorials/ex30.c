@@ -26,7 +26,7 @@ static const char help[] = "Steady-state 2D subduction flow, pressure and temper
 
 
 /*F-----------------------------------------------------------------------
-   
+
     This PETSc 2.2.0 example by Richard F. Katz
     http://www.ldeo.columbia.edu/~katz/
 
@@ -80,7 +80,7 @@ typedef struct { /* parameters needed to compute viscosity */
 
 typedef struct { /* physical and miscelaneous parameters */
   PetscReal    width, depth, scaled_width, scaled_depth, peclet, potentialT;
-  PetscReal    slab_dip, slab_age, slab_velocity, kappa, z_scale; 
+  PetscReal    slab_dip, slab_age, slab_velocity, kappa, z_scale;
   PetscReal    c, d, sb, cb, skt, visc_cutoff, lid_age, eta0, continuation;
   PetscReal    L, V, lid_depth, fault_depth;
   ViscParam    diffusion, dislocation;
@@ -148,12 +148,12 @@ int main(int argc,char **argv)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up the problem parameters.
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SetParams(&param,&grid);CHKERRQ(ierr);
   ierr = ReportParams(&param,&grid);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
   ierr = DMDACreate2d(comm,grid.bx,grid.by,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
@@ -165,7 +165,7 @@ int main(int argc,char **argv)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */   
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscMalloc(sizeof(AppCtx),&user);CHKERRQ(ierr);
   user->param   = &param;
   user->grid    = &grid;
@@ -181,21 +181,21 @@ int main(int argc,char **argv)
 
 
   ierr = SNESSetConvergenceTest(snes,SNESConverged_Interactive,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscPushSignalHandler(InteractiveHandler,(void*)user);CHKERRQ(ierr);    
-   
+  ierr = PetscPushSignalHandler(InteractiveHandler,(void*)user);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize and solve the nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = Initialize(da);CHKERRQ(ierr);
-  ierr = UpdateSolution(snes,user,&nits);CHKERRQ(ierr); 
-  
+  ierr = UpdateSolution(snes,user,&nits);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Output variables.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DoOutput(snes,nits);CHKERRQ(ierr);
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Free work space. 
+     Free work space.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecDestroy(&user->Xguess);CHKERRQ(ierr);
   ierr = VecDestroy(&user->x);CHKERRQ(ierr);
@@ -252,12 +252,12 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
     if (!q) PetscPrintf(PETSC_COMM_WORLD,"Computing Variable Viscosity Solution\n");
 
     /* continuation method on viscosity cutoff */
-    for (param->continuation=0.0; ; param->continuation+=cont_incr) { 
+    for (param->continuation=0.0; ; param->continuation+=cont_incr) {
       if (!q) PetscPrintf(PETSC_COMM_WORLD," Continuation parameter = %G\n", param->continuation);
 
       /* solve the non-linear system */
       ierr = VecCopy(user->Xguess,user->x);CHKERRQ(ierr);
-      ierr = SNESSolve(snes,0,user->x);CHKERRQ(ierr); 
+      ierr = SNESSolve(snes,0,user->x);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
       ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
       *nits += its;
@@ -290,7 +290,7 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
   if (param->stop_solve && !q) PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: stopping solve.\n");
   if (reason<0 && !q) PetscPrintf(PETSC_COMM_WORLD,"FAILED TO CONVERGE: stopping solve.\n");
   PetscFunctionReturn(0);
-}   
+}
 
 
 /*=====================================================================
@@ -344,9 +344,9 @@ PETSC_STATIC_INLINE PassiveScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *
   Parameter   *param = user->param;
   GridInfo    *grid  = user->grid;
   PetscScalar x, z, r, st, ct, th, c=param->c, d=param->d;
-  
+
   x = (i - grid->jlid)*grid->dx;  z = (j - grid->jlid - 0.5)*grid->dz;
-  r = sqrt(x*x+z*z); st = z/r;  ct = x/r;  th = atan(z/x); 
+  r = sqrt(x*x+z*z); st = z/r;  ct = x/r;  th = atan(z/x);
   return ct*(c*th*st+d*(st+th*ct)) + st*(c*(st-th*ct)+d*th*st);
 }
 
@@ -360,10 +360,10 @@ PETSC_STATIC_INLINE PetscScalar VertVelocity(PetscInt i, PetscInt j, AppCtx *use
   Parameter   *param = user->param;
   GridInfo    *grid  = user->grid;
   PetscScalar x, z, r, st, ct, th, c=param->c, d=param->d;
-  
+
   x = (i - grid->jlid - 0.5)*grid->dx;  z = (j - grid->jlid)*grid->dz;
-  r = sqrt(x*x+z*z); st = z/r;  ct = x/r;  th = atan(z/x); 
-  return st*(c*th*st+d*(st+th*ct)) - ct*(c*(st-th*ct)+d*th*st);  
+  r = sqrt(x*x+z*z); st = z/r;  ct = x/r;  th = atan(z/x);
+  return st*(c*th*st+d*(st+th*ct)) - ct*(c*(st-th*ct)+d*th*st);
 }
 
 /*---------------------------------------------------------------------*/
@@ -378,7 +378,7 @@ PETSC_STATIC_INLINE PetscScalar Pressure(PetscInt i, PetscInt j, AppCtx *user)
   PetscScalar x, z, r, st, ct, c=param->c, d=param->d;
 
   x = (i - grid->jlid - 0.5)*grid->dx;  z = (j - grid->jlid - 0.5)*grid->dz;
-  r = sqrt(x*x+z*z);  st = z/r;  ct = x/r;  
+  r = sqrt(x*x+z*z);  st = z/r;  ct = x/r;
   return (-2.0*(c*ct-d*st)/r);
 }
 
@@ -401,31 +401,31 @@ PETSC_STATIC_INLINE PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, Pe
     if (j<=grid->jlid) return EPS_ZERO;
 
     uE = x[j][i].u; uW = x[j][i-1].u;
-    wN = x[j][i].w; wS = x[j-1][i].w; 
-    wE = WInterp(x,i,j-1); 
+    wN = x[j][i].w; wS = x[j-1][i].w;
+    wE = WInterp(x,i,j-1);
     if (i==j) { uN = param->cb; wW = param->sb; }
     else      { uN = UInterp(x,i-1,j); wW = WInterp(x,i-1,j-1); }
 
     if (j==grid->jlid+1) uS = 0.0;
-    else                 uS = UInterp(x,i-1,j-1);  
+    else                 uS = UInterp(x,i-1,j-1);
 
   } else {       /* on CELL_CORNER */
     if (j<grid->jlid) return EPS_ZERO;
 
-    uN = x[j+1][i].u;  uS = x[j][i].u;  
-    wE = x[j][i+1].w;  wW = x[j][i].w; 
+    uN = x[j+1][i].u;  uS = x[j][i].u;
+    wE = x[j][i+1].w;  wW = x[j][i].w;
     if (i==j) { wN = param->sb; uW = param->cb; }
-    else      { wN = WInterp(x,i,j); uW = UInterp(x,i-1,j); }           
+    else      { wN = WInterp(x,i,j); uW = UInterp(x,i-1,j); }
 
     if (j==grid->jlid) {
       uE = 0.0;  uW = 0.0;
       uS = -uN;
       wS = -wN;
-    } else { 
-      uE = UInterp(x,i,j);  
+    } else {
+      uE = UInterp(x,i,j);
       wS = WInterp(x,i,j-1);
     }
-  } 
+  }
 
   eps11 = (uE-uW)/grid->dx;  eps22 = (wN-wS)/grid->dz;
   eps12 = 0.5*((uN-uS)/grid->dz + (wE-wW)/grid->dx);
@@ -449,20 +449,20 @@ PETSC_STATIC_INLINE PetscScalar Viscosity(PetscScalar T, PetscScalar eps, Passiv
 
   P = rho_g*(z*param->L*1000.0); /* Pa */
 
-  if        (iVisc==VISC_CONST) {  
+  if        (iVisc==VISC_CONST) {
     /* constant viscosity */
     return 1.0;
 
-  } else if (iVisc==VISC_DIFN) {   
+  } else if (iVisc==VISC_DIFN) {
     /* diffusion creep rheology */
     result = difn.A*PetscExpScalar((difn.Estar + P*difn.Vstar)/R/(T+273.0))/param->eta0;
 
-  } else if (iVisc==VISC_DISL) { 
+  } else if (iVisc==VISC_DISL) {
     /* dislocation creep rheology */
     strain_power = pow( eps*eps_scale, (1.0-disl.n)/disl.n );
     result = disl.A*PetscExpScalar((disl.Estar + P*disl.Vstar)/disl.n/R/(T+273.0))*strain_power/param->eta0;
 
-  } else if (iVisc==VISC_FULL) { 
+  } else if (iVisc==VISC_FULL) {
     /* dislocation/diffusion creep rheology */
     strain_power = pow( eps*eps_scale, (1.0-disl.n)/disl.n );
     v1 = difn.A*PetscExpScalar((difn.Estar + P*difn.Vstar)/R/(T+273.0))/param->eta0;
@@ -494,7 +494,7 @@ PETSC_STATIC_INLINE PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscIn
   PetscScalar    dudxW,dudxE,dudzN,dudzS,dwdxN,dwdxS;
   PetscInt            jlim = grid->nj-1;
 
-  z_scale = param->z_scale; 
+  z_scale = param->z_scale;
 
   if ( param->ivisc==VISC_DIFN || param->ivisc>=VISC_DISL ) { /* viscosity is T-dependent */
     TS = param->potentialT * TInterp(x,i,j-1) * exp( (j-1.0)*dz*z_scale );
@@ -509,21 +509,21 @@ PETSC_STATIC_INLINE PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscIn
       epsW = CalcSecInv(x,i,j,  CELL_CENTER,user);
     }
   }
-  etaN = Viscosity(TN,epsN,dz*(j+0.5),param);   
+  etaN = Viscosity(TN,epsN,dz*(j+0.5),param);
   etaS = Viscosity(TS,epsS,dz*(j-0.5),param);
-  etaW = Viscosity(TW,epsW,dz*j,param);   
+  etaW = Viscosity(TW,epsW,dz*j,param);
   etaE = Viscosity(TE,epsE,dz*j,param);
 
   dPdx = ( x[j][i+1].p - x[j][i].p )/dx;
   if (j==jlim) dudzN = etaN * ( x[j][i].w   - x[j][i+1].w )/dx;
   else         dudzN = etaN * ( x[j+1][i].u - x[j][i].u   )/dz;
-  dudzS = etaS * ( x[j][i].u    - x[j-1][i].u )/dz; 
+  dudzS = etaS * ( x[j][i].u    - x[j-1][i].u )/dz;
   dudxE = etaE * ( x[j][i+1].u  - x[j][i].u   )/dx;
   dudxW = etaW * ( x[j][i].u    - x[j][i-1].u )/dx;
 
   residual  = -dPdx                         /* X-MOMENTUM EQUATION*/
-	      +( dudxE - dudxW )/dx 
-              +( dudzN - dudzS )/dz; 
+	      +( dudxE - dudxW )/dx
+              +( dudzN - dudzS )/dz;
 
   if ( param->ivisc!=VISC_CONST ) {
     dwdxN = etaN * ( x[j][i+1].w   - x[j][i].w   )/dx;
@@ -567,22 +567,22 @@ PETSC_STATIC_INLINE PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscIn
       epsW = CalcSecInv(x,i-1,j,CELL_CORNER,user);
     }
   }
-  etaN = Viscosity(TN,epsN,dz*(j+1),param);   
+  etaN = Viscosity(TN,epsN,dz*(j+1),param);
   etaS = Viscosity(TS,epsS,dz*j,param);
-  etaW = Viscosity(TW,epsW,dz*(j+0.5),param);   
+  etaW = Viscosity(TW,epsW,dz*(j+0.5),param);
   etaE = Viscosity(TE,epsE,dz*(j+0.5),param);
 
-  dPdz = ( x[j+1][i].p - x[j][i].p )/dz;  
+  dPdz = ( x[j+1][i].p - x[j][i].p )/dz;
   dwdzN = etaN * ( x[j+1][i].w - x[j][i].w )/dz;
   dwdzS = etaS * ( x[j][i].w - x[j-1][i].w )/dz;
   if (i==ilim) dwdxE = etaE * ( x[j][i].u   - x[j+1][i].u )/dz;
   else         dwdxE = etaE * ( x[j][i+1].w - x[j][i].w   )/dx;
   dwdxW = 2.0*etaW * ( x[j][i].w - x[j][i-1].w )/dx;
-  
+
   /* Z-MOMENTUM */
-  residual  = -dPdz                /* constant viscosity terms */                  
-	      +( dwdzN - dwdzS )/dz 
-              +( dwdxE - dwdxW )/dx; 
+  residual  = -dPdz                /* constant viscosity terms */
+	      +( dwdzN - dwdzS )/dz
+              +( dwdxE - dwdxW )/dx;
 
   if ( param->ivisc!=VISC_CONST ) {
     dudzE = etaE * ( x[j+1][i].u - x[j][i].u )/dz;
@@ -645,31 +645,31 @@ PETSC_STATIC_INLINE PetscScalar EnergyResidual(Field **x, PetscInt i, PetscInt j
   } else {
     /* advect in the slab and wedge */
     uW = x[j][i-1].u; uE = x[j][i].u;
-    wS = x[j-1][i].w; wN = x[j][i].w; 
+    wS = x[j-1][i].w; wN = x[j][i].w;
   }
 
-  if ( param->adv_scheme==ADVECT_FV || i==ilim-1 || j==jlim-1 || i==1 || j==1 ) { 
+  if ( param->adv_scheme==ADVECT_FV || i==ilim-1 || j==jlim-1 || i==1 || j==1 ) {
     /* finite volume advection */
     TS  = ( x[j][i].T + x[j-1][i].T )/2.0;
-    TN  = ( x[j][i].T + x[j+1][i].T )/2.0;  
-    TE  = ( x[j][i].T + x[j][i+1].T )/2.0;  
+    TN  = ( x[j][i].T + x[j+1][i].T )/2.0;
+    TE  = ( x[j][i].T + x[j][i+1].T )/2.0;
     TW  = ( x[j][i].T + x[j][i-1].T )/2.0;
-    fN = wN*TN*dx; fS = wS*TS*dx;           
+    fN = wN*TN*dx; fS = wS*TS*dx;
     fE = uE*TE*dz; fW = uW*TW*dz;
-    
-  } else {        
+
+  } else {
     /* Fromm advection scheme */
-    fE =     ( uE *(-x[j][i+2].T + 5.0*(x[j][i+1].T+x[j][i].T)-x[j][i-1].T)/8.0 
+    fE =     ( uE *(-x[j][i+2].T + 5.0*(x[j][i+1].T+x[j][i].T)-x[j][i-1].T)/8.0
 	       - fabs(uE)*(-x[j][i+2].T + 3.0*(x[j][i+1].T-x[j][i].T)+x[j][i-1].T)/8.0 )*dz;
-    fW =     ( uW *(-x[j][i+1].T + 5.0*(x[j][i].T+x[j][i-1].T)-x[j][i-2].T)/8.0 
+    fW =     ( uW *(-x[j][i+1].T + 5.0*(x[j][i].T+x[j][i-1].T)-x[j][i-2].T)/8.0
 	       - fabs(uW)*(-x[j][i+1].T + 3.0*(x[j][i].T-x[j][i-1].T)+x[j][i-2].T)/8.0 )*dz;
-    fN =     ( wN *(-x[j+2][i].T + 5.0*(x[j+1][i].T+x[j][i].T)-x[j-1][i].T)/8.0 
+    fN =     ( wN *(-x[j+2][i].T + 5.0*(x[j+1][i].T+x[j][i].T)-x[j-1][i].T)/8.0
 	       - fabs(wN)*(-x[j+2][i].T + 3.0*(x[j+1][i].T-x[j][i].T)+x[j-1][i].T)/8.0 )*dx;
-    fS =     ( wS *(-x[j+1][i].T + 5.0*(x[j][i].T+x[j-1][i].T)-x[j-2][i].T)/8.0 
+    fS =     ( wS *(-x[j+1][i].T + 5.0*(x[j][i].T+x[j-1][i].T)-x[j-2][i].T)/8.0
 	       - fabs(wS)*(-x[j+1][i].T + 3.0*(x[j][i].T-x[j-1][i].T)+x[j-2][i].T)/8.0 )*dx;
   }
-  
-  residual -= ( fE - fW + fN - fS );  
+
+  residual -= ( fE - fW + fN - fS );
 
   return residual;
 }
@@ -690,8 +690,8 @@ PETSC_STATIC_INLINE PetscScalar ShearStress(Field **x, PetscInt i, PetscInt j, P
 
   if (ipos==CELL_CENTER) { /* on cell center */
 
-    wE = WInterp(x,i,j-1); 
-    if (i==j) { wW = param->sb; uN = param->cb;} 
+    wE = WInterp(x,i,j-1);
+    if (i==j) { wW = param->sb; uN = param->cb;}
     else      { wW = WInterp(x,i-1,j-1); uN = UInterp(x,i-1,j); }
     if (j==grid->jlid+1)  uS = 0.0;
     else                  uS = UInterp(x,i-1,j-1);
@@ -699,7 +699,7 @@ PETSC_STATIC_INLINE PetscScalar ShearStress(Field **x, PetscInt i, PetscInt j, P
   } else { /* on cell corner */
 
     uN = x[j+1][i].u;         uS = x[j][i].u;
-    wW = x[j][i].w;           wE = x[j][i+1].w;   
+    wW = x[j][i].w;           wE = x[j][i+1].w;
 
   }
 
@@ -720,7 +720,7 @@ PETSC_STATIC_INLINE PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j,
   PetscScalar    epsC=0.0, etaC, TC, uE, uW, pC, z_scale;
   if (i<j || j<=grid->jlid) return EPS_ZERO;
 
-  ivisc=param->ivisc;  z_scale = param->z_scale; 
+  ivisc=param->ivisc;  z_scale = param->z_scale;
 
   if (ipos==CELL_CENTER) { /* on cell center */
 
@@ -728,7 +728,7 @@ PETSC_STATIC_INLINE PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j,
     if (ivisc>=VISC_DISL) epsC = CalcSecInv(x,i,j,CELL_CENTER,user);
     etaC = Viscosity(TC,epsC,dz*j,param);
 
-    uW = x[j][i-1].u;   uE = x[j][i].u; 
+    uW = x[j][i-1].u;   uE = x[j][i].u;
     pC = x[j][i].p;
 
   } else { /* on cell corner */
@@ -742,7 +742,7 @@ PETSC_STATIC_INLINE PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j,
     else      uW = UInterp(x,i-1,j);
     uE = UInterp(x,i,j); pC = PInterp(x,i,j);
   }
-    
+
   return 2.0*etaC*(uE-uW)/dx - pC;
 }
 
@@ -761,7 +761,7 @@ PETSC_STATIC_INLINE PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j,
   PetscScalar    pC, wN, wS, z_scale;
   if (i<j || j<=grid->jlid) return EPS_ZERO;
 
-  ivisc=param->ivisc;  z_scale = param->z_scale; 
+  ivisc=param->ivisc;  z_scale = param->z_scale;
 
   if (ipos==CELL_CENTER) { /* on cell center */
 
@@ -777,7 +777,7 @@ PETSC_STATIC_INLINE PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j,
     if (ivisc>=VISC_DISL) epsC = CalcSecInv(x,i,j,CELL_CORNER,user);
     etaC = Viscosity(TC,epsC,dz*(j+0.5),param);
     if (i==j) wN = param->sb;
-    else      wN = WInterp(x,i,j); 
+    else      wN = WInterp(x,i,j);
     wS = WInterp(x,i,j-1); pC = PInterp(x,i,j);
   }
 
@@ -787,13 +787,13 @@ PETSC_STATIC_INLINE PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j,
 /*---------------------------------------------------------------------*/
 
 /*=====================================================================
-  INITIALIZATION, POST-PROCESSING AND OUTPUT FUNCTIONS 
+  INITIALIZATION, POST-PROCESSING AND OUTPUT FUNCTIONS
   =====================================================================*/
 
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "SetParams"
-/* initializes the problem parameters and checks for 
+/* initializes the problem parameters and checks for
    command line changes */
 PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
 /*---------------------------------------------------------------------*/
@@ -801,8 +801,8 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   PetscErrorCode ierr, ierr_out=0;
   PetscReal      SEC_PER_YR = 3600.00*24.00*365.2500;
   PetscReal      PI = 3.14159265358979323846;
-  PetscReal      alpha_g_on_cp_units_inverse_km=4.0e-5*9.8;  
-  
+  PetscReal      alpha_g_on_cp_units_inverse_km=4.0e-5*9.8;
+
   /* domain geometry */
   param->slab_dip      = 45.0;
   param->width         = 320.0;                                            /* km */
@@ -835,7 +835,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
 
   /* boundary conditions */
   param->pv_analytic        = PETSC_FALSE;
-  param->ibound             = BC_NOSTRESS;    
+  param->ibound             = BC_NOSTRESS;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ibound",&(param->ibound),PETSC_NULL);CHKERRQ(ierr);
 
   /* physical constants */
@@ -844,7 +844,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->lid_age       = 50.0;              /* Ma */
   param->kappa         = 0.7272e-6;         /* m^2/sec */
   param->potentialT    = 1300.0;            /* degrees C */
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-slab_velocity",&(param->slab_velocity),PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-slab_velocity",&(param->slab_velocity),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-slab_age",&(param->slab_age),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-lid_age",&(param->lid_age),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&(param->kappa),PETSC_NULL);CHKERRQ(ierr);
@@ -876,7 +876,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->param_test       = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-quiet",&(param->quiet));CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-test",&(param->param_test));CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-file",param->filename,PETSC_MAX_PATH_LEN,&(param->output_to_file));  
+  ierr = PetscOptionsGetString(PETSC_NULL,"-file",param->filename,PETSC_MAX_PATH_LEN,&(param->output_to_file));
 
   /* advection */
   param->adv_scheme       = ADVECT_FROMM;       /* advection scheme: 0=finite vol, 1=Fromm */
@@ -889,10 +889,10 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->toggle_kspmon       = PETSC_FALSE;
 
   /* derived parameters for slab angle */
-  param->sb  = sin(param->slab_dip); 
+  param->sb  = sin(param->slab_dip);
   param->cb  = cos(param->slab_dip);
   param->c   =  param->slab_dip*param->sb/(param->slab_dip*param->slab_dip-param->sb*param->sb);
-  param->d   = (param->slab_dip*param->cb-param->sb)/(param->slab_dip*param->slab_dip-param->sb*param->sb); 
+  param->d   = (param->slab_dip*param->cb-param->sb)/(param->slab_dip*param->slab_dip-param->sb*param->sb);
 
   /* length, velocity and time scale for non-dimensionalization */
   param->L = PetscMin(param->width,param->depth);               /* km */
@@ -916,7 +916,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->z_scale       = param->L * alpha_g_on_cp_units_inverse_km;
   param->skt           = sqrt(param->kappa*param->slab_age*SEC_PER_YR);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-peclet",&(param->peclet),PETSC_NULL);CHKERRQ(ierr);
-  
+
   return ierr_out;
 }
 
@@ -973,10 +973,10 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"       Stress-Free (normal & shear stress)\n");CHKERRQ(ierr);
     } else if ( param->ibound==BC_EXPERMNT ) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"       Experimental boundary condition \n");CHKERRQ(ierr);
-    } else { 
+    } else {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"       Invalid! \n");CHKERRQ(ierr);
       ierr_out=1;
-    }    
+    }
 
     if (param->output_to_file)
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
@@ -984,7 +984,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
 #else
       PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       PETSc binary file \"%s\"\n",param->filename);
 #endif
-    if ( param->output_ivisc != param->ivisc ) 
+    if ( param->output_ivisc != param->ivisc )
       PetscPrintf(PETSC_COMM_WORLD,"                          Output viscosity: -ivisc %D\n",param->output_ivisc);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"---------------------END ex30 PARAM REPORT---------------------\n");CHKERRQ(ierr);
@@ -1047,7 +1047,7 @@ PetscErrorCode Initialize(DM da)
   ierr = DMDAVecRestoreArray(da,Xguess,(void**)&x);CHKERRQ(ierr);
 
   return 0;
-} 
+}
 
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
@@ -1077,7 +1077,7 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
 
   /* compute final residual and final viscosity/strain rate fields */
   ierr = SNESGetFunction(snes, &res, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  ierr = ViscosityField(da, user->x, user->Xguess);CHKERRQ(ierr); 
+  ierr = ViscosityField(da, user->x, user->Xguess);CHKERRQ(ierr);
 
   /* get the communicator and the rank of the processor */
   ierr = PetscObjectGetComm((PetscObject)snes, &comm);CHKERRQ(ierr);
@@ -1109,7 +1109,7 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
       ierr = VecSetSizes(pars, 0, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(pars);CHKERRQ(ierr);
     }
-    ierr = VecAssemblyBegin(pars);CHKERRQ(ierr); ierr = VecAssemblyEnd(pars);CHKERRQ(ierr); 
+    ierr = VecAssemblyBegin(pars);CHKERRQ(ierr); ierr = VecAssemblyEnd(pars);CHKERRQ(ierr);
 
     /* create viewer */
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
@@ -1120,22 +1120,22 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
 
     /* send vectors to viewer */
     ierr = PetscObjectSetName((PetscObject)res,"res");
-    ierr = VecView(res,viewer);CHKERRQ(ierr); 
+    ierr = VecView(res,viewer);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)user->x,"out");
-    ierr = VecView(user->x, viewer);CHKERRQ(ierr);  
+    ierr = VecView(user->x, viewer);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)(user->Xguess),"aux");
-    ierr = VecView(user->Xguess, viewer);CHKERRQ(ierr); 
+    ierr = VecView(user->Xguess, viewer);CHKERRQ(ierr);
     ierr = StressField(da);CHKERRQ(ierr); /* compute stress fields */
     ierr = PetscObjectSetName((PetscObject)(user->Xguess),"str");
-    ierr = VecView(user->Xguess, viewer);CHKERRQ(ierr); 
+    ierr = VecView(user->Xguess, viewer);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)pars,"par");
     ierr = VecView(pars, viewer);CHKERRQ(ierr);
-    
+
     /* destroy viewer and vector */
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = VecDestroy(&pars);CHKERRQ(ierr);
-  } 
-  
+  }
+
   param->ivisc = ivt;
   return 0;
 }
@@ -1225,7 +1225,7 @@ PetscErrorCode StressField(DM da)
   /* Compute stress on the corner points */
   for (j=js; j<js+jm; j++) {
      for (i=is; i<is+im; i++) {
-      
+
 	x[j][i].u = ShearStress(y,i,j,CELL_CENTER,user);
 	x[j][i].w = ShearStress(y,i,j,CELL_CORNER,user);
 	x[j][i].p = XNormalStress(y,i,j,CELL_CENTER,user);
@@ -1241,13 +1241,13 @@ PetscErrorCode StressField(DM da)
 }
 
 /*=====================================================================
-  UTILITY FUNCTIONS 
+  UTILITY FUNCTIONS
   =====================================================================*/
 
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "SlabVel"
-/* returns the velocity of the subducting slab and handles fault nodes 
+/* returns the velocity of the subducting slab and handles fault nodes
    for BC */
 PETSC_STATIC_INLINE PassiveScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx *user)
 /*---------------------------------------------------------------------*/
@@ -1260,15 +1260,15 @@ PETSC_STATIC_INLINE PassiveScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx
       return param->cb;
     } else if (j<=grid->jfault) {
       return 0.0;
-    } else 
+    } else
       return param->cb;
 
-  } else {           
+  } else {
     if (i<j) {
       return param->sb;
     } else if (j<=grid->jfault) {
       return 0.0;
-    } else 
+    } else
       return param->sb;
   }
 }
@@ -1282,10 +1282,10 @@ PETSC_STATIC_INLINE PassiveScalar PlateModel(PetscInt j, PetscInt plate, AppCtx 
 {
   Parameter     *param = user->param;
   PassiveScalar z;
-  if (plate==PLATE_LID) 
+  if (plate==PLATE_LID)
     z = (j-0.5)*user->grid->dz;
   else /* PLATE_SLAB */
-    z = (j-0.5)*user->grid->dz*param->cb; 
+    z = (j-0.5)*user->grid->dz*param->cb;
 #if defined (PETSC_HAVE_ERF)
   return erf(z*param->L/2.0/param->skt);
 #else
@@ -1301,18 +1301,18 @@ PETSC_STATIC_INLINE PassiveScalar PlateModel(PetscInt j, PetscInt plate, AppCtx 
 PetscBool  OptionsHasName(const char pre[],const char name[])
 /* ------------------------------------------------------------------- */
 {
-  PetscBool      retval; 
+  PetscBool      retval;
   PetscErrorCode ierr;
   ierr = PetscOptionsHasName(pre,name,&retval);CHKERRABORT(PETSC_COMM_WORLD,ierr);
   return retval;
 }
 
 /*=====================================================================
-  INTERACTIVE SIGNAL HANDLING 
+  INTERACTIVE SIGNAL HANDLING
   =====================================================================*/
 
 /* ------------------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESConverged_Interactive"
 PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm, PetscReal snorm, PetscReal fnorm, SNESConvergedReason *reason, void *ctx)
 /* ------------------------------------------------------------------- */
@@ -1346,7 +1346,7 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm,
 
 /* ------------------------------------------------------------------- */
 #include <signal.h>
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "InteractiveHandler"
 PetscErrorCode InteractiveHandler(int signum, void *ctx)
 /* ------------------------------------------------------------------- */
@@ -1364,14 +1364,14 @@ PetscErrorCode InteractiveHandler(int signum, void *ctx)
   } else if (signum == SIGURG) {
     param->stop_solve = PETSC_TRUE;
 #endif
-  } 
+  }
   return 0;
 }
 
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal"
-/*  main call-back function that computes the processor-local piece 
+/*  main call-back function that computes the processor-local piece
     of the residual */
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *ptr)
 /*---------------------------------------------------------------------*/
@@ -1388,13 +1388,13 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   /* Define global and local grid parameters */
   mx   = info->mx;     mz   = info->my;
   ilim = mx-1;         jlim = mz-1;
-  is   = info->xs;     ie   = info->xs+info->xm; 
+  is   = info->xs;     ie   = info->xs+info->xm;
   js   = info->ys;     je   = info->ys+info->ym;
 
   /* Define geometric and numeric parameters */
   /* ivisc = param->ivisc; */     ibound = param->ibound;
 
-  for (j=js; j<je; j++) { 
+  for (j=js; j<je; j++) {
     for (i=is; i<ie; i++) {
 
       /************* X-MOMENTUM/VELOCITY *************/
@@ -1410,7 +1410,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
 	if (ibound==BC_ANALYTIC) {
 	  f[j][i].u = x[j][i].u - HorizVelocity(i,j,user);
 	} else {
-	  f[j][i].u = XNormalStress(x,i,j,CELL_CENTER,user) - EPS_ZERO; 
+	  f[j][i].u = XNormalStress(x,i,j,CELL_CENTER,user) - EPS_ZERO;
 	}
 
       } else if (j==jlim) {
@@ -1423,11 +1423,11 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
 	  /* experimental boundary condition */
 	}
 
-      } else { 
+      } else {
 	/* in the mantle wedge */
 	f[j][i].u = XMomentumResidual(x,i,j,user);
       }
-      
+
       /************* Z-MOMENTUM/VELOCITY *************/
       if (i<=j) {
 	f[j][i].w = x[j][i].w - SlabVel('W',i,j,user);
@@ -1441,7 +1441,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
 	if (ibound==BC_ANALYTIC) {
 	  f[j][i].w = x[j][i].w - VertVelocity(i,j,user);
 	} else {
-	  f[j][i].w = ZNormalStress(x,i,j,CELL_CENTER,user) - EPS_ZERO; 
+	  f[j][i].w = ZNormalStress(x,i,j,CELL_CENTER,user) - EPS_ZERO;
 	}
 
       } else if (i==ilim) {
@@ -1494,9 +1494,9 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
 
       } else {
 	/* in the mantle wedge */
-	f[j][i].T = EnergyResidual(x,i,j,user);      
+	f[j][i].T = EnergyResidual(x,i,j,user);
       }
     }
   }
   PetscFunctionReturn(0);
-} 
+}

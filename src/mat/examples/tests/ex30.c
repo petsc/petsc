@@ -91,7 +91,7 @@ int main(int argc,char **args)
   info.diagonal_fill = 0;
   info.zeropivot     = 0.0;
   ierr = PetscOptionsHasName(PETSC_NULL,"-lu",&LU);CHKERRQ(ierr);
-  if (LU){ 
+  if (LU){
     printf("Test LU...\n");
     ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_LU,&A);CHKERRQ(ierr);
     ierr = MatLUFactorSymbolic(A,C,row,col,&info);CHKERRQ(ierr);
@@ -125,7 +125,7 @@ int main(int argc,char **args)
     /*
     printf("In-place factored matrix:\n");
     ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    */  
+    */
     ierr = MatSolve(A,b,y);CHKERRQ(ierr);
     ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2_inplace);CHKERRQ(ierr);
@@ -135,7 +135,7 @@ int main(int argc,char **args)
 
   /* Test Cholesky and ICC on seqaij matrix with matrix reordering on aij matrix C */
   CHOLESKY = LU;
-  if (CHOLESKY){ 
+  if (CHOLESKY){
     printf("Test Cholesky...\n");
     lf = -1;
     ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&A);CHKERRQ(ierr);
@@ -149,7 +149,7 @@ int main(int argc,char **args)
     ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_ICC,&A);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(A,C,row,&info);CHKERRQ(ierr);
   }
-  ierr = MatCholeskyFactorNumeric(A,C,&info);CHKERRQ(ierr);  
+  ierr = MatCholeskyFactorNumeric(A,C,&info);CHKERRQ(ierr);
 
   /* test MatForwardSolve() and MatBackwardSolve() with matrix reordering on aij matrix C */
   if (lf == -1){
@@ -158,14 +158,14 @@ int main(int argc,char **args)
       printf("Test MatForwardSolve...\n");
       ierr = MatForwardSolve(A,b,ytmp);CHKERRQ(ierr);
       printf("Test MatBackwardSolve...\n");
-      ierr = MatBackwardSolve(A,ytmp,y);CHKERRQ(ierr);      
+      ierr = MatBackwardSolve(A,ytmp,y);CHKERRQ(ierr);
       ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
       if (norm2 > 1.e-14){
-        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%G\n",norm2);CHKERRQ(ierr); 
+        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%G\n",norm2);CHKERRQ(ierr);
       }
     }
-  } 
+  }
 
   ierr = MatSolve(A,b,y);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);

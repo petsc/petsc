@@ -91,7 +91,7 @@ PetscInt main(PetscInt argc,char **args)
     /* Use PETSc-FFTW interface                  */
     /*-------------------------------------------*/
     PetscInt i,*dim,k,DIM;
-    Mat      A; 
+    Mat      A;
     Vec      input,output;
 
     N=30;
@@ -102,13 +102,13 @@ PetscInt main(PetscInt argc,char **args)
         dim[k]=30;
       }
       N *= dim[i-1];
-  
+
       /* Create FFTW object */
       if (!rank) printf("Use PETSc-FFTW interface...%d-DIM:%d \n",DIM,N);
       ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
 
       /* Create FFTW vectors that are compatible with parallel layout of A */
-      ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr); 
+      ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
@@ -121,20 +121,20 @@ PetscInt main(PetscInt argc,char **args)
       ierr = VecDuplicate(input,&output);CHKERRQ(ierr);
       if (view){ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
-      /* Vector input is copied to another vector x using VecScatterPetscToFFTW. This is because the user data 
-         can have any parallel layout. But FFTW requires special parallel layout of the data. Hence the original 
+      /* Vector input is copied to another vector x using VecScatterPetscToFFTW. This is because the user data
+         can have any parallel layout. But FFTW requires special parallel layout of the data. Hence the original
          data which is in the vector "input" here, needs to be copied to a vector x, which has the correct parallel
          layout for FFTW. Also, during parallel real transform, this pads extra zeros automatically
          at the end of last  dimension. This padding is required by FFTW to perform parallel real D.F.T.  */
       ierr = VecScatterPetscToFFTW(A,input,x);CHKERRQ(ierr);
-      
+
       /* Apply FFTW_FORWARD and FFTW_BACKWARD */
       ierr = MatMult(A,x,y);CHKERRQ(ierr);
       if (view){ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
       ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
 
-      /* Output from Backward DFT needs to be modified to obtain user readable data the routine VecScatterFFTWToPetsc 
-         performs the job. In some sense this is the reverse operation of VecScatterPetscToFFTW. This routine gets rid of 
+      /* Output from Backward DFT needs to be modified to obtain user readable data the routine VecScatterFFTWToPetsc
+         performs the job. In some sense this is the reverse operation of VecScatterPetscToFFTW. This routine gets rid of
          the extra spaces that were artificially padded to perform real parallel transform.    */
       ierr = VecScatterFFTWToPetsc(A,z,output);CHKERRQ(ierr);
 
@@ -144,7 +144,7 @@ PetscInt main(PetscInt argc,char **args)
       if (view){ierr = VecView(output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
       ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
       ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);
-      if (enorm > 1.e-09 && !rank){ 
+      if (enorm > 1.e-09 && !rank){
         ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
       }
 

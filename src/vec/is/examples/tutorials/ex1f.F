@@ -5,7 +5,7 @@
 !/*T
 !    Concepts: index sets^manipulating a general index set;
 !T*/
-!    
+!
 !
 !  The following include statements are required for Fortran programs
 !  that use PETSc index sets:
@@ -29,12 +29,12 @@
 
 !  Create an index set with 5 entries. Each processor creates
 !  its own index set with its own list of integers.
-   
+
       indices(1) = rank + 1
-      indices(2) = rank + 2 
-      indices(3) = rank + 3 
-      indices(4) = rank + 4 
-      indices(5) = rank + 5 
+      indices(2) = rank + 2
+      indices(3) = rank + 3
+      indices(4) = rank + 4
+      indices(5) = rank + 5
 
 !     if using 64bit integers cannot pass 5 into routine expecting an integer*8
       n = 5
@@ -45,7 +45,7 @@
 
       call ISView(is,PETSC_VIEWER_STDOUT_SELF,ierr)
 
-!  Get the number of indices in the set 
+!  Get the number of indices in the set
 
       call ISGetLocalSize(is,n,ierr)
 
@@ -64,20 +64,20 @@
       index5 = indices(ix+5)
       write(6,100) rank,index1,index5
  100  format('[',i5,'] First index = ',i5,' fifth index = ',i5)
-      
-!   Once we no longer need access to the indices they should 
-!   returned to the system 
+
+!   Once we no longer need access to the indices they should
+!   returned to the system
 
       call ISRestoreIndices(is,indices,ix,ierr)
-  
-!   All PETSc objects should be destroyed once they are 
+
+!   All PETSc objects should be destroyed once they are
 !   no longer needed
 
       call ISDestroy(is,ierr)
       call PetscFinalize(ierr)
       end
 
- 
+
 
 
 

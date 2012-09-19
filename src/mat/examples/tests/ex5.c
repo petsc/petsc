@@ -1,4 +1,4 @@
- 
+
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose().\n\
 Also MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
 
@@ -8,7 +8,7 @@ Also MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale()
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C; 
+  Mat            C;
   Vec            s,u,w,x,y,z;
   PetscErrorCode ierr;
   PetscInt       i,j,m = 8,n,rstart,rend,vstart,vend;
@@ -45,11 +45,11 @@ int main(int argc,char **args)
   ierr = VecGetOwnershipRange(y,&vstart,&vend);CHKERRQ(ierr);
 
   /* Assembly */
-  for (i=rstart; i<rend; i++) { 
+  for (i=rstart; i<rend; i++) {
     v = 100*(i+1);
     ierr = VecSetValues(z,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-    for (j=0; j<n; j++) { 
-      v=10*(i+1)+j+1; 
+    for (j=0; j<n; j++) {
+      v=10*(i+1)+j+1;
       ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -65,9 +65,9 @@ int main(int argc,char **args)
 
   /* Flush off proc Mat values and do more assembly */
   ierr = MatAssemblyBegin(C,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++) { 
-    for (j=0; j<n; j++) { 
-      v=10*(i+1)+j+1; 
+  for (i=rstart; i<rend; i++) {
+    for (j=0; j<n; j++) {
+      v=10*(i+1)+j+1;
       ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -137,10 +137,10 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL,"-test_diagonalscale",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatDiagonalScale(C,x,y);CHKERRQ(ierr);
-    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   /* Free data structures */
-  ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&s);CHKERRQ(ierr); 
+  ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&s);CHKERRQ(ierr);
   ierr = VecDestroy(&w);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr); ierr = VecDestroy(&z);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);

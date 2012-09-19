@@ -50,17 +50,17 @@ struct _p_CellProperties {
 static PetscErrorCode DMDAGetElementCorners(DM da,PetscInt *sx,PetscInt *sy,PetscInt *sz,PetscInt *mx,PetscInt *my,PetscInt *mz);
 
 /* elements */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "CellPropertiesCreate"
 PetscErrorCode CellPropertiesCreate(DM da_stokes,CellProperties *C)
 {
   PetscErrorCode ierr;
   CellProperties cells;
   PetscInt mx,my,mz,sex,sey,sez;
-  
+
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(struct _p_CellProperties),&cells);CHKERRQ(ierr);
-  
+
   ierr = DMDAGetElementCorners(da_stokes,&sex,&sey,&sez,&mx,&my,&mz);CHKERRQ(ierr);
   cells->mx = mx;
   cells->my = my;
@@ -70,12 +70,12 @@ PetscErrorCode CellPropertiesCreate(DM da_stokes,CellProperties *C)
   cells->sey = sey;
   cells->sez = sez;
   ierr = PetscMalloc(sizeof(GaussPointCoefficients)*mx*my*mz,&cells->gpc);CHKERRQ(ierr);
-  
+
   *C = cells;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "CellPropertiesDestroy"
 PetscErrorCode CellPropertiesDestroy(CellProperties *C)
 {
@@ -91,7 +91,7 @@ PetscErrorCode CellPropertiesDestroy(CellProperties *C)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "CellPropertiesGetCell"
 PetscErrorCode CellPropertiesGetCell(CellProperties C,PetscInt I,PetscInt J,PetscInt K,GaussPointCoefficients **G)
 {

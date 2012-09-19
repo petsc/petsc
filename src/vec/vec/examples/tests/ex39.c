@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   ierr = VecPlaceArray(Y2,y+N/2);CHKERRQ(ierr);
   ierr = VecPlaceArray(F1,f);CHKERRQ(ierr);
   ierr = VecPlaceArray(F2,f+N/2);CHKERRQ(ierr);
- 
+
   /* Do subvector addition */
   ierr = VecWAXPY(F1,1.0,X1,Y1);CHKERRQ(ierr);
   ierr = VecWAXPY(F2,1.0,X2,Y2);CHKERRQ(ierr);
@@ -94,4 +94,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

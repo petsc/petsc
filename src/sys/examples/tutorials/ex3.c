@@ -15,7 +15,7 @@ codes.  Note that the code must be compiled with the flag -DPETSC_USE_LOG\n\
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscsys.h" so that we can use PETSc profiling routines.
 */
 #include <petscsys.h>
@@ -32,7 +32,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-  /* 
+  /*
      Create a new user-defined event.
       - Note that PetscLogEventRegister() returns to the user a unique
         integer event number, which should then be used for profiling
@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   ierr = PetscSleep(1);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
 
-  /* 
+  /*
      We disable the logging of an event.
 
   */
@@ -57,7 +57,7 @@ int main(int argc,char **argv)
   ierr = PetscSleep(1);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
 
-  /* 
+  /*
      We next enable the logging of an event
   */
   ierr = PetscLogEventActivate(USER_EVENT);CHKERRQ(ierr);
@@ -68,4 +68,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

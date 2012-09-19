@@ -15,22 +15,22 @@ T*/
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
-  
+
             -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
-  
+
     with boundary conditions
-   
+
              u = 0  for  x = 0, x = 1, y = 0, y = 1.
-  
+
     A finite difference approximation with the usual 5-point stencil
-    is used to discretize the boundary value problem to obtain a nonlinear 
+    is used to discretize the boundary value problem to obtain a nonlinear
     system of equations.
 
     The parallel version of this code is snes/examples/tutorials/ex5.c
 
   ------------------------------------------------------------------------- */
 
-/* 
+/*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that
    this file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -42,8 +42,8 @@ T*/
 
 #include <petscsnes.h>
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines, FormJacobian() and
    FormFunction().
 */
@@ -53,7 +53,7 @@ typedef struct {
       PetscInt    my;           /* Discretization in y-direction */
 } AppCtx;
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -69,10 +69,10 @@ int main(int argc,char **argv)
   Mat            J;                    /* Jacobian matrix */
   AppCtx         user;                 /* user-defined application context */
   PetscErrorCode ierr;
-  PetscInt       i,its,N,hist_its[50]; 
+  PetscInt       i,its,N,hist_its[50];
   PetscMPIInt    size;
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.,history[50];
-  MatFDColoring  fdcoloring;           
+  MatFDColoring  fdcoloring;
   PetscBool      matrix_free = PETSC_FALSE,flg,fd_coloring = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -88,7 +88,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   N = user.mx*user.my;
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -104,7 +104,7 @@ int main(int argc,char **argv)
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set function evaluation routine and vector.  Whenever the nonlinear
      solver needs to evaluate the nonlinear function, it will call this
      routine.
@@ -120,7 +120,7 @@ int main(int argc,char **argv)
 
   /*
      Create matrix. Here we only approximately preallocate storage space
-     for the Jacobian.  See the users manual for a discussion of better 
+     for the Jacobian.  See the users manual for a discussion of better
      techniques for preallocating matrix memory.
   */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
@@ -144,7 +144,7 @@ int main(int argc,char **argv)
     ISColoring   iscoloring;
     MatStructure str;
 
-    /* 
+    /*
       This initializes the nonzero structure of the Jacobian. This is artificial
       because clearly if we had a routine to compute the Jacobian we won't need
       to use finite differences.
@@ -152,7 +152,7 @@ int main(int argc,char **argv)
     ierr = FormJacobian(snes,x,&J,&J,&str,&user);CHKERRQ(ierr);
 
     /*
-       Color the matrix, i.e. determine groups of columns that share no common 
+       Color the matrix, i.e. determine groups of columns that share no common
       rows. These columns in the Jacobian can all be computed simulataneously.
     */
     ierr = MatGetColoring(J,MATCOLORINGNATURAL,&iscoloring);CHKERRQ(ierr);
@@ -167,10 +167,10 @@ int main(int argc,char **argv)
         Tell SNES to use the routine SNESDefaultComputeJacobianColor()
       to compute Jacobians.
     */
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRQ(ierr);  
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   }
-  /* 
+  /*
      Set Jacobian matrix data structure and default Jacobian evaluation
      routine.  Whenever the nonlinear solver needs to compute the
      Jacobian matrix, it will call this routine.
@@ -180,7 +180,7 @@ int main(int argc,char **argv)
       - The user can override with:
          -snes_fd : default finite differencing approximation of Jacobian
          -snes_mf : matrix-free Newton-Krylov method with no preconditioning
-                    (unless user explicitly sets preconditioner) 
+                    (unless user explicitly sets preconditioner)
          -snes_mf_operator : form preconditioning matrix as set by the user,
                              but use matrix-free approx for Jacobian-vector
                              products within Newton-Krylov method
@@ -215,14 +215,14 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr); 
+  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
 
 
-  /* 
+  /*
      Print the convergence history.  This is intended just to demonstrate
-     use of the data attained via SNESSetConvergenceHistory().  
+     use of the data attained via SNESSetConvergenceHistory().
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-print_history",&flg);CHKERRQ(ierr);
   if (flg) {
@@ -252,7 +252,7 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-/* 
+/*
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
@@ -269,7 +269,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   PetscReal      lambda,temp1,temp,hx,hy;
   PetscScalar    *x;
 
-  mx	 = user->mx; 
+  mx	 = user->mx;
   my	 = user->my;
   lambda = user->param;
 
@@ -288,12 +288,12 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   for (j=0; j<my; j++) {
     temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
     for (i=0; i<mx; i++) {
-      row = i + j*mx;  
+      row = i + j*mx;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
-        x[row] = 0.0; 
+        x[row] = 0.0;
         continue;
       }
-      x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
+      x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
     }
   }
 
@@ -306,7 +306,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-/* 
+/*
    FormFunction - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -325,7 +325,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscReal      two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx;
   PetscScalar    ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
 
-  mx	 = user->mx; 
+  mx	 = user->mx;
   my	 = user->my;
   lambda = user->param;
   hx     = one / (PetscReal)(mx-1);
@@ -341,7 +341,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
   /*
-     Compute function 
+     Compute function
   */
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
@@ -366,7 +366,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   */
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  return 0; 
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -393,7 +393,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   PetscScalar    two = 2.0,one = 1.0,lambda,v[5],sc,*x;
   PetscReal      hx,hy,hxdhy,hydhx;
 
-  mx	 = user->mx; 
+  mx	 = user->mx;
   my	 = user->my;
   lambda = user->param;
   hx     = 1.0 / (PetscReal)(mx-1);
@@ -407,7 +407,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   */
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
 
-  /* 
+  /*
      Compute entries of the Jacobian
   */
   for (j=0; j<my; j++) {
@@ -431,7 +431,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   */
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
-  /* 
+  /*
      Assemble matrix
   */
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

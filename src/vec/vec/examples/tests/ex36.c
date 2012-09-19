@@ -7,7 +7,7 @@ static char help[] = "Parallel vector layout.\n\n";
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscis.h     - index sets
@@ -27,14 +27,14 @@ int main(int argc,char **argv)
   Vec            x;
   PetscBool      set_option_negidx = PETSC_FALSE, set_values_negidx = PETSC_FALSE, get_values_negidx = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL, "-set_option_negidx", &set_option_negidx, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL, "-set_values_negidx", &set_values_negidx, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL, "-get_values_negidx", &get_values_negidx, PETSC_NULL);CHKERRQ(ierr);
-  
+
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
 
 
   /* Set the vectors */
-  
+
   ierr = PetscMalloc(n*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
 
@@ -63,25 +63,25 @@ int main(int argc,char **argv)
 
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Setting values...\n", rank); CHKERRQ(ierr);
   for (i = 0; i<m; i++) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, 
-				   "%d: idx[%D] == %D; val[%D] == %f\n", 
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,
+				   "%d: idx[%D] == %D; val[%D] == %f\n",
 				   rank, i, indices[i], i, PetscRealPart(values[i]));CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   ierr = VecSetValues(x, m, indices, values, INSERT_VALUES);CHKERRQ(ierr);
 
-  /* 
+  /*
      Assemble vector.
   */
-  
+
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
   /*
      Extract values from the vector.
   */
-  
+
   for (i=0; i<m; i++) {
     values[i] = -1.0;
     if (get_values_negidx) {
@@ -102,12 +102,12 @@ int main(int argc,char **argv)
 
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Fetched values:\n", rank);CHKERRQ(ierr);
   for (i = 0; i<m; i++) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%D] == %D; val[%D] == %f\n", 
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%D] == %D; val[%D] == %f\n",
 				   rank, i, indices[i], i, PetscRealPart(values[i]));CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-  /* 
+  /*
      Free work space.
   */
 
@@ -119,4 +119,4 @@ int main(int argc,char **argv)
 
   return 0;
 }
- 
+

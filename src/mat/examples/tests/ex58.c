@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscBool      equal;
   const char     *eq[2];
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   n = m;
@@ -39,7 +39,7 @@ int main(int argc,char **argv)
     ierr = MatSetValues(A,1,&rend,2,cols,v,INSERT_VALUES);CHKERRQ(ierr);
   }
   v[0] = -1.0; v[1] = 2.0; v[2] = -1.0;
-  for (i=rstart; i<rend; i++) { 
+  for (i=rstart; i<rend; i++) {
     cols[0] = i-1;
     cols[1] = i;
     cols[2] = i+1;
@@ -56,7 +56,7 @@ int main(int argc,char **argv)
   eq[1] = "equal";
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrices are %s\n",eq[equal]);CHKERRQ(ierr);
 
-  /* Free data structures */  
+  /* Free data structures */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 
@@ -64,4 +64,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscScalar      v, alpha;
   PetscReal        normf,normi,norm1;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -32,9 +32,9 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
   ierr = MatSetUp(mat);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++) { 
-    for (j=0; j<n; j++) { 
-      v=10.0*i+j; 
+  for (i=rstart; i<rend; i++) {
+    for (j=0; j<n; j++) {
+      v=10.0*i+j;
       ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
     ierr = MatTranspose(mat,MAT_REUSE_MATRIX,&mat);CHKERRQ(ierr);   /* in-place transpose */
     tmat = mat; mat = 0;
   } else {      /* out-of-place transpose */
-    ierr = MatTranspose(mat,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr); 
+    ierr = MatTranspose(mat,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
   }
 
   /* ----------------- Test MatNorm()  ----------------- */
@@ -72,11 +72,11 @@ int main(int argc,char **argv)
     alpha = 1.0;
     ierr = PetscOptionsGetScalar(PETSC_NULL,"-alpha",&alpha,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  B = B + alpha * A\n");CHKERRQ(ierr);
-    ierr = MatAXPY(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
+    ierr = MatAXPY(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAYPX:  B = alpha*B + A\n");CHKERRQ(ierr);
-    ierr = MatAYPX(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
+    ierr = MatAYPX(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -84,9 +84,9 @@ int main(int argc,char **argv)
     Mat C;
     alpha = 1.0;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  C = C + alpha * A, C=A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
-    ierr = MatDuplicate(mat,MAT_COPY_VALUES,&C);CHKERRQ(ierr); 
-    ierr = MatAXPY(C,alpha,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr); 
-    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+    ierr = MatDuplicate(mat,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
+    ierr = MatAXPY(C,alpha,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
   }
 
@@ -98,10 +98,10 @@ int main(int argc,char **argv)
     ierr = MatSetFromOptions(matB);CHKERRQ(ierr);
     ierr = MatSetUp(matB);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(matB,&rstart,&rend);CHKERRQ(ierr);
-    if (rstart % 2 != 0) rstart++;   
-    for (i=rstart; i<rend; i += 2) { 
-      for (j=0; j<n; j += 2) { 
-        v=10.0*i+j; 
+    if (rstart % 2 != 0) rstart++;
+    for (i=rstart; i<rend; i += 2) {
+      for (j=0; j<n; j += 2) {
+        v=10.0*i+j;
         ierr = MatSetValues(matB,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
@@ -114,16 +114,16 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  B = B + alpha * A, SUBSET_NONZERO_PATTERN\n");CHKERRQ(ierr);
     ierr = MatAXPY(mat,alpha,matB,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = MatDestroy(&matB);CHKERRQ(ierr);  
+    ierr = MatDestroy(&matB);CHKERRQ(ierr);
   }
 
-  /* Free data structures */  
+  /* Free data structures */
   if (mat)  {ierr = MatDestroy(&mat);CHKERRQ(ierr);}
   if (tmat) {ierr = MatDestroy(&tmat);CHKERRQ(ierr);}
 
   ierr = PetscFinalize();
   return 0;
 }
- 
+
 
 

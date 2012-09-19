@@ -30,7 +30,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
        PetscScalar  xwork(6)
        PetscScalar, pointer ::  xx_v(:),yy_v(:)
@@ -108,4 +108,4 @@
        call VecDestroy(y,ierr)
        call PetscFinalize(ierr)
        end
- 
+

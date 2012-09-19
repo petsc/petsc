@@ -1018,8 +1018,15 @@ shared_nomesg:
 #
 #  Remove trailing blanks from source code
 rmtrailingblanks: 
-	@for i in ${SOURCEF} ${SOURCEC} ${SOURCEH}; do \
+	@for i in ${SOURCEF} ${SOURCEC} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF}; do \
 	  sed -i '' s"/[ ]*$$//"g $$i; \
+	done
+
+#
+#  Remove trailing blanks from source code
+uncrustify: 
+	@for i in ${SOURCEC} ${SOURCEH} ${EXAMPLESC}; do \
+	  uncrustify -c ${PETSC_DIR}/bin/uncrustify.cfg $$i; \
 	done
 
 include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscrules

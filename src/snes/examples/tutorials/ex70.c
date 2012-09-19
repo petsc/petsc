@@ -348,8 +348,8 @@ PetscErrorCode StokesSetupApproxSchur(Stokes *s) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  // Schur complement approximation: myS = A11 - A10 diag(A00)^(-1) A01 
-  // note: A11 is zero 
+  // Schur complement approximation: myS = A11 - A10 diag(A00)^(-1) A01
+  // note: A11 is zero
   // note: in real life this matrix would be build directly,
   // i.e. without MatMatMult
 
@@ -625,7 +625,7 @@ PetscErrorCode StokesCalcResidual(Stokes *s) {
   ierr = PetscPrintf(PETSC_COMM_WORLD," residual p = %G\n",val); CHKERRQ(ierr);
   ierr = VecRestoreSubVector(s->b, s->isg[1], &b1); CHKERRQ(ierr);
 
-  // total residual 
+  // total residual
   ierr = VecNorm(s->b, NORM_2, &val); CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD," residual [u,p] = %G\n", val); CHKERRQ(ierr);
   PetscFunctionReturn(0);

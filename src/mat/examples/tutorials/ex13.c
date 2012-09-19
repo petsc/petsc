@@ -2,12 +2,12 @@
 static char help[] = "Test MatFwkAIJ: a block matrix with an AIJ-like datastructure keeping track of nonzero blocks.\n\
 Each block is a matrix of (generally) any type.\n\n";
 
-/* 
+/*
   Include "petscmat.h" so that we can use matrices.
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h    - vectors
      petscmat.h    - matrices
-     petscis.h     - index sets            petscviewer.h - viewers               
+     petscis.h     - index sets            petscviewer.h - viewers
 */
 #include <petscmat.h>
 #include <petsc-private/matimpl.h>
@@ -30,7 +30,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  /* 
+  /*
      Determine file from which we read the matrix
 
   */
@@ -38,7 +38,7 @@ int main(int argc,char **args)
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
 
 
-  /* 
+  /*
      Open binary file.  Note that we use FILE_MODE_READ to indicate
      reading from this file.
   */

@@ -78,8 +78,8 @@ PetscInt main(PetscInt argc,char **args)
 //      }
 
 
-    
- 
+
+
 // ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr);
 //  printf("Vector size from ex148 %d\n",vsize);
 //  ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);

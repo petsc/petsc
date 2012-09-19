@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* create two vectors */
-  N = size*n; 
+  N = size*n;
   ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
   ierr = VecSetSizes(y,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(PETSC_COMM_WORLD,n,(n*(rank+1))%N,1,&is2);CHKERRQ(ierr);
 
   /* fill local part of parallel vector x */
-  value = (PetscScalar)(rank+1); 
+  value = (PetscScalar)(rank+1);
   for (i=n*rank; i<n*(rank+1); i++) {
     ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -67,4 +67,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

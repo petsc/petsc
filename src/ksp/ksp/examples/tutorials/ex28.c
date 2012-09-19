@@ -23,7 +23,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,-3,2,1,0,&da);CHKERRQ(ierr);  
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,-3,2,1,0,&da);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,PETSC_NULL);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp,ComputeMatrix,PETSC_NULL);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ PetscErrorCode ComputeInitialSolution(DM da,Vec x)
   ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx = 2.0*PETSC_PI / (PetscReal)(mx);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  
+
   for (i=xs; i<xs+xm; i++){
     col[0] = 2*i; col[1] = 2*i + 1;
     val[0] = val[1] = PetscSinScalar(((PetscScalar)i)*Hx);
@@ -102,7 +102,7 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
   PetscFunctionBegin;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = PetscMemzero(col,7*sizeof(MatStencil));CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
+  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx = 2.0*PETSC_PI / (PetscReal)(mx);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   lambda = 2.0*Hx;

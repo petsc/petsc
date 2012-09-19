@@ -6,15 +6,15 @@ static char help[] = "Reads a PETSc matrix from a file partitions it\n\n";
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscmat.h" so that we can use matrices.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
      petscmat.h - matrices
-     petscis.h     - index sets            
-     petscviewer.h - viewers    
+     petscis.h     - index sets
+     petscviewer.h - viewers
 
-  Example of usage:  
+  Example of usage:
     mpiexec -n 3 ex73 -f <matfile> -mat_partitioning_type parmetis/scotch -viewer_binary_skip_info -nox
 */
 #include <petscksp.h>
@@ -42,12 +42,12 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL, "-view_is", &viewIS);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL, "-view_vecs", &viewVecs);CHKERRQ(ierr);
 
-  /* 
+  /*
      Determine file from which we read the matrix
   */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
 
-  /* 
+  /*
        Open binary file.  Note that we use FILE_MODE_READ to indicate
        reading from this file.
   */
@@ -92,7 +92,7 @@ int main(int argc,char **args)
 
   /* get number of new vertices for each processor */
   ierr = PetscMalloc(size*sizeof(PetscInt),&nlocal);CHKERRQ(ierr);
-  ierr = ISPartitioningCount(is,size,nlocal);CHKERRQ(ierr); 
+  ierr = ISPartitioningCount(is,size,nlocal);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   /* get old global number of each new global number */
@@ -108,7 +108,7 @@ int main(int argc,char **args)
   /* move the matrix rows to the new processes they have been assigned to by the permutation */
   ierr = ISSort(is);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   /* move the vector rows to the new processes they have been assigned to */
   ierr = MatGetLocalSize(B,&m,&n);CHKERRQ(ierr);
@@ -133,7 +133,7 @@ int main(int argc,char **args)
     const PetscInt    *cols;
     const PetscScalar *vals;
     PetscScalar       *nvals;
-    
+
     ierr = MatGetOwnershipRange(B,&rstart,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscMalloc(2*m*sizeof(PetscInt),&nzd);CHKERRQ(ierr);
     ierr = PetscMemzero(nzd,2*m*sizeof(PetscInt));CHKERRQ(ierr);
@@ -148,7 +148,7 @@ int main(int argc,char **args)
       nzmax = PetscMax(nzmax,nzd[2*i]+nzo[2*i]);
       ierr = MatRestoreRow(B,i+rstart,&nzl,&cols,PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = MatCreateAIJ(PETSC_COMM_WORLD,2*m,2*m,PETSC_DECIDE,PETSC_DECIDE,0,nzd,0,nzo,&J);CHKERRQ(ierr);    
+    ierr = MatCreateAIJ(PETSC_COMM_WORLD,2*m,2*m,PETSC_DECIDE,PETSC_DECIDE,0,nzd,0,nzo,&J);CHKERRQ(ierr);
     ierr = PetscInfo(0,"Created empty Jacobian matrix\n");CHKERRQ(ierr);
     ierr = PetscFree(nzd);CHKERRQ(ierr);
     ierr = PetscFree(nzo);CHKERRQ(ierr);
@@ -170,18 +170,18 @@ int main(int argc,char **args)
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     if (viewMats){
       if (!rank) printf("Jacobian matrix structure:\n");
-      ierr = MatView(J,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);    
+      ierr = MatView(J,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = PetscFree2(ncols,nvals);CHKERRQ(ierr);
   }
-  
+
   /*
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  ierr = MatDestroy(&B);CHKERRQ(ierr); 
-  ierr = VecDestroy(&xin);CHKERRQ(ierr); 
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = VecDestroy(&xin);CHKERRQ(ierr);
   ierr = VecDestroy(&xout);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

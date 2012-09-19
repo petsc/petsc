@@ -6,7 +6,7 @@ static char help[] = "Demonstrates using a local ordering to set values into a p
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscis.h     - index sets
@@ -41,18 +41,18 @@ int main(int argc,char **argv)
   ierr = VecSet(x,one);CHKERRQ(ierr);
 
   /*
-     Set the local to global ordering for the vector. Each processor 
+     Set the local to global ordering for the vector. Each processor
      generates a list of the global indices for each local index. Note that
      the local indices are just whatever is convenient for a particular application.
-     In this case we treat the vector as lying on a one dimensional grid and 
-     have one ghost point on each end of the blocks owned by each processor. 
+     In this case we treat the vector as lying on a one dimensional grid and
+     have one ghost point on each end of the blocks owned by each processor.
   */
 
   ierr = VecGetSize(x,&M);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
   ng   = rend - rstart + 2;
   ierr = PetscMalloc(ng*sizeof(PetscInt),&gindices);CHKERRQ(ierr);
-  gindices[0] = rstart - 1; 
+  gindices[0] = rstart - 1;
   for (i=0; i<ng-1; i++) {
     gindices[i+1] = gindices[i] + 1;
   }
@@ -78,10 +78,10 @@ int main(int argc,char **argv)
         contributions will be added together.
   */
   for (i=0; i<ng; i++) {
-    ierr = VecSetValuesLocal(x,1,&i,&one,ADD_VALUES);CHKERRQ(ierr);  
+    ierr = VecSetValuesLocal(x,1,&i,&one,ADD_VALUES);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
      Assemble vector, using the 2-step process:
        VecAssemblyBegin(), VecAssemblyEnd()
      Computations can be done while messages are in transition
@@ -99,4 +99,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

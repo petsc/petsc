@@ -42,11 +42,11 @@ int main(int argc,char **args)
   ierr = VecLoad(b,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
-  /* 
-   If the load matrix is larger then the vector, due to being padded 
+  /*
+   If the load matrix is larger then the vector, due to being padded
    to match the blocksize then create a new padded vector
   */
-  { 
+  {
     PetscInt    m,n,j,mvec,start,end,indx;
     Vec         tmp;
     PetscScalar *bold;

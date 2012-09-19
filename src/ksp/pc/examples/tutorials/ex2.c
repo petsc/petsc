@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   Mat                A,M;
   Vec                X,B,D;
   MPI_Comm           comm;
-  PetscScalar        v; 
+  PetscScalar        v;
   KSPConvergedReason reason;
   PetscInt           i,j,its;
   PetscErrorCode     ierr;
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-options_left",PETSC_NULL);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
-  
+
   /*
    * Construct the Kershaw matrix
    * and a suitable rhs / initial guess
@@ -82,7 +82,7 @@ int main(int argc,char **argv)
    * The iterative method will break down unless you comment in the SetShift
    * line below, or use the -pc_factor_shift_positive_definite option.
    * Run the code twice: once as given to see the negative pivot and the
-   * divergence behaviour, then comment in the Shift line, or add the 
+   * divergence behaviour, then comment in the Shift line, or add the
    * command line option, and see that the pivots are all positive and
    * the method converges.
    */

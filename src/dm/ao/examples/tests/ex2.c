@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   PetscInt       n,*ispetsc,*isapp,start,N,i;
   AO             ao;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr); n = rank + 2;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   ierr = MPI_Allreduce(&n,&N,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   start -= n;
 
-  for (i=0; i<n; i++) {  
+  for (i=0; i<n; i++) {
     ispetsc[i] = start + i;
     isapp[i]   = N - start - i - 1;
   }
@@ -48,6 +48,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+
 
 

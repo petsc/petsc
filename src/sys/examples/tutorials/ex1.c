@@ -6,7 +6,7 @@ static char help[] = "Introductory example that illustrates printing.\n\n";
    Concepts: printing^in parallel
    Processors: n
 T*/
- 
+
 #include <petscsys.h>
 int main(int argc,char **argv)
 {
@@ -17,23 +17,23 @@ int main(int argc,char **argv)
     Every PETSc routine should begin with the PetscInitialize() routine.
     argc, argv - These command line arguments are taken to extract the options
                  supplied to PETSc and options supplied to MPI.
-    help       - When PETSc executable is invoked with the option -help, 
-                 it prints the various options that can be applied at 
+    help       - When PETSc executable is invoked with the option -help,
+                 it prints the various options that can be applied at
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
-  /* 
+  /*
      The following MPI calls return the number of processes
      being used and the rank of this process in the group.
    */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  /* 
+  /*
      Here we would like to print only one message that represents
-     all the processes in the group.  We use PetscPrintf() with the 
+     all the processes in the group.  We use PetscPrintf() with the
      communicator PETSC_COMM_WORLD.  Thus, only one message is
      printed representng PETSC_COMM_WORLD, i.e., all the processors.
   */

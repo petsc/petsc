@@ -9,17 +9,17 @@ Input arguments are:\n\
    -my_jacobian_struct:     use user-provided Jacobian data structure to create matcoloring context \n\n";
 
 /*
-  Example: 
+  Example:
   ./ex45 -n 10 -snes_monitor -ksp_monitor
   ./ex45 -n 10 -snes_monitor -ksp_monitor -snes_jacobian_default -pc_type jacobi
   ./ex45 -n 10 -snes_monitor -ksp_monitor -snes_jacobian_default -pc_type ilu
-  ./ex45 -n 10 -snes_jacobian_default -log_summary |grep SNESFunctionEval 
-  ./ex45 -n 10 -snes_jacobian_default -fd_jacobian_coloring -my_jacobian_struct -log_summary |grep SNESFunctionEval 
+  ./ex45 -n 10 -snes_jacobian_default -log_summary |grep SNESFunctionEval
+  ./ex45 -n 10 -snes_jacobian_default -fd_jacobian_coloring -my_jacobian_struct -log_summary |grep SNESFunctionEval
  */
 
 #include <petscsnes.h>
 
-/* 
+/*
    User-defined routines
 */
 PetscErrorCode MyJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       it,n = 5,i;
   PetscMPIInt    size;
-  PetscReal      h,xp = 0.0; 
+  PetscReal      h,xp = 0.0;
   PetscScalar    v,pfive = .5;
   PetscBool      flg;
   PetscBool      fd_jacobian_coloring;
@@ -85,26 +85,26 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&J);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,1,PETSC_NULL,&JPrec);CHKERRQ(ierr);
-  
+
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_jacobian_default",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg){ 
-    /* Jacobian using finite differences. Slow and expensive, not take advantage of sparsity */ 
+  if (flg){
+    /* Jacobian using finite differences. Slow and expensive, not take advantage of sparsity */
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
   } else {
     /* User provided Jacobian and preconditioner(diagonal part of Jacobian) */
     ierr = SNESSetJacobian(snes,J,JPrec,MyJacobian,0);CHKERRQ(ierr);
-  } 
+  }
 
   fd_jacobian_coloring = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-fd_jacobian_coloring",&fd_jacobian_coloring,PETSC_NULL);CHKERRQ(ierr);  
-  if (fd_jacobian_coloring){ 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-fd_jacobian_coloring",&fd_jacobian_coloring,PETSC_NULL);CHKERRQ(ierr);
+  if (fd_jacobian_coloring){
     /* Jacobian using finite differences with matfdcoloring based on the sparse structure.
      In this case, only three calls to FormFunction() for each Jacobian evaluation - very fast! */
     /* Get the data structure of J */
     flg = PETSC_FALSE;
     ierr = PetscOptionsGetBool(PETSC_NULL,"-my_jacobian_struct",&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg){ 
+    if (flg){
       /* use user-provided jacobian data structure */
       ierr = MyApproxJacobianStructure(&J,PETSC_NULL);CHKERRQ(ierr);
     } else {
@@ -113,7 +113,7 @@ int main(int argc,char **argv)
       ierr = SNESComputeJacobian(snes,x,&J,&J,&flag);CHKERRQ(ierr);
     }
     /* Use SNESDefaultComputeJacobianColor() for Jacobian evaluation */
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr); 
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr);
   }
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -136,7 +136,7 @@ int main(int argc,char **argv)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-/* 
+/*
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
@@ -192,18 +192,18 @@ PetscErrorCode MyJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *fla
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   d = (PetscReal)(n - 1); d = d*d;
 
-  /* Form Jacobian.  Also form a different preconditioning matrix that 
+  /* Form Jacobian.  Also form a different preconditioning matrix that
      has only the diagonal elements. */
-  i = 0; A[0] = 1.0; 
+  i = 0; A[0] = 1.0;
   ierr = MatSetValues(*jac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatSetValues(*prejac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
   for (i=1; i<n-1; i++) {
-    j[0] = i - 1; j[1] = i;                   j[2] = i + 1; 
-    A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d; 
+    j[0] = i - 1; j[1] = i;                   j[2] = i + 1;
+    A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d;
     ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatSetValues(*prejac,1,&i,1,&i,&A[1],INSERT_VALUES);CHKERRQ(ierr);
   }
-  i = n-1; A[0] = 1.0; 
+  i = n-1; A[0] = 1.0;
   ierr = MatSetValues(*jac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatSetValues(*prejac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
 
@@ -222,7 +222,7 @@ PetscErrorCode MyJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *fla
   Create an approximate data structure for Jacobian matrix to be used with matcoloring
 
    Input Parameters:
-.    A - dummy jacobian matrix 
+.    A - dummy jacobian matrix
 
    Output Parameters:
      A -  jacobian matrix with assigned non-zero structure
@@ -236,14 +236,14 @@ PetscErrorCode MyApproxJacobianStructure(Mat *jac,void *dummy)
   ierr = MatGetSize(*jac,&n,&n);CHKERRQ(ierr);
 
   zeros[0] = zeros[1] = zeros[2] = 0.0;
-  i = 0; 
+  i = 0;
   ierr = MatSetValues(*jac,1,&i,1,&i,zeros,INSERT_VALUES);CHKERRQ(ierr);
-  
+
   for (i=1; i<n-1; i++) {
-    j[0] = i - 1; j[1] = i; j[2] = i + 1; 
+    j[0] = i - 1; j[1] = i; j[2] = i + 1;
     ierr = MatSetValues(*jac,1,&i,3,j,zeros,INSERT_VALUES);CHKERRQ(ierr);
   }
-  i = n-1; 
+  i = n-1;
   ierr = MatSetValues(*jac,1,&i,1,&i,zeros,INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

@@ -3,9 +3,9 @@ static char help[] = "Tests PetscRandom functions.\n\n";
 
 #include <petscsys.h>
 
-/* Usage: 
+/* Usage:
    mpiexec -n <np> ./ex1 -n <num_of_random_numbers> -random_type <type> -log_summary
-                         -view_randomvalues <view_rank> 
+                         -view_randomvalues <view_rank>
                          -random_view ascii -random_view_file <filename>
 */
 
@@ -27,14 +27,14 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-view_randomvalues",&view_rank,PETSC_NULL);CHKERRQ(ierr);
-  
+
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rnd);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_DRAND48)
   ierr = PetscRandomSetType(rnd,PETSCRAND48);CHKERRQ(ierr);
 #elif defined(PETSC_HAVE_RAND)
   ierr = PetscRandomSetType(rnd,PETSCRAND);CHKERRQ(ierr);
 #endif
-  ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr); 
+  ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
 
   ierr = PetscMalloc(n*sizeof(PetscInt),&values);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
@@ -48,7 +48,7 @@ int main(int argc,char **argv)
 
   ierr = PetscLogEventRegister("Sort",0,&event);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
- 
+
   ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
@@ -67,4 +67,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

@@ -7,7 +7,7 @@ static char help[] = "Sends a PETSc vector to a socket connection, receives it b
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec            b; 
+  Vec            b;
   PetscViewer    fd;
   PetscErrorCode ierr;
   PetscInt       i;

@@ -12,12 +12,12 @@ Options:\n\
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
-{  
+{
   char           fin[PETSC_MAX_PATH_LEN],fout[PETSC_MAX_PATH_LEN] ="default.mat";
-  PetscViewer    fdin,fdout;               
-  Vec            b;   
-  const MatType  mtype = MATSEQBAIJ;            
-  Mat            A,*B;             
+  PetscViewer    fdin,fdout;
+  Vec            b;
+  const MatType  mtype = MATSEQBAIJ;
+  Mat            A,*B;
   PetscErrorCode ierr;
   PetscInt       start=0;
   PetscMPIInt    size;
@@ -39,12 +39,12 @@ int main(int argc,char **args)
   ierr = MatSetType(A,mtype);CHKERRQ(ierr);
   ierr = MatLoad(A,fdin);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fdin);CHKERRQ(ierr);
-  
+
   ierr = MatGetSize(A,&size,&size);CHKERRQ(ierr);
   size /= 2;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-start",&start,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-size",&size,PETSC_NULL);CHKERRQ(ierr);
-  
+
   ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&isrow);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&iscol);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);

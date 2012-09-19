@@ -27,7 +27,7 @@ int main(int argc,char **args)
   PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatMatTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_MatRARt=PETSC_TRUE;
   PetscInt       pm,pn,pM,pN;
   MatInfo        info;
-  
+
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -44,7 +44,7 @@ int main(int argc,char **args)
     preload = PETSC_FALSE;
   } else {
     ierr = PetscOptionsGetString(PETSC_NULL,"-f3",file[3],128,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate a file name for test matrix B with the -f3 option."); 
+    if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate a file name for test matrix B with the -f3 option.");
   }
 
   PetscPreLoadBegin(preload,"Load system");
@@ -61,8 +61,8 @@ int main(int argc,char **args)
   ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr);
   nzp  = PetscMax((PetscInt)(0.1*M),5);
   ierr = PetscMalloc((nzp+1)*(sizeof(PetscInt)+sizeof(PetscScalar)),&idxn);CHKERRQ(ierr);
-  a    = (PetscScalar*)(idxn + nzp);              
- 
+  a    = (PetscScalar*)(idxn + nzp);
+
   /* Create vectors v1 and v2 that are compatible with A_save */
   ierr = VecCreate(PETSC_COMM_WORLD,&v1);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A_save,&m,PETSC_NULL);CHKERRQ(ierr);
@@ -100,7 +100,7 @@ int main(int argc,char **args)
     norm = 0.0;
     for (i=0; i<10; i++) {
       ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
-      ierr = MatMult(B,x,v1);CHKERRQ(ierr);  
+      ierr = MatMult(B,x,v1);CHKERRQ(ierr);
       ierr = MatMult(A,v1,v2);CHKERRQ(ierr);  /* v2 = A*B*x */
       ierr = MatMult(C,x,v1);CHKERRQ(ierr);   /* v1 = C*x   */
       ierr = VecNorm(v1,NORM_2,&norm_abs);CHKERRQ(ierr);
@@ -119,7 +119,7 @@ int main(int argc,char **args)
     /* Test MatDuplicate() of C */
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
     ierr = MatDestroy(&C1);CHKERRQ(ierr);
-    ierr = MatDestroy(&C);CHKERRQ(ierr); 
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
   } /* if (Test_MatMatMult) */
 
   /* Test MatTransposeMatMult() and MatMatTransposeMult() */
@@ -129,8 +129,8 @@ int main(int argc,char **args)
     PetscInt PN,rstart,rend;
     PN   = M/2;
     nzp  = 5; /* num of nonzeros in each row of P */
-    ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr); 
-    ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,M,PN);CHKERRQ(ierr); 
+    ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr);
+    ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,M,PN);CHKERRQ(ierr);
     ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(P,nzp,PETSC_NULL,nzp,PETSC_NULL);CHKERRQ(ierr);
@@ -149,22 +149,22 @@ int main(int argc,char **args)
     ierr = MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
     /* Create R = P^T */
-    ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr); 
+    ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
 
     {/* Test R = P^T, C1 = R*B */
       ierr = MatMatMult(R,B,MAT_INITIAL_MATRIX,fill,&C1);CHKERRQ(ierr);
-      ierr = MatTranspose(P,MAT_REUSE_MATRIX,&R);CHKERRQ(ierr); 
+      ierr = MatTranspose(P,MAT_REUSE_MATRIX,&R);CHKERRQ(ierr);
       ierr = MatMatMult(R,B,MAT_REUSE_MATRIX,fill,&C1);CHKERRQ(ierr);
       ierr = MatDestroy(&C1);CHKERRQ(ierr);
     }
-    
+
     /* C = P^T*B */
     ierr = MatTransposeMatMult(P,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
     ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-    
+
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     ierr = MatTransposeMatMult(P,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
-   
+
     /* Compare P^T*B and R*B */
     ierr = MatMatMult(R,B,MAT_INITIAL_MATRIX,fill,&C1);CHKERRQ(ierr);
     ierr = MatEqual(C,C1,&flg);CHKERRQ(ierr);
@@ -185,17 +185,17 @@ int main(int argc,char **args)
       ierr = MatMatTransposeMult(B,R,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
       ierr = MatSetOptionsPrefix(C,"matmatmulttr_");CHKERRQ(ierr); /* enable '-matmatmulttr_' for matrix C */
       ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-      
+
       /* Test MAT_REUSE_MATRIX - reuse symbolic C */
       ierr = MatMatTransposeMult(B,R,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
-    
+
       /* Check */
       ierr = MatMatMult(B,P,MAT_INITIAL_MATRIX,fill,&C1);CHKERRQ(ierr);
       ierr = MatEqual(C,C1,&flg);CHKERRQ(ierr);
       if (!flg){
         ierr = PetscPrintf(PETSC_COMM_WORLD,"Error in MatMatTransposeMult()\n");
       }
-      ierr = MatDestroy(&C1);CHKERRQ(ierr);  
+      ierr = MatDestroy(&C1);CHKERRQ(ierr);
       ierr = MatDestroy(&C);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&P);CHKERRQ(ierr);
@@ -211,10 +211,10 @@ int main(int argc,char **args)
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
     /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] A: %d,%d, %d,%d\n",rank,m,n,M,N); */
 
-    PN   = M/2; 
+    PN   = M/2;
     nzp  = (PetscInt)(0.1*PN+1); /* num of nozeros in each row of P */
-    ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr); 
-    ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,N,PN);CHKERRQ(ierr); 
+    ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr);
+    ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,N,PN);CHKERRQ(ierr);
     ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(P,nzp,PETSC_NULL,nzp,PETSC_NULL);CHKERRQ(ierr);
@@ -235,7 +235,7 @@ int main(int argc,char **args)
     /* ierr = MatView(P,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
     ierr = MatGetSize(P,&pM,&pN);CHKERRQ(ierr);
     ierr = MatGetLocalSize(P,&pm,&pn);CHKERRQ(ierr);
-    ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); 
+    ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
     /* if (!rank){ierr = PetscPrintf(PETSC_COMM_SELF," MatPtAP() is done, P, %d, %d, %d,%d\n",pm,pn,pM,pN);} */
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
@@ -274,16 +274,16 @@ int main(int argc,char **args)
     ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
     ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  
+
     ierr = VecCreate(PETSC_COMM_WORLD,&v3);CHKERRQ(ierr);
     ierr = VecSetSizes(v3,n,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(v3);CHKERRQ(ierr); 
+    ierr = VecSetFromOptions(v3);CHKERRQ(ierr);
     ierr = VecDuplicate(v3,&v4);CHKERRQ(ierr);
 
     norm = 0.0;
     for (i=0; i<10; i++) {
       ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
-      ierr = MatMult(P,x,v1);CHKERRQ(ierr);  
+      ierr = MatMult(P,x,v1);CHKERRQ(ierr);
       ierr = MatMult(A,v1,v2);CHKERRQ(ierr);  /* v2 = A*P*x */
 
       ierr = MatMultTranspose(P,v2,v3);CHKERRQ(ierr); /* v3 = Pt*A*P*x */
@@ -297,21 +297,21 @@ int main(int argc,char **args)
     if (norm >= tol) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v1 - v2|: %G\n",norm);CHKERRQ(ierr);
     }
-  
+
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = MatDestroy(&P);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
     ierr = VecDestroy(&v3);CHKERRQ(ierr);
     ierr = VecDestroy(&v4);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
-  } 
+  }
 
   /* Destroy objects */
   ierr = VecDestroy(&v1);CHKERRQ(ierr);
   ierr = VecDestroy(&v2);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = PetscFree(idxn);CHKERRQ(ierr);
-  
+
   ierr = MatDestroy(&A_save);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 

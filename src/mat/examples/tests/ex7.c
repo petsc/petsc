@@ -9,7 +9,7 @@ routines directly.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C,LU; 
+  Mat            C,LU;
   MatInfo        info;
   PetscInt       i,j,m = 3,n = 3,Ii,J;
   PetscErrorCode ierr;
@@ -44,9 +44,9 @@ int main(int argc,char **args)
 
   ierr = MatFactorInfoInitialize(&luinfo);CHKERRQ(ierr);
   luinfo.fill = 2.0;
-  luinfo.dtcol = 0.0; 
-  luinfo.zeropivot = 1.e-14; 
-  luinfo.pivotinblocks = 1.0; 
+  luinfo.dtcol = 0.0;
+  luinfo.zeropivot = 1.e-14;
+  luinfo.pivotinblocks = 1.0;
   ierr = MatGetFactor(C,MATSOLVERPETSC,MAT_FACTOR_LU,&LU);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(LU,C,perm,iperm,&luinfo);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(LU,C,&luinfo);CHKERRQ(ierr);

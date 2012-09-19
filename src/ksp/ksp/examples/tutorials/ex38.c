@@ -23,7 +23,7 @@ int main(int Argc,char **Args)
   DM              da;
 
   PetscInitialize(&Argc,&Args,(char *)0,help);
-  
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = Create1dLaplacian(n,&cmat);CHKERRQ(ierr);
   ierr = MatGetVecs(cmat,&x,0);CHKERRQ(ierr);
@@ -48,15 +48,15 @@ int main(int Argc,char **Args)
 
   ierr = PCASASetTolerances(pcmg, 1.e-10, 1.e-10, PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = KSPSolve(kspmg,b,x);CHKERRQ(ierr);
   ierr = KSPDestroy(&kspmg);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr); 
-  ierr = MatDestroy(&cmat);CHKERRQ(ierr); 
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = MatDestroy(&cmat);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
@@ -98,7 +98,7 @@ PetscErrorCode CalculateRhs(Vec u)
   ierr = VecGetSize(u,&n);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(u,&loc_start,&loc_end);CHKERRQ(ierr);
   h = 1.0/((PetscReal)(n+1));
-  uu = 2.0*h*h; 
+  uu = 2.0*h*h;
   for (i=loc_start; i<loc_end; i++) {
     ierr = VecSetValues(u,1,&i,&uu,INSERT_VALUES);CHKERRQ(ierr);
   }

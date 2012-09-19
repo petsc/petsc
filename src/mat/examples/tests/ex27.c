@@ -8,7 +8,7 @@ static char help[] = "Tests repeated use of assembly for matrices.\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C; 
+  Mat            C;
   PetscInt       i,j,m = 5,n = 2,Ii,J;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -24,7 +24,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  for (i=0; i<m; i++) { 
+  for (i=0; i<m; i++) {
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  Ii = j + n*i;
       if (i>0)   {J = Ii - n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
@@ -46,7 +46,7 @@ int main(int argc,char **args)
       v = -4.0; ierr = MatSetValues(C,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  /* Introduce new nonzero that requires new construction for 
+  /* Introduce new nonzero that requires new construction for
       matrix-vector product */
   if (rank) {
     Ii = rank-1; J = m*n-1;

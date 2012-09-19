@@ -6,7 +6,7 @@ static char help[] = "Solves a tridiagonal linear system with KSP.\n\n";
    Processors: 1
 T*/
 
-/* 
+/*
   Modified from ex1.c for testing matrix operations when matrix structure is changed.
   Contributed by Jose E. Roman, Feb. 2012.
 */
@@ -34,12 +34,12 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-nonzero_guess",&nonzeroguess,PETSC_NULL);CHKERRQ(ierr);
 
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
+  /*
      Create vectors.  Note that we form 1 vector from scratch and
      then duplicate as needed.
   */
@@ -50,12 +50,12 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
 
-  /* 
+  /*
      Create matrix.  When using MatCreate(), the matrix format can
      be specified at runtime.
 
      Performance tuning note:  For problems of substantial size,
-     preallocation of matrix memory is crucial for attaining good 
+     preallocation of matrix memory is crucial for attaining good
      performance. See the matrix chapter of the users manual for details.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -63,7 +63,7 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  /* 
+  /*
      Assemble matrix
   */
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
@@ -78,7 +78,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* 
+  /*
      jroman: added matrices
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
@@ -97,27 +97,27 @@ int main(int argc,char **args)
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
   ierr = MatAXPY(C,2.0,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set exact solution; then compute right-hand-side vector.
   */
   ierr = VecSet(u,one);CHKERRQ(ierr);
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* 
+  /*
      Create linear solver context
   */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
   ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set linear solver defaults for this problem (optional).
      - By extracting the KSP and PC contexts from the KSP context,
        we can then directly call any KSP and PC routines to set
@@ -130,7 +130,7 @@ int main(int argc,char **args)
   ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
-  /* 
+  /*
     Set runtime options, e.g.,
         -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
     These options will override those specified above as long as
@@ -144,19 +144,19 @@ int main(int argc,char **args)
     ierr = VecSet(x,p);CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
   }
- 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* 
+  /*
      Solve linear system
   */
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr); 
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* 
+  /*
      Check the error
   */
   ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
@@ -165,7 +165,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",
                      norm,its);CHKERRQ(ierr);
 
-  /* 
+  /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */

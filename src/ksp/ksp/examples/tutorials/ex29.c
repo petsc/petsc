@@ -125,7 +125,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   PetscFunctionReturn(0);
 }
 
-    
+
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRho"
 PetscErrorCode ComputeRho(PetscInt i, PetscInt j, PetscInt mx, PetscInt my, PetscReal centerRho, PetscReal *rho)
@@ -155,7 +155,7 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
   PetscFunctionBegin;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   centerRho = user->rho;
-  ierr = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
+  ierr = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx    = 1.0 / (PetscReal)(mx-1);
   Hy    = 1.0 / (PetscReal)(my-1);
   HxdHy = Hx/Hy;

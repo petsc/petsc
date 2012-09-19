@@ -44,7 +44,7 @@ PetscErrorCode RegisterMatScaleUserImpl(Mat mat)
   PetscMPIInt size;
 
   ierr = MPI_Comm_size(((PetscObject)mat)->comm, &size);CHKERRQ(ierr);
-  
+
   if (size == 1) { /* SeqAIJ Matrix */
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatScaleUserImpl_C",
                                              "MatScaleUserImpl_SeqAIJ",
@@ -94,7 +94,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscScalar    v,none = -1.0;
   PetscMPIInt    rank,size;
-  
+
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -113,7 +113,7 @@ int main(int argc,char **args)
   ierr = RegisterMatScaleUserImpl(mat);CHKERRQ(ierr);
 
   /* assemble the matrix */
-  for (i=0; i<m; i++) { 
+  for (i=0; i<m; i++) {
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  Ii = j + n*i;
       if (i>0)   {J = Ii - n; ierr = MatSetValues(mat,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}

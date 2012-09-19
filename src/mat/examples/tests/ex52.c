@@ -28,8 +28,8 @@ int main(int argc,char **args)
 
   ierr = MatGetOwnershipRange(A,&start,&end);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-column_oriented",&flg);CHKERRQ(ierr);
-  if (flg) { 
-    ierr = MatSetOption(A,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr); 
+  if (flg) {
+    ierr = MatSetOption(A,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   }
 
   /* inproc assembly */
@@ -52,7 +52,7 @@ int main(int argc,char **args)
 
   /* Test MatSetValuesBlocked() */
   ierr = PetscOptionsHasName(PETSC_NULL,"-test_setvaluesblocked",&flg);CHKERRQ(ierr);
-  if (flg) { 
+  if (flg) {
     PetscScalar *bval;
     row /= bs;
     col = start/bs;
@@ -76,4 +76,4 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

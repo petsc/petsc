@@ -27,7 +27,7 @@ static char help[] = "Nonlinear, time-dependent. Developed from radiative_surfac
 	dTs/dt = Fnet/(Cp*dz) - Div([u*Ts, v*Ts]) + D*Lap(Ts)
                = Fnet/(Cs*dz) - u*(dTs/dx) - v*(dTs/dy) + D*(Ts_xx + Ts_yy)
 	dp/dt  = -Div([u*p,v*p])
-               = - u*dp/dx - v*dp/dy  
+               = - u*dp/dx - v*dp/dy
 	dTa/dt = Fnet/Cp
 
    Equation of State:
@@ -99,7 +99,7 @@ typedef struct {
 /* Struct for visualization */
 typedef struct {
    PetscBool   drawcontours;   /* flag - 1 indicates drawing contours */
-   PetscViewer drawviewer; 
+   PetscViewer drawviewer;
 } MonitorCtx;
 
 
@@ -249,7 +249,7 @@ int main(int argc,char **argv)
   }
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Extract global vectors from DA; 
+     Extract global vectors from DA;
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&T);CHKERRQ(ierr);
   ierr = VecDuplicate(T,&rhs);CHKERRQ(ierr); //r: vector to put the computed right hand side
@@ -322,7 +322,7 @@ PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar e
 {
  PetscFunctionBegin;
   *flux = SIG*((EMMSFC*emma*pow(airtemp,4)) + (EMMSFC*fract*(1 - emma)*pow(cloudTemp,4)) - (EMMSFC*pow(sfctemp,4)));   //calculates flux using Stefan-Boltzmann relation
-  PetscFunctionReturn(0); 
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__

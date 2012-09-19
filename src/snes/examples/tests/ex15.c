@@ -42,7 +42,7 @@ int main( int argc, char **argv )
   Vec                 r;
   PetscReal         zero=0.0,thnd=1000;
 
-  
+
   /* Initialize PETSC */
   PetscInitialize( &argc, &argv,(char *)0,help );
 
@@ -70,8 +70,8 @@ int main( int argc, char **argv )
               user.nx,user.ny,user.ecc,user.b);
   /*
      Extract global and local vectors from DA; the vector user.B is
-     used solely as work space for the evaluation of the function, 
-     gradient, and Hessian.  Duplicate for remaining vectors that are 
+     used solely as work space for the evaluation of the function,
+     gradient, and Hessian.  Duplicate for remaining vectors that are
      the same types.
   */
   info = DMCreateGlobalVector(user.da,&x); CHKERRQ(info); /* Solution */
@@ -80,7 +80,7 @@ int main( int argc, char **argv )
 
   /*  Create matrix user.A to store quadratic, Create a local ordering scheme. */
   info = DMCreateMatrix(user.da,MATAIJ,&user.A);CHKERRQ(info);
-  
+
   /* User defined function -- compute linear term of quadratic */
   info = ComputeB(&user); CHKERRQ(info);
 
@@ -110,14 +110,14 @@ int main( int argc, char **argv )
   if (reason <= 0) {
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"The SNESVI solver did not converge, adjust some parameters, or check the function evaluation routines\n");
   }
-  
+
   /* Free memory */
-  info = VecDestroy(&x); CHKERRQ(info); 
+  info = VecDestroy(&x); CHKERRQ(info);
   info = VecDestroy(&xl);CHKERRQ(info);
   info = VecDestroy(&xu);CHKERRQ(info);
   info = VecDestroy(&r);CHKERRQ(info);
   info = MatDestroy(&user.A); CHKERRQ(info);
-  info = VecDestroy(&user.B); CHKERRQ(info); 
+  info = VecDestroy(&user.B); CHKERRQ(info);
   info = DMDestroy(&user.da); CHKERRQ(info);
   info = SNESDestroy(&snes);CHKERRQ(info);
 
@@ -127,7 +127,7 @@ int main( int argc, char **argv )
 }
 
 static PetscReal p(PetscReal xi, PetscReal ecc)
-{ 
+{
   PetscReal t=1.0+ecc*cos(xi);
   return(t*t*t);
 }
@@ -157,7 +157,7 @@ PetscErrorCode ComputeB(AppCtx* user)
 
   info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(info);
 
-  /* Compute the linear term in the objective function */  
+  /* Compute the linear term in the objective function */
   for (i=xs; i<xs+xm; i++){
     temp=sin((i+1)*hx);
     for (j=ys; j<ys+ym; j++){
@@ -200,7 +200,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
   hyhy=one/(hy*hy);
 
   info = VecSet(G, zero); CHKERRQ(info);
-  
+
   /* Get local vector */
   info = DMGetLocalVector(user->da,&localX);CHKERRQ(info);
   /* Get ghoist points */
@@ -228,24 +228,24 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
     vmiddle=(hxhx)*(trule1+trule2+trule3+trule4)+hyhy*(trule1+trule2+trule5+trule6);
 
     for (j=ys; j<ys+ym; j++){
-      
+
        v[0]=0; v[1]=0; v[2]=0; v[3]=0; v[4]=0;
-       
+
        k=0;
-       if (j > 0){ 
+       if (j > 0){
 	 v[k]=vdown; row[k] = i; col[k] = j-1; k++;
        }
-       
+
        if (i > 0){
 	 v[k]= vleft; row[k] = i-1; col[k] = j; k++;
        }
 
        v[k]= vmiddle; row[k] = i; col[k] = j; k++;
-       
+
        if (i+1 < nx){
 	 v[k]= vright; row[k] = i+1; col[k] = j; k++;
        }
-       
+
        if (j+1 < ny){
 	 v[k]= vup; row[k] = i; col[k] = j+1; k++;
        }
@@ -275,8 +275,8 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormHessian"
-/* 
-   FormHessian computes the quadratic term in the quadratic objective function 
+/*
+   FormHessian computes the quadratic term in the quadratic objective function
    Notice that the objective function in this problem is quadratic (therefore a constant
    hessian).  If using a nonquadratic solver, then you might want to reconsider this function
 */
@@ -315,7 +315,7 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
   /* Get ghost points */
   info = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
   info = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
- 
+
   /* Get pointers to vector data */
   info = DMDAVecGetArray(user->da,localX, &x); CHKERRQ(info);
 
@@ -340,20 +340,20 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
     for (j=ys; j<ys+ym; j++){
       k=0;
       row.i = i; row.j = j;
-      if (j > 0){ 
+      if (j > 0){
 	v[k]=vdown; col[k].i=i;col[k].j = j-1; k++;
       }
-       
+
       if (i > 0){
 	v[k]= vleft; col[k].i= i-1; col[k].j = j;k++;
       }
 
       v[k]= vmiddle; col[k].i=i; col[k].j = j;k++;
-       
+
       if (i+1 < nx){
 	v[k]= vright; col[k].i = i+1; col[k].j = j; k++;
       }
-       
+
       if (j+1 < ny){
 	v[k]= vup; col[k].i = i; col[k].j = j+1; k++;
       }

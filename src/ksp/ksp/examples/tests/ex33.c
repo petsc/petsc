@@ -1,8 +1,8 @@
 static char help[] = "Test MatGetInertia().\n\n";
 
 /*
-  Examples of command line options:      
-  ./ex33 -sigma 2.0 -pc_factor_mat_solver_package mumps -mat_mumps_icntl_13 1 
+  Examples of command line options:
+  ./ex33 -sigma 2.0 -pc_factor_mat_solver_package mumps -mat_mumps_icntl_13 1
   ./ex33 -sigma <shift> -fA <matrix_file>
 */
 
@@ -11,7 +11,7 @@ static char help[] = "Test MatGetInertia().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            A,B,F; 
+  Mat            A,B,F;
   PetscErrorCode ierr;
   KSP            ksp;
   PC             pc;
@@ -19,12 +19,12 @@ int main(int argc,char **args)
   PetscInt       nneg, nzero, npos;
   PetscScalar 	 v,sigma;
   PetscBool   	 flag,loadA=PETSC_FALSE,loadB=PETSC_FALSE;
-  char           file[2][PETSC_MAX_PATH_LEN]; 
+  char           file[2][PETSC_MAX_PATH_LEN];
   PetscViewer    viewer;
   PetscMPIInt    rank;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute the matrices that define the eigensystem, Ax=kBx
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscOptionsGetString(PETSC_NULL,"-fA",file[0],PETSC_MAX_PATH_LEN,&loadA);CHKERRQ(ierr);
@@ -33,7 +33,7 @@ int main(int argc,char **args)
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
     ierr = MatLoad(A,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);  
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
     ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[1],PETSC_MAX_PATH_LEN,&loadB);CHKERRQ(ierr);
     if (loadB){
@@ -42,9 +42,9 @@ int main(int argc,char **args)
       ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
       ierr = MatSetType(B,MATSBAIJ);CHKERRQ(ierr);
       ierr  = MatLoad(B,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);  
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
-  } 
+  }
 
   if (!loadA) { /* Matrix A is copied from slepc-3.0.0-p6/src/examples/ex13.c. */
     ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
@@ -59,20 +59,20 @@ int main(int argc,char **args)
 
     ierr = MatSetOption(A,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
-    for ( II=Istart; II<Iend; II++ ) { 
-      v = -1.0; i = II/n; j = II-i*n;  
+    for ( II=Istart; II<Iend; II++ ) {
+      v = -1.0; i = II/n; j = II-i*n;
       if (i>0) { J=II-n; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
       if (i<m-1) { J=II+n; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
       if (j>0) { J=II-1; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
       if (j<n-1) { J=II+1; MatSetValues(A,1,&II,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr); }
       v=4.0; MatSetValues(A,1,&II,1,&II,&v,INSERT_VALUES);CHKERRQ(ierr);
-    
+
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   /* ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-  
+
   if (!loadB) {
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
@@ -82,10 +82,10 @@ int main(int argc,char **args)
     ierr = MatSetUp(B);CHKERRQ(ierr);
     ierr = MatSetOption(B,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
- 
-    for ( II=Istart; II<Iend; II++ ) { 
+
+    for ( II=Istart; II<Iend; II++ ) {
       /* v=4.0; MatSetValues(B,1,&II,1,&II,&v,INSERT_VALUES);CHKERRQ(ierr); */
-      v=1.0; MatSetValues(B,1,&II,1,&II,&v,INSERT_VALUES);CHKERRQ(ierr); 
+      v=1.0; MatSetValues(B,1,&II,1,&II,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -96,7 +96,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-sigma",&sigma,&flag);CHKERRQ(ierr);
   if (flag){
     sigma = -1.0 * sigma;
-    ierr = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- A - sigma*B */  
+    ierr = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- A - sigma*B */
     /* ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   }
 

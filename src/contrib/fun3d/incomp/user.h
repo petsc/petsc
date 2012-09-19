@@ -1,7 +1,7 @@
 
-#include <petscsys.h> 
+#include <petscsys.h>
 #include <petsc-private/fortranimpl.h>
-                  
+
 #define max_colors  200
 #define max_nbtran 20
 
@@ -101,7 +101,7 @@ typedef struct gxy{                            /* GRID STRUCTURE             */
    REAL *Xgm;                                 /* Another GMRES array        */
    REAL *temr;                                /* Temporary array            */
    REAL *ALU;                                 /* Big array for ILU(0)       */
-   int  *ia, *iau, *ja, *fhelp;               /* Stuff for ILU(0)           */ 
+   int  *ia, *iau, *ja, *fhelp;               /* Stuff for ILU(0)           */
 
 /*
  * stuff to read in daves grid file
@@ -135,11 +135,11 @@ typedef struct gxy{                            /* GRID STRUCTURE             */
    REAL *xGlo, *yGlo, *zGlo;
    Vec qGlo;
    VecScatter scatterGlo;*/
-   
-#if defined(_OPENMP) 
+
+#if defined(_OPENMP)
 #if defined(HAVE_REDUNDANT_WORK)
-   REAL *resd;  
-#else 
+   REAL *resd;
+#else
    int nedgeAllThr;
    int *part_thr,*nedge_thr,*edge_thr;
    REAL *xyzn_thr;
@@ -147,7 +147,7 @@ typedef struct gxy{                            /* GRID STRUCTURE             */
 #endif
 } GRID;                                         /* Grids                      */
                                                /*============================*/
-                                            
+
                                                /*============================*/
 typedef struct{                               /* GENERAL INFORMATION        */
    REAL title[20];                            /* Title line                 */
@@ -298,20 +298,20 @@ extern void PETSC_STDCALL f77LSTGS(int*,int*,int*,PetscScalar*,PetscScalar*,Pets
 extern void PETSC_STDCALL f77GETRES(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,
-                      PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*, 
+                      PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,
                       PetscScalar*,PetscScalar*,PetscScalar*,int*,int*,
                       PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,
-#if defined(_OPENMP) 
+#if defined(_OPENMP)
                       int*,
 #if defined(HAVE_EDGE_COLORING)
                       int*, int*,
-#elif defined(HAVE_REDUNDANT_WORK)     
-                      PetscScalar*,       
+#elif defined(HAVE_REDUNDANT_WORK)
+                      PetscScalar*,
 #else
                       int*,
                       int*,int*,int*,PetscScalar*,
 #endif
-#endif  
+#endif
                       int*,int*,int*);
 extern void PETSC_STDCALL f77FORCE(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,PetscScalar*,
                      PetscScalar*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);

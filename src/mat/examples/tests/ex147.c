@@ -33,11 +33,11 @@ PetscInt main(PetscInt argc,char **args)
 
     alloc_local = fftw_mpi_local_size_transposed(D,dim,PETSC_COMM_WORLD,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
-    printf("The value alloc_local is %ld from process %d\n",alloc_local,rank);  
-    printf("The value local_n0 is %ld from process %d\n",local_n0,rank);  
-    printf("The value local_0_start is  %ld from process %d\n",local_0_start,rank);  
-    printf("The value local_n1 is  %ld from process %d\n",local_n1,rank);  
-    printf("The value local_1_start is  %ld from process %d\n",local_1_start,rank);  
+    printf("The value alloc_local is %ld from process %d\n",alloc_local,rank);
+    printf("The value local_n0 is %ld from process %d\n",local_n0,rank);
+    printf("The value local_0_start is  %ld from process %d\n",local_0_start,rank);
+    printf("The value local_n1 is  %ld from process %d\n",local_n1,rank);
+    printf("The value local_1_start is  %ld from process %d\n",local_1_start,rank);
 
     /* Allocate space for input and output arrays  */
 
@@ -69,9 +69,9 @@ PetscInt main(PetscInt argc,char **args)
     VecGetArray(fin,&x_arr);
     VecGetArray(fout1,&z_arr);
     VecGetArray(fout,&y_arr);
-   
-    dim[3]=N3;    
-    
+
+    dim[3]=N3;
+
     fplan=fftw_mpi_plan_dft_r2c(D,dim,(double *)x_arr,(fftw_complex *)y_arr,PETSC_COMM_WORLD,FFTW_ESTIMATE);
     bplan=fftw_mpi_plan_dft_c2r(D,dim,(fftw_complex *)y_arr,(double *)z_arr,PETSC_COMM_WORLD,FFTW_ESTIMATE);
 

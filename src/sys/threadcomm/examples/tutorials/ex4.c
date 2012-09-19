@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   ierr = VecAXPY(y,alpha,x);CHKERRQ(ierr);
   v = two+alpha*one;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"y+%lfx = %lf\n",alpha,v);CHKERRQ(ierr);
-  
+
   ierr = VecDot(x,y,&dot);CHKERRQ(ierr);
 
   ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);

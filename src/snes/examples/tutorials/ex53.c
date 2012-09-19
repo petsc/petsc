@@ -6,7 +6,7 @@ typedef struct {
   Mat         M,Jac;
 } AppCtx;
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction1"
-/* 
+/*
    FormFunction1 - Evaluates nonlinear function, F(x).
 
    Input Parameters:

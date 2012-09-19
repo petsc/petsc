@@ -17,7 +17,7 @@ Input parameters include:\n\
 
    This program solves the one-dimensional heat equation (also called the
    diffusion equation),
-       u_t = u_xx, 
+       u_t = u_xx,
    on the domain 0 <= x <= 1, with the boundary conditions
        u(t,0) = 0, u(t,1) = 0,
    and the initial condition
@@ -36,7 +36,7 @@ Input parameters include:\n\
                       3*exp(-4*pi*pi*t) * sin(2*pi*x)
 
    Notes:
-   This code demonstrates the TS solver interface to two variants of 
+   This code demonstrates the TS solver interface to two variants of
    linear problems, u_t = f(u,t), namely
      - time-dependent f:   f(u,t) is a function of t
      - time-independent f: f(u,t) is simply f(u)
@@ -45,9 +45,9 @@ Input parameters include:\n\
 
   ------------------------------------------------------------------------- */
 
-/* 
+/*
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs) to manage
-   the parallel grid.  Include "petscts.h" so that we can use TS solvers.  
+   the parallel grid.  Include "petscts.h" so that we can use TS solvers.
    Note that this file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h  - vectors
      petscmat.h  - matrices
@@ -59,8 +59,8 @@ Input parameters include:\n\
 #include <petscdmda.h>
 #include <petscts.h>
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines.
 */
 typedef struct {
@@ -76,7 +76,7 @@ typedef struct {
   PetscReal   norm_2,norm_max;  /* error norms */
 } AppCtx;
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode InitialConditions(Vec,AppCtx*);
@@ -106,13 +106,13 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
- 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   appctx.comm = PETSC_COMM_WORLD;
 
   m    = 60;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);    
+  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
   appctx.m        = m;
   appctx.h        = 1.0/(m-1.0);
   appctx.norm_2   = 0.0;
@@ -125,9 +125,9 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
      Create distributed array (DMDA) to manage parallel grid and vectors
-     and to set up the ghost point communication pattern.  There are M 
+     and to set up the ghost point communication pattern.  There are M
      total grid values spread equally among all the processors.
-  */ 
+  */
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m,1,1,PETSC_NULL,&appctx.da);CHKERRQ(ierr);
 
@@ -135,11 +135,11 @@ int main(int argc,char **argv)
      Extract global and local vectors from DMDA; we use these to store the
      approximate solution.  Then duplicate these for remaining vectors that
      have the same types.
-  */ 
+  */
   ierr = DMCreateGlobalVector(appctx.da,&u);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(appctx.da,&appctx.u_local);CHKERRQ(ierr);
 
-  /* 
+  /*
      Create local work vector for use in evaluating right-hand-side function;
      create global work vector for storing exact solution.
   */
@@ -147,15 +147,15 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(u,&appctx.solution);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set up displays to show graphs of the solution and error 
+     Set up displays to show graphs of the solution and error
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(appctx.viewer1,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(appctx.viewer2,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -186,7 +186,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-time_dependent_rhs",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     /*
-       For linear problems with a time-dependent f(u,t) in the equation 
+       For linear problems with a time-dependent f(u,t) in the equation
        u_t = f(u,t), the user provides the discretized right-hand-side
        as a time-dependent matrix.
     */
@@ -194,7 +194,7 @@ int main(int argc,char **argv)
     ierr = TSSetRHSJacobian(ts,A,A,RHSMatrixHeat,&appctx);CHKERRQ(ierr);
   } else {
     /*
-       For linear problems with a time-independent f(u) in the equation 
+       For linear problems with a time-independent f(u) in the equation
        u_t = f(u), the user provides the discretized right-hand-side
        as a matrix only once, and then sets a null matrix evaluation
        routine.
@@ -204,7 +204,7 @@ int main(int argc,char **argv)
     ierr = TSSetRHSFunction(ts,PETSC_NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,&appctx);CHKERRQ(ierr);
   }
- 
+
   if (tsproblem == TS_NONLINEAR) {
     SNES snes;
     ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunctionHeat,&appctx);CHKERRQ(ierr);
@@ -221,9 +221,9 @@ int main(int argc,char **argv)
   ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Customize timestepping solver:  
+     Customize timestepping solver:
        - Set the solution method to be the Backward Euler method.
-       - Set timestepping duration info 
+       - Set timestepping duration info
      Then set runtime options, which can override these defaults.
      For example,
           -ts_max_steps <maxsteps> -ts_final_time <maxtime>
@@ -273,7 +273,7 @@ int main(int argc,char **argv)
      Always call PetscFinalize() before exiting a program.  This routine
        - finalizes the PETSc libraries as well as MPI
        - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary). 
+         options are chosen (e.g., -log_summary).
   */
   ierr = PetscFinalize();
   return 0;
@@ -282,7 +282,7 @@ int main(int argc,char **argv)
 #undef __FUNCT__
 #define __FUNCT__ "InitialConditions"
 /*
-   InitialConditions - Computes the solution at the initial time. 
+   InitialConditions - Computes the solution at the initial time.
 
    Input Parameter:
    u - uninitialized solution vector (global)
@@ -290,20 +290,20 @@ int main(int argc,char **argv)
 
    Output Parameter:
    u - vector with solution at initial time (global)
-*/ 
+*/
 PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
 {
   PetscScalar    *u_localptr,h = appctx->h;
   PetscInt       i,mybase,myend;
   PetscErrorCode ierr;
 
-  /* 
+  /*
      Determine starting point of each processor's range of
      grid values.
   */
   ierr = VecGetOwnershipRange(u,&mybase,&myend);CHKERRQ(ierr);
 
-  /* 
+  /*
     Get a pointer to vector data.
     - For default PETSc vectors, VecGetArray() returns a pointer to
       the data array.  Otherwise, the routine is implementation dependent.
@@ -314,7 +314,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
   */
   ierr = VecGetArray(u,&u_localptr);CHKERRQ(ierr);
 
-  /* 
+  /*
      We initialize the solution array by simply writing the solution
      directly into the array locations.  Alternatively, we could use
      VecSetValues() or VecSetValuesLocal().
@@ -323,12 +323,12 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
     u_localptr[i-mybase] = PetscSinScalar(PETSC_PI*i*6.*h) + 3.*PetscSinScalar(PETSC_PI*i*2.*h);
   }
 
-  /* 
+  /*
      Restore vector
   */
   ierr = VecRestoreArray(u,&u_localptr);CHKERRQ(ierr);
 
-  /* 
+  /*
      Print debugging information if desired
   */
   if (appctx->debug) {
@@ -358,8 +358,8 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
   PetscInt       i,mybase,myend;
   PetscErrorCode ierr;
 
-  /* 
-     Determine starting and ending points of each processor's 
+  /*
+     Determine starting and ending points of each processor's
      range of grid values
   */
   ierr = VecGetOwnershipRange(solution,&mybase,&myend);CHKERRQ(ierr);
@@ -369,7 +369,7 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
   */
   ierr = VecGetArray(solution,&s_localptr);CHKERRQ(ierr);
 
-  /* 
+  /*
      Simply write the solution directly into the array locations.
      Alternatively, we culd use VecSetValues() or VecSetValuesLocal().
   */
@@ -379,7 +379,7 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
     s_localptr[i-mybase] = PetscSinScalar(sc1*(PetscReal)i)*ex1 + 3.*PetscSinScalar(sc2*(PetscReal)i)*ex2;
   }
 
-  /* 
+  /*
      Restore vector
   */
   ierr = VecRestoreArray(solution,&s_localptr);CHKERRQ(ierr);
@@ -389,7 +389,7 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
 #undef __FUNCT__
 #define __FUNCT__ "Monitor"
 /*
-   Monitor - User-provided routine to monitor the solution computed at 
+   Monitor - User-provided routine to monitor the solution computed at
    each timestep.  This example plots the solution and computes the
    error in two different norms.
 
@@ -400,8 +400,8 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
    time   - the current time
    u      - the solution at this timestep
    ctx    - the user-provided context for this monitoring routine.
-            In this case we use the application context which contains 
-            information about the problem size, workspace and the exact 
+            In this case we use the application context which contains
+            information about the problem size, workspace and the exact
             solution.
 */
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
@@ -410,12 +410,12 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   PetscErrorCode ierr;
   PetscReal      norm_2,norm_max;
 
-  /* 
+  /*
      View a graph of the current iterate
   */
   ierr = VecView(u,appctx->viewer2);CHKERRQ(ierr);
 
-  /* 
+  /*
      Compute the exact solution
   */
   ierr = ExactSolution(time,appctx->solution,appctx);CHKERRQ(ierr);
@@ -439,7 +439,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   /*
-     PetscPrintf() causes only the first processor in this 
+     PetscPrintf() causes only the first processor in this
      communicator to print the timestep information.
   */
   ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %G 2-norm error = %G max norm error = %G\n",
@@ -447,7 +447,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 
-  /* 
+  /*
      View a graph of the error
   */
   ierr = VecView(appctx->solution,appctx->viewer1);CHKERRQ(ierr);
@@ -484,10 +484,10 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   Notes:
   RHSMatrixHeat computes entries for the locally owned part of the system.
    - Currently, all PETSc parallel matrix formats are partitioned by
-     contiguous chunks of rows across the processors. 
+     contiguous chunks of rows across the processors.
    - Each processor needs to insert only elements that it owns
      locally (but any non-local elements will be sent to the
-     appropriate processor during matrix assembly). 
+     appropriate processor during matrix assembly).
    - Always specify global row and columns of matrix entries when
      using MatSetValues(); we could alternatively use MatSetValuesLocal().
    - Here, we set all entries for a particular row at once.
@@ -508,7 +508,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
 
   ierr = MatGetOwnershipRange(A,&mstart,&mend);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set matrix rows corresponding to boundary data
   */
 
@@ -525,10 +525,10 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
   }
 
   /*
-     Set matrix rows corresponding to interior data.  We construct the 
+     Set matrix rows corresponding to interior data.  We construct the
      matrix one row at a time.
   */
-  v[0] = sone; v[1] = stwo; v[2] = sone;  
+  v[0] = sone; v[1] = stwo; v[2] = sone;
   for (i=mstart; i<mend; i++) {
     idx[0] = i-1; idx[1] = i; idx[2] = i+1;
     ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
@@ -566,7 +566,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
   *str = SAME_NONZERO_PATTERN;
 
   /*
-     Set and option to indicate that we will never add a new nonzero location 
+     Set and option to indicate that we will never add a new nonzero location
      to the matrix. If we do, it will generate an error.
   */
   ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);

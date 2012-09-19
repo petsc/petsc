@@ -8,7 +8,7 @@ static char help[] = "Tests MatDenseGetArray() and MatView_SeqDense_Binary(), Ma
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat              A; 
+  Mat              A;
   PetscInt         i,j,m = 3,n = 2,rstart,rend;
   PetscErrorCode   ierr;
   PetscScalar      v,*array;
@@ -17,12 +17,12 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /*
-      Create a parallel dense matrix shared by all processors 
+      Create a parallel dense matrix shared by all processors
   */
   ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL,&A);CHKERRQ(ierr);
 
   /*
-     Set values into the matrix 
+     Set values into the matrix
   */
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /*
-       Print the matrix to the screen 
+       Print the matrix to the screen
   */
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
@@ -61,7 +61,7 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
-  /* 
+  /*
      Now reload the matrix and view it
   */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",FILE_MODE_READ,&view);CHKERRQ(ierr);

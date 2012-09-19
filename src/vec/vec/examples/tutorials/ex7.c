@@ -5,7 +5,7 @@ and from Fortran to C\n\n";
 
 #include <petscvec.h>
 /*
-  Ugly stuff to insure the function names match between Fortran 
+  Ugly stuff to insure the function names match between Fortran
   and C. Sorry, but this is out of our PETSc hands to cleanup.
 */
 #include <petsc-private/fortranimpl.h>
@@ -34,15 +34,15 @@ int main(int argc,char **args)
   /* This function should be called to be able to use PETSc routines
      from the FORTRAN subroutines needed by this program */
 
-  PetscInitializeFortran();  
+  PetscInitializeFortran();
 
   ierr = VecCreate(PETSC_COMM_WORLD,&vec);CHKERRQ(ierr);
   ierr = VecSetSizes(vec,PETSC_DECIDE,m);CHKERRQ(ierr);
   ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
 
-  /* 
+  /*
      Call Fortran routine - the use of MPI_Comm_c2f() allows
-     translation of the MPI_Comm from C so that it can be properly 
+     translation of the MPI_Comm from C so that it can be properly
      interpreted from Fortran.
   */
   fcomm = MPI_Comm_c2f(PETSC_COMM_WORLD);
@@ -68,7 +68,7 @@ void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,PetscErrorCode* ierr)
     Fortran Communicator back to C communicator
   */
   comm = MPI_Comm_f2c(*fcomm);
-  
+
   /* Some PETSc/MPI operations on Vec/Communicator objects */
   *ierr = VecGetSize(*fvec,&vsize);
   *ierr = MPI_Barrier(comm);

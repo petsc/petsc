@@ -36,11 +36,11 @@ PetscInt main(PetscInt argc,char **args)
 
     alloc_local = fftw_mpi_local_size_3d_transposed(N0,N1,N2/2+1,PETSC_COMM_WORLD,&local_n0,&local_0_start,&local_n1,&local_1_start);
 
-//    printf("The value alloc_local is %ld from process %d\n",alloc_local,rank);  
-    printf("The value local_n0 is %ld from process %d\n",local_n0,rank);  
-//    printf("The value local_0_start is  %ld from process %d\n",local_0_start,rank);  
-//    printf("The value local_n1 is  %ld from process %d\n",local_n1,rank);  
-//    printf("The value local_1_start is  %ld from process %d\n",local_1_start,rank);  
+//    printf("The value alloc_local is %ld from process %d\n",alloc_local,rank);
+    printf("The value local_n0 is %ld from process %d\n",local_n0,rank);
+//    printf("The value local_0_start is  %ld from process %d\n",local_0_start,rank);
+//    printf("The value local_n1 is  %ld from process %d\n",local_n1,rank);
+//    printf("The value local_1_start is  %ld from process %d\n",local_1_start,rank);
 
     /* Allocate space for input and output arrays  */
 
@@ -75,7 +75,7 @@ PetscInt main(PetscInt argc,char **args)
     VecGetArray(fin,&x_arr);
     VecGetArray(fout1,&z_arr);
     VecGetArray(fout,&y_arr);
-    
+
     fplan=fftw_mpi_plan_dft_r2c_3d(N0,N1,N2,(double *)x_arr,(fftw_complex *)y_arr,PETSC_COMM_WORLD,FFTW_ESTIMATE);
     bplan=fftw_mpi_plan_dft_c2r_3d(N0,N1,N2,(fftw_complex *)y_arr,(double *)z_arr,PETSC_COMM_WORLD,FFTW_ESTIMATE);
 
@@ -97,7 +97,7 @@ PetscInt main(PetscInt argc,char **args)
 //    VecSetSizes(final,PETSC_DECIDE,N_factor);
     VecSetFromOptions(ini);
     VecSetFromOptions(final);
- 
+
     if (N2%2==0)
       NM=N2+2;
     else
@@ -109,7 +109,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1*N2,&indx4);
     for (i=0;i<local_n0;i++){
        for (j=0;j<N1;j++){
-          for (k=0;k<N2;k++){ 
+          for (k=0;k<N2;k++){
             tempindx = i*N1*N2 + j*N2 + k;
             tempindx1 = i*N1*NM + j*NM + k;
             indx3[tempindx]=local_0_start*N1*N2+tempindx;
@@ -128,9 +128,9 @@ PetscInt main(PetscInt argc,char **args)
     VecSetValues(final,local_n0*N1*N2,indx3,y_arr,INSERT_VALUES);
     VecAssemblyBegin(final);
     VecAssemblyEnd(final);
-    
+
     printf("The local index value is %ld from %d",local_n0*N1*N2,rank);
-/*    
+/*
     for (i=0;i<N0;i++){
        for (j=0;j<N1;j++){
           indx=i*N1*NM+j*NM;
@@ -152,7 +152,7 @@ PetscInt main(PetscInt argc,char **args)
 
     VecAssemblyBegin(ini);
     VecAssemblyEnd(ini);
- 
+
     VecAssemblyBegin(final);
     VecAssemblyEnd(final);
 

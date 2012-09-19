@@ -31,7 +31,7 @@
 !     rctx     - random number context
 !
 
-      Mat              A 
+      Mat              A
       Vec              x,b,u
       PC               pc
       PetscInt  n,dim,istart,iend
@@ -44,7 +44,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       pfive = .5d0
@@ -53,10 +53,10 @@
       one    = 1
       zero   = 0
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !      Compute the matrix and right-hand-side vector that define
 !      the linear system, Ax = b.
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create parallel matrix, specifying only its global dimensions.
 !  When using MatCreate(), the matrix format can be specified at
@@ -70,20 +70,20 @@
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which
-!  rows of the matrix are locally owned. 
+!  rows of the matrix are locally owned.
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
 !  Set matrix elements in parallel.
 !   - Each processor needs to insert only elements that it owns
 !     locally (but any non-local elements will be sent to the
-!     appropriate processor during matrix assembly). 
+!     appropriate processor during matrix assembly).
 !   - Always specify global rows and columns of matrix entries.
 
       do 10, II=Istart,Iend-1
         v = -1.0
         i = II/n
-        j = II - i*n  
+        j = II - i*n
         if (i.gt.0) then
           JJ = II - n
           call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
@@ -129,9 +129,9 @@
       call VecSet(u,pfive,ierr)
       call MatMult(A,u,b,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Create the linear solver and set various options
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create linear solver context
 

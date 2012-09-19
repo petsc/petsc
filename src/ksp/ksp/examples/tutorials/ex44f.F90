@@ -51,7 +51,7 @@
           xx(i) = i*hx
       enddo
       call VecRestoreArrayF90(x,xx,ierr)
-      return 
+      return
       end
       subroutine ComputeMatrix(da,J,ierr)
 #include <finclude/petscdef.h>
@@ -72,7 +72,7 @@
       do i=xs,xs+xm-1
         if ((i .eq. 0) .or. (i .eq. mx-1)) then
           call MatSetValue(J,i,i,1d0,INSERT_VALUES,ierr)
-        else 
+        else
           call MatSetValue(J,i,i-1,-hx,INSERT_VALUES,ierr)
           call MatSetValue(J,i,i+1,-hx,INSERT_VALUES,ierr)
           call MatSetValue(J,i,i,2*hx,INSERT_VALUES,ierr)
@@ -80,5 +80,5 @@
       enddo
       call MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr)
-      return 
+      return
       end

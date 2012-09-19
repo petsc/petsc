@@ -21,19 +21,19 @@ static char help[] = "Test file for the PCFactorSetShiftType()\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  KSP                solver; 
-  PC                 prec; 
+  KSP                solver;
+  PC                 prec;
   Mat                A,M;
   Vec                X,B,D;
   MPI_Comm           comm;
-  PetscScalar        v; 
+  PetscScalar        v;
   KSPConvergedReason reason;
   PetscInt           i,j,its;
   PetscErrorCode     ierr;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
-  
+
   /*
    * Construct the Kershaw matrix
    * and a suitable rhs / initial guess

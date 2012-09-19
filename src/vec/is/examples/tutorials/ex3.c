@@ -22,11 +22,11 @@ int main(int argc,char **argv)
   PetscBool      isblock;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-      
+
   /*
     Create a block index set. The index set has 4 blocks each of size 3.
     The indices are {0,1,2,3,4,5,9,10,11,12,13,14}
-    Note each processor is generating its own index set 
+    Note each processor is generating its own index set
     (in this case they are all identical)
   */
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,PETSC_COPY_VALUES,&set);CHKERRQ(ierr);

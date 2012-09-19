@@ -20,7 +20,7 @@ int main(int argc,char **args)
   PetscMPIInt    size;
   Mat            A;
   Vec            x;
-  char           bfile[PETSC_MAX_PATH_LEN],hbfile[PETSC_MAX_PATH_LEN]; 
+  char           bfile[PETSC_MAX_PATH_LEN],hbfile[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
   Mat_SeqAIJ     *a;
   PetscScalar    *aa,*xx;

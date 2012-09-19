@@ -17,7 +17,7 @@ int main(int argc, char **args)
   IS              is;
   PetscInt        r,N = 10, start, end;
   PetscErrorCode  ierr;
-  
+
   ierr = PetscInitialize(&argc, &args, (char *) 0, help);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL, "-N", &N, PETSC_NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);

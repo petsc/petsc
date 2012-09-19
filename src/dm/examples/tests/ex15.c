@@ -15,8 +15,8 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0;
   PetscBool pt;
   DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE;
- 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dim",&dim,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M1,PETSC_NULL);CHKERRQ(ierr);
@@ -36,7 +36,7 @@ int main(int argc,char **argv)
     M2 = ratio*M1;
   }
 
-  /* Set up the array */ 
+  /* Set up the array */
   if (dim == 1) {
     ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M1,dof,s,PETSC_NULL,&da_c);CHKERRQ(ierr);
     ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M2,dof,s,PETSC_NULL,&da_f);CHKERRQ(ierr);
@@ -66,7 +66,7 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+
 
 
 

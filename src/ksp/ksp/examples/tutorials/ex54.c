@@ -135,7 +135,7 @@ int main(int argc,char **args)
     ierr = KSPGetPC(ksp,&pc);                                   CHKERRQ(ierr);
     ierr = PCSetType(pc,PCGAMG);                                CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp);                              CHKERRQ(ierr);
-    
+
     /* finish KSP/PC setup */
     ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
     ierr = PCSetCoordinates( pc, 2, m, coords );                   CHKERRQ(ierr);
@@ -155,9 +155,9 @@ int main(int argc,char **args)
   ierr = PetscLogStagePush(stage);      CHKERRQ(ierr);
 #endif
   ierr = VecSet(xx,.0);          CHKERRQ(ierr);
-  
+
   ierr = KSPSolve(ksp,bb,xx);     CHKERRQ(ierr);
-  
+
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogStagePop();      CHKERRQ(ierr);
 #endif

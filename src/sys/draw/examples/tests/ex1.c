@@ -10,7 +10,7 @@ int main(int argc,char **argv)
   PetscDraw      draw;
   PetscErrorCode ierr;
   int            x = 0,y = 0,width = 300,height = 300;
- 
+
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   ierr = PetscDrawString(draw,.2,.2,PETSC_DRAW_BLUE,"Some Text");CHKERRQ(ierr);
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscSleep(2);CHKERRQ(ierr);
-  ierr = PetscDrawClear(draw);CHKERRQ(ierr); 
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawResizeWindow(draw,600,600);CHKERRQ(ierr);
   ierr = PetscSleep(2);CHKERRQ(ierr);
@@ -33,4 +33,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

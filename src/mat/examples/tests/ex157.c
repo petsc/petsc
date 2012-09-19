@@ -19,7 +19,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
-  
+
 //#if !defined(PETSC_USE_COMPLEX)
 //  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "Example for Complex DFT. Your current data type is real");
 //#endif
@@ -36,7 +36,7 @@ PetscInt main(PetscInt argc,char **args)
 //  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
 //  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
   ierr = VecDuplicate(input,&output);
- 
+
   DIM = 2; dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
   ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
@@ -55,13 +55,13 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
   ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  
+
   ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
 
   ierr = OutputTransformFFT(A,z,output);CHKERRQ(ierr);
   fac = 1.0/(PetscReal)N;
   ierr = VecScale(output,fac);CHKERRQ(ierr);
-  
+
   ierr = VecAssemblyBegin(input);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(input);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(output);CHKERRQ(ierr);

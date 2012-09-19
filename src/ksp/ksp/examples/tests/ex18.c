@@ -19,10 +19,10 @@ int main(int argc,char **args)
   Vec            x,b,u;
   Mat            A;
   KSP            ksp;
-  char           file[PETSC_MAX_PATH_LEN]; 
+  char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
   PetscLogStage  stage1;
-  
+
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read matrix and RHS */
@@ -35,8 +35,8 @@ int main(int argc,char **args)
   ierr = VecLoad(b,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
-  /* 
-     If the load matrix is larger then the vector, due to being padded 
+  /*
+     If the load matrix is larger then the vector, due to being padded
      to match the blocksize then create a new padded vector
   */
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);

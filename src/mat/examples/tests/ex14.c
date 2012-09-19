@@ -7,7 +7,7 @@ static char help[] = "Tests sequential and parallel MatGetRow() and MatRestoreRo
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat               C; 
+  Mat               C;
   PetscInt          i,j,m = 5,n = 5,Ii,J,nz,rstart,rend;
   PetscErrorCode    ierr;
   PetscMPIInt       rank;
@@ -18,8 +18,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Create the matrix for the five point stencil, YET AGAIN */
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr); 
-  ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr); 
+  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
+  ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);

@@ -58,7 +58,7 @@ int main(int argc,char **argv) {
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&B);
   ierr = MatDestroy(&A);
-  
+
   PetscFinalize();
   return(0);
 }

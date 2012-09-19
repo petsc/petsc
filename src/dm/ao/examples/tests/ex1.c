@@ -10,7 +10,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscInt       i,n = 5;
-  PetscInt       getpetsc[]  = {0,3,4},getapp[]  = {2,1,9,7}; 
+  PetscInt       getpetsc[]  = {0,3,4},getapp[]  = {2,1,9,7};
   PetscInt       getpetsc1[] = {0,3,4},getapp1[] = {2,1,9,7};
   PetscInt       getpetsc2[] = {0,3,4},getapp2[] = {2,1,9,7};
   PetscInt       getpetsc3[] = {0,3,4},getapp3[] = {2,1,9,7};
@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   AO             ao;
   const PetscInt *app;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -35,7 +35,7 @@ int main(int argc,char **argv)
 
   ierr = AOPetscToApplication(ao,4,getapp);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,3,getpetsc);CHKERRQ(ierr);
- 
+
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 2,1,9,7 PetscToApplication %D %D %D %D\n",
           rank,getapp[0],getapp[1],getapp[2],getapp[3]);CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 0,3,4 ApplicationToPetsc %D %D %D\n",
@@ -50,16 +50,16 @@ int main(int argc,char **argv)
   }
   ierr = AOCreateMemoryScalableIS(isapp,ispetsc,&ao);CHKERRQ(ierr);CHKERRQ(ierr);
   ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
- 
+
   ierr = AOPetscToApplication(ao,4,getapp1);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,3,getpetsc1);CHKERRQ(ierr);
- 
+
   /* Check accuracy */;
   for (i=0; i<4;i++)
     if (getapp1[i] != getapp[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp1 %d != getapp %d",getapp1[i],getapp[i]);
   for (i=0; i<3;i++)
     if (getpetsc1[i] != getpetsc[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc1 %d != getpetsc %d",getpetsc1[i],getpetsc[i]);
-  
+
   ierr = AODestroy(&ao);CHKERRQ(ierr);
 
   /* test MemoryScalable ao: ispetsc = PETSC_NULL */
@@ -68,12 +68,12 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_SELF,"\nTest AOCreateMemoryScalable with ispetsc=PETSC_NULL:\n");
   }
   ierr = AOCreateMemoryScalableIS(isapp,PETSC_NULL,&ao);CHKERRQ(ierr);CHKERRQ(ierr);
- 
+
   ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
- 
+
   ierr = AOPetscToApplication(ao,4,getapp2);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,3,getpetsc2);CHKERRQ(ierr);
- 
+
   /* Check accuracy */;
   for (i=0; i<4;i++)
     if (getapp2[i] != getapp[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp2 %d != getapp %d",getapp2[i],getapp[i]);
@@ -85,10 +85,10 @@ int main(int argc,char **argv)
   ierr = ISGetIndices(isapp,&app);CHKERRQ(ierr);
   ierr = AOCreateMemoryScalable(PETSC_COMM_WORLD,n,app,PETSC_NULL,&ao);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isapp,&app);CHKERRQ(ierr);
- 
+
   ierr = AOPetscToApplication(ao,4,getapp4);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,3,getpetsc4);CHKERRQ(ierr);
- 
+
   /* Check accuracy */;
   for (i=0; i<4;i++)
     if (getapp4[i] != getapp[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp4 %d != getapp %d",getapp4[i],getapp[i]);
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
   /* ispetsc and isapp are nolonger used. */
   ierr = ISDestroy(&ispetsc);CHKERRQ(ierr);
   ierr = ISDestroy(&isapp);CHKERRQ(ierr);
-  
+
   ierr = AOPetscToApplication(ao,4,getapp3);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,3,getpetsc3);CHKERRQ(ierr);
 
@@ -121,7 +121,7 @@ int main(int argc,char **argv)
 
   /* Check accuracy */;
   for (i=0; i<4;i++)
-    
+
     if (getapp3[i] != getapp[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp3 %d != getapp %d",getapp3[i],getapp[i]);
   for (i=0; i<3;i++)
     if (getpetsc3[i] != getpetsc[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc3 %d != getpetsc %d",getpetsc3[i],getpetsc[i]);
@@ -130,6 +130,6 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+
 
 

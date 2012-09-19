@@ -207,7 +207,7 @@ typedef struct {
 
 /* Utility */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RiemannListAdd"
 PetscErrorCode RiemannListAdd(PetscFList *flist,const char *name,RiemannFunction rsolve)
 {
@@ -218,7 +218,7 @@ PetscErrorCode RiemannListAdd(PetscFList *flist,const char *name,RiemannFunction
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RiemannListFind"
 PetscErrorCode RiemannListFind(PetscFList flist,const char *name,RiemannFunction *rsolve)
 {
@@ -230,7 +230,7 @@ PetscErrorCode RiemannListFind(PetscFList flist,const char *name,RiemannFunction
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ReconstructListAdd"
 PetscErrorCode ReconstructListAdd(PetscFList *flist,const char *name,ReconstructFunction r)
 {
@@ -241,7 +241,7 @@ PetscErrorCode ReconstructListAdd(PetscFList *flist,const char *name,Reconstruct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ReconstructListFind"
 PetscErrorCode ReconstructListFind(PetscFList flist,const char *name,ReconstructFunction *r)
 {
@@ -263,7 +263,7 @@ PetscErrorCode ReconstructListFind(PetscFList flist,const char *name,Reconstruct
 
 /* First a few functions useful to several different physics */
 #undef __FUNCT__
-#define __FUNCT__ "PhysicsCharacteristic_Conservative"  
+#define __FUNCT__ "PhysicsCharacteristic_Conservative"
 static PetscErrorCode PhysicsCharacteristic_Conservative(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
 {
   PetscInt i,j;
@@ -279,7 +279,7 @@ static PetscErrorCode PhysicsCharacteristic_Conservative(void *vctx,PetscInt m,c
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PhysicsDestroy_SimpleFree"  
+#define __FUNCT__ "PhysicsDestroy_SimpleFree"
 static PetscErrorCode PhysicsDestroy_SimpleFree(void *vctx)
 {
   PetscErrorCode ierr;
@@ -297,7 +297,7 @@ typedef struct {
   PetscReal a;                  /* advective velocity */
 } AdvectCtx;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Advect"
 static PetscErrorCode PhysicsRiemann_Advect(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
@@ -311,7 +311,7 @@ static PetscErrorCode PhysicsRiemann_Advect(void *vctx,PetscInt m,const PetscSca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCharacteristic_Advect"
 static PetscErrorCode PhysicsCharacteristic_Advect(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
 {
@@ -324,7 +324,7 @@ static PetscErrorCode PhysicsCharacteristic_Advect(void *vctx,PetscInt m,const P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsSample_Advect"
 static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
@@ -350,7 +350,7 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Advect"
 static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
 {
@@ -383,7 +383,7 @@ typedef struct {
   PetscReal lxf_speed;
 } BurgersCtx;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsSample_Burgers"
 static PetscErrorCode PhysicsSample_Burgers(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
@@ -421,7 +421,7 @@ static PetscErrorCode PhysicsSample_Burgers(void *vctx,PetscInt initial,FVBCType
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Burgers_Exact"
 static PetscErrorCode PhysicsRiemann_Burgers_Exact(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
@@ -438,7 +438,7 @@ static PetscErrorCode PhysicsRiemann_Burgers_Exact(void *vctx,PetscInt m,const P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Burgers_Roe"
 static PetscErrorCode PhysicsRiemann_Burgers_Roe(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
@@ -452,7 +452,7 @@ static PetscErrorCode PhysicsRiemann_Burgers_Roe(void *vctx,PetscInt m,const Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Burgers_LxF"
 static PetscErrorCode PhysicsRiemann_Burgers_LxF(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
@@ -468,7 +468,7 @@ static PetscErrorCode PhysicsRiemann_Burgers_LxF(void *vctx,PetscInt m,const Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Burgers_Rusanov"
 static PetscErrorCode PhysicsRiemann_Burgers_Rusanov(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
@@ -484,7 +484,7 @@ static PetscErrorCode PhysicsRiemann_Burgers_Rusanov(void *vctx,PetscInt m,const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Burgers"
 static PetscErrorCode PhysicsCreate_Burgers(FVCtx *ctx)
 {
@@ -534,7 +534,7 @@ typedef struct {
 
 static inline PetscScalar TrafficFlux(PetscScalar a,PetscScalar u) { return a*u*(1-u); }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsSample_Traffic"
 static PetscErrorCode PhysicsSample_Traffic(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
@@ -559,7 +559,7 @@ static PetscErrorCode PhysicsSample_Traffic(void *vctx,PetscInt initial,FVBCType
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Traffic_Exact"
 static PetscErrorCode PhysicsRiemann_Traffic_Exact(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
@@ -579,7 +579,7 @@ static PetscErrorCode PhysicsRiemann_Traffic_Exact(void *vctx,PetscInt m,const P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Traffic_Roe"
 static PetscErrorCode PhysicsRiemann_Traffic_Roe(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
@@ -593,7 +593,7 @@ static PetscErrorCode PhysicsRiemann_Traffic_Roe(void *vctx,PetscInt m,const Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Traffic_LxF"
 static PetscErrorCode PhysicsRiemann_Traffic_LxF(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
@@ -608,7 +608,7 @@ static PetscErrorCode PhysicsRiemann_Traffic_LxF(void *vctx,PetscInt m,const Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Traffic_Rusanov"
 static PetscErrorCode PhysicsRiemann_Traffic_Rusanov(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
@@ -622,7 +622,7 @@ static PetscErrorCode PhysicsRiemann_Traffic_Rusanov(void *vctx,PetscInt m,const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Traffic"
 static PetscErrorCode PhysicsCreate_Traffic(FVCtx *ctx)
 {
@@ -689,7 +689,7 @@ static inline void AcousticsFlux(AcousticsCtx *ctx,const PetscScalar *u,PetscSca
   f[1] = ctx->c/ctx->z*u[0];
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCharacteristic_Acoustics"
 static PetscErrorCode PhysicsCharacteristic_Acoustics(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
 {
@@ -729,7 +729,7 @@ static PetscErrorCode PhysicsSample_Acoustics_Initial(AcousticsCtx *phys,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsSample_Acoustics"
 static PetscErrorCode PhysicsSample_Acoustics(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
@@ -761,7 +761,7 @@ static PetscErrorCode PhysicsSample_Acoustics(void *vctx,PetscInt initial,FVBCTy
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Acoustics_Exact"
 static PetscErrorCode PhysicsRiemann_Acoustics_Exact(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
@@ -780,7 +780,7 @@ static PetscErrorCode PhysicsRiemann_Acoustics_Exact(void *vctx,PetscInt m,const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Acoustics"
 static PetscErrorCode PhysicsCreate_Acoustics(FVCtx *ctx)
 {
@@ -829,7 +829,7 @@ static inline void IsoGasFlux(PetscReal c,const PetscScalar *u,PetscScalar *f)
   f[1] = PetscSqr(u[1])/u[0] + c*c*u[0];
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsSample_IsoGas"
 static PetscErrorCode PhysicsSample_IsoGas(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
@@ -850,7 +850,7 @@ static PetscErrorCode PhysicsSample_IsoGas(void *vctx,PetscInt initial,FVBCType 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_IsoGas_Roe"
 static PetscErrorCode PhysicsRiemann_IsoGas_Roe(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
@@ -896,7 +896,7 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Roe(void *vctx,PetscInt m,const Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_IsoGas_Exact"
 static PetscErrorCode PhysicsRiemann_IsoGas_Exact(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
@@ -967,7 +967,7 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Exact(void *vctx,PetscInt m,const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_IsoGas_Rusanov"
 static PetscErrorCode PhysicsRiemann_IsoGas_Rusanov(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
@@ -986,7 +986,7 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Rusanov(void *vctx,PetscInt m,const 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCharacteristic_IsoGas"
 static PetscErrorCode PhysicsCharacteristic_IsoGas(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
 {
@@ -1006,7 +1006,7 @@ static PetscErrorCode PhysicsCharacteristic_IsoGas(void *vctx,PetscInt m,const P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_IsoGas"
 static PetscErrorCode PhysicsCreate_IsoGas(FVCtx *ctx)
 {
@@ -1057,7 +1057,7 @@ static inline void ShallowFlux(ShallowCtx *phys,const PetscScalar *u,PetscScalar
   f[1] = PetscSqr(u[1])/u[0] + 0.5*phys->gravity*PetscSqr(u[0]);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Shallow_Exact"
 static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
@@ -1139,7 +1139,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Shallow_Rusanov"
 static PetscErrorCode PhysicsRiemann_Shallow_Rusanov(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
@@ -1158,7 +1158,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Rusanov(void *vctx,PetscInt m,const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCharacteristic_Shallow"
 static PetscErrorCode PhysicsCharacteristic_Shallow(void *vctx,PetscInt m,const PetscScalar *u,PetscScalar *X,PetscScalar *Xi,PetscReal *speeds)
 {
@@ -1179,7 +1179,7 @@ static PetscErrorCode PhysicsCharacteristic_Shallow(void *vctx,PetscInt m,const 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Shallow"
 static PetscErrorCode PhysicsCreate_Shallow(FVCtx *ctx)
 {
@@ -1220,7 +1220,7 @@ static PetscErrorCode PhysicsCreate_Shallow(FVCtx *ctx)
 
 /* --------------------------------- Finite Volume Solver ----------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "FVRHSFunction"
 static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 {
@@ -1385,7 +1385,7 @@ static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "FVSample"
 static PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
 {
@@ -1415,7 +1415,7 @@ static PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SolutionStatsView"
 static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
 {
@@ -1454,7 +1454,7 @@ static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SolutionErrorNorms"
 static PetscErrorCode SolutionErrorNorms(FVCtx *ctx,DM da,PetscReal t,Vec X,PetscReal *nrm1,PetscReal *nrmsup)
 {
@@ -1474,7 +1474,7 @@ static PetscErrorCode SolutionErrorNorms(FVCtx *ctx,DM da,PetscReal t,Vec X,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char *argv[])
 {

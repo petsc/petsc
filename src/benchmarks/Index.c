@@ -4,7 +4,7 @@
 extern int BlastCache(void);
 extern int test1(void);
 extern int test2(void);
- 
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   PetscInitialize(&argc,&argv,0,0);
- 
+
   ierr = test1();CHKERRQ(ierr);
   ierr = test2();CHKERRQ(ierr);
 
@@ -35,14 +35,14 @@ int test1(void)
   ierr = PetscMalloc(20000*sizeof(PetscScalar),&x);CHKERRQ(ierr);
   ierr = PetscMalloc(20000*sizeof(PetscScalar),&y);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(2000*sizeof(int),&z);CHKERRQ(ierr); 
-  ierr = PetscMalloc(2000*sizeof(int),&zi);CHKERRQ(ierr); 
+  ierr = PetscMalloc(2000*sizeof(int),&z);CHKERRQ(ierr);
+  ierr = PetscMalloc(2000*sizeof(int),&zi);CHKERRQ(ierr);
 
 
 
   /* Take care of paging effects */
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
-  
+
    /* Form the random set of integers */
   for (i=0; i<2000; i++) {
     ierr   = PetscRandomGetValue(r,&value);CHKERRQ(ierr);
@@ -67,7 +67,7 @@ int test1(void)
   ierr = BlastCache();CHKERRQ(ierr);
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
-  for (i=0; i<500; i+=4) {  
+  for (i=0; i<500; i+=4) {
     x[i]   = y[z[i]];
     x[1+i] = y[z[1+i]];
     x[2+i] = y[z[2+i]];
@@ -103,7 +103,7 @@ int test1(void)
   for (i=0; i<2000; i++) {  x[z[i]] = y[zi[i]]; }
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
   fprintf(stdout,"%-27s : %e sec\n","x[z[i]] = y[zi[i]]",(t2-t1)/2000.0);
-  
+
   ierr = PetscMemcpy(x,y,10);CHKERRQ(ierr);
   ierr = PetscMemcpy(z,zi,10);CHKERRQ(ierr);
   ierr = PetscFree(z);CHKERRQ(ierr);
@@ -129,7 +129,7 @@ int test2(void)
 
   /* Take care of paging effects */
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
- 
+
   for (i=0; i<20000; i++) {
     x[i]  = i;
     y[i]  = i;

@@ -23,7 +23,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*) 0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  
+
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(B);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
   ierr = MatGetOwnershipIS(B,&isrows,&iscols);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr); 
+  ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr);
   ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
   ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
@@ -115,7 +115,7 @@ int main(int argc,char **argv)
   if (mats_view){
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d] b: m %d\n",rank,m);CHKERRQ(ierr);
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
-    ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
+    ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
 
@@ -148,7 +148,7 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Aher:\n");CHKERRQ(ierr);
     ierr = MatView(Aher,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  
+
   /* Cholesky factorization */
   /*------------------------*/
   ierr = PetscPrintf(PETSC_COMM_WORLD," Test Cholesky Solver \n");CHKERRQ(ierr);
@@ -163,7 +163,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(G,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCopy(Aher,G,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  /* Only G = U^T * U is implemented for now */ 
+  /* Only G = U^T * U is implemented for now */
   ierr = MatCholeskyFactor(G,0,0);CHKERRQ(ierr);
   if (mats_view){
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Cholesky Factor G:\n");CHKERRQ(ierr);
@@ -185,7 +185,7 @@ int main(int argc,char **argv)
   ierr = MatSolve(G,b,x);CHKERRQ(ierr);
   ierr = MatMatSolve(G,B,X);CHKERRQ(ierr);
   ierr = MatDestroy(&G);CHKERRQ(ierr);
- 
+
   /* Check norm(Aher*x - b) */
   ierr = VecCreate(PETSC_COMM_WORLD,&c);CHKERRQ(ierr);
   ierr = VecSetSizes(c,m,PETSC_DECIDE);CHKERRQ(ierr);
@@ -222,8 +222,8 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(x,&d);CHKERRQ(ierr);
   ierr = VecCopy(x,d);CHKERRQ(ierr);
 
-  /* PF=LU or F=LU factorization - perms is ignored by Elemental; 
-     set finfo.dtcol !0 or 0 to enable/disable partial pivoting */ 
+  /* PF=LU or F=LU factorization - perms is ignored by Elemental;
+     set finfo.dtcol !0 or 0 to enable/disable partial pivoting */
   finfo.dtcol = 0.1;
   ierr = MatLUFactor(F,0,0,&finfo);CHKERRQ(ierr);
 
@@ -277,4 +277,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

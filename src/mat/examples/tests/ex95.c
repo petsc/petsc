@@ -4,7 +4,7 @@ static char help[] = "Testing MatCreateMPIAIJSumSeqAIJ().\n\n";
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **argv) 
+int main(int argc,char **argv)
 {
   Mat            A,B;
   MatScalar      a[1],alpha;
@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
+
   if (rank == prid){
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] A: \n",rank);
     ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   ierr = MatView(B, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
- 
+
   PetscFinalize();
   return(0);
 }

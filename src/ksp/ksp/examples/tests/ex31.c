@@ -31,7 +31,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  
+
   ierr = PetscOptionsGetBool(PETSC_NULL,"-partition",&partition,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-displayIS",&displayIS,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-displayMat",&displayMat,PETSC_NULL);CHKERRQ(ierr);
@@ -45,8 +45,8 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);  
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
+  ierr = MatLoad(A,fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
 
@@ -68,12 +68,12 @@ int main(int argc,char **args)
     IS              mis,nis,is;
     PetscInt        *count;
     Mat             BB;
-     
+
     if (displayMat){
       if (!rank) printf("Before partitioning/reordering, A:\n");CHKERRQ(ierr);
       ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     }
-      
+
     ierr = PetscMalloc(size*sizeof(PetscInt),&count);CHKERRQ(ierr);
     ierr = MatPartitioningCreate(PETSC_COMM_WORLD, &mpart);CHKERRQ(ierr);
     ierr = MatPartitioningSetAdjacency(mpart, A);CHKERRQ(ierr);
@@ -99,10 +99,10 @@ int main(int argc,char **args)
       printf("[ %d ] count:\n",rank);
       for (i=0; i<size; i++){
         printf(" %d",count[i]);
-      }  
+      }
       printf("\n");
     }
-      
+
     ierr = ISInvertPermutation(nis, count[rank], &is);CHKERRQ(ierr);
     ierr = PetscFree(count);CHKERRQ(ierr);
     ierr = ISDestroy(&nis);CHKERRQ(ierr);
@@ -131,12 +131,12 @@ int main(int argc,char **args)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - -
                            Solve system
-        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
+        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
-  /* Check error */   
-  ierr = MatMult(A,x,u);CHKERRQ(ierr);     
+  /* Check error */
+  ierr = MatMult(A,x,u);CHKERRQ(ierr);
   ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
@@ -146,13 +146,13 @@ int main(int argc,char **args)
   if (flg){
     KSPConvergedReason reason;
     ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %D\n", reason); 
+    PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %D\n", reason);
   }
 
   /* Free work space.*/
   ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr); 
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

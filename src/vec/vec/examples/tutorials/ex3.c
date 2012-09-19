@@ -8,7 +8,7 @@ static char help[] = "Parallel vector layout.\n\n";
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscis.h     - index sets
@@ -31,38 +31,38 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  
-  /* 
+
+  /*
      Create a vector, specifying only its global dimension.
-     When using VecCreate(), VecSetSizes() and VecSetFromOptions(), 
-     the vector format (currently parallel or sequential) is 
-     determined at runtime.  Also, the parallel partitioning of 
+     When using VecCreate(), VecSetSizes() and VecSetFromOptions(),
+     the vector format (currently parallel or sequential) is
+     determined at runtime.  Also, the parallel partitioning of
      the vector is determined by PETSc at runtime.
   */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
-  /* 
+  /*
      PETSc parallel vectors are partitioned by
      contiguous chunks of rows across the processors.  Determine
-     which vector are locally owned. 
+     which vector are locally owned.
   */
   ierr = VecGetOwnershipRange(x,&istart,&iend);CHKERRQ(ierr);
 
-  /* -------------------------------------------------------------------- 
+  /* --------------------------------------------------------------------
      Set the vector elements.
       - Always specify global locations of vector entries.
       - Each processor can insert into any location, even ones it does not own
       - In this case each processor adds values to all the entries,
          this is not practical, but is merely done as an example
    */
-  for (i=0; i<n; i++) { 
+  for (i=0; i<n; i++) {
     v = (PetscReal)(rank*i);
     ierr = VecSetValues(x,1,&i,&v,ADD_VALUES);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
      Assemble vector, using the 2-step process:
        VecAssemblyBegin(), VecAssemblyEnd()
      Computations can be done while messages are in transition
@@ -89,7 +89,7 @@ int main(int argc,char **argv)
   ierr = VecView(x,viewer);CHKERRQ(ierr);
 
   /* --------------------------------------------------------------------
-       Access the vector values directly. Each processor has access only 
+       Access the vector values directly. Each processor has access only
     to its portion of the vector. For default PETSc vectors VecGetArray()
     does NOT involve a copy
   */
@@ -105,7 +105,7 @@ int main(int argc,char **argv)
   */
   ierr = VecView(x,viewer);CHKERRQ(ierr);
 
-  /* 
+  /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
@@ -115,4 +115,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

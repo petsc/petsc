@@ -5,7 +5,7 @@ static char help[] = "Newton's method for a two-variable system, sequential.\n\n
    Concepts: SNES^basic example
 T*/
 
-/* 
+/*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -16,7 +16,7 @@ T*/
 */
 #include <petscsnes.h>
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -69,12 +69,12 @@ int main(int argc,char **argv)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-hard",&flg);CHKERRQ(ierr);
   if (!flg) {
-    /* 
+    /*
      Set function evaluation routine and vector.
     */
     ierr = SNESSetFunction(snes,r,FormFunction1,PETSC_NULL);CHKERRQ(ierr);
 
-    /* 
+    /*
      Set Jacobian matrix data structure and Jacobian evaluation routine
     */
     ierr = SNESSetJacobian(snes,J,J,FormJacobian1,PETSC_NULL);CHKERRQ(ierr);
@@ -86,7 +86,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* 
+  /*
      Set linear solver defaults for this problem. By extracting the
      KSP and PC contexts from the SNES context, we can then
      directly call any KSP and PC routines to set various options.
@@ -96,7 +96,7 @@ int main(int argc,char **argv)
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,PETSC_DEFAULT,20);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set SNES/KSP/KSP/PC runtime options, e.g.,
          -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
      These options will override those specified above as long as
@@ -146,7 +146,7 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction1"
-/* 
+/*
    FormFunction1 - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -179,7 +179,7 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
 
   /* Restore vectors */
   ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -225,7 +225,7 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   */
   ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
 
-  /* 
+  /*
      Assemble matrix
   */
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -266,7 +266,7 @@ PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
      Restore vectors
   */
   ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */

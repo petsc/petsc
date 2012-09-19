@@ -16,7 +16,7 @@ typedef struct {
 #undef __FUNCT__
 #define __FUNCT__ "MyMult"
 /*
-    This is called on ALL processess, master and worker 
+    This is called on ALL processess, master and worker
 */
 PetscErrorCode MyMult(MPI_Comm comm,MyMultCtx *ctx,void *dummy)
 {
@@ -61,13 +61,13 @@ PetscErrorCode MySubsolver(MyMultCtx *ctx)
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
-  char           file[PETSC_MAX_PATH_LEN]; 
+  char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
   PetscMPIInt    rank,size,nodesize = 1;
   MyMultCtx      ctx;
   const PetscInt *ns; /* length of vector ctx.x on all process */
   PetscInt       i,rstart,n = 0;   /* length of vector ctx.xr on this process */
-  IS             is; 
+  IS             is;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ctx.comm = PETSC_COMM_WORLD;
@@ -98,7 +98,7 @@ int main(int argc,char **args)
   ierr = VecScatterCreate(ctx.xr,is,ctx.x,is,&ctx.sct);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
-  /* 
+  /*
      The master nodes call the function MySubsolver() while the worker nodes wait for requests to call functions
      These requests are triggered by the calls from the masters on PetscHMPIRunCtx()
   */

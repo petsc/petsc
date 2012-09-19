@@ -56,7 +56,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       one   = 1.0
@@ -191,7 +191,7 @@
       if (rank .eq. 0) write(6,210) v
  210  format ("VecPointwiseDivide ",1pe8.2)
 
-      
+
       dots(1) = one
       dots(2) = three
       dots(3) = two
@@ -220,4 +220,4 @@
       call PetscFinalize(ierr)
 
       end
- 
+

@@ -31,7 +31,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       Vec     x
       PetscInt N,i,ione
@@ -44,10 +44,10 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 !  Create a parallel vector.
-!   - In this case, we specify the size of the local portion on 
+!   - In this case, we specify the size of the local portion on
 !     each processor, and PETSc computes the global size.  Alternatively,
-!     if we pass the global size and use PETSC_DECIDE for the 
-!     local size PETSc will choose a reasonable partition trying 
+!     if we pass the global size and use PETSC_DECIDE for the
+!     local size PETSc will choose a reasonable partition trying
 !     to put nearly an equal number of elements on each processor.
 
       N = rank + 1
@@ -86,4 +86,4 @@
 
       call PetscFinalize(ierr)
       end
- 
+

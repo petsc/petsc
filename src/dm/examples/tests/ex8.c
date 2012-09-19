@@ -1,4 +1,4 @@
-      
+
 static char help[] = "Demonstrates generating a slice from a DMDA Vector.\n\n";
 
 #include <petscdmda.h>
@@ -31,14 +31,14 @@ PetscErrorCode GenerateSliceScatter(DM da,VecScatter *scatter,Vec *vslice)
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
-  /* 
+  /*
      nslice is number of degrees of freedom in this processors slice
    if there are more processors then z plans the extra processors get 0
    elements in their slice.
   */
   if (rank < P) {nslice = M*N;} else nslice = 0;
 
-  /* 
+  /*
      Generate the local vector to hold this processors slice
   */
   ierr = VecCreateSeq(PETSC_COMM_SELF,nslice,vslice);CHKERRQ(ierr);
@@ -46,7 +46,7 @@ PetscErrorCode GenerateSliceScatter(DM da,VecScatter *scatter,Vec *vslice)
 
   /*
        Generate the indices for the slice in the "natural" global ordering
-     Note: this is just an example, one could select any subset of nodes 
+     Note: this is just an example, one could select any subset of nodes
     on each processor. Just list them in the global natural ordering.
 
   */
@@ -62,15 +62,15 @@ PetscErrorCode GenerateSliceScatter(DM da,VecScatter *scatter,Vec *vslice)
   /*
       Convert the indices to the "PETSc" global ordering
   */
-  ierr = AOApplicationToPetsc(ao,nslice,sliceindices);CHKERRQ(ierr); 
-  
+  ierr = AOApplicationToPetsc(ao,nslice,sliceindices);CHKERRQ(ierr);
+
   /* Create the "from" and "to" index set */
   /* This is to scatter from the global vector */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nslice,sliceindices,PETSC_OWN_POINTER,&isfrom);CHKERRQ(ierr);
   /* This is to gather into the local vector */
   ierr = ISCreateStride(PETSC_COMM_SELF,nslice,0,1,&isto);CHKERRQ(ierr);
   ierr = VecScatterCreate(vglobal,isfrom,*vslice,isto,scatter);CHKERRQ(ierr);
-  ierr = ISDestroy(&isfrom);CHKERRQ(ierr); 
+  ierr = ISDestroy(&isfrom);CHKERRQ(ierr);
   ierr = ISDestroy(&isto);CHKERRQ(ierr);
   return 0;
 }
@@ -92,10 +92,10 @@ int main(int argc,char **argv)
   DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
   VecScatter     scatter;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  /* Read options */  
+  /* Read options */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) stencil_type =  DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */

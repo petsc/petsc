@@ -1,4 +1,4 @@
-  
+
 static char help[] = "Tests various 2-dimensional DMDA routines.\n\n";
 
 #include <petscdmda.h>
@@ -21,10 +21,10 @@ int main(int argc,char **argv)
   PetscScalar    value;
   DMDAStencilType  st = DMDA_STENCIL_BOX;
   AO             ao;
- 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRQ(ierr);
- 
+
   /* Readoptions */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-NX",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-NY",&N,PETSC_NULL);CHKERRQ(ierr);
@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-testorder",&testorder,PETSC_NULL);CHKERRQ(ierr);
   /*
-      Test putting two nodes in x and y on each processor, exact last processor 
+      Test putting two nodes in x and y on each processor, exact last processor
       in x and y gets the rest.
   */
   flg  = PETSC_FALSE;
@@ -89,7 +89,7 @@ int main(int argc,char **argv)
 
   if (!testorder) { /* turn off printing when testing ordering mappings */
     ierr = PetscPrintf (PETSC_COMM_WORLD,"\nGlobal Vectors:\n");CHKERRQ(ierr);
-    ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+    ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscPrintf (PETSC_COMM_WORLD,"\n\n");CHKERRQ(ierr);
   }
 
@@ -103,7 +103,7 @@ int main(int argc,char **argv)
     PetscViewer sviewer;
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nLocal Vector: processor %d\n",rank);CHKERRQ(ierr);
     ierr = PetscViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
-    ierr = VecView(local,sviewer);CHKERRQ(ierr); 
+    ierr = VecView(local,sviewer);CHKERRQ(ierr);
     ierr = PetscViewerRestoreSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
   }
 
@@ -119,25 +119,25 @@ int main(int argc,char **argv)
     kk = 0;
     for (j=Ys; j<Ys+Ym; j++) {
       for (i=Xs; i<Xs+Xm; i++) {
-        iloc = w*((j-Ys)*Xm + i-Xs); 
+        iloc = w*((j-Ys)*Xm + i-Xs);
         for (l=0; l<w; l++) {
           iglobal[kk++] = ltog[iloc+l];
         }
       }
-    } 
+    }
 
     /* Map this to the application ordering (which for DMDAs is just the natural ordering
        that would be used for 1 processor, numbering most rapidly by x, then y) */
-    ierr = AOPetscToApplication(ao,nloc,iglobal);CHKERRQ(ierr); 
+    ierr = AOPetscToApplication(ao,nloc,iglobal);CHKERRQ(ierr);
 
     /* Then map the application ordering back to the PETSc DMDA ordering */
-    ierr = AOApplicationToPetsc(ao,nloc,iglobal);CHKERRQ(ierr); 
+    ierr = AOApplicationToPetsc(ao,nloc,iglobal);CHKERRQ(ierr);
 
     /* Verify the mappings */
     kk=0;
     for (j=Ys; j<Ys+Ym; j++) {
       for (i=Xs; i<Xs+Xm; i++) {
-        iloc = w*((j-Ys)*Xm + i-Xs); 
+        iloc = w*((j-Ys)*Xm + i-Xs);
         for (l=0; l<w; l++) {
           if (iglobal[kk] != ltog[iloc+l]) {
             ierr = PetscFPrintf(PETSC_COMM_SELF,stdout,"[%d] Problem with mapping: j=%D, i=%D, l=%D, petsc1=%D, petsc2=%D\n",

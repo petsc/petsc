@@ -16,7 +16,7 @@ T*/
 #include <petscmat.h>
 #include <petscksp.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "GetISs"
 static PetscErrorCode GetISs(Vec vecs[],IS is[])
 {
@@ -83,7 +83,7 @@ PetscErrorCode test_view( void )
   tmp_buf[0] = a;
   tmp_buf[1] = b;
   ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&a);CHKERRQ(ierr); 
+  ierr = VecDestroy(&a);CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
@@ -236,7 +236,7 @@ PetscErrorCode test_axpy_dot_max( void )
   ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,tmp_buf,&X);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
-  ierr = VecDestroy(&x1);CHKERRQ(ierr);  
+  ierr = VecDestroy(&x1);CHKERRQ(ierr);
   ierr = VecDestroy(&x2);CHKERRQ(ierr);
 
 

@@ -28,7 +28,7 @@ PetscErrorCode test_vec_ops( void )
 
   PetscFunctionBegin;
   PetscPrintf( PETSC_COMM_WORLD, "============== %s ==============\n",PETSC_FUNCTION_NAME);
-  
+
   /* create 4 slave vectors */
   ierr = VecCreate( PETSC_COMM_WORLD, &c );CHKERRQ(ierr);
   ierr = VecSetSizes( c, PETSC_DECIDE, 4 );CHKERRQ(ierr);
@@ -44,7 +44,7 @@ PetscErrorCode test_vec_ops( void )
   ierr = VecCreate( PETSC_COMM_WORLD, &h );CHKERRQ(ierr);
   ierr = VecSetSizes( h, PETSC_DECIDE, 8 );CHKERRQ(ierr);
   ierr = VecSetType( h, VECMPI );CHKERRQ(ierr);
-  
+
   /* set the 6 vectors to some numbers */
   ierr = VecSet( c, 1.0 );CHKERRQ(ierr);
   ierr = VecSet( d, 2.0 );CHKERRQ(ierr);
@@ -93,7 +93,7 @@ PetscErrorCode test_vec_ops( void )
   ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);
   ierr = VecDot(X,X,&val);CHKERRQ(ierr);
   PetscPrintf( PETSC_COMM_WORLD, "X.X = %f \n", val );
-  
+
   /* re-assemble X */
   PetscPrintf( PETSC_COMM_WORLD, "X = [g h] \n");
   ierr = VecNestSetSubVec(X,1,g);CHKERRQ(ierr);

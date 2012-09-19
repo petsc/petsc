@@ -37,8 +37,8 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   DM             da;
   Vec            global,local;
- 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(0,"-dof",&dof,0);CHKERRQ(ierr);
   /* Create distributed array and get vectors */
@@ -59,4 +59,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

@@ -1,13 +1,13 @@
 /*
        Formatted test for TS routines.
 
-          Solves U_t = U_xx 
+          Solves U_t = U_xx
      F(t,u) = (u_i+1 - 2u_i + u_i-1)/h^2
-       using several different schemes. 
+       using several different schemes.
 */
 
-/* Usage: 
-   ./ex1 -nox -ts_type beuler -ts_view 
+/* Usage:
+   ./ex1 -nox -ts_type beuler -ts_view
    ./ex1 -nox -linear_constant_matrix -ts_type beuler -pc_type lu
    ./ex1 -nox -linear_variable_matrix -ts_type beuler
 */
@@ -26,7 +26,7 @@ typedef struct {
   PetscInt    M;                     /* total number of grid points */
   PetscReal   h;                     /* mesh width h = 1/(M-1) */
   PetscReal   norm_2,norm_max;
-  PetscBool   nox;                   /* indicates problem is to be run without graphics */ 
+  PetscBool   nox;                   /* indicates problem is to be run without graphics */
 } AppCtx;
 
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void *);
@@ -60,18 +60,18 @@ int main(int argc,char **argv)
   TSProblemType  tsproblem = TS_LINEAR;
   PetscDraw      draw;
   char           tsinfo[120];
- 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   appctx.M = 60;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&appctx.M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&maxsteps,PETSC_NULL);CHKERRQ(ierr);
-    
-  ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&appctx.nox);CHKERRQ(ierr); 
+
+  ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&appctx.nox);CHKERRQ(ierr);
   appctx.norm_2 = 0.0; appctx.norm_max = 0.0;
 
-  /* Set up the ghost point communication pattern */ 
+  /* Set up the ghost point communication pattern */
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,appctx.M,1,1,PETSC_NULL,&appctx.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(appctx.da,&appctx.global);CHKERRQ(ierr);
   ierr = VecGetLocalSize(appctx.global,&m);CHKERRQ(ierr);
@@ -80,10 +80,10 @@ int main(int argc,char **argv)
   /* Set up display to show wave graph */
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(appctx.viewer1,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(appctx.viewer2,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
 
   /* make work array for evaluating right hand side function */
   ierr = VecDuplicate(appctx.local,&appctx.localwork);CHKERRQ(ierr);
@@ -95,9 +95,9 @@ int main(int argc,char **argv)
 
   /* set initial conditions */
   ierr = Initial(appctx.global,&appctx);CHKERRQ(ierr);
- 
+
   /*
-     This example is written to allow one to easily test parts 
+     This example is written to allow one to easily test parts
     of TS, we do not expect users to generally need to use more
     then a single TSProblemType
   */
@@ -128,7 +128,7 @@ int main(int argc,char **argv)
     tsproblem = TS_NONLINEAR;
     problem   = nonlinear_jacobian;
   }
-    
+
   /* make timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,tsproblem);CHKERRQ(ierr);
@@ -158,9 +158,9 @@ int main(int argc,char **argv)
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetSizes(A,m,m,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRQ(ierr); 
+    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
 
-    ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&Alhs);CHKERRQ(ierr); 
+    ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&Alhs);CHKERRQ(ierr);
     ierr = MatZeroEntries(Alhs);CHKERRQ(ierr);
     ierr = MatShift(Alhs,1.0);CHKERRQ(ierr);
     ierr = TSSetMatrices(ts,A,PETSC_NULL,Alhs,PETSC_NULL,DIFFERENT_NONZERO_PATTERN,&appctx);CHKERRQ(ierr);
@@ -176,7 +176,7 @@ int main(int argc,char **argv)
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);
     ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
 
-    ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&Alhs);CHKERRQ(ierr);    
+    ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&Alhs);CHKERRQ(ierr);
     ierr = MatZeroEntries(Alhs);CHKERRQ(ierr);
     ierr = MatShift(Alhs,1.0);CHKERRQ(ierr);
     ierr = LHSMatrixHeat(ts,0.0,&Alhs,&Alhs,&A_structure,&appctx);CHKERRQ(ierr);
@@ -189,7 +189,7 @@ int main(int argc,char **argv)
     ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunctionHeat,&appctx);CHKERRQ(ierr);
     ierr = MatCreateShell(PETSC_COMM_WORLD,m,m,PETSC_DECIDE,PETSC_DECIDE,&appctx,&A);CHKERRQ(ierr);
     ierr = MatShellSetOperation(A,MATOP_MULT,(void(*)(void))RHSMatrixFree);CHKERRQ(ierr);
-    ierr = TSSetRHSJacobian(ts,A,A,PETSC_NULL,&appctx);CHKERRQ(ierr);  
+    ierr = TSSetRHSJacobian(ts,A,A,PETSC_NULL,&appctx);CHKERRQ(ierr);
   } else if (problem == nonlinear_jacobian) {
     /*
          The user provides the RHS and Jacobian
@@ -200,7 +200,7 @@ int main(int argc,char **argv)
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);
     ierr = MatSetUp(A);CHKERRQ(ierr);
     ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
-    ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianHeat,&appctx);CHKERRQ(ierr);  
+    ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianHeat,&appctx);CHKERRQ(ierr);
   }
 
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
@@ -247,7 +247,7 @@ int main(int argc,char **argv)
   Set initial condition: u(t=0) = sin(6*pi*x) + 3*sin(2*pi*x)
 */
 #undef __FUNCT__
-#define __FUNCT__ "Initial" 
+#define __FUNCT__ "Initial"
 PetscErrorCode Initial(Vec global,void *ctx)
 {
   AppCtx         *appctx = (AppCtx*) ctx;
@@ -271,7 +271,7 @@ PetscErrorCode Initial(Vec global,void *ctx)
 #undef __FUNCT__
 #define __FUNCT__ "Solution"
 /*
-   Exact solution: 
+   Exact solution:
      u = sin(6*pi*x)*exp(-36*pi*pi*t) + 3*sin(2*pi*x)*exp(-4*pi*pi*t)
 */
 PetscErrorCode Solution(PetscReal t,Vec solution,void *ctx)
@@ -285,9 +285,9 @@ PetscErrorCode Solution(PetscReal t,Vec solution,void *ctx)
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(solution,&mybase,&myend);CHKERRQ(ierr);
 
-  ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); 
+  ex1 = exp(-36.*PETSC_PI*PETSC_PI*t);
   ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
-  sc1 = PETSC_PI*6.*h;                 
+  sc1 = PETSC_PI*6.*h;
   sc2 = PETSC_PI*2.*h;
   ierr = VecGetArray(solution,&localptr);CHKERRQ(ierr);
   for (i=mybase; i<myend; i++) {
@@ -353,11 +353,11 @@ PetscErrorCode RHSFunctionHeat(TS ts,PetscReal t,Vec globalin,Vec globalout,void
   DM             da = appctx->da;
   Vec            local = appctx->local,localwork = appctx->localwork;
   PetscErrorCode ierr;
-  PetscInt       i,localsize; 
+  PetscInt       i,localsize;
   PetscScalar    *copyptr,*localptr,sc;
 
   PetscFunctionBegin;
-  /*Extract local array */ 
+  /*Extract local array */
   ierr = DMGlobalToLocalBegin(da,globalin,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,globalin,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = VecGetArray(local,&localptr);CHKERRQ(ierr);
@@ -398,7 +398,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str
 
   PetscFunctionBegin;
   *str = SAME_NONZERO_PATTERN;
- 
+
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -417,7 +417,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str
   /*
      Construct matrice one row at a time
   */
-  v[0] = sone; v[1] = stwo; v[2] = sone;  
+  v[0] = sone; v[1] = stwo; v[2] = sone;
   for (i=mstart; i<mend; i++) {
     idx[0] = i-1; idx[1] = i; idx[2] = i+1;
     ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
@@ -450,7 +450,7 @@ PetscErrorCode LHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str
   ierr = MatZeroEntries(A);CHKERRQ(ierr);
   ierr = MatShift(A,1.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}  
+}
 
 
 

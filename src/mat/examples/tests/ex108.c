@@ -8,7 +8,7 @@ int main(int argc,char **argv) {
   Mat            A,B,As;
   PetscInt       i,j,k,nz,n,*ai,*aj,asi[]={0,2,3,4,6,7};
   PetscInt       asj[]={0,4,1,2,3,4,4};
-  PetscScalar    asa[7],*aa; 
+  PetscScalar    asa[7],*aa;
   PetscRandom    rctx;
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -19,13 +19,13 @@ int main(int argc,char **argv) {
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* Create a aij matrix for checking */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,5,5,2,PETSC_NULL,&A);CHKERRQ(ierr); 
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,5,5,2,PETSC_NULL,&A);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
- 
+
   k = 0;
   for (i=0; i<5; i++) {
-    nz = asi[i+1] - asi[i];  /* length of i_th row of A */ 
+    nz = asi[i+1] - asi[i];  /* length of i_th row of A */
     for (j=0; j<nz; j++){
       ierr = PetscRandomGetValue(rctx,&asa[k]);CHKERRQ(ierr);
       ierr = MatSetValues(A,1,&i,1,&asj[k],&asa[k],INSERT_VALUES);CHKERRQ(ierr);
@@ -42,17 +42,17 @@ int main(int argc,char **argv) {
   /* Create a baij matrix using MatCreateSeqBAIJWithArrays() */
   ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&n,&ai,&aj,&flg);CHKERRQ(ierr);
   ierr = MatSeqAIJGetArray(A,&aa);CHKERRQ(ierr);
-  ierr = MatCreateSeqBAIJWithArrays(PETSC_COMM_SELF,1,5,5,ai,aj,aa,&B);CHKERRQ(ierr); 
+  ierr = MatCreateSeqBAIJWithArrays(PETSC_COMM_SELF,1,5,5,ai,aj,aa,&B);CHKERRQ(ierr);
   ierr = MatSeqAIJRestoreArray(A,&aa);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&n,&ai,&aj,&flg);CHKERRQ(ierr);
   ierr = MatMultEqual(A,B,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMult(A,B) are NOT equal"); 
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMult(A,B) are NOT equal");
 
   /* Create a sbaij matrix using MatCreateSeqSBAIJWithArrays() */
-  ierr = MatCreateSeqSBAIJWithArrays(PETSC_COMM_SELF,1,5,5,asi,asj,asa,&As);CHKERRQ(ierr); 
+  ierr = MatCreateSeqSBAIJWithArrays(PETSC_COMM_SELF,1,5,5,asi,asj,asa,&As);CHKERRQ(ierr);
   ierr = MatMultEqual(A,As,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMult(A,As) are NOT equal"); 
-  
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMult(A,As) are NOT equal");
+
   /* Free spaces */
   ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);

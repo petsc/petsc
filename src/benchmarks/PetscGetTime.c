@@ -7,7 +7,7 @@ int main(int argc,char **argv)
 {
   PetscLogDouble x,y;
   int        i,ierr;
-  
+
   PetscInitialize(&argc,&argv,0,0);
  /* To take care of paging effects */
   ierr = PetscGetTime(&y);CHKERRQ(ierr);

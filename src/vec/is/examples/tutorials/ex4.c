@@ -24,16 +24,16 @@ int main(int argc,char **argv)
 
   /*
       Create a local to global mapping. Each processor independently
-     creates a mapping  
+     creates a mapping
   */
   ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,n,indices,PETSC_COPY_VALUES,&mapping);CHKERRQ(ierr);
 
   /*
-     Map a set of local indices to their global values 
+     Map a set of local indices to their global values
   */
   ierr = ISLocalToGlobalMappingApply(mapping,m,input,output);CHKERRQ(ierr);
   ierr = PetscIntView(m,output,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  
+
   /*
      Map some global indices to local, retaining the ones without a local index by -1
   */

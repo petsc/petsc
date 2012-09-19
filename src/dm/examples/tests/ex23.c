@@ -20,20 +20,20 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   PetscRandom    rdm;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic",&pt,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic",&pt,PETSC_NULL);CHKERRQ(ierr);
   if (pt == 1) bx = DMDA_BOUNDARY_PERIODIC;
   if (pt == 2) by = DMDA_BOUNDARY_PERIODIC;
   if (pt == 3) {bx = DMDA_BOUNDARY_PERIODIC; by = DMDA_BOUNDARY_PERIODIC;}
   if (pt == 4) bz = DMDA_BOUNDARY_PERIODIC;
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_type",&st,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_type",&st,PETSC_NULL);CHKERRQ(ierr);
   stencil_type = (DMDAStencilType) st;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-one",&flg2);CHKERRQ(ierr);
@@ -61,7 +61,7 @@ int main(int argc,char **argv)
   ierr = VecSetRandom(global3,rdm);CHKERRQ(ierr);
   ierr = VecView(global3,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    
+
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = VecLoad(global2,viewer);CHKERRQ(ierr);
   ierr = VecLoad(global4,viewer);CHKERRQ(ierr);

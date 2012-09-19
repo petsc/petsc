@@ -18,7 +18,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
-  
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
 
   /* ---------------------------------------------------------------------- */
@@ -61,7 +61,7 @@ int main(int argc,char **args)
   ierr = PetscBinaryRead(fd,&sz,1,PETSC_INT);CHKERRQ(ierr);
   if (sz <=0) SETERRQ(PETSC_COMM_SELF,1,"Error: Must have array length > 0");
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"reading data in binary from input.dat, sz =%D ...\n",sz);CHKERRQ(ierr); 
+  ierr = PetscPrintf(PETSC_COMM_SELF,"reading data in binary from input.dat, sz =%D ...\n",sz);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,avec,sz,PETSC_SCALAR);CHKERRQ(ierr);
 
   /* View vector */

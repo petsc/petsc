@@ -9,7 +9,7 @@
 
 /*
   Demonstrates dumping matrix/vector from heritage code for PETSc.
-   Note does not do bit swapping, so will not generate proper 
+   Note does not do bit swapping, so will not generate proper
 PETSc files on Paragon/Dec Alpha.
 */
 
@@ -45,7 +45,7 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
   double *vals;
 
   if (!fd) {
-    fd = creat(filename,0666); 
+    fd = creat(filename,0666);
     if (fd == -1) {
       fprintf(stdout,"Unable to open binary file\n");
       exit(0);
@@ -83,7 +83,7 @@ void Store1DArray(int m,double *a,const char *filename,int *fdd)
   int  classid = 1211214; /* classid for vectors */
 
   if (fd == -1) {
-    fd = creat(filename,0666); 
+    fd = creat(filename,0666);
     if (fd == -1) {
       fprintf(stdout,"Unable to open binary file\n");
       exit(0);

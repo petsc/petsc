@@ -46,7 +46,7 @@ int main(int argc,char **args)
     if (rowin != row) SETERRQ(PETSC_COMM_SELF,1,"Bad file");
     while (fscanf(file," %d %le",&col,(double*)&val)) {
       ierr = MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
-    }  
+    }
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

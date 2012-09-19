@@ -11,7 +11,7 @@ structures throughout the process.  Note the various stages of event logging.\n\
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -21,7 +21,7 @@ T*/
 */
 #include <petscksp.h>
 
-/* 
+/*
    Declare user-defined routines
 */
 extern PetscErrorCode CheckError(Vec,Vec,Vec,PetscInt,PetscReal,PetscLogEvent);
@@ -54,14 +54,14 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   n = 2*size;
 
-  /* 
+  /*
      Register various stages for profiling
   */
   ierr = PetscLogStageRegister("Prelim setup",&stages[0]);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Linear System 1",&stages[1]);CHKERRQ(ierr);
   ierr = PetscLogStageRegister("Linear System 2",&stages[2]);CHKERRQ(ierr);
 
-  /* 
+  /*
      Register a user-defined event for profiling (error checking).
   */
   CHECK_ERROR = 0;
@@ -73,7 +73,7 @@ int main(int argc,char **args)
 
   ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
 
-  /* 
+  /*
      Create data structures for first linear system.
       - Create parallel matrix, specifying only its global dimensions.
         When using MatCreate(), the matrix format can be specified at
@@ -81,7 +81,7 @@ int main(int argc,char **args)
         determined by PETSc at runtime.
       - Create parallel vectors.
         - When using VecSetSizes(), we specify only the vector's global
-          dimension; the parallel partitioning is determined at runtime. 
+          dimension; the parallel partitioning is determined at runtime.
         - Note: We form 1 vector from scratch and then duplicate as needed.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&C1);CHKERRQ(ierr);
@@ -105,7 +105,7 @@ int main(int argc,char **args)
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp1);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp1);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set user-defined monitoring routine for first linear system.
   */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-my_ksp_monitor",&flg,PETSC_NULL);CHKERRQ(ierr);
@@ -127,14 +127,14 @@ int main(int argc,char **args)
   */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp2);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set different options prefix for second linear system.
      Set runtime options (e.g., -s2_pc_type <type>)
   */
   ierr = KSPAppendOptionsPrefix(ksp2,"s2_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp2);CHKERRQ(ierr);
 
-  /* 
+  /*
      Assemble exact solution vector in parallel.  Note that each
      processor needs to set only its local part of the vector.
   */
@@ -148,7 +148,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
 
-  /* 
+  /*
      Log the number of flops for computing vector entries
   */
   ierr = PetscLogFlops(2.0*ldim);CHKERRQ(ierr);
@@ -158,15 +158,15 @@ int main(int argc,char **args)
   */
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
-  /* -------------------------------------------------------------- 
+  /* --------------------------------------------------------------
                         Linear solver loop:
-      Solve 2 different linear systems several times in succession 
+      Solve 2 different linear systems several times in succession
      -------------------------------------------------------------- */
 
   for (t=0; t<ntimes; t++) {
 
     /* - - - - - - - - - - - - Stage 1: - - - - - - - - - - - - - -
-                 Assemble and solve first linear system            
+                 Assemble and solve first linear system
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     /*
@@ -174,22 +174,22 @@ int main(int argc,char **args)
     */
     ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
 
-    /* 
+    /*
        Initialize all matrix entries to zero.  MatZeroEntries() retains
        the nonzero structure of the matrix for sparse formats.
     */
     if (t > 0) {ierr = MatZeroEntries(C1);CHKERRQ(ierr);}
 
-    /* 
+    /*
        Set matrix entries in parallel.  Also, log the number of flops
        for computing matrix entries.
         - Each processor needs to insert only elements that it owns
           locally (but any non-local elements will be sent to the
-          appropriate processor during matrix assembly). 
+          appropriate processor during matrix assembly).
         - Always specify global row and columns of matrix entries.
     */
-    for (Ii=Istart; Ii<Iend; Ii++) { 
-      v = -1.0; i = Ii/n; j = Ii - i*n;  
+    for (Ii=Istart; Ii<Iend; Ii++) {
+      v = -1.0; i = Ii/n; j = Ii - i*n;
       if (i>0)   {J = Ii - n; ierr = MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
       if (i<m-1) {J = Ii + n; ierr = MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
       if (j>0)   {J = Ii - 1; ierr = MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
@@ -202,7 +202,7 @@ int main(int argc,char **args)
     }
     ierr = PetscLogFlops(2.0*(Iend-Istart));CHKERRQ(ierr);
 
-    /* 
+    /*
        Assemble matrix, using the 2-step process:
          MatAssemblyBegin(), MatAssemblyEnd()
        Computations can be done while messages are in transition
@@ -211,17 +211,17 @@ int main(int argc,char **args)
     ierr = MatAssemblyBegin(C1,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(C1,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-    /* 
+    /*
        Indicate same nonzero structure of successive linear system matrices
     */
     ierr = MatSetOption(C1,MAT_NEW_NONZERO_LOCATIONS,PETSC_TRUE);CHKERRQ(ierr);
 
-    /* 
+    /*
        Compute right-hand-side vector
     */
     ierr = MatMult(C1,u,b1);CHKERRQ(ierr);
 
-    /* 
+    /*
        Set operators. Here the matrix that defines the linear system
        also serves as the preconditioning matrix.
         - The flag SAME_NONZERO_PATTERN indicates that the
@@ -244,7 +244,7 @@ int main(int argc,char **args)
     */
     ierr = KSPSetOperators(ksp1,C1,C1,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
-    /* 
+    /*
        Use the previous solution of linear system #1 as the initial
        guess for the next solve of linear system #1.  The user MUST
        call KSPSetInitialGuessNonzero() in indicate use of an initial
@@ -254,7 +254,7 @@ int main(int argc,char **args)
       ierr = KSPSetInitialGuessNonzero(ksp1,PETSC_TRUE);CHKERRQ(ierr);
     }
 
-    /* 
+    /*
        Solve the first linear system.  Here we explicitly call
        KSPSetUp() for more detailed performance monitoring of
        certain preconditioners, such as ICC and ILU.  This call
@@ -268,10 +268,10 @@ int main(int argc,char **args)
     /*
        Check error of solution to first linear system
     */
-    ierr = CheckError(u,x1,b1,its,1.e-4,CHECK_ERROR);CHKERRQ(ierr); 
+    ierr = CheckError(u,x1,b1,its,1.e-4,CHECK_ERROR);CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - Stage 2: - - - - - - - - - - - - - -
-                 Assemble and solve second linear system            
+                 Assemble and solve second linear system
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     /*
@@ -285,7 +285,7 @@ int main(int argc,char **args)
     */
     if (t > 0) {ierr = MatZeroEntries(C2);CHKERRQ(ierr);}
 
-   /* 
+   /*
       Assemble matrix in parallel. Also, log the number of flops
       for computing matrix entries.
        - To illustrate the features of parallel matrix assembly, we
@@ -296,7 +296,7 @@ int main(int argc,char **args)
        - For best efficiency the user should strive to set as many
          entries locally as possible.
     */
-    for (i=0; i<m; i++) { 
+    for (i=0; i<m; i++) {
       for (j=2*rank; j<2*rank+2; j++) {
         v = -1.0;  Ii = j + n*i;
         if (i>0)   {J = Ii - n; ierr = MatSetValues(C2,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
@@ -305,22 +305,22 @@ int main(int argc,char **args)
         if (j<n-1) {J = Ii + 1; ierr = MatSetValues(C2,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
         v = 6.0 + t*0.5; ierr = MatSetValues(C2,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
       }
-    } 
+    }
     for (Ii=Istart2; Ii<Iend2; Ii++) { /* Make matrix nonsymmetric */
       v = -1.0*(t+0.5); i = Ii/n;
       if (i>0)   {J = Ii - n; ierr = MatSetValues(C2,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     }
     ierr = MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
+    ierr = MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = PetscLogFlops(2.0*(Iend-Istart));CHKERRQ(ierr);
 
-    /* 
+    /*
        Indicate same nonzero structure of successive linear system matrices
     */
     ierr = MatSetOption(C2,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);CHKERRQ(ierr);
 
     /*
-       Compute right-hand-side vector 
+       Compute right-hand-side vector
     */
     ierr = MatMult(C2,u,b2);CHKERRQ(ierr);
 
@@ -332,7 +332,7 @@ int main(int argc,char **args)
     */
     ierr = KSPSetOperators(ksp2,C2,C2,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
-    /* 
+    /*
        Solve the second linear system
     */
     ierr = KSPSetUp(ksp2);CHKERRQ(ierr);
@@ -342,18 +342,18 @@ int main(int argc,char **args)
     /*
        Check error of solution to second linear system
     */
-    ierr = CheckError(u,x2,b2,its,1.e-4,CHECK_ERROR);CHKERRQ(ierr); 
+    ierr = CheckError(u,x2,b2,its,1.e-4,CHECK_ERROR);CHKERRQ(ierr);
 
-    /* 
+    /*
        Conclude profiling stage #2
     */
     ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
-  /* -------------------------------------------------------------- 
+  /* --------------------------------------------------------------
                        End of linear solver loop
      -------------------------------------------------------------- */
 
-  /* 
+  /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
@@ -430,14 +430,14 @@ PetscErrorCode MyKSPMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
   Vec            x;
   PetscErrorCode ierr;
 
-  /* 
+  /*
      Build the solution vector
   */
   ierr = KSPBuildSolution(ksp,PETSC_NULL,&x);CHKERRQ(ierr);
 
   /*
      Write the solution vector and residual norm to stdout.
-      - PetscPrintf() handles output for multiprocessor jobs 
+      - PetscPrintf() handles output for multiprocessor jobs
         by printing from only one processor in the communicator.
       - The parallel viewer PETSC_VIEWER_STDOUT_WORLD handles
         data from multiple processors so that the output

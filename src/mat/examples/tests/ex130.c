@@ -1,4 +1,4 @@
- 
+
 static char help[] = "Tests external direct solvers. Simplified from ex125.c\n\
 Example: mpiexec -n <np> ./ex130 -f <matrix binary file> -mat_solver_package 1 -mat_superlu_equil \n\n";
 
@@ -8,7 +8,7 @@ Example: mpiexec -n <np> ./ex130 -f <matrix binary file> -mat_solver_package 1 -
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            A,F; 
+  Mat            A,F;
   Vec            u,x,b;
   PetscErrorCode ierr;
   PetscMPIInt    rank,nproc;
@@ -34,18 +34,18 @@ int main(int argc,char **args)
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = VecLoad(b,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
   ierr = MatNorm(A,NORM_INFINITY,&Anorm);CHKERRQ(ierr);
-  
+
   /* Create vectors */
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr); /* save the true solution */
 
   /* Test LU Factorization */
   ierr = MatGetOrdering(A,MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
-  
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_solver_package",&ipack,PETSC_NULL);CHKERRQ(ierr);
   switch (ipack){
   case 1:
@@ -55,7 +55,7 @@ int main(int argc,char **args)
     break;
 #endif
   case 2:
-#ifdef PETSC_HAVE_MUMPS 
+#ifdef PETSC_HAVE_MUMPS
     if (!rank) printf(" MUMPS LU:\n");
     ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     {
@@ -70,7 +70,7 @@ int main(int argc,char **args)
     ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   }
 
-  info.fill = 5.0; 
+  info.fill = 5.0;
   ierr = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
 
   for (nfact = 0; nfact < 1; nfact++){
@@ -79,28 +79,28 @@ int main(int argc,char **args)
 
     /* Test MatSolve() */
     if (testMatSolve){
-      ierr = MatSolve(F,b,x);CHKERRQ(ierr); 
-    
+      ierr = MatSolve(F,b,x);CHKERRQ(ierr);
+
       /* Check the residual */
       ierr = MatMult(A,x,u);CHKERRQ(ierr);
       ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
       ierr = VecNorm(u,NORM_INFINITY,&norm);CHKERRQ(ierr);
-      if (norm > tol){ 
+      if (norm > tol){
         if (!rank){
           ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve: rel residual %g/%g = %g, LU numfact %d\n",norm,Anorm,norm/Anorm,nfact);CHKERRQ(ierr);
         }
       }
     }
-  } 
-  
+  }
+
   /* Free data structures */
-  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
   ierr = ISDestroy(&iperm);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr); 
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr); 
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

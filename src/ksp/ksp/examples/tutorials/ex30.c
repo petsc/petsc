@@ -8,7 +8,7 @@ static char help[] = " * Example code testing SeqDense matrices with an LDA (lea
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  KSP         solver; 
+  KSP         solver;
   PC          pc;
   Mat         A,B;
   Vec         X,Y,Z;

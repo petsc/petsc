@@ -7,7 +7,7 @@ static char help[] = "Tests automatic allocation of matrix storage space.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C; 
+  Mat            C;
   PetscInt       i,j,m = 3,n = 3,Ii,J;
   PetscErrorCode ierr;
   PetscScalar    v;

@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
-  
+
   ierr = VecCreateSeq(comm,10,&V);CHKERRQ(ierr);
   ierr = VecSetRandom(V,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(V);CHKERRQ(ierr);
@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   ierr = VecNorm(V,NORM_2,&nrm2);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"cached: norm1=%e, norm2=%e\n",nrm1,nrm2);CHKERRQ(ierr);
 
-  /* 
+  /*
    * Alter an element
    */
   ierr = VecSetValues(V,1,&ione,&one,INSERT_VALUES);CHKERRQ(ierr);

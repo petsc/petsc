@@ -18,7 +18,7 @@ int FormElementStiffness(PetscReal H,PetscScalar *Ke)
 #define __FUNCT__ "FormElementRhs"
 int FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
 {
-  r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 
+  r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0;
   return 0;
 }
 
@@ -26,7 +26,7 @@ int FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C; 
+  Mat            C;
   PetscErrorCode ierr;
   PetscInt       i,m = 2,N,M,its,idx[4],count,*rows;
   PetscScalar    val,Ke[16],r[4];
@@ -48,7 +48,7 @@ int main(int argc,char **args)
   ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);
   for (i=0; i<M; i++) {
      /* location of lower left corner of element */
-     x = h*(i % m); y = h*(i/m); 
+     x = h*(i % m); y = h*(i/m);
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + (i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
@@ -59,7 +59,7 @@ int main(int argc,char **args)
 
   /* create right hand side and solution */
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&u);CHKERRQ(ierr); 
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&ustar);CHKERRQ(ierr);
   ierr = VecSet(u,0.0);CHKERRQ(ierr);
@@ -67,7 +67,7 @@ int main(int argc,char **args)
 
   for (i=0; i<M; i++) {
      /* location of lower left corner of element */
-     x = h*(i % m); y = h*(i/m); 
+     x = h*(i % m); y = h*(i/m);
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + (i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
@@ -92,11 +92,11 @@ int main(int argc,char **args)
     rows[count++] = i;
   }
   for (i=0; i<4*m; i++) {
-     x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
+     x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1));
      val = y;
      ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
      ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
-  }    
+  }
   ierr = MatZeroRows(C,4*m,rows,1.0,0,0);CHKERRQ(ierr);
 
   ierr = PetscFree(rows);CHKERRQ(ierr);
@@ -114,7 +114,7 @@ int main(int argc,char **args)
 
   /* check error */
   for (i=0; i<N; i++) {
-     x = h*(i % (m+1)); y = h*(i/(m+1)); 
+     x = h*(i % (m+1)); y = h*(i/(m+1));
      val = y;
      ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
   }

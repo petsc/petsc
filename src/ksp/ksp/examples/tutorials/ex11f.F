@@ -9,7 +9,7 @@
 !
 !  The model problem:
 !     Solve Helmholtz equation on the unit square: (0,1) x (0,1)
-!          -delta u - sigma1*u + i*sigma2*u = f, 
+!          -delta u - sigma1*u + i*sigma2*u = f,
 !           where delta = Laplace operator
 !     Dirichlet b.c.'s on all sides
 !     Use the 2-D, five-point finite difference stencil.
@@ -59,7 +59,7 @@
 !
 
       KSP             ksp
-      Mat              A 
+      Mat              A
       Vec              x,b,u
       PetscRandom      rctx
       double precision norm,h2,sigma1
@@ -74,7 +74,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 #if !defined(PETSC_USE_COMPLEX)
@@ -93,10 +93,10 @@
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       dim    = n*n
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !      Compute the matrix and right-hand-side vector that define
 !      the linear system, Ax = b.
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create parallel matrix, specifying only its global dimensions.
 !  When using MatCreate(), the matrix format can be specified at
@@ -110,14 +110,14 @@
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which
-!  rows of the matrix are locally owned. 
+!  rows of the matrix are locally owned.
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
 !  Set matrix elements in parallel.
 !   - Each processor needs to insert only elements that it owns
 !     locally (but any non-local elements will be sent to the
-!     appropriate processor during matrix assembly). 
+!     appropriate processor during matrix assembly).
 !   - Always specify global rows and columns of matrix entries.
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-norandom',        &
@@ -138,7 +138,7 @@
       do 10, II=Istart,Iend-1
         v = -1.0
         i = II/n
-        j = II - i*n  
+        j = II - i*n
         if (i.gt.0) then
           JJ = II - n
           call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
@@ -194,9 +194,9 @@
       endif
       call MatMult(A,u,b,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Create the linear solver and set various options
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create linear solver context
 
@@ -212,15 +212,15 @@
 
       call KSPSetFromOptions(ksp,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call KSPSolve(ksp,b,x,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                     Check solution and clean up
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Check the error
 

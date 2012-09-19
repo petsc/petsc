@@ -25,12 +25,12 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-procedural",&TEST_PROCEDURAL,PETSC_NULL);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
+  /*
      Create vectors.  Note that we form 1 vector from scratch and
      then duplicate as needed. For this simple case let PETSc decide how
      many elements of the vector are stored on each processor. The second
@@ -61,7 +61,7 @@ int main(int argc,char **args)
   }
   if (rend == n) {
     rend = n-1;
-    i = n-1; col[0] = n-2; col[1] = n-1; value[0] = -1.0; value[1] = 2.0; 
+    i = n-1; col[0] = n-2; col[1] = n-1; value[0] = -1.0; value[1] = 2.0;
     ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
 
@@ -80,13 +80,13 @@ int main(int argc,char **args)
   ierr = VecSet(u,one);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set linear solver defaults for this problem (optional).
      - By extracting the KSP and PC contexts from the KSP context,
        we can then directly call any KSP and PC routines to set
@@ -106,18 +106,18 @@ int main(int argc,char **args)
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   }
   /*  Solve linear system */
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr); 
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
   if (TEST_PROCEDURAL){ /* View solver info; */
     ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
- 
+
   /* Check the error */
   ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
-  
+
   /* Free work space. */
   ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr); ierr = MatDestroy(&A);CHKERRQ(ierr);

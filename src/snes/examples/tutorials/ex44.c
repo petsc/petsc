@@ -8,7 +8,7 @@ Input arguments are:\n\
                    matrix-free methods in this example.\n\n";
 
 /*
-  Example: 
+  Example:
   ./ex44 -snes_mf -snes_monitor -snes_view
   ./ex44 -snes_mf -user_precond -snes_monitor -snes_view
  */
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       it,n = 5,i;
   PetscMPIInt    size;
-  PetscReal      h,xp = 0.0; 
+  PetscReal      h,xp = 0.0;
   PetscScalar    v,pfive = .5;
   PetscBool      flg;
 
@@ -102,18 +102,18 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_SELF,"SNES iterations = %D\n\n",it);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Free work space.  
+     Free work space.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDestroy(&x);CHKERRQ(ierr);    
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = VecDestroy(&F);CHKERRQ(ierr);     
+  ierr = VecDestroy(&F);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
 
 /* ------------------------------------------------------------------- */
-/* 
+/*
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
@@ -161,6 +161,6 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 PetscErrorCode MatrixFreePreconditioner(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  ierr = VecCopy(x,y);CHKERRQ(ierr);  
+  ierr = VecCopy(x,y);CHKERRQ(ierr);
   return 0;
 }

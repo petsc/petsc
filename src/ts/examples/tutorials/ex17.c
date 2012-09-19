@@ -16,8 +16,8 @@ static const char help[] = "Time-dependent PDE in 1d. Simplified from ex15.c for
    mpiexec -n 2 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor -ksp_monitor
          ./ex17 -da_grid_x 40 -drawcontours -draw_pause .1
          ./ex17 -da_grid_x 100 -drawcontours -draw_pause .1 -ts_type theta -ts_theta_theta 0.5 # Midpoint is not L-stable
-         ./ex17 -jac_type fd_coloring -drawcontours -draw_pause .1 -da_grid_x 500 -boundary 1 
-         ./ex17 -da_grid_x 100 -drawcontours -draw_pause 1 -ts_type gl -ts_adapt_type none -ts_max_steps 2 
+         ./ex17 -jac_type fd_coloring -drawcontours -draw_pause .1 -da_grid_x 500 -boundary 1
+         ./ex17 -da_grid_x 100 -drawcontours -draw_pause 1 -ts_type gl -ts_adapt_type none -ts_max_steps 2
 */
 
 #include <petscdmda.h>
@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-11,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Extract global vectors from DMDA; 
+     Extract global vectors from DMDA;
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
 
@@ -307,7 +307,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec U,void* ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MyTSMonitor"
 PetscErrorCode MyTSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ptr)
 {

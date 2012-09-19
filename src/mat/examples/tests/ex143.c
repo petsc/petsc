@@ -108,15 +108,15 @@ PetscInt main(PetscInt argc,char **args)
       }
       N *= dim[i-1];
 
-  
+
       /* Create FFTW object */
       if (!rank) printf("Use PETSc-FFTW interface...%d-DIM:%d \n",DIM,N);
 
       ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
 
       /* Create vectors that are compatible with parallel layout of A - must call MatGetVecs()! */
-    
-      ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr); 
+
+      ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
@@ -126,13 +126,13 @@ PetscInt main(PetscInt argc,char **args)
 
       if (view){ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
-      // Apply FFTW_FORWARD and FFTW_BACKWARD 
+      // Apply FFTW_FORWARD and FFTW_BACKWARD
       ierr = MatMult(A,x,y);CHKERRQ(ierr);
       if (view){ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
       ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
 
-      // Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x 
+      // Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x
       a = 1.0/(PetscReal)N;
       ierr = VecScale(z,a);CHKERRQ(ierr);
       if (view){ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
@@ -141,16 +141,16 @@ PetscInt main(PetscInt argc,char **args)
       if (enorm > 1.e-9 && !rank){
         ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
       }
-     
+
       ierr = VecDestroy(&x);CHKERRQ(ierr);
       ierr = VecDestroy(&y);CHKERRQ(ierr);
       ierr = VecDestroy(&z);CHKERRQ(ierr);
-      ierr = MatDestroy(&A);CHKERRQ(ierr); 
+      ierr = MatDestroy(&A);CHKERRQ(ierr);
 
       ierr = PetscFree(dim);CHKERRQ(ierr);
     }
   }
-   
+
   ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

@@ -29,7 +29,7 @@ PetscErrorCode reduce_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommRedCt
   for (i=trstarts[myrank];i < trstarts[myrank+1];i++) my_sum += a[i];
 
   PetscThreadReductionKernelPost(myrank,red,&my_sum);
-  
+
   return 0;
 }
 
@@ -43,7 +43,7 @@ PetscErrorCode max_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommRedCtx r
   }
 
   PetscThreadReductionKernelPost(myrank,red,&my_max);
-  
+
   return 0;
 }
 
@@ -57,7 +57,7 @@ PetscErrorCode min_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommRedCtx r
   }
 
   PetscThreadReductionKernelPost(myrank,red,&my_min);
-  
+
   return 0;
 }
 
@@ -73,7 +73,7 @@ PetscErrorCode maxloc_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommRedCt
   }
 
   PetscThreadReductionKernelPost(myrank,red,my_maxloc);
-  
+
   return 0;
 }
 
@@ -89,7 +89,7 @@ PetscErrorCode minloc_kernel(PetscInt myrank,PetscScalar *a,PetscThreadCommRedCt
   }
 
   PetscThreadReductionKernelPost(myrank,red,my_minloc);
-  
+
   return 0;
 }
 
@@ -108,7 +108,7 @@ int main(int argc,char **argv)
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscMalloc(N*sizeof(PetscScalar),&a);CHKERRQ(ierr);
-    
+
   /* Set thread ownership ranges for the array */
   ierr = PetscThreadCommGetOwnershipRanges(PETSC_COMM_WORLD,N,&trstarts);CHKERRQ(ierr);
 

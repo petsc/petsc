@@ -7,7 +7,7 @@ with a user-provided preconditioner.  Input arguments are:\n\
                    matrix-free methods in this example.\n\n";
 /*
   Modified from ex6.c by Mike McCourt <mccomic@iit.edu>
-   for testing SNESLineSearchSet() 
+   for testing SNESLineSearchSet()
  */
 
 /*T
@@ -19,7 +19,7 @@ with a user-provided preconditioner.  Input arguments are:\n\
    Processors: 1
 T*/
 
-/* 
+/*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -34,7 +34,7 @@ using namespace std;
 
 struct AppCtx{int testint;};
 
-/* 
+/*
    User-defined routines
 */
 PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -201,7 +201,7 @@ PetscErrorCode FormLineSearch(SNES snes,void* user,Vec X,Vec F,Vec G,Vec Y,Vec W
 }
 
 /* ------------------------------------------------------------------- */
-/* 
+/*
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
@@ -257,18 +257,18 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *f
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   d = (PetscReal)(n - 1); d = d*d;
 
-  /* Form Jacobian.  Also form a different preconditioning matrix that 
+  /* Form Jacobian.  Also form a different preconditioning matrix that
      has only the diagonal elements. */
-  i = 0; A[0] = 1.0; 
+  i = 0; A[0] = 1.0;
   ierr = MatSetValues(*jac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatSetValues(*prejac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
   for (i=1; i<n-1; i++) {
-    j[0] = i - 1; j[1] = i;                   j[2] = i + 1; 
-    A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d; 
+    j[0] = i - 1; j[1] = i;                   j[2] = i + 1;
+    A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d;
     ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatSetValues(*prejac,1,&i,1,&i,&A[1],INSERT_VALUES);CHKERRQ(ierr);
   }
-  i = n-1; A[0] = 1.0; 
+  i = n-1; A[0] = 1.0;
   ierr = MatSetValues(*jac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatSetValues(*prejac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
 
@@ -297,6 +297,6 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *f
 PetscErrorCode MatrixFreePreconditioner(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  ierr = VecCopy(x,y);CHKERRQ(ierr);  
+  ierr = VecCopy(x,y);CHKERRQ(ierr);
   return 0;
 }

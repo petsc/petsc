@@ -9,9 +9,9 @@ int main(int argc,char **argv)
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
-  int            x = 0,y = 0,width = 256,height = 256,i; 
+  int            x = 0,y = 0,width = 256,height = 256,i;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   ierr = PetscDrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
@@ -24,4 +24,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

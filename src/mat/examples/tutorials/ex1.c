@@ -11,12 +11,12 @@ static char help[] = "Reads a PETSc matrix and vector from a file and reorders i
    Processors: 1
 T*/
 
-/* 
+/*
   Include "petscmat.h" so that we can use matrices.
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h    - vectors
      petscmat.h    - matrices
-     petscis.h     - index sets            petscviewer.h - viewers               
+     petscis.h     - index sets            petscviewer.h - viewers
 */
 #include <petscmat.h>
 
@@ -35,7 +35,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
 
-  /* 
+  /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
@@ -47,14 +47,14 @@ int main(int argc,char **args)
   /* -----------------------------------------------------------
                   Beginning of loop
      ----------------------------------------------------------- */
-  /* 
-     Loop through the reordering 2 times.  
+  /*
+     Loop through the reordering 2 times.
       - The intention here is to preload and solve a small system;
         then load another (larger) system and solve it as well.
         This process preloads the instructions with the smaller
         system so that more accurate performance monitoring (via
         -log_summary) can be done with the larger one (that actually
-        is the system of interest). 
+        is the system of interest).
   */
   PetscPreLoadBegin(PetscPreLoad,"Load");
 
@@ -62,7 +62,7 @@ int main(int argc,char **args)
                            Load system i
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    /* 
+    /*
        Open binary file.  Note that we use FILE_MODE_READ to indicate
        reading from this file.
     */
@@ -83,7 +83,7 @@ int main(int argc,char **args)
     PetscPreLoadStage("Reordering");
     ierr = MatGetOrdering(A,rtype,&isrow,&iscol);CHKERRQ(ierr);
 
-    /* 
+    /*
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
     */

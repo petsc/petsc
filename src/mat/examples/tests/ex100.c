@@ -2,7 +2,7 @@
 static char help[] = "Tests vatious routines in MatMAIJ format.\n";
 
 #include <petscmat.h>
-#define IMAX 15 
+#define IMAX 15
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
@@ -36,14 +36,14 @@ int main(int argc,char **args)
   ierr = MatCreateMAIJ(A,dof,&MA);CHKERRQ(ierr);
   ierr = MatGetLocalSize(MA,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(MA,&M,&N);CHKERRQ(ierr);
-  
+
   if (size == 1){
     ierr = MatConvert(MA,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   } else {
     ierr = MatConvert(MA,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   }
 
-  /* Test MatMult() */ 
+  /* Test MatMult() */
   ierr = MatMultEqual(MA,B,10,&flg);CHKERRQ(ierr);
   if (!flg){
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMul() for MAIJ matrix");
@@ -59,7 +59,7 @@ int main(int argc,char **args)
   if (!flg){
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulAdd() for MAIJ matrix");
   }
-  
+
   /* Test MatMultTransposeAdd() */
    ierr = MatMultTransposeAddEqual(MA,B,10,&flg);CHKERRQ(ierr);
   if (!flg){
@@ -67,8 +67,8 @@ int main(int argc,char **args)
   }
 
   ierr = MatDestroy(&MA);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr); 
-  ierr = MatDestroy(&B);CHKERRQ(ierr);  
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = PetscFinalize();
 #endif
   return 0;

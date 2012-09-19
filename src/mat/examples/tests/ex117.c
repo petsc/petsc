@@ -60,8 +60,8 @@ int main(int argc,char **args)
 
    // begin cholesky factorization
   ierr = MatGetOrdering(mat,MATORDERINGNATURAL,&perm,&colp);CHKERRQ(ierr);
-  ierr = ISDestroy(&colp);CHKERRQ(ierr);    
-  info.fill=1.0; 
+  ierr = ISDestroy(&colp);CHKERRQ(ierr);
+  info.fill=1.0;
   ierr = MatGetFactor(mat,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&fact);CHKERRQ(ierr);
   ierr = MatCholeskyFactorSymbolic(fact,mat,perm,&info);CHKERRQ(ierr);
   ierr = MatCholeskyFactorNumeric(fact,mat,&info);CHKERRQ(ierr);

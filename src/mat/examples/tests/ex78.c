@@ -41,7 +41,7 @@ int main(int argc,char **args)
 {
   Mat            A;
   Vec            b,u,u_tmp;
-  char           Ain[PETSC_MAX_PATH_LEN],rhs[PETSC_MAX_PATH_LEN],solu[PETSC_MAX_PATH_LEN]; 
+  char           Ain[PETSC_MAX_PATH_LEN],rhs[PETSC_MAX_PATH_LEN],solu[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
   int            m,n,nz,dummy; /* these are fscaned so kept as int */
   PetscInt       i,col,row,shift = 1,sizes[3],nsizes;
@@ -62,7 +62,7 @@ int main(int argc,char **args)
   if (flg) shift = 0;
   if (flg_A){
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read matrix in ascii format ...\n");CHKERRQ(ierr);
-    ierr = PetscFOpen(PETSC_COMM_SELF,Ain,"r",&Afile);CHKERRQ(ierr); 
+    ierr = PetscFOpen(PETSC_COMM_SELF,Ain,"r",&Afile);CHKERRQ(ierr);
     nsizes = 3;
     ierr = PetscOptionsGetIntArray(PETSC_NULL,"-nosizesinfile",sizes,&nsizes,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -88,7 +88,7 @@ int main(int argc,char **args)
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     fflush(stdout);
-    fclose(Afile);  
+    fclose(Afile);
   }
 
   ierr = PetscOptionsGetString(PETSC_NULL,"-rhs",rhs,PETSC_MAX_PATH_LEN,&flg_b);CHKERRQ(ierr);
@@ -97,9 +97,9 @@ int main(int argc,char **args)
     ierr = VecSetSizes(b,PETSC_DECIDE,n);CHKERRQ(ierr);
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read rhs in ascii format ...\n");CHKERRQ(ierr);
-    ierr = PetscFOpen(PETSC_COMM_SELF,rhs,"r",&bfile);CHKERRQ(ierr); 
-    for (i=0; i<n; i++) {      
-      fscanf(bfile,"%d %le\n",&dummy,(double*)&val); 
+    ierr = PetscFOpen(PETSC_COMM_SELF,rhs,"r",&bfile);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      fscanf(bfile,"%d %le\n",&dummy,(double*)&val);
       ierr = VecSetValues(b,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
@@ -114,9 +114,9 @@ int main(int argc,char **args)
     ierr = VecSetSizes(u,PETSC_DECIDE,n);CHKERRQ(ierr);
     ierr = VecSetFromOptions(u);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read exact solution in ascii format ...\n");CHKERRQ(ierr);
-    ierr = PetscFOpen(PETSC_COMM_SELF,solu,"r",&ufile);CHKERRQ(ierr); 
+    ierr = PetscFOpen(PETSC_COMM_SELF,solu,"r",&ufile);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      fscanf(ufile,"%d  %le\n",&dummy,(double*)&val); 
+      fscanf(ufile,"%d  %le\n",&dummy,(double*)&val);
       ierr = VecSetValues(u,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
@@ -124,7 +124,7 @@ int main(int argc,char **args)
     fflush(stdout);
     fclose(ufile);
   }
- 
+
   /* Write matrix, rhs and exact solution in Petsc binary file */
   ierr = PetscPrintf(PETSC_COMM_SELF,"\n Write matrix in binary to 'matrix.dat' ...\n");CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",FILE_MODE_WRITE,&view);CHKERRQ(ierr);
@@ -141,7 +141,7 @@ int main(int argc,char **args)
 
   /* Check accuracy of the data */
   if (flg_A & flg_b & flg_u){
-    ierr = VecDuplicate(u,&u_tmp);CHKERRQ(ierr); 
+    ierr = VecDuplicate(u,&u_tmp);CHKERRQ(ierr);
     ierr = MatMult(A,u,u_tmp);CHKERRQ(ierr);
     ierr = VecAXPY(u_tmp,-1.0,b);CHKERRQ(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);

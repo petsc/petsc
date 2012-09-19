@@ -208,7 +208,7 @@ int main(int argc,char **args)
     ierr = KSPGetPC( ksp, &pc );                                   CHKERRQ(ierr);
     ierr = PCSetType( pc, PCGAMG );                                CHKERRQ(ierr);
     ierr = KSPSetFromOptions( ksp );                              CHKERRQ(ierr);
-    
+
     /* finish KSP/PC setup */
     ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
     if ( use_coords ) {
@@ -253,7 +253,7 @@ int main(int argc,char **args)
     PetscViewer viewer;
     Vec res;
     MPI_Comm  wcomm = ((PetscObject)bb)->comm;
-    
+
     ierr = VecNorm( bb, NORM_2, &norm2 );  CHKERRQ(ierr);
 
     ierr = VecDuplicate( xx, &res );   CHKERRQ(ierr);

@@ -20,12 +20,12 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-test_mat_sbaij",&testsbaij);CHKERRQ(ierr);
-  
+
   if (testsbaij){
     ierr = MatCreateSBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,PETSC_NULL,1,PETSC_NULL,&A);CHKERRQ(ierr);
   } else {
     ierr = MatCreateBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,PETSC_NULL,1,PETSC_NULL,&A);CHKERRQ(ierr);
-  }  
+  }
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   eval = 9;
 
@@ -50,7 +50,7 @@ int main(int argc,char **args)
   This option does not work for rectangular matrices
   ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   */
-  
+
   ierr = MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES);CHKERRQ(ierr);
 
   /* Do another MatSetValues to test the case when only one local block is specified */
@@ -61,7 +61,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  
+
   ierr = PetscOptionsHasName(PETSC_NULL,"-zero_rows",&flg);CHKERRQ(ierr);
   if (flg) {
     col[0] = rstart*bs+0;

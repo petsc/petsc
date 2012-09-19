@@ -33,9 +33,9 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecSetFromOptions(input);CHKERRQ(ierr);
   ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
   ierr = VecDuplicate(input,&output);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)input, "Real space vector");CHKERRQ(ierr); 
+  ierr = PetscObjectSetName((PetscObject)input, "Real space vector");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)output, "Reconstructed vector");CHKERRQ(ierr);
-  
+
   /* Get FFTW vectors 'x', 'y' and 'z' */
   DIM = 2;
   dim[0] = N0; dim[1] = N1;
@@ -70,7 +70,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = VecDestroy(&z);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

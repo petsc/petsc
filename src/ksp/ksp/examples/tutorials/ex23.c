@@ -6,7 +6,7 @@ static char help[] = "Solves a tridiagonal linear system.\n\n";
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -34,12 +34,12 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
+  /*
      Create vectors.  Note that we form 1 vector from scratch and
      then duplicate as needed. For this simple case let PETSc decide how
      many elements of the vector are stored on each processor. The second
@@ -58,12 +58,12 @@ int main(int argc,char **args)
   ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&nlocal);CHKERRQ(ierr);
 
-  /* 
+  /*
      Create matrix.  When using MatCreate(), the matrix format can
      be specified at runtime.
 
      Performance tuning note:  For problems of substantial size,
-     preallocation of matrix memory is crucial for attaining good 
+     preallocation of matrix memory is crucial for attaining good
      performance. See the matrix chapter of the users manual for details.
 
      We pass in nlocal as the "local" size of the matrix to force it
@@ -74,12 +74,12 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  /* 
-     Assemble matrix.  
+  /*
+     Assemble matrix.
 
-     The linear system is distributed across the processors by 
+     The linear system is distributed across the processors by
      chunks of contiguous rows, which correspond to contiguous
-     sections of the mesh on which the problem is discretized.  
+     sections of the mesh on which the problem is discretized.
      For matrix assembly, each processor contributes entries for
      the part that it owns locally.
   */
@@ -92,7 +92,7 @@ int main(int argc,char **args)
   }
   if (rend == n) {
     rend = n-1;
-    i = n-1; col[0] = n-2; col[1] = n-1; value[0] = -1.0; value[1] = 2.0; 
+    i = n-1; col[0] = n-2; col[1] = n-1; value[0] = -1.0; value[1] = 2.0;
     ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
 
@@ -107,27 +107,27 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set exact solution; then compute right-hand-side vector.
   */
   ierr = VecSet(u,one);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* 
+  /*
      Create linear solver context
   */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set linear solver defaults for this problem (optional).
      - By extracting the KSP and PC contexts from the KSP context,
        we can then directly call any KSP and PC routines to set
@@ -140,7 +140,7 @@ int main(int argc,char **args)
   ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
-  /* 
+  /*
     Set runtime options, e.g.,
         -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
     These options will override those specified above as long as
@@ -148,25 +148,25 @@ int main(int argc,char **args)
     routines.
   */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
- 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* 
+  /*
      Solve linear system
   */
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr); 
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
-  /* 
+  /*
      View solver info; we could instead use the option -ksp_view to
      print this info to the screen at the conclusion of KSPSolve().
   */
   ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* 
+  /*
      Check the error
   */
   ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
@@ -176,7 +176,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */

@@ -75,8 +75,8 @@
       call MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr)
 
 !  Clean up
-      call MatDestroy(A,ierr)     
-      return 
+      call MatDestroy(A,ierr)
+      return
       end
 
 ! -----------------------------------------------------------------
@@ -110,8 +110,8 @@
       call MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr)
 
 !  Clean up
-      call MatDestroy(A,ierr)     
-      return 
+      call MatDestroy(A,ierr)
+      return
       end
 
 ! -----------------------------------------------------------------

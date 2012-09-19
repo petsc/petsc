@@ -12,14 +12,14 @@ T*/
 PetscErrorCode kernel_func1(PetscInt myrank,PetscInt *ranks,PetscScalar *values)
 {
   values[myrank] *= 1;
-  printf("First Kernel:My rank is %d, x = %f\n",ranks[myrank],values[myrank]); 
+  printf("First Kernel:My rank is %d, x = %f\n",ranks[myrank],values[myrank]);
   return(0);
 }
 
 PetscErrorCode kernel_func2(PetscInt myrank,PetscInt *ranks,PetscScalar *values)
 {
   values[myrank] *= 2;
-  printf("Second Kernel:My rank is %d, x = %f\n",ranks[myrank],values[myrank]); 
+  printf("Second Kernel:My rank is %d, x = %f\n",ranks[myrank],values[myrank]);
   return(0);
 
 }

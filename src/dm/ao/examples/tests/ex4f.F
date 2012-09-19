@@ -23,12 +23,12 @@
          localvert(4) = 3
       endif
 
-!     Test AOCreateBasic() 
+!     Test AOCreateBasic()
       call AOCreateBasic(PETSC_COMM_WORLD, nlocal, localvert,             &
      &     PETSC_NULL_INTEGER,ao,ierr)
       call AODestroy(ao,ierr)
 
-!     Test AOCreateMemoryScalable() 
+!     Test AOCreateMemoryScalable()
       call AOCreateMemoryScalable(PETSC_COMM_WORLD, nlocal, localvert,    &
      &     PETSC_NULL_INTEGER,ao,ierr)
       call AODestroy(ao,ierr)

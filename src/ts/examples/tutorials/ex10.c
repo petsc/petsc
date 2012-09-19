@@ -61,7 +61,7 @@ struct _n_RD {
   PetscReal final_time;
 };
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RDDestroy"
 static PetscErrorCode RDDestroy(RD *rd)
 {
@@ -172,7 +172,7 @@ static void RDDiffusionCoefficient(RD rd,PetscBool  limit,RDNode *n,RDNode *nx,P
   }
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RDStateView"
 static PetscErrorCode RDStateView(RD rd,Vec X,Vec Xdot,Vec F)
 {
@@ -254,7 +254,7 @@ static PetscScalar RDDiffusion(RD rd,PetscReal hx,const RDNode x[],PetscInt i,RD
   return ihx*(fluxR - fluxL);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RDGetLocalArrays"
 static PetscErrorCode RDGetLocalArrays(RD rd,TS ts,Vec X,Vec Xdot,PetscReal *Theta,PetscReal *dt,Vec *X0loc,RDNode **x0,Vec *Xloc,RDNode **x,Vec *Xloc_t,RDNode **xdot)
 {
@@ -294,7 +294,7 @@ static PetscErrorCode RDGetLocalArrays(RD rd,TS ts,Vec X,Vec Xdot,PetscReal *The
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RDRestoreLocalArrays"
 static PetscErrorCode RDRestoreLocalArrays(RD rd,Vec *X0loc,RDNode **x0,Vec *Xloc,RDNode **x,Vec *Xloc_t,RDNode **xdot)
 {
@@ -310,7 +310,7 @@ static PetscErrorCode RDRestoreLocalArrays(RD rd,Vec *X0loc,RDNode **x0,Vec *Xlo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RDCheckDomain_Private"
 static PetscErrorCode RDCheckDomain_Private(RD rd,TS ts,Vec X,PetscBool  *in) {
   PetscErrorCode ierr;
@@ -339,7 +339,7 @@ static PetscErrorCode RDCheckDomain_Private(RD rd,TS ts,Vec X,PetscBool  *in) {
     if (!_in) PetscFunctionReturn(0);                              \
   } while (0)
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RDIFunction_FD"
 static PetscErrorCode RDIFunction_FD(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
@@ -528,7 +528,7 @@ static void RDEvaluate(PetscReal interp[][2],PetscReal deriv[][2],PetscInt q,con
   }
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RDGetQuadrature"
 /*
  Various quadrature rules.  The nonlinear terms are non-polynomial so no standard quadrature will be exact.
@@ -583,7 +583,7 @@ static PetscErrorCode RDGetQuadrature(RD rd,PetscReal hx,PetscInt *nq,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RDIFunction_FE"
 /*
  Finite element version
@@ -672,7 +672,7 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RDIJacobian_FE"
 static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
 {
@@ -750,7 +750,7 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
 static PetscScalar RDRadiationTemperature(RD rd,PetscScalar E)
 { return pow(E*rd->c/(4.*rd->sigma_b),0.25); }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RDInitialState"
 static PetscErrorCode RDInitialState(RD rd,Vec X)
 {
@@ -784,7 +784,7 @@ static PetscErrorCode RDInitialState(RD rd,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RDView"
 static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
 {
@@ -825,7 +825,7 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RDTestDifferentiation"
 static PetscErrorCode RDTestDifferentiation(RD rd)
 {
@@ -1025,7 +1025,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {

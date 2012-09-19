@@ -8,20 +8,20 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
 
     This problem is modeled by
     the partial differential equation
-  
+
             -Laplacian u  = g,  0 < x,y < 1,
-  
+
     with boundary conditions
-   
+
              u = 0  for  x = 0, x = 1, y = 0, y = 1.
-  
+
     A finite difference approximation with the usual 5-point stencil
-    is used to discretize the boundary value problem to obtain a nonlinear 
+    is used to discretize the boundary value problem to obtain a nonlinear
     system of equations.
 
     Usage: ./ex26 -ksp_monitor_short -pc_type ml
-           -mg_coarse_ksp_max_it 10  
-           -mg_levels_1_ksp_max_it 10 -mg_levels_2_ksp_max_it 10 
+           -mg_coarse_ksp_max_it 10
+           -mg_levels_1_ksp_max_it 10 -mg_levels_2_ksp_max_it 10
            -mg_fine_ksp_max_it 10
 */
 
@@ -49,9 +49,9 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   PetscScalar    one = 1.0;
   PetscInt       mx,my;
-  Mat            A; 
-  GridCtx        fine_ctx; 
-  KSP            ksp; 
+  Mat            A;
+  GridCtx        fine_ctx;
+  KSP            ksp;
   PetscBool      flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,&flg);CHKERRQ(ierr);
   if (flg) fine_ctx.my = my;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",fine_ctx.mx,fine_ctx.my);CHKERRQ(ierr);
-  n = fine_ctx.mx*fine_ctx.my; 
+  n = fine_ctx.mx*fine_ctx.my;
 
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
@@ -94,7 +94,7 @@ int main(int argc,char **argv)
 
   /* set options, then solve system */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr); /* calls PCSetFromOptions_ML if 'pc_type=ml' */
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
+  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,fine_ctx.b,fine_ctx.x);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %D\n",its);CHKERRQ(ierr);
@@ -105,7 +105,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&fine_ctx.da);CHKERRQ(ierr);
   ierr = VecDestroy(&fine_ctx.localX);CHKERRQ(ierr);
   ierr = VecDestroy(&fine_ctx.localF);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
@@ -122,7 +122,7 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
   PetscInt       nloc,*ltog,grow;
   PetscScalar    two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
 
-  mx = grid->mx;            my = grid->my;            
+  mx = grid->mx;            my = grid->my;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   hxdhy = hx/hy;            hydhx = hy/hx;
 
@@ -133,7 +133,7 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - Ys)*Xm + xs - Xs - 1; 
+    row = (j - Ys)*Xm + xs - Xs - 1;
     for (i=xs; i<xs+xm; i++) {
       row++;
       grow = ltog[row];

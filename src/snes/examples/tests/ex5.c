@@ -25,18 +25,18 @@ T*/
     where
 
          0 < x,y < 1,
-  
+
     with boundary conditions
-   
+
              u = 0  for  x = 0, x = 1, y = 0, y = 1.
-  
+
     A finite difference approximation with the usual 5-point stencil
-    is used to discretize the boundary value problem to obtain a nonlinear 
+    is used to discretize the boundary value problem to obtain a nonlinear
     system of equations.
 
   ------------------------------------------------------------------------- */
 
-/* 
+/*
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
@@ -49,8 +49,8 @@ T*/
 #include <petscdmda.h>
 #include <petscsnes.h>
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines, FormJacobian() and
    FormFunction().
 */
@@ -63,7 +63,7 @@ typedef struct {
    PetscMPIInt rank;           /* processor rank */
 } AppCtx;
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
@@ -138,7 +138,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
   ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set function evaluation routine and vector
   */
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
@@ -147,12 +147,12 @@ int main(int argc,char **argv)
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
+  /*
      Set Jacobian matrix data structure and default Jacobian evaluation
      routine. User can override with:
      -snes_fd : default finite differencing approximation of Jacobian
      -snes_mf : matrix-free Newton-Krylov method with no preconditioning
-                (unless user explicitly sets preconditioner) 
+                (unless user explicitly sets preconditioner)
      -snes_mf_operator : form preconditioning matrix as set by the user,
                          but use matrix-free approx for Jacobian-vector
                          products within Newton-Krylov method
@@ -203,7 +203,7 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr); 
+  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
 
@@ -216,7 +216,7 @@ int main(int argc,char **argv)
     ierr = MatDestroy(&J);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&user.localX);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.localF);CHKERRQ(ierr); ierr = VecDestroy(&r);CHKERRQ(ierr);      
+  ierr = VecDestroy(&user.localF);CHKERRQ(ierr); ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
@@ -225,7 +225,7 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-/* 
+/*
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
@@ -273,12 +273,12 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   for (j=ys; j<ys+ym; j++) {
     temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
-      row = i - gxs + (j - gys)*gxm; 
+      row = i - gxs + (j - gys)*gxm;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
-        x[row] = 0.0; 
+        x[row] = 0.0;
         continue;
       }
-      x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
+      x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
     }
   }
 
@@ -293,11 +293,11 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   ierr = DMLocalToGlobalBegin(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   return 0;
-} 
+}
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-/* 
+/*
    FormFunction - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -316,7 +316,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscReal      two = 2.0,one = 1.0,half = 0.5;
   PetscReal      lambda,hx,hy,hxdhy,hydhx,sc;
   PetscScalar    u,ux,uxx,uyy,*x,*f,kappa;
-  Vec            localX = user->localX,localF = user->localF; 
+  Vec            localX = user->localX,localF = user->localF;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -348,7 +348,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
      Compute function over the locally owned part of the grid
   */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - gys)*gxm + xs - gxs - 1; 
+    row = (j - gys)*gxm + xs - gxs - 1;
     for (i=xs; i<xs+xm; i++) {
       row++;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
@@ -375,8 +375,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DMLocalToGlobalBegin(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
-  return 0; 
-} 
+  return 0;
+}
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
@@ -440,20 +440,20 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   */
   ierr = DMDAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
 
-  /* 
+  /*
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by
         contiguous chunks of rows across the processors. The "grow"
-        parameter computed below specifies the global row number 
+        parameter computed below specifies the global row number
         corresponding to each local grid point.
       - Each processor needs to insert only elements that it owns
         locally (but any non-local elements will be sent to the
-        appropriate processor during matrix assembly). 
+        appropriate processor during matrix assembly).
       - Always specify global row and columns of matrix entries.
       - Here, we set all entries for a particular row at once.
   */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - gys)*gxm + xs - gxs - 1; 
+    row = (j - gys)*gxm + xs - gxs - 1;
     for (i=xs; i<xs+xm; i++) {
       row++;
       grow = ltog[row];
@@ -472,7 +472,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
     }
   }
 
-  /* 
+  /*
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd().
      By placing code between these two statements, computations can be

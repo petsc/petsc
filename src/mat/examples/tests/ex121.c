@@ -12,12 +12,12 @@ PetscInt main(PetscInt argc,char **args)
 {
   typedef enum {RANDOM, CONSTANT, TANH, NUM_FUNCS} FuncType;
   const char    *funcNames[NUM_FUNCS] = {"random", "constant", "tanh"};
-  Mat            A;    
+  Mat            A;
   PetscMPIInt    size;
   PetscInt       n = 10,N,ndim=4,dim[4],DIM,i,j;
   Vec            w,x,y1,y2,z1,z2;
   PetscScalar   *a, *a2, *a3;
-  PetscScalar    s;  
+  PetscScalar    s;
   PetscRandom    rdm;
   PetscReal      enorm;
   PetscInt       func=0;
@@ -59,7 +59,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscObjectSetName((PetscObject) z1, "Reconstructed convolution");CHKERRQ(ierr);
     ierr = VecDuplicate(x,&z2);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) z2, "Real space convolution");CHKERRQ(ierr);
-    
+
     if (function == RANDOM) {
       ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
     } else if (function == CONSTANT) {
@@ -90,7 +90,7 @@ PetscInt main(PetscInt argc,char **args)
     /* Convolve x with w*/
     ierr = MatMult(A,x,y1);CHKERRQ(ierr);
     ierr = MatMult(A,w,y2);CHKERRQ(ierr);
-    ierr = VecPointwiseMult(y1, y1, y2);CHKERRQ(ierr); 
+    ierr = VecPointwiseMult(y1, y1, y2);CHKERRQ(ierr);
     if (view && i == 0) {ierr = VecView(y1, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     ierr = MatMultTranspose(A,y1,z1);CHKERRQ(ierr);
 

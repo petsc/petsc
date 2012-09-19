@@ -70,7 +70,7 @@ struct _p_PetscThreadCommRedCtx{
   PetscDataType                 type;           /* The reduction data type */
 };
 
-typedef struct _p_PetscThreadCommJobCtx *PetscThreadCommJobCtx;
+typedef struct _p_PetscThreadCommJobCtx* PetscThreadCommJobCtx;
 struct  _p_PetscThreadCommJobCtx{
   PetscThreadComm   tcomm;                         /* The thread communicator */
   PetscInt          nargs;                         /* Number of arguments for the kernel */
@@ -82,7 +82,7 @@ struct  _p_PetscThreadCommJobCtx{
 };
 
 /* Structure to manage job queue */
-typedef struct _p_PetscThreadCommJobQueue *PetscThreadCommJobQueue;
+typedef struct _p_PetscThreadCommJobQueue* PetscThreadCommJobQueue;
 struct _p_PetscThreadCommJobQueue{
   PetscInt ctr;                                         /* job counter */
   PetscInt kernel_ctr;                                  /* kernel counter .. need this otherwise race conditions are unavoidable */
@@ -91,7 +91,7 @@ struct _p_PetscThreadCommJobQueue{
 
 extern PetscThreadCommJobQueue PetscJobQueue;
 
-typedef struct _PetscThreadCommOps *PetscThreadCommOps;
+typedef struct _PetscThreadCommOps* PetscThreadCommOps;
 struct _PetscThreadCommOps {
   PetscErrorCode (*destroy)(PetscThreadComm);
   PetscErrorCode (*runkernel)(MPI_Comm,PetscThreadCommJobCtx);

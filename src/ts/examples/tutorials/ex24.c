@@ -93,7 +93,7 @@ int main(int argc,char **argv)
   return 0;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MonitorObjective"
 static PetscErrorCode MonitorObjective(TS ts,PetscInt step,PetscReal t,Vec X,void *ictx)
 {

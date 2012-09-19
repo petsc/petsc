@@ -22,9 +22,9 @@ PetscInt main(PetscInt argc,char **args)
     Vec             fin,fout,fout1;
     Vec             ini,final;
     PetscRandom     rnd;
-    PetscErrorCode  ierr; 
+    PetscErrorCode  ierr;
     PetscInt        *indx3,tempindx,low,*indx4,tempindx1;
-    
+
     ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
     ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
@@ -33,25 +33,25 @@ PetscInt main(PetscInt argc,char **args)
 
     alloc_local = fftw_mpi_local_size_2d_transposed(N0,N1/2+1,PETSC_COMM_WORLD,&local_n0,&local_0_start,&local_n1,&local_1_start);
 #if defined(DEBUGGING)
-    printf("The value alloc_local is %ld from process %d\n",alloc_local,rank);  
-    printf("The value local_n0 is %ld from process %d\n",local_n0,rank);  
-    printf("The value local_0_start is  %ld from process %d\n",local_0_start,rank);  
-//    printf("The value local_n1 is  %ld from process %d\n",local_n1,rank);  
-//    printf("The value local_1_start is  %ld from process %d\n",local_1_start,rank);  
-//    printf("The value local_n0 is  %ld from process %d\n",local_n0,rank);  
+    printf("The value alloc_local is %ld from process %d\n",alloc_local,rank);
+    printf("The value local_n0 is %ld from process %d\n",local_n0,rank);
+    printf("The value local_0_start is  %ld from process %d\n",local_0_start,rank);
+//    printf("The value local_n1 is  %ld from process %d\n",local_n1,rank);
+//    printf("The value local_1_start is  %ld from process %d\n",local_1_start,rank);
+//    printf("The value local_n0 is  %ld from process %d\n",local_n0,rank);
 #endif
 
     /* Allocate space for input and output arrays  */
     in1=(double *)fftw_malloc(sizeof(double)*alloc_local*2);
     in2=(double *)fftw_malloc(sizeof(double)*alloc_local*2);
     out=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-    
+
     N=2*N0*(N1/2+1);N_factor=N0*N1;
     n=2*local_n0*(N1/2+1);n1=local_n1*N0*2;
 
-//    printf("The value N is  %d from process %d\n",N,rank);  
-//    printf("The value n is  %d from process %d\n",n,rank);  
-//    printf("The value n1 is  %d from process %d\n",n1,rank);  
+//    printf("The value N is  %d from process %d\n",N,rank);
+//    printf("The value n is  %d from process %d\n",n,rank);
+//    printf("The value n1 is  %d from process %d\n",n1,rank);
     /* Creating data vector and accompanying array with VeccreateMPIWithArray */
     ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,( PetscScalar*)in1,&fin);CHKERRQ(ierr);
     ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)out,&fout);CHKERRQ(ierr);
@@ -63,7 +63,7 @@ PetscInt main(PetscInt argc,char **args)
 //       {
 //       VecSetValues(fin,1,&i,&one,INSERT_VALUES);
 //     }
- 
+
 //    VecSet(fin,one);
     i=0;
     ierr = VecSetValues(fin,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
@@ -75,21 +75,21 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecSetValues(fin,1,&i,&four,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(fin);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(fin);CHKERRQ(ierr);
-    
+
     ierr = VecSet(fout,zero);CHKERRQ(ierr);
     ierr = VecSet(fout1,zero);CHKERRQ(ierr);
-        
-    // Get the meaningful portion of array 
+
+    // Get the meaningful portion of array
     ierr = VecGetArray(fin,&x_arr);CHKERRQ(ierr);
     ierr = VecGetArray(fout1,&z_arr);CHKERRQ(ierr);
     ierr = VecGetArray(fout,&y_arr);CHKERRQ(ierr);
 
     fplan=fftw_mpi_plan_dft_r2c_2d(N0,N1,(double *)x_arr,(fftw_complex *)y_arr,PETSC_COMM_WORLD,FFTW_ESTIMATE);
     bplan=fftw_mpi_plan_dft_c2r_2d(N0,N1,(fftw_complex *)y_arr,(double *)z_arr,PETSC_COMM_WORLD,FFTW_ESTIMATE);
-   
+
     fftw_execute(fplan);
-    fftw_execute(bplan);  
-  
+    fftw_execute(bplan);
+
     ierr = VecRestoreArray(fin,&x_arr);
     ierr = VecRestoreArray(fout1,&z_arr);
     ierr = VecRestoreArray(fout,&y_arr);
@@ -99,16 +99,16 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecCreate(PETSC_COMM_WORLD,&final);CHKERRQ(ierr);
     ierr = VecSetSizes(ini,local_n0*N1,N0*N1);CHKERRQ(ierr);
     ierr = VecSetSizes(final,local_n0*N1,N0*N1);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(ini);CHKERRQ(ierr);   
-    ierr = VecSetFromOptions(final);CHKERRQ(ierr);   
- 
+    ierr = VecSetFromOptions(ini);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(final);CHKERRQ(ierr);
+
     if (N1%2==0){
       NM = N1+2;
     } else {
       NM = N1+1;
     }
     //printf("The Value of NM is %d",NM);
-    ierr = VecGetOwnershipRange(fin,&low,PETSC_NULL);  
+    ierr = VecGetOwnershipRange(fin,&low,PETSC_NULL);
     //printf("The local index is %d from %d\n",low,rank);
     ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1,&indx3);
     ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1,&indx4);
@@ -123,17 +123,17 @@ PetscInt main(PetscInt argc,char **args)
       }
     }
 
-    ierr = VecGetValues(fin,local_n0*N1,indx4,x_arr);CHKERRQ(ierr);   
-    ierr = VecSetValues(ini,local_n0*N1,indx3,x_arr,INSERT_VALUES);CHKERRQ(ierr);   
-    ierr = VecAssemblyBegin(ini);CHKERRQ(ierr);   
-    ierr = VecAssemblyEnd(ini);CHKERRQ(ierr);   
+    ierr = VecGetValues(fin,local_n0*N1,indx4,x_arr);CHKERRQ(ierr);
+    ierr = VecSetValues(ini,local_n0*N1,indx3,x_arr,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(ini);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(ini);CHKERRQ(ierr);
 
     ierr = VecGetValues(fout1,local_n0*N1,indx4,y_arr);
     ierr = VecSetValues(final,local_n0*N1,indx3,y_arr,INSERT_VALUES);
     ierr = VecAssemblyBegin(final);
     ierr = VecAssemblyEnd(final);
 
-/*    
+/*
     VecScatter      vecscat;
     IS              indx1,indx2;
     for (i=0;i<N0;i++){
@@ -152,17 +152,17 @@ PetscInt main(PetscInt argc,char **args)
     a = 1.0/(PetscReal)N_factor;
     ierr = VecScale(fout1,a);CHKERRQ(ierr);
     ierr = VecScale(final,a);CHKERRQ(ierr);
- 
+
 
 //    VecView(ini,PETSC_VIEWER_STDOUT_WORLD);
 //    VecView(final,PETSC_VIEWER_STDOUT_WORLD);
     ierr = VecAXPY(final,-1.0,ini);CHKERRQ(ierr);
-     
+
     ierr = VecNorm(final,NORM_1,&enorm);CHKERRQ(ierr);
     if (enorm > 1.e-10){
       ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm of |x - z|  = %e\n",enorm);CHKERRQ(ierr);
     }
- 
+
     // Execute fftw with function fftw_execute and destory it after execution
     fftw_destroy_plan(fplan);
     fftw_destroy_plan(bplan);

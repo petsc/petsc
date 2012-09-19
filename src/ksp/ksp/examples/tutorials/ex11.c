@@ -13,7 +13,7 @@ T*/
 
    The model problem:
       Solve Helmholtz equation on the unit square: (0,1) x (0,1)
-          -delta u - sigma1*u + i*sigma2*u = f, 
+          -delta u - sigma1*u + i*sigma2*u = f,
            where delta = Laplace operator
       Dirichlet b.c.'s on all sides
       Use the 2-D, five-point finite difference stencil.
@@ -23,7 +23,7 @@ T*/
       must be run to enable this
 */
 
-/* 
+/*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -61,11 +61,11 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   dim = n*n;
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* 
+  /*
      Create parallel matrix, specifying only its global dimensions.
      When using MatCreate(), the matrix format can be specified at
      runtime. Also, the parallel partitioning of the matrix is
@@ -76,18 +76,18 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
-  /* 
+  /*
      Currently, all PETSc parallel matrix formats are partitioned by
      contiguous chunks of rows across the processors.  Determine which
-     rows of the matrix are locally owned. 
+     rows of the matrix are locally owned.
   */
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set matrix elements in parallel.
       - Each processor needs to insert only elements that it owns
         locally (but any non-local elements will be sent to the
-        appropriate processor during matrix assembly). 
+        appropriate processor during matrix assembly).
       - Always specify global rows and columns of matrix entries.
   */
 
@@ -102,8 +102,8 @@ int main(int argc,char **args)
     sigma2 = 10.0*PETSC_i;
   }
   h2 = 1.0/((n+1)*(n+1));
-  for (Ii=Istart; Ii<Iend; Ii++) { 
-    v = -1.0; i = Ii/n; j = Ii - i*n;  
+  for (Ii=Istart; Ii<Iend; Ii++) {
+    v = -1.0; i = Ii/n; j = Ii - i*n;
     if (i>0) {
       J = Ii-n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     if (i<n-1) {
@@ -118,7 +118,7 @@ int main(int argc,char **args)
   }
   if (use_random) {ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);}
 
-  /* 
+  /*
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd()
      Computations can be done while messages are in transition
@@ -127,23 +127,23 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* 
+  /*
      Create parallel vectors.
       - When using VecCreate(), VecSetSizes() and VecSetFromOptions(),
       we specify only the vector's global
-        dimension; the parallel partitioning is determined at runtime. 
+        dimension; the parallel partitioning is determined at runtime.
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
   ierr = VecSetSizes(u,PETSC_DECIDE,dim);CHKERRQ(ierr);
   ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr); 
+  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set exact solution; then compute right-hand-side vector.
   */
-  
+
   if (use_random) {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -153,34 +153,34 @@ int main(int argc,char **args)
   }
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
+  /*
      Create linear solver context
   */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  /* 
+  /*
     Set runtime options, e.g.,
         -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
   */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -199,7 +199,7 @@ int main(int argc,char **args)
     ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
      Check the error
   */
   ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
@@ -207,7 +207,7 @@ int main(int argc,char **args)
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G iterations %D\n",norm,its);CHKERRQ(ierr);
 
-  /* 
+  /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */

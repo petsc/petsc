@@ -15,13 +15,13 @@ PetscInt main(PetscInt argc,char **args)
 {
   typedef enum {RANDOM, CONSTANT, TANH, NUM_FUNCS} FuncType;
   const char    *funcNames[NUM_FUNCS] = {"random", "constant", "tanh"};
-  Mat            A, AA;    
+  Mat            A, AA;
   PetscMPIInt    size;
   PetscInt       N,i, stencil=1,dof=1;
   PetscInt       dim[3] = {10,10,10}, ndim = 3;
   Vec            coords,x,y,z,xx,yy,zz;
   PetscReal      h[3];
-  PetscScalar    s;  
+  PetscScalar    s;
   PetscRandom    rdm;
   PetscReal      norm, enorm;
   PetscInt       func;
@@ -40,23 +40,23 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscOptionsEList("-function", "Function type", "ex27", funcNames, NUM_FUNCS, funcNames[function], &func, PETSC_NULL);CHKERRQ(ierr);
     function = (FuncType) func;
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_x",&view_x,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_y",&view_y,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_z",&view_z,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-dim",dim,&ndim,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_x",&view_x,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_y",&view_y,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_z",&view_z,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-dim",dim,&ndim,PETSC_NULL);CHKERRQ(ierr);
 
-  
 
-  ierr = DMDACreate3d(PETSC_COMM_SELF,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR, 
-                    dim[0], dim[1], dim[2], 
-                    PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 
+
+  ierr = DMDACreate3d(PETSC_COMM_SELF,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
+                    dim[0], dim[1], dim[2],
+                    PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
                     dof, stencil,
                     PETSC_NULL, PETSC_NULL, PETSC_NULL,
                     &da);CHKERRQ(ierr);
   // Coordinates
   ierr = DMDAGetCoordinateDA(da, &coordsda);
   ierr = DMGetGlobalVector(coordsda, &coords);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) coords, "Grid coordinates");CHKERRQ(ierr);  
+  ierr = PetscObjectSetName((PetscObject) coords, "Grid coordinates");CHKERRQ(ierr);
   for (i = 0, N = 1; i < 3; i++) {
     h[i] = 1.0/dim[i];
     PetscScalar *a;
@@ -96,16 +96,16 @@ PetscInt main(PetscInt argc,char **args)
   }
   ierr = PetscPrintf(PETSC_COMM_SELF, "; total size %d \n",N);CHKERRQ(ierr);
 
-  
+
   if (function == RANDOM) {
     ierr = PetscRandomCreate(PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
     ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
     ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
-  } 
+  }
   else if (function == CONSTANT) {
     ierr = VecSet(x, 1.0);CHKERRQ(ierr);
-  } 
+  }
   else if (function == TANH) {
     PetscScalar *a;
     ierr = VecGetArray(x, &a);CHKERRQ(ierr);
@@ -125,19 +125,19 @@ PetscInt main(PetscInt argc,char **args)
 
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "|x|_2 = %g\n",norm);CHKERRQ(ierr);
-  
+
   /* create USFFT object */
   ierr = MatCreateSeqUSFFT(coords,da,&A);CHKERRQ(ierr);
   /* create FFTW object */
   ierr = MatCreateSeqFFTW(PETSC_COMM_SELF,3,dim,&AA);CHKERRQ(ierr);
-  
+
   /* apply USFFT and FFTW FORWARD "preemptively", so the fftw_plans can be reused on different vectors */
   ierr = MatMult(A,x,z);CHKERRQ(ierr);
   ierr = MatMult(AA,xx,zz);CHKERRQ(ierr);
   // Now apply USFFT and FFTW forward several (3) times
   for (i=0; i<3; ++i){
-    ierr = MatMult(A,x,y);CHKERRQ(ierr); 
-    ierr = MatMult(AA,xx,yy);CHKERRQ(ierr); 
+    ierr = MatMult(A,x,y);CHKERRQ(ierr);
+    ierr = MatMult(AA,xx,yy);CHKERRQ(ierr);
     ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
     ierr = MatMultTranspose(AA,yy,zz);CHKERRQ(ierr);
   }
@@ -148,14 +148,14 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD, "yy = \n");CHKERRQ(ierr);
     ierr = VecView(yy, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  
+
   if (view_z) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "z = \n");CHKERRQ(ierr);
     ierr = VecView(z, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "zz = \n");CHKERRQ(ierr);
     ierr = VecView(zz, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  
+
   /* compare x and z. USFFT computes an unnormalized DFT, thus z = N*x */
   s = 1.0/(PetscReal)N;
   ierr = VecScale(z,s);CHKERRQ(ierr);
@@ -176,14 +176,14 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecNorm(y,NORM_1,&enorm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "|y|_2 = %g\n",norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "|y-yy| = %g\n",enorm);CHKERRQ(ierr);
-  
+
   /* compare z and zz: USFFT and FFTW results*/
   ierr = VecNorm(z,NORM_2,&norm);CHKERRQ(ierr);
   ierr = VecAXPY(z,-1.0,zz);CHKERRQ(ierr);
   ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "|z|_2 = %g\n",norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "|z-zz| = %g\n",enorm);CHKERRQ(ierr);
-  
+
 
   /* free spaces */
   ierr = DMRestoreGlobalVector(da,&x);CHKERRQ(ierr);

@@ -10,10 +10,10 @@ Input parameters include\n\
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
-  Mat            A,B;    
-  PetscViewer    fd;               
-  char           file[2][PETSC_MAX_PATH_LEN];     
-  PetscBool      flg; 
+  Mat            A,B;
+  PetscViewer    fd;
+  char           file[2][PETSC_MAX_PATH_LEN];
+  PetscBool      flg;
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       ma,na,mb,nb;
@@ -27,17 +27,17 @@ PetscInt main(PetscInt argc,char **args)
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -fA options");
   ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[1],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -fP options");
-   
+
   /* Load matrices */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   printf("\n A:\n");
   printf("----------------------\n");
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatGetSize(A,&ma,&na);CHKERRQ(ierr);
-  
+
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatLoad(B,fd);CHKERRQ(ierr);
@@ -46,7 +46,7 @@ PetscInt main(PetscInt argc,char **args)
   printf("----------------------\n");
   ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatGetSize(B,&mb,&nb);CHKERRQ(ierr);
-   
+
   /* Compute B = -A + B */
   if (ma != mb || na != nb) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"nonconforming matrix size");
   ierr = MatAXPY(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);

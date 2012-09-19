@@ -25,7 +25,7 @@
       call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
 
-!     create two vectors 
+!     create two vectors
 !     one parallel and one sequential. The sequential one on each processor
 !     is as long as the entire parallel one.
 
@@ -52,7 +52,7 @@
 
 !     create two index sets and the scatter context to move the contents of
 !     of the parallel vector to each sequential vector. If you want the
-!     parallel vector delivered to only one processor then create a is2 
+!     parallel vector delivered to only one processor then create a is2
 !     of length zero on all processors except the one to receive the parallel vector
 
       first = 0
@@ -65,7 +65,7 @@
       call VecScatterDestroy(ctx,ierr)
 !
 !   View the sequential vector on the 0th processor
-!  
+!
       if (rank .eq. 0) then
         call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr)
       endif
@@ -75,6 +75,6 @@
       call ISDestroy(is1,ierr)
       call ISDestroy(is2,ierr)
 
-      call PetscFinalize(ierr) 
+      call PetscFinalize(ierr)
       end
- 
+

@@ -1,7 +1,7 @@
 
-static char help[] = "Reads a matrix from PETSc binary file. Use for view or investigating matrix data structure. \n\n"; 
+static char help[] = "Reads a matrix from PETSc binary file. Use for view or investigating matrix data structure. \n\n";
 /*
- Example: 
+ Example:
       ./ex16 -f <matrix file> -a_mat_view_draw -draw_pause -1
       ./ex16 -f <matrix file> -a_mat_view_info
  */
@@ -11,7 +11,7 @@ static char help[] = "Reads a matrix from PETSc binary file. Use for view or inv
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat                   A,Asp;          
+  Mat                   A,Asp;
   PetscViewer           fd;               /* viewer */
   char                  file[PETSC_MAX_PATH_LEN];     /* input file name */
   PetscErrorCode        ierr;
@@ -24,7 +24,7 @@ int main(int argc,char **args)
   PetscMPIInt          rank;
   MatInfo              matinfo;
   PetscInt             Dnnz,Onnz;
-  
+
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ int main(int argc,char **args)
   printf("Dnnz %d %d\n",Dnnz,Onnz);
   ierr = MatSeqAIJSetPreallocation(Asp,Dnnz,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Asp,Dnnz,PETSC_NULL,Onnz,PETSC_NULL);CHKERRQ(ierr);
- 
+
   /* Check zero rows */
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   nrows = 0;
@@ -78,7 +78,7 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(Asp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Asp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
- 
+
   percent=(PetscReal)nnzA*100/(m*n);
   ierr = PetscPrintf(PETSC_COMM_SELF," [%d] Matrix A local size %d,%d; nnzA %d, %g percent; No. of zero rows: %d\n",rank,m,n,nnzA,percent,nrows);
   percent=(PetscReal)nnzAsp*100/(m*n);

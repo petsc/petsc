@@ -27,7 +27,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  row  = 0; 
+  row  = 0;
   indices[0] = 0; indices[1] = 1; indices[2] = 2; indices[3] = 3; indices[4] = 4; indices[5] = 5;
   values[0] = -1.0; values[1] = 0.0; values[2] = 1.0; values[3] = 3.0; values[4] = 4.0; values[5] = -5.0;
   ierr = MatSetValues(A,1,&row,6,indices,values,INSERT_VALUES);CHKERRQ(ierr);
@@ -107,7 +107,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(&min);CHKERRQ(ierr);
   ierr = VecDestroy(&max);CHKERRQ(ierr);
   ierr = VecDestroy(&maxabs);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

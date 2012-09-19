@@ -1,7 +1,7 @@
 #include <petscsnes.h>
 #include <petscdmda.h>
 
-static  char help[]= 
+static  char help[]=
 "This example is an implementation of minimal surface area with \n\
 a plate problem from the TAO package (examples/plate2.c) \n\
 This example is based on a problem from the MINPACK-2 test suite.\n\
@@ -16,10 +16,10 @@ The command line options are:\n\
   -start <st>, where <st> =0 for zero vector, <st> != 0 \n\
                for an average of the boundary conditions\n\n";
 
-/*                                                                              
-   User-defined application context - contains data needed by the               
-   application-provided call-back routines, FormJacobian() and                  
-   FormFunction().                                                              
+/*
+   User-defined application context - contains data needed by the
+   application-provided call-back routines, FormJacobian() and
+   FormFunction().
 */
 
 typedef struct {
@@ -131,13 +131,13 @@ int main(int argc, char **argv)
 #undef __FUNCT__
 #define __FUNCT__ "FormGradient"
 
-/*  FormGradient - Evaluates gradient of f.             
+/*  FormGradient - Evaluates gradient of f.
 
     Input Parameters:
 .   snes  - the SNES context
 .   X     - input vector
 .   ptr   - optional user-defined context, as set by SNESSetFunction()
-    
+
     Output Parameters:
 .   G - vector containing the newly evaluated gradient
 */
@@ -176,10 +176,10 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   /* Compute function over the locally owned part of the mesh */
   for (j=ys; j < ys+ym; j++){
     for (i=xs; i< xs+xm; i++){
-      
+
       xc = x[j][i];
       xlt=xrb=xl=xr=xb=xt=xc;
-      
+
       if (i==0){ /* left side */
         xl= left[j-ys+1];
         xlt = left[j-ys+2];
@@ -193,7 +193,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
       } else {
         xb = x[j-1][i];
       }
-      
+
       if (i+1 == mx){ /* right side */
         xr=right[j-ys+1];
         xrb = right[j-ys];
@@ -223,7 +223,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
       d6 = (xrb-xb);
       d7 = (xlt-xl);
       d8 = (xt-xlt);
-      
+
       df1dxc = d1*hydhx;
       df2dxc = ( d1*hydhx + d4*hxdhy );
       df3dxc = d3*hxdhy;
@@ -246,7 +246,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
       f4 = PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
       f5 = PetscSqrtReal( 1.0 + d2*d2 + d5*d5);
       f6 = PetscSqrtReal( 1.0 + d4*d4 + d6*d6);
-      
+
       df1dxc /= f1;
       df2dxc /= f2;
       df3dxc /= f3;
@@ -255,10 +255,10 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
       df6dxc /= f6;
 
       g[j][i] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc )/2.0;
-      
+
     }
   }
-  
+
   /* Restore vectors */
   info = DMDAVecRestoreArray(user->da,localX, &x); CHKERRQ(info);
   info = DMDAVecRestoreArray(user->da,G, &g); CHKERRQ(info);
@@ -289,7 +289,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
 
 */
 PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure* flag, void *ptr)
-{ 
+{
   AppCtx          *user = (AppCtx *) ptr;
   Mat             H = *tH;
   PetscErrorCode  info;
@@ -321,7 +321,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   /* Get ghost points */
   info = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
   info = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(info);
- 
+
   /* Get pointers to vector data */
   info = DMDAVecGetArray(user->da,localX, &x); CHKERRQ(info);
 
@@ -329,7 +329,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   /* Compute Jacobian over the locally owned part of the mesh */
   for (j=ys; j< ys+ym; j++){
     for (i=xs; i< xs+xm; i++){
-      xc = x[j][i]; 
+      xc = x[j][i];
       xlt=xrb=xl=xr=xb=xt=xc;
 
       /* Left */
@@ -339,7 +339,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       } else {
         xl = x[j][i-1];
       }
-      
+
       /* Bottom */
       if (j==0){
         xb=bottom[i+1];
@@ -347,7 +347,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       } else {
         xb = x[j-1][i];
       }
-      
+
       /* Right */
       if (i+1 == mx){
         xr=right[j+1];
@@ -382,7 +382,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       d6 = (xrb-xb)/hx;
       d7 = (xlt-xl)/hy;
       d8 = (xlt-xt)/hx;
-      
+
       f1 = PetscSqrtReal( 1.0 + d1*d1 + d7*d7);
       f2 = PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
       f3 = PetscSqrtReal( 1.0 + d3*d3 + d8*d8);
@@ -408,50 +408,50 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 	(hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +
 	(hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
 
-      hl/=2.0; hr/=2.0; ht/=2.0; hb/=2.0; hbr/=2.0; htl/=2.0;  hc/=2.0; 
+      hl/=2.0; hr/=2.0; ht/=2.0; hb/=2.0; hbr/=2.0; htl/=2.0;  hc/=2.0;
 
       k=0;
       row.i = i;row.j= j;
       /* Bottom */
-      if (j>0){ 
-	v[k]=hb; 
+      if (j>0){
+	v[k]=hb;
 	col[k].i = i; col[k].j=j-1; k++;
       }
-      
+
       /* Bottom right */
       if (j>0 && i < mx -1){
-	v[k]=hbr; 
+	v[k]=hbr;
 	col[k].i = i+1; col[k].j = j-1; k++;
       }
-      
+
       /* left */
       if (i>0){
-	v[k]= hl; 
+	v[k]= hl;
 	col[k].i = i-1; col[k].j = j; k++;
       }
-      
+
       /* Centre */
       v[k]= hc; col[k].i= row.i; col[k].j = row.j; k++;
-      
+
       /* Right */
       if (i < mx-1 ){
-	v[k]= hr; 
+	v[k]= hr;
 	col[k].i= i+1; col[k].j = j;k++;
       }
-      
+
       /* Top left */
       if (i>0 && j < my-1 ){
-	v[k]= htl; 
+	v[k]= htl;
 	col[k].i = i-1;col[k].j = j+1; k++;
       }
-      
+
       /* Top */
       if (j < my-1 ){
-	v[k]= ht; 
+	v[k]= ht;
 	col[k].i = i; col[k].j = j+1; k++;
       }
-      
-      info = MatSetValuesStencil(H,1,&row,k,col,v,INSERT_VALUES); 
+
+      info = MatSetValuesStencil(H,1,&row,k,col,v,INSERT_VALUES);
       CHKERRQ(info);
     }
   }
@@ -474,7 +474,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "MSA_BoundaryConditions"
-/* 
+/*
    MSA_BoundaryConditions -  Calculates the boundary conditions for
    the region.
 
@@ -580,25 +580,25 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 
   /* Scale the boundary if desired */
 
-  info = PetscOptionsGetReal(PETSC_NULL,"-bottom",&scl,&flg); 
+  info = PetscOptionsGetReal(PETSC_NULL,"-bottom",&scl,&flg);
   CHKERRQ(info);
   if (flg){
     info = VecScale(Bottom, scl); CHKERRQ(info);
   }
-  
-  info = PetscOptionsGetReal(PETSC_NULL,"-top",&scl,&flg); 
+
+  info = PetscOptionsGetReal(PETSC_NULL,"-top",&scl,&flg);
   CHKERRQ(info);
   if (flg){
     info = VecScale(Top, scl); CHKERRQ(info);
   }
-  
-  info = PetscOptionsGetReal(PETSC_NULL,"-right",&scl,&flg); 
+
+  info = PetscOptionsGetReal(PETSC_NULL,"-right",&scl,&flg);
   CHKERRQ(info);
   if (flg){
     info = VecScale(Right, scl); CHKERRQ(info);
   }
-  
-  info = PetscOptionsGetReal(PETSC_NULL,"-left",&scl,&flg); 
+
+  info = PetscOptionsGetReal(PETSC_NULL,"-left",&scl,&flg);
   CHKERRQ(info);
   if (flg){
     info = VecScale(Left, scl); CHKERRQ(info);
@@ -611,7 +611,7 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 #undef __FUNCT__
 #define __FUNCT__ "MSA_InitialPoint"
 /*
-   MSA_InitialPoint - Calculates the initial guess in one of three ways. 
+   MSA_InitialPoint - Calculates the initial guess in one of three ways.
 
    Input Parameters:
 .  user - user-defined application context
@@ -632,7 +632,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   info = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg); CHKERRQ(info);
 
   if (flg && start==0){ /* The zero vector is reasonable */
- 
+
     info = VecSet(X, zero); CHKERRQ(info);
     /* PLogInfo(user,"Min. Surface Area Problem: Start with 0 vector \n"); */
 
@@ -641,7 +641,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     PetscInt     mx=user->mx,my=user->my;
     PetscScalar  **x;
     PetscInt    xs,xm,ys,ym;
-    
+
     info = VecGetArray(user->Top,&top); CHKERRQ(info);
     info = VecGetArray(user->Bottom,&bottom); CHKERRQ(info);
     info = VecGetArray(user->Left,&left); CHKERRQ(info);
@@ -651,14 +651,14 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     info = DMDAVecGetArray(user->da,X,&x); CHKERRQ(info);
     info = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(info);
 
-    /* Perform local computations */    
+    /* Perform local computations */
     for (j=ys; j<ys+ym; j++){
       for (i=xs; i< xs+xm; i++){
 	x[j][i] = ( (j+1)*bottom[i-xs+1]/my+(my-j+1)*top[i-xs+1]/(my+2)+
 		   (i+1)*left[j-ys+1]/mx+(mx-i+1)*right[j-ys+1]/(mx+2))/2.0;
       }
     }
-    
+
     /* Restore vectors */
     info = DMDAVecRestoreArray(user->da,X,&x); CHKERRQ(info);
     info = VecRestoreArray(user->Left,&left); CHKERRQ(info);
@@ -672,7 +672,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "MSA_Plate"
-/* 
+/*
    MSA_Plate -  Calculates an obstacle for surface to stretch over.
 */
 PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx)
@@ -699,7 +699,7 @@ PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx)
   info = PetscOptionsHasName(PETSC_NULL,"-cylinder",&cylinder); CHKERRQ(info);
   /* Compute the optional lower box */
   if (cylinder){
-    for (i=xs; i< xs+xm; i++){    
+    for (i=xs; i< xs+xm; i++){
       for (j=ys; j<ys+ym; j++){
 	t1=(2.0*i-mx)*bmy;
 	t2=(2.0*j-my)*bmx;
@@ -711,16 +711,16 @@ PetscErrorCode MSA_Plate(Vec XL,Vec XU,void *ctx)
     }
   } else {
     /* Compute the optional lower box */
-    for (i=xs; i< xs+xm; i++){    
+    for (i=xs; i< xs+xm; i++){
       for (j=ys; j<ys+ym; j++){
-	if (i>=(mx-bmx)/2 && i<mx-(mx-bmx)/2 && 
+	if (i>=(mx-bmx)/2 && i<mx-(mx-bmx)/2 &&
 	    j>=(my-bmy)/2 && j<my-(my-bmy)/2 ){
 	  xl[j][i] = user->bheight;
 	}
       }
     }
   }
-    
+
   info = DMDAVecRestoreArray(user->da,XL,&xl); CHKERRQ(info);
 
   PetscFunctionReturn(0);

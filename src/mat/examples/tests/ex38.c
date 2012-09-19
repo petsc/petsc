@@ -1,5 +1,5 @@
 
-static char help[] = "Test interface of Elemental. \n\n"; 
+static char help[] = "Test interface of Elemental. \n\n";
 
 #include <petscmat.h>
 
@@ -31,7 +31,7 @@ int main(int argc,char **args)
   ierr = MatSetType(C,MATELEMENTAL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
-  
+
   ierr = PetscOptionsHasName(PETSC_NULL,"-row_oriented",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatSetOption(C,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);}
   ierr = MatGetOwnershipIS(C,&isrows,&iscols);CHKERRQ(ierr);
@@ -57,8 +57,8 @@ int main(int argc,char **args)
   ierr = PetscMalloc(nrows*ncols*sizeof(*v),&v);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
-      //v[i*ncols+j] = (PetscReal)(rank); 
-      v[i*ncols+j] = (PetscReal)(rank*10000+100*rows[i]+cols[j]); 
+      //v[i*ncols+j] = (PetscReal)(rank);
+      v[i*ncols+j] = (PetscReal)(rank*10000+100*rows[i]+cols[j]);
     }
   }
   ierr = MatSetValues(C,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
@@ -67,13 +67,13 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  // Test MatView() 
+  // Test MatView()
   if (mats_view){
     ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  
+
   // Set unowned matrix entries - add subdiagonals and diagonals from proc[0]
-  if (rank == 0) { 
+  if (rank == 0) {
     PetscInt M,N,cols[2];
     ierr = MatGetSize(C,&M,&N);CHKERRQ(ierr);
     for (i=0; i<M; i++){
@@ -89,7 +89,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  // Test MatMult() 
+  // Test MatMult()
   ierr = MatComputeExplicitOperator(C,&Caij);CHKERRQ(ierr);
   ierr = MatMultEqual(C,Caij,5,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultEqual() fails");
@@ -123,4 +123,4 @@ int main(int argc,char **args)
   return 0;
 }
 
- 
+

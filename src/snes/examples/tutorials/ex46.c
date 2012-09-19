@@ -10,8 +10,8 @@ T*/
 
 #include <petscsnes.h>
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines, FormJacobianLocal() and
    FormFunctionLocal().
 */
@@ -21,7 +21,7 @@ typedef struct {
   PetscInt    m;  /* Exponent for A */
 } AppCtx;
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
@@ -132,7 +132,7 @@ PetscScalar funcADer(PetscScalar z, AppCtx *user)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal"
-/* 
+/*
    FormFunctionLocal - Evaluates nonlinear function, F(x).
 */
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
@@ -151,7 +151,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   K      = user->K;
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
-  hxdhy  = hx/hy; 
+  hxdhy  = hx/hy;
   hydhx  = hy/hx;
   /*
      Compute function over the locally owned part of the grid
@@ -176,8 +176,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   }
   ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   ierr = PetscLogFlops(11*info->ym*info->xm);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal"
@@ -197,16 +197,16 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
   K      = user->K;
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
-  hxdhy  = hx/hy; 
+  hxdhy  = hx/hy;
   hydhx  = hy/hx;
 
-  /* 
+  /*
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by
-        contiguous chunks of rows across the processors. 
+        contiguous chunks of rows across the processors.
       - Each processor needs to insert only elements that it owns
         locally (but any non-local elements will be sent to the
-        appropriate processor during matrix assembly). 
+        appropriate processor during matrix assembly).
       - Here, we set all entries for a particular row at once.
       - We can set matrix entries either using either
         MatSetValuesLocal() or MatSetValues(), as discussed above.
@@ -242,7 +242,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
     }
   }
 
-  /* 
+  /*
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd().
   */

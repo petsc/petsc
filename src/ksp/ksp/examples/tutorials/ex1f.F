@@ -22,7 +22,7 @@
 !  Use of the conventional Fortran include statements is also supported
 !  In this case, the PETsc include files are located in the directory
 !  petsc/include/foldinclude.
-!         
+!
 !  Since one must be very careful to include each file no more than once
 !  in a Fortran routine, application programmers must exlicitly list
 !  each file needed for the various PETSc components within their
@@ -61,7 +61,7 @@
 !     norm     - norm of error in solution
 !
       Vec              x,b,u
-      Mat              A 
+      Mat              A
       KSP              ksp
       PC               pc
       PetscReal        norm,tol
@@ -73,7 +73,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
@@ -92,10 +92,10 @@
       i3 = 3
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Compute the matrix and right-hand-side vector that define
 !         the linear system, Ax = b.
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create matrix.  When using MatCreate(), the matrix format can
 !  be specified at runtime.
@@ -145,9 +145,9 @@
       call VecSet(u,one,ierr)
       call MatMult(A,u,b,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !          Create the linear solver and set various options
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create linear solver context
 
@@ -180,9 +180,9 @@
 
       call KSPSetFromOptions(ksp,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call KSPSolve(ksp,b,x,ierr)
 
@@ -190,9 +190,9 @@
 
       call KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Check solution and clean up
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Check the error
 

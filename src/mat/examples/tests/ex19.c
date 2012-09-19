@@ -23,7 +23,7 @@ int FormElementStiffness(PetscReal H,PetscScalar *Ke)
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C; 
+  Mat            C;
   Vec            u,b;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
@@ -49,7 +49,7 @@ int main(int argc,char **args)
   ierr = MatSetUp(C);CHKERRQ(ierr);
 
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
-  end   = start + M/size + ((M%size) > rank); 
+  end   = start + M/size + ((M%size) > rank);
 
   /* Form the element stiffness for the Laplacian */
   ierr = FormElementStiffness(h*h,Ke);
@@ -77,8 +77,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Create test vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr); 
-  ierr = VecSetSizes(u,PETSC_DECIDE,N);CHKERRQ(ierr); 
+  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
+  ierr = VecSetSizes(u,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecSet(u,one);CHKERRQ(ierr);

@@ -41,7 +41,7 @@ int main(int argc,char **args)
 #if defined(PETSC_USE_SOCKET_VIEWER)
   ierr = VecView(x,PETSC_VIEWER_SOCKET_WORLD);CHKERRQ(ierr);
 #endif
-  
+
   ierr = PetscSleep(30);CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -49,6 +49,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return 0;
 }
-    
+
 
 

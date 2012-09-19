@@ -18,7 +18,7 @@ linear solvers on the individual blocks.\n\n";
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -57,7 +57,7 @@ int main(int argc,char **args)
          the linear system, Ax = b.
      ------------------------------------------------------------------- */
 
-  /* 
+  /*
      Create and assemble parallel matrix
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -66,8 +66,8 @@ int main(int argc,char **args)
   ierr = MatMPIAIJSetPreallocation(A,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(A,5,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
-  for (Ii=Istart; Ii<Iend; Ii++) { 
-    v = -1.0; i = Ii/n; j = Ii - i*n;  
+  for (Ii=Istart; Ii<Iend; Ii++) {
+    v = -1.0; i = Ii/n; j = Ii - i*n;
     if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
@@ -97,7 +97,7 @@ int main(int argc,char **args)
   */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
@@ -116,7 +116,7 @@ int main(int argc,char **args)
                    Define the problem decomposition
      ------------------------------------------------------------------- */
 
-  /* 
+  /*
      Call PCBJacobiSetTotalBlocks() to set individually the size of
      each block in the preconditioner.  This could also be done with
      the runtime option
@@ -136,19 +136,19 @@ int main(int argc,char **args)
                Set the linear solvers for the subblocks
      ------------------------------------------------------------------- */
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Basic method, should be sufficient for the needs of most users.
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
      By default, the block Jacobi method uses the same solver on each
-     block of the problem.  To set the same solver options on all blocks, 
+     block of the problem.  To set the same solver options on all blocks,
      use the prefix -sub before the usual PC and KSP options, e.g.,
           -sub_pc_type <pc> -sub_ksp_type <ksp> -sub_ksp_rtol 1.e-4
   */
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         Advanced method, setting different solvers for various blocks.
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
      Note that each block's KSP context is completely independent of
      the others, and the full range of uniprocessor KSP options is
@@ -159,7 +159,7 @@ int main(int argc,char **args)
   */
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCBJACOBI,&isbjacobi);CHKERRQ(ierr);
   if (isbjacobi) {
-    /* 
+    /*
        Call KSPSetUp() to set the block Jacobi data structures (including
        creation of an internal KSP context for each block).
 
@@ -174,7 +174,7 @@ int main(int argc,char **args)
 
     /*
        Loop over the local blocks, setting various KSP options
-       for each block.  
+       for each block.
     */
     for (i=0; i<nlocal; i++) {
       ierr = KSPGetPC(subksp[i],&subpc);CHKERRQ(ierr);
@@ -198,7 +198,7 @@ int main(int argc,char **args)
                       Solve the linear system
      ------------------------------------------------------------------- */
 
-  /* 
+  /*
     Set runtime options
   */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
@@ -228,7 +228,7 @@ int main(int argc,char **args)
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G iterations %D\n",norm,its);CHKERRQ(ierr);
 
-  /* 
+  /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */

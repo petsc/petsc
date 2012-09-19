@@ -46,7 +46,7 @@ int main(int argc,char **argv) {
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
+
   /* Perform SeqAIJ_SeqMAIJ PtAP */
   ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,1.,&mC);CHKERRQ(ierr);
   ierr = MatView(mC,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
@@ -56,7 +56,7 @@ int main(int argc,char **argv) {
   ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* Perform diff of two matrices */
-  ierr = MatAXPY(C,-1.0,mC,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
+  ierr = MatAXPY(C,-1.0,mC,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   /* Note: We should be able to use SAME_NONZERO_PATTERN on the line above, */
   /*       but don't because this flag doesn't assist testing. */
   ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

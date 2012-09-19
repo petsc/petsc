@@ -25,7 +25,7 @@ typedef struct
   PetscReal     dy;     /* the grid space in y-direction */
   PetscReal     a;      /* the convection coefficient    */
   PetscReal     epsilon; /* the diffusion coefficient    */
-  PetscReal     tfinal;  
+  PetscReal     tfinal;
 } Data;
 
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void *);
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   const TSType   tstype;
   PetscBool      sundials;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /* set data */
@@ -91,7 +91,7 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
 #endif
   dt             = 0.1;
-  ftime_original = data.tfinal = 1.0; 
+  ftime_original = data.tfinal = 1.0;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,time_steps,ftime_original);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,global);CHKERRQ(ierr);
@@ -151,7 +151,7 @@ int main(int argc,char **argv)
 
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetUp(ts);CHKERRQ(ierr);
-  
+
   /* Test TSSetPostStep() */
   ierr = PetscOptionsHasName(PETSC_NULL,"-test_PostStep",&flg);CHKERRQ(ierr);
   if (flg){
@@ -176,7 +176,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerDestroy(&viewfile);CHKERRQ(ierr);
   }
 
-  /* display solver info for Sundials */ 
+  /* display solver info for Sundials */
   ierr = TSGetType(ts,&tstype);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)ts,TSSUNDIALS,&sundials);CHKERRQ(ierr);
   if (sundials){
@@ -487,7 +487,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PostStep"
 PetscErrorCode PostStep(TS ts)
 {

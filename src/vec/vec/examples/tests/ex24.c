@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   VecScatter     ctx = 0;
   PetscViewer    sviewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRQ(ierr);
@@ -32,14 +32,14 @@ int main(int argc,char **argv)
 
   /* create two index sets */
   if (rank < size-1) {
-    m = n + 2; 
+    m = n + 2;
   } else {
     m = n;
   }
   ierr = PetscMalloc((m)*sizeof(PetscInt),&blks);CHKERRQ(ierr);
   blks[0] = n*rank;
   for (i=1; i<m; i++) {
-    blks[i] = blks[i-1] + 1;   
+    blks[i] = blks[i-1] + 1;
   }
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,m,blks,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
   ierr = PetscFree(blks);CHKERRQ(ierr);
@@ -61,7 +61,7 @@ int main(int argc,char **argv)
   ierr = VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"----\n");CHKERRQ(ierr); 
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"----\n");CHKERRQ(ierr);
   ierr = PetscViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
   ierr = VecView(y,sviewer);CHKERRQ(ierr); fflush(stdout);
   ierr = PetscViewerRestoreSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
@@ -77,4 +77,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

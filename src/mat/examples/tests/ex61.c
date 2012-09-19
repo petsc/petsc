@@ -6,7 +6,7 @@ static char help[] = "Tests MatSeq(B)AIJSetColumnIndices().\n\n";
 /*
       Generate the following matrix:
 
-         1 0 3 
+         1 0 3
          1 2 3
          0 0 3
 */

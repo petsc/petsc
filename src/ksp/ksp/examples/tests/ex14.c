@@ -28,25 +28,25 @@ T*/
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
-  
+
             -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
-  
+
     with boundary conditions
-   
+
              u = 0  for  x = 0, x = 1, y = 0, y = 1.
-  
+
     A finite difference approximation with the usual 5-point stencil
-    is used to discretize the boundary value problem to obtain a nonlinear 
+    is used to discretize the boundary value problem to obtain a nonlinear
     system of equations.
 
     The SNES version of this problem is:  snes/examples/tutorials/ex5.c
     We urge users to employ the SNES component for solving nonlinear
-    problems whenever possible, as it offers many advantages over coding 
+    problems whenever possible, as it offers many advantages over coding
     nonlinear solvers independently.
 
   ------------------------------------------------------------------------- */
 
-/* 
+/*
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscksp.h" so that we can use KSP solvers.  Note that this
    file automatically includes:
@@ -58,8 +58,8 @@ T*/
 #include <petscdmda.h>
 #include <petscksp.h>
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines, ComputeJacobian() and
    ComputeFunction().
 */
@@ -71,7 +71,7 @@ typedef struct {
    PetscInt    rank;           /* processor rank */
 } AppCtx;
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode ComputeFunction(AppCtx*,Vec,Vec),FormInitialGuess(AppCtx*,Vec);
@@ -200,7 +200,7 @@ int main(int argc,char **argv)
      Solve nonlinear system with a user-defined method
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
+  /*
       This solver is a very simplistic inexact Newton method, with no
       no damping strategies or bells and whistles. The intent of this code
       is  merely to demonstrate the repeated solution with KSP of linear
@@ -214,13 +214,13 @@ int main(int argc,char **argv)
 
   for (i=0; i<max_nonlin_its; i++) {
 
-    /* 
+    /*
         Compute the Jacobian matrix.  See the comments in this routine for
         important information about setting the flag mat_flag.
      */
     ierr = ComputeJacobian(&user,X,J,&mat_flag);CHKERRQ(ierr);
 
-    /* 
+    /*
         Solve J Y = F, where J is the Jacobian matrix.
           - First, set the KSP linear operators.  Here the matrix that
             defines the linear system also serves as the preconditioning
@@ -231,7 +231,7 @@ int main(int argc,char **argv)
     ierr = KSPSolve(ksp,F,Y);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&lin_its);CHKERRQ(ierr);
 
-    /* 
+    /*
        Compute updated iterate
      */
     ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);       /* ynorm = || Y || */
@@ -242,7 +242,7 @@ int main(int argc,char **argv)
       ierr = PetscPrintf(comm,"   linear solve iterations = %D, xnorm=%G, ynorm=%G\n",lin_its,xnorm,ynorm);CHKERRQ(ierr);
     }
 
-    /* 
+    /*
        Evaluate new nonlinear function
      */
     ierr = ComputeFunction(&user,X,F);CHKERRQ(ierr);     /* Compute F(X)    */
@@ -271,7 +271,7 @@ int main(int argc,char **argv)
         ierr = PetscPrintf(comm,"Exceeded maximum number of function evaluations: %D > %D\n",i,max_functions);CHKERRQ(ierr);
       }
       break;
-    }  
+    }
   }
   ierr = PetscPrintf(comm,"Number of SNES iterations = %D\n",i+1);CHKERRQ(ierr);
 
@@ -282,7 +282,7 @@ int main(int argc,char **argv)
 
   ierr = MatDestroy(&J);CHKERRQ(ierr);           ierr = VecDestroy(&Y);CHKERRQ(ierr);
   ierr = VecDestroy(&user.localX);CHKERRQ(ierr); ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.localF);CHKERRQ(ierr); ierr = VecDestroy(&F);CHKERRQ(ierr);      
+  ierr = VecDestroy(&user.localF);CHKERRQ(ierr); ierr = VecDestroy(&F);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
@@ -291,7 +291,7 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-/* 
+/*
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
@@ -337,12 +337,12 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   for (j=ys; j<ys+ym; j++) {
     temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
-      row = i - gxs + (j - gys)*gxm; 
+      row = i - gxs + (j - gys)*gxm;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
-        x[row] = 0.0; 
+        x[row] = 0.0;
         continue;
       }
-      x[row] = temp1*PetscSqrtScalar(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
+      x[row] = temp1*PetscSqrtScalar(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
     }
   }
 
@@ -357,11 +357,11 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   ierr = DMLocalToGlobalBegin(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   return 0;
-} 
+}
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "ComputeFunction"
-/* 
+/*
    ComputeFunction - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -377,7 +377,7 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
   PetscInt       i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
   PetscReal      two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
   PetscScalar    u,uxx,uyy,*x,*f;
-  Vec            localX = user->localX,localF = user->localF; 
+  Vec            localX = user->localX,localF = user->localF;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -408,7 +408,7 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
      Compute function over the locally owned part of the grid
   */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - gys)*gxm + xs - gxs - 1; 
+    row = (j - gys)*gxm + xs - gxs - 1;
     for (i=xs; i<xs+xm; i++) {
       row++;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
@@ -434,8 +434,8 @@ PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
   ierr = DMLocalToGlobalBegin(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
-  return 0; 
-} 
+  return 0;
+}
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobian"
@@ -495,20 +495,20 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
   */
   ierr = DMDAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
 
-  /* 
+  /*
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by
         contiguous chunks of rows across the processors. The "grow"
-        parameter computed below specifies the global row number 
+        parameter computed below specifies the global row number
         corresponding to each local grid point.
       - Each processor needs to insert only elements that it owns
         locally (but any non-local elements will be sent to the
-        appropriate processor during matrix assembly). 
+        appropriate processor during matrix assembly).
       - Always specify global row and columns of matrix entries.
       - Here, we set all entries for a particular row at once.
   */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - gys)*gxm + xs - gxs - 1; 
+    row = (j - gys)*gxm + xs - gxs - 1;
     for (i=xs; i<xs+xm; i++) {
       row++;
       grow = ltog[row];
@@ -527,7 +527,7 @@ PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
     }
   }
 
-  /* 
+  /*
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd().
      By placing code between these two statements, computations can be

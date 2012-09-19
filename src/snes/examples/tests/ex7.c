@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   ierr = PetscObjectSetName((PetscObject)x,"Approximate Solution");CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&F);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&U);CHKERRQ(ierr); 
+  ierr = VecDuplicate(x,&U);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)U,"Exact Solution");CHKERRQ(ierr);
 
   /* create explict matrix preconditioner */
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
     xp += h;
   }
 
-  /* Create nonlinear solver */  
+  /* Create nonlinear solver */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetType(snes,type);CHKERRQ(ierr);
 
@@ -132,7 +132,7 @@ PetscErrorCode  FormInitialGuess(SNES snes,Vec x)
 #define __FUNCT__ "FormJacobian"
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /*  Evaluates a matrix that is used to precondition the matrix-free
-    jacobian. In this case, the explict preconditioner matrix is 
+    jacobian. In this case, the explict preconditioner matrix is
     also EXACTLY the Jacobian. In general, it would be some lower
     order, simplified apprioximation */
 
@@ -152,14 +152,14 @@ PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,v
     ierr = VecGetSize(x,&n);CHKERRQ(ierr);
     d = (PetscReal)(n - 1); d = d*d;
 
-    i = 0; A[0] = 1.0; 
+    i = 0; A[0] = 1.0;
     ierr = MatSetValues(*B,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
     for (i=1; i<n-1; i++) {
-      j[0] = i - 1; j[1] = i;                   j[2] = i + 1; 
-      A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d; 
+      j[0] = i - 1; j[1] = i;                   j[2] = i + 1;
+      A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d;
       ierr = MatSetValues(*B,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
     }
-    i = n-1; A[0] = 1.0; 
+    i = n-1; A[0] = 1.0;
     ierr = MatSetValues(*B,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

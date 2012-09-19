@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0;
   MPI_Comm       comm_f, comm_c;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dim",&dim,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
@@ -25,8 +25,8 @@ int main(int argc,char **argv)
 
   comm_f = PETSC_COMM_WORLD;
   ierr = DMDASplitComm2d(comm_f,M,M,s,&comm_c);CHKERRQ(ierr);
-    
-  /* Set up the array */ 
+
+  /* Set up the array */
   if (dim == 2) {
     ierr = DMDACreate2d(comm_c,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,M,PETSC_DECIDE,PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da_c);CHKERRQ(ierr);
     M    = ratio*(M-1) + 1;
@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+
 
 
 

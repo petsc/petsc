@@ -106,7 +106,7 @@ static PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void
 
   PetscFunctionBegin;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
+  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   h    = 1.0/(mx-1);
 

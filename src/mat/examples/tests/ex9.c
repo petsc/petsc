@@ -7,7 +7,7 @@ static char help[] = "Tests MPI parallel matrix creation.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C; 
+  Mat            C;
   MatInfo        info;
   PetscMPIInt    rank,size;
   PetscInt       i,j,m = 3,n = 2,low,high,iglobal;
@@ -28,7 +28,7 @@ int main(int argc,char **args)
   ierr = MatSetUp(C);CHKERRQ(ierr);
 
   /* Create the matrix for the five point stencil, YET AGAIN */
-  for (i=0; i<m; i++) { 
+  for (i=0; i<m; i++) {
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  Ii = j + n*i;
       if (i>0)   {J = Ii - n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}

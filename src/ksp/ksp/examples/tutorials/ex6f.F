@@ -44,7 +44,7 @@
       PetscErrorCode ierr
       PetscBool  flg
       PetscScalar  v
-      
+
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       m      = 3
@@ -67,20 +67,20 @@
       call MatSetUp(A,ierr)
 
 !  The matrix is partitioned by contiguous chunks of rows across the
-!  processors.  Determine which rows of the matrix are locally owned. 
+!  processors.  Determine which rows of the matrix are locally owned.
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
-!  Set matrix elements. 
+!  Set matrix elements.
 !   - Each processor needs to insert only elements that it owns
 !     locally (but any non-local elements will be sent to the
-!     appropriate processor during matrix assembly). 
+!     appropriate processor during matrix assembly).
 !   - Always specify global rows and columns of matrix entries.
 
       do 10, II=Istart,Iend-1
         v = -1.0
         i = II/n
-        j = II - i*n  
+        j = II - i*n
         if (i.gt.0) then
           JJ = II - n
           call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)

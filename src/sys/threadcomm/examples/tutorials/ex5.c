@@ -52,7 +52,7 @@ int main(int argc,char **argv)
     ierr = PetscGetTime(&t0);CHKERRQ(ierr);
     for (j=0; j<N; j++) {
       /*      ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)CounterIncrement_kernel,1,counters);CHKERRQ(ierr); */
-      ierr = PetscThreadCommRunKernel1(PETSC_COMM_WORLD,(PetscThreadKernel)CounterIncrement_kernel,counters);CHKERRQ(ierr); 
+      ierr = PetscThreadCommRunKernel1(PETSC_COMM_WORLD,(PetscThreadKernel)CounterIncrement_kernel,counters);CHKERRQ(ierr);
     }
     ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
     ierr = PetscGetTime(&t1);CHKERRQ(ierr);

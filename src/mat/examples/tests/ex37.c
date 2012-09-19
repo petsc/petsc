@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n"; 
+static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n";
 
 #include <petscmat.h>
 
@@ -7,7 +7,7 @@ static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C,A; 
+  Mat            C,A;
   PetscInt       i, n = 10,midx[3],bs=1;
   PetscErrorCode ierr;
   PetscScalar    v[3];
@@ -24,7 +24,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
   ierr = MatSetType(C,MATAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  
+
   ierr = MatGetType(C,&type);CHKERRQ(ierr);
   if (size == 1){
     ierr = PetscObjectTypeCompare((PetscObject)C,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
@@ -42,10 +42,10 @@ int main(int argc,char **args)
     ierr = MatSetValues(C,1,&i,3,midx,v,INSERT_VALUES);CHKERRQ(ierr);
   }
   i = 0; midx[0] = 0; midx[1] = 1;
-  v[0] = 2.0; v[1] = -1.; 
+  v[0] = 2.0; v[1] = -1.;
   ierr = MatSetValues(C,1,&i,2,midx,v,INSERT_VALUES);CHKERRQ(ierr);
   i = n-1; midx[0] = n-2; midx[1] = n-1;
-  v[0] = -1.0; v[1] = 2.; 
+  v[0] = -1.0; v[1] = 2.;
   ierr = MatSetValues(C,1,&i,2,midx,v,INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -62,7 +62,7 @@ int main(int argc,char **args)
   ierr = MatCopy(C,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatEqual(A,C,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,1,"MatCopy(C,A,DIFFERENT_NONZERO_PATTERN): Matrices are NOT equal");
-  
+
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"A is obtained with MatCopy(,,DIFFERENT_NONZERO_PATTERN):\n");CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -73,7 +73,7 @@ int main(int argc,char **args)
   ierr = MatCopy(C,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatEqual(A,C,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,1,"MatCopy(C,A,SAME_NONZERO_PATTERN): Matrices are NOT equal");
-  
+
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nA is obtained with MatCopy(,,SAME_NONZERO_PATTERN):\n");CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -81,7 +81,7 @@ int main(int argc,char **args)
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"A:\n");CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  
+
   /* test MatStore/RetrieveValues() */
   if (isAIJ){
     ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);CHKERRQ(ierr);
@@ -96,4 +96,4 @@ int main(int argc,char **args)
   return 0;
 }
 
- 
+

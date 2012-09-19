@@ -9,7 +9,7 @@ static char help[] = "Reads a PETSc matrix and vector from a file and solves a l
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -35,7 +35,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  /* 
+  /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
@@ -43,7 +43,7 @@ int main(int argc,char **args)
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f0 option");
 
 
-  /* 
+  /*
        Open binary file.  Note that we use FILE_MODE_READ to indicate
        reading from this file.
   */
@@ -60,11 +60,11 @@ int main(int argc,char **args)
   ierr = VecLoad(b,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
-  /* 
-       If the loaded matrix is larger than the vector (due to being padded 
+  /*
+       If the loaded matrix is larger than the vector (due to being padded
        to match the block size of the system), then create a new padded vector.
   */
-  { 
+  {
       PetscInt     m,n,j,mvec,start,end,idx;
       Vec          tmp;
       PetscScalar *bold;
@@ -98,7 +98,7 @@ int main(int argc,char **args)
   ierr = KSPSetOperators(ksp,A,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  /* 
+  /*
        Here we explicitly call KSPSetUp() and KSPSetUpOnBlocks() to
        enable more precise profiling of setting up the preconditioner.
        These calls are optional, since both will be called within
@@ -113,7 +113,7 @@ int main(int argc,char **args)
             This stage is not profiled separately.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
+  /*
      Check error
   */
   ierr = MatMult(A,x,u);
@@ -123,15 +123,15 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %G\n",norm);CHKERRQ(ierr);
 
-  /* 
+  /*
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  ierr = MatDestroy(&A);CHKERRQ(ierr); 
-  ierr = MatDestroy(&B);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr); 
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
 
 
   ierr = PetscFinalize();

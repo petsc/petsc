@@ -22,7 +22,7 @@ typedef struct _p_PetscThreadComm* PetscThreadComm;
 
    Level: developer
 */
-typedef struct _p_PetscThreadCommRedCtx *PetscThreadCommRedCtx;
+typedef struct _p_PetscThreadCommRedCtx* PetscThreadCommRedCtx;
 
 #define PetscThreadCommType char*
 #define PTHREAD             "pthread"
@@ -32,7 +32,7 @@ typedef struct _p_PetscThreadCommRedCtx *PetscThreadCommRedCtx;
 PETSC_EXTERN PetscFList PetscThreadCommList;
 
 typedef enum {THREADCOMM_SUM,THREADCOMM_PROD,THREADCOMM_MAX,THREADCOMM_MIN,THREADCOMM_MAXLOC,THREADCOMM_MINLOC} PetscThreadCommReductionOp;
-PETSC_EXTERN const char *const PetscThreadCommReductionOps[];
+PETSC_EXTERN const char* const PetscThreadCommReductionOps[];
 
 PETSC_EXTERN PetscErrorCode PetscGetNCores(PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscCommGetThreadComm(MPI_Comm,PetscThreadComm*);
@@ -53,7 +53,7 @@ PETSC_EXTERN PetscErrorCode PetscThreadCommRunKernel6(MPI_Comm,PetscErrorCode (*
 PETSC_EXTERN PetscErrorCode PetscThreadCommBarrier(MPI_Comm);
 PETSC_EXTERN PetscErrorCode PetscThreadCommGetOwnershipRanges(MPI_Comm,PetscInt,PetscInt*[]);
 PETSC_EXTERN PetscErrorCode PetscThreadCommRegisterDestroy(void);
-PETSC_EXTERN PetscInt  PetscThreadCommGetRank(PetscThreadComm);
+PETSC_EXTERN PetscInt PetscThreadCommGetRank(PetscThreadComm);
 
 /* Reduction operations */
 PETSC_EXTERN PetscErrorCode PetscThreadReductionKernelPost(PetscInt,PetscThreadCommRedCtx,void*);

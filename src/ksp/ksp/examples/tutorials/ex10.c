@@ -16,7 +16,7 @@ users manual for a discussion of preloading.  Input parameters include\n\
         -help -ksp_view                  \n\
         -num_numfac <num_numfac> -num_rhs <num_rhs> \n\
         -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package superlu or superlu_dist or mumps \n\
-        -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package mumps \n\   
+        -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package mumps \n\
    mpiexec -n <np> ./ex10 -f0 <datafile> -ksp_type cg -pc_type asm -pc_asm_type basic -sub_pc_type icc -mat_type sbaij
  \n\n";
 */
@@ -25,7 +25,7 @@ users manual for a discussion of preloading.  Input parameters include\n\
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -62,7 +62,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-output_solution",&outputSoln,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-initialguessfilename",initialguessfilename,PETSC_MAX_PATH_LEN,&initialguessfile);CHKERRQ(ierr);
 
-  /* 
+  /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
@@ -80,14 +80,14 @@ int main(int argc,char **args)
   /* -----------------------------------------------------------
                   Beginning of linear solver loop
      ----------------------------------------------------------- */
-  /* 
-     Loop through the linear solve 2 times.  
+  /*
+     Loop through the linear solve 2 times.
       - The intention here is to preload and solve a small system;
         then load another (larger) system and solve it as well.
         This process preloads the instructions with the smaller
         system so that more accurate performance monitoring (via
         -log_summary) can be done with the larger one (that actually
-        is the system of interest). 
+        is the system of interest).
   */
   PetscPreLoadBegin(preload,"Load system");
 
@@ -95,12 +95,12 @@ int main(int argc,char **args)
                            Load system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    /* 
+    /*
        Open binary file.  Note that we use FILE_MODE_READ to indicate
        reading from this file.
     */
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PetscPreLoadIt],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-    
+
     /*
        Load the matrix and vector; then destroy the viewer.
     */
@@ -122,7 +122,7 @@ int main(int argc,char **args)
 	  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 	  ierr = VecSet(b,one);CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
+          ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
           ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
           ierr = VecSetFromOptions(b);CHKERRQ(ierr);
           ierr = VecLoad(b,fd);CHKERRQ(ierr);
@@ -132,7 +132,7 @@ int main(int argc,char **args)
         ierr = VecLoad(b,fd);CHKERRQ(ierr);
       }
     }
-    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
+    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
     /* Make A singular for testing zero-pivot of ilu factorization        */
     /* Example: ./ex10 -f0 <datafile> -test_zeropivot -set_row_zero -pc_factor_shift_nonzero */
@@ -144,8 +144,8 @@ int main(int argc,char **args)
       const PetscScalar *vals;
       PetscBool         flg1=PETSC_FALSE;
       PetscScalar       *zeros;
-      row = 0;      
-      ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);     
+      row = 0;
+      ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
       ierr = PetscMalloc(sizeof(PetscScalar)*(ncols+1),&zeros);
       ierr = PetscMemzero(zeros,(ncols+1)*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr = PetscOptionsGetBool(PETSC_NULL, "-set_row_zero", &flg1,PETSC_NULL);CHKERRQ(ierr);
@@ -173,11 +173,11 @@ int main(int argc,char **args)
       ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
     }
 
-    /* 
-       If the loaded matrix is larger than the vector (due to being padded 
+    /*
+       If the loaded matrix is larger than the vector (due to being padded
        to match the block size of the system), then create a new padded vector.
     */
-    
+
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
     /*  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);*/
     ierr = MatGetSize(A,&M,PETSC_NULL);CHKERRQ(ierr);
@@ -203,7 +203,7 @@ int main(int argc,char **args)
       ierr = VecAssemblyEnd(tmp);CHKERRQ(ierr);
       b = tmp;
     }
-    
+
     ierr = MatGetVecs(A,&x,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
     if (initialguessfile) {
@@ -260,7 +260,7 @@ int main(int argc,char **args)
     //  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                       Setup solve for system
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     /*
        Conclude profiling last stage; begin profiling next stage.
     */
@@ -295,7 +295,7 @@ int main(int argc,char **args)
       }
       ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-      /* 
+      /*
        Here we explicitly call KSPSetUp() and KSPSetUpOnBlocks() to
        enable more precise profiling of setting up the preconditioner.
        These calls are optional, since both will be called within
@@ -350,7 +350,7 @@ int main(int argc,char **args)
             Check error, print output, free data structures.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-      /* 
+      /*
          Check error
       */
       if (trans) {
@@ -362,7 +362,7 @@ int main(int argc,char **args)
       ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
       /*
        Write output (optinally using table for solver details).
-        - PetscPrintf() handles output for multiprocessor jobs 
+        - PetscPrintf() handles output for multiprocessor jobs
           by printing from only one processor in the communicator.
         - KSPView() prints information about the linear solver.
       */
@@ -419,18 +419,18 @@ int main(int argc,char **args)
       if (flg){
         KSPConvergedReason reason;
         ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
-        PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %D\n", reason); 
+        PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %D\n", reason);
       }
-       
+
     } /* while ( num_numfac-- ) */
 
-    /* 
+    /*
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
     */
     ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
     ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = KSPDestroy(&ksp);CHKERRQ(ierr); 
+    ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   PetscPreLoadEnd();
   /* -----------------------------------------------------------
                       End of linear solver loop

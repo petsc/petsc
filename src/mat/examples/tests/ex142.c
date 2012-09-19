@@ -14,11 +14,11 @@ static char help[] = "Test sequential r2c/c2r FFTW interface \n\n";
 PetscInt main(PetscInt argc,char **args)
 {
   typedef enum {RANDOM, CONSTANT, TANH, NUM_FUNCS} FuncType;
-  const char    *funcNames[NUM_FUNCS] = {"random", "constant", "tanh"};  
+  const char    *funcNames[NUM_FUNCS] = {"random", "constant", "tanh"};
   PetscMPIInt    size;
   PetscInt       n = 10,N,Ny,ndim=4,dim[4],DIM,i;
   Vec            x,y,z;
-  PetscScalar    s;  
+  PetscScalar    s;
   PetscRandom    rdm;
   PetscReal      enorm;
   PetscInt       func=RANDOM;
@@ -56,22 +56,22 @@ PetscInt main(PetscInt argc,char **args)
     /*----------------------------------------------------------*/
     N = Ny = 1;
     for (i = 0; i < DIM-1; i++) {
-      N *= dim[i]; 
+      N *= dim[i];
     }
     Ny = N; Ny *= 2*(dim[DIM-1]/2 + 1); /* add padding elements to output vector y */
     N *= dim[DIM-1];
-    
+
 
     ierr = PetscPrintf(PETSC_COMM_SELF, "\n %d-D: FFTW on vector of size %d \n",DIM,N);CHKERRQ(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
-   
+
     ierr = VecCreateSeq(PETSC_COMM_SELF,Ny,&y);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
 
     ierr = VecDuplicate(x,&z);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
-    
+
 
     /* Set fftw plan                    */
     /*----------------------------------*/
@@ -96,7 +96,7 @@ PetscInt main(PetscInt argc,char **args)
     case 3:
       fplan = fftw_plan_dft_r2c_3d(dim[0],dim[1],dim[2],(double *)x_array, (fftw_complex*)y_array,flags);
       bplan = fftw_plan_dft_c2r_3d(dim[0],dim[1],dim[2],(fftw_complex*)y_array,(double *)z_array,flags);
-      break;  
+      break;
     default:
       fplan = fftw_plan_dft_r2c(DIM,dim,(double *)x_array, (fftw_complex*)y_array,flags);
       bplan = fftw_plan_dft_c2r(DIM,dim,(fftw_complex*)y_array,(double *)z_array,flags);
@@ -107,7 +107,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
     ierr = VecRestoreArray(z,&z_array);CHKERRQ(ierr);
 
-    /* Initialize Real space vector x: 
+    /* Initialize Real space vector x:
        The data in the in/out arrays is overwritten during FFTW_MEASURE planning, so planning
        should be done before the input is initialized by the user.
     --------------------------------------------------------*/
@@ -137,7 +137,7 @@ PetscInt main(PetscInt argc,char **args)
       //printf("\n fout:\n");
       //fftw_complex* fout = (fftw_complex*)y_array;
       //for (i=0; i<N/2+1; i++) printf("%d (%g %g)\n",i,fout[i][0],fout[i][1]);
-  
+
       /* FFTW_BACKWARD: destroys its input array 'y_array' even for out-of-place transforms! */
       fftw_execute(bplan);
     }

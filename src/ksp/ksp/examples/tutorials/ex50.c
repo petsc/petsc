@@ -1,5 +1,5 @@
 /*   DM/KSP solving a system of linear equations.
-     Poisson equation in 2D: 
+     Poisson equation in 2D:
 
      div(grad p) = f,  0 < x,y < 1
      with
@@ -11,8 +11,8 @@
      Contributed by Michael Boghosian <boghmic@iit.edu>, 2008,
          based on petsc/src/ksp/ksp/examples/tutorials/ex29.c and ex32.c
 
-     Example of Usage: 
-          ./ex50 -mglevels 3 -ksp_monitor -M 3 -N 3 -ksp_view -da_view_draw -draw_pause -1 
+     Example of Usage:
+          ./ex50 -mglevels 3 -ksp_monitor -M 3 -N 3 -ksp_view -da_view_draw -draw_pause -1
           ./ex50 -M 100 -N 100 -mglevels 1 -mg_levels_0_pc_factor_levels <ilu_levels> -ksp_monitor -cmp_solu
           ./ex50 -M 100 -N 100 -mglevels 1 -mg_levels_0_pc_type lu -mg_levels_0_pc_factor_shift_type NONZERO -ksp_monitor -cmp_solu
           mpiexec -n 4 ./ex50 -M 3 -N 3 -ksp_monitor -ksp_view -mglevels 10 -log_summary
@@ -33,7 +33,7 @@ extern PetscErrorCode VecView_VTK(Vec, const char [], const char []);
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
-typedef struct { 
+typedef struct {
   PetscScalar  uu, tt;
   BCType       bcType;
 } UserContext;
@@ -41,16 +41,16 @@ typedef struct {
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
-{ 
+{
   KSP            ksp;
   DM             da;
   UserContext    user;
   PetscInt       bc;
   PetscErrorCode ierr;
-      
+
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);  
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,(DM)da);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
 
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   bc   = (PetscInt)NEUMANN; // Use Neumann Boundary Conditions
   user.bcType = (BCType)bc;
 
-  
+
   ierr = KSPSetComputeRHS(ksp,ComputeRHS,&user);CHKERRQ(ierr);
   ierr = KSPSetComputeOperators(ksp,ComputeJacobian,&user);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
@@ -72,7 +72,7 @@ int main(int argc,char **argv)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ComputeRHS" 
+#define __FUNCT__ "ComputeRHS"
 PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 {
   UserContext    *user = (UserContext*)ctx;
@@ -86,7 +86,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);
   uu = user->uu; tt = user->tt;
-  pi = 4*atan(1.0); 
+  pi = 4*atan(1.0);
   Hx   = 1.0/(PetscReal)(M);
   Hy   = 1.0/(PetscReal)(N);
 
@@ -115,7 +115,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ComputeJacobian" 
+#define __FUNCT__ "ComputeJacobian"
 PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ctx)
 {
   UserContext    *user = (UserContext*)ctx;
@@ -127,7 +127,7 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ct
 
   PetscFunctionBegin;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);  
+  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);
   Hx    = 1.0 / (PetscReal)(M);
   Hy    = 1.0 / (PetscReal)(N);
   HxdHy = Hx/Hy;
@@ -136,10 +136,10 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ct
   for (j=ys; j<ys+ym; j++){
     for (i=xs; i<xs+xm; i++){
       row.i = i; row.j = j;
-      
+
       if (i==0 || j==0 || i==M-1 || j==N-1) {
         if (user->bcType == DIRICHLET){
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");	  
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");	
         } else if (user->bcType == NEUMANN){
           num=0; numi=0; numj=0;
           if (j!=0) {

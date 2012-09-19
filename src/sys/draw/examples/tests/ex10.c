@@ -10,8 +10,8 @@ int main(int argc,char **argv)
   PetscDraw      draw;
   PetscErrorCode ierr;
   int            x = 0,y = 0,width = 300,height = 300;
- 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
 #if defined (PETSC_HAVE_X)
@@ -39,4 +39,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

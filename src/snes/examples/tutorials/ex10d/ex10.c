@@ -33,7 +33,7 @@ T*/
 
    The Laplacian is approximated in the following way: each edge is given a weight
    of one meaning that the diagonal term will have the weight equal to the degree
-   of a node. The off diagonal terms will get a weight of -1. 
+   of a node. The off diagonal terms will get a weight of -1.
 
    -----------------------------------------------------------------------*/
 
@@ -56,7 +56,7 @@ T*/
 #define MAX_VERT_ELEM   3  /* Vertices per element       */
 
 /*
-  Application-defined context for problem specific data 
+  Application-defined context for problem specific data
 */
 typedef struct {
       PetscInt    Nvglobal,Nvlocal;            /* global and local number of vertices */
@@ -66,10 +66,10 @@ typedef struct {
       PetscInt 	  icv[MAX_ELEM][MAX_VERT_ELEM]; /* vertices belonging to an element */
       PetscInt	  v2p[MAX_VERT];                /* processor number for a vertex */
       PetscInt    *locInd,*gloInd;             /* local and global orderings for a node */
-      Vec 	  localX,localF;               /* local solution (u) and f(u) vectors */ 
+      Vec 	  localX,localF;               /* local solution (u) and f(u) vectors */
       PetscReal	  non_lin_param;                /* nonlinear parameter for the PDE */
       PetscReal	  lin_param;                    /* linear parameter for the PDE */
-      VecScatter  scatter;                      /* scatter context for the local and 
+      VecScatter  scatter;                      /* scatter context for the local and
                                                     distributed vectors */
 } AppCtx;
 
@@ -97,8 +97,8 @@ int main(int argc,char **argv)
   PetscInt               bs = 1;               /* block size for multicomponent systems */
   PetscInt               nvertices;            /* number of local plus ghost nodes of a processor */
   PetscInt               *pordering;           /* PETSc ordering */
-  PetscInt               *vertices;            /* list of all vertices (incl. ghost ones) 
-                                                on a processor */ 
+  PetscInt               *vertices;            /* list of all vertices (incl. ghost ones)
+                                                on a processor */
   PetscInt               *verticesmask;
   PetscInt               *tmp;
   PetscInt               i,j,jstart,inode,nb,nbrs,Nvneighborstotal = 0;
@@ -144,33 +144,33 @@ int main(int argc,char **argv)
   user.Nelocal = 0;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      Read the mesh and partitioning information  
+      Read the mesh and partitioning information
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  
+
   /*
      Read the mesh and partitioning information from 'adj.in'.
      The file format is as follows.
-     For each line the first entry is the processor rank where the 
-     current node belongs. The second entry is the number of 
+     For each line the first entry is the processor rank where the
+     current node belongs. The second entry is the number of
      neighbors of a node. The rest of the line is the adjacency
-     list of a node. Currently this file is set up to work on two 
+     list of a node. Currently this file is set up to work on two
      processors.
 
-     This is not a very good example of reading input. In the future, 
-     we will put an example that shows the style that should be 
-     used in a real application, where partitioning will be done 
-     dynamically by calling partitioning routines (at present, we have 
-     a  ready interface to ParMeTiS). 
+     This is not a very good example of reading input. In the future,
+     we will put an example that shows the style that should be
+     used in a real application, where partitioning will be done
+     dynamically by calling partitioning routines (at present, we have
+     a  ready interface to ParMeTiS).
    */
-  fptr = fopen("adj.in","r"); 
+  fptr = fopen("adj.in","r");
   if (!fptr) SETERRQ(PETSC_COMM_SELF,0,"Could not open adj.in");
-  
+
   /*
      Each processor writes to the file output.<rank> where rank is the
      processor's rank.
   */
   sprintf(part_name,"output.%d",rank);
-  fptr1 = fopen(part_name,"w"); 
+  fptr1 = fopen(part_name,"w");
   if (!fptr1) SETERRQ(PETSC_COMM_SELF,0,"Could no open output file");
   ierr = PetscMalloc(user.Nvglobal*sizeof(PetscInt),&user.gloInd);
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Rank is %D\n",rank);CHKERRQ(ierr);
@@ -204,10 +204,10 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*
-    Create the local ordering list for vertices. First a list using the PETSc global 
-    ordering is created. Then we use the AO object to get the PETSc-to-application and 
-    application-to-PETSc mappings. Each vertex also gets a local index (stored in the 
-    locInd array). 
+    Create the local ordering list for vertices. First a list using the PETSc global
+    ordering is created. Then we use the AO object to get the PETSc-to-application and
+    application-to-PETSc mappings. Each vertex also gets a local index (stored in the
+    locInd array).
   */
   ierr = MPI_Scan(&user.Nvlocal,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   rstart -= user.Nvlocal;
@@ -217,20 +217,20 @@ int main(int argc,char **argv)
     pordering[i] = rstart + i;
   }
 
-  /* 
-    Create the AO object 
+  /*
+    Create the AO object
   */
   ierr = AOCreateBasic(MPI_COMM_WORLD,user.Nvlocal,user.gloInd,pordering,&ao);CHKERRQ(ierr);
   ierr = PetscFree(pordering);CHKERRQ(ierr);
- 
-  /* 
-    Keep the global indices for later use 
+
+  /*
+    Keep the global indices for later use
   */
   ierr = PetscMalloc(user.Nvlocal*sizeof(PetscInt),&user.locInd);CHKERRQ(ierr);
   ierr = PetscMalloc(Nvneighborstotal*sizeof(PetscInt),&tmp);CHKERRQ(ierr);
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Demonstrate the use of AO functionality 
+    Demonstrate the use of AO functionality
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Before AOApplicationToPetsc, local indices are : \n");CHKERRQ(ierr);
@@ -250,8 +250,8 @@ int main(int argc,char **argv)
    ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n");CHKERRQ(ierr);
   }
 
-  /* 
-    Now map the vlocal and neighbor lists to the PETSc ordering 
+  /*
+    Now map the vlocal and neighbor lists to the PETSc ordering
   */
   ierr = AOApplicationToPetsc(ao,user.Nvlocal,user.locInd);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,Nvneighborstotal,tmp);CHKERRQ(ierr);
@@ -280,14 +280,14 @@ int main(int argc,char **argv)
   /*
    Next, we need to generate a list of vertices required for this processor
    and a local numbering scheme for all vertices required on this processor.
-      vertices - integer array of all vertices needed on this processor in PETSc 
-                 global numbering; this list consists of first the "locally owned" 
+      vertices - integer array of all vertices needed on this processor in PETSc
+                 global numbering; this list consists of first the "locally owned"
                  vertices followed by the ghost vertices.
-      verticesmask - integer array that for each global vertex lists its local 
+      verticesmask - integer array that for each global vertex lists its local
                      vertex number (in vertices) + 1. If the global vertex is not
                      represented on this processor, then the corresponding
                      entry in verticesmask is zero
- 
+
       Note: vertices and verticesmask are both Nvglobal in length; this may
     sound terribly non-scalable, but in fact is not so bad for a reasonable
     number of processors. Importantly, it allows us to use NO SEARCHING
@@ -297,17 +297,17 @@ int main(int argc,char **argv)
   ierr      = PetscMalloc(user.Nvglobal*sizeof(PetscInt),&verticesmask);CHKERRQ(ierr);
   ierr      = PetscMemzero(verticesmask,user.Nvglobal*sizeof(PetscInt));CHKERRQ(ierr);
   nvertices = 0;
- 
-  /* 
-    First load "owned vertices" into list 
+
+  /*
+    First load "owned vertices" into list
   */
   for (i=0; i < user.Nvlocal; i++) {
     vertices[nvertices++]   = user.locInd[i];
     verticesmask[user.locInd[i]] = nvertices;
   }
- 
-  /* 
-    Now load ghost vertices into list 
+
+  /*
+    Now load ghost vertices into list
   */
   for (i=0; i < user.Nvlocal; i++) {
     for (j=0; j < user.itot[i]; j++) {
@@ -325,7 +325,7 @@ int main(int argc,char **argv)
    ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"%D ",vertices[i]);CHKERRQ(ierr);
    }
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"\n");CHKERRQ(ierr);
- 
+
   /*
      Map the vertices listed in the neighbors to the local numbering from
     the global ordering that they contained initially.
@@ -343,13 +343,13 @@ int main(int argc,char **argv)
   }
 
   N = user.Nvglobal;
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector and matrix data structures
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
-    Create vector data structures 
+  /*
+    Create vector data structures
   */
   ierr = VecCreate(MPI_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,user.Nvlocal,N);CHKERRQ(ierr);
@@ -359,27 +359,27 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
 
   /*
-    Create the scatter between the global representation and the 
+    Create the scatter between the global representation and the
     local representation
   */
   ierr = ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal);CHKERRQ(ierr);
   ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,vertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
-  ierr = VecScatterCreate(x,isglobal,user.localX,islocal,&user.scatter);CHKERRQ(ierr);  
-  ierr = ISDestroy(&isglobal);CHKERRQ(ierr); 
-  ierr = ISDestroy(&islocal);CHKERRQ(ierr); 
+  ierr = VecScatterCreate(x,isglobal,user.localX,islocal,&user.scatter);CHKERRQ(ierr);
+  ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+  ierr = ISDestroy(&islocal);CHKERRQ(ierr);
 
-  /* 
-     Create matrix data structure; Just to keep the example simple, we have not done any 
+  /*
+     Create matrix data structure; Just to keep the example simple, we have not done any
      preallocation of memory for the matrix. In real application code with big matrices,
-     preallocation should always be done to expedite the matrix creation. 
+     preallocation should always be done to expedite the matrix creation.
   */
   ierr = MatCreate(MPI_COMM_WORLD,&Jac);CHKERRQ(ierr);
   ierr = MatSetSizes(Jac,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(Jac);CHKERRQ(ierr);
   ierr = MatSetUp(Jac);CHKERRQ(ierr);
 
-  /* 
-    The following routine allows us to set the matrix values in local ordering 
+  /*
+    The following routine allows us to set the matrix values in local ordering
   */
   ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs*nvertices,vertices,PETSC_COPY_VALUES,&isl2g);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(Jac,isl2g,isl2g);CHKERRQ(ierr);
@@ -410,7 +410,7 @@ int main(int argc,char **argv)
      ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
      ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
      /* ierr = MatFDColoringView(matfdcoloring,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-     ierr = SNESSetJacobian(snes,Jac,Jac,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr); 
+     ierr = SNESSetJacobian(snes,Jac,Jac,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
      ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
    }
 
@@ -432,8 +432,8 @@ int main(int argc,char **argv)
   */
   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
 
-   /* 
-     Print the initial guess 
+   /*
+     Print the initial guess
    */
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   for (inode = 0; inode < user.Nvlocal; inode++){
@@ -448,7 +448,7 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetNonlinearStepFailures(snes,&nfails);CHKERRQ(ierr);
- 
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Print the output : solution vector and other information
      Each processor writes to the file output.<rank> where rank is the
@@ -474,9 +474,9 @@ int main(int argc,char **argv)
   ierr = PetscFree(tmp);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&user.scatter);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&isl2g);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);  
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.localX);CHKERRQ(ierr);  
+  ierr = VecDestroy(&user.localX);CHKERRQ(ierr);
   ierr = VecDestroy(&user.localF);CHKERRQ(ierr);
   ierr = MatDestroy(&Jac);CHKERRQ(ierr);  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   /*ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);*/
@@ -491,7 +491,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "FormInitialGuess"
 /* --------------------  Form initial approximation ----------------- */
 
-/* 
+/*
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
@@ -511,13 +511,13 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   PetscInt   Neglobal,Nvglobal,j,row;
   PetscReal  alpha,lambda;
 
-  Nvglobal = user->Nvglobal; 
+  Nvglobal = user->Nvglobal;
   Neglobal = user->Neglobal;
   lambda   = user->non_lin_param;
   alpha    = user->lin_param;
 #endif
 
-  Nvlocal  = user->Nvlocal; 
+  Nvlocal  = user->Nvlocal;
   gloInd   = user->gloInd;
 
   /*
@@ -545,7 +545,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
 /* --------------------  Evaluate Function F(x) --------------------- */
-/* 
+/*
    FormFunction - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -582,12 +582,12 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   alpha    = user->lin_param;
   scatter  = user->scatter;
 
-  /* 
+  /*
      PDE : L(u) + lambda*u*u +alpha*u = 0 where L(u) is the approximate Laplacian as
-     described in the beginning of this code 
-                                                                                   
+     described in the beginning of this code
+
      First scatter the distributed vector X into local vector localX (that includes
-     values for ghost nodes. If we wish,we can put some other work between 
+     values for ghost nodes. If we wish,we can put some other work between
      VecScatterBegin() and VecScatterEnd() to overlap the communication with
      computation.
  */
@@ -600,10 +600,10 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
 
-  /* 
-    Now compute the f(x). As mentioned earlier, the computed Laplacian is just an 
-    approximate one chosen for illustrative purpose only. Another point to notice 
-    is that this is a local (completly parallel) calculation. In practical application 
+  /*
+    Now compute the f(x). As mentioned earlier, the computed Laplacian is just an
+    approximate one chosen for illustrative purpose only. Another point to notice
+    is that this is a local (completly parallel) calculation. In practical application
     codes, function calculation time is a dominat portion of the overall execution time.
   */
   for (i=0; i < Nvlocal; i++) {
@@ -620,7 +620,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   /*ierr = VecView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
-  return 0; 
+  return 0;
 }
 
 #undef __FUNCT__
@@ -654,29 +654,29 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   PetscInt     row,Nvglobal,Neglobal;
   PetscInt     *gloInd;
 
-  Nvglobal = user->Nvglobal; 
+  Nvglobal = user->Nvglobal;
   Neglobal = user->Neglobal;
   gloInd   = user->gloInd;
 #endif
- 
+
   /*printf("Entering into FormJacobian \n");*/
-  Nvlocal  = user->Nvlocal; 
+  Nvlocal  = user->Nvlocal;
   lambda   = user->non_lin_param;
   alpha    =  user->lin_param;
   scatter  = user->scatter;
 
-  /* 
+  /*
      PDE : L(u) + lambda*u*u +alpha*u = 0 where L(u) is the approximate Laplacian as
-     described in the beginning of this code 
-                                                                                   
+     described in the beginning of this code
+
      First scatter the distributed vector X into local vector localX (that includes
-     values for ghost nodes. If we wish, we can put some other work between 
+     values for ghost nodes. If we wish, we can put some other work between
      VecScatterBegin() and VecScatterEnd() to overlap the communication with
      computation.
   */
   ierr = VecScatterBegin(scatter,X,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,X,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  
+
   /*
      Get pointer to vector data
   */
@@ -690,17 +690,17 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
       value[j+1] = -1.0;
     }
 
-  /* 
+  /*
     Set the matrix values in the local ordering. Note that in order to use this
-    feature we must call the routine MatSetLocalToGlobalMapping() after the 
-    matrix has been created. 
+    feature we must call the routine MatSetLocalToGlobalMapping() after the
+    matrix has been created.
   */
     ierr = MatSetValuesLocal(jac,1,&i,1+user->itot[i],col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
      Assemble matrix, using the 2-step process:
-       MatAssemblyBegin(), MatAssemblyEnd(). 
+       MatAssemblyBegin(), MatAssemblyEnd().
      Between these two calls, the pointer to vector data has been restored to
      demonstrate the use of overlapping communicationn with computation.
   */

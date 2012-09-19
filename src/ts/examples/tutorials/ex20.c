@@ -70,7 +70,7 @@ Input parameters include:\n";
 
 Notes:
      RHSFunction has an imex split with -u_2/(u_2^2-1) as part of Ifunc (as
-     described above, and RHSFunction2 has the split with that as part of 
+     described above, and RHSFunction2 has the split with that as part of
      the RHS, choosing RHS or RHS2 also chooses the corresponding IJacobian
      or IJacobian2.
 
@@ -235,7 +235,7 @@ static PetscErrorCode RegisterMyARK2(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "Monitor"
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
 static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)

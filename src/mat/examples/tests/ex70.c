@@ -1,5 +1,5 @@
 
-static char help[] = "Tests Vec/MatSetValues() with negative row and column indices.\n\n"; 
+static char help[] = "Tests Vec/MatSetValues() with negative row and column indices.\n\n";
 
 #include <petscmat.h>
 #include <petscpc.h>
@@ -8,7 +8,7 @@ static char help[] = "Tests Vec/MatSetValues() with negative row and column indi
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C; 
+  Mat            C;
   PetscInt       i[2],j[2];
   PetscErrorCode ierr;
   PetscScalar    v[] = {1.0,2.0,3.0,4.0};
@@ -20,12 +20,12 @@ int main(int argc,char **args)
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,3,3);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_WORLD,3,&x);CHKERRQ(ierr);
-  
+
   i[0] = 1; i[1] = -1; j[0] = 1; j[1] = 2;
   ierr = MatSetValues(C,2,i,2,j,v,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatSetValues(C,2,j,2,i,v,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecSetValues(x,2,i,v,INSERT_VALUES);CHKERRQ(ierr);
-  
+
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -39,4 +39,4 @@ int main(int argc,char **args)
   return 0;
 }
 
- 
+

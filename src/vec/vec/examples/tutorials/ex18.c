@@ -8,7 +8,7 @@ static char help[] = "Computes the integral of 2*x/(1+x^2) from x=0..1 \nThis is
    Contributed by Mike McCourt <mccomic@iit.edu> and Nathan Johnston <johnnat@iit.edu>
 T*/
 
-/* 
+/*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscis.h     - index sets
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
     i=N-1;
     ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
   }
-  /* 
+  /*
      Assemble vector, using the 2-step process:
        VecAssemblyBegin(), VecAssemblyEnd()
      Computations can be done while messages are in transition
@@ -86,7 +86,7 @@ int main(int argc,char **argv)
   ierr = VecSum(x,&result);CHKERRQ(ierr);
   result = result*h;
   ierr   = VecDot(x,xend,&dummy);CHKERRQ(ierr);
-  result = result-h*dummy;   
+  result = result-h*dummy;
 
   /*
       Return the value of the integral.
@@ -98,4 +98,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

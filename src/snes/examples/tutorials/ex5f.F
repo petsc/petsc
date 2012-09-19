@@ -14,18 +14,18 @@
 !T*/
 !
 !  --------------------------------------------------------------------------
-! 
+!
 !  Solid Fuel Ignition (SFI) problem.  This problem is modeled by
 !  the partial differential equation
-!  
+!
 !          -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
-! 
+!
 !  with boundary conditions
-!  
+!
 !           u = 0  for  x = 0, x = 1, y = 0, y = 1.
-! 
+!
 !  A finite difference approximation with the usual 5-point stencil
-!  is used to discretize the boundary value problem to obtain a nonlinear 
+!  is used to discretize the boundary value problem to obtain a nonlinear
 !  system of equations.
 !
 !  --------------------------------------------------------------------------
@@ -40,9 +40,9 @@
 !
 #include "ex5f.h"
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  Variables:
 !     snes        - nonlinear solver
@@ -65,9 +65,9 @@
       external FormInitialGuess
       external FormFunctionLocal,FormJacobianLocal
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Initialize program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
@@ -161,7 +161,7 @@
 !  this vector to zero by calling VecSet().
 
       call FormInitialGuess(x,ierr)
-      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr) 
+      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
       call SNESGetIterationNumber(snes,its,ierr)
       if (rank .eq. 0) then
          write(6,100) its
@@ -193,7 +193,7 @@
 !
 !  Notes:
 !  This routine serves as a wrapper for the lower-level routine
-!  "ApplicationInitialGuess", where the actual computations are 
+!  "ApplicationInitialGuess", where the actual computations are
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely handles ghost point scatters and accesses
@@ -252,7 +252,7 @@
 !
 !  Output Parameters:
 !  x - local vector data
-!  ierr - error code 
+!  ierr - error code
 !
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
@@ -291,7 +291,7 @@
  10      continue
  20   continue
 
-      return 
+      return
       end
 
 ! ---------------------------------------------------------------------
@@ -304,7 +304,7 @@
 !
 !  Output Parameters:
 !  f - local vector data, f(x)
-!  ierr - error code 
+!  ierr - error code
 !
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
@@ -352,7 +352,7 @@
      &             .or. i .eq. mx .or. j .eq. my) then
                f(i,j) = x(i,j)
             else
-               u = x(i,j) 
+               u = x(i,j)
                uxx = hydhx * (two*u                                     &
      &                - x(i-1,j) - x(i+1,j))
                uyy = hxdhy * (two*u - x(i,j-1) - x(i,j+1))
@@ -377,7 +377,7 @@
 !  Output Parameters:
 !  jac      - Jacobian matrix
 !  jac_prec - optionally different preconditioning matrix (not used here)
-!  ierr     - error code 
+!  ierr     - error code
 !
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
@@ -398,7 +398,7 @@
 !          MatSetLocalToGlobalMapping() once
 !        - Set matrix entries using the local ordering
 !          by calling MatSetValuesLocal()
-!    (B) MatSetValues(), using the global ordering 
+!    (B) MatSetValues(), using the global ordering
 !        - Use DMDAGetGlobalIndices() to extract the local-to-global map
 !        - Then apply this map explicitly yourself
 !        - Set matrix entries using the global ordering by calling
@@ -417,7 +417,7 @@
       PetscErrorCode  ierr
       integer ctx
       DMDALocalInfo info(DMDA_LOCAL_INFO_SIZE)
-      
+
 
 !  Local variables:
       PetscInt  row,col(5),i,j,i1,i5
@@ -438,10 +438,10 @@
 
 !  Compute entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by
-!     contiguous chunks of rows across the processors. 
+!     contiguous chunks of rows across the processors.
 !   - Each processor needs to insert only elements that it owns
 !     locally (but any non-local elements will be sent to the
-!     appropriate processor during matrix assembly). 
+!     appropriate processor during matrix assembly).
 !   - Here, we set all entries for a particular row at once.
 !   - We can set matrix entries either using either
 !     MatSetValuesLocal() or MatSetValues(), as discussed above.

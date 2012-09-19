@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "ex19.h5", FILE_MODE_READ, &viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/");CHKERRQ(ierr);
   ierr = VecLoad(y1, viewer);CHKERRQ(ierr);
-  
+
   ierr = PetscViewerHDF5PushGroup(viewer, "/testBlockSize");CHKERRQ(ierr);
   ierr = VecLoad(y2, viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/testTimestep");CHKERRQ(ierr);
@@ -116,4 +116,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }
- 
+

@@ -26,7 +26,7 @@
 
 !  GetInt requires a PetscInt so have to do this ugly setting
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-width',w,          &
-     &     flg,ierr) 
+     &     flg,ierr)
       width = w
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-height',h,         &
      &     flg,ierr)
@@ -60,4 +60,4 @@
       call PetscDrawDestroy(draw,ierr)
       call PetscFinalize(ierr)
       end
- 
+

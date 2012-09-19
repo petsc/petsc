@@ -1,5 +1,5 @@
 
-static char help[] = "Tests relaxation for dense matrices.\n\n"; 
+static char help[] = "Tests relaxation for dense matrices.\n\n";
 
 #include <petscmat.h>
 
@@ -7,7 +7,7 @@ static char help[] = "Tests relaxation for dense matrices.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C; 
+  Mat            C;
   Vec            u,x,b,e;
   PetscInt       i,n = 10,midx[3];
   PetscErrorCode ierr;
@@ -35,10 +35,10 @@ int main(int argc,char **args)
     ierr = MatSetValues(C,1,&i,3,midx,v,INSERT_VALUES);CHKERRQ(ierr);
   }
   i = 0; midx[0] = 0; midx[1] = 1;
-  v[0] = 2.0; v[1] = -1.; 
+  v[0] = 2.0; v[1] = -1.;
   ierr = MatSetValues(C,1,&i,2,midx,v,INSERT_VALUES);CHKERRQ(ierr);
   i = n-1; midx[0] = n-2; midx[1] = n-1;
-  v[0] = -1.0; v[1] = 2.; 
+  v[0] = -1.0; v[1] = 2.;
   ierr = MatSetValues(C,1,&i,2,midx,v,INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -61,4 +61,4 @@ int main(int argc,char **args)
   return 0;
 }
 
- 
+

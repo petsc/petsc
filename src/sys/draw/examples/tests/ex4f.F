@@ -11,13 +11,13 @@
       PetscDraw    draw
       integer dummy
       PetscErrorCode ierr
-    
+
       integer i
 
       do 10, i=0,255
         call PetscDrawLine(draw,0.d0,i/256.d0,1.d0,i/256.d0,i,ierr)
  10   continue
-      return 
+      return
       end
 
       program main
@@ -41,4 +41,4 @@
       call PetscFinalize(ierr)
       end
 
- 
+

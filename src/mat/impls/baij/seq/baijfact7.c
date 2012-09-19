@@ -285,7 +285,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat B,Mat A,const MatFactorInfo *inf
     for (k=0;k < nzL;k++) {
       row = bjtmp[k];
       pc = rtmp + bs2*row;
-      for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
+      for (flg=0,j=0; j<bs2; j++) {
+        if (pc[j]!=0.0) {
+          flg = 1;
+          break;
+        }
+      }
       if (flg) {
         pv = b->a + bs2*bdiag[row];
         /* PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */
@@ -606,7 +611,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat B,Mat A,const Ma
     for (k=0;k < nzL;k++) {
       row = bjtmp[k];
       pc = rtmp + bs2*row;
-      for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
+      for (flg=0,j=0; j<bs2; j++) {
+        if (pc[j]!=0.0) {
+          flg = 1;
+          break;
+        }
+      }
       if (flg) {
         pv = b->a + bs2*bdiag[row];
         /* PetscKernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */

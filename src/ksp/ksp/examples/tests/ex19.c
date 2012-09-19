@@ -5,18 +5,18 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
   -Nx <npx>, where <npx> = number of processors in the x-direction\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
 
-/*  
+/*
     This problem is modeled by
     the partial differential equation
-  
+
             -Laplacian u  = g,  0 < x,y < 1,
-  
+
     with boundary conditions
-   
+
              u = 0  for  x = 0, x = 1, y = 0, y = 1.
-  
+
     A finite difference approximation with the usual 5-point stencil
-    is used to discretize the boundary value problem to obtain a nonlinear 
+    is used to discretize the boundary value problem to obtain a nonlinear
     system of equations.
 */
 
@@ -54,7 +54,7 @@ extern int FormJacobian_Grid(AppCtx *,GridCtx *,Mat *);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  AppCtx         user;                      
+  AppCtx         user;
   PetscErrorCode ierr;
   PetscInt       its,N,n,Nx = PETSC_DECIDE,Ny = PETSC_DECIDE,nlocal,Nlocal;
   PetscMPIInt    size;
@@ -65,7 +65,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
   user.ratio = 2;
-  user.coarse.mx = 5; user.coarse.my = 5; 
+  user.coarse.mx = 5; user.coarse.my = 5;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
@@ -118,15 +118,15 @@ int main(int argc,char **argv)
   ierr = KSPSetOptionsPrefix(user.ksp_coarse,"coarse_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(user.ksp_coarse);CHKERRQ(ierr);
   ierr = KSPSetOperators(user.ksp_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = PCMGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr); 
-  ierr = PCMGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr); 
+  ierr = PCMGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr);
+  ierr = PCMGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr);
 
   /* Create fine level */
   ierr = PCMGGetSmoother(pc,FINE_LEVEL,&ksp_fine);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(ksp_fine,"fine_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp_fine);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = PCMGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr); 
+  ierr = PCMGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr);
   ierr = PCMGSetResidual(pc,FINE_LEVEL,PCMGDefaultResidual,user.fine.J);CHKERRQ(ierr);
 
   /* Create interpolation between the levels */
@@ -169,7 +169,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&user.coarse.localF);CHKERRQ(ierr);
 
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(&user.Ii);CHKERRQ(ierr); 
+  ierr = MatDestroy(&user.Ii);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;
@@ -185,7 +185,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
   PetscInt       nloc,*ltog,grow;
   PetscScalar    two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
 
-  mx = grid->mx;            my = grid->my;            
+  mx = grid->mx;            my = grid->my;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
   hxdhy = hx/hy;            hydhx = hy/hx;
 
@@ -196,7 +196,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - Ys)*Xm + xs - Xs - 1; 
+    row = (j - Ys)*Xm + xs - Xs - 1;
     for (i=xs; i<xs+xm; i++) {
       row++;
       grow = ltog[row];

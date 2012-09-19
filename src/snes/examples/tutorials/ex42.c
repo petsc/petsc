@@ -5,7 +5,7 @@ static char help[] = "Newton's method to solve a two-variable system that comes 
    Concepts: SNES^basic example
 T*/
 
-/* 
+/*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   SNESConvergedReason reason;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -57,12 +57,12 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
   ierr = MatSetUp(J);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set function evaluation routine and vector.
   */
   ierr = SNESSetFunction(snes,r,FormFunction1,PETSC_NULL);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set Jacobian matrix data structure and Jacobian evaluation routine
   */
   ierr = SNESSetJacobian(snes,J,J,FormJacobian1,PETSC_NULL);CHKERRQ(ierr);
@@ -111,7 +111,7 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction1"
-/* 
+/*
    FormFunction1 - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -143,7 +143,7 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
 
   /* Restore vectors */
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -190,7 +190,7 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   */
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
 
-  /* 
+  /*
      Assemble matrix
   */
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

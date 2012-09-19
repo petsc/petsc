@@ -6,7 +6,7 @@ static char help[] = "Demonstrates using PetscWebServe().\nRun with -ams_publish
    Concepts: printing^in parallel
    Processors: n
 T*/
- 
+
 #include <petscsys.h>
 #include <petscksp.h>
 int main(int argc,char **argv)
@@ -18,8 +18,8 @@ int main(int argc,char **argv)
     Every PETSc routine should begin with the PetscInitialize() routine.
     argc, argv - These command line arguments are taken to extract the options
                  supplied to PETSc and options supplied to MPI.
-    help       - When PETSc executable is invoked with the option -help, 
-                 it prints the various options that can be applied at 
+    help       - When PETSc executable is invoked with the option -help,
+                 it prints the various options that can be applied at
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   ierr = PetscRandomSetFromOptions(rand2);CHKERRQ(ierr);
 #if defined(PETSC_USE_SERVER)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Starting up PetscWebServe()\n");CHKERRQ(ierr);
-  ierr = PetscWebServe(PETSC_COMM_WORLD,PETSC_DEFAULT);CHKERRQ(ierr); 
+  ierr = PetscWebServe(PETSC_COMM_WORLD,PETSC_DEFAULT);CHKERRQ(ierr);
   while (1) {;}
 #endif
   ierr = PetscRandomDestroy(&rand1);CHKERRQ(ierr);

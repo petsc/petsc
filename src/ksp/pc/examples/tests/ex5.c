@@ -44,7 +44,7 @@ int main(int Argc,char **Args)
   PetscInitialize(&Argc,&Args,(char *)0,help);
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-x",&x_mesh,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-l",&levels,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-l",&levels,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-c",&cycles,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-smooths",&smooths,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-a",&flg);CHKERRQ(ierr);
@@ -53,7 +53,7 @@ int main(int Argc,char **Args)
   if (flg) {am = PC_MG_FULL;}
   ierr = PetscOptionsHasName(PETSC_NULL,"-j",&flg);CHKERRQ(ierr);
   if (flg) {use_jacobi = 1;}
-         
+
   ierr = PetscMalloc(levels*sizeof(PetscInt),&N);CHKERRQ(ierr);
   N[0] = x_mesh;
   for (i=1; i<levels; i++) {
@@ -96,8 +96,8 @@ int main(int Argc,char **Args)
 
     /* this is a dummy! since KSP requires a matrix passed in  */
     ierr = KSPSetOperators(ksp[i],mat[i],mat[i],DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    /* 
-        We override the matrix passed in by forcing it to use Richardson with 
+    /*
+        We override the matrix passed in by forcing it to use Richardson with
         a user provided application. This is non-standard and this practice
         should be avoided.
     */
@@ -122,7 +122,7 @@ int main(int Argc,char **Args)
     ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRQ(ierr);
     R[levels - 1 - i] = x;
     ierr = PCMGSetR(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
-  } 
+  }
   /* create coarse level vectors */
   ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x);CHKERRQ(ierr);
   ierr = PCMGSetX(pcmg,0,x);CHKERRQ(ierr); X[0] = x;
@@ -151,7 +151,7 @@ int main(int Argc,char **Args)
   ierr = PetscFree(N);CHKERRQ(ierr);
   ierr = VecDestroy(&solution);CHKERRQ(ierr);
 
-  /* note we have to keep a list of all vectors allocated, this is 
+  /* note we have to keep a list of all vectors allocated, this is
      not ideal, but putting it in MGDestroy is not so good either*/
   for (i=0; i<levels; i++) {
     ierr = VecDestroy(&X[i]);CHKERRQ(ierr);
@@ -336,7 +336,7 @@ PetscErrorCode Create1dLaplacian(PetscInt n,Mat *mat)
 
   PetscFunctionBegin;
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,mat);CHKERRQ(ierr);
-  
+
   idx= n-1;
   ierr = MatSetValues(*mat,1,&idx,1,&idx,&two,INSERT_VALUES);CHKERRQ(ierr);
   for (i=0; i<n-1; i++) {
@@ -363,7 +363,7 @@ PetscErrorCode CalculateRhs(Vec u)
   ierr = VecGetSize(u,&n);CHKERRQ(ierr);
   h = 1.0/((PetscReal)(n+1));
   for (i=0; i<n; i++) {
-    x += h; uu = 2.0*h*h; 
+    x += h; uu = 2.0*h*h;
     ierr = VecSetValues(u,1,&i,&uu,INSERT_VALUES);CHKERRQ(ierr);
   }
 
@@ -383,7 +383,7 @@ PetscErrorCode CalculateSolution(PetscInt n,Vec *solution)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,solution);CHKERRQ(ierr);
   h = 1.0/((PetscReal)(n+1));
   for (i=0; i<n; i++) {
-    x += h; uu = x*(1.-x); 
+    x += h; uu = x*(1.-x);
     ierr = VecSetValues(*solution,1,&i,&uu,INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

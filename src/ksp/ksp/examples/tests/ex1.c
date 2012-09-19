@@ -7,7 +7,7 @@ static char help[] = "Tests solving linear system on 0 by 0 matrix.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C; 
+  Mat            C;
   PetscErrorCode ierr;
   PetscInt       N = 0;
   Vec            u,b,x;
@@ -25,7 +25,7 @@ int main(int argc,char **args)
 
   /* create right hand side and solution */
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&u);CHKERRQ(ierr); 
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&x);CHKERRQ(ierr);
   ierr = VecSet(u,0.0);CHKERRQ(ierr);

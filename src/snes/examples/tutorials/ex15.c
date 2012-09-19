@@ -48,7 +48,7 @@ F*/
 #include <petscsnes.h>
 
 /*
-   User-defined application context - contains data needed by the 
+   User-defined application context - contains data needed by the
    application-provided call-back routines, FormJacobianLocal() and
    FormFunctionLocal().
 */
@@ -378,7 +378,7 @@ static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,Pets
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionPicardLocal"
 /*
-    This is the opposite sign of the part of FormFunctionLocal that excludes the A(x) x part of the operation, 
+    This is the opposite sign of the part of FormFunctionLocal that excludes the A(x) x part of the operation,
     that is FormFunction applies A(x) x - b(x) while this applies b(x) because for Picard we think of it as solving A(x) x = b(x)
 
 */

@@ -10,7 +10,7 @@ differently from the way it is assembled.  Input arguments are:\n\
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -52,12 +52,12 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
          the linear system, Au = b.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
+  /*
      Create stiffness matrix
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -66,7 +66,7 @@ int main(int argc,char **args)
   ierr = MatSeqAIJSetPreallocation(A,9,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A,9,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr); /* More than necessary */
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
-  end   = start + M/size + ((M%size) > rank); 
+  end   = start + M/size + ((M%size) > rank);
 
   /*
      Assemble matrix
@@ -74,7 +74,7 @@ int main(int argc,char **args)
   ierr = FormElementStiffness(h*h,Ke);
   for (i=start; i<end; i++) {
      /* location of lower left corner of element */
-     x = h*(i % m); y = h*(i/m); 
+     x = h*(i % m); y = h*(i/m);
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + (i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
@@ -86,8 +86,8 @@ int main(int argc,char **args)
   /*
      Create right-hand-side and solution vectors
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr); 
-  ierr = VecSetSizes(u,PETSC_DECIDE,N);CHKERRQ(ierr); 
+  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
+  ierr = VecSetSizes(u,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)u,"Approx. Solution");CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
@@ -96,12 +96,12 @@ int main(int argc,char **args)
   ierr = VecSet(u,0.0);CHKERRQ(ierr);
   ierr = VecSet(b,0.0);CHKERRQ(ierr);
 
-  /* 
+  /*
      Assemble right-hand-side vector
   */
   for (i=start; i<end; i++) {
      /* location of lower left corner of element */
-     x = h*(i % m); y = h*(i/m); 
+     x = h*(i % m); y = h*(i/m);
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + (i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
@@ -111,7 +111,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
-  /* 
+  /*
      Modify matrix and right-hand-side for Dirichlet boundary conditions
   */
   ierr = PetscMalloc(4*m*sizeof(PetscInt),&rows);CHKERRQ(ierr);
@@ -128,20 +128,20 @@ int main(int argc,char **args)
     rows[count++] = i;
   }
   for (i=0; i<4*m; i++) {
-     x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
+     x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1));
      val = y;
      ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
      ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
-  }    
+  }
   ierr = MatZeroRows(A,4*m,rows,1.0,0,0);CHKERRQ(ierr);
   ierr = PetscFree(rows);CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(b);CHKERRQ(ierr); 
+  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -150,20 +150,20 @@ int main(int argc,char **args)
   ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* Check error */
   ierr = VecGetOwnershipRange(ustar,&start,&end);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
-     x = h*(i % (m+1)); y = h*(i/(m+1)); 
+     x = h*(i % (m+1)); y = h*(i/(m+1));
      val = y;
      ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -174,7 +174,7 @@ int main(int argc,char **args)
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G Iterations %D\n",norm*h,its);CHKERRQ(ierr);
 
-  /* 
+  /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
@@ -211,6 +211,6 @@ PetscErrorCode FormElementStiffness(PetscReal H,PetscScalar *Ke)
 PetscErrorCode FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
 {
   PetscFunctionBegin;
-  r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 
+  r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0;
   PetscFunctionReturn(0);
 }

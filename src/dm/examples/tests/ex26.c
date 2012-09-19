@@ -9,8 +9,8 @@ static char help[] = "Tests error message in DMCreateColoring() with periodic bo
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat            J;                   
-  PetscErrorCode ierr; 
+  Mat            J;
+  PetscErrorCode ierr;
   DM             da;
   MatFDColoring  matfdcoloring = 0;
   ISColoring     iscoloring;
@@ -28,7 +28,7 @@ int main(int argc,char **argv)
 
   /* free spaces */
   ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr); 
+  ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   PetscFunctionReturn(0);

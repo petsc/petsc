@@ -32,8 +32,8 @@ int main(int argc,char **argv)
     Every PETSc routine should begin with the PetscInitialize() routine.
     argc, argv - These command line arguments are taken to extract the options
                  supplied to PETSc and options supplied to MPI.
-    help       - When PETSc executable is invoked with the option -help, 
-                 it prints the various options that can be applied at 
+    help       - When PETSc executable is invoked with the option -help,
+                 it prints the various options that can be applied at
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
@@ -63,10 +63,10 @@ int main(int argc,char **argv)
   ierr = PetscBagRegisterInt   (bag,&params->ia,5  ,"param_2","The second parameter");CHKERRQ(ierr);
   ierr = PetscBagRegisterBool (bag,&params->ta,PETSC_TRUE,"do_output","Write output file (true/false)");CHKERRQ(ierr);
 
-  /* 
-     Write output file with PetscViewerBinaryMatlab viewer. 
+  /*
+     Write output file with PetscViewerBinaryMatlab viewer.
      NOTE: the output generated with this viewer can be loaded into
-     matlab using bin/matlab/PetscBinaryReadMatlab.m 
+     matlab using bin/matlab/PetscBinaryReadMatlab.m
   */
   ierr = PetscViewerBinaryMatlabOpen(PETSC_COMM_WORLD,params->filename,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerBinaryMatlabOutputBag(viewer,"params",bag);CHKERRQ(ierr);
@@ -74,12 +74,12 @@ int main(int argc,char **argv)
   ierr = DMDASetFieldName(da,1,"field2");CHKERRQ(ierr);
   ierr = PetscViewerBinaryMatlabOutputVecDA(viewer,"da1",global,da);CHKERRQ(ierr);
   ierr = PetscViewerBinaryMatlabDestroy(&viewer);CHKERRQ(ierr);
-  
+
   /* clean up and exit */
   ierr = PetscBagDestroy(&bag);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = VecDestroy(&local);CHKERRQ(ierr);
   ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;  
+  return 0;
 }

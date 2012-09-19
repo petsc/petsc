@@ -115,7 +115,7 @@ c
       gm1g  = gm1/gamma
       gp1g  = gp1/gamma
       ggm1  = gamma*gm1
- 
+
       pi = 4.*atan(1.)
       conv = 180./pi
       rho0  = 1.0
@@ -151,7 +151,7 @@ c
 !  But NOW (11/4/96), Kyle wants to follow CFL3D's grid-axis
 !  convention, so let's set it up that way.
 !
-#if defined(CFL3D_AXIS)    
+#if defined(CFL3D_AXIS)
       u0 =   xmach * cos(alpha/conv) * cos(yaw/conv)
       v0 = - xmach * sin(yaw/conv)
       w0 =   xmach * sin(alpha/conv) * cos(yaw/conv)
@@ -168,8 +168,8 @@ c
       pt0 = 1.0
       if (irank .eq. 0) write(10,500)rho0,c0,p0,u0,v0,
      1                               w0,ei0,et0,h0,pt0
-  500 format(1h ,'Initial values: rho,c,p,u,v,w,ei,e,h,pt ',11f10.5) 
-      
+  500 format(1h ,'Initial values: rho,c,p,u,v,w,ei,e,h,pt ',11f10.5)
+
       do n = 1,nnodes
          qnode(1,n) = rho0
          qnode(2,n) = rho0*u0
@@ -220,7 +220,7 @@ c
             amut(n)   = cmu*turbinf
  1010    continue
       end if
- 
+
       if (ivisc.eq.5.or.ivisc.eq.6) then
          if (irank .eq. 0) write(10,110)
          if (irank .eq. 0) write(10,140)vkar,cb1,sig,cb2
@@ -235,7 +235,7 @@ c
  1020    continue
       end if
 !     print *, "I am out of INIT"
- 
+
       return
   110 format(1h ,'Parameters for turbulence model')
   120 format(1h ,'k=',f10.5,' cmu=',f10.5,' ce1=',f10.5,'ce2=',f10.5)
@@ -246,7 +246,7 @@ c
 !
 ! End of subroutine INIT
 !
-      
+
       end
 
 
@@ -330,9 +330,9 @@ c=====================================================================72
       character*40 filename
 
       integer unit
-! 
+!
 !  DEBUG: to check things out
-!  
+!
       nsface = 0
       nvface = 0
       nfface = 0
@@ -367,7 +367,7 @@ c
 
 c================================ README =============================72
 c
-! Read grid 
+! Read grid
 c
 c=====================================================================72
       subroutine README(nnodes,ncell,nedge,
@@ -427,11 +427,11 @@ c
       if (ivisc.ne.0) then
          read (unit) (c2e(j,1),j=1,ncell),(c2e(j,2),j=1,ncell),
      &               (c2e(j,3),j=1,ncell),(c2e(j,4),j=1,ncell),
-     &               (c2e(j,5),j=1,ncell),(c2e(j,6),j=1,ncell) 
+     &               (c2e(j,5),j=1,ncell),(c2e(j,6),j=1,ncell)
       else
          read (unit) (idum,j=1,ncell),(idum,j=1,ncell),
      &               (idum,j=1,ncell),(idum,j=1,ncell),
-     &               (idum,j=1,ncell),(idum,j=1,ncell) 
+     &               (idum,j=1,ncell),(idum,j=1,ncell)
       end if
 c
 !  Read coordinates of grid points
@@ -449,7 +449,7 @@ c
       read (unit) (evec(k,1),k=1,nedge),(evec(k,2),k=1,nedge)
 c
 !  Read in unit normals of dual mesh face (from node 1 to node 2)
-!  and the area of the dual mesh face 
+!  and the area of the dual mesh face
 c
       read (unit) (xn(k),k=1,nedge),(yn(k),k=1,nedge),
      &            (zn(k),k=1,nedge),(ra(k),k=1,nedge)
@@ -533,7 +533,7 @@ c
       if (ivisc.gt.3) then
          read(unit)(slen(i),i=1,nnodes)
       end if
- 
+
       close (unit)
 c
 !  End of subroutine README
@@ -544,7 +544,7 @@ c
 
 !================================ RREST ==============================72
 !
-! Reads input data for restarts 
+! Reads input data for restarts
 !
 !=====================================================================72
       subroutine RREST(nnodes, qvec, turbre, amut)
@@ -583,7 +583,7 @@ c
 
 c================================ WREST ==============================72
 c
-! Writes output flowfield for restarts 
+! Writes output flowfield for restarts
 c
 c=====================================================================72
       subroutine WREST(nnodes, qvec, turbre, amut)
@@ -614,7 +614,7 @@ c
 
 c================================ PLLAN ====================================
 c
-!  Writes output for plotting 
+!  Writes output for plotting
 c
 c============================================================================
       subroutine PLLAN(nnodes,irank)
@@ -680,9 +680,9 @@ c============================================================================
       integer isnode(1)
       integer i,j,n,i1,i2,i3,ic,isp,ist
       integer istep, iopen, iclose, ibnd
- 
+
       real x(1),y(1),z(1)
- 
+
       character c4*4,title*20
       character aaa*10
       save aaa
@@ -713,7 +713,7 @@ c================================== INIT =============================72
 !
 !   + do a zone-title, so we can keep track of things
 !   + start with solid-wall boundary surfaces
-!  
+!
       isp   = 1
       ist   = 1
       do 10 i=1,nnbound
@@ -741,13 +741,13 @@ c================================== INIT =============================72
         write(99,1010) (qnode(1,j),j=isp,isp+nnpts(i)-1)
         write(99,1010) (qnode(2,j),j=isp,isp+nnpts(i)-1)
         write(99,1010) (qnode(3,j),j=isp,isp+nnpts(i)-1)
-        write(99,1010) (qnode(4,j),j=isp,isp+nnpts(i)-1)           
+        write(99,1010) (qnode(4,j),j=isp,isp+nnpts(i)-1)
         write(99,1010) (qnode(5,j)/pinf,j=isp,isp+nnpts(i)-1)
         write(99,1010) ((qnode(5,j)/pinf)/
-     1                  qnode(1,j)**gamma - 1.0,   
+     1                  qnode(1,j)**gamma - 1.0,
      2                  j=isp,isp+nnpts(i)-1)
-        write(99,1010) (sqrt((qnode(2,j)**2 + 
-     1                  qnode(3,j)**2 + 
+        write(99,1010) (sqrt((qnode(2,j)**2 +
+     1                  qnode(3,j)**2 +
      2                  qnode(4,j)**2)/
      3                  (gamma*qnode(5,j)/
      4                  qnode(1,j))),
@@ -763,7 +763,7 @@ c================================== INIT =============================72
 !
    30   continue
 !
-        isp = isp + nnpts(i) 
+        isp = isp + nnpts(i)
         ist = ist + nntet(i)
 !
    10 continue
@@ -833,10 +833,10 @@ c================================== INIT =============================72
       integer ierr
       PetscLogDouble flops
 #if defined(INTERLACING)
-      real qvec(5,nvertices) 
+      real qvec(5,nvertices)
 #define qnode(i,j) qvec(i,j)
 #else
-      real qvec(nvertices,5) 
+      real qvec(nvertices,5)
 #define qnode(i,j) qvec(j,i)
 #endif
       flops = 0.0
@@ -848,11 +848,11 @@ c================================== INIT =============================72
          q2  = u*u + v*v + w*w
          E   = qnode(5,i)
          p   = gm1*(E - 0.5*rho*q2)
- 
+
          qnode(2,i) = u
          qnode(3,i) = v
          qnode(4,i) = w
-         qnode(5,i) = (E + p)/rho        
+         qnode(5,i) = (E + p)/rho
  1000 continue
       flops = flops + nvertices*14
       call PetscLogFlops(flops,ierr)
@@ -875,10 +875,10 @@ c
       integer ierr
       PetscLogDouble flops
 #if defined(INTERLACING)
-      real qvec(5,nvertices) 
+      real qvec(5,nvertices)
 #define qnode(i,j) qvec(i,j)
 #else
-      real qvec(nvertices,5) 
+      real qvec(nvertices,5)
 #define qnode(i,j) qvec(j,i)
 #endif
 
@@ -890,7 +890,7 @@ c
          w   = qnode(4,i)
          q2  = u*u + v*v + w*w
          H   = qnode(5,i)
- 
+
          qnode(2,i) = rho*u
          qnode(3,i) = rho*v
          qnode(4,i) = rho*w
@@ -916,10 +916,10 @@ c=====================================================================72
       PetscLogDouble flops
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
 #if defined(INTERLACING)
-      real qvec(5,nvertices) 
+      real qvec(5,nvertices)
 #define qnode(i,j) qvec(i,j)
 #else
-      real qvec(nvertices,5) 
+      real qvec(nvertices,5)
 #define qnode(i,j) qvec(j,i)
 #endif
 
@@ -932,7 +932,7 @@ c=====================================================================72
          q2  = u*u + v*v + w*w
          E   = qnode(5,i)
          p   = gm1*(E - 0.5*rho*q2)
- 
+
          qnode(2,i) = u
          qnode(3,i) = v
          qnode(4,i) = w
@@ -959,10 +959,10 @@ c=====================================================================72
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
 
 #if defined(INTERLACING)
-      real qvec(5,nvertices) 
+      real qvec(5,nvertices)
 #define qnode(i,j) qvec(i,j)
 #else
-      real qvec(nvertices,5) 
+      real qvec(nvertices,5)
 #define qnode(i,j) qvec(j,i)
 #endif
       flops = 0.0
@@ -973,7 +973,7 @@ c=====================================================================72
          w   = qnode(4,i)
          q2  = u*u + v*v + w*w
          P   = qnode(5,i)
- 
+
          qnode(2,i) = rho*u
          qnode(3,i) = rho*v
          qnode(4,i) = rho*w
@@ -994,7 +994,7 @@ c
 c=====================================================================72
       subroutine L2NORM(res,nnodes,nnode_glo,x,y,z,vol,irank)
 #include <finclude/petscsys.h>
- 
+
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/history/rms(3000),clw(3000),cdw(3000),cmxw(3000),
@@ -1017,7 +1017,7 @@ c
 ! iflag=2 dq
 c
       iflag = 0
- 
+
       t1 = float(nnode_glo)
       sum = 0.0
       rmax = 0.0
@@ -1066,7 +1066,7 @@ c              yloc = y(i)
 !           end if
 c1030    continue
 !     end if
- 
+
 !     rms(ntt) = sqrt(sum/t1)
       icount = 1
       sumglo=0.0
@@ -1127,7 +1127,7 @@ c
 !  Modified - D. K. Kaushik (1/3/98)
 !  Orginal name of this subroutine was FORCE2.
 !  Added new parameters - clift, cdrag, cmom, irank, nvertices
-!  
+!
 !=====================================================================72
       subroutine FORCE(nnodes,nedge,
      &                 isnode,ivnode,
@@ -1164,7 +1164,7 @@ c
       real cl_glo,cd_glo,cx_glo,cy_glo,cz_glo,cmx_glo,cmy_glo,cmz_glo
       real coef_loc(8), coef_glo(8)
       PetscSizeT sizeofscalar
-c 
+c
 #if defined(INTERLACING)
       real qvec(5,nvertices)
       integer evec(2,nedge)
@@ -1184,7 +1184,7 @@ c
       csy=cos(yaw/conv)
       sny=sin(yaw/conv)
 c
-c  initialize forces to zero  
+c  initialize forces to zero
 c
       cl_loc = 0.0
       cd_loc = 0.0
@@ -1197,7 +1197,7 @@ c
       do i = 1, 8
          coef_glo(i) = 0.0
       enddo
- 
+
 c
 c     if (ntt.eq.ncyc) then
 c       if (nnbound.gt.0) then
@@ -1222,7 +1222,7 @@ c
                x3    = x(node3)
                y3    = y(node3)
                z3    = z(node3)
-               
+
                ax = x2 - x1
                ay = y2 - y1
                az = z2 - z1
@@ -1237,28 +1237,28 @@ c
                xnorm =-0.5*(ay*bz - az*by)
                ynorm = 0.5*(ax*bz - az*bx)
                znorm =-0.5*(ax*by - ay*bx)
- 
+
                rho1  = qnode(1,node1)
                u1    = qnode(2,node1)/rho1
                v1    = qnode(3,node1)/rho1
                w1    = qnode(4,node1)/rho1
-               p1    = gm1*(qnode(5,node1) 
+               p1    = gm1*(qnode(5,node1)
      &               - .5*rho1*(u1*u1 + v1*v1 + w1*w1))
                rho2  = qnode(1,node2)
                u2    = qnode(2,node2)/rho2
                v2    = qnode(3,node2)/rho2
                w2    = qnode(4,node2)/rho2
-               p2    = gm1*(qnode(5,node2) 
+               p2    = gm1*(qnode(5,node2)
      &               - .5*rho2*(u2*u2 + v2*v2 + w2*w2))
                rho3  = qnode(1,node3)
                u3    = qnode(2,node3)/rho3
                v3    = qnode(3,node3)/rho3
                w3    = qnode(4,node3)/rho3
-               p3    = gm1*(qnode(5,node3) 
+               p3    = gm1*(qnode(5,node3)
      &               - .5*rho3*(u3*u3 + v3*v3 + w3*w3))
- 
+
                press = (p1 + p2 + p3)/3.0
-               cp    = 2.*(press/p0-1.)/(gamma*xmach*xmach)        
+               cp    = 2.*(press/p0-1.)/(gamma*xmach*xmach)
 c
                dcx = cp*xnorm
                dcy = cp*ynorm
@@ -1283,7 +1283,7 @@ c    &                   - (xmid - xr)*dcz + (zmid - zr)*dcx
 c              cmzw(ntt) = cmzw(ntt)
 c    &                   + (xmid - xr)*dcy - (ymid - yr)*dcx
 c
-#if defined(CFL3D_AXIS)    
+#if defined(CFL3D_AXIS)
                 cl_loc = cl_loc - dcx*sna     + dcz*csa
                 cd_loc = cd_loc + dcx*csa*csy - dcy*sny
      &                          + dcz*sna*csy
@@ -1368,7 +1368,7 @@ c
                x3   = x(node3)
                y3   = y(node3)
                z3   = z(node3)
-               
+
                ax = x2 - x1
                ay = y2 - y1
                az = z2 - z1
@@ -1383,28 +1383,28 @@ c
                xnorm =-0.5*(ay*bz - az*by)
                ynorm = 0.5*(ax*bz - az*bx)
                znorm =-0.5*(ax*by - ay*bx)
- 
+
                rho1  = qnode(1,node1)
                u1    = qnode(2,node1)/rho1
                v1    = qnode(3,node1)/rho1
                w1    = qnode(4,node1)/rho1
-               p1    = gm1*(qnode(5,node1) 
+               p1    = gm1*(qnode(5,node1)
      &               - .5*rho1*(u1*u1 + v1*v1 + w1*w1))
                rho2  = qnode(1,node2)
                u2    = qnode(2,node2)/rho2
                v2    = qnode(3,node2)/rho2
                w2    = qnode(4,node2)/rho2
-               p2    = gm1*(qnode(5,node2) 
+               p2    = gm1*(qnode(5,node2)
      &               - .5*rho2*(u2*u2 + v2*v2 + w2*w2))
                rho3  = qnode(1,node3)
                u3    = qnode(2,node3)/rho3
                v3    = qnode(3,node3)/rho3
                w3    = qnode(4,node3)/rho3
-               p3    = gm1*(qnode(5,node3) 
+               p3    = gm1*(qnode(5,node3)
      &               - .5*rho3*(u3*u3 + v3*v3 + w3*w3))
- 
+
                press = (p1 + p2 + p3)/3.0
-               cp    = 2.*(press/p0-1.)/(gamma*xmach*xmach)        
+               cp    = 2.*(press/p0-1.)/(gamma*xmach*xmach)
 c
                dcx = cp*xnorm
                dcy = cp*ynorm
@@ -1427,8 +1427,8 @@ c               cmyw(ntt) = cmyw(ntt)
 c    &                    - (xmid - xr)*dcz + (zmid - zr)*dcx
 c               cmzw(ntt) = cmzw(ntt)
 c    &                    + (xmid - xr)*dcy - (ymid - yr)*dcx
-c 
-#if defined(CFL3D_AXIS)    
+c
+#if defined(CFL3D_AXIS)
                 cl_loc = cl_loc - dcx*sna     + dcz*csa
                 cd_loc = cd_loc + dcx*csa*csy - dcy*sny
      &                          + dcz*sna*csy
@@ -1460,7 +1460,7 @@ c
 #endif
 c
          endif
- 
+
        enddo
 c
       icount = 8
@@ -1495,7 +1495,7 @@ c
        cmzw(ntt) = coef_glo(8) / (sref*bref)
        clift = clw(ntt)
        cdrag = cdw(ntt)
-#if defined(CFL3D_AXIS)    
+#if defined(CFL3D_AXIS)
        cmom  = cmzw(ntt)
 #else
        cmom  = cmyw(ntt)
@@ -1510,7 +1510,7 @@ c
 !
 !================================ SKINFRIC ===========================72
 !
-!  This gets skin friction drag (and contribution to lift) for all 
+!  This gets skin friction drag (and contribution to lift) for all
 !  viscous boundaries --- modified D. K. Kaushik (1/10/98)
 !
 !=====================================================================72
@@ -1537,7 +1537,7 @@ c
 !
       integer ivnode(nvnode),f2ntv(nvfacet,4),vface_bit(1)
       integer c2n(ncell,4)
-! 
+!
 #if defined(INTERLACING)
       real qvec(5,nvertices)
 #define qnode(i,j) qvec(i,j)
@@ -1552,7 +1552,7 @@ c
       c23 = 2./3.
       xmr = xmach / Re
       pi = acos(-1.)
-      conv = 180. / pi 
+      conv = 180. / pi
 !
 !  Initialize sums
 !
@@ -1615,30 +1615,30 @@ c
      &          -((x2-x1)*(z3-z1) - (x3-x1)*(z2-z1))*(y4-y1)
      &          +((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1))*(z4-z1))/6.
 !
- 
+
                rho1  = qnode(1,node1)
                u1    = qnode(2,node1)/rho1
                v1    = qnode(3,node1)/rho1
                w1    = qnode(4,node1)/rho1
-               p1    = gm1*(qnode(5,node1) 
+               p1    = gm1*(qnode(5,node1)
      &               - .5*rho1*(u1*u1 + v1*v1 + w1*w1))
                rho2  = qnode(1,node2)
                u2    = qnode(2,node2)/rho2
                v2    = qnode(3,node2)/rho2
                w2    = qnode(4,node2)/rho2
-               p2    = gm1*(qnode(5,node2) 
+               p2    = gm1*(qnode(5,node2)
      &               - .5*rho2*(u2*u2 + v2*v2 + w2*w2))
                rho3  = qnode(1,node3)
                u3    = qnode(2,node3)/rho3
                v3    = qnode(3,node3)/rho3
                w3    = qnode(4,node3)/rho3
-               p3    = gm1*(qnode(5,node3) 
+               p3    = gm1*(qnode(5,node3)
      &               - .5*rho3*(u3*u3 + v3*v3 + w3*w3))
                rho4  = qnode(1,node4)
                u4    = qnode(2,node4)/rho4
                v4    = qnode(3,node4)/rho4
                w4    = qnode(4,node4)/rho4
-               p4    = gm1*(qnode(5,node4) 
+               p4    = gm1*(qnode(5,node4)
      &               - .5*rho4*(u4*u4 + v4*v4 + w4*w4))
 !
 !  Compute viscosity for the cell
@@ -1689,7 +1689,7 @@ c
      &                    +ynorm*(vz + wy)
      &                    +znorm*(c43*wz - c23*(ux + vy)))
 !
-!  Now dot the stress vector acting on the surface face with 
+!  Now dot the stress vector acting on the surface face with
 !  a unit vector in the drag (lift) direction.  This is the
 !  magnitude of the friction force acting on the face in the
 !  drag (lift) direction
@@ -1753,7 +1753,7 @@ c
       integer isnode(1),ivnode(1),ifnode(1)
 
       dimension cdt(1)
-c  
+c
 #if defined(INTERLACING)
       real qvec(5,nvertices)
       integer evec(2,nedge)
@@ -1793,9 +1793,9 @@ c
                ynorm = ynorm*area
                znorm = znorm*area
 c
-c xnorm = x-normal x area of face  
-c ynorm = y-normal x area of face  
-c znorm = z-normal x area of face  
+c xnorm = x-normal x area of face
+c ynorm = y-normal x area of face
+c znorm = z-normal x area of face
 c
                rho1 = qnode(1,node1)
                u1   = qnode(2,node1)/rho1
@@ -1813,7 +1813,7 @@ c
                p2   = gm1*(e2 - 0.5*rho2*(u2*u2 + v2*v2 + w2*w2))
                c2   = sqrt(gamma*p2/rho2)
 c
-c Get average values on face 
+c Get average values on face
 c
                u    = 0.5*(u1 + u2)
                v    = 0.5*(v1 + v2)
@@ -1827,7 +1827,7 @@ c
  1020    continue
 c
          flops = flops + 51.0*nedge
-c 
+c
 c Now loop over boundaries and close the contours
 c
          do 1030 i = 1,nsnode
@@ -1908,7 +1908,7 @@ c
  1050    continue
 c
          flops = flops + 30.0*nfnode
- 
+
 c
 c Now cdt has sum(|u.n| + c*area)
 c
@@ -1949,7 +1949,7 @@ c
 c================================= SPLIT =============================72
 c
 c Calculates the fluxes on the face and performs the flux balance
-c Note that this subroutine uses primative variables 
+c Note that this subroutine uses primative variables
 c
 c=====================================================================72
       subroutine SPLIT(nnodes, ncell, nedge,
@@ -1991,8 +1991,8 @@ c     real phi(nvertices,5)
 
 
 #if defined(INTERLACING)
-      real qvec(5,nvertices) 
-      real grad(3,5,nvertices) 
+      real qvec(5,nvertices)
+      real grad(3,5,nvertices)
       real resvec(5,nnodes)
       real phiv(5,nvertices)
       integer evec(2,nedge)
@@ -2004,8 +2004,8 @@ c     real phi(nvertices,5)
 #define phi(i,j) phiv(i,j)
 #define eptr(j,i) evec(i,j)
 #else
-      real qvec(nvertices,5) 
-      real grad(nvertices,5,3) 
+      real qvec(nvertices,5)
+      real grad(nvertices,5,3)
       real resvec(nnodes,5)
       real phiv(nvertices,5)
       integer evec(nedge,2)
@@ -2018,7 +2018,7 @@ c     real phi(nvertices,5)
 #define eptr(i,j) evec(i,j)
 #endif
 
-c Loop over all the faces and calculate a flux 
+c Loop over all the faces and calculate a flux
 c
        flops = 0.0
        second = 1.0
@@ -2068,7 +2068,7 @@ c
           enrgy = press/gm1 + 0.5*rho*q2
           c     = sqrt(gamma*press/rho)
           ubar  = xnorm*u + ynorm*v + znorm*w
-          fmach = ubar/c 
+          fmach = ubar/c
           ubp2a = -ubar + 2.*c
 	  flops = flops + 61.0
 c
@@ -2077,7 +2077,7 @@ c
            fluxp2 = fluxp1*(xnorm*ubp2a/gamma + u)
            fluxp3 = fluxp1*(ynorm*ubp2a/gamma + v)
            fluxp4 = fluxp1*(znorm*ubp2a/gamma + w)
-           fluxp5 = fluxp1*((-gm1*ubar*ubar 
+           fluxp5 = fluxp1*((-gm1*ubar*ubar
      &                  + 2.*gm1*ubar*c + 2.*c*c)/(gamma*gamma - 1)
      &                  + 0.5*q2)
            flops = flops + 34.0
@@ -2126,7 +2126,7 @@ c
           enrgy = press/gm1 + 0.5*rho*q2
           c     = sqrt(gamma*press/rho)
           ubar  = xnorm*u + ynorm*v + znorm*w
-          fmach = ubar/c 
+          fmach = ubar/c
           ubm2a = -ubar - 2.*c
 	  flops = flops + 55.0
 c
@@ -2135,7 +2135,7 @@ c
            fluxm2 = fluxm1*(xnorm*ubm2a/gamma + u)
            fluxm3 = fluxm1*(ynorm*ubm2a/gamma + v)
            fluxm4 = fluxm1*(znorm*ubm2a/gamma + w)
-           fluxm5 = fluxm1*((-gm1*ubar*ubar 
+           fluxm5 = fluxm1*((-gm1*ubar*ubar
      &                  - 2.*gm1*ubar*c + 2.*c*c)/(gamma*gamma - 1)
      &                  + 0.5*q2)
            flops = flops + 35.0
@@ -2175,19 +2175,19 @@ c
         endif
 c
  1010 continue
-  
+
 c     c68 = 6./8.
 c     c18 = 1./8.
       c68 = 0.75
       c18 = 0.125
 c
-c Loop over the boundaries 
+c Loop over the boundaries
 c First do inviscid faces
 c
       do 2020 n = 1, nnfacet
                node1 = isnode(f2ntn(n,1))
                node2 = isnode(f2ntn(n,2))
-               node3 = isnode(f2ntn(n,3)) 
+               node3 = isnode(f2ntn(n,3))
 
                x1 = x(node1)
                y1 = y(node1)
@@ -2203,7 +2203,7 @@ c
                y3 = y(node3)
                z3 = z(node3)
                p3 = qnode(5,node3)
-               
+
                ax = x2 - x1
                ay = y2 - y1
                az = z2 - z1
@@ -2252,7 +2252,7 @@ c
       do 3020 n = 1, nvfacet
                node1 = ivnode(f2ntv(n,1))
                node2 = ivnode(f2ntv(n,2))
-               node3 = ivnode(f2ntv(n,3)) 
+               node3 = ivnode(f2ntv(n,3))
 
                x1 = x(node1)
                y1 = y(node1)
@@ -2268,7 +2268,7 @@ c
                y3 = y(node3)
                z3 = z(node3)
                p3 = qnode(5,node3)
-               
+
                ax = x2 - x1
                ay = y2 - y1
                az = z2 - z1
@@ -2315,7 +2315,7 @@ c
  3020 continue
 c
 c The next section of code is for when you dont care about
-c preserving linear data on boundary. Also, doing this 
+c preserving linear data on boundary. Also, doing this
 c matches the left hand side when not doing Newton-Krylov
 c Usually just go around unless you are just experimenting
 c
@@ -2399,7 +2399,7 @@ c
          rplus   = unormi + 2.0*a/gm1
          rminus  = unormo - 2.0*cout/gm1
          flops = flops + 32.0
-         if (unormi .gt. 1.0) then 
+         if (unormi .gt. 1.0) then
             rminus = unormi - 2.0*a/gm1
             flops = flops + 3.0
          endif
@@ -2452,7 +2452,7 @@ c
 
 !================================= ROE ===============================72
 !
-! This routine computes the fluxes using Roe's approximate Riemann 
+! This routine computes the fluxes using Roe's approximate Riemann
 ! solver.
 ! Remember that for this subroutine, q(5) is the pressure
 !
@@ -2495,8 +2495,8 @@ c
 
 
 #if defined(INTERLACING)
-      real qvec(5,nvertices) 
-      real grad(3,5,nvertices) 
+      real qvec(5,nvertices)
+      real grad(3,5,nvertices)
       real resvec(5,nnodes)
       real phiv(5,nvertices)
       integer evec(2,nedge)
@@ -2508,8 +2508,8 @@ c
 #define phi(i,j) phiv(i,j)
 #define eptr(j,i) evec(i,j)
 #else
-      real qvec(nvertices,5) 
-      real grad(nvertices,5,3) 
+      real qvec(nvertices,5)
+      real grad(nvertices,5,3)
       real resvec(nnodes,5)
       real phiv(nvertices,5)
       integer evec(nedge,2)
@@ -2522,7 +2522,7 @@ c
 #define eptr(i,j) evec(i,j)
 #endif
 c
-c Loop over all the faces and calculate a flux 
+c Loop over all the faces and calculate a flux
 c
        flops = 0.0
        if (ntt.le.nitfo) then
@@ -2551,11 +2551,11 @@ c Get variables on "left" side of face
 c
           if (second .eq. 0) then
             rhol   = qnode(1,node1)
-            ul     = qnode(2,node1) 
+            ul     = qnode(2,node1)
             vl     = qnode(3,node1)
-            wl     = qnode(4,node1) 
+            wl     = qnode(4,node1)
             q2l    = ul*ul + vl*vl + wl*wl
-            pressl = qnode(5,node1) 
+            pressl = qnode(5,node1)
             enrgyl = pressl/gm1 + .5*rhol*q2l
             Hl     = (enrgyl + pressl)/rhol
             cl     = sqrt(gamma*pressl/rhol)
@@ -2564,11 +2564,11 @@ c
 c Get variables on "right" side of face
 c
             rhor   = qnode(1,node2)
-            ur     = qnode(2,node2) 
-            vr     = qnode(3,node2) 
-            wr     = qnode(4,node2) 
+            ur     = qnode(2,node2)
+            vr     = qnode(3,node2)
+            wr     = qnode(4,node2)
             q2r    = ur*ur + vr*vr + wr*wr
-            pressr = qnode(5,node2)  
+            pressr = qnode(5,node2)
             enrgyr = pressr/gm1 + .5*rhor*q2r
             Hr     = (enrgyr + pressr)/rhor
             cr     = sqrt(gamma*pressr/rhor)
@@ -2578,22 +2578,22 @@ c
             rx     = xmean - x(node1)
             ry     = ymean - y(node1)
             rz     = zmean - z(node1)
-            rhol   = qnode(1,node1) + phi(1,node1)*gradx(1,node1)*rx 
+            rhol   = qnode(1,node1) + phi(1,node1)*gradx(1,node1)*rx
      &                              + phi(1,node1)*grady(1,node1)*ry
      &                              + phi(1,node1)*gradz(1,node1)*rz
-            ul     = qnode(2,node1) + phi(2,node1)*gradx(2,node1)*rx 
-     &                              + phi(2,node1)*grady(2,node1)*ry 
-     &                              + phi(2,node1)*gradz(2,node1)*rz 
-            vl     = qnode(3,node1) + phi(3,node1)*gradx(3,node1)*rx 
-     &                              + phi(3,node1)*grady(3,node1)*ry 
-     &                              + phi(3,node1)*gradz(3,node1)*rz 
-            wl     = qnode(4,node1) + phi(4,node1)*gradx(4,node1)*rx 
-     &                              + phi(4,node1)*grady(4,node1)*ry 
-     &                              + phi(4,node1)*gradz(4,node1)*rz 
+            ul     = qnode(2,node1) + phi(2,node1)*gradx(2,node1)*rx
+     &                              + phi(2,node1)*grady(2,node1)*ry
+     &                              + phi(2,node1)*gradz(2,node1)*rz
+            vl     = qnode(3,node1) + phi(3,node1)*gradx(3,node1)*rx
+     &                              + phi(3,node1)*grady(3,node1)*ry
+     &                              + phi(3,node1)*gradz(3,node1)*rz
+            wl     = qnode(4,node1) + phi(4,node1)*gradx(4,node1)*rx
+     &                              + phi(4,node1)*grady(4,node1)*ry
+     &                              + phi(4,node1)*gradz(4,node1)*rz
             q2l    = ul*ul + vl*vl + wl*wl
-            pressl = qnode(5,node1) + phi(5,node1)*gradx(5,node1)*rx 
-     &                              + phi(5,node1)*grady(5,node1)*ry 
-     &                              + phi(5,node1)*gradz(5,node1)*rz 
+            pressl = qnode(5,node1) + phi(5,node1)*gradx(5,node1)*rx
+     &                              + phi(5,node1)*grady(5,node1)*ry
+     &                              + phi(5,node1)*gradz(5,node1)*rz
             enrgyl = pressl/gm1 + .5*rhol*q2l
             Hl     = (enrgyl + pressl)/rhol
             cl     = sqrt(gamma*pressl/rhol)
@@ -2604,22 +2604,22 @@ c
             rx     = xmean - x(node2)
             ry     = ymean - y(node2)
             rz     = zmean - z(node2)
-            rhor   = qnode(1,node2) + phi(1,node2)*gradx(1,node2)*rx 
+            rhor   = qnode(1,node2) + phi(1,node2)*gradx(1,node2)*rx
      &                              + phi(1,node2)*grady(1,node2)*ry
      &                              + phi(1,node2)*gradz(1,node2)*rz
-            ur     = qnode(2,node2) + phi(2,node2)*gradx(2,node2)*rx 
-     &                              + phi(2,node2)*grady(2,node2)*ry 
-     &                              + phi(2,node2)*gradz(2,node2)*rz 
-            vr     = qnode(3,node2) + phi(3,node2)*gradx(3,node2)*rx 
-     &                              + phi(3,node2)*grady(3,node2)*ry 
-     &                              + phi(3,node2)*gradz(3,node2)*rz 
-            wr     = qnode(4,node2) + phi(4,node2)*gradx(4,node2)*rx 
-     &                              + phi(4,node2)*grady(4,node2)*ry 
-     &                              + phi(4,node2)*gradz(4,node2)*rz 
+            ur     = qnode(2,node2) + phi(2,node2)*gradx(2,node2)*rx
+     &                              + phi(2,node2)*grady(2,node2)*ry
+     &                              + phi(2,node2)*gradz(2,node2)*rz
+            vr     = qnode(3,node2) + phi(3,node2)*gradx(3,node2)*rx
+     &                              + phi(3,node2)*grady(3,node2)*ry
+     &                              + phi(3,node2)*gradz(3,node2)*rz
+            wr     = qnode(4,node2) + phi(4,node2)*gradx(4,node2)*rx
+     &                              + phi(4,node2)*grady(4,node2)*ry
+     &                              + phi(4,node2)*gradz(4,node2)*rz
             q2r    = ur*ur + vr*vr + wr*wr
-            pressr = qnode(5,node2) + phi(5,node2)*gradx(5,node2)*rx 
-     &                              + phi(5,node2)*grady(5,node2)*ry 
-     &                              + phi(5,node2)*gradz(5,node2)*rz 
+            pressr = qnode(5,node2) + phi(5,node2)*gradx(5,node2)*rx
+     &                              + phi(5,node2)*grady(5,node2)*ry
+     &                              + phi(5,node2)*gradz(5,node2)*rz
             enrgyr = pressr/gm1 + .5*rhor*q2r
             Hr     = (enrgyr + pressr)/rhor
             cr     = sqrt(gamma*pressr/rhor)
@@ -2645,14 +2645,14 @@ c
             eig1 = abs(ubar + c)
             eig2 = abs(ubar - c)
             eig3 = abs(ubar)
- 
+
             drho   = rhor - rhol
             dpress = pressr - pressl
             du     = ur - ul
             dv     = vr - vl
             dw     = wr - wl
             dubar  = ubarr - ubarl
- 
+
             c2 = c*c
 c
 c jumps have units of density
@@ -2661,7 +2661,7 @@ c
             dv2 = 0.5*(dpress - rho*c*dubar)/c2
             dv3 = rho
             dv4 = (c*c*drho - dpress)/c2
- 
+
             r21 = u + c*xnorm
             r31 = v + c*ynorm
             r41 = w + c*znorm
@@ -2676,24 +2676,24 @@ c
             r33 = dv - dubar*ynorm
             r43 = dw - dubar*znorm
             r53 = u*du + v*dv + w*dw - ubar*dubar
-         
+
             r24 = u
             r34 = v
             r44 = w
             r54 = 0.5*q2
- 
+
             t1 = eig1*dv1     + eig2*dv2
      &                        + eig3*dv4
-            t2 = eig1*r21*dv1 + eig2*r22*dv2 
+            t2 = eig1*r21*dv1 + eig2*r22*dv2
      &         + eig3*r23*dv3 + eig3*r24*dv4
-            t3 = eig1*r31*dv1 + eig2*r32*dv2 
+            t3 = eig1*r31*dv1 + eig2*r32*dv2
      &         + eig3*r33*dv3 + eig3*r34*dv4
-            t4 = eig1*r41*dv1 + eig2*r42*dv2 
+            t4 = eig1*r41*dv1 + eig2*r42*dv2
      &         + eig3*r43*dv3 + eig3*r44*dv4
-            t5 = eig1*r51*dv1 + eig2*r52*dv2 
+            t5 = eig1*r51*dv1 + eig2*r52*dv2
      &         + eig3*r53*dv3 + eig3*r54*dv4
 c
-c Compute flux using variables from left side of face 
+c Compute flux using variables from left side of face
 c
             fluxp1 = area*rhol*ubarl
             fluxp2 = area*(rhol*ul*ubarl + xnorm*pressl)
@@ -2708,7 +2708,7 @@ c
             fluxm3 = area*(rhor*vr*ubarr + ynorm*pressr)
             fluxm4 = area*(rhor*wr*ubarr + znorm*pressr)
             fluxm5 = area*(enrgyr + pressr)*ubarr
- 
+
             res1 = 0.5*(fluxp1 + fluxm1 - area*t1)
             res2 = 0.5*(fluxp2 + fluxm2 - area*t2)
             res3 = 0.5*(fluxp3 + fluxm3 - area*t3)
@@ -2740,7 +2740,7 @@ c     c18 = 1./8.
       c68 = 0.75
       c18 = 0.125
 c
-c Loop over the boundaries 
+c Loop over the boundaries
 c First do inviscid faces
 c
 c  Switch the constants for now
@@ -2751,7 +2751,7 @@ c
       do 2020 n = 1, nnfacet
                node1 = isnode(f2ntn(n,1))
                node2 = isnode(f2ntn(n,2))
-               node3 = isnode(f2ntn(n,3)) 
+               node3 = isnode(f2ntn(n,3))
 
                x1 = x(node1)
                y1 = y(node1)
@@ -2767,7 +2767,7 @@ c
                y3 = y(node3)
                z3 = z(node3)
                p3 = qnode(5,node3)
-               
+
                ax = x2 - x1
                ay = y2 - y1
                az = z2 - z1
@@ -2817,7 +2817,7 @@ c
       do 3020 n = 1, nvfacet
                node1 = ivnode(f2ntv(n,1))
                node2 = ivnode(f2ntv(n,2))
-               node3 = ivnode(f2ntv(n,3)) 
+               node3 = ivnode(f2ntv(n,3))
 
                x1 = x(node1)
                y1 = y(node1)
@@ -2833,7 +2833,7 @@ c
                y3 = y(node3)
                z3 = z(node3)
                p3 = qnode(5,node3)
-               
+
                ax = x2 - x1
                ay = y2 - y1
                az = z2 - z1
@@ -2880,7 +2880,7 @@ c
  3020 continue
 c
 c The next section of code is for when you dont care about
-c preserving linear data on boundary. Also, doing this 
+c preserving linear data on boundary. Also, doing this
 c matches the left hand side when not doing Newton-Krylov
 c Usually just go around unless you are just experimenting
 c
@@ -2964,7 +2964,7 @@ c
          rplus   = unormi + 2.0*a/gm1
          rminus  = unormo - 2.0*cout/gm1
          flops = flops + 32.0
-         if (unormi .gt. 1.0) then 
+         if (unormi .gt. 1.0) then
             rminus = unormi - 2.0*a/gm1
             flops = flops + 3.0
          endif
@@ -3021,7 +3021,7 @@ c code - D. K. Kaushik (1/17/97)
 c---------------------------------------------------------------
 c
 c=============================== SUMGS ===============================72
-c 
+c
 c Gets the weights for calculating gradients using least squares
 c
 c=====================================================================72
@@ -3059,7 +3059,7 @@ c
       PetscSizeT sizeofscalar
 !
 !
-!    Initialize all the rij to 0.0 
+!    Initialize all the rij to 0.0
 !
       do 1000 i = 1,nnodes
          r11(i) = 0.0
@@ -3071,7 +3071,7 @@ c
          r44(i) = 0.0
  1000 continue
 !
-! Now loop over the edges and accumulate the r's 
+! Now loop over the edges and accumulate the r's
 !
       do 1020 n = 1, nedge
 !
@@ -3149,7 +3149,7 @@ c
           endif
 c
           if (node2 .le. nnodes) then
-           r22(node2) = r22(node2) + 
+           r22(node2) = r22(node2) +
      1                  (-dy + dx*r12(node2)/r11(node2))**2
            r23(node2) = r23(node2) - dz*
      1                  (-dy+dx*r12(node2)/r11(node2))
@@ -3189,7 +3189,7 @@ c
           w2 = weight*weight
 c
           if (node1 .le. nnodes) then
-           r33(node1) = r33(node1) + 
+           r33(node1) = r33(node1) +
      1                  (dz-dx*r13(node1)/r11(node1)-
      2                  r23(node1)/r22(node1)*
      3                  (dy - dx*r12(node1)/
@@ -3197,7 +3197,7 @@ c
           endif
 c
           if (node2 .le. nnodes) then
-           r33(node2) = r33(node2) + 
+           r33(node2) = r33(node2) +
      1                  (-dz+dx*r13(node2)/r11(node2)-
      2                  r23(node2)/r22(node2)*
      3                  (-dy + dx*r12(node2)/
@@ -3216,7 +3216,7 @@ c
 c Added by Dinesh Kaushik (6/27/97)
 c /*'The following addition changes the meaning of r11 .. r33. r44
 c is the new parameter introduced by me. The new definitions
-c are taken from LSTGS (where these parameters 
+c are taken from LSTGS (where these parameters
 c are used finally).
 c r11->w11
 c r22->w22
@@ -3537,9 +3537,9 @@ c
 
 c=================================== GETRES ==========================72
 c
-c Calculates the residual 
+c Calculates the residual
 c Last Modified - D. K. Kaushik 1/23/97
-c I have eliminated the input variables which were not needed - 
+c I have eliminated the input variables which were not needed -
 c dq, A, B, iupdate
 c
 c=====================================================================72
@@ -3612,7 +3612,7 @@ c
 
 c     if (flag .eq. -1) then
 c        call PLogEventRegister(delta2_event,delta2_label,'red:',ierr)
-c        call PLogEventRegister(flux_event,flux_label,'blue:',ierr)         
+c        call PLogEventRegister(flux_event,flux_label,'blue:',ierr)
 c        flag = 1
 c     endif
 c
@@ -3654,7 +3654,7 @@ c
          call ETOP(nvertices,qvec)
       end if
 c /*'
-c   Calculate the gradients 
+c   Calculate the gradients
 c   ----Kyle seems to recommend only LSTGS for gradients,
 c   so I have commented the GETGRAD call - DKK (1/17/97)
 c
@@ -3695,7 +3695,7 @@ c     if (iflim.eq.1.and.ifcn.ne.1) then
 c     if (iflim.ne.2) then
 c      call TIMLIM(nnodes,nedge,qnode,res,dq,phiv,ncolor,ncount,
 c    &             gradx,grady,gradz,x,y,z,eptr)
-c 
+c
 c If we used the limiter we need to zero out the residual again
 c since we used it for scratch space
 c
@@ -3770,7 +3770,7 @@ c    &             ncount,qvec,x,y,resvec,xn,yn,rl,
 c    &             nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
 c    &             sxn,syn,vxn,vyn,fxn,fyn,phiv)
 c '*/
-      else 
+      else
          call ROE(nnodes,ncell,nedge,
      &            nsface,nvface,nfface,isface,ivface,ifface,
      &            nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
@@ -3850,7 +3850,7 @@ c
 c=============================================================================
       SUBROUTINE OPENM(irank)
 c
-c  TAPE7  -- input:  mach number, angle of attack etc.. 
+c  TAPE7  -- input:  mach number, angle of attack etc..
 c  TAPE9  -- input:  reads restart file
 c  TAPE10 -- output: residual history
 c  TAPE11 -- output: writes restart file
@@ -3859,25 +3859,25 @@ c  TAPE13 -- output: writes flowfield for contour plotting
 c
       OPEN(UNIT= 7,FILE='ginput.faces',
      +form='formatted',STATUS='OLD')
- 
+
 c     OPEN(UNIT=9,FILE='framer.bin',
 c    +form='unformatted',STATUS='old')
- 
+
       if (irank .eq. 0) OPEN(UNIT= 10,FILE='frame.out3',
      +form='formatted',STATUS='unknown')
- 
+
 c     OPEN(UNIT= 11,FILE='frame.bin',
 c    +form='unformatted',STATUS='unknown')
- 
+
 c     OPEN(UNIT= 12,FILE='frame.plt',
 c    +form='formatted',STATUS='unknown')
- 
+
 c     OPEN(UNIT= 13,FILE='frame.tec',
 c    +form='formatted',STATUS='unknown')
- 
+
 c     OPEN(UNIT= 14,FILE='frame.fast.g',
 c    +form='unformatted',STATUS='unknown')
- 
+
 c     OPEN(UNIT= 15,FILE='frame.fast.q',
 c    +form='unformatted',STATUS='unknown')
 
@@ -3956,7 +3956,7 @@ c
         node2 = eptr(i,2)
 c
         if (node1 .le. nnodes) then
-          index1 = ia(node1) + iwork(node1) 
+          index1 = ia(node1) + iwork(node1)
           iwork(node1) = iwork(node1) + 1
           ja(index1) = node2
         endif
@@ -3989,7 +3989,7 @@ c First take care of node1
 c
 c       idiag = iau(node1)
 c
-c If the offdiagonal term is ordered later in the ja array 
+c If the offdiagonal term is ordered later in the ja array
 c
 c       if (node2.gt.node1) then
 c        jstart = idiag + 1
@@ -4008,7 +4008,7 @@ c Now take care of node2
 c
 c       idiag = iau(node2)
 c
-c If the offdiagonal term is ordered later in the ja array 
+c If the offdiagonal term is ordered later in the ja array
 c
 c       if (node1.gt.node2) then
 c        jstart = idiag + 1

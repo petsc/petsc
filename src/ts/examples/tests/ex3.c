@@ -16,8 +16,8 @@ Input arguments are\n\
 /* special variable - max size of all arrays  */
 #define num_z 60
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines.
 */
 typedef struct{
@@ -56,12 +56,12 @@ int main(int argc,char **argv)
   Vec            init_sol; /* ts solution vector */
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only");
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-useAlhs",&appctx.useAlhs);CHKERRQ(ierr); 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-useAlhs",&appctx.useAlhs);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nphase",&nphase,PETSC_NULL);CHKERRQ(ierr);
   if (nphase > 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"nphase must be an integer between 1 and 3");
 
@@ -111,7 +111,7 @@ int main(int argc,char **argv)
   /* set intial guess */
   /*------------------*/
   for (i=0; i<nz-2; i++){
-    val = exact(z[i+1], 0.0); 
+    val = exact(z[i+1], 0.0);
     ierr = VecSetValue(init_sol,i,(PetscScalar)val,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(init_sol);
@@ -186,7 +186,7 @@ int main(int argc,char **argv)
 }
 
 /*------------------------------------------------------------------------
-  Set exact solution 
+  Set exact solution
   u(z,t) = sin(6*PI*z)*exp(-36.*PI*PI*t) + 3.*sin(2*PI*z)*exp(-4.*PI*PI*t)
 --------------------------------------------------------------------------*/
 PetscScalar exact(PetscScalar z,PetscReal t)
@@ -202,7 +202,7 @@ PetscScalar exact(PetscScalar z,PetscReal t)
 #undef __FUNCT__
 #define __FUNCT__ "Monitor"
 /*
-   Monitor - User-provided routine to monitor the solution computed at 
+   Monitor - User-provided routine to monitor the solution computed at
    each timestep.  This example plots the solution and computes the
    error in two different norms.
 
@@ -213,8 +213,8 @@ PetscScalar exact(PetscScalar z,PetscReal t)
    time   - the current time
    u      - the solution at this timestep
    ctx    - the user-provided context for this monitoring routine.
-            In this case we use the application context which contains 
-            information about the problem size, workspace and the exact 
+            In this case we use the application context which contains
+            information about the problem size, workspace and the exact
             solution.
 */
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
@@ -321,7 +321,7 @@ PetscScalar bspl(PetscScalar *x, PetscScalar xx,PetscInt il,PetscInt iq,PetscInt
   i1=nll[il][iq1];
   i2=nll[il][iq2];
 
-  /*** Determine nodal values at the endpoints of the interval intrvl ***/ 
+  /*** Determine nodal values at the endpoints of the interval intrvl ***/
   x1=x[i1];
   x2=x[i2];
   //printf("x1=%g\tx2=%g\txx=%g\n",x1,x2,xx);
@@ -333,7 +333,7 @@ PetscScalar bspl(PetscScalar *x, PetscScalar xx,PetscInt il,PetscInt iq,PetscInt
 }
 
 /*---------------------------------------------------------
-  Function called by rhs function to get B and g 
+  Function called by rhs function to get B and g
 ---------------------------------------------------------*/
 void femBg(PetscScalar btri[][3],PetscScalar *f,PetscInt nz,PetscScalar *z, PetscReal t)
 {
@@ -403,7 +403,7 @@ void femBg(PetscScalar btri[][3],PetscScalar *f,PetscInt nz,PetscScalar *z, Pets
             if (j > -1){
               jj = 1+j-i;
               btri[i][jj] += bij*dd;
-            } else {  
+            } else {
               f[i] += bij*dd*exact(z[ipp], t);
               // f[i] += 0.0;
               // if (il==0 && j==-1){
@@ -444,7 +444,7 @@ void femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
   qdwt[1] = 4.0/6.0;
   qdwt[2] = 1.0/6.0;
 
-  /* 1st and last nodes have Dirichlet boundary condition - 
+  /* 1st and last nodes have Dirichlet boundary condition -
      set indices there to -1 */
 
   for (i=0; i < nz-1; i++)
@@ -454,7 +454,7 @@ void femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
   }/*end for (i)*/
   indx[nz-1]=-1;
 
-  ipq = 0;  
+  ipq = 0;
 
   for (il=0; il < nz-1; il++)
   {
@@ -490,7 +490,7 @@ void femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
             if (j > -1) {
               add_term = aij*dd;
               ierr = MatSetValue(obj->Amat,i,j,add_term,ADD_VALUES);
-            }/*endif*/ 
+            }/*endif*/
           }/*end for (iqq)*/
         }/*end if (i>0)*/
       }/*end for (iq)*/
@@ -506,7 +506,7 @@ void femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
         By + g values ****
 ---------------------------------------------------------*/
 void rhs(AppCtx *obj,PetscScalar *y, PetscInt nz, PetscScalar *z, PetscReal t)
-{ 
+{
   PetscInt        i,j,js,je,jj;
   PetscScalar     val,g[num_z],btri[num_z][3],add_term;
   PetscErrorCode  ierr;

@@ -7,7 +7,7 @@ static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C; 
+  Mat            C;
   PetscInt       i,j,m = 3,n = 3,Ii,J;
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -65,14 +65,14 @@ int main(int argc,char **args)
 
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
   info.fill      = 2.0;
-  info.dtcol     = 0.0; 
-  info.zeropivot = 1.e-14; 
+  info.dtcol     = 0.0;
+  info.zeropivot = 1.e-14;
   info.pivotinblocks = 1.0;
-  ierr = MatLUFactor(C,perm,iperm,&info);CHKERRQ(ierr); 
+  ierr = MatLUFactor(C,perm,iperm,&info);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Test MatSolve */
-  ierr = MatSolve(C,b,x);CHKERRQ(ierr); 
+  ierr = MatSolve(C,b,x);CHKERRQ(ierr);
   ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
@@ -82,7 +82,7 @@ int main(int argc,char **args)
   }
 
   /* Test MatSolveAdd */
-  ierr = MatSolveAdd(C,b,y,x);CHKERRQ(ierr); 
+  ierr = MatSolveAdd(C,b,y,x);CHKERRQ(ierr);
   ierr = VecAXPY(x,-1.0,y);CHKERRQ(ierr);
   ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);

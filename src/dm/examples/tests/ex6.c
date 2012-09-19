@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   AO             ao;
   PetscBool      flg = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,300,&viewer);CHKERRQ(ierr);
 
   /* Read options */
@@ -35,38 +35,38 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRQ(ierr);
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) stencil_type =  DMDA_STENCIL_STAR;
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-box",&flg,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-box",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) stencil_type =  DMDA_STENCIL_BOX;
 
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-xperiodic",&flg,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-xperiodic",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) bx = DMDA_BOUNDARY_PERIODIC;
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-xghosted",&flg,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-xghosted",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) bx = DMDA_BOUNDARY_GHOSTED;
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-xnonghosted",&flg,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-xnonghosted",&flg,PETSC_NULL);CHKERRQ(ierr);
 
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-yperiodic",&flg,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-yperiodic",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) by = DMDA_BOUNDARY_PERIODIC;
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-yghosted",&flg,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-yghosted",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) by = DMDA_BOUNDARY_GHOSTED;
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-ynonghosted",&flg,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-ynonghosted",&flg,PETSC_NULL);CHKERRQ(ierr);
 
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-zperiodic",&flg,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-zperiodic",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) bz = DMDA_BOUNDARY_PERIODIC;
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-zghosted",&flg,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-zghosted",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) bz = DMDA_BOUNDARY_GHOSTED;
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-znonghosted",&flg,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-znonghosted",&flg,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-testorder",&test_order,PETSC_NULL);CHKERRQ(ierr);
 
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
   if (!test_order) { /* turn off printing when testing ordering mappings */
     if (M*N*P<40) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\nGlobal Vector:\n");CHKERRQ(ierr);
-      ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+      ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
     }
   }
@@ -127,7 +127,7 @@ int main(int argc,char **argv)
     PetscViewer sviewer;
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nLocal Vector: processor %d\n",rank);CHKERRQ(ierr);
     ierr = PetscViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
-    ierr = VecView(local,sviewer);CHKERRQ(ierr); 
+    ierr = VecView(local,sviewer);CHKERRQ(ierr);
     ierr = PetscViewerRestoreSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
@@ -146,27 +146,27 @@ int main(int argc,char **argv)
     for (k=Zs; k<Zs+Zm; k++) {
       for (j=Ys; j<Ys+Ym; j++) {
         for (i=Xs; i<Xs+Xm; i++) {
-          iloc = w*((k-Zs)*Xm*Ym + (j-Ys)*Xm + i-Xs); 
+          iloc = w*((k-Zs)*Xm*Ym + (j-Ys)*Xm + i-Xs);
           for (l=0; l<w; l++) {
             iglobal[kk++] = ltog[iloc+l];
           }
         }
       }
-    } 
+    }
 
     /* Map this to the application ordering (which for DMDAs is just the natural ordering
        that would be used for 1 processor, numbering most rapidly by x, then y, then z) */
-    ierr = AOPetscToApplication(ao,nloc,iglobal);CHKERRQ(ierr); 
+    ierr = AOPetscToApplication(ao,nloc,iglobal);CHKERRQ(ierr);
 
     /* Then map the application ordering back to the PETSc DMDA ordering */
-    ierr = AOApplicationToPetsc(ao,nloc,iglobal);CHKERRQ(ierr); 
+    ierr = AOApplicationToPetsc(ao,nloc,iglobal);CHKERRQ(ierr);
 
     /* Verify the mappings */
     kk=0;
     for (k=Zs; k<Zs+Zm; k++) {
       for (j=Ys; j<Ys+Ym; j++) {
         for (i=Xs; i<Xs+Xm; i++) {
-          iloc = w*((k-Zs)*Xm*Ym + (j-Ys)*Xm + i-Xs); 
+          iloc = w*((k-Zs)*Xm*Ym + (j-Ys)*Xm + i-Xs);
           for (l=0; l<w; l++) {
             if (iglobal[kk] != ltog[iloc+l]) {
               ierr = PetscPrintf(MPI_COMM_WORLD,"[%D] Problem with mapping: z=%D, j=%D, i=%D, l=%D, petsc1=%D, petsc2=%D\n",
@@ -178,7 +178,7 @@ int main(int argc,char **argv)
       }
     }
     ierr = PetscFree(iglobal);CHKERRQ(ierr);
-  } 
+  }
 
   /* Free memory */
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -188,7 +188,7 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
-  
+
 
 
 

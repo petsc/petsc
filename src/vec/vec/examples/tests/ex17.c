@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   IS             is1,is2;
   VecScatter     ctx;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
@@ -45,8 +45,8 @@ int main(int argc,char **argv)
   ierr = VecScatterBegin(ctx,y,x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx,y,x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
-  
-  if (!rank) 
+
+  if (!rank)
     {printf("----\n"); ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -57,4 +57,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

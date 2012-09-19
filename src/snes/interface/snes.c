@@ -370,7 +370,7 @@ static PetscErrorCode DMCoarsenHook_SNESVecSol(DM dm,DM dmc,void *ctx)
  * safely call SNESGetDM() in their residual evaluation routine. */
 static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,MatStructure *mstruct,void *ctx)
 {
-  SNES snes =                 (SNES)ctx;
+  SNES                        snes = (SNES)ctx;
   PetscErrorCode              ierr;
   Mat                         Asave = A,Bsave = B;
   Vec                         X,Xnamed = PETSC_NULL;
@@ -1603,7 +1603,7 @@ $    func (SNES snes,Vec x,Vec b,void *ctx);
 PetscErrorCode SNESSetGS(SNES snes,PetscErrorCode (*gsfunc)(SNES,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  DM dm;
+  DM             dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -1628,7 +1628,8 @@ PetscErrorCode SNESSetGS(SNES snes,PetscErrorCode (*gsfunc)(SNES,Vec,Vec,void*),
 .seealso: SNESSetGS(), SNESGetGS(), SNESSetPC(), SNESGetGSSweeps()
 @*/
 
-PetscErrorCode SNESSetGSSweeps(SNES snes, PetscInt sweeps) {
+PetscErrorCode SNESSetGSSweeps(SNES snes, PetscInt sweeps)
+{
   PetscFunctionBegin;
   snes->gssweeps = sweeps;
   PetscFunctionReturn(0);
@@ -1652,7 +1653,8 @@ PetscErrorCode SNESSetGSSweeps(SNES snes, PetscInt sweeps) {
 
 .seealso: SNESSetGS(), SNESGetGS(), SNESSetPC(), SNESSetGSSweeps()
 @*/
-PetscErrorCode SNESGetGSSweeps(SNES snes, PetscInt * sweeps) {
+PetscErrorCode SNESGetGSSweeps(SNES snes, PetscInt * sweeps)
+{
   PetscFunctionBegin;
   *sweeps = snes->gssweeps;
   PetscFunctionReturn(0);
@@ -1663,8 +1665,8 @@ PetscErrorCode SNESGetGSSweeps(SNES snes, PetscInt * sweeps) {
 PetscErrorCode  SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   PetscErrorCode ierr;
-  DM dm;
-  SNESDM sdm;
+  DM             dm;
+  SNESDM         sdm;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
@@ -1970,9 +1972,9 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
 PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
 {
   PetscErrorCode ierr;
-  PetscInt i;
-  DM dm;
-  SNESDM sdm;
+  PetscInt       i;
+  DM             dm;
+  SNESDM         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -2175,14 +2177,14 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
     ierr = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_compare_coloring_threshold_rtol",&threshold_rtol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_compare_coloring_threshold_atol",&threshold_atol,PETSC_NULL);CHKERRQ(ierr);
     if (flag || flag_display || flag_draw || flag_contour || flag_threshold) {
-      Mat Bfd;
-      MatStructure mstruct;
-      PetscViewer vdraw,vstdout;
-      ISColoring iscoloring;
-      MatFDColoring matfdcoloring;
+      Mat            Bfd;
+      MatStructure   mstruct;
+      PetscViewer    vdraw,vstdout;
+      ISColoring     iscoloring;
+      MatFDColoring  matfdcoloring;
       PetscErrorCode (*func)(SNES,Vec,Vec,void*);
-      void *funcctx;
-      PetscReal norm1,norm2,normmax;
+      void           *funcctx;
+      PetscReal      norm1,norm2,normmax;
 
       ierr = MatDuplicate(*B,MAT_DO_NOT_COPY_VALUES,&Bfd);CHKERRQ(ierr);
       ierr = MatGetColoring(Bfd,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
@@ -2228,9 +2230,9 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
         ierr = MatGetOwnershipRange(*B,&rstart,&rend);CHKERRQ(ierr);
         for (i=rstart; i<rend; i++) {
           const PetscScalar *ba,*ca;
-          const PetscInt *bj,*cj;
-          PetscInt bn,cn,j,maxentrycol = -1,maxdiffcol = -1,maxrdiffcol = -1;
-          PetscReal maxentry = 0,maxdiff = 0,maxrdiff = 0;
+          const PetscInt    *bj,*cj;
+          PetscInt          bn,cn,j,maxentrycol = -1,maxdiffcol = -1,maxrdiffcol = -1;
+          PetscReal         maxentry = 0,maxdiff = 0,maxrdiff = 0;
           ierr = MatGetRow(*B,i,&bn,&bj,&ba);CHKERRQ(ierr);
           ierr = MatGetRow(Bfd,i,&cn,&cj,&ca);CHKERRQ(ierr);
           if (bn != cn) SETERRQ(((PetscObject)*A)->comm,PETSC_ERR_PLIB,"Unexpected different nonzero pattern in -snes_compare_coloring_threshold");
@@ -2414,11 +2416,10 @@ PetscErrorCode SNESGetJacobian(SNES snes,Mat *A,Mat *B,PetscErrorCode (**func)(S
 @*/
 PetscErrorCode  SNESSetUp(SNES snes)
 {
-  PetscErrorCode ierr;
-  DM             dm;
-  SNESDM         sdm;
-  SNESLineSearch              linesearch;
-  SNESLineSearch              pclinesearch;
+  PetscErrorCode              ierr;
+  DM                          dm;
+  SNESDM                      sdm;
+  SNESLineSearch              linesearch, pclinesearch;
   void                        *lsprectx,*lspostctx;
   SNESLineSearchPreCheckFunc  lsprefunc;
   SNESLineSearchPostCheckFunc lspostfunc;
@@ -3344,9 +3345,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "SNESGetConvergenceHistoryMatlab"
 mxArray *SNESGetConvergenceHistoryMatlab(SNES snes)
 {
-  mxArray        *mat;
-  PetscInt       i;
-  PetscReal      *ar;
+  mxArray   *mat;
+  PetscInt  i;
+  PetscReal *ar;
 
   PetscFunctionBegin;
   mat  = mxCreateDoubleMatrix(snes->conv_hist_len,1,mxREAL);

@@ -7,7 +7,7 @@ static char help[] = "Tests copying an AIJ matrix.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C,A; 
+  Mat            C,A;
   PetscInt       i,j,m = 5,n = 5,Ii,J;
   PetscErrorCode ierr;
   PetscScalar    v;
@@ -45,7 +45,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); 
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);

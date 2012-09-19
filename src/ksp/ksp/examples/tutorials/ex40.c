@@ -49,7 +49,7 @@ int main(int Argc,char **Args)
   /* Set the fudge parameters, we scale the whole thing by 1/(2*h) later */
   h = 1.;
   rho *= 1./(2.*h);
-  
+
   /* Geometry info */
   for (i=0; i<2; i++) {
     nodes[i] = n;
@@ -58,7 +58,7 @@ int main(int Argc,char **Args)
   }
   ierr = DMADDACreate(PETSC_COMM_WORLD, 2, nodes, PETSC_NULL, 2,periodic, &adda);CHKERRQ(ierr);
   ierr = DMADDASetRefinement(adda, refine, 2);CHKERRQ(ierr);
-  
+
   /* Random numbers */
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ int main(int Argc,char **Args)
       /* use those to set the field */
       uxy1 = PetscExpScalar( ((PetscScalar) (R*c/beta))*PETSC_i);
       uxy2 = PetscExpScalar( ((PetscScalar) (R*s/beta))*PETSC_i);
-      
+
       sxy.x[0] = x; sxy.x[1] = y; /* the point where we are */
 
       /* center action */
@@ -107,7 +107,7 @@ int main(int Argc,char **Args)
       sxy.d = 1; /* spin 1, 1 */
       val = -rho;
       ierr = DMADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      
+
       sxy_m.x[0] = x+1; sxy_m.x[1] = y; /* right action */
       sxy.d = 0; sxy_m.d = 0; /* spin 0, 0 */
       val = -uxy1; valconj = PetscConj(val);
@@ -145,7 +145,7 @@ int main(int Argc,char **Args)
       ierr = DMADDAMatSetValues(H, adda, 1, &sxy, adda, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
     }
   }
-  
+
   ierr = PetscFree(sxy.x);CHKERRQ(ierr);
   ierr = PetscFree(sxy_m.x);CHKERRQ(ierr);
 
@@ -255,7 +255,7 @@ PetscErrorCode computeMinEigVal(Mat A, PetscInt its, PetscScalar *eig) {
   PetscReal       norm;
   Mat             G;
   PetscInt        i;
-  
+
   PetscFunctionBegin;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);

@@ -47,7 +47,12 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C,Mat A,const MatFactorI
     while (row < i) {
       pc = rtmp + bs2*row;
 /*      if (*pc) { */
-      for (flg=0,k=0; k<bs2; k++) { if (pc[k]!=0.0) { flg = 1; break; }}
+      for (flg=0,k=0; k<bs2; k++) {
+        if (pc[k]!=0.0) {
+          flg = 1;
+          break;
+        }
+      }
       if (flg) {
         pv = ba + bs2*diag_offset[row];
         pj = bj + diag_offset[row] + 1;

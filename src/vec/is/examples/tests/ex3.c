@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscInt       rank,size;
   IS             is,newis;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   ierr = PetscFree(indices);CHKERRQ(ierr);
 
   /*
-      Stick them together from all processors 
+      Stick them together from all processors
   */
   ierr = ISAllGather(is,&newis);CHKERRQ(ierr);
 
@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+
 
 
 

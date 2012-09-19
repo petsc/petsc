@@ -19,11 +19,11 @@ static const char help[] = "Solves PDE optimization problem using full-space met
 
             FU = (fw fu flambda)
 
-       In this example the PDE is 
-                             Uxx = 2, 
+       In this example the PDE is
+                             Uxx = 2,
                             u(0) = w(0), thus this is the free parameter
                             u(1) = 0
-       the function we wish to minimize is 
+       the function we wish to minimize is
                             \integral u^{2}
 
        The exact solution for u is given by u(x) = x*x - 1.25*x + .25
@@ -57,7 +57,7 @@ int main(int argc,char **argv)
   SNES           snes;
   UserCtx        user;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&user.packer);CHKERRQ(ierr);
@@ -99,7 +99,7 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
 /*
@@ -142,14 +142,14 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     else if (i == N-1) flambda[N-1] =    h*u[N-1] + 2.*d*lambda[N-1] - d*lambda[N-2];
     else if (i == N-2) flambda[N-2] = 2.*h*u[N-2] + 2.*d*lambda[N-2] - d*lambda[N-3];
     else               flambda[i]   = 2.*h*u[i]   - d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]);
-  } 
+  }
 
   /* derivative of L() w.r.t. lambda */
   for (i=xs; i<xs+xm; i++) {
     if      (i == 0)   fu[0]   = 2.0*d*(u[0] - w[0]);
     else if (i == N-1) fu[N-1] = 2.0*d*u[N-1];
     else               fu[i]   = -(d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0*h);
-  } 
+  }
 
   ierr = VecRestoreArray(vw,&w);CHKERRQ(ierr);
   ierr = VecRestoreArray(vfw,&fw);CHKERRQ(ierr);

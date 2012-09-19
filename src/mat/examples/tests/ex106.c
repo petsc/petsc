@@ -32,7 +32,7 @@ int main(int argc,char **args)
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_nonsym",&mat_nonsymmetric);CHKERRQ(ierr);
 
-  /* 
+  /*
      Create parallel matrix, specifying only its global dimensions.
      When using MatCreate(), the matrix format can be specified at
      runtime. Also, the parallel partitioning of the matrix is
@@ -43,15 +43,15 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set matrix entries matrix in parallel.
       - Each processor needs to insert only elements that it owns
         locally (but any non-local elements will be sent to the
-        appropriate processor during matrix assembly). 
+        appropriate processor during matrix assembly).
       - Always specify global row and columns of matrix entries.
   */
-  for (I=Istart; I<Iend; I++) { 
-    v = -1.0; i = I/n; j = I - i*n;  
+  for (I=Istart; I<Iend; I++) {
+    v = -1.0; i = I/n; j = I - i*n;
     if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
@@ -63,7 +63,7 @@ int main(int argc,char **args)
      Make the matrix nonsymmetric if desired
   */
   if (mat_nonsymmetric) {
-    for (I=Istart; I<Iend; I++) { 
+    for (I=Istart; I<Iend; I++) {
       v = -1.5; i = I/n;
       if (i>1)   {J = I-n-1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     }
@@ -72,7 +72,7 @@ int main(int argc,char **args)
     ierr = MatSetOption(C,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd()
      Computations can be done while messages are in transition
@@ -82,10 +82,10 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   its_max=1000;
-  /* 
+  /*
      Create parallel vectors.
       - When using VecSetSizes(), we specify only the vector's global
-        dimension; the parallel partitioning is determined at runtime. 
+        dimension; the parallel partitioning is determined at runtime.
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
@@ -94,7 +94,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
 
-  /* 
+  /*
      Currently, all parallel PETSc vectors are partitioned by
      contiguous chunks across the processors.  Determine which
      range of entries are locally owned.
@@ -115,7 +115,7 @@ int main(int argc,char **args)
     ierr = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
      Assemble vector, using the 2-step process:
        VecAssemblyBegin(), VecAssemblyEnd()
      Computations can be done while messages are in transition,
@@ -138,7 +138,7 @@ int main(int argc,char **args)
     }
     ierr = MatSolve(F,b,x);CHKERRQ(ierr);
     ierr = MatDestroy(&F);CHKERRQ(ierr);
-  } 
+  }
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
   ierr = ISDestroy(&iperm);CHKERRQ(ierr);
 

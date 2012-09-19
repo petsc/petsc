@@ -28,7 +28,7 @@ int main(int argc,char **args)
 
   ierr = MatGetSize(A,PETSC_NULL,&n);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscReal),&norms);CHKERRQ(ierr);
-  ierr = MatGetColumnNorms(A,NORM_2,norms);CHKERRQ(ierr); 
+  ierr = MatGetColumnNorms(A,NORM_2,norms);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscRealView(n,norms,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }

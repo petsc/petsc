@@ -2,7 +2,7 @@ static const char help[] = "Tests MatGetSubMatrix with MatSubMatrix versus MatAI
 
 #include <petscmat.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AssembleMatrix"
 static PetscErrorCode AssembleMatrix(MPI_Comm comm,Mat *A)
 {
@@ -26,7 +26,7 @@ static PetscErrorCode AssembleMatrix(MPI_Comm comm,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "Compare2"
 static PetscErrorCode Compare2(Vec *X,const char *test)
 {
@@ -56,7 +56,7 @@ static PetscErrorCode Compare2(Vec *X,const char *test)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "CheckMatrices"
 static PetscErrorCode CheckMatrices(Mat A,Mat B,Vec left,Vec right,Vec X,Vec Y,Vec X1,Vec Y1)
 {
@@ -104,7 +104,7 @@ static PetscErrorCode CheckMatrices(Mat A,Mat B,Vec left,Vec right,Vec X,Vec Y,V
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {

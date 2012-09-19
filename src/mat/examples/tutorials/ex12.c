@@ -9,12 +9,12 @@ static char help[] = "Reads a PETSc matrix and vector from a file appends the ve
    Processors: 1
 T*/
 
-/* 
+/*
   Include "petscmat.h" so that we can use matrices.
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h    - vectors
      petscmat.h    - matrices
-     petscis.h     - index sets            petscviewer.h - viewers               
+     petscis.h     - index sets            petscviewer.h - viewers
 */
 #include <petscmat.h>
 #include <../src/mat/impls/aij/seq/aij.h>
@@ -44,7 +44,7 @@ PetscErrorCode PadMatrix(Mat A,Vec v,PetscScalar c,Mat *B)
   }
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n+1,n+1,0,cnt,B);CHKERRQ(ierr);
   ierr = MatSetOption(*B,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-  
+
   /* copy over the matrix entries from the matrix and then the vector */
   for (i=0; i<n; i++){
     ierr = MatSetValues(*B,1,&i,aij->i[i+1] - aij->i[i],aij->j + aij->i[i],aij->a + aij->i[i],INSERT_VALUES);CHKERRQ(ierr);
@@ -76,7 +76,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
 
-  /* 
+  /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */

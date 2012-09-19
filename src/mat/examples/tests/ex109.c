@@ -4,7 +4,7 @@ static char help[] = "Test MatMatMult() for AIJ and Dense matrices.\n\n";
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **argv) 
+int main(int argc,char **argv)
 {
   Mat            A,B,C,D;
   PetscInt       i,M=10,N=5;
@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   nza  = (PetscInt)(.3*M); /* num of nozeros in each row of A */
   ierr = MatSeqAIJSetPreallocation(A,nza,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,nza,PETSC_NULL,nza,PETSC_NULL);CHKERRQ(ierr);  
+  ierr = MatMPIAIJSetPreallocation(A,nza,PETSC_NULL,nza,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatSetRandom(A,r);CHKERRQ(ierr);
 
   /* create a dense matrix B */
@@ -47,13 +47,13 @@ int main(int argc,char **argv)
   ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
 
   ierr = MatMatMultSymbolic(A,B,fill,&D);CHKERRQ(ierr);
-  for (i=0; i<2; i++){    
+  for (i=0; i<2; i++){
     ierr = MatMatMultNumeric(A,B,D);CHKERRQ(ierr);
-  }  
+  }
   ierr = MatEqual(C,D,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");
 
-  ierr = MatDestroy(&D);CHKERRQ(ierr); 
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);

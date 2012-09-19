@@ -11,22 +11,22 @@ options are:\n\
   -Mx <xg>, where <xg> = number of grid points in the x-direction on coarse grid\n\
   -My <yg>, where <yg> = number of grid points in the y-direction on coarse grid\n\n";
 
-/*  
+/*
     1) Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
-  
+
             -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1 ,
-  
+
     with boundary conditions
-   
+
              u = 0  for  x = 0, x = 1, y = 0, y = 1.
-  
+
     A finite difference approximation with the usual 5-point stencil
-    is used to discretize the boundary value problem to obtain a nonlinear 
+    is used to discretize the boundary value problem to obtain a nonlinear
     system of equations.
 
    The code has two cases for multilevel solver
-     I. the coarse grid Jacobian is computed in parallel 
+     I. the coarse grid Jacobian is computed in parallel
      II. the coarse grid Jacobian is computed sequentially on each processor
    in both cases the coarse problem is SOLVED redundantly.
 
@@ -75,8 +75,8 @@ extern PetscErrorCode FormInterpolation(AppCtx *);
 #define __FUNC__ "main"
 int main( int argc, char **argv )
 {
-  SNES           snes;                      
-  AppCtx         user;                      
+  SNES           snes;
+  AppCtx         user;
   PetscErrorCode ierr;
   PetscInt       its, N, n, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, nlocal,Nlocal;
   PetscMPIInt    size;
@@ -85,7 +85,7 @@ int main( int argc, char **argv )
   PC             pc;
 
   /*
-      Initialize PETSc, note that default options in ex11options can be 
+      Initialize PETSc, note that default options in ex11options can be
       overridden at the command line
   */
   PetscInitialize( &argc, &argv,"ex11options",help );
@@ -168,8 +168,8 @@ int main( int argc, char **argv )
   ierr = KSPSetOptionsPrefix(user.ksp_coarse,"coarse_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(user.ksp_coarse);CHKERRQ(ierr);
   ierr = KSPSetOperators(user.ksp_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = PCMGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr); 
-  ierr = PCMGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr); 
+  ierr = PCMGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr);
+  ierr = PCMGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr);
   if (user.redundant_build) {
     PC  rpc;
     ierr = KSPGetPC(user.ksp_coarse,&rpc);CHKERRQ(ierr);
@@ -181,7 +181,7 @@ int main( int argc, char **argv )
   ierr = KSPSetOptionsPrefix(user.ksp_fine,"fine_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(user.ksp_fine);CHKERRQ(ierr);
   ierr = KSPSetOperators(user.ksp_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = PCMGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr); 
+  ierr = PCMGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr);
   ierr = PCMGSetResidual(pc,FINE_LEVEL,PCMGDefaultResidual,user.fine.J);CHKERRQ(ierr);
 
   /* Create interpolation between the levels */
@@ -220,8 +220,8 @@ int main( int argc, char **argv )
   ierr = DMDestroy(&user.coarse.da);CHKERRQ(ierr);
 
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = MatDestroy(&user.R);CHKERRQ(ierr); 
-  ierr = VecDestroy(&user.Rscale);CHKERRQ(ierr); 
+  ierr = MatDestroy(&user.R);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.Rscale);CHKERRQ(ierr);
   PetscFinalize();
 
   return 0;
@@ -252,12 +252,12 @@ PetscErrorCode FormInitialGuess1(AppCtx *user,Vec X)
   for (j=ys; j<ys+ym; j++) {
     temp = (double)(PetscMin(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
-      row = i - Xs + (j - Ys)*Xm; 
+      row = i - Xs + (j - Ys)*Xm;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
-        x[row] = 0.0; 
+        x[row] = 0.0;
         continue;
       }
-      x[row] = temp1*PetscSqrtReal( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) ); 
+      x[row] = temp1*PetscSqrtReal( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) );
     }
   }
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
@@ -278,7 +278,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscErrorCode ierr;
   double         two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx,sc;
   PetscScalar    u, uxx, uyy, *x,*f;
-  Vec            localX = user->fine.localX, localF = user->fine.localF; 
+  Vec            localX = user->fine.localX, localF = user->fine.localF;
 
   mx = user->fine.mx;       my = user->fine.my;       lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
@@ -294,7 +294,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
   /* Evaluate function */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - Ys)*Xm + xs - Xs - 1; 
+    row = (j - Ys)*Xm + xs - Xs - 1;
     for (i=xs; i<xs+xm; i++) {
       row++;
       if (i > 0 && i < mx-1 && j > 0 && j < my-1) {
@@ -316,11 +316,11 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DMLocalToGlobalBegin(user->fine.da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(user->fine.da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
-  return 0; 
-} 
+  return 0;
+}
 
 /*
-        Computes the part of the Jacobian associated with this processor 
+        Computes the part of the Jacobian associated with this processor
 */
 #undef __FUNC__
 #define __FUNC__ "FormJacobian_Grid"
@@ -346,7 +346,7 @@ PetscErrorCode FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - Ys)*Xm + xs - Xs - 1; 
+    row = (j - Ys)*Xm + xs - Xs - 1;
     for (i=xs; i<xs+xm; i++) {
       row++;
       grow = ltog[row];
@@ -442,7 +442,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   /* create coarse grid jacobian for preconditioner */
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  
+
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
 
@@ -473,7 +473,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
 #undef __FUNC__
 #define __FUNC__ "FormInterpolation"
 /*
-      Forms the interpolation (and restriction) operator from 
+      Forms the interpolation (and restriction) operator from
 coarse grid to fine.
 */
 PetscErrorCode FormInterpolation(AppCtx *user)
@@ -487,7 +487,7 @@ PetscErrorCode FormInterpolation(AppCtx *user)
   PetscScalar    v[4],x,y, one = 1.0;
   Mat            mat;
   Vec            Rscale;
-  
+
   ierr = DMDAGetCorners(user->fine.da,&i_start,&j_start,0,&m,&n,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(user->fine.da,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
   ierr = DMDAGetGlobalIndices(user->fine.da,PETSC_NULL,&idx);CHKERRQ(ierr);
@@ -513,8 +513,8 @@ PetscErrorCode FormInterpolation(AppCtx *user)
       i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratio);    /* coarse grid node below fine grid node */
 
-      /* 
-         Only include those interpolation points that are truly 
+      /*
+         Only include those interpolation points that are truly
          nonzero. Note this is very important for final grid lines
          in x and y directions; since they have no right/top neighbors
       */
@@ -532,21 +532,21 @@ PetscErrorCode FormInterpolation(AppCtx *user)
       cols[nc] = idx_c[col];
       v[nc++]  = x*y - x - y + 1.0;
       /* one right and below */
-      if (i_c*ratio != i) { 
+      if (i_c*ratio != i) {
         cols[nc] = idx_c[col+1];
         v[nc++]  = -x*y + x;
       }
       /* one left and above */
-      if (j_c*ratio != j) { 
+      if (j_c*ratio != j) {
         cols[nc] = idx_c[col+m_ghost_c];
         v[nc++]  = -x*y + y;
       }
       /* one right and above */
-      if (j_c*ratio != j && i_c*ratio != i) { 
+      if (j_c*ratio != j && i_c*ratio != i) {
         cols[nc] = idx_c[col+m_ghost_c+1];
         v[nc++]  = x*y;
       }
-      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
+      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

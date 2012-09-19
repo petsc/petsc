@@ -1,4 +1,4 @@
- 
+
 static char help[] = "Tests MatSolve() and MatMatSolve() (interface to superlu_dist).\n\
 Example: mpiexec -n <np> ./ex125 -f <matrix binary file> -nrhs 4 \n\n";
 
@@ -8,7 +8,7 @@ Example: mpiexec -n <np> ./ex125 -f <matrix binary file> -nrhs 4 \n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            A,RHS,C,F,X; 
+  Mat            A,RHS,C,F,X;
   Vec            u,x,b;
   PetscErrorCode ierr;
   PetscMPIInt    rank,nproc;
@@ -34,27 +34,27 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (m != n) {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
   }
-  
+
   /* Create dense matrix C and X; C holds true solution with identical colums */
   nrhs = 2;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nrhs",&nrhs,PETSC_NULL);CHKERRQ(ierr);
   if (!rank) printf("ex125: nrhs %d\n",nrhs);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr); 
+  ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
-  
+
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = MatSetRandom(C,rand);CHKERRQ(ierr);
   ierr = MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&X);CHKERRQ(ierr);
-  
+
   /* Create vectors */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
@@ -66,7 +66,7 @@ int main(int argc,char **args)
   ierr = MatGetOrdering(A,MATORDERINGND,&perm,&iperm);CHKERRQ(ierr);
   //ierr = ISView(perm,PETSC_VIEWER_STDOUT_WORLD);
   //ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);
-  
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_solver_package",&ipack,PETSC_NULL);CHKERRQ(ierr);
   switch (ipack){
   case 0:
@@ -82,7 +82,7 @@ int main(int argc,char **args)
     break;
 #endif
   case 2:
-#ifdef PETSC_HAVE_MUMPS 
+#ifdef PETSC_HAVE_MUMPS
     if (!rank) printf(" MUMPS LU:\n");
     ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     {
@@ -97,7 +97,7 @@ int main(int argc,char **args)
     ierr = MatGetFactor(A,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   }
 
-  info.fill = 5.0; 
+  info.fill = 5.0;
   ierr = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
 
   for (nfact = 0; nfact < 2; nfact++){
@@ -120,17 +120,17 @@ int main(int argc,char **args)
       for (nsolve = 0; nsolve < 2; nsolve++){
         if (!rank) printf("   %d-the MatMatSolve \n",nsolve);
         ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
-        
+
         /* Check the error */
         ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-        if (norm > tol){ 
+        if (norm > tol){
           if (!rank){
             ierr = PetscPrintf(PETSC_COMM_SELF,"1st MatMatSolve: Norm of error %g, nsolve %d\n",norm,nsolve);CHKERRQ(ierr);
           }
         }
       }
-    } 
+    }
 
     /* Test MatSolve() */
     if (testMatSolve){
@@ -138,19 +138,19 @@ int main(int argc,char **args)
         ierr = VecGetArray(x,&array);CHKERRQ(ierr);
         for (i=0; i<m; i++){
           ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-          array[i] = rval; 
+          array[i] = rval;
         }
         ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
-        ierr = VecCopy(x,u);CHKERRQ(ierr); 
+        ierr = VecCopy(x,u);CHKERRQ(ierr);
         ierr = MatMult(A,x,b);CHKERRQ(ierr);
 
         if (!rank) printf("   %d-the MatSolve \n",nsolve);
-        ierr = MatSolve(F,b,x);CHKERRQ(ierr); 
-       
+        ierr = MatSolve(F,b,x);CHKERRQ(ierr);
+
         /* Check the error */
         ierr = VecAXPY(u,-1.0,x);CHKERRQ(ierr);  /* u <- (-1.0)x + u */
         ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-        if (norm > tol){ 
+        if (norm > tol){
           ierr = MatMult(A,x,u);CHKERRQ(ierr); /* u = A*x */
           PetscReal resi;
           ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
@@ -161,23 +161,23 @@ int main(int argc,char **args)
         }
       }
     }
-  } 
-  
+  }
+
   /* Free data structures */
-  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&F);CHKERRQ(ierr);
   ierr = MatDestroy(&X);CHKERRQ(ierr);
   if (testMatMatSolve){
     ierr = MatDestroy(&RHS);CHKERRQ(ierr);
   }
-  
+
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = ISDestroy(&perm);CHKERRQ(ierr);
   ierr = ISDestroy(&iperm);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr); 
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr); 
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

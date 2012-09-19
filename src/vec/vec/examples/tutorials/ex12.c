@@ -6,7 +6,7 @@ static char help[] = "Demonstrates VecStrideScatter() and VecStrideGather().\n\n
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscis.h     - index sets
@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
-  /* 
+  /*
       Create multi-component vector with 2 components
   */
   ierr = VecCreate(PETSC_COMM_WORLD,&v);CHKERRQ(ierr);
@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   ierr = VecSetBlockSize(v,2);CHKERRQ(ierr);
   ierr = VecSetFromOptions(v);CHKERRQ(ierr);
 
-  /* 
+  /*
       Create single-component vector
   */
   ierr = VecCreate(PETSC_COMM_WORLD,&s);CHKERRQ(ierr);
@@ -55,13 +55,13 @@ int main(int argc,char **argv)
   ierr = VecView(s,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*
-     Put the values back into the second component 
+     Put the values back into the second component
   */
   ierr = VecStrideScatter(s,1,v,ADD_VALUES);CHKERRQ(ierr);
 
   ierr = VecView(v,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  /* 
+  /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
@@ -70,4 +70,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

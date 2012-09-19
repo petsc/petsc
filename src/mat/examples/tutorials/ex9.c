@@ -6,12 +6,12 @@ static char help[] = "Tests MatCreateComposite()\n\n";
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscmat.h" so that we can use matrices.
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h    - vectors
      petscmat.h    - matrices
-     petscis.h     - index sets            petscviewer.h - viewers               
+     petscis.h     - index sets            petscviewer.h - viewers
 */
 #include <petscmat.h>
 
@@ -30,14 +30,14 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
 
-  /* 
+  /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
 
-    /* 
+    /*
        Open binary file.  Note that we use FILE_MODE_READ to indicate
        reading from this file.
     */
@@ -58,7 +58,7 @@ int main(int argc,char **args)
     ierr = MatGetVecs(A[0],&x,&y);CHKERRQ(ierr);
     ierr = VecDuplicate(y,&work);CHKERRQ(ierr);
     ierr = VecDuplicate(y,&z);CHKERRQ(ierr);
-    
+
     ierr = VecSet(x,1.0);CHKERRQ(ierr);
     ierr = MatMult(A[0],x,z);CHKERRQ(ierr);
     ierr = MatMultAdd(A[1],x,z,z);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite multiplicative after merge %G\n",rnorm);
     }
 
-    /* 
+    /*
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
     */

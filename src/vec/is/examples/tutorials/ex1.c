@@ -8,11 +8,11 @@ static char help[] = "Creating a general index set.\n\n";
 
     Description: Creates an index set based on a set of integers. Views that index set
     and then destroys it.
-    
+
 T*/
- 
+
 /*
-    Include petscis.h so we can use PETSc IS objects. Note that this automatically 
+    Include petscis.h so we can use PETSc IS objects. Note that this automatically
   includes petscsys.h.
 */
 #include <petscis.h>
@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   PetscMPIInt    rank;
   IS             is;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /*
@@ -35,11 +35,11 @@ int main(int argc,char **argv)
    its own index set with its own list of integers.
   */
   ierr = PetscMalloc(5*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-  indices[0] = rank + 1; 
-  indices[1] = rank + 2; 
-  indices[2] = rank + 3; 
-  indices[3] = rank + 4; 
-  indices[4] = rank + 5; 
+  indices[0] = rank + 1;
+  indices[1] = rank + 2;
+  indices[2] = rank + 3;
+  indices[3] = rank + 4;
+  indices[4] = rank + 5;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,5,indices,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   /*
      Note that ISCreateGeneral() has made a copy of the indices
@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   ierr = ISView(is,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /*
-     Get the number of indices in the set 
+     Get the number of indices in the set
   */
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
 
@@ -68,8 +68,8 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] First index %D\n",rank,nindices[0]);CHKERRQ(ierr);
 
   /*
-     Once we no longer need access to the indices they should 
-     returned to the system 
+     Once we no longer need access to the indices they should
+     returned to the system
   */
   ierr = ISRestoreIndices(is,&nindices);CHKERRQ(ierr);
 
@@ -81,4 +81,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

@@ -1,7 +1,7 @@
 
 static char help[] = "Tests VecView() contour plotting for 2d DMDAs.\n\n";
 
-/* 
+/*
   MATLAB must be installed to configure PETSc to have MATLAB engine.
 Unless you have specific important reasons for using the MATLAB engine, we do not
 recommend it. If you want to use MATLAB for visualization and maybe a little post processing
@@ -50,7 +50,7 @@ int main(int argc,char **argv)
   PetscViewer    mviewer;
 #endif
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,"tmp.mat",FILE_MODE_WRITE,&mviewer);CHKERRQ(ierr);
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-star_stencil",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) stype = DMDA_STENCIL_STAR;
-      
+
   /* Create distributed array and get vectors */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
@@ -74,7 +74,7 @@ int main(int argc,char **argv)
   ierr = VecScale(local,value);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(da,local,ADD_VALUES,global);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(da,local,ADD_VALUES,global);CHKERRQ(ierr);
-  
+
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL, "-view_global", &flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) { /* view global vector in natural ordering */
@@ -98,4 +98,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

@@ -1,5 +1,5 @@
 
-/* This file created by Peter Mell   6/30/95 */ 
+/* This file created by Peter Mell   6/30/95 */
 
 static char help[] = "Solves the one dimensional heat equation.\n\n";
 
@@ -18,13 +18,13 @@ int main(int argc,char **argv)
   Vec            local,global,copy;
   PetscScalar    *localptr,*copyptr;
   PetscReal       h,k;
- 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);
-    
-  /* Set up the array */ 
+
+  /* Set up the array */
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,M,w,s,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
@@ -49,8 +49,8 @@ int main(int argc,char **argv)
   localptr[0] = copyptr[0] = 0.0;
   localptr[localsize-1] = copyptr[localsize-1] = 1.0;
   for (i=1; i<localsize-1; i++) {
-    j=(i-1)+mybase; 
-    localptr[i] = sin((PETSC_PI*j*6)/((PetscReal)M) 
+    j=(i-1)+mybase;
+    localptr[i] = sin((PETSC_PI*j*6)/((PetscReal)M)
                         + 1.2 * sin((PETSC_PI*j*2)/((PetscReal)M))) * 4+4;
   }
 
@@ -60,16 +60,16 @@ int main(int argc,char **argv)
   ierr = DMLocalToGlobalEnd(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
 
   /* Assign Parameters */
-  h= 1.0/M; 
+  h= 1.0/M;
   k= h*h/2.2;
 
-  for (j=0; j<time_steps; j++) {  
+  for (j=0; j<time_steps; j++) {
 
     /* Global to Local */
     ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
-    /*Extract local array */ 
+    /*Extract local array */
     ierr = VecGetArray(local,&localptr);CHKERRQ(ierr);
     ierr = VecGetArray (copy,&copyptr);CHKERRQ(ierr);
 
@@ -79,15 +79,15 @@ int main(int argc,char **argv)
       copyptr[i] = localptr[i] + (k/(h*h)) *
                            (localptr[i+1]-2.0*localptr[i]+localptr[i-1]);
     }
-  
+
     ierr = VecRestoreArray(copy,&copyptr);CHKERRQ(ierr);
     ierr = VecRestoreArray(local,&localptr);CHKERRQ(ierr);
 
     /* Local to Global */
     ierr = DMLocalToGlobalBegin(da,copy,INSERT_VALUES,global);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(da,copy,INSERT_VALUES,global);CHKERRQ(ierr);
-  
-    /* View Wave */ 
+
+    /* View Wave */
     ierr = VecView(global,viewer);CHKERRQ(ierr);
 
   }
@@ -100,7 +100,7 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+
 
 
 

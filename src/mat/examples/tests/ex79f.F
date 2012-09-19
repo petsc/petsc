@@ -11,7 +11,7 @@
       Mat         A,Ad,Ao
       PetscErrorCode ierr
       PetscMPIInt rank
-      PetscViewer v    
+      PetscViewer v
       PetscInt i,j,ia(1),ja(1)
       PetscInt n,icol(1),rstart
       PetscInt zero,one,rend

@@ -113,7 +113,7 @@
 ! Note that for Spalarts model, I use turbinf as the freestream value of
 ! the dependent variable just as in the Baldwin-Barth model.
 ! The constant is set so that in the freestream, nu_t=0.009 (1.341946)
-! 
+!
 !     print *, "I am in INIT"
       res0 = 1.0d0
       resc = 1.0d0
@@ -124,7 +124,7 @@
       gm1g  = 1.0d0
       gp1g  = 1.0d0
       ggm1  = 1.0d0
- 
+
       pi = 4.0d0*datan(1.0d0)
       conv = 180.0d0/pi
       p0    = 1.0d0
@@ -175,7 +175,7 @@
             amut(n)   = cmu*turbinf
  1010    continue
       end if
- 
+
       if (ivisc.eq.5.or.ivisc.eq.6) then
          if (irank .eq. 0) write(10,110)
          if (irank .eq. 0) write(10,140)vkar,cb1,sig,cb2
@@ -190,7 +190,7 @@
  1020    continue
       end if
 !     print *, "I am out of INIT"
- 
+
       return
   110 format(1h ,'Parameters for turbulence model')
   120 format(1h ,'k=',f10.5,' cmu=',f10.5,' ce1=',f10.5,'ce2=',f10.5)
@@ -201,7 +201,7 @@
 !
 ! End of subroutine INIT
 !
-      
+
       end
 
 
@@ -287,7 +287,7 @@
      &                  f2ntn,f2ntv,f2ntf,isnode,ivnode,ifnode,            &
      &                  irank)
 !
-      implicit none      
+      implicit none
 #include <finclude/petscsys.h>
       PetscScalar pinf
       PetscScalar gamma,gm1,gp1,gm1g,gp1g,ggm1
@@ -304,8 +304,8 @@
       integer isnode(1),ivnode(1),ifnode(1)
       PetscScalar  x(1),y(1),z(1),q(4,nnodes)
       integer i,j,i1,i2,i3,ic,isp,ist
- 
- 
+
+
       character c4*4,title*20
 
       pinf = p0
@@ -314,11 +314,11 @@
 !
       write(13,'(a)') 'TITLE="' // title // '"'
       write(13,'(a)') 'VARIABLES="X     ","Y     ","Z     ","RHO   ",',     &
-     &     '"U     ","V     ","W     ","P/Pinf"'  
+     &     '"U     ","V     ","W     ","P/Pinf"'
 !
 !   + do a zone-title, so we can keep track of things
 !   + start with solid-wall boundary surfaces
-!  
+!
       isp   = 1
       ist   = 1
       do 10 i=1,nnbound
@@ -327,9 +327,9 @@
         if (i .ge.   10 .and. i .le.   99) ic = 3
         if (i .ge.  100 .and. i .le.  999) ic = 2
         if (i .ge. 1000 .and. i .le. 9999) ic = 1
- 
+
         write(13,1000) "nn." // c4(ic:4),nnpts(i),nntet(i)
- 
+
         write(13,1010) (x(isnode(j))      ,j=isp,isp+nnpts(i)-1)
         write(13,1010) (y(isnode(j))      ,j=isp,isp+nnpts(i)-1)
         write(13,1010) (z(isnode(j))      ,j=isp,isp+nnpts(i)-1)
@@ -338,22 +338,22 @@
         write(13,1010) (q(3,isnode(j))      ,j=isp,isp+nnpts(i)-1)
         write(13,1010) (q(4,isnode(j))      ,j=isp,isp+nnpts(i)-1)
         write(13,1010) (q(1,isnode(j))/pinf ,j=isp,isp+nnpts(i)-1)
- 
+
         do 30 j=ist,ist+nntet(i)-1
           i1 = f2ntn(j,1) - isp + 1
           i2 = f2ntn(j,2) - isp + 1
           i3 = f2ntn(j,3) - isp + 1
- 
+
           write(13,1020) i1,i2,i3,i3
    30   continue
- 
-        isp = isp + nnpts(i) 
+
+        isp = isp + nnpts(i)
         ist = ist + nntet(i)
- 
+
    10 continue
 !
 !   + start with viscous boundary surfaces
-! 
+!
       isp   = 1
       ist   = 1
       do 70 i=1,nvbound
@@ -362,9 +362,9 @@
         if (i .ge.   10 .and. i .le.   99) ic = 3
         if (i .ge.  100 .and. i .le.  999) ic = 2
         if (i .ge. 1000 .and. i .le. 9999) ic = 1
- 
+
         write(13,1000) "nv." // c4(ic:4),nvpts(i),nvtet(i)
- 
+
         write(13,1010) (x(ivnode(j))      ,j=isp,isp+nvpts(i)-1)
         write(13,1010) (y(ivnode(j))      ,j=isp,isp+nvpts(i)-1)
         write(13,1010) (z(ivnode(j))      ,j=isp,isp+nvpts(i)-1)
@@ -373,22 +373,22 @@
         write(13,1010) (q(3,ivnode(j))      ,j=isp,isp+nvpts(i)-1)
         write(13,1010) (q(4,ivnode(j))      ,j=isp,isp+nvpts(i)-1)
         write(13,1010) (q(1,ivnode(j))/pinf ,j=isp,isp+nvpts(i)-1)
- 
+
         do 90 j=ist,ist+nvtet(i)-1
            i1 = f2ntv(j,1) - isp + 1
            i2 = f2ntv(j,2) - isp + 1
            i3 = f2ntv(j,3) - isp + 1
- 
+
            write(13,1020) i1,i2,i3,i3
    90   continue
- 
+
         isp = isp + nvpts(i)
         ist = ist + nvtet(i)
- 
+
    70 continue
 !
 !   + do the far-field boundary surfaces
-!  
+!
       isp   = 1
       ist   = 1
       do 40 i=1,nfbound
@@ -397,9 +397,9 @@
          if (i .ge.   10 .and. i .le.   99) ic = 3
          if (i .ge.  100 .and. i .le.  999) ic = 2
          if (i .ge. 1000 .and. i .le. 9999) ic = 1
-  
+
          write(13,1000) "ff." // c4(ic:4),nfpts(i),nftet(i)
-  
+
          write(13,1010) (x(ifnode(j))        ,j=isp,isp+nfpts(i)-1)
          write(13,1010) (y(ifnode(j))        ,j=isp,isp+nfpts(i)-1)
          write(13,1010) (z(ifnode(j))        ,j=isp,isp+nfpts(i)-1)
@@ -408,18 +408,18 @@
          write(13,1010) (q(3,ifnode(j))      ,j=isp,isp+nfpts(i)-1)
          write(13,1010) (q(4,ifnode(j))      ,j=isp,isp+nfpts(i)-1)
          write(13,1010) (q(1,ifnode(j))/pinf ,j=isp,isp+nfpts(i)-1)
- 
+
          do 60 j=ist,ist+nftet(i)-1
             i1 = f2ntf(j,1) - isp + 1
             i2 = f2ntf(j,2) - isp + 1
             i3 = f2ntf(j,3) - isp + 1
- 
+
             write(13,1020) i1,i2,i3,i3
    60    continue
- 
-         isp = isp + nfpts(i) 
+
+         isp = isp + nfpts(i)
          ist = ist + nftet(i)
- 
+
    40  continue
 
 !
@@ -437,7 +437,7 @@
 !  Calculates the forces
 !  Modified - D. K. Kaushik (1/15/97)
 !  Added new parameters - clift, cdrag, cmom, irank, nvertices
-!  
+!
 !=====================================================================72
 #undef __FUNCT__
 #define __FUNCT__ "FORCE"
@@ -447,7 +447,7 @@
      &                 nvfacet,f2ntv,nvbound,                           &
      &                 evec,qvec,xyz,sface_bit,vface_bit,               &
      &                 clift, cdrag, cmom,irank,nvertices)
-      implicit none      
+      implicit none
 #include <finclude/petscsys.h>
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
@@ -483,7 +483,7 @@
       PetscScalar xnorm,ynorm,znorm
       PetscScalar dcx,dcy,dcz,cp,press
       integer icount,n,node1,node2,node3,ierr
-      
+
 #if defined(INTERLACING)
       PetscScalar qvec(4,nvertices)
       PetscScalar xyz(3,nvertices)
@@ -509,7 +509,7 @@
       csa=cos(alpha/conv)
       sna=sin(alpha/conv)
 !
-!  initialize forces to zero  
+!  initialize forces to zero
 !
       clw(ntt) = 0.0d0
       cdw(ntt) = 0.0d0
@@ -526,11 +526,11 @@
       coef_glo(1) = 0.0d0
       coef_glo(2) = 0.0d0
       coef_glo(3) = 0.0d0
- 
+
       xr = 0.25d0
       yr = 0.0d0
       zr = 0.0d0
-       
+
       do 30 n = 1, nnfacet
                node1 = isnode(f2ntn(n,1))
                node2 = isnode(f2ntn(n,2))
@@ -547,7 +547,7 @@
                x3 = x(node3)
                y3 = y(node3)
                z3 = z(node3)
-               
+
                ax = x2 - x1
                ay = y2 - y1
                az = z2 - z1
@@ -562,7 +562,7 @@
                xnorm =-0.5d0*(ay*bz - az*by)
                ynorm = 0.5d0*(ax*bz - az*bx)
                znorm =-0.5d0*(ax*by - ay*bx)
- 
+
                p1 = qnode(1,node1)
                u1 = qnode(2,node1)
                v1 = qnode(3,node1)
@@ -577,9 +577,9 @@
                u3 = qnode(2,node3)
                v3 = qnode(3,node3)
                w3 = qnode(4,node3)
- 
+
                press = (p1 + p2 + p3)/3.0d0
-               cp    = 2.d0*(press - 1.0d0)        
+               cp    = 2.d0*(press - 1.0d0)
 !
                dcx = cp*xnorm
                dcy = cp*ynorm
@@ -625,7 +625,7 @@
                x3 = x(node3)
                y3 = y(node3)
                z3 = z(node3)
-               
+
                ax = x2 - x1
                ay = y2 - y1
                az = z2 - z1
@@ -640,7 +640,7 @@
                xnorm =-0.5d0*(ay*bz - az*by)
                ynorm = 0.5d0*(ax*bz - az*bx)
                znorm =-0.5d0*(ax*by - ay*bx)
- 
+
                p1    = qnode(1,node1)
                u1    = qnode(2,node1)
                v1    = qnode(3,node1)
@@ -655,10 +655,10 @@
                u3    = qnode(2,node3)
                v3    = qnode(3,node3)
                w3    = qnode(4,node3)
- 
+
                press = (p1 + p2 + p3)/3.0d0
                cp    = 2.d0*(press -1.0d0)
- 
+
                dcx = cp*xnorm
                dcy = cp*ynorm
                dcz = cp*znorm
@@ -671,7 +671,7 @@
                 clloc = clloc - dcx*sna + dcy*csa
                 cdloc = cdloc + dcx*csa + dcy*sna
                 cmloc = cmloc                                            &
-     &                     + (xmid - xr)*dcy - (ymid - yr)*dcx        
+     &                     + (xmid - xr)*dcy - (ymid - yr)*dcx
                endif
 
  60   continue
@@ -720,7 +720,7 @@
      &                  nsnode,nvnode,nfnode,isnode,ivnode,ifnode,       &
      &                  LocalTS,irank,nvertices)
 !
-      implicit none      
+      implicit none
 #include <finclude/petscsys.h>
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
@@ -800,33 +800,33 @@
                znorm = znorm*area
 !
 !/*
-! xnorm = xnormal * area of face  
-! ynorm = ynormal * area of face  
-! znorm = znormal * area of face  
+! xnorm = xnormal * area of face
+! ynorm = ynormal * area of face
+! znorm = znormal * area of face
 !*/
                u1   = qnode(2,node1)
                v1   = qnode(3,node1)
                w1   = qnode(4,node1)
- 
+
                u2   = qnode(2,node2)
                v2   = qnode(3,node2)
                w2   = qnode(4,node2)
 !
-! Get average values on face 
+! Get average values on face
 !
                u    = 0.5d0*(u1 + u2)
                v    = 0.5d0*(v1 + v2)
                w    = 0.5d0*(w1 + w2)
                ubar = xn(n)*u + yn(n)*v + zn(n)*w
                c    = sqrt(ubar*ubar + beta)
- 
+
                term = abs(u*xnorm + v*ynorm + w*znorm) + c*area
                cdt(node1) = cdt(node1) + term
                cdt(node2) = cdt(node2) + term
 !
  1020    continue
          flops = flops + 27.0*nedge
-! 
+!
 ! Now loop over boundaries and close the contours
 !
          do 1030 i = 1,nsnode
@@ -838,7 +838,7 @@
             ynorm = syn(i)
             znorm = szn(i)
             area  = sqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
- 
+
             u   = qnode(2,inode)
             v   = qnode(3,inode)
             w   = qnode(4,inode)
@@ -868,7 +868,7 @@
 ! Because velocities are zero, c is just sqrt(beta)
 !
             c  = sqrt(beta)
-            Vn = c*area 
+            Vn = c*area
 
             cdt(inode) = cdt(inode) + Vn
 !
@@ -886,18 +886,18 @@
             ynorm = fyn(i)
             znorm = fzn(i)
             area  = sqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
- 
+
             u   = qnode(2,inode)
             v   = qnode(3,inode)
             w   = qnode(4,inode)
             ubar= (u*xnorm + v*ynorm + w*znorm)/area
             c = sqrt(ubar*ubar + beta)
- 
+
             Vn = abs(xnorm*u + ynorm*v + znorm*w) + c*area
             cdt(inode) = cdt(inode) + Vn
  1050    continue
          flops = flops + 24.0*nfnode
- 
+
          do 1060 n = 1,nvertices
             cdt(n) = vol(n)/cdt(n)
  1060    continue
@@ -938,7 +938,7 @@
      &                max_threads,                                              &
      &                ncolor,ncount,                                            &
      &                irank,nvertices)
-#elif defined(HAVE_REDUNDANT_WORK)     
+#elif defined(HAVE_REDUNDANT_WORK)
       subroutine FLUX(nnodes, ncell, nedge,                                     &
      &                nsface, nvface, nfface, isface, ivface, ifface,           &
      &                nsnode, nvnode, nfnode, isnode, ivnode, ifnode,           &
@@ -973,8 +973,8 @@
      &                grad,evec,qvec,xyz,resvec,xyzn,                           &
      &                sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,                  &
      &                irank,nvertices)
-#endif  
-      implicit none      
+#endif
+      implicit none
 #include <finclude/petscsys.h>
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
@@ -1008,7 +1008,7 @@
       integer f2ntn(nnfacet,4)
       integer f2ntv(nvfacet,4)
       integer f2ntf(nffacet,4)
-      integer i,n,node1,node2,node3,inode      
+      integer i,n,node1,node2,node3,inode
       integer ierr,first_edge,last_edge
       PetscLogDouble flops
       PetscScalar  xmean,ymean,zmean,xnorm,ynorm
@@ -1038,13 +1038,13 @@
       PetscScalar  fluxp1,fluxp2,fluxp3,fluxp4
       PetscScalar  fluxm1,fluxm2,fluxm3,fluxm4
       PetscScalar  res1,res2,res3,res4
-      PetscScalar  rhs1,rhs2,rhs3,rhs4   
+      PetscScalar  rhs1,rhs2,rhs3,rhs4
       PetscScalar  c68,c18,second
       PetscScalar  ax,ay,az,bx,by,bz
-      PetscScalar  pa,pb,pc,ub,vb,wb       
+      PetscScalar  pa,pb,pc,ub,vb,wb
 #if defined(INTERLACING)
-      PetscScalar qvec(4,nvertices) 
-      PetscScalar grad(3,4,nvertices) 
+      PetscScalar qvec(4,nvertices)
+      PetscScalar grad(3,4,nvertices)
       PetscScalar resvec(4,nnodes)
       PetscScalar xyz(3,nvertices)
       PetscScalar xyzn(4,nedge)
@@ -1063,8 +1063,8 @@
 #define ra(i) xyzn(4,i)
 #define eptr(j,i) evec(i,j)
 #else
-      PetscScalar qvec(nvertices,4) 
-      PetscScalar grad(nvertices,4,3) 
+      PetscScalar qvec(nvertices,4)
+      PetscScalar grad(nvertices,4,3)
       PetscScalar resvec(nnodes,4)
       PetscScalar xyz(nvertices,3)
       PetscScalar xyzn(nedge,4)
@@ -1111,13 +1111,13 @@
 #endif
 !      logging variables
        integer flux_event, fun3d_class, flag
-       character * 16 flux_label 
+       character * 16 flux_label
        data flag/-1/,flux_label/'FluxEvaluation  '/
        save flux_event, fun3d_class, flag, flux_label
        if (flag .eq. -1) then
           call PetscClassIdRegister('PetscFun3d',fun3d_class,ierr)
           call PetscLogEventRegister(flux_label,                        &
-     &         fun3d_class,flux_event,ierr)         
+     &         fun3d_class,flux_event,ierr)
           flag = 1
        endif
        call PetscLogEventBegin(flux_event,PETSC_NULL_OBJECT,            &
@@ -1146,7 +1146,7 @@
        last_edge = nedge
 #endif
 !
-! Loop over all the faces and calculate flux 
+! Loop over all the faces and calculate flux
 !
 !$omp  parallel default(shared) private(n,node1,node2,xmean,ymean,           &
 !$omp& zmean,xnorm,ynorm,znorm,rlen,dot,x1,y1,z1,size,x2,y2,z2,rx,           &
@@ -1180,9 +1180,9 @@
 !!$omp   end critical
 #if defined(_OPENMP)
 #if defined(HAVE_EDGE_COLORING)
-!$omp do 
+!$omp do
 #elif defined(HAVE_REDUNDANT_WORK)
-!$omp do 
+!$omp do
 #else
 !     tot_threads = omp_get_num_threads()
       my_thread_id = omp_get_thread_num()
@@ -1201,7 +1201,7 @@
 
 #endif
 #else
-#endif       
+#endif
       do n = first_edge, last_edge
         node1 = eptr(n,1)
         node2 = eptr(n,2)
@@ -1260,13 +1260,13 @@
      &                       + gradz(1,node1)*rz
          uL = qnode(2,node1) + gradx(2,node1)*rx                           &
      &                       + grady(2,node1)*ry                           &
-     &                       + gradz(2,node1)*rz 
+     &                       + gradz(2,node1)*rz
          vL = qnode(3,node1) + gradx(3,node1)*rx                           &
      &                       + grady(3,node1)*ry                           &
-     &                       + gradz(3,node1)*rz 
+     &                       + gradz(3,node1)*rz
          wL = qnode(4,node1) + gradx(4,node1)*rx                           &
      &                       + grady(4,node1)*ry                           &
-     &                       + gradz(4,node1)*rz 
+     &                       + gradz(4,node1)*rz
 
          ubarL  = xnorm*uL + ynorm*vL + znorm*wL
 !        c2L = ubarl*ubarL + beta
@@ -1280,13 +1280,13 @@
      &                         + gradz(1,node2)*rz
          uR   = qnode(2,node2) + gradx(2,node2)*rx                         &
      &                         + grady(2,node2)*ry                         &
-     &                         + gradz(2,node2)*rz 
+     &                         + gradz(2,node2)*rz
          vR   = qnode(3,node2) + gradx(3,node2)*rx                         &
      &                         + grady(3,node2)*ry                         &
-     &                         + gradz(3,node2)*rz 
+     &                         + gradz(3,node2)*rz
          wR   = qnode(4,node2) + gradx(4,node2)*rx                         &
      &                         + grady(4,node2)*ry                         &
-     &                         + gradz(4,node2)*rz 
+     &                         + gradz(4,node2)*rz
          ubarR  = xnorm*uR + ynorm*vR + znorm*wR
 !        c2R = ubarR*ubarR + beta
 !        cR  = sqrt(c2R)
@@ -1330,7 +1330,7 @@
           ti31 =  .5d0*(c-ubar)/beta
           ti41 = -.5d0*(c+ubar)/beta
 !
-! jumps (T(inverse)*dq) 
+! jumps (T(inverse)*dq)
           dv1 = (ti11*dp + phi4*du + phi5*dv + phi6*dw)/c2
           dv2 = (ti21*dp + phi7*du + phi8*dv + phi9*dw)/c2
           dv3 = .5d0*(2.d0*ti31*dp + xnorm*du + ynorm*dv + znorm*dw)/c2
@@ -1368,10 +1368,10 @@
 ! Modify to calculate .5(fl +fr) from nodes
 ! instead of extrapolated ones
 !
-!         pL    = qnode(1,node1) 
-!         uL    = qnode(2,node1) 
-!         vL    = qnode(3,node1) 
-!         wL    = qnode(4,node1) 
+!         pL    = qnode(1,node1)
+!         uL    = qnode(2,node1)
+!         vL    = qnode(3,node1)
+!         wL    = qnode(4,node1)
 !         ubarL = xnorm*uL + ynorm*vL + znorm*wL
 !
           fluxp1 = rlen*beta*ubarL
@@ -1381,10 +1381,10 @@
 !
 ! Now the right side
 !
-!         pR    = qnode(1,node2) 
-!         uR    = qnode(2,node2) 
-!         vR    = qnode(3,node2) 
-!         wR    = qnode(4,node2) 
+!         pR    = qnode(1,node2)
+!         uR    = qnode(2,node2)
+!         vR    = qnode(3,node2)
+!         wR    = qnode(4,node2)
 !         ubarR = xnorm*uR + ynorm*vR + znorm*wR
 !
           fluxm1 = rlen*beta*ubarR
@@ -1403,7 +1403,7 @@
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK) && !defined(HAVE_EDGE_COLORING)
           if ((part_thr(node1).eq.my_thread_id)                                 &
      &        .and.(node1.le.nnodes)) then
-#else         
+#else
           if (node1.le.nnodes) then
 #endif
            res(1,node1) = res(1,node1) + res1
@@ -1416,7 +1416,7 @@
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK) && !defined(HAVE_EDGE_COLORING)
           if ((part_thr(node2).eq.my_thread_id)                                 &
      &        .and.(node2.le.nnodes)) then
-#else         
+#else
           if (node2.le.nnodes) then
 #endif
            res(1,node2) = res(1,node2) - res1
@@ -1430,10 +1430,10 @@
 #endif
 !
       enddo
-#if defined(_OPENMP) 
+#if defined(_OPENMP)
 #if defined(HAVE_EDGE_COLORING)
 !$omp enddo
-!$omp end parallel  
+!$omp end parallel
        first_edge = first_edge + ncount(i)
       enddo
 #elif defined(HAVE_REDUNDANT_WORK)
@@ -1464,13 +1464,13 @@
       c68 = 0.75d0
       c18 = 0.125d0
 !
-! Close contour over the boundaries 
+! Close contour over the boundaries
 ! First do inviscid faces
 !
       do n = 1, nnfacet
                node1 = isnode(f2ntn(n,1))
                node2 = isnode(f2ntn(n,2))
-               node3 = isnode(f2ntn(n,3)) 
+               node3 = isnode(f2ntn(n,3))
 
                x1 = x(node1)
                y1 = y(node1)
@@ -1486,7 +1486,7 @@
                y3 = y(node3)
                z3 = z(node3)
                p3 = qnode(1,node3)
-               
+
                ax = x2 - x1
                ay = y2 - y1
                az = z2 - z1
@@ -1535,7 +1535,7 @@
       do n = 1, nvfacet
                node1 = ivnode(f2ntv(n,1))
                node2 = ivnode(f2ntv(n,2))
-               node3 = ivnode(f2ntv(n,3)) 
+               node3 = ivnode(f2ntv(n,3))
 
                x1 = x(node1)
                y1 = y(node1)
@@ -1551,7 +1551,7 @@
                y3 = y(node3)
                z3 = z(node3)
                p3 = qnode(1,node3)
-               
+
                ax = x2 - x1
                ay = y2 - y1
                az = z2 - z1
@@ -1598,7 +1598,7 @@
       enddo
 !
 ! The next section of code is for when you dont care about
-! preserving linear data on boundary. Also, doing this 
+! preserving linear data on boundary. Also, doing this
 ! matches the left hand side when not doing Newton-Krylov
 ! Usually just go around unless you are just experimenting
 !
@@ -1651,7 +1651,7 @@
          inode   = ifnode(i)
 !
 !/*
-! Get normal and "other" 2 vectors. Remember that fxn,fyn and fzn 
+! Get normal and "other" 2 vectors. Remember that fxn,fyn and fzn
 ! has the magnitude of the face contained in it.
 !*/
          xnorm   = fxn(i)
@@ -1795,7 +1795,7 @@
 !---------------------------------------------------------------
 !
 !=============================== SUMGS ===============================72
-! 
+!
 ! Gets the weights for calculating gradients using least squares
 !
 !=====================================================================72
@@ -1803,7 +1803,7 @@
 #define __FUNCT__ "SUMGS"
       subroutine SUMGS(nnodes,nedge,evec,xyz,rxy,irank,nvertices)
 
-      implicit none      
+      implicit none
 #include <finclude/petscsys.h>
       integer nnodes,nedge,irank,nvertices
 #if defined(INTERLACING)
@@ -1844,7 +1844,7 @@
       PetscScalar r12r11,r13r11,r23r22,rmess
 
 !
-! Initialize all the rij to 0.0 
+! Initialize all the rij to 0.0
 !
       do 1000 i = 1,nnodes
          r11(i) = 0.0
@@ -1856,7 +1856,7 @@
          r44(i) = 0.0
  1000 continue
 !
-! Now loop over the edges and accumulate the r 
+! Now loop over the edges and accumulate the r
 !
       do 1020 n = 1, nedge
 !
@@ -2005,7 +2005,7 @@
 ! Added by Dinesh Kaushik (6/27/97)
 ! The following addition changes the meaning of r11 .. r33. r44
 ! is the new parameter introduced by me. The new definitions
-! are taken from LSTGS (where these parameters 
+! are taken from LSTGS (where these parameters
 ! are used finally).
 ! r11->w11
 ! r22->w22
@@ -2054,7 +2054,7 @@
      &                 qvec,grad,xyz,                                    &
      &                 rxy,irank,nvertices)
 !
-      implicit none      
+      implicit none
 #include <finclude/petscsys.h>
       integer nnodes,nedge,irank,nvertices
 !
@@ -2314,9 +2314,9 @@
 
 !=================================== GETRES ==========================72
 !
-! Calculates the residual 
+! Calculates the residual
 ! Last Modified - D. K. Kaushik 1/23/97
-! I have eliminated the input variables which were not needed - 
+! I have eliminated the input variables which were not needed -
 ! dq, A, B, iupdate
 !
 !=====================================================================72
@@ -2336,7 +2336,7 @@
      &                  max_threads,                                        &
      &                  ncolor,ncount,                                      &
      &                  LocalTS,irank, nvertices)
-#elif defined(HAVE_REDUNDANT_WORK)     
+#elif defined(HAVE_REDUNDANT_WORK)
       subroutine GETRES(nnodes,ncell,nedge,nsface,nvface,nfface,nbface,     &
      &                  nsnode,nvnode,nfnode,isface,ivface,ifface,          &
      &                  ileast,isnode,ivnode,ifnode,                        &
@@ -2377,7 +2377,7 @@
      &                  LocalTS,irank, nvertices)
 #endif
 !
-      implicit none      
+      implicit none
 #include <finclude/petscsys.h>
 !
       integer nnodes, ncell, nedge,                                         &
@@ -2432,7 +2432,7 @@
 !     logging variables
 !     integer flux_event, flag, ierr
 !     integer delta2_event
-!     character * 16 flux_label 
+!     character * 16 flux_label
 !     character * 16 delta2_label
 !     data flag/-1/,flux_label/'FluxEvaluation  '/
 !     data delta2_label/'DELTA2          '/
@@ -2446,23 +2446,23 @@
        PetscScalar resvec(nnodes,4)
 #define res(i,j) resvec(j,i)
 #endif
-#if defined(_OPENMP) 
+#if defined(_OPENMP)
        integer max_threads
 #if defined(HAVE_EDGE_COLORING)
        integer ncolor,ncount(1)
-#elif defined(HAVE_REDUNDANT_WORK)     
-       PetscScalar resd(4,nnodes)       
+#elif defined(HAVE_REDUNDANT_WORK)
+       PetscScalar resd(4,nnodes)
 #else
        integer nedgeAllThr,part_thr(nnodes),nedge_thr(0:max_threads),         &
      &         edge_thr(2,nedgeAllThr)
        PetscScalar xyzn_thr(4,nedgeAllThr)
 #endif
-#endif  
+#endif
 !
 
 !     if (flag .eq. -1) then
 !        call PetscLogEventRegister(delta2_event,delta2_label,ierr)
-!        call PetscLogEventRegister(flux_event,flux_label,ierr)         
+!        call PetscLogEventRegister(flux_event,flux_label,ierr)
 !        flag = 1
 !     endif
 !
@@ -2479,7 +2479,7 @@
   888 continue
 !
 !/*
-!   Calculate the gradients 
+!   Calculate the gradients
 !   ----Kyle seems to recommend only LSTGS for gradients,
 !   so I have commented the GETGRAD call - DKK (1/17/97)
 !
@@ -2547,7 +2547,7 @@
      &          max_threads,                                              &
      &          ncolor,ncount,                                            &
      &          irank,nvertices)
-#elif defined(HAVE_REDUNDANT_WORK)     
+#elif defined(HAVE_REDUNDANT_WORK)
       call FLUX(nnodes, ncell, nedge,                                     &
      &          nsface, nvface, nfface, isface, ivface, ifface,           &
      &          nsnode, nvnode, nfnode, isnode, ivnode, ifnode,           &
@@ -2582,7 +2582,7 @@
      &          grad,evec,qvec,xyz,resvec,xyzn,                           &
      &          sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,                  &
      &          irank,nvertices)
-#endif  
+#endif
 !          call PetscLogEventEnd(flux_event,0,0,0,0,ierr)
 !/*
 ! calculate viscous fluxes
@@ -2621,7 +2621,7 @@
 #define __FUNCT__ "OPENM"
       SUBROUTINE OPENM(irank)
 !
-!  TAPE7  -- input:  mach number, angle of attack etc.. 
+!  TAPE7  -- input:  mach number, angle of attack etc..
 !  TAPE9  -- input:  reads restart file
 !  TAPE10 -- output: residual history
 !  TAPE11 -- output: writes restart file
@@ -2632,25 +2632,25 @@
       integer  irank
 !     OPEN(UNIT= 7,FILE='home/petsc/datafiles/fun3dgrid/ginput.faces',            &
 !    &form='formatted',STATUS='OLD')
- 
+
 !     OPEN(UNIT=9,FILE='framer.bin',
 !    &form='unformatted',STATUS='old')
- 
+
       if (irank .eq. 0) OPEN(UNIT= 10,FILE='frame.out3',                          &
      &form='formatted',STATUS='unknown')
- 
+
 !     OPEN(UNIT= 11,FILE='frame.bin',
 !    +form='unformatted',STATUS='unknown')
- 
+
 !     OPEN(UNIT= 12,FILE='frame.plt',
 !    +form='formatted',STATUS='unknown')
- 
+
 !     OPEN(UNIT= 13,FILE='frame.tec',
 !    +form='formatted',STATUS='unknown')
- 
+
 !     OPEN(UNIT= 14,FILE='frame.fast.g',
 !    +form='unformatted',STATUS='unknown')
- 
+
 !     OPEN(UNIT= 15,FILE='frame.fast.q',
 !    +form='unformatted',STATUS='unknown')
 
@@ -2666,7 +2666,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "GETIA"
       subroutine GETIA(nnodes,nedge,evec,ia,ideg,irank)
-      implicit none      
+      implicit none
 #include <finclude/petscsys.h>
       integer nnodes,nedge,irank
       integer ia(1),ideg(1)
@@ -2717,7 +2717,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "GETJA"
       subroutine GETJA(nnodes,nedge,evec,ia,ja,iwork,irank)
-      implicit none      
+      implicit none
 #include <finclude/petscsys.h>
       integer nnodes,nedge,irank
       integer ia(1),ja(1),iwork(1)
@@ -2746,7 +2746,7 @@
         node2 = eptr(i,2)
 !
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK) && !defined(HAVE_EDGE_COLORING)
-        index1 = ia(node1) + iwork(node1) 
+        index1 = ia(node1) + iwork(node1)
         iwork(node1) = iwork(node1) + 1
         ja(index1) = node2
         index2 = ia(node2) + iwork(node2)
@@ -2754,7 +2754,7 @@
         ja(index2) = node1
 #else
         if (node1 .le. nnodes) then
-          index1 = ia(node1) + iwork(node1) 
+          index1 = ia(node1) + iwork(node1)
           iwork(node1) = iwork(node1) + 1
           ja(index1) = node2
         endif
@@ -2788,7 +2788,7 @@
 !
 !       idiag = iau(node1)
 !
-! If the offdiagonal term is ordered later in the ja array 
+! If the offdiagonal term is ordered later in the ja array
 !
 !       if(node2.gt.node1)then
 !        jstart = idiag + 1
@@ -2807,7 +2807,7 @@
 !
 !       idiag = iau(node2)
 !
-! If the offdiagonal term is ordered later in the ja array 
+! If the offdiagonal term is ordered later in the ja array
 !
 !       if(node1.gt.node2)then
 !        jstart = idiag + 1
@@ -2836,7 +2836,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "SORTER"
       subroutine SORTER(istart,iend,ja,inode)
-      implicit none      
+      implicit none
 #include <finclude/petscsys.h>
       integer istart,iend,inode
       integer ja(1)

@@ -1,6 +1,6 @@
 
 /*
-  Used for testing AIJ matrix with all zeros. 
+  Used for testing AIJ matrix with all zeros.
 */
 
 static char help[] = "Used for Solving a linear system where the matrix has all zeros.\n\n";
@@ -65,7 +65,7 @@ int main(int argc,char **argv)
   ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetDM(pc,(DM)da);CHKERRQ(ierr);
- 
+
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
   /* check final residual */
@@ -82,7 +82,7 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Final residual %g\n",norm);CHKERRQ(ierr);
     ierr = VecDestroy(&b1);CHKERRQ(ierr);
   }
-   
+
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);

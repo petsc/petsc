@@ -7,8 +7,8 @@ static char help[] ="Tests sequential and parallel DMCreateMatrix(), MatMatMult(
   -Npy <npy>, where <npy> = number of processors in the y-direction\n\
   -Npz <npz>, where <npz> = number of processors in the z-direction\n\n";
 
-/*  
-    This test is modified from ~src/ksp/examples/tests/ex19.c. 
+/*
+    This test is modified from ~src/ksp/examples/tests/ex19.c.
     Example of usage: mpiexec -n 3 ex96 -Mx 10 -My 10 -Mz 10
 */
 
@@ -42,10 +42,10 @@ typedef struct {
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  AppCtx         user;                      
+  AppCtx         user;
   PetscInt       Npx=PETSC_DECIDE,Npy=PETSC_DECIDE,Npz=PETSC_DECIDE;
   PetscMPIInt    size,rank;
-  PetscInt       m,n,M,N,i,nrows,*ia,*ja; 
+  PetscInt       m,n,M,N,i,nrows,*ia,*ja;
   PetscScalar    one = 1.0;
   PetscReal      fill=2.0;
   Mat            A,A_tmp,P,C,C1,C2;
@@ -66,7 +66,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
   if (user.coarse.mz) Test_3D = PETSC_TRUE;
 
-  user.fine.mx = user.ratio*(user.coarse.mx-1)+1; 
+  user.fine.mx = user.ratio*(user.coarse.mx-1)+1;
   user.fine.my = user.ratio*(user.coarse.my-1)+1;
   user.fine.mz = user.ratio*(user.coarse.mz-1)+1;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -89,17 +89,17 @@ int main(int argc,char **argv)
   /*------------------------------------------------------------*/
   ierr = DMCreateMatrix(user.fine.da,MATAIJ,&A);CHKERRQ(ierr);
   ierr = DMCreateMatrix(user.fine.da,MATBAIJ,&C);CHKERRQ(ierr);
-  
+
   ierr = MatConvert(C,MATAIJ,MAT_INITIAL_MATRIX,&A_tmp);CHKERRQ(ierr); /* not work for mpisbaij matrix! */
   ierr = MatEqual(A,A_tmp,&flg);CHKERRQ(ierr);
   if (!flg) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != C"); 
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != C");
   }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&A_tmp);CHKERRQ(ierr);
-  
+
   /*------------------------------------------------------------*/
-  
+
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   /* set val=one to A */
@@ -118,7 +118,7 @@ int main(int argc,char **argv)
     for (i=0; i<a->i[m]; i++) a->a[i] = one;
     /* B_part */
     for (i=0; i<b->i[m]; i++) b->a[i] = one;
-    
+
   }
   /* ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
@@ -134,7 +134,7 @@ int main(int argc,char **argv)
 
   /* Create interpolation between the levels */
   ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,PETSC_NULL);CHKERRQ(ierr);
-  
+
   ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(P,&M,&N);CHKERRQ(ierr);
 
@@ -152,7 +152,7 @@ int main(int argc,char **argv)
   if (Test_MatMatMult){
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&A_tmp);CHKERRQ(ierr);
     ierr = MatMatMult(A_tmp,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
-    
+
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;
     for (i=0; i<2; i++){
@@ -177,7 +177,7 @@ int main(int argc,char **argv)
     norm = 0.0;
     for (i=0; i<10; i++) {
       ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
-      ierr = MatMult(P,x,v1);CHKERRQ(ierr);  
+      ierr = MatMult(P,x,v1);CHKERRQ(ierr);
       ierr = MatMult(A_tmp,v1,v2);CHKERRQ(ierr);  /* v2 = A*P*x */
       ierr = MatMult(C,x,v1);CHKERRQ(ierr);       /* v1 = C*x   */
       ierr = VecAXPY(v1,none,v2);CHKERRQ(ierr);
@@ -189,18 +189,18 @@ int main(int argc,char **argv)
     if (norm >= tol && !rank) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|/|v2|: %G\n",norm);CHKERRQ(ierr);
     }
-    
+
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = MatDestroy(&C);CHKERRQ(ierr);
     ierr = MatDestroy(&A_tmp);CHKERRQ(ierr);
   }
 
-  /* Test P^T * A * P - MatPtAP() */ 
+  /* Test P^T * A * P - MatPtAP() */
   /*------------------------------*/
   if (Test_MatPtAP){
-    ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); 
+    ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
     ierr = MatGetLocalSize(C,&m,&n);CHKERRQ(ierr);
-    
+
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;
     for (i=0; i<1; i++){
@@ -212,16 +212,16 @@ int main(int argc,char **argv)
         /* Test MatDuplicate()        */
     /*----------------------------*/
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
-    ierr = MatDuplicate(C1,MAT_COPY_VALUES,&C2);CHKERRQ(ierr); 
-    ierr = MatDestroy(&C1);CHKERRQ(ierr); 
-    ierr = MatDestroy(&C2);CHKERRQ(ierr); 
+    ierr = MatDuplicate(C1,MAT_COPY_VALUES,&C2);CHKERRQ(ierr);
+    ierr = MatDestroy(&C1);CHKERRQ(ierr);
+    ierr = MatDestroy(&C2);CHKERRQ(ierr);
 
     /* Create vector x that is compatible with P */
     ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
     ierr = MatGetLocalSize(P,&m,&n);CHKERRQ(ierr);
     ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  
+
     ierr = VecCreate(PETSC_COMM_WORLD,&v3);CHKERRQ(ierr);
     ierr = VecSetSizes(v3,n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(v3);CHKERRQ(ierr);
@@ -230,7 +230,7 @@ int main(int argc,char **argv)
     norm = 0.0;
     for (i=0; i<10; i++) {
       ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
-      ierr = MatMult(P,x,v1);CHKERRQ(ierr);  
+      ierr = MatMult(P,x,v1);CHKERRQ(ierr);
       ierr = MatMult(A,v1,v2);CHKERRQ(ierr);  /* v2 = A*P*x */
 
       ierr = MatMultTranspose(P,v2,v3);CHKERRQ(ierr); /* v3 = Pt*A*P*x */
@@ -244,12 +244,12 @@ int main(int argc,char **argv)
     if (norm >= tol && !rank) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v3 - v4|/|v3|: %G\n",norm);CHKERRQ(ierr);
     }
-  
+
     ierr = MatDestroy(&C);CHKERRQ(ierr);
     ierr = VecDestroy(&v3);CHKERRQ(ierr);
     ierr = VecDestroy(&v4);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
- 
+
   }
 
   /* Clean up */
@@ -259,7 +259,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&v2);CHKERRQ(ierr);
   ierr = DMDestroy(&user.fine.da);CHKERRQ(ierr);
   ierr = DMDestroy(&user.coarse.da);CHKERRQ(ierr);
-  ierr = MatDestroy(&P);CHKERRQ(ierr); 
+  ierr = MatDestroy(&P);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
 

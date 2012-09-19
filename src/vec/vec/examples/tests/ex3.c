@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0,two = 2.0,three = 3.0;
   Vec            x,y;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   if (n < 5) n = 5;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -32,12 +32,12 @@ int main(int argc,char **argv)
 
   if (rank == 1) {
     idx = 2; ierr = VecSetValues(y,1,&idx,&three,INSERT_VALUES);CHKERRQ(ierr);
-    idx = 0; ierr = VecSetValues(y,1,&idx,&two,INSERT_VALUES);CHKERRQ(ierr); 
-    idx = 0; ierr = VecSetValues(y,1,&idx,&one,INSERT_VALUES);CHKERRQ(ierr); 
+    idx = 0; ierr = VecSetValues(y,1,&idx,&two,INSERT_VALUES);CHKERRQ(ierr);
+    idx = 0; ierr = VecSetValues(y,1,&idx,&one,INSERT_VALUES);CHKERRQ(ierr);
   }
   else {
-    idx = 7; ierr = VecSetValues(y,1,&idx,&three,INSERT_VALUES);CHKERRQ(ierr); 
-  } 
+    idx = 7; ierr = VecSetValues(y,1,&idx,&three,INSERT_VALUES);CHKERRQ(ierr);
+  }
   ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
 
@@ -49,4 +49,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

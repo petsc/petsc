@@ -19,9 +19,9 @@ int main(int argc,char **argv)
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
   VecScatter     tolocalall,fromlocalall;
   PetscInt       start,end;
-  
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);
 
   /* Read options */
@@ -80,4 +80,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

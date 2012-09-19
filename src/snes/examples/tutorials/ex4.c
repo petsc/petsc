@@ -10,19 +10,19 @@ T*/
 /* ------------------------------------------------------------------------
 
     The Lane-Emden equation is given by the partial differential equation
-  
+
             -alpha*Laplacian u - lambda*u^3 = 0,  0 < x,y < 1,
-  
+
     with boundary conditions
-   
+
              u = 0  for  x = 0, x = 1, y = 0, y = 1.
-  
+
     A bilinear finite element approximation is used to discretize the boundary
     value problem to obtain a nonlinear system of equations.
 
   ------------------------------------------------------------------------- */
 
-/* 
+/*
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
@@ -37,8 +37,8 @@ T*/
 #include <petscdmda.h>
 #include <petscsnes.h>
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines, FormJacobianLocal() and
    FormFunctionLocal().
 */
@@ -59,7 +59,7 @@ static PetscScalar quadPoints[8] = {0.211325, 0.211325,
                                     0.211325, 0.788675};
 static PetscScalar quadWeights[4] = {0.25, 0.25, 0.25, 0.25};
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode FormInitialGuess(DM,Vec);
@@ -131,7 +131,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SNESSolve(snes,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = SNESSolve(snes,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes, &reason);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -181,7 +181,7 @@ PetscErrorCode ExactSolution(PetscReal x, PetscReal y, PetscScalar *u)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-/* 
+/*
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
@@ -238,9 +238,9 @@ PetscErrorCode FormInitialGuess(DM da,Vec X)
 
       if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
         /* boundary conditions are all zero Dirichlet */
-        x[j][i] = 0.0; 
+        x[j][i] = 0.0;
       } else {
-        x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp)); 
+        x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
       }
     }
   }
@@ -319,7 +319,7 @@ PetscErrorCode nonlinearResidualBratu(PetscReal lambda, PetscScalar u[], PetscSc
     phi[3] = (1.0 - quadPoints[q*2])* quadPoints[q*2+1];
     res    = quadWeights[q]*PetscExpScalar(u[0]*phi[0]+ u[1]*phi[1] + u[2]*phi[2]+ u[3]*phi[3]);
     rLocal[0] += phi[0]*res;
-    rLocal[1] += phi[1]*res;  
+    rLocal[1] += phi[1]*res;
     rLocal[2] += phi[2]*res;
     rLocal[3] += phi[3]*res;
   }
@@ -358,7 +358,7 @@ PetscErrorCode nonlinearJacobian(PetscScalar lambda, PetscScalar u[], PetscScala
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal"
-/* 
+/*
    FormFunctionLocal - Evaluates nonlinear function, F(x).
 
        Process adiC(36): FormFunctionLocal
@@ -379,7 +379,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*lambda;
-  hxhy   = hx*hy; 
+  hxhy   = hx*hy;
 
   /* Zero the vector */
   ierr = PetscMemzero((void *) &(f[info->xs][info->ys]), info->xm*info->ym*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -434,8 +434,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   }
 
   ierr = PetscLogFlops(68.0*(info->ym-1)*(info->xm-1));CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal"
@@ -457,16 +457,16 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*lambda;
-  hxhy   = hx*hy; 
+  hxhy   = hx*hy;
 
   ierr = MatZeroEntries(jac);CHKERRQ(ierr);
-  /* 
+  /*
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by
-        contiguous chunks of rows across the processors. 
+        contiguous chunks of rows across the processors.
       - Each processor needs to insert only elements that it owns
         locally (but any non-local elements will be sent to the
-        appropriate processor during matrix assembly). 
+        appropriate processor during matrix assembly).
       - Here, we set all entries for a particular row at once.
       - We can set matrix entries either using either
         MatSetValuesLocal() or MatSetValues(), as discussed above.
@@ -548,7 +548,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
     }
   }
 
-  /* 
+  /*
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd().
   */

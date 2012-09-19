@@ -81,7 +81,7 @@ int main(int argc,char **args)
   ierr = PetscLogEventBegin(VECTOR_READ,0,0,0,0);CHKERRQ(ierr);
   if (mpiio_use) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Using MPI IO for reading the vector\n");CHKERRQ(ierr);
-    ierr = PetscOptionsSetValue("-viewer_binary_mpiio","");CHKERRQ(ierr); 
+    ierr = PetscOptionsSetValue("-viewer_binary_mpiio","");CHKERRQ(ierr);
   }
   if (isbinary) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n");CHKERRQ(ierr);
@@ -100,7 +100,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Setting vector sizes...\n");CHKERRQ(ierr);
     if (size > 1) {
       if (!rank) {
-	lsize = m/size + size; 
+	lsize = m/size + size;
 	ierr = VecSetSizes(u,lsize,m);CHKERRQ(ierr);
       }
       else if (rank == size-1) {

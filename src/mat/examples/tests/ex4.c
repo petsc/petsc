@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
-    value = (PetscReal)i+1; tmp = i % 5; 
+    value = (PetscReal)i+1; tmp = i % 5;
     ierr = MatSetValues(mat,1,&tmp,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(PETSC_COMM_SELF,3,2,1,&irkeep);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,5,4,1,&ickeep);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(mat,1,&irkeep,&ickeep,MAT_INITIAL_MATRIX,&submatrices);CHKERRQ(ierr);
-  submat = *submatrices; 
+  submat = *submatrices;
   ierr = PetscFree(submatrices);CHKERRQ(ierr);
   /*
      sviewer will cause the submatrices (one per processor) to be printed in the correct order
@@ -57,4 +57,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

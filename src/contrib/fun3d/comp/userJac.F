@@ -67,7 +67,7 @@ c
 #define dfm(a,b) val1(b+5,a)
 #define eptr(i,j) evec(i,j)
 #endif
-c 
+c
 c Loop over the edges and fill the matrix
 c First just zero it out
 c
@@ -122,7 +122,7 @@ c     call MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY,ierr)
 c     call MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY,ierr)
 c     print *, "Finished doing time stepping part to diagonal term"
 c
-c Now fill A from interior contributions 
+c Now fill A from interior contributions
 c We will fix the boundaries later
 c
 c  First convert to primitive variables
@@ -326,7 +326,7 @@ c
               rhorvR = 0.
               rhorwR = 0.
               rhorpR = 0.
-c 
+c
             ur     = qnode(2,node2)
               urrL = 0.0
               uruL = 0.0
@@ -495,7 +495,7 @@ c
             rhopL = 0.5 / sqrt(rhol*rhor) * (rhol*rhorpL +
      &              rhor*rholpL)
 c
-            rhorR = 0.5 / sqrt(rhol*rhor) * (rhol*rhorrR + 
+            rhorR = 0.5 / sqrt(rhol*rhor) * (rhol*rhorrR +
      &              rhor*rholrR)
             rhouR = 0.5 / sqrt(rhol*rhor) * (rhol*rhoruR +
      &              rhor*rholuR)
@@ -511,22 +511,22 @@ c
             watrL = ((rho + rhor)*rhorL - rho*(rhorL + rhorrL)) /
      &              (rho + rhor) / (rho + rhor)
             watuL = ((rho + rhor)*rhouL - rho*(rhouL + rhoruL)) /
-     &              (rho + rhor) / (rho + rhor) 
+     &              (rho + rhor) / (rho + rhor)
             watvL = ((rho + rhor)*rhovL - rho*(rhovL + rhorvL)) /
-     &              (rho + rhor) / (rho + rhor) 
+     &              (rho + rhor) / (rho + rhor)
             watwL = ((rho + rhor)*rhowL - rho*(rhowL + rhorwL)) /
-     &              (rho + rhor) / (rho + rhor) 
+     &              (rho + rhor) / (rho + rhor)
             watpL = ((rho + rhor)*rhopL - rho*(rhopL + rhorpL)) /
-     &              (rho + rhor) / (rho + rhor) 
+     &              (rho + rhor) / (rho + rhor)
 c
             watrR = ((rho + rhor)*rhorR - rho*(rhorR + rhorrR)) /
-     &              (rho + rhor) / (rho + rhor) 
+     &              (rho + rhor) / (rho + rhor)
             watuR = ((rho + rhor)*rhouR - rho*(rhouR + rhoruR)) /
-     &              (rho + rhor) / (rho + rhor) 
+     &              (rho + rhor) / (rho + rhor)
             watvR = ((rho + rhor)*rhovR - rho*(rhovR + rhorvR)) /
-     &              (rho + rhor) / (rho + rhor) 
+     &              (rho + rhor) / (rho + rhor)
             watwR = ((rho + rhor)*rhowR - rho*(rhowR + rhorwR)) /
-     &              (rho + rhor) / (rho + rhor) 
+     &              (rho + rhor) / (rho + rhor)
             watpR = ((rho + rhor)*rhopR - rho*(rhopR + rhorpR)) /
      &              (rho + rhor) / (rho + rhor)
 c
@@ -1180,7 +1180,7 @@ c
             t1pR = eig1*dv1pR+dv1*eig1pR + eig2*dv2pR+dv2*eig2pR
      &           + eig3*dv4pR+dv4*eig3pR
 c
-            t2 = eig1*r21*dv1 + eig2*r22*dv2 
+            t2 = eig1*r21*dv1 + eig2*r22*dv2
      &         + eig3*r23*dv3 + eig3*r24*dv4
 c
             t2rL = eig1*(r21*dv1rL+dv1*r21rL)+r21*dv1*eig1rL
@@ -1235,7 +1235,7 @@ c
      &           + eig3*(r24*dv4pR+dv4*r24pR)+r24*dv4*eig3pR
 c
 c
-            t3 = eig1*r31*dv1 + eig2*r32*dv2 
+            t3 = eig1*r31*dv1 + eig2*r32*dv2
      &         + eig3*r33*dv3 + eig3*r34*dv4
 c
             t3rL = eig1*(r31*dv1rL+dv1*r31rL)+r31*dv1*eig1rL
@@ -1290,7 +1290,7 @@ c
      &           + eig3*(r34*dv4pR+dv4*r34pR)+r34*dv4*eig3pR
 c
 c
-            t4 = eig1*r41*dv1 + eig2*r42*dv2 
+            t4 = eig1*r41*dv1 + eig2*r42*dv2
      &         + eig3*r43*dv3 + eig3*r44*dv4
 c
             t4rL = eig1*(r41*dv1rL+dv1*r41rL)+r41*dv1*eig1rL
@@ -1345,7 +1345,7 @@ c
      &           + eig3*(r44*dv4pR+dv4*r44pR)+r44*dv4*eig3pR
 c
 c
-            t5 = eig1*r51*dv1 + eig2*r52*dv2 
+            t5 = eig1*r51*dv1 + eig2*r52*dv2
      &         + eig3*r53*dv3 + eig3*r54*dv4
 c
             t5rL = eig1*(r51*dv1rL+dv1*r51rL)+r51*dv1*eig1rL
@@ -1399,7 +1399,7 @@ c
      &           + eig3*(r53*dv3pR+dv3*r53pR)+r53*dv3*eig3pR
      &           + eig3*(r54*dv4pR+dv4*r54pR)+r54*dv4*eig3pR
 c
-c Compute flux using variables from left side of face 
+c Compute flux using variables from left side of face
 c
             fluxp1 = area*rhol*ubarl
 c
@@ -1691,7 +1691,7 @@ c
           flux5pR = 0.5*(fluxp5pR + fluxm5pR - area*t5pR)
 c/*
 c  These last 50 equations are the dfp's and dfm's we're
-c  looking for, but they're w.r.t. primitive variables. 
+c  looking for, but they're w.r.t. primitive variables.
 c
 c  We need to convert these last results into conservative
 c  variables, using one last chain-rule.
@@ -1708,7 +1708,7 @@ c  */
         q1Q5L = 0.
 c
         q2Q1L = - ul / rhol
-        q2Q2L = 1. / rhol 
+        q2Q2L = 1. / rhol
         q2Q3L = 0.
         q2Q4L = 0.
         q2Q5L = 0.
@@ -1934,7 +1934,7 @@ c       do j = 1,5
 c        irow(j) = 5*(node1-1)+j-1
 c        icol(j) = irow(j)
 c        do k = 1,5
-c         in = k + 10*(j-1) 
+c         in = k + 10*(j-1)
 c         val(in) = dfp(j,k)
 c	 enddo
 c	enddo
@@ -1970,7 +1970,7 @@ c       A(idiag,5,5) = A(idiag,5,5) + dfp(5,5)
 c       do j = 1,5
 c        icol(5+j) = 5*(node2-1)+j-1
 c        do k = 1,5
-c         in = k + 5 + 10*(j-1) 
+c         in = k + 5 + 10*(j-1)
 c         val(in) = dfm(j,k)
 c	 enddo
 c	enddo
@@ -2033,10 +2033,10 @@ c Now do the second node
 c
        if (node2 .le. nnodes) then
 c       do j = 1,5
-c        irow(j) = 5*(node2-1)+j-1 
+c        irow(j) = 5*(node2-1)+j-1
 c        icol(j) = irow(j)
 c        do k = 1,5
-c         in = k + 10*(j-1) 
+c         in = k + 10*(j-1)
 c         val(in) = -dfm(j,k)
 c	 enddo
 c	enddo
@@ -2073,7 +2073,7 @@ c
 c       do j = 1,5
 c        icol(5+j) = 5*(node1-1)+j-1
 c        do k = 1,5
-c         in = k + 5 + 10*(j-1) 
+c         in = k + 5 + 10*(j-1)
 c         val(in) = -dfp(j,k)
 c	 enddo
 c	enddo
@@ -2107,7 +2107,7 @@ c       call CHK_ERR(irank,ierr,irow(1),icol(1))
         do j = 1,5
          irow(j) = (node2-1)+(j-1)*nnodes
          icol(j) = (node1-1)+(j-1)*nnodes
-         icol(5+j) = irow(j) 
+         icol(5+j) = irow(j)
         enddo
         call MatSetValues(A,5,irow,10,icol,val1,ADD_VALUES,ierr)
 #endif
@@ -2256,7 +2256,7 @@ c
          xnorm = xnorm/rlen
          ynorm = ynorm/rlen
          znorm = znorm/rlen
-c  
+c
          rho = qnode(1,inode)
          u   = qnode(2,inode)/rho
          v   = qnode(3,inode)/rho
@@ -2417,7 +2417,7 @@ c
 !
 ! Now do the farfield
 !
-      s0 = c0*c0/(gamma*rho0**gm1)      
+      s0 = c0*c0/(gamma*rho0**gm1)
       xgm1 = 1./gm1
       flops = flops + 5.0
       do 1070 i = 1,nfnode
@@ -2544,19 +2544,19 @@ c
          pbe = (2.*rhob*cb*cbe + cb*cb*rhobe)/gamma
 c
 c234567890c234567890c234567890c234567890c234567890c234567890c23456789012
-         ebr = pbr/gm1 + .5*(2.*rhob*(ub*ubr + vb*vbr + wb*wbr) 
+         ebr = pbr/gm1 + .5*(2.*rhob*(ub*ubr + vb*vbr + wb*wbr)
      >         + q2b*rhobr)
-         ebm = pbm/gm1 + .5*(2.*rhob*(ub*ubm + vb*vbm + wb*wbm) 
+         ebm = pbm/gm1 + .5*(2.*rhob*(ub*ubm + vb*vbm + wb*wbm)
      >         + q2b*rhobm)
-         ebn = pbn/gm1 + .5*(2.*rhob*(ub*ubn + vb*vbn + wb*wbn) 
+         ebn = pbn/gm1 + .5*(2.*rhob*(ub*ubn + vb*vbn + wb*wbn)
      >         + q2b*rhobn)
-         ebo = pbo/gm1 + .5*(2.*rhob*(ub*ubo + vb*vbo + wb*wbo) 
+         ebo = pbo/gm1 + .5*(2.*rhob*(ub*ubo + vb*vbo + wb*wbo)
      >         + q2b*rhobo)
-         ebe = pbe/gm1 + .5*(2.*rhob*(ub*ube + vb*vbe + wb*wbe) 
+         ebe = pbe/gm1 + .5*(2.*rhob*(ub*ube + vb*vbe + wb*wbe)
      >         + q2b*rhobe)
          flops = flops + 208.0
 c
-        else 
+        else
          ub = u0 + xnorm*(unormb - unormo)
          vb = v0 + ynorm*(unormb - unormo)
          wb = w0 + znorm*(unormb - unormo)
@@ -2611,15 +2611,15 @@ c
          pbo = (2.*rhob*cb*cbo + cb*cb*rhobo)/gamma
          pbe = (2.*rhob*cb*cbe + cb*cb*rhobe)/gamma
 c
-         ebr = pbr/gm1 + .5*(2.*rhob*(ub*ubr + vb*vbr + wb*wbr) 
+         ebr = pbr/gm1 + .5*(2.*rhob*(ub*ubr + vb*vbr + wb*wbr)
      >         + q2b*rhobr)
-         ebm = pbm/gm1 + .5*(2.*rhob*(ub*ubm + vb*vbm + wb*wbm) 
+         ebm = pbm/gm1 + .5*(2.*rhob*(ub*ubm + vb*vbm + wb*wbm)
      >         + q2b*rhobm)
-         ebn = pbn/gm1 + .5*(2.*rhob*(ub*ubn + vb*vbn + wb*wbn) 
+         ebn = pbn/gm1 + .5*(2.*rhob*(ub*ubn + vb*vbn + wb*wbn)
      >         + q2b*rhobn)
-         ebo = pbo/gm1 + .5*(2.*rhob*(ub*ubo + vb*vbo + wb*wbo) 
+         ebo = pbo/gm1 + .5*(2.*rhob*(ub*ubo + vb*vbo + wb*wbo)
      >         + q2b*rhobo)
-         ebe = pbe/gm1 + .5*(2.*rhob*(ub*ube + vb*vbe + wb*wbe) 
+         ebe = pbe/gm1 + .5*(2.*rhob*(ub*ube + vb*vbe + wb*wbe)
      >         + q2b*rhobe)
          flops = flops + 177.0
 c
@@ -2634,26 +2634,26 @@ c
          val(4) = rlen*(rhob*unormbo + unormb*rhobo)
          val(5) = rlen*(rhob*unormbe + unormb*rhobe)
 c
-         val(6) = rlen*(rhob*ub*unormbr 
+         val(6) = rlen*(rhob*ub*unormbr
      1             + unormb*(rhob*ubr + ub*rhobr) + xnorm*pbr)
-         val(7) = rlen*(rhob*ub*unormbm 
+         val(7) = rlen*(rhob*ub*unormbm
      1             + unormb*(rhob*ubm + ub*rhobm) + xnorm*pbm)
-         val(8) = rlen*(rhob*ub*unormbn 
+         val(8) = rlen*(rhob*ub*unormbn
      1             + unormb*(rhob*ubn + ub*rhobn) + xnorm*pbn)
          val(9) = rlen*(rhob*ub*unormbo
      1             + unormb*(rhob*ubo + ub*rhobo) + xnorm*pbo)
-         val(10) = rlen*(rhob*ub*unormbe 
+         val(10) = rlen*(rhob*ub*unormbe
      1             + unormb*(rhob*ube + ub*rhobe) + xnorm*pbe)
 c
-         val(11) = rlen*(rhob*vb*unormbr 
+         val(11) = rlen*(rhob*vb*unormbr
      1             + unormb*(rhob*vbr + vb*rhobr) + ynorm*pbr)
-         val(12) = rlen*(rhob*vb*unormbm 
+         val(12) = rlen*(rhob*vb*unormbm
      1             + unormb*(rhob*vbm + vb*rhobm) + ynorm*pbm)
-         val(13) = rlen*(rhob*vb*unormbn 
+         val(13) = rlen*(rhob*vb*unormbn
      1             + unormb*(rhob*vbn + vb*rhobn) + ynorm*pbn)
          val(14) = rlen*(rhob*vb*unormbo
      1             + unormb*(rhob*vbo + vb*rhobo) + ynorm*pbo)
-         val(15) = rlen*(rhob*vb*unormbe 
+         val(15) = rlen*(rhob*vb*unormbe
      1             + unormb*(rhob*vbe + vb*rhobe) + ynorm*pbe)
 c
          val(16) = rlen*(rhob*wb*unormbr
@@ -2719,7 +2719,7 @@ c
 c
 
       subroutine CHK_ERR(irank, ierr, irow, icol)
-      if (ierr .gt. 0) then 
+      if (ierr .gt. 0) then
        write(*,*) 'On processor ',irank, ': Non-zero entry in row ',
      1 irow, ' and column ',icol,' is beyond the pre-allocated memory'
       endif

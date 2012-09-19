@@ -17,8 +17,8 @@ struct himaInfoTag {
   double        r;
   double        dt;
   int           totalNumSim;
-  double        *St0; 
-  double        *vol; 
+  double        *St0;
+  double        *vol;
 };
 typedef struct himaInfoTag himaInfo;
 
@@ -30,10 +30,10 @@ double basketPayoff(double vol[], double St0[], int n, double r,double dt, doubl
 void stdNormalArray(double *eps, int size,PetscRandom ran);
 unsigned long divWork(int id, unsigned long num, int np);
 
-/* 
+/*
    Contributed by Xiaoyan Zeng <zengxia@iit.edu> and Liu, Kwong Ip" <kiliu@math.hkbu.edu.hk>
 
-   Example of usage: 
+   Example of usage:
      mpiexec -n 4 ./ex2 -num_of_stocks 30 -interest_rate 0.4 -time_interval 0.01 -num_of_simulations 10000
 */
 
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     ierr = PetscRandomSetFromOptions(ran);CHKERRQ(ierr);
 
     ierr = MPI_Comm_size(PETSC_COMM_WORLD, &np);CHKERRQ(ierr);     /* number of nodes */
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &myid);CHKERRQ(ierr);   /* my ranking */   
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &myid);CHKERRQ(ierr);   /* my ranking */
 
     ierr = PetscOptionsHasName(PETSC_NULL, "-check_generators", &flg);CHKERRQ(ierr);
     if (flg){
@@ -76,12 +76,12 @@ int main(int argc, char *argv[])
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] rval: %g\n",myid,r);
       ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);
     }
-    
+
     hinfo.n           = 31;
     hinfo.r           = 0.04;
     hinfo.dt          = 1.0/12; /* a month as a period */
     hinfo.totalNumSim = 1000;
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-num_of_stocks",&(hinfo.n),PETSC_NULL);CHKERRQ(ierr); 
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-num_of_stocks",&(hinfo.n),PETSC_NULL);CHKERRQ(ierr);
     if (hinfo.n <1 || hinfo.n > 31) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only 31 stocks listed in stock.txt. num_of_stocks %D must between 1 and 31",hinfo.n);
     ierr = PetscOptionsGetReal(PETSC_NULL,"-interest_rate",&(hinfo.r),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetReal(PETSC_NULL,"-time_interval",&(hinfo.dt),PETSC_NULL);CHKERRQ(ierr);
@@ -114,11 +114,11 @@ int main(int argc, char *argv[])
     /* payoff = exp(-r*dt*n)*(totalx/totalNumSim);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Option price = $%.3f using %ds of %s computation with %d %s for %d stocks, %d trading period per year, %.2f%% interest rate\n",
      payoff,(int)(stop - start),"parallel",np,"processors",n,(int)(1/dt),r);CHKERRQ(ierr); */
-    
+
     free(vol);
     free(eps);
     ierr = PetscRandomDestroy(&ran);CHKERRQ(ierr);
-    PetscFinalize();   
+    PetscFinalize();
     return 0;
 }
 
@@ -131,7 +131,7 @@ void stdNormalArray(double *eps, int size, PetscRandom ran)
   for (i=0;i<size;i+=2){
     ierr = PetscRandomGetValue(ran,(PetscScalar*)&u1);CHKERRABORT(PETSC_COMM_WORLD,ierr);
     ierr = PetscRandomGetValue(ran,(PetscScalar*)&u2);CHKERRABORT(PETSC_COMM_WORLD,ierr);
-    
+
     t = sqrt(-2*log(u1));
     eps[i] = t * cos(2*PI*u2);
     eps[i+1] = t * sin(2*PI*u2);
@@ -145,7 +145,7 @@ double basketPayoff(double vol[], double St0[], int n, double r,double dt, doubl
   double payoff;
   int    maxk,i,j;
   int    pointcount=0;
-    
+
   for (i=0;i<n;i++) {
     Stk[i] = St0[i];
   }
@@ -162,7 +162,7 @@ double basketPayoff(double vol[], double St0[], int n, double r,double dt, doubl
     exchange(St0+j-1,St0+maxk);
     exchange(vol+j-1,vol+maxk);
   }
-    
+
   payoff = 0;
   for (i=0;i<n;i++){
     temp = (Stk[i]/St0[i]) - 1 ;
@@ -180,9 +180,9 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
   char           temp[50];
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  double         *v = hinfo->vol, *t = hinfo->St0; 
+  double         *v = hinfo->vol, *t = hinfo->St0;
   int            num=hinfo->n;
-    
+
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank){
@@ -200,7 +200,7 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
 void exchange(double *a, double *b)
 {
   double t;
-    
+
   t = *a;
   *a = *b;
   *b = t;

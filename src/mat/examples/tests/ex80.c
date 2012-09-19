@@ -6,13 +6,13 @@ static char help[] = "Partition tiny grid.\n\n";
    Processors: 4
 T*/
 
-/* 
+/*
   Include "petscmat.h" so that we can use matrices.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
      petscmat.h - matrices
-     petscis.h     - index sets            
-     petscviewer.h - viewers               
+     petscis.h     - index sets
+     petscviewer.h - viewers
 */
 #include <petscksp.h>
 
@@ -56,7 +56,7 @@ int main(int argc,char **args)
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*
-       Partition the graph of the matrix 
+       Partition the graph of the matrix
   */
   ierr = MatPartitioningCreate(PETSC_COMM_WORLD,&part);CHKERRQ(ierr);
   ierr = MatPartitioningSetAdjacency(part,A);CHKERRQ(ierr);
@@ -75,7 +75,7 @@ int main(int argc,char **args)
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
 
 
   ierr = PetscFinalize();

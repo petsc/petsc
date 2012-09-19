@@ -9,15 +9,15 @@
 !
 !   This program solves a simple time-dependent nonlinear PDE using implicit
 !   timestepping:
-!                                    u * u_xx 
+!                                    u * u_xx
 !                              u_t = ---------
-!                                    2*(t+1)^2 
+!                                    2*(t+1)^2
 !
 !             u(0,x) = 1 + x*x; u(t,0) = t + 1; u(t,1) = 2*t + 2
 !
 !   The exact solution is u(t,x) = (1 + x*x) * (1 + t).
 !
-!   Note that since the solution is linear in time and quadratic in x, 
+!   Note that since the solution is linear in time and quadratic in x,
 !   the finite difference scheme actually computes the "exact" solution.
 !
 !   We use the backward Euler method.
@@ -27,9 +27,9 @@
       program main
       implicit none
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                    Include files
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  Each routine within this program uses the include file 'ex2f.h',
 !  which itself includes the various PETSc include files as well as
@@ -43,7 +43,7 @@
 !  Use of the conventional Fortran include statements is also supported
 !  In this case, the PETsc include files are located in the directory
 !  petsc/include/foldinclude.
-!         
+!
 !  Since one must be very careful to include each file no more than once
 !  in a Fortran routine, application programmers must exlicitly list
 !  each file needed for the various PETSc components within their
@@ -53,9 +53,9 @@
 
 #include "ex2f.h"
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  Variables:
 !     ts             - timestepping solver
@@ -87,9 +87,9 @@
       external MyMonitor,RHSFunction
       external InitialConditions,RHSJacobian
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       comm = PETSC_COMM_WORLD
@@ -185,9 +185,9 @@
       call TSSetInitialTimeStep(ts,0.d0,dt,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!  Customize timestepping solver:  
+!  Customize timestepping solver:
 !     - Set the solution method to be the Backward Euler method.
-!     - Set timestepping duration info 
+!     - Set timestepping duration info
 !  Then set runtime options, which can override these defaults.
 !  For example,
 !     -ts_max_steps <maxsteps> -ts_final_time <maxtime>
@@ -240,7 +240,7 @@
 
 !  ------------------------------------------------------------------------
 !
-!  InitialConditions - Computes the solution at the initial time. 
+!  InitialConditions - Computes the solution at the initial time.
 !
 !  Input Parameters:
 !     u - uninitialized solution vector (global)
@@ -277,21 +277,21 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the users manual for details.
 
-      call VecGetArray(u,localptr,idx,ierr) 
+      call VecGetArray(u,localptr,idx,ierr)
 
 !     We initialize the solution array by simply writing the solution
 !     directly into the array locations.  Alternatively, we could use
 !     VecSetValues() or VecSetValuesLocal().
 
       do 10, i=mybase,myend
-!       x - current location in global grid 
+!       x - current location in global grid
         x = h*(i-1)
         localptr(i-mybase+idx+1) = one_d0 + x*x
  10   continue
 
 !  Restore vector
 
-      call VecRestoreArray(u,localptr,idx,ierr) 
+      call VecRestoreArray(u,localptr,idx,ierr)
 
 !  Print debugging information if desired
       if (debug) then
@@ -337,27 +337,27 @@
       mybase = mybase + 1
 
 !  Get a pointer to vector data
-      call VecGetArray(solution,localptr,idx,ierr) 
+      call VecGetArray(solution,localptr,idx,ierr)
 
 !  Simply write the solution directly into the array locations
 !  Alternatively, we could use VecSetValues() or VecSetValuesLocal().
 
       do 10, i=mybase,myend
-!       x - current location in global grid 
+!       x - current location in global grid
         x = h*(i-1)
         localptr(i-mybase+idx+1) = (t + one_d0)*(one_d0 + x*x)
  10   continue
 
 !  Restore vector
 
-      call VecRestoreArray(solution,localptr,idx,ierr) 
+      call VecRestoreArray(solution,localptr,idx,ierr)
 
       return
       end
 
 !  ------------------------------------------------------------------------
 !
-!   MyMonitor - A user-provided routine to monitor the solution computed at 
+!   MyMonitor - A user-provided routine to monitor the solution computed at
 !   each time-step.  This example plots the solution and computes the
 !   error in two different norms.
 !
@@ -471,9 +471,9 @@
       PetscInt    i,localsize
       PetscOffset idx_c,idx_l,il
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Get ready for local function computations
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
@@ -484,32 +484,32 @@
       call DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
 
 !  Access directly the values in our local INPUT work vector
-      call VecGetArray(u_local,localptr,idx_l,ierr) 
+      call VecGetArray(u_local,localptr,idx_l,ierr)
 
 !  Access directly the values in our local OUTPUT work vector
-      call VecGetArray(localwork,copyptr,idx_c,ierr) 
+      call VecGetArray(localwork,copyptr,idx_c,ierr)
 
       sc = one_d0/(h*h*two_d0*(one_d0+t)*(one_d0+t))
 
 !  Evaluate our function on the nodes owned by this processor
       call VecGetLocalSize(u_local,localsize,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-!  Compute entries for the locally owned part 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Compute entries for the locally owned part
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-!  Handle boundary conditions: This is done by using the boundary condition 
-!        u(t,boundary) = g(t,boundary) 
+!  Handle boundary conditions: This is done by using the boundary condition
+!        u(t,boundary) = g(t,boundary)
 !  for some function g. Now take the derivative with respect to t to obtain
 !        u_{t}(t,boundary) = g_{t}(t,boundary)
 !
-!  In our case, u(t,0) = t + 1, so that u_{t}(t,0) = 1 
+!  In our case, u(t,0) = t + 1, so that u_{t}(t,0) = 1
 !          and  u(t,1) = 2t+ 1, so that u_{t}(t,1) = 2
 
        if (rank .eq. 0)      copyptr(1+idx_c) = one_d0
        if (rank .eq. size-1) copyptr(localsize+idx_c) = two_d0
 
-!  Handle the interior nodes where the PDE is replace by finite 
+!  Handle the interior nodes where the PDE is replace by finite
 !  difference operators.
 
       do 10, i=2,localsize-1
@@ -518,10 +518,10 @@
      &     (localptr(il+1) + localptr(il-1) - two_d0*localptr(il))
  10   continue
 
-      call VecRestoreArray(u_local,localptr,idx_l,ierr) 
-      call VecRestoreArray(localwork,copyptr,idx_c,ierr) 
+      call VecRestoreArray(u_local,localptr,idx_l,ierr)
+      call VecRestoreArray(localwork,copyptr,idx_c,ierr)
 
-!  Return the values from our local OUTPUT vector into our global 
+!  Return the values from our local OUTPUT vector into our global
 !  output vector.
 
       call DMLocalToGlobalBegin(da,localwork,INSERT_VALUES,global_out   &
@@ -558,11 +558,11 @@
 !  RHSJacobian computes entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by
 !     contiguous chunks of rows across the processors. The "grow"
-!     parameter computed below specifies the global row number 
+!     parameter computed below specifies the global row number
 !     corresponding to each local grid point.
 !   - Each processor needs to insert only elements that it owns
 !     locally (but any non-local elements will be sent to the
-!     appropriate processor during matrix assembly). 
+!     appropriate processor during matrix assembly).
 !   - Always specify global row and columns of matrix entries.
 !   - Here, we set all entries for a particular row at once.
 !   - Note that MatSetValues() uses 0-based row and column numbers
@@ -588,9 +588,9 @@
       PetscInt    mstarts,mends
       PetscOffset idx,is
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Get ready for local Jacobian computations
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
@@ -601,24 +601,24 @@
       call DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
 
 !  Get pointer to vector data
-      call VecGetArray(u_local,localptr,idx,ierr) 
+      call VecGetArray(u_local,localptr,idx,ierr)
 
 !  Get starting and ending locally owned rows of the matrix
       call MatGetOwnershipRange(A,mstarts,mends,ierr)
       mstart(1) = mstarts
       mend(1)   = mends
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Compute entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by
-!     contiguous chunks of rows across the processors. 
+!     contiguous chunks of rows across the processors.
 !   - Each processor needs to insert only elements that it owns
 !     locally (but any non-local elements will be sent to the
-!     appropriate processor during matrix assembly). 
+!     appropriate processor during matrix assembly).
 !   - Here, we set all entries for a particular row at once.
 !   - We can set matrix entries either using either
 !     MatSetValuesLocal() or MatSetValues().
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Set matrix rows corresponding to boundary data
       i1 = 1
@@ -651,11 +651,11 @@
  10   continue
 
 !  Restore vector
-      call VecRestoreArray(u_local,localptr,idx,ierr) 
+      call VecRestoreArray(u_local,localptr,idx,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Complete the matrix assembly process and set some options
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Assemble matrix, using the 2-step process:
 !       MatAssemblyBegin(), MatAssemblyEnd()
@@ -683,7 +683,7 @@
 
       str = SAME_NONZERO_PATTERN
 
-!  Set and option to indicate that we will never add a new nonzero location 
+!  Set and option to indicate that we will never add a new nonzero location
 !  to the matrix. If we do, it will generate an error.
 
       call MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,ierr)

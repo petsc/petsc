@@ -14,7 +14,7 @@ The command line options include:\n\
    Processors: n
 T*/
 
-/* 
+/*
    Include "petscdraw.h" so that we can use distributed arrays (DMDAs).
    Include "petscdraw.h" so that we can use PETSc drawing routines.
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
@@ -29,7 +29,7 @@ T*/
 #include <petscdmda.h>
 #include <petscsnes.h>
 
-/* 
+/*
    User-defined routines.  Note that immediately before each routine below,
    we define the macro __FUNCT__ to be a string containing the routine name.
    If defined, this macro is used in the PETSc error handlers to provide a
@@ -48,7 +48,7 @@ PetscErrorCode PostCheck(SNESLineSearch,Vec,Vec,Vec,PetscBool*,PetscBool*,void*)
 PetscErrorCode PostSetSubKSP(SNESLineSearch,Vec,Vec,Vec,PetscBool*,PetscBool*,void*);
 PetscErrorCode MatrixFreePreconditioner(PC,Vec,Vec);
 
-/* 
+/*
    User-defined application context
 */
 typedef struct {
@@ -63,11 +63,11 @@ typedef struct {
    User-defined context for monitoring
 */
 typedef struct {
-   PetscViewer viewer; 
+   PetscViewer viewer;
 } MonitorCtx;
 
 /*
-   User-defined context for checking candidate iterates that are 
+   User-defined context for checking candidate iterates that are
    determined by line search methods
 */
 typedef struct {
@@ -128,9 +128,9 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(ctx.da,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&F);CHKERRQ(ierr); ctx.F = F;
-  ierr = VecDuplicate(x,&U);CHKERRQ(ierr); 
+  ierr = VecDuplicate(x,&U);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set function evaluation routine and vector.  Whenever the nonlinear
      solver needs to compute the nonlinear function, it will call this
      routine.
@@ -150,7 +150,7 @@ int main(int argc,char **argv)
   ierr = MatSeqAIJSetPreallocation(J,3,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(J,3,PETSC_NULL,3,PETSC_NULL);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set Jacobian matrix data structure and default Jacobian evaluation
      routine.  Whenever the nonlinear solver needs to compute the
      Jacobian matrix, it will call this routine.
@@ -177,11 +177,11 @@ int main(int argc,char **argv)
      Customize nonlinear solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
+  /*
      Set an optional user-defined monitoring routine
   */
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRQ(ierr);
-  ierr = SNESMonitorSet(snes,Monitor,&monP,0);CHKERRQ(ierr); 
+  ierr = SNESMonitorSet(snes,Monitor,&monP,0);CHKERRQ(ierr);
 
   /*
      Set names for some vectors to facilitate monitoring (optional)
@@ -189,14 +189,14 @@ int main(int argc,char **argv)
   ierr = PetscObjectSetName((PetscObject)x,"Approximate Solution");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)U,"Exact Solution");CHKERRQ(ierr);
 
-  /* 
+  /*
      Set SNES/KSP/KSP/PC runtime options, e.g.,
          -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
   */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  /* 
-     Set an optional user-defined routine to check the validity of candidate 
+  /*
+     Set an optional user-defined routine to check the validity of candidate
      iterates that are determined by line search methods
   */
   ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
@@ -204,8 +204,8 @@ int main(int argc,char **argv)
 
   if (post_check) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating post step checking routine\n");CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPostCheck(linesearch,PostCheck,&checkP);CHKERRQ(ierr); 
-    ierr = VecDuplicate(x,&(checkP.last_step));CHKERRQ(ierr); 
+    ierr = SNESLineSearchSetPostCheck(linesearch,PostCheck,&checkP);CHKERRQ(ierr);
+    ierr = VecDuplicate(x,&(checkP.last_step));CHKERRQ(ierr);
     checkP.tolerance = 1.0;
     checkP.user      = &ctx;
     ierr = PetscOptionsGetReal(PETSC_NULL,"-check_tol",&checkP.tolerance,PETSC_NULL);CHKERRQ(ierr);
@@ -214,16 +214,16 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-post_setsubksp",&post_setsubksp);CHKERRQ(ierr);
   if (post_setsubksp) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating post setsubksp\n");CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPostCheck(linesearch,PostSetSubKSP,&checkP1);CHKERRQ(ierr); 
+    ierr = SNESLineSearchSetPostCheck(linesearch,PostSetSubKSP,&checkP1);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-pre_check_iterates",&pre_check);CHKERRQ(ierr);
   if (pre_check) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating pre step checking routine\n");CHKERRQ(ierr);
-    ierr = SNESLineSearchSetPreCheck(linesearch,PreCheck,&checkP);CHKERRQ(ierr); 
+    ierr = SNESLineSearchSetPreCheck(linesearch,PreCheck,&checkP);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
      Print parameters used for convergence testing (optional) ... just
      to demonstrate this routine; this information is also printed with
      the option -snes_view
@@ -283,7 +283,7 @@ int main(int argc,char **argv)
      Check solution and clean up
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
+  /*
      Check the error
   */
   ierr = VecAXPY(x,none,U);CHKERRQ(ierr);
@@ -328,7 +328,7 @@ PetscErrorCode FormInitialGuess(Vec x)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-/* 
+/*
    FormFunction - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -432,7 +432,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,vo
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   PetscScalar    *xx,d,A[3];
-  PetscErrorCode ierr;           
+  PetscErrorCode ierr;
   PetscInt       i,j[3],M,xs,xm;
   DM             da = user->da;
 
@@ -455,12 +455,12 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,vo
   */
 
   if (xs == 0) {  /* left boundary */
-    i = 0; A[0] = 1.0; 
+    i = 0; A[0] = 1.0;
     ierr = MatSetValues(*jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
     xs++;xm--;
   }
   if (xs+xm == M) { /* right boundary */
-    i = M-1; A[0] = 1.0; 
+    i = M-1; A[0] = 1.0;
     ierr = MatSetValues(*jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
     xm--;
   }
@@ -472,12 +472,12 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,vo
   */
   d = 1.0/(user->h*user->h);
   for (i=xs; i<xs+xm; i++) {
-    j[0] = i - 1; j[1] = i; j[2] = i + 1; 
+    j[0] = i - 1; j[1] = i; j[2] = i + 1;
     A[0] = A[2] = d; A[1] = -2.0*d + 2.0*xx[i];
     ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd().
      By placing code between these two statements, computations can be
@@ -504,7 +504,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,vo
    snes - the SNES context
    its - iteration number
    norm - 2-norm function value (may be estimated)
-   ctx - optional user-defined context for private data for the 
+   ctx - optional user-defined context for private data for the
          monitor routine, as set by SNESMonitorSet()
 
    Note:
@@ -556,7 +556,7 @@ PetscErrorCode PreCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y, PetscBool 
 
    Input Parameters:
    snes - the SNES context
-   ctx  - optional user-defined context for private data for the 
+   ctx  - optional user-defined context for private data for the
           monitor routine, as set by SNESLineSearchSetPostCheck()
    xcurrent - current solution
    y - search direction and length
@@ -565,7 +565,7 @@ PetscErrorCode PreCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y, PetscBool 
    Output Parameters:
    y    - proposed step (search direction and length) (possibly changed)
    x    - current iterate (possibly modified)
-   
+
  */
 PetscErrorCode PostCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,PetscBool  *changed_y,PetscBool  *changed_x, void * ctx)
 {
@@ -596,9 +596,9 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pets
     ierr = DMDAVecGetArray(da,x,&xa);CHKERRQ(ierr);
     ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-    /* 
+    /*
        If we fail the user-defined check for validity of the candidate iterate,
-       then modify the iterate as we like.  (Note that the particular modification 
+       then modify the iterate as we like.  (Note that the particular modification
        below is intended simply to demonstrate how to manipulate this data, not
        as a meaningful or appropriate choice.)
     */
@@ -625,7 +625,7 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pets
 #define __FUNCT__ "PostSetSubKSP"
 /*
    PostSetSubKSP - Optional user-defined routine that reset SubKSP options when hierarchical bjacobi PC is used
-   e.g, 
+   e.g,
      mpiexec -n 8 ./ex3 -nox -n 10000 -ksp_type fgmres -pc_type bjacobi -pc_bjacobi_blocks 4 -sub_ksp_type gmres -sub_ksp_max_it 3 -post_setsubksp -sub_ksp_rtol 1.e-16
    Set by SNESLineSearchSetPostCheck().
 
@@ -638,7 +638,7 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pets
    Output Parameters:
    y    - proposed step (search direction and length) (possibly changed)
    x    - current iterate (possibly modified)
-   
+
  */
 PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,PetscBool  *changed_y,PetscBool  *changed_x, void * ctx)
 {
@@ -689,7 +689,7 @@ PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,
 PetscErrorCode MatrixFreePreconditioner(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  ierr = VecCopy(x,y);CHKERRQ(ierr);  
+  ierr = VecCopy(x,y);CHKERRQ(ierr);
   return 0;
 }
 

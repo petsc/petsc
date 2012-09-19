@@ -205,7 +205,7 @@
 !-----------------------------------------------------------------------
       fa%p1=24
       fa%p2=15
-      fa%r1=6 
+      fa%r1=6
       fa%r2=6
       fa%sw=1
       fa%r1g=fa%r1+fa%sw
@@ -244,7 +244,7 @@
       ENDIF
 !-----------------------------------------------------------------------
 !     count the number of unknowns owned on each processor and determine
-!     the starting point of each processors ownership 
+!     the starting point of each processors ownership
 !     for global vector with redundancy.
 !-----------------------------------------------------------------------
       tonglobal = 0
@@ -395,7 +395,7 @@
          CALL DMDAGetCorners(da1,x,y,0,nx,ny,0,ierr)
          IF (y == 0)THEN
             ny=ny-1
-         ELSE 
+         ELSE
             y=y-1
          ENDIF
          fa%xg(0)=x

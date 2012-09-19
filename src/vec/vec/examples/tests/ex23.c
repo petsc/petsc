@@ -3,9 +3,9 @@ static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
   Using a blocked send and a strided receive.\n\n";
 
 /*
-        0 1 2 3 | 4 5 6 7 ||  8 9 10 11 
+        0 1 2 3 | 4 5 6 7 ||  8 9 10 11
 
-     Scatter first and third block to first processor and 
+     Scatter first and third block to first processor and
      second and third block to second processor
 */
 #include <petscvec.h>
@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   IS             is1,is2;
   VecScatter     ctx = 0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
@@ -55,8 +55,8 @@ int main(int argc,char **argv)
   ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
   ierr = VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr); 
- 
+  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+
   ierr = PetscSleep(2.0*rank);CHKERRQ(ierr);
   ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
@@ -68,4 +68,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

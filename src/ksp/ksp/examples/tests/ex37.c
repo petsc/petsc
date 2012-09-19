@@ -12,11 +12,11 @@ Reads a PETSc matrix and vector from a file and solves a linear system.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  KSP            subksp;             
-  Mat            A,subA;        
-  Vec            x,b,u,subb,subx,subu;           
-  PetscViewer    fd;            
-  char           file[PETSC_MAX_PATH_LEN];     
+  KSP            subksp;
+  Mat            A,subA;
+  Vec            x,b,u,subb,subx,subu;
+  PetscViewer    fd;
+  char           file[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
   PetscErrorCode ierr;
   PetscInt       i,m,n,its;
@@ -28,21 +28,21 @@ int main(int argc,char **args)
   PetscScalar    *barray,*xarray,*uarray,*array,one=1.0;
   PetscInt       type=1;
 
-  PetscInitialize(&argc,&args,(char *)0,help); 
+  PetscInitialize(&argc,&args,(char *)0,help);
   /* Load the matrix */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-    
+
   /* Load the matrix; then destroy the viewer.*/
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    
+
   /* Create rhs vector b */
   ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
@@ -124,7 +124,7 @@ int main(int argc,char **args)
   ierr = VecResetArray(subb);CHKERRQ(ierr);
   ierr = VecResetArray(subx);CHKERRQ(ierr);
   ierr = VecResetArray(subu);CHKERRQ(ierr);
-  
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-subvec_view",&id,&flg);CHKERRQ(ierr);
   if (flg && rank == id){
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] subb:\n", rank);
@@ -148,7 +148,7 @@ int main(int argc,char **args)
   ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
-  
+
   ierr = PetscFinalize();
   return 0;
 }

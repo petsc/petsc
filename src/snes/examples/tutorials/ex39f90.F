@@ -7,22 +7,22 @@
 !       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
 !
 !   Modified from ex5f90.F by Mike McCourt <mccomic@iit.edu>
-!   for testing Fortran interface on 
+!   for testing Fortran interface on
 !   SNESLineSearchSet(), SNESLineSearchSetPreCheck(), SNESLineSearchSetPostCheck()
 !
 !  --------------------------------------------------------------------------
-! 
+!
 !  Solid Fuel Ignition (SFI) problem.  This problem is modeled by
 !  the partial differential equation
-!  
+!
 !          -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
-! 
+!
 !  with boundary conditions
-!  
+!
 !           u = 0  for  x = 0, x = 1, y = 0, y = 1.
-! 
+!
 !  A finite difference approximation with the usual 5-point stencil
-!  is used to discretize the boundary value problem to obtain a nonlinear 
+!  is used to discretize the boundary value problem to obtain a nonlinear
 !  system of equations.
 !
 !  The uniprocessor version of this code is snes/examples/tutorials/ex4f.F
@@ -59,7 +59,7 @@
 !
 !  Notes:
 !  This routine serves as a wrapper for the lower-level routine
-!  "FormFunctionLocal", where the actual computations are 
+!  "FormFunctionLocal", where the actual computations are
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely handles ghost point scatters and accesses
@@ -132,7 +132,7 @@
 !      call VecView(X,PETSC_VIEWER_STDOUT_WORLD,ierr)
 !      call VecView(F,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
-      return 
+      return
       end subroutine formfunction
       end module f90module
 
@@ -154,9 +154,9 @@
 #include <finclude/petscvec.h90>
 #include <finclude/petscdmda.h90>
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  Variables:
 !     snes        - nonlinear solver
@@ -183,9 +183,9 @@
       external FormInitialGuess,FormJacobian,FormLineSearch
       external FormPostCheck,FormPreCheck
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Initialize program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,user%rank,ierr)
@@ -229,7 +229,7 @@
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
      &               PETSC_NULL_INTEGER,ierr)
-      
+
 !
 !   Visualize the distribution of the array across the processors
 !
@@ -274,7 +274,7 @@
 !  routine. User can override with:
 !     -snes_fd : default finite differencing approximation of Jacobian
 !     -snes_mf : matrix-free Newton-Krylov method with no preconditioning
-!                (unless user explicitly sets preconditioner) 
+!                (unless user explicitly sets preconditioner)
 !     -snes_mf_operator : form preconditioning matrix as set by the user,
 !                         but use matrix-free approx for Jacobian-vector
 !                         products within Newton-Krylov method
@@ -337,7 +337,7 @@
       call FormInitialGuess(snes,x,ierr)
 	write(*,*)"Before SNESSolve"
 	write(*,*)"user%xm=",user%xm
-      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr) 
+      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr)
       call SNESGetIterationNumber(snes,its,ierr);
       if (user%rank .eq. 0) then
          write(6,100) its
@@ -393,7 +393,7 @@
       call VecNorm(f,NORM_2,gnorm,ierr)
       call VecNorm(x,NORM_2,xnorm,ierr)
       call SNESLineSearchSetNorms(linesearch,xnorm,gnorm,ynorm,ierr)
-      return 
+      return
       end
 
 ! ---------------------------------------------------------------------
@@ -408,7 +408,7 @@
 !
 !  Notes:
 !  This routine serves as a wrapper for the lower-level routine
-!  "InitialGuessLocal", where the actual computations are 
+!  "InitialGuessLocal", where the actual computations are
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely handles ghost point scatters and accesses
@@ -468,7 +468,7 @@
       call DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X,ierr)
       call DMRestoreLocalVector(da,localX,ierr)
 
-      return 
+      return
       end
 
 ! ---------------------------------------------------------------------
@@ -481,7 +481,7 @@
 !
 !  Output Parameters:
 !  x - local vector data
-!  ierr - error code 
+!  ierr - error code
 !
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
@@ -531,7 +531,7 @@
  10      continue
  20   continue
 
-      return 
+      return
       end
 
 ! ---------------------------------------------------------------------
@@ -544,7 +544,7 @@
 !
 !  Output Parameters:
 !  f - local vector data, f(x)
-!  ierr - error code 
+!  ierr - error code
 !
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
@@ -583,7 +583,7 @@
      &             .or. i .eq. user%mx .or. j .eq. user%my) then
                f(i,j) = x(i,j)
             else
-               u = x(i,j) 
+               u = x(i,j)
                uxx = hydhx * (two*u                                     &
      &                - x(i-1,j) - x(i+1,j))
                uyy = hxdhy * (two*u - x(i,j-1) - x(i,j+1))
@@ -612,7 +612,7 @@
 !
 !  Notes:
 !  This routine serves as a wrapper for the lower-level routine
-!  "FormJacobianLocal", where the actual computations are 
+!  "FormJacobianLocal", where the actual computations are
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely accesses the local vector data via
@@ -634,7 +634,7 @@
 !          MatSetLocalToGlobalMapping() once
 !        - Set matrix entries using the local ordering
 !          by calling MatSetValuesLocal()
-!    (B) MatSetValues(), using the global ordering 
+!    (B) MatSetValues(), using the global ordering
 !        - Use DMDAGetGlobalIndicesF90() to extract the local-to-global map
 !        - Then apply this map explicitly yourself
 !        - Set matrix entries using the global ordering by calling
@@ -736,7 +736,7 @@
 !  Output Parameters:
 !  jac      - Jacobian matrix
 !  jac_prec - optionally different preconditioning matrix (not used here)
-!  ierr     - error code 
+!  ierr     - error code
 !
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
@@ -757,7 +757,7 @@
 !          MatSetLocalToGlobalMapping() once
 !        - Set matrix entries using the local ordering
 !          by calling MatSetValuesLocal()
-!    (B) MatSetValues(), using the global ordering 
+!    (B) MatSetValues(), using the global ordering
 !        - Use DMDAGetGlobalIndicesF90() to extract the local-to-global map
 !        - Then apply this map explicitly yourself
 !        - Set matrix entries using the global ordering by calling
@@ -803,10 +803,10 @@
 
 !     Compute entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by
-!     contiguous chunks of rows across the processors. 
+!     contiguous chunks of rows across the processors.
 !   - Each processor needs to insert only elements that it owns
 !     locally (but any non-local elements will be sent to the
-!     appropriate processor during matrix assembly). 
+!     appropriate processor during matrix assembly).
 !   - Here, we set all entries for a particular row at once.
 !   - We can set matrix entries either using either
 !     MatSetValuesLocal() or MatSetValues(), as discussed above.
@@ -855,7 +855,7 @@
       PetscBool      changed_Y
       PetscErrorCode ierr
 
-     	write(*,*)"Inside formPreCheck, user%xm=",user%xm        
+     	write(*,*)"Inside formPreCheck, user%xm=",user%xm
       end subroutine formPreCheck
 
       subroutine FormPostCheck(snes,X,Y,W,changed_Y,changed_W,user,ierr)
@@ -867,6 +867,6 @@
       PetscBool      changed_Y,changed_W
       PetscErrorCode ierr
 
-     	write(*,*)"Inside formPostCheck, user%xm=",user%xm        
+     	write(*,*)"Inside formPostCheck, user%xm=",user%xm
       end subroutine formPostCheck
 

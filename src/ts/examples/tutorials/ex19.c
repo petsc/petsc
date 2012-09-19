@@ -31,7 +31,7 @@ Input parameters include:\n";
    [ (u_2^3/3 - u_2) - u_1 ]   [ 0 ]
 
    which is now in the desired form of u_t = f(u,t). As this is a DAE, and
-   there is no u_2', there is no need for a split, 
+   there is no u_2', there is no need for a split,
 
    so
 
@@ -139,7 +139,7 @@ static PetscErrorCode RegisterMyARK2(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "Monitor"
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
 static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)

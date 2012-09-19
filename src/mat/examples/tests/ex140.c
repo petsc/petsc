@@ -30,7 +30,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
 
-  /* 
+  /*
      Open binary file.  Note that we use FILE_MODE_READ to indicate
      reading from this file.
   */

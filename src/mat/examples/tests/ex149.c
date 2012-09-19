@@ -36,10 +36,10 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecSetSizes(input,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(input);CHKERRQ(ierr);
   ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
-  ierr = VecDuplicate(input,&output); 
+  ierr = VecDuplicate(input,&output);
 //  ierr = VecGetSize(input,&vsize);CHKERRQ(ierr);
 //  printf("Size of the input Vector is %d\n",vsize);
-  
+
   DIM = 3;
   dim[0] = N0; dim[1] = N1; dim[2] = N2;
 
@@ -73,8 +73,8 @@ PetscInt main(PetscInt argc,char **args)
 //      }
 
 
-    
- 
+
+
 // ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr);
 //  printf("Vector size from ex148 %d\n",vsize);
 //  ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
@@ -83,7 +83,7 @@ PetscInt main(PetscInt argc,char **args)
 
   ierr = PetscFinalize();
   return 0;
-  
+
 }
 
 

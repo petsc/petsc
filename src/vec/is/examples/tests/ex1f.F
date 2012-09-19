@@ -20,19 +20,19 @@
        call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
        call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
-!     Test IS of size 0 
+!     Test IS of size 0
 
        n = 0
        call ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,    &
-     &                      is,ierr) 
+     &                      is,ierr)
            CHKERRQ(ierr)
-       call ISGetLocalSize(is,n,ierr) 
+       call ISGetLocalSize(is,n,ierr)
            CHKERRQ(ierr)
        if (n .ne. 0) then
          print*, 'Error getting size of zero IS'
          stop
        endif
-       call ISDestroy(is,ierr) 
+       call ISDestroy(is,ierr)
 
 
 !     Create large IS and test ISGetIndices(,ierr)
@@ -42,9 +42,9 @@
         indices(i) = i-1
  10   continue
       call ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,       &
-     &                     is,ierr) 
+     &                     is,ierr)
            CHKERRQ(ierr)
-      call ISGetIndices(is,ii,iis,ierr) 
+      call ISGetIndices(is,ii,iis,ierr)
            CHKERRQ(ierr)
       do 20, i=1,n
         if (ii(i+iis) .ne. indices(i)) then
@@ -52,54 +52,54 @@
            stop
         endif
  20   continue
-      call ISRestoreIndices(is,ii,iis,ierr) 
+      call ISRestoreIndices(is,ii,iis,ierr)
            CHKERRQ(ierr)
 
-!     Check identity and permutation 
-  
-      call ISPermutation(is,flag,ierr) 
+!     Check identity and permutation
+
+      call ISPermutation(is,flag,ierr)
            CHKERRQ(ierr)
       if (flag) then
          print*, 'Error checking permutation'
          stop
       endif
-      call ISIdentity(is,flag,ierr) 
+      call ISIdentity(is,flag,ierr)
            CHKERRQ(ierr)
       if (.not. flag) then
          print*, 'Error checking identity'
          stop
       endif
-      call ISSetPermutation(is,ierr) 
+      call ISSetPermutation(is,ierr)
            CHKERRQ(ierr)
-      call ISSetIdentity(is,ierr)  
+      call ISSetIdentity(is,ierr)
            CHKERRQ(ierr)
-      call ISPermutation(is,flag,ierr) 
+      call ISPermutation(is,flag,ierr)
            CHKERRQ(ierr)
       if (.not. flag) then
          print*, 'Error checking permutation second time'
          stop
       endif
-      call ISIdentity(is,flag,ierr) 
+      call ISIdentity(is,flag,ierr)
            CHKERRQ(ierr)
       if (.not. flag) then
          print*, 'Error checking identity second time'
          stop
       endif
 
-!     Check equality of index sets 
+!     Check equality of index sets
 
-      call ISEqual(is,is,flag,ierr) 
+      call ISEqual(is,is,flag,ierr)
            CHKERRQ(ierr)
       if (.not. flag) then
          print*, 'Error checking equal'
          stop
       endif
 
-!     Sorting 
+!     Sorting
 
-      call ISSort(is,ierr) 
+      call ISSort(is,ierr)
            CHKERRQ(ierr)
-      call ISSorted(is,flag,ierr) 
+      call ISSorted(is,flag,ierr)
            CHKERRQ(ierr)
       if (.not. flag) then
          print*, 'Error checking sorted'
@@ -108,20 +108,20 @@
 
 !     Thinks it is a different type?
 
-      call PetscObjectTypeCompare(is,ISSTRIDE,flag,ierr) 
+      call PetscObjectTypeCompare(is,ISSTRIDE,flag,ierr)
            CHKERRQ(ierr)
       if (flag) then
          print*, 'Error checking stride'
          stop
       endif
-      call PetscObjectTypeCompare(is,ISBLOCK,flag,ierr) 
+      call PetscObjectTypeCompare(is,ISBLOCK,flag,ierr)
            CHKERRQ(ierr)
       if (flag) then
          print*, 'Error checking block'
          stop
       endif
 
-      call ISDestroy(is,ierr) 
+      call ISDestroy(is,ierr)
            CHKERRQ(ierr)
 
 !     Inverting permutation
@@ -131,13 +131,13 @@
  30   continue
 
       call ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,         &
-     &                     is,ierr) 
+     &                     is,ierr)
            CHKERRQ(ierr)
-      call ISSetPermutation(is,ierr) 
+      call ISSetPermutation(is,ierr)
            CHKERRQ(ierr)
-      call ISInvertPermutation(is,PETSC_DECIDE,newis,ierr) 
+      call ISInvertPermutation(is,PETSC_DECIDE,newis,ierr)
            CHKERRQ(ierr)
-      call ISGetIndices(newis,ii,iis,ierr) 
+      call ISGetIndices(newis,ii,iis,ierr)
            CHKERRQ(ierr)
       do 40, i=1,n
         if (ii(iis+i) .ne. n - i) then
@@ -145,15 +145,15 @@
           stop
        endif
  40   continue
-      call ISRestoreIndices(newis,ii,iis,ierr) 
+      call ISRestoreIndices(newis,ii,iis,ierr)
            CHKERRQ(ierr)
-      call ISDestroy(newis,ierr) 
+      call ISDestroy(newis,ierr)
            CHKERRQ(ierr)
-      call ISDestroy(is,ierr) 
+      call ISDestroy(is,ierr)
            CHKERRQ(ierr)
       call PetscFinalize(ierr)
       end
- 
+
 
 
 

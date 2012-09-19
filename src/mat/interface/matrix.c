@@ -489,7 +489,7 @@ PetscErrorCode  MatRestoreRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscIn
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  if (ncols) {PetscValidIntPointer(ncols,3);}
+  if (ncols) PetscValidIntPointer(ncols,3);
   if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!mat->ops->restorerow) PetscFunctionReturn(0);
   ierr = (*mat->ops->restorerow)(mat,row,ncols,(PetscInt **)cols,(PetscScalar **)vals);CHKERRQ(ierr);

@@ -9,7 +9,7 @@ diagonal data structure.  Input arguments are:\n\
 /* This code is not intended as an efficient implementation, it is only
    here to produce an interesting sparse matrix quickly.
 
-   PLEASE DO NOT BASE ANY OF YOUR CODES ON CODE LIKE THIS, THERE ARE MUCH 
+   PLEASE DO NOT BASE ANY OF YOUR CODES ON CODE LIKE THIS, THERE ARE MUCH
    BETTER WAYS TO DO THIS. */
 
 extern PetscErrorCode GetElasticityMatrix(PetscInt,Mat*);
@@ -48,15 +48,15 @@ int main(int argc,char **args)
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
-    v = (PetscScalar)(i-rstart + 100*rank); 
+    v = (PetscScalar)(i-rstart + 100*rank);
     ierr = VecSetValues(u,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-  } 
+  }
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
-  
+
   /* Compute right-hand-side */
   ierr = MatMult(mat,u,b);CHKERRQ(ierr);
-  
+
   /* Solve linear system */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,mat,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -85,7 +85,7 @@ int main(int argc,char **args)
 /* -------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "GetElasticityMatrix"
-/* 
+/*
   GetElasticityMatrix - Forms 3D linear elasticity matrix.
  */
 PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
@@ -101,7 +101,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
   ierr = PetscPrintf(PETSC_COMM_SELF,"m = %D, N=%D\n",m,N);CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,PETSC_NULL,&mat);CHKERRQ(ierr); 
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,PETSC_NULL,&mat);CHKERRQ(ierr);
 
   /* Form stiffness for element */
   ierr = PetscMalloc(81*sizeof(PetscReal *),&K);CHKERRQ(ierr);
@@ -115,7 +115,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   for (k=0; k<m; k++) {
     for (j=0; j<m; j++) {
       for (i=0; i<m; i++) {
-	h1 = 0; 
+	h1 = 0;
         base = 2*k*shiftz + 2*j*shifty + 2*i*shiftx;
 	for (k1=0; k1<3; k1++) {
 	  for (j_1=0; j_1<3; j_1++) {
@@ -158,7 +158,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ict,rowkeep,PETSC_COPY_VALUES,&iskeep);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(mat,1,&iskeep,&iskeep,MAT_INITIAL_MATRIX,&submatb);CHKERRQ(ierr);
-  submat = *submatb; 
+  submat = *submatb;
   ierr = PetscFree(submatb);CHKERRQ(ierr);
   ierr = PetscFree(rowkeep);CHKERRQ(ierr);
   ierr = ISDestroy(&iskeep);CHKERRQ(ierr);
@@ -189,11 +189,11 @@ PetscErrorCode AddElement(Mat mat,PetscInt r1,PetscInt r2,PetscReal **K,PetscInt
   for (l1=0; l1<3; l1++) {
     for (l2=0; l2<3; l2++) {
 /*
-   NOTE you should never do this! Inserting values 1 at a time is 
+   NOTE you should never do this! Inserting values 1 at a time is
    just too expensive!
 */
       if (K[h1+l1][h2+l2] != 0.0) {
-        row = r1+l1; col = r2+l2; val = K[h1+l1][h2+l2]; 
+        row = r1+l1; col = r2+l2; val = K[h1+l1][h2+l2];
 	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
         row = r2+l2; col = r1+l1;
 	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
@@ -224,7 +224,7 @@ PetscInt     rmap[20] = {0,1,2,3,5,6,7,8,9,11,15,17,18,19,20,21,23,24,25,26};
 /* -------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "Elastic20Stiff"
-/* 
+/*
   Elastic20Stiff - Forms 20 node elastic stiffness for element.
  */
 PetscErrorCode Elastic20Stiff(PetscReal **Ke)
@@ -284,19 +284,19 @@ PetscErrorCode Elastic20Stiff(PetscReal **Ke)
     for (j=0; j<81; j++) {
       if (PetscAbsReal(Ke[i][j]) < m)  Ke[i][j] = 0.0;
     }
-  }  
+  }
   /* force the matrix to be exactly symmetric */
   for (i=0; i<81; i++) {
     for (j=0; j<i; j++) {
       Ke[i][j] = (Ke[i][j] + Ke[j][i])/2.0;
     }
-  } 
+  }
   return 0;
 }
 /* -------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "paulsetup20"
-/* 
+/*
   paulsetup20 - Sets up data structure for forming local elastic stiffness.
  */
 PetscErrorCode paulsetup20(void)
@@ -365,18 +365,18 @@ PetscErrorCode paulsetup20(void)
   c = 1.0/8.0;
   for (j=0; j<N_int; j++) {
     for (i=0; i<20; i++) {
-      if (i==0 || i==2 || i==5 || i==7 || i==12 || i==14 || i== 17 || i==19){ 
+      if (i==0 || i==2 || i==5 || i==7 || i==12 || i==14 || i== 17 || i==19){
         N[i][j] = c*(1.0 + r2[i]*rst[0][j])*
                 (1.0 + s2[i]*rst[1][j])*(1.0 + t2[i]*rst[2][j])*
                 (-2.0 + r2[i]*rst[0][j] + s2[i]*rst[1][j] + t2[i]*rst[2][j]);
         part_N[0][i][j] = c*r2[i]*(1 + s2[i]*rst[1][j])*(1 + t2[i]*rst[2][j])*
-                 (-1.0 + 2.0*r2[i]*rst[0][j] + s2[i]*rst[1][j] + 
+                 (-1.0 + 2.0*r2[i]*rst[0][j] + s2[i]*rst[1][j] +
                  t2[i]*rst[2][j]);
         part_N[1][i][j] = c*s2[i]*(1 + r2[i]*rst[0][j])*(1 + t2[i]*rst[2][j])*
-                 (-1.0 + r2[i]*rst[0][j] + 2.0*s2[i]*rst[1][j] + 
+                 (-1.0 + r2[i]*rst[0][j] + 2.0*s2[i]*rst[1][j] +
                  t2[i]*rst[2][j]);
         part_N[2][i][j] = c*t2[i]*(1 + r2[i]*rst[0][j])*(1 + s2[i]*rst[1][j])*
-                 (-1.0 + r2[i]*rst[0][j] + s2[i]*rst[1][j] + 
+                 (-1.0 + r2[i]*rst[0][j] + s2[i]*rst[1][j] +
                  2.0*t2[i]*rst[2][j]);
       }
       else if (i==1 || i==6 || i==13 || i==18) {
@@ -416,7 +416,7 @@ PetscErrorCode paulsetup20(void)
 /* -------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "paulintegrate20"
-/* 
+/*
    paulintegrate20 - Does actual numerical integration on 20 node element.
  */
 PetscErrorCode paulintegrate20(PetscReal K[60][60])
@@ -485,7 +485,7 @@ PetscErrorCode paulintegrate20(PetscReal K[60][60])
       B[5][3*k]   = B_temp[2][k];
       B[5][3*k+2] = B_temp[0][k];
     }
-  
+
     /* Construct the C matrix, uses the constants "nu" and "E". */
     for (i=0; i<6; i++) {
       for (j=0; j<6; j++) {
@@ -506,7 +506,7 @@ PetscErrorCode paulintegrate20(PetscReal K[60][60])
     C[1][2] = C[0][1];
     C[2][0] = C[0][1];
     C[2][1] = C[0][1];
-  
+
     for (i=0; i<6; i++) {
       for (j=0; j<60; j++) {
         B_temp[i][j] = 0.0;

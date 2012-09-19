@@ -24,8 +24,8 @@ int main(int argc,char **argv)
     Every PETSc routine should begin with the PetscInitialize() routine.
     argc, argv - These command line arguments are taken to extract the options
                  supplied to PETSc and options supplied to MPI.
-    help       - When PETSc executable is invoked with the option -help, 
-                 it prints the various options that can be applied at 
+    help       - When PETSc executable is invoked with the option -help,
+                 it prints the various options that can be applied at
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
@@ -43,8 +43,8 @@ int main(int argc,char **argv)
   ierr = DMLocalToGlobalBegin(da,local,ADD_VALUES,global);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(da,local,ADD_VALUES,global);CHKERRQ(ierr);
 
-  /* 
-     Write output file with PetscViewerHDF5 viewer. 
+  /*
+     Write output file with PetscViewerHDF5 viewer.
 
   */
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output",FILE_MODE_WRITE,&viewer); CHKERRQ(ierr);
@@ -70,5 +70,5 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = VecDestroy(&global2);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return 0;  
+  return 0;
 }

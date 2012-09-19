@@ -44,12 +44,12 @@ int main(int Argc,char **Args)
   /* Set the fudge parameters, we scale the whole thing by 1/(2*h) later */
   h = 1.;
   rho *= 1./(2.*h);
-  
+
   /* Geometry info */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, n, n,
 		    PETSC_DECIDE, PETSC_DECIDE, 2 /* this is the # of dof's */,
 		    1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
-  
+
   /* Random numbers */
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -85,7 +85,7 @@ int main(int Argc,char **Args)
       /* use those to set the field */
       uxy1 = PetscExpScalar( ((PetscScalar) (R*c/beta))*PETSC_i);
       uxy2 = PetscExpScalar( ((PetscScalar) (R*s/beta))*PETSC_i);
-      
+
       sxy.i = x; sxy.j = y; /* the point where we are */
 
       /* center action */
@@ -94,7 +94,7 @@ int main(int Argc,char **Args)
       sxy.c = 1; /* spin 1, 1 */
       val = -rho;
       ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
-      
+
       sxy_m.i = x+1; sxy_m.j = y; /* right action */
       sxy.c = 0; sxy_m.c = 0; /* spin 0, 0 */
       val = -uxy1; valconj = PetscConj(val);
@@ -132,7 +132,7 @@ int main(int Argc,char **Args)
       ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
     }
   }
-  
+
   ierr = MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(H, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -231,7 +231,7 @@ PetscErrorCode computeMaxEigVal(Mat A, PetscInt its, PetscScalar *eig) {
   Vec             x0, x, x_1, tmp;
   PetscScalar     lambda_its, lambda_its_1;
   PetscInt        i;
-  
+
   PetscFunctionBegin;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);

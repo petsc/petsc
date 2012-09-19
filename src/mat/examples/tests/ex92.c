@@ -1,7 +1,7 @@
 
 static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for parallel MatSBAIJ format.\n";
 /* Example of usage:
-      mpiexec -n 2 ./ex92 -nd 2 -ov 3 -mat_block_size 2 -view_id 0 -test_overlap -test_submat 
+      mpiexec -n 2 ./ex92 -nd 2 -ov 3 -mat_block_size 2 -view_id 0 -test_overlap -test_submat
 */
 #include <petscmat.h>
 
@@ -32,7 +32,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL, "-test_overlap", &TestOverlap);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL, "-test_submat", &TestSubMat);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL, "-test_allcols", &TestAllcols);CHKERRQ(ierr);
-  
+
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,mbs*bs,mbs*bs,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(A,MATBAIJ);CHKERRQ(ierr);
@@ -54,7 +54,7 @@ int main(int argc,char **args)
   /* Now set blocks of values */
   for (j=0; j<bs*bs; j++) vals[j] = 0.0;
   for (i=0; i<Mbs; i++){
-    cols[0] = i*bs; rows[0] = i*bs; 
+    cols[0] = i*bs; rows[0] = i*bs;
     for (j=1; j<bs; j++) {
       rows[j] = rows[j-1]+1;
       cols[j] = cols[j-1]+1;
@@ -81,10 +81,10 @@ int main(int argc,char **args)
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
+
   /* make A a symmetric matrix: A <- A^T + A */
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);CHKERRQ(ierr);
-  ierr = MatAXPY(A,one,Atrans,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
+  ierr = MatAXPY(A,one,Atrans,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);
   ierr = MatEqual(A, Atrans, &flg);
@@ -96,18 +96,18 @@ int main(int argc,char **args)
   ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
 
   /* create a SeqSBAIJ matrix sA (= A) */
-  ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr); 
+  ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
   if (vid >= 0 && vid < size){
     if (!rank) printf("A: \n");
-    ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+    ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     if (!rank) printf("sA: \n");
-    ierr = MatView(sA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+    ierr = MatView(sA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /* Test sA==A through MatMult() */
   ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG ,"Error in MatConvert(): A != sA"); 
-  
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG ,"Error in MatConvert(): A != sA");
+
   /* Test MatIncreaseOverlap() */
   ierr = PetscMalloc(nd*sizeof(IS **),&is1);CHKERRQ(ierr);
   ierr = PetscMalloc(nd*sizeof(IS **),&is2);CHKERRQ(ierr);
@@ -116,10 +116,10 @@ int main(int argc,char **args)
     if (!TestAllcols){
       ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
       sz = (PetscInt)((0.5+0.2*PetscRealPart(rval))*mbs); /* 0.5*mbs < sz < 0.7*mbs */
-    
+
       for (j=0; j<sz; j++) {
         ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-        idx[j*bs] = bs*(PetscInt)(PetscRealPart(rval)*Mbs); 
+        idx[j*bs] = bs*(PetscInt)(PetscRealPart(rval)*Mbs);
         for (k=1; k<bs; k++) idx[j*bs+k] = idx[j*bs]+k;
       }
       ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is1+i);CHKERRQ(ierr);
@@ -152,7 +152,7 @@ int main(int argc,char **args)
     ierr = PetscLogStagePop();CHKERRQ(ierr);
 
     ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
-    ierr = MatIncreaseOverlap(A,nd,is1,ov);CHKERRQ(ierr); 
+    ierr = MatIncreaseOverlap(A,nd,is1,ov);CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
 
     if (rank == vid){
@@ -162,15 +162,15 @@ int main(int argc,char **args)
       ierr = ISView(is2[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }
 
-    for (i=0; i<nd; ++i) { 
+    for (i=0; i<nd; ++i) {
       ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
       if (!flg ){
         if (rank == 0){
           ierr = ISSort(is1[i]);CHKERRQ(ierr);
           /* ISView(is1[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
-          ierr = ISSort(is2[i]);CHKERRQ(ierr); 
+          ierr = ISSort(is2[i]);CHKERRQ(ierr);
           /* ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
-        } 
+        }
         SETERRQ1(PETSC_COMM_SELF,1,"i=%D, is1 != is2",i);
       }
     }
@@ -186,15 +186,15 @@ int main(int argc,char **args)
     ierr = MatGetSubMatrices(sA,nd,is2,is2,MAT_INITIAL_MATRIX,&submatsA);CHKERRQ(ierr);
 
     ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A != sA"); 
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A != sA");
 
     /* Now test MatGetSubmatrices with MAT_REUSE_MATRIX option */
     ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA);CHKERRQ(ierr);
     ierr = MatGetSubMatrices(sA,nd,is2,is2,MAT_REUSE_MATRIX,&submatsA);CHKERRQ(ierr);
     ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"MatGetSubmatrices(): A != sA");
-    
-    for (i=0; i<nd; ++i) { 
+
+    for (i=0; i<nd; ++i) {
       ierr = MatDestroy(&submatA[i]);CHKERRQ(ierr);
       ierr = MatDestroy(&submatsA[i]);CHKERRQ(ierr);
     }
@@ -203,7 +203,7 @@ int main(int argc,char **args)
   }
 
   /* Free allocated memory */
-  for (i=0; i<nd; ++i) { 
+  for (i=0; i<nd; ++i) {
     ierr = ISDestroy(&is1[i]);CHKERRQ(ierr);
     ierr = ISDestroy(&is2[i]);CHKERRQ(ierr);
   }

@@ -1,4 +1,4 @@
-      
+
 static char help[] = "VecView() with a DMDA1d vector and draw viewer.\n\n";
 
 #include <petscdmda.h>
@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   Vec            global;
   PF             pf;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,10,3,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);

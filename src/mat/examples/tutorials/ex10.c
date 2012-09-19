@@ -1,17 +1,17 @@
 
-static char help[] = "Reads a PETSc matrix and computes the 2 norm of the columns\n\n"; 
+static char help[] = "Reads a PETSc matrix and computes the 2 norm of the columns\n\n";
 
 /*T
    Concepts: Mat^loading a binary matrix;
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscmat.h" so that we can use matrices.
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h    - vectors
      petscmat.h    - matrices
-     petscis.h     - index sets            petscviewer.h - viewers               
+     petscis.h     - index sets            petscviewer.h - viewers
 */
 #include <petscmat.h>
 
@@ -31,14 +31,14 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
 
-  /* 
+  /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
 
-  /* 
+  /*
      Open binary file.  Note that we use FILE_MODE_READ to indicate
      reading from this file.
   */

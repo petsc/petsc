@@ -51,7 +51,7 @@
       DMDALocalInfo in(DMDA_LOCAL_INFO_SIZE)
       PetscScalar x(in(DMDA_LOCAL_INFO_DOF),                            &
      &              XG_RANGE,                                           &
-     &              YG_RANGE)  
+     &              YG_RANGE)
       PetscScalar f(in(DMDA_LOCAL_INFO_DOF),                            &
      &             X_RANGE,                                             &
      &             Y_RANGE)
@@ -66,5 +66,5 @@
       enddo
 
       return
-      end      
+      end
 

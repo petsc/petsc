@@ -20,11 +20,11 @@ static const char help[] = "Solves PDE optimization problem using full-space met
 
             FU = (fw [fu_0 flambda_0 .....])
 
-       In this example the PDE is 
-                             Uxx = 2, 
+       In this example the PDE is
+                             Uxx = 2,
                             u(0) = w(0), thus this is the free parameter
                             u(1) = 0
-       the function we wish to minimize is 
+       the function we wish to minimize is
                             \integral u^{2}
 
        The exact solution for u is given by u(x) = x*x - 1.25*x + .25
@@ -48,8 +48,8 @@ extern PetscErrorCode ComputeJacobian_MF(SNES,Vec,Mat*,Mat*,MatStructure*,void*)
 extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
 
 /*
-    Uses full multigrid preconditioner with GMRES (with no preconditioner inside the GMRES) as the 
-  smoother on all levels. This is because (1) in the matrix free case no matrix entries are 
+    Uses full multigrid preconditioner with GMRES (with no preconditioner inside the GMRES) as the
+  smoother on all levels. This is because (1) in the matrix free case no matrix entries are
   available for doing Jacobi or SOR preconditioning and (2) the explicit matrix case the diagonal
   entry for the control variable is zero which means default SOR will not work.
 
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
   /* Hardwire several options; can be changed at command line */
   ierr = PetscOptionsInsertString(common_options);CHKERRQ(ierr);
   ierr = PetscOptionsInsertString(matrix_free_options);CHKERRQ(ierr);
-  ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_monitor",&use_monitor,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* Create a global vector that includes a single redundant array and two da arrays */
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
     /* create graphics windows */
     ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"u_lambda - state variables and Lagrange multipliers",-1,-1,-1,-1,&user.u_lambda_viewer);CHKERRQ(ierr);
     ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"fu_lambda - derivate w.r.t. state variables and Lagrange multipliers",-1,-1,-1,-1,&user.fu_lambda_viewer);CHKERRQ(ierr);
-    ierr = SNESMonitorSet(snes,Monitor,0,0);CHKERRQ(ierr); 
+    ierr = SNESMonitorSet(snes,Monitor,0,0);CHKERRQ(ierr);
   }
 
   ierr = SNESSolve(snes,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -134,7 +134,7 @@ typedef struct {
   PetscScalar lambda;
 } ULambda;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ComputeFunction"
 /*
       Evaluates FU = Gradiant(L(w,u,lambda))
@@ -180,14 +180,14 @@ PetscErrorCode ComputeFunction(SNES snes,Vec U,Vec FU,void *ctx)
     else if (i == N-1) fu_lambda[N-1].lambda =    h*u_lambda[N-1].u + 2.*d*u_lambda[N-1].lambda - d*u_lambda[N-2].lambda;
     else if (i == N-2) fu_lambda[N-2].lambda = 2.*h*u_lambda[N-2].u + 2.*d*u_lambda[N-2].lambda - d*u_lambda[N-3].lambda;
     else               fu_lambda[i].lambda   = 2.*h*u_lambda[i].u   - d*(u_lambda[i+1].lambda - 2.0*u_lambda[i].lambda + u_lambda[i-1].lambda);
-  } 
+  }
 
   /* derivative of L() w.r.t. lambda */
   for (i=xs; i<xs+xm; i++) {
     if      (i == 0)   fu_lambda[0].u   = 2.0*d*(u_lambda[0].u - w[0]);
     else if (i == N-1) fu_lambda[N-1].u = 2.0*d*u_lambda[N-1].u;
     else               fu_lambda[i].u   = -(d*(u_lambda[i+1].u - 2.0*u_lambda[i].u + u_lambda[i-1].u) - 2.0*h);
-  } 
+  }
 
   ierr = VecRestoreArray(vw,&w);CHKERRQ(ierr);
   ierr = VecRestoreArray(vfw,&fw);CHKERRQ(ierr);
@@ -199,9 +199,9 @@ PetscErrorCode ComputeFunction(SNES snes,Vec U,Vec FU,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "u_solution"
-/* 
+/*
     Computes the exact solution
 */
 PetscErrorCode u_solution(void *dummy,PetscInt n,const PetscScalar *x,PetscScalar *u)
@@ -214,9 +214,9 @@ PetscErrorCode u_solution(void *dummy,PetscInt n,const PetscScalar *x,PetscScala
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ExactSolution"
-PetscErrorCode ExactSolution(DM packer,Vec U) 
+PetscErrorCode ExactSolution(DM packer,Vec U)
 {
   PF             pf;
   Vec            x,u_global;
@@ -243,7 +243,7 @@ PetscErrorCode ExactSolution(DM packer,Vec U)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
 {
@@ -261,7 +261,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   ierr = DMGetApplicationContext(packer,&user);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(packer,U,&w,&u_lambda);CHKERRQ(ierr);
-  ierr = VecView(u_lambda,user->u_lambda_viewer); 
+  ierr = VecView(u_lambda,user->u_lambda_viewer);
   ierr = DMCompositeRestoreAccess(packer,U,&w,&u_lambda);CHKERRQ(ierr);
 
   ierr = SNESGetFunction(snes,&F,0,0);CHKERRQ(ierr);
@@ -284,7 +284,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_MF"
 PetscErrorCode DMCreateMatrix_MF(DM packer,const MatType stype,Mat *A)
 {
@@ -301,7 +301,7 @@ PetscErrorCode DMCreateMatrix_MF(DM packer,const MatType stype,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ComputeJacobian_MF"
 PetscErrorCode ComputeJacobian_MF(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,void *ctx)
 {

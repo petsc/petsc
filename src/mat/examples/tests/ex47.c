@@ -27,7 +27,7 @@ int main(int argc,char **args)
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
 #else
-  
+
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
 
   /* Load the matrix as AIJ format */
@@ -54,7 +54,7 @@ int main(int argc,char **args)
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(B,&m2,&n2);CHKERRQ(ierr);
   if (m!=m2) SETERRQ(PETSC_COMM_SELF,1,"Matrices are of different size. Cannot run this example");
- 
+
   /* Test MatEqual() */
   ierr = MatEqual(B,C,&tflg);CHKERRQ(ierr);
   if (!tflg) SETERRQ(PETSC_COMM_SELF,1,"MatEqual() failed");
@@ -65,7 +65,7 @@ int main(int argc,char **args)
 
   ierr = MatGetDiagonal(A,x);CHKERRQ(ierr);
   ierr = MatGetDiagonal(B,y);CHKERRQ(ierr);
-  
+
   ierr = VecEqual(x,y,&tflg);CHKERRQ(ierr);
   if (!tflg)  SETERRQ(PETSC_COMM_SELF,1,"MatGetDiagonal() failed");
 
@@ -82,7 +82,7 @@ int main(int argc,char **args)
   ierr = MatMult(B,x,y);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
   rnorm = ((norm1-norm2)*100)/norm1;
-  if (rnorm<-0.1 || rnorm>0.01) { 
+  if (rnorm<-0.1 || rnorm>0.01) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Norm1=%e Norm2=%e\n",norm1,norm2);CHKERRQ(ierr);
     SETERRQ(PETSC_COMM_SELF,1,"MatDiagonalScale() failed");
   }
@@ -93,17 +93,17 @@ int main(int argc,char **args)
     row  = (int)(rval*m);
     ierr = MatGetRow(A,row,&ncols1,&cols1,&vals1);CHKERRQ(ierr);
     ierr = MatGetRow(B,row,&ncols2,&cols2,&vals2);CHKERRQ(ierr);
-    
+
     for (i=0,j=0; i<ncols1 && j<ncols2; i++) {
       while (cols2[j] != cols1[i]) j++;
       if (vals1[i] != vals2[j]) SETERRQ(PETSC_COMM_SELF,1,"MatGetRow() failed - vals incorrect.");
     }
     if (i<ncols1) SETERRQ(PETSC_COMM_SELF,1,"MatGetRow() failed - cols incorrect");
-    
+
     ierr = MatRestoreRow(A,row,&ncols1,&cols1,&vals1);CHKERRQ(ierr);
     ierr = MatRestoreRow(B,row,&ncols2,&cols2,&vals2);CHKERRQ(ierr);
   }
-    
+
   MatDestroy(&A);
   MatDestroy(&B);
   MatDestroy(&C);

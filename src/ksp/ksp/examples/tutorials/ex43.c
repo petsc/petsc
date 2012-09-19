@@ -161,7 +161,7 @@ static void ConstructGaussQuadrature(PetscInt *ngp,PetscScalar gp_xi[][2],PetscS
 
 
 /* procs to the left claim the ghost node as their element */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetLocalElementSize"
 static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,PetscInt *mzl)
 {
@@ -193,7 +193,7 @@ static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetElementCorners"
 static PetscErrorCode DMDAGetElementCorners(DM da,
                                           PetscInt *sx,PetscInt *sy,PetscInt *sz,
@@ -231,7 +231,7 @@ i,j are the element indices
 The unknown is a vector quantity.
 The s[].c is used to indicate the degree of freedom.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetElementEqnums_up"
 static PetscErrorCode DMDAGetElementEqnums_up(MatStencil s_u[],MatStencil s_p[],PetscInt i,PetscInt j)
 {
@@ -262,7 +262,7 @@ static PetscErrorCode DMDAGetElementEqnums_up(MatStencil s_u[],MatStencil s_p[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetElementOwnershipRanges2d"
 static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da,PetscInt **_lx,PetscInt **_ly)
 {
@@ -337,7 +337,7 @@ static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da,PetscInt **_lx,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDACoordViewGnuplot2d"
 static PetscErrorCode DMDACoordViewGnuplot2d(DM da,const char prefix[])
 {
@@ -377,7 +377,7 @@ static PetscErrorCode DMDACoordViewGnuplot2d(DM da,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAViewGnuplot2d"
 static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],const char prefix[])
 {
@@ -445,7 +445,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAViewCoefficientsGnuplot2d"
 static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char comment[],const char prefix[])
 {
@@ -740,7 +740,7 @@ static void FormMomentumRhsQ1(PetscScalar Fe[],PetscScalar coords[],PetscScalar 
   }
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "GetElementCoords"
 static PetscErrorCode GetElementCoords(DMDACoor2d **_coords,PetscInt ei,PetscInt ej,PetscScalar el_coords[])
 {
@@ -753,7 +753,7 @@ static PetscErrorCode GetElementCoords(DMDACoor2d **_coords,PetscInt ei,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AssembleA_Stokes"
 static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,DM properties_da,Vec properties)
 {
@@ -826,7 +826,7 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,DM properties_da,Vec p
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AssembleA_PCStokes"
 static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,DM properties_da,Vec properties)
 {
@@ -899,7 +899,7 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,DM properties_da,Vec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDASetValuesLocalStencil_ADD_VALUES"
 static PetscErrorCode DMDASetValuesLocalStencil_ADD_VALUES(StokesDOF **fields_F,MatStencil u_eqn[],MatStencil p_eqn[],PetscScalar Fe_u[],PetscScalar Fe_p[])
 {
@@ -914,7 +914,7 @@ static PetscErrorCode DMDASetValuesLocalStencil_ADD_VALUES(StokesDOF **fields_F,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AssembleF_Stokes"
 static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,DM properties_da,Vec properties)
 {
@@ -991,7 +991,7 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,DM properties_da,Vec p
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDACreateSolCx"
 static PetscErrorCode DMDACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc,PetscInt nz,
                                     PetscInt mx,PetscInt my,
@@ -1053,7 +1053,7 @@ static PetscErrorCode DMDACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "StokesDAGetNodalFields"
 static PetscErrorCode StokesDAGetNodalFields(StokesDOF **fields,PetscInt ei,PetscInt ej,StokesDOF nodal_fields[])
 {
@@ -1066,7 +1066,7 @@ static PetscErrorCode StokesDAGetNodalFields(StokesDOF **fields,PetscInt ei,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAIntegrateErrors"
 static PetscErrorCode DMDAIntegrateErrors(DM stokes_da,Vec X,Vec X_analytic)
 {
@@ -1177,7 +1177,7 @@ static PetscErrorCode DMDAIntegrateErrors(DM stokes_da,Vec X,Vec X_analytic)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "solve_stokes_2d_coupled"
 static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
 {
@@ -1604,7 +1604,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
@@ -1625,7 +1625,7 @@ int main(int argc,char **args)
 
 /* -------------------------- helpers for boundary conditions -------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "BCApply_EAST"
 static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A,Vec b)
 {
@@ -1693,7 +1693,7 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "BCApply_WEST"
 static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A,Vec b)
 {
@@ -1761,7 +1761,7 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "BCApply_NORTH"
 static PetscErrorCode BCApply_NORTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A,Vec b)
 {
@@ -1829,7 +1829,7 @@ static PetscErrorCode BCApply_NORTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "BCApply_SOUTH"
 static PetscErrorCode BCApply_SOUTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A,Vec b)
 {
@@ -1898,12 +1898,12 @@ static PetscErrorCode BCApply_SOUTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDABCApplyFreeSlip"
 /*
 Free slip sides.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDABCApplyFreeSlip"
 static PetscErrorCode DMDABCApplyFreeSlip(DM da_Stokes,Mat A,Vec f)
 {

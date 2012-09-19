@@ -25,8 +25,8 @@ int main(int argc,char **argv)
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* create single vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr); 
-  ierr = VecSetSizes(y,PETSC_DECIDE,m);CHKERRQ(ierr); 
+  ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
+  ierr = VecSetSizes(y,PETSC_DECIDE,m);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
   ierr = VecDuplicate(y,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(y,&ytmp);CHKERRQ(ierr);
@@ -38,21 +38,21 @@ int main(int argc,char **argv)
   /* create multiple vectors RHS and SOLU */
   ierr = MatCreate(PETSC_COMM_WORLD,&RHS);CHKERRQ(ierr);
   ierr = MatSetSizes(RHS,PETSC_DECIDE,PETSC_DECIDE,n,nrhs);CHKERRQ(ierr);
-  ierr = MatSetType(RHS,MATDENSE);CHKERRQ(ierr); 
-  ierr = MatSetFromOptions(RHS);CHKERRQ(ierr); 
+  ierr = MatSetType(RHS,MATDENSE);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(RHS);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(RHS,PETSC_NULL);CHKERRQ(ierr);
-  
+
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = MatDenseGetArray(RHS,&array);CHKERRQ(ierr);
   for (j=0; j<nrhs; j++){
     for (i=0; i<n; i++){
       ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-      array[n*j+i] = rval; 
+      array[n*j+i] = rval;
     }
   }
   ierr = MatDenseRestoreArray(RHS,&array);CHKERRQ(ierr);
-  
+
   ierr = MatDuplicate(RHS,MAT_DO_NOT_COPY_VALUES,&SOLU);CHKERRQ(ierr);
 
   /* create matrix */
@@ -101,7 +101,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatMult(mat,x,b);CHKERRQ(ierr);
   ierr = MatDuplicate(mat,MAT_COPY_VALUES,&F);CHKERRQ(ierr);
-  
+
   /* in-place LU */
   ierr = MatLUFactor(F,0,0,0);CHKERRQ(ierr);
   ierr = MatSolve(F,b,y);CHKERRQ(ierr);
@@ -117,13 +117,13 @@ int main(int argc,char **argv)
     ierr = VecPlaceArray(y,solu_array+j*m);CHKERRQ(ierr);
     ierr = VecPlaceArray(b,rhs_array+j*m);CHKERRQ(ierr);
 
-    ierr = MatMult(mat,y,ytmp);CHKERRQ(ierr); 
+    ierr = MatMult(mat,y,ytmp);CHKERRQ(ierr);
     ierr = VecAXPY(ytmp,-1.0,b);CHKERRQ(ierr); /* ytmp = mat*SOLU[:,j] - RHS[:,j] */
     ierr = VecNorm(ytmp,NORM_2,&norm);CHKERRQ(ierr);
     if (norm > tol){
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: Norm of residual for LU %G\n",norm);CHKERRQ(ierr);
     }
-    
+
     ierr = VecResetArray(b);CHKERRQ(ierr);
     ierr = VecResetArray(y);CHKERRQ(ierr);
   }
@@ -140,7 +140,7 @@ int main(int argc,char **argv)
   value = -1.0; ierr = VecAXPY(y,value,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > tol){
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);  
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Norm of error for LU %G\n",norm);CHKERRQ(ierr);
   }
 
   /* free space */
@@ -156,4 +156,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

@@ -17,12 +17,12 @@ int main(int argc,char **argv)
   PetscBool      flg;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /*
-     Test IS of size 0 
+     Test IS of size 0
   */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,0,&n,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = ISGetSize(is,&n);CHKERRQ(ierr);
@@ -44,8 +44,8 @@ int main(int argc,char **argv)
   }
   ierr = ISRestoreIndices(is,&ii);CHKERRQ(ierr);
 
-  /* 
-     Check identity and permutation 
+  /*
+     Check identity and permutation
   */
   ierr = ISPermutation(is,&flg);CHKERRQ(ierr);
   if (flg) SETERRQ(PETSC_COMM_SELF,1,"ISPermutation");
@@ -59,13 +59,13 @@ int main(int argc,char **argv)
   if (!flg) SETERRQ(PETSC_COMM_SELF,1,"ISIdentity");
 
   /*
-     Check equality of index sets 
+     Check equality of index sets
   */
   ierr = ISEqual(is,is,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,1,"ISEqual");
 
   /*
-     Sorting 
+     Sorting
   */
   ierr = ISSort(is);CHKERRQ(ierr);
   ierr = ISSorted(is,&flg);CHKERRQ(ierr);
@@ -101,7 +101,7 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+
 
 
 

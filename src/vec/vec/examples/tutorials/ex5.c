@@ -51,7 +51,7 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   /*  ierr = PetscOptionsClear();CHKERRQ(ierr);*/
-  ierr = PetscOptionsSetValue("-viewer_binary_mpiio","");CHKERRQ(ierr); 
+  ierr = PetscOptionsSetValue("-viewer_binary_mpiio","");CHKERRQ(ierr);
 
   ierr = PetscLogEventEnd(VECTOR_GENERATE,0,0,0,0);CHKERRQ(ierr);
 

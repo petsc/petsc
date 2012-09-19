@@ -32,7 +32,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&x2);CHKERRQ(ierr);
 
-  /* Create matrix. Only proc[0] sets values - not efficient for parallel processing! 
+  /* Create matrix. Only proc[0] sets values - not efficient for parallel processing!
      See ex23.c for efficient parallel assembly matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
@@ -64,14 +64,14 @@ int main(int argc,char **args)
   ierr = KSPSetOperators(ksp,A,A,SAME_PRECONDITIONER);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_MUMPS 
+#ifdef PETSC_HAVE_MUMPS
   ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
 #endif
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  
+
   /* 1. Solve linear system A x = b */
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr); 
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
   /* Check the error */
   ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
@@ -81,11 +81,11 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"1. Norm of error for Ax=b: %G, Iterations %D\n",
                      norm,its);CHKERRQ(ierr);
   }
- 
+
   /* 2. Solve linear system A^T x = b*/
   ierr = MatMultTranspose(A,u,b);CHKERRQ(ierr);
-  ierr = KSPSolveTranspose(ksp,b,x2);CHKERRQ(ierr); 
-  
+  ierr = KSPSolveTranspose(ksp,b,x2);CHKERRQ(ierr);
+
   /* Check the error */
   ierr = VecAXPY(x2,neg_one,u);CHKERRQ(ierr);
   ierr = VecNorm(x2,NORM_2,&norm);CHKERRQ(ierr);
@@ -97,14 +97,14 @@ int main(int argc,char **args)
 
   /* 3. Change A and solve A x = b with an iterative solver using A=LU as a preconditioner*/
   if (!rank){
-    i = 0; col[0] = n-1; value[0] = 1.e-2; 
+    i = 0; col[0] = n-1; value[0] = 1.e-2;
     ierr = MatSetValues(A,1,&i,1,col,value,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = MatMult(A,u,b);CHKERRQ(ierr); 
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr); 
+  ierr = MatMult(A,u,b);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
   /* Check the error */
   ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
@@ -116,10 +116,10 @@ int main(int argc,char **args)
   }
 
   /* Free work space. */
-  ierr = VecDestroy(&x);CHKERRQ(ierr); 
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&x2);CHKERRQ(ierr); 
-  ierr = VecDestroy(&b);CHKERRQ(ierr); 
+  ierr = VecDestroy(&x2);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
 

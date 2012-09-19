@@ -1,9 +1,9 @@
 
 static char help[] = "Newton's method to solve a many-variable system that comes from the 2 variable Rosenbrock function + trivial.\n\n";
 
-/* 
+/*
 
-./ex43 -snes_monitor_range -snes_max_it 1000 -snes_rtol 1.e-14 -n 10 -snes_converged_reason -sub_snes_monito -sub_snes_mf -sub_snes_converged_reason -sub_snes_rtol 1.e-10 -sub_snes_max_it 1000 -sub_snes_monitor 
+./ex43 -snes_monitor_range -snes_max_it 1000 -snes_rtol 1.e-14 -n 10 -snes_converged_reason -sub_snes_monito -sub_snes_mf -sub_snes_converged_reason -sub_snes_rtol 1.e-10 -sub_snes_max_it 1000 -sub_snes_monitor
 
   Accelerates Newton's method by solving a small problem defined by those elements with large residual plus one level of overlap
 
@@ -67,12 +67,12 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,2+ctx.p+ctx.n,2+ctx.p+ctx.n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set function evaluation routine and vector.
   */
   ierr = SNESSetFunction(snes,r,FormFunction1,(void*)&ctx);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set Jacobian matrix data structure and Jacobian evaluation routine
   */
   ierr = SNESSetJacobian(snes,J,J,FormJacobian1,(void*)&ctx);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-  xx[0] = -1.2; 
+  xx[0] = -1.2;
   for (i=1; i<ctx.p+2; i++) {
     xx[i] = 1.0;
   }
@@ -102,7 +102,7 @@ int main(int argc,char **argv)
 
   ierr = SNESMonitorSet(snes,MonitorRange,0,0);CHKERRQ(ierr);
   ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,snes_steps_per_solve,PETSC_DEFAULT);CHKERRQ(ierr);
-  for (i=0; i<max_snes_solves; i++) { 
+  for (i=0; i<max_snes_solves; i++) {
     ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
     if (reason && reason != SNES_DIVERGED_MAX_IT) break;
@@ -125,7 +125,7 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction1"
-/* 
+/*
    FormFunction1 - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -165,7 +165,7 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ictx)
 
   /* Restore vectors */
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -227,7 +227,7 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   */
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
 
-  /* 
+  /*
      Assemble matrix
   */
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

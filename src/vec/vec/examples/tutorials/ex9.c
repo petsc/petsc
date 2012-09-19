@@ -8,12 +8,12 @@ static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
    Description: Ghost padding is one way to handle local calculations that
       involve values from other processors. VecCreateGhost() provides
-      a way to create vectors with extra room at the end of the vector 
-      array to contain the needed ghost values from other processors, 
+      a way to create vectors with extra room at the end of the vector
+      array to contain the needed ghost values from other processors,
       vector computations are otherwise unaffected.
 T*/
 
-/* 
+/*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscis.h     - index sets
@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   if (size != 2) SETERRQ(PETSC_COMM_SELF,1,"Must run example with two processors\n");
 
   /*
-     Construct a two dimensional graph connecting nlocal degrees of 
+     Construct a two dimensional graph connecting nlocal degrees of
      freedom per processor. From this we will generate the global
      indices of needed ghost values
 
@@ -47,26 +47,26 @@ int main(int argc,char **argv)
      example is only to demonstrate the management of ghost padding
      with VecCreateGhost().
 
-     In this example we consider the vector as representing 
-     degrees of freedom in a one dimensional grid with periodic 
+     In this example we consider the vector as representing
+     degrees of freedom in a one dimensional grid with periodic
      boundary conditions.
 
         ----Processor  1---------  ----Processor 2 --------
          0    1   2   3   4    5    6    7   8   9   10   11
-                               |----| 
+                               |----|
          |-------------------------------------------------|
 
   */
 
   if (!rank) {
-    ifrom[0] = 11; ifrom[1] = 6; 
+    ifrom[0] = 11; ifrom[1] = 6;
   } else {
-    ifrom[0] = 0;  ifrom[1] = 5; 
+    ifrom[0] = 0;  ifrom[1] = 5;
   }
 
   /*
-     Create the vector with two slots for ghost points. Note that both 
-     the local vector (lx) and the global vector (gx) share the same 
+     Create the vector with two slots for ghost points. Note that both
+     the local vector (lx) and the global vector (gx) share the same
      array for storing vector values.
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-allocate",&flg);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   ierr = VecGhostGetLocalForm(gx,&lx);CHKERRQ(ierr);
 
   /*
-     Set the values from 0 to 12 into the "global" vector 
+     Set the values from 0 to 12 into the "global" vector
   */
   ierr = VecGetOwnershipRange(gx,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
   ierr = VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /*
-     Print out each vector, including the ghost padding region. 
+     Print out each vector, including the ghost padding region.
   */
   ierr = VecGetArray(lx,&array);CHKERRQ(ierr);
   for (i=0; i<nlocal+nghost; i++) {
@@ -118,12 +118,12 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(lx,&array);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-  ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRQ(ierr); 
+  ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRQ(ierr);
   ierr = VecDestroy(&gx);CHKERRQ(ierr);
   if (flg) {ierr = PetscFree(tarray);CHKERRQ(ierr);}
   ierr = PetscFinalize();
   return 0;
 }
- 
+
 
 

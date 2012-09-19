@@ -1,4 +1,4 @@
-#include <petscsys.h> 
+#include <petscsys.h>
 #include <petsc-private/fortranimpl.h>
 
 #define max_colors  200
@@ -100,7 +100,7 @@ typedef struct gxy{                            /* GRID STRUCTURE             */
    REAL *Xgm;                                 /* Another GMRES array        */
    REAL *temr;                                /* Temporary array            */
    REAL *ALU;                                 /* Big array for ILU(0)       */
-   int  *ia, *iau, *ja, *fhelp;               /* Stuff for ILU(0)           */ 
+   int  *ia, *iau, *ja, *fhelp;               /* Stuff for ILU(0)           */
 
 /*
  * stuff to read in daves grid file
@@ -111,12 +111,12 @@ typedef struct gxy{                            /* GRID STRUCTURE             */
    int *f2ntn,*f2ntv,*f2ntf;
 
 /* PETSc datastructures and other related info */
-   Vec qnode;                                 /* Global distributed solution 
+   Vec qnode;                                 /* Global distributed solution
 						 vector*/
-   Vec qnodeLoc;                              /* Local sequential solution 
+   Vec qnodeLoc;                              /* Local sequential solution
 						 vector*/
    Vec dq;                                    /* Delta Q                    */
-   Vec qold;                                  /* Global distributed solution 
+   Vec qold;                                  /* Global distributed solution
 						 vector*/
    Vec  res;                                  /* Residual                   */
    Vec  grad;              		      /* Gradient Vector	    */
@@ -142,10 +142,10 @@ typedef struct gxy{                            /* GRID STRUCTURE             */
 
 
 
-   
+
 }GRID;                                         /* Grids                      */
                                                /*============================*/
-                                            
+
                                                /*============================*/
 typedef struct{                               /* GENERAL INFORMATION        */
    REAL title[20];                            /* Title line                 */
@@ -299,10 +299,10 @@ int write_fine_grid(GRID *);
 EXTERN_C_BEGIN
 extern void PETSC_STDCALL f77FORLINK(void);
 extern void PETSC_STDCALL f77OPENM(int*);
-extern void PETSC_STDCALL f77FILLA(int* nnodesLoc,int* nedgeLoc,int* eptr,int*nsface, 
-				   int* isface,PetscScalar* fxn,PetscScalar* fyn,PetscScalar* fzn, 
+extern void PETSC_STDCALL f77FILLA(int* nnodesLoc,int* nedgeLoc,int* eptr,int*nsface,
+				   int* isface,PetscScalar* fxn,PetscScalar* fyn,PetscScalar* fzn,
 				   PetscScalar* sxn,PetscScalar* syn,PetscScalar* szn,int* nsnodeLoc,int* nvnodeLoc,
-				   int* nfnodeLoc,int* isnode,int* ivnode,int* ifnode, 
+				   int* nfnodeLoc,int* isnode,int* ivnode,int* ifnode,
 				   PetscScalar* qnode,Mat* jac,PetscScalar* cdt,PetscScalar* rl,PetscScalar* area,PetscScalar* xn,PetscScalar*,PetscScalar* zn,
              PetscScalar* cfl,int* rank,int* nvertices);
 extern void PETSC_STDCALL f77READR1(int*,int*);
@@ -325,8 +325,8 @@ extern void PETSC_STDCALL f77GETRES(int* nnodesLoc,int* ncell,int *nedgeLoc,int*
 				    PetscScalar* grad,PetscScalar* res,PetscScalar* turbre,PetscScalar* slen,int* c2n,int* c2e,
 				    PetscScalar* us,PetscScalar* vs,PetscScalar* as,PetscScalar* phi,PetscScalar* amut,
 				    int* ires,int* rank,int* nvertices);
-extern void PETSC_STDCALL f77FORCE(int* nnodesLoc,int* nedgeLoc,   
-            int* isnode,int* ivnode,  
+extern void PETSC_STDCALL f77FORCE(int* nnodesLoc,int* nedgeLoc,
+            int* isnode,int* ivnode,
             int* nnfacetLoc,int* f2ntn,int* nnbound,
             int* nvfacetLoc,int* f2ntv,int* nvbound,
             int* eptr,PetscScalar* qnode,PetscScalar* x,PetscScalar* y,PetscScalar* z,
@@ -340,5 +340,5 @@ extern void PETSC_STDCALL f77TECFLO(int* nnodes,int* nvbound,int* nvfacet,int* n
              PetscScalar* qnode, int* nvpts, int* nvtet,
              int* f2ntv, int* ivnode,
              int* timeStep, int* rank, int* openFile, int* closeFile,
-             int* boundaryType,PetscScalar* title); 
+             int* boundaryType,PetscScalar* title);
 EXTERN_C_END

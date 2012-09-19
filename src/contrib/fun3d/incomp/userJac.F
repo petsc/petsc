@@ -13,13 +13,13 @@
 !=============================================================================
 #undef __FUNCT__
 #define __FUNCT__ "FILLA"
-      subroutine FILLA(nnodes,nedge,evec,                               & 
+      subroutine FILLA(nnodes,nedge,evec,                               &
      &                 nsface,isface,fxn,fyn,fzn,sxn,syn,szn,           &
      &                 nsnode,nvnode,nfnode,isnode,ivnode,ifnode,       &
      &                 qvec,A,cdt,                                      &
      &                 vol,xyzn,cfl,irank,nvertices)
 !
-      implicit none     
+      implicit none
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
 #include <finclude/petscmat.h>
@@ -112,9 +112,9 @@
       PetscScalar wb,wbp,wbu,wbv,wbw
       PetscScalar unormb,unormbp,unormbu
       PetscScalar unormbv,unormbw
-     
 
-! 
+
+!
 ! Loop over the edges and fill the matrix
 ! First just zero it out
 !
@@ -151,7 +151,7 @@
 !     call MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY,ierr)
 !     print *, "Finished doing time stepping part to diagonal term"
 !
-! Now fill A from interior contributions 
+! Now fill A from interior contributions
 ! We will fix the boundaries later
 !
       do 1040 n = 1, nedge
@@ -257,7 +257,7 @@
 ! Put in the eigenvalue smoothing stuff
 !
           eigeps  = .1d0*(abs(ubar) + abs(c))
-! 
+!
 !         if(eig1.lt.eigeps)eig1 = .5*(eig1**2/eigeps + eigeps)
 !         if(eig2.lt.eigeps)eig2 = .5*(eig2**2/eigeps + eigeps)
 !         if(eig3.lt.eigeps)eig3 = .5*(eig3**2/eigeps + eigeps)
@@ -301,7 +301,7 @@
           y34 =  c2inv*.5d0*znorm
           y44 =  c2inv*.5d0*znorm
 !
-! Now get elements of T 
+! Now get elements of T
 !
           t11 = 0.0d0
           t21 = X1
@@ -317,7 +317,7 @@
           t23 = xnorm*beta + u*(ubar + c)
           t33 = ynorm*beta + v*(ubar + c)
           t43 = znorm*beta + w*(ubar + c)
- 
+
           t14 = -c*beta
           t24 = xnorm*beta + u*(ubar - c)
           t34 = ynorm*beta + v*(ubar - c)
@@ -345,7 +345,7 @@
         a43 = eig1*t41*y13 + eig2*t42*y23 + eig3*t43*y33 + eig4*t44*y43
         a44 = eig1*t41*y14 + eig2*t42*y24 + eig3*t43*y34 + eig4*t44*y44
 !
-! Form .5*(A + |A|) 
+! Form .5*(A + |A|)
 !
           dfp(1,1) = .5d0*(dfp(1,1) + a11)
           dfp(1,2) = .5d0*(dfp(1,2) + a12)
@@ -389,7 +389,7 @@
           dfm(4,3) = rlen*ynorm*wR
           dfm(4,4) = rlen*(ubarR + znorm*wR)
 !
-! Form .5*(A - |A|) 
+! Form .5*(A - |A|)
 !
           dfm(1,1) = .5d0*(dfm(1,1) - a11)
           dfm(1,2) = .5d0*(dfm(1,2) - a12)
@@ -488,7 +488,7 @@
         do j = 1,4
          irow(j) = (node2-1)+(j-1)*nnodes
          icol(j) = (node1-1)+(j-1)*nnodes
-         icol(4+j) = irow(j) 
+         icol(4+j) = irow(j)
         enddo
         call MatSetValues(A,4,irow,8,icol,val1,ADD_VALUES,ierr)
 #endif
@@ -549,7 +549,7 @@
 !        inode = ivnode(i)
 !        idiag = iau(inode)
 !
-! First zero out all the ones on the row and then 
+! First zero out all the ones on the row and then
 ! refill them so that the velocity is just zero on body
 !
 !        jstart = ia(inode)
@@ -858,7 +858,7 @@
       implicit none
 #include <finclude/petscsysdef.h>
       integer irank,ierr,irow,icol
-      if (ierr .gt. 0) then 
+      if (ierr .gt. 0) then
        write(*,*) 'On processor ',irank, ': Non-zero entry in row ',     &
      & irow, ' and column ',icol,' is beyond the pre-allocated memory'
       endif

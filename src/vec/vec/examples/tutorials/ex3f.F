@@ -27,7 +27,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       Vec     x
       PetscViewer  viewer
@@ -51,7 +51,7 @@
 
 !  Currently, all PETSc parallel vectors are partitioned by
 !  contiguous chunks of rows across the processors.  Determine
-!  which vector are locally owned. 
+!  which vector are locally owned.
       call VecGetOwnershipRange(x,istart,iend,ierr)
 
 !  Set the vector elements.
@@ -91,4 +91,4 @@
 
       call PetscFinalize(ierr)
       end
- 
+

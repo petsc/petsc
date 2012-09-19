@@ -773,7 +773,7 @@ PetscErrorCode ComputeCorrector(DM da, Vec uOld, Vec u)
   PetscInt       i,ne,nc;
   const PetscInt *e;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = VecSet(u,0.0);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da, &uOldLocal);CHKERRQ(ierr);

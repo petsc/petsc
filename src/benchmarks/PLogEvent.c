@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   if (flg) fprintf(stderr,"-log_summary ");
   ierr = PetscOptionsHasName(PETSC_NULL,"-log_mpe",&flg);CHKERRQ(ierr);
   if (flg) fprintf(stderr,"-log_mpe ");
-  
+
   fprintf(stderr,"\n");
 
   ierr = PetscFinalize();

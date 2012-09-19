@@ -380,7 +380,7 @@ static void PRangeClear(PRange *p)
   p->cmax = p->max = -1e100;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PRangeMinMax"
 static PetscErrorCode PRangeMinMax(PRange *p,PetscReal min,PetscReal max)
 {
@@ -393,7 +393,7 @@ static PetscErrorCode PRangeMinMax(PRange *p,PetscReal min,PetscReal max)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "THIDestroy"
 static PetscErrorCode THIDestroy(THI *thi)
 {
@@ -408,7 +408,7 @@ static PetscErrorCode THIDestroy(THI *thi)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "THICreate"
 static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
 {
@@ -547,7 +547,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "THIInitializePrm"
 static PetscErrorCode THIInitializePrm(THI thi,DM da2prm,Vec prm)
 {
@@ -644,7 +644,7 @@ static PetscErrorCode DMRefineHook_THI(DM dmc,DM dmf,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "THIDAGetPrm"
 static PetscErrorCode THIDAGetPrm(DM da,PrmNode ***prm)
 {
@@ -661,7 +661,7 @@ static PetscErrorCode THIDAGetPrm(DM da,PrmNode ***prm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "THIDARestorePrm"
 static PetscErrorCode THIDARestorePrm(DM da,PrmNode ***prm)
 {
@@ -678,7 +678,7 @@ static PetscErrorCode THIDARestorePrm(DM da,PrmNode ***prm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "THIInitial"
 static PetscErrorCode THIInitial(DM da,Vec X)
 {
@@ -755,7 +755,7 @@ static void PointwiseNonlinearity2D(THI thi,Node n[],PetscReal phi[],PetscReal d
   THIViscosity(thi,PetscRealPart(gam),eta,deta);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "THIFunctionLocal"
 static PetscErrorCode THIFunctionLocal(DMDALocalInfo *info,Node ***x,Node ***f,THI thi)
 {
@@ -862,7 +862,7 @@ static PetscErrorCode THIFunctionLocal(DMDALocalInfo *info,Node ***x,Node ***f,T
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "THIMatrixStatistics"
 static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
 {
@@ -884,7 +884,7 @@ static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "THISurfaceStatistics"
 static PetscErrorCode THISurfaceStatistics(DM da,Vec X,PetscReal *min,PetscReal *max,PetscReal *mean)
 {
@@ -915,7 +915,7 @@ static PetscErrorCode THISurfaceStatistics(DM da,Vec X,PetscReal *min,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "THISolveStatistics"
 static PetscErrorCode THISolveStatistics(THI thi,SNES snes,PetscInt coarsened,const char name[])
 {
@@ -978,7 +978,7 @@ static PetscErrorCode THISolveStatistics(THI thi,SNES snes,PetscInt coarsened,co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "THIJacobianLocal_2D"
 static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,Node **x,Mat B,THI thi)
 {
@@ -1054,7 +1054,7 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,Node **x,Mat B,THI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "THIJacobianLocal_3D"
 static PetscErrorCode THIJacobianLocal_3D(DMDALocalInfo *info,Node ***x,Mat B,THI thi,THIAssemblyMode amode)
 {
@@ -1253,7 +1253,7 @@ static PetscErrorCode THIJacobianLocal_3D(DMDALocalInfo *info,Node ***x,Mat B,TH
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "THIJacobianLocal_3D_Full"
 static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo *info,Node ***x,Mat A,Mat B,MatStructure *mstr,THI thi)
 {
@@ -1265,7 +1265,7 @@ static PetscErrorCode THIJacobianLocal_3D_Full(DMDALocalInfo *info,Node ***x,Mat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "THIJacobianLocal_3D_Tridiagonal"
 static PetscErrorCode THIJacobianLocal_3D_Tridiagonal(DMDALocalInfo *info,Node ***x,Mat B,THI thi)
 {
@@ -1276,7 +1276,7 @@ static PetscErrorCode THIJacobianLocal_3D_Tridiagonal(DMDALocalInfo *info,Node *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMRefineHierarchy_THI"
 static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarchy[])
 {
@@ -1313,12 +1313,12 @@ static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarch
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateInterpolation_DA_THI"
 static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *scale)
 {
   PetscErrorCode ierr;
-  PetscInt       dim;  
+  PetscInt       dim;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dac,DM_CLASSID,1);
@@ -1338,7 +1338,7 @@ static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *sca
     if (zs != 0) SETERRQ(PETSC_COMM_SELF,1,"unexpected");
     ierr = MatCreate(((PetscObject)daf)->comm,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,xm*ym*zm,xm*ym,mx*my*mz,mx*my);CHKERRQ(ierr);
-    
+
     ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(B,1,NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(B,1,NULL,0,NULL);CHKERRQ(ierr);
@@ -1361,7 +1361,7 @@ static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *sca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_THI_Tridiagonal"
 static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,const MatType mtype,Mat *J)
 {
@@ -1394,7 +1394,7 @@ static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,const MatType mtype,M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "THIDAVecView_VTK_XML"
 static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM da,Vec X,const char filename[])
 {
@@ -1485,7 +1485,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM da,Vec X,const char filena
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char *argv[])
 {

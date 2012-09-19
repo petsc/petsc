@@ -5,13 +5,13 @@ static char help[] = "Demonstrates creating a stride index set.\n\n";
     Concepts: index sets^creating a stride index set;
     Concepts: stride^creating a stride index set;
     Concepts: IS^creating a stride index set;
-    
+
     Description: Creates an index set based on a stride. Views that index set
     and then destroys it.
 T*/
 
 /*
-  Include petscis.h so we can use PETSc IS objects. Note that this automatically 
+  Include petscis.h so we can use PETSc IS objects. Note that this automatically
   includes petscsys.h.
 */
 
@@ -26,15 +26,15 @@ int main(int argc,char **argv)
   IS             set;
   const PetscInt *indices;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
-      
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+
   n     = 10;
   first = 3;
   step  = 2;
 
   /*
     Create stride index set, starting at 3 with a stride of 2
-    Note each processor is generating its own index set 
+    Note each processor is generating its own index set
     (in this case they are all identical)
   */
   ierr = ISCreateStride(PETSC_COMM_SELF,n,first,step,&set);CHKERRQ(ierr);

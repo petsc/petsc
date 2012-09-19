@@ -6,7 +6,7 @@ static char help[] = "Reads a PETSc matrix and vector from a socket connection, 
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -41,10 +41,10 @@ int main(int argc,char **args)
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
   ierr = VecView(x,fd);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr); 
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

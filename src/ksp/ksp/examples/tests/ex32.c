@@ -1,5 +1,5 @@
 /*
-  Laplacian in 3D. Use for testing BAIJ matrix. 
+  Laplacian in 3D. Use for testing BAIJ matrix.
   Modeled by the partial differential equation
 
    - Laplacian u = 1,0 < x,y,z < 1,
@@ -82,7 +82,7 @@ int main(int argc,char **argv)
   ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetDM(pc,(DM)da);CHKERRQ(ierr);
- 
+
   if (trans) {
     ierr = KSPSolveTranspose(ksp,b,x);CHKERRQ(ierr);
   } else {
@@ -103,7 +103,7 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Final residual %g\n",norm);CHKERRQ(ierr);
     ierr = VecDestroy(&b1);CHKERRQ(ierr);
   }
-   
+
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
@@ -127,7 +127,7 @@ PetscErrorCode ComputeRHS(DM da,Vec b)
   ierr = VecSet(b,h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-    
+
 #undef __FUNCT__
 #define __FUNCT__ "ComputeMatrix"
 PetscErrorCode ComputeMatrix(DM da,Mat B)
@@ -136,9 +136,9 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,dof,k1,k2,k3;
   PetscScalar    *v,*v_neighbor,Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
   MatStencil     row,col;
- 
+
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr); 
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
   /* For simplicity, this example only works on mx=my=mz */
   if ( mx != my || mx != mz) SETERRQ3(PETSC_COMM_SELF,1,"This example only works with mx %d = my %d = mz %d\n",mx,my,mz);
 
@@ -162,30 +162,30 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
     }
   }
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  
+
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){
       for (i=xs; i<xs+xm; i++){
         row.i = i; row.j = j; row.k = k;
-	if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){ /* boudary points */	 
+	if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){ /* boudary points */	
 	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
         } else { /* interior points */
           /* center */
           col.i = i; col.j = j; col.k = k;
-          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v,INSERT_VALUES);CHKERRQ(ierr);          
-          
+          ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v,INSERT_VALUES);CHKERRQ(ierr);
+
           /* x neighbors */
 	  col.i = i-1; col.j = j; col.k = k;
           ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
 	  col.i = i+1; col.j = j; col.k = k;
 	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
-	 
+	
 	  /* y neighbors */
 	  col.i = i; col.j = j-1; col.k = k;
 	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
 	  col.i = i; col.j = j+1; col.k = k;
 	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);
-	 
+	
           /* z neighbors */
 	  col.i = i; col.j = j; col.k = k-1;
 	  ierr = MatSetValuesBlockedStencil(B,1,&row,1,&col,v_neighbor,INSERT_VALUES);CHKERRQ(ierr);

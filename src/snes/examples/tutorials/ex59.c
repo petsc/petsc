@@ -9,18 +9,18 @@ static const char help[] = "Tries to solve u`` + u^{2} = f for an easy case and 
        Run with -n 14 to see fail to converge and -n 15 to see convergence
 
        The option -second_order uses a different discretization of the Neumann boundary condition and always converges
-    
+
 */
 
 #include <petscsnes.h>
 
 PetscBool second_order = PETSC_FALSE;
-#define X0DOT      -2.0 
-#define X1          5.0 
+#define X0DOT      -2.0
+#define X1          5.0
 #define KPOW        2.0
 const PetscScalar sperturb = 1.1;
 
-/* 
+/*
    User-defined routines
 */
 PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   const PetscScalar k = KPOW;
   PetscScalar       v2;
   PetscScalar       *xx;
-  
+
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
@@ -94,7 +94,7 @@ int main(int argc,char **argv)
   /* set right hand side and initial guess to be exact solution of continuim problem */
 #define SQR(x) ((x)*(x))
   xp = 0.0;
-  for (i=0; i<n; i++) 
+  for (i=0; i<n; i++)
     {
       v = k*(k-1.)*(b-a)*PetscPowScalar(xp,k-2.) + SQR(a*xp) + SQR(b-a)*PetscPowScalar(xp,2.*k) + 2.*a*(b-a)*PetscPowScalar(xp,k+1.);
       ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
@@ -109,9 +109,9 @@ int main(int argc,char **argv)
     v2 = xx[i]*sperturb;
     ierr = VecSetValues(x,1,&i,&v2,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
 
-  
+
   ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"SNES iterations = %D\n\n",it);CHKERRQ(ierr);
@@ -144,7 +144,7 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   if (second_order){
     ff[0] = d*(0.5*d*(-xx[2] + 4.*xx[1] - 3.*xx[0]) - X0DOT);
   } else {
-    ff[0] = d*(d*(xx[1] - xx[0]) - X0DOT); 
+    ff[0] = d*(d*(xx[1] - xx[0]) - X0DOT);
   }
   for (i=1; i<n-1; i++) {
     ff[i] = d2*(xx[i-1] - 2.*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
@@ -166,24 +166,24 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *f
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   d = (PetscReal)(n - 1); d2 = d*d;
 
-  i = 0; 
+  i = 0;
   if (second_order) {
     j[0] = 0; j[1] = 1; j[2] = 2;
-    A[0] = -3.*d*d*0.5; A[1] = 4.*d*d*0.5;  A[2] = -1.*d*d*0.5;   
+    A[0] = -3.*d*d*0.5; A[1] = 4.*d*d*0.5;  A[2] = -1.*d*d*0.5;
     ierr = MatSetValues(*prejac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
   } else {
     j[0] = 0; j[1] = 1;
-    A[0] = -d*d; A[1] = d*d;  
+    A[0] = -d*d; A[1] = d*d;
     ierr = MatSetValues(*prejac,1,&i,2,j,A,INSERT_VALUES);CHKERRQ(ierr);
   }
   for (i=1; i<n-1; i++) {
-     j[0] = i - 1; j[1] = i;                   j[2] = i + 1; 
-     A[0] = d2;    A[1] = -2.*d2 + 2.*xx[i];  A[2] = d2; 
+     j[0] = i - 1; j[1] = i;                   j[2] = i + 1;
+     A[0] = d2;    A[1] = -2.*d2 + 2.*xx[i];  A[2] = d2;
      ierr = MatSetValues(*prejac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
   }
 
-  i = n-1; 
-  A[0] = d*d; 
+  i = n-1;
+  A[0] = d*d;
   ierr = MatSetValues(*prejac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

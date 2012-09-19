@@ -9,7 +9,7 @@ int main(int argc,char **argv) {
   Mat            A,B;
   PetscInt       i,j,column;
   PetscInt       *di,*dj,*oi,*oj;
-  PetscScalar    *oa,*da,value; 
+  PetscScalar    *oa,*da,value;
   PetscRandom    rctx;
   PetscErrorCode ierr;
   PetscBool      equal;
@@ -28,7 +28,7 @@ int main(int argc,char **argv) {
   ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
- 
+
   for (i=5*rank; i<5*rank+5; i++) {
     for (j=0; j<5*size; j++){
       ierr   = PetscRandomGetValue(rctx,&value);CHKERRQ(ierr);
@@ -43,7 +43,7 @@ int main(int argc,char **argv) {
   Ampiaij = (Mat_MPIAIJ*) A->data;
   daij    = (Mat_SeqAIJ*) Ampiaij->A->data;
   oaij    = (Mat_SeqAIJ*) Ampiaij->B->data;
-  
+
   di      = daij->i;
   dj      = daij->j;
   da      = daij->a;

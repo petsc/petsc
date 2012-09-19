@@ -16,21 +16,21 @@ T*/
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
-  
+
             -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
-  
+
     with boundary conditions
-   
+
              u = 0  for  x = 0, x = 1, y = 0, y = 1, z = 0, z = 1
-  
+
     A finite difference approximation with the usual 7-point stencil
-    is used to discretize the boundary value problem to obtain a nonlinear 
+    is used to discretize the boundary value problem to obtain a nonlinear
     system of equations.
 
 
   ------------------------------------------------------------------------- */
 
-/* 
+/*
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
@@ -44,8 +44,8 @@ T*/
 #include <petscsnes.h>
 
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines, FormJacobian() and
    FormFunction().
 */
@@ -54,7 +54,7 @@ typedef struct {
    DM          da;             /* distributed array data structure */
 } AppCtx;
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
@@ -115,7 +115,7 @@ int main(int argc,char **argv)
      Set Jacobian matrix data structure and default Jacobian evaluation
      routine. User can override with:
      -snes_mf : matrix-free Newton-Krylov method with no preconditioning
-                (unless user explicitly sets preconditioner) 
+                (unless user explicitly sets preconditioner)
      -snes_mf_operator : form preconditioning matrix as set by the user,
                          but use matrix-free approx for Jacobian-vector
                          products within Newton-Krylov method
@@ -151,14 +151,14 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr); 
+  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Explicitly check norm of the residual of the solution
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = FormFunction(snes,x,r,(void*)&user);CHKERRQ(ierr);
-  ierr = VecNorm(r,NORM_2,&fnorm);CHKERRQ(ierr); 
+  ierr = VecNorm(r,NORM_2,&fnorm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D fnorm %G\n",its,fnorm);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -170,7 +170,7 @@ int main(int argc,char **argv)
     ierr = MatDestroy(&J);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);      
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -180,7 +180,7 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-/* 
+/*
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
@@ -233,7 +233,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
       for (i=xs; i<xs+xm; i++) {
         if (i == 0 || j == 0 || k == 0 || i == Mx-1 || j == My-1 || k == Mz-1) {
           /* boundary conditions are all zero Dirichlet */
-          x[k][j][i] = 0.0; 
+          x[k][j][i] = 0.0;
         } else {
           x[k][j][i] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,tempj));
         }
@@ -246,11 +246,11 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   */
   ierr = DMDAVecRestoreArray(user->da,X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-/* 
+/*
    FormFunction - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -336,8 +336,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DMDAVecRestoreArray(user->da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
@@ -400,13 +400,13 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   */
   ierr = DMDAGetCorners(user->da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
-  /* 
+  /*
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by
-        contiguous chunks of rows across the processors. 
+        contiguous chunks of rows across the processors.
       - Each processor needs to insert only elements that it owns
         locally (but any non-local elements will be sent to the
-        appropriate processor during matrix assembly). 
+        appropriate processor during matrix assembly).
       - Here, we set all entries for a particular row at once.
       - We can set matrix entries either using either
         MatSetValuesLocal() or MatSetValues(), as discussed above.
@@ -436,7 +436,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   ierr = DMDAVecRestoreArray(user->da,localX,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
 
-  /* 
+  /*
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd().
   */

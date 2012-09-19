@@ -16,8 +16,8 @@ int main(int argc,char **argv)
   PetscScalar    v;
   PetscReal      normf,normi,norm1;
   MatInfo        info;
-  
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -32,9 +32,9 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++) { 
-    for (j=0; j<n; j++) { 
-      v=10*i+j; 
+  for (i=rstart; i<rend; i++) {
+    for (j=0; j<n; j++) {
+      v=10*i+j;
       ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
     ierr = MatTranspose(mat,MAT_REUSE_MATRIX,&mat);CHKERRQ(ierr);   /* in-place transpose */
     tmat = mat; mat = 0;
   } else {      /* out-of-place transpose */
-    ierr = MatTranspose(mat,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr); 
+    ierr = MatTranspose(mat,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
   }
 
   /* Print info about transpose matrix */
@@ -78,15 +78,15 @@ int main(int argc,char **argv)
     PetscScalar alpha = 1.0;
     ierr = PetscOptionsGetScalar(PETSC_NULL,"-alpha",&alpha,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A\n");CHKERRQ(ierr);
-    ierr = MatAXPY(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
+    ierr = MatAXPY(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
-  /* Free data structures */  
+  /* Free data structures */
   ierr = MatDestroy(&tmat);CHKERRQ(ierr);
   if (mat) {ierr = MatDestroy(&mat);CHKERRQ(ierr);}
 
   ierr = PetscFinalize();
   return 0;
 }
- 
+

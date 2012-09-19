@@ -21,7 +21,7 @@ int FormElementStiffness(PetscReal H,PetscScalar *Ke)
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat          C; 
+  Mat          C;
   int          i,m = 5,rank,size,N,start,end,M;
   int          ierr,idx[4];
   PetscBool    flg;
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
-  end   = start + M/size + ((M%size) > rank); 
+  end   = start + M/size + ((M%size) > rank);
 
   /* Assemble matrix */
   ierr = FormElementStiffness(h*h,Ke);   /* element stiffness for Laplacian */
@@ -59,8 +59,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Create right-hand-side and solution vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr); 
-  ierr = VecSetSizes(u,PETSC_DECIDE,N);CHKERRQ(ierr); 
+  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
+  ierr = VecSetSizes(u,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)u,"Approx. Solution");CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);

@@ -22,7 +22,7 @@
       return
       end
 
-      
+
       program main
       implicit none
 

@@ -3,7 +3,7 @@ static char help[] = "Tests the vatious routines in MatMPIBAIJ format.\n";
 
 
 #include <petscmat.h>
-#define IMAX 15 
+#define IMAX 15
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
@@ -40,7 +40,7 @@ int main(int argc,char **args)
 
   ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
- 
+
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
@@ -56,33 +56,33 @@ int main(int argc,char **args)
   ierr = MatNorm(A,NORM_FROBENIUS,&s1norm);CHKERRQ(ierr);
   ierr = MatNorm(B,NORM_FROBENIUS,&s2norm);CHKERRQ(ierr);
   rnorm = PetscAbsScalar(s2norm-s1norm)/s2norm;
-  if ( rnorm>tol ) { 
+  if ( rnorm>tol ) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error: MatNorm_FROBENIUS()- NormA=%16.14e NormB=%16.14e bs = %D\n",rank,s1norm,s2norm,bs);CHKERRQ(ierr);
   }
   ierr = MatNorm(A,NORM_INFINITY,&s1norm);CHKERRQ(ierr);
   ierr = MatNorm(B,NORM_INFINITY,&s2norm);CHKERRQ(ierr);
   rnorm = PetscAbsScalar(s2norm-s1norm)/s2norm;
-  if ( rnorm>tol ) { 
+  if ( rnorm>tol ) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error: MatNorm_INFINITY()- NormA=%16.14e NormB=%16.14e bs = %D\n",rank,s1norm,s2norm,bs);CHKERRQ(ierr);
-  } 
+  }
   ierr = MatNorm(A,NORM_1,&s1norm);CHKERRQ(ierr);
   ierr = MatNorm(B,NORM_1,&s2norm);CHKERRQ(ierr);
   rnorm = PetscAbsScalar(s2norm-s1norm)/s2norm;
-  if ( rnorm>tol ) { 
+  if ( rnorm>tol ) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error: MatNorm_NORM_1()- NormA=%16.14e NormB=%16.14e bs = %D\n",rank,s1norm,s2norm,bs);CHKERRQ(ierr);
   }
 
-  /* Test MatMult() */ 
+  /* Test MatMult() */
   for (i=0; i<IMAX; i++) {
     ierr = VecSetRandom(xx,rand);CHKERRQ(ierr);
     ierr = MatMult(A,xx,s1);CHKERRQ(ierr);
     ierr = MatMult(B,xx,s2);CHKERRQ(ierr);
     ierr = VecAXPY(s2,-1.0,s1);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_2,&rnorm);CHKERRQ(ierr);
-    if (rnorm>tol) { 
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error: MatMult - Norm2=%16.14e bs = %D\n",rank,rnorm,bs);CHKERRQ(ierr);  
+    if (rnorm>tol) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error: MatMult - Norm2=%16.14e bs = %D\n",rank,rnorm,bs);CHKERRQ(ierr);
     }
-  } 
+  }
 
   /* test MatMultAdd() */
   for (i=0; i<IMAX; i++) {
@@ -92,9 +92,9 @@ int main(int argc,char **args)
     ierr = MatMultAdd(B,xx,yy,s2);CHKERRQ(ierr);
     ierr = VecAXPY(s2,-1.0,s1);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_2,&rnorm);CHKERRQ(ierr);
-    if (rnorm>tol) { 
+    if (rnorm>tol) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error: MatMultAdd - Norm2=%16.14e bs = %D\n",rank,rnorm,bs);CHKERRQ(ierr);
-    } 
+    }
   }
 
   /* Test MatMultTranspose() */
@@ -105,9 +105,9 @@ int main(int argc,char **args)
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
     rnorm = s2norm-s1norm;
-    if (rnorm<-tol || rnorm>tol) { 
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error: MatMultTranspose - Norm1=%16.14e Norm2=%16.14e bs = %D\n",rank,s1norm,s2norm,bs);CHKERRQ(ierr);  
-    } 
+    if (rnorm<-tol || rnorm>tol) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error: MatMultTranspose - Norm1=%16.14e Norm2=%16.14e bs = %D\n",rank,s1norm,s2norm,bs);CHKERRQ(ierr);
+    }
   }
   /* Test MatMultTransposeAdd() */
   for (i=0; i<IMAX; i++) {
@@ -118,9 +118,9 @@ int main(int argc,char **args)
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
     rnorm = s2norm-s1norm;
-    if (rnorm<-tol || rnorm>tol) { 
+    if (rnorm<-tol || rnorm>tol) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error: MatMultTransposeAdd - Norm1=%16.14e Norm2=%16.14e bs = %D\n",rank,s1norm,s2norm,bs);CHKERRQ(ierr);
-    } 
+    }
   }
 
   /* Check MatGetValues() */
@@ -138,7 +138,7 @@ int main(int argc,char **args)
     rows[0] = rstart + (int)(PetscRealPart(v)*m);
     ierr = PetscRandomGetValue(rand,&v);CHKERRQ(ierr);
     rows[1] = rstart + (int)(PetscRealPart(v)*m);
-    
+
     ierr = MatGetValues(A,2,rows,2,cols,vals1);CHKERRQ(ierr);
     ierr = MatGetValues(B,2,rows,2,cols,vals2);CHKERRQ(ierr);
 
@@ -155,21 +155,21 @@ int main(int argc,char **args)
     row  = rstart + (int)(PetscRealPart(v)*m);
     ierr = MatGetRow(A,row,&ncols1,&cols1,&v1);CHKERRQ(ierr);
     ierr = MatGetRow(B,row,&ncols2,&cols2,&v2);CHKERRQ(ierr);
-    
+
     for (i=0,j=0; i<ncols1 && j<ncols2; j++) {
       while (cols2[j] != cols1[i]) i++;
       if (v1[i] != v2[j]) SETERRQ(PETSC_COMM_SELF,1,"MatGetRow() failed - vals incorrect.");
     }
     if (j<ncols2) SETERRQ(PETSC_COMM_SELF,1,"MatGetRow() failed - cols incorrect");
-    
+
     ierr = MatRestoreRow(A,row,&ncols1,&cols1,&v1);CHKERRQ(ierr);
     ierr = MatRestoreRow(B,row,&ncols2,&cols2,&v2);CHKERRQ(ierr);
   }
-  
+
   /* Test MatConvert() */
   ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-  
-  /* See if MatMult Says both are same */ 
+
+  /* See if MatMult Says both are same */
   for (i=0; i<IMAX; i++) {
     ierr = VecSetRandom(xx,rand);CHKERRQ(ierr);
     ierr = MatMult(A,xx,s1);CHKERRQ(ierr);
@@ -177,8 +177,8 @@ int main(int argc,char **args)
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
     rnorm = s2norm-s1norm;
-    if (rnorm<-tol || rnorm>tol) { 
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error in MatConvert: MatMult - Norm1=%16.14e Norm2=%16.14e bs = %D\n",rank,s1norm,s2norm,bs);CHKERRQ(ierr);  
+    if (rnorm<-tol || rnorm>tol) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error in MatConvert: MatMult - Norm1=%16.14e Norm2=%16.14e bs = %D\n",rank,s1norm,s2norm,bs);CHKERRQ(ierr);
     }
   }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -193,7 +193,7 @@ int main(int argc,char **args)
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
     rnorm = s2norm-s1norm;
-    if (rnorm<-tol || rnorm>tol) { 
+    if (rnorm<-tol || rnorm>tol) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error in MatConvert:MatMult - Norm1=%16.14e Norm2=%16.14e bs = %D\n",
                   rank,s1norm,s2norm,bs);CHKERRQ(ierr);
     }
@@ -201,8 +201,8 @@ int main(int argc,char **args)
   ierr = MatDestroy(&At);CHKERRQ(ierr);
   ierr = MatDestroy(&Bt);CHKERRQ(ierr);
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr); 
-  ierr = MatDestroy(&B);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = VecDestroy(&xx);CHKERRQ(ierr);
   ierr = VecDestroy(&yy);CHKERRQ(ierr);
   ierr = VecDestroy(&s1);CHKERRQ(ierr);

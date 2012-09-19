@@ -28,7 +28,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  for (i=0; i<m; i++) { 
+  for (i=0; i<m; i++) {
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  Ii = j + n*i;
       if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
@@ -53,14 +53,14 @@ int main(int argc,char **args)
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 
-  /* Now Create a rectangular matrix with five point stencil (app) 
+  /* Now Create a rectangular matrix with five point stencil (app)
    n+size is used so that this dimension is always divisible by size.
    This way, we can always use bs = size for any number of procs */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*(n+size));CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  for (i=0; i<m; i++) { 
+  for (i=0; i<m; i++) {
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  Ii = j + n*i;
       if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
@@ -77,7 +77,7 @@ int main(int argc,char **args)
   ierr = TestMatZeroRows_Basic(A,is,diag);CHKERRQ(ierr);
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr); 
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
@@ -99,7 +99,7 @@ PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,PetscScalar diag)
   }
 
   ierr = MatZeroRowsIS(B,is,diag,0,0);CHKERRQ(ierr);
-  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   return 0;
 }
@@ -117,7 +117,7 @@ PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A,IS is,PetscScalar diag)
   ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 
   ierr = MatZeroRowsIS(B,is,diag,0,0);CHKERRQ(ierr);
-  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   return 0;
 }

@@ -11,7 +11,7 @@ static char help[] ="Solves the time dependent Bratu problem using pseudo-timest
 
 /* ------------------------------------------------------------------------
 
-    This code demonstrates how one may solve a nonlinear problem 
+    This code demonstrates how one may solve a nonlinear problem
     with pseudo-timestepping. In this simple example, the pseudo-timestep
     is the same for all grid points, i.e., this is equivalent to using
     the backward Euler method with a variable timestep.
@@ -20,7 +20,7 @@ static char help[] ="Solves the time dependent Bratu problem using pseudo-timest
     is an easy nonlinear problem, but it is included to demonstrate how
     the pseudo-timestepping may be done.
 
-    See snes/examples/tutorials/ex4.c[ex4f.F] and 
+    See snes/examples/tutorials/ex4.c[ex4f.F] and
     snes/examples/tutorials/ex5.c[ex5f.F] where the problem is described
     and solved using Newton's method alone.
 
@@ -33,7 +33,7 @@ static char help[] ="Solves the time dependent Bratu problem using pseudo-timest
 #include <petscts.h>
 
 /*
-  Create an application context to contain data needed by the 
+  Create an application context to contain data needed by the
   application-provided call-back routines, FormJacobian() and
   FormFunction().
 */
@@ -43,7 +43,7 @@ typedef struct {
   PetscInt    my;           /* Discretization in y-direction */
 } AppCtx;
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode  FormJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   Mat            J;                  /* Jacobian matrix */
   AppCtx         user;               /* user-defined work context */
   PetscInt       its,N;                /* iterations for convergence */
-  PetscErrorCode ierr; 
+  PetscErrorCode ierr;
   PetscReal      param_max = 6.81,param_min = 0.,dt;
   PetscReal      ftime;
   PetscMPIInt    size;
@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   user.mx        = 4;
   user.my        = 4;
   user.param     = 6.0;
-  
+
   /*
      Allow user to set the grid dimensions and nonlinearity parameter at run-time
   */
@@ -82,8 +82,8 @@ int main(int argc,char **argv)
   dt = .5/PetscMax(user.mx,user.my);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&dt,PETSC_NULL);CHKERRQ(ierr);
   N          = user.mx*user.my;
-  
-  /* 
+
+  /*
       Create vectors to hold the solution and function value
   */
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
@@ -92,13 +92,13 @@ int main(int argc,char **argv)
   /*
     Create matrix to hold Jacobian. Preallocate 5 nonzeros per row
     in the sparse matrix. Note that this is not the optimal strategy; see
-    the Performance chapter of the users manual for information on 
+    the Performance chapter of the users manual for information on
     preallocating memory in sparse matrices.
   */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,0,&J);CHKERRQ(ierr);
 
-  /* 
-     Create timestepper context 
+  /*
+     Create timestepper context
   */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
 
   /*
-     Provide the call-back for the nonlinear function we are 
+     Provide the call-back for the nonlinear function we are
      evaluating. Thus whenever the timestepping routines need the
      function they will call this routine. Note the final argument
      is the application context used by the call-back functions.
@@ -117,7 +117,7 @@ int main(int argc,char **argv)
   ierr = TSSetRHSFunction(ts,PETSC_NULL,FormFunction,&user);CHKERRQ(ierr);
 
   /*
-     Set the Jacobian matrix and the function used to compute 
+     Set the Jacobian matrix and the function used to compute
      Jacobians.
   */
   ierr = TSSetRHSJacobian(ts,J,J,FormJacobian,&user);CHKERRQ(ierr);
@@ -128,13 +128,13 @@ int main(int argc,char **argv)
   ierr = FormInitialGuess(x,&user);
 
   /*
-       This indicates that we are using pseudo timestepping to 
+       This indicates that we are using pseudo timestepping to
      find a steady state solution to the nonlinear problem.
   */
   ierr = TSSetType(ts,TSPSEUDO);CHKERRQ(ierr);
 
   /*
-       Set the initial time to start at (this is arbitrary for 
+       Set the initial time to start at (this is arbitrary for
      steady state problems; and the initial timestep given above
   */
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
@@ -171,7 +171,7 @@ int main(int argc,char **argv)
 
   printf("Number of pseudo timesteps = %d final time %4.2e\n",(int)its,ftime);
 
-  /* 
+  /*
      Free the data structures constructed above
   */
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -198,7 +198,7 @@ PetscErrorCode FormInitialGuess(Vec X,AppCtx *user)
   PetscReal      temp1,temp,hx,hy;
   PetscScalar    *x;
 
-  mx	 = user->mx; 
+  mx	 = user->mx;
   my	 = user->my;
   lambda = user->param;
 
@@ -210,12 +210,12 @@ PetscErrorCode FormInitialGuess(Vec X,AppCtx *user)
   for (j=0; j<my; j++) {
     temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
     for (i=0; i<mx; i++) {
-      row = i + j*mx;  
+      row = i + j*mx;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
-        x[row] = 0.0; 
+        x[row] = 0.0;
         continue;
       }
-      x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
+      x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
     }
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
@@ -234,7 +234,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   PetscReal      hx,hy,hxdhy,hydhx;
   PetscScalar    ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
 
-  mx	 = user->mx; 
+  mx	 = user->mx;
   my	 = user->my;
   lambda = user->param;
 
@@ -265,7 +265,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  return 0; 
+  return 0;
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
@@ -289,7 +289,7 @@ PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat *J,Mat *B,MatStructure *
   PetscReal      hx,hy,hxdhy,hydhx;
 
 
-  mx	 = user->mx; 
+  mx	 = user->mx;
   my	 = user->my;
   lambda = user->param;
 

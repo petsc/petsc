@@ -8,7 +8,7 @@ extern PetscErrorCode MatGetOrdering_myordering(Mat,const MatOrderingType,IS *,I
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat               C,Cperm; 
+  Mat               C,Cperm;
   PetscInt          i,j,m = 5,n = 5,Ii,J,ncols;
   PetscErrorCode    ierr;
   PetscScalar       v;
@@ -23,7 +23,7 @@ int main(int argc,char **args)
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* create the matrix for the five point stencil, YET AGAIN */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C); 
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C);
   ierr = MatSetUp(C);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
@@ -55,7 +55,7 @@ int main(int argc,char **args)
 
   /* create Cperm = rperm*C*icperm */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-testmyordering",&TestMyorder,PETSC_NULL);CHKERRQ(ierr);
-  if (TestMyorder){ 
+  if (TestMyorder){
     ierr = MatGetOrdering_myordering(C,MATORDERINGQMD,&rperm,&cperm);CHKERRQ(ierr);
     printf("myordering's rperm:\n");
     ierr = ISView(rperm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
@@ -88,7 +88,7 @@ int main(int argc,char **args)
 
 #include <petsc-private/matimpl.h>
 /* This is modified from MatGetOrdering_Natural() */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_myordering"
 PetscErrorCode MatGetOrdering_myordering(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
@@ -115,4 +115,4 @@ PetscErrorCode MatGetOrdering_myordering(Mat mat,const MatOrderingType type,IS *
   PetscFunctionReturn(0);
 }
 
-  
+

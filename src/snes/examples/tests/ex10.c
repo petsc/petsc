@@ -22,10 +22,10 @@ The command line options are:\n\
   -lb <value>, lower bound on the variables\n\
   -ub <value>, upper bound on the variables\n\n";
 
-/*                                                                              
-   User-defined application context - contains data needed by the               
-   application-provided call-back routines, FormJacobian() and                  
-   FormFunction().                                                              
+/*
+   User-defined application context - contains data needed by the
+   application-provided call-back routines, FormJacobian() and
+   FormFunction().
 */
 
 typedef struct {
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 
   /* Calculate any derived values from parameters */
   N = user.mx*user.my;
-  
+
   PetscPrintf(PETSC_COMM_SELF,"\n---- Minimum Surface Area Problem -----\n");
   PetscPrintf(PETSC_COMM_SELF,"mx:%d, my:%d\n", user.mx,user.my);
 
@@ -135,13 +135,13 @@ int main(int argc, char **argv)
 #undef __FUNCT__
 #define __FUNCT__ "FormGradient"
 
-/*  FormGradient - Evaluates gradient of f.             
+/*  FormGradient - Evaluates gradient of f.
 
     Input Parameters:
 .   snes  - the SNES context
 .   X     - input vector
 .   ptr   - optional user-defined context, as set by SNESSetFunction()
-    
+
     Output Parameters:
 .   G - vector containing the newly evaluated gradient
 */
@@ -167,10 +167,10 @@ int FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   for (j=0; j<my; j++){
     for (i=0; i< mx; i++){
       row= j*mx + i;
-      
+
       xc = x[row];
       xlt=xrb=xl=xr=xb=xt=xc;
-      
+
       if (i==0){ /* left side */
         xl= user->left[j+1];
         xlt = user->left[j+2];
@@ -184,7 +184,7 @@ int FormGradient(SNES snes, Vec X, Vec G, void *ptr){
       } else {
         xb = x[row-mx];
       }
-      
+
       if (i+1 == mx){ /* right side */
         xr=user->right[j+1];
         xrb = user->right[j];
@@ -214,7 +214,7 @@ int FormGradient(SNES snes, Vec X, Vec G, void *ptr){
       d6 = (xrb-xb);
       d7 = (xlt-xl);
       d8 = (xt-xlt);
-      
+
       df1dxc = d1*hydhx;
       df2dxc = ( d1*hydhx + d4*hxdhy );
       df3dxc = d3*hxdhy;
@@ -237,7 +237,7 @@ int FormGradient(SNES snes, Vec X, Vec G, void *ptr){
       f4 = PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
       f5 = PetscSqrtReal( 1.0 + d2*d2 + d5*d5);
       f6 = PetscSqrtReal( 1.0 + d4*d4 + d6*d6);
-      
+
       df1dxc /= f1;
       df2dxc /= f2;
       df3dxc /= f3;
@@ -246,10 +246,10 @@ int FormGradient(SNES snes, Vec X, Vec G, void *ptr){
       df6dxc /= f6;
 
       g[row] = (df1dxc+df2dxc+df3dxc+df4dxc+df5dxc+df6dxc )/2.0;
-      
+
     }
   }
-  
+
   /* Restore vectors */
   info = VecRestoreArray(X, &x); CHKERRQ(info);
   info = VecRestoreArray(G, &g); CHKERRQ(info);
@@ -273,7 +273,7 @@ int FormGradient(SNES snes, Vec X, Vec G, void *ptr){
 
 */
 PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure* flag, void *ptr)
-{ 
+{
   AppCtx          *user = (AppCtx *) ptr;
   Mat             H = *tH;
   PetscErrorCode  info;
@@ -299,8 +299,8 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   for (i=0; i< mx; i++){
     for (j=0; j<my; j++){
       row= j*mx + i;
-      
-      xc = x[row]; 
+
+      xc = x[row];
       xlt=xrb=xl=xr=xb=xt=xc;
 
       /* Left side */
@@ -310,14 +310,14 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       } else {
         xl = x[row-1];
       }
-      
+
       if (j==0){
         xb=user->bottom[i+1];
         xrb = user->bottom[i+2];
       } else {
         xb = x[row-mx];
       }
-      
+
       if (i+1 == mx){
         xr=user->right[j+1];
         xrb = user->right[j];
@@ -348,7 +348,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       d6 = (xrb-xb)/hx;
       d7 = (xlt-xl)/hy;
       d8 = (xlt-xt)/hx;
-      
+
       f1 = PetscSqrtReal( 1.0 + d1*d1 + d7*d7);
       f2 = PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
       f3 = PetscSqrtReal( 1.0 + d3*d3 + d8*d8);
@@ -374,44 +374,44 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 	(hxdhy*(1.0+d1*d1)+hydhx*(1.0+d4*d4)-2*d1*d4)/(f2*f2*f2) +
 	(hxdhy*(1.0+d2*d2)+hydhx*(1.0+d3*d3)-2*d2*d3)/(f4*f4*f4);
 
-      hl/=2.0; hr/=2.0; ht/=2.0; hb/=2.0; hbr/=2.0; htl/=2.0;  hc/=2.0; 
+      hl/=2.0; hr/=2.0; ht/=2.0; hb/=2.0; hbr/=2.0; htl/=2.0;  hc/=2.0;
 
       k=0;
-      if (j>0){ 
+      if (j>0){
 	v[k]=hb; col[k]=row - mx; k++;
       }
-      
+
       if (j>0 && i < mx -1){
 	v[k]=hbr; col[k]=row - mx+1; k++;
       }
-      
+
       if (i>0){
 	v[k]= hl; col[k]=row - 1; k++;
       }
-      
+
       v[k]= hc; col[k]=row; k++;
-      
+
       if (i < mx-1 ){
 	v[k]= hr; col[k]=row+1; k++;
       }
-      
+
       if (i>0 && j < my-1 ){
 	v[k]= htl; col[k] = row+mx-1; k++;
       }
-      
+
       if (j < my-1 ){
 	v[k]= ht; col[k] = row+mx; k++;
       }
-      
-      /* 
+
+      /*
 	 Set matrix values using local numbering, which was defined
 	 earlier, in the main routine.
       */
-      info = MatSetValues(H,1,&row,k,col,v,INSERT_VALUES); 
+      info = MatSetValues(H,1,&row,k,col,v,INSERT_VALUES);
       CHKERRQ(info);
     }
   }
-  
+
   /* Restore vectors */
   info = VecRestoreArray(X,&x); CHKERRQ(info);
 
@@ -425,7 +425,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "MSA_BoundaryConditions"
-/* 
+/*
    MSA_BoundaryConditions -  Calculates the boundary conditions for
    the region.
 
@@ -512,7 +512,7 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 #undef __FUNCT__
 #define __FUNCT__ "MSA_InitialPoint"
 /*
-   MSA_InitialPoint - Calculates the initial guess in one of three ways. 
+   MSA_InitialPoint - Calculates the initial guess in one of three ways.
 
    Input Parameters:
 .  user - user-defined application context
@@ -531,7 +531,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   info = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg); CHKERRQ(info);
 
   if (flg && start==0){ /* The zero vector is reasonable */
- 
+
     info = VecSet(X, zero); CHKERRQ(info);
     /* PLogInfo(user,"Min. Surface Area Problem: Start with 0 vector \n"); */
 
@@ -541,11 +541,11 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     PetscInt    row;
     PetscInt    mx=user->mx,my=user->my;
     PetscScalar *x;
-    
+
     /* Get pointers to vector data */
     info = VecGetArray(X,&x); CHKERRQ(info);
 
-    /* Perform local computations */    
+    /* Perform local computations */
     for (j=0; j<my; j++){
       for (i=0; i< mx; i++){
 	row=(j)*mx + (i);
@@ -553,10 +553,10 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 		   ((i+1)*user->left[j+1]+(mx-i+1)*user->right[j+1])/(mx+2))/2.0;
       }
     }
-    
+
     /* Restore vectors */
     info = VecRestoreArray(X,&x); CHKERRQ(info);
-    
+
   }
   return 0;
 }
