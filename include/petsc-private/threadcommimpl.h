@@ -73,6 +73,13 @@ struct _p_PetscThreadCommRedCtx{
   PetscDataType                 type;           /* The reduction data type */
 };
 
+struct _p_PetscThreadCommReduction{
+  PetscInt              nreds;                              /* Number of reductions in operation */
+  PetscThreadCommRedCtx redctx[PETSC_REDUCTIONS_MAX];       /* Reduction objects */
+  PetscInt               ctr;                               /* Global Reduction counter */
+  PetscInt              *thread_ctr;                        /* Reduction counter for each thread */
+};
+
 typedef struct _p_PetscThreadCommJobCtx* PetscThreadCommJobCtx;
 struct  _p_PetscThreadCommJobCtx{
   PetscThreadComm   tcomm;                         /* The thread communicator */

@@ -22,7 +22,7 @@ typedef struct _p_PetscThreadComm *PetscThreadComm;
 
    Level: developer
 */
-typedef struct _p_PetscThreadCommRedCtx* PetscThreadCommRedCtx;
+typedef struct _p_PetscThreadCommReduction* PetscThreadCommReduction;
 
 #define PetscThreadCommType char*
 #define PTHREAD             "pthread"
