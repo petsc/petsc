@@ -15,6 +15,9 @@
 #define petsclogstagepush_        PETSCLOGSTAGEPUSH
 #define petscgetflops_            PETSCGETFLOPS
 #define petsclogstagegetid_       PETSCLOGSTAGEGETID
+#define petsclogeventbegin_       PETSCLOGEVENTBEGIN
+#define petsclogeventend_         PETSCLOGEVENTEND
+#define petsclogflops_            PETSCLOGFLOPS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petsclogview_             petsclogview
 #define petsclogprintDetailed_    petsclogprintDetailed
@@ -29,9 +32,24 @@
 #define petsclogstagepush_        petsclogstagepush
 #define petscgetflops_            petscgetflops
 #define petsclogstagegetid_       petsclogstagegetid
+#define petsclogeventbegin_       petsclogeventbegin
+#define petsclogeventend_         petsclogeventend
+#define petsclogflops_            petsclogflops
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL petsclogeventbegin_(PetscLogEvent *e,PetscErrorCode *ierr){
+  *ierr = PetscLogEventBegin(*e,0,0,0,0);
+}
+
+void PETSC_STDCALL petsclogeventend_(PetscLogEvent *e,PetscErrorCode *ierr){
+  *ierr = PetscLogEventEnd(*e,0,0,0,0);
+}
+
+void PETSC_STDCALL petsclogflops_(PetscLogDouble *f,PetscErrorCode *ierr) {
+  *ierr = PetscLogFlops(*f);
+}
 
 void PETSC_STDCALL petsclogview_(PetscViewer *viewer,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
