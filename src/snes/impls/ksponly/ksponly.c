@@ -27,6 +27,11 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
     snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
     PetscFunctionReturn(0);
   }
+  if (snes->numbermonitors) {
+    PetscReal fnorm;
+    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
+    ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
+  }
 
   /* Solve J Y = F, where J is Jacobian matrix */
   ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
@@ -46,6 +51,12 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
 
   /* Take the computed step. */
   ierr = VecAXPY(X,-1.0,Y);CHKERRQ(ierr);
+  if (snes->numbermonitors) {
+    PetscReal fnorm;
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
+    ierr = SNESMonitor(snes,1,fnorm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

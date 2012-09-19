@@ -1,5 +1,5 @@
 
-static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping.";
+static char help[] ="Solves the time independent Bratu problem using pseudo-timestepping.";
 
 /*
    Concepts: TS^pseudo-timestepping
@@ -46,9 +46,7 @@ typedef struct {
 /*
    User-defined routines
 */
-extern PetscErrorCode  FormJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),
-     FormFunction(TS,PetscReal,Vec,Vec,void*),
-     FormInitialGuess(Vec,AppCtx*);
+extern PetscErrorCode  FormJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*), FormFunction(TS,PetscReal,Vec,Vec,void*), FormInitialGuess(Vec,AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
