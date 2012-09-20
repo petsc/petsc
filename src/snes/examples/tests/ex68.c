@@ -79,7 +79,7 @@ PetscErrorCode CheckProblem1(Mat A, Vec b, Vec u)
 PetscErrorCode ConstructProblem2(Mat A, Vec b)
 {
   PetscInt       N = 10, constraintSize = 4;
-  PetscInt       rStart, rEnd, row;
+  PetscInt       row;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -88,7 +88,7 @@ PetscErrorCode ConstructProblem2(Mat A, Vec b)
     PetscInt    cols[2] = {row, row + N - constraintSize};
     PetscScalar vals[2] = {1.0, 1.0};
 
-    ierr = MatSetValues(A, 1, &row, 2, &cols, vals, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(A, 1, &row, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
   }
   for (row = constraintSize; row < N - constraintSize; ++row) {
     PetscScalar val = 1.0;

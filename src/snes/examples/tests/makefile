@@ -2,11 +2,11 @@
 CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
-FPPFLAGS        =	 
+FPPFLAGS        =
 LOCDIR          = src/snes/examples/tests/
-EXAMPLESC       = ex1.c ex5.c ex7.c ex8.c ex10.c ex11.c ex15.c ex16.c ex17.c
+EXAMPLESC       = ex1.c ex5.c ex7.c ex8.c ex10.c ex11.c ex15.c ex16.c ex17.c ex68.c
 EXAMPLESF       = ex1f.F ex12f.F ex14f.F
-DIRS	        = 
+DIRS	        =
 MANSEC          = SNES
 
 include ${PETSC_DIR}/conf/variables
@@ -83,6 +83,10 @@ ex16: ex16.o  chkopts
 ex17: ex17.o chkopts
 	-${CLINKER} -o ex17 ex17.o ${PETSC_SNES_LIB}
 	${RM} ex17.o
+
+ex68: ex68.o chkopts
+	-${CLINKER} -o ex68 ex68.o ${PETSC_SNES_LIB}
+	${RM} ex68.o
 
 #--------------------------------------------------------------------------
 runex1:
@@ -220,10 +224,10 @@ runex17:
 
 #
 
-TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex11.PETSc ex11.rm ex17.PETSc runex17 ex17.rm
+TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex11.PETSc ex11.rm ex17.PETSc runex17 ex17.rm ex68.PETSc ex68.rm
 TESTEXAMPLES_C_X	       = ex7.PETSc runex7 runex7_2 ex7.rm 
 TESTEXAMPLES_FORTRAN	       = ex12f.PETSc runex12f ex12f.rm  ex1f.PETSc runex1f_2 runex1f_3 ex1f.rm
-TESTEXAMPLES_C_X_MPIUNI      = ex7.PETSc ex7.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm 
+TESTEXAMPLES_C_X_MPIUNI        = ex7.PETSc ex7.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm 
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = 
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
 
