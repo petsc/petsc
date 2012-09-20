@@ -8,11 +8,11 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = $(SOURCEC:.c=.o)
 OBJSF    =
-LIBBASE  = libpetscsnes
-MANSEC   = SNES
+LIBBASE  = libpetscts
+MANSEC   = TS
 DIRS     = 
 EDIRS    = 
-LOCDIR   = src/snes/utils/
+LOCDIR   = src/ts/utils/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
