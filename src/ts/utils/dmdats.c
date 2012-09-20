@@ -260,7 +260,7 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat 
 
    Level: beginner
 
-.seealso: DMTSSetFunction(), DMDATSSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+.seealso: DMTSSetRHSFunction(), DMDATSSetRHSJacobianLocal(), DMDASNESSetFunctionLocal()
 @*/
 PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm,InsertMode imode,DMDATSRHSFunctionLocal func,void *ctx)
 {
@@ -299,7 +299,7 @@ PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm,InsertMode imode,DMDATSRHSFunctio
 
    Level: beginner
 
-.seealso: DMTSSetJacobian(), DMDATSSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+.seealso: DMTSSetRHSJacobian(), DMDATSSetRHSFunctionLocal(), DMDASNESSetJacobianLocal()
 @*/
 PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,DMDATSRHSJacobianLocal func,void *ctx)
 {
@@ -339,7 +339,7 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,DMDATSRHSJacobianLocal func,void 
 
    Level: beginner
 
-.seealso: DMTSSetFunction(), DMDATSSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+.seealso: DMTSSetIFunction(), DMDATSSetIJacobianLocal(), DMDASNESSetFunctionLocal()
 @*/
 PetscErrorCode DMDATSSetIFunctionLocal(DM dm,InsertMode imode,DMDATSIFunctionLocal func,void *ctx)
 {
@@ -378,7 +378,7 @@ PetscErrorCode DMDATSSetIFunctionLocal(DM dm,InsertMode imode,DMDATSIFunctionLoc
 
    Level: beginner
 
-.seealso: DMTSSetJacobian(), DMDATSSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+.seealso: DMTSSetJacobian(), DMDATSSetIFunctionLocal(), DMDASNESSetJacobianLocal()
 @*/
 PetscErrorCode DMDATSSetIJacobianLocal(DM dm,DMDATSIJacobianLocal func,void *ctx)
 {
