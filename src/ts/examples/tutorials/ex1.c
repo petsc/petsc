@@ -38,9 +38,9 @@ static char help[] ="Solves the time independent Bratu problem using pseudo-time
   FormFunction().
 */
 typedef struct {
-  PetscReal   param;        /* test problem parameter */
-  PetscInt    mx;           /* Discretization in x-direction */
-  PetscInt    my;           /* Discretization in y-direction */
+  PetscReal param;          /* test problem parameter */
+  PetscInt  mx;             /* Discretization in x-direction */
+  PetscInt  my;             /* Discretization in y-direction */
 } AppCtx;
 
 /*
@@ -66,20 +66,20 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only");
 
-  user.mx        = 4;
-  user.my        = 4;
-  user.param     = 6.0;
+  user.mx    = 4;
+  user.my    = 4;
+  user.param = 6.0;
 
   /*
      Allow user to set the grid dimensions and nonlinearity parameter at run-time
   */
   PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);
   PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);
+  N    = user.mx*user.my;
+  dt   = .5/PetscMax(user.mx,user.my);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&dt,PETSC_NULL);CHKERRQ(ierr);
   PetscOptionsGetReal(PETSC_NULL,"-param",&user.param,PETSC_NULL);
   if (user.param >= param_max || user.param <= param_min) SETERRQ(PETSC_COMM_SELF,1,"Parameter is out of range");
-  dt = .5/PetscMax(user.mx,user.my);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&dt,PETSC_NULL);CHKERRQ(ierr);
-  N          = user.mx*user.my;
 
   /*
       Create vectors to hold the solution and function value
@@ -121,7 +121,7 @@ int main(int argc,char **argv)
   ierr = TSSetRHSJacobian(ts,J,J,FormJacobian,&user);CHKERRQ(ierr);
 
   /*
-       For the initial guess for the problem
+       Form the initial guess for the problem
   */
   ierr = FormInitialGuess(x,&user);
 
@@ -133,7 +133,7 @@ int main(int argc,char **argv)
 
   /*
        Set the initial time to start at (this is arbitrary for
-     steady state problems; and the initial timestep given above
+     steady state problems); and the initial timestep given above
   */
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
 
@@ -167,7 +167,7 @@ int main(int argc,char **argv)
   */
   ierr = TSGetTimeStepNumber(ts,&its);CHKERRQ(ierr);
 
-  printf("Number of pseudo timesteps = %d final time %4.2e\n",(int)its,ftime);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of pseudo timesteps = %d final time %4.2e\n",(int)its,ftime);CHKERRQ(ierr);
 
   /*
      Free the data structures constructed above
@@ -196,14 +196,14 @@ PetscErrorCode FormInitialGuess(Vec X,AppCtx *user)
   PetscReal      temp1,temp,hx,hy;
   PetscScalar    *x;
 
-  mx	 = user->mx;
-  my	 = user->my;
+  mx     = user->mx;
+  my     = user->my;
   lambda = user->param;
 
-  hx    = one / (PetscReal)(mx-1);
-  hy    = one / (PetscReal)(my-1);
+  hx = one / (PetscReal)(mx-1);
+  hy = one / (PetscReal)(my-1);
 
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr  = VecGetArray(X,&x);CHKERRQ(ierr);
   temp1 = lambda/(lambda + one);
   for (j=0; j<my; j++) {
     temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
@@ -232,8 +232,8 @@ PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   PetscReal      hx,hy,hxdhy,hydhx;
   PetscScalar    ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
 
-  mx	 = user->mx;
-  my	 = user->my;
+  mx     = user->mx;
+  my     = user->my;
   lambda = user->param;
 
   hx    = one / (PetscReal)(mx-1);
@@ -251,13 +251,13 @@ PetscErrorCode FormFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
         f[row] = x[row];
         continue;
       }
-      u = x[row];
-      ub = x[row - mx];
-      ul = x[row - 1];
-      ut = x[row + mx];
-      ur = x[row + 1];
-      uxx = (-ur + two*u - ul)*hydhx;
-      uyy = (-ut + two*u - ub)*hxdhy;
+      u      = x[row];
+      ub     = x[row - mx];
+      ul     = x[row - 1];
+      ut     = x[row + mx];
+      ur     = x[row + 1];
+      uxx    = (-ur + two*u - ul)*hydhx;
+      uyy    = (-ut + two*u - ub)*hxdhy;
       f[row] = -uxx + -uyy + sc*lambda*PetscExpScalar(u);
     }
   }
@@ -286,8 +286,8 @@ PetscErrorCode FormJacobian(TS ts,PetscReal t,Vec X,Mat *J,Mat *B,MatStructure *
   PetscReal      hx,hy,hxdhy,hydhx;
 
 
-  mx	 = user->mx;
-  my	 = user->my;
+  mx     = user->mx;
+  my     = user->my;
   lambda = user->param;
 
   hx    = 1.0 / (PetscReal)(mx-1);
