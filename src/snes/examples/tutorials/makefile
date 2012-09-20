@@ -12,7 +12,7 @@ MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5s.c ex7.c ex8.c \
                 ex10.c ex12.c ex14.c ex15.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                 ex25.c ex28.c ex30.c \
-                ex35.c ex38.c ex42.c ex43.c ex44.c ex45.c ex46.c ex48.c \
+                ex35.c ex38.c ex42.c ex43.c ex46.c ex48.c \
                 ex52.c ex53.c ex54.c ex55.c ex58.c ex59.c ex60.c \
                 ex61.c ex61gen.c ex61view.c ex62.c ex63.c ex633D_DB.c ex64.c ex65.c ex70.c \
                 ex47cu.cu ex52_integrateElement_coef.cu ex52_integrateElement.cu
@@ -781,32 +781,6 @@ runex42:
 	   else echo ${PWD} ; echo "Possible problem with with ex42_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex42_1.tmp
 
-runex44:
-	-@${MPIEXEC} -n 1 ./ex44 -n 10 -snes_mf -user_precond > ex44.tmp 2>&1; \
-	   if (${DIFF} output/ex44_0.out ex44.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex44, diffs above \n========================================="; fi; \
-	   ${RM} -f ex44.tmp
-runex44_2:
-	-@${MPIEXEC} -n 1 ./ex44 -n 10 -snes_mf > ex44.tmp 2>&1; \
-	   if (${DIFF} output/ex44_0.out ex44.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex44_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex44.tmp
-
-runex45:
-	-@${MPIEXEC} -n 1 ./ex45 -n 10 > ex45.tmp 2>&1; \
-	   if (${DIFF} output/ex45_0.out ex45.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex45, diffs above \n========================================="; fi; \
-	   ${RM} -f ex45.tmp
-runex45_2:
-	-@${MPIEXEC} -n 1 ./ex45 -n 10 -snes_jacobian_default -pc_type jacobi > ex45.tmp 2>&1; \
-	   if (${DIFF} output/ex45_0.out ex45.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex45_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex45.tmp
-runex45_3:
-	-@${MPIEXEC} -n 1 ./ex45 -n 10 -snes_jacobian_default -fd_jacobian_coloring -my_jacobian_struct > ex45.tmp 2>&1; \
-	   if (${DIFF} output/ex45_0.out ex45.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex45_3, diffs above \n========================================="; fi; \
-	   ${RM} -f ex45.tmp
 runex46:
 	-@${MPIEXEC} -n 1 ./ex46 -snes_view -snes_monitor_short -da_refine 1 -pc_type mg -ksp_type fgmres -pc_mg_type full -mg_levels_ksp_chebyshev_estimate_eigenvalues 0.5,1.1  > ex46.tmp 2>&1; \
 	   if (${DIFF} output/ex46_1.out ex46.tmp) then true; \
@@ -868,7 +842,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex25.PETSc runex25 runex25_2 \
                                  ex25.rm ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm ex30.PETSc runex30 ex30.rm \
                                  ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
-                                 ex44.PETSc runex44 runex44_2 ex44.rm ex45.PETSc runex45 runex45_2 runex45_3 ex45.rm ex46.PETSc runex46 ex46.rm \
+                                 ex46.PETSc runex46 ex46.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
                                  ex58.PETSc runex58 runex58_2 ex58.rm \
                                  ex54.PETSc ex54.rm ex59.PETSc ex59.rm

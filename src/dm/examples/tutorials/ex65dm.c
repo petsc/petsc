@@ -19,7 +19,6 @@ int main(int argc, char **argv)
   DM                  daf,dac1,dac2,dac3,dac4,daf1,daf2,daf3,daf4;
   Vec                 scaling_p1,scaling_p2,scaling_p3,scaling_p4;
   Mat                 interp_p1,interp_p2,interp_p3,interp_p4,interp_m1,interp_m2,interp_m3,interp_m4;
-  PetscInt            i;
   
   PetscInitialize(&argc,&argv, (char*)0, help);
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,1024,1024,PETSC_DECIDE,PETSC_DECIDE, 1, 1,PETSC_NULL,PETSC_NULL,&daf);CHKERRQ(ierr);
