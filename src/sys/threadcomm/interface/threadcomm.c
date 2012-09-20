@@ -1214,12 +1214,26 @@ PetscErrorCode PetscThreadCommGetOwnershipRanges(MPI_Comm comm,PetscInt N,PetscI
   PetscFunctionReturn(0);
 }
 
-PetscInt PetscThreadCommGetRank(PetscThreadComm tcomm)
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadCommGetRank"
+/*
+   PetscThreadCommGetRank - Gets the rank of the calling thread
+
+   Input Parameters:
+.  tcomm - the thread communicator
+
+   Output Parameters:
+.  trank - The rank of the calling thread
+
+*/
+PetscErrorCode PetscThreadCommGetRank(PetscThreadComm tcomm,PetscInt *trank)
 {
-  PetscInt trank = 0;
+  PetscErrorCode ierr;
+  PetscInt       rank = 0;
 
   if (tcomm->ops->getrank) {
-    trank = (*tcomm->ops->getrank)();
+    ierr = (*tcomm->ops->getrank)(&rank);
   }
-  return trank;
+  *trank = rank; 
+  return 0;
 }
