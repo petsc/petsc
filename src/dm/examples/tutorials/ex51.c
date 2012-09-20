@@ -1,5 +1,4 @@
 static char help[] = "Tests DMDAVecGetArrayDOF()\n";
-#include <petscsnes.h>
 #include <petscdmda.h>
 
 int main(int argc, char *argv[]) {

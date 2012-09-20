@@ -910,6 +910,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
 
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"Options for nonequilibrium radiation-diffusion with RD ionization",PETSC_NULL);CHKERRQ(ierr);
   {
+    rd->initial = 1;
     ierr = PetscOptionsInt("-rd_initial","Initial condition (1=Marshak, 2=Blast, 3=Marshak+)","",rd->initial,&rd->initial,0);CHKERRQ(ierr);
     switch (rd->initial) {
     case 1:
