@@ -4103,10 +4103,9 @@ user-specified Jacobian and the default SNES matrix-free form.
 Table~\ref{tab_jacobians} summarizes the various matrix situations
 that SNES supports.  In particular, different linear system matrices
 and preconditioning matrices are allowed, as well as both matrix-free
-and application-provided preconditioners.  All combinations are
-possible, as demonstrated by the example, 
-\trl{${PETSC_DIR}/src/snes/examples/tutorials/ex6.c},
- in Figure~\ref{fig_snesexample2}.
+and application-provided preconditioners.  If 
+\trl{${PETSC_DIR}/src/snes/examples/tutorials/ex3.c},
+ listed in Figure~\ref{fig_snesexample2}, is run with the options \trl{-snes_mf} and \trl{-user_precond} then it uses a matrix-free application of the matrix-vector multiple and a user provided matrix free Jacobian.
 
 \begin{center}
 \begin{table}[H]
@@ -4141,7 +4140,7 @@ $ ^\dagger $ Set user-defined matrix formation routine with SNESSetJacobian().
 
 \begin{figure}[H]
 {\small
-\fileinclude{../../../../src/snes/examples/tutorials/ex6.c}
+\fileinclude{../../../../src/snes/examples/tutorials/ex3.c}
 }
 \caption{Example of Uniprocess SNES Code - Both Conventional and Matrix-Free Jacobians}
 \label{fig_snesexample2}
