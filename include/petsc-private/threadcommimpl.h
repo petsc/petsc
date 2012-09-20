@@ -25,9 +25,6 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 /* Max. number of arguments for kernel */
 #define PETSC_KERNEL_NARGS_MAX 10
 
-/* Max. number of reductions */
-#define PETSC_REDUCTIONS_MAX 32
-
 /* Max. number of kernels */
 #define PETSC_KERNELS_MAX 32
 

@@ -34,6 +34,9 @@ PETSC_EXTERN PetscFList PetscThreadCommList;
 typedef enum {THREADCOMM_SUM,THREADCOMM_PROD,THREADCOMM_MAX,THREADCOMM_MIN,THREADCOMM_MAXLOC,THREADCOMM_MINLOC} PetscThreadCommReductionOp;
 PETSC_EXTERN const char* const PetscThreadCommReductionOps[];
 
+/* Max. number of reductions */
+#define PETSC_REDUCTIONS_MAX 32
+
 PETSC_EXTERN PetscErrorCode PetscGetNCores(PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscCommGetThreadComm(MPI_Comm,PetscThreadComm*);
 PETSC_EXTERN PetscErrorCode PetscThreadCommInitializePackage(const char *path);
