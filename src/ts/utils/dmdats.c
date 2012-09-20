@@ -248,19 +248,23 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat 
 
    Input Arguments:
 +  dm - DM to associate callback with
+.  imode - insert mode for the residual
 .  func - local residual evaluation
 -  ctx - optional context for local residual evaluation
 
    Calling sequence for func:
+
+$ func(DMDALocalInfo info,PetscReal t,void *x,void *f,void *ctx)
+
 +  info - DMDALocalInfo defining the subdomain to evaluate the residual on
-.  imode - INSERT_VALUES if local function computes owned part, ADD_VALUES if it contributes to ghosted part
-.  x - dimensional pointer to state at which to evaluate residual
-.  f - dimensional pointer to residual, write the residual here
--  ctx - optional context passed above
+.  t - time at which to evaluate residual
+.  x - array of local state information
+.  f - output array of local residual information
+-  ctx - optional user context
 
    Level: beginner
 
-.seealso: DMTSSetFunction(), DMDATSSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+.seealso: DMTSSetRHSFunction(), DMDATSSetRHSJacobianLocal(), DMDASNESSetFunctionLocal()
 @*/
 PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm,InsertMode imode,DMDATSRHSFunctionLocal func,void *ctx)
 {
@@ -287,19 +291,25 @@ PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm,InsertMode imode,DMDATSRHSFunctio
    Logically Collective
 
    Input Arguments:
-+  dm - DM to associate callback with
-.  func - local residual evaluation
--  ctx - optional context for local residual evaluation
++  dm    - DM to associate callback with
+.  func  - local RHS Jacobian evaluation routine
+-  ctx   - optional context for local jacobian evaluation
 
    Calling sequence for func:
+
+$ func(DMDALocalInfo* info,PetscReal t,void* x,Mat J,Mat B,MatStructure *flg,void *ctx);
+
 +  info - DMDALocalInfo defining the subdomain to evaluate the residual on
-.  x - dimensional pointer to state at which to evaluate residual
-.  f - dimensional pointer to residual, write the residual here
--  ctx - optional context passed above
+.  t    - time at which to evaluate residual
+.  x    - array of local state information
+.  J    - Jacobian matrix
+.  B    - preconditioner matrix; often same as J
+.  flg  - flag indicating information about the preconditioner matrix structure (same as flag in KSPSetOperators())
+-  ctx  - optional context passed above
 
    Level: beginner
 
-.seealso: DMTSSetJacobian(), DMDATSSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+.seealso: DMTSSetRHSJacobian(), DMDATSSetRHSFunctionLocal(), DMDASNESSetJacobianLocal()
 @*/
 PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,DMDATSRHSJacobianLocal func,void *ctx)
 {
@@ -326,20 +336,21 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,DMDATSRHSJacobianLocal func,void 
    Logically Collective
 
    Input Arguments:
-+  dm - DM to associate callback with
++  dm   - DM to associate callback with
 .  func - local residual evaluation
--  ctx - optional context for local residual evaluation
+-  ctx  - optional context for local residual evaluation
 
    Calling sequence for func:
 +  info - DMDALocalInfo defining the subdomain to evaluate the residual on
-.  imode - INSERT_VALUES if local function computes owned part, ADD_VALUES if it contributes to ghosted part
-.  x - dimensional pointer to state at which to evaluate residual
-.  f - dimensional pointer to residual, write the residual here
+.  t    - time at which to evaluate residual
+.  x    - array of local state information
+.  xdot - array of local time derivative information
+.  f    - output array of local function evaluation information
 -  ctx - optional context passed above
 
    Level: beginner
 
-.seealso: DMTSSetFunction(), DMDATSSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+.seealso: DMTSSetIFunction(), DMDATSSetIJacobianLocal(), DMDASNESSetFunctionLocal()
 @*/
 PetscErrorCode DMDATSSetIFunctionLocal(DM dm,InsertMode imode,DMDATSIFunctionLocal func,void *ctx)
 {
@@ -366,19 +377,26 @@ PetscErrorCode DMDATSSetIFunctionLocal(DM dm,InsertMode imode,DMDATSIFunctionLoc
    Logically Collective
 
    Input Arguments:
-+  dm - DM to associate callback with
++  dm   - DM to associate callback with
 .  func - local residual evaluation
--  ctx - optional context for local residual evaluation
+-  ctx   - optional context for local residual evaluation
 
    Calling sequence for func:
+
+$ func(DMDALocalInfo* info,PetscReal t,void* x,void *xdot,Mat J,Mat B,MatStructure *flg,void *ctx);
+
 +  info - DMDALocalInfo defining the subdomain to evaluate the residual on
-.  x - dimensional pointer to state at which to evaluate residual
-.  f - dimensional pointer to residual, write the residual here
--  ctx - optional context passed above
+.  t    - time at which to evaluate the jacobian
+.  x    - array of local state information
+.  xdot - time derivative at this state
+.  J    - Jacobian matrix
+.  B    - preconditioner matrix; often same as J
+.  flg  - flag indicating information about the preconditioner matrix structure (same as flag in KSPSetOperators())
+-  ctx  - optional context passed above
 
    Level: beginner
 
-.seealso: DMTSSetJacobian(), DMDATSSetJacobian(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+.seealso: DMTSSetJacobian(), DMDATSSetIFunctionLocal(), DMDASNESSetJacobianLocal()
 @*/
 PetscErrorCode DMDATSSetIJacobianLocal(DM dm,DMDATSIJacobianLocal func,void *ctx)
 {

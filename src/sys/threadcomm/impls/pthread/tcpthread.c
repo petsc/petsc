@@ -21,12 +21,12 @@ static PetscInt ptcommcrtct = 0; /* PThread communicator creation count. Increme
                                     last pthread communicator destruction, the thread pool is also terminated
                                   */
 
-PetscInt PetscThreadCommGetRank_PThread()
+PetscErrorCode PetscThreadCommGetRank_PThread(PetscInt *trank)
 {
 #if defined(PETSC_PTHREAD_LOCAL)
-  return PetscPThreadRank;
+  *trank = PetscPThreadRank;
 #else
-  return *((PetscInt*)pthread_getspecific(PetscPThreadRankkey));
+  *trank = *((PetscInt*)pthread_getspecific(PetscPThreadRankkey));
 #endif
 }
 

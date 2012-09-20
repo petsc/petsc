@@ -1,9 +1,10 @@
 #include <../src/sys/threadcomm/impls/openmp/tcopenmpimpl.h>
 #include <omp.h>
 
-PetscInt PetscThreadCommGetRank_OpenMP(void)
+PetscErrorCode PetscThreadCommGetRank_OpenMP(PetscInt *trank)
 {
-  return omp_get_thread_num();
+  *trank =  omp_get_thread_num();
+  return 0;
 }
 
 EXTERN_C_BEGIN

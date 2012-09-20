@@ -25,9 +25,6 @@ PETSC_EXTERN PetscMPIInt Petsc_ThreadComm_keyval;
 /* Max. number of arguments for kernel */
 #define PETSC_KERNEL_NARGS_MAX 10
 
-/* Max. number of reductions */
-#define PETSC_REDUCTIONS_MAX 32
-
 /* Max. number of kernels */
 #define PETSC_KERNELS_MAX 32
 
@@ -107,7 +104,7 @@ struct _PetscThreadCommOps {
   PetscErrorCode (*runkernel)(MPI_Comm,PetscThreadCommJobCtx);
   PetscErrorCode (*view)(PetscThreadComm,PetscViewer);
   PetscErrorCode (*barrier)(PetscThreadComm);
-  PetscInt       (*getrank)(void);
+  PetscErrorCode (*getrank)(PetscInt*);
 };
 
 struct _p_PetscThreadComm{

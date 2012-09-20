@@ -25,23 +25,23 @@ int main(int argc,char **argv)
   ierr = VecSetSizes(x,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecSet(x,one);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"x = %lf\n",one);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"x = %lf\n",PetscRealPart(one));CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
   ierr = VecSetSizes(y,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
   ierr = VecSet(y,two);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"y = %lf\n",two);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"y = %lf\n",PetscRealPart(two));CHKERRQ(ierr);
 
   ierr = VecAXPY(y,alpha,x);CHKERRQ(ierr);
   v = two+alpha*one;
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"y+%lfx = %lf\n",alpha,v);CHKERRQ(ierr);
-
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"y+%lfx = %lf\n",alpha,PetscRealPart(v));CHKERRQ(ierr);
+  
   ierr = VecDot(x,y,&dot);CHKERRQ(ierr);
 
   ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Dot product %d*(%lf*%lf) is %lf\n",N,one,v,dot);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Dot product %d*(%lf*%lf) is %lf\n",N,PetscRealPart(one),PetscRealPart(v),PetscRealPart(dot));CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
   PetscFinalize();
