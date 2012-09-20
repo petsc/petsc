@@ -77,7 +77,6 @@ extern PetscErrorCode InitialConditions(Vec,AppCtx*);
 extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
-extern PetscErrorCode MyBCRoutine(TS,PetscReal,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -171,8 +170,8 @@ int main(int argc,char **argv)
     /*
        For linear problems with a time-independent f(u) in the equation
        u_t = f(u), the user provides the discretized right-hand-side
-       as a matrix only once, and then sets a null matrix evaluation
-       routine.
+       as a matrix only once, and then sets the special Jacobian evaluation
+       routine TSComputeRHSJacobianConstant() which will NOT recompute the Jacobian.
     */
     MatStructure A_structure;
     ierr = RHSMatrixHeat(ts,0.0,u,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
@@ -219,8 +218,7 @@ int main(int argc,char **argv)
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %G, avg. error (max norm) = %G\n",
-              appctx.norm_2/steps,appctx.norm_max/steps);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %G, avg. error (max norm) = %G\n",appctx.norm_2/steps,appctx.norm_max/steps);CHKERRQ(ierr);
   ierr = TSView(ts,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -292,8 +290,8 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     printf("initial guess vector\n");
-     ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Initial guess vector\n");CHKERRQ(ierr);
+    ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   return 0;
@@ -366,6 +364,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   AppCtx         *appctx = (AppCtx*) ctx;   /* user-defined application context */
   PetscErrorCode ierr;
   PetscReal      norm_2,norm_max,dt,dttol;
+
   /*
      View a graph of the current iterate
   */
@@ -380,9 +379,9 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     printf("Computed solution vector\n");
+     ierr = PetscPrintf("Computed solution vector\n");CHKERRQ(ierr);
      ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-     printf("Exact solution vector\n");
+     ierr = PetscPrintf("Exact solution vector\n");CHKERRQ(ierr);
      ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
@@ -395,8 +394,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Timestep %3D: step size = %-11g, time = %-11g, 2-norm error = %-11g, max norm error = %-11g\n",
-         step,dt,time,norm_2,norm_max);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Timestep %3D: step size = %-11g, time = %-11g, 2-norm error = %-11g, max norm error = %-11g\n",step,dt,time,norm_2,norm_max);CHKERRQ(ierr);
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 
@@ -416,8 +414,8 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     printf("Error vector\n");
-     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscPrintf("Error vector\n");CHKERRQ(ierr);
+    ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   return 0;
@@ -516,30 +514,6 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
      to the matrix. If we do, it will generate an error.
   */
   ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-
-  return 0;
-}
-/* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "MYBCRoutine"
-/*
-   Input Parameters:
-   ts - the TS context
-   t - current time
-   f - function
-   ctx - optional user-defined context, as set by TSetBCFunction()
- */
-PetscErrorCode MyBCRoutine(TS ts,PetscReal t,Vec f,void *ctx)
-{
-  AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
-  PetscErrorCode ierr,m = appctx->m;
-  PetscScalar    *fa;
-
-  ierr = VecGetArray(f,&fa);CHKERRQ(ierr);
-  fa[0] = 0.0;
-  fa[m-1] = 0.0;
-  ierr = VecRestoreArray(f,&fa);CHKERRQ(ierr);
-  printf("t=%g\n",t);
 
   return 0;
 }

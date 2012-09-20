@@ -38,12 +38,12 @@ PetscErrorCode  SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,M
 {
   MatFDColoring  color = (MatFDColoring)ctx;
   PetscErrorCode ierr;
-  DM dm;
-  PetscErrorCode              (*func)(SNES,Vec,Vec,void*);
-  Vec                         F;
-  void                        *funcctx;
-  ISColoring                  iscoloring;
-  PetscBool                   hascolor;
+  DM             dm;
+  PetscErrorCode (*func)(SNES,Vec,Vec,void*);
+  Vec            F;
+  void           *funcctx;
+  ISColoring     iscoloring;
+  PetscBool      hascolor;
 
   PetscFunctionBegin;
   if (color) {
