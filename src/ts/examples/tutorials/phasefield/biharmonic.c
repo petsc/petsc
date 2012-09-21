@@ -58,19 +58,17 @@ typedef struct {PetscBool cahnhillard;PetscBool degenerate;PetscReal kappa;Petsc
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS                     ts;                 /* nonlinear solver */
-  Vec                    x,r;                  /* solution, residual vectors */
-  Mat                    J;                    /* Jacobian matrix */
-  PetscInt               steps,Mx,maxsteps = 10000000;
-  PetscErrorCode         ierr;
-  DM                     da;
-  MatFDColoring          matfdcoloring;
-  ISColoring             iscoloring;
-  PetscReal              ftime,dt;
-  PetscReal              vbounds[] = {-1.1,1.1};
-  PetscBool              wait,vi = PETSC_FALSE,mymonitor;
-  Vec                    ul,uh;
-  UserCtx                ctx;
+  TS             ts;                 /* nonlinear solver */
+  Vec            x,r;                  /* solution, residual vectors */
+  Mat            J;                    /* Jacobian matrix */
+  PetscInt       steps,Mx,maxsteps = 10000000;
+  PetscErrorCode ierr;
+  DM             da;
+  PetscReal      ftime,dt;
+  PetscReal      vbounds[] = {-1.1,1.1};
+  PetscBool      wait,vi = PETSC_FALSE,mymonitor;
+  Vec            ul,uh;
+  UserCtx        ctx;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -515,20 +513,20 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
 */
 PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
 {
-  UserCtx                   *ctx = (UserCtx*)ptr;
-  PetscDrawLG               lg;
-  PetscErrorCode            ierr;
-  PetscScalar               *u,l,r,c;
-  PetscInt                  Mx,i,xs,xm,cnt;
-  PetscReal                 x,y,hx,pause,sx,len,max,xx[4],yy[4],xx_netforce,yy_netforce,yup,ydown,y2,len2;
-  PetscDraw                 draw;
-  Vec                       localU;
-  DM                        da;
-  int                       colors[] = {PETSC_DRAW_YELLOW,PETSC_DRAW_RED,PETSC_DRAW_BLUE,PETSC_DRAW_PLUM,PETSC_DRAW_BLACK};
-  const char *const         legend[3][3] = {{"-kappa (\\grad u,\\grad u)","(1 - u^2)^2"},{"-kappa (\\grad u,\\grad u)","(1 - u^2)"},{"-kappa (\\grad u,\\grad u)","logarithmic"}};
-  PetscDrawAxis             axis;
-  PetscDrawViewPorts        *ports;
-  PetscReal                 tol = ctx->tol, theta=ctx->theta,theta_c=ctx->theta_c,a,b; // a and b are used in the cubic truncation of the log function
+  UserCtx            *ctx = (UserCtx*)ptr;
+  PetscDrawLG        lg;
+  PetscErrorCode     ierr;
+  PetscScalar        *u,l,r,c;
+  PetscInt           Mx,i,xs,xm,cnt;
+  PetscReal          x,y,hx,pause,sx,len,max,xx[4],yy[4],xx_netforce,yy_netforce,yup,ydown,y2,len2;
+  PetscDraw          draw;
+  Vec                localU;
+  DM                 da;
+  int                colors[] = {PETSC_DRAW_YELLOW,PETSC_DRAW_RED,PETSC_DRAW_BLUE,PETSC_DRAW_PLUM,PETSC_DRAW_BLACK};
+  const char *const  legend[3][3] = {{"-kappa (\\grad u,\\grad u)","(1 - u^2)^2"},{"-kappa (\\grad u,\\grad u)","(1 - u^2)"},{"-kappa (\\grad u,\\grad u)","logarithmic"}};
+  PetscDrawAxis      axis;
+  PetscDrawViewPorts *ports;
+  PetscReal          tol = ctx->tol, theta=ctx->theta,theta_c=ctx->theta_c,a,b; // a and b are used in the cubic truncation of the log function
 
 
   PetscFunctionBegin;

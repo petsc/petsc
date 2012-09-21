@@ -213,14 +213,10 @@ PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da,ISColoringType ctype,ISColori
     ierr = DMCreateColoring_DA_2d_5pt_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
   } else {
 
-    if (bx == DMDA_BOUNDARY_PERIODIC && (m % col)){
-      SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X (%d) is divisible\n\
-                 by 2*stencil_width + 1 (%d)\n", m, col);
-    }
-    if (by == DMDA_BOUNDARY_PERIODIC && (n % col)){
-      SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y (%d) is divisible\n\
-                 by 2*stencil_width + 1 (%d)\n", n, col);
-    }
+    if (bx == DMDA_BOUNDARY_PERIODIC && (m % col)) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X (%d) is divisible\n\
+                                                            by 2*stencil_width + 1 (%d)\n", m, col);
+    if (by == DMDA_BOUNDARY_PERIODIC && (n % col)) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y (%d) is divisible\n\
+                                                            by 2*stencil_width + 1 (%d)\n", n, col);
     if (ctype == IS_COLORING_GLOBAL) {
       if (!dd->localcoloring) {
 	ierr = PetscMalloc(nc*nx*ny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
@@ -284,18 +280,12 @@ PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da,ISColoringType ctype,ISColori
   */
   ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&nc,&s,&bx,&by,&bz,&st);CHKERRQ(ierr);
   col    = 2*s + 1;
-  if (bx == DMDA_BOUNDARY_PERIODIC && (m % col)){
-    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
-                 by 2*stencil_width + 1\n");
-  }
-  if (by == DMDA_BOUNDARY_PERIODIC && (n % col)){
-    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
-                 by 2*stencil_width + 1\n");
-  }
-  if (bz == DMDA_BOUNDARY_PERIODIC && (p % col)){
-    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
-                 by 2*stencil_width + 1\n");
-  }
+  if (bx == DMDA_BOUNDARY_PERIODIC && (m % col)) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+                                                         by 2*stencil_width + 1\n");
+  if (by == DMDA_BOUNDARY_PERIODIC && (n % col)) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+                                                         by 2*stencil_width + 1\n");
+  if (bz == DMDA_BOUNDARY_PERIODIC && (p % col)) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
+                                                         by 2*stencil_width + 1\n");
 
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
@@ -366,10 +356,8 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da,ISColoringType ctype,ISColori
   ierr = DMDAGetInfo(da,&dim,&m,0,0,&M,0,0,&nc,&s,&bx,0,0,0);CHKERRQ(ierr);
   col    = 2*s + 1;
 
-  if (bx == DMDA_BOUNDARY_PERIODIC && (m % col)) {
-    SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points %d is divisible\n\
-                 by 2*stencil_width + 1 %d\n",(int)m,(int)col);
-  }
+  if (bx == DMDA_BOUNDARY_PERIODIC && (m % col)) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points %d is divisible\n\
+                                                          by 2*stencil_width + 1 %d\n",(int)m,(int)col);
 
   ierr = DMDAGetCorners(da,&xs,0,0,&nx,0,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,0,0,&gnx,0,0);CHKERRQ(ierr);
@@ -432,14 +420,8 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISCo
   ierr   = DMDAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
   ierr   = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
-  if (bx == DMDA_BOUNDARY_PERIODIC && (m % 5)){
-    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
-                 by 5\n");
-  }
-  if (by == DMDA_BOUNDARY_PERIODIC && (n % 5)){
-    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
-                 by 5\n");
-  }
+  if (bx == DMDA_BOUNDARY_PERIODIC && (m % 5)) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible by 5\n");
+  if (by == DMDA_BOUNDARY_PERIODIC && (n % 5)) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible by 5\n");
 
   /* create the coloring */
   if (ctype == IS_COLORING_GLOBAL) {
@@ -757,19 +739,13 @@ PetscErrorCode DMCreateMatrix_DA(DM da, const MatType mtype,Mat *J)
       ierr = DMCreateMatrix_DA_2d_MPIBAIJ(da,A);CHKERRQ(ierr);
     } else if (dim == 3) {
       ierr = DMCreateMatrix_DA_3d_MPIBAIJ(da,A);CHKERRQ(ierr);
-    } else {
-      SETERRQ3(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
-	       "Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
-    }
+    } else  SETERRQ3(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension! Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
   } else if (sbaij) {
     if (dim == 2) {
       ierr = DMCreateMatrix_DA_2d_MPISBAIJ(da,A);CHKERRQ(ierr);
     } else if (dim == 3) {
       ierr = DMCreateMatrix_DA_3d_MPISBAIJ(da,A);CHKERRQ(ierr);
-    } else {
-      SETERRQ3(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
-	       "Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
-    }
+    } else SETERRQ3(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension! Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
   } else {
     ISLocalToGlobalMapping ltog,ltogb;
     ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
@@ -1668,18 +1644,12 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
   */
   ierr = DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&bx,&by,&bz,&st);CHKERRQ(ierr);
   col    = 2*s + 1;
-  if (bx == DMDA_BOUNDARY_PERIODIC && (m % col)){
-    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+  if (bx == DMDA_BOUNDARY_PERIODIC && (m % col)) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
                  by 2*stencil_width + 1\n");
-  }
-  if (by == DMDA_BOUNDARY_PERIODIC && (n % col)){
-    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+  if (by == DMDA_BOUNDARY_PERIODIC && (n % col)) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
                  by 2*stencil_width + 1\n");
-  }
-  if (bz == DMDA_BOUNDARY_PERIODIC && (p % col)){
-    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
+  if (bz == DMDA_BOUNDARY_PERIODIC && (p % col)) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
                  by 2*stencil_width + 1\n");
-  }
 
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
