@@ -12,33 +12,28 @@ static char help[] = "Nonlinear DAE benchmark problems.\n";
 */
 #include <petscts.h>
 
-typedef struct _Problem *Problem;
+typedef struct _Problem* Problem;
 struct _Problem {
   PetscErrorCode (*destroy)(Problem);
-  TSIFunction function;
-  TSIJacobian jacobian;
+  TSIFunction    function;
+  TSIJacobian    jacobian;
   PetscErrorCode (*solution)(PetscReal,Vec,void*);
-
-  MPI_Comm comm;
-  PetscReal final_time;
-  PetscInt n;
-  PetscBool hasexact;
-  void *data;
+  MPI_Comm       comm;
+  PetscReal      final_time;
+  PetscInt       n;
+  PetscBool      hasexact;
+  void           *data;
 };
 
 /*
-*  User-defined routines
-*/
-
-/*
-*  Stiff 3-variable system from chemical reactions, due to Robertson (1966), problem ROBER in Hairer&Wanner, ODE 2, 1996
+      Stiff 3-variable system from chemical reactions, due to Robertson (1966), problem ROBER in Hairer&Wanner, ODE 2, 1996
 */
 #undef __FUNCT__
 #define __FUNCT__ "RoberFunction"
 static PetscErrorCode RoberFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscScalar *x,*xdot,*f;
+  PetscScalar    *x,*xdot,*f;
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -58,18 +53,18 @@ static PetscErrorCode RoberFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 static PetscErrorCode RoberJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscInt rowcol[] = {0,1,2};
-  PetscScalar *x,*xdot,J[3][3];
+  PetscInt       rowcol[] = {0,1,2};
+  PetscScalar    *x,*xdot,J[3][3];
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr    = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   J[0][0] = a + 0.04;     J[0][1] = -1e4*x[2];                   J[0][2] = -1e4*x[1];
   J[1][0] = -0.04;        J[1][1] = a + 1e4*x[2] + 3e7*2*x[1];   J[1][2] = 1e4*x[1];
   J[2][0] = 0;            J[2][1] = -3e7*2*x[1];                 J[2][2] = a;
-  ierr = MatSetValues(*B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr    = MatSetValues(*B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -86,7 +81,7 @@ static PetscErrorCode RoberJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a
 static PetscErrorCode RoberSolution(PetscReal t,Vec X,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscScalar *x;
+  PetscScalar    *x;
 
   PetscFunctionBegin;
   if (t != 0) SETERRQ(PETSC_COMM_SELF,1,"not implemented");
@@ -113,14 +108,14 @@ static PetscErrorCode RoberCreate(Problem p)
   PetscFunctionReturn(0);
 }
 
+/*
+     Stiff scalar valued problem 
+*/
 
 typedef struct {
   PetscReal lambda;
 } CECtx;
 
-/*
-* Stiff scalar valued problem with an exact solution
-*/
 #undef __FUNCT__
 #define __FUNCT__ "CEDestroy"
 static PetscErrorCode CEDestroy(Problem p)
@@ -137,8 +132,8 @@ static PetscErrorCode CEDestroy(Problem p)
 static PetscErrorCode CEFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscReal l = ((CECtx*)ctx)->lambda;
-  PetscScalar *x,*xdot,*f;
+  PetscReal      l = ((CECtx*)ctx)->lambda;
+  PetscScalar    *x,*xdot,*f;
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -158,18 +153,18 @@ static PetscErrorCode CEFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ct
 #define __FUNCT__ "CEJacobian"
 static PetscErrorCode CEJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
 {
-  PetscReal l = ((CECtx*)ctx)->lambda;
+  PetscReal      l = ((CECtx*)ctx)->lambda;
   PetscErrorCode ierr;
-  PetscInt rowcol[] = {0};
-  PetscScalar *x,*xdot,J[1][1];
+  PetscInt       rowcol[] = {0};
+  PetscScalar    *x,*xdot,J[1][1];
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr    = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   J[0][0] = a + l;
-  ierr = MatSetValues(*B,1,rowcol,1,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr    = MatSetValues(*B,1,rowcol,1,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -185,9 +180,9 @@ static PetscErrorCode CEJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Ma
 #define __FUNCT__ "CESolution"
 static PetscErrorCode CESolution(PetscReal t,Vec X,void *ctx)
 {
-  PetscReal l = ((CECtx*)ctx)->lambda;
+  PetscReal      l = ((CECtx*)ctx)->lambda;
   PetscErrorCode ierr;
-  PetscScalar *x;
+  PetscScalar    *x;
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -201,10 +196,10 @@ static PetscErrorCode CESolution(PetscReal t,Vec X,void *ctx)
 static PetscErrorCode CECreate(Problem p)
 {
   PetscErrorCode ierr;
-  CECtx         *ce;
+  CECtx          *ce;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(CECtx),&ce);CHKERRQ(ierr);
+  ierr    = PetscMalloc(sizeof(CECtx),&ce);CHKERRQ(ierr);
   p->data = (void*)ce;
 
   p->destroy    = &CEDestroy;
@@ -216,7 +211,7 @@ static PetscErrorCode CECreate(Problem p)
   p->hasexact   = PETSC_TRUE;
 
   ce->lambda = 10;
-  ierr = PetscOptionsBegin(p->comm,PETSC_NULL,"CE options","");CHKERRQ(ierr);
+  ierr       = PetscOptionsBegin(p->comm,PETSC_NULL,"CE options","");CHKERRQ(ierr);
   {
     ierr = PetscOptionsReal("-problem_ce_lambda","Parameter controlling stiffness: xdot + lambda*(x - cos(t))","",ce->lambda,&ce->lambda,PETSC_NULL);CHKERRQ(ierr);
   }
@@ -232,7 +227,7 @@ static PetscErrorCode CECreate(Problem p)
 static PetscErrorCode OregoFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscScalar *x,*xdot,*f;
+  PetscScalar    *x,*xdot,*f;
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -252,12 +247,12 @@ static PetscErrorCode OregoFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 static PetscErrorCode OregoJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscInt rowcol[] = {0,1,2};
-  PetscScalar *x,*xdot,J[3][3];
+  PetscInt       rowcol[] = {0,1,2};
+  PetscScalar    *x,*xdot,J[3][3];
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr    = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   J[0][0] = a - 77.27*((1. - 8.375e-6*x[0] - x[1]) - 8.375e-6*x[0]);
   J[0][1] = -77.27*(1. - x[0]);
   J[0][2] = 0;
@@ -267,9 +262,9 @@ static PetscErrorCode OregoJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a
   J[2][0] = -0.161;
   J[2][1] = 0;
   J[2][2] = a + 0.161;
-  ierr = MatSetValues(*B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
+  ierr    = MatSetValues(*B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -286,7 +281,7 @@ static PetscErrorCode OregoJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a
 static PetscErrorCode OregoSolution(PetscReal t,Vec X,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscScalar *x;
+  PetscScalar    *x;
 
   PetscFunctionBegin;
   if (t != 0) SETERRQ(PETSC_COMM_SELF,1,"not implemented");
@@ -318,9 +313,9 @@ static PetscErrorCode OregoCreate(Problem p)
 *  User-defined monitor for comparing to exact solutions when possible
 */
 typedef struct {
-  MPI_Comm  comm;
-  Problem   problem;
-  Vec       x;
+  MPI_Comm comm;
+  Problem  problem;
+  Vec      x;
 } MonitorCtx;
 
 #undef __FUNCT__
@@ -328,8 +323,8 @@ typedef struct {
 static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *ctx)
 {
   PetscErrorCode ierr;
-  MonitorCtx *mon = (MonitorCtx*)ctx;
-  PetscReal h,nrm_x,nrm_exact,nrm_diff;
+  MonitorCtx     *mon = (MonitorCtx*)ctx;
+  PetscReal      h,nrm_x,nrm_exact,nrm_diff;
 
   PetscFunctionBegin;
   if (!mon->problem->solution) PetscFunctionReturn(0);
@@ -344,32 +339,34 @@ static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *c
 }
 
 
-
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscFList      plist = PETSC_NULL;
-  char            pname[256];
-  TS              ts;           /* nonlinear solver */
-  Vec             x,r;          /* solution, residual vectors */
-  Mat             A;            /* Jacobian matrix */
-  Problem         problem;
-  PetscBool       use_monitor;
-  PetscInt        steps,maxsteps = 1000,nonlinits,linits,snesfails,rejects;
-  PetscReal       ftime;
-  MonitorCtx      mon;
-  PetscErrorCode  ierr;
+  PetscFList     plist = PETSC_NULL;
+  char           pname[256];
+  TS             ts;            /* nonlinear solver */
+  Vec            x,r;           /* solution, residual vectors */
+  Mat            A;             /* Jacobian matrix */
+  Problem        problem;
+  PetscBool      use_monitor;
+  PetscInt       steps,maxsteps = 1000,nonlinits,linits,snesfails,rejects;
+  PetscReal      ftime;
+  MonitorCtx     mon;
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
   /* Register the available problems */
-  ierr = PetscFListAdd(&plist,"rober","",(void(*)(void))&RoberCreate);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&plist,"ce",   "",(void(*)(void))&CECreate   );CHKERRQ(ierr);
-  ierr = PetscFListAdd(&plist,"orego","",(void(*)(void))&OregoCreate);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&plist,"rober","",(void (*)(void))&RoberCreate);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&plist,"ce",   "",(void (*)(void))&CECreate);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&plist,"orego","",(void (*)(void))&OregoCreate);CHKERRQ(ierr);
   ierr = PetscStrcpy(pname,"ce");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -377,26 +374,25 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Timestepping benchmark options","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsList("-problem_type","Name of problem to run","",plist,pname,pname,sizeof(pname),PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsList("-problem_type","Name of problem to run","",plist,pname,pname,sizeof(pname),PETSC_NULL);CHKERRQ(ierr);
     use_monitor = PETSC_FALSE;
-    ierr = PetscOptionsBool("-monitor_error","Display errors relative to exact solutions","",use_monitor,&use_monitor,PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsBool("-monitor_error","Display errors relative to exact solutions","",use_monitor,&use_monitor,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Create the new problem */
-  ierr = PetscNew(struct _Problem,&problem);CHKERRQ(ierr);
+  ierr          = PetscNew(struct _Problem,&problem);CHKERRQ(ierr);
   problem->comm = MPI_COMM_WORLD;
   {
     PetscErrorCode (*pcreate)(Problem);
 
-    ierr = PetscFListFind(plist,MPI_COMM_WORLD,pname,PETSC_FALSE,(void(**)(void))&pcreate);CHKERRQ(ierr);
+    ierr = PetscFListFind(plist,MPI_COMM_WORLD,pname,PETSC_FALSE,(void (**)(void))&pcreate);CHKERRQ(ierr);
     if (!pcreate) SETERRQ1(PETSC_COMM_SELF,1,"No problem '%s'",pname);
     ierr = (*pcreate)(problem);CHKERRQ(ierr);
   }
 
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Create necessary matrix and vectors, solve same ODE on every process
+    Create necessary matrix and vectors
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,problem->n,problem->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -406,9 +402,9 @@ int main(int argc,char **argv)
   ierr = MatGetVecs(A,&x,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
-  mon.comm = PETSC_COMM_WORLD;
+  mon.comm    = PETSC_COMM_WORLD;
   mon.problem = problem;
-  ierr = VecDuplicate(x,&mon.x);CHKERRQ(ierr);
+  ierr        = VecDuplicate(x,&mon.x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -447,7 +443,9 @@ int main(int argc,char **argv)
   ierr = TSGetSNESIterations(ts,&nonlinits);CHKERRQ(ierr);
   ierr = TSGetKSPIterations(ts,&linits);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"steps %D (%D rejected, %D SNES fails), ftime %G, nonlinits %D, linits %D\n",steps,rejects,snesfails,ftime,nonlinits,linits);CHKERRQ(ierr);
-  if (problem->hasexact) {ierr = MonitorError(ts,steps,ftime,x,&mon);CHKERRQ(ierr);}
+  if (problem->hasexact) {
+    ierr = MonitorError(ts,steps,ftime,x,&mon);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
