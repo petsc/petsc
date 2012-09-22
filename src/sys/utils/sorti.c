@@ -159,7 +159,7 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt ii[], Petsc
   PetscValidPointer(loc, 4);
   /* continually narrow search until just one element remains */
   while(imin < imax) {
-    PetscInt imid = (imin+imax)/2;
+    PetscInt imid = ((unsigned PetscInt) imin + (unsigned PetscInt) imax) >> 1;
 
     /* code must guarantee the interval is reduced at each iteration
     assert(imid < imax); */
