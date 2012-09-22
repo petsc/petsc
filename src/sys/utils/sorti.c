@@ -123,6 +123,66 @@ PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscFindInt"
+/*@
+  PetscFindInt - Finds and integers in a sorted array of integers
+
+   Not Collective
+
+   Input Parameters:
++  key - the integer to locate
+.  n   - number of value in the array
+-  ii  - array of integers
+
+   Output Parameter:
+.  loc - the location, or -1 if the value is not found
+
+   Level: intermediate
+
+   Concepts: sorting^ints
+
+.seealso: PetscSortInt(), PetscSortIntWithArray(), PetscSortRemoveDupsInt()
+@*/
+PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, PetscInt ii[], PetscInt *loc)
+{
+  /* inclusive indices
+     0 <= imin when using truncate toward zero divide
+       imid = (imin+imax)/2;
+     imin unrestricted when using truncate toward minus infinity divide
+       imid = (imin+imax)>>1; or
+       imid = (int)floor((imin+imax)/2.0); */
+  PetscInt       imin = 0, imax = n-1;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(ii, 3);
+  PetscValidPointer(loc, 4);
+  /* continually narrow search until just one element remains */
+  while(imin < imax) {
+    PetscInt imid = (imin+imax)/2;
+
+    /* code must guarantee the interval is reduced at each iteration
+    assert(imid < imax); */
+    /* reduce the search */
+    if (ii[imid] < key) {
+      imin = imid + 1;
+    } else {
+      imax = imid;
+    }
+  }
+  /* At exit of while:
+     if ii[] is empty, then imax < imin
+     otherwise imax == imin */
+  /* deferred test for equality */
+  if ((imax == imin) && (ii[imin] == key)) {
+    *loc = imin;
+  } else {
+    *loc = -1;
+  }
+  PetscFunctionReturn(0);
+}
+
 
 /* -----------------------------------------------------------------------*/
 #define SWAP2(a,b,c,d,t) {t=a;a=b;b=t;t=c;c=d;d=t;}
