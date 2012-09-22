@@ -810,7 +810,6 @@ static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP* ksp_fet
   ierr = KSPSetPC(temp_ksp,D);CHKERRQ(ierr);
   ierr = KSPSetComputeSingularValues(temp_ksp,PETSC_TRUE);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(temp_ksp);CHKERRQ(ierr);
-  ierr = KSPSetNormType(temp_ksp,KSP_NORM_NATURAL);CHKERRQ(ierr);
   ierr = KSPSetUp(temp_ksp);CHKERRQ(ierr);
   *ksp_fetidp = temp_ksp;
   ierr = MatDestroy(&F);CHKERRQ(ierr);
@@ -836,7 +835,6 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP* ksp)
   ierr = KSPSetType(temp_ksp,KSPCG);CHKERRQ(ierr);
   ierr = KSPSetTolerances(temp_ksp,1.0e-8,1.0e-8,1.0e15,10000);CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(temp_ksp,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = KSPSetNormType(temp_ksp,KSP_NORM_NATURAL);CHKERRQ(ierr);
   ierr = KSPGetPC(temp_ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCBDDC);CHKERRQ(ierr);
 

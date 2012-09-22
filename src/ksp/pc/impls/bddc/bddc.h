@@ -97,6 +97,8 @@ typedef struct {
   CoarseCommunicationsType   coarse_communications_type;
   PetscInt                   coarsening_ratio;
   PetscInt                   active_procs;
+  PetscInt                   current_level;
+  PetscInt                   max_levels;
   /* For verbose output of some bddc data structures */
   PetscBool                  dbg_flag;
   PetscViewer                dbg_viewer;
