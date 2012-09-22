@@ -144,7 +144,7 @@ PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
 
 .seealso: PetscSortInt(), PetscSortIntWithArray(), PetscSortRemoveDupsInt()
 @*/
-PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, PetscInt ii[], PetscInt *loc)
+PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt ii[], PetscInt *loc)
 {
   /* inclusive indices
      0 <= imin when using truncate toward zero divide
@@ -152,8 +152,7 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, PetscInt ii[], PetscInt *l
      imin unrestricted when using truncate toward minus infinity divide
        imid = (imin+imax)>>1; or
        imid = (int)floor((imin+imax)/2.0); */
-  PetscInt       imin = 0, imax = n-1;
-  PetscErrorCode ierr;
+  PetscInt imin = 0, imax = n-1;
 
   PetscFunctionBegin;
   PetscValidPointer(ii, 3);
