@@ -2709,6 +2709,77 @@ PetscErrorCode DMComplexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt po
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexGetNumFaceVertices"
+static PetscErrorCode DMComplexGetNumFaceVertices(DM dm, PetscInt numCorners, PetscInt *numFaceVertices) {
+  MPI_Comm       comm = ((PetscObject) dm)->comm;
+  PetscInt       cellDim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(numFaceVertices,3);
+  ierr = DMComplexGetDimension(dm, &cellDim);CHKERRQ(ierr);
+  switch(cellDim) {
+  case 0:
+    *numFaceVertices = 0;
+    break;
+  case 1:
+    *numFaceVertices = 1;
+    break;
+  case 2:
+    switch(numCorners) {
+    case 3: // triangle
+      *numFaceVertices = 2; // Edge has 2 vertices
+      break;
+    case 4: // quadrilateral
+      *numFaceVertices = 2; // Edge has 2 vertices
+      break;
+    case 6: // quadratic triangle, tri and quad cohesive Lagrange cells
+      *numFaceVertices = 3; // Edge has 3 vertices
+      break;
+    case 9: // quadratic quadrilateral, quadratic quad cohesive Lagrange cells
+      *numFaceVertices = 3; // Edge has 3 vertices
+      break;
+    default:
+      SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid number of face corners %d for dimension %d", numCorners, cellDim);
+    }
+    break;
+  case 3:
+    switch(numCorners)	{
+    case 4: // tetradehdron
+      *numFaceVertices = 3; // Face has 3 vertices
+      break;
+    case 6: // tet cohesive cells
+      *numFaceVertices = 4; // Face has 4 vertices
+      break;
+    case 8: // hexahedron
+      *numFaceVertices = 4; // Face has 4 vertices
+      break;
+    case 9: // tet cohesive Lagrange cells
+      *numFaceVertices = 6; // Face has 6 vertices
+      break;
+    case 10: // quadratic tetrahedron
+      *numFaceVertices = 6; // Face has 6 vertices
+      break;
+    case 12: // hex cohesive Lagrange cells
+      *numFaceVertices = 6; // Face has 6 vertices
+      break;
+    case 18: // quadratic tet cohesive Lagrange cells
+      *numFaceVertices = 6; // Face has 6 vertices
+      break;
+    case 27: // quadratic hexahedron, quadratic hex cohesive Lagrange cells
+      *numFaceVertices = 9; // Face has 9 vertices
+      break;
+    default:
+      SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid number of face corners %d for dimension %d", numCorners, cellDim);
+    }
+    break;
+  default:
+    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid cell dimension %d", cellDim);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexCreateNeighborCSR"
 PetscErrorCode DMComplexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency) {
   const PetscInt maxFaceCases = 30;
@@ -2742,46 +2813,12 @@ PetscErrorCode DMComplexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt
 
       ierr = DMComplexGetConeSize(dm, c, &corners);CHKERRQ(ierr);
       if (!cornersSeen[corners]) {
+        PetscInt nFV;
+
         if (numFaceCases >= maxFaceCases) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Exceeded maximum number of face recognition cases");
         cornersSeen[corners] = 1;
-        if (corners == dim+1) {
-          numFaceVertices[numFaceCases] = dim;
-          PetscInfo(dm, "Recognizing simplices\n");
-        } else if ((dim == 1) && (corners == 3)) {
-          numFaceVertices[numFaceCases] = 3;
-          PetscInfo(dm, "Recognizing quadratic edges\n");
-        } else if ((dim == 2) && (corners == 4)) {
-          numFaceVertices[numFaceCases] = 2;
-          PetscInfo(dm, "Recognizing quads\n");
-        } else if ((dim == 2) && (corners == 6)) {
-          numFaceVertices[numFaceCases] = 3;
-          PetscInfo(dm, "Recognizing tri and quad cohesive Lagrange cells\n");
-        } else if ((dim == 2) && (corners == 9)) {
-          numFaceVertices[numFaceCases] = 3;
-          PetscInfo(dm, "Recognizing quadratic quads and quadratic quad cohesive Lagrange cells\n");
-        } else if ((dim == 3) && (corners == 6)) {
-          numFaceVertices[numFaceCases] = 4;
-          PetscInfo(dm, "Recognizing tet cohesive cells\n");
-        } else if ((dim == 3) && (corners == 8)) {
-          numFaceVertices[numFaceCases] = 4;
-          PetscInfo(dm, "Recognizing hexes\n");
-        } else if ((dim == 3) && (corners == 9)) {
-          numFaceVertices[numFaceCases] = 6;
-          PetscInfo(dm, "Recognizing tet cohesive Lagrange cells\n");
-        } else if ((dim == 3) && (corners == 10)) {
-          numFaceVertices[numFaceCases] = 6;
-          PetscInfo(dm, "Recognizing quadratic tets\n");
-        } else if ((dim == 3) && (corners == 12)) {
-          numFaceVertices[numFaceCases] = 6;
-          PetscInfo(dm, "Recognizing hex cohesive Lagrange cells\n");
-        } else if ((dim == 3) && (corners == 18)) {
-          numFaceVertices[numFaceCases] = 6;
-          PetscInfo(dm, "Recognizing quadratic tet cohesive Lagrange cells\n");
-        } else if ((dim == 3) && (corners == 27)) {
-          numFaceVertices[numFaceCases] = 9;
-          PetscInfo(dm, "Recognizing quadratic hexes and quadratic hex cohesive Lagrange cells\n");
-        } else SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not recognize number of face vertices for %D corners", corners);
-        ++numFaceCases;
+        ierr = DMComplexGetNumFaceVertices(dm, corners, &nFV);CHKERRQ(ierr);
+        numFaceVertices[numFaceCases++] = nFV;
       }
     }
   }
@@ -6392,6 +6429,11 @@ PetscErrorCode DMComplexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCor
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexGetOrientedFace"
+/*
+    Given a cell and a face, as a set of vertices,
+      return the oriented face, as a set of vertices, in faceVertices
+    The orientation is such that the face normal points out of the cell
+*/
 PetscErrorCode DMComplexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize, const PetscInt face[], PetscInt numCorners, PetscInt indices[], PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
 {
   const PetscInt *cone;
@@ -6593,5 +6635,248 @@ PetscErrorCode DMComplexSetVTKBounds(DM dm, PetscInt cMax, PetscInt vMax)
   PetscFunctionBegin;
   if (cMax >= 0) mesh->vtkCellMax   = cMax;
   if (vMax >= 0) mesh->vtkVertexMax = vMax;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexInsertFace_Private"
+/*
+  DMComplexInsertFace_Private - Puts a face into the mesh
+
+  Not collective
+
+  Input Parameters:
+  + dm            - The DMComplex
+  . numFaceVertex - The number of vertices in the face
+  . faceVertices  - The vertices in the face
+  . numCorners    - The number of vertices in the cell
+  - cell          - A cell containing the face
+
+  Output Parameters:
+  . newFacePoints - Contains next face point number on input, updated on output
+
+  Level: developer
+*/
+PetscErrorCode DMComplexInsertFace_Private(DM dm, PetscInt numFaceVertices, const PetscInt faceVertices[], PetscInt numCorners, PetscInt cell, PetscInt *newFacePoint)
+{
+  MPI_Comm        comm = ((PetscObject) dm)->comm;
+  const PetscInt *faces;
+  PetscInt        numFaces, coneSize;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
+  if (coneSize != 1) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone size of cell %d is %d != 1", cell, coneSize);
+  ierr = DMComplexGetJoin(dm, numFaceVertices, faceVertices, &numFaces, &faces);CHKERRQ(ierr);
+  if (numFaces > 1) {
+    SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Vertex set had %d faces, not one", numFaces);
+  } else if (numFaces == 1) {
+    /* Add the other cell neighbor for this face */
+    ierr = DMComplexSetCone(dm, cell, faces);CHKERRQ(ierr);
+  } else {
+    PetscInt *indices, *origVertices, *orientedVertices;
+    PetscBool posOriented;
+
+    ierr = DMGetWorkArray(dm, 3*numFaceVertices * sizeof(PetscInt), PETSC_INT, &orientedVertices);CHKERRQ(ierr);
+    origVertices = &orientedVertices[numFaceVertices];
+    indices      = &orientedVertices[numFaceVertices*2];
+    ierr = DMComplexGetOrientedFace(dm, cell, numFaceVertices, faceVertices, numCorners, indices, origVertices, orientedVertices, &posOriented);CHKERRQ(ierr);
+    ierr = DMComplexSetCone(dm, *newFacePoint, orientedVertices);CHKERRQ(ierr);
+    ierr = DMComplexSetCone(dm, cell, newFacePoint);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(dm, 3*numFaceVertices * sizeof(PetscInt), PETSC_INT, &orientedVertices);CHKERRQ(ierr);
+    ++(*newFacePoint);
+  }
+  ierr = DMComplexRestoreJoin(dm, numFaceVertices, faceVertices, &numFaces, &faces);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexCreateSubmesh"
+PetscErrorCode DMComplexCreateSubmesh(DM dm, const char *label, DM *subdm)
+{
+  MPI_Comm        comm = ((PetscObject) dm)->comm;
+  PetscBool       boundaryFaces = PETSC_FALSE;
+  PetscSection    coordSection, subCoordSection;
+  Vec             coordinates, subCoordinates;
+  PetscScalar    *coords, *subCoords;
+  IS              labelIS;
+  const PetscInt *subVertices;
+  PetscInt       *subCells = PETSC_NULL;
+  PetscInt        numSubVertices, firstSubVertex, numSubCells = 0, maxSubCells = 0;
+  PetscInt       *face, maxConeSize, numSubFaces = 0, firstSubFace, newFacePoint, nFV = 0, coordSize;
+  PetscInt        dim; /* Right now, do not specify dimension */
+  PetscInt        cStart, cEnd, c, vStart, vEnd, v, p, corner, i, d, f;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetMaxSizes(dm, &maxConeSize, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, maxConeSize, PETSC_INT, &face);CHKERRQ(ierr);
+  ierr = DMCreate(comm, subdm);CHKERRQ(ierr);
+  ierr = DMSetType(*subdm, DMCOMPLEX);CHKERRQ(ierr);
+  ierr = DMComplexSetDimension(*subdm, dim-1);CHKERRQ(ierr);
+  ierr = DMComplexGetStratumIS(dm, label, 1, &labelIS);CHKERRQ(ierr);
+  ierr = ISGetSize(labelIS, &numSubVertices);CHKERRQ(ierr);
+  ierr = ISGetIndices(labelIS, &subVertices);CHKERRQ(ierr);
+  for(v = 0; v < numSubVertices; ++v) {
+    const PetscInt vertex = subVertices[v];
+    PetscInt *star = PETSC_NULL;
+    PetscInt  starSize, numCells = 0;
+
+    ierr = DMComplexGetTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+    for(p = 0; p < starSize*2; p += 2) {
+      const PetscInt point = star[p];
+      if ((point >= cStart) && (point < cEnd)) {
+        star[numCells++] = point;
+      }
+    }
+    for(c = 0; c < numCells; ++c) {
+      const PetscInt cell    = star[c];
+      PetscInt      *closure = PETSC_NULL;
+      PetscInt       closureSize, numCorners = 0, faceSize = 0;
+      PetscInt       cellLoc;
+
+      /* TODO: Use the old size here */
+      ierr = PetscFindInt(cell, numSubCells, subCells, &cellLoc);CHKERRQ(ierr);
+      if (cellLoc >= 0) continue;
+      /* TODO: Remove censored cells here (could use VTK cellMax) */
+      ierr = DMComplexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      for(p = 0; p < closureSize*2; p += 2) {
+        const PetscInt point = closure[p];
+        if ((point >= vStart) && (point < vEnd)) {
+          closure[numCorners++] = point;
+        }
+      }
+      if (!nFV) {ierr = DMComplexGetNumFaceVertices(dm, numCorners, &nFV);CHKERRQ(ierr);}
+      for(corner = 0; corner < numCorners; ++corner) {
+        const PetscInt cellVertex = closure[corner];
+        PetscInt       vertexLoc;
+
+        ierr = PetscFindInt(cellVertex, numSubVertices, subVertices, &vertexLoc);CHKERRQ(ierr);
+        if (vertexLoc >= 0) { /* contains submesh vertex */
+          for(i = 0; i < faceSize; ++i) {if (cellVertex == face[i]) break;}
+          if (i < faceSize) {
+            if (faceSize >= maxConeSize) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices in face %d should not exceed %d", faceSize+1, maxConeSize);
+            face[faceSize++] = cellVertex;
+          }
+        }
+      }
+      ierr = DMComplexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      if (faceSize >= nFV) {
+        if (faceSize > nFV && !boundaryFaces) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
+        if (numSubCells >= maxSubCells) {
+          PetscInt *tmpCells;
+          maxSubCells = PetscMax(numSubVertices, maxSubCells*2);
+          ierr = PetscMalloc(maxSubCells * sizeof(PetscInt), &tmpCells);CHKERRQ(ierr);
+          ierr = PetscMemcpy(tmpCells, subCells, numSubCells * sizeof(PetscInt));CHKERRQ(ierr);
+          ierr = PetscFree(subCells);CHKERRQ(ierr);
+          subCells = tmpCells;
+        }
+        /* TOOD: Maybe overestimate then squeeze out empty faces */
+        if (faceSize > nFV) {
+          /* TODO: This is tricky. Maybe just add all faces */
+          numSubFaces++;
+        } else {
+          numSubFaces++;
+        }
+        subCells[numSubCells++] = cell;
+      }
+    }
+    ierr = DMComplexRestoreTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+    ierr = PetscSortRemoveDupsInt(&numSubCells, subCells);CHKERRQ(ierr);
+  }
+  ierr = DMComplexSetChart(*subdm, 0, numSubCells+numSubFaces+numSubVertices);CHKERRQ(ierr);
+  /* Set cone sizes */
+  firstSubVertex = numSubCells;
+  firstSubFace   = numSubCells+numSubVertices;
+  newFacePoint   = firstSubFace;
+  for(c = 0; c < numSubCells; ++c) {
+    ierr = DMComplexSetConeSize(*subdm, c, 1);CHKERRQ(ierr);
+  }
+  for(f = firstSubFace; f < firstSubFace+numSubFaces; ++f) {
+    ierr = DMComplexSetConeSize(*subdm, f, nFV);CHKERRQ(ierr);
+  }
+  ierr = DMSetUp(*subdm);CHKERRQ(ierr);
+  /* Create face cones */
+  for(c = 0; c < numSubCells; ++c) {
+    const PetscInt cell    = subCells[c];
+    PetscInt      *closure = PETSC_NULL;
+    PetscInt       closureSize, numCorners = 0, faceSize = 0;
+
+    ierr = DMComplexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for(p = 0; p < closureSize*2; p += 2) {
+      const PetscInt point = closure[p];
+      if ((point >= vStart) && (point < vEnd)) {
+        closure[numCorners++] = point;
+      }
+    }
+    for(corner = 0; corner < numCorners; ++corner) {
+      const PetscInt cellVertex = closure[corner];
+      PetscInt       vertexCell;
+
+      ierr = PetscFindInt(cellVertex, numSubVertices, subVertices, &vertexCell);CHKERRQ(ierr);
+      if (vertexCell >= 0) { /* contains submesh vertex */
+        for(i = 0; i < faceSize; ++i) {if (cellVertex == face[i]) break;}
+        if (i < faceSize) {face[faceSize++] = cellVertex;}
+      }
+    }
+    ierr = DMComplexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    if (faceSize >= nFV) {
+      if (faceSize > nFV && !boundaryFaces) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
+      // Here we allow a set of vertices to lie completely on a boundary cell (like a corner tetrahedron)
+      //   We have to take all the faces, and discard those in the interior
+      //   We check the join of the face vertices, which produces 2 cells if in the interior
+#if 0
+      // This object just calls insert on each face that comes from subsets()
+      // In fact, we can just always acll subsets(), since when we pass a single face it is a single call
+      FaceInserterV<FlexMesh::sieve_type> inserter(mesh, sieve, subSieve, f, *c_iter, numCorners, indices, &origVertices, &faceVertices, &submeshCells);
+      PointArray                          faceVec(face->begin(), face->end());
+
+      subsets(faceVec, nFV, inserter);
+#endif
+      ierr = DMComplexInsertFace_Private(*subdm, faceSize, face, numCorners, cell, &newFacePoint);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMComplexSymmetrize(*subdm);CHKERRQ(ierr);
+  ierr = DMComplexStratify(*subdm);CHKERRQ(ierr);
+  /* TODO: Should interpolate, starting from faces */
+  /* Build coordinates */
+  ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMComplexGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMComplexGetCoordinateSection(*subdm, &subCoordSection);CHKERRQ(ierr);
+  ierr = DMComplexGetCoordinateVec(*subdm, &coordinates);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(coordSection, firstSubVertex, firstSubVertex+numSubVertices);CHKERRQ(ierr);
+  for (v = firstSubVertex; v < firstSubVertex+numSubVertices; ++v) {
+    ierr = PetscSectionSetDof(coordSection, v, dim);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
+  ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = VecGetArray(subCoordinates, &subCoords);CHKERRQ(ierr);
+  for(v = 0; v < numSubVertices; ++v) {
+    const PetscInt vertex    = subVertices[v];
+    const PetscInt subVertex = firstSubVertex+v;
+    PetscInt dof, off, sdof, soff;
+
+    ierr = PetscSectionGetDof(coordSection, vertex, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(coordSection, vertex, &off);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(subCoordSection, subVertex, &sdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(subCoordSection, subVertex, &soff);CHKERRQ(ierr);
+    if (dof != sdof) SETERRQ4(comm, PETSC_ERR_PLIB, "Coordinate dimension %d on subvertex %d, vertex %d should be %d", sdof, subVertex, vertex, dof);
+    for(d = 0; d < dof; ++d) {
+      subCoords[soff+d] = coords[off+d];
+    }
+  }
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = VecRestoreArray(subCoordinates, &subCoords);CHKERRQ(ierr);
+
+  ierr = PetscFree(subCells);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(labelIS, &subVertices);CHKERRQ(ierr);
+  ierr = ISDestroy(&labelIS);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, maxConeSize, PETSC_INT, &face);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
