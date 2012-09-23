@@ -68,11 +68,6 @@ PetscErrorCode  (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfD
 */
 PetscBool   PetscCUSPSynchronize = PETSC_FALSE;
 
-/* pthread_key for PetscStack */
-#if defined(PETSC_HAVE_PTHREADCLASSES) && !defined(PETSC_PTHREAD_LOCAL)
-pthread_key_t petscstack_key;
-#endif
-
 /* ------------------------------------------------------------------------------*/
 /*
    Optional file where all PETSc output from various prints is saved
@@ -510,10 +505,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   /*
       Setup building of stack frames for all function calls
   */
-#if defined(PETSC_USE_DEBUG)
-  PetscThreadLocalRegister(petscstack); /* Creates petscstack_key if needed */
-  ierr = PetscStackCreate();CHKERRQ(ierr);
-#endif
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-options_gui",&PetscOptionsPublish,PETSC_NULL);CHKERRQ(ierr);
 
