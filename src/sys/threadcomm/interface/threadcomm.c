@@ -681,6 +681,71 @@ PetscErrorCode PetscThreadCommRunKernel(MPI_Comm comm,PetscErrorCode (*func)(Pet
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscThreadCommRunKernel0"
+/*@C
+   PetscThreadCommRunKernel0 - PetscThreadCommRunKernel version for kernels with no
+                               input arguments
+
+   Input Parameters:
++  comm  - the MPI communicator
+-  func  - the kernel (needs to be cast to PetscThreadKernel)
+
+   Level: developer
+
+   Notes:
+   All input arguments to the kernel must be passed by reference, Petsc objects are
+   inherrently passed by reference so you don't need to additionally & them.
+
+   Example usage - PetscThreadCommRunKernel0(comm,(PetscThreadKernel)kernel_func);
+   with kernel_func declared as
+   PetscErrorCode kernel_func(PetscInt thread_id)
+
+   The first input argument of kernel_func, thread_id, is the thread rank. This is passed implicitly
+   by PETSc.
+
+.seealso: PetscThreadCommCreate(), PetscThreadCommGNThreads()
+@*/
+PetscErrorCode PetscThreadCommRunKernel0(MPI_Comm comm,PetscErrorCode (*func)(PetscInt,...))
+{
+  PetscErrorCode          ierr;
+  PetscInt                i;
+  PetscThreadComm         tcomm=0;
+  PetscThreadCommJobCtx   job;
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventBegin(ThreadComm_RunKernel,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
+  if (tcomm->isnothread) {
+    ierr = (*func)(0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(ThreadComm_RunKernel,0,0,0,0);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  job = PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
+  if (job->job_status[0] != THREAD_JOB_NONE) {
+    for (i=0;i<tcomm->nworkThreads;i++) {
+      while(PetscReadOnce(int,job->job_status[i]) != THREAD_JOB_COMPLETED)
+	;
+    }
+  }
+
+  job->tcomm = tcomm;
+  job->tcomm->job_ctr = PetscJobQueue->ctr;
+  job->nargs = 1;
+  job->pfunc = (PetscThreadKernel)func;
+
+  for (i=0;i<tcomm->nworkThreads;i++) job->job_status[i] = THREAD_JOB_POSTED;
+
+  PetscJobQueue->ctr = (PetscJobQueue->ctr+1)%PETSC_KERNELS_MAX; /* Increment the queue ctr to point to the next available slot */
+  PetscJobQueue->kernel_ctr++;
+
+  ierr = (*tcomm->ops->runkernel)(comm,job);CHKERRQ(ierr);
+
+  ierr = PetscLogEventEnd(ThreadComm_RunKernel,0,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommRunKernel1"
 /*@C
    PetscThreadCommRunKernel1 - PetscThreadCommRunKernel version for kernels with 1
