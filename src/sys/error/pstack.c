@@ -1,5 +1,6 @@
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
+#include <petscthreadcomm.h>
 
 #if defined(PETSC_USE_DEBUG)
 
@@ -25,19 +26,27 @@ PetscErrorCode  PetscStackDepublish(void)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscStackCreate_kernel(PetscInt trank)
+{
+  PetscStack *petscstack_in;
+  if(petscstack) return 0;
+
+  petscstack_in = (PetscStack*)malloc(sizeof(PetscStack));
+  petscstack_in->currentsize = 0;
+  petscstack = petscstack_in;
+  PetscThreadLocalSetValue(petscstack,petscstack);
+  PetscThreadLocalSetValue(petscstack,petscstack); /* Sets the value for the pthread_key_t if it is used */
+  return 0;
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscStackCreate"
 PetscErrorCode  PetscStackCreate(void)
 {
   PetscErrorCode ierr;
 
-  PetscStack *petscstack_in;
-  if (petscstack) return 0;
-
-  ierr = PetscNew(PetscStack,&petscstack_in);CHKERRQ(ierr);
-  petscstack_in->currentsize = 0;
-  petscstack = petscstack_in;
-  PetscThreadLocalSetValue(petscstack,petscstack); /* Sets the value for the pthread_key_t if it is used */
+  ierr = PetscThreadCommRunKernel0(PETSC_COMM_SELF,(PetscThreadKernel)PetscStackCreate_kernel);CHKERRQ(ierr);
+  ierr = PetscThreadCommBarrier(PETSC_COMM_SELF);CHKERRQ(ierr);
   return 0;
 }
 
@@ -78,18 +87,25 @@ PetscErrorCode  PetscStackView(PetscViewer viewer)
   return 0;
 }
 
+PetscErrorCode PetscStackDestroy_kernel(PetscInt trank)
+{
+  if(petscstack) {
+    PetscStack *petscstack_in = petscstack;
+    petscstack = 0;
+    free(petscstack_in);
+  }
+  return 0;
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscStackDestroy"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 PetscErrorCode  PetscStackDestroy(void)
 {
   PetscErrorCode ierr;
-  if (petscstack){
-    PetscStack *petscstack_in = petscstack;
-    petscstack = 0;
-    ierr = PetscFree(petscstack_in);CHKERRQ(ierr);
-    PetscThreadLocalDestroy(petscstack); /* Deletes pthread_key if it was used */
-  }
+  ierr = PetscThreadCommRunKernel0(PETSC_COMM_SELF,(PetscThreadKernel)PetscStackDestroy_kernel);CHKERRQ(ierr);
+  ierr = PetscThreadCommBarrier(PETSC_COMM_SELF);CHKERRQ(ierr);
+  PetscThreadLocalDestroy(petscstack); /* Deletes pthread_key if it was used */
   return 0;
 }
 
