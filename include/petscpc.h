@@ -501,6 +501,7 @@ PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat,Vec,Vec);
 #endif
 
+PETSC_EXTERN PetscErrorCode PCISSetUseStiffnessScaling(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainScalingFactor(PC,PetscScalar);
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainDiagonalScaling(PC,Vec);
 

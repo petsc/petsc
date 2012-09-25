@@ -3,6 +3,48 @@
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
+#define __FUNCT__ "PCISSetUseStiffnessScaling_IS"
+static PetscErrorCode PCISSetUseStiffnessScaling_IS(PC pc, PetscBool use)
+{
+  PetscErrorCode ierr;
+  PC_IS  *pcis = (PC_IS*)pc->data;
+
+  PetscFunctionBegin;
+  pcis->use_stiffness_scaling = use;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "PCISSetUseStiffnessScaling"
+/*@
+ PCISSetUseStiffnessScaling - Tells PCIS to construct partition of unity using
+                              local matrices' diagonal.
+
+   Not collective
+
+   Input Parameters:
++  pc - the preconditioning context
+-  use - whether or not pcis use matrix diagonal to build partition of unity.
+
+   Level: intermediate
+
+   Notes:
+
+.seealso: PCBDDC
+@*/
+PetscErrorCode PCISSetUseStiffnessScaling(PC pc, PetscBool use)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCISSetUseStiffnessScaling_C",(PC,PetscBool),(pc,use));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
 #define __FUNCT__ "PCISSetSubdomainDiagonalScaling_IS"
 static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_factors)
 {
@@ -192,24 +234,24 @@ PetscErrorCode  PCISSetUp(PC pc)
   ierr = VecScatterCreate(pcis->vec1_global,pcis->is_B_global,pcis->vec1_B,(IS)0,&pcis->global_to_B);CHKERRQ(ierr);
 
   /* Creating scaling "matrix" D */
+  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_is_use_stiffness_scaling",&pcis->use_stiffness_scaling,PETSC_NULL);CHKERRQ(ierr);
   if ( !pcis->D ) {
-    ierr = VecSet(pcis->vec1_B,pcis->scaling_factor);CHKERRQ(ierr);
-  } else {
-    ierr = VecCopy(pcis->D,pcis->vec1_B);CHKERRQ(ierr);
+    ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
+    if (!pcis->use_stiffness_scaling) {
+      ierr = VecSet(pcis->D,pcis->scaling_factor);CHKERRQ(ierr);
+    } else {
+      ierr = MatGetDiagonal(matis->A,pcis->vec1_N);CHKERRQ(ierr);
+      ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd  (pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    }
   }
+  ierr = VecCopy(pcis->D,pcis->vec1_B);CHKERRQ(ierr);
   ierr = VecSet(counter,0.0);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_B,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->global_to_B,counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->global_to_B,counter,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  if ( !pcis->D ) {
-    ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
-    ierr = VecCopy(pcis->vec1_B,pcis->D);CHKERRQ(ierr);
-    ierr = VecReciprocal(pcis->D);CHKERRQ(ierr);
-    ierr = VecScale(pcis->D,pcis->scaling_factor);CHKERRQ(ierr);
-  } else {
-    ierr = VecPointwiseDivide(pcis->D,pcis->D,pcis->vec1_B);CHKERRQ(ierr);
-  }
+  ierr = VecPointwiseDivide(pcis->D,pcis->D,pcis->vec1_B);CHKERRQ(ierr);
 
   /* See historical note 01, at the bottom of this file. */
 
@@ -336,6 +378,7 @@ PetscErrorCode  PCISDestroy(PC pc)
   if (pcis->ISLocalToGlobalMappingGetInfoWasCalled) {
     ierr = ISLocalToGlobalMappingRestoreInfo((ISLocalToGlobalMapping)0,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
   }
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetUseStiffnessScaling_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetSubdomainScalingFactor_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetSubdomainDiagonalScaling_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -380,6 +423,8 @@ PetscErrorCode  PCISCreate(PC pc)
   pcis->ISLocalToGlobalMappingGetInfoWasCalled = PETSC_FALSE;
   pcis->scaling_factor = 1.0;
   /* composing functions */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetUseStiffnessScaling_C","PCISSetUseStiffnessScaling_IS",
+                    PCISSetUseStiffnessScaling_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetSubdomainScalingFactor_C","PCISSetSubdomainScalingFactor_IS",
                     PCISSetSubdomainScalingFactor_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetSubdomainDiagonalScaling_C","PCISSetSubdomainDiagonalScaling_IS",

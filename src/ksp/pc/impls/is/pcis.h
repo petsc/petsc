@@ -47,6 +47,7 @@ typedef struct {
   VecScatter      global_to_B;    /* scattering context from global to local interface nodes */
   PetscBool       pure_neumann;
   PetscScalar     scaling_factor;
+  PetscBool       use_stiffness_scaling;
 
   PetscBool  ISLocalToGlobalMappingGetInfoWasCalled;
   PetscInt   n_neigh;    /* number of neighbours this subdomain has (by now, INCLUDING OR NOT the subdomain itself). */
