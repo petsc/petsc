@@ -3059,6 +3059,11 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
     /* Allow user's customization */
     ierr = KSPSetFromOptions(pcbddc->ksp_D);CHKERRQ(ierr);
+    /* umfpack interface has a bug when matrix dimension is zero */
+    if (!n_D) {
+      ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
+      ierr = PCFactorSetMatSolverPackage(pc_temp,MATSOLVERPETSC);CHKERRQ(ierr);
+    }
     /* Set Up KSP for Dirichlet problem of BDDC */
     ierr = KSPSetUp(pcbddc->ksp_D);CHKERRQ(ierr);
     /* set ksp_D into pcis data */
@@ -3077,6 +3082,11 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
     /* Allow user's customization */
     ierr = KSPSetFromOptions(pcbddc->ksp_R);CHKERRQ(ierr);
+    /* umfpack interface has a bug when matrix dimension is zero */
+    if (!pcis->n) {
+      ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
+      ierr = PCFactorSetMatSolverPackage(pc_temp,MATSOLVERPETSC);CHKERRQ(ierr);
+    }
     /* Set Up KSP for Neumann problem of BDDC */
     ierr = KSPSetUp(pcbddc->ksp_R);CHKERRQ(ierr);
     /* check Dirichlet and Neumann solvers */
