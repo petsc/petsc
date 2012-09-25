@@ -2126,7 +2126,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *
     sctx.newshift = PETSC_FALSE;
 
     for (i=0; i<mbs; i++) c2r[i] = mbs;
-    il[0] = 0;
+    if (mbs) il[0] = 0;
 
     for (k = 0; k<mbs; k++){
       /* zero rtmp */
