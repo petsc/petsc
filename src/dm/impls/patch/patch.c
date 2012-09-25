@@ -1,6 +1,22 @@
 #include <petsc-private/patchimpl.h>   /*I      "petscdmpatch.h"   I*/
 #include <petscdmda.h>
 
+/*
+Solver loop to update \tau:
+
+  DMZoom(dmc, &dmz)
+  DMRefine(dmz, &dmf),
+  Scatter Xcoarse -> Xzoom,
+  Interpolate Xzoom -> Xfine (note that this may be on subcomms),
+  Smooth Xfine using two-step smoother
+    normal smoother plus Kaczmarz---moves back and forth from dmzoom to dmfine
+  Compute residual Rfine
+  Restrict Rfine to Rzoom_restricted
+  Scatter Rzoom_restricted -> Rcoarse_restricted
+  Compute global residual Rcoarse
+  TauCoarse = Rcoarse - Rcoarse_restricted
+*/
+
 #undef __FUNCT__
 #define __FUNCT__ "DMPatchView_Ascii"
 PetscErrorCode DMPatchView_Ascii(DM dm, PetscViewer viewer)
