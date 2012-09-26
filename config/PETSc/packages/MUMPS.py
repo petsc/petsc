@@ -133,10 +133,11 @@ class Configure(PETSc.package.NewPackage):
     return self.installDir
 
   def configureLibrary(self):
-    if self.parmetis.found:
-      self.deps.append(self.parmetis)
-    elif self.ptscotch.found:
-      self.deps.append(self.ptscotch)
+    if not self.framework.argDB['with-mumps-serial']:
+      if self.parmetis.found:
+        self.deps.append(self.parmetis)
+      elif self.ptscotch.found:
+        self.deps.append(self.ptscotch)
     PETSc.package.NewPackage.configureLibrary(self)
      # [parallem mumps] make sure either ptscotch or parmetis is enabled
     if not self.framework.argDB['with-mumps-serial'] and not self.ptscotch.found and not self.parmetis.found:
