@@ -49,6 +49,8 @@ class Configure(PETSc.package.NewPackage):
   def Install(self):
     import os
 
+    if not hasattr(self.compilers, 'FC'):
+      raise RuntimeError('Cannot install '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
     if not self.compilers.FortranDefineCompilerOption:
       raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')
     if self.framework.argDB['with-mumps-serial']:
