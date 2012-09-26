@@ -549,7 +549,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     if (jac->schur) {
       KSP kspA, kspInner, kspUpper;
 
-      ierr = MatSchurComplementGetKSP(jac->schur, kspInner);CHKERRQ(ierr);
+      ierr = MatSchurComplementGetKSP(jac->schur, &kspInner);CHKERRQ(ierr);
       ilink = jac->head;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
