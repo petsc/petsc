@@ -416,7 +416,7 @@ PETSC_EXTERN PetscErrorCode PetscStackPrint(PetscStack*,FILE* fp);
 
 #if defined(PETSC_HAVE_PTHREADCLASSES) && !defined(PETSC_PTHREAD_LOCAL)
 /* Get the value associated with name_key */
-#define PetscThreadLocalGetValue(name,type) ( (type)pthread_getspecific(name##_key))
+#define PetscThreadLocalGetValue(name) ( pthread_getspecific(name##_key))
 /* Set the value for name_key */
 #define PetscThreadLocalSetValue(name,value) ( pthread_setspecific(name##_key,(void*)value) )
 /* Create name_key */
@@ -424,7 +424,7 @@ PETSC_EXTERN PetscErrorCode PetscStackPrint(PetscStack*,FILE* fp);
 /* Destroy name_key */
 #define PetscThreadLocalDestroy(name) ( pthread_key_delete(name##_key) )
 #else
-#define PetscThreadLocalGetValue(name,type) ( (type)name )
+#define PetscThreadLocalGetValue(name) (name )
 #define PetscThreadLocalSetValue(name,value)
 #define PetscThreadLocalRegister(name)
 #define PetscThreadLocalDestroy(name)
@@ -457,7 +457,7 @@ PETSC_EXTERN PetscErrorCode PetscStackPrint(PetscStack*,FILE* fp);
 M*/
 #define PetscFunctionBegin \
   do {									\
-    petscstack = PetscThreadLocalGetValue(petscstack,PetscStack*);	\
+    petscstack = (PetscStack*)PetscThreadLocalGetValue(petscstack);     \
     if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {	\
       petscstack->function[petscstack->currentsize]  = PETSC_FUNCTION_NAME; \
       petscstack->file[petscstack->currentsize]      = __FILE__;        \
@@ -476,7 +476,7 @@ M*/
 
 #define PetscStackPush(n) \
   do {									\
-    petscstack = PetscThreadLocalGetValue(petscstack,PetscStack*);	\
+    petscstack = (PetscStack*)PetscThreadLocalGetValue(petscstack); \
     if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {	\
       petscstack->function[petscstack->currentsize]  = n;		\
       petscstack->file[petscstack->currentsize]      = "unknown";	\
@@ -486,7 +486,7 @@ M*/
     } CHKMEMQ;} while (0)
 
 #define PetscStackPop \
-  do {CHKMEMQ;petscstack = PetscThreadLocalGetValue(petscstack,PetscStack*); \
+  do {CHKMEMQ;petscstack = (PetscStack*)PetscThreadLocalGetValue(petscstack); \
     if (petscstack && petscstack->currentsize > 0) {			\
       petscstack->currentsize--;					\
       petscstack->function[petscstack->currentsize]  = 0;		\
@@ -522,7 +522,7 @@ M*/
 M*/
 #define PetscFunctionReturn(a) \
   do {									\
-    petscstack = PetscThreadLocalGetValue(petscstack,PetscStack*);	\
+    petscstack = (PetscStack*)PetscThreadLocalGetValue(petscstack); \
     if (petscstack && petscstack->currentsize > 0) {			\
       petscstack->currentsize--;					\
       petscstack->function[petscstack->currentsize]  = 0;		\
@@ -534,7 +534,7 @@ M*/
 
 #define PetscFunctionReturnVoid() \
   do {							\
-    petscstack = PetscThreadLocalGetValue(petscstack,PetscStack*);	\
+    petscstack = (PetscStack*)PetscThreadLocalGetValue(petscstack); \
     if (petscstack && petscstack->currentsize > 0) {			\
       petscstack->currentsize--;					\
       petscstack->function[petscstack->currentsize]  = 0;		\
