@@ -6,7 +6,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCISSetUseStiffnessScaling_IS"
 static PetscErrorCode PCISSetUseStiffnessScaling_IS(PC pc, PetscBool use)
 {
-  PetscErrorCode ierr;
   PC_IS  *pcis = (PC_IS*)pc->data;
 
   PetscFunctionBegin;

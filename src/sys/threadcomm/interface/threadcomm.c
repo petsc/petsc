@@ -1296,9 +1296,10 @@ PetscErrorCode PetscThreadCommGetRank(PetscThreadComm tcomm,PetscInt *trank)
   PetscErrorCode ierr;
   PetscInt       rank = 0;
 
+  PetscFunctionBegin;
   if (tcomm->ops->getrank) {
-    ierr = (*tcomm->ops->getrank)(&rank);
+    ierr = (*tcomm->ops->getrank)(&rank);CHKERRQ(ierr);
   }
-  *trank = rank; 
-  return 0;
+  *trank = rank;
+  PetscFunctionReturn(0);
 }

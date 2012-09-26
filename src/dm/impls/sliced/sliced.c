@@ -257,6 +257,7 @@ static PetscErrorCode  DMGlobalToLocalBegin_Sliced(DM da,Vec g,InsertMode mode,V
   PetscBool      flg;
 
   PetscFunctionBegin;
+  ierr = VecGhostIsLocalForm(g,l,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Local vector is not local form of global vector");
   ierr = VecGhostUpdateEnd(g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGhostUpdateBegin(g,mode,SCATTER_FORWARD);CHKERRQ(ierr);

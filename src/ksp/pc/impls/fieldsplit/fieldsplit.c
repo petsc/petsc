@@ -128,7 +128,6 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
   PetscBool         iascii;
   PetscInt          i,j;
   PC_FieldSplitLink ilink = jac->head;
-  KSP               ksp;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -547,7 +546,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
     /* need to handle case when one is resetting up the preconditioner */
     if (jac->schur) {
-      KSP kspA, kspInner, kspUpper;
+      KSP kspA = jac->head->ksp, kspInner = PETSC_NULL, kspUpper = jac->kspupper;
 
       ierr = MatSchurComplementGetKSP(jac->schur, &kspInner);CHKERRQ(ierr);
       ilink = jac->head;

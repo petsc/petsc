@@ -91,7 +91,7 @@ static PetscErrorCode TSStep_Theta(TS ts)
 {
   TS_Theta            *th = (TS_Theta*)ts->data;
   PetscInt            its,lits,reject;
-  PetscReal           next_time_step;
+  PetscReal           next_time_step = 0.0;
   SNESConvergedReason snesreason;
   PetscErrorCode      ierr;
 

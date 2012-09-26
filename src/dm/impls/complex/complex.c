@@ -6846,7 +6846,7 @@ PetscErrorCode DMComplexCreateSubmesh(DM dm, const char *label, DM *subdm)
   ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateSection(*subdm, &subCoordSection);CHKERRQ(ierr);
-  ierr = DMComplexGetCoordinateVec(*subdm, &coordinates);CHKERRQ(ierr);
+  ierr = DMComplexGetCoordinateVec(*subdm, &subCoordinates);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, firstSubVertex, firstSubVertex+numSubVertices);CHKERRQ(ierr);
   for (v = firstSubVertex; v < firstSubVertex+numSubVertices; ++v) {
     ierr = PetscSectionSetDof(coordSection, v, dim);CHKERRQ(ierr);
