@@ -383,6 +383,22 @@ PETSC_EXTERN PetscErrorCode PetscFPTrapPop(void);
 #include <pthread.h>
 #endif
 
+#if defined(PETSC_HAVE_PTHREADCLASSES) && !defined(PETSC_PTHREAD_LOCAL)
+/* Get the value associated with name_key */
+#define PetscThreadLocalGetValue(name) ( pthread_getspecific(name##_key))
+/* Set the value for name_key */
+#define PetscThreadLocalSetValue(name,value) ( pthread_setspecific(name##_key,(void*)value) )
+/* Create name_key */
+#define PetscThreadLocalRegister(name) ( pthread_key_create(&name##_key,NULL) )
+/* Destroy name_key */
+#define PetscThreadLocalDestroy(name) ( pthread_key_delete(name##_key) )
+#else
+#define PetscThreadLocalGetValue(name) (name )
+#define PetscThreadLocalSetValue(name,value) (name = value)
+#define PetscThreadLocalRegister(name)
+#define PetscThreadLocalDestroy(name)
+#endif
+
 /*
       Allows the code to build a stack frame as it runs
 */
@@ -415,22 +431,6 @@ PETSC_EXTERN PetscErrorCode PetscStackCopy(PetscStack*,PetscStack*);
 PETSC_EXTERN PetscErrorCode PetscStackPrint(PetscStack*,FILE* fp);
 
 #define PetscStackActive (((PetscStack*)PetscThreadLocalGetValue(petscstack)) != 0)
-
-#if defined(PETSC_HAVE_PTHREADCLASSES) && !defined(PETSC_PTHREAD_LOCAL)
-/* Get the value associated with name_key */
-#define PetscThreadLocalGetValue(name) ( pthread_getspecific(name##_key))
-/* Set the value for name_key */
-#define PetscThreadLocalSetValue(name,value) ( pthread_setspecific(name##_key,(void*)value) )
-/* Create name_key */
-#define PetscThreadLocalRegister(name) ( pthread_key_create(&name##_key,NULL) )
-/* Destroy name_key */
-#define PetscThreadLocalDestroy(name) ( pthread_key_delete(name##_key) )
-#else
-#define PetscThreadLocalGetValue(name) (name )
-#define PetscThreadLocalSetValue(name,value) (name = value)
-#define PetscThreadLocalRegister(name)
-#define PetscThreadLocalDestroy(name)
-#endif
 
 /*MC
    PetscFunctionBegin - First executable line of each PETSc function
