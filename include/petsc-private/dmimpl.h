@@ -67,6 +67,13 @@ struct _DMRefineHookLink {
   DMRefineHookLink next;
 };
 
+typedef struct _DMBlockRestrictHookLink *DMBlockRestrictHookLink;
+struct _DMBlockRestrictHookLink {
+  PetscErrorCode (*restricthook)(DM,VecScatter,VecScatter,DM,void*);
+  void *ctx;
+  DMBlockRestrictHookLink next;
+};
+
 typedef enum {DMVEC_STATUS_IN,DMVEC_STATUS_OUT} DMVecStatus;
 typedef struct _DMNamedVecLink *DMNamedVecLink;
 struct _DMNamedVecLink {
@@ -106,6 +113,7 @@ struct _p_DM {
   void                   *data;
   DMCoarsenHookLink      coarsenhook; /* For transfering auxiliary problem data to coarser grids */
   DMRefineHookLink       refinehook;
+  DMBlockRestrictHookLink blockrestricthook;
   DMLocalFunction1       lf;
   DMLocalJacobian1       lj;
   /* Flexible communication */
