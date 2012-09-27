@@ -42,6 +42,7 @@ J*/
 #define SNESNCG          "ncg"
 #define SNESFAS          "fas"
 #define SNESMS           "ms"
+#define SNESNASM         "nasm"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId SNES_CLASSID;

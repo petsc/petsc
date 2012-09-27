@@ -340,6 +340,20 @@ runex5_5_ngmres:
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ngmres, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_5_ngmres.tmp
 
+runex5_5_nasm:
+	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 \
+        -snes_type nasm -sub_snes_mf -snes_max_it 10 > ex5_5_nasm.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_nasm.out ex5_5_nasm.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_nasm, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_nasm.tmp
+
+runex5_5_aspin:
+	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 \
+        -npc_snes_type nasm -snes_npc_side left -npc_sub_snes_mf -snes_max_it 10 > ex5_5_aspin.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_aspin.out ex5_5_aspin.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_aspin, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_aspin.tmp
+
 runex5_5_ngmres_nrichardson:
 	-@${CSD_BASIC_COMMAND_LINE} -snes_type ngmres -snes_ngmres_m ${N_RESTART} -npc_snes_type nrichardson -npc_snes_max_it ${N_SMOOTHS} \
         > ex5_5_ngmres_richardson.tmp 2>&1; \
