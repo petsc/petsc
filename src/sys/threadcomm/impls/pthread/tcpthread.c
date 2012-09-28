@@ -28,6 +28,7 @@ PetscErrorCode PetscThreadCommGetRank_PThread(PetscInt *trank)
 #else
   *trank = *((PetscInt*)pthread_getspecific(PetscPThreadRankkey));
 #endif
+  return 0;
 }
 
 

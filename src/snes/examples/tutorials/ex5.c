@@ -64,7 +64,7 @@ typedef struct {
 */
 extern PetscErrorCode FormInitialGuess(DM,AppCtx*,Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
-extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*);
+extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,MatStructure*,AppCtx*);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 extern PetscErrorCode FormFunctionMatlab(SNES,Vec,Vec,void *);
 #endif
@@ -123,10 +123,10 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(DMDASNESFunction)FormFunctionLocal,&user);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-fd",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (!flg) {
-    ierr = DMDASetLocalJacobian(da,(DMDALocalFunction1)FormJacobianLocal);CHKERRQ(ierr);
+    ierr = DMDASNESSetJacobianLocal(da,(DMDASNESJacobian)FormJacobianLocal,&user);CHKERRQ(ierr);
   }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
@@ -281,7 +281,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
 /*
    FormJacobianLocal - Evaluates Jacobian matrix on local process patch
 */
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,AppCtx *user)
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jacpre,Mat jac,MatStructure *flg,AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;

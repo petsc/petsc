@@ -10,6 +10,7 @@ class Configure(PETSc.package.NewPackage):
     self.functions = ['blacs_pinfo']
     self.requires32bitint = 0
     self.functionsFortran = 1
+    self.double    = 0
     self.complex   = 1
     self.useddirectly     = 0 # PETSc does not use BLACS, it is only used by ScaLAPACK which is used by MUMPS
     self.worksonWindows   = 1

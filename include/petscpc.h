@@ -486,6 +486,8 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
 #if defined(PETSC_HAVE_PCBDDC)
 /* Enum defining how to treat the coarse problem */
 typedef enum {SEQUENTIAL_BDDC,REPLICATED_BDDC,PARALLEL_BDDC,MULTILEVEL_BDDC} CoarseProblemType;
+PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseningRatio(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCBDDCSetMaxLevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetNullSpace(PC,MatNullSpace);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundaries(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCGetDirichletBoundaries(PC,IS*);
@@ -499,6 +501,7 @@ PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat,Vec,Vec);
 #endif
 
+PETSC_EXTERN PetscErrorCode PCISSetUseStiffnessScaling(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainScalingFactor(PC,PetscScalar);
 PETSC_EXTERN PetscErrorCode PCISSetSubdomainDiagonalScaling(PC,Vec);
 

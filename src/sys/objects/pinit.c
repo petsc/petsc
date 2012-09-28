@@ -46,6 +46,11 @@ const char *const PetscDataTypes[] = {"INT","DOUBLE","COMPLEX","LONG","SHORT","F
 PetscBool  PetscPreLoadingUsed = PETSC_FALSE;
 PetscBool  PetscPreLoadingOn   = PETSC_FALSE;
 
+/* pthread_key for PetscStack */
+#if defined(PETSC_HAVE_PTHREADCLASSES) && !defined(PETSC_PTHREAD_LOCAL)
+pthread_key_t petscstack_key;
+#endif
+
 /*
        Checks the options database for initializations related to the
     PETSc components
@@ -832,6 +837,11 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
   ierr = PetscThreadCommInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_DEBUG)
+  PetscThreadLocalRegister(petscstack); /* Creates petscstack_key if needed */
+  ierr = PetscStackCreate();CHKERRQ(ierr);
+#endif
+
   /*
       Once we are completedly initialized then we can set this variables
   */
@@ -986,9 +996,7 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
 #if defined(PETSC_USE_DEBUG)
-  if (PetscStackActive) {
-    ierr = PetscStackDestroy();CHKERRQ(ierr);
-  }
+  ierr = PetscStackDestroy();CHKERRQ(ierr);
 #endif
 
   flg1 = PETSC_FALSE;

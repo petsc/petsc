@@ -178,7 +178,7 @@
           PetscInt     dim, numFields, numBC
           PetscInt, pointer :: numComp(:)
           PetscInt, pointer :: numDof(:)
-          PetscInt, pointer :: bcFields(:)
+          PetscInt, pointer :: bcField(:)
           IS_HIDE,  pointer :: bcPoints(:)
           PetscErrorCode ierr
           DM_HIDE m

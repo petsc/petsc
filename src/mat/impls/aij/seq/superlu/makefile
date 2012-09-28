@@ -1,5 +1,4 @@
 #requirespackage   'PETSC_HAVE_SUPERLU'
-#requiresprecision double
 
 ALL: lib
 

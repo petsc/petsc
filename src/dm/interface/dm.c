@@ -1757,6 +1757,84 @@ PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMBlockRestrictHookAdd"
+/*@
+   DMBlockRestrictHookAdd - adds a callback to be run when restricting a nonlinear problem to the coarse grid
+
+   Logically Collective
+
+   Input Arguments:
++  global - global DM
+.  restricthook - function to run to update data on block solve (at the beginning of the block solve)
+-  ctx - [optional] user-defined context for provide data for the hooks (may be PETSC_NULL)
+
+   Calling sequence for restricthook:
+$    restricthook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
+
++  global - global DM
+.  out    - scatter to the outer (with ghost and overlap points) block vector
+.  in     - scatter to block vector values only owned locally
+.  block  - block DM (may just be a shell if the global DM is passed in correctly)
+-  ctx - optional user-defined function context
+
+   Level: advanced
+
+   Notes:
+   This function is only needed if auxiliary data needs to be set up on coarse grids.
+
+   If this function is called multiple times, the hooks will be run in the order they are added.
+
+   In order to compose with nonlinear preconditioning without duplicating storage, the hook should be implemented to
+   extract the finest level information from its context (instead of from the SNES).
+
+.seealso: DMRefineHookAdd(), SNESFASGetInterpolation(), SNESFASGetInjection(), PetscObjectCompose(), PetscContainerCreate()
+@*/
+PetscErrorCode DMBlockRestrictHookAdd(DM global,PetscErrorCode (*restricthook)(DM,VecScatter,VecScatter,DM,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DMBlockRestrictHookLink link,*p;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(global,DM_CLASSID,1);
+  for (p=&global->blockrestricthook; *p; p=&(*p)->next) {} /* Scan to the end of the current list of hooks */
+  ierr = PetscMalloc(sizeof(struct _DMBlockRestrictHookLink),&link);CHKERRQ(ierr);
+  link->restricthook = restricthook;
+  link->ctx = ctx;
+  link->next = PETSC_NULL;
+  *p = link;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMBlockRestrict"
+/*@
+   DMBlockRestrict - restricts user-defined problem data to a block DM by running hooks registered by DMBlockRestrictHookAdd()
+
+   Collective if any hooks are
+
+   Input Arguments:
++  fine - finer DM to use as a base
+.  restrct - restriction matrix, apply using MatRestrict()
+.  inject - injection matrix, also use MatRestrict()
+-  coarse - coarer DM to update
+
+   Level: developer
+
+.seealso: DMCoarsenHookAdd(), MatRestrict()
+@*/
+PetscErrorCode DMBlockRestrict(DM global,VecScatter in,VecScatter out,DM block)
+{
+  PetscErrorCode ierr;
+  DMBlockRestrictHookLink link;
+
+  PetscFunctionBegin;
+  for (link=global->blockrestricthook; link; link=link->next) {
+    if (link->restricthook) {ierr = (*link->restricthook)(global,in,out,block,link->ctx);CHKERRQ(ierr);}
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMGetCoarsenLevel"
 /*@
     DMGetCoarsenLevel - Get's the number of coarsenings that have generated this DM.

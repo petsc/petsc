@@ -256,6 +256,7 @@ M*/
 typedef struct {PetscScalar x,y,z;} DMDACoor3d;
 
 PETSC_EXTERN PetscErrorCode DMDAGetLocalInfo(DM,DMDALocalInfo*);
+PETSC_EXTERN PetscErrorCode DMDAGetLocalBlockInfo(DM,DMDALocalInfo*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDALocalFunction1)(DMDALocalInfo*,void*,void*,void*);
 PETSC_EXTERN PetscErrorCode DMDAComputeFunctionLocal(DM, DMDALocalFunction1, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMDAComputeFunctionLocalGhost(DM, DMDALocalFunction1, Vec, Vec, void *);

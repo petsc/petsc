@@ -126,17 +126,17 @@ PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
 #undef __FUNCT__
 #define __FUNCT__ "PetscFindInt"
 /*@
-  PetscFindInt - Finds and integers in a sorted array of integers
+  PetscFindInt - Finds integer in a sorted array of integers
 
    Not Collective
 
    Input Parameters:
 +  key - the integer to locate
-.  n   - number of value in the array
+.  n   - number of values in the array
 -  ii  - array of integers
 
    Output Parameter:
-.  loc - the location, or -1 if the value is not found
+.  loc - the location if found, otherwise -(slot+1) where slot is the place the value would go
 
    Level: intermediate
 
@@ -146,39 +146,17 @@ PetscErrorCode  PetscSortRemoveDupsInt(PetscInt *n,PetscInt ii[])
 @*/
 PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt ii[], PetscInt *loc)
 {
-  /* inclusive indices
-     0 <= imin when using truncate toward zero divide
-       imid = (imin+imax)/2;
-     imin unrestricted when using truncate toward minus infinity divide
-       imid = (imin+imax)>>1; or
-       imid = (int)floor((imin+imax)/2.0); */
-  PetscInt imin = 0, imax = n-1;
+  PetscInt lo = 0,hi = n;
 
   PetscFunctionBegin;
-  PetscValidPointer(ii, 3);
-  PetscValidPointer(loc, 4);
-  /* continually narrow search until just one element remains */
-  while(imin < imax) {
-    PetscInt imid = ((unsigned PetscInt) imin + (unsigned PetscInt) imax) >> 1;
-
-    /* code must guarantee the interval is reduced at each iteration
-    assert(imid < imax); */
-    /* reduce the search */
-    if (ii[imid] < key) {
-      imin = imid + 1;
-    } else {
-      imax = imid;
-    }
+  PetscValidPointer(ii,3);
+  PetscValidPointer(loc,4);
+  while (hi - lo > 1) {
+    PetscInt mid = lo + (hi - lo)/2;
+    if (key < ii[mid]) hi = mid;
+    else               lo = mid;
   }
-  /* At exit of while:
-     if ii[] is empty, then imax < imin
-     otherwise imax == imin */
-  /* deferred test for equality */
-  if ((imax == imin) && (ii[imin] == key)) {
-    *loc = imin;
-  } else {
-    *loc = -1;
-  }
+  *loc = key == ii[lo] ? lo : -(lo + (key > ii[lo]) + 1);
   PetscFunctionReturn(0);
 }
 

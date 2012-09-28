@@ -97,12 +97,15 @@ typedef struct {
   CoarseCommunicationsType   coarse_communications_type;
   PetscInt                   coarsening_ratio;
   PetscInt                   active_procs;
+  PetscInt                   current_level;
+  PetscInt                   max_levels;
   /* For verbose output of some bddc data structures */
   PetscBool                  dbg_flag;
   PetscViewer                dbg_viewer;
 } PC_BDDC;
 
 /* prototypes for functions contained in bddc.c */
+static PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
 static PetscErrorCode PCBDDCAdaptNullSpace(PC);
 static PetscErrorCode PCBDDCCoarseSetUp(PC);
 static PetscErrorCode PCBDDCFindConnectedComponents(PCBDDCGraph,PetscInt);

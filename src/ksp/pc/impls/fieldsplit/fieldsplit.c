@@ -2,13 +2,21 @@
 #include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscdmcomposite.h>   /*I "petscdmcomposite.h" I*/
 
+/*
+  There is a nice discussion of block preconditioners in
+
+[El08] A taxonomy and comparison of parallel block multi-level preconditioners for the incompressible Navier–Stokes equations
+       Howard Elman, V.E. Howle, John Shadid, Robert Shuttleworth, Ray Tuminaro, Journal of Computational Physics 227 (2008) 1790--1808
+       http://chess.cs.umd.edu/~elman/papers/tax.pdf
+*/
+
 const char *const PCFieldSplitSchurPreTypes[] = {"SELF","DIAG","USER","PCFieldSplitSchurPreType","PC_FIELDSPLIT_SCHUR_PRE_",0};
 const char *const PCFieldSplitSchurFactTypes[] = {"DIAG","LOWER","UPPER","FULL","PCFieldSplitSchurFactType","PC_FIELDSPLIT_SCHUR_FACT_",0};
 
 typedef struct _PC_FieldSplitLink *PC_FieldSplitLink;
 struct _PC_FieldSplitLink {
   KSP               ksp;
-  Vec               x,y;
+  Vec               x,y,z;
   char              *splitname;
   PetscInt          nfields;
   PetscInt          *fields,*fields_col;
@@ -32,11 +40,12 @@ typedef struct {
   /* Only used when Schur complement preconditioning is used */
   Mat                                B;            /* The (0,1) block */
   Mat                                C;            /* The (1,0) block */
-  Mat                                schur;        /* The Schur complement S = A11 - A10 A00^{-1} A01 */
+  Mat                                schur;        /* The Schur complement S = A11 - A10 A00^{-1} A01, the KSP here, kspinner, is H_1 in [El08] */
   Mat                                schur_user;   /* User-provided preconditioning matrix for the Schur complement */
   PCFieldSplitSchurPreType           schurpre; /* Determines which preconditioning matrix is used for the Schur complement */
   PCFieldSplitSchurFactType schurfactorization;
   KSP                                kspschur;     /* The solver for S */
+  KSP                                kspupper;     /* The solver for A in the upper diagonal part of the factorization (H_2 in [El08]) */
   PC_FieldSplitLink                  head;
   PetscBool                          reset;         /* indicates PCReset() has been last called on this object, hack */
   PetscBool                          suboptionsset; /* Indicates that the KSPSetFromOptions() has been called on the sub-KSPs */
@@ -119,7 +128,6 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
   PetscBool         iascii;
   PetscInt          i,j;
   PC_FieldSplitLink ilink = jac->head;
-  KSP               ksp;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -168,13 +176,14 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"KSP solver for A00 block \n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    if (jac->schur) {
-      ierr = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
-      ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  not yet available\n");CHKERRQ(ierr);
-    }
+    ierr = KSPView(jac->head->ksp,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    if (jac->kspupper != jac->head->ksp) {
+      ierr = PetscViewerASCIIPrintf(viewer,"KSP solver for upper A00 in upper triangular factor \n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = KSPView(jac->kspupper,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
     ierr = PetscViewerASCIIPrintf(viewer,"KSP solver for S = A11 - A10 inv(A00) A01 \n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     if (jac->kspschur) {
@@ -463,7 +472,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       }
       /* create work vectors for each split */
       ierr = MatGetVecs(jac->pmat[i],&jac->x[i],&jac->y[i]);CHKERRQ(ierr);
-      ilink->x = jac->x[i]; ilink->y = jac->y[i];
+      ilink->x = jac->x[i]; ilink->y = jac->y[i]; ilink->z = PETSC_NULL;
       /* compute scatter contexts needed by multiplicative versions and non-default splits */
       ierr = VecScatterCreate(xtmp,ilink->is,jac->x[i],PETSC_NULL,&ilink->sctx);CHKERRQ(ierr);
       /* Check for null space attached to IS */
@@ -537,6 +546,9 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
     /* need to handle case when one is resetting up the preconditioner */
     if (jac->schur) {
+      KSP kspA = jac->head->ksp, kspInner = PETSC_NULL, kspUpper = jac->kspupper;
+
+      ierr = MatSchurComplementGetKSP(jac->schur, &kspInner);CHKERRQ(ierr);
       ilink = jac->head;
       ierr  = ISComplement(ilink->is_col,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
@@ -546,6 +558,12 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ierr  = MatSchurComplementUpdate(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],pc->flag);CHKERRQ(ierr);
+      if (kspA != kspInner) {
+        ierr = KSPSetOperators(kspA,jac->mat[0],jac->pmat[0],pc->flag);CHKERRQ(ierr);
+      }
+      if (kspUpper != kspA) {
+        ierr = KSPSetOperators(kspUpper,jac->mat[0],jac->pmat[0],pc->flag);CHKERRQ(ierr);
+      }
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),pc->flag);CHKERRQ(ierr);
      } else {
       KSP ksp;
@@ -589,11 +607,32 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr = KSPGetDM(jac->head->ksp, &dmInner);CHKERRQ(ierr);
         ierr = KSPSetDM(ksp, dmInner);CHKERRQ(ierr);
         ierr = KSPSetDMActive(ksp, PETSC_FALSE);CHKERRQ(ierr);
+        ierr = KSPSetOperators(jac->head->ksp,jac->mat[0],jac->pmat[0],flag);CHKERRQ(ierr);
+        ierr = KSPSetFromOptions(jac->head->ksp);CHKERRQ(ierr);
       } else {
         ierr = MatSchurComplementSetKSP(jac->schur, jac->head->ksp);CHKERRQ(ierr);
         ierr = PetscObjectReference((PetscObject) jac->head->ksp);CHKERRQ(ierr);
       }
       ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
+
+      ierr = PetscSNPrintf(schurtestoption, sizeof(schurtestoption), "-fieldsplit_%s_upper_", ilink->splitname);CHKERRQ(ierr);
+      ierr = PetscOptionsFindPairPrefix_Private(((PetscObject)pc)->prefix, schurtestoption, PETSC_NULL, &flg);CHKERRQ(ierr);
+      if (flg) {
+        DM dmInner;
+
+        ierr = PetscSNPrintf(schurprefix, sizeof(schurprefix), "%sfieldsplit_%s_upper_", ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", ilink->splitname);CHKERRQ(ierr);
+        ierr = KSPCreate(((PetscObject) pc)->comm, &jac->kspupper);CHKERRQ(ierr);
+        ierr = KSPSetOptionsPrefix(jac->kspupper, schurprefix);CHKERRQ(ierr);
+        ierr = KSPGetDM(jac->head->ksp, &dmInner);CHKERRQ(ierr);
+        ierr = KSPSetDM(jac->kspupper, dmInner);CHKERRQ(ierr);
+        ierr = KSPSetDMActive(jac->kspupper, PETSC_FALSE);CHKERRQ(ierr);
+        ierr = KSPSetFromOptions(jac->kspupper);CHKERRQ(ierr);
+        ierr = KSPSetOperators(jac->kspupper,jac->mat[0],jac->pmat[0],flag);CHKERRQ(ierr);
+        ierr = VecDuplicate(jac->head->x, &jac->head->z);CHKERRQ(ierr);
+      } else {
+        jac->kspupper = jac->head->ksp;
+        ierr = PetscObjectReference((PetscObject) jac->head->ksp);CHKERRQ(ierr);
+      }
 
       ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);               CHKERRQ(ierr);
       ierr  = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
@@ -651,19 +690,17 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
-  KSP               ksp;
   PC_FieldSplitLink ilinkA = jac->head, ilinkD = ilinkA->next;
+  KSP               kspA = ilinkA->ksp, kspLower = kspA, kspUpper = jac->kspupper;
 
   PetscFunctionBegin;
-  ierr = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
-
   switch (jac->schurfactorization) {
     case PC_FIELDSPLIT_SCHUR_FACT_DIAG:
       /* [A00 0; 0 -S], positive definite, suitable for MINRES */
       ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterBegin(ilinkD->sctx,x,ilinkD->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
+      ierr = KSPSolve(kspA,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
       ierr = VecScatterBegin(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilinkD->sctx,x,ilinkD->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = KSPSolve(jac->kspschur,ilinkD->x,ilinkD->y);CHKERRQ(ierr);
@@ -676,7 +713,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
       /* [A00 0; A10 S], suitable for left preconditioning */
       ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
+      ierr = KSPSolve(kspA,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
       ierr = MatMult(jac->C,ilinkA->y,ilinkD->x);CHKERRQ(ierr);
       ierr = VecScale(ilinkD->x,-1.);CHKERRQ(ierr);
       ierr = VecScatterBegin(ilinkD->sctx,x,ilinkD->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -697,7 +734,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
       ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
+      ierr = KSPSolve(kspA,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
       ierr = VecScatterBegin(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -706,7 +743,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
       /* [1 0; A10 A00^{-1} 1] [A00 0; 0 S] [1 A00^{-1}A01; 0 1], an exact solve if applied exactly, needs one extra solve with A */
       ierr = VecScatterBegin(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilinkA->sctx,x,ilinkA->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
+      ierr = KSPSolve(kspLower,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
       ierr = MatMult(jac->C,ilinkA->y,ilinkD->x);CHKERRQ(ierr);
       ierr = VecScale(ilinkD->x,-1.0);CHKERRQ(ierr);
       ierr = VecScatterBegin(ilinkD->sctx,x,ilinkD->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -716,9 +753,16 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc,Vec x,Vec y)
       ierr = VecScatterBegin(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilinkD->sctx,ilinkD->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
-      ierr = MatMult(jac->B,ilinkD->y,ilinkA->y);CHKERRQ(ierr);
-      ierr = VecAXPY(ilinkA->x,-1.0,ilinkA->y);CHKERRQ(ierr);
-      ierr = KSPSolve(ksp,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
+      if (kspUpper == kspA) {
+        ierr = MatMult(jac->B,ilinkD->y,ilinkA->y);CHKERRQ(ierr);
+        ierr = VecAXPY(ilinkA->x,-1.0,ilinkA->y);CHKERRQ(ierr);
+        ierr = KSPSolve(kspA,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
+      } else {
+        ierr = KSPSolve(kspA,ilinkA->x,ilinkA->y);CHKERRQ(ierr);
+        ierr = MatMult(jac->B,ilinkD->y,ilinkA->x);CHKERRQ(ierr);
+        ierr = KSPSolve(kspUpper,ilinkA->x,ilinkA->z);CHKERRQ(ierr);
+        ierr = VecAXPY(ilinkA->y,-1.0,ilinkA->z);CHKERRQ(ierr);
+      }
       ierr = VecScatterBegin(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(ilinkA->sctx,ilinkA->y,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
@@ -882,6 +926,7 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
     ierr = KSPReset(ilink->ksp);CHKERRQ(ierr);
     ierr = VecDestroy(&ilink->x);CHKERRQ(ierr);
     ierr = VecDestroy(&ilink->y);CHKERRQ(ierr);
+    ierr = VecDestroy(&ilink->z);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&ilink->sctx);CHKERRQ(ierr);
     ierr = ISDestroy(&ilink->is);CHKERRQ(ierr);
     ierr = ISDestroy(&ilink->is_col);CHKERRQ(ierr);

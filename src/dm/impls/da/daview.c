@@ -234,3 +234,54 @@ PetscErrorCode  DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetLocalBlockInfo"
+/*@C
+   DMDAGetLocalBlockInfo - Gets information about a given distributed array and this processors location in it with overlap taken into account
+
+   Not Collective
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameters:
+.  dainfo - structure containing the information
+
+   Level: beginner
+
+.keywords: distributed array, get, information
+
+.seealso: DMDAGetLocalInfo(), DMDASetOverlap()
+@*/
+PetscErrorCode  DMDAGetLocalBlockInfo(DM da,DMDALocalInfo *info)
+{
+  PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
+  PetscFunctionBegin;
+  ierr = DMDAGetLocalInfo(da,info);CHKERRQ(ierr);
+
+  if (dd->overlap > 0) {
+    if (info->xs - dd->overlap > 0 || info->bx == DMDA_BOUNDARY_PERIODIC) {
+      info->xs -= dd->overlap;
+      info->xm += dd->overlap;
+    }
+    if (info->xs + info->xm + dd->overlap < info->mx || info->bx == DMDA_BOUNDARY_PERIODIC) {
+      info->xm += dd->overlap;
+    }
+    if (info->ys - dd->overlap > 0 || info->by == DMDA_BOUNDARY_PERIODIC) {
+      info->ys -= dd->overlap;
+      info->ym += dd->overlap;
+    }
+    if (info->ys + info->ym + dd->overlap < info->my || info->by == DMDA_BOUNDARY_PERIODIC) {
+      info->ym += dd->overlap;
+    }
+    if (info->zs - dd->overlap > 0 || info->bz == DMDA_BOUNDARY_PERIODIC) {
+      info->zs -= dd->overlap;
+      info->zm += dd->overlap;
+    }
+    if (info->zs + info->zm + dd->overlap < info->mz || info->bz == DMDA_BOUNDARY_PERIODIC) {
+      info->zm += dd->overlap;
+    }
+  }
+  PetscFunctionReturn(0);
+}

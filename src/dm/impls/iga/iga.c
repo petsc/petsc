@@ -1640,7 +1640,7 @@ PetscErrorCode CreateTaperSetOfPoints(PetscReal Xbegin,PetscReal Xend,PetscReal 
   dX = (Xend-Xbegin)/sum;
   X[0] = Xbegin;
   for (i=1;i<N;i++){
-    X[i] = X[i-1] + dX*pow(f,(PetscReal)i-1.0);
+    X[i] = X[i-1] + dX*pow(f,(PetscReal)(i-1));
   }
 
   PetscFunctionReturn(0);

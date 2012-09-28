@@ -1,6 +1,5 @@
 
 #requirespackage   'PETSC_HAVE_MUMPS'
-#requiresprecision double
 
 ALL: lib
 
