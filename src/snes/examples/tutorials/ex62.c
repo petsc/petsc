@@ -612,7 +612,7 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
-  ierr = DMComplexGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = PetscMalloc(numComp * sizeof(PetscScalar), &values);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
     PetscScalar *coords;
@@ -1725,7 +1725,7 @@ int main(int argc, char **argv)
 
     ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-    ierr = DMComplexGetCoordinateVec(user.dm, &crd_vec);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(user.dm, &crd_vec);CHKERRQ(ierr);
     ierr = VecGetLocalSize(crd_vec,&mlocal);CHKERRQ(ierr);
     ierr = PetscMalloc(mlocal*sizeof(*coords), &coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(crd_vec, &v);CHKERRQ(ierr);

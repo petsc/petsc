@@ -854,8 +854,8 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
 
   ierr = DMDAGetInfo(stokes_da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   /* setup for coords */
-  ierr = DMDAGetCoordinateDA(stokes_da,&cda);CHKERRQ(ierr);
-  ierr = DMDAGetGhostedCoordinates(stokes_da,&coords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(stokes_da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(stokes_da,&coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   ierr = DMDAGetElementCorners(stokes_da,&sex,&sey,&sez,&mx,&my,&mz);CHKERRQ(ierr);
@@ -947,8 +947,8 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,CellProperties cell_
 
   ierr = DMDAGetInfo(stokes_da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   /* setup for coords */
-  ierr = DMDAGetCoordinateDA(stokes_da,&cda);CHKERRQ(ierr);
-  ierr = DMDAGetGhostedCoordinates(stokes_da,&coords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(stokes_da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(stokes_da,&coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   ierr = DMDAGetElementCorners(stokes_da,&sex,&sey,&sez,&mx,&my,&mz);CHKERRQ(ierr);
@@ -1035,8 +1035,8 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,CellProperties cell_pr
 
   ierr = DMDAGetInfo(stokes_da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   /* setup for coords */
-  ierr = DMDAGetCoordinateDA(stokes_da,&cda);CHKERRQ(ierr);
-  ierr = DMDAGetGhostedCoordinates(stokes_da,&coords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(stokes_da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(stokes_da,&coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   /* get acces to the vector */
@@ -1184,8 +1184,8 @@ static PetscErrorCode DMDACreateManufacturedSolution(PetscInt mx,PetscInt my,Pet
 
   ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
 
-  ierr = DMDAGetGhostedCoordinates(da,&coords);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(da,&coords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);
@@ -1255,8 +1255,8 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da,Vec X,Vec X_analytic)
   ConstructGaussQuadrature3D(&ngp,gp_xi,gp_weight);
 
   /* setup for coords */
-  ierr = DMDAGetCoordinateDA(stokes_da,&cda);CHKERRQ(ierr);
-  ierr = DMDAGetGhostedCoordinates(stokes_da,&coords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(stokes_da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(stokes_da,&coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   /* setup for analytic */
@@ -1458,8 +1458,8 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"      <Points>\n");
 
   /* copy coordinates */
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-  ierr = DMDAGetGhostedCoordinates(da,&coords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(da,&coords);CHKERRQ(ierr);
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"        <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%d\" />\n",memory_offset);
   memory_offset = memory_offset + sizeof(PetscInt) + sizeof(PetscScalar)*N*3;
 
@@ -1833,8 +1833,8 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   ierr = CellPropertiesCreate(da_Stokes,&cell_properties);CHKERRQ(ierr);
 
   /* interpolate the coordinates to quadrature points */
-  ierr = DMDAGetCoordinateDA(da_Stokes,&vel_cda);CHKERRQ(ierr);
-  ierr = DMDAGetGhostedCoordinates(da_Stokes,&vel_coords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da_Stokes,&vel_cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(da_Stokes,&vel_coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(vel_cda,vel_coords,&_vel_coords);CHKERRQ(ierr);
   ierr = DMDAGetElementCorners(da_Stokes,&sex,&sey,&sez,&Imx,&Jmy,&Kmz);CHKERRQ(ierr);
   for (ek = sez; ek < sez+Kmz; ek++) {

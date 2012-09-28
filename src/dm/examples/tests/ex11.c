@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&locala);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinates(da,&coors);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da,&coors);CHKERRQ(ierr);
   ierr = VecGetArray(coors,&xy);CHKERRQ(ierr);
 
   ierr = VecView(coors,PETSC_VIEWER_STDOUT_SELF);

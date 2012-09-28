@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&locala);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinates(da,&coors);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da,&coors);CHKERRQ(ierr);
   ierr = VecGetArray(coors,&x);CHKERRQ(ierr);
 
   /* Set values into global vectors */

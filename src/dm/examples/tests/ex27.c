@@ -54,7 +54,7 @@ PetscInt main(PetscInt argc,char **args)
                     PETSC_NULL, PETSC_NULL, PETSC_NULL,
                     &da);CHKERRQ(ierr);
   // Coordinates
-  ierr = DMDAGetCoordinateDA(da, &coordsda);
+  ierr = DMGetCoordinateDM(da, &coordsda);
   ierr = DMGetGlobalVector(coordsda, &coords);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coords, "Grid coordinates");CHKERRQ(ierr);
   for (i = 0, N = 1; i < 3; i++) {

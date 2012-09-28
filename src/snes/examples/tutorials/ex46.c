@@ -156,8 +156,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   /*
      Compute function over the locally owned part of the grid
   */
-  ierr = DMDAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(info->da, &coordDA);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {

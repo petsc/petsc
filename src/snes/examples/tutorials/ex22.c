@@ -230,10 +230,10 @@ PetscErrorCode ExactSolution(DM packer,Vec U)
 
   ierr = PFCreate(PETSC_COMM_WORLD,1,2,&pf);CHKERRQ(ierr);
   ierr = PFSetType(pf,PFQUICK,(void*)u_solution);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinates(da,&x);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da,&x);CHKERRQ(ierr);
   if (!x) {
     ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinates(da,&x);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(da,&x);CHKERRQ(ierr);
   }
   ierr = DMCompositeGetAccess(packer,U,&w,&u_global,0);CHKERRQ(ierr);
   if (w) w[0] = .25;
