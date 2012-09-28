@@ -45,6 +45,8 @@ PetscErrorCode DMComplexCreateSquareBoundary(DM dm, const PetscReal lower[], con
   PetscInt       markerRight    = 1;
   PetscInt       markerLeft     = 1;
   PetscBool      markerSeparate = PETSC_FALSE;
+  Vec            coordinates;
+  PetscSection   coordSection;
   PetscScalar   *coords;
   PetscInt       coordSize;
   PetscMPIInt    rank;
@@ -116,22 +118,25 @@ PetscErrorCode DMComplexCreateSquareBoundary(DM dm, const PetscReal lower[], con
   ierr = DMComplexSymmetrize(dm);CHKERRQ(ierr);
   ierr = DMComplexStratify(dm);CHKERRQ(ierr);
   /* Build coordinates */
-  ierr = PetscSectionSetChart(mesh->coordSection, numEdges, numEdges + numVertices);CHKERRQ(ierr);
+  ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(coordSection, numEdges, numEdges + numVertices);CHKERRQ(ierr);
   for (v = numEdges; v < numEdges+numVertices; ++v) {
-    ierr = PetscSectionSetDof(mesh->coordSection, v, 2);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(coordSection, v, 2);CHKERRQ(ierr);
   }
-  ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(mesh->coordSection, &coordSize);CHKERRQ(ierr);
-  ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(mesh->coordinates);CHKERRQ(ierr);
-  ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+  ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
+  ierr = VecCreate(((PetscObject) dm)->comm, &coordinates);CHKERRQ(ierr);
+  ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   for (vy = 0; vy <= edges[1]; ++vy) {
     for (vx = 0; vx <= edges[0]; ++vx) {
       coords[(vy*(edges[0]+1)+vx)*2+0] = lower[0] + ((upper[0] - lower[0])/edges[0])*vx;
       coords[(vy*(edges[0]+1)+vx)*2+1] = lower[1] + ((upper[1] - lower[1])/edges[1])*vy;
     }
   }
-  ierr = VecRestoreArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -153,6 +158,8 @@ PetscErrorCode DMComplexCreateCubeBoundary(DM dm, const PetscReal lower[], const
   DM_Complex    *mesh        = (DM_Complex *) dm->data;
   PetscInt       numVertices = (faces[0]+1)*(faces[1]+1)*(faces[2]+1);
   PetscInt       numFaces    = 6;
+  Vec            coordinates;
+  PetscSection   coordSection;
   PetscScalar   *coords;
   PetscInt       coordSize;
   PetscMPIInt    rank;
@@ -203,15 +210,17 @@ PetscErrorCode DMComplexCreateCubeBoundary(DM dm, const PetscReal lower[], const
   ierr = DMComplexSymmetrize(dm);CHKERRQ(ierr);
   ierr = DMComplexStratify(dm);CHKERRQ(ierr);
   /* Build coordinates */
-  ierr = PetscSectionSetChart(mesh->coordSection, numFaces, numFaces + numVertices);CHKERRQ(ierr);
+  ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(coordSection, numFaces, numFaces + numVertices);CHKERRQ(ierr);
   for (v = numFaces; v < numFaces+numVertices; ++v) {
-    ierr = PetscSectionSetDof(mesh->coordSection, v, 3);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(coordSection, v, 3);CHKERRQ(ierr);
   }
-  ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(mesh->coordSection, &coordSize);CHKERRQ(ierr);
-  ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(mesh->coordinates);CHKERRQ(ierr);
-  ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+  ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
+  ierr = VecCreate(((PetscObject) dm)->comm, &coordinates);CHKERRQ(ierr);
+  ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   for (vz = 0; vz <= faces[2]; ++vz) {
     for (vy = 0; vy <= faces[1]; ++vy) {
       for (vx = 0; vx <= faces[0]; ++vx) {
@@ -221,7 +230,8 @@ PetscErrorCode DMComplexCreateCubeBoundary(DM dm, const PetscReal lower[], const
       }
     }
   }
-  ierr = VecRestoreArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -273,6 +283,8 @@ PetscErrorCode DMComplexCreateSquareMesh(DM dm, const PetscReal lower[], const P
     const PetscInt firstVertex  = numFaces;
     const PetscInt firstXEdge   = numFaces + numVertices;
     const PetscInt firstYEdge   = numFaces + numVertices + numTotXEdges;
+    Vec            coordinates;
+    PetscSection   coordSection;
     PetscScalar   *coords;
     PetscInt       coordSize;
     PetscInt       v, vx, vy;
@@ -346,22 +358,25 @@ PetscErrorCode DMComplexCreateSquareMesh(DM dm, const PetscReal lower[], const P
     ierr = DMComplexSymmetrize(dm);CHKERRQ(ierr);
     ierr = DMComplexStratify(dm);CHKERRQ(ierr);
     /* Build coordinates */
-    ierr = PetscSectionSetChart(mesh->coordSection, firstVertex, firstVertex+numVertices);CHKERRQ(ierr);
+    ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(coordSection, firstVertex, firstVertex+numVertices);CHKERRQ(ierr);
     for (v = firstVertex; v < firstVertex+numVertices; ++v) {
-      ierr = PetscSectionSetDof(mesh->coordSection, v, 2);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(coordSection, v, 2);CHKERRQ(ierr);
     }
-    ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
-    ierr = PetscSectionGetStorageSize(mesh->coordSection, &coordSize);CHKERRQ(ierr);
-    ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(mesh->coordinates);CHKERRQ(ierr);
-    ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+    ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
+    ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
+    ierr = VecCreate(((PetscObject) dm)->comm, &coordinates);CHKERRQ(ierr);
+    ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+    ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
     for (vy = 0; vy < numYVertices; ++vy) {
       for (vx = 0; vx < numXVertices; ++vx) {
         coords[(vy*numXVertices+vx)*2+0] = lower[0] + ((upper[0] - lower[0])/numXEdges)*vx;
         coords[(vy*numXVertices+vx)*2+1] = lower[1] + ((upper[1] - lower[1])/numYEdges)*vy;
       }
     }
-    ierr = VecRestoreArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+    ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+    ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -444,6 +459,7 @@ PetscErrorCode DMComplexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const Pets
 /* External function declarations here */
 extern PetscErrorCode DMCreateInterpolation_Complex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 extern PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J);
+extern PetscErrorCode DMCreateCoordinateDM_Complex(DM dm, DM *cdm);
 extern PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined);
 extern PetscErrorCode DMSetUp_Complex(DM dm);
 extern PetscErrorCode DMDestroy_Complex(DM dm);
@@ -466,6 +482,7 @@ PetscErrorCode DMInitialize_Complex(DM dm)
   dm->ops->createlocaltoglobalmapping      = PETSC_NULL;
   dm->ops->createlocaltoglobalmappingblock = PETSC_NULL;
   dm->ops->createfieldis      = PETSC_NULL;
+  dm->ops->createcoordinatedm = DMCreateCoordinateDM_Complex;
   dm->ops->getcoloring        = 0;
   dm->ops->creatematrix       = DMCreateMatrix_Complex;
   dm->ops->createinterpolation= 0;
@@ -506,9 +523,6 @@ PetscErrorCode DMCreate_Complex(DM dm)
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->supportSection);CHKERRQ(ierr);
   mesh->maxSupportSize   = 0;
   mesh->supports         = PETSC_NULL;
-  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coordSection);CHKERRQ(ierr);
-  ierr = VecCreate(((PetscObject) dm)->comm, &mesh->coordinates);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) mesh->coordinates, "coordinates");CHKERRQ(ierr);
   mesh->refinementLimit  = -1.0;
 
   mesh->facesTmp         = PETSC_NULL;

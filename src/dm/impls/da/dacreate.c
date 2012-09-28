@@ -113,6 +113,7 @@ extern PetscErrorCode  DMLocalToGlobalEnd_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMCreateInterpolation_DA(DM,DM,Mat*,Vec*);
 extern PetscErrorCode  DMCreateColoring_DA(DM,ISColoringType,const MatType,ISColoring*);
 extern PetscErrorCode  DMCreateMatrix_DA(DM,const MatType,Mat*);
+extern PetscErrorCode  DMCreateCoordinateDM_DA(DM,DM*);
 extern PetscErrorCode  DMRefine_DA(DM,MPI_Comm,DM*);
 extern PetscErrorCode  DMCoarsen_DA(DM,MPI_Comm,DM*);
 extern PetscErrorCode  DMRefineHierarchy_DA(DM,PetscInt,DM[]);
@@ -161,10 +162,10 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
   ierr = DMSetUp(da);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(viewer,&coors,1,PETSC_ENUM);CHKERRQ(ierr);
   if (coors) {
-    ierr = DMDAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(da,&dac);CHKERRQ(ierr);
     ierr = DMCreateGlobalVector(dac,&c);CHKERRQ(ierr);
     ierr = VecLoad(c,viewer);CHKERRQ(ierr);
-    ierr = DMDASetCoordinates(da,c);CHKERRQ(ierr);
+    ierr = DMSetCoordinates(da,c);CHKERRQ(ierr);
     ierr = VecDestroy(&c);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -313,6 +314,7 @@ PetscErrorCode  DMCreate_DA(DM da)
   da->ops->setfromoptions      = DMSetFromOptions_DA;
   da->ops->setup               = DMSetUp_DA;
   da->ops->load                = DMLoad_DA;
+  da->ops->createcoordinatedm  = DMCreateCoordinateDM_DA;
   da->ops->createfielddecomposition = DMCreateFieldDecomposition_DA;
   PetscFunctionReturn(0);
 }

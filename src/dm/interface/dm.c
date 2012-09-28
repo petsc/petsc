@@ -258,6 +258,10 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = PetscSFDestroy(&(*dm)->sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->defaultSF);CHKERRQ(ierr);
 
+  ierr = DMDestroy(&(*dm)->coordinateDM);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*dm)->coordinates);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*dm)->coordinatesLocal);CHKERRQ(ierr);
+
   for (f = 0; f < (*dm)->numFields; ++f) {
     ierr = PetscObjectDestroy(&(*dm)->fields[f]);CHKERRQ(ierr);
   }
@@ -3199,31 +3203,37 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
   ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
   ierr = PetscLayoutGetRanges(layout, &ranges);CHKERRQ(ierr);
   for (p = pStart, nleaves = 0; p < pEnd; ++p) {
-    PetscInt dof, cdof;
+    PetscInt gdof, gcdof;
 
-    ierr = PetscSectionGetDof(globalSection, p, &dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetConstraintDof(globalSection, p, &cdof);CHKERRQ(ierr);
-    nleaves += dof < 0 ? -(dof+1)-cdof : dof-cdof;
+    ierr = PetscSectionGetDof(globalSection, p, &gdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(globalSection, p, &gcdof);CHKERRQ(ierr);
+    nleaves += gdof < 0 ? -(gdof+1)-gcdof : gdof-gcdof;
   }
   ierr = PetscMalloc(nleaves * sizeof(PetscInt), &local);CHKERRQ(ierr);
   ierr = PetscMalloc(nleaves * sizeof(PetscSFNode), &remote);CHKERRQ(ierr);
   for (p = pStart, l = 0; p < pEnd; ++p) {
     PetscInt *cind;
-    PetscInt  dof, gdof, cdof, dim, off, goff, d, c;
+    PetscInt  dof, cdof, off, gdof, gcdof, goff, gsize, d, c;
 
     ierr = PetscSectionGetDof(localSection, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(localSection, p, &off);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(localSection, p, &cdof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintIndices(localSection, p, &cind);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(globalSection, p, &gdof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(globalSection, p, &gcdof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(globalSection, p, &goff);CHKERRQ(ierr);
-    dim  = dof-cdof;
+    if (!gdof) continue; /* Censored point */
+    gsize = gdof < 0 ? -(gdof+1)-gcdof : gdof-gcdof;
+    if (gsize != dof-cdof) {
+      if (gsize != dof) SETERRQ4(comm, PETSC_ERR_ARG_WRONG, "Global dof %d for point %d is neither the constrained size %d, nor the unconstrained %d", size, p, dof-cdof, dof);
+      cdof = 0; /* Ignore constraints */
+    }
     for (d = 0, c = 0; d < dof; ++d) {
       if ((c < cdof) && (cind[c] == d)) {++c; continue;}
       local[l+d-c] = off+d;
     }
     if (gdof < 0) {
-      for (d = 0; d < dim; ++d, ++l) {
+      for(d = 0; d < gsize; ++d, ++l) {
         PetscInt offset = -(goff+1) + d, r;
 
         for (r = 0; r < size; ++r) {
@@ -3233,12 +3243,13 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
         remote[l].index = offset - ranges[r];
       }
     } else {
-      for (d = 0; d < dim; ++d, ++l) {
+      for(d = 0; d < gsize; ++d, ++l) {
         remote[l].rank  = rank;
         remote[l].index = goff+d - ranges[rank];
       }
     }
   }
+  if (l != nleaves) SETERRQ2(comm, PETSC_ERR_PLIB, "Iteration error, l %d != nleaves %d", l, nleaves);
   ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(dm->defaultSF, nroots, nleaves, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3311,5 +3322,200 @@ PetscErrorCode DMGetField(DM dm, PetscInt f, PetscObject *field)
   if (!dm->fields) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Fields have not been setup in this DM. Call DMSetNumFields()");
   if ((f < 0) || (f >= dm->numFields)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Field %d should be in [%d,%d)", f, 0, dm->numFields);
   *field = dm->fields[f];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetCoordinates"
+/*@
+  DMSetCoordinates - Sets into the DM a global vector that holds the coordinates
+
+  Collective on DM
+
+  Input Parameters:
++ dm - the DM
+- c - coordinate vector
+
+  Note:
+  The coordinates do include those for ghost points, which are in the local vector
+
+  Level: intermediate
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+.seealso: DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLoca(), DMGetCoordinateDM()
+@*/
+PetscErrorCode DMSetCoordinates(DM dm, Vec c)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(c,VEC_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject) c);CHKERRQ(ierr);
+  ierr = VecDestroy(&dm->coordinates);CHKERRQ(ierr);
+  dm->coordinates = c;
+  ierr = VecDestroy(&dm->coordinatesLocal);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetCoordinatesLocal"
+/*@
+  DMSetCoordinatesLocal - Sets into the DM a local vector that holds the coordinates
+
+  Collective on DM
+
+   Input Parameters:
++  dm - the DM
+-  c - coordinate vector
+
+  Note:
+  The coordinates of ghost points can be set using DMSetCoordinates()
+  followed by DMGetCoordinatesLocal(). This is intended to enable the
+  setting of ghost coordinates outside of the domain.
+
+  Level: intermediate
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+.seealso: DMGetCoordinatesLocal(), DMSetCoordinates(), DMGetCoordinates(), DMGetCoordinateDM()
+@*/
+PetscErrorCode DMSetCoordinatesLocal(DM dm, Vec c)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(c,VEC_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject) c);CHKERRQ(ierr);
+  ierr = VecDestroy(&dm->coordinatesLocal);CHKERRQ(ierr);
+  dm->coordinatesLocal = c;
+  ierr = VecDestroy(&dm->coordinates);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetCoordinates"
+/*@
+  DMGetCoordinates - Gets a global vector with the coordinates associated with the DM.
+
+  Not Collective
+
+  Input Parameter:
+. dm - the DM
+
+  Output Parameter:
+. c - global coordinate vector
+
+  Note:
+  This is a borrowed reference, so the user should NOT destroy this vector
+
+  Each process has only the local coordinates (does NOT have the ghost coordinates).
+
+  For DMDA, in two and three dimensions coordinates are interlaced (x_0,y_0,x_1,y_1,...)
+  and (x_0,y_0,z_0,x_1,y_1,z_1...)
+
+  Level: intermediate
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+.seealso: DMSetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM()
+@*/
+PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(c,2);
+  if (!dm->coordinates) {
+    DM cdm;
+
+    if (!dm->coordinatesLocal) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ORDER, "You must call DMSetCoordinates() or DMSetCoordinatesLocal() before this call");
+    ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(cdm, &dm->coordinates);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) dm->coordinates, "coordinates");CHKERRQ(ierr);
+    ierr = DMLocalToGlobalBegin(cdm, dm->coordinatesLocal, INSERT_VALUES, dm->coordinates);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(cdm, dm->coordinatesLocal, INSERT_VALUES, dm->coordinates);CHKERRQ(ierr);
+  }
+  *c = dm->coordinates;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetCoordinatesLocal"
+/*@
+  DMGetCoordinatesLocal - Gets a local vector with the coordinates associated with the DM.
+
+  Collective on DM
+
+  Input Parameter:
+. dm - the DM
+
+  Output Parameter:
+. c - coordinate vector
+
+  Note:
+  This is a borrowed reference, so the user should NOT destroy this vector
+
+  Each process has the local and ghost coordinates
+
+  For DMDA, in two and three dimensions coordinates are interlaced (x_0,y_0,x_1,y_1,...)
+  and (x_0,y_0,z_0,x_1,y_1,z_1...)
+
+  Level: intermediate
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+.seealso: DMSetCoordinatesLocal(), DMGetCoordinates(), DMSetCoordinates(), DMGetCoordinateDM()
+@*/
+PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(c,2);
+  if (!dm->coordinatesLocal) {
+    DM cdm;
+
+    if (!dm->coordinates) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ORDER, "You must call DMSetCoordinates() or DMSetCoordinatesLocal() before this call");
+    ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
+    ierr = DMCreateLocalVector(cdm, &dm->coordinatesLocal);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) dm->coordinatesLocal, "coordinates");CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(cdm, dm->coordinates, INSERT_VALUES, dm->coordinatesLocal);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(cdm, dm->coordinates, INSERT_VALUES, dm->coordinatesLocal);CHKERRQ(ierr);
+  }
+  *c = dm->coordinatesLocal;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetCoordinateDM"
+/*@
+  DMGetCoordinateDM - Gets the DM that scatters between global and local coordinates
+
+  Collective on DM
+
+  Input Parameter:
+. dm - the DM
+
+  Output Parameter:
+. cdm - coordinate DM
+
+  Level: intermediate
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+.seealso: DMSetCoordinates(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal()
+@*/
+PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(cdm,2);
+  if (!dm->coordinateDM) {
+    if (!dm->ops->createcoordinatedm) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Unable to create coordinates for this DM");
+    ierr = (*dm->ops->createcoordinatedm)(dm, &dm->coordinateDM);CHKERRQ(ierr);
+  }
+  *cdm = dm->coordinateDM;
   PetscFunctionReturn(0);
 }

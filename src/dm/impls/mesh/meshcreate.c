@@ -557,8 +557,8 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, const DMType newtype, DM *dmNew)
   }
   ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
   ierr = DMMeshSetCoordinateSection(*dmNew, section);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinateDA(dm, &cda);CHKERRQ(ierr);
-  ierr = DMDAGetGhostedCoordinates(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm, &cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   {
     Obj<PETSC_MESH_TYPE::real_section_type> coordSection = mesh->getRealSection("coordinates");
 

@@ -30,9 +30,6 @@ typedef struct {
 
   AO                  ao;                    /* application ordering context */
 
-  Vec                    coordinates;        /* coordinates (x,y,z) of local nodes, not including ghosts*/
-  DM                     da_coordinates;     /* da for getting ghost values of coordinates */
-  Vec                    ghosted_coordinates;/* coordinates with ghost nodes */
   char                   **fieldname;        /* names of individual components in vectors */
 
   PetscInt               *lx,*ly,*lz;        /* number of nodes in each partition block along 3 axis */

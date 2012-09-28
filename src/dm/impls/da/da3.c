@@ -39,14 +39,14 @@ PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D, Y range of indices: %D %D, Z range of indices: %D %D\n",
                                                 info.xs,info.xs+info.xm,info.ys,info.ys+info.ym,info.zs,info.zs+info.zm);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-      if (dd->coordinates) {
+      if (da->coordinates) {
         PetscInt        last;
         const PetscReal *coors;
-        ierr = VecGetArrayRead(dd->coordinates,&coors);CHKERRQ(ierr);
-        ierr = VecGetLocalSize(dd->coordinates,&last);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(da->coordinates,&coors);CHKERRQ(ierr);
+        ierr = VecGetLocalSize(da->coordinates,&last);CHKERRQ(ierr);
         last = last - 3;
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Lower left corner %G %G %G : Upper right %G %G %G\n",coors[0],coors[1],coors[2],coors[last],coors[last+1],coors[last+2]);CHKERRQ(ierr);
-        ierr = VecRestoreArrayRead(dd->coordinates,&coors);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(da->coordinates,&coors);CHKERRQ(ierr);
       }
 #endif
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

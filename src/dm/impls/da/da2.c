@@ -48,7 +48,7 @@ PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
-    if (!dd->coordinates) {
+    if (!da->coordinates) {
       ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
     }
     ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);

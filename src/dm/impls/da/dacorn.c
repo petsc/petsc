@@ -6,243 +6,62 @@
 #include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDASetCoordinates"
-/*@
-   DMDASetCoordinates - Sets into the DMDA a vector that indicates the
-      coordinates of the local nodes (NOT including ghost nodes).
-
-   Collective on DMDA
-
-   Input Parameter:
-+  da - the distributed array
--  c - coordinate vector
-
-   Note:
-    The coordinates should NOT include those for all ghost points
-
-  Level: intermediate
-
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
-.seealso: DMDASetGhostCoordinates(), DMDAGetGhostCorners(), DMDAGetCoordinates(), DMDASetUniformCoordinates(). DMDAGetGhostedCoordinates(), DMDAGetCoordinateDA()
-@*/
-PetscErrorCode  DMDASetCoordinates(DM da,Vec c)
+#define __FUNCT__ "DMCreateCoordinateDM_DA"
+PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
 {
-  PetscErrorCode ierr;
-  DM_DA          *dd = (DM_DA*)da->data;
-  PetscInt       bs;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidHeaderSpecific(c,VEC_CLASSID,2);
-  ierr = VecGetBlockSize(c,&bs);CHKERRQ(ierr);
-  /* I am relaxing this requirement, so that we can use a PetscSection */
-  /* if (bs != dd->dim) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"Block size of vector must match dimension of DMDA"); */
-  ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
-  ierr = VecDestroy(&dd->coordinates);CHKERRQ(ierr);
-  dd->coordinates = c;
-  ierr = VecDestroy(&dd->ghosted_coordinates);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetGhostedCoordinates"
-/*@
-   DMDASetGhostedCoordinates - Sets into the DMDA a vector that indicates the
-      coordinates of the local nodes, including ghost nodes.
-
-   Collective on DMDA
-
-   Input Parameter:
-+  da - the distributed array
--  c - coordinate vector
-
-   Note:
-    The coordinates of interior ghost points can be set using DMDASetCoordinates()
-    followed by DMDAGetGhostedCoordinates().  This is intended to enable the setting
-    of ghost coordinates outside of the domain.
-
-    Non-ghosted coordinates, if set, are assumed still valid.
-
-  Level: intermediate
-
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
-.seealso: DMDASetCoordinates(), DMDAGetGhostCorners(), DMDAGetCoordinates(), DMDASetUniformCoordinates(). DMDAGetGhostedCoordinates(), DMDAGetCoordinateDA()
-@*/
-PetscErrorCode  DMDASetGhostedCoordinates(DM da,Vec c)
-{
-  PetscErrorCode ierr;
-  DM_DA          *dd = (DM_DA*)da->data;
-  PetscInt       bs;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidHeaderSpecific(c,VEC_CLASSID,2);
-  ierr = VecGetBlockSize(c,&bs);CHKERRQ(ierr);
-  if (bs != dd->dim) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"Block size of vector must match dimension of DMDA");
-  ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
-  ierr = VecDestroy(&dd->ghosted_coordinates);CHKERRQ(ierr);
-  dd->ghosted_coordinates = c;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetCoordinates"
-/*@
-   DMDAGetCoordinates - Gets the node coordinates associated with a DMDA.
-
-   Not Collective
-
-   Input Parameter:
-.  da - the distributed array
-
-   Output Parameter:
-.  c - coordinate vector
-
-   Note:
-    Each process has only the coordinates for its local nodes (does NOT have the
-  coordinates for the ghost nodes).
-
-    For two and three dimensions coordinates are interlaced (x_0,y_0,x_1,y_1,...)
-    and (x_0,y_0,z_0,x_1,y_1,z_1...)
-
-  Level: intermediate
-
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
-.seealso: DMDAGetGhostCorners(), DMDASetCoordinates(), DMDASetUniformCoordinates(), DMDAGetGhostedCoordinates(), DMDAGetCoordinateDA()
-@*/
-PetscErrorCode  DMDAGetCoordinates(DM da,Vec *c)
-{
-  DM_DA          *dd = (DM_DA*)da->data;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidPointer(c,2);
-  *c = dd->coordinates;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetCoordinateDA"
-/*@
-   DMDAGetCoordinateDA - Gets the DMDA that scatters between global and local DMDA coordinates
-
-   Collective on DMDA
-
-   Input Parameter:
-.  da - the distributed array
-
-   Output Parameter:
-.  dac - coordinate DMDA
-
-  Level: intermediate
-
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
-.seealso: DMDAGetGhostCorners(), DMDASetCoordinates(), DMDASetUniformCoordinates(), DMDAGetCoordinates(), DMDAGetGhostedCoordinates()
-@*/
-PetscErrorCode  DMDAGetCoordinateDA(DM da,DM *cda)
-{
+  DM_DA         *da = (DM_DA *) dm->data;
   PetscMPIInt    size;
   PetscErrorCode ierr;
-  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  if (!dd->da_coordinates) {
-    ierr = MPI_Comm_size(((PetscObject)da)->comm,&size);CHKERRQ(ierr);
-    if (dd->dim == 1) {
-      PetscInt         s,m,*lc,l;
-      DMDABoundaryType bx;
-      ierr = DMDAGetInfo(da,0,&m,0,0,0,0,0,0,&s,&bx,0,0,0);CHKERRQ(ierr);
-      ierr = DMDAGetCorners(da,0,0,0,&l,0,0);CHKERRQ(ierr);
-      ierr = PetscMalloc(size*sizeof(PetscInt),&lc);CHKERRQ(ierr);
-      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
-      ierr = DMDACreate1d(((PetscObject)da)->comm,bx,m,1,s,lc,&dd->da_coordinates);CHKERRQ(ierr);
-      ierr = PetscFree(lc);CHKERRQ(ierr);
-    } else if (dd->dim == 2) {
-      PetscInt         i,s,m,*lc,*ld,l,k,n,M,N;
-      DMDABoundaryType bx,by;
-      ierr = DMDAGetInfo(da,0,&m,&n,0,&M,&N,0,0,&s,&bx,&by,0,0);CHKERRQ(ierr);
-      ierr = DMDAGetCorners(da,0,0,0,&l,&k,0);CHKERRQ(ierr);
-      ierr = PetscMalloc2(size,PetscInt,&lc,size,PetscInt,&ld);CHKERRQ(ierr);
-      /* only first M values in lc matter */
-      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
-      /* every Mth value in ld matters */
-      ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
-      for ( i=0; i<N; i++) {
+  ierr = MPI_Comm_size(((PetscObject) dm)->comm, &size);CHKERRQ(ierr);
+  if (da->dim == 1) {
+    PetscInt         s,m,*lc,l;
+    DMDABoundaryType bx;
+
+    ierr = DMDAGetInfo(dm,0,&m,0,0,0,0,0,0,&s,&bx,0,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(dm,0,0,0,&l,0,0);CHKERRQ(ierr);
+    ierr = PetscMalloc(size * sizeof(PetscInt), &lc);CHKERRQ(ierr);
+    ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
+    ierr = DMDACreate1d(((PetscObject)dm)->comm,bx,m,1,s,lc,cdm);CHKERRQ(ierr);
+    ierr = PetscFree(lc);CHKERRQ(ierr);
+  } else if (da->dim == 2) {
+    PetscInt         i,s,m,*lc,*ld,l,k,n,M,N;
+    DMDABoundaryType bx,by;
+
+    ierr = DMDAGetInfo(dm,0,&m,&n,0,&M,&N,0,0,&s,&bx,&by,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(dm,0,0,0,&l,&k,0);CHKERRQ(ierr);
+    ierr = PetscMalloc2(size,PetscInt,&lc,size,PetscInt,&ld);CHKERRQ(ierr);
+    /* only first M values in lc matter */
+    ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
+    /* every Mth value in ld matters */
+      ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
+      for(i = 0; i < N; ++i) {
         ld[i] = ld[M*i];
       }
-      ierr = DMDACreate2d(((PetscObject)da)->comm,bx,by,DMDA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&dd->da_coordinates);CHKERRQ(ierr);
+      ierr = DMDACreate2d(((PetscObject)dm)->comm,bx,by,DMDA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,cdm);CHKERRQ(ierr);
       ierr = PetscFree2(lc,ld);CHKERRQ(ierr);
-    } else if (dd->dim == 3) {
-      PetscInt         i,s,m,*lc,*ld,*le,l,k,q,n,M,N,P,p;
-      DMDABoundaryType bx,by,bz;
-      ierr = DMDAGetInfo(da,0,&m,&n,&p,&M,&N,&P,0,&s,&bx,&by,&bz,0);CHKERRQ(ierr);
-      ierr = DMDAGetCorners(da,0,0,0,&l,&k,&q);CHKERRQ(ierr);
-      ierr = PetscMalloc3(size,PetscInt,&lc,size,PetscInt,&ld,size,PetscInt,&le);CHKERRQ(ierr);
-      /* only first M values in lc matter */
-      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
-      /* every Mth value in ld matters */
-      ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
-      for ( i=0; i<N; i++) {
-        ld[i] = ld[M*i];
-      }
-      ierr = MPI_Allgather(&q,1,MPIU_INT,le,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
-      for ( i=0; i<P; i++) {
-        le[i] = le[M*N*i];
-      }
-      ierr = DMDACreate3d(((PetscObject)da)->comm,bx,by,bz,DMDA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,&dd->da_coordinates);CHKERRQ(ierr);
-      ierr = PetscFree3(lc,ld,le);CHKERRQ(ierr);
+  } else if (da->dim == 3) {
+    PetscInt         i,s,m,*lc,*ld,*le,l,k,q,n,M,N,P,p;
+    DMDABoundaryType bx,by,bz;
+
+    ierr = DMDAGetInfo(dm,0,&m,&n,&p,&M,&N,&P,0,&s,&bx,&by,&bz,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(dm,0,0,0,&l,&k,&q);CHKERRQ(ierr);
+    ierr = PetscMalloc3(size,PetscInt,&lc,size,PetscInt,&ld,size,PetscInt,&le);CHKERRQ(ierr);
+    /* only first M values in lc matter */
+    ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
+    /* every Mth value in ld matters */
+    ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
+    for(i = 0; i < N; ++i) {
+      ld[i] = ld[M*i];
     }
+    ierr = MPI_Allgather(&q,1,MPIU_INT,le,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
+    for(i = 0; i < P; ++i) {
+      le[i] = le[M*N*i];
+    }
+    ierr = DMDACreate3d(((PetscObject)dm)->comm,bx,by,bz,DMDA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,cdm);CHKERRQ(ierr);
+    ierr = PetscFree3(lc,ld,le);CHKERRQ(ierr);
   }
-  *cda = dd->da_coordinates;
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetGhostedCoordinates"
-/*@
-   DMDAGetGhostedCoordinates - Gets the node coordinates associated with a DMDA.
-
-   Collective on DMDA
-
-   Input Parameter:
-.  da - the distributed array
-
-   Output Parameter:
-.  c - coordinate vector
-
-   Note:
-    Each process has only the coordinates for its local AND ghost nodes
-
-    For two and three dimensions coordinates are interlaced (x_0,y_0,x_1,y_1,...)
-    and (x_0,y_0,z_0,x_1,y_1,z_1...)
-
-  Level: intermediate
-
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
-.seealso: DMDAGetGhostCorners(), DMDASetCoordinates(), DMDASetUniformCoordinates(), DMDAGetCoordinates(), DMDAGetCoordinateDA()
-@*/
-PetscErrorCode  DMDAGetGhostedCoordinates(DM da,Vec *c)
-{
-  PetscErrorCode ierr;
-  DM_DA          *dd = (DM_DA*)da->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidPointer(c,2);
-  if (!dd->coordinates) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"You must call DMDASetCoordinates() before this call");
-  if (!dd->ghosted_coordinates) {
-    DM dac;
-    ierr = DMDAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
-    ierr = DMCreateLocalVector(dac,&dd->ghosted_coordinates);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(dac,dd->coordinates,INSERT_VALUES,dd->ghosted_coordinates);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(dac,dd->coordinates,INSERT_VALUES,dd->ghosted_coordinates);CHKERRQ(ierr);
-  }
-  *c = dd->ghosted_coordinates;
   PetscFunctionReturn(0);
 }
 
@@ -393,7 +212,7 @@ PetscErrorCode  DMDAGetLocalBoundingBox(DM da,PetscReal lmin[],PetscReal lmax[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   dim = dd->dim;
-  ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
   if (coords) {
     ierr = VecGetArrayRead(coords,&local_coords);CHKERRQ(ierr);
     ierr = VecGetLocalSize(coords,&N);CHKERRQ(ierr);
@@ -496,10 +315,9 @@ PetscErrorCode  DMDAGetReducedDA(DM da,PetscInt nfields,DM *nda)
   } else if (dim == 3) {
     ierr = DMDACreate3d(((PetscObject)da)->comm,bx,by,bz,stencil_type,M,N,P,m,n,p,nfields,s,lx,ly,lz,nda);CHKERRQ(ierr);
   }
-  if (dd->coordinates) {
-    DM_DA *ndd = (DM_DA*)(*nda)->data;
-    ierr        = PetscObjectReference((PetscObject)dd->coordinates);CHKERRQ(ierr);
-    ndd->coordinates = dd->coordinates;
+  if (da->coordinates) {
+    ierr        = PetscObjectReference((PetscObject)da->coordinates);CHKERRQ(ierr);
+    (*nda)->coordinates = da->coordinates;
   }
   PetscFunctionReturn(0);
 }

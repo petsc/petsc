@@ -194,7 +194,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 
     {                           /* Write the coordinates */
       Vec Coords;
-      ierr = DMDAGetCoordinates(da,&Coords);CHKERRQ(ierr);
+      ierr = DMGetCoordinates(da,&Coords);CHKERRQ(ierr);
       if (Coords) {
         const PetscScalar *coords;
         ierr = VecGetArrayRead(Coords,&coords);CHKERRQ(ierr);

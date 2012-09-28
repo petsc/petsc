@@ -402,7 +402,7 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   /* TODO: Need to check for "coordinates_dimensioned" */
   ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionCreateGlobalSection(coordSection, dm->sf, PETSC_FALSE, &globalCoordSection);CHKERRQ(ierr);
-  ierr = DMComplexGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMComplexGetVTKBounds(dm, PETSC_NULL, &vMax);CHKERRQ(ierr);
   if (vMax >= 0) {
     PetscInt pStart, pEnd, p, localSize = 0;

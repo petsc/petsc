@@ -582,8 +582,8 @@ PetscErrorCode DMDAComputeCellGeometry(DM dm, PetscInt cell, PetscQuadrature *qu
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMDAGetInfo(dm, &dim, 0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinates(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinateDA(dm, &cdm);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMDAVecGetClosure(cdm, PETSC_NULL, coordinates, cell, &vertices);CHKERRQ(ierr);
   for (d = 0; d < dim; ++d) {
     v0[d] = PetscRealPart(vertices[d]);

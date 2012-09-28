@@ -30,8 +30,6 @@ typedef struct {
   PetscSection         supportSection;   /* Layout of cones (inedges for DAG) */
   PetscInt             maxSupportSize;   /* Cached for fast lookup */
   PetscInt            *supports;         /* Cone for each point */
-  PetscSection         coordSection;     /* Layout for coordinates */
-  Vec                  coordinates;      /* Coordinate values */
   PetscReal            refinementLimit;  /* Maximum volume for refined cell */
 
   PetscInt            *facesTmp;            /* Work space for faces operation */

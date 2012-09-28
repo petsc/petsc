@@ -44,7 +44,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(da,&section);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&istart,&jstart,&kstart,&isize,&jsize,&ksize);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinateDA(da, &cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da, &cda);CHKERRQ(ierr);
   if (section) {
     /* This would be better as a vector, but this is compatible */
     PetscInt numComp[3]      = {1, 1, 1};
@@ -116,7 +116,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
       SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot create uniform coordinates for this dimension %D\n",dim);
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
-    ierr = DMDASetCoordinates(da,xcoor);CHKERRQ(ierr);
+    ierr = DMSetCoordinates(da,xcoor);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(da,xcoor);CHKERRQ(ierr);
     ierr = VecDestroy(&xcoor);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -163,7 +163,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot create uniform coordinates for this dimension %D\n",dim);
-  ierr = DMDASetCoordinates(da,xcoor);CHKERRQ(ierr);
+  ierr = DMSetCoordinates(da,xcoor);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,xcoor);CHKERRQ(ierr);
   ierr = VecDestroy(&xcoor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -208,10 +208,10 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   n    = n/step;
 
   /* get coordinates of nodes */
-  ierr = DMDAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   if (!xcoor) {
     ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,0.0,0.0,0.0);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   }
   ierr = VecGetArrayRead(xcoor,&xg);CHKERRQ(ierr);
 
