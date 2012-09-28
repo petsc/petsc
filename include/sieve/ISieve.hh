@@ -2719,7 +2719,7 @@ namespace ALE {
         ierr = DMComplexSetSupportSize(dm, renumbering[*c_iter], support->size());CHKERRXX(ierr);
         maxSize = std::max(maxSize, support->size());
       }
-      ierr = DMComplexSetUp(dm);CHKERRXX(ierr);
+      ierr = DMSetUp(dm);CHKERRXX(ierr);
       // Fill up cones and supports
       typename Sieve::point_type *points = new typename Sieve::point_type[maxSize];
 
@@ -2813,6 +2813,7 @@ namespace ALE {
       PetscInt                            n;
       PetscErrorCode                      ierr;
 
+      if (!chart.size()) return;
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         min = std::min(min, renumbering[*p_iter]);
         max = std::max(max, renumbering[*p_iter]);
@@ -2831,7 +2832,7 @@ namespace ALE {
         PetscInt dof, off;
 
         ierr = PetscSectionGetDof(coordSection, renumbering[*p_iter], &dof);CHKERRXX(ierr);
-        ierr = PetscSectionGetOff(coordSection, renumbering[*p_iter], &off);CHKERRXX(ierr);
+        ierr = PetscSectionGetOffset(coordSection, renumbering[*p_iter], &off);CHKERRXX(ierr);
         for(int d = 0; d < dof; ++d) {
           a[off+d] = values[d];
         }
@@ -2889,19 +2890,20 @@ namespace ALE {
       Vec            coordinates;
       PetscErrorCode ierr;
 
-      ierr = DMCreate(mesh.comm(), dm);CHKERRQ(ierr);
-      ierr = DMSetType(*dm, DMCOMPLEX);CHKERRQ(ierr);
-      ierr = DMComplexSetDimension(dm, mesh.getDimension());CHKERRXX(ierr);
+      ierr = DMCreate(mesh.comm(), dm);CHKERRXX(ierr);
+      ierr = DMSetType(*dm, DMCOMPLEX);CHKERRXX(ierr);
+      ierr = DMComplexSetDimension(*dm, mesh.getDimension());CHKERRXX(ierr);
       convertSieve(*mesh.getSieve(), *dm, renumbering, renumber);
       ierr = DMComplexStratify(*dm);CHKERRXX(ierr);
       convertOrientation(*mesh.getSieve(), *dm, renumbering, mesh.getArrowSection("orientation").ptr());
       ierr = DMComplexGetCoordinateSection(*dm, &coordSection);CHKERRXX(ierr);
-      ierr = DMComplexGetCoordinateVec(*dm, &coordinates);CHKERRXX(ierr);
+      ierr = VecCreate(mesh.comm(), &coordinates);CHKERRXX(ierr);
       convertCoordinates(*mesh.getRealSection("coordinates"), coordSection, coordinates, renumbering);
+      ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRXX(ierr);
       const typename Mesh::labels_type& labels = mesh.getLabels();
 
       for(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
-        convertLabel(dm, l_iter->first, l_iter->second, renumbering);
+        convertLabel(*dm, l_iter->first.c_str(), l_iter->second, renumbering);
       }
     }
   };
