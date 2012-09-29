@@ -224,8 +224,10 @@ PetscErrorCode  PetscDrawRegister(const char *sname,const char *path,const char 
 
    Options Database Keys:
 +   -nox - do not use X graphics (ignore graphics calls, but run program correctly)
--   -nox_warning - when X windows support is not installed this prevents the warning message
+.   -nox_warning - when X windows support is not installed this prevents the warning message
                    from being printed
+.   -draw_save [optional filename] - (X windows only) saves each image before it is cleared to a file
+-   -draw_save_movie - converts image files to a movie  at the end of the run. See PetscDrawSetSave()
 
    Level: intermediate
 
@@ -235,7 +237,7 @@ PetscErrorCode  PetscDrawRegister(const char *sname,const char *path,const char 
     Concepts: drawing^setting options
     Concepts: graphics^setting options
 
-.seealso: PetscDrawCreate(), PetscDrawSetType()
+.seealso: PetscDrawCreate(), PetscDrawSetType(), PetscDrawSetSave()
 
 @*/
 PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
@@ -321,6 +323,9 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
    Concepts: X windows^graphics
 
    Notes: Requires that PETSc be configured with the option --with-afterimage to save the images and ffmpeg must be in your path to make the movie
+
+   If X windows generates an error message about X_CreateWindow() failing then Afterimage was installed without X windows. Reinstall Afterimage using the 
+   ./configure flags --x-includes=/pathtoXincludes --x-libraries=/pathtoXlibraries   For example under Mac OS X Mountain Lion --x-includes=/opt/X11/include -x-libraries=/opt/X11/lib
 
 
 .seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy(), PetscDrawSave()
