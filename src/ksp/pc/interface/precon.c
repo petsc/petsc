@@ -1465,7 +1465,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 {
   const PCType      cstr;
   PetscErrorCode    ierr;
-  PetscBool         iascii,isstring;
+  PetscBool         iascii,isstring,isbinary;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -1478,6 +1478,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pc,viewer,"PC Object");CHKERRQ(ierr);
@@ -1510,9 +1511,12 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-7.7s",cstr);CHKERRQ(ierr);
     if (pc->ops->view) {ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);}
-  } else {
-    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported by PC",((PetscObject)viewer)->type_name);
-  }
+  } else if (isbinary) {
+    ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);
+    if (pc->ops->view) {
+      ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);
+    }
+  } 
   PetscFunctionReturn(0);
 }
 

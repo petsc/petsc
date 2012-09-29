@@ -447,10 +447,11 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   PC_MG_Levels   **mglevels = mg->levels;
   PetscErrorCode ierr;
   PetscInt       levels = mglevels[0]->levels,i;
-  PetscBool      iascii;
+  PetscBool      iascii,isbinary;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%s\n", PCMGTypes[mg->am],levels,(mglevels[0]->cycles == PC_MG_CYCLE_V) ? "v" : "w");CHKERRQ(ierr);
     if (mg->am == PC_MG_MULTIPLICATIVE) {
@@ -479,7 +480,17 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
     }
-  } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PCMG",((PetscObject)viewer)->type_name);
+  } else if (isbinary) {
+    for (i=levels-1; i>=0; i--) {
+      if (i) {
+        ierr = MatView(mglevels[i]->interpolate,viewer);CHKERRQ(ierr);
+      }
+      ierr = KSPView(mglevels[i]->smoothd,viewer);CHKERRQ(ierr);
+      if (i && mglevels[i]->smoothd != mglevels[i]->smoothu) {
+        ierr = KSPView(mglevels[i]->smoothu,viewer);CHKERRQ(ierr);
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 

@@ -513,9 +513,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: happy breakdown tolerance %G\n",gmres->haptol);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"%s restart %D",cstr,gmres->max_k);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for KSP GMRES",((PetscObject)viewer)->type_name);
-  }
+  } 
   PetscFunctionReturn(0);
 }
 
