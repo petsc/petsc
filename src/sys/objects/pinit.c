@@ -996,9 +996,7 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
 #if defined(PETSC_USE_DEBUG)
-  if (PetscStackActive) {
-    ierr = PetscStackDestroy();CHKERRQ(ierr);
-  }
+  ierr = PetscStackDestroy();CHKERRQ(ierr);
 #endif
 
   flg1 = PETSC_FALSE;

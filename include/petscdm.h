@@ -143,6 +143,16 @@ PETSC_EXTERN PetscErrorCode DMLocalToGlobalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalEnd(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMConvert(DM,const DMType,DM*);
 
+PETSC_EXTERN PetscErrorCode DMGetCoordinateDM(DM,DM*);
+PETSC_EXTERN PetscErrorCode DMGetCoordinates(DM,Vec*);
+PETSC_EXTERN PetscErrorCode DMSetCoordinates(DM,Vec);
+PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocal(DM,Vec*);
+PETSC_EXTERN PetscErrorCode DMSetCoordinatesLocal(DM,Vec);
+
+/* block hook interface */
+PETSC_EXTERN PetscErrorCode DMBlockRestrictHookAdd(DM,PetscErrorCode (*)(DM,VecScatter,VecScatter,DM,void*),void*);
+PETSC_EXTERN PetscErrorCode DMBlockRestrict(DM,VecScatter,VecScatter,DM);
+
 PETSC_EXTERN PetscErrorCode DMSetOptionsPrefix(DM,const char []);
 PETSC_EXTERN PetscErrorCode DMSetVecType(DM,const VecType);
 PETSC_EXTERN PetscErrorCode DMSetMatType(DM,const MatType);

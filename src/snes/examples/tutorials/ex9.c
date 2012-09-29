@@ -165,8 +165,8 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible)
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DMDAGetCoordinateDA(da, &coordDA);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinates(da, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da, &coordDA);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da, &coordinates);CHKERRQ(ierr);
 
   ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da, user->psi, &psi);CHKERRQ(ierr);

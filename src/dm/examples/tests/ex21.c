@@ -51,11 +51,11 @@ PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
     Mat        interp;
     PetscReal  norm;
 
-    ierr = DMDAGetCoordinateDA(dac,&cdac);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinateDA(daf,&cdaf);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(dac,&cdac);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(daf,&cdaf);CHKERRQ(ierr);
 
-    ierr = DMDAGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
 
     ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
 

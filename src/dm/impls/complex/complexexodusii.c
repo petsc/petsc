@@ -34,6 +34,8 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, DM *dm)
 #if defined(PETSC_HAVE_EXODUSII)
   DM_Complex    *mesh;
   PetscMPIInt    num_proc, rank;
+  PetscSection   coordSection;
+  Vec            coordinates;
   PetscScalar   *coords;
   PetscInt       coordSize, v;
   PetscErrorCode ierr;
@@ -130,15 +132,17 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, DM *dm)
     ierr = PetscFree(vs_id);CHKERRQ(ierr);
   }
   /* Read coordinates */
-  ierr = PetscSectionSetChart(mesh->coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
+  ierr = DMComplexGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
   for (v = numCells; v < numCells+numVertices; ++v) {
-    ierr = PetscSectionSetDof(mesh->coordSection, v, dim);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(coordSection, v, dim);CHKERRQ(ierr);
   }
-  ierr = PetscSectionSetUp(mesh->coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(mesh->coordSection, &coordSize);CHKERRQ(ierr);
-  ierr = VecSetSizes(mesh->coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(mesh->coordinates);CHKERRQ(ierr);
-  ierr = VecGetArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+  ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
+  ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
+  ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   if (rank == 0) {
     PetscReal *x, *y, *z;
 
@@ -149,7 +153,8 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, DM *dm)
     if (dim > 2) {for (v = 0; v < numVertices; ++v) {coords[v*dim+2] = z[v];}}
     ierr = PetscFree3(x,y,z);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(mesh->coordinates, &coords);CHKERRQ(ierr);
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
 #endif

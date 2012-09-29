@@ -41,8 +41,8 @@ PetscErrorCode FormPermeability(DM da, Vec Kappa, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMDAGetCoordinateDA(da, &cda);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinates(da, &c);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da, &cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da, &c);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da, &xs,PETSC_NULL,PETSC_NULL, &xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da, Kappa, &K);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda, c, &coords);CHKERRQ(ierr);

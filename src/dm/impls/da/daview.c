@@ -76,13 +76,13 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
     ierr = PetscViewerBinaryWrite(viewer,&by,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&bz,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&stencil,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
-    if (dd->coordinates) coors = PETSC_TRUE;
+    if (da->coordinates) coors = PETSC_TRUE;
     ierr = PetscViewerBinaryWrite(viewer,&coors,1,PETSC_BOOL,PETSC_FALSE);CHKERRQ(ierr);
   }
 
   /* save the coordinates if they exist to disk (in the natural ordering) */
-  if (dd->coordinates) {
-    ierr = VecView(dd->coordinates,viewer);CHKERRQ(ierr);
+  if (da->coordinates) {
+    ierr = VecView(da->coordinates,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -98,7 +98,7 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da, &dim, &M, &N, &P, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   /* if (dim != 3) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "VTK output only works for three dimensional DMDAs.");} */
-  if (!dd->coordinates) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP, "VTK output requires DMDA coordinates.");
+  if (!da->coordinates) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP, "VTK output requires DMDA coordinates.");
   /* Write Header */
   ierr = PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Structured Mesh Example\n");CHKERRQ(ierr);
@@ -106,15 +106,15 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"DATASET STRUCTURED_GRID\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"DIMENSIONS %d %d %d\n", M, N, P);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"POINTS %d double\n", M*N*P);CHKERRQ(ierr);
-  if (dd->coordinates) {
+  if (da->coordinates) {
     DM  dac;
     Vec natural;
 
-    ierr = DMDAGetCoordinateDA(da, &dac);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(da, &dac);CHKERRQ(ierr);
     ierr = DMDACreateNaturalVector(dac, &natural);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) natural, "coor_");CHKERRQ(ierr);
-    ierr = DMDAGlobalToNaturalBegin(dac, dd->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
-    ierr = DMDAGlobalToNaturalEnd(dac, dd->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
+    ierr = DMDAGlobalToNaturalBegin(dac, da->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
+    ierr = DMDAGlobalToNaturalEnd(dac, da->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
     ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_COORDS);CHKERRQ(ierr);
     ierr = VecView(natural, viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
@@ -234,3 +234,54 @@ PetscErrorCode  DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetLocalBlockInfo"
+/*@C
+   DMDAGetLocalBlockInfo - Gets information about a given distributed array and this processors location in it with overlap taken into account
+
+   Not Collective
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameters:
+.  dainfo - structure containing the information
+
+   Level: beginner
+
+.keywords: distributed array, get, information
+
+.seealso: DMDAGetLocalInfo(), DMDASetOverlap()
+@*/
+PetscErrorCode  DMDAGetLocalBlockInfo(DM da,DMDALocalInfo *info)
+{
+  PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
+  PetscFunctionBegin;
+  ierr = DMDAGetLocalInfo(da,info);CHKERRQ(ierr);
+
+  if (dd->overlap > 0) {
+    if (info->xs - dd->overlap > 0 || info->bx == DMDA_BOUNDARY_PERIODIC) {
+      info->xs -= dd->overlap;
+      info->xm += dd->overlap;
+    }
+    if (info->xs + info->xm + dd->overlap < info->mx || info->bx == DMDA_BOUNDARY_PERIODIC) {
+      info->xm += dd->overlap;
+    }
+    if (info->ys - dd->overlap > 0 || info->by == DMDA_BOUNDARY_PERIODIC) {
+      info->ys -= dd->overlap;
+      info->ym += dd->overlap;
+    }
+    if (info->ys + info->ym + dd->overlap < info->my || info->by == DMDA_BOUNDARY_PERIODIC) {
+      info->ym += dd->overlap;
+    }
+    if (info->zs - dd->overlap > 0 || info->bz == DMDA_BOUNDARY_PERIODIC) {
+      info->zs -= dd->overlap;
+      info->zm += dd->overlap;
+    }
+    if (info->zs + info->zm + dd->overlap < info->mz || info->bz == DMDA_BOUNDARY_PERIODIC) {
+      info->zm += dd->overlap;
+    }
+  }
+  PetscFunctionReturn(0);
+}

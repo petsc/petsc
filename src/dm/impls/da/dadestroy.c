@@ -105,10 +105,6 @@ PetscErrorCode  DMDestroy_DA(DM da)
   ierr = ISColoringDestroy(&dd->localcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&dd->ghostedcoloring);CHKERRQ(ierr);
 
-  ierr = VecDestroy(&dd->coordinates);CHKERRQ(ierr);
-  ierr = VecDestroy(&dd->ghosted_coordinates);CHKERRQ(ierr);
-  ierr = DMDestroy(&dd->da_coordinates);CHKERRQ(ierr);
-
   ierr = PetscFree(dd->neighbors);CHKERRQ(ierr);
   ierr = PetscFree(dd->dfill);CHKERRQ(ierr);
   ierr = PetscFree(dd->ofill);CHKERRQ(ierr);

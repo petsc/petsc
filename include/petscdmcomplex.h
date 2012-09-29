@@ -17,6 +17,7 @@
 .seealso:  DM, DMComplexCreate()
 S*/
 PETSC_EXTERN PetscErrorCode DMComplexCreate(MPI_Comm, DM*);
+PETSC_EXTERN PetscErrorCode DMComplexCreateSubmesh(DM, const char[], DM*);
 PETSC_EXTERN PetscErrorCode DMComplexCreateFromCellList(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscBool, const int[], const double[], DM*);
 PETSC_EXTERN PetscErrorCode DMComplexClone(DM, DM*);
 PETSC_EXTERN PetscErrorCode DMComplexGetDimension(DM, PetscInt *);
@@ -30,14 +31,17 @@ PETSC_EXTERN PetscErrorCode DMComplexSetCone(DM, PetscInt, const PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMComplexGetConeOrientation(DM, PetscInt, const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMComplexSetConeOrientation(DM, PetscInt, const PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMComplexGetSupportSize(DM, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMComplexSetSupportSize(DM, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMComplexGetSupport(DM, PetscInt, const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode DMComplexSetSupport(DM, PetscInt, const PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMComplexGetConeSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMComplexGetCones(DM, PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMComplexGetConeOrientations(DM, PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMComplexGetMaxSizes(DM, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMComplexSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMComplexSymmetrize(DM);
 PETSC_EXTERN PetscErrorCode DMComplexStratify(DM);
+PETSC_EXTERN PetscErrorCode DMComplexGetCoordinateSection(DM, PetscSection *);
+PETSC_EXTERN PetscErrorCode DMComplexSetCoordinateSection(DM, PetscSection);
 
 PETSC_EXTERN PetscErrorCode DMComplexHasLabel(DM, const char [], PetscBool *);
 PETSC_EXTERN PetscErrorCode DMComplexGetLabelValue(DM, const char[], PetscInt, PetscInt *);
@@ -73,9 +77,6 @@ PETSC_EXTERN PetscErrorCode DMComplexGetDepth(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexCreateSection(DM, PetscInt, PetscInt, PetscInt [], PetscInt [], PetscInt, PetscInt [], IS [], PetscSection *);
-PETSC_EXTERN PetscErrorCode DMComplexGetCoordinateSection(DM, PetscSection *);
-PETSC_EXTERN PetscErrorCode DMComplexSetCoordinateSection(DM, PetscSection);
-PETSC_EXTERN PetscErrorCode DMComplexGetCoordinateVec(DM, Vec *);
 PETSC_EXTERN PetscErrorCode DMComplexCreateConeSection(DM, PetscSection *);
 
 /* FEM Support */

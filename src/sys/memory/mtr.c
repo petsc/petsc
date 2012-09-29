@@ -214,7 +214,7 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],c
   TRfrags++;
 
 #if defined(PETSC_USE_DEBUG)
-  ierr = PetscStackCopy(petscstack,&head->stack);CHKERRQ(ierr);
+  ierr = PetscStackCopy((PetscStack*)PetscThreadLocalGetValue(petscstack),&head->stack);CHKERRQ(ierr);
 #endif
 
   /*

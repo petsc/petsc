@@ -348,7 +348,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
   PetscFunctionBegin;
   /* Get ghosted coordinates */
-  ierr = DMDAGetGhostedCoordinates(user->da,&coords);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(user->da,&coords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
 
   /* Get local element info */

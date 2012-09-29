@@ -242,7 +242,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
 
         PetscFunctionBegin;
         /* Get ghosted coordinates */
-        ierr = DMDAGetGhostedCoordinates(user->da,&coords);CHKERRQ(ierr);
+        ierr = DMGetCoordinatesLocal(user->da,&coords);CHKERRQ(ierr);
         ierr = VecDuplicate(user->u1,&rand1);
         ierr = VecDuplicate(user->u1,&rand2);
         ierr = VecSetRandom(rand1,PETSC_NULL);
@@ -447,7 +447,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
   PetscFunctionBegin;
   /* Get ghosted coordinates */
-  ierr = DMDAGetGhostedCoordinates(user->da,&coords);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(user->da,&coords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
 
   /* Create the mass matrix M_0 */

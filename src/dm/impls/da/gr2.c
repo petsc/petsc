@@ -154,10 +154,10 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = VecGetArray(xlocal,&zctx.v);CHKERRQ(ierr);
 
   /* get coordinates of nodes */
-  ierr = DMDAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   if (!xcoor) {
     ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   }
 
   /*

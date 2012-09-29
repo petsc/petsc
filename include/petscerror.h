@@ -383,6 +383,22 @@ PETSC_EXTERN PetscErrorCode PetscFPTrapPop(void);
 #include <pthread.h>
 #endif
 
+#if defined(PETSC_HAVE_PTHREADCLASSES) && !defined(PETSC_PTHREAD_LOCAL)
+/* Get the value associated with name_key */
+#define PetscThreadLocalGetValue(name) ( pthread_getspecific(name##_key))
+/* Set the value for name_key */
+#define PetscThreadLocalSetValue(name,value) ( pthread_setspecific(name##_key,(void*)value) )
+/* Create name_key */
+#define PetscThreadLocalRegister(name) ( pthread_key_create(&name##_key,NULL) )
+/* Destroy name_key */
+#define PetscThreadLocalDestroy(name) ( pthread_key_delete(name##_key) )
+#else
+#define PetscThreadLocalGetValue(name) (name )
+#define PetscThreadLocalSetValue(name,value) (name = value)
+#define PetscThreadLocalRegister(name)
+#define PetscThreadLocalDestroy(name)
+#endif
+
 /*
       Allows the code to build a stack frame as it runs
 */
@@ -403,8 +419,10 @@ typedef struct  {
 PETSC_EXTERN PETSC_PTHREAD_LOCAL PetscStack *petscstack;
 #else
 PETSC_EXTERN pthread_key_t petscstack_key;
-PETSC_EXTERN PetscStack *petscstack;
 #endif
+#elif defined(PETSC_HAVE_OPENMP)
+PETSC_EXTERN PetscStack *petscstack;
+#pragma omp threadprivate(petscstack)
 #else
 PETSC_EXTERN PetscStack *petscstack;
 #endif
@@ -412,23 +430,7 @@ PETSC_EXTERN PetscStack *petscstack;
 PETSC_EXTERN PetscErrorCode PetscStackCopy(PetscStack*,PetscStack*);
 PETSC_EXTERN PetscErrorCode PetscStackPrint(PetscStack*,FILE* fp);
 
-#define PetscStackActive (petscstack != 0)
-
-#if defined(PETSC_HAVE_PTHREADCLASSES) && !defined(PETSC_PTHREAD_LOCAL)
-/* Get the value associated with name_key */
-#define PetscThreadLocalGetValue(name) ( pthread_getspecific(name##_key))
-/* Set the value for name_key */
-#define PetscThreadLocalSetValue(name,value) ( pthread_setspecific(name##_key,(void*)value) )
-/* Create name_key */
-#define PetscThreadLocalRegister(name) ( pthread_key_create(&name##_key,NULL) )
-/* Destroy name_key */
-#define PetscThreadLocalDestroy(name) ( pthread_key_delete(name##_key) )
-#else
-#define PetscThreadLocalGetValue(name) (name )
-#define PetscThreadLocalSetValue(name,value)
-#define PetscThreadLocalRegister(name)
-#define PetscThreadLocalDestroy(name)
-#endif
+#define PetscStackActive (((PetscStack*)PetscThreadLocalGetValue(petscstack)) != 0)
 
 /*MC
    PetscFunctionBegin - First executable line of each PETSc function
@@ -457,13 +459,14 @@ PETSC_EXTERN PetscErrorCode PetscStackPrint(PetscStack*,FILE* fp);
 M*/
 #define PetscFunctionBegin \
   do {									\
-    petscstack = (PetscStack*)PetscThreadLocalGetValue(petscstack);     \
-    if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {	\
-      petscstack->function[petscstack->currentsize]  = PETSC_FUNCTION_NAME; \
-      petscstack->file[petscstack->currentsize]      = __FILE__;        \
-      petscstack->directory[petscstack->currentsize] = __SDIR__;        \
-      petscstack->line[petscstack->currentsize]      = __LINE__;        \
-      petscstack->currentsize++;                                        \
+    PetscStack* petscstackp;                                            \
+    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);     \
+    if (petscstackp && (petscstackp->currentsize < PETSCSTACKSIZE)) {	\
+      petscstackp->function[petscstackp->currentsize]  = PETSC_FUNCTION_NAME; \
+      petscstackp->file[petscstackp->currentsize]      = __FILE__;        \
+      petscstackp->directory[petscstackp->currentsize] = __SDIR__;        \
+      petscstackp->line[petscstackp->currentsize]      = __LINE__;        \
+      petscstackp->currentsize++;                                        \
     }                                                                   \
     PetscCheck__FUNCT__();						\
   } while (0)
@@ -476,23 +479,25 @@ M*/
 
 #define PetscStackPush(n) \
   do {									\
-    petscstack = (PetscStack*)PetscThreadLocalGetValue(petscstack); \
-    if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {	\
-      petscstack->function[petscstack->currentsize]  = n;		\
-      petscstack->file[petscstack->currentsize]      = "unknown";	\
-      petscstack->directory[petscstack->currentsize] = "unknown";	\
-      petscstack->line[petscstack->currentsize]      = 0;		\
-      petscstack->currentsize++;					\
+    PetscStack * petscstackp;                                           \
+    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);     \
+    if (petscstackp && (petscstackp->currentsize < PETSCSTACKSIZE)) {	\
+      petscstackp->function[petscstackp->currentsize]  = n;		\
+      petscstackp->file[petscstackp->currentsize]      = "unknown";	\
+      petscstackp->directory[petscstackp->currentsize] = "unknown";	\
+      petscstackp->line[petscstackp->currentsize]      = 0;		\
+      petscstackp->currentsize++;					\
     } CHKMEMQ;} while (0)
 
 #define PetscStackPop \
-  do {CHKMEMQ;petscstack = (PetscStack*)PetscThreadLocalGetValue(petscstack); \
-    if (petscstack && petscstack->currentsize > 0) {			\
-      petscstack->currentsize--;					\
-      petscstack->function[petscstack->currentsize]  = 0;		\
-      petscstack->file[petscstack->currentsize]      = 0;		\
-      petscstack->directory[petscstack->currentsize] = 0;		\
-      petscstack->line[petscstack->currentsize]      = 0;		\
+  do {CHKMEMQ;PetscStack* petscstackp;                                  \
+    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);     \
+    if (petscstackp && petscstackp->currentsize > 0) {			\
+      petscstackp->currentsize--;					\
+      petscstackp->function[petscstackp->currentsize]  = 0;		\
+      petscstackp->file[petscstackp->currentsize]      = 0;		\
+      petscstackp->directory[petscstackp->currentsize] = 0;		\
+      petscstackp->line[petscstackp->currentsize]      = 0;		\
     }} while (0)
 
 /*MC
@@ -522,25 +527,27 @@ M*/
 M*/
 #define PetscFunctionReturn(a) \
   do {									\
-    petscstack = (PetscStack*)PetscThreadLocalGetValue(petscstack); \
-    if (petscstack && petscstack->currentsize > 0) {			\
-      petscstack->currentsize--;					\
-      petscstack->function[petscstack->currentsize]  = 0;		\
-      petscstack->file[petscstack->currentsize]      = 0;		\
-      petscstack->directory[petscstack->currentsize] = 0;		\
-      petscstack->line[petscstack->currentsize]      = 0;		\
+    PetscStack* petscstackp;                                            \
+    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack); \
+    if (petscstackp && petscstackp->currentsize > 0) {			\
+      petscstackp->currentsize--;					\
+      petscstackp->function[petscstackp->currentsize]  = 0;		\
+      petscstackp->file[petscstackp->currentsize]      = 0;		\
+      petscstackp->directory[petscstackp->currentsize] = 0;		\
+      petscstackp->line[petscstackp->currentsize]      = 0;		\
     }									\
     return(a);} while (0)
 
 #define PetscFunctionReturnVoid() \
-  do {							\
-    petscstack = (PetscStack*)PetscThreadLocalGetValue(petscstack); \
-    if (petscstack && petscstack->currentsize > 0) {			\
-      petscstack->currentsize--;					\
-      petscstack->function[petscstack->currentsize]  = 0;		\
-      petscstack->file[petscstack->currentsize]      = 0;		\
-      petscstack->directory[petscstack->currentsize] = 0;		\
-      petscstack->line[petscstack->currentsize]      = 0;		\
+  do {                                                              \
+    PetscStack* petscstackp;                                        \
+    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack); \
+    if (petscstackp && petscstackp->currentsize > 0) {			\
+      petscstackp->currentsize--;					\
+      petscstackp->function[petscstackp->currentsize]  = 0;		\
+      petscstackp->file[petscstackp->currentsize]      = 0;		\
+      petscstackp->directory[petscstackp->currentsize] = 0;		\
+      petscstackp->line[petscstackp->currentsize]      = 0;		\
     }									\
     return;} while (0)
 #else

@@ -80,8 +80,8 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
     ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0 );CHKERRQ(ierr);
   }
 
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
 
   ierr = VecGetArray(Gcoords,&XX);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -212,8 +212,8 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
 
   PetscFunctionBegin;
   ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0 );CHKERRQ(ierr);
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
 
   ierr = DMDAVecGetArray(cda,Gcoords,&XX);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -269,8 +269,8 @@ PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
   DM             cda;
 
   PetscFunctionBegin;
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
 
   ierr = DMDAVecGetArray(cda,Gcoords,&XX);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,field,&FF);CHKERRQ(ierr);
@@ -302,8 +302,8 @@ PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
   DM             cda;
 
   PetscFunctionBegin;
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
+  ierr = DAGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DAGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
 
   ierr = DMDAVecGetArray(cda,Gcoords,&XX);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,field,&FF);CHKERRQ(ierr);
@@ -364,11 +364,11 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
     DM  cdaf,cdac;
     Vec coordsc,coordsf;
 
-    ierr = DMDAGetCoordinateDA(dac,&cdac);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinateDA(daf,&cdaf);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(dac,&cdac);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(daf,&cdaf);CHKERRQ(ierr);
 
-    ierr = DMDAGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
 
     ierr = DMCreateInterpolation(cdac,cdaf,&II,&scale);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
@@ -464,11 +464,11 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
     DM  cdaf,cdac;
     Vec coordsc,coordsf;
 
-    ierr = DMDAGetCoordinateDA(dac,&cdac);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinateDA(daf,&cdaf);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(dac,&cdac);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(daf,&cdaf);CHKERRQ(ierr);
 
-    ierr = DMDAGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
 
     ierr = DMCreateInterpolation(cdac,cdaf,&II,&scale);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
@@ -567,11 +567,11 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
     DM  cdaf,cdac;
     Vec coordsc,coordsf;
 
-    ierr = DMDAGetCoordinateDA(dac,&cdac);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinateDA(daf,&cdaf);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(dac,&cdac);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(daf,&cdaf);CHKERRQ(ierr);
 
-    ierr = DMDAGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
 
     ierr = DMCreateInterpolation(cdac,cdaf,&II,&scale);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);

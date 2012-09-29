@@ -115,11 +115,6 @@ PETSC_EXTERN PetscErrorCode DMDAGetScatter(DM,VecScatter*,VecScatter*,VecScatter
 PETSC_EXTERN PetscErrorCode DMDAGetNeighbors(DM,const PetscMPIInt**);
 
 PETSC_EXTERN PetscErrorCode DMDAGetAO(DM,AO*);
-PETSC_EXTERN PetscErrorCode DMDASetCoordinates(DM,Vec);
-PETSC_EXTERN PetscErrorCode DMDASetGhostedCoordinates(DM,Vec);
-PETSC_EXTERN PetscErrorCode DMDAGetCoordinates(DM,Vec *);
-PETSC_EXTERN PetscErrorCode DMDAGetGhostedCoordinates(DM,Vec *);
-PETSC_EXTERN PetscErrorCode DMDAGetCoordinateDA(DM,DM *);
 PETSC_EXTERN PetscErrorCode DMDASetUniformCoordinates(DM,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode DMDAGetBoundingBox(DM,PetscReal[],PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMDAGetLocalBoundingBox(DM,PetscReal[],PetscReal[]);
@@ -261,6 +256,7 @@ M*/
 typedef struct {PetscScalar x,y,z;} DMDACoor3d;
 
 PETSC_EXTERN PetscErrorCode DMDAGetLocalInfo(DM,DMDALocalInfo*);
+PETSC_EXTERN PetscErrorCode DMDAGetLocalBlockInfo(DM,DMDALocalInfo*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDALocalFunction1)(DMDALocalInfo*,void*,void*,void*);
 PETSC_EXTERN PetscErrorCode DMDAComputeFunctionLocal(DM, DMDALocalFunction1, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMDAComputeFunctionLocalGhost(DM, DMDALocalFunction1, Vec, Vec, void *);

@@ -729,17 +729,17 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   ierr = DMView_DA_Private(da2);CHKERRQ(ierr);
 
   /* interpolate coordinates if they are set on the coarse grid */
-  if (dd->coordinates) {
+  if (da->coordinates) {
     DM  cdaf,cdac;
     Vec coordsc,coordsf;
     Mat II;
 
-    ierr = DMDAGetCoordinateDA(da,&cdac);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinates(da,&coordsc);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinateDA(da2,&cdaf);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(da,&cdac);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(da,&coordsc);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(da2,&cdaf);CHKERRQ(ierr);
     /* force creation of the coordinate vector */
     ierr = DMDASetUniformCoordinates(da2,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinates(da2,&coordsf);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(da2,&coordsf);CHKERRQ(ierr);
     ierr = DMCreateInterpolation(cdac,cdaf,&II,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
     ierr = MatDestroy(&II);CHKERRQ(ierr);
@@ -859,17 +859,17 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   ierr = DMView_DA_Private(da2);CHKERRQ(ierr);
 
   /* inject coordinates if they are set on the fine grid */
-  if (dd->coordinates) {
+  if (da->coordinates) {
     DM         cdaf,cdac;
     Vec        coordsc,coordsf;
     VecScatter inject;
 
-    ierr = DMDAGetCoordinateDA(da,&cdaf);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinates(da,&coordsf);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinateDA(da2,&cdac);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(da,&cdaf);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(da,&coordsf);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(da2,&cdac);CHKERRQ(ierr);
     /* force creation of the coordinate vector */
     ierr = DMDASetUniformCoordinates(da2,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinates(da2,&coordsc);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(da2,&coordsc);CHKERRQ(ierr);
 
     ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
     ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

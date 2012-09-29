@@ -18,6 +18,7 @@ struct _DMOps {
   PetscErrorCode (*createlocaltoglobalmapping)(DM);
   PetscErrorCode (*createlocaltoglobalmappingblock)(DM);
   PetscErrorCode (*createfieldis)(DM,PetscInt*,char***,IS**);
+  PetscErrorCode (*createcoordinatedm)(DM,DM*);
 
   PetscErrorCode (*getcoloring)(DM,ISColoringType,const MatType,ISColoring*);	
   PetscErrorCode (*creatematrix)(DM, const MatType,Mat*);
@@ -67,6 +68,13 @@ struct _DMRefineHookLink {
   DMRefineHookLink next;
 };
 
+typedef struct _DMBlockRestrictHookLink *DMBlockRestrictHookLink;
+struct _DMBlockRestrictHookLink {
+  PetscErrorCode (*restricthook)(DM,VecScatter,VecScatter,DM,void*);
+  void *ctx;
+  DMBlockRestrictHookLink next;
+};
+
 typedef enum {DMVEC_STATUS_IN,DMVEC_STATUS_OUT} DMVecStatus;
 typedef struct _DMNamedVecLink *DMNamedVecLink;
 struct _DMNamedVecLink {
@@ -106,6 +114,7 @@ struct _p_DM {
   void                   *data;
   DMCoarsenHookLink      coarsenhook; /* For transfering auxiliary problem data to coarser grids */
   DMRefineHookLink       refinehook;
+  DMBlockRestrictHookLink blockrestricthook;
   DMLocalFunction1       lf;
   DMLocalJacobian1       lj;
   /* Flexible communication */
@@ -114,6 +123,10 @@ struct _p_DM {
   /* Allows a non-standard data layout */
   PetscSection           defaultSection;       /* Layout for local vectors */
   PetscSection           defaultGlobalSection; /* Layout for global vectors */
+  /* Coordinates */
+  DM                     coordinateDM;         /* Layout for coordinates (default section) */
+  Vec                    coordinates;          /* Coordinate values in global vector */
+  Vec                    coordinatesLocal;     /* Coordinate values in local  vector */
   /* Null spaces -- of course I should make this have a variable number of fields */
   /*   I now believe this might not be the right way: see below */
   NullSpaceFunc          nullspaceConstructors[10];
