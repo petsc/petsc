@@ -105,6 +105,7 @@ typedef struct {
 } PC_BDDC;
 
 /* prototypes for functions contained in bddc.c */
+static PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
 static PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
 static PetscErrorCode PCBDDCAdaptNullSpace(PC);
 static PetscErrorCode PCBDDCCoarseSetUp(PC);

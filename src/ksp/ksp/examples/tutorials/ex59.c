@@ -761,6 +761,7 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat* A)
 
   if (dd.DBC_zerorows) {
     ierr = ComputeSpecialBoundaryIndices(dd,&dirichletIS,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSetOption(local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatZeroRowsLocalIS(temp_A,dirichletIS,1.0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = ISDestroy(&dirichletIS);CHKERRQ(ierr);
   }
