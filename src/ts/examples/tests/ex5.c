@@ -215,6 +215,7 @@ int main(int argc,char **argv)
   /*Create grid*/
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-20,-20,
                       PETSC_DECIDE,PETSC_DECIDE,dof,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
 
   /*Define output window for each variable of interest*/
   ierr = DMDASetFieldName(da,0,"Ts");CHKERRQ(ierr);
