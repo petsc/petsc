@@ -15,7 +15,8 @@ class Configure(PETSc.package.NewPackage):
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
-    self.deps = []
+    self.pthreadclasses = framework.require('PETSc.packages.pthreadclasses',self)
+    self.deps = [self.pthreadclasses]
     return
 
   def configureLibrary(self):
@@ -51,10 +52,12 @@ class Configure(PETSc.package.NewPackage):
       if self.setCompilers.checkLinkerFlag(ompflag):
         self.setCompilers.addLinkerFlag(ompflag)
       self.setCompilers.popLanguage()
+    # OpenMP threadprivate variables are not supported on all platforms (for e.g on MacOS).
+    # Hence forcing to configure additionally with --with-pthreadclasses so that pthread
+    # routines pthread_get/setspecific() can be used instead.
+    if not self.checkCompile('#include <omp.h>\nint a;\n#pragma omp threadprivate(a)\n','') and not self.pthreadclasses.found:
+      raise RuntimeError('OpenMP threadprivate variables not found. Configure additionally with --with-pthreadclasses=1')
     # register package since PETSc.package.NewPackage.configureLibrary(self) will not work since there is no library to find
     if not hasattr(self.framework, 'packages'):
       self.framework.packages = []
     self.framework.packages.append(self)
-
-# sets PETSC_HAVE_OPENMP and adds the relevant flag
-# to the compile and link lines
