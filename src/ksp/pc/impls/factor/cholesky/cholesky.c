@@ -130,14 +130,10 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       ierr = PetscLogObjectParent(pc,((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       if (!dir->reuseordering) {
-        if (dir->row && dir->col && (dir->row != dir->col)) {
-          ierr = ISDestroy(&dir->row);CHKERRQ(ierr);
-        }
-        ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
+        ierr = ISDestroy(&dir->row);CHKERRQ(ierr);
         ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
-        if (dir->col && (dir->row != dir->col)) {  /* only use row ordering for SBAIJ */
-          ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
-        }
+        ierr = ISDestroy(&dir->col);CHKERRQ(ierr); /* only use dir->row ordering in CholeskyFactor */
+
         flg  = PETSC_FALSE;
         ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&flg,PETSC_NULL);CHKERRQ(ierr);
         if (flg) {
