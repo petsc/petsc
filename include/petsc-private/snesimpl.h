@@ -33,6 +33,7 @@ struct _SNESOps {
 struct _p_SNES {
   PETSCHEADER(struct _SNESOps);
   DM        dm;
+  PetscBool dmAuto;             /* SNES created currently used DM automatically */
   SNES      pc;
   PCSide    pcside;
   PetscBool usespc;

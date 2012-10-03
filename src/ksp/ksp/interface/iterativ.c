@@ -1001,7 +1001,7 @@ PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
     KSPDM          kdm;
     ierr = PetscObjectQuery((PetscObject)ksp->dm,"KSPDM",(PetscObject*)&oldcontainer);CHKERRQ(ierr);
     ierr = PetscObjectQuery((PetscObject)dm,"KSPDM",(PetscObject*)&container);CHKERRQ(ierr);
-    if (oldcontainer && !container) {
+    if (oldcontainer && ksp->dmAuto && !container) {
       ierr = DMKSPCopyContext(ksp->dm,dm);CHKERRQ(ierr);
       ierr = DMKSPGetContext(ksp->dm,&kdm);CHKERRQ(ierr);
       if (kdm->originaldm == ksp->dm) { /* Grant write privileges to the replacement DM */
@@ -1011,6 +1011,7 @@ PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
     ierr = DMDestroy(&ksp->dm);CHKERRQ(ierr);
   }
   ksp->dm = dm;
+  ksp->dmAuto = PETSC_FALSE;
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetDM(pc,dm);CHKERRQ(ierr);
   ksp->dmActive = PETSC_TRUE;
@@ -1070,6 +1071,7 @@ PetscErrorCode  KSPGetDM(KSP ksp,DM *dm)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (!ksp->dm) {
     ierr = DMShellCreate(((PetscObject)ksp)->comm,&ksp->dm);CHKERRQ(ierr);
+    ksp->dmAuto = PETSC_TRUE;
   }
   *dm = ksp->dm;
   PetscFunctionReturn(0);

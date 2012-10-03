@@ -4414,7 +4414,7 @@ PetscErrorCode  SNESSetDM(SNES snes,DM dm)
     PetscContainer oldcontainer,container;
     ierr = PetscObjectQuery((PetscObject)snes->dm,"SNESDM",(PetscObject*)&oldcontainer);CHKERRQ(ierr);
     ierr = PetscObjectQuery((PetscObject)dm,"SNESDM",(PetscObject*)&container);CHKERRQ(ierr);
-    if (oldcontainer && !container) {
+    if (oldcontainer && snes->dmAuto && !container) {
       ierr = DMSNESCopyContext(snes->dm,dm);CHKERRQ(ierr);
       ierr = DMSNESGetContext(snes->dm,&sdm);CHKERRQ(ierr);
       if (sdm->originaldm == snes->dm) { /* Grant write privileges to the replacement DM */
@@ -4424,6 +4424,7 @@ PetscErrorCode  SNESSetDM(SNES snes,DM dm)
     ierr = DMDestroy(&snes->dm);CHKERRQ(ierr);
   }
   snes->dm = dm;
+  snes->dmAuto = PETSC_FALSE;
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,dm);CHKERRQ(ierr);
   ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
@@ -4460,6 +4461,7 @@ PetscErrorCode  SNESGetDM(SNES snes,DM *dm)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (!snes->dm) {
     ierr = DMShellCreate(((PetscObject)snes)->comm,&snes->dm);CHKERRQ(ierr);
+    snes->dmAuto = PETSC_TRUE;
   }
   *dm = snes->dm;
   PetscFunctionReturn(0);

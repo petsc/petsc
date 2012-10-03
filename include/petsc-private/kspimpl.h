@@ -38,7 +38,8 @@ typedef enum {KSP_SETUP_NEW, KSP_SETUP_NEWMATRIX, KSP_SETUP_NEWRHS} KSPSetUpStag
 struct _p_KSP {
   PETSCHEADER(struct _KSPOps);
   DM              dm;
-  PetscBool       dmActive;
+  PetscBool       dmAuto;       /* DM was created automatically by KSP */
+  PetscBool       dmActive;     /* KSP should use DM for computing operators */
   /*------------------------- User parameters--------------------------*/
   PetscInt        max_it;                     /* maximum number of iterations */
   KSPFischerGuess guess;
