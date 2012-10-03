@@ -430,7 +430,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->computejacobian) {
-    SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESDM not improperly configured");
+    SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESDM not properly configured");
   } else if (!snes->jacobian && snes->mf) {
     Mat J;
     void *functx;
