@@ -262,7 +262,7 @@ PetscErrorCode DMCreate_Cartesian(DM dm)
 
   new(&mesh->m) ALE::Obj<ALE::CartesianMesh>(PETSC_NULL);
 
-  ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);
+  ierr = DMSetVecType(dm,VECSTANDARD);CHKERRQ(ierr);
   dm->ops->globaltolocalbegin = 0;
   dm->ops->globaltolocalend   = 0;
   dm->ops->localtoglobalbegin = 0;

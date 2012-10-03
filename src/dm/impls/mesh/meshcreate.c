@@ -671,7 +671,7 @@ PetscErrorCode DMCreate_Mesh(DM dm)
   mesh->closureTmpA    = PETSC_NULL;
   mesh->closureTmpB    = PETSC_NULL;
 
-  ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);
+  ierr = DMSetVecType(dm,VECSTANDARD);CHKERRQ(ierr);
   dm->ops->view               = DMView_Mesh;
   dm->ops->setfromoptions     = DMSetFromOptions_Mesh;
   dm->ops->setup              = 0;
