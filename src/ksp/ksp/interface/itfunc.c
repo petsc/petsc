@@ -1920,6 +1920,9 @@ PetscErrorCode  KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 -   -ksp_diagonal_scale_fix - scale the matrix back AFTER the solve
 
 
+    Notes: Scales the matrix by  D^(-1/2)  A  D^(-1/2)  [D^(1/2) x ] = D^(-1/2) b
+       where D_{ii} is 1/abs(A_{ii}) unless A_{ii} is zero and then it is 1.
+
     BE CAREFUL with this routine: it actually scales the matrix and right
     hand side that define the system. After the system is solved the matrix
     and right hand side remain scaled unless you use KSPSetDiagonalScaleFix()
