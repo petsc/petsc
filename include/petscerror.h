@@ -490,7 +490,7 @@ M*/
     } CHKMEMQ;} while (0)
 
 #define PetscStackPop \
-  do {CHKMEMQ;PetscStack* petscstackp;                                  \
+  do {PetscStack* petscstackp;CHKMEMQ;                                  \
     petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);     \
     if (petscstackp && petscstackp->currentsize > 0) {			\
       petscstackp->currentsize--;					\
