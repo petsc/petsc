@@ -52,6 +52,8 @@ PETSC_EXTERN PetscErrorCode DMComplexGetLabelIdIS(DM, const char[], IS *);
 PETSC_EXTERN PetscErrorCode DMComplexGetStratumSize(DM, const char [], PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexGetStratumIS(DM, const char [], PetscInt, IS *);
 PETSC_EXTERN PetscErrorCode DMComplexClearLabelStratum(DM, const char[], PetscInt);
+PETSC_EXTERN PetscErrorCode DMComplexGetCellNumbering(DM, IS *);
+PETSC_EXTERN PetscErrorCode DMComplexGetVertexNumbering(DM, IS *);
 
 PETSC_EXTERN PetscErrorCode DMComplexGetMeet(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
 PETSC_EXTERN PetscErrorCode DMComplexGetFullMeet(DM, PetscInt, const PetscInt [], PetscInt *, const PetscInt **);
@@ -90,6 +92,8 @@ PETSC_EXTERN PetscErrorCode DMComplexCreateExodus(MPI_Comm , PetscInt , DM *);
 
 PETSC_EXTERN PetscErrorCode DMComplexGetVTKBounds(DM, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexSetVTKBounds(DM, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode DMComplexGetVTKCellHeight(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMComplexSetVTKCellHeight(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMComplexVTKWriteAll(PetscObject, PetscViewer);
 
 #endif

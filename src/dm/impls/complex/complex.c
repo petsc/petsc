@@ -264,6 +264,8 @@ PetscErrorCode DMDestroy_Complex(DM dm)
     ierr = PetscFree(next);CHKERRQ(ierr);
     next = tmp;
   }
+  ierr = ISDestroy(&mesh->globalVertexNumbers);CHKERRQ(ierr);
+  ierr = ISDestroy(&mesh->globalCellNumbers);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1876,6 +1878,9 @@ PetscErrorCode DMComplexStratify(DM dm)
       ierr = DMComplexSetLabelValue(dm, "depth", p, 0);CHKERRQ(ierr);
     } else if (!supportSize && coneSize) {
       ++numLeaves;
+    } else if (!supportSize && !coneSize) {
+      /* Isolated points */
+      ierr = DMComplexSetLabelValue(dm, "depth", p, 0);CHKERRQ(ierr);
     }
   }
   if (numRoots + numLeaves == (pEnd - pStart)) {
@@ -6734,6 +6739,7 @@ PetscErrorCode DMComplexGetVTKBounds(DM dm, PetscInt *cMax, PetscInt *vMax)
   DM_Complex *mesh = (DM_Complex *) dm->data;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (cMax) *cMax = mesh->vtkCellMax;
   if (vMax) *vMax = mesh->vtkVertexMax;
   PetscFunctionReturn(0);
@@ -6746,8 +6752,34 @@ PetscErrorCode DMComplexSetVTKBounds(DM dm, PetscInt cMax, PetscInt vMax)
   DM_Complex *mesh = (DM_Complex *) dm->data;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (cMax >= 0) mesh->vtkCellMax   = cMax;
   if (vMax >= 0) mesh->vtkVertexMax = vMax;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetVTKCellHeight"
+PetscErrorCode DMComplexGetVTKCellHeight(DM dm, PetscInt *cellHeight)
+{
+  DM_Complex *mesh = (DM_Complex *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(cellHeight, 2);
+  *cellHeight = mesh->vtkCellHeight;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexSetVTKCellHeight"
+PetscErrorCode DMComplexSetVTKCellHeight(DM dm, PetscInt cellHeight)
+{
+  DM_Complex *mesh = (DM_Complex *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->vtkCellHeight = cellHeight;
   PetscFunctionReturn(0);
 }
 
@@ -6861,11 +6893,12 @@ PetscErrorCode DMComplexCreateSubmesh(DM dm, const char label[], DM *subdm)
   PetscScalar    *coords, *subCoords;
   IS              labelIS;
   const PetscInt *subVertices;
+  PetscInt       *subVerticesActive;
   PetscInt       *subCells = PETSC_NULL;
-  PetscInt        numSubVertices, firstSubVertex, numSubCells = 0, maxSubCells = 0, numOldSubCells;
+  PetscInt        numSubVertices, numSubVerticesActive, firstSubVertex, numSubCells = 0, maxSubCells = 0, numOldSubCells;
   PetscInt       *face, *subface, maxConeSize, numSubFaces = 0, firstSubFace, newFacePoint, nFV = 0, coordSize;
   PetscInt        dim; /* Right now, do not specify dimension */
-  PetscInt        cStart, cEnd, cMax, c, vStart, vEnd, v, p, corner, i, d, f;
+  PetscInt        cStart, cEnd, cMax, c, vStart, vEnd, vMax, v, p, corner, i, d, f;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -6873,8 +6906,9 @@ PetscErrorCode DMComplexCreateSubmesh(DM dm, const char label[], DM *subdm)
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMComplexGetMaxSizes(dm, &maxConeSize, PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMComplexGetVTKBounds(dm, &cMax, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMComplexGetVTKBounds(dm, &cMax, &vMax);CHKERRQ(ierr);
   if (cMax >= 0) {cEnd = PetscMin(cEnd, cMax);}
+  if (vMax >= 0) {vEnd = PetscMin(vEnd, vMax);}
   ierr = DMGetWorkArray(dm, 2*maxConeSize, PETSC_INT, &face);CHKERRQ(ierr);
   subface = &face[maxConeSize];
   ierr = DMCreate(comm, subdm);CHKERRQ(ierr);
@@ -6885,6 +6919,8 @@ PetscErrorCode DMComplexCreateSubmesh(DM dm, const char label[], DM *subdm)
   ierr = ISGetIndices(labelIS, &subVertices);CHKERRQ(ierr);
   maxSubCells = numSubVertices;
   ierr = PetscMalloc(maxSubCells * sizeof(PetscInt), &subCells);CHKERRQ(ierr);
+  ierr = PetscMalloc(numSubVertices * sizeof(PetscInt), &subVerticesActive);CHKERRQ(ierr);
+  ierr = PetscMemzero(subVerticesActive, numSubVertices * sizeof(PetscInt));CHKERRQ(ierr);
   for(v = 0; v < numSubVertices; ++v) {
     const PetscInt vertex = subVertices[v];
     PetscInt *star = PETSC_NULL;
@@ -6923,7 +6959,9 @@ PetscErrorCode DMComplexCreateSubmesh(DM dm, const char label[], DM *subdm)
           for(i = 0; i < faceSize; ++i) {if (cellVertex == face[i]) break;}
           if (i == faceSize) {
             if (faceSize >= maxConeSize) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices in face %d should not exceed %d", faceSize+1, maxConeSize);
-            face[faceSize++] = cellVertex;
+            face[faceSize]    = cellVertex;
+            subface[faceSize] = subVertex;
+            ++faceSize;
           }
         }
       }
@@ -6945,16 +6983,25 @@ PetscErrorCode DMComplexCreateSubmesh(DM dm, const char label[], DM *subdm)
         } else {
           numSubFaces++;
         }
+        for(f = 0; f < faceSize; ++f) {
+          subVerticesActive[subface[f]] = 1;
+        }
         subCells[numSubCells++] = cell;
       }
     }
     ierr = DMComplexRestoreTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
     ierr = PetscSortRemoveDupsInt(&numSubCells, subCells);CHKERRQ(ierr);
   }
-  ierr = DMComplexSetChart(*subdm, 0, numSubCells+numSubFaces+numSubVertices);CHKERRQ(ierr);
+  /* Pick out active subvertices */
+  for(v = 0, numSubVerticesActive = 0; v < numSubVertices; ++v) {
+    if (subVerticesActive[v]) {
+      subVerticesActive[numSubVerticesActive++] = subVertices[v];
+    }
+  }
+  ierr = DMComplexSetChart(*subdm, 0, numSubCells+numSubFaces+numSubVerticesActive);CHKERRQ(ierr);
   /* Set cone sizes */
   firstSubVertex = numSubCells;
-  firstSubFace   = numSubCells+numSubVertices;
+  firstSubFace   = numSubCells+numSubVerticesActive;
   newFacePoint   = firstSubFace;
   for(c = 0; c < numSubCells; ++c) {
     ierr = DMComplexSetConeSize(*subdm, c, 1);CHKERRQ(ierr);
@@ -6980,7 +7027,7 @@ PetscErrorCode DMComplexCreateSubmesh(DM dm, const char label[], DM *subdm)
       const PetscInt cellVertex = closure[corner];
       PetscInt       subVertex;
 
-      ierr = PetscFindInt(cellVertex, numSubVertices, subVertices, &subVertex);CHKERRQ(ierr);
+      ierr = PetscFindInt(cellVertex, numSubVerticesActive, subVerticesActive, &subVertex);CHKERRQ(ierr);
       if (subVertex >= 0) { /* contains submesh vertex */
         for(i = 0; i < faceSize; ++i) {if (cellVertex == face[i]) break;}
         if (i == faceSize) {
@@ -7013,8 +7060,8 @@ PetscErrorCode DMComplexCreateSubmesh(DM dm, const char label[], DM *subdm)
   ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateSection(*subdm, &subCoordSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(subCoordSection, firstSubVertex, firstSubVertex+numSubVertices);CHKERRQ(ierr);
-  for (v = firstSubVertex; v < firstSubVertex+numSubVertices; ++v) {
+  ierr = PetscSectionSetChart(subCoordSection, firstSubVertex, firstSubVertex+numSubVerticesActive);CHKERRQ(ierr);
+  for (v = firstSubVertex; v < firstSubVertex+numSubVerticesActive; ++v) {
     ierr = PetscSectionSetDof(subCoordSection, v, dim);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(subCoordSection);CHKERRQ(ierr);
@@ -7024,8 +7071,8 @@ PetscErrorCode DMComplexCreateSubmesh(DM dm, const char label[], DM *subdm)
   ierr = VecSetFromOptions(subCoordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates,    &coords);CHKERRQ(ierr);
   ierr = VecGetArray(subCoordinates, &subCoords);CHKERRQ(ierr);
-  for(v = 0; v < numSubVertices; ++v) {
-    const PetscInt vertex    = subVertices[v];
+  for(v = 0; v < numSubVerticesActive; ++v) {
+    const PetscInt vertex    = subVerticesActive[v];
     const PetscInt subVertex = firstSubVertex+v;
     PetscInt dof, off, sdof, soff;
 
@@ -7042,9 +7089,79 @@ PetscErrorCode DMComplexCreateSubmesh(DM dm, const char label[], DM *subdm)
   ierr = VecRestoreArray(subCoordinates, &subCoords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(*subdm, subCoordinates);CHKERRQ(ierr);
 
+  ierr = DMComplexSetVTKCellHeight(*subdm, 1);CHKERRQ(ierr);
+
   ierr = PetscFree(subCells);CHKERRQ(ierr);
+  ierr = PetscFree(subVerticesActive);CHKERRQ(ierr);
   ierr = ISRestoreIndices(labelIS, &subVertices);CHKERRQ(ierr);
   ierr = ISDestroy(&labelIS);CHKERRQ(ierr);
   ierr = DMRestoreWorkArray(dm, 2*maxConeSize, PETSC_INT, &face);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexCreateNumbering_Private"
+/* We can easily have a form that takes an IS instead */
+PetscErrorCode DMComplexCreateNumbering_Private(DM dm, PetscInt pStart, PetscInt pEnd, PetscSF sf, IS *numbering)
+{
+  PetscSection   section, globalSection;
+  PetscInt      *numbers, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &section);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    ierr = PetscSectionSetDof(section, p, 1);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
+  ierr = PetscSectionCreateGlobalSection(section, sf, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
+  ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt), &numbers);CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    ierr = PetscSectionGetOffset(globalSection, p, &numbers[p-pStart]);CHKERRQ(ierr);
+  }
+  ierr = ISCreateGeneral(((PetscObject) dm)->comm, pEnd - pStart, numbers, PETSC_OWN_POINTER, numbering);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetCellNumbering"
+PetscErrorCode DMComplexGetCellNumbering(DM dm, IS *globalCellNumbers)
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscInt       cStart, cEnd, cMax;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!mesh->globalVertexNumbers) {
+    ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    ierr = DMComplexGetVTKBounds(dm, &cMax, PETSC_NULL);CHKERRQ(ierr);
+    if (cMax >= 0) {cEnd = PetscMin(cEnd, cMax);}
+    ierr = DMComplexCreateNumbering_Private(dm, cStart, cEnd, dm->sf, &mesh->globalCellNumbers);CHKERRQ(ierr);
+  }
+  *globalCellNumbers = mesh->globalCellNumbers;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetVertexNumbering"
+PetscErrorCode DMComplexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscInt       vStart, vEnd, vMax;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!mesh->globalVertexNumbers) {
+    ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    ierr = DMComplexGetVTKBounds(dm, PETSC_NULL, &vMax);CHKERRQ(ierr);
+    if (vMax >= 0) {vEnd = PetscMin(vEnd, vMax);}
+    ierr = DMComplexCreateNumbering_Private(dm, vStart, vEnd, dm->sf, &mesh->globalVertexNumbers);CHKERRQ(ierr);
+  }
+  *globalVertexNumbers = mesh->globalVertexNumbers;
   PetscFunctionReturn(0);
 }

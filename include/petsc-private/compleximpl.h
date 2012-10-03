@@ -34,11 +34,14 @@ typedef struct {
 
   PetscInt            *facesTmp;            /* Work space for faces operation */
 
-  /* Labels */
+  /* Labels and numbering */
   DMLabel              labels;         /* Linked list of labels */
+  IS                   globalVertexNumbers;
+  IS                   globalCellNumbers;
 
   /* Output */
   PetscInt             vtkCellMax, vtkVertexMax; /* Allow exclusion of some points in the VTK output */
+  PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
 
   /* Debugging */
   PetscBool            printSetValues;

@@ -84,7 +84,7 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, PetscSection globalConeSection, FIL
   MPI_Comm       comm = ((PetscObject) dm)->comm;
   PetscInt       dim;
   PetscInt       numCorners = 0, maxCorners;
-  PetscInt       numCells   = 0, totCells = 0, cellType;
+  PetscInt       numCells   = 0, totCells = 0, cellType, cellHeight;
   PetscInt       numLabelCells, cMax, cStart, cEnd, c, vStart, vEnd, v;
   PetscMPIInt    numProcs, rank, proc, tag = 1;
   PetscBool      hasLabel;
@@ -94,7 +94,8 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, PetscSection globalConeSection, FIL
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMComplexGetVTKBounds(dm, &cMax, PETSC_NULL);CHKERRQ(ierr);
   if (cMax >= 0) {cEnd = PetscMin(cEnd, cMax);}
@@ -221,7 +222,7 @@ PetscErrorCode DMComplexVTKWriteSection(DM dm, PetscSection section, PetscSectio
   const MPI_Datatype mpiType = MPIU_SCALAR;
   PetscScalar       *array;
   PetscInt           numDof = 0, maxDof;
-  PetscInt           numLabelCells, cMax, cStart, cEnd, numLabelVertices, vMax, vStart, vEnd, pStart, pEnd, p;
+  PetscInt           numLabelCells, cellHeight, cMax, cStart, cEnd, numLabelVertices, vMax, vStart, vEnd, pStart, pEnd, p;
   PetscMPIInt        numProcs, rank, proc, tag = 1;
   PetscBool          hasLabel;
   PetscErrorCode     ierr;
@@ -232,17 +233,20 @@ PetscErrorCode DMComplexVTKWriteSection(DM dm, PetscSection section, PetscSectio
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   /* VTK only wants the values at cells or vertices */
-  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMComplexGetVTKBounds(dm, &cMax, &vMax);CHKERRQ(ierr);
+  if (cMax >= 0) {cEnd = PetscMin(cEnd, cMax);}
   if (vMax >= 0) {vEnd = PetscMin(vEnd, vMax);}
-  if (cMax >= 0 && !pStart) {vEnd = PetscMin(vEnd, cMax);}
-  pStart = PetscMax(cStart, pStart);
-  pEnd   = PetscMin(vEnd,   pEnd);
+  pStart = PetscMax(PetscMin(cStart, vStart), pStart);
+  pEnd   = PetscMin(PetscMax(cEnd,   vEnd),   pEnd);
   ierr = DMComplexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
   ierr = DMComplexGetStratumSize(dm, "vtk", 2, &numLabelVertices);CHKERRQ(ierr);
   hasLabel = numLabelCells > 0 || numLabelVertices > 0 ? PETSC_TRUE : PETSC_FALSE;
-  for (p = pStart; p < pEnd; ++p) {
+  for(p = pStart; p < pEnd; ++p) {
+    /* Reject points not either cells or vertices */
+    if (((p < cStart) || (p >= cEnd)) && ((p < vStart) || (p >= vEnd))) continue;
     if (hasLabel) {
       PetscInt value;
 
@@ -266,6 +270,8 @@ PetscErrorCode DMComplexVTKWriteSection(DM dm, PetscSection section, PetscSectio
       /* Here we lose a way to filter points by keeping them out of the Numbering */
       PetscInt dof, off, goff, d;
 
+      /* Reject points not either cells or vertices */
+      if (((p < cStart) || (p >= cEnd)) && ((p < vStart) || (p >= vEnd))) continue;
       if (hasLabel) {
         PetscInt value;
 
@@ -322,6 +328,8 @@ PetscErrorCode DMComplexVTKWriteSection(DM dm, PetscSection section, PetscSectio
     for (p = pStart; p < pEnd; ++p) {
       PetscInt dof, off, goff, d;
 
+      /* Reject points not either cells or vertices */
+      if (((p < cStart) || (p >= cEnd)) && ((p < vStart) || (p >= vEnd))) continue;
       if (hasLabel) {
         PetscInt value;
 

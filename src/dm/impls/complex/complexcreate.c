@@ -528,8 +528,11 @@ PetscErrorCode DMCreate_Complex(DM dm)
   mesh->facesTmp         = PETSC_NULL;
 
   mesh->labels               = PETSC_NULL;
+  mesh->globalVertexNumbers  = PETSC_NULL;
+  mesh->globalCellNumbers    = PETSC_NULL;
   mesh->vtkCellMax           = PETSC_DETERMINE;
   mesh->vtkVertexMax         = PETSC_DETERMINE;
+  mesh->vtkCellHeight        = 0;
   mesh->printSetValues       = PETSC_FALSE;
 
   ierr = DMInitialize_Complex(dm);CHKERRQ(ierr);
