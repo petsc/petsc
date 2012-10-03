@@ -1386,7 +1386,7 @@ PetscErrorCode  VecZeroEntries(Vec vec)
 static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
 {
   PetscBool      opt;
-  VecType  defaultType;
+  VecType        defaultType;
   char           typeName[256];
   PetscMPIInt    size;
   PetscErrorCode ierr;

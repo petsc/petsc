@@ -284,8 +284,12 @@ static PetscErrorCode ((*PetscRegisterFinalize_Functions[MAXREGFIN])(void));
 @*/
 PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*f)(void))
 {
-  PetscFunctionBegin;
+  PetscInt i;
 
+  PetscFunctionBegin;
+  for (i=0; i<PetscRegisterFinalize_Count; i++) {
+    if (f == PetscRegisterFinalize_Functions[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Called twice with same function to register");
+  }
   if (PetscRegisterFinalize_Count < MAXREGFIN) {
     PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGFIN\n",MAXREGFIN);
