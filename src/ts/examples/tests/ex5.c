@@ -5,8 +5,9 @@ static char help[] = "Nonlinear, time-dependent. Developed from radiative_surfac
    Usage:
     mpiexec -n <np> ./ex5 [options]
     ./ex5 -help  [view petsc options]
-    ./ex5 -ts_type sundials -ts_sundials_monitor_steps -pc_type lu -ts_view
+    ./ex5 -ts_type sundials -ts_view
     ./ex5 -da_grid_x 20 -da_grid_y 20 -log_summary
+    ./ex5 -da_grid_x 20 -da_grid_y 20 -ts_type rosw -ts_atol 1.e-6 -ts_rtol 1.e-6
     ./ex5 -drawcontours -draw_pause 0.1 -draw_fields 0,1,2,3,4
 */
 
@@ -148,7 +149,6 @@ int main(int argc,char **argv)
   PetscScalar rh;             //relative humidity
   PetscScalar x;              //memory varialbe for relative humidity calculation
   PetscScalar deep_grnd_temp; //temperature of ground under top soil surface layer
-
   PetscScalar emma;		//absorption-emission constant for air
   PetscScalar pressure1 = 101300; //surface pressure
   PetscScalar mixratio;         //mixing ratio
@@ -278,7 +278,11 @@ int main(int argc,char **argv)
   }
 
   /*Define what to print for ts_monitor option*/
-  ierr = TSMonitorSet(ts,Monitor,&usermonitor,PETSC_NULL);CHKERRQ(ierr);
+  PetscBool  monitor_off = PETSC_FALSE;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-monitor_off",&monitor_off);CHKERRQ(ierr);
+  if (!monitor_off){  
+    ierr = TSMonitorSet(ts,Monitor,&usermonitor,PETSC_NULL);CHKERRQ(ierr);
+  }
   ierr = FormInitialSolution(da,T,&user);CHKERRQ(ierr);
   dt    = TIMESTEP; /* initial time step */
   ftime = TIMESTEP*time;
@@ -741,9 +745,6 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
 {
   PetscErrorCode ierr;
   PetscScalar    *array;
-  PetscInt       itime=(PetscInt)(time);
-  TSType   type;
-  PetscBool      sundials;
   MonitorCtx     *user = (MonitorCtx*)ctx;
   PetscViewer    viewer = user->drawviewer;
   PetscMPIInt    rank;
@@ -751,18 +752,14 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)ts)->comm,&rank);CHKERRQ(ierr);
-
-  ierr = TSGetType(ts,&type);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)ts,TSSUNDIALS,&sundials);CHKERRQ(ierr);
   ierr = VecNorm(T,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  if (sundials || itime%60 == 0){
-    ierr = VecGetArray(T,&array);CHKERRQ(ierr);
-    if (!rank){printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,time,(((array[0]-273)*9)/5 + 32),(((array[1]-273)*9)/5 + 32),array[2],array[3],array[4],array[5]);}
-    ierr = VecRestoreArray(T,&array);CHKERRQ(ierr);
-
-    if (user->drawcontours){
-      ierr = VecView(T,viewer);CHKERRQ(ierr);
-    }
+  
+  ierr = VecGetArray(T,&array);CHKERRQ(ierr);
+  if (!rank){printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,time,(((array[0]-273)*9)/5 + 32),(((array[1]-273)*9)/5 + 32),array[2],array[3],array[4],array[5]);}
+  ierr = VecRestoreArray(T,&array);CHKERRQ(ierr);
+    
+  if (user->drawcontours){
+    ierr = VecView(T,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
