@@ -112,6 +112,32 @@ cdef class DM(Object):
 
     #
 
+    def getCoordinateDM(self):
+        cdef DM cdm = DM()
+        CHKERR( DMGetCoordinateDM(self.dm, &cdm.dm) )
+        PetscINCREF(cdm.obj)
+        return cdm
+
+    def setCoordinates(self, Vec c not None):
+        CHKERR( DMSetCoordinates(self.dm, c.vec) )
+
+    def getCoordinates(self):
+        cdef Vec c = Vec()
+        CHKERR( DMGetCoordinates(self.dm, &c.vec) )
+        PetscINCREF(c.obj)
+        return c
+
+    def setCoordinatesLocal(self, Vec c not None):
+        CHKERR( DMSetCoordinatesLocal(self.dm, c.vec) )
+
+    def getCoordinatesLocal(self):
+        cdef Vec c = Vec()
+        CHKERR( DMGetCoordinatesLocal(self.dm, &c.vec) )
+        PetscINCREF(c.obj)
+        return c
+
+    #
+
     def createMat(self, mat_type=None):
         cdef PetscMatType mtype = MATAIJ
         mat_type = str2bytes(mat_type, &mtype)
@@ -136,6 +162,15 @@ cdef class DM(Object):
         cdef Mat mat = Mat()
         CHKERR( DMCreateAggregates(self.dm, dm.dm, &mat.mat) )
         return mat
+
+    def convert(self, dm_type):
+        cdef const_char *cval = NULL
+        dm_type = str2bytes(dm_type, &cval)
+        cdef PetscDM newdm = NULL
+        CHKERR( DMConvert(self.dm, cval, &newdm) )
+        cdef DM dm = <DM>subtype_DM(newdm)()
+        dm.dm = newdm
+        return dm
 
     def refine(self, comm=None):
         cdef MPI_Comm dmcomm = MPI_COMM_NULL

@@ -340,27 +340,6 @@ cdef class DA(DM):
                                         _ymin, _ymax,
                                         _zmin, _zmax) )
 
-    def setCoordinates(self, Vec c not None):
-        CHKERR( DASetCoordinates(self.dm, c.vec) )
-
-    def getCoordinates(self):
-        cdef Vec c = Vec()
-        CHKERR( DAGetCoordinates(self.dm, &c.vec) )
-        PetscINCREF(c.obj)
-        return c
-
-    def getCoordinateDA(self):
-        cdef DA cda = DA()
-        CHKERR( DAGetCoordinateDA(self.dm, &cda.dm) )
-        PetscINCREF(cda.obj)
-        return cda
-
-    def getGhostCoordinates(self):
-        cdef Vec gc = Vec()
-        CHKERR( DAGetGhostedCoordinates(self.dm, &gc.vec) )
-        PetscINCREF(gc.obj)
-        return gc
-
     def getBoundingBox(self):
         cdef PetscInt i,dim=0
         CHKERR( DAGetDim(self.dm, &dim) )

@@ -72,10 +72,6 @@ cdef extern from * nogil:
                                 PetscReal,PetscReal,
                                 PetscReal,PetscReal,
                                 PetscReal,PetscReal)
-    int DASetCoordinates"DMDASetCoordinates"(PetscDA,PetscVec)
-    int DAGetCoordinates"DMDAGetCoordinates"(PetscDA,PetscVec*)
-    int DAGetCoordinateDA"DMDAGetCoordinateDA"(PetscDA,PetscDA*)
-    int DAGetGhostedCoordinates"DMDAGetGhostedCoordinates"(PetscDA,PetscVec*)
     int DAGetBoundingBox"DMDAGetBoundingBox"(PetscDM,PetscReal[],PetscReal[])
     int DAGetLocalBoundingBox"DMDAGetLocalBoundingBox"(PetscDM,PetscReal[],PetscReal[])
 

@@ -69,13 +69,13 @@ class BaseTestDA(object):
         c = self.da.getCoordinates()
         self.da.setCoordinates(c)
         c.destroy()
-        cda = self.da.getCoordinateDA()
+        cda = self.da.getCoordinateDM()
         cda.destroy()
         #
         c = self.da.getCoordinates()
         self.da.setCoordinates(c)
         c.destroy()
-        gc = self.da.getGhostCoordinates()
+        gc = self.da.getCoordinatesLocal()
         gc.destroy()
 
     def testCreateVecMat(self):
