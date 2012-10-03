@@ -342,7 +342,7 @@ typedef struct _p_TSAdapt *TSAdapt;
 
 .seealso: TSAdaptSetType(), TS
 E*/
-#define TSAdaptType  char*
+typedef const char *TSAdaptType;
 #define TSADAPTBASIC "basic"
 #define TSADAPTNONE  "none"
 #define TSADAPTCFL   "cfl"
@@ -436,7 +436,7 @@ typedef struct _p_TSGLAdapt *TSGLAdapt;
 
 .seealso: TSGLAdaptSetType(), TS
 J*/
-#define TSGLAdaptType  char*
+typedef const char *TSGLAdaptType;
 #define TSGLADAPT_NONE "none"
 #define TSGLADAPT_SIZE "size"
 #define TSGLADAPT_BOTH "both"
@@ -510,7 +510,7 @@ PETSC_EXTERN PetscErrorCode TSGLAdaptDestroy(TSGLAdapt*);
 
 .seealso: TSGLSetAcceptType(), TS
 J*/
-#define TSGLAcceptType  char*
+typedef const char *TSGLAcceptType;
 #define TSGLACCEPT_ALWAYS "always"
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSGLAcceptFunction)(TS,PetscReal,PetscReal,const PetscReal[],PetscBool *);
