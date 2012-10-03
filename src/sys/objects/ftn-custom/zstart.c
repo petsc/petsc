@@ -436,6 +436,11 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   *ierr = PetscThreadCommInitializePackage(PETSC_NULL);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Calling PetscThreadCommInitialize()\n");return;}
 
+#if defined(PETSC_USE_DEBUG)
+  PetscThreadLocalRegister(petscstack); /* Creates petscstack_key if needed */
+  *ierr = PetscStackCreate();
+#endif
+
   *ierr = PetscOptionsGetInt(PETSC_NULL,"-hmpi_spawn_size",&nodesize,&flg);
   if (flg) {
 #if defined(PETSC_HAVE_MPI_COMM_SPAWN)
