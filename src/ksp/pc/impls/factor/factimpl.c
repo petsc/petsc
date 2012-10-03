@@ -355,8 +355,6 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     if (t == MAT_FACTOR_ILU || t == MAT_FACTOR_ICC){
       ierr = PetscViewerStringSPrintf(viewer," lvls=%D,order=%s",(PetscInt)factor->info.levels,factor->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PC_Factor",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

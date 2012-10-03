@@ -12,7 +12,7 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN];
   PetscBool      aij,sbaij,flg;
   PetscViewer    fd;
-  MatType  type = MATBAIJ;
+  MatType        type = MATBAIJ;
   PetscInt       n1 = 7, idx1[] = {1,5,6,8,9,12,15};
   PetscInt       n2 = 5, idx2[] = {7,22,30,13,19};
   Vec            b,x;

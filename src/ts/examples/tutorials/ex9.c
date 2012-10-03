@@ -199,9 +199,9 @@ typedef struct {
   PetscReal cfl_idt;            /* Max allowable value of 1/Delta t */
   PetscReal cfl;
   PetscReal xmin,xmax;
-  PetscInt initial;
-  PetscBool  exact;
-  FVBCType bctype;
+  PetscInt  initial;
+  PetscBool exact;
+  FVBCType  bctype;
 } FVCtx;
 
 

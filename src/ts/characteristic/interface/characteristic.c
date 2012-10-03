@@ -780,11 +780,11 @@ PetscErrorCode CharacteristicSiftDown(Characteristic c, Queue queue, PetscInt ro
 PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
 {
   DMDABoundaryType bx, by;
-  PetscBool      IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
-  MPI_Comm       comm;
-  PetscMPIInt    rank;
-  PetscInt       **procs,pi,pj,pim,pip,pjm,pjp,PI,PJ;
-  PetscErrorCode ierr;
+  PetscBool        IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
+  MPI_Comm         comm;
+  PetscMPIInt      rank;
+  PetscInt         **procs,pi,pj,pim,pip,pjm,pjp,PI,PJ;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);

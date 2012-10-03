@@ -8,11 +8,11 @@ static const char help[] = "Test DMCreateInjection() for mapping coordinates in 
 #define __FUNCT__ "test1_DAInjection3d"
 PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
 {
-  PetscErrorCode ierr;
-  DM dac,daf;
-  PetscViewer vv;
-  Vec ac,af;
-  PetscInt periodicity;
+  PetscErrorCode   ierr;
+  DM               dac,daf;
+  PetscViewer      vv;
+  Vec              ac,af;
+  PetscInt         periodicity;
   DMDABoundaryType bx,by,bz;
 
   PetscFunctionBegin;

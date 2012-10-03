@@ -1463,7 +1463,7 @@ PetscErrorCode  PCPostSolve(PC pc,KSP ksp)
 @*/
 PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 {
-  PCType      cstr;
+  PCType            cstr;
   PetscErrorCode    ierr;
   PetscBool         iascii,isstring,isbinary;
   PetscViewerFormat format;

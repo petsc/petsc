@@ -7,21 +7,21 @@ static char help[] = "Tests VecView()/VecLoad() for DMDA vectors (this tests DMD
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscMPIInt    rank,size;
-  PetscInt       N = 6,M=8,P=5,dof=1;
-  PetscInt       stencil_width=1,pt=0,st=0;
-  PetscErrorCode ierr;
-  PetscBool      flg2,flg3,isbinary,mpiio;
+  PetscMPIInt      rank,size;
+  PetscInt         N = 6,M=8,P=5,dof=1;
+  PetscInt         stencil_width=1,pt=0,st=0;
+  PetscErrorCode   ierr;
+  PetscBool        flg2,flg3,isbinary,mpiio;
   DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
   DMDAStencilType  stencil_type = DMDA_STENCIL_STAR;
-  DM             da,da2;
-  Vec            global1,global2;
-  PetscScalar    mone = -1.0;
-  PetscReal      norm;
-  PetscViewer    viewer;
-  PetscRandom    rdm;
+  DM               da,da2;
+  Vec              global1,global2;
+  PetscScalar      mone = -1.0;
+  PetscReal        norm;
+  PetscViewer      viewer;
+  PetscRandom      rdm;
 #if defined(PETSC_HAVE_HDF5)
-  PetscBool      ishdf5;
+  PetscBool        ishdf5;
 #endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

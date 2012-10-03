@@ -533,10 +533,10 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   ierr = PetscOptionsBegin(comm,NULL,"Toy Hydrostatic Ice options","");CHKERRQ(ierr);
   {
     QuadratureType quad = QUAD_GAUSS;
-    char homexp[] = "A";
-    char mtype[256] = MATSBAIJ;
-    PetscReal L,m = 1.0;
-    PetscBool  flg;
+    char           homexp[] = "A";
+    char           mtype[256] = MATSBAIJ;
+    PetscReal      L,m = 1.0;
+    PetscBool      flg;
     L = thi->Lx;
     ierr = PetscOptionsReal("-thi_L","Domain size (m)","",L,&L,&flg);CHKERRQ(ierr);
     if (flg) thi->Lx = thi->Ly = L;
@@ -1621,7 +1621,7 @@ int main(int argc,char *argv[])
   ierr = THICreate(comm,&thi);CHKERRQ(ierr);
   ierr = THICreateDM3d(thi,&da3);CHKERRQ(ierr);
   {
-    PetscInt Mx,My,mx,my,s;
+    PetscInt        Mx,My,mx,my,s;
     DMDAStencilType st;
     ierr = DMDAGetInfo(da3,0, 0,&My,&Mx, 0,&my,&mx, 0,&s,0,0,0,&st);CHKERRQ(ierr);
     ierr = DMDACreate2d(((PetscObject)thi)->comm,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,st,My,Mx,my,mx,sizeof(PrmNode)/sizeof(PetscScalar),s,0,0,&da2);CHKERRQ(ierr);

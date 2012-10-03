@@ -976,7 +976,7 @@ namespace ALE {
           }
         }
         for(int p = 1; p < mesh->commSize(); p++) {
-          RestartType *remoteValues;
+          RestartType  *remoteValues;
           int          numLocalElements;
           MPI_Status   status;
 

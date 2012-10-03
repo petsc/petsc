@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscErrorCode    ierr;
   PetscMPIInt       size,rank;
   PetscBool         flg;
-  MatType     type;
+  MatType           type;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);

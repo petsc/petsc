@@ -112,9 +112,11 @@ PetscErrorCode PetscShellGraphExpandRow_Private(PetscShellGraph graph, PetscInt 
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscShellGraphAddVertex"
-PetscErrorCode PetscShellGraphAddVertex(PetscShellGraph graph, PetscInt *v) {
-  PetscInt ii;
+PetscErrorCode PetscShellGraphAddVertex(PetscShellGraph graph, PetscInt *v) 
+{
+  PetscInt       ii;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (graph->vcount >= graph->vmax) {
     /* Add rows */
@@ -290,14 +292,14 @@ struct _n_PetscShellVTable_SO {
 
 struct _p_PetscShell {
   PETSCHEADER(int);
-  PetscShellVTableType      vtable_type;
-  void                      *vtable;
-  char *                    url;
-  PetscShell                visitor;
-  PetscInt                  N, maxN;
-  char **                   key;
-  PetscShell                *component;
-  PetscShellGraph           dep_graph;
+  PetscShellVTableType vtable_type;
+  void                 *vtable;
+  char *               url;
+  PetscShell           visitor;
+  PetscInt             N, maxN;
+  char **              key;
+  PetscShell           *component;
+  PetscShellGraph      dep_graph;
 };
 
 
@@ -438,12 +440,14 @@ PetscErrorCode PetscShellCall(PetscShell shell, const char* message) {
 */
 #undef  __FUNCT__
 #define __FUNCT__ "PetscShellParseURL_Private"
-PetscErrorCode  PetscShellParseURL_Private(const char inurl[], char **outpath, char **outname, PetscShellVTableType *outtype){
-  char *n, *s;
-  static PetscInt nlen = PETSC_SHELL_MAX_URL_LENGTH;
-  static char path[PETSC_SHELL_MAX_URL_LENGTH+1], name[PETSC_SHELL_MAX_URL_LENGTH+1];
+PetscErrorCode  PetscShellParseURL_Private(const char inurl[], char **outpath, char **outname, PetscShellVTableType *outtype)
+{
+  char                 *n, *s;
+  static PetscInt      nlen = PETSC_SHELL_MAX_URL_LENGTH;
+  static char          path[PETSC_SHELL_MAX_URL_LENGTH+1], name[PETSC_SHELL_MAX_URL_LENGTH+1];
   PetscShellVTableType type = PETSC_SHELL_VTABLE_NONE;
-  PetscErrorCode ierr;
+  PetscErrorCode       ierr;
+
   PetscFunctionBegin;
   /* FIX: this routine should replace the filesystem path by an abolute path for real normalization */
   /* Copy the inurl so we can manipulate it inplace and also truncate to the max allowable length */

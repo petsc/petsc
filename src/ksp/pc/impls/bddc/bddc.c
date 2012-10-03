@@ -2273,7 +2273,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
   PetscBool      nnsp_has_cnst=PETSC_FALSE,use_nnsp_true=pcbddc->use_nnsp_true;
   PetscInt       nnsp_size=0,nnsp_addone=0,temp_constraints,temp_start_ptr;
   IS             *used_IS;
-  MatType  impMatType=MATSEQAIJ;
+  MatType        impMatType=MATSEQAIJ;
   PetscBLASInt   Bs,Bt,lwork,lierr;
   PetscReal      tol=1.0e-8;
   MatNullSpace   nearnullsp;
@@ -2850,8 +2850,8 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
   IS                is_C_local;
   IS                is_aux1;
   IS                is_aux2;
-  VecType     impVecType;
-  MatType     impMatType;
+  VecType           impVecType;
+  MatType           impMatType;
   PetscInt          n_R=0;
   PetscInt          n_D=0;
   PetscInt          n_B=0;
@@ -2865,7 +2865,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
   PetscScalar       *coarsefunctions_errors;
   PetscScalar       *constraints_errors;
   /* auxiliary indices */
-  PetscInt i,j,k;
+  PetscInt          i,j,k;
   /* for verbose output of bddc */
   PetscViewer       viewer=pcbddc->dbg_viewer;
   PetscBool         dbg_flag=pcbddc->dbg_flag;
@@ -3412,12 +3412,11 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     /* Checking coarse_sub_mat and coarse basis functios */
     /* It shuld be \Phi^{(j)^T} A^{(j)} \Phi^{(j)}=coarse_sub_mat */
     if (dbg_flag) {
-
-      Mat coarse_sub_mat;
-      Mat TM1,TM2,TM3,TM4;
-      Mat coarse_phi_D,coarse_phi_B,A_II,A_BB,A_IB,A_BI;
-      MatType checkmattype=MATSEQAIJ;
-      PetscScalar      value;
+      Mat         coarse_sub_mat;
+      Mat         TM1,TM2,TM3,TM4;
+      Mat         coarse_phi_D,coarse_phi_B,A_II,A_BB,A_IB,A_BI;
+      MatType     checkmattype=MATSEQAIJ;
+      PetscScalar value;
 
       ierr = MatConvert(pcis->A_II,checkmattype,MAT_INITIAL_MATRIX,&A_II);CHKERRQ(ierr);
       ierr = MatConvert(pcis->A_IB,checkmattype,MAT_INITIAL_MATRIX,&A_IB);CHKERRQ(ierr);

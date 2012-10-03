@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscScalar    v[3];
   PetscBool      flg,isAIJ;
-  MatType  type;
+  MatType        type;
   PetscMPIInt    size;
 
   PetscInitialize(&argc,&args,(char *)0,help);

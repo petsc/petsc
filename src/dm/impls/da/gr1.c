@@ -20,7 +20,7 @@
 
   Level: beginner
 
-.seealso: DMDASetCoordinates(), DMDAGetCoordinates(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
+.seealso: DMSetCoordinates(), DMGetCoordinates(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
 
 @*/
 PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)

@@ -30,31 +30,23 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESQNApply_Broyden"
-PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold, Vec D, Vec Dold) {
-
-  PetscErrorCode ierr;
-
-  SNES_QN *qn = (SNES_QN*)snes->data;
-
-  Vec W = snes->work[3];
-
-  Vec *U = qn->U;
-  Vec *V = qn->V;
-
-  /* ksp thing for jacobian scaling */
+PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold, Vec D, Vec Dold) 
+{
+  PetscErrorCode     ierr;
+  SNES_QN            *qn = (SNES_QN*)snes->data;
+  Vec                W = snes->work[3];
+  Vec                *U = qn->U;
+  Vec                *V = qn->V;
   KSPConvergedReason kspreason;
   MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
+  PetscInt           k,i,lits;
+  PetscInt           m = qn->m;
+  PetscScalar        gdot;
+  PetscInt           l = m;
+  Mat                jac,jac_pre;
 
-  PetscInt k,i,lits;
-  PetscInt m = qn->m;
-  PetscScalar gdot;
-  PetscInt l = m;
-
-  Mat jac,jac_pre;
   PetscFunctionBegin;
-
   if (it < m) l = it;
-
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = SNESGetJacobian(snes,&jac,&jac_pre,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = KSPSetOperators(snes->ksp,jac,jac_pre,flg);CHKERRQ(ierr);
@@ -600,18 +592,14 @@ static PetscErrorCode SNESDestroy_QN(SNES snes)
 static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
 {
 
-  PetscErrorCode ierr;
-  SNES_QN    *qn;
-  PetscBool  monflg = PETSC_FALSE,flg;
-  SNESLineSearch linesearch;
-  SNESQNRestartType rtype;
-  SNESQNScaleType   stype;
+  PetscErrorCode    ierr;
+  SNES_QN           *qn = (SNES_QN*)snes->data;
+  PetscBool         monflg = PETSC_FALSE,flg;
+  SNESLineSearch    linesearch;
+  SNESQNRestartType rtype = qn->restart_type;
+  SNESQNScaleType   stype = qn->scale_type;
+
   PetscFunctionBegin;
-
-  qn    = (SNES_QN*)snes->data;
-  rtype = qn->restart_type;
-  stype = qn->scale_type;
-
   ierr = PetscOptionsHead("SNES QN options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_qn_m","Number of past states saved for L-BFGS methods","SNESQN",qn->m,&qn->m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_qn_powell_gamma","Powell angle tolerance",          "SNESQN", qn->powell_gamma, &qn->powell_gamma, PETSC_NULL);CHKERRQ(ierr);
@@ -665,7 +653,8 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
 
 .keywords: SNES, SNESQN, restart, type, set SNESLineSearch
 @*/
-PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype) {
+PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype) 
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -698,7 +687,8 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype) {
 .keywords: SNES, SNESQN, scaling, type, set SNESLineSearch
 @*/
 
-PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype) {
+PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype) 
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);

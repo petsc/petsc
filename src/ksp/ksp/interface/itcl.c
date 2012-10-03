@@ -333,16 +333,16 @@ $       This will require 1 more iteration of the solver than usual.
 @*/
 PetscErrorCode  KSPSetFromOptions(KSP ksp)
 {
-  PetscErrorCode          ierr;
-  PetscInt                indx;
-  const char             *convtests[] = {"default","skip"};
-  char                    type[256], monfilename[PETSC_MAX_PATH_LEN];
-  PetscViewer             monviewer;
-  PetscBool               flg,flag;
-  PetscInt                model[2]={0,0},nmax;
-  KSPNormType             normtype;
-  PCSide                  pcside;
-  void                    *ctx;
+  PetscErrorCode ierr;
+  PetscInt       indx;
+  const char     *convtests[] = {"default","skip"};
+  char           type[256], monfilename[PETSC_MAX_PATH_LEN];
+  PetscViewer    monviewer;
+  PetscBool      flg,flag;
+  PetscInt       model[2]={0,0},nmax;
+  KSPNormType    normtype;
+  PCSide         pcside;
+  void           *ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);

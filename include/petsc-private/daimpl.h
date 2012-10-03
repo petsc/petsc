@@ -9,82 +9,82 @@
 #include "petsc-private/dmimpl.h"
 
 typedef struct {
-  PetscInt            M,N,P;                 /* array dimensions */
-  PetscInt            m,n,p;                 /* processor layout */
-  PetscInt            w;                     /* degrees of freedom per node */
-  PetscInt            s;                     /* stencil width */
-  PetscInt            xs,xe,ys,ye,zs,ze;     /* range of local values */
-  PetscInt            Xs,Xe,Ys,Ye,Zs,Ze;     /* range including ghost values
+  PetscInt              M,N,P;                 /* array dimensions */
+  PetscInt              m,n,p;                 /* processor layout */
+  PetscInt              w;                     /* degrees of freedom per node */
+  PetscInt              s;                     /* stencil width */
+  PetscInt              xs,xe,ys,ye,zs,ze;     /* range of local values */
+  PetscInt              Xs,Xe,Ys,Ye,Zs,Ze;     /* range including ghost values
                                                    values above already scaled by w */
-  PetscInt            *idx,Nl;               /* local to global map */
-  PetscInt            base;                  /* global number of 1st local node */
-  DMDABoundaryType    bx,by,bz;              /* indicates type of ghost nodes at boundary */
-  VecScatter          gtol,ltog,ltol;        /* scatters, see below for details */
+  PetscInt              *idx,Nl;               /* local to global map */
+  PetscInt              base;                  /* global number of 1st local node */
+  DMDABoundaryType      bx,by,bz;              /* indicates type of ghost nodes at boundary */
+  VecScatter            gtol,ltog,ltol;        /* scatters, see below for details */
   DMDAStencilType       stencil_type;          /* stencil, either box or star */
-  PetscInt            dim;                   /* DMDA dimension (1,2, or 3) */
+  PetscInt              dim;                   /* DMDA dimension (1,2, or 3) */
   DMDAInterpolationType interptype;
 
-  PetscInt            nlocal,Nlocal;         /* local size of local vector and global vector */
+  PetscInt              nlocal,Nlocal;         /* local size of local vector and global vector */
 
-  PetscInt            overlap;               /* overlap of local subdomains */
+  PetscInt              overlap;               /* overlap of local subdomains */
 
-  AO                  ao;                    /* application ordering context */
+  AO                    ao;                    /* application ordering context */
 
-  char                   **fieldname;        /* names of individual components in vectors */
+  char                  **fieldname;        /* names of individual components in vectors */
 
-  PetscInt               *lx,*ly,*lz;        /* number of nodes in each partition block along 3 axis */
-  Vec                    natural;            /* global vector for storing items in natural order */
-  VecScatter             gton;               /* vector scatter from global to natural */
-  PetscMPIInt            *neighbors;         /* ranks of all neighbors and self */
+  PetscInt              *lx,*ly,*lz;        /* number of nodes in each partition block along 3 axis */
+  Vec                   natural;            /* global vector for storing items in natural order */
+  VecScatter            gton;               /* vector scatter from global to natural */
+  PetscMPIInt           *neighbors;         /* ranks of all neighbors and self */
 
-  ISColoring             localcoloring;       /* set by DMCreateColoring() */
-  ISColoring             ghostedcoloring;
+  ISColoring            localcoloring;       /* set by DMCreateColoring() */
+  ISColoring            ghostedcoloring;
 
-  DMDAElementType          elementtype;
-  PetscInt               ne;                  /* number of elements */
-  PetscInt               *e;                  /* the elements */
+  DMDAElementType       elementtype;
+  PetscInt              ne;                  /* number of elements */
+  PetscInt              *e;                  /* the elements */
 
-  PetscInt               refine_x,refine_y,refine_z;    /* ratio used in refining */
-  PetscInt               coarsen_x,coarsen_y,coarsen_z; /* ratio used for coarsening */
+  PetscInt              refine_x,refine_y,refine_z;    /* ratio used in refining */
+  PetscInt              coarsen_x,coarsen_y,coarsen_z; /* ratio used for coarsening */
 
 #define DMDA_MAX_AD_ARRAYS 2 /* work arrays for holding derivative type data, via DMDAGetAdicArray() */
-  void                   *adarrayin[DMDA_MAX_AD_ARRAYS],*adarrayout[DMDA_MAX_AD_ARRAYS];
-  void                   *adarrayghostedin[DMDA_MAX_AD_ARRAYS],*adarrayghostedout[DMDA_MAX_AD_ARRAYS];
-  void                   *adstartin[DMDA_MAX_AD_ARRAYS],*adstartout[DMDA_MAX_AD_ARRAYS];
-  void                   *adstartghostedin[DMDA_MAX_AD_ARRAYS],*adstartghostedout[DMDA_MAX_AD_ARRAYS];
+  void                  *adarrayin[DMDA_MAX_AD_ARRAYS],*adarrayout[DMDA_MAX_AD_ARRAYS];
+  void                  *adarrayghostedin[DMDA_MAX_AD_ARRAYS],*adarrayghostedout[DMDA_MAX_AD_ARRAYS];
+  void                  *adstartin[DMDA_MAX_AD_ARRAYS],*adstartout[DMDA_MAX_AD_ARRAYS];
+  void                  *adstartghostedin[DMDA_MAX_AD_ARRAYS],*adstartghostedout[DMDA_MAX_AD_ARRAYS];
   PetscInt                    tdof,ghostedtdof;
 
                             /* work arrays for holding derivative type data, via DMDAGetAdicMFArray() */
-  void                   *admfarrayin[DMDA_MAX_AD_ARRAYS],*admfarrayout[DMDA_MAX_AD_ARRAYS];
-  void                   *admfarrayghostedin[DMDA_MAX_AD_ARRAYS],*admfarrayghostedout[DMDA_MAX_AD_ARRAYS];
-  void                   *admfstartin[DMDA_MAX_AD_ARRAYS],*admfstartout[DMDA_MAX_AD_ARRAYS];
-  void                   *admfstartghostedin[DMDA_MAX_AD_ARRAYS],*admfstartghostedout[DMDA_MAX_AD_ARRAYS];
+  void                  *admfarrayin[DMDA_MAX_AD_ARRAYS],*admfarrayout[DMDA_MAX_AD_ARRAYS];
+  void                  *admfarrayghostedin[DMDA_MAX_AD_ARRAYS],*admfarrayghostedout[DMDA_MAX_AD_ARRAYS];
+  void                  *admfstartin[DMDA_MAX_AD_ARRAYS],*admfstartout[DMDA_MAX_AD_ARRAYS];
+  void                  *admfstartghostedin[DMDA_MAX_AD_ARRAYS],*admfstartghostedout[DMDA_MAX_AD_ARRAYS];
 
 #define DMDA_MAX_WORK_ARRAYS 2 /* work arrays for holding work via DMDAGetArray() */
-  void                   *arrayin[DMDA_MAX_WORK_ARRAYS],*arrayout[DMDA_MAX_WORK_ARRAYS];
-  void                   *arrayghostedin[DMDA_MAX_WORK_ARRAYS],*arrayghostedout[DMDA_MAX_WORK_ARRAYS];
-  void                   *startin[DMDA_MAX_WORK_ARRAYS],*startout[DMDA_MAX_WORK_ARRAYS];
-  void                   *startghostedin[DMDA_MAX_WORK_ARRAYS],*startghostedout[DMDA_MAX_WORK_ARRAYS];
+  void                  *arrayin[DMDA_MAX_WORK_ARRAYS],*arrayout[DMDA_MAX_WORK_ARRAYS];
+  void                  *arrayghostedin[DMDA_MAX_WORK_ARRAYS],*arrayghostedout[DMDA_MAX_WORK_ARRAYS];
+  void                  *startin[DMDA_MAX_WORK_ARRAYS],*startout[DMDA_MAX_WORK_ARRAYS];
+  void                  *startghostedin[DMDA_MAX_WORK_ARRAYS],*startghostedout[DMDA_MAX_WORK_ARRAYS];
 
-  DMDALocalFunction1       lf;
-  DMDALocalFunction1       lj;
-  DMDALocalFunction1       adic_lf;
-  DMDALocalFunction1       adicmf_lf;
-  DMDALocalFunction1       adifor_lf;
-  DMDALocalFunction1       adiformf_lf;
+  DMDALocalFunction1    lf;
+  DMDALocalFunction1    lj;
+  DMDALocalFunction1    adic_lf;
+  DMDALocalFunction1    adicmf_lf;
+  DMDALocalFunction1    adifor_lf;
+  DMDALocalFunction1    adiformf_lf;
 
-  PetscErrorCode (*lfi)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
-  PetscErrorCode (*adic_lfi)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
-  PetscErrorCode (*adicmf_lfi)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
-  PetscErrorCode (*lfib)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
-  PetscErrorCode (*adic_lfib)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
-  PetscErrorCode (*adicmf_lfib)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
+  PetscErrorCode        (*lfi)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
+  PetscErrorCode        (*adic_lfi)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
+  PetscErrorCode        (*adicmf_lfi)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
+  PetscErrorCode        (*lfib)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
+  PetscErrorCode        (*adic_lfib)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
+  PetscErrorCode        (*adicmf_lfib)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
 
   /* used by DMDASetBlockFills() */
-  PetscInt               *ofill,*dfill;
+  PetscInt              *ofill,*dfill;
 
   /* used by DMDASetMatPreallocateOnly() */
-  PetscBool              prealloc_only;
+  PetscBool             prealloc_only;
 } DM_DA;
 
 /*

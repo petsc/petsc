@@ -1298,31 +1298,31 @@ PetscErrorCode  DMDAMultiplyByJacobian1WithAdifor(DM da,Vec u,Vec v,Vec f,void *
 #define __FUNCT__ "DMSetUp_DA_2D"
 PetscErrorCode  DMSetUp_DA_2D(DM da)
 {
-  DM_DA                  *dd = (DM_DA*)da->data;
-  const PetscInt         M            = dd->M;
-  const PetscInt         N            = dd->N;
-  PetscInt               m            = dd->m;
-  PetscInt               n            = dd->n;
-  PetscInt               o            = dd->overlap;
-  const PetscInt         dof          = dd->w;
-  const PetscInt         s            = dd->s;
+  DM_DA            *dd = (DM_DA*)da->data;
+  const PetscInt   M            = dd->M;
+  const PetscInt   N            = dd->N;
+  PetscInt         m            = dd->m;
+  PetscInt         n            = dd->n;
+  PetscInt         o            = dd->overlap;
+  const PetscInt   dof          = dd->w;
+  const PetscInt   s            = dd->s;
   DMDABoundaryType bx         = dd->bx;
   DMDABoundaryType by         = dd->by;
   DMDAStencilType  stencil_type = dd->stencil_type;
-  PetscInt               *lx           = dd->lx;
-  PetscInt               *ly           = dd->ly;
-  MPI_Comm               comm;
-  PetscMPIInt            rank,size;
-  PetscInt               xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,start,end,IXs,IXe,IYs,IYe;
-  PetscInt               up,down,left,right,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn,*idx_cpy;
-  const PetscInt         *idx_full;
-  PetscInt               xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
-  PetscInt               s_x,s_y; /* s proportionalized to w */
-  PetscInt               sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
-  Vec                    local,global;
-  VecScatter             ltog,gtol;
-  IS                     to,from,ltogis;
-  PetscErrorCode         ierr;
+  PetscInt         *lx           = dd->lx;
+  PetscInt         *ly           = dd->ly;
+  MPI_Comm         comm;
+  PetscMPIInt      rank,size;
+  PetscInt         xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,start,end,IXs,IXe,IYs,IYe;
+  PetscInt         up,down,left,right,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn,*idx_cpy;
+  const PetscInt   *idx_full;
+  PetscInt         xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
+  PetscInt         s_x,s_y; /* s proportionalized to w */
+  PetscInt         sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
+  Vec              local,global;
+  VecScatter       ltog,gtol;
+  IS               to,from,ltogis;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (dof < 1) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);

@@ -131,23 +131,23 @@ PetscErrorCode DMView_DA_Private(DM da)
 #define __FUNCT__ "DMSetUp_DA_1D"
 PetscErrorCode  DMSetUp_DA_1D(DM da)
 {
-  DM_DA                  *dd = (DM_DA*)da->data;
-  const PetscInt         M     = dd->M;
-  const PetscInt         dof   = dd->w;
-  const PetscInt         s     = dd->s;
-  const PetscInt         o     = dd->overlap;
-  const PetscInt         sDist = s*dof;  /* absolute stencil distance */
-  const PetscInt         oDist = o*dof;
-  const PetscInt         *lx    = dd->lx;
+  DM_DA            *dd = (DM_DA*)da->data;
+  const PetscInt   M     = dd->M;
+  const PetscInt   dof   = dd->w;
+  const PetscInt   s     = dd->s;
+  const PetscInt   o     = dd->overlap;
+  const PetscInt   sDist = s*dof;  /* absolute stencil distance */
+  const PetscInt   oDist = o*dof;
+  const PetscInt   *lx    = dd->lx;
   DMDABoundaryType bx  = dd->bx;
-  MPI_Comm               comm;
-  Vec                    local, global;
-  VecScatter             ltog, gtol;
-  IS                     to, from;
-  PetscBool              flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
-  PetscMPIInt            rank, size;
-  PetscInt               i,*idx,nn,left,xs,xe,x,Xs,Xe,start,end,m,IXs,IXe;
-  PetscErrorCode         ierr;
+  MPI_Comm         comm;
+  Vec              local, global;
+  VecScatter       ltog, gtol;
+  IS               to, from;
+  PetscBool        flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
+  PetscMPIInt      rank, size;
+  PetscInt         i,*idx,nn,left,xs,xe,x,Xs,Xe,start,end,m,IXs,IXe;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (dof < 1) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);

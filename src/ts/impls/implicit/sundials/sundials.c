@@ -293,7 +293,7 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   PetscScalar    *y_data,*parray;
   void           *mem;
   PC             pc;
-  PCType   pctype;
+  PCType         pctype;
   PetscBool      pcnone;
 
   PetscFunctionBegin;

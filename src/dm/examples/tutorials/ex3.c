@@ -106,12 +106,12 @@ PetscErrorCode SetCoordinates3d(DM da)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInt       M = 5,N = 4,P = 3, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,dim = 1;
-  PetscErrorCode ierr;
-  DM             dac,daf;
+  PetscInt         M = 5,N = 4,P = 3, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,dim = 1;
+  PetscErrorCode   ierr;
+  DM               dac,daf;
   DMDABoundaryType bx=DMDA_BOUNDARY_NONE,by=DMDA_BOUNDARY_NONE,bz=DMDA_BOUNDARY_NONE;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
-  Mat            A;
+  Mat              A;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 

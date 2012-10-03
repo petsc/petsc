@@ -424,13 +424,13 @@ PetscErrorCode DMIGAInitializeUniform3d(DM dm,PetscBool IsRational,PetscInt NumD
                                         PetscInt py,PetscInt Ny,PetscInt Cy,PetscReal Uy0, PetscReal Uyf,PetscBool IsPeriodicY,PetscInt ngy,
                                         PetscInt pz,PetscInt Nz,PetscInt Cz,PetscReal Uz0, PetscReal Uzf,PetscBool IsPeriodicZ,PetscInt ngz)
 {
-  DM_IGA        *iga = (DM_IGA *) dm->data;
-  PetscErrorCode ierr;
+  DM_IGA           *iga = (DM_IGA *) dm->data;
+  PetscErrorCode   ierr;
   DMDABoundaryType xptype = DMDA_BOUNDARY_NONE;
   DMDABoundaryType yptype = DMDA_BOUNDARY_NONE;
   DMDABoundaryType zptype = DMDA_BOUNDARY_NONE;
-  PetscInt   sw;
-  DMDALocalInfo       info_dof;
+  PetscInt         sw;
+  DMDALocalInfo    info_dof;
 
   PetscFunctionBegin;
   /* Test C < p */
@@ -519,19 +519,19 @@ PetscErrorCode DMIGAInitializeUniform3d(DM dm,PetscBool IsRational,PetscInt NumD
 #define __FUNCT__ "DMIGAInitializeGeometry3d"
 PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivatives,char *FunctionSpaceFile,char *GeomFile)
 {
-  DM_IGA        *iga = (DM_IGA *) dm->data;
-  FILE          *fp;
-  PetscErrorCode ierr;
-  MPI_Comm       comm;
-  PetscViewer    viewer;
-  PetscInt       spatial_dim,i;
-  PetscReal      Umax;
-  PetscInt       numEl;
+  DM_IGA           *iga = (DM_IGA *) dm->data;
+  FILE             *fp;
+  PetscErrorCode   ierr;
+  MPI_Comm         comm;
+  PetscViewer      viewer;
+  PetscInt         spatial_dim,i;
+  PetscReal        Umax;
+  PetscInt         numEl;
   DMDABoundaryType ptype;
-  PetscInt       sw;
-  DMDALocalInfo  info_dof;
-  int            ival;
-  double         dval;
+  PetscInt         sw;
+  DMDALocalInfo    info_dof;
+  int              ival;
+  double           dval;
 
   PetscFunctionBegin;
   fp = fopen(FunctionSpaceFile, "r");
@@ -672,12 +672,12 @@ PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscI
                                                PetscInt py,PetscInt Ny,PetscInt Cy,PetscReal fy,
                                                PetscReal Uy0, PetscReal Uyf,PetscBool IsPeriodicY,PetscInt ngy)
 {
-  DM_IGA        *iga = (DM_IGA *) dm->data;
-  PetscErrorCode ierr;
+  DM_IGA           *iga = (DM_IGA *) dm->data;
+  PetscErrorCode   ierr;
   DMDABoundaryType xptype = DMDA_BOUNDARY_NONE ;
   DMDABoundaryType yptype = DMDA_BOUNDARY_NONE ;
-  PetscInt   sw;
-  DMDALocalInfo       info_dof;
+  PetscInt         sw;
+  DMDALocalInfo    info_dof;
 
   PetscFunctionBegin;
   /* Test C < p */
@@ -834,12 +834,12 @@ PetscErrorCode DMIGAInitializeUniform2d(DM dm,PetscBool IsRational,PetscInt NumD
                                         PetscInt px,PetscInt Nx,PetscInt Cx,PetscReal Ux0, PetscReal Uxf,PetscBool IsPeriodicX,PetscInt ngx,
                                         PetscInt py,PetscInt Ny,PetscInt Cy,PetscReal Uy0, PetscReal Uyf,PetscBool IsPeriodicY,PetscInt ngy)
 {
-  DM_IGA        *iga = (DM_IGA *) dm->data;
-  PetscErrorCode ierr;
+  DM_IGA           *iga = (DM_IGA *) dm->data;
+  PetscErrorCode   ierr;
   DMDABoundaryType xptype = DMDA_BOUNDARY_NONE ;
   DMDABoundaryType yptype = DMDA_BOUNDARY_NONE ;
-  PetscInt   sw;
-  DMDALocalInfo       info_dof;
+  PetscInt         sw;
+  DMDALocalInfo    info_dof;
 
   PetscFunctionBegin;
   /* Test C < p */
@@ -914,11 +914,11 @@ PetscErrorCode DMIGAInitializeUniform2d(DM dm,PetscBool IsRational,PetscInt NumD
 PetscErrorCode DMIGAInitializeUniform1d(DM dm,PetscBool IsRational,PetscInt NumDerivatives,PetscInt ndof,
                                         PetscInt px,PetscInt Nx,PetscInt Cx,PetscReal Ux0, PetscReal Uxf,PetscBool IsPeriodicX,PetscInt ngx)
 {
-  DM_IGA        *iga = (DM_IGA *) dm->data;
-  PetscErrorCode ierr;
+  DM_IGA           *iga = (DM_IGA *) dm->data;
+  PetscErrorCode   ierr;
   DMDABoundaryType ptype = DMDA_BOUNDARY_NONE ;
-  PetscInt   sw;
-  DMDALocalInfo       info_dof;
+  PetscInt         sw;
+  DMDALocalInfo    info_dof;
 
   PetscFunctionBegin;
   /* Test C < p */

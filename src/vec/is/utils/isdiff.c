@@ -594,11 +594,11 @@ PetscErrorCode ISMapToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 #define __FUNCT__ "ISMapFactorRight"
 PetscErrorCode ISMapFactorRight(IS a, IS b, PetscBool drop, IS *c)
 {
-  PetscErrorCode ierr;
-  ISLocalToGlobalMapping ltog;
+  PetscErrorCode             ierr;
+  ISLocalToGlobalMapping     ltog;
   ISGlobalToLocalMappingType gtoltype = IS_GTOLM_DROP;
-  PetscInt alen, clen, *cindices, *cindices2;
-  const PetscInt *aindices;
+  PetscInt                   alen, clen, *cindices, *cindices2;
+  const PetscInt             *aindices;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(a, IS_CLASSID, 1);
   PetscValidHeaderSpecific(b, IS_CLASSID, 2);

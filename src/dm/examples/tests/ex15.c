@@ -7,13 +7,13 @@ static char help[] = "Tests DMDA interpolation.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInt       M1 = 3,M2,dof = 1,s = 1,ratio = 2,dim = 1;
-  PetscErrorCode ierr;
-  DM             da_c,da_f;
-  Vec            v_c,v_f;
-  Mat            I;
-  PetscScalar    one = 1.0;
-  PetscBool pt;
+  PetscInt         M1 = 3,M2,dof = 1,s = 1,ratio = 2,dim = 1;
+  PetscErrorCode   ierr;
+  DM               da_c,da_f;
+  Vec              v_c,v_f;
+  Mat              I;
+  PetscScalar      one = 1.0;
+  PetscBool        pt;
   DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);

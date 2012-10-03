@@ -7,17 +7,17 @@ static char help[] = "Tests DMDAGetElements() and VecView() contour plotting for
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInt       M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ne,nc,i;
-  const PetscInt *e;
-  PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
-  DM             da;
-  PetscViewer    viewer;
-  Vec            local,global;
-  PetscScalar    value;
+  PetscInt         M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ne,nc,i;
+  const PetscInt   *e;
+  PetscErrorCode   ierr;
+  PetscBool        flg = PETSC_FALSE;
+  DM               da;
+  PetscViewer      viewer;
+  Vec              local,global;
+  PetscScalar      value;
   DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
-  PetscScalar    *lv;
+  PetscScalar      *lv;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);

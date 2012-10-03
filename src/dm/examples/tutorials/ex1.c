@@ -36,18 +36,18 @@ Use the options
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscMPIInt    rank;
-  PetscInt       M = -10,N = -8;
-  PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
-  DM             da;
-  PetscViewer    viewer;
-  Vec            local,global;
-  PetscScalar    value;
+  PetscMPIInt      rank;
+  PetscInt         M = -10,N = -8;
+  PetscErrorCode   ierr;
+  PetscBool        flg = PETSC_FALSE;
+  DM               da;
+  PetscViewer      viewer;
+  Vec              local,global;
+  PetscScalar      value;
   DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  PetscViewer    mviewer;
+  PetscViewer      mviewer;
 #endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);

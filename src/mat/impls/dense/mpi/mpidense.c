@@ -657,13 +657,13 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
 #define __FUNCT__ "MatView_MPIDense_ASCIIorDraworSocket"
 static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
-  Mat_MPIDense          *mdn = (Mat_MPIDense*)mat->data;
-  PetscErrorCode        ierr;
-  PetscMPIInt           size = mdn->size,rank = mdn->rank;
-  PetscViewerType vtype;
-  PetscBool             iascii,isdraw;
-  PetscViewer           sviewer;
-  PetscViewerFormat     format;
+  Mat_MPIDense      *mdn = (Mat_MPIDense*)mat->data;
+  PetscErrorCode    ierr;
+  PetscMPIInt       size = mdn->size,rank = mdn->rank;
+  PetscViewerType   vtype;
+  PetscBool         iascii,isdraw;
+  PetscViewer       sviewer;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);

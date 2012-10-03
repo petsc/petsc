@@ -43,7 +43,7 @@ typedef struct {
   Mat                                schur;        /* The Schur complement S = A11 - A10 A00^{-1} A01, the KSP here, kspinner, is H_1 in [El08] */
   Mat                                schur_user;   /* User-provided preconditioning matrix for the Schur complement */
   PCFieldSplitSchurPreType           schurpre; /* Determines which preconditioning matrix is used for the Schur complement */
-  PCFieldSplitSchurFactType schurfactorization;
+  PCFieldSplitSchurFactType          schurfactorization;
   KSP                                kspschur;     /* The solver for S */
   KSP                                kspupper;     /* The solver for A in the upper diagonal part of the factorization (H_2 in [El08]) */
   PC_FieldSplitLink                  head;

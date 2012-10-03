@@ -5,8 +5,8 @@
 
 typedef struct _n_PetscViewerVTKObjectLink *PetscViewerVTKObjectLink;
 struct _n_PetscViewerVTKObjectLink {
-  PetscViewerVTKFieldType ft;
-  PetscObject vec;
+  PetscViewerVTKFieldType  ft;
+  PetscObject              vec;
   PetscViewerVTKObjectLink next;
 };
 

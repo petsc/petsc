@@ -2439,7 +2439,7 @@ PetscErrorCode  DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
   if (!dm->ops->jacobian) {
     ISColoring     coloring;
     MatFDColoring  fd;
-    MatType  mtype;
+    MatType        mtype;
 
     ierr = PetscObjectGetType((PetscObject)B,&mtype);CHKERRQ(ierr);
     ierr = DMCreateColoring(dm,dm->coloringtype,mtype,&coloring);CHKERRQ(ierr);

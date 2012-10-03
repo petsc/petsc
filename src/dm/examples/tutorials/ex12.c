@@ -15,11 +15,11 @@ Use the options
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInt       M = -10,N = -8;
-  PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
-  DM             da;
-  Vec            global1,global2,global3;
+  PetscInt         M = -10,N = -8;
+  PetscErrorCode   ierr;
+  PetscBool        flg = PETSC_FALSE;
+  DM               da;
+  Vec              global1,global2,global3;
   DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
 

@@ -106,8 +106,8 @@ EXTERN_C_END
 PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar *y)
 {
   DMDABoundaryType bx, by;
-  PetscInt       dim, gx, gy;
-  PetscErrorCode ierr;
+  PetscInt         dim, gx, gy;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &bx, &by, 0, 0);

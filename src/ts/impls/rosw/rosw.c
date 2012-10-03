@@ -1414,9 +1414,9 @@ static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     TSRosWType rostype;
-    PetscInt i;
-    PetscReal abscissa[512];
-    char buf[512];
+    PetscInt   i;
+    PetscReal  abscissa[512];
+    char       buf[512];
     ierr = TSRosWGetType(ts,&rostype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Rosenbrock-W %s\n",rostype);CHKERRQ(ierr);
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->ASum);CHKERRQ(ierr);

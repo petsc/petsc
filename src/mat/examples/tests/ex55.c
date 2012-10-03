@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,j,ntypes,bs,mbs,m,block,d_nz=6, o_nz=3,col[3],row,verbose=0;
   PetscMPIInt    size,rank;
-  MatType  type[9];
+  MatType        type[9];
   char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
   PetscBool      equal,flg_loadmat,flg;

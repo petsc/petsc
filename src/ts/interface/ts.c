@@ -907,7 +907,7 @@ PetscErrorCode  TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)
 PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  TSType   type;
+  TSType         type;
   PetscBool      iascii,isstring,isundials;
 
   PetscFunctionBegin;

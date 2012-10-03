@@ -300,10 +300,10 @@ PetscErrorCode  PetscViewerSetUp(PetscViewer viewer)
 @*/
 PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
 {
-  PetscErrorCode        ierr;
-  PetscBool             iascii;
-  PetscViewerType cstr;
-  PetscViewerFormat     format;
+  PetscErrorCode    ierr;
+  PetscBool         iascii;
+  PetscViewerType   cstr;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);

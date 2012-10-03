@@ -145,8 +145,8 @@ int main(int argc,char **argv)
 
 #ifdef PETSC_HAVE_SUNDIALS
   {
-    TSType   type;
-    PetscBool      sundialstype=PETSC_FALSE;
+    TSType    type;
+    PetscBool sundialstype=PETSC_FALSE;
     ierr = TSGetType(ts,&type);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ts,TSSUNDIALS,&sundialstype);CHKERRQ(ierr);
     if (sundialstype && appctx.useAlhs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use Alhs formulation for TSSUNDIALS type");

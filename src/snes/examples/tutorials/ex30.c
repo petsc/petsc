@@ -93,9 +93,9 @@ typedef struct { /* physical and miscelaneous parameters */
 typedef struct { /* grid parameters */
   DMDABoundaryType bx,by;
   DMDAStencilType  stencil;
-  PetscInt       corner,ni,nj,jlid,jfault,inose;
-  PetscInt       dof,stencil_width,mglevels;
-  PetscReal      dx,dz;
+  PetscInt         corner,ni,nj,jlid,jfault,inose;
+  PetscInt         dof,stencil_width,mglevels;
+  PetscReal        dx,dz;
 } GridInfo;
 
 typedef struct { /* application context */

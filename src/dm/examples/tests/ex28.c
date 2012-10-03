@@ -83,7 +83,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecRestoreArray(coords, &a);CHKERRQ(ierr);
 
   }
-  ierr = DMDASetCoordinates(da, coords);CHKERRQ(ierr);
+  ierr = DMSetCoordinates(da, coords);CHKERRQ(ierr);
   ierr = VecDestroy(&coords);CHKERRQ(ierr);
 
   // Work vectors

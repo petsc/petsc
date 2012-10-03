@@ -12,7 +12,7 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
   PetscViewer    fd;
-  MatType  type = MATMPIBAIJ;
+  MatType        type = MATMPIBAIJ;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsHasName(PETSC_NULL,"-aij",&flg);CHKERRQ(ierr);

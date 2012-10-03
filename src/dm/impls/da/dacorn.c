@@ -197,7 +197,7 @@ PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscIn
 
 .keywords: distributed array, get, coordinates
 
-.seealso: DMDAGetCoordinateDA(), DMDAGetCoordinates(), DMDAGetBoundingBox()
+.seealso: DMDAGetCoordinateDA(), DMGetCoordinates(), DMDAGetBoundingBox()
 @*/
 PetscErrorCode  DMDAGetLocalBoundingBox(DM da,PetscReal lmin[],PetscReal lmax[])
 {
@@ -257,7 +257,7 @@ PetscErrorCode  DMDAGetLocalBoundingBox(DM da,PetscReal lmin[],PetscReal lmax[])
 
 .keywords: distributed array, get, coordinates
 
-.seealso: DMDAGetCoordinateDA(), DMDAGetCoordinates(), DMDAGetLocalBoundingBox()
+.seealso: DMDAGetCoordinateDA(), DMGetCoordinates(), DMDAGetLocalBoundingBox()
 @*/
 PetscErrorCode  DMDAGetBoundingBox(DM da,PetscReal gmin[],PetscReal gmax[])
 {
@@ -293,17 +293,16 @@ PetscErrorCode  DMDAGetBoundingBox(DM da,PetscReal gmin[],PetscReal gmax[])
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DMDAGetGhostCorners(), DMDASetCoordinates(), DMDASetUniformCoordinates(), DMDAGetCoordinates(), DMDAGetGhostedCoordinates()
+.seealso: DMDAGetGhostCorners(), DMSetCoordinates(), DMDASetUniformCoordinates(), DMGetCoordinates(), DMDAGetGhostedCoordinates()
 @*/
 PetscErrorCode  DMDAGetReducedDA(DM da,PetscInt nfields,DM *nda)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   DM_DA            *dd = (DM_DA*)da->data;
-
-  PetscInt          s,m,n,p,M,N,P,dim;
+  PetscInt         s,m,n,p,M,N,P,dim;
   const PetscInt   *lx,*ly,*lz;
-  DMDABoundaryType  bx,by,bz;
-  DMDAStencilType   stencil_type;
+  DMDABoundaryType bx,by,bz;
+  DMDAStencilType  stencil_type;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,&dim,&M,&N,&P,&m,&n,&p,0,&s,&bx,&by,&bz,&stencil_type);CHKERRQ(ierr);

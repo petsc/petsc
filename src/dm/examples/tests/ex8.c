@@ -80,17 +80,17 @@ PetscErrorCode GenerateSliceScatter(DM da,VecScatter *scatter,Vec *vslice)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscMPIInt    rank;
-  PetscInt       m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,M = 3,N = 5,P=3,s=1;
-  PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
-  PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
-  DM             da;
-  Vec            local,global,vslice;
-  PetscScalar    value;
+  PetscMPIInt      rank;
+  PetscInt         m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,M = 3,N = 5,P=3,s=1;
+  PetscInt         *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
+  PetscErrorCode   ierr;
+  PetscBool        flg = PETSC_FALSE;
+  DM               da;
+  Vec              local,global,vslice;
+  PetscScalar      value;
   DMDABoundaryType wrap = DMDA_XYPERIODIC;
   DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
-  VecScatter     scatter;
+  VecScatter       scatter;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

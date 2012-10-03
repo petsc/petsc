@@ -7,20 +7,20 @@ static char help[] = "Tests various 2-dimensional DMDA routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscMPIInt    rank;
-  PetscErrorCode ierr;
-  PetscInt       M = 10,N = 8,m = PETSC_DECIDE;
-  PetscInt       s=2,w=2,n = PETSC_DECIDE,nloc,l,i,j,kk;
-  PetscInt       Xs,Xm,Ys,Ym,iloc,*iglobal,*ltog;
-  PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL;
-  PetscBool      testorder = PETSC_FALSE,flg;
+  PetscMPIInt      rank;
+  PetscErrorCode   ierr;
+  PetscInt         M = 10,N = 8,m = PETSC_DECIDE;
+  PetscInt         s=2,w=2,n = PETSC_DECIDE,nloc,l,i,j,kk;
+  PetscInt         Xs,Xm,Ys,Ym,iloc,*iglobal,*ltog;
+  PetscInt         *lx = PETSC_NULL,*ly = PETSC_NULL;
+  PetscBool        testorder = PETSC_FALSE,flg;
   DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by= DMDA_BOUNDARY_NONE;
-  DM             da;
-  PetscViewer    viewer;
-  Vec            local,global;
-  PetscScalar    value;
+  DM               da;
+  PetscViewer      viewer;
+  Vec              local,global;
+  PetscScalar      value;
   DMDAStencilType  st = DMDA_STENCIL_BOX;
-  AO             ao;
+  AO               ao;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRQ(ierr);

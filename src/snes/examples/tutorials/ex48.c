@@ -237,11 +237,11 @@ struct _p_THI {
     PetscReal irefgam,eps2,exponent,refvel,epsvel;
   } friction;
   PetscReal rhog;
-  PetscBool  no_slip;
-  PetscBool  tridiagonal;
-  PetscBool  coarse2d;
-  PetscBool  verbose;
-  MatType mattype;
+  PetscBool no_slip;
+  PetscBool tridiagonal;
+  PetscBool coarse2d;
+  PetscBool verbose;
+  MatType   mattype;
 };
 
 struct _n_Units {
@@ -449,10 +449,10 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   ierr = PetscOptionsBegin(comm,NULL,"Toy Hydrostatic Ice options","");CHKERRQ(ierr);
   {
     QuadratureType quad = QUAD_GAUSS;
-    char homexp[] = "A";
-    char mtype[256] = MATSBAIJ;
-    PetscReal L,m = 1.0;
-    PetscBool  flg;
+    char           homexp[] = "A";
+    char           mtype[256] = MATSBAIJ;
+    PetscReal      L,m = 1.0;
+    PetscBool      flg;
     L = thi->Lx;
     ierr = PetscOptionsReal("-thi_L","Domain size (m)","",L,&L,&flg);CHKERRQ(ierr);
     if (flg) thi->Lx = thi->Ly = L;
@@ -551,8 +551,8 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
 #define __FUNCT__ "THIInitializePrm"
 static PetscErrorCode THIInitializePrm(THI thi,DM da2prm,Vec prm)
 {
-  PrmNode **p;
-  PetscInt i,j,xs,xm,ys,ym,mx,my;
+  PrmNode        **p;
+  PetscInt       i,j,xs,xm,ys,ym,mx,my;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -573,11 +573,11 @@ static PetscErrorCode THIInitializePrm(THI thi,DM da2prm,Vec prm)
 #define __FUNCT__ "THISetUpDM"
 static PetscErrorCode THISetUpDM(THI thi,DM dm)
 {
-  PetscErrorCode ierr;
-  PetscInt refinelevel,coarsenlevel,level,dim,Mx,My,Mz,mx,my,s;
+  PetscErrorCode  ierr;
+  PetscInt        refinelevel,coarsenlevel,level,dim,Mx,My,Mz,mx,my,s;
   DMDAStencilType st;
-  DM da2prm;
-  Vec X;
+  DM              da2prm;
+  Vec             X;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dm,&dim, &Mz,&My,&Mx, 0,&my,&mx, 0,&s,0,0,0,&st);CHKERRQ(ierr);
@@ -1280,12 +1280,12 @@ static PetscErrorCode THIJacobianLocal_3D_Tridiagonal(DMDALocalInfo *info,Node *
 #define __FUNCT__ "DMRefineHierarchy_THI"
 static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarchy[])
 {
-  PetscErrorCode ierr;
-  THI thi;
-  PetscInt dim,M,N,m,n,s,dof;
-  DM dac,daf;
-  DMDAStencilType  st;
-  DM_DA *ddf,*ddc;
+  PetscErrorCode  ierr;
+  THI             thi;
+  PetscInt        dim,M,N,m,n,s,dof;
+  DM              dac,daf;
+  DMDAStencilType st;
+  DM_DA           *ddf,*ddc;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)dac0,"THI",(PetscObject*)&thi);CHKERRQ(ierr);

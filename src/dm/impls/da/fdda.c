@@ -187,14 +187,14 @@ PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,MatType mtype,ISC
 #define __FUNCT__ "DMCreateColoring_DA_2d_MPIAIJ"
 PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da,ISColoringType ctype,ISColoring *coloring)
 {
-  PetscErrorCode         ierr;
-  PetscInt               xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,M,N,dim,s,k,nc,col;
-  PetscInt               ncolors;
-  MPI_Comm               comm;
-  DMDABoundaryType       bx,by;
-  DMDAStencilType        st;
-  ISColoringValue        *colors;
-  DM_DA                  *dd = (DM_DA*)da->data;
+  PetscErrorCode   ierr;
+  PetscInt         xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,M,N,dim,s,k,nc,col;
+  PetscInt         ncolors;
+  MPI_Comm         comm;
+  DMDABoundaryType bx,by;
+  DMDAStencilType  st;
+  ISColoringValue  *colors;
+  DM_DA            *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*
@@ -587,7 +587,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, MatType mtype,Mat *J)
   PetscInt       dim,dof,nx,ny,nz,dims[3],starts[3],M,N,P;
   Mat            A;
   MPI_Comm       comm;
-  MatType  Atype;
+  MatType        Atype;
   PetscSection   section, sectionGlobal;
   void           (*aij)(void)=PETSC_NULL,(*baij)(void)=PETSC_NULL,(*sbaij)(void)=PETSC_NULL;
   MatType        ttype[256];

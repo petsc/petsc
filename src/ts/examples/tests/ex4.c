@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   PC             pc;
   PetscViewer    viewer;
   char           pcinfo[120],tsinfo[120];
-  TSType   tstype;
+  TSType         tstype;
   PetscBool      sundials;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);

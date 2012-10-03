@@ -393,8 +393,8 @@ PetscErrorCode  MatSetDM_HYPREStruct(Mat mat,DM da)
   PetscErrorCode  ierr;
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
   PetscInt         dim,dof,sw[3],nx,ny,nz,ilower[3],iupper[3],ssize,i;
-  DMDABoundaryType   px,py,pz;
-  DMDAStencilType    st;
+  DMDABoundaryType px,py,pz;
+  DMDAStencilType  st;
 
   PetscFunctionBegin;
   ex->da = da;
@@ -833,8 +833,8 @@ PetscErrorCode  MatSetDM_HYPRESStruct(Mat mat,DM da)
   Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;
   PetscInt          dim,dof,sw[3],nx,ny,nz;
   PetscInt          ilower[3],iupper[3],ssize,i;
-  DMDABoundaryType    px,py,pz;
-  DMDAStencilType     st;
+  DMDABoundaryType  px,py,pz;
+  DMDAStencilType   st;
   PetscInt          nparts= 1; /* assuming only one part */
   PetscInt          part  = 0;
 

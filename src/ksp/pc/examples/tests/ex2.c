@@ -16,8 +16,8 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       n = 10,i,its,col[3];
   PetscScalar    value[3];
-  PCType   pcname;
-  KSPType  kspname;
+  PCType         pcname;
+  KSPType        kspname;
   PetscReal      norm,tol=1.e-14;
 
   PetscInitialize(&argc,&args,(char *)0,help);

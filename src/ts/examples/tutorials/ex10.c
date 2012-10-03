@@ -36,21 +36,21 @@ typedef struct {
 typedef struct _n_RD *RD;
 
 struct _n_RD {
-  void           (*MaterialEnergy)(RD,const RDNode*,PetscScalar*,RDNode*);
-  DM             da;
-  PetscBool      monitor_residual;
+  void               (*MaterialEnergy)(RD,const RDNode*,PetscScalar*,RDNode*);
+  DM                 da;
+  PetscBool          monitor_residual;
   DiscretizationType discretization;
-  QuadratureType quadrature;
-  JacobianType   jacobian;
-  PetscInt       initial;
-  BCType         leftbc;
-  PetscBool      view_draw;
-  char           view_binary[PETSC_MAX_PATH_LEN];
-  PetscBool      test_diff;
-  PetscBool      endpoint;
-  PetscBool      bclimit;
-  PetscBool      bcmidpoint;
-  RDUnit         unit;
+  QuadratureType     quadrature;
+  JacobianType       jacobian;
+  PetscInt           initial;
+  BCType             leftbc;
+  PetscBool          view_draw;
+  char               view_binary[PETSC_MAX_PATH_LEN];
+  PetscBool          test_diff;
+  PetscBool          endpoint;
+  PetscBool          bclimit;
+  PetscBool          bcmidpoint;
+  RDUnit             unit;
 
   /* model constants, see Table 2 and RDCreate() */
   PetscReal rho,K_R,K_p,I_H,m_p,m_e,h,k,c,sigma_b,beta,gamma;

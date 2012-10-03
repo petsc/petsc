@@ -95,44 +95,44 @@ struct _DMWorkLink {
 
 struct _p_DM {
   PETSCHEADER(struct _DMOps);
-  Vec                    localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];
-  Vec                    globalin[DM_MAX_WORK_VECTORS],globalout[DM_MAX_WORK_VECTORS];
-  DMNamedVecLink         namedglobal;
-  DMWorkLink             workin,workout;
-  void                   *ctx;    /* a user context */
-  PetscErrorCode         (*ctxdestroy)(void**);
-  Vec                    x;       /* location at which the functions/Jacobian are computed */
-  ISColoringType         coloringtype;
-  MatFDColoring          fd;      /* used by DMComputeJacobianDefault() */
-  VecType                vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
-  MatType                mattype;  /* type of matrix created with DMCreateMatrix() */
-  PetscInt               bs;
-  ISLocalToGlobalMapping ltogmap,ltogmapb;
-  PetscBool              prealloc_only; /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */
-  PetscInt               levelup,leveldown;  /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
-  PetscBool              setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
-  void                   *data;
-  DMCoarsenHookLink      coarsenhook; /* For transfering auxiliary problem data to coarser grids */
-  DMRefineHookLink       refinehook;
+  Vec                     localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];
+  Vec                     globalin[DM_MAX_WORK_VECTORS],globalout[DM_MAX_WORK_VECTORS];
+  DMNamedVecLink          namedglobal;
+  DMWorkLink              workin,workout;
+  void                    *ctx;    /* a user context */
+  PetscErrorCode          (*ctxdestroy)(void**);
+  Vec                     x;       /* location at which the functions/Jacobian are computed */
+  ISColoringType          coloringtype;
+  MatFDColoring           fd;      /* used by DMComputeJacobianDefault() */
+  VecType                 vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
+  MatType                 mattype;  /* type of matrix created with DMCreateMatrix() */
+  PetscInt                bs;
+  ISLocalToGlobalMapping  ltogmap,ltogmapb;
+  PetscBool               prealloc_only; /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */
+  PetscInt                levelup,leveldown;  /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
+  PetscBool               setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
+  void                    *data;
+  DMCoarsenHookLink       coarsenhook; /* For transfering auxiliary problem data to coarser grids */
+  DMRefineHookLink        refinehook;
   DMBlockRestrictHookLink blockrestricthook;
-  DMLocalFunction1       lf;
-  DMLocalJacobian1       lj;
+  DMLocalFunction1        lf;
+  DMLocalJacobian1        lj;
   /* Flexible communication */
-  PetscSF                sf;                   /* SF for parallel point overlap */
-  PetscSF                defaultSF;            /* SF for parallel dof overlap using default section */
+  PetscSF                 sf;                   /* SF for parallel point overlap */
+  PetscSF                 defaultSF;            /* SF for parallel dof overlap using default section */
   /* Allows a non-standard data layout */
-  PetscSection           defaultSection;       /* Layout for local vectors */
-  PetscSection           defaultGlobalSection; /* Layout for global vectors */
+  PetscSection            defaultSection;       /* Layout for local vectors */
+  PetscSection            defaultGlobalSection; /* Layout for global vectors */
   /* Coordinates */
-  DM                     coordinateDM;         /* Layout for coordinates (default section) */
-  Vec                    coordinates;          /* Coordinate values in global vector */
-  Vec                    coordinatesLocal;     /* Coordinate values in local  vector */
+  DM                      coordinateDM;         /* Layout for coordinates (default section) */
+  Vec                     coordinates;          /* Coordinate values in global vector */
+  Vec                     coordinatesLocal;     /* Coordinate values in local  vector */
   /* Null spaces -- of course I should make this have a variable number of fields */
   /*   I now believe this might not be the right way: see below */
-  NullSpaceFunc          nullspaceConstructors[10];
+  NullSpaceFunc           nullspaceConstructors[10];
   /* Fields are represented by objects */
-  PetscInt               numFields;
-  PetscObject           *fields;
+  PetscInt                numFields;
+  PetscObject             *fields;
 };
 
 PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;

@@ -596,8 +596,8 @@ static PetscErrorCode MatView_Nest(Mat A,PetscViewer viewer)
     PetscViewerASCIIPrintf(viewer,"MatNest structure: \n" );
     for (i=0; i<bA->nr; i++) {
       for (j=0; j<bA->nc; j++) {
-        MatType type;
-        char name[256] = "",prefix[256] = "";
+        MatType  type;
+        char     name[256] = "",prefix[256] = "";
         PetscInt NR,NC;
         PetscBool isNest = PETSC_FALSE;
 

@@ -157,15 +157,15 @@ PETSC_EXTERN PetscErrorCode DMDASplitComm2d(MPI_Comm,PetscInt,PetscInt,PetscInt,
 .seealso:  DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DM, DMDAGetLocalInfo(), DMDAGetInfo()
 S*/
 typedef struct {
-  PetscInt       dim,dof,sw;
-  PetscInt       mx,my,mz;    /* global number of grid points in each direction */
-  PetscInt       xs,ys,zs;    /* starting point of this processor, excluding ghosts */
-  PetscInt       xm,ym,zm;    /* number of grid points on this processor, excluding ghosts */
-  PetscInt       gxs,gys,gzs;    /* starting point of this processor including ghosts */
-  PetscInt       gxm,gym,gzm;    /* number of grid points on this processor including ghosts */
+  PetscInt         dim,dof,sw;
+  PetscInt         mx,my,mz;    /* global number of grid points in each direction */
+  PetscInt         xs,ys,zs;    /* starting point of this processor, excluding ghosts */
+  PetscInt         xm,ym,zm;    /* number of grid points on this processor, excluding ghosts */
+  PetscInt         gxs,gys,gzs;    /* starting point of this processor including ghosts */
+  PetscInt         gxm,gym,gzm;    /* number of grid points on this processor including ghosts */
   DMDABoundaryType bx,by,bz; /* type of ghost nodes at boundary */
   DMDAStencilType  st;
-  DM             da;
+  DM               da;
 } DMDALocalInfo;
 
 /*MC
@@ -209,7 +209,7 @@ M*/
       Vec      vcoors;
       DM       cda;
 
-      DMDAGetCoordinates(da,&vcoors);
+      DMGetCoordinates(da,&vcoors);
       DMDAGetCoordinateDA(da,&cda);
       DMDAVecGetArray(cda,vcoors,&coors);
       DMDAGetCorners(cda,&mstart,&nstart,0,&m,&n,0)
@@ -222,7 +222,7 @@ M*/
       }
       DMDAVecRestoreArray(dac,vcoors,&coors);
 
-.seealso: DMDACoor3d, DMDAForEachPointBegin(), DMDAGetCoordinateDA(), DMDAGetCoordinates(), DMDAGetGhostCoordinates()
+.seealso: DMDACoor3d, DMDAForEachPointBegin(), DMDAGetCoordinateDA(), DMGetCoordinates(), DMDAGetGhostCoordinates()
 M*/
 typedef struct {PetscScalar x,y;} DMDACoor2d;
 
@@ -236,7 +236,7 @@ typedef struct {PetscScalar x,y;} DMDACoor2d;
       Vec      vcoors;
       DM       cda;
 
-      DMDAGetCoordinates(da,&vcoors);
+      DMGetCoordinates(da,&vcoors);
       DMDAGetCoordinateDA(da,&cda);
       DMDAVecGetArray(cda,vcoors,&coors);
       DMDAGetCorners(cda,&mstart,&nstart,&pstart,&m,&n,&p)
@@ -251,7 +251,7 @@ typedef struct {PetscScalar x,y;} DMDACoor2d;
       }
       DMDAVecRestoreArray(dac,vcoors,&coors);
 
-.seealso: DMDACoor2d, DMDAForEachPointBegin(), DMDAGetCoordinateDA(), DMDAGetCoordinates(), DMDAGetGhostCoordinates()
+.seealso: DMDACoor2d, DMDAForEachPointBegin(), DMDAGetCoordinateDA(), DMGetCoordinates(), DMDAGetGhostCoordinates()
 M*/
 typedef struct {PetscScalar x,y,z;} DMDACoor3d;
 

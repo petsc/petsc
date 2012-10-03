@@ -7,16 +7,16 @@ static char help[] = "Tests various 1-dimensional DMDA routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscMPIInt    rank;
-  PetscInt       M = 13,s=1,dof=1;
+  PetscMPIInt      rank;
+  PetscInt         M = 13,s=1,dof=1;
   DMDABoundaryType bx = DMDA_BOUNDARY_PERIODIC;
-  PetscErrorCode ierr;
-  DM             da;
-  PetscViewer    viewer;
-  Vec            local,global;
-  PetscScalar    value;
-  PetscDraw      draw;
-  PetscBool      flg = PETSC_FALSE;
+  PetscErrorCode   ierr;
+  DM               da;
+  PetscViewer      viewer;
+  Vec              local,global;
+  PetscScalar      value;
+  PetscDraw        draw;
+  PetscBool        flg = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 

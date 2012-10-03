@@ -8,14 +8,14 @@ static char help[] = "Tests MatSetValuesBlockedStencil() in 3d.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInt       M = 3,N = 4,P = 2,s = 1,w = 2,i, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
-  PetscErrorCode ierr;
-  DM             da;
-  Mat            mat;
-  DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
-  PetscBool      flg = PETSC_FALSE;
-  MatStencil     idx[2],idy[2];
-  PetscScalar    *values;
+  PetscInt        M = 3,N = 4,P = 2,s = 1,w = 2,i, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
+  PetscErrorCode  ierr;
+  DM              da;
+  Mat             mat;
+  DMDAStencilType stencil_type = DMDA_STENCIL_BOX;
+  PetscBool       flg = PETSC_FALSE;
+  MatStencil      idx[2],idy[2];
+  PetscScalar     *values;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 

@@ -435,11 +435,11 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
   */
   if (!l) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"There is no such thing as a up smoother on the coarse grid");
   if (mglevels[l]->smoothu == mglevels[l]->smoothd) {
-    KSPType ksptype;
-    PCType pctype;
-    PC ipc;
-    PetscReal rtol,abstol,dtol;
-    PetscInt maxits;
+    KSPType     ksptype;
+    PCType      pctype;
+    PC          ipc; 
+    PetscReal   rtol,abstol,dtol;
+    PetscInt    maxits;
     KSPNormType normtype;
     ierr = PetscObjectGetComm((PetscObject)mglevels[l]->smoothd,&comm);CHKERRQ(ierr);
     ierr = KSPGetOptionsPrefix(mglevels[l]->smoothd,&prefix);CHKERRQ(ierr);

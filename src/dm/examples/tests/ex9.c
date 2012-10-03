@@ -8,16 +8,16 @@ static char help[] = "Tests DMCreateColoring() in 3d.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInt       i,M = 3,N = 5,P=3,s=1,w=2,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
-  PetscErrorCode ierr;
-  PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
-  DM             da;
-  PetscBool      flg = PETSC_FALSE,test_order = PETSC_FALSE;
-  ISColoring     coloring;
-  Mat            mat;
-  DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
-  Vec            lvec,dvec;
-  MatFDColoring  fdcoloring;
+  PetscInt        i,M = 3,N = 5,P=3,s=1,w=2,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
+  PetscErrorCode  ierr;
+  PetscInt        *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
+  DM              da;
+  PetscBool       flg = PETSC_FALSE,test_order = PETSC_FALSE;
+  ISColoring      coloring;
+  Mat             mat;
+  DMDAStencilType stencil_type = DMDA_STENCIL_BOX;
+  Vec             lvec,dvec;
+  MatFDColoring   fdcoloring;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
