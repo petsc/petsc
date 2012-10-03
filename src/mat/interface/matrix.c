@@ -4983,7 +4983,7 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
    row-oriented input will generally assemble the fastest. The default
    is row-oriented.
 
-   Logically Collective on Mat
+   Logically Collective on Mat for certain operations, such as MAT_SPD, not collective for MAT_ROW_ORIENTED, see MatOption
 
    Input Parameters:
 +  mat - the matrix
@@ -5085,6 +5085,8 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
 
    Concepts: matrices^setting options
 
+.seealso:  MatOption, Mat
+
 @*/
 PetscErrorCode  MatSetOption(Mat mat,MatOption op,PetscBool  flg)
 {
@@ -5093,10 +5095,10 @@ PetscErrorCode  MatSetOption(Mat mat,MatOption op,PetscBool  flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidLogicalCollectiveEnum(mat,op,2);
+  if (op > 0) PetscValidLogicalCollectiveEnum(mat,op,2);
   PetscValidLogicalCollectiveBool(mat,flg,3);
 
-  if (((int) op) < 0 || ((int) op) >= NUM_MAT_OPTIONS) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)op);
+  if (((int) op) <= MAT_OPTION_MIN || ((int) op) >= MAT_OPTION_MAX) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)op);
   if (!((PetscObject)mat)->type_name) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_TYPENOTSET,"Cannot set options until type and size have been set, see MatSetType() and MatSetSizes()");
 
   switch (op) {

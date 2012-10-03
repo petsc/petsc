@@ -358,23 +358,34 @@ PETSC_EXTERN PetscErrorCode MatAssembled(Mat,PetscBool *);
 
    Any additions/changes here MUST also be made in include/finclude/petscmat.h
 
+   Developer Notes: Entries that are negative need not be called collectively by all processes.
+
 .seealso: MatSetOption()
 E*/
-typedef enum {MAT_ROW_ORIENTED,MAT_NEW_NONZERO_LOCATIONS,
-              MAT_SYMMETRIC,
-              MAT_STRUCTURALLY_SYMMETRIC,
-              MAT_NEW_DIAGONALS,MAT_IGNORE_OFF_PROC_ENTRIES,
-              MAT_NEW_NONZERO_LOCATION_ERR,
-              MAT_NEW_NONZERO_ALLOCATION_ERR,MAT_USE_HASH_TABLE,
-              MAT_KEEP_NONZERO_PATTERN,MAT_IGNORE_ZERO_ENTRIES,
-              MAT_USE_INODES,
-              MAT_HERMITIAN,
-              MAT_SYMMETRY_ETERNAL,
-              MAT_CHECK_COMPRESSED_ROW,
-              MAT_IGNORE_LOWER_TRIANGULAR,MAT_ERROR_LOWER_TRIANGULAR,
-              MAT_GETROW_UPPERTRIANGULAR,MAT_UNUSED_NONZERO_LOCATION_ERR,
-              MAT_SPD,MAT_NO_OFF_PROC_ENTRIES,MAT_NO_OFF_PROC_ZERO_ROWS,
-              NUM_MAT_OPTIONS} MatOption;
+typedef enum {MAT_OPTION_MIN = -8,
+              MAT_NEW_NONZERO_LOCATION_ERR = -7,
+              MAT_NO_OFF_PROC_ZERO_ROWS = -6,
+              MAT_NO_OFF_PROC_ENTRIES = -5,
+              MAT_UNUSED_NONZERO_LOCATION_ERR = -4,
+              MAT_NEW_NONZERO_ALLOCATION_ERR = -3, 
+              MAT_ROW_ORIENTED = -2,
+              MAT_NEW_NONZERO_LOCATIONS = -1,
+              MAT_SYMMETRIC = 1,
+              MAT_STRUCTURALLY_SYMMETRIC = 2,
+              MAT_NEW_DIAGONALS = 3,
+              MAT_IGNORE_OFF_PROC_ENTRIES = 4,
+              MAT_USE_HASH_TABLE = 5,
+              MAT_KEEP_NONZERO_PATTERN = 6,
+              MAT_IGNORE_ZERO_ENTRIES = 7,
+              MAT_USE_INODES = 8,
+              MAT_HERMITIAN = 9,
+              MAT_SYMMETRY_ETERNAL = 10,
+              MAT_CHECK_COMPRESSED_ROW = 11,
+              MAT_IGNORE_LOWER_TRIANGULAR = 12,
+              MAT_ERROR_LOWER_TRIANGULAR = 13,
+              MAT_GETROW_UPPERTRIANGULAR = 14,
+              MAT_SPD = 15,
+              MAT_OPTION_MAX = 16} MatOption;
 
 PETSC_EXTERN const char *MatOptions[];
 PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool );

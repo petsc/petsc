@@ -32,6 +32,7 @@
 !
 !  Matrix options; must match those in include/petscmat.h
 !
+      PetscEnum MAT_OPTION_MIN
       PetscEnum MAT_ROW_ORIENTED
       PetscEnum MAT_NEW_NONZERO_LOCATIONS
       PetscEnum MAT_SYMMETRIC
@@ -66,31 +67,32 @@
       PetscEnum MAT_DIAGBLOCK_HYB
       PetscEnum MAT_OFFDIAGBLOCK_HYB
       PetscEnum MAT_HYB
-      PetscEnum NUM_MAT_OPTIONS
+      PetscEnum MAT_OPTION_MAX
 
-      parameter (MAT_ROW_ORIENTED=0)
-      parameter (MAT_NEW_NONZERO_LOCATIONS=1)
-      parameter (MAT_SYMMETRIC=2)
-      parameter (MAT_STRUCTURALLY_SYMMETRIC=3)
-      parameter (MAT_NEW_DIAGONALS=4)
-      parameter (MAT_IGNORE_OFF_PROC_ENTRIES=5)
-      parameter (MAT_NEW_NONZERO_LOCATION_ERR=6)
-      parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=7)
-      parameter (MAT_USE_HASH_TABLE=8)
-      parameter (MAT_KEEP_NONZERO_PATTERN=9)
-      parameter (MAT_IGNORE_ZERO_ENTRIES=10)
-      parameter (MAT_USE_INODES=11)
-      parameter (MAT_HERMITIAN=12)
-      parameter (MAT_SYMMETRY_ETERNAL=13)
-      parameter (MAT_CHECK_COMPRESSED_ROW=14)
-      parameter (MAT_IGNORE_LOWER_TRIANGULAR=15)
-      parameter (MAT_ERROR_LOWER_TRIANGULAR=16)
-      parameter (MAT_GETROW_UPPERTRIANGULAR=17)
-      parameter (MAT_UNUSED_NONZERO_LOCATION_ERR=18)
-      parameter (MAT_SPD=19)
-      parameter (MAT_NO_OFF_PROC_ENTRIES=20)
-      parameter (MAT_NO_OFF_PROC_ZERO_ROWS=21)
-      parameter (NUM_MAT_OPTIONS=22)
+      parameter (MAT_OPTION_MIN=-7)
+      parameter (MAT_ROW_ORIENTED=-2)
+      parameter (MAT_NEW_NONZERO_LOCATIONS=-1)
+      parameter (MAT_SYMMETRIC=1)
+      parameter (MAT_STRUCTURALLY_SYMMETRIC=2)
+      parameter (MAT_NEW_DIAGONALS=3)
+      parameter (MAT_IGNORE_OFF_PROC_ENTRIES=4)
+      parameter (MAT_NEW_NONZERO_LOCATION_ERR=-7)
+      parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=-3)
+      parameter (MAT_USE_HASH_TABLE=5)
+      parameter (MAT_KEEP_NONZERO_PATTERN=6)
+      parameter (MAT_IGNORE_ZERO_ENTRIES=7)
+      parameter (MAT_USE_INODES=8)
+      parameter (MAT_HERMITIAN=9)
+      parameter (MAT_SYMMETRY_ETERNAL=10)
+      parameter (MAT_CHECK_COMPRESSED_ROW=11)
+      parameter (MAT_IGNORE_LOWER_TRIANGULAR=12)
+      parameter (MAT_ERROR_LOWER_TRIANGULAR=13)
+      parameter (MAT_GETROW_UPPERTRIANGULAR=14)
+      parameter (MAT_UNUSED_NONZERO_LOCATION_ERR=-4)
+      parameter (MAT_SPD=15)
+      parameter (MAT_NO_OFF_PROC_ENTRIES=-5)
+      parameter (MAT_NO_OFF_PROC_ZERO_ROWS=-6)
+      parameter (MAT_OPTION_MAX=16)
 !
 !  MatFactorShiftType
 !
