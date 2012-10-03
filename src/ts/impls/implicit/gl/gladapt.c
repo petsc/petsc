@@ -139,7 +139,7 @@ PetscErrorCode  TSGLAdaptRegisterDestroy(void)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptSetType"
-PetscErrorCode  TSGLAdaptSetType(TSGLAdapt adapt,const TSGLAdaptType type)
+PetscErrorCode  TSGLAdaptSetType(TSGLAdapt adapt,TSGLAdaptType type)
 {
   PetscErrorCode ierr,(*r)(TSGLAdapt);
 

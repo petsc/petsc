@@ -1,6 +1,6 @@
 #include <petsc-private/snesimpl.h>   /*I "petscsnes.h" I*/
 
-static const SNESMSType SNESMSDefault = SNESMSM62;
+static SNESMSType SNESMSDefault = SNESMSM62;
 static PetscBool SNESMSRegisterAllCalled;
 static PetscBool SNESMSPackageInitialized;
 
@@ -206,7 +206,7 @@ PetscErrorCode SNESMSFinalizePackage(void)
 
 .seealso: SNESMS
 @*/
-PetscErrorCode SNESMSRegister(const SNESMSType name,PetscInt nstages,PetscInt nregisters,PetscReal stability,const PetscReal gamma[],const PetscReal delta[],const PetscReal betasub[])
+PetscErrorCode SNESMSRegister(SNESMSType name,PetscInt nstages,PetscInt nregisters,PetscReal stability,const PetscReal gamma[],const PetscReal delta[],const PetscReal betasub[])
 {
   PetscErrorCode ierr;
   SNESMSTableauLink link;
@@ -496,13 +496,13 @@ EXTERN_C_END
 
 .seealso: SNESMSGetType(), SNESMS
 @*/
-PetscErrorCode SNESMSSetType(SNES snes,const SNESMSType rostype)
+PetscErrorCode SNESMSSetType(SNES snes,SNESMSType rostype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr = PetscTryMethod(snes,"SNESMSSetType_C",(SNES,const SNESMSType),(snes,rostype));CHKERRQ(ierr);
+  ierr = PetscTryMethod(snes,"SNESMSSetType_C",(SNES,SNESMSType),(snes,rostype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

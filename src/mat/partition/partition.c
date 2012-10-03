@@ -145,7 +145,7 @@ PetscErrorCode  MatPartitioningRegisterDestroy(void)
 
 .keywords: Partitioning, get, method, name, type
 @*/
-PetscErrorCode  MatPartitioningGetType(MatPartitioning partitioning,const MatPartitioningType *type)
+PetscErrorCode  MatPartitioningGetType(MatPartitioning partitioning,MatPartitioningType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(partitioning,MAT_PARTITIONING_CLASSID,1);
@@ -497,7 +497,7 @@ $      (for instance, parmetis)
 .seealso: MatPartitioningCreate(), MatPartitioningApply(), MatPartitioningType
 
 @*/
-PetscErrorCode  MatPartitioningSetType(MatPartitioning part,const MatPartitioningType type)
+PetscErrorCode  MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
 {
   PetscErrorCode ierr,(*r)(MatPartitioning);
   PetscBool  match;

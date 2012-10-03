@@ -15,7 +15,7 @@ typedef struct  {
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Sliced"
-PetscErrorCode  DMCreateMatrix_Sliced(DM dm, const MatType mtype,Mat *J)
+PetscErrorCode  DMCreateMatrix_Sliced(DM dm, MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
   PetscInt               *globals,*sd_nnz,*so_nnz,rstart,bs,i;

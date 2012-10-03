@@ -2,7 +2,7 @@
 static char help[] = "Tests matrix ordering routines.\n\n";
 
 #include <petscmat.h>
-extern PetscErrorCode MatGetOrdering_myordering(Mat,const MatOrderingType,IS *,IS *);
+extern PetscErrorCode MatGetOrdering_myordering(Mat,MatOrderingType,IS *,IS *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -90,7 +90,7 @@ int main(int argc,char **args)
 /* This is modified from MatGetOrdering_Natural() */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_myordering"
-PetscErrorCode MatGetOrdering_myordering(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+PetscErrorCode MatGetOrdering_myordering(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
   PetscInt       n,i,*ii;

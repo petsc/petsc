@@ -30,10 +30,10 @@ typedef struct _p_Characteristic *Characteristic;
 .seealso: CharacteristicSetType(), Characteristic
 J*/
 #define CHARACTERISTICDA "da"
-#define CharacteristicType char*
+typedef const char* CharacteristicType;
 
 PETSC_EXTERN PetscErrorCode CharacteristicCreate(MPI_Comm, Characteristic *);
-PETSC_EXTERN PetscErrorCode CharacteristicSetType(Characteristic, const CharacteristicType);
+PETSC_EXTERN PetscErrorCode CharacteristicSetType(Characteristic, CharacteristicType);
 PETSC_EXTERN PetscErrorCode CharacteristicSetUp(Characteristic);
 PETSC_EXTERN PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic, DM, Vec, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);
 PETSC_EXTERN PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic, DM, Vec, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(void *, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);

@@ -272,13 +272,13 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
 
 .seealso: TSSSP, TSSSPGetType(), TSSSPSetNumStages(), TSSSPRKS2, TSSSPRKS3, TSSSPRK104
 @*/
-PetscErrorCode TSSSPSetType(TS ts,const TSSSPType type)
+PetscErrorCode TSSSPSetType(TS ts,TSSSPType type)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSSSPSetType_C",(TS,const TSSSPType),(ts,type));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ts,"TSSSPSetType_C",(TS,TSSSPType),(ts,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -299,13 +299,13 @@ PetscErrorCode TSSSPSetType(TS ts,const TSSSPType type)
 
 .seealso: TSSSP, TSSSPSettype(), TSSSPSetNumStages(), TSSSPRKS2, TSSSPRKS3, TSSSPRK104
 @*/
-PetscErrorCode TSSSPGetType(TS ts,const TSSSPType *type)
+PetscErrorCode TSSSPGetType(TS ts,TSSSPType *type)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSSSPGetType_C",(TS,const TSSSPType*),(ts,type));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ts,"TSSSPGetType_C",(TS,TSSSPType*),(ts,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -368,7 +368,7 @@ PetscErrorCode TSSSPGetNumStages(TS ts,PetscInt *nstages)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSSPSetType_SSP"
-PetscErrorCode TSSSPSetType_SSP(TS ts,const TSSSPType type)
+PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
 {
   PetscErrorCode ierr,(*r)(TS,PetscReal,PetscReal,Vec);
   TS_SSP *ssp = (TS_SSP*)ts->data;
@@ -383,7 +383,7 @@ PetscErrorCode TSSSPSetType_SSP(TS ts,const TSSSPType type)
 }
 #undef __FUNCT__
 #define __FUNCT__ "TSSSPGetType_SSP"
-PetscErrorCode TSSSPGetType_SSP(TS ts,const TSSSPType *type)
+PetscErrorCode TSSSPGetType_SSP(TS ts,TSSSPType *type)
 {
   TS_SSP *ssp = (TS_SSP*)ts->data;
 

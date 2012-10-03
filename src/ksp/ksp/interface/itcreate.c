@@ -643,7 +643,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
 .seealso: PCSetType(), KSPType
 
 @*/
-PetscErrorCode  KSPSetType(KSP ksp, const KSPType type)
+PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
 {
   PetscErrorCode ierr,(*r)(KSP);
   PetscBool      match;
@@ -722,7 +722,7 @@ PetscErrorCode  KSPRegisterDestroy(void)
 
 .seealso: KSPSetType()
 @*/
-PetscErrorCode  KSPGetType(KSP ksp,const KSPType *type)
+PetscErrorCode  KSPGetType(KSP ksp,KSPType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);

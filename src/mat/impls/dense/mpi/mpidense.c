@@ -660,7 +660,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
   Mat_MPIDense          *mdn = (Mat_MPIDense*)mat->data;
   PetscErrorCode        ierr;
   PetscMPIInt           size = mdn->size,rank = mdn->rank;
-  const PetscViewerType vtype;
+  PetscViewerType vtype;
   PetscBool             iascii,isdraw;
   PetscViewer           sviewer;
   PetscViewerFormat     format;

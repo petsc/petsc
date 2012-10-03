@@ -104,7 +104,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetMatOrderingType_Factor"
-PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC pc,const MatOrderingType ordering)
+PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC pc,MatOrderingType ordering)
 {
   PC_Factor      *dir = (PC_Factor*)pc->data;
   PetscErrorCode ierr;
@@ -113,7 +113,7 @@ PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC pc,const MatOrderingType or
   PetscFunctionBegin;
   if (!pc->setupcalled) {
      ierr = PetscFree(dir->ordering);CHKERRQ(ierr);
-     ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
+     ierr = PetscStrallocpy(ordering,(char**)&dir->ordering);CHKERRQ(ierr);
   } else {
     ierr = PetscStrcmp(dir->ordering,ordering,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot change ordering after use");

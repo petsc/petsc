@@ -74,7 +74,7 @@ PetscErrorCode DMCreateLocalVector_IGA(DM dm, Vec *lvec)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_IGA"
-PetscErrorCode DMCreateMatrix_IGA(DM dm, const MatType mtype, Mat *J)
+PetscErrorCode DMCreateMatrix_IGA(DM dm, MatType mtype, Mat *J)
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
   PetscErrorCode ierr;

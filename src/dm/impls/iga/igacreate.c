@@ -16,7 +16,7 @@ PetscErrorCode  DMSetFromOptions_IGA(DM dm)
 /* External function declarations here */
 extern PetscErrorCode DMCreateGlobalVector_IGA(DM dm, Vec *gvec);
 extern PetscErrorCode DMCreateLocalVector_IGA(DM dm, Vec *lvec);
-extern PetscErrorCode DMCreateMatrix_IGA(DM dm, const MatType mtype, Mat *J);
+extern PetscErrorCode DMCreateMatrix_IGA(DM dm, MatType mtype, Mat *J);
 extern PetscErrorCode DMGlobalToLocalBegin_IGA(DM dm, Vec g, InsertMode mode, Vec l);
 extern PetscErrorCode DMGlobalToLocalEnd_IGA(DM dm, Vec g, InsertMode mode, Vec l);
 extern PetscErrorCode DMLocalToGlobalBegin_IGA(DM dm, Vec l, InsertMode mode, Vec g);
@@ -45,7 +45,7 @@ PetscErrorCode DMCreate_IGA(DM dm)
   iga->Ux  = 0; iga->Uy  = 0; iga->Uz  = 0;
   iga->bdX = 0; iga->bdY = 0; iga->bdZ = 0;
 
-  ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(VECSTANDARD, (char**)&dm->vectype);CHKERRQ(ierr);
   dm->ops->view               = DMView_IGA;
   dm->ops->setfromoptions     = DMSetFromOptions_IGA;
   dm->ops->setup              = 0;

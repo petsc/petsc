@@ -11,7 +11,7 @@
 */
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 
-static const TSARKIMEXType TSARKIMEXDefault = TSARKIMEX3;
+static TSARKIMEXType TSARKIMEXDefault = TSARKIMEX3;
 static PetscBool TSARKIMEXRegisterAllCalled;
 static PetscBool TSARKIMEXPackageInitialized;
 
@@ -500,7 +500,7 @@ PetscErrorCode TSARKIMEXFinalizePackage(void)
 
 .seealso: TSARKIMEX
 @*/
-PetscErrorCode TSARKIMEXRegister(const TSARKIMEXType name,PetscInt order,PetscInt s,
+PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name,PetscInt order,PetscInt s,
                                  const PetscReal At[],const PetscReal bt[],const PetscReal ct[],
                                  const PetscReal A[],const PetscReal b[],const PetscReal c[],
                                  const PetscReal bembedt[],const PetscReal bembed[],
@@ -997,7 +997,7 @@ static PetscErrorCode TSView_ARKIMEX(TS ts,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    const TSARKIMEXType arktype;
+    TSARKIMEXType arktype;
     char buf[512];
     ierr = TSARKIMEXGetType(ts,&arktype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  ARK IMEX %s\n",arktype);CHKERRQ(ierr);
@@ -1025,13 +1025,13 @@ static PetscErrorCode TSView_ARKIMEX(TS ts,PetscViewer viewer)
 
 .seealso: TSARKIMEXGetType(), TSARKIMEX, TSARKIMEX2D, TSARKIMEX2E, TSARKIMEXPRSSP2, TSARKIMEX3, TSARKIMEXBPR3, TSARKIMEXARS443, TSARKIMEX4, TSARKIMEX5
 @*/
-PetscErrorCode TSARKIMEXSetType(TS ts,const TSARKIMEXType arktype)
+PetscErrorCode TSARKIMEXSetType(TS ts,TSARKIMEXType arktype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSARKIMEXSetType_C",(TS,const TSARKIMEXType),(ts,arktype));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ts,"TSARKIMEXSetType_C",(TS,TSARKIMEXType),(ts,arktype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1052,13 +1052,13 @@ PetscErrorCode TSARKIMEXSetType(TS ts,const TSARKIMEXType arktype)
 
 .seealso: TSARKIMEXGetType()
 @*/
-PetscErrorCode TSARKIMEXGetType(TS ts,const TSARKIMEXType *arktype)
+PetscErrorCode TSARKIMEXGetType(TS ts,TSARKIMEXType *arktype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscUseMethod(ts,"TSARKIMEXGetType_C",(TS,const TSARKIMEXType*),(ts,arktype));CHKERRQ(ierr);
+  ierr = PetscUseMethod(ts,"TSARKIMEXGetType_C",(TS,TSARKIMEXType*),(ts,arktype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1090,7 +1090,7 @@ PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts,PetscBool flg)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSARKIMEXGetType_ARKIMEX"
-PetscErrorCode  TSARKIMEXGetType_ARKIMEX(TS ts,const TSARKIMEXType *arktype)
+PetscErrorCode  TSARKIMEXGetType_ARKIMEX(TS ts,TSARKIMEXType *arktype)
 {
   TS_ARKIMEX *ark = (TS_ARKIMEX*)ts->data;
   PetscErrorCode ierr;
@@ -1102,7 +1102,7 @@ PetscErrorCode  TSARKIMEXGetType_ARKIMEX(TS ts,const TSARKIMEXType *arktype)
 }
 #undef __FUNCT__
 #define __FUNCT__ "TSARKIMEXSetType_ARKIMEX"
-PetscErrorCode  TSARKIMEXSetType_ARKIMEX(TS ts,const TSARKIMEXType arktype)
+PetscErrorCode  TSARKIMEXSetType_ARKIMEX(TS ts,TSARKIMEXType arktype)
 {
   TS_ARKIMEX *ark = (TS_ARKIMEX*)ts->data;
   PetscErrorCode ierr;

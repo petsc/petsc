@@ -406,7 +406,7 @@ PetscErrorCode PetscThreadCommGetAffinities(MPI_Comm comm,PetscInt affinities[])
    See "petsc/include/petscthreadcomm.h" for available types
 
 */
-PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,const PetscThreadCommType type)
+PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,PetscThreadCommType type)
 {
   PetscErrorCode ierr,(*r)(PetscThreadComm);
   char           ttype[256];

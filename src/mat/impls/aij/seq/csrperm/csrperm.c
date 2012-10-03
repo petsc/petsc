@@ -588,7 +588,7 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqAIJPERM"
-PetscErrorCode  MatConvert_SeqAIJ_SeqAIJPERM(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
+PetscErrorCode  MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;

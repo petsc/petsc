@@ -68,7 +68,7 @@ PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
 
 .seealso: ISGetType(), ISCreate()
 @*/
-PetscErrorCode  ISSetType(IS is, const ISType method)
+PetscErrorCode  ISSetType(IS is, ISType method)
 {
   PetscErrorCode (*r)(IS);
   PetscBool      match;
@@ -108,7 +108,7 @@ PetscErrorCode  ISSetType(IS is, const ISType method)
 
 .seealso: ISSetType(), ISCreate()
 @*/
-PetscErrorCode  ISGetType(IS is, const ISType *type)
+PetscErrorCode  ISGetType(IS is, ISType *type)
 {
   PetscErrorCode ierr;
 

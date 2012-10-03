@@ -74,7 +74,7 @@ namespace ALE {
       typedef typename ALE::New::SectionCompletion<bundle_type, value_type, alloc_type>   completion;
     public:
       template<typename PartitionType>
-      static void scatterSieve(const Obj<bundle_type>& bundle, const Obj<sieve_type>& sieve, const int dim, const Obj<sieve_type>& sieveNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const int height, const int numCells, const PartitionType assignment[]) {
+      static void scatterSieve(const Obj<bundle_type>& bundle, const Obj<sieve_type>& sieve, const int dim, const Obj<sieve_type>& sieveNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const int height, const int numCells, PartitionType assignment[]) {
         typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, value_type, value_alloc_type> > send_section_type;
         typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, value_type, value_alloc_type> > recv_section_type;
         int rank  = sieve->commRank();

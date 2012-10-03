@@ -379,7 +379,7 @@ PetscErrorCode  PCCreate_ILU(PC pc)
   ilu->row                                   = 0;
   ilu->inplace                               = PETSC_FALSE;
   ierr = PetscStrallocpy(MATSOLVERPETSC,&((PC_Factor*)ilu)->solvertype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(MATORDERINGNATURAL,&((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGNATURAL,(char**)&((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);
   ilu->reuseordering                         = PETSC_FALSE;
   ((PC_Factor*)ilu)->info.dt                 = PETSC_DEFAULT;
   ((PC_Factor*)ilu)->info.dtcount            = PETSC_DEFAULT;

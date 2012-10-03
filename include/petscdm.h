@@ -30,7 +30,7 @@ PETSC_EXTERN PetscClassId DM_CLASSID;
 
 .seealso: DMSetType(), DM
 J*/
-#define DMType char*
+typedef const char* DMType;
 #define DMDA        "da"
 #define DMADDA      "adda"
 #define DMCOMPOSITE "composite"
@@ -47,8 +47,8 @@ J*/
 PETSC_EXTERN PetscFList DMList;
 PETSC_EXTERN PetscBool DMRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode DMCreate(MPI_Comm,DM*);
-PETSC_EXTERN PetscErrorCode DMSetType(DM, const DMType);
-PETSC_EXTERN PetscErrorCode DMGetType(DM, const DMType *);
+PETSC_EXTERN PetscErrorCode DMSetType(DM, DMType);
+PETSC_EXTERN PetscErrorCode DMGetType(DM, DMType *);
 PETSC_EXTERN PetscErrorCode DMRegister(const char[],const char[],const char[],PetscErrorCode (*)(DM));
 PETSC_EXTERN PetscErrorCode DMRegisterAll(const char []);
 PETSC_EXTERN PetscErrorCode DMRegisterDestroy(void);
@@ -118,8 +118,8 @@ PETSC_EXTERN PetscErrorCode DMGetLocalToGlobalMapping(DM,ISLocalToGlobalMapping*
 PETSC_EXTERN PetscErrorCode DMGetLocalToGlobalMappingBlock(DM,ISLocalToGlobalMapping*);
 PETSC_EXTERN PetscErrorCode DMCreateFieldIS(DM,PetscInt*,char***,IS**);
 PETSC_EXTERN PetscErrorCode DMGetBlockSize(DM,PetscInt*);
-PETSC_EXTERN PetscErrorCode DMCreateColoring(DM,ISColoringType,const MatType,ISColoring*);
-PETSC_EXTERN PetscErrorCode DMCreateMatrix(DM,const MatType,Mat*);
+PETSC_EXTERN PetscErrorCode DMCreateColoring(DM,ISColoringType,MatType,ISColoring*);
+PETSC_EXTERN PetscErrorCode DMCreateMatrix(DM,MatType,Mat*);
 PETSC_EXTERN PetscErrorCode DMSetMatrixPreallocateOnly(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolation(DM,DM,Mat*,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateInjection(DM,DM,VecScatter*);
@@ -141,7 +141,7 @@ PETSC_EXTERN PetscErrorCode DMGlobalToLocalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalEnd(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalEnd(DM,Vec,InsertMode,Vec);
-PETSC_EXTERN PetscErrorCode DMConvert(DM,const DMType,DM*);
+PETSC_EXTERN PetscErrorCode DMConvert(DM,DMType,DM*);
 
 PETSC_EXTERN PetscErrorCode DMGetCoordinateDM(DM,DM*);
 PETSC_EXTERN PetscErrorCode DMGetCoordinates(DM,Vec*);
@@ -154,8 +154,8 @@ PETSC_EXTERN PetscErrorCode DMBlockRestrictHookAdd(DM,PetscErrorCode (*)(DM,VecS
 PETSC_EXTERN PetscErrorCode DMBlockRestrict(DM,VecScatter,VecScatter,DM);
 
 PETSC_EXTERN PetscErrorCode DMSetOptionsPrefix(DM,const char []);
-PETSC_EXTERN PetscErrorCode DMSetVecType(DM,const VecType);
-PETSC_EXTERN PetscErrorCode DMSetMatType(DM,const MatType);
+PETSC_EXTERN PetscErrorCode DMSetVecType(DM,VecType);
+PETSC_EXTERN PetscErrorCode DMSetMatType(DM,MatType);
 PETSC_EXTERN PetscErrorCode DMSetApplicationContext(DM,void*);
 PETSC_EXTERN PetscErrorCode DMSetApplicationContextDestroy(DM,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode DMGetApplicationContext(DM,void*);

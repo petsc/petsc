@@ -379,7 +379,7 @@ extern PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec);
 extern PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec);
 extern PetscErrorCode DMCreateLocalToGlobalMapping_Mesh(DM dm);
 extern PetscErrorCode DMCreateInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
-extern PetscErrorCode DMCreateMatrix_Mesh(DM dm, const MatType mtype, Mat *J);
+extern PetscErrorCode DMCreateMatrix_Mesh(DM dm, MatType mtype, Mat *J);
 extern PetscErrorCode DMRefine_Mesh(DM dm, MPI_Comm comm, DM *dmRefined);
 extern PetscErrorCode DMCoarsenHierarchy_Mesh(DM dm, int numLevels, DM *coarseHierarchy);
 extern PetscErrorCode DMDestroy_Mesh(DM dm);
@@ -388,7 +388,7 @@ extern PetscErrorCode DMView_Mesh(DM dm, PetscViewer viewer);
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "DMConvert_DA_Mesh"
-PetscErrorCode DMConvert_DA_Mesh(DM dm, const DMType newtype, DM *dmNew)
+PetscErrorCode DMConvert_DA_Mesh(DM dm, DMType newtype, DM *dmNew)
 {
   PetscSection   section;
   DM             cda;

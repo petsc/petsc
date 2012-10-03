@@ -51,7 +51,7 @@ PetscFList PCList = 0;
 .seealso: KSPSetType(), PCType
 
 @*/
-PetscErrorCode  PCSetType(PC pc,const PCType type)
+PetscErrorCode  PCSetType(PC pc,PCType type)
 {
   PetscErrorCode ierr,(*r)(PC);
   PetscBool      match;
@@ -135,7 +135,7 @@ PetscErrorCode  PCRegisterDestroy(void)
 .seealso: PCSetType()
 
 @*/
-PetscErrorCode  PCGetType(PC pc,const PCType *type)
+PetscErrorCode  PCGetType(PC pc,PCType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);

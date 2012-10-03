@@ -109,7 +109,7 @@ PetscErrorCode  MatCreateMPIAIJPERM(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt
 }
 
 EXTERN_C_BEGIN
-extern PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat,MatType,MatReuse,Mat*);
 extern PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 EXTERN_C_END
 
@@ -132,7 +132,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_MPIAIJPERM"
-PetscErrorCode  MatConvert_MPIAIJ_MPIAIJPERM(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
+PetscErrorCode  MatConvert_MPIAIJ_MPIAIJPERM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;

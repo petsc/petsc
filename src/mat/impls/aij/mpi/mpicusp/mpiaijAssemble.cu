@@ -164,8 +164,8 @@ struct is_diag
   __host__ __device__
   bool operator()(Tuple t) {
     // Check column
-    const IndexType row = thrust::get<0>(t);
-    const IndexType col = thrust::get<1>(t);
+    IndexType row = thrust::get<0>(t);
+    IndexType col = thrust::get<1>(t);
     return (row >= first) && (row < last) && (col >= first) && (col < last);
   }
 };
@@ -180,7 +180,7 @@ struct is_nonlocal
   __host__ __device__
   bool operator()(Tuple t) {
     // Check column
-    const IndexType row = thrust::get<0>(t);
+    IndexType row = thrust::get<0>(t);
     return (row < first) || (row >= last);
   }
 };

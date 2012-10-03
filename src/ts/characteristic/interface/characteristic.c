@@ -164,7 +164,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
 .seealso: CharacteristicType
 
 @*/
-PetscErrorCode CharacteristicSetType(Characteristic c, const CharacteristicType type)
+PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
 {
   PetscErrorCode ierr, (*r)(Characteristic);
   PetscBool      match;

@@ -36,7 +36,7 @@ PetscFList MatList = 0;
 
 .seealso: PCSetType(), VecSetType(), MatCreate(), MatType, Mat
 @*/
-PetscErrorCode  MatSetType(Mat mat, const MatType matype)
+PetscErrorCode  MatSetType(Mat mat, MatType matype)
 {
   PetscErrorCode ierr,(*r)(Mat);
   PetscBool      sametype,found;
@@ -124,7 +124,7 @@ PetscErrorCode  MatRegisterDestroy(void)
 
 .seealso: MatSetType()
 @*/
-PetscErrorCode  MatGetType(Mat mat,const MatType *type)
+PetscErrorCode  MatGetType(Mat mat,MatType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);

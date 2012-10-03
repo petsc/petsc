@@ -35,7 +35,7 @@ typedef struct _p_PC* PC;
 
 .seealso: PCSetType(), PC, PCCreate()
 J*/
-#define PCType char*
+typedef const char* PCType;
 #define PCNONE            "none"
 #define PCJACOBI          "jacobi"
 #define PCSOR             "sor"
@@ -98,7 +98,7 @@ typedef enum { PC_SIDE_DEFAULT=-1,PC_LEFT,PC_RIGHT,PC_SYMMETRIC} PCSide;
 PETSC_EXTERN const char *const *const PCSides;
 
 PETSC_EXTERN PetscErrorCode PCCreate(MPI_Comm,PC*);
-PETSC_EXTERN PetscErrorCode PCSetType(PC,const PCType);
+PETSC_EXTERN PetscErrorCode PCSetType(PC,PCType);
 PETSC_EXTERN PetscErrorCode PCSetUp(PC);
 PETSC_EXTERN PetscErrorCode PCSetUpOnBlocks(PC);
 PETSC_EXTERN PetscErrorCode PCApply(PC,Vec,Vec);
@@ -184,7 +184,7 @@ M*/
 PETSC_EXTERN PetscErrorCode PCReset(PC);
 PETSC_EXTERN PetscErrorCode PCDestroy(PC*);
 PETSC_EXTERN PetscErrorCode PCSetFromOptions(PC);
-PETSC_EXTERN PetscErrorCode PCGetType(PC,const PCType*);
+PETSC_EXTERN PetscErrorCode PCGetType(PC,PCType*);
 
 PETSC_EXTERN PetscErrorCode PCFactorGetMatrix(PC,Mat*);
 PETSC_EXTERN PetscErrorCode PCSetModifySubMatrices(PC,PetscErrorCode(*)(PC,PetscInt,const IS[],const IS[],Mat[],void*),void*);
@@ -256,7 +256,7 @@ PETSC_EXTERN PetscErrorCode PCFactorSetFill(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCFactorSetColumnPivot(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCFactorReorderForNonzeroDiagonal(PC,PetscReal);
 
-PETSC_EXTERN PetscErrorCode PCFactorSetMatOrderingType(PC,const MatOrderingType);
+PETSC_EXTERN PetscErrorCode PCFactorSetMatOrderingType(PC,MatOrderingType);
 PETSC_EXTERN PetscErrorCode PCFactorSetReuseOrdering(PC,PetscBool );
 PETSC_EXTERN PetscErrorCode PCFactorSetReuseFill(PC,PetscBool );
 PETSC_EXTERN PetscErrorCode PCFactorSetUseInPlace(PC);
@@ -364,7 +364,7 @@ PETSC_EXTERN const char *const PCCompositeTypes[];
 
 PETSC_EXTERN PetscErrorCode PCCompositeSetUseTrue(PC);
 PETSC_EXTERN PetscErrorCode PCCompositeSetType(PC,PCCompositeType);
-PETSC_EXTERN PetscErrorCode PCCompositeAddPC(PC,const PCType);
+PETSC_EXTERN PetscErrorCode PCCompositeAddPC(PC,PCType);
 PETSC_EXTERN PetscErrorCode PCCompositeGetPC(PC,PetscInt,PC *);
 PETSC_EXTERN PetscErrorCode PCCompositeSpecialSetAlpha(PC,PetscScalar);
 
@@ -477,8 +477,8 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetSolverType(PC,char[],PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetThreshold(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);
-#define PCGAMGType char*
-PETSC_EXTERN PetscErrorCode PCGAMGSetType( PC,const PCGAMGType );
+typedef const char* PCGAMGType;
+PETSC_EXTERN PetscErrorCode PCGAMGSetType( PC,PCGAMGType );
 PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);

@@ -34,7 +34,7 @@ namespace ALE {
       typedef typename Sieve::point_type point_type;
       typedef typename Sieve::arrow_type arrow_type;
     protected:
-      const FaceType& face;
+      FaceType& face;
       PointArray&     origVertices;
       PointArray&     faceVertices;
       int            *indices;
@@ -42,7 +42,7 @@ namespace ALE {
       int             oppositeVertex;
       int             v;
     public:
-      FaceVisitor(const FaceType& f, PointArray& oV, PointArray& fV, int *i, const int debug) : face(f), origVertices(oV), faceVertices(fV), indices(i), debug(debug), oppositeVertex(-1), v(0) {};
+      FaceVisitor(FaceType& f, PointArray& oV, PointArray& fV, int *i, const int debug) : face(f), origVertices(oV), faceVertices(fV), indices(i), debug(debug), oppositeVertex(-1), v(0) {};
       void visitPoint(const point_type& point) {
         if (face->find(point) != face->end()) {
           if (debug) std::cout << "    vertex " << point << std::endl;

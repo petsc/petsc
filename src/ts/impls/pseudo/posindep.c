@@ -682,7 +682,7 @@ PetscErrorCode  TSCreate_Pseudo(TS ts)
   TS_Pseudo      *pseudo;
   PetscErrorCode ierr;
   SNES           snes;
-  const SNESType stype;
+  SNESType stype;
 
   PetscFunctionBegin;
   ts->ops->reset           = TSReset_Pseudo;

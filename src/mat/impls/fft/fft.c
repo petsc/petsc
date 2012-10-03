@@ -44,7 +44,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
    Level: intermediate
 
 @*/
-PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],const MatType mattype,Mat* A)
+PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],MatType mattype,Mat* A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

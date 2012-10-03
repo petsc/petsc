@@ -812,7 +812,7 @@ PetscErrorCode DMComplexPreallocateOperator_2(DM dm, PetscInt bs, PetscSection s
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Complex"
-PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J)
+PetscErrorCode DMCreateMatrix_Complex(DM dm, MatType mtype, Mat *J)
 {
   PetscSection   section, sectionGlobal;
   PetscInt       bs = -1;

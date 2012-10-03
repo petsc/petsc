@@ -65,7 +65,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqBAIJ"
-PetscErrorCode  MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode  MatConvert_SeqAIJ_SeqBAIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;

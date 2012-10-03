@@ -27,7 +27,7 @@ typedef struct _p_AO* AO;
 
 .seealso: AOSetType(), AO
 J*/
-#define AOType char*
+typedef const char* AOType;
 #define AOBASIC               "basic"
 #define AOADVANCED            "advanced"
 #define AOMAPPING             "mapping"
@@ -55,8 +55,8 @@ PETSC_EXTERN PetscErrorCode AODestroy(AO*);
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFList AOList;
 PETSC_EXTERN PetscBool AORegisterAllCalled;
-PETSC_EXTERN PetscErrorCode AOSetType(AO, const AOType);
-PETSC_EXTERN PetscErrorCode AOGetType(AO, const AOType *);
+PETSC_EXTERN PetscErrorCode AOSetType(AO, AOType);
+PETSC_EXTERN PetscErrorCode AOGetType(AO, AOType *);
 
 PETSC_EXTERN PetscErrorCode AORegister(const char [], const char [], const char [], PetscErrorCode (*)(AO));
 PETSC_EXTERN PetscErrorCode AORegisterAll(const char []);

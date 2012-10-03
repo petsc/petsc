@@ -5464,9 +5464,9 @@ PetscErrorCode  MatGetCommunicationStructs(Mat A, Vec *lvec, PetscInt *colmap[],
 }
 
 EXTERN_C_BEGIN
-extern PetscErrorCode  MatConvert_MPIAIJ_MPIAIJCRL(Mat,const MatType,MatReuse,Mat*);
-extern PetscErrorCode  MatConvert_MPIAIJ_MPIAIJPERM(Mat,const MatType,MatReuse,Mat*);
-extern PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode  MatConvert_MPIAIJ_MPIAIJCRL(Mat,MatType,MatReuse,Mat*);
+extern PetscErrorCode  MatConvert_MPIAIJ_MPIAIJPERM(Mat,MatType,MatReuse,Mat*);
+extern PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat,MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 #undef __FUNCT__

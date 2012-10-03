@@ -232,7 +232,7 @@ PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscBool  symmetric
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvertFrom_MPIAdj"
-PetscErrorCode  MatConvertFrom_MPIAdj(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
+PetscErrorCode  MatConvertFrom_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   Mat               B;
   PetscErrorCode    ierr;

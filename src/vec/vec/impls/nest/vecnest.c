@@ -569,7 +569,7 @@ static PetscErrorCode VecView_Nest(Vec x,PetscViewer viewer)
 
     ierr = PetscViewerASCIIPrintf(viewer,"VecNest  structure: \n");CHKERRQ(ierr);
     for (i=0; i<bx->nb; i++) {
-      const VecType type;
+      VecType type;
       char name[256] = "",prefix[256] = "";
       PetscInt NR;
 

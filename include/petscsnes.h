@@ -26,7 +26,7 @@ typedef struct _p_SNES* SNES;
 
 .seealso: SNESSetType(), SNES
 J*/
-#define SNESType char*
+typedef const char* SNESType;
 #define SNESLS           "ls"
 #define SNESTR           "tr"
 #define SNESPYTHON       "python"
@@ -52,7 +52,7 @@ PETSC_EXTERN PetscErrorCode SNESInitializePackage(const char[]);
 PETSC_EXTERN PetscErrorCode SNESCreate(MPI_Comm,SNES*);
 PETSC_EXTERN PetscErrorCode SNESReset(SNES);
 PETSC_EXTERN PetscErrorCode SNESDestroy(SNES*);
-PETSC_EXTERN PetscErrorCode SNESSetType(SNES,const SNESType);
+PETSC_EXTERN PetscErrorCode SNESSetType(SNES,SNESType);
 PETSC_EXTERN PetscErrorCode SNESMonitor(SNES,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode SNESMonitorSet(SNES,PetscErrorCode(*)(SNES,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode SNESMonitorCancel(SNES);
@@ -142,7 +142,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructu
 
 PETSC_EXTERN PetscErrorCode MatDAADSetSNES(Mat,SNES);
 
-PETSC_EXTERN PetscErrorCode SNESGetType(SNES,const SNESType*);
+PETSC_EXTERN PetscErrorCode SNESGetType(SNES,SNESType*);
 PETSC_EXTERN PetscErrorCode SNESMonitorDefault(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorRange(SNES,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode SNESMonitorRatio(SNES,PetscInt,PetscReal,void *);
@@ -502,7 +502,7 @@ S*/
 .seealso: SNESLineSearchSetType(), SNES
 J*/
 
-#define SNESLineSearchType char*
+typedef const char* SNESLineSearchType;
 #define SNESLINESEARCHBT                 "bt"
 #define SNESLINESEARCHBASIC              "basic"
 #define SNESLINESEARCHL2                 "l2"
@@ -529,7 +529,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate(MPI_Comm, SNESLineSearch*);
 PETSC_EXTERN PetscErrorCode SNESLineSearchReset(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchView(SNESLineSearch,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESLineSearchDestroy(SNESLineSearch *);
-PETSC_EXTERN PetscErrorCode SNESLineSearchSetType(SNESLineSearch, const SNESLineSearchType);
+PETSC_EXTERN PetscErrorCode SNESLineSearchSetType(SNESLineSearch, SNESLineSearchType);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetUp(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchApply(SNESLineSearch, Vec, Vec, PetscReal *, Vec);
@@ -669,7 +669,7 @@ PETSC_EXTERN PetscErrorCode SNESMultiblockSetType(SNES, PCCompositeType);
 
 .seealso: SNESMSSetType(), SNES
 J*/
-#define SNESMSType char*
+typedef const char* SNESMSType;
 #define SNESMSM62       "m62"
 #define SNESMSEULER     "euler"
 #define SNESMSJAMESON83 "jameson83"
@@ -679,8 +679,8 @@ J*/
 #define SNESMSVLTP51    "vltp51"
 #define SNESMSVLTP61    "vltp61"
 
-PETSC_EXTERN PetscErrorCode SNESMSRegister(const SNESMSType,PetscInt,PetscInt,PetscReal,const PetscReal[],const PetscReal[],const PetscReal[]);
-PETSC_EXTERN PetscErrorCode SNESMSSetType(SNES,const SNESMSType);
+PETSC_EXTERN PetscErrorCode SNESMSRegister(SNESMSType,PetscInt,PetscInt,PetscReal,const PetscReal[],const PetscReal[],const PetscReal[]);
+PETSC_EXTERN PetscErrorCode SNESMSSetType(SNES,SNESMSType);
 PETSC_EXTERN PetscErrorCode SNESMSFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode SNESMSInitializePackage(const char path[]);
 PETSC_EXTERN PetscErrorCode SNESMSRegisterDestroy(void);

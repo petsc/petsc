@@ -18,7 +18,7 @@ PETSC_EXTERN PetscFList PFList;
 
 .seealso: PFSetType(), PF
 J*/
-#define PFType char*
+typedef const char* PFType;
 #define PFCONSTANT      "constant"
 #define PFMAT           "mat"
 #define PFSTRING        "string"
@@ -40,7 +40,7 @@ typedef struct _p_PF* PF;
 PETSC_EXTERN PetscClassId PF_CLASSID;
 
 PETSC_EXTERN PetscErrorCode PFCreate(MPI_Comm,PetscInt,PetscInt,PF*);
-PETSC_EXTERN PetscErrorCode PFSetType(PF,const PFType,void*);
+PETSC_EXTERN PetscErrorCode PFSetType(PF,PFType,void*);
 PETSC_EXTERN PetscErrorCode PFSet(PF,PetscErrorCode(*)(void*,PetscInt,const PetscScalar*,PetscScalar*),PetscErrorCode(*)(void*,Vec,Vec),PetscErrorCode(*)(void*,PetscViewer),PetscErrorCode(*)(void*),void*);
 PETSC_EXTERN PetscErrorCode PFApply(PF,PetscInt,const PetscScalar*,PetscScalar*);
 PETSC_EXTERN PetscErrorCode PFApplyVec(PF,Vec,Vec);
@@ -59,7 +59,7 @@ PETSC_EXTERN PetscErrorCode PFRegister(const char[],const char[],const char[],Pe
 
 PETSC_EXTERN PetscErrorCode PFDestroy(PF*);
 PETSC_EXTERN PetscErrorCode PFSetFromOptions(PF);
-PETSC_EXTERN PetscErrorCode PFGetType(PF,const PFType*);
+PETSC_EXTERN PetscErrorCode PFGetType(PF,PFType*);
 
 PETSC_EXTERN PetscErrorCode PFView(PF,PetscViewer);
 

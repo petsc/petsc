@@ -458,7 +458,7 @@ PetscErrorCode DMComplexCreateHexBoxMesh(MPI_Comm comm, PetscInt dim, const Pets
 
 /* External function declarations here */
 extern PetscErrorCode DMCreateInterpolation_Complex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
-extern PetscErrorCode DMCreateMatrix_Complex(DM dm, const MatType mtype, Mat *J);
+extern PetscErrorCode DMCreateMatrix_Complex(DM dm, MatType mtype, Mat *J);
 extern PetscErrorCode DMCreateCoordinateDM_Complex(DM dm, DM *cdm);
 extern PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined);
 extern PetscErrorCode DMSetUp_Complex(DM dm);
@@ -473,7 +473,7 @@ PetscErrorCode DMInitialize_Complex(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(VECSTANDARD, (char**)&dm->vectype);CHKERRQ(ierr);
   dm->ops->view               = DMView_Complex;
   dm->ops->setfromoptions     = DMSetFromOptions_Complex;
   dm->ops->setup              = DMSetUp_Complex;

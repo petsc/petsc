@@ -94,7 +94,7 @@ M*/
 
 .seealso: VecSetType(), Vec
 J*/
-#define VecType char*
+typedef const char* VecType;
 #define VECSEQ         "seq"
 #define VECMPI         "mpi"
 #define VECSTANDARD    "standard"   /* seq on one process and mpi on several */
@@ -305,8 +305,8 @@ PETSC_EXTERN PetscErrorCode VecSetValuesBlocked(Vec,PetscInt,const PetscInt[],co
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFList VecList;
 PETSC_EXTERN PetscBool VecRegisterAllCalled;
-PETSC_EXTERN PetscErrorCode VecSetType(Vec, const VecType);
-PETSC_EXTERN PetscErrorCode VecGetType(Vec, const VecType *);
+PETSC_EXTERN PetscErrorCode VecSetType(Vec, VecType);
+PETSC_EXTERN PetscErrorCode VecGetType(Vec, VecType *);
 PETSC_EXTERN PetscErrorCode VecRegister(const char[],const char[],const char[],PetscErrorCode (*)(Vec));
 PETSC_EXTERN PetscErrorCode VecRegisterAll(const char []);
 PETSC_EXTERN PetscErrorCode VecRegisterDestroy(void);

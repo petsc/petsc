@@ -63,7 +63,7 @@ PetscErrorCode  MatCoarsenRegisterDestroy(void)
 
 .keywords: Coarsen, get, method, name, type
 @*/
-PetscErrorCode  MatCoarsenGetType(MatCoarsen coarsen,const MatCoarsenType *type)
+PetscErrorCode  MatCoarsenGetType(MatCoarsen coarsen,MatCoarsenType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarsen,MAT_COARSEN_CLASSID,1);
@@ -362,7 +362,7 @@ $      (for instance, mis)
 .seealso: MatCoarsenCreate(), MatCoarsenApply(), MatCoarsenType
 
 @*/
-PetscErrorCode  MatCoarsenSetType( MatCoarsen coarser, const MatCoarsenType type )
+PetscErrorCode  MatCoarsenSetType( MatCoarsen coarser, MatCoarsenType type )
 {
   PetscErrorCode ierr,(*r)(MatCoarsen);
   PetscBool  match;

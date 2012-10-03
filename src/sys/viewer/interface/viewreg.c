@@ -64,7 +64,7 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 
 .seealso: PetscViewerCreate(), PetscViewerGetType(), PetscViewerType
 @*/
-PetscErrorCode  PetscViewerSetType(PetscViewer viewer,const PetscViewerType type)
+PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
 {
   PetscErrorCode ierr,(*r)(PetscViewer);
   PetscBool      match;

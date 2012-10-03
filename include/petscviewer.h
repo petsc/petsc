@@ -40,7 +40,7 @@ PETSC_EXTERN PetscClassId PETSC_VIEWER_CLASSID;
 
 .seealso: PetscViewerSetType(), PetscViewer
 J*/
-#define PetscViewerType char*
+typedef const char* PetscViewerType;
 #define PETSCVIEWERSOCKET       "socket"
 #define PETSCVIEWERASCII        "ascii"
 #define PETSCVIEWERBINARY       "binary"
@@ -128,8 +128,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaOpen(MPI_Comm, int, const char
 PETSC_EXTERN PetscErrorCode PetscViewerSiloOpen(MPI_Comm, const char[], PetscViewer *);
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 
-PETSC_EXTERN PetscErrorCode PetscViewerGetType(PetscViewer,const PetscViewerType*);
-PETSC_EXTERN PetscErrorCode PetscViewerSetType(PetscViewer,const PetscViewerType);
+PETSC_EXTERN PetscErrorCode PetscViewerGetType(PetscViewer,PetscViewerType*);
+PETSC_EXTERN PetscErrorCode PetscViewerSetType(PetscViewer,PetscViewerType);
 PETSC_EXTERN PetscErrorCode PetscViewerDestroy(PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerGetSingleton(PetscViewer,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerRestoreSingleton(PetscViewer,PetscViewer*);

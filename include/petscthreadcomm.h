@@ -24,7 +24,7 @@ typedef struct _p_PetscThreadComm *PetscThreadComm;
 */
 typedef struct _p_PetscThreadCommReduction *PetscThreadCommReduction;
 
-#define PetscThreadCommType char*
+typedef const char* PetscThreadCommType;
 #define PTHREAD             "pthread"
 #define NOTHREAD            "nothread"
 #define OPENMP              "openmp"

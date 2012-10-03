@@ -26,7 +26,7 @@ typedef struct _p_TS* TS;
 
 .seealso: TSSetType(), TS
 J*/
-#define TSType char*
+typedef const char* TSType;
 #define TSEULER           "euler"
 #define TSBEULER          "beuler"
 #define TSPSEUDO          "pseudo"
@@ -240,8 +240,8 @@ PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM,PetscErrorCode (*)(DMDALo
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFList TSList;
 PETSC_EXTERN PetscBool TSRegisterAllCalled;
-PETSC_EXTERN PetscErrorCode TSGetType(TS,const TSType*);
-PETSC_EXTERN PetscErrorCode TSSetType(TS,const TSType);
+PETSC_EXTERN PetscErrorCode TSGetType(TS,TSType*);
+PETSC_EXTERN PetscErrorCode TSSetType(TS,TSType);
 PETSC_EXTERN PetscErrorCode TSRegister(const char[], const char[], const char[], PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSRegisterAll(const char[]);
 PETSC_EXTERN PetscErrorCode TSRegisterDestroy(void);
@@ -314,13 +314,13 @@ PETSC_EXTERN PetscErrorCode TSMonitorLGDestroy(PetscDrawLG*);
 
 .seealso: TSSSPSetType(), TS
 J*/
-#define TSSSPType char*
+typedef const char* TSSSPType;
 #define TSSSPRKS2  "rks2"
 #define TSSSPRKS3  "rks3"
 #define TSSSPRK104 "rk104"
 
-PETSC_EXTERN PetscErrorCode TSSSPSetType(TS,const TSSSPType);
-PETSC_EXTERN PetscErrorCode TSSSPGetType(TS,const TSSSPType*);
+PETSC_EXTERN PetscErrorCode TSSSPSetType(TS,TSSSPType);
+PETSC_EXTERN PetscErrorCode TSSSPGetType(TS,TSSSPType*);
 PETSC_EXTERN PetscErrorCode TSSSPSetNumStages(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSSSPGetNumStages(TS,PetscInt*);
 
@@ -401,7 +401,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSAdaptInitializePackage(const char[]);
 PETSC_EXTERN PetscErrorCode TSAdaptFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate(MPI_Comm,TSAdapt*);
-PETSC_EXTERN PetscErrorCode TSAdaptSetType(TSAdapt,const TSAdaptType);
+PETSC_EXTERN PetscErrorCode TSAdaptSetType(TSAdapt,TSAdaptType);
 PETSC_EXTERN PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt,const char[]);
 PETSC_EXTERN PetscErrorCode TSAdaptCandidatesClear(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCandidateAdd(TSAdapt,const char[],PetscInt,PetscInt,PetscReal,PetscReal,PetscBool);
@@ -494,7 +494,7 @@ PETSC_EXTERN PetscErrorCode TSGLAdaptRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptInitializePackage(const char[]);
 PETSC_EXTERN PetscErrorCode TSGLAdaptFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptCreate(MPI_Comm,TSGLAdapt*);
-PETSC_EXTERN PetscErrorCode TSGLAdaptSetType(TSGLAdapt,const TSGLAdaptType);
+PETSC_EXTERN PetscErrorCode TSGLAdaptSetType(TSGLAdapt,TSGLAdaptType);
 PETSC_EXTERN PetscErrorCode TSGLAdaptSetOptionsPrefix(TSGLAdapt,const char[]);
 PETSC_EXTERN PetscErrorCode TSGLAdaptChoose(TSGLAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscBool *);
 PETSC_EXTERN PetscErrorCode TSGLAdaptView(TSGLAdapt,PetscViewer);
@@ -570,7 +570,7 @@ M*/
 
 .seealso: TSGLSetType(), TSGLRegister()
 J*/
-#define TSGLType char*
+typedef const char* TSGLType;
 #define TSGL_IRKS   "irks"
 
 /*MC
@@ -625,9 +625,9 @@ PETSC_EXTERN PetscErrorCode TSGLRegisterAll(const char[]);
 PETSC_EXTERN PetscErrorCode TSGLRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSGLInitializePackage(const char[]);
 PETSC_EXTERN PetscErrorCode TSGLFinalizePackage(void);
-PETSC_EXTERN PetscErrorCode TSGLSetType(TS,const TSGLType);
+PETSC_EXTERN PetscErrorCode TSGLSetType(TS,TSGLType);
 PETSC_EXTERN PetscErrorCode TSGLGetAdapt(TS,TSGLAdapt*);
-PETSC_EXTERN PetscErrorCode TSGLSetAcceptType(TS,const TSGLAcceptType);
+PETSC_EXTERN PetscErrorCode TSGLSetAcceptType(TS,TSGLAcceptType);
 
 /*J
     TSARKIMEXType - String with the name of an Additive Runge-Kutta IMEX method.
@@ -636,7 +636,7 @@ PETSC_EXTERN PetscErrorCode TSGLSetAcceptType(TS,const TSGLAcceptType);
 
 .seealso: TSARKIMEXSetType(), TS, TSARKIMEX, TSARKIMEXRegister()
 J*/
-#define TSARKIMEXType char*
+typedef const char* TSARKIMEXType;
 #define TSARKIMEXA2     "a2"
 #define TSARKIMEXL2     "l2"
 #define TSARKIMEXARS122 "ars122"
@@ -649,10 +649,10 @@ J*/
 #define TSARKIMEXARS443 "ars443"
 #define TSARKIMEX4      "4"
 #define TSARKIMEX5      "5"
-PETSC_EXTERN PetscErrorCode TSARKIMEXGetType(TS ts,const TSARKIMEXType*);
-PETSC_EXTERN PetscErrorCode TSARKIMEXSetType(TS ts,const TSARKIMEXType);
+PETSC_EXTERN PetscErrorCode TSARKIMEXGetType(TS ts,TSARKIMEXType*);
+PETSC_EXTERN PetscErrorCode TSARKIMEXSetType(TS ts,TSARKIMEXType);
 PETSC_EXTERN PetscErrorCode TSARKIMEXSetFullyImplicit(TS,PetscBool);
-PETSC_EXTERN PetscErrorCode TSARKIMEXRegister(const TSARKIMEXType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[],const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSARKIMEXRegister(TSARKIMEXType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[],const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSARKIMEXFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSARKIMEXInitializePackage(const char path[]);
 PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterDestroy(void);
@@ -665,7 +665,7 @@ PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterAll(void);
 
 .seealso: TSRosWSetType(), TS, TSROSW, TSRosWRegister()
 J*/
-#define TSRosWType char*
+typedef const char* TSRosWType;
 #define TSROSW2M          "2m"
 #define TSROSW2P          "2p"
 #define TSROSWRA3PW       "ra3pw"
@@ -683,11 +683,11 @@ J*/
 #define TSROSWVELDD4      "veldd4"
 #define TSROSW4L          "4l"
 
-PETSC_EXTERN PetscErrorCode TSRosWGetType(TS ts,const TSRosWType*);
-PETSC_EXTERN PetscErrorCode TSRosWSetType(TS ts,const TSRosWType);
+PETSC_EXTERN PetscErrorCode TSRosWGetType(TS ts,TSRosWType*);
+PETSC_EXTERN PetscErrorCode TSRosWSetType(TS ts,TSRosWType);
 PETSC_EXTERN PetscErrorCode TSRosWSetRecomputeJacobian(TS,PetscBool);
-PETSC_EXTERN PetscErrorCode TSRosWRegister(const TSRosWType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
-PETSC_EXTERN PetscErrorCode TSRosWRegisterRos4(const TSRosWType,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode TSRosWRegister(TSRosWType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSRosWRegisterRos4(TSRosWType,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSRosWFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSRosWInitializePackage(const char path[]);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterDestroy(void);

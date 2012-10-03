@@ -4,7 +4,7 @@ static const char help[] = "Test parallel assembly of SBAIJ matrices\n\n";
 
 #undef __FUNCT__
 #define __FUNCT__ "Assemble"
-PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,const MatType mtype)
+PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,MatType mtype)
 {
   const PetscInt rc[] = {0,1,2,3};
   const PetscScalar vals[] = {1, 2, 3, 4, 5, 6, 7, 8,

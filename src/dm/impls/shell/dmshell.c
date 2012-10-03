@@ -9,7 +9,7 @@ typedef struct  {
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Shell"
-static PetscErrorCode DMCreateMatrix_Shell(DM dm,const MatType mtype,Mat *J)
+static PetscErrorCode DMCreateMatrix_Shell(DM dm,MatType mtype,Mat *J)
 {
   PetscErrorCode ierr;
   DM_Shell       *shell = (DM_Shell*)dm->data;
@@ -109,7 +109,7 @@ PetscErrorCode DMShellSetMatrix(DM dm,Mat J)
 
 .seealso: DMCreateMatrix(), DMShellSetMatrix()
 @*/
-PetscErrorCode DMShellSetCreateMatrix(DM dm,PetscErrorCode (*func)(DM,const MatType,Mat*))
+PetscErrorCode DMShellSetCreateMatrix(DM dm,PetscErrorCode (*func)(DM,MatType,Mat*))
 {
 
   PetscFunctionBegin;

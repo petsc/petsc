@@ -775,7 +775,7 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
 
 .seealso: SNESLineSearchCreate()
 @*/
-PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, const SNESLineSearchType type)
+PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchType type)
 {
 
   PetscErrorCode ierr,(*r)(SNESLineSearch);

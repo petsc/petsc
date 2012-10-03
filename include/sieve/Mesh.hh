@@ -4905,7 +4905,7 @@ namespace ALE {
       typedef typename std::map<edge_type, point_type> edge_map_type;
       typedef enum {LINE, LINE_LAGRANGE, TRIANGLE, QUADRILATERAL, TETRAHEDRON, HEXAHEDRON, TRIANGULAR_PRISM, TRIANGULAR_PRISM_LAGRANGE, HEXAHEDRON_LAGRANGE} CellType;
     protected:
-      const MeshType&     _mesh;
+      MeshType&     _mesh;
       int           _dim;
       point_type    _vertexOffset;
       edge_map_type _edge2vertex;
@@ -5183,7 +5183,7 @@ namespace ALE {
         throw ALE::Exception("Could not determine number of new cells for this cell type");
       };
       void splitEdge(const point_type cell, const int coneSize, const point_type cone[], point_type& curNewVertex) {
-        const CellType   t = this->getCellType(cell);
+        CellType   t = this->getCellType(cell);
         int              numEdges;
         const edge_type *edges;
 
@@ -5215,7 +5215,7 @@ namespace ALE {
         }
       };
       void getNewCell(const point_type cell, const int coneSize, const point_type cone[], int newCellNumber, int *newConeSize, const point_type **newCone) {
-        const CellType    t = this->getCellType(cell);
+        CellType    t = this->getCellType(cell);
         int               numCells;
         const point_type *cells;
 
@@ -5245,7 +5245,7 @@ namespace ALE {
         }
       };
       void getNeighboringVertices(const point_type cell, const int coneSize, const point_type cone[], const point_type firstNewVertex, point_type vertex2edge[]) {
-        const CellType   t = this->getCellType(cell);
+        CellType   t = this->getCellType(cell);
         int              numEdges;
         const edge_type *edges;
 

@@ -41,7 +41,7 @@ PetscBool  TSRegisterAllCalled          = PETSC_FALSE;
 .keywords: TS, set, type
 
 @*/
-PetscErrorCode  TSSetType(TS ts,const TSType type)
+PetscErrorCode  TSSetType(TS ts,TSType type)
 {
   PetscErrorCode (*r)(TS);
   PetscBool      match;
@@ -88,7 +88,7 @@ PetscErrorCode  TSSetType(TS ts,const TSType type)
 .keywords: TS, timestepper, get, type, name
 .seealso TSSetType()
 @*/
-PetscErrorCode  TSGetType(TS ts, const TSType *type)
+PetscErrorCode  TSGetType(TS ts, TSType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);

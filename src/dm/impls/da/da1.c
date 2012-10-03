@@ -139,7 +139,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   const PetscInt         sDist = s*dof;  /* absolute stencil distance */
   const PetscInt         oDist = o*dof;
   const PetscInt         *lx    = dd->lx;
-  const DMDABoundaryType bx  = dd->bx;
+  DMDABoundaryType bx  = dd->bx;
   MPI_Comm               comm;
   Vec                    local, global;
   VecScatter             ltog, gtol;

@@ -428,13 +428,13 @@ PetscErrorCode  PCFactorSetUseInPlace(PC pc)
     SeqAIJ format in this case to get reorderings.
 
 @*/
-PetscErrorCode  PCFactorSetMatOrderingType(PC pc,const MatOrderingType ordering)
+PetscErrorCode  PCFactorSetMatOrderingType(PC pc,MatOrderingType ordering)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorSetMatOrderingType_C",(PC,const MatOrderingType),(pc,ordering));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCFactorSetMatOrderingType_C",(PC,MatOrderingType),(pc,ordering));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

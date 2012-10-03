@@ -154,7 +154,7 @@ PetscErrorCode  MatGetDiagonalBlock(Mat A,Mat *a)
   } else if (size == 1) {
     *a = A;
   } else {
-    const MatType mattype;
+    MatType mattype;
     ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
     SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"Matrix type %s does not support getting diagonal block",mattype);
   }
@@ -3744,7 +3744,7 @@ PetscErrorCode  MatCopy(Mat A,Mat B,MatStructure str)
 
 .seealso: MatCopy(), MatDuplicate()
 @*/
-PetscErrorCode  MatConvert(Mat mat, const MatType newtype,MatReuse reuse,Mat *M)
+PetscErrorCode  MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
 {
   PetscErrorCode ierr;
   PetscBool      sametype,issame,flg;
@@ -3773,7 +3773,7 @@ PetscErrorCode  MatConvert(Mat mat, const MatType newtype,MatReuse reuse,Mat *M)
   if ((sametype || issame) && (reuse==MAT_INITIAL_MATRIX) && mat->ops->duplicate) {
     ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
   } else {
-    PetscErrorCode (*conv)(Mat, const MatType,MatReuse,Mat*)=PETSC_NULL;
+    PetscErrorCode (*conv)(Mat, MatType,MatReuse,Mat*)=PETSC_NULL;
     const char     *prefix[3] = {"seq","mpi",""};
     PetscInt       i;
     /*
@@ -4395,7 +4395,7 @@ PetscErrorCode  MatIsTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *flg)
       ierr = (*f)(A,B,tol,flg);CHKERRQ(ierr);
     } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_NOTSAMETYPE,"Matrices do not have the same comparator for symmetry test");
   } else {
-    const MatType mattype;
+    MatType mattype;
     if (!f) {ierr = MatGetType(A,&mattype);CHKERRQ(ierr);}
     else    {ierr = MatGetType(B,&mattype);CHKERRQ(ierr);}
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for transpose",mattype);
@@ -7848,7 +7848,7 @@ PetscErrorCode  MatIsSymmetric(Mat A,PetscReal tol,PetscBool  *flg)
 
   if (!A->symmetric_set) {
     if (!A->ops->issymmetric) {
-      const MatType mattype;
+      MatType mattype;
       ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for symmetric",mattype);
     }
@@ -7867,7 +7867,7 @@ PetscErrorCode  MatIsSymmetric(Mat A,PetscReal tol,PetscBool  *flg)
     *flg = PETSC_FALSE;
   } else {
     if (!A->ops->issymmetric) {
-      const MatType mattype;
+      MatType mattype;
       ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for symmetric",mattype);
     }
@@ -7907,7 +7907,7 @@ PetscErrorCode  MatIsHermitian(Mat A,PetscReal tol,PetscBool  *flg)
 
   if (!A->hermitian_set) {
     if (!A->ops->ishermitian) {
-      const MatType mattype;
+      MatType mattype;
       ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for hermitian",mattype);
     }
@@ -7926,7 +7926,7 @@ PetscErrorCode  MatIsHermitian(Mat A,PetscReal tol,PetscBool  *flg)
     *flg = PETSC_FALSE;
   } else {
     if (!A->ops->ishermitian) {
-      const MatType mattype;
+      MatType mattype;
       ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for hermitian",mattype);
     }
@@ -8208,7 +8208,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   MatCheckPreallocated(A,1);
 
   if (!A->ops->ptap) {
-    const MatType mattype;
+    MatType mattype;
     ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
     SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"Matrix of type <%s> does not support PtAP",mattype);
   }
@@ -8373,7 +8373,7 @@ PetscErrorCode  MatRARt(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
   MatCheckPreallocated(A,1);
 
   if (!A->ops->rart) {
-    const MatType mattype;
+    MatType mattype;
     ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
     SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"Matrix of type <%s> does not support RARt",mattype);
   }

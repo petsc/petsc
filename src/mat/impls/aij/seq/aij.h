@@ -271,9 +271,9 @@ extern PetscErrorCode Mat_CheckInode_FactorLU(Mat,PetscBool );
 extern PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat,Mat,PetscInt*);
 
 EXTERN_C_BEGIN
-extern PetscErrorCode  MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,MatReuse,Mat*);
-extern PetscErrorCode  MatConvert_SeqAIJ_SeqBAIJ(Mat,const MatType,MatReuse,Mat*);
-extern PetscErrorCode  MatConvert_SeqAIJ_SeqAIJPERM(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode  MatConvert_SeqAIJ_SeqSBAIJ(Mat,MatType,MatReuse,Mat*);
+extern PetscErrorCode  MatConvert_SeqAIJ_SeqBAIJ(Mat,MatType,MatReuse,Mat*);
+extern PetscErrorCode  MatConvert_SeqAIJ_SeqAIJPERM(Mat,MatType,MatReuse,Mat*);
 extern PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
 extern PetscErrorCode  MatMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode  MatMatMult_SeqDense_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);

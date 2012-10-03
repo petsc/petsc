@@ -596,7 +596,7 @@ static PetscErrorCode MatView_Nest(Mat A,PetscViewer viewer)
     PetscViewerASCIIPrintf(viewer,"MatNest structure: \n" );
     for (i=0; i<bA->nr; i++) {
       for (j=0; j<bA->nc; j++) {
-        const MatType type;
+        MatType type;
         char name[256] = "",prefix[256] = "";
         PetscInt NR,NC;
         PetscBool isNest = PETSC_FALSE;
@@ -956,7 +956,7 @@ PetscErrorCode  MatNestGetLocalISs(Mat A,IS rows[],IS cols[])
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatNestSetVecType_Nest"
-PetscErrorCode  MatNestSetVecType_Nest(Mat A,const VecType vtype)
+PetscErrorCode  MatNestSetVecType_Nest(Mat A,VecType vtype)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -987,12 +987,12 @@ EXTERN_C_END
 
 .seealso: MatGetVecs()
 @*/
-PetscErrorCode  MatNestSetVecType(Mat A,const VecType vtype)
+PetscErrorCode  MatNestSetVecType(Mat A,VecType vtype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(A,"MatNestSetVecType_C",(Mat,const VecType),(A,vtype));CHKERRQ(ierr);
+  ierr = PetscTryMethod(A,"MatNestSetVecType_C",(Mat,VecType),(A,vtype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

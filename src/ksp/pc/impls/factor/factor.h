@@ -22,7 +22,7 @@ extern PetscErrorCode  PCFactorSetShiftType_Factor(PC,MatFactorShiftType);
 extern PetscErrorCode  PCFactorSetShiftAmount_Factor(PC,PetscReal);
 extern PetscErrorCode  PCFactorSetDropTolerance_Factor(PC,PetscReal,PetscReal,PetscInt);
 extern PetscErrorCode  PCFactorSetFill_Factor(PC,PetscReal);
-extern PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC,const MatOrderingType);
+extern PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC,MatOrderingType);
 extern PetscErrorCode  PCFactorSetLevels_Factor(PC,PetscInt);
 extern PetscErrorCode  PCFactorSetAllowDiagonalFill_Factor(PC);
 extern PetscErrorCode  PCFactorSetPivotInBlocks_Factor(PC,PetscBool );

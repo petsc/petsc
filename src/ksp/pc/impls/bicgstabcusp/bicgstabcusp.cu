@@ -9,9 +9,7 @@
 #include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <cusp/monitor.h>
-#undef VecType
 #include <cusp/krylov/bicgstab.h>
-#define VecType char*
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h>
 

@@ -27,7 +27,7 @@ typedef struct _p_KSP*     KSP;
 
 .seealso: KSPSetType(), KSP
 J*/
-#define KSPType char*
+typedef const char* KSPType;
 #define KSPRICHARDSON "richardson"
 #define KSPCHEBYSHEV  "chebyshev"
 #define KSPCG         "cg"
@@ -65,7 +65,7 @@ J*/
 PETSC_EXTERN PetscClassId KSP_CLASSID;
 
 PETSC_EXTERN PetscErrorCode KSPCreate(MPI_Comm,KSP *);
-PETSC_EXTERN PetscErrorCode KSPSetType(KSP,const KSPType);
+PETSC_EXTERN PetscErrorCode KSPSetType(KSP,KSPType);
 PETSC_EXTERN PetscErrorCode KSPSetUp(KSP);
 PETSC_EXTERN PetscErrorCode KSPSetUpOnBlocks(KSP);
 PETSC_EXTERN PetscErrorCode KSPSolve(KSP,Vec,Vec);
@@ -128,7 +128,7 @@ M*/
 #define KSPRegisterDynamic(a,b,c,d) KSPRegister(a,b,c,d)
 #endif
 
-PETSC_EXTERN PetscErrorCode KSPGetType(KSP,const KSPType *);
+PETSC_EXTERN PetscErrorCode KSPGetType(KSP,KSPType *);
 PETSC_EXTERN PetscErrorCode KSPSetPCSide(KSP,PCSide);
 PETSC_EXTERN PetscErrorCode KSPGetPCSide(KSP,PCSide*);
 PETSC_EXTERN PetscErrorCode KSPGetTolerances(KSP,PetscReal*,PetscReal*,PetscReal*,PetscInt*);

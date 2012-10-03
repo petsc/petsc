@@ -14,7 +14,7 @@ PETSC_EXTERN PetscClassId PETSC_DRAW_CLASSID;
 
 .seealso: PetscDrawSetType(), PetscDraw, PetscViewer
 J*/
-#define PetscDrawType  char*
+typedef const char* PetscDrawType;
 #define PETSC_DRAW_X          "x"
 #define PETSC_DRAW_GLUT       "glut"
 #define PETSC_DRAW_OPENGLES   "opengles"
@@ -83,8 +83,8 @@ M*/
 #define PetscDrawRegisterDynamic(a,b,c,d) PetscDrawRegister(a,b,c,d)
 #endif
 
-PETSC_EXTERN PetscErrorCode PetscDrawGetType(PetscDraw,const PetscDrawType*);
-PETSC_EXTERN PetscErrorCode PetscDrawSetType(PetscDraw,const PetscDrawType);
+PETSC_EXTERN PetscErrorCode PetscDrawGetType(PetscDraw,PetscDrawType*);
+PETSC_EXTERN PetscErrorCode PetscDrawSetType(PetscDraw,PetscDrawType);
 PETSC_EXTERN PetscErrorCode PetscDrawCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
 PETSC_EXTERN PetscErrorCode PetscDrawSetFromOptions(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawSetSave(PetscDraw,const char*,PetscBool);

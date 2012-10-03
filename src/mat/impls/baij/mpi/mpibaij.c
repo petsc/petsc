@@ -3093,7 +3093,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIBAIJ_MPIAdj"
-PetscErrorCode  MatConvert_MPIBAIJ_MPIAdj(Mat B, const MatType newtype,MatReuse reuse,Mat *adj)
+PetscErrorCode  MatConvert_MPIBAIJ_MPIAdj(Mat B, MatType newtype,MatReuse reuse,Mat *adj)
 {
   Mat_MPIBAIJ    *b = (Mat_MPIBAIJ*)B->data;
   PetscErrorCode ierr;
@@ -3141,13 +3141,13 @@ EXTERN_C_END
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 EXTERN_C_BEGIN
-PetscErrorCode  MatConvert_SeqBAIJ_SeqAIJ(Mat,const MatType,MatReuse,Mat*);
+PetscErrorCode  MatConvert_SeqBAIJ_SeqAIJ(Mat,MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIBAIJ_MPIAIJ"
-PetscErrorCode  MatConvert_MPIBAIJ_MPIAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode  MatConvert_MPIBAIJ_MPIAIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*)A->data;
@@ -3202,7 +3202,7 @@ EXTERN_C_END
 M*/
 
 EXTERN_C_BEGIN
-extern PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat,MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 EXTERN_C_BEGIN

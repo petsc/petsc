@@ -140,7 +140,7 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
 .seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerType
 
 @*/
-PetscErrorCode  PetscViewerGetType(PetscViewer viewer,const PetscViewerType *type)
+PetscErrorCode  PetscViewerGetType(PetscViewer viewer,PetscViewerType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
@@ -302,7 +302,7 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
 {
   PetscErrorCode        ierr;
   PetscBool             iascii;
-  const PetscViewerType cstr;
+  PetscViewerType cstr;
   PetscViewerFormat     format;
 
   PetscFunctionBegin;

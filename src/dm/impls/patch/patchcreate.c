@@ -36,7 +36,7 @@ PetscErrorCode DMInitialize_Patch(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(VECSTANDARD,(char**) &dm->vectype);CHKERRQ(ierr);
   dm->ops->view               = DMView_Patch;
   dm->ops->setfromoptions     = DMSetFromOptions_Patch;
   dm->ops->setup              = DMSetUp_Patch;

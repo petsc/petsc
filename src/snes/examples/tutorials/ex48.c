@@ -1363,7 +1363,7 @@ static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *sca
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_THI_Tridiagonal"
-static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,const MatType mtype,Mat *J)
+static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da,MatType mtype,Mat *J)
 {
   PetscErrorCode ierr;
   Mat A;

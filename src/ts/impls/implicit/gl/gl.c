@@ -640,14 +640,14 @@ EXTERN_C_END
 
 .keywords: TS, TSGL, set, type
 @*/
-PetscErrorCode  TSGLSetType(TS ts,const TSGLType type)
+PetscErrorCode  TSGLSetType(TS ts,TSGLType type)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(type,2);
-  ierr = PetscTryMethod(ts,"TSGLSetType_C",(TS,const TSGLType),(ts,type));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ts,"TSGLSetType_C",(TS,TSGLType),(ts,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -672,14 +672,14 @@ PetscErrorCode  TSGLSetType(TS ts,const TSGLType type)
 
 .seealso: TS, TSGL, TSGLAcceptRegisterDynamic(), TSGLAdapt, set type
 @*/
-PetscErrorCode  TSGLSetAcceptType(TS ts,const TSGLAcceptType type)
+PetscErrorCode  TSGLSetAcceptType(TS ts,TSGLAcceptType type)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(type,2);
-  ierr = PetscTryMethod(ts,"TSGLSetAcceptType_C",(TS,const TSGLAcceptType),(ts,type));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ts,"TSGLSetAcceptType_C",(TS,TSGLAcceptType),(ts,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -775,7 +775,7 @@ static PetscErrorCode TSGLVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSGLSetType_GL"
-PetscErrorCode  TSGLSetType_GL(TS ts,const TSGLType type)
+PetscErrorCode  TSGLSetType_GL(TS ts,TSGLType type)
 {
   PetscErrorCode ierr,(*r)(TS);
   PetscBool  same;
@@ -797,7 +797,7 @@ PetscErrorCode  TSGLSetType_GL(TS ts,const TSGLType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLSetAcceptType_GL"
-PetscErrorCode  TSGLSetAcceptType_GL(TS ts,const TSGLAcceptType type)
+PetscErrorCode  TSGLSetAcceptType_GL(TS ts,TSGLAcceptType type)
 {
   PetscErrorCode ierr;
   TSGLAcceptFunction r;

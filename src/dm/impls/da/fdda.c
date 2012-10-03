@@ -99,7 +99,7 @@ PetscErrorCode  DMDASetBlockFills(DM da,PetscInt *dfill,PetscInt *ofill)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateColoring_DA"
-PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
+PetscErrorCode  DMCreateColoring_DA(DM da,ISColoringType ctype,MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode   ierr;
   PetscInt         dim,m,n,p,nc;
@@ -581,13 +581,13 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_DA"
-PetscErrorCode DMCreateMatrix_DA(DM da, const MatType mtype,Mat *J)
+PetscErrorCode DMCreateMatrix_DA(DM da, MatType mtype,Mat *J)
 {
   PetscErrorCode ierr;
   PetscInt       dim,dof,nx,ny,nz,dims[3],starts[3],M,N,P;
   Mat            A;
   MPI_Comm       comm;
-  const MatType  Atype;
+  MatType  Atype;
   PetscSection   section, sectionGlobal;
   void           (*aij)(void)=PETSC_NULL,(*baij)(void)=PETSC_NULL,(*sbaij)(void)=PETSC_NULL;
   MatType        ttype[256];
@@ -688,7 +688,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, const MatType mtype,Mat *J)
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,dof*nx*ny*nz,dof*nx*ny*nz,dof*M*N*P,dof*M*N*P);CHKERRQ(ierr);
-  ierr = MatSetType(A,(const MatType)ttype);CHKERRQ(ierr);
+  ierr = MatSetType(A,(MatType)ttype);CHKERRQ(ierr);
   ierr = MatSetDM(A,da);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatGetType(A,&Atype);CHKERRQ(ierr);

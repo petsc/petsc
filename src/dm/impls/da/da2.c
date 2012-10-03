@@ -1306,9 +1306,9 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   PetscInt               o            = dd->overlap;
   const PetscInt         dof          = dd->w;
   const PetscInt         s            = dd->s;
-  const DMDABoundaryType bx         = dd->bx;
-  const DMDABoundaryType by         = dd->by;
-  const DMDAStencilType  stencil_type = dd->stencil_type;
+  DMDABoundaryType bx         = dd->bx;
+  DMDABoundaryType by         = dd->by;
+  DMDAStencilType  stencil_type = dd->stencil_type;
   PetscInt               *lx           = dd->lx;
   PetscInt               *ly           = dd->ly;
   MPI_Comm               comm;

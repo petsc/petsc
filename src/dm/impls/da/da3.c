@@ -176,10 +176,10 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   PetscInt               o            = dd->overlap;
   const PetscInt         dof          = dd->w;
   const PetscInt         s            = dd->s;
-  const DMDABoundaryType bx         = dd->bx;
-  const DMDABoundaryType by         = dd->by;
-  const DMDABoundaryType bz         = dd->bz;
-  const DMDAStencilType  stencil_type = dd->stencil_type;
+  DMDABoundaryType bx         = dd->bx;
+  DMDABoundaryType by         = dd->by;
+  DMDABoundaryType bz         = dd->bz;
+  DMDAStencilType  stencil_type = dd->stencil_type;
   PetscInt               *lx           = dd->lx;
   PetscInt               *ly           = dd->ly;
   PetscInt               *lz           = dd->lz;

@@ -1715,7 +1715,7 @@ namespace ALE {
         ALE_LOG_EVENT_END;
       };
       template<typename PartitionType>
-      static PartitionType *subordinatePartition(const Obj<bundle_type>& bundle, int levels, const Obj<bundle_type>& subBundle, const PartitionType assignment[]) {
+      static PartitionType *subordinatePartition(const Obj<bundle_type>& bundle, int levels, const Obj<bundle_type>& subBundle, PartitionType assignment[]) {
         const Obj<typename bundle_type::numbering_type>& cNumbering = bundle->getFactory()->getLocalNumbering(bundle, bundle->depth());
         const Obj<typename bundle_type::label_sequence>& cells      = subBundle->heightStratum(0);
         const Obj<typename bundle_type::numbering_type>& sNumbering = bundle->getFactory()->getLocalNumbering(subBundle, subBundle->depth());

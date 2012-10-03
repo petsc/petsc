@@ -381,7 +381,7 @@ PetscErrorCode  PFRegister(const char sname[],const char path[],const char name[
 .seealso: PFSetType()
 
 @*/
-PetscErrorCode  PFGetType(PF pf,const PFType *type)
+PetscErrorCode  PFGetType(PF pf,PFType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
@@ -418,7 +418,7 @@ PetscErrorCode  PFGetType(PF pf,const PFType *type)
 .seealso: PFSet(), PFRegisterDynamic(), PFCreate(), DMDACreatePF()
 
 @*/
-PetscErrorCode  PFSetType(PF pf,const PFType type,void *ctx)
+PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
 {
   PetscErrorCode ierr,(*r)(PF,void*);
   PetscBool      match;

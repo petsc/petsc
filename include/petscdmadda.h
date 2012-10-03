@@ -8,7 +8,7 @@ PetscErrorCode  DMADDASetParameters(DM,PetscInt,PetscInt*,PetscInt*,PetscInt,Pet
 PetscErrorCode  DMADDASetRefinement(DM, PetscInt *,PetscInt);
 PetscErrorCode  DMADDAGetCorners(DM, PetscInt **, PetscInt **);
 PetscErrorCode  DMADDAGetGhostCorners(DM, PetscInt **, PetscInt **);
-PetscErrorCode  DMADDAGetMatrixNS(DM, DM, const MatType , Mat *);
+PetscErrorCode  DMADDAGetMatrixNS(DM, DM, MatType , Mat *);
 
 /* functions to set values in vectors and matrices */
 struct _ADDAIdx_s {

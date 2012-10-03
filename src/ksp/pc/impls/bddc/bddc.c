@@ -2273,7 +2273,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
   PetscBool      nnsp_has_cnst=PETSC_FALSE,use_nnsp_true=pcbddc->use_nnsp_true;
   PetscInt       nnsp_size=0,nnsp_addone=0,temp_constraints,temp_start_ptr;
   IS             *used_IS;
-  const MatType  impMatType=MATSEQAIJ;
+  MatType  impMatType=MATSEQAIJ;
   PetscBLASInt   Bs,Bt,lwork,lierr;
   PetscReal      tol=1.0e-8;
   MatNullSpace   nearnullsp;
@@ -2850,8 +2850,8 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
   IS                is_C_local;
   IS                is_aux1;
   IS                is_aux2;
-  const VecType     impVecType;
-  const MatType     impMatType;
+  VecType     impVecType;
+  MatType     impMatType;
   PetscInt          n_R=0;
   PetscInt          n_D=0;
   PetscInt          n_B=0;
@@ -3416,7 +3416,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
       Mat coarse_sub_mat;
       Mat TM1,TM2,TM3,TM4;
       Mat coarse_phi_D,coarse_phi_B,A_II,A_BB,A_IB,A_BI;
-      const MatType checkmattype=MATSEQAIJ;
+      MatType checkmattype=MATSEQAIJ;
       PetscScalar      value;
 
       ierr = MatConvert(pcis->A_II,checkmattype,MAT_INITIAL_MATRIX,&A_II);CHKERRQ(ierr);
@@ -3539,9 +3539,9 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
   ISLocalToGlobalMapping coarse_ISLG;
   /* some other variables */
   PetscErrorCode ierr;
-  const MatType coarse_mat_type;
-  const PCType  coarse_pc_type;
-  const KSPType coarse_ksp_type;
+  MatType coarse_mat_type;
+  PCType  coarse_pc_type;
+  KSPType coarse_ksp_type;
   PC pc_temp;
   PetscInt i,j,k;
   PetscInt max_it_coarse_ksp=1;  /* don't increase this value */
@@ -4457,7 +4457,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
     PC  check_pc;
     Vec check_vec;
     PetscReal   abs_infty_error,infty_error,lambda_min,lambda_max;
-    const KSPType check_ksp_type;
+    KSPType check_ksp_type;
 
     /* Create ksp object suitable for extreme eigenvalues' estimation */
     ierr = KSPCreate(coarse_comm,&check_ksp);CHKERRQ(ierr);

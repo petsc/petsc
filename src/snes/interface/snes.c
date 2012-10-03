@@ -3696,7 +3696,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
 .seealso: SNESType, SNESCreate()
 
 @*/
-PetscErrorCode  SNESSetType(SNES snes,const SNESType type)
+PetscErrorCode  SNESSetType(SNES snes,SNESType type)
 {
   PetscErrorCode ierr,(*r)(SNES);
   PetscBool      match;
@@ -3776,7 +3776,7 @@ PetscErrorCode  SNESRegisterDestroy(void)
 
 .keywords: SNES, nonlinear, get, type, name
 @*/
-PetscErrorCode  SNESGetType(SNES snes,const SNESType *type)
+PetscErrorCode  SNESGetType(SNES snes,SNESType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);

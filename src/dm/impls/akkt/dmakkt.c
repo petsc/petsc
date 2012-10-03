@@ -496,7 +496,7 @@ PetscErrorCode DMCreateInterpolation_AKKT(DM cdm, DM fdm, Mat *interp, Vec* rsca
 
 #undef  __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_AKKT"
-PetscErrorCode DMCreateMatrix_AKKT(DM dm, const MatType type, Mat *A) {
+PetscErrorCode DMCreateMatrix_AKKT(DM dm, MatType type, Mat *A) {
   PetscBool iskkt;
   PetscErrorCode ierr;
   DM_AKKT* kkt = (DM_AKKT*)(dm->data);

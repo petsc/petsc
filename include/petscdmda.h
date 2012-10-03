@@ -342,7 +342,7 @@ PETSC_EXTERN PetscErrorCode DMDASetLocalAdicMFFunctionib_Private(DM,PetscErrorCo
 #endif
 
 PETSC_EXTERN PetscErrorCode DMDAComputeFunctioniTest1(DM,void*);
-PETSC_EXTERN PetscErrorCode DMDASetGetMatrix(DM,PetscErrorCode (*)(DM, const MatType,Mat *));
+PETSC_EXTERN PetscErrorCode DMDASetGetMatrix(DM,PetscErrorCode (*)(DM, MatType,Mat *));
 PETSC_EXTERN PetscErrorCode DMDASetBlockFills(DM,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMDASetRefinementFactor(DM,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDAGetRefinementFactor(DM,PetscInt*,PetscInt*,PetscInt*);

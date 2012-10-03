@@ -104,7 +104,7 @@ PetscErrorCode  MatMFFDInitializePackage(const char path[])
 
 .seealso: MatCreateSNESMF(), MatMFFDRegisterDynamic(), MatMFFDSetFunction()
 @*/
-PetscErrorCode  MatMFFDSetType(Mat mat,const MatMFFDType ftype)
+PetscErrorCode  MatMFFDSetType(Mat mat,MatMFFDType ftype)
 {
   PetscErrorCode ierr,(*r)(MatMFFD);
   MatMFFD        ctx = (MatMFFD)mat->data;

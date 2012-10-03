@@ -109,7 +109,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBSTRM(Mat A, MatAssemblyType mode)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqSBAIJ_SeqSBSTRM"
-PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
+PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
 

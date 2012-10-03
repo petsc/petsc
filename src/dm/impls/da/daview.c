@@ -53,7 +53,6 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   DMDAStencilType  stencil;
   DMDABoundaryType bx,by,bz;
   MPI_Comm         comm;
-  DM_DA            *dd = (DM_DA*)da->data;
   PetscInt         classid = DM_FILE_CLASSID,subclassid = DMDA_FILE_CLASSID ;
   PetscBool        coors = PETSC_FALSE;
 
@@ -93,7 +92,6 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 {
   PetscInt       dim, dof, M = 0, N = 0, P = 0;
   PetscErrorCode ierr;
-  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da, &dim, &M, &N, &P, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);

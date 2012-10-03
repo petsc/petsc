@@ -435,8 +435,8 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
   */
   if (!l) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"There is no such thing as a up smoother on the coarse grid");
   if (mglevels[l]->smoothu == mglevels[l]->smoothd) {
-    const KSPType ksptype;
-    const PCType pctype;
+    KSPType ksptype;
+    PCType pctype;
     PC ipc;
     PetscReal rtol,abstol,dtol;
     PetscInt maxits;

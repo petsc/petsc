@@ -25,7 +25,7 @@ typedef struct _p_Mat*           Mat;
 
 .seealso: MatSetType(), Mat, MatSolverPackage
 J*/
-#define MatType char*
+typedef const char* MatType;
 #define MATSAME            "same"
 #define MATMAIJ            "maij"
 #define MATSEQMAIJ         "seqmaij"
@@ -169,7 +169,7 @@ PETSC_EXTERN PetscErrorCode MatInitializePackage(const char[]);
 
 PETSC_EXTERN PetscErrorCode MatCreate(MPI_Comm,Mat*);
 PETSC_EXTERN PetscErrorCode MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
-PETSC_EXTERN PetscErrorCode MatSetType(Mat,const MatType);
+PETSC_EXTERN PetscErrorCode MatSetType(Mat,MatType);
 PETSC_EXTERN PetscErrorCode MatSetFromOptions(Mat);
 PETSC_EXTERN PetscErrorCode MatRegisterAll(const char[]);
 PETSC_EXTERN PetscErrorCode MatRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat));
@@ -284,7 +284,7 @@ PETSC_EXTERN PetscErrorCode MatCreateComposite(MPI_Comm,PetscInt,const Mat*,Mat*
 typedef enum {MAT_COMPOSITE_ADDITIVE,MAT_COMPOSITE_MULTIPLICATIVE} MatCompositeType;
 PETSC_EXTERN PetscErrorCode MatCompositeSetType(Mat,MatCompositeType);
 
-PETSC_EXTERN PetscErrorCode MatCreateFFT(MPI_Comm,PetscInt,const PetscInt[],const MatType,Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateFFT(MPI_Comm,PetscInt,const PetscInt[],MatType,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSeqCUFFT(MPI_Comm,PetscInt,const PetscInt[],Mat*);
 
 PETSC_EXTERN PetscErrorCode MatCreateTranspose(Mat,Mat*);
@@ -389,7 +389,7 @@ typedef enum {MAT_OPTION_MIN = -8,
 
 PETSC_EXTERN const char *MatOptions[];
 PETSC_EXTERN PetscErrorCode MatSetOption(Mat,MatOption,PetscBool );
-PETSC_EXTERN PetscErrorCode MatGetType(Mat,const MatType*);
+PETSC_EXTERN PetscErrorCode MatGetType(Mat,MatType*);
 
 PETSC_EXTERN PetscErrorCode MatGetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatGetRow(Mat,PetscInt,PetscInt *,const PetscInt *[],const PetscScalar*[]);
@@ -439,7 +439,7 @@ $                               have several matrices with the same nonzero patt
 E*/
 typedef enum {MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES,MAT_SHARE_NONZERO_PATTERN} MatDuplicateOption;
 
-PETSC_EXTERN PetscErrorCode MatConvert(Mat,const MatType,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatConvert(Mat,MatType,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatDuplicate(Mat,MatDuplicateOption,Mat*);
 
 
@@ -960,7 +960,7 @@ PETSC_EXTERN PetscErrorCode MatFindNonzeroRows(Mat,IS*);
 
 .seealso: MatGetOrdering()
 J*/
-#define MatOrderingType char*
+typedef const char* MatOrderingType;
 #define MATORDERINGNATURAL     "natural"
 #define MATORDERINGND          "nd"
 #define MATORDERING1WD         "1wd"
@@ -969,9 +969,9 @@ J*/
 #define MATORDERINGROWLENGTH   "rowlength"
 #define MATORDERINGAMD         "amd"            /* only works if UMFPACK is installed with PETSc */
 
-PETSC_EXTERN PetscErrorCode MatGetOrdering(Mat,const MatOrderingType,IS*,IS*);
+PETSC_EXTERN PetscErrorCode MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrderingList(PetscFList *list);
-PETSC_EXTERN PetscErrorCode MatOrderingRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,const MatOrderingType,IS*,IS*));
+PETSC_EXTERN PetscErrorCode MatOrderingRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,MatOrderingType,IS*,IS*));
 
 /*MC
    MatOrderingRegisterDynamic - Adds a new sparse matrix ordering to the matrix package.
@@ -1116,13 +1116,13 @@ PETSC_EXTERN PetscErrorCode MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscI
 
 .seealso: MatGetColoring()
 J*/
-#define MatColoringType char*
+typedef const char* MatColoringType;
 #define MATCOLORINGNATURAL "natural"
 #define MATCOLORINGSL      "sl"
 #define MATCOLORINGLF      "lf"
 #define MATCOLORINGID      "id"
 
-PETSC_EXTERN PetscErrorCode MatGetColoring(Mat,const MatColoringType,ISColoring*);
+PETSC_EXTERN PetscErrorCode MatGetColoring(Mat,MatColoringType,ISColoring*);
 PETSC_EXTERN PetscErrorCode MatColoringRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,MatColoringType,ISColoring *));
 
 /*MC
@@ -1238,7 +1238,7 @@ typedef struct _p_MatPartitioning* MatPartitioning;
 dm
 .seealso: MatPartitioningCreate(), MatPartitioning
 J*/
-#define MatPartitioningType char*
+typedef const char* MatPartitioningType;
 #define MATPARTITIONINGCURRENT  "current"
 #define MATPARTITIONINGSQUARE   "square"
 #define MATPARTITIONINGPARMETIS "parmetis"
@@ -1248,7 +1248,7 @@ J*/
 
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate(MPI_Comm,MatPartitioning*);
-PETSC_EXTERN PetscErrorCode MatPartitioningSetType(MatPartitioning,const MatPartitioningType);
+PETSC_EXTERN PetscErrorCode MatPartitioningSetType(MatPartitioning,MatPartitioningType);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetNParts(MatPartitioning,PetscInt);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetAdjacency(MatPartitioning,Mat);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning,const PetscInt[]);
@@ -1308,7 +1308,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode MatPartitioningView(MatPartitioning,PetscViewer);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning);
-PETSC_EXTERN PetscErrorCode MatPartitioningGetType(MatPartitioning,const MatPartitioningType*);
+PETSC_EXTERN PetscErrorCode MatPartitioningGetType(MatPartitioning,MatPartitioningType*);
 
 PETSC_EXTERN PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningParmetisGetEdgeCut(MatPartitioning, PetscInt *);
@@ -1381,7 +1381,7 @@ typedef struct _p_MatCoarsen* MatCoarsen;
 dm
 .seealso: MatCoarsenCreate(), MatCoarsen
 J*/
-#define MatCoarsenType char*
+typedef const char* MatCoarsenType;
 #define MATCOARSENMIS  "mis"
 #define MATCOARSENHEM  "hem"
 
@@ -1414,7 +1414,7 @@ typedef struct _PetscCoarsenData{
 }PetscCoarsenData;
 
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate(MPI_Comm,MatCoarsen*);
-PETSC_EXTERN PetscErrorCode MatCoarsenSetType(MatCoarsen,const MatCoarsenType);
+PETSC_EXTERN PetscErrorCode MatCoarsenSetType(MatCoarsen,MatCoarsenType);
 PETSC_EXTERN PetscErrorCode MatCoarsenSetAdjacency(MatCoarsen,Mat);
 PETSC_EXTERN PetscErrorCode MatCoarsenSetGreedyOrdering(MatCoarsen,const IS);
 PETSC_EXTERN PetscErrorCode MatCoarsenSetStrictAggs(MatCoarsen,PetscBool);
@@ -1475,7 +1475,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode MatCoarsenView(MatCoarsen,PetscViewer);
 PETSC_EXTERN PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen);
-PETSC_EXTERN PetscErrorCode MatCoarsenGetType(MatCoarsen,const MatCoarsenType*);
+PETSC_EXTERN PetscErrorCode MatCoarsenGetType(MatCoarsen,MatCoarsenType*);
 
 
 PETSC_EXTERN PetscErrorCode MatMeshToVertexGraph(Mat,PetscInt,Mat*);
@@ -1716,11 +1716,11 @@ typedef struct _p_MatMFFD* MatMFFD;
 
 .seealso: MatMFFDSetType(), MatMFFDRegister()
 J*/
-#define MatMFFDType char*
+typedef const char* MatMFFDType;
 #define MATMFFD_DS  "ds"
 #define MATMFFD_WP  "wp"
 
-PETSC_EXTERN PetscErrorCode MatMFFDSetType(Mat,const MatMFFDType);
+PETSC_EXTERN PetscErrorCode MatMFFDSetType(Mat,MatMFFDType);
 PETSC_EXTERN PetscErrorCode MatMFFDRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatMFFD));
 
 /*MC
@@ -1905,7 +1905,7 @@ PETSC_EXTERN PetscErrorCode MatNestGetISs(Mat,IS[],IS[]);
 PETSC_EXTERN PetscErrorCode MatNestGetLocalISs(Mat,IS[],IS[]);
 PETSC_EXTERN PetscErrorCode MatNestGetSubMats(Mat,PetscInt*,PetscInt*,Mat***);
 PETSC_EXTERN PetscErrorCode MatNestGetSubMat(Mat,PetscInt,PetscInt,Mat*);
-PETSC_EXTERN PetscErrorCode MatNestSetVecType(Mat,const VecType);
+PETSC_EXTERN PetscErrorCode MatNestSetVecType(Mat,VecType);
 PETSC_EXTERN PetscErrorCode MatNestSetSubMats(Mat,PetscInt,const IS[],PetscInt,const IS[],const Mat[]);
 PETSC_EXTERN PetscErrorCode MatNestSetSubMat(Mat,PetscInt,PetscInt,Mat);
 

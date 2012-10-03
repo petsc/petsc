@@ -312,7 +312,7 @@ PetscErrorCode  PCCreate_Cholesky(PC pc)
   ((PC_Factor*)dir)->info.pivotinblocks = 1.0;
   dir->col                    = 0;
   dir->row                    = 0;
-  ierr = PetscStrallocpy(MATORDERINGNATURAL,&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGNATURAL,(char**)&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERPETSC,&((PC_Factor*)dir)->solvertype);CHKERRQ(ierr);
   dir->reusefill        = PETSC_FALSE;
   dir->reuseordering    = PETSC_FALSE;

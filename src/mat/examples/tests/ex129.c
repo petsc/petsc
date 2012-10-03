@@ -78,7 +78,7 @@ int main(int argc,char **args)
   } else { /* Test inplace factorization */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&F);CHKERRQ(ierr);
     /* or create F without DMDA
-    const MatType     type;
+    MatType     type;
     PetscInt          i,ncols;
     const PetscInt    *cols;
     const PetscScalar *vals;

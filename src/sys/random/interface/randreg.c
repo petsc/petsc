@@ -28,7 +28,7 @@ PetscBool  PetscRandomRegisterAllCalled = PETSC_FALSE;
 .seealso: PetscRandomGetType(), PetscRandomCreate()
 @*/
 
-PetscErrorCode  PetscRandomSetType(PetscRandom rnd, const PetscRandomType type)
+PetscErrorCode  PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
 {
   PetscErrorCode (*r)(PetscRandom);
   PetscBool      match;
@@ -76,7 +76,7 @@ PetscErrorCode  PetscRandomSetType(PetscRandom rnd, const PetscRandomType type)
 .keywords: random, get, type, name
 .seealso: PetscRandomSetType(), PetscRandomCreate()
 @*/
-PetscErrorCode  PetscRandomGetType(PetscRandom rnd, const PetscRandomType *type)
+PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(rnd, PETSC_RANDOM_CLASSID,1);

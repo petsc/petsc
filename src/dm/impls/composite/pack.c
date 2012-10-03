@@ -1056,7 +1056,7 @@ static PetscErrorCode DMCreateLocalToGlobalMapping_Composite(DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateColoring_Composite"
-PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
+PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode         ierr;
   PetscInt               n,i,cnt;

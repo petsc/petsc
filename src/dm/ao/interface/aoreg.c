@@ -26,7 +26,7 @@ PetscBool  AORegisterAllCalled          = PETSC_FALSE;
 .keywords: ao, set, type
 .seealso: AOGetType(), AOCreate()
 @*/
-PetscErrorCode  AOSetType(AO ao, const AOType method)
+PetscErrorCode  AOSetType(AO ao, AOType method)
 {
   PetscErrorCode (*r)(AO);
   PetscBool      match;
@@ -67,7 +67,7 @@ PetscErrorCode  AOSetType(AO ao, const AOType method)
 .keywords: ao, get, type, name
 .seealso: AOSetType(), AOCreate()
 @*/
-PetscErrorCode  AOGetType(AO ao, const AOType *type)
+PetscErrorCode  AOGetType(AO ao, AOType *type)
 {
   PetscErrorCode ierr;
 

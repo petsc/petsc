@@ -301,9 +301,9 @@ PetscErrorCode  PCCreate_LU(PC pc)
   ierr = PetscStrallocpy(MATSOLVERPETSC,&((PC_Factor*)dir)->solvertype);CHKERRQ(ierr); /* default SolverPackage */
   ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = PetscStrallocpy(MATORDERINGND,&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(MATORDERINGND,(char**)&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
   } else {
-    ierr = PetscStrallocpy(MATORDERINGNATURAL,&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(MATORDERINGNATURAL,(char**)&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
   }
   dir->reusefill        = PETSC_FALSE;
   dir->reuseordering    = PETSC_FALSE;

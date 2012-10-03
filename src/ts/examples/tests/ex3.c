@@ -145,7 +145,7 @@ int main(int argc,char **argv)
 
 #ifdef PETSC_HAVE_SUNDIALS
   {
-    const TSType   type;
+    TSType   type;
     PetscBool      sundialstype=PETSC_FALSE;
     ierr = TSGetType(ts,&type);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)ts,TSSUNDIALS,&sundialstype);CHKERRQ(ierr);

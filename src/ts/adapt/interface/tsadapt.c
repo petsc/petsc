@@ -127,7 +127,7 @@ PetscErrorCode  TSAdaptRegisterDestroy(void)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptSetType"
-PetscErrorCode  TSAdaptSetType(TSAdapt adapt,const TSAdaptType type)
+PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
 {
   PetscErrorCode ierr,(*r)(TSAdapt);
 

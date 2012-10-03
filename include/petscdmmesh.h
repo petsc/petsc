@@ -169,7 +169,7 @@ PETSC_EXTERN PetscErrorCode DMMeshHasSectionReal(DM, const char [], PetscBool  *
 PETSC_EXTERN PetscErrorCode DMMeshGetSectionReal(DM, const char [], SectionReal *);
 PETSC_EXTERN PetscErrorCode DMMeshSetSectionReal(DM, const char [], SectionReal);
 PETSC_EXTERN PetscErrorCode DMMeshCreateVector(DM, SectionReal, Vec *);
-PETSC_EXTERN PetscErrorCode DMMeshCreateMatrix(DM, SectionReal, const MatType, Mat *);
+PETSC_EXTERN PetscErrorCode DMMeshCreateMatrix(DM, SectionReal, MatType, Mat *);
 PETSC_EXTERN PetscErrorCode DMMeshCreateGlobalScatter(DM, SectionReal, VecScatter *);
 PETSC_EXTERN PetscErrorCode DMMeshAssembleVector(Vec, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
 PETSC_EXTERN PetscErrorCode DMMeshAssembleMatrix(Mat, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);

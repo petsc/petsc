@@ -20,8 +20,8 @@ struct _DMOps {
   PetscErrorCode (*createfieldis)(DM,PetscInt*,char***,IS**);
   PetscErrorCode (*createcoordinatedm)(DM,DM*);
 
-  PetscErrorCode (*getcoloring)(DM,ISColoringType,const MatType,ISColoring*);	
-  PetscErrorCode (*creatematrix)(DM, const MatType,Mat*);
+  PetscErrorCode (*getcoloring)(DM,ISColoringType,MatType,ISColoring*);	
+  PetscErrorCode (*creatematrix)(DM, MatType,Mat*);
   PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);
   PetscErrorCode (*getaggregates)(DM,DM,Mat*);
   PetscErrorCode (*getinjection)(DM,DM,VecScatter*);

@@ -84,14 +84,14 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 
 .seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMDA, DMDAInterpolationType, VecType
 @*/
-PetscErrorCode  DMSetVecType(DM da,const VecType ctype)
+PetscErrorCode  DMSetVecType(DM da,VecType ctype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   ierr = PetscFree(da->vectype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(ctype,&da->vectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(ctype,(char**)&da->vectype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -113,13 +113,13 @@ PetscErrorCode  DMSetVecType(DM da,const VecType ctype)
 
 .seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType
 @*/
-PetscErrorCode  DMSetMatType(DM dm,const MatType ctype)
+PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = PetscFree(dm->mattype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(ctype,&dm->mattype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(ctype,(char**)&dm->mattype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -724,7 +724,7 @@ PetscErrorCode  DMCreateInjection(DM dm1,DM dm2,VecScatter *ctx)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateMatrix()
 
 @*/
-PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
+PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode ierr;
 
@@ -767,7 +767,7 @@ PetscErrorCode  DMCreateColoring(DM dm,ISColoringType ctype,const MatType mtype,
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation()
 
 @*/
-PetscErrorCode  DMCreateMatrix(DM dm,const MatType mtype,Mat *mat)
+PetscErrorCode  DMCreateMatrix(DM dm,MatType mtype,Mat *mat)
 {
   PetscErrorCode ierr;
 
@@ -2439,7 +2439,7 @@ PetscErrorCode  DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
   if (!dm->ops->jacobian) {
     ISColoring     coloring;
     MatFDColoring  fd;
-    const MatType  mtype;
+    MatType  mtype;
 
     ierr = PetscObjectGetType((PetscObject)B,&mtype);CHKERRQ(ierr);
     ierr = DMCreateColoring(dm,dm->coloringtype,mtype,&coloring);CHKERRQ(ierr);
@@ -2498,7 +2498,7 @@ PetscBool  DMRegisterAllCalled          = PETSC_FALSE;
 .keywords: DM, set, type
 .seealso: DMGetType(), DMCreate()
 @*/
-PetscErrorCode  DMSetType(DM dm, const DMType method)
+PetscErrorCode  DMSetType(DM dm, DMType method)
 {
   PetscErrorCode (*r)(DM);
   PetscBool      match;
@@ -2540,7 +2540,7 @@ PetscErrorCode  DMSetType(DM dm, const DMType method)
 .keywords: DM, get, type, name
 .seealso: DMSetType(), DMCreate()
 @*/
-PetscErrorCode  DMGetType(DM dm, const DMType *type)
+PetscErrorCode  DMGetType(DM dm, DMType *type)
 {
   PetscErrorCode ierr;
 
@@ -2577,7 +2577,7 @@ PetscErrorCode  DMGetType(DM dm, const DMType *type)
 
 .seealso: DMCreate()
 @*/
-PetscErrorCode DMConvert(DM dm, const DMType newtype, DM *M)
+PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
 {
   DM             B;
   char           convname[256];
@@ -2591,7 +2591,7 @@ PetscErrorCode DMConvert(DM dm, const DMType newtype, DM *M)
   ierr = PetscObjectTypeCompare((PetscObject) dm, newtype, &sametype);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype, "same", &issame);CHKERRQ(ierr);
   {
-    PetscErrorCode (*conv)(DM, const DMType, DM *) = PETSC_NULL;
+    PetscErrorCode (*conv)(DM, DMType, DM *) = PETSC_NULL;
 
     /*
        Order of precedence:

@@ -478,10 +478,10 @@ $         Sources and Development of Mathematical Software, Wayne R. Cowell edit
 .seealso:  MatGetColoringTypeFromOptions(), MatColoringRegisterDynamic(), MatFDColoringCreate(),
            SNESDefaultComputeJacobianColor()
 @*/
-PetscErrorCode  MatGetColoring(Mat mat,const MatColoringType type,ISColoring *iscoloring)
+PetscErrorCode  MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
 {
   PetscBool      flag;
-  PetscErrorCode ierr,(*r)(Mat,const MatColoringType,ISColoring *);
+  PetscErrorCode ierr,(*r)(Mat,MatColoringType,ISColoring *);
   char           tname[PETSC_MAX_PATH_LEN];
   MPI_Comm       comm;
 

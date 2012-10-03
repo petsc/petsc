@@ -371,7 +371,7 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatConvert_Shell(Mat, const MatType,MatReuse,Mat*);
+extern PetscErrorCode MatConvert_Shell(Mat, MatType,MatReuse,Mat*);
 
 static struct _MatOps MatOps_Values = {0,
        0,

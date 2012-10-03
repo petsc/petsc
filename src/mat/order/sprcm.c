@@ -8,7 +8,7 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_RCM"
-PetscErrorCode  MatGetOrdering_RCM(Mat mat,const MatOrderingType type,IS *row,IS *col)
+PetscErrorCode  MatGetOrdering_RCM(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;
   PetscInt       i,*mask,*xls,nrow,*ia,*ja,*perm;

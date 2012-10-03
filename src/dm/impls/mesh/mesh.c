@@ -377,7 +377,7 @@ PetscErrorCode GetAdjacentDof_Private()
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Mesh"
-PetscErrorCode DMCreateMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
+PetscErrorCode DMCreateMatrix_Mesh(DM dm, MatType mtype, Mat *J)
 {
   DM_Mesh               *mesh = (DM_Mesh *) dm->data;
   ISLocalToGlobalMapping ltog;
@@ -438,7 +438,7 @@ PetscErrorCode DMCreateMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
 
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DMDASetBlockFills()
 @*/
-PetscErrorCode DMMeshCreateMatrix(DM dm, SectionReal section, const MatType mtype, Mat *J)
+PetscErrorCode DMMeshCreateMatrix(DM dm, SectionReal section, MatType mtype, Mat *J)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;

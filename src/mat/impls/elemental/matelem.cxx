@@ -804,7 +804,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Elemental_Dense"
-static PetscErrorCode MatConvert_Elemental_Dense(Mat A,const MatType newtype,MatReuse reuse,Mat *B)
+static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse reuse,Mat *B)
 {
   Mat                Bmpi;
   Mat_Elemental      *a = (Mat_Elemental*)A->data;

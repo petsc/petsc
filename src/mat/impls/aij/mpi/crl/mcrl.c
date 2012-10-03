@@ -123,7 +123,7 @@ extern PetscErrorCode MatDuplicate_AIJCRL(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_MPIAIJCRL"
-PetscErrorCode  MatConvert_MPIAIJ_MPIAIJCRL(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
+PetscErrorCode  MatConvert_MPIAIJ_MPIAIJCRL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;

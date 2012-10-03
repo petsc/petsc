@@ -99,7 +99,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
 
 .seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy()
 @*/
-PetscErrorCode  PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
+PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 {
   PetscErrorCode ierr,(*r)(PetscDraw);
   PetscBool       match;
@@ -189,7 +189,7 @@ PetscErrorCode  PetscDrawRegisterDestroy(void)
    Level: advanced
 
 @*/
-PetscErrorCode  PetscDrawGetType(PetscDraw draw,const PetscDrawType *type)
+PetscErrorCode  PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);

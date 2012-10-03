@@ -28,7 +28,7 @@ int main(int argc,char **args)
   PetscLogStage  stage[6];
 #endif
   PetscScalar DD1[24][24];
-  const PCType type;
+  PCType type;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   wcomm = PETSC_COMM_WORLD;

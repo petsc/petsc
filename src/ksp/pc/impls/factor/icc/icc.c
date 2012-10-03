@@ -186,7 +186,7 @@ PetscErrorCode  PCCreate_ICC(PC pc)
   ierr = PetscNewLog(pc,PC_ICC,&icc);CHKERRQ(ierr);
 
   ((PC_Factor*)icc)->fact	          = 0;
-  ierr = PetscStrallocpy(MATORDERINGNATURAL,&((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERINGNATURAL,(char**)&((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
   ierr = PetscStrallocpy(MATSOLVERPETSC,&((PC_Factor*)icc)->solvertype);CHKERRQ(ierr);
   ierr = MatFactorInfoInitialize(&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   ((PC_Factor*)icc)->factortype         = MAT_FACTOR_ICC;

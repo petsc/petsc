@@ -2220,7 +2220,7 @@ PETSC_EXTERN PetscErrorCode PetscGetDisplay(char[],size_t);
 
 .seealso: PetscRandomSetType(), PetscRandom
 J*/
-#define PetscRandomType char*
+typedef const char* PetscRandomType;
 #define PETSCRAND       "rand"
 #define PETSCRAND48     "rand48"
 #define PETSCSPRNG      "sprng"
@@ -2248,9 +2248,9 @@ PETSC_EXTERN PetscBool PetscRandomRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscRandomRegisterAll(const char []);
 PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscRandom));
 PETSC_EXTERN PetscErrorCode PetscRandomRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom, const PetscRandomType);
+PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom, PetscRandomType);
 PETSC_EXTERN PetscErrorCode PetscRandomSetFromOptions(PetscRandom);
-PETSC_EXTERN PetscErrorCode PetscRandomGetType(PetscRandom, const PetscRandomType*);
+PETSC_EXTERN PetscErrorCode PetscRandomGetType(PetscRandom, PetscRandomType*);
 PETSC_EXTERN PetscErrorCode PetscRandomViewFromOptions(PetscRandom,char*);
 PETSC_EXTERN PetscErrorCode PetscRandomView(PetscRandom,PetscViewer);
 

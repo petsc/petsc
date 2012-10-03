@@ -12,7 +12,7 @@ EXTERN_C_BEGIN
 
       This code does not work and is not called anywhere. It would be registered with MatOrderingRegisterAll()
 */
-PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)mat->data;
   PetscErrorCode    ierr;

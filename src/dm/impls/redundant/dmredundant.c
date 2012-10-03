@@ -10,7 +10,7 @@ typedef struct  {
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Redundant"
-static PetscErrorCode DMCreateMatrix_Redundant(DM dm,const MatType mtype,Mat *J)
+static PetscErrorCode DMCreateMatrix_Redundant(DM dm,MatType mtype,Mat *J)
 {
   DM_Redundant           *red = (DM_Redundant*)dm->data;
   PetscErrorCode         ierr;
@@ -228,7 +228,7 @@ static PetscErrorCode DMView_Redundant(DM dm,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateColoring_Redundant"
-static PetscErrorCode DMCreateColoring_Redundant(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
+static PetscErrorCode DMCreateColoring_Redundant(DM dm,ISColoringType ctype,MatType mtype,ISColoring *coloring)
 {
   DM_Redundant    *red = (DM_Redundant*)dm->data;
   PetscErrorCode  ierr;
@@ -441,7 +441,7 @@ PetscErrorCode DMCreate_Redundant(DM dm)
   dm->ops->coarsen            = DMCoarsen_Redundant;
   dm->ops->createinterpolation= DMCreateInterpolation_Redundant;
   dm->ops->getcoloring        = DMCreateColoring_Redundant;
-  ierr = PetscStrallocpy(VECSTANDARD,&dm->vectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(VECSTANDARD,(char**)&dm->vectype);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantSetSize_C","DMRedundantSetSize_Redundant",DMRedundantSetSize_Redundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantGetSize_C","DMRedundantGetSize_Redundant",DMRedundantGetSize_Redundant);CHKERRQ(ierr);
   PetscFunctionReturn(0);

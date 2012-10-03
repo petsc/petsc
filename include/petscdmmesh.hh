@@ -11,7 +11,7 @@ PetscErrorCode DMMeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscView
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateMatrix"
 template<typename Mesh, typename Section>
-PetscErrorCode  DMMeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, const MatType mtype, Mat *J, int bs = -1, bool fillMatrix = false)
+PetscErrorCode  DMMeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, MatType mtype, Mat *J, int bs = -1, bool fillMatrix = false)
 {
   const ALE::Obj<typename Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, section->getName(), section);
   int            localSize  = order->getLocalSize();

@@ -1724,7 +1724,7 @@ EXTERN_C_END
 M*/
 
 EXTERN_C_BEGIN
-extern PetscErrorCode MatConvert_MPISBAIJ_MPISBSTRM(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode MatConvert_MPISBAIJ_MPISBSTRM(Mat,MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 EXTERN_C_BEGIN

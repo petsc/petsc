@@ -90,7 +90,7 @@ struct _MatOps {
   PetscErrorCode (*getsubmatrix)(Mat,IS,IS,MatReuse,Mat*);
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*view)(Mat,PetscViewer);
-  PetscErrorCode (*convertfrom)(Mat, const MatType,MatReuse,Mat*);
+  PetscErrorCode (*convertfrom)(Mat, MatType,MatReuse,Mat*);
   PetscErrorCode (*dummy10)(Mat,PetscBool );
   /*64*/
   PetscErrorCode (*dummy8)(Mat,Vec,Vec);
@@ -101,7 +101,7 @@ struct _MatOps {
   /*69*/
   PetscErrorCode (*getrowmaxabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*getrowminabs)(Mat,Vec,PetscInt[]);
-  PetscErrorCode (*convert)(Mat, const MatType,MatReuse,Mat*);
+  PetscErrorCode (*convert)(Mat, MatType,MatReuse,Mat*);
   PetscErrorCode (*setcoloring)(Mat,ISColoring);
   PetscErrorCode (*setvaluesadic)(Mat,void*);
   /*74*/
@@ -206,7 +206,7 @@ PETSC_EXTERN MatBaseName MatBaseNameList;
 /*
    Utility private matrix routines
 */
-PETSC_EXTERN PetscErrorCode MatConvert_Basic(Mat, const MatType,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatConvert_Basic(Mat, MatType,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
 PETSC_EXTERN PetscErrorCode MatView_Private(Mat);
 

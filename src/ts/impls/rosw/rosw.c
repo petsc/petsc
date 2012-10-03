@@ -14,7 +14,7 @@
 
 #include <../src/mat/blockinvert.h>
 
-static const TSRosWType TSRosWDefault = TSROSWRA34PW2;
+static TSRosWType TSRosWDefault = TSROSWRA34PW2;
 static PetscBool TSRosWRegisterAllCalled;
 static PetscBool TSRosWPackageInitialized;
 
@@ -697,7 +697,7 @@ PetscErrorCode TSRosWFinalizePackage(void)
 
 .seealso: TSRosW
 @*/
-PetscErrorCode TSRosWRegister(const TSRosWType name,PetscInt order,PetscInt s,
+PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,
                               const PetscReal A[],const PetscReal Gamma[],const PetscReal b[],const PetscReal bembed[],
                                  PetscInt pinterp,const PetscReal binterpt[])
 {
@@ -830,7 +830,7 @@ PetscErrorCode TSRosWRegister(const TSRosWType name,PetscInt order,PetscInt s,
 
 .seealso: TSRosW, TSRosWRegister()
 @*/
-PetscErrorCode TSRosWRegisterRos4(const TSRosWType name,PetscReal gamma,PetscReal a2,PetscReal a3,PetscReal b3,PetscReal e4)
+PetscErrorCode TSRosWRegisterRos4(TSRosWType name,PetscReal gamma,PetscReal a2,PetscReal a3,PetscReal b3,PetscReal e4)
 {
   PetscErrorCode ierr;
   /* Declare numeric constants so they can be quad precision without being truncated at double */
@@ -1413,7 +1413,7 @@ static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    const TSRosWType rostype;
+    TSRosWType rostype;
     PetscInt i;
     PetscReal abscissa[512];
     char buf[512];
@@ -1444,13 +1444,13 @@ static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
 
 .seealso: TSRosWGetType(), TSROSW, TSROSW2M, TSROSW2P, TSROSWRA3PW, TSROSWRA34PW2, TSROSWRODAS3, TSROSWSANDU3, TSROSWASSP3P3S1C, TSROSWLASSP3P4S2C, TSROSWLLSSP3P4S2C, TSROSWARK3
 @*/
-PetscErrorCode TSRosWSetType(TS ts,const TSRosWType rostype)
+PetscErrorCode TSRosWSetType(TS ts,TSRosWType rostype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSRosWSetType_C",(TS,const TSRosWType),(ts,rostype));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ts,"TSRosWSetType_C",(TS,TSRosWType),(ts,rostype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1471,13 +1471,13 @@ PetscErrorCode TSRosWSetType(TS ts,const TSRosWType rostype)
 
 .seealso: TSRosWGetType()
 @*/
-PetscErrorCode TSRosWGetType(TS ts,const TSRosWType *rostype)
+PetscErrorCode TSRosWGetType(TS ts,TSRosWType *rostype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscUseMethod(ts,"TSRosWGetType_C",(TS,const TSRosWType*),(ts,rostype));CHKERRQ(ierr);
+  ierr = PetscUseMethod(ts,"TSRosWGetType_C",(TS,TSRosWType*),(ts,rostype));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1509,7 +1509,7 @@ PetscErrorCode TSRosWSetRecomputeJacobian(TS ts,PetscBool flg)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSRosWGetType_RosW"
-PetscErrorCode  TSRosWGetType_RosW(TS ts,const TSRosWType *rostype)
+PetscErrorCode  TSRosWGetType_RosW(TS ts,TSRosWType *rostype)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
   PetscErrorCode ierr;
@@ -1521,7 +1521,7 @@ PetscErrorCode  TSRosWGetType_RosW(TS ts,const TSRosWType *rostype)
 }
 #undef __FUNCT__
 #define __FUNCT__ "TSRosWSetType_RosW"
-PetscErrorCode  TSRosWSetType_RosW(TS ts,const TSRosWType rostype)
+PetscErrorCode  TSRosWSetType_RosW(TS ts,TSRosWType rostype)
 {
   TS_RosW         *ros = (TS_RosW*)ts->data;
   PetscErrorCode  ierr;

@@ -32,7 +32,7 @@ typedef struct _p_IS* IS;
 
 .seealso: ISSetType(), IS
 J*/
-#define ISType char*
+typedef const char* ISType;
 #define ISGENERAL      "general"
 #define ISSTRIDE       "stride"
 #define ISBLOCK        "block"
@@ -40,8 +40,8 @@ J*/
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFList ISList;
 PETSC_EXTERN PetscBool ISRegisterAllCalled;
-PETSC_EXTERN PetscErrorCode ISSetType(IS, const ISType);
-PETSC_EXTERN PetscErrorCode ISGetType(IS, const ISType *);
+PETSC_EXTERN PetscErrorCode ISSetType(IS, ISType);
+PETSC_EXTERN PetscErrorCode ISGetType(IS, ISType *);
 PETSC_EXTERN PetscErrorCode ISRegister(const char[],const char[],const char[],PetscErrorCode (*)(IS));
 PETSC_EXTERN PetscErrorCode ISRegisterAll(const char []);
 PETSC_EXTERN PetscErrorCode ISRegisterDestroy(void);

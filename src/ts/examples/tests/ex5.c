@@ -742,7 +742,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
   PetscErrorCode ierr;
   PetscScalar    *array;
   PetscInt       itime=(PetscInt)(time);
-  const TSType   type;
+  TSType   type;
   PetscBool      sundials;
   MonitorCtx     *user = (MonitorCtx*)ctx;
   PetscViewer    viewer = user->drawviewer;
