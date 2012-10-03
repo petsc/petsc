@@ -2371,6 +2371,7 @@ cdef PetscErrorCode TSStep_Python_default(
         ts.time_step = dt
         tt = ts.ptime + ts.time_step
         CHKERR( VecCopy(ts.vec_sol,vec_update) )
+        TSPreStep_Python(ts)
         TSSolveStep_Python(ts,tt,vec_update)
         TSAdaptStep_Python(ts,tt,vec_update,&dt,&ok)
         if ok:  break
