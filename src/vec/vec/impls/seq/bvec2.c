@@ -7,11 +7,45 @@
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/vec/vec/impls/mpi/pvecimpl.h> /* For VecView_MPI_HDF5 */
 #include <petscblaslapack.h>
+#include <petscthreadcomm.h>
 
 #if defined(PETSC_HAVE_HDF5)
 extern PetscErrorCode VecView_MPI_HDF5(Vec,PetscViewer);
 #endif
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode VecPointwiseMax_kernel(PetscInt thread_id,Vec win,Vec xin,Vec yin)
+{
+  PetscErrorCode    ierr;
+  PetscInt          *trstarts=win->map->trstarts;
+  PetscInt          i;
+  const PetscScalar *xx,*yy;
+  PetscScalar       *ww;
+
+  ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(yin,&yy);CHKERRQ(ierr);
+  ierr = VecGetArray(win,&ww);CHKERRQ(ierr);
+  for(i=trstarts[thread_id]; i < trstarts[thread_id+1];i++) {
+    ww[i] = PetscMax(PetscRealPart(xx[i]),PetscRealPart(yy[i]));
+  }
+  ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(yin,&yy);CHKERRQ(ierr);
+  ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecPointwiseMax_Seq"
+PetscErrorCode VecPointwiseMax_Seq(Vec win,Vec xin,Vec yin)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscThreadCommRunKernel3(((PetscObject)win)->comm,(PetscThreadKernel)VecPointwiseMax_kernel,win,xin,yin);CHKERRQ(ierr);
+  ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__
 #define __FUNCT__ "VecPointwiseMax_Seq"
 PetscErrorCode VecPointwiseMax_Seq(Vec win,Vec xin,Vec yin)
@@ -33,7 +67,41 @@ PetscErrorCode VecPointwiseMax_Seq(Vec win,Vec xin,Vec yin)
   ierr = PetscLogFlops(n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode VecPointwiseMin_kernel(PetscInt thread_id,Vec win,Vec xin,Vec yin)
+{
+  PetscErrorCode    ierr;
+  PetscInt          *trstarts=win->map->trstarts;
+  PetscInt          i;
+  const PetscScalar *xx,*yy;
+  PetscScalar       *ww;
+
+  ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(yin,&yy);CHKERRQ(ierr);
+  ierr = VecGetArray(win,&ww);CHKERRQ(ierr);
+  for(i=trstarts[thread_id]; i < trstarts[thread_id+1];i++) {
+    ww[i] = PetscMin(PetscRealPart(xx[i]),PetscRealPart(yy[i]));
+  }
+  ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(yin,&yy);CHKERRQ(ierr);
+  ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecPointwiseMin_Seq"
+PetscErrorCode VecPointwiseMin_Seq(Vec win,Vec xin,Vec yin)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscThreadCommRunKernel3(((PetscObject)win)->comm,(PetscThreadKernel)VecPointwiseMin_kernel,win,xin,yin);CHKERRQ(ierr);
+  ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__
 #define __FUNCT__ "VecPointwiseMin_Seq"
 PetscErrorCode VecPointwiseMin_Seq(Vec win,Vec xin,Vec yin)
@@ -55,7 +123,41 @@ PetscErrorCode VecPointwiseMin_Seq(Vec win,Vec xin,Vec yin)
   ierr = PetscLogFlops(n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode VecPointwiseMaxAbs_kernel(PetscInt thread_id,Vec win,Vec xin,Vec yin)
+{
+  PetscErrorCode    ierr;
+  PetscInt          *trstarts=win->map->trstarts;
+  PetscInt          i;
+  const PetscScalar *xx,*yy;
+  PetscScalar       *ww;
+
+  ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(yin,&yy);CHKERRQ(ierr);
+  ierr = VecGetArray(win,&ww);CHKERRQ(ierr);
+  for(i=trstarts[thread_id]; i < trstarts[thread_id+1];i++) {
+    ww[i] = PetscMax(PetscAbsScalar(xx[i]),PetscAbsScalar(yy[i]));
+  }
+  ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(yin,&yy);CHKERRQ(ierr);
+  ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecPointwiseMaxAbs_Seq"
+PetscErrorCode VecPointwiseMaxAbs_Seq(Vec win,Vec xin,Vec yin)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscThreadCommRunKernel3(((PetscObject)win)->comm,(PetscThreadKernel)VecPointwiseMaxAbs_kernel,win,xin,yin);CHKERRQ(ierr);
+  ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__
 #define __FUNCT__ "VecPointwiseMaxAbs_Seq"
 PetscErrorCode VecPointwiseMaxAbs_Seq(Vec win,Vec xin,Vec yin)
@@ -77,8 +179,56 @@ PetscErrorCode VecPointwiseMaxAbs_Seq(Vec win,Vec xin,Vec yin)
   ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #include <../src/vec/vec/impls/seq/ftn-kernels/fxtimesy.h>
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode VecPointwiseMult_kernel(PetscInt thread_id,Vec win,Vec xin,Vec yin)
+{
+  PetscErrorCode    ierr;
+  PetscInt          *trstarts=win->map->trstarts;
+  PetscInt          i;
+  const PetscScalar *xx,*yy;
+  PetscScalar       *ww;
+
+  ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(yin,&yy);CHKERRQ(ierr);
+  ierr = VecGetArray(win,&ww);CHKERRQ(ierr);
+  if(ww == xx) {
+    for(i=trstarts[thread_id]; i < trstarts[thread_id+1];i++) ww[i] *= yy[i];
+  } else if(ww == yy) {
+    for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) ww[i] *= xx[i];
+  } else 
+#if defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
+  {
+    PetscInt start,n;
+    start = trstarts[thread_id];
+    n = trstarts[thread_id+1] - trstarts[thread_id];
+    fortranxtimesy_(xx+start,yy+start,ww+start,&n);
+  }
+#else
+  {
+    for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) ww[i] = xx[i] * yy[i];
+  }
+#endif
+  ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(yin,&yy);CHKERRQ(ierr);
+  ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecPointwiseMult_Seq"
+PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscThreadCommRunKernel3(((PetscObject)win)->comm,(PetscThreadKernel)VecPointwiseMult_kernel,win,xin,yin);CHKERRQ(ierr);
+  ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__
 #define __FUNCT__ "VecPointwiseMult_Seq"
 PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
@@ -108,7 +258,41 @@ PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
   ierr = PetscLogFlops(n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode VecPointwiseDivide_kernel(PetscInt thread_id,Vec win,Vec xin,Vec yin)
+{
+  PetscErrorCode    ierr;
+  PetscInt          *trstarts=win->map->trstarts;
+  PetscInt          i;
+  const PetscScalar *xx,*yy;
+  PetscScalar       *ww;
+
+  ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(yin,&yy);CHKERRQ(ierr);
+  ierr = VecGetArray(win,&ww);CHKERRQ(ierr);
+  for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
+    ww[i] = xx[i] / yy[i];
+  }
+  ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(yin,&yy);CHKERRQ(ierr);
+  ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecPointwiseDivide_Seq"
+PetscErrorCode VecPointwiseDivide_Seq(Vec win,Vec xin,Vec yin)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscThreadCommRunKernel3(((PetscObject)win)->comm,(PetscThreadKernel)VecPointwiseDivide_kernel,win,xin,yin);CHKERRQ(ierr);
+  ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__
 #define __FUNCT__ "VecPointwiseDivide_Seq"
 PetscErrorCode VecPointwiseDivide_Seq(Vec win,Vec xin,Vec yin)
@@ -130,7 +314,35 @@ PetscErrorCode VecPointwiseDivide_Seq(Vec win,Vec xin,Vec yin)
   ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode VecSetRandom_kernel(PetscInt thread_id,Vec xin, PetscRandom r)
+{
+  PetscErrorCode ierr;
+  PetscInt       *trstarts=xin->map->trstarts;
+  PetscInt       i;
+  PetscScalar    *xx;
+
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+  for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
+    ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecSetRandom_Seq"
+PetscErrorCode VecSetRandom_Seq(Vec xin,PetscRandom r)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecSetRandom_kernel,xin,r);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__
 #define __FUNCT__ "VecSetRandom_Seq"
 PetscErrorCode VecSetRandom_Seq(Vec xin,PetscRandom r)
@@ -145,6 +357,7 @@ PetscErrorCode VecSetRandom_Seq(Vec xin,PetscRandom r)
   ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "VecGetSize_Seq"
@@ -155,6 +368,33 @@ PetscErrorCode VecGetSize_Seq(Vec vin,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
+
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode VecConjugate_kernel(PetscInt thread_id,Vec xin)
+{
+  PetscErrorCode ierr;
+  PetscScalar    *x;
+  PetscInt       *trstarts=xin->map->trstarts,i;
+
+  ierr = VecGetArray(xin,&x);CHKERRQ(ierr);
+  for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
+    x[i] = PetscConj(x[i]);
+  }
+  ierr = VecRestoreArray(xin,&x);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecConjugate_Seq"
+PetscErrorCode VecConjugate_Seq(Vec xin)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscThreadCommRunKernel1(((PetscObject)xin)->comm,(PetscThreadKernel)VecConjugate_kernel,xin);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__
 #define __FUNCT__ "VecConjugate_Seq"
 PetscErrorCode VecConjugate_Seq(Vec xin)
@@ -172,6 +412,7 @@ PetscErrorCode VecConjugate_Seq(Vec xin)
   ierr = VecRestoreArray(xin,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "VecResetArray_Seq"
@@ -185,6 +426,39 @@ PetscErrorCode VecResetArray_Seq(Vec vin)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode VecCopy_kernel(PetscInt thread_id,Vec xin,Vec yin)
+{
+  PetscErrorCode    ierr;
+  PetscInt          *trstarts=yin->map->trstarts;
+  PetscScalar       *ya;
+  const PetscScalar *xa;
+  PetscInt          start,end,n;
+
+  ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
+  ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
+  start = trstarts[thread_id];
+  end   = trstarts[thread_id+1];
+  n     = end-start;
+  ierr = PetscMemcpy(ya+start,xa+start,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCopy_Seq"
+PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if(xin != yin) {
+    ierr = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecCopy_kernel,xin,yin);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__
 #define __FUNCT__ "VecCopy_Seq"
 PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
@@ -203,6 +477,42 @@ PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
   }
   PetscFunctionReturn(0);
 }
+#endif
+
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode VecSwap_kernel(PetscInt thread_id,Vec xin,Vec yin)
+{
+  PetscErrorCode   ierr;
+  PetscInt         *trstarts=xin->map->trstarts;
+  PetscInt         start,end,n;
+  PetscBLASInt     one=1,bn;
+  PetscScalar      *xa,*ya;
+
+  ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
+  ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
+  start = trstarts[thread_id];
+  end   = trstarts[thread_id+1];
+  n     = end-start;
+  bn    = PetscBLASIntCast(n);
+  BLASswap_(&bn,xa+start,&one,ya+start,&one);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecSwap_Seq"
+PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if(xin != yin) {
+    ierr = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecSwap_kernel,xin,yin);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#else
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSwap_Seq"
@@ -222,8 +532,74 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
   }
   PetscFunctionReturn(0);
 }
+#endif
 
 #include <../src/vec/vec/impls/seq/ftn-kernels/fnorm.h>
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode VecNorm_kernel(PetscInt thread_id,Vec xin,NormType* type_p,PetscThreadCommReduction red)
+{
+  PetscErrorCode ierr;
+  PetscInt       *trstarts=xin->map->trstarts;
+  PetscInt       start,end,n;
+  PetscBLASInt   one = 1,bn;
+  const PetscScalar *xx;
+  PetscReal      z_loc;
+  NormType       type=*type_p;
+
+  start = trstarts[thread_id];
+  end   = trstarts[thread_id+1];
+  n     = end - start;
+  bn    = PetscBLASIntCast(n);
+  ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
+  if(type == NORM_2 || type == NORM_FROBENIUS) {
+    z_loc = PetscRealPart(BLASdot_(&bn,xx+start,&one,xx+start,&one));
+    ierr = PetscThreadReductionKernelPost(thread_id,red,(void*)&z_loc);CHKERRQ(ierr);
+  } else if (type == NORM_INFINITY) {
+    PetscInt  i;
+    PetscReal max=0.0,tmp;
+    for(i=trstarts[thread_id]; i < trstarts[thread_id+1]; i++) {
+      if ((tmp = PetscAbsScalar(xx[i])) > max) max = tmp;
+      /* check special case of tmp == NaN */
+      if (tmp != tmp) {max = tmp; break;}
+    }
+    ierr = PetscThreadReductionKernelPost(thread_id,red,(void*)&max);CHKERRQ(ierr);
+  } else if (type == NORM_1) {
+    z_loc = BLASasum_(&bn,xx+start,&one);
+    ierr  = PetscThreadReductionKernelPost(thread_id,red,(void*)&z_loc);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecNorm_Seq"
+PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
+{
+  PetscErrorCode           ierr;
+  PetscThreadCommReduction red;
+
+  PetscFunctionBegin;
+  if(type == NORM_2 || type == NORM_FROBENIUS) {
+    ierr = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_SUM,PETSC_REAL,1,&red);CHKERRQ(ierr);
+    ierr = PetscThreadCommRunKernel3(((PetscObject)xin)->comm,(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
+    ierr = PetscThreadReductionEnd(red,z);CHKERRQ(ierr);
+    *z = PetscSqrtReal(*z);
+  } else if (type == NORM_INFINITY) {
+    ierr = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_MAX,PETSC_REAL,1,&red);CHKERRQ(ierr);
+    ierr = PetscThreadCommRunKernel3(((PetscObject)xin)->comm,(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
+    ierr = PetscThreadReductionEnd(red,z);CHKERRQ(ierr);
+  } else if (type == NORM_1) {
+    ierr = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_SUM,PETSC_REAL,1,&red);CHKERRQ(ierr);
+    ierr = PetscThreadCommRunKernel3(((PetscObject)xin)->comm,(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
+    ierr = PetscThreadReductionEnd(red,z);CHKERRQ(ierr);
+  } else if (type == NORM_1_AND_2) {
+    ierr = VecNorm_Seq(xin,NORM_1,z);CHKERRQ(ierr);
+    ierr = VecNorm_Seq(xin,NORM_2,z+1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#else
+
 #undef __FUNCT__
 #define __FUNCT__ "VecNorm_Seq"
 PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
@@ -264,6 +640,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
   }
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "VecView_Seq_ASCII"
