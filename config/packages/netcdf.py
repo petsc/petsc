@@ -86,7 +86,7 @@ class Configure(config.package.GNUPackage):
     if self.installNeeded('make.inc'):    # Now compile & install
       try:
         self.logPrintBox('Configuring NetCDF; this may take several minutes')
-        output,err,ret  = self.executeShellCommand('cd '+self.packageDir+' && '+' '.join(configEnv)+' ./configure '+' '.join(configOpts), timeout=2500, log = self.framework.log)
+        output,err,ret  = self.executeShellCommand('cd '+self.packageDir+' && ./configure '+' '.join(configEnv)+' '.join(configOpts), timeout=2500, log = self.framework.log)
         self.logPrintBox('Compiling & installing NetCDF; this may take several minutes')
         output,err,ret  = self.executeShellCommand('cd '+self.packageDir+' && make clean && make && make install && make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
