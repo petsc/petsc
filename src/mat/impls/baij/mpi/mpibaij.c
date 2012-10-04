@@ -3109,10 +3109,6 @@ PetscErrorCode  MatConvert_MPIBAIJ_MPIAdj(Mat B, MatType newtype,MatReuse reuse,
     if ((id[i+1] - id[i]) < 0) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Indices wrong %D %D %D",i,id[i],id[i+1]);
     if ((io[i+1] - io[i]) < 0) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Indices wrong %D %D %D",i,io[i],io[i+1]);
     ii[i+1] = ii[i] + id[i+1] - id[i] + io[i+1] - io[i];
-    /* remove one from count of matrix has diagonal */
-    for (j=id[i]; j<id[i+1]; j++) {
-      if (jd[j] == i) {ii[i+1]--;break;}
-    }
   CHKMEMQ;
   }
   ierr = PetscMalloc(ii[M]*sizeof(PetscInt),&jj);CHKERRQ(ierr);
@@ -3124,10 +3120,8 @@ PetscErrorCode  MatConvert_MPIBAIJ_MPIAdj(Mat B, MatType newtype,MatReuse reuse,
   CHKMEMQ;
     }
     for (k=id[i]; k<id[i+1]; k++) {
-      if (jd[k] != i) {
-        jj[cnt++] = rstart + jd[k];
+      jj[cnt++] = rstart + jd[k];
   CHKMEMQ;
-      }
     }
     for (;j<io[i+1]; j++) {
       jj[cnt++] = garray[jo[j]];

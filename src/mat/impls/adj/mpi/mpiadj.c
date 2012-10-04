@@ -248,11 +248,8 @@ PetscErrorCode  MatConvertFrom_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *new
 
   /* count the number of nonzeros per row */
   for (i=0; i<m; i++) {
-    ierr   = MatGetRow(A,i+rstart,&len,&rj,PETSC_NULL);CHKERRQ(ierr);
-    for (j=0; j<len; j++) {
-      if (rj[j] == i+rstart) {len--; break;}    /* don't count diagonal */
-    }
-    ierr   = MatRestoreRow(A,i+rstart,&len,&rj,PETSC_NULL);CHKERRQ(ierr);
+    ierr   = MatGetRow(A,i+rstart,&len,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr   = MatRestoreRow(A,i+rstart,&len,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     nzeros += len;
   }
 
@@ -267,10 +264,8 @@ PetscErrorCode  MatConvertFrom_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *new
     ierr    = MatGetRow(A,i+rstart,&len,&rj,&ra);CHKERRQ(ierr);
     cnt     = 0;
     for (j=0; j<len; j++) {
-      if (rj[j] != i+rstart) { /* if not diagonal */
-        a[nzeros+cnt]    = (PetscInt) PetscAbsScalar(ra[j]);
-        ja[nzeros+cnt++] = rj[j];
-      }
+      a[nzeros+cnt]    = (PetscInt) PetscAbsScalar(ra[j]);
+      ja[nzeros+cnt++] = rj[j];
     }
     ierr    = MatRestoreRow(A,i+rstart,&len,&rj,&ra);CHKERRQ(ierr);
     nzeros += cnt;
