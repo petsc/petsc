@@ -4591,7 +4591,6 @@ PetscErrorCode DMComplexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm)
 {
   MPI_Comm       comm = ((PetscObject) boundary)->comm;
-  DM_Complex    *bd   = (DM_Complex *) boundary->data;
   const PetscInt dim  = 3;
   PLC           *in, *out;
   PetscInt       verbose = 0, vStart, vEnd, v, fStart, fEnd, f;
@@ -4612,8 +4611,8 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
 
     ierr = PetscMalloc(in->numberofpoints*dim * sizeof(PetscReal), &in->pointlist);CHKERRQ(ierr);
     ierr = PetscMalloc(in->numberofpoints     * sizeof(int),       &in->pointmarkerlist);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(bd, &coordinates);CHKERRQ(ierr);
-    ierr = DMComplexGetCoordinateSection(bd, &coordSection);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(boundary, &coordinates);CHKERRQ(ierr);
+    ierr = DMComplexGetCoordinateSection(boundary, &coordSection);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &array);CHKERRQ(ierr);
     for (v = vStart; v < vEnd; ++v) {
       const PetscInt idx = v - vStart;
@@ -4731,7 +4730,6 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
 PetscErrorCode DMComplexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
 {
   MPI_Comm       comm = ((PetscObject) dm)->comm;
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
   const PetscInt dim  = 3;
   PLC           *in, *out;
   PetscInt       verbose = 0, vStart, vEnd, v, cStart, cEnd, c, depth, depthGlobal;
