@@ -149,8 +149,9 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt ii[], Petsc
   PetscInt lo = 0,hi = n;
 
   PetscFunctionBegin;
-  PetscValidPointer(ii,3);
   PetscValidPointer(loc,4);
+  if (!n) {*loc = -1; PetscFunctionReturn(0);}
+  PetscValidPointer(ii,3);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo)/2;
     if (key < ii[mid]) hi = mid;
