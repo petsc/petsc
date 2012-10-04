@@ -372,7 +372,7 @@
         command. In different runs the order at which values arrive at a given
         process (via MPI) can be in a different order, thus the order in which some
         floating point arithmetic operations are performed will be different. Since
-        floating point arithmetic arithmetic is not commutative the computed
+        floating point arithmetic arithmetic is not associative, the computed
         quantity may be (slightly) different. Over a run the many slight
         differences in the inner products and norms will effect all the computed
         results. It is important to realize that none of the computed answers are
