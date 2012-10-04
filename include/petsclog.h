@@ -190,13 +190,17 @@ struct _n_PetscStageLog {
 #define PETSC_FLOPS_PER_OP 1.0
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscLogFlops"
+PETSC_STATIC_INLINE PetscErrorCode PetscLogFlops(PetscLogDouble n)
+{
+  PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
-#define PetscLogFlops(n) (petsc_tmp_flops = (PETSC_FLOPS_PER_OP*((PetscLogDouble)n)), ((petsc_tmp_flops < 0) ? PETSC_ERR_FLOP_COUNT : (petsc_TotalFlops += petsc_tmp_flops,0)))
-#define PetscLogFlopsNoError(n) (petsc_TotalFlops += PETSC_FLOPS_PER_OP*((PetscLogDouble)n))
-#else
-#define PetscLogFlops(n) (petsc_TotalFlops += PETSC_FLOPS_PER_OP*((PetscLogDouble)n),0)
-#define PetscLogFlopsNoError(n) (petsc_TotalFlops += PETSC_FLOPS_PER_OP*((PetscLogDouble)n))
+  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot log negative flops");
 #endif
+  petsc_TotalFlops += PETSC_FLOPS_PER_OP*n;
+  PetscFunctionReturn(0);
+}
 
 #if defined (PETSC_HAVE_MPE)
 #include "mpe.h"
@@ -410,7 +414,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogD
 #else  /* ---Logging is turned off --------------------------------------------*/
 
 #define PetscLogFlops(n) 0
-#define PetscLogFlopsNoError(n)
 
 /*
      With logging turned off, then MPE has to be turned off

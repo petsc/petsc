@@ -6083,7 +6083,7 @@ PetscErrorCode DMComplexComputeRectangleGeometry_private(DM dm, PetscInt e, Pets
     invJ[1] = -invDet*J[1];
     invJ[2] = -invDet*J[2];
     invJ[3] =  invDet*J[0];
-    PetscLogFlopsNoError(5.0);
+    PetscLogFlops(5.0);
   }
   ierr = DMComplexVecRestoreClosure(dm, coordSection, coordinates, e, PETSC_NULL, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
