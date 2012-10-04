@@ -282,8 +282,9 @@ PETSC_EXTERN PetscErrorCode ISColoringDestroy(ISColoring*);
 PETSC_EXTERN PetscErrorCode ISColoringView(ISColoring,PetscViewer);
 PETSC_EXTERN PetscErrorCode ISColoringGetIS(ISColoring,PetscInt*,IS*[]);
 PETSC_EXTERN PetscErrorCode ISColoringRestoreIS(ISColoring,IS*[]);
-#define ISColoringReference(coloring) ((coloring)->refct++,0)
-#define ISColoringSetType(coloring,type) ((coloring)->ctype = type,0)
+PETSC_EXTERN PetscErrorCode ISColoringReference(ISColoring);
+PETSC_EXTERN PetscErrorCode ISColoringSetType(ISColoring,ISColoringType);
+
 
 /* --------------------------------------------------------------------------*/
 

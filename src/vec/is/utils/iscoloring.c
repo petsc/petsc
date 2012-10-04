@@ -4,6 +4,24 @@
 const char *const ISColoringTypes[] = {"global","ghosted","ISColoringType","IS_COLORING_",0};
 
 #undef __FUNCT__
+#define __FUNCT__ "ISColoringReference"
+PetscErrorCode ISColoringReference(ISColoring coloring)
+{
+  PetscFunctionBegin;
+  (coloring)->refct++;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ISColoringSetType"
+PetscErrorCode ISColoringSetType(ISColoring coloring,ISColoringType type)
+{
+  PetscFunctionBegin;
+  (coloring)->ctype = type;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ISColoringDestroy"
 /*@
    ISColoringDestroy - Destroys a coloring context.
