@@ -346,7 +346,7 @@ PetscErrorCode  PetscDrawOpenNull(MPI_Comm comm,PetscDraw *win)
   Level: advanced
 
 @*/
-PetscErrorCode  PetscDrawSetDisplay(PetscDraw draw,char *display)
+PetscErrorCode  PetscDrawSetDisplay(PetscDraw draw,const char display[])
 {
   PetscErrorCode ierr;
 

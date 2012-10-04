@@ -237,7 +237,7 @@ PetscErrorCode  PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,Pe
 PetscErrorCode  PetscTableAddCountExpand(PetscTable ta,PetscInt key)
 {
   PetscErrorCode ierr;
-  PetscInt       ii = 0,hash = HASHT(ta,key);
+  PetscInt       ii = 0,hash = PetscHash(ta,key);
   const PetscInt tsize = ta->tablesize,tcount = ta->count;
   PetscInt *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
 

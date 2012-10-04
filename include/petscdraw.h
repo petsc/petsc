@@ -191,9 +191,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawSynchronizedClear(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawBOP(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawEOP(PetscDraw);
 
-PETSC_EXTERN PetscErrorCode PetscDrawSetDisplay(PetscDraw,char*);
-#define PetscDrawSetFilename(a,b) PetscDrawSetDisplay(a,b)
-
+PETSC_EXTERN PetscErrorCode PetscDrawSetDisplay(PetscDraw,const char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawGetSingleton(PetscDraw,PetscDraw*);
 PETSC_EXTERN PetscErrorCode PetscDrawRestoreSingleton(PetscDraw,PetscDraw*);
 
