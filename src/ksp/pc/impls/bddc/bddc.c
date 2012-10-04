@@ -4804,7 +4804,8 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
       if (aux_new_xadj[i]==1) {
         new_adjncy[new_xadj[i]]=i;
       }
-    } 
+    }
+    ierr = PetscFree(aux_new_xadj);CHKERRQ(ierr); 
     for (i=0;i<mat_graph->ncmps;i++) {
       k = mat_graph->cptr[i+1]-mat_graph->cptr[i];
       for (j=0;j<k;j++) {
