@@ -385,13 +385,13 @@ PETSC_EXTERN PetscErrorCode PetscFPTrapPop(void);
 
 #if defined(PETSC_HAVE_PTHREADCLASSES) && !defined(PETSC_PTHREAD_LOCAL)
 /* Get the value associated with name_key */
-#define PetscThreadLocalGetValue(name) ( pthread_getspecific(name##_key))
+#define PetscThreadLocalGetValue(name) ( pthread_getspecific(name))
 /* Set the value for name_key */
-#define PetscThreadLocalSetValue(name,value) ( pthread_setspecific(name##_key,(void*)value) )
+#define PetscThreadLocalSetValue(name,value) ( pthread_setspecific(name,(void*)value) )
 /* Create name_key */
-#define PetscThreadLocalRegister(name) ( pthread_key_create(&name##_key,NULL) )
+#define PetscThreadLocalRegister(name) ( pthread_key_create(&name,NULL) )
 /* Destroy name_key */
-#define PetscThreadLocalDestroy(name) ( pthread_key_delete(name##_key) )
+#define PetscThreadLocalDestroy(name) ( pthread_key_delete(name) )
 #else
 #define PetscThreadLocalGetValue(name) (name )
 #define PetscThreadLocalSetValue(name,value) (name = value)
@@ -418,7 +418,7 @@ typedef struct  {
 #if defined(PETSC_PTHREAD_LOCAL)
 PETSC_EXTERN PETSC_PTHREAD_LOCAL PetscStack *petscstack;
 #else
-PETSC_EXTERN pthread_key_t petscstack_key;
+PETSC_EXTERN pthread_key_t petscstack;
 #endif
 #elif defined(PETSC_HAVE_OPENMP)
 PETSC_EXTERN PetscStack *petscstack;

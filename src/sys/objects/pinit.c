@@ -48,7 +48,7 @@ PetscBool  PetscPreLoadingOn   = PETSC_FALSE;
 
 /* pthread_key for PetscStack */
 #if defined(PETSC_HAVE_PTHREADCLASSES) && !defined(PETSC_PTHREAD_LOCAL)
-pthread_key_t petscstack_key;
+pthread_key_t petscstack;
 #endif
 
 /*
