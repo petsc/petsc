@@ -170,6 +170,7 @@ struct _n_SNESDM {
 
   /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */
   PetscErrorCode (*destroy)(SNESDM);
+  PetscErrorCode (*duplicate)(SNESDM,DM);
   void *data;
 
   /* This is NOT reference counted. The SNES that originally created this context is cached here to implement copy-on-write.

@@ -23,6 +23,21 @@ static PetscErrorCode SNESDMDestroy_DMDA(SNESDM sdm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESDMDuplicate_DMDA"
+static PetscErrorCode SNESDMDuplicate_DMDA(SNESDM oldsdm,DM dm)
+{
+  PetscErrorCode ierr;
+  SNESDM         sdm;
+
+  PetscFunctionBegin;
+  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = PetscNewLog(dm,DM_DA_SNES,&sdm->data);CHKERRQ(ierr);
+  if (oldsdm->data)ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DM_DA_SNES));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDASNESGetContext"
 static PetscErrorCode DMDASNESGetContext(DM dm,SNESDM sdm,DM_DA_SNES **dmdasnes)
 {
@@ -33,6 +48,7 @@ static PetscErrorCode DMDASNESGetContext(DM dm,SNESDM sdm,DM_DA_SNES **dmdasnes)
   if (!sdm->data) {
     ierr = PetscNewLog(dm,DM_DA_SNES,&sdm->data);CHKERRQ(ierr);
     sdm->destroy = SNESDMDestroy_DMDA;
+    sdm->duplicate = SNESDMDuplicate_DMDA;
   }
   *dmdasnes = (DM_DA_SNES*)sdm->data;
   PetscFunctionReturn(0);

@@ -229,6 +229,8 @@ PetscErrorCode DMSNESGetContextWrite(DM dm,SNESDM *snesdm)
     ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_SNESDM);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"SNESDM",(PetscObject)container);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+    /* implementation specific copy hooks */
+    ierr = (sdm->duplicate)(oldsdm,dm);CHKERRQ(ierr);
   }
   *snesdm = sdm;
   PetscFunctionReturn(0);
@@ -238,7 +240,7 @@ PetscErrorCode DMSNESGetContextWrite(DM dm,SNESDM *snesdm)
 #define __FUNCT__ "DMSNESCopyContext"
 /*@C
    DMSNESCopyContext - copies a DM context to a new DM
-
+ 
    Logically Collective
 
    Input Arguments:
