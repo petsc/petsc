@@ -1475,7 +1475,7 @@ if (dlclose(handle)) {
                  'LDFLAGS','LIBS','MPI_DIR','RM']
     for envVal in ignoreEnv:
       if envVal in os.environ:
-        self.logPrintBox('***** WARNING: '+envVal+' found in enviornment variables - ignoring ******')
+        self.logPrintBox('***** WARNING: '+envVal+' found in environment variables - ignoring ******')
         del os.environ[envVal]
     return
 
