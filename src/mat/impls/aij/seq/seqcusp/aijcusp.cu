@@ -106,12 +106,12 @@ PetscErrorCode MatSetFromOptions_SeqAIJCUSP(Mat A)
   ierr = PetscOptionsHead("SeqAIJCUSP options");CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)A);
   ierr = PetscOptionsEnum("-mat_cusp_mult_storage_format","sets storage format of (seq)aijcusp gpu matrices for SpMV",
-			  "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+			  "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatCUSPSetFormat(A,MAT_CUSP_MULT,format);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnum("-mat_cusp_storage_format","sets storage format of (seq)aijcusp gpu matrices for SpMV",
-			  "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+			  "MatCUSPSetFormat",MatCUSPStorageFormats,(PetscEnum)MAT_CUSP_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatCUSPSetFormat(A,MAT_CUSP_ALL,format);CHKERRQ(ierr);
   }

@@ -141,20 +141,20 @@ PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(Mat A)
   ierr = PetscObjectOptionsBegin((PetscObject)A);
   if (A->factortype==MAT_FACTOR_NONE) {
     ierr = PetscOptionsEnum("-mat_cusparse_mult_storage_format","sets storage format of (seq)aijcusparse gpu matrices for SpMV",
-			    "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+			    "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)MAT_CUSPARSE_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatCUSPARSESetFormat(A,MAT_CUSPARSE_MULT,format);CHKERRQ(ierr);
     }
   }
   else { 
     ierr = PetscOptionsEnum("-mat_cusparse_solve_storage_format","sets storage format of (seq)aijcusparse gpu matrices for TriSolve",
-			    "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+			    "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)MAT_CUSPARSE_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatCUSPARSESetFormat(A,MAT_CUSPARSE_SOLVE,format);CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsEnum("-mat_cusparse_storage_format","sets storage format of (seq)aijcusparse gpu matrices for SpMV and TriSolve",
-                          "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+                          "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)MAT_CUSPARSE_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatCUSPARSESetFormat(A,MAT_CUSPARSE_ALL,format);CHKERRQ(ierr);
   }

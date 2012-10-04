@@ -181,17 +181,17 @@ PetscErrorCode MatSetFromOptions_MPIAIJCUSPARSE(Mat A)
   ierr = PetscObjectOptionsBegin((PetscObject)A);
   if (A->factortype==MAT_FACTOR_NONE) {
     ierr = PetscOptionsEnum("-mat_cusparse_mult_diag_storage_format","sets storage format of the diagonal blocks of (mpi)aijcusparse gpu matrices for SpMV",
-			    "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+			    "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)MAT_CUSPARSE_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatCUSPARSESetFormat(A,MAT_CUSPARSE_MULT_DIAG,format);CHKERRQ(ierr);
     }
     ierr = PetscOptionsEnum("-mat_cusparse_mult_offdiag_storage_format","sets storage format of the off-diagonal blocks (mpi)aijcusparse gpu matrices for SpMV",
-			    "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+			    "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)MAT_CUSPARSE_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatCUSPARSESetFormat(A,MAT_CUSPARSE_MULT_OFFDIAG,format);CHKERRQ(ierr);
     }
     ierr = PetscOptionsEnum("-mat_cusparse_storage_format","sets storage format of the diagonal and off-diagonal blocks (mpi)aijcusparse gpu matrices for SpMV",
-			    "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)format,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
+			    "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)MAT_CUSPARSE_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatCUSPARSESetFormat(A,MAT_CUSPARSE_ALL,format);CHKERRQ(ierr);
     }
