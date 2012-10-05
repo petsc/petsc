@@ -384,19 +384,44 @@ PETSC_EXTERN PetscErrorCode PetscFPTrapPop(void);
 #endif
 
 #if defined(PETSC_HAVE_PTHREADCLASSES) && !defined(PETSC_PTHREAD_LOCAL)
-/* Get the value associated with name_key */
-#define PetscThreadLocalGetValue(name) ( pthread_getspecific(name))
-/* Set the value for name_key */
-#define PetscThreadLocalSetValue(name,value) ( pthread_setspecific(name,(void*)value) )
-/* Create name_key */
-#define PetscThreadLocalRegister(name) ( pthread_key_create(&name,NULL) )
-/* Destroy name_key */
-#define PetscThreadLocalDestroy(name) ( pthread_key_delete(name) )
+/* Get the value associated with key */
+PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(pthread_key_t key)
+{
+  return pthread_getspecific(key);
+}
+
+/* Set the value for key */
+PETSC_STATIC_INLINE void PetscThreadLocalSetValue(pthread_key_t key,void* value)
+{
+  pthread_setspecific(key,(void*)value);
+}
+
+/* Create pthread thread local key */
+PETSC_STATIC_INLINE void PetscThreadLocalRegister(pthread_key_t key)
+{
+  pthread_key_create(&key,NULL);
+}
+
+/* Delete pthread thread local key */
+PETSC_STATIC_INLINE void PetscThreadLocalDestroy(pthread_key_t key)
+{
+  pthread_key_delete(key);
+}
 #else
-#define PetscThreadLocalGetValue(name) (name )
+PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(void* name)
+{
+  return name;
+}
+
 #define PetscThreadLocalSetValue(name,value) (name = value)
-#define PetscThreadLocalRegister(name)
-#define PetscThreadLocalDestroy(name)
+
+PETSC_STATIC_INLINE void PetscThreadLocalRegister(void* name)
+{
+}
+
+PETSC_STATIC_INLINE void PetscThreadLocalDestroy(void* name)
+{
+} 
 #endif
 
 /*
