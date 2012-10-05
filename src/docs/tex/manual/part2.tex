@@ -4444,69 +4444,6 @@ To set up TS for solving an ODE, one must set the following:
 The vector \trl{initialsolution} should contain the ``initial conditions''
 for the ODE. 
 
-\item Function: 
-\subitem $ \bullet $ For linear functions (solved with implicit timestepping),
- the user must call 
-\begin{tabbing}
-TSSetMatrices(TS ts,\\
-Mat A,PetscErrorCode (*frhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),\\
-Mat B,PetscErrorCode (*flhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),\\
-MatStructure flag,void *ctx)
-\end{tabbing}
-The matrices \trl{A} and \trl{B} are right and left hand-side matrix respectively.
-The functions \trl{frhs} and \trl{flhs} are used to form the matrices \trl{A} and \trl{B} 
-at each timestep if the matrices are time dependent.
-If the matrices do not depend on time, the user should 
-pass in PETSC\_NULL.  The variable \trl{ctx} allows 
-users to pass in an application context that is passed to the \trl{frhs()} or \trl{flhs()} function 
-whenever they are called, as the final argument. The user must provide the matrices
-\trl{A}. If \trl{B} is an identity matrix, the user should pass in PETSC\_NULL. 
-If the right-hand side is provided only as a linear
-function, the user must construct a MATSHELL matrix. Note that this is 
-the same interface as that for SNESSetJacobian(). 
-
-\subitem $ \bullet $  For nonlinear problems (or linear problems solved using
-explicit timestepping methods) the user  passes the function with 
-the routine
-
-\begin{tabbing}
- TSSetRHSFunction(TS ts,Vec R,PetscErrorCode (*f)(TS,double,Vec,Vec,void*),void *fP);
-\end{tabbing}
-The vector \trl{R} is an optional location to store the result.
-The arguments to the function \trl{f()} are
-the timestep context, the current time, the input for the function,
-the output for the function, and the (optional) user-provided context
-variable \trl{fP}.
-
-\item Jacobian: For nonlinear problems the user must also provide the 
-(approximate) Jacobian matrix of \trl{F(u,t)} and a function to
-compute it at each Newton iteration. This is done with the command
-\begin{tabbing}
- TSSetRHSJacobian(\=TS ts,Mat A, Mat P,PetscErrorCode (*fjac)(TS,double,Vec,Mat*,Mat*,\\
-                  \>        MatStructure*,void*),void *fP);
-\end{tabbing}
-The arguments for the function \trl{fjac()} are
-the timestep context, the current time, the location where the
-Jacobian is to be computed, the Jacobian matrix, an alternative
-approximate Jacobian matrix used as a preconditioner, and the optional
-user-provided context, passed in as \trl{fP}. The user must provide the 
-Jacobian as a matrix; thus, if using a matrix-free approach is used, the
-user must create a MATSHELL matrix. Again, note the similarity
-to SNESSetJacobian().
-\end{itemize}
-
-To configure TS to use coloring, create a MatFDColoring, register the function
-\begin{tabbing}
-  MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);
-\end{tabbing}
-obtain the snes using TSGetSNES(), and set the Jacobian routine
-\begin{tabbing}
-  SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,matfdcoloring);
-\end{tabbing}
-\sindex{coloring with TS}
-
-\subsection{Solving Differential Algebraic Equations}
-\label{sec_dae}
 The interface for solving time dependent problems given in the implicit
 form
 \[
@@ -4522,7 +4459,7 @@ reduces overhead to prepare the system for algebraic solvers (SNES/KSP)
 by having the user assemble the correctly shifted matrix.  Therefore
 this interface is also useful for ODE systems.
 
-To solve a DAE, instead of TSSetRHSFunction() and TSSetRHSJacobian(), one
+To solve an ODE or DAE one
 uses:
 
 \begin{itemize}
