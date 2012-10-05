@@ -1398,7 +1398,7 @@ PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring matcolor
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(Csp,&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJGetArray(Cden,&ca_den);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(Cden,&ca_den);CHKERRQ(ierr);
   cp_den = ca_den;
   for (k=0; k<ncolors; k++) {
     nrows = matcoloring->nrows[k];
@@ -1409,7 +1409,7 @@ PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring matcolor
     }
     cp_den += m;
   }
-  ierr = MatSeqAIJRestoreArray(Cden,&ca_den);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(Cden,&ca_den);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
