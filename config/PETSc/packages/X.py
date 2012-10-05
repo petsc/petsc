@@ -230,7 +230,7 @@ acfindx:
     if foundInclude and foundLibrary:
       self.logPrint('Found X includes and libraries')
       self.found     = 1
-      self.include = self.headers.getIncludeArgumentList(includeDir)
+      self.include = [includeDir]
       if libraryDir:
         self.lib     = ['-L'+libraryDir,'-lX11']
       else:
