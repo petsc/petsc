@@ -61,7 +61,6 @@ typedef const char* PCType;
 #define PCFIELDSPLIT      "fieldsplit"
 #define PCTFS             "tfs"
 #define PCML              "ml"
-#define PCPROMETHEUS      "prometheus"
 #define PCGALERKIN        "galerkin"
 #define PCEXOTIC          "exotic"
 #define PCHMPI            "hmpi"

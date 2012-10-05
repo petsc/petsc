@@ -22,7 +22,6 @@ configure_options = [
   #'--download-hdf5',
   #'--download-sundials=1',
   #'--download-hypre=1',
-  '--download-prometheus=1',
   '--download-umfpack=1',
   '--download-chaco=1',
   '--download-spai=1',

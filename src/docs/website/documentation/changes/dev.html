@@ -117,6 +117,7 @@
         <li>Added <tt>PCBDDCSetMaxLevels()</tt> to control the maximum number of levels when doing multilevel.</li>
         <li>Added <tt>PCBDDCSetCoarseningRatio()</tt> to control the coarsening ratio when doing multilevel.</li>
         <li>Added <tt>PCISSetUseStiffnessScaling()</tt> to build partition of unity using local matrices' diagonal.</li>
+        <li>Removed PETSc interface to <a href="http://www.columbia.edu/~ma2325/prometheus/">Prometheus</a>. Use "-pc_type gamg -pc_gamg_type agg" as alternative.</li>
       </ul>
       <h4>KSP:</h4>
       <h4>SNES:</h4>

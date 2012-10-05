@@ -805,7 +805,7 @@ class Configure(config.base.Configure):
     for i in self.framework.packages:
       if hasattr(i,'postProcess'): postPackages.append(i)
     if postPackages:
-      # prometheus needs petsc conf files. so attempt to create them early
+      # ctetgen needs petsc conf files. so attempt to create them early
       self.framework.dumpConfFiles()
       for i in postPackages: i.postProcess()
     return

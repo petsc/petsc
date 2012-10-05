@@ -1,4 +1,4 @@
-static char help[] = 3D, bi-linear quadrilateral (Q1), displacement finite element formulation\n\
+static char help[] = "3D, bi-linear quadrilateral (Q1), displacement finite element formulation\n\
 of plain strain linear elasticity, that uses the GAMG PC.  E=1.0, nu=0.25.\n\
 Unit square domain with Dirichelet boundary condition on the y=0 side only.\n\
 Load of 1.0 in x direction on all nodes (not a true uniform load).\n\
@@ -101,18 +101,13 @@ int main(int argc,char **args)
     assert(ic==m);
 
     /* create stiffness matrix */
-    if ( strcmp(type, PCPROMETHEUS) == 0 ){
-      /* prometheus needs BAIJ */
-      ierr = MatCreateBAIJ(wcomm,3,m,m,M,M,27,PETSC_NULL,19,PETSC_NULL,&Amat);CHKERRQ(ierr);
-    }
-    else {
-      ierr = MatCreate(wcomm,&Amat);CHKERRQ(ierr);
-      ierr = MatSetSizes(Amat,m,m,M,M);CHKERRQ(ierr);
-      ierr = MatSetBlockSize(Amat,3);CHKERRQ(ierr);
-      ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
-      ierr = MatSeqAIJSetPreallocation(Amat,0,d_nnz);CHKERRQ(ierr);
-      ierr = MatMPIAIJSetPreallocation(Amat,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
-    }
+    ierr = MatCreate(wcomm,&Amat);CHKERRQ(ierr);
+    ierr = MatSetSizes(Amat,m,m,M,M);CHKERRQ(ierr);
+    ierr = MatSetBlockSize(Amat,3);CHKERRQ(ierr);
+    ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(Amat,0,d_nnz);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(Amat,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
+
     ierr = PetscFree( d_nnz );  CHKERRQ(ierr);
     ierr = PetscFree( o_nnz );  CHKERRQ(ierr);
 

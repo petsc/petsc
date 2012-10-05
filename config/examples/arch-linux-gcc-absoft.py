@@ -11,7 +11,6 @@ configure_options = [
   '--download-f-blas-lapack=1',
   '--download-mpich=1',
   '--download-mpich-pm=gforker',
-  '--download-prometheus=1',
   '--download-cmake=1',
   '--download-metis=1',
   '--download-parmetis=1',
