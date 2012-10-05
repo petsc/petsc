@@ -37,7 +37,6 @@ PetscErrorCode  DMSetFromOptions_Complex(DM dm)
 */
 PetscErrorCode DMComplexCreateSquareBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
 {
-  DM_Complex    *mesh        = (DM_Complex *) dm->data;
   PetscInt       numVertices = (edges[0]+1)*(edges[1]+1);
   PetscInt       numEdges    = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
   PetscInt       markerTop      = 1;
@@ -155,7 +154,6 @@ PetscErrorCode DMComplexCreateSquareBoundary(DM dm, const PetscReal lower[], con
 */
 PetscErrorCode DMComplexCreateCubeBoundary(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt faces[])
 {
-  DM_Complex    *mesh        = (DM_Complex *) dm->data;
   PetscInt       numVertices = (faces[0]+1)*(faces[1]+1)*(faces[2]+1);
   PetscInt       numFaces    = 6;
   Vec            coordinates;
@@ -252,7 +250,6 @@ PetscErrorCode DMComplexCreateCubeBoundary(DM dm, const PetscReal lower[], const
 */
 PetscErrorCode DMComplexCreateSquareMesh(DM dm, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[])
 {
-  DM_Complex    *mesh           = (DM_Complex *) dm->data;
   PetscInt       markerTop      = 1;
   PetscInt       markerBottom   = 1;
   PetscInt       markerRight    = 1;
