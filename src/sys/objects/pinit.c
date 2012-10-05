@@ -838,7 +838,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscThreadCommInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
-  PetscThreadLocalRegister(petscstack); /* Creates petscstack_key if needed */
+  PetscThreadLocalRegister(&petscstack); /* Creates petscstack_key if needed */
   ierr = PetscStackCreate();CHKERRQ(ierr);
 #endif
 

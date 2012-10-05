@@ -397,9 +397,9 @@ PETSC_STATIC_INLINE void PetscThreadLocalSetValue(pthread_key_t key,void* value)
 }
 
 /* Create pthread thread local key */
-PETSC_STATIC_INLINE void PetscThreadLocalRegister(pthread_key_t key)
+PETSC_STATIC_INLINE void PetscThreadLocalRegister(pthread_key_t *key)
 {
-  pthread_key_create(&key,NULL);
+  pthread_key_create(key,NULL);
 }
 
 /* Delete pthread thread local key */

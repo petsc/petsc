@@ -437,7 +437,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Calling PetscThreadCommInitialize()\n");return;}
 
 #if defined(PETSC_USE_DEBUG)
-  PetscThreadLocalRegister(petscstack); /* Creates petscstack_key if needed */
+  PetscThreadLocalRegister(&petscstack); /* Creates petscstack_key if needed */
   *ierr = PetscStackCreate();
 #endif
 
