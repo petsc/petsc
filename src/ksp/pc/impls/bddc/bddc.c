@@ -1509,6 +1509,7 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
     ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&j,(const PetscInt**)&temp_indices,PETSC_NULL);CHKERRQ(ierr);
   }
   dual_size = pcis->n_B-n_vertices;
+  ierr = PetscSortInt(n_vertices,vertex_indices);CHKERRQ(ierr);
   ierr = PetscMalloc(dual_size*sizeof(*dual_dofs_boundary_indices),&dual_dofs_boundary_indices);CHKERRQ(ierr);
   ierr = PetscMalloc(dual_size*sizeof(*aux_local_numbering_1),&aux_local_numbering_1);CHKERRQ(ierr);
   ierr = PetscMalloc(dual_size*sizeof(*aux_local_numbering_2),&aux_local_numbering_2);CHKERRQ(ierr);
@@ -1556,12 +1557,6 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
   ierr = VecSum(pcis->vec1_global,&scalar_value);CHKERRQ(ierr);
   fetidpmat_ctx->n_lambda = (PetscInt) scalar_value;
   /* printf("I found %d global multipliers (%f)\n",fetidpmat_ctx->n_lambda,scalar_value); */
-  ierr = VecCreate(PETSC_COMM_SELF,&fetidpmat_ctx->lambda_local);CHKERRQ(ierr);
-  ierr = VecSetSizes(fetidpmat_ctx->lambda_local,n_local_lambda,n_local_lambda);CHKERRQ(ierr);
-  ierr = VecSetType(fetidpmat_ctx->lambda_local,VECSEQ);CHKERRQ(ierr);
-  ierr = VecCreate(comm,&lambda_global);CHKERRQ(ierr);
-  ierr = VecSetSizes(lambda_global,PETSC_DECIDE,fetidpmat_ctx->n_lambda);CHKERRQ(ierr);
-  ierr = VecSetType(lambda_global,VECMPI);CHKERRQ(ierr);
 
   /* compute global ordering of lagrange multipliers and associate l2g map */
 
@@ -1584,10 +1579,15 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
   for (i=0;i<dual_size;i++) {
     aux_global_numbering_mpi[i]=(PetscMPIInt)aux_global_numbering[i];
   }
+  ierr = PetscFree(aux_global_numbering);CHKERRQ(ierr);
   ierr = PetscMalloc(sum_dof_sizes*sizeof(*all_aux_global_numbering_mpi_1),&all_aux_global_numbering_mpi_1);CHKERRQ(ierr);
   ierr = PetscMalloc(sum_dof_sizes*sizeof(*all_aux_global_numbering_mpi_2),&all_aux_global_numbering_mpi_2);CHKERRQ(ierr);
+
   ierr = MPI_Gatherv(aux_global_numbering_mpi,dual_size,MPIU_INT,all_aux_global_numbering_mpi_1,dof_sizes,dof_displs,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Gatherv(aux_local_numbering_2,dual_size,MPIU_INT,all_aux_global_numbering_mpi_2,dof_sizes,dof_displs,MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr = PetscFree(aux_local_numbering_2);CHKERRQ(ierr);
+  ierr = PetscFree(dof_displs);CHKERRQ(ierr);
+  ierr = PetscFree(dof_sizes);CHKERRQ(ierr);
 
   ierr = PetscMalloc(fetidpmat_ctx->n_lambda*sizeof(*global_dofs_numbering),&global_dofs_numbering);CHKERRQ(ierr);
   if ( rank == 0 ) {
@@ -1605,6 +1605,8 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
     }
     /* printf("Partial sum for global dofs %d should be %d\n",partial_sum,fetidpmat_ctx->n_lambda); */
   }
+  ierr = PetscFree(all_aux_global_numbering_mpi_1);CHKERRQ(ierr);
+  ierr = PetscFree(all_aux_global_numbering_mpi_2);CHKERRQ(ierr);
   ierr = MPI_Bcast(global_dofs_numbering,fetidpmat_ctx->n_lambda,MPIU_INT,0,comm);CHKERRQ(ierr);
 
   /* init data for scaling factors exchange */
@@ -1731,11 +1733,25 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
       partial_sum += j;
     }
   }
+  ierr = PetscFree(aux_sums);CHKERRQ(ierr);
+  ierr = PetscFree(global_dofs_numbering);CHKERRQ(ierr);
+  ierr = PetscFree(aux_global_numbering_mpi);CHKERRQ(ierr);
+  ierr = PetscFree(aux_local_numbering_1);CHKERRQ(ierr);
+  ierr = PetscFree(dual_dofs_boundary_indices);CHKERRQ(ierr);
   ierr = PetscFree(all_factors[0]);CHKERRQ(ierr);
   ierr = PetscFree(all_factors);CHKERRQ(ierr);
   /* printf("I found %d local lambda dofs when numbering them (should be %d)\n",partial_sum,n_local_lambda); */
+
+  /* Local to global mapping of fetidpmat */
+  ierr = VecCreate(PETSC_COMM_SELF,&fetidpmat_ctx->lambda_local);CHKERRQ(ierr);
+  ierr = VecSetSizes(fetidpmat_ctx->lambda_local,n_local_lambda,n_local_lambda);CHKERRQ(ierr);
+  ierr = VecSetType(fetidpmat_ctx->lambda_local,VECSEQ);CHKERRQ(ierr);
+  ierr = VecCreate(comm,&lambda_global);CHKERRQ(ierr);
+  ierr = VecSetSizes(lambda_global,PETSC_DECIDE,fetidpmat_ctx->n_lambda);CHKERRQ(ierr);
+  ierr = VecSetType(lambda_global,VECMPI);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,n_local_lambda,l2g_indices,PETSC_OWN_POINTER,&IS_l2g_lambda);CHKERRQ(ierr);
   ierr = VecScatterCreate(fetidpmat_ctx->lambda_local,(IS)0,lambda_global,IS_l2g_lambda,&fetidpmat_ctx->l2g_lambda);CHKERRQ(ierr);
+  ierr = ISDestroy(&IS_l2g_lambda);CHKERRQ(ierr);
 
   /* Create local part of B_delta */
   ierr = MatCreate(PETSC_COMM_SELF,&fetidpmat_ctx->B_delta);
@@ -1746,6 +1762,7 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
   for (i=0;i<n_local_lambda;i++) {
     ierr = MatSetValue(fetidpmat_ctx->B_delta,i,cols_B_delta[i],vals_B_delta[i],INSERT_VALUES);CHKERRQ(ierr);
   }
+  ierr = PetscFree(vals_B_delta);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(fetidpmat_ctx->B_delta,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (fetidpmat_ctx->B_delta,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -1772,6 +1789,8 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
     ierr = MatAssemblyBegin(fetidpmat_ctx->B_Ddelta,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd  (fetidpmat_ctx->B_Ddelta,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
+  ierr = PetscFree(scaling_factors);CHKERRQ(ierr);
+  ierr = PetscFree(cols_B_delta);CHKERRQ(ierr);
 
   /* Create some vectors needed by fetidp */
   ierr = VecDuplicate(pcis->vec1_B,&fetidpmat_ctx->temp_solution_B);CHKERRQ(ierr);
@@ -1961,23 +1980,8 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
     }
   }
   /* final cleanup */
-  ierr = PetscFree(dual_dofs_boundary_indices);CHKERRQ(ierr);
   ierr = PetscFree(vertex_indices);CHKERRQ(ierr);
-  ierr = PetscFree(aux_local_numbering_1);CHKERRQ(ierr);
-  ierr = PetscFree(aux_local_numbering_2);CHKERRQ(ierr);
-  ierr = PetscFree(aux_global_numbering);CHKERRQ(ierr);
-  ierr = PetscFree(aux_global_numbering_mpi);CHKERRQ(ierr);
-  ierr = PetscFree(dof_sizes);CHKERRQ(ierr);
-  ierr = PetscFree(dof_displs);CHKERRQ(ierr);
-  ierr = PetscFree(all_aux_global_numbering_mpi_1);CHKERRQ(ierr);
-  ierr = PetscFree(all_aux_global_numbering_mpi_2);CHKERRQ(ierr);
-  ierr = PetscFree(global_dofs_numbering);CHKERRQ(ierr);
-  ierr = PetscFree(aux_sums);CHKERRQ(ierr);
-  ierr = PetscFree(cols_B_delta);CHKERRQ(ierr);
-  ierr = PetscFree(vals_B_delta);CHKERRQ(ierr);
-  ierr = PetscFree(scaling_factors);CHKERRQ(ierr);
   ierr = VecDestroy(&lambda_global);CHKERRQ(ierr);
-  ierr = ISDestroy(&IS_l2g_lambda);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
