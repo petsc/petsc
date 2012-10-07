@@ -45,6 +45,7 @@ PetscErrorCode DMPatchZoom(DM dm, PetscInt rank, MPI_Comm commz, DM *dmz, PetscS
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+#if 0
   if (commz == MPI_COMM_NULL) {
     /* Split communicator */
     SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
@@ -68,6 +69,7 @@ PetscErrorCode DMPatchZoom(DM dm, PetscInt rank, MPI_Comm commz, DM *dmz, PetscS
   ierr = DMSetUp(*dmz);CHKERRQ(ierr);
   /* Create SF for ghosted map */
   /* Create SF for restricted map */
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -80,6 +82,7 @@ PetscErrorCode DMPatchSolve(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+#if 0
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   for(r = 0; r < size; ++r) {
     DM  dmz, dmf;
@@ -102,6 +105,7 @@ PetscErrorCode DMPatchSolve(DM dm)
     /* Compute global residual Rcoarse */
     /* TauCoarse = Rcoarse - Rcoarse_restricted */
   }
+#endif
   PetscFunctionReturn(0);
 }
 
