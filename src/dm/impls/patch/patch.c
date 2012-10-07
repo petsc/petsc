@@ -18,6 +18,94 @@ Solver loop to update \tau:
 */
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPatchZoom"
+/*
+  DMPatchZoom - Create a version of the coarse patch (identified by rank) with halo on communicator commz
+
+  Input Parameters:
+  + dm - the DM
+  . rank - the rank which holds the given patch
+  - commz - the new communicator for the patch
+
+  Output Parameters:
+  + dmz  - the patch DM
+  . sfz  - the PetscSF mapping the patch+halo to the zoomed version
+  . sfzr - the PetscSF mapping the patch to the restricted zoomed version
+
+  Level: intermediate
+
+  Note: All processes in commz should have the same rank (could autosplit comm)
+
+.seealso: DMPatchSolve()
+*/
+PetscErrorCode DMPatchZoom(DM dm, PetscInt rank, MPI_Comm commz, DM *dmz, PetscSF *sfz, PetscSF *sfzr)
+{
+  PetscInt        dim, dof, sw;
+  DMDAStencilType st;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (commz == MPI_COMM_NULL) {
+    /* Split communicator */
+    SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
+  }
+  /* Create patch DM */
+  ierr = DMDAGetDim(dm, &dim);CHKERRQ(ierr);
+  ierr = DMDAGetDof(dm, &dof);CHKERRQ(ierr);
+  ierr = DMDAGetStencilType(dm, &st);CHKERRQ(ierr);
+  ierr = DMDAGetStencilWidth(dm, &sw);CHKERRQ(ierr);
+
+  ierr = DMDACreate(commz, dmz);CHKERRQ(ierr);
+  ierr = DMDASetDim(*dmz, dim);CHKERRQ(ierr);
+  ierr = DMDASetSizes(*da, M, N, 1);CHKERRQ(ierr);
+  ierr = DMDASetNumProcs(*dmz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(*dmz, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
+  ierr = DMDASetDof(*dmz, dof);CHKERRQ(ierr);
+  ierr = DMDASetStencilType(*dmz, st);CHKERRQ(ierr);
+  ierr = DMDASetStencilWidth(*dmz, sw);CHKERRQ(ierr);
+  ierr = DMDASetOwnershipRanges(*dmz, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dmz);CHKERRQ(ierr);
+  ierr = DMSetUp(*dmz);CHKERRQ(ierr);
+  /* Create SF for ghosted map */
+  /* Create SF for restricted map */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPatchSolve"
+PetscErrorCode DMPatchSolve(DM dm)
+{
+  MPI_Comm       comm = ((PetscObject) dm)->comm;
+  PetscMPIInt    size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  for(r = 0; r < size; ++r) {
+    DM  dmz, dmf;
+    Mat interpz;
+
+    ierr = DMPatchZoom(dm, r, comm, &dmz);CHKERRQ(ierr);
+    /* Scatter Xcoarse -> Xzoom */
+    ierr = PetscSFBcastBegin(sfz, MPIU_SCALAR, xcarray, xzarray);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sfz, MPIU_SCALAR, xcarray, xzarray);CHKERRQ(ierr);
+    /* Interpolate Xzoom -> Xfine, note that this may be on subcomms */
+    ierr = DMRefine(dmz, MPI_COMM_NULL, &dmf);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(dmz, dmf, &interpz, PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMInterpolate(dmz, interpz, dmf);CHKERRQ(ierr);
+    /* Smooth Xfine using two-step smoother, normal smoother plus Kaczmarz---moves back and forth from dmzoom to dmfine */
+    /* Compute residual Rfine */
+    /* Restrict Rfine to Rzoom_restricted */
+    /* Scatter Rzoom_restricted -> Rcoarse_restricted */
+    ierr = PetscSFBcastBegin(sfzr, MPIU_SCALAR, xzarray, xcarray, MPI_SUM);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sfzr, MPIU_SCALAR, xzarray, xcarray, MPI_SUM);CHKERRQ(ierr);
+    /* Compute global residual Rcoarse */
+    /* TauCoarse = Rcoarse - Rcoarse_restricted */
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPatchView_Ascii"
 PetscErrorCode DMPatchView_Ascii(DM dm, PetscViewer viewer)
 {
