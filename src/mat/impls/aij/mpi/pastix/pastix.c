@@ -415,7 +415,7 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
       lu->iparm[IPARM_VERBOSE] =  icntl;
     }
     icntl=-1;
-    ierr = PetscOptionsInt("-mat_pastix_threadnbr","iparm[IPARM_THREAD_NBR] : Number of thread by MPI node","None",lu->iparm[IPARM_THREAD_NBR],&icntl,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_pastix_threadnbr","iparm[IPARM_THREAD_NBR] : Number of thread by MPI node","None",lu->iparm[IPARM_THREAD_NBR],&icntl,&flg);CHKERRQ(ierr);
     if ((flg && icntl > 0)) {
       lu->iparm[IPARM_THREAD_NBR] = icntl;
     }
