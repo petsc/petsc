@@ -41,8 +41,8 @@ typedef struct {
   KSP           coarse_ksp;
   Mat           coarse_phi_B;
   Mat           coarse_phi_D;
-  PetscMPIInt   local_primal_size;
-  PetscMPIInt   *local_primal_indices;
+  PetscInt      local_primal_size;
+  PetscInt      *local_primal_indices;
   PetscMPIInt   *local_primal_displacements;
   PetscMPIInt   *local_primal_sizes;
   PetscMPIInt   replicated_primal_size;

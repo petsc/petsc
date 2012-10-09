@@ -1461,17 +1461,18 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
   IS             IS_l2g_lambda;
 
   PetscBool      skip_node,fully_redundant;
-  PetscInt       i,j,k,s,n_boundary_dofs,sum_dof_sizes,n_global_lambda,n_vertices;
+  PetscInt       i,j,k,s,n_boundary_dofs,n_global_lambda,n_vertices,partial_sum;
   PetscInt       n_local_lambda,n_lambda_for_dof,dual_size,n_neg_values,n_pos_values;
-  PetscMPIInt    rank,nprocs,partial_sum;
+  PetscMPIInt    rank,nprocs;
   PetscScalar    scalar_value;
 
   PetscInt       *vertex_indices,*temp_indices;
   PetscInt       *dual_dofs_boundary_indices,*aux_local_numbering_1,*aux_global_numbering;
   PetscInt       *aux_sums,*cols_B_delta,*l2g_indices;
-  PetscMPIInt    *aux_local_numbering_2,*aux_global_numbering_mpi,*dof_sizes,*dof_displs;
-  PetscMPIInt    *all_aux_global_numbering_mpi_1,*all_aux_global_numbering_mpi_2,*global_dofs_numbering;
   PetscScalar    *array,*scaling_factors,*vals_B_delta;
+  PetscInt       *aux_local_numbering_2,*dof_sizes,*dof_displs;
+  PetscInt       first_index,old_index;
+  PetscBool      first_found = PETSC_FALSE;
 
   /* For communication of scaling factors */
   PetscInt       *ptrs_buffer,neigh_position;
@@ -1481,7 +1482,7 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
   /* tests */
   Vec            test_vec;
   PetscBool      test_fetidp;
-  PetscViewer    viewer; 
+  PetscViewer    viewer;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -1543,7 +1544,7 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
       /* store some data needed */
       dual_dofs_boundary_indices[partial_sum] = n_boundary_dofs-1;
       aux_local_numbering_1[partial_sum] = i;
-      aux_local_numbering_2[partial_sum] = (PetscMPIInt)n_lambda_for_dof;
+      aux_local_numbering_2[partial_sum] = n_lambda_for_dof;
       partial_sum++;
     }
   }
@@ -1551,71 +1552,83 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
   printf("I found %d boundary dofs (should be %d)\n",n_boundary_dofs,pcis->n_B);
   printf("Partial sum %d should be %d\n",partial_sum,dual_size);*/
   ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+
   ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
   ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecSum(pcis->vec1_global,&scalar_value);CHKERRQ(ierr);
-  fetidpmat_ctx->n_lambda = (PetscInt) scalar_value;
+  fetidpmat_ctx->n_lambda = (PetscInt) scalar_value; 
   /* printf("I found %d global multipliers (%f)\n",fetidpmat_ctx->n_lambda,scalar_value); */
 
   /* compute global ordering of lagrange multipliers and associate l2g map */
+  ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
+  ierr = VecSet(pcis->vec1_N,0.0);CHKERRQ(ierr);
+  ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+  for (i=0;i<dual_size;i++) {
+    array[aux_local_numbering_1[i]] = aux_local_numbering_2[i];
+  }
+  ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+  ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,pcis->vec1_global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,pcis->vec1_global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecSum(pcis->vec1_global,&scalar_value);CHKERRQ(ierr);
+  if (pcbddc->dbg_flag && (PetscInt)scalar_value != fetidpmat_ctx->n_lambda) {
+    SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in %s: global number of multipliers mismatch! (%d!=%d)\n",__FUNCT__,(PetscInt)scalar_value,fetidpmat_ctx->n_lambda);
+  }
 
-  ierr = PetscMalloc(dual_size*sizeof(*aux_global_numbering),&aux_global_numbering);CHKERRQ(ierr);
-  ierr = PetscMalloc(dual_size*sizeof(*aux_global_numbering_mpi),&aux_global_numbering_mpi);CHKERRQ(ierr);
-  j = (rank == 0 ? nprocs : 0);
+  /* Fill pcis->vec1_global with cumulative function for global numbering */
+  ierr = VecGetArray(pcis->vec1_global,&array);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(pcis->vec1_global,&s);CHKERRQ(ierr);
+  k = 0;
+  first_index = -1;
+  for (i=0;i<s;i++) {
+    if (!first_found && array[i] > 0.0) {
+      first_found = PETSC_TRUE;
+      first_index = i;
+    }
+    k += (PetscInt)array[i];
+  }
+  j = ( !rank ? nprocs : 0);
   ierr = PetscMalloc(j*sizeof(*dof_sizes),&dof_sizes);CHKERRQ(ierr);
   ierr = PetscMalloc(j*sizeof(*dof_displs),&dof_displs);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(matis->mapping,dual_size,aux_local_numbering_1,aux_global_numbering);CHKERRQ(ierr);
-  ierr = MPI_Gather(&dual_size,1,MPIU_INT,dof_sizes,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  sum_dof_sizes=0;
-  if ( rank == 0 ) {
+  ierr = MPI_Gather(&k,1,MPIU_INT,dof_sizes,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+  if (!rank) {
     dof_displs[0]=0;
-    sum_dof_sizes=dual_size;
     for (i=1;i<nprocs;i++) {
       dof_displs[i] = dof_displs[i-1]+dof_sizes[i-1];
-      sum_dof_sizes += dof_sizes[i];
     }
   }
-  for (i=0;i<dual_size;i++) {
-    aux_global_numbering_mpi[i]=(PetscMPIInt)aux_global_numbering[i];
+  ierr = MPI_Scatter(dof_displs,1,MPIU_INT,&k,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+  if (first_found) {
+    array[first_index] += k;
+    old_index = first_index;
+    for (i=first_index+1;i<s;i++) {
+      if (array[i] > 0.0) {
+        array[i] += array[old_index];
+        old_index = i;
+      }
+    }
   }
-  ierr = PetscFree(aux_global_numbering);CHKERRQ(ierr);
-  ierr = PetscMalloc(sum_dof_sizes*sizeof(*all_aux_global_numbering_mpi_1),&all_aux_global_numbering_mpi_1);CHKERRQ(ierr);
-  ierr = PetscMalloc(sum_dof_sizes*sizeof(*all_aux_global_numbering_mpi_2),&all_aux_global_numbering_mpi_2);CHKERRQ(ierr);
-
-  ierr = MPI_Gatherv(aux_global_numbering_mpi,dual_size,MPIU_INT,all_aux_global_numbering_mpi_1,dof_sizes,dof_displs,MPIU_INT,0,comm);CHKERRQ(ierr);
-  ierr = MPI_Gatherv(aux_local_numbering_2,dual_size,MPIU_INT,all_aux_global_numbering_mpi_2,dof_sizes,dof_displs,MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr = VecRestoreArray(pcis->vec1_global,&array);CHKERRQ(ierr);
+  ierr = VecSet(pcis->vec1_N,0.0);CHKERRQ(ierr);
+  ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = PetscMalloc(dual_size*sizeof(*aux_global_numbering),&aux_global_numbering);CHKERRQ(ierr);
+  ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+  for (i=0;i<dual_size;i++) {
+    aux_global_numbering[i] = (PetscInt)array[aux_local_numbering_1[i]]-aux_local_numbering_2[i];
+  }
+  ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
   ierr = PetscFree(aux_local_numbering_2);CHKERRQ(ierr);
   ierr = PetscFree(dof_displs);CHKERRQ(ierr);
   ierr = PetscFree(dof_sizes);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(fetidpmat_ctx->n_lambda*sizeof(*global_dofs_numbering),&global_dofs_numbering);CHKERRQ(ierr);
-  if ( rank == 0 ) {
-    ierr = PetscSortMPIIntWithArray(sum_dof_sizes,all_aux_global_numbering_mpi_1,all_aux_global_numbering_mpi_2);CHKERRQ(ierr);
-    j=-1;
-    partial_sum = 0;
-    for (i=0;i<sum_dof_sizes;i++) {
-      if (j != all_aux_global_numbering_mpi_1[i] ) {
-        j=all_aux_global_numbering_mpi_1[i];
-        for (k=0;k<all_aux_global_numbering_mpi_2[i];k++) {
-          global_dofs_numbering[partial_sum+k]=all_aux_global_numbering_mpi_1[i];
-        }
-        partial_sum += all_aux_global_numbering_mpi_2[i];
-      }
-    }
-    /* printf("Partial sum for global dofs %d should be %d\n",partial_sum,fetidpmat_ctx->n_lambda); */
-  }
-  ierr = PetscFree(all_aux_global_numbering_mpi_1);CHKERRQ(ierr);
-  ierr = PetscFree(all_aux_global_numbering_mpi_2);CHKERRQ(ierr);
-  ierr = MPI_Bcast(global_dofs_numbering,fetidpmat_ctx->n_lambda,MPIU_INT,0,comm);CHKERRQ(ierr);
-
   /* init data for scaling factors exchange */
   partial_sum = 0;
   j = 0;
-  ierr = PetscMalloc( pcis->n_neigh*sizeof(PetscInt),&ptrs_buffer);CHKERRQ(ierr);
-  ierr = PetscMalloc( (pcis->n_neigh-1)*sizeof(MPI_Request),&send_reqs);CHKERRQ(ierr);
-  ierr = PetscMalloc( (pcis->n_neigh-1)*sizeof(MPI_Request),&recv_reqs);CHKERRQ(ierr);
-  ierr = PetscMalloc( pcis->n*sizeof(PetscScalar*),&all_factors);CHKERRQ(ierr);
+  ierr = PetscMalloc(pcis->n_neigh*sizeof(PetscInt),&ptrs_buffer);CHKERRQ(ierr);
+  ierr = PetscMalloc((pcis->n_neigh-1)*sizeof(MPI_Request),&send_reqs);CHKERRQ(ierr);
+  ierr = PetscMalloc((pcis->n_neigh-1)*sizeof(MPI_Request),&recv_reqs);CHKERRQ(ierr);
+  ierr = PetscMalloc(pcis->n*sizeof(PetscScalar*),&all_factors);CHKERRQ(ierr);
   ptrs_buffer[0]=0;
   for (i=1;i<pcis->n_neigh;i++) {
     partial_sum += pcis->n_shared[i];
@@ -1674,7 +1687,7 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
   n_global_lambda=0;
   partial_sum=0;
   for (i=0;i<dual_size;i++) {
-    while( global_dofs_numbering[n_global_lambda] != aux_global_numbering_mpi[i] ) { n_global_lambda++; }
+    n_global_lambda = aux_global_numbering[i];
     j = mat_graph->count[aux_local_numbering_1[i]];
     k = (mat_graph->neighbours_set[aux_local_numbering_1[i]][0] == -1 ?  1 : 0);
     j = j - k;
@@ -1720,8 +1733,7 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
         for (k=0;k<s+1;k++) {
           scalar_value += array[k];
         }
-        scalar_value = -scalar_value;
-        scaling_factors[partial_sum+s] = scalar_value;
+        scaling_factors[partial_sum+s] = -scalar_value;
       }
       for (s=0;s<n_pos_values;s++) {
         scalar_value = 0.0;
@@ -1733,9 +1745,8 @@ static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx *fetidpmat_ctx )
       partial_sum += j;
     }
   }
+  ierr = PetscFree(aux_global_numbering);CHKERRQ(ierr);
   ierr = PetscFree(aux_sums);CHKERRQ(ierr);
-  ierr = PetscFree(global_dofs_numbering);CHKERRQ(ierr);
-  ierr = PetscFree(aux_global_numbering_mpi);CHKERRQ(ierr);
   ierr = PetscFree(aux_local_numbering_1);CHKERRQ(ierr);
   ierr = PetscFree(dual_dofs_boundary_indices);CHKERRQ(ierr);
   ierr = PetscFree(all_factors[0]);CHKERRQ(ierr);
@@ -3554,7 +3565,6 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
 
   PetscInt      offset,offset2;
   PetscMPIInt   im_active=0;
-  PetscMPIInt   *auxglobal_primal;
   PetscInt      *dnz,*onz;
 
   PetscBool     setsym,issym=PETSC_FALSE;
@@ -3573,17 +3583,22 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
  
   /* Assign global numbering to coarse dofs */
   {
-    PetscMPIInt    *auxlocal_primal;
-    PetscMPIInt    *all_auxglobal_primal;
-    PetscMPIInt    mpi_local_primal_size = (PetscMPIInt)pcbddc->local_primal_size;
-    PetscInt       *row_cmat_indices;
-    PetscInt       *aux_ordering;
-    PetscInt       *row_cmat_global_indices;
-    PetscInt       size_of_constraint;
-    PetscBool      *array_bool;
+    PetscInt     *auxlocal_primal;
+    PetscInt     *row_cmat_indices;
+    PetscInt     *aux_ordering;
+    PetscInt     *row_cmat_global_indices;
+    PetscInt     *dof_sizes,*dof_displs;
+    PetscInt     size_of_constraint;
+    PetscBool    *array_bool;
+    PetscBool    first_found;
+    PetscInt     first_index,old_index,s;
+    PetscMPIInt  mpi_local_primal_size;
+    PetscScalar  coarsesum,*array;
+
+    mpi_local_primal_size = (PetscMPIInt)pcbddc->local_primal_size;
 
     /* Construct needed data structures for message passing */
-    ierr = PetscMalloc(mpi_local_primal_size*sizeof(PetscMPIInt),&pcbddc->local_primal_indices);CHKERRQ(ierr);
+    ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscInt),&pcbddc->local_primal_indices);CHKERRQ(ierr);
     j = 0;
     if (rank_prec_comm == 0 || pcbddc->coarse_problem_type == REPLICATED_BDDC || pcbddc->coarse_problem_type == MULTILEVEL_BDDC) {
       j = size_prec_comm;
@@ -3601,18 +3616,12 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       pcbddc->local_primal_displacements[i] = pcbddc->replicated_primal_size ;
       pcbddc->replicated_primal_size += pcbddc->local_primal_sizes[i];
     }
-    if (rank_prec_comm == 0) {
-      /* allocate some auxiliary space */
-      ierr = PetscMalloc(pcbddc->replicated_primal_size*sizeof(*all_auxglobal_primal),&all_auxglobal_primal);CHKERRQ(ierr);
-    }
-    ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscMPIInt),&auxlocal_primal);CHKERRQ(ierr);
-    ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscMPIInt),&auxglobal_primal);CHKERRQ(ierr);
 
     /* First let's count coarse dofs.
        This code fragment assumes that the number of local constraints per connected component
        is not greater than the number of nodes defined for the connected component 
        (otherwise we will surely have linear dependence between constraints and thus a singular coarse problem) */
-    /* auxlocal_primal      : primal indices in local nodes numbering (internal and interface) with complete queue sorted by global ordering */
+    ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscInt),&auxlocal_primal);CHKERRQ(ierr);
     j = 0;
     for (i=0;i<pcbddc->local_primal_size;i++) {
       ierr = MatGetRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -3645,18 +3654,76 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,PETSC_NULL);CHKERRQ(ierr);
     }
     ierr = PetscFree(aux_ordering);CHKERRQ(ierr);
-    if (dbg_flag) {
-      PetscScalar coarsesum,*array;
+    ierr = PetscFree(array_bool);CHKERRQ(ierr);
+    ierr = PetscFree(row_cmat_global_indices);CHKERRQ(ierr);
 
+    /* Compute number of coarse dofs */
+    ierr = VecSet(pcis->vec1_N,0.0);CHKERRQ(ierr);
+    ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+    for (i=0;i<pcbddc->local_primal_size;i++) {
+      array[auxlocal_primal[i]]=1.0;
+    }
+    ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+    ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,pcis->vec1_global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,pcis->vec1_global,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecSum(pcis->vec1_global,&coarsesum);CHKERRQ(ierr);
+    pcbddc->coarse_size = (PetscInt)coarsesum;
+  
+    /* Fill pcis->vec1_global with cumulative function for global numbering */
+    ierr = VecGetArray(pcis->vec1_global,&array);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(pcis->vec1_global,&s);CHKERRQ(ierr);
+    k = 0;
+    first_index = -1;
+    first_found = PETSC_FALSE;
+    for (i=0;i<s;i++) {
+      if (!first_found && array[i] > 0.0) {
+        first_found = PETSC_TRUE;
+        first_index = i;
+      }
+      k += (PetscInt)array[i];
+    }
+    j = ( !rank_prec_comm ? size_prec_comm : 0);
+    ierr = PetscMalloc(j*sizeof(*dof_sizes),&dof_sizes);CHKERRQ(ierr);
+    ierr = PetscMalloc(j*sizeof(*dof_displs),&dof_displs);CHKERRQ(ierr);
+    ierr = MPI_Gather(&k,1,MPIU_INT,dof_sizes,1,MPIU_INT,0,prec_comm);CHKERRQ(ierr);
+    if (!rank_prec_comm) {
+      dof_displs[0]=0;
+      for (i=1;i<size_prec_comm;i++) {
+        dof_displs[i] = dof_displs[i-1]+dof_sizes[i-1];
+      }
+    }
+    ierr = MPI_Scatter(dof_displs,1,MPIU_INT,&k,1,MPIU_INT,0,prec_comm);CHKERRQ(ierr);
+    if (first_found) {
+      array[first_index] += k;
+      old_index = first_index;
+      for (i=first_index+1;i<s;i++) {
+        if (array[i] > 0.0) {
+          array[i] += array[old_index];
+          old_index = i;
+        }
+      }
+    }
+    ierr = VecRestoreArray(pcis->vec1_global,&array);CHKERRQ(ierr);
+    ierr = VecSet(pcis->vec1_N,0.0);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+    for (i=0;i<pcbddc->local_primal_size;i++) {
+      pcbddc->local_primal_indices[i] = (PetscInt)array[auxlocal_primal[i]]-1;
+    }
+    ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+    ierr = PetscFree(dof_displs);CHKERRQ(ierr);
+    ierr = PetscFree(dof_sizes);CHKERRQ(ierr);
+
+    if (dbg_flag) {
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"Check coarse indices\n");CHKERRQ(ierr);
       ierr = VecSet(pcis->vec1_N,0.0);CHKERRQ(ierr);
       ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-      for (i=0;i<pcis->n;i++) {
-        if (array_bool[i]) {
-          array[i]=1.0;
-        }
+      for (i=0;i<pcbddc->local_primal_size;i++) {
+        array[auxlocal_primal[i]]=1.0;
       }
       ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
       ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
@@ -3685,41 +3752,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       ierr = PetscViewerASCIIPrintf(viewer,"Size of coarse problem SHOULD be %lf\n",coarsesum);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscFree(row_cmat_global_indices);CHKERRQ(ierr);
-    ierr = PetscFree(array_bool);CHKERRQ(ierr);
-
-    /* Now assign them a global numbering */
-    /* auxglobal_primal contains indices in global nodes numbering (internal and interface) */
-    ierr = ISLocalToGlobalMappingApply(matis->mapping,pcbddc->local_primal_size,auxlocal_primal,auxglobal_primal);CHKERRQ(ierr);
     ierr = PetscFree(auxlocal_primal);CHKERRQ(ierr);
-    /* all_auxglobal_primal contains all primal nodes indices in global nodes numbering (internal and interface) */
-    ierr = MPI_Gatherv(&auxglobal_primal[0],pcbddc->local_primal_size,MPIU_INT,&all_auxglobal_primal[0],pcbddc->local_primal_sizes,pcbddc->local_primal_displacements,MPIU_INT,0,prec_comm);CHKERRQ(ierr);
-
-    /* After this block all_auxglobal_primal should contains one copy of each primal node's indices in global nodes numbering */
-    if (!rank_prec_comm) {
-      pcbddc->coarse_size=pcbddc->replicated_primal_size;
-      ierr = PetscSortRemoveDupsMPIInt(&pcbddc->coarse_size,all_auxglobal_primal);CHKERRQ(ierr);
-    }
-    ierr = MPI_Bcast(&pcbddc->coarse_size,1,MPIU_INT,0,prec_comm);CHKERRQ(ierr);
-    if (rank_prec_comm) {
-      ierr = PetscMalloc(pcbddc->coarse_size*sizeof(PetscMPIInt),&all_auxglobal_primal);CHKERRQ(ierr);
-    }
-    /* We only need to broadcast the indices from 0 to pcbddc->coarse_size. Remaning elements of array all_aux_global_primal are garbage. */
-    ierr = MPI_Bcast(all_auxglobal_primal,pcbddc->coarse_size,MPIU_INT,0,prec_comm);CHKERRQ(ierr);
-    
-    /* Now get global coarse numbering of local primal nodes */
-    for (i=0;i<pcbddc->local_primal_size;i++) {
-      k=0;
-      while( all_auxglobal_primal[k] != auxglobal_primal[i] ) { k++;}
-      pcbddc->local_primal_indices[i]=k;
-    }
-    ierr = PetscFree(auxglobal_primal);CHKERRQ(ierr);
-    ierr = PetscFree(all_auxglobal_primal);CHKERRQ(ierr);
-    if (rank_prec_comm==0) {
-      j=pcbddc->replicated_primal_size;
-      ierr = PetscMalloc(j*sizeof(PetscMPIInt),&auxglobal_primal);CHKERRQ(ierr);
-    }
-    ierr = MPI_Gatherv(pcbddc->local_primal_indices,pcbddc->local_primal_size,MPIU_INT,auxglobal_primal,pcbddc->local_primal_sizes,pcbddc->local_primal_displacements,MPIU_INT,0,prec_comm);CHKERRQ(ierr);
   }
 
   if (dbg_flag) {
@@ -4036,9 +4069,11 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
             }
           } else {
             PetscMPIInt send_size;
+            PetscMPIInt *send_buffer;
             PetscInt    *aux_ins_indices;
             PetscInt    ii,jj;
             MPI_Request *requests;
+
             ierr = PetscMalloc(count_recv*sizeof(PetscMPIInt),&localdispl2);CHKERRQ(ierr);
             /* reusing pcbddc->local_primal_displacements and pcbddc->replicated_primal_size */
             ierr = PetscFree(pcbddc->local_primal_displacements);CHKERRQ(ierr);
@@ -4065,9 +4100,16 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
             }
             if (rank_coarse_proc_send_to != MPI_PROC_NULL ) {
               send_size = pcbddc->local_primal_size;
-              ierr = MPI_Isend(pcbddc->local_primal_indices,send_size,MPIU_INT,rank_coarse_proc_send_to,999,prec_comm,&requests[count_recv]);CHKERRQ(ierr);
+              ierr = PetscMalloc(send_size*sizeof(PetscMPIInt),&send_buffer);CHKERRQ(ierr);
+              for (i=0;i<send_size;i++) {
+                send_buffer[i]=(PetscMPIInt)pcbddc->local_primal_indices[i];
+              }
+              ierr = MPI_Isend(send_buffer,send_size,MPIU_INT,rank_coarse_proc_send_to,999,prec_comm,&requests[count_recv]);CHKERRQ(ierr);
             }
             ierr = MPI_Waitall(count_recv+1,requests,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+            if (rank_coarse_proc_send_to != MPI_PROC_NULL ) { 
+              ierr = PetscFree(send_buffer);CHKERRQ(ierr);
+            }
             j = 0;
             for (i=0;i<count_recv;i++) {
               ii = pcbddc->local_primal_displacements[i+1]-pcbddc->local_primal_displacements[i];
@@ -4163,6 +4205,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       {
 
         PetscMPIInt mysize,mysize2;
+        PetscMPIInt *send_buffer;
 
         if (rank_prec_comm==active_rank) {
           ierr = PetscMalloc ( pcbddc->replicated_primal_size*sizeof(PetscMPIInt),&pcbddc->replicated_local_primal_indices);CHKERRQ(ierr);
@@ -4180,13 +4223,18 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
 
         mysize=pcbddc->local_primal_size;
         mysize2=pcbddc->local_primal_size*pcbddc->local_primal_size;
+        ierr = PetscMalloc(mysize*sizeof(PetscMPIInt),&send_buffer);CHKERRQ(ierr);
+        for (i=0;i<mysize;i++) {
+          send_buffer[i]=(PetscMPIInt)pcbddc->local_primal_indices[i];
+        }
         if (pcbddc->coarse_problem_type == SEQUENTIAL_BDDC){
-          ierr = MPI_Gatherv(&pcbddc->local_primal_indices[0],mysize,MPIU_INT,&pcbddc->replicated_local_primal_indices[0],pcbddc->local_primal_sizes,pcbddc->local_primal_displacements,MPIU_INT,master_proc,prec_comm);CHKERRQ(ierr);
+          ierr = MPI_Gatherv(send_buffer,mysize,MPIU_INT,&pcbddc->replicated_local_primal_indices[0],pcbddc->local_primal_sizes,pcbddc->local_primal_displacements,MPIU_INT,master_proc,prec_comm);CHKERRQ(ierr);
           ierr = MPI_Gatherv(&coarse_submat_vals[0],mysize2,MPIU_SCALAR,&temp_coarse_mat_vals[0],localsizes2,localdispl2,MPIU_SCALAR,master_proc,prec_comm);CHKERRQ(ierr);
         } else {
-          ierr = MPI_Allgatherv(&pcbddc->local_primal_indices[0],mysize,MPIU_INT,&pcbddc->replicated_local_primal_indices[0],pcbddc->local_primal_sizes,pcbddc->local_primal_displacements,MPIU_INT,prec_comm);CHKERRQ(ierr);
+          ierr = MPI_Allgatherv(send_buffer,mysize,MPIU_INT,&pcbddc->replicated_local_primal_indices[0],pcbddc->local_primal_sizes,pcbddc->local_primal_displacements,MPIU_INT,prec_comm);CHKERRQ(ierr);
           ierr = MPI_Allgatherv(&coarse_submat_vals[0],mysize2,MPIU_SCALAR,&temp_coarse_mat_vals[0],localsizes2,localdispl2,MPIU_SCALAR,prec_comm);CHKERRQ(ierr);
         }
+        ierr = PetscFree(send_buffer);CHKERRQ(ierr);
         break;
       }/* switch on coarse problem and communications associated with finished */
   }
@@ -4213,79 +4261,95 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
     }
     /* preallocation */
     if (pcbddc->coarse_problem_type != MULTILEVEL_BDDC) {
+
       PetscInt lrows,lcols;
+
       ierr = MatGetLocalSize(pcbddc->coarse_mat,&lrows,&lcols);CHKERRQ(ierr);
       ierr = MatPreallocateInitialize(coarse_comm,lrows,lcols,dnz,onz);CHKERRQ(ierr);
+
       if (pcbddc->coarse_problem_type == PARALLEL_BDDC) {
-        PetscInt coarse_index_row,coarse_index_col,start_row,owner;
-        PetscMPIInt *auxpreall_displs; 
-        PetscMPIInt *auxpreall_sizes; 
-        PetscMPIInt *auxpreall_dnz; 
-        PetscMPIInt *auxpreall_onz; 
-        PetscInt    *auxpreall_ownership; 
-        if (rank_prec_comm == 0) {
-          ierr = PetscMalloc((size_prec_comm+1)*sizeof(PetscMPIInt),&auxpreall_displs);CHKERRQ(ierr);
-          auxpreall_displs[size_prec_comm]=pcbddc->coarse_size;
-          ierr = PetscMalloc(size_prec_comm*sizeof(PetscMPIInt),&auxpreall_sizes);CHKERRQ(ierr);
-          ierr = PetscMalloc(pcbddc->coarse_size*sizeof(PetscMPIInt),&auxpreall_dnz);CHKERRQ(ierr);
-          ierr = PetscMemzero(auxpreall_dnz,pcbddc->coarse_size*sizeof(PetscMPIInt));CHKERRQ(ierr);
-          ierr = PetscMalloc(pcbddc->coarse_size*sizeof(PetscMPIInt),&auxpreall_onz);CHKERRQ(ierr);
-          ierr = PetscMemzero(auxpreall_onz,pcbddc->coarse_size*sizeof(PetscMPIInt));CHKERRQ(ierr);
-          ierr = PetscMalloc(pcbddc->coarse_size*sizeof(PetscInt),&auxpreall_ownership);CHKERRQ(ierr);
-        }
-        ierr = MatGetOwnershipRange(pcbddc->coarse_mat,&start_row,PETSC_NULL);CHKERRQ(ierr);
-        ierr = MPI_Gather(&start_row,1,MPIU_INT,auxpreall_displs,1,MPIU_INT,0,prec_comm);CHKERRQ(ierr);
-        if (rank_prec_comm == 0) {
-          k=0;
-          for (i=0;i<size_prec_comm;i++) {
-            auxpreall_sizes[i]=auxpreall_displs[i+1]-auxpreall_displs[i];
-            for (j=0;j<auxpreall_sizes[i];j++) {
-              auxpreall_ownership[auxpreall_displs[i]+j]=i;
-            }
+
+        Vec         vec_dnz,vec_onz;
+        PetscScalar *my_dnz,*my_onz,*array;
+        PetscInt    *mat_ranges,*row_ownership;
+        PetscInt    coarse_index_row,coarse_index_col,owner;
+
+        ierr = VecCreate(prec_comm,&vec_dnz);CHKERRQ(ierr);
+        ierr = VecSetSizes(vec_dnz,PETSC_DECIDE,pcbddc->coarse_size);CHKERRQ(ierr);
+        ierr = VecSetType(vec_dnz,VECMPI);CHKERRQ(ierr);
+        ierr = VecDuplicate(vec_dnz,&vec_onz);CHKERRQ(ierr);
+
+        ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscScalar),&my_dnz);CHKERRQ(ierr);
+        ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscScalar),&my_onz);CHKERRQ(ierr);
+        ierr = PetscMemzero(my_dnz,pcbddc->local_primal_size*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscMemzero(my_onz,pcbddc->local_primal_size*sizeof(PetscScalar));CHKERRQ(ierr);
+
+        ierr = PetscMalloc(pcbddc->coarse_size*sizeof(PetscInt),&row_ownership);CHKERRQ(ierr);
+        ierr = MatGetOwnershipRanges(pcbddc->coarse_mat,(const PetscInt**)&mat_ranges);CHKERRQ(ierr);
+        for (i=0;i<size_prec_comm;i++) {
+          for (j=mat_ranges[i];j<mat_ranges[i+1];j++) {
+            row_ownership[j]=i;
           }
-          for (i=0;i<size_prec_comm;i++) {
-            for (j=0;j<pcbddc->local_primal_sizes[i];j++) {
-              coarse_index_row=auxglobal_primal[j+pcbddc->local_primal_displacements[i]];
-              for (k=j;k<pcbddc->local_primal_sizes[i];k++) {
-                coarse_index_col=auxglobal_primal[k+pcbddc->local_primal_displacements[i]];
-                owner = auxpreall_ownership[coarse_index_row];
-                if (coarse_index_col>auxpreall_displs[owner]-1 && coarse_index_col < auxpreall_displs[owner]+auxpreall_sizes[owner]) {
-                  auxpreall_dnz[coarse_index_row]++;
-                } else {
-                  auxpreall_onz[coarse_index_row]++;
-                }
-                if (k != j) {
-                  owner = auxpreall_ownership[coarse_index_col];
-                  if (coarse_index_row>auxpreall_displs[owner]-1 && coarse_index_row < auxpreall_displs[owner]+auxpreall_sizes[owner]) {
-                    auxpreall_dnz[coarse_index_col]++;
-                  } else {
-                    auxpreall_onz[coarse_index_col]++;
-                  }
-                }
+        }
+
+        for (i=0;i<pcbddc->local_primal_size;i++) {
+          coarse_index_row = pcbddc->local_primal_indices[i];
+          owner = row_ownership[coarse_index_row];
+          for (j=i;j<pcbddc->local_primal_size;j++) {
+            owner = row_ownership[coarse_index_row];
+            coarse_index_col = pcbddc->local_primal_indices[j];
+            if (coarse_index_col > mat_ranges[owner]-1 && coarse_index_col < mat_ranges[owner+1] ) {
+              my_dnz[i] += 1.0;
+            } else {
+              my_onz[i] += 1.0;
+            }
+            if (i != j) {
+              owner = row_ownership[coarse_index_col];
+              if (coarse_index_row > mat_ranges[owner]-1 && coarse_index_row < mat_ranges[owner+1] ) {
+                my_dnz[j] += 1.0;
+              } else {
+                my_onz[j] += 1.0;
               }
             }
           }
         }
-        ierr = MPI_Scatterv(auxpreall_dnz,auxpreall_sizes,auxpreall_displs,MPIU_INT,
-                            dnz,lrows,MPIU_INT,0,prec_comm);
-        ierr = MPI_Scatterv(auxpreall_onz,auxpreall_sizes,auxpreall_displs,MPIU_INT,
-                            onz,lrows,MPIU_INT,0,prec_comm);
-        if (rank_prec_comm == 0) {
-          ierr = PetscFree(auxpreall_displs);CHKERRQ(ierr);
-          ierr = PetscFree(auxpreall_sizes);CHKERRQ(ierr);
-          ierr = PetscFree(auxpreall_dnz);CHKERRQ(ierr);
-          ierr = PetscFree(auxpreall_onz);CHKERRQ(ierr);
-          ierr = PetscFree(auxpreall_ownership);CHKERRQ(ierr);
+        ierr = VecSet(vec_dnz,0.0);CHKERRQ(ierr);
+        ierr = VecSet(vec_onz,0.0);CHKERRQ(ierr);
+        ierr = VecSetValues(vec_dnz,pcbddc->local_primal_size,pcbddc->local_primal_indices,my_dnz,ADD_VALUES);CHKERRQ(ierr);
+        ierr = VecSetValues(vec_onz,pcbddc->local_primal_size,pcbddc->local_primal_indices,my_onz,ADD_VALUES);CHKERRQ(ierr);
+        ierr = VecAssemblyBegin(vec_dnz);CHKERRQ(ierr);
+        ierr = VecAssemblyBegin(vec_onz);CHKERRQ(ierr);
+        ierr = VecAssemblyEnd(vec_dnz);CHKERRQ(ierr);
+        ierr = VecAssemblyEnd(vec_onz);CHKERRQ(ierr);
+        j = mat_ranges[rank_prec_comm+1]-mat_ranges[rank_prec_comm];
+        ierr = VecGetArray(vec_dnz,&array);CHKERRQ(ierr);
+        for (i=0;i<j;i++) {
+          dnz[i] = (PetscInt)array[i];
         }
+        ierr = VecRestoreArray(vec_dnz,&array);CHKERRQ(ierr);
+        ierr = VecGetArray(vec_onz,&array);CHKERRQ(ierr);
+        for (i=0;i<j;i++) {
+          onz[i] = (PetscInt)array[i];
+        }
+        ierr = VecRestoreArray(vec_onz,&array);CHKERRQ(ierr);
+        ierr = PetscFree(my_dnz);CHKERRQ(ierr);
+        ierr = PetscFree(my_onz);CHKERRQ(ierr);
+        ierr = PetscFree(row_ownership);CHKERRQ(ierr);
+        ierr = VecDestroy(&vec_dnz);CHKERRQ(ierr);
+        ierr = VecDestroy(&vec_onz);CHKERRQ(ierr);
       } else {
         for (k=0;k<size_prec_comm;k++){
           offset=pcbddc->local_primal_displacements[k];
           offset2=localdispl2[k];
           ins_local_primal_size = pcbddc->local_primal_sizes[k];
-          ins_local_primal_indices = &pcbddc->replicated_local_primal_indices[offset];
+          ierr = PetscMalloc(ins_local_primal_size*sizeof(PetscInt),&ins_local_primal_indices);CHKERRQ(ierr);
+          for (j=0;j<ins_local_primal_size;j++){
+            ins_local_primal_indices[j]=(PetscInt)pcbddc->replicated_local_primal_indices[offset+j];
+          }
           for (j=0;j<ins_local_primal_size;j++) {
             ierr = MatPreallocateSet(ins_local_primal_indices[j],ins_local_primal_size,ins_local_primal_indices,dnz,onz);CHKERRQ(ierr);
           }
+          ierr = PetscFree(ins_local_primal_indices);CHKERRQ(ierr);
         }
       }
       /* check */
@@ -4304,7 +4368,6 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       ierr = MatSeqAIJSetPreallocation(matis_coarse_local_mat,0,dnz);CHKERRQ(ierr);
       ierr = PetscFree(dnz);CHKERRQ(ierr);
     }
-    if (rank_prec_comm == 0) { ierr = PetscFree(auxglobal_primal);CHKERRQ(ierr); }
     /* insert values */
     if (pcbddc->coarse_problem_type == PARALLEL_BDDC) {
       ierr = MatSetValues(pcbddc->coarse_mat,ins_local_primal_size,ins_local_primal_indices,ins_local_primal_size,ins_local_primal_indices,ins_coarse_mat_vals,ADD_VALUES);CHKERRQ(ierr);
@@ -4318,9 +4381,13 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
           offset = pcbddc->local_primal_displacements[k];
           offset2 = localdispl2[k];
           ins_local_primal_size = pcbddc->local_primal_displacements[k+1]-pcbddc->local_primal_displacements[k];
-          ins_local_primal_indices = &pcbddc->replicated_local_primal_indices[offset];
+          ierr = PetscMalloc(ins_local_primal_size*sizeof(PetscInt),&ins_local_primal_indices);CHKERRQ(ierr);
+          for (j=0;j<ins_local_primal_size;j++){
+            ins_local_primal_indices[j]=(PetscInt)pcbddc->replicated_local_primal_indices[offset+j];
+          }
           ins_coarse_mat_vals = &temp_coarse_mat_vals[offset2];
           ierr = MatSetValues(pcbddc->coarse_mat,ins_local_primal_size,ins_local_primal_indices,ins_local_primal_size,ins_local_primal_indices,ins_coarse_mat_vals,ADD_VALUES);CHKERRQ(ierr);
+          ierr = PetscFree(ins_local_primal_indices);CHKERRQ(ierr);
         }
       }
       ins_local_primal_indices = 0;
@@ -4330,9 +4397,13 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
         offset=pcbddc->local_primal_displacements[k];
         offset2=localdispl2[k];
         ins_local_primal_size = pcbddc->local_primal_sizes[k];
-        ins_local_primal_indices = &pcbddc->replicated_local_primal_indices[offset];
+        ierr = PetscMalloc(ins_local_primal_size*sizeof(PetscInt),&ins_local_primal_indices);CHKERRQ(ierr);
+        for (j=0;j<ins_local_primal_size;j++){
+          ins_local_primal_indices[j]=(PetscInt)pcbddc->replicated_local_primal_indices[offset+j];
+        }
         ins_coarse_mat_vals = &temp_coarse_mat_vals[offset2];
         ierr = MatSetValues(pcbddc->coarse_mat,ins_local_primal_size,ins_local_primal_indices,ins_local_primal_size,ins_local_primal_indices,ins_coarse_mat_vals,ADD_VALUES);CHKERRQ(ierr);
+        ierr = PetscFree(ins_local_primal_indices);CHKERRQ(ierr);
       }
       ins_local_primal_indices = 0;
       ins_coarse_mat_vals = 0;
