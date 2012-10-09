@@ -14,19 +14,24 @@ class Configure(PETSc.package.NewPackage):
   def setupHelp(self, help):
     import nargs
     PETSc.package.NewPackage.setupHelp(self, help)
+    help.addArgument('SOWING', '-download-sowing-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for sowing configure'))
+    help.addArgument('SOWING', '-download-sowing-cxx=<prog>',                    nargs.Arg(None, None, 'CXX compiler for sowing configure'))
+    help.addArgument('SOWING', '-download-sowing-cpp=<prog>',                    nargs.Arg(None, None, 'CPP for sowing configure'))
+    help.addArgument('SOWING', '-download-sowing-cxxcpp=<prog>',                 nargs.Arg(None, None, 'CXX CPP for sowing configure'))
     help.addArgument('SOWING', '-download-sowing-configure-options=<options>',   nargs.Arg(None, None, 'additional options for sowing configure'))
     return
 
   def Install(self):
     import os
     args = ['--prefix='+self.installDir]
-    args.append('CC="'+self.setCompilers.getCompiler()+'"\n')
-    args.append('CPP="'+self.setCompilers.getPreprocessor()+'"')
-    if hasattr(self.compilers, 'CXX'):
-      self.framework.pushLanguage('Cxx')
-      args.append('CXX="'+self.setCompilers.getCompiler()+'"')
-      args.append('CXXCPP="'+self.setCompilers.getPreprocessor()+'"')
-      self.framework.popLanguage()
+    if 'download-sowing-cc' in self.framework.argDB and self.framework.argDB['download-sowing-cc']:
+      args.append('CC="'+self.framework.argDB['download-sowing-cc']+'"')
+    if 'download-sowing-cxx' in self.framework.argDB and self.framework.argDB['download-sowing-cxx']:
+      args.append('CXX="'+self.framework.argDB['download-sowing-cxx']+'"')
+    if 'download-sowing-cpp' in self.framework.argDB and self.framework.argDB['download-sowing-cpp']:
+      args.append('CPP="'+self.framework.argDB['download-sowing-cpp']+'"')
+    if 'download-sowing-cxxcpp' in self.framework.argDB and self.framework.argDB['download-sowing-cxxcpp']:
+      args.append('CXXCPP="'+self.framework.argDB['download-sowing-cxxcpp']+'"')
     if 'download-sowing-configure-options' in self.framework.argDB and self.framework.argDB['download-sowing-configure-options']:
       args.append(self.framework.argDB['download-sowing-configure-options'])
     args = ' '.join(args)
