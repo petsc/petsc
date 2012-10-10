@@ -76,6 +76,7 @@ class PETScMaker(script.Script):
    self.setupModules()
 
  def cmakeboot(self, args, log):
+   import shlex
    self.setup()
    options = deque()
 
@@ -112,6 +113,9 @@ class PETScMaker(script.Script):
      options.append('-DCMAKE_'+cmakelanguage+'_COMPILER:FILEPATH=' + compiler)
      options.append('-DCMAKE_'+cmakelanguage+'_FLAGS:STRING=' + ''.join(flags))
      self.setCompilers.popLanguage()
+   options.append('-DCMAKE_AR='+self.setCompilers.AR)
+   ranlib = shlex.split(self.setCompilers.RANLIB)[0]
+   options.append('-DCMAKE_RANLIB='+ranlib)
    if win32fe:
      options.append('-DPETSC_WIN32FE:FILEPATH=%s'%win32fe)
      # Default on Windows is to generate Visual Studio project files, but

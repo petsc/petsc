@@ -23,6 +23,8 @@ class Configure(PETSc.package.NewPackage):
 
   def Install(self):
     import os
+    import shlex
+
     if not self.cmake.found:
       raise RuntimeError('CMake 2.8.5 or above is needed to build Elemental')
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
@@ -31,6 +33,9 @@ class Configure(PETSc.package.NewPackage):
 
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
+    args.append('-DCMAKE_AR='+self.setCompilers.AR)
+    ranlib = shlex.split(self.setCompilers.RANLIB)[0]
+    args.append('-DCMAKE_RANLIB='+ranlib)
     cflags = self.setCompilers.getCompilerFlags()
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     self.framework.popLanguage()
