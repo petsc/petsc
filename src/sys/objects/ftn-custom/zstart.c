@@ -447,7 +447,9 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
     *ierr = PetscHMPISpawn((PetscMPIInt) nodesize);/* worker nodes never return from here; they go directly to PetscEnd() */
     if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscHMPIS-pawn()\n");return;}
 #else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -hmpi_merge_size instead");
+    *ierr = PETSC_ERR_SUP;
+    (*PetscErrorPrintf)("PetscInitialize: PETSc built without MPI 2 (MPI_Comm_spawn) support, use -hmpi_merge_size instead");
+    return;
 #endif
   } else {
     *ierr = PetscOptionsGetInt(PETSC_NULL,"-hmpi_merge_size",&nodesize,&flg);
