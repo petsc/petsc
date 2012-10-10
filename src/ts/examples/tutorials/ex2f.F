@@ -166,16 +166,7 @@
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m,ierr)
       call MatSetFromOptions(A,ierr)
       call MatSetUp(A,ierr)
-
-      fdjac = PETSC_FALSE
-      call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-fdjac',fdjac,flg, &
-     &     ierr)
-      if (fdjac) then
-         call SetCRoutineFromFortran(ts,A,A,ierr)
-      else
-         call TSSetRHSJacobian(ts,A,A,RHSJacobian,PETSC_NULL_OBJECT,    &
-     &        ierr)
-      endif
+      call TSSetRHSJacobian(ts,A,A,RHSJacobian,PETSC_NULL_OBJECT,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Set solution vector and initial timestep

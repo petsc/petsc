@@ -68,11 +68,6 @@ extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
 
-/*
-   Utility routine for finite difference Jacobian approximation
-*/
-extern PetscErrorCode RHSJacobianFD(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
-
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -85,7 +80,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscReal      dt;
   PetscReal      time_total_max = 100.0; /* default max total time */
-  PetscBool      flg,mymonitor = PETSC_FALSE;
+  PetscBool      mymonitor = PETSC_FALSE;
   PetscReal      bounds[] = {1.0, 3.3};
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -155,12 +150,7 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,appctx.m,appctx.m);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-fdjac",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianFD,&appctx);CHKERRQ(ierr);
-  } else {
-    ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&appctx);CHKERRQ(ierr);
-  }
+  ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&appctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solution vector and initial timestep
