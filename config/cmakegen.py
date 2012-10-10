@@ -124,6 +124,12 @@ if (PETSC_CLANGUAGE_Cxx OR PETSC_HAVE_CXX)
   enable_language (CXX)
 endif ()
 
+if (APPLE)
+  SET(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET> ")
+  SET(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET> ")
+  SET(CMAKE_Fortran_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET> ")
+endif ()
+
 include_directories ("${PETSc_SOURCE_DIR}/include" "${PETSc_BINARY_DIR}/include")
 
 add_definitions (-D__INSDIR__= ) # CMake always uses the absolute path
