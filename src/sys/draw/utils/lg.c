@@ -20,10 +20,10 @@
 
 .seealso: PetscDrawLGAddPoints()
 @*/
-PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,PetscReal *x,PetscReal *y)
+PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const PetscReal *y)
 {
   PetscErrorCode ierr;
-  int            i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
@@ -77,7 +77,7 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,PetscReal *x,PetscReal *y)
 PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscReal **yy)
 {
   PetscErrorCode ierr;
-  int            i,j,k;
+  PetscInt       i,j,k;
   PetscReal      *x,*y;
 
   PetscFunctionBegin;
@@ -85,7 +85,7 @@ PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscRe
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
   if (lg->loc+n*lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    int    chunk = CHUNCKSIZE;
+    PetscInt  chunk = CHUNCKSIZE;
 
     if (n > chunk) chunk = n;
     ierr = PetscMalloc2(lg->len+lg->dim*chunk,PetscReal,&tmpx,lg->len+lg->dim*chunk,PetscReal,&tmpy);CHKERRQ(ierr);
@@ -115,7 +115,6 @@ PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscRe
   lg->nopts += n;
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawLGSetLimits"

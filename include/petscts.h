@@ -307,6 +307,10 @@ PETSC_EXTERN PetscErrorCode TSMonitorLGCreate(MPI_Comm,const char[],const char[]
 PETSC_EXTERN PetscErrorCode TSMonitorLG(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGDestroy(PetscDrawLG*);
 
+PETSC_EXTERN PetscErrorCode TSMonitorSolutionODECreate(MPI_Comm,PetscInt,const char[],const char[],int,int,int,int,PetscDrawLG *);
+PETSC_EXTERN PetscErrorCode TSMonitorSolutionODE(TS,PetscInt,PetscReal,Vec,void *);
+PETSC_EXTERN PetscErrorCode TSMonitorSolutionODEDestroy(PetscDrawLG*);
+
 /*J
    TSSSPType - string with the name of TSSSP scheme.
 

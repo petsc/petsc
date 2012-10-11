@@ -152,7 +152,7 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
 
 .seealso:  PetscDrawLGDestroy()
 @*/
-PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,int dim,PetscDrawLG *outctx)
+PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outctx)
 {
   PetscErrorCode ierr;
   PetscBool      isnull;
@@ -255,6 +255,33 @@ PetscErrorCode  PetscDrawLGSetLegend(PetscDrawLG lg,const char *const *names)
       ierr = PetscStrallocpy(names[i],&lg->legend[i]);CHKERRQ(ierr);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawLGGetDimension"
+/*@
+   PetscDrawLGGetDimension - Change the number of lines that are to be drawn.
+
+   Logically Collective over PetscDrawLG
+
+   Input Parameter:
+.  lg - the line graph context.
+
+   Output Parameter:
+.  dim - the number of curves.
+
+   Level: intermediate
+
+   Concepts: line graph^setting number of lines
+
+@*/
+PetscErrorCode  PetscDrawLGGetDimension(PetscDrawLG lg,PetscInt *dim)
+{
+  PetscFunctionBegin;
+  if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
+  *dim = lg->dim;
   PetscFunctionReturn(0);
 }
 
@@ -421,6 +448,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
 
+  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
   ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
   ierr = PetscDrawAxisDraw(lg->axis);CHKERRQ(ierr);
@@ -434,7 +462,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
         else cl = PETSC_DRAW_BLACK+i;
         ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],cl);CHKERRQ(ierr);
         if (lg->use_dots) {
-          ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_RED,"x");CHKERRQ(ierr);
+          ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],cl,"x");CHKERRQ(ierr);
         }
       }
     }

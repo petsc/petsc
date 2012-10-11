@@ -117,7 +117,15 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       PetscDrawLG lg;
 
       ierr = TSMonitorLGCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&lg);
-      ierr = TSMonitorSet(ts,TSMonitorLG,lg,TSMonitorLGDestroy);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorLG,lg,(PetscErrorCode (*)(void**))TSMonitorLGDestroy);CHKERRQ(ierr);
+    }
+    opt  = PETSC_FALSE;
+    ierr = PetscOptionsBool("-ts_monitor_solutionode","Monitor solution graphically","TSMonitorSolutionODE",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
+    if (opt) {
+      PetscDrawLG lg;
+
+      ierr = TSMonitorSolutionODECreate(((PetscObject)ts)->comm,3,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&lg);
+      ierr = TSMonitorSet(ts,TSMonitorSolutionODE,lg,(PetscErrorCode (*)(void**))TSMonitorSolutionODEDestroy);CHKERRQ(ierr);
     }
     opt  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ts_monitor_solution","Monitor solution graphically","TSMonitorSolution",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
@@ -3840,3 +3848,113 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
   PetscFunctionReturn(0);
 }
 #endif
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorSolutionODE"
+/*@C
+   TSMonitorSolutionODE - Monitors progress of the TS solvers by plotting each component of the solution vector
+       in a time based line graph
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+-  lg - a line graph object
+
+   Level: intermediate
+
+    Notes: only for sequential solves
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
+@*/
+PetscErrorCode  TSMonitorSolutionODE(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
+{
+  PetscErrorCode    ierr;
+  PetscDrawLG       lg = (PetscDrawLG)dummy;
+  PetscReal         *xx;
+  const PetscScalar *yy;
+  PetscInt          i,dim;
+
+  PetscFunctionBegin;
+  if (!step) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
+  ierr = PetscDrawLGGetDimension(lg,&dim);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*sizeof(PetscReal),&xx);CHKERRQ(ierr);
+  for (i=0; i<dim; i++) xx[i] = ptime;
+
+  ierr = VecGetArrayRead(x,&yy);CHKERRQ(ierr);
+  ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&yy);CHKERRQ(ierr);
+  ierr = PetscFree(xx);CHKERRQ(ierr);
+  ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorSolutionODEDestroy"
+/*@C
+   TSMonitorSolutionODEDestroy - Destroys the monitor context for TSMonitorSolutionODE()
+
+   Collective on TS
+
+   Input Parameters:
+.    ctx - the monitor context
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorSolutionODE()
+@*/
+PetscErrorCode  TSMonitorSolutionODEDestroy(PetscDrawLG *lg)
+{
+  PetscDraw      draw;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDrawLGGetDraw(*lg,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGDestroy(lg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorSolutionODECreate"
+/*@C
+   TSMonitorSolutionODECreate - Creates the monitor context for TSMonitorSolutionODE()
+
+   Collective on TS
+
+   Input Parameter:
++    comm - MPI communicator
+.    N - number of components in the solution vector
+-
+
+   Output Patameter:
+.    ctx - the monitor context
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorSolution()
+@*/
+PetscErrorCode  TSMonitorSolutionODECreate(MPI_Comm comm,PetscInt N,const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+{
+  PetscDraw      win;
+  PetscErrorCode ierr;
+  PetscDrawAxis  axis;
+
+  PetscFunctionBegin;
+  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = PetscDrawSetType(win,PETSC_DRAW_X);CHKERRQ(ierr);
+  ierr = PetscDrawLGCreate(win,N,draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGIndicateDataPoints(*draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGGetAxis(*draw,&axis);CHKERRQ(ierr);
+  ierr = PetscDrawAxisSetLabels(axis,"Solution","Time","Solution");CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(*draw,win);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

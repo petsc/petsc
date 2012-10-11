@@ -267,14 +267,15 @@ typedef struct _p_PetscDrawLG*   PetscDrawLG;
 
 PETSC_EXTERN PetscClassId PETSC_DRAWLG_CLASSID;
 
-PETSC_EXTERN PetscErrorCode PetscDrawLGCreate(PetscDraw,int,PetscDrawLG *);
+PETSC_EXTERN PetscErrorCode PetscDrawLGCreate(PetscDraw,PetscInt,PetscDrawLG *);
 PETSC_EXTERN PetscErrorCode PetscDrawLGDestroy(PetscDrawLG*);
-PETSC_EXTERN PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG,PetscReal*,PetscReal*);
-PETSC_EXTERN PetscErrorCode PetscDrawLGAddPoints(PetscDrawLG,int,PetscReal**,PetscReal**);
+PETSC_EXTERN PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG,const PetscReal*,const PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDrawLGAddPoints(PetscDrawLG,PetscInt,PetscReal**,PetscReal**);
 PETSC_EXTERN PetscErrorCode PetscDrawLGDraw(PetscDrawLG);
 PETSC_EXTERN PetscErrorCode PetscDrawLGPrint(PetscDrawLG);
 PETSC_EXTERN PetscErrorCode PetscDrawLGReset(PetscDrawLG);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetDimension(PetscDrawLG,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscDrawLGGetDimension(PetscDrawLG,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetLegend(PetscDrawLG,const char *const*);
 PETSC_EXTERN PetscErrorCode PetscDrawLGGetAxis(PetscDrawLG,PetscDrawAxis *);
 PETSC_EXTERN PetscErrorCode PetscDrawLGGetDraw(PetscDrawLG,PetscDraw *);
