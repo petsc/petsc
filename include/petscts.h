@@ -303,7 +303,7 @@ PETSC_EXTERN PetscErrorCode TSView(TS,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSSetApplicationContext(TS,void *);
 PETSC_EXTERN PetscErrorCode TSGetApplicationContext(TS,void *);
 
-PETSC_EXTERN PetscErrorCode TSMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDrawLG *);
 PETSC_EXTERN PetscErrorCode TSMonitorLG(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGDestroy(PetscDrawLG*);
 

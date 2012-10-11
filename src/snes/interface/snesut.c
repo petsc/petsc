@@ -152,8 +152,8 @@ PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,void 
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESMonitorJacUpdateSpectrum"
-PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnorm,void *ctx) {
-
+PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnorm,void *ctx)
+{
 #if defined(PETSC_MISSING_LAPACK_GEEV)
   SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
 #elif defined(PETSC_HAVE_ESSL)

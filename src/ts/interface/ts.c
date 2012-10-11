@@ -114,13 +114,20 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     opt  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ts_monitor_draw","Monitor timestep size graphically","TSMonitorLG",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
     if (opt) {
-      ierr = TSMonitorSet(ts,TSMonitorLG,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      PetscDrawLG lg;
+
+      ierr = TSMonitorLGCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&lg);
+      ierr = TSMonitorSet(ts,TSMonitorLG,lg,TSMonitorLGDestroy);CHKERRQ(ierr);
     }
     opt  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ts_monitor_solution","Monitor solution graphically","TSMonitorSolution",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
     if (opt) {
-      void *ctx;
-      ierr = TSMonitorSolutionCreate(ts,PETSC_NULL,&ctx);CHKERRQ(ierr);
+      void        *ctx;
+      PetscViewer viewer;
+      
+      ierr = PetscViewerDrawOpen(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);
+      ierr = TSMonitorSolutionCreate(ts,viewer,&ctx);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       ierr = TSMonitorSet(ts,TSMonitorSolution,ctx,TSMonitorSolutionDestroy);CHKERRQ(ierr);
     }
     opt  = PETSC_FALSE;
@@ -2188,14 +2195,14 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec x)
 .seealso: TSMonitorLGDestroy(), TSMonitorSet()
 
 @*/
-PetscErrorCode  TSMonitorLGCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+PetscErrorCode  TSMonitorLGCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw      win;
   PetscErrorCode ierr;
   PetscDrawAxis  axis;
 
   PetscFunctionBegin;
-  ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetType(win,PETSC_DRAW_X);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,1,draw);CHKERRQ(ierr);
   ierr = PetscDrawLGIndicateDataPoints(*draw);CHKERRQ(ierr);
