@@ -39,7 +39,6 @@ typedef const char* DMType;
 #define DMMESH      "mesh"
 #define DMCOMPLEX   "complex"
 #define DMCARTESIAN "cartesian"
-#define DMIGA       "iga"
 #define DMREDUNDANT "redundant"
 #define DMAKKT      "akkt"
 #define DMPATCH     "patch"
