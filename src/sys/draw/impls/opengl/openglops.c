@@ -1008,7 +1008,7 @@ static PetscErrorCode PetscDrawPause_OpenGL(PetscDraw draw)
 
   PetscFunctionBegin;
   if (draw->pause > 0) PetscSleep(draw->pause);
-  else if (draw->pause < 0) {
+  else if (draw->pause == -1) {
     PetscDrawButton button;
     PetscMPIInt     rank;
     ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);

@@ -258,6 +258,11 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
   PetscValidHeaderSpecific(*draw,PETSC_DRAW_CLASSID,1);
   if (--((PetscObject)(*draw))->refct > 0) PetscFunctionReturn(0);
 
+  if ((*draw)->pause == -2) {
+    (*draw)->pause = -1;
+    ierr = PetscDrawPause(*draw);CHKERRQ(ierr);
+  }
+
   /* if memory was published then destroy it */
   ierr = PetscObjectDepublish(*draw);CHKERRQ(ierr);
 

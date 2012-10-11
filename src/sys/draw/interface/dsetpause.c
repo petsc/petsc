@@ -14,7 +14,7 @@
 
    Input Parameters:
 +  draw   - the drawing object
--  lpause - number of seconds to pause, -1 implies until user input
+-  lpause - number of seconds to pause, -1 implies until user input, -2 pauses only on the PetscDrawDestroy()
 
    Level: intermediate
 
