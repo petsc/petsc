@@ -7140,13 +7140,14 @@ PetscErrorCode DMComplexCreateNumbering_Private(DM dm, PetscInt pStart, PetscInt
 PetscErrorCode DMComplexGetCellNumbering(DM dm, IS *globalCellNumbers)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
-  PetscInt       cStart, cEnd, cMax;
+  PetscInt       cellHeight, cStart, cEnd, cMax;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!mesh->globalVertexNumbers) {
-    ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  if (!mesh->globalCellNumbers) {
+    ierr = DMComplexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+    ierr = DMComplexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
     ierr = DMComplexGetVTKBounds(dm, &cMax, PETSC_NULL);CHKERRQ(ierr);
     if (cMax >= 0) {cEnd = PetscMin(cEnd, cMax);}
     ierr = DMComplexCreateNumbering_Private(dm, cStart, cEnd, dm->sf, &mesh->globalCellNumbers);CHKERRQ(ierr);
