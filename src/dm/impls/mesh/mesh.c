@@ -3940,7 +3940,7 @@ PetscErrorCode DMMeshSetSection(DM dm, const char name[], PetscSection section) 
     }
     s->allocatePoint();
     for(PetscInt p = pStart; p < pEnd; ++p) {
-      PetscInt *indices;
+      const PetscInt *indices;
 
       ierr = PetscSectionGetConstraintIndices(section, p, &indices);CHKERRQ(ierr);
       s->setConstraintDof(p, indices);

@@ -107,8 +107,8 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
   }
   ierr = PetscSectionSetUp(*newSection);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt  cdof, fcdof;
-    PetscInt *cInd;
+    PetscInt        cdof, fcdof;
+    const PetscInt *cInd;
 
     ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
     if (cdof) {
@@ -1000,8 +1000,8 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
 
       ierr = PetscSectionGetConstraintDof(*subs, p, &cdof);CHKERRQ(ierr);
       if (cdof) {
-        PetscInt *oldIndices;
-        PetscInt  fdof, cfdof, fc, numConst = 0, fOff = 0;
+        const PetscInt *oldIndices;
+        PetscInt        fdof, cfdof, fc, numConst = 0, fOff = 0;
 
         for (f = 0; f < numFields; ++f) {
           PetscInt oldFoff = 0, oldf;
@@ -1416,7 +1416,7 @@ PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
 
 #undef __FUNCT__
 #define __FUNCT__ "VecIntGetValuesSection"
-PetscErrorCode VecIntGetValuesSection(PetscInt *baseArray, PetscSection s, PetscInt point, PetscInt **values)
+PetscErrorCode VecIntGetValuesSection(PetscInt *baseArray, PetscSection s, PetscInt point, const PetscInt **values)
 {
   const PetscInt p = point - s->atlasLayout.pStart;
 
@@ -1490,7 +1490,7 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
     if (orientation >= 0) {
       const PetscInt  dim  = s->atlasDof[p];
       PetscInt        cInd = 0, i;
-      PetscInt       *cDof;
+      const PetscInt *cDof;
 
       ierr = PetscSectionGetConstraintIndices(s, point, &cDof);CHKERRQ(ierr);
       if (doInsert) {
@@ -1513,10 +1513,10 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
         }
       }
     } else {
-      PetscInt *cDof;
-      PetscInt  offset  = 0;
-      PetscInt  cOffset = 0;
-      PetscInt  j       = 0, field;
+      const PetscInt *cDof;
+      PetscInt        offset  = 0;
+      PetscInt        cOffset = 0;
+      PetscInt        j       = 0, field;
 
       ierr = PetscSectionGetConstraintIndices(s, point, &cDof);CHKERRQ(ierr);
       for (field = 0; field < s->numFields; ++field) {
@@ -1541,7 +1541,7 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
 
 #undef __FUNCT__
 #define __FUNCT__ "VecIntSetValuesSection"
-PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, PetscInt point, PetscInt values[], InsertMode mode)
+PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, PetscInt point, const PetscInt values[], InsertMode mode)
 {
   PetscInt      *array;
   const PetscInt p           = point - s->atlasLayout.pStart;
@@ -1581,9 +1581,9 @@ PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
     }
   } else {
     if (orientation >= 0) {
-      const PetscInt dim  = s->atlasDof[p];
-      PetscInt       cInd = 0, i;
-      PetscInt      *cDof;
+      const PetscInt  dim  = s->atlasDof[p];
+      PetscInt        cInd = 0, i;
+      const PetscInt *cDof;
 
       ierr = PetscSectionGetConstraintIndices(s, point, &cDof);CHKERRQ(ierr);
       if (mode == INSERT_VALUES) {
@@ -1598,10 +1598,10 @@ PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
         }
       }
     } else {
-      PetscInt *cDof;
-      PetscInt  offset  = 0;
-      PetscInt  cOffset = 0;
-      PetscInt  j       = 0, field;
+      const PetscInt *cDof;
+      PetscInt        offset  = 0;
+      PetscInt        cOffset = 0;
+      PetscInt        j       = 0, field;
 
       ierr = PetscSectionGetConstraintIndices(s, point, &cDof);CHKERRQ(ierr);
       for (field = 0; field < s->numFields; ++field) {
@@ -1624,7 +1624,7 @@ PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetConstraintIndices"
-PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, PetscInt **indices)
+PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, const PetscInt **indices)
 {
   PetscErrorCode ierr;
 
@@ -1639,7 +1639,7 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetConstraintIndices"
-PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, PetscInt indices[])
+PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, const PetscInt indices[])
 {
   PetscErrorCode ierr;
 
@@ -1652,7 +1652,7 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetFieldConstraintIndices"
-PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, PetscInt **indices)
+PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, const PetscInt **indices)
 {
   PetscErrorCode ierr;
 
@@ -1666,7 +1666,7 @@ PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt po
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetFieldConstraintIndices"
-PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, PetscInt indices[])
+PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, const PetscInt indices[])
 {
   PetscErrorCode ierr;
 

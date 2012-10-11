@@ -446,12 +446,26 @@ PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (dm->defaultSection) {
     PetscSection gSection;
-    PetscInt     localSize;
+    PetscInt     localSize, blockSize = -1, pStart, pEnd, p;
 
     ierr = DMGetDefaultGlobalSection(dm, &gSection);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(dm->defaultSection, &pStart, &pEnd);CHKERRQ(ierr);
+    for(p = pStart; p < pEnd; ++p) {
+      PetscInt dof, cdof;
+
+      ierr = PetscSectionGetDof(dm->defaultSection, p, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetConstraintDof(dm->defaultSection, p, &cdof);CHKERRQ(ierr);
+      if ((blockSize < 0) && (dof > 0)) blockSize = dof-cdof;
+      if ((dof > 0) && (dof-cdof != blockSize)) {
+        blockSize = 1;
+        break;
+      }
+    }
     ierr = PetscSectionGetConstrainedStorageSize(dm->defaultGlobalSection, &localSize);CHKERRQ(ierr);
+    if (localSize%blockSize) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Mismatch between blocksize %d and local storage size %d", blockSize, localSize);
     ierr = VecCreate(((PetscObject) dm)->comm, vec);CHKERRQ(ierr);
     ierr = VecSetSizes(*vec, localSize, PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*vec, blockSize);CHKERRQ(ierr);
     /* ierr = VecSetType(*vec, dm->vectype);CHKERRQ(ierr); */
     ierr = VecSetFromOptions(*vec);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject) *vec, "DM", (PetscObject) dm);CHKERRQ(ierr);
@@ -489,11 +503,23 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (dm->defaultSection) {
-    PetscInt localSize;
+    PetscInt localSize, blockSize = -1, pStart, pEnd, p;
 
+    ierr = PetscSectionGetChart(dm->defaultSection, &pStart, &pEnd);CHKERRQ(ierr);
+    for(p = pStart; p < pEnd; ++p) {
+      PetscInt dof;
+
+      ierr = PetscSectionGetDof(dm->defaultSection, p, &dof);CHKERRQ(ierr);
+      if ((blockSize < 0) && (dof > 0)) blockSize = dof;
+      if ((dof > 0) && (dof != blockSize)) {
+        blockSize = 1;
+        break;
+      }
+    }
     ierr = PetscSectionGetStorageSize(dm->defaultSection, &localSize);CHKERRQ(ierr);
     ierr = VecCreate(PETSC_COMM_SELF, vec);CHKERRQ(ierr);
     ierr = VecSetSizes(*vec, localSize, localSize);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*vec, blockSize);CHKERRQ(ierr);
     ierr = VecSetFromOptions(*vec);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject) *vec, "DM", (PetscObject) dm);CHKERRQ(ierr);
   } else {
@@ -653,7 +679,7 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
     Notes:  For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by
         DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the interpolation.
 
-        For DMDA objects you can use this interpolation (more precisely the interpolation from the DMDAGetCoordinateDA()) to interpolate the mesh coordinate vectors
+        For DMDA objects you can use this interpolation (more precisely the interpolation from the DMGetCoordinateDM()) to interpolate the mesh coordinate vectors
         EXCEPT in the periodic case where it does not make sense since the coordinate vectors are not periodic.
 
 
@@ -3290,8 +3316,8 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
   ierr = PetscMalloc(nleaves * sizeof(PetscInt), &local);CHKERRQ(ierr);
   ierr = PetscMalloc(nleaves * sizeof(PetscSFNode), &remote);CHKERRQ(ierr);
   for (p = pStart, l = 0; p < pEnd; ++p) {
-    PetscInt *cind;
-    PetscInt  dof, cdof, off, gdof, gcdof, goff, gsize, d, c;
+    const PetscInt *cind;
+    PetscInt        dof, cdof, off, gdof, gcdof, goff, gsize, d, c;
 
     ierr = PetscSectionGetDof(localSection, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(localSection, p, &off);CHKERRQ(ierr);
@@ -3504,10 +3530,9 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(c,2);
-  if (!dm->coordinates) {
+  if (!dm->coordinates && dm->coordinatesLocal) {
     DM cdm;
 
-    if (!dm->coordinatesLocal) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ORDER, "You must call DMSetCoordinates() or DMSetCoordinatesLocal() before this call");
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMCreateGlobalVector(cdm, &dm->coordinates);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) dm->coordinates, "coordinates");CHKERRQ(ierr);
@@ -3551,10 +3576,9 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(c,2);
-  if (!dm->coordinatesLocal) {
+  if (!dm->coordinatesLocal && dm->coordinates) {
     DM cdm;
 
-    if (!dm->coordinates) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ORDER, "You must call DMSetCoordinates() or DMSetCoordinatesLocal() before this call");
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMCreateLocalVector(cdm, &dm->coordinatesLocal);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) dm->coordinatesLocal, "coordinates");CHKERRQ(ierr);

@@ -812,12 +812,12 @@ namespace ALE {
       inline static void insert(value_type& x, value_type y) {x  = y;}
       template<typename Point>
       void updatePoint(const Point& point, void (*fuse)(value_type&, value_type), const bool setBC, const int orientation = 1) {
-        PetscInt       dim;  // The number of dof on this point
-        PetscInt       cDim; // The nubmer of constraints on this point
-        PetscInt      *cDof; // The indices of the constrained dofs on this point
-        value_type    *a;    // The values on this point
-        PetscInt       offset, cInd = 0;
-        PetscErrorCode ierr;
+        PetscInt        dim;  // The number of dof on this point
+        PetscInt        cDim; // The nubmer of constraints on this point
+        const PetscInt *cDof; // The indices of the constrained dofs on this point
+        value_type     *a;    // The values on this point
+        PetscInt        offset, cInd = 0;
+        PetscErrorCode  ierr;
 
         ierr = PetscSectionGetDof(section, point, &dim);CHKERRXX(ierr);
         ierr = PetscSectionGetConstraintDof(section, point, &cDim);CHKERRXX(ierr);
@@ -862,7 +862,7 @@ namespace ALE {
           PetscInt    dim;  // The number of dof for field f on this point
           PetscInt    comp; // The number of components for field f on this point
           PetscInt    cDim; // The nubmer of constraints for field f on this point
-          PetscInt   *cDof; // The indices of the constrained dofs for field f on this point
+          const PetscInt *cDof; // The indices of the constrained dofs for field f on this point
           PetscInt    cInd = 0;
 
           ierr = PetscSectionGetFieldComponents(section, f, &comp);CHKERRXX(ierr);
@@ -1144,12 +1144,12 @@ namespace ALE {
       PetscInt           *j;
     protected:
       void updatePoint(const point_type& point, const bool setBC, const int orientation = 1) {
-        PetscInt       dim;  // The number of dof on this point
-        PetscInt       cDim; // The nubmer of constraints on this point
-        PetscInt      *cDof; // The indices of the constrained dofs on this point
-        PetscInt       offset = this->order.getIndex(point);
-        PetscInt       cInd   = 0;
-        PetscErrorCode ierr;
+        PetscInt        dim;  // The number of dof on this point
+        PetscInt        cDim; // The nubmer of constraints on this point
+        const PetscInt *cDof; // The indices of the constrained dofs on this point
+        PetscInt        offset = this->order.getIndex(point);
+        PetscInt        cInd   = 0;
+        PetscErrorCode  ierr;
 
         ierr = PetscSectionGetDof(section, point, &dim);CHKERRXX(ierr);
         ierr = PetscSectionGetConstraintDof(section, point, &cDim);CHKERRXX(ierr);
@@ -1198,7 +1198,7 @@ namespace ALE {
           PetscInt  dim;  // The number of dof for field f on this point
           PetscInt  comp; // The number of components for field f on this point
           PetscInt  cDim; // The nubmer of constraints for field f on this point
-          PetscInt *cDof; // The indices of the constrained dofs for field f on this point
+          const PetscInt *cDof; // The indices of the constrained dofs for field f on this point
           PetscInt  cInd = 0;
 
           ierr = PetscSectionGetFieldComponents(section, f, &comp);CHKERRXX(ierr);
