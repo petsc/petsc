@@ -679,8 +679,8 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
       ierr = PetscSectionGetDof(sectionAdj, d, &adof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(sectionAdj, d, &aoff);CHKERRQ(ierr);
       for (q = 0; q < numAdj; ++q) {
-        PetscInt  ndof, ncdof, ngoff, nd;
-        PetscInt *ncind;
+        PetscInt        ndof, ncdof, ngoff, nd;
+        const PetscInt *ncind;
 
         /* Adjacent points may not be in the section chart */
         if ((tmpAdj[q] < pStart) || (tmpAdj[q] >= pEnd)) continue;
@@ -714,19 +714,30 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
   ierr = PetscLayoutSetUp(rLayout);CHKERRQ(ierr);
   ierr = PetscLayoutGetRange(rLayout, &rStart, &rEnd);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&rLayout);CHKERRQ(ierr);
-  for (r = rStart; r < rEnd; ++r) {
+  /* Only loop over blocks of rows */
+  if (rStart%bs || rEnd%bs) SETERRQ3(((PetscObject) A)->comm, PETSC_ERR_ARG_WRONG, "Invalid layout [%d, %d) for matrix, must be divisible by block size %d", rStart, rEnd, bs);
+  for (r = rStart/bs; r < rEnd/bs; ++r) {
+    const PetscInt row = r*bs;
     PetscInt numCols, cStart, c;
 
-    ierr = PetscSectionGetDof(sectionAdj, r, &numCols);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(sectionAdj, r, &cStart);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(sectionAdj, row, &numCols);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(sectionAdj, row, &cStart);CHKERRQ(ierr);
     for (c = cStart; c < cStart+numCols; ++c) {
-      if ((cols[c] >= rStart) && (cols[c] < rEnd)) {
+      if ((cols[c] >= rStart*bs) && (cols[c] < rEnd*bs)) {
         ++dnz[r-rStart];
-        if (cols[c] >= r) {++dnzu[r-rStart];}
+        if (cols[c] >= row) {++dnzu[r-rStart];}
       } else {
         ++onz[r-rStart];
-        if (cols[c] >= r) {++onzu[r-rStart];}
+        if (cols[c] >= row) {++onzu[r-rStart];}
       }
+    }
+  }
+  if (bs > 1) {
+    for (r = 0; r < locRows/bs; ++r) {
+      dnz[r]  /= bs;
+      onz[r]  /= bs;
+      dnzu[r] /= bs;
+      onzu[r] /= bs;
     }
   }
   /* Set matrix pattern */
@@ -5552,11 +5563,11 @@ PETSC_STATIC_INLINE void insert(PetscScalar *x, PetscScalar y) {*x  = y;}
 #define __FUNCT__ "updatePoint_private"
 PetscErrorCode updatePoint_private(PetscSection section, PetscInt point, PetscInt dof, void (*fuse)(PetscScalar *, PetscScalar), PetscBool setBC, PetscInt orientation, const PetscScalar values[], PetscScalar array[])
 {
-  PetscInt       cdof;  /* The number of constraints on this point */
-  PetscInt      *cdofs; /* The indices of the constrained dofs on this point */
-  PetscScalar   *a;
-  PetscInt       off, cind = 0, k;
-  PetscErrorCode ierr;
+  PetscInt        cdof;  /* The number of constraints on this point */
+  const PetscInt *cdofs; /* The indices of the constrained dofs on this point */
+  PetscScalar    *a;
+  PetscInt        off, cind = 0, k;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscSectionGetConstraintDof(section, point, &cdof);CHKERRQ(ierr);
@@ -5601,9 +5612,9 @@ PetscErrorCode updatePointFields_private(PetscSection section, PetscInt point, P
   ierr = PetscSectionGetOffset(section, point, &off);CHKERRQ(ierr);
   a    = &array[off];
   for (f = 0, foff = 0; f < numFields; ++f) {
-    PetscInt  fdof, fcomp, fcdof;
-    PetscInt *fcdofs; /* The indices of the constrained dofs for field f on this point */
-    PetscInt  cind = 0, k, c;
+    PetscInt        fdof, fcomp, fcdof;
+    const PetscInt *fcdofs; /* The indices of the constrained dofs for field f on this point */
+    PetscInt        cind = 0, k, c;
 
     ierr = PetscSectionGetFieldComponents(section, f, &fcomp);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldDof(section, point, f, &fdof);CHKERRQ(ierr);
@@ -5792,10 +5803,10 @@ PetscErrorCode DMComplexPrintMatSetValues(Mat A, PetscInt point, PetscInt numInd
 #define __FUNCT__ "indicesPoint_private"
 /* . off - The global offset of this point */
 PetscErrorCode indicesPoint_private(PetscSection section, PetscInt point, PetscInt dof, PetscInt off, PetscBool setBC, PetscInt orientation, PetscInt indices[]) {
-  PetscInt       cdof;  /* The number of constraints on this point */
-  PetscInt      *cdofs; /* The indices of the constrained dofs on this point */
-  PetscInt       cind = 0, k;
-  PetscErrorCode ierr;
+  PetscInt        cdof;  /* The number of constraints on this point */
+  const PetscInt *cdofs; /* The indices of the constrained dofs on this point */
+  PetscInt        cind = 0, k;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscSectionGetDof(section, point, &dof);CHKERRQ(ierr);
@@ -5847,9 +5858,9 @@ PetscErrorCode indicesPointFields_private(PetscSection section, PetscInt point, 
   PetscFunctionBegin;
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   for (f = 0, foff = 0; f < numFields; ++f) {
-    PetscInt  fdof, fcomp, cfdof;
-    PetscInt *fcdofs; /* The indices of the constrained dofs for field f on this point */
-    PetscInt  cind = 0, k, c;
+    PetscInt        fdof, fcomp, cfdof;
+    const PetscInt *fcdofs; /* The indices of the constrained dofs for field f on this point */
+    PetscInt        cind = 0, k, c;
 
     ierr = PetscSectionGetFieldComponents(section, f, &fcomp);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldDof(section, point, f, &fdof);CHKERRQ(ierr);
@@ -7129,13 +7140,14 @@ PetscErrorCode DMComplexCreateNumbering_Private(DM dm, PetscInt pStart, PetscInt
 PetscErrorCode DMComplexGetCellNumbering(DM dm, IS *globalCellNumbers)
 {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
-  PetscInt       cStart, cEnd, cMax;
+  PetscInt       cellHeight, cStart, cEnd, cMax;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!mesh->globalVertexNumbers) {
-    ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  if (!mesh->globalCellNumbers) {
+    ierr = DMComplexGetVTKCellHeight(dm, &cellHeight);CHKERRQ(ierr);
+    ierr = DMComplexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
     ierr = DMComplexGetVTKBounds(dm, &cMax, PETSC_NULL);CHKERRQ(ierr);
     if (cMax >= 0) {cEnd = PetscMin(cEnd, cMax);}
     ierr = DMComplexCreateNumbering_Private(dm, cStart, cEnd, dm->sf, &mesh->globalCellNumbers);CHKERRQ(ierr);
