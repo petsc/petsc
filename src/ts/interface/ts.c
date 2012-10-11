@@ -3875,20 +3875,13 @@ PetscErrorCode  TSMonitorSolutionODE(TS ts,PetscInt step,PetscReal ptime,Vec x,v
 {
   PetscErrorCode    ierr;
   PetscDrawLG       lg = (PetscDrawLG)dummy;
-  PetscReal         *xx;
   const PetscScalar *yy;
-  PetscInt          i,dim;
 
   PetscFunctionBegin;
   if (!step) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
-  ierr = PetscDrawLGGetDimension(lg,&dim);CHKERRQ(ierr);
-  ierr = PetscMalloc(dim*sizeof(PetscReal),&xx);CHKERRQ(ierr);
-  for (i=0; i<dim; i++) xx[i] = ptime;
-
   ierr = VecGetArrayRead(x,&yy);CHKERRQ(ierr);
-  ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
+  ierr = PetscDrawLGAddCommonPoint(lg,ptime,yy);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(x,&yy);CHKERRQ(ierr);
-  ierr = PetscFree(xx);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
