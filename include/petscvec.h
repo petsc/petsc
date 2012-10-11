@@ -561,5 +561,7 @@ PETSC_EXTERN PetscErrorCode VecNestSetSubVec(Vec,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode VecCreateNest(MPI_Comm,PetscInt,IS*,Vec*,Vec*);
 PETSC_EXTERN PetscErrorCode VecNestGetSize(Vec,PetscInt*);
 
+PETSC_EXTERN PetscErrorCode PetscOptionsVec(const char[],const char[],const char[],Vec,PetscBool*);
+
 #endif
 

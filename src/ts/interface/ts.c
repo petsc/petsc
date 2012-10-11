@@ -124,7 +124,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     if (opt) {
       PetscDrawLG lg;
 
-      ierr = TSMonitorSolutionODECreate(((PetscObject)ts)->comm,3,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&lg);
+      ierr = TSMonitorSolutionODECreate(((PetscObject)ts)->comm,3,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,&lg);
       ierr = TSMonitorSet(ts,TSMonitorSolutionODE,lg,(PetscErrorCode (*)(void**))TSMonitorSolutionODEDestroy);CHKERRQ(ierr);
     }
     opt  = PETSC_FALSE;
@@ -133,7 +133,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       void        *ctx;
       PetscViewer viewer;
       
-      ierr = PetscViewerDrawOpen(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);
+      ierr = PetscViewerDrawOpen(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,&viewer);
       ierr = TSMonitorSolutionCreate(ts,viewer,&ctx);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       ierr = TSMonitorSet(ts,TSMonitorSolution,ctx,TSMonitorSolutionDestroy);CHKERRQ(ierr);
