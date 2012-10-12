@@ -182,7 +182,9 @@ class Configure(config.package.Package):
       
       if not hasattr(self.compilers, 'FC'):
         raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-f2cblaslapack=1?')
-      libdir = self.downLoadBlasLapack('f','f')            
+      if self.defaultPrecision == '__float128':
+        raise RuntimeError('Cannot use --download-f-blas-lapack with precision __float128, maybe you want --download-f2cblaslapack?')
+      libdir = self.downLoadBlasLapack('f','f')
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'), 1)
       raise RuntimeError('Could not use downloaded f-blas-lapack.')
     # Try specified BLASLAPACK library
