@@ -248,7 +248,7 @@ PetscErrorCode DMTSGetIFunction(DM dm,TSIFunction *func,void **ctx)
    Level: advanced
 
    Note:
-   TSSetFunction() is normally used, but it calls this function internally because the user context is actually
+   TSSetRSHFunction() is normally used, but it calls this function internally because the user context is actually
    associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
    not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
 
@@ -257,13 +257,78 @@ PetscErrorCode DMTSGetIFunction(DM dm,TSIFunction *func,void **ctx)
 PetscErrorCode DMTSSetRHSFunction(DM dm,TSRHSFunction func,void *ctx)
 {
   PetscErrorCode ierr;
-  TSDM tsdm;
+  TSDM           tsdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMTSGetContextWrite(dm,&tsdm);CHKERRQ(ierr);
   if (func) tsdm->rhsfunction = func;
   if (ctx)  tsdm->rhsfunctionctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSGetSolutionFunction"
+/*@C
+   DMTSGetSolutionFunction - gets the TS solution evaluation function
+
+   Not Collective
+
+   Input Arguments:
+.  dm - DM to be used with TS
+
+   Output Parameters:
++  func - solution function evaluation function, see TSSetSolution() for calling sequence
+-  ctx - context for solution evaluation
+
+   Level: advanced
+
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+@*/
+PetscErrorCode DMTSGetSolutionFunction(DM dm,TSSolutionFunction *func,void **ctx)
+{
+  PetscErrorCode ierr;
+  TSDM           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMTSGetContext(dm,&tsdm);CHKERRQ(ierr);
+  if (func) *func = tsdm->solution;
+  if (ctx)  *ctx  = tsdm->solutionctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSSetSolutionFunction"
+/*@C
+   DMTSSetSolutionFunction - set TS solution evaluation function
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to be used with TS
+.  func - solution function evaluation function, see TSSetSolution() for calling sequence
+-  ctx - context for solution evaluation
+
+   Level: advanced
+
+   Note:
+   TSSetSolutionFunction() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
+   not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
+
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+@*/
+PetscErrorCode DMTSSetSolutionFunction(DM dm,TSSolutionFunction func,void *ctx)
+{
+  PetscErrorCode ierr;
+  TSDM           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMTSGetContextWrite(dm,&tsdm);CHKERRQ(ierr);
+  if (func) tsdm->solution    = func;
+  if (ctx)  tsdm->solutionctx = ctx;
   PetscFunctionReturn(0);
 }
 

@@ -1354,10 +1354,10 @@ static PetscErrorCode TSSetFromOptions_RosW(TS ts)
   ierr = PetscOptionsHead("RosW ODE solver options");CHKERRQ(ierr);
   {
     RosWTableauLink link;
-    PetscInt count,choice;
-    PetscBool flg;
-    const char **namelist;
-    SNES snes;
+    PetscInt        count,choice;
+    PetscBool       flg;
+    const char      **namelist;
+    SNES            snes;
 
     ierr = PetscStrncpy(rostype,TSRosWDefault,sizeof(rostype));CHKERRQ(ierr);
     for (link=RosWTableauList,count=0; link; link=link->next,count++) ;
@@ -1385,9 +1385,9 @@ static PetscErrorCode TSSetFromOptions_RosW(TS ts)
 static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt,PetscInt n,const PetscReal x[])
 {
   PetscErrorCode ierr;
-  PetscInt i;
-  size_t left,count;
-  char *p;
+  PetscInt       i;
+  size_t         left,count;
+  char           *p;
 
   PetscFunctionBegin;
   for (i=0,p=buf,left=len; i<n; i++) {
@@ -1409,6 +1409,7 @@ static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
   RosWTableau    tab  = ros->tableau;
   PetscBool      iascii;
   PetscErrorCode ierr;
+  TSAdapt        adapt;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -1425,6 +1426,8 @@ static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,abscissa);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa of A+Gamma = %s\n",buf);CHKERRQ(ierr);
   }
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+  ierr = TSAdaptView(adapt,viewer);CHKERRQ(ierr);
   ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1519,6 +1522,7 @@ PetscErrorCode  TSRosWGetType_RosW(TS ts,TSRosWType *rostype)
   *rostype = ros->tableau->name;
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "TSRosWSetType_RosW"
 PetscErrorCode  TSRosWSetType_RosW(TS ts,TSRosWType rostype)

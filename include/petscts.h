@@ -172,6 +172,9 @@ PETSC_EXTERN PetscErrorCode TSGetRHSFunction(TS,Vec*,TSRHSFunction*,void**);
 PETSC_EXTERN PetscErrorCode TSSetRHSJacobian(TS,Mat,Mat,TSRHSJacobian,void*);
 PETSC_EXTERN PetscErrorCode TSGetRHSJacobian(TS,Mat*,Mat*,TSRHSJacobian*,void**);
 
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSSolutionFunction)(TS,PetscReal,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSSetSolutionFunction(TS,TSSolutionFunction,void*);
+
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIFunction)(TS,PetscReal,Vec,Vec,Vec,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIJacobian)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
 PETSC_EXTERN PetscErrorCode TSSetIFunction(TS,Vec,TSIFunction,void*);
@@ -226,6 +229,8 @@ PETSC_EXTERN PetscErrorCode DMTSSetIFunction(DM,TSIFunction,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetIFunction(DM,TSIFunction*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetIJacobian(DM,TSIJacobian,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetIJacobian(DM,TSIJacobian*,void**);
+PETSC_EXTERN PetscErrorCode DMTSSetSolutionFunction(DM,TSSolutionFunction,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetSolutionFunction(DM,TSSolutionFunction*,void**);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSFunctionLocal)(DMDALocalInfo*,PetscReal,void*,void*,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSJacobianLocal)(DMDALocalInfo*,PetscReal,void*,Mat,Mat,MatStructure*,void*);
@@ -310,6 +315,10 @@ PETSC_EXTERN PetscErrorCode TSMonitorLGDestroy(PetscDrawLG*);
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionODECreate(MPI_Comm,PetscInt,const char[],const char[],int,int,int,int,PetscDrawLG *);
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionODE(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionODEDestroy(PetscDrawLG*);
+
+PETSC_EXTERN PetscErrorCode TSMonitorErrorODECreate(MPI_Comm,PetscInt,const char[],const char[],int,int,int,int,PetscDrawLG *);
+PETSC_EXTERN PetscErrorCode TSMonitorErrorODE(TS,PetscInt,PetscReal,Vec,void *);
+PETSC_EXTERN PetscErrorCode TSMonitorErrorODEDestroy(PetscDrawLG*);
 
 /*J
    TSSSPType - string with the name of TSSSP scheme.

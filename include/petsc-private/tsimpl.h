@@ -160,12 +160,15 @@ struct _n_TSDM {
   TSIFunction ifunction;
   TSIJacobian ijacobian;
 
+  TSSolutionFunction solution;
+
   void *rhsfunctionctx;
   void *rhsjacobianctx;
 
   void *ifunctionctx;
   void *ijacobianctx;
 
+  void *solutionctx;
 
 
   /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */

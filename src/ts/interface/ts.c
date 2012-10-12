@@ -128,11 +128,19 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       ierr = TSMonitorSet(ts,TSMonitorSolutionODE,lg,(PetscErrorCode (*)(void**))TSMonitorSolutionODEDestroy);CHKERRQ(ierr);
     }
     opt  = PETSC_FALSE;
+    ierr = PetscOptionsBool("-ts_monitor_errorode","Monitor error graphically","TSMonitorErrorODE",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
+    if (opt) {
+      PetscDrawLG lg;
+
+      ierr = TSMonitorErrorODECreate(((PetscObject)ts)->comm,3,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,&lg);
+      ierr = TSMonitorSet(ts,TSMonitorErrorODE,lg,(PetscErrorCode (*)(void**))TSMonitorErrorODEDestroy);CHKERRQ(ierr);
+    }
+    opt  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ts_monitor_solution","Monitor solution graphically","TSMonitorSolution",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
     if (opt) {
       void        *ctx;
       PetscViewer viewer;
-      
+
       ierr = PetscViewerDrawOpen(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,&viewer);
       ierr = TSMonitorSolutionCreate(ts,viewer,&ctx);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -318,6 +326,51 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
   }
 
   ierr = PetscLogEventEnd(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeSolutionFunction"
+/*@
+   TSComputeSolutionFunction - Evaluates the solution function.
+
+   Collective on TS and Vec
+
+   Input Parameters:
++  ts - the TS context
+-  t - current time
+
+   Output Parameter:
+.  y - right hand side
+
+   Note:
+   Most users should not need to explicitly call this routine, as it
+   is used internally within the nonlinear solvers.
+
+   Level: developer
+
+.keywords: TS, compute
+
+.seealso: TSSetRHSFunction(), TSComputeIFunction()
+@*/
+PetscErrorCode TSComputeSolutionFunction(TS ts,PetscReal t,Vec x)
+{
+  PetscErrorCode     ierr;
+  TSSolutionFunction solutionfunction;
+  void               *ctx;
+  DM                 dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,3);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSGetSolutionFunction(dm,&solutionfunction,&ctx);CHKERRQ(ierr);
+
+  if (solutionfunction) {
+    PetscStackPush("TS user right-hand-side function");
+    ierr = (*solutionfunction)(ts,t,x,ctx);CHKERRQ(ierr);
+    PetscStackPop;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -611,6 +664,44 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
   }
   ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetSolutionFunction"
+/*@C
+    TSSetSolutionFunction - Provide a function that computes the solution of the ODE
+
+    Logically Collective on TS
+
+    Input Parameters:
++   ts - the TS context obtained from TSCreate()
+.   f - routine for evaluating the solution
+-   ctx - [optional] user-defined context for private data for the
+          function evaluation routine (may be PETSC_NULL)
+
+    Calling sequence of func:
+$     func (TS ts,PetscReal t,Vec u,void *ctx);
+
++   t - current timestep
+.   u - output vector
+-   ctx - [optional] user-defined function context
+
+    Level: beginner
+
+.keywords: TS, timestep, set, right-hand-side, function
+
+.seealso: TSSetRHSJacobian(), TSSetIJacobian()
+@*/
+PetscErrorCode  TSSetSolutionFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSSetSolutionFunction(dm,f,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3948,6 +4039,114 @@ PetscErrorCode  TSMonitorSolutionODECreate(MPI_Comm comm,PetscInt N,const char h
   ierr = PetscDrawLGIndicateDataPoints(*draw);CHKERRQ(ierr);
   ierr = PetscDrawLGGetAxis(*draw,&axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,"Solution","Time","Solution");CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(*draw,win);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorErrorODE"
+/*@C
+   TSMonitorErrorODE - Monitors progress of the TS solvers by plotting each component of the solution vector
+       in a time based line graph
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+-  lg - a line graph object
+
+   Level: intermediate
+
+    Notes: only for sequential solves
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
+@*/
+PetscErrorCode  TSMonitorErrorODE(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
+{
+  PetscErrorCode    ierr;
+  PetscDrawLG       lg = (PetscDrawLG)dummy;
+  const PetscScalar *yy;
+  Vec               y;
+
+  PetscFunctionBegin;
+  if (!step) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
+  ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
+  ierr = TSComputeSolutionFunction(ts,ptime,y);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(y,&yy);CHKERRQ(ierr);
+  ierr = PetscDrawLGAddCommonPoint(lg,ptime,yy);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(y,&yy);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorErrorODEDestroy"
+/*@C
+   TSMonitorErrorODEDestroy - Destroys the monitor context for TSMonitorErrorODE()
+
+   Collective on TS
+
+   Input Parameters:
+.    ctx - the monitor context
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorErrorODE()
+@*/
+PetscErrorCode  TSMonitorErrorODEDestroy(PetscDrawLG *lg)
+{
+  PetscDraw      draw;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscDrawLGGetDraw(*lg,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGDestroy(lg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorErrorODECreate"
+/*@C
+   TSMonitorErrorODECreate - Creates the monitor context for TSMonitorErrorODE()
+
+   Collective on TS
+
+   Input Parameter:
++    comm - MPI communicator
+.    N - number of components in the solution vector
+-
+
+   Output Patameter:
+.    ctx - the monitor context
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorError()
+@*/
+PetscErrorCode  TSMonitorErrorODECreate(MPI_Comm comm,PetscInt N,const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+{
+  PetscDraw      win;
+  PetscErrorCode ierr;
+  PetscDrawAxis  axis;
+
+  PetscFunctionBegin;
+  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
+  ierr = PetscDrawSetType(win,PETSC_DRAW_X);CHKERRQ(ierr);
+  ierr = PetscDrawLGCreate(win,N,draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGIndicateDataPoints(*draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGGetAxis(*draw,&axis);CHKERRQ(ierr);
+  ierr = PetscDrawAxisSetLabels(axis,"Error","Time","Error");CHKERRQ(ierr);
   ierr = PetscLogObjectParent(*draw,win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
