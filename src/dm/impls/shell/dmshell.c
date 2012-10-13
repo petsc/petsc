@@ -18,8 +18,19 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,MatType mtype,Mat *J)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(J,3);
+  if (!shell->A) {
+    if (shell->Xglobal) {
+      PetscInt m,M;
+      ierr = PetscInfo(dm,"Naively creating matrix using global vector distribution without preallocation");CHKERRQ(ierr);
+      ierr = VecGetSize(shell->Xglobal,&M);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(shell->Xglobal,&m);CHKERRQ(ierr);
+      ierr = MatCreate(((PetscObject)dm)->comm,&shell->A);CHKERRQ(ierr);
+      ierr = MatSetSizes(shell->A,m,m,M,M);CHKERRQ(ierr);
+      if (mtype) {ierr = MatSetType(shell->A,mtype);CHKERRQ(ierr);}
+      ierr = MatSetUp(shell->A);CHKERRQ(ierr);
+    } else SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_USER,"Must call DMShellSetMatrix(), DMShellSetCreateMatrix(), or provide a vector");
+  }
   A = shell->A;
-  if (!A) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_USER,"Must call DMShellSetMatrix() or DMShellSetCreateMatrix()");
   if (mtype) {
     PetscBool flg;
     ierr = PetscObjectTypeCompare((PetscObject)A,mtype,&flg);CHKERRQ(ierr);
