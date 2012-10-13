@@ -2306,7 +2306,7 @@ PetscErrorCode  TSMonitorLGCreate(MPI_Comm comm,const char host[],const char lab
   ierr = PetscDrawLGCreate(win,1,draw);CHKERRQ(ierr);
   ierr = PetscDrawLGIndicateDataPoints(*draw);CHKERRQ(ierr);
   ierr = PetscDrawLGGetAxis(*draw,&axis);CHKERRQ(ierr);
-  ierr = PetscDrawAxisSetLabels(axis,"Integration Time","Iteration","Time");CHKERRQ(ierr);
+  ierr = PetscDrawAxisSetLabels(axis,"Timestep as function of time","Time","Time step");CHKERRQ(ierr);
   ierr = PetscLogObjectParent(*draw,win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2316,7 +2316,7 @@ PetscErrorCode  TSMonitorLGCreate(MPI_Comm comm,const char host[],const char lab
 PetscErrorCode TSMonitorLG(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
 {
   PetscDrawLG    lg = (PetscDrawLG) monctx;
-  PetscReal      x,y = ptime;
+  PetscReal      x = ptime,y;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2329,15 +2329,13 @@ PetscErrorCode TSMonitorLG(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
     viewer = PETSC_VIEWER_DRAW_(comm);
     ierr   = PetscViewerDrawGetDrawLG(viewer,0,&lg);CHKERRQ(ierr);
     ierr   = PetscDrawLGGetAxis(lg,&axis);CHKERRQ(ierr);
-    ierr   = PetscDrawAxisSetLabels(axis,"Integration Time","Iteration","Time");CHKERRQ(ierr);
+    ierr   = PetscDrawAxisSetLabels(axis,"Timestep as function of time","Time","Time step");CHKERRQ(ierr);
   }
 
   if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
-  x = (PetscReal)n;
+  ierr = TSGetTimeStep(ts,&y);CHKERRQ(ierr);
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
-  if (n < 20 || (n % 5)) {
-    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
-  }
+  ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
