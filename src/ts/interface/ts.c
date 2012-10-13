@@ -351,7 +351,7 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
 
 .keywords: TS, compute
 
-.seealso: TSSetRHSFunction(), TSComputeIFunction()
+.seealso: TSSetSolutionFunction(), TSSetRHSFunction(), TSComputeIFunction()
 @*/
 PetscErrorCode TSComputeSolutionFunction(TS ts,PetscReal t,Vec x)
 {
@@ -670,7 +670,7 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
 #undef __FUNCT__
 #define __FUNCT__ "TSSetSolutionFunction"
 /*@C
-    TSSetSolutionFunction - Provide a function that computes the solution of the ODE
+    TSSetSolutionFunction - Provide a function that computes the solution of the ODE or DAE
 
     Logically Collective on TS
 
@@ -687,11 +687,18 @@ $     func (TS ts,PetscReal t,Vec u,void *ctx);
 .   u - output vector
 -   ctx - [optional] user-defined function context
 
+    Notes:
+    This routine is used for testing accuracy of time integration schemes when you already know the solution.
+    If analytic solutions are not known for your system, consider using the Method of Manufactured Solutions to
+    create closed-form solutions with non-physical forcing terms.
+
+    For low-dimensional problems solved in serial, such as small discrete systems, TSMonitorErrorODE() can be used to monitor the error history.
+
     Level: beginner
 
 .keywords: TS, timestep, set, right-hand-side, function
 
-.seealso: TSSetRHSJacobian(), TSSetIJacobian()
+.seealso: TSSetRHSJacobian(), TSSetIJacobian(), TSComputeSolutionFunction()
 @*/
 PetscErrorCode  TSSetSolutionFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,void*),void *ctx)
 {
@@ -4057,11 +4064,17 @@ PetscErrorCode  TSMonitorSolutionODECreate(MPI_Comm comm,PetscInt N,const char h
 
    Level: intermediate
 
-    Notes: only for sequential solves
+   Notes:
+   Only for sequential solves.
+
+   The user must provide the solution using TSSetSolutionFunction() to use this monitor.
+
+   Options Database Keys:
+.  -ts_monitor_errorode - create a graphical monitor of error history
 
 .keywords: TS,  vector, monitor, view
 
-.seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
 @*/
 PetscErrorCode  TSMonitorErrorODE(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
 {
@@ -4126,11 +4139,14 @@ PetscErrorCode  TSMonitorErrorODEDestroy(PetscDrawLG *lg)
    Output Patameter:
 .    ctx - the monitor context
 
+   Options Database Keys:
+.  -ts_monitor_errorode - create a graphical monitor of error history
+
    Level: intermediate
 
 .keywords: TS,  vector, monitor, view
 
-.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorError()
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorErrorODE()
 @*/
 PetscErrorCode  TSMonitorErrorODECreate(MPI_Comm comm,PetscInt N,const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {

@@ -302,8 +302,8 @@ PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
   DM             cda;
 
   PetscFunctionBegin;
-  ierr = DAGetCoordinateDM(da,&cda);CHKERRQ(ierr);
-  ierr = DAGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
 
   ierr = DMDAVecGetArray(cda,Gcoords,&XX);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,field,&FF);CHKERRQ(ierr);
