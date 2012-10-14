@@ -2037,7 +2037,7 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ     *Aloc=(Mat_SeqAIJ*)a->A->data,*Bloc=(Mat_SeqAIJ*)a->B->data;
   PetscErrorCode ierr;
-  PetscInt       M = A->rmap->N,N = A->cmap->N,ma,na,mb,*ai,*aj,*bi,*bj,row,*cols,*cols_tmp,i,*d_nnz;
+  PetscInt       M = A->rmap->N,N = A->cmap->N,ma,na,mb,nb,*ai,*aj,*bi,*bj,row,*cols,*cols_tmp,i;
   PetscInt       cstart=A->cmap->rstart,ncol;
   Mat            B;
   MatScalar      *array;
@@ -2045,25 +2045,43 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX && A == *matout && M != N) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
 
-  ma = A->rmap->n; na = A->cmap->n; mb = a->B->rmap->n;
+  ma = A->rmap->n; na = A->cmap->n; mb = a->B->rmap->n; nb = a->B->cmap->n;
   ai = Aloc->i; aj = Aloc->j;
   bi = Bloc->i; bj = Bloc->j;
   if (reuse == MAT_INITIAL_MATRIX || *matout == A) {
-    /* compute d_nnz for preallocation; o_nnz is approximated by d_nnz to avoid communication */
-    ierr = PetscMalloc((1+na)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
-    ierr = PetscMemzero(d_nnz,(1+na)*sizeof(PetscInt));CHKERRQ(ierr);
-    for (i=0; i<ai[ma]; i++){
+    PetscInt *d_nnz,*g_nnz,*o_nnz;
+    PetscSFNode *oloc;
+    PetscSF sf;
+
+    ierr = PetscMalloc4(na,PetscInt,&d_nnz,na,PetscInt,&o_nnz,nb,PetscInt,&g_nnz,nb,PetscSFNode,&oloc);CHKERRQ(ierr);
+    /* compute d_nnz for preallocation */
+    ierr = PetscMemzero(d_nnz,na*sizeof(PetscInt));CHKERRQ(ierr);
+    for (i=0; i<ai[ma]; i++) {
       d_nnz[aj[i]] ++;
       aj[i] += cstart; /* global col index to be used by MatSetValues() */
     }
+    /* compute local off-diagonal contributions */
+    for (i=0; i<bi[ma]; i++) g_nnz[bj[i]]++;
+    /* map those to global */
+    for (i=0; i<nb; i++) {
+      PetscInt gcol = a->garray[i],colowner;
+      ierr = PetscLayoutFindOwner(A->cmap,a->garray[i],&colowner);CHKERRQ(ierr);
+      oloc[i].rank  = colowner;
+      oloc[i].index = gcol - A->cmap->range[colowner];
+    }
+    ierr = PetscSFCreate(((PetscObject)A)->comm,&sf);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(sf,na,nb,PETSC_NULL,PETSC_USE_POINTER,oloc,PETSC_USE_POINTER);CHKERRQ(ierr);
+    ierr = PetscMemzero(o_nnz,na*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(sf,MPIU_INT,g_nnz,o_nnz,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(sf,MPIU_INT,g_nnz,o_nnz,MPIU_SUM);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
 
     ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,A->cmap->n,A->rmap->n,N,M);CHKERRQ(ierr);
     ierr = MatSetBlockSizes(B,A->cmap->bs,A->rmap->bs); CHKERRQ(ierr);
     ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(B,0,d_nnz,0,d_nnz);CHKERRQ(ierr);
-    ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscFree(d_nnz);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(B,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
+    ierr = PetscFree4(d_nnz,o_nnz,g_nnz,oloc);CHKERRQ(ierr);
   } else {
     B = *matout;
     ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
