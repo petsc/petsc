@@ -2,7 +2,7 @@
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
-
+#define PETSC_DESIRE_COMPLEX
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 
 #if defined(PETSC_HAVE_CUSP)
@@ -697,18 +697,17 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_COMPLEX)
   /*
      Initialized the global complex variable; this is because with
      shared libraries the constructors for global variables
      are not called; at least on IRIX.
   */
   {
-#if defined(PETSC_CLANGUAGE_CXX)
-    PetscScalar ic(0.0,1.0);
-    PETSC_i = ic;
-#else
-    PETSC_i = I;
+#if defined(PETSC_CLANGUAGE_CXX) && defined(PETSC_HAVE_CXX_COMPLEX)
+    PetscComplex ic(0.0,1.0);
+    PETSC_i = ic; 
+#elif defined(PETSC_CLANGUAGE_C) && defined(PETSC_HAVE_C99_COMPLEX)
+    PETSC_i = _Complex_I;
 #endif
   }
 
@@ -717,6 +716,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Type_commit(&MPIU_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Type_contiguous(2,MPI_FLOAT,&MPIU_C_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_C_COMPLEX);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
   ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);CHKERRQ(ierr);
 #endif
 #endif

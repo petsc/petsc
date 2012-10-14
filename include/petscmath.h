@@ -49,8 +49,8 @@ typedef __float128 PetscReal;
 /*
     Complex number definitions
  */
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_CLANGUAGE_CXX)
+#if defined(PETSC_CLANGUAGE_CXX) && defined(PETSC_HAVE_CXX_COMPLEX)
+#define PETSC_HAVE_COMPLEX 1
 /* C++ support of complex number */
 #if defined(PETSC_HAVE_CUSP)
 #define complexlib cusp
@@ -60,76 +60,82 @@ typedef __float128 PetscReal;
 #include <complex>
 #endif
 
-#define PetscRealPart(a)      (a).real()
-#define PetscImaginaryPart(a) (a).imag()
-#define PetscAbsScalar(a)     complexlib::abs(a)
-#define PetscConj(a)          complexlib::conj(a)
-#define PetscSqrtScalar(a)    complexlib::sqrt(a)
-#define PetscPowScalar(a,b)   complexlib::pow(a,b)
-#define PetscExpScalar(a)     complexlib::exp(a)
-#define PetscLogScalar(a)     complexlib::log(a)
-#define PetscSinScalar(a)     complexlib::sin(a)
-#define PetscCosScalar(a)     complexlib::cos(a)
+#define PetscRealPartComplex(a)      (a).real()
+#define PetscImaginaryPartComplex(a) (a).imag()
+#define PetscAbsComplex(a)           complexlib::abs(a)
+#define PetscConjComplex(a)          complexlib::conj(a)
+#define PetscSqrtComplex(a)          complexlib::sqrt(a)
+#define PetscPowComplex(a,b)         complexlib::pow(a,b)
+#define PetscExpComplex(a)           complexlib::exp(a)
+#define PetscLogComplex(a)           complexlib::log(a)
+#define PetscSinComplex(a)           complexlib::sin(a)
+#define PetscCosComplex(a)           complexlib::cos(a)
 
 #if defined(PETSC_USE_REAL_SINGLE)
-typedef complexlib::complex<float> PetscScalar;
+typedef complexlib::complex<float> PetscComplex;
 #elif defined(PETSC_USE_REAL_DOUBLE)
-typedef complexlib::complex<double> PetscScalar;
+typedef complexlib::complex<double> PetscComplex;
 #elif defined(PETSC_USE_REAL___FLOAT128)
-typedef complexlib::complex<__float128> PetscScalar;
+typedef complexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
 #endif  /* PETSC_USE_REAL_ */
 
-#else /* PETSC_CLANGUAGE_CXX */
+#elif defined(PETSC_CLANGUAGE_C) && defined(PETSC_HAVE_C99_COMPLEX)
+#define PETSC_HAVE_COMPLEX 1
 
-/*  C support of complex numbers: Requires C99 compliant compiler*/
+/* Use C99 _Complex for the type. Do not include complex.h by default to define "complex" because of symbol conflicts in Hypre. */
+/* Compilation units that can safely use complex should define PETSC_DESIRE_COMPLEX before including any headers */
+#if defined(PETSC_USE_COMPLEX) || defined(PETSC_DESIRE_COMPLEX)
 #include <complex.h>
+#endif
 
 #if defined(PETSC_USE_REAL_SINGLE)
-typedef float complex PetscScalar;
+typedef float _Complex PetscComplex;
 
-#define PetscRealPart(a)      crealf(a)
-#define PetscImaginaryPart(a) cimagf(a)
-#define PetscAbsScalar(a)     cabsf(a)
-#define PetscConj(a)          conjf(a)
-#define PetscSqrtScalar(a)    csqrtf(a)
-#define PetscPowScalar(a,b)   cpowf(a,b)
-#define PetscExpScalar(a)     cexpf(a)
-#define PetscLogScalar(a)     clogf(a)
-#define PetscSinScalar(a)     csinf(a)
-#define PetscCosScalar(a)     ccosf(a)
+#define PetscRealPartComplex(a)      crealf(a)
+#define PetscImaginaryPartComplex(a) cimagf(a)
+#define PetscAbsComplex(a)           cabsf(a)
+#define PetscConjComplex(a)          conjf(a)
+#define PetscSqrtComplex(a)          csqrtf(a)
+#define PetscPowComplex(a,b)         cpowf(a,b)
+#define PetscExpComplex(a)           cexpf(a)
+#define PetscLogComplex(a)           clogf(a)
+#define PetscSinComplex(a)           csinf(a)
+#define PetscCosComplex(a)           ccosf(a)
 
 #elif defined(PETSC_USE_REAL_DOUBLE)
-typedef double complex PetscScalar;
+typedef double _Complex PetscComplex;
 
-#define PetscRealPart(a)      creal(a)
-#define PetscImaginaryPart(a) cimag(a)
-#define PetscAbsScalar(a)     cabs(a)
-#define PetscConj(a)          conj(a)
-#define PetscSqrtScalar(a)    csqrt(a)
-#define PetscPowScalar(a,b)   cpow(a,b)
-#define PetscExpScalar(a)     cexp(a)
-#define PetscLogScalar(a)     clog(a)
-#define PetscSinScalar(a)     csin(a)
-#define PetscCosScalar(a)     ccos(a)
+#define PetscRealPartComplex(a)      creal(a)
+#define PetscImaginaryPartComplex(a) cimag(a)
+#define PetscAbsComplex(a)           cabs(a)
+#define PetscConjComplex(a)          conj(a)
+#define PetscSqrtComplex(a)          csqrt(a)
+#define PetscPowComplex(a,b)         cpow(a,b)
+#define PetscExpComplex(a)           cexp(a)
+#define PetscLogComplex(a)           clog(a)
+#define PetscSinComplex(a)           csin(a)
+#define PetscCosComplex(a)           ccos(a)
 
 #elif defined(PETSC_USE_REAL___FLOAT128)
-typedef __complex128 PetscScalar;
+typedef __complex128 PetscComplex;
 PETSC_EXTERN MPI_Datatype MPIU___FLOAT128;
 PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
 #define MPIU_SCALAR MPIU___COMPLEX128
 
-#define PetscRealPart(a)      crealq(a)
-#define PetscImaginaryPart(a) cimagq(a)
-#define PetscAbsScalar(a)     cabsq(a)
-#define PetscConj(a)          conjq(a)
-#define PetscSqrtScalar(a)    csqrtq(a)
-#define PetscPowScalar(a,b)   cpowq(a,b)
-#define PetscExpScalar(a)     cexpq(a)
-#define PetscLogScalar(a)     clogq(a)
-#define PetscSinScalar(a)     csinq(a)
-#define PetscCosScalar(a)     ccosq(a)
-
+#define PetscRealPartComplex(a)      crealq(a)
+#define PetscImaginaryPartComplex(a) cimagq(a)
+#define PetscAbsComplex(a)           cabsq(a)
+#define PetscConjComplex(a)          conjq(a)
+#define PetscSqrtComplex(a)          csqrtq(a)
+#define PetscPowComplex(a,b)         cpowq(a,b)
+#define PetscExpComplex(a)           cexpq(a)
+#define PetscLogComplex(a)           clogq(a)
+#define PetscSinComplex(a)           csinq(a)
+#define PetscCosComplex(a)           ccosq(a)
+a
 #endif /* PETSC_USE_REAL_* */
+#elif defined(PETSC_USE_COMPLEX)
+#error "PETSc was configured --with-scalar-type=complex, but a language-appropriate complex library is not available"
 #endif /* PETSC_CLANGUAGE_CXX */
 
 #if defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
@@ -139,6 +145,19 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
 PETSC_EXTERN MPI_Datatype MPIU_C_DOUBLE_COMPLEX;
 PETSC_EXTERN MPI_Datatype MPIU_C_COMPLEX;
 #endif /* PETSC_HAVE_MPI_C_DOUBLE_COMPLEX */
+
+#if defined(PETSC_USE_COMPLEX)
+typedef PetscComplex PetscScalar;
+#define PetscRealPart(a)      PetscRealPartComplex(a)
+#define PetscImaginaryPart(a) PetscImaginaryPartComplex(a)
+#define PetscAbsScalar(a)     PetscAbsComplex(a)
+#define PetscConj(a)          PetscConjComplex(a)
+#define PetscSqrtScalar(a)    PetscSqrtComplex(a)
+#define PetscPowScalar(a,b)   PetscPowComplex(a,b)
+#define PetscExpScalar(a)     PetscExpComplex(a)
+#define PetscLogScalar(a)     PetscLogComplex(a)
+#define PetscSinScalar(a)     PetscSinComplex(a)
+#define PetscCosScalar(a)     PetscCosComplex(a)
 
 #if defined(PETSC_USE_REAL_SINGLE)
 #define MPIU_SCALAR MPIU_C_COMPLEX
@@ -194,8 +213,10 @@ PETSC_STATIC_INLINE PetscReal PetscAbsScalar(PetscScalar a) {return a < 0.0 ? -a
 */
 typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE, PETSC_SCALAR_LONG_DOUBLE } PetscScalarPrecision;
 
+#if defined(PETSC_HAVE_COMPLEX)
 /* PETSC_i is the imaginary number, i */
-PETSC_EXTERN PetscScalar   PETSC_i;
+PETSC_EXTERN PetscComplex PETSC_i;
+#endif
 
 /*MC
    PetscMin - Returns minimum of two numbers

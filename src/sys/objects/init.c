@@ -32,7 +32,7 @@ PetscBool    PetscFinalizeCalled   = PETSC_FALSE;
 PetscMPIInt  PetscGlobalRank = -1;
 PetscMPIInt  PetscGlobalSize = -1;
 
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
 template <> class std::complex<double>; /* instantiate complex template class */
 #endif
@@ -40,9 +40,7 @@ template <> class std::complex<double>; /* instantiate complex template class */
 MPI_Datatype   MPIU_C_DOUBLE_COMPLEX;
 MPI_Datatype   MPIU_C_COMPLEX;
 #endif
-PetscScalar    PETSC_i;
-#else
-PetscScalar    PETSC_i = 0.0;
+PetscComplex    PETSC_i;
 #endif
 #if defined(PETSC_USE_REAL___FLOAT128)
 MPI_Datatype   MPIU___FLOAT128 = 0;
