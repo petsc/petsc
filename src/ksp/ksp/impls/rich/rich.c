@@ -256,9 +256,7 @@ EXTERN_C_END
 
           Here B is the application of the preconditioner
 
-          This method often (usually) will not converge unless scale is very small. It
-is described in
-
+          This method often (usually) will not converge unless scale is very small.
 
    Notes: For some preconditioners, currently SOR, the convergence test is skipped to improve speed,
     thus it always iterates the maximum number of iterations you've selected. When -ksp_monitor
