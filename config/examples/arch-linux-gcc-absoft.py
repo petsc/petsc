@@ -6,6 +6,7 @@
 configure_options = [
   '--with-cc=gcc',
   '--with-fc=f90',
+  'FFLAGS=-M1643', #suppress warnings about unused 'parameter' variables defined in fortran includes
   '--with-cxx=g++',
   '--with-clanguage=c++',
   '--download-f-blas-lapack=1',
