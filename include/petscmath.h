@@ -120,7 +120,6 @@ typedef double _Complex PetscComplex;
 typedef __complex128 PetscComplex;
 PETSC_EXTERN MPI_Datatype MPIU___FLOAT128;
 PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
-#define MPIU_SCALAR MPIU___COMPLEX128
 
 #define PetscRealPartComplex(a)      crealq(a)
 #define PetscImaginaryPartComplex(a) cimagq(a)
@@ -132,7 +131,6 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
 #define PetscLogComplex(a)           clogq(a)
 #define PetscSinComplex(a)           csinq(a)
 #define PetscCosComplex(a)           ccosq(a)
-a
 #endif /* PETSC_USE_REAL_* */
 #elif defined(PETSC_USE_COMPLEX)
 #error "PETSc was configured --with-scalar-type=complex, but a language-appropriate complex library is not available"
@@ -163,6 +161,8 @@ typedef PetscComplex PetscScalar;
 #define MPIU_SCALAR MPIU_C_COMPLEX
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #define MPIU_SCALAR MPIU_C_DOUBLE_COMPLEX
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define MPIU_SCALAR MPIU___COMPLEX128
 #endif /* PETSC_USE_REAL_* */
 
 /*
