@@ -1023,19 +1023,12 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscBool  flg)
     a->compressedrow.check = flg;
     break;
   case MAT_SPD:
-    A->spd_set                         = PETSC_TRUE;
-    A->spd                             = flg;
-    if (flg) {
-      A->symmetric                     = PETSC_TRUE;
-      A->structurally_symmetric        = PETSC_TRUE;
-      A->symmetric_set                 = PETSC_TRUE;
-      A->structurally_symmetric_set    = PETSC_TRUE;
-    }
-    break;
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
+    /* These options are handled directly by MatSetOption() */
+    break;
   case MAT_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:

@@ -1379,12 +1379,15 @@ PetscErrorCode MatSetOption_SeqDense(Mat A,MatOption op,PetscBool  flg)
   case MAT_KEEP_NONZERO_PATTERN:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
+  case MAT_IGNORE_LOWER_TRIANGULAR:
+    ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
+    break;
+  case MAT_SPD:
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
-  case MAT_IGNORE_LOWER_TRIANGULAR:
-    ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
+    /* These options are handled directly by MatSetOption() */
     break;
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unknown option %s",MatOptions[op]);

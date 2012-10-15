@@ -1933,15 +1933,21 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
 #define __FUNCT__ "PetscOptionsVec"
 PetscErrorCode PetscOptionsVec(const char key[],const char text[],const char man[],Vec v,PetscBool *set)
 {
-  PetscInt       n;
+  PetscInt       i,N,rstart,rend;
   PetscErrorCode ierr;
   PetscScalar    *xx;
+  PetscReal      *xreal;
 
   PetscFunctionBegin;
-  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
+  ierr = VecGetSize(v,&N);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscReal),&xreal);CHKERRQ(ierr);
+  ierr = PetscMemzero(xreal,N*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscOptionsRealArray(key,text,man,xreal,&N,set);CHKERRQ(ierr);
   ierr = VecGetArray(v,&xx);CHKERRQ(ierr);
-  ierr = PetscOptionsRealArray(key,text,man,xx,&n,set);CHKERRQ(ierr);
+  for (i=rstart; i<rend; i++) xx[i-rstart] = xreal[i];
   ierr = VecRestoreArray(v,&xx);CHKERRQ(ierr);
+  ierr = PetscFree(xreal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

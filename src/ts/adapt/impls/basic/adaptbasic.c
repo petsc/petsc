@@ -90,6 +90,24 @@ static PetscErrorCode TSAdaptSetFromOptions_Basic(TSAdapt adapt)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSAdaptView_Basic"
+static PetscErrorCode TSAdaptView_Basic(TSAdapt adapt,PetscViewer viewer)
+{
+  TSAdapt_Basic  *basic = (TSAdapt_Basic*)adapt->data;
+  PetscErrorCode ierr;
+  PetscBool      iascii;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    if (basic->always_accept) {ierr = PetscViewerASCIIPrintf(viewer,"  Basic: always accepting steps\n");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(viewer,"  Basic: clip fastest decrease %G, fastest increase %G\n",basic->clip[0],basic->clip[1]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Basic: safety factor %G, extra factor after step rejection %G\n",basic->safety,basic->reject_safety);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptCreate_Basic"
@@ -111,6 +129,7 @@ PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
   adapt->ops->choose         = TSAdaptChoose_Basic;
   adapt->ops->setfromoptions = TSAdaptSetFromOptions_Basic;
   adapt->ops->destroy        = TSAdaptDestroy_Basic;
+  adapt->ops->view           = TSAdaptView_Basic;
 
   a->clip[0]       = 0.1;
   a->clip[1]       = 10.;

@@ -3981,7 +3981,19 @@ PetscErrorCode  TSMonitorSolutionODE(TS ts,PetscInt step,PetscReal ptime,Vec x,v
     ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
   }
   ierr = VecGetArrayRead(x,&yy);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  {
+    PetscReal *yreal;
+    PetscInt i,n;
+    ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscReal),&yreal);CHKERRQ(ierr);
+    for (i=0; i<n; i++) yreal[i] = PetscRealPart(yy[i]);
+    ierr = PetscDrawLGAddCommonPoint(lg,ptime,yreal);CHKERRQ(ierr);
+    ierr = PetscFree(yreal);CHKERRQ(ierr);
+  }
+#else
   ierr = PetscDrawLGAddCommonPoint(lg,ptime,yy);CHKERRQ(ierr);
+#endif
   ierr = VecRestoreArrayRead(x,&yy);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4094,7 +4106,19 @@ PetscErrorCode  TSMonitorErrorODE(TS ts,PetscInt step,PetscReal ptime,Vec x,void
   ierr = TSComputeSolutionFunction(ts,ptime,y);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(y,&yy);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  {
+    PetscReal *yreal;
+    PetscInt i,n;
+    ierr = VecGetLocalSize(y,&n);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscReal),&yreal);CHKERRQ(ierr);
+    for (i=0; i<n; i++) yreal[i] = PetscRealPart(yy[i]);
+    ierr = PetscDrawLGAddCommonPoint(lg,ptime,yreal);CHKERRQ(ierr);
+    ierr = PetscFree(yreal);CHKERRQ(ierr);
+  }
+#else
   ierr = PetscDrawLGAddCommonPoint(lg,ptime,yy);CHKERRQ(ierr);
+#endif
   ierr = VecRestoreArrayRead(y,&yy);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);

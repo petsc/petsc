@@ -342,7 +342,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscBool      flag1,flag2,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
+  PetscBool      flag1,flag2,flag3,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
   char           view[10];
   char           filename[PETSC_MAX_PATH_LEN];
   PetscViewer    viewer;
@@ -484,9 +484,11 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 
   flag1 = PETSC_FALSE;
   flag2 = PETSC_FALSE;
+  flag3 = PETSC_FALSE;
   ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues",&flag1,PETSC_NULL);CHKERRQ(ierr);
   ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues",&flag2,PETSC_NULL);CHKERRQ(ierr);
-  if (flag1 || flag2) {
+  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_plot_eigencontours",&flag3,PETSC_NULL);CHKERRQ(ierr);
+  if (flag1 || flag2 || flag3) {
     PetscInt   nits,n,i,neig;
     PetscReal *r,*c;
 
@@ -519,6 +521,9 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
         ierr = PetscDrawSPDraw(drawsp);CHKERRQ(ierr);
         ierr = PetscDrawSPDestroy(&drawsp);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+      }
+      if (flag3 && !rank) {
+        ierr = KSPPlotEigenContours_Private(ksp,neig,r,c);CHKERRQ(ierr);
       }
       ierr = PetscFree(r);CHKERRQ(ierr);
     }

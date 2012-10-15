@@ -21,7 +21,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
                 ex129.c ex130.c ex131.c ex132.c ex133.c ex134.c ex135.c \
                 ex136.c ex137.c ex138.c ex139.c ex140.c ex141.c ex142.c \
                 ex143.c ex144.c ex145.c ex146.c ex147.c ex148.c ex149.c \
-                ex150.c ex151.c ex153.c ex154.c ex155.c ex157.c ex158.c ex159.c ex164.c
+                ex150.c ex151.c ex152.c ex153.c ex154.c ex155.c ex157.c ex158.c ex159.c ex164.c
 EXAMPLESF	 = ex16f90.F ex36f.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F ex120f.F ex126f.F
 
 include ${PETSC_DIR}/conf/variables
@@ -1743,6 +1743,14 @@ runex151:
 #	   ${DIFF} output/ex151_3.out ex151_3.tmp || echo ${PWD} "\nPossible problem with ex151_3, diffs above \n========================================="; \
 #	   ${RM} -f ex151_3.tmp
 
+runex152:
+	-@${MPIEXEC} -n 2 ./ex152 -prefix ${DATAFILESPATH}/parmetis-test/testnp2 > ex152_1.tmp 2>&1; \
+	   ${DIFF} output/ex152_1.out ex152_1.tmp || echo ${PWD} "\nPossible problem with ex152, diffs above \n========================================="; \
+	   ${RM} -f ex152_1.tmp
+runex152_2:
+	-@${MPIEXEC} -n 4 ./ex152 -prefix ${DATAFILESPATH}/parmetis-test/testnp4 > ex152_2.tmp 2>&1; \
+	   ${DIFF} output/ex152_2.out ex152_2.tmp || echo ${PWD} "\nPossible problem with ex152, diffs above \n========================================="; \
+	   ${RM} -f ex152_2.tmp
 runex158:
 	-@${MPIEXEC} -n 1 ./ex158 > ex158.tmp 2>&1; \
 	   ${DIFF} output/ex158.out ex158.tmp || echo ${PWD} "\nPossible problem with ex158, diffs above \n========================================="; \
@@ -1826,7 +1834,7 @@ TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex42.PETSc runex42 \
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex79f ex79f.rm 
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm 
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
-TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm
+TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm ex152.PETSc runex152 runex152_2 ex152.rm
 TESTEXAMPLES_FFTW_REAL         = ex142.PETSc ex142.rm ex144.PETSc runex144 runex144_2 ex144.rm \
                                  ex158.PETsc runex158 runex158_3 ex158.rm
 TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc ex121.rm \

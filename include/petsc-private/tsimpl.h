@@ -48,7 +48,7 @@ struct _p_TS {
   DM            dm;
   TSProblemType problem_type;
   Vec           vec_sol;
-  TSAdapt adapt;
+  TSAdapt       adapt;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
   PetscErrorCode (*monitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,void*); /* returns control to user after */
