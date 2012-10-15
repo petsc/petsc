@@ -1930,7 +1930,7 @@ PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscRe
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (ts->numbermonitors >= MAXTSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   ts->monitor[ts->numbermonitors]           = monitor;
-  ts->mdestroy[ts->numbermonitors]          = mdestroy;
+  ts->monitordestroy[ts->numbermonitors]    = mdestroy;
   ts->monitorcontext[ts->numbermonitors++]  = (void*)mctx;
   PetscFunctionReturn(0);
 }
@@ -1962,8 +1962,8 @@ PetscErrorCode  TSMonitorCancel(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   for (i=0; i<ts->numbermonitors; i++) {
-    if (ts->mdestroy[i]) {
-      ierr = (*ts->mdestroy[i])(&ts->monitorcontext[i]);CHKERRQ(ierr);
+    if (ts->monitordestroy[i]) {
+      ierr = (*ts->monitordestroy[i])(&ts->monitorcontext[i]);CHKERRQ(ierr);
     }
   }
   ts->numbermonitors = 0;
