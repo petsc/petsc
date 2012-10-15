@@ -378,7 +378,7 @@ PetscErrorCode PetscStripZeros(char *buf)
 #undef __FUNCT__
 #define __FUNCT__ "PetscStripZerosPlus"
 /*
-      Removes the plus in something like 1.1e+2
+      Removes the plus in something like 1.1e+2 or 1.1e+02
 */
 PetscErrorCode PetscStripZerosPlus(char *buf)
 {
@@ -391,15 +391,15 @@ PetscErrorCode PetscStripZerosPlus(char *buf)
   for (i=1; i<n-2; i++) {
     if (buf[i] == '+') {
       if (buf[i+1] == '0') {
-        for (j=i+1; j<n+1; j++) buf[j-1] = buf[j+1];
+        for (j=i+1; j<n; j++) buf[j-1] = buf[j+1];
         PetscFunctionReturn(0);
       } else {
-        for (j=i+1; j<n+1; j++) buf[j] = buf[j+1];
+        for (j=i+1; j<n+1; j++) buf[j-1] = buf[j];
         PetscFunctionReturn(0);
       }
     } else if (buf[i] == '-') {
       if (buf[i+1] == '0') {
-        for (j=i+1; j<n+1; j++) buf[j] = buf[j+1];
+        for (j=i+1; j<n; j++) buf[j] = buf[j+1];
         PetscFunctionReturn(0);
       }
     }

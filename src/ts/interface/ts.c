@@ -124,7 +124,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     if (opt) {
       PetscDrawLG lg;
 
-      ierr = TSMonitorSolutionODECreate(((PetscObject)ts)->comm,3,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,&lg);
+      ierr = TSMonitorSolutionODECreate(PETSC_COMM_SELF,1,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,&lg);
       ierr = TSMonitorSet(ts,TSMonitorSolutionODE,lg,(PetscErrorCode (*)(void**))TSMonitorSolutionODEDestroy);CHKERRQ(ierr);
     }
     opt  = PETSC_FALSE;
@@ -132,7 +132,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     if (opt) {
       PetscDrawLG lg;
 
-      ierr = TSMonitorErrorODECreate(((PetscObject)ts)->comm,3,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,&lg);
+      ierr = TSMonitorErrorODECreate(PETSC_COMM_SELF,3,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,&lg);
       ierr = TSMonitorSet(ts,TSMonitorErrorODE,lg,(PetscErrorCode (*)(void**))TSMonitorErrorODEDestroy);CHKERRQ(ierr);
     }
     opt  = PETSC_FALSE;
@@ -3972,9 +3972,14 @@ PetscErrorCode  TSMonitorSolutionODE(TS ts,PetscInt step,PetscReal ptime,Vec x,v
   PetscErrorCode    ierr;
   PetscDrawLG       lg = (PetscDrawLG)dummy;
   const PetscScalar *yy;
+  PetscInt          dim;
 
   PetscFunctionBegin;
-  if (!step) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
+  if (!step) {
+    ierr = VecGetLocalSize(x,&dim);CHKERRQ(ierr);
+    ierr = PetscDrawLGSetDimension(lg,dim);CHKERRQ(ierr);
+    ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
+  }
   ierr = VecGetArrayRead(x,&yy);CHKERRQ(ierr);
   ierr = PetscDrawLGAddCommonPoint(lg,ptime,yy);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(x,&yy);CHKERRQ(ierr);
