@@ -372,7 +372,7 @@ PetscErrorCode KSPPlotEigenContours_Private(KSP ksp,PetscInt neig,const PetscRea
       if (tmod > 0.2 && tmod < 0.5) tmod = 0.2;
       if (tmod > 0.05 && tmod < 0.2) tmod = 0.05;
       if (tmod < 1e-3) tmod = 1e-3;
-      value[i+j*M] = PetscLogScalar(tmod) / PetscLogScalar(10);
+      value[i+j*M] = PetscLogScalar(tmod) / PetscLogScalar(10.0);
     }
   }
   ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigen-contours",PETSC_DECIDE,PETSC_DECIDE,450,450,&viewer);CHKERRQ(ierr);
