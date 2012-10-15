@@ -50,6 +50,7 @@ typedef __float128 PetscReal;
     Complex number definitions
  */
 #if defined(PETSC_CLANGUAGE_CXX) && defined(PETSC_HAVE_CXX_COMPLEX)
+#if defined(PETSC_USE_COMPLEX) || defined(PETSC_DESIRE_COMPLEX)
 #define PETSC_HAVE_COMPLEX 1
 /* C++ support of complex number */
 #if defined(PETSC_HAVE_CUSP)
@@ -78,15 +79,14 @@ typedef complexlib::complex<double> PetscComplex;
 #elif defined(PETSC_USE_REAL___FLOAT128)
 typedef complexlib::complex<__float128> PetscComplex; /* Notstandard and not expected to work, use __complex128 */
 #endif  /* PETSC_USE_REAL_ */
+#endif  /* PETSC_USE_COMPLEX && PETSC_DESIRE_COMPLEX */
 
 #elif defined(PETSC_CLANGUAGE_C) && defined(PETSC_HAVE_C99_COMPLEX)
-#define PETSC_HAVE_COMPLEX 1
-
 /* Use C99 _Complex for the type. Do not include complex.h by default to define "complex" because of symbol conflicts in Hypre. */
 /* Compilation units that can safely use complex should define PETSC_DESIRE_COMPLEX before including any headers */
 #if defined(PETSC_USE_COMPLEX) || defined(PETSC_DESIRE_COMPLEX)
+#define PETSC_HAVE_COMPLEX 1
 #include <complex.h>
-#endif
 
 #if defined(PETSC_USE_REAL_SINGLE)
 typedef float _Complex PetscComplex;
@@ -134,7 +134,8 @@ PETSC_EXTERN MPI_Datatype MPIU___COMPLEX128;
 #endif /* PETSC_USE_REAL_* */
 #elif defined(PETSC_USE_COMPLEX)
 #error "PETSc was configured --with-scalar-type=complex, but a language-appropriate complex library is not available"
-#endif /* PETSC_CLANGUAGE_CXX */
+#endif /* PETSC_USE_COMPLEX || PETSC_DESIRE_COMPLEX */
+#endif /* (PETSC_CLANGUAGE_CXX && PETSC_HAVE_CXX_COMPLEX) else-if (PETSC_CLANGUAGE_C && PETSC_HAVE_C99_COMPLEX) */
 
 #if defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
 #define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX

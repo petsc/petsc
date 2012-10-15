@@ -6,6 +6,7 @@
   what malloc is being used until it has already processed the input.
 */
 
+#define PETSC_DESIRE_COMPLEX
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
