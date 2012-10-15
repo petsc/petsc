@@ -712,7 +712,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   }
 
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-  ierr = MPI_Type_contiguous(2,MPIU_REAL,&MPIU_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
+  ierr = MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Type_contiguous(2,MPI_FLOAT,&MPIU_C_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_C_COMPLEX);CHKERRQ(ierr);
