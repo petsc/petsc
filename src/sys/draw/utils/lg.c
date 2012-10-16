@@ -126,7 +126,7 @@ PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG lg,const PetscReal *x,const Pets
 
 .seealso: PetscDrawLGAddPoint()
 @*/
-PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscReal **yy)
+PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG lg,PetscInt n,PetscReal **xx,PetscReal **yy)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k;
