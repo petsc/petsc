@@ -1937,17 +1937,21 @@ PetscErrorCode PetscOptionsVec(const char key[],const char text[],const char man
   PetscErrorCode ierr;
   PetscScalar    *xx;
   PetscReal      *xreal;
+  PetscBool      iset;
 
   PetscFunctionBegin;
   ierr = VecGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
   ierr = VecGetSize(v,&N);CHKERRQ(ierr);
   ierr = PetscMalloc(N*sizeof(PetscReal),&xreal);CHKERRQ(ierr);
   ierr = PetscMemzero(xreal,N*sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscOptionsRealArray(key,text,man,xreal,&N,set);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&xx);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++) xx[i-rstart] = xreal[i];
-  ierr = VecRestoreArray(v,&xx);CHKERRQ(ierr);
+  ierr = PetscOptionsRealArray(key,text,man,xreal,&N,&iset);CHKERRQ(ierr);
+  if (iset) {
+    ierr = VecGetArray(v,&xx);CHKERRQ(ierr);
+    for (i=rstart; i<rend; i++) xx[i-rstart] = xreal[i];
+    ierr = VecRestoreArray(v,&xx);CHKERRQ(ierr);
+  }
   ierr = PetscFree(xreal);CHKERRQ(ierr);
+  if (set) *set = iset;
   PetscFunctionReturn(0);
 }
 
