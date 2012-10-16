@@ -72,6 +72,9 @@ cmake:
 	@echo "Building PETSc using CMake with ${MAKE_NP} build threads"
 	@echo "=========================================="
 	@cd ${PETSC_DIR}/${PETSC_ARCH} && ${OMAKE} -j ${MAKE_NP} VERBOSE=1
+	@if [ "${BUILDSHAREDLIB}" = "yes" -a "${DSYMUTIL}" != "true" ]; then \
+        echo "Running ${DSYMUTIL} on ${SHLIBS}";\
+        for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
 	@echo "========================================="
 
 # Does nothing; needed for some rules that require actions.
@@ -946,7 +949,6 @@ shared_none:
 shared_linux:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${CLINKER} -shared -Wl,-soname,${LIBNAME}.${SL_LINKER_SUFFIX} -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC} ${OTHERSHAREDLIBS}; \
-	${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}
 
 shared_darwin:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
