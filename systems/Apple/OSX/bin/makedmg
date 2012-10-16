@@ -2,7 +2,9 @@
 #
 # This script makes a Apple Mac OS X dmg from the PETSc framework
 #
-# Make sure that "Enable access for assistive devices" is checked in System Preferences>>Universal Access. It is required for the AppleScript to work. 
+# Make sure that "Enable access for assistive devices" is checked in System Preferences>>Universal Access. It is required for the AppleScript to work.
+#
+#  Before runningt this script follow the directions in ./systems/Apple/OSX/bin/makeframework  to make the Apple PETSc Framework 
 #
 echo "Creating ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg from ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework"
 rm -rf pack.temp.dmg tempsource ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
