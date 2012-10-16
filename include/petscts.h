@@ -310,17 +310,11 @@ PETSC_EXTERN PetscErrorCode TSSetApplicationContext(TS,void *);
 PETSC_EXTERN PetscErrorCode TSGetApplicationContext(TS,void *);
 
 typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
-PETSC_EXTERN PetscErrorCode TSMonitorTimeStepCreate(MPI_Comm,const char[],const char[],int,int,int,int,TSMonitorLGCtx *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TSMonitorLGCtx *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorTimeStep(TS,PetscInt,PetscReal,Vec,void *);
-PETSC_EXTERN PetscErrorCode TSMonitorTimeStepDestroy(TSMonitorLGCtx*);
-
-PETSC_EXTERN PetscErrorCode TSMonitorSolutionODECreate(MPI_Comm,PetscInt,const char[],const char[],int,int,int,int,TSMonitorLGCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionODE(TS,PetscInt,PetscReal,Vec,void *);
-PETSC_EXTERN PetscErrorCode TSMonitorSolutionODEDestroy(TSMonitorLGCtx*);
-
-PETSC_EXTERN PetscErrorCode TSMonitorErrorODECreate(MPI_Comm,PetscInt,const char[],const char[],int,int,int,int,TSMonitorLGCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorErrorODE(TS,PetscInt,PetscReal,Vec,void *);
-PETSC_EXTERN PetscErrorCode TSMonitorErrorODEDestroy(TSMonitorLGCtx*);
 
 /*J
    TSSSPType - string with the name of TSSSP scheme.

@@ -61,7 +61,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 .  -ts_final_time time - maximum time to compute to
 .  -ts_dt dt - initial time step
 .  -ts_monitor - print information at each timestep
--  -ts_monitor_draw - plot information at each timestep
+-  -ts_monitor_draw - plot time-step information at each timestep
 
    Level: beginner
 
@@ -111,29 +111,26 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscOptionsString("-ts_monitor_python","Use Python function","TSMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {ierr = PetscPythonMonitorSet((PetscObject)ts,monfilename);CHKERRQ(ierr);}
 
-    opt  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ts_monitor_draw","Monitor timestep size graphically","TSMonitorTimeStep",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_monitor_draw","Monitor timestep size graphically","TSMonitorTimeStep",&opt);CHKERRQ(ierr);
     if (opt) {
       TSMonitorLGCtx ctx;
 
-      ierr = TSMonitorTimeStepCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);
-      ierr = TSMonitorSet(ts,TSMonitorTimeStep,ctx,(PetscErrorCode (*)(void**))TSMonitorTimeStepDestroy);CHKERRQ(ierr);
+      ierr = TSMonitorLGCtxCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,1,&ctx);
+      ierr = TSMonitorSet(ts,TSMonitorTimeStep,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
     }
-    opt  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ts_monitor_solutionode","Monitor solution graphically","TSMonitorSolutionODE",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_monitor_solutionode","Monitor solution graphically","TSMonitorSolutionODE",&opt);CHKERRQ(ierr);
     if (opt) {
       TSMonitorLGCtx ctx;
 
-      ierr = TSMonitorSolutionODECreate(PETSC_COMM_SELF,1,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,&ctx);
-      ierr = TSMonitorSet(ts,TSMonitorSolutionODE,ctx,(PetscErrorCode (*)(void**))TSMonitorSolutionODEDestroy);CHKERRQ(ierr);
+      ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,1,&ctx);
+      ierr = TSMonitorSet(ts,TSMonitorSolutionODE,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
     }
-    opt  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ts_monitor_errorode","Monitor error graphically","TSMonitorErrorODE",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_monitor_errorode","Monitor error graphically","TSMonitorErrorODE",&opt);CHKERRQ(ierr);
     if (opt) {
       TSMonitorLGCtx ctx;
 
-      ierr = TSMonitorErrorODECreate(PETSC_COMM_SELF,3,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,&ctx);
-      ierr = TSMonitorSet(ts,TSMonitorErrorODE,ctx,(PetscErrorCode (*)(void**))TSMonitorErrorODEDestroy);CHKERRQ(ierr);
+      ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,1,&ctx);
+      ierr = TSMonitorSet(ts,TSMonitorErrorODE,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
     }
     opt  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ts_monitor_solution","Monitor solution graphically","TSMonitorSolution",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
@@ -2277,10 +2274,10 @@ struct _n_TSMonitorLGCtx {
 
 
 #undef __FUNCT__
-#define __FUNCT__ "TSMonitorTimeStepCreate"
+#define __FUNCT__ "TSMonitorLGCtxCreate"
 /*@C
-   TSMonitorTimeStepCreate - Creates a line graph context for use with
-   TS to monitor convergence of preconditioned residual norms.
+   TSMonitorLGCtxCreate - Creates a line graph context for use with
+   TS to monitor the solution process graphically in various ways
 
    Collective on TS
 
@@ -2288,29 +2285,31 @@ struct _n_TSMonitorLGCtx {
 +  host - the X display to open, or null for the local machine
 .  label - the title to put in the title bar
 .  x, y - the screen coordinates of the upper left coordinate of the window
--  m, n - the screen width and height in pixels
+.  m, n - the screen width and height in pixels
+-  howoften - if positive then determines the frequency of the plotting, if -1 then only at the final time
 
    Output Parameter:
 .  ctx - the context
 
    Options Database Key:
-.  -ts_monitor_draw - automatically sets line graph monitor
++  -ts_monitor_draw - automatically sets line graph monitor
+.  -ts_monitor_solutionode -
+-  -ts_monitor_errorode -
 
    Notes:
-   Use TSMonitorTimeStepDestroy() to destroy this line graph, not PetscDrawLGDestroy().
+   Use TSMonitorLGCtxDestroy() to destroy.
 
    Level: intermediate
 
 .keywords: TS, monitor, line graph, residual, seealso
 
-.seealso: TSMonitorTimeStepDestroy(), TSMonitorSet()
+.seealso: TSMonitorTimeStep(), TSMonitorSet(), TSMonitorSolutionODE(), TSMonitorErrorODE()
 
 @*/
-PetscErrorCode  TSMonitorTimeStepCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,TSMonitorLGCtx *ctx)
+PetscErrorCode  TSMonitorLGCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,TSMonitorLGCtx *ctx)
 {
   PetscDraw      win;
   PetscErrorCode ierr;
-  PetscDrawAxis  axis;
 
   PetscFunctionBegin;
   ierr = PetscNew(sizeof(struct _n_TSMonitorLGCtx),ctx);CHKERRQ(ierr);
@@ -2318,9 +2317,8 @@ PetscErrorCode  TSMonitorTimeStepCreate(MPI_Comm comm,const char host[],const ch
   ierr = PetscDrawSetType(win,PETSC_DRAW_X);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,1,&(*ctx)->lg);CHKERRQ(ierr);
   ierr = PetscDrawLGIndicateDataPoints((*ctx)->lg);CHKERRQ(ierr);
-  ierr = PetscDrawLGGetAxis((*ctx)->lg,&axis);CHKERRQ(ierr);
-  ierr = PetscDrawAxisSetLabels(axis,"Timestep as function of time","Time","Time step");CHKERRQ(ierr);
   ierr = PetscLogObjectParent((*ctx)->lg,win);CHKERRQ(ierr);
+  (*ctx)->howoften = howoften;
   PetscFunctionReturn(0);
 }
 
@@ -2333,7 +2331,12 @@ PetscErrorCode TSMonitorTimeStep(TS ts,PetscInt n,PetscReal ptime,Vec v,void *mo
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!n) {ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);}
+  if (!n) {
+    PetscDrawAxis  axis;
+    ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis,"Timestep as function of time","Time","Time step");CHKERRQ(ierr);
+    ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
+  }
   ierr = TSGetTimeStep(ts,&y);CHKERRQ(ierr);
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
@@ -2341,10 +2344,10 @@ PetscErrorCode TSMonitorTimeStep(TS ts,PetscInt n,PetscReal ptime,Vec v,void *mo
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSMonitorTimeStepDestroy"
+#define __FUNCT__ "TSMonitorLGCtxDestroy"
 /*@C
-   TSMonitorTimeStepDestroy - Destroys a line graph context that was created
-   with TSMonitorTimeStepCreate().
+   TSMonitorLGCtxDestroy - Destroys a line graph context that was created
+   with TSMonitorLGCtxCreate().
 
    Collective on TSMonitorLGCtx
 
@@ -2355,9 +2358,9 @@ PetscErrorCode TSMonitorTimeStep(TS ts,PetscInt n,PetscReal ptime,Vec v,void *mo
 
 .keywords: TS, monitor, line graph, destroy
 
-.seealso: TSMonitorTimeStepCreate(),  TSMonitorSet(), TSMonitorTimeStep();
+.seealso: TSMonitorLGCtxCreate(),  TSMonitorSet(), TSMonitorTimeStep();
 @*/
-PetscErrorCode  TSMonitorTimeStepDestroy(TSMonitorLGCtx *ctx)
+PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
@@ -3973,6 +3976,9 @@ PetscErrorCode  TSMonitorSolutionODE(TS ts,PetscInt step,PetscReal ptime,Vec x,v
 
   PetscFunctionBegin;
   if (!step) {
+    PetscDrawAxis  axis;
+    ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","Solution");CHKERRQ(ierr);
     ierr = VecGetLocalSize(x,&dim);CHKERRQ(ierr);
     ierr = PetscDrawLGSetDimension(ctx->lg,dim);CHKERRQ(ierr);
     ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
@@ -3993,79 +3999,6 @@ PetscErrorCode  TSMonitorSolutionODE(TS ts,PetscInt step,PetscReal ptime,Vec x,v
 #endif
   ierr = VecRestoreArrayRead(x,&yy);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TSMonitorSolutionODEDestroy"
-/*@C
-   TSMonitorSolutionODEDestroy - Destroys the monitor context for TSMonitorSolutionODE()
-
-   Collective on TS
-
-   Input Parameters:
-.    ctx - the monitor context
-
-   Level: intermediate
-
-.keywords: TS,  vector, monitor, view
-
-.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorSolutionODE()
-@*/
-PetscErrorCode  TSMonitorSolutionODEDestroy(TSMonitorLGCtx *ctx)
-{
-  PetscDraw      draw;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscDrawLGGetDraw((*ctx)->lg,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGDestroy(&(*ctx)->lg);CHKERRQ(ierr);
-  ierr = PetscFree(*ctx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TSMonitorSolutionODECreate"
-/*@C
-   TSMonitorSolutionODECreate - Creates the monitor context for TSMonitorSolutionODE()
-
-   Collective on TS
-
-   Input Parameter:
-+    comm - MPI communicator, always PETSC_COMM_SELF even for parallel runs
-.    N - number of components in the solution vector
--
-
-   Output Patameter:
-.    ctx - the monitor context
-
-   Level: intermediate
-
-    Notes: each process in a parallel run displays its component solutions in a separate window
-
-.keywords: TS,  vector, monitor, view
-
-.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorSolution()
-@*/
-PetscErrorCode  TSMonitorSolutionODECreate(MPI_Comm comm,PetscInt N,const char host[],const char label[],int x,int y,int m,int n,TSMonitorLGCtx *ctx)
-{
-  PetscDraw      win;
-  PetscErrorCode ierr;
-  PetscDrawAxis  axis;
-  PetscMPIInt    size;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"Always create this object with PETSC_COMM_SELF, even for parallel solves");
-  ierr = PetscNew(sizeof(struct _n_TSMonitorLGCtx),ctx);CHKERRQ(ierr);
-  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
-  ierr = PetscDrawSetType(win,PETSC_DRAW_X);CHKERRQ(ierr);
-  ierr = PetscDrawLGCreate(win,N,&(*ctx)->lg);CHKERRQ(ierr);
-  ierr = PetscDrawLGIndicateDataPoints((*ctx)->lg);CHKERRQ(ierr);
-  ierr = PetscDrawLGGetAxis((*ctx)->lg,&axis);CHKERRQ(ierr);
-  ierr = PetscDrawAxisSetLabels(axis,"Solution","Time","Solution");CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((*ctx)->lg,win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4103,9 +4036,17 @@ PetscErrorCode  TSMonitorErrorODE(TS ts,PetscInt step,PetscReal ptime,Vec x,void
   TSMonitorLGCtx    ctx = (TSMonitorLGCtx)dummy;
   const PetscScalar *yy;
   Vec               y;
+  PetscInt          dim;
 
   PetscFunctionBegin;
-  if (!step) {ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);}
+  if (!step) {
+    PetscDrawAxis  axis;
+    ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis,"Solution as function of time","Time","Solution");CHKERRQ(ierr);
+    ierr = VecGetLocalSize(x,&dim);CHKERRQ(ierr);
+    ierr = PetscDrawLGSetDimension(ctx->lg,dim);CHKERRQ(ierr);
+    ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
+  }
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = TSComputeSolutionFunction(ts,ptime,y);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
@@ -4129,76 +4070,3 @@ PetscErrorCode  TSMonitorErrorODE(TS ts,PetscInt step,PetscReal ptime,Vec x,void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TSMonitorErrorODEDestroy"
-/*@C
-   TSMonitorErrorODEDestroy - Destroys the monitor context for TSMonitorErrorODE()
-
-   Collective on TS
-
-   Input Parameters:
-.    ctx - the monitor context
-
-   Level: intermediate
-
-.keywords: TS,  vector, monitor, view
-
-.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorErrorODE()
-@*/
-PetscErrorCode  TSMonitorErrorODEDestroy(TSMonitorLGCtx *ctx)
-{
-  PetscDraw      draw;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscDrawLGGetDraw((*ctx)->lg,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGDestroy(&(*ctx)->lg);CHKERRQ(ierr);
-  ierr = PetscFree(*ctx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TSMonitorErrorODECreate"
-/*@C
-   TSMonitorErrorODECreate - Creates the monitor context for TSMonitorErrorODE()
-
-   Collective on TS
-
-   Input Parameter:
-+    comm - MPI communicator
-.    N - number of components in the solution vector
--
-
-   Output Patameter:
-.    ctx - the monitor context
-
-   Options Database Keys:
-.  -ts_monitor_errorode - create a graphical monitor of error history
-
-   Level: intermediate
-
-.keywords: TS,  vector, monitor, view
-
-.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorErrorODE()
-@*/
-PetscErrorCode  TSMonitorErrorODECreate(MPI_Comm comm,PetscInt N,const char host[],const char label[],int x,int y,int m,int n,TSMonitorLGCtx *ctx)
-{
-  PetscDraw      win;
-  PetscErrorCode ierr;
-  PetscDrawAxis  axis;
-  PetscMPIInt    size;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"Always create this object with PETSC_COMM_SELF, even for parallel solves");
-  ierr = PetscNew(sizeof(struct _n_TSMonitorLGCtx),ctx);CHKERRQ(ierr);
-  ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
-  ierr = PetscDrawSetType(win,PETSC_DRAW_X);CHKERRQ(ierr);
-  ierr = PetscDrawLGCreate(win,N,&(*ctx)->lg);CHKERRQ(ierr);
-  ierr = PetscDrawLGIndicateDataPoints((*ctx)->lg);CHKERRQ(ierr);
-  ierr = PetscDrawLGGetAxis((*ctx)->lg,&axis);CHKERRQ(ierr);
-  ierr = PetscDrawAxisSetLabels(axis,"Error","Time","Error");CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((*ctx)->lg,win);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
