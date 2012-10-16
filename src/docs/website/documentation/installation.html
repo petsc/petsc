@@ -934,9 +934,11 @@
 
       <hr>
 
-      <div id="pthreads">
-        <h3><a name="threads">Installing PETSc to use PThreads</a></h3>
-
+      <div id="threads">
+        <h3><a name="threads">Installing PETSc to use Threads</a></h3>
+	<p>
+	  <b>petsc-3.3</b>
+	</p>
         <ul>
           <li>
             Configure and build PETSc with the additional configure options (note
@@ -960,9 +962,38 @@
           </li>
         </ul>
 
-        <a href="#" target="_top">Return to Installation Instructions</a>
-      </div> <!-- #pthreads -->
+	<p>
+	  <b>petsc-dev</b>
+	</p>
+        <ul>
+	  <li>
+	    Threads can be used via native pthread lockfree implementation or OpenMP.
+	  </li>
+          <li>
+            Configure and build PETSc with the additional configure options
+            <ul>
+              <li> --with-pthreadclasses and/or --with-openmp </li>
+            </ul>
+          </li>
 
+          <li>
+            Run a sample example with:
+            <ul>
+              <li>cd src/snes/examples/tutorials</li>
+              <li>make ex19</li>
+              <li>
+                ./ex19 -threadcomm_type pthread -threadcomm_nthreads 2 -pc_type none
+                 -da_grid_x 100 -da_grid_y 100 -log_summary
+                -mat_no_inode -preload off
+              </li>
+            </ul>
+	    *Note: For using threaded vector and matrix operations enable the flag PETSC_THREADCOMM_ACTIVE in $PETSC_DIR/$PETSC_ARCH/include/petscconf.h 
+          </li>
+        </ul>
+
+      </div> <!-- #threads -->
+
+      <a href="#" target="_top">Return to Installation Instructions</a>
     </div>
 
     <!--end-->

@@ -131,9 +131,9 @@ PetscErrorCode SNESComputeLocalBlockFunction_DMDA(SNES snes,Vec X,Vec F,void *dm
   PetscValidHeaderSpecific(F,VEC_CLASSID,3);
   PetscValidHeaderSpecific(dm,DM_CLASSID,4);
 
-  if (!dmdasnes->residuallocal) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"Corrupt context");
   ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDASNESGetContext(dm,sdm,&dmdasnes);CHKERRQ(ierr);
+  if (!dmdasnes->residuallocal) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"Corrupt context");
   ierr = DMDAVecGetArray(dm,X,&x);CHKERRQ(ierr);
   ierr = DMDAGetLocalBlockInfo(dm,&info);CHKERRQ(ierr);
   switch (dmdasnes->residuallocalimode) {
@@ -249,9 +249,9 @@ PetscErrorCode SNESComputeLocalBlockJacobian_DMDA(SNES snes,Vec X,Mat *A,Mat *B,
   void           *x;
 
   PetscFunctionBegin;
-  if (!dmdasnes->residuallocal) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"Corrupt context");
   ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDASNESGetContext(dm,sdm,&dmdasnes);CHKERRQ(ierr);
+  if (!dmdasnes->residuallocal) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"Corrupt context");
   if (dmdasnes->jacobianlocal) {
     ierr = DMDAVecGetArray(dm,X,&x);CHKERRQ(ierr);
     CHKMEMQ;
