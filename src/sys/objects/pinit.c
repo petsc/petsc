@@ -716,9 +716,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Type_commit(&MPIU_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Type_contiguous(2,MPI_FLOAT,&MPIU_C_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_C_COMPLEX);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-  ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);CHKERRQ(ierr);
-#endif
 #endif
 
   /*
@@ -734,9 +731,12 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Type_contiguous(4,MPI_DOUBLE,&MPIU___COMPLEX128);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU___COMPLEX128);CHKERRQ(ierr);
 #endif
-  ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscMax_Local,1,&MPIU_MAX);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscMin_Local,1,&MPIU_MIN);CHKERRQ(ierr);
+#endif
+
+#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
+  ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);CHKERRQ(ierr);
 #endif
 
   ierr = MPI_Type_contiguous(2,MPIU_SCALAR,&MPIU_2SCALAR);CHKERRQ(ierr);
@@ -1172,18 +1172,21 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_USE_COMPLEX)
   ierr = MPI_Type_free(&MPIU___COMPLEX128);CHKERRQ(ierr);
 #endif
-  ierr = MPI_Op_free(&MPIU_SUM);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_MAX);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_MIN);CHKERRQ(ierr);
 #endif
 
 #if defined(PETSC_USE_COMPLEX)
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-  ierr = MPI_Op_free(&MPIU_SUM);CHKERRQ(ierr);
   ierr = MPI_Type_free(&MPIU_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Type_free(&MPIU_C_COMPLEX);CHKERRQ(ierr);
 #endif
 #endif
+
+#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
+  ierr = MPI_Op_free(&MPIU_SUM);CHKERRQ(ierr);
+#endif
+
   ierr = MPI_Type_free(&MPIU_2SCALAR);CHKERRQ(ierr);
   ierr = MPI_Type_free(&MPIU_2INT);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscMaxSum_Op);CHKERRQ(ierr);
