@@ -26,7 +26,6 @@ cdef extern from * nogil:
     PetscPCType PCFIELDSPLIT
     PetscPCType PCTFS
     PetscPCType PCML
-    PetscPCType PCPROMETHEUS
     PetscPCType PCGALERKIN
     PetscPCType PCEXOTIC
     PetscPCType PCHMPI

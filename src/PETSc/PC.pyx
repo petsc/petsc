@@ -27,7 +27,6 @@ class PCType(object):
     FIELDSPLIT   = S_(PCFIELDSPLIT)
     TFS          = S_(PCTFS)
     ML           = S_(PCML)
-    PROMETHEUS   = S_(PCPROMETHEUS)
     GALERKIN     = S_(PCGALERKIN)
     EXOTIC       = S_(PCEXOTIC)
     HMPI         = S_(PCHMPI)
