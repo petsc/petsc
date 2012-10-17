@@ -597,3 +597,28 @@ PetscErrorCode  MatCreate_SchurComplement(Mat N)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+static PetscBool  KSPMatRegisterAllCalled;
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPMatRegisterAll"
+/*@C
+  KSPMatRegisterAll - Registers all matrix implementations in the KSP package.
+
+  Not Collective
+
+  Level: advanced
+
+.keywords: Mat, KSP, register, all
+
+.seealso: MatRegisterAll(), MatRegisterDestroy(), KSPInitializePackage()
+@*/
+PetscErrorCode KSPMatRegisterAll(const char path[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  KSPRegisterAllCalled = PETSC_TRUE;
+  ierr = MatRegisterDynamic(MATSCHURCOMPLEMENT,path,"MatCreate_SchurComplement",MatCreate_SchurComplement); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

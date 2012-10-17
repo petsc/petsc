@@ -5,7 +5,6 @@ EXTERN_C_BEGIN
 extern PetscErrorCode  MatCreate_MFFD(Mat);
 extern PetscErrorCode  MatCreate_MAIJ(Mat);
 extern PetscErrorCode  MatCreate_IS(Mat);
-extern PetscErrorCode  MatCreate_SchurComplement(Mat);
 
 extern PetscErrorCode  MatCreate_SeqAIJ(Mat);
 extern PetscErrorCode  MatCreate_MPIAIJ(Mat);
@@ -89,7 +88,6 @@ PetscErrorCode  MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATSEQMAIJ,        path,"MatCreate_MAIJ",    MatCreate_MAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMAIJ,           path,"MatCreate_MAIJ",    MatCreate_MAIJ);CHKERRQ(ierr);
 
-  ierr = MatRegisterDynamic(MATSCHURCOMPLEMENT,path,"MatCreate_SchurComplement",      MatCreate_SchurComplement);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATIS,             path,"MatCreate_IS",      MatCreate_IS);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSHELL,          path,"MatCreate_Shell",   MatCreate_Shell);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATCOMPOSITE,      path,"MatCreate_Composite",   MatCreate_Composite);CHKERRQ(ierr);
