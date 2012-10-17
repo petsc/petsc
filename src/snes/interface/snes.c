@@ -499,6 +499,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
 .  -snes_monitor_residual - plots residual (not its norm) at each iteration
 .  -snes_monitor_solution_update - plots update to solution at each iteration
 .  -snes_monitor_lg_residualnorm - plots residual norm at each iteration
+.  -snes_monitor_lg_range - plots residual norm at each iteration
 .  -snes_fd - use finite differences to compute Jacobian; very slow, only for testing
 .  -snes_fd_color - use finite differences with coloring to compute Jacobian
 .  -snes_mf_ksp_monitor - if using matrix-free multiply then print h at each KSP iteration
@@ -642,11 +643,20 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorResidual,0,0);CHKERRQ(ierr);}
     flg  = PETSC_FALSE;
     ierr = PetscOptionsBool("-snes_monitor_lg_residualnorm","Plot function norm at each iteration","SNESMonitorLGResidualNorm",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorLGResidualNorm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
+    if (flg) {
+      PetscDrawLG ctx;
+
+      ierr = SNESMonitorLGCreate(0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
+      ierr = SNESMonitorSet(snes,SNESMonitorLGResidualNorm,ctx,(PetscErrorCode (*)(void**))SNESMonitorLGDestroy);CHKERRQ(ierr);
+    }
     flg  = PETSC_FALSE;
     ierr = PetscOptionsBool("-snes_monitor_lg_range","Plot function range at each iteration","SNESMonitorLGRange",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorLGRange,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
+    if (flg) {
+      PetscViewer ctx;
 
+      ierr = PetscViewerDrawOpen(((PetscObject)snes)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
+      ierr = SNESMonitorSet(snes,SNESMonitorLGRange,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+    }
 
     flg  = PETSC_FALSE;
     ierr = PetscOptionsBool("-snes_monitor_jacupdate_spectrum","Print the change in the spectrum of the Jacobian","SNESMonitorJacUpdateSpectrum",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
@@ -2984,13 +2994,8 @@ PetscErrorCode  SNESMonitorLGRange(SNES snes,PetscInt n,PetscReal rnorm,void *mo
   PetscViewer      v = (PetscViewer)monctx;
   static PetscReal prev; /* should be in the context */
   PetscDraw        draw;
-  PetscFunctionBegin;
-  if (!monctx) {
-    MPI_Comm    comm;
 
-    ierr   = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-    v      = PETSC_VIEWER_DRAW_(comm);
-  }
+  PetscFunctionBegin;
   ierr   = PetscViewerDrawGetDrawLG(v,0,&lg);CHKERRQ(ierr);
   if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
   ierr   = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
