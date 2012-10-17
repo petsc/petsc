@@ -61,7 +61,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 .  -ts_final_time time - maximum time to compute to
 .  -ts_dt dt - initial time step
 .  -ts_monitor - print information at each timestep
--  -ts_monitor_draw - plot time-step information at each timestep
+-  -ts_monitor_lg_timestep - plot time-step information at each timestep
 
    Level: beginner
 
@@ -111,32 +111,32 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscOptionsString("-ts_monitor_python","Use Python function","TSMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {ierr = PetscPythonMonitorSet((PetscObject)ts,monfilename);CHKERRQ(ierr);}
 
-    ierr = PetscOptionsName("-ts_monitor_draw","Monitor timestep size graphically","TSMonitorTimeStep",&opt);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",&opt);CHKERRQ(ierr);
     if (opt) {
       TSMonitorLGCtx ctx;
       PetscInt       howoften = 1;
 
-      ierr = PetscOptionsInt("-ts_monitor_draw","Monitor timestep size graphically","TSMonitorTimeStep",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
       ierr = TSMonitorLGCtxCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);
-      ierr = TSMonitorSet(ts,TSMonitorTimeStep,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorLGTimeStep,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-ts_monitor_solutionode","Monitor solution graphically","TSMonitorSolutionODE",&opt);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",&opt);CHKERRQ(ierr);
     if (opt) {
       TSMonitorLGCtx ctx;
       PetscInt       howoften = 1;
 
-      ierr = PetscOptionsInt("-ts_monitor_solutionode","Monitor solution graphically","TSMonitorSolutionODE",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
       ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);
-      ierr = TSMonitorSet(ts,TSMonitorSolutionODE,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorLGSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-ts_monitor_errorode","Monitor error graphically","TSMonitorErrorODE",&opt);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_monitor_lg_error","Monitor error graphically","TSMonitorLGError",&opt);CHKERRQ(ierr);
     if (opt) {
       TSMonitorLGCtx ctx;
       PetscInt       howoften = 1;
 
-      ierr = PetscOptionsInt("-ts_monitor_errorode","Monitor error graphically","TSMonitorErrorODE",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-ts_monitor_lg_error","Monitor error graphically","TSMonitorLGError",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
       ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);
-      ierr = TSMonitorSet(ts,TSMonitorErrorODE,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorLGError,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
     }
     opt  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ts_monitor_solution","Monitor solution graphically","TSMonitorSolution",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
@@ -695,7 +695,7 @@ $     func (TS ts,PetscReal t,Vec u,void *ctx);
     If analytic solutions are not known for your system, consider using the Method of Manufactured Solutions to
     create closed-form solutions with non-physical forcing terms.
 
-    For low-dimensional problems solved in serial, such as small discrete systems, TSMonitorErrorODE() can be used to monitor the error history.
+    For low-dimensional problems solved in serial, such as small discrete systems, TSMonitorLGError() can be used to monitor the error history.
 
     Level: beginner
 
@@ -2299,9 +2299,9 @@ struct _n_TSMonitorLGCtx {
 .  ctx - the context
 
    Options Database Key:
-+  -ts_monitor_draw - automatically sets line graph monitor
-.  -ts_monitor_solutionode -
--  -ts_monitor_errorode -
++  -ts_monitor_lg_timestep - automatically sets line graph monitor
+.  -ts_monitor_lg_solution -
+-  -ts_monitor_lg_error -
 
    Notes:
    Use TSMonitorLGCtxDestroy() to destroy.
@@ -2310,7 +2310,7 @@ struct _n_TSMonitorLGCtx {
 
 .keywords: TS, monitor, line graph, residual, seealso
 
-.seealso: TSMonitorTimeStep(), TSMonitorSet(), TSMonitorSolutionODE(), TSMonitorErrorODE()
+.seealso: TSMonitorLGTimeStep(), TSMonitorSet(), TSMonitorLGSolution(), TSMonitorLGError()
 
 @*/
 PetscErrorCode  TSMonitorLGCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,TSMonitorLGCtx *ctx)
@@ -2330,8 +2330,8 @@ PetscErrorCode  TSMonitorLGCtxCreate(MPI_Comm comm,const char host[],const char 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSMonitorTimeStep"
-PetscErrorCode TSMonitorTimeStep(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
+#define __FUNCT__ "TSMonitorLGTimeStep"
+PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
 {
   TSMonitorLGCtx ctx = (TSMonitorLGCtx) monctx;
   PetscReal      x = ptime,y;
@@ -2367,7 +2367,7 @@ PetscErrorCode TSMonitorTimeStep(TS ts,PetscInt n,PetscReal ptime,Vec v,void *mo
 
 .keywords: TS, monitor, line graph, destroy
 
-.seealso: TSMonitorLGCtxCreate(),  TSMonitorSet(), TSMonitorTimeStep();
+.seealso: TSMonitorLGCtxCreate(),  TSMonitorSet(), TSMonitorLGTimeStep();
 @*/
 PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
 {
@@ -3955,9 +3955,9 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 
   
 #undef __FUNCT__
-#define __FUNCT__ "TSMonitorSolutionODE"
+#define __FUNCT__ "TSMonitorLGSolution"
 /*@C
-   TSMonitorSolutionODE - Monitors progress of the TS solvers by plotting each component of the solution vector
+   TSMonitorLGSolution - Monitors progress of the TS solvers by plotting each component of the solution vector
        in a time based line graph
 
    Collective on TS
@@ -3976,7 +3976,7 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
 @*/
-PetscErrorCode  TSMonitorSolutionODE(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
+PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
 {
   PetscErrorCode    ierr;
   TSMonitorLGCtx    ctx = (TSMonitorLGCtx)dummy;
@@ -4014,9 +4014,9 @@ PetscErrorCode  TSMonitorSolutionODE(TS ts,PetscInt step,PetscReal ptime,Vec x,v
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSMonitorErrorODE"
+#define __FUNCT__ "TSMonitorLGError"
 /*@C
-   TSMonitorErrorODE - Monitors progress of the TS solvers by plotting each component of the solution vector
+   TSMonitorLGError - Monitors progress of the TS solvers by plotting each component of the solution vector
        in a time based line graph
 
    Collective on TS
@@ -4035,13 +4035,13 @@ PetscErrorCode  TSMonitorSolutionODE(TS ts,PetscInt step,PetscReal ptime,Vec x,v
    The user must provide the solution using TSSetSolutionFunction() to use this monitor.
 
    Options Database Keys:
-.  -ts_monitor_errorode - create a graphical monitor of error history
+.  -ts_monitor_lg_error - create a graphical monitor of error history
 
 .keywords: TS,  vector, monitor, view
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
 @*/
-PetscErrorCode  TSMonitorErrorODE(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
+PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
 {
   PetscErrorCode    ierr;
   TSMonitorLGCtx    ctx = (TSMonitorLGCtx)dummy;

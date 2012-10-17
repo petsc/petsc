@@ -312,9 +312,9 @@ PETSC_EXTERN PetscErrorCode TSGetApplicationContext(TS,void *);
 typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
 PETSC_EXTERN PetscErrorCode TSMonitorLGCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TSMonitorLGCtx *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx*);
-PETSC_EXTERN PetscErrorCode TSMonitorTimeStep(TS,PetscInt,PetscReal,Vec,void *);
-PETSC_EXTERN PetscErrorCode TSMonitorSolutionODE(TS,PetscInt,PetscReal,Vec,void *);
-PETSC_EXTERN PetscErrorCode TSMonitorErrorODE(TS,PetscInt,PetscReal,Vec,void *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGTimeStep(TS,PetscInt,PetscReal,Vec,void *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGSolution(TS,PetscInt,PetscReal,Vec,void *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGError(TS,PetscInt,PetscReal,Vec,void *);
 
 /*J
    TSSSPType - string with the name of TSSSP scheme.
