@@ -1512,10 +1512,10 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
    Options Database Keys:
 +    -ksp_monitor        - sets KSPMonitorDefault()
 .    -ksp_monitor_true_residual    - sets KSPMonitorTrueResidualNorm()
-.    -ksp_monitor_draw    - sets line graph monitor,
-                           uses KSPMonitorLGCreate()
-.    -ksp_monitor_draw_true_residual   - sets line graph monitor,
-                           uses KSPMonitorLGCreate()
+.    -ksp_monitor_lg_residualnorm    - sets line graph monitor,
+                           uses KSPMonitorLGResidualNormCreate()
+.    -ksp_monitor_lg_true_residualnorm   - sets line graph monitor,
+                           uses KSPMonitorLGResidualNormCreate()
 .    -ksp_monitor_singular_value    - sets KSPMonitorSingularValue()
 -    -ksp_monitor_cancel - cancels all monitors that have
                           been hardwired into a code by
@@ -1539,7 +1539,7 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
 
 .keywords: KSP, set, monitor
 
-.seealso: KSPMonitorDefault(), KSPMonitorLGCreate(), KSPMonitorCancel()
+.seealso: KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(), KSPMonitorCancel()
 @*/
 PetscErrorCode  KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
 {
@@ -1582,7 +1582,7 @@ PetscErrorCode  KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,Pet
 
 .keywords: KSP, set, monitor
 
-.seealso: KSPMonitorDefault(), KSPMonitorLGCreate(), KSPMonitorSet()
+.seealso: KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(), KSPMonitorSet()
 @*/
 PetscErrorCode  KSPMonitorCancel(KSP ksp)
 {
@@ -1618,7 +1618,7 @@ PetscErrorCode  KSPMonitorCancel(KSP ksp)
 
 .keywords: KSP, get, monitor, context
 
-.seealso: KSPMonitorDefault(), KSPMonitorLGCreate()
+.seealso: KSPMonitorDefault(), KSPMonitorLGResidualNormCreate()
 @*/
 PetscErrorCode  KSPGetMonitorContext(KSP ksp,void **ctx)
 {

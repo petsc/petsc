@@ -329,7 +329,7 @@ PetscErrorCode  KSPLSQRGetArnorm( KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm
 
 .keywords: KSP, default, monitor, residual
 
-.seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGCreate(), KSPMonitorDefault()
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGResidualNormCreate(), KSPMonitorDefault()
 @*/
 PetscErrorCode  KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {

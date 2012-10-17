@@ -14,7 +14,7 @@
 #define kspmonitordefault_         KSPMONITORDEFAULT
 #define kspmonitortrueresidualnorm_    KSPMONITORTRUERESIDUALNORM
 #define kspmonitorsolution_        KSPMONITORSOLUTION
-#define kspmonitorlg_              KSPMONITORLG
+#define kspmonitorlgresidualnorm_      KSPMONITORLGRESIDUALNORM
 #define kspmonitorlgtrueresidualnorm_  KSPMONITORLGTRUERESIDUALNORM
 #define kspmonitorsingularvalue_   KSPMONITORSINGULARVALUE
 #define kspfgmresmodifypcksp_      KSPFGMRESMODIFYPCKSP
@@ -36,7 +36,7 @@
 #define kspmonitordefault_             kspmonitordefault
 #define kspmonitortrueresidualnorm_    kspmonitortrueresidualnorm
 #define kspmonitorsolution_            kspmonitorsolution
-#define kspmonitorlg_                  kspmonitorlg
+#define kspmonitorlgresidualnorm_      kspmonitorlgresidualnorm
 #define kspmonitorlgtrueresidualnorm_  kspmonitorlgtrueresidualnorm
 #define kspfgmresmodifypcksp_          kspfgmresmodifypcksp
 #define kspfgmresmodifypcnochange_     kspfgmresmodifypcnochange
@@ -86,9 +86,9 @@ void  kspmonitorsingularvalue_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,P
   *ierr = KSPMonitorSingularValue(*ksp,*it,*norm,ctx);
 }
 
-void  kspmonitorlg_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
+void  kspmonitorlgresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
 {
-  *ierr = KSPMonitorLG(*ksp,*it,*norm,ctx);
+  *ierr = KSPMonitorLGResidualNorm(*ksp,*it,*norm,ctx);
 }
 
 void  kspmonitorlgtrueresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
@@ -156,8 +156,8 @@ void PETSC_STDCALL kspmonitorset_(KSP *ksp,void (PETSC_STDCALL *monitor)(KSP*,Pe
   PetscObjectAllocateFortranPointers(*ksp,FTN_MAX);
   if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitordefault_) {
     *ierr = KSPMonitorSet(*ksp,KSPMonitorDefault,0,0);
-  } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitorlg_) {
-    *ierr = KSPMonitorSet(*ksp,KSPMonitorLG,0,0);
+  } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitorlgresidualnorm_) {
+    *ierr = KSPMonitorSet(*ksp,KSPMonitorLGResidualNorm,0,0);
   } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitorlgtrueresidualnorm_) {
     *ierr = KSPMonitorSet(*ksp,KSPMonitorLGTrueResidualNorm,0,0);
   } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitorsolution_) {

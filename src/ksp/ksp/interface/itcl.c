@@ -316,7 +316,7 @@ $       This will require 1 more iteration of the solver than usual.
 .   -ksp_knoll - compute initial guess by applying the preconditioner to the right hand side
 .   -ksp_monitor_cancel - cancel all previous convergene monitor routines set
 .   -ksp_monitor <optional filename> - print residual norm at each iteration
-.   -ksp_monitor_draw - plot residual norm at each iteration
+.   -ksp_monitor_lg_residualnorm - plot residual norm at each iteration
 .   -ksp_monitor_solution - plot solution at each iteration
 -   -ksp_monitor_singular_value - monitor extremem singular values at each iteration
 
@@ -526,25 +526,34 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
       Graphically plots preconditioned residual norm
     */
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ksp_monitor_draw","Monitor graphically preconditioned residual norm","KSPMonitorSet",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ksp_monitor_lg_residualnorm","Monitor graphically preconditioned residual norm","KSPMonitorSet",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
-      ierr = KSPMonitorSet(ksp,KSPMonitorLG,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      PetscDrawLG ctx;
+
+      ierr = KSPMonitorLGResidualNormCreate(0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorLGResidualNorm,ctx,(PetscErrorCode (*)(void**))KSPMonitorLGResidualNormDestroy);CHKERRQ(ierr);
     }
     /*
       Graphically plots preconditioned and true residual norm
     */
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ksp_monitor_draw_true_residual","Monitor graphically true residual norm","KSPMonitorSet",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ksp_monitor_lg_true_residualnorm","Monitor graphically true residual norm","KSPMonitorSet",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg){
-      ierr = KSPMonitorSet(ksp,KSPMonitorLGTrueResidualNorm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      PetscDrawLG ctx;
+
+      ierr = KSPMonitorLGTrueResidualNormCreate(((PetscObject)ksp)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorLGTrueResidualNorm,ctx,(PetscErrorCode (*)(void**))KSPMonitorLGTrueResidualNormDestroy);CHKERRQ(ierr);
     }
     /*
       Graphically plots preconditioned residual norm and range of residual element values
     */
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ksp_monitor_range_draw","Monitor graphically range of preconditioned residual norm","KSPMonitorSet",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ksp_monitor_lg_range","Monitor graphically range of preconditioned residual norm","KSPMonitorSet",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
-      ierr = KSPMonitorSet(ksp,KSPMonitorLGRange,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      PetscViewer ctx;
+
+      ierr = PetscViewerDrawOpen(((PetscObject)ksp)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&ctx);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorLGRange,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
 
     /*

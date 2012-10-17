@@ -2957,7 +2957,7 @@ PetscErrorCode  SNESMonitorLGResidualNorm(SNES snes,PetscInt it,PetscReal norm,v
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr = KSPMonitorLG((KSP)snes,it,norm,ctx);CHKERRQ(ierr);
+  ierr = KSPMonitorLGResidualNorm((KSP)snes,it,norm,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2968,7 +2968,7 @@ PetscErrorCode  SNESMonitorLGCreate(const char host[],const char label[],int x,i
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPMonitorLGCreate(host,label,x,y,m,n,draw);CHKERRQ(ierr);
+  ierr = KSPMonitorLGResidualNormCreate(host,label,x,y,m,n,draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2979,7 +2979,7 @@ PetscErrorCode  SNESMonitorLGDestroy(PetscDrawLG *draw)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPMonitorLGDestroy(draw);CHKERRQ(ierr);
+  ierr = KSPMonitorLGResidualNormDestroy(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

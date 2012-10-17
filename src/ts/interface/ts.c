@@ -117,7 +117,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       PetscInt       howoften = 1;
 
       ierr = PetscOptionsInt("-ts_monitor_lg_timestep","Monitor timestep size graphically","TSMonitorLGTimeStep",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
-      ierr = TSMonitorLGCtxCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);
+      ierr = TSMonitorLGCtxCreate(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);CHKERRQ(ierr);
       ierr = TSMonitorSet(ts,TSMonitorLGTimeStep,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-ts_monitor_lg_solution","Monitor solution graphically","TSMonitorLGSolution",&opt);CHKERRQ(ierr);
