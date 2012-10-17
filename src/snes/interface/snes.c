@@ -498,7 +498,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
 .  -snes_monitor_solution - plots solution at each iteration
 .  -snes_monitor_residual - plots residual (not its norm) at each iteration
 .  -snes_monitor_solution_update - plots update to solution at each iteration
-.  -snes_monitor_draw - plots residual norm at each iteration
+.  -snes_monitor_lg_residualnorm - plots residual norm at each iteration
 .  -snes_fd - use finite differences to compute Jacobian; very slow, only for testing
 .  -snes_fd_color - use finite differences with coloring to compute Jacobian
 .  -snes_mf_ksp_monitor - if using matrix-free multiply then print h at each KSP iteration
@@ -641,10 +641,10 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsBool("-snes_monitor_residual","Plot residual at each iteration","SNESMonitorResidual",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorResidual,0,0);CHKERRQ(ierr);}
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-snes_monitor_draw","Plot function norm at each iteration","SNESMonitorLG",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorLG,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
+    ierr = PetscOptionsBool("-snes_monitor_lg_residualnorm","Plot function norm at each iteration","SNESMonitorLGResidualNorm",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorLGResidualNorm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-snes_monitor_range_draw","Plot function range at each iteration","SNESMonitorLG",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-snes_monitor_lg_range","Plot function range at each iteration","SNESMonitorLGRange",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorLGRange,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
 
 
@@ -2940,8 +2940,8 @@ PetscErrorCode  SNESSetTrustRegionTolerance(SNES snes,PetscReal tol)
    macros instead of functions
 */
 #undef __FUNCT__
-#define __FUNCT__ "SNESMonitorLG"
-PetscErrorCode  SNESMonitorLG(SNES snes,PetscInt it,PetscReal norm,void *ctx)
+#define __FUNCT__ "SNESMonitorLGResidualNorm"
+PetscErrorCode  SNESMonitorLGResidualNorm(SNES snes,PetscInt it,PetscReal norm,void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -3042,28 +3042,6 @@ PetscErrorCode  SNESMonitorLGRange(SNES snes,PetscInt n,PetscReal rnorm,void *mo
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESMonitorLGRangeCreate"
-PetscErrorCode  SNESMonitorLGRangeCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = KSPMonitorLGCreate(host,label,x,y,m,n,draw);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorLGRangeDestroy"
-PetscErrorCode  SNESMonitorLGRangeDestroy(PetscDrawLG *draw)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = KSPMonitorLGDestroy(draw);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "SNESMonitor"
 /*@
    SNESMonitor - runs the user provided monitor routines, if they exist
@@ -3124,7 +3102,7 @@ $     int func(SNES snes,PetscInt its, PetscReal norm,void *mctx)
 
    Options Database Keys:
 +    -snes_monitor        - sets SNESMonitorDefault()
-.    -snes_monitor_draw    - sets line graph monitor,
+.    -snes_monitor_lg_residualnorm    - sets line graph monitor,
                             uses SNESMonitorLGCreate()
 -    -snes_monitor_cancel - cancels all monitors that have
                             been hardwired into a code by

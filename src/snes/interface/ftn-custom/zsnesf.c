@@ -24,7 +24,7 @@
 #define snessetoptionsprefix_            SNESSETOPTIONSPREFIX
 #define snesmonitordefault_              SNESMONITORDEFAULT
 #define snesmonitorsolution_             SNESMONITORSOLUTION
-#define snesmonitorlg_                   SNESMONITORLG
+#define snesmonitorlgresidualnorm_       SNESMONITORLGRESIDUALNORM
 #define snesmonitorsolutionupdate_       SNESMONITORSOLUTIONUPDATE
 #define snesmonitorset_                  SNESMONITORSET
 #define snesgetsneslinesearch_           SNESGETSNESLINESEARCH
@@ -49,7 +49,7 @@
 #define snessettype_                     snessettype
 #define snesappendoptionsprefix_         snesappendoptionsprefix
 #define snessetoptionsprefix_            snessetoptionsprefix
-#define snesmonitorlg_                   snesmonitorlg
+#define snesmonitorlgresidualnorm_       snesmonitorlgresidualnorm
 #define snesmonitordefault_              snesmonitordefault
 #define snesmonitorsolution_             snesmonitorsolution
 #define snesmonitorsolutionupdate_       snesmonitorsolutionupdate
@@ -326,9 +326,9 @@ void PETSC_STDCALL snessetoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_LEN(
 /*----------------------------------------------------------------------*/
 /* functions, hence no STDCALL */
 
-void snesmonitorlg_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+void snesmonitorlgresidualnorm_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
 {
-  *ierr = SNESMonitorLG(*snes,*its,*fgnorm,dummy);
+  *ierr = SNESMonitorLGResidualNorm(*snes,*its,*fgnorm,dummy);
 }
 
 void snesmonitordefault_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
@@ -357,8 +357,8 @@ void PETSC_STDCALL snesmonitorset_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,P
     *ierr = SNESMonitorSet(*snes,SNESMonitorSolution,0,0);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitorsolutionupdate_) {
     *ierr = SNESMonitorSet(*snes,SNESMonitorSolutionUpdate,0,0);
-  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitorlg_) {
-    *ierr = SNESMonitorSet(*snes,SNESMonitorLG,0,0);
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitorlgresidualnorm_) {
+    *ierr = SNESMonitorSet(*snes,SNESMonitorLGResidualNorm,0,0);
   } else {
     ((PetscObject)*snes)->fortran_func_pointers[3] = (PetscVoidFunction)func;
     ((PetscObject)*snes)->fortran_func_pointers[4] = (PetscVoidFunction)mctx;

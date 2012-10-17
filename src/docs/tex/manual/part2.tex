@@ -3883,7 +3883,7 @@ user can employ this routine for any application-specific computations
 that should be done after the solution update. The option
 \trl{-snes_monitor} \findex{-snes_monitor} activates the default
 SNES monitor routine, SNESMonitorDefault(), 
-while \trl{-snes_monitor_draw} \findex{-snes_monitor_draw} draws
+while \trl{-snes_monitor_lg_residualnorm} \findex{-snes_monitor_lg_residualnorm} draws
 a simple line graph of the residual norm's convergence.
 
 Once can cancel hardwired monitoring routines for SNES at runtime with 
@@ -6990,8 +6990,8 @@ large, or for timing.
 For both the linear and nonlinear solvers default routines
 allow one to graphically monitor convergence of the iterative method.
 These are accessed via the command line with 
-\trl{-ksp_monitor_draw} and \trl{-snes_monitor_draw}. \findex{-ksp_monitor_draw}
-\findex{-snes_monitor_draw} See also Sections \ref{sec_kspmonitor} and
+\trl{-ksp_monitor_draw} and \trl{-snes_monitor_lg_residualnorm}. \findex{-ksp_monitor_draw}
+\findex{-snes_monitor_lg_residualnorm} See also Sections \ref{sec_kspmonitor} and
 \ref{sec_snesmonitor}. 
 
 The two functions used are KSPMonitorLG() 

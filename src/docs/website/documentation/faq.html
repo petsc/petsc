@@ -150,7 +150,7 @@
         <li><a href="#split">What does Error detected in PetscSplitOwnership() about "sum of local lengths ...": mean?</a></li>
         <li><a href="#valgrind">What does Corrupt argument or Caught signal or SEQV or segmentation violation or bus error mean? Can I use valgrind to debug memory corruption issues?</a></li>
         <li><a href="#zeropivot">What does Detected zero pivot in LU factorization mean?</a></li>
-        <li><a href="#xwindows">You create Draw windows or ViewerDraw windows or use options -ksp_monitor or_draw -snes_monitor_draw and the program seems to run OK but windows never open.</a></li>
+        <li><a href="#xwindows">You create Draw windows or ViewerDraw windows or use options -ksp_monitor or_draw -snes_monitor_lg_residualnorm and the program seems to run OK but windows never open.</a></li>
         <li><a href="#memory">The program seems to use more and more memory as it runs, even though you don't think you are allocating more memory.</a></li>
         <li><a href="#key">When calling MatPartitioningApply() you get a message <code>Error! Key 16615 not found</code></a></li>
         <li><a href="#gmres">With GMRES At restart the second residual norm printed does not match the first </a></li>
@@ -1715,7 +1715,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         an error in the code that generates the matrix.
       </p>
 
-      <h3><a name="xwindows">You create <code>Draw</code> windows or <code>ViewerDraw</code> windows or use options <code>-ksp_monitor_draw</code> or <code>-snes_monitor_draw</code> and the program seems to run OK but windows never open.</a></h3>
+      <h3><a name="xwindows">You create <code>Draw</code> windows or <code>ViewerDraw</code> windows or use options <code>-ksp_monitor_draw</code> or <code>-snes_monitor_lg_residualnorm</code> and the program seems to run OK but windows never open.</a></h3>
 
       The libraries were compiled without support for X windows. Make sure that
       ./configure was run with the option <code>--with-x</code>

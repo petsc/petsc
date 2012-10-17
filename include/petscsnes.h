@@ -182,11 +182,9 @@ PETSC_EXTERN PetscErrorCode SNESKSPSetParametersEW(SNES,PetscInt,PetscReal,Petsc
 PETSC_EXTERN PetscErrorCode SNESKSPGetParametersEW(SNES,PetscInt*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode SNESMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
-PETSC_EXTERN PetscErrorCode SNESMonitorLG(SNES,PetscInt,PetscReal,void*);
+PETSC_EXTERN PetscErrorCode SNESMonitorLGResidualNorm(SNES,PetscInt,PetscReal,void*);
 PETSC_EXTERN PetscErrorCode SNESMonitorLGDestroy(PetscDrawLG*);
-PETSC_EXTERN PetscErrorCode SNESMonitorLGRangeCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
 PETSC_EXTERN PetscErrorCode SNESMonitorLGRange(SNES,PetscInt,PetscReal,void*);
-PETSC_EXTERN PetscErrorCode SNESMonitorLGRangeDestroy(PetscDrawLG*);
 
 PETSC_EXTERN PetscErrorCode SNESSetApplicationContext(SNES,void *);
 PETSC_EXTERN PetscErrorCode SNESGetApplicationContext(SNES,void *);
