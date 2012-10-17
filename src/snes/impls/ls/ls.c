@@ -245,8 +245,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes,snes->norm,lits);
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
-    /* Test for convergence, xnorm = || X || */
-    if (snes->ops->converged != SNESSkipConverged) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
+    /* Test for convergence */
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;
   }
