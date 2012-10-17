@@ -315,6 +315,8 @@ PETSC_EXTERN PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx*);
 PETSC_EXTERN PetscErrorCode TSMonitorLGTimeStep(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGSolution(TS,PetscInt,PetscReal,Vec,void *);
 PETSC_EXTERN PetscErrorCode TSMonitorLGError(TS,PetscInt,PetscReal,Vec,void *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGSNESIterations(TS,PetscInt,PetscReal,Vec,void *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGKSPIterations(TS,PetscInt,PetscReal,Vec,void *);
 
 /*J
    TSSSPType - string with the name of TSSSP scheme.

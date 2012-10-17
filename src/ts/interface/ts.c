@@ -61,7 +61,9 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 .  -ts_final_time time - maximum time to compute to
 .  -ts_dt dt - initial time step
 .  -ts_monitor - print information at each timestep
--  -ts_monitor_lg_timestep - plot time-step information at each timestep
+.  -ts_monitor_lg_timestep - plot time-step information at each timestep
+.  -ts_monitor_lg_ksp_iterations - plot the number of linear iterations used at each time-step
+-  -ts_monitor_lg_snes_iterations - plot the number of nonlinear iterations used at each time-step
 
    Level: beginner
 
@@ -137,6 +139,24 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       ierr = PetscOptionsInt("-ts_monitor_lg_error","Monitor error graphically","TSMonitorLGError",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
       ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);
       ierr = TSMonitorSet(ts,TSMonitorLGError,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsName("-ts_monitor_lg_snes_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGSNESIterations",&opt);CHKERRQ(ierr);
+    if (opt) {
+      TSMonitorLGCtx ctx;
+      PetscInt       howoften = 1;
+
+      ierr = PetscOptionsInt("-ts_monitor_lg_snes_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGSNESIterations",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+      ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);
+      ierr = TSMonitorSet(ts,TSMonitorLGSNESIterations,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsName("-ts_monitor_lg_ksp_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGKSPIterations",&opt);CHKERRQ(ierr);
+    if (opt) {
+      TSMonitorLGCtx ctx;
+      PetscInt       howoften = 1;
+
+      ierr = PetscOptionsInt("-ts_monitor_lg_ksp_iterations","Monitor number nonlinear iterations for each timestep graphically","TSMonitorLGKSPIterations",howoften,&howoften,PETSC_NULL);CHKERRQ(ierr);
+      ierr = TSMonitorLGCtxCreate(PETSC_COMM_SELF,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&ctx);
+      ierr = TSMonitorSet(ts,TSMonitorLGKSPIterations,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
     }
     opt  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ts_monitor_solution","Monitor solution graphically","TSMonitorSolution",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
@@ -2277,6 +2297,7 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec x)
 struct _n_TSMonitorLGCtx {
   PetscDrawLG lg;
   PetscInt    howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
+  PetscInt    ksp_its,snes_its;
 };
 
 
@@ -2319,7 +2340,7 @@ PetscErrorCode  TSMonitorLGCtxCreate(MPI_Comm comm,const char host[],const char 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(sizeof(struct _n_TSMonitorLGCtx),ctx);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_TSMonitorLGCtx,ctx);CHKERRQ(ierr);
   ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetType(win,PETSC_DRAW_X);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,1,&(*ctx)->lg);CHKERRQ(ierr);
@@ -4083,3 +4104,56 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec x,void 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorLGSNESIterations"
+PetscErrorCode TSMonitorLGSNESIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
+{
+  TSMonitorLGCtx ctx = (TSMonitorLGCtx) monctx;
+  PetscReal      x = ptime,y;
+  PetscErrorCode ierr;
+  PetscInt       its;
+
+  PetscFunctionBegin;
+  if (!n) {
+    PetscDrawAxis  axis;
+    ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis,"Nonlinear iterations as function of time","Time","SNES Iterations");CHKERRQ(ierr);
+    ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
+    ctx->snes_its  = 0;
+  }
+  ierr = TSGetSNESIterations(ts,&its);CHKERRQ(ierr);
+  y    = its - ctx->snes_its;
+  ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
+  if (((ctx->howoften > 0) && (!(n % ctx->howoften))) || ((ctx->howoften == -1) && (n == -1))){
+    ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
+  }
+  ctx->snes_its = its;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorLGKSPIterations"
+PetscErrorCode TSMonitorLGKSPIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
+{
+  TSMonitorLGCtx ctx = (TSMonitorLGCtx) monctx;
+  PetscReal      x = ptime,y;
+  PetscErrorCode ierr;
+  PetscInt       its;
+
+  PetscFunctionBegin;
+  if (!n) {
+    PetscDrawAxis  axis;
+    ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis,"Linear iterations as function of time","Time","KSP Iterations");CHKERRQ(ierr);
+    ierr = PetscDrawLGReset(ctx->lg);CHKERRQ(ierr);
+    ctx->ksp_its = 0;
+  }
+  ierr = TSGetKSPIterations(ts,&its);CHKERRQ(ierr);
+  y    = its - ctx->ksp_its;
+  ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
+  if (((ctx->howoften > 0) && (!(n % ctx->howoften))) || ((ctx->howoften == -1) && (n == -1))){
+    ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
+  }
+  ctx->ksp_its = its;
+  PetscFunctionReturn(0);
+}
