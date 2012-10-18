@@ -6,8 +6,10 @@
 ALL: all
 LOCDIR	 = ./
 DIRS	 = src include tutorials
-CFLAGS	 = 
-FFLAGS	 = 
+CFLAGS	 =
+FFLAGS	 =
+CPPFLAGS =
+FPPFLAGS =
 
 # next line defines PETSC_DIR and PETSC_ARCH if they are not set
 include ././${PETSC_ARCH}/conf/petscvariables
