@@ -235,6 +235,9 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt *dnnz,co
   void (*aij)(void);
 
   PetscFunctionBegin;
+  ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(A,bs,0,dnnz);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(A,bs,0,dnnz,0,onnz);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(A,bs,0,dnnzu);CHKERRQ(ierr);
@@ -254,8 +257,8 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt *dnnz,co
     } else {                    /* Convert block-row precallocation to scalar-row */
       PetscInt i,m,*sdnnz,*sonnz;
       ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscMalloc2((!!dnnz)*m*bs,PetscInt,&sdnnz,(!!onnz)*m*bs,PetscInt,&sonnz);CHKERRQ(ierr);
-      for (i=0; i<m*bs; i++) {
+      ierr = PetscMalloc2((!!dnnz)*m,PetscInt,&sdnnz,(!!onnz)*m,PetscInt,&sonnz);CHKERRQ(ierr);
+      for (i=0; i<m; i++) {
         if (dnnz) sdnnz[i] = dnnz[i/bs] * bs;
         if (onnz) sonnz[i] = onnz[i/bs] * bs;
       }
@@ -264,7 +267,6 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A,PetscInt bs,const PetscInt *dnnz,co
       ierr = PetscFree2(sdnnz,sonnz);CHKERRQ(ierr);
     }
   }
-  ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

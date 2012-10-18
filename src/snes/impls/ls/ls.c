@@ -253,7 +253,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
       if (++snes->numFailures >= snes->maxFailures) {
         PetscBool  ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        ierr = SNESLSCheckLocalMin_Private(snes,snes->jacobian,F,X,fnorm,&ismin);CHKERRQ(ierr);
+        ierr = SNESLSCheckLocalMin_Private(snes,snes->jacobian,F,W,fnorm,&ismin);CHKERRQ(ierr);
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
         break;
       }
@@ -265,8 +265,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes,snes->norm,lits);
     ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
-    /* Test for convergence, xnorm = || X || */
-    if (snes->ops->converged != SNESSkipConverged) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
+    /* Test for convergence */
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;
   }
