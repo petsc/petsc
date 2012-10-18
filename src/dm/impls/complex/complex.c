@@ -3630,62 +3630,6 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParall
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_HAVE_TRIANGLE
-#include <triangle.h>
-
-#undef __FUNCT__
-#define __FUNCT__ "InitInput_Triangle"
-PetscErrorCode InitInput_Triangle(struct triangulateio *inputCtx) {
-  PetscFunctionBegin;
-  inputCtx->numberofpoints = 0;
-  inputCtx->numberofpointattributes = 0;
-  inputCtx->pointlist = PETSC_NULL;
-  inputCtx->pointattributelist = PETSC_NULL;
-  inputCtx->pointmarkerlist = PETSC_NULL;
-  inputCtx->numberofsegments = 0;
-  inputCtx->segmentlist = PETSC_NULL;
-  inputCtx->segmentmarkerlist = PETSC_NULL;
-  inputCtx->numberoftriangleattributes = 0;
-  inputCtx->trianglelist = PETSC_NULL;
-  inputCtx->numberofholes = 0;
-  inputCtx->holelist = PETSC_NULL;
-  inputCtx->numberofregions = 0;
-  inputCtx->regionlist = PETSC_NULL;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "InitOutput_Triangle"
-PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx) {
-  PetscFunctionBegin;
-  outputCtx->numberofpoints = 0;
-  outputCtx->pointlist = PETSC_NULL;
-  outputCtx->pointattributelist = PETSC_NULL;
-  outputCtx->pointmarkerlist = PETSC_NULL;
-  outputCtx->numberoftriangles = 0;
-  outputCtx->trianglelist = PETSC_NULL;
-  outputCtx->triangleattributelist = PETSC_NULL;
-  outputCtx->neighborlist = PETSC_NULL;
-  outputCtx->segmentlist = PETSC_NULL;
-  outputCtx->segmentmarkerlist = PETSC_NULL;
-  outputCtx->numberofedges = 0;
-  outputCtx->edgelist = PETSC_NULL;
-  outputCtx->edgemarkerlist = PETSC_NULL;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "FiniOutput_Triangle"
-PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx) {
-  PetscFunctionBegin;
-  free(outputCtx->pointmarkerlist);
-  free(outputCtx->edgelist);
-  free(outputCtx->edgemarkerlist);
-  free(outputCtx->trianglelist);
-  free(outputCtx->neighborlist);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexInterpolate_2D"
 PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
@@ -4092,6 +4036,62 @@ PetscErrorCode DMComplexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt
     *dm  = idm;
   }
   ierr = DMComplexBuildCoordinates_Private(*dm, dim, numCells, numVertices, vertexCoords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#ifdef PETSC_HAVE_TRIANGLE
+#include <triangle.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "InitInput_Triangle"
+PetscErrorCode InitInput_Triangle(struct triangulateio *inputCtx) {
+  PetscFunctionBegin;
+  inputCtx->numberofpoints = 0;
+  inputCtx->numberofpointattributes = 0;
+  inputCtx->pointlist = PETSC_NULL;
+  inputCtx->pointattributelist = PETSC_NULL;
+  inputCtx->pointmarkerlist = PETSC_NULL;
+  inputCtx->numberofsegments = 0;
+  inputCtx->segmentlist = PETSC_NULL;
+  inputCtx->segmentmarkerlist = PETSC_NULL;
+  inputCtx->numberoftriangleattributes = 0;
+  inputCtx->trianglelist = PETSC_NULL;
+  inputCtx->numberofholes = 0;
+  inputCtx->holelist = PETSC_NULL;
+  inputCtx->numberofregions = 0;
+  inputCtx->regionlist = PETSC_NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "InitOutput_Triangle"
+PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx) {
+  PetscFunctionBegin;
+  outputCtx->numberofpoints = 0;
+  outputCtx->pointlist = PETSC_NULL;
+  outputCtx->pointattributelist = PETSC_NULL;
+  outputCtx->pointmarkerlist = PETSC_NULL;
+  outputCtx->numberoftriangles = 0;
+  outputCtx->trianglelist = PETSC_NULL;
+  outputCtx->triangleattributelist = PETSC_NULL;
+  outputCtx->neighborlist = PETSC_NULL;
+  outputCtx->segmentlist = PETSC_NULL;
+  outputCtx->segmentmarkerlist = PETSC_NULL;
+  outputCtx->numberofedges = 0;
+  outputCtx->edgelist = PETSC_NULL;
+  outputCtx->edgemarkerlist = PETSC_NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FiniOutput_Triangle"
+PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx) {
+  PetscFunctionBegin;
+  free(outputCtx->pointmarkerlist);
+  free(outputCtx->edgelist);
+  free(outputCtx->edgemarkerlist);
+  free(outputCtx->trianglelist);
+  free(outputCtx->neighborlist);
   PetscFunctionReturn(0);
 }
 
