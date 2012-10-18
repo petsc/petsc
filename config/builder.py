@@ -374,9 +374,13 @@ class MakeParser(object):
     m = re.match('-@\$\{MPIEXEC\} -n (?P<numProcs>\d+) ./(?P<ex>ex\w+)(?P<args>[-.,\w ]+)>', lines[0])
     if not m:
       raise RuntimeError('Could not parse launch sequence:\n'+lines[0])
-    m2 = re.search('\$\{DIFF\} output/%s_(?P<num>\w+)\.out' % m.group('ex'), lines[1])
+    comparison = 'Not present'
+    m2 = None
+    if len(lines) > 1:
+      m2 = re.search('\$\{DIFF\} output/%s_(?P<num>\w+)\.out' % m.group('ex'), lines[1])
+      comparsion = lines[1]
     if not m2:
-      raise RuntimeError('Could not parse comparison:\n'+lines[1]+'\n pattern: '+'\$\{DIFF\} output/%s_(?P<num>\w+).out' % m.group('ex'))
+      raise RuntimeError('Could not parse comparison:\n'+comparison+'\n pattern: '+'\$\{DIFF\} output/%s_(?P<num>\w+).out' % m.group('ex'))
     return {'numProcs': m.group('numProcs'), 'args': m.group('args'), 'num': m2.group('num')}
 
   def parseTest(self, filename, testTarget):
