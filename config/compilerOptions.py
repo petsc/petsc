@@ -10,6 +10,7 @@ class CompilerOptions(config.base.Configure):
       try:
         output   = self.executeShellCommand(compiler + ' -show')[0]
         compiler = output.split(' ')[0]
+        self.framework.addMakeMacro('MPICC_SHOW',output.strip())
       except:
         pass
 
@@ -77,6 +78,7 @@ class CompilerOptions(config.base.Configure):
       try:
         output   = self.executeShellCommand(compiler+' -show')[0]
         compiler = output.split(' ')[0]
+        self.framework.addMakeMacro('MPICXX_SHOW',output.strip())
       except:
         pass
     
@@ -148,6 +150,7 @@ class CompilerOptions(config.base.Configure):
       try:
         output   = self.executeShellCommand(compiler+' -show')[0]
         compiler = output.split(' ')[0]
+        self.framework.addMakeMacro('MPIFC_SHOW',output.strip())
       except:
         pass
 
