@@ -76,8 +76,16 @@ info:
 	-@grep "\#define " ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h
 	-@echo "-----------------------------------------"
 	-@echo "Using C/C++ compile: ${PETSC_COMPILE}"
+	-@if [ "${PETSC_LANGUAGE}" = "CONLY" -a "${MPICC_SHOW}" != "" ]; then \
+             echo mpicc -show: ${MPICC_SHOW}; \
+	  elif [ "${PETSC_LANGUAGE}" = "CXXONLY" -a "${MPICXX_SHOW}" != "" ]; then \
+             echo mpicxx -show: ${MPICXX_SHOW}; \
+          fi;
 	-@if [ "${FC}" != "" ]; then \
 	   echo "Using Fortran compile: ${PETSC_FCOMPILE}";\
+           if [ "${MPIFC_SHOW}" != "" ]; then \
+             echo mpif90 -show: ${MPIFC_SHOW}; \
+           fi; \
          fi
 	-@if [ "${CUDAC}" != "" ]; then \
 	   echo "Using CUDA compile: ${PETSC_CUCOMPILE}";\
