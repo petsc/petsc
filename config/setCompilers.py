@@ -1469,6 +1469,13 @@ if (dlclose(handle)) {
                 raise RuntimeError(msg)
     return
 
+  def printEnvVariables(self):
+    buf = '**** printenv ****'
+    for key,val in os.environ.iteritems():
+      buf += '\n'+str(key)+'='+str(val)
+    self.logPrint(buf)
+    return
+
   def resetEnvCompilers(self):
     ignoreEnv = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS',
                  'F90','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS',
@@ -1480,6 +1487,7 @@ if (dlclose(handle)) {
     return
 
   def configure(self):
+    self.executeTest(self.printEnvVariables)
     self.executeTest(self.resetEnvCompilers)
     self.executeTest(self.checkMPICompilerOverride)
     self.executeTest(self.checkVendor)
