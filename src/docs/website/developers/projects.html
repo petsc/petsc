@@ -99,14 +99,6 @@ If MatLoad don't immediately load the data for rank 0 and they only store the fi
         </li>
 
         <li>
-          Interface to
-          <a href="http://code.google.com/p/elemental/">Elemental</a> for modern
-          distributed-memory dense linear algebra
-        </li>
-
-        <li>Vec and Mat class based on pthreads parallelism</li>
-
-        <li>
           Turn MPICH, Open MPI and then PETSc into an Apple Framework.
         </li>
 
@@ -116,14 +108,7 @@ If MatLoad don't immediately load the data for rank 0 and they only store the fi
           tridiagonal solvers.
         </li>
 
-        <li>
-          Convert KSPSPECEST to something like -ksp_type chebyshev
-          -ksp_chebyshev_precompute_parameters
-          -ksp_chebyshev_precompute_ksp_type cg
-          -ksp_chebyshev_precompute_minfactor .95
-        </li>
-
-        <li>MatSOR() should used blocks when bs > for AIJ matrices and no inodes        </li>
+        <li>MatSOR() should used blocks when bs>1 for AIJ matrices and no inodes        </li>
 
         <li>
           KSPSolve and SNESSolve should return bounds on the errors and some
