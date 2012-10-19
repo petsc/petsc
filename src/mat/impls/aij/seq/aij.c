@@ -911,8 +911,8 @@ PetscErrorCode MatZeroEntries_SeqAIJ_Kernel(PetscInt thread_id,Mat A)
 
   start = trstarts[thread_id];
   end   = trstarts[thread_id+1];
-  n     = end - start;
-  ierr = PetscMemzero(a->a+start,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  n     = a->i[end] - a->i[start];
+  ierr = PetscMemzero(a->a+a->i[start],n*sizeof(PetscScalar));CHKERRQ(ierr);
   return 0;
 }
 
