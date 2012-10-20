@@ -308,7 +308,8 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
     }
     if (rank == size-1 && bx == DMDA_BOUNDARY_PERIODIC && size > 1) {
       ierr = MPI_Recv(&tmp,1,MPIU_REAL,0,tag2,comm,&status);CHKERRQ(ierr);
-      ierr = PetscDrawLine(draw,PetscRealPart(xg[n-2]),PetscRealPart(array[j+step*(n-1)]),PetscRealPart(xg[n-1]),tmp,PETSC_DRAW_RED);CHKERRQ(ierr);
+      /* If the mesh is not uniform we do not know the mesh spacing between the last point on the right and the first ghost point */
+      ierr = PetscDrawLine(draw,PetscRealPart(xg[n-1]),PetscRealPart(array[j+step*(n-1)]),PetscRealPart(xg[n-1]+(xg[n-1]-xg[n-2])),tmp,PETSC_DRAW_RED);CHKERRQ(ierr);
       if (showpoints) {
         ierr = PetscDrawPoint(draw,PetscRealPart(xg[n-2]),PetscRealPart(array[j+step*(n-1)]),PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
