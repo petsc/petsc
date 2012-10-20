@@ -2064,14 +2064,8 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
     ierr = PetscMemzero(g_nnz,nb*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=0; i<bi[ma]; i++) g_nnz[bj[i]]++;
     /* map those to global */
-    for (i=0; i<nb; i++) {
-      PetscInt gcol = a->garray[i],colowner;
-      ierr = PetscLayoutFindOwner(A->cmap,a->garray[i],&colowner);CHKERRQ(ierr);
-      oloc[i].rank  = colowner;
-      oloc[i].index = gcol - A->cmap->range[colowner];
-    }
     ierr = PetscSFCreate(((PetscObject)A)->comm,&sf);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(sf,na,nb,PETSC_NULL,PETSC_USE_POINTER,oloc,PETSC_USE_POINTER);CHKERRQ(ierr);
+    ierr = PetscSFSetGraphLayout(sf,A->cmap,nb,PETSC_NULL,PETSC_USE_POINTER,a->garray);CHKERRQ(ierr);
     ierr = PetscMemzero(o_nnz,na*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscSFReduceBegin(sf,MPIU_INT,g_nnz,o_nnz,MPIU_SUM);CHKERRQ(ierr);
     ierr = PetscSFReduceEnd(sf,MPIU_INT,g_nnz,o_nnz,MPIU_SUM);CHKERRQ(ierr);
