@@ -18,7 +18,9 @@ PetscLogEvent ThreadComm_RunKernel, ThreadComm_Barrier;
 #define __FUNCT__ "PetscGetNCores"
 /*@
   PetscGetNCores - Gets the number of available cores on the system
-		
+
+  Not Collective
+
   Level: developer
 
   Notes
@@ -60,6 +62,8 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
   PetscCommGetThreadComm - Gets the thread communicator
                            associated with the MPI communicator
 
+  Not Collective
+
   Input Parameters:
 . comm - the MPI communicator
 
@@ -96,6 +100,8 @@ PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
 /*
    PetscThreadCommCreate - Allocates a thread communicator object
 
+   Not Collective
+
    Input Parameters:
 .  comm - the MPI communicator
 
@@ -131,6 +137,8 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
 #define __FUNCT__ "PetscThreadCommDestroy"
 /*
   PetscThreadCommDestroy - Frees a thread communicator object
+
+  Not Collective
 
   Input Parameters:
 . tcomm - the PetscThreadComm object
@@ -175,7 +183,7 @@ PetscErrorCode PetscThreadCommDestroy(PetscThreadComm *tcomm)
 /*@C
    PetscThreadCommView - view a thread communicator
 
-   Collective
+   Collective on comm
 
    Input Parameters:
 +  comm - MPI communicator
@@ -432,6 +440,8 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,PetscThreadCommType 
 /*  PetscThreadCommBarrier - Apply a barrier on the thread communicator
                              associated with the MPI communicator
 
+    Not collective
+
     Input Parameters:
 .   comm - the MPI communicator
 
@@ -612,6 +622,8 @@ PetscErrorCode PetscThreadCommGetInts(MPI_Comm comm,PetscInt **val1, PetscInt **
 /*@C
    PetscThreadCommRunKernel - Runs the kernel using the thread communicator
                               associated with the MPI communicator
+
+   Not Collective
 
    Input Parameters:
 +  comm  - the MPI communicator
