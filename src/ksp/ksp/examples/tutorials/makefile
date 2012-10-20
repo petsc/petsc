@@ -5,7 +5,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex8g.c ex9.c \
-                ex10.c ex11.c ex12.c ex13.c ex15.c ex16.c  ex23.c \
+                ex10.c ex11.c ex12.c ex13.c ex15.c ex16.c ex18.c ex23.c \
                 ex25.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex34.c \
                  ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c \
                 ex45.c ex46.c  ex49.c ex50.c ex51.c ex52.c ex53.c \
@@ -840,6 +840,14 @@ runex16:
 	   if (${DIFF} output/ex16_1.out ex16_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex16_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex16_1.tmp
+runex18:
+	-@${MPIEXEC} -n 3 ./ex18 -m 39 -n 18 -ksp_monitor_short -permute nd > ex18_1.tmp 2>&1; \
+	   ${DIFF} output/ex18_1.out ex18_1.tmp || printf "${PWD}\nPossible problem with with ex18_1, diffs above \n========================================="; \
+	   ${RM} -f ex18_1.tmp
+runex18_2:
+	-@${MPIEXEC} -n 3 ./ex18 -m 39 -n 18 -ksp_monitor_short -permute rcm > ex18_2.tmp 2>&1; \
+	   ${DIFF} output/ex18_2.out ex18_2.tmp || printf "${PWD}\nPossible problem with with ex18_2, diffs above \n========================================="; \
+	   ${RM} -f ex18_2.tmp
 runex21f:
 	-@${MPIEXEC} -n 1 ./ex21f  > ex21f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex21f_1.out ex21f_1.tmp) then true; \
