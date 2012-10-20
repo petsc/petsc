@@ -4270,7 +4270,7 @@ PetscErrorCode  MatCreateAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAIJGetSeqAIJ"
-PetscErrorCode  MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,PetscInt *colmap[])
+PetscErrorCode  MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[])
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
 

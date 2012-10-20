@@ -3927,7 +3927,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIBAIJGetSeqBAIJ"
-PetscErrorCode  MatMPIBAIJGetSeqBAIJ(Mat A,Mat *Ad,Mat *Ao,PetscInt *colmap[])
+PetscErrorCode  MatMPIBAIJGetSeqBAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[])
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *)A->data;
   PetscFunctionBegin;
