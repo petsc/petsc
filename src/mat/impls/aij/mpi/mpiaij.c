@@ -1721,40 +1721,102 @@ PetscErrorCode MatSOR_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,Pe
 #define __FUNCT__ "MatPermute_MPIAIJ"
 PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
 {
-  MPI_Comm       comm;
-  PetscInt       first,local_rowsize,local_colsize;
-  const PetscInt *rows;
-  IS             crowp,growp,irowp,lrowp,lcolp,icolp;
+  Mat            aA,aB,Aperm;
+  const PetscInt *rwant,*cwant,*gcols,*ai,*bi,*aj,*bj;
+  PetscScalar    *aa,*ba;
+  PetscInt       i,j,m,n,ng,anz,bnz,*dnnz,*onnz,*tdnnz,*tonnz,*rdest,*cdest,*work,*gcdest;
+  PetscSF        rowsf,sf;
+  IS             parcolp = PETSC_NULL;
+  PetscBool      done;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  /* make a collective version of 'rowp', this is to be tolerant of users who pass serial index sets */
-  ierr = ISOnComm(rowp,comm,PETSC_USE_POINTER,&crowp);CHKERRQ(ierr);
-  /* collect the global row permutation and invert it */
-  ierr = ISAllGather(crowp,&growp);CHKERRQ(ierr);
-  ierr = ISSetPermutation(growp);CHKERRQ(ierr);
-  ierr = ISDestroy(&crowp);CHKERRQ(ierr);
-  ierr = ISInvertPermutation(growp,PETSC_DECIDE,&irowp);CHKERRQ(ierr);
-  ierr = ISDestroy(&growp);CHKERRQ(ierr);
-  /* get the local target indices */
-  ierr = MatGetOwnershipRange(A,&first,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&local_rowsize,&local_colsize);CHKERRQ(ierr);
-  ierr = ISGetIndices(irowp,&rows);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,local_rowsize,rows+first,PETSC_COPY_VALUES,&lrowp);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(irowp,&rows);CHKERRQ(ierr);
-  ierr = ISDestroy(&irowp);CHKERRQ(ierr);
-  /* the column permutation is so much easier;
-     make a local version of 'colp' and invert it */
-  ierr = ISOnComm(colp,PETSC_COMM_SELF,PETSC_USE_POINTER,&lcolp);CHKERRQ(ierr);
-  ierr = ISSetPermutation(lcolp);CHKERRQ(ierr);
-  ierr = ISInvertPermutation(lcolp,PETSC_DECIDE,&icolp);CHKERRQ(ierr);
-  ierr = ISDestroy(&lcolp);CHKERRQ(ierr);
-  /* now we just get the submatrix */
-  ierr = MatGetSubMatrix_MPIAIJ_Private(A,lrowp,icolp,local_colsize,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
-  /* clean up */
-  ierr = ISDestroy(&lrowp);CHKERRQ(ierr);
-  ierr = ISDestroy(&icolp);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+  ierr = ISGetIndices(rowp,&rwant);CHKERRQ(ierr);
+  ierr = ISGetIndices(colp,&cwant);CHKERRQ(ierr);
+  ierr = PetscMalloc3(PetscMax(m,n),PetscInt,&work,m,PetscInt,&rdest,n,PetscInt,&cdest);CHKERRQ(ierr);
+
+  /* Invert row permutation to find out where my rows should go */
+  ierr = PetscSFCreate(((PetscObject)A)->comm,&rowsf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraphLayout(rowsf,A->rmap,A->rmap->n,PETSC_NULL,PETSC_OWN_POINTER,rwant);CHKERRQ(ierr);
+  for (i=0; i<m; i++) work[i] = A->rmap->rstart + i;
+  ierr = PetscSFReduceBegin(rowsf,MPIU_INT,work,rdest,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(rowsf,MPIU_INT,work,rdest,MPI_REPLACE);CHKERRQ(ierr);
+
+  /* Invert column permutation to find out where my columns should go */
+  ierr = PetscSFCreate(((PetscObject)A)->comm,&sf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraphLayout(sf,A->cmap,A->cmap->n,PETSC_NULL,PETSC_OWN_POINTER,cwant);CHKERRQ(ierr);
+  for (i=0; i<n; i++) work[i] = A->cmap->rstart + i;
+  ierr = PetscSFReduceBegin(sf,MPIU_INT,work,cdest,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf,MPIU_INT,work,cdest,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+
+  ierr = ISRestoreIndices(rowp,&rwant);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(colp,&cwant);CHKERRQ(ierr);
+  ierr = MatMPIAIJGetSeqAIJ(A,&aA,&aB,&gcols);CHKERRQ(ierr);
+
+  /* Find out where my gcols should go */
+  ierr = MatGetSize(aB,PETSC_NULL,&ng);CHKERRQ(ierr);
+  ierr = PetscMalloc(ng*sizeof(PetscInt),&gcdest);CHKERRQ(ierr);
+  ierr = PetscSFCreate(((PetscObject)A)->comm,&sf);CHKERRQ(ierr);
+  ierr = PetscSFSetGraphLayout(sf,A->cmap,ng,PETSC_NULL,PETSC_OWN_POINTER,gcols);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sf,MPIU_INT,cdest,gcdest);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sf,MPIU_INT,cdest,gcdest);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+
+  ierr = PetscMalloc4(m,PetscInt,&dnnz,m,PetscInt,&onnz,m,PetscInt,&tdnnz,m,PetscInt,&tonnz);CHKERRQ(ierr);
+  ierr = PetscMemzero(dnnz,m*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(onnz,m*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = MatGetRowIJ(aA,0,PETSC_FALSE,PETSC_FALSE,&anz,&ai,&aj,&done);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(aB,0,PETSC_FALSE,PETSC_FALSE,&bnz,&bi,&bj,&done);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    PetscInt row = rdest[i],rowner;
+    ierr = PetscLayoutFindOwner(A->rmap,row,&rowner);CHKERRQ(ierr);
+    for (j=ai[i]; j<ai[i+1]; j++) {
+      PetscInt cowner,col = cdest[aj[j]];
+      ierr = PetscLayoutFindOwner(A->cmap,col,&cowner);CHKERRQ(ierr); /* Could build an index for the columns to eliminate this search */
+      if (rowner == cowner) dnnz[i]++;
+      else onnz[i]++;
+    }
+    for (j=bi[i]; j<bi[i+1]; j++) {
+      PetscInt cowner,col = gcdest[bj[j]];
+      ierr = PetscLayoutFindOwner(A->cmap,col,&cowner);CHKERRQ(ierr);
+      if (rowner == cowner) dnnz[i]++;
+      else onnz[i]++;
+    }
+  }
+  ierr = PetscMemzero(tdnnz,m*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(tonnz,m*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(rowsf,MPIU_INT,dnnz,tdnnz);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(rowsf,MPIU_INT,dnnz,tdnnz);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(rowsf,MPIU_INT,onnz,tonnz);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(rowsf,MPIU_INT,onnz,tonnz);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&rowsf);CHKERRQ(ierr);
+
+  ierr = MatCreateAIJ(((PetscObject)A)->comm,A->rmap->n,A->cmap->n,A->cmap->N,A->cmap->N,0,tdnnz,0,tonnz,&Aperm);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArray(aA,&aa);CHKERRQ(ierr);
+  ierr = MatSeqAIJGetArray(aB,&ba);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    PetscInt *acols = dnnz,*bcols = onnz; /* Repurpose now-unneeded arrays */
+    PetscInt rowlen;
+    rowlen = ai[i+1] - ai[i];
+    for (j=0; j<rowlen; j++) acols[j] = cdest[aj[ai[i]+j]];
+    ierr = MatSetValues(Aperm,1,&rdest[i],rowlen,acols,aa+ai[i],INSERT_VALUES);CHKERRQ(ierr);
+    rowlen = bi[i+1] - bi[i];
+    for (j=0; j<rowlen; j++) bcols[j] = gcdest[bj[bi[i]+j]];
+    ierr = MatSetValues(Aperm,1,&rdest[i],rowlen,bcols,ba+bi[i],INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(Aperm,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Aperm,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(aA,0,PETSC_FALSE,PETSC_FALSE,&anz,&ai,&aj,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(aB,0,PETSC_FALSE,PETSC_FALSE,&bnz,&bi,&bj,&done);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArray(aA,&aa);CHKERRQ(ierr);
+  ierr = MatSeqAIJRestoreArray(aB,&ba);CHKERRQ(ierr);
+  ierr = PetscFree4(dnnz,onnz,tdnnz,tonnz);CHKERRQ(ierr);
+  ierr = PetscFree3(work,rdest,cdest);CHKERRQ(ierr);
+  ierr = PetscFree(gcdest);CHKERRQ(ierr);
+  if (parcolp) {ierr = ISDestroy(&colp);CHKERRQ(ierr);}
+  *B = Aperm;
   PetscFunctionReturn(0);
 }
 
@@ -3113,7 +3175,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 /*54*/ MatFDColoringCreate_MPIAIJ,
        0,
        MatSetUnfactored_MPIAIJ,
-       0, /* MatPermute_MPIAIJ, impl currently broken */
+       MatPermute_MPIAIJ,
        0,
 /*59*/ MatGetSubMatrix_MPIAIJ,
        MatDestroy_MPIAIJ,
