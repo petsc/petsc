@@ -8191,6 +8191,7 @@ PetscErrorCode  MatFactorInfoInitialize(MatFactorInfo *info)
 PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
+  PetscBool viatranspose;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -8213,7 +8214,18 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
     SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"Matrix of type <%s> does not support PtAP",mattype);
   }
   ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
-  ierr = (*A->ops->ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
+  viatranspose = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(((PetscObject)A)->prefix,"-matptap_viatranspose",&viatranspose,PETSC_NULL);CHKERRQ(ierr);
+  if (viatranspose) {
+    Mat AP,Pt;
+    ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,PETSC_DECIDE,&AP);CHKERRQ(ierr);
+    ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
+    ierr = MatMatMult(Pt,AP,scall,fill,C);CHKERRQ(ierr);
+    ierr = MatDestroy(&Pt);CHKERRQ(ierr);
+    ierr = MatDestroy(&AP);CHKERRQ(ierr);
+  } else {
+    ierr = (*A->ops->ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
