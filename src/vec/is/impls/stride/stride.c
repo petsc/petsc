@@ -370,8 +370,8 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
   if (step > 0) {min = first; max = first + step*(n-1);}
   else          {max = first; min = first + step*(n-1);}
 
-  is->min     = min;
-  is->max     = max;
+  is->min     = n > 0 ? min : -1;
+  is->max     = n > 0 ? max : -1;
   is->data    = (void*)sub;
 
   if ((!first && step == 1) || (first == max && step == -1 && !min)) {
