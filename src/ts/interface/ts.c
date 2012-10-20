@@ -170,6 +170,14 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       ierr = TSMonitorSet(ts,TSMonitorSolution,ctx,TSMonitorSolutionDestroy);CHKERRQ(ierr);
     }
     opt  = PETSC_FALSE;
+    ierr = PetscOptionsBool("-ts_monitor_error","Monitor error graphically","TSMonitorError",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
+    if (opt) {
+      PetscViewer viewer;
+
+      ierr = PetscViewerDrawOpen(((PetscObject)ts)->comm,0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,&viewer);
+      ierr = TSMonitorSet(ts,TSMonitorError,viewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+    }
+    opt  = PETSC_FALSE;
     ierr = PetscOptionsString("-ts_monitor_solution_binary","Save each solution to a binary file","TSMonitorSolutionBinary",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       PetscViewer ctx;
@@ -2761,6 +2769,41 @@ PetscErrorCode  TSMonitorSolutionCreate(TS ts,PetscViewer viewer,void **ctx)
   ictx->viewer      = viewer;
   ictx->showinitial = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)ts)->prefix,"-ts_monitor_solution_initial",&ictx->showinitial,PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorError"
+/*@C
+   TSMonitorError - Monitors progress of the TS solvers by calling
+   VecView() for the error at each timestep
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+-  dummy - either a viewer or PETSC_NULL
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
+@*/
+PetscErrorCode  TSMonitorError(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
+{
+  PetscErrorCode ierr;
+  PetscViewer    viewer = (PetscViewer)dummy;
+  Vec            work;
+
+  PetscFunctionBegin;
+  ierr = VecDuplicate(x,&work);CHKERRQ(ierr);
+  ierr = TSComputeSolutionFunction(ts,ptime,work);CHKERRQ(ierr);
+  ierr = VecAXPY(work,-1.0,x);CHKERRQ(ierr);
+  ierr = VecView(work,viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
