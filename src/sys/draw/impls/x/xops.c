@@ -484,7 +484,6 @@ static PetscErrorCode PetscDrawCheckResizedWindow_X(PetscDraw draw)
   if (!rank) {
     XFlush(win->disp);
     XSync(win->disp,False);
-    ierr = PetscSleep(1);
     XSync(win->disp,False);
     XGetGeometry(win->disp,win->win,&root,&x,&y,geo,geo+1,&border,&depth);
   }
