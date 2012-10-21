@@ -10,9 +10,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatGetOrdering_QMD"
 PetscErrorCode  MatGetOrdering_QMD(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
-  PetscInt       i,  *deg,*marker,*rchset,*nbrhd,*qsize,*qlink,nofsub,*iperm,nrow;
+  PetscInt       i,  *deg,*marker,*rchset,*nbrhd,*qsize,*qlink,nofsub,*iperm,nrow,*perm;
   PetscErrorCode ierr;
-  PetscInt       *ia,*ja,*perm;
+  const PetscInt *ia,*ja;
   PetscBool       done;
 
   PetscFunctionBegin;

@@ -11,7 +11,8 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatGetOrdering_RCM(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;
-  PetscInt       i,*mask,*xls,nrow,*ia,*ja,*perm;
+  PetscInt       i,*mask,*xls,nrow,*perm;
+  const PetscInt *ia,*ja;
   PetscBool      done;
 
   PetscFunctionBegin;

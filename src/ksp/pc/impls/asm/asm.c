@@ -1199,14 +1199,16 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
       ierr = PetscObjectTypeCompare((PetscObject)mpart,MATPARTITIONINGSQUARE,&match);CHKERRQ(ierr);
     }
     if (!match) { /* assume a "good" partitioner is available */
-      PetscInt na,*ia,*ja;
+      PetscInt na;
+      const PetscInt *ia,*ja;
       ierr = MatGetRowIJ(Ad,0,PETSC_TRUE,isbaij,&na,&ia,&ja,&done);CHKERRQ(ierr);
       if (done) {
 	/* Build adjacency matrix by hand. Unfortunately a call to
 	   MatConvert(Ad,MATMPIADJ,MAT_INITIAL_MATRIX,&adj) will
 	   remove the block-aij structure and we cannot expect
 	   MatPartitioning to split vertices as we need */
-	PetscInt i,j,*row,len,nnz,cnt,*iia=0,*jja=0;
+	PetscInt i,j,len,nnz,cnt,*iia=0,*jja=0;
+        const PetscInt *row;
 	nnz = 0;
 	for (i=0; i<na; i++) { /* count number of nonzeros */
 	  len = ia[i+1] - ia[i];

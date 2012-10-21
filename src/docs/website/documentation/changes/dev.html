@@ -104,6 +104,7 @@
       <ul>
         <li><tt>MatGetArray()/MatRestoreArray()</tt> have been removed. Use <tt>MatDenseGetArray()/MatDenseRestoreArray()</tt> or <tt>MatSeqAIJGetArray()/MatSeqAIJRestoreArray()</tt></li>
         <li>PLAPACK interface has been removed.</li>
+        <li>MatGetRowIJ() and MatGetColumnIJ() have been made const-correct; the index arrays have always been read-only.</li>
       </ul>
 
       <h4>PC:</h4>

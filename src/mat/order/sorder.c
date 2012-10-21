@@ -71,7 +71,8 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatGetOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
-  PetscInt       n,*ia,*ja,*permr,*lens,i;
+  PetscInt       n,*permr,*lens,i;
+  const PetscInt *ia,*ja;
   PetscBool      done;
 
   PetscFunctionBegin;

@@ -43,7 +43,7 @@
 /*                                                                */
 #undef __FUNCT__
 #define __FUNCT__ "SPARSEPACKgenqmd"
-PetscErrorCode SPARSEPACKgenqmd(PetscInt *neqns, PetscInt *xadj, PetscInt *adjncy,
+PetscErrorCode SPARSEPACKgenqmd(const PetscInt *neqns,const PetscInt *xadj,const PetscInt *adjncy,
 	PetscInt *perm, PetscInt *invp, PetscInt *deg, PetscInt *marker, PetscInt *
 	rchset, PetscInt *nbrhd, PetscInt *qsize, PetscInt *qlink, PetscInt *nofsub)
 {
@@ -52,11 +52,11 @@ PetscErrorCode SPARSEPACKgenqmd(PetscInt *neqns, PetscInt *xadj, PetscInt *adjnc
 
     /* Local variables */
     PetscInt ndeg, irch, node, nump1, j, inode;
-    extern PetscErrorCode SPARSEPACKqmdqt(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+    extern PetscErrorCode SPARSEPACKqmdqt(const PetscInt*,const PetscInt *,const PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
     PetscInt ip, np, mindeg, search;
-    extern PetscErrorCode SPARSEPACKqmdrch(PetscInt*, PetscInt *, PetscInt *,
+    extern PetscErrorCode SPARSEPACKqmdrch(const PetscInt*, const PetscInt *,const PetscInt *,
 	      PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *),
-	   SPARSEPACKqmdupd(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *,
+	   SPARSEPACKqmdupd(const PetscInt*, const PetscInt *, const PetscInt *, PetscInt *, PetscInt *,
 	      PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
     PetscInt nhdsze, nxnode, rchsze, thresh, num;
 

@@ -6,7 +6,8 @@ static char help[] = "Testing MatCreateSeqBAIJWithArrays() and MatCreateSeqSBAIJ
 #define __FUNCT__ "main"
 int main(int argc,char **argv) {
   Mat            A,B,As;
-  PetscInt       i,j,k,nz,n,*ai,*aj,asi[]={0,2,3,4,6,7};
+  const PetscInt *ai,*aj;
+  PetscInt       i,j,k,nz,n,asi[]={0,2,3,4,6,7};
   PetscInt       asj[]={0,4,1,2,3,4,4};
   PetscScalar    asa[7],*aa;
   PetscRandom    rctx;
@@ -42,7 +43,8 @@ int main(int argc,char **argv) {
   /* Create a baij matrix using MatCreateSeqBAIJWithArrays() */
   ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&n,&ai,&aj,&flg);CHKERRQ(ierr);
   ierr = MatSeqAIJGetArray(A,&aa);CHKERRQ(ierr);
-  ierr = MatCreateSeqBAIJWithArrays(PETSC_COMM_SELF,1,5,5,ai,aj,aa,&B);CHKERRQ(ierr);
+  /* WARNING: This sharing is dangerous if either A or B is later assembled */
+  ierr = MatCreateSeqBAIJWithArrays(PETSC_COMM_SELF,1,5,5,(PetscInt*)ai,(PetscInt*)aj,aa,&B);CHKERRQ(ierr);
   ierr = MatSeqAIJRestoreArray(A,&aa);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&n,&ai,&aj,&flg);CHKERRQ(ierr);
   ierr = MatMultEqual(A,B,10,&flg);CHKERRQ(ierr);

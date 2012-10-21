@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   AppCtx         user;
   PetscInt       Npx=PETSC_DECIDE,Npy=PETSC_DECIDE,Npz=PETSC_DECIDE;
   PetscMPIInt    size,rank;
-  PetscInt       m,n,M,N,i,nrows,*ia,*ja;
+  PetscInt       m,n,M,N,i,nrows;
   PetscScalar    one = 1.0;
   PetscReal      fill=2.0;
   Mat            A,A_tmp,P,C,C1,C2;
@@ -103,7 +103,8 @@ int main(int argc,char **argv)
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   /* set val=one to A */
-  if (size == 1){
+  if (size == 1) {
+    const PetscInt *ia,*ja;
     ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&nrows,&ia,&ja,&flg);
     if (flg){
       ierr = MatSeqAIJGetArray(A,&array);CHKERRQ(ierr);

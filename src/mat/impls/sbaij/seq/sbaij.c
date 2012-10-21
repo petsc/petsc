@@ -64,10 +64,11 @@ PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetRowIJ_SeqSBAIJ"
-static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscBool  symmetric,PetscBool  blockcompressed,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscBool  *done)
+static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscBool  symmetric,PetscBool  blockcompressed,PetscInt *nn,const PetscInt *inia[],const PetscInt *inja[],PetscBool  *done)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   PetscInt     i,j,n = a->mbs,nz = a->i[n],bs = A->rmap->bs;
+  PetscInt       **ia = (PetscInt**)inia,**ja = (PetscInt**)inja;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -100,7 +101,7 @@ static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscBool  symm
 
 #undef __FUNCT__
 #define __FUNCT__ "MatRestoreRowIJ_SeqSBAIJ"
-static PetscErrorCode MatRestoreRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscBool  symmetric,PetscBool  blockcompressed,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscBool  *done)
+static PetscErrorCode MatRestoreRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscBool  symmetric,PetscBool  blockcompressed,PetscInt *nn,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   PetscInt     i,n = a->mbs,nz = a->i[n];

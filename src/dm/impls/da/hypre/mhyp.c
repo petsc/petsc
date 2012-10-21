@@ -12,8 +12,8 @@
 PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o,HYPRE_IJMatrix ij)
 {
   PetscErrorCode ierr;
-  PetscInt       i;
-  PetscInt       n_d,*ia_d,n_o,*ia_o;
+  PetscInt       i,n_d,n_o;
+  const PetscInt *ia_d,*ia_o;
   PetscBool      done_d=PETSC_FALSE,done_o=PETSC_FALSE;
   PetscInt       *nnz_d=PETSC_NULL,*nnz_o=PETSC_NULL;
 
@@ -73,7 +73,7 @@ PetscErrorCode MatHYPRE_IJMatrixCreate(Mat A,HYPRE_IJMatrix *ij)
   {
     PetscBool   same;
     Mat         A_d,A_o;
-    PetscInt    *colmap;
+    const PetscInt *colmap;
     ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&same);CHKERRQ(ierr);
     if (same) {
       ierr = MatMPIAIJGetSeqAIJ(A,&A_d,&A_o,&colmap);CHKERRQ(ierr);

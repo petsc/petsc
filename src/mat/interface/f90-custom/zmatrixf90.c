@@ -62,7 +62,7 @@ void PETSC_STDCALL matseqaijrestorearrayf90_(Mat *mat,F90Array2d *ptr,int *ierr 
 void PETSC_STDCALL matgetrowijf90_(Mat *B,PetscInt *shift,PetscBool  *sym,PetscBool  *blockcompressed,PetscInt *n,F90Array1d *ia,
                                 F90Array1d *ja,PetscBool  *done,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad)  PETSC_F90_2PTR_PROTO(jad))
 {
-  PetscInt *IA,*JA;
+  const PetscInt *IA,*JA;
   *ierr = MatGetRowIJ(*B,*shift,*sym,*blockcompressed,n,&IA,&JA,done);if (*ierr) return; if (!*done) return;
   *ierr = F90Array1dCreate((PetscInt *)IA,PETSC_INT,1,*n+1,ia PETSC_F90_2PTR_PARAM(iad));
   *ierr = F90Array1dCreate((PetscInt *)JA,PETSC_INT,1,IA[*n],ja PETSC_F90_2PTR_PARAM(jad));
@@ -71,7 +71,7 @@ void PETSC_STDCALL matgetrowijf90_(Mat *B,PetscInt *shift,PetscBool  *sym,PetscB
 void PETSC_STDCALL matrestorerowijf90_(Mat *B,PetscInt *shift,PetscBool  *sym,PetscBool  *blockcompressed, PetscInt *n,F90Array1d *ia,
                                 F90Array1d *ja,PetscBool  *done,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad)  PETSC_F90_2PTR_PROTO(jad))
 {
-  PetscInt *IA,*JA;
+  const PetscInt *IA,*JA;
   *ierr = F90Array1dAccess(ia,PETSC_INT,(void **)&IA PETSC_F90_2PTR_PARAM(iad));if (*ierr) return;
   *ierr = F90Array1dDestroy(ia,PETSC_INT PETSC_F90_2PTR_PARAM(iad));if (*ierr) return;
   *ierr = F90Array1dAccess(ja,PETSC_INT,(void **)&JA PETSC_F90_2PTR_PARAM(jad));if (*ierr) return;

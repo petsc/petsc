@@ -31,7 +31,7 @@
 /******************************************************************/
 #undef __FUNCT__
 #define __FUNCT__ "SPARSEPACKqmdupd"
-PetscErrorCode SPARSEPACKqmdupd(PetscInt *xadj, PetscInt *adjncy, PetscInt *nlist,
+PetscErrorCode SPARSEPACKqmdupd(const PetscInt *xadj,const PetscInt *adjncy, PetscInt *nlist,
 	PetscInt *list, PetscInt *deg, PetscInt *qsize, PetscInt *qlink, PetscInt *
 	marker, PetscInt *rchset, PetscInt *nbrhd)
 {
@@ -40,9 +40,9 @@ PetscErrorCode SPARSEPACKqmdupd(PetscInt *xadj, PetscInt *adjncy, PetscInt *nlis
 
     /* Local variables */
     PetscInt inhd, irch, node, mark, j, inode, nabor, jstop, jstrt, il;
-    extern PetscErrorCode SPARSEPACKqmdrch(PetscInt*, PetscInt *, PetscInt *,
+    extern PetscErrorCode SPARSEPACKqmdrch(const PetscInt*,const PetscInt *,const PetscInt *,
 	    PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *),
-	     SPARSEPACKqmdmrg(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *,
+	     SPARSEPACKqmdmrg(const PetscInt*,const PetscInt *,const PetscInt *, PetscInt *, PetscInt *,
 	    PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
     PetscInt nhdsze, rchsze, deg0, deg1;
 

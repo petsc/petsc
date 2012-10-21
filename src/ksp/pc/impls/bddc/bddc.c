@@ -392,7 +392,7 @@ PetscErrorCode PCBDDCGetNeumannBoundaries(PC pc,IS *NeumannBoundaries)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCBDDCSetLocalAdjacencyGraph_BDDC"
-static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs, PetscInt xadj[], PetscInt adjncy[], PetscCopyMode copymode)
+static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,const PetscInt xadj[],const PetscInt adjncy[], PetscCopyMode copymode)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PCBDDCGraph    mat_graph=pcbddc->mat_graph;
@@ -408,8 +408,8 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs, P
     ierr = PetscMemcpy(mat_graph->xadj,xadj,(mat_graph->nvtxs+1)*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(mat_graph->adjncy,adjncy,xadj[mat_graph->nvtxs]*sizeof(PetscInt));CHKERRQ(ierr);
   } else if (copymode == PETSC_OWN_POINTER) {
-    mat_graph->xadj=xadj;
-    mat_graph->adjncy=adjncy;
+    mat_graph->xadj = (PetscInt*)xadj;
+    mat_graph->adjncy = (PetscInt*)adjncy;
   } else {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported copy mode %d in %s\n",copymode,__FUNCT__);
   }
@@ -436,7 +436,7 @@ EXTERN_C_END
 
 .seealso: PCBDDC
 @*/
-PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,PetscInt xadj[],PetscInt adjncy[], PetscCopyMode copymode)
+PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,const PetscInt xadj[],const PetscInt adjncy[], PetscCopyMode copymode)
 {
   PetscInt       nrows,ncols;
   Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
@@ -448,7 +448,7 @@ PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,PetscInt xadj[]
   if (nvtxs != nrows) {
     SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local adjacency size %d passed in %s differs from local problem size %d!\n",nvtxs,__FUNCT__,nrows);
   } else {
-    ierr = PetscTryMethod(pc,"PCBDDCSetLocalAdjacencyGraph_C",(PC,PetscInt,PetscInt[],PetscInt[],PetscCopyMode),(pc,nvtxs,xadj,adjncy,copymode));CHKERRQ(ierr);
+    ierr = PetscTryMethod(pc,"PCBDDCSetLocalAdjacencyGraph_C",(PC,PetscInt,const PetscInt[],const PetscInt[],PetscCopyMode),(pc,nvtxs,xadj,adjncy,copymode));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -891,14 +891,12 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
   FETIDPMat_ctx  *mat_ctx;
   PC_IS*         pcis;
   PC_BDDC*       pcbddc;
-  Mat_IS*        matis;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(fetidp_mat,&mat_ctx);CHKERRQ(ierr);
   pcis = (PC_IS*)mat_ctx->pc->data;
   pcbddc = (PC_BDDC*)mat_ctx->pc->data;
-  matis = (Mat_IS*)mat_ctx->pc->pmat->data;
 
   /* change of basis for physical rhs if needed
      It also changes the rhs in case of dirichlet boundaries */
@@ -978,14 +976,12 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
   FETIDPMat_ctx  *mat_ctx;
   PC_IS*         pcis;
   PC_BDDC*       pcbddc;
-  Mat_IS*        matis;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(fetidp_mat,&mat_ctx);CHKERRQ(ierr);
   pcis = (PC_IS*)mat_ctx->pc->data;
   pcbddc = (PC_BDDC*)mat_ctx->pc->data;
-  matis = (Mat_IS*)mat_ctx->pc->pmat->data;
 
   /* apply B_delta^T */
   ierr = VecScatterBegin(mat_ctx->l2g_lambda,fetidp_flux_sol,mat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -2074,7 +2070,8 @@ static PetscErrorCode PCBDDCSetupLocalAdjacencyGraph(PC pc)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
-  PetscInt       nvtxs,*xadj,*adjncy;
+  PetscInt       nvtxs;
+  const PetscInt *xadj,*adjncy;
   Mat            mat_adj; 
   PetscBool      symmetrize_rowij=PETSC_TRUE,compressed_rowij=PETSC_FALSE,flg_row=PETSC_TRUE;
   PCBDDCGraph    mat_graph=pcbddc->mat_graph;

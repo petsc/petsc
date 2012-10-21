@@ -25,7 +25,8 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;
-  PetscInt       nrow,*ia,*ja,*perm;
+  PetscInt       nrow,*perm;
+  const PetscInt *ia,*ja;
   int            status;
   PetscReal      val;
   double         Control[AMD_CONTROL],Info[AMD_INFO];
