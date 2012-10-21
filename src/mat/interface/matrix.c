@@ -4492,14 +4492,16 @@ PetscErrorCode  MatIsHermitianTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *fl
    Input Parameters:
 +  mat - the matrix to permute
 .  row - row permutation, each processor supplies only the permutation for its rows
--  col - column permutation, each processor needs the entire column permutation, that is
-         this is the same size as the total number of columns in the matrix. It can often
-         be obtained with ISAllGather() on the row permutation
+-  col - column permutation, each processor supplies only the permutation for its columns
 
    Output Parameters:
 .  B - the permuted matrix
 
    Level: advanced
+
+   Note:
+   The index sets map from row/col of permuted matrix to row/col of original matrix.
+   The index sets should be on the same communicator as Mat and have the same local sizes.
 
    Concepts: matrices^permuting
 
