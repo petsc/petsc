@@ -29,7 +29,7 @@
 /*****************************************************************/
 #undef __FUNCT__
 #define __FUNCT__ "SPARSEPACKqmdrch"
-PetscErrorCode SPARSEPACKqmdrch(PetscInt *root, PetscInt *xadj, PetscInt *adjncy,
+PetscErrorCode SPARSEPACKqmdrch(const PetscInt *root,const PetscInt *xadj,const PetscInt *adjncy,
 	PetscInt *deg, PetscInt *marker, PetscInt *rchsze, PetscInt *rchset,
 	PetscInt *nhdsze, PetscInt *nbrhd)
 {

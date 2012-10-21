@@ -153,6 +153,8 @@ PetscErrorCode  KSPInitializePackage(const char path[])
   ierr = PetscClassIdRegister("Krylov Solver",&KSP_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = KSPRegisterAll(path);CHKERRQ(ierr);
+  /* Register matrix implementations packaged in KSP */
+  ierr = KSPMatRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("KSPGMRESOrthog",   KSP_CLASSID,&KSP_GMRESOrthogonalization);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("KSPSetUp",         KSP_CLASSID,&KSP_SetUp);CHKERRQ(ierr);

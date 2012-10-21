@@ -192,10 +192,11 @@ PetscErrorCode MatEqual_MPIAdj(Mat A,Mat B,PetscBool * flg)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetRowIJ_MPIAdj"
-PetscErrorCode MatGetRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscBool  symmetric,PetscBool  blockcompressed,PetscInt *m,PetscInt *ia[],PetscInt *ja[],PetscBool  *done)
+PetscErrorCode MatGetRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscBool  symmetric,PetscBool  blockcompressed,PetscInt *m,const PetscInt *inia[],const PetscInt *inja[],PetscBool  *done)
 {
   PetscInt       i;
   Mat_MPIAdj     *a = (Mat_MPIAdj *)A->data;
+  PetscInt       **ia = (PetscInt**)inia,**ja = (PetscInt**)inja;
 
   PetscFunctionBegin;
   *m    = A->rmap->n;
@@ -213,10 +214,11 @@ PetscErrorCode MatGetRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscBool  symmetric,Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "MatRestoreRowIJ_MPIAdj"
-PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscBool  symmetric,PetscBool  blockcompressed,PetscInt *m,PetscInt *ia[],PetscInt *ja[],PetscBool  *done)
+PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscBool  symmetric,PetscBool  blockcompressed,PetscInt *m,const PetscInt *inia[],const PetscInt *inja[],PetscBool  *done)
 {
   PetscInt   i;
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data;
+  PetscInt   **ia = (PetscInt**)inia,**ja = (PetscInt**)inja;
 
   PetscFunctionBegin;
   if (ia && a->i != *ia) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"ia passed back is not one obtained with MatGetRowIJ()");

@@ -5,7 +5,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MINPACKdegr"
-PetscErrorCode MINPACKdegr(PetscInt *n,PetscInt * indrow,PetscInt * jpntr,PetscInt * indcol,PetscInt * ipntr,PetscInt * ndeg,PetscInt * iwa)
+PetscErrorCode MINPACKdegr(PetscInt *n,const PetscInt * indrow,const PetscInt * jpntr,const PetscInt * indcol,const PetscInt * ipntr,PetscInt * ndeg,PetscInt * iwa)
 {
     /* System generated locals */
     PetscInt i__1, i__2, i__3;

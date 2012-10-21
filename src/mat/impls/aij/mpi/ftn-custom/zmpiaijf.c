@@ -15,9 +15,9 @@ EXTERN_C_BEGIN
 
 void PETSC_STDCALL matmpiaijgetseqaij_(Mat *A,Mat *Ad,Mat *Ao,PetscInt *ic,size_t *iic,PetscErrorCode *ierr)
 {
-  PetscInt *i;
+  const PetscInt *i;
   *ierr = MatMPIAIJGetSeqAIJ(*A,Ad,Ao,&i);if (*ierr) return;
-  *iic  = PetscIntAddressToFortran(ic,i);
+  *iic  = PetscIntAddressToFortran(ic,(PetscInt*)i);
 }
 
 void PETSC_STDCALL matcreateaij_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,

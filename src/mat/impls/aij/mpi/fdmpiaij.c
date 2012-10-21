@@ -10,9 +10,9 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   Mat_MPIAIJ            *aij = (Mat_MPIAIJ*)mat->data;
   PetscErrorCode        ierr;
   PetscMPIInt           size,*ncolsonproc,*disp,nn;
-  PetscInt              i,n,nrows,j,k,m,*rows = 0,*A_ci,*A_cj,ncols,col;
-  const PetscInt        *is;
-  PetscInt              nis = iscoloring->n,nctot,*cols,*B_ci,*B_cj;
+  PetscInt              i,n,nrows,j,k,m,ncols,col;
+  const PetscInt        *is,*A_ci,*A_cj,*B_ci,*B_cj,*rows = 0;
+  PetscInt              nis = iscoloring->n,nctot,*cols;
   PetscInt              *rowhit,M,cstart,cend,colb;
   PetscInt              *columnsforrow,l;
   IS                    *isa;

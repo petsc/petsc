@@ -3,8 +3,8 @@
 
 #include <petscsys.h>
 
-extern PetscErrorCode SPARSEPACKfn1wd(PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
-extern PetscErrorCode SPARSEPACKrevrse(PetscInt*,PetscInt*),SPARSEPACKrootls(PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+extern PetscErrorCode SPARSEPACKfn1wd(const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+extern PetscErrorCode SPARSEPACKrevrse(const PetscInt*,PetscInt*),SPARSEPACKrootls(const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
 /*****************************************************************/
 /***********     GEN1WD ..... GENERAL ONE-WAY DISSECTION  ********/
@@ -32,7 +32,7 @@ extern PetscErrorCode SPARSEPACKrevrse(PetscInt*,PetscInt*),SPARSEPACKrootls(Pet
 /****************************************************************/
 #undef __FUNCT__
 #define __FUNCT__ "SPARSEPACKgen1wd"
-PetscErrorCode SPARSEPACKgen1wd(PetscInt *neqns, PetscInt *xadj, PetscInt *adjncy,
+PetscErrorCode SPARSEPACKgen1wd(const PetscInt *neqns,const PetscInt *xadj,const PetscInt *adjncy,
 	                        PetscInt *mask, PetscInt *nblks, PetscInt *xblk, PetscInt *perm, PetscInt *xls, PetscInt *ls)
 {
     /* System generated locals */

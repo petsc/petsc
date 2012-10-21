@@ -71,7 +71,8 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatGetOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
-  PetscInt       n,*ia,*ja,*permr,*lens,i;
+  PetscInt       n,*permr,*lens,i;
+  const PetscInt *ia,*ja;
   PetscBool      done;
 
   PetscFunctionBegin;
@@ -192,23 +193,52 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
+  /* This code is terrible. MatGetOrdering() multiple dispatch should use matrix and this code should move to impls/aij/mpi. */
+  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
+  if (ismpiaij) {               /* Reorder using diagonal block */
+    Mat Ad,Ao;
+    const PetscInt *colmap;
+    IS lrowperm,lcolperm;
+    PetscInt i,rstart,rend,*idx;
+    const PetscInt *lidx;
+    ierr = MatMPIAIJGetSeqAIJ(mat,&Ad,&Ao,&colmap);CHKERRQ(ierr);
+    ierr = MatGetOrdering(Ad,type,&lrowperm,&lcolperm);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
+    /* Remap row index set to global space */
+    ierr = ISGetIndices(lrowperm,&lidx);CHKERRQ(ierr);
+    ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    for (i=0; i+rstart<rend; i++) idx[i] = rstart + lidx[i];
+    ierr = ISRestoreIndices(lrowperm,&lidx);CHKERRQ(ierr);
+    ierr = ISDestroy(&lrowperm);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)mat)->comm,rend-rstart,idx,PETSC_OWN_POINTER,rperm);CHKERRQ(ierr);
+    ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);
+    /* Remap column index set to global space */
+    ierr = ISGetIndices(lcolperm,&lidx);CHKERRQ(ierr);
+    ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    for (i=0; i+rstart<rend; i++) idx[i] = rstart + lidx[i];
+    ierr = ISRestoreIndices(lcolperm,&lidx);CHKERRQ(ierr);
+    ierr = ISDestroy(&lcolperm);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)mat)->comm,rend-rstart,idx,PETSC_OWN_POINTER,cperm);CHKERRQ(ierr);
+    ierr = ISSetPermutation(*cperm);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
   /* this chunk of code is REALLY bad, should maybe get the ordering from the factor matrix,
-     then those that don't support orderings will handle their cases themselfs. */
+     then those that don't support orderings will handle their cases themselves. */
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQDENSE,&isseqdense);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIDENSE,&ismpidense);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIAIJCUSP,&ismpiaijcusp);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIAIJCUSPARSE,&ismpiaijcusparse);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&ismpibaij);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPISBAIJ,&ismpisbaij);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATELEMENTAL,&iselemental);CHKERRQ(ierr);
-  if (isseqdense || ismpidense || ismpiaij || ismpibaij || ismpisbaij || ismpiaijcusp || ismpiaijcusparse || iselemental) {
+  if (isseqdense || ismpidense || ismpibaij || ismpisbaij || ismpiaijcusp || ismpiaijcusparse || iselemental) {
     ierr = MatGetLocalSize(mat,&m,PETSC_NULL);CHKERRQ(ierr);
     /*
        These matrices only give natural ordering
     */
-    ierr = ISCreateStride(PETSC_COMM_SELF,0,m,1,cperm);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,0,m,1,rperm);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,cperm);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,rperm);CHKERRQ(ierr);
     ierr = ISSetIdentity(*cperm);CHKERRQ(ierr);
     ierr = ISSetIdentity(*rperm);CHKERRQ(ierr);
     ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);

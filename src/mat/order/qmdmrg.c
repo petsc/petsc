@@ -33,7 +33,7 @@
 /*****************************************************************/
 #undef __FUNCT__
 #define __FUNCT__ "SPARSEPACKqmdmrg"
-PetscErrorCode SPARSEPACKqmdmrg(PetscInt *xadj, PetscInt *adjncy, PetscInt *deg,
+PetscErrorCode SPARSEPACKqmdmrg(const PetscInt *xadj,const PetscInt *adjncy, PetscInt *deg,
 	PetscInt *qsize, PetscInt *qlink, PetscInt *marker, PetscInt *deg0,
 	PetscInt *nhdsze, PetscInt *nbrhd, PetscInt *rchset, PetscInt *ovrlp)
 {

@@ -1227,13 +1227,10 @@ informs the user that all rows from \trl{first_row} to
 \trl{last_row-1} (since the value returned in \trl{last_row} is one more
 than the global index of the last local row) will be stored on the local process.
 
-In the sparse matrix implementations, once the assembly routines have been 
-called, the matrices are compressed and can be used for matrix-vector
-multiplication, etc.
-Inserting new values into the matrix at this point will be expensive, 
-since it requires copies and possible memory allocation. Thus, whenever 
-possible one should completely set the values in the matrices before 
-calling the final assembly routines. 
+In the sparse matrix implementations, once the assembly routines have been called, the matrices are compressed and can be used for matrix-vector multiplication, etc.
+Any space for preallocated nonzeros that was not filled by a call to MatSetValues() or a related routine is compressed out by assembling with \trl{MAT_FINAL_ASSEMBLY}.
+If you intend to use that extra space later, be sure to insert explicit zeros before assembling with \trl{MAT_FINAL_ASSEMBLY} so the space will not be compressed out.
+Once the matrix has been assembled, inserting new values will be expensive since it will require copies and possible memory allocation.
 
 If one wishes to repeatedly assemble matrices that retain the same
 nonzero pattern (such as within a nonlinear or time-dependent

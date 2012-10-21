@@ -113,16 +113,16 @@ void PETSC_STDCALL   matgetvecs_(Mat *mat,Vec *right,Vec *left, int *ierr )
 void PETSC_STDCALL matgetrowij_(Mat *B,PetscInt *shift,PetscBool  *sym,PetscBool  *blockcompressed,PetscInt *n,PetscInt *ia,size_t *iia,
                                 PetscInt *ja,size_t *jja,PetscBool  *done,PetscErrorCode *ierr)
 {
-  PetscInt *IA,*JA;
+  const PetscInt *IA,*JA;
   *ierr = MatGetRowIJ(*B,*shift,*sym,*blockcompressed,n,&IA,&JA,done);if (*ierr) return;
-  *iia  = PetscIntAddressToFortran(ia,IA);
-  *jja  = PetscIntAddressToFortran(ja,JA);
+  *iia  = PetscIntAddressToFortran(ia,(PetscInt*)IA);
+  *jja  = PetscIntAddressToFortran(ja,(PetscInt*)JA);
 }
 
 void PETSC_STDCALL matrestorerowij_(Mat *B,PetscInt *shift,PetscBool  *sym,PetscBool  *blockcompressed, PetscInt *n,PetscInt *ia,size_t *iia,
                                     PetscInt *ja,size_t *jja,PetscBool  *done,PetscErrorCode *ierr)
 {
-  PetscInt *IA = PetscIntAddressFromFortran(ia,*iia),*JA = PetscIntAddressFromFortran(ja,*jja);
+  const PetscInt *IA = PetscIntAddressFromFortran(ia,*iia),*JA = PetscIntAddressFromFortran(ja,*jja);
   *ierr = MatRestoreRowIJ(*B,*shift,*sym,*blockcompressed,n,&IA,&JA,done);
 }
 

@@ -6,12 +6,12 @@
 /*
      Prototypes for Minpack coloring routines
 */
-extern PetscErrorCode MINPACKdegr(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
+extern PetscErrorCode MINPACKdegr(PetscInt*,const PetscInt *,const PetscInt *,const PetscInt *,const PetscInt *,PetscInt *,PetscInt *);
 extern PetscErrorCode MINPACKdsm(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
-extern PetscErrorCode MINPACKido(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
+extern PetscErrorCode MINPACKido(PetscInt*,PetscInt *,const PetscInt *,const PetscInt *,const PetscInt *,const PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
 extern PetscErrorCode MINPACKnumsrt(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
-extern PetscErrorCode MINPACKseq(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
+extern PetscErrorCode MINPACKseq(PetscInt*,const PetscInt *,const PetscInt *,const PetscInt *,const PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
 extern PetscErrorCode MINPACKsetr(PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
-extern PetscErrorCode MINPACKslo(PetscInt*,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
+extern PetscErrorCode MINPACKslo(PetscInt*,const PetscInt *,const PetscInt *,const PetscInt *,const PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
 
 #endif

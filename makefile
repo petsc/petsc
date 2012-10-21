@@ -77,14 +77,14 @@ info:
 	-@echo "-----------------------------------------"
 	-@echo "Using C/C++ compile: ${PETSC_COMPILE}"
 	-@if [ "${PETSC_LANGUAGE}" = "CONLY" -a "${MPICC_SHOW}" != "" ]; then \
-             echo -e mpicc -show: ${MPICC_SHOW}; \
+             printf  "mpicc -show: %b\n" "${MPICC_SHOW}"; \
 	  elif [ "${PETSC_LANGUAGE}" = "CXXONLY" -a "${MPICXX_SHOW}" != "" ]; then \
-             echo -e mpicxx -show: ${MPICXX_SHOW}; \
+             printf "mpicxx -show: %b\n" "${MPICXX_SHOW}"; \
           fi;
 	-@if [ "${FC}" != "" ]; then \
 	   echo "Using Fortran compile: ${PETSC_FCOMPILE}";\
            if [ "${MPIFC_SHOW}" != "" ]; then \
-             echo -e mpif90 -show: ${MPIFC_SHOW}; \
+             printf "mpif90 -show: %b\n" "${MPIFC_SHOW}"; \
            fi; \
          fi
 	-@if [ "${CUDAC}" != "" ]; then \

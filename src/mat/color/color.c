@@ -12,7 +12,7 @@
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringDegreeSequence_Minpack"
-PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m,PetscInt *cja, PetscInt *cia, PetscInt *rja, PetscInt *ria, PetscInt **seq)
+PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m,const PetscInt *cja,const PetscInt *cia,const PetscInt *rja,const PetscInt *ria,PetscInt **seq)
 {
   PetscInt       *work;
   PetscErrorCode ierr;
@@ -56,7 +56,8 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
-  PetscInt        *list,*work,clique,*ria,*rja,*cia,*cja,*seq,*coloring,n;
+  PetscInt        *list,*work,clique,*seq,*coloring,n;
+  const PetscInt  *ria,*rja,*cia,*cja;
   PetscInt        ncolors,i;
   PetscBool       done;
   Mat             mat_seq = mat;
@@ -143,7 +144,8 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
-  PetscInt        *list,*work,*ria,*rja,*cia,*cja,*seq,*coloring,n;
+  PetscInt        *list,*work,*seq,*coloring,n;
+  const PetscInt  *ria,*rja,*cia,*cja;
   PetscInt        n1, none,ncolors,i;
   PetscBool       done;
   Mat             mat_seq = mat;
@@ -232,7 +234,8 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
-  PetscInt        *list,*work,clique,*ria,*rja,*cia,*cja,*seq,*coloring,n;
+  PetscInt        *list,*work,clique,*seq,*coloring,n;
+  const PetscInt  *ria,*rja,*cia,*cja;
   PetscInt        ncolors,i;
   PetscBool       done;
   Mat             mat_seq = mat;

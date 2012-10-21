@@ -10,8 +10,8 @@
 PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,nrows,N,j,k,m,*rows,*ci,*cj,ncols,col;
-  const PetscInt *is;
+  PetscInt       i,n,nrows,N,j,k,m,ncols,col;
+  const PetscInt *is,*rows,*ci,*cj;
   PetscInt       nis = iscoloring->n,*rowhit,*columnsforrow,l,bs = 1;
   IS             *isa;
   PetscBool      done,flg = PETSC_FALSE;

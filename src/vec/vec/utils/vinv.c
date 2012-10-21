@@ -1403,7 +1403,7 @@ PetscErrorCode  VecAbs(Vec v)
 
   Level: beginner
 
-  Note: This function does not yet support parallel Index Sets
+  Note: This function does not yet support parallel Index Sets with non-local permutations
 
 .seealso: MatPermute()
 .keywords: vec, permute
@@ -1412,24 +1412,25 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool  inv)
 {
   PetscScalar    *array, *newArray;
   const PetscInt *idx;
-  PetscInt       i;
+  PetscInt       i,rstart,rend;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
   ierr = ISGetIndices(row, &idx);CHKERRQ(ierr);
   ierr = VecGetArray(x, &array);CHKERRQ(ierr);
   ierr = PetscMalloc(x->map->n*sizeof(PetscScalar), &newArray);CHKERRQ(ierr);
 #ifdef PETSC_USE_DEBUG
   for (i = 0; i < x->map->n; i++) {
-    if ((idx[i] < 0) || (idx[i] >= x->map->n)) {
+    if ((idx[i] < rstart) || (idx[i] >= rend)) {
       SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "Permutation index %D is out of bounds: %D", i, idx[i]);
     }
   }
 #endif
   if (!inv) {
-    for (i = 0; i < x->map->n; i++) newArray[i]      = array[idx[i]];
+    for (i = 0; i < x->map->n; i++) newArray[i] = array[idx[i]-rstart];
   } else {
-    for (i = 0; i < x->map->n; i++) newArray[idx[i]] = array[i];
+    for (i = 0; i < x->map->n; i++) newArray[idx[i]-rstart] = array[i];
   }
   ierr = VecRestoreArray(x, &array);CHKERRQ(ierr);
   ierr = ISRestoreIndices(row, &idx);CHKERRQ(ierr);

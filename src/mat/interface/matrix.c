@@ -4492,14 +4492,16 @@ PetscErrorCode  MatIsHermitianTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *fl
    Input Parameters:
 +  mat - the matrix to permute
 .  row - row permutation, each processor supplies only the permutation for its rows
--  col - column permutation, each processor needs the entire column permutation, that is
-         this is the same size as the total number of columns in the matrix. It can often
-         be obtained with ISAllGather() on the row permutation
+-  col - column permutation, each processor supplies only the permutation for its columns
 
    Output Parameters:
 .  B - the permuted matrix
 
    Level: advanced
+
+   Note:
+   The index sets map from row/col of permuted matrix to row/col of original matrix.
+   The index sets should be on the same communicator as Mat and have the same local sizes.
 
    Concepts: matrices^permuting
 
@@ -4728,6 +4730,10 @@ static PetscInt MatAssemblyEnd_InUse = 0;
    in MatSetValues(); use MAT_FINAL_ASSEMBLY for the final assembly before
    using the matrix.
 
+   Space for preallocated nonzeros that is not filled by a call to MatSetValues() or a related routine are compressed
+   out by assembly. If you intend to use that extra space on a subsequent assembly, be sure to insert explicit zeros
+   before MAT_FINAL_ASSEMBLY so the space is not compressed out.
+
    Level: beginner
 
    Concepts: matrices^assembling
@@ -4904,6 +4910,10 @@ PetscErrorCode MatView_Private(Mat mat)
    Use MAT_FLUSH_ASSEMBLY when switching between ADD_VALUES and INSERT_VALUES
    in MatSetValues(); use MAT_FINAL_ASSEMBLY for the final assembly before
    using the matrix.
+
+   Space for preallocated nonzeros that is not filled by a call to MatSetValues() or a related routine are compressed
+   out by assembly. If you intend to use that extra space on a subsequent assembly, be sure to insert explicit zeros
+   before MAT_FINAL_ASSEMBLY so the space is not compressed out.
 
    Level: beginner
 
@@ -6757,7 +6767,7 @@ $    call  MatGetRowIJF90(mat,shift,symmetric,inodecompressed,n,ia,ja,done,ierr)
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ(), MatSeqAIJGetArray()
 @*/
-PetscErrorCode  MatGetRowIJ(Mat mat,PetscInt shift,PetscBool  symmetric,PetscBool  inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscBool  *done)
+PetscErrorCode MatGetRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *n,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
 {
   PetscErrorCode ierr;
 
@@ -6805,7 +6815,7 @@ PetscErrorCode  MatGetRowIJ(Mat mat,PetscInt shift,PetscBool  symmetric,PetscBoo
 
 .seealso: MatGetRowIJ(), MatRestoreColumnIJ()
 @*/
-PetscErrorCode  MatGetColumnIJ(Mat mat,PetscInt shift,PetscBool  symmetric,PetscBool  inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscBool  *done)
+PetscErrorCode MatGetColumnIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *n,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
 {
   PetscErrorCode ierr;
 
@@ -6852,7 +6862,7 @@ PetscErrorCode  MatGetColumnIJ(Mat mat,PetscInt shift,PetscBool  symmetric,Petsc
 
 .seealso: MatGetRowIJ(), MatRestoreColumnIJ()
 @*/
-PetscErrorCode  MatRestoreRowIJ(Mat mat,PetscInt shift,PetscBool  symmetric,PetscBool  inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscBool  *done)
+PetscErrorCode MatRestoreRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *n,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
 {
   PetscErrorCode ierr;
 
@@ -6899,7 +6909,7 @@ PetscErrorCode  MatRestoreRowIJ(Mat mat,PetscInt shift,PetscBool  symmetric,Pets
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ()
 @*/
-PetscErrorCode  MatRestoreColumnIJ(Mat mat,PetscInt shift,PetscBool  symmetric,PetscBool  inodecompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscBool  *done)
+PetscErrorCode MatRestoreColumnIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *n,const PetscInt *ia[],const PetscInt *ja[],PetscBool  *done)
 {
   PetscErrorCode ierr;
 
@@ -8191,6 +8201,7 @@ PetscErrorCode  MatFactorInfoInitialize(MatFactorInfo *info)
 PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
+  PetscBool viatranspose;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -8213,7 +8224,18 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
     SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"Matrix of type <%s> does not support PtAP",mattype);
   }
   ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
-  ierr = (*A->ops->ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
+  viatranspose = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(((PetscObject)A)->prefix,"-matptap_viatranspose",&viatranspose,PETSC_NULL);CHKERRQ(ierr);
+  if (viatranspose) {
+    Mat AP,Pt;
+    ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,PETSC_DECIDE,&AP);CHKERRQ(ierr);
+    ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
+    ierr = MatMatMult(Pt,AP,scall,fill,C);CHKERRQ(ierr);
+    ierr = MatDestroy(&Pt);CHKERRQ(ierr);
+    ierr = MatDestroy(&AP);CHKERRQ(ierr);
+  } else {
+    ierr = (*A->ops->ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

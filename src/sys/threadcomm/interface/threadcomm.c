@@ -18,7 +18,9 @@ PetscLogEvent ThreadComm_RunKernel, ThreadComm_Barrier;
 #define __FUNCT__ "PetscGetNCores"
 /*@
   PetscGetNCores - Gets the number of available cores on the system
-		
+
+  Not Collective
+
   Level: developer
 
   Notes
@@ -60,6 +62,8 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
   PetscCommGetThreadComm - Gets the thread communicator
                            associated with the MPI communicator
 
+  Not Collective
+
   Input Parameters:
 . comm - the MPI communicator
 
@@ -77,18 +81,15 @@ PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
   PetscErrorCode ierr;
   PetscMPIInt    flg;
   void*          ptr;
-  MPI_Comm       icomm;
 
   PetscFunctionBegin;
   if (comm == comm_cached) {
     *tcommp = tcomm_cached;
     PetscFunctionReturn(0);
   }
-  ierr = PetscCommDuplicate(comm,&icomm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MPI_Attr_get(icomm,Petsc_ThreadComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_ThreadComm_keyval,&ptr,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"MPI_Comm does not have a thread communicator");
   *tcommp = (PetscThreadComm)ptr;
-  ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
   comm_cached = comm;
   tcomm_cached = *tcommp;
   PetscFunctionReturn(0);
@@ -98,6 +99,8 @@ PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
 #define __FUNCT__ "PetscThreadCommCreate"
 /*
    PetscThreadCommCreate - Allocates a thread communicator object
+
+   Not Collective
 
    Input Parameters:
 .  comm - the MPI communicator
@@ -134,6 +137,8 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
 #define __FUNCT__ "PetscThreadCommDestroy"
 /*
   PetscThreadCommDestroy - Frees a thread communicator object
+
+  Not Collective
 
   Input Parameters:
 . tcomm - the PetscThreadComm object
@@ -178,7 +183,7 @@ PetscErrorCode PetscThreadCommDestroy(PetscThreadComm *tcomm)
 /*@C
    PetscThreadCommView - view a thread communicator
 
-   Collective
+   Collective on comm
 
    Input Parameters:
 +  comm - MPI communicator
@@ -435,6 +440,8 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,PetscThreadCommType 
 /*  PetscThreadCommBarrier - Apply a barrier on the thread communicator
                              associated with the MPI communicator
 
+    Not collective
+
     Input Parameters:
 .   comm - the MPI communicator
 
@@ -615,6 +622,8 @@ PetscErrorCode PetscThreadCommGetInts(MPI_Comm comm,PetscInt **val1, PetscInt **
 /*@C
    PetscThreadCommRunKernel - Runs the kernel using the thread communicator
                               associated with the MPI communicator
+
+   Not Collective
 
    Input Parameters:
 +  comm  - the MPI communicator
@@ -1154,20 +1163,14 @@ EXTERN_C_END
 PetscErrorCode PetscThreadCommDetach(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  MPI_Comm       icomm;
   PetscMPIInt    flg;
   void           *ptr;
 
   PetscFunctionBegin;
-  ierr = PetscCommDuplicate(comm,&icomm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MPI_Attr_get(icomm,Petsc_ThreadComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_ThreadComm_keyval,&ptr,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MPI_Attr_delete(icomm,Petsc_ThreadComm_keyval);CHKERRQ(ierr);
+    ierr = MPI_Attr_delete(comm,Petsc_ThreadComm_keyval);CHKERRQ(ierr);
   }
-  ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
-  /* Release reference from PetscThreadCommAttach */
-  ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1180,16 +1183,14 @@ PetscErrorCode PetscThreadCommDetach(MPI_Comm comm)
 PetscErrorCode PetscThreadCommAttach(MPI_Comm comm,PetscThreadComm tcomm)
 {
   PetscErrorCode ierr;
-  MPI_Comm       icomm;
   PetscMPIInt    flg;
   void           *ptr;
 
   PetscFunctionBegin;
-  ierr = PetscCommDuplicate(comm,&icomm,PETSC_NULL);CHKERRQ(ierr); /* This extra reference is released in PetscThreadCommDetach */
-  ierr = MPI_Attr_get(icomm,Petsc_ThreadComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_ThreadComm_keyval,&ptr,&flg);CHKERRQ(ierr);
   if (!flg) {
     tcomm->refct++;
-    ierr = MPI_Attr_put(icomm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
+    ierr = MPI_Attr_put(comm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

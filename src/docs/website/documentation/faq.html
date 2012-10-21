@@ -145,6 +145,7 @@
         <li><a href="#start_in_debugger-doesnotwork">How do I debug if -start_in_debugger does not work on my machine?</a></li>
         <li><a href="#debug-hang">How can I see where my code is hanging?</a></li>
         <li><a href="#debug-inspect">How can I inspect Vec and Mat values when in the debugger?</a></li>
+        <li><a href="#debug-fp">How can I find the cause of floating point exceptions like not-a-number (NaN) or infinity?</a></li>
         <li><a href="#libimf">Error while loading shared libraries: libimf.so: cannot open shared object file: No such file or directory.</a></li>
         <li><a href="#objecttypenotset">What does Object Type not set: Argument # n mean?</a></li>
         <li><a href="#split">What does Error detected in PetscSplitOwnership() about "sum of local lengths ...": mean?</a></li>
@@ -1605,6 +1606,15 @@ PETSC_COMM_WORLD = NewComm;
         Mat. See the routine TV_display_type() in src/vec/vec/interface/vector.c
         for an example of how these may be written. Contact us if you would like
         to add more.
+      </p>
+
+      <h3><a name="debug-fp">How can I find the cause of floating point exceptions like not-a-number (NaN) or infinity?</a></h3>
+      <p>
+        The best way to locate floating point exceptions is to use a debugger.
+        On supported architectures (including Linux and glibc-based systems), just run in a debugger and pass -fp_trap to the PETSc application.
+        This will activate signaling exceptions and the debugger will break on the line that first divides by zero or otherwise generates an exceptions.
+        Without a debugger, running with -fp_trap in debug mode will only identify the function in which the error occurred, but not the line or the type of exception.
+        If -fp_trap is not supported on your architecture, consult the documentation for your debugger since there is likely a way to have it catch exceptions.
       </p>
 
       <h3><a name="libimf">Error while loading shared libraries: libimf.so: cannot open shared object file: No such file or directory.</a></h3>
