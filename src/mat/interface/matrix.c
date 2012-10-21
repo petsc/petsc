@@ -4730,6 +4730,10 @@ static PetscInt MatAssemblyEnd_InUse = 0;
    in MatSetValues(); use MAT_FINAL_ASSEMBLY for the final assembly before
    using the matrix.
 
+   Space for preallocated nonzeros that is not filled by a call to MatSetValues() or a related routine are compressed
+   out by assembly. If you intend to use that extra space on a subsequent assembly, be sure to insert explicit zeros
+   before MAT_FINAL_ASSEMBLY so the space is not compressed out.
+
    Level: beginner
 
    Concepts: matrices^assembling
@@ -4906,6 +4910,10 @@ PetscErrorCode MatView_Private(Mat mat)
    Use MAT_FLUSH_ASSEMBLY when switching between ADD_VALUES and INSERT_VALUES
    in MatSetValues(); use MAT_FINAL_ASSEMBLY for the final assembly before
    using the matrix.
+
+   Space for preallocated nonzeros that is not filled by a call to MatSetValues() or a related routine are compressed
+   out by assembly. If you intend to use that extra space on a subsequent assembly, be sure to insert explicit zeros
+   before MAT_FINAL_ASSEMBLY so the space is not compressed out.
 
    Level: beginner
 
