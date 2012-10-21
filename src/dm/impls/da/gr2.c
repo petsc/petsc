@@ -217,10 +217,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     zctx.k = displayfields[i];
     if (useports) {
       ierr = PetscDrawViewPortsSet(ports,i);CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerDrawGetDraw(viewer,i,&draw);CHKERRQ(ierr);
-      ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
-    }
+    } 
 
     /*
         Determine the min and max color in plot

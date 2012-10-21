@@ -41,6 +41,7 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
     ierr = PetscSleep(dpause);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  if (dpause != -1) PetscFunctionReturn(0);
 
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
   ierr = PetscDrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
