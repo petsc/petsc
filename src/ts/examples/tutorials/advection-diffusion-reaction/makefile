@@ -10,7 +10,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
-DIRS            = phasefield advection-diffusion-reaction
+DIRS            = phasefield
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
@@ -23,13 +23,13 @@ ex1f: ex1f.o  chkopts
 	-${FLINKER} -o ex1f ex1f.o  ${PETSC_TS_LIB}
 	${RM} ex1f.o
 
-ex2: ex2.o chkopts
-	-${CLINKER} -o ex2 ex2.o ${PETSC_TS_LIB}
-	${RM} ex2.o
+ex2: ex2.o  chkopts
+	-${CLINKER} -o ex2 ex2.o  ${PETSC_TS_LIB}
+	${RM} ex2.o 
 
-ex2f: ex2f.o chkopts
-	-${FLINKER} -o ex2f ex2f.o ${PETSC_TS_LIB}
-	${RM} ex2f.o
+ex2f: ex2f.o  chkopts
+	-${FLINKER} -o ex2f ex2f.o   ${PETSC_TS_LIB}
+	${RM} ex2f.o 
 
 ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_TS_LIB}
