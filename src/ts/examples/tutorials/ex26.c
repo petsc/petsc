@@ -81,7 +81,6 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo*,PetscReal,Field**,Field**,Field
 typedef struct {
   PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
   PetscBool    parabolic;                    /* allow a transient term corresponding roughly to artificial compressibility */
-  PetscBool    draw_contours;                /* flag - 1 indicates drawing contours */
   PetscReal    cfl_initial;                  /* CFL for first time step */
 } AppCtx;
 
@@ -115,14 +114,12 @@ int main(int argc,char **argv)
   user.lidvelocity   = 1.0/(mx*my);
   user.prandtl       = 1.0;
   user.grashof       = 1.0;
-  user.draw_contours = PETSC_FALSE;
   user.parabolic     = PETSC_FALSE;
   user.cfl_initial   = 50.;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Driven cavity/natural convection options","");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-lidvelocity","Lid velocity, related to Reynolds number","",user.lidvelocity,&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-prandtl","Ratio of viscous to thermal diffusivity","",user.prandtl,&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-grashof","Ratio of bouyant to viscous forces","",user.grashof,&user.grashof,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-draw_contours","Plot the solution with contours","",user.draw_contours,&user.draw_contours,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-parabolic","Relax incompressibility to make the system parabolic instead of differential-algebraic","",user.parabolic,&user.parabolic,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-cfl_initial","Advective CFL for the first time step","",user.cfl_initial,&user.cfl_initial,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -161,13 +158,6 @@ int main(int argc,char **argv)
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,steps);CHKERRQ(ierr);
-
-  /*
-     Visualize solution
-  */
-  if (user.draw_contours) {
-    ierr = VecView(X,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

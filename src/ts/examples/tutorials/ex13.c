@@ -7,9 +7,9 @@ static char help[] = "Time-dependent PDE in 2d. Simplified from ex7.c for illust
            u(x,y) = 0.0           if r >= .125
 
     mpiexec -n 2 ./ex13 -da_grid_x 40 -da_grid_y 40 -ts_max_steps 2 -use_coloring -snes_monitor -ksp_monitor
-         ./ex13 -use_coloring -drawcontours
-         ./ex13 -use_coloring -drawcontours -draw_pause -1
-         mpiexec -n 2 ./ex13 -drawcontours -ts_type sundials -ts_sundials_monitor_steps
+         ./ex13 -use_coloring 
+         ./ex13 -use_coloring  -draw_pause -1
+         mpiexec -n 2 ./ex13 -ts_type sundials -ts_sundials_monitor_steps
 */
 
 #include <petscdmda.h>
@@ -19,16 +19,12 @@ static char help[] = "Time-dependent PDE in 2d. Simplified from ex7.c for illust
    User-defined data structures and routines
 */
 typedef struct {
-   PetscBool drawcontours;   /* flag - 1 indicates drawing contours */
-} MonitorCtx;
-typedef struct {
   PetscReal      c;
 } AppCtx;
 
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode FormInitialSolution(DM,Vec,void*);
-extern PetscErrorCode MyTSMonitor(TS,PetscInt,PetscReal,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -41,7 +37,6 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   DM             da;
   PetscReal      ftime,dt;
-  MonitorCtx     usermonitor;       /* user-defined monitor context */
   AppCtx         user;              /* user-defined work context */
   PetscBool      coloring=PETSC_FALSE;
 
@@ -60,9 +55,6 @@ int main(int argc,char **argv)
 
   /* Initialize user application context */
   user.c = -30.0;
-
-  usermonitor.drawcontours = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -86,7 +78,6 @@ int main(int argc,char **argv)
 
   ftime = 1.0;
   ierr = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MyTSMonitor,&usermonitor,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -291,22 +282,4 @@ PetscErrorCode FormInitialSolution(DM da,Vec U,void* ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MyTSMonitor"
-PetscErrorCode MyTSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ptr)
-{
-  PetscErrorCode ierr;
-  PetscReal      norm;
-  MPI_Comm       comm;
-  MonitorCtx     *user = (MonitorCtx*)ptr;
-
-  PetscFunctionBegin;
-  ierr = VecNorm(v,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"timestep %D: time %G, solution norm %G\n",step,ptime,norm);CHKERRQ(ierr);
-  if (user->drawcontours){
-    ierr = VecView(v,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 

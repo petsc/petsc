@@ -16,8 +16,8 @@ static char help[] = "Time-dependent PDE in 2d. Modified from ex13.c for illustr
    At y=0, y=1: du(x,y,t)/dy = 0
 
    mpiexec -n 2 ./ex15 -da_grid_x 40 -da_grid_y 40 -ts_max_steps 2 -snes_monitor -ksp_monitor
-         ./ex15 -da_grid_x 40 -da_grid_y 40 -drawcontours -draw_pause .1 -boundary 1
-         ./ex15 -da_grid_x 40 -da_grid_y 40 -drawcontours -draw_pause .1 -boundary 1 -Jtype 2 -nstencilpts 9
+         ./ex15 -da_grid_x 40 -da_grid_y 40  -draw_pause .1 -boundary 1 -ts_monitor_solution
+         ./ex15 -da_grid_x 40 -da_grid_y 40  -draw_pause .1 -boundary 1 -Jtype 2 -nstencilpts 9
 
 */
 
@@ -27,10 +27,6 @@ static char help[] = "Time-dependent PDE in 2d. Modified from ex13.c for illustr
 /*
    User-defined data structures and routines
 */
-/* MonitorCtx: used by MyTSMonitor() */
-typedef struct {
-   PetscBool drawcontours;
-} MonitorCtx;
 
 /* AppCtx: used by FormIFunction() and FormIJacobian() */
 typedef struct {
@@ -44,7 +40,6 @@ typedef struct {
 extern PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 extern PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode FormInitialSolution(Vec,void*);
-extern PetscErrorCode MyTSMonitor(TS,PetscInt,PetscReal,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -57,7 +52,6 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   DM             da;
   PetscReal      dt,ftime;
-  MonitorCtx     usermonitor;       /* user-defined monitor context */
   AppCtx         user;              /* user-defined work context */
   SNES           snes;
   PetscInt       Jtype; /* Jacobian type
@@ -75,9 +69,6 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nstencilpts",&user.nstencilpts,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-boundary",&user.boundary,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
-
-  usermonitor.drawcontours = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -106,7 +97,6 @@ int main(int argc,char **argv)
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,r,FormIFunction,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MyTSMonitor,&usermonitor,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -362,24 +352,4 @@ PetscErrorCode FormInitialSolution(Vec U,void* ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MyTSMonitor"
-PetscErrorCode MyTSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ptr)
-{
-  PetscErrorCode ierr;
-  PetscReal      norm,vmax,vmin;
-  MPI_Comm       comm;
-  MonitorCtx     *user = (MonitorCtx*)ptr;
-
-  PetscFunctionBegin;
-  ierr = VecNorm(v,NORM_1,&norm);CHKERRQ(ierr);
-  ierr = VecMax(v,PETSC_NULL,&vmax);CHKERRQ(ierr);
-  ierr = VecMin(v,PETSC_NULL,&vmin);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"timestep %D: time %G, solution norm %G, max %G, min %G\n",step,ptime,norm,vmax,vmin);CHKERRQ(ierr);
-  if (user->drawcontours){
-    ierr = VecView(v,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 

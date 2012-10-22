@@ -117,8 +117,6 @@ int main(int argc,char **argv)
   appctx.norm_max = 0.0;
   ierr = PetscPrintf(PETSC_COMM_SELF,"Solving a linear TS problem on 1 processor\n");CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-time_steps_max",&time_steps_max,PETSC_NULL);CHKERRQ(ierr);
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

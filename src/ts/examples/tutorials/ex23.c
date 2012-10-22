@@ -3,8 +3,6 @@ Runtime options include:\n\
 -xmin <xmin>\n\
 -xmax <xmax>\n\
 -ymin <ymin>\n\
--T <T>, where <T> is the end time for the time domain simulation\n\
--dt <dt>,where <dt> is the step size for the numerical integration\n\
 -gamma <gamma>\n\
 -theta_c <theta_c>\n\
 -implicit <0,1> treat theta_c*M_0*u explicitly/implicitly\n\n";
@@ -314,13 +312,11 @@ PetscErrorCode GetParams(AppCtx* user)
   user->gamma = 3.2E-4; user->theta_c = 1;
   user->implicit = 0;
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor",&user->tsmonitor,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor",&user->tsmonitor,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-gamma",&user->gamma,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-theta_c",&user->theta_c,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-implicit",&user->implicit,&flg);CHKERRQ(ierr);
