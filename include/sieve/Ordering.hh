@@ -5,7 +5,7 @@
 #include <sieve/Partitioner.hh>
 #endif
 
-PetscErrorCode SPARSEPACKgenrcm(PetscInt *neqns,PetscInt *xadj,PetscInt *adjncy,PetscInt *perm,PetscInt *mask,PetscInt *xls);
+PetscErrorCode SPARSEPACKgenrcm(PetscInt const *neqns,PetscInt const *xadj,PetscInt const *adjncy,PetscInt *perm,PetscInt *mask,PetscInt *xls);
 
 namespace ALE {
   template<typename Alloc_ = malloc_allocator<int> >
