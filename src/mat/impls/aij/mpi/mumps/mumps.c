@@ -850,7 +850,7 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS* mumps)
   PetscFunctionReturn(0);
 }
 
-/* Note the Petsc r and c permutations are ignored */
+/* Note Petsc r(=c) permutation is used when lu->id.ICNTL(7)==1 with centralized assembled matrix input; otherwise r and c are ignored */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_AIJMUMPS"
 PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
@@ -888,7 +888,13 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
         lu->id.a = lu->val;
 #endif
       }
-      if (lu->id.ICNTL(7) == 1){ /* use user-provide matrix ordering */
+      if (lu->id.ICNTL(7) == 1){ /* use user-provide matrix ordering - assuming r = c ordering */
+        /*
+        PetscBool      flag;
+        ierr = ISEqual(r,c,&flag);CHKERRQ(ierr);
+        if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"row_perm != col_perm");
+        ierr = ISView(r,PETSC_VIEWER_STDOUT_SELF); 
+         */
         if (!lu->myid) {
           const PetscInt *idx;
           PetscInt i,*perm_in;
