@@ -2,6 +2,7 @@
 /* gennd.f -- translated by f2c (version 19931217).*/
 
 #include <petscsys.h>
+#include <../src/mat/order/order.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "SPARSEPACKrevrse"
@@ -63,7 +64,6 @@ PetscErrorCode SPARSEPACKgennd(const PetscInt *neqns,const PetscInt *xadj,const 
 
     /* Local variables */
     PetscInt nsep,root,i;
-    extern PetscErrorCode SPARSEPACKfndsep(const PetscInt*,const PetscInt *,const PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,PetscInt *);
     PetscInt num;
 
     PetscFunctionBegin;

@@ -2,6 +2,7 @@
 /* genqmd.f -- translated by f2c (version 19931217).*/
 
 #include <petscsys.h>
+#include <../src/mat/order/order.h>
 
 /******************************************************************/
 /***********    GENQMD ..... QUOT MIN DEGREE ORDERING    **********/
@@ -52,12 +53,7 @@ PetscErrorCode SPARSEPACKgenqmd(const PetscInt *neqns,const PetscInt *xadj,const
 
     /* Local variables */
     PetscInt ndeg, irch, node, nump1, j, inode;
-    extern PetscErrorCode SPARSEPACKqmdqt(const PetscInt*,const PetscInt *,const PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
     PetscInt ip, np, mindeg, search;
-    extern PetscErrorCode SPARSEPACKqmdrch(const PetscInt*, const PetscInt *,const PetscInt *,
-	      PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *),
-	   SPARSEPACKqmdupd(const PetscInt*, const PetscInt *, const PetscInt *, PetscInt *, PetscInt *,
-	      PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
     PetscInt nhdsze, nxnode, rchsze, thresh, num;
 
 /*       INITIALIZE DEGREE VECTOR AND OTHER WORKING VARIABLES.   */

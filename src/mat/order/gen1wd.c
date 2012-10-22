@@ -2,9 +2,7 @@
 /* gen1wd.f -- translated by f2c (version 19931217).*/
 
 #include <petscsys.h>
-
-extern PetscErrorCode SPARSEPACKfn1wd(const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
-extern PetscErrorCode SPARSEPACKrevrse(const PetscInt*,PetscInt*),SPARSEPACKrootls(const PetscInt*,const PetscInt*,const PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+#include <../src/mat/order/order.h>
 
 /*****************************************************************/
 /***********     GEN1WD ..... GENERAL ONE-WAY DISSECTION  ********/
