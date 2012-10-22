@@ -96,7 +96,6 @@ typedef struct {
   CoarseProblemType          coarse_problem_type;
   CoarseCommunicationsType   coarse_communications_type;
   PetscInt                   coarsening_ratio;
-  PetscInt                   active_procs;
   PetscInt                   current_level;
   PetscInt                   max_levels;
   /* For verbose output of some bddc data structures */
