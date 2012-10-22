@@ -677,7 +677,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
 #if defined(PETSC_USE_COMPLEX)
       ierr = PetscViewerASCIIPrintf(viewer,"%18.16e %18.16e\n",PetscRealPart(xv[i]),PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
 #else
-      ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",xv[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",(double)xv[i]);CHKERRQ(ierr);
 #endif
     }
   } else if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL) {
@@ -760,7 +760,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
         }
 #if !defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIIPrintf(viewer,"%G",xv[i*bs+b]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%g",xv[i*bs+b]);CHKERRQ(ierr);
 #endif
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -778,7 +778,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
         }
 #if !defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIIPrintf(viewer,"%G",xv[i*bs+b]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%g",xv[i*bs+b]);CHKERRQ(ierr);
 #endif
       }
       for (b=bs; b<3; b++) {
@@ -816,14 +816,14 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
       }
 #if defined(PETSC_USE_COMPLEX)
       if (PetscImaginaryPart(xv[i]) > 0.0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%G + %G i\n",PetscRealPart(xv[i]),PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%g + %g i\n",PetscRealPart(xv[i]),PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
       } else if (PetscImaginaryPart(xv[i]) < 0.0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%G - %G i\n",PetscRealPart(xv[i]),-PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%g - %g i\n",PetscRealPart(xv[i]),-PetscImaginaryPart(xv[i]));CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"%G\n",PetscRealPart(xv[i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%g\n",PetscRealPart(xv[i]));CHKERRQ(ierr);
       }
 #else
-      ierr = PetscViewerASCIIPrintf(viewer,"%G\n",xv[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%g\n",(double)xv[i]);CHKERRQ(ierr);
 #endif
     }
   }

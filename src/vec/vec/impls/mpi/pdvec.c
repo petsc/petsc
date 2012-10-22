@@ -70,7 +70,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",PetscRealPart(xarray[i]));CHKERRQ(ierr);
         }
 #else
-        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",xarray[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",(double)xarray[i]);CHKERRQ(ierr);
 #endif
       }
       /* receive and print messages */
@@ -191,7 +191,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
           if (b > 0) {
             ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
           }
-          ierr = PetscViewerASCIIPrintf(viewer,"%G",PetscRealPart(xarray[i*bs+b]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%g",PetscRealPart(xarray[i*bs+b]));CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
       }
@@ -203,7 +203,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
             if (b > 0) {
               ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
             }
-            ierr = PetscViewerASCIIPrintf(viewer,"%G",PetscRealPart(values[i*bs+b]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"%g",PetscRealPart(values[i*bs+b]));CHKERRQ(ierr);
           }
           ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
         }
@@ -222,7 +222,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
           if (b > 0) {
             ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
           }
-          ierr = PetscViewerASCIIPrintf(viewer,"%G",PetscRealPart(xarray[i*bs+b]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%g",PetscRealPart(xarray[i*bs+b]));CHKERRQ(ierr);
         }
         for (b=bs; b<3; b++) {
           ierr = PetscViewerASCIIPrintf(viewer," 0.0");CHKERRQ(ierr);
@@ -237,7 +237,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
             if (b > 0) {
               ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
             }
-            ierr = PetscViewerASCIIPrintf(viewer,"%G",PetscRealPart(values[i*bs+b]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"%g",PetscRealPart(values[i*bs+b]));CHKERRQ(ierr);
           }
           for (b=bs; b<3; b++) {
             ierr = PetscViewerASCIIPrintf(viewer," 0.0");CHKERRQ(ierr);
@@ -293,14 +293,14 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         }
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(xarray[i]) > 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%G + %G i\n",PetscRealPart(xarray[i]),PetscImaginaryPart(xarray[i]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%g + %g i\n",PetscRealPart(xarray[i]),PetscImaginaryPart(xarray[i]));CHKERRQ(ierr);
         } else if (PetscImaginaryPart(xarray[i]) < 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%G - %G i\n",PetscRealPart(xarray[i]),-PetscImaginaryPart(xarray[i]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%g - %g i\n",PetscRealPart(xarray[i]),-PetscImaginaryPart(xarray[i]));CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerASCIIPrintf(viewer,"%G\n",PetscRealPart(xarray[i]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%g\n",PetscRealPart(xarray[i]));CHKERRQ(ierr);
         }
 #else
-        ierr = PetscViewerASCIIPrintf(viewer,"%G\n",xarray[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%g\n",(double)xarray[i]);CHKERRQ(ierr);
 #endif
       }
       /* receive and print messages */
@@ -316,14 +316,14 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
           }
 #if defined(PETSC_USE_COMPLEX)
           if (PetscImaginaryPart(values[i]) > 0.0) {
-            ierr = PetscViewerASCIIPrintf(viewer,"%G + %G i\n",PetscRealPart(values[i]),PetscImaginaryPart(values[i]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"%g + %g i\n",PetscRealPart(values[i]),PetscImaginaryPart(values[i]));CHKERRQ(ierr);
           } else if (PetscImaginaryPart(values[i]) < 0.0) {
-            ierr = PetscViewerASCIIPrintf(viewer,"%G - %G i\n",PetscRealPart(values[i]),-PetscImaginaryPart(values[i]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"%g - %g i\n",PetscRealPart(values[i]),-PetscImaginaryPart(values[i]));CHKERRQ(ierr);
           } else {
-            ierr = PetscViewerASCIIPrintf(viewer,"%G\n",PetscRealPart(values[i]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"%g\n",PetscRealPart(values[i]));CHKERRQ(ierr);
           }
 #else
-          ierr = PetscViewerASCIIPrintf(viewer,"%G\n",values[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%g\n",(double)values[i]);CHKERRQ(ierr);
 #endif
         }
       }
