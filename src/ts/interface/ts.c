@@ -159,7 +159,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       ierr = TSMonitorSet(ts,TSMonitorLGKSPIterations,ctx,(PetscErrorCode (*)(void**))TSMonitorLGCtxDestroy);CHKERRQ(ierr);
     }
     opt  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",&opt);CHKERRQ(ierr);
     if (opt) {
       TSMonitorDrawCtx ctx;
       PetscInt         howoften = 1;
@@ -169,7 +169,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       ierr = TSMonitorSet(ts,TSMonitorDrawSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
     }
     opt  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ts_monitor_draw_error","Monitor error graphically","TSMonitorDrawError",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_monitor_draw_error","Monitor error graphically","TSMonitorDrawError",&opt);CHKERRQ(ierr);
     if (opt) {
       TSMonitorDrawCtx ctx;
       PetscInt         howoften = 1;
@@ -2693,6 +2693,8 @@ PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec x,
     }
     ierr = VecCopy(x,ictx->initialsolution);CHKERRQ(ierr);
   }
+  if (!(((ictx->howoften > 0) && (!(step % ictx->howoften))) || ((ictx->howoften == -1) && (step == -1)))) PetscFunctionReturn(0);
+
   if (ictx->showinitial) {
     PetscReal pause;
     ierr = PetscViewerDrawGetPause(ictx->viewer,&pause);CHKERRQ(ierr);
@@ -2796,6 +2798,7 @@ PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec x,voi
   Vec              work;
 
   PetscFunctionBegin;
+  if (!(((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && (step == -1)))) PetscFunctionReturn(0);
   ierr = VecDuplicate(x,&work);CHKERRQ(ierr);
   ierr = TSComputeSolutionFunction(ts,ptime,work);CHKERRQ(ierr);
   ierr = VecAXPY(work,-1.0,x);CHKERRQ(ierr);
