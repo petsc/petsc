@@ -8,6 +8,26 @@ typedef struct {
   Vec work1,work2;
 } Mat_SchurComplement;
 
+#undef __FUNCT__
+#define __FUNCT__ "MatGetVecs_SchurComplement"
+PetscErrorCode MatGetVecs_SchurComplement(Mat N,Vec *right,Vec *left)
+{
+  Mat_SchurComplement  *Na = (Mat_SchurComplement*)N->data;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  if (Na->D) {
+    ierr = MatGetVecs(Na->D,right,left);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  if (right) {
+    ierr = MatGetVecs(Na->B,right,PETSC_NULL);CHKERRQ(ierr);
+  }
+  if (left) {
+    ierr = MatGetVecs(Na->C,PETSC_NULL,left);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_SchurComplement"
@@ -586,6 +606,7 @@ PetscErrorCode  MatCreate_SchurComplement(Mat N)
   N->data = (void*) Na;
 
   N->ops->destroy        = MatDestroy_SchurComplement;
+  N->ops->getvecs        = MatGetVecs_SchurComplement;
   N->ops->view           = MatView_SchurComplement;
   N->ops->mult           = MatMult_SchurComplement;
   N->ops->multadd        = MatMultAdd_SchurComplement;
