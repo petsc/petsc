@@ -264,6 +264,7 @@ PetscErrorCode DMDestroy_Complex(DM dm)
     ierr = PetscFree(next);CHKERRQ(ierr);
     next = tmp;
   }
+  ierr = ISDestroy(&mesh->subpointMap);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->globalVertexNumbers);CHKERRQ(ierr);
   ierr = ISDestroy(&mesh->globalCellNumbers);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
@@ -6896,13 +6897,14 @@ PetscErrorCode DMComplexInsertFace_Private(DM dm, DM subdm, PetscInt numFaceVert
 PetscErrorCode DMComplexCreateSubmesh(DM dm, const char label[], DM *subdm)
 {
   MPI_Comm        comm = ((PetscObject) dm)->comm;
+  DM_Complex     *submesh;
   PetscBool       boundaryFaces = PETSC_FALSE;
   PetscSection    coordSection, subCoordSection;
   Vec             coordinates, subCoordinates;
   PetscScalar    *coords, *subCoords;
   IS              labelIS;
   const PetscInt *subVertices;
-  PetscInt       *subVerticesActive;
+  PetscInt       *subVerticesActive, *tmpPoints;
   PetscInt       *subCells = PETSC_NULL;
   PetscInt        numSubVertices, numSubVerticesActive, firstSubVertex, numSubCells = 0, maxSubCells = 0, numOldSubCells;
   PetscInt       *face, *subface, maxConeSize, numSubFaces = 0, firstSubFace, newFacePoint, nFV = 0, coordSize;
@@ -7099,6 +7101,16 @@ PetscErrorCode DMComplexCreateSubmesh(DM dm, const char label[], DM *subdm)
   ierr = DMSetCoordinatesLocal(*subdm, subCoordinates);CHKERRQ(ierr);
 
   ierr = DMComplexSetVTKCellHeight(*subdm, 1);CHKERRQ(ierr);
+  /* Create map from submesh points to original mesh points */
+  submesh = (DM_Complex *) (*subdm)->data;
+  ierr = PetscMalloc((numSubCells+numSubVerticesActive) * sizeof(PetscInt), &tmpPoints);CHKERRQ(ierr);
+  for(c = 0; c < numSubCells; ++c) {
+    tmpPoints[c] = subCells[c];
+  }
+  for(v = numSubCells; v < numSubCells+numSubVerticesActive; ++v) {
+    tmpPoints[v] = subVerticesActive[v-numSubCells];
+  }
+  ierr = ISCreateGeneral(comm, numSubCells+numSubVerticesActive, tmpPoints, PETSC_OWN_POINTER, &submesh->subpointMap);CHKERRQ(ierr);
 
   ierr = PetscFree(subCells);CHKERRQ(ierr);
   ierr = PetscFree(subVerticesActive);CHKERRQ(ierr);
@@ -7173,5 +7185,19 @@ PetscErrorCode DMComplexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
     ierr = DMComplexCreateNumbering_Private(dm, vStart, vEnd, dm->sf, &mesh->globalVertexNumbers);CHKERRQ(ierr);
   }
   *globalVertexNumbers = mesh->globalVertexNumbers;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetSubpointMap"
+PetscErrorCode DMComplexGetSubpointMap(DM dm, IS *subpointMap)
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(subpointMap, 2);
+  *subpointMap = mesh->subpointMap;
   PetscFunctionReturn(0);
 }

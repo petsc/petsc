@@ -950,6 +950,223 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetPointLayout"
+PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
+{
+  PetscInt       pStart, pEnd, p, localSize = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt dof;
+
+    ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
+    if (dof > 0) {++localSize;}
+  }
+  ierr = PetscLayoutCreate(comm, layout);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(*layout, localSize);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(*layout, 1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(*layout);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetValueLayout"
+PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
+{
+  PetscInt       pStart, pEnd, p, localSize = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt dof;
+
+    ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
+    if (dof > 0) {localSize += dof;}
+  }
+  ierr = PetscLayoutCreate(comm, layout);CHKERRQ(ierr);
+  ierr = PetscLayoutSetLocalSize(*layout, localSize);CHKERRQ(ierr);
+  ierr = PetscLayoutSetBlockSize(*layout, 1);CHKERRQ(ierr);
+  ierr = PetscLayoutSetUp(*layout);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetOffset"
+/*@
+  PetscSectionGetOffset - Return the offset into an array or local Vec for the dof associated with the given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+- point - the point
+
+  Output Parameter:
+. offset - the offset
+
+  Level: intermediate
+
+.seealso: PetscSectionGetFieldOffset(), PetscSectionCreate()
+@*/
+PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *offset)
+{
+  PetscFunctionBegin;
+  if ((point < s->atlasLayout.pStart) || (point >= s->atlasLayout.pEnd)) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %d should be in [%d, %d)", point, s->atlasLayout.pStart, s->atlasLayout.pEnd);
+  }
+  *offset = s->atlasOff[point - s->atlasLayout.pStart];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionSetOffset"
+/*@
+  PetscSectionSetOffset - Set the offset into an array or local Vec for the dof associated with the given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+- offset - the offset
+
+  Note: The user usually does not call this function, but uses PetscSectionSetUp()
+
+  Level: intermediate
+
+.seealso: PetscSectionGetFieldOffset(), PetscSectionCreate(), PetscSectionSetUp()
+@*/
+PetscErrorCode PetscSectionSetOffset(PetscSection s, PetscInt point, PetscInt offset)
+{
+  PetscFunctionBegin;
+  if ((point < s->atlasLayout.pStart) || (point >= s->atlasLayout.pEnd)) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %d should be in [%d, %d)", point, s->atlasLayout.pStart, s->atlasLayout.pEnd);
+  }
+  s->atlasOff[point - s->atlasLayout.pStart] = offset;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetFieldOffset"
+/*@
+  PetscSectionGetFieldOffset - Return the offset into an array or local Vec for the dof associated with the given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+- field - the field
+
+  Output Parameter:
+. offset - the offset
+
+  Level: intermediate
+
+.seealso: PetscSectionGetOffset(), PetscSectionCreate()
+@*/
+PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt *offset)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if ((field < 0) || (field >= s->numFields)) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
+  }
+  ierr = PetscSectionGetOffset(s->field[field], point, offset);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionSetFieldOffset"
+/*@
+  PetscSectionSetFieldOffset - Set the offset into an array or local Vec for the dof associated with the given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+. field - the field
+- offset - the offset
+
+  Note: The user usually does not call this function, but uses PetscSectionSetUp()
+
+  Level: intermediate
+
+.seealso: PetscSectionGetOffset(), PetscSectionCreate(), PetscSectionSetUp()
+@*/
+PetscErrorCode PetscSectionSetFieldOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt offset)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if ((field < 0) || (field >= s->numFields)) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
+  }
+  ierr = PetscSectionSetOffset(s->field[field], point, offset);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetFieldPointOffset"
+/* This gives the offset on a point of the field, ignoring constraints */
+PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt *offset)
+{
+  PetscInt       off, foff;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if ((field < 0) || (field >= s->numFields)) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
+  }
+  ierr = PetscSectionGetOffset(s, point, &off);CHKERRQ(ierr);
+  ierr = PetscSectionGetOffset(s->field[field], point, &foff);CHKERRQ(ierr);
+  *offset = foff - off;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetOffsetRange"
+/*@
+  PetscSectionGetOffsetRange - Return the full range of offsets [start, end)
+
+  Not collective
+
+  Input Parameter:
+. s - the PetscSection
+
+  Output Parameters:
++ start - the minimum offset
+- end   - one more than the maximum offset
+
+  Level: intermediate
+
+.seealso: PetscSectionGetOffset(), PetscSectionCreate()
+@*/
+PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, PetscInt *end)
+{
+  PetscInt       os = s->atlasOff[0], oe = s->atlasOff[0], pStart, pEnd, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  for(p = 0; p < pEnd-pStart; ++p) {
+    PetscInt dof = s->atlasDof[p], off = s->atlasOff[p];
+
+    if (off >= 0) {
+      os = PetscMin(os, off);
+      oe = PetscMax(oe, off+dof);
+    }
+  }
+  if (start) *start = os;
+  if (end)   *end   = oe;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionCreateSubsection"
@@ -1031,161 +1248,76 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetPointLayout"
-PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
+#define __FUNCT__ "PetscSectionCreateSubmeshSection"
+PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs)
 {
-  PetscInt       pStart, pEnd, p, localSize = 0;
-  PetscErrorCode ierr;
+  const PetscInt *points, *indices;
+  PetscInt        numFields, f, numSubpoints, pStart, pEnd, p, subp;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    PetscInt dof;
+  ierr = PetscSectionGetNumFields(s, &numFields);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(s->atlasLayout.comm, subs);CHKERRQ(ierr);
+  if (numFields) {ierr = PetscSectionSetNumFields(*subs, numFields);CHKERRQ(ierr);}
+  for(f = 0; f < numFields; ++f) {
+    const char *name;
+    PetscInt    numComp;
 
+    ierr = PetscSectionGetFieldName(s, f, &name);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldName(*subs, f, name);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldComponents(s, f, &numComp);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(*subs, f, numComp);CHKERRQ(ierr);
+  }
+  /* For right now, we do not try to squeeze the subchart */
+  ierr = ISGetSize(subpointMap, &numSubpoints);CHKERRQ(ierr);
+  ierr = ISGetIndices(subpointMap, &points);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(*subs, 0, numSubpoints);CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    PetscInt dof, cdof, fdof, cfdof;
+
+    ierr = PetscFindInt(p, numSubpoints, points, &subp);CHKERRQ(ierr);
+    if (subp < 0) continue;
+    for(f = 0; f < numFields; ++f) {
+      ierr = PetscSectionGetFieldDof(s, p, f, &fdof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(*subs, subp, f, fdof);CHKERRQ(ierr);
+      ierr = PetscSectionGetFieldConstraintDof(s, p, f, &cfdof);CHKERRQ(ierr);
+      if (cfdof) {ierr = PetscSectionSetFieldConstraintDof(*subs, subp, f, cfdof);CHKERRQ(ierr);}
+    }
     ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
-    if (dof > 0) {++localSize;}
+    ierr = PetscSectionSetDof(*subs, subp, dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
+    if (cdof) {ierr = PetscSectionSetConstraintDof(*subs, subp, cdof);CHKERRQ(ierr);}
   }
-  ierr = PetscLayoutCreate(comm, layout);CHKERRQ(ierr);
-  ierr = PetscLayoutSetLocalSize(*layout, localSize);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(*layout, 1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(*layout);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
+  ierr = PetscSectionSetUp(*subs);CHKERRQ(ierr);
+  /* Change offsets to original offsets */
+  for(p = pStart; p < pEnd; ++p) {
+    PetscInt off, foff;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetValueLayout"
-PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
-{
-  PetscInt       pStart, pEnd, p, localSize = 0;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    PetscInt dof;
-
-    ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
-    if (dof > 0) {localSize += dof;}
+    ierr = PetscFindInt(p, numSubpoints, points, &subp);CHKERRQ(ierr);
+    if (subp < 0) continue;
+    for(f = 0; f < numFields; ++f) {
+      ierr = PetscSectionGetFieldOffset(s, p, f, &foff);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldOffset(*subs, subp, f, foff);CHKERRQ(ierr);
+    }
+    ierr = PetscSectionGetOffset(s, p, &off);CHKERRQ(ierr);
+    ierr = PetscSectionSetOffset(*subs, subp, off);CHKERRQ(ierr);
   }
-  ierr = PetscLayoutCreate(comm, layout);CHKERRQ(ierr);
-  ierr = PetscLayoutSetLocalSize(*layout, localSize);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(*layout, 1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(*layout);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
+  /* Copy constraint indices */
+  for(subp = 0; subp < numSubpoints; ++subp) {
+    PetscInt cdof;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetOffset"
-/*@
-  PetscSectionGetOffset - Return the offset into an arary or local Vec for the dof associated with the given point.
-
-  Not collective
-
-  Input Parameters:
-+ s - the PetscSection
-- point - the point
-
-  Output Parameter:
-. offset - the offset
-
-  Level: intermediate
-
-.seealso: PetscSectionGetFieldOffset(), PetscSectionCreate()
-@*/
-PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *offset)
-{
-  PetscFunctionBegin;
-  if ((point < s->atlasLayout.pStart) || (point >= s->atlasLayout.pEnd)) {
-    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %d should be in [%d, %d)", point, s->atlasLayout.pStart, s->atlasLayout.pEnd);
-  }
-  *offset = s->atlasOff[point - s->atlasLayout.pStart];
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetFieldOffset"
-/*@
-  PetscSectionGetFieldOffset - Return the offset into an arary or local Vec for the dof associated with the given point.
-
-  Not collective
-
-  Input Parameters:
-+ s - the PetscSection
-. point - the point
-- field - the field
-
-  Output Parameter:
-. offset - the offset
-
-  Level: intermediate
-
-.seealso: PetscSectionGetOffset(), PetscSectionCreate()
-@*/
-PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt *offset)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if ((field < 0) || (field >= s->numFields)) {
-    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
-  }
-  ierr = PetscSectionGetOffset(s->field[field], point, offset);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetFieldPointOffset"
-/* This gives the offset on a point of the field, ignoring constraints */
-PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt *offset)
-{
-  PetscInt       off, foff;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if ((field < 0) || (field >= s->numFields)) {
-    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, s->numFields);
-  }
-  ierr = PetscSectionGetOffset(s, point, &off);CHKERRQ(ierr);
-  ierr = PetscSectionGetOffset(s->field[field], point, &foff);CHKERRQ(ierr);
-  *offset = foff - off;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscSectionGetOffsetRange"
-/*@
-  PetscSectionGetOffsetRange - Return the full range of offsets [start, end)
-
-  Not collective
-
-  Input Parameter:
-. s - the PetscSection
-
-  Output Parameters:
-+ start - the minimum offset
-- end   - one more than the maximum offset
-
-  Level: intermediate
-
-.seealso: PetscSectionGetOffset(), PetscSectionCreate()
-@*/
-PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, PetscInt *end)
-{
-  PetscInt       os = s->atlasOff[0], oe = s->atlasOff[0], pStart, pEnd, p;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    PetscInt dof = s->atlasDof[p], off = s->atlasOff[p];
-
-    if (off >= 0) {
-      os = PetscMin(os, off);
-      oe = PetscMax(oe, off+dof);
+    ierr = PetscSectionGetConstraintDof(*subs, subp, &cdof);CHKERRQ(ierr);
+    if (cdof) {
+      for(f = 0; f < numFields; ++f) {
+        ierr = PetscSectionGetFieldConstraintIndices(s, points[subp], f, &indices);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldConstraintIndices(*subs, subp, f, indices);CHKERRQ(ierr);
+      }
+      ierr = PetscSectionGetConstraintIndices(s, points[subp], &indices);CHKERRQ(ierr);
+      ierr = PetscSectionSetConstraintIndices(*subs, subp, indices);CHKERRQ(ierr);
     }
   }
-  if (start) *start = os;
-  if (end)   *end   = oe;
+  ierr = ISRestoreIndices(subpointMap, &points);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
