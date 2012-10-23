@@ -2,7 +2,6 @@
 /* fn1wd.f -- translated by f2c (version 19931217).*/
 
 #include <../src/mat/order/order.h>
-extern PetscErrorCode SPARSEPACKfnroot(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 
 /*****************************************************************/
 /********     FN1WD ..... FIND ONE-WAY DISSECTORS        *********/
@@ -31,10 +30,11 @@ extern PetscErrorCode SPARSEPACKfnroot(PetscInt*, PetscInt *, PetscInt *, PetscI
 /*****************************************************************/
 #undef __FUNCT__
 #define __FUNCT__ "SPARSEPACKfn1wd"
-PetscErrorCode SPARSEPACKfn1wd(PetscInt *root, PetscInt *xadj, PetscInt *adjncy,
+PetscErrorCode SPARSEPACKfn1wd(PetscInt *root,const PetscInt *inxadj,const PetscInt *adjncy,
                                PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *nlvl, PetscInt *
                                xls, PetscInt *ls)
 {
+    PetscInt *xadj = (PetscInt*)inxadj; /* Used as temporary and reset */
     /* System generated locals */
     PetscInt  i__1, i__2;
 

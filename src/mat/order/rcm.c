@@ -2,6 +2,7 @@
 /* rcm.f -- translated by f2c (version 19931217).*/
 
 #include <petscsys.h>
+#include <../src/mat/order/order.h>
 
 /*****************************************************************/
 /*********     RCM ..... REVERSE CUTHILL-MCKEE ORDERING   *******/
@@ -47,8 +48,6 @@ PetscErrorCode SPARSEPACKrcm(const PetscInt *root,const PetscInt *xadj,const Pet
 
     /* Local variables */
     PetscInt node, fnbr, lnbr, i, j, k, l, lperm, jstop, jstrt;
-    extern PetscErrorCode SPARSEPACKdegree(const PetscInt*,const PetscInt *,const PetscInt *,
-	    PetscInt *, PetscInt *, PetscInt *, PetscInt *);
     PetscInt lbegin, lvlend, nbr;
 
 /*       FIND THE DEGREES OF THE NODES IN THE                  */

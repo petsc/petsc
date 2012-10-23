@@ -2,6 +2,7 @@
 /* qmdupd.f -- translated by f2c (version 19931217).*/
 
 #include <petscsys.h>
+#include <../src/mat/order/order.h>
 
 /******************************************************************/
 /***********     QMDUPD ..... QUOT MIN DEG UPDATE      ************/
@@ -31,8 +32,8 @@
 /******************************************************************/
 #undef __FUNCT__
 #define __FUNCT__ "SPARSEPACKqmdupd"
-PetscErrorCode SPARSEPACKqmdupd(const PetscInt *xadj,const PetscInt *adjncy, PetscInt *nlist,
-	PetscInt *list, PetscInt *deg, PetscInt *qsize, PetscInt *qlink, PetscInt *
+PetscErrorCode SPARSEPACKqmdupd(const PetscInt *xadj,const PetscInt *adjncy,const PetscInt *nlist,
+	const PetscInt *list, PetscInt *deg, PetscInt *qsize, PetscInt *qlink, PetscInt *
 	marker, PetscInt *rchset, PetscInt *nbrhd)
 {
     /* System generated locals */
@@ -40,10 +41,6 @@ PetscErrorCode SPARSEPACKqmdupd(const PetscInt *xadj,const PetscInt *adjncy, Pet
 
     /* Local variables */
     PetscInt inhd, irch, node, mark, j, inode, nabor, jstop, jstrt, il;
-    extern PetscErrorCode SPARSEPACKqmdrch(const PetscInt*,const PetscInt *,const PetscInt *,
-	    PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *),
-	     SPARSEPACKqmdmrg(const PetscInt*,const PetscInt *,const PetscInt *, PetscInt *, PetscInt *,
-	    PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
     PetscInt nhdsze, rchsze, deg0, deg1;
 
 /*       FIND ALL ELIMINATED SUPERNODES THAT ARE ADJACENT*/

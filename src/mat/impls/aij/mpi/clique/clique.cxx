@@ -216,7 +216,13 @@ PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *
   }
 
   /* Numeric factorization */
-  cliq::LDL( *cliq->info, *cliq->frontTree, cliq::LDL_1D );
+  cliq::LDL( *cliq->info, *cliq->frontTree, cliq::LDL_1D);
+  //L.frontType = cliq::SYMM_2D;
+
+  // refactor
+  //cliq::ChangeFrontType( *cliq->frontTree, cliq::LDL_2D );
+  //*(cliq->frontTree.frontType) = cliq::LDL_2D;
+  //cliq::LDL( *cliq->info, *cliq->frontTree, cliq::LDL_2D );
 
   cliq->matstruc = SAME_NONZERO_PATTERN;
   F->assembled   = PETSC_TRUE;
