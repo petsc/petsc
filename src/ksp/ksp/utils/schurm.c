@@ -619,7 +619,7 @@ PetscErrorCode  MatCreate_SchurComplement(Mat N)
 }
 EXTERN_C_END
 
-static PetscBool  KSPMatRegisterAllCalled;
+static PetscBool KSPMatRegisterAllCalled;
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPMatRegisterAll"
@@ -639,7 +639,8 @@ PetscErrorCode KSPMatRegisterAll(const char path[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  KSPRegisterAllCalled = PETSC_TRUE;
+  if (KSPMatRegisterAllCalled) PetscFunctionReturn(0);
+  KSPMatRegisterAllCalled = PETSC_TRUE;
   ierr = MatRegisterDynamic(MATSCHURCOMPLEMENT,path,"MatCreate_SchurComplement",MatCreate_SchurComplement); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
