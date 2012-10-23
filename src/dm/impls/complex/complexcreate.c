@@ -524,6 +524,8 @@ PetscErrorCode DMCreate_Complex(DM dm)
 
   mesh->facesTmp         = PETSC_NULL;
 
+  mesh->subpointMap      = PETSC_NULL;
+
   mesh->labels               = PETSC_NULL;
   mesh->globalVertexNumbers  = PETSC_NULL;
   mesh->globalCellNumbers    = PETSC_NULL;
