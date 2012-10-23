@@ -302,10 +302,10 @@ PetscErrorCode PetscThreadCommGetNThreads(MPI_Comm comm,PetscInt *nthreads)
 
    Input Parameters:
 +  tcomm - the thread communicator
-.  affinities - array of core affinity for threads
+-  affinities - array of core affinity for threads
 
    Options Database keys:
-   -thread_affinities <list of thread affinities>
+.  -threadcomm_affinities <list of thread affinities>
 
    Level: developer
 
