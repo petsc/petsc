@@ -139,10 +139,13 @@ PETSC_EXTERN PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetExactFinalTime(TS,PetscBool);
 
 PETSC_EXTERN PetscErrorCode TSMonitorDefault(TS,PetscInt,PetscReal,Vec,void*);
-PETSC_EXTERN PetscErrorCode TSMonitorSolution(TS,PetscInt,PetscReal,Vec,void*);
-PETSC_EXTERN PetscErrorCode TSMonitorSolutionCreate(TS,PetscViewer,void**);
-PETSC_EXTERN PetscErrorCode TSMonitorSolutionDestroy(void**);
-PETSC_EXTERN PetscErrorCode TSMonitorError(TS,PetscInt,PetscReal,Vec,void*);
+
+typedef struct _n_TSMonitorDrawCtx*  TSMonitorDrawCtx;
+PETSC_EXTERN PetscErrorCode TSMonitorDrawCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TSMonitorDrawCtx *);
+PETSC_EXTERN PetscErrorCode TSMonitorDrawCtxDestroy(TSMonitorDrawCtx*);
+PETSC_EXTERN PetscErrorCode TSMonitorDrawSolution(TS,PetscInt,PetscReal,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSMonitorDrawError(TS,PetscInt,PetscReal,Vec,void*);
+
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionBinary(TS,PetscInt,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionVTK(TS,PetscInt,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionVTKDestroy(void*);
