@@ -231,7 +231,8 @@ static PetscErrorCode PetscDrawFlush_X(PetscDraw draw)
   if (XiWin->drw) {
     XCopyArea(XiWin->disp,XiWin->drw,XiWin->win,XiWin->gc.set,0,0,XiWin->w,XiWin->h,0,0);
   }
-  XFlush(XiWin->disp); XSync(XiWin->disp,False);
+  XFlush(XiWin->disp);
+  XSync(XiWin->disp,False);
   PetscFunctionReturn(0);
 }
 
@@ -244,7 +245,6 @@ static PetscErrorCode PetscDrawSynchronizedFlush_X(PetscDraw draw)
   PetscDraw_X*   XiWin = (PetscDraw_X*)draw->data;
 
   PetscFunctionBegin;
-  XFlush(XiWin->disp);
   if (XiWin->drw) {
     ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
     /* make sure data has actually arrived at server */
@@ -253,8 +253,8 @@ static PetscErrorCode PetscDrawSynchronizedFlush_X(PetscDraw draw)
     if (!rank) {
       XCopyArea(XiWin->disp,XiWin->drw,XiWin->win,XiWin->gc.set,0,0,XiWin->w,XiWin->h,0,0);
       XFlush(XiWin->disp);
+      XSync(XiWin->disp,False);
     }
-    XSync(XiWin->disp,False);
     ierr = MPI_Barrier(((PetscObject)draw)->comm);CHKERRQ(ierr);
   } else {
     ierr = MPI_Barrier(((PetscObject)draw)->comm);CHKERRQ(ierr);
@@ -392,7 +392,8 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *
   if (y_user) *y_user = draw->coor_yl + ((1.0 - ((double)py)/((double)win->h)-draw->port_yl))*(draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
 
   XUndefineCursor(win->disp,win->win);
-  XFlush(win->disp); XSync(win->disp,False);
+  XFlush(win->disp); 
+  XSync(win->disp,False);
   PetscFunctionReturn(0);
 }
 
