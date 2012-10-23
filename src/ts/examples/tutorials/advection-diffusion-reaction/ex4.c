@@ -7,6 +7,7 @@ static char help[] = "Chemo-taxis Problems from Mathematical Biology.\n";
         rho_t = 
         c_t   = 
 
+     Further discusson on Page 134 and in 2d on Page 409
 */
 
 /*
@@ -29,6 +30,7 @@ typedef struct {
 
 typedef struct {
   PetscReal epsilon,delta,alpha,beta,gamma,kappa,lambda,mu,cstar;
+  PetscBool upwind;
 } AppCtx;
 
 /*
@@ -62,6 +64,9 @@ int main(int argc,char **argv)
   appctx.lambda  = 1.0;
   appctx.mu      = 100.;
   appctx.cstar   = .2;
+  appctx.upwind  = PETSC_TRUE;
+  ierr = PetscOptionsGetScalar(PETSC_NULL,"-delta",&appctx.delta,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-upwind",&appctx.upwind,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -139,7 +144,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
   PetscErrorCode ierr;
   PetscInt       i,Mx,xs,xm;
   PetscReal      hx,sx;
-  PetscScalar    rho,c,rhoxx,cxx,cx,rhox;
+  PetscScalar    rho,c,rhoxx,cxx,cx,rhox,kcxrhox;
   Field          *x,*f,*xdot;
   Vec            localX;
 
@@ -172,14 +177,14 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   if (!xs) {
-    f[0].rho = /*xdot[0].rho; */ x[0].rho - 0.0;
-    f[0].c   = /*xdot[0].c; */ x[0].c   - 1.0;
+    f[0].rho = xdot[0].rho; /* x[0].rho - 0.0; */
+    f[0].c   = xdot[0].c; /* x[0].c   - 1.0; */
     xs++;
     xm--;
   }
   if (xs+xm == Mx) {
-    f[Mx-1].rho = /*xdot[Mx-1].rho; */ x[Mx-1].rho - 1.0;
-    f[Mx-1].c   = /*xdot[Mx-1].c; */  x[Mx-1].c   - 0.0;
+    f[Mx-1].rho = xdot[Mx-1].rho; /* x[Mx-1].rho - 1.0; */
+    f[Mx-1].c   = xdot[Mx-1].c;  /* x[Mx-1].c   - 0.0;  */
     xm--;
   }
 
@@ -188,13 +193,19 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
   */
   for (i=xs; i<xs+xm; i++) {
     rho       = x[i].rho;
-    rhox      = .5*(x[i+1].rho - x[i-1].rho)/hx;
     rhoxx     = (-2.0*rho + x[i-1].rho + x[i+1].rho)*sx;
     c         = x[i].c;
-    cx        = .5*(x[i+1].c - x[i-1].c)/hx;
     cxx       = (-2.0*c + x[i-1].c + x[i+1].c)*sx;
-    f[i].rho = xdot[i].rho - appctx->epsilon*rhoxx + appctx->kappa*(cxx*rho + cx*rhox) - appctx->mu*rho*(1.0 - rho)*PetscMax(0,c - appctx->cstar) + appctx->beta*rho;
-    /*f[i].rho = xdot[i].rho - appctx->epsilon*rhoxx + appctx->kappa*(cxx*rho + cx*rhox) - appctx->mu*rho*(1.0 - rho)*(c - appctx->cstar) + appctx->beta*rho;*/
+
+    if (!appctx->upwind) {
+      rhox      = .5*(x[i+1].rho - x[i-1].rho)/hx;
+      cx        = .5*(x[i+1].c - x[i-1].c)/hx;
+      kcxrhox   = appctx->kappa*(cxx*rho + cx*rhox);
+    } else {
+      kcxrhox   = appctx->kappa*((x[i+1].c - x[i].c)*x[i+1].rho - (x[i].c - x[i-1].c)*x[i].rho)*sx;
+    }
+
+    f[i].rho = xdot[i].rho - appctx->epsilon*rhoxx + kcxrhox  - appctx->mu*PetscAbsScalar(rho)*(1.0 - rho)*PetscMax(0,c - appctx->cstar) + appctx->beta*rho;
     f[i].c   = xdot[i].c - appctx->delta*cxx + appctx->lambda*c + appctx->alpha*rho*c/(appctx->gamma + c);
   }
 
