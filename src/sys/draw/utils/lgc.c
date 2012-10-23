@@ -422,6 +422,18 @@ PetscErrorCode  PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_X)
+#include <sys/types.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <setjmp.h>
+static jmp_buf PetscXIOErrorJumpBuf;
+static void PetscXIOHandler(Display *dpy)
+{
+  longjmp(PetscXIOErrorJumpBuf, 1);
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawLGDraw"
 /*@
@@ -443,10 +455,22 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
   PetscErrorCode ierr;
   int            i,j,dim = lg->dim,nopts = lg->nopts,rank,cl;
   PetscDraw      draw = lg->win;
+  PetscBool      isnull;
 
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,PETSC_DRAWLG_CLASSID,1);
+  ierr = PetscDrawIsNull(lg->win,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
+
+#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_X)
+  if (!setjmp(PetscXIOErrorJumpBuf)) XSetIOErrorHandler((XIOErrorHandler)PetscXIOHandler);
+  else {
+    XSetIOErrorHandler(PETSC_NULL);
+    ierr = PetscDrawSetType(draw,PETSC_DRAW_NULL);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+#endif
 
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
   ierr = PetscDrawClear(draw);CHKERRQ(ierr);
@@ -489,6 +513,9 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
   }
   ierr = PetscDrawFlush(lg->win);CHKERRQ(ierr);
   ierr = PetscDrawPause(lg->win);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_X)
+  XSetIOErrorHandler(PETSC_NULL);
+#endif
   PetscFunctionReturn(0);
 }
 
