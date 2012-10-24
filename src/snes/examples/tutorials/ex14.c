@@ -125,11 +125,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-fdcoloring",&coloring,PETSC_NULL);CHKERRQ(ierr);
   if (!matrix_free) {
+    ierr = DMCreateMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
     if (coloring) {
-      ierr = DMCreateMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr);
     } else {
-      ierr = DMCreateMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
     }
   }
