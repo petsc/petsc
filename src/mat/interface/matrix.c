@@ -8201,11 +8201,15 @@ PetscErrorCode  MatFactorInfoInitialize(MatFactorInfo *info)
 PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
-  PetscBool viatranspose;
+  PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*fP)(Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*ptap)(Mat,Mat,MatReuse,PetscReal,Mat*)=PETSC_NULL;
+  PetscBool      viatranspose;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
+  MatCheckPreallocated(A,1);
   if (!A->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidHeaderSpecific(P,MAT_CLASSID,2);
@@ -8213,29 +8217,42 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   MatCheckPreallocated(P,2);
   if (!P->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (P->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  PetscValidPointer(C,3);
+ 
   if (P->rmap->N!=A->cmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->rmap->N,A->cmap->N);
   if (fill < 1.0) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
-  MatCheckPreallocated(A,1);
 
-  if (!A->ops->ptap) {
-    MatType mattype;
-    ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
-    SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"Matrix of type <%s> does not support PtAP",mattype);
+  if (scall == MAT_REUSE_MATRIX) {
+    PetscValidPointer(*C,5);
+    PetscValidHeaderSpecific(*C,MAT_CLASSID,5);
+    ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
+    ierr = (*(*C)->ops->ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
+  }
+  if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
+  if (fill < 1.0) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
+
+  fA = A->ops->ptap;
+  fP = P->ops->ptap;
+  if (fP == fA) {
+    if (!fA) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatPtAP not supported for A of type %s",((PetscObject)A)->type_name);
+    ptap = fA;
+  } else {
+    /* dispatch based on the type of A and P from their PetscObject's PetscFLists. */
+    char  ptapname[256];
+    ierr = PetscStrcpy(ptapname,"MatPtAP_");CHKERRQ(ierr);
+    ierr = PetscStrcat(ptapname,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = PetscStrcat(ptapname,"_");CHKERRQ(ierr);
+    ierr = PetscStrcat(ptapname,((PetscObject)P)->type_name);CHKERRQ(ierr);
+    ierr = PetscStrcat(ptapname,"_C");CHKERRQ(ierr); /* e.g., ptapname = "MatPtAP_seqdense_seqaij_C" */
+    ierr = PetscObjectQueryFunction((PetscObject)P,ptapname,(void (**)(void))&ptap);CHKERRQ(ierr);
+    if (!ptap) {
+      /* dual dispatch using MatQueryOp */
+      ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&ptap), "MatPtAP",2,((PetscObject)A)->type_name,((PetscObject)P)->type_name); CHKERRQ(ierr);
+      if (!ptap) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatPtAP requires A, %s, to be compatible with P, %s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
+    }
   }
   ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
-  viatranspose = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)A)->prefix,"-matptap_viatranspose",&viatranspose,PETSC_NULL);CHKERRQ(ierr);
-  if (viatranspose) {
-    Mat AP,Pt;
-    ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,PETSC_DECIDE,&AP);CHKERRQ(ierr);
-    ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
-    ierr = MatMatMult(Pt,AP,scall,fill,C);CHKERRQ(ierr);
-    ierr = MatDestroy(&Pt);CHKERRQ(ierr);
-    ierr = MatDestroy(&AP);CHKERRQ(ierr);
-  } else {
-    ierr = (*A->ops->ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
-  }
+  ierr = (*ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -8559,6 +8576,7 @@ PetscErrorCode  MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
+  MatCheckPreallocated(A,1);
   if (!A->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
@@ -8577,7 +8595,6 @@ PetscErrorCode  MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
   }
   if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
   if (fill < 1.0) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
-  MatCheckPreallocated(A,1);
 
   fA = A->ops->matmult;
   fB = B->ops->matmult;
