@@ -647,7 +647,9 @@ cdef class Mat(Object):
         cdef PetscInt shift=0
         cdef PetscBool symm=symmetric
         cdef PetscBool bcmp=compressed
-        cdef PetscInt n=0, *ia=NULL, *ja=NULL
+        cdef PetscInt n=0
+        cdef const_PetscInt *ia=NULL
+        cdef const_PetscInt *ja=NULL
         cdef PetscBool done=PETSC_FALSE
         CHKERR( MatGetRowIJ(self.mat, shift, symm, bcmp, &n, &ia, &ja, &done) )
         cdef object ai=None, aj=None
@@ -659,7 +661,9 @@ cdef class Mat(Object):
     def getColumnIJ(self, symmetric=False, compressed=False):
         cdef PetscInt shift=0
         cdef PetscBool symm=symmetric, bcmp=compressed
-        cdef PetscInt n=0, *ia=NULL, *ja=NULL
+        cdef PetscInt n=0
+        cdef const_PetscInt *ia=NULL
+        cdef const_PetscInt *ja=NULL
         cdef PetscBool done=PETSC_FALSE
         CHKERR( MatGetColumnIJ(self.mat, shift, symm, bcmp, &n, &ia, &ja, &done) )
         cdef object ai=None, aj=None
