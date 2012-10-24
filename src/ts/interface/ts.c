@@ -2331,7 +2331,10 @@ struct _n_TSMonitorLGCtx {
    Options Database Key:
 +  -ts_monitor_lg_timestep - automatically sets line graph monitor
 .  -ts_monitor_lg_solution -
--  -ts_monitor_lg_error -
+.  -ts_monitor_lg_error -
+.  -ts_monitor_lg_ksp_iterations -
+.  -ts_monitor_lg_snes_iterations -
+-  -lg_indicate_data_points <true,false> - indicate the data points (at each time step) on the plot; default is true
 
    Notes:
    Use TSMonitorLGCtxDestroy() to destroy.
@@ -2347,13 +2350,17 @@ PetscErrorCode  TSMonitorLGCtxCreate(MPI_Comm comm,const char host[],const char 
 {
   PetscDraw      win;
   PetscErrorCode ierr;
+  PetscBool      flg = PETSC_TRUE;
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _n_TSMonitorLGCtx,ctx);CHKERRQ(ierr);
   ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,1,&(*ctx)->lg);CHKERRQ(ierr);
-  ierr = PetscDrawLGIndicateDataPoints((*ctx)->lg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-lg_indicate_data_points",&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscDrawLGIndicateDataPoints((*ctx)->lg);CHKERRQ(ierr);
+  }
   ierr = PetscLogObjectParent((*ctx)->lg,win);CHKERRQ(ierr);
   (*ctx)->howoften = howoften;
   PetscFunctionReturn(0);
@@ -2376,7 +2383,7 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt n,PetscReal ptime,Vec v,void *
   }
   ierr = TSGetTimeStep(ts,&y);CHKERRQ(ierr);
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
-  if (((ctx->howoften > 0) && (!(n % ctx->howoften)) || ((ctx->howoften == -1) && (n == -1)))){
+  if (((ctx->howoften > 0) && (!(n % ctx->howoften))) || ((ctx->howoften == -1) && (n == -1))){
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -2675,6 +2682,12 @@ struct _n_TSMonitorDrawCtx {
 .  ptime - current time
 -  dummy - either a viewer or PETSC_NULL
 
+   Options Database:
+.   -ts_monitor_draw_solution_initial - show initial solution as well as current solution
+
+   Notes: the initial solution and current solution are not displayed with a common axis scaling so generally the option -ts_monitor_draw_solution_initial
+       will look bad
+
    Level: intermediate
 
 .keywords: TS,  vector, monitor, view
@@ -2751,6 +2764,9 @@ PetscErrorCode  TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
    Output Patameter:
 .    ctx - the monitor context
 
+   Options Database:
+.   -ts_monitor_draw_solution_initial - show initial solution as well as current solution
+
    Level: intermediate
 
 .keywords: TS,  vector, monitor, view
@@ -2766,7 +2782,7 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
   ierr = PetscViewerDrawOpen(comm,host,label,x,y,m,n,&(*ctx)->viewer);CHKERRQ(ierr);
   (*ctx)->showinitial = PETSC_FALSE;
   (*ctx)->howoften    = howoften;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor_solution_initial",&(*ctx)->showinitial,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor_draw_solution_initial",&(*ctx)->showinitial,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4194,7 +4210,7 @@ PetscErrorCode TSMonitorLGKSPIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,v
   ierr = TSGetKSPIterations(ts,&its);CHKERRQ(ierr);
   y    = its - ctx->ksp_its;
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
-  if (((ctx->howoften > 0) && (!(n % ctx->howoften)) && (n > -1) || ((ctx->howoften == -1) && (n == -1)))){
+  if (((ctx->howoften > 0) && (!(n % ctx->howoften)) && (n > -1)) || ((ctx->howoften == -1) && (n == -1))){
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
   ctx->ksp_its = its;
