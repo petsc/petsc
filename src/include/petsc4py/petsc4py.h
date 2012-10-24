@@ -6,6 +6,9 @@
 
 #include <Python.h>
 #include <petsc.h>
+#if PETSC_VERSION_(3,2,0)
+#define PetscShell PetscFwk
+#endif
 #include "petsc4py.PETSc_api.h"
 
 static int import_petsc4py(void) {
