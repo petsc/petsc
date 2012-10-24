@@ -504,6 +504,7 @@ EXTERN_C_BEGIN
 PetscErrorCode DMCreate_Complex(DM dm)
 {
   DM_Complex    *mesh;
+  PetscInt       unit;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -525,6 +526,10 @@ PetscErrorCode DMCreate_Complex(DM dm)
   mesh->facesTmp         = PETSC_NULL;
 
   mesh->subpointMap      = PETSC_NULL;
+
+  for(unit = 0; unit < NUM_PETSC_UNITS; ++unit) {
+    mesh->scale[unit]    = 1.0;
+  }
 
   mesh->labels               = PETSC_NULL;
   mesh->globalVertexNumbers  = PETSC_NULL;

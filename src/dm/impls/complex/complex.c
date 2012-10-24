@@ -7201,3 +7201,30 @@ PetscErrorCode DMComplexGetSubpointMap(DM dm, IS *subpointMap)
   *subpointMap = mesh->subpointMap;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetScale"
+PetscErrorCode DMComplexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(scale, 3);
+  *scale = mesh->scale[unit];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexSetScale"
+PetscErrorCode DMComplexSetScale(DM dm, PetscUnit unit, PetscReal scale)
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->scale[unit] = scale;
+  PetscFunctionReturn(0);
+}

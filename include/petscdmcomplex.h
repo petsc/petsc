@@ -97,4 +97,6 @@ PETSC_EXTERN PetscErrorCode DMComplexGetVTKCellHeight(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexSetVTKCellHeight(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMComplexVTKWriteAll(PetscObject, PetscViewer);
 
+PETSC_EXTERN PetscErrorCode DMComplexGetScale(DM, PetscUnit, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMComplexSetScale(DM, PetscUnit, PetscReal);
 #endif

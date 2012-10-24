@@ -227,4 +227,6 @@ typedef struct {
   const PetscReal *basis;         /* The basis functions tabulated at the quadrature points */
   const PetscReal *basisDer;      /* The basis function derivatives tabulated at the quadrature points */
 } PetscQuadrature;
+
+typedef enum {PETSC_UNIT_LENGTH, PETSC_UNIT_MASS, PETSC_UNIT_TIME, PETSC_UNIT_CURRENT, PETSC_UNIT_TEMPERATURE, PETSC_UNIT_AMOUNT, PETSC_UNIT_LUMINOSITY, NUM_PETSC_UNITS} PetscUnit;
 #endif

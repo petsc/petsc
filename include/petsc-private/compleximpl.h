@@ -45,6 +45,7 @@ typedef struct {
   /* Output */
   PetscInt             vtkCellMax, vtkVertexMax; /* Allow exclusion of some points in the VTK output */
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
+  PetscReal            scale[NUM_PETSC_UNITS];   /* The scale for each SI unit */
 
   /* Debugging */
   PetscBool            printSetValues;
