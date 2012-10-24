@@ -116,7 +116,12 @@
 !     Representation of complex i
 !
       PetscFortranComplex PETSC_i
+#if defined(PETSC_USE_REAL_SINGLE)
+      parameter (PETSC_i = (0.0e0,1.0e0))
+#else
       parameter (PETSC_i = (0.0d0,1.0d0))
+#endif
+
 !
 !     Basic constants
 ! 
