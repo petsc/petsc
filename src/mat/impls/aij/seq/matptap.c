@@ -9,26 +9,20 @@
 #include <petscbt.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPtAPSymbolic_SeqAIJ"
-PetscErrorCode MatPtAPSymbolic_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatPtAP_SeqAIJ_SeqAIJ"
+PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!P->ops->ptapsymbolic_seqaij) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
-  ierr = (*P->ops->ptapsymbolic_seqaij)(A,P,fill,C);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPNumeric_SeqAIJ"
-PetscErrorCode MatPtAPNumeric_SeqAIJ(Mat A,Mat P,Mat C)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!P->ops->ptapnumeric_seqaij) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
-  ierr = (*P->ops->ptapnumeric_seqaij)(A,P,C);CHKERRQ(ierr);
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+    ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ(A,P,fill,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
+  }
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+  ierr = MatPtAPNumeric_SeqAIJ_SeqAIJ(A,P,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
