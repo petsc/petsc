@@ -39,7 +39,7 @@ PetscErrorCode  KSPMonitorLGResidualNormCreate(const char host[],const char labe
 
   PetscFunctionBegin;
   ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
-  ierr = PetscDrawSetType(win,PETSC_DRAW_X);CHKERRQ(ierr);
+  ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,1,draw);CHKERRQ(ierr);
   ierr = PetscDrawLGGetAxis(*draw,&axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,"Convergence","Iteration","Residual Norm");CHKERRQ(ierr);
@@ -204,7 +204,7 @@ PetscErrorCode  KSPMonitorLGTrueResidualNormCreate(MPI_Comm comm,const char host
   if (rank) { *draw = 0; PetscFunctionReturn(0);}
 
   ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
-  ierr = PetscDrawSetType(win,PETSC_DRAW_X);CHKERRQ(ierr);
+  ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
   ierr = PetscDrawLGCreate(win,2,draw);CHKERRQ(ierr);
   ierr = PetscDrawLGGetAxis(*draw,&axis);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,"Convergence","Iteration","Residual Norms");CHKERRQ(ierr);

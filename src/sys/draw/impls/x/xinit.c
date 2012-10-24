@@ -308,6 +308,12 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw)
   ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
   if (!draw->savefilename) PetscFunctionReturn(0);
+  if (draw->savefilecount == -1) {
+    /* The first PetscDrawClear() should happen before any drawing has been done, hence do not save at the first PetscDrawClear() */
+    draw->savefilecount++;
+    PetscFunctionReturn(0);
+  }
+
   if (!asv) {
     asv = create_asvisual(drawx->disp, 0, 0, 0);if (!asv) SETERRQ(((PetscObject)draw)->comm,PETSC_ERR_PLIB,"Cannot create AfterImage ASVisual");
   }

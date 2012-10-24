@@ -66,8 +66,9 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
   draw->popup   = 0;
   ierr = PetscOptionsGetReal(PETSC_NULL,"-draw_pause",&dpause,&flag);CHKERRQ(ierr);
   if (flag) draw->pause = dpause;
-  draw->savefilename = PETSC_NULL;
+  draw->savefilename  = PETSC_NULL;
   draw->savefilemovie = PETSC_FALSE;
+  draw->savefilecount = -1;
   *indraw       = draw;
   PetscFunctionReturn(0);
 }
@@ -322,7 +323,9 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 
    Concepts: X windows^graphics
 
-   Notes: Requires that PETSc be configured with the option --with-afterimage to save the images and ffmpeg must be in your path to make the movie
+   Notes: You should call this BEFORE calling PetscDrawClear() and creating your image.
+
+   Requires that PETSc be configured with the option --with-afterimage to save the images and ffmpeg must be in your path to make the movie
 
    If X windows generates an error message about X_CreateWindow() failing then Afterimage was installed without X windows. Reinstall Afterimage using the 
    ./configure flags --x-includes=/pathtoXincludes --x-libraries=/pathtoXlibraries   For example under Mac OS X Mountain Lion --x-includes=/opt/X11/include -x-libraries=/opt/X11/lib
@@ -337,7 +340,6 @@ PetscErrorCode  PetscDrawSetSave(PetscDraw draw,const char *filename,PetscBool m
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   ierr = PetscFree(draw->savefilename);CHKERRQ(ierr);
-  draw->savefilecount = 0;
   draw->savefilemovie = movie;
   if (filename && filename[0]) {
     ierr = PetscStrallocpy(filename,&draw->savefilename);CHKERRQ(ierr);
