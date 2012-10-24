@@ -302,7 +302,7 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
   if (draw->popup) {
     *popup = draw->popup;
   } else if (draw->ops->getpopup) {
-      ierr = (*draw->ops->getpopup)(draw,popup);CHKERRQ(ierr);
+    ierr = (*draw->ops->getpopup)(draw,popup);CHKERRQ(ierr);
   } else {
     *popup = PETSC_NULL;
   }

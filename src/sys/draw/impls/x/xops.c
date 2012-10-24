@@ -228,7 +228,7 @@ static PetscErrorCode PetscDrawFlush_X(PetscDraw draw)
   PetscDraw_X* XiWin = (PetscDraw_X*)draw->data;
 
   PetscFunctionBegin;
-  if (XiWin->drw) {
+  if (XiWin->drw && XiWin->win) {
     XCopyArea(XiWin->disp,XiWin->drw,XiWin->win,XiWin->gc.set,0,0,XiWin->w,XiWin->h,0,0);
   }
   XFlush(XiWin->disp);
@@ -245,7 +245,7 @@ static PetscErrorCode PetscDrawSynchronizedFlush_X(PetscDraw draw)
   PetscDraw_X*   XiWin = (PetscDraw_X*)draw->data;
 
   PetscFunctionBegin;
-  if (XiWin->drw) {
+  if (XiWin->drw && XiWin->win) {
     ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
     /* make sure data has actually arrived at server */
     XSync(XiWin->disp,False);
@@ -324,7 +324,7 @@ static PetscErrorCode PetscDrawSetDoubleBuffer_X(PetscDraw draw)
 {
   PetscDraw_X*   win = (PetscDraw_X*)draw->data;
   PetscErrorCode ierr;
-  PetscMPIInt   rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   if (win->drw) PetscFunctionReturn(0);
@@ -402,8 +402,10 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *
 static PetscErrorCode PetscDrawPause_X(PetscDraw draw)
 {
   PetscErrorCode ierr;
+  PetscDraw_X*   win = (PetscDraw_X*)draw->data;
 
   PetscFunctionBegin;
+  if (!win->win) PetscFunctionReturn(0);
   if (draw->pause > 0) PetscSleep(draw->pause);
   else if (draw->pause == -1) {
     PetscDrawButton button;
@@ -441,12 +443,14 @@ static PetscErrorCode PetscDrawSetTitle_X(PetscDraw draw,const char title[])
   size_t         len;
 
   PetscFunctionBegin;
-  XGetWMName(win->disp,win->win,&prop);
-  XFree((void*)prop.value);
-  prop.value  = (unsigned char *)title;
-  ierr        = PetscStrlen(title,&len);CHKERRQ(ierr);
-  prop.nitems = (long) len;
-  XSetWMName(win->disp,win->win,&prop);
+  if (win->win) {
+    XGetWMName(win->disp,win->win,&prop);
+    XFree((void*)prop.value);
+    prop.value  = (unsigned char *)title;
+    ierr        = PetscStrlen(title,&len);CHKERRQ(ierr);
+    prop.nitems = (long) len;
+    XSetWMName(win->disp,win->win,&prop);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -461,9 +465,11 @@ static PetscErrorCode PetscDrawResizeWindow_X(PetscDraw draw,int w,int h)
   Window         root;
 
   PetscFunctionBegin;
-  XResizeWindow(win->disp,win->win,w,h);
-  XGetGeometry(win->disp,win->win,&root,&x,&y,&ww,&hh,&border,&depth);
-  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
+  if (win->win) {
+    XResizeWindow(win->disp,win->win,w,h);
+    XGetGeometry(win->disp,win->win,&root,&x,&y,&ww,&hh,&border,&depth);
+    ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -481,6 +487,7 @@ static PetscErrorCode PetscDrawCheckResizedWindow_X(PetscDraw draw)
   XRectangle     box;
 
   PetscFunctionBegin;
+  if (!win->win) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     XFlush(win->disp);
@@ -698,9 +705,9 @@ PetscErrorCode  PetscDrawCreate_X(PetscDraw draw)
     ierr = PetscDrawXGetDisplaySize_Private(draw->display,&xmax,&ymax);
     /* if some processors fail on this and others succed then this is a problem ! */
     if (ierr) {
-       (*PetscErrorPrintf)("PETSc unable to use X windows\nproceeding without graphics\n");
-       ierr = PetscDrawSetType(draw,PETSC_DRAW_NULL);CHKERRQ(ierr);
-       PetscFunctionReturn(0);
+      (*PetscErrorPrintf)("PETSc unable to use X windows\nproceeding without graphics\n");
+      ierr = PetscDrawSetType(draw,PETSC_DRAW_NULL);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
     }
   }
 
@@ -802,7 +809,6 @@ PetscErrorCode  PetscDrawCreate_X(PetscDraw draw)
     Need barrier here so processor 0 does not destroy the window before other
     processors have completed PetscDrawXiQuickWindow()
   */
-  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_double_buffer",&flg,PETSC_NULL);CHKERRQ(ierr);
