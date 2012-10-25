@@ -408,18 +408,18 @@ PETSC_STATIC_INLINE void PetscThreadLocalDestroy(pthread_key_t key)
   pthread_key_delete(key);
 }
 #else
-PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(void*)
+PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(void* name)
 {
   return name;
 }
 
 #define PetscThreadLocalSetValue(name,value) (name = value)
 
-PETSC_STATIC_INLINE void PetscThreadLocalRegister(void*)
+PETSC_STATIC_INLINE void PetscThreadLocalRegister(void* name)
 {
 }
 
-PETSC_STATIC_INLINE void PetscThreadLocalDestroy(void*)
+PETSC_STATIC_INLINE void PetscThreadLocalDestroy(void* name)
 {
 } 
 #endif
