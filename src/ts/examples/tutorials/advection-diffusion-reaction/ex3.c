@@ -1,13 +1,18 @@
 
 static char help[] ="Model Equations for Advection-Diffusion\n";
 
-
 /*
     Page 9, Section 1.2 Model Equations for Advection-Diffusion
 
           u_t = a u_x + d u_xx
 
    The initial conditions used here different then in the book.
+
+*/
+
+/*
+     Helpful runtime linear solver options:
+           -pc_type mg -da_refine 2 -snes_monitor -ksp_monitor -ts_view   (geometric multigrid with three levels)
 
 */
 
@@ -29,7 +34,7 @@ static char help[] ="Model Equations for Advection-Diffusion\n";
 */
 typedef struct {
   PetscScalar a,d;   /* advection and diffusion strength */
-  PetscBool   upwind; 
+  PetscBool   upwind;
 } AppCtx;
 
 /*
@@ -96,7 +101,6 @@ int main(int argc,char **argv)
   ierr = TSSetRHSFunction(ts,PETSC_NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,A,A,RHSMatrixHeat,&appctx);CHKERRQ(ierr);
   ierr = TSSetSolutionFunction(ts,(PetscErrorCode (*)(TS,PetscReal,Vec,void*))Solution,&appctx);CHKERRQ(ierr);
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize timestepping solver:
@@ -242,7 +246,6 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
   ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
   return 0;
 }
-
 
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
