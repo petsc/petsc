@@ -415,11 +415,11 @@ PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(void* name)
 
 #define PetscThreadLocalSetValue(name,value) (name = value)
 
-PETSC_STATIC_INLINE void PetscThreadLocalRegister(void* name)
+PETSC_STATIC_INLINE void PetscThreadLocalRegister(PETSC_UNUSED void *name)
 {
 }
 
-PETSC_STATIC_INLINE void PetscThreadLocalDestroy(void* name)
+PETSC_STATIC_INLINE void PetscThreadLocalDestroy(PETSC_UNUSED void *name)
 {
 } 
 #endif
