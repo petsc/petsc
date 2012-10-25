@@ -1,16 +1,19 @@
 
 static char help[] = "Nonlinear Reaction Problem from Chemistry.\n";
 
-/*
+/*F
 
      This directory contains examples based on the PDES/ODES given in the book
       Numerical Solution of Time-Dependent Advection-Diffusion-Reaction Equations by
       W. Hundsdorf and J.G. Verwer
 
      Page 3, Section 1.1 Nonlinear Reaction Problems from Chemistry
-                 u_1_t  -k u_1 u_2  = 0
-                 u_2_t  -k u_1 u_2  = 0
-                 u_3_t   k u_1 u_2  = 0
+
+\begin{eqnarray}
+                 {U_1}_t  - k U_1 U_2  & = & 0 \\
+                 {U_2}_t  - k U_1 U_2 & = & 0 \\
+                 {U_3}_t  - k U_1 U_2 & = & 0
+\end{eqnarray}
 
      Helpful runtime monitoring options:
          -ts_view                  -  prints information about the solver being used
@@ -27,7 +30,7 @@ static char help[] = "Nonlinear Reaction Problem from Chemistry.\n";
          -lg_indicate_data_points false   -  do NOT show the data points on the plots
          -draw_save                       -  save the timestep and solution plot as a .Gif image file
 
-*/
+F*/
 
 /*
       Project: Generate a nicely formated HTML page using 
