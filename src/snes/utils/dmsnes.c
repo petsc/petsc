@@ -148,6 +148,28 @@ static PetscErrorCode DMRestrictHook_SNESDM(DM dm,Mat Restrict,Vec rscale,Mat In
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMRefineHook_SNESDM"
+static PetscErrorCode DMRefineHook_SNESDM(DM dm,DM dmf,void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMSNESCopyContext(dm,dmf);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMInterpolateHook_SNESDM"
+/* This could restrict auxiliary information to the coarse level.
+ */
+static PetscErrorCode DMInterpolateHook_SNESDM(DM dm,Mat Interp,DM dmf,void *ctx)
+{
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMSNESGetContext"
 /*@C
    DMSNESGetContext - get read-only private SNESDM context from a DM
@@ -266,6 +288,7 @@ PetscErrorCode DMSNESCopyContext(DM dmsrc,DM dmdest)
   if (container) {
     ierr = PetscObjectCompose((PetscObject)dmdest,"SNESDM",(PetscObject)container);CHKERRQ(ierr);
     ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_SNESDM,DMRestrictHook_SNESDM,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMRefineHookAdd(dmdest,DMRefineHook_SNESDM,DMInterpolateHook_SNESDM,PETSC_NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
