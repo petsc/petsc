@@ -46,7 +46,7 @@ typedef struct {
 /*
    User-defined routines
 */
-extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*),InitialSolution(DM,Vec);
+extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*),InitialConditions(DM,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -93,7 +93,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = InitialSolution(da,x);CHKERRQ(ierr);
+  ierr = InitialConditions(da,x);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -199,8 +199,8 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "InitialSolution"
-PetscErrorCode InitialSolution(DM da,Vec U)
+#define __FUNCT__ "InitialConditions"
+PetscErrorCode InitialConditions(DM da,Vec U)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,xs,ys,xm,ym,Mx,My;

@@ -29,14 +29,14 @@ typedef struct {
 } Field;
 
 typedef struct {
-  PetscReal epsilon,delta,alpha,beta,gamma,kappa,lambda,mu,cstar;
-  PetscBool upwind;
+  PetscScalar epsilon,delta,alpha,beta,gamma,kappa,lambda,mu,cstar;
+  PetscBool   upwind;
 } AppCtx;
 
 /*
    User-defined routines
 */
-extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*),InitialSolution(DM,Vec);
+extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*),InitialConditions(DM,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -92,7 +92,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = InitialSolution(da,U);CHKERRQ(ierr);
+  ierr = InitialConditions(da,U);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -200,7 +200,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
       kcxrhox   = appctx->kappa*((u[i+1].c - u[i].c)*u[i+1].rho - (u[i].c - u[i-1].c)*u[i].rho)*sx;
     }
 
-    f[i].rho = udot[i].rho - appctx->epsilon*rhoxx + kcxrhox  - appctx->mu*PetscAbsScalar(rho)*(1.0 - rho)*PetscMax(0,c - appctx->cstar) + appctx->beta*rho;
+    f[i].rho = udot[i].rho - appctx->epsilon*rhoxx + kcxrhox  - appctx->mu*PetscAbsScalar(rho)*(1.0 - rho)*PetscMax(0,PetscRealPart(c - appctx->cstar)) + appctx->beta*rho;
     f[i].c   = udot[i].c - appctx->delta*cxx + appctx->lambda*c + appctx->alpha*rho*c/(appctx->gamma + c);
   }
 
@@ -216,8 +216,8 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "InitialSolution"
-PetscErrorCode InitialSolution(DM da,Vec U)
+#define __FUNCT__ "InitialConditions"
+PetscErrorCode InitialConditions(DM da,Vec U)
 {
   PetscErrorCode ierr;
   PetscInt       i,xs,xm,Mx;

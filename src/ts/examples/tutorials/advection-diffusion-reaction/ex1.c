@@ -190,7 +190,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Reaction options","");CHKERRQ(ierr);
   {
     ctx.k       = .9;
-    ierr        = PetscOptionsReal("-k","Reaction coefficient","",ctx.k,&ctx.k,PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsScalar("-k","Reaction coefficient","",ctx.k,&ctx.k,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecDuplicate(U,&ctx.initialsolution);CHKERRQ(ierr);
     ierr = VecGetArray(ctx.initialsolution,&u);CHKERRQ(ierr);
     u[0] = 1;
