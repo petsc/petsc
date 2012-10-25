@@ -158,8 +158,6 @@ int main(int argc,char **argv)
   TS             ts;            /* ODE integrator */
   Vec            U;             /* solution will be stored here */
   Mat            A;             /* Jacobian matrix */
-  PetscInt       steps,nonlinits,linits,snesfails,rejects;
-  PetscReal      ftime;
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n = 3;
@@ -199,7 +197,6 @@ int main(int argc,char **argv)
     ierr = PetscOptionsVec("-initial","Initial values","",ctx.initialsolution,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
@@ -210,30 +207,24 @@ int main(int argc,char **argv)
   ierr = TSSetIFunction(ts,PETSC_NULL,(TSIFunction) IFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&ctx);CHKERRQ(ierr);
   ierr = TSSetSolutionFunction(ts,(TSSolutionFunction)Solution,&ctx);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,1000,20.0);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = Solution(ts,0,U,&ctx);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set runtime options
+     Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSetDuration(ts,1000,20.0);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,U,&ftime);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  ierr = TSGetSNESFailures(ts,&snesfails);CHKERRQ(ierr);
-  ierr = TSGetStepRejections(ts,&rejects);CHKERRQ(ierr);
-  ierr = TSGetSNESIterations(ts,&nonlinits);CHKERRQ(ierr);
-  ierr = TSGetKSPIterations(ts,&linits);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"steps %D (%D rejected, %D SNES fails), ftime %G, nonlinits %D, linits %D\n",steps,rejects,snesfails,ftime,nonlinits,linits);CHKERRQ(ierr);
+  ierr = TSSolve(ts,U,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.

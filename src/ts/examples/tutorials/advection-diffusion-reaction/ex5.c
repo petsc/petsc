@@ -1,13 +1,21 @@
 
-static char help[] = "Chemo-taxis Problems from Mathematical Biology.\n";
+static char help[] = "Pattern Formation with Reaction-Diffusion Equations.\n";
 
 /*
-     Page 29, Chemo-taxis Problems from Mathematical Biology
+     Page 21, Pattern Formation with Reaction-Diffusion Equations
 
-        rho_t = 
-        c_t   = 
+        u_t = D1 (u_xx + u_yy)  - u*v^2 + gama( 1 -u)
+        v_t = D2 (v_xx + v_yy)  + u*v^2 - (gamma + kappa)v   
 
-     Further discusson on Page 134 and in 2d on Page 409
+    Unlike in the book this uses periodic boundary conditions instead of Neumann 
+    (since they are easier for finite differences).
+*/
+
+/*
+      Helpful runtime monitor options:
+           -ts_monitor_draw_solution
+           -draw_save -draw_save_movie
+
 */
 
 /*
@@ -25,25 +33,24 @@ static char help[] = "Chemo-taxis Problems from Mathematical Biology.\n";
 #include <petscts.h>
 
 typedef struct {
-  PetscScalar rho,c;
+  PetscScalar u,v;
 } Field;
 
 typedef struct {
-  PetscReal epsilon,delta,alpha,beta,gamma,kappa,lambda,mu,cstar;
-  PetscBool upwind;
+  PetscReal D1,D2,gamma,kappa;
 } AppCtx;
 
 /*
    User-defined routines
 */
-extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*),InitialSolution(DM,Vec);
+extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*),InitialSolution(DM,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS              ts;                 /* nonlinear solver */
-  Vec             U;                  /* solution, residual vectors */
+  TS              ts;                 /* ODE integrator */
+  Vec             x;                  /* solution */
   PetscErrorCode  ierr;
   DM              da;
   AppCtx          appctx;
@@ -53,65 +60,57 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-  appctx.epsilon = 1.0e-3;
-  appctx.delta   = 1.0;
-  appctx.alpha   = 10.0;
-  appctx.beta    = 4.0;
-  appctx.gamma   = 1.0;
-  appctx.kappa   = .75;
-  appctx.lambda  = 1.0;
-  appctx.mu      = 100.;
-  appctx.cstar   = .2;
-  appctx.upwind  = PETSC_TRUE;
-  ierr = PetscOptionsGetScalar(PETSC_NULL,"-delta",&appctx.delta,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-upwind",&appctx.upwind,PETSC_NULL);CHKERRQ(ierr);
+  appctx.D1    = 8.0e-5;
+  appctx.D2    = 4.0e-5;
+  appctx.gamma = .024;
+  appctx.kappa = .06;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,-8,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,0,"rho");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,1,"c");CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,-65,-65,PETSC_DECIDE,PETSC_DECIDE,2,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,0,"u");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,1,"v");CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMCreateGlobalVector(da,&U);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&appctx);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&appctx);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = InitialSolution(da,U);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
+  ierr = InitialSolution(da,x);CHKERRQ(ierr);
+  ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSetDuration(ts,PETSC_DEFAULT,2000.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.0001);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,PETSC_DEFAULT,1.0);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Solve nonlinear system
+     Solve ODE system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,U,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = TSSolve(ts,x,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDestroy(&U);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
@@ -120,35 +119,36 @@ int main(int argc,char **argv)
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "IFunction"
+#define __FUNCT__ "RHSFunction"
 /*
-   IFunction - Evaluates nonlinear function, F(U).
+   RHSFunction - Evaluates nonlinear function, F(x).
 
    Input Parameters:
 .  ts - the TS context
-.  U - input vector
-.  ptr - optional user-defined context, as set by SNESSetFunction()
+.  X - input vector
+.  ptr - optional user-defined context, as set by TSSetRHSFunction()
 
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
+PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
 {
   AppCtx         *appctx = (AppCtx*)ptr;
   DM             da;
   PetscErrorCode ierr;
-  PetscInt       i,Mx,xs,xm;
-  PetscReal      hx,sx;
-  PetscScalar    rho,c,rhoxx,cxx,cx,rhox,kcxrhox;
-  Field          *u,*f,*udot;
+  PetscInt       i,j,Mx,My,xs,ys,xm,ym;
+  PetscReal      hx,hy,sx,sy;
+  PetscScalar    uc,uxx,uyy,vc,vxx,vyy;
+  Field          **u,**f;
   Vec            localU;
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
-  hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
+  hx     = 2.50/(PetscReal)(Mx); sx = 1.0/(hx*hx);
+  hy     = 2.50/(PetscReal)(My); sy = 1.0/(hy*hy);
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -163,54 +163,36 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
      Get pointers to vector data
   */
   ierr = DMDAVecGetArray(da,localU,&u);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,Udot,&udot);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-
-  if (!xs) {
-    f[0].rho = udot[0].rho; /* u[0].rho - 0.0; */
-    f[0].c   = udot[0].c; /* u[0].c   - 1.0; */
-    xs++;
-    xm--;
-  }
-  if (xs+xm == Mx) {
-    f[Mx-1].rho = udot[Mx-1].rho; /* u[Mx-1].rho - 1.0; */
-    f[Mx-1].c   = udot[Mx-1].c;  /* u[Mx-1].c   - 0.0;  */
-    xm--;
-  }
+  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
   */
-  for (i=xs; i<xs+xm; i++) {
-    rho       = u[i].rho;
-    rhoxx     = (-2.0*rho + u[i-1].rho + u[i+1].rho)*sx;
-    c         = u[i].c;
-    cxx       = (-2.0*c + u[i-1].c + u[i+1].c)*sx;
-
-    if (!appctx->upwind) {
-      rhox      = .5*(u[i+1].rho - u[i-1].rho)/hx;
-      cx        = .5*(u[i+1].c - u[i-1].c)/hx;
-      kcxrhox   = appctx->kappa*(cxx*rho + cx*rhox);
-    } else {
-      kcxrhox   = appctx->kappa*((u[i+1].c - u[i].c)*u[i+1].rho - (u[i].c - u[i-1].c)*u[i].rho)*sx;
+  for (j=ys; j<ys+ym; j++) {
+    for (i=xs; i<xs+xm; i++) {
+      uc         = u[j][i].u;
+      uxx       = (-2.0*uc + u[j][i-1].u + u[j][i+1].u)*sx;
+      uyy       = (-2.0*uc + u[j-1][i].u + u[j+1][i].u)*sy;
+      vc         = u[j][i].v;
+      vxx       = (-2.0*vc + u[j][i-1].v + u[j][i+1].v)*sx;
+      vyy       = (-2.0*vc + u[j-1][i].v + u[j+1][i].v)*sy;
+      f[j][i].u = appctx->D1*(uxx + uyy) - uc*vc*vc + appctx->gamma*(1.0 - uc);
+      f[j][i].v = appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc;
     }
-
-    f[i].rho = udot[i].rho - appctx->epsilon*rhoxx + kcxrhox  - appctx->mu*PetscAbsScalar(rho)*(1.0 - rho)*PetscMax(0,c - appctx->cstar) + appctx->beta*rho;
-    f[i].c   = udot[i].c - appctx->delta*cxx + appctx->lambda*c + appctx->alpha*rho*c/(appctx->gamma + c);
   }
 
   /*
      Restore vectors
   */
   ierr = DMDAVecRestoreArray(da,localU,&u);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,Udot,&udot);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
+  ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -220,14 +202,15 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
 PetscErrorCode InitialSolution(DM da,Vec U)
 {
   PetscErrorCode ierr;
-  PetscInt       i,xs,xm,Mx;
-  Field          *u;
-  PetscReal      hx,x;
+  PetscInt       i,j,xs,ys,xm,ym,Mx,My;
+  Field          **u;
+  PetscReal      hx,hy,x,y;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 1.0/(PetscReal)(Mx-1);
+  hx     = 2.5/(PetscReal)(Mx);
+  hy     = 2.5/(PetscReal)(My);
 
   /*
      Get pointers to vector data
@@ -237,19 +220,22 @@ PetscErrorCode InitialSolution(DM da,Vec U)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
   */
-  for (i=xs; i<xs+xm; i++) {
-    x = i*hx;
-    if (x < 1.0){
-      u[i].rho = 0.0;
-    } else {
-      u[i].rho = 1.0;
+  for (j=ys; j<ys+ym; j++) {
+    y = j*hy;
+    for (i=xs; i<xs+xm; i++) {
+      x = i*hx;
+      if ((1.0 <= x) && (x <= 1.5) && (1.0 <= y) && (y <= 1.5)) {
+        u[j][i].v = .25*PetscPowScalar(PetscSinScalar(4.0*PETSC_PI*x),2.0)*PetscPowScalar(PetscSinScalar(4.0*PETSC_PI*y),2.0);
+      } else {
+        u[j][i].v = 0.0;
+      }
+      u[j][i].u = 1.0 - 2.0*u[j][i].v;
     }
-    u[i].c = PetscCosScalar(.5*PETSC_PI*x);
   }
 
   /*

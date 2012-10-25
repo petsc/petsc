@@ -28,7 +28,6 @@ static char help[] ="Model Equations for Advection-Diffusion\n";
    application-provided call-back routines.
 */
 typedef struct {
-  PetscReal   h;     /* mesh width */
   PetscScalar a,d;   /* advection and diffusion strength */
   PetscBool   upwind; 
 } AppCtx;
@@ -38,7 +37,7 @@ typedef struct {
 */
 extern PetscErrorCode InitialConditions(TS,Vec,AppCtx*);
 extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode ExactSolution(TS,PetscReal,Vec,AppCtx*);
+extern PetscErrorCode Solution(TS,PetscReal,Vec,AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -47,31 +46,25 @@ int main(int argc,char **argv)
   AppCtx         appctx;                 /* user-defined application context */
   TS             ts;                     /* timestepping context */
   Mat            A;                      /* matrix data structure */
-  Vec            u;                      /* approximate solution vector */
-  PetscReal      time_total_max = 100.0; /* default max total time */
-  PetscInt       time_steps_max = 100;   /* default max timesteps */
+  Vec            U;                      /* approximate solution vector */
   PetscErrorCode ierr;
-  PetscInt       steps,m;
   PetscReal      dt;
   DM             da;
+  PetscInt       M;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-
-  m    = 60;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  appctx.h        = 1.0/m;
   appctx.a        = 1.0;
   appctx.d        = 0.0;
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-a",&appctx.a,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-d",&appctx.d,PETSC_NULL);CHKERRQ(ierr);
   appctx.upwind   = PETSC_TRUE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-upwind",&appctx.upwind,PETSC_NULL);CHKERRQ(ierr);
-  
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, m, 1, 1,PETSC_NULL,&da);CHKERRQ(ierr);
+
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -60, 1, 1,PETSC_NULL,&da);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -79,8 +72,8 @@ int main(int argc,char **argv)
   /*
      Create vector data structures for approximate and exact solutions
   */
-  ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
-  
+  ierr = DMCreateGlobalVector(da,&U);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -96,20 +89,14 @@ int main(int argc,char **argv)
   ierr = DMCreateMatrix(da,MATAIJ,&A);CHKERRQ(ierr);
 
   /*
-      For linear problems with a time-dependent f(u,t) in the equation
+      For linear problems with a time-dependent f(U,t) in the equation
      u_t = f(u,t), the user provides the discretized right-hand-side
       as a time-dependent matrix.
   */
   ierr = TSSetRHSFunction(ts,PETSC_NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,A,A,RHSMatrixHeat,&appctx);CHKERRQ(ierr);
-  ierr = TSSetSolutionFunction(ts,(PetscErrorCode (*)(TS,PetscReal,Vec,void*))ExactSolution,&appctx);CHKERRQ(ierr);
+  ierr = TSSetSolutionFunction(ts,(PetscErrorCode (*)(TS,PetscReal,Vec,void*))Solution,&appctx);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set solution vector and initial timestep
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  dt = appctx.h*appctx.h/2.0;
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize timestepping solver:
@@ -120,24 +107,22 @@ int main(int argc,char **argv)
      to override the defaults set by TSSetDuration().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetDuration(ts,time_steps_max,time_total_max);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  dt   = .5/(M*M);
+  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,100,100.0);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Solve the problem
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*
      Evaluate initial conditions
   */
-  ierr = InitialConditions(ts,u,&appctx);CHKERRQ(ierr);
+  ierr = InitialConditions(ts,U,&appctx);CHKERRQ(ierr);
 
   /*
      Run the timestepping solver
   */
-  ierr = TSSolve(ts,u,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = TSSolve(ts,U,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -146,7 +131,7 @@ int main(int argc,char **argv)
 
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   /*
@@ -171,15 +156,17 @@ int main(int argc,char **argv)
    Output Parameter:
    u - vector with solution at initial time (global)
 */
-PetscErrorCode InitialConditions(TS ts,Vec u,AppCtx *appctx)
+PetscErrorCode InitialConditions(TS ts,Vec U,AppCtx *appctx)
 {
-  PetscScalar    *u_localptr,h = appctx->h;
+  PetscScalar    *u,h;
   PetscErrorCode ierr;
-  PetscInt       i,mstart,mend,xm;
+  PetscInt       i,mstart,mend,xm,M;
   DM             da;
 
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&mstart,0,0,&xm,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  h    = 1.0/M;
   mend = mstart + xm;
   /*
     Get a pointer to vector data.
@@ -190,7 +177,7 @@ PetscErrorCode InitialConditions(TS ts,Vec u,AppCtx *appctx)
     - Note that the Fortran interface to VecGetArray() differs from the
       C version.  See the users manual for details.
   */
-  ierr = DMDAVecGetArray(da,u,&u_localptr);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
 
   /*
      We initialize the solution array by simply writing the solution
@@ -198,21 +185,20 @@ PetscErrorCode InitialConditions(TS ts,Vec u,AppCtx *appctx)
      VecSetValues() or VecSetValuesLocal().
   */
   for (i=mstart; i<mend; i++) {
-    u_localptr[i] = PetscSinScalar(PETSC_PI*i*6.*h) + 3.*PetscSinScalar(PETSC_PI*i*2.*h);
+    u[i] = PetscSinScalar(PETSC_PI*i*6.*h) + 3.*PetscSinScalar(PETSC_PI*i*2.*h);
   }
 
   /*
      Restore vector
   */
-  ierr = DMDAVecRestoreArray(da,u,&u_localptr);CHKERRQ(ierr);
-
+  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
   return 0;
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "ExactSolution"
+#define __FUNCT__ "Solution"
 /*
-   ExactSolution - Computes the exact solution at a given time.
+   Solution - Computes the exact solution at a given time.
 
    Input Parameters:
    t - current time
@@ -222,20 +208,22 @@ PetscErrorCode InitialConditions(TS ts,Vec u,AppCtx *appctx)
    Output Parameter:
    solution - vector with the newly computed exact solution
 */
-PetscErrorCode ExactSolution(TS ts,PetscReal t,Vec solution,AppCtx *appctx)
+PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
 {
-  PetscScalar    *s_localptr,h = appctx->h,ex1,ex2,sc1,sc2;
+  PetscScalar    *u,ex1,ex2,sc1,sc2,h;
   PetscErrorCode ierr;
-  PetscInt       i,mstart,mend,xm;
+  PetscInt       i,mstart,mend,xm,M;
   DM             da;
 
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&mstart,0,0,&xm,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  h    = 1.0/M;
   mend = mstart + xm;
   /*
      Get a pointer to vector data.
   */
-  ierr = DMDAVecGetArray(da,solution,&s_localptr);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
 
   /*
      Simply write the solution directly into the array locations.
@@ -245,13 +233,13 @@ PetscErrorCode ExactSolution(TS ts,PetscReal t,Vec solution,AppCtx *appctx)
   ex2 = PetscExpScalar(-4.*PETSC_PI*PETSC_PI*appctx->d*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
   for (i=mstart; i<mend; i++) {
-    s_localptr[i] = PetscSinScalar(sc1*(PetscReal)i + appctx->a*PETSC_PI*6.*t)*ex1 + 3.*PetscSinScalar(sc2*(PetscReal)i + appctx->a*PETSC_PI*2.*t)*ex2;
+    u[i] = PetscSinScalar(sc1*(PetscReal)i + appctx->a*PETSC_PI*6.*t)*ex1 + 3.*PetscSinScalar(sc2*(PetscReal)i + appctx->a*PETSC_PI*2.*t)*ex2;
   }
 
   /*
      Restore vector
   */
-  ierr = DMDAVecRestoreArray(da,solution,&s_localptr);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
   return 0;
 }
 
@@ -278,19 +266,20 @@ PetscErrorCode ExactSolution(TS ts,PetscReal t,Vec solution,AppCtx *appctx)
    Recall that MatSetValues() uses 0-based row and column numbers
    in Fortran as well as in C.
 */
-PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   Mat            A = *AA;                      /* Jacobian matrix */
   AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
   PetscInt       mstart, mend;
   PetscErrorCode ierr;
   PetscInt       i,idx[3],M,xm;
-  PetscScalar    v[3];
+  PetscScalar    v[3],h;
   DM             da;
 
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&mstart,0,0,&xm,0,0);CHKERRQ(ierr);
+  h    = 1.0/M;
   mend = mstart + xm;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute entries for the locally owned part of the matrix
@@ -300,9 +289,9 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
   */
 
   /* diffusion */
-  v[0] = appctx->d/(appctx->h*appctx->h); 
-  v[1] = -2.0*appctx->d/(appctx->h*appctx->h);
-  v[2] = appctx->d/(appctx->h*appctx->h);
+  v[0] = appctx->d/(h*h); 
+  v[1] = -2.0*appctx->d/(h*h);
+  v[2] = appctx->d/(h*h);
   if (!mstart) {
     idx[0] = M-1; idx[1] = 0; idx[2] = 1;
     ierr = MatSetValues(A,1,&mstart,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
@@ -330,8 +319,8 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
   mend = mstart + xm;
   if (!appctx->upwind) {
     /* advection -- centered differencing */
-    v[0] = -.5*appctx->a/(appctx->h);
-    v[1] = .5*appctx->a/(appctx->h);
+    v[0] = -.5*appctx->a/(h);
+    v[1] = .5*appctx->a/(h);
     if (!mstart) {
       idx[0] = M-1; idx[1] = 1;
       ierr = MatSetValues(A,1,&mstart,2,idx,v,ADD_VALUES);CHKERRQ(ierr);
@@ -350,8 +339,8 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
     }
   } else {
     /* advection -- upwinding */
-    v[0] = -appctx->a/(appctx->h);
-    v[1] = appctx->a/(appctx->h);
+    v[0] = -appctx->a/(h);
+    v[1] = appctx->a/(h);
     if (!mstart) {
       idx[0] = 0; idx[1] = 1;
       ierr = MatSetValues(A,1,&mstart,2,idx,v,ADD_VALUES);CHKERRQ(ierr);
@@ -407,6 +396,5 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Vec X,Mat *AA,Mat *BB,MatStructur
      to the matrix. If we do, it will generate an error.
   */
   ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-
   return 0;
 }
