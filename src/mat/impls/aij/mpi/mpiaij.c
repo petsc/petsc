@@ -2122,6 +2122,9 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
       d_nnz[aj[i]] ++;
       aj[i] += cstart; /* global col index to be used by MatSetValues() */
     }
+#if defined(OMPI_MAJOR_VERSION) /* Open MPI Bug. https://bitbucket.org/petsc/petsc-dev/issue/9/implement-petscsf-without-one-sided */
+    ierr = PetscMemcpy(o_nnz,d_nnz,na*sizeof(PetscInt));CHKERRQ(ierr);
+#else
     /* compute local off-diagonal contributions */
     ierr = PetscMemzero(g_nnz,nb*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=0; i<bi[ma]; i++) g_nnz[bj[i]]++;
@@ -2139,6 +2142,10 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
     ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(B,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
     ierr = PetscFree4(d_nnz,o_nnz,g_nnz,oloc);CHKERRQ(ierr);
+#endif
+#if defined(OMPI_MAJOR_VERSION)
+    ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+#endif
   } else {
     B = *matout;
     ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
