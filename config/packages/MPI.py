@@ -286,7 +286,7 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_MPI_FINT', 1)
     self.addDefine('HAVE_MPI_IN_PLACE', 1)
     if not self.argDB['with-mpiuni-fortran-binding']:
-      self.addDefine('MPIUNI_AVOID_MPI_NAMESPACE', 1)
+      self.framework.addDefine('MPIUNI_AVOID_MPI_NAMESPACE', 1)
       self.usingMPIUniFortranBinding = 0
     else:
       self.usingMPIUniFortranBinding = 1
