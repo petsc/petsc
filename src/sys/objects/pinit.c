@@ -702,7 +702,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
      shared libraries the constructors for global variables
      are not called; at least on IRIX.
   */
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_COMPLEX)
   {
 #if defined(PETSC_CLANGUAGE_CXX)
     PetscComplex ic(0.0,1.0);
@@ -718,7 +718,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Type_contiguous(2,MPI_FLOAT,&MPIU_C_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_C_COMPLEX);CHKERRQ(ierr);
 #endif
-#endif /* PETSC_USE_COMPLEX */
+#endif /* PETSC_HAVE_COMPLEX */
 
   /*
      Create the PETSc MPI reduction operator that sums of the first
