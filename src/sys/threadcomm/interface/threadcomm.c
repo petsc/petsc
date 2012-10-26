@@ -1171,6 +1171,8 @@ PetscErrorCode PetscThreadCommDetach(MPI_Comm comm)
   if (flg) {
     ierr = MPI_Attr_delete(comm,Petsc_ThreadComm_keyval);CHKERRQ(ierr);
   }
+  /* Release extra reference from PetscThreadCommAttach */
+  ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1183,6 +1185,7 @@ PetscErrorCode PetscThreadCommDetach(MPI_Comm comm)
 PetscErrorCode PetscThreadCommAttach(MPI_Comm comm,PetscThreadComm tcomm)
 {
   PetscErrorCode ierr;
+  MPI_Comm       icomm;
   PetscMPIInt    flg;
   void           *ptr;
 
@@ -1192,6 +1195,9 @@ PetscErrorCode PetscThreadCommAttach(MPI_Comm comm,PetscThreadComm tcomm)
     tcomm->refct++;
     ierr = MPI_Attr_put(comm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
   }
+  /* PetscCommDuplicate() is called here to make the mpiuni case work. 
+   This extra reference is released in PetscThreadCommDetach */
+  ierr = PetscCommDuplicate(comm,&icomm,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
