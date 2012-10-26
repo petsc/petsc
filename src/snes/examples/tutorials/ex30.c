@@ -343,10 +343,14 @@ PETSC_STATIC_INLINE PassiveScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *
 {
   Parameter   *param = user->param;
   GridInfo    *grid  = user->grid;
-  PetscScalar x, z, r, st, ct, th, c=param->c, d=param->d;
+  PetscScalar st, ct, th, c=param->c, d=param->d;
+  PetscReal   x, z,r;
 
   x = (i - grid->jlid)*grid->dx;  z = (j - grid->jlid - 0.5)*grid->dz;
-  r = sqrt(x*x+z*z); st = z/r;  ct = x/r;  th = atan(z/x);
+  r = PetscSqrtReal(x*x+z*z); 
+  st = z/r;  
+  ct = x/r;  
+  th = atan(z/x);
   return ct*(c*th*st+d*(st+th*ct)) + st*(c*(st-th*ct)+d*th*st);
 }
 
@@ -359,7 +363,8 @@ PETSC_STATIC_INLINE PetscScalar VertVelocity(PetscInt i, PetscInt j, AppCtx *use
 {
   Parameter   *param = user->param;
   GridInfo    *grid  = user->grid;
-  PetscScalar x, z, r, st, ct, th, c=param->c, d=param->d;
+  PetscScalar st, ct, th, c=param->c, d=param->d;
+  PetscReal   x, z, r;
 
   x = (i - grid->jlid - 0.5)*grid->dx;  z = (j - grid->jlid)*grid->dz;
   r = sqrt(x*x+z*z); st = z/r;  ct = x/r;  th = atan(z/x);
@@ -442,10 +447,10 @@ PETSC_STATIC_INLINE PetscScalar Viscosity(PetscScalar T, PetscScalar eps, Passiv
 {
   PetscReal    result=0.0;
   ViscParam    difn=param->diffusion, disl=param->dislocation;
-  PetscInt          iVisc=param->ivisc;
-  double       eps_scale=param->V/(param->L*1000.0);
-  double       strain_power, v1, v2, P;
-  double       rho_g = 32340.0, R=8.3144;
+  PetscInt     iVisc=param->ivisc;
+  PetscScalar  eps_scale=param->V/(param->L*1000.0);
+  PetscScalar  strain_power, v1, v2, P;
+  PetscScalar  rho_g = 32340.0, R=8.3144;
 
   P = rho_g*(z*param->L*1000.0); /* Pa */
 
@@ -455,19 +460,19 @@ PETSC_STATIC_INLINE PetscScalar Viscosity(PetscScalar T, PetscScalar eps, Passiv
 
   } else if (iVisc==VISC_DIFN) {
     /* diffusion creep rheology */
-    result = difn.A*PetscExpScalar((difn.Estar + P*difn.Vstar)/R/(T+273.0))/param->eta0;
+    result = PetscRealPart((difn.A*PetscExpScalar((difn.Estar + P*difn.Vstar)/R/(T+273.0))/param->eta0));
 
   } else if (iVisc==VISC_DISL) {
     /* dislocation creep rheology */
     strain_power = pow( eps*eps_scale, (1.0-disl.n)/disl.n );
-    result = disl.A*PetscExpScalar((disl.Estar + P*disl.Vstar)/disl.n/R/(T+273.0))*strain_power/param->eta0;
+    result = PetscRealPart(disl.A*PetscExpScalar((disl.Estar + P*disl.Vstar)/disl.n/R/(T+273.0))*strain_power/param->eta0);
 
   } else if (iVisc==VISC_FULL) {
     /* dislocation/diffusion creep rheology */
     strain_power = pow( eps*eps_scale, (1.0-disl.n)/disl.n );
     v1 = difn.A*PetscExpScalar((difn.Estar + P*difn.Vstar)/R/(T+273.0))/param->eta0;
     v2 = disl.A*PetscExpScalar((disl.Estar + P*disl.Vstar)/disl.n/R/(T+273.0))*strain_power/param->eta0;
-    result = 1.0/(1.0/v1 + 1.0/v2);
+    result = PetscRealPart(1.0/(1.0/v1 + 1.0/v2));
   }
 
   /* max viscosity is param->eta0 */
@@ -499,7 +504,7 @@ PETSC_STATIC_INLINE PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscIn
   if ( param->ivisc==VISC_DIFN || param->ivisc>=VISC_DISL ) { /* viscosity is T-dependent */
     TS = param->potentialT * TInterp(x,i,j-1) * exp( (j-1.0)*dz*z_scale );
     if (j==jlim) TN = TS;
-    else         TN = param->potentialT * TInterp(x,i,j)   * exp(  j     *dz*z_scale );
+    else         TN = param->potentialT * TInterp(x,i,j) * exp(PetscScalar(j)*dz*z_scale );
     TW = param->potentialT * x[j][i].T        * exp( (j-0.5)*dz*z_scale );
     TE = param->potentialT * x[j][i+1].T      * exp( (j-0.5)*dz*z_scale );
     if (param->ivisc>=VISC_DISL) { /* olivine dislocation creep */
@@ -511,8 +516,8 @@ PETSC_STATIC_INLINE PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscIn
   }
   etaN = Viscosity(TN,epsN,dz*(j+0.5),param);
   etaS = Viscosity(TS,epsS,dz*(j-0.5),param);
-  etaW = Viscosity(TW,epsW,dz*j,param);
-  etaE = Viscosity(TE,epsE,dz*j,param);
+  etaW = Viscosity(TW,epsW,dz*PetscScalar(j),param);
+  etaE = Viscosity(TE,epsE,dz*PetscScalar(j),param);
 
   dPdx = ( x[j][i+1].p - x[j][i].p )/dx;
   if (j==jlim) dudzN = etaN * ( x[j][i].w   - x[j][i+1].w )/dx;
@@ -548,7 +553,7 @@ PETSC_STATIC_INLINE PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscIn
   PetscScalar    etaN=0.0,etaS=0.0,etaE=0.0,etaW=0.0,epsN=0.0,epsS=0.0,epsE=0.0,epsW=0.0;
   PetscScalar    TE=0.0,TN=0.0,TS=0.0,TW=0.0, dPdz, residual,z_scale;
   PetscScalar    dudzE,dudzW,dwdxW,dwdxE,dwdzN,dwdzS;
-  PetscInt            ilim = grid->ni-1;
+  PetscInt       ilim = grid->ni-1;
 
   /* geometric and other parameters */
   z_scale = param->z_scale;
@@ -557,9 +562,9 @@ PETSC_STATIC_INLINE PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscIn
   if ( param->ivisc==VISC_DIFN || param->ivisc>=VISC_DISL ) { /* viscosity is T-dependent */
     TN = param->potentialT * x[j+1][i].T      * exp( (j+0.5)*dz*z_scale );
     TS = param->potentialT * x[j][i].T        * exp( (j-0.5)*dz*z_scale );
-    TW = param->potentialT * TInterp(x,i-1,j) * exp(  j     *dz*z_scale );
+    TW = param->potentialT * TInterp(x,i-1,j) * exp(  PetscScalar(j)*dz*z_scale );
     if (i==ilim) TE = TW;
-    else         TE = param->potentialT * TInterp(x,i,j)   * exp(  j*dz*z_scale );
+    else         TE = param->potentialT * TInterp(x,i,j) * exp(PetscScalar(j)*dz*z_scale );
     if (param->ivisc>=VISC_DISL) { /* olivine dislocation creep */
       epsN = CalcSecInv(x,i,j+1,CELL_CENTER,user);
       epsS = CalcSecInv(x,i,j,  CELL_CENTER,user);
@@ -567,8 +572,8 @@ PETSC_STATIC_INLINE PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscIn
       epsW = CalcSecInv(x,i-1,j,CELL_CORNER,user);
     }
   }
-  etaN = Viscosity(TN,epsN,dz*(j+1),param);
-  etaS = Viscosity(TS,epsS,dz*j,param);
+  etaN = Viscosity(TN,epsN,dz*(j+1.0),param);
+  etaS = Viscosity(TS,epsS,dz*(j+0.0),param);
   etaW = Viscosity(TW,epsW,dz*(j+0.5),param);
   etaE = Viscosity(TE,epsE,dz*(j+0.5),param);
 
@@ -660,13 +665,13 @@ PETSC_STATIC_INLINE PetscScalar EnergyResidual(Field **x, PetscInt i, PetscInt j
   } else {
     /* Fromm advection scheme */
     fE =     ( uE *(-x[j][i+2].T + 5.0*(x[j][i+1].T+x[j][i].T)-x[j][i-1].T)/8.0
-	       - fabs(uE)*(-x[j][i+2].T + 3.0*(x[j][i+1].T-x[j][i].T)+x[j][i-1].T)/8.0 )*dz;
+	       - PetscAbsScalar(uE)*(-x[j][i+2].T + 3.0*(x[j][i+1].T-x[j][i].T)+x[j][i-1].T)/8.0 )*dz;
     fW =     ( uW *(-x[j][i+1].T + 5.0*(x[j][i].T+x[j][i-1].T)-x[j][i-2].T)/8.0
-	       - fabs(uW)*(-x[j][i+1].T + 3.0*(x[j][i].T-x[j][i-1].T)+x[j][i-2].T)/8.0 )*dz;
+	       - PetscAbsScalar(uW)*(-x[j][i+1].T + 3.0*(x[j][i].T-x[j][i-1].T)+x[j][i-2].T)/8.0 )*dz;
     fN =     ( wN *(-x[j+2][i].T + 5.0*(x[j+1][i].T+x[j][i].T)-x[j-1][i].T)/8.0
-	       - fabs(wN)*(-x[j+2][i].T + 3.0*(x[j+1][i].T-x[j][i].T)+x[j-1][i].T)/8.0 )*dx;
+	       - PetscAbsScalar(wN)*(-x[j+2][i].T + 3.0*(x[j+1][i].T-x[j][i].T)+x[j-1][i].T)/8.0 )*dx;
     fS =     ( wS *(-x[j+1][i].T + 5.0*(x[j][i].T+x[j-1][i].T)-x[j-2][i].T)/8.0
-	       - fabs(wS)*(-x[j+1][i].T + 3.0*(x[j][i].T-x[j-1][i].T)+x[j-2][i].T)/8.0 )*dx;
+	       - PetscAbsScalar(wS)*(-x[j+1][i].T + 3.0*(x[j][i].T-x[j-1][i].T)+x[j-2][i].T)/8.0 )*dx;
   }
 
   residual -= ( fE - fW + fN - fS );
@@ -726,7 +731,7 @@ PETSC_STATIC_INLINE PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j,
 
     TC = param->potentialT * x[j][i].T * exp( (j-0.5)*dz*z_scale );
     if (ivisc>=VISC_DISL) epsC = CalcSecInv(x,i,j,CELL_CENTER,user);
-    etaC = Viscosity(TC,epsC,dz*j,param);
+    etaC = Viscosity(TC,epsC,dz*PetscScalar(j),param);
 
     uW = x[j][i-1].u;   uE = x[j][i].u;
     pC = x[j][i].p;
@@ -734,7 +739,7 @@ PETSC_STATIC_INLINE PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j,
   } else { /* on cell corner */
     if ( i==ilim || j==jlim ) return EPS_ZERO;
 
-    TC = param->potentialT * TInterp(x,i,j) * exp( j*dz*z_scale );
+    TC = param->potentialT * TInterp(x,i,j) * exp( PetscScalar(j)*dz*z_scale);
     if (ivisc>=VISC_DISL) epsC = CalcSecInv(x,i,j,CELL_CORNER,user);
     etaC = Viscosity(TC,epsC,dz*(j+0.5),param);
 
@@ -767,13 +772,13 @@ PETSC_STATIC_INLINE PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j,
 
     TC = param->potentialT * x[j][i].T * exp( (j-0.5)*dz*z_scale );
     if (ivisc>=VISC_DISL) epsC = CalcSecInv(x,i,j,CELL_CENTER,user);
-    etaC = Viscosity(TC,epsC,dz*j,param);
+    etaC = Viscosity(TC,epsC,dz*PetscScalar(j),param);
     wN = x[j][i].w; wS = x[j-1][i].w; pC = x[j][i].p;
 
   } else { /* on cell corner */
     if ( (i==ilim) || (j==jlim) ) return EPS_ZERO;
 
-    TC = param->potentialT * TInterp(x,i,j) * exp( j*dz*z_scale );
+    TC = param->potentialT * TInterp(x,i,j) * exp( PetscScalar(j)*dz*z_scale );
     if (ivisc>=VISC_DISL) epsC = CalcSecInv(x,i,j,CELL_CORNER,user);
     etaC = Viscosity(TC,epsC,dz*(j+0.5),param);
     if (i==j) wN = param->sb;
@@ -1177,14 +1182,14 @@ PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
   ierr = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
   for (j=js; j<js+jm; j++) {
     for (i=is; i<is+im; i++) {
-      T  = param->potentialT * x[j][i].T * exp( (j-0.5)*dz*param->z_scale );
+      T  = PetscRealPart(param->potentialT * x[j][i].T * exp( (j-0.5)*dz*param->z_scale ));
       if (i<ilim && j<jlim) {
-	TC = param->potentialT * TInterp(x,i,j) * exp( j*dz*param->z_scale );
+	TC = PetscRealPart(param->potentialT * TInterp(x,i,j) * exp( j*dz*param->z_scale ));
       } else {
 	TC = T;
       }
-      eps  = CalcSecInv(x,i,j,CELL_CENTER,user);
-      epsC = CalcSecInv(x,i,j,CELL_CORNER,user);
+      eps  = PetscRealPart((CalcSecInv(x,i,j,CELL_CENTER,user)));
+      epsC = PetscRealPart(CalcSecInv(x,i,j,CELL_CORNER,user));
       v[j][i].u = eps;
       v[j][i].w = epsC;
       v[j][i].p = Viscosity(T,eps,dz*(j-0.5),param);
@@ -1287,7 +1292,7 @@ PETSC_STATIC_INLINE PassiveScalar PlateModel(PetscInt j, PetscInt plate, AppCtx 
   else /* PLATE_SLAB */
     z = (j-0.5)*user->grid->dz*param->cb;
 #if defined (PETSC_HAVE_ERF)
-  return erf(z*param->L/2.0/param->skt);
+  return (erf(PetscRealPart(z*param->L/2.0/param->skt)));
 #else
   SETERRQ(PETSC_COMM_SELF,1,"erf() not available on this machine");
 #endif
