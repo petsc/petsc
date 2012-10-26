@@ -119,14 +119,13 @@ class Configure(config.package.Package):
           dir = os.path.join(homedir,dir)
           if os.path.isdir(dir):
             yield (dir)
-    # Try MPICH install locations under Windows
-    yield(os.path.join('/cygdrive','c','Program Files','Microsoft HPC Pack 2008 SDK'))
-    yield(os.path.join('/cygdrive','c','Program Files','Microsoft Compute Cluster Pack'))
-    yield(os.path.join('/cygdrive','c','Program Files','MPICH2'))
-    yield(os.path.join('/cygdrive','c','Program Files (x86)','MPICH2'))
-    yield(os.path.join('/cygdrive','c','Program Files','MPICH'))
-    yield(os.path.join('/cygdrive','c','Program Files','MPICH','SDK.gcc'))
-    yield(os.path.join('/cygdrive','c','Program Files','MPICH','SDK'))
+    # Try MSMPI/MPICH install locations under Windows
+    # ex: /cygdrive/c/Program Files/Microsoft HPC Pack 2008 SDK
+    for root in ['/',os.path.join('/','cygdrive')]:
+      for drive in ['c']:
+        for programFiles in ['Program Files','Program Files (x86)']:
+          for packageDir in ['Microsoft HPC Pack 2008 SDK','Microsoft Compute Cluster Pack','MPICH2','MPICH',os.path.join('MPICH','SDK.gcc'),os.path.join('MPICH','SDK')]:
+            yield(os.path.join(root,drive,programFiles,packageDir))
     return
 
   def checkSharedLibrary(self):
@@ -286,7 +285,7 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_MPI_FINT', 1)
     self.addDefine('HAVE_MPI_IN_PLACE', 1)
     if not self.argDB['with-mpiuni-fortran-binding']:
-      self.addDefine('MPIUNI_AVOID_MPI_NAMESPACE', 1)
+      self.framework.addDefine('MPIUNI_AVOID_MPI_NAMESPACE', 1)
       self.usingMPIUniFortranBinding = 0
     else:
       self.usingMPIUniFortranBinding = 1
