@@ -1701,13 +1701,13 @@ namespace ALE {
     void setMaxDof(const int maxDof) {this->_maxDof = maxDof;};
     void copy(const Obj<IMesh>& m) {
       this->setSieve(m->getSieve());
-      this->setLabel("height", m->getLabel("height"));
-      this->_maxHeight = m->height();
-      this->setLabel("depth", m->getLabel("depth"));
-      this->_maxDepth  = m->depth();
-      if (m->hasLabel("marker")) {
-        this->setLabel("marker", m->getLabel("marker"));
+      const labels_type& labels = m->getLabels();
+
+      for(typename labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+        this->setLabel(l_iter->first, l_iter->second);
       }
+      this->_maxHeight = m->height();
+      this->_maxDepth  = m->depth();
       this->setRealSection("coordinates", m->getRealSection("coordinates"));
       this->setArrowSection("orientation", m->getArrowSection("orientation"));
     };
