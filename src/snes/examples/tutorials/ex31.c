@@ -20,8 +20,7 @@ Boundary Conditions:
   -bc_type dirichlet   Dirichlet conditions on the entire boundary, coming from the exact solution functions
 
   -dm_complex_separate_marker
-  -bc_type mantle      Dirichlet conditions on the y-velocity at the top boundary
-                       Stress-free (homogeneous Neumann) conditions on the other boundaries
+  -bc_type freeslip    Dirichlet conditions on the normal velocity at each boundary
 
 Discretization:
 
@@ -66,7 +65,7 @@ puts it into the Sieve ordering.
 const PetscInt numFields     = 3;
 const PetscInt numComponents = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1+NUM_BASIS_COMPONENTS_2;
 
-typedef enum {DIRICHLET, BC_MANTLE} BCType;
+typedef enum {DIRICHLET, FREE_SLIP} BCType;
 typedef enum {RUN_FULL, RUN_TEST} RunType;
 
 typedef struct {
@@ -316,7 +315,7 @@ PetscScalar linear_p_3d(const PetscReal x[]) {
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
-  const char    *bcTypes[2]  = {"dirichlet", "mantle"};
+  const char    *bcTypes[2]  = {"dirichlet", "freeslip"};
   const char    *runTypes[2] = {"full", "test"};
   PetscInt       bc, run;
   PetscErrorCode ierr;
@@ -524,31 +523,27 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
       if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
     }
   }
-  if (user->bcType == DIRICHLET) {
+  if (user->bcType == FREE_SLIP) {
     numBC = 2;
     ierr  = DMComplexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
     bcPoints[1] = bcPoints[0];
     ierr  = PetscObjectReference((PetscObject) bcPoints[1]);CHKERRQ(ierr);
-  } else if (user->bcType == BC_MANTLE) {
-    IS       faces[6];
-    PetscInt s, n = 0;
-
-    numBC = 1;
-    for (s = 0; s < 6; ++s) {
-      ierr  = DMComplexGetStratumIS(dm, "marker", s, &faces[n]);CHKERRQ(ierr);
-      if (faces[n]) ++n;
+    ierr = DMComplexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
+  } else {
+    if (user->bcType == DIRICHLET) {
+      numBC = 2;
+      ierr  = DMComplexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
+      bcPoints[1] = bcPoints[0];
+      ierr  = PetscObjectReference((PetscObject) bcPoints[1]);CHKERRQ(ierr);
     }
-    ierr  = ISConcatenate(((PetscObject) dm)->comm, n, faces, &bcPoints[0]);CHKERRQ(ierr);
+    ierr = DMComplexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   }
-  ierr = DMComplexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 0, "velocity");CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 1, "pressure");CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 2, "temperature");CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
-  if ((user->bcType == DIRICHLET) || (user->bcType == BC_MANTLE)) {
-    ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
-    ierr = ISDestroy(&bcPoints[1]);CHKERRQ(ierr);
-  }
+  ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
+  ierr = ISDestroy(&bcPoints[1]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -618,7 +613,7 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
       SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
     }
     break;
-  case BC_MANTLE:
+  case FREE_SLIP:
     switch(user->dim) {
     case 2:
       user->exactFuncs[0] = quadratic2_u_2d;
