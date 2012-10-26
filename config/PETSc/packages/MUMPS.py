@@ -68,7 +68,7 @@ class Configure(PETSc.package.NewPackage):
       g.write('LMETIS = '+self.libraries.toString(self.parmetis.lib)+'\n')
       orderingsc += ' -Dmetis -Dparmetis'
       orderingsf += ' '+self.compilers.FortranDefineCompilerOption+'metis '+self.compilers.FortranDefineCompilerOption+'parmetis'
-    elif self.ptscotch.found:
+    if self.ptscotch.found:
       g.write('ISCOTCH = '+self.headers.toString(self.ptscotch.include)+'\n')
       g.write('LSCOTCH = '+self.libraries.toString(self.ptscotch.lib)+'\n')
       orderingsc += ' -Dscotch  -Dptscotch'
@@ -138,7 +138,7 @@ class Configure(PETSc.package.NewPackage):
     if not self.framework.argDB['with-mumps-serial']:
       if self.parmetis.found:
         self.deps.append(self.parmetis)
-      elif self.ptscotch.found:
+      if self.ptscotch.found:
         self.deps.append(self.ptscotch)
     PETSc.package.NewPackage.configureLibrary(self)
      # [parallem mumps] make sure either ptscotch or parmetis is enabled
