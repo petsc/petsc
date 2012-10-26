@@ -6,7 +6,7 @@ class Configure(PETSc.package.NewPackage):
     #'https://gforge.inria.fr/frs/download.php/28978/scotch_5.1.12b_esmumps.tar.gz'
     self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch_5.1.12b_esmumps-p2.tar.gz']
     self.downloadfilename = 'scotch'
-    self.liblist      = [['libptscotch.a','libptscotcherr.a']]
+    self.liblist      = [['libptesmumps.a', 'libptscotch.a','libptscotcherr.a']]
     self.functions    = ['SCOTCH_archBuild']
     self.includes     = ['ptscotch.h']
     self.requires32bitint = 0
