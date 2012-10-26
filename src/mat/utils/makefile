@@ -5,7 +5,7 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = convert.c matstash.c axpy.c zerodiag.c \
            getcolv.c gcreate.c freespace.c compressedrow.c multequal.c \
-           ptap.c matstashspace.c pheap.c
+           matstashspace.c pheap.c
 SOURCEF  =
 SOURCEH  = freespace.h petscheap.h
 OBJSC    = $(SOURCEC:.c=.o)

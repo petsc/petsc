@@ -72,26 +72,20 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPtAPSymbolic_MPIAIJ"
-PetscErrorCode MatPtAPSymbolic_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatPtAP_MPIAIJ_MPIAIJ"
+PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!P->ops->ptapsymbolic_mpiaij) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
-  ierr = (*P->ops->ptapsymbolic_mpiaij)(A,P,fill,C);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPNumeric_MPIAIJ"
-PetscErrorCode MatPtAPNumeric_MPIAIJ(Mat A,Mat P,Mat C)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!P->ops->ptapnumeric_mpiaij) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
-  ierr = (*P->ops->ptapnumeric_mpiaij)(A,P,C);CHKERRQ(ierr);
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+    ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ(A,P,fill,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
+  }
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+  ierr = MatPtAPNumeric_MPIAIJ_MPIAIJ(A,P,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

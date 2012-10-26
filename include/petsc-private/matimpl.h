@@ -213,7 +213,6 @@ PETSC_EXTERN PetscErrorCode MatView_Private(Mat);
 PETSC_EXTERN PetscErrorCode MatHeaderMerge(Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscInt*, PetscInt*,PetscInt*,PetscInt*, PetscInt**);
-PETSC_EXTERN PetscErrorCode MatPtAP_Basic(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_EXTERN PetscErrorCode MatDiagonalSet_Default(Mat,Vec,InsertMode);
 
 #if defined(PETSC_USE_DEBUG)
