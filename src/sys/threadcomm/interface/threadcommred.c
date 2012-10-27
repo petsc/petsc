@@ -45,7 +45,7 @@ PetscErrorCode PetscThreadReductionBegin(MPI_Comm comm,PetscThreadCommReductionO
     redctx->tcomm = tcomm;
   }
   red->nreds += nreds;
-  red->ctr = (red->ctr+nreds)%PETSC_REDUCTIONS_MAX;
+  red->ctr = red->ctr+nreds;
   *redout = red;
   PetscFunctionReturn(0);
 }
