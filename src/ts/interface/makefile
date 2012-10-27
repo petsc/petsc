@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = ts.c tscreate.c tsreg.c tsregall.c dlregists.c
+SOURCEC  = ts.c tscreate.c tsreg.c tsregall.c dlregists.c tseig.c
 SOURCEF  =
 SOURCEH  = 
 OBJSC    = ${SOURCEC:.c=.o}
