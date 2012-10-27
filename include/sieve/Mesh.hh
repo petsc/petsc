@@ -1701,6 +1701,9 @@ namespace ALE {
     void setMaxDof(const int maxDof) {this->_maxDof = maxDof;};
     void copy(const Obj<IMesh>& m) {
       this->setSieve(m->getSieve());
+      this->_calculatedOverlap = m->_calculatedOverlap;
+      this->_sendOverlap       = m->_sendOverlap;
+      this->_recvOverlap       = m->_recvOverlap;
       const labels_type& labels = m->getLabels();
 
       for(typename labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
