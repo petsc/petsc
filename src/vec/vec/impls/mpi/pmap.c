@@ -587,7 +587,7 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf,PetscLayout layout,PetscInt nlea
   ierr = PetscLayoutGetLocalSize(layout,&nroots);CHKERRQ(ierr);
   ierr = PetscMalloc(nleaves*sizeof(PetscSFNode),&remote);CHKERRQ(ierr);
   for (i=0; i<nleaves; i++) {
-    PetscInt owner;
+    PetscInt owner = -1;
     ierr = PetscLayoutFindOwner(layout,iremote[i],&owner);CHKERRQ(ierr);
     remote[i].rank  = owner;
     remote[i].index = iremote[i] - layout->range[owner];
