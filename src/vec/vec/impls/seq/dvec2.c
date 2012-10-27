@@ -12,13 +12,12 @@ PetscErrorCode VecMDot_kernel(PetscInt thread_id,Vec xin,PetscInt *nvp,Vec *yvec
 {
   PetscErrorCode       ierr;
   PetscInt             *trstarts=xin->map->trstarts;
-  PetscInt             start,end,n,nv=*nvp,i,j;
+  PetscInt             start,end,nv=*nvp,i,j;
   PetscScalar          *xx,*yy;
   PetscScalar          sum;
 
   start = trstarts[thread_id];
   end   = trstarts[thread_id+1];
-  n     = end - start;
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   for(i=0;i<nv;i++) {
     sum = 0.;
@@ -546,13 +545,12 @@ PetscErrorCode VecMax_kernel(PetscInt thread_id,Vec xin,PetscThreadCommReduction
 {
   PetscErrorCode ierr;
   PetscInt       *trstarts=xin->map->trstarts;
-  PetscInt       start,end,n,i;
+  PetscInt       start,end,i;
   const PetscScalar *xx;
   PetscReal      lred[2],tmp;
 
   start = trstarts[thread_id];
   end   = trstarts[thread_id+1];
-  n     = end-start;
   ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
   lred[0] = xx[start]; lred[1] = start;
   for(i=start+1;i<end;i++) {
@@ -630,13 +628,12 @@ PetscErrorCode VecMin_kernel(PetscInt thread_id,Vec xin,PetscThreadCommReduction
 {
   PetscErrorCode ierr;
   PetscInt       *trstarts=xin->map->trstarts;
-  PetscInt       start,end,n,i;
+  PetscInt       start,end,i;
   const PetscScalar *xx;
   PetscReal      lred[2],tmp;
 
   start = trstarts[thread_id];
   end   = trstarts[thread_id+1];
-  n     = end-start;
   ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
   lred[0] = xx[start]; lred[1] = start;
   for(i=start+1;i<end;i++) {
