@@ -5168,6 +5168,160 @@ PetscErrorCode DMComplexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexCreateSectionInitial"
+/* Set the number of dof on each point and separate by fields */
+PetscErrorCode DMComplexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numFields, PetscInt numComp[], PetscInt numDof[], PetscSection *section) {
+  PetscInt      *numDofTot;
+  PetscInt       pStart = 0, pEnd = 0;
+  PetscInt       p, d, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc((dim+1) * sizeof(PetscInt), &numDofTot);CHKERRQ(ierr);
+  for(d = 0; d <= dim; ++d) {
+    numDofTot[d] = 0;
+    for(f = 0; f < numFields; ++f) {
+      numDofTot[d] += numDof[f*(dim+1)+d];
+    }
+  }
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, section);CHKERRQ(ierr);
+  if (numFields > 1) {
+    ierr = PetscSectionSetNumFields(*section, numFields);CHKERRQ(ierr);
+    if (numComp) {
+      for(f = 0; f < numFields; ++f) {
+        ierr = PetscSectionSetFieldComponents(*section, f, numComp[f]);CHKERRQ(ierr);
+      }
+    }
+  } else {
+    numFields = 0;
+  }
+  ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(*section, pStart, pEnd);CHKERRQ(ierr);
+  for(d = 0; d <= dim; ++d) {
+    ierr = DMComplexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
+    for(p = pStart; p < pEnd; ++p) {
+      for(f = 0; f < numFields; ++f) {
+        ierr = PetscSectionSetFieldDof(*section, p, f, numDof[f*(dim+1)+d]);CHKERRQ(ierr);
+      }
+      ierr = PetscSectionSetDof(*section, p, numDofTot[d]);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree(numDofTot);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexCreateSectionBCDof"
+/* Set the number of dof on each point and separate by fields */
+PetscErrorCode DMComplexCreateSectionBCDof(DM dm, PetscInt numBC, PetscInt bcField[], IS bcPoints[], PetscSection section) {
+  PetscInt       numFields;
+  PetscInt       bc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  for (bc = 0; bc < numBC; ++bc) {
+    PetscInt        field = 0;
+    const PetscInt *idx;
+    PetscInt        n, i;
+
+    if (numFields) {field = bcField[bc];}
+    ierr = ISGetLocalSize(bcPoints[bc], &n);CHKERRQ(ierr);
+    ierr = ISGetIndices(bcPoints[bc], &idx);CHKERRQ(ierr);
+    for (i = 0; i < n; ++i) {
+      const PetscInt p = idx[i];
+      PetscInt       numConst;
+
+      /* Constrain every dof on the point */
+      if (numFields) {
+        ierr = PetscSectionGetFieldDof(section, p, field, &numConst);CHKERRQ(ierr);
+      } else {
+        ierr = PetscSectionGetDof(section, p, &numConst);CHKERRQ(ierr);
+      }
+      if (numFields) {
+        ierr = PetscSectionSetFieldConstraintDof(section, p, field, numConst);CHKERRQ(ierr);
+      }
+      ierr = PetscSectionAddConstraintDof(section, p, numConst);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(bcPoints[bc], &idx);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexCreateSectionBCIndices"
+/* Set the constrained indices on each point and separate by fields */
+PetscErrorCode DMComplexCreateSectionBCIndices(DM dm, PetscSection section) {
+  PetscInt      *maxConstraints;
+  PetscInt       numFields, f, pStart = 0, pEnd = 0, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc((numFields+1) * sizeof(PetscInt), &maxConstraints);CHKERRQ(ierr);
+  for(f = 0; f <= numFields; ++f) {maxConstraints[f] = 0;}
+  for(p = pStart; p < pEnd; ++p) {
+    PetscInt cdof;
+
+    if (numFields) {
+      for(f = 0; f < numFields; ++f) {
+        ierr = PetscSectionGetFieldConstraintDof(section, p, f, &cdof);CHKERRQ(ierr);
+        maxConstraints[f] = PetscMax(maxConstraints[f], cdof);
+      }
+    } else {
+      ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
+      maxConstraints[0] = PetscMax(maxConstraints[0], cdof);
+    }
+  }
+  for (f = 0; f < numFields; ++f) {
+    maxConstraints[numFields] += maxConstraints[f];
+  }
+  if (maxConstraints[numFields]) {
+    PetscInt *indices;
+
+    ierr = PetscMalloc(maxConstraints[numFields] * sizeof(PetscInt), &indices);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      PetscInt cdof, d;
+
+      ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
+      if (cdof) {
+        if (cdof > maxConstraints[numFields]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_LIB, "Likely memory corruption, point %D cDof %D > maxConstraints %D", p, cdof, maxConstraints[numFields]);
+        if (numFields) {
+          PetscInt numConst = 0, foff = 0;
+
+          for (f = 0; f < numFields; ++f) {
+            PetscInt cfdof, fdof;
+
+            ierr = PetscSectionGetFieldDof(section, p, f, &fdof);CHKERRQ(ierr);
+            ierr = PetscSectionGetFieldConstraintDof(section, p, f, &cfdof);CHKERRQ(ierr);
+            /* Change constraint numbering from absolute local dof number to field relative local dof number */
+            for(d = 0; d < cfdof; ++d) {
+              indices[numConst+d] = d;
+            }
+            ierr = PetscSectionSetFieldConstraintIndices(section, p, f, &indices[numConst]);CHKERRQ(ierr);
+            for(d = 0; d < cfdof; ++d) {
+              indices[numConst+d] += foff;
+            }
+            numConst += cfdof;
+            foff     += fdof;
+          }
+          if (cdof != numConst) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of field constraints %D should be %D", numConst, cdof);
+        } else {
+          for (d = 0; d < cdof; ++d) {
+            indices[d] = d;
+          }
+        }
+        ierr = PetscSectionSetConstraintIndices(section, p, indices);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscFree(indices);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(maxConstraints);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexCreateSection"
 /*@C
   DMComplexCreateSection - Create a PetscSection based upon the dof layout specification provided.
@@ -5196,119 +5350,18 @@ PetscErrorCode DMComplexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt 
 .seealso: DMComplexCreate(), PetscSectionCreate()
 @*/
 PetscErrorCode DMComplexCreateSection(DM dm, PetscInt dim, PetscInt numFields, PetscInt numComp[], PetscInt numDof[], PetscInt numBC, PetscInt bcField[], IS bcPoints[], PetscSection *section) {
-  PetscInt      *numDofTot, *maxConstraints;
-  PetscInt       pStart = 0, pEnd = 0;
-  PetscInt       p, d, f, bc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc2(dim+1,PetscInt,&numDofTot,numFields+1,PetscInt,&maxConstraints);CHKERRQ(ierr);
-  for (f = 0; f <= numFields; ++f) {maxConstraints[f] = 0;}
-  for (d = 0; d <= dim; ++d) {
-    numDofTot[d] = 0;
-    for (f = 0; f < numFields; ++f) {
-      numDofTot[d] += numDof[f*(dim+1)+d];
-    }
-  }
-  ierr = PetscSectionCreate(((PetscObject) dm)->comm, section);CHKERRQ(ierr);
-  if (numFields > 1) {
-    ierr = PetscSectionSetNumFields(*section, numFields);CHKERRQ(ierr);
-    if (numComp) {
-      for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldComponents(*section, f, numComp[f]);CHKERRQ(ierr);
-      }
-    }
-  } else {
-    numFields = 0;
-  }
-  ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(*section, pStart, pEnd);CHKERRQ(ierr);
-  for (d = 0; d <= dim; ++d) {
-    ierr = DMComplexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
-    for (p = pStart; p < pEnd; ++p) {
-      for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(*section, p, f, numDof[f*(dim+1)+d]);CHKERRQ(ierr);
-      }
-      ierr = PetscSectionSetDof(*section, p, numDofTot[d]);CHKERRQ(ierr);
-    }
-  }
-  if (numBC) {
-    for (bc = 0; bc < numBC; ++bc) {
-      PetscInt        field = 0;
-      const PetscInt *idx;
-      PetscInt        n, i;
-
-      if (numFields) {field = bcField[bc];}
-      ierr = ISGetLocalSize(bcPoints[bc], &n);CHKERRQ(ierr);
-      ierr = ISGetIndices(bcPoints[bc], &idx);CHKERRQ(ierr);
-      for (i = 0; i < n; ++i) {
-        const PetscInt p = idx[i];
-        PetscInt       depth, numConst;
-
-        ierr = DMComplexGetLabelValue(dm, "depth", p, &depth);CHKERRQ(ierr);
-        numConst              = numDof[field*(dim+1)+depth];
-        maxConstraints[field] = PetscMax(maxConstraints[field], numConst);
-        if (numFields) {
-          ierr = PetscSectionSetFieldConstraintDof(*section, p, field, numConst);CHKERRQ(ierr);
-        }
-        ierr = PetscSectionAddConstraintDof(*section, p, numConst);CHKERRQ(ierr);
-      }
-      ierr = ISRestoreIndices(bcPoints[bc], &idx);CHKERRQ(ierr);
-    }
-    for (f = 0; f < numFields; ++f) {
-      maxConstraints[numFields] += maxConstraints[f];
-    }
-  }
+  ierr = DMComplexCreateSectionInitial(dm, dim, numFields, numComp, numDof, section);CHKERRQ(ierr);
+  ierr = DMComplexCreateSectionBCDof(dm, numBC, bcField, bcPoints, *section);CHKERRQ(ierr);
   ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
-  if (maxConstraints[numFields]) {
-    PetscInt *indices;
-
-    ierr = PetscMalloc(maxConstraints[numFields] * sizeof(PetscInt), &indices);CHKERRQ(ierr);
-    ierr = PetscSectionGetChart(*section, &pStart, &pEnd);CHKERRQ(ierr);
-    for (p = pStart; p < pEnd; ++p) {
-      PetscInt cDof;
-
-      ierr = PetscSectionGetConstraintDof(*section, p, &cDof);CHKERRQ(ierr);
-      if (cDof) {
-        if (cDof > maxConstraints[numFields]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_LIB, "Likely memory corruption, point %D cDof %D > maxConstraints %D", p, cDof, maxConstraints);
-        if (numFields) {
-          PetscInt numConst = 0, fOff = 0;
-
-          for (f = 0; f < numFields; ++f) {
-            PetscInt cfDof, fDof;
-
-            ierr = PetscSectionGetFieldDof(*section, p, f, &fDof);CHKERRQ(ierr);
-            ierr = PetscSectionGetFieldConstraintDof(*section, p, f, &cfDof);CHKERRQ(ierr);
-            /* Change constraint numbering from absolute local dof number to field relative local dof number */
-            for (d = 0; d < cfDof; ++d) {
-              indices[numConst+d] = d;
-            }
-            ierr = PetscSectionSetFieldConstraintIndices(*section, p, f, &indices[numConst]);CHKERRQ(ierr);
-            for (d = 0; d < cfDof; ++d) {
-              indices[numConst+d] += fOff;
-            }
-            numConst += cfDof;
-            fOff     += fDof;
-          }
-          if (cDof != numConst) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of field constraints %D should be %D", numConst, cDof);
-        } else {
-          for (d = 0; d < cDof; ++d) {
-            indices[d] = d;
-          }
-        }
-        ierr = PetscSectionSetConstraintIndices(*section, p, indices);CHKERRQ(ierr);
-      }
-    }
-    ierr = PetscFree(indices);CHKERRQ(ierr);
-  }
-  ierr = PetscFree2(numDofTot,maxConstraints);CHKERRQ(ierr);
+  if (numBC) {ierr = DMComplexCreateSectionBCIndices(dm, *section);CHKERRQ(ierr);}
   {
     PetscBool view = PETSC_FALSE;
 
     ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-section_view", &view);CHKERRQ(ierr);
-    if (view) {
-      ierr = PetscSectionView(*section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    }
+    if (view) {ierr = PetscSectionView(*section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -7192,8 +7245,7 @@ PetscErrorCode DMComplexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
 #define __FUNCT__ "DMComplexGetSubpointMap"
 PetscErrorCode DMComplexGetSubpointMap(DM dm, IS *subpointMap)
 {
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
-  PetscErrorCode ierr;
+  DM_Complex *mesh = (DM_Complex *) dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -7203,11 +7255,24 @@ PetscErrorCode DMComplexGetSubpointMap(DM dm, IS *subpointMap)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexSetSubpointMap"
+/* Note: Should normally not be called by the user, since it is set in DMComplexCreateSubmesh() */
+PetscErrorCode DMComplexSetSubpointMap(DM dm, IS subpointMap)
+{
+  DM_Complex *mesh = (DM_Complex *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(subpointMap, IS_CLASSID, 2);
+  mesh->subpointMap = subpointMap;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexGetScale"
 PetscErrorCode DMComplexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
 {
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
-  PetscErrorCode ierr;
+  DM_Complex *mesh = (DM_Complex *) dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -7220,8 +7285,7 @@ PetscErrorCode DMComplexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
 #define __FUNCT__ "DMComplexSetScale"
 PetscErrorCode DMComplexSetScale(DM dm, PetscUnit unit, PetscReal scale)
 {
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
-  PetscErrorCode ierr;
+  DM_Complex *mesh = (DM_Complex *) dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);

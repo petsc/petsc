@@ -72,6 +72,7 @@ PETSC_EXTERN PetscErrorCode DMComplexSetRefinementLimit(DM, PetscReal);
 PETSC_EXTERN PetscErrorCode DMComplexDistribute(DM, const char[], DM*);
 PETSC_EXTERN PetscErrorCode DMComplexLoad(PetscViewer, DM);
 PETSC_EXTERN PetscErrorCode DMComplexGetSubpointMap(DM, IS*);
+PETSC_EXTERN PetscErrorCode DMComplexSetSubpointMap(DM, IS);
 
 PETSC_EXTERN PetscErrorCode DMComplexCreateCubeBoundary(DM, const PetscReal [], const PetscReal [], const PetscInt []);
 PETSC_EXTERN PetscErrorCode DMComplexCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, DM *);
