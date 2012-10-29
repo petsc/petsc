@@ -1704,6 +1704,7 @@ namespace ALE {
       this->_calculatedOverlap = m->_calculatedOverlap;
       this->_sendOverlap       = m->_sendOverlap;
       this->_recvOverlap       = m->_recvOverlap;
+      this->_renumbering       = m->_renumbering;
       const labels_type& labels = m->getLabels();
 
       for(typename labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
