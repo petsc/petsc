@@ -4283,33 +4283,27 @@ is \findex{SNESVISetVariableBounds} used to indicate that one is solving a varia
 \sindex{ODE solvers}
 
 The TS library provides a framework for the scalable solution of ODEs and DAEs
-arising from the discretization of time-dependent PDEs, and of
-steady-state problems using pseudo-timestepping.
+arising from the discretization of time-dependent PDEs.
 
 \vspace{.2cm}
 
 \noindent
 
-{\bf Time-Dependent Problems:} Consider the ODE
-\[
-              u_t = F(u,t),
-\]
-where $ u $ is a finite-dimensional vector, usually obtained from
-discretizing a PDE with finite differences, finite elements, etc.
-For example, in the backward Euler method, discretizing the heat equation 
+{\bf Simple Example:} Consider the PDE
 \[
           u_t = u_{xx} 
 \]
-with centered finite differences results in 
-\[
-          (u_i)_t = \frac{u_{i+1} - 2 u_{i} + u_{i-1}}{h^2};
-\]
-or with piecewise linear finite elements approximation
-$ u(x,t) \doteq \sum_i \xi_i(t) \phi_i(x)$ yields semi-discrete equation
+discretized with centered finite differences in space yielding  the  semi-discrete equation
+\begin{eqnarray*}
+          (u_i)_t & =  & \frac{u_{i+1} - 2 u_{i} + u_{i-1}}{h^2}, \\
+           u_t      &  = & \tilde{A} u;
+\end{eqnarray*}
+or with piecewise linear finite elements approximation in space
+$ u(x,t) \doteq \sum_i \xi_i(t) \phi_i(x)$ yielding the  semi-discrete equation
 \[
           B {\xi}'(t) = A \xi(t)
 \]
-and discrete equation
+Now applying the backward Euler method results in 
 \[
         ( B - dt^n A  ) u^{n+1} = A u^n, 
 \]
@@ -4320,62 +4314,100 @@ in which
 \[  
          {\xi}'(t_{n+1}) \doteq \frac{{u^{n+1}}_i - {u^{n}}_i }{dt^{n}},
 \]
-$A$ is the stiffness matrix and $B$ is the mass matrix.
-
-The TS library provides code to solve these equations (currently 
-using the forward or backward Euler method) as well as an interface to 
-other sophisticated ODE solvers, in a clean and easy manner,
-where the user need only provide code for the evaluation of $ F(u,t) $ and 
-(optionally) its associated Jacobian matrix.
+$A$ is the stiffness matrix and $B$ is the identity for finite differences or the mass matrix for the finite element method.
 
 \vspace{.2cm}
 
-\noindent
-{\bf Steady-State Problems:} 
-In addition, TS provides a general code for performing pseudo timestepping
-with a variable timestep at each physical node point. For example, instead of
-directly attacking the steady-state problem
+The PETSc interface for solving time dependent problems assumes the problem is written in the form
 \[
-           F(u) = 0,
+        F(t,u,\dot{u}) = G(t,u), \quad u(t_0) = u_0.
 \]
-we can use pseudo-transient continuation by solving
-\[
-           u_t = F(u).
-\]
-Using time differencing 
-\[
-   u_t \doteq \frac{{u^{n+1}} - {u^{n}} }{dt^{n}}
-\]
-with the backward Euler method, we obtain
-nonlinear equations at a series of pseudo-timesteps
-\[
-           \frac{1}{dt^n} B (u^{n+1} - u^{n} ) = F(u^{n+1}).
-\]
-For this problem the user must provide $F(u)$,
-the time steps $dt^{n}$ and the left-hand-side matrix $B$
-(or optionally, if the timestep is position independent and $B$ is the
-identity matrix,
-a scalar timestep), as well as optionally the Jacobian of $F(u)$. 
+In general, this is a differential algebraic
+equation (DAE) \footnote{If the matrix $F_{\dot{u}}(t) = \partial F
+/ \partial \dot{u}$ is nonsingular then it is an ODE and can be
+transformed to the standard explicit form, although this transformation
+may not lead to efficient algorithms.} For ODE with nontrivial mass
+matrices such as arise in FEM, the implicit/DAE interface significantly
+reduces overhead to prepare the system for algebraic solvers (SNES/KSP)
+by having the user assemble the correctly shifted matrix.  Therefore
+this interface is also useful for ODE systems.
 
-More generally, this can be applied to implicit ODE and DAE for which
-the transient form is
-\[
-  F(u,\dot{u}) = 0.
-\]
-See Section~\ref{sec_dae} for details on this formulation.
+To solve an ODE or DAE one uses:
 
-\section{Basic TS Usage}
+\begin{itemize}
+\item Function $F(t,u,\dot{u})$
+  \begin{tabbing}
+    TSSetIFunction(TS ts,Vec R,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,Vec,void*),void *funP);
+  \end{tabbing}
+  The vector \trl{R} is an optional location to store the residual.
+  The arguments to the function \trl{f()} are the
+  timestep contex, current time, input state $u$, input time derivative
+  $\dot{u}$, and the (optional) user-provided context \trl{funP}. If    $F(t,u,\dot{u}) = \dot{u} $ then
+  one need not call this function.
+
+\item Function $ G(t,u)$, if it is nonzero, is provided with the function
+  \begin{tabbing}
+    TSSetRHSFunction(TS ts,Vec R,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *funP);
+  \end{tabbing}
+
+\item Jacobian $F_u + (shift)F_{\dot{u}}$ \\
+  If using a fully implicit or semi-implict (IMEX) method one also can provide an appropriate (approximate) Jacobian matrix of $F()$.
+  \begin{tabbing}
+    TS\=SetIJacobian(TS ts,Mat A,Mat B,\\
+    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*),void *jacP);
+  \end{tabbing}
+  The arguments for the function \trl{fjac()}
+  are the timestep contex, current time, input state $u$, input
+  derivative $\dot{u}$, $shift$, matrix $A$, preconditioning matrix
+  $B$, flag describing structure of preconditioning matrix (see the
+  discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
+  details), and the (optional) user-provided context \trl{jacP}. 
+  This form for Jacobian arises because for all implicit and semi-implicit time integrator in PETSc $\dot{u}^n$ is approximated by $(shift) u^n + g(u^{n-1},...)$ 
+  where the $shift$ is positive and $ g(u^{n-1},...)$ depends on previous iterations; 
+  for example for backward Euler $\dot{u} = (u^n - u^{n-1})/\delta t = u^n/\delta t - u^{n-1}/\delta t.$  Hence 
+\begin{eqnarray*}
+    \frac{d F}{d u^n} &  = &  \frac{\partial F}{\partial \dot{u}}\frac{\partial \dot{u}}{\partial u} + \frac{\partial F}{\partial u}\\
+                      & = &   (shift) F_{\dot{u}}(t^n,u^n,\dot{u}^n) + F_u(t^t,u^n,\dot{u}^n).
+\end{eqnarray*}
+  For example, again with the backwards Euler method, one obtains
+\begin{eqnarray*}
+    \frac{d F}{d u^n} & = &   u^n/\delta t + F_u(t^t,u^n,\dot{u}^n).
+\end{eqnarray*}
+
+\item Jacobian $G_u$ \\
+  If using a fully implicit method and the function $ G() $ is provided, one also can provide an appropriate (approximate) Jacobian matrix of $G()$.
+  \begin{tabbing}
+    TS\=SetRHSJacobian(TS ts,Mat A,Mat B,\\
+    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *jacP);
+  \end{tabbing}
+  The arguments for the function \trl{fjac()}
+  are the timestep contex, current time, input state $u$, matrix $A$, preconditioning matrix
+  $B$, flag describing structure of preconditioning matrix (see the
+  discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
+  details), and the (optional) user-provided context \trl{jacP}. 
+\end{itemize}
+
+Providing appropriate $ F() $ and $G() $ for your problem allows for the easy runtime switching between explicit, semi-implicit (IMEX), and fully implicit method.
+
+\section{Basic TS Options}
 
 The user first creates a TS object with the command
 \begin{tabbing}
-  int TSCreate(MPI\_Comm comm,TSProblemType problemtype,TS *ts);
+  int TSCreate(MPI\_Comm comm,TS *ts);
+\end{tabbing}
+
+\begin{tabbing}
+  int TSSetProblemType(TS ts,TSProblemType problemtype);
 \end{tabbing}
 The TSProblemType 
-is one of \trl{TS_LINEAR} or \trl{TS_NONLINEAR},
-to indicate whether $ F(u,t) $ is given by a matrix $ A $, or $ A(t) $, or a
-function $ F(u,t). $
+is one of \trl{TS_LINEAR} or \trl{TS_NONLINEAR}.
 
-One can set the solution method with the routine
+\noindent To set up TS for solving an ODE, one must set the ``initial conditions'' for the ODE with
+\begin{tabbing}
+ TSSetSolution(TS ts, Vec initialsolution);
+\end{tabbing}
+
+\noindent One can set the solution method with the routine
 \begin{tabbing}
  TSSetType(TS ts,TSType type);
 \end{tabbing}
@@ -4388,7 +4420,7 @@ or the command line option \\
 \sindex{backward Euler}
 
 
-Set the initial time and timestep with the command
+\noindent Set the initial time and timestep with the command
 \begin{tabbing}
  TSSetInitialTimeStep(TS ts,double time,double dt);
 \end{tabbing}
@@ -4403,14 +4435,14 @@ can determine the current timestep with the routine
 Here, ``current'' refers to the timestep being used to attempt to
 promote the solution form $ u^n $ to $ u^{n+1}. $
 
-One sets the total number of timesteps to run or the total time to run 
+\noindent One sets the total number of timesteps to run or the total time to run 
 (whatever is first) with the command 
 \begin{tabbing}
  TSSetDuration(TS ts,int maxsteps,double maxtime);
 \end{tabbing}
 One performs the request number of time steps with
 \begin{tabbing}
-  TSSolve(TS ts,Vec X,PetscReal *ftime);
+  TSSolve(TS ts,Vec U,PetscReal *ftime);
 \end{tabbing}
 The solve call implicitly sets up the timestep context;
 this can be done explicitly with
@@ -4430,77 +4462,74 @@ In place of TSSolve(), a single step can be taken using
 TSStep(TS ts);
 \end{tabbing}
 
-\subsection{Solving Time-dependent Problems}
-To set up TS for solving an ODE, one must set the following:
-
-\begin{itemize}
-\item Solution:
-\begin{tabbing}
- TSSetSolution(TS ts, Vec initialsolution);
-\end{tabbing}
-The vector \trl{initialsolution} should contain the ``initial conditions''
-for the ODE. 
-
-The interface for solving time dependent problems given in the implicit
-form
-\[
-        F(t,u,\dot{u}) = 0, \quad u(t_0) = u_0
-\]
-is slightly different.  In general, this is a differential algebraic
-equation (DAE), but if the matrix $F_{\dot{u}}(t) = \partial F
-/ \partial \dot{u}$ is nonsingular then it is an ODE and can be
-transformed to the standard explicit form, although this transformation
-may not lead to efficient algorithms.  For ODE with nontrivial mass
-matrices such as arise in FEM, the implicit/DAE interface significantly
-reduces overhead to prepare the system for algebraic solvers (SNES/KSP)
-by having the user assemble the correctly shifted matrix.  Therefore
-this interface is also useful for ODE systems.
-
-To solve an ODE or DAE one
-uses:
-
-\begin{itemize}
-\item Function $F(t,u,\dot{u})$
-  \begin{tabbing}
-    TSSetIFunction(TS ts,Vec R,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,Vec,void*),void *funP);
-  \end{tabbing}
-  The vector \trl{R} is an optional location to store the residual.
-  The arguments to the function \trl{f()} are the
-  timestep contex, current time, input state $u$, input time derivative
-  $\dot{u}$, and the (optional) user-provided context \trl{funP}.
-
-\item Jacobian $F_u + aF_{\dot{u}}$ \\
-  Unless one is using matrix-free methods without preconditioning, the user must also provide an (approximate) Jacobian matrix of $G(u) = F(t,u,w+au)$.
-  This form for $G$ arises because the time integrator internally approximates $\dot{u}$ by $w+au$ where the positive ``shift'' $a$ and vector $w$ depend on the integration method, step size, and past states.
-  The function that evaluates $G'(u) = F_u + aF_{\dot{u}}$ is set with
-  \begin{tabbing}
-    TS\=SetIJacobian(TS ts,Mat A,Mat B,\\
-    \>PetscErrorCode (*fjac)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*),void *jacP);
-  \end{tabbing}
-  The arguments for the function \trl{fjac()}
-  are the timestep contex, current time, input state $u$, input
-  derivative $\dot{u}$, shift $a$, matrix $A$, preconditioning matrix
-  $B$, flag describing structure of preconditioning matrix (see the
-  discussion of KSPSetOperators() in Section~\ref{sec_usingsles} for
-  details), and the (optional) user-provided context \trl{jacP}.
-\end{itemize}
-
 \subsection{Using Implicit-Explicit (IMEX) methods for multi-rate problems}
 \label{sec_imex}
-The methods of the last section can be generalized for problems with multiple time scales using the form
-\begin{equation}\label{eq:imex}
-  G(t,u,\dot u) = F(t,u),\quad u(t_0) = u_0
-\end{equation}
-where $G$ will be treated implicitly using a method suitable for stiff problems and $F$ will be treated explicitly when using an IMEX method like TSARKIMEX.
-$G$ is typically linear or weakly nonlinear while $F$ may have very strong nonlinearities such as arise in non-oscillatory methods for hyperbolic PDE.
+For problems with multiple time scales 
+$F()$ will be treated implicitly using a method suitable for stiff problems and $G()$ will be treated explicitly when using an IMEX method like TSARKIMEX.
+$F()$ is typically linear or weakly nonlinear while $G()$ may have very strong nonlinearities such as arise in non-oscillatory methods for hyperbolic PDE.
 The user provides three pieces of information, the APIs for which have been described above.
 \begin{itemize}
-\item ``Slow'' part $F(t,u)$ using TSSetRHSFunction().
-\item ``Stiff'' part $G(t,u,\dot u)$ using TSSetIFunction().
-\item Jacobian $J(t,u,\dot u) = G_u + a G_{\dot u}$ using TSSetIJacobian().
-  An assembled Jacobian is optional and can be approximated using finite differencing.
+\item ``Slow'' part $G(t,u)$ using TSSetRHSFunction().
+\item ``Stiff'' part $F(t,u,\dot u)$ using TSSetIFunction().
+\item Jacobian $F_u + (shift) F_{\dot u}$ using TSSetIJacobian().
 \end{itemize}
-To solve Equation~\ref{eq:imex} using fully implicit methods, the user may also provide the Jacobian $F_u$.
+
+\subsection{Using fully implicit methods}
+Either provide the Jacobian of $F() $ (and $G()$ if $G()$ is provided) or use a DM that provides a coloring so the Jacobian can be computed efficiently via finite differences.
+
+{\bf Theta methods}
+
+{\bf GL methods}
+
+\subsection{Using the Explicit Runge-Kutta timestepper with variable timesteps}
+The explicit Euler and Runge-Kutta methods require the ODE be in the form
+\[
+    \dot{u} = G(u,t).
+\]
+The user can either call TSSetRHSFunction() and/or they can call TSSetIFunction() (so long as the function provided to TSSetIFunction() is equivalent to 
+$ \dot{u} + \tilde{F}(t,u) $) but 
+the Jacobians need not be provided.\footnote{PETSc will automatically translate the function provided to the appropriate form.} 
+
+The Explicit Runge-Kutta timestepper with variable timesteps is an \sindex{Runge-Kutta}
+implementation of standard Runge-Kutta using Dormand-Prince \sindex{Dorman-Prince}
+5(4). It is easy to change this table if needed. Since the time-stepper is using variable timesteps, the
+``TSSetInitialTimeStep()'' function is not used.
+
+Setting the tolerance with 
+\begin{tabbing}
+TSRKSetTolerance(TS ts,double tolerance)
+\end{tabbing}
+or \trl{-ts_rk_tol} \findex{-ts_rk_tol} 
+defines the global tolerance, for the whole time
+period. The tolerance for each timestep is calculated relatively to
+the size of the timestep.
+
+The error in each timestep is calculated using the two solutions given
+from Dormand-Prince 5(4). The local error is calculated from the
+2-norm from the difference of the two solutions.
+
+Other timestep features:
+\begin{itemize}
+  \item The next timestep can be maximum 5 times the present timestep
+  \item The smallest timestep can be 1e-14 (to avoid machine precision
+  errors)
+\end{itemize}
+
+More details about the solver and code examples can be found at
+\trl{http://www.parallab.uib.no/projects/molecul/matrix/}.
+
+
+\subsection{Special Cases}
+
+{\bf Linear ODEs}
+
+{\bf ???}
+
+\subsection{Monitoring and visualizing solutions}
+
+\subsection{Error control via variable time-stepping}
+
+\subsection{Debugging ODE solvers}
 
 \subsection{Using Sundials from PETSc}
 \label{sec_sundials}
@@ -4564,12 +4593,47 @@ This may be set in the options
 database with \trl{-ts_sundials_gmres_restart} \trl{restart}. \findex{-ts_sundials_gmres_restart}
 
 
-\subsection{Solving Steady-State Problems with Pseudo-Timestepping}
+\chapter{Solving Steady-State Problems with Pseudo-Timestepping}
+
+\vspace{.2cm}
+
+\noindent
+{\bf Simple Example:} 
+TS provides a general code for performing pseudo timestepping
+with a variable timestep at each physical node point. For example, instead of
+directly attacking the steady-state problem
+\[
+           G(u) = 0,
+\]
+we can use pseudo-transient continuation by solving
+\[
+           u_t = G(u).
+\]
+Using time differencing 
+\[
+   u_t \doteq \frac{{u^{n+1}} - {u^{n}} }{dt^{n}}
+\]
+with the backward Euler method, we obtain
+nonlinear equations at a series of pseudo-timesteps
+\[
+           \frac{1}{dt^n} B (u^{n+1} - u^{n} ) = G(u^{n+1}).
+\]
+For this problem the user must provide $G(u)$,
+the time steps $dt^{n}$ and the left-hand-side matrix $B$
+(or optionally, if the timestep is position independent and $B$ is the
+identity matrix,
+a scalar timestep), as well as optionally the Jacobian of $G(u)$. 
+
+More generally, this can be applied to implicit ODE and DAE for which
+the transient form is
+\[
+  F(u,\dot{u}) = 0.
+\]
 
 For solving steady-state problems with pseudo-timestepping one proceeds 
 as follows.
 \begin{itemize}
-\item Provide the function \trl{F(u)} with the routine
+\item Provide the function \trl{G(u)} with the routine
 \begin{tabbing}
  TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,double,Vec,Vec,void*),void *fP);
 \end{tabbing}
@@ -4578,7 +4642,7 @@ the timestep context, the current time, the input for the function,
 the output for the function and the (optional) user-provided context
 variable \trl{fP}.
 
-\item Provide the (approximate) Jacobian matrix of \trl{F(u,t)} and a 
+\item Provide the (approximate) Jacobian matrix of \trl{G(u)} and a 
 function to compute it at each Newton iteration. This is done with the command
 \begin{tabbing}
  TSSetRHSJacobian(\=TS ts,Mat A, Mat B,PetscErrorCode (*f)(TS,double,Vec,Mat*,Mat*,\\
@@ -4633,34 +4697,6 @@ or  the option
       has not yet been created.
 \end{itemize}
 
-\subsection{Using the Explicit Runge-Kutta timestepper with variable timesteps}
-The Explicit Runge-Kutta timestepper with variable timesteps is an \sindex{Runge-Kutta}
-implementation of standard Runge-Kutta using Dormand-Prince \sindex{Dorman-Prince}
-5(4). It is easy to change this table if needed. Since the time-stepper is using variable timesteps, the
-``TSSetInitialTimeStep()'' function is not used.
-
-Setting the tolerance with 
-\begin{tabbing}
-TSRKSetTolerance(TS ts,double tolerance)
-\end{tabbing}
-or \trl{-ts_rk_tol} \findex{-ts_rk_tol} 
-defines the global tolerance, for the whole time
-period. The tolerance for each timestep is calculated relatively to
-the size of the timestep.
-
-The error in each timestep is calculated using the two solutions given
-from Dormand-Prince 5(4). The local error is calculated from the
-2-norm from the difference of the two solutions.
-
-Other timestep features:
-\begin{itemize}
-  \item The next timestep can be maximum 5 times the present timestep
-  \item The smallest timestep can be 1e-14 (to avoid machine precision
-  errors)
-\end{itemize}
-
-More details about the solver and code examples can be found at
-\trl{http://www.parallab.uib.no/projects/molecul/matrix/}.
 
 
 \cleardoublepage
