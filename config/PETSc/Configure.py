@@ -566,7 +566,7 @@ class Configure(config.base.Configure):
       self.addDefine('UNUSED', ' ')
       return
     self.pushLanguage(self.languages.clanguage)      
-    if self.checkLink('__attribute((unused)) static int myfunc(void){ return 1;}', 'int i = myfunc();\ntypedef void* atype;\n__attribute((unused))  atype a;\n'):
+    if self.checkLink('__attribute((unused)) static int myfunc(__attribute((unused)) void *name){ return 1;}', 'int i = 0;\nint j = myfunc(&i);\ntypedef void* atype;\n__attribute((unused))  atype a;\n'):
       self.addDefine('UNUSED', '__attribute((unused))')
     else:
       self.addDefine('UNUSED', ' ')
