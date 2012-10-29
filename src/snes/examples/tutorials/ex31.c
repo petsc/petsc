@@ -466,6 +466,145 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateBoundaryPointIS_Square"
+PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, PetscInt **numBoundaryConstraints, IS **boundaryPoints, IS **constraintIndices)
+{
+  MPI_Comm        comm = ((PetscObject) dm)->comm;
+  const PetscReal eps  = 1.0e-10;
+  PetscSection    coordSection;
+  Vec             coordinates;
+  PetscScalar    *coords;
+  IS              bcPoints;
+  const PetscInt *points;
+  const PetscInt  corner = 0, bottom = 1, right = 2, top = 3, left = 4;
+  PetscBool       onBd[5];
+  PetscInt        numBoundaryPoints[5] = {0, 0, 0, 0, 0}, bd, numPoints, p;
+  PetscInt       *bdPoints[5], *idx;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  /* boundary 0: corners
+     boundary 1: bottom
+     boundary 2: right
+     boundary 3: top
+     boundary 4: left
+  */
+  *numBoundaries = 5;
+  ierr = PetscMalloc(*numBoundaries * sizeof(PetscInt), numBoundaryConstraints);CHKERRQ(ierr);
+  ierr = PetscMalloc(*numBoundaries * sizeof(IS), boundaryPoints);CHKERRQ(ierr);
+  ierr = PetscMalloc(*numBoundaries * sizeof(IS), constraintIndices);CHKERRQ(ierr);
+  /* Set number of constraints for each boundary */
+  (*numBoundaryConstraints)[corner] = 2;
+  (*numBoundaryConstraints)[bottom] = 1;
+  (*numBoundaryConstraints)[right]  = 1;
+  (*numBoundaryConstraints)[top]    = 1;
+  (*numBoundaryConstraints)[left]   = 1;
+  /* Set local constraint indices for each boundary */
+  ierr = PetscMalloc((*numBoundaryConstraints)[corner] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  idx[0] = 0; idx[1] = 1;
+  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[corner], idx, PETSC_OWN_POINTER, &(*boundaryPoints)[corner]);CHKERRQ(ierr);
+  ierr = PetscMalloc((*numBoundaryConstraints)[bottom] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  idx[0] = 1;
+  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[bottom], idx, PETSC_OWN_POINTER, &(*boundaryPoints)[bottom]);CHKERRQ(ierr);
+  ierr = PetscMalloc((*numBoundaryConstraints)[right] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  idx[0] = 0;
+  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[right], idx, PETSC_OWN_POINTER, &(*boundaryPoints)[right]);CHKERRQ(ierr);
+  ierr = PetscMalloc((*numBoundaryConstraints)[top] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  idx[0] = 1;
+  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[top], idx, PETSC_OWN_POINTER, &(*boundaryPoints)[top]);CHKERRQ(ierr);
+  ierr = PetscMalloc((*numBoundaryConstraints)[left] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
+  idx[0] = 0;
+  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[left], idx, PETSC_OWN_POINTER, &(*boundaryPoints)[left]);CHKERRQ(ierr);
+  /* Count points on each boundary */
+  ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMComplexGetStratumIS(dm, "marker", 1, &bcPoints);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(bcPoints, &numPoints);CHKERRQ(ierr);
+  ierr = ISGetIndices(bcPoints, &points);CHKERRQ(ierr);
+  for(p = 0; p < numPoints; ++p) {
+    PetscInt off, bd;
+
+    ierr = PetscSectionGetOffset(coordSection, points[p], &off);CHKERRQ(ierr);
+    onBd[bottom] = PetscAbsScalar(coords[off+1]      ) < eps ? PETSC_TRUE : PETSC_FALSE;
+    onBd[right]  = PetscAbsScalar(coords[off+0] - 1.0) < eps ? PETSC_TRUE : PETSC_FALSE;
+    onBd[top]    = PetscAbsScalar(coords[off+1] - 1.0) < eps ? PETSC_TRUE : PETSC_FALSE;
+    onBd[left]   = PetscAbsScalar(coords[off+0]      ) < eps ? PETSC_TRUE : PETSC_FALSE;
+    onBd[corner] = onBd[bottom] + onBd[right] + onBd[top] + onBd[left] > 1 ? PETSC_TRUE : PETSC_FALSE;
+
+    for(bd = 0; bd < 5; ++bd) {
+      if (onBd[bd]) {
+        ++numBoundaryPoints[bd];
+        break;
+      }
+    }
+  }
+  /* Set points on each boundary */
+  for(bd = 0; bd < 5; ++bd) {
+    ierr = PetscMalloc(numBoundaryPoints[bd] * sizeof(PetscInt), &bdPoints[bd]);CHKERRQ(ierr);
+    numBoundaryPoints[bd] = 0;
+  }
+  for(p = 0; p < numPoints; ++p) {
+    PetscInt off, bd;
+
+    ierr = PetscSectionGetOffset(coordSection, points[p], &off);CHKERRQ(ierr);
+    onBd[bottom] = PetscAbsScalar(coords[off+1]      ) < eps ? PETSC_TRUE : PETSC_FALSE;
+    onBd[right]  = PetscAbsScalar(coords[off+0] - 1.0) < eps ? PETSC_TRUE : PETSC_FALSE;
+    onBd[top]    = PetscAbsScalar(coords[off+1] - 1.0) < eps ? PETSC_TRUE : PETSC_FALSE;
+    onBd[left]   = PetscAbsScalar(coords[off+0]      ) < eps ? PETSC_TRUE : PETSC_FALSE;
+    onBd[corner] = onBd[bottom] + onBd[right] + onBd[top] + onBd[left] > 1 ? PETSC_TRUE : PETSC_FALSE;
+
+    for(bd = 0; bd < 5; ++bd) {
+      if (onBd[bd]) {
+        bdPoints[bd][numBoundaryPoints[bd]++] = points[p];
+        break;
+      }
+    }
+  }
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(bcPoints, &points);CHKERRQ(ierr);
+  ierr = ISDestroy(&bcPoints);CHKERRQ(ierr);
+  for(bd = 0; bd < 5; ++bd) {
+    ierr = ISCreateGeneral(comm, numBoundaryPoints[bd], bdPoints[bd], PETSC_OWN_POINTER, &(*boundaryPoints)[bd]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateBoundaryPointIS_Cube"
+PetscErrorCode CreateBoundaryPointIS_Cube(DM dm, PetscInt *numBoundaries, PetscInt **numBoundaryConstraints, IS **boundaryPoints, IS **constraintIndices)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Just lazy");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateBoundaryPointIS"
+/* This will only work for the square/cube, but I think the interface is robust */
+PetscErrorCode CreateBoundaryPointIS(DM dm, PetscInt *numBoundaries, PetscInt **numBoundaryConstraints, IS **boundaryPoints, IS **constraintIndices)
+{
+  PetscInt       dim;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  switch(dim) {
+  case 2:
+    CreateBoundaryPointIS_Square(dm, numBoundaries, numBoundaryConstraints, boundaryPoints, constraintIndices);CHKERRQ(ierr);
+    break;
+  case 3:
+    CreateBoundaryPointIS_Cube(dm, numBoundaries, numBoundaryConstraints, boundaryPoints, constraintIndices);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No boundary creatin routine for dimension %d", dim);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SetupQuadrature"
 PetscErrorCode SetupQuadrature(AppCtx *user) {
   PetscFunctionBegin;
@@ -524,11 +663,26 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
     }
   }
   if (user->bcType == FREE_SLIP) {
-    numBC = 2;
-    ierr  = DMComplexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
-    bcPoints[1] = bcPoints[0];
-    ierr  = PetscObjectReference((PetscObject) bcPoints[1]);CHKERRQ(ierr);
-    ierr = DMComplexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
+    PetscInt  numBoundaries, b;
+    PetscInt *numBoundaryConstraints;
+    IS       *boundaryPoints, *constraintIndices;
+
+    ierr = DMComplexCreateSectionInitial(dm, dim, numFields, numComp, numDof, &section);CHKERRQ(ierr);
+    /* Velocity conditions */
+    ierr = CreateBoundaryPointIS(dm, &numBoundaries, &numBoundaryConstraints, &boundaryPoints, &constraintIndices);CHKERRQ(ierr);
+    for(b = 0; b < numBoundaries; ++b) {
+      ierr = DMComplexCreateSectionBCDof(dm, 1, &bcFields[0], &boundaryPoints[b], numBoundaryConstraints[b], section);CHKERRQ(ierr);
+    }
+    /* Temperature conditions */
+    ierr = DMComplexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
+    ierr = DMComplexCreateSectionBCDof(dm, 1, &bcFields[1], &bcPoints[0], section);CHKERRQ(ierr);
+    ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
+    for(b = 0; b < numBoundaries; ++b) {
+      ierr = DMComplexCreateSectionBCIndicesField(dm, bcFields[0], boundaryPoints[b], constraintIndices[b], section);CHKERRQ(ierr);
+    }
+    ierr = DMComplexCreateSectionBCIndicesField(dm, bcFields[1], bcPoints[0], PETSC_NULL, section);CHKERRQ(ierr);
+    ierr = DMComplexCreateSectionBCIndices(dm, section);CHKERRQ(ierr);
+    ierr = PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   } else {
     if (user->bcType == DIRICHLET) {
       numBC = 2;
@@ -816,50 +970,6 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
   ierr = PetscFree2(v0,J);CHKERRQ(ierr);
   ierr = PetscFree(values);CHKERRQ(ierr);
 #endif
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "CreatePressureNullSpace"
-PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSpace) {
-  Vec            pressure, localP;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetGlobalVector(dm, &pressure);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &localP);CHKERRQ(ierr);
-  ierr = VecSet(pressure, 0.0);CHKERRQ(ierr);
-  /* Put a constant in for all pressures
-     Could change this to project the constant function onto the pressure space (when that is finished) */
-  {
-    PetscSection section;
-    PetscInt     pStart, pEnd, p;
-    PetscScalar *a;
-
-    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = VecGetArray(localP, &a);CHKERRQ(ierr);
-    for (p = pStart; p < pEnd; ++p) {
-      PetscInt fDim, off, d;
-
-      ierr = PetscSectionGetFieldDof(section, p, 1, &fDim);CHKERRQ(ierr);
-      ierr = PetscSectionGetFieldOffset(section, p, 1, &off);CHKERRQ(ierr);
-      for (d = 0; d < fDim; ++d) {
-        a[off+d] = 1.0;
-      }
-    }
-    ierr = VecRestoreArray(localP, &a);CHKERRQ(ierr);
-  }
-  ierr = DMLocalToGlobalBegin(dm, localP, INSERT_VALUES, pressure);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm, localP, INSERT_VALUES, pressure);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &localP);CHKERRQ(ierr);
-  ierr = VecNormalize(pressure, PETSC_NULL);CHKERRQ(ierr);
-  if (user->debug) {
-    ierr = PetscPrintf(((PetscObject) dm)->comm, "Pressure Null Space\n");CHKERRQ(ierr);
-    ierr = VecView(pressure, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
-  ierr = MatNullSpaceCreate(((PetscObject) dm)->comm, PETSC_FALSE, 1, &pressure, nullSpace);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &pressure);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
