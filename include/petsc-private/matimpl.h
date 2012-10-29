@@ -133,11 +133,11 @@ struct _MatOps {
   PetscErrorCode (*mattransposemult)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*mattransposemultsymbolic)(Mat,Mat,PetscReal,Mat*);
   PetscErrorCode (*mattransposemultnumeric)(Mat,Mat,Mat);
-  PetscErrorCode (*ptapsymbolic_seqaij)(Mat,Mat,PetscReal,Mat*); /* actual implememtation, A=seqaij */
+  PetscErrorCode (*dummy98)(Mat); 
   /*99*/
-  PetscErrorCode (*ptapnumeric_seqaij)(Mat,Mat,Mat);             /* actual implememtation, A=seqaij */
-  PetscErrorCode (*ptapsymbolic_mpiaij)(Mat,Mat,PetscReal,Mat*); /* actual implememtation, A=mpiaij */
-  PetscErrorCode (*ptapnumeric_mpiaij)(Mat,Mat,Mat);             /* actual implememtation, A=mpiaij */
+  PetscErrorCode (*dummy99)(Mat);            
+  PetscErrorCode (*dummy100)(Mat); 
+  PetscErrorCode (*dummy101)(Mat);            
   PetscErrorCode (*conjugate)(Mat);                              /* complex conjugate */
   PetscErrorCode (*dummy5)(void);
   /*104*/
