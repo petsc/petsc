@@ -4521,9 +4521,22 @@ More details about the solver and code examples can be found at
 
 \subsection{Special Cases}
 
-{\bf Linear ODEs}
+\begin{itemize}
+\item $ \dot{u} = A u.$ First compute the matrix $ A$ then call
+\begin{tabbing}
+  TSSetProblemType(ts,TS_LINEAR);\\
+  TSSetRHSFunction(ts,PETSC_NULL,TSComputeRHSFunctionLinear,PETSC_NULL); \\
+  TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,PETSC_NULL);
+\end{tabbing}
 
-{\bf ???}
+\item $ \dot{u} = A(t) u.$ Use
+\begin{tabbing}
+  TSSetProblemType(ts,TS_LINEAR);\\
+  TSSetRHSFunction(ts,PETSC_NULL,TSComputeRHSFunctionLinear,PETSC_NULL); \\
+  TSSetRHSJacobian(ts,A,A,YourComputeRHSJacobian,\&appctx);
+\end{tabbing}
+where {\tt YourComputeRHSJacobian()} is a function you provide that computes $A$ as a function of time.
+\end{itemize}
 
 \subsection{Monitoring and visualizing solutions}
 
