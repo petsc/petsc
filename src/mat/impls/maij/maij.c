@@ -3191,7 +3191,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__"MatPtAP_SeqAIJ_SeqMAIJ"
+#define __FUNCT__ "MatPtAP_SeqAIJ_SeqMAIJ"
 PetscErrorCode MatPtAP_SeqAIJ_SeqMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
@@ -3230,7 +3230,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ(Mat A,Mat PP,Mat C)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatPtAPNumeric is not implemented for MPIMAIJ matrix yet");
   PetscFunctionReturn(0);
 }
-EXTERN_C_BEGIN
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
