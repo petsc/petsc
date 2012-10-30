@@ -320,7 +320,7 @@ PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal 
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
       if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
-        lobj += (hydhx + hxdhy)*x[j][i]*x[j][i];
+        lobj += PetscRealPart((hydhx + hxdhy)*x[j][i]*x[j][i]);
       } else {
         u       = x[j][i];
         uw      = x[j][i-1];
@@ -337,12 +337,12 @@ PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal 
         uxux     = u*(2.*u - ue - uw)*hydhx;
         uyuy     = u*(2.*u - un - us)*hxdhy;
 
-        lobj     += 0.5*(uxux + uyuy) - sc*PetscExpScalar(u);
+        lobj     += PetscRealPart(0.5*(uxux + uyuy) - sc*PetscExpScalar(u));
       }
     }
   }
   ierr = PetscLogFlops(12.0*info->ym*info->xm);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&lobj,obj,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  ierr = MPI_Allreduce(&lobj,obj,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
