@@ -87,7 +87,12 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
     ierr = VecDuplicate(v,&xdot);CHKERRQ(ierr);
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESGetJacobian(snes,&A,&B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    ierr = TSComputeIJacobian(ts,ptime,v,xdot,1.0,&A,&B,&structure,PETSC_FALSE);CHKERRQ(ierr);  
+    ierr = SNESComputeJacobian(snes,v,&A,&B,&structure);CHKERRQ(ierr);
+    /*    ierr = TSComputeIJacobian(ts,ptime,v,xdot,1.0,&A,&B,&structure,PETSC_FALSE);CHKERRQ(ierr);   */
+    ierr = MatScale(A,-1.0);CHKERRQ(ierr);
+    if (A != B) {
+      ierr = MatScale(B,-1.0);CHKERRQ(ierr);
+    }
     ierr = KSPSetOperators(ksp,A,B,structure);CHKERRQ(ierr);
     ierr = VecSetRandom(xdot,ctx->rand);CHKERRQ(ierr);
     ierr = KSPSolve(ksp,xdot,xdot);CHKERRQ(ierr);
