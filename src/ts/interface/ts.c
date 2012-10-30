@@ -611,7 +611,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
     PetscValidHeaderSpecific(*B,MAT_CLASSID,5);
   }
   if (imex) {
-    if (!ijacobian) {  /* system was written as Udot = F(t,U) */
+    if (!ijacobian) {  /* system was written as Udot = G(t,U) */
       ierr = MatZeroEntries(*A);CHKERRQ(ierr);
       ierr = MatShift(*A,shift);CHKERRQ(ierr);
       if (*A != *B) {
@@ -659,7 +659,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal shi
 #define __FUNCT__ "TSSetRHSFunction"
 /*@C
     TSSetRHSFunction - Sets the routine for evaluating the function,
-    F(t,u), where U_t = F(t,u).
+    where U_t = G(t,u).
 
     Logically Collective on TS
 
@@ -756,7 +756,7 @@ PetscErrorCode  TSSetSolutionFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec
 #define __FUNCT__ "TSSetRHSJacobian"
 /*@C
    TSSetRHSJacobian - Sets the function to compute the Jacobian of F,
-   where U_t = F(U,t), as well as the location to store the matrix.
+   where U_t = G(U,t), as well as the location to store the matrix.
 
    Logically Collective on TS
 
@@ -835,7 +835,7 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
 #undef __FUNCT__
 #define __FUNCT__ "TSSetIFunction"
 /*@C
-   TSSetIFunction - Set the function to compute F(t,U,U_t) where F = 0 is the DAE to be solved.
+   TSSetIFunction - Set the function to compute F(t,U,U_t) where F() = 0 is the DAE to be solved.
 
    Logically Collective on TS
 
@@ -982,7 +982,7 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *A,Mat *B,MatStructure *fla
 .  U    - state vector
 .  U_t  - time derivative of state vector
 .  a    - shift
-.  A    - Jacobian of G(U) = F(t,U,W+a*U), equivalent to dF/dU + a*dF/dU_t
+.  A    - Jacobian of F(t,U,W+a*U), equivalent to dF/dU + a*dF/dU_t
 .  B    - preconditioning matrix for A, may be same as A
 .  flag - flag indicating information about the preconditioner matrix
           structure (same as flag in KSPSetOperators())
@@ -992,7 +992,7 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *A,Mat *B,MatStructure *fla
    The matrices A and B are exactly the matrices that are used by SNES for the nonlinear solve.
 
    The matrix dF/dU + a*dF/dU_t you provide turns out to be
-   the Jacobian of G(U) = F(t,U,W+a*U) where F(t,U,U_t) = 0 is the DAE to be solved.
+   the Jacobian of F(t,U,W+a*U) where F(t,U,U_t) = 0 is the DAE to be solved.
    The time integrator internally approximates U_t by W+a*U where the positive "shift"
    a and vector W depend on the integration method, step size, and past states. For example with
    the backward Euler method a = 1/dt and W = -a*U(previous timestep) so
@@ -1375,7 +1375,7 @@ PetscErrorCode  TSSetProblemType(TS ts, TSProblemType type)
 .vb
          M U_t = A U
          M(t) U_t = A(t) U
-         U_t = F(t,U)
+         F(t,U,U_t)
 .ve
 
    Level: beginner
@@ -2603,7 +2603,7 @@ PetscErrorCode  TSGetOptionsPrefix(TS ts,const char *prefix[])
 .  ts  - The TS context obtained from TSCreate()
 
    Output Parameters:
-+  J   - The Jacobian J of F, where U_t = F(U,t)
++  J   - The Jacobian J of F, where U_t = G(U,t)
 .  M   - The preconditioner matrix, usually the same as J
 .  func - Function to compute the Jacobian of the RHS
 -  ctx - User-defined context for Jacobian evaluation routine

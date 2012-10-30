@@ -4524,21 +4524,46 @@ More details about the solver and code examples can be found at
 \begin{itemize}
 \item $ \dot{u} = A u.$ First compute the matrix $ A$ then call
 \begin{tabbing}
-  TSSetProblemType(ts,TS_LINEAR);\\
+  TSSetProblemType(ts,TS\_LINEAR);\\
   TSSetRHSFunction(ts,PETSC_NULL,TSComputeRHSFunctionLinear,PETSC_NULL); \\
   TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,PETSC_NULL);
 \end{tabbing}
+or 
+\begin{tabbing}
+  TSSetProblemType(ts,TS\_LINEAR);\\
+  TSSetIFunction(ts,PETSC_NULL,TSComputeIFunctionLinear,PETSC_NULL); \\
+  TSSetIJacobian(ts,A,A,TSComputeIJacobianConstant,PETSC_NULL);
+\end{tabbing}
+
 
 \item $ \dot{u} = A(t) u.$ Use
 \begin{tabbing}
-  TSSetProblemType(ts,TS_LINEAR);\\
+  TSSetProblemType(ts,TS\_LINEAR);\\
   TSSetRHSFunction(ts,PETSC_NULL,TSComputeRHSFunctionLinear,PETSC_NULL); \\
   TSSetRHSJacobian(ts,A,A,YourComputeRHSJacobian,\&appctx);
 \end{tabbing}
-where {\tt YourComputeRHSJacobian()} is a function you provide that computes $A$ as a function of time.
+where {\tt YourComputeRHSJacobian()} is a function you provide that computes $A$ as a function of time. Or use
+\begin{tabbing}
+  TSSetProblemType(ts,TS\_LINEAR);\\
+  TSSetIFunction(ts,PETSC_NULL,TSComputeIFunctionLinear,PETSC_NULL); \\
+  TSSetIJacobian(ts,A,A,YourComputeIJacobian,\&appctx);
+\end{tabbing}
+
 \end{itemize}
 
 \subsection{Monitoring and visualizing solutions}
+
+\begin{itemize}
+\item  -ts\_monitor - prints the time and timestep at each iteration.
+\item  -ts\_adapt\_monitor - prints information about the timestep adaption calculation at each iteration.
+\item  -ts\_monitor\_lg\_timestep - plots the size of each timestep, TSMonitorLGTimeStep().
+\item  -ts\_monitor\_lg\_solution - for ODEs with only a few components (not arising from the descretization of a PDE) plots the solution as a function of time, TSMonitorLGSolution().
+\item  -ts\_monitor\_lg\_error - for ODEs with only a few components plots the error as a function of time, only if TSSetSolutionFunction() is provided, TSMonitorLGError().
+\item  -ts\_monitor\_draw\_solution - plots the solution at each iteration, TSMonitorDrawSolution().
+\item  -ts\_monitor\_draw\_error - plots the error at each iteration only if TSSetSolutionFunction() is provided, TSMonitorDrawSolution().
+\item  -ts\_monitor\_solution\_binary - saves the solution at each iteration to a binary file, TSMonitorSolutionBinary().
+\item  -ts\_monitor\_solution\_vtk < filename-%%03D.vts> - saves the solution at each iteration to a file in vtk format, TSMonitorSolutionVTK().
+\end{itemize}
 
 \subsection{Error control via variable time-stepping}
 
