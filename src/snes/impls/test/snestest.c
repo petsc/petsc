@@ -86,9 +86,10 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   }
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   /*
-         Return error code cause Jacobian not good
+   Abort after the first iteration due to the jacobian not being valid.
   */
-  PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
+  SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"SNESTest aborts after Jacobian test");
+  PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------ */
 #undef __FUNCT__
@@ -113,6 +114,18 @@ static PetscErrorCode SNESSetFromOptions_Test(SNES snes)
   ierr = PetscOptionsHead("Hand-coded Jacobian tester options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_test_display","Display difference between hand-coded and finite difference Jacobians","None",ls->complete_print,&ls->complete_print,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetUp_Test"
+PetscErrorCode SNESSetUp_Test(SNES snes)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -141,7 +154,7 @@ PetscErrorCode  SNESCreate_Test(SNES  snes)
   snes->ops->destroy         = SNESDestroy_Test;
   snes->ops->setfromoptions  = SNESSetFromOptions_Test;
   snes->ops->view            = 0;
-  snes->ops->setup           = 0;
+  snes->ops->setup           = SNESSetUp_Test;
   snes->ops->reset           = 0;
 
   snes->usesksp             = PETSC_FALSE;

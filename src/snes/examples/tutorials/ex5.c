@@ -247,7 +247,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   PetscErrorCode ierr;
   PetscInt       i,j;
   PetscReal      lambda,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar    u,uxx,uyy;
+  PetscScalar    u,ue,uw,un,us,uxx,uyy;
 
   PetscFunctionBegin;
 
@@ -266,8 +266,16 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
         f[j][i] = 2.0*(hydhx+hxdhy)*x[j][i];
       } else {
         u       = x[j][i];
-        uxx     = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx;
-        uyy     = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy;
+        uw      = x[j][i-1];
+        ue      = x[j][i+1];
+        un      = x[j-1][i];
+        us      = x[j+1][i];
+        if (i-1 == 0) uw = 0.;
+        if (i+1 == info->mx-1) ue = 0.;
+        if (j-1 == 0) un = 0.;
+        if (j+1 == info->my-1) us = 0.;
+        uxx     = (2.0*u - uw - ue)*hydhx;
+        uyy     = (2.0*u - un - us)*hxdhy;
         f[j][i] = uxx + uyy - sc*PetscExpScalar(u);
       }
     }
@@ -284,7 +292,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
 PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jacpre,Mat jac,MatStructure *flg,AppCtx *user)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j;
+  PetscInt       i,j,k;
   MatStencil     col[5],row;
   PetscScalar    lambda,v[5],hx,hy,hxdhy,hydhx,sc;
 
@@ -316,13 +324,32 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jacpre,
         v[0] =  2.0*(hydhx + hxdhy);
         ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
       } else {
+        k = 0;
         /* interior grid points */
-        v[0] = -hxdhy;                                           col[0].j = j - 1; col[0].i = i;
-        v[1] = -hydhx;                                           col[1].j = j;     col[1].i = i-1;
-        v[2] = 2.0*(hydhx + hxdhy) - sc*PetscExpScalar(x[j][i]); col[2].j = row.j; col[2].i = row.i;
-        v[3] = -hydhx;                                           col[3].j = j;     col[3].i = i+1;
-        v[4] = -hxdhy;                                           col[4].j = j + 1; col[4].i = i;
-        ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
+        if (j-1 != 0) {
+          v[k] = -hxdhy;
+          col[k].j = j - 1; col[k].i = i;
+          k++;
+        }
+        if (i-1 != 0) {
+          v[k] = -hydhx;
+          col[k].j = j;     col[k].i = i-1;
+          k++;
+        }
+
+        v[k] = 2.0*(hydhx + hxdhy) - sc*PetscExpScalar(x[j][i]); col[k].j = row.j; col[k].i = row.i; k++;
+
+        if (i+1 != info->mx-1) {
+          v[k] = -hydhx;
+          col[k].j = j;     col[k].i = i+1;
+          k++;
+        }
+        if (j+1 != info->mx-1) {
+          v[k] = -hxdhy;
+          col[k].j = j + 1; col[k].i = i;
+          k++;
+        }
+        ierr = MatSetValuesStencil(jac,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }

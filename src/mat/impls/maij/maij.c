@@ -177,10 +177,9 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
 .seealso: MatMAIJGetAIJ(), MatMAIJRedimension(), MatCreateMAIJ()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MAIJ"
-PetscErrorCode  MatCreate_MAIJ(Mat A)
+PETSC_EXTERN_C PetscErrorCode MatCreate_MAIJ(Mat A)
 {
   PetscErrorCode ierr;
   Mat_MPIMAIJ    *b;
@@ -205,7 +204,6 @@ PetscErrorCode  MatCreate_MAIJ(Mat A)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* --------------------------------------------------------------------------------------*/
 #undef __FUNCT__
@@ -3189,10 +3187,9 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__"MatPtAP_SeqAIJ_SeqMAIJ"
-PetscErrorCode MatPtAP_SeqAIJ_SeqMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatPtAP_SeqAIJ_SeqMAIJ"
+PETSC_EXTERN_C PetscErrorCode MatPtAP_SeqAIJ_SeqMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
 
@@ -3207,11 +3204,10 @@ PetscErrorCode MatPtAP_SeqAIJ_SeqMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,
   ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPSymbolic_MPIAIJ_MPIMAIJ"
-PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C)
+PETSC_EXTERN_C PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C)
 {
   PetscErrorCode    ierr;
 
@@ -3224,18 +3220,16 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPNumeric_MPIAIJ_MPIMAIJ"
-PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ(Mat A,Mat PP,Mat C)
+PETSC_EXTERN_C PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ(Mat A,Mat PP,Mat C)
 {
   PetscFunctionBegin;
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatPtAPNumeric is not implemented for MPIMAIJ matrix yet");
   PetscFunctionReturn(0);
 }
-EXTERN_C_BEGIN
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqMAIJ_SeqAIJ"
-PetscErrorCode  MatConvert_SeqMAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN_C PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat_SeqMAIJ       *b = (Mat_SeqMAIJ*)A->data;
   Mat               a = b->AIJ,B;
@@ -3280,14 +3274,12 @@ PetscErrorCode  MatConvert_SeqMAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIMAIJ_MPIAIJ"
-PetscErrorCode  MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN_C PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat_MPIMAIJ       *maij = (Mat_MPIMAIJ*)A->data;
   Mat               MatAIJ  = ((Mat_SeqMAIJ*)maij->AIJ->data)->AIJ,B;
@@ -3352,7 +3344,6 @@ PetscErrorCode  MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,MatReuse reuse,
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSubMatrix_MAIJ"
