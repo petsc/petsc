@@ -18,6 +18,7 @@ typedef struct {
   Vec            left,right;
   Vec            dshift_owned,left_owned,right_owned;
   Vec            left_work,right_work;
+  Vec            left_add_work,right_add_work;
   PetscBool      usingscaled;
   void           *ctx;
 } Mat_Shell;
@@ -221,6 +222,8 @@ PetscErrorCode MatDestroy_Shell(Mat mat)
   ierr = VecDestroy(&shell->dshift_owned);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->left_work);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->right_work);CHKERRQ(ierr);
+  ierr = VecDestroy(&shell->left_add_work);CHKERRQ(ierr);
+  ierr = VecDestroy(&shell->right_add_work);CHKERRQ(ierr);
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -242,6 +245,25 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatMultAdd_Shell"
+PetscErrorCode MatMultAdd_Shell(Mat A,Vec x,Vec y,Vec z)
+{
+  Mat_Shell      *shell = (Mat_Shell*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (y == z) {
+    if (!shell->right_add_work) {ierr = VecDuplicate(z,&shell->right_add_work);CHKERRQ(ierr);}
+    ierr = MatMult(A,x,shell->right_add_work);CHKERRQ(ierr);
+    ierr = VecWAXPY(z,1.0,shell->right_add_work,y);CHKERRQ(ierr);
+  } else {
+    ierr = MatMult(A,x,z);CHKERRQ(ierr);
+    ierr = VecAXPY(z,1.0,y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_Shell"
 PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
 {
@@ -254,6 +276,25 @@ PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
   ierr = (*shell->multtranspose)(A,xx,y);CHKERRQ(ierr);
   ierr = MatShellShiftAndScale(A,xx,y);CHKERRQ(ierr);
   ierr = MatShellPostScaleRight(A,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMultTransposeAdd_Shell"
+PetscErrorCode MatMultTransposeAdd_Shell(Mat A,Vec x,Vec y,Vec z)
+{
+  Mat_Shell      *shell = (Mat_Shell*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (y == z) {
+    if (!shell->left_add_work) {ierr = VecDuplicate(z,&shell->left_add_work);CHKERRQ(ierr);}
+    ierr = MatMultTranspose(A,x,shell->left_add_work);CHKERRQ(ierr);
+    ierr = VecWAXPY(z,1.0,shell->left_add_work,y);CHKERRQ(ierr);
+  } else {
+    ierr = MatMultTranspose(A,x,z);CHKERRQ(ierr);
+    ierr = VecAXPY(z,1.0,y);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -675,16 +716,28 @@ PetscErrorCode  MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  if (op == MATOP_DESTROY) {
+  switch (op) {
+  case MATOP_DESTROY:
     ierr = PetscObjectTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
     if (flg) {
        Mat_Shell *shell = (Mat_Shell*)mat->data;
        shell->destroy                 = (PetscErrorCode (*)(Mat)) f;
     } else mat->ops->destroy          = (PetscErrorCode (*)(Mat)) f;
+    break;
+  case MATOP_VIEW:
+    mat->ops->view  = (PetscErrorCode (*)(Mat,PetscViewer)) f;
+    break;
+  case MATOP_MULT:
+    mat->ops->mult = (PetscErrorCode (*)(Mat,Vec,Vec)) f;
+    if (!mat->ops->multadd) mat->ops->multadd = MatMultAdd_Shell;
+    break;
+  case MATOP_MULT_TRANSPOSE:
+    mat->ops->multtranspose = (PetscErrorCode (*)(Mat,Vec,Vec)) f;
+    if (!mat->ops->multtransposeadd) mat->ops->multtransposeadd = MatMultTransposeAdd_Shell;
+    break;
+  default:
+    (((void(**)(void))mat->ops)[op]) = f;
   }
-  else if (op == MATOP_VIEW) mat->ops->view  = (PetscErrorCode (*)(Mat,PetscViewer)) f;
-  else                       (((void(**)(void))mat->ops)[op]) = f;
-
   PetscFunctionReturn(0);
 }
 
