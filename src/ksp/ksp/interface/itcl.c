@@ -501,6 +501,14 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
       ierr = KSPMonitorSet(ksp,KSPMonitorTrueResidualNorm,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
     /*
+      Prints with max norm at each iteration
+    */
+    ierr = PetscOptionsString("-ksp_monitor_max","Monitor true residual max norm","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscViewerASCIIOpen(((PetscObject)ksp)->comm,monfilename,&monviewer);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorTrueResidualMaxNorm,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+    }
+    /*
       Prints extreme eigenvalue estimates at each iteration
     */
     ierr = PetscOptionsString("-ksp_monitor_singular_value","Monitor singular values","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);

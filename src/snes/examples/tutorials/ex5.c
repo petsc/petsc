@@ -65,6 +65,7 @@ typedef struct {
 extern PetscErrorCode FormInitialGuess(DM,AppCtx*,Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,MatStructure*,AppCtx*);
+extern PetscErrorCode FormObjectiveLocal(DMDALocalInfo*,PetscScalar**,PetscReal*,AppCtx*);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 extern PetscErrorCode FormFunctionMatlab(SNES,Vec,Vec,void *);
 #endif
@@ -127,6 +128,11 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-fd",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (!flg) {
     ierr = DMDASNESSetJacobianLocal(da,(DMDASNESJacobian)FormJacobianLocal,&user);CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-obj",&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DMDASNESSetObjectiveLocal(da,(DMDASNESObjective)FormObjectiveLocal,&user);CHKERRQ(ierr);
   }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
@@ -281,6 +287,62 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
     }
   }
   ierr = PetscLogFlops(11.0*info->ym*info->xm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "FormObjectiveLocal"
+/*
+   FormFunctionLocal - Evaluates nonlinear function, F(x) on local process patch
+
+
+ */
+PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal *obj,AppCtx *user)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,j;
+  PetscReal      lambda,hx,hy,hxdhy,hydhx,sc,lobj=0;
+  PetscScalar    u,ue,uw,un,us,uxux,uyuy;
+  MPI_Comm       comm;
+  PetscFunctionBegin;
+  *obj = 0;
+  comm = ((PetscObject)info->da)->comm;
+  lambda = user->param;
+  hx     = 1.0/(PetscReal)(info->mx-1);
+  hy     = 1.0/(PetscReal)(info->my-1);
+  sc     = hx*hy*lambda;
+  hxdhy  = hx/hy;
+  hydhx  = hy/hx;
+  /*
+     Compute function over the locally owned part of the grid
+  */
+  for (j=info->ys; j<info->ys+info->ym; j++) {
+    for (i=info->xs; i<info->xs+info->xm; i++) {
+      if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
+        lobj += PetscRealPart((hydhx + hxdhy)*x[j][i]*x[j][i]);
+      } else {
+        u       = x[j][i];
+        uw      = x[j][i-1];
+        ue      = x[j][i+1];
+        un      = x[j-1][i];
+        us      = x[j+1][i];
+        if (i-1 == 0) uw = 0.;
+        if (i+1 == info->mx-1) ue = 0.;
+        if (j-1 == 0) un = 0.;
+        if (j+1 == info->my-1) us = 0.;
+
+        /* F[u] = 1/2\int_{\omega}\nabla^2u(x)*u(x)*dx */
+
+        uxux     = u*(2.*u - ue - uw)*hydhx;
+        uyuy     = u*(2.*u - un - us)*hxdhy;
+
+        lobj     += PetscRealPart(0.5*(uxux + uyuy) - sc*PetscExpScalar(u));
+      }
+    }
+  }
+  ierr = PetscLogFlops(12.0*info->ym*info->xm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&lobj,obj,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

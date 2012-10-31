@@ -363,12 +363,14 @@ PETSC_EXTERN PetscErrorCode SNESDMComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructur
 /* --------- Solving systems of nonlinear equations --------------- */
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESJacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESObjective)(SNES,Vec,PetscReal *,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESGSFunction)(SNES,Vec,Vec,void*);
 PETSC_EXTERN PetscErrorCode SNESSetFunction(SNES,Vec,SNESFunction,void*);
 PETSC_EXTERN PetscErrorCode SNESGetFunction(SNES,Vec*,SNESFunction*,void**);
 PETSC_EXTERN PetscErrorCode SNESComputeFunction(SNES,Vec,Vec);
 PETSC_EXTERN PetscErrorCode SNESSetJacobian(SNES,Mat,Mat,SNESJacobian,void*);
 PETSC_EXTERN PetscErrorCode SNESGetJacobian(SNES,Mat*,Mat*,SNESJacobian*,void**);
+PETSC_EXTERN PetscErrorCode SNESDefaultObjectiveComputeFunctionFD(SNES,Vec,Vec,void*);
 PETSC_EXTERN PetscErrorCode SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 PETSC_EXTERN PetscErrorCode SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 PETSC_EXTERN PetscErrorCode SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(SNES,Vec,void*),void*);
@@ -376,6 +378,10 @@ PETSC_EXTERN PetscErrorCode SNESSetPicard(SNES,Vec,SNESFunction,Mat,Mat,SNESJaco
 PETSC_EXTERN PetscErrorCode SNESGetPicard(SNES,Vec*,SNESFunction*,Mat*,Mat*,SNESJacobian*,void**);
 PETSC_EXTERN PetscErrorCode SNESSetInitialFunction(SNES,Vec);
 PETSC_EXTERN PetscErrorCode SNESSetInitialFunctionNorm(SNES,PetscReal);
+
+PETSC_EXTERN PetscErrorCode SNESSetObjective(SNES,SNESObjective,void*);
+PETSC_EXTERN PetscErrorCode SNESGetObjective(SNES,SNESObjective*,void**);
+PETSC_EXTERN PetscErrorCode SNESComputeObjective(SNES,Vec,PetscReal *);
 
 /*E
     SNESNormType - Norm that is passed in the Krylov convergence
@@ -639,6 +645,8 @@ PETSC_EXTERN PetscErrorCode DMSNESSetJacobian(DM,PetscErrorCode(*)(SNES,Vec,Mat*
 PETSC_EXTERN PetscErrorCode DMSNESGetJacobian(DM,PetscErrorCode(**)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void**);
 PETSC_EXTERN PetscErrorCode DMSNESSetPicard(DM,PetscErrorCode(*)(SNES,Vec,Vec,void*),PetscErrorCode(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void*);
 PETSC_EXTERN PetscErrorCode DMSNESGetPicard(DM,PetscErrorCode(**)(SNES,Vec,Vec,void*),PetscErrorCode(**)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void**);
+PETSC_EXTERN PetscErrorCode DMSNESSetObjective(DM,SNESObjective,void*);
+PETSC_EXTERN PetscErrorCode DMSNESGetObjective(DM,SNESObjective*,void**);
 
 PETSC_EXTERN PetscErrorCode DMSNESSetBlockFunction(DM,PetscErrorCode(*)(SNES,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMSNESGetBlockFunction(DM,PetscErrorCode(**)(SNES,Vec,Vec,void*),void**);
@@ -647,9 +655,11 @@ PETSC_EXTERN PetscErrorCode DMSNESGetBlockJacobian(DM,PetscErrorCode(**)(SNES,Ve
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDASNESFunction)(DMDALocalInfo*,void*,void*,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDASNESJacobian)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDASNESObjective)(DMDALocalInfo*,void*,PetscReal*,void*);
 
 PETSC_EXTERN PetscErrorCode DMDASNESSetFunctionLocal(DM,InsertMode,DMDASNESFunction,void*);
 PETSC_EXTERN PetscErrorCode DMDASNESSetJacobianLocal(DM,DMDASNESJacobian,void*);
+PETSC_EXTERN PetscErrorCode DMDASNESSetObjectiveLocal(DM,DMDASNESObjective,void*);
 
 PETSC_EXTERN PetscErrorCode SNESComputeLocalBlockFunction_DMDA(SNES,Vec,Vec,void *);
 PETSC_EXTERN PetscErrorCode SNESComputeLocalBlockJacobian_DMDA(SNES,Vec,Mat*,Mat*,MatStructure*,void*);

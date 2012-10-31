@@ -152,6 +152,9 @@ struct _n_SNESDM {
   PetscErrorCode (*computegs)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
+  /* objective */
+  PetscErrorCode (*computeobjective)(SNES,Vec,PetscReal*,void*);
+
   /* Picard iteration functions */
   PetscErrorCode (*computepfunction)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computepjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -164,6 +167,7 @@ struct _n_SNESDM {
   void *gsctx;
   void *pctx;
   void *jacobianctx;
+  void *objectivectx;
 
   void *blockfunctionctx;
   void *blockjacobianctx;

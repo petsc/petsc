@@ -672,6 +672,12 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     }
 
     flg  = PETSC_FALSE;
+    ierr = PetscOptionsBool("-snes_fd_function","Use finite differences (slow) to compute function from user objective","SNESDefaultObjectiveComputeFunctionFD",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    if (flg) {
+      ierr = SNESSetFunction(snes,PETSC_NULL,SNESDefaultObjectiveComputeFunctionFD,PETSC_NULL);CHKERRQ(ierr);
+    }
+
+    flg  = PETSC_FALSE;
     ierr = PetscOptionsBool("-snes_fd_color","Use finite differences with coloring to compute Jacobian","SNESDefaultComputeJacobianColor",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       void *functx;

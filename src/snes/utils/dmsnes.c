@@ -363,6 +363,70 @@ PetscErrorCode DMSNESGetFunction(DM dm,PetscErrorCode (**func)(SNES,Vec,Vec,void
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMSNESSetObjective"
+/*@C
+   DMSNESSetFunction - set SNES objective evaluation function
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to be used with SNES
+.  func - residual evaluation function, see SNESSetObjective() for calling sequence
+-  ctx - context for residual evaluation
+
+   Level: advanced
+
+.seealso: DMSNESSetContext(), SNESGetObjective(), DMSNESSetFunction()
+@*/
+PetscErrorCode DMSNESSetObjective(DM dm,SNESObjective func,void *ctx)
+{
+  PetscErrorCode ierr;
+  SNESDM sdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  if (func) sdm->computeobjective = func;
+  if (ctx)  sdm->objectivectx = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSNESGetObjective"
+/*@C
+   DMSNESGetObjective - get SNES objective evaluation function
+
+   Not Collective
+
+   Input Argument:
+.  dm - DM to be used with SNES
+
+   Output Arguments:
++  func - residual evaluation function, see SNESSetObjective() for calling sequence
+-  ctx - context for residual evaluation
+
+   Level: advanced
+
+   Note:
+   SNESGetFunction() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.
+
+.seealso: DMSNESSetContext(), DMSNESSetObjective(), SNESSetFunction()
+@*/
+PetscErrorCode DMSNESGetObjective(DM dm,SNESObjective *func,void **ctx)
+{
+  PetscErrorCode ierr;
+  SNESDM sdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  if (func) *func = sdm->computeobjective;
+  if (ctx)  *ctx = sdm->objectivectx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMSNESSetGS"
 /*@C
    DMSNESSetGS - set SNES Gauss-Seidel relaxation function

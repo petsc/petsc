@@ -218,7 +218,7 @@ PetscErrorCode  KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy
 
 .keywords: KSP, default, monitor, residual
 
-.seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGResidualNormCreate()
+.seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(),KSPMonitorTrueResidualMaxNorm()
 @*/
 PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
@@ -247,6 +247,64 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,vo
   ierr = PetscStrncpy(normtype,KSPNormTypes[ksp->normtype],sizeof(normtype));CHKERRQ(ierr);
   ierr = PetscStrtolower(normtype);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP %s resid norm %14.12e true resid norm %14.12e ||r(i)||/||b|| %14.12e\n",n,normtype,(double)rnorm,(double)scnorm,(double)(scnorm/bnorm));CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitorTrueResidualMaxNorm"
+/*@C
+   KSPMonitorTrueResidualMaxNorm - Prints the true residual max norm as well as the preconditioned
+   residual norm at each iteration of an iterative solver.
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp   - iterative context
+.  n     - iteration number
+.  rnorm - norm (preconditioned) residual value (may be estimated).
+-  dummy - unused monitor context
+
+   Options Database Key:
+.  -ksp_monitor_max - Activates KSPMonitorTrueResidualMaxNorm()
+
+   Notes:
+   This could be implemented (better) with a flag in ksp.
+
+   Level: intermediate
+
+.keywords: KSP, default, monitor, residual
+
+.seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGResidualNormCreate(),KSPMonitorTrueResidualNorm()
+@*/
+PetscErrorCode  KSPMonitorTrueResidualMaxNorm(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+{
+  PetscErrorCode  ierr;
+  Vec             resid,work;
+  PetscReal       scnorm,bnorm;
+  PetscViewer     viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(((PetscObject)ksp)->comm);
+  char            normtype[256];
+
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
+  if (n == 0 && ((PetscObject)ksp)->prefix) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Residual norms (max) for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+  }
+  ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
+
+  /*
+     Unscale the residual but only if both matrices are the same matrix, since only then would
+    they be scaled.
+  */
+  ierr = VecCopy(resid,work);CHKERRQ(ierr);
+  ierr = VecNorm(work,NORM_INFINITY,&scnorm);CHKERRQ(ierr);
+  ierr = VecDestroy(&work);CHKERRQ(ierr);
+  ierr = VecNorm(ksp->vec_rhs,NORM_INFINITY,&bnorm);CHKERRQ(ierr);
+  ierr = PetscStrncpy(normtype,KSPNormTypes[ksp->normtype],sizeof(normtype));CHKERRQ(ierr);
+  ierr = PetscStrtolower(normtype);CHKERRQ(ierr);
+  /* ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP %s resid norm %14.12e true resid norm %14.12e ||r(i)||_inf/||b||_inf %14.12e\n",n,normtype,(double)rnorm,(double)scnorm,(double)(scnorm/bnorm));CHKERRQ(ierr); */
+  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP true resid max norm %14.12e ||r(i)||/||b|| %14.12e\n",n,(double)scnorm,(double)(scnorm/bnorm));CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
