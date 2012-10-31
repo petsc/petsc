@@ -166,7 +166,8 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     }
     if (linesearch->ops->vinorm) {
       gnorm = fnorm;
-    ierr = (*linesearch->ops->vinorm)(snes, G, W, &gnorm);CHKERRQ(ierr);
+      ierr = (*linesearch->ops->vinorm)(snes, G, W, &gnorm);CHKERRQ(ierr);
+      g = PetscSqr(gnorm);
     } else {
       ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);
       g = gnorm*gnorm;
