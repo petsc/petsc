@@ -701,6 +701,7 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
 */
 PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscSection   section;
+  PetscBool      view;
   PetscInt       dim                = user->dim;
   PetscInt       numBC              = 0;
   PetscInt       numComp[NUM_FIELDS] = {NUM_BASIS_COMPONENTS_0, NUM_BASIS_COMPONENTS_1, NUM_BASIS_COMPONENTS_2};
@@ -758,7 +759,8 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
   ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
   ierr = ISDestroy(&bcPoints[1]);CHKERRQ(ierr);
-  if (user->bcType == FREE_SLIP) {
+  ierr = PetscOptionsHasName(((PetscObject) dm)->prefix, "-section_view", &view);CHKERRQ(ierr);
+  if ((user->bcType == FREE_SLIP) && view) {
     PetscSection s, gs;
 
     ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
