@@ -141,30 +141,29 @@ PetscScalar linear_T_2d(const PetscReal x[]) {
 };
 
 /*
-  In 2D, for the mantle, we use exact solution:
+  In 2D, for freeslip, we use exact solution:
 
-    u = 2 (x+1)^2 - 4 (x+1) y
-    v = 2 (y-1)^2 - 4 x (y-1)
+    u =  2 x (x-1) + 4 (x+1) y
+    v = -2 y (y-1) - 4 x (y-1)
     p = x + y - 1
     T = x + y
-    f_x = f_y = 3
+    f_x = 3
+    f_y = -5
 
   so that
 
-    -\Delta u + \nabla p + f = <-4, -4> + <1, 1> + <3, 3> = 0
-    \nabla \cdot u           = 4(x+1)-4y + 4(y-1)-4x      = 0
+    -\Delta u + \nabla p + f = <-4, 4> + <1, 1> + <3, -5> = 0
+    \nabla \cdot u           = 2(2x-1)+4y - 2(2y-1)-4x    = 0
     -\Delta T + q_T          = 0
 */
 PetscScalar quadratic2_u_2d(const PetscReal x[]) {
-  PetscReal xp = x[0] + 1.0;
-  return 2.0*xp*xp - 4.0*xp*x[1];
+  return 2.0*x[0]*(x[0]-1.0) + 4.0*(x[0]+1.0)*x[1];
 };
 
 PetscScalar quadratic2_v_2d(const PetscReal x[]) {
   PetscReal ym = x[1] - 1.0;
-  return 2.0*ym*ym - 4.0*x[0]*ym;
+  return -2.0*x[1]*ym - 4.0*x[0]*ym;
 };
-
 
 void f0_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
@@ -173,6 +172,14 @@ void f0_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
   for (comp = 0; comp < Ncomp; ++comp) {
     f0[comp] = 3.0;
   }
+}
+
+void f0_u_freeslip_2D(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
+  const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
+  PetscInt       comp;
+
+  f0[0] =  3.0;
+  f0[1] = -5.0;
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y, v_x, v_y} or {u_x, u_y, u_z, v_x, v_y, v_z, w_x, w_y, w_z}
@@ -466,23 +473,39 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PointOnBoundary_2D"
+PetscErrorCode PointOnBoundary_2D(const PetscScalar coords[], PetscBool onBd[])
+{
+  const PetscInt  corner = 0, bottom = 1, right = 2, top = 3, left = 4;
+  const PetscReal eps = 1.0e-10;
+
+  PetscFunctionBegin;
+  onBd[bottom] = PetscAbsScalar(coords[1]      ) < eps ? PETSC_TRUE : PETSC_FALSE;
+  onBd[right]  = PetscAbsScalar(coords[0] - 1.0) < eps ? PETSC_TRUE : PETSC_FALSE;
+  onBd[top]    = PetscAbsScalar(coords[1] - 1.0) < eps ? PETSC_TRUE : PETSC_FALSE;
+  onBd[left]   = PetscAbsScalar(coords[0]      ) < eps ? PETSC_TRUE : PETSC_FALSE;
+  onBd[corner] = onBd[bottom] + onBd[right] + onBd[top] + onBd[left] > 1 ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateBoundaryPointIS_Square"
 PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, PetscInt **numBoundaryConstraints, IS **boundaryPoints, IS **constraintIndices)
 {
   MPI_Comm        comm = ((PetscObject) dm)->comm;
-  const PetscReal eps  = 1.0e-10;
   PetscSection    coordSection;
   Vec             coordinates;
   PetscScalar    *coords;
+  PetscInt        vStart, vEnd;
   IS              bcPoints;
   const PetscInt *points;
   const PetscInt  corner = 0, bottom = 1, right = 2, top = 3, left = 4;
-  PetscBool       onBd[5];
   PetscInt        numBoundaryPoints[5] = {0, 0, 0, 0, 0}, bd, numPoints, p;
   PetscInt       *bdPoints[5], *idx;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   /* boundary 0: corners
      boundary 1: bottom
      boundary 2: right
@@ -502,19 +525,19 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   /* Set local constraint indices for each boundary */
   ierr = PetscMalloc((*numBoundaryConstraints)[corner] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
   idx[0] = 0; idx[1] = 1;
-  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[corner], idx, PETSC_OWN_POINTER, &(*boundaryPoints)[corner]);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[corner], idx, PETSC_OWN_POINTER, &(*constraintIndices)[corner]);CHKERRQ(ierr);
   ierr = PetscMalloc((*numBoundaryConstraints)[bottom] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
   idx[0] = 1;
-  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[bottom], idx, PETSC_OWN_POINTER, &(*boundaryPoints)[bottom]);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[bottom], idx, PETSC_OWN_POINTER, &(*constraintIndices)[bottom]);CHKERRQ(ierr);
   ierr = PetscMalloc((*numBoundaryConstraints)[right] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
   idx[0] = 0;
-  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[right], idx, PETSC_OWN_POINTER, &(*boundaryPoints)[right]);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[right], idx, PETSC_OWN_POINTER, &(*constraintIndices)[right]);CHKERRQ(ierr);
   ierr = PetscMalloc((*numBoundaryConstraints)[top] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
   idx[0] = 1;
-  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[top], idx, PETSC_OWN_POINTER, &(*boundaryPoints)[top]);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[top], idx, PETSC_OWN_POINTER, &(*constraintIndices)[top]);CHKERRQ(ierr);
   ierr = PetscMalloc((*numBoundaryConstraints)[left] * sizeof(PetscInt), &idx);CHKERRQ(ierr);
   idx[0] = 0;
-  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[left], idx, PETSC_OWN_POINTER, &(*boundaryPoints)[left]);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm, (*numBoundaryConstraints)[left], idx, PETSC_OWN_POINTER, &(*constraintIndices)[left]);CHKERRQ(ierr);
   /* Count points on each boundary */
   ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
@@ -523,14 +546,33 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   ierr = ISGetLocalSize(bcPoints, &numPoints);CHKERRQ(ierr);
   ierr = ISGetIndices(bcPoints, &points);CHKERRQ(ierr);
   for(p = 0; p < numPoints; ++p) {
-    PetscInt off, bd;
+    PetscBool onBd[5];
+    PetscInt  off, bd;
 
-    ierr = PetscSectionGetOffset(coordSection, points[p], &off);CHKERRQ(ierr);
-    onBd[bottom] = PetscAbsScalar(coords[off+1]      ) < eps ? PETSC_TRUE : PETSC_FALSE;
-    onBd[right]  = PetscAbsScalar(coords[off+0] - 1.0) < eps ? PETSC_TRUE : PETSC_FALSE;
-    onBd[top]    = PetscAbsScalar(coords[off+1] - 1.0) < eps ? PETSC_TRUE : PETSC_FALSE;
-    onBd[left]   = PetscAbsScalar(coords[off+0]      ) < eps ? PETSC_TRUE : PETSC_FALSE;
-    onBd[corner] = onBd[bottom] + onBd[right] + onBd[top] + onBd[left] > 1 ? PETSC_TRUE : PETSC_FALSE;
+    if ((points[p] >= vStart) && (points[p] < vEnd)) {
+      ierr = PetscSectionGetOffset(coordSection, points[p], &off);CHKERRQ(ierr);
+      ierr = PointOnBoundary_2D(&coords[off], onBd);CHKERRQ(ierr);
+    } else {
+      PetscInt *closure = PETSC_NULL;
+      PetscInt  closureSize, q, r;
+
+      ierr = DMComplexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      /* Compress out non-vertices */
+      for(q = 0, r = 0; q < closureSize*2; q += 2) {
+        if ((closure[q] >= vStart) && (closure[q] < vEnd)) {
+          closure[r] = closure[q];
+          ++r;
+        }
+      }
+      closureSize = r;
+      for(q = 0; q < closureSize; ++q) {
+        ierr = PetscSectionGetOffset(coordSection, closure[q], &off);CHKERRQ(ierr);
+        ierr = PointOnBoundary_2D(&coords[off], onBd);CHKERRQ(ierr);
+        if (!onBd[corner]) break;
+      }
+      ierr = DMComplexRestoreTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      if (q == closureSize) SETERRQ1(comm, PETSC_ERR_PLIB, "Cannot handle face %d which has every vertex on a corner", points[p]);
+    }
 
     for(bd = 0; bd < 5; ++bd) {
       if (onBd[bd]) {
@@ -545,14 +587,33 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
     numBoundaryPoints[bd] = 0;
   }
   for(p = 0; p < numPoints; ++p) {
-    PetscInt off, bd;
+    PetscBool onBd[5];
+    PetscInt  off, bd;
 
-    ierr = PetscSectionGetOffset(coordSection, points[p], &off);CHKERRQ(ierr);
-    onBd[bottom] = PetscAbsScalar(coords[off+1]      ) < eps ? PETSC_TRUE : PETSC_FALSE;
-    onBd[right]  = PetscAbsScalar(coords[off+0] - 1.0) < eps ? PETSC_TRUE : PETSC_FALSE;
-    onBd[top]    = PetscAbsScalar(coords[off+1] - 1.0) < eps ? PETSC_TRUE : PETSC_FALSE;
-    onBd[left]   = PetscAbsScalar(coords[off+0]      ) < eps ? PETSC_TRUE : PETSC_FALSE;
-    onBd[corner] = onBd[bottom] + onBd[right] + onBd[top] + onBd[left] > 1 ? PETSC_TRUE : PETSC_FALSE;
+    if ((points[p] >= vStart) && (points[p] < vEnd)) {
+      ierr = PetscSectionGetOffset(coordSection, points[p], &off);CHKERRQ(ierr);
+      ierr = PointOnBoundary_2D(&coords[off], onBd);CHKERRQ(ierr);
+    } else {
+      PetscInt *closure = PETSC_NULL;
+      PetscInt  closureSize, q, r;
+
+      ierr = DMComplexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      /* Compress out non-vertices */
+      for(q = 0, r = 0; q < closureSize*2; q += 2) {
+        if ((closure[q] >= vStart) && (closure[q] < vEnd)) {
+          closure[r] = closure[q];
+          ++r;
+        }
+      }
+      closureSize = r;
+      for(q = 0; q < closureSize; ++q) {
+        ierr = PetscSectionGetOffset(coordSection, closure[q], &off);CHKERRQ(ierr);
+        ierr = PointOnBoundary_2D(&coords[off], onBd);CHKERRQ(ierr);
+        if (!onBd[corner]) break;
+      }
+      ierr = DMComplexRestoreTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      if (q == closureSize) SETERRQ1(comm, PETSC_ERR_PLIB, "Cannot handle face %d which has every vertex on a corner", points[p]);
+    }
 
     for(bd = 0; bd < 5; ++bd) {
       if (onBd[bd]) {
@@ -675,14 +736,13 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
     }
     /* Temperature conditions */
     ierr = DMComplexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
-    ierr = DMComplexCreateSectionBCDof(dm, 1, &bcFields[1], &bcPoints[0], section);CHKERRQ(ierr);
+    ierr = DMComplexCreateSectionBCDof(dm, 1, &bcFields[1], &bcPoints[0], PETSC_DETERMINE, section);CHKERRQ(ierr);
     ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
     for(b = 0; b < numBoundaries; ++b) {
       ierr = DMComplexCreateSectionBCIndicesField(dm, bcFields[0], boundaryPoints[b], constraintIndices[b], section);CHKERRQ(ierr);
     }
     ierr = DMComplexCreateSectionBCIndicesField(dm, bcFields[1], bcPoints[0], PETSC_NULL, section);CHKERRQ(ierr);
     ierr = DMComplexCreateSectionBCIndices(dm, section);CHKERRQ(ierr);
-    ierr = PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   } else {
     if (user->bcType == DIRICHLET) {
       numBC = 2;
@@ -698,6 +758,14 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
   ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
   ierr = ISDestroy(&bcPoints[1]);CHKERRQ(ierr);
+  if (user->bcType == FREE_SLIP) {
+    PetscSection s, gs;
+
+    ierr = DMGetDefaultSection(dm, &s);CHKERRQ(ierr);
+    ierr = PetscSectionView(s, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = DMGetDefaultGlobalSection(dm, &gs);CHKERRQ(ierr);
+    ierr = PetscSectionView(gs, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -705,7 +773,11 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
 #define __FUNCT__ "SetupExactSolution"
 PetscErrorCode SetupExactSolution(AppCtx *user) {
   PetscFunctionBegin;
-  user->f0Funcs[0] = f0_u;
+  if (user->bcType == FREE_SLIP) {
+    user->f0Funcs[0] = f0_u_freeslip_2D;
+  } else {
+    user->f0Funcs[0] = f0_u;
+  }
   user->f0Funcs[1] = f0_p;
   user->f0Funcs[2] = f0_T;
   user->f1Funcs[0] = f1_u;
