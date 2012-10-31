@@ -5,8 +5,11 @@
 struct _n_TSMonitorSPEigCtx {
   PetscDrawSP drawsp;
   KSP         ksp;
-  PetscRandom rand;
   PetscInt    howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
+  PetscBool   computeexplicitly;
+  MPI_Comm    comm;
+  PetscRandom rand;
+  PetscScalar shift;
 };
 
 
@@ -28,10 +31,14 @@ struct _n_TSMonitorSPEigCtx {
 .  ctx - the context
 
    Options Database Key:
-.  -ts_monitor_eig - plot egienvalues of linearized right hand side
+.  -ts_monitor_sp_eig - plot egienvalues of linearized right hand side
 
    Notes:
    Use TSMonitorSPEigCtxDestroy() to destroy.
+
+   Currently only works if the Jacobian is provided explicitly.
+
+   Currently only works for ODEs u_t - F(t,u) = 0; that is with no mass matrix.
 
    Level: intermediate
 
@@ -48,13 +55,13 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _n_TSMonitorSPEigCtx,ctx);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(comm,&(*ctx)->rand);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions((*ctx)->rand);CHKERRQ(ierr);
   ierr = PetscDrawCreate(comm,host,label,x,y,m,n,&win);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(win);CHKERRQ(ierr);
   ierr = PetscDrawSPCreate(win,1,&(*ctx)->drawsp);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(comm,&(*ctx)->rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions((*ctx)->rand);CHKERRQ(ierr);
   ierr = KSPCreate(comm,&(*ctx)->ksp);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix((*ctx)->ksp,"ts_monitor_eig_");CHKERRQ(ierr); /* this is wrong, used use also prefix from the TS */
+  ierr = KSPSetOptionsPrefix((*ctx)->ksp,"ts_monitor_sp_eig_");CHKERRQ(ierr); /* this is wrong, used use also prefix from the TS */
   ierr = KSPSetType((*ctx)->ksp,KSPGMRES);CHKERRQ(ierr);
   ierr = KSPGMRESSetRestart((*ctx)->ksp,200);CHKERRQ(ierr);
   ierr = KSPSetTolerances((*ctx)->ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,200);CHKERRQ(ierr);
@@ -62,7 +69,12 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
   ierr = KSPSetFromOptions((*ctx)->ksp);CHKERRQ(ierr);
   ierr = KSPGetPC((*ctx)->ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-  (*ctx)->howoften = howoften;
+  (*ctx)->howoften          = howoften;
+  (*ctx)->computeexplicitly = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor_sp_eig_explicitly",&(*ctx)->computeexplicitly,PETSC_NULL);CHKERRQ(ierr);
+  (*ctx)->shift             = 0.0;
+  ierr = PetscOptionsGetScalar(PETSC_NULL,"-ts_monitor_sp_eig_shift",&(*ctx)->shift,PETSC_NULL);CHKERRQ(ierr);
+  (*ctx)->comm              = comm;
   PetscFunctionReturn(0);
 }
 
@@ -73,42 +85,58 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
   TSMonitorSPEigCtx ctx = (TSMonitorSPEigCtx) monctx;
   PetscErrorCode    ierr;
   KSP               ksp = ctx->ksp;
-  PetscInt          n,nits,neig,i;
+  PetscInt          n,N,nits,neig,i,its = 200;
   PetscReal         *r,*c;
   PetscDrawSP       drawsp = ctx->drawsp;
   MatStructure      structure;
   Mat               A,B;
   Vec               xdot;
   SNES              snes;
-
+  
   PetscFunctionBegin;
   if (!step) PetscFunctionReturn(0);
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && (step == -1))){
     ierr = VecDuplicate(v,&xdot);CHKERRQ(ierr);
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESGetJacobian(snes,&A,&B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    ierr = SNESComputeJacobian(snes,v,&A,&B,&structure);CHKERRQ(ierr);
-    /*    ierr = TSComputeIJacobian(ts,ptime,v,xdot,1.0,&A,&B,&structure,PETSC_FALSE);CHKERRQ(ierr);   */
+    /* 
+       This doesn't work because methods keep and use internal information about the shift so it 
+       seems we would need code for each method to trick the correct Jacobian in being computed.
+    ts->time_step = PETSC_MAX_REAL;
+    ierr = SNESComputeJacobian(snes,v,&A,&B,&structure);CHKERRQ(ierr); 
+    */
+    ierr = TSComputeIJacobian(ts,ptime,v,xdot,0.0,&A,&B,&structure,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatScale(A,-1.0);CHKERRQ(ierr);
-    if (A != B) {
-      ierr = MatScale(B,-1.0);CHKERRQ(ierr);
-    }
-    ierr = KSPSetOperators(ksp,A,B,structure);CHKERRQ(ierr);
+    ierr = MatShift(A,ctx->shift);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,A,A,structure);CHKERRQ(ierr);
+    ierr = VecGetSize(v,&n);CHKERRQ(ierr);
+    if (n < 200) its = n;
+    ierr = KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,its);CHKERRQ(ierr);
     ierr = VecSetRandom(xdot,ctx->rand);CHKERRQ(ierr);
     ierr = KSPSolve(ksp,xdot,xdot);CHKERRQ(ierr);
     ierr = VecDestroy(&xdot);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&nits);CHKERRQ(ierr);
-    n = nits+2;
+    N = nits+2;
 
     if (nits) {
-      ierr = PetscMalloc2(n,PetscReal,&r,n,PetscReal,&c);CHKERRQ(ierr);
-      ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig);CHKERRQ(ierr);
+      ierr = PetscDrawSPReset(drawsp);CHKERRQ(ierr);
+      ierr = PetscMalloc2(N,PetscReal,&r,N,PetscReal,&c);CHKERRQ(ierr);
+      if (ctx->computeexplicitly) {
+        ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c);CHKERRQ(ierr);
+        neig = n;
+      } else {
+        ierr = KSPComputeEigenvalues(ksp,N,r,c,&neig);CHKERRQ(ierr);
+      }
       for (i=0; i<neig; i++) {
+        r[i] -= ctx->shift;
+        ierr = PetscPrintf(ctx->comm,"%g + %g i\n",r[i],c[i]);CHKERRQ(ierr);
         ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
       ierr = PetscDrawSPDraw(drawsp);CHKERRQ(ierr);
       ierr = PetscFree2(r,c);CHKERRQ(ierr);
     }
+    ierr = MatShift(A,-ctx->shift);CHKERRQ(ierr);
+    ierr = MatScale(A,-1.0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
