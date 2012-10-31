@@ -5340,9 +5340,7 @@ PetscErrorCode DMComplexCreateSectionBCIndicesField(DM dm, PetscInt field, IS bc
   }
   ierr = ISGetLocalSize(bcPoints, &numPoints);CHKERRQ(ierr);
   ierr = ISGetIndices(bcPoints, &points);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(constraintIndices, &numConstraints);CHKERRQ(ierr);
-  ierr = ISGetIndices(constraintIndices, &indices);CHKERRQ(ierr);
-  if (!indices) {
+  if (!constraintIndices) {
     PetscInt *idx, i;
 
     ierr = PetscSectionGetMaxDof(section, &maxDof);CHKERRQ(ierr);
@@ -5353,6 +5351,8 @@ PetscErrorCode DMComplexCreateSectionBCIndicesField(DM dm, PetscInt field, IS bc
     }
     ierr = PetscFree(idx);CHKERRQ(ierr);
   } else {
+    ierr = ISGetLocalSize(constraintIndices, &numConstraints);CHKERRQ(ierr);
+    ierr = ISGetIndices(constraintIndices, &indices);CHKERRQ(ierr);
     for(p = 0; p < numPoints; ++p) {
       PetscInt fcdof;
 
@@ -5360,9 +5360,9 @@ PetscErrorCode DMComplexCreateSectionBCIndicesField(DM dm, PetscInt field, IS bc
       if (fcdof != numConstraints) SETERRQ4(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Section point %d field %d has %d constraints, but yo ugave %d indices", p, field, fcdof, numConstraints);
       ierr = PetscSectionSetFieldConstraintIndices(section, points[p], field, indices);CHKERRQ(ierr);
     }
+    ierr = ISRestoreIndices(constraintIndices, &indices);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(bcPoints, &points);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(constraintIndices, &indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5972,7 +5972,7 @@ PetscErrorCode indicesPoint_private(PetscSection section, PetscInt point, PetscI
           indices[k] = -(off+k+1);
           ++cind;
         } else {
-          indices[k] = off+k;
+          indices[k] = off+k-cind;
         }
       }
     } else {
@@ -5982,7 +5982,7 @@ PetscErrorCode indicesPoint_private(PetscSection section, PetscInt point, PetscI
           indices[dof-k-1] = -(off+k+1);
           ++cind;
         } else {
-          indices[dof-k-1] = off+k;
+          indices[dof-k-1] = off+k-cind;
         }
       }
     }
@@ -6027,7 +6027,7 @@ PetscErrorCode indicesPointFields_private(PetscSection section, PetscInt point, 
             indices[foffs[f]+k] = -(off+foff+k+1);
             ++cind;
           } else {
-            indices[foffs[f]+k] = off+foff+k;
+            indices[foffs[f]+k] = off+foff+k-cind;
           }
         }
       } else {
@@ -6037,7 +6037,7 @@ PetscErrorCode indicesPointFields_private(PetscSection section, PetscInt point, 
               indices[foffs[f]+k*fcomp+c] = -(off+foff+(fdof/fcomp-1-k)*fcomp+c+1);
               ++cind;
             } else {
-              indices[foffs[f]+k*fcomp+c] = off+foff+(fdof/fcomp-1-k)*fcomp+c;
+              indices[foffs[f]+k*fcomp+c] = off+foff+(fdof/fcomp-1-k)*fcomp+c-cind;
             }
           }
         }
