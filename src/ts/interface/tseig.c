@@ -92,23 +92,25 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
   Mat               A,B;
   Vec               xdot;
   SNES              snes;
-  
+
   PetscFunctionBegin;
   if (!step) PetscFunctionReturn(0);
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && (step == -1))){
     ierr = VecDuplicate(v,&xdot);CHKERRQ(ierr);
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESGetJacobian(snes,&A,&B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&B);CHKERRQ(ierr);
     /* 
        This doesn't work because methods keep and use internal information about the shift so it 
        seems we would need code for each method to trick the correct Jacobian in being computed.
     ts->time_step = PETSC_MAX_REAL;
     ierr = SNESComputeJacobian(snes,v,&A,&B,&structure);CHKERRQ(ierr); 
     */
-    ierr = TSComputeIJacobian(ts,ptime,v,xdot,0.0,&A,&B,&structure,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = MatScale(A,-1.0);CHKERRQ(ierr);
-    ierr = MatShift(A,ctx->shift);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp,A,A,structure);CHKERRQ(ierr);
+    ierr = TSComputeIJacobian(ts,ptime,v,xdot,0.0,&B,&B,&structure,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = MatScale(B,-1.0*ts->time_step);CHKERRQ(ierr);
+    ierr = MatShift(B,ctx->shift);CHKERRQ(ierr);
+
+    ierr = KSPSetOperators(ksp,B,B,structure);CHKERRQ(ierr);
     ierr = VecGetSize(v,&n);CHKERRQ(ierr);
     if (n < 200) its = n;
     ierr = KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,its);CHKERRQ(ierr);
@@ -119,8 +121,10 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
     N = nits+2;
 
     if (nits) {
+      PetscDraw draw;
       ierr = PetscDrawSPReset(drawsp);CHKERRQ(ierr);
-      ierr = PetscMalloc2(N,PetscReal,&r,N,PetscReal,&c);CHKERRQ(ierr);
+      ierr = PetscDrawSPSetLimits(drawsp,-2.1,.1,-1.1,1.1);CHKERRQ(ierr);
+      ierr = PetscMalloc2(PetscMax(n,N),PetscReal,&r,PetscMax(n,N),PetscReal,&c);CHKERRQ(ierr);
       if (ctx->computeexplicitly) {
         ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c);CHKERRQ(ierr);
         neig = n;
@@ -132,11 +136,13 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
         ierr = PetscPrintf(ctx->comm,"%g + %g i\n",r[i],c[i]);CHKERRQ(ierr);
         ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
-      ierr = PetscDrawSPDraw(drawsp);CHKERRQ(ierr);
+      ierr = PetscDrawSPDraw(drawsp,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscDrawSPGetDraw(drawsp,&draw);CHKERRQ(ierr);
+      ierr = PetscDrawEllipse(draw,-1.0,0.0,2.0,2.0,PETSC_DRAW_CYAN);CHKERRQ(ierr);
+      ierr = PetscDrawSPDraw(drawsp,PETSC_FALSE);CHKERRQ(ierr);
       ierr = PetscFree2(r,c);CHKERRQ(ierr);
     }
-    ierr = MatShift(A,-ctx->shift);CHKERRQ(ierr);
-    ierr = MatScale(A,-1.0);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

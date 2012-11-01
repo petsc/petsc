@@ -59,13 +59,17 @@ PetscErrorCode PetscDrawArrow_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscRe
 #define __FUNCT__ "PetscDrawPoint_X"
 static PetscErrorCode PetscDrawPoint_X(PetscDraw draw,PetscReal x,PetscReal  y,int c)
 {
-  int          xx,yy;
+  int          xx,yy,i,j;
   PetscDraw_X* XiWin = (PetscDraw_X*)draw->data;
 
   PetscFunctionBegin;
   xx = XTRANS(draw,XiWin,x);  yy = YTRANS(draw,XiWin,y);
   PetscDrawXiSetColor(XiWin,c);
-  XDrawPoint(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,xx,yy);
+  for (i=-1; i<2; i++) {
+    for (j=-1; j<2; j++) {
+      XDrawPoint(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,xx+i,yy+j);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -95,7 +99,7 @@ static PetscErrorCode PetscDrawEllipse_X(PetscDraw Win, PetscReal x, PetscReal y
   PetscFunctionBegin;
   PetscDrawXiSetColor(XiWin, c);
   xA = XTRANS(Win, XiWin, x - a/2.0); w = XTRANS(Win, XiWin, x + a/2.0) - xA;
-  yA = YTRANS(Win, XiWin, y + b/2.0); h = YTRANS(Win, XiWin, y - b/2.0) - yA;
+  yA = YTRANS(Win, XiWin, y + b/2.0); h = PetscAbs(YTRANS(Win, XiWin, y - b/2.0) - yA);
   XFillArc(XiWin->disp, PetscDrawXiDrawable(XiWin), XiWin->gc.set, xA, yA, w, h, 0, 23040);
   PetscFunctionReturn(0);
 }

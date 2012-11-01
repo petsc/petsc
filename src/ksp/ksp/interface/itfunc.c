@@ -518,7 +518,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
         for (i=0; i<neig; i++) {
           ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
         }
-        ierr = PetscDrawSPDraw(drawsp);CHKERRQ(ierr);
+        ierr = PetscDrawSPDraw(drawsp,PETSC_TRUE);CHKERRQ(ierr);
         ierr = PetscDrawSPDestroy(&drawsp);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       }
@@ -573,7 +573,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
       for (i=0; i<n; i++) {
         ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
-      ierr = PetscDrawSPDraw(drawsp);CHKERRQ(ierr);
+      ierr = PetscDrawSPDraw(drawsp,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscDrawSPDestroy(&drawsp);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }

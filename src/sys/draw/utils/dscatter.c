@@ -293,14 +293,15 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
    Not Collective (ignored on all processors except processor 0 of PetscDrawSP)
 
    Input Parameter:
-.  sp - the line graph context
++  sp - the line graph context
+-  clear - clear the window before drawing the new plot
 
    Level: intermediate
 
 .seealso: PetscDrawLGDraw(), PetscDrawLGSPDraw()
 
 @*/
-PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp)
+PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
 {
   PetscReal      xmin=sp->xmin,xmax=sp->xmax,ymin=sp->ymin,ymax=sp->ymax;
   PetscErrorCode ierr;
@@ -314,7 +315,10 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp)
 
   if (nopts < 1) PetscFunctionReturn(0);
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
-  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+  if (clear) {
+    ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
+    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+  }
   ierr = PetscDrawAxisSetLimits(sp->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
   ierr = PetscDrawAxisDraw(sp->axis);CHKERRQ(ierr);
 
@@ -322,7 +326,7 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp)
   if (!rank) {
     for (i=0; i<dim; i++) {
       for (j=0; j<nopts; j++) {
-	ierr = PetscDrawString(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED,"x");CHKERRQ(ierr);
+	ierr = PetscDrawPoint(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED);CHKERRQ(ierr);
       }
     }
   }
