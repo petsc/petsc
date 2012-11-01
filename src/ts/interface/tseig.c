@@ -132,7 +132,7 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
         ierr = KSPComputeEigenvalues(ksp,N,r,c,&neig);CHKERRQ(ierr);
       }
       for (i=0; i<neig; i++) {
-        r[i] -= ctx->shift;
+        r[i] -= PetscAbsScalar(ctx->shift);
         ierr = PetscPrintf(ctx->comm,"%g + %g i\n",r[i],c[i]);CHKERRQ(ierr);
         ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
