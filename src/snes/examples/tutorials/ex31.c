@@ -165,6 +165,33 @@ PetscScalar quadratic2_v_2d(const PetscReal x[]) {
   return -2.0*x[1]*ym - 4.0*x[0]*ym;
 };
 
+/*
+  In 2D, for freeslip, we use exact solution:
+
+    u =   2 x (x-1) (1 - 2 y)
+    v =  -2 y (y-1) (1 - 2 x)
+    p = x + y - 1
+    T = x + y
+    f_x =  3 - 8y
+    f_y = -5 + 8x
+
+-Delta u = <-4 (1 - 2y), 4 (1 - 2x)>
+\nabla \cdot u = (4x-2) (1-2y) - (4y-2) (1-2x)
+
+  so that
+
+    -\Delta u + \nabla p + f = <-4+8y, 4-8x> + <1, 1> + <3-8y, 8x-5> = 0
+    \nabla \cdot u           = (4x-2) (1-2y) - (4y-2) (1-2x)         = 0
+    -\Delta T + q_T          = 0
+*/
+PetscScalar cubic_u_2d(const PetscReal x[]) {
+  return 2.0*x[0]*(x[0]-1.0)*(1.0 - 2.0*x[1]);
+};
+
+PetscScalar cubic_v_2d(const PetscReal x[]) {
+  return -2.0*x[1]*(x[1]-1.0)*(1.0 - 2.0*x[0]);
+};
+
 void f0_u(PetscScalar u[], const PetscScalar gradU[], PetscScalar f0[]) {
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
   PetscInt       comp;
