@@ -262,7 +262,8 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
   PetscErrorCode  ierr;
 
 #ifdef PETSC_HAVE_TXPETSCGPU
-  CUSPMATRIX* mat = (CUSPMATRIX*)cuspstruct->mat->getCsrMatrix();
+  CUSPMATRIX* mat;
+  ierr = cuspstruct->mat->getCsrMatrix(&mat);CHKERRCUSP(ierr);
 #else
   CUSPMATRIX* mat = (CUSPMATRIX*)cuspstruct->mat;
 #endif

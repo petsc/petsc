@@ -70,7 +70,7 @@ static PetscErrorCode PCSetUp_SACUSPPoly(PC pc)
     ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
     gpustruct  = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);
 #ifdef PETSC_HAVE_TXPETSCGPU
-    mat = (CUSPMATRIX*)gpustruct->mat->getCsrMatrix();
+    ierr = gpustruct->mat->getCsrMatrix(&mat);CHKERRCUSP(ierr);
 #else
     mat = (CUSPMATRIX*)gpustruct->mat;
 #endif

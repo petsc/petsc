@@ -321,7 +321,7 @@ PetscErrorCode MatSeqAIJCUSPARSEBuildUpperTriMatrix(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSeqAIJCUSPARSEAnalysiAndCopyToGPU"
+#define __FUNCT__ "MatSeqAIJCUSPARSEAnalysisAndCopyToGPU"
 PetscErrorCode MatSeqAIJCUSPARSEAnalysisAndCopyToGPU(Mat A)
 {
   PetscErrorCode     ierr;
