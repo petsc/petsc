@@ -6,6 +6,9 @@
 #include<exodusII.h>
 #endif
 
+PETSC_EXTERN PetscErrorCode DMComplexInterpolate_2D(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMComplexInterpolate_3D(DM, DM *);
+
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexCreateExodus"
 /*@
@@ -15,7 +18,8 @@
 
   Input Parameters:
 + comm  - The MPI communicator
-- exoid - The ExodusII id associated with a exodus file and obtained using ex_open
+. exoid - The ExodusII id associated with a exodus file and obtained using ex_open
+- interpolate - Create faces and edges in the mesh
 
   Output Parameter:
 . dm  - The DM object representing the mesh
@@ -29,7 +33,7 @@
 .keywords: mesh,ExodusII
 .seealso: MeshCreate(), MeshCreateExodus()
 @*/
-PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, DM *dm)
+PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool interpolate, DM *dm)
 {
 #if defined(PETSC_HAVE_EXODUSII)
   DM_Complex    *mesh;
@@ -106,6 +110,20 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, DM *dm)
   }
   ierr = DMComplexSymmetrize(*dm);CHKERRQ(ierr);
   ierr = DMComplexStratify(*dm);CHKERRQ(ierr);
+  if (interpolate) {
+    DM idm;
+
+    switch(dim) {
+    case 2:
+      ierr = DMComplexInterpolate_2D(*dm, &idm);CHKERRQ(ierr);break;
+    case 3:
+      ierr = DMComplexInterpolate_3D(*dm, &idm);CHKERRQ(ierr);break;
+    default:
+      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No mesh interpolation support for dimension %D", dim);
+    }
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = idm;
+  }
 
   /* Create vertex set label */
   if (!rank && (num_vs > 0)) {
@@ -120,11 +138,11 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, DM *dm)
     /* Get vertex set ids */
     ierr = PetscMalloc(num_vs * sizeof(int), &vs_id);CHKERRQ(ierr);
     ierr = ex_get_node_set_ids(exoid, vs_id);CHKERRQ(ierr);
-    for (vs = 0; vs < num_vs; vs++) {
+    for(vs = 0; vs < num_vs; ++vs) {
       ierr = ex_get_node_set_param(exoid, vs_id[vs], &num_vertex_in_set, &num_attr);CHKERRQ(ierr);
       ierr = PetscMalloc(num_vertex_in_set * sizeof(int), &vs_vertex_list);CHKERRQ(ierr);
       ierr = ex_get_node_set(exoid, vs_id[vs], vs_vertex_list);CHKERRQ(ierr);
-      for (v = 0; v < num_vertex_in_set; v++) {
+      for(v = 0; v < num_vertex_in_set; ++v) {
         ierr = DMComplexSetLabelValue(*dm, "Vertex Sets", vs_vertex_list[v]+numCells-1, vs_id[vs]);CHKERRQ(ierr);
       }
       ierr = PetscFree(vs_vertex_list);CHKERRQ(ierr);
@@ -140,11 +158,12 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, DM *dm)
   ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
   ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   if (rank == 0) {
-    PetscReal *x, *y, *z;
+    float *x, *y, *z;
 
     ierr = PetscMalloc3(numVertices,PetscReal,&x,numVertices,PetscReal,&y,numVertices,PetscReal,&z);CHKERRQ(ierr);
     ierr = ex_get_coord(exoid, x, y, z);CHKERRQ(ierr);
@@ -155,6 +174,42 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, DM *dm)
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
+
+  /* Create vertex set label */
+  if (!rank && interpolate && (num_fs > 0)) {
+    int  fs, f, voff;
+    /* Read from ex_get_side_set_ids() */
+    int *fs_id;
+    /* Read from ex_get_side_set_param() */
+    int  num_side_in_set, num_dist_fact_in_set;
+    /* Read from ex_get_side_set_node_list() */
+    int *fs_vertex_count_list, *fs_vertex_list;
+
+    /* Get side set ids */
+    ierr = PetscMalloc(num_fs * sizeof(int), &fs_id);CHKERRQ(ierr);
+    ierr = ex_get_side_set_ids(exoid, fs_id);CHKERRQ(ierr);
+    for(fs = 0; fs < num_fs; ++fs) {
+      ierr = ex_get_side_set_param(exoid, fs_id[fs], &num_side_in_set, &num_dist_fact_in_set);CHKERRQ(ierr);
+      ierr = PetscMalloc2(num_side_in_set,int,&fs_vertex_count_list,num_side_in_set*4,int,&fs_vertex_list);CHKERRQ(ierr);
+      ierr = ex_get_side_set_node_list(exoid, fs_id[fs], fs_vertex_count_list, fs_vertex_list);CHKERRQ(ierr);
+      for(f = 0, voff = 0; f < num_side_in_set; ++f) {
+        const PetscInt *faces    = PETSC_NULL;
+        PetscInt        faceSize = fs_vertex_count_list[f], numFaces;
+        PetscInt        faceVertices[4], v;
+
+        if (faceSize > 4) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "ExodusII side cannot have %d > 4 vertices", faceSize);
+        for(v = 0; v < faceSize; ++v, ++voff) {
+          faceVertices[v] = fs_vertex_list[voff]+numCells-1;
+        }
+        ierr = DMComplexGetFullJoin(*dm, faceSize, faceVertices, &numFaces, &faces);CHKERRQ(ierr);
+        if (numFaces != 1) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Invalid ExodusII side %d in set %d maps to %d faces", f, fs, numFaces);
+        ierr = DMComplexSetLabelValue(*dm, "Face Sets", faces[0], fs_id[fs]);CHKERRQ(ierr);
+        ierr = DMComplexRestoreJoin(*dm, faceSize, faceVertices, &numFaces, &faces);CHKERRQ(ierr);
+      }
+      ierr = PetscFree2(fs_vertex_count_list,fs_vertex_list);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(fs_id);CHKERRQ(ierr);
+  }
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --download-exodusii");
 #endif
