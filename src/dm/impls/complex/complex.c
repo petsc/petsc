@@ -4,6 +4,41 @@
 PetscLogEvent DMCOMPLEX_Distribute;
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexViewLabel_Ascii"
+PetscErrorCode DMComplexViewLabel_Ascii(DM dm, const char name[], PetscViewer viewer)
+{
+  IS              ids;
+  const PetscInt *markers;
+  PetscInt        num, i;
+  PetscMPIInt     rank;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Label '%s':\n", name);CHKERRQ(ierr);
+  ierr = DMComplexGetLabelIdIS(dm, name, &ids);CHKERRQ(ierr);
+  ierr = ISGetSize(ids, &num);CHKERRQ(ierr);
+  ierr = ISGetIndices(ids, &markers);CHKERRQ(ierr);
+  for (i = 0; i < num; ++i) {
+    IS              pIS;
+    const PetscInt *points;
+    PetscInt        size, p;
+
+    ierr = DMComplexGetStratumIS(dm, name, markers[i], &pIS);
+    ierr = ISGetSize(pIS, &size);CHKERRQ(ierr);
+    ierr = ISGetIndices(pIS, &points);CHKERRQ(ierr);
+    for (p = 0; p < size; ++p) {
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%D]: %D (%D)\n", rank, points[p], markers[i]);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(pIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&pIS);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(ids, &markers);CHKERRQ(ierr);
+  ierr = ISDestroy(&ids);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexView_Ascii"
 PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
 {
@@ -60,31 +95,7 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
     if (pStart >= 0) {ierr = PetscSectionVecView(coordSection, coordinates, viewer);CHKERRQ(ierr);}
     ierr = DMComplexHasLabel(dm, "marker", &hasLabel);CHKERRQ(ierr);
     if (hasLabel) {
-      const char     *name = "marker";
-      IS              ids;
-      const PetscInt *markers;
-      PetscInt        num, i;
-
-      ierr = PetscViewerASCIIPrintf(viewer, "Label '%s':\n", name);CHKERRQ(ierr);
-      ierr = DMComplexGetLabelIdIS(dm, name, &ids);CHKERRQ(ierr);
-      ierr = ISGetSize(ids, &num);CHKERRQ(ierr);
-      ierr = ISGetIndices(ids, &markers);CHKERRQ(ierr);
-      for (i = 0; i < num; ++i) {
-        IS              pIS;
-        const PetscInt *points;
-        PetscInt        size, p;
-
-        ierr = DMComplexGetStratumIS(dm, name, markers[i], &pIS);
-        ierr = ISGetSize(pIS, &size);CHKERRQ(ierr);
-        ierr = ISGetIndices(pIS, &points);CHKERRQ(ierr);
-        for (p = 0; p < size; ++p) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%D]: %D (%D)\n", rank, points[p], markers[i]);CHKERRQ(ierr);
-        }
-        ierr = ISRestoreIndices(pIS, &points);CHKERRQ(ierr);
-        ierr = ISDestroy(&pIS);CHKERRQ(ierr);
-      }
-      ierr = ISRestoreIndices(ids, &markers);CHKERRQ(ierr);
-      ierr = ISDestroy(&ids);CHKERRQ(ierr);
+      ierr = DMComplexViewLabel_Ascii(dm, "marker", viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_LATEX) {
@@ -1563,6 +1574,15 @@ PetscErrorCode DMComplexGetFaces(DM dm, PetscInt p, PetscInt *numFaces, PetscInt
       *faceSize = 2;
       *faces    = mesh->facesTmp;
       break;
+    case 4:
+      mesh->facesTmp[0] = cone[0]; mesh->facesTmp[1] = cone[1];
+      mesh->facesTmp[2] = cone[1]; mesh->facesTmp[3] = cone[2];
+      mesh->facesTmp[4] = cone[2]; mesh->facesTmp[5] = cone[3];
+      mesh->facesTmp[6] = cone[3]; mesh->facesTmp[7] = cone[0];
+      *numFaces = 4;
+      *faceSize = 2;
+      *faces    = mesh->facesTmp;
+      break;
     default:
       SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
     }
@@ -1914,6 +1934,80 @@ PetscErrorCode DMComplexStratify(DM dm)
     }
   }
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetNumLabels"
+/*@
+  DMComplexGetNumLabels - Return the number of labels defined by the mesh
+
+  Not Collective
+
+  Input Parameter:
+. dm   - The DMComplex object
+
+  Output Parameter:
+. numLabels - the number of Labels
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+@*/
+PetscErrorCode DMComplexGetNumLabels(DM dm, PetscInt *numLabels)
+{
+  DM_Complex *mesh = (DM_Complex *) dm->data;
+  DMLabel     next = mesh->labels;
+  PetscInt    n    = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(numLabels, 2);
+  while(next) {
+    ++n;
+    next = next->next;
+  }
+  *numLabels = n;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetLabelName"
+/*@C
+  DMComplexGetLabelName - Return the name of nth label
+
+  Not Collective
+
+  Input Parameters:
++ dm - The DMComplex object
+- n  - the label number
+
+  Output Parameter:
+. name - the label name
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+@*/
+PetscErrorCode DMComplexGetLabelName(DM dm, PetscInt n, const char **name)
+{
+  DM_Complex *mesh = (DM_Complex *) dm->data;
+  DMLabel     next = mesh->labels;
+  PetscInt    l    = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 3);
+  while(next) {
+    if (l == n) {
+      *name = next->name;
+      PetscFunctionReturn(0);
+    }
+    ++l;
+    next = next->next;
+  }
+  SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Label %d does not exist in this DM", n);
 }
 
 #undef __FUNCT__
@@ -3638,7 +3732,6 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
   DM             idm;
   DM_Complex    *mesh;
   PetscInt      *off;
-  const PetscInt numCorners = 3;
   PetscInt       dim, numCells, cStart, cEnd, c, numVertices, vStart, vEnd;
   PetscInt       numEdges, firstEdge, edge, e;
   PetscErrorCode ierr;
@@ -3654,9 +3747,22 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
   /* Count edges using algorithm from CreateNeighborCSR */
   ierr = DMComplexCreateNeighborCSR(dm, PETSC_NULL, &off, PETSC_NULL);CHKERRQ(ierr);
   if (off) {
+    PetscInt numCorners = 0;
+
     numEdges = off[numCells]/2;
+#if 0
     /* Account for boundary edges: \sum_c 3 - neighbors = 3*numCells - totalNeighbors */
     numEdges += 3*numCells - off[numCells];
+#else
+    /* Account for boundary edges: \sum_c #faces - #neighbors = \sum_c #cellVertices - #neighbors = totalCorners - totalNeighbors */
+    for(c = cStart; c < cEnd; ++c) {
+      PetscInt coneSize;
+
+      ierr = DMComplexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
+      numCorners += coneSize;
+    }
+    numEdges += numCorners - off[numCells];
+#endif
   }
   /* Check Euler characteristic V - E + F = 1 */
   if (numVertices && (numVertices-numEdges+numCells != 1)) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Euler characteristic of mesh is %d  != 1", numVertices-numEdges+numCells);
@@ -3666,6 +3772,9 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
   ierr = DMComplexSetDimension(idm, dim);CHKERRQ(ierr);
   ierr = DMComplexSetChart(idm, 0, numCells+numVertices+numEdges);CHKERRQ(ierr);
   for (c = 0; c < numCells; ++c) {
+    PetscInt numCorners;
+
+    ierr = DMComplexGetConeSize(dm, c, &numCorners);CHKERRQ(ierr);
     ierr = DMComplexSetConeSize(idm, c, numCorners);CHKERRQ(ierr);
   }
   for (e = firstEdge; e < firstEdge+numEdges; ++e) {

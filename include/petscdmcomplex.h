@@ -43,6 +43,8 @@ PETSC_EXTERN PetscErrorCode DMComplexStratify(DM);
 PETSC_EXTERN PetscErrorCode DMComplexGetCoordinateSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMComplexSetCoordinateSection(DM, PetscSection);
 
+PETSC_EXTERN PetscErrorCode DMComplexGetNumLabels(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMComplexGetLabelName(DM, PetscInt, const char **);
 PETSC_EXTERN PetscErrorCode DMComplexHasLabel(DM, const char [], PetscBool *);
 PETSC_EXTERN PetscErrorCode DMComplexGetLabelValue(DM, const char[], PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexSetLabelValue(DM, const char[], PetscInt, PetscInt);
@@ -90,7 +92,7 @@ PETSC_EXTERN PetscErrorCode DMComplexVecRestoreClosure(DM, PetscSection, Vec, Pe
 PETSC_EXTERN PetscErrorCode DMComplexVecSetClosure(DM, PetscSection, Vec, PetscInt, const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode DMComplexMatSetClosure(DM, PetscSection, PetscSection, Mat, PetscInt, PetscScalar[], InsertMode);
 
-PETSC_EXTERN PetscErrorCode DMComplexCreateExodus(MPI_Comm , PetscInt , DM *);
+PETSC_EXTERN PetscErrorCode DMComplexCreateExodus(MPI_Comm, PetscInt, PetscBool, DM *);
 
 PETSC_EXTERN PetscErrorCode DMComplexGetVTKBounds(DM, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexSetVTKBounds(DM, PetscInt, PetscInt);
