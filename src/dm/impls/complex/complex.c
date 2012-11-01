@@ -1402,6 +1402,27 @@ PetscErrorCode DMComplexSetSupport(DM dm, PetscInt p, const PetscInt support[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexInsertSupport"
+PetscErrorCode DMComplexInsertSupport(DM dm, PetscInt p, PetscInt supportPos, PetscInt supportPoint)
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscInt       pStart, pEnd;
+  PetscInt       dof, off;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscSectionGetChart(mesh->supportSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetDof(mesh->supportSection, p, &dof);CHKERRQ(ierr);
+  ierr = PetscSectionGetOffset(mesh->supportSection, p, &off);CHKERRQ(ierr);
+  if ((p < pStart) || (p >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %D is not in the valid range [%D, %D)", p, pStart, pEnd);
+  if ((supportPoint < pStart) || (supportPoint >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Support point %D is not in the valid range [%D, %D)", supportPoint, pStart, pEnd);
+  if (supportPos >= dof) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Support position %D of point %D is not in the valid range [0, %D)", supportPos, p, dof);
+  mesh->supports[off+supportPos] = supportPoint;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexGetTransitiveClosure"
 /*@C
   DMComplexGetTransitiveClosure - Return the points on the transitive closure of the in-edges or out-edges for this point in the Sieve DAG

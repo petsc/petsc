@@ -11,20 +11,354 @@ static char help[] = "Second Order TVD Finite Volume Example.\n";
 #endif
 
 typedef struct {
-  PetscBool debug;
+  PetscInt     numGhostCells;
+  PetscSection normalSection;
+  Vec          normals;
+  PetscSection stateSection;
+  Vec          state, residual;
 } AppCtx;
+
+#undef __FUNCT__
+#define __FUNCT__ "ConstructGhostCells"
+PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
+{
+  DM              dm = *dmGhosted, gdm;
+  PetscSection    coordSection, newCoordSection;
+  Vec             coordinates;
+  const char     *name = "Face Sets";
+  IS              idIS;
+  const PetscInt *ids;
+  PetscInt       *newpoints;
+  PetscInt        dim, depth, d, maxConeSize, maxSupportSize, numLabels, l;
+  PetscInt        numFS, fs, pStart, pEnd, p, cStart, cEnd, c, ghostCell, vStart, vEnd, v;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCreate(((PetscObject) dm)->comm, &gdm);CHKERRQ(ierr);
+  ierr = DMSetType(gdm, DMCOMPLEX);CHKERRQ(ierr);
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMComplexSetDimension(gdm, dim);CHKERRQ(ierr);
+
+  ierr = DMComplexGetLabelIdIS(dm, name, &idIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
+  ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
+  user->numGhostCells = 0;
+  for(fs = 0; fs < numFS; ++fs) {
+    PetscInt numBdFaces;
+
+    ierr = DMComplexGetStratumSize(dm, name, ids[fs], &numBdFaces);CHKERRQ(ierr);
+    user->numGhostCells += numBdFaces;
+  }
+  ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  pEnd += user->numGhostCells;
+  ierr = DMComplexSetChart(gdm, pStart, pEnd);CHKERRQ(ierr);
+  /* Set cone and support sizes */
+  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  for(c = cStart; c < cEnd; ++c) {
+    PetscInt size;
+
+    ierr = DMComplexGetConeSize(dm, c, &size);CHKERRQ(ierr);
+    ierr = DMComplexSetConeSize(gdm, c, size);CHKERRQ(ierr);
+  }
+  for(c = cEnd; c < cEnd+user->numGhostCells; ++c) {
+    ierr = DMComplexSetConeSize(gdm, c, 1);CHKERRQ(ierr);
+  }
+  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
+  for(d = 0; d < depth; ++d) {
+    ierr = DMComplexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
+    for(p = pStart; p < pEnd; ++p) {
+      PetscInt newp = p+user->numGhostCells;
+      PetscInt size;
+
+      ierr = DMComplexGetConeSize(dm, p, &size);CHKERRQ(ierr);
+      ierr = DMComplexSetConeSize(gdm, newp, size);CHKERRQ(ierr);
+      ierr = DMComplexGetSupportSize(dm, p, &size);CHKERRQ(ierr);
+      ierr = DMComplexSetSupportSize(gdm, newp, size);CHKERRQ(ierr);
+    }
+  }
+  for(fs = 0; fs < numFS; ++fs) {
+    IS              faceIS;
+    const PetscInt *faces;
+    PetscInt        numFaces, f;
+
+    ierr = DMComplexGetStratumIS(dm, name, ids[fs], &faceIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
+    ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
+    for(f = 0; f < numFaces; ++f) {
+      PetscInt size;
+
+      ierr = DMComplexGetSupportSize(dm, faces[f], &size);CHKERRQ(ierr);
+      if (size != 1) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "DM has boundary face %d with %d support cells", faces[f], size);
+      ierr = DMComplexSetSupportSize(gdm, faces[f]+user->numGhostCells, 2);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
+    ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
+  }
+  ierr = DMSetUp(gdm);CHKERRQ(ierr);
+  /* Set cones and supports, may have to orient supports here */
+  ierr = DMComplexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
+  ierr = PetscMalloc(PetscMax(maxConeSize, maxSupportSize) * sizeof(PetscInt), &newpoints);CHKERRQ(ierr);
+  ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    const PetscInt *points, *orientations;
+    PetscInt        size, i, newp = p >= cEnd ? p+user->numGhostCells : p;
+
+    ierr = DMComplexGetConeSize(dm, p, &size);CHKERRQ(ierr);
+    ierr = DMComplexGetCone(dm, p, &points);CHKERRQ(ierr);
+    ierr = DMComplexGetConeOrientation(dm, p, &orientations);CHKERRQ(ierr);
+    for(i = 0; i < size; ++i) {
+      newpoints[i] = points[i] >= cEnd ? points[i]+user->numGhostCells : points[i];
+    }
+    ierr = DMComplexSetCone(gdm, newp, newpoints);CHKERRQ(ierr);
+    ierr = DMComplexSetConeOrientation(gdm, newp, orientations);CHKERRQ(ierr);
+    ierr = DMComplexGetSupportSize(dm, p, &size);CHKERRQ(ierr);
+    ierr = DMComplexGetSupport(dm, p, &points);CHKERRQ(ierr);
+    for(i = 0; i < size; ++i) {
+      newpoints[i] = points[i] >= cEnd ? points[i]+user->numGhostCells : points[i];
+    }
+    ierr = DMComplexSetSupport(gdm, newp, newpoints);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(newpoints);CHKERRQ(ierr);
+  ghostCell = cEnd;
+  for(fs = 0; fs < numFS; ++fs) {
+    IS              faceIS;
+    const PetscInt *faces;
+    PetscInt        numFaces, f;
+
+    ierr = DMComplexGetStratumIS(dm, name, ids[fs], &faceIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
+    ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
+    for(f = 0; f < numFaces; ++f, ++ghostCell) {
+      PetscInt newFace = faces[f] + user->numGhostCells;
+
+      ierr = DMComplexSetCone(gdm, ghostCell, &newFace);CHKERRQ(ierr);
+      ierr = DMComplexInsertSupport(gdm, newFace, 1, ghostCell);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
+    ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
+  ierr = ISDestroy(&idIS);CHKERRQ(ierr);
+  ierr = DMComplexStratify(gdm);CHKERRQ(ierr);
+  /* Convert coordinates */
+  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &newCoordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(newCoordSection, vStart+user->numGhostCells, vEnd+user->numGhostCells);CHKERRQ(ierr);
+  for(v = vStart; v < vEnd; ++v) {
+    ierr = PetscSectionSetDof(newCoordSection, v+user->numGhostCells, dim);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(newCoordSection);CHKERRQ(ierr);
+  ierr = DMComplexSetCoordinateSection(gdm, newCoordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) coordinates);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(gdm, coordinates);CHKERRQ(ierr);
+  /* Convert labels */
+  ierr = DMComplexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
+  for(l = 0; l < numLabels; ++l) {
+    const char *lname;
+    PetscBool   isDepth;
+
+    ierr = DMComplexGetLabelName(dm, l, &lname);CHKERRQ(ierr);
+    ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
+    if (isDepth) continue;
+    ierr = DMComplexGetLabelIdIS(dm, lname, &idIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
+    ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
+    for(fs = 0; fs < numFS; ++fs) {
+      IS              pointIS;
+      const PetscInt *points;
+      PetscInt        numPoints;
+
+      ierr = DMComplexGetStratumIS(dm, lname, ids[fs], &pointIS);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
+      ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+      for(p = 0; p < numPoints; ++p) {
+        PetscInt newpoint = points[p] >= cEnd ? points[p]+user->numGhostCells : points[p];
+
+        ierr = DMComplexSetLabelValue(gdm, lname, newpoint, ids[fs]);CHKERRQ(ierr);
+      }
+      ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
+    ierr = ISDestroy(&idIS);CHKERRQ(ierr);
+  }
+
+  ierr = DMSetFromOptions(gdm);CHKERRQ(ierr);
+  ierr = DMDestroy(dmGhosted);CHKERRQ(ierr);
+  *dmGhosted = gdm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ConstructNormals"
+/* Iterate over all faces and give me the area-scaled normal vector */
+PetscErrorCode ConstructNormals(DM dm, PetscSection normalSection, Vec normals)
+{
+  PetscSection   coordSection;
+  Vec            coordinates;
+  PetscScalar   *n;
+  PetscInt       dim, normalSize, fStart, fEnd, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(normalSection, fStart, fEnd);CHKERRQ(ierr);
+  for(f = fStart; f < fEnd; ++f) {
+    ierr = PetscSectionSetDof(normalSection, f, dim);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(normalSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(normalSection, &normalSize);CHKERRQ(ierr);
+  ierr = VecSetSizes(normals, normalSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(normals);CHKERRQ(ierr);
+  ierr = VecGetArray(normals, &n);CHKERRQ(ierr);
+  for(f = fStart; f < fEnd; ++f) {
+    const PetscScalar *coords = PETSC_NULL;
+    PetscInt           coordSize, off, d;
+    PetscReal          v[2], mag = 0.0;
+
+    ierr = DMComplexVecGetClosure(dm, coordSection, coordinates, f, &coordSize, &coords);CHKERRQ(ierr);
+    /* Only support edges right now */
+    if (coordSize != dim*2) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "We only support edges right now");
+    v[0] =  (coords[1] - coords[dim+1]);
+    v[1] = -(coords[0] - coords[dim+0]);
+    ierr = DMComplexVecRestoreClosure(dm, coordSection, coordinates, f, &coordSize, &coords);CHKERRQ(ierr);
+    for(d = 0; d < dim; ++d) {mag += PetscSqr(v[d]);}
+    mag  = sqrt(mag);
+    ierr = PetscSectionGetOffset(normalSection, f, &off);CHKERRQ(ierr);
+#if 0
+    for(d = 0; d < dim; ++d) {n[off+d] = v[d]/mag;}
+#else
+    /* I think this is the area scaling you want */
+    for(d = 0; d < dim; ++d) {n[off+d] = v[d];}
+#endif
+  }
+  ierr = VecRestoreArray(normals, &n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ConstructState"
+PetscErrorCode ConstructState(DM dm, PetscSection stateSection, Vec state)
+{
+  PetscInt       dof = 1, stateSize, cStart, cEnd, c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(stateSection, cStart, cEnd);CHKERRQ(ierr);
+  for(c = cStart; c < cEnd; ++c) {
+    ierr = PetscSectionSetDof(stateSection, c, dof);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(stateSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(stateSection, &stateSize);CHKERRQ(ierr);
+  ierr = VecSetSizes(state, stateSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(state);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CopyToGhosts"
+/* Iterate over boundary faces copying state from the cell inside into the ghost cell. */
+PetscErrorCode CopyToGhosts(DM dm, AppCtx *user)
+{
+  const char     *name = "Face Sets";
+  IS              idIS;
+  const PetscInt *ids;
+  PetscScalar    *state;
+  PetscInt        numFS, fs;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetLabelIdIS(dm, name, &idIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
+  ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
+  ierr = VecGetArray(user->state, &state);CHKERRQ(ierr);
+  for(fs = 0; fs < numFS; ++fs) {
+    IS              faceIS;
+    const PetscInt *faces;
+    PetscInt        numFaces, f;
+
+    ierr = DMComplexGetStratumIS(dm, name, ids[fs], &faceIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
+    ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
+    for(f = 0; f < numFaces; ++f) {
+      const PetscInt  face = faces[f];
+      const PetscInt *cells;
+      PetscInt        numCells;
+
+      ierr = DMComplexGetSupportSize(dm, face, &numCells);CHKERRQ(ierr);
+      ierr = DMComplexGetSupport(dm, face, &cells);CHKERRQ(ierr);
+      if (numCells != 2) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "DM has %d > 2 cells for face %d", numCells, f);
+      PetscInt dof, off, gdof, goff, d;
+
+      ierr = PetscSectionGetDof(user->stateSection, cells[0], &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(user->stateSection, cells[0], &off);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(user->stateSection, cells[1], &gdof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(user->stateSection, cells[1], &goff);CHKERRQ(ierr);
+      for(d = 0; d < dof; ++d) {
+        state[goff+d] = state[off+d];
+      }
+    }
+    ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
+    ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(user->state,    &state);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
+  ierr = ISDestroy(&idIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CalculateFlux"
+/* Iterate over all faces and give me access to solution state + residual for the cells on both sides. */
+PetscErrorCode CalculateFlux(DM dm, AppCtx *user)
+{
+  PetscScalar   *state, *residual;
+  PetscInt       fStart, fEnd, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+  ierr = VecGetArray(user->state,    &state);CHKERRQ(ierr);
+  ierr = VecGetArray(user->residual, &residual);CHKERRQ(ierr);
+  for(f = fStart; f < fEnd; ++f) {
+    const PetscInt *cells;
+    PetscInt        numCells, c;
+
+    ierr = DMComplexGetSupportSize(dm, f, &numCells);CHKERRQ(ierr);
+    ierr = DMComplexGetSupport(dm, f, &cells);CHKERRQ(ierr);
+    if (numCells != 2) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "DM has %d > 2 cells for face %d", numCells, f);
+    for(c = 0; c < numCells; ++c) {
+      PetscInt dof, off, d;
+
+      ierr = PetscSectionGetDof(user->stateSection, cells[c], &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(user->stateSection, cells[c], &off);CHKERRQ(ierr);
+      for(d = 0; d < dof; ++d) {
+        residual[off+d] = state[off+d];
+      }
+    }
+  }
+  ierr = VecRestoreArray(user->state,    &state);CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->residual, &residual);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   MPI_Comm       comm;
+  AppCtx         user;
   DM             dm;
   PetscInt       exoid;
   int            CPU_word_size = 0, IO_word_size = 0;
   float          version;
   TS             ts;
-  PetscInt       numLabels, l;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -37,18 +371,25 @@ int main(int argc, char **argv)
   if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
 
+  ierr = ConstructGhostCells(&dm, &user);CHKERRQ(ierr);
+
   ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts, TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts, TSROSW);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
 
-  ierr = DMComplexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
-  for(l = 0; l < numLabels; ++l) {
-    const char *name;
+  ierr = PetscSectionCreate(comm, &user.normalSection);CHKERRQ(ierr);
+  ierr = VecCreate(comm, &user.normals);CHKERRQ(ierr);
+  ierr = ConstructNormals(dm, user.normalSection, user.normals);CHKERRQ(ierr);
+  ierr = VecView(user.normals, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-    ierr = DMComplexGetLabelName(dm, l, &name);CHKERRQ(ierr);
-    ierr = DMComplexViewLabel_Ascii(dm, name, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
+  ierr = PetscSectionCreate(comm, &user.stateSection);CHKERRQ(ierr);
+  ierr = VecCreate(comm, &user.state);CHKERRQ(ierr);
+  ierr = ConstructState(dm, user.stateSection, user.state);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.state, &user.residual);CHKERRQ(ierr);
+
+  ierr = CopyToGhosts(dm, &user);CHKERRQ(ierr);
+  ierr = CalculateFlux(dm, &user);CHKERRQ(ierr);
 
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFinalize();
