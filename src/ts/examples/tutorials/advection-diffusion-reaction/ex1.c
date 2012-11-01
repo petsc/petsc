@@ -170,7 +170,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
@@ -206,7 +206,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr); 
+  ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,PETSC_NULL,(TSIFunction) IFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&ctx);CHKERRQ(ierr);
   ierr = TSSetSolutionFunction(ts,(TSSolutionFunction)Solution,&ctx);CHKERRQ(ierr);
@@ -238,5 +238,5 @@ int main(int argc,char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return(0);
 }
