@@ -166,11 +166,11 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     }
     if (linesearch->ops->vinorm) {
       gnorm = fnorm;
-    ierr = (*linesearch->ops->vinorm)(snes, G, W, &gnorm);CHKERRQ(ierr);
+      ierr = (*linesearch->ops->vinorm)(snes, G, W, &gnorm);CHKERRQ(ierr);
     } else {
       ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);
-      g = gnorm*gnorm;
     }
+    g = PetscSqr(gnorm);
   }
 
   if (PetscIsInfOrNanReal(g)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");

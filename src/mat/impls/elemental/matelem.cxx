@@ -386,7 +386,6 @@ static PetscErrorCode MatGetDiagonal_Elemental(Mat A,Vec D)
 {
   PetscInt        i,nrows,ncols,nD,rrank,ridx,crank,cidx;
   Mat_Elemental   *a = (Mat_Elemental*)A->data;
-  PetscElemScalar *d;
   PetscErrorCode  ierr;
   PetscElemScalar v;
   MPI_Comm        comm=((PetscObject)A)->comm;
