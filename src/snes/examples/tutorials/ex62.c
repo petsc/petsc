@@ -1715,28 +1715,6 @@ int main(int argc, char **argv)
   ierr = SNESSetFunction(snes, r, SNESDMComputeFunction, &user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  {
-    KSP ksp;
-    PC  pc;
-    Vec crd_vec;
-    const PetscScalar *v;
-    PetscInt   i, mlocal;
-    PetscReal *coords;
-
-    ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(user.dm, &crd_vec);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(crd_vec,&mlocal);CHKERRQ(ierr);
-    ierr = PetscMalloc(mlocal*sizeof(*coords), &coords);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(crd_vec, &v);CHKERRQ(ierr);
-    for (i = 0; i < mlocal; i++) {
-      coords[i] = PetscRealPart(v[i]);
-    }
-    ierr = VecRestoreArrayRead(crd_vec, &v);CHKERRQ(ierr);
-    ierr = PCSetCoordinates(pc, SPATIAL_DIM_0, mlocal/SPATIAL_DIM_0, coords);CHKERRQ(ierr);
-    ierr = PetscFree(coords);CHKERRQ(ierr);
-  }
-
   ierr = DMComputeVertexFunction(user.dm, INSERT_ALL_VALUES, u, numComponents, user.exactFuncs, &user);CHKERRQ(ierr);
   if (user.runType == RUN_FULL) {
     PetscScalar (*initialGuess[numComponents])(const PetscReal x[]);
