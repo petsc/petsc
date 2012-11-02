@@ -557,6 +557,10 @@ PETSC_EXTERN PetscErrorCode MatMatMult(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_EXTERN PetscErrorCode MatMatMultSymbolic(Mat,Mat,PetscReal,Mat*);
 PETSC_EXTERN PetscErrorCode MatMatMultNumeric(Mat,Mat,Mat);
 
+PETSC_EXTERN PetscErrorCode MatMatMatMult(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
+PETSC_EXTERN PetscErrorCode MatMatMatMultSymbolic(Mat,Mat,Mat,PetscReal,Mat*);
+PETSC_EXTERN PetscErrorCode MatMatMatMultNumeric(Mat,Mat,Mat,Mat);
+
 PETSC_EXTERN PetscErrorCode MatPtAP(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_EXTERN PetscErrorCode MatPtAPSymbolic(Mat,Mat,PetscReal,Mat*);
 PETSC_EXTERN PetscErrorCode MatPtAPNumeric(Mat,Mat,Mat);
@@ -1547,6 +1551,9 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_DESTROY=60,
                MATOP_VIEW=61,
                MATOP_CONVERT_FROM=62,
+               MATOP_MATMAT_MULT=63,
+               MATOP_MATMAT_MULT_SYMBOLIC=64,
+               MATOP_MATMAT_MULT_NUMERIC=65,
                MATOP_SET_LOCAL_TO_GLOBAL_MAP=66,
                MATOP_SET_VALUES_LOCAL=67,
                MATOP_ZERO_ROWS_LOCAL=68,

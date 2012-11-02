@@ -285,6 +285,9 @@
       PetscEnum MATOP_DESTROY
       PetscEnum MATOP_VIEW
       PetscEnum MATOP_CONVERT_FROM
+      PetscEnum MATOP_MATMAT_MULT
+      PetscEnum MATOP_MATMAT_MULT_SYMBOLIC
+      PetscEnum MATOP_MATMAT_MULT_NUMERIC
       PetscEnum MATOP_SET_LOCAL_TO_GLOBAL_MAP
       PetscEnum MATOP_SET_VALUES_LOCAL
       PetscEnum MATOP_ZERO_ROWS_LOCAL
@@ -412,6 +415,9 @@
       parameter(MATOP_DESTROY=60)
       parameter(MATOP_VIEW=61)
       parameter(MATOP_CONVERT_FROM=62)
+      parameter(MATOP_MATMAT_MULT=63)
+      parameter(MATOP_MATMAT_MULT_SYMBOLIC=64)
+      parameter(MATOP_MATMAT_MULT_NUMERIC=65)                                                  
       parameter(MATOP_SET_LOCAL_TO_GLOBAL_MAP=66)
       parameter(MATOP_SET_VALUES_LOCAL=67)
       parameter(MATOP_ZERO_ROWS_LOCAL=68)
