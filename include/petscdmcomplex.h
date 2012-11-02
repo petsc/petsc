@@ -104,4 +104,6 @@ PETSC_EXTERN PetscErrorCode DMComplexVTKWriteAll(PetscObject, PetscViewer);
 
 PETSC_EXTERN PetscErrorCode DMComplexGetScale(DM, PetscUnit, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMComplexSetScale(DM, PetscUnit, PetscReal);
+
+PETSC_EXTERN PetscErrorCode DMComplexProjectFunction(DM, PetscInt, PetscScalar (**)(const PetscReal []), InsertMode, Vec);
 #endif

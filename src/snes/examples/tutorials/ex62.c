@@ -298,6 +298,30 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMVecViewLocal"
+PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
+{
+  Vec            lv;
+  PetscInt       p;
+  PetscMPIInt    rank, numProcs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject) dm)->comm, &numProcs);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &lv);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, lv);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, lv);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Local function\n");CHKERRQ(ierr);
+  for (p = 0; p < numProcs; ++p) {
+    if (p == rank) {ierr = VecView(lv, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+    ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
+  }
+  ierr = DMRestoreLocalVector(dm, &lv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -437,205 +461,6 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ComputeError"
-/*
-  ComputeError - This function computes the L_2 error, or difference between the exact solution function u
-  and the FEM interpolant solution u_h.
-
-  Input Parameters:
-+ dm         - The DM
-. exactFuncs - The exact solution functions to evaluate
-- X          - The solution vector u_h
-
-  Output Parameter:
-. error - The error ||u - u_h||_2
-*/
-PetscErrorCode ComputeError(DM dm, PetscQuadrature quad[], PetscScalar (**exactFuncs)(const PetscReal []), Vec X, PetscReal *error) {
-  const PetscInt   debug = 0;
-  Vec              localX;
-  PetscReal       *coords, *v0, *J, *invJ, detJ;
-  PetscReal        localError;
-  PetscInt         dim, cStart, cEnd, c, field, fieldOffset, comp;
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
-  ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
-  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {
-    const PetscScalar *x;
-    PetscReal          elemError = 0.0;
-
-    ierr = DMComplexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
-    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
-    ierr = DMComplexVecGetClosure(dm, PETSC_NULL, localX, c, PETSC_NULL, &x);CHKERRQ(ierr);
-
-    for (field = 0, comp = 0, fieldOffset = 0; field < numFields; ++field) {
-      const PetscInt   numQuadPoints = quad[field].numQuadPoints;
-      const PetscReal *quadPoints    = quad[field].quadPoints;
-      const PetscReal *quadWeights   = quad[field].quadWeights;
-      const PetscInt   numBasisFuncs = quad[field].numBasisFuncs;
-      const PetscInt   numBasisComps = quad[field].numComponents;
-      const PetscReal *basis         = quad[field].basis;
-      PetscInt         q, d, e, fc, f;
-
-      if (debug) {
-        char title[1024];
-        ierr = PetscSNPrintf(title, 1023, "Solution for Field %d", field);CHKERRQ(ierr);
-        ierr = DMPrintCellVector(c, title, numBasisFuncs*numBasisComps, &x[fieldOffset]);CHKERRQ(ierr);
-      }
-      for (q = 0; q < numQuadPoints; ++q) {
-        for (d = 0; d < dim; d++) {
-          coords[d] = v0[d];
-          for (e = 0; e < dim; e++) {
-            coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
-          }
-        }
-        for (fc = 0; fc < numBasisComps; ++fc) {
-          const PetscScalar funcVal     = (*exactFuncs[comp+fc])(coords);
-          PetscReal         interpolant = 0.0;
-          for (f = 0; f < numBasisFuncs; ++f) {
-            const PetscInt fidx = f*numBasisComps+fc;
-            interpolant += x[fieldOffset+fidx]*basis[q*numBasisFuncs*numBasisComps+fidx];
-          }
-          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d error %g\n", c, field, PetscSqr(interpolant - funcVal)*quadWeights[q]*detJ);CHKERRQ(ierr);}
-          elemError += PetscSqr(interpolant - funcVal)*quadWeights[q]*detJ;
-        }
-      }
-      comp        += numBasisComps;
-      fieldOffset += numBasisFuncs*numBasisComps;
-    }
-    ierr = DMComplexVecRestoreClosure(dm, PETSC_NULL, localX, c, PETSC_NULL, &x);CHKERRQ(ierr);
-    if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %d error %g\n", c, elemError);CHKERRQ(ierr);}
-    localError += elemError;
-  }
-  ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&localError, error, 1, MPIU_REAL, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
-  *error = PetscSqrtReal(*error);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeVertexFunction"
-/*
-  DMComputeVertexFunction - This calls a function with the coordinates of each vertex, and stores the result in a vector.
-
-  Input Parameters:
-+ dm      - The DM
-. mode    - The insertion mode for values
-. numComp - The number of components (functions)
-- funcs   - The coordinate functions to evaluate
-
-  Output Parameter:
-. X - vector
-*/
-PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt numComp, PetscScalar (**funcs)(const PetscReal []), AppCtx *user)
-{
-  Vec            localX, coordinates;
-  PetscSection   section, cSection;
-  PetscInt       vStart, vEnd, v, c;
-  PetscScalar   *values;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = DMComplexGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = PetscMalloc(numComp * sizeof(PetscScalar), &values);CHKERRQ(ierr);
-  for (v = vStart; v < vEnd; ++v) {
-    PetscScalar *coords;
-
-    ierr = VecGetValuesSection(coordinates, cSection, v, &coords);CHKERRQ(ierr);
-    for (c = 0; c < numComp; ++c) {
-      values[c] = (*funcs[c])(coords);
-    }
-    ierr = VecSetValuesSection(localX, section, v, values, mode);CHKERRQ(ierr);
-  }
-  /* Temporary, msut be replaced by a projection on the finite element basis */
-  {
-    PetscScalar *coordsE;
-    PetscInt     eStart = 0, eEnd = 0, e, depth, dim;
-
-    ierr = PetscSectionGetDof(cSection, vStart, &dim);CHKERRQ(ierr);
-    ierr = DMComplexGetLabelSize(dm, "depth", &depth);CHKERRQ(ierr);
-    --depth;
-    if (depth > 1) {ierr = DMComplexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);}
-    ierr = PetscMalloc(dim * sizeof(PetscScalar),&coordsE);CHKERRQ(ierr);
-    for (e = eStart; e < eEnd; ++e) {
-      const PetscInt *cone;
-      PetscInt        coneSize, d;
-      PetscScalar    *coordsA, *coordsB;
-
-      ierr = DMComplexGetConeSize(dm, e, &coneSize);CHKERRQ(ierr);
-      ierr = DMComplexGetCone(dm, e, &cone);CHKERRQ(ierr);
-      if (coneSize != 2) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Cone size %d for point %d should be 2", coneSize, e);
-      ierr = VecGetValuesSection(coordinates, cSection, cone[0], &coordsA);CHKERRQ(ierr);
-      ierr = VecGetValuesSection(coordinates, cSection, cone[1], &coordsB);CHKERRQ(ierr);
-      for (d = 0; d < dim; ++d) {
-        coordsE[d] = 0.5*(coordsA[d] + coordsB[d]);
-      }
-      for (c = 0; c < numComp; ++c) {
-        values[c] = (*funcs[c])(coordsE);
-      }
-      ierr = VecSetValuesSection(localX, section, e, values, mode);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(coordsE);CHKERRQ(ierr);
-  }
-
-  ierr = PetscFree(values);CHKERRQ(ierr);
-  if (user->showInitial) {
-    PetscInt p;
-
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Local function\n");CHKERRQ(ierr);
-    for (p = 0; p < user->numProcs; ++p) {
-      if (p == user->rank) {ierr = VecView(localX, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
-      ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
-    }
-  }
-  ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
-#if 0
-  const PetscInt localDof = this->_mesh->sizeWithBC(s, *cells->begin());
-  PetscReal      detJ;
-
-  ierr = PetscMalloc(localDof * sizeof(PetscScalar), &values);CHKERRQ(ierr);
-  ierr = PetscMalloc2(dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
-  ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(this->_mesh->getSieve()->getMaxConeSize(), dim+1)+1, true);
-
-  for (PetscInt c = cStart; c < cEnd; ++c) {
-    ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*this->_mesh->getSieve(), c, pV);
-    const PETSC_MESH_TYPE::point_type *oPoints = pV.getPoints();
-    const int                          oSize   = pV.getSize();
-    int                                v       = 0;
-
-    ierr = DMComplexComputeCellGeometry(dm, c, v0, J, PETSC_NULL, &detJ);CHKERRQ(ierr);
-    for (PetscInt cl = 0; cl < oSize; ++cl) {
-      const PetscInt fDim;
-
-      ierr = PetscSectionGetDof(oPoints[cl], &fDim);CHKERRQ(ierr);
-      if (pointDim) {
-        for (PetscInt d = 0; d < fDim; ++d, ++v) {
-          values[v] = (*this->_options.integrate)(v0, J, v, initFunc);
-        }
-      }
-    }
-    ierr = DMComplexVecSetClosure(dm, PETSC_NULL, localX, c, values);CHKERRQ(ierr);
-    pV.clear();
-  }
-  ierr = PetscFree2(v0,J);CHKERRQ(ierr);
-  ierr = PetscFree(values);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -1128,13 +953,15 @@ int main(int argc, char **argv)
   ierr = SNESSetFunction(snes, r, SNESDMComputeFunction, &user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = DMComputeVertexFunction(user.dm, INSERT_ALL_VALUES, u, numComponents, user.exactFuncs, &user);CHKERRQ(ierr);
+  ierr = DMComplexProjectFunction(user.dm, numComponents, user.exactFuncs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  if (user.showInitial) {ierr = DMVecViewLocal(user.dm, u, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
   if (user.runType == RUN_FULL) {
     PetscScalar (*initialGuess[numComponents])(const PetscReal x[]);
     PetscInt c;
 
     for (c = 0; c < numComponents; ++c) {initialGuess[c] = zero;}
-    ierr = DMComputeVertexFunction(user.dm, INSERT_VALUES, u, numComponents, initialGuess, &user);CHKERRQ(ierr);
+    ierr = DMComplexProjectFunction(user.dm, numComponents, initialGuess, INSERT_VALUES, u);CHKERRQ(ierr);
+    if (user.showInitial) {ierr = DMVecViewLocal(user.dm, u, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
     if (user.debug) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
       ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -1142,7 +969,7 @@ int main(int argc, char **argv)
     ierr = SNESSolve(snes, PETSC_NULL, u);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
-    ierr = ComputeError(user.dm, user.q, user.exactFuncs, u, &error);CHKERRQ(ierr);
+    ierr = DMComplexComputeL2Diff(user.dm, user.q, user.exactFuncs, u, &error);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %.3g\n", error);CHKERRQ(ierr);
     if (user.showSolution) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution\n");CHKERRQ(ierr);
@@ -1155,7 +982,7 @@ int main(int argc, char **argv)
     /* Check discretization error */
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial guess\n");CHKERRQ(ierr);
     ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = ComputeError(user.dm, user.q, user.exactFuncs, u, &error);CHKERRQ(ierr);
+    ierr = DMComplexComputeL2Diff(user.dm, user.q, user.exactFuncs, u, &error);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);
     /* Check residual */
     ierr = SNESDMComputeFunction(snes, u, r, &user);CHKERRQ(ierr);
