@@ -4,11 +4,10 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = aij.c aijfact.c ij.c fdaij.c \
-	   matmatmult.c symtranspose.c matptap.c matrart.c inode.c inode2.c matmatmatmult.c
+	   matmatmult.c symtranspose.c matptap.c matrart.c inode.c inode2.c
 SOURCEF  = 
 SOURCEH  = aij.h
-OBJSC    = aij.o aijfact.o ij.o fdaij.o \
-	   matmatmult.o symtranspose.o matptap.o matrart.o inode.o inode2.o matmatmatmult.o
+OBJSC    = $(SOURCEC:.c=.o)
 OBJSF    = 
 LIBBASE  = libpetscmat
 DIRS     = superlu umfpack essl lusol matlab csrperm crl bas ftn-kernels seqcusp \
