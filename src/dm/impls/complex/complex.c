@@ -7510,3 +7510,9 @@ PetscErrorCode DMComplexSetScale(DM dm, PetscUnit unit, PetscReal scale)
   mesh->scale[unit] = scale;
   PetscFunctionReturn(0);
 }
+
+
+/*******************************************************************************
+This should be in a separate Discretization object, but I am not sure how to lay
+it out yet, so I am stuffing things here while I experiment.
+*******************************************************************************/
