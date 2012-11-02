@@ -1946,4 +1946,6 @@ PETSC_EXTERN PetscErrorCode MatIJMap(Mat, MatIJIndexType, PetscInt,const PetscIn
 PETSC_EXTERN PetscErrorCode MatIJBin(Mat, MatIJIndexType, PetscInt,const PetscInt*,const PetscInt*,const PetscScalar*,PetscInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt**);
 PETSC_EXTERN PetscErrorCode MatIJBinMap(Mat,Mat, MatIJIndexType,PetscInt,const PetscInt*,const PetscInt*,const PetscScalar*,MatIJIndexType,PetscInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt**);
 
+PETSC_EXTERN PetscErrorCode MatChop(Mat,PetscReal);
+
 #endif
