@@ -179,6 +179,7 @@ PetscErrorCode  ISSetPermutation(IS is)
         if (idx[i] != i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Index set is not a permutation");
       }
       ierr = PetscFree(idx);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(is,&iidx);CHKERRQ(ierr);
     }
   }
 #endif
