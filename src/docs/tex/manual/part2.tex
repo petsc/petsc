@@ -7340,12 +7340,9 @@ makefiles, they are also easily used.
 
    CFLAGS   =\\  
    SOURCEC  = sp1wd.c spinver.c spnd.c spqmd.c sprcm.c\\
-   SOURCEF  = degree.f  fnroot.f genqmd.f qmdqt.f rcm.f fn1wd.f gen1wd.f \ \\
-              genrcm.f qmdrch.f rootls.f fndsep.f gennd.f qmdmrg.f qmdupd.f\\
+   SOURCEF  = degree.F  fnroot.F genqmd.F qmdqt.F rcm.F fn1wd.F gen1wd.F \ \\
+              genrcm.F qmdrch.F rootls.F fndsep.F gennd.F qmdmrg.F qmdupd.F\\
    SOURCEH  = \\
-   OBJSC    = sp1wd.o spinver.o spnd.o spqmd.o sprcm.o\\
-   OBJSF    = degree.o  fnroot.o genqmd.o qmdqt.o rcm.o fn1wd.o gen1wd.o \ \\
-              genrcm.o qmdrch.o rootls.o fndsep.o gennd.o qmdmrg.o qmdupd.o\\
    LIBBASE  = libpetscmat\\
    MANSEC   = Mat\\
 
@@ -7359,9 +7356,7 @@ makefiles, they are also easily used.
 
 The library's name is \trl{libpetscmat.a}, and the source files being added
 to it are indicated by \trl{SOURCEC} (for C files) and \trl{SOURCEF} (for 
-Fortran files). Note that the \trl{OBJSF} and \trl{OBJSC} are identical 
-to \trl{SOURCEF} and \trl{SOURCEC}, respectively, except they use the
-suffix \trl{.o} rather than \trl{.c} or \trl{.f}. 
+Fortran files).
 
 The variable \trl{MANSEC} indicates that any manual pages generated
 from this source should be included in the \trl{Mat} section. 

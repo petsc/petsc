@@ -6,7 +6,6 @@ FFLAGS   =
 CPPFLAGS = 
 SOURCEC  = partition.c spartition.c
 SOURCEH  = 
-OBJSC    = partition.o spartition.o
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/partition/
 MANSEC   = MatOrderings

@@ -4,7 +4,6 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = 
-OBJSC    = 
 SOURCEF  =
 SOURCEH  =
 DIRS     =

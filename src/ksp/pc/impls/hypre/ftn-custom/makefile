@@ -4,7 +4,6 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = zhypref.c
-OBJSC    = ${SOURCEC:.c=.o}
 SOURCEF  =
 SOURCEH  =
 DIRS     =

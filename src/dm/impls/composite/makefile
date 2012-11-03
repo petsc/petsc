@@ -6,8 +6,6 @@ FFLAGS   =
 SOURCEC  = pack.c packm.c
 SOURCEF  =
 SOURCEH  = packimpl.h
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMCOMPOSITE

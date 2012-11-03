@@ -7,8 +7,6 @@ FFLAGS   =
 SOURCEC  = zbinvf90.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = ${SOURCEC:.c=.o}
-OBJSF    = 
 LIBBASE  = libpetscsys
 LOCDIR   = src/sys/viewer/impls/binary/f90-custom/
 

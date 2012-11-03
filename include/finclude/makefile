@@ -13,8 +13,6 @@ SOURCEH   = petsc.h petscsys.h petsclog.h petscvec.h petscsnes.h petscdm.h petsc
             petscdef.h  petscsysdef.h petsclogdef.h petscvecdef.h petscsnesdef.h petscdmdef.h petscdmdadef.h petscdmmeshdef.h \
             petscdrawdef.h petscmatdef.h petsckspdef.h petscpcdef.h petscviewerdef.h petscisdef.h petscaodef.h petscpcmgdef.h \
 	    petsctsdef.h
-OBJSC     =
-OBJSF     =
 LIBBASE   = libpetscvec
 DIRS      =
 MANSEC    = Sys

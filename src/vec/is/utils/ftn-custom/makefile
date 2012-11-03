@@ -4,7 +4,6 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = ziscoloringf.c zisltogf.c
-OBJSC    = ziscoloringf.o zisltogf.o
 SOURCEF  =
 SOURCEH  =
 DIRS     =

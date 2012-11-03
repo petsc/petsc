@@ -6,8 +6,6 @@ FFLAGS   =
 SOURCEC  = pgmres.c
 SOURCEH  = pgmresimpl.h
 SOURCEF  =
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/gmres/pgmres/

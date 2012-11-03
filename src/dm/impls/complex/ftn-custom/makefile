@@ -4,7 +4,6 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = zcomplex.c
-OBJSC    = zcomplex.o
 SOURCEF  =
 SOURCEH  =
 DIRS     =

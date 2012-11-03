@@ -6,8 +6,6 @@ FFLAGS    =
 SOURCEC	  = cputime.c fdate.c ptime.c
 SOURCEF	  =
 SOURCEH	  =
-OBJSC	  = ${SOURCEC:.c=.o}
-OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  = rs6000_time nt_time

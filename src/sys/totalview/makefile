@@ -6,8 +6,6 @@ CPPFLAGS  =
 SOURCEC	  = tv_data_display.c
 SOURCEF	  =
 SOURCEH	  = tv_data_display.h
-OBJSC	  = ${SOURCEC:.c=.o}
-OBJSF	  =
 MANSEC	  = Profiling
 LIBBASE	  = libpetscsys
 DIRS	  = 

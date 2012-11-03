@@ -4,7 +4,6 @@ ALL: lib
 CFLAGS   = 
 FFLAGS   =
 SOURCEC  = dmakkt.c
-OBJSC    = $(SOURCEC:.c=.o)
 SOURCEH  = dmakkt.h
 LIBBASE  = libpetscdm
 DIRS     = 

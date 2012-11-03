@@ -6,8 +6,6 @@ FFLAGS   =
 SOURCEC  = qn.c
 SOURCEF  =
 SOURCEH  =
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 LOCDIR   = src/snes/impls/qn

@@ -16,13 +16,11 @@ FPPFLAGS         = $(USERCPPFLAGS)
 SOURCEC	         = 
 SOURCEF	         =
 SOURCEH	         =
-OBJSC	         = 
-OBJSF            =
 CLEANFILES       = flow.exe flow.o flow history.out
 LOCDIR           = src/contrib/fun3d/incomp/
 EXAMPLESC        = flow.c user.h
 EXAMPLESF        = user.F userJac.F
-FLOW_OBJSF       = user.o userJac.o
+FLOW_OBJSF       = $(EXAMPLESF:.F=.o)
 #
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

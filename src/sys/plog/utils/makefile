@@ -8,8 +8,6 @@ CPPFLAGS  =
 SOURCEC	  = classLog.c stageLog.c eventLog.c stack.c
 SOURCEF	  =
 SOURCEH	  = 
-OBJSC	  = ${SOURCEC:.c=.o}
-OBJSF	  =
 MANSEC	  = Profiling
 LIBBASE	  = libpetscsys
 DIRS	  = 

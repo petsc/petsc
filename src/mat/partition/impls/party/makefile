@@ -7,7 +7,6 @@ FFLAGS   =
 CPPFLAGS = ${PARTY_INCLUDE}
 SOURCEC  = party.c
 SOURCEH  = 
-OBJSC    = party.o
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/partition/impls/party/
 MANSEC   = MatOrderings

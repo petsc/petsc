@@ -6,8 +6,6 @@ FFLAGS   =
 SOURCEC  = dmts.c dmdats.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 LIBBASE  = libpetscts
 MANSEC   = TS
 DIRS     = 

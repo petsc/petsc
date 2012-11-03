@@ -6,7 +6,6 @@ FFLAGS   =
 SOURCEC  = schurm.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = schurm.o
 LIBBASE  = libpetscksp
 DIRS     =
 MANSEC   = KSP

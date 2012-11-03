@@ -11,7 +11,6 @@ specialfastlib: speciallib
 ALL: lib 
 SOURCEH   = 
 SOURCEC   = 
-OBJSC     = 
 DIRS      = 
 LOCDIR    = src/sys/ams/java
 MANSEC    = Sys

@@ -6,8 +6,6 @@ FFLAGS   =
 SOURCEC  = vector.c veccreate.c vecreg.c vecregall.c dlregisvec.c rvector.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = ${SOURCEC:.c=.o}
-OBJSF    =
 DIRS     =
 LIBBASE  = libpetscvec
 MANSEC   = Vec

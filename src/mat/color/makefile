@@ -16,8 +16,6 @@ FFLAGS   =
 SOURCEC  = degr.c setr.c dsm.c ido.c numsrt.c seq.c slo.c color.c \
            scolor.c
 SOURCEH  = color.h
-OBJSC    = degr.o setr.o dsm.o ido.o numsrt.o seq.o slo.o color.o \
-           scolor.o
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/color/
 MANSEC   = MatOrderings

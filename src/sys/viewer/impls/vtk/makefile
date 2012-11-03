@@ -5,8 +5,6 @@ FFLAGS   =
 SOURCEC  = vtkv.c
 SOURCEF  =
 SOURCEH  = vtkvimpl.h
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 MANSEC   = Viewer
 LIBBASE  = libpetscsys
 DIRS     =

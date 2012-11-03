@@ -9,7 +9,8 @@ MANSEC           =
 LOCDIR		 = src/contrib/dvr/
 EXAMPLESC	 = 
 EXAMPLESF	 = dvr.F mxm44f2g.F basic.F
-DVR_OBJSF        = dvr.o mxm44f2g.o basic.o
+DVR_OBJSF        = $(EXAMPLESF:.F=.o)
+
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

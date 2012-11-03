@@ -7,8 +7,6 @@ FFLAGS   =
 SOURCEC  = zindexf90.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = ${SOURCEC:.c=.o}
-OBJSF    = 
 LIBBASE  = libpetscvec
 LOCDIR   = src/vec/is/interface/f90-custom/
 

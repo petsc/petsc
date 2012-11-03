@@ -367,7 +367,7 @@ update-web:
 #  builds a single list of files for each PETSc library so they may all be built in parallel
 #  without a recursive set of make calls
 createfastbuild:
-	cd src/vec; ${RM} -f files; /bin/echo -n "SOURCEC = " > files; make tree ACTION=sourcelist BASE_DIR=${PETSC_DIR}/src/vec;  /bin/echo -n "OBJSC    = $${SOURCEC:.c=.o} " >> files
+	cd src/vec; ${RM} -f files; /bin/echo -n "SOURCEC = " > files; make tree ACTION=sourcelist BASE_DIR=${PETSC_DIR}/src/vec
 
 ###########################################################
 #

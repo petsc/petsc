@@ -7,8 +7,6 @@ FFLAGS   =
 SOURCEC  = zbagf90.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = ${SOURCEC:.c=.o}
-OBJSF    = 
 LIBBASE  = libpetscsys
 LOCDIR   = src/sys/bag/f90-custom/
 

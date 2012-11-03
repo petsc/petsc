@@ -6,7 +6,6 @@ FFLAGS   =
 CPPFLAGS = 
 SOURCEC  = mis.c
 SOURCEH  = 
-OBJSC    = mis.o
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/coarsen/impls/mis/
 MANSEC   = MatOrderings

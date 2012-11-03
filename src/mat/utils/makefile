@@ -8,8 +8,6 @@ SOURCEC  = convert.c matstash.c axpy.c zerodiag.c \
            matstashspace.c pheap.c
 SOURCEF  =
 SOURCEH  = freespace.h petscheap.h
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
 MANSEC   = Mat

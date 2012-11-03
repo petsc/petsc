@@ -2,8 +2,6 @@ ALL: lib
 
 SOURCEH	 = ../../../include/petsc-private/sfimpl.h ../../../include/petscsf.h
 SOURCEC  = dlregissf.c sf.c
-OBJSC	 = $(SOURCEC:.c=.o)
-OBJSF	 =
 LIBBASE	 = libpetscsys
 DIRS	 = examples
 LOCDIR   = src/sys/sf/

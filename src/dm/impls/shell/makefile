@@ -6,8 +6,6 @@ FFLAGS   =
 SOURCEC  = dmshell.c
 SOURCEF  =
 SOURCEH  = ../../../../include/petscdmshell.h
-OBJSC    = ${SOURCEC:.c=.o}
-OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMSHELL

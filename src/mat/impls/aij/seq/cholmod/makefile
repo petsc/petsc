@@ -9,8 +9,6 @@ FFLAGS   =
 SOURCEC  = aijcholmod.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = ${SOURCEC:.c=.o}
-OBJSF    = 
 LIBBASE  = libpetscmat
 DIRS     = 
 MANSEC   = Mat

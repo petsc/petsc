@@ -14,15 +14,6 @@ SOURCEC  = adintr_acos.c adintr_exp.c adintr_max.c adintr_acosh.c \
 
 SOURCEF  =
 SOURCEH  = ../../../../include/adic/run-map.h ../../../../include/adic/run-alloc.h report-once.h
-OBJSC    = adintr_acos.o adintr_exp.o adintr_max.o adintr_acosh.o \
-	adintr_fabs.o adintr_min.o adintr_asin.o adintr_floor.o \
-	adintr_modf.o adintr_asinh.o adintr_fmax.o adintr_pow.o \
-	adintr_atan.o adintr_fmin.o adintr_sin.o adintr_atan2.o \
-	adintr_fmod.o adintr_sinh.o adintr_atanh.o adintr_frexp.o \
-	adintr_sqrt.o adintr_ceil.o adintr_ldexp.o adintr_tan.o \
-	adintr_cos.o adintr_log.o adintr_tanh.o adintr_cosh.o \
-	adintr_log10.o adintrinsics.o report-once.o
-OBJSF    =
 LIBBASE  = libpetscsys
 DIRS     = 
 LOCDIR   = src/sys/adic/adintrinsics/
