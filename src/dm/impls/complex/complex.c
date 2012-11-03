@@ -7720,6 +7720,7 @@ PetscErrorCode DMComplexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar
   PetscFunctionReturn(0);
 }
 
+#if 0
 PETSC_EXTERN PetscErrorCode FEMIntegrateResidualBatch(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
                                                       const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
                                                       void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
@@ -8054,3 +8055,4 @@ PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, void
   }
   PetscFunctionReturn(0);
 }
+#endif
