@@ -8045,7 +8045,7 @@ PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, void
     ierr = MatView(JacP, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   /* ierr = PetscLogEventEnd(JacobianFEMEvent,0,0,0,0);CHKERRQ(ierr); */
-  ierr = PetscObjectTypeCompare(Jac, MATSHELL, &isShell);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)Jac, MATSHELL, &isShell);CHKERRQ(ierr);
   if (isShell) {
     JacActionCtx *jctx;
 
