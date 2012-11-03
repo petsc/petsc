@@ -14,7 +14,7 @@
 #define __FUNCT__ "MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat *D)
 {
-  PetscErrorCode ierr;
+  /* PetscErrorCode ierr; */
 
   PetscFunctionBegin;
   printf("MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ...\n");
@@ -35,14 +35,9 @@ PetscErrorCode MatMatMatMult_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,MatReuse sca
 #define __FUNCT__ "MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,PetscReal fill,Mat *D)
 {
+  /*
   PetscErrorCode     ierr;
-  Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
-  PetscInt           *ai=a->i,*bi=b->i,*ci,*cj;
-  PetscInt           am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
-  PetscReal          afill;
-  PetscInt           i,j,anzi,brow,bnzj,cnzi,*bj,*aj,nlnk_max,*lnk,ndouble=0;
-  PetscBT            lnkbt;
-  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+   */
 
   PetscFunctionBegin;
   printf("MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ...\n");
@@ -53,7 +48,9 @@ PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Pets
 #define __FUNCT__ "MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Mat D)
 {
+  /*
   PetscErrorCode ierr;
+   */
   
   PetscFunctionBegin;
   printf("MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ...\n");

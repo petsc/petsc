@@ -8,7 +8,7 @@ static char help[] ="Tests sequential and parallel MatMatMatMult() and MatPtAP()
   -Npz <npz>, where <npz> = number of processors in the z-direction\n\n";
 
 /*
-    Example of usage: mpiexec -n 3 ./ex169 -Mx 10 -My 10 -Mz 10
+    Example of usage: mpiexec -n 3 ./ex41 -Mx 10 -My 10 -Mz 10
 */
 
 #include <petscdmda.h>
@@ -48,8 +48,6 @@ int main(int argc,char **argv)
   PetscReal      fill=2.0;
   Mat            A,P,R,C;
   PetscScalar    *array;
-  //Vec           x,v1,v2,v3,v4;
-  //PetscReal     norm,norm_tmp,norm_tmp1,tol=1.e-12;
   PetscRandom   rdm;
   PetscBool     Test_MatMatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_FALSE,Test_3D=PETSC_FALSE,flg;
 
@@ -147,7 +145,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&user.coarse.da);CHKERRQ(ierr);
   ierr = MatDestroy(&P);CHKERRQ(ierr);
   ierr = MatDestroy(&R);CHKERRQ(ierr);
-  //ierr = MatDestroy(&C);CHKERRQ(ierr);
+  /* ierr = MatDestroy(&C);CHKERRQ(ierr); */
   ierr = PetscFinalize();
   return 0;
 }
