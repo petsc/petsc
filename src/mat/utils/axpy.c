@@ -295,7 +295,6 @@ PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
     Level: advanced
 
 .keywords: Mat, compute, explicit, operator
-
 @*/
 PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
 {
@@ -407,7 +406,7 @@ PetscErrorCode MatAXPYGetxtoy_Private(PetscInt m,PetscInt *xi,PetscInt *xj,Petsc
   Level: intermediate
 
 .seealso: MatCreate(), MatZeroEntries()
-*/
+ @*/
 PetscErrorCode MatChop(Mat A, PetscReal tol)
 {
   PetscScalar   *newVals;

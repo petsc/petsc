@@ -365,7 +365,7 @@ PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
   Level: intermediate
 
 .seealso: VecCreate(), VecSet()
-*/
+@*/
 PetscErrorCode VecChop(Vec v, PetscReal tol)
 {
   PetscScalar   *a;
