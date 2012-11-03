@@ -45,7 +45,7 @@ PetscErrorCode FEMIntegrateResidualBatch(PetscInt Ne, PetscInt numFields, PetscI
 {
   const PetscInt debug   = 0;
   const PetscInt dim     = SPATIAL_DIM_0;
-  const PetscInt numComponents = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1;
+  const PetscInt numComponents = NUM_BASIS_COMPONENTS_TOTAL;
   PetscInt       cOffset = 0;
   PetscInt       eOffset = 0, e;
   PetscErrorCode ierr;
@@ -69,8 +69,8 @@ PetscErrorCode FEMIntegrateResidualBatch(PetscInt Ne, PetscInt numFields, PetscI
     }
     for (q = 0; q < Nq; ++q) {
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      PetscScalar      u[NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1];
-      PetscScalar      gradU[dim*(NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1)];
+      PetscScalar      u[NUM_BASIS_COMPONENTS_TOTAL];
+      PetscScalar      gradU[dim*(NUM_BASIS_COMPONENTS_TOTAL)];
       PetscReal        x[SPATIAL_DIM_0];
       PetscInt         fOffset     = 0;
       PetscInt         dOffset     = cOffset;
@@ -240,7 +240,7 @@ PetscErrorCode FEMIntegrateJacobianActionBatch(PetscInt Ne, PetscInt numFields, 
   const PetscReal *basisDerI = quad[fieldI].basisDer;
   const PetscInt   debug   = 0;
   const PetscInt   dim     = SPATIAL_DIM_0;
-  const PetscInt numComponents = NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1;
+  const PetscInt numComponents = NUM_BASIS_COMPONENTS_TOTAL;
   PetscInt         cellDof = 0; /* Total number of dof on a cell */
   PetscInt         cOffset = 0; /* Offset into coefficients[], argCoefficients[], elemVec[] for element e */
   PetscInt         offsetI = 0; /* Offset into an element vector for fieldI */
@@ -274,8 +274,8 @@ PetscErrorCode FEMIntegrateJacobianActionBatch(PetscInt Ne, PetscInt numFields, 
         elemVec[cOffset+i] = 0.0;
       }
       for (q = 0; q < Nq; ++q) {
-        PetscScalar u[NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1];
-        PetscScalar gradU[dim*(NUM_BASIS_COMPONENTS_0+NUM_BASIS_COMPONENTS_1)];
+        PetscScalar u[NUM_BASIS_COMPONENTS_TOTAL];
+        PetscScalar gradU[dim*(NUM_BASIS_COMPONENTS_TOTAL)];
         PetscReal   x[SPATIAL_DIM_0];
         PetscInt    fOffset            = 0;       /* Offset into u[] for field_q (like offsetI) */
         PetscInt    dOffset            = cOffset; /* Offset into coefficients[] for field_q */
@@ -937,6 +937,22 @@ class QuadratureGenerator(script.Script):
                 elemMat[i][j][d][e] += basisDerTab[q][i][d]*basisDerTab[q][j][e]*weights[q]
       elemMats.append(elemMat)
     return elemMats
+
+  def getAggregateBasisStructs(self, elements):
+    '''Return defines for overall sizes'''
+    from Cxx import Define
+
+    numComp = 0
+    for element in elements:
+      numComp += getattr(element, 'numComponents', 1)
+    numFields = Define()
+    numFields.identifier = 'NUM_FIELDS'
+    numFields.replacementText = str(len(elements))
+    numComponents = Define()
+    numComponents.identifier = 'NUM_BASIS_COMPONENTS_TOTAL'
+    numComponents.replacementText = str(numComp)
+    code    = [numFields, numComponents]
+    return code
 
   def getBasisStructs(self, name, element, quadrature, num, tensor = 0):
     '''Return C arrays with the basis functions and their derivatives evalauted at the quadrature points
@@ -1645,6 +1661,7 @@ class QuadratureGenerator(script.Script):
           n += element.value_shape()[0]
         else:
           n += 1
+      defns.extend(self.getAggregateBasisStructs(elements))
       #defns.extend(self.getQuadratureSetup())
       #defns.extend(self.getElementIntegrals())
     except CompilerException, e:

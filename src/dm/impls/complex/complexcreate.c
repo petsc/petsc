@@ -16,6 +16,7 @@ PetscErrorCode  DMSetFromOptions_Complex(DM dm)
     /* Handle associated vectors */
     /* Handle viewing */
     ierr = PetscOptionsBool("-dm_complex_print_set_values", "Output all set values info", "DMView", PETSC_FALSE, &mesh->printSetValues, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dm_complex_print_fem", "Debug output level all fem computations", "DMView", 0, &mesh->printFEM, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -538,6 +539,7 @@ PetscErrorCode DMCreate_Complex(DM dm)
   mesh->vtkVertexMax         = PETSC_DETERMINE;
   mesh->vtkCellHeight        = 0;
   mesh->printSetValues       = PETSC_FALSE;
+  mesh->printFEM             = 0;
 
   ierr = DMInitialize_Complex(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);

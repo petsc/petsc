@@ -49,6 +49,7 @@ typedef struct {
 
   /* Debugging */
   PetscBool            printSetValues;
+  PetscInt             printFEM;
 } DM_Complex;
 
 #endif /* _COMPLEXIMPL_H */

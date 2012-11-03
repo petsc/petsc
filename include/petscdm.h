@@ -228,5 +228,15 @@ typedef struct {
   const PetscReal *basisDer;      /* The basis function derivatives tabulated at the quadrature points */
 } PetscQuadrature;
 
+typedef struct {
+  PetscQuadrature *quad;
+  void (**f0Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The f_0 functions for each field */
+  void (**f1Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The f_1 functions for each field */
+  void (**g0Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_0 functions for each field pair */
+  void (**g1Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_1 functions for each field pair */
+  void (**g2Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_2 functions for each field pair */
+  void (**g3Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_3 functions for each field pair */
+} PetscFEM;
+
 typedef enum {PETSC_UNIT_LENGTH, PETSC_UNIT_MASS, PETSC_UNIT_TIME, PETSC_UNIT_CURRENT, PETSC_UNIT_TEMPERATURE, PETSC_UNIT_AMOUNT, PETSC_UNIT_LUMINOSITY, NUM_PETSC_UNITS} PetscUnit;
 #endif
