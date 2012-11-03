@@ -70,8 +70,8 @@ typedef struct {
   PetscMPIInt   numProcs;          /* The number of processes */
   RunType       runType;           /* Whether to run tests, or solve the full problem */
   PetscBool     jacobianMF;        /* Whether to calculate the Jacobian action on the fly */
-  PetscLogEvent createMeshEvent, residualEvent, jacobianEvent;
-  PetscBool     showInitial, showResidual, showJacobian, showSolution;
+  PetscLogEvent createMeshEvent;
+  PetscBool     showInitial, showSolution;
   /* Domain and mesh definition */
   PetscInt      dim;               /* The topological mesh dimension */
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
@@ -252,8 +252,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   options->numBlocks       = 1;
   options->jacobianMF      = PETSC_FALSE;
   options->showInitial     = PETSC_FALSE;
-  options->showResidual    = PETSC_FALSE;
-  options->showJacobian    = PETSC_FALSE;
   options->showSolution    = PETSC_TRUE;
 
   options->fem.quad    = (PetscQuadrature *) &options->q;
@@ -283,14 +281,10 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex62.c", options->numBlocks, &options->numBlocks, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-jacobian_mf", "Calculate the action of the Jacobian on the fly", "ex62.c", options->jacobianMF, &options->jacobianMF, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex62.c", options->showInitial, &options->showInitial, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-show_residual", "Output the residual for verification", "ex62.c", options->showResidual, &options->showResidual, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-show_jacobian", "Output the Jacobian for verification", "ex62.c", options->showJacobian, &options->showJacobian, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex62.c", options->showSolution, &options->showSolution, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
-  ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("Residual",   SNES_CLASSID, &options->residualEvent);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("Jacobian",   SNES_CLASSID, &options->jacobianEvent);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
