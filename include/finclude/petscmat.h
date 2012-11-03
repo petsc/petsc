@@ -417,7 +417,7 @@
       parameter(MATOP_CONVERT_FROM=62)
       parameter(MATOP_MATMAT_MULT=63)
       parameter(MATOP_MATMAT_MULT_SYMBOLIC=64)
-      parameter(MATOP_MATMAT_MULT_NUMERIC=65)                                                  
+      parameter(MATOP_MATMAT_MULT_NUMERIC=65)
       parameter(MATOP_SET_LOCAL_TO_GLOBAL_MAP=66)
       parameter(MATOP_SET_VALUES_LOCAL=67)
       parameter(MATOP_ZERO_ROWS_LOCAL=68)
