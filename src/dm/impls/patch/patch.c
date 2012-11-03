@@ -40,9 +40,11 @@ Solver loop to update \tau:
 */
 PetscErrorCode DMPatchZoom(DM dm, PetscInt rank, MPI_Comm commz, DM *dmz, PetscSF *sfz, PetscSF *sfzr)
 {
+#if 0
   PetscInt        dim, dof, sw;
   DMDAStencilType st;
   PetscErrorCode  ierr;
+#endif 
 
   PetscFunctionBegin;
 #if 0
@@ -77,9 +79,11 @@ PetscErrorCode DMPatchZoom(DM dm, PetscInt rank, MPI_Comm commz, DM *dmz, PetscS
 #define __FUNCT__ "DMPatchSolve"
 PetscErrorCode DMPatchSolve(DM dm)
 {
+#if 0
   MPI_Comm       comm = ((PetscObject) dm)->comm;
   PetscMPIInt    size;
   PetscErrorCode ierr;
+#endif
 
   PetscFunctionBegin;
 #if 0

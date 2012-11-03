@@ -2,7 +2,6 @@
 ALL: lib
 
 SOURCEC  = petscglobal.c
-OBJSC    = petscglobal.o
 DIRS     = 
 LOCDIR   = src/sys/adic/
 NOADIC   = false

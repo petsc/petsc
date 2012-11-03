@@ -7,8 +7,6 @@ FFLAGS   =
 SOURCEC  = zdmf.c zdmgetf.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = ${SOURCEC:.c=.o}
-OBJSF    = 
 LIBBASE  = libpetscdm
 MANSEC   = DM
 LOCDIR   = src/dm/interface/ftn-custom/

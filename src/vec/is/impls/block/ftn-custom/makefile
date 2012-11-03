@@ -4,7 +4,6 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = zblockf.c
-OBJSC    = zblockf.o
 SOURCEF  =
 SOURCEH  =
 DIRS     =

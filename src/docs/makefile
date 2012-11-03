@@ -20,8 +20,6 @@ DOCS     = manualpages/sec/header_* tex/manual/manual.tex \
            website/documentation/referencing.html\
            website/documentation/exercises/index.html website/documentation/exercises/*/index.html \
            website/documentation/changes/*.html
-OBJSC    =
-OBJSF    =
 LIBBASE  = 
 LINCLUDE = ${SOURCEH}
 DIRS     = 

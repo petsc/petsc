@@ -6,8 +6,6 @@ FFLAGS    =
 SOURCEC	  = pami.c
 SOURCEF	  =
 SOURCEH	  =
-OBJSC	  = ${SOURCEC:.c=.o}
-OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  =

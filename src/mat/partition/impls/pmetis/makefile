@@ -8,7 +8,6 @@ FFLAGS   =
 CPPFLAGS = ${PARMETIS_INCLUDE}
 SOURCEC  = pmetis.c
 SOURCEH  = 
-OBJSC    = pmetis.o
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/partition/impls/pmetis/
 MANSEC   = MatOrderings

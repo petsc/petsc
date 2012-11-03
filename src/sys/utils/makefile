@@ -8,8 +8,6 @@ SOURCEC	  = arch.c fhost.c fuser.c memc.c mpiu.c psleep.c sortd.c sorti.c \
 	    select.c mpimesg.c sseenabled.c mpitr.c  mpilong.c mathinf.c
 SOURCEF	  =
 SOURCEH	  = ../../../include/petscctable.h
-OBJSC	  = ${SOURCEC:.c=.o}
-OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  = ftn-kernels

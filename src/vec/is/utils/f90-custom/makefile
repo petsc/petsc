@@ -7,8 +7,6 @@ FFLAGS   =
 SOURCEC  = ziscoloringf90.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = ${SOURCEC:.c=.o}
-OBJSF    = 
 LIBBASE  = libpetscvec
 LOCDIR   = src/vec/is/utils/f90-custom/
 

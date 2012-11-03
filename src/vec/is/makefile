@@ -2,8 +2,6 @@
 ALL: lib
 
 SOURCEH	 = ../../../include/petsc-private/isimpl.h ../../../include/petscis.h
-OBJSC	 =
-OBJSF	 =
 LIBBASE	 = libpetscvec
 DIRS	 = interface impls  examples utils
 LOCDIR   = src/vec/is/

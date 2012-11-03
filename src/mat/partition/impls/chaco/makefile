@@ -7,7 +7,6 @@ FFLAGS   =
 CPPFLAGS = ${CHACO_INCLUDE}
 SOURCEC  = chaco.c
 SOURCEH  = 
-OBJSC    = chaco.o
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/partition/impls/chaco/
 MANSEC   = MatOrderings

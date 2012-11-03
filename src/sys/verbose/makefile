@@ -7,8 +7,6 @@ CPPFLAGS  =
 SOURCEC	  = verboseinfo.c
 SOURCEF	  =
 SOURCEH	  = 
-OBJSC	  = ${SOURCEC:.c=.o}
-OBJSF	  =
 MANSEC	  = Profiling
 LIBBASE	  = libpetscsys
 DIRS	  = 

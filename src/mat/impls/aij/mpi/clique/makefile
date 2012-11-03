@@ -8,8 +8,6 @@ FFLAGS   =
 SOURCEC	 = clique.cxx
 SOURCEF	 =
 SOURCEH	 = matcliqueimpl.h
-OBJSC	 = $(SOURCEC:.cxx=.o)
-OBJSF	 =
 LIBBASE	 = libpetscmat
 DIRS	 =
 MANSEC	 = Mat

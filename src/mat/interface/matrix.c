@@ -24,6 +24,7 @@ PetscLogEvent MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
 PetscLogEvent MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_RARt, MAT_RARtSymbolic, MAT_RARtNumeric;
 PetscLogEvent MAT_MatTransposeMult, MAT_MatTransposeMultSymbolic, MAT_MatTransposeMultNumeric;
 PetscLogEvent MAT_TransposeMatMult, MAT_TransposeMatMultSymbolic, MAT_TransposeMatMultNumeric;
+PetscLogEvent MAT_MatMatMult, MAT_MatMatMultSymbolic, MAT_MatMatMultNumeric;
 PetscLogEvent MAT_MultHermitianTranspose,MAT_MultHermitianTransposeAdd;
 PetscLogEvent MAT_Getsymtranspose, MAT_Getsymtransreduced, MAT_Transpose_SeqAIJ, MAT_GetBrowsOfAcols;
 PetscLogEvent MAT_GetBrowsOfAocols, MAT_Getlocalmat, MAT_Getlocalmatcondensed, MAT_Seqstompi, MAT_Seqstompinum, MAT_Seqstompisym;
@@ -8933,6 +8934,102 @@ PetscErrorCode  MatTransposeMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
   ierr = PetscLogEventBegin(MAT_TransposeMatMult,A,B,0,0);CHKERRQ(ierr);
   ierr = (*transposematmult)(A,B,scall,fill,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_TransposeMatMult,A,B,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMatMult"
+/*@
+   MatMatMatMult - Performs Matrix-Matrix-Matrix Multiplication D=A*B*C.
+
+   Neighbor-wise Collective on Mat
+
+   Input Parameters:
++  A - the left matrix
+.  B - the middle matrix
+.  C - the right matrix
+.  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-  fill - expected fill as ratio of nnz(D)/(nnz(A) + nnz(B)+nnz(C)), use PETSC_DEFAULT if you do not have a good estimate
+          if the result is a dense matrix this is irrelevent
+
+   Output Parameters:
+.  D - the product matrix
+
+   Notes:
+   Unless scall is MAT_REUSE_MATRIX D will be created.
+
+   MAT_REUSE_MATRIX can only be used if the matrices A, B and C have the same nonzero pattern as in the previous call
+
+   To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
+   actually needed.
+
+   If you have many matrices with the same non-zero structure to multiply, you
+   should either
+$   1) use MAT_REUSE_MATRIX in all calls but the first or
+$   2) call MatMatMatMultSymbolic() once and then MatMatMatMultNumeric() for each product needed
+
+   Level: intermediate
+
+.seealso: MatMatMult, MatPtAP()
+@*/
+PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Mat *D)
+{
+  PetscErrorCode ierr;
+  PetscErrorCode (*fA)(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*fB)(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*fC)(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*mult)(Mat,Mat,Mat,MatReuse,PetscReal,Mat *)=PETSC_NULL;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  MatCheckPreallocated(A,1);
+  if (!A->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscValidHeaderSpecific(B,MAT_CLASSID,2);
+  PetscValidType(B,2);
+  MatCheckPreallocated(B,2);
+  if (!B->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (B->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscValidPointer(C,3);
+  if (B->rmap->N!=A->cmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->cmap->N);
+  if (scall == MAT_REUSE_MATRIX) {
+    PetscValidPointer(*D,6);
+    PetscValidHeaderSpecific(*D,MAT_CLASSID,6);
+    ierr = PetscLogEventBegin(MAT_MatMatMult,A,B,0,0);CHKERRQ(ierr);
+    ierr = (*(*D)->ops->matmatmult)(A,B,C,scall,fill,D);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MatMatMult,A,B,0,0);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
+  if (fill < 1.0) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
+
+  fA = A->ops->matmatmult;
+  fB = B->ops->matmatmult;
+  fC = C->ops->matmatmult;
+  if (fA == fB && fA == fC) {
+    if (!fA) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"MatMatMatMult not supported for A of type %s",((PetscObject)A)->type_name);
+    mult = fA;
+  } else {
+    /* dispatch based on the type of A, B and C from their PetscObject's PetscFLists. */
+    char  multname[256];
+    ierr = PetscStrcpy(multname,"MatMatMatMult_");CHKERRQ(ierr);
+    ierr = PetscStrcat(multname,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = PetscStrcat(multname,"_");CHKERRQ(ierr);
+    ierr = PetscStrcat(multname,((PetscObject)B)->type_name);CHKERRQ(ierr);
+    ierr = PetscStrcat(multname,"_");CHKERRQ(ierr);
+    ierr = PetscStrcat(multname,((PetscObject)C)->type_name);CHKERRQ(ierr);
+    ierr = PetscStrcat(multname,"_C");CHKERRQ(ierr);
+    ierr = PetscObjectQueryFunction((PetscObject)B,multname,(void (**)(void))&mult);CHKERRQ(ierr);
+    if (!mult) {
+      /* dual dispatch using MatQueryOp */
+      ierr = MatQueryOp(((PetscObject)A)->comm, (PetscVoidFunction*)(&mult), "MatMatMatMult",3,((PetscObject)A)->type_name,((PetscObject)B)->type_name,((PetscObject)C)->type_name); CHKERRQ(ierr);
+      if (!mult) SETERRQ3(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MatMatMatMult requires A, %s, to be compatible with B, %s, C, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name,((PetscObject)C)->type_name);
+    }
+  }
+  ierr = PetscLogEventBegin(MAT_MatMatMult,A,B,0,0);CHKERRQ(ierr);
+  ierr = (*mult)(A,B,C,scall,fill,D);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMatMult,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

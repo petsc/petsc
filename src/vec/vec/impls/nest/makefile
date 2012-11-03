@@ -6,8 +6,6 @@ FFLAGS   =
 SOURCEC  = vecnest.c
 SOURCEF  =
 SOURCEH  = vecnestimpl.h
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 LOCDIR   = src/vec/vec/impls/nest/

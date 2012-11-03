@@ -245,12 +245,10 @@ int main(int argc,char **argv)
     if (norm >= tol && !rank) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v3 - v4|/|v3|: %G\n",norm);CHKERRQ(ierr);
     }
-
     ierr = MatDestroy(&C);CHKERRQ(ierr);
     ierr = VecDestroy(&v3);CHKERRQ(ierr);
     ierr = VecDestroy(&v4);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
-
   }
 
   /* Clean up */
@@ -261,8 +259,6 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&user.fine.da);CHKERRQ(ierr);
   ierr = DMDestroy(&user.coarse.da);CHKERRQ(ierr);
   ierr = MatDestroy(&P);CHKERRQ(ierr);
-
   ierr = PetscFinalize();
-
   return 0;
 }

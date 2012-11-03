@@ -6,8 +6,6 @@ FFLAGS    =
 SOURCEC	  = random.c randreg.c dlregisrand.c randomc.c
 SOURCEF	  =
 SOURCEH	  = 
-OBJSC	  = ${SOURCEC:.c=.o}
-OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  = 

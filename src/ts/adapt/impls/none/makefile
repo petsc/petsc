@@ -6,8 +6,6 @@ FFLAGS   =
 SOURCEC  = adaptnone.c
 SOURCEF  =
 SOURCEH  =
-OBJSC    = ${SOURCEC:.c=.o}
-OBJSF    =
 LIBBASE  = libpetscts
 MANSEC   = TS
 LOCDIR   = src/ts/adapt/impls/none/

@@ -6,8 +6,6 @@ FFLAGS   =
 SOURCEC  = ms.c
 SOURCEF  =
 SOURCEH  =
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 LOCDIR   = src/snes/impls/ms

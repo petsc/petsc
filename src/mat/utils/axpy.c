@@ -295,7 +295,6 @@ PetscErrorCode  MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
     Level: advanced
 
 .keywords: Mat, compute, explicit, operator
-
 @*/
 PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
 {
@@ -389,5 +388,61 @@ PetscErrorCode MatAXPYGetxtoy_Private(PetscInt m,PetscInt *xi,PetscInt *xj,Petsc
     xi++; yi++;
   }
   *xtoy = x2y;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatChop"
+/*@
+  MatChop - Set all values in the matrix less than the tolerance to zero
+
+  Input Parameters:
++ A   - The matrix
+- tol - The zero tolerance
+
+  Output Parameters:
+. A - The chopped matrix
+
+  Level: intermediate
+
+.seealso: MatCreate(), MatZeroEntries()
+ @*/
+PetscErrorCode MatChop(Mat A, PetscReal tol)
+{
+  PetscScalar   *newVals;
+  PetscInt      *newCols;
+  PetscInt       rStart, rEnd, numRows, maxRows, r, colMax = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetOwnershipRange(A, &rStart, &rEnd);CHKERRQ(ierr);
+  for (r = rStart; r < rEnd; ++r) {
+    PetscInt ncols;
+
+    ierr = MatGetRow(A, r, &ncols, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    colMax = PetscMax(colMax, ncols);CHKERRQ(ierr);
+    ierr = MatRestoreRow(A, r, &ncols, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  }
+  numRows = rEnd - rStart;
+  ierr = MPI_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscMalloc2(colMax,PetscInt,&newCols,colMax,PetscScalar,&newVals);CHKERRQ(ierr);
+  for (r = rStart; r < rStart+maxRows; ++r) {
+    const PetscScalar *vals;
+    const PetscInt    *cols;
+    PetscInt           ncols, c;
+
+    if (r < rEnd) {
+      ierr = MatGetRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
+      for (c = 0; c < ncols; ++c) {
+        newCols[c] = cols[c];
+        newVals[c] = PetscAbsScalar(vals[c]) < tol ? 0.0 : vals[c];
+      }
+      ierr = MatRestoreRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
+      ierr = MatSetValues(A, 1, &r, ncols, newCols, newVals, INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  ierr = PetscFree2(newCols,newVals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

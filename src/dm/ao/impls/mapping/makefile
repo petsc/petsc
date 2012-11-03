@@ -5,7 +5,6 @@ CFLAGS    =
 FFLAGS    =
 SOURCEC  = aomapping.c
 SOURCEH  =
-OBJSC    = ${SOURCEC:.c=.o}
 LIBBASE  = libpetscdm
 DIRS     = 
 MANSEC   = AO

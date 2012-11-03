@@ -6,8 +6,6 @@ FFLAGS   =
 SOURCEC  = matnest.c
 SOURCEF  =
 SOURCEH  = matnestimpl.h 
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
 LOCDIR   = src/mat/impls/nest/

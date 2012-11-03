@@ -262,7 +262,7 @@ static PetscErrorCode SNESMSStep_3Sstar(SNES snes,Vec X,Vec F)
   ierr = VecCopy(X,S3);CHKERRQ(ierr);
   for (i=0; i<nstages; i++) {
     Vec Ss[4] = {S1,S2,S3,Y};
-    PetscScalar scoeff[4] = {gamma[0*nstages+i]-1.0,gamma[1*nstages+i],gamma[2*nstages+i],-betasub[i]*ms->damping};
+    PetscScalar scoeff[4] = {gamma[0*nstages+i]-(PetscReal)1.0,gamma[1*nstages+i],gamma[2*nstages+i],-betasub[i]*ms->damping};
     ierr = VecAXPY(S2,delta[i],S1);CHKERRQ(ierr);
     if (i>0) {
       ierr = SNESComputeFunction(snes,S1,F);CHKERRQ(ierr);

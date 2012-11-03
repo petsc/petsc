@@ -6,8 +6,6 @@ CPPFLAGS    = ${EXTRA_FLAGS}
 SOURCEC     = testcomponentsI.c testcomponentsII.c
 SOURCEF     = 
 SOURCEH     =
-OBJSC       = testcomponentsI.o testcomponentsII.o
-OBJSF       = 
 MANSEC      = Sys
 LOCDIR      = src/sys/shell/examples/tests/
 

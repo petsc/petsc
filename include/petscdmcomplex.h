@@ -104,4 +104,17 @@ PETSC_EXTERN PetscErrorCode DMComplexVTKWriteAll(PetscObject, PetscViewer);
 
 PETSC_EXTERN PetscErrorCode DMComplexGetScale(DM, PetscUnit, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMComplexSetScale(DM, PetscUnit, PetscReal);
+
+typedef struct {
+  DM    dm;
+  Vec   u; /* The base vector for the Jacbobian action J(u) x */
+  Mat   J; /* Preconditioner for testing */
+  void *user;
+} JacActionCtx;
+
+PETSC_EXTERN PetscErrorCode DMComplexProjectFunction(DM, PetscInt, PetscScalar (**)(const PetscReal []), InsertMode, Vec);
+PETSC_EXTERN PetscErrorCode DMComplexComputeL2Diff(DM, PetscQuadrature[], PetscScalar (**)(const PetscReal []), Vec, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMComplexComputeResidualFEM(DM, Vec, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMComplexComputeJacobianActionFEM(DM, Mat, Vec, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMComplexComputeJacobianFEM(DM, Vec, Mat, Mat, void *);
 #endif

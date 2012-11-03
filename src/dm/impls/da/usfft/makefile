@@ -8,7 +8,6 @@ ALL: lib
 CFLAGS   = 
 FFLAGS   =
 SOURCEC  = matusfft.c
-OBJSC    = matusfft.o
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMDA

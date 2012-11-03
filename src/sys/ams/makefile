@@ -4,7 +4,6 @@
 ALL: lib 
 SOURCEH   = 
 SOURCEC   = pams.c
-OBJSC     = pams.o
 DIRS      = java
 LOCDIR    = src/sys/ams/
 MANSEC    = Sys

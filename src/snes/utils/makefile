@@ -6,8 +6,6 @@ FFLAGS   =
 SOURCEC  = dmsnes.c dmdasnes.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 DIRS     = mesh

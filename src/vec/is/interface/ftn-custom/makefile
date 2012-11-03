@@ -4,7 +4,6 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = zindexf.c
-OBJSC    = zindexf.o
 SOURCEF  =
 SOURCEH  =
 DIRS     =

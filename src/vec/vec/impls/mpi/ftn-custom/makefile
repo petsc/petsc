@@ -4,7 +4,6 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = zpbvecf.c
-OBJSC    = zpbvecf.o
 SOURCEF  =
 SOURCEH  =
 DIRS     =

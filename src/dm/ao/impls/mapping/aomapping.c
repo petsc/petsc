@@ -92,8 +92,8 @@ PetscErrorCode AOPetscToApplication_Mapping(AO ao, PetscInt n, PetscInt *ia)
         low  = mid + 1;
       }
     }
-    if (low > high) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid input index %D", idex);
-    ia[i] = app[perm[mid]];
+    if (low > high) ia[i] = -1;
+    else            ia[i] = app[perm[mid]];
   }
   PetscFunctionReturn(0);
 }

@@ -350,3 +350,34 @@ PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "VecChop"
+/*@
+  VecChop - Set all values in the vector less than the tolerance to zero
+
+  Input Parameters:
++ v   - The vector
+- tol - The zero tolerance
+
+  Output Parameters:
+. v - The chopped vector
+
+  Level: intermediate
+
+.seealso: VecCreate(), VecSet()
+@*/
+PetscErrorCode VecChop(Vec v, PetscReal tol)
+{
+  PetscScalar   *a;
+  PetscInt       n, i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &a);CHKERRQ(ierr);
+  for (i = 0; i < n; ++i) {
+    if (PetscAbsScalar(a[i]) < tol) a[i] = 0.0;
+  }
+  ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

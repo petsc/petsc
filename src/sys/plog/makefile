@@ -6,8 +6,6 @@ CPPFLAGS  =
 SOURCEC	  = plog.c plogmpe.c
 SOURCEF	  =
 SOURCEH	  = ../../../include/petsc-private/logimpl.h ../../../include/petsclog.h
-OBJSC	  = ${SOURCEC:.c=.o}
-OBJSF	  =
 MANSEC	  = Profiling
 LIBBASE	  = libpetscsys
 DIRS	  = utils

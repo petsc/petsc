@@ -6,8 +6,6 @@ FFLAGS   =
 SOURCEC  = gl.c gladapt.c
 SOURCEF  =
 SOURCEH  = gl.h
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 LIBBASE  = libpetscts
 MANSEC   = TS
 LOCDIR   = src/ts/impls/implicit/gl/
