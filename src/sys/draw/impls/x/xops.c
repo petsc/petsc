@@ -6,13 +6,37 @@
 #include <../src/sys/draw/impls/x/ximpl.h>         /*I  "petscsys.h" I*/
 
 /*
-     These macros transform from the users coordinates to the
-   X-window pixel coordinates.
+     These macros transform from the users coordinates to the  X-window pixel coordinates.
 */
-#define XTRANS(draw,xwin,x) \
-   (int)(((xwin)->w)*((draw)->port_xl + (((x - (draw)->coor_xl)*((draw)->port_xr - (draw)->port_xl))/((draw)->coor_xr - (draw)->coor_xl))))
-#define YTRANS(draw,xwin,y) \
-   (int)(((xwin)->h)*(1.0-(draw)->port_yl - (((y - (draw)->coor_yl)*((draw)->port_yr - (draw)->port_yl))/((draw)->coor_yr - (draw)->coor_yl))))
+#define XTRANS(draw,xwin,x)  (int)(((xwin)->w)*((draw)->port_xl + (((x - (draw)->coor_xl)*((draw)->port_xr - (draw)->port_xl))/((draw)->coor_xr - (draw)->coor_xl))))
+#define YTRANS(draw,xwin,y)  (int)(((xwin)->h)*(1.0-(draw)->port_yl - (((y - (draw)->coor_yl)*((draw)->port_yr - (draw)->port_yl))/((draw)->coor_yr - (draw)->coor_yl))))
+
+#define ITRANS(draw,xwin,i)  (draw)->coor_xl + (i*((draw)->coor_xr - (draw)->coor_xl)/((xwin)->w) - (draw)->port_xl)/((draw)->port_xr - (draw)->port_xl)
+#define JTRANS(draw,xwin,j)  (draw)->coor_yl + (j*((draw)->coor_yr - (draw)->coor_xl)/((xwin)->h) + (draw)->port_yl - 1.0)/((draw)->port_yl - (draw)->port_yr)
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawCoordinateToPixel_X"
+PetscErrorCode PetscDrawCoordinateToPixel_X(PetscDraw draw,PetscReal x,PetscReal y,PetscInt *i,PetscInt *j)
+{
+  PetscDraw_X*   XiWin = (PetscDraw_X*)draw->data;
+
+  PetscFunctionBegin;
+  *i = XTRANS(draw,XiWin,x);
+  *j = YTRANS(draw,XiWin,y);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawPixelToCoordinate_X"
+PetscErrorCode PetscDrawPixelToCoordinate_X(PetscDraw draw,PetscInt i,PetscInt j,PetscReal *x,PetscReal *y)
+{
+  PetscDraw_X*   XiWin = (PetscDraw_X*)draw->data;
+
+  PetscFunctionBegin;
+  *x = ITRANS(draw,XiWin,i);
+  *y = JTRANS(draw,XiWin,j);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawLine_X"
@@ -70,6 +94,18 @@ static PetscErrorCode PetscDrawPoint_X(PetscDraw draw,PetscReal x,PetscReal  y,i
       XDrawPoint(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,xx+i,yy+j);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawPointPixel_X"
+static PetscErrorCode PetscDrawPointPixel_X(PetscDraw draw,PetscInt x,PetscInt  y,int c)
+{
+  PetscDraw_X* XiWin = (PetscDraw_X*)draw->data;
+
+  PetscFunctionBegin;
+  PetscDrawXiSetColor(XiWin,c);
+  XDrawPoint(XiWin->disp,PetscDrawXiDrawable(XiWin),XiWin->gc.set,x,y);
   PetscFunctionReturn(0);
 }
 
@@ -600,7 +636,10 @@ static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
 #endif
                                  PetscDrawSetSave_X,
                                  0,
-                                 PetscDrawArrow_X};
+                                 PetscDrawArrow_X,
+                                 PetscDrawCoordinateToPixel_X,
+                                 PetscDrawPixelToCoordinate_X,
+                                 PetscDrawPointPixel_X};
 
 
 extern PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X*,char*,char*,int,int,int,int);

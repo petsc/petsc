@@ -149,12 +149,18 @@ PETSC_EXTERN PetscErrorCode PetscDrawResizeWindow(PetscDraw,int,int);
 
 PETSC_EXTERN PetscErrorCode PetscDrawScalePopup(PetscDraw,PetscReal,PetscReal);
 
+PETSC_EXTERN PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw,PetscInt,PetscInt,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw,PetscReal,PetscReal,PetscInt*,PetscInt*);
+
+PETSC_EXTERN PetscErrorCode PetscDrawIndicatorFunction(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int,PetscBool (*)(PetscReal,PetscReal));
+
 PETSC_EXTERN PetscErrorCode PetscDrawLine(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
 PETSC_EXTERN PetscErrorCode PetscDrawArrow(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
 PETSC_EXTERN PetscErrorCode PetscDrawLineSetWidth(PetscDraw,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawLineGetWidth(PetscDraw,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode PetscDrawPoint(PetscDraw,PetscReal,PetscReal,int);
+PETSC_EXTERN PetscErrorCode PetscDrawPointPixel(PetscDraw,PetscInt,PetscInt,int);
 PETSC_EXTERN PetscErrorCode PetscDrawPointSetSize(PetscDraw,PetscReal);
 
 PETSC_EXTERN PetscErrorCode PetscDrawRectangle(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int,int);
@@ -250,6 +256,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawAxisCreate(PetscDraw,PetscDrawAxis *);
 PETSC_EXTERN PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis*);
 PETSC_EXTERN PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis);
 PETSC_EXTERN PetscErrorCode PetscDrawAxisSetLimits(PetscDrawAxis,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawAxisGetLimits(PetscDrawAxis,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDrawAxisSetHoldLimits(PetscDrawAxis,PetscBool );
 PETSC_EXTERN PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis,int,int,int);
 PETSC_EXTERN PetscErrorCode PetscDrawAxisSetLabels(PetscDrawAxis,const char[],const char[],const char[]);

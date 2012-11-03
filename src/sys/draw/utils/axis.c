@@ -41,6 +41,35 @@ PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRe
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDrawAxisGetLimits"
+/*@
+    PetscDrawAxisGetLimits -  Gets the limits (in user coords) of the axis
+
+    Not Collective (ignored on all processors except processor 0 of PetscDrawAxis)
+
+    Input Parameters:
++   axis - the axis
+.   xmin,xmax - limits in x
+-   ymin,ymax - limits in y
+
+    Level: advanced
+
+.seealso:  PetscDrawAxisSetLimits()
+
+@*/
+PetscErrorCode  PetscDrawAxisGetLimits(PetscDrawAxis axis,PetscReal *xmin,PetscReal *xmax,PetscReal *ymin,PetscReal *ymax)
+{
+  PetscFunctionBegin;
+  if (!axis) PetscFunctionReturn(0);
+  if (axis->hold) PetscFunctionReturn(0);
+  *xmin = axis->xlow;
+  *xmax = axis->xhigh;
+  *ymin = axis->ylow;
+  *ymax = axis->yhigh;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscADefLabel"
 /*
    val is the label value.  sep is the separation to the next (or previous)

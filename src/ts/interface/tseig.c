@@ -1,4 +1,4 @@
-
+#define PETSC_DESIRE_COMPLEX
 #include <petsc-private/tsimpl.h>        /*I "petscts.h"  I*/
 
 /* ------------------------------------------------------------------------*/
@@ -10,6 +10,7 @@ struct _n_TSMonitorSPEigCtx {
   MPI_Comm    comm;
   PetscRandom rand;
   PetscScalar shift;
+  PetscReal   xmin,xmax,ymin,ymax;
 };
 
 
@@ -75,8 +76,27 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
   (*ctx)->shift             = 0.0;
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ts_monitor_sp_eig_shift",&(*ctx)->shift,PETSC_NULL);CHKERRQ(ierr);
   (*ctx)->comm              = comm;
+  (*ctx)->xmin = -2.1;
+  (*ctx)->xmax = .1;
+  (*ctx)->ymin = -1.1;
+  (*ctx)->ymax = 1.1;
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_COMPLEX)
+PetscComplex Rtheta(PetscReal theta,PetscComplex z)
+{
+  return( (1.0 - (1.0 - theta)*z)/(1.0 - theta*z) );
+}
+
+PetscBool TSIndicator_Theta(PetscReal x,PetscReal y) 
+{
+  PetscComplex r = Rtheta(0.,x + PETSC_i*y);
+  printf("%g %g %g\n",x,y,PetscAbsComplex(r));
+  if (PetscAbsComplex(r) <= 1.0) return PETSC_TRUE;
+  else return PETSC_FALSE;
+}
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorSPEig"
@@ -123,7 +143,7 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
     if (nits) {
       PetscDraw draw;
       ierr = PetscDrawSPReset(drawsp);CHKERRQ(ierr);
-      ierr = PetscDrawSPSetLimits(drawsp,-2.1,.1,-1.1,1.1);CHKERRQ(ierr);
+      ierr = PetscDrawSPSetLimits(drawsp,ctx->xmin,ctx->xmax,ctx->ymin,ctx->ymax);CHKERRQ(ierr);
       ierr = PetscMalloc2(PetscMax(n,N),PetscReal,&r,PetscMax(n,N),PetscReal,&c);CHKERRQ(ierr);
       if (ctx->computeexplicitly) {
         ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c);CHKERRQ(ierr);
@@ -136,11 +156,22 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
         ierr = PetscPrintf(ctx->comm,"%g + %g i\n",r[i],c[i]);CHKERRQ(ierr);
         ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
+      ierr = PetscFree2(r,c);CHKERRQ(ierr);
       ierr = PetscDrawSPDraw(drawsp,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscDrawSPGetDraw(drawsp,&draw);CHKERRQ(ierr);
-      ierr = PetscDrawEllipse(draw,-1.0,0.0,2.0,2.0,PETSC_DRAW_CYAN);CHKERRQ(ierr);
+      /*      ierr = PetscDrawEllipse(draw,-1.0,0.0,2.0,2.0,PETSC_DRAW_CYAN);CHKERRQ(ierr); */
+#if defined(PETSC_HAVE_COMPLEX)
+      {
+      PetscDrawAxis axis;
+      PetscReal     xmin,xmax,ymin,ymax;
+
+      ierr = PetscDrawSPGetAxis(drawsp,&axis);CHKERRQ(ierr);
+      ierr = PetscDrawAxisGetLimits(axis,&xmin,&xmax,&ymin,&ymax);CHKERRQ(ierr);
+      ierr = PetscDrawIndicatorFunction(draw,xmin,xmax,ymin,ymax,PETSC_DRAW_CYAN,TSIndicator_Theta);CHKERRQ(ierr);
+
       ierr = PetscDrawSPDraw(drawsp,PETSC_FALSE);CHKERRQ(ierr);
-      ierr = PetscFree2(r,c);CHKERRQ(ierr);
+      }
+#endif
     }
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
@@ -177,4 +208,6 @@ PetscErrorCode  TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx *ctx)
   ierr = PetscFree(*ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
 
