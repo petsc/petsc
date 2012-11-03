@@ -643,7 +643,7 @@ $       call PetscInitialize(file,ierr)
 PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const char help[])
 {
   PetscErrorCode ierr;
-  PetscMPIInt    flag, size, p;
+  PetscMPIInt    flag, size;
   PetscInt       nodesize;
   PetscBool      flg;
   char           hostname[256];
@@ -821,9 +821,12 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   }
 
 #if defined(PETSC_HAVE_CUDA)
-  for(p = 0; p < PetscGlobalSize; ++p) {
-    if (p == PetscGlobalRank) {cublasInit();}
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  {
+    PetscMPIInt p;
+    for (p = 0; p < PetscGlobalSize; ++p) {
+      if (p == PetscGlobalRank) {cublasInit();}
+      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    }
   }
 #endif
 
@@ -900,7 +903,7 @@ extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
 PetscErrorCode  PetscFinalize(void)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank, p;
+  PetscMPIInt    rank;
   PetscInt       i,nopt;
   PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,objects_left = PETSC_FALSE;
 #if defined(PETSC_HAVE_AMS)
@@ -1239,9 +1242,12 @@ PetscErrorCode  PetscFinalize(void)
   ierr = MPI_Keyval_free(&Petsc_OuterComm_keyval);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_CUDA)
-  for(p = 0; p < PetscGlobalSize; ++p) {
-    if (p == PetscGlobalRank) {cublasShutdown();}
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  {
+    PetscInt p;
+    for (p = 0; p < PetscGlobalSize; ++p) {
+      if (p == PetscGlobalRank) {cublasShutdown();}
+      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    }
   }
 #endif
 
