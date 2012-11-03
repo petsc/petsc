@@ -47,6 +47,24 @@ typedef struct {
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */
   PetscReal            scale[NUM_PETSC_UNITS];   /* The scale for each SI unit */
 
+  /* FEM (should go in another DM) */
+  PetscErrorCode (*integrateResidualFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
+                                         const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
+                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]);
+  PetscErrorCode (*integrateJacobianActionFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[], const PetscScalar[],
+                                               const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
+                                               void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                               void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                               void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                               void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]);
+  PetscErrorCode (*integrateJacobianFEM)(PetscInt, PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
+                                         const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
+                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]);
+
   /* Debugging */
   PetscBool            printSetValues;
   PetscInt             printFEM;

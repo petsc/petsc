@@ -416,8 +416,10 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupExactSolution"
-PetscErrorCode SetupExactSolution(AppCtx *user) {
-  PetscFEM *fem = &user->fem;
+PetscErrorCode SetupExactSolution(DM dm, AppCtx *user) {
+  PetscFEM      *fem = &user->fem;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   fem->f0Funcs[0] = f0_u;
   fem->f0Funcs[1] = f0_p;
@@ -454,6 +456,7 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
+  ierr = DMComplexSetFEMIntegration(dm, FEMIntegrateResidualBatch, FEMIntegrateJacobianActionBatch, FEMIntegrateJacobianBatch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -614,7 +617,7 @@ int main(int argc, char **argv)
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr);
   ierr = SNESSetDM(snes, user.dm);CHKERRQ(ierr);
 
-  ierr = SetupExactSolution(&user);CHKERRQ(ierr);
+  ierr = SetupExactSolution(user.dm, &user);CHKERRQ(ierr);
   ierr = SetupQuadrature(&user);CHKERRQ(ierr);
   ierr = SetupSection(user.dm, &user);CHKERRQ(ierr);
 

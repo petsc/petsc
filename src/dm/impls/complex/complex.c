@@ -7517,6 +7517,36 @@ This should be in a separate Discretization object, but I am not sure how to lay
 it out yet, so I am stuffing things here while I experiment.
 *******************************************************************************/
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexSetFEMIntegration"
+PetscErrorCode DMComplexSetFEMIntegration(DM dm,
+                                          PetscErrorCode (*integrateResidualFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
+                                                                                 const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]),
+                                          PetscErrorCode (*integrateJacobianActionFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[], const PetscScalar[],
+                                                                                       const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
+                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]),
+                                          PetscErrorCode (*integrateJacobianFEM)(PetscInt, PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
+                                                                                 const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]))
+{
+  DM_Complex *mesh = (DM_Complex *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->integrateResidualFEM       = integrateResidualFEM;
+  mesh->integrateJacobianActionFEM = integrateJacobianActionFEM;
+  mesh->integrateJacobianFEM       = integrateJacobianFEM;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexProjectFunction"
 /*@C
   DMComplexProjectFunction - This projects the given function into the function space provided.
@@ -7720,24 +7750,6 @@ PetscErrorCode DMComplexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar
   PetscFunctionReturn(0);
 }
 
-#if 0
-PETSC_EXTERN PetscErrorCode FEMIntegrateResidualBatch(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
-                                                      const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]);
-PETSC_EXTERN PetscErrorCode FEMIntegrateJacobianActionBatch(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[], const PetscScalar[],
-                                                            const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                                            void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                            void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                            void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                            void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]);
-PETSC_EXTERN PetscErrorCode FEMIntegrateJacobianBatch(PetscInt, PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
-                                                      const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]);
-
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexComputeResidualFEM"
 /*@
@@ -7807,12 +7819,12 @@ PetscErrorCode DMComplexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     PetscInt batchSize  = numBlocks * blockSize;
     PetscInt numBatches = numBatchesTmp;
     PetscInt numChunks  = numCells / (numBatches*batchSize);
-    ierr = FEMIntegrateResidualBatch(numChunks*numBatches*batchSize, numFields, field, quad, u, v0, J, invJ, detJ, f0, f1, elemVec);CHKERRQ(ierr);
+    ierr = (*mesh->integrateResidualFEM)(numChunks*numBatches*batchSize, numFields, field, quad, u, v0, J, invJ, detJ, f0, f1, elemVec);CHKERRQ(ierr);
     /* Remainder */
     PetscInt numRemainder = numCells % (numBatches * batchSize);
     PetscInt offset       = numCells - numRemainder;
-    ierr = FEMIntegrateResidualBatch(numRemainder, numFields, field, quad, &u[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
-                                     f0, f1, &elemVec[offset*cellDof]);CHKERRQ(ierr);
+    ierr = (*mesh->integrateResidualFEM)(numRemainder, numFields, field, quad, &u[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
+                                         f0, f1, &elemVec[offset*cellDof]);CHKERRQ(ierr);
   }
   for (c = cStart; c < cEnd; ++c) {
     if (mesh->printFEM > 1) {ierr = DMPrintCellVector(c, "Residual", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
@@ -7917,12 +7929,12 @@ PetscErrorCode DMComplexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, v
     PetscInt batchSize  = numBlocks * blockSize;
     PetscInt numBatches = numBatchesTmp;
     PetscInt numChunks  = numCells / (numBatches*batchSize);
-    ierr = FEMIntegrateJacobianActionBatch(numChunks*numBatches*batchSize, numFields, field, quad, u, a, v0, J, invJ, detJ, fem->g0Funcs, fem->g1Funcs, fem->g2Funcs, fem->g3Funcs, elemVec);CHKERRQ(ierr);
+    ierr = (*mesh->integrateJacobianActionFEM)(numChunks*numBatches*batchSize, numFields, field, quad, u, a, v0, J, invJ, detJ, fem->g0Funcs, fem->g1Funcs, fem->g2Funcs, fem->g3Funcs, elemVec);CHKERRQ(ierr);
     /* Remainder */
     PetscInt numRemainder = numCells % (numBatches * batchSize);
     PetscInt offset       = numCells - numRemainder;
-    ierr = FEMIntegrateJacobianActionBatch(numRemainder, numFields, field, quad, &u[offset*cellDof], &a[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
-                                           fem->g0Funcs, fem->g1Funcs, fem->g2Funcs, fem->g3Funcs, &elemVec[offset*cellDof]);CHKERRQ(ierr);
+    ierr = (*mesh->integrateJacobianActionFEM)(numRemainder, numFields, field, quad, &u[offset*cellDof], &a[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
+                                               fem->g0Funcs, fem->g1Funcs, fem->g2Funcs, fem->g3Funcs, &elemVec[offset*cellDof]);CHKERRQ(ierr);
   }
   for (c = cStart; c < cEnd; ++c) {
     if (mesh->printFEM > 1) {ierr = DMPrintCellVector(c, "Residual", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
@@ -8021,12 +8033,12 @@ PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, void
       PetscInt batchSize  = numBlocks * blockSize;
       PetscInt numBatches = numBatchesTmp;
       PetscInt numChunks  = numCells / (numBatches*batchSize);
-      ierr = FEMIntegrateJacobianBatch(numChunks*numBatches*batchSize, numFields, fieldI, fieldJ, quad, u, v0, J, invJ, detJ, g0, g1, g2, g3, elemMat);CHKERRQ(ierr);
+      ierr = (*mesh->integrateJacobianFEM)(numChunks*numBatches*batchSize, numFields, fieldI, fieldJ, quad, u, v0, J, invJ, detJ, g0, g1, g2, g3, elemMat);CHKERRQ(ierr);
       /* Remainder */
       PetscInt numRemainder = numCells % (numBatches * batchSize);
       PetscInt offset       = numCells - numRemainder;
-      ierr = FEMIntegrateJacobianBatch(numRemainder, numFields, fieldI, fieldJ, quad, &u[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
-                                       g0, g1, g2, g3, &elemMat[offset*cellDof*cellDof]);CHKERRQ(ierr);
+      ierr = (*mesh->integrateJacobianFEM)(numRemainder, numFields, fieldI, fieldJ, quad, &u[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
+                                           g0, g1, g2, g3, &elemMat[offset*cellDof*cellDof]);CHKERRQ(ierr);
     }
   }
   for (c = cStart; c < cEnd; ++c) {
@@ -8055,4 +8067,3 @@ PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, void
   }
   PetscFunctionReturn(0);
 }
-#endif
