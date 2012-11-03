@@ -569,7 +569,6 @@
       parameter(MAT_CUSPARSE_SOLVE=3)
       parameter(MAT_CUSPARSE_ALL=4)
 #endif
-		
 !
 !  End of Fortran include file for the Mat package in PETSc
 !
