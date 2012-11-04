@@ -36,7 +36,6 @@ PETSC_EXTERN PetscErrorCode DMComplexInterpolate_3D(DM, DM *);
 PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool interpolate, DM *dm)
 {
 #if defined(PETSC_HAVE_EXODUSII)
-  DM_Complex    *mesh;
   PetscMPIInt    num_proc, rank;
   PetscSection   coordSection;
   Vec            coordinates;
@@ -55,10 +54,10 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool in
   ierr = MPI_Comm_size(comm, &num_proc);CHKERRQ(ierr);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMCOMPLEX);CHKERRQ(ierr);
-  mesh = (DM_Complex *) (*dm)->data;
   /* Open EXODUS II file and read basic informations on rank 0, then broadcast to all processors */
   if (!rank) {
-    ierr = ex_get_init(exoid, title, &dim, &numVertices, &numCells, &num_cs, &num_vs, &num_fs);CHKERRQ(ierr);
+    ierr = ex_get_init(exoid, title, &dim, &numVertices, &numCells, &num_cs, &num_vs, &num_fs);
+    if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ExodusII ex_get_init() failed with error code %D\n",ierr);
     if (!num_cs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exodus file does not contain any cell set\n");
   }
   ierr = MPI_Bcast(title, PETSC_MAX_PATH_LEN+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
@@ -174,6 +173,7 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool in
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
 
   /* Create vertex set label */
   if (!rank && interpolate && (num_fs > 0)) {

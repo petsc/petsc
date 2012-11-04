@@ -2660,6 +2660,7 @@ PetscErrorCode DMComplexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt po
 
   ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = PetscMalloc(numPoints * sizeof(PetscInt *), &closures);CHKERRQ(ierr);
+  ierr = PetscMemzero(closures,numPoints*sizeof(PetscInt*));CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, numPoints*(depth+2), PETSC_INT, &offsets);CHKERRQ(ierr);
   maxSize = (PetscInt) (pow((PetscReal) mesh->maxSupportSize, depth)+1);
   ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &join[0]);CHKERRQ(ierr);
@@ -7517,6 +7518,36 @@ This should be in a separate Discretization object, but I am not sure how to lay
 it out yet, so I am stuffing things here while I experiment.
 *******************************************************************************/
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexSetFEMIntegration"
+PetscErrorCode DMComplexSetFEMIntegration(DM dm,
+                                          PetscErrorCode (*integrateResidualFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
+                                                                                 const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]),
+                                          PetscErrorCode (*integrateJacobianActionFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[], const PetscScalar[],
+                                                                                       const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
+                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]),
+                                          PetscErrorCode (*integrateJacobianFEM)(PetscInt, PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
+                                                                                 const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]))
+{
+  DM_Complex *mesh = (DM_Complex *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->integrateResidualFEM       = integrateResidualFEM;
+  mesh->integrateJacobianActionFEM = integrateJacobianActionFEM;
+  mesh->integrateJacobianFEM       = integrateJacobianFEM;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexProjectFunction"
 /*@C
   DMComplexProjectFunction - This projects the given function into the function space provided.
@@ -7542,8 +7573,9 @@ PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**
 {
   Vec            localX, coordinates;
   PetscSection   section, cSection;
-  PetscInt       vStart, vEnd, v, c;
-  PetscScalar   *values;
+  PetscInt       dim, vStart, vEnd, v, c, d;
+  PetscScalar   *values, *cArray;
+  PetscReal     *coords;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -7553,25 +7585,31 @@ PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**
   ierr = DMComplexGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = PetscMalloc(numComp * sizeof(PetscScalar), &values);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &cArray);CHKERRQ(ierr);
+  ierr = PetscSectionGetDof(cSection, vStart, &dim);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim * sizeof(PetscReal),&coords);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
-    PetscScalar *coords;
+    PetscInt dof, off;
 
-    ierr = VecGetValuesSection(coordinates, cSection, v, &coords);CHKERRQ(ierr);
-    for (c = 0; c < numComp; ++c) {
+    ierr = PetscSectionGetDof(cSection, v, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(cSection, v, &off);CHKERRQ(ierr);
+    if (dof > dim) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Cannot have more coordinates %d then dimensions %d", dof, dim);
+    for(d = 0; d < dof; ++d) {
+      coords[d] = PetscRealPart(cArray[off+d]);
+    }
+    for(c = 0; c < numComp; ++c) {
       values[c] = (*funcs[c])(coords);
     }
     ierr = VecSetValuesSection(localX, section, v, values, mode);CHKERRQ(ierr);
   }
-  /* Temporary, msut be replaced by a projection on the finite element basis */
+  ierr = VecRestoreArray(coordinates, &cArray);CHKERRQ(ierr);
+  /* Temporary, must be replaced by a projection on the finite element basis */
   {
-    PetscScalar *coordsE;
-    PetscInt     eStart = 0, eEnd = 0, e, depth, dim;
+    PetscInt eStart = 0, eEnd = 0, e, depth;
 
-    ierr = PetscSectionGetDof(cSection, vStart, &dim);CHKERRQ(ierr);
     ierr = DMComplexGetLabelSize(dm, "depth", &depth);CHKERRQ(ierr);
     --depth;
     if (depth > 1) {ierr = DMComplexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);}
-    ierr = PetscMalloc(dim * sizeof(PetscScalar),&coordsE);CHKERRQ(ierr);
     for (e = eStart; e < eEnd; ++e) {
       const PetscInt *cone;
       PetscInt        coneSize, d;
@@ -7583,16 +7621,16 @@ PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**
       ierr = VecGetValuesSection(coordinates, cSection, cone[0], &coordsA);CHKERRQ(ierr);
       ierr = VecGetValuesSection(coordinates, cSection, cone[1], &coordsB);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
-        coordsE[d] = 0.5*(coordsA[d] + coordsB[d]);
+        coords[d] = 0.5*(PetscRealPart(coordsA[d]) + PetscRealPart(coordsB[d]));
       }
       for (c = 0; c < numComp; ++c) {
-        values[c] = (*funcs[c])(coordsE);
+        values[c] = (*funcs[c])(coords);
       }
       ierr = VecSetValuesSection(localX, section, e, values, mode);CHKERRQ(ierr);
     }
-    ierr = PetscFree(coordsE);CHKERRQ(ierr);
   }
 
+  ierr = PetscFree(coords);CHKERRQ(ierr);
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
@@ -7696,11 +7734,11 @@ PetscErrorCode DMComplexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar
           }
         }
         for (fc = 0; fc < numBasisComps; ++fc) {
-          const PetscScalar funcVal     = (*funcs[comp+fc])(coords);
-          PetscReal         interpolant = 0.0;
+          const PetscReal funcVal     = PetscRealPart((*funcs[comp+fc])(coords));
+          PetscReal       interpolant = 0.0;
           for (f = 0; f < numBasisFuncs; ++f) {
             const PetscInt fidx = f*numBasisComps+fc;
-            interpolant += x[fieldOffset+fidx]*basis[q*numBasisFuncs*numBasisComps+fidx];
+            interpolant += PetscRealPart(x[fieldOffset+fidx])*basis[q*numBasisFuncs*numBasisComps+fidx];
           }
           if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d diff %g\n", c, field, PetscSqr(interpolant - funcVal)*quadWeights[q]*detJ);CHKERRQ(ierr);}
           elemDiff += PetscSqr(interpolant - funcVal)*quadWeights[q]*detJ;
@@ -7719,24 +7757,6 @@ PetscErrorCode DMComplexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar
   *diff = PetscSqrtReal(*diff);
   PetscFunctionReturn(0);
 }
-
-#if 0
-PETSC_EXTERN PetscErrorCode FEMIntegrateResidualBatch(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
-                                                      const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]);
-PETSC_EXTERN PetscErrorCode FEMIntegrateJacobianActionBatch(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[], const PetscScalar[],
-                                                            const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                                            void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                            void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                            void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                            void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]);
-PETSC_EXTERN PetscErrorCode FEMIntegrateJacobianBatch(PetscInt, PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
-                                                      const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexComputeResidualFEM"
@@ -7807,12 +7827,12 @@ PetscErrorCode DMComplexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     PetscInt batchSize  = numBlocks * blockSize;
     PetscInt numBatches = numBatchesTmp;
     PetscInt numChunks  = numCells / (numBatches*batchSize);
-    ierr = FEMIntegrateResidualBatch(numChunks*numBatches*batchSize, numFields, field, quad, u, v0, J, invJ, detJ, f0, f1, elemVec);CHKERRQ(ierr);
+    ierr = (*mesh->integrateResidualFEM)(numChunks*numBatches*batchSize, numFields, field, quad, u, v0, J, invJ, detJ, f0, f1, elemVec);CHKERRQ(ierr);
     /* Remainder */
     PetscInt numRemainder = numCells % (numBatches * batchSize);
     PetscInt offset       = numCells - numRemainder;
-    ierr = FEMIntegrateResidualBatch(numRemainder, numFields, field, quad, &u[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
-                                     f0, f1, &elemVec[offset*cellDof]);CHKERRQ(ierr);
+    ierr = (*mesh->integrateResidualFEM)(numRemainder, numFields, field, quad, &u[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
+                                         f0, f1, &elemVec[offset*cellDof]);CHKERRQ(ierr);
   }
   for (c = cStart; c < cEnd; ++c) {
     if (mesh->printFEM > 1) {ierr = DMPrintCellVector(c, "Residual", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
@@ -7917,12 +7937,12 @@ PetscErrorCode DMComplexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, v
     PetscInt batchSize  = numBlocks * blockSize;
     PetscInt numBatches = numBatchesTmp;
     PetscInt numChunks  = numCells / (numBatches*batchSize);
-    ierr = FEMIntegrateJacobianActionBatch(numChunks*numBatches*batchSize, numFields, field, quad, u, a, v0, J, invJ, detJ, fem->g0Funcs, fem->g1Funcs, fem->g2Funcs, fem->g3Funcs, elemVec);CHKERRQ(ierr);
+    ierr = (*mesh->integrateJacobianActionFEM)(numChunks*numBatches*batchSize, numFields, field, quad, u, a, v0, J, invJ, detJ, fem->g0Funcs, fem->g1Funcs, fem->g2Funcs, fem->g3Funcs, elemVec);CHKERRQ(ierr);
     /* Remainder */
     PetscInt numRemainder = numCells % (numBatches * batchSize);
     PetscInt offset       = numCells - numRemainder;
-    ierr = FEMIntegrateJacobianActionBatch(numRemainder, numFields, field, quad, &u[offset*cellDof], &a[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
-                                           fem->g0Funcs, fem->g1Funcs, fem->g2Funcs, fem->g3Funcs, &elemVec[offset*cellDof]);CHKERRQ(ierr);
+    ierr = (*mesh->integrateJacobianActionFEM)(numRemainder, numFields, field, quad, &u[offset*cellDof], &a[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
+                                               fem->g0Funcs, fem->g1Funcs, fem->g2Funcs, fem->g3Funcs, &elemVec[offset*cellDof]);CHKERRQ(ierr);
   }
   for (c = cStart; c < cEnd; ++c) {
     if (mesh->printFEM > 1) {ierr = DMPrintCellVector(c, "Residual", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
@@ -8021,12 +8041,12 @@ PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, void
       PetscInt batchSize  = numBlocks * blockSize;
       PetscInt numBatches = numBatchesTmp;
       PetscInt numChunks  = numCells / (numBatches*batchSize);
-      ierr = FEMIntegrateJacobianBatch(numChunks*numBatches*batchSize, numFields, fieldI, fieldJ, quad, u, v0, J, invJ, detJ, g0, g1, g2, g3, elemMat);CHKERRQ(ierr);
+      ierr = (*mesh->integrateJacobianFEM)(numChunks*numBatches*batchSize, numFields, fieldI, fieldJ, quad, u, v0, J, invJ, detJ, g0, g1, g2, g3, elemMat);CHKERRQ(ierr);
       /* Remainder */
       PetscInt numRemainder = numCells % (numBatches * batchSize);
       PetscInt offset       = numCells - numRemainder;
-      ierr = FEMIntegrateJacobianBatch(numRemainder, numFields, fieldI, fieldJ, quad, &u[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
-                                       g0, g1, g2, g3, &elemMat[offset*cellDof*cellDof]);CHKERRQ(ierr);
+      ierr = (*mesh->integrateJacobianFEM)(numRemainder, numFields, fieldI, fieldJ, quad, &u[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
+                                           g0, g1, g2, g3, &elemMat[offset*cellDof*cellDof]);CHKERRQ(ierr);
     }
   }
   for (c = cStart; c < cEnd; ++c) {
@@ -8055,4 +8075,3 @@ PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, void
   }
   PetscFunctionReturn(0);
 }
-#endif

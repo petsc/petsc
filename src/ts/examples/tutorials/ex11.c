@@ -151,7 +151,6 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
   ierr = PetscSectionSetUp(newCoordSection);CHKERRQ(ierr);
   ierr = DMComplexSetCoordinateSection(gdm, newCoordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject) coordinates);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(gdm, coordinates);CHKERRQ(ierr);
   /* Convert labels */
   ierr = DMComplexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
@@ -366,7 +365,11 @@ int main(int argc, char **argv)
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
-  if (!rank) {exoid = ex_open("sevenside.exo", EX_READ, &CPU_word_size, &IO_word_size, &version);CHKERRQ(!exoid);}
+  if (!rank) {
+    const char *filename = "sevenside.exo";
+    exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
+    if (exoid <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ex_open(\"%s\",...) did not return a valid file ID",filename);
+  }
   ierr = DMComplexCreateExodus(comm, exoid, PETSC_TRUE, &dm);CHKERRQ(ierr);
   if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
@@ -391,6 +394,12 @@ int main(int argc, char **argv)
   ierr = CopyToGhosts(dm, &user);CHKERRQ(ierr);
   ierr = CalculateFlux(dm, &user);CHKERRQ(ierr);
 
+  ierr = PetscSectionDestroy(&user.normalSection);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.normals);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&user.stateSection);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.state);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.residual);CHKERRQ(ierr);
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return(0);

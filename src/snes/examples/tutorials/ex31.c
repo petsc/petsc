@@ -747,8 +747,10 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupExactSolution"
-PetscErrorCode SetupExactSolution(AppCtx *user) {
-  PetscFEM *fem = &user->fem;
+PetscErrorCode SetupExactSolution(DM dm, AppCtx *user) {
+  PetscFEM      *fem = &user->fem;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (user->bcType == FREE_SLIP) {
     fem->f0Funcs[0] = f0_u_freeslip_2D;
@@ -831,6 +833,7 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid boundary condition type %d", user->bcType);
   }
+  ierr = DMComplexSetFEMIntegration(dm, FEMIntegrateResidualBatch, FEMIntegrateJacobianActionBatch, FEMIntegrateJacobianBatch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -986,7 +989,7 @@ int main(int argc, char **argv)
   ierr = SNESSetDM(snes, user.dm);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(user.dm, &user);CHKERRQ(ierr);
 
-  ierr = SetupExactSolution(&user);CHKERRQ(ierr);
+  ierr = SetupExactSolution(user.dm, &user);CHKERRQ(ierr);
   ierr = SetupQuadrature(&user);CHKERRQ(ierr);
   ierr = SetupSection(user.dm, &user);CHKERRQ(ierr);
 

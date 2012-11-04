@@ -8,7 +8,7 @@ NOADIC    = true
 EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c ex11.c ex14.c \
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
-                ex33.c ex34.c ex35.c ex36.c ex37.c
+                ex33.c ex34.c ex35.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c
 EXAMPLESCH      = 
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
@@ -158,6 +158,9 @@ ex39: ex39.o chkopts
 ex40: ex40.o chkopts
 	-${CLINKER} -o ex40 ex40.o ${PETSC_KSP_LIB}
 	${RM} ex40.o
+ex41: ex41.o chkopts
+	-${CLINKER} -o ex41 ex41.o ${PETSC_KSP_LIB}
+	${RM} ex41.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
