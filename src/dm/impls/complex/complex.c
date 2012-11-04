@@ -7595,7 +7595,7 @@ PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**
     ierr = PetscSectionGetOffset(cSection, v, &off);CHKERRQ(ierr);
     if (dof > dim) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Cannot have more coordinates %d then dimensions %d", dof, dim);
     for(d = 0; d < dof; ++d) {
-      coords[d] = PetscAbsScalar(cArray[off+d]);
+      coords[d] = PetscRealPart(cArray[off+d]);
     }
     for(c = 0; c < numComp; ++c) {
       values[c] = (*funcs[c])(coords);
@@ -7621,7 +7621,7 @@ PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**
       ierr = VecGetValuesSection(coordinates, cSection, cone[0], &coordsA);CHKERRQ(ierr);
       ierr = VecGetValuesSection(coordinates, cSection, cone[1], &coordsB);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
-        coords[d] = 0.5*(PetscAbsScalar(coordsA[d]) + PetscAbsScalar(coordsB[d]));
+        coords[d] = 0.5*(PetscRealPart(coordsA[d]) + PetscRealPart(coordsB[d]));
       }
       for (c = 0; c < numComp; ++c) {
         values[c] = (*funcs[c])(coords);
@@ -7734,11 +7734,11 @@ PetscErrorCode DMComplexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar
           }
         }
         for (fc = 0; fc < numBasisComps; ++fc) {
-          const PetscReal funcVal     = PetscAbsScalar((*funcs[comp+fc])(coords));
+          const PetscReal funcVal     = PetscRealPart((*funcs[comp+fc])(coords));
           PetscReal       interpolant = 0.0;
           for (f = 0; f < numBasisFuncs; ++f) {
             const PetscInt fidx = f*numBasisComps+fc;
-            interpolant += PetscAbsScalar(x[fieldOffset+fidx])*basis[q*numBasisFuncs*numBasisComps+fidx];
+            interpolant += PetscRealPart(x[fieldOffset+fidx])*basis[q*numBasisFuncs*numBasisComps+fidx];
           }
           if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d diff %g\n", c, field, PetscSqr(interpolant - funcVal)*quadWeights[q]*detJ);CHKERRQ(ierr);}
           elemDiff += PetscSqr(interpolant - funcVal)*quadWeights[q]*detJ;
