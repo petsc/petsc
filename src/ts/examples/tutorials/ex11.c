@@ -151,7 +151,6 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
   ierr = PetscSectionSetUp(newCoordSection);CHKERRQ(ierr);
   ierr = DMComplexSetCoordinateSection(gdm, newCoordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject) coordinates);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(gdm, coordinates);CHKERRQ(ierr);
   /* Convert labels */
   ierr = DMComplexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
@@ -395,6 +394,12 @@ int main(int argc, char **argv)
   ierr = CopyToGhosts(dm, &user);CHKERRQ(ierr);
   ierr = CalculateFlux(dm, &user);CHKERRQ(ierr);
 
+  ierr = PetscSectionDestroy(&user.normalSection);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.normals);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&user.stateSection);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.state);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.residual);CHKERRQ(ierr);
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return(0);
