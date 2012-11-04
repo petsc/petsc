@@ -366,7 +366,11 @@ int main(int argc, char **argv)
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
-  if (!rank) {exoid = ex_open("sevenside.exo", EX_READ, &CPU_word_size, &IO_word_size, &version);CHKERRQ(!exoid);}
+  if (!rank) {
+    const char *filename = "sevenside.exo";
+    exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
+    if (exoid <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ex_open(\"%s\",...) did not return a valid file ID",filename);
+  }
   ierr = DMComplexCreateExodus(comm, exoid, PETSC_TRUE, &dm);CHKERRQ(ierr);
   if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
