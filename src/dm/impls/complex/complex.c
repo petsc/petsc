@@ -2660,6 +2660,7 @@ PetscErrorCode DMComplexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt po
 
   ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = PetscMalloc(numPoints * sizeof(PetscInt *), &closures);CHKERRQ(ierr);
+  ierr = PetscMemzero(closures,numPoints*sizeof(PetscInt*));CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, numPoints*(depth+2), PETSC_INT, &offsets);CHKERRQ(ierr);
   maxSize = (PetscInt) (pow((PetscReal) mesh->maxSupportSize, depth)+1);
   ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &join[0]);CHKERRQ(ierr);
