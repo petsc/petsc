@@ -12,7 +12,7 @@
 #define YTRANS(draw,xwin,y)  (int)(((xwin)->h)*(1.0-(draw)->port_yl - (((y - (draw)->coor_yl)*((draw)->port_yr - (draw)->port_yl))/((draw)->coor_yr - (draw)->coor_yl))))
 
 #define ITRANS(draw,xwin,i)  (draw)->coor_xl + (i*((draw)->coor_xr - (draw)->coor_xl)/((xwin)->w) - (draw)->port_xl)/((draw)->port_xr - (draw)->port_xl)
-#define JTRANS(draw,xwin,j)  (draw)->coor_yl + (j*((draw)->coor_yr - (draw)->coor_xl)/((xwin)->h) + (draw)->port_yl - 1.0)/((draw)->port_yl - (draw)->port_yr)
+#define JTRANS(draw,xwin,j)  draw->coor_yl + (((double)j)/xwin->h + draw->port_yl - 1.0)*(draw->coor_yr - draw->coor_yl)/(draw->port_yl - draw->port_yr)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCoordinateToPixel_X"

@@ -86,13 +86,12 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
 #if defined(PETSC_HAVE_COMPLEX)
 PetscComplex Rtheta(PetscReal theta,PetscComplex z)
 {
-  return( (1.0 - (1.0 - theta)*z)/(1.0 - theta*z) );
+  return( (1.0 + (1.0 - theta)*z)/(1.0 - theta*z) );
 }
 
 PetscBool TSIndicator_Theta(PetscReal x,PetscReal y) 
 {
-  PetscComplex r = Rtheta(0.,x + PETSC_i*y);
-  printf("%g %g %g\n",x,y,PetscAbsComplex(r));
+  PetscComplex r = Rtheta(.75,x + PETSC_i*y);
   if (PetscAbsComplex(r) <= 1.0) return PETSC_TRUE;
   else return PETSC_FALSE;
 }
@@ -142,6 +141,8 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
 
     if (nits) {
       PetscDraw draw;
+      PetscReal pause;
+
       ierr = PetscDrawSPReset(drawsp);CHKERRQ(ierr);
       ierr = PetscDrawSPSetLimits(drawsp,ctx->xmin,ctx->xmax,ctx->ymin,ctx->ymax);CHKERRQ(ierr);
       ierr = PetscMalloc2(PetscMax(n,N),PetscReal,&r,PetscMax(n,N),PetscReal,&c);CHKERRQ(ierr);
@@ -157,9 +158,11 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
         ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
       ierr = PetscFree2(r,c);CHKERRQ(ierr);
-      ierr = PetscDrawSPDraw(drawsp,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscDrawSPGetDraw(drawsp,&draw);CHKERRQ(ierr);
-      /*      ierr = PetscDrawEllipse(draw,-1.0,0.0,2.0,2.0,PETSC_DRAW_CYAN);CHKERRQ(ierr); */
+      ierr = PetscDrawGetPause(draw,&pause);CHKERRQ(ierr);
+      ierr = PetscDrawSetPause(draw,0.0);CHKERRQ(ierr);
+      ierr = PetscDrawSPDraw(drawsp,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PetscDrawSetPause(draw,pause);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_COMPLEX)
       {
       PetscDrawAxis axis;
@@ -168,7 +171,6 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
       ierr = PetscDrawSPGetAxis(drawsp,&axis);CHKERRQ(ierr);
       ierr = PetscDrawAxisGetLimits(axis,&xmin,&xmax,&ymin,&ymax);CHKERRQ(ierr);
       ierr = PetscDrawIndicatorFunction(draw,xmin,xmax,ymin,ymax,PETSC_DRAW_CYAN,TSIndicator_Theta);CHKERRQ(ierr);
-
       ierr = PetscDrawSPDraw(drawsp,PETSC_FALSE);CHKERRQ(ierr);
       }
 #endif
