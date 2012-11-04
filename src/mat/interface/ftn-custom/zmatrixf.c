@@ -18,6 +18,7 @@
 #define matzerorowscolumns_              MATZEROROWSCOLUMNS
 #define matzerorowscolumnsis_            MATZEROROWSCOLUMNSIS
 #define matzerorowsstencil_              MATZEROROWSSTENCIL
+#define matzerorowscolumnsstencil_       MATZEROROWSCOLUMNSSTENCIL
 #define matzerorows_                     MATZEROROWS
 #define matzerorowsis_                   MATZEROROWSIS
 #define matzerorowslocal_                MATZEROROWSLOCAL
@@ -59,6 +60,7 @@
 #define matzerorowscolumns_              matzerorowscolumns
 #define matzerorowscolumnsis_            matzerorowscolumnsis
 #define matzerorowsstencil_              matzerorowsstencil
+#define matzerorowscolumnsstencil_       matzerorowscolumnsstencil
 #define matzerorows_                     matzerorows
 #define matzerorowsis_                   matzerorowsis
 #define matzerorowslocal_                matzerorowslocal
@@ -289,6 +291,13 @@ void PETSC_STDCALL matzerorowsstencil_(Mat *mat,PetscInt *numRows,MatStencil *ro
   CHKFORTRANNULLOBJECTDEREFERENCE(x);
   CHKFORTRANNULLOBJECTDEREFERENCE(b);
   *ierr = MatZeroRowsStencil(*mat,*numRows,rows,*diag,*x,*b);
+}
+
+void PETSC_STDCALL matzerorowscolumnsstencil_(Mat *mat,PetscInt *numRows,MatStencil *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLOBJECTDEREFERENCE(x);
+  CHKFORTRANNULLOBJECTDEREFERENCE(b);
+  *ierr = MatZeroRowsColumnsStencil(*mat,*numRows,rows,*diag,*x,*b);
 }
 
 void PETSC_STDCALL matzerorows_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
