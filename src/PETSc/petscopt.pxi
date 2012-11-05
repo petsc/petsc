@@ -26,6 +26,8 @@ cdef extern from * nogil:
     int PetscTokenDestroy(PetscToken*)
     int PetscTokenFind(PetscToken,char*[])
 
+    int PetscOptionsValidKey(char[],PetscBool*)
+
 #
 
 cdef getprefix(prefix, deft=None):
@@ -146,16 +148,28 @@ cdef tokenize(options):
       CHKERR( PetscTokenDestroy(&t) )
   return tokens
 
+cdef bint iskey(key):
+    cdef const_char *k = NULL
+    cdef PetscBool b = PETSC_FALSE
+    if key:
+        key = str2bytes(key, &k)
+        CHKERR( PetscOptionsValidKey(k, &b) )
+        if b == PETSC_TRUE:
+            return True
+    return False
+
 cdef gettok(tokens):
-    if tokens: 
+    if tokens:
         return tokens.pop(0)
-    else: 
+    else:
         return None
 
 cdef getkey(key, prefix):
-    if not key or key[0] != '-' :
+    if not iskey(key):
         return None
     key = key[1:]
+    if key[0] == '-':
+        key = key[1:]
     if not key.startswith(prefix):
         return None
     return key.replace(prefix, '', 1)
