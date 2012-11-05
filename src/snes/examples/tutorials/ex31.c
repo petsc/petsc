@@ -63,6 +63,7 @@ puts it into the Sieve ordering.
 
 typedef enum {DIRICHLET, FREE_SLIP} BCType;
 typedef enum {RUN_FULL, RUN_TEST} RunType;
+typedef enum {FORCING_CONSTANT, FORCING_LINEAR} ForcingType;
 
 typedef struct {
   DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
@@ -93,6 +94,7 @@ typedef struct {
   void (*g3Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g3[]); /* g3_uu(x,y,z), g3_up(x,y,z), g3_pu(x,y,z), and g3_pp(x,y,z) */
   PetscScalar (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL])(const PetscReal x[]); /* The exact solution function u(x,y,z), v(x,y,z), p(x,y,z), and T(x,y,z) */
   BCType        bcType;            /* The type of boundary conditions */
+  ForcingType   forcingType;       /* The type of rhs */
 } AppCtx;
 
 PetscScalar zero(const PetscReal coords[]) {
@@ -100,13 +102,16 @@ PetscScalar zero(const PetscReal coords[]) {
 }
 
 /*
-  In 2D we use exact solution:
+  In 2D, for constant forcing,
+
+    f_x = f_y = 3
+
+  we use the exact solution,
 
     u = x^2 + y^2
     v = 2 x^2 - 2xy
     p = x + y - 1
     T = x + y
-    f_x = f_y = 3
 
   so that
 
@@ -131,42 +136,17 @@ PetscScalar linear_T_2d(const PetscReal x[]) {
 };
 
 /*
-  In 2D, for freeslip, we use exact solution:
+  In 2D, for linear forcing,
 
-    u =  2 x (x-1) + 4 (x+1) y
-    v = -2 y (y-1) - 4 x (y-1)
-    p = x + y - 1
-    T = x + y
-    f_x = 3
-    f_y = -5
-
-  so that
-
-    -\Delta u + \nabla p + f = <-4, 4> + <1, 1> + <3, -5> = 0
-    \nabla \cdot u           = 2(2x-1)+4y - 2(2y-1)-4x    = 0
-    -\Delta T + q_T          = 0
-*/
-PetscScalar quadratic2_u_2d(const PetscReal x[]) {
-  return 2.0*x[0]*(x[0]-1.0) + 4.0*(x[0]+1.0)*x[1];
-};
-
-PetscScalar quadratic2_v_2d(const PetscReal x[]) {
-  PetscReal ym = x[1] - 1.0;
-  return -2.0*x[1]*ym - 4.0*x[0]*ym;
-};
-
-/*
-  In 2D, for freeslip, we use exact solution:
-
-    u =   2 x (x-1) (1 - 2 y)
-    v =  -2 y (y-1) (1 - 2 x)
-    p = x + y - 1
-    T = x + y
     f_x =  3 - 8y
     f_y = -5 + 8x
 
--Delta u = <-4 (1 - 2y), 4 (1 - 2x)>
-\nabla \cdot u = (4x-2) (1-2y) - (4y-2) (1-2x)
+  we use the exact solution,
+
+    u =  2 x (x-1) (1 - 2 y)
+    v = -2 y (y-1) (1 - 2 x)
+    p = x + y - 1
+    T = x + y
 
   so that
 
@@ -182,7 +162,7 @@ PetscScalar cubic_v_2d(const PetscReal x[]) {
   return -2.0*x[1]*(x[1]-1.0)*(1.0 - 2.0*x[0]);
 };
 
-void f0_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]) {
+void f0_u_constant(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]) {
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
   PetscInt       comp;
 
@@ -191,9 +171,9 @@ void f0_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[],
   }
 }
 
-void f0_u_freeslip_2D(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]) {
-  f0[0] =  3.0;
-  f0[1] = -5.0;
+void f0_u_linear_2d(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]) {
+  f0[0] =  3.0 - 8.0*x[1];
+  f0[1] = -5.0 + 8.0*x[0];
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y, v_x, v_y} or {u_x, u_y, u_z, v_x, v_y, v_z, w_x, w_y, w_z}
@@ -334,9 +314,10 @@ PetscScalar linear_p_3d(const PetscReal x[]) {
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
-  const char    *bcTypes[2]  = {"dirichlet", "freeslip"};
-  const char    *runTypes[2] = {"full", "test"};
-  PetscInt       bc, run;
+  const char    *bcTypes[2]      = {"dirichlet", "freeslip"};
+  const char    *forcingTypes[2] = {"constant", "linear"};
+  const char    *runTypes[2]     = {"full", "test"};
+  PetscInt       bc, forcing, run;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -346,6 +327,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   options->interpolate     = PETSC_FALSE;
   options->refinementLimit = 0.0;
   options->bcType          = DIRICHLET;
+  options->forcingType     = FORCING_CONSTANT;
   options->numBatches      = 1;
   options->numBlocks       = 1;
   options->jacobianMF      = PETSC_FALSE;
@@ -363,23 +345,26 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMCOMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex62.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex31.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
   run = options->runType;
-  ierr = PetscOptionsEList("-run_type", "The run type", "ex62.c", runTypes, 2, runTypes[options->runType], &run, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-run_type", "The run type", "ex31.c", runTypes, 2, runTypes[options->runType], &run, PETSC_NULL);CHKERRQ(ierr);
   options->runType = (RunType) run;
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex62.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex62.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex62.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex31.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex31.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex31.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
   bc = options->bcType;
-  ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex62.c",bcTypes,2,bcTypes[options->bcType],&bc,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex31.c",bcTypes,2,bcTypes[options->bcType],&bc,PETSC_NULL);CHKERRQ(ierr);
   options->bcType = (BCType) bc;
-  ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex62.c", options->numBatches, &options->numBatches, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex62.c", options->numBlocks, &options->numBlocks, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-jacobian_mf", "Calculate the action of the Jacobian on the fly", "ex62.c", options->jacobianMF, &options->jacobianMF, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex62.c", options->showInitial, &options->showInitial, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex62.c", options->showSolution, &options->showSolution, PETSC_NULL);CHKERRQ(ierr);
+  forcing = options->forcingType;
+  ierr = PetscOptionsEList("-forcing_type","Type of forcing function","ex31.c",forcingTypes,2,forcingTypes[options->forcingType],&forcing,PETSC_NULL);CHKERRQ(ierr);
+  options->forcingType = (ForcingType) forcing;
+  ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex31.c", options->numBatches, &options->numBatches, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex31.c", options->numBlocks, &options->numBlocks, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-jacobian_mf", "Calculate the action of the Jacobian on the fly", "ex31.c", options->jacobianMF, &options->jacobianMF, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex31.c", options->showInitial, &options->showInitial, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex31.c", options->showSolution, &options->showSolution, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
@@ -752,10 +737,27 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (user->bcType == FREE_SLIP) {
-    fem->f0Funcs[0] = f0_u_freeslip_2D;
-  } else {
-    fem->f0Funcs[0] = f0_u;
+  switch(user->forcingType) {
+  case FORCING_CONSTANT:
+    if (user->bcType == FREE_SLIP) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Constant forcing is incompatible with freeslip boundary conditions");
+    fem->f0Funcs[0] = f0_u_constant;
+    break;
+  case FORCING_LINEAR:
+    switch(user->bcType) {
+    case DIRICHLET:
+    case FREE_SLIP:
+      switch(user->dim) {
+      case 2:
+        fem->f0Funcs[0] = f0_u_linear_2d;
+        break;
+      default:
+        SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+      }
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid boundary condition type %d", user->bcType);
+    }
+    break;
   }
   fem->f0Funcs[1] = f0_p;
   fem->f0Funcs[2] = f0_T;
@@ -798,40 +800,53 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user) {
   fem->g3Funcs[6] = PETSC_NULL;
   fem->g3Funcs[7] = PETSC_NULL;
   fem->g3Funcs[8] = g3_TT;      /* < \nabla t, \nabla T + {\nabla T}^T > */
-  switch(user->bcType) {
-  case DIRICHLET:
-    switch(user->dim) {
-    case 2:
-      user->exactFuncs[0] = quadratic_u_2d;
-      user->exactFuncs[1] = quadratic_v_2d;
-      user->exactFuncs[2] = linear_p_2d;
-      user->exactFuncs[3] = linear_T_2d;
+  switch(user->forcingType) {
+  case FORCING_CONSTANT:
+    switch(user->bcType) {
+    case DIRICHLET:
+      switch(user->dim) {
+      case 2:
+        user->exactFuncs[0] = quadratic_u_2d;
+        user->exactFuncs[1] = quadratic_v_2d;
+        user->exactFuncs[2] = linear_p_2d;
+        user->exactFuncs[3] = linear_T_2d;
       break;
-    case 3:
-      user->exactFuncs[0] = quadratic_u_3d;
-      user->exactFuncs[1] = quadratic_v_3d;
-      user->exactFuncs[2] = quadratic_w_3d;
-      user->exactFuncs[3] = linear_p_3d;
-      user->exactFuncs[4] = linear_T_2d;
+      case 3:
+        user->exactFuncs[0] = quadratic_u_3d;
+        user->exactFuncs[1] = quadratic_v_3d;
+        user->exactFuncs[2] = quadratic_w_3d;
+        user->exactFuncs[3] = linear_p_3d;
+        user->exactFuncs[4] = linear_T_2d;
+      break;
+      default:
+        SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+      }
       break;
     default:
-      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid boundary condition type %d", user->bcType);
     }
     break;
-  case FREE_SLIP:
-    switch(user->dim) {
-    case 2:
-      user->exactFuncs[0] = quadratic2_u_2d;
-      user->exactFuncs[1] = quadratic2_v_2d;
-      user->exactFuncs[2] = linear_p_2d;
-      user->exactFuncs[3] = linear_T_2d;
+  case FORCING_LINEAR:
+    switch(user->bcType) {
+    case DIRICHLET:
+    case FREE_SLIP:
+      switch(user->dim) {
+      case 2:
+        user->exactFuncs[0] = cubic_u_2d;
+        user->exactFuncs[1] = cubic_v_2d;
+        user->exactFuncs[2] = linear_p_2d;
+        user->exactFuncs[3] = linear_T_2d;
+        break;
+      default:
+        SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+      }
       break;
     default:
-      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid boundary condition type %d", user->bcType);
     }
     break;
   default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid boundary condition type %d", user->bcType);
+    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid forcing type %d", user->forcingType);
   }
   ierr = DMComplexSetFEMIntegration(dm, FEMIntegrateResidualBatch, FEMIntegrateJacobianActionBatch, FEMIntegrateJacobianBatch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
