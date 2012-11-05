@@ -8,7 +8,7 @@ class TestOptions(unittest.TestCase):
 
     PREFIX  = 'myopts-'
     OPTLIST = [('bool',   True),
-               ('int',    7),
+               ('int',    -7),
                ('real',   5),
                ('scalar', 3),
                ('string', 'petsc4py'),
