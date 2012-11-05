@@ -414,6 +414,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
         }
       }
 
+#if defined(PETSC_USE_LOG)
       {
         const char   *sname = "MG Apply";
         PetscStageLog stageLog;
@@ -431,6 +432,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
           ierr = PetscLogStageRegister(sname, &mg->stageApply);CHKERRQ(ierr);
         }
       }
+#endif
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
