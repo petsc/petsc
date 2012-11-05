@@ -256,8 +256,8 @@ for p in blas qblas lapack qlapack; do
 		echo 'slamch' > ${TMP}/SINGLE.list
 		echo 'dlamch' > ${TMP}/DOUBLE.list
 		if [[ ${TESTING} != "0" ]]; then
-			echo 'second' > ${TMP}/SINGLE.list
-			echo 'dsecnd' > ${TMP}/DOUBLE.list
+			echo 'second' >> ${TMP}/SINGLE.list
+			echo 'dsecnd' >> ${TMP}/DOUBLE.list
 		fi
 		rm ${TMP}/QUAD.list
 		cd $SRC
@@ -310,7 +310,7 @@ for p in blas qblas lapack qlapack; do
 			s/MAXLOC\\(([^:]+):/MAXLOC(\\1,/g;
 			s/MAXLOC\\(([^(]+)\\((.+)\\),/MAXLOC( \\1, \\2,/g;
 		" ${base}.f |
-		$F2C -A | ${BIN}/lenscrub |
+		$F2C -A -R | ${BIN}/lenscrub |
 		$SED -r -e "
 			/\\/\\*  *\\.\\. .*\\*\\//d;
 			s/extern integer mymaxloc_\\([^)]*\\);//g;
@@ -4160,7 +4160,7 @@ rm -r $TMP
 #		s/(INTRINSIC [^\\n]*)LEN_TRIM/\\1 MAX/g;
 #		s/(INTRINSIC [^\\n]*)CEILING/\\1 MIN/g;
 #	" < $f | \
-#	f2c | \
+#	f2c -A -R | \
 #	sed -e "
 #		1 i\
 #		#define len_trim__(cad,len) ({ \
@@ -4369,7 +4369,7 @@ rm -r $TMP
 #		s/(INTRINSIC [^\\n]*)LEN_TRIM/\\1 MAX/g;
 #		s/(INTRINSIC [^\\n]*)CEILING/\\1 MIN/g;
 #	" < $f | \
-#	f2c | \
+#	f2c -A -R | \
 #	sed -e "
 #		1 i\
 #		#define len_trim__(cad,len) ({ \
