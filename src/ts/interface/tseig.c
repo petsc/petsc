@@ -9,7 +9,6 @@ struct _n_TSMonitorSPEigCtx {
   PetscBool   computeexplicitly;
   MPI_Comm    comm;
   PetscRandom rand;
-  PetscScalar shift;
   PetscReal   xmin,xmax,ymin,ymax;
 };
 
@@ -73,8 +72,6 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
   (*ctx)->howoften          = howoften;
   (*ctx)->computeexplicitly = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor_sp_eig_explicitly",&(*ctx)->computeexplicitly,PETSC_NULL);CHKERRQ(ierr);
-  (*ctx)->shift             = 0.0;
-  ierr = PetscOptionsGetScalar(PETSC_NULL,"-ts_monitor_sp_eig_shift",&(*ctx)->shift,PETSC_NULL);CHKERRQ(ierr);
   (*ctx)->comm              = comm;
   (*ctx)->xmin = -2.1;
   (*ctx)->xmax = 1.1;
@@ -127,7 +124,6 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
     */
     ierr = TSComputeIJacobian(ts,ptime,v,xdot,0.0,&B,&B,&structure,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatScale(B,-1.0*ts->time_step);CHKERRQ(ierr);
-    ierr = MatShift(B,ctx->shift);CHKERRQ(ierr);
 
     ierr = KSPSetOperators(ksp,B,B,structure);CHKERRQ(ierr);
     ierr = VecGetSize(v,&n);CHKERRQ(ierr);
@@ -155,7 +151,6 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
         ierr = KSPComputeEigenvalues(ksp,N,r,c,&neig);CHKERRQ(ierr);
       }
       for (i=0; i<neig; i++) {
-        r[i] -= PetscAbsScalar(ctx->shift);
         if (ts->ops->linearstability) {
           PetscReal fr,fi;
           ierr = TSComputeLinearStability(ts,r[i],c[i],&fr,&fi);CHKERRQ(ierr);

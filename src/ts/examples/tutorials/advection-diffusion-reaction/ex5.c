@@ -259,7 +259,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructure 
   PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscReal      hx,hy,sx,sy;
-  PetscScalar    uc,uxx,uyy,vc,vxx,vyy;
+  PetscScalar    uc,vc;
   Field          **u;
   Vec            localU;
   MatStencil     stencil[6],rowstencil;
