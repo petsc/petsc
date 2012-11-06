@@ -156,7 +156,9 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
       }
       for (i=0; i<neig; i++) {
         r[i] -= PetscAbsScalar(ctx->shift);
-        ierr = PetscPrintf(ctx->comm,"%g + %g i\n",r[i],c[i]);CHKERRQ(ierr);
+        if ((r[i]*r[i] + c[i]*c[i]) > 1.0) {
+           ierr = PetscPrintf(ctx->comm,"Linearized Eigenvalue %g + %g i norm indicates unstable scheme \n",r[i],c[i]);CHKERRQ(ierr);
+        }
         ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
       ierr = PetscFree2(r,c);CHKERRQ(ierr);
