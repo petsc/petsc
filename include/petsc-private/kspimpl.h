@@ -110,6 +110,8 @@ struct _p_KSP {
   Vec          truediagonal;
 
   MatNullSpace nullsp;      /* Null space of the operator, removed from Krylov space */
+
+  PetscViewer  eigviewer;   /* Viewer where computed eigenvalues are displayed */
 };
 
 typedef struct { /* dummy data structure used in KSPMonitorDynamicTolerance() */

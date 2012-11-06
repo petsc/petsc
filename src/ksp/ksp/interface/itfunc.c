@@ -512,15 +512,17 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
         PetscDraw   draw;
         PetscDrawSP drawsp;
 
-        ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);CHKERRQ(ierr);
-        ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+        if (!ksp->eigviewer) {
+          ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",PETSC_DECIDE,PETSC_DECIDE,400,400,&ksp->eigviewer);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerDrawGetDraw(ksp->eigviewer,0,&draw);CHKERRQ(ierr);
         ierr = PetscDrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
+        ierr = PetscDrawSPReset(drawsp);CHKERRQ(ierr);
         for (i=0; i<neig; i++) {
           ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
         }
         ierr = PetscDrawSPDraw(drawsp,PETSC_TRUE);CHKERRQ(ierr);
         ierr = PetscDrawSPDestroy(&drawsp);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       }
       if (flag3 && !rank) {
         ierr = KSPPlotEigenContours_Private(ksp,neig,r,c);CHKERRQ(ierr);
@@ -567,15 +569,17 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
       PetscDraw   draw;
       PetscDrawSP drawsp;
 
-      ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,300,300,&viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+      if (!ksp->eigviewer) {
+        ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,400,400,&ksp->eigviewer);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerDrawGetDraw(ksp->eigviewer,0,&draw);CHKERRQ(ierr);
       ierr = PetscDrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
+      ierr = PetscDrawSPReset(draw);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
         ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
       ierr = PetscDrawSPDraw(drawsp,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscDrawSPDestroy(&drawsp);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
     ierr = PetscFree2(r,c);CHKERRQ(ierr);
   }
@@ -812,6 +816,7 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
     ierr = (*(*ksp)->convergeddestroy)((*ksp)->cnvP);CHKERRQ(ierr);
   }
   ierr = KSPMonitorCancel((*ksp));CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&(*ksp)->eigviewer);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
