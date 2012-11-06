@@ -1009,6 +1009,7 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC a_pc,
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
   PC_GAMG_AGG    *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
   Mat             mat,Gmat2, Gmat1 = *a_Gmat1; /* squared graph */
+  const PetscInt verbose = pc_gamg->verbose;
   IS              perm;
   PetscInt        Ii,nloc,bs,n,m;
   PetscInt *permute;
@@ -1028,12 +1029,18 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC a_pc,
   nloc = n/bs;
 
   if ( pc_gamg_agg->square_graph ) {
+    if ( verbose > 1 ) {
+      PetscPrintf(wcomm,"[%d]%s square graph\n",mype,__FUNCT__);
+    }
     /* ierr = MatMatTransposeMult( Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 ); */
     ierr = MatTransposeMatMult( Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
     CHKERRQ(ierr);
+    if ( verbose > 2 ) {
+      PetscPrintf(wcomm,"[%d]%s square graph done\n",mype,__FUNCT__);
+    }
   }
   else Gmat2 = Gmat1;
-
+  
   /* get MIS aggs */
   /* randomize */
   ierr = PetscMalloc( nloc*sizeof(PetscInt), &permute ); CHKERRQ(ierr);
@@ -1053,6 +1060,10 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC a_pc,
     }
   }
   ierr = PetscFree( bIndexSet );  CHKERRQ(ierr);
+  
+  if ( verbose > 1 ) {
+    PetscPrintf(wcomm,"[%d]%s coarsen graph\n",mype,__FUNCT__);
+  }
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_USE_POINTER, &perm);
   CHKERRQ(ierr);
@@ -1075,6 +1086,10 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC a_pc,
 #if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
 #endif
+  if ( verbose > 2 ) {
+    PetscPrintf(wcomm,"[%d]%s coarsen graph done\n",mype,__FUNCT__);
+  }
+
   /* smooth aggs */
   if ( Gmat2 != Gmat1 ) {
     const PetscCoarsenData *llist = *agg_lists;
@@ -1096,6 +1111,10 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC a_pc,
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventEnd(PC_GAMGCoarsen_AGG,0,0,0,0);CHKERRQ(ierr);
 #endif
+  if ( verbose > 2 ) {
+    PetscPrintf(wcomm,"[%d]%s PCGAMGCoarsen_AGG done\n",mype,__FUNCT__);
+  }
+  
   PetscFunctionReturn(0);
 }
 
@@ -1167,14 +1186,14 @@ PetscErrorCode PCGAMGProlongator_AGG( PC pc,
   /* can get all points "removed" */
   ierr =  MatGetSize( Prol, &kk, &ii ); CHKERRQ(ierr);
   if ( ii==0 ) {
-    if ( verbose ) {
+    if ( verbose > 0 ) {
       PetscPrintf(wcomm,"[%d]%s no selected points on coarse grid\n",mype,__FUNCT__);
     }
     ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
     *a_P_out = PETSC_NULL;  /* out */
     PetscFunctionReturn(0);
   }
-  if ( verbose ) {
+  if ( verbose > 0 ) {
     PetscPrintf(wcomm,"\t\t[%d]%s New grid %d nodes\n",mype,__FUNCT__,ii/col_bs);
   }
   ierr = MatGetOwnershipRangeColumn( Prol, &myCrs0, &kk ); CHKERRQ(ierr);
@@ -1341,7 +1360,7 @@ PetscErrorCode PCGAMGOptprol_AGG( PC pc,
       ierr = PetscLogEventActivate(PC_Apply);CHKERRQ(ierr);
 
       ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
-      if ( verbose ) {
+      if ( verbose > 0 ) {
         PetscPrintf(wcomm,"\t\t\t%s smooth P0: max eigen=%e min=%e PC=%s\n",
                     __FUNCT__,emax,emin,PCJACOBI);
       }
