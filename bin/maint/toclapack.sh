@@ -310,7 +310,7 @@ for p in blas qblas lapack qlapack; do
 			s/MAXLOC\\(([^:]+):/MAXLOC(\\1,/g;
 			s/MAXLOC\\(([^(]+)\\((.+)\\),/MAXLOC( \\1, \\2,/g;
 		" ${base}.f |
-		$F2C -A -R | ${BIN}/lenscrub |
+		$F2C -a -A -R | ${BIN}/lenscrub |
 		$SED -r -e "
 			/\\/\\*  *\\.\\. .*\\*\\//d;
 			s/extern integer mymaxloc_\\([^)]*\\);//g;
@@ -453,7 +453,7 @@ EOF
 static integer c__1 = 1;
 static real c_b32 = 0.f;
 
-doublereal slamch_(char *cmach)
+real slamch_(char *cmach)
 {
     /* Initialized data */
 
@@ -613,7 +613,7 @@ doublereal slamch_(char *cmach)
     static integer lbeta;
     static real savec;
     static logical lieee1;
-    extern doublereal slamc3_(real *, real *);
+    extern real slamc3_(real *, real *);
 
 
 /*  -- LAPACK auxiliary routine (version 3.3.0) -- */
@@ -838,7 +838,7 @@ L30:
     static logical lieee1;
     extern /* Subroutine */ int slamc1_(integer *, integer *, logical *, 
 	    logical *);
-    extern doublereal slamc3_(real *, real *);
+    extern real slamc3_(real *, real *);
     extern /* Subroutine */ int slamc4_(integer *, real *, integer *), 
 	    slamc5_(integer *, integer *, integer *, logical *, integer *, 
 	    real *);
@@ -1115,7 +1115,7 @@ ngs
 
 /* *********************************************************************** */
 
-doublereal slamc3_(real *a, real *b)
+real slamc3_(real *a, real *b)
 {
     /* System generated locals */
     real ret_val;
@@ -1167,7 +1167,7 @@ doublereal slamc3_(real *a, real *b)
     static real a;
     static integer i__;
     static real b1, b2, c1, c2, d1, d2, one, zero, rbase;
-    extern doublereal slamc3_(real *, real *);
+    extern real slamc3_(real *, real *);
 
 
 /*  -- LAPACK auxiliary routine (version 3.3.0) -- */
@@ -1267,7 +1267,7 @@ L10:
     static integer try__, lexp;
     static real oldy;
     static integer uexp, nbits;
-    extern doublereal slamc3_(real *, real *);
+    extern real slamc3_(real *, real *);
     static real recbas;
     static integer exbits, expsum;
 
@@ -4160,7 +4160,7 @@ rm -r $TMP
 #		s/(INTRINSIC [^\\n]*)LEN_TRIM/\\1 MAX/g;
 #		s/(INTRINSIC [^\\n]*)CEILING/\\1 MIN/g;
 #	" < $f | \
-#	f2c -A -R | \
+#	f2c -a -A -R | \
 #	sed -e "
 #		1 i\
 #		#define len_trim__(cad,len) ({ \
@@ -4369,7 +4369,7 @@ rm -r $TMP
 #		s/(INTRINSIC [^\\n]*)LEN_TRIM/\\1 MAX/g;
 #		s/(INTRINSIC [^\\n]*)CEILING/\\1 MIN/g;
 #	" < $f | \
-#	f2c -A -R | \
+#	f2c -a -A -R | \
 #	sed -e "
 #		1 i\
 #		#define len_trim__(cad,len) ({ \
