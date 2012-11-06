@@ -4219,3 +4219,34 @@ PetscErrorCode TSMonitorLGKSPIterations(TS ts,PetscInt n,PetscReal ptime,Vec v,v
   ctx->ksp_its = its;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeLinearStability"
+/*@
+   TSComputeLinearStability - computes the linear stability function at a point
+
+   Collective on TS and Vec
+
+   Input Parameters:
++  ts - the TS context
+-  xr,xi - real and imaginary part of input arguments
+
+   Output Parameters:
+.  yr,yi - real and imaginary part of function value
+
+   Level: developer
+
+.keywords: TS, compute
+
+.seealso: TSSetRHSFunction(), TSComputeIFunction()
+@*/
+PetscErrorCode TSComputeLinearStability(TS ts,PetscReal xr,PetscReal xi,PetscReal *yr,PetscReal *yi)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (!ts->ops->linearstability) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_SUP,"Linearized stability function not provided for this method");
+  ierr = (*ts->ops->linearstability)(ts,xr,xi,yr,yi);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

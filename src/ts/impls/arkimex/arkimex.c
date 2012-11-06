@@ -4,7 +4,7 @@
   Notes:
   The general system is written as
 
-  F(t,X,Xdot) = G(t,X)
+  F(t,U,Udot) = G(t,U)
 
   where F represents the stiff part of the physics and G represents the non-stiff part.
 
@@ -17,10 +17,10 @@ static PetscBool TSARKIMEXPackageInitialized;
 
 typedef struct _ARKTableau *ARKTableau;
 struct _ARKTableau {
-  char *name;
-  PetscInt order;               /* Classical approximation order of the method */
-  PetscInt s;                   /* Number of stages */
-  PetscInt pinterp;             /* Interpolation order */
+  char      *name;
+  PetscInt  order;               /* Classical approximation order of the method */
+  PetscInt  s;                   /* Number of stages */
+  PetscInt  pinterp;             /* Interpolation order */
   PetscReal *At,*bt,*ct;        /* Stiff tableau */
   PetscReal *A,*b,*c;           /* Non-stiff tableau */
   PetscReal *bembedt,*bembed;   /* Embedded formula of order one less (order-1) */
@@ -35,17 +35,17 @@ struct _ARKTableauLink {
 static ARKTableauLink ARKTableauList;
 
 typedef struct {
-  ARKTableau  tableau;
-  Vec         *Y;               /* States computed during the step */
-  Vec         *YdotI;           /* Time derivatives for the stiff part */
-  Vec         *YdotRHS;         /* Function evaluations for the non-stiff part */
-  Vec         Ydot;             /* Work vector holding Ydot during residual evaluation */
-  Vec         Work;             /* Generic work vector */
-  Vec         Z;                /* Ydot = shift(Y-Z) */
-  PetscScalar *work;            /* Scalar work */
-  PetscReal   shift;
-  PetscReal   stage_time;
-  PetscBool   imex;
+  ARKTableau   tableau;
+  Vec          *Y;               /* States computed during the step */
+  Vec          *YdotI;           /* Time derivatives for the stiff part */
+  Vec          *YdotRHS;         /* Function evaluations for the non-stiff part */
+  Vec          Ydot;             /* Work vector holding Ydot during residual evaluation */
+  Vec          Work;             /* Generic work vector */
+  Vec          Z;                /* Ydot = shift(Y-Z) */
+  PetscScalar  *work;            /* Scalar work */
+  PetscReal    shift;
+  PetscReal    stage_time;
+  PetscBool    imex;
   TSStepStatus status;
 } TS_ARKIMEX;
 /*MC
@@ -508,8 +508,8 @@ PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name,PetscInt order,PetscInt s,
 {
   PetscErrorCode ierr;
   ARKTableauLink link;
-  ARKTableau t;
-  PetscInt i,j;
+  ARKTableau     t;
+  PetscInt       i,j;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
@@ -714,13 +714,13 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
 #define __FUNCT__ "TSInterpolate_ARKIMEX"
 static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
 {
-  TS_ARKIMEX *ark = (TS_ARKIMEX*)ts->data;
-  PetscInt s = ark->tableau->s,pinterp = ark->tableau->pinterp,i,j;
-  PetscReal h;
-  PetscReal tt,t;
-  PetscScalar *bt,*b;
+  TS_ARKIMEX      *ark = (TS_ARKIMEX*)ts->data;
+  PetscInt        s = ark->tableau->s,pinterp = ark->tableau->pinterp,i,j;
+  PetscReal       h;
+  PetscReal       tt,t;
+  PetscScalar     *bt,*b;
   const PetscReal *Bt = ark->tableau->binterpt,*B = ark->tableau->binterp;
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (!Bt || !B) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_SUP,"TSARKIMEX %s does not have an interpolation formula",ark->tableau->name);
@@ -891,9 +891,9 @@ static PetscErrorCode DMCoarsenHook_TSARKIMEX(DM fine,DM coarse,void *ctx)
 #define __FUNCT__ "DMRestrictHook_TSARKIMEX"
 static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse,void *ctx)
 {
-  TS ts = (TS)ctx;
+  TS             ts = (TS)ctx;
   PetscErrorCode ierr;
-  Vec Z,Z_c;
+  Vec            Z,Z_c;
 
   PetscFunctionBegin;
   ierr = TSARKIMEXGetVecs(ts,fine,&Z,PETSC_NULL);CHKERRQ(ierr);
@@ -914,6 +914,7 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
   PetscInt       s = tab->s;
   PetscErrorCode ierr;
   DM             dm;
+
   PetscFunctionBegin;
   if (!ark->tableau) {
     ierr = TSARKIMEXSetType(ts,TSARKIMEXDefault);CHKERRQ(ierr);
@@ -945,9 +946,9 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts)
   ierr = PetscOptionsHead("ARKIMEX ODE solver options");CHKERRQ(ierr);
   {
     ARKTableauLink link;
-    PetscInt count,choice;
-    PetscBool flg;
-    const char **namelist;
+    PetscInt       count,choice;
+    PetscBool      flg;
+    const char     **namelist;
     ierr = PetscStrncpy(arktype,TSARKIMEXDefault,sizeof(arktype));CHKERRQ(ierr);
     for (link=ARKTableauList,count=0; link; link=link->next,count++) ;
     ierr = PetscMalloc(count*sizeof(char*),&namelist);CHKERRQ(ierr);
@@ -969,9 +970,9 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts)
 static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt,PetscInt n,const PetscReal x[])
 {
   PetscErrorCode ierr;
-  PetscInt i;
-  size_t left,count;
-  char *p;
+  PetscInt       i;
+  size_t         left,count;
+  char           *p;
 
   PetscFunctionBegin;
   for (i=0,p=buf,left=len; i<n; i++) {
@@ -1164,7 +1165,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "TSCreate_ARKIMEX"
 PetscErrorCode  TSCreate_ARKIMEX(TS ts)
 {
-  TS_ARKIMEX       *th;
+  TS_ARKIMEX     *th;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

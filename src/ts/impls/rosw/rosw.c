@@ -4,10 +4,10 @@
   Notes:
   The general system is written as
 
-  G(t,X,Xdot) = F(t,X)
+  F(t,U,Udot) = G(t,U)
 
-  where G represents the stiff part of the physics and F represents the non-stiff part.
-  This method is designed to be linearly implicit on G and can use an approximate and lagged Jacobian.
+  where F represents the stiff part of the physics and G represents the non-stiff part.
+  This method is designed to be linearly implicit on F and can use an approximate and lagged Jacobian.
 
 */
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
@@ -47,18 +47,18 @@ struct _RosWTableauLink {
 static RosWTableauLink RosWTableauList;
 
 typedef struct {
-  RosWTableau tableau;
-  Vec         *Y;               /* States computed during the step, used to complete the step */
-  Vec         Ydot;             /* Work vector holding Ydot during residual evaluation */
-  Vec         Ystage;           /* Work vector for the state value at each stage */
-  Vec         Zdot;             /* Ydot = Zdot + shift*Y */
-  Vec         Zstage;           /* Y = Zstage + Y */
-  Vec         VecSolPrev;       /* Work vector holding the solution from the previous step (used for interpolation)*/
-  PetscScalar *work;            /* Scalar work space of length number of stages, used to prepare VecMAXPY() */
-  PetscReal   shift;
-  PetscReal   stage_time;
-  PetscReal   stage_explicit;     /* Flag indicates that the current stage is explicit */
-  PetscBool   recompute_jacobian; /* Recompute the Jacobian at each stage, default is to freeze the Jacobian at the start of each step */
+  RosWTableau  tableau;
+  Vec          *Y;               /* States computed during the step, used to complete the step */
+  Vec          Ydot;             /* Work vector holding Ydot during residual evaluation */
+  Vec          Ystage;           /* Work vector for the state value at each stage */
+  Vec          Zdot;             /* Ydot = Zdot + shift*Y */
+  Vec          Zstage;           /* Y = Zstage + Y */
+  Vec          VecSolPrev;       /* Work vector holding the solution from the previous step (used for interpolation)*/
+  PetscScalar  *work;            /* Scalar work space of length number of stages, used to prepare VecMAXPY() */
+  PetscReal    shift;
+  PetscReal    stage_time;
+  PetscReal    stage_explicit;     /* Flag indicates that the current stage is explicit */
+  PetscBool    recompute_jacobian; /* Recompute the Jacobian at each stage, default is to freeze the Jacobian at the start of each step */
   TSStepStatus status;
 } TS_RosW;
 
@@ -604,7 +604,7 @@ PetscErrorCode TSRosWRegisterAll(void)
 @*/
 PetscErrorCode TSRosWRegisterDestroy(void)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
   RosWTableauLink link;
 
   PetscFunctionBegin;
@@ -697,15 +697,14 @@ PetscErrorCode TSRosWFinalizePackage(void)
 
 .seealso: TSRosW
 @*/
-PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,
-                              const PetscReal A[],const PetscReal Gamma[],const PetscReal b[],const PetscReal bembed[],
-                                 PetscInt pinterp,const PetscReal binterpt[])
+PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const PetscReal A[],const PetscReal Gamma[],const PetscReal b[],const PetscReal bembed[],
+                              PetscInt pinterp,const PetscReal binterpt[])
 {
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
   RosWTableauLink link;
-  RosWTableau t;
-  PetscInt i,j,k;
-  PetscScalar *GammaInv;
+  RosWTableau     t;
+  PetscInt        i,j,k;
+  PetscScalar     *GammaInv;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,1);
@@ -840,8 +839,8 @@ PetscErrorCode TSRosWRegisterRos4(TSRosWType name,PetscReal gamma,PetscReal a2,P
     p43 = one/twelve - gamma/three,
     p44 = one/twentyfour - gamma/two + three/two*gamma*gamma - gamma*gamma*gamma,
     p56 = one/twenty - gamma/four;
-  PetscReal a4,a32,a42,a43,b1,b2,b4,beta2p,beta3p,beta4p,beta32,beta42,beta43,beta32beta2p,beta4jbetajp;
-  PetscReal A[4][4],Gamma[4][4],b[4],bm[4];
+  PetscReal   a4,a32,a42,a43,b1,b2,b4,beta2p,beta3p,beta4p,beta32,beta42,beta43,beta32beta2p,beta4jbetajp;
+  PetscReal   A[4][4],Gamma[4][4],b[4],bm[4];
   PetscScalar M[3][3],rhs[3];
 
   PetscFunctionBegin;
@@ -924,7 +923,7 @@ PetscErrorCode TSRosWRegisterRos4(TSRosWType name,PetscReal gamma,PetscReal a2,P
 
  so we can evaluate the method of different order even after the step has been optimistically completed.
 */
-static PetscErrorCode TSEvaluateStep_RosW(TS ts,PetscInt order,Vec X,PetscBool *done)
+static PetscErrorCode TSEvaluateStep_RosW(TS ts,PetscInt order,Vec U,PetscBool *done)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
   RosWTableau    tab  = ros->tableau;
@@ -935,22 +934,22 @@ static PetscErrorCode TSEvaluateStep_RosW(TS ts,PetscInt order,Vec X,PetscBool *
   PetscFunctionBegin;
   if (order == tab->order) {
     if (ros->status == TS_STEP_INCOMPLETE) { /* Use standard completion formula */
-      ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
+      ierr = VecCopy(ts->vec_sol,U);CHKERRQ(ierr);
       for (i=0; i<tab->s; i++) w[i] = tab->bt[i];
-      ierr = VecMAXPY(X,tab->s,w,ros->Y);CHKERRQ(ierr);
-    } else {ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);}
+      ierr = VecMAXPY(U,tab->s,w,ros->Y);CHKERRQ(ierr);
+    } else {ierr = VecCopy(ts->vec_sol,U);CHKERRQ(ierr);}
     if (done) *done = PETSC_TRUE;
     PetscFunctionReturn(0);
   } else if (order == tab->order-1) {
     if (!tab->bembedt) goto unavailable;
     if (ros->status == TS_STEP_INCOMPLETE) { /* Use embedded completion formula */
-      ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
+      ierr = VecCopy(ts->vec_sol,U);CHKERRQ(ierr);
       for (i=0; i<tab->s; i++) w[i] = tab->bembedt[i];
-      ierr = VecMAXPY(X,tab->s,w,ros->Y);CHKERRQ(ierr);
+      ierr = VecMAXPY(U,tab->s,w,ros->Y);CHKERRQ(ierr);
     } else {                    /* Use rollback-and-recomplete formula (bembedt - bt) */
       for (i=0; i<tab->s; i++) w[i] = tab->bembedt[i] - tab->bt[i];
-      ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
-      ierr = VecMAXPY(X,tab->s,w,ros->Y);CHKERRQ(ierr);
+      ierr = VecCopy(ts->vec_sol,U);CHKERRQ(ierr);
+      ierr = VecMAXPY(U,tab->s,w,ros->Y);CHKERRQ(ierr);
     }
     if (done) *done = PETSC_TRUE;
     PetscFunctionReturn(0);
@@ -1074,15 +1073,15 @@ static PetscErrorCode TSStep_RosW(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSInterpolate_RosW"
-static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec X)
+static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec U)
 {
-  TS_RosW        *ros = (TS_RosW*)ts->data;
-  PetscInt s = ros->tableau->s,pinterp = ros->tableau->pinterp,i,j;
-  PetscReal h;
-  PetscReal tt,t;
-  PetscScalar *bt;
+  TS_RosW         *ros = (TS_RosW*)ts->data;
+  PetscInt        s = ros->tableau->s,pinterp = ros->tableau->pinterp,i,j;
+  PetscReal       h;
+  PetscReal       tt,t;
+  PetscScalar     *bt;
   const PetscReal *Bt = ros->tableau->binterpt;
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
   const PetscReal *GammaInv = ros->tableau->GammaInv;
   PetscScalar     *w   = ros->work;
   Vec             *Y   = ros->Y;
@@ -1111,20 +1110,20 @@ static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec X)
   }
 
   /* y(t+tt*h) = y(t) + Sum bt(tt) * GammaInv * Ydot */
-  /*X<-0*/
-  ierr = VecZeroEntries(X);CHKERRQ(ierr);
+  /*U<-0*/
+  ierr = VecZeroEntries(U);CHKERRQ(ierr);
 
-  /*X<- Sum bt_i * GammaInv(i,1:i) * Y(1:i) */
+  /*U<- Sum bt_i * GammaInv(i,1:i) * Y(1:i) */
   for (j=0; j<s; j++)  w[j]=0;
   for (j=0; j<s; j++) {
     for (i=j; i<s; i++) {
       w[j] +=  bt[i]*GammaInv[i*s+j];
     }
   }
-  ierr = VecMAXPY(X,i,w,Y);CHKERRQ(ierr);
+  ierr = VecMAXPY(U,i,w,Y);CHKERRQ(ierr);
 
   /*X<-y(t) + X*/
-  ierr = VecAXPY(X,1.0,ros->VecSolPrev);CHKERRQ(ierr);
+  ierr = VecAXPY(U,1.0,ros->VecSolPrev);CHKERRQ(ierr);
 
   ierr = PetscFree(bt);CHKERRQ(ierr);
 
@@ -1245,10 +1244,10 @@ static PetscErrorCode DMCoarsenHook_TSRosW(DM fine,DM coarse,void *ctx)
 #define __FUNCT__ "DMRestrictHook_TSRosW"
 static PetscErrorCode DMRestrictHook_TSRosW(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse,void *ctx)
 {
-  TS ts = (TS)ctx;
+  TS             ts = (TS)ctx;
   PetscErrorCode ierr;
-  Vec Ydot,Zdot,Ystage,Zstage;
-  Vec Ydotc,Zdotc,Ystagec,Zstagec;
+  Vec            Ydot,Zdot,Ystage,Zstage;
+  Vec            Ydotc,Zdotc,Ystagec,Zstagec;
 
   PetscFunctionBegin;
   ierr = TSRosWGetVecs(ts,fine,&Ydot,&Ystage,&Zdot,&Zstage);CHKERRQ(ierr);
@@ -1272,18 +1271,18 @@ static PetscErrorCode DMRestrictHook_TSRosW(DM fine,Mat restrct,Vec rscale,Mat i
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESTSFormFunction_RosW"
-static PetscErrorCode SNESTSFormFunction_RosW(SNES snes,Vec X,Vec F,TS ts)
+static PetscErrorCode SNESTSFormFunction_RosW(SNES snes,Vec U,Vec F,TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
   PetscErrorCode ierr;
-  Vec Ydot,Zdot,Ystage,Zstage;
-  DM dm,dmsave;
+  Vec            Ydot,Zdot,Ystage,Zstage;
+  DM             dm,dmsave;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = TSRosWGetVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
-  ierr = VecWAXPY(Ydot,ros->shift,X,Zdot);CHKERRQ(ierr); /* Ydot = shift*X + Zdot */
-  ierr = VecWAXPY(Ystage,1.0,X,Zstage);CHKERRQ(ierr);    /* Ystage = X + Zstage */
+  ierr = VecWAXPY(Ydot,ros->shift,U,Zdot);CHKERRQ(ierr); /* Ydot = shift*U + Zdot */
+  ierr = VecWAXPY(Ystage,1.0,U,Zstage);CHKERRQ(ierr);    /* Ystage = U + Zstage */
   dmsave = ts->dm;
   ts->dm = dm;
   ierr = TSComputeIFunction(ts,ros->stage_time,Ystage,Ydot,F,PETSC_FALSE);CHKERRQ(ierr);
@@ -1294,12 +1293,12 @@ static PetscErrorCode SNESTSFormFunction_RosW(SNES snes,Vec X,Vec F,TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_RosW"
-static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *str,TS ts)
+static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes,Vec U,Mat *A,Mat *B,MatStructure *str,TS ts)
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
-  Vec Ydot,Zdot,Ystage,Zstage;
+  Vec            Ydot,Zdot,Ystage,Zstage;
   PetscErrorCode ierr;
-  DM dm,dmsave;
+  DM             dm,dmsave;
 
   PetscFunctionBegin;
   /* ros->Ydot and ros->Ystage have already been computed in SNESTSFormFunction_RosW (SNES guarantees this) */
@@ -1576,17 +1575,17 @@ EXTERN_C_END
   Developer notes:
   Rosenbrock-W methods are typically specified for autonomous ODE
 
-$  xdot = f(x)
+$  udot = f(u)
 
   by the stage equations
 
-$  k_i = h f(x_0 + sum_j alpha_ij k_j) + h J sum_j gamma_ij k_j
+$  k_i = h f(u_0 + sum_j alpha_ij k_j) + h J sum_j gamma_ij k_j
 
   and step completion formula
 
-$  x_1 = x_0 + sum_j b_j k_j
+$  u_1 = u_0 + sum_j b_j k_j
 
-  with step size h and coefficients alpha_ij, gamma_ij, and b_i. Implementing the method in this form would require f(x)
+  with step size h and coefficients alpha_ij, gamma_ij, and b_i. Implementing the method in this form would require f(u)
   and the Jacobian J to be available, in addition to the shifted matrix I - h gamma_ii J. Following Hairer and Wanner,
   we define new variables for the stage equations
 
@@ -1598,8 +1597,8 @@ $  A = Alpha Gamma^{-1}, bt^T = b^T Gamma^{-i}
 
   to rewrite the method as
 
-$  [M/(h gamma_ii) - J] y_i = f(x_0 + sum_j a_ij y_j) + M sum_j (c_ij/h) y_j
-$  x_1 = x_0 + sum_j bt_j y_j
+$  [M/(h gamma_ii) - J] y_i = f(u_0 + sum_j a_ij y_j) + M sum_j (c_ij/h) y_j
+$  u_1 = u_0 + sum_j bt_j y_j
 
    where we have introduced the mass matrix M. Continue by defining
 
@@ -1613,7 +1612,7 @@ $  Ydot = 1/h (Gamma^{-1} \otimes I) Y .
    stage y_i, the stage equations reduce to performing one Newton step (typically with a lagged Jacobian) on the
    equation
 
-$  g(x_0 + sum_j a_ij y_j + y_i, ydot_i) = 0
+$  g(u_0 + sum_j a_ij y_j + y_i, ydot_i) = 0
 
    with initial guess y_i = 0.
 

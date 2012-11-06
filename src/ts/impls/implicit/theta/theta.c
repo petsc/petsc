@@ -1,6 +1,7 @@
 /*
   Code for timestepping with implicit Theta method
 */
+#define PETSC_DESIRE_COMPLEX
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscsnesfas.h>
 
@@ -350,6 +351,23 @@ PetscErrorCode  TSThetaSetEndpoint_Theta(TS ts,PetscBool flg)
 }
 EXTERN_C_END
 
+#if defined(PETSC_HAVE_COMPLEX)
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeLinearStability_Theta"
+static PetscErrorCode TSComputeLinearStability_Theta(TS ts,PetscReal xr,PetscReal xi,PetscReal *yr,PetscReal *yi)
+{
+  PetscComplex z = xr + xi*PETSC_i,f;
+  TS_Theta     *th = (TS_Theta*)ts->data;
+
+  PetscFunctionBegin;
+  f = (1.0 + (1.0 - th->Theta)*z)/(1.0 - th->Theta*z);
+  *yr = PetscRealPartComplex(f);
+  *yi = PetscImaginaryPartComplex(f);
+  PetscFunctionReturn(0);
+}
+#endif
+
+
 /* ------------------------------------------------------------ */
 /*MC
       TSTHETA - DAE solver using the implicit Theta method
@@ -408,15 +426,18 @@ PetscErrorCode  TSCreate_Theta(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ts->ops->reset          = TSReset_Theta;
-  ts->ops->destroy        = TSDestroy_Theta;
-  ts->ops->view           = TSView_Theta;
-  ts->ops->setup          = TSSetUp_Theta;
-  ts->ops->step           = TSStep_Theta;
-  ts->ops->interpolate    = TSInterpolate_Theta;
-  ts->ops->setfromoptions = TSSetFromOptions_Theta;
-  ts->ops->snesfunction   = SNESTSFormFunction_Theta;
-  ts->ops->snesjacobian   = SNESTSFormJacobian_Theta;
+  ts->ops->reset           = TSReset_Theta;
+  ts->ops->destroy         = TSDestroy_Theta;
+  ts->ops->view            = TSView_Theta;
+  ts->ops->setup           = TSSetUp_Theta;
+  ts->ops->step            = TSStep_Theta;
+  ts->ops->interpolate     = TSInterpolate_Theta;
+  ts->ops->setfromoptions  = TSSetFromOptions_Theta;
+  ts->ops->snesfunction    = SNESTSFormFunction_Theta;
+  ts->ops->snesjacobian    = SNESTSFormJacobian_Theta;
+#if defined(PETSC_HAVE_COMPLEX)
+  ts->ops->linearstability = TSComputeLinearStability_Theta;
+#endif
 
   ierr = PetscNewLog(ts,TS_Theta,&th);CHKERRQ(ierr);
   ts->data = (void*)th;

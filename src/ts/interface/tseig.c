@@ -77,25 +77,25 @@ PetscErrorCode  TSMonitorSPEigCtxCreate(MPI_Comm comm,const char host[],const ch
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ts_monitor_sp_eig_shift",&(*ctx)->shift,PETSC_NULL);CHKERRQ(ierr);
   (*ctx)->comm              = comm;
   (*ctx)->xmin = -2.1;
-  (*ctx)->xmax = .1;
+  (*ctx)->xmax = 1.1;
   (*ctx)->ymin = -1.1;
   (*ctx)->ymax = 1.1;
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_COMPLEX)
-PetscComplex Rtheta(PetscReal theta,PetscComplex z)
+#undef __FUNCT__
+#define __FUNCT__ "TSLinearStabilityIndicator"
+static PetscErrorCode TSLinearStabilityIndicator(TS  ts, PetscReal xr,PetscReal xi,PetscBool *flg) 
 {
-  return( (1.0 + (1.0 - theta)*z)/(1.0 - theta*z) );
-}
+  PetscErrorCode ierr;
+  PetscReal      yr,yi;
 
-PetscBool TSIndicator_Theta(PetscReal x,PetscReal y) 
-{
-  PetscComplex r = Rtheta(.75,x + PETSC_i*y);
-  if (PetscAbsComplex(r) <= 1.0) return PETSC_TRUE;
-  else return PETSC_FALSE;
+  PetscFunctionBegin;
+  ierr = TSComputeLinearStability(ts,xr,xi,&yr,&yi);CHKERRQ(ierr);
+  if ((yr*yr + yi*yi) <= 1.0) *flg = PETSC_TRUE;
+  else *flg = PETSC_FALSE;
+  PetscFunctionReturn(0);
 }
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorSPEig"
@@ -140,8 +140,10 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
     N = nits+2;
 
     if (nits) {
-      PetscDraw draw;
-      PetscReal pause;
+      PetscDraw     draw;
+      PetscReal     pause;
+      PetscDrawAxis axis;
+      PetscReal     xmin,xmax,ymin,ymax;
 
       ierr = PetscDrawSPReset(drawsp);CHKERRQ(ierr);
       ierr = PetscDrawSPSetLimits(drawsp,ctx->xmin,ctx->xmax,ctx->ymin,ctx->ymax);CHKERRQ(ierr);
@@ -163,17 +165,13 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
       ierr = PetscDrawSetPause(draw,0.0);CHKERRQ(ierr);
       ierr = PetscDrawSPDraw(drawsp,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscDrawSetPause(draw,pause);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_COMPLEX)
-      {
-      PetscDrawAxis axis;
-      PetscReal     xmin,xmax,ymin,ymax;
 
-      ierr = PetscDrawSPGetAxis(drawsp,&axis);CHKERRQ(ierr);
-      ierr = PetscDrawAxisGetLimits(axis,&xmin,&xmax,&ymin,&ymax);CHKERRQ(ierr);
-      ierr = PetscDrawIndicatorFunction(draw,xmin,xmax,ymin,ymax,PETSC_DRAW_CYAN,TSIndicator_Theta);CHKERRQ(ierr);
-      ierr = PetscDrawSPDraw(drawsp,PETSC_FALSE);CHKERRQ(ierr);
+      if (ts->ops->linearstability) {
+        ierr = PetscDrawSPGetAxis(drawsp,&axis);CHKERRQ(ierr);
+        ierr = PetscDrawAxisGetLimits(axis,&xmin,&xmax,&ymin,&ymax);CHKERRQ(ierr);
+        ierr = PetscDrawIndicatorFunction(draw,xmin,xmax,ymin,ymax,PETSC_DRAW_CYAN,(PetscErrorCode (*)(void*,PetscReal,PetscReal,PetscBool*))TSLinearStabilityIndicator,ts);CHKERRQ(ierr);
+        ierr = PetscDrawSPDraw(drawsp,PETSC_FALSE);CHKERRQ(ierr);
       }
-#endif
     }
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }

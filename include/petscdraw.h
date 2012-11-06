@@ -152,7 +152,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawScalePopup(PetscDraw,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawPixelToCoordinate(PetscDraw,PetscInt,PetscInt,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDrawCoordinateToPixel(PetscDraw,PetscReal,PetscReal,PetscInt*,PetscInt*);
 
-PETSC_EXTERN PetscErrorCode PetscDrawIndicatorFunction(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int,PetscBool (*)(PetscReal,PetscReal));
+PETSC_EXTERN PetscErrorCode PetscDrawIndicatorFunction(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int,PetscErrorCode (*)(void*,PetscReal,PetscReal,PetscBool*),void*);
 
 PETSC_EXTERN PetscErrorCode PetscDrawLine(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
 PETSC_EXTERN PetscErrorCode PetscDrawArrow(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);

@@ -20,12 +20,12 @@
    Level: developer
 
 @*/
-PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax,int c,PetscBool (*f)(PetscReal,PetscReal))
+PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax,int c,PetscErrorCode (*f)(void *,PetscReal,PetscReal,PetscBool*),void *ctx)
 {
   PetscInt       xstart,ystart,xend,yend,i,j,tmp;
   PetscErrorCode ierr;
   PetscReal      x,y;
-  PetscBool      isnull;
+  PetscBool      isnull,flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -42,7 +42,8 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscR
   for (i=xstart; i<xend+1; i++) {
     for (j=ystart; j<yend+1; j++) {
       ierr = PetscDrawPixelToCoordinate(draw,i,j,&x,&y);CHKERRQ(ierr);
-      if (f(x,y)) {
+      ierr = f(ctx,x,y,&flg);CHKERRQ(ierr);
+      if (flg) {
         ierr = PetscDrawPointPixel(draw,i,j,c);CHKERRQ(ierr);
       }
     }
