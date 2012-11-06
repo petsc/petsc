@@ -872,7 +872,7 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes,Vec X,Mat *A,Mat *B,M
   /* ark->Ydot has already been computed in SNESTSFormFunction_ARKIMEX (SNES guarantees this) */
   dmsave = ts->dm;
   ts->dm = dm;
-  ierr = TSComputeIJacobian(ts,ark->stage_time,X,Ydot,ark->shift,A,B,str,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,ark->stage_time,X,Ydot,ark->shift,A,B,str,ark->imex);CHKERRQ(ierr);
   ts->dm = dmsave;
   ierr = TSARKIMEXRestoreVecs(ts,dm,PETSC_NULL,&Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);

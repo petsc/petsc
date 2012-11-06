@@ -47,6 +47,7 @@ typedef struct {
    User-defined routines
 */
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*),InitialConditions(DM,Vec);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -89,6 +90,7 @@ int main(int argc,char **argv)
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&appctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ts,PETSC_NULL,PETSC_NULL,RHSJacobian,&appctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -246,4 +248,93 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "RHSJacobian"
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+{
+  Mat            A = *AA;                      /* Jacobian matrix */
+  AppCtx         *appctx = (AppCtx*)ctx;     /* user-defined application context */
+  DM             da;
+  PetscErrorCode ierr;
+  PetscInt       i,j,Mx,My,xs,ys,xm,ym;
+  PetscReal      hx,hy,sx,sy;
+  PetscScalar    uc,uxx,uyy,vc,vxx,vyy;
+  Field          **u;
+  Vec            localU;
+  MatStencil     stencil[6],rowstencil;
+  PetscScalar    entries[6];
 
+  PetscFunctionBegin;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+
+  hx     = 2.50/(PetscReal)(Mx); sx = 1.0/(hx*hx);
+  hy     = 2.50/(PetscReal)(My); sy = 1.0/(hy*hy);
+
+  /*
+     Scatter ghost points to local vector,using the 2-step process
+        DMGlobalToLocalBegin(),DMGlobalToLocalEnd().
+     By placing code between these two statements, computations can be
+     done while messages are in transition.
+  */
+  ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
+
+  /*
+     Get pointers to vector data
+  */
+  ierr = DMDAVecGetArray(da,localU,&u);CHKERRQ(ierr);
+
+  /*
+     Get local grid boundaries
+  */
+  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+
+  /*
+     Compute function over the locally owned part of the grid
+  */
+  for (j=ys; j<ys+ym; j++) {
+    for (i=xs; i<xs+xm; i++) {
+      uc         = u[j][i].u;
+      vc         = u[j][i].v;
+
+      /*      uxx       = (-2.0*uc + u[j][i-1].u + u[j][i+1].u)*sx;
+      uyy       = (-2.0*uc + u[j-1][i].u + u[j+1][i].u)*sy;
+
+      vxx       = (-2.0*vc + u[j][i-1].v + u[j][i+1].v)*sx;
+      vyy       = (-2.0*vc + u[j-1][i].v + u[j+1][i].v)*sy;
+       f[j][i].u = appctx->D1*(uxx + uyy) - uc*vc*vc + appctx->gamma*(1.0 - uc);*/
+
+      stencil[0].k = 0; stencil[0].j = j-1; stencil[0].i = i; stencil[0].c = 0; entries[0] = appctx->D1*sy;
+      stencil[1].k = 0; stencil[1].j = j+1; stencil[1].i = i; stencil[1].c = 0; entries[1] = appctx->D1*sy;
+      stencil[2].k = 0; stencil[2].j = j; stencil[2].i = i-1; stencil[2].c = 0; entries[2] = appctx->D1*sx;
+      stencil[3].k = 0; stencil[3].j = j; stencil[3].i = i+1; stencil[3].c = 0; entries[3] = appctx->D1*sx;
+      stencil[4].k = 0; stencil[4].j = j; stencil[4].i = i; stencil[4].c = 0; entries[4] = -2.0*appctx->D1*(sx + sy) - vc*vc - appctx->gamma; 
+      stencil[5].k = 0; stencil[5].j = j; stencil[5].i = i; stencil[5].c = 1; entries[5] = -2.0*uc*vc;
+      rowstencil.k = 0; rowstencil.j = j; rowstencil.i = i; rowstencil.c = 0;
+      ierr = MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+
+      stencil[0].k = 0; stencil[0].j = j-1; stencil[0].i = i; stencil[0].c = 1; entries[0] = appctx->D2*sy;
+      stencil[1].k = 0; stencil[1].j = j+1; stencil[1].i = i; stencil[1].c = 1; entries[1] = appctx->D2*sy;
+      stencil[2].k = 0; stencil[2].j = j; stencil[2].i = i-1; stencil[2].c = 1; entries[2] = appctx->D2*sx;
+      stencil[3].k = 0; stencil[3].j = j; stencil[3].i = i+1; stencil[3].c = 1; entries[3] = appctx->D2*sx;
+      stencil[4].k = 0; stencil[4].j = j; stencil[4].i = i; stencil[4].c = 1; entries[4] = -2.0*appctx->D2*(sx + sy) + 2.0*uc*vc - appctx->gamma - appctx->kappa; 
+      stencil[5].k = 0; stencil[5].j = j; stencil[5].i = i; stencil[5].c = 0; entries[5] = vc*vc;
+      rowstencil.k = 0; rowstencil.j = j; rowstencil.i = i; rowstencil.c = 1;
+      ierr = MatSetValuesStencil(A,1,&rowstencil,6,stencil,entries,INSERT_VALUES);CHKERRQ(ierr);
+      /* f[j][i].v = appctx->D2*(vxx + vyy) + uc*vc*vc - (appctx->gamma + appctx->kappa)*vc; */
+    }
+  }
+
+  /*
+     Restore vectors
+  */
+  ierr = DMDAVecRestoreArray(da,localU,&u);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  *str = SAME_NONZERO_PATTERN;
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
