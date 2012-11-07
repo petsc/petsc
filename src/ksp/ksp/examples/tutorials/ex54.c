@@ -136,6 +136,8 @@ int main(int argc,char **args)
     ierr = PCSetType(pc,PCGAMG);                                CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp);                              CHKERRQ(ierr);
 
+    /* ierr = PCGAMGSetType(pc,"agg"); CHKERRQ(ierr); */
+
     /* finish KSP/PC setup */
     ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
     ierr = PCSetCoordinates( pc, 2, m, coords );                   CHKERRQ(ierr);

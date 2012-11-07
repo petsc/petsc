@@ -1538,9 +1538,14 @@ PetscErrorCode  PCCreateGAMG_AGG( PC pc )
   PC_GAMG_AGG      *pc_gamg_agg;
 
   PetscFunctionBegin;
+  
+  if( pc_gamg->subctx ){
+    /* call base class */
+    ierr = PCDestroy_GAMG( pc );CHKERRQ(ierr);
+  }
+
   /* create sub context for SA */
   ierr = PetscNewLog( pc, PC_GAMG_AGG, &pc_gamg_agg ); CHKERRQ(ierr);
-  assert(!pc_gamg->subctx);
   pc_gamg->subctx = pc_gamg_agg;
 
   pc->ops->setfromoptions = PCSetFromOptions_GAMG_AGG;
