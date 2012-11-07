@@ -1,15 +1,16 @@
 
 /*
-    This file implements improved flexible BiCGStab contributed by Jie Chen.
-    It can almost certainly supercede fbcgs.c.
-    Only right preconditioning is supported.
-    This code is only correct for the real case... Need to modify for complex numbers...
+    This file implements FBiCGStab-R.
+    Only allow right preconditioning.
+    FBiCGStab-R is a mathematically equivalent variant of FBiCGStab. Differences are:
+      (1) There are fewer MPI_Allreduce calls.
+      (2) The convergence occasionally is much faster than that of FBiCGStab.
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_IFBCGS"
-PetscErrorCode KSPSetUp_IFBCGS(KSP ksp)
+#define __FUNCT__ "KSPSetUp_FBCGSR"
+PetscErrorCode KSPSetUp_FBCGSR(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -20,13 +21,12 @@ PetscErrorCode KSPSetUp_IFBCGS(KSP ksp)
 
 #include <petsc-private/pcimpl.h>            /*I "petscksp.h" I*/
 #undef __FUNCT__
-#define __FUNCT__ "KSPSolve_IFBCGS"
-PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
+#define __FUNCT__ "KSPSolve_FBCGSR"
+PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
 {
   PetscErrorCode    ierr;
   PetscInt          i,j,N;
-  PetscReal         rho;
-  PetscScalar       tau,sigma,alpha,omega,beta;
+  PetscScalar       rho,tau,sigma,alpha,omega,beta;
   PetscScalar       xi1,xi2,xi3,xi4;
   Vec               X,B,P,P2,RP,R,V,S,T,S2;
   PetscScalar       *PETSC_RESTRICT rp, *PETSC_RESTRICT r, *PETSC_RESTRICT p;
@@ -54,7 +54,7 @@ PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
 
   /* Only supports right preconditioning */
   if (ksp->pc_side != PC_RIGHT)
-    SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP ifbcgs does not support %s",PCSides[ksp->pc_side]);
+    SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP fbcgsr does not support %s",PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
     if (!bcgs->guess) {
       ierr = VecDuplicate(X,&bcgs->guess);CHKERRQ(ierr);
@@ -197,21 +197,21 @@ PetscErrorCode  KSPSolve_IFBCGS(KSP ksp)
 }
 
 /*MC
-     KSPIFBCGS - Implements the improved flexible BiCGStab (Stabilized version of BiConjugate Gradient Squared) method.
+     KSPFBCGSR - Implements a mathematically equivalent variant of FBiCGSTab.
 
    Options Database Keys:
 .   see KSPSolve()
 
    Level: beginner
 
-   Notes: Only supports right preconditioning
+   Notes: Only allow right preconditioning
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "KSPCreate_IFBCGS"
-PetscErrorCode  KSPCreate_IFBCGS(KSP ksp)
+#define __FUNCT__ "KSPCreate_FBCGSR"
+PetscErrorCode  KSPCreate_FBCGSR(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_BCGS       *bcgs;
@@ -219,8 +219,8 @@ PetscErrorCode  KSPCreate_IFBCGS(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,KSP_BCGS,&bcgs);CHKERRQ(ierr);
   ksp->data                 = bcgs;
-  ksp->ops->setup           = KSPSetUp_IFBCGS;
-  ksp->ops->solve           = KSPSolve_IFBCGS;
+  ksp->ops->setup           = KSPSetUp_FBCGSR;
+  ksp->ops->solve           = KSPSolve_FBCGSR;
   ksp->ops->destroy         = KSPDestroy_BCGS;
   ksp->ops->reset           = KSPReset_BCGS;
   ksp->ops->buildsolution   = KSPBuildSolution_BCGS;
