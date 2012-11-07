@@ -944,7 +944,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
   F->ops->lufactornumeric  = MatFactorNumeric_MUMPS;
   F->ops->solve            = MatSolve_MUMPS;
   F->ops->solvetranspose   = MatSolveTranspose_MUMPS;
-  F->ops->matsolve         = MatMatSolve_MUMPS;
+  F->ops->matsolve         = 0; /* use MatMatSolve_Basic() until mumps supports distributed rhs */
   PetscFunctionReturn(0);
 }
 
