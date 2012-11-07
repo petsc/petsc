@@ -574,7 +574,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
       }
       ierr = PetscViewerDrawGetDraw(ksp->eigviewer,0,&draw);CHKERRQ(ierr);
       ierr = PetscDrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
-      ierr = PetscDrawSPReset(draw);CHKERRQ(ierr);
+      ierr = PetscDrawSPReset(drawsp);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
         ierr = PetscDrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
