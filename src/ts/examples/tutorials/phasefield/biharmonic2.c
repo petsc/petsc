@@ -11,7 +11,7 @@ static char help[] = "Solves biharmonic equation in 1d.\n";
 
 Evolve the biharmonic heat equation with bounds:  (same as biharmonic)
 ---------------
-./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason -ts_monitor_solution_initial -wait   -ts_type beuler  -da_refine 5 -draw_fields 1 -ts_dt 9.53674e-9 
+./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason --wait   -ts_type beuler  -da_refine 5 -draw_fields 1 -ts_dt 9.53674e-9 
 
     w = -kappa \Delta u  + u^3  - u
     u_t =  \Delta w                                    
@@ -20,7 +20,7 @@ Evolve the biharmonic heat equation with bounds:  (same as biharmonic)
 
 Evolve the Cahn-Hillard equations:
 ---------------
-./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason  -ts_monitor_solution_initial -wait   -ts_type beuler    -da_refine 6 -vi  -draw_fields 1  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
+./biharmonic2 -ts_monitor -snes_monitor -ts_monitor_draw_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason  --wait   -ts_type beuler    -da_refine 6 -vi  -draw_fields 1  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
 
 
 */

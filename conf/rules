@@ -15,7 +15,7 @@ chkpetsc_dir:
         fi
 
 petscnagupgrade:
-	-@PETSC_DIR=${PETSC_DIR} ${PETSC_DIR}/bin/petscnagupgrade.py
+	-@PETSC_DIR=${PETSC_DIR} ${PYTHON} ${PETSC_DIR}/bin/petscnagupgrade.py
 
 chk_loc:
 	@if [ ${LOC}foo = foo ] ; then \
