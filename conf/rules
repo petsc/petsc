@@ -262,12 +262,6 @@ alltree: ${ACTION}
 	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ; ) fi; \
 	done ; fi
 
-getlinklibs:
-	-@echo  ${C_SH_LIB_PATH} ${PETSC_TS_LIB}
-
-getincludedirs:
-	-@echo  ${PETSC_CC_INCLUDES}
-
 getpetscflags:
 	-@echo  ${PETSCFLAGS}
 
@@ -277,8 +271,34 @@ getmpilinklibs:
 getmpiincludedirs:
 	-@echo  ${MPI_INCLUDE}
 
+# -----------------------------------------------------------------
 getmpiexec:
 	-@echo  ${MPIEXEC}
+
+getccompiler:
+	-@echo ${CC}
+
+getfortrancompiler:
+	-@echo ${FC}
+
+getcxxcompiler:
+	-@echo ${CXX}
+
+getlinklibs:
+	-@echo  ${C_SH_LIB_PATH} ${PETSC_TS_LIB}
+
+getincludedirs:
+	-@echo  ${PETSC_CC_INCLUDES}
+
+getcflags:
+	-@echo ${CC_FLAGS}
+
+getfortranflags:
+	-@echo ${FC_FLAGS}
+
+getblaslapacklibs:
+	-@echo ${BLASLAPACK_LIB}
+
 
 # --------------------------------------------------------------------
 #
