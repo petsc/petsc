@@ -7674,85 +7674,221 @@ command
 \chapter{Unstructured Grids in PETSc}
 \label{ch_unstructured}
 
-This chapter introduces the DMMesh subclass of DM, which allows the user to handle unstructured grids using the generic
-DM interface for hierarchy and multi-physics. The underlying implementation is written in C++, and thus requires PETSc
-to be build using --with-clanguage=c++. More advanced features will also require direct C++ access in the user code,
-however much can be done using only the C/F77/F90 interface.
+This chapter introduces the DMComplex subclass of DM, which allows the user to handle unstructured grids using the generic
+DM interface for hierarchy and multi-physics. DMComplex was created to remedy a huge problem in all current PDE
+simulation codes, namely that the discretization was so closely tied to the data layout and solver that switiching
+discretizations in the same code was not possible. Not only does this preclude the kind of comparsion that is necessary
+for scientific investigation, but it makes library development (as opposed to monolithic applications) impossible.
 
 \medskip \medskip
 
-\section{Sections: Vectors on Unstructured Grids} \sindex{sections}
+\section{Representing Unstructured Grids} \sindex{DMComplex}
 
-\subsection{Defining Sections}
+The main advantage of DMComplex in representing topology is that it treats all the different pieces of a mesh,
+e.g. cells, faces, edges, vertices in exactly the same way. This allows the interface to be very small and simple, while
+remaining flexible and general. This also allows ``dimension independent programming'', which means that the same
+algorithm can be used unchanged for meshes of different shapes and dimensions.
 
-The sequence for setting up any Section is the following:
+All pieces of the mesh are treated as \textit{points}, which are identified by PetscInts. A mesh is built by relating
+points to other points, in particular specifying a ``covering'' relation among the points. For example, an edge is
+defined by being covered by two vertices, and a triangle can be defined by begin covered by three edges (or even by
+three vertices). In fact, this structure has been known for a long time. It is a Hasse Diagram~\cite{HasseDiagram},
+which is a Directed Acyclic Graph (DAG) representing a cell complex using the covering relation. The graph edges
+represent the relation, which also encodes a poset.
+
+For example, we can encode the doublet mesh below
+\begin{figure}
+\centering
+\begin{tikzpicture}[scale=2.0]
+  \tikzstyle{vertex}  = [text=blue]
+  \tikzstyle{vertexV} = [circle,inner sep=0pt,draw=black,fill=blue,text=white]
+  \tikzstyle{edge}    = [text=red]
+  \tikzstyle{edgeV}   = [circle,inner sep=0pt,draw=black,fill=red,text=white]
+  \tikzstyle{face}    = [text=green]
+  \tikzstyle{faceV}   = [circle,inner sep=0pt,draw=black,fill=green,text=white]
+  \tikzstyle{sec}     = [->]
+  % Doublet mesh with values for P_3
+  \path (-1.732, 0.0) node[vertexV](dv0) {$v_0$};
+  \path ( 0.0,  -1.0) node[vertexV](dv1) {$v_1$};
+  \path ( 0.0,   1.0) node[vertexV](dv2) {$v_2$};
+  \path ( 1.732, 0.0) node[vertexV](dv3) {$v_3$};
+  \draw (dv0) -- (dv1) node[edgeV,pos=0.5] {$e_0$};
+  \draw (dv1) -- (dv2) node[edgeV,pos=0.5] {$e_1$};
+  \draw (dv2) -- (dv0) node[edgeV,pos=0.5] {$e_2$};
+  \draw (dv2) -- (dv3) node[edgeV,pos=0.5] {$e_3$};
+  \draw (dv3) -- (dv1) node[edgeV,pos=0.5] {$e_4$};
+  \path (-0.6667, 0.0) node[faceV](f0) {$f_0$};
+  \path ( 0.6667, 0.0) node[faceV](f1) {$f_1$};
+\end{tikzpicture}
+\caption{A 2D doublet mesh, two triangles sharing an edge.}
+\label{fig:doubletMesh}
+\end{figure}
+which can also be represented as the DAG
+\begin{figure}
+\centering
+\begin{tikzpicture}[scale=2.0]
+  \tikzstyle{vertex}  = [text=blue]
+  \tikzstyle{vertexV} = [circle,inner sep=0pt,draw=black,fill=blue,text=white]
+  \tikzstyle{edge}    = [text=red]
+  \tikzstyle{edgeV}   = [circle,inner sep=0pt,draw=black,fill=red,text=white]
+  \tikzstyle{face}    = [text=green]
+  \tikzstyle{faceV}   = [circle,inner sep=0pt,draw=black,fill=green,text=white]
+  \tikzstyle{sec}     = [->]
+  % DAG for doublet
+  \path (-1.5, 2.0) node[vertexV](dv0) {$v_0$};
+  \path (-0.5, 2.0) node[vertexV](dv1) {$v_1$};
+  \path ( 0.5, 2.0) node[vertexV](dv2) {$v_2$};
+  \path ( 1.5, 2.0) node[vertexV](dv3) {$v_3$};
+  \draw (-2.0, 1.0) node[edgeV](e0) {$e_0$};
+  \draw (-1.0, 1.0) node[edgeV](e1) {$e_1$};
+  \draw ( 0.0, 1.0) node[edgeV](e2) {$e_2$};
+  \draw ( 1.0, 1.0) node[edgeV](e3) {$e_3$};
+  \draw ( 2.0, 1.0) node[edgeV](e4) {$e_4$};
+  \path (-1.0, 0.0) node[faceV](f0) {$f_0$};
+  \path ( 1.0, 0.0) node[faceV](f1) {$f_1$};
+  \draw[sec] (dv0) -- (e0);
+  \draw[sec] (dv1) -- (e0);
+  \draw[sec] (dv1) -- (e1);
+  \draw[sec] (dv2) -- (e1);
+  \draw[sec] (dv2) -- (e2);
+  \draw[sec] (dv0) -- (e2);
+  \draw[sec] (dv2) -- (e3);
+  \draw[sec] (dv3) -- (e3);
+  \draw[sec] (dv3) -- (e4);
+  \draw[sec] (dv1) -- (e4);
+  \draw[sec] (e0)  -- (f0);
+  \draw[sec] (e1)  -- (f0);
+  \draw[sec] (e2)  -- (f0);
+  \draw[sec] (e2)  -- (f1);
+  \draw[sec] (e3)  -- (f1);
+  \draw[sec] (e4)  -- (f1);
+\end{tikzpicture}
+\caption{The Hasse diagram for our 2D doublet mesh, expressed as a DAG.}
+\label{fig:doubletSieve}
+\end{figure}
+To use the PETSc API, we first consecutively number the mesh pieces. The PETSc convention is to numbers first cells,
+then vertices, then faces, and then edges, but the user is free to violate this convention. First, we declare the set of
+points present in a mesh,
+\begin{tabbing}
+  DMComplexSetChart(dm, 0, 11);
+\end{tabbing}
+We then define the covering relation, which we call the \textit{cone}, which are also the in-edges in the DAG. In order
+to preallocate correctly, we first setup sizes,
+\begin{tabbing}
+  DMComplexSetConeSize(dm, 0, 3);\\
+  DMComplexSetConeSize(dm, 1, 3);\\
+  DMComplexSetConeSize(dm, 6, 2);\\
+  DMComplexSetConeSize(dm, 7, 2);\\
+  DMComplexSetConeSize(dm, 8, 2);\\
+  DMComplexSetConeSize(dm, 9, 2);\\
+  DMComplexSetConeSize(dm, 10, 2);\\
+  DMSetUp(dm);
+\end{tabbing}
+and then point values,
+\begin{tabbing}
+  DMComplexSetCone(dm, 0, [6, 7, 8]);\\
+  DMComplexSetCone(dm, 1, [8, 9, 10]);\\
+  DMComplexSetCone(dm, 6, [2, 3]);\\
+  DMComplexSetCone(dm, 7, [3, 4]);\\
+  DMComplexSetCone(dm, 8, [4, 2]);\\
+  DMComplexSetCone(dm, 9, [4, 5]);\\
+  DMComplexSetCone(dm, 10, [5, 3]);
+\end{tabbing}
+
+There is also an API for the dual relation, using DMComplexSetSupportSize() and DMComplexSetSupport(), but this can be
+calculated automatically by calling
+\begin{tabbing}
+  DMComplexSymmetrize(dm);
+\end{tabbing}
+In order to support efficient queries, we also want to construct fast search structures, indices, for the different
+types of points, which is done using
+\begin{tabbing}
+  DMComplexStratify(dm);
+\end{tabbing}
+
+\section{Data on Unstructured Grids} \sindex{PetscSection}
+
+The strongest links between solvers and discretizations are,
+\begin{itemize}
+  \item the layout of data over the mesh,
+  \item problem partitioning, and
+  \item ordering of unknowns.
+\end{itemize}
+To enable modularity, we encode the operations above in simple data structures that can be understood by the linear
+algebra engine in PETSc without any reference to the mesh (toplology) or discretization (analysis).
+
+\subsection{Data Layout}
+
+Data is associated to a mesh using the PetscSection object. A PetscSection can be thought of as a generalization of
+PetscLayout, in the same way that a fiber bundle is a generalization of the normal Euclidean basis used in linear
+algebra. With PetscLayout, we associate a unit vector ($e_i$) with every point in the space, and just divide up points
+between processes. Using PetscSection, we can associate a set of dofs, a small space $\{e_k\}$, with every point, and
+though our points must be contiguous liek PetscLayout, they can be in any range $[\mathrm{pStart}, \mathrm{pEnd})$.
+
+The sequence for setting up any PetscSection is the following:
 \begin{enumerate}
-  \item Specify the chart
-  \item Specify the fiber dimensions
-  \item Allocate
-  \item Specify the values
+  \item Specify the chart,
+  \item Specify the number of dofs per point, and
+  \item Set up the PetscSection.
 \end{enumerate}
-We will expand on each item in turn.
+For example, using the mesh from Fig.~\ref{fig:doubletMesh}, we can layout data for a continuous Galerkin $P_3$ finite
+element method,
+\begin{tabbing}
+  PetscInt pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, eStart, eEnd, e;\\
+\\
+  DMComplexGetChart(dm, \&pStart, \&pEnd);\\
+  DMComplexGetHeightStratum(dm, 0, \&cStart, \&cEnd);\\
+  DMComplexGetHeightStratum(dm, 1, \&eStart, \&eEnd);\\
+  DMComplexGetDepthStratum(dm, 0, \&vStart, \&vEnd);\\
+  PetscSectionSetChart(s, pStart, pEnd);\\
+  for\=(c = cStart; c < cEnd; ++c)\\
+    \>PetscSectionSetDof(s, c, 1);\\
+  for(v = vStart; v < vEnd; ++v)\\
+    \>PetscSectionSetDof(s, v, 1);\\
+  for(e = eStart; e < eEnd; ++e)\\
+    \>PetscSectionSetDof(s, e, 2);\\
+  PetscSectionSetUp(s);
+\end{tabbing}
+Now a PETSc local vector can be created manually using this layout,
+\begin{tabbing}
+  PetscSectionGetStorageSize(s, \&n);\\
+  VecSetSizes(localVec, n, PETSC_DETERMINE);\\
+  VecSetFromOptions(localVec);
+\end{tabbing}
+however it is usually easier to use the DM directly, which also provides global vectors,
+\begin{tabbing}
+  DMSetDefaultSection(dm, s);\\
+  DMGetLocalVector(s, \&localVec);\\
+  DMGetGlobalVector(s, \&globalVec);
+\end{tabbing}
 
-First, you specify the chart, which is the domain for the Section. For any Section retrieved from the Mesh, for instance
-using MeshGetSectionReal(), this is done automatically.
+\subsection{Partitioning and Ordering}
 
-Second, you determine sizes for both values and constraints at the same time:
-\begin{lstlisting}[language=C++]
-for(loop over points) {
-  section->setFiberDimension(p, dof);
-}
-for(loop over boundary points) {
-  section->setConstraintDimension(p, numConstraints);
-}
-\end{lstlisting}
+In exactly the same way as MatPartitioning and MatOrdering, we encode the results of a partition or order in an
+IS. However, the graph we are dealing with now is not the adjacency graph of the problem Jacobian, but the mesh
+itself. Once the mesh is partitioned and reordered, we used the data layout from a PetscSection to automatically derive
+a problem partitioning/ordering.
 
-Third, we allocate storage for this section
-\begin{lstlisting}[language=C++]
-  section->allocatePoint()
-\end{lstlisting}
-which also creates storage for the boundary conditions.
+\section{Evaluating Residuals} \sindex{Residual Evaulation}
 
-Now you can input values and constraints whenever you want
-\begin{lstlisting}[language=C++]
-for(loop over points) {
-  section->updatePoint(p, values);
-}
-for(loop over boundary points) {
-  /* Here we constrain the x and y values */
-  int dofs[2] = {0, 1};
+The evaluation of a residual, or Jacobian, for most discretizations has the following general form:
+\begin{itemize}
+  \item Traverse the mesh, picking out pieces which in general overlap,
 
-  section->setConstraintDof(p, dofs);
-}
-\end{lstlisting}
-Notice that the input to setConstraintDofs() are the local dofs which are fixed.
+  \item Extract some values from the solution vector, associated with this piece,
 
-\subsection{Updating Values}
-There are many kinds of update*() functions since users want different ways of setting values. As an
-example, we will take a point p with 3 degrees of freedom (u,v,w), and we constrain v, so the fiber
-dimension is 3, the constraint dimension is 1, and the constraint dof is [1]. Now, the simplest update is
+  \item Calculate some values for the piece, and
 
-   section->updatePoint(p, [a, b, c])
+  \item Insert these values into the residual vector
+\end{itemize}
+DMComplex separates these different concerns by passing sets of points, which are just integers, from mesh traversal
+routines to data extraction routines and back. In this way, the PetscSection which structures the data inside a Vec does
+not need to know anything about the mesh inside a DMComplex.
 
-which will set the values 'a' and 'c', ignoring 'b' since it is constrained. The function updateAddPoint() does
-the same thing but adds the values. We have a similar function
+First show Transitive closure for FEM (polyhedral) and FV
 
-  section->updateFreePoint(p, [a, c])
+Next show DMComplexVecGetClosure()
 
-which updates the unconstrained values, and only takes those values as input. If you want to update
-constrained values, you could use
-
-  section->updatePointBC(p, [b])
-
-which updates the values of constrained unknowns, and takes only the constraint values. You could also use
-
-  section->updatePointBCFull(p, [a, b, c])
-
-which takes all the values, but only updates the constraint 'b'. Finally,
-
-  section->updatePointAll(p, [a, b, c])
-
-takes the all values and updates all of them, ignoring constraints.
 
 %------------------------------------------------------------------
 
