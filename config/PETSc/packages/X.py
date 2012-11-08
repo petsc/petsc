@@ -7,13 +7,8 @@ class Configure(PETSc.package.NewPackage,config.autoconf.Configure):
   def __init__(self, framework):
     config.autoconf.Configure.__init__(self, framework)
     PETSc.package.NewPackage.__init__(self, framework)
-    self.lookforbydefault=1
-    return
-
-  def setupHelp(self, help):
-    import nargs
-    PETSc.package.NewPackage.setupHelp(self, help)
-    help.addArgument('X', '-with-xt=<bool>',               nargs.ArgBool(None, 0,   'Activate Xt'))
+    self.lookforbydefault = 1
+    self.pkgname          = 'x11'
     return
 
   def setupDependencies(self, framework):
@@ -69,7 +64,6 @@ acfindx:
 
   def generateGuesses(self):
     '''Generate list of possible locations of X11'''
-    useXt        = self.framework.argDB['with-xt']
     includeDirs  = ['/Developer/SDKs/MacOSX10.5.sdk/usr/X11/include',
                     '/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6/include',
                     '/usr/X11/include',
@@ -105,8 +99,6 @@ acfindx:
       includeDir = self.framework.argDB['with-x-include']
 
     testLibraries = ['libX11.a'] # 'XSetWMName'
-    if useXt:
-      testLibraries.append('libXt.a') # 'XtMalloc'
     # Guess X location
     (includeDirGuess, libraryDirGuess) = self.checkXMake()
     yield ('Standard X Location', libraryDirGuess, testLibraries, includeDirGuess)
@@ -159,8 +151,6 @@ acfindx:
       foundInclude = 1
     else:
       includes  = ['X11/Xlib.h']
-      if self.framework.argDB['with-xt']:
-        includes.append('X11/Intrinsic.h')
 
       for testInclude in includes:
         # Check guess
@@ -186,8 +176,6 @@ acfindx:
       foundLibrary = 1
     else:
       testLibraries = [('X11', 'XSetWMName')]
-      if self.framework.argDB['with-xt']:
-        testLibraries.append(('Xt', 'XtMalloc'))
 
       # Check guess
       for testLibrary, testFunction in testLibraries:

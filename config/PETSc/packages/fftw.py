@@ -9,6 +9,7 @@ class Configure(PETSc.package.NewPackage):
     self.includes  = ['fftw3-mpi.h']  
     self.liblist   = [['libfftw3_mpi.a','libfftw3.a']]
     self.complex   = 1
+    self.pkgname   = fftw3
     return
 
   def setupDependencies(self, framework):
