@@ -162,6 +162,34 @@ PetscScalar cubic_v_2d(const PetscReal x[]) {
   return -2.0*x[1]*(x[1]-1.0)*(1.0 - 2.0*x[0]);
 };
 
+/*
+  In 2D, for ??? forcing,
+
+    f_x =  3 - 8y
+    f_y = -5 + 8x
+
+  we use the exact solution,
+
+    u =  2 x (x-1) (1 - 2 y)
+    v = -2 y (y-1) (1 - 2 x)
+    p = x + y - 1
+    T = x + y
+
+    \hat t \cdot (\nabla u + \nabla u^T)
+    = \hat t \cdot /2 (2x-1) (1-2y)       2y (y-1) - 2x (x-1) \
+                   \2y (y-1) - 2x (x-1)  -2 (2y-1) (1-2x)     /
+
+    at the top and bottom (t = <1,0>)
+
+    y = 0 < 2 (2x-1), -2x (x-1)>
+    y = 1 <-2 (2x-1), -2x (x-1)>
+  so that
+
+    -\Delta u + \nabla p + f = <-4+8y, 4-8x> + <1, 1> + <3-8y, 8x-5> = 0
+    \nabla \cdot u           = (4x-2) (1-2y) - (4y-2) (1-2x)         = 0
+    -\Delta T + q_T          = 0
+*/
+
 void f0_u_constant(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]) {
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
   PetscInt       comp;
