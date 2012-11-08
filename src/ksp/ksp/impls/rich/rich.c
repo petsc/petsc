@@ -64,7 +64,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 
   /* if user has provided fast Richardson code use that */
   ierr = PCApplyRichardsonExists(ksp->pc,&exists);CHKERRQ(ierr);
-  if (exists && !ksp->numbermonitors && !ksp->transpose_solve) {
+  if (exists && !ksp->numbermonitors && !ksp->transpose_solve & !ksp->nullsp) {
     PCRichardsonConvergedReason reason;
     ierr = PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->abstol,ksp->divtol,maxit,ksp->guess_zero,&ksp->its,&reason);CHKERRQ(ierr);
     ksp->reason = (KSPConvergedReason)reason;
