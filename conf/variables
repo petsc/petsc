@@ -39,7 +39,8 @@ PETSC_CUCOMPILE_SINGLE= ${CUDAC} -o $*.o ${CUDAC_FLAGS} -c --compiler-options="$
 # define OBJSC and OBJSF OBJSCU
 OBJSC_TMP1 = $(SOURCEC:.c=.o)
 OBJSC_TMP2 = $(OBJSC_TMP1:.C=.o)
-OBJSC      = $(OBJSC_TMP2:.cxx=.o)
+OBJSC_TMP3 = $(OBJSC_TMP2:.cxx=.o)
+OBJSC      = $(OBJSC_TMP3:.cpp=.o)
 OBJSF_TMP1 = $(SOURCEF:.F=.o)
 OBJSF_TMP2 = $(OBJSF_TMP1:.F90=.o)
 OBJSF_TMP3 = $(OBJSF_TMP2:.F95=.o)
