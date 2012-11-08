@@ -390,9 +390,32 @@ PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,void *dummy)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorDynamicTolerance"
-/*
- A hack to using dynamic tolerance in preconditioner
- */
+/*@C
+   KSPMonitorDynamicTolerance - Recompute the inner tolerance in every
+   outer iteration in an adaptive way.
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp   - iterative context
+.  n     - iteration number (not used)
+.  fnorm - the current residual norm
+.  dummy - some context as a C struct. fields:
+             coef: a scaling coefficient. default 1.0. can be passed through
+                   -sub_ksp_dynamic_tolerance_param
+             bnrm: norm of the right-hand side. store it to avoid repeated calculation
+
+   Notes:
+   This may be useful for a flexibly preconditioner Krylov method to
+   control the accuracy of the inner solves needed to gaurantee the
+   convergence of the outer iterations.
+
+   Level: advanced
+
+.keywords: KSP, inner tolerance
+
+.seealso: KSPMonitorDynamicToleranceDestroy()
+@*/
 PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy)
 {
   PetscErrorCode ierr;
@@ -413,9 +436,7 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,v
   }
   ierr = KSPGetTolerances(ksp, &outer_rtol, &outer_abstol, &outer_dtol, &outer_maxits);CHKERRQ(ierr);
   inner_rtol = PetscMin( scale->coef * scale->bnrm * outer_rtol / fnorm, 0.999 );
-
-  /* force printing. will remove later */
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "        Inner rtol = %G\n", inner_rtol);CHKERRQ(ierr);
+  /*ierr = PetscPrintf(PETSC_COMM_WORLD, "        Inner rtol = %G\n", inner_rtol);CHKERRQ(ierr);*/
 
   /* if pc is ksp */
   ierr = PCKSPGetKSP(pc, &kspinner);CHKERRQ(ierr);
@@ -434,14 +455,15 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp,PetscInt its,PetscReal fnorm,v
   }
 
   /* todo: dynamic tolerance may apply to other types of pc too */
+
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitorDynamicToleranceDestroy"
 /*
- A hack to using dynamic tolerance in preconditioner
- */
+  Destroy the dummy context used in KSPMonitorDynamicTolerance()
+*/
 PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy) {
   PetscErrorCode ierr;
   PetscFunctionBegin;

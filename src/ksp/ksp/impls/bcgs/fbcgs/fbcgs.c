@@ -1,7 +1,7 @@
 
 /*
-    This file implements flexible BiCGStab contributed by Jie Chen.
-    Only right preconditioning is supported.
+    This file implements flexible BiCGStab (FBiCGStab).
+    Only allow right preconditioning.
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
 
@@ -174,14 +174,14 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 }
 
 /*MC
-     KSPFBCGS - Implements flexible BiCGStab (Stabilized version of BiConjugate Gradient Squared) method.
+     KSPFBCGS - Implements flexible BiCGStab method.
 
    Options Database Keys:
 .   see KSPSolve()
 
    Level: beginner
 
-   Notes: Only supports right preconditioning
+   Notes: Only allow right preconditioning
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
 M*/

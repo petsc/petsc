@@ -6,7 +6,7 @@ FFLAGS   =
 SOURCEC  = bcgs.c
 SOURCEF  =
 LIBBASE  = libpetscksp
-DIRS     = fbcgs ifbcgs tfibcgs
+DIRS     = fbcgs fbcgsr
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/bcgs/
 
