@@ -1413,7 +1413,7 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *new
       PetscSF bmsf;
       PetscSFNode *bmedges;
       Mat B;
-      PetscInt bm, *bmdnnz, *bmonnz, br;
+      PetscInt bm, *bmdnnz, br;
       const PetscInt *bmindices;
       B = nest->m[i][j];
       if (!B) continue;
@@ -1423,7 +1423,6 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *new
       ierr = PetscMalloc(2*bm*sizeof(PetscSFNode),&bmedges);     CHKERRQ(ierr);
       ierr = PetscMalloc(2*bm*sizeof(PetscInt),&bmdnnz);         CHKERRQ(ierr);
       for (k = 0; k < 2*bm; ++k) bmdnnz[k] = 0;
-      bmonnz = bmdnnz+bm;
       /*
        Locate the owners for all of the locally-owned global row indices for this row block.
        These determine the roots of PetscSF used to communicate preallocation data to row owners.
