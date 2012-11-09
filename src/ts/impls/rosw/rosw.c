@@ -55,7 +55,7 @@ typedef struct {
   Vec          Zstage;           /* Y = Zstage + Y */
   Vec          VecSolPrev;       /* Work vector holding the solution from the previous step (used for interpolation)*/
   PetscScalar  *work;            /* Scalar work space of length number of stages, used to prepare VecMAXPY() */
-  PetscReal    shift;
+  PetscReal    scoeff;           /* shift = scoeff/dt */
   PetscReal    stage_time;
   PetscReal    stage_explicit;     /* Flag indicates that the current stage is explicit */
   PetscBool    recompute_jacobian; /* Recompute the Jacobian at each stage, default is to freeze the Jacobian at the start of each step */
@@ -995,10 +995,10 @@ static PetscErrorCode TSStep_RosW(TS ts)
       ierr = TSPreStage(ts,ros->stage_time);CHKERRQ(ierr);
       if (GammaZeroDiag[i]) {
         ros->stage_explicit = PETSC_TRUE;
-        ros->shift = 1./h;
+        ros->scoeff = 1.;
       } else {
         ros->stage_explicit = PETSC_FALSE;
-        ros->shift = 1./(h*Gamma[i*s+i]);
+        ros->scoeff = 1./Gamma[i*s+i];
       }
 
       ierr = VecCopy(ts->vec_sol,Zstage);CHKERRQ(ierr);
@@ -1276,12 +1276,13 @@ static PetscErrorCode SNESTSFormFunction_RosW(SNES snes,Vec U,Vec F,TS ts)
   TS_RosW        *ros = (TS_RosW*)ts->data;
   PetscErrorCode ierr;
   Vec            Ydot,Zdot,Ystage,Zstage;
+  PetscReal      shift = ros->scoeff / ts->time_step;
   DM             dm,dmsave;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = TSRosWGetVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
-  ierr = VecWAXPY(Ydot,ros->shift,U,Zdot);CHKERRQ(ierr); /* Ydot = shift*U + Zdot */
+  ierr = VecWAXPY(Ydot,shift,U,Zdot);CHKERRQ(ierr);      /* Ydot = shift*U + Zdot */
   ierr = VecWAXPY(Ystage,1.0,U,Zstage);CHKERRQ(ierr);    /* Ystage = U + Zstage */
   dmsave = ts->dm;
   ts->dm = dm;
@@ -1297,6 +1298,7 @@ static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes,Vec U,Mat *A,Mat *B,MatS
 {
   TS_RosW        *ros = (TS_RosW*)ts->data;
   Vec            Ydot,Zdot,Ystage,Zstage;
+  PetscReal      shift = ros->scoeff / ts->time_step;
   PetscErrorCode ierr;
   DM             dm,dmsave;
 
@@ -1306,7 +1308,7 @@ static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes,Vec U,Mat *A,Mat *B,MatS
   ierr = TSRosWGetVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
   dmsave = ts->dm;
   ts->dm = dm;
-  ierr = TSComputeIJacobian(ts,ros->stage_time,Ystage,Ydot,ros->shift,A,B,str,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,ros->stage_time,Ystage,Ydot,shift,A,B,str,PETSC_TRUE);CHKERRQ(ierr);
   ts->dm = dmsave;
   ierr = TSRosWRestoreVecs(ts,dm,&Ydot,&Zdot,&Ystage,&Zstage);CHKERRQ(ierr);
   PetscFunctionReturn(0);

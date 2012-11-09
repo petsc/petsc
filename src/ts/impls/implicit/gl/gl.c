@@ -900,7 +900,7 @@ static PetscErrorCode TSSolve_GL(TS ts)
   if (0) {
     /* Find consistent initial data for DAE */
     gl->stage_time = ts->ptime + ts->time_step;
-    gl->shift = 1./ts->time_step;
+    gl->scoeff = 1.;
     gl->stage = 0;
     ierr = VecCopy(ts->vec_sol,gl->Z);CHKERRQ(ierr);
     ierr = VecCopy(ts->vec_sol,gl->Y);CHKERRQ(ierr);
@@ -943,7 +943,9 @@ static PetscErrorCode TSSolve_GL(TS ts)
     rejections = 0;
     while (1) {
       for (i=0; i<s; i++) {
-        PetscScalar shift = gl->shift = 1./PetscRealPart(h*a[i*s+i]);
+        PetscScalar shift;
+        gl->scoeff = 1./PetscRealPart(a[i*s+i]);
+        shift = gl->scoeff/ts->time_step;
         gl->stage = i;
         gl->stage_time = ts->ptime + PetscRealPart(c[i])*h;
 
@@ -1113,7 +1115,7 @@ static PetscErrorCode SNESTSFormFunction_GL(SNES snes,Vec x,Vec f,TS ts)
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = TSGLGetVecs(ts,dm,&Z,&Ydot);CHKERRQ(ierr);
-  ierr = VecWAXPY(Ydot,gl->shift,x,Z);CHKERRQ(ierr);
+  ierr = VecWAXPY(Ydot,gl->scoeff/ts->time_step,x,Z);CHKERRQ(ierr);
   dmsave = ts->dm;
   ts->dm = dm;
   ierr = TSComputeIFunction(ts,gl->stage_time,x,Ydot,f,PETSC_FALSE);CHKERRQ(ierr);
@@ -1136,7 +1138,7 @@ static PetscErrorCode SNESTSFormJacobian_GL(SNES snes,Vec x,Mat *A,Mat *B,MatStr
   dmsave = ts->dm;
   ts->dm = dm;
   /* gl->Xdot will have already been computed in SNESTSFormFunction_GL */
-  ierr = TSComputeIJacobian(ts,gl->stage_time,x,gl->Ydot[gl->stage],gl->shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,gl->stage_time,x,gl->Ydot[gl->stage],gl->scoeff/ts->time_step,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
   ts->dm = dmsave;
   ierr = TSGLRestoreVecs(ts,dm,&Z,&Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);

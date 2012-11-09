@@ -102,7 +102,7 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
   PetscErrorCode    ierr;
   KSP               ksp = ctx->ksp;
   PetscInt          n,N,nits,neig,i,its = 200;
-  PetscReal         *r,*c;
+  PetscReal         *r,*c,time_step_save;
   PetscDrawSP       drawsp = ctx->drawsp;
   MatStructure      structure;
   Mat               A,B;
@@ -119,11 +119,11 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
     /* 
        This doesn't work because methods keep and use internal information about the shift so it 
        seems we would need code for each method to trick the correct Jacobian in being computed.
+     */
+    time_step_save = ts->time_step;
     ts->time_step = PETSC_MAX_REAL;
-    ierr = SNESComputeJacobian(snes,v,&A,&B,&structure);CHKERRQ(ierr); 
-    */
-    ierr = TSComputeIJacobian(ts,ptime,v,xdot,0.0,&B,&B,&structure,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = MatScale(B,-1.0*ts->time_step);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes,v,&A,&B,&structure);CHKERRQ(ierr);
+    ts->time_step = time_step_save;
 
     ierr = KSPSetOperators(ksp,B,B,structure);CHKERRQ(ierr);
     ierr = VecGetSize(v,&n);CHKERRQ(ierr);
@@ -150,6 +150,8 @@ PetscErrorCode TSMonitorSPEig(TS ts,PetscInt step,PetscReal ptime,Vec v,void *mo
       } else {
         ierr = KSPComputeEigenvalues(ksp,N,r,c,&neig);CHKERRQ(ierr);
       }
+      /* We used the positive operator to be able to reuse KSPs that require positive definiteness, now flip the spectrum as is conventional for ODEs */
+      for (i=0; i<neig; i++) r[i] = -r[i];
       for (i=0; i<neig; i++) {
         if (ts->ops->linearstability) {
           PetscReal fr,fi;

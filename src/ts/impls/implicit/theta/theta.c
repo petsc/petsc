@@ -11,7 +11,6 @@ typedef struct {
   PetscBool extrapolate;
   PetscBool endpoint;
   PetscReal Theta;
-  PetscReal shift;
   PetscReal stage_time;
 } TS_Theta;
 
@@ -103,9 +102,9 @@ static PetscErrorCode TSStep_Theta(TS ts)
     ts->time_steps_since_decrease = 0; /* don't want to increase time step two time steps in a row */
   }
   for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
+    PetscReal shift = 1./(th->Theta*ts->time_step);
     next_time_step = ts->time_step;
     th->stage_time = ts->ptime + (th->endpoint ? 1. : th->Theta)*ts->time_step;
-    th->shift = 1./(th->Theta*ts->time_step);
     ierr = TSPreStep(ts);CHKERRQ(ierr);
     ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
 
@@ -116,7 +115,7 @@ static PetscErrorCode TSStep_Theta(TS ts)
       ierr = VecScale(th->affine,(th->Theta-1.)/th->Theta);CHKERRQ(ierr);
     }
     if (th->extrapolate) {
-      ierr = VecWAXPY(th->X,1./th->shift,th->Xdot,ts->vec_sol);CHKERRQ(ierr);
+      ierr = VecWAXPY(th->X,1./shift,th->Xdot,ts->vec_sol);CHKERRQ(ierr);
     } else {
       ierr = VecCopy(ts->vec_sol,th->X);CHKERRQ(ierr);
     }
@@ -140,7 +139,8 @@ static PetscErrorCode TSStep_Theta(TS ts)
   if (th->endpoint) {
     ierr = VecCopy(th->X,ts->vec_sol);CHKERRQ(ierr);
   } else {
-    ierr = VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,ts->vec_sol,th->X);CHKERRQ(ierr);
+    PetscReal shift = 1./(th->Theta*ts->time_step);
+    ierr = VecAXPBYPCZ(th->Xdot,-shift,shift,0,ts->vec_sol,th->X);CHKERRQ(ierr);
     ierr = VecAXPY(ts->vec_sol,ts->time_step,th->Xdot);CHKERRQ(ierr);
   }
   ts->ptime += ts->time_step;
@@ -207,12 +207,13 @@ static PetscErrorCode SNESTSFormFunction_Theta(SNES snes,Vec x,Vec y,TS ts)
   PetscErrorCode ierr;
   Vec            X0,Xdot;
   DM             dm,dmsave;
+  PetscReal      shift = 1./(th->Theta*ts->time_step);
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   /* When using the endpoint variant, this is actually 1/Theta * Xdot */
   ierr = TSThetaGetX0AndXdot(ts,dm,&X0,&Xdot);CHKERRQ(ierr);
-  ierr = VecAXPBYPCZ(Xdot,-th->shift,th->shift,0,X0,x);CHKERRQ(ierr);
+  ierr = VecAXPBYPCZ(Xdot,-shift,shift,0,X0,x);CHKERRQ(ierr);
 
   /* DM monkey-business allows user code to call TSGetDM() inside of functions evaluated on levels of FAS */
   dmsave = ts->dm;
@@ -231,6 +232,7 @@ static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,Mat
   PetscErrorCode ierr;
   Vec            Xdot;
   DM             dm,dmsave;
+  PetscReal      shift = 1./(th->Theta*ts->time_step);
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
@@ -240,7 +242,7 @@ static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,Mat
 
   dmsave = ts->dm;
   ts->dm = dm;
-  ierr = TSComputeIJacobian(ts,th->stage_time,x,Xdot,th->shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,th->stage_time,x,Xdot,shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
   ts->dm = dmsave;
   ierr = TSThetaRestoreX0AndXdot(ts,dm,PETSC_NULL,&Xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);

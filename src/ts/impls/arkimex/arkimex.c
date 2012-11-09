@@ -43,7 +43,7 @@ typedef struct {
   Vec          Work;             /* Generic work vector */
   Vec          Z;                /* Ydot = shift(Y-Z) */
   PetscScalar  *work;            /* Scalar work */
-  PetscReal    shift;
+  PetscReal    scoeff;           /* shift = scoeff/dt */
   PetscReal    stage_time;
   PetscBool    imex;
   TSStepStatus status;
@@ -650,13 +650,13 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         ierr = VecMAXPY(Y[i],i,w,YdotRHS);CHKERRQ(ierr);
       } else {
         ark->stage_time = t + h*ct[i];
-        ark->shift = 1./(h*At[i*s+i]);
+        ark->scoeff = 1./At[i*s+i];
         ierr = TSPreStage(ts,ark->stage_time);CHKERRQ(ierr);
         /* Affine part */
         ierr = VecZeroEntries(W);CHKERRQ(ierr);
         for (j=0; j<i; j++) w[j] = h*A[i*s+j];
         ierr = VecMAXPY(W,i,w,YdotRHS);CHKERRQ(ierr);
-        ierr = VecScale(W, ark->shift);CHKERRQ(ierr);
+        ierr = VecScale(W, ark->scoeff/h);CHKERRQ(ierr);
 
         /* Ydot = shift*(Y-Z) */
         ierr = VecCopy(ts->vec_sol,Z);CHKERRQ(ierr);
@@ -843,12 +843,13 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes,Vec X,Vec F,TS ts)
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
   DM             dm,dmsave;
   Vec            Z,Ydot;
+  PetscReal      shift = ark->scoeff / ts->time_step;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = TSARKIMEXGetVecs(ts,dm,&Z,&Ydot);CHKERRQ(ierr);
-  ierr = VecAXPBYPCZ(Ydot,-ark->shift,ark->shift,0,Z,X);CHKERRQ(ierr); /* Ydot = shift*(X-Z) */
+  ierr = VecAXPBYPCZ(Ydot,-shift,shift,0,Z,X);CHKERRQ(ierr); /* Ydot = shift*(X-Z) */
   dmsave = ts->dm;
   ts->dm = dm;
   ierr = TSComputeIFunction(ts,ark->stage_time,X,Ydot,F,ark->imex);CHKERRQ(ierr);
@@ -864,6 +865,7 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes,Vec X,Mat *A,Mat *B,M
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
   DM             dm,dmsave;
   Vec            Ydot;
+  PetscReal      shift = ark->scoeff / ts->time_step;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -872,7 +874,7 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes,Vec X,Mat *A,Mat *B,M
   /* ark->Ydot has already been computed in SNESTSFormFunction_ARKIMEX (SNES guarantees this) */
   dmsave = ts->dm;
   ts->dm = dm;
-  ierr = TSComputeIJacobian(ts,ark->stage_time,X,Ydot,ark->shift,A,B,str,ark->imex);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,ark->stage_time,X,Ydot,shift,A,B,str,ark->imex);CHKERRQ(ierr);
   ts->dm = dmsave;
   ierr = TSARKIMEXRestoreVecs(ts,dm,PETSC_NULL,&Ydot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
