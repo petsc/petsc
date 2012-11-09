@@ -119,6 +119,7 @@ build:
 #
 # Builds PETSc test examples for a given architecture
 #
+check: test
 test: 
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/conf/test.log
 testx: 
