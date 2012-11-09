@@ -104,6 +104,49 @@ class Configure(config.base.Configure):
 
     return
 
+  def DumpPkgconfig(self):
+    ''' Create a pkg-config file '''
+    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig')):
+      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig'))
+    fd = open(os.path.join(self.petscdir.dir,self.arch.arch,'lib','pkgconfig','PETSc.pc'),'w')
+    if self.framework.argDB['prefix']:
+      installdir = self.framework.argDB['prefix']
+      fd.write('prefix='+installdir+'\n')
+      fd.write('exec_prefix=${prefix}\n')
+      fd.write('includedir=${prefix}/include\n')
+      fd.write('libdir='+os.path.join(installdir,'lib')+'\n')
+    else:
+      fd.write('prefix='+self.petscdir.dir+'\n')
+      fd.write('exec_prefix=${prefix}\n')
+      fd.write('includedir=${prefix}/include\n')
+      fd.write('libdir='+os.path.join(self.petscdir.dir,self.arch.arch,'lib')+'\n')
+
+    self.setCompilers.pushLanguage('C')
+    fd.write('ccompiler='+self.setCompilers.getCompiler()+'\n')
+    self.setCompilers.popLanguage()
+    if hasattr(self.compilers, 'C++'):
+      self.setCompilers.pushLanguage('C++')
+      fd.write('cxxcompiler='+self.setCompilers.getCompiler()+'\n')
+      self.setCompilers.popLanguage()
+    if hasattr(self.compilers, 'FC'):
+      self.setCompilers.pushLanguage('FC')
+      fd.write('fcompiler='+self.setCompilers.getCompiler()+'\n')
+      self.setCompilers.popLanguage()
+
+    fd.write('\n')
+    fd.write('Name: PETSc\n')
+    fd.write('Description: Library to solve ODEs and algebraic equations\n')
+    fd.write('Version: 3.3\n')  # should figure this out from petscversion.h file
+
+    fd.write('Cflags: '+self.allincludes+'\n')
+
+    if self.framework.argDB['prefix']:
+      fd.write('Libs: '+self.alllibs.replace(os.path.join(self.petscdir.dir,self.arch.arch),self.framework.argDB['prefix'])+'\n')
+    else:
+      fd.write('Libs: '+self.alllibs+'\n')
+    fd.close()
+    return
+
   def Dump(self):
     ''' Actually put the values into the configuration files '''
     # eventually everything between -- should be gone
@@ -235,11 +278,13 @@ class Configure(config.base.Configure):
         includes.extend(i.include)
         self.addMakeMacro(i.PACKAGE+'_INCLUDE',self.headers.toStringNoDupes(i.include))
     if self.framework.argDB['with-single-library']:
-      self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS)
+      self.alllibs = self.libraries.toStringNoDupes(['-L'+os.path.join(self.petscdir.dir,self.arch.arch,'lib'),' -lpetsc']+libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
+      self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.alllibs)
     self.addMakeMacro('PETSC_EXTERNAL_LIB_BASIC',self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS)
     self.PETSC_EXTERNAL_LIB_BASIC = self.libraries.toStringNoDupes(libs+self.libraries.math+self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' '))+self.CHUD.LIBS
-    self.addMakeMacro('PETSC_CC_INCLUDES',self.headers.toStringNoDupes(includes))
-    self.PETSC_CC_INCLUDES = self.headers.toStringNoDupes(includes)
+    self.allincludes = self.headers.toStringNoDupes(includes)
+    self.addMakeMacro('PETSC_CC_INCLUDES',self.allincludes)
+    self.PETSC_CC_INCLUDES = self.allincludes
     if hasattr(self.compilers, 'FC'):
       if self.compilers.fortranIsF90:
         self.addMakeMacro('PETSC_FC_INCLUDES',self.headers.toStringNoDupes(includes,includes))
@@ -852,6 +897,7 @@ class Configure(config.base.Configure):
     self.dumpCMakeConfig()
     self.dumpCMakeLists()
     self.cmakeBoot()
+    self.DumpPkgconfig()
     self.framework.log.write('================================================================================\n')
     self.logClear()
     return
