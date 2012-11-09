@@ -7885,10 +7885,61 @@ DMComplex separates these different concerns by passing sets of points, which ar
 routines to data extraction routines and back. In this way, the PetscSection which structures the data inside a Vec does
 not need to know anything about the mesh inside a DMComplex.
 
-First show Transitive closure for FEM (polyhedral) and FV
-
-Next show DMComplexVecGetClosure()
-
+The most common mesh traversal is the transitive closure of a point, which is exactly the transitive closure of a point
+in the DAG using the covering relation. Note that this closure can be calculated orienting the arrows in either
+direction. For example, in a finite element calculation, we calculate an integral over the closure of each element, and
+then sum up the contributions to the basis function coefficients. The closure of the element can be expressed discretely
+as the transitive closure of the element point in the mesh DAG, where each point also has an orientation. Then we can
+retrieve the data using PetscSection methods,
+\begin{tabbing}
+  PetscScalar *a;\\
+  PetscInt     numPoints, *points = PETSC\_NULL, p;\\
+\\
+  VecGetArray(u, \&a);\\
+  DMComplexGetTransitiveClosure(dm, cell, PETSC\_TRUE, \&numPoints, \&points);\\
+  for\=(p = 0; p ${}\le{}$ numPoints*2; p += 2) \{\\
+    \>PetscInt dof, off, d;\\
+\\
+    \>PetscSectionGetDof(section, points[p], \&dof);\\
+    \>PetscSectionGetOffset(section, points[p], \&off);\\
+    \>for\=(d = 0; d ${}\le{}$ dof; ++d) \{\\
+      \>\>myfunc(a[off+d]);\\
+    \>\}\\
+  \}\\
+  DMComplexRestoreTransitiveClosure(dm, cell, PETSC\_TRUE, \&numPoints, \&points);\\
+  VecRestoreArray(u, \&a);
+\end{tabbing}
+This operation is so common, that we have built a convenience method around it which returns the values in a contiguous
+array, correctly taking into account the orientations of various mesh points,
+\begin{tabbing}
+  const PetscScalar *values;\\
+  PetscInt           csize;\\
+\\
+  DMComplexVecGetClosure(dm, section, u, cell, \&csize, \&values);\\
+  /* Do integral in quadrature loop */\\
+  DMComplexVecRestoreClosure(dm, section, u, cell, \&csize, \&values);\\
+  DMComplexVecSetClosure(dm, section, residual, cell, \&r, ADD\_VALUES);
+\end{tabbing}
+A simple example of this kind of calculation is in DMComplexComputeL2Diff(). Note that there is no restriction on the
+type of cell or dimension of the mesh in the code above, so it will work for polyhedral cells, hybrid meshes, and meshes
+of any dimension, without change. We can also reverse the covering relation, so that the code works for finite volume
+methods where we want the data from neighboring cells for each face
+\begin{tabbing}
+  PetscScalar *a;\\
+  PetscInt     points[2*2], numPoints, p, dofA, offA, dofB, offB;\\
+\\
+  VecGetArray(u, \&a);\\
+  DMComplexGetTransitiveClosure(dm, cell, PETSC\_FALSE, \&numPoints, \&points);\\
+  assert(numPoints == 2);\\
+  PetscSectionGetDof(section, points[0*2], \&dofA);\\
+  PetscSectionGetDof(section, points[1*2], \&dofB);\\
+  assert(dofA == dofB);\\
+  PetscSectionGetOffset(section, points[0*2], \&offA);\\
+  PetscSectionGetOffset(section, points[1*2], \&offB);\\
+  myfunc(a[offA], a[offB]);\\
+  VecRestoreArray(u, \&a);
+\end{tabbing}
+This kind of calculation is used in TS ex11.
 
 %------------------------------------------------------------------
 
