@@ -42,18 +42,19 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.setCompilers  = framework.require('config.setCompilers',      self)
-    self.arch          = framework.require('PETSc.utilities.arch',     self.setCompilers)
-    self.petscdir      = framework.require('PETSc.utilities.petscdir', self.setCompilers)
-    self.languages     = framework.require('PETSc.utilities.languages',self.setCompilers)
-    self.debugging     = framework.require('PETSc.utilities.debugging',self.setCompilers)
-    self.CHUD          = framework.require('PETSc.utilities.CHUD',     self)        
-    self.compilers     = framework.require('config.compilers',         self)
-    self.types         = framework.require('config.types',             self)
-    self.headers       = framework.require('config.headers',           self)
-    self.functions     = framework.require('config.functions',         self)
-    self.libraries     = framework.require('config.libraries',         self)
-    self.atomics       = framework.require('config.atomics',           self)
+    self.setCompilers  = framework.require('config.setCompilers',       self)
+    self.arch          = framework.require('PETSc.utilities.arch',      self.setCompilers)
+    self.petscdir      = framework.require('PETSc.utilities.petscdir',  self.setCompilers)
+    self.languages     = framework.require('PETSc.utilities.languages', self.setCompilers)
+    self.debugging     = framework.require('PETSc.utilities.debugging', self.setCompilers)
+    self.CHUD          = framework.require('PETSc.utilities.CHUD',      self)        
+    self.compilers     = framework.require('config.compilers',          self)
+    self.types         = framework.require('config.types',              self)
+    self.headers       = framework.require('config.headers',            self)
+    self.functions     = framework.require('config.functions',          self)
+    self.libraries     = framework.require('config.libraries',          self)
+    self.atomics       = framework.require('config.atomics',            self)
+    self.blasLapack    = framework.require('config.packages.BlasLapack',self)
     if os.path.isdir(os.path.join('config', 'PETSc')):
       for d in ['utilities', 'packages']:
         for utility in os.listdir(os.path.join('config', 'PETSc', d)):
@@ -132,6 +133,7 @@ class Configure(config.base.Configure):
       self.setCompilers.pushLanguage('FC')
       fd.write('fcompiler='+self.setCompilers.getCompiler()+'\n')
       self.setCompilers.popLanguage()
+    fd.write('blaslapacklibs='+self.libraries.toStringNoDupes(self.blaslapack.lib)+'\n')
 
     fd.write('\n')
     fd.write('Name: PETSc\n')
