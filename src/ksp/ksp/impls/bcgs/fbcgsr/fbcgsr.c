@@ -26,7 +26,8 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
 {
   PetscErrorCode    ierr;
   PetscInt          i,j,N;
-  PetscScalar       rho,tau,sigma,alpha,omega,beta;
+  PetscScalar       tau,sigma,alpha,omega,beta;
+  PetscReal         rho;
   PetscScalar       xi1,xi2,xi3,xi4;
   Vec               X,B,P,P2,RP,R,V,S,T,S2;
   PetscScalar       *PETSC_RESTRICT rp, *PETSC_RESTRICT r, *PETSC_RESTRICT p;
