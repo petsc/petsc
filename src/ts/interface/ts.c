@@ -1954,7 +1954,8 @@ PetscErrorCode  TSPostStep(TS ts)
 $    int monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx)
 
 +    ts - the TS context
-.    steps - iteration number
+.    steps - iteration number (after the final time step the monitor routine is called with a step of -1, this is at the final time which may have 
+                               been interpolated to)
 .    time - current time
 .    u - current iterate
 -    mctx - [optional] monitoring context
