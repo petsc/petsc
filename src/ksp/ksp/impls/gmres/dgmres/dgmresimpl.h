@@ -6,43 +6,45 @@
 #define KSPGMRES_NO_MACROS
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 
+#define KSPDGMRESHEADER \
+  /* Data specific to DGMRES */ \
+  Vec		*U;	/* Vectors that form the basis of the invariant subspace */ \
+  PetscScalar	*T;	/* T=U^T*M^{-1}*A*U */ \
+  PetscScalar	*TF;	/* The factors L and U from T = P*L*U */ \
+  PetscBLASInt 	*InvP;	/* Permutation Vector from the LU factorization of T */ \
+  PetscInt	neig;	/* number of eigenvalues to extract at each restart */ \
+  PetscInt	r;		/* current number of deflated eigenvalues */ \
+  PetscInt 	max_neig;	/* Maximum number of eigenvalues to deflate */ \
+  PetscReal 	lambdaN;	/* modulus of the largest eigenvalue of A */ \
+  PetscReal	smv; 	/* smaller multiple of the remaining allowed number of steps -- used for the adaptive strategy */ \
+  PetscInt	force; /* Force the use of the deflation at the restart */ \
+  PetscInt	matvecs; /* Total number of matrix-vectors */ \
+  PetscInt	GreatestEig; /* Extract the greatest eigenvalues instead */ \
+  PetscReal     *wr, *wi, *modul; /* Real and complex part and modulus of eigenvalues */ \
+  PetscScalar   *Q, *Z; /* Left and right schur/eigenvectors from the QZ algorithm */ \
+  PetscInt      *perm; /* temporary permutation vector */ \
+  /* Work spaces */ \
+  Vec		*mu;	/* Save the product M^{-1}AU */ \
+  PetscScalar	*Sr; 	/* Schur vectors to extract */ \
+  Vec		*X; 	/* Schurs Vectors Sr projected to the entire space */ \
+  Vec		*mx; 	/* store the product M^{-1}*A*X */ \
+  PetscScalar	*umx; 	/* store the product U^T*M^{-1}*A*X */ \
+  PetscScalar	*xmu; 	/* store the product X^T*M^{-1}*A*U */ \
+  PetscScalar	*xmx;	/* store the product X^T*M^{-1}*A*X */ \
+  PetscScalar	*x1; 	/* store the product U^T*x */ \
+  PetscScalar	*x2; 	/* store the product U^T*x */ \
+  PetscScalar 	*Sr2; 	/* Schur vectors at the improvement step */ \
+  PetscScalar	*auau; 	/* product of (M*A*U)^T*M*A*U */ \
+  PetscScalar	*auu; 	/* product of (M*A*U)^T*U */ \
+  PetscScalar 	*work; 	/* work space for LAPACK functions */ \
+  PetscInt	*iwork;	/* work space for LAPACK functions */ \
+  PetscReal	*orth; 	/* Coefficients for the orthogonalization */ \
+  PetscBool     HasSchur; /* Indicate if the Schur form had already been computed in this cycle */ \
+  PetscInt	improve; /* 0 = do not improve the eigenvalues; This is an experimental option */
+
 typedef struct {
   KSPGMRESHEADER
-
-  /* Data specific to DGMRES */
-  Vec			*U;	/* Vectors that form the basis of the invariant subspace */
-  PetscScalar	*T;	/* T=U^T*M^{-1}*A*U */
-  PetscScalar	*TF;	/* The factors L and U from T = P*L*U */
-  PetscBLASInt 		*InvP;	/* Permutation Vector from the LU factorization of T */
-  PetscInt		neig;	/* number of eigenvalues to extract at each restart */
-  PetscInt		r;		/* current number of deflated eigenvalues */
-  PetscInt 		max_neig;	/* Maximum number of eigenvalues to deflate */
-  PetscReal 	lambdaN;	/* modulus of the largest eigenvalue of A */
-  PetscReal		smv; 	/* smaller multiple of the remaining allowed number of steps -- used for the adaptive strategy */
-  PetscInt		force; /* Force the use of the deflation at the restart */
-  PetscInt		matvecs; /* Total number of matrix-vectors */
-  PetscInt		GreatestEig; /* Extract the greatest eigenvalues instead */
-
-  /* Work spaces */
-  Vec			*mu;	/* Save the product M^{-1}AU */
-  PetscScalar	*Sr; 	/* Schur vectors to extract */
-  Vec			*X; 	/* Schurs Vectors Sr projected to the entire space */
-  Vec			*mx; 	/* store the product M^{-1}*A*X */
-  PetscScalar	*umx; 	/* store the product U^T*M^{-1}*A*X */
-  PetscScalar	*xmu; 	/* store the product X^T*M^{-1}*A*U */
-  PetscScalar	*xmx;	/* store the product X^T*M^{-1}*A*X */
-  PetscScalar	*x1; 	/* store the product U^T*x */
-  PetscScalar	*x2; 	/* store the product U^T*x */
-  PetscScalar 	*Sr2; 	/* Schur vectors at the improvement step */
-  PetscScalar	*auau; 	/* product of (M*A*U)^T*M*A*U */
-  PetscScalar	*auu; 	/* product of (M*A*U)^T*U */
-
-  PetscScalar 	*work; 	/* work space for LAPACK functions */
-  PetscInt		*iwork;	/* work space for LAPACK functions */
-  PetscReal		*orth; 	/* Coefficients for the orthogonalization */
-
-  PetscInt		improve; /* 0 = do not improve the eigenvalues; This is an experimental option */
-
+  KSPDGMRESHEADER
 } KSP_DGMRES;
 
 PetscLogEvent KSP_DGMRESComputeDeflationData, KSP_DGMRESApplyDeflation;
@@ -58,30 +60,41 @@ PetscLogEvent KSP_DGMRESComputeDeflationData, KSP_DGMRESApplyDeflation;
 #define VEC_TEMP_MATOP dgmres->vecs[1]
 #define VEC_VV(i)      dgmres->vecs[VEC_OFFSET+i]
 
-#define EIG_OFFSET			2
+#define EIG_OFFSET		1
 #define DGMRES_DEFAULT_EIG	1
-#define DGMRES_DEFAULT_MAXEIG 100
+#define DGMRES_DEFAULT_MAXEIG 10
 
-#define	UU		dgmres->U
-#define	TT		dgmres->T
-#define	TTF		dgmres->TF
-#define	XX		dgmres->X
+#define	UU	dgmres->U
+#define	TT	dgmres->T
+#define	TTF	dgmres->TF
+#define	XX	dgmres->X
 #define	INVP	dgmres->InvP
-#define	MU		dgmres->mu
-#define	MX		dgmres->mx
-#define	UMX		dgmres->umx
-#define	XMU		dgmres->xmu
-#define	XMX		dgmres->xmx
-#define	X1		dgmres->x1
-#define	X2		dgmres->x2
-#define	SR		dgmres->Sr
-#define	SR2		dgmres->Sr2
+#define	MU	dgmres->mu
+#define	MX	dgmres->mx
+#define	UMX	dgmres->umx
+#define	XMU	dgmres->xmu
+#define	XMX	dgmres->xmx
+#define	X1	dgmres->x1
+#define	X2	dgmres->x2
+#define	SR	dgmres->Sr
+#define	SR2	dgmres->Sr2
 #define AUAU	dgmres->auau
-#define AUU		dgmres->auu
+#define AUU	dgmres->auu
 #define	MAX_K	dgmres->max_k
 #define	MAX_NEIG dgmres->max_neig
 #define WORK	dgmres->work
 #define	IWORK	dgmres->iwork
 #define	ORTH	dgmres->orth
-#define SMV 1
+#define SMV     1
 #endif
+
+PETSC_EXTERN_C  PetscErrorCode KSPDGMRESSetEigen_DGMRES (KSP,PetscInt);
+PETSC_EXTERN_C  PetscErrorCode KSPDGMRESComputeSchurForm_DGMRES (KSP, PetscInt *);
+PETSC_EXTERN_C  PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES (KSP, PetscInt *);
+PETSC_EXTERN_C  PetscErrorCode KSPDGMRESApplyDeflation_DGMRES (KSP, Vec, Vec);
+PETSC_EXTERN_C  PetscErrorCode KSPSolve_DGMRES (KSP );
+PETSC_EXTERN_C  PetscErrorCode KSPDGMREScycle (PetscInt *,KSP );
+PETSC_EXTERN_C  PetscErrorCode KSPSetUp_DGMRES (KSP );
+PETSC_EXTERN_C  PetscErrorCode KSPSetFromOptions_DGMRES (KSP);
+PETSC_EXTERN_C  PetscErrorCode KSPBuildSolution_DGMRES (KSP, Vec ,Vec *);
+PETSC_EXTERN_C  PetscErrorCode KSPDestroy_DGMRES (KSP);

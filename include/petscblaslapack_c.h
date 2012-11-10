@@ -43,6 +43,9 @@
 #  define LAPACKhseqr_ shseqr
 #  define LAPACKgges_  sgges
 #  define LAPACKtrsen_ strsen
+#  define LAPACKormqr_ sormqr
+#  define LAPACKhgeqz_ shgeqz
+#  define LAPACKtrtrs_ strtrs
 # else
 /* Real double precision with no character string arguments */
 #  define LAPACKgeqrf_ dgeqrf
@@ -80,6 +83,9 @@
 #  define LAPACKhseqr_ dhseqr
 #  define LAPACKgges_  dgges
 #  define LAPACKtrsen_ dtrsen
+#  define LAPACKormqr_ dormqr
+#  define LAPACKhgeqz_ dhgeqz
+#  define LAPACKtrtrs_ dtrtrs
 # endif
 #else
 # if defined(PETSC_USE_REAL_SINGLE)
@@ -118,6 +124,9 @@
 #  define LAPACKhseqr_ chseqr
 #  define LAPACKgges_  cgges
 #  define LAPACKtrsen_ ctrsen
+#  define LAPACKormqr_ cormqr
+#  define LAPACKhgeqz_ chgeqz
+#  define LAPACKtrtrs_ ctrtrs
 /* LAPACKstebz_ does not exist for complex. */
 # else
 /* Complex double precision with no character string arguments */
@@ -155,6 +164,9 @@
 #  define LAPACKhseqr_ zhseqr
 #  define LAPACKtrsen_ ztrsen
 #  define LAPACKgges_  zgges
+#  define LAPACKormqr_ zormqr
+#  define LAPACKhgeqz_ zhgeqz
+#  define LAPACKtrtrs_ ztrtrs
 /* LAPACKstebz_ does not exist for complex. */
 # endif
 #endif

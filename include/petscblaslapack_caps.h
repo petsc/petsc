@@ -42,6 +42,9 @@
 #  define LAPACKhseqr_ SHSEQR
 #  define LAPACKgges_  SGGES
 #  define LAPACKtrsen_ STRSEN
+#  define LAPACKormqr_ SORMQR
+#  define LAPACKhgeqz_ SHGEQZ
+#  define LAPACKtrtrs_ STRTRS
 # else
 /* Real double precision with no character string arguments */
 #  define LAPACKgeqrf_ DGEQRF
@@ -79,6 +82,9 @@
 #  define LAPACKhseqr_ DHSEQR
 #  define LAPACKgges_  DGGES
 #  define LAPACKtrsen_ DTRSEN
+#  define LAPACKormqr_ DORMQR
+#  define LAPACKhgeqz_ DHGEQZ
+#  define LAPACKtrtrs_ DTRTRS
 # endif
 
 #else
@@ -119,6 +125,9 @@
 #  define LAPACKhseqr_ CHSEQR
 #  define LAPACKgges_  CGGES
 #  define LAPACKtrsen_ CTRSEN
+#  define LAPACKormqr_ CORMQR
+#  define LAPACKhgeqz_ CHGEQZ
+#  define LAPACKtrtrs_ CTRTRS
 # else
 /* Complex double precision with no character string arguments */
 #  define LAPACKgeqrf_ ZGEQRF
@@ -156,6 +165,9 @@
 #  define LAPACKhseqr_ ZHSEQR
 #  define LAPACKgges_  ZGGES
 #  define LAPACKtrsen_ ZTRSEN
+#  define LAPACKormqr_ ZORMQR
+#  define LAPACKhgeqz_ ZHGEQZ
+#  define LAPACKtrtrs_ ZTRTRS
 # endif
 #endif
 
