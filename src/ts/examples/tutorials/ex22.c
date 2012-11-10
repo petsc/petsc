@@ -12,6 +12,10 @@ static const char help[] = "Time-dependent advection-reaction PDE in 1d, demonst
 
    Upstream boundary conditions:
    u(0,t) = 1-sin(12*t)^4
+
+   Useful command-line parameters:
+   -ts_arkimex_fully_implicit - treats advection implicitly, only relevant with -ts_type arkimex (default)
+   -ts_type rosw - use Rosenbrock-W method (linearly implicit IMEX, amortizes assembly and preconditioner setup)
 */
 
 #include <petscdmda.h>
@@ -35,7 +39,9 @@ static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS                ts;         /* nonlinear solver */
+  TS                ts;         /* time integrator */
+  SNES              snes;       /* nonlinear solver */
+  SNESLineSearch    linesearch; /* line search */
   Vec               X;          /* solution, residual vectors */
   Mat               J;          /* Jacobian matrix */
   PetscInt          steps,maxsteps,mx;
@@ -77,6 +83,13 @@ int main(int argc,char **argv)
   ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunction,&user);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
+
+  /* A line search in the nonlinear solve can fail due to ill-conditioning unless an absolute tolerance is set. Since
+   * this problem is linear, we deactivate the line search. For a linear problem, it is usually recommended to also use
+   * SNESSetType(snes,SNESKSPONLY). */
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
 
   ftime = 1.0;
   maxsteps = 10000;

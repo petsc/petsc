@@ -36,6 +36,8 @@
       external FormInitialSolution
 
       TS             ts
+      SNES           snes
+      SNESLineSearch linesearch
       Vec            X
       Mat            J
       PetscInt       steps,maxsteps,mx
@@ -97,6 +99,10 @@
       call TSSetIFunction(ts,PETSC_NULL_OBJECT,FormIFunction,user,ierr)
       call DMCreateMatrix(da,MATAIJ,J,ierr)
       call TSSetIJacobian(ts,J,J,FormIJacobian,user,ierr)
+
+      call TSGetSNES(ts,snes,ierr)
+      call SNESGetSNESLineSearch(snes,linesearch,ierr)
+      call SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC,ierr)
 
       ftime = 1.0
       maxsteps = 10000
