@@ -2109,14 +2109,24 @@ PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, 
     if (flg) break;
     next = next->next;
   }
-  /* Find, or add, label value */
+  /* Find label value */
   for (v = 0; v < next->numStrata; ++v) {
+#if 1
+    PetscInt i;
+
+    ierr = PetscFindInt(point, next->stratumSizes[v], &next->points[next->stratumOffsets[v]], &i);
+    if (i >= 0) {
+      *value = next->stratumValues[v];
+      break;
+    }
+#else
     for (p = next->stratumOffsets[v]; p < next->stratumOffsets[v]+next->stratumSizes[v]; ++p) {
       if (next->points[p] == point) {
         *value = next->stratumValues[v];
         break;
       }
     }
+#endif
   }
   PetscFunctionReturn(0);
 }
