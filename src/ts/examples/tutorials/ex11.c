@@ -14,7 +14,6 @@ typedef struct {
   PetscInt     numGhostCells;
   PetscSection normalSection;
   Vec          normals;
-  PetscSection stateSection;
   Vec          state, residual;
 } AppCtx;
 
@@ -183,6 +182,8 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
     ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
     ierr = ISDestroy(&idIS);CHKERRQ(ierr);
   }
+  /* Turn off visualization of ghost cells */
+  ierr = DMComplexSetVTKBounds(gdm, cEnd, PETSC_DETERMINE);CHKERRQ(ierr);
 
   ierr = DMSetFromOptions(gdm);CHKERRQ(ierr);
   ierr = DMDestroy(dmGhosted);CHKERRQ(ierr);
@@ -242,21 +243,33 @@ PetscErrorCode ConstructNormals(DM dm, PetscSection normalSection, Vec normals)
 
 #undef __FUNCT__
 #define __FUNCT__ "ConstructState"
-PetscErrorCode ConstructState(DM dm, PetscSection stateSection, Vec state)
+PetscErrorCode ConstructState(DM dm, PetscInt numGhostCells, Vec state)
 {
-  PetscInt       dof = 1, stateSize, cStart, cEnd, c;
+  PetscSection   stateSection;
+  PetscInt       dof = 1, *cind, d, stateSize, cStart, cEnd, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &stateSection);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(stateSection, cStart, cEnd);CHKERRQ(ierr);
   for(c = cStart; c < cEnd; ++c) {
     ierr = PetscSectionSetDof(stateSection, c, dof);CHKERRQ(ierr);
   }
+  for(c = cEnd-numGhostCells; c < cEnd; ++c) {
+    ierr = PetscSectionSetConstraintDof(stateSection, c, dof);CHKERRQ(ierr);
+  }
   ierr = PetscSectionSetUp(stateSection);CHKERRQ(ierr);
+  ierr = PetscMalloc(dof * sizeof(PetscInt), &cind);CHKERRQ(ierr);
+  for(d = 0; d < dof; ++d) cind[d] = d;
+  for(c = cEnd-numGhostCells; c < cEnd; ++c) {
+    ierr = PetscSectionSetConstraintIndices(stateSection, c, cind);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(cind);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(stateSection, &stateSize);CHKERRQ(ierr);
   ierr = VecSetSizes(state, stateSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(state);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(dm, stateSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -268,11 +281,13 @@ PetscErrorCode CopyToGhosts(DM dm, AppCtx *user)
   const char     *name = "Face Sets";
   IS              idIS;
   const PetscInt *ids;
+  PetscSection    stateSection;
   PetscScalar    *state;
   PetscInt        numFS, fs;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetDefaultSection(dm, &stateSection);CHKERRQ(ierr);
   ierr = DMComplexGetLabelIdIS(dm, name, &idIS);CHKERRQ(ierr);
   ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
   ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
@@ -295,10 +310,10 @@ PetscErrorCode CopyToGhosts(DM dm, AppCtx *user)
       if (numCells != 2) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "DM has %d > 2 cells for face %d", numCells, f);
       PetscInt dof, off, gdof, goff, d;
 
-      ierr = PetscSectionGetDof(user->stateSection, cells[0], &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(user->stateSection, cells[0], &off);CHKERRQ(ierr);
-      ierr = PetscSectionGetDof(user->stateSection, cells[1], &gdof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(user->stateSection, cells[1], &goff);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(stateSection, cells[0], &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(stateSection, cells[0], &off);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(stateSection, cells[1], &gdof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(stateSection, cells[1], &goff);CHKERRQ(ierr);
       for(d = 0; d < dof; ++d) {
         state[goff+d] = state[off+d];
       }
@@ -317,11 +332,13 @@ PetscErrorCode CopyToGhosts(DM dm, AppCtx *user)
 /* Iterate over all faces and give me access to solution state + residual for the cells on both sides. */
 PetscErrorCode CalculateFlux(DM dm, AppCtx *user)
 {
+  PetscSection   stateSection;
   PetscScalar   *state, *residual;
   PetscInt       fStart, fEnd, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetDefaultSection(dm, &stateSection);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = VecGetArray(user->state,    &state);CHKERRQ(ierr);
   ierr = VecGetArray(user->residual, &residual);CHKERRQ(ierr);
@@ -335,8 +352,8 @@ PetscErrorCode CalculateFlux(DM dm, AppCtx *user)
     for(c = 0; c < numCells; ++c) {
       PetscInt dof, off, d;
 
-      ierr = PetscSectionGetDof(user->stateSection, cells[c], &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(user->stateSection, cells[c], &off);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(stateSection, cells[c], &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(stateSection, cells[c], &off);CHKERRQ(ierr);
       for(d = 0; d < dof; ++d) {
         residual[off+d] = state[off+d];
       }
@@ -386,9 +403,8 @@ int main(int argc, char **argv)
   ierr = ConstructNormals(dm, user.normalSection, user.normals);CHKERRQ(ierr);
   ierr = VecView(user.normals, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = PetscSectionCreate(comm, &user.stateSection);CHKERRQ(ierr);
   ierr = VecCreate(comm, &user.state);CHKERRQ(ierr);
-  ierr = ConstructState(dm, user.stateSection, user.state);CHKERRQ(ierr);
+  ierr = ConstructState(dm, user.numGhostCells, user.state);CHKERRQ(ierr);
   ierr = VecDuplicate(user.state, &user.residual);CHKERRQ(ierr);
 
   ierr = CopyToGhosts(dm, &user);CHKERRQ(ierr);
@@ -396,7 +412,6 @@ int main(int argc, char **argv)
 
   ierr = PetscSectionDestroy(&user.normalSection);CHKERRQ(ierr);
   ierr = VecDestroy(&user.normals);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&user.stateSection);CHKERRQ(ierr);
   ierr = VecDestroy(&user.state);CHKERRQ(ierr);
   ierr = VecDestroy(&user.residual);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
