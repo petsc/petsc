@@ -620,6 +620,7 @@ int main(int argc, char **argv)
   ierr = SetUpLocalSpace(dm, user.numGhostCells);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
   ierr = SetInitialCondition(dm, X, &user);CHKERRQ(ierr);
   ierr = VecViewVTK(X, "ex11-000.vtk");CHKERRQ(ierr);
   if (0) {                      /* crashing */
