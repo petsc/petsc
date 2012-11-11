@@ -150,6 +150,8 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool in
   }
   /* Read coordinates */
   ierr = DMComplexGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSection, 0, dim);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
   for (v = numCells; v < numCells+numVertices; ++v) {
     ierr = PetscSectionSetDof(coordSection, v, dim);CHKERRQ(ierr);
