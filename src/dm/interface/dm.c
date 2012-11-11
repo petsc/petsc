@@ -65,7 +65,6 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "DMSetVecType"
 /*@C
@@ -92,6 +91,60 @@ PetscErrorCode  DMSetVecType(DM da,VecType ctype)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   ierr = PetscFree(da->vectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(ctype,(char**)&da->vectype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecGetDM"
+/*@
+  VecSetDM - Gets the DM defining the data layout of the vector
+
+  Not collective
+
+  Input Parameter:
+. v - The Vec
+
+  Output Parameter:
+. dm - The DM
+
+  Level: intermediate
+
+.seealso: VecSetDM(), DMGetLocalVector(), DMGetGlobalVector(), DMSetVecType()
+@*/
+PetscErrorCode VecGetDM(Vec v, DM *dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidPointer(dm,2);
+  ierr = PetscObjectQuery((PetscObject) v, "__PETSc_dm", (PetscObject *) dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecSetDM"
+/*@
+  VecSetDM - Sets the DM defining the data layout of the vector
+
+  Not collective
+
+  Input Parameters:
++ v - The Vec
+- dm - The DM
+
+  Level: intermediate
+
+.seealso: VecGetDM(), DMGetLocalVector(), DMGetGlobalVector(), DMSetVecType()
+@*/
+PetscErrorCode VecSetDM(Vec v, DM dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,2);
+  ierr = PetscObjectCompose((PetscObject) v, "__PETSc_dm", (PetscObject) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

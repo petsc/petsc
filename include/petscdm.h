@@ -183,6 +183,9 @@ PETSC_EXTERN PetscErrorCode DMGetRefineLevel(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMGetCoarsenLevel(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMFinalizePackage(void);
 
+PETSC_EXTERN PetscErrorCode VecGetDM(Vec, DM*);
+PETSC_EXTERN PetscErrorCode VecSetDM(Vec, DM);
+
 typedef struct NLF_DAAD* NLF;
 
 #include <petscbag.h>
