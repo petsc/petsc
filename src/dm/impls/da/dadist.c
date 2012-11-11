@@ -13,7 +13,7 @@ PetscErrorCode  VecDuplicate_MPI_DA(Vec g,Vec* gg)
   DM             da;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)g,"DM",(PetscObject*)&da);CHKERRQ(ierr);
+  ierr = VecGetDM(g, &da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,gg);CHKERRQ(ierr);
   ierr = PetscLayoutReference(g->map,&(*gg)->map);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -35,7 +35,7 @@ PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec* g)
   ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
   ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
   ierr = VecSetFromOptions(*g);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*g,"DM",(PetscObject)da);CHKERRQ(ierr);
+  ierr = VecSetDM(*g, da);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(*g,da->ltogmap);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMappingBlock(*g,da->ltogmapb);CHKERRQ(ierr);
   ierr = VecSetOperation(*g,VECOP_VIEW,(void(*)(void))VecView_MPI_DA);CHKERRQ(ierr);

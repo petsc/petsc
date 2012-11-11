@@ -177,6 +177,60 @@ PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatGetDM"
+/*@
+  MatSetDM - Gets the DM defining the data layout of the matrix
+
+  Not collective
+
+  Input Parameter:
+. A - The Mat
+
+  Output Parameter:
+. dm - The DM
+
+  Level: intermediate
+
+.seealso: MatSetDM(), DMCreateMatrix(), DMSetMatType()
+@*/
+PetscErrorCode MatGetDM(Mat A, DM *dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidPointer(dm,2);
+  ierr = PetscObjectQuery((PetscObject) A, "__PETSc_dm", (PetscObject *) dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetDM"
+/*@
+  MatSetDM - Sets the DM defining the data layout of the matrix
+
+  Not collective
+
+  Input Parameters:
++ A - The Mat
+- dm - The DM
+
+  Level: intermediate
+
+.seealso: MatGetDM(), DMCreateMatrix(), DMSetMatType()
+@*/
+PetscErrorCode MatSetDM(Mat A, DM dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,2);
+  ierr = PetscObjectCompose((PetscObject) A, "__PETSc_dm", (PetscObject) dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMSetOptionsPrefix"
 /*@C
    DMSetOptionsPrefix - Sets the prefix used for searching for all
@@ -240,9 +294,9 @@ PetscErrorCode  DMDestroy(DM *dm)
   }
   for (nlink=(*dm)->namedglobal; nlink; nlink=nlink->next) cnt++;
   if ((*dm)->x) {
-    PetscObject obj;
-    ierr = PetscObjectQuery((PetscObject)(*dm)->x,"DM",&obj);CHKERRQ(ierr);
-    if (obj == (PetscObject)*dm) cnt++;
+    DM obj;
+    ierr = VecGetDM((*dm)->x, &obj);CHKERRQ(ierr);
+    if (obj == *dm) cnt++;
   }
 
   if (--((PetscObject)(*dm))->refct - cnt > 0) {*dm = 0; PetscFunctionReturn(0);}
@@ -521,7 +575,7 @@ PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
     ierr = VecSetBlockSize(*vec, blockSize);CHKERRQ(ierr);
     /* ierr = VecSetType(*vec, dm->vectype);CHKERRQ(ierr); */
     ierr = VecSetFromOptions(*vec);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) *vec, "DM", (PetscObject) dm);CHKERRQ(ierr);
+    ierr = VecSetDM(*vec, dm);CHKERRQ(ierr);
     /* ierr = VecSetLocalToGlobalMapping(*vec, dm->ltogmap);CHKERRQ(ierr); */
     /* ierr = VecSetLocalToGlobalMappingBlock(*vec, dm->ltogmapb);CHKERRQ(ierr); */
     /* ierr = VecSetOperation(*vec, VECOP_DUPLICATE, (void(*)(void)) VecDuplicate_MPI_DM);CHKERRQ(ierr); */
@@ -574,7 +628,7 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
     ierr = VecSetSizes(*vec, localSize, localSize);CHKERRQ(ierr);
     ierr = VecSetBlockSize(*vec, blockSize);CHKERRQ(ierr);
     ierr = VecSetFromOptions(*vec);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) *vec, "DM", (PetscObject) dm);CHKERRQ(ierr);
+    ierr = VecSetDM(*vec, dm);CHKERRQ(ierr);
   } else {
     ierr = (*dm->ops->createlocalvector)(dm,vec);CHKERRQ(ierr);
   }

@@ -98,7 +98,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   ierr = PetscViewerDrawGetBounds(viewer,&nbounds,&bounds);CHKERRQ(ierr);
 
-  ierr = PetscObjectQuery((PetscObject)xin,"DM",(PetscObject*)&da);CHKERRQ(ierr);
+  ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
   if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
@@ -134,13 +134,13 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
       /* remove association between xlocal and da, because below we compose in the opposite
          direction and if we left this connect we'd get a loop, so the objects could
          never be destroyed */
-      ierr = PetscObjectRemoveReference((PetscObject)xlocal,"DM");CHKERRQ(ierr);
+      ierr = PetscObjectRemoveReference((PetscObject)xlocal,"__PETSc_dm");CHKERRQ(ierr);
     }
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsGhosted",(PetscObject)xlocal);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)xlocal);CHKERRQ(ierr);
   } else {
     if (bx !=  DMDA_BOUNDARY_NONE || by !=  DMDA_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) {
-      ierr = PetscObjectQuery((PetscObject)xlocal,"DM",(PetscObject*)&dac);CHKERRQ(ierr);
+      ierr = VecGetDM(xlocal, &dac);CHKERRQ(ierr);
     } else {
       dac = da;
     }
@@ -184,7 +184,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     ierr = PetscObjectDereference((PetscObject)dag);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)xcoorl);CHKERRQ(ierr);
   } else {
-    ierr = PetscObjectQuery((PetscObject)xcoorl,"DM",(PetscObject*)&dag);CHKERRQ(ierr);
+    ierr = VecGetDM(xcoorl,&dag);CHKERRQ(ierr);
   }
   ierr = DMGlobalToLocalBegin(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
@@ -289,7 +289,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
 
-  ierr = PetscObjectQuery((PetscObject)xin,"DM",(PetscObject*)&dm);CHKERRQ(ierr);
+  ierr = VecGetDM(xin,&dm);CHKERRQ(ierr);
   if (!dm) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
   da = (DM_DA*)dm->data;
 
@@ -502,7 +502,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
   const char     *prefix,*name;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)xin,"DM",(PetscObject*)&da);CHKERRQ(ierr);
+  ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
   if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isvtk);CHKERRQ(ierr);
@@ -584,7 +584,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)xin,"DM",(PetscObject*)&da);CHKERRQ(ierr);
+  ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
   dd = (DM_DA*)da->data;
 
   /* Create the dataspace for the dataset */
@@ -662,7 +662,7 @@ PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
 #endif
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)xin,"DM",(PetscObject*)&da);CHKERRQ(ierr);
+  ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
   dd   = (DM_DA*)da->data;
 #if defined(PETSC_HAVE_MPIIO)
   ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
@@ -701,7 +701,7 @@ PetscErrorCode  VecLoad_Default_DA(Vec xin, PetscViewer viewer)
 #endif
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)xin,"DM",(PetscObject*)&da);CHKERRQ(ierr);
+  ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
   if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
 #if defined(PETSC_HAVE_HDF5)

@@ -449,18 +449,25 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   if (hasPoint) {
     ierr = PetscFPrintf(comm, fp, "POINT_DATA %d\n", totVertices);
     for (link = vtk->link; link; link = link->next) {
-      Vec            X = (Vec) link->vec;
-      PetscContainer c;
-      PetscSection   section, globalSection;
-      const char    *name;
-      PetscInt       enforceDof = PETSC_DETERMINE;
+      Vec          X = (Vec) link->vec;
+      DM           dmX;
+      PetscSection section, globalSection;
+      const char  *name;
+      PetscInt     enforceDof = PETSC_DETERMINE;
 
       if ((link->ft != PETSC_VTK_POINT_FIELD) && (link->ft != PETSC_VTK_POINT_VECTOR_FIELD)) continue;
       if (link->ft == PETSC_VTK_POINT_VECTOR_FIELD) enforceDof = 3;
       ierr = PetscObjectGetName(link->vec, &name);CHKERRQ(ierr);
-      ierr = PetscObjectQuery(link->vec, "section", (PetscObject *) &c);CHKERRQ(ierr);
-      if (!c) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
-      ierr = PetscContainerGetPointer(c, (void **) &section);CHKERRQ(ierr);
+      ierr = VecGetDM(X, &dmX);CHKERRQ(ierr);
+      if (dmX) {
+        ierr = DMGetDefaultSection(dmX, &section);
+      } else {
+        PetscContainer c;
+
+        ierr = PetscObjectQuery(link->vec, "section", (PetscObject *) &c);CHKERRQ(ierr);
+        if (!c) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
+        ierr = PetscContainerGetPointer(c, (void **) &section);CHKERRQ(ierr);
+      }
       if (!section) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
       ierr = PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
       ierr = DMComplexVTKWriteField(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0);CHKERRQ(ierr);
@@ -472,7 +479,7 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
     ierr = PetscFPrintf(comm, fp, "CELL_DATA %d\n", totCells);
     for (link = vtk->link; link; link = link->next) {
       Vec            X = (Vec) link->vec;
-      PetscContainer c;
+      DM             dmX;
       PetscSection   section, globalSection;
       const char    *name;
       PetscInt       enforceDof = PETSC_DETERMINE;
@@ -480,9 +487,16 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
       if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
       if (link->ft == PETSC_VTK_CELL_VECTOR_FIELD) enforceDof = 3;
       ierr = PetscObjectGetName(link->vec, &name);CHKERRQ(ierr);
-      ierr = PetscObjectQuery(link->vec, "section", (PetscObject *) &c);CHKERRQ(ierr);
-      if (!c) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
-      ierr = PetscContainerGetPointer(c, (void **) &section);CHKERRQ(ierr);
+      ierr = VecGetDM(X, &dmX);CHKERRQ(ierr);
+      if (dmX) {
+        ierr = DMGetDefaultSection(dmX, &section);
+      } else {
+        PetscContainer c;
+
+        ierr = PetscObjectQuery(link->vec, "section", (PetscObject *) &c);CHKERRQ(ierr);
+        if (!c) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
+        ierr = PetscContainerGetPointer(c, (void **) &section);CHKERRQ(ierr);
+      }
       if (!section) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
       ierr = PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
       ierr = DMComplexVTKWriteField(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0);CHKERRQ(ierr);

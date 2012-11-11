@@ -196,7 +196,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   ierr = PetscViewerDrawGetBounds(v,&nbounds,&bounds);CHKERRQ(ierr);
 
-  ierr = PetscObjectQuery((PetscObject)xin,"DM",(PetscObject*)&da);CHKERRQ(ierr);
+  ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
   if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_vec_mark_points",&showpoints,PETSC_NULL);CHKERRQ(ierr);

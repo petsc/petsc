@@ -80,7 +80,7 @@ static PetscErrorCode DMCreateGlobalVector_Redundant(DM dm,Vec *gvec)
   ierr = DMGetLocalToGlobalMappingBlock(dm,&ltogb);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(*gvec,ltog);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMappingBlock(*gvec,ltog);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*gvec,"DM",(PetscObject)dm);CHKERRQ(ierr);
+  ierr = VecSetDM(*gvec,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -98,7 +98,7 @@ static PetscErrorCode DMCreateLocalVector_Redundant(DM dm,Vec *lvec)
   ierr = VecCreate(PETSC_COMM_SELF,lvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*lvec,red->N,red->N);CHKERRQ(ierr);
   ierr = VecSetType(*lvec,dm->vectype);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*lvec,"DM",(PetscObject)dm);CHKERRQ(ierr);
+  ierr = VecSetDM(*lvec,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

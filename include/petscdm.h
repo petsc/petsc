@@ -185,6 +185,8 @@ PETSC_EXTERN PetscErrorCode DMFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode VecGetDM(Vec, DM*);
 PETSC_EXTERN PetscErrorCode VecSetDM(Vec, DM);
+PETSC_EXTERN PetscErrorCode MatGetDM(Mat, DM*);
+PETSC_EXTERN PetscErrorCode MatSetDM(Mat, DM);
 
 typedef struct NLF_DAAD* NLF;
 

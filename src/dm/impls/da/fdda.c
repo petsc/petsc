@@ -471,9 +471,9 @@ extern PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM,Mat);
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSetDM"
+#define __FUNCT__ "MatSetupDM"
 /*@
-   MatSetDM - Sets the DMDA that is to be used by the HYPRE_StructMatrix PETSc matrix
+   MatSetupDM - Sets the DMDA that is to be used by the HYPRE_StructMatrix PETSc matrix
 
    Logically Collective on Mat
 
@@ -484,14 +484,14 @@ extern PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM,Mat);
    Level: intermediate
 
 @*/
-PetscErrorCode  MatSetDM(Mat mat,DM da)
+PetscErrorCode MatSetupDM(Mat mat,DM da)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  ierr = PetscTryMethod(mat,"MatSetDM_C",(Mat,DM),(mat,da));CHKERRQ(ierr);
+  ierr = PetscTryMethod(mat,"MatSetupDM_C",(Mat,DM),(mat,da));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -516,7 +516,7 @@ PetscErrorCode  MatView_MPI_DA(Mat A,PetscViewer viewer)
   if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscFunctionReturn(0);
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)A,"DM",(PetscObject*)&da);CHKERRQ(ierr);
+  ierr = MatGetDM(A, &da);CHKERRQ(ierr);
   if (!da) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix not generated from a DMDA");
 
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
@@ -553,7 +553,7 @@ PetscErrorCode  MatLoad_MPI_DA(Mat A,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject)A,"DM",(PetscObject*)&da);CHKERRQ(ierr);
+  ierr = MatGetDM(A, &da);CHKERRQ(ierr);
   if (!da) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix not generated from a DMDA");
 
   /* Load the matrix in natural ordering */
@@ -756,7 +756,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, MatType mtype,Mat *J)
   }
   ierr = DMDAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
   ierr = MatSetStencil(A,dim,dims,starts,dof);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)A,"DM",(PetscObject)da);CHKERRQ(ierr);
+  ierr = MatSetDM(A,da);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) {
     /* change viewer to display matrix in natural ordering */

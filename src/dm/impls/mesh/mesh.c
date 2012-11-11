@@ -407,7 +407,7 @@ PetscErrorCode DMCreateMatrix_Mesh(DM dm, MatType mtype, Mat *J)
     }
     ierr = SectionRealDestroy(&section);CHKERRQ(ierr);
   }
-  ierr = PetscObjectCompose((PetscObject) *J, "DM", (PetscObject) dm);CHKERRQ(ierr);
+  ierr = MatSetDM(*J, dm);CHKERRQ(ierr);
   ierr = DMGetLocalToGlobalMapping(dm, &ltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(*J, ltog, ltog);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -456,7 +456,7 @@ PetscErrorCode DMMeshCreateMatrix(DM dm, SectionReal section, MatType mtype, Mat
   } catch(ALE::Exception e) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, e.message());
   }
-  ierr = PetscObjectCompose((PetscObject) *J, "DM", (PetscObject) dm);CHKERRQ(ierr);
+  ierr = MatSetDM(*J, dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -567,7 +567,7 @@ PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec)
   ierr = VecCreate(((PetscObject) dm)->comm, gvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*gvec, localSize, globalSize);CHKERRQ(ierr);
   ierr = VecSetFromOptions(*gvec);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject) *gvec, "DM", (PetscObject) dm);CHKERRQ(ierr);
+  ierr = VecSetDM(*gvec, dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -597,7 +597,7 @@ PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec)
   ierr = VecCreate(PETSC_COMM_SELF, lvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*lvec, size, size);CHKERRQ(ierr);
   ierr = VecSetFromOptions(*lvec);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject) *lvec, "DM", (PetscObject) dm);CHKERRQ(ierr);
+  ierr = VecSetDM(*lvec, dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2122,7 +2122,7 @@ PetscErrorCode DMMeshAssembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMo
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject) b, "DM", (PetscObject *) &dm);CHKERRQ(ierr);
+  ierr = VecGetDM(b, &dm);CHKERRQ(ierr);
   ierr = DMMeshGetSectionReal(dm, "x", &section);CHKERRQ(ierr);
   ierr = DMMeshAssembleVector(b, dm, section, e, v, mode);CHKERRQ(ierr);
   ierr = SectionRealDestroy(&section);CHKERRQ(ierr);

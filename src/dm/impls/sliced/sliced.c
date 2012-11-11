@@ -245,7 +245,7 @@ static PetscErrorCode  DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)
   PetscValidPointer(gvec,2);
   *gvec = 0;
   ierr = VecCreateGhostBlock(((PetscObject)dm)->comm,slice->bs,slice->n*slice->bs,PETSC_DETERMINE,slice->Nghosts,slice->ghosts,gvec);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*gvec,"DM",(PetscObject)dm);CHKERRQ(ierr);
+  ierr = VecSetDM(*gvec,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
