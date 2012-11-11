@@ -3,15 +3,6 @@
 #include <../src/sys/viewer/impls/vtk/vtkvimpl.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexVTKCellTypeValid"
-PetscErrorCode DMComplexVTKCellTypeValid(DM dm, PetscInt cellType, PetscBool *valid)
-{
-  PetscFunctionBegin;
-  *valid = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMComplexVTKGetCellType"
 static PetscErrorCode DMComplexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, PetscInt *cellType) {
   PetscFunctionBegin;
@@ -79,14 +70,14 @@ static PetscErrorCode DMComplexVTKGetCellType(DM dm, PetscInt dim, PetscInt corn
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexVTKWriteCells"
-PetscErrorCode DMComplexVTKWriteCells(DM dm, PetscSection globalConeSection, FILE *fp, PetscInt *totalCells)
+PetscErrorCode DMComplexVTKWriteCells(DM dm, FILE *fp, PetscInt *totalCells)
 {
   MPI_Comm       comm = ((PetscObject) dm)->comm;
   PetscInt       dim;
-  PetscInt       numCorners = 0, maxCorners;
-  PetscInt       numCells   = 0, totCells = 0, cellType, cellHeight;
+  PetscInt       numCorners = 0, totCorners = 0, maxCorners, *corners;
+  PetscInt       numCells   = 0, totCells   = 0, maxCells, cellHeight;
   PetscInt       numLabelCells, cMax, cStart, cEnd, c, vStart, vEnd, v;
-  PetscMPIInt    numProcs, rank, proc, tag = 1;
+  PetscMPIInt    numProcs, rank, proc, tag = 1; /* TODO Get a proper tag */
   PetscBool      hasLabel;
   PetscErrorCode ierr;
 
@@ -101,9 +92,9 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, PetscSection globalConeSection, FIL
   if (cMax >= 0) {cEnd = PetscMin(cEnd, cMax);}
   ierr = DMComplexGetStratumSize(dm, "vtk", 1, &numLabelCells);CHKERRQ(ierr);
   hasLabel = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
-  for (c = cStart; c < cEnd; ++c) {
-    PetscInt  nC;
-    PetscBool valid;
+  for(c = cStart; c < cEnd; ++c) {
+    PetscInt *closure = PETSC_NULL;
+    PetscInt  closureSize;
 
     if (hasLabel) {
       PetscInt value;
@@ -111,27 +102,26 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, PetscSection globalConeSection, FIL
       ierr = DMComplexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
       if (value != 1) continue;
     }
-    /* TODO: Does not work for interpolated meshes */
-    ierr = PetscSectionGetDof(globalConeSection, c, &nC);CHKERRQ(ierr);
-    ierr = DMComplexVTKGetCellType(dm, dim, nC, &cellType);CHKERRQ(ierr);
-    ierr = DMComplexVTKCellTypeValid(dm, cellType, &valid);CHKERRQ(ierr);
-    if (!valid) continue;
-    if (!numCorners) {
-      numCorners = nC;
-    } else if (numCorners != nC) {
-      SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %d has %d corners, which should be %d", c, nC, numCorners);
+    ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for (v = 0; v < closureSize*2; v += 2) {
+      if ((closure[v] >= vStart) && (closure[v] < vEnd)) ++numCorners;
     }
+    ierr = DMComplexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     ++numCells;
   }
+  maxCells = numCells;
   ierr = MPI_Reduce(&numCells, &totCells, 1, MPIU_INT, MPI_SUM, 0, comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&numCorners, &maxCorners, 1, MPIU_INT, MPI_MAX, comm);CHKERRQ(ierr);
-  if (numCorners && numCorners != maxCorners) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "All elements must have %d corners, not %d", maxCorners, numCorners);
-  ierr = PetscFPrintf(comm, fp, "CELLS %d %d\n", totCells, totCells*(maxCorners+1));CHKERRQ(ierr);
+  ierr = MPI_Reduce(&numCells, &maxCells, 1, MPIU_INT, MPI_MAX, 0, comm);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&numCorners, &totCorners, 1, MPIU_INT, MPI_SUM, 0, comm);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&numCorners, &maxCorners, 1, MPIU_INT, MPI_MAX, 0, comm);CHKERRQ(ierr);
+  ierr = PetscMalloc(maxCells * sizeof(PetscInt), &corners);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fp, "CELLS %d %d\n", totCells, totCorners+totCells);CHKERRQ(ierr);
   if (!rank) {
-    for (c = cStart; c < cEnd; ++c) {
+    PetscInt *remoteVertices;
+
+    for(c = cStart; c < cEnd; ++c) {
       PetscInt *closure = PETSC_NULL;
-      PetscInt  coneSize, closureSize;
-      PetscBool valid;
+      PetscInt  closureSize, nC = 0;
 
       if (hasLabel) {
         PetscInt value;
@@ -139,46 +129,45 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, PetscSection globalConeSection, FIL
         ierr = DMComplexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
         if (value != 1) continue;
       }
-      ierr = PetscSectionGetDof(globalConeSection, c, &coneSize);CHKERRQ(ierr);
-      ierr = DMComplexVTKGetCellType(dm, dim, coneSize, &cellType);CHKERRQ(ierr);
-      ierr = DMComplexVTKCellTypeValid(dm, cellType, &valid);CHKERRQ(ierr);
-      if (!valid) continue;
-      ierr = PetscFPrintf(comm, fp, "%d ", maxCorners);CHKERRQ(ierr);
       ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       /* TODO Need global vertex numbering */
       for (v = 0; v < closureSize*2; v += 2) {
-        const PetscInt vertex = closure[v];
-
-        if ((vertex < vStart) || (vertex >= vEnd)) continue;
-        ierr = PetscFPrintf(comm, fp, " %d", vertex - vStart);CHKERRQ(ierr);
+        if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
+          closure[nC++] = closure[v] - vStart;
+        }
+      }
+      corners[c-cStart] = nC;
+      ierr = PetscFPrintf(comm, fp, "%d ", nC);CHKERRQ(ierr);
+      for(v = 0; v < nC; ++v) {
+        ierr = PetscFPrintf(comm, fp, " %d", closure[v]);CHKERRQ(ierr);
       }
       ierr = PetscFPrintf(comm, fp, "\n");CHKERRQ(ierr);
       ierr = DMComplexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
-    for (proc = 1; proc < numProcs; ++proc) {
-      PetscInt  *remoteVertices;
+    if (numProcs > 1) {ierr = PetscMalloc((maxCorners+maxCells) * sizeof(PetscInt), &remoteVertices);CHKERRQ(ierr);}
+    for(proc = 1; proc < numProcs; ++proc) {
       MPI_Status status;
 
-      ierr = MPI_Recv(&numCells, 1, MPIU_INT, proc, tag, comm, &status);CHKERRQ(ierr);
-      ierr = PetscMalloc(numCells*maxCorners * sizeof(PetscInt), &remoteVertices);CHKERRQ(ierr);
-      ierr = MPI_Recv(remoteVertices, numCells*maxCorners, MPIU_INT, proc, tag, comm, &status);CHKERRQ(ierr);
-      for (c = 0; c < numCells; ++c) {
-        ierr = PetscFPrintf(comm, fp, "%d ", maxCorners);CHKERRQ(ierr);
-        for (v = 0; v < maxCorners; ++v) {
-          ierr = PetscFPrintf(comm, fp, " %d", remoteVertices[c*maxCorners+v]);CHKERRQ(ierr);
+      ierr = MPI_Recv(&numCorners, 1, MPIU_INT, proc, tag, comm, &status);CHKERRQ(ierr);
+      ierr = MPI_Recv(remoteVertices, numCorners, MPIU_INT, proc, tag, comm, &status);CHKERRQ(ierr);
+      for(c = 0; c < numCorners;) {
+        PetscInt nC = remoteVertices[c++];
+
+        ierr = PetscFPrintf(comm, fp, "%d ", nC);CHKERRQ(ierr);
+        for(v = 0; v < nC; ++v, ++c) {
+          ierr = PetscFPrintf(comm, fp, " %d", remoteVertices[c]);CHKERRQ(ierr);
         }
         ierr = PetscFPrintf(comm, fp, "\n");CHKERRQ(ierr);
       }
-      ierr = PetscFree(remoteVertices);CHKERRQ(ierr);
     }
+    if (numProcs > 1) {ierr = PetscFree(remoteVertices);CHKERRQ(ierr);}
   } else {
-    PetscInt *localVertices, k = 0;
+    PetscInt *localVertices, numSend = numCells+numCorners, k = 0;
 
-    ierr = PetscMalloc(numCells*maxCorners * sizeof(PetscInt), &localVertices);CHKERRQ(ierr);
+    ierr = PetscMalloc(numSend * sizeof(PetscInt), &localVertices);CHKERRQ(ierr);
     for (c = cStart; c < cEnd; ++c) {
       PetscInt *closure = PETSC_NULL;
-      PetscInt  coneSize, closureSize;
-      PetscBool valid;
+      PetscInt  closureSize, nC = 0;
 
       if (hasLabel) {
         PetscInt value;
@@ -186,31 +175,48 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, PetscSection globalConeSection, FIL
         ierr = DMComplexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
         if (value != 1) continue;
       }
-      /* TODO Use closure for interpolated meshes */
-      ierr = PetscSectionGetDof(globalConeSection, c, &coneSize);CHKERRQ(ierr);
-      ierr = DMComplexVTKGetCellType(dm, dim, coneSize, &cellType);CHKERRQ(ierr);
-      ierr = DMComplexVTKCellTypeValid(dm, cellType, &valid);CHKERRQ(ierr);
-      if (!valid) continue;
       ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       /* TODO Need global vertex numbering */
       for (v = 0; v < closureSize*2; v += 2) {
-        const PetscInt vertex = closure[v];
-
-        if ((vertex < vStart) || (vertex >= vEnd)) continue;
-        localVertices[k++] = vertex - vStart;
+        if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
+          closure[nC++] = closure[v] - vStart;
+        }
+      }
+      corners[c-cStart]  = nC;
+      localVertices[k++] = nC;
+      for(v = 0; v < nC; ++v, ++k) {
+        localVertices[k] = closure[v];
       }
       ierr = DMComplexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
-    if (k != numCells*maxCorners) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numCells*maxCorners);
-    ierr = MPI_Send(&numCells, 1, MPIU_INT, 0, tag, comm);CHKERRQ(ierr);
-    ierr = MPI_Send(localVertices, numCells*maxCorners, MPI_INT, 0, tag, comm);CHKERRQ(ierr);
+    if (k != numSend) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numSend);
+    ierr = MPI_Send(&numSend, 1, MPIU_INT, 0, tag, comm);CHKERRQ(ierr);
+    ierr = MPI_Send(localVertices, numSend, MPIU_INT, 0, tag, comm);CHKERRQ(ierr);
     ierr = PetscFree(localVertices);CHKERRQ(ierr);
   }
   ierr = PetscFPrintf(comm, fp, "CELL_TYPES %d\n", totCells);CHKERRQ(ierr);
-  ierr = DMComplexVTKGetCellType(dm, dim, maxCorners, &cellType);CHKERRQ(ierr);
-  for (c = 0; c < totCells; ++c) {
-    ierr = PetscFPrintf(comm, fp, "%d\n", cellType);CHKERRQ(ierr);
+  if (!rank) {
+    PetscInt cellType;
+
+    for (c = 0; c < numCells; ++c) {
+      ierr = DMComplexVTKGetCellType(dm, dim, corners[c], &cellType);CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm, fp, "%d\n", cellType);CHKERRQ(ierr);
+    }
+    for(proc = 1; proc < numProcs; ++proc) {
+      MPI_Status status;
+
+      ierr = MPI_Recv(&numCells, 1, MPIU_INT, proc, tag, comm, &status);CHKERRQ(ierr);
+      ierr = MPI_Recv(corners, numCells, MPIU_INT, proc, tag, comm, &status);CHKERRQ(ierr);
+      for(c = 0; c < numCells; ++c) {
+        ierr = DMComplexVTKGetCellType(dm, dim, corners[c], &cellType);CHKERRQ(ierr);
+        ierr = PetscFPrintf(comm, fp, "%d\n", cellType);CHKERRQ(ierr);
+      }
+    }
+  } else {
+    ierr = MPI_Send(&numCells, 1, MPIU_INT, 0, tag, comm);CHKERRQ(ierr);
+    ierr = MPI_Send(corners, numCells, MPIU_INT, 0, tag, comm);CHKERRQ(ierr);
   }
+  ierr = PetscFree(corners);CHKERRQ(ierr);
   *totalCells = totCells;
   PetscFunctionReturn(0);
 }
@@ -393,7 +399,6 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   FILE                    *fp;
   PetscViewerVTKObjectLink link;
   PetscSection             coordSection, globalCoordSection;
-  PetscSection             coneSection, globalConeSection;
   PetscLayout              vLayout;
   Vec                      coordinates;
   PetscReal                lengthScale;
@@ -435,9 +440,7 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   ierr = PetscFPrintf(comm, fp, "POINTS %d double\n", totVertices);CHKERRQ(ierr);
   ierr = DMComplexVTKWriteSection(dm, coordSection, globalCoordSection, coordinates, fp, 3, PETSC_DETERMINE, lengthScale);CHKERRQ(ierr);
   /* Cells */
-  ierr = DMComplexGetConeSection(dm, &coneSection);CHKERRQ(ierr);
-  ierr = PetscSectionCreateGlobalSection(coneSection, dm->sf, PETSC_FALSE, &globalConeSection);CHKERRQ(ierr);
-  ierr = DMComplexVTKWriteCells(dm, globalConeSection, fp, &totCells);CHKERRQ(ierr);
+  ierr = DMComplexVTKWriteCells(dm, fp, &totCells);CHKERRQ(ierr);
   /* Vertex fields */
   for (link = vtk->link; link; link = link->next) {
     if ((link->ft == PETSC_VTK_POINT_FIELD) || (link->ft == PETSC_VTK_POINT_VECTOR_FIELD)) hasPoint = PETSC_TRUE;
@@ -489,7 +492,6 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   /* Cleanup */
   ierr = PetscSectionDestroy(&globalCoordSection);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&vLayout);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&globalConeSection);CHKERRQ(ierr);
   ierr = PetscFClose(comm, fp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
