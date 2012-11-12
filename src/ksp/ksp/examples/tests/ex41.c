@@ -46,10 +46,10 @@ int main(int argc,char **argv)
   PetscInt       m,n,M,N,i,nrows;
   PetscScalar    one = 1.0;
   PetscReal      fill=2.0;
-  Mat            A,P,R,C;
+  Mat            A,P,R,C,PtAP;
   PetscScalar    *array;
-  PetscRandom   rdm;
-  PetscBool     Test_MatMatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_FALSE,Test_3D=PETSC_FALSE,flg;
+  PetscRandom    rdm;
+  PetscBool      Test_3D=PETSC_FALSE,flg;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -112,8 +112,8 @@ int main(int argc,char **argv)
     for (i=0; i<b->i[m]; i++) b->a[i] = one;
 
   }
-  if (!rank) printf("A:\n");
-  ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+  //if (!rank) printf("A:\n");
+  //ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
 
   /* Set up distributed array for coarse grid */
   if (!Test_3D){
@@ -127,16 +127,24 @@ int main(int argc,char **argv)
 
   /* Create interpolation between the fine and coarse grids */
   ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&P,PETSC_NULL);CHKERRQ(ierr);
-  if (!rank) printf("P:\n");
-  ierr = MatView(P, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+  //if (!rank) printf("P:\n");
+  //ierr = MatView(P, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
 
   /* Get R = P^T */
   ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
-  if (!rank) printf("R:\n");
-  ierr = MatView(R, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //if (!rank) printf("R:\n");
+  //ierr = MatView(R, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  /* D = R*A*P */
+  /* C = R*A*P */
   ierr = MatMatMatMult(R,A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+  ierr = MatMatMatMult(R,A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+
+  /* Test C == PtAP */
+  ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&PtAP);CHKERRQ(ierr); 
+  ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&PtAP);CHKERRQ(ierr);
+  ierr = MatEqual(C,PtAP,&flg);CHKERRQ(ierr); 
+  if (!flg) printf("RAP != PtAP\n");
+  ierr = MatDestroy(&PtAP);CHKERRQ(ierr); 
 
   /* Clean up */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
@@ -145,7 +153,7 @@ int main(int argc,char **argv)
   ierr = DMDestroy(&user.coarse.da);CHKERRQ(ierr);
   ierr = MatDestroy(&P);CHKERRQ(ierr);
   ierr = MatDestroy(&R);CHKERRQ(ierr);
-  /* ierr = MatDestroy(&C);CHKERRQ(ierr); */
+  ierr = MatDestroy(&C);CHKERRQ(ierr); 
   ierr = PetscFinalize();
   return 0;
 }
