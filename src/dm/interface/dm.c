@@ -97,7 +97,7 @@ PetscErrorCode  DMSetVecType(DM da,VecType ctype)
 #undef __FUNCT__
 #define __FUNCT__ "VecGetDM"
 /*@
-  VecSetDM - Gets the DM defining the data layout of the vector
+  VecGetDM - Gets the DM defining the data layout of the vector
 
   Not collective
 
@@ -179,7 +179,7 @@ PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
 #undef __FUNCT__
 #define __FUNCT__ "MatGetDM"
 /*@
-  MatSetDM - Gets the DM defining the data layout of the matrix
+  MatGetDM - Gets the DM defining the data layout of the matrix
 
   Not collective
 
