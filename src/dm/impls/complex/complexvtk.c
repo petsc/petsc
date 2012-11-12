@@ -234,6 +234,8 @@ PetscErrorCode DMComplexVTKWriteSection(DM dm, PetscSection section, PetscSectio
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(v,VEC_CLASSID,4);
   if (precision < 0) precision = 6;
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
