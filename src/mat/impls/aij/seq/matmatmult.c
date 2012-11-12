@@ -9,9 +9,6 @@
 #include <../src/mat/utils/petscheap.h>
 #include <petscbt.h>
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
-/*
-#define DEBUG_MATMATMULT
- */
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"
@@ -227,9 +224,6 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,Mat C)
   PetscInt       nextb;
 
   PetscFunctionBegin;
-#if defined(DEBUG_MATMATMULT)
-  ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable...\n");CHKERRQ(ierr);
-#endif
   /* clean old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
   /* Traverse A row-wise. */
