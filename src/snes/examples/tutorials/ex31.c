@@ -63,7 +63,7 @@ puts it into the Sieve ordering.
 
 typedef enum {DIRICHLET, FREE_SLIP} BCType;
 typedef enum {RUN_FULL, RUN_TEST} RunType;
-typedef enum {FORCING_CONSTANT, FORCING_LINEAR} ForcingType;
+typedef enum {FORCING_CONSTANT, FORCING_LINEAR, FORCING_CUBIC} ForcingType;
 
 typedef struct {
   DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
@@ -163,32 +163,53 @@ PetscScalar cubic_v_2d(const PetscReal x[]) {
 };
 
 /*
-  In 2D, for ??? forcing,
+  Let \sigma = (\nabla u + \nabla u^T) = < \sigma_{ij} >, where \sigma_{ij} = \sigma_{ji}
+  Then at the top and bottom (t = <1,0>),
+    <\sigma_{00}, \sigma_{01}> = 0 so \sigma_{00} = A(x,y) y(1-y) \sigma_{01} = B(x,y) y(1-y)
+  Using the left and right (t = <0,1>),
+    <\sigma_{10}, \sigma_{11}> = 0 so \sigma_{10} = C(x,y) x(1-x) \sigma_{11} = D(x,y) x(1-x)
+  Which means
+    \sigma_{00} = A(x,y) y(1-y)        = 2 u_x
+    \sigma_{01} = E(x,y) x(1-x) y(1-y) = u_y + v_x
+    \sigma_{11} = D(x,y) x(1-x)        = 2 v_y
+  Also we have
+    u(x=0,1) = 0 ==> u = A'(x,y) x(1-x)
+    v(y=0,1) = 0 ==> v = D'(x,y) y(1-y)
+  Thus we need
+    \int x - x^2 = x^2/2 - x^3/3 + C ==> 3 x^2 - 2 x^3 + 1 = 0 at x=0,1
+  so that
+    u =  (3 x^2 - 2 x^3 + 1) y(1-y)
+    v = -(3 y^2 - 2 y^3 + 1) x(1-x)
+    u_x =  6 x(1-x) y(1-y)
+    v_y = -6 x(1-x) y(1-y)
+    u_xx =  6 (1-2x) y(1-y)
+    v_yy = -6 (1-2y) x(1-x)
 
-    f_x =  3 - 8y
-    f_y = -5 + 8x
+  In 2D, for cubic forcing,
+
+    f_x = -1 + 6 (1-2x) y(1-y)
+    f_y = -1 - 6 (1-2y) x(1-x)
 
   we use the exact solution,
 
-    u =  2 x (x-1) (1 - 2 y)
-    v = -2 y (y-1) (1 - 2 x)
+    u =  (3 x^2 - 2 x^3 + 1) y(1-y)
+    v = -(3 y^2 - 2 y^3 + 1) x(1-x)
     p = x + y - 1
     T = x + y
 
-    \hat t \cdot (\nabla u + \nabla u^T)
-    = \hat t \cdot /2 (2x-1) (1-2y)       2y (y-1) - 2x (x-1) \
-                   \2y (y-1) - 2x (x-1)  -2 (2y-1) (1-2x)     /
-
-    at the top and bottom (t = <1,0>)
-
-    y = 0 < 2 (2x-1), -2x (x-1)>
-    y = 1 <-2 (2x-1), -2x (x-1)>
   so that
 
-    -\Delta u + \nabla p + f = <-4+8y, 4-8x> + <1, 1> + <3-8y, 8x-5> = 0
-    \nabla \cdot u           = (4x-2) (1-2y) - (4y-2) (1-2x)         = 0
+    -\Delta u + \nabla p + f = <-6 (1-2x) y(1-y), 6 (1-2y) x(1-x)> + <1, 1> + <-1 + 6 (1-2x) y(1-y), -1 - 6 (1-2y) x(1-x)> = 0
+    \nabla \cdot u           = 6 x(1-x) y(1-y) -6 (1-2y) x(1-x) = 0
     -\Delta T + q_T          = 0
 */
+PetscScalar quintic_u_2d(const PetscReal x[]) {
+  return (3.0*x[0]*x[0] - 2.0*x[0]*x[0]*x[0] + 1.0)*x[1]*(1.0-x[1]);
+};
+
+PetscScalar quintic_v_2d(const PetscReal x[]) {
+  return -(3.0*x[1]*x[1] - 2.0*x[1]*x[1]*x[1] + 1.0)*x[0]*(1.0-x[0]);
+};
 
 void f0_u_constant(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]) {
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
@@ -202,6 +223,11 @@ void f0_u_constant(const PetscScalar u[], const PetscScalar gradU[], const Petsc
 void f0_u_linear_2d(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]) {
   f0[0] =  3.0 - 8.0*x[1];
   f0[1] = -5.0 + 8.0*x[0];
+}
+
+void f0_u_cubic_2d(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]) {
+  f0[0] = -1.0 + 6.0*(1.0 - 2.0*x[0])*x[1]*(1.0 - x[1]);
+  f0[1] = -1.0 - 6.0*(1.0 - 2.0*x[1])*x[0]*(1.0 - x[0]);
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y, v_x, v_y} or {u_x, u_y, u_z, v_x, v_y, v_z, w_x, w_y, w_z}
@@ -343,7 +369,7 @@ PetscScalar linear_p_3d(const PetscReal x[]) {
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   const char    *bcTypes[2]      = {"dirichlet", "freeslip"};
-  const char    *forcingTypes[2] = {"constant", "linear"};
+  const char    *forcingTypes[3] = {"constant", "linear", "cubic"};
   const char    *runTypes[2]     = {"full", "test"};
   PetscInt       bc, forcing, run;
   PetscErrorCode ierr;
@@ -386,7 +412,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex31.c",bcTypes,2,bcTypes[options->bcType],&bc,PETSC_NULL);CHKERRQ(ierr);
   options->bcType = (BCType) bc;
   forcing = options->forcingType;
-  ierr = PetscOptionsEList("-forcing_type","Type of forcing function","ex31.c",forcingTypes,2,forcingTypes[options->forcingType],&forcing,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-forcing_type","Type of forcing function","ex31.c",forcingTypes,3,forcingTypes[options->forcingType],&forcing,PETSC_NULL);CHKERRQ(ierr);
   options->forcingType = (ForcingType) forcing;
   ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex31.c", options->numBatches, &options->numBatches, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex31.c", options->numBlocks, &options->numBlocks, PETSC_NULL);CHKERRQ(ierr);
@@ -786,6 +812,22 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user) {
       SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid boundary condition type %d", user->bcType);
     }
     break;
+  case FORCING_CUBIC:
+    switch(user->bcType) {
+    case DIRICHLET:
+    case FREE_SLIP:
+      switch(user->dim) {
+      case 2:
+        fem->f0Funcs[0] = f0_u_cubic_2d;
+        break;
+      default:
+        SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+      }
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid boundary condition type %d", user->bcType);
+    }
+    break;
   }
   fem->f0Funcs[1] = f0_p;
   fem->f0Funcs[2] = f0_T;
@@ -857,11 +899,29 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user) {
   case FORCING_LINEAR:
     switch(user->bcType) {
     case DIRICHLET:
-    case FREE_SLIP:
       switch(user->dim) {
       case 2:
         user->exactFuncs[0] = cubic_u_2d;
         user->exactFuncs[1] = cubic_v_2d;
+        user->exactFuncs[2] = linear_p_2d;
+        user->exactFuncs[3] = linear_T_2d;
+        break;
+      default:
+        SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
+      }
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid boundary condition type %d", user->bcType);
+    }
+    break;
+  case FORCING_CUBIC:
+    switch(user->bcType) {
+    case DIRICHLET:
+    case FREE_SLIP:
+      switch(user->dim) {
+      case 2:
+        user->exactFuncs[0] = quintic_u_2d;
+        user->exactFuncs[1] = quintic_v_2d;
         user->exactFuncs[2] = linear_p_2d;
         user->exactFuncs[3] = linear_T_2d;
         break;
