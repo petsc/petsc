@@ -24,7 +24,7 @@ int main(int argc,char **args)
   char           file[4][128];
   PetscBool      flg,preload = PETSC_TRUE;
   PetscScalar    *a,rval,alpha,none = -1.0;
-  PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatMatTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_MatRARt=PETSC_TRUE;
+  PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatMatTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_MatRARt=PETSC_TRUE,Test_MatMatMatMult=PETSC_TRUE;
   PetscInt       pm,pn,pM,pN;
   MatInfo        info;
 
@@ -267,6 +267,17 @@ int main(int argc,char **args)
       }
       ierr = MatDestroy(&R);CHKERRQ(ierr);
       ierr = MatDestroy(&RARt);CHKERRQ(ierr);
+    }
+
+    if (Test_MatMatMatMult && size == 1){
+      Mat       R, RAP;
+      PetscBool equal;
+      ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
+      ierr = MatMatMatMult(R,A,P,MAT_INITIAL_MATRIX,2.0,&RAP);CHKERRQ(ierr);
+      ierr = MatEqual(C,RAP,&equal);CHKERRQ(ierr);
+      if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PtAP != RAP");
+      ierr = MatDestroy(&R);CHKERRQ(ierr);
+      ierr = MatDestroy(&RAP);CHKERRQ(ierr);
     }
 
     /* Create vector x that is compatible with P */

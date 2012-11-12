@@ -60,6 +60,11 @@ typedef struct {
   PetscErrorCode (*destroy)(Mat);
 } Mat_RARt;
 
+typedef struct {
+  Mat            BC;    /* temp matrix for storing B*C */
+  PetscErrorCode (*destroy)(Mat);
+} Mat_MatMatMatMult;
+
 /*
   MATSEQAIJ format - Compressed row storage (also called Yale sparse matrix
   format) or compressed sparse row (CSR).  The i[] and j[] arrays start at 0. For example,
@@ -106,6 +111,7 @@ typedef struct {
 
   PetscScalar      *matmult_abdense;     /* used by MatMatMult() */
   Mat_PtAP         *ptap;                /* used by MatPtAP() */
+  Mat_MatMatMatMult *matmatmatmult;      /* used by MatMatMatMult() */
 } Mat_SeqAIJ;
 
 /*
