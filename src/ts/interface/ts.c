@@ -2122,9 +2122,12 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
    The hook set using TSSetPreStep() is called before each attempt to take the step. In general, the time step size may
    be changed due to adaptive error controller or solve failures. Note that steps may contain multiple stages.
 
+   This may over-step the final time provided in TSSetDuration() depending on the time-step used. TSSolve() interpolates to exactly the 
+   time provided in TSSetDuration(). One can use TSInterpolate() to determine an interpolated solution within the final timestep.
+
 .keywords: TS, timestep, solve
 
-.seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve(), TSSetPreStep(), TSSetPreStage()
+.seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve(), TSSetPreStep(), TSSetPreStage(), TSInterpolate()
 @*/
 PetscErrorCode  TSStep(TS ts)
 {
