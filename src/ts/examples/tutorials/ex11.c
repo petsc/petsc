@@ -226,6 +226,9 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, AppCtx *us
 
   /* Make centroids and areas */
   ierr = DMComplexClone(dm, &dmCell);CHKERRQ(ierr);
+  ++coordSection->refcnt;
+  ierr = DMComplexSetCoordinateSection(dmCell, coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dmCell, coordinates);CHKERRQ(ierr);
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &sectionCell);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionCell, cStart, cEnd);CHKERRQ(ierr);
@@ -546,32 +549,17 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecViewVTK"
+#define __FUNCT__ "OutputVTK"
 /* Matt refuses to compose the DM with the Vec so that VecView() would work, hence this atrocity. */
-static PetscErrorCode VecViewVTK(Vec X,const char *filename)
+static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer)
 {
   PetscErrorCode ierr;
-  PetscViewer    viewer;
-  Vec            locX;
-  const char     *name;
-  DM             dm;
 
   PetscFunctionBegin;
-  ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
-  ierr = PetscViewerCreate(((PetscObject)X)->comm, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
-  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject) X, &name);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) locX, name);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
-  ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMComplexVTKWriteAll, PETSC_VTK_CELL_FIELD, (PetscObject) locX);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr); /* viewer drops reference */
-  ierr = PetscObjectReference((PetscObject)locX);CHKERRQ(ierr); /* viewer drops reference */
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(((PetscObject) dm)->comm, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(*viewer, filename);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(*viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -589,6 +577,7 @@ int main(int argc, char **argv)
   TS             ts;
   TSConvergedReason reason;
   Vec            X, locX, locF;
+  PetscViewer    viewer;
   PetscMPIInt    rank;
   char           filename[PETSC_MAX_PATH_LEN] = "sevenside.exo", outfile[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -603,7 +592,7 @@ int main(int argc, char **argv)
     user.wind[0] = 1.0;
     user.wind[1] = 0.0;
     ierr = PetscOptionsRealArray("-ufv_wind","background wind vx,vy","",user.wind,&two,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-f","Exodus.II filename to read","",filename,filename,sizeof filename,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-f","Exodus.II filename to read","",filename,filename,sizeof(filename),PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -626,10 +615,12 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
   ierr = SetInitialCondition(dm, X, &user);CHKERRQ(ierr);
-  ierr = VecViewVTK(X, "ex11-000.vtk");CHKERRQ(ierr);
-  if (0) {                      /* crashing */
-    ierr = VecViewVTK(user.cellgeom, "ex11-cellgeom.vtk");CHKERRQ(ierr);
-  }
+  ierr = OutputVTK(dm, "ex11-000.vtk", &viewer);CHKERRQ(ierr);
+  ierr = VecView(X, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = OutputVTK(dm, "ex11-cellgeom.vtk", &viewer);CHKERRQ(ierr);
+  ierr = VecView(user.cellgeom, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &locF);CHKERRQ(ierr);
@@ -650,8 +641,10 @@ int main(int argc, char **argv)
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,nsteps);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(outfile,sizeof outfile,"ex11-%03d.vtk",(int)nsteps);CHKERRQ(ierr);
-  ierr = VecViewVTK(X, outfile);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(outfile, sizeof(outfile), "ex11-%03D.vtk", nsteps);CHKERRQ(ierr);
+  ierr = OutputVTK(dm, outfile, &viewer);CHKERRQ(ierr);
+  ierr = VecView(X, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = VecDestroy(&user.cellgeom);CHKERRQ(ierr);
