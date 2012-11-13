@@ -5,8 +5,8 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     # host locally as fftw.org url can expire after new release.
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fftw-3.3.2.tar.gz','http://www.fftw.org/fftw-3.3.2.tar.gz']
-    self.functions = ['fftw_malloc'] 
-    self.includes  = ['fftw3-mpi.h']  
+    self.functions = ['fftw_malloc']
+    self.includes  = ['fftw3-mpi.h']
     self.liblist   = [['libfftw3_mpi.a','libfftw3.a']]
     self.complex   = 1
     self.pkgname   = 'fftw3'
@@ -16,7 +16,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.deps = [self.mpi]
     return
-          
+
   def Install(self):
     import os
 
@@ -45,6 +45,9 @@ class Configure(PETSc.package.NewPackage):
     args.append('--enable-mpi')
     if self.mpi.lib:
       args.append('LIBS="'+self.libraries.toStringNoDupes(self.mpi.lib)+'"')
+
+    # Also build the single precision library
+    args.append('--enable-single')
 
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'fftw'), 'w')
