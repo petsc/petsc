@@ -20,7 +20,7 @@
 
 .seealso: PetscDrawLGAddPoints(), PetscDrawLGAddPoint()
 @*/
-PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,PetscReal x,const PetscReal *y)
+PetscErrorCode  PetscDrawLGAddCommonPoint(PetscDrawLG lg,const PetscReal x,const PetscReal *y)
 {
   PetscErrorCode ierr;
   PetscInt       i;
