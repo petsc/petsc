@@ -3,6 +3,85 @@
 /* Logging support */
 PetscLogEvent DMCOMPLEX_Distribute;
 
+PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
+
+#undef __FUNCT__
+#define __FUNCT__ "VecView_Complex_Local"
+PetscErrorCode VecView_Complex_Local(Vec v, PetscViewer viewer)
+{
+  DM             dm;
+  PetscBool      isvtk;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  if (!dm) SETERRQ(((PetscObject) v)->comm, PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK, &isvtk);CHKERRQ(ierr);
+  if (isvtk) {
+    PetscViewerVTKFieldType ft = PETSC_VTK_POINT_FIELD;
+    PetscSection            section;
+    PetscInt                dim, pStart, pEnd, cStart, vStart, cdof, vdof;
+
+    ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+    ierr = DMComplexGetHeightStratum(dm, 0, &cStart, PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMComplexGetDepthStratum(dm, 0, &vStart, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+    if ((cStart >= pStart) && (cStart < pEnd)) {ierr = PetscSectionGetDof(section, cStart, &cdof);CHKERRQ(ierr);}
+    if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetDof(section, vStart, &vdof);CHKERRQ(ierr);}
+    if (cdof) {
+      if (cdof == dim) {
+        ft = PETSC_VTK_CELL_VECTOR_FIELD;
+      } else {
+        ft = PETSC_VTK_CELL_FIELD;
+      }
+    } else if (vdof) {
+      if (vdof == dim) {
+        ft = PETSC_VTK_POINT_VECTOR_FIELD;
+      } else {
+        ft = PETSC_VTK_POINT_FIELD;
+      }
+    } else {
+      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Could not classify input Vec for VTK");
+    }
+    ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr); /* viewer drops reference */
+    ierr = PetscObjectReference((PetscObject) v);CHKERRQ(ierr);  /* viewer drops reference */
+    ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMComplexVTKWriteAll, ft, (PetscObject) v);CHKERRQ(ierr);
+  } else {
+    ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecView_Complex"
+PetscErrorCode VecView_Complex(Vec v, PetscViewer viewer)
+{
+  DM             dm;
+  PetscBool      isvtk;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  if (!dm) SETERRQ(((PetscObject) v)->comm, PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK, &isvtk);CHKERRQ(ierr);
+  if (isvtk) {
+    Vec         locv;
+    const char *name;
+
+    ierr = DMGetLocalVector(dm, &locv);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) v, &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) locv, name);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, locv);CHKERRQ(ierr);
+    ierr = VecView_Complex_Local(locv, viewer);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
+  } else {
+    ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexViewLabel_Ascii"
 PetscErrorCode DMComplexViewLabel_Ascii(DM dm, const char name[], PetscViewer viewer)

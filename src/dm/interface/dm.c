@@ -527,6 +527,9 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
   PetscFunctionReturn(0);
 }
 
+PETSC_EXTERN PetscErrorCode VecView_Complex_Local(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode VecView_Complex(Vec, PetscViewer);
+
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateGlobalVector"
 /*@
@@ -579,6 +582,7 @@ PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
     /* ierr = VecSetLocalToGlobalMapping(*vec, dm->ltogmap);CHKERRQ(ierr); */
     /* ierr = VecSetLocalToGlobalMappingBlock(*vec, dm->ltogmapb);CHKERRQ(ierr); */
     /* ierr = VecSetOperation(*vec, VECOP_DUPLICATE, (void(*)(void)) VecDuplicate_MPI_DM);CHKERRQ(ierr); */
+    ierr = VecSetOperation(*vec, VECOP_VIEW, (void(*)(void)) VecView_Complex);CHKERRQ(ierr);
   } else {
     ierr = (*dm->ops->createglobalvector)(dm,vec);CHKERRQ(ierr);
   }
@@ -629,6 +633,7 @@ PetscErrorCode  DMCreateLocalVector(DM dm,Vec *vec)
     ierr = VecSetBlockSize(*vec, blockSize);CHKERRQ(ierr);
     ierr = VecSetFromOptions(*vec);CHKERRQ(ierr);
     ierr = VecSetDM(*vec, dm);CHKERRQ(ierr);
+    ierr = VecSetOperation(*vec, VECOP_VIEW, (void(*)(void)) VecView_Complex_Local);CHKERRQ(ierr);
   } else {
     ierr = (*dm->ops->createlocalvector)(dm,vec);CHKERRQ(ierr);
   }
