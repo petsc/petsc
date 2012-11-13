@@ -209,17 +209,18 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
 #undef __FUNCT__
 #define __FUNCT__ "ConstructGeometry"
 /* Set up face data and cell data */
-PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom)
+PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, AppCtx *user)
 {
   DM             dmFace, dmCell;
   PetscSection   sectionFace, sectionCell;
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscScalar    *fgeom, *cgeom;
-  PetscInt       cStart, cEnd, c, fStart, fEnd, f;
+  PetscScalar   *fgeom, *cgeom;
+  PetscInt       dim, cStart, cEnd, c, fStart, fEnd, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
 
@@ -236,18 +237,18 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom)
 
   ierr = DMCreateLocalVector(dmCell, cellgeom);CHKERRQ(ierr);
   ierr = VecGetArray(*cellgeom, &cgeom);CHKERRQ(ierr);
-  for(c = cStart; c < cEnd; ++c) {
+  for(c = cStart; c < user->cEndInterior; ++c) {
     const PetscScalar *coords = PETSC_NULL;
     PetscInt           coordSize, numCorners, p;
-    PetscScalar        sx = 0,sy = 0;
-    CellGeom           *cg;
+    PetscScalar        sx = 0, sy = 0;
+    CellGeom          *cg;
 
     ierr = DMComplexVecGetClosure(dm, coordSection, coordinates, c, &coordSize, &coords);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRef(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
     ierr = PetscMemzero(cg,sizeof(*cg));CHKERRQ(ierr);
-    numCorners = coordSize/DIM;
+    numCorners = coordSize/dim;
     for(p = 0; p < numCorners; ++p) {
-      const PetscScalar *x = coords+p*DIM, *y = coords+((p+1)%numCorners)*DIM;
+      const PetscScalar *x = coords+p*dim, *y = coords+((p+1)%numCorners)*dim;
       const PetscScalar cross = x[0]*y[1] - x[1]*y[0];
       cg->area += 0.5*cross;
       sx += (x[0] + y[0])*cross;
@@ -258,6 +259,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom)
     cg->area = PetscAbsScalar(cg->area);
     ierr = DMComplexVecRestoreClosure(dm, coordSection, coordinates, c, &coordSize, &coords);CHKERRQ(ierr);
   }
+  ierr = CopyToGhosts(dmCell, user, *cellgeom);CHKERRQ(ierr);
 
   /* Make normals */
   ierr = DMComplexClone(dm, &dmFace);CHKERRQ(ierr);
@@ -282,21 +284,23 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom)
     ierr = DMComplexVecGetClosure(dm, coordSection, coordinates, f, &coordSize, &coords);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRef(dmFace, f, fgeom, &fg);CHKERRQ(ierr);
     /* Only support edges right now */
-    if (coordSize != DIM*2) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "We only support edges right now");
-    fg->centroid[0] = 0.5*(coords[0] + coords[DIM]);
-    fg->centroid[1] = 0.5*(coords[1] + coords[DIM+1]);
-    fg->normal[0] = (coords[1] - coords[DIM+1]);
-    fg->normal[1] = -(coords[0] - coords[DIM+0]);
+    if (coordSize != dim*2) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "We only support edges right now");
+    fg->centroid[0] = 0.5*(coords[0] + coords[dim]);
+    fg->centroid[1] = 0.5*(coords[1] + coords[dim+1]);
+    fg->normal[0] =  (coords[1] - coords[dim+1]);
+    fg->normal[1] = -(coords[0] - coords[dim+0]);
     ierr = DMComplexVecRestoreClosure(dm, coordSection, coordinates, f, &coordSize, &coords);CHKERRQ(ierr);
     /* Flip orientation if necessary to match ordering in support */
     ierr = DMComplexGetSupport(dm, f, &cells);CHKERRQ(ierr);
-    ierr = DMComplexPointLocalRead(dmCell, cells[0], cgeom, &cL);CHKERRQ(ierr);
-    ierr = DMComplexPointLocalRead(dmCell, cells[1], cgeom, &cR);CHKERRQ(ierr);
-    v[0] = cR->centroid[0] - cL->centroid[0];
-    v[1] = cR->centroid[1] - cL->centroid[1];
-    if (Dot2(fg->normal, v) < 0) {
-      fg->normal[0] = -fg->normal[0];
+    if ((cells[0] < cEnd) && (cells[1] < cEnd)) {
+      ierr = DMComplexPointLocalRead(dmCell, cells[0], cgeom, &cL);CHKERRQ(ierr);
+      ierr = DMComplexPointLocalRead(dmCell, cells[1], cgeom, &cR);CHKERRQ(ierr);
+      v[0] = cR->centroid[0] - cL->centroid[0];
+      v[1] = cR->centroid[1] - cL->centroid[1];
+      if (Dot2(fg->normal, v) < 0) {
+        fg->normal[0] = -fg->normal[0];
       fg->normal[1] = -fg->normal[1];
+      }
     }
   }
   ierr = VecRestoreArray(*facegeom, &fgeom);CHKERRQ(ierr);
@@ -341,23 +345,23 @@ PetscErrorCode SetUpLocalSpace(DM dm, PetscInt numGhostCells)
 
 #undef __FUNCT__
 #define __FUNCT__ "CopyToGhosts"
-/* Iterate over boundary faces copying state from the cell inside into the ghost cell. */
+/* Iterate over boundary faces copying values from the cell inside into the ghost cell. */
 PetscErrorCode CopyToGhosts(DM dm, AppCtx *user, Vec locX)
 {
   const char     *name = "Face Sets";
   IS              idIS;
   const PetscInt *ids;
-  PetscSection    stateSection;
-  PetscScalar    *state;
+  PetscSection    section;
+  PetscScalar    *values;
   PetscInt        numFS, fs;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDefaultSection(dm, &stateSection);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMComplexGetLabelIdIS(dm, name, &idIS);CHKERRQ(ierr);
   ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
   ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
-  ierr = VecGetArray(locX, &state);CHKERRQ(ierr);
+  ierr = VecGetArray(locX, &values);CHKERRQ(ierr);
   for(fs = 0; fs < numFS; ++fs) {
     IS              faceIS;
     const PetscInt *faces;
@@ -376,18 +380,18 @@ PetscErrorCode CopyToGhosts(DM dm, AppCtx *user, Vec locX)
       if (numCells != 2) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "DM has %d > 2 cells for face %d", numCells, f);
       PetscInt dof, off, gdof, goff, d;
 
-      ierr = PetscSectionGetDof(stateSection, cells[0], &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(stateSection, cells[0], &off);CHKERRQ(ierr);
-      ierr = PetscSectionGetDof(stateSection, cells[1], &gdof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(stateSection, cells[1], &goff);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(section, cells[0], &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(section, cells[0], &off);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(section, cells[1], &gdof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(section, cells[1], &goff);CHKERRQ(ierr);
       for(d = 0; d < dof; ++d) {
-        state[goff+d] = state[off+d];
+        values[goff+d] = values[off+d];
       }
     }
     ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
     ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(locX, &state);CHKERRQ(ierr);
+  ierr = VecRestoreArray(locX, &values);CHKERRQ(ierr);
   ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
   ierr = ISDestroy(&idIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -613,7 +617,7 @@ int main(int argc, char **argv)
 
   ierr = ConstructGhostCells(&dm, &user);CHKERRQ(ierr);
 
-  ierr = ConstructGeometry(dm, &user.facegeom, &user.cellgeom);CHKERRQ(ierr);
+  ierr = ConstructGeometry(dm, &user.facegeom, &user.cellgeom, &user);CHKERRQ(ierr);
   ierr = VecView(user.cellgeom, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Set up DM with section describing local vector and configure local vector. */
