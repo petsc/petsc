@@ -472,7 +472,7 @@ extern PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM,Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetupDM"
-/*@
+/*@C
    MatSetupDM - Sets the DMDA that is to be used by the HYPRE_StructMatrix PETSc matrix
 
    Logically Collective on Mat
