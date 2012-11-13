@@ -20,6 +20,9 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   MatStructure   flg;
   PetscReal      nrm,gnorm;
   SNES_Test      *neP = (SNES_Test*)snes->data;
+  SNESObjective  obj;
+  void           *ctx;
+  PetscReal      fnorm,f1norm,dnorm;
 
   PetscFunctionBegin;
 
@@ -84,10 +87,6 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     if (!gnorm) gnorm = 1; /* just in case */
     ierr = PetscPrintf(((PetscObject)snes)->comm,"Norm of matrix ratio %g difference %g (%s)\n",(double)(nrm/gnorm),(double)nrm,loc[i]);CHKERRQ(ierr);
 
-
-    SNESObjective obj;
-    void          *ctx;
-    PetscReal     fnorm,f1norm,dnorm;
     ierr = SNESGetObjective(snes,&obj,&ctx);CHKERRQ(ierr);
     if (obj) {
       ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
