@@ -7916,10 +7916,11 @@ PetscErrorCode DMComplexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     PetscInt batchSize  = numBlocks * blockSize;
     PetscInt numBatches = numBatchesTmp;
     PetscInt numChunks  = numCells / (numBatches*batchSize);
-    ierr = (*mesh->integrateResidualFEM)(numChunks*numBatches*batchSize, numFields, field, quad, u, v0, J, invJ, detJ, f0, f1, elemVec);CHKERRQ(ierr);
     /* Remainder */
     PetscInt numRemainder = numCells % (numBatches * batchSize);
     PetscInt offset       = numCells - numRemainder;
+
+    ierr = (*mesh->integrateResidualFEM)(numChunks*numBatches*batchSize, numFields, field, quad, u, v0, J, invJ, detJ, f0, f1, elemVec);CHKERRQ(ierr);
     ierr = (*mesh->integrateResidualFEM)(numRemainder, numFields, field, quad, &u[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
                                          f0, f1, &elemVec[offset*cellDof]);CHKERRQ(ierr);
   }
@@ -8026,10 +8027,11 @@ PetscErrorCode DMComplexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, v
     PetscInt batchSize  = numBlocks * blockSize;
     PetscInt numBatches = numBatchesTmp;
     PetscInt numChunks  = numCells / (numBatches*batchSize);
-    ierr = (*mesh->integrateJacobianActionFEM)(numChunks*numBatches*batchSize, numFields, field, quad, u, a, v0, J, invJ, detJ, fem->g0Funcs, fem->g1Funcs, fem->g2Funcs, fem->g3Funcs, elemVec);CHKERRQ(ierr);
     /* Remainder */
     PetscInt numRemainder = numCells % (numBatches * batchSize);
     PetscInt offset       = numCells - numRemainder;
+
+    ierr = (*mesh->integrateJacobianActionFEM)(numChunks*numBatches*batchSize, numFields, field, quad, u, a, v0, J, invJ, detJ, fem->g0Funcs, fem->g1Funcs, fem->g2Funcs, fem->g3Funcs, elemVec);CHKERRQ(ierr);
     ierr = (*mesh->integrateJacobianActionFEM)(numRemainder, numFields, field, quad, &u[offset*cellDof], &a[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
                                                fem->g0Funcs, fem->g1Funcs, fem->g2Funcs, fem->g3Funcs, &elemVec[offset*cellDof]);CHKERRQ(ierr);
   }
@@ -8130,10 +8132,11 @@ PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, void
       PetscInt batchSize  = numBlocks * blockSize;
       PetscInt numBatches = numBatchesTmp;
       PetscInt numChunks  = numCells / (numBatches*batchSize);
-      ierr = (*mesh->integrateJacobianFEM)(numChunks*numBatches*batchSize, numFields, fieldI, fieldJ, quad, u, v0, J, invJ, detJ, g0, g1, g2, g3, elemMat);CHKERRQ(ierr);
       /* Remainder */
       PetscInt numRemainder = numCells % (numBatches * batchSize);
       PetscInt offset       = numCells - numRemainder;
+
+      ierr = (*mesh->integrateJacobianFEM)(numChunks*numBatches*batchSize, numFields, fieldI, fieldJ, quad, u, v0, J, invJ, detJ, g0, g1, g2, g3, elemMat);CHKERRQ(ierr);
       ierr = (*mesh->integrateJacobianFEM)(numRemainder, numFields, fieldI, fieldJ, quad, &u[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
                                            g0, g1, g2, g3, &elemMat[offset*cellDof*cellDof]);CHKERRQ(ierr);
     }
