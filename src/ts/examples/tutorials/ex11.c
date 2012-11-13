@@ -16,6 +16,8 @@ typedef struct {
   PetscInt  numGhostCells, cEndInterior;
   Vec       cellgeom, facegeom;
   PetscReal wind[DIM];
+  PetscReal inflowState[1];
+  PetscReal minradius;
 } AppCtx;
 
 typedef struct {
@@ -25,11 +27,12 @@ typedef struct {
 
 typedef struct {
   PetscScalar centroid[DIM];
-  PetscScalar area;
+  PetscScalar volume;
 } CellGeom;
 
-PETSC_STATIC_INLINE PetscScalar Dot2(const PetscScalar *x,const PetscScalar *y) { return x[0]*x[0] + x[1]*y[1];}
+PETSC_STATIC_INLINE PetscScalar Dot2(const PetscScalar *x,const PetscScalar *y) { return x[0]*y[0] + x[1]*y[1];}
 PETSC_STATIC_INLINE PetscReal Norm2(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(Dot2(x,x)));}
+PETSC_STATIC_INLINE void Waxpy2(PetscScalar a,const PetscScalar *x,const PetscScalar *y,PetscScalar *w) { w[0] = a*x[0] + y[0]; w[1] = a*x[1] + y[1]; }
 
 #undef __FUNCT__
 #define __FUNCT__ "ConstructGhostCells"
@@ -227,7 +230,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, AppCtx *us
   ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
 
-  /* Make centroids and areas */
+  /* Make cell centroids and volumes */
   ierr = DMComplexClone(dm, &dmCell);CHKERRQ(ierr);
   ++coordSection->refcnt;
   ierr = DMComplexSetCoordinateSection(dmCell, coordSection);CHKERRQ(ierr);
@@ -256,18 +259,17 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, AppCtx *us
     for(p = 0; p < numCorners; ++p) {
       const PetscScalar *x = coords+p*dim, *y = coords+((p+1)%numCorners)*dim;
       const PetscScalar cross = x[0]*y[1] - x[1]*y[0];
-      cg->area += 0.5*cross;
+      cg->volume += 0.5*cross;
       sx += (x[0] + y[0])*cross;
       sy += (x[1] + y[1])*cross;
     }
-    cg->centroid[0] = sx / (6*cg->area);
-    cg->centroid[1] = sy / (6*cg->area);
-    cg->area = PetscAbsScalar(cg->area);
+    cg->centroid[0] = sx / (6*cg->volume);
+    cg->centroid[1] = sy / (6*cg->volume);
+    cg->volume = PetscAbsScalar(cg->volume);
     ierr = DMComplexVecRestoreClosure(dm, coordSection, coordinates, c, &coordSize, &coords);CHKERRQ(ierr);
   }
-  ierr = CopyToGhosts(dmCell, user, *cellgeom);CHKERRQ(ierr);
 
-  /* Make normals */
+  /* Make normals and fill in ghost centroids */
   ierr = DMComplexClone(dm, &dmFace);CHKERRQ(ierr);
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &sectionFace);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
@@ -279,10 +281,11 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, AppCtx *us
   ierr = DMSetDefaultSection(dmFace, sectionFace);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(dmFace, facegeom);CHKERRQ(ierr);
   ierr = VecGetArray(*facegeom, &fgeom);CHKERRQ(ierr);
+  user->minradius = PETSC_MAX_REAL;
   for(f = fStart; f < fEnd; ++f) {
     const PetscScalar *coords = PETSC_NULL;
     const PetscInt     *cells;
-    PetscInt           coordSize;
+    PetscInt           i,coordSize;
     PetscScalar        v[2];
     FaceGeom           *fg;
     CellGeom           *cL,*cR;
@@ -296,18 +299,35 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, AppCtx *us
     fg->normal[0] =  (coords[1] - coords[dim+1]);
     fg->normal[1] = -(coords[0] - coords[dim+0]);
     ierr = DMComplexVecRestoreClosure(dm, coordSection, coordinates, f, &coordSize, &coords);CHKERRQ(ierr);
-    /* Flip orientation if necessary to match ordering in support */
     ierr = DMComplexGetSupport(dm, f, &cells);CHKERRQ(ierr);
-    if ((cells[0] < cEnd) && (cells[1] < cEnd)) {
-      ierr = DMComplexPointLocalRead(dmCell, cells[0], cgeom, &cL);CHKERRQ(ierr);
-      ierr = DMComplexPointLocalRead(dmCell, cells[1], cgeom, &cR);CHKERRQ(ierr);
-      v[0] = cR->centroid[0] - cL->centroid[0];
-      v[1] = cR->centroid[1] - cL->centroid[1];
-      if (Dot2(fg->normal, v) < 0) {
-        fg->normal[0] = -fg->normal[0];
-      fg->normal[1] = -fg->normal[1];
+    /* Reflect ghost centroid across plane of face */
+    for (i=0; i<2; i++) {
+      if (cells[i] >= user->cEndInterior) {
+        const CellGeom *ci;
+        CellGeom       *cg;
+        PetscScalar    c2f[2],a;
+        ierr = DMComplexPointLocalRead(dmCell, cells[(i+1)%2], cgeom, &ci);CHKERRQ(ierr);
+        Waxpy2(-1,ci->centroid,fg->centroid,c2f); /* cell to face centroid */
+        a = Dot2(c2f,fg->normal)/Dot2(fg->normal,fg->normal);
+        ierr = DMComplexPointLocalRef(dmCell, cells[i], cgeom, &cg);CHKERRQ(ierr);
+        Waxpy2(2*a,fg->normal,ci->centroid,cg->centroid);
+        cg->volume = ci->volume;
       }
     }
+    /* Flip face orientation if necessary to match ordering in support */
+    ierr = DMComplexPointLocalRead(dmCell, cells[0], cgeom, &cL);CHKERRQ(ierr);
+    ierr = DMComplexPointLocalRead(dmCell, cells[1], cgeom, &cR);CHKERRQ(ierr);
+    Waxpy2(-1,cL->centroid,cR->centroid,v);
+    if (Dot2(fg->normal, v) < 0) {
+      fg->normal[0] = -fg->normal[0];
+      fg->normal[1] = -fg->normal[1];
+    }
+    if (Dot2(fg->normal,v) <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Face direction could not be fixed");
+    /* Update minimum radius */
+    Waxpy2(-1,fg->centroid,cL->centroid,v);
+    user->minradius = PetscMin(user->minradius,Norm2(v));
+    Waxpy2(-1,fg->centroid,cR->centroid,v);
+    user->minradius = PetscMin(user->minradius,Norm2(v));
   }
   ierr = VecRestoreArray(*facegeom, &fgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(*cellgeom, &cgeom);CHKERRQ(ierr);
@@ -350,60 +370,6 @@ PetscErrorCode SetUpLocalSpace(DM dm, PetscInt numGhostCells)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "CopyToGhosts"
-/* Iterate over boundary faces copying values from the cell inside into the ghost cell. */
-PetscErrorCode CopyToGhosts(DM dm, AppCtx *user, Vec locX)
-{
-  const char     *name = "Face Sets";
-  IS              idIS;
-  const PetscInt *ids;
-  PetscSection    section;
-  PetscScalar    *values;
-  PetscInt        numFS, fs;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = DMComplexGetLabelIdIS(dm, name, &idIS);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
-  ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
-  ierr = VecGetArray(locX, &values);CHKERRQ(ierr);
-  for(fs = 0; fs < numFS; ++fs) {
-    IS              faceIS;
-    const PetscInt *faces;
-    PetscInt        numFaces, f;
-
-    ierr = DMComplexGetStratumIS(dm, name, ids[fs], &faceIS);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
-    ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
-    for(f = 0; f < numFaces; ++f) {
-      const PetscInt  face = faces[f];
-      const PetscInt *cells;
-      PetscInt        numCells;
-
-      ierr = DMComplexGetSupportSize(dm, face, &numCells);CHKERRQ(ierr);
-      ierr = DMComplexGetSupport(dm, face, &cells);CHKERRQ(ierr);
-      if (numCells != 2) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "DM has %d > 2 cells for face %d", numCells, f);
-      PetscInt dof, off, gdof, goff, d;
-
-      ierr = PetscSectionGetDof(section, cells[0], &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(section, cells[0], &off);CHKERRQ(ierr);
-      ierr = PetscSectionGetDof(section, cells[1], &gdof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(section, cells[1], &goff);CHKERRQ(ierr);
-      for(d = 0; d < dof; ++d) {
-        values[goff+d] = values[off+d];
-      }
-    }
-    ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
-    ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
-  }
-  ierr = VecRestoreArray(locX, &values);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
-  ierr = ISDestroy(&idIS);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "SetInitialCondition"
 PetscErrorCode SetInitialCondition(DM dm, Vec X, AppCtx *user)
 {
@@ -437,45 +403,36 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, AppCtx *user)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "CalculateFlux"
-/* Iterate over all faces and give me access to solution state + residual for the cells on both sides. */
-PetscErrorCode CalculateFlux(DM dm, AppCtx *user, Vec locX, Vec locF)
+#define __FUNCT__ "Boundary_Inflow"
+static PetscErrorCode Boundary_Inflow(AppCtx *user, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG)
 {
-  PetscSection   stateSection;
-  PetscScalar   *state, *residual;
-  PetscInt       fStart, fEnd, f;
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMGetDefaultSection(dm, &stateSection);CHKERRQ(ierr);
-  ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = VecGetArray(locX, &state);CHKERRQ(ierr);
-  ierr = VecGetArray(locF, &residual);CHKERRQ(ierr);
-  for(f = fStart; f < fEnd; ++f) {
-    const PetscInt *cells;
-    PetscInt        numCells, c;
+  xG[0] = user->inflowState[0];
+  PetscFunctionReturn(0);
+}
 
-    ierr = DMComplexGetSupportSize(dm, f, &numCells);CHKERRQ(ierr);
-    ierr = DMComplexGetSupport(dm, f, &cells);CHKERRQ(ierr);
-    if (numCells != 2) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "DM has %d > 2 cells for face %d", numCells, f);
-    for(c = 0; c < numCells; ++c) {
-      PetscInt dof, off, d;
+#undef __FUNCT__
+#define __FUNCT__ "Boundary_Outflow"
+static PetscErrorCode Boundary_Outflow(AppCtx *user, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG)
+{
+  PetscFunctionBegin;
+  xG[0] = xI[0];
+  PetscFunctionReturn(0);
+}
 
-      ierr = PetscSectionGetDof(stateSection, cells[c], &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(stateSection, cells[c], &off);CHKERRQ(ierr);
-      for(d = 0; d < dof; ++d) {
-        residual[off+d] = state[off+d];
-      }
-    }
-  }
-  ierr = VecRestoreArray(locX, &state);CHKERRQ(ierr);
-  ierr = VecRestoreArray(locF, &residual);CHKERRQ(ierr);
+#undef __FUNCT__
+#define __FUNCT__ "Boundary_Wall"
+static PetscErrorCode Boundary_Wall(AppCtx *user, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG)
+{
+  /* PetscReal vn = Dot2(user->wind,n); */
+  PetscFunctionBegin;
+  xG[0] = xI[0];
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "Riemann"
-PetscErrorCode Riemann(AppCtx *user, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
+static PetscErrorCode Riemann(AppCtx *user, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
 {
   PetscReal wn;
 
@@ -486,6 +443,70 @@ PetscErrorCode Riemann(AppCtx *user, const PetscReal *n, const PetscScalar *xL, 
   } else {
     flux[0] = xR[0]*wn;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ApplyBC"
+static PetscErrorCode ApplyBC(DM dm, Vec locX, AppCtx *user)
+{
+  const char     *name = "Face Sets";
+  DM             dmFace;
+  IS             idIS;
+  const PetscInt *ids;
+  PetscScalar    *x;
+  const PetscScalar *facegeom;
+  PetscInt       numFS, fs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(user->facegeom,&dmFace);CHKERRQ(ierr);
+  ierr = DMComplexGetLabelIdIS(dm, name, &idIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
+  ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(user->facegeom, &facegeom);CHKERRQ(ierr);
+  ierr = VecGetArray(locX, &x);CHKERRQ(ierr);
+  for(fs = 0; fs < numFS; ++fs) {
+    PetscErrorCode (*bcFunc)(AppCtx*,const PetscReal*,const PetscScalar*,PetscScalar*);
+    IS              faceIS;
+    const PetscInt *faces;
+    PetscInt        numFaces, f;
+
+    switch (ids[fs]) {
+    case 100:                   /* bottom */
+      bcFunc = Boundary_Inflow;
+      break;
+    case 101:                   /* top */
+    case 200:                   /* left */
+      bcFunc = Boundary_Wall;
+      break;
+    case 300:                   /* right */
+      bcFunc = Boundary_Outflow;
+      break;
+    default: SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_USER,"Invalid boundary Id: %D",ids[fs]);
+    }
+    ierr = DMComplexGetStratumIS(dm, name, ids[fs], &faceIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
+    ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
+    for(f = 0; f < numFaces; ++f) {
+      const PetscInt    face = faces[f], *cells;
+      const PetscScalar *xI;
+      PetscScalar       *xG;
+      const FaceGeom    *fg;
+
+      ierr = DMComplexPointLocalRead(dmFace, face, facegeom, &fg);CHKERRQ(ierr);
+      ierr = DMComplexGetSupport(dm, face, &cells);CHKERRQ(ierr);
+      ierr = DMComplexPointLocalRead(dm, cells[0], x, &xI);CHKERRQ(ierr);
+      ierr = DMComplexPointLocalRef(dm, cells[1], x, &xG);CHKERRQ(ierr);
+      ierr = (*bcFunc)(user, fg->normal, xI, xG);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
+    ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(locX, &x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(user->facegeom,&facegeom);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
+  ierr = ISDestroy(&idIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -512,7 +533,7 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
 
-  ierr = CopyToGhosts(dm, user, locX);CHKERRQ(ierr);
+  ierr = ApplyBC(dm, locX, user);CHKERRQ(ierr);
 
   ierr = VecZeroEntries(locF);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->facegeom,&facegeom);CHKERRQ(ierr);
@@ -538,14 +559,14 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
     ierr = DMComplexPointLocalRef(dm,cells[1],f,&fR);CHKERRQ(ierr);
     ierr = Riemann(user, fg->normal, xL, xR, flux);CHKERRQ(ierr);
     for (i=0; i<dof; i++) {
-      fL[i] -= flux[i] / cgL->area;
-      fR[i] += flux[i] / cgR->area;
+      fL[i] -= flux[i] / cgL->volume;
+      fR[i] += flux[i] / cgR->volume;
     }
   }
   ierr = VecRestoreArrayRead(locX,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(locF,&f);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dm,locX,INSERT_VALUES,X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm,locX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(dm,locF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm,locF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&locX);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&locF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -553,7 +574,6 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "OutputVTK"
-/* Matt refuses to compose the DM with the Vec so that VecView() would work, hence this atrocity. */
 static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer)
 {
   PetscErrorCode ierr;
@@ -567,19 +587,47 @@ static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MonitorVTK"
+static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,void *ctx)
+{
+  char filename[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
+  PetscReal xnorm;
+  DM dm;
+  PetscViewer viewer;
+  Vec locX;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
+  ierr = VecNorm(X,NORM_INFINITY,&xnorm);CHKERRQ(ierr);
+  ierr = PetscPrintf(((PetscObject)ts)->comm,"% 3D  time %8.2G  |x| %8.2G\n",stepnum,time,xnorm);CHKERRQ(ierr);
+  if (stepnum == -1) PetscFunctionReturn(0);
+  ierr = PetscSNPrintf(filename,sizeof filename,"ex11-%03D.vtk",stepnum);CHKERRQ(ierr);
+  ierr = OutputVTK(dm,filename,&viewer);CHKERRQ(ierr);
+
+  ierr = DMGetLocalVector(dm,&locX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,locX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,locX);CHKERRQ(ierr);
+  ierr = VecView(locX,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm,&locX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
   MPI_Comm       comm;
   AppCtx         user;
   DM             dm;
-  PetscReal      ftime;
+  PetscReal      ftime,cfl,dt;
   PetscInt       nsteps;
   int            CPU_word_size = 0, IO_word_size = 0, exoid;
   float          version;
   TS             ts;
   TSConvergedReason reason;
-  Vec            X, locX, locF;
+  Vec            X;
   PetscViewer    viewer;
   PetscMPIInt    rank;
   char           filename[PETSC_MAX_PATH_LEN] = "sevenside.exo", outfile[PETSC_MAX_PATH_LEN];
@@ -591,10 +639,15 @@ int main(int argc, char **argv)
 
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"Unstructured Finite Volume Options","");CHKERRQ(ierr);
   {
-    PetscInt two = 2;
-    user.wind[0] = 1.0;
-    user.wind[1] = 0.0;
+    PetscInt two = 2,dof;
+    user.wind[0] = 0.0;
+    user.wind[1] = 1.0;
     ierr = PetscOptionsRealArray("-ufv_wind","background wind vx,vy","",user.wind,&two,PETSC_NULL);CHKERRQ(ierr);
+    dof = 1;
+    user.inflowState[0] = -2.0;
+    ierr = PetscOptionsRealArray("-ufv_inflow","Inflow state","",user.inflowState,&dof,PETSC_NULL);CHKERRQ(ierr);
+    cfl = 0.9 * 4;              /* default SSPRKS2 with s=5 stages is stable for CFL number s-1 */
+    ierr = PetscOptionsReal("-ufv_cfl","CFL number per step","",cfl,&cfl,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-f","Exodus.II filename to read","",filename,filename,sizeof(filename),PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -610,7 +663,7 @@ int main(int argc, char **argv)
   ierr = ConstructGhostCells(&dm, &user);CHKERRQ(ierr);
 
   ierr = ConstructGeometry(dm, &user.facegeom, &user.cellgeom, &user);CHKERRQ(ierr);
-  ierr = VecView(user.cellgeom, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  if (0) {ierr = VecView(user.facegeom, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
   /* Set up DM with section describing local vector and configure local vector. */
   ierr = SetUpLocalSpace(dm, user.numGhostCells);CHKERRQ(ierr);
@@ -625,19 +678,14 @@ int main(int argc, char **argv)
   ierr = VecView(user.cellgeom, viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
-  ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &locF);CHKERRQ(ierr);
-  ierr = CopyToGhosts(dm, &user, locX);CHKERRQ(ierr);
-  ierr = CalculateFlux(dm, &user, locX, locF);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &locF);CHKERRQ(ierr);
-
   ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts, TSSSP);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,MonitorVTK,&user,PETSC_NULL);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000,2.0);CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,0.1/Norm2(user.wind));CHKERRQ(ierr);
+  dt = cfl * user.minradius / Norm2(user.wind);
+  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
   ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
