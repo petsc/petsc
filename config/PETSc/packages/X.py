@@ -16,6 +16,7 @@ class Configure(PETSc.package.NewPackage):
 
   def getSearchDirectories(self):
     '''Generate list of possible locations of X11'''
+    yield ''
     yield '/opt/X11'
     yield '/Developer/SDKs/MacOSX10.5.sdk/usr/X11'
     yield '/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6'
@@ -30,9 +31,9 @@ class Configure(PETSc.package.NewPackage):
     yield '/usr/X386'
     yield '/usr/x386'
     yield '/usr/XFree86/X11'
-    yield '/usr'
     yield '/usr/local'
     yield '/usr/local/x11r5'
     yield '/usr/lpp/Xamples'
     yield '/usr/openwin'
     yield '/usr/openwin/share'
+    return
