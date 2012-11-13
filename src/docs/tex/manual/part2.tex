@@ -4442,7 +4442,7 @@ promote the solution form $ u^n $ to $ u^{n+1}. $
 \end{tabbing}
 One performs the request number of time steps with
 \begin{tabbing}
-  TSSolve(TS ts,Vec U,PetscReal *ftime);
+  TSSolve(TS ts,Vec U);
 \end{tabbing}
 The solve call implicitly sets up the timestep context;
 this can be done explicitly with

@@ -300,7 +300,8 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,T,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,T);CHKERRQ(ierr);
+  ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   if (!rank){PetscPrintf(PETSC_COMM_WORLD,"Solution T after %g hours %d steps\n",ftime/3600,steps);}
 

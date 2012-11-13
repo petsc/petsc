@@ -159,7 +159,8 @@ int main(int argc,char **argv)
   /*
       Perform the solve. This is where the timestepping takes place.
   */
-  ierr = TSSolve(ts,x,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,x);CHKERRQ(ierr);
+  ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
 
   /*
       Get the number of steps

@@ -200,7 +200,8 @@
 
 !  Run the timestepping solver
 
-      call TSSolve(ts,u,ftime,ierr)
+      call TSSolve(ts,u,ierr)
+      call TSGetSolveTime(ts,ftime,ierr)
       call TSGetTimeStepNumber(ts,steps,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
 

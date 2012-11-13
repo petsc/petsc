@@ -133,7 +133,6 @@ int main(int argc,char **argv)
   AppCtx                 ctx;
   PetscErrorCode         ierr;
   DM                     da;
-  PetscReal              ftime;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = SetFromOptions(&ctx);CHKERRQ(ierr);
@@ -160,7 +159,7 @@ int main(int argc,char **argv)
   ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
   ierr = SNESLineSearchSetPostCheck(linesearch, ReactingFlowPostCheck, (void *)&ctx);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = TSSolve(ts,x,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,x);CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);

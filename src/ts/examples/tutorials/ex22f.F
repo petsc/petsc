@@ -126,8 +126,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Solve nonlinear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      call TSSolve(ts,X,ftime,ierr)
-      call TSGetTimeStepNumber(ts,steps,ierr)
+      call TSSolve(ts,X,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.

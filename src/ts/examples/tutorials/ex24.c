@@ -73,7 +73,8 @@ int main(int argc,char **argv)
 #endif
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
-  ierr = TSSolve(ts,X,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,X);CHKERRQ(ierr);
+  ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetSNESIterations(ts,&nits);CHKERRQ(ierr);
   ierr = TSGetKSPIterations(ts,&lits);CHKERRQ(ierr);

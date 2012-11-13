@@ -640,7 +640,8 @@ int main(int argc, char **argv)
   ierr = TSSetDuration(ts,1000,2.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.1/Norm2(user.wind));CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSolve(ts,X,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,X);CHKERRQ(ierr);
+  ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,nsteps);CHKERRQ(ierr);

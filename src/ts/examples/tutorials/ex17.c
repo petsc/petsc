@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   TS             ts;                   /* nonlinear solver */
   Vec            u;                    /* solution, residual vectors */
   Mat            J;                    /* Jacobian matrix */
-  PetscInt       steps,maxsteps = 1000;     /* iterations for convergence */
+  PetscInt       maxsteps = 1000;     /* iterations for convergence */
   PetscErrorCode ierr;
   DM             da;
   PetscReal      ftime,dt;
@@ -119,10 +119,9 @@ int main(int argc,char **argv)
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Solve nonlinear system
+     Integrate ODE system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,u,&ftime);CHKERRQ(ierr);
-  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = TSSolve(ts,u);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.

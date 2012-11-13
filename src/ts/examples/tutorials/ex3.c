@@ -211,7 +211,7 @@ int main(int argc,char **argv)
   /*
      Run the timestepping solver
   */
-  ierr = TSSolve(ts,u,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSSolve(ts,u);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -108,6 +108,7 @@ struct _p_TS {
 
   PetscInt  steps;                  /* steps taken so far */
   PetscReal ptime;                  /* time at the start of the current step (stage time is internal if it exists) */
+  PetscReal solvetime;              /* time at the conclusion of TSSolve() */
   PetscInt  ksp_its;                /* total number of linear solver iterations */
   PetscInt  snes_its;               /* total number of nonlinear solver iterations */
 

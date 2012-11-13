@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 
 
   /* Run the timestepping solver */
-  ierr = TSSolve(ts,x,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSSolve(ts,x);CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);

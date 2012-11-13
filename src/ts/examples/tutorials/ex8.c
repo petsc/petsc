@@ -436,7 +436,8 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,x,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,x);CHKERRQ(ierr);
+  ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetSNESFailures(ts,&snesfails);CHKERRQ(ierr);
   ierr = TSGetStepRejections(ts,&rejects);CHKERRQ(ierr);

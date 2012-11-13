@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   PetscInt               steps,Mx, maxsteps = 1000000;
   PetscErrorCode         ierr;
   DM                     da;
-  PetscReal              ftime,dt;
+  PetscReal              dt;
   PetscReal              vbounds[] = {-1.1,1.1};
   PetscBool              wait;
   UserCtx                ctx;
@@ -115,7 +115,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,x,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,x);CHKERRQ(ierr);
   wait  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-wait",&wait,PETSC_NULL);CHKERRQ(ierr);
   if (wait) {

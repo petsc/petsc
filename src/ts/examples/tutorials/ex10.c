@@ -1081,7 +1081,8 @@ int main(int argc, char *argv[])
   if (rd->test_diff) {
     ierr = RDTestDifferentiation(rd);CHKERRQ(ierr);
   }
-  ierr = TSSolve(ts,X,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,X);CHKERRQ(ierr);
+  ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Steps %D  final time %G\n",steps,ftime);CHKERRQ(ierr);
   if (rd->view_draw) {

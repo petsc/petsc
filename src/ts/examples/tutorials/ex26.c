@@ -153,7 +153,8 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);
   ierr = FormInitialSolution(ts,X,&user);CHKERRQ(ierr);
 
-  ierr = TSSolve(ts,X,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,X);CHKERRQ(ierr);
+  ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
 

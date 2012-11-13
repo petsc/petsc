@@ -176,7 +176,8 @@
 !
 !      Perform the solve. This is where the timestepping takes place.
 !
-      call TSSolve(ts,x,ftime,ierr)
+      call TSSolve(ts,x,ierr)
+      call TSGetSolveTime(ts,ftime,ierr)
       call TSGetTimeStepNumber(ts,its,ierr)
       call TSGetConvergedReason(ts,reason,ierr)
 

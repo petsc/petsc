@@ -126,7 +126,7 @@ int main(int argc,char **argv)
   /*
      Run the timestepping solver
   */
-  ierr = TSSolve(ts,U,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSSolve(ts,U);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

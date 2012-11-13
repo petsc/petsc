@@ -184,8 +184,7 @@ program main
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Solve nonlinear system
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  call TSSolve(ts,X,ftime,ierr)
-  call TSGetTimeStepNumber(ts,steps,ierr)
+  call TSSolve(ts,X,ierr)
 
   if (OptionSaveToDisk) then
      call GetLayout(da,mx,xs,xe,gxs,gxe,ierr)

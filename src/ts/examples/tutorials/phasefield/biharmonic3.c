@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   DM                     da;
   MatFDColoring          matfdcoloring;
   ISColoring             iscoloring;
-  PetscReal              ftime,dt;
+  PetscReal              dt;
   PetscReal              vbounds[] = {-100000,100000,-1.1,1.1};
   PetscBool              wait;
   Vec                    ul,uh;
@@ -150,7 +150,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,x,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,x);CHKERRQ(ierr);
   wait  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-wait",&wait,PETSC_NULL);CHKERRQ(ierr);
   if (wait) {

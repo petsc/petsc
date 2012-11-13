@@ -2207,10 +2207,7 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
 
    Input Parameter:
 +  ts - the TS context obtained from TSCreate()
--  u - the solution vector
-
-   Output Parameter:
-.  ftime - time of the state vector u upon completion
+-  u - the solution vector  (can be null if TSSetSolution() was used, otherwise must contain the initial conditions)
 
    Level: beginner
 
@@ -2223,7 +2220,7 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
 
 .seealso: TSCreate(), TSSetSolution(), TSStep()
 @*/
-PetscErrorCode TSSolve(TS ts,Vec u,PetscReal *ftime)
+PetscErrorCode TSSolve(TS ts,Vec u)
 {
   PetscBool      flg;
   char           filename[PETSC_MAX_PATH_LEN];
@@ -2256,7 +2253,7 @@ PetscErrorCode TSSolve(TS ts,Vec u,PetscReal *ftime)
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
     ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);
-    if (ftime) *ftime = ts->ptime;
+    ts->solvetime = ts->ptime;
   } else {
     /* steps the requested number of timesteps. */
     ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
@@ -2271,10 +2268,10 @@ PetscErrorCode TSSolve(TS ts,Vec u,PetscReal *ftime)
     }
     if (ts->exact_final_time && ts->ptime > ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,u);CHKERRQ(ierr);
-      if (ftime) *ftime = ts->max_time;
+      ts->solvetime = ts->max_time;
     } else {
       ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);
-      if (ftime) *ftime = ts->ptime;
+      ts->solvetime = ts->ptime;
     }
   }
   ierr = TSMonitor(ts,-1,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
@@ -3140,7 +3137,6 @@ PetscErrorCode TSComputeIJacobianConstant(TS ts,PetscReal t,Vec U,Vec Udot,Petsc
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "TSGetConvergedReason"
 /*@
@@ -3170,6 +3166,37 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(reason,2);
   *reason = ts->reason;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetSolveTime"
+/*@
+   TSGetSolveTime - Gets the time after a call to TSSolve()
+
+   Not Collective
+
+   Input Parameter:
+.  ts - the TS context
+
+   Output Parameter:
+.  ftime - the final time. This time should correspond to the final time set with TSSetDuration()
+
+   Level: intermediate
+
+   Notes:
+   Can only be called after the call to TSSolve() is complete.
+
+.keywords: TS, nonlinear, set, convergence, test
+
+.seealso: TSSetConvergenceTest(), TSConvergedReason
+@*/
+PetscErrorCode  TSGetSolveTime(TS ts,PetscReal *ftime)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(ftime,2);
+  *ftime = ts->solvetime;
   PetscFunctionReturn(0);
 }
 

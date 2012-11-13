@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   PetscInt       maxsteps = 1000;      /* iterations for convergence */
   PetscErrorCode ierr;
   DM             da;
-  PetscReal      dt,ftime;
+  PetscReal      dt;
   AppCtx         user;              /* user-defined work context */
   SNES           snes;
   PetscInt       Jtype; /* Jacobian type
@@ -133,7 +133,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,u,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,u);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
