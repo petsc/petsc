@@ -158,9 +158,12 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &newCoordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(newCoordSection, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(newCoordSection, 0, dim);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(newCoordSection, vStart+user->numGhostCells, vEnd+user->numGhostCells);CHKERRQ(ierr);
   for(v = vStart; v < vEnd; ++v) {
     ierr = PetscSectionSetDof(newCoordSection, v+user->numGhostCells, dim);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(newCoordSection, v+user->numGhostCells, 0, dim);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(newCoordSection);CHKERRQ(ierr);
   ierr = DMComplexSetCoordinateSection(gdm, newCoordSection);CHKERRQ(ierr);
