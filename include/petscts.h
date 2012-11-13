@@ -75,7 +75,7 @@ PETSC_EXTERN const char *const*TSConvergedReasons;
 
    Level: beginner
 
-.seealso: TSSolve(), TSConvergedReason(), TSGetAdapt()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt()
 M*/
 
 /*MC
@@ -83,7 +83,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSConvergedReason(), TSGetAdapt(), TSSetDuration(), TSGetSolveTime()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetDuration(), TSGetSolveTime()
 M*/
 
 /*MC
@@ -91,7 +91,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSConvergedReason(), TSGetAdapt(), TSSetDuration()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetDuration()
 M*/
 
 /*MC
@@ -99,7 +99,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSConvergedReason(), TSGetAdapt(), TSGetSNES(), SNESGetConvergedReason()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSGetSNES(), SNESGetConvergedReason()
 M*/
 
 /*MC
@@ -107,7 +107,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSConvergedReason(), TSGetAdapt()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt()
 M*/
 
 /* Logging support */
@@ -154,6 +154,7 @@ PETSC_EXTERN PetscErrorCode TSStep(TS);
 PETSC_EXTERN PetscErrorCode TSEvaluateStep(TS,PetscInt,Vec,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSSolve(TS,Vec);
 PETSC_EXTERN PetscErrorCode TSGetConvergedReason(TS,TSConvergedReason*);
+PETSC_EXTERN PetscErrorCode TSGetSolveTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSGetSolutionTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSGetSNESIterations(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSGetKSPIterations(TS,PetscInt*);

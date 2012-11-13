@@ -3151,7 +3151,7 @@ PetscErrorCode TSComputeIJacobianConstant(TS ts,PetscReal t,Vec U,Vec Udot,Petsc
 .  reason - negative value indicates diverged, positive value converged, see TSConvergedReason or the
             manual pages for the individual convergence tests for complete lists
 
-   Level: intermediate
+   Level: beginner
 
    Notes:
    Can only be called after the call to TSSolve() is complete.
@@ -3182,7 +3182,7 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
    Output Parameter:
 .  ftime - the final time. This time should correspond to the final time set with TSSetDuration()
 
-   Level: intermediate
+   Level: beginner
 
    Notes:
    Can only be called after the call to TSSolve() is complete.
