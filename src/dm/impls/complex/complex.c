@@ -2707,7 +2707,7 @@ PetscErrorCode DMComplexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt po
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(coveredPoints, 4);
-  ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, coveredPoints);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, (void *) coveredPoints);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2910,7 +2910,7 @@ PetscErrorCode DMComplexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt po
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(coveredPoints, 4);
-  ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, coveredPoints);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, (void *) coveredPoints);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5914,7 +5914,7 @@ PetscErrorCode DMComplexVecRestoreClosure(DM dm, PetscSection section, Vec v, Pe
 
   PetscFunctionBegin;
   /* Should work without recalculating size */
-  ierr = DMRestoreWorkArray(dm, size, PETSC_SCALAR, values);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, size, PETSC_SCALAR, (void *) values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -7196,7 +7196,7 @@ PetscErrorCode DMComplexInsertFace_Private(DM dm, DM subdm, PetscInt numFaceVert
     PetscInt f;
 
     numFaces = 0;
-    ierr = DMGetWorkArray(subdm, 1, PETSC_INT, &faces);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(subdm, 1, PETSC_INT, (void **) &faces);CHKERRQ(ierr);
     for(f = firstFace; f < *newFacePoint; ++f) {
       PetscInt dof, off, d;
 

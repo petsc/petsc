@@ -81,7 +81,7 @@ PETSC_STATIC_INLINE PetscErrorCode RestorePointArray_Private(DM dm,PetscInt *rn,
 
   PetscFunctionBegin;
   if (rn) *rn = 0;
-  if (rpoints) {ierr = DMRestoreWorkArray(dm,*rn,PETSC_INT,rpoints);CHKERRQ(ierr);}
+  if (rpoints) {ierr = DMRestoreWorkArray(dm,* rn, PETSC_INT, (void *) rpoints);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -349,7 +349,7 @@ PetscErrorCode DMDARestoreClosureScalar(DM dm, PetscSection section,PetscInt p,P
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(values, 5);
   count = 0;                    /* We are lying about the count */
-  ierr = DMRestoreWorkArray(dm,count,PETSC_SCALAR,values);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, count, PETSC_SCALAR, (void *) values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
