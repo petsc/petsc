@@ -346,9 +346,7 @@ PetscErrorCode DMDestroy_Complex(DM dm)
     DMLabel tmp;
 
     ierr = PetscFree(next->name);CHKERRQ(ierr);
-    ierr = PetscFree(next->stratumValues);CHKERRQ(ierr);
-    ierr = PetscFree(next->stratumOffsets);CHKERRQ(ierr);
-    ierr = PetscFree(next->stratumSizes);CHKERRQ(ierr);
+    ierr = PetscFree3(next->stratumValues,next->stratumOffsets,next->stratumSizes);CHKERRQ(ierr);
     ierr = PetscFree(next->points);CHKERRQ(ierr);
     tmp  = next->next;
     ierr = PetscFree(next);CHKERRQ(ierr);
@@ -2173,7 +2171,7 @@ PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, 
   DM_Complex    *mesh = (DM_Complex *) dm->data;
   DMLabel        next = mesh->labels;
   PetscBool      flg;
-  PetscInt       v, p;
+  PetscInt       v;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3689,9 +3687,9 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParall
       /* Bcast numStrata (could filter for no points in stratum) */
       if (!rank) {newLabel->numStrata = next->numStrata;}
       ierr = MPI_Bcast(&newLabel->numStrata, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-      ierr = PetscMalloc(newLabel->numStrata * sizeof(PetscInt), &newLabel->stratumValues);CHKERRQ(ierr);
-      ierr = PetscMalloc(newLabel->numStrata * sizeof(PetscInt), &newLabel->stratumSizes);CHKERRQ(ierr);
-      ierr = PetscMalloc((newLabel->numStrata+1) * sizeof(PetscInt), &newLabel->stratumOffsets);CHKERRQ(ierr);
+      ierr = PetscMalloc3(newLabel->numStrata,PetscInt,&newLabel->stratumValues,
+                          newLabel->numStrata,PetscInt,&newLabel->stratumSizes,
+                          newLabel->numStrata+1,PetscInt,&newLabel->stratumOffsets);CHKERRQ(ierr);
       /* Bcast stratumValues (could filter for no points in stratum) */
       if (!rank) {ierr = PetscMemcpy(newLabel->stratumValues, next->stratumValues, next->numStrata * sizeof(PetscInt));CHKERRQ(ierr);}
       ierr = MPI_Bcast(newLabel->stratumValues, newLabel->numStrata, MPIU_INT, 0, comm);CHKERRQ(ierr);
