@@ -1,6 +1,6 @@
 
-static char help[] = "Creates a matrix using simple quadrilateral finite elements, and uses it to test GAMG\n\
-  -ne <size>       : problem size\n                                      \
+static char help[] = "Creates a matrix from quadrilateral finite elements in 2D, Laplacian \n\
+  -ne <size>       : problem size in number of elements (eg, -ne 31 gives 32^2 grid)\n
   -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
 
 #include <petscksp.h>

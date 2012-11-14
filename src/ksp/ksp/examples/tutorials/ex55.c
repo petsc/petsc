@@ -1,8 +1,8 @@
 static char help[] = "2D, bi-linear quadrilateral (Q1), displacement finite element formulation\n\
-of plain strain linear elasticity, that uses the GAMG PC.  E=1.0, nu=0.25.\n\
+of plain strain linear elasticity.  E=1.0, nu=0.25.\n\
 Unit square domain with Dirichelet boundary condition on the y=0 side only.\n\
 Load of 1.0 in x direction on all nodes (not a true uniform load).\n\
-  -ne <size>      : number of (square) quadrilateral elements in each dimention\n\
+  -ne <size>      : number of (square) quadrilateral elements in each dimension\n\
   -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
 
 #include <petscksp.h>
@@ -164,7 +164,7 @@ int main(int argc,char **args)
   {
     PetscReal *coords;
     ierr = PetscMalloc(m*sizeof(PetscReal),&coords);
-    /* forms the element stiffness for the Laplacian and coordinates */
+    /* forms the element stiffness and coordinates */
     for (Ii = Istart/2, ix = 0; Ii < Iend/2; Ii++, ix++ ) {
       j = Ii/(ne+1); i = Ii%(ne+1);
       /* coords */
