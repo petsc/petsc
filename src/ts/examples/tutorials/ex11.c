@@ -18,6 +18,7 @@ typedef struct {
   PetscReal wind[DIM];
   PetscReal inflowState[1];
   PetscReal minradius;
+  PetscInt  vtkInterval;        /* For monitor */
 } AppCtx;
 
 typedef struct {
@@ -590,6 +591,7 @@ static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer
 #define __FUNCT__ "MonitorVTK"
 static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,void *ctx)
 {
+  AppCtx         *user = (AppCtx*)ctx;
   DM             dm;
   PetscViewer    viewer;
   char           filename[PETSC_MAX_PATH_LEN];
@@ -601,11 +603,16 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
   ierr = VecNorm(X,NORM_INFINITY,&xnorm);CHKERRQ(ierr);
   ierr = PetscPrintf(((PetscObject)ts)->comm,"% 3D  time %8.2G  |x| %8.2G\n",stepnum,time,xnorm);CHKERRQ(ierr);
-  if (stepnum == -1) PetscFunctionReturn(0);
-  ierr = PetscSNPrintf(filename,sizeof filename,"ex11-%03D.vtk",stepnum);CHKERRQ(ierr);
-  ierr = OutputVTK(dm,filename,&viewer);CHKERRQ(ierr);
-  ierr = VecView(X,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  if (user->vtkInterval < 1) PetscFunctionReturn(0);
+  if ((stepnum == -1) ^ (stepnum % user->vtkInterval == 0)) {
+    if (stepnum == -1) {        /* Final time is not multiple of normal time interval, write it anyway */
+      ierr = TSGetTimeStepNumber(ts,&stepnum);CHKERRQ(ierr);
+    }
+    ierr = PetscSNPrintf(filename,sizeof filename,"ex11-%03D.vtk",stepnum);CHKERRQ(ierr);
+    ierr = OutputVTK(dm,filename,&viewer);CHKERRQ(ierr);
+    ierr = VecView(X,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -644,13 +651,15 @@ int main(int argc, char **argv)
     cfl = 0.9 * 4;              /* default SSPRKS2 with s=5 stages is stable for CFL number s-1 */
     ierr = PetscOptionsReal("-ufv_cfl","CFL number per step","",cfl,&cfl,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-f","Exodus.II filename to read","",filename,filename,sizeof(filename),PETSC_NULL);CHKERRQ(ierr);
+    user.vtkInterval = 1;
+    ierr = PetscOptionsInt("-ufv_vtk_interval","VTK output interval (0 to disable)","",user.vtkInterval,&user.vtkInterval,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (!rank) {
     exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
     if (exoid <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ex_open(\"%s\",...) did not return a valid file ID",filename);
-  }
+  } else exoid = -1;                 /* Not used */
   ierr = DMComplexCreateExodus(comm, exoid, PETSC_TRUE, &dm);CHKERRQ(ierr);
   if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
