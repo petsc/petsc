@@ -2233,7 +2233,7 @@ PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, 
   DM_Complex    *mesh = (DM_Complex *) dm->data;
   DMLabel        next = mesh->labels;
   PetscBool      flg  = PETSC_FALSE;
-  PetscInt       v, p;
+  PetscInt       v, p, loc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2275,13 +2275,8 @@ PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, 
     next->stratumSizes   = tmpS;
   }
   /* Check whether point exists */
-  for (p = next->stratumOffsets[v]; p < next->stratumOffsets[v]+next->stratumSizes[v]; ++p) {
-    if (next->points[p] == point) {
-      break;
-    }
-  }
-  /* Add point: NEED TO OPTIMIZE */
-  if (p >= next->stratumOffsets[v]+next->stratumSizes[v]) {
+  ierr = PetscFindInt(point,next->stratumSizes[v],next->points+next->stratumOffsets[v],&loc);CHKERRQ(ierr);
+  if (loc < 0) {
     /* Check for reallocation */
     if (next->stratumSizes[v] >= next->stratumOffsets[v+1]-next->stratumOffsets[v]) {
       PetscInt  oldSize   = next->stratumOffsets[v+1]-next->stratumOffsets[v];
@@ -2305,10 +2300,10 @@ PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, 
       ierr = PetscFree(next->points);CHKERRQ(ierr);
       next->points = newPoints;
     }
-    /* Insert point and resort */
-    next->points[next->stratumOffsets[v]+next->stratumSizes[v]] = point;
+    loc = next->stratumOffsets[v] + (-loc - 1); /* decode insert location */
+    for (p=next->stratumOffsets[v]+next->stratumSizes[v]; p>loc; p--) next->points[p] = next->points[p-1];
+    next->points[loc] = point;
     ++next->stratumSizes[v];
-    ierr = PetscSortInt(next->stratumSizes[v], &next->points[next->stratumOffsets[v]]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
