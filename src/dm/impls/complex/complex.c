@@ -3394,7 +3394,8 @@ PetscErrorCode DMComplexEnlargePartition(DM dm, const PetscInt start[], const Pe
     PetscHashISize(h, newNumPoints);
     ierr = PetscSectionSetDof(newps, part, newNumPoints);CHKERRQ(ierr);
     ierr = PetscMalloc(newNumPoints * sizeof(PetscInt), &tmpPoints[part]);CHKERRQ(ierr);
-    PetscHashIGetKeys(h, n, tmpPoints[part]);
+    /* Should not need this conditional */
+    if (newNumPoints) {PetscHashIGetKeys(h, n, tmpPoints[part]);}
     totPoints += newNumPoints;
   }
   ierr = ISRestoreIndices(*partition, &points);CHKERRQ(ierr);
