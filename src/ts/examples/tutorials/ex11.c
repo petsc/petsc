@@ -590,27 +590,22 @@ static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer
 #define __FUNCT__ "MonitorVTK"
 static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,void *ctx)
 {
-  char filename[PETSC_MAX_PATH_LEN];
+  DM             dm;
+  PetscViewer    viewer;
+  char           filename[PETSC_MAX_PATH_LEN];
+  PetscReal      xnorm;
   PetscErrorCode ierr;
-  PetscReal xnorm;
-  DM dm;
-  PetscViewer viewer;
-  Vec locX;
 
   PetscFunctionBegin;
+  ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
   ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
   ierr = VecNorm(X,NORM_INFINITY,&xnorm);CHKERRQ(ierr);
   ierr = PetscPrintf(((PetscObject)ts)->comm,"% 3D  time %8.2G  |x| %8.2G\n",stepnum,time,xnorm);CHKERRQ(ierr);
   if (stepnum == -1) PetscFunctionReturn(0);
   ierr = PetscSNPrintf(filename,sizeof filename,"ex11-%03D.vtk",stepnum);CHKERRQ(ierr);
   ierr = OutputVTK(dm,filename,&viewer);CHKERRQ(ierr);
-
-  ierr = DMGetLocalVector(dm,&locX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,locX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,locX);CHKERRQ(ierr);
-  ierr = VecView(locX,viewer);CHKERRQ(ierr);
+  ierr = VecView(X,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm,&locX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
