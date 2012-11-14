@@ -195,7 +195,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   PetscBT              lnkbt;
   PetscScalar          *apa;
   PetscReal            afill;
-  PetscBool            scalable=PETSC_FALSE;
+  PetscBool            scalable=PETSC_TRUE;
   PetscInt             nlnk_max,armax,prmax;
 
   PetscFunctionBegin;
@@ -797,7 +797,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,PetscReal f
 PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIAIJ(Mat P,Mat A,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
-  PetscBool      scalable=PETSC_FALSE,viamatmatmult=PETSC_FALSE;
+  PetscBool      scalable=PETSC_TRUE,viamatmatmult=PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsBool("-mattransposematmult_viamatmatmult","Use R=Pt and C=R*A","",viamatmatmult,&viamatmatmult,PETSC_NULL);CHKERRQ(ierr);
@@ -1396,7 +1396,6 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Mat
   aj   = a_loc->j;
 
   for (i=0; i<am; i++) {
-    /* 2-a) put A[i,:] to dense array aval */
     anz = ai[i+1] - ai[i];
     adj = aj + ai[i];
     ada = a_loc->a + ai[i];
@@ -1444,7 +1443,6 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Mat
       }
       ierr = PetscLogFlops(2.0*anz);CHKERRQ(ierr);
     }
-
   }
 
   /* 3) send and recv matrix values coa */
