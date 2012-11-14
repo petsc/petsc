@@ -4,6 +4,7 @@
 /* Logging support */
 PetscLogEvent DMCOMPLEX_Distribute, DMCOMPLEX_Stratify;
 
+PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
 #undef __FUNCT__
@@ -49,7 +50,14 @@ PetscErrorCode VecView_Complex_Local(Vec v, PetscViewer viewer)
     ierr = PetscObjectReference((PetscObject) v);CHKERRQ(ierr);  /* viewer drops reference */
     ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMComplexVTKWriteAll, ft, (PetscObject) v);CHKERRQ(ierr);
   } else {
-    ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);
+    PetscBool isseq;
+
+    ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
+    if (isseq) {
+      ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);
+    } else {
+      ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -78,7 +86,14 @@ PetscErrorCode VecView_Complex(Vec v, PetscViewer viewer)
     ierr = VecView_Complex_Local(locv, viewer);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm, &locv);CHKERRQ(ierr);
   } else {
-    ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);
+    PetscBool isseq;
+
+    ierr = PetscObjectTypeCompare((PetscObject) v, VECSEQ, &isseq);CHKERRQ(ierr);
+    if (isseq) {
+      ierr = VecView_Seq(v, viewer);CHKERRQ(ierr);
+    } else {
+      ierr = VecView_MPI(v, viewer);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -3342,8 +3357,89 @@ PetscErrorCode DMComplexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt
 #endif
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexEnlargePartition"
+/* Expand the partition by BFS on the adjacency graph */
+PetscErrorCode DMComplexEnlargePartition(DM dm, const PetscInt start[], const PetscInt adjacency[], PetscSection *partSection, IS *partition) {
+  PetscHashI      h;
+  PetscSection    newps;
+  IS              newpart;
+  const PetscInt *points;
+  PetscInt      **tmpPoints, *newPoints, totPoints = 0;
+  PetscInt        pStart, pEnd, part, q;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscHashICreate(h);
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &newps);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(*partSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(newps, pStart, pEnd);CHKERRQ(ierr);
+  ierr = ISGetIndices(*partition, &points);CHKERRQ(ierr);
+  ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt *), &tmpPoints);CHKERRQ(ierr);
+  for(part = pStart; part < pEnd; ++part) {
+    PetscInt numPoints, newNumPoints, off, p, n = 0;
+
+    PetscHashIClear(h);
+    ierr = PetscSectionGetDof(*partSection, part, &numPoints);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(*partSection, part, &off);CHKERRQ(ierr);
+    /* Add all existing points to table and all points in next BFS level */
+    /* TODO We are brute forcing here, but could check the adjacency size to find the boundary */
+    for(p = 0; p < numPoints; ++p) {
+      PetscInt s = start[p], e = start[p+1], a;
+
+      PetscHashIAdd(h, points[p], 1);
+      for(a = s; a < e; ++a) {
+        PetscHashIAdd(h, adjacency[a], 1);
+      }
+    }
+    PetscHashISize(h, newNumPoints);
+    ierr = PetscSectionSetDof(newps, part, newNumPoints);CHKERRQ(ierr);
+    ierr = PetscMalloc(newNumPoints * sizeof(PetscInt), &tmpPoints[part]);CHKERRQ(ierr);
+    PetscHashIGetKeys(h, n, tmpPoints[part]);
+    totPoints += newNumPoints;
+  }
+  ierr = ISRestoreIndices(*partition, &points);CHKERRQ(ierr);
+  PetscHashIDestroy(h);
+  ierr = PetscSectionSetUp(newps);CHKERRQ(ierr);
+  ierr = PetscMalloc(totPoints * sizeof(PetscInt), &newPoints);CHKERRQ(ierr);
+  for(part = pStart, q = 0; part < pEnd; ++part) {
+    PetscInt numPoints, p;
+
+    ierr = PetscSectionGetDof(newps, part, &numPoints);CHKERRQ(ierr);
+    for(p = 0; p < numPoints; ++p, ++q) {
+      newPoints[q] = tmpPoints[part][p];
+    }
+    ierr = PetscFree(tmpPoints[part]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(tmpPoints);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject) dm)->comm, totPoints, newPoints, PETSC_OWN_POINTER, &newpart);CHKERRQ(ierr);
+  ierr = ISDestroy(partition);CHKERRQ(ierr);
+  *partition = newpart;
+  ierr = PetscSectionDestroy(partSection);CHKERRQ(ierr);
+  *partSection = newps;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexCreatePartition"
-PetscErrorCode DMComplexCreatePartition(DM dm, PetscSection *partSection, IS *partition, PetscInt height) {
+/*
+  DMComplexCreatePartition - Create a non-overlapping partition of the points at the given height
+
+  Collective on DM
+
+  Input Parameters:
+  + dm - The DM
+  . height - The height for points in the partition
+  - enlarge - Expand each partition with neighbors
+
+  Output Parameters:
+  + partSection - The PetscSection giving the division of points by partition
+  - partition - The list of points by partition
+
+  Level: developer
+
+.seealso DMComplexDistribute()
+*/
+PetscErrorCode DMComplexCreatePartition(DM dm, PetscInt height, PetscBool enlarge, PetscSection *partSection, IS *partition) {
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
@@ -3370,17 +3466,17 @@ PetscErrorCode DMComplexCreatePartition(DM dm, PetscSection *partSection, IS *pa
     PetscInt *start     = PETSC_NULL;
     PetscInt *adjacency = PETSC_NULL;
 
+    ierr = DMComplexCreateNeighborCSR(dm, &numVertices, &start, &adjacency);CHKERRQ(ierr);
     if (1) {
-      ierr = DMComplexCreateNeighborCSR(dm, &numVertices, &start, &adjacency);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_CHACO
       ierr = DMComplexPartition_Chaco(dm, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
 #endif
     } else {
-      ierr = DMComplexCreateNeighborCSR(dm, &numVertices, &start, &adjacency);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_PARMETIS
       ierr = DMComplexPartition_ParMetis(dm, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
 #endif
     }
+    if (enlarge) {ierr = DMComplexEnlargePartition(dm, start, adjacency, partSection, partition);CHKERRQ(ierr);}
     ierr = PetscFree(start);CHKERRQ(ierr);
     ierr = PetscFree(adjacency);CHKERRQ(ierr);
 # if 0
@@ -3519,7 +3615,8 @@ PetscErrorCode DMComplexDistributeField(DM dm, PetscSF pointSF, PetscSection ori
 
   Input Parameter:
 + dm  - The original DMComplex object
-- partitioner - The partitioning package, or NULL for the default
+. partitioner - The partitioning package, or NULL for the default
+- overlap - The overlap of partitions, 0 is the default
 
   Output Parameter:
 . parallelMesh - The distributed DMComplex object, or PETSC_NULL
@@ -3531,7 +3628,7 @@ PetscErrorCode DMComplexDistributeField(DM dm, PetscSF pointSF, PetscSection ori
 .keywords: mesh, elements
 .seealso: DMComplexCreate(), DMComplexDistributeByFace()
 @*/
-PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParallel)
+PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt overlap, DM *dmParallel)
 {
   DM_Complex    *mesh   = (DM_Complex *) dm->data, *pmesh;
   MPI_Comm       comm   = ((PetscObject) dm)->comm;
@@ -3551,7 +3648,7 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParall
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(dmParallel,3);
+  PetscValidPointer(dmParallel,4);
   ierr = PetscLogEventBegin(DMCOMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
@@ -3560,7 +3657,8 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParall
 
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   /* Create cell partition - We need to rewrite to use IS, use the MatPartition stuff */
-  ierr = DMComplexCreatePartition(dm, &cellPartSection, &cellPart, height);CHKERRQ(ierr);
+  if (overlap > 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Overlap > 1 not yet implemented");
+  ierr = DMComplexCreatePartition(dm, height, overlap > 0 ? PETSC_TRUE : PETSC_FALSE, &cellPartSection, &cellPart);CHKERRQ(ierr);
   /* Create SF assuming a serial partition for all processes: Could check for IS length here */
   if (!rank) {
     numRemoteRanks = numProcs;

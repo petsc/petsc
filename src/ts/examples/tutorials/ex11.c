@@ -666,7 +666,7 @@ int main(int argc, char **argv)
   ierr = DMComplexCreateExodus(comm, exoid, PETSC_TRUE, &dm);CHKERRQ(ierr);
   if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
   /* Distribute mesh */
-  ierr = DMComplexDistribute(dm, "chaco", &dmDist);CHKERRQ(ierr);
+  ierr = DMComplexDistribute(dm, "chaco", 1, &dmDist);CHKERRQ(ierr);
   if (dmDist) {
     ierr = DMDestroy(&dm);CHKERRQ(ierr);
     dm   = dmDist;

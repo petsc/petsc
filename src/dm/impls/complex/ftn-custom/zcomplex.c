@@ -24,11 +24,11 @@
 /* Definitions of Fortran Wrapper routines */
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL dmcomplexdistribute_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), DM *dmParallel, int *ierr PETSC_END_LEN(lenN)) {
+void PETSC_STDCALL dmcomplexdistribute_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *overlap, DM *dmParallel, int *ierr PETSC_END_LEN(lenN)) {
   char *partitioner;
 
   FIXCHAR(name, lenN, partitioner);
-  *ierr = DMComplexDistribute(*dm, partitioner, dmParallel);
+  *ierr = DMComplexDistribute(*dm, partitioner, *overlap, dmParallel);
   FREECHAR(name, partitioner);
 }
 
