@@ -7,6 +7,7 @@ class Configure(PETSc.package.NewPackage):
     self.functions        = ['XSetWMName']
     self.includes         = ['X11/Xlib.h']
     self.liblist          = [['libX11.a']]
+    self.double           = 0
     self.complex          = 1
     self.lookforbydefault = 1
     self.worksonWindows   = 1 # no X on windows - but this flag is set for auto-disable to work
