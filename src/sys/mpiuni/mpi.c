@@ -24,14 +24,18 @@ int     MPIUNI_DATASIZE[10] = {sizeof(int),sizeof(float),sizeof(double),2*sizeof
 #define MAX_ATTR 128
 
 typedef struct {
-  void                *extra_state;
   void                *attribute_val;
   int                 active;
-  MPI_Delete_function *del;
 } MPI_Attr;
 
-static MPI_Attr attr[MAX_ATTR];
-static int      num_attr = 1,mpi_tag_ub = 100000000;
+typedef struct {
+  void                *extra_state;
+  MPI_Delete_function *del;
+} MPI_Attr_keyval;
+
+static MPI_Attr_keyval attr_keyval[MAX_ATTR];
+static MPI_Attr        attr[MAX_ATTR];
+static int             num_attr = 1,mpi_tag_ub = 100000000;
 
 #if defined(__cplusplus)
 extern "C" {
@@ -64,15 +68,14 @@ int MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,
 {
   if (num_attr >= MAX_ATTR) MPI_Abort(MPI_COMM_WORLD,1);
 
-  attr[num_attr].extra_state = extra_state;
-  attr[num_attr].del         = delete_fn;
-  *keyval                    = num_attr++;
+  attr_keyval[num_attr].extra_state = extra_state;
+  attr_keyval[num_attr].del         = delete_fn;
+  *keyval                           = num_attr++;
   return 0;
 }
 
 int MPI_Keyval_free(int *keyval)
 {
-  attr[*keyval].active = 0;
   return MPI_SUCCESS;
 }
 
@@ -85,11 +88,11 @@ int MPI_Attr_put(MPI_Comm comm,int keyval,void *attribute_val)
   
 int MPI_Attr_delete(MPI_Comm comm,int keyval)
 {
-  if (attr[keyval].active && attr[keyval].del) {
+  if (attr[keyval].active && attr_keyval[keyval].del) {
     void* save_attribute_val   = attr[keyval].attribute_val;
     attr[keyval].active        = 0;
     attr[keyval].attribute_val = 0;
-    (*(attr[keyval].del))(comm,keyval,save_attribute_val,attr[keyval].extra_state);
+    (*(attr_keyval[keyval].del))(comm,keyval,save_attribute_val,attr_keyval[keyval].extra_state);
   }
   return MPI_SUCCESS;
 }
@@ -123,8 +126,8 @@ int MPI_Comm_free(MPI_Comm *comm)
 
   if (--dups) return MPI_SUCCESS;
   for (i=0; i<num_attr; i++) {
-    if (attr[i].active && attr[i].del) {
-      (*attr[i].del)(*comm,i,attr[i].attribute_val,attr[i].extra_state);
+    if (attr[i].active && attr_keyval[i].del) {
+      (*attr_keyval[i].del)(*comm,i,attr[i].attribute_val,attr_keyval[i].extra_state);
     }
     attr[i].active = 0;
   }
