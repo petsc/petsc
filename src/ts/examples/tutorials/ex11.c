@@ -632,7 +632,8 @@ int main(int argc, char **argv)
   Vec            X;
   PetscViewer    viewer;
   PetscMPIInt    rank;
-  char           filename[PETSC_MAX_PATH_LEN] = "sevenside.exo", outfile[PETSC_MAX_PATH_LEN];
+  char           filename[PETSC_MAX_PATH_LEN] = "sevenside.exo";
+  PetscBool      vtkCellGeom;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
@@ -653,6 +654,8 @@ int main(int argc, char **argv)
     ierr = PetscOptionsString("-f","Exodus.II filename to read","",filename,filename,sizeof(filename),PETSC_NULL);CHKERRQ(ierr);
     user.vtkInterval = 1;
     ierr = PetscOptionsInt("-ufv_vtk_interval","VTK output interval (0 to disable)","",user.vtkInterval,&user.vtkInterval,PETSC_NULL);CHKERRQ(ierr);
+    vtkCellGeom = PETSC_FALSE;
+    ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -681,12 +684,11 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
   ierr = SetInitialCondition(dm, X, &user);CHKERRQ(ierr);
-  ierr = OutputVTK(dm, "ex11-000.vtk", &viewer);CHKERRQ(ierr);
-  ierr = VecView(X, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = OutputVTK(dm, "ex11-cellgeom.vtk", &viewer);CHKERRQ(ierr);
-  ierr = VecView(user.cellgeom, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  if (vtkCellGeom) {
+    ierr = OutputVTK(dm, "ex11-cellgeom.vtk", &viewer);CHKERRQ(ierr);
+    ierr = VecView(user.cellgeom, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
 
   ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts, TSSSP);CHKERRQ(ierr);
@@ -702,10 +704,6 @@ int main(int argc, char **argv)
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
   ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,nsteps);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(outfile, sizeof(outfile), "ex11-%03D.vtk", nsteps);CHKERRQ(ierr);
-  ierr = OutputVTK(dm, outfile, &viewer);CHKERRQ(ierr);
-  ierr = VecView(X, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
   ierr = VecDestroy(&user.cellgeom);CHKERRQ(ierr);
