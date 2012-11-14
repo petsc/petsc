@@ -398,9 +398,11 @@ PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pE
 PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numDof)
 {
   PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
   if ((point < s->atlasLayout.pStart) || (point >= s->atlasLayout.pEnd)) {
     SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %d should be in [%d, %d)", point, s->atlasLayout.pStart, s->atlasLayout.pEnd);
   }
+#endif
   *numDof = s->atlasDof[point - s->atlasLayout.pStart];
   PetscFunctionReturn(0);
 }
@@ -1015,9 +1017,11 @@ PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLa
 PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *offset)
 {
   PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
   if ((point < s->atlasLayout.pStart) || (point >= s->atlasLayout.pEnd)) {
     SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %d should be in [%d, %d)", point, s->atlasLayout.pStart, s->atlasLayout.pEnd);
   }
+#endif
   *offset = s->atlasOff[point - s->atlasLayout.pStart];
   PetscFunctionReturn(0);
 }
