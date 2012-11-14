@@ -167,7 +167,7 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool in
   if (rank == 0) {
     float *x, *y, *z;
 
-    ierr = PetscMalloc3(numVertices,PetscReal,&x,numVertices,PetscReal,&y,numVertices,PetscReal,&z);CHKERRQ(ierr);
+    ierr = PetscMalloc3(numVertices,float,&x,numVertices,float,&y,numVertices,float,&z);CHKERRQ(ierr);
     ierr = ex_get_coord(exoid, x, y, z);CHKERRQ(ierr);
     if (dim > 0) {for (v = 0; v < numVertices; ++v) {coords[v*dim+0] = x[v];}}
     if (dim > 1) {for (v = 0; v < numVertices; ++v) {coords[v*dim+1] = y[v];}}
