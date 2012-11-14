@@ -158,6 +158,7 @@ PetscErrorCode  DMInitializePackage(const char path[])
   ierr = PetscLogEventRegister("DMDALocalADFunc",        DM_CLASSID,&DMDA_LocalADFunction);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("DMComplexDistribute",    DM_CLASSID,&DMCOMPLEX_Distribute);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMComplexStratify",      DM_CLASSID,&DMCOMPLEX_Stratify);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
   ierr = PetscLogEventRegister("DMMeshView",             DM_CLASSID,&DMMesh_View);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMMeshGetGlobalScatter", DM_CLASSID,&DMMesh_GetGlobalScatter);CHKERRQ(ierr);

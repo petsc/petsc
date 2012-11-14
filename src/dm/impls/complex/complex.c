@@ -1,7 +1,7 @@
 #include <petsc-private/compleximpl.h>   /*I      "petscdmcomplex.h"   I*/
 
 /* Logging support */
-PetscLogEvent DMCOMPLEX_Distribute;
+PetscLogEvent DMCOMPLEX_Distribute, DMCOMPLEX_Stratify;
 
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
@@ -1995,6 +1995,7 @@ PetscErrorCode DMComplexStratify(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscLogEventBegin(DMCOMPLEX_Stratify,dm,0,0,0);CHKERRQ(ierr);
   /* Calculate depth */
   ierr = PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd);CHKERRQ(ierr);
   /* Initialize roots and count leaves */
@@ -2031,6 +2032,7 @@ PetscErrorCode DMComplexStratify(DM dm)
       ierr = DMComplexSetDepth_Private(dm, p, &depth);CHKERRQ(ierr);
     }
   }
+  ierr = PetscLogEventEnd(DMCOMPLEX_Stratify,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

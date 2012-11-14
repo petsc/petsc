@@ -5,7 +5,7 @@
 #include <petscdmcomplex.h> /*I      "petscdmcomplex.h"    I*/
 #include "petsc-private/dmimpl.h"
 
-PETSC_EXTERN PetscLogEvent DMCOMPLEX_Distribute;
+PETSC_EXTERN PetscLogEvent DMCOMPLEX_Distribute, DMCOMPLEX_Stratify;
 
 typedef struct _n_DMLabel *DMLabel;
 struct _n_DMLabel {
