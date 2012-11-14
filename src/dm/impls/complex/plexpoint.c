@@ -1,6 +1,25 @@
 #include <petsc-private/compleximpl.h>   /*I      "petscdmcomplex.h"   I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexGetOffset_Private"
+PETSC_STATIC_INLINE PetscErrorCode DMComplexGetOffset_Private(DM dm,PetscInt point,PetscInt *offset)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscErrorCode ierr;
+    ierr = PetscSectionGetOffset(dm->defaultSection,point,offset);CHKERRQ(ierr);
+  }
+#else
+  {
+    PetscSection s = dm->defaultSection;
+    *offset = s->atlasOff[point - s->atlasLayout.pStart];
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexGetPointLocal"
 /*@
    DMComplexGetPointLocal - get location of point data in local Vec
@@ -68,7 +87,7 @@ PetscErrorCode DMComplexPointLocalRead(DM dm,PetscInt point,const PetscScalar *a
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidScalarPointer(array,3);
   PetscValidPointer(ptr,4);
-  ierr = DMComplexGetPointLocal(dm,point,&start,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMComplexGetOffset_Private(dm,point,&start);CHKERRQ(ierr);
   *(const PetscScalar **)ptr = array + start;
   PetscFunctionReturn(0);
 }
@@ -108,7 +127,7 @@ PetscErrorCode DMComplexPointLocalRef(DM dm,PetscInt point,PetscScalar *array,vo
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidScalarPointer(array,3);
   PetscValidPointer(ptr,4);
-  ierr = DMComplexGetPointLocal(dm,point,&start,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMComplexGetOffset_Private(dm,point,&start);CHKERRQ(ierr);
   *(PetscScalar **)ptr = array + start;
   PetscFunctionReturn(0);
 }
