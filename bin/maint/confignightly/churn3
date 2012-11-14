@@ -1,8 +1,8 @@
 #! /bin/csh
 #
-set MACH=xbox
+set MACH=churn
 set USR=petsc
-set LOC=/home/petsc/petsc-dev
+set LOC=/sandbox/petsc/petsc-dev-3
 set CONF=arch-linux-dbg-quad
 set PURL=http://petsc.cs.iit.edu/petsc/petsc-dev
 set BURL=http://petsc.cs.iit.edu/petsc/BuildSystem
