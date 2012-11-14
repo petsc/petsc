@@ -622,7 +622,7 @@ int main(int argc, char **argv)
 {
   MPI_Comm       comm;
   AppCtx         user;
-  DM             dm;
+  DM             dm, dmDist;
   PetscReal      ftime,cfl,dt;
   PetscInt       nsteps;
   int            CPU_word_size = 0, IO_word_size = 0, exoid;
@@ -662,6 +662,12 @@ int main(int argc, char **argv)
   } else exoid = -1;                 /* Not used */
   ierr = DMComplexCreateExodus(comm, exoid, PETSC_TRUE, &dm);CHKERRQ(ierr);
   if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
+  /* Distribute mesh */
+  ierr = DMComplexDistribute(dm, "chaco", &dmDist);CHKERRQ(ierr);
+  if (dmDist) {
+    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    dm   = dmDist;
+  }
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
 
   ierr = ConstructGhostCells(&dm, &user);CHKERRQ(ierr);
