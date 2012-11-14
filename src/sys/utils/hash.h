@@ -692,8 +692,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJSetMultivalued(PetscHashIJ h, Pets
   PetscFunctionReturn(0);
 }
 
-
-
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJResize"
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJResize(PetscHashIJ h, PetscInt n){
@@ -715,6 +713,25 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKeySize(PetscHashIJ h, PetscInt *n
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJSize(PetscHashIJ h, PetscInt *m){
   PetscFunctionBegin;
   (*m)=h->size;
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJGet"
+/*
+ Locate key i in the hash table h. If i is found in table, ii is its first value; otherwise, ii == -1.
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGet(PetscHashIJ h, PetscHashIJKey i, PetscInt *ii)
+{
+  khiter_t _9_hi;
+
+  PetscFunctionBegin;
+  _9_hi = kh_get(HASHIJ, (h)->ht, (i));
+  if (_9_hi != kh_end((h)->ht)) {
+    *ii = kh_val((h)->ht, _9_hi).head->k;
+  } else {
+    *ii = -1;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -747,7 +764,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterGetKey(PetscHashIJ h, PetscHas
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "PetscHashIJGetValIter"
+#define __FUNCT__ "PetscHashIJIterGetValIter"
 PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterGetValIter(PetscHashIJ h, PetscHashIJIter hi, PetscHashIJValIter *vi) {
   PetscFunctionBegin;
   if (hi != kh_end(h->ht) && kh_exist((h)->ht,(hi)))((*vi) = kh_val((h)->ht,(hi)).head); else ((*vi) = 0);

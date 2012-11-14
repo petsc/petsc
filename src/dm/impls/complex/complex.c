@@ -1,4 +1,5 @@
 #include <petsc-private/compleximpl.h>   /*I      "petscdmcomplex.h"   I*/
+#include <../src/sys/utils/hash.h>
 
 /* Logging support */
 PetscLogEvent DMCOMPLEX_Distribute, DMCOMPLEX_Stratify;
@@ -2235,7 +2236,7 @@ PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, 
   DM_Complex    *mesh = (DM_Complex *) dm->data;
   DMLabel        next = mesh->labels;
   PetscBool      flg  = PETSC_FALSE;
-  PetscInt       v, p, loc;
+  PetscInt       v, loc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2279,6 +2280,7 @@ PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, 
   /* Check whether point exists */
   ierr = PetscFindInt(point,next->stratumSizes[v],next->points+next->stratumOffsets[v],&loc);CHKERRQ(ierr);
   if (loc < 0) {
+    PetscInt off = next->stratumOffsets[v] - (loc+1); /* decode insert location */
     /* Check for reallocation */
     if (next->stratumSizes[v] >= next->stratumOffsets[v+1]-next->stratumOffsets[v]) {
       PetscInt  oldSize   = next->stratumOffsets[v+1]-next->stratumOffsets[v];
@@ -2302,9 +2304,8 @@ PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, 
       ierr = PetscFree(next->points);CHKERRQ(ierr);
       next->points = newPoints;
     }
-    loc = next->stratumOffsets[v] + (-loc - 1); /* decode insert location */
-    for (p=next->stratumOffsets[v]+next->stratumSizes[v]; p>loc; p--) next->points[p] = next->points[p-1];
-    next->points[loc] = point;
+    ierr = PetscMemmove(&next->points[off+1], &next->points[off], (next->stratumSizes[v]+(loc+1)) * sizeof(PetscInt));CHKERRQ(ierr);
+    next->points[off] = point;
     ++next->stratumSizes[v];
   }
   PetscFunctionReturn(0);
@@ -3554,6 +3555,7 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], DM *dmParall
   ierr = PetscLogEventBegin(DMCOMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
+  *dmParallel = PETSC_NULL;
   if (numProcs == 1) PetscFunctionReturn(0);
 
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
@@ -3837,6 +3839,7 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
 {
   DM             idm;
   DM_Complex    *mesh;
+  PetscHashIJ    edgeTable;
   PetscInt      *off;
   PetscInt       dim, numCells, cStart, cEnd, c, numVertices, vStart, vEnd;
   PetscInt       numEdges, firstEdge, edge, e;
@@ -3888,6 +3891,9 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
   }
   ierr = DMSetUp(idm);CHKERRQ(ierr);
   /* Get edge cones from subsets of cell vertices */
+  ierr = PetscHashIJCreate(&edgeTable);CHKERRQ(ierr);
+  ierr = PetscHashIJSetMultivalued(edgeTable, PETSC_FALSE);CHKERRQ(ierr);
+
   for (c = 0, edge = firstEdge; c < numCells; ++c) {
     const PetscInt *cellFaces;
     PetscInt        numCellFaces, faceSize, cf;
@@ -3895,6 +3901,17 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
     ierr = DMComplexGetFaces(dm, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
     if (faceSize != 2) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Triangles cannot have face of size %D", faceSize);
     for (cf = 0; cf < numCellFaces; ++cf) {
+#if 1
+      PetscHashIJKey key = {PetscMin(cellFaces[cf*faceSize+0], cellFaces[cf*faceSize+1]),
+                            PetscMax(cellFaces[cf*faceSize+0], cellFaces[cf*faceSize+1])};
+
+      ierr = PetscHashIJGet(edgeTable, key, &e);CHKERRQ(ierr);
+      if (e < 0) {
+        ierr = DMComplexSetCone(idm, edge, &cellFaces[cf*faceSize]);CHKERRQ(ierr);
+        ierr = PetscHashIJAdd(edgeTable, key, edge);CHKERRQ(ierr);
+        e    = edge++;
+      }
+#else
       PetscBool found = PETSC_FALSE;
 
       /* TODO Need join of vertices to check for existence of edges, which needs support (could set edge support), so just brute force for now */
@@ -3912,10 +3929,12 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
         ierr = DMComplexSetCone(idm, edge, &cellFaces[cf*faceSize]);CHKERRQ(ierr);
         ++edge;
       }
+#endif
       ierr = DMComplexInsertCone(idm, c, cf, e);CHKERRQ(ierr);
     }
   }
   if (edge != firstEdge+numEdges) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D should be %D", edge-firstEdge, numEdges);
+  ierr = PetscHashIJDestroy(&edgeTable);CHKERRQ(ierr);
   ierr = PetscFree(off);CHKERRQ(ierr);
   ierr = DMComplexSymmetrize(idm);CHKERRQ(ierr);
   ierr = DMComplexStratify(idm);CHKERRQ(ierr);
