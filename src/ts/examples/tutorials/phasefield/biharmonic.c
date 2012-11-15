@@ -362,7 +362,6 @@ PetscErrorCode FormJacobian(TS ts,PetscReal ftime,Vec X,Mat *A,Mat *B,MatStructu
   PetscScalar    *x,c,r,l,vals[5];
   Vec            localX;
   UserCtx        *ctx = (UserCtx*)ptr;
-  PetscReal      tol = ctx->tol, theta=ctx->theta,theta_c=ctx->theta_c,a,b;//a and b are used in the cubic truncation of the log function
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
