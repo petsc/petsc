@@ -3376,27 +3376,31 @@ PetscErrorCode DMComplexEnlargePartition(DM dm, const PetscInt start[], const Pe
   ierr = ISGetIndices(*partition, &points);CHKERRQ(ierr);
   ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt *), &tmpPoints);CHKERRQ(ierr);
   for(part = pStart; part < pEnd; ++part) {
-    PetscInt numPoints, newNumPoints, off, p, n = 0;
+    PetscInt numPoints, nP, numNewPoints, off, p, n = 0;
 
     PetscHashIClear(h);
     ierr = PetscSectionGetDof(*partSection, part, &numPoints);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(*partSection, part, &off);CHKERRQ(ierr);
-    /* Add all existing points to table and all points in next BFS level */
-    /* TODO We are brute forcing here, but could check the adjacency size to find the boundary */
+    /* Add all existing points to h */
+    for(p = 0; p < numPoints; ++p) {
+      PetscHashIAdd(h, points[off+p], 1);
+    }
+    PetscHashISize(h, nP);
+    if (nP != numPoints) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Invalid partition has %d points, but only %d were unique", numPoints, nP);
+    /* Add all points in next BFS level */
+    /*   TODO We are brute forcing here, but could check the adjacency size to find the boundary */
     for(p = 0; p < numPoints; ++p) {
       PetscInt s = start[p], e = start[p+1], a;
 
-      PetscHashIAdd(h, points[p], 1);
       for(a = s; a < e; ++a) {
         PetscHashIAdd(h, adjacency[a], 1);
       }
     }
-    PetscHashISize(h, newNumPoints);
-    ierr = PetscSectionSetDof(newps, part, newNumPoints);CHKERRQ(ierr);
-    ierr = PetscMalloc(newNumPoints * sizeof(PetscInt), &tmpPoints[part]);CHKERRQ(ierr);
-    /* Should not need this conditional */
-    if (newNumPoints) {PetscHashIGetKeys(h, n, tmpPoints[part]);}
-    totPoints += newNumPoints;
+    PetscHashISize(h, numNewPoints);
+    ierr = PetscSectionSetDof(newps, part, numNewPoints);CHKERRQ(ierr);
+    ierr = PetscMalloc(numNewPoints * sizeof(PetscInt), &tmpPoints[part]);CHKERRQ(ierr);
+    if (numNewPoints) {PetscHashIGetKeys(h, n, tmpPoints[part]);} /* Should not need this conditional */
+    totPoints += numNewPoints;
   }
   ierr = ISRestoreIndices(*partition, &points);CHKERRQ(ierr);
   PetscHashIDestroy(h);
