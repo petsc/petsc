@@ -730,6 +730,7 @@ PetscErrorCode PetscThreadCommRunKernel0(MPI_Comm comm,PetscErrorCode (*func)(Pe
     PetscFunctionReturn(0);
   }
 
+  if (!PetscJobQueue) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Trying to run kernel with no job queue");
   job = PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
@@ -796,6 +797,7 @@ PetscErrorCode PetscThreadCommRunKernel1(MPI_Comm comm,PetscErrorCode (*func)(Pe
     PetscFunctionReturn(0);
   }
 
+  if (!PetscJobQueue) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Trying to run kernel with no job queue");
   job = PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
@@ -864,6 +866,7 @@ PetscErrorCode PetscThreadCommRunKernel2(MPI_Comm comm,PetscErrorCode (*func)(Pe
     PetscFunctionReturn(0);
   }
 
+  if (!PetscJobQueue) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Trying to run kernel with no job queue");
   job = PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
@@ -934,6 +937,7 @@ PetscErrorCode PetscThreadCommRunKernel3(MPI_Comm comm,PetscErrorCode (*func)(Pe
     PetscFunctionReturn(0);
   }
 
+  if (!PetscJobQueue) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Trying to run kernel with no job queue");
   job = PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
@@ -1006,6 +1010,7 @@ PetscErrorCode PetscThreadCommRunKernel4(MPI_Comm comm,PetscErrorCode (*func)(Pe
     PetscFunctionReturn(0);
   }
 
+  if (!PetscJobQueue) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Trying to run kernel with no job queue");
   job = PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
@@ -1081,6 +1086,7 @@ PetscErrorCode PetscThreadCommRunKernel6(MPI_Comm comm,PetscErrorCode (*func)(Pe
     PetscFunctionReturn(0);
   }
 
+  if (!PetscJobQueue) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Trying to run kernel with no job queue");
   job = PetscJobQueue->jobs[PetscJobQueue->ctr]; /* Get the job context from the queue to launch this job */
   if (job->job_status[0] != THREAD_JOB_NONE) {
     for (i=0;i<tcomm->nworkThreads;i++) {
@@ -1171,8 +1177,6 @@ PetscErrorCode PetscThreadCommDetach(MPI_Comm comm)
   if (flg) {
     ierr = MPI_Attr_delete(comm,Petsc_ThreadComm_keyval);CHKERRQ(ierr);
   }
-  /* Release extra reference from PetscThreadCommAttach */
-  ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1195,9 +1199,6 @@ PetscErrorCode PetscThreadCommAttach(MPI_Comm comm,PetscThreadComm tcomm)
     tcomm->refct++;
     ierr = MPI_Attr_put(comm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
   }
-  /* PetscCommDuplicate() is called here to make the mpiuni case work. 
-   This extra reference is released in PetscThreadCommDetach */
-  ierr = PetscCommDuplicate(comm,&icomm,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

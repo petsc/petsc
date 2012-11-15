@@ -19,19 +19,28 @@
 void    *MPIUNI_TMP        = 0;
 int     MPIUNI_DATASIZE[10] = {sizeof(int),sizeof(float),sizeof(double),2*sizeof(double),sizeof(char),2*sizeof(int),4*sizeof(double),4,8,2*sizeof(double)};
 /*
-       With MPI Uni there is only one communicator, which is called 1.
+       With MPI Uni there are exactly four distinct communicators:
+    MPI_COMM_SELF, MPI_COMM_WORLD, and a MPI_Comm_dup() of each of these (duplicates of duplicates return the same communictor)
+
+    MPI_COMM_SELF and MPI_COMM_WORLD are MPI_Comm_free() in MPI_Finalize() but in general with PETSc,
+     the other communicators are freed once the last PETSc object is freed (before MPI_Finalize()).
+
 */
 #define MAX_ATTR 128
 
 typedef struct {
-  void                *extra_state;
   void                *attribute_val;
   int                 active;
-  MPI_Delete_function *del;
 } MPI_Attr;
 
-static MPI_Attr attr[MAX_ATTR];
-static int      num_attr = 1,mpi_tag_ub = 100000000;
+typedef struct {
+  void                *extra_state;
+  MPI_Delete_function *del;
+} MPI_Attr_keyval;
+
+static MPI_Attr_keyval attr_keyval[MAX_ATTR];
+static MPI_Attr        attr[4][MAX_ATTR];
+static int             num_attr = 1,mpi_tag_ub = 100000000;
 
 #if defined(__cplusplus)
 extern "C" {
@@ -55,8 +64,10 @@ int MPIUNI_Memcpy(void *a,const void* b,int n) {
 */
 static int Keyval_setup(void)
 {
-  attr[0].active        = 1;
-  attr[0].attribute_val = &mpi_tag_ub;
+  attr[MPI_COMM_WORLD-1][0].active        = 1;
+  attr[MPI_COMM_WORLD-1][0].attribute_val = &mpi_tag_ub;
+  attr[MPI_COMM_SELF-1][0].active         = 1;
+  attr[MPI_COMM_SELF-1][0].attribute_val  = &mpi_tag_ub;
   return 0;
 }
 
@@ -64,56 +75,64 @@ int MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,
 {
   if (num_attr >= MAX_ATTR) MPI_Abort(MPI_COMM_WORLD,1);
 
-  attr[num_attr].extra_state = extra_state;
-  attr[num_attr].del         = delete_fn;
-  *keyval                    = num_attr++;
+  attr_keyval[num_attr].extra_state = extra_state;
+  attr_keyval[num_attr].del         = delete_fn;
+  *keyval                           = num_attr++;
   return 0;
 }
 
 int MPI_Keyval_free(int *keyval)
 {
-  attr[*keyval].active = 0;
   return MPI_SUCCESS;
 }
 
 int MPI_Attr_put(MPI_Comm comm,int keyval,void *attribute_val)
 {
-  attr[keyval].active        = 1;
-  attr[keyval].attribute_val = attribute_val;
+  if (comm-1 < 0 || comm-1 > 3) return 1;
+  attr[comm-1][keyval].active        = 1;
+  attr[comm-1][keyval].attribute_val = attribute_val;
   return MPI_SUCCESS;
 }
   
 int MPI_Attr_delete(MPI_Comm comm,int keyval)
 {
-  if (attr[keyval].active && attr[keyval].del) {
-    void* save_attribute_val   = attr[keyval].attribute_val;
-    attr[keyval].active        = 0;
-    attr[keyval].attribute_val = 0;
-    (*(attr[keyval].del))(comm,keyval,save_attribute_val,attr[keyval].extra_state);
+  if (comm-1 < 0 || comm-1 > 3) return 1;
+  if (attr[comm-1][keyval].active && attr_keyval[keyval].del) {
+    void* save_attribute_val   = attr[comm-1][keyval].attribute_val;
+    attr[comm-1][keyval].active        = 0;
+    attr[comm-1][keyval].attribute_val = 0;
+    (*(attr_keyval[keyval].del))(comm,keyval,save_attribute_val,attr_keyval[keyval].extra_state);
   }
   return MPI_SUCCESS;
 }
 
 int MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
 {
+  if (comm-1 < 0 || comm-1 > 3) return 1;
   if (!keyval) Keyval_setup();
-  *flag                   = attr[keyval].active;
-  *(void **)attribute_val = attr[keyval].attribute_val;
+  *flag                   = attr[comm-1][keyval].active;
+  *(void **)attribute_val = attr[comm-1][keyval].attribute_val;
   return MPI_SUCCESS;
 }
 
-static int dups = 0;
+  static int dups[4] = {1,1,1,1};
 int MPI_Comm_create(MPI_Comm comm,MPI_Group group,MPI_Comm *newcomm)
 {
-  dups++;
+  if (comm-1 < 0 || comm-1 > 3) return 1;
+  dups[comm-1]++;
   *newcomm =  comm;
   return MPI_SUCCESS;
 }
 
 int MPI_Comm_dup(MPI_Comm comm,MPI_Comm *out)
 {
-  *out = comm;
-  dups++;
+  if (comm-1 < 0 || comm-1 > 3) return 1;
+  if (comm == MPI_COMM_WORLD || comm == MPI_COMM_SELF) {
+    *out = comm + 2;
+  } else {
+    *out = comm;
+    dups[comm-1]++;
+  }
   return 0;
 }
 
@@ -121,13 +140,15 @@ int MPI_Comm_free(MPI_Comm *comm)
 {
   int i;
 
-  if (--dups) return MPI_SUCCESS;
+  if (*comm-1 < 0 || *comm-1 > 3) return 1;
+  if (--dups[*comm-1]) return MPI_SUCCESS;
   for (i=0; i<num_attr; i++) {
-    if (attr[i].active && attr[i].del) {
-      (*attr[i].del)(*comm,i,attr[i].attribute_val,attr[i].extra_state);
+    if (attr[*comm-1][i].active && attr_keyval[i].del) {
+      (*attr_keyval[i].del)(*comm,i,attr[*comm-1][i].attribute_val,attr_keyval[i].extra_state);
     }
-    attr[i].active = 0;
+    attr[*comm-1][i].active = 0;
   }
+  *comm = 0;
   return MPI_SUCCESS;
 }
 
@@ -164,8 +185,13 @@ int MPI_Init(int *argc, char ***argv)
 
 int MPI_Finalize(void)
 {
+  MPI_Comm comm;
   if (MPI_was_finalized) return 1;
   if (!MPI_was_initialized) return 1;
+  comm = MPI_COMM_WORLD;
+  MPI_Comm_free(&comm);
+  comm = MPI_COMM_SELF;
+  MPI_Comm_free(&comm);
   MPI_was_finalized = 1;
   return 0;
 }
