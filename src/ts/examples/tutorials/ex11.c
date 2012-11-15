@@ -219,14 +219,16 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = DMGetPointSF(gdm, &gsfPoint);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
-  ierr = PetscMalloc(numLeaves * sizeof(PetscInt),    &glocalPoints);CHKERRQ(ierr);
-  ierr = PetscMalloc(numLeaves * sizeof(PetscSFNode), &gremotePoints);CHKERRQ(ierr);
-  for(l = 0; l < numLeaves; ++l) {
-    glocalPoints[l]        = localPoints[l] >= cEnd ? localPoints[l] + user->numGhostCells : localPoints[l];
-    gremotePoints[l].rank  = remotePoints[l].rank;
-    gremotePoints[l].index = remotePoints[l].index >= cEnd ? remotePoints[l].index + user->numGhostCells : remotePoints[l].index;
+  if (numLeaves >= 0) {
+    ierr = PetscMalloc(numLeaves * sizeof(PetscInt),    &glocalPoints);CHKERRQ(ierr);
+    ierr = PetscMalloc(numLeaves * sizeof(PetscSFNode), &gremotePoints);CHKERRQ(ierr);
+    for(l = 0; l < numLeaves; ++l) {
+      glocalPoints[l]        = localPoints[l] >= cEnd ? localPoints[l] + user->numGhostCells : localPoints[l];
+      gremotePoints[l].rank  = remotePoints[l].rank;
+      gremotePoints[l].index = remotePoints[l].index >= cEnd ? remotePoints[l].index + user->numGhostCells : remotePoints[l].index;
+    }
+    ierr = PetscSFSetGraph(gsfPoint, numRoots+user->numGhostCells, numLeaves, glocalPoints, PETSC_OWN_POINTER, gremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
-  ierr = PetscSFSetGraph(gsfPoint, numRoots+user->numGhostCells, numLeaves, glocalPoints, PETSC_OWN_POINTER, gremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
   /* Make label for VTK output */
   ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, PETSC_NULL, &numLeaves, &leafLocal, &leafRemote);CHKERRQ(ierr);
@@ -242,9 +244,6 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
   for(; c < cEnd; ++c) {
     ierr = DMComplexSetLabelValue(gdm, "vtk", c, 1);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMComplexViewLabel_Ascii(gdm, "vtk", PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Make a label for ghost faces */
   PetscInt fStart, fEnd, f;
 
@@ -266,8 +265,6 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
       if (!vA && !vB) {ierr = DMComplexSetLabelValue(gdm, "ghost", f, 1);CHKERRQ(ierr);}
     }
   }
-  ierr = DMComplexViewLabel_Ascii(gdm, "ghost", PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = DMSetFromOptions(gdm);CHKERRQ(ierr);
   ierr = DMDestroy(dmGhosted);CHKERRQ(ierr);
