@@ -5,9 +5,9 @@
 
 !     External objects outside of MPI calls 
        integer MPI_COMM_WORLD
-       parameter (MPI_COMM_WORLD = 1)
+       parameter (MPI_COMM_WORLD = 2)
        integer MPI_COMM_SELF
-       parameter (MPI_COMM_SELF = 2)
+       parameter (MPI_COMM_SELF = 1)
        integer  MPI_COMM_NULL
        parameter (MPI_COMM_NULL = 0)
        integer MPI_SUCCESS 

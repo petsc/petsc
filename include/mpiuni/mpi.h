@@ -119,8 +119,8 @@ from generating warning messages about unused variables while compiling PETSc.
 */
 extern void *MPIUNI_TMP;
 
-#define MPI_COMM_WORLD       1
-#define MPI_COMM_SELF        MPI_COMM_WORLD
+#define MPI_COMM_SELF        1
+#define MPI_COMM_WORLD       2
 #define MPI_COMM_NULL        0
 #define MPI_SUCCESS          0
 #define MPI_IDENT            0
