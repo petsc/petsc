@@ -114,12 +114,13 @@ PetscErrorCode DMComplexViewLabel_Ascii(DM dm, const char name[], PetscViewer vi
   ierr = DMComplexGetLabelIdIS(dm, name, &ids);CHKERRQ(ierr);
   ierr = ISGetSize(ids, &num);CHKERRQ(ierr);
   ierr = ISGetIndices(ids, &markers);CHKERRQ(ierr);
-  for (i = 0; i < num; ++i) {
+  for(i = 0; i < num; ++i) {
     IS              pIS;
     const PetscInt *points;
     PetscInt        size, p;
 
     ierr = DMComplexGetStratumIS(dm, name, markers[i], &pIS);
+    if (!pIS) continue;
     ierr = ISGetSize(pIS, &size);CHKERRQ(ierr);
     ierr = ISGetIndices(pIS, &points);CHKERRQ(ierr);
     for (p = 0; p < size; ++p) {
