@@ -214,7 +214,14 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
   PetscSFNode       *gremotePoints;
   const PetscInt    *localPoints;
   PetscInt          *glocalPoints;
+  PetscInt          *numGhostCells;
   PetscInt           numRoots, numLeaves;
+  PetscMPIInt        numProcs;
+
+  /* Jed: Fix this unscalable thing, probably using FetchAndOp which looks like an incantation to me */
+  ierr = MPI_Comm_size(((PetscObject) dm)->comm, &numProcs);CHKERRQ(ierr);
+  ierr = PetscMalloc(numProcs * sizeof(PetscInt), &numGhostCells);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&user->numGhostCells, 1, MPIU_INT, numGhostCells, 1, MPIU_INT, ((PetscObject) dm)->comm);CHKERRQ(ierr);
 
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = DMGetPointSF(gdm, &gsfPoint);CHKERRQ(ierr);
@@ -225,10 +232,11 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
     for(l = 0; l < numLeaves; ++l) {
       glocalPoints[l]        = localPoints[l] >= cEnd ? localPoints[l] + user->numGhostCells : localPoints[l];
       gremotePoints[l].rank  = remotePoints[l].rank;
-      gremotePoints[l].index = remotePoints[l].index >= cEnd ? remotePoints[l].index + user->numGhostCells : remotePoints[l].index;
+      gremotePoints[l].index = remotePoints[l].index >= cEnd ? remotePoints[l].index + numGhostCells[remotePoints[l].rank] : remotePoints[l].index;
     }
     ierr = PetscSFSetGraph(gsfPoint, numRoots+user->numGhostCells, numLeaves, glocalPoints, PETSC_OWN_POINTER, gremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
+  ierr = PetscFree(numGhostCells);CHKERRQ(ierr);
   /* Make label for VTK output */
   ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, PETSC_NULL, &numLeaves, &leafLocal, &leafRemote);CHKERRQ(ierr);
@@ -244,6 +252,11 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
   for(; c < cEnd; ++c) {
     ierr = DMComplexSetLabelValue(gdm, "vtk", c, 1);CHKERRQ(ierr);
   }
+#if 0
+  ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMComplexViewLabel_Ascii(gdm, "vtk", PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+#endif
   /* Make a label for ghost faces */
   PetscInt fStart, fEnd, f;
 
@@ -397,6 +410,49 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, AppCtx *us
   ierr = MPI_Allreduce(&minradius, &user->minradius, 1, MPIU_SCALAR, MPI_MIN, ((PetscObject) dm)->comm);CHKERRQ(ierr);
   ierr = DMDestroy(&dmCell);CHKERRQ(ierr);
   ierr = DMDestroy(&dmFace);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreatePartitionVec"
+PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
+{
+  PetscSF        sfPoint;
+  PetscSection   coordSection;
+  Vec            coordinates;
+  PetscSection   sectionCell;
+  PetscScalar   *part;
+  PetscInt       cStart, cEnd, c;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMComplexClone(dm, dmCell);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+  ierr = DMSetPointSF(*dmCell, sfPoint);CHKERRQ(ierr);
+  ++coordSection->refcnt;
+  ierr = DMComplexSetCoordinateSection(*dmCell, coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(*dmCell, coordinates);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &sectionCell);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(*dmCell, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(sectionCell, cStart, cEnd);CHKERRQ(ierr);
+  for(c = cStart; c < cEnd; ++c) {
+    ierr = PetscSectionSetDof(sectionCell, c, 1);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(*dmCell, sectionCell);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(*dmCell, partition);CHKERRQ(ierr);
+  ierr = VecGetArray(*partition, &part);CHKERRQ(ierr);
+  for(c = cStart; c < cEnd; ++c) {
+    PetscScalar *p;
+
+    ierr = DMComplexPointLocalRef(*dmCell, c, part, &p);CHKERRQ(ierr);
+    p[0] = rank;
+  }
+  ierr = VecRestoreArray(*partition, &part);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -703,7 +759,7 @@ int main(int argc, char **argv)
   AppCtx         user;
   DM             dm, dmDist;
   PetscReal      ftime,cfl,dt;
-  PetscInt       nsteps;
+  PetscInt       overlap,nsteps;
   int            CPU_word_size = 0, IO_word_size = 0, exoid;
   float          version;
   TS             ts;
@@ -733,6 +789,8 @@ int main(int argc, char **argv)
     ierr = PetscOptionsString("-f","Exodus.II filename to read","",filename,filename,sizeof(filename),PETSC_NULL);CHKERRQ(ierr);
     user.vtkInterval = 1;
     ierr = PetscOptionsInt("-ufv_vtk_interval","VTK output interval (0 to disable)","",user.vtkInterval,&user.vtkInterval,PETSC_NULL);CHKERRQ(ierr);
+    overlap = 1;
+    ierr = PetscOptionsInt("-ufv_mesh_overlap","Number of cells to overlap partitions","",overlap,&overlap,PETSC_NULL);CHKERRQ(ierr);
     vtkCellGeom = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,PETSC_NULL);CHKERRQ(ierr);
   }
@@ -745,7 +803,7 @@ int main(int argc, char **argv)
   ierr = DMComplexCreateExodus(comm, exoid, PETSC_TRUE, &dm);CHKERRQ(ierr);
   if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
   /* Distribute mesh */
-  ierr = DMComplexDistribute(dm, "chaco", 1, &dmDist);CHKERRQ(ierr);
+  ierr = DMComplexDistribute(dm, "chaco", overlap, &dmDist);CHKERRQ(ierr);
   if (dmDist) {
     ierr = DMDestroy(&dm);CHKERRQ(ierr);
     dm   = dmDist;
@@ -763,9 +821,18 @@ int main(int argc, char **argv)
   ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
   ierr = SetInitialCondition(dm, X, &user);CHKERRQ(ierr);
   if (vtkCellGeom) {
+    DM  dmCell;
+    Vec partition;
+
     ierr = OutputVTK(dm, "ex11-cellgeom.vtk", &viewer);CHKERRQ(ierr);
     ierr = VecView(user.cellgeom, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = CreatePartitionVec(dm, &dmCell, &partition);CHKERRQ(ierr);
+    ierr = OutputVTK(dmCell, "ex11-partition.vtk", &viewer);CHKERRQ(ierr);
+    ierr = VecView(partition, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = VecDestroy(&partition);CHKERRQ(ierr);
+    ierr = DMDestroy(&dmCell);CHKERRQ(ierr);
   }
 
   ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
