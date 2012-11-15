@@ -751,7 +751,7 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
     ierr = PetscViewerASCIIGetStdout(((PetscObject)vec)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  PetscCheckSameComm(vec,1,viewer,2);
+  /* PetscCheckSameComm(vec,1,viewer,2); Viewing a SELF vec on a parallel viewer should be acceptable */
   if (vec->stash.n || vec->bstash.n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");
 
   ierr = PetscLogEventBegin(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
