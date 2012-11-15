@@ -416,8 +416,10 @@ PetscErrorCode SetUpLocalSpace(DM dm, AppCtx *user)
     PetscInt val;
 
     ierr = PetscSectionSetDof(stateSection, c, dof);CHKERRQ(ierr);
+#if 0
     ierr = DMComplexGetLabelValue(dm, "vtk", c, &val);CHKERRQ(ierr);
     if (!val) {ierr = PetscSectionSetConstraintDof(stateSection, c, dof);CHKERRQ(ierr);}
+#endif
   }
   for(c = user->cEndInterior; c < cEnd; ++c) {
     ierr = PetscSectionSetConstraintDof(stateSection, c, dof);CHKERRQ(ierr);
@@ -425,12 +427,14 @@ PetscErrorCode SetUpLocalSpace(DM dm, AppCtx *user)
   ierr = PetscSectionSetUp(stateSection);CHKERRQ(ierr);
   ierr = PetscMalloc(dof * sizeof(PetscInt), &cind);CHKERRQ(ierr);
   for(d = 0; d < dof; ++d) cind[d] = d;
+#if 0
   for(c = cStart; c < cEnd; ++c) {
     PetscInt val;
 
     ierr = DMComplexGetLabelValue(dm, "vtk", c, &val);CHKERRQ(ierr);
     if (!val) {ierr = PetscSectionSetConstraintIndices(stateSection, c, cind);CHKERRQ(ierr);}
   }
+#endif
   for(c = user->cEndInterior; c < cEnd; ++c) {
     ierr = PetscSectionSetConstraintIndices(stateSection, c, cind);CHKERRQ(ierr);
   }
