@@ -812,9 +812,9 @@ runex39:
 	   else echo ${PWD} ; echo "Possible problem with with ex39_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex39.tmp
 runex39_2:
-	-@${MPIEXEC} -n 8 ./ex39 -ksp_type ifbcgs -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 32 -n2 32 -n3 32 > ex39.tmp 2>&1;\
+	-@${MPIEXEC} -n 8 ./ex39 -ksp_type fbcgsr -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 32 -n2 32 -n3 32 > ex39.tmp 2>&1;\
 	if (${DIFF} output/ex39.out ex39.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex39_1, diffs above \n========================================="; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex39_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex39.tmp
 
 runex40:

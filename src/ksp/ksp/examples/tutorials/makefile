@@ -391,15 +391,15 @@ runex2_umfpack:
            if (${DIFF} output/ex2_umfpack.out ex2_umfpack.tmp) then true; \
            else echo ${PWD} ; echo "Possible problem with with ex2_umfpack, diffs above \n========================================="; fi; \
            ${RM} -f ex2_umfpack.tmp
-runex2_tfibcgs:
-	-@${MPIEXEC} -n 1 ./ex2 -ksp_type tfibcgs -pc_type ilu  > ex2.tmp 2>&1; \
-           if (${DIFF} output/ex2_tfibcgs.out ex2.tmp) then true; \
-           else echo ${PWD} ; echo "Possible problem with with ex2_tfibcgs, diffs above \n========================================="; fi; \
+runex2_fbcgs:
+	-@${MPIEXEC} -n 1 ./ex2 -ksp_type fbcgs -pc_type ilu  > ex2.tmp 2>&1; \
+           if (${DIFF} output/ex2_fbcgs.out ex2.tmp) then true; \
+           else echo ${PWD} ; echo "Possible problem with with ex2_fbcgs, diffs above \n========================================="; fi; \
            ${RM} -f ex2.tmp
-runex2_tfibcgs_2:
-	-@${MPIEXEC} -n 3 ./ex2 -ksp_type tfibcgs -pc_type bjacobi > ex2.tmp 2>&1; \
-           if (${DIFF} output/ex2_tfibcgs_2.out ex2.tmp) then true; \
-           else echo ${PWD} ; echo "Possible problem with with ex2_tfibcgs_2, diffs above \n========================================="; fi; \
+runex2_fbcgs_2:
+	-@${MPIEXEC} -n 3 ./ex2 -ksp_type fbcgsr -pc_type bjacobi > ex2.tmp 2>&1; \
+           if (${DIFF} output/ex2_fbcgs_2.out ex2.tmp) then true; \
+           else echo ${PWD} ; echo "Possible problem with with ex2_fbcgs_2, diffs above \n========================================="; fi; \
            ${RM} -f ex2.tmp
 
 runex2f:
@@ -1069,7 +1069,7 @@ runex58_sbaij:
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 \
-                                 runex2_chebyest_1 runex2_chebyest_2 runex2_chebyest_3 runex2_chebyest_4 runex2_tfibcgs runex2_tfibcgs_2 ex2.rm \
+                                 runex2_chebyest_1 runex2_chebyest_2 runex2_chebyest_3 runex2_chebyest_4 runex2_fbcgs runex2_fbcgs_2 ex2.rm \
                                  ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex8g.PETSc runex8g_1 runex8g_2 runex8g_3 ex8g.rm \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
