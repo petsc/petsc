@@ -21,7 +21,8 @@ PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
     ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
   }
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
-  ierr = MatPtAPNumeric_SeqAIJ_SeqAIJ(A,P,*C);CHKERRQ(ierr);
+  //ierr = (*(A)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr); /* should use matrix *C, not A! */
+  ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr); 
   ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -45,8 +46,8 @@ PetscErrorCode MatDestroy_SeqAIJ_PtAP(Mat A)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy2"
-PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy2(Mat A,Mat P,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy"
+PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
@@ -145,14 +146,14 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy2(Mat A,Mat P,PetscReal f
   ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,pn,pn,ci,cj,ca,C);CHKERRQ(ierr);
   (*C)->rmap->bs = P->cmap->bs;
   (*C)->cmap->bs = P->cmap->bs;
-PetscPrintf(PETSC_COMM_SELF,"************%s C.bs=%d,%d\n",__FUNCT__,(*C)->rmap->bs,(*C)->cmap->bs);
+ 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* Since these are PETSc arrays, change flags to free them as necessary. */
   c = (Mat_SeqAIJ *)((*C)->data);
   c->free_a  = PETSC_TRUE;
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
-  A->ops->ptapnumeric = MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy2; /* should use *C->ops until PtAP insterface is updated to double dispatch as MatMatMult() */
+  (*C)->ops->ptapnumeric = MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy; /* should use *C->ops until PtAP insterface is updated to double dispatch as MatMatMult() */
 
   /* Clean up. */
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
@@ -170,8 +171,8 @@ PetscPrintf(PETSC_COMM_SELF,"************%s C.bs=%d,%d\n",__FUNCT__,(*C)->rmap->
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy2"
-PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy2(Mat A,Mat P,Mat C)
+#define __FUNCT__ "MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy"
+PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,Mat C)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ *) A->data;
@@ -184,7 +185,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy2(Mat A,Mat P,Mat C)
   MatScalar      *aa=a->a,*apa,*pa=p->a,*pA=p->a,*paj,*ca=c->a,*caj;
 
   PetscFunctionBegin;
-  /* Allocate temporary array for storage of one row of A*P */
+  /* Allocate temporary array for storage of one row of A*P (cn: non-scalable) */
   ierr = PetscMalloc(cn*(sizeof(MatScalar)+sizeof(PetscInt))+c->rmax*sizeof(PetscInt),&apa);CHKERRQ(ierr);
 
   apjdense = (PetscInt *)(apa + cn);
@@ -250,7 +251,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy2(Mat A,Mat P,Mat C)
   /* Assemble the final matrix and clean up */
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-PetscPrintf(PETSC_COMM_SELF,"************%s C.bs=%d,%d\n",__FUNCT__,C->rmap->bs,C->cmap->bs);
+
   ierr = PetscFree(apa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -261,21 +262,21 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
   Mat_SeqAIJ         *ap,*c;
-  PetscInt           *api,*apj,*ci,pn=P->cmap->N,sparse_axpy=0;
+  PetscInt           *api,*apj,*ci,pn=P->cmap->N;
   MatScalar          *ca;
   Mat_PtAP           *ptap;
   Mat                Pt,AP;
+  PetscBool          sparse_axpy=PETSC_TRUE;
 
   PetscFunctionBegin;
+  ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
   /* flag 'sparse_axpy' determines which implementations to be used:
-       0: do dense axpy in MatPtAPNumeric() - fastest, but requires storage of struct A*P; (default)
-       1: do one sparse axpy - uses same memory as sparse_axpy=0 and might execute less flops
-          (apnz vs. cnz in the outerproduct), slower than case '0' when cnz is not too large than apnz;
-       2: do two sparse axpy in MatPtAPNumeric() - slowest, does not store structure of A*P. */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-matptap_sparseaxpy",&sparse_axpy,PETSC_NULL);CHKERRQ(ierr);
-  if (sparse_axpy == 2){
-    ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy2(A,P,fill,C);CHKERRQ(ierr);
-
+       0: do dense axpy in MatPtAPNumeric() - fastest, but requires storage of struct A*P; 
+       1: do two sparse axpy in MatPtAPNumeric() - slowest, does not store structure of A*P. */
+  ierr = PetscOptionsBool("-matptap_scalable","Use sparse axpy but slower MatPtAPNumeric()","",sparse_axpy,&sparse_axpy,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  if (sparse_axpy){
+    ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(A,P,fill,C);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -309,17 +310,17 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* Allocate temporary array for storage of one row of A*P */
   ierr = PetscMalloc((pn+1)*sizeof(PetscScalar),&ptap->apa);CHKERRQ(ierr);
   ierr = PetscMemzero(ptap->apa,(pn+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-  if (sparse_axpy == 1){
-    A->ops->ptapnumeric = MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy;
-  } else {
-    A->ops->ptapnumeric = MatPtAPNumeric_SeqAIJ_SeqAIJ;
-  }
+  (*C)->ops->ptapnumeric = MatPtAPNumeric_SeqAIJ_SeqAIJ;
+  
   ptap->api = api;
   ptap->apj = apj;
 
   /* Clean up. */
   ierr = MatDestroy(&Pt);CHKERRQ(ierr);
   ierr = MatDestroy(&AP);CHKERRQ(ierr);
+#if defined(PETSC_USE_INFO)
+  ierr = PetscInfo2((*C),"given fill %G, use scalable %d\n",fill,sparse_axpy);CHKERRQ(ierr); 
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -416,109 +417,6 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 #if defined(PROFILE_MatPtAPNumeric)
   printf("PtAPNumeric_SeqAIJ time %g + %g, flops %d %d\n",time_Cseq0,time_Cseq1,flops0,flops1);
-#endif
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy"
-PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,Mat C)
-{
-  PetscErrorCode    ierr;
-  Mat_SeqAIJ        *a  = (Mat_SeqAIJ *) A->data;
-  Mat_SeqAIJ        *p  = (Mat_SeqAIJ *) P->data;
-  Mat_SeqAIJ        *c  = (Mat_SeqAIJ *) C->data;
-  const PetscInt    *ai=a->i,*aj=a->j,*pi=p->i,*pj=p->j,*ci=c->i,*cj=c->j;
-  const PetscScalar *aa=a->a,*pa=p->a,*pval;
-  const PetscInt    *apj,*pcol,*cjj;
-  const PetscInt    am=A->rmap->N,cm=C->rmap->N;
-  PetscInt          i,j,k,anz,apnz,pnz,prow,crow,apcol,nextap;
-  PetscScalar       *apa,*ca=c->a,*caj,pvalj;
-  Mat_PtAP          *ptap = c->ptap;
-#if defined(PROFILE_MatPtAPNumeric)
-  PetscLogDouble    t0,tf,time_Cseq0=0.0,time_Cseq1=0.0;
-  PetscInt          flops0=0,flops1=0;
-#endif
-
-  PetscFunctionBegin;
-  /* Get temporary array for storage of one row of A*P */
-  apa = ptap->apa;
-
-  /* Clear old values in C */
-  ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
-
-  for (i=0;i<am;i++) {
-    /* Form sparse row of AP[i,:] = A[i,:]*P */
-#if defined(PROFILE_MatPtAPNumeric)
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
-#endif
-    anz  = ai[i+1] - ai[i];
-    apnz = 0;
-    for (j=0; j<anz; j++) {
-      prow = aj[j];
-      pnz  = pi[prow+1] - pi[prow];
-      pcol = pj + pi[prow];
-      pval = pa + pi[prow];
-      for (k=0; k<pnz; k++) {
-        apa[pcol[k]] += aa[j]*pval[k];
-      }
-      ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
-#if defined(PROFILE_MatPtAPNumeric)
-      flops0 += 2.0*pnz;
-#endif
-    }
-    aj += anz; aa += anz;
-#if defined(PROFILE_MatPtAPNumeric)
-    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-    time_Cseq0 += tf - t0;
-#endif
-
-    /* Compute P^T*A*P using outer product P[i,:]^T*AP[i,:]. */
-#if defined(PROFILE_MatPtAPNumeric)
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
-#endif
-    apj  = ptap->apj + ptap->api[i];
-    apnz = ptap->api[i+1] - ptap->api[i];
-    pnz  = pi[i+1] - pi[i];
-    pcol = pj + pi[i];
-    pval = pa + pi[i];
-
-    /* Perform sparse axpy */
-    for (j=0; j<pnz; j++) {
-      crow   = pcol[j];
-      cjj    = cj + ci[crow];
-      caj    = ca + ci[crow];
-      pvalj  = pval[j];
-      nextap = 1;
-      apcol  = apj[nextap];
-      for (k=0; nextap<apnz; k++) {
-        if (cjj[k] == apcol) {
-          caj[k] += pvalj*apa[apcol];
-          apcol   = apj[nextap++];
-        }
-      }
-      ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
-#if defined(PROFILE_MatPtAPNumeric)
-      flops1 += 2.0*apnz;
-#endif
-    }
-#if defined(PROFILE_MatPtAPNumeric)
-    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-    time_Cseq1 += tf - t0;
-#endif
-
-    /* Zero the current row info for A*P */
-    for (j=0; j<apnz; j++) {
-      apcol      = apj[j];
-      apa[apcol] = 0.;
-    }
-  }
-
-  /* Assemble the final matrix and clean up */
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#if defined(PROFILE_MatPtAPNumeric)
-  printf("MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy time %g + %g, flops %d %d\n",time_Cseq0,time_Cseq1,flops0,flops1);
 #endif
   PetscFunctionReturn(0);
 }
