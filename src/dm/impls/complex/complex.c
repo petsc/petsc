@@ -112,7 +112,7 @@ PetscErrorCode DMComplexViewLabel_Ascii(DM dm, const char name[], PetscViewer vi
   ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Label '%s':\n", name);CHKERRQ(ierr);
   ierr = DMComplexGetLabelIdIS(dm, name, &ids);CHKERRQ(ierr);
-  ierr = ISGetSize(ids, &num);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(ids, &num);CHKERRQ(ierr);
   ierr = ISGetIndices(ids, &markers);CHKERRQ(ierr);
   for(i = 0; i < num; ++i) {
     IS              pIS;
@@ -2144,7 +2144,7 @@ PetscErrorCode DMComplexGetLabelName(DM dm, PetscInt n, const char **name)
   Level: intermediate
 
 .keywords: mesh
-.seealso: DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+.seealso: DMComplexCreateLabel(), DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
 @*/
 PetscErrorCode DMComplexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 {
@@ -2161,6 +2161,48 @@ PetscErrorCode DMComplexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
     ierr = PetscStrcmp(name, next->name, hasLabel);CHKERRQ(ierr);
     if (*hasLabel) break;
     next = next->next;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexCreateLabel"
+/*@C
+  DMComplexCreateLabel - Create a label of the given name if it does not already exist
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMComplex object
+- name - The label name
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMComplexHasLabel(), DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+@*/
+PetscErrorCode DMComplexCreateLabel(DM dm, const char name[])
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  DMLabel        next = mesh->labels;
+  PetscBool      flg  = PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  while(next) {
+    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
+    if (flg) break;
+    next = next->next;
+  }
+  if (!flg) {
+    DMLabel tmpLabel = mesh->labels;
+    ierr = PetscNew(struct _n_DMLabel, &mesh->labels);CHKERRQ(ierr);
+    mesh->labels->next = tmpLabel;
+    next = mesh->labels;
+    ierr = PetscStrallocpy(name, &next->name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2495,10 +2537,10 @@ PetscErrorCode DMComplexGetLabelSize(DM dm, const char name[], PetscInt *size)
 @*/
 PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
 {
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
-  DMLabel        next = mesh->labels;
-  PetscInt      *values;
-  PetscInt       size=-1, i = 0;
+  DM_Complex    *mesh   = (DM_Complex *) dm->data;
+  DMLabel        next   = mesh->labels;
+  PetscInt      *values = PETSC_NULL;
+  PetscInt       size   = 0, i = 0;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -2519,6 +2561,7 @@ PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
     next = next->next;
   }
   if (!next) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label with name %s exists in this mesh", name);
+  *ids = PETSC_NULL;
   ierr = ISCreateGeneral(((PetscObject) dm)->comm, size, values, PETSC_OWN_POINTER, ids);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
