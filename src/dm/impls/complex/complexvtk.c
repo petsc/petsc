@@ -124,7 +124,7 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, FILE *fp, PetscInt *totalCells)
   if (!rank) {
     PetscInt *remoteVertices;
 
-    for(c = cStart; c < cEnd; ++c) {
+    for(c = cStart, numCells = 0; c < cEnd; ++c) {
       PetscInt *closure = PETSC_NULL;
       PetscInt  closureSize, nC = 0;
 
@@ -141,7 +141,7 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, FILE *fp, PetscInt *totalCells)
           closure[nC++] = gv < 0 ? -(gv+1) : gv;
         }
       }
-      corners[c-cStart] = nC;
+      corners[numCells++] = nC;
       ierr = PetscFPrintf(comm, fp, "%d ", nC);CHKERRQ(ierr);
       for(v = 0; v < nC; ++v) {
         ierr = PetscFPrintf(comm, fp, " %d", closure[v]);CHKERRQ(ierr);
@@ -170,7 +170,7 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, FILE *fp, PetscInt *totalCells)
     PetscInt *localVertices, numSend = numCells+numCorners, k = 0;
 
     ierr = PetscMalloc(numSend * sizeof(PetscInt), &localVertices);CHKERRQ(ierr);
-    for (c = cStart; c < cEnd; ++c) {
+    for (c = cStart, numCells = 0; c < cEnd; ++c) {
       PetscInt *closure = PETSC_NULL;
       PetscInt  closureSize, nC = 0;
 
@@ -187,7 +187,7 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, FILE *fp, PetscInt *totalCells)
           closure[nC++] = gv < 0 ? -(gv+1) : gv;
         }
       }
-      corners[c-cStart]  = nC;
+      corners[numCells++]  = nC;
       localVertices[k++] = nC;
       for(v = 0; v < nC; ++v, ++k) {
         localVertices[k] = closure[v];
