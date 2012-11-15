@@ -72,16 +72,19 @@ static PetscErrorCode DMComplexVTKGetCellType(DM dm, PetscInt dim, PetscInt corn
 #define __FUNCT__ "DMComplexVTKWriteCells"
 PetscErrorCode DMComplexVTKWriteCells(DM dm, FILE *fp, PetscInt *totalCells)
 {
-  MPI_Comm       comm = ((PetscObject) dm)->comm;
-  PetscInt       dim;
-  PetscInt       numCorners = 0, totCorners = 0, maxCorners, *corners;
-  PetscInt       numCells   = 0, totCells   = 0, maxCells, cellHeight;
-  PetscInt       numLabelCells, cMax, cStart, cEnd, c, vStart, vEnd, v;
-  PetscMPIInt    numProcs, rank, proc, tag = 1; /* TODO Get a proper tag */
-  PetscBool      hasLabel;
-  PetscErrorCode ierr;
+  MPI_Comm        comm = ((PetscObject) dm)->comm;
+  IS              globalVertexNumbers;
+  const PetscInt *gvertex;
+  PetscInt        dim;
+  PetscInt        numCorners = 0, totCorners = 0, maxCorners, *corners;
+  PetscInt        numCells   = 0, totCells   = 0, maxCells, cellHeight;
+  PetscInt        numLabelCells, cMax, cStart, cEnd, c, vStart, vEnd, v;
+  PetscMPIInt     numProcs, rank, proc, tag;
+  PetscBool       hasLabel;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscCommGetNewTag(comm, &tag);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
@@ -114,6 +117,8 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, FILE *fp, PetscInt *totalCells)
   ierr = MPI_Reduce(&numCells, &maxCells, 1, MPIU_INT, MPI_MAX, 0, comm);CHKERRQ(ierr);
   ierr = MPI_Reduce(&numCorners, &totCorners, 1, MPIU_INT, MPI_SUM, 0, comm);CHKERRQ(ierr);
   ierr = MPI_Reduce(&numCorners, &maxCorners, 1, MPIU_INT, MPI_MAX, 0, comm);CHKERRQ(ierr);
+  ierr = DMComplexGetVertexNumbering(dm, &globalVertexNumbers);CHKERRQ(ierr);
+  ierr = ISGetIndices(globalVertexNumbers, &gvertex);CHKERRQ(ierr);
   ierr = PetscMalloc(maxCells * sizeof(PetscInt), &corners);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "CELLS %d %d\n", totCells, totCorners+totCells);CHKERRQ(ierr);
   if (!rank) {
@@ -130,10 +135,10 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, FILE *fp, PetscInt *totalCells)
         if (value != 1) continue;
       }
       ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-      /* TODO Need global vertex numbering */
       for (v = 0; v < closureSize*2; v += 2) {
         if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
-          closure[nC++] = closure[v] - vStart;
+          const PetscInt gv = gvertex[closure[v] - vStart];
+          closure[nC++] = gv < 0 ? -(gv+1) : gv;
         }
       }
       corners[c-cStart] = nC;
@@ -176,10 +181,10 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, FILE *fp, PetscInt *totalCells)
         if (value != 1) continue;
       }
       ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-      /* TODO Need global vertex numbering */
       for (v = 0; v < closureSize*2; v += 2) {
         if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
-          closure[nC++] = closure[v] - vStart;
+          const PetscInt gv = gvertex[closure[v] - vStart];
+          closure[nC++] = gv < 0 ? -(gv+1) : gv;
         }
       }
       corners[c-cStart]  = nC;
@@ -194,6 +199,7 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, FILE *fp, PetscInt *totalCells)
     ierr = MPI_Send(localVertices, numSend, MPIU_INT, 0, tag, comm);CHKERRQ(ierr);
     ierr = PetscFree(localVertices);CHKERRQ(ierr);
   }
+  ierr = ISRestoreIndices(globalVertexNumbers, &gvertex);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "CELL_TYPES %d\n", totCells);CHKERRQ(ierr);
   if (!rank) {
     PetscInt cellType;
@@ -229,7 +235,7 @@ PetscErrorCode DMComplexVTKWriteSection(DM dm, PetscSection section, PetscSectio
   PetscScalar       *array;
   PetscInt           numDof = 0, maxDof;
   PetscInt           numLabelCells, cellHeight, cMax, cStart, cEnd, numLabelVertices, vMax, vStart, vEnd, pStart, pEnd, p;
-  PetscMPIInt        numProcs, rank, proc, tag = 1;
+  PetscMPIInt        numProcs, rank, proc, tag;
   PetscBool          hasLabel;
   PetscErrorCode     ierr;
 
@@ -237,6 +243,7 @@ PetscErrorCode DMComplexVTKWriteSection(DM dm, PetscSection section, PetscSectio
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(v,VEC_CLASSID,4);
   if (precision < 0) precision = 6;
+  ierr = PetscCommGetNewTag(comm, &tag);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
