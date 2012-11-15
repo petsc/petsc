@@ -157,6 +157,8 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
   ierr = VecScatterDestroy(&b->ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&b->w);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatConvert_mpimaij_mpiaij_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatPtAP_mpiaij_mpimaij_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3228,6 +3230,24 @@ PETSC_EXTERN_C PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ(Mat A,Mat PP,Mat C)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatPtAP_MPIAIJ_MPIMAIJ"
+PETSC_EXTERN_C PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+    ierr = MatPtAPSymbolic_MPIAIJ_MPIMAIJ(A,P,fill,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
+  }
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+  ierr = ((*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqMAIJ_SeqAIJ"
 PETSC_EXTERN_C PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
@@ -3529,6 +3549,7 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       B->ops->multadd             = MatMultAdd_MPIMAIJ_dof;
       B->ops->multtransposeadd    = MatMultTransposeAdd_MPIMAIJ_dof;
       ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpimaij_mpiaij_C","MatConvert_MPIMAIJ_MPIAIJ",MatConvert_MPIMAIJ_MPIAIJ);CHKERRQ(ierr);
+      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatPtAP_mpiaij_mpimaij_C","MatPtAP_MPIAIJ_MPIMAIJ",MatPtAP_MPIAIJ_MPIMAIJ);CHKERRQ(ierr);
     }
     B->ops->getsubmatrix        = MatGetSubMatrix_MAIJ;
     ierr = MatSetUp(B);CHKERRQ(ierr);

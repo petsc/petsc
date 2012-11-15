@@ -17,4 +17,5 @@ typedef struct {
 } Mat_MPIMAIJ;
 
 PETSC_EXTERN_C PetscErrorCode MatPtAP_SeqAIJ_SeqMAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+PETSC_EXTERN_C PetscErrorCode MatPtAP_MPIAIJ_MPIMAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 #endif
