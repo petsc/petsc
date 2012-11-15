@@ -3806,6 +3806,7 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
 
     ierr = DMComplexDistributeField(dm, pointSF, originalCoordSection, originalCoordinates, newCoordSection, newCoordinates);CHKERRQ(ierr);
     ierr = DMSetCoordinatesLocal(*dmParallel, newCoordinates);CHKERRQ(ierr);
+    ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
   }
   /* Distribute labels */
   {
