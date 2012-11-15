@@ -161,7 +161,7 @@ int main(int argc,char **args)
           else DD2[i][j] = 0.0;
         else DD2[i][j] = DD1[i][j];
   }
-  {
+  { 
     PetscReal *coords;
     ierr = PetscMalloc(m*sizeof(PetscReal),&coords);
     /* forms the element stiffness and coordinates */
