@@ -446,7 +446,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(*dmCell, sectionCell);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(*dmCell, partition);CHKERRQ(ierr);
-  ierr = PetscObjectSetName(*partition, "partition");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)*partition, "partition");CHKERRQ(ierr);
   ierr = VecGetArray(*partition, &part);CHKERRQ(ierr);
   for(c = cStart; c < cEnd; ++c) {
     PetscScalar *p;
@@ -471,12 +471,13 @@ PetscErrorCode SetUpLocalSpace(DM dm, AppCtx *user)
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &stateSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(stateSection, cStart, cEnd);CHKERRQ(ierr);
   for(c = cStart; c < cEnd; ++c) {
-    PetscInt val;
-
     ierr = PetscSectionSetDof(stateSection, c, dof);CHKERRQ(ierr);
 #if 0
-    ierr = DMComplexGetLabelValue(dm, "vtk", c, &val);CHKERRQ(ierr);
-    if (!val) {ierr = PetscSectionSetConstraintDof(stateSection, c, dof);CHKERRQ(ierr);}
+    {
+      PetscInt val;
+      ierr = DMComplexGetLabelValue(dm, "vtk", c, &val);CHKERRQ(ierr);
+      if (!val) {ierr = PetscSectionSetConstraintDof(stateSection, c, dof);CHKERRQ(ierr);}
+    }
 #endif
   }
   for(c = user->cEndInterior; c < cEnd; ++c) {
