@@ -8205,11 +8205,15 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*fP)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*ptap)(Mat,Mat,MatReuse,PetscReal,Mat*)=PETSC_NULL;
-  PetscBool      viatranspose=PETSC_FALSE;
+  PetscBool      viatranspose=PETSC_FALSE,viamatmatmatmult=PETSC_FALSE;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetBool(((PetscObject)A)->prefix,"-matptap_viatranspose",&viatranspose,PETSC_NULL);CHKERRQ(ierr);
-  if (viatranspose && scall == MAT_REUSE_MATRIX) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not supported yet");
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  if (size ==1){
+    ierr = PetscOptionsGetBool(((PetscObject)A)->prefix,"-matptap_viamatmatmatmult",&viamatmatmatmult,PETSC_NULL);CHKERRQ(ierr);
+  }
 
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
@@ -8229,10 +8233,25 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
     PetscValidPointer(*C,5);
     PetscValidHeaderSpecific(*C,MAT_CLASSID,5);
     ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
-    ierr = (*(*C)->ops->ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
+    if (viatranspose || viamatmatmatmult){
+      Mat Pt;
+      ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
+      if (viamatmatmatmult && size == 1){
+        ierr = MatMatMatMult(Pt,A,P,scall,fill,C);CHKERRQ(ierr);
+      } else {
+        Mat AP;
+        ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,fill,&AP);CHKERRQ(ierr);
+        ierr = MatMatMult(Pt,AP,scall,fill,C);CHKERRQ(ierr);
+        ierr = MatDestroy(&AP);CHKERRQ(ierr);
+      } 
+      ierr = MatDestroy(&Pt);CHKERRQ(ierr);
+    } else {
+      ierr = (*(*C)->ops->ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
+    }
     ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+
   if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
   if (fill < 1.0) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
 
@@ -8258,13 +8277,20 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   }
 
   ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
-  if (viatranspose) {
-    Mat AP,Pt;
-    ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,PETSC_DECIDE,&AP);CHKERRQ(ierr);
+  if (viatranspose || viamatmatmatmult) {
+    Mat Pt;
     ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
-    ierr = MatMatMult(Pt,AP,scall,fill,C);CHKERRQ(ierr);
+    if (viamatmatmatmult && size == 1){ 
+      ierr = MatMatMatMult(Pt,A,P,scall,fill,C);CHKERRQ(ierr);
+      ierr = PetscInfo(*C,"MatPtAP via MatMatMatMult\n");CHKERRQ(ierr);
+    } else {
+      Mat AP;
+      ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,fill,&AP);CHKERRQ(ierr);
+      ierr = MatMatMult(Pt,AP,scall,fill,C);CHKERRQ(ierr);
+      ierr = MatDestroy(&AP);CHKERRQ(ierr);
+      ierr = PetscInfo(*C,"MatPtAP via MatTranspose and MatMatMult\n");CHKERRQ(ierr);
+    }
     ierr = MatDestroy(&Pt);CHKERRQ(ierr);
-    ierr = MatDestroy(&AP);CHKERRQ(ierr);
   } else {
     ierr = (*ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
   }
