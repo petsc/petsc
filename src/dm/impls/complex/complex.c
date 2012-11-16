@@ -3810,7 +3810,7 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
   }
   /* Distribute labels */
   {
-    DMLabel    next      = mesh->labels, newNext = PETSC_NULL;
+    DMLabel    next      = mesh->labels, newNext = pmesh->labels;
     PetscInt   numLabels = 0, l;
 
     /* Bcast number of labels */
@@ -3820,19 +3820,24 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
     for (l = 0; l < numLabels; ++l) {
       DMLabel         newLabel;
       const PetscInt *partArray;
+      const char     *name;
       PetscInt       *stratumSizes = PETSC_NULL, *points = PETSC_NULL;
       PetscMPIInt    *sendcnts = PETSC_NULL, *offsets = PETSC_NULL, *displs = PETSC_NULL;
       PetscInt        nameSize, s, p;
+      PetscBool       isdepth;
       size_t          len = 0;
 
-      ierr = PetscNew(struct _n_DMLabel, &newLabel);CHKERRQ(ierr);
       /* Bcast name (could filter for no points) */
       if (!rank) {ierr = PetscStrlen(next->name, &len);CHKERRQ(ierr);}
       nameSize = len;
       ierr = MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-      ierr = PetscMalloc(nameSize+1, &newLabel->name);CHKERRQ(ierr);
-      if (!rank) {ierr = PetscMemcpy(newLabel->name, next->name, nameSize+1);CHKERRQ(ierr);}
-      ierr = MPI_Bcast(newLabel->name, nameSize+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
+      ierr = PetscMalloc(nameSize+1, &name);CHKERRQ(ierr);
+      if (!rank) {ierr = PetscMemcpy(name, next->name, nameSize+1);CHKERRQ(ierr);}
+      ierr = MPI_Bcast(name, nameSize+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
+      ierr = PetscStrcmp(name, "depth", &isdepth);CHKERRQ(ierr);
+      if (isdepth) {ierr = PetscFree(name);CHKERRQ(ierr); continue;}
+      ierr = PetscNew(struct _n_DMLabel, &newLabel);CHKERRQ(ierr);
+      newLabel->name = name;
       /* Bcast numStrata (could filter for no points in stratum) */
       if (!rank) {newLabel->numStrata = next->numStrata;}
       ierr = MPI_Bcast(&newLabel->numStrata, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
@@ -7624,6 +7629,7 @@ PetscErrorCode DMComplexCreateSubmesh(DM dm, const char label[], DM *subdm)
   ierr = VecRestoreArray(coordinates,    &coords);CHKERRQ(ierr);
   ierr = VecRestoreArray(subCoordinates, &subCoords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(*subdm, subCoordinates);CHKERRQ(ierr);
+  ierr = VecDestroy(&subCoordinates);CHKERRQ(ierr);
 
   ierr = DMComplexSetVTKCellHeight(*subdm, 1);CHKERRQ(ierr);
   /* Create map from submesh points to original mesh points */

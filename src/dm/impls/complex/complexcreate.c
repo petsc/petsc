@@ -137,6 +137,7 @@ PetscErrorCode DMComplexCreateSquareBoundary(DM dm, const PetscReal lower[], con
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -231,6 +232,7 @@ PetscErrorCode DMComplexCreateCubeBoundary(DM dm, const PetscReal lower[], const
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -375,6 +377,7 @@ PetscErrorCode DMComplexCreateSquareMesh(DM dm, const PetscReal lower[], const P
     }
     ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
+    ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
