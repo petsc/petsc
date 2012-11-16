@@ -8,7 +8,8 @@ static PetscInt N_CORES = -1;
 PetscBool  PetscThreadCommRegisterAllCalled = PETSC_FALSE;
 PetscFList PetscThreadCommList              = PETSC_NULL;
 PetscMPIInt Petsc_ThreadComm_keyval         = MPI_KEYVAL_INVALID;
-
+static MPI_Comm        comm_cached  = MPI_COMM_NULL;
+static PetscThreadComm tcomm_cached = 0;
 PetscThreadCommJobQueue PetscJobQueue=PETSC_NULL;
 
 /* Logging support */
@@ -76,8 +77,6 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
 @*/
 PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
 {
-  static MPI_Comm comm_cached = MPI_COMM_NULL;
-  static PetscThreadComm tcomm_cached = 0;
   PetscErrorCode ierr;
   PetscMPIInt    flg;
   void*          ptr;
@@ -119,6 +118,12 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
 
   PetscFunctionBegin;
   PetscValidPointer(tcomm,2);
+
+  /* always initialed the cached comms to zero since PetscInitialize() may be called multiple times */
+  comm_cached  = MPI_COMM_NULL;
+  tcomm_cached = 0;
+
+
   *tcomm = PETSC_NULL;
 
   ierr = PetscNew(struct _p_PetscThreadComm,&tcommout);CHKERRQ(ierr);
@@ -1189,7 +1194,6 @@ PetscErrorCode PetscThreadCommDetach(MPI_Comm comm)
 PetscErrorCode PetscThreadCommAttach(MPI_Comm comm,PetscThreadComm tcomm)
 {
   PetscErrorCode ierr;
-  MPI_Comm       icomm;
   PetscMPIInt    flg;
   void           *ptr;
 
