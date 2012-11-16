@@ -293,6 +293,12 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
       ierr = PetscMalloc(nleaves*sizeof(*sf->mine),&sf->mine_alloc);CHKERRQ(ierr);
       sf->mine = sf->mine_alloc;
       ierr = PetscMemcpy(sf->mine,ilocal,nleaves*sizeof(*sf->mine));CHKERRQ(ierr);
+      sf->minleaf = PETSC_MAX_INT;
+      sf->maxleaf = PETSC_MIN_INT;
+      for (i=0; i<nleaves; i++) {
+        sf->minleaf = PetscMin(sf->minleaf,ilocal[i]);
+        sf->maxleaf = PetscMax(sf->maxleaf,ilocal[i]);
+      }
       break;
     case PETSC_OWN_POINTER:
       sf->mine_alloc = (PetscInt*)ilocal;
@@ -303,6 +309,10 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf,PetscInt nroots,PetscInt nleaves,const
       break;
     default: SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown localmode");
     }
+  }
+  if (!ilocal || nleaves > 0) {
+    sf->minleaf = 0;
+    sf->maxleaf = nleaves - 1;
   }
   switch (remotemode) {
   case PETSC_COPY_VALUES:
@@ -477,11 +487,13 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
 /*@C
    PetscSFGetGraph - Get the graph specifying a parallel star forest
 
-   Collective
+   Not Collective
 
    Input Arguments:
-+  sf - star forest
-.  nroots - number of root vertices on the current process (these are possible targets for other process to attach leaves)
+.  sf - star forest
+
+   Output Arguments:
++  nroots - number of root vertices on the current process (these are possible targets for other process to attach leaves)
 .  nleaves - number of leaf vertices on the current process, each of these references a root on any process
 .  ilocal - locations of leaves in leafdata buffers
 -  iremote - remote locations of root vertices for each leaf on the current process
@@ -495,10 +507,40 @@ PetscErrorCode PetscSFGetGraph(PetscSF sf,PetscInt *nroots,PetscInt *nleaves,con
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  /* We are not currently requiring that the graph is set, thus returning nroots=-1 if it has not been set */
+  /* if (!sf->graphset) SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_ARG_WRONGSTATE,"Graph has not been set, must call PetscSFSetGraph()"); */
   if (nroots) *nroots = sf->nroots;
   if (nleaves) *nleaves = sf->nleaves;
   if (ilocal) *ilocal = sf->mine;
   if (iremote) *iremote = sf->remote;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSFGetLeafRange"
+/*@C
+   PetscSFGetLeafRange - Get the active leaf ranges
+
+   Not Collective
+
+   Input Arguments:
+.  sf - star forest
+
+   Output Arguments:
++  minleaf - minimum active leaf on this process
+-  maxleaf - maximum active leaf on this process
+
+   Level: developer
+
+.seealso: PetscSFCreate(), PetscSFView(), PetscSFSetGraph(), PetscSFGetGraph()
+@*/
+PetscErrorCode PetscSFGetLeafRange(PetscSF sf,PetscInt *minleaf,PetscInt *maxleaf)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
+  if (minleaf) *minleaf = sf->minleaf;
+  if (maxleaf) *maxleaf = sf->maxleaf;
   PetscFunctionReturn(0);
 }
 
