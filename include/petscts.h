@@ -155,7 +155,6 @@ PETSC_EXTERN PetscErrorCode TSEvaluateStep(TS,PetscInt,Vec,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSSolve(TS,Vec);
 PETSC_EXTERN PetscErrorCode TSGetConvergedReason(TS,TSConvergedReason*);
 PETSC_EXTERN PetscErrorCode TSGetSolveTime(TS,PetscReal*);
-PETSC_EXTERN PetscErrorCode TSGetSolutionTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSGetSNESIterations(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSGetKSPIterations(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSGetStepRejections(TS,PetscInt*);
