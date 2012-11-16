@@ -112,14 +112,15 @@ PetscErrorCode DMComplexViewLabel_Ascii(DM dm, const char name[], PetscViewer vi
   ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Label '%s':\n", name);CHKERRQ(ierr);
   ierr = DMComplexGetLabelIdIS(dm, name, &ids);CHKERRQ(ierr);
-  ierr = ISGetSize(ids, &num);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(ids, &num);CHKERRQ(ierr);
   ierr = ISGetIndices(ids, &markers);CHKERRQ(ierr);
-  for (i = 0; i < num; ++i) {
+  for(i = 0; i < num; ++i) {
     IS              pIS;
     const PetscInt *points;
     PetscInt        size, p;
 
     ierr = DMComplexGetStratumIS(dm, name, markers[i], &pIS);
+    if (!pIS) continue;
     ierr = ISGetSize(pIS, &size);CHKERRQ(ierr);
     ierr = ISGetIndices(pIS, &points);CHKERRQ(ierr);
     for (p = 0; p < size; ++p) {
@@ -2143,7 +2144,7 @@ PetscErrorCode DMComplexGetLabelName(DM dm, PetscInt n, const char **name)
   Level: intermediate
 
 .keywords: mesh
-.seealso: DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+.seealso: DMComplexCreateLabel(), DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
 @*/
 PetscErrorCode DMComplexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
 {
@@ -2160,6 +2161,48 @@ PetscErrorCode DMComplexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
     ierr = PetscStrcmp(name, next->name, hasLabel);CHKERRQ(ierr);
     if (*hasLabel) break;
     next = next->next;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexCreateLabel"
+/*@C
+  DMComplexCreateLabel - Create a label of the given name if it does not already exist
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMComplex object
+- name - The label name
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMComplexHasLabel(), DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+@*/
+PetscErrorCode DMComplexCreateLabel(DM dm, const char name[])
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  DMLabel        next = mesh->labels;
+  PetscBool      flg  = PETSC_FALSE;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  while(next) {
+    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
+    if (flg) break;
+    next = next->next;
+  }
+  if (!flg) {
+    DMLabel tmpLabel = mesh->labels;
+    ierr = PetscNew(struct _n_DMLabel, &mesh->labels);CHKERRQ(ierr);
+    mesh->labels->next = tmpLabel;
+    next = mesh->labels;
+    ierr = PetscStrallocpy(name, &next->name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2494,10 +2537,10 @@ PetscErrorCode DMComplexGetLabelSize(DM dm, const char name[], PetscInt *size)
 @*/
 PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
 {
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
-  DMLabel        next = mesh->labels;
-  PetscInt      *values;
-  PetscInt       size=-1, i = 0;
+  DM_Complex    *mesh   = (DM_Complex *) dm->data;
+  DMLabel        next   = mesh->labels;
+  PetscInt      *values = PETSC_NULL;
+  PetscInt       size   = 0, i = 0;
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -2518,6 +2561,7 @@ PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
     next = next->next;
   }
   if (!next) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label with name %s exists in this mesh", name);
+  *ids = PETSC_NULL;
   ierr = ISCreateGeneral(((PetscObject) dm)->comm, size, values, PETSC_OWN_POINTER, ids);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3376,27 +3420,31 @@ PetscErrorCode DMComplexEnlargePartition(DM dm, const PetscInt start[], const Pe
   ierr = ISGetIndices(*partition, &points);CHKERRQ(ierr);
   ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt *), &tmpPoints);CHKERRQ(ierr);
   for(part = pStart; part < pEnd; ++part) {
-    PetscInt numPoints, newNumPoints, off, p, n = 0;
+    PetscInt numPoints, nP, numNewPoints, off, p, n = 0;
 
     PetscHashIClear(h);
     ierr = PetscSectionGetDof(*partSection, part, &numPoints);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(*partSection, part, &off);CHKERRQ(ierr);
-    /* Add all existing points to table and all points in next BFS level */
-    /* TODO We are brute forcing here, but could check the adjacency size to find the boundary */
+    /* Add all existing points to h */
+    for(p = 0; p < numPoints; ++p) {
+      PetscHashIAdd(h, points[off+p], 1);
+    }
+    PetscHashISize(h, nP);
+    if (nP != numPoints) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Invalid partition has %d points, but only %d were unique", numPoints, nP);
+    /* Add all points in next BFS level */
+    /*   TODO We are brute forcing here, but could check the adjacency size to find the boundary */
     for(p = 0; p < numPoints; ++p) {
       PetscInt s = start[p], e = start[p+1], a;
 
-      PetscHashIAdd(h, points[p], 1);
       for(a = s; a < e; ++a) {
         PetscHashIAdd(h, adjacency[a], 1);
       }
     }
-    PetscHashISize(h, newNumPoints);
-    ierr = PetscSectionSetDof(newps, part, newNumPoints);CHKERRQ(ierr);
-    ierr = PetscMalloc(newNumPoints * sizeof(PetscInt), &tmpPoints[part]);CHKERRQ(ierr);
-    /* Should not need this conditional */
-    if (newNumPoints) {PetscHashIGetKeys(h, n, tmpPoints[part]);}
-    totPoints += newNumPoints;
+    PetscHashISize(h, numNewPoints);
+    ierr = PetscSectionSetDof(newps, part, numNewPoints);CHKERRQ(ierr);
+    ierr = PetscMalloc(numNewPoints * sizeof(PetscInt), &tmpPoints[part]);CHKERRQ(ierr);
+    if (numNewPoints) {PetscHashIGetKeys(h, n, tmpPoints[part]);} /* Should not need this conditional */
+    totPoints += numNewPoints;
   }
   ierr = ISRestoreIndices(*partition, &points);CHKERRQ(ierr);
   PetscHashIDestroy(h);

@@ -3442,7 +3442,7 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
     if (!gdof) continue; /* Censored point */
     gsize = gdof < 0 ? -(gdof+1)-gcdof : gdof-gcdof;
     if (gsize != dof-cdof) {
-      if (gsize != dof) SETERRQ4(comm, PETSC_ERR_ARG_WRONG, "Global dof %d for point %d is neither the constrained size %d, nor the unconstrained %d", size, p, dof-cdof, dof);
+      if (gsize != dof) SETERRQ4(comm, PETSC_ERR_ARG_WRONG, "Global dof %d for point %d is neither the constrained size %d, nor the unconstrained %d", gsize, p, dof-cdof, dof);
       cdof = 0; /* Ignore constraints */
     }
     for (d = 0, c = 0; d < dof; ++d) {
@@ -3487,13 +3487,38 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
 
   Note: This gets a borrowed reference, so the user should not destroy this PetscSF.
 
-.seealso: DMGetDefaultSF(), DMSetDefaultSF(), DMCreateDefaultSF()
+.seealso: DMSetPointSF(), DMGetDefaultSF(), DMSetDefaultSF(), DMCreateDefaultSF()
 @*/
 PetscErrorCode DMGetPointSF(DM dm, PetscSF *sf) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(sf, 2);
   *sf = dm->sf;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetPointSF"
+/*@
+  DMSetPointSF - Set the PetscSF encoding the parallel section point overlap for the DM.
+
+  Input Parameters:
++ dm - The DM
+- sf - The PetscSF
+
+  Level: intermediate
+
+.seealso: DMGetPointSF(), DMGetDefaultSF(), DMSetDefaultSF(), DMCreateDefaultSF()
+@*/
+PetscErrorCode DMSetPointSF(DM dm, PetscSF sf) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
+  ierr = PetscSFDestroy(&dm->sf);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) sf);CHKERRQ(ierr);
+  dm->sf = sf;
   PetscFunctionReturn(0);
 }
 

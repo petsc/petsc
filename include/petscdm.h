@@ -218,6 +218,7 @@ PETSC_EXTERN PetscErrorCode DMGetDefaultSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetDefaultSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMCreateDefaultSF(DM, PetscSection, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetPointSF(DM, PetscSF *);
+PETSC_EXTERN PetscErrorCode DMSetPointSF(DM, PetscSF);
 
 PETSC_EXTERN PetscErrorCode DMGetNumFields(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSetNumFields(DM, PetscInt);

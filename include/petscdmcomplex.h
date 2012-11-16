@@ -51,6 +51,7 @@ PETSC_EXTERN PetscErrorCode DMComplexPointLocalRead(DM,PetscInt,const PetscScala
 PETSC_EXTERN PetscErrorCode DMComplexGetNumLabels(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexGetLabelName(DM, PetscInt, const char **);
 PETSC_EXTERN PetscErrorCode DMComplexHasLabel(DM, const char [], PetscBool *);
+PETSC_EXTERN PetscErrorCode DMComplexCreateLabel(DM, const char []);
 PETSC_EXTERN PetscErrorCode DMComplexGetLabelValue(DM, const char[], PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexSetLabelValue(DM, const char[], PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMComplexClearLabelValue(DM, const char[], PetscInt, PetscInt);

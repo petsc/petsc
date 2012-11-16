@@ -3,6 +3,7 @@
 configure_options = [
   '--with-debugging=0',
 
+  '--useThreads=0', # for some reason cmake hangs when invoked from configure on bsd?
   #'-download-f-blas-lapack=1',
   '--download-mpich=1',
   '--download-cmake=1',
