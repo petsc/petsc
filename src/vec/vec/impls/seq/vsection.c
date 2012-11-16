@@ -785,8 +785,8 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
 @*/
 PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscBool includeConstraints, PetscSection *gsection)
 {
-  PetscInt      *neg, *recv;
-  PetscInt       pStart, pEnd, p, dof, cdof, off, globalOff = 0, nroots;
+  PetscInt       *neg = PETSC_NULL, *recv = PETSC_NULL;
+  PetscInt       pStart, pEnd, p, dof, cdof, off, globalOff = 0, nroots, nlocal;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -794,23 +794,28 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*gsection, pStart, pEnd);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sf, &nroots, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  nlocal = nroots;              /* The local/leaf space matches global/root space */
   /* Must allocate for all points visible to SF, which may be more than this section */
-  ierr = PetscMalloc2(nroots,PetscInt,&neg,nroots,PetscInt,&recv);CHKERRQ(ierr);
-  ierr = PetscMemzero(neg,nroots*sizeof(PetscInt));CHKERRQ(ierr);
+  if (nroots > 0) {             /* nroots < 0 means that the graph has not been set, only happens in serial */
+    ierr = PetscMalloc2(nroots,PetscInt,&neg,nlocal,PetscInt,&recv);CHKERRQ(ierr);
+    ierr = PetscMemzero(neg,nroots*sizeof(PetscInt));CHKERRQ(ierr);
+  }
   /* Mark all local points with negative dof */
   for (p = pStart; p < pEnd; ++p) {
     ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionSetDof(*gsection, p, dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
     if (!includeConstraints && cdof > 0) {ierr = PetscSectionSetConstraintDof(*gsection, p, cdof);CHKERRQ(ierr);}
-    neg[p] = -(dof+1);
+    if (neg) neg[p] = -(dof+1);
   }
   ierr = PetscSectionSetUpBC(*gsection);CHKERRQ(ierr);
-  ierr = PetscMemzero(recv,nroots*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    if (recv[p] < 0) {(*gsection)->atlasDof[p-pStart] = recv[p];}
+  if (nroots > 0) {
+    ierr = PetscMemzero(recv,nlocal*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      if (recv[p] < 0) {(*gsection)->atlasDof[p-pStart] = recv[p];}
+    }
   }
   /* Calculate new sizes, get proccess offset, and calculate point offsets */
   for (p = 0, off = 0; p < pEnd-pStart; ++p) {
@@ -822,14 +827,16 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   globalOff -= off;
   for (p = pStart, off = 0; p < pEnd; ++p) {
     (*gsection)->atlasOff[p-pStart] += globalOff;
-    neg[p] = -((*gsection)->atlasOff[p-pStart]+1);
+    if (neg) neg[p] = -((*gsection)->atlasOff[p-pStart]+1);
   }
   /* Put in negative offsets for ghost points */
-  ierr = PetscMemzero(recv,nroots*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    if (recv[p] < 0) {(*gsection)->atlasOff[p-pStart] = recv[p];}
+  if (nroots > 0) {
+    ierr = PetscMemzero(recv,nlocal*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf, MPIU_INT, neg, recv);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      if (recv[p] < 0) {(*gsection)->atlasOff[p-pStart] = recv[p];}
+    }
   }
   ierr = PetscFree2(neg,recv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
