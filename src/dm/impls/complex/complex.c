@@ -3960,8 +3960,8 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
     ierr = PetscSFFetchAndOpBegin(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
     ierr = PetscSFFetchAndOpEnd(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
 #endif
-    ierr = PetscSFFetchAndOpBegin(pointSF, MPI_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
-    ierr = PetscSFFetchAndOpEnd(pointSF, MPI_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
+    ierr = PetscSFReduceBegin(pointSF, MPI_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(pointSF, MPI_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
     for (p = 0; p < numLeaves; ++p) {
