@@ -3820,7 +3820,7 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
     for (l = 0; l < numLabels; ++l) {
       DMLabel         newLabel;
       const PetscInt *partArray;
-      const char     *name;
+      char           *name;
       PetscInt       *stratumSizes = PETSC_NULL, *points = PETSC_NULL;
       PetscMPIInt    *sendcnts = PETSC_NULL, *offsets = PETSC_NULL, *displs = PETSC_NULL;
       PetscInt        nameSize, s, p;
