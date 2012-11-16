@@ -8322,7 +8322,7 @@ PetscErrorCode  MatPtAPNumeric(Mat A,Mat P,Mat C)
   MatCheckPreallocated(A,1);
 
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
-  ierr = (*A->ops->ptapnumeric)(A,P,C);CHKERRQ(ierr);
+  ierr = (*C->ops->ptapnumeric)(A,P,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -8377,7 +8377,6 @@ PetscErrorCode  MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
 
   /* ierr = MatSetBlockSize(*C,A->rmap->bs);CHKERRQ(ierr); NO! this is not always true -ma */
-
   PetscFunctionReturn(0);
 }
 

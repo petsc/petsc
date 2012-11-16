@@ -21,7 +21,6 @@ PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
     ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
   }
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
-  //ierr = (*(A)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr); /* should use matrix *C, not A! */
   ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr); 
   ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -36,7 +35,6 @@ PetscErrorCode MatDestroy_SeqAIJ_PtAP(Mat A)
   Mat_PtAP       *ptap = a->ptap;
 
   PetscFunctionBegin;
-  /* free ptap, then A */
   ierr = PetscFree(ptap->apa);CHKERRQ(ierr);
   ierr = PetscFree(ptap->api);CHKERRQ(ierr);
   ierr = PetscFree(ptap->apj);CHKERRQ(ierr);
@@ -153,7 +151,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
   c->free_a  = PETSC_TRUE;
   c->free_ij = PETSC_TRUE;
   c->nonew   = 0;
-  (*C)->ops->ptapnumeric = MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy; /* should use *C->ops until PtAP insterface is updated to double dispatch as MatMatMult() */
+  (*C)->ops->ptapnumeric = MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy;
 
   /* Clean up. */
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
