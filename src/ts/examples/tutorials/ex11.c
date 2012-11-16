@@ -240,6 +240,7 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
   /* Make label for VTK output */
   ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, PETSC_NULL, &numLeaves, &leafLocal, &leafRemote);CHKERRQ(ierr);
+  ierr = DMComplexCreateLabel(gdm, "vtk");CHKERRQ(ierr);
   for(l = 0, c = cStart; l < numLeaves && c < cEnd; ++l, ++c) {
     for(; c < leafLocal[l] && c < cEnd; ++c) {
       ierr = DMComplexSetLabelValue(gdm, "vtk", c, 1);CHKERRQ(ierr);
@@ -445,6 +446,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(*dmCell, sectionCell);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(*dmCell, partition);CHKERRQ(ierr);
+  ierr = PetscObjectSetName(*partition, "partition");CHKERRQ(ierr);
   ierr = VecGetArray(*partition, &part);CHKERRQ(ierr);
   for(c = cStart; c < cEnd; ++c) {
     PetscScalar *p;

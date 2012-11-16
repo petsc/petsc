@@ -3427,14 +3427,16 @@ PetscErrorCode DMComplexEnlargePartition(DM dm, const PetscInt start[], const Pe
     ierr = PetscSectionGetOffset(*partSection, part, &off);CHKERRQ(ierr);
     /* Add all existing points to h */
     for(p = 0; p < numPoints; ++p) {
-      PetscHashIAdd(h, points[off+p], 1);
+      const PetscInt point = points[off+p];
+      PetscHashIAdd(h, point, 1);
     }
     PetscHashISize(h, nP);
     if (nP != numPoints) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Invalid partition has %d points, but only %d were unique", numPoints, nP);
     /* Add all points in next BFS level */
     /*   TODO We are brute forcing here, but could check the adjacency size to find the boundary */
     for(p = 0; p < numPoints; ++p) {
-      PetscInt s = start[p], e = start[p+1], a;
+      const PetscInt point = points[off+p];
+      PetscInt s = start[point], e = start[point+1], a;
 
       for(a = s; a < e; ++a) {
         PetscHashIAdd(h, adjacency[a], 1);
