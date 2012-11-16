@@ -1340,17 +1340,20 @@ PetscErrorCode PCGAMGOptprol_AGG( PC pc,
         ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
       }
       ierr = KSPCreate(wcomm,&eksp);                            CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix( eksp, "gamg_est_");         CHKERRQ(ierr);
-      ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
-      ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE );    CHKERRQ(ierr);
-      ierr = KSPSetOperators( eksp, Amat, Amat, SAME_NONZERO_PATTERN );
-      CHKERRQ( ierr );
-      ierr = KSPGetPC( eksp, &pc );                              CHKERRQ( ierr );
-      ierr = PCSetType( pc, PCJACOBI ); CHKERRQ(ierr);  /* smoother */
       ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);
       CHKERRQ(ierr);
       ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(eksp,((PetscObject)pc)->prefix);CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix( eksp, "gamg_est_");         CHKERRQ(ierr);
+      ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
+
+      ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE );    CHKERRQ(ierr);
+      ierr = KSPSetOperators( eksp, Amat, Amat, SAME_NONZERO_PATTERN );
+      CHKERRQ( ierr );
       ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE );        CHKERRQ(ierr);
+
+      ierr = KSPGetPC( eksp, &pc );                              CHKERRQ( ierr );
+      ierr = PCSetType( pc, PCJACOBI ); CHKERRQ(ierr);  /* smoother in smoothed agg. */
 
       /* solve - keep stuff out of logging */
       ierr = PetscLogEventDeactivate(KSP_Solve);CHKERRQ(ierr);
