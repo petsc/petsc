@@ -11,16 +11,44 @@ static char help[] = "Second Order TVD Finite Volume Example.\n";
 #endif
 
 #define DIM 2                   /* Geometric dimension */
+#define ALEN(a) (sizeof(a)/sizeof((a)[0]))
 
-typedef struct {
+static PetscFList PhysicsList;
+
+typedef struct _n_User *User;
+typedef struct _n_Physics *Physics;
+
+typedef PetscErrorCode (*SolutionFunction)(User,PetscReal,const PetscReal*,PetscScalar*);
+typedef PetscErrorCode (*BoundaryFunction)(Physics,const PetscReal*,const PetscScalar*,PetscScalar*);
+typedef PetscErrorCode (*RiemannFunction)(Physics,const PetscReal*,const PetscScalar*,const PetscScalar*,PetscScalar*);
+static PetscErrorCode PhysicsBoundaryRegister(Physics,const char*,BoundaryFunction,PetscInt,const PetscInt*);
+
+typedef struct _n_BoundaryLink *BoundaryLink;
+struct _n_BoundaryLink {
+  BoundaryFunction func;
+  char             *name;
+  PetscInt         numids;
+  PetscInt         *ids;
+  BoundaryLink     next;
+};
+
+struct _n_Physics {
+  RiemannFunction riemann;
+  SolutionFunction solution;
+  BoundaryLink boundary;
+  PetscReal dof;                /* number of degrees of freedom per cell */
+  PetscReal maxspeed;           /* estimate of global maximum speed (for CFL calculation) */
+  void *data;
+};
+
+struct _n_User {
   PetscInt  numGhostCells;
   PetscInt  cEndInterior;  /* First boundary ghost cell */
   Vec       cellgeom, facegeom;
-  PetscReal wind[DIM];
-  PetscReal inflowState[1];
   PetscReal minradius;
   PetscInt  vtkInterval;        /* For monitor */
-} AppCtx;
+  Physics   physics;
+};
 
 typedef struct {
   PetscScalar normal[DIM];              /* Area-scaled normals */
@@ -36,9 +64,92 @@ PETSC_STATIC_INLINE PetscScalar Dot2(const PetscScalar *x,const PetscScalar *y) 
 PETSC_STATIC_INLINE PetscReal Norm2(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(Dot2(x,x)));}
 PETSC_STATIC_INLINE void Waxpy2(PetscScalar a,const PetscScalar *x,const PetscScalar *y,PetscScalar *w) { w[0] = a*x[0] + y[0]; w[1] = a*x[1] + y[1]; }
 
+
+/******************* Advect ********************/
+typedef struct {
+  PetscReal wind[DIM];
+  PetscReal inflowState;
+} Physics_Advect;
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsBoundary_Advect_Inflow"
+static PetscErrorCode PhysicsBoundary_Advect_Inflow(Physics phys, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG)
+{
+  Physics_Advect *advect = (Physics_Advect*)phys->data;
+
+  PetscFunctionBegin;
+  xG[0] = advect->inflowState;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsBoundary_Advect_Outflow"
+static PetscErrorCode PhysicsBoundary_Advect_Outflow(Physics phys, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG)
+{
+  PetscFunctionBegin;
+  xG[0] = xI[0];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsRiemann_Advect"
+static PetscErrorCode PhysicsRiemann_Advect(Physics phys, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
+{
+  Physics_Advect *advect = (Physics_Advect*)phys->data;
+  PetscReal wn;
+
+  PetscFunctionBegin;
+  wn = Dot2(advect->wind, n);
+  flux[0] = (wn > 0 ? xL[0] : xR[0]) * wn;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsSolution_Advect"
+static PetscErrorCode PhysicsSolution_Advect(User user,PetscReal time,const PetscReal *x,PetscScalar *u)
+{
+  Physics_Advect *advect = (Physics_Advect*)user->physics->data;
+  PetscReal x0[2];
+
+  PetscFunctionBegin;
+  Waxpy2(-time,advect->wind,x,x0);
+  if (x0[1] > 0) u[0] = 1.*x[0] + 3.*x[1];
+  else u[0] = advect->inflowState;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsCreate_Advect"
+static PetscErrorCode PhysicsCreate_Advect(User user,Physics phys)
+{
+  const PetscInt inflowids[] = {100,101,200},outflowids[] = {300};
+  Physics_Advect *advect = (Physics_Advect*)phys->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PhysicsBoundaryRegister(phys,"inflow",PhysicsBoundary_Advect_Inflow,ALEN(inflowids),inflowids);CHKERRQ(ierr);
+  ierr = PhysicsBoundaryRegister(phys,"outflow",PhysicsBoundary_Advect_Outflow,ALEN(outflowids),outflowids);CHKERRQ(ierr);
+  phys->riemann = PhysicsRiemann_Advect;
+  phys->solution = PhysicsSolution_Advect;
+  ierr = PetscNew(Physics_Advect,&phys->data);CHKERRQ(ierr);
+  advect = phys->data;
+  ierr = PetscOptionsHead("Advect options");CHKERRQ(ierr);
+  {
+    PetscInt two = 2,dof = 1;
+    advect->wind[0] = 0.0;
+    advect->wind[1] = 1.0;
+    ierr = PetscOptionsRealArray("-advect_wind","background wind vx,vy","",advect->wind,&two,PETSC_NULL);CHKERRQ(ierr);
+    advect->inflowState = -2.0;
+    ierr = PetscOptionsRealArray("-advect_inflow","Inflow state","",&advect->inflowState,&dof,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  phys->maxspeed = Norm2(advect->wind);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "ConstructGhostCells"
-PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
+PetscErrorCode ConstructGhostCells(DM *dmGhosted, User user)
 {
   DM                 dm = *dmGhosted, gdm;
   PetscSection       coordSection, newCoordSection;
@@ -289,7 +400,7 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
 #undef __FUNCT__
 #define __FUNCT__ "ConstructGeometry"
 /* Set up face data and cell data */
-PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, AppCtx *user)
+PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
 {
   DM             dmFace, dmCell;
   PetscSection   sectionFace, sectionCell;
@@ -460,7 +571,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetUpLocalSpace"
-PetscErrorCode SetUpLocalSpace(DM dm, AppCtx *user)
+PetscErrorCode SetUpLocalSpace(DM dm, User user)
 {
   PetscSection   stateSection;
   PetscInt       dof = 1, *cind, d, stateSize, cStart, cEnd, c;
@@ -507,8 +618,97 @@ PetscErrorCode SetUpLocalSpace(DM dm, AppCtx *user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SetUpBoundaries"
+PetscErrorCode SetUpBoundaries(DM dm, User user)
+{
+  Physics phys = user->physics;
+  PetscErrorCode ierr;
+  BoundaryLink b;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsBegin(((PetscObject)dm)->comm,PETSC_NULL,"Boundary condition options","");CHKERRQ(ierr);
+  for (b = phys->boundary; b; b=b->next) {
+    char optname[512];
+    PetscInt ids[512],len = 512;
+    PetscBool flg;
+    ierr = PetscSNPrintf(optname,sizeof optname,"-bc_%s",b->name);CHKERRQ(ierr);
+    ierr = PetscMemzero(ids,sizeof(ids));CHKERRQ(ierr);
+    ierr = PetscOptionsIntArray(optname,"List of boundary IDs","",ids,&len,&flg);CHKERRQ(ierr);
+    if (flg) {
+      /* TODO: check all IDs to make sure they exist in the mesh */
+      ierr = PetscFree(b->ids);CHKERRQ(ierr);
+      b->numids = len;
+      ierr = PetscMalloc(len*sizeof(PetscInt),&b->ids);CHKERRQ(ierr);
+      ierr = PetscMemcpy(b->ids,ids,len*sizeof(PetscInt));CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsBoundaryRegister"
+/* ids are just defaults, can be overridden at command line */
+static PetscErrorCode PhysicsBoundaryRegister(Physics phys,const char *name,BoundaryFunction bcFunc,PetscInt numids,const PetscInt *ids)
+{
+  PetscErrorCode ierr;
+  BoundaryLink link;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(struct _n_BoundaryLink,&link);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
+  link->numids = numids;
+  ierr = PetscMalloc(numids*sizeof(PetscInt),&link->ids);CHKERRQ(ierr);
+  ierr = PetscMemcpy(link->ids,ids,numids*sizeof(PetscInt));CHKERRQ(ierr);
+  link->func = bcFunc;
+  link->next = phys->boundary;
+  phys->boundary = link;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "BoundaryLinkDestroy"
+static PetscErrorCode BoundaryLinkDestroy(BoundaryLink *link)
+{
+  PetscErrorCode ierr;
+  BoundaryLink l,next;
+
+  PetscFunctionBegin;
+  if (!link) PetscFunctionReturn(0);
+  l = *link;
+  *link = PETSC_NULL;
+  for ( ; l; l=next) {
+    next = l->next;
+    ierr = PetscFree(l->ids);CHKERRQ(ierr);
+    ierr = PetscFree(l->name);CHKERRQ(ierr);
+    ierr = PetscFree(l);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsBoundaryFind"
+static PetscErrorCode PhysicsBoundaryFind(Physics phys,PetscInt id,BoundaryFunction *bcFunc)
+{
+  BoundaryLink link;
+  PetscInt i;
+
+  PetscFunctionBegin;
+  for (link=phys->boundary; link; link=link->next) {
+    for (i=0; i<link->numids; i++) {
+      if (link->ids[i] == id) {
+        *bcFunc = link->func;
+        PetscFunctionReturn(0);
+      }
+    }
+  }
+  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Boundary ID %D not associated with any registered boundary condition",id);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SetInitialCondition"
-PetscErrorCode SetInitialCondition(DM dm, Vec X, AppCtx *user)
+PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
 {
   DM                 dmCell;
   Vec                locX;
@@ -529,7 +729,7 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, AppCtx *user)
 
     ierr = DMComplexPointLocalRead(dmCell,c,cellgeom,&cg);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRef(dm,c,x,&xc);CHKERRQ(ierr);
-    xc[0] = cg->centroid[0] + 3*cg->centroid[1];
+    ierr = (*user->physics->solution)(user,0.0,cg->centroid,xc);CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(user->cellgeom, &cellgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(locX, &x);CHKERRQ(ierr);
@@ -540,53 +740,10 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, AppCtx *user)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "Boundary_Inflow"
-static PetscErrorCode Boundary_Inflow(AppCtx *user, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG)
-{
-  PetscFunctionBegin;
-  xG[0] = user->inflowState[0];
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "Boundary_Outflow"
-static PetscErrorCode Boundary_Outflow(AppCtx *user, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG)
-{
-  PetscFunctionBegin;
-  xG[0] = xI[0];
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "Boundary_Wall"
-static PetscErrorCode Boundary_Wall(AppCtx *user, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG)
-{
-  /* PetscReal vn = Dot2(user->wind,n); */
-  PetscFunctionBegin;
-  xG[0] = xI[0];
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "Riemann"
-static PetscErrorCode Riemann(AppCtx *user, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
-{
-  PetscReal wn;
-
-  PetscFunctionBegin;
-  wn = Dot2(user->wind, n);
-  if (wn > 0) {
-    flux[0] = xL[0]*wn;
-  } else {
-    flux[0] = xR[0]*wn;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "ApplyBC"
-static PetscErrorCode ApplyBC(DM dm, Vec locX, AppCtx *user)
+static PetscErrorCode ApplyBC(DM dm, Vec locX, User user)
 {
+  Physics        phys = user->physics;
   const char     *name = "Face Sets";
   DM             dmFace;
   IS             idIS;
@@ -604,24 +761,12 @@ static PetscErrorCode ApplyBC(DM dm, Vec locX, AppCtx *user)
   ierr = VecGetArrayRead(user->facegeom, &facegeom);CHKERRQ(ierr);
   ierr = VecGetArray(locX, &x);CHKERRQ(ierr);
   for(fs = 0; fs < numFS; ++fs) {
-    PetscErrorCode (*bcFunc)(AppCtx*,const PetscReal*,const PetscScalar*,PetscScalar*);
-    IS              faceIS;
-    const PetscInt *faces;
-    PetscInt        numFaces, f;
+    BoundaryFunction bcFunc;
+    IS               faceIS;
+    const PetscInt   *faces;
+    PetscInt         numFaces, f;
 
-    switch (ids[fs]) {
-    case 100:                   /* bottom */
-      bcFunc = Boundary_Inflow;
-      break;
-    case 101:                   /* top */
-    case 200:                   /* left */
-      bcFunc = Boundary_Wall;
-      break;
-    case 300:                   /* right */
-      bcFunc = Boundary_Outflow;
-      break;
-    default: SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_USER,"Invalid boundary Id: %D",ids[fs]);
-    }
+    ierr = PhysicsBoundaryFind(phys,ids[fs],&bcFunc);CHKERRQ(ierr);
     ierr = DMComplexGetStratumIS(dm, name, ids[fs], &faceIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
@@ -635,7 +780,7 @@ static PetscErrorCode ApplyBC(DM dm, Vec locX, AppCtx *user)
       ierr = DMComplexGetSupport(dm, face, &cells);CHKERRQ(ierr);
       ierr = DMComplexPointLocalRead(dm, cells[0], x, &xI);CHKERRQ(ierr);
       ierr = DMComplexPointLocalRef(dm, cells[1], x, &xG);CHKERRQ(ierr);
-      ierr = (*bcFunc)(user, fg->normal, xI, xG);CHKERRQ(ierr);
+      ierr = (*bcFunc)(user->physics, fg->normal, xI, xG);CHKERRQ(ierr);
     }
     ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
     ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
@@ -651,7 +796,7 @@ static PetscErrorCode ApplyBC(DM dm, Vec locX, AppCtx *user)
 #define __FUNCT__ "RHSFunction"
 static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
 {
-  AppCtx            *user = (AppCtx *) ctx;
+  User               user = (User)ctx;
   DM                 dm, dmFace, dmCell;
   PetscSection       section;
   Vec                locX, locF;
@@ -696,7 +841,7 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
     ierr = DMComplexPointLocalRead(dm,cells[1],x,&xR);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRef(dm,cells[0],f,&fL);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRef(dm,cells[1],f,&fR);CHKERRQ(ierr);
-    ierr = Riemann(user, fg->normal, xL, xR, flux);CHKERRQ(ierr);
+    ierr = (*user->physics->riemann)(user->physics, fg->normal, xL, xR, flux);CHKERRQ(ierr);
     for (i=0; i<dof; i++) {
       fL[i] -= flux[i] / cgL->volume;
       fR[i] += flux[i] / cgR->volume;
@@ -729,7 +874,7 @@ static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer
 #define __FUNCT__ "MonitorVTK"
 static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,void *ctx)
 {
-  AppCtx         *user = (AppCtx*)ctx;
+  User           user = (User)ctx;
   DM             dm;
   PetscViewer    viewer;
   char           filename[PETSC_MAX_PATH_LEN];
@@ -759,7 +904,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
 int main(int argc, char **argv)
 {
   MPI_Comm       comm;
-  AppCtx         user;
+  User           user;
   DM             dm, dmDist;
   PetscReal      ftime,cfl,dt;
   PetscInt       overlap,nsteps;
@@ -778,24 +923,30 @@ int main(int argc, char **argv)
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
+  ierr = PetscNew(struct _n_User,&user);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_Physics,&user->physics);CHKERRQ(ierr);
+
+  /* Register physical models to be available on the command line */
+  ierr = PetscFListAdd(&PhysicsList,"advect"          ,"",(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
+
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"Unstructured Finite Volume Options","");CHKERRQ(ierr);
   {
-    PetscInt two = 2,dof;
-    user.wind[0] = 0.0;
-    user.wind[1] = 1.0;
-    ierr = PetscOptionsRealArray("-ufv_wind","background wind vx,vy","",user.wind,&two,PETSC_NULL);CHKERRQ(ierr);
-    dof = 1;
-    user.inflowState[0] = -2.0;
-    ierr = PetscOptionsRealArray("-ufv_inflow","Inflow state","",user.inflowState,&dof,PETSC_NULL);CHKERRQ(ierr);
+    char physname[256] = "advect";
+    PetscErrorCode (*physcreate)(User,Physics);
     cfl = 0.9 * 4;              /* default SSPRKS2 with s=5 stages is stable for CFL number s-1 */
     ierr = PetscOptionsReal("-ufv_cfl","CFL number per step","",cfl,&cfl,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-f","Exodus.II filename to read","",filename,filename,sizeof(filename),PETSC_NULL);CHKERRQ(ierr);
-    user.vtkInterval = 1;
-    ierr = PetscOptionsInt("-ufv_vtk_interval","VTK output interval (0 to disable)","",user.vtkInterval,&user.vtkInterval,PETSC_NULL);CHKERRQ(ierr);
+    user->vtkInterval = 1;
+    ierr = PetscOptionsInt("-ufv_vtk_interval","VTK output interval (0 to disable)","",user->vtkInterval,&user->vtkInterval,PETSC_NULL);CHKERRQ(ierr);
     overlap = 1;
     ierr = PetscOptionsInt("-ufv_mesh_overlap","Number of cells to overlap partitions","",overlap,&overlap,PETSC_NULL);CHKERRQ(ierr);
     vtkCellGeom = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscFListFind(PhysicsList,comm,physname,PETSC_TRUE,(void(**)(void))&physcreate);CHKERRQ(ierr);
+    ierr = PetscMemzero(user->physics,sizeof(struct _n_Physics));CHKERRQ(ierr);
+    ierr = (*physcreate)(user,user->physics);CHKERRQ(ierr);
+    if (user->physics->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -813,22 +964,23 @@ int main(int argc, char **argv)
   }
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
 
-  ierr = ConstructGhostCells(&dm, &user);CHKERRQ(ierr);
-  ierr = ConstructGeometry(dm, &user.facegeom, &user.cellgeom, &user);CHKERRQ(ierr);
-  if (0) {ierr = VecView(user.facegeom, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+  ierr = ConstructGhostCells(&dm, user);CHKERRQ(ierr);
+  ierr = ConstructGeometry(dm, &user->facegeom, &user->cellgeom, user);CHKERRQ(ierr);
+  if (0) {ierr = VecView(user->facegeom, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
   /* Set up DM with section describing local vector and configure local vector. */
-  ierr = SetUpLocalSpace(dm, &user);CHKERRQ(ierr);
+  ierr = SetUpLocalSpace(dm, user);CHKERRQ(ierr);
+  ierr = SetUpBoundaries(dm, user);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(dm, &X);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
-  ierr = SetInitialCondition(dm, X, &user);CHKERRQ(ierr);
+  ierr = SetInitialCondition(dm, X, user);CHKERRQ(ierr);
   if (vtkCellGeom) {
     DM  dmCell;
     Vec partition;
 
     ierr = OutputVTK(dm, "ex11-cellgeom.vtk", &viewer);CHKERRQ(ierr);
-    ierr = VecView(user.cellgeom, viewer);CHKERRQ(ierr);
+    ierr = VecView(user->cellgeom, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = CreatePartitionVec(dm, &dmCell, &partition);CHKERRQ(ierr);
     ierr = OutputVTK(dmCell, "ex11-partition.vtk", &viewer);CHKERRQ(ierr);
@@ -841,10 +993,10 @@ int main(int argc, char **argv)
   ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
   ierr = TSSetType(ts, TSSSP);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MonitorVTK,&user,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&user);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,MonitorVTK,user,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000,2.0);CHKERRQ(ierr);
-  dt = cfl * user.minradius / Norm2(user.wind);
+  dt = cfl * user->minradius / user->physics->maxspeed;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
@@ -854,8 +1006,13 @@ int main(int argc, char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,nsteps);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
 
-  ierr = VecDestroy(&user.cellgeom);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.facegeom);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->cellgeom);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->facegeom);CHKERRQ(ierr);
+  ierr = PetscFListDestroy(&PhysicsList);CHKERRQ(ierr);
+  ierr = BoundaryLinkDestroy(&user->physics->boundary);CHKERRQ(ierr);
+  ierr = PetscFree(user->physics->data);CHKERRQ(ierr);
+  ierr = PetscFree(user->physics);CHKERRQ(ierr);
+  ierr = PetscFree(user);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
