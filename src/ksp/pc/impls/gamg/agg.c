@@ -1339,11 +1339,27 @@ PetscErrorCode PCGAMGOptprol_AGG( PC pc,
         ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
         ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
       }
+      
+      /* zeroing out BC rows -- needed for crazy matrices */
+      {
+        PetscInt Istart,Iend,ncols,jj,Ii;
+        PetscScalar zero = 0.0;
+        ierr = MatGetOwnershipRange( Amat, &Istart, &Iend );    CHKERRQ(ierr);
+        for ( Ii = Istart, jj = 0 ; Ii < Iend ; Ii++, jj++ ) {
+          ierr = MatGetRow(Amat,Ii,&ncols,0,0); CHKERRQ(ierr);
+          if( ncols <= 1 ) {
+            ierr = VecSetValues( bb, 1, &Ii, &zero, INSERT_VALUES );  CHKERRQ(ierr); 
+          }
+          ierr = MatRestoreRow(Amat,Ii,&ncols,0,0); CHKERRQ(ierr);
+        }
+        ierr = VecAssemblyBegin(bb); CHKERRQ(ierr);
+        ierr = VecAssemblyEnd(bb); CHKERRQ(ierr);
+      }
+
       ierr = KSPCreate(wcomm,&eksp);                            CHKERRQ(ierr);
       ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);
       CHKERRQ(ierr);
       ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
-      /* ierr = KSPSetOptionsPrefix(eksp,((PetscObject)pc)->prefix);CHKERRQ(ierr); */
       ierr = KSPAppendOptionsPrefix( eksp, "gamg_est_");         CHKERRQ(ierr);
       ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
 

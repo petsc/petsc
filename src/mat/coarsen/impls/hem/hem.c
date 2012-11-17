@@ -25,7 +25,7 @@ PetscErrorCode PetscCDCreate( PetscInt a_size, PetscCoarsenData **a_out )
   for (ii=0;ii<a_size;ii++) ail->array[ii] = PETSC_NULL;
   ail->extra_nodes = PETSC_NULL;
   ail->mat = PETSC_NULL;
-  ail->removedIS = PETSC_NULL;
+  /* ail->removedIS = PETSC_NULL; */
   return 0;
 }
 
@@ -45,9 +45,9 @@ PetscErrorCode PetscCDDestroy( PetscCoarsenData *ail )
   if ( ail->pool_list.array ) {
     ierr = PetscFree( ail->pool_list.array );  CHKERRQ(ierr);
   }
-  if ( ail->removedIS ) {
-    ierr = ISDestroy( &ail->removedIS ); CHKERRQ(ierr);
-  }
+  /* if ( ail->removedIS ) { */
+  /*   ierr = ISDestroy( &ail->removedIS ); CHKERRQ(ierr); */
+  /* } */
   /* delete this (+array) */
   ierr = PetscFree( ail->array );  CHKERRQ(ierr);
   /* delete this (+agg+pool array) */
@@ -351,25 +351,25 @@ PetscErrorCode PetscCDGetASMBlocks( const PetscCoarsenData *ail, const PetscInt 
 
 /* PetscCDSetRemovedIS
  */
-PetscErrorCode PetscCDSetRemovedIS( PetscCoarsenData *ail, MPI_Comm comm, const PetscInt a_sz, PetscInt a_ids[])
-{
-  PetscErrorCode ierr;
+/* PetscErrorCode PetscCDSetRemovedIS( PetscCoarsenData *ail, MPI_Comm comm, const PetscInt a_sz, PetscInt a_ids[]) */
+/* { */
+/*   PetscErrorCode ierr; */
 
-  if ( ail->removedIS ) {
-    ierr = ISDestroy( &ail->removedIS); CHKERRQ(ierr);
-  }
-  ierr = ISCreateGeneral( comm, a_sz, a_ids, PETSC_COPY_VALUES, &ail->removedIS ); CHKERRQ(ierr);
-  return 0;
-}
+/*   if ( ail->removedIS ) { */
+/*     ierr = ISDestroy( &ail->removedIS); CHKERRQ(ierr); */
+/*   } */
+/*   ierr = ISCreateGeneral( comm, a_sz, a_ids, PETSC_COPY_VALUES, &ail->removedIS ); CHKERRQ(ierr); */
+/*   return 0; */
+/* } */
 
 /* PetscCDGetRemovedIS
  */
-PetscErrorCode PetscCDGetRemovedIS( PetscCoarsenData *ail, IS *a_is )
-{
-  *a_is = ail->removedIS;
-  ail->removedIS = PETSC_NULL; /* hack to relinquish ownership */
-  return 0;
-}
+/* PetscErrorCode PetscCDGetRemovedIS( PetscCoarsenData *ail, IS *a_is ) */
+/* { */
+/*   *a_is = ail->removedIS; */
+/*   ail->removedIS = PETSC_NULL; /\* hack to relinquish ownership *\/ */
+/*   return 0; */
+/* } */
 
 /* ********************************************************************** */
 /* edge for priority queue */
@@ -523,23 +523,23 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
     }
 
     /* get removed IS, use '' */
-    if ( iter==1 ) {
-      PetscInt *lid_rem,idx;
-      ierr = PetscMalloc( nloc*sizeof(PetscInt), &lid_rem ); CHKERRQ(ierr);
-      for (kk=idx=0;kk<nloc;kk++){
-        PetscInt nn,lid=kk;
-        ii = matA->i; nn = ii[lid+1] - ii[lid];
-        if ( (ix=lid_cprowID[lid]) != -1 ) { /* if I have any ghost neighbors */
-          ii = matB->compressedrow.i;
-          nn += ii[ix+1] - ii[ix];
-        }
-        if ( nn < 2 ) {
-          lid_rem[idx++] = kk + my0;
-        }
-      }
-      ierr = PetscCDSetRemovedIS( agg_llists, wcomm, idx, lid_rem ); CHKERRQ(ierr);
-      ierr = PetscFree( lid_rem );  CHKERRQ(ierr);
-    }
+    /* if ( iter==1 ) { */
+    /*   PetscInt *lid_rem,idx; */
+    /*   ierr = PetscMalloc( nloc*sizeof(PetscInt), &lid_rem ); CHKERRQ(ierr); */
+    /*   for (kk=idx=0;kk<nloc;kk++){ */
+    /*     PetscInt nn,lid=kk; */
+    /*     ii = matA->i; nn = ii[lid+1] - ii[lid]; */
+    /*     if ( (ix=lid_cprowID[lid]) != -1 ) { /\* if I have any ghost neighbors *\/ */
+    /*       ii = matB->compressedrow.i; */
+    /*       nn += ii[ix+1] - ii[ix]; */
+    /*     } */
+    /*     if ( nn < 2 ) { */
+    /*       lid_rem[idx++] = kk + my0; */
+    /*     } */
+    /*   } */
+    /*   ierr = PetscCDSetRemovedIS( agg_llists, wcomm, idx, lid_rem ); CHKERRQ(ierr); */
+    /*   ierr = PetscFree( lid_rem );  CHKERRQ(ierr); */
+    /* } */
 
     /* compute 'locMaxEdge' & 'locMaxPE', and create list of edges, count edges' */
     for (nEdges=0,kk=0,gid=my0;kk<nloc;kk++,gid++){

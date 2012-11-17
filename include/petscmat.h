@@ -1414,7 +1414,7 @@ typedef struct _PetscCoarsenData{
   /* cache a Mat for communication data */
   Mat mat;
   /* cache IS of removed equations */
-  IS removedIS;
+  /* IS removedIS; */
 }PetscCoarsenData;
 
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate(MPI_Comm,MatCoarsen*);
