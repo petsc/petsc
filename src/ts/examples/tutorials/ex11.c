@@ -22,7 +22,9 @@ typedef struct _n_Physics *Physics;
 typedef PetscErrorCode (*SolutionFunction)(User,PetscReal,const PetscReal*,PetscScalar*);
 typedef PetscErrorCode (*BoundaryFunction)(Physics,const PetscReal*,const PetscScalar*,PetscScalar*);
 typedef PetscErrorCode (*RiemannFunction)(Physics,const PetscReal*,const PetscScalar*,const PetscScalar*,PetscScalar*);
+typedef PetscErrorCode (*MonitorFunction)(Physics,const PetscScalar*,PetscReal*);
 static PetscErrorCode PhysicsBoundaryRegister(Physics,const char*,BoundaryFunction,PetscInt,const PetscInt*);
+static PetscErrorCode PhysicsFunctionalRegister(Physics,const char*,PetscInt*);
 
 typedef struct _n_BoundaryLink *BoundaryLink;
 struct _n_BoundaryLink {
@@ -33,10 +35,19 @@ struct _n_BoundaryLink {
   BoundaryLink     next;
 };
 
+typedef struct _n_FunctionalLink *FunctionalLink;
+struct _n_FunctionalLink {
+  char *name;
+  PetscInt offset;
+  FunctionalLink next;
+};
+
 struct _n_Physics {
   RiemannFunction riemann;
   SolutionFunction solution;
+  MonitorFunction monitor;
   BoundaryLink boundary;
+  FunctionalLink functional;
   PetscInt  dof;                /* number of degrees of freedom per cell */
   PetscReal maxspeed;           /* estimate of global maximum speed (for CFL calculation) */
   void *data;
@@ -166,6 +177,10 @@ static PetscErrorCode PhysicsCreate_Advect(User user,Physics phys)
 typedef struct {
   PetscReal gravity;
   PetscReal boundaryHeight;
+  struct {
+    PetscInt hOffset;
+    PetscInt cOffset;
+  } monitor;
 } Physics_SW;
 typedef struct {
   PetscScalar vals[0];
@@ -245,11 +260,28 @@ static PetscErrorCode PhysicsSolution_SW(User user,PetscReal time,const PetscRea
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PhysicsMonitor_SW"
+static PetscErrorCode PhysicsMonitor_SW(Physics phys,const PetscScalar *xx,PetscReal *f)
+{
+  Physics_SW *sw = (Physics_SW*)phys->data;
+  const SWNode *x = (const SWNode*)xx;
+  PetscScalar u[2];
+  PetscReal h;
+
+  PetscFunctionBegin;
+  h = PetscAbsScalar(x->h);
+  f[sw->monitor.hOffset] = h;
+  Scale2(1./x->h,x->uh,u);
+  f[sw->monitor.cOffset] = Norm2(u) + PetscSqrtReal(sw->gravity*h);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_SW"
 static PetscErrorCode PhysicsCreate_SW(User user,Physics phys)
 {
   const PetscInt wallids[] = {100,101,200,300};
-  Physics_SW *sw = (Physics_SW*)phys->data;
+  Physics_SW *sw;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -266,6 +298,9 @@ static PetscErrorCode PhysicsCreate_SW(User user,Physics phys)
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   phys->maxspeed = PetscSqrtReal(2.0*sw->gravity); /* Mach 1 for depth of 2 */
+  phys->monitor = PhysicsMonitor_SW;
+  ierr = PhysicsFunctionalRegister(phys,"Height",&sw->monitor.hOffset);CHKERRQ(ierr);
+  ierr = PhysicsFunctionalRegister(phys,"Speed",&sw->monitor.cOffset);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -930,6 +965,43 @@ static PetscErrorCode PhysicsBoundaryFind(Physics phys,PetscInt id,BoundaryFunct
   SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Boundary ID %D not associated with any registered boundary condition",id);
   PetscFunctionReturn(0);
 }
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsFunctionalRegister"
+static PetscErrorCode PhysicsFunctionalRegister(Physics phys,const char *name,PetscInt *offset)
+{
+  PetscErrorCode ierr;
+  FunctionalLink link,*ptr;
+  PetscInt lastoffset = -1;
+
+  PetscFunctionBegin;
+  for (ptr=&phys->functional; *ptr; ptr = &(*ptr)->next) lastoffset = (*ptr)->offset;
+  ierr = PetscNew(struct _n_FunctionalLink,&link);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
+  link->offset = lastoffset + 1;
+  link->next = PETSC_NULL;
+  *ptr = link;
+  *offset = link->offset;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FunctionalLinkDestroy"
+static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
+{
+  PetscErrorCode ierr;
+  FunctionalLink l,next;
+
+  PetscFunctionBegin;
+  if (!link) PetscFunctionReturn(0);
+  l = *link;
+  *link = PETSC_NULL;
+  for ( ; l; l=next) {
+    next = l->next;
+    ierr = PetscFree(l->name);CHKERRQ(ierr);
+    ierr = PetscFree(l);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "SetInitialCondition"
@@ -1103,7 +1175,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   User           user = (User)ctx;
   DM             dm;
   PetscViewer    viewer;
-  char           filename[PETSC_MAX_PATH_LEN];
+  char           filename[PETSC_MAX_PATH_LEN],*ftable = PETSC_NULL;
   PetscReal      xnorm;
   PetscErrorCode ierr;
 
@@ -1111,7 +1183,83 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
   ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
   ierr = VecNorm(X,NORM_INFINITY,&xnorm);CHKERRQ(ierr);
-  ierr = PetscPrintf(((PetscObject)ts)->comm,"% 3D  time %8.2G  |x| %8.2G\n",stepnum,time,xnorm);CHKERRQ(ierr);
+  if (stepnum >= 0) {           /* No summary for final time */
+    Physics phys = user->physics;
+    PetscInt c,cStart,cEnd,fcount,i;
+    size_t ftableused,ftablealloc;
+    const PetscScalar *cellgeom,*x;
+    DM dmCell;
+    Vec locX;
+    FunctionalLink flink;
+    PetscReal *fmin,*fmax,*fintegral,*ftmp;
+    for (flink=phys->functional,fcount=0; flink; flink=flink->next) fcount++;
+    ierr = PetscMalloc4(fcount,PetscReal,&fmin,fcount,PetscReal,&fmax,fcount,PetscReal,&fintegral,fcount,PetscReal,&ftmp);CHKERRQ(ierr);
+    for (i=0; i<fcount; i++) {
+      fmin[i] = PETSC_MAX_REAL;
+      fmax[i] = PETSC_MIN_REAL;
+      fintegral[i] = 0;
+    }
+    ierr = DMComplexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+    ierr = VecGetDM(user->cellgeom,&dmCell);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(dm,&locX);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,locX);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,locX);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(user->cellgeom,&cellgeom);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(locX,&x);CHKERRQ(ierr);
+    for (c=cStart; c<user->cEndInterior; c++) {
+      const CellGeom *cg;
+      const PetscScalar *cx;
+      ierr = DMComplexPointLocalRead(dmCell,c,cellgeom,&cg);CHKERRQ(ierr);
+      ierr = DMComplexPointLocalRead(dm,c,x,&cx);CHKERRQ(ierr);
+      if (phys->monitor) {ierr = (*phys->monitor)(user->physics,cx,ftmp);CHKERRQ(ierr);}
+      for (i=0; i<fcount; i++) {
+        fmin[i] = PetscMin(fmin[i],ftmp[i]);
+        fmax[i] = PetscMax(fmax[i],ftmp[i]);
+        fintegral[i] += cg->volume * ftmp[i];
+      }
+    }
+    ierr = VecRestoreArrayRead(user->cellgeom,&cellgeom);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(locX,&x);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dm,&locX);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE,fmin,fcount,MPIU_REAL,MPI_MIN,((PetscObject)ts)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE,fmax,fcount,MPIU_REAL,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(MPI_IN_PLACE,fintegral,fcount,MPIU_REAL,MPI_SUM,((PetscObject)ts)->comm);CHKERRQ(ierr);
+
+    ftablealloc = fcount * 100;
+    ftableused = 0;
+    ierr = PetscMalloc(ftablealloc,&ftable);CHKERRQ(ierr);
+    for (flink=phys->functional,i=0; i<fcount; flink=flink->next,i++) {
+      size_t countused;
+      char buffer[256],*p;
+      if (i % 3) {
+        ierr = PetscMemcpy(buffer,"  ",2);CHKERRQ(ierr);
+        p = buffer + 2;
+      } else if (i) {
+        char newline[] = "\n";
+        ierr = PetscMemcpy(buffer,newline,sizeof newline-1);CHKERRQ(ierr);
+        p = buffer + sizeof newline - 1;
+      } else {
+        p = buffer;
+      }
+      ierr = PetscSNPrintfCount(p,sizeof buffer-(p-buffer),"%12s [%10.7G,%10.7G] int %10.7G",&countused,flink->name,fmin[i],fmax[i],fintegral[i]);CHKERRQ(ierr);
+      countused += p - buffer;
+      if (countused > ftablealloc-ftableused-1) { /* reallocate */
+        char *ftablenew;
+        ftablealloc = 2*ftablealloc + countused;
+        ierr = PetscMalloc(ftablealloc,&ftablenew);CHKERRQ(ierr);
+        ierr = PetscMemcpy(ftablenew,ftable,ftableused);CHKERRQ(ierr);
+        ierr = PetscFree(ftable);CHKERRQ(ierr);
+        ftable = ftablenew;
+      }
+      ierr = PetscMemcpy(ftable+ftableused,buffer,countused);CHKERRQ(ierr);
+      ftableused += countused;
+      ftable[ftableused] = 0;
+    }
+    ierr = PetscFree4(fmin,fmax,fintegral,ftmp);CHKERRQ(ierr);
+
+    ierr = PetscPrintf(((PetscObject)ts)->comm,"% 3D  time %8.4G  |x| %8.4G  %s\n",stepnum,time,xnorm,ftable?ftable:"");CHKERRQ(ierr);
+    ierr = PetscFree(ftable);CHKERRQ(ierr);
+  }
   if (user->vtkInterval < 1) PetscFunctionReturn(0);
   if ((stepnum == -1) ^ (stepnum % user->vtkInterval == 0)) {
     if (stepnum == -1) {        /* Final time is not multiple of normal time interval, write it anyway */
@@ -1240,6 +1388,7 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&user->facegeom);CHKERRQ(ierr);
   ierr = PetscFListDestroy(&PhysicsList);CHKERRQ(ierr);
   ierr = BoundaryLinkDestroy(&user->physics->boundary);CHKERRQ(ierr);
+  ierr = FunctionalLinkDestroy(&user->physics->functional);CHKERRQ(ierr);
   ierr = PetscFree(user->physics->data);CHKERRQ(ierr);
   ierr = PetscFree(user->physics);CHKERRQ(ierr);
   ierr = PetscFree(user->work.flux);CHKERRQ(ierr);
