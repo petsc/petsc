@@ -716,14 +716,12 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
   ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   for(face = fStart; face < fEnd; ++face) {
     const PetscInt    *cells,dof = 1;
-    PetscInt           ghost,i;
+    PetscInt           i;
     PetscScalar        flux[1],*fL,*fR;
     const FaceGeom    *fg;
     const CellGeom    *cgL,*cgR;
     const PetscScalar *xL,*xR;
 
-    ierr = DMComplexGetLabelValue(dm, "ghost", face, &ghost);CHKERRQ(ierr);
-    if (ghost >= 0) continue;
     ierr = DMComplexGetSupport(dm, face, &cells);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRead(dmFace,face,facegeom,&fg);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRead(dmCell,cells[0],cellgeom,&cgL);CHKERRQ(ierr);
