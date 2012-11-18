@@ -47,6 +47,9 @@ PETSC_EXTERN PetscErrorCode DMComplexSetCoordinateSection(DM, PetscSection);
 PETSC_EXTERN PetscErrorCode DMComplexGetPointLocal(DM,PetscInt,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMComplexPointLocalRef(DM,PetscInt,PetscScalar*,void*);
 PETSC_EXTERN PetscErrorCode DMComplexPointLocalRead(DM,PetscInt,const PetscScalar*,const void*);
+PETSC_EXTERN PetscErrorCode DMComplexGetPointGlobal(DM,PetscInt,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMComplexPointGlobalRef(DM,PetscInt,PetscScalar*,void*);
+PETSC_EXTERN PetscErrorCode DMComplexPointGlobalRead(DM,PetscInt,const PetscScalar*,const void*);
 
 PETSC_EXTERN PetscErrorCode DMComplexGetNumLabels(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexGetLabelName(DM, PetscInt, const char **);
