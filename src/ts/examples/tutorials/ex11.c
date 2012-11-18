@@ -827,7 +827,6 @@ static PetscErrorCode ZeroGhosts(DM dm, PetscScalar *f)
   PetscFunctionReturn(0);
 }
 
-//#define CONSTANT 1
 #undef __FUNCT__
 #define __FUNCT__ "RHSFunction"
 static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
@@ -875,23 +874,11 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
     ierr = DMComplexPointLocalRead(dm,cells[1],x,&xR);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRef(dm,cells[0],f,&fL);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRef(dm,cells[1],f,&fR);CHKERRQ(ierr);
-#ifdef CONSTANT
-    for (i=0; i<dof; i++) {
-      fL[i] += 1;
-      fR[i] += 1;
-    }
-#elif ORIENTED
-    for (i=0; i<dof; i++) {
-      fL[i] -= 1;
-      fR[i] += 1;
-    }
-#else
     ierr = (*user->physics->riemann)(user->physics, fg->normal, xL, xR, flux);CHKERRQ(ierr);
     for (i=0; i<dof; i++) {
       fL[i] -= flux[i] / cgL->volume;
       fR[i] += flux[i] / cgR->volume;
     }
-#endif
   }
   ierr = ZeroGhosts(dm, f);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(locX,&x);CHKERRQ(ierr);
@@ -899,24 +886,6 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm,locF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm,locF,ADD_VALUES,F);CHKERRQ(ierr);
-#if defined(CONSTANT) || defined(ORIENTED)
-  {
-    PetscSF     sf;
-    PetscMPIInt numProcs, rank, p;
-
-    ierr = DMGetDefaultSF(dm, &sf);CHKERRQ(ierr);
-    ierr = PetscSFView(sf, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(((PetscObject)dm)->comm, &numProcs);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(((PetscObject)dm)->comm, &rank);CHKERRQ(ierr);
-    ierr = PetscPrintf(((PetscObject)dm)->comm, "Local function\n");CHKERRQ(ierr);
-    for (p = 0; p < numProcs; ++p) {
-      if (p == rank) {ierr = VecView(locF, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
-      ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
-    }
-    ierr = PetscPrintf(((PetscObject)dm)->comm, "Global function\n");CHKERRQ(ierr);
-    ierr = VecView(F, PETSC_VIEWER_STDOUT_(((PetscObject)dm)->comm));CHKERRQ(ierr);
-  }
-#endif
   ierr = DMRestoreLocalVector(dm,&locX);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&locF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
