@@ -36,18 +36,22 @@ struct _n_Physics {
   RiemannFunction riemann;
   SolutionFunction solution;
   BoundaryLink boundary;
-  PetscReal dof;                /* number of degrees of freedom per cell */
+  PetscInt  dof;                /* number of degrees of freedom per cell */
   PetscReal maxspeed;           /* estimate of global maximum speed (for CFL calculation) */
   void *data;
 };
 
 struct _n_User {
+  MPI_Comm  comm;
   PetscInt  numGhostCells;
   PetscInt  cEndInterior;  /* First boundary ghost cell */
   Vec       cellgeom, facegeom;
   PetscReal minradius;
   PetscInt  vtkInterval;        /* For monitor */
   Physics   physics;
+  struct {
+    PetscScalar *flux;
+  } work;
 };
 
 typedef struct {
@@ -62,8 +66,15 @@ typedef struct {
 
 PETSC_STATIC_INLINE PetscScalar Dot2(const PetscScalar *x,const PetscScalar *y) { return x[0]*y[0] + x[1]*y[1];}
 PETSC_STATIC_INLINE PetscReal Norm2(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(Dot2(x,x)));}
+PETSC_STATIC_INLINE void Normalize2(PetscScalar *x) { PetscReal a = 1./Norm2(x); x[0] *= a; x[1] *= a; }
 PETSC_STATIC_INLINE void Waxpy2(PetscScalar a,const PetscScalar *x,const PetscScalar *y,PetscScalar *w) { w[0] = a*x[0] + y[0]; w[1] = a*x[1] + y[1]; }
+PETSC_STATIC_INLINE void Scale2(PetscScalar a,const PetscScalar *x,PetscScalar *y) { y[0] = a*x[0]; y[1] = a*x[1]; }
 
+PETSC_STATIC_INLINE void NormalSplit(const PetscReal *n,const PetscScalar *x,PetscScalar *xn,PetscScalar *xt)
+{                               /* Split x into normal and tangential components */
+  Scale2(Dot2(x,n)/Dot2(n,n),n,xn);
+  Waxpy2(-1,xn,x,xt);
+}
 
 /******************* Advect ********************/
 typedef struct {
@@ -129,6 +140,7 @@ static PetscErrorCode PhysicsCreate_Advect(User user,Physics phys)
   PetscFunctionBegin;
   ierr = PhysicsBoundaryRegister(phys,"inflow",PhysicsBoundary_Advect_Inflow,ALEN(inflowids),inflowids);CHKERRQ(ierr);
   ierr = PhysicsBoundaryRegister(phys,"outflow",PhysicsBoundary_Advect_Outflow,ALEN(outflowids),outflowids);CHKERRQ(ierr);
+  phys->dof = 1;
   phys->riemann = PhysicsRiemann_Advect;
   phys->solution = PhysicsSolution_Advect;
   ierr = PetscNew(Physics_Advect,&phys->data);CHKERRQ(ierr);
@@ -144,6 +156,113 @@ static PetscErrorCode PhysicsCreate_Advect(User user,Physics phys)
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   phys->maxspeed = Norm2(advect->wind);
+  PetscFunctionReturn(0);
+}
+
+/******************* Shallow Water ********************/
+typedef struct {
+  PetscReal gravity;
+  PetscReal boundaryHeight;
+} Physics_SW;
+typedef struct {
+  PetscScalar vals[0];
+  PetscScalar h;
+  PetscScalar uh[DIM];
+} SWNode;
+
+#undef __FUNCT__
+#define __FUNCT__ "SWFlux"
+/*
+ * h_t + div(uh) = 0
+ * (uh)_t + div (u\otimes uh + g h^2 / 2 I) = 0
+ *
+ * */
+static PetscErrorCode SWFlux(Physics phys,const PetscReal *n,const SWNode *x,SWNode *f)
+{
+  Physics_SW *sw = (Physics_SW*)phys->data;
+  PetscScalar uhn,u[DIM];
+  PetscInt i;
+
+  PetscFunctionBegin;
+  Scale2(1./x->h,x->uh,u);
+  uhn = Dot2(x->uh,n);
+  f->h = uhn;
+  for (i=0; i<DIM; i++) f->uh[i] = u[i] * uhn + sw->gravity * PetscSqr(x->h) * n[i];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsBoundary_SW_Wall"
+static PetscErrorCode PhysicsBoundary_SW_Wall(Physics phys, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG)
+{
+  PetscFunctionBegin;
+  xG[0] = xI[0];
+  xG[1] = -xI[1];
+  xG[2] = -xI[2];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsRiemann_SW"
+static PetscErrorCode PhysicsRiemann_SW(Physics phys, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
+{
+  Physics_SW *sw = (Physics_SW*)phys->data;
+  PetscReal c,speed;
+  const SWNode *uL = (const SWNode*)xL,*uR = (const SWNode*)xR;
+  SWNode fL,fR;
+  PetscInt i;
+
+  PetscFunctionBegin;
+  if (uL->h < 0 || uR->h < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative");
+  SWFlux(phys,n,uL,&fL);
+  SWFlux(phys,n,uR,&fR);
+  c = PetscSqrtScalar(sw->gravity*PetscMax(uL->h,uR->h)); /* gravity wave speed */
+  speed = PetscMax(PetscAbsScalar(Dot2(uL->uh,n)),PetscAbsScalar(Dot2(uR->uh,n))) / Norm2(n) + c;
+  for (i=0; i<1+DIM; i++) flux[i] = 0.5*(fL.vals[i] + fR.vals[i]) + 0.5*speed*(xL[i] - xR[i]);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsSolution_SW"
+static PetscErrorCode PhysicsSolution_SW(User user,PetscReal time,const PetscReal *x,PetscScalar *u)
+{
+  //Physics_SW *sw = (Physics_SW*)user->physics->data;
+  PetscReal dx[2],r,sigma;
+
+  PetscFunctionBegin;
+  if (time != 0.0) SETERRQ1(user->comm,PETSC_ERR_SUP,"No solution known for time %G",time);
+  dx[0] = x[0] - 1.5;
+  dx[1] = x[1] - 1.0;
+  r = Norm2(dx);
+  sigma = 0.5;
+  u[0] = 1 + 0.1*PetscExpScalar(-PetscSqr(r)/(2*PetscSqr(sigma)));
+  u[1] = 0.0;
+  u[2] = 0.0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsCreate_SW"
+static PetscErrorCode PhysicsCreate_SW(User user,Physics phys)
+{
+  const PetscInt wallids[] = {100,101,200,300};
+  Physics_SW *sw = (Physics_SW*)phys->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PhysicsBoundaryRegister(phys,"wall",PhysicsBoundary_SW_Wall,ALEN(wallids),wallids);CHKERRQ(ierr);
+  phys->dof = 1+DIM;
+  phys->riemann = PhysicsRiemann_SW;
+  phys->solution = PhysicsSolution_SW;
+  ierr = PetscNew(Physics_SW,&phys->data);CHKERRQ(ierr);
+  sw = phys->data;
+  ierr = PetscOptionsHead("SW options");CHKERRQ(ierr);
+  {
+    sw->gravity = 1.0;
+    ierr = PetscOptionsReal("-sw_gravity","Gravitational constant","",sw->gravity,&sw->gravity,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  phys->maxspeed = PetscSqrtReal(2.0*sw->gravity); /* Mach 1 for depth of 2 */
   PetscFunctionReturn(0);
 }
 
@@ -574,7 +693,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
 PetscErrorCode SetUpLocalSpace(DM dm, User user)
 {
   PetscSection   stateSection;
-  PetscInt       dof = 1, *cind, d, stateSize, cStart, cEnd, c;
+  PetscInt       dof = user->physics->dof, *cind, d, stateSize, cStart, cEnd, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -694,6 +813,7 @@ static PetscErrorCode PhysicsBoundaryFind(Physics phys,PetscInt id,BoundaryFunct
   PetscInt i;
 
   PetscFunctionBegin;
+  *bcFunc = PETSC_NULL;
   for (link=phys->boundary; link; link=link->next) {
     for (i=0; i<link->numids; i++) {
       if (link->ids[i] == id) {
@@ -797,6 +917,7 @@ static PetscErrorCode ApplyBC(DM dm, Vec locX, User user)
 static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
 {
   User               user = (User)ctx;
+  Physics            phys = user->physics;
   DM                 dm, dmFace, dmCell;
   PetscSection       section;
   Vec                locX, locF;
@@ -824,9 +945,9 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
   ierr = VecGetArray(locF,&f);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   for(face = fStart; face < fEnd; ++face) {
-    const PetscInt    *cells,dof = 1;
-    PetscInt           ghost,i;
-    PetscScalar        flux[1],*fL,*fR;
+    const PetscInt    *cells;
+    PetscInt          ghost,i;
+    PetscScalar       *flux = user->work.flux,*fL,*fR;
     const FaceGeom    *fg;
     const CellGeom    *cgL,*cgR;
     const PetscScalar *xL,*xR;
@@ -841,8 +962,8 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
     ierr = DMComplexPointLocalRead(dm,cells[1],x,&xR);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRef(dm,cells[0],f,&fL);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRef(dm,cells[1],f,&fR);CHKERRQ(ierr);
-    ierr = (*user->physics->riemann)(user->physics, fg->normal, xL, xR, flux);CHKERRQ(ierr);
-    for (i=0; i<dof; i++) {
+    ierr = (*phys->riemann)(user->physics, fg->normal, xL, xR, flux);CHKERRQ(ierr);
+    for (i=0; i<phys->dof; i++) {
       fL[i] -= flux[i] / cgL->volume;
       fR[i] += flux[i] / cgR->volume;
     }
@@ -925,9 +1046,11 @@ int main(int argc, char **argv)
 
   ierr = PetscNew(struct _n_User,&user);CHKERRQ(ierr);
   ierr = PetscNew(struct _n_Physics,&user->physics);CHKERRQ(ierr);
+  user->comm = comm;
 
   /* Register physical models to be available on the command line */
   ierr = PetscFListAdd(&PhysicsList,"advect"          ,"",(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PhysicsList,"sw"              ,"",(void(*)(void))PhysicsCreate_SW);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"Unstructured Finite Volume Options","");CHKERRQ(ierr);
   {
@@ -947,6 +1070,8 @@ int main(int argc, char **argv)
     ierr = PetscMemzero(user->physics,sizeof(struct _n_Physics));CHKERRQ(ierr);
     ierr = (*physcreate)(user,user->physics);CHKERRQ(ierr);
     if (user->physics->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
+    if (user->physics->dof <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
+    ierr = PetscMalloc(user->physics->dof*sizeof(PetscScalar),&user->work.flux);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -1012,6 +1137,7 @@ int main(int argc, char **argv)
   ierr = BoundaryLinkDestroy(&user->physics->boundary);CHKERRQ(ierr);
   ierr = PetscFree(user->physics->data);CHKERRQ(ierr);
   ierr = PetscFree(user->physics);CHKERRQ(ierr);
+  ierr = PetscFree(user->work.flux);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
