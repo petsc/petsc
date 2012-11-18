@@ -237,10 +237,11 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
     ierr = PetscSFSetGraph(gsfPoint, numRoots+user->numGhostCells, numLeaves, glocalPoints, PETSC_OWN_POINTER, gremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
   ierr = PetscFree(numGhostCells);CHKERRQ(ierr);
-  /* Make label for VTK output */
+  /* Make label for VTK output and ghost cells */
   ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, PETSC_NULL, &numLeaves, &leafLocal, &leafRemote);CHKERRQ(ierr);
   ierr = DMComplexCreateLabel(gdm, "vtk");CHKERRQ(ierr);
+  ierr = DMComplexCreateLabel(gdm, "ghost");CHKERRQ(ierr);
   for(l = 0, c = cStart; l < numLeaves && c < cEnd; ++l, ++c) {
     for(; c < leafLocal[l] && c < cEnd; ++c) {
       ierr = DMComplexSetLabelValue(gdm, "vtk", c, 1);CHKERRQ(ierr);
@@ -248,6 +249,8 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
     if (leafLocal[l] >= cEnd) break;
     if (leafRemote[c].rank == rank) {
       ierr = DMComplexSetLabelValue(gdm, "vtk", c, 1);CHKERRQ(ierr);
+    } else {
+      ierr = DMComplexSetLabelValue(gdm, "ghost", c, 2);CHKERRQ(ierr);
     }
   }
   for(; c < cEnd; ++c) {
@@ -262,7 +265,6 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
   PetscInt fStart, fEnd, f;
 
   ierr = DMComplexGetHeightStratum(gdm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = DMComplexCreateLabel(gdm, "ghost");CHKERRQ(ierr);
   for(f = fStart; f < fEnd; ++f) {
     PetscInt numCells;
 
@@ -279,6 +281,11 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, AppCtx *user)
       if (!vA && !vB) {ierr = DMComplexSetLabelValue(gdm, "ghost", f, 1);CHKERRQ(ierr);}
     }
   }
+#if 0
+  ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMComplexViewLabel_Ascii(gdm, "ghost", PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+#endif
 
   ierr = DMSetFromOptions(gdm);CHKERRQ(ierr);
   ierr = DMDestroy(dmGhosted);CHKERRQ(ierr);
@@ -476,7 +483,7 @@ PetscErrorCode SetUpLocalSpace(DM dm, AppCtx *user)
     {
       PetscInt val;
       ierr = DMComplexGetLabelValue(dm, "vtk", c, &val);CHKERRQ(ierr);
-      if (!val) {ierr = PetscSectionSetConstraintDof(stateSection, c, dof);CHKERRQ(ierr);}
+      if (val < 0) {ierr = PetscSectionSetConstraintDof(stateSection, c, dof);CHKERRQ(ierr);}
     }
 #endif
   }
@@ -491,7 +498,7 @@ PetscErrorCode SetUpLocalSpace(DM dm, AppCtx *user)
     PetscInt val;
 
     ierr = DMComplexGetLabelValue(dm, "vtk", c, &val);CHKERRQ(ierr);
-    if (!val) {ierr = PetscSectionSetConstraintIndices(stateSection, c, cind);CHKERRQ(ierr);}
+    if (val < 0) {ierr = PetscSectionSetConstraintIndices(stateSection, c, cind);CHKERRQ(ierr);}
   }
 #endif
   for(c = user->cEndInterior; c < cEnd; ++c) {
@@ -646,7 +653,36 @@ static PetscErrorCode ApplyBC(DM dm, Vec locX, AppCtx *user)
   ierr = ISDestroy(&idIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#undef __FUNCT__
+#define __FUNCT__ "ZeroGhosts"
+static PetscErrorCode ZeroGhosts(DM dm, PetscScalar *f)
+{
+  IS              ghostIS;
+  const PetscInt *ghosts;
+  PetscInt        dim, numGhosts, g;
+  PetscErrorCode  ierr;
 
+  PetscFunctionBegin;
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMComplexGetStratumIS(dm, "ghost", dim, &ghostIS);CHKERRQ(ierr);
+  if (!ghostIS) PetscFunctionReturn(0);
+  ierr = ISGetLocalSize(ghostIS, &numGhosts);CHKERRQ(ierr);
+  ierr = ISGetIndices(ghostIS, &ghosts);CHKERRQ(ierr);
+  for(g = 0; g < numGhosts; ++g) {
+    PetscScalar *gC;
+    PetscInt     dof = 1, d;
+
+    ierr = DMComplexPointLocalRef(dm, ghosts[g], f, &gC);CHKERRQ(ierr);
+    for(d = 0; d < dof; ++d) {
+      gC[d] = 0.0;
+    }
+  }
+  ierr = ISRestoreIndices(ghostIS, &ghosts);CHKERRQ(ierr);
+  ierr = ISDestroy(&ghostIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+//#define CONSTANT 1
 #undef __FUNCT__
 #define __FUNCT__ "RHSFunction"
 static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
@@ -696,16 +732,48 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
     ierr = DMComplexPointLocalRead(dm,cells[1],x,&xR);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRef(dm,cells[0],f,&fL);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRef(dm,cells[1],f,&fR);CHKERRQ(ierr);
+#ifdef CONSTANT
+    for (i=0; i<dof; i++) {
+      fL[i] += 1;
+      fR[i] += 1;
+    }
+#elif ORIENTED
+    for (i=0; i<dof; i++) {
+      fL[i] -= 1;
+      fR[i] += 1;
+    }
+#else
     ierr = Riemann(user, fg->normal, xL, xR, flux);CHKERRQ(ierr);
     for (i=0; i<dof; i++) {
       fL[i] -= flux[i] / cgL->volume;
       fR[i] += flux[i] / cgR->volume;
     }
+#endif
   }
+  ierr = ZeroGhosts(dm, f);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(locX,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(locF,&f);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dm,locF,INSERT_VALUES,F);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm,locF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = VecZeroEntries(F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(dm,locF,ADD_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm,locF,ADD_VALUES,F);CHKERRQ(ierr);
+#if defined(CONSTANT) || defined(ORIENTED)
+  {
+    PetscSF     sf;
+    PetscMPIInt numProcs, rank, p;
+
+    ierr = DMGetDefaultSF(dm, &sf);CHKERRQ(ierr);
+    ierr = PetscSFView(sf, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject)dm)->comm, &numProcs);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)dm)->comm, &rank);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)dm)->comm, "Local function\n");CHKERRQ(ierr);
+    for (p = 0; p < numProcs; ++p) {
+      if (p == rank) {ierr = VecView(locF, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+      ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
+    }
+    ierr = PetscPrintf(((PetscObject)dm)->comm, "Global function\n");CHKERRQ(ierr);
+    ierr = VecView(F, PETSC_VIEWER_STDOUT_(((PetscObject)dm)->comm));CHKERRQ(ierr);
+  }
+#endif
   ierr = DMRestoreLocalVector(dm,&locX);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&locF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
