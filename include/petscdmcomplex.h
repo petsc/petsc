@@ -72,7 +72,7 @@ PETSC_EXTERN PetscErrorCode DMComplexRestoreJoin(DM, PetscInt, const PetscInt []
 PETSC_EXTERN PetscErrorCode DMComplexGetTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMComplexRestoreTransitiveClosure(DM, PetscInt, PetscBool, PetscInt *, PetscInt *[]);
 
-PETSC_EXTERN PetscErrorCode DMComplexCreatePartition(DM, PetscInt, PetscBool, PetscSection *, IS *);
+PETSC_EXTERN PetscErrorCode DMComplexCreatePartition(DM, PetscInt, PetscBool, PetscSection *, IS *, PetscSection *, IS *);
 PETSC_EXTERN PetscErrorCode DMComplexCreatePartitionClosure(DM, PetscSection, IS, PetscSection *, IS *);
 
 PETSC_EXTERN PetscErrorCode DMComplexGenerate(DM, const char [], PetscBool , DM *);
