@@ -1050,6 +1050,7 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
   }
   ierr = VecRestoreArrayRead(user->cellgeom, &cellgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(X, &x);CHKERRQ(ierr);
+  VecView(X,0);
   PetscFunctionReturn(0);
 }
 

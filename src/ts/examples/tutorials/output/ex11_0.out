@@ -1,6 +1,14 @@
-  0  time        0  |x|      7.2
-  1  time     0.72  |x|      4.4
-  2  time      1.4  |x|        2
-  3  time      2.2  |x|      1.9
- -1  time      2.2  |x|      1.9
+Vector Object:solution 1 MPI processes
+  type: seq
+4.19099
+7.15466
+5.88574
+2.33333
+3.7975
+3.10022
+1.22222
+  0  time        0  |x|    7.155  
+  1  time   0.7211  |x|    4.386  
+  2  time    1.442  |x|    1.968  
+  3  time    2.163  |x|    1.925  
 CONVERGED_TIME at time 2.16333 after 3 steps
