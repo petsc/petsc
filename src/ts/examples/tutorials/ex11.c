@@ -4,6 +4,7 @@ static char help[] = "Second Order TVD Finite Volume Example.\n";
 */
 #include <petscts.h>
 #include <petscdmcomplex.h>
+#include <petscblaslapack.h>
 #ifdef PETSC_HAVE_EXODUSII
 #include <exodusII.h>
 #else
@@ -43,6 +44,7 @@ struct _n_Physics {
 
 struct _n_User {
   MPI_Comm  comm;
+  PetscBool reconstruct;
   PetscInt  numGhostCells;
   PetscInt  cEndInterior;  /* First boundary ghost cell */
   Vec       cellgeom, facegeom;
@@ -57,6 +59,7 @@ struct _n_User {
 typedef struct {
   PetscScalar normal[DIM];              /* Area-scaled normals */
   PetscScalar centroid[DIM];            /* Location of centroid (quadrature point) */
+  PetscScalar grad[2][DIM];             /* Face contribution to gradient in left and right cell */
 } FaceGeom;
 
 typedef struct {
@@ -517,6 +520,106 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, User user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PseudoInverse"
+/* Overwrites A */
+static PetscErrorCode PseudoInverse(PetscInt m,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscScalar *work)
+{
+  PetscBool debug = PETSC_FALSE;
+  PetscErrorCode ierr;
+  PetscBLASInt M,N,K,lda,ldb,ldwork,info;
+  PetscScalar *R,*Q,*Aback,Alpha;
+
+  PetscFunctionBegin;
+  if (debug) {
+    ierr = PetscMalloc(m*n*sizeof(PetscScalar),&Aback);CHKERRQ(ierr);
+    ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+
+  M = PetscBLASIntCast(m);
+  N = PetscBLASIntCast(n);
+  lda = M;
+  ldwork = M*N;
+  ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+  LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info);
+  ierr = PetscFPTrapPop();CHKERRQ(ierr);
+  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRF error");
+  R = A; /* Upper triangular part of A now contains R, the rest contains the elementary reflectors */
+
+  /* Extract an explicit representation of Q */
+  Q = Ainv;
+  ierr = PetscMemcpy(Q,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
+  K = N;                        /* full rank */
+  LAPACKungqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info);
+  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
+
+  /* Compute A^{-T} = (R^{-1} Q^T)^T = Q R^{-T} */
+  Alpha = 1.0;
+  ldb = lda;
+  BLAStrsm_("Right","Upper","ConjugateTranspose","NotUnitTriangular",&M,&N,&Alpha,R,&lda,Q,&ldb);
+  /* Ainv is Q, overwritten with inverse */
+
+  if (debug) {                      /* Check that pseudo-inverse worked */
+    PetscScalar Beta = 0.0;
+    PetscInt ldc;
+    K = N;
+    ldc = N;
+    BLASgemm_("ConjugateTranspose","Normal",&N,&K,&M,&Alpha,Ainv,&lda,Aback,&ldb,&Beta,work,&ldc);
+    ierr = PetscScalarView(n*n,work,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscFree(Aback);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "BuildLeastSquares"
+/* Build least squares gradient reconstruction operators */
+static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,PetscScalar *fgeom,DM dmCell,PetscScalar *cgeom)
+{
+  PetscErrorCode ierr;
+  PetscInt c,cStart,cEnd,maxNumFaces;
+  PetscScalar *B,*Binv,*work,*tau,**gref;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetMaxSizes(dm,&maxNumFaces,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc5(maxNumFaces*DIM,PetscScalar,&B,maxNumFaces*DIM,PetscScalar,&Binv,maxNumFaces*DIM,PetscScalar,&work,maxNumFaces,PetscScalar,&tau,maxNumFaces,PetscScalar*,&gref);CHKERRQ(ierr);
+  for (c=cStart; c<cEndInterior; c++) {
+    const PetscInt *faces;
+    PetscInt numFaces,f,i,j;
+    const CellGeom *cg;
+    ierr = DMComplexGetConeSize(dm,c,&numFaces);CHKERRQ(ierr);
+    if (numFaces < DIM) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction",c,numFaces);
+    ierr = DMComplexGetCone(dm,c,&faces);CHKERRQ(ierr);
+    ierr = DMComplexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
+    for (f=0; f<numFaces; f++) {
+      const PetscInt *fcells;
+      ierr = DMComplexGetSupport(dm,faces[f],&fcells);CHKERRQ(ierr);
+      gref[f] = PETSC_NULL;
+      for (i=0; i<2; i++) {
+        FaceGeom *fg;
+        const CellGeom *cg1;
+        if (fcells[i] == c) continue;
+        ierr = DMComplexPointLocalRef(dmFace,faces[f],fgeom,&fg);CHKERRQ(ierr);
+        ierr = DMComplexPointLocalRead(dmCell,fcells[i],cgeom,&cg1);CHKERRQ(ierr);
+        for (j=0; j<DIM; j++) B[j*numFaces+f] = cg1->centroid[j] - cg->centroid[j];
+        gref[f] = fg->grad[i];  /* Gradient reconstruction term will go here */
+      }
+      if (!gref[f]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Connectivity corrrupt");
+    }
+
+    /* Overwrites B with garbage, returns Binv in row-major format */
+    ierr = PseudoInverse(numFaces,DIM,B,Binv,tau,work);CHKERRQ(ierr);
+    for (f=0; f<numFaces; f++) {
+      for (j=0; j<DIM; j++) {
+        gref[f][j] = Binv[f*DIM+j];
+      }
+    }
+  }
+  ierr = PetscFree5(B,Binv,work,tau,gref);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ConstructGeometry"
 /* Set up face data and cell data */
 PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
@@ -636,6 +739,8 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
     Waxpy2(-1,fg->centroid,cR->centroid,v);
     minradius = PetscMin(minradius,Norm2(v));
   }
+
+  ierr = BuildLeastSquares(dm,user->cEndInterior,dmFace,fgeom,dmCell,cgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(*facegeom, &fgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(*cellgeom, &cgeom);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&minradius, &user->minradius, 1, MPIU_SCALAR, MPI_MIN, ((PetscObject) dm)->comm);CHKERRQ(ierr);
