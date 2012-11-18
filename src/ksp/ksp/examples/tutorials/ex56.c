@@ -138,7 +138,7 @@ int main(int argc,char **args)
       else {
 	for (i=0;i<24;i++){
 	  for (j=0;j<24;j++){
-	    fscanf(file, "%le", &DD1[i][j]);
+	    ierr = fscanf(file, "%le", &DD1[i][j]);
 	  }
 	}
       }

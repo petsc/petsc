@@ -554,8 +554,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   PetscMPIInt      mype,npe,nactivepe;
   Mat              Aarr[GAMG_MAXLEVELS],Parr[GAMG_MAXLEVELS];
   PetscReal        emaxs[GAMG_MAXLEVELS];
-  IS              *ASMLocalIDsArr[GAMG_MAXLEVELS],removedEqs[GAMG_MAXLEVELS];
-  PetscInt         level_bs[GAMG_MAXLEVELS];
+  IS              *ASMLocalIDsArr[GAMG_MAXLEVELS];
   GAMGKKTMat       kktMatsArr[GAMG_MAXLEVELS];
   PetscLogDouble   nnz0=0.,nnztot=0.;
   MatInfo          info;
@@ -681,7 +680,6 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       PetscCoarsenData *agg_lists;
       Mat Prol11,Prol22;
 
-      level_bs[level] = bs;
       ierr = pc_gamg->graph( pc,kktMatsArr[level].A11, &Gmat ); CHKERRQ(ierr);
       ierr = pc_gamg->coarsen( pc, &Gmat, &agg_lists ); CHKERRQ(ierr);
       ierr = pc_gamg->prolongator( pc, kktMatsArr[level].A11, Gmat, agg_lists, &Prol11 ); CHKERRQ(ierr);
@@ -702,8 +700,6 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
           ierr = pc_gamg->optprol( pc, kktMatsArr[level].A11, &Prol11 ); CHKERRQ(ierr);
         }
 
-        /* remove rows of singleton rows (BCs) */
-
         if ( stokes ) {
           IS is_row[2] = {kktMatsArr[level].prim_is,kktMatsArr[level].constr_is};
           Mat a[4] = {Prol11, PETSC_NULL, PETSC_NULL, Prol22 };
@@ -716,10 +712,11 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       else Parr[level1] = PETSC_NULL;
 
       if ( pc_gamg->use_aggs_in_gasm ) {
-        ierr = PetscCDGetASMBlocks(agg_lists, level_bs[level], &nASMBlocksArr[level], &ASMLocalIDsArr[level] );  CHKERRQ(ierr);
+        ierr = PetscCDGetASMBlocks(agg_lists, bs, &nASMBlocksArr[level], &ASMLocalIDsArr[level] );
+        CHKERRQ(ierr);
       }
 
-      ierr = PetscCDGetRemovedIS( agg_lists, &removedEqs[level] );  CHKERRQ(ierr);
+      
 
       ierr = MatDestroy( &Gmat );      CHKERRQ(ierr);
       ierr = PetscCDDestroy( agg_lists );  CHKERRQ(ierr);
@@ -919,7 +916,8 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
         ierr = PetscObjectTypeCompare( (PetscObject)subpc, PCJACOBI, &flag ); CHKERRQ(ierr);
         if ( flag && emaxs[level] > 0.0 ) emax=emaxs[level]; /* eigen estimate only for diagnal PC */
         else{ /* eigen estimate 'emax' */
-          KSP eksp; Mat Lmat = Aarr[level];
+          KSP eksp; 
+          Mat Lmat = Aarr[level];
           Vec bb, xx;
 
           ierr = MatGetVecs( Lmat, &bb, 0 );         CHKERRQ(ierr);
@@ -931,31 +929,23 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
             ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
             ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
           }
-
-          if ( removedEqs[level] ) {
-            /* being very careful - zeroing out BC rows (this is not done in agg.c estimates) */
-            PetscScalar *zeros;
-            PetscInt ii,jj, *idx_bs, sz, bs=level_bs[level];
-            const PetscInt *idx;
-            ierr = ISGetLocalSize( removedEqs[level], &sz ); CHKERRQ(ierr);
-            ierr = PetscMalloc( bs*sz*sizeof(PetscScalar), &zeros ); CHKERRQ(ierr);
-            for (ii=0;ii<bs*sz;ii++) zeros[ii] = 0.;
-            ierr = PetscMalloc( bs*sz*sizeof(PetscInt), &idx_bs ); CHKERRQ(ierr);
-            ierr = ISGetIndices( removedEqs[level], &idx); CHKERRQ(ierr);
-            for (ii=0;ii<sz;ii++) {
-              for (jj=0;jj<bs;jj++) {
-                idx_bs[ii] = bs*idx[ii]+jj;
+          
+          /* zeroing out BC rows -- needed for crazy matrices */
+          {
+            PetscInt Istart,Iend,ncols,jj,Ii;
+            PetscScalar zero = 0.0;
+            ierr = MatGetOwnershipRange( Lmat, &Istart, &Iend );    CHKERRQ(ierr);
+            for ( Ii = Istart, jj = 0 ; Ii < Iend ; Ii++, jj++ ) {
+              ierr = MatGetRow(Lmat,Ii,&ncols,0,0); CHKERRQ(ierr);
+              if( ncols <= 1 ) {
+                ierr = VecSetValues( bb, 1, &Ii, &zero, INSERT_VALUES );  CHKERRQ(ierr); 
               }
+              ierr = MatRestoreRow(Lmat,Ii,&ncols,0,0); CHKERRQ(ierr);
             }
-            ierr = ISRestoreIndices( removedEqs[level], &idx ); CHKERRQ(ierr);
-            if ( sz > 0 ) {
-              ierr = VecSetValues( bb, sz, idx_bs, zeros, INSERT_VALUES );  CHKERRQ(ierr);
-            }
-            ierr = PetscFree( idx_bs );  CHKERRQ(ierr);
-            ierr = PetscFree( zeros );  CHKERRQ(ierr);
             ierr = VecAssemblyBegin(bb); CHKERRQ(ierr);
             ierr = VecAssemblyEnd(bb); CHKERRQ(ierr);
           }
+
           ierr = KSPCreate( wcomm, &eksp );CHKERRQ(ierr);
           ierr = KSPSetTolerances( eksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 10 );
           CHKERRQ(ierr);
@@ -1001,10 +991,6 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
         }
         ierr = KSPChebyshevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
       } /* setup checby flag */
-
-      if ( removedEqs[level] ) {
-        ierr = ISDestroy( &removedEqs[level] );                    CHKERRQ(ierr);
-      }
     } /* non-coarse levels */
 
     /* clean up */

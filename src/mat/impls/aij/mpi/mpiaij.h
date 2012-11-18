@@ -68,6 +68,9 @@ typedef struct {
   /* Used by MatMatMult() and MatPtAP() */
   Mat_PtAPMPI   *ptap;
 
+  /* used by MatMatMatMult() */
+  Mat_MatMatMatMult *matmatmatmult;
+
   /* Used by MPICUSP and MPICUSPARSE classes */
   void * spptr;
 } Mat_MPIAIJ;
@@ -98,6 +101,10 @@ extern PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat,Mat,PetscReal,Mat*);
 extern PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
+
+extern PetscErrorCode MatMatMatMult_MPIAIJ_MPIAIJ_MPIAIJ(Mat,Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat,Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(Mat,Mat,Mat,Mat);
 
 extern PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);

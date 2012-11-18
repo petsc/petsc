@@ -1462,7 +1462,8 @@ class PETScMaker(script.Script):
  def getTestCommand(self, executable, **params):
    numProcs = params.get('numProcs', 1)
    args     = params.get('args', '')
-   return ' '.join([self.configInfo.mpi.mpiexec, '-n', str(numProcs), os.path.abspath(executable), args])
+   hosts    = ','.join(['localhost']*numProcs)
+   return ' '.join([self.configInfo.mpi.mpiexec, '-hosts', hosts, '-n', str(numProcs), os.path.abspath(executable), args])
 
  def runTest(self, testDir, executable, testNum, **params):
    cmd = self.getTestCommand(executable, **params)

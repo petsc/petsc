@@ -318,11 +318,11 @@ PetscErrorCode maxIndSetAgg( const IS perm,
   }
 
   /* cache IS of removed nodes, use 'lid_gid' */
-  for (kk=n=0,ix=my0;kk<nloc;kk++,ix++) {
-    if ( lid_removed[kk] ) lid_gid[n++] = ix;
-  }
-  assert(n==nremoved);
-  ierr = PetscCDSetRemovedIS( agg_lists, wcomm, n, lid_gid ); CHKERRQ(ierr);
+  /* for (kk=n=0,ix=my0;kk<nloc;kk++,ix++) { */
+  /*   if ( lid_removed[kk] ) lid_gid[n++] = ix; */
+  /* } */
+  /* assert(n==nremoved); */
+  /* ierr = PetscCDSetRemovedIS( agg_lists, wcomm, n, lid_gid ); CHKERRQ(ierr); */
 
   ierr = PetscFree( lid_cprowID );  CHKERRQ(ierr);
   ierr = PetscFree( lid_gid );  CHKERRQ(ierr);
