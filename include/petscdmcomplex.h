@@ -44,6 +44,7 @@ PETSC_EXTERN PetscErrorCode DMComplexSymmetrize(DM);
 PETSC_EXTERN PetscErrorCode DMComplexStratify(DM);
 PETSC_EXTERN PetscErrorCode DMComplexGetCoordinateSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMComplexSetCoordinateSection(DM, PetscSection);
+PETSC_EXTERN PetscErrorCode DMComplexSetPreallocationCenterDimension(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMComplexGetPointLocal(DM,PetscInt,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMComplexPointLocalRef(DM,PetscInt,PetscScalar*,void*);
 PETSC_EXTERN PetscErrorCode DMComplexPointLocalRead(DM,PetscInt,const PetscScalar*,const void*);
