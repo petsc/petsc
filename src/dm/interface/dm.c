@@ -3470,9 +3470,8 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
       for(d = 0; d < gsize; ++d, ++l) {
         PetscInt offset = -(goff+1) + d, r;
 
-        for (r = 0; r < size; ++r) {
-          if ((offset >= ranges[r]) && (offset < ranges[r+1])) break;
-        }
+        ierr = PetscFindInt(offset,size,ranges,&r);CHKERRQ(ierr);
+        if (r < 0) r = -(r+2);
         remote[l].rank  = r;
         remote[l].index = offset - ranges[r];
       }

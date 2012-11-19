@@ -485,30 +485,30 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, User user)
   const PetscSFNode *remotePoints;
   PetscSFNode       *gremotePoints;
   const PetscInt    *localPoints;
-  PetscInt          *glocalPoints;
-  PetscInt          *numGhostCells;
+  PetscInt          *glocalPoints,*newLocation,*newRemoteLocation;
   PetscInt           numRoots, numLeaves;
   PetscMPIInt        numProcs;
 
-  /* Jed: Fix this unscalable thing, probably using FetchAndOp which looks like an incantation to me */
   ierr = MPI_Comm_size(((PetscObject) dm)->comm, &numProcs);CHKERRQ(ierr);
-  ierr = PetscMalloc(numProcs * sizeof(PetscInt), &numGhostCells);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&user->numGhostCells, 1, MPIU_INT, numGhostCells, 1, MPIU_INT, ((PetscObject) dm)->comm);CHKERRQ(ierr);
-
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = DMGetPointSF(gdm, &gsfPoint);CHKERRQ(ierr);
+  ierr = DMComplexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
-  if (numLeaves >= 0) {
+  if (numRoots >= 0) {
+    ierr = PetscMalloc2(numRoots,PetscInt,&newLocation,pEnd-pStart,PetscInt,&newRemoteLocation);CHKERRQ(ierr);
+    for (l=0; l<numRoots; l++) newLocation[l] = l + (l >= cEnd ? user->numGhostCells : 0);
+    ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
     ierr = PetscMalloc(numLeaves * sizeof(PetscInt),    &glocalPoints);CHKERRQ(ierr);
     ierr = PetscMalloc(numLeaves * sizeof(PetscSFNode), &gremotePoints);CHKERRQ(ierr);
     for(l = 0; l < numLeaves; ++l) {
       glocalPoints[l]        = localPoints[l] >= cEnd ? localPoints[l] + user->numGhostCells : localPoints[l];
       gremotePoints[l].rank  = remotePoints[l].rank;
-      gremotePoints[l].index = remotePoints[l].index >= cEnd ? remotePoints[l].index + numGhostCells[remotePoints[l].rank] : remotePoints[l].index;
+      gremotePoints[l].index = newRemoteLocation[localPoints[l]];
     }
+    ierr = PetscFree2(newLocation,newRemoteLocation);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(gsfPoint, numRoots+user->numGhostCells, numLeaves, glocalPoints, PETSC_OWN_POINTER, gremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
-  ierr = PetscFree(numGhostCells);CHKERRQ(ierr);
   /* Make label for VTK output and ghost cells */
   ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, PETSC_NULL, &numLeaves, &leafLocal, &leafRemote);CHKERRQ(ierr);
