@@ -456,7 +456,8 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
 {
   DM_Complex        *mesh = (DM_Complex *) dm->data;
   MPI_Comm           comm = ((PetscObject) dm)->comm;
-  PetscSF            sf   = dm->sf, sfDof, sfAdj;
+  PetscBool          useClosure = PETSC_FALSE;
+  PetscSF            sf, sfDof, sfAdj;
   PetscSection       leafSectionAdj, rootSectionAdj, sectionAdj;
   PetscInt           nleaves, l, p;
   const PetscInt    *leaves;
@@ -473,6 +474,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
   PetscFunctionBegin;
   ierr = PetscOptionsGetBool(PETSC_NULL, "-dm_view_preallocation", &debug, PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   /* Create dof SF based on point SF */
   if (debug) {
     ierr = PetscPrintf(comm, "Input Section for Preallocation:\n");CHKERRQ(ierr);
