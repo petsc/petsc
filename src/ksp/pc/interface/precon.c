@@ -1434,6 +1434,55 @@ PetscErrorCode  PCPostSolve(PC pc,KSP ksp)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCLoad"
+/*@C
+  PCLoad - Loads a PC that has been stored in binary  with PCView().
+
+  Collective on PetscViewer
+
+  Input Parameters:
++ newdm - the newly loaded PC, this needs to have been created with PCCreate() or
+           some related function before a call to PCLoad().
+- viewer - binary file viewer, obtained from PetscViewerBinaryOpen() 
+
+   Level: intermediate
+
+  Notes:
+   The type is determined by the data in the file, any type set into the PC before this call is ignored.
+
+  Notes for advanced users:
+  Most users should not need to know the details of the binary storage
+  format, since PCLoad() and PCView() completely hide these details.
+  But for anyone who's interested, the standard binary matrix storage
+  format is
+.vb
+     has not yet been determined
+.ve
+
+.seealso: PetscViewerBinaryOpen(), PCView(), MatLoad(), VecLoad()
+@*/
+PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscBool      isbinary;
+  PetscInt       classid, subclassid;
+  char           type[256];
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(newdm,PC_CLASSID,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+
+  ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+  if (classid != PC_FILE_CLASSID) SETERRQ(((PetscObject)newdm)->comm,PETSC_ERR_ARG_WRONG,"Not PC next in file");
+  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = PCSetType(newdm, type);CHKERRQ(ierr);
+  ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCView"
 /*@C
    PCView - Prints the PC data structure.
@@ -1512,6 +1561,18 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     ierr = PetscViewerStringSPrintf(viewer," %-7.7s",cstr);CHKERRQ(ierr);
     if (pc->ops->view) {ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);}
   } else if (isbinary) {
+    PetscInt         classid = PC_FILE_CLASSID;
+    MPI_Comm         comm;
+    PetscMPIInt      rank;
+    char             type[256];
+
+    ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscStrncpy(type,((PetscObject)pc)->type_name,256);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+    }
     if (pc->ops->view) {
       ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);
     }

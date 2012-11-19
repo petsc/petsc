@@ -15,6 +15,58 @@ PetscFList KSPList = 0;
 PetscBool  KSPRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
+#define __FUNCT__ "KSPLoad"
+/*@C
+  KSPLoad - Loads a KSP that has been stored in binary  with KSPView().
+
+  Collective on PetscViewer
+
+  Input Parameters:
++ newdm - the newly loaded KSP, this needs to have been created with KSPCreate() or
+           some related function before a call to KSPLoad().
+- viewer - binary file viewer, obtained from PetscViewerBinaryOpen()
+
+   Level: intermediate
+
+  Notes:
+   The type is determined by the data in the file, any type set into the KSP before this call is ignored.
+
+  Notes for advanced users:
+  Most users should not need to know the details of the binary storage
+  format, since KSPLoad() and KSPView() completely hide these details.
+  But for anyone who's interested, the standard binary matrix storage
+  format is
+.vb
+     has not yet been determined
+.ve
+
+.seealso: PetscViewerBinaryOpen(), KSPView(), MatLoad(), VecLoad()
+@*/
+PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscBool      isbinary;
+  PetscInt       classid;
+  char           type[256];
+  PC             pc;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(newdm,KSP_CLASSID,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+
+  ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+  if (classid != KSP_FILE_CLASSID) SETERRQ(((PetscObject)newdm)->comm,PETSC_ERR_ARG_WRONG,"Not KSP next in file");
+  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = KSPSetType(newdm, type);CHKERRQ(ierr);
+  ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
+  ierr = KSPGetPC(newdm,&pc);CHKERRQ(ierr);
+  ierr = PCLoad(pc,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPView"
 /*@C
    KSPView - Prints the KSP data structure.
@@ -48,7 +100,7 @@ PetscBool  KSPRegisterAllCalled = PETSC_FALSE;
 PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool      iascii;
+  PetscBool      iascii,isbinary;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -57,6 +109,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   PetscCheckSameComm(ksp,1,viewer,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer,"KSP Object");CHKERRQ(ierr);
     if (ksp->ops->view) {
@@ -76,6 +129,22 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     if (ksp->nullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached null space\n");CHKERRQ(ierr);}
     if (!ksp->guess_zero) {ierr = PetscViewerASCIIPrintf(viewer,"  using nonzero initial guess\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  using %s norm type for convergence test\n",KSPNormTypes[ksp->normtype]);CHKERRQ(ierr);
+  } else if (isbinary) {
+    PetscInt         classid = KSP_FILE_CLASSID;
+    MPI_Comm         comm;
+    PetscMPIInt      rank;
+    char             type[256];
+
+    ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscStrncpy(type,((PetscObject)ksp)->type_name,256);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+    }
+    if (ksp->ops->view) {
+      ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
+    }
   } else {
     if (ksp->ops->view) {
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);

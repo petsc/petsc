@@ -525,7 +525,7 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
   }
   ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (isbinary) {
-    PetscInt         classid = DM_FILE_CLASSID,subclassid = DMDA_FILE_CLASSID;
+    PetscInt         classid = DM_FILE_CLASSID;
     MPI_Comm         comm;
     PetscMPIInt      rank;
     char             type[256];
@@ -2998,8 +2998,7 @@ PetscErrorCode  DMSetJacobianMatlab(DM dm,const char *func)
 #undef __FUNCT__
 #define __FUNCT__ "DMLoad"
 /*@C
-  DMLoad - Loads a DM that has been stored in binary or HDF5 format
-  with DMView().
+  DMLoad - Loads a DM that has been stored in binary  with DMView().
 
   Collective on PetscViewer
 
@@ -3012,7 +3011,7 @@ PetscErrorCode  DMSetJacobianMatlab(DM dm,const char *func)
    Level: intermediate
 
   Notes:
-  Defaults to the DM DA.
+   The type is determined by the data in the file, any type set into the DM before this call is ignored.
 
   Notes for advanced users:
   Most users should not need to know the details of the binary storage
@@ -3023,23 +3022,13 @@ PetscErrorCode  DMSetJacobianMatlab(DM dm,const char *func)
      has not yet been determined
 .ve
 
-   The type is determined by the data in the file, any type set into the DM before this call is ignored.
-
-   In addition, PETSc automatically does the byte swapping for
-machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
-linux, Windows and the paragon; thus if you write your own binary
-read/write routines you have to swap the bytes; see PetscBinaryRead()
-and PetscBinaryWrite() to see how this may be done.
-
-  Concepts: vector^loading from file
-
 .seealso: PetscViewerBinaryOpen(), DMView(), MatLoad(), VecLoad()
 @*/
 PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isbinary;
-  PetscInt       classid, subclassid;
+  PetscInt       classid;
   char           type[256];
 
   PetscFunctionBegin;

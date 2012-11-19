@@ -126,6 +126,57 @@ PetscErrorCode  SNESGetFunctionDomainError(SNES snes, PetscBool *domainerror)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESLoad"
+/*@C
+  SNESLoad - Loads a SNES that has been stored in binary  with SNESView().
+
+  Collective on PetscViewer
+
+  Input Parameters:
++ newdm - the newly loaded SNES, this needs to have been created with SNESCreate() or
+           some related function before a call to SNESLoad().
+- viewer - binary file viewer, obtained from PetscViewerBinaryOpen()
+
+   Level: intermediate
+
+  Notes:
+   The type is determined by the data in the file, any type set into the SNES before this call is ignored.
+
+  Notes for advanced users:
+  Most users should not need to know the details of the binary storage
+  format, since SNESLoad() and TSView() completely hide these details.
+  But for anyone who's interested, the standard binary matrix storage
+  format is
+.vb
+     has not yet been determined
+.ve
+
+.seealso: PetscViewerBinaryOpen(), SNESView(), MatLoad(), VecLoad()
+@*/
+PetscErrorCode  SNESLoad(SNES newdm, PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscBool      isbinary;
+  PetscInt       classid;
+  char           type[256];
+  KSP            ksp;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(newdm,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+
+  ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+  if (classid != SNES_FILE_CLASSID) SETERRQ(((PetscObject)newdm)->comm,PETSC_ERR_ARG_WRONG,"Not SNES next in file");
+  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = SNESSetType(newdm, type);CHKERRQ(ierr);
+  ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
+  ierr = SNESGetKSP(newdm,&ksp);CHKERRQ(ierr);
+  ierr = KSPLoad(ksp,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESView"
@@ -164,7 +215,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   PetscErrorCode      ierr;
   KSP                 ksp;
   SNESLineSearch      linesearch;
-  PetscBool           iascii,isstring;
+  PetscBool           iascii,isstring,isbinary;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -176,6 +227,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)snes,viewer,"SNES Object");CHKERRQ(ierr);
     if (snes->ops->view) {
@@ -213,6 +265,22 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     const char *type;
     ierr = SNESGetType(snes,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
+  } else if (isbinary) {
+    PetscInt         classid = SNES_FILE_CLASSID;
+    MPI_Comm         comm;
+    PetscMPIInt      rank;
+    char             type[256];
+
+    ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscStrncpy(type,((PetscObject)snes)->type_name,256);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+    }
+    if (snes->ops->view) {
+      ierr = (*snes->ops->view)(snes,viewer);CHKERRQ(ierr);
+    }
   }
   if (snes->pc && snes->usespc) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);

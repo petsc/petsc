@@ -130,6 +130,9 @@ PETSC_EXTERN PetscErrorCode SNESGetSolution(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESGetSolutionUpdate(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESGetRhs(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESView(SNES,PetscViewer);
+PETSC_EXTERN PetscErrorCode SNESLoad(SNES,PetscViewer);
+
+#define SNES_FILE_CLASSID 1211224
 
 PETSC_EXTERN PetscErrorCode SNESSetOptionsPrefix(SNES,const char[]);
 PETSC_EXTERN PetscErrorCode SNESAppendOptionsPrefix(SNES,const char[]);

@@ -23,6 +23,7 @@ struct _PCOps {
   PetscErrorCode (*destroy)(PC);
   PetscErrorCode (*view)(PC,PetscViewer);
   PetscErrorCode (*reset)(PC);
+  PetscErrorCode (*load)(PC,PetscViewer);
 };
 
 /*
