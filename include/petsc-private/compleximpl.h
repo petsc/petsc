@@ -42,6 +42,9 @@ typedef struct {
   IS                   globalVertexNumbers;
   IS                   globalCellNumbers;
 
+  /* Preallocation */
+  PetscInt             preallocCenterDim; /* Dimension of the points which connect adjacent points for preallocation */
+
   /* Output */
   PetscInt             vtkCellMax, vtkVertexMax; /* Allow exclusion of some points in the VTK output */
   PetscInt             vtkCellHeight;            /* The height of cells for output, default is 0 */

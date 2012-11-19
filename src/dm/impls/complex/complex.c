@@ -451,29 +451,41 @@ PetscErrorCode DMComplexGetAdjacency_Private(DM dm, PetscInt p, PetscBool useClo
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexSetPreallocationCenterDimension"
+PetscErrorCode DMComplexSetPreallocationCenterDimension(DM dm, PetscInt preallocCenterDim)
+{
+  DM_Complex *mesh = (DM_Complex *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->preallocCenterDim = preallocCenterDim;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexPreallocateOperator"
 PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection section, PetscSection sectionGlobal, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
 {
   DM_Complex        *mesh = (DM_Complex *) dm->data;
   MPI_Comm           comm = ((PetscObject) dm)->comm;
-  PetscBool          useClosure = PETSC_FALSE;
   PetscSF            sf, sfDof, sfAdj;
   PetscSection       leafSectionAdj, rootSectionAdj, sectionAdj;
   PetscInt           nleaves, l, p;
   const PetscInt    *leaves;
   const PetscSFNode *remotes;
-  PetscInt           pStart, pEnd, numDof, globalOffStart, globalOffEnd, numCols;
+  PetscInt           dim, pStart, pEnd, numDof, globalOffStart, globalOffEnd, numCols;
   PetscInt          *tmpClosure, *tmpAdj, *adj, *rootAdj, *cols;
   PetscInt           depth, maxConeSize, maxSupportSize, maxClosureSize, maxAdjSize, adjSize;
   PetscLayout        rLayout;
   PetscInt           locRows, rStart, rEnd, r;
   PetscMPIInt        size;
-  PetscBool          debug = PETSC_FALSE;
+  PetscBool          useClosure, debug = PETSC_FALSE;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetBool(PETSC_NULL, "-dm_view_preallocation", &debug, PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   /* Create dof SF based on point SF */
   if (debug) {
@@ -490,8 +502,16 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     ierr = PetscSFView(sfDof, PETSC_NULL);CHKERRQ(ierr);
   }
   /* Create section for dof adjacency (dof ==> # adj dof) */
-  /*   FEM: Two points p and q are adjacent if q \in closure(star(p)) */
-  /*   FVM: Two points p and q are adjacent if q \in star(closure(p)) */
+  /*   FEM:   Two points p and q are adjacent if q \in closure(star(p)), preallocCenterDim = dim   */
+  /*   FVM:   Two points p and q are adjacent if q \in star(cone(p)),    preallocCenterDim = dim-1 */
+  /*   FVM++: Two points p and q are adjacent if q \in star(closure(p)), preallocCenterDim = 0     */
+  if (mesh->preallocCenterDim == dim) {
+    useClosure = PETSC_FALSE;
+  } else if (mesh->preallocCenterDim == 0) {
+    useClosure = PETSC_TRUE;
+  } else {
+    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Do not support preallocation with center points of dimension %d", mesh->preallocCenterDim);
+  }
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &numDof);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &leafSectionAdj);CHKERRQ(ierr);
@@ -529,7 +549,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
-    ierr = DMComplexGetAdjacency_Private(dm, p, PETSC_FALSE, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMComplexGetAdjacency_Private(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
     for (q = 0; q < numAdj; ++q) {
       PetscInt ndof, ncdof;
 
@@ -563,7 +583,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     if (!dof) continue;
     ierr = PetscSectionGetDof(rootSectionAdj, off, &adof);CHKERRQ(ierr);
     if (adof <= 0) continue;
-    ierr = DMComplexGetAdjacency_Private(dm, p, PETSC_FALSE, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMComplexGetAdjacency_Private(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
     for (q = 0; q < numAdj; ++q) {
       PetscInt ndof, ncdof;
 
@@ -597,7 +617,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
-    ierr = DMComplexGetAdjacency_Private(dm, p, PETSC_FALSE, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMComplexGetAdjacency_Private(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
     for (d = off; d < off+dof; ++d) {
       PetscInt aoff, i = 0;
 
@@ -650,7 +670,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     if (!dof) continue;
     ierr = PetscSectionGetDof(rootSectionAdj, off, &adof);CHKERRQ(ierr);
     if (adof <= 0) continue;
-    ierr = DMComplexGetAdjacency_Private(dm, p, PETSC_FALSE, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMComplexGetAdjacency_Private(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
     for (d = off; d < off+dof; ++d) {
       PetscInt adof, aoff, i;
 
@@ -733,7 +753,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     if (found) continue;
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
-    ierr = DMComplexGetAdjacency_Private(dm, p, PETSC_FALSE, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMComplexGetAdjacency_Private(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
     for (q = 0; q < numAdj; ++q) {
       PetscInt ndof, ncdof, noff;
 
@@ -781,7 +801,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
       }
     }
     if (found) continue;
-    ierr = DMComplexGetAdjacency_Private(dm, p, PETSC_FALSE, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMComplexGetAdjacency_Private(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
     for (d = goff; d < goff+dof-cdof; ++d) {
       PetscInt adof, aoff, i = 0;
 
@@ -1052,6 +1072,7 @@ PetscErrorCode DMComplexSetDimension(DM dm, PetscInt dim)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, dim, 2);
   mesh->dim = dim;
+  mesh->preallocCenterDim = dim;
   PetscFunctionReturn(0);
 }
 
