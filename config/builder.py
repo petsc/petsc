@@ -342,7 +342,8 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                         'src/ts/examples/tutorials/ex11':      [{'numProcs': 1, 'args': '-ufv_vtk_interval 0'},
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f sevenside-quad-15.e'},
                                                                 {'numProcs': 2, 'args': '-ufv_vtk_interval 0'},
-                                                                {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f sevenside-quad-15.e'}],
+                                                                {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f sevenside-quad-15.e'},
+                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -ts_type rosw'}],
                         'src/ts/examples/tutorials/ex18':      {'numProcs': 1, 'args': '-snes_mf -ts_monitor_solution -ts_monitor -snes_monitor'},
                         }
 
@@ -1447,9 +1448,9 @@ class PETScMaker(script.Script):
      with file(outputName) as f:
        validOutput = f.read()
        if not validOutput == output:
-         self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match" % (executable, str(testNum)))
-         for line in unified_diff(output.split('\n'), validOutput.split('\n'), fromfile='Current Output', tofile='Saved Output'):
-           self.logPrint(line)
+         self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match" % (executable, str(testNum)), debugSection = 'screen', forceScroll = True)
+         for line in unified_diff(validOutput.split('\n'), output.split('\n'), fromfile='Current Output', tofile='Saved Output'):
+           self.logPrint(line+'\n', debugSection = 'screen', forceScroll = True)
          self.logPrintDivider()
          self.logPrint(validOutput, indent = 0)
          self.logPrintDivider()
@@ -1462,7 +1463,8 @@ class PETScMaker(script.Script):
  def getTestCommand(self, executable, **params):
    numProcs = params.get('numProcs', 1)
    args     = params.get('args', '')
-   return ' '.join([self.configInfo.mpi.mpiexec, '-n', str(numProcs), os.path.abspath(executable), args])
+   hosts    = ','.join(['localhost']*numProcs)
+   return ' '.join([self.configInfo.mpi.mpiexec, '-hosts', hosts, '-n', str(numProcs), os.path.abspath(executable), args])
 
  def runTest(self, testDir, executable, testNum, **params):
    cmd = self.getTestCommand(executable, **params)
