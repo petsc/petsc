@@ -519,7 +519,7 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, User user)
       ierr = DMComplexSetLabelValue(gdm, "vtk", c, 1);CHKERRQ(ierr);
     }
     if (leafLocal[l] >= cEnd) break;
-    if (leafRemote[c].rank == rank) {
+    if (leafRemote[l].rank == rank) {
       ierr = DMComplexSetLabelValue(gdm, "vtk", c, 1);CHKERRQ(ierr);
     } else {
       ierr = DMComplexSetLabelValue(gdm, "ghost", c, 2);CHKERRQ(ierr);
@@ -1050,7 +1050,6 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
   }
   ierr = VecRestoreArrayRead(user->cellgeom, &cellgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(X, &x);CHKERRQ(ierr);
-  VecView(X,0);
   PetscFunctionReturn(0);
 }
 
@@ -1106,34 +1105,6 @@ static PetscErrorCode ApplyBC(DM dm, Vec locX, User user)
   ierr = ISDestroy(&idIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "ZeroGhosts"
-static PetscErrorCode ZeroGhosts(DM dm, PetscScalar *f)
-{
-  IS              ghostIS;
-  const PetscInt *ghosts;
-  PetscInt        dim, numGhosts, g;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMComplexGetStratumIS(dm, "ghost", dim, &ghostIS);CHKERRQ(ierr);
-  if (!ghostIS) PetscFunctionReturn(0);
-  ierr = ISGetLocalSize(ghostIS, &numGhosts);CHKERRQ(ierr);
-  ierr = ISGetIndices(ghostIS, &ghosts);CHKERRQ(ierr);
-  for(g = 0; g < numGhosts; ++g) {
-    PetscScalar *gC;
-    PetscInt     dof = 1, d;
-
-    ierr = DMComplexPointLocalRef(dm, ghosts[g], f, &gC);CHKERRQ(ierr);
-    for(d = 0; d < dof; ++d) {
-      gC[d] = 0.0;
-    }
-  }
-  ierr = ISRestoreIndices(ghostIS, &ghosts);CHKERRQ(ierr);
-  ierr = ISDestroy(&ghostIS);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSFunctionLocal_Upwind"
@@ -1153,12 +1124,14 @@ static PetscErrorCode RHSFunctionLocal_Upwind(DM dm,DM dmFace,DM dmCell,Vec locX
   ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   for (face = fStart; face < fEnd; ++face) {
     const PetscInt    *cells;
-    PetscInt          i;
+    PetscInt          i,ghost;
     PetscScalar       *flux = user->work.flux,*fL,*fR;
     const FaceGeom    *fg;
     const CellGeom    *cgL,*cgR;
     const PetscScalar *xL,*xR;
 
+    ierr = DMComplexGetLabelValue(dm, "ghost", face, &ghost);CHKERRQ(ierr);
+    if (ghost >= 0) continue;
     ierr = DMComplexGetSupport(dm, face, &cells);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRead(dmFace,face,facegeom,&fg);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRead(dmCell,cells[0],cellgeom,&cgL);CHKERRQ(ierr);
@@ -1173,7 +1146,6 @@ static PetscErrorCode RHSFunctionLocal_Upwind(DM dm,DM dmFace,DM dmCell,Vec locX
       if (fR) fR[i] += flux[i] / cgR->volume;
     }
   }
-  ierr = ZeroGhosts(dm, f);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(user->facegeom,&facegeom);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(user->cellgeom,&cellgeom);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(locX,&x);CHKERRQ(ierr);
@@ -1266,7 +1238,6 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
       }
     }
     ierr = VecRestoreArrayRead(locGrad,&grad);CHKERRQ(ierr);
-    ierr = ZeroGhosts(dm, f);CHKERRQ(ierr);
     ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(user->facegeom,&facegeom);CHKERRQ(ierr);
@@ -1338,7 +1309,6 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     size_t ftableused,ftablealloc;
     const PetscScalar *cellgeom,*x;
     DM dmCell;
-    Vec locX;
     FunctionalLink flink;
     PetscReal *fmin,*fmax,*fintegral,*ftmp;
     for (flink=phys->functional,fcount=0; flink; flink=flink->next) fcount++;
@@ -1350,16 +1320,14 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     }
     ierr = DMComplexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
     ierr = VecGetDM(user->cellgeom,&dmCell);CHKERRQ(ierr);
-    ierr = DMGetLocalVector(dm,&locX);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,locX);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,locX);CHKERRQ(ierr);
     ierr = VecGetArrayRead(user->cellgeom,&cellgeom);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(locX,&x);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
     for (c=cStart; c<user->cEndInterior; c++) {
       const CellGeom *cg;
       const PetscScalar *cx;
       ierr = DMComplexPointLocalRead(dmCell,c,cellgeom,&cg);CHKERRQ(ierr);
-      ierr = DMComplexPointLocalRead(dm,c,x,&cx);CHKERRQ(ierr);
+      ierr = DMComplexPointGlobalRead(dm,c,x,&cx);CHKERRQ(ierr);
+      if (!cx) continue;
       if (phys->monitor) {ierr = (*phys->monitor)(user->physics,cx,ftmp);CHKERRQ(ierr);}
       for (i=0; i<fcount; i++) {
         fmin[i] = PetscMin(fmin[i],ftmp[i]);
@@ -1368,8 +1336,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
       }
     }
     ierr = VecRestoreArrayRead(user->cellgeom,&cellgeom);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(locX,&x);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dm,&locX);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
     ierr = MPI_Allreduce(MPI_IN_PLACE,fmin,fcount,MPIU_REAL,MPI_MIN,((PetscObject)ts)->comm);CHKERRQ(ierr);
     ierr = MPI_Allreduce(MPI_IN_PLACE,fmax,fcount,MPIU_REAL,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
     ierr = MPI_Allreduce(MPI_IN_PLACE,fintegral,fcount,MPIU_REAL,MPI_SUM,((PetscObject)ts)->comm);CHKERRQ(ierr);
