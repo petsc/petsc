@@ -726,6 +726,18 @@ testex19: ex19.PETSc
         ${RM} -f ex19_1.tmp; \
         ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm ; fi
 
+runex19_pthread:
+	-@${MPIEXEC} -n 1 ./ex19 -pc_type none -ksp_type fgmres -threadcomm_type pthread -threadcomm_nthreads 2 > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_threadcomm.out ex19.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_pthread, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19.tmp
+
+runex19_openmp:
+	-@${MPIEXEC} -n 1 ./ex19 -pc_type none -ksp_type fgmres -threadcomm_type openmp -threadcomm_nthreads 2 > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_threadcomm.out ex19.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_openmp, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19.tmp
+
 runex19_cusp:
 	-@${MPIEXEC} -n 1 ./ex19 -dm_vec_type cusp -dm_mat_type aijcusp -pc_type none -ksp_type fgmres -snes_monitor_short -snes_rtol 1.e-5 > ex19.tmp 2>&1; \
 	   if (${DIFF} output/ex19_cusp.out ex19.tmp) then true; \
@@ -875,6 +887,7 @@ TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_4 runex19_fieldsplit_mumps r
 TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu ex19.rm
 TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm  ex19.PETSc  ex19.rm
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm  ex19.PETSc runex19_11 runex19_12 ex19.rm
-TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm ex47cu.PETSc runex47cu ex47cu.rm 
+TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm ex47cu.PETSc runex47cu ex47cu.rm
+TESTEXAMPLES_THREADCOMM        = ex19.PETSc runex19_pthread runex19_openmp ex19.rm 
 
 include ${PETSC_DIR}/conf/test

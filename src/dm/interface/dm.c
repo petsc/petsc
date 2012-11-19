@@ -362,6 +362,7 @@ PetscErrorCode  DMDestroy(DM *dm)
 
   ierr = PetscSectionDestroy(&(*dm)->defaultSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&(*dm)->defaultGlobalSection);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&(*dm)->map);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->defaultSF);CHKERRQ(ierr);
 
@@ -3263,6 +3264,8 @@ PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section) {
 /*@
   DMGetDefaultGlobalSection - Get the PetscSection encoding the global data layout for the DM.
 
+  Collective on DM
+
   Input Parameter:
 . dm - The DM
 
@@ -3284,6 +3287,7 @@ PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *section) {
   if (!dm->defaultGlobalSection) {
     if (!dm->defaultSection || !dm->sf) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "DM must have a default PetscSection and PetscSF in order to create a global PetscSection");
     ierr = PetscSectionCreateGlobalSection(dm->defaultSection, dm->sf, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);
+    ierr = PetscSectionGetValueLayout(((PetscObject)dm)->comm,dm->defaultGlobalSection,&dm->map);CHKERRQ(ierr);
   }
   *section = dm->defaultGlobalSection;
   PetscFunctionReturn(0);

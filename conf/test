@@ -45,16 +45,15 @@ testexamples_HDF5: ${TESTEXAMPLES_HDF5}
 testexamples_CHACO: ${TESTEXAMPLES_CHACO}
 testexamples_TRIANGLE: ${TESTEXAMPLES_TRIANGLE}
 testexamples_SIEVE: ${TESTEXAMPLES_SIEVE}
+
 testexamples_BOOST: ${TESTEXAMPLES_BOOST}
 testexamples_TETGEN: ${TESTEXAMPLES_TETGEN}
 testexamples_PTSCOTCH: ${TESTEXAMPLES_PTSCOTCH}
 testexamples_PASTIX: ${TESTEXAMPLES_PASTIX}
 testexamples_ML: ${TESTEXAMPLES_ML}
 testexamples_CUSP: ${TESTEXAMPLES_CUSP}
-testexamples_PTHREAD: ${TESTEXAMPLES_PTHREAD}
-testexamples_PTHREADCLASSES: ${TESTEXAMPLES_PTHREADCLASSES}
 testexamples_YAML: ${TESTEXAMPLES_YAML}
-testexamples_AFTERIMAGE: ${TESTEXAMPLES_AFTERIMAGE}
+testexamples_THREADCOMM: ${TESTEXAMPLES_THREADCOMM}
 testexamples_X:
 testexamples_OPENGL:
 testexamples_MPE:
@@ -65,7 +64,6 @@ testexamples_SOWING:
 testexamples_C2HTML:
 testexamples_BLACS:
 testexamples_SCALAPACK:
-testexamples_OPENMP:
 testexamples_TXPETSCGPU:
 testexamples_CMAKE:
 
@@ -123,8 +121,8 @@ buildexamples_MPE:
 	-@${OMAKE} testexamples_MPE TESTEXAMPLES_MPE=`echo ${TESTEXAMPLES_MPE} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_ESSL:
 	-@${OMAKE} testexamples_ESSL TESTEXAMPLES_ESSL=`echo ${TESTEXAMPLES_ESSL} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_OPENMP:
-	-@${OMAKE} testexamples_OPENMP TESTEXAMPLES_OPENMP=`echo ${TESTEXAMPLES_OPENMP} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_THREADCOMM:
+	-@${OMAKE} testexamples_THREADCOMM TESTEXAMPLES_THREADCOMM=`echo ${TESTEXAMPLES_THREADCOMM} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 
 TESTMODE = testexamples
 

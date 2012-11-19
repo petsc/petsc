@@ -9010,10 +9010,15 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
   PetscValidType(B,2);
   MatCheckPreallocated(B,2);
-  if (!B->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (B->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (!B->assembled) SETERRQ(((PetscObject)B)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (B->factortype) SETERRQ(((PetscObject)B)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscValidHeaderSpecific(C,MAT_CLASSID,3);
   PetscValidPointer(C,3);
-  if (B->rmap->N!=A->cmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->cmap->N);
+  MatCheckPreallocated(C,3);
+  if (!C->assembled) SETERRQ(((PetscObject)C)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (C->factortype) SETERRQ(((PetscObject)C)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (B->rmap->N!=A->cmap->N) SETERRQ2(((PetscObject)B)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->cmap->N);
+  if (C->rmap->N!=B->cmap->N) SETERRQ2(((PetscObject)C)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",C->rmap->N,B->cmap->N);
   if (scall == MAT_REUSE_MATRIX) {
     PetscValidPointer(*D,6);
     PetscValidHeaderSpecific(*D,MAT_CLASSID,6);
