@@ -488,7 +488,8 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     ierr = PetscSFView(sfDof, PETSC_NULL);CHKERRQ(ierr);
   }
   /* Create section for dof adjacency (dof ==> # adj dof) */
-  /*   Two points p and q are adjacent if q \in closure(star(p)) */
+  /*   FEM: Two points p and q are adjacent if q \in closure(star(p)) */
+  /*   FVM: Two points p and q are adjacent if q \in star(closure(p)) */
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &numDof);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &leafSectionAdj);CHKERRQ(ierr);
