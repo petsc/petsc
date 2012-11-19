@@ -1099,10 +1099,13 @@ and PetscBinaryWrite() to see how this may be done.
 PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
 {
   PetscErrorCode ierr;
+  PetscBool      isbinary;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(newvec,VEC_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   if (!((PetscObject)newvec)->type_name && !newvec->ops->create) {

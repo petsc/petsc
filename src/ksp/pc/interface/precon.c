@@ -1512,11 +1512,10 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     ierr = PetscViewerStringSPrintf(viewer," %-7.7s",cstr);CHKERRQ(ierr);
     if (pc->ops->view) {ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);}
   } else if (isbinary) {
-    ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);
     if (pc->ops->view) {
       ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);
     }
-  } 
+  }
   PetscFunctionReturn(0);
 }
 

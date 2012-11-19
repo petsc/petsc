@@ -516,11 +516,27 @@ PetscErrorCode  DMSetFromOptions(DM dm)
 PetscErrorCode  DMView(DM dm,PetscViewer v)
 {
   PetscErrorCode ierr;
+  PetscBool      isbinary;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
- if (!v) {
+  if (!v) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)dm)->comm,&v);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (isbinary) {
+    PetscInt         classid = DM_FILE_CLASSID,subclassid = DMDA_FILE_CLASSID;
+    MPI_Comm         comm;
+    PetscMPIInt      rank;
+    char             type[256];
+
+    ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PetscViewerBinaryWrite(v,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscStrncpy(type,((PetscObject)dm)->type_name,256);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(v,type,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+    }
   }
   if (dm->ops->view) {
     ierr = (*dm->ops->view)(dm,v);CHKERRQ(ierr);
@@ -2650,7 +2666,7 @@ PetscErrorCode  DMSetType(DM dm, DMType method)
 
   if (!DMRegisterAllCalled) {ierr = DMRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscFListFind(DMList, ((PetscObject)dm)->comm, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
+  if (!r) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
 
   if (dm->ops->destroy) {
     ierr = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
@@ -3007,6 +3023,8 @@ PetscErrorCode  DMSetJacobianMatlab(DM dm,const char *func)
      has not yet been determined
 .ve
 
+   The type is determined by the data in the file, any type set into the DM before this call is ignored.
+
    In addition, PETSc automatically does the byte swapping for
 machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
 linux, Windows and the paragon; thus if you write your own binary
@@ -3020,14 +3038,20 @@ and PetscBinaryWrite() to see how this may be done.
 PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
 {
   PetscErrorCode ierr;
+  PetscBool      isbinary;
+  PetscInt       classid, subclassid;
+  char           type[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(newdm,DM_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-  if (!((PetscObject)newdm)->type_name) {
-    ierr = DMSetType(newdm, DMDA);CHKERRQ(ierr);
-  }
+  ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+  if (classid != DM_FILE_CLASSID) SETERRQ(((PetscObject)newdm)->comm,PETSC_ERR_ARG_WRONG,"Not DM next in file");
+  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = DMSetType(newdm, type);CHKERRQ(ierr);
   ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

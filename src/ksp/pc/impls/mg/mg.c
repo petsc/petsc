@@ -484,9 +484,6 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     }
   } else if (isbinary) {
     for (i=levels-1; i>=0; i--) {
-      if (i) {
-        ierr = MatView(mglevels[i]->interpolate,viewer);CHKERRQ(ierr);
-      }
       ierr = KSPView(mglevels[i]->smoothd,viewer);CHKERRQ(ierr);
       if (i && mglevels[i]->smoothd != mglevels[i]->smoothu) {
         ierr = KSPView(mglevels[i]->smoothu,viewer);CHKERRQ(ierr);
@@ -758,6 +755,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 #endif
   ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_mg_dump_binary",&dump,PETSC_NULL);CHKERRQ(ierr);
   if (dump) {
+   
     viewer = PETSC_VIEWER_BINARY_(((PetscObject)pc)->comm);
   }
 
