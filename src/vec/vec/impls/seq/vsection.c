@@ -973,10 +973,11 @@ PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLa
   PetscFunctionBegin;
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt dof;
+    PetscInt dof,cdof;
 
     ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
-    if (dof > 0) {localSize += dof;}
+    ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
+    if (dof-cdof > 0) {localSize += dof-cdof;}
   }
   ierr = PetscLayoutCreate(comm, layout);CHKERRQ(ierr);
   ierr = PetscLayoutSetLocalSize(*layout, localSize);CHKERRQ(ierr);

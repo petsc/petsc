@@ -541,6 +541,7 @@ PetscErrorCode DMCreate_Complex(DM dm)
   mesh->vtkCellMax           = PETSC_DETERMINE;
   mesh->vtkVertexMax         = PETSC_DETERMINE;
   mesh->vtkCellHeight        = 0;
+  mesh->preallocCenterDim    = -1;
 
   mesh->integrateResidualFEM       = PETSC_NULL;
   mesh->integrateJacobianActionFEM = PETSC_NULL;

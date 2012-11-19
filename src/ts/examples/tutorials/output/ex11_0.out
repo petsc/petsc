@@ -1,12 +1,3 @@
-Vector Object:solution 1 MPI processes
-  type: seq
-4.19099
-7.15466
-5.88574
-2.33333
-3.7975
-3.10022
-1.22222
   0  time        0  |x|    7.155  
   1  time   0.7211  |x|    4.386  
   2  time    1.442  |x|    1.968  

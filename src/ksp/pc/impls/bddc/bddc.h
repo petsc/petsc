@@ -92,7 +92,7 @@ typedef struct {
   IS                         *ISForDofs;
   IS                         NeumannBoundaries;
   IS                         DirichletBoundaries;
-  PetscBool                  prec_type;
+  PetscBool                  inexact_prec_type;
   CoarseProblemType          coarse_problem_type;
   CoarseCommunicationsType   coarse_communications_type;
   PetscInt                   coarsening_ratio;
@@ -136,6 +136,21 @@ typedef struct {
   PC         pc;
 } FETIDPPC_ctx;
 
+/* inexact solvers with nullspace correction */
+typedef struct {
+  Mat basis_mat;
+  Mat Kbasis_mat;
+  Mat Lbasis_mat;
+  PC  local_pc;
+  Vec work_small_1;
+  Vec work_small_2;
+  Vec work_full_1;
+  Vec work_full_2;
+} NullSpaceCorrection_ctx;
+
+static PetscErrorCode PCBDDCAdaptLocalProblem(PC,IS);
+static PetscErrorCode PCBDDCDestroyNullSpaceCorrectionPC(PC);
+static PetscErrorCode PCBDDCApplyNullSpaceCorrectionPC(PC,Vec,Vec);
 static PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx**);
 static PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
 static PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx*);

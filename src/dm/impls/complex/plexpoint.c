@@ -228,7 +228,7 @@ PetscErrorCode DMComplexPointGlobalRead(DM dm,PetscInt point,const PetscScalar *
   PetscValidScalarPointer(array,3);
   PetscValidPointer(ptr,4);
   ierr = DMComplexGetGlobalOffset_Private(dm,point,&start);CHKERRQ(ierr);
-  *(const PetscScalar **)ptr = (start >= 0) ? array + start : PETSC_NULL;
+  *(const PetscScalar **)ptr = (start >= 0) ? array + start - dm->map->rstart : PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -268,6 +268,6 @@ PetscErrorCode DMComplexPointGlobalRef(DM dm,PetscInt point,PetscScalar *array,v
   PetscValidScalarPointer(array,3);
   PetscValidPointer(ptr,4);
   ierr = DMComplexGetGlobalOffset_Private(dm,point,&start);CHKERRQ(ierr);
-  *(PetscScalar **)ptr = (start >= 0) ? array + start : PETSC_NULL;
+  *(PetscScalar **)ptr = (start >= 0) ? array + start - dm->map->rstart : PETSC_NULL;
   PetscFunctionReturn(0);
 }
