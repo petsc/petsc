@@ -3403,10 +3403,8 @@ PetscErrorCode DMComplexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexEnlargePartition"
 /* Expand the partition by BFS on the adjacency graph */
-PetscErrorCode DMComplexEnlargePartition(DM dm, const PetscInt start[], const PetscInt adjacency[], PetscSection *partSection, IS *partition) {
+PetscErrorCode DMComplexEnlargePartition(DM dm, const PetscInt start[], const PetscInt adjacency[], PetscSection origPartSection, IS origPartition, PetscSection *partSection, IS *partition) {
   PetscHashI      h;
-  PetscSection    newps;
-  IS              newpart;
   const PetscInt *points;
   PetscInt      **tmpPoints, *newPoints, totPoints = 0;
   PetscInt        pStart, pEnd, part, q;
@@ -3414,17 +3412,17 @@ PetscErrorCode DMComplexEnlargePartition(DM dm, const PetscInt start[], const Pe
 
   PetscFunctionBegin;
   PetscHashICreate(h);
-  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &newps);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(*partSection, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(newps, pStart, pEnd);CHKERRQ(ierr);
-  ierr = ISGetIndices(*partition, &points);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, partSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(origPartSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(*partSection, pStart, pEnd);CHKERRQ(ierr);
+  ierr = ISGetIndices(origPartition, &points);CHKERRQ(ierr);
   ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt *), &tmpPoints);CHKERRQ(ierr);
   for(part = pStart; part < pEnd; ++part) {
     PetscInt numPoints, nP, numNewPoints, off, p, n = 0;
 
     PetscHashIClear(h);
-    ierr = PetscSectionGetDof(*partSection, part, &numPoints);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(*partSection, part, &off);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(origPartSection, part, &numPoints);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(origPartSection, part, &off);CHKERRQ(ierr);
     /* Add all existing points to h */
     for(p = 0; p < numPoints; ++p) {
       const PetscInt point = points[off+p];
@@ -3443,30 +3441,26 @@ PetscErrorCode DMComplexEnlargePartition(DM dm, const PetscInt start[], const Pe
       }
     }
     PetscHashISize(h, numNewPoints);
-    ierr = PetscSectionSetDof(newps, part, numNewPoints);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(*partSection, part, numNewPoints);CHKERRQ(ierr);
     ierr = PetscMalloc(numNewPoints * sizeof(PetscInt), &tmpPoints[part]);CHKERRQ(ierr);
     if (numNewPoints) {PetscHashIGetKeys(h, n, tmpPoints[part]);} /* Should not need this conditional */
     totPoints += numNewPoints;
   }
-  ierr = ISRestoreIndices(*partition, &points);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(origPartition, &points);CHKERRQ(ierr);
   PetscHashIDestroy(h);
-  ierr = PetscSectionSetUp(newps);CHKERRQ(ierr);
+  ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
   ierr = PetscMalloc(totPoints * sizeof(PetscInt), &newPoints);CHKERRQ(ierr);
   for(part = pStart, q = 0; part < pEnd; ++part) {
     PetscInt numPoints, p;
 
-    ierr = PetscSectionGetDof(newps, part, &numPoints);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(*partSection, part, &numPoints);CHKERRQ(ierr);
     for(p = 0; p < numPoints; ++p, ++q) {
       newPoints[q] = tmpPoints[part][p];
     }
     ierr = PetscFree(tmpPoints[part]);CHKERRQ(ierr);
   }
   ierr = PetscFree(tmpPoints);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(((PetscObject) dm)->comm, totPoints, newPoints, PETSC_OWN_POINTER, &newpart);CHKERRQ(ierr);
-  ierr = ISDestroy(partition);CHKERRQ(ierr);
-  *partition = newpart;
-  ierr = PetscSectionDestroy(partSection);CHKERRQ(ierr);
-  *partSection = newps;
+  ierr = ISCreateGeneral(((PetscObject) dm)->comm, totPoints, newPoints, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3484,18 +3478,22 @@ PetscErrorCode DMComplexEnlargePartition(DM dm, const PetscInt start[], const Pe
 
   Output Parameters:
   + partSection - The PetscSection giving the division of points by partition
-  - partition - The list of points by partition
+  . partition - The list of points by partition
+  . origPartSection - If enlarge is true, the PetscSection giving the division of points before enlarging by partition, otherwise PETSC_NULL
+  - origPartition - If enlarge is true, the list of points before enlarging by partition, otherwise PETSC_NULL
 
   Level: developer
 
 .seealso DMComplexDistribute()
 */
-PetscErrorCode DMComplexCreatePartition(DM dm, PetscInt height, PetscBool enlarge, PetscSection *partSection, IS *partition) {
+PetscErrorCode DMComplexCreatePartition(DM dm, PetscInt height, PetscBool enlarge, PetscSection *partSection, IS *partition, PetscSection *origPartSection, IS *origPartition) {
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject) dm)->comm, &size);CHKERRQ(ierr);
+  *origPartSection = PETSC_NULL;
+  *origPartition   = PETSC_NULL;
   if (size == 1) {
     PetscInt *points;
     PetscInt  cStart, cEnd, c;
@@ -3527,7 +3525,11 @@ PetscErrorCode DMComplexCreatePartition(DM dm, PetscInt height, PetscBool enlarg
       ierr = DMComplexPartition_ParMetis(dm, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
 #endif
     }
-    if (enlarge) {ierr = DMComplexEnlargePartition(dm, start, adjacency, partSection, partition);CHKERRQ(ierr);}
+    if (enlarge) {
+      *origPartSection = *partSection;
+      *origPartition   = *partition;
+      ierr = DMComplexEnlargePartition(dm, start, adjacency, *origPartSection, *origPartition, partSection, partition);CHKERRQ(ierr);
+    }
     ierr = PetscFree(start);CHKERRQ(ierr);
     ierr = PetscFree(adjacency);CHKERRQ(ierr);
 # if 0
@@ -3685,8 +3687,8 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
   MPI_Comm       comm   = ((PetscObject) dm)->comm;
   const PetscInt height = 0;
   PetscInt       dim, numRemoteRanks;
-  IS             cellPart,        part;
-  PetscSection   cellPartSection, partSection;
+  IS             origCellPart,        cellPart,        part;
+  PetscSection   origCellPartSection, cellPartSection, partSection;
   PetscSFNode   *remoteRanks;
   PetscSF        partSF, pointSF, coneSF;
   ISLocalToGlobalMapping renumbering;
@@ -3709,7 +3711,7 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   /* Create cell partition - We need to rewrite to use IS, use the MatPartition stuff */
   if (overlap > 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Overlap > 1 not yet implemented");
-  ierr = DMComplexCreatePartition(dm, height, overlap > 0 ? PETSC_TRUE : PETSC_FALSE, &cellPartSection, &cellPart);CHKERRQ(ierr);
+  ierr = DMComplexCreatePartition(dm, height, overlap > 0 ? PETSC_TRUE : PETSC_FALSE, &cellPartSection, &cellPart, &origCellPartSection, &origCellPart);CHKERRQ(ierr);
   /* Create SF assuming a serial partition for all processes: Could check for IS length here */
   if (!rank) {
     numRemoteRanks = numProcs;
@@ -3728,6 +3730,11 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
     ierr = PetscPrintf(comm, "Cell Partition:\n");CHKERRQ(ierr);
     ierr = PetscSectionView(cellPartSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = ISView(cellPart, PETSC_NULL);CHKERRQ(ierr);
+    if (origCellPart) {
+      ierr = PetscPrintf(comm, "Original Cell Partition:\n");CHKERRQ(ierr);
+      ierr = PetscSectionView(origCellPartSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      ierr = ISView(origCellPart, PETSC_NULL);CHKERRQ(ierr);
+    }
     ierr = PetscSFView(partSF, PETSC_NULL);CHKERRQ(ierr);
   }
   /* Close the partition over the mesh */
@@ -3956,12 +3963,27 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
       lowners[p*2+0] = rank;
       lowners[p*2+1] = leaves ? leaves[p] : p;
     }
-#if 0 /* Why doesn't this datatype work */
-    ierr = PetscSFFetchAndOpBegin(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
-    ierr = PetscSFFetchAndOpEnd(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
-#endif
+    /* TODO This really should be MPI_2INT */
     ierr = PetscSFReduceBegin(pointSF, MPI_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
     ierr = PetscSFReduceEnd(pointSF, MPI_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
+    if (origCellPart) {
+      /* Make sure cells in the original partition are not assigned to other procs */
+      const PetscInt *origCells;
+
+      ierr = ISGetIndices(origCellPart, &origCells);CHKERRQ(ierr);
+      for(p = 0; p < numProcs; ++p) {
+        PetscInt dof, off, d;
+
+        ierr = PetscSectionGetDof(origCellPartSection, p, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(origCellPartSection, p, &off);CHKERRQ(ierr);
+        for(d = off; d < off+dof; ++d) {
+          rowners[origCells[d]*2] = p;
+        }
+      }
+      ierr = ISRestoreIndices(origCellPart, &origCells);CHKERRQ(ierr);
+    }
+    ierr = ISDestroy(&origCellPart);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&origCellPartSection);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
     for (p = 0; p < numLeaves; ++p) {

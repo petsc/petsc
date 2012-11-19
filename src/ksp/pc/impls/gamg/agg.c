@@ -884,7 +884,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       LAPACKgeqrf_( &Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO );
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      if ( INFO != 0 ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xGEQRS error");
+      if ( INFO != 0 ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xGEQRF error");
       /* get R - column oriented - output B_{i+1} */
       {
         PetscReal *data = &out_data[clid*nSAvec];

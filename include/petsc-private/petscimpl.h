@@ -170,6 +170,8 @@ PETSC_EXTERN void PetscSegv_sigaction(int, siginfo_t*, void *);
 +     ptr - the pointer
 -     dtype - the type of data the pointer is suppose to point to
 
+   Level: developer
+
 @*/
 PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
 {
