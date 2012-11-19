@@ -151,7 +151,7 @@ static PetscErrorCode PhysicsSolution_Advect(User user,PetscReal time,const Pets
 #define __FUNCT__ "PhysicsCreate_Advect"
 static PetscErrorCode PhysicsCreate_Advect(User user,Physics phys)
 {
-  const PetscInt inflowids[] = {100,101,200},outflowids[] = {300};
+  const PetscInt inflowids[] = {100,200,300},outflowids[] = {101};
   Physics_Advect *advect = (Physics_Advect*)phys->data;
   PetscErrorCode ierr;
 
@@ -1463,7 +1463,7 @@ int main(int argc, char **argv)
 
   ierr = ConstructGhostCells(&dm, user);CHKERRQ(ierr);
   ierr = ConstructGeometry(dm, &user->facegeom, &user->cellgeom, user);CHKERRQ(ierr);
-  if (0) {ierr = VecView(user->facegeom, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+  if (0) {ierr = VecView(user->cellgeom, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
   /* Set up DM with section describing local vector and configure local vector. */
   ierr = SetUpLocalSpace(dm, user);CHKERRQ(ierr);
