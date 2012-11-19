@@ -1397,7 +1397,7 @@ int main(int argc, char **argv)
   User           user;
   DM             dm, dmDist;
   PetscReal      ftime,cfl,dt;
-  PetscInt       overlap,nsteps;
+  PetscInt       dim, overlap, nsteps;
   int            CPU_word_size = 0, IO_word_size = 0, exoid;
   float          version;
   TS             ts;
@@ -1464,6 +1464,8 @@ int main(int argc, char **argv)
   ierr = ConstructGhostCells(&dm, user);CHKERRQ(ierr);
   ierr = ConstructGeometry(dm, &user->facegeom, &user->cellgeom, user);CHKERRQ(ierr);
   if (0) {ierr = VecView(user->cellgeom, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMComplexSetPreallocationCenterDimension(dm, 0);CHKERRQ(ierr);
 
   /* Set up DM with section describing local vector and configure local vector. */
   ierr = SetUpLocalSpace(dm, user);CHKERRQ(ierr);
