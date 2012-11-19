@@ -3948,54 +3948,66 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
   /* Create point SF for parallel mesh */
   {
     const PetscInt *leaves;
-    PetscSFNode    *remotePoints;
-    PetscInt       *rowners, *lowners, *ghostPoints;
-    PetscInt        numRoots, numLeaves, numGhostPoints = 0, p, gp;
+    PetscSFNode    *remotePoints, *rowners, *lowners;
+    PetscInt        numRoots, numLeaves, numGhostPoints = 0, p, gp, *ghostPoints;;
     PetscInt        pStart, pEnd;
 
     ierr = DMComplexGetChart(*dmParallel, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscMalloc2(numRoots*2,PetscInt,&rowners,numLeaves*2,PetscInt,&lowners);CHKERRQ(ierr);
-    for (p = 0; p < numRoots*2; ++p) {
-      rowners[p] = 0;
+    ierr = PetscMalloc2(numRoots,PetscSFNode,&rowners,numLeaves,PetscSFNode,&lowners);CHKERRQ(ierr);
+    for (p=0; p<numRoots; p++) {
+      rowners[p].rank = -1;
+      rowners[p].index = -1;
     }
-    for (p = 0; p < numLeaves; ++p) {
-      lowners[p*2+0] = rank;
-      lowners[p*2+1] = leaves ? leaves[p] : p;
-    }
-    /* TODO This really should be MPI_2INT */
-    ierr = PetscSFReduceBegin(pointSF, MPI_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(pointSF, MPI_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
     if (origCellPart) {
       /* Make sure cells in the original partition are not assigned to other procs */
       const PetscInt *origCells;
 
       ierr = ISGetIndices(origCellPart, &origCells);CHKERRQ(ierr);
-      for(p = 0; p < numProcs; ++p) {
+      for (p = 0; p < numProcs; ++p) {
         PetscInt dof, off, d;
 
         ierr = PetscSectionGetDof(origCellPartSection, p, &dof);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(origCellPartSection, p, &off);CHKERRQ(ierr);
         for(d = off; d < off+dof; ++d) {
-          rowners[origCells[d]*2] = p;
+          rowners[origCells[d]].rank = p;
         }
       }
       ierr = ISRestoreIndices(origCellPart, &origCells);CHKERRQ(ierr);
     }
     ierr = ISDestroy(&origCellPart);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&origCellPartSection);CHKERRQ(ierr);
+
+    ierr = PetscSFBcastBegin(pointSF, MPI_2INT, rowners, lowners);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(pointSF, MPI_2INT, rowners, lowners);CHKERRQ(ierr);
+    for (p = 0; p < numLeaves; ++p) {
+      if (lowners[p].rank < 0 || lowners[p].rank == rank) { /* Either put in a bid or we know we own it */
+        lowners[p].rank = rank;
+        lowners[p].index = leaves ? leaves[p] : p;
+      } else if (lowners[p].rank >= 0) { /* Point already claimed so flag so that MAXLOC does not listen to us */
+        lowners[p].rank = -2;
+        lowners[p].index = -2;
+      }
+    }
+    for (p=0; p<numRoots; p++) { /* Root must not participate in the rediction, flag so that MAXLOC does not use */
+      rowners[p].rank = -3;
+      rowners[p].index = -3;
+    }
+    ierr = PetscSFReduceBegin(pointSF, MPI_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(pointSF, MPI_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
     for (p = 0; p < numLeaves; ++p) {
-      if (lowners[p*2+0] != rank) ++numGhostPoints;
+      if (lowners[p].rank < 0 || lowners[p].index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cell partition corrupt: point not claimed");
+      if (lowners[p].rank != rank) ++numGhostPoints;
     }
     ierr = PetscMalloc(numGhostPoints * sizeof(PetscInt),    &ghostPoints);CHKERRQ(ierr);
     ierr = PetscMalloc(numGhostPoints * sizeof(PetscSFNode), &remotePoints);CHKERRQ(ierr);
     for (p = 0, gp = 0; p < numLeaves; ++p) {
-      if (lowners[p*2+0] != rank) {
+      if (lowners[p].rank != rank) {
         ghostPoints[gp]       = leaves ? leaves[p] : p;
-        remotePoints[gp].rank  = lowners[p*2+0];
-        remotePoints[gp].index = lowners[p*2+1];
+        remotePoints[gp].rank  = lowners[p].rank;
+        remotePoints[gp].index = lowners[p].index;
         ++gp;
       }
     }
