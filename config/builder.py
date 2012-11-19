@@ -1448,9 +1448,9 @@ class PETScMaker(script.Script):
      with file(outputName) as f:
        validOutput = f.read()
        if not validOutput == output:
-         self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match" % (executable, str(testNum)))
-         for line in unified_diff(output.split('\n'), validOutput.split('\n'), fromfile='Current Output', tofile='Saved Output'):
-           self.logPrint(line)
+         self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match" % (executable, str(testNum)), debugSection = 'screen', forceScroll = True)
+         for line in unified_diff(validOutput.split('\n'), output.split('\n'), fromfile='Current Output', tofile='Saved Output'):
+           self.logPrint(line+'\n', debugSection = 'screen', forceScroll = True)
          self.logPrintDivider()
          self.logPrint(validOutput, indent = 0)
          self.logPrintDivider()
