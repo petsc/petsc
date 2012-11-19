@@ -342,7 +342,8 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                         'src/ts/examples/tutorials/ex11':      [{'numProcs': 1, 'args': '-ufv_vtk_interval 0'},
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f sevenside-quad-15.e'},
                                                                 {'numProcs': 2, 'args': '-ufv_vtk_interval 0'},
-                                                                {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f sevenside-quad-15.e'}],
+                                                                {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f sevenside-quad-15.e'},
+                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -ts_type rosw'}],
                         'src/ts/examples/tutorials/ex18':      {'numProcs': 1, 'args': '-snes_mf -ts_monitor_solution -ts_monitor -snes_monitor'},
                         }
 
