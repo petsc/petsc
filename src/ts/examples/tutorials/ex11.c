@@ -1070,6 +1070,7 @@ static PetscErrorCode ApplyBC(DM dm, Vec locX, User user)
   PetscFunctionBegin;
   ierr = VecGetDM(user->facegeom,&dmFace);CHKERRQ(ierr);
   ierr = DMComplexGetLabelIdIS(dm, name, &idIS);CHKERRQ(ierr);
+  if (!idIS) PetscFunctionReturn(0);
   ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
   ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->facegeom, &facegeom);CHKERRQ(ierr);

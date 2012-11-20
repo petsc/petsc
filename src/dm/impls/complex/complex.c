@@ -2590,9 +2590,10 @@ PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
     }
     next = next->next;
   }
-  if (!next) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label with name %s exists in this mesh", name);
   *ids = PETSC_NULL;
-  ierr = ISCreateGeneral(((PetscObject) dm)->comm, size, values, PETSC_OWN_POINTER, ids);CHKERRQ(ierr);
+  if (next) {                   /* We found the label on this process */
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, size, values, PETSC_OWN_POINTER, ids);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
