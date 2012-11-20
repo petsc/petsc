@@ -520,11 +520,13 @@ PetscErrorCode DMSNESGetGS(DM dm,PetscErrorCode (**func)(SNES,Vec,Vec,void*),voi
 PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  SNESDM sdm;
+  SNESDM         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (func || ctx) ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  if (func || ctx) {
+    ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  }
   if (func) sdm->computejacobian = func;
   if (ctx)  sdm->jacobianctx = ctx;
   PetscFunctionReturn(0);
