@@ -183,8 +183,9 @@ typedef struct {
   PetscReal gravity;
   PetscReal boundaryHeight;
   struct {
-    PetscInt hOffset;
-    PetscInt cOffset;
+    PetscInt Height;
+    PetscInt Speed;
+    PetscInt Energy;
   } monitor;
 } Physics_SW;
 typedef struct {
@@ -240,7 +241,7 @@ static PetscErrorCode PhysicsRiemann_SW(Physics phys, const PetscReal *n, const 
   SWFlux(phys,n,uL,&fL);
   SWFlux(phys,n,uR,&fR);
   c = PetscSqrtScalar(sw->gravity*PetscMax(uL->h,uR->h)); /* gravity wave speed */
-  speed = PetscMax(PetscAbsScalar(Dot2(uL->uh,n)),PetscAbsScalar(Dot2(uR->uh,n))) / Norm2(n) + c;
+  speed = PetscMax(PetscAbsScalar(Dot2(uL->uh,n)/uL->h),PetscAbsScalar(Dot2(uR->uh,n)/uR->h)) / Norm2(n) + c;
   for (i=0; i<1+DIM; i++) flux[i] = 0.5*(fL.vals[i] + fR.vals[i]) + 0.5*speed*(xL[i] - xR[i]);
   PetscFunctionReturn(0);
 }
@@ -265,8 +266,8 @@ static PetscErrorCode PhysicsSolution_SW(User user,PetscReal time,const PetscRea
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PhysicsMonitor_SW"
-static PetscErrorCode PhysicsMonitor_SW(Physics phys,const PetscScalar *xx,PetscReal *f)
+#define __FUNCT__ "PhysicsFunctional_SW"
+static PetscErrorCode PhysicsFunctional_SW(Physics phys,const PetscScalar *xx,PetscReal *f)
 {
   Physics_SW *sw = (Physics_SW*)phys->data;
   const SWNode *x = (const SWNode*)xx;
@@ -274,10 +275,11 @@ static PetscErrorCode PhysicsMonitor_SW(Physics phys,const PetscScalar *xx,Petsc
   PetscReal h;
 
   PetscFunctionBegin;
-  h = PetscAbsScalar(x->h);
-  f[sw->monitor.hOffset] = h;
+  h = PetscRealPart(x->h);
+  f[sw->monitor.Height] = h;
   Scale2(1./x->h,x->uh,u);
-  f[sw->monitor.cOffset] = Norm2(u) + PetscSqrtReal(sw->gravity*h);
+  f[sw->monitor.Speed] = Norm2(u) + PetscSqrtReal(sw->gravity*h);
+  f[sw->monitor.Energy] = 0.5*(Dot2(x->uh,u) + sw->gravity*PetscSqr(h));
   PetscFunctionReturn(0);
 }
 
@@ -303,9 +305,10 @@ static PetscErrorCode PhysicsCreate_SW(User user,Physics phys)
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   phys->maxspeed = PetscSqrtReal(2.0*sw->gravity); /* Mach 1 for depth of 2 */
-  phys->monitor = PhysicsMonitor_SW;
-  ierr = PhysicsFunctionalRegister(phys,"Height",&sw->monitor.hOffset);CHKERRQ(ierr);
-  ierr = PhysicsFunctionalRegister(phys,"Speed",&sw->monitor.cOffset);CHKERRQ(ierr);
+  phys->monitor = PhysicsFunctional_SW;
+  ierr = PhysicsFunctionalRegister(phys,"Height",&sw->monitor.Height);CHKERRQ(ierr);
+  ierr = PhysicsFunctionalRegister(phys,"Speed",&sw->monitor.Speed);CHKERRQ(ierr);
+  ierr = PhysicsFunctionalRegister(phys,"Energy",&sw->monitor.Energy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
