@@ -224,7 +224,7 @@ PetscErrorCode MatSetDM(Mat A, DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(dm,DM_CLASSID,2);
+  if (dm) {PetscValidHeaderSpecific(dm,DM_CLASSID,2);}
   ierr = PetscObjectCompose((PetscObject) A, "__PETSc_dm", (PetscObject) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

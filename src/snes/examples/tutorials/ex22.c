@@ -153,7 +153,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec U,Vec FU,void *ctx)
   DM             packer,red,da;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)U,"__PETSc_dm",(PetscObject*)&packer);CHKERRQ(ierr); /* Ugly way to get context */
+  ierr = VecGetDM(U, &packer);CHKERRQ(ierr);
   ierr = DMCompositeGetEntries(packer,&red,&da);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(packer,&vw,&vu_lambda);CHKERRQ(ierr);
   ierr = DMCompositeScatter(packer,U,vw,vu_lambda);CHKERRQ(ierr);
