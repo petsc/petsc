@@ -795,6 +795,55 @@ runex30:
 	   else  echo  ${PWD} "\nPossible problem with with ex30_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex30_1.tmp
 
+runex35:
+	-@${MPIEXEC} -n 1 ./ex35 -snes_rtol 1.e-12 -snes_monitor_short -snes_type nrichardson   > ex35_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_1.out ex35_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_1.tmp
+
+runex35_2:
+	-@${MPIEXEC} -n 1 ./ex35  -snes_rtol 1.e-12 -snes_monitor_short -ksp_rtol 1.e-12  -ksp_monitor_short -ksp_type richardson -pc_type none -ksp_richardson_self_scale    > ex35_2.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_2.out ex35_2.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_2.tmp
+
+runex35_3:
+	-@${MPIEXEC} -n 1 ./ex35  -snes_rtol 1.e-12 -snes_monitor_short  -snes_type ngmres    > ex35_3.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_3.out ex35_3.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_3, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_3.tmp
+
+runex35_4:
+	-@${MPIEXEC} -n 1 ./ex35  -snes_rtol 1.e-12 -snes_monitor_short  -ksp_type gmres -ksp_monitor_short -ksp_rtol 1.e-12 -pc_type none    > ex35_4.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_4.out ex35_4.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_4, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_4.tmp
+
+runex35_5:
+	-@${MPIEXEC} -n 1 ./ex35  -snes_rtol 1.e-12 -snes_monitor_short  -snes_type ncg     > ex35_5.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_5.out ex35_5.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_5, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_5.tmp
+
+runex35_6:
+	-@${MPIEXEC} -n 1 ./ex35  -snes_rtol 1.e-12 -snes_monitor_short  -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-12 -pc_type none     > ex35_6.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_6.out ex35_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_6, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_6.tmp
+
+runex35_7:
+	-@${MPIEXEC} -n 1 ./ex35 -da_refine 2 -snes_rtol 1.e-12 -snes_monitor_short  -pc_type mg -mg_levels_ksp_type richardson -mg_levels_pc_type none -mg_levels_ksp_monitor_short \
+            -mg_levels_ksp_richardson_self_scale -ksp_type richardson -ksp_monitor_short -ksp_rtol 1.e-12      > ex35_7.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_7.out ex35_7.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_7, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_7.tmp
+
+runex35_8:
+	-@${MPIEXEC} -n 1 ./ex35  -da_refine 2 -snes_monitor_short  -snes_type fas -fas_levels_snes_monitor_short -fas_coarse_snes_type ls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_type fas   > ex35_8.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_8.out ex35_8.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_8, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_8.tmp
+
 runex40f90:
 	-@${MPIEXEC} -n 1 ./ex40f90 -snes_monitor_short -snes_view  -da_refine 1 -pc_type mg  -pc_mg_type full -ksp_type fgmres -pc_mg_galerkin  > ex40f90_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex40f90.out ex40f90_1.tmp) then true; \
@@ -867,6 +916,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm \
                                  ex25.PETSc runex25 runex25_2 \
                                  ex25.rm ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm ex30.PETSc runex30 ex30.rm \
+                                 ex35.PETSc runex35 runex35_2 runex35_3 runex35_4 runex35_5 runex35_6 runex35_7 ex35.rm \
                                  ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
                                  ex46.PETSc runex46 ex46.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
