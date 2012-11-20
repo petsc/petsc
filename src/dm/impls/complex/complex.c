@@ -4096,8 +4096,10 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
     numEdges += numCorners - off[numCells];
 #endif
   }
+#if 0
   /* Check Euler characteristic V - E + F = 1 */
   if (numVertices && (numVertices-numEdges+numCells != 1)) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Euler characteristic of mesh is %d  != 1", numVertices-numEdges+numCells);
+#endif
   /* Create interpolated mesh */
   ierr = DMCreate(((PetscObject) dm)->comm, &idm);CHKERRQ(ierr);
   ierr = DMSetType(idm, DMCOMPLEX);CHKERRQ(ierr);
