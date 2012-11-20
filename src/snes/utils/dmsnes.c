@@ -321,7 +321,9 @@ PetscErrorCode DMSNESSetFunction(DM dm,PetscErrorCode (*func)(SNES,Vec,Vec,void*
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (func || ctx)ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  if (func || ctx) {
+    ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  }
   if (func) sdm->computefunction = func;
   if (ctx)  sdm->functionctx = ctx;
   PetscFunctionReturn(0);
@@ -385,7 +387,9 @@ PetscErrorCode DMSNESSetObjective(DM dm,SNESObjective func,void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (func || ctx)ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  if (func || ctx) {
+    ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  }
   if (func) sdm->computeobjective = func;
   if (ctx)  sdm->objectivectx = ctx;
   PetscFunctionReturn(0);
@@ -454,7 +458,9 @@ PetscErrorCode DMSNESSetGS(DM dm,PetscErrorCode (*func)(SNES,Vec,Vec,void*),void
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (func || ctx)ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  if (func || ctx) {
+    ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  }
   if (func) sdm->computegs = func;
   if (ctx)  sdm->gsctx = ctx;
   PetscFunctionReturn(0);
@@ -710,7 +716,9 @@ PetscErrorCode DMSNESSetBlockFunction(DM dm,PetscErrorCode (*func)(SNES,Vec,Vec,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (func || ctx)ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  if (func || ctx) {
+    ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  }
   if (func) sdm->computeblockfunction = func;
   if (ctx)  sdm->blockfunctionctx = ctx;
   PetscFunctionReturn(0);
@@ -774,7 +782,9 @@ PetscErrorCode DMSNESSetBlockJacobian(DM dm,PetscErrorCode (*func)(SNES,Vec,Mat*
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (func || ctx)ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  if (func || ctx) {
+    ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  }
   if (func) sdm->computeblockjacobian = func;
   if (ctx)  sdm->blockjacobianctx = ctx;
   PetscFunctionReturn(0);
