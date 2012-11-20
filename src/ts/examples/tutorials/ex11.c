@@ -567,6 +567,14 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, User user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SplitFaces"
+PetscErrorCode SplitFaces(DM *dmSplit, User user)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PseudoInverse"
 /* Overwrites A */
 static PetscErrorCode PseudoInverse(PetscInt m,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscScalar *work)
