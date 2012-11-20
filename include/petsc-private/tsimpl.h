@@ -187,7 +187,6 @@ struct _n_TSDM {
 PETSC_EXTERN PetscErrorCode DMTSGetContext(DM,TSDM*);
 PETSC_EXTERN PetscErrorCode DMTSGetContextWrite(DM,TSDM*);
 PETSC_EXTERN PetscErrorCode DMTSCopyContext(DM,DM);
-PETSC_EXTERN PetscErrorCode DMTSDuplicateContext(DM,DM);
 PETSC_EXTERN PetscErrorCode DMTSSetUpLegacy(DM);
 
 

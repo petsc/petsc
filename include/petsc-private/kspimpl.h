@@ -165,7 +165,6 @@ struct _n_KSPDM {
 PETSC_EXTERN PetscErrorCode DMKSPGetContext(DM,KSPDM*);
 PETSC_EXTERN PetscErrorCode DMKSPGetContextWrite(DM,KSPDM*);
 PETSC_EXTERN PetscErrorCode DMKSPCopyContext(DM,DM);
-PETSC_EXTERN PetscErrorCode DMKSPDuplicateContext(DM,DM);
 
 /*
        These allow the various Krylov methods to apply to either the linear system or its transpose.

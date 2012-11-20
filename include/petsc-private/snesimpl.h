@@ -186,7 +186,6 @@ struct _n_SNESDM {
 PETSC_EXTERN PetscErrorCode DMSNESGetContext(DM,SNESDM*);
 PETSC_EXTERN PetscErrorCode DMSNESGetContextWrite(DM,SNESDM*);
 PETSC_EXTERN PetscErrorCode DMSNESCopyContext(DM,DM);
-PETSC_EXTERN PetscErrorCode DMSNESDuplicateContext(DM,DM);
 PETSC_EXTERN PetscErrorCode DMSNESSetUpLegacy(DM);
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
