@@ -1478,7 +1478,9 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
   if (classid != PC_FILE_CLASSID) SETERRQ(((PetscObject)newdm)->comm,PETSC_ERR_ARG_WRONG,"Not PC next in file");
   ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
   ierr = PCSetType(newdm, type);CHKERRQ(ierr);
-  ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
+  if (newdm->ops->load) {
+    ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

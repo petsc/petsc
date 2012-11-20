@@ -1062,7 +1062,7 @@ PetscErrorCode  TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)
 
 .seealso: PetscViewerBinaryOpen(), TSView(), MatLoad(), VecLoad()
 @*/
-PetscErrorCode  TSLoad(TS newdm, PetscViewer viewer)
+PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isbinary;
@@ -1071,18 +1071,22 @@ PetscErrorCode  TSLoad(TS newdm, PetscViewer viewer)
   SNES           snes;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(newdm,TS_CLASSID,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
-  if (classid != TS_FILE_CLASSID) SETERRQ(((PetscObject)newdm)->comm,PETSC_ERR_ARG_WRONG,"Not TS next in file");
+  if (classid != TS_FILE_CLASSID) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_ARG_WRONG,"Not TS next in file");
   ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
-  ierr = TSSetType(newdm, type);CHKERRQ(ierr);
-  ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
-  ierr = TSGetSNES(newdm,&snes);CHKERRQ(ierr);
-  ierr = SNESLoad(snes,viewer);CHKERRQ(ierr);
+  ierr = TSSetType(ts, type);CHKERRQ(ierr);
+  if (ts->ops->load) {
+    ierr = (*ts->ops->load)(ts,viewer);CHKERRQ(ierr);
+  }
+  ierr = DMCreate(((PetscObject)ts)->comm,&ts->dm);CHKERRQ(ierr);
+  ierr = DMLoad(ts->dm,viewer);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(ts->dm,&ts->vec_sol);CHKERRQ(ierr);
+  ierr = VecLoad(ts->vec_sol,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1168,6 +1172,8 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     if (ts->ops->view) {
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
     }
+    ierr = DMView(ts->dm,viewer);CHKERRQ(ierr);
+    ierr = VecView(ts->vec_sol,viewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)ts,TSSUNDIALS,&isundials);CHKERRQ(ierr);
@@ -2298,7 +2304,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(u,VEC_CLASSID,2);
+  if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
   if (ts->exact_final_time) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
     if (!ts->vec_sol || u == ts->vec_sol) {
       Vec y;
@@ -2306,9 +2312,13 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ierr = TSSetSolution(ts,y);CHKERRQ(ierr);
       ierr = VecDestroy(&y);CHKERRQ(ierr); /* grant ownership */
     }
-    ierr = VecCopy(u,ts->vec_sol);CHKERRQ(ierr);
+    if (u) {
+      ierr = VecCopy(u,ts->vec_sol);CHKERRQ(ierr);
+    }
   } else {
-    ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
+    if (u) {
+      ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
+    }
   }
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   /* reset time step and iteration counters */

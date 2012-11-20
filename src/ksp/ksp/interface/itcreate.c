@@ -60,7 +60,9 @@ PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
   if (classid != KSP_FILE_CLASSID) SETERRQ(((PetscObject)newdm)->comm,PETSC_ERR_ARG_WRONG,"Not KSP next in file");
   ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
   ierr = KSPSetType(newdm, type);CHKERRQ(ierr);
-  ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
+  if (newdm->ops->load) {
+    ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
+  }
   ierr = KSPGetPC(newdm,&pc);CHKERRQ(ierr);
   ierr = PCLoad(pc,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
