@@ -25,6 +25,7 @@ typedef PetscErrorCode (*RiemannFunction)(Physics,const PetscReal*,const PetscSc
 typedef PetscErrorCode (*MonitorFunction)(Physics,const PetscScalar*,PetscReal*);
 static PetscErrorCode PhysicsBoundaryRegister(Physics,const char*,BoundaryFunction,PetscInt,const PetscInt*);
 static PetscErrorCode PhysicsFunctionalRegister(Physics,const char*,PetscInt*);
+static PetscErrorCode OutputVTK(DM,const char *,PetscViewer*);
 
 typedef struct _n_BoundaryLink *BoundaryLink;
 struct _n_BoundaryLink {
@@ -660,6 +661,27 @@ static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,Pe
         gref[f][j] = Binv[j*numFaces+f];
       }
     }
+
+#if 1
+    if (0) {
+      PetscReal grad[2] = {0,0};
+      for (f=0; f<numFaces; f++) {
+        const PetscInt *fcells;
+        const CellGeom *cg1;
+        const FaceGeom *fg;
+        ierr = DMComplexGetSupport(dm,faces[f],&fcells);CHKERRQ(ierr);
+        ierr = DMComplexPointLocalRead(dmFace,faces[f],fgeom,&fg);CHKERRQ(ierr);
+        for (i=0; i<2; i++) {
+          if (fcells[i] == c) continue;
+          ierr = DMComplexPointLocalRead(dmCell,fcells[i],cgeom,&cg1);CHKERRQ(ierr);
+          PetscScalar du = cg1->centroid[0] + 3*cg1->centroid[1] - (cg->centroid[0] + 3*cg->centroid[1]);
+          grad[0] += fg->grad[!i][0] * du;
+          grad[1] += fg->grad[!i][1] * du;
+        }
+      }
+      printf("cell[%d] grad (%g,%g)\n",c,grad[0],grad[1]);
+    }
+#endif
   }
   ierr = PetscFree5(B,Binv,work,tau,gref);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1164,7 +1186,7 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
   PetscErrorCode    ierr;
   const PetscScalar *facegeom, *cellgeom, *x;
   PetscScalar       *f;
-  PetscInt          fStart, fEnd, face;
+  PetscInt          fStart, fEnd, face, cStart, cell;
   Vec               locGrad,Grad;
 
   PetscFunctionBegin;
@@ -1173,10 +1195,12 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
   ierr = VecGetArrayRead(user->facegeom,&facegeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->cellgeom,&cellgeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locX,&x);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, PETSC_NULL);CHKERRQ(ierr);
   {
     PetscScalar *grad;
     ierr = VecGetArray(locGrad,&grad);CHKERRQ(ierr);
-    ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+    /* Reconstruct gradients */
     for (face=fStart; face<fEnd; ++face) {
       const PetscInt    *cells;
       const PetscScalar *cx[2];
@@ -1198,6 +1222,43 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
         }
       }
     }
+    /* Limit interior gradients. Using cell-based loop because it generalizes better to vector limiters. */
+    for (cell=cStart; cell<user->cEndInterior; cell++) {
+      const PetscInt *faces;
+      PetscInt numFaces,f;
+      PetscReal *cellPhi = user->work.state0;        /* Scalar limiter applied to each component separately */
+      const PetscScalar *cx;
+      const CellGeom    *cg;
+      PetscScalar       *cgrad;
+      PetscInt          i;
+      ierr = DMComplexGetConeSize(dm,cell,&numFaces);CHKERRQ(ierr);
+      ierr = DMComplexGetCone(dm,cell,&faces);CHKERRQ(ierr);
+      ierr = DMComplexPointLocalRead(dm,cell,x,&cx);CHKERRQ(ierr);
+      ierr = DMComplexPointLocalRead(dmCell,cell,cellgeom,&cg);CHKERRQ(ierr);
+      ierr = DMComplexPointLocalRef(dmGrad,cell,grad,&cgrad);CHKERRQ(ierr);
+      /* Limiter will be minimum value over all neighbors */
+      for (i=0; i<dof; i++) cellPhi[i] = PETSC_MAX_REAL;
+      for (f=0; f<numFaces; f++) {
+        const PetscScalar *ncx;
+        const CellGeom    *ncg;
+        const PetscInt    *fcells;
+        PetscInt          face = faces[f],ncell;
+        PetscScalar       v[DIM];
+        ierr = DMComplexGetSupport(dm,face,&fcells);CHKERRQ(ierr);
+        ncell = cell == fcells[0] ? fcells[1] : fcells[0];
+        ierr = DMComplexPointLocalRead(dm,ncell,x,&ncx);CHKERRQ(ierr);
+        ierr = DMComplexPointLocalRead(dmCell,ncell,cellgeom,&ncg);CHKERRQ(ierr);
+        Waxpy2(-1,cg->centroid,ncg->centroid,v);
+        for (i=0; i<dof; i++) {
+          PetscScalar r,phi;
+          r = 2*Dot2(&cgrad[i*DIM],v) / (ncx[i] - cx[i]) - 1; /* equivalent to mirroring a ghost point opposite */
+          phi = PetscMax(0,PetscMin(1,r));                    /* minmod */
+          cellPhi[i] = PetscMin(cellPhi[i],phi);
+        }
+      }
+      /* Apply limiter to gradient */
+      for (i=0; i<dof; i++) Scale2(cellPhi[i],&cgrad[i*DIM],&cgrad[i*DIM]);
+    }
     ierr = VecRestoreArray(locGrad,&grad);CHKERRQ(ierr);
   }
   ierr = DMGetGlobalVector(dmGrad,&Grad);CHKERRQ(ierr);
@@ -1213,7 +1274,7 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
     ierr = VecGetArray(F,&f);CHKERRQ(ierr);
     for (face=fStart; face<fEnd; ++face) {
       const PetscInt    *cells;
-      PetscInt          ghost,i,j;
+      PetscInt          ghost,i,j,bset;
       PetscScalar       *flux = user->work.flux,*fx[2] = {user->work.state0,user->work.state1},*cf[2];
       const FaceGeom    *fg;
       const CellGeom    *cg[2];
@@ -1228,9 +1289,15 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
         ierr = DMComplexPointLocalRead(dmCell,cells[i],cellgeom,&cg[i]);CHKERRQ(ierr);
         ierr = DMComplexPointLocalRead(dm,cells[i],x,&cx[i]);CHKERRQ(ierr);
         ierr = DMComplexPointLocalRead(dmGrad,cells[i],grad,&cgrad[i]);CHKERRQ(ierr);
-        ierr = DMComplexPointGlobalRef(dm,cells[1],f,&cf[i]);CHKERRQ(ierr);
+        ierr = DMComplexPointGlobalRef(dm,cells[i],f,&cf[i]);CHKERRQ(ierr);
         Waxpy2(-1,cg[i]->centroid,fg->centroid,dx);
         for (j=0; j<dof; j++) fx[i][j] = cx[i][j] + Dot2(cgrad[i],dx);
+      }
+      ierr = DMComplexGetLabelValue(dm, "Face Sets", face, &bset);CHKERRQ(ierr);
+      if (bset != -1) {
+        BoundaryFunction bcFunc;
+        ierr = PhysicsBoundaryFind(phys,bset,&bcFunc);CHKERRQ(ierr);
+        ierr = (*bcFunc)(phys,fg->normal,fx[0],fx[1]);CHKERRQ(ierr);
       }
       ierr = (*phys->riemann)(user->physics, fg->normal, fx[0], fx[1], flux);CHKERRQ(ierr);
       for (i=0; i<phys->dof; i++) {
