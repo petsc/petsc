@@ -365,7 +365,7 @@ PetscErrorCode DMSNESGetFunction(DM dm,PetscErrorCode (**func)(SNES,Vec,Vec,void
 #undef __FUNCT__
 #define __FUNCT__ "DMSNESSetObjective"
 /*@C
-   DMSNESSetFunction - set SNES objective evaluation function
+   DMSNESSetObjective - set SNES objective evaluation function
 
    Not Collective
 
