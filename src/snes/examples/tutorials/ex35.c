@@ -156,7 +156,7 @@ PetscErrorCode MyDMComputeFunction(DM dm,Vec x,Vec F)
   ierr = DMGetApplicationContext(dm,&J);CHKERRQ(ierr);
   if (!J) {
     ierr = DMCreateMatrix(dm,MATAIJ,&J);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)J,"DM",(PetscObject)PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)J,"__PETSc_dm",(PetscObject)PETSC_NULL);CHKERRQ(ierr);
     ierr = FormMatrix(dm,J);CHKERRQ(ierr);
     ierr = DMSetApplicationContext(dm,J);CHKERRQ(ierr);
     ierr = DMSetApplicationContextDestroy(dm,(PetscErrorCode (*)(void**))MatDestroy);CHKERRQ(ierr);
