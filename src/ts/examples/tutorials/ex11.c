@@ -15,6 +15,7 @@ static char help[] = "Second Order TVD Finite Volume Example.\n";
 #define ALEN(a) (sizeof(a)/sizeof((a)[0]))
 
 static PetscFList PhysicsList;
+static PetscFList LimitList;
 
 typedef struct _n_User *User;
 typedef struct _n_Physics *Physics;
@@ -57,6 +58,7 @@ struct _n_Physics {
 struct _n_User {
   MPI_Comm  comm;
   PetscErrorCode (*RHSFunctionLocal)(DM,DM,DM,Vec,Vec,User);
+  PetscReal (*Limit)(PetscReal);
   PetscBool reconstruct;
   PetscInt  numGhostCells, numSplitFaces;
   PetscInt  cEndInterior;  /* First boundary ghost cell */
@@ -94,6 +96,53 @@ PETSC_STATIC_INLINE void NormalSplit(const PetscReal *n,const PetscScalar *x,Pet
   Scale2(Dot2(x,n)/Dot2(n,n),n,xn);
   Waxpy2(-1,xn,x,xt);
 }
+
+/* Limiters given in symmetric form following Berger, Aftosmis, and Murman 2005
+ *
+ * The classical flux-limited formulation is psi(r) where
+ *
+ * r = (u[0] - u[-1]) / (u[1] - u[0])
+ *
+ * The second order TVD region is bounded by
+ *
+ * psi_minmod(r) = min(r,1)      and        psi_superbee(r) = min(2, 2r, max(1,r))
+ *
+ * where all limiters are implicitly clipped to be non-negative. A more convenient slope-limited form is psi(r) =
+ * phi(r)(r+1)/2 in which the reconstructed interface values are
+ *
+ * u(v) = u[0] + phi(r) (grad u)[0] v
+ *
+ * where v is the vector from centroid to quadrature point. In these variables, the usual limiters become
+ *
+ * phi_minmod(r) = 2 min(1/(1+r),r/(1+r))   phi_superbee(r) = 2 min(2/(1+r), 2r/(1+r), max(1,r)/(1+r))
+ *
+ * For a nicer symmetric formulation, rewrite in terms of
+ *
+ * f = (u[0] - u[-1]) / (u[1] - u[-1])
+ *
+ * where r(f) = f/(1-f). Not that r(1-f) = (1-f)/f = 1/r(f) so the symmetry condition
+ *
+ * phi(r) = phi(1/r)
+ *
+ * becomes
+ *
+ * w(f) = w(1-f).
+ *
+ * The limiters below implement this final form w(f). The reference methods are
+ *
+ * w_minmod(f) = 2 min(f,(1-f))             w_superbee(r) = 4 min((1-f), f)
+ * */
+static PetscReal Limit_Zero(PetscReal f) { return 0; }
+static PetscReal Limit_None(PetscReal f) { return 1; }
+static PetscReal Limit_Minmod(PetscReal f) { return PetscMax(0,PetscMin(f,(1-f))*2); }
+static PetscReal Limit_VanLeer(PetscReal f) { return PetscMax(0,4*f*(1-f)); }
+static PetscReal Limit_VanAlbada(PetscReal f) { return PetscMax(0,2*f*(1-f) / (PetscSqr(f) + PetscSqr(1-f))); }
+static PetscReal Limit_Sin(PetscReal f) {
+  PetscReal fclip = PetscMax(0,PetscMin(f,1));
+  return PetscSinReal(PETSC_PI*fclip);
+}
+static PetscReal Limit_Superbee(PetscReal f) { return 2*Limit_Minmod(f); }
+static PetscReal Limit_MC(PetscReal f) { return PetscMin(1,Limit_Superbee(f)); } /* aka Barth-Jespersen */
 
 /******************* Advect ********************/
 typedef struct {
@@ -844,9 +893,24 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "IsExteriorGhostFace"
+static PetscErrorCode IsExteriorGhostFace(DM dm,PetscInt face,PetscBool *isghost)
+{
+  PetscErrorCode ierr;
+  PetscInt ghost,boundary;
+
+  PetscFunctionBegin;
+  *isghost = PETSC_FALSE;
+  ierr = DMComplexGetLabelValue(dm, "ghost", face, &ghost);CHKERRQ(ierr);
+  ierr = DMComplexGetLabelValue(dm, "Face Sets", face, &boundary);CHKERRQ(ierr);
+  if (ghost >= 0 || boundary >= 0) *isghost = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PseudoInverse"
 /* Overwrites A */
-static PetscErrorCode PseudoInverse(PetscInt m,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscScalar *work)
+static PetscErrorCode PseudoInverse(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscScalar *work)
 {
   PetscBool debug = PETSC_FALSE;
   PetscErrorCode ierr;
@@ -861,8 +925,8 @@ static PetscErrorCode PseudoInverse(PetscInt m,PetscInt n,PetscScalar *A,PetscSc
 
   M = PetscBLASIntCast(m);
   N = PetscBLASIntCast(n);
-  lda = M;
-  ldwork = M*N;
+  lda = PetscBLASIntCast(mstride);
+  ldwork = lda*N;
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
   LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info);
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
@@ -871,7 +935,7 @@ static PetscErrorCode PseudoInverse(PetscInt m,PetscInt n,PetscScalar *A,PetscSc
 
   /* Extract an explicit representation of Q */
   Q = Ainv;
-  ierr = PetscMemcpy(Q,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(Q,A,mstride*n*sizeof(PetscScalar));CHKERRQ(ierr);
   K = N;                        /* full rank */
   LAPACKungqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info);
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
@@ -909,34 +973,36 @@ static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,Pe
   ierr = PetscMalloc5(maxNumFaces*DIM,PetscScalar,&B,maxNumFaces*DIM,PetscScalar,&Binv,maxNumFaces*DIM,PetscScalar,&work,maxNumFaces,PetscScalar,&tau,maxNumFaces,PetscScalar*,&gref);CHKERRQ(ierr);
   for (c=cStart; c<cEndInterior; c++) {
     const PetscInt *faces;
-    PetscInt numFaces,f,i,j;
+    PetscInt numFaces,usedFaces,f,i,j;
     const CellGeom *cg;
+    PetscBool ghost;
     ierr = DMComplexGetConeSize(dm,c,&numFaces);CHKERRQ(ierr);
     if (numFaces < DIM) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction",c,numFaces);
     ierr = DMComplexGetCone(dm,c,&faces);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
-    for (f=0; f<numFaces; f++) {
+    for (f=0,usedFaces=0; f<numFaces; f++) {
       const PetscInt *fcells;
+      PetscInt       ncell,side;
+      FaceGeom       *fg;
+      const CellGeom *cg1;
+      ierr = IsExteriorGhostFace(dm,faces[f],&ghost);CHKERRQ(ierr);
+      if (ghost) continue;
       ierr = DMComplexGetSupport(dm,faces[f],&fcells);CHKERRQ(ierr);
-      gref[f] = PETSC_NULL;
-      for (i=0; i<2; i++) {
-        FaceGeom *fg;
-        const CellGeom *cg1;
-        if (fcells[i] == c) continue;
-        ierr = DMComplexPointLocalRef(dmFace,faces[f],fgeom,&fg);CHKERRQ(ierr);
-        ierr = DMComplexPointLocalRead(dmCell,fcells[i],cgeom,&cg1);CHKERRQ(ierr);
-        for (j=0; j<DIM; j++) B[j*numFaces+f] = cg1->centroid[j] - cg->centroid[j];
-        gref[f] = fg->grad[(i+1)%2];  /* Gradient reconstruction term will go here */
-      }
-      if (!gref[f]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Connectivity corrrupt");
+      side = (c != fcells[0]); /* c is on left=0 or right=1 of face */
+      ncell = fcells[!side];   /* the neighbor */
+      ierr = DMComplexPointLocalRef(dmFace,faces[f],fgeom,&fg);CHKERRQ(ierr);
+      ierr = DMComplexPointLocalRead(dmCell,ncell,cgeom,&cg1);CHKERRQ(ierr);
+      for (j=0; j<DIM; j++) B[j*numFaces+usedFaces] = cg1->centroid[j] - cg->centroid[j];
+      gref[usedFaces++] = fg->grad[side];  /* Gradient reconstruction term will go here */
     }
-
+    if (!usedFaces) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Mesh contains isolated cell (no neighbors). Is it intentional?");
     /* Overwrites B with garbage, returns Binv in row-major format */
-    ierr = PseudoInverse(numFaces,DIM,B,Binv,tau,work);CHKERRQ(ierr);
-    for (f=0; f<numFaces; f++) {
-      for (j=0; j<DIM; j++) {
-        gref[f][j] = Binv[j*numFaces+f];
-      }
+    ierr = PseudoInverse(usedFaces,numFaces,DIM,B,Binv,tau,work);CHKERRQ(ierr);
+    for (f=0,i=0; f<numFaces; f++) {
+      ierr = IsExteriorGhostFace(dm,faces[f],&ghost);CHKERRQ(ierr);
+      if (ghost) continue;
+      for (j=0; j<DIM; j++) gref[i][j] = Binv[j*numFaces+i];
+      i++;
     }
 
 #if 1
@@ -1540,8 +1606,8 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
   Vec               locGrad,Grad;
 
   PetscFunctionBegin;
-  ierr = DMGetLocalVector(dmGrad,&locGrad);CHKERRQ(ierr);
-  ierr = VecZeroEntries(locGrad);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dmGrad,&Grad);CHKERRQ(ierr);
+  ierr = VecZeroEntries(Grad);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->facegeom,&facegeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->cellgeom,&cellgeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locX,&x);CHKERRQ(ierr);
@@ -1549,7 +1615,7 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, PETSC_NULL);CHKERRQ(ierr);
   {
     PetscScalar *grad;
-    ierr = VecGetArray(locGrad,&grad);CHKERRQ(ierr);
+    ierr = VecGetArray(Grad,&grad);CHKERRQ(ierr);
     /* Reconstruct gradients */
     for (face=fStart; face<fEnd; ++face) {
       const PetscInt    *cells;
@@ -1557,18 +1623,21 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
       const FaceGeom    *fg;
       PetscScalar       *cgrad[2];
       PetscInt          i,j;
+      PetscBool         ghost;
 
+      ierr = IsExteriorGhostFace(dm,face,&ghost);CHKERRQ(ierr);
+      if (ghost) continue;
       ierr = DMComplexGetSupport(dm,face,&cells);CHKERRQ(ierr);
       ierr = DMComplexPointLocalRead(dmFace,face,facegeom,&fg);CHKERRQ(ierr);
       for (i=0; i<2; i++) {
         ierr = DMComplexPointLocalRead(dm,cells[i],x,&cx[i]);CHKERRQ(ierr);
-        ierr = DMComplexPointLocalRef(dmGrad,cells[i],grad,&cgrad[i]);CHKERRQ(ierr);
+        ierr = DMComplexPointGlobalRef(dmGrad,cells[i],grad,&cgrad[i]);CHKERRQ(ierr);
       }
       for (i=0; i<dof; i++) {
         PetscScalar delta = cx[1][i] - cx[0][i];
         for (j=0; j<DIM; j++) {
-          cgrad[0][i*DIM+j] += fg->grad[0][j] * delta;
-          cgrad[1][i*DIM+j] -= fg->grad[1][j] * delta;
+          if (cgrad[0]) cgrad[0][i*DIM+j] += fg->grad[0][j] * delta;
+          if (cgrad[1]) cgrad[1][i*DIM+j] -= fg->grad[1][j] * delta;
         }
       }
     }
@@ -1585,7 +1654,7 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
       ierr = DMComplexGetCone(dm,cell,&faces);CHKERRQ(ierr);
       ierr = DMComplexPointLocalRead(dm,cell,x,&cx);CHKERRQ(ierr);
       ierr = DMComplexPointLocalRead(dmCell,cell,cellgeom,&cg);CHKERRQ(ierr);
-      ierr = DMComplexPointLocalRef(dmGrad,cell,grad,&cgrad);CHKERRQ(ierr);
+      ierr = DMComplexPointGlobalRef(dmGrad,cell,grad,&cgrad);CHKERRQ(ierr);
       /* Limiter will be minimum value over all neighbors */
       for (i=0; i<dof; i++) cellPhi[i] = PETSC_MAX_REAL;
       for (f=0; f<numFaces; f++) {
@@ -1594,26 +1663,27 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
         const PetscInt    *fcells;
         PetscInt          face = faces[f],ncell;
         PetscScalar       v[DIM];
+        PetscBool         ghost;
+        ierr = IsExteriorGhostFace(dm,face,&ghost);CHKERRQ(ierr);
+        if (ghost) continue;
         ierr = DMComplexGetSupport(dm,face,&fcells);CHKERRQ(ierr);
         ncell = cell == fcells[0] ? fcells[1] : fcells[0];
         ierr = DMComplexPointLocalRead(dm,ncell,x,&ncx);CHKERRQ(ierr);
         ierr = DMComplexPointLocalRead(dmCell,ncell,cellgeom,&ncg);CHKERRQ(ierr);
         Waxpy2(-1,cg->centroid,ncg->centroid,v);
         for (i=0; i<dof; i++) {
-          PetscScalar r,phi;
-          r = 2*Dot2(&cgrad[i*DIM],v) / (ncx[i] - cx[i]) - 1; /* equivalent to mirroring a ghost point opposite */
-          phi = PetscMax(0,PetscMin(1,r));                    /* minmod */
+          /* We use the symmetric slope limited form of Berger, Aftosmis, and Murman 2005 */
+          PetscScalar phi,flim = 0.5 * (ncx[i] - cx[i]) / Dot2(&cgrad[i*DIM],v);
+          phi = (*user->Limit)(flim);
           cellPhi[i] = PetscMin(cellPhi[i],phi);
         }
       }
       /* Apply limiter to gradient */
       for (i=0; i<dof; i++) Scale2(cellPhi[i],&cgrad[i*DIM],&cgrad[i*DIM]);
     }
-    ierr = VecRestoreArray(locGrad,&grad);CHKERRQ(ierr);
+    ierr = VecRestoreArray(Grad,&grad);CHKERRQ(ierr);
   }
-  ierr = DMGetGlobalVector(dmGrad,&Grad);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dmGrad,locGrad,INSERT_VALUES,Grad);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dmGrad,locGrad,INSERT_VALUES,Grad);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dmGrad,&locGrad);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dmGrad,Grad,INSERT_VALUES,locGrad);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dmGrad,Grad,INSERT_VALUES,locGrad);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmGrad,&Grad);CHKERRQ(ierr);
@@ -1839,9 +1909,18 @@ int main(int argc, char **argv)
   ierr = PetscFListAdd(&PhysicsList,"advect"          ,"",(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
   ierr = PetscFListAdd(&PhysicsList,"sw"              ,"",(void(*)(void))PhysicsCreate_SW);CHKERRQ(ierr);
 
+  ierr = PetscFListAdd(&LimitList,"zero"              ,"",(void(*)(void))Limit_Zero);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&LimitList,"none"              ,"",(void(*)(void))Limit_None);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&LimitList,"minmod"            ,"",(void(*)(void))Limit_Minmod);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&LimitList,"vanleer"           ,"",(void(*)(void))Limit_VanLeer);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&LimitList,"vanalbada"         ,"",(void(*)(void))Limit_VanAlbada);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&LimitList,"sin"               ,"",(void(*)(void))Limit_Sin);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&LimitList,"superbee"          ,"",(void(*)(void))Limit_Superbee);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&LimitList,"mc"                ,"",(void(*)(void))Limit_MC);CHKERRQ(ierr);
+
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"Unstructured Finite Volume Options","");CHKERRQ(ierr);
   {
-    char physname[256] = "advect";
+    char physname[256] = "advect",limitname[256] = "minmod";
     PetscErrorCode (*physcreate)(User,Physics);
     cfl = 0.9 * 4;              /* default SSPRKS2 with s=5 stages is stable for CFL number s-1 */
     ierr = PetscOptionsReal("-ufv_cfl","CFL number per step","",cfl,&cfl,PETSC_NULL);CHKERRQ(ierr);
@@ -1862,6 +1941,10 @@ int main(int argc, char **argv)
     user->reconstruct = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_reconstruct","Reconstruct gradients for a second order method (grows stencil)","",user->reconstruct,&user->reconstruct,PETSC_NULL);CHKERRQ(ierr);
     user->RHSFunctionLocal = user->reconstruct ? RHSFunctionLocal_LS : RHSFunctionLocal_Upwind;
+    if (user->reconstruct) {
+      ierr = PetscOptionsList("-limit","Limiter to apply to reconstructed solution","",LimitList,limitname,limitname,sizeof limitname,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscFListFind(LimitList,comm,limitname,PETSC_TRUE,(void(**)(void))&user->Limit);CHKERRQ(ierr);
+    }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -1929,6 +2012,7 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&user->facegeom);CHKERRQ(ierr);
   ierr = DMDestroy(&user->dmGrad);CHKERRQ(ierr);
   ierr = PetscFListDestroy(&PhysicsList);CHKERRQ(ierr);
+  ierr = PetscFListDestroy(&LimitList);CHKERRQ(ierr);
   ierr = BoundaryLinkDestroy(&user->physics->boundary);CHKERRQ(ierr);
   ierr = FunctionalLinkDestroy(&user->physics->functional);CHKERRQ(ierr);
   ierr = PetscFree(user->physics->data);CHKERRQ(ierr);
