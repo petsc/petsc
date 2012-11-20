@@ -64,7 +64,7 @@ def buildExample(args):
   maker.cleanup()
   return ret
 
-def checkSingleRun(maker, ex, extraArgs = ''):
+def checkSingleRun(maker, ex, replace, extraArgs = ''):
   import shutil
 
   if isinstance(ex, list):
@@ -109,7 +109,7 @@ def checkSingleRun(maker, ex, extraArgs = ''):
       maker.link(executable, objects, maker.configInfo.languages.clanguage)
     if not 'args' in param: param['args'] = ''
     param['args'] += extraArgs
-    if maker.runTest(exampleDir, executable, testnum, **param):
+    if maker.runTest(exampleDir, executable, testnum, replace, **param):
       print('TEST RUN FAILED (check make.log for details)')
       return 1
     rebuildTest = False
@@ -142,7 +142,7 @@ def check(args):
       else:
         examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f.F'))
   for ex in examples:
-    ret = checkSingleRun(maker, ex, extraArgs)
+    ret = checkSingleRun(maker, ex, args.replace, extraArgs)
     if ret: break
   if not ret:
     print('All tests pass')
@@ -278,6 +278,7 @@ if __name__ == '__main__':
   parser_check.add_argument('--args', action='append', default=[], help='Extra execution arguments for test')
   parser_check.add_argument('--retain', action='store_true', default=False, help='Retain the executable after testing')
   parser_check.add_argument('--testnum', type=int, help='The test number to execute')
+  parser_check.add_argument('--replace', action='store_true', default=False, help='Replace stored output with test output')
   parser_check.set_defaults(func=check)
   parser_regression = subparsers.add_parser('regression', help='Execute regression tests')
   parser_regression.set_defaults(func=regression)
