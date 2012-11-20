@@ -1465,7 +1465,7 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isbinary;
-  PetscInt       classid, subclassid;
+  PetscInt       classid;
   char           type[256];
 
   PetscFunctionBegin;

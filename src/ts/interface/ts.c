@@ -1068,7 +1068,6 @@ PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
   PetscBool      isbinary;
   PetscInt       classid;
   char           type[256];
-  SNES           snes;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
