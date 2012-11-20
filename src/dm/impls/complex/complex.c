@@ -2590,9 +2590,10 @@ PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
     }
     next = next->next;
   }
-  if (!next) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label with name %s exists in this mesh", name);
   *ids = PETSC_NULL;
-  ierr = ISCreateGeneral(((PetscObject) dm)->comm, size, values, PETSC_OWN_POINTER, ids);CHKERRQ(ierr);
+  if (next) {                   /* We found the label on this process */
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, size, values, PETSC_OWN_POINTER, ids);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -3835,11 +3836,14 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
   {
     PetscSection originalCoordSection, newCoordSection;
     Vec          originalCoordinates, newCoordinates;
+    const char  *name;
 
     ierr = DMComplexGetCoordinateSection(dm, &originalCoordSection);CHKERRQ(ierr);
     ierr = DMComplexGetCoordinateSection(*dmParallel, &newCoordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &originalCoordinates);CHKERRQ(ierr);
     ierr = VecCreate(comm, &newCoordinates);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) originalCoordinates, &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) newCoordinates, name);CHKERRQ(ierr);
 
     ierr = DMComplexDistributeField(dm, pointSF, originalCoordSection, originalCoordinates, newCoordSection, newCoordinates);CHKERRQ(ierr);
     ierr = DMSetCoordinatesLocal(*dmParallel, newCoordinates);CHKERRQ(ierr);
@@ -4447,6 +4451,7 @@ PetscErrorCode DMComplexBuildCoordinates_Private(DM dm, PetscInt spaceDim, Petsc
   ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject) dm)->comm, &coordinates);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);

@@ -1,4 +1,3 @@
-#include <petscsnes.h>
 #include <petsc-private/dmimpl.h>     /*I      "petscdm.h"     I*/
 
 PetscClassId  DM_CLASSID;
