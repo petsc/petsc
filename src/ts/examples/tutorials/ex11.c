@@ -1153,14 +1153,17 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
 #define __FUNCT__ "CreateMassMatrix"
 PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
 {
+  DM             dmMass, dmFace, dmCell, dmCoord;
   PetscSection   coordSection;
   Vec            coordinates;
-  DM             dmMass;
   PetscSection   sectionMass;
+  PetscScalar   *m;
+  const PetscScalar *facegeom, *cellgeom, *coords;
   PetscInt       vStart, vEnd, v;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetCoordinateDM(dm, &dmCoord);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMComplexClone(dm, &dmMass);CHKERRQ(ierr);
@@ -1171,14 +1174,50 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionMass, vStart, vEnd);CHKERRQ(ierr);
   for(v = vStart; v < vEnd; ++v) {
-    PetscInt numNeighbors;
+    PetscInt numFaces;
 
-    ierr = DMComplexGetSupportSize(dmMass, v, &numNeighbors);CHKERRQ(ierr);
-    ierr = PetscSectionSetDof(sectionMass, v, numNeighbors*numNeighbors);CHKERRQ(ierr);
+    ierr = DMComplexGetSupportSize(dmMass, v, &numFaces);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(sectionMass, v, numFaces*numFaces);CHKERRQ(ierr);
   }
   ierr = PetscSectionSetUp(sectionMass);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dmMass, sectionMass);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmMass, massMatrix);CHKERRQ(ierr);
+  ierr = VecGetArray(*massMatrix, &m);CHKERRQ(ierr);
+  ierr = VecGetDM(user->facegeom, &dmFace);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(user->facegeom, &facegeom);CHKERRQ(ierr);
+  ierr = VecGetDM(user->cellgeom, &dmCell);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(user->cellgeom, &cellgeom);CHKERRQ(ierr);
+  for(v = vStart; v < vEnd; ++v) {
+    const PetscInt    *faces;
+    const FaceGeom    *fgA, *fgB, *cg;
+    const PetscScalar *vertex;
+    PetscInt           numFaces, sides[2], f, g;
+
+    ierr = DMComplexPointLocalRead(dmCoord, v, coords, &vertex);CHKERRQ(ierr);
+    ierr = DMComplexGetSupportSize(dmMass, v, &numFaces);CHKERRQ(ierr);
+    ierr = DMComplexGetSupport(dmMass, v, &faces);CHKERRQ(ierr);
+    for(f = 0; f < numFaces; ++f) {
+      sides[0] = faces[f];
+      ierr = DMComplexPointLocalRead(dmFace, faces[f], facegeom, &fgA);CHKERRQ(ierr);
+      for(g = 0; g < numFaces; ++g) {
+        const PetscInt *cells = PETSC_NULL;;
+        PetscScalar     area  = 0.0;
+        PetscInt        numCells;
+
+        sides[1] = faces[g];
+        ierr = DMComplexPointLocalRead(dmFace, faces[g], facegeom, &fgB);CHKERRQ(ierr);
+        ierr = DMComplexGetJoin(dmMass, 2, sides, &numCells, &cells);CHKERRQ(ierr);
+        if (numCells != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid join for faces");
+        ierr = DMComplexPointLocalRead(dmCell, cells[0], cellgeom, &cg);CHKERRQ(ierr);
+        area += (vertex[0] - cg->centroid[0])*(fgA->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgA->centroid[0] - cg->centroid[0]);
+        area += (vertex[0] - cg->centroid[0])*(fgB->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgB->centroid[0] - cg->centroid[0]);
+        m[f*numFaces+g] = Dot2(fgA->normal, fgB->normal)*area*0.5;
+        ierr = DMComplexRestoreJoin(dmMass, 2, sides, &numCells, &cells);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = VecRestoreArrayRead(user->facegeom, &facegeom);CHKERRQ(ierr);
+  ierr = VecRestoreArray(*massMatrix, &m);CHKERRQ(ierr);
   ierr = DMDestroy(&dmMass);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
