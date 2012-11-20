@@ -570,6 +570,77 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, User user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ConstructCellBoundary"
+PetscErrorCode ConstructCellBoundary(DM dm, User user)
+{
+  const char     *name   = "Cell Sets";
+  const char     *bdname = "split faces";
+  IS              regionIS, innerIS;
+  const PetscInt *regions, *cells;
+  PetscInt        numRegions, innerRegion, numCells, c;
+
+  PetscInt       cStart, cEnd, fStart, fEnd;
+
+  PetscBool       hasLabel;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+
+  ierr = DMComplexHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
+  if (!hasLabel) PetscFunctionReturn(0);
+  ierr = DMComplexGetLabelSize(dm, name, &numRegions);CHKERRQ(ierr);
+  if (numRegions != 2) PetscFunctionReturn(0);
+  /* Get the inner id */
+  ierr = DMComplexGetLabelIdIS(dm, name, &regionIS);CHKERRQ(ierr);
+  ierr = ISGetIndices(regionIS, &regions);CHKERRQ(ierr);
+  innerRegion = regions[0];
+  ierr = ISRestoreIndices(regionIS, &regions);CHKERRQ(ierr);
+  ierr = ISDestroy(&regionIS);CHKERRQ(ierr);
+  /* Find the faces between cells in different regions, could call DMComplexCreateNeighborCSR() */
+  ierr = DMComplexGetStratumIS(dm, name, innerRegion, &innerIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(innerIS, &numCells);CHKERRQ(ierr);
+  ierr = ISGetIndices(innerIS, &cells);CHKERRQ(ierr);
+  ierr = DMComplexCreateLabel(dm, bdname);CHKERRQ(ierr);
+  for(c = 0; c < numCells; ++c) {
+    const PetscInt  cell = cells[c];
+    const PetscInt *faces;
+    PetscInt        numFaces, f;
+
+    if ((cell < cStart) || (cell >= cEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", cell);
+    ierr = DMComplexGetConeSize(dm, cell, &numFaces);CHKERRQ(ierr);
+    ierr = DMComplexGetCone(dm, cell, &faces);CHKERRQ(ierr);
+    for(f = 0; f < numFaces; ++f) {
+      const PetscInt  face = faces[f];
+      const PetscInt *neighbors;
+      PetscInt        nC, regionA, regionB;
+
+      if ((face < fStart) || (face >= fEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a face", face);
+      ierr = DMComplexGetSupportSize(dm, face, &nC);CHKERRQ(ierr);
+      if (nC != 2) continue;
+      ierr = DMComplexGetSupport(dm, face, &neighbors);CHKERRQ(ierr);
+      if ((neighbors[0] >= user->cEndInterior) || (neighbors[1] >= user->cEndInterior)) continue;
+      if ((neighbors[0] < cStart) || (neighbors[0] >= cEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", neighbors[0]);
+      if ((neighbors[1] < cStart) || (neighbors[1] >= cEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", neighbors[1]);
+      ierr = DMComplexGetLabelValue(dm, name, neighbors[0], &regionA);CHKERRQ(ierr);
+      ierr = DMComplexGetLabelValue(dm, name, neighbors[1], &regionB);CHKERRQ(ierr);
+      if (regionA < 0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[0]);
+      if (regionB < 0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[1]);
+      if (regionA != regionB) {
+        ierr = DMComplexSetLabelValue(dm, bdname, faces[f], 1);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = ISRestoreIndices(innerIS, &cells);CHKERRQ(ierr);
+  ierr = ISDestroy(&innerIS);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMComplexViewLabel_Ascii(dm, bdname, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SplitFaces"
 /* Right now, I have just added duplicate faces, which see both cells. We can
 - Add duplicate vertices and decouple the face cones
@@ -586,9 +657,12 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   PetscInt          *newpoints;
   PetscInt           dim, depth, maxConeSize, maxSupportSize, numLabels;
   PetscInt           numFS, fs, pStart, pEnd, p, vStart, vEnd, v, fStart, fEnd, newf, d, l;
+  PetscBool          hasLabel;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = DMComplexHasLabel(dm, labelName, &hasLabel);CHKERRQ(ierr);
+  if (!hasLabel) PetscFunctionReturn(0);
   ierr = DMCreate(((PetscObject) dm)->comm, &sdm);CHKERRQ(ierr);
   ierr = DMSetType(sdm, DMCOMPLEX);CHKERRQ(ierr);
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
@@ -713,6 +787,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
     ierr = DMComplexGetLabelName(dm, l, &lname);CHKERRQ(ierr);
     ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
     if (isDepth) continue;
+    ierr = DMComplexCreateLabel(sdm, lname);CHKERRQ(ierr);
     ierr = DMComplexGetLabelIdIS(dm, lname, &idIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
     ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
@@ -1732,6 +1807,8 @@ int main(int argc, char **argv)
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
 
   ierr = ConstructGhostCells(&dm, user);CHKERRQ(ierr);
+  ierr = ConstructCellBoundary(dm, user);CHKERRQ(ierr);
+  ierr = SplitFaces(&dm, "split faces", user);CHKERRQ(ierr);
   ierr = ConstructGeometry(dm, &user->facegeom, &user->cellgeom, user);CHKERRQ(ierr);
   if (0) {ierr = VecView(user->cellgeom, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
