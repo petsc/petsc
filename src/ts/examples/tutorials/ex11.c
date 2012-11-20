@@ -1150,6 +1150,40 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateMassMatrix"
+PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
+{
+  PetscSection   coordSection;
+  Vec            coordinates;
+  DM             dmMass;
+  PetscSection   sectionMass;
+  PetscInt       vStart, vEnd, v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMComplexClone(dm, &dmMass);CHKERRQ(ierr);
+  ++coordSection->refcnt;
+  ierr = DMComplexSetCoordinateSection(dmMass, coordSection);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dmMass, coordinates);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &sectionMass);CHKERRQ(ierr);
+  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(sectionMass, vStart, vEnd);CHKERRQ(ierr);
+  for(v = vStart; v < vEnd; ++v) {
+    PetscInt numNeighbors;
+
+    ierr = DMComplexGetSupportSize(dmMass, v, &numNeighbors);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(sectionMass, v, numNeighbors*numNeighbors);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(sectionMass);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(dmMass, sectionMass);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dmMass, massMatrix);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmMass);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SetUpLocalSpace"
 PetscErrorCode SetUpLocalSpace(DM dm, User user)
 {
