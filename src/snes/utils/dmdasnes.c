@@ -313,12 +313,12 @@ PetscErrorCode SNESComputeLocalBlockJacobian_DMDA(SNES snes,Vec X,Mat *A,Mat *B,
 
    Input Arguments:
 +  dm - DM to associate callback with
+.  imode - INSERT_VALUES if local function computes owned part, ADD_VALUES if it contributes to ghosted part
 .  func - local residual evaluation
 -  ctx - optional context for local residual evaluation
 
    Calling sequence for func:
 +  info - DMDALocalInfo defining the subdomain to evaluate the residual on
-.  imode - INSERT_VALUES if local function computes owned part, ADD_VALUES if it contributes to ghosted part
 .  x - dimensional pointer to state at which to evaluate residual
 .  f - dimensional pointer to residual, write the residual here
 -  ctx - optional context passed above
