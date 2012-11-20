@@ -58,7 +58,7 @@ struct _n_User {
   MPI_Comm  comm;
   PetscErrorCode (*RHSFunctionLocal)(DM,DM,DM,Vec,Vec,User);
   PetscBool reconstruct;
-  PetscInt  numGhostCells;
+  PetscInt  numGhostCells, numSplitFaces;
   PetscInt  cEndInterior;  /* First boundary ghost cell */
   Vec       cellgeom, facegeom;
   DM        dmGrad;
@@ -571,9 +571,200 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, User user)
 
 #undef __FUNCT__
 #define __FUNCT__ "SplitFaces"
-PetscErrorCode SplitFaces(DM *dmSplit, User user)
+/* Right now, I have just added duplicate faces, which see both cells. We can
+- Add duplicate vertices and decouple the face cones
+- Disconnect faces from cells across the rotation gap
+*/
+PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
 {
+  DM                 dm = *dmSplit, sdm;
+  PetscSF            sfPoint, gsfPoint;
+  PetscSection       coordSection, newCoordSection;
+  Vec                coordinates;
+  IS                 idIS;
+  const PetscInt    *ids;
+  PetscInt          *newpoints;
+  PetscInt           dim, depth, maxConeSize, maxSupportSize, numLabels;
+  PetscInt           numFS, fs, pStart, pEnd, p, vStart, vEnd, v, fStart, fEnd, newf, d, l;
+  PetscErrorCode     ierr;
+
   PetscFunctionBegin;
+  ierr = DMCreate(((PetscObject) dm)->comm, &sdm);CHKERRQ(ierr);
+  ierr = DMSetType(sdm, DMCOMPLEX);CHKERRQ(ierr);
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMComplexSetDimension(sdm, dim);CHKERRQ(ierr);
+
+  ierr = DMComplexGetLabelIdIS(dm, labelName, &idIS);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
+  ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
+  user->numSplitFaces = 0;
+  for(fs = 0; fs < numFS; ++fs) {
+    PetscInt numBdFaces;
+
+    ierr = DMComplexGetStratumSize(dm, labelName, ids[fs], &numBdFaces);CHKERRQ(ierr);
+    user->numSplitFaces += numBdFaces;
+  }
+  ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  pEnd += user->numSplitFaces;
+  ierr = DMComplexSetChart(sdm, pStart, pEnd);CHKERRQ(ierr);
+  /* Set cone and support sizes */
+  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
+  for(d = 0; d <= depth; ++d) {
+    ierr = DMComplexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
+    for(p = pStart; p < pEnd; ++p) {
+      PetscInt newp = p;
+      PetscInt size;
+
+      ierr = DMComplexGetConeSize(dm, p, &size);CHKERRQ(ierr);
+      ierr = DMComplexSetConeSize(sdm, newp, size);CHKERRQ(ierr);
+      ierr = DMComplexGetSupportSize(dm, p, &size);CHKERRQ(ierr);
+      ierr = DMComplexSetSupportSize(sdm, newp, size);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+  for(fs = 0, newf = fEnd; fs < numFS; ++fs) {
+    IS              faceIS;
+    const PetscInt *faces;
+    PetscInt        numFaces, f;
+
+    ierr = DMComplexGetStratumIS(dm, labelName, ids[fs], &faceIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
+    ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
+    for(f = 0; f < numFaces; ++f, ++newf) {
+      PetscInt size;
+
+      /* Right now I think that both faces should see both cells */
+      ierr = DMComplexGetConeSize(dm, faces[f], &size);CHKERRQ(ierr);
+      ierr = DMComplexSetConeSize(sdm, newf, size);CHKERRQ(ierr);
+      ierr = DMComplexGetSupportSize(dm, faces[f], &size);CHKERRQ(ierr);
+      ierr = DMComplexSetSupportSize(sdm, newf, size);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
+    ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
+  }
+  ierr = DMSetUp(sdm);CHKERRQ(ierr);
+  /* Set cones and supports */
+  ierr = DMComplexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
+  ierr = PetscMalloc(PetscMax(maxConeSize, maxSupportSize) * sizeof(PetscInt), &newpoints);CHKERRQ(ierr);
+  ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    const PetscInt *points, *orientations;
+    PetscInt        size, i, newp = p;
+
+    ierr = DMComplexGetConeSize(dm, p, &size);CHKERRQ(ierr);
+    ierr = DMComplexGetCone(dm, p, &points);CHKERRQ(ierr);
+    ierr = DMComplexGetConeOrientation(dm, p, &orientations);CHKERRQ(ierr);
+    for(i = 0; i < size; ++i) {
+      newpoints[i] = points[i];
+    }
+    ierr = DMComplexSetCone(sdm, newp, newpoints);CHKERRQ(ierr);
+    ierr = DMComplexSetConeOrientation(sdm, newp, orientations);CHKERRQ(ierr);
+    ierr = DMComplexGetSupportSize(dm, p, &size);CHKERRQ(ierr);
+    ierr = DMComplexGetSupport(dm, p, &points);CHKERRQ(ierr);
+    for(i = 0; i < size; ++i) {
+      newpoints[i] = points[i];
+    }
+    ierr = DMComplexSetSupport(sdm, newp, newpoints);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(newpoints);CHKERRQ(ierr);
+  for(fs = 0, newf = fEnd; fs < numFS; ++fs) {
+    IS              faceIS;
+    const PetscInt *faces;
+    PetscInt        numFaces, f;
+
+    ierr = DMComplexGetStratumIS(dm, labelName, ids[fs], &faceIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
+    ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
+    for(f = 0; f < numFaces; ++f, ++newf) {
+      const PetscInt *points;
+
+      ierr = DMComplexGetCone(dm, faces[f], &points);CHKERRQ(ierr);
+      ierr = DMComplexSetCone(sdm, newf, points);CHKERRQ(ierr);
+      ierr = DMComplexGetSupport(dm, faces[f], &points);CHKERRQ(ierr);
+      ierr = DMComplexSetSupport(sdm, newf, points);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
+    ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
+  ierr = ISDestroy(&idIS);CHKERRQ(ierr);
+  ierr = DMComplexStratify(sdm);CHKERRQ(ierr);
+  /* Convert coordinates */
+  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &newCoordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(newCoordSection, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(newCoordSection, 0, dim);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(newCoordSection, vStart, vEnd);CHKERRQ(ierr);
+  for(v = vStart; v < vEnd; ++v) {
+    ierr = PetscSectionSetDof(newCoordSection, v, dim);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(newCoordSection, v, 0, dim);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(newCoordSection);CHKERRQ(ierr);
+  ierr = DMComplexSetCoordinateSection(sdm, newCoordSection);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(sdm, coordinates);CHKERRQ(ierr);
+  /* Convert labels */
+  ierr = DMComplexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
+  for(l = 0; l < numLabels; ++l) {
+    const char *lname;
+    PetscBool   isDepth;
+
+    ierr = DMComplexGetLabelName(dm, l, &lname);CHKERRQ(ierr);
+    ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
+    if (isDepth) continue;
+    ierr = DMComplexGetLabelIdIS(dm, lname, &idIS);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
+    ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
+    for(fs = 0; fs < numFS; ++fs) {
+      IS              pointIS;
+      const PetscInt *points;
+      PetscInt        numPoints;
+
+      ierr = DMComplexGetStratumIS(dm, lname, ids[fs], &pointIS);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
+      ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+      for(p = 0; p < numPoints; ++p) {
+        PetscInt newpoint = points[p];
+
+        ierr = DMComplexSetLabelValue(sdm, lname, newpoint, ids[fs]);CHKERRQ(ierr);
+      }
+      ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
+    ierr = ISDestroy(&idIS);CHKERRQ(ierr);
+  }
+  /* Convert pointSF */
+  const PetscSFNode *remotePoints;
+  PetscSFNode       *gremotePoints;
+  const PetscInt    *localPoints;
+  PetscInt          *glocalPoints,*newLocation,*newRemoteLocation;
+  PetscInt           numRoots, numLeaves;
+  PetscMPIInt        numProcs;
+
+  ierr = MPI_Comm_size(((PetscObject) dm)->comm, &numProcs);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+  ierr = DMGetPointSF(sdm, &gsfPoint);CHKERRQ(ierr);
+  ierr = DMComplexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
+  if (numRoots >= 0) {
+    ierr = PetscMalloc2(numRoots,PetscInt,&newLocation,pEnd-pStart,PetscInt,&newRemoteLocation);CHKERRQ(ierr);
+    for (l=0; l<numRoots; l++) newLocation[l] = l; /* + (l >= cEnd ? user->numGhostCells : 0); */
+    ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
+    ierr = PetscMalloc(numLeaves * sizeof(PetscInt),    &glocalPoints);CHKERRQ(ierr);
+    ierr = PetscMalloc(numLeaves * sizeof(PetscSFNode), &gremotePoints);CHKERRQ(ierr);
+    for(l = 0; l < numLeaves; ++l) {
+      glocalPoints[l]        = localPoints[l]; /* localPoints[l] >= cEnd ? localPoints[l] + user->numGhostCells : localPoints[l]; */
+      gremotePoints[l].rank  = remotePoints[l].rank;
+      gremotePoints[l].index = newRemoteLocation[localPoints[l]];
+    }
+    ierr = PetscFree2(newLocation,newRemoteLocation);CHKERRQ(ierr);
+    ierr = PetscSFSetGraph(gsfPoint, numRoots+user->numGhostCells, numLeaves, glocalPoints, PETSC_OWN_POINTER, gremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  }
+
+  *dmSplit = sdm;
   PetscFunctionReturn(0);
 }
 
