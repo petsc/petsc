@@ -489,6 +489,12 @@ runex5f90t:
 	   if (${DIFF} output/ex5f90_1.out ex5f90t_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5f90t_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5f90t_1.tmp
+runex7:
+	-@${MPIEXEC} -n 1 ./ex7   -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always \
+                     > ex7_1.tmp 2>&1; \
+           if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
+           else  echo  ${PWD} "\nPossible problem with with ex7_1, diffs above \n========================================="; fi; \
+           ${RM} -f ex7_1.tmp
 runex8:
 	-@${MPIEXEC} -n 2 ./ex8  -mx 16 -my 16 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always \
                     -lidvelocity 0. -grashof 1000. > ex8_1.tmp 2>&1; \
@@ -905,7 +911,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex5_5_ngmres runex5_5_ngmres_nrichardson runex5_5_ncg runex5_5_nrichardson \
                                  runex5_5_ngmres_ngs runex5_5_qn runex5_5_ls \
                                  runex5_5_fas runex5_5_ngmres_fas runex5_5_fas_additive \
-                                 runex5_6 ex5.rm\
+                                 runex5_6 ex5.rm ex7.PETSc runex7 ex7.rm\
+                                 ex8.PETSc runex8 runex8_2 runex8_3 ex8.rm\
                                  ex9.PETSc runex9 runex9_2 runex9_3 runex9_4 ex9.rm\
                                  ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc runex15 runex15_3 ex15.rm ex18.PETSc runex18 ex18.rm \
                                  ex19.PETSc runex19 runex19_5 \

@@ -89,7 +89,7 @@ static PetscScalar quadWeights[4] = {0.15902069,  0.09097931,  0.15902069,  0.09
    User-defined routines
 */
 extern PetscErrorCode CreateNullSpace(DM, Vec*);
-extern PetscErrorCode FormInitialGuess(DM,Vec);
+extern PetscErrorCode FormInitialGuess(SNES,Vec,void*);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field**,Field**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,Field**,Mat,AppCtx*);
 extern PetscErrorCode L_2Error(DM, Vec, double *, AppCtx *);
@@ -146,14 +146,7 @@ int main(int argc,char **argv)
   ierr = DMDASetLocalJacobian(da, (DMDALocalFunction1)FormJacobianLocal);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Evaluate initial guess
-     Note: The user should initialize the vector, x, with the initial guess
-     for the nonlinear solver prior to calling SNESSolve().  In particular,
-     to employ an initial guess of zero, the user should explicitly set
-     this vector to zero by calling VecSet().
-  */
-  ierr = DMSetInitialGuess(da, FormInitialGuess);CHKERRQ(ierr);
+  ierr = SNESSetComputeInitialGuess(snes, FormInitialGuess,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
@@ -226,15 +219,17 @@ PetscErrorCode CreateNullSpace(DM da, Vec *N)
    Output Parameter:
    X - vector
 */
-PetscErrorCode FormInitialGuess(DM da,Vec X)
+PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
 {
   AppCtx        *user;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscErrorCode ierr;
   PetscReal      lambda,temp1,temp,hx,hy;
   Field        **x;
+  DM             da;
 
   PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
