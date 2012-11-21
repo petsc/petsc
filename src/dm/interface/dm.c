@@ -1758,7 +1758,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetFunction()
 
 @*/
@@ -2208,30 +2208,6 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSetInitialGuess"
-/*@C
-    DMSetInitialGuess - sets a function to compute an initial guess vector entries for the solvers
-
-    Logically Collective on DM
-
-    Input Parameter:
-+   dm - the DM object to destroy
--   f - the function to compute the initial guess
-
-    Level: intermediate
-
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
-
-@*/
-PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  dm->ops->initialguess = f;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMSetFunction"
 /*@C
     DMSetFunction - sets a function to compute the right hand side vector entries for the KSP solver or nonlinear function for SNES
@@ -2247,7 +2223,7 @@ PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
     Notes: This sets both the function for function evaluations and the function used to compute Jacobians via finite differences if no Jacobian
            computer is provided with DMSetJacobian(). Canceling cancels the function, but not the function used to compute the Jacobian.
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetJacobian()
 
 @*/
@@ -2275,7 +2251,7 @@ PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetFunction()
 
 @*/
@@ -2300,7 +2276,7 @@ PetscErrorCode  DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,Mat,Mat,MatStruct
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetJacobian()
 
 @*/
@@ -2353,7 +2329,7 @@ PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetFunction(), DMSetVariableBounds()
 
 @*/
@@ -2367,58 +2343,6 @@ PetscErrorCode  DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
     ierr = (*dm->ops->computevariablebounds)(dm, xl,xu); CHKERRQ(ierr);
   }
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "This DM is incapable of computing variable bounds.");
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeInitialGuess"
-/*@
-    DMComputeInitialGuess - computes an initial guess vector entries for the KSP solvers
-
-    Collective on DM
-
-    Input Parameter:
-+   dm - the DM object to destroy
--   x - the vector to hold the initial guess values
-
-    Level: developer
-
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetRhs(), DMSetMat()
-
-@*/
-PetscErrorCode  DMComputeInitialGuess(DM dm,Vec x)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (!dm->ops->initialguess) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetInitialGuess()");
-  ierr = (*dm->ops->initialguess)(dm,x);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMHasInitialGuess"
-/*@
-    DMHasInitialGuess - does the DM object have an initial guess function
-
-    Not Collective
-
-    Input Parameter:
-.   dm - the DM object to destroy
-
-    Output Parameter:
-.   flg - PETSC_TRUE if function exists
-
-    Level: developer
-
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
-
-@*/
-PetscErrorCode  DMHasInitialGuess(DM dm,PetscBool  *flg)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  *flg =  (dm->ops->initialguess) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2512,7 +2436,7 @@ PetscErrorCode  DMHasColoring(DM dm,PetscBool  *flg)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetFunction(), DMSetJacobian(), DMSetVariableBounds()
 
 @*/
@@ -2547,7 +2471,7 @@ PetscErrorCode  DMSetVec(DM dm,Vec x)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetJacobian()
 
 @*/
@@ -2580,7 +2504,7 @@ PetscErrorCode  DMComputeFunction(DM dm,Vec x,Vec b)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetFunction()
 
 @*/
