@@ -562,7 +562,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
       kdm->computerhs = PETSC_NULL;
       kdm->rhsctx = PETSC_NULL;
       ierr = DMSetFunction(dms[i],0);
-      ierr = DMSetInitialGuess(dms[i],0);
       if (!mglevels[i+1]->interpolate) {
 	ierr = DMCreateInterpolation(dms[i],dms[i+1],&p,&rscale);CHKERRQ(ierr);
 	ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
