@@ -1824,7 +1824,7 @@ int main(int argc, char **argv)
   PetscViewer    viewer;
   PetscMPIInt    rank;
   char           filename[PETSC_MAX_PATH_LEN] = "sevenside.exo";
-  PetscBool      vtkCellGeom;
+  PetscBool      vtkCellGeom, splitFaces;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
@@ -1862,6 +1862,8 @@ int main(int argc, char **argv)
     user->reconstruct = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_reconstruct","Reconstruct gradients for a second order method (grows stencil)","",user->reconstruct,&user->reconstruct,PETSC_NULL);CHKERRQ(ierr);
     user->RHSFunctionLocal = user->reconstruct ? RHSFunctionLocal_LS : RHSFunctionLocal_Upwind;
+    splitFaces = PETSC_FALSE;
+    ierr = PetscOptionsBool("-ufv_split_faces","Split faces between cell sets","",splitFaces,&splitFaces,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -1880,7 +1882,7 @@ int main(int argc, char **argv)
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
 
   ierr = ConstructGhostCells(&dm, user);CHKERRQ(ierr);
-  ierr = ConstructCellBoundary(dm, user);CHKERRQ(ierr);
+  if (splitFaces) {ierr = ConstructCellBoundary(dm, user);CHKERRQ(ierr);}
   ierr = SplitFaces(&dm, "split faces", user);CHKERRQ(ierr);
   ierr = ConstructGeometry(dm, &user->facegeom, &user->cellgeom, user);CHKERRQ(ierr);
   if (0) {ierr = VecView(user->cellgeom, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}

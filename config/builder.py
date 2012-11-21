@@ -345,7 +345,7 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                 {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f share/petsc/datafiles/meshes/sevenside-quad-15.exo'},
                                                                 {'numProcs': 8, 'args': '-ufv_vtk_interval 0 -f share/petsc/datafiles/meshes/sevenside-quad.exo'},
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw'},
-                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f squaremotor-30.exo'}],
+                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f share/petsc/datafiles/meshes/squaremotor-30.exo -ufv_split_faces'}],
                         'src/ts/examples/tutorials/ex18':      {'numProcs': 1, 'args': '-snes_mf -ts_monitor_solution -ts_monitor -snes_monitor'},
                         }
 
