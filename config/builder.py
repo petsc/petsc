@@ -1277,7 +1277,11 @@ class PETScMaker(script.Script):
    self.logWrite('Linking object '+str(objects)+' into '+executable+'\n', debugSection = self.debugSection, forceScroll = True)
    self.configInfo.compilers.pushLanguage(language)
    packageIncludes, packageLibs = self.getPackageInfo()
-   cmd = self.configInfo.compilers.getFullLinkerCmd(' '.join(objects)+' -L'+self.petscLibDir+' -lpetsc '+packageLibs+' -L/usr/local/cuda/lib', executable)
+   if self.argDB.get('with-single-library') == 0:
+       libpetsc = ' -lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys '
+   else:
+       libpetsc = ' -lpetsc '
+   cmd = self.configInfo.compilers.getFullLinkerCmd(' '.join(objects)+' -L'+self.petscLibDir+libpetsc+packageLibs+' -L/usr/local/cuda/lib', executable)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
