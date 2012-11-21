@@ -85,6 +85,7 @@ typedef struct {
   PetscScalar volume;
 } CellGeom;
 
+
 PETSC_STATIC_INLINE PetscScalar Dot2(const PetscScalar *x,const PetscScalar *y) { return x[0]*y[0] + x[1]*y[1];}
 PETSC_STATIC_INLINE PetscReal Norm2(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(Dot2(x,x)));}
 PETSC_STATIC_INLINE void Normalize2(PetscScalar *x) { PetscReal a = 1./Norm2(x); x[0] *= a; x[1] *= a; }
@@ -335,6 +336,158 @@ static PetscErrorCode PhysicsFunctional_SW(Physics phys,const PetscScalar *xx,Pe
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_SW"
 static PetscErrorCode PhysicsCreate_SW(User user,Physics phys)
+{
+  const PetscInt wallids[] = {100,101,200,300};
+  Physics_SW *sw;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PhysicsBoundaryRegister(phys,"wall",PhysicsBoundary_SW_Wall,ALEN(wallids),wallids);CHKERRQ(ierr);
+  phys->dof = 1+DIM;
+  phys->riemann = PhysicsRiemann_SW;
+  phys->solution = PhysicsSolution_SW;
+  ierr = PetscNew(Physics_SW,&phys->data);CHKERRQ(ierr);
+  sw = phys->data;
+  ierr = PetscOptionsHead("SW options");CHKERRQ(ierr);
+  {
+    sw->gravity = 1.0;
+    ierr = PetscOptionsReal("-sw_gravity","Gravitational constant","",sw->gravity,&sw->gravity,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  phys->maxspeed = PetscSqrtReal(2.0*sw->gravity); /* Mach 1 for depth of 2 */
+  phys->monitor = PhysicsFunctional_SW;
+  ierr = PhysicsFunctionalRegister(phys,"Height",&sw->monitor.Height);CHKERRQ(ierr);
+  ierr = PhysicsFunctionalRegister(phys,"Speed",&sw->monitor.Speed);CHKERRQ(ierr);
+  ierr = PhysicsFunctionalRegister(phys,"Energy",&sw->monitor.Energy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/******************* Euler ********************/
+typedef struct {
+  PetscScalar vals[0];
+  PetscScalar r;
+  PetscScalar ru[DIM];
+  PetscScalar e;
+} EulerNode;
+typedef PetscErrorCode (*EquationOfState)(const PetscReal*, const EulerNode*, PetscScalar*); 
+typedef struct {
+  PetscReal *params;
+  EquationOfState eos;
+  struct {
+    PetscInt Density;
+    PetscInt Speed;
+    PetscInt Energy;
+    PetscInt Pressure;
+  } monitor;
+} PhysicsEuler;
+
+#undef __FUNCT__
+#define __FUNCT__ "pressure_PG"
+static PetscErrorCode Pressure_PG(const PetscReal *f,const EulerNode *x,PetscScalar *p)
+{
+  PetscScalar     ru2=0.0; 
+  PetscInt        i;
+
+  PetscFunctionBegin;
+  for(i=0; i<DIM; i++) ru2 += x->ru[i] * x->ru[i];
+  ru2 /= x->r;
+  (*p)=2.0*(x->e-0.5*ru2)/(*f);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "EulerFlux"
+/*
+ * x = (rho,rho*(u_1),...,rho*e)^T
+ * x_t+div(f_1(x))+...+div(f_DIM(x)) = 0
+ * 
+ * f_i(x) = u_i*x+(0,0,...,p,...,p*u_i)^T
+ *
+ */
+static PetscErrorCode EulerFlux(Physics phys,const PetscReal *n,const EulerNode *x,EulerNode *f)
+{
+  PhysicsEuler    *eu = (PhysicsEuler*)phys->data;
+  PetscScalar     u=0.0; 
+  PetscInt        i;
+
+  PetscFunctionBegin;
+  for(i=0; i<DIM; i++) u += x->ru[i] * x->ru[i] / (x->r * x->r);
+  for(i=0; i<DIM; i++) f->r;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsBoundary_Euler_Wall"
+static PetscErrorCode PhysicsBoundary_Euler_Wall(Physics phys, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG)
+{
+  PetscInt i;
+  PetscFunctionBegin;
+  xG[0] = xI[0];
+  for(i=1;i<DIM+1;i++) xG[i] = -xI[i];
+  xG[DIM+1] = xI[DIM+1];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsRiemann_Euler"
+static PetscErrorCode PhysicsRiemann_Euler(Physics phys, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
+{
+  Physics_SW *sw = (Physics_SW*)phys->data;
+  PetscReal c,speed;
+  const SWNode *uL = (const SWNode*)xL,*uR = (const SWNode*)xR;
+  SWNode fL,fR;
+  PetscInt i;
+
+  PetscFunctionBegin;
+  if (uL->h < 0 || uR->h < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative");
+  SWFlux(phys,n,uL,&fL);
+  SWFlux(phys,n,uR,&fR);
+  c = PetscSqrtScalar(sw->gravity*PetscMax(uL->h,uR->h)); /* gravity wave speed */
+  speed = PetscMax(PetscAbsScalar(Dot2(uL->uh,n)/uL->h),PetscAbsScalar(Dot2(uR->uh,n)/uR->h)) / Norm2(n) + c;
+  for (i=0; i<1+DIM; i++) flux[i] = 0.5*(fL.vals[i] + fR.vals[i]) + 0.5*speed*(xL[i] - xR[i]);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsSolution_Euler"
+static PetscErrorCode PhysicsSolution_Euler(User user,PetscReal time,const PetscReal *x,PetscScalar *u)
+{
+  //Physics_SW *sw = (Physics_SW*)user->physics->data;
+  PetscReal dx[2],r,sigma;
+
+  PetscFunctionBegin;
+  if (time != 0.0) SETERRQ1(user->comm,PETSC_ERR_SUP,"No solution known for time %G",time);
+  dx[0] = x[0] - 1.5;
+  dx[1] = x[1] - 1.0;
+  r = Norm2(dx);
+  sigma = 0.5;
+  u[0] = 1 + 0.1*PetscExpScalar(-PetscSqr(r)/(2*PetscSqr(sigma)));
+  u[1] = 0.0;
+  u[2] = 0.0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsFunctional_Euler"
+static PetscErrorCode PhysicsFunctional_Euler(Physics phys,const PetscScalar *xx,PetscReal *f)
+{
+  Physics_SW *sw = (Physics_SW*)phys->data;
+  const SWNode *x = (const SWNode*)xx;
+  PetscScalar u[2];
+  PetscReal h;
+
+  PetscFunctionBegin;
+  h = PetscRealPart(x->h);
+  f[sw->monitor.Height] = h;
+  Scale2(1./x->h,x->uh,u);
+  f[sw->monitor.Speed] = Norm2(u) + PetscSqrtReal(sw->gravity*h);
+  f[sw->monitor.Energy] = 0.5*(Dot2(x->uh,u) + sw->gravity*PetscSqr(h));
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsCreate_Euler"
+static PetscErrorCode PhysicsCreate_Euler(User user,Physics phys)
 {
   const PetscInt wallids[] = {100,101,200,300};
   Physics_SW *sw;
