@@ -209,6 +209,11 @@ PetscErrorCode  KSPSetUp(KSP ksp)
       ierr = DMComputeInitialGuess(ksp->dm,ksp->vec_sol);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
+    if (kdm->computeinitialguess && ksp->setupstage != KSP_SETUP_NEWRHS) {
+      /* only computes initial guess the first time through */
+      ierr = (*kdm->computeinitialguess)(ksp,ksp->vec_sol,kdm->initialguessctx);CHKERRQ(ierr);
+      ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+    }
     if (kdm->computerhs) {
       ierr = (*kdm->computerhs)(ksp,ksp->vec_rhs,kdm->rhsctx);CHKERRQ(ierr);
     } else {
@@ -2132,11 +2137,46 @@ $  func(KSP ksp,Vec b,void *ctx)
 PetscErrorCode KSPSetComputeRHS(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  DM dm;
+  DM             dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
   ierr = DMKSPSetComputeRHS(dm,func,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPSetComputeInitialGuess"
+/*@C
+   KSPSetComputeInitialGuess - set routine to compute the initial guess of the linear system
+
+   Logically Collective
+
+   Input Arguments:
++  ksp - the KSP context
+.  func - function to compute the initial guess
+-  ctx - optional context
+
+   Calling sequence of func:
+$  func(KSP ksp,Vec x,void *ctx)
+
++  ksp - the KSP context
+.  x - solution vector
+-  ctx - optional user-provided context
+
+   Level: beginner
+
+.seealso: KSPSolve()
+@*/
+PetscErrorCode KSPSetComputeInitialGuess(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
+  ierr = DMKSPSetComputeInitialGuess(dm,func,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

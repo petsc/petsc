@@ -217,7 +217,7 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm,PetscErrorCode (**func)(KSP,Mat,Ma
 #undef __FUNCT__
 #define __FUNCT__ "DMKSPSetComputeRHS"
 /*@C
-   DMKSPSetComputeRHS - set KSP matrix evaluation function
+   DMKSPSetComputeRHS - set KSP right hand side evaluation function
 
    Not Collective
 
@@ -238,7 +238,7 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm,PetscErrorCode (**func)(KSP,Mat,Ma
 PetscErrorCode DMKSPSetComputeRHS(DM dm,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  KSPDM kdm;
+  KSPDM          kdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -249,9 +249,42 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm,PetscErrorCode (*func)(KSP,Vec,void*),vo
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMKSPSetComputeInitialGuess"
+/*@C
+   DMKSPSetComputeInitialGuess - set KSP initial guess evaluation function
+
+   Not Collective
+
+   Input Argument:
++  dm - DM to be used with KSP
+.  func - initial guess evaluation function, see KSPSetComputeInitialGuess() for calling sequence
+-  ctx - context for right hand side evaluation
+
+   Level: advanced
+
+   Note:
+   KSPSetComputeInitialGuess() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.  
+
+.seealso: DMKSPSetContext(), DMKSPGetComputeRHS(), KSPSetRHS()
+@*/
+PetscErrorCode DMKSPSetComputeInitialGuess(DM dm,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  KSPDM          kdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMKSPGetContextWrite(dm,&kdm);CHKERRQ(ierr);
+  if (func) kdm->computeinitialguess = func;
+  if (ctx)  kdm->initialguessctx      = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMKSPGetComputeRHS"
 /*@C
-   DMKSPGetComputeRHS - get KSP matrix evaluation function
+   DMKSPGetComputeRHS - get KSP right hand side evaluation function
 
    Not Collective
 
@@ -276,5 +309,36 @@ PetscErrorCode DMKSPGetComputeRHS(DM dm,PetscErrorCode (**func)(KSP,Vec,void*),v
   ierr = DMKSPGetContext(dm,&kdm);CHKERRQ(ierr);
   if (func) *func = kdm->computerhs;
   if (ctx)  *(void**)ctx = kdm->rhsctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMKSPGetComputeInitialGuess"
+/*@C
+   DMKSPGetComputeInitialGuess - get KSP initial guess evaluation function
+
+   Not Collective
+
+   Input Argument:
+.  dm - DM to be used with KSP
+
+   Output Arguments:
++  func - initial guess evaluation function, see KSPSetComputeInitialGuess() for calling sequence
+-  ctx - context for right hand side evaluation
+
+   Level: advanced
+
+.seealso: DMKSPSetContext(), KSPSetComputeRHS(), DMKSPSetComputeRHS()
+@*/
+PetscErrorCode DMKSPGetComputeInitialGuess(DM dm,PetscErrorCode (**func)(KSP,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  KSPDM kdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMKSPGetContext(dm,&kdm);CHKERRQ(ierr);
+  if (func) *func = kdm->computeinitialguess;
+  if (ctx)  *(void**)ctx = kdm->initialguessctx;
   PetscFunctionReturn(0);
 }

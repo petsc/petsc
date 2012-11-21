@@ -148,8 +148,10 @@ typedef struct _n_KSPDM *KSPDM;
 struct _n_KSPDM {
   PetscErrorCode (*computeoperators)(KSP,Mat,Mat,MatStructure*,void*);
   PetscErrorCode (*computerhs)(KSP,Vec,void*);
+  PetscErrorCode (*computeinitialguess)(KSP,Vec,void*);
   void *operatorsctx;
   void *rhsctx;
+  void *initialguessctx;
 
   /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */
   PetscErrorCode (*destroy)(KSPDM);
@@ -160,7 +162,7 @@ struct _n_KSPDM {
    */
   DM originaldm;
 
-  void (*fortran_func_pointers[2])(void); /* Store our own function pointers so they are associated with the KSPDM instead of the DM */
+  void (*fortran_func_pointers[3])(void); /* Store our own function pointers so they are associated with the KSPDM instead of the DM */
 };
 PETSC_EXTERN PetscErrorCode DMKSPGetContext(DM,KSPDM*);
 PETSC_EXTERN PetscErrorCode DMKSPGetContextWrite(DM,KSPDM*);
