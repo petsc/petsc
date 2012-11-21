@@ -339,12 +339,12 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                #{'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
                                                                #{'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'}
 ],
-                        'src/ts/examples/tutorials/ex11':      [{'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f share/petsc/datafiles/meshes/sevenside.exo'},
-                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f share/petsc/datafiles/meshes/sevenside-quad-15.exo'},
-                                                                {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f share/petsc/datafiles/meshes/sevenside.exo'},
-                                                                {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f share/petsc/datafiles/meshes/sevenside-quad-15.exo'},
-                                                                {'numProcs': 8, 'args': '-ufv_vtk_interval 0 -f share/petsc/datafiles/meshes/sevenside-quad.exo'},
-                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw'},
+                        'src/ts/examples/tutorials/ex11':      [{'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo'},
+                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo'},
+                                                                {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo'},
+                                                                {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo'},
+                                                                {'numProcs': 8, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad.exo'},
+                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo -ts_type rosw'},
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f squaremotor-30.exo'}],
                         'src/ts/examples/tutorials/ex18':      {'numProcs': 1, 'args': '-snes_mf -ts_monitor_solution -ts_monitor -snes_monitor'},
                         }
@@ -1479,7 +1479,7 @@ class PETScMaker(script.Script):
 
  def getTestCommand(self, executable, **params):
    numProcs = params.get('numProcs', 1)
-   args     = params.get('args', '')
+   args     = params.get('args', '') % dict(meshes=os.path.join(self.petscDir,'share','petsc','datafiles','meshes'))
    hosts    = ','.join(['localhost']*int(numProcs))
    return ' '.join([self.configInfo.mpi.mpiexec, '-hosts', hosts, '-n', str(numProcs), os.path.abspath(executable), args])
 
