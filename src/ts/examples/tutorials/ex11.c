@@ -1771,6 +1771,7 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,PetscReal ti
       ierr = DMComplexPointLocalRead(dm,cell,x,&cx);CHKERRQ(ierr);
       ierr = DMComplexPointLocalRead(dmCell,cell,cellgeom,&cg);CHKERRQ(ierr);
       ierr = DMComplexPointGlobalRef(dmGrad,cell,grad,&cgrad);CHKERRQ(ierr);
+      if (!cgrad) continue;     /* ghost cell, we don't compute */
       /* Limiter will be minimum value over all neighbors */
       for (i=0; i<dof; i++) cellPhi[i] = PETSC_MAX_REAL;
       for (f=0; f<numFaces; f++) {
