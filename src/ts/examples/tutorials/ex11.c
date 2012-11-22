@@ -214,21 +214,12 @@ static PetscErrorCode PhysicsSolution_Advect(Model mod,PetscReal time,const Pets
 {
   Physics phys = (Physics)ctx;
   Physics_Advect *advect = (Physics_Advect*)phys->data;
-  PetscReal x0[DIM];
+  PetscReal x0[2];
 
   PetscFunctionBegin;
   Waxpy2(-time,advect->wind,x,x0);
-  switch (advect->solnum) {
-  case 0:
-    if (x0[1] > 0) u[0] = 1.*x[0] + 3.*x[1];
-    else u[0] = advect->inflowState;
-    break;
-  case 1: {
-    PetscReal v[DIM],c[DIM] = {0.5,0.5},r,rad = 0.5;
-    Waxpy2(-1,c,x0,v);
-    r = Norm2(v);
-    u[0] = PetscMax(1 - r/rad,0);
-  }
+  if (x0[1] > 0) u[0] = 1.*x[0] + 3.*x[1];
+  else u[0] = advect->inflowState;
   PetscFunctionReturn(0);
 }
 
