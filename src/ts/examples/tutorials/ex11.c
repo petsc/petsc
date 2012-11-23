@@ -27,7 +27,7 @@ typedef struct _n_Model *Model;
 /* 'User' implements a discretization of a continuous model. */
 typedef struct _n_User *User;
 
-typedef PetscErrorCode (*RiemannFunction)(Physics,const PetscReal*,const PetscScalar*,const PetscScalar*,PetscScalar*);
+typedef PetscErrorCode (*RiemannFunction)(Physics,const PetscReal*,const PetscReal*,const PetscScalar*,const PetscScalar*,PetscScalar*);
 typedef PetscErrorCode (*SolutionFunction)(Model,PetscReal,const PetscReal*,PetscScalar*,void*);
 typedef PetscErrorCode (*BoundaryFunction)(Model,PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*);
 typedef PetscErrorCode (*FunctionalFunction)(Model,PetscReal,const PetscReal*,const PetscScalar*,PetscReal*,void*);
@@ -58,7 +58,7 @@ struct _n_FunctionalLink {
 struct _n_Physics {
   RiemannFunction riemann;
   PetscInt  dof;                /* number of degrees of freedom per cell */
-  PetscReal maxspeed;
+  PetscReal maxspeed;           /* kludge to pick initial time step, need to add monitoring and step control */
   void *data;
 };
 
@@ -166,9 +166,27 @@ static PetscReal Limit_Superbee(PetscReal f) { return 2*Limit_Minmod(f); }
 static PetscReal Limit_MC(PetscReal f) { return PetscMin(1,Limit_Superbee(f)); } /* aka Barth-Jespersen */
 
 /******************* Advect ********************/
+typedef enum {ADVECT_SOL_TILTED,ADVECT_SOL_BUMP} AdvectSolType;
+static const char *const AdvectSolTypes[] = {"TILTED","BUMP","AdvectSolType","ADVECT_SOL_",0};
+typedef enum {ADVECT_SOL_BUMP_CONE,ADVECT_SOL_BUMP_COS} AdvectSolBumpType;
+static const char *const AdvectSolBumpTypes[] = {"CONE","COS","AdvectSolBumpType","ADVECT_SOL_BUMP_",0};
+
 typedef struct {
   PetscReal wind[DIM];
+} Physics_Advect_Tilted;
+typedef struct {
+  PetscReal center[DIM];
+  PetscReal radius;
+  AdvectSolBumpType type;
+} Physics_Advect_Bump;
+
+typedef struct {
   PetscReal inflowState;
+  AdvectSolType soltype;
+  union {
+    Physics_Advect_Tilted tilted;
+    Physics_Advect_Bump bump;
+  } sol;
   struct {
     PetscInt Error;
   } functional;
@@ -197,13 +215,25 @@ static PetscErrorCode PhysicsBoundary_Advect_Outflow(Model mod, PetscReal time, 
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Advect"
-static PetscErrorCode PhysicsRiemann_Advect(Physics phys, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
+static PetscErrorCode PhysicsRiemann_Advect(Physics phys, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
 {
   Physics_Advect *advect = (Physics_Advect*)phys->data;
-  PetscReal wn;
+  PetscReal wind[DIM],wn;
 
   PetscFunctionBegin;
-  wn = Dot2(advect->wind, n);
+  switch (advect->soltype) {
+  case ADVECT_SOL_TILTED: {
+    Physics_Advect_Tilted *tilted = &advect->sol.tilted;
+    wind[0] = tilted->wind[0];
+    wind[1] = tilted->wind[1];
+  } break;
+  case ADVECT_SOL_BUMP:
+    wind[0] = -qp[1];
+    wind[1] = qp[0];
+    break;
+  default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for solution type %s",AdvectSolBumpTypes[advect->soltype]);
+  }
+  wn = Dot2(wind, n);
   flux[0] = (wn > 0 ? xL[0] : xR[0]) * wn;
   PetscFunctionReturn(0);
 }
@@ -214,12 +244,36 @@ static PetscErrorCode PhysicsSolution_Advect(Model mod,PetscReal time,const Pets
 {
   Physics phys = (Physics)ctx;
   Physics_Advect *advect = (Physics_Advect*)phys->data;
-  PetscReal x0[2];
 
   PetscFunctionBegin;
-  Waxpy2(-time,advect->wind,x,x0);
-  if (x0[1] > 0) u[0] = 1.*x[0] + 3.*x[1];
-  else u[0] = advect->inflowState;
+  switch (advect->soltype) {
+  case ADVECT_SOL_TILTED: {
+    PetscReal x0[DIM];
+    Physics_Advect_Tilted *tilted = &advect->sol.tilted;
+    Waxpy2(-time,tilted->wind,x,x0);
+    if (x0[1] > 0) u[0] = 1.*x[0] + 3.*x[1];
+    else u[0] = advect->inflowState;
+  } break;
+  case ADVECT_SOL_BUMP: {
+    Physics_Advect_Bump *bump = &advect->sol.bump;
+    PetscReal x0[DIM],v[DIM],r,cost,sint;
+    cost = PetscCosReal(time);
+    sint = PetscSinReal(time);
+    x0[0] = cost*x[0] + sint*x[1];
+    x0[1] = -sint*x[0] + cost*x[1];
+    Waxpy2(-1,bump->center,x0,v);
+    r = Norm2(v);
+    switch (bump->type) {
+    case ADVECT_SOL_BUMP_CONE:
+      u[0] = PetscMax(1 - r/bump->radius,0);
+      break;
+    case ADVECT_SOL_BUMP_COS:
+      u[0] = 0.5 + 0.5*PetscCosReal(PetscMin(r/bump->radius,1)*PETSC_PI);
+      break;
+    }
+  } break;
+  default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown solution type");
+  }
   PetscFunctionReturn(0);
 }
 
@@ -253,14 +307,34 @@ static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys)
   ierr = PetscOptionsHead("Advect options");CHKERRQ(ierr);
   {
     PetscInt two = 2,dof = 1;
-    advect->wind[0] = 0.0;
-    advect->wind[1] = 1.0;
-    ierr = PetscOptionsRealArray("-advect_wind","background wind vx,vy","",advect->wind,&two,PETSC_NULL);CHKERRQ(ierr);
-    advect->inflowState = -2.0;
-    ierr = PetscOptionsRealArray("-advect_inflow","Inflow state","",&advect->inflowState,&dof,PETSC_NULL);CHKERRQ(ierr);
+    advect->soltype = ADVECT_SOL_TILTED;
+    ierr = PetscOptionsEnum("-advect_sol_type","solution type","",AdvectSolTypes,(PetscEnum)advect->soltype,(PetscEnum*)&advect->soltype,PETSC_NULL);CHKERRQ(ierr);
+    switch (advect->soltype) {
+    case ADVECT_SOL_TILTED: {
+      Physics_Advect_Tilted *tilted = &advect->sol.tilted;
+      two = 2;
+      tilted->wind[0] = 0.0;
+      tilted->wind[1] = 1.0;
+      ierr = PetscOptionsRealArray("-advect_tilted_wind","background wind vx,vy","",tilted->wind,&two,PETSC_NULL);CHKERRQ(ierr);
+      advect->inflowState = -2.0;
+      ierr = PetscOptionsRealArray("-advect_tilted_inflow","Inflow state","",&advect->inflowState,&dof,PETSC_NULL);CHKERRQ(ierr);
+      phys->maxspeed = Norm2(tilted->wind);
+    } break;
+    case ADVECT_SOL_BUMP: {
+      Physics_Advect_Bump *bump = &advect->sol.bump;
+      two = 2;
+      bump->center[0] = 2.;
+      bump->center[1] = 0.;
+      ierr = PetscOptionsRealArray("-advect_bump_center","location of center of bump x,y","",bump->center,&two,PETSC_NULL);CHKERRQ(ierr);
+      bump->radius = 0.9;
+      ierr = PetscOptionsReal("-advect_bump_radius","radius of bump","",bump->radius,&bump->radius,PETSC_NULL);CHKERRQ(ierr);
+      bump->type = ADVECT_SOL_BUMP_CONE;
+      ierr = PetscOptionsEnum("-advect_bump_type","type of bump","",AdvectSolBumpTypes,(PetscEnum)bump->type,(PetscEnum*)&bump->type,PETSC_NULL);CHKERRQ(ierr);
+      phys->maxspeed = 3.;       /* radius of mesh, kludge */
+    } break;
+  }
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  phys->maxspeed = Norm2(advect->wind);
 
   {
     const PetscInt inflowids[] = {100,200,300},outflowids[] = {101};
@@ -325,7 +399,7 @@ static PetscErrorCode PhysicsBoundary_SW_Wall(Model mod, PetscReal time, const P
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_SW"
-static PetscErrorCode PhysicsRiemann_SW(Physics phys, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
+static PetscErrorCode PhysicsRiemann_SW(Physics phys, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
 {
   Physics_SW *sw = (Physics_SW*)phys->data;
   PetscReal c,speed;
@@ -1694,7 +1768,7 @@ static PetscErrorCode RHSFunctionLocal_Upwind(DM dm,DM dmFace,DM dmCell,PetscRea
     ierr = DMComplexPointLocalRead(dm,cells[1],x,&xR);CHKERRQ(ierr);
     ierr = DMComplexPointGlobalRef(dm,cells[0],f,&fL);CHKERRQ(ierr);
     ierr = DMComplexPointGlobalRef(dm,cells[1],f,&fR);CHKERRQ(ierr);
-    ierr = (*phys->riemann)(phys, fg->normal, xL, xR, flux);CHKERRQ(ierr);
+    ierr = (*phys->riemann)(phys, fg->centroid, fg->normal, xL, xR, flux);CHKERRQ(ierr);
     for (i=0; i<phys->dof; i++) {
       if (fL) fL[i] -= flux[i] / cgL->volume;
       if (fR) fR[i] += flux[i] / cgR->volume;
@@ -1837,7 +1911,7 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,PetscReal ti
         ierr = ModelBoundaryFind(mod,bset,&bcFunc,&bcCtx);CHKERRQ(ierr);
         ierr = (*bcFunc)(mod,time,fg->centroid,fg->normal,fx[0],fx[1],bcCtx);CHKERRQ(ierr);
       }
-      ierr = (*phys->riemann)(phys, fg->normal, fx[0], fx[1], flux);CHKERRQ(ierr);
+      ierr = (*phys->riemann)(phys, fg->centroid, fg->normal, fx[0], fx[1], flux);CHKERRQ(ierr);
       for (i=0; i<phys->dof; i++) {
         if (cf[0]) cf[0][i] -= flux[i] / cg[0]->volume;
         if (cf[1]) cf[1][i] += flux[i] / cg[1]->volume;
