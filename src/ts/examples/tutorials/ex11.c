@@ -1032,7 +1032,7 @@ static PetscErrorCode IsExteriorGhostFace(DM dm,PetscInt face,PetscBool *isghost
 
 #undef __FUNCT__
 #define __FUNCT__ "PseudoInverse"
-/* Overwrites A */
+/* Overwrites A. Can only handle full-rank problems with m>=n */
 static PetscErrorCode PseudoInverse(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscScalar *work)
 {
   PetscBool debug = PETSC_FALSE;
@@ -1082,6 +1082,53 @@ static PetscErrorCode PseudoInverse(PetscInt m,PetscInt mstride,PetscInt n,Petsc
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PseudoInverseSVD"
+/* Overwrites A. Can handle degenerate problems and m<n. */
+static PetscErrorCode PseudoInverseSVD(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscScalar *work)
+{
+  PetscBool debug = PETSC_FALSE;
+  PetscErrorCode ierr;
+  PetscInt i,j,maxmn;
+  PetscBLASInt M,N,nrhs,lda,ldb,irank,ldwork,info;
+  PetscScalar rcond,*tmpwork,*Brhs,*Aback;
+
+  PetscFunctionBegin;
+  if (debug) {
+    ierr = PetscMalloc(m*n*sizeof(PetscScalar),&Aback);CHKERRQ(ierr);
+    ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+
+  /* initialize to identity */
+  tmpwork = Ainv;
+  Brhs = work;
+  maxmn = PetscMax(m,n);
+  for (j=0; j<maxmn; j++) {
+    for (i=0; i<maxmn; i++) Brhs[i + j*maxmn] = 1.0*(i == j);
+  }
+
+  M = PetscBLASIntCast(m);
+  N = PetscBLASIntCast(n);
+  nrhs = M;
+  lda = PetscBLASIntCast(mstride);
+  ldb = PetscBLASIntCast(maxmn);
+  ldwork = PetscBLASIntCast(mstride*mstride);
+  rcond = -1;
+  ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+  LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb,tau,&rcond,&irank,tmpwork,&ldwork,&info);
+  ierr = PetscFPTrapPop();CHKERRQ(ierr);
+  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");
+  /* The following check should be turned into a diagnostic as soon as someone wants to do this intentionally */
+  if (irank < PetscMin(M,N)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Rank deficient least squares fit, indicates an isolated cell with two colinear points");
+
+  /* Brhs shaped (M,nrhs) column-major coldim=mstride was overwritten by Ainv shaped (N,nrhs) column-major coldim=maxmn.
+   * Here we transpose to (N,nrhs) row-major rowdim=mstride. */
+  for (i=0; i<n; i++) {
+    for (j=0; j<nrhs; j++) Ainv[i*mstride+j] = Brhs[i + j*maxmn];
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "BuildLeastSquares"
 /* Build least squares gradient reconstruction operators */
 static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,PetscScalar *fgeom,DM dmCell,PetscScalar *cgeom)
@@ -1093,7 +1140,7 @@ static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,Pe
   PetscFunctionBegin;
   ierr = DMComplexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMComplexGetMaxSizes(dm,&maxNumFaces,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc5(maxNumFaces*DIM,PetscScalar,&B,maxNumFaces*DIM,PetscScalar,&Binv,maxNumFaces*DIM,PetscScalar,&work,maxNumFaces,PetscScalar,&tau,maxNumFaces,PetscScalar*,&gref);CHKERRQ(ierr);
+  ierr = PetscMalloc5(maxNumFaces*DIM,PetscScalar,&B,maxNumFaces*PetscMax(DIM,maxNumFaces),PetscScalar,&Binv,maxNumFaces*PetscMax(DIM,maxNumFaces),PetscScalar,&work,maxNumFaces,PetscScalar,&tau,maxNumFaces,PetscScalar*,&gref);CHKERRQ(ierr);
   for (c=cStart; c<cEndInterior; c++) {
     const PetscInt *faces;
     PetscInt numFaces,usedFaces,f,i,j;
@@ -1120,7 +1167,11 @@ static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,Pe
     }
     if (!usedFaces) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Mesh contains isolated cell (no neighbors). Is it intentional?");
     /* Overwrites B with garbage, returns Binv in row-major format */
-    ierr = PseudoInverse(usedFaces,numFaces,DIM,B,Binv,tau,work);CHKERRQ(ierr);
+    if (0) {
+      ierr = PseudoInverse(usedFaces,numFaces,DIM,B,Binv,tau,work);CHKERRQ(ierr);
+    } else {
+      ierr = PseudoInverseSVD(usedFaces,numFaces,DIM,B,Binv,tau,work);CHKERRQ(ierr);
+    }
     for (f=0,i=0; f<numFaces; f++) {
       ierr = IsExteriorGhostFace(dm,faces[f],&ghost);CHKERRQ(ierr);
       if (ghost) continue;
