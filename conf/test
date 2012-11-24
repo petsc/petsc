@@ -66,6 +66,7 @@ testexamples_BLACS:
 testexamples_SCALAPACK:
 testexamples_TXPETSCGPU:
 testexamples_CMAKE:
+testexamples_AFTERIMAGE:
 
 buildexamples_MPI: 
 	-@${OMAKE} testexamples_MPI TESTEXAMPLES_MPI=`echo ${TESTEXAMPLES_MPI} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
