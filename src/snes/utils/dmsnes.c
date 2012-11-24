@@ -208,6 +208,7 @@ PetscErrorCode DMSNESGetContext(DM dm,SNESDM *snesdm)
     ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_SNESDM);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"SNESDM",(PetscObject)container);CHKERRQ(ierr);
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_SNESDM,DMRestrictHook_SNESDM,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMRefineHookAdd(dm,DMRefineHook_SNESDM,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscContainerGetPointer(container,(void**)snesdm);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
   }

@@ -29,6 +29,20 @@ static PetscErrorCode DMCoarsenHook_KSPDM(DM dm,DM dmc,void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMRefineHook_KSPDM"
+/* Attaches the KSPDM to the coarse level.
+ * Under what conditions should we copy versus duplicate?
+ */
+static PetscErrorCode DMRefineHook_KSPDM(DM dm,DM dmc,void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMKSPCopyContext(dm,dmc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMKSPGetContext"
 /*@C
    DMKSPGetContext - get read-only private KSPDM context from a DM
@@ -67,6 +81,7 @@ PetscErrorCode DMKSPGetContext(DM dm,KSPDM *snesdm)
     ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_KSPDM);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"KSPDM",(PetscObject)container);CHKERRQ(ierr);
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_KSPDM,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMRefineHookAdd(dm,DMRefineHook_KSPDM,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscContainerGetPointer(container,(void**)snesdm);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
   }
@@ -145,6 +160,7 @@ PetscErrorCode DMKSPCopyContext(DM dmsrc,DM dmdest)
   if (container) {
     ierr = PetscObjectCompose((PetscObject)dmdest,"KSPDM",(PetscObject)container);CHKERRQ(ierr);
     ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_KSPDM,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMRefineHookAdd(dmdest,DMRefineHook_KSPDM,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
