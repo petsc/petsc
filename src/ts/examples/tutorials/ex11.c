@@ -402,18 +402,22 @@ static PetscErrorCode PhysicsBoundary_SW_Wall(Model mod, PetscReal time, const P
 static PetscErrorCode PhysicsRiemann_SW(Physics phys, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
 {
   Physics_SW *sw = (Physics_SW*)phys->data;
-  PetscReal c,speed;
+  PetscReal cL,cR,speed,nn[DIM];
   const SWNode *uL = (const SWNode*)xL,*uR = (const SWNode*)xR;
   SWNode fL,fR;
   PetscInt i;
 
   PetscFunctionBegin;
   if (uL->h < 0 || uR->h < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative");
-  SWFlux(phys,n,uL,&fL);
-  SWFlux(phys,n,uR,&fR);
-  c = PetscSqrtScalar(sw->gravity*PetscMax(uL->h,uR->h)); /* gravity wave speed */
-  speed = PetscMax(PetscAbsScalar(Dot2(uL->uh,n)/uL->h),PetscAbsScalar(Dot2(uR->uh,n)/uR->h)) / Norm2(n) + c;
-  for (i=0; i<1+DIM; i++) flux[i] = 0.5*(fL.vals[i] + fR.vals[i]) + 0.5*speed*(xL[i] - xR[i]);
+  nn[0] = n[0];
+  nn[1] = n[1];
+  Normalize2(nn);
+  SWFlux(phys,nn,uL,&fL);
+  SWFlux(phys,nn,uR,&fR);
+  cL = PetscSqrtReal(sw->gravity*PetscRealPart(uL->h));
+  cR = PetscSqrtReal(sw->gravity*PetscRealPart(uR->h)); /* gravity wave speed */
+  speed = PetscMax(PetscAbsScalar(Dot2(uL->uh,nn)/uL->h) + cL,PetscAbsScalar(Dot2(uR->uh,nn)/uR->h) + cR);
+  for (i=0; i<1+DIM; i++) flux[i] = (0.5*(fL.vals[i] + fR.vals[i]) + 0.5*speed*(xL[i] - xR[i])) * Norm2(n);
   PetscFunctionReturn(0);
 }
 
@@ -429,7 +433,7 @@ static PetscErrorCode PhysicsSolution_SW(Model mod,PetscReal time,const PetscRea
   dx[1] = x[1] - 1.0;
   r = Norm2(dx);
   sigma = 0.5;
-  u[0] = 1 + 0.1*PetscExpScalar(-PetscSqr(r)/(2*PetscSqr(sigma)));
+  u[0] = 1 + 2*PetscExpScalar(-PetscSqr(r)/(2*PetscSqr(sigma)));
   u[1] = 0.0;
   u[2] = 0.0;
   PetscFunctionReturn(0);
@@ -447,8 +451,8 @@ static PetscErrorCode PhysicsFunctional_SW(Model mod,PetscReal time,const PetscR
 
   PetscFunctionBegin;
   h = PetscRealPart(x->h);
-  f[sw->functional.Height] = h;
   Scale2(1./x->h,x->uh,u);
+  f[sw->functional.Height] = h;
   f[sw->functional.Speed] = Norm2(u) + PetscSqrtReal(sw->gravity*h);
   f[sw->functional.Energy] = 0.5*(Dot2(x->uh,u) + sw->gravity*PetscSqr(h));
   PetscFunctionReturn(0);
