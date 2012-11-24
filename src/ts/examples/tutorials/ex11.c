@@ -1037,7 +1037,7 @@ static PetscErrorCode IsExteriorGhostFace(DM dm,PetscInt face,PetscBool *isghost
 #undef __FUNCT__
 #define __FUNCT__ "PseudoInverse"
 /* Overwrites A. Can only handle full-rank problems with m>=n */
-static PetscErrorCode PseudoInverse(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscScalar *work)
+static PetscErrorCode PseudoInverse(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscInt worksize,PetscScalar *work)
 {
   PetscBool debug = PETSC_FALSE;
   PetscErrorCode ierr;
@@ -1053,7 +1053,7 @@ static PetscErrorCode PseudoInverse(PetscInt m,PetscInt mstride,PetscInt n,Petsc
   M = PetscBLASIntCast(m);
   N = PetscBLASIntCast(n);
   lda = PetscBLASIntCast(mstride);
-  ldwork = lda*N;
+  ldwork = PetscBLASIntCast(worksize);
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
   LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info);
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
@@ -1086,9 +1086,24 @@ static PetscErrorCode PseudoInverse(PetscInt m,PetscInt mstride,PetscInt n,Petsc
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PseudoInverseGetWorkRequired"
+static PetscErrorCode PseudoInverseGetWorkRequired(PetscInt maxFaces,PetscInt *work)
+{
+  PetscInt m,n,nrhs,minwork;
+
+  PetscFunctionBegin;
+  m = maxFaces;
+  n = DIM;
+  nrhs = maxFaces;
+  minwork = 3*PetscMin(m,n) + PetscMax(2*PetscMin(m,n), PetscMax(PetscMax(m,n), nrhs)); /* required by LAPACK */
+  *work = 5*minwork;            /* We can afford to be extra generous */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PseudoInverseSVD"
 /* Overwrites A. Can handle degenerate problems and m<n. */
-static PetscErrorCode PseudoInverseSVD(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscScalar *work)
+static PetscErrorCode PseudoInverseSVD(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscInt worksize,PetscScalar *work)
 {
   PetscBool debug = PETSC_FALSE;
   PetscErrorCode ierr;
@@ -1115,7 +1130,7 @@ static PetscErrorCode PseudoInverseSVD(PetscInt m,PetscInt mstride,PetscInt n,Pe
   nrhs = M;
   lda = PetscBLASIntCast(mstride);
   ldb = PetscBLASIntCast(maxmn);
-  ldwork = PetscBLASIntCast(mstride*mstride);
+  ldwork = PetscBLASIntCast(worksize);
   rcond = -1;
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
   LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb,tau,&rcond,&irank,tmpwork,&ldwork,&info);
@@ -1138,13 +1153,14 @@ static PetscErrorCode PseudoInverseSVD(PetscInt m,PetscInt mstride,PetscInt n,Pe
 static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,PetscScalar *fgeom,DM dmCell,PetscScalar *cgeom)
 {
   PetscErrorCode ierr;
-  PetscInt c,cStart,cEnd,maxNumFaces;
+  PetscInt c,cStart,cEnd,maxNumFaces,worksize;
   PetscScalar *B,*Binv,*work,*tau,**gref;
 
   PetscFunctionBegin;
   ierr = DMComplexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMComplexGetMaxSizes(dm,&maxNumFaces,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc5(maxNumFaces*DIM,PetscScalar,&B,maxNumFaces*PetscMax(DIM,maxNumFaces),PetscScalar,&Binv,maxNumFaces*PetscMax(DIM,maxNumFaces),PetscScalar,&work,maxNumFaces,PetscScalar,&tau,maxNumFaces,PetscScalar*,&gref);CHKERRQ(ierr);
+  ierr = PseudoInverseGetWorkRequired(maxNumFaces,&worksize);CHKERRQ(ierr);
+  ierr = PetscMalloc5(maxNumFaces*DIM,PetscScalar,&B,worksize,PetscScalar,&Binv,worksize,PetscScalar,&work,maxNumFaces,PetscScalar,&tau,maxNumFaces,PetscScalar*,&gref);CHKERRQ(ierr);
   for (c=cStart; c<cEndInterior; c++) {
     const PetscInt *faces;
     PetscInt numFaces,usedFaces,f,i,j;
@@ -1172,9 +1188,9 @@ static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,Pe
     if (!usedFaces) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Mesh contains isolated cell (no neighbors). Is it intentional?");
     /* Overwrites B with garbage, returns Binv in row-major format */
     if (0) {
-      ierr = PseudoInverse(usedFaces,numFaces,DIM,B,Binv,tau,work);CHKERRQ(ierr);
+      ierr = PseudoInverse(usedFaces,numFaces,DIM,B,Binv,tau,worksize,work);CHKERRQ(ierr);
     } else {
-      ierr = PseudoInverseSVD(usedFaces,numFaces,DIM,B,Binv,tau,work);CHKERRQ(ierr);
+      ierr = PseudoInverseSVD(usedFaces,numFaces,DIM,B,Binv,tau,worksize,work);CHKERRQ(ierr);
     }
     for (f=0,i=0; f<numFaces; f++) {
       ierr = IsExteriorGhostFace(dm,faces[f],&ghost);CHKERRQ(ierr);
