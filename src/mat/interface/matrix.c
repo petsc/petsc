@@ -4729,7 +4729,11 @@ static PetscInt MatAssemblyEnd_InUse = 0;
    use only after MatAssemblyBegin() and MatAssemblyEnd() have been called.
    Use MAT_FLUSH_ASSEMBLY when switching between ADD_VALUES and INSERT_VALUES
    in MatSetValues(); use MAT_FINAL_ASSEMBLY for the final assembly before
-   using the matrix.
+   using the matrix.  
+
+   ALL processes that share a matrix MUST call MatAssemblyBegin() and MatAssemblyEnd() the SAME NUMBER of times, and each time with the
+   same flag of MAT_FLUSH_ASSEMBLY or MAT_FINAL_ASSEMBLY for all processes. Thus you CANNOT locally change from ADD_VALUES to INSERT_VALUES, that is
+   a global collective operation requring all processes that share the matrix.
 
    Space for preallocated nonzeros that is not filled by a call to MatSetValues() or a related routine are compressed
    out by assembly. If you intend to use that extra space on a subsequent assembly, be sure to insert explicit zeros
