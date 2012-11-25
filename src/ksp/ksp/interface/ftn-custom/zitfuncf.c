@@ -20,6 +20,7 @@
 #define kspfgmresmodifypcksp_      KSPFGMRESMODIFYPCKSP
 #define kspfgmresmodifypcnochange_ KSPFGMRESMODIFYPCNOCHANGE
 #define kspsetcomputerhs_              KSPSETCOMPUTERHS_
+#define kspsetcomputeinitialguess_     KSPSETCOMPUTEINITIALGUESS
 #define kspsetcomputeoperators_        KSPSETCOMPUTEOPERATORS_
 #define dmkspsetcomputerhs_            DMKSPSETCOMPUTERHS_       /* zdmkspf.c */
 #define dmkspsetcomputeoperators_      DMKSPSETCOMPUTEOPERATORS_ /* zdmkspf. */
@@ -41,6 +42,7 @@
 #define kspfgmresmodifypcksp_          kspfgmresmodifypcksp
 #define kspfgmresmodifypcnochange_     kspfgmresmodifypcnochange
 #define kspsetcomputerhs_              kspsetcomputerhs
+#define kspsetcomputeinitialguess_     kspsetcomputeinitialguess
 #define kspsetcomputeoperators_        kspsetcomputeoperators
 #define dmkspsetcomputerhs_            dmkspsetcomputerhs       /* zdmkspf.c */
 #define dmkspsetcomputeoperators_      dmkspsetcomputeoperators /* zdmkspf */
@@ -48,6 +50,7 @@
 
 /* These are defined in zdmkspf.c */
 PETSC_EXTERN_C void PETSC_STDCALL dmkspsetcomputerhs_(DM *dm,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr);
+PETSC_EXTERN_C void PETSC_STDCALL dmkspsetcomputeinitialguess_(DM *dm,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr);
 PETSC_EXTERN_C void PETSC_STDCALL dmkspsetcomputeoperators_(DM *dm,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr);
 
 EXTERN_C_BEGIN
@@ -224,6 +227,13 @@ void PETSC_STDCALL kspsetcomputerhs_(KSP *ksp,void (PETSC_STDCALL *func)(KSP*,Ve
   DM dm;
   *ierr = KSPGetDM(*ksp,&dm);
   if (!*ierr) dmkspsetcomputerhs_(&dm,func,ctx,ierr);
+}
+
+void PETSC_STDCALL kspsetcomputeinitialguess_(KSP *ksp,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+{
+  DM dm;
+  *ierr = KSPGetDM(*ksp,&dm);
+  if (!*ierr) dmkspsetcomputeinitialguess_(&dm,func,ctx,ierr);
 }
 
 void PETSC_STDCALL kspsetcomputeoperators_(KSP *ksp,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)

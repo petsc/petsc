@@ -148,19 +148,26 @@ typedef struct _n_KSPDM *KSPDM;
 struct _n_KSPDM {
   PetscErrorCode (*computeoperators)(KSP,Mat,Mat,MatStructure*,void*);
   PetscErrorCode (*computerhs)(KSP,Vec,void*);
+  PetscErrorCode (*computeinitialguess)(KSP,Vec,void*);
   void *operatorsctx;
   void *rhsctx;
+  void *initialguessctx;
 
   /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */
   PetscErrorCode (*destroy)(KSPDM);
+  PetscErrorCode (*duplicate)(KSPDM,DM);
   void *data;
 
-  /* This is NOT reference counted. The KSP that originally created this context is cached here to implement copy-on-write.
-   * Fields in the KSPDM should only be written if the KSP matches originalksp.
+  /* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way
+   * copy-on-write. When DMKSPGetContextWrite() sees a request using a different DM, it makes a copy. Thus, if a user
+   * only interacts directly with one level, e.g., using KSPSetComputeOperators(), then coarse levels are constructed by
+   * PCMG, then the user changes the routine with another call to KSPSetComputeOperators(), it automatically propagates
+   * to all the levels. If instead, they get out a specific level and set the routines on that level, subsequent changes
+   * to the original level will no longer propagate to that level.
    */
   DM originaldm;
 
-  void (*fortran_func_pointers[2])(void); /* Store our own function pointers so they are associated with the KSPDM instead of the DM */
+  void (*fortran_func_pointers[3])(void); /* Store our own function pointers so they are associated with the KSPDM instead of the DM */
 };
 PETSC_EXTERN PetscErrorCode DMKSPGetContext(DM,KSPDM*);
 PETSC_EXTERN PetscErrorCode DMKSPGetContextWrite(DM,KSPDM*);

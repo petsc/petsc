@@ -3,9 +3,11 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmkspsetcomputerhs_            DMKSPSETCOMPUTERHS_
+#define dmkspsetcomputeinitialguess_   DMKSPSETCOMPUTEINITIALGUESS_
 #define dmkspsetcomputeoperators_      DMKSPSETCOMPUTEOPERATORS_
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmkspsetcomputerhs_            dmkspsetcomputerhs       /* zdmkspf.c */
+#define dmkspsetcomputeinitialguess_   dmkspsetcomputeinitialguess       /* zdmkspf.c */
 #define dmkspsetcomputeoperators_      dmkspsetcomputeoperators /* zdmkspf */
 #endif
 
@@ -17,6 +19,17 @@ static PetscErrorCode ourkspcomputerhs(KSP ksp,Vec b,void *ctx)
   ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
   ierr = DMKSPGetContext(dm,&kdm);CHKERRQ(ierr);
   (*(void (PETSC_STDCALL *)(KSP*,Vec*,void*,PetscErrorCode*))(kdm->fortran_func_pointers[0]))(&ksp,&b,ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+static PetscErrorCode ourkspcomputeinitialguess(KSP ksp,Vec b,void *ctx)
+{
+  PetscErrorCode ierr = 0;
+  DM             dm;
+  KSPDM          kdm;
+  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
+  ierr = DMKSPGetContext(dm,&kdm);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(KSP*,Vec*,void*,PetscErrorCode*))(kdm->fortran_func_pointers[2]))(&ksp,&b,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -44,6 +57,17 @@ PETSC_EXTERN_C void PETSC_STDCALL dmkspsetcomputerhs_(DM *dm,void (PETSC_STDCALL
   if (!*ierr) {
     kdm->fortran_func_pointers[0] = (PetscVoidFunction)func;
     *ierr = DMKSPSetComputeRHS(*dm,ourkspcomputerhs,ctx);
+  }
+}
+
+PETSC_EXTERN_C void PETSC_STDCALL dmkspsetcomputeinitialguess_(DM *dm,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+{
+  KSPDM kdm;
+  CHKFORTRANNULLOBJECT(ctx);
+  *ierr = DMKSPGetContext(*dm,&kdm);
+  if (!*ierr) {
+    kdm->fortran_func_pointers[2] = (PetscVoidFunction)func;
+    *ierr = DMKSPSetComputeInitialGuess(*dm,ourkspcomputeinitialguess,ctx);
   }
 }
 

@@ -34,7 +34,7 @@ static PetscErrorCode SNESDMDuplicate_DMDA(SNESDM oldsdm,DM dm)
   PetscFunctionBegin;
   ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
   ierr = PetscNewLog(dm,DM_DA_SNES,&sdm->data);CHKERRQ(ierr);
-  if (oldsdm->data)ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DM_DA_SNES));CHKERRQ(ierr);
+  if (oldsdm->data) {ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DM_DA_SNES));CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -313,12 +313,12 @@ PetscErrorCode SNESComputeLocalBlockJacobian_DMDA(SNES snes,Vec X,Mat *A,Mat *B,
 
    Input Arguments:
 +  dm - DM to associate callback with
+.  imode - INSERT_VALUES if local function computes owned part, ADD_VALUES if it contributes to ghosted part
 .  func - local residual evaluation
 -  ctx - optional context for local residual evaluation
 
    Calling sequence for func:
 +  info - DMDALocalInfo defining the subdomain to evaluate the residual on
-.  imode - INSERT_VALUES if local function computes owned part, ADD_VALUES if it contributes to ghosted part
 .  x - dimensional pointer to state at which to evaluate residual
 .  f - dimensional pointer to residual, write the residual here
 -  ctx - optional context passed above
@@ -335,7 +335,7 @@ PetscErrorCode DMDASNESSetFunctionLocal(DM dm,InsertMode imode,PetscErrorCode (*
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDASNESGetContext(dm,sdm,&dmdasnes);CHKERRQ(ierr);
   dmdasnes->residuallocalimode = imode;
   dmdasnes->residuallocal = func;
@@ -378,7 +378,7 @@ PetscErrorCode DMDASNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DMDALocalIn
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDASNESGetContext(dm,sdm,&dmdasnes);CHKERRQ(ierr);
   dmdasnes->jacobianlocal = func;
   dmdasnes->jacobianlocalctx = ctx;
@@ -418,7 +418,7 @@ PetscErrorCode DMDASNESSetObjectiveLocal(DM dm,DMDASNESObjective func,void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDASNESGetContext(dm,sdm,&dmdasnes);CHKERRQ(ierr);
   dmdasnes->objectivelocal = func;
   dmdasnes->objectivelocalctx = ctx;

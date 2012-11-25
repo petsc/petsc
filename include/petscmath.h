@@ -29,10 +29,18 @@ PETSC_EXTERN MPI_Datatype MPIU_2INT;
 #define MPIU_REAL   MPI_FLOAT
 typedef float PetscReal;
 #define PetscSqrtReal(a)    sqrt(a)
+#define PetscExpReal(a)     exp(a)
+#define PetscLogReal(a)     log(a)
+#define PetscSinReal(a)     sin(a)
+#define PetscCosReal(a)     cos(a)
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #define MPIU_REAL   MPI_DOUBLE
 typedef double PetscReal;
 #define PetscSqrtReal(a)    sqrt(a)
+#define PetscExpReal(a)     exp(a)
+#define PetscLogReal(a)     log(a)
+#define PetscSinReal(a)     sin(a)
+#define PetscCosReal(a)     cos(a)
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #if defined(__cplusplus)
 extern "C" {
@@ -44,6 +52,10 @@ extern "C" {
 #define MPIU_REAL MPIU___FLOAT128
 typedef __float128 PetscReal;
 #define PetscSqrtReal(a)    sqrtq(a)
+#define PetscExpReal(a)     expq(a)
+#define PetscLogReal(a)     logq(a)
+#define PetscSinReal(a)     sinq(a)
+#define PetscCosReal(a)     cosq(a)
 #endif /* PETSC_USE_REAL_* */
 
 /*

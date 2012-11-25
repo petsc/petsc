@@ -15,22 +15,32 @@ static char help[] = "Second Order TVD Finite Volume Example.\n";
 #define ALEN(a) (sizeof(a)/sizeof((a)[0]))
 
 static PetscFList PhysicsList;
+static PetscFList LimitList;
 
-typedef struct _n_User *User;
+/* Represents continuum physical equations. */
 typedef struct _n_Physics *Physics;
 
-typedef PetscErrorCode (*SolutionFunction)(User,PetscReal,const PetscReal*,PetscScalar*);
-typedef PetscErrorCode (*BoundaryFunction)(Physics,const PetscReal*,const PetscScalar*,PetscScalar*);
-typedef PetscErrorCode (*RiemannFunction)(Physics,const PetscReal*,const PetscScalar*,const PetscScalar*,PetscScalar*);
-typedef PetscErrorCode (*MonitorFunction)(Physics,const PetscScalar*,PetscReal*);
-static PetscErrorCode PhysicsBoundaryRegister(Physics,const char*,BoundaryFunction,PetscInt,const PetscInt*);
-static PetscErrorCode PhysicsFunctionalRegister(Physics,const char*,PetscInt*);
+/* Physical model includes boundary conditions, initial conditions, and functionals of interest. It is
+ * discretization-independent, but its members depend on the scenario being solved. */
+typedef struct _n_Model *Model;
+
+/* 'User' implements a discretization of a continuous model. */
+typedef struct _n_User *User;
+
+typedef PetscErrorCode (*RiemannFunction)(Physics,const PetscReal*,const PetscReal*,const PetscScalar*,const PetscScalar*,PetscScalar*);
+typedef PetscErrorCode (*SolutionFunction)(Model,PetscReal,const PetscReal*,PetscScalar*,void*);
+typedef PetscErrorCode (*BoundaryFunction)(Model,PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*);
+typedef PetscErrorCode (*FunctionalFunction)(Model,PetscReal,const PetscReal*,const PetscScalar*,PetscReal*,void*);
+static PetscErrorCode ModelBoundaryRegister(Model,const char*,BoundaryFunction,void*,PetscInt,const PetscInt*);
+static PetscErrorCode ModelSolutionSetDefault(Model,SolutionFunction,void*);
+static PetscErrorCode ModelFunctionalRegister(Model,const char*,PetscInt*,FunctionalFunction,void*);
 static PetscErrorCode OutputVTK(DM,const char *,PetscViewer*);
 
 typedef struct _n_BoundaryLink *BoundaryLink;
 struct _n_BoundaryLink {
-  BoundaryFunction func;
   char             *name;
+  BoundaryFunction func;
+  void             *ctx;
   PetscInt         numids;
   PetscInt         *ids;
   BoundaryLink     next;
@@ -38,25 +48,38 @@ struct _n_BoundaryLink {
 
 typedef struct _n_FunctionalLink *FunctionalLink;
 struct _n_FunctionalLink {
-  char *name;
-  PetscInt offset;
-  FunctionalLink next;
+  char               *name;
+  FunctionalFunction func;
+  void               *ctx;
+  PetscInt           offset;
+  FunctionalLink     next;
 };
 
 struct _n_Physics {
   RiemannFunction riemann;
-  SolutionFunction solution;
-  MonitorFunction monitor;
-  BoundaryLink boundary;
-  FunctionalLink functional;
   PetscInt  dof;                /* number of degrees of freedom per cell */
-  PetscReal maxspeed;           /* estimate of global maximum speed (for CFL calculation) */
+  PetscReal maxspeed;           /* kludge to pick initial time step, need to add monitoring and step control */
   void *data;
 };
 
+struct _n_Model {
+  MPI_Comm comm;                /* Does not do collective communicaton, but some error conditions can be collective */
+  Physics physics;
+  BoundaryLink boundary;
+  FunctionalLink functionalRegistry;
+  PetscInt maxComputed;
+  PetscInt numMonitored;
+  FunctionalLink *functionalMonitored;
+  PetscInt numCall;
+  FunctionalLink *functionalCall;
+  SolutionFunction solution;
+  void *solutionctx;
+  PetscReal maxspeed;           /* estimate of global maximum speed (for CFL calculation) */
+};
+
 struct _n_User {
-  MPI_Comm  comm;
-  PetscErrorCode (*RHSFunctionLocal)(DM,DM,DM,Vec,Vec,User);
+  PetscErrorCode (*RHSFunctionLocal)(DM,DM,DM,PetscReal,Vec,Vec,User);
+  PetscReal (*Limit)(PetscReal);
   PetscBool reconstruct;
   PetscInt  numGhostCells, numSplitFaces;
   PetscInt  cEndInterior;  /* First boundary ghost cell */
@@ -64,7 +87,7 @@ struct _n_User {
   DM        dmGrad;
   PetscReal minradius;
   PetscInt  vtkInterval;        /* For monitor */
-  Physics   physics;
+  Model     model;
   struct {
     PetscScalar *flux;
     PetscScalar *state0;
@@ -95,16 +118,85 @@ PETSC_STATIC_INLINE void NormalSplit(const PetscReal *n,const PetscScalar *x,Pet
   Waxpy2(-1,xn,x,xt);
 }
 
+/* Limiters given in symmetric form following Berger, Aftosmis, and Murman 2005
+ *
+ * The classical flux-limited formulation is psi(r) where
+ *
+ * r = (u[0] - u[-1]) / (u[1] - u[0])
+ *
+ * The second order TVD region is bounded by
+ *
+ * psi_minmod(r) = min(r,1)      and        psi_superbee(r) = min(2, 2r, max(1,r))
+ *
+ * where all limiters are implicitly clipped to be non-negative. A more convenient slope-limited form is psi(r) =
+ * phi(r)(r+1)/2 in which the reconstructed interface values are
+ *
+ * u(v) = u[0] + phi(r) (grad u)[0] v
+ *
+ * where v is the vector from centroid to quadrature point. In these variables, the usual limiters become
+ *
+ * phi_minmod(r) = 2 min(1/(1+r),r/(1+r))   phi_superbee(r) = 2 min(2/(1+r), 2r/(1+r), max(1,r)/(1+r))
+ *
+ * For a nicer symmetric formulation, rewrite in terms of
+ *
+ * f = (u[0] - u[-1]) / (u[1] - u[-1])
+ *
+ * where r(f) = f/(1-f). Not that r(1-f) = (1-f)/f = 1/r(f) so the symmetry condition
+ *
+ * phi(r) = phi(1/r)
+ *
+ * becomes
+ *
+ * w(f) = w(1-f).
+ *
+ * The limiters below implement this final form w(f). The reference methods are
+ *
+ * w_minmod(f) = 2 min(f,(1-f))             w_superbee(r) = 4 min((1-f), f)
+ * */
+static PetscReal Limit_Zero(PetscReal f) { return 0; }
+static PetscReal Limit_None(PetscReal f) { return 1; }
+static PetscReal Limit_Minmod(PetscReal f) { return PetscMax(0,PetscMin(f,(1-f))*2); }
+static PetscReal Limit_VanLeer(PetscReal f) { return PetscMax(0,4*f*(1-f)); }
+static PetscReal Limit_VanAlbada(PetscReal f) { return PetscMax(0,2*f*(1-f) / (PetscSqr(f) + PetscSqr(1-f))); }
+static PetscReal Limit_Sin(PetscReal f) {
+  PetscReal fclip = PetscMax(0,PetscMin(f,1));
+  return PetscSinReal(PETSC_PI*fclip);
+}
+static PetscReal Limit_Superbee(PetscReal f) { return 2*Limit_Minmod(f); }
+static PetscReal Limit_MC(PetscReal f) { return PetscMin(1,Limit_Superbee(f)); } /* aka Barth-Jespersen */
+
 /******************* Advect ********************/
+typedef enum {ADVECT_SOL_TILTED,ADVECT_SOL_BUMP} AdvectSolType;
+static const char *const AdvectSolTypes[] = {"TILTED","BUMP","AdvectSolType","ADVECT_SOL_",0};
+typedef enum {ADVECT_SOL_BUMP_CONE,ADVECT_SOL_BUMP_COS} AdvectSolBumpType;
+static const char *const AdvectSolBumpTypes[] = {"CONE","COS","AdvectSolBumpType","ADVECT_SOL_BUMP_",0};
+
 typedef struct {
   PetscReal wind[DIM];
+} Physics_Advect_Tilted;
+typedef struct {
+  PetscReal center[DIM];
+  PetscReal radius;
+  AdvectSolBumpType type;
+} Physics_Advect_Bump;
+
+typedef struct {
   PetscReal inflowState;
+  AdvectSolType soltype;
+  union {
+    Physics_Advect_Tilted tilted;
+    Physics_Advect_Bump bump;
+  } sol;
+  struct {
+    PetscInt Error;
+  } functional;
 } Physics_Advect;
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsBoundary_Advect_Inflow"
-static PetscErrorCode PhysicsBoundary_Advect_Inflow(Physics phys, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG)
+static PetscErrorCode PhysicsBoundary_Advect_Inflow(Model mod, PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
+  Physics phys = (Physics)ctx;
   Physics_Advect *advect = (Physics_Advect*)phys->data;
 
   PetscFunctionBegin;
@@ -114,7 +206,7 @@ static PetscErrorCode PhysicsBoundary_Advect_Inflow(Physics phys, const PetscRea
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsBoundary_Advect_Outflow"
-static PetscErrorCode PhysicsBoundary_Advect_Outflow(Physics phys, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG)
+static PetscErrorCode PhysicsBoundary_Advect_Outflow(Model mod, PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
   PetscFunctionBegin;
   xG[0] = xI[0];
@@ -123,58 +215,137 @@ static PetscErrorCode PhysicsBoundary_Advect_Outflow(Physics phys, const PetscRe
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_Advect"
-static PetscErrorCode PhysicsRiemann_Advect(Physics phys, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
+static PetscErrorCode PhysicsRiemann_Advect(Physics phys, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
 {
   Physics_Advect *advect = (Physics_Advect*)phys->data;
-  PetscReal wn;
+  PetscReal wind[DIM],wn;
 
   PetscFunctionBegin;
-  wn = Dot2(advect->wind, n);
+  switch (advect->soltype) {
+  case ADVECT_SOL_TILTED: {
+    Physics_Advect_Tilted *tilted = &advect->sol.tilted;
+    wind[0] = tilted->wind[0];
+    wind[1] = tilted->wind[1];
+  } break;
+  case ADVECT_SOL_BUMP:
+    wind[0] = -qp[1];
+    wind[1] = qp[0];
+    break;
+  default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for solution type %s",AdvectSolBumpTypes[advect->soltype]);
+  }
+  wn = Dot2(wind, n);
   flux[0] = (wn > 0 ? xL[0] : xR[0]) * wn;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsSolution_Advect"
-static PetscErrorCode PhysicsSolution_Advect(User user,PetscReal time,const PetscReal *x,PetscScalar *u)
+static PetscErrorCode PhysicsSolution_Advect(Model mod,PetscReal time,const PetscReal *x,PetscScalar *u,void *ctx)
 {
-  Physics_Advect *advect = (Physics_Advect*)user->physics->data;
-  PetscReal x0[2];
+  Physics phys = (Physics)ctx;
+  Physics_Advect *advect = (Physics_Advect*)phys->data;
 
   PetscFunctionBegin;
-  Waxpy2(-time,advect->wind,x,x0);
-  if (x0[1] > 0) u[0] = 1.*x[0] + 3.*x[1];
-  else u[0] = advect->inflowState;
+  switch (advect->soltype) {
+  case ADVECT_SOL_TILTED: {
+    PetscReal x0[DIM];
+    Physics_Advect_Tilted *tilted = &advect->sol.tilted;
+    Waxpy2(-time,tilted->wind,x,x0);
+    if (x0[1] > 0) u[0] = 1.*x[0] + 3.*x[1];
+    else u[0] = advect->inflowState;
+  } break;
+  case ADVECT_SOL_BUMP: {
+    Physics_Advect_Bump *bump = &advect->sol.bump;
+    PetscReal x0[DIM],v[DIM],r,cost,sint;
+    cost = PetscCosReal(time);
+    sint = PetscSinReal(time);
+    x0[0] = cost*x[0] + sint*x[1];
+    x0[1] = -sint*x[0] + cost*x[1];
+    Waxpy2(-1,bump->center,x0,v);
+    r = Norm2(v);
+    switch (bump->type) {
+    case ADVECT_SOL_BUMP_CONE:
+      u[0] = PetscMax(1 - r/bump->radius,0);
+      break;
+    case ADVECT_SOL_BUMP_COS:
+      u[0] = 0.5 + 0.5*PetscCosReal(PetscMin(r/bump->radius,1)*PETSC_PI);
+      break;
+    }
+  } break;
+  default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown solution type");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsFunctional_Advect"
+static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const PetscScalar *x,const PetscScalar *y,PetscReal *f,void *ctx)
+{
+  Physics phys = (Physics)ctx;
+  Physics_Advect *advect = (Physics_Advect*)phys->data;
+  PetscScalar yexact[1];
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PhysicsSolution_Advect(mod,time,x,yexact,phys);CHKERRQ(ierr);
+  f[advect->functional.Error] = PetscAbsScalar(y[0]-yexact[0]);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_Advect"
-static PetscErrorCode PhysicsCreate_Advect(User user,Physics phys)
+static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys)
 {
-  const PetscInt inflowids[] = {100,200,300},outflowids[] = {101};
   Physics_Advect *advect = (Physics_Advect*)phys->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PhysicsBoundaryRegister(phys,"inflow",PhysicsBoundary_Advect_Inflow,ALEN(inflowids),inflowids);CHKERRQ(ierr);
-  ierr = PhysicsBoundaryRegister(phys,"outflow",PhysicsBoundary_Advect_Outflow,ALEN(outflowids),outflowids);CHKERRQ(ierr);
   phys->dof = 1;
   phys->riemann = PhysicsRiemann_Advect;
-  phys->solution = PhysicsSolution_Advect;
   ierr = PetscNew(Physics_Advect,&phys->data);CHKERRQ(ierr);
   advect = phys->data;
   ierr = PetscOptionsHead("Advect options");CHKERRQ(ierr);
   {
     PetscInt two = 2,dof = 1;
-    advect->wind[0] = 0.0;
-    advect->wind[1] = 1.0;
-    ierr = PetscOptionsRealArray("-advect_wind","background wind vx,vy","",advect->wind,&two,PETSC_NULL);CHKERRQ(ierr);
-    advect->inflowState = -2.0;
-    ierr = PetscOptionsRealArray("-advect_inflow","Inflow state","",&advect->inflowState,&dof,PETSC_NULL);CHKERRQ(ierr);
+    advect->soltype = ADVECT_SOL_TILTED;
+    ierr = PetscOptionsEnum("-advect_sol_type","solution type","",AdvectSolTypes,(PetscEnum)advect->soltype,(PetscEnum*)&advect->soltype,PETSC_NULL);CHKERRQ(ierr);
+    switch (advect->soltype) {
+    case ADVECT_SOL_TILTED: {
+      Physics_Advect_Tilted *tilted = &advect->sol.tilted;
+      two = 2;
+      tilted->wind[0] = 0.0;
+      tilted->wind[1] = 1.0;
+      ierr = PetscOptionsRealArray("-advect_tilted_wind","background wind vx,vy","",tilted->wind,&two,PETSC_NULL);CHKERRQ(ierr);
+      advect->inflowState = -2.0;
+      ierr = PetscOptionsRealArray("-advect_tilted_inflow","Inflow state","",&advect->inflowState,&dof,PETSC_NULL);CHKERRQ(ierr);
+      phys->maxspeed = Norm2(tilted->wind);
+    } break;
+    case ADVECT_SOL_BUMP: {
+      Physics_Advect_Bump *bump = &advect->sol.bump;
+      two = 2;
+      bump->center[0] = 2.;
+      bump->center[1] = 0.;
+      ierr = PetscOptionsRealArray("-advect_bump_center","location of center of bump x,y","",bump->center,&two,PETSC_NULL);CHKERRQ(ierr);
+      bump->radius = 0.9;
+      ierr = PetscOptionsReal("-advect_bump_radius","radius of bump","",bump->radius,&bump->radius,PETSC_NULL);CHKERRQ(ierr);
+      bump->type = ADVECT_SOL_BUMP_CONE;
+      ierr = PetscOptionsEnum("-advect_bump_type","type of bump","",AdvectSolBumpTypes,(PetscEnum)bump->type,(PetscEnum*)&bump->type,PETSC_NULL);CHKERRQ(ierr);
+      phys->maxspeed = 3.;       /* radius of mesh, kludge */
+    } break;
+  }
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  phys->maxspeed = Norm2(advect->wind);
+
+  {
+    const PetscInt inflowids[] = {100,200,300},outflowids[] = {101};
+    /* Register "canned" boundary conditions and defaults for where to apply. */
+    ierr = ModelBoundaryRegister(mod,"inflow",PhysicsBoundary_Advect_Inflow,phys,ALEN(inflowids),inflowids);CHKERRQ(ierr);
+    ierr = ModelBoundaryRegister(mod,"outflow",PhysicsBoundary_Advect_Outflow,phys,ALEN(outflowids),outflowids);CHKERRQ(ierr);
+    /* Initial/transient solution with default boundary conditions */
+    ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Advect,phys);CHKERRQ(ierr);
+    /* Register "canned" functionals */
+    ierr = ModelFunctionalRegister(mod,"Error",&advect->functional.Error,PhysicsFunctional_Advect,phys);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -186,7 +357,7 @@ typedef struct {
     PetscInt Height;
     PetscInt Speed;
     PetscInt Energy;
-  } monitor;
+  } functional;
 } Physics_SW;
 typedef struct {
   PetscScalar vals[0];
@@ -217,7 +388,7 @@ static PetscErrorCode SWFlux(Physics phys,const PetscReal *n,const SWNode *x,SWN
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsBoundary_SW_Wall"
-static PetscErrorCode PhysicsBoundary_SW_Wall(Physics phys, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG)
+static PetscErrorCode PhysicsBoundary_SW_Wall(Model mod, PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
   PetscFunctionBegin;
   xG[0] = xI[0];
@@ -228,38 +399,41 @@ static PetscErrorCode PhysicsBoundary_SW_Wall(Physics phys, const PetscReal *n, 
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsRiemann_SW"
-static PetscErrorCode PhysicsRiemann_SW(Physics phys, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
+static PetscErrorCode PhysicsRiemann_SW(Physics phys, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
 {
   Physics_SW *sw = (Physics_SW*)phys->data;
-  PetscReal c,speed;
+  PetscReal cL,cR,speed,nn[DIM];
   const SWNode *uL = (const SWNode*)xL,*uR = (const SWNode*)xR;
   SWNode fL,fR;
   PetscInt i;
 
   PetscFunctionBegin;
   if (uL->h < 0 || uR->h < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative");
-  SWFlux(phys,n,uL,&fL);
-  SWFlux(phys,n,uR,&fR);
-  c = PetscSqrtScalar(sw->gravity*PetscMax(uL->h,uR->h)); /* gravity wave speed */
-  speed = PetscMax(PetscAbsScalar(Dot2(uL->uh,n)/uL->h),PetscAbsScalar(Dot2(uR->uh,n)/uR->h)) / Norm2(n) + c;
-  for (i=0; i<1+DIM; i++) flux[i] = 0.5*(fL.vals[i] + fR.vals[i]) + 0.5*speed*(xL[i] - xR[i]);
+  nn[0] = n[0];
+  nn[1] = n[1];
+  Normalize2(nn);
+  SWFlux(phys,nn,uL,&fL);
+  SWFlux(phys,nn,uR,&fR);
+  cL = PetscSqrtReal(sw->gravity*PetscRealPart(uL->h));
+  cR = PetscSqrtReal(sw->gravity*PetscRealPart(uR->h)); /* gravity wave speed */
+  speed = PetscMax(PetscAbsScalar(Dot2(uL->uh,nn)/uL->h) + cL,PetscAbsScalar(Dot2(uR->uh,nn)/uR->h) + cR);
+  for (i=0; i<1+DIM; i++) flux[i] = (0.5*(fL.vals[i] + fR.vals[i]) + 0.5*speed*(xL[i] - xR[i])) * Norm2(n);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsSolution_SW"
-static PetscErrorCode PhysicsSolution_SW(User user,PetscReal time,const PetscReal *x,PetscScalar *u)
+static PetscErrorCode PhysicsSolution_SW(Model mod,PetscReal time,const PetscReal *x,PetscScalar *u,void *ctx)
 {
-  //Physics_SW *sw = (Physics_SW*)user->physics->data;
   PetscReal dx[2],r,sigma;
 
   PetscFunctionBegin;
-  if (time != 0.0) SETERRQ1(user->comm,PETSC_ERR_SUP,"No solution known for time %G",time);
+  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %G",time);
   dx[0] = x[0] - 1.5;
   dx[1] = x[1] - 1.0;
   r = Norm2(dx);
   sigma = 0.5;
-  u[0] = 1 + 0.1*PetscExpScalar(-PetscSqr(r)/(2*PetscSqr(sigma)));
+  u[0] = 1 + 2*PetscExpScalar(-PetscSqr(r)/(2*PetscSqr(sigma)));
   u[1] = 0.0;
   u[2] = 0.0;
   PetscFunctionReturn(0);
@@ -267,8 +441,9 @@ static PetscErrorCode PhysicsSolution_SW(User user,PetscReal time,const PetscRea
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsFunctional_SW"
-static PetscErrorCode PhysicsFunctional_SW(Physics phys,const PetscScalar *xx,PetscReal *f)
+static PetscErrorCode PhysicsFunctional_SW(Model mod,PetscReal time,const PetscReal *coord,const PetscScalar *xx,PetscReal *f,void *ctx)
 {
+  Physics phys = (Physics)ctx;
   Physics_SW *sw = (Physics_SW*)phys->data;
   const SWNode *x = (const SWNode*)xx;
   PetscScalar u[2];
@@ -276,26 +451,23 @@ static PetscErrorCode PhysicsFunctional_SW(Physics phys,const PetscScalar *xx,Pe
 
   PetscFunctionBegin;
   h = PetscRealPart(x->h);
-  f[sw->monitor.Height] = h;
   Scale2(1./x->h,x->uh,u);
-  f[sw->monitor.Speed] = Norm2(u) + PetscSqrtReal(sw->gravity*h);
-  f[sw->monitor.Energy] = 0.5*(Dot2(x->uh,u) + sw->gravity*PetscSqr(h));
+  f[sw->functional.Height] = h;
+  f[sw->functional.Speed] = Norm2(u) + PetscSqrtReal(sw->gravity*h);
+  f[sw->functional.Energy] = 0.5*(Dot2(x->uh,u) + sw->gravity*PetscSqr(h));
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsCreate_SW"
-static PetscErrorCode PhysicsCreate_SW(User user,Physics phys)
+static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys)
 {
-  const PetscInt wallids[] = {100,101,200,300};
   Physics_SW *sw;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PhysicsBoundaryRegister(phys,"wall",PhysicsBoundary_SW_Wall,ALEN(wallids),wallids);CHKERRQ(ierr);
   phys->dof = 1+DIM;
   phys->riemann = PhysicsRiemann_SW;
-  phys->solution = PhysicsSolution_SW;
   ierr = PetscNew(Physics_SW,&phys->data);CHKERRQ(ierr);
   sw = phys->data;
   ierr = PetscOptionsHead("SW options");CHKERRQ(ierr);
@@ -305,10 +477,15 @@ static PetscErrorCode PhysicsCreate_SW(User user,Physics phys)
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   phys->maxspeed = PetscSqrtReal(2.0*sw->gravity); /* Mach 1 for depth of 2 */
-  phys->monitor = PhysicsFunctional_SW;
-  ierr = PhysicsFunctionalRegister(phys,"Height",&sw->monitor.Height);CHKERRQ(ierr);
-  ierr = PhysicsFunctionalRegister(phys,"Speed",&sw->monitor.Speed);CHKERRQ(ierr);
-  ierr = PhysicsFunctionalRegister(phys,"Energy",&sw->monitor.Energy);CHKERRQ(ierr);
+
+  {
+    const PetscInt wallids[] = {100,101,200,300};
+    ierr = ModelBoundaryRegister(mod,"wall",PhysicsBoundary_SW_Wall,phys,ALEN(wallids),wallids);CHKERRQ(ierr);
+    ierr = ModelSolutionSetDefault(mod,PhysicsSolution_SW,phys);CHKERRQ(ierr);
+    ierr = ModelFunctionalRegister(mod,"Height",&sw->functional.Height,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
+    ierr = ModelFunctionalRegister(mod,"Speed",&sw->functional.Speed,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
+    ierr = ModelFunctionalRegister(mod,"Energy",&sw->functional.Energy,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -635,7 +812,6 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
   ierr = ISRestoreIndices(innerIS, &cells);CHKERRQ(ierr);
   ierr = ISDestroy(&innerIS);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMComplexViewLabel_Ascii(dm, bdname, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -838,15 +1014,30 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
     ierr = PetscFree2(newLocation,newRemoteLocation);CHKERRQ(ierr);
     ierr = PetscSFSetGraph(gsfPoint, numRoots+user->numGhostCells, numLeaves, glocalPoints, PETSC_OWN_POINTER, gremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
   }
-
+  ierr = DMDestroy(dmSplit);CHKERRQ(ierr);
   *dmSplit = sdm;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "IsExteriorGhostFace"
+static PetscErrorCode IsExteriorGhostFace(DM dm,PetscInt face,PetscBool *isghost)
+{
+  PetscErrorCode ierr;
+  PetscInt ghost,boundary;
+
+  PetscFunctionBegin;
+  *isghost = PETSC_FALSE;
+  ierr = DMComplexGetLabelValue(dm, "ghost", face, &ghost);CHKERRQ(ierr);
+  ierr = DMComplexGetLabelValue(dm, "Face Sets", face, &boundary);CHKERRQ(ierr);
+  if (ghost >= 0 || boundary >= 0) *isghost = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PseudoInverse"
-/* Overwrites A */
-static PetscErrorCode PseudoInverse(PetscInt m,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscScalar *work)
+/* Overwrites A. Can only handle full-rank problems with m>=n */
+static PetscErrorCode PseudoInverse(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscInt worksize,PetscScalar *work)
 {
   PetscBool debug = PETSC_FALSE;
   PetscErrorCode ierr;
@@ -861,8 +1052,8 @@ static PetscErrorCode PseudoInverse(PetscInt m,PetscInt n,PetscScalar *A,PetscSc
 
   M = PetscBLASIntCast(m);
   N = PetscBLASIntCast(n);
-  lda = M;
-  ldwork = M*N;
+  lda = PetscBLASIntCast(mstride);
+  ldwork = PetscBLASIntCast(worksize);
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
   LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info);
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
@@ -871,7 +1062,7 @@ static PetscErrorCode PseudoInverse(PetscInt m,PetscInt n,PetscScalar *A,PetscSc
 
   /* Extract an explicit representation of Q */
   Q = Ainv;
-  ierr = PetscMemcpy(Q,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(Q,A,mstride*n*sizeof(PetscScalar));CHKERRQ(ierr);
   K = N;                        /* full rank */
   LAPACKungqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info);
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
@@ -895,48 +1086,117 @@ static PetscErrorCode PseudoInverse(PetscInt m,PetscInt n,PetscScalar *A,PetscSc
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PseudoInverseGetWorkRequired"
+static PetscErrorCode PseudoInverseGetWorkRequired(PetscInt maxFaces,PetscInt *work)
+{
+  PetscInt m,n,nrhs,minwork;
+
+  PetscFunctionBegin;
+  m = maxFaces;
+  n = DIM;
+  nrhs = maxFaces;
+  minwork = 3*PetscMin(m,n) + PetscMax(2*PetscMin(m,n), PetscMax(PetscMax(m,n), nrhs)); /* required by LAPACK */
+  *work = 5*minwork;            /* We can afford to be extra generous */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PseudoInverseSVD"
+/* Overwrites A. Can handle degenerate problems and m<n. */
+static PetscErrorCode PseudoInverseSVD(PetscInt m,PetscInt mstride,PetscInt n,PetscScalar *A,PetscScalar *Ainv,PetscScalar *tau,PetscInt worksize,PetscScalar *work)
+{
+  PetscBool debug = PETSC_FALSE;
+  PetscErrorCode ierr;
+  PetscInt i,j,maxmn;
+  PetscBLASInt M,N,nrhs,lda,ldb,irank,ldwork,info;
+  PetscScalar rcond,*tmpwork,*Brhs,*Aback;
+
+  PetscFunctionBegin;
+  if (debug) {
+    ierr = PetscMalloc(m*n*sizeof(PetscScalar),&Aback);CHKERRQ(ierr);
+    ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+
+  /* initialize to identity */
+  tmpwork = Ainv;
+  Brhs = work;
+  maxmn = PetscMax(m,n);
+  for (j=0; j<maxmn; j++) {
+    for (i=0; i<maxmn; i++) Brhs[i + j*maxmn] = 1.0*(i == j);
+  }
+
+  M = PetscBLASIntCast(m);
+  N = PetscBLASIntCast(n);
+  nrhs = M;
+  lda = PetscBLASIntCast(mstride);
+  ldb = PetscBLASIntCast(maxmn);
+  ldwork = PetscBLASIntCast(worksize);
+  rcond = -1;
+  ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+  LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb,tau,&rcond,&irank,tmpwork,&ldwork,&info);
+  ierr = PetscFPTrapPop();CHKERRQ(ierr);
+  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");
+  /* The following check should be turned into a diagnostic as soon as someone wants to do this intentionally */
+  if (irank < PetscMin(M,N)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Rank deficient least squares fit, indicates an isolated cell with two colinear points");
+
+  /* Brhs shaped (M,nrhs) column-major coldim=mstride was overwritten by Ainv shaped (N,nrhs) column-major coldim=maxmn.
+   * Here we transpose to (N,nrhs) row-major rowdim=mstride. */
+  for (i=0; i<n; i++) {
+    for (j=0; j<nrhs; j++) Ainv[i*mstride+j] = Brhs[i + j*maxmn];
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "BuildLeastSquares"
 /* Build least squares gradient reconstruction operators */
 static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,PetscScalar *fgeom,DM dmCell,PetscScalar *cgeom)
 {
   PetscErrorCode ierr;
-  PetscInt c,cStart,cEnd,maxNumFaces;
+  PetscInt c,cStart,cEnd,maxNumFaces,worksize;
   PetscScalar *B,*Binv,*work,*tau,**gref;
 
   PetscFunctionBegin;
   ierr = DMComplexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMComplexGetMaxSizes(dm,&maxNumFaces,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc5(maxNumFaces*DIM,PetscScalar,&B,maxNumFaces*DIM,PetscScalar,&Binv,maxNumFaces*DIM,PetscScalar,&work,maxNumFaces,PetscScalar,&tau,maxNumFaces,PetscScalar*,&gref);CHKERRQ(ierr);
+  ierr = PseudoInverseGetWorkRequired(maxNumFaces,&worksize);CHKERRQ(ierr);
+  ierr = PetscMalloc5(maxNumFaces*DIM,PetscScalar,&B,worksize,PetscScalar,&Binv,worksize,PetscScalar,&work,maxNumFaces,PetscScalar,&tau,maxNumFaces,PetscScalar*,&gref);CHKERRQ(ierr);
   for (c=cStart; c<cEndInterior; c++) {
     const PetscInt *faces;
-    PetscInt numFaces,f,i,j;
+    PetscInt numFaces,usedFaces,f,i,j;
     const CellGeom *cg;
+    PetscBool ghost;
     ierr = DMComplexGetConeSize(dm,c,&numFaces);CHKERRQ(ierr);
     if (numFaces < DIM) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cell %D has only %D faces, not enough for gradient reconstruction",c,numFaces);
     ierr = DMComplexGetCone(dm,c,&faces);CHKERRQ(ierr);
     ierr = DMComplexPointLocalRead(dmCell,c,cgeom,&cg);CHKERRQ(ierr);
-    for (f=0; f<numFaces; f++) {
+    for (f=0,usedFaces=0; f<numFaces; f++) {
       const PetscInt *fcells;
+      PetscInt       ncell,side;
+      FaceGeom       *fg;
+      const CellGeom *cg1;
+      ierr = IsExteriorGhostFace(dm,faces[f],&ghost);CHKERRQ(ierr);
+      if (ghost) continue;
       ierr = DMComplexGetSupport(dm,faces[f],&fcells);CHKERRQ(ierr);
-      gref[f] = PETSC_NULL;
-      for (i=0; i<2; i++) {
-        FaceGeom *fg;
-        const CellGeom *cg1;
-        if (fcells[i] == c) continue;
-        ierr = DMComplexPointLocalRef(dmFace,faces[f],fgeom,&fg);CHKERRQ(ierr);
-        ierr = DMComplexPointLocalRead(dmCell,fcells[i],cgeom,&cg1);CHKERRQ(ierr);
-        for (j=0; j<DIM; j++) B[j*numFaces+f] = cg1->centroid[j] - cg->centroid[j];
-        gref[f] = fg->grad[(i+1)%2];  /* Gradient reconstruction term will go here */
-      }
-      if (!gref[f]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Connectivity corrrupt");
+      side = (c != fcells[0]); /* c is on left=0 or right=1 of face */
+      ncell = fcells[!side];   /* the neighbor */
+      ierr = DMComplexPointLocalRef(dmFace,faces[f],fgeom,&fg);CHKERRQ(ierr);
+      ierr = DMComplexPointLocalRead(dmCell,ncell,cgeom,&cg1);CHKERRQ(ierr);
+      for (j=0; j<DIM; j++) B[j*numFaces+usedFaces] = cg1->centroid[j] - cg->centroid[j];
+      gref[usedFaces++] = fg->grad[side];  /* Gradient reconstruction term will go here */
     }
-
+    if (!usedFaces) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Mesh contains isolated cell (no neighbors). Is it intentional?");
     /* Overwrites B with garbage, returns Binv in row-major format */
-    ierr = PseudoInverse(numFaces,DIM,B,Binv,tau,work);CHKERRQ(ierr);
-    for (f=0; f<numFaces; f++) {
-      for (j=0; j<DIM; j++) {
-        gref[f][j] = Binv[j*numFaces+f];
-      }
+    if (0) {
+      ierr = PseudoInverse(usedFaces,numFaces,DIM,B,Binv,tau,worksize,work);CHKERRQ(ierr);
+    } else {
+      ierr = PseudoInverseSVD(usedFaces,numFaces,DIM,B,Binv,tau,worksize,work);CHKERRQ(ierr);
+    }
+    for (f=0,i=0; f<numFaces; f++) {
+      ierr = IsExteriorGhostFace(dm,faces[f],&ghost);CHKERRQ(ierr);
+      if (ghost) continue;
+      for (j=0; j<DIM; j++) gref[i][j] = Binv[j*numFaces+i];
+      i++;
     }
 
 #if 1
@@ -1092,7 +1352,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
     ierr = PetscSectionCreate(((PetscObject)dm)->comm,&sectionGrad);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(sectionGrad,cStart,cEnd);CHKERRQ(ierr);
     for (c=cStart; c<cEnd; c++) {
-      ierr = PetscSectionSetDof(sectionGrad,c,user->physics->dof*DIM);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(sectionGrad,c,user->model->physics->dof*DIM);CHKERRQ(ierr);
     }
     ierr = PetscSectionSetUp(sectionGrad);CHKERRQ(ierr);
     ierr = DMSetDefaultSection(user->dmGrad,sectionGrad);CHKERRQ(ierr);
@@ -1163,7 +1423,6 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinateDM(dm, &dmCoord);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMComplexClone(dm, &dmMass);CHKERRQ(ierr);
@@ -1187,6 +1446,8 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   ierr = VecGetArrayRead(user->facegeom, &facegeom);CHKERRQ(ierr);
   ierr = VecGetDM(user->cellgeom, &dmCell);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->cellgeom, &cellgeom);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dm, &dmCoord);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
   for(v = vStart; v < vEnd; ++v) {
     const PetscInt    *faces;
     const FaceGeom    *fgA, *fgB, *cg;
@@ -1201,7 +1462,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
       ierr = DMComplexPointLocalRead(dmFace, faces[f], facegeom, &fgA);CHKERRQ(ierr);
       for(g = 0; g < numFaces; ++g) {
         const PetscInt *cells = PETSC_NULL;;
-        PetscScalar     area  = 0.0;
+        PetscReal       area  = 0.0;
         PetscInt        numCells;
 
         sides[1] = faces[g];
@@ -1209,14 +1470,16 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
         ierr = DMComplexGetJoin(dmMass, 2, sides, &numCells, &cells);CHKERRQ(ierr);
         if (numCells != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid join for faces");
         ierr = DMComplexPointLocalRead(dmCell, cells[0], cellgeom, &cg);CHKERRQ(ierr);
-        area += (vertex[0] - cg->centroid[0])*(fgA->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgA->centroid[0] - cg->centroid[0]);
-        area += (vertex[0] - cg->centroid[0])*(fgB->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgB->centroid[0] - cg->centroid[0]);
+        area += PetscAbsScalar((vertex[0] - cg->centroid[0])*(fgA->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgA->centroid[0] - cg->centroid[0]));
+        area += PetscAbsScalar((vertex[0] - cg->centroid[0])*(fgB->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgB->centroid[0] - cg->centroid[0]));
         m[f*numFaces+g] = Dot2(fgA->normal, fgB->normal)*area*0.5;
         ierr = DMComplexRestoreJoin(dmMass, 2, sides, &numCells, &cells);CHKERRQ(ierr);
       }
     }
   }
   ierr = VecRestoreArrayRead(user->facegeom, &facegeom);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(user->facegeom, &facegeom);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecRestoreArray(*massMatrix, &m);CHKERRQ(ierr);
   ierr = DMDestroy(&dmMass);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1227,7 +1490,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
 PetscErrorCode SetUpLocalSpace(DM dm, User user)
 {
   PetscSection   stateSection;
-  PetscInt       dof = user->physics->dof, *cind, d, stateSize, cStart, cEnd, c;
+  PetscInt       dof = user->model->physics->dof, *cind, d, stateSize, cStart, cEnd, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1274,13 +1537,13 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
 #define __FUNCT__ "SetUpBoundaries"
 PetscErrorCode SetUpBoundaries(DM dm, User user)
 {
-  Physics phys = user->physics;
+  Model mod = user->model;
   PetscErrorCode ierr;
   BoundaryLink b;
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(((PetscObject)dm)->comm,PETSC_NULL,"Boundary condition options","");CHKERRQ(ierr);
-  for (b = phys->boundary; b; b=b->next) {
+  for (b = mod->boundary; b; b=b->next) {
     char optname[512];
     PetscInt ids[512],len = 512;
     PetscBool flg;
@@ -1300,9 +1563,9 @@ PetscErrorCode SetUpBoundaries(DM dm, User user)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PhysicsBoundaryRegister"
-/* ids are just defaults, can be overridden at command line */
-static PetscErrorCode PhysicsBoundaryRegister(Physics phys,const char *name,BoundaryFunction bcFunc,PetscInt numids,const PetscInt *ids)
+#define __FUNCT__ "ModelBoundaryRegister"
+/* The ids are just defaults, can be overridden at command line. I expect to set defaults based on names in the future. */
+static PetscErrorCode ModelBoundaryRegister(Model mod,const char *name,BoundaryFunction bcFunc,void *ctx,PetscInt numids,const PetscInt *ids)
 {
   PetscErrorCode ierr;
   BoundaryLink link;
@@ -1314,8 +1577,9 @@ static PetscErrorCode PhysicsBoundaryRegister(Physics phys,const char *name,Boun
   ierr = PetscMalloc(numids*sizeof(PetscInt),&link->ids);CHKERRQ(ierr);
   ierr = PetscMemcpy(link->ids,ids,numids*sizeof(PetscInt));CHKERRQ(ierr);
   link->func = bcFunc;
-  link->next = phys->boundary;
-  phys->boundary = link;
+  link->ctx  = ctx;
+  link->next = mod->boundary;
+  mod->boundary = link;
   PetscFunctionReturn(0);
 }
 
@@ -1340,41 +1604,101 @@ static PetscErrorCode BoundaryLinkDestroy(BoundaryLink *link)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PhysicsBoundaryFind"
-static PetscErrorCode PhysicsBoundaryFind(Physics phys,PetscInt id,BoundaryFunction *bcFunc)
+#define __FUNCT__ "ModelBoundaryFind"
+static PetscErrorCode ModelBoundaryFind(Model mod,PetscInt id,BoundaryFunction *bcFunc,void **ctx)
 {
   BoundaryLink link;
   PetscInt i;
 
   PetscFunctionBegin;
   *bcFunc = PETSC_NULL;
-  for (link=phys->boundary; link; link=link->next) {
+  for (link=mod->boundary; link; link=link->next) {
     for (i=0; i<link->numids; i++) {
       if (link->ids[i] == id) {
         *bcFunc = link->func;
+        *ctx = link->ctx;
         PetscFunctionReturn(0);
       }
     }
   }
-  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Boundary ID %D not associated with any registered boundary condition",id);
+  SETERRQ1(mod->comm,PETSC_ERR_USER,"Boundary ID %D not associated with any registered boundary condition",id);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
-#define __FUNCT__ "PhysicsFunctionalRegister"
-static PetscErrorCode PhysicsFunctionalRegister(Physics phys,const char *name,PetscInt *offset)
+#define __FUNCT__ "ModelSolutionSetDefault"
+/* Behavior will be different for multi-physics or when using non-default boundary conditions */
+static PetscErrorCode ModelSolutionSetDefault(Model mod,SolutionFunction func,void *ctx)
+{
+  PetscFunctionBegin;
+  mod->solution = func;
+  mod->solutionctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelFunctionalRegister"
+static PetscErrorCode ModelFunctionalRegister(Model mod,const char *name,PetscInt *offset,FunctionalFunction func,void *ctx)
 {
   PetscErrorCode ierr;
   FunctionalLink link,*ptr;
   PetscInt lastoffset = -1;
 
   PetscFunctionBegin;
-  for (ptr=&phys->functional; *ptr; ptr = &(*ptr)->next) lastoffset = (*ptr)->offset;
+  for (ptr=&mod->functionalRegistry; *ptr; ptr = &(*ptr)->next) lastoffset = (*ptr)->offset;
   ierr = PetscNew(struct _n_FunctionalLink,&link);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
   link->offset = lastoffset + 1;
+  link->func = func;
+  link->ctx  = ctx;
   link->next = PETSC_NULL;
   *ptr = link;
   *offset = link->offset;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelFunctionalSetFromOptions"
+static PetscErrorCode ModelFunctionalSetFromOptions(Model mod)
+{
+  PetscErrorCode ierr;
+  PetscInt i,j;
+  FunctionalLink link;
+  char *names[256];
+
+  PetscFunctionBegin;
+  mod->numMonitored = ALEN(names);
+  ierr = PetscOptionsStringArray("-monitor","list of functionals to monitor","",names,&mod->numMonitored,PETSC_NULL);CHKERRQ(ierr);
+  /* Create list of functionals that will be computed somehow */
+  ierr = PetscMalloc(mod->numMonitored*sizeof(FunctionalLink),&mod->functionalMonitored);CHKERRQ(ierr);
+  /* Create index of calls that we will have to make to compute these functionals (over-allocation in general). */
+  ierr = PetscMalloc(mod->numMonitored*sizeof(FunctionalLink),&mod->functionalCall);CHKERRQ(ierr);
+  mod->numCall = 0;
+  for (i=0; i<mod->numMonitored; i++) {
+    for (link=mod->functionalRegistry; link; link=link->next) {
+      PetscBool match;
+      ierr = PetscStrcasecmp(names[i],link->name,&match);CHKERRQ(ierr);
+      if (match) break;
+    }
+    if (!link) SETERRQ1(mod->comm,PETSC_ERR_USER,"No known functional '%s'",names[i]);
+    mod->functionalMonitored[i] = link;
+    for (j=0; j<i; j++) {
+      if (mod->functionalCall[j]->func == link->func && mod->functionalCall[j]->ctx == link->ctx) goto next_name;
+    }
+    mod->functionalCall[mod->numCall++] = link; /* Just points to the first link using the result. There may be more results. */
+    next_name:
+    ierr = PetscFree(names[i]);CHKERRQ(ierr);
+  }
+
+  /* Find out the maximum index of any functional computed by a function we will be calling (even if we are not using it) */
+  mod->maxComputed = -1;
+  for (link=mod->functionalRegistry; link; link=link->next) {
+    for (i=0; i<mod->numCall; i++) {
+      FunctionalLink call = mod->functionalCall[i];
+      if (link->func == call->func && link->ctx == call->ctx) {
+        mod->maxComputed = PetscMax(mod->maxComputed,link->offset);
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1402,6 +1726,7 @@ static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
 PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
 {
   DM                 dmCell;
+  Model              mod = user->model;
   const PetscScalar  *cellgeom;
   PetscScalar        *x;
   PetscInt           cStart, cEnd, cEndInterior = user->cEndInterior, c;
@@ -1418,7 +1743,7 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
 
     ierr = DMComplexPointLocalRead(dmCell,c,cellgeom,&cg);CHKERRQ(ierr);
     ierr = DMComplexPointGlobalRef(dm,c,x,&xc);CHKERRQ(ierr);
-    if (xc) {ierr = (*user->physics->solution)(user,0.0,cg->centroid,xc);CHKERRQ(ierr);}
+    if (xc) {ierr = (*mod->solution)(mod,0.0,cg->centroid,xc,mod->solutionctx);CHKERRQ(ierr);}
   }
   ierr = VecRestoreArrayRead(user->cellgeom, &cellgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(X, &x);CHKERRQ(ierr);
@@ -1427,9 +1752,9 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
 
 #undef __FUNCT__
 #define __FUNCT__ "ApplyBC"
-static PetscErrorCode ApplyBC(DM dm, Vec locX, User user)
+static PetscErrorCode ApplyBC(DM dm, PetscReal time, Vec locX, User user)
 {
-  Physics        phys = user->physics;
+  Model          mod = user->model;
   const char     *name = "Face Sets";
   DM             dmFace;
   IS             idIS;
@@ -1449,11 +1774,12 @@ static PetscErrorCode ApplyBC(DM dm, Vec locX, User user)
   ierr = VecGetArray(locX, &x);CHKERRQ(ierr);
   for(fs = 0; fs < numFS; ++fs) {
     BoundaryFunction bcFunc;
+    void             *bcCtx;
     IS               faceIS;
     const PetscInt   *faces;
     PetscInt         numFaces, f;
 
-    ierr = PhysicsBoundaryFind(phys,ids[fs],&bcFunc);CHKERRQ(ierr);
+    ierr = ModelBoundaryFind(mod,ids[fs],&bcFunc,&bcCtx);CHKERRQ(ierr);
     ierr = DMComplexGetStratumIS(dm, name, ids[fs], &faceIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
     ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
@@ -1467,7 +1793,7 @@ static PetscErrorCode ApplyBC(DM dm, Vec locX, User user)
       ierr = DMComplexGetSupport(dm, face, &cells);CHKERRQ(ierr);
       ierr = DMComplexPointLocalRead(dm, cells[0], x, &xI);CHKERRQ(ierr);
       ierr = DMComplexPointLocalRef(dm, cells[1], x, &xG);CHKERRQ(ierr);
-      ierr = (*bcFunc)(user->physics, fg->normal, xI, xG);CHKERRQ(ierr);
+      ierr = (*bcFunc)(mod, time, fg->centroid, fg->normal, xI, xG, bcCtx);CHKERRQ(ierr);
     }
     ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
     ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
@@ -1481,9 +1807,9 @@ static PetscErrorCode ApplyBC(DM dm, Vec locX, User user)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSFunctionLocal_Upwind"
-static PetscErrorCode RHSFunctionLocal_Upwind(DM dm,DM dmFace,DM dmCell,Vec locX,Vec F,User user)
+static PetscErrorCode RHSFunctionLocal_Upwind(DM dm,DM dmFace,DM dmCell,PetscReal time,Vec locX,Vec F,User user)
 {
-  Physics            phys = user->physics;
+  Physics            phys = user->model->physics;
   PetscErrorCode ierr;
   const PetscScalar *facegeom, *cellgeom, *x;
   PetscScalar       *f;
@@ -1513,7 +1839,7 @@ static PetscErrorCode RHSFunctionLocal_Upwind(DM dm,DM dmFace,DM dmCell,Vec locX
     ierr = DMComplexPointLocalRead(dm,cells[1],x,&xR);CHKERRQ(ierr);
     ierr = DMComplexPointGlobalRef(dm,cells[0],f,&fL);CHKERRQ(ierr);
     ierr = DMComplexPointGlobalRef(dm,cells[1],f,&fR);CHKERRQ(ierr);
-    ierr = (*phys->riemann)(user->physics, fg->normal, xL, xR, flux);CHKERRQ(ierr);
+    ierr = (*phys->riemann)(phys, fg->centroid, fg->normal, xL, xR, flux);CHKERRQ(ierr);
     for (i=0; i<phys->dof; i++) {
       if (fL) fL[i] -= flux[i] / cgL->volume;
       if (fR) fR[i] += flux[i] / cgR->volume;
@@ -1528,11 +1854,12 @@ static PetscErrorCode RHSFunctionLocal_Upwind(DM dm,DM dmFace,DM dmCell,Vec locX
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSFunctionLocal_LS"
-static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec F,User user)
+static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,PetscReal time,Vec locX,Vec F,User user)
 {
   DM                dmGrad = user->dmGrad;
-  Physics           phys = user->physics;
-  const PetscInt    dof = user->physics->dof;
+  Model             mod = user->model;
+  Physics           phys = mod->physics;
+  const PetscInt    dof = phys->dof;
   PetscErrorCode    ierr;
   const PetscScalar *facegeom, *cellgeom, *x;
   PetscScalar       *f;
@@ -1540,8 +1867,8 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
   Vec               locGrad,Grad;
 
   PetscFunctionBegin;
-  ierr = DMGetLocalVector(dmGrad,&locGrad);CHKERRQ(ierr);
-  ierr = VecZeroEntries(locGrad);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(dmGrad,&Grad);CHKERRQ(ierr);
+  ierr = VecZeroEntries(Grad);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->facegeom,&facegeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->cellgeom,&cellgeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locX,&x);CHKERRQ(ierr);
@@ -1549,7 +1876,7 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, PETSC_NULL);CHKERRQ(ierr);
   {
     PetscScalar *grad;
-    ierr = VecGetArray(locGrad,&grad);CHKERRQ(ierr);
+    ierr = VecGetArray(Grad,&grad);CHKERRQ(ierr);
     /* Reconstruct gradients */
     for (face=fStart; face<fEnd; ++face) {
       const PetscInt    *cells;
@@ -1557,18 +1884,21 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
       const FaceGeom    *fg;
       PetscScalar       *cgrad[2];
       PetscInt          i,j;
+      PetscBool         ghost;
 
+      ierr = IsExteriorGhostFace(dm,face,&ghost);CHKERRQ(ierr);
+      if (ghost) continue;
       ierr = DMComplexGetSupport(dm,face,&cells);CHKERRQ(ierr);
       ierr = DMComplexPointLocalRead(dmFace,face,facegeom,&fg);CHKERRQ(ierr);
       for (i=0; i<2; i++) {
         ierr = DMComplexPointLocalRead(dm,cells[i],x,&cx[i]);CHKERRQ(ierr);
-        ierr = DMComplexPointLocalRef(dmGrad,cells[i],grad,&cgrad[i]);CHKERRQ(ierr);
+        ierr = DMComplexPointGlobalRef(dmGrad,cells[i],grad,&cgrad[i]);CHKERRQ(ierr);
       }
       for (i=0; i<dof; i++) {
         PetscScalar delta = cx[1][i] - cx[0][i];
         for (j=0; j<DIM; j++) {
-          cgrad[0][i*DIM+j] += fg->grad[0][j] * delta;
-          cgrad[1][i*DIM+j] -= fg->grad[1][j] * delta;
+          if (cgrad[0]) cgrad[0][i*DIM+j] += fg->grad[0][j] * delta;
+          if (cgrad[1]) cgrad[1][i*DIM+j] -= fg->grad[1][j] * delta;
         }
       }
     }
@@ -1585,7 +1915,8 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
       ierr = DMComplexGetCone(dm,cell,&faces);CHKERRQ(ierr);
       ierr = DMComplexPointLocalRead(dm,cell,x,&cx);CHKERRQ(ierr);
       ierr = DMComplexPointLocalRead(dmCell,cell,cellgeom,&cg);CHKERRQ(ierr);
-      ierr = DMComplexPointLocalRef(dmGrad,cell,grad,&cgrad);CHKERRQ(ierr);
+      ierr = DMComplexPointGlobalRef(dmGrad,cell,grad,&cgrad);CHKERRQ(ierr);
+      if (!cgrad) continue;     /* ghost cell, we don't compute */
       /* Limiter will be minimum value over all neighbors */
       for (i=0; i<dof; i++) cellPhi[i] = PETSC_MAX_REAL;
       for (f=0; f<numFaces; f++) {
@@ -1594,26 +1925,27 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
         const PetscInt    *fcells;
         PetscInt          face = faces[f],ncell;
         PetscScalar       v[DIM];
+        PetscBool         ghost;
+        ierr = IsExteriorGhostFace(dm,face,&ghost);CHKERRQ(ierr);
+        if (ghost) continue;
         ierr = DMComplexGetSupport(dm,face,&fcells);CHKERRQ(ierr);
         ncell = cell == fcells[0] ? fcells[1] : fcells[0];
         ierr = DMComplexPointLocalRead(dm,ncell,x,&ncx);CHKERRQ(ierr);
         ierr = DMComplexPointLocalRead(dmCell,ncell,cellgeom,&ncg);CHKERRQ(ierr);
         Waxpy2(-1,cg->centroid,ncg->centroid,v);
         for (i=0; i<dof; i++) {
-          PetscScalar r,phi;
-          r = 2*Dot2(&cgrad[i*DIM],v) / (ncx[i] - cx[i]) - 1; /* equivalent to mirroring a ghost point opposite */
-          phi = PetscMax(0,PetscMin(1,r));                    /* minmod */
+          /* We use the symmetric slope limited form of Berger, Aftosmis, and Murman 2005 */
+          PetscScalar phi,flim = 0.5 * (ncx[i] - cx[i]) / Dot2(&cgrad[i*DIM],v);
+          phi = (*user->Limit)(flim);
           cellPhi[i] = PetscMin(cellPhi[i],phi);
         }
       }
       /* Apply limiter to gradient */
       for (i=0; i<dof; i++) Scale2(cellPhi[i],&cgrad[i*DIM],&cgrad[i*DIM]);
     }
-    ierr = VecRestoreArray(locGrad,&grad);CHKERRQ(ierr);
+    ierr = VecRestoreArray(Grad,&grad);CHKERRQ(ierr);
   }
-  ierr = DMGetGlobalVector(dmGrad,&Grad);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dmGrad,locGrad,INSERT_VALUES,Grad);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dmGrad,locGrad,INSERT_VALUES,Grad);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dmGrad,&locGrad);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dmGrad,Grad,INSERT_VALUES,locGrad);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dmGrad,Grad,INSERT_VALUES,locGrad);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dmGrad,&Grad);CHKERRQ(ierr);
@@ -1646,10 +1978,11 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,Vec locX,Vec
       ierr = DMComplexGetLabelValue(dm, "Face Sets", face, &bset);CHKERRQ(ierr);
       if (bset != -1) {
         BoundaryFunction bcFunc;
-        ierr = PhysicsBoundaryFind(phys,bset,&bcFunc);CHKERRQ(ierr);
-        ierr = (*bcFunc)(phys,fg->normal,fx[0],fx[1]);CHKERRQ(ierr);
+        void *bcCtx;
+        ierr = ModelBoundaryFind(mod,bset,&bcFunc,&bcCtx);CHKERRQ(ierr);
+        ierr = (*bcFunc)(mod,time,fg->centroid,fg->normal,fx[0],fx[1],bcCtx);CHKERRQ(ierr);
       }
-      ierr = (*phys->riemann)(user->physics, fg->normal, fx[0], fx[1], flux);CHKERRQ(ierr);
+      ierr = (*phys->riemann)(phys, fg->centroid, fg->normal, fx[0], fx[1], flux);CHKERRQ(ierr);
       for (i=0; i<phys->dof; i++) {
         if (cf[0]) cf[0][i] -= flux[i] / cg[0]->volume;
         if (cf[1]) cf[1][i] += flux[i] / cg[1]->volume;
@@ -1684,10 +2017,10 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
 
-  ierr = ApplyBC(dm, locX, user);CHKERRQ(ierr);
+  ierr = ApplyBC(dm, time, locX, user);CHKERRQ(ierr);
 
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
-  ierr = (*user->RHSFunctionLocal)(dm,dmFace,dmCell,locX,F,user);CHKERRQ(ierr);
+  ierr = (*user->RHSFunctionLocal)(dm,dmFace,dmCell,time,locX,F,user);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&locX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1722,14 +2055,13 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
   ierr = VecNorm(X,NORM_INFINITY,&xnorm);CHKERRQ(ierr);
   if (stepnum >= 0) {           /* No summary for final time */
-    Physics phys = user->physics;
+    Model mod = user->model;
     PetscInt c,cStart,cEnd,fcount,i;
     size_t ftableused,ftablealloc;
     const PetscScalar *cellgeom,*x;
     DM dmCell;
-    FunctionalLink flink;
     PetscReal *fmin,*fmax,*fintegral,*ftmp;
-    for (flink=phys->functional,fcount=0; flink; flink=flink->next) fcount++;
+    fcount = mod->maxComputed+1;
     ierr = PetscMalloc4(fcount,PetscReal,&fmin,fcount,PetscReal,&fmax,fcount,PetscReal,&fintegral,fcount,PetscReal,&ftmp);CHKERRQ(ierr);
     for (i=0; i<fcount; i++) {
       fmin[i] = PETSC_MAX_REAL;
@@ -1745,8 +2077,11 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
       const PetscScalar *cx;
       ierr = DMComplexPointLocalRead(dmCell,c,cellgeom,&cg);CHKERRQ(ierr);
       ierr = DMComplexPointGlobalRead(dm,c,x,&cx);CHKERRQ(ierr);
-      if (!cx) continue;
-      if (phys->monitor) {ierr = (*phys->monitor)(user->physics,cx,ftmp);CHKERRQ(ierr);}
+      if (!cx) continue;        /* not a global cell */
+      for (i=0; i<mod->numCall; i++) {
+        FunctionalLink flink = mod->functionalCall[i];
+        ierr = (*flink->func)(mod,time,cg->centroid,cx,ftmp,flink->ctx);CHKERRQ(ierr);
+      }
       for (i=0; i<fcount; i++) {
         fmin[i] = PetscMin(fmin[i],ftmp[i]);
         fmax[i] = PetscMax(fmax[i],ftmp[i]);
@@ -1762,9 +2097,10 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     ftablealloc = fcount * 100;
     ftableused = 0;
     ierr = PetscMalloc(ftablealloc,&ftable);CHKERRQ(ierr);
-    for (flink=phys->functional,i=0; i<fcount; flink=flink->next,i++) {
+    for (i=0; i<mod->numMonitored; i++) {
       size_t countused;
       char buffer[256],*p;
+      FunctionalLink flink = mod->functionalMonitored[i];
       if (i % 3) {
         ierr = PetscMemcpy(buffer,"  ",2);CHKERRQ(ierr);
         p = buffer + 2;
@@ -1813,6 +2149,8 @@ int main(int argc, char **argv)
 {
   MPI_Comm       comm;
   User           user;
+  Model          mod;
+  Physics        phys;
   DM             dm, dmDist;
   PetscReal      ftime,cfl,dt;
   PetscInt       dim, overlap, nsteps;
@@ -1832,17 +2170,29 @@ int main(int argc, char **argv)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
   ierr = PetscNew(struct _n_User,&user);CHKERRQ(ierr);
-  ierr = PetscNew(struct _n_Physics,&user->physics);CHKERRQ(ierr);
-  user->comm = comm;
+  ierr = PetscNew(struct _n_Model,&user->model);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_Physics,&user->model->physics);CHKERRQ(ierr);
+  mod = user->model;
+  phys = mod->physics;
+  mod->comm = comm;
 
   /* Register physical models to be available on the command line */
   ierr = PetscFListAdd(&PhysicsList,"advect"          ,"",(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
   ierr = PetscFListAdd(&PhysicsList,"sw"              ,"",(void(*)(void))PhysicsCreate_SW);CHKERRQ(ierr);
 
+  ierr = PetscFListAdd(&LimitList,"zero"              ,"",(void(*)(void))Limit_Zero);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&LimitList,"none"              ,"",(void(*)(void))Limit_None);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&LimitList,"minmod"            ,"",(void(*)(void))Limit_Minmod);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&LimitList,"vanleer"           ,"",(void(*)(void))Limit_VanLeer);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&LimitList,"vanalbada"         ,"",(void(*)(void))Limit_VanAlbada);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&LimitList,"sin"               ,"",(void(*)(void))Limit_Sin);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&LimitList,"superbee"          ,"",(void(*)(void))Limit_Superbee);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&LimitList,"mc"                ,"",(void(*)(void))Limit_MC);CHKERRQ(ierr);
+
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"Unstructured Finite Volume Options","");CHKERRQ(ierr);
   {
-    char physname[256] = "advect";
-    PetscErrorCode (*physcreate)(User,Physics);
+    char physname[256] = "advect",limitname[256] = "minmod";
+    PetscErrorCode (*physcreate)(Model,Physics);
     cfl = 0.9 * 4;              /* default SSPRKS2 with s=5 stages is stable for CFL number s-1 */
     ierr = PetscOptionsReal("-ufv_cfl","CFL number per step","",cfl,&cfl,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-f","Exodus.II filename to read","",filename,filename,sizeof(filename),PETSC_NULL);CHKERRQ(ierr);
@@ -1854,16 +2204,22 @@ int main(int argc, char **argv)
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscFListFind(PhysicsList,comm,physname,PETSC_TRUE,(void(**)(void))&physcreate);CHKERRQ(ierr);
-    ierr = PetscMemzero(user->physics,sizeof(struct _n_Physics));CHKERRQ(ierr);
-    ierr = (*physcreate)(user,user->physics);CHKERRQ(ierr);
-    if (user->physics->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
-    if (user->physics->dof <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
-    ierr = PetscMalloc3(user->physics->dof,PetscScalar,&user->work.flux,user->physics->dof,PetscScalar,&user->work.state0,user->physics->dof,PetscScalar,&user->work.state1);CHKERRQ(ierr);
+    ierr = PetscMemzero(phys,sizeof(struct _n_Physics));CHKERRQ(ierr);
+    ierr = (*physcreate)(mod,phys);CHKERRQ(ierr);
+    mod->maxspeed = phys->maxspeed;
+    if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
+    if (phys->dof <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
+    ierr = PetscMalloc3(phys->dof,PetscScalar,&user->work.flux,phys->dof,PetscScalar,&user->work.state0,phys->dof,PetscScalar,&user->work.state1);CHKERRQ(ierr);
     user->reconstruct = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_reconstruct","Reconstruct gradients for a second order method (grows stencil)","",user->reconstruct,&user->reconstruct,PETSC_NULL);CHKERRQ(ierr);
     user->RHSFunctionLocal = user->reconstruct ? RHSFunctionLocal_LS : RHSFunctionLocal_Upwind;
     splitFaces = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_split_faces","Split faces between cell sets","",splitFaces,&splitFaces,PETSC_NULL);CHKERRQ(ierr);
+    if (user->reconstruct) {
+      ierr = PetscOptionsList("-ufv_limit","Limiter to apply to reconstructed solution","",LimitList,limitname,limitname,sizeof limitname,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscFListFind(LimitList,comm,limitname,PETSC_TRUE,(void(**)(void))&user->Limit);CHKERRQ(ierr);
+    }
+    ierr = ModelFunctionalSetFromOptions(mod);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -1917,7 +2273,7 @@ int main(int argc, char **argv)
   ierr = TSMonitorSet(ts,MonitorVTK,user,PETSC_NULL);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000,2.0);CHKERRQ(ierr);
-  dt = cfl * user->minradius / user->physics->maxspeed;
+  dt = cfl * user->minradius / user->model->maxspeed;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
@@ -1931,10 +2287,14 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&user->facegeom);CHKERRQ(ierr);
   ierr = DMDestroy(&user->dmGrad);CHKERRQ(ierr);
   ierr = PetscFListDestroy(&PhysicsList);CHKERRQ(ierr);
-  ierr = BoundaryLinkDestroy(&user->physics->boundary);CHKERRQ(ierr);
-  ierr = FunctionalLinkDestroy(&user->physics->functional);CHKERRQ(ierr);
-  ierr = PetscFree(user->physics->data);CHKERRQ(ierr);
-  ierr = PetscFree(user->physics);CHKERRQ(ierr);
+  ierr = PetscFListDestroy(&LimitList);CHKERRQ(ierr);
+  ierr = BoundaryLinkDestroy(&user->model->boundary);CHKERRQ(ierr);
+  ierr = FunctionalLinkDestroy(&user->model->functionalRegistry);CHKERRQ(ierr);
+  ierr = PetscFree(user->model->functionalMonitored);CHKERRQ(ierr);
+  ierr = PetscFree(user->model->functionalCall);CHKERRQ(ierr);
+  ierr = PetscFree(user->model->physics->data);CHKERRQ(ierr);
+  ierr = PetscFree(user->model->physics);CHKERRQ(ierr);
+  ierr = PetscFree(user->model);CHKERRQ(ierr);
   ierr = PetscFree3(user->work.flux,user->work.state0,user->work.state1);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);

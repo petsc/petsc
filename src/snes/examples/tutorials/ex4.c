@@ -62,7 +62,7 @@ static PetscScalar quadWeights[4] = {0.25, 0.25, 0.25, 0.25};
 /*
    User-defined routines
 */
-extern PetscErrorCode FormInitialGuess(DM,Vec);
+extern PetscErrorCode FormInitialGuess(SNES,Vec,void*);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*);
 extern PetscErrorCode PrintVector(DM, Vec);
@@ -126,7 +126,7 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = DMSetInitialGuess(da, FormInitialGuess);CHKERRQ(ierr);
+  ierr = SNESSetComputeInitialGuess(snes,FormInitialGuess,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
@@ -190,15 +190,17 @@ PetscErrorCode ExactSolution(PetscReal x, PetscReal y, PetscScalar *u)
    Output Parameter:
    X - vector
 */
-PetscErrorCode FormInitialGuess(DM da,Vec X)
+PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
 {
   AppCtx        *user;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscErrorCode ierr;
   PetscReal      lambda,temp1,temp,hx,hy;
   PetscScalar    **x;
+  DM             da;
 
   PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);

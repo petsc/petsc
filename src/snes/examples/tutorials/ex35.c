@@ -61,8 +61,8 @@ T*/
    User-defined routines
 */
 extern PetscErrorCode FormMatrix(DM,Mat);
-extern PetscErrorCode MyDMComputeFunction(DM,Vec,Vec);
-extern PetscErrorCode MyDMComputeJacobian(DM,Vec,Mat,Mat,MatStructure*);
+extern PetscErrorCode MyComputeFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode MyComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode NonlinearGS(SNES,Vec);
 
 #undef __FUNCT__
@@ -113,9 +113,8 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da,&b);CHKERRQ(ierr);
   ierr = VecSetRandom(b,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DMSetFunction(da,MyDMComputeFunction);CHKERRQ(ierr);
-  ierr = DMSetJacobian(da,MyDMComputeJacobian);CHKERRQ(ierr);
-
+  ierr = SNESSetFunction(snes,PETSC_NULL,MyComputeFunction,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,MyComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -146,13 +145,15 @@ int main(int argc,char **argv)
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "MyDMComputeFunction"
-PetscErrorCode MyDMComputeFunction(DM dm,Vec x,Vec F)
+#define __FUNCT__ "MyComputeFunction"
+PetscErrorCode MyComputeFunction(SNES snes,Vec x,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
   Mat            J;
+  DM             dm;
 
   PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm,&J);CHKERRQ(ierr);
   if (!J) {
     ierr = DMCreateMatrix(dm,MATAIJ,&J);CHKERRQ(ierr);
@@ -166,13 +167,16 @@ PetscErrorCode MyDMComputeFunction(DM dm,Vec x,Vec F)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MyDMComputeJacobian"
-PetscErrorCode MyDMComputeJacobian(DM dm,Vec x,Mat J,Mat Jp,MatStructure *str)
+#define __FUNCT__ "MyComputeJacobian"
+PetscErrorCode MyComputeJacobian(SNES snes,Vec x,Mat *J,Mat *Jp,MatStructure *str,void* ctx)
 {
   PetscErrorCode ierr;
+  DM             dm;
 
   PetscFunctionBegin;
-  ierr = FormMatrix(dm,Jp);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = FormMatrix(dm,*Jp);CHKERRQ(ierr);
+  *str = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 

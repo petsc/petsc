@@ -89,6 +89,8 @@ def checkSingleRun(maker, ex, replace, extraArgs = ''):
     params = [params]
   # NOTE: testnum will be wrong for single tests, just push fixes to PETSc
   rebuildTest = True
+  numtests = 1 if args.testnum is not None else len(params)
+  maker.logPrint('Running %d tests\n' % (numtests,), debugSection='screen', forceScroll=True)
   for testnum, param in enumerate(params):
     if 'num' in param: testnum = param['num']
     if not args.testnum is None and testnum != args.testnum: continue

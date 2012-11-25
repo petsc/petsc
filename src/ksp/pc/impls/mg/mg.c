@@ -558,11 +558,11 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr = KSPSetDM(mglevels[i]->smoothd,dms[i]);CHKERRQ(ierr);
       if (mg->galerkin) {ierr = KSPSetDMActive(mglevels[i]->smoothd,PETSC_FALSE);CHKERRQ(ierr);}
       ierr = DMKSPGetContextWrite(dms[i],&kdm);CHKERRQ(ierr);
-      /* Ugly hack so that the next KSPSetUp() will use the RHS that we set */
+      /* Ugly hack so that the next KSPSetUp() will use the RHS that we set. A better fix is to change dmActive to take
+       * a bitwise OR of computing the matrix, RHS, and initial iterate. */
       kdm->computerhs = PETSC_NULL;
       kdm->rhsctx = PETSC_NULL;
       ierr = DMSetFunction(dms[i],0);
-      ierr = DMSetInitialGuess(dms[i],0);
       if (!mglevels[i+1]->interpolate) {
 	ierr = DMCreateInterpolation(dms[i],dms[i+1],&p,&rscale);CHKERRQ(ierr);
 	ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);

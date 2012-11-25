@@ -174,12 +174,17 @@ struct _n_TSDM {
   void *solutionctx;
 
 
-  /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */
+  /* These inner routines allow implementation-specific routines such as DMDA local functions. */
   PetscErrorCode (*destroy)(TSDM);
+  PetscErrorCode (*duplicate)(TSDM,DM);
   void *data;
 
-  /* This is NOT reference counted. The SNES that originally created this context is cached here to implement copy-on-write.
-   * Fields in the TSDM should only be written if the SNES matches originalsnes.
+  /* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way
+   * copy-on-write. When DMTSGetContextWrite() sees a request using a different DM, it makes a copy. Thus, if a user
+   * only interacts directly with one level, e.g., using TSSetIFunction(), then coarse levels of a multilevel item
+   * integrator are built, then the user changes the routine with another call to TSSetIFunction(), it automatically
+   * propagates to all the levels. If instead, they get out a specific level and set the function on that level,
+   * subsequent changes to the original level will no longer propagate to that level.
    */
   DM originaldm;
 };

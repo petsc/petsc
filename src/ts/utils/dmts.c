@@ -124,6 +124,8 @@ PetscErrorCode DMTSGetContextWrite(DM dm,TSDM *tsdm)
     ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_TSDM);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"TSDM",(PetscObject)container);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+    /* implementation specific copy hooks */
+    if (sdm->duplicate) {ierr = (*sdm->duplicate)(oldsdm,dm);CHKERRQ(ierr);}
   }
   *tsdm = sdm;
   PetscFunctionReturn(0);

@@ -379,7 +379,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool  hasOpera
     /* This version replaces both the user-provided Jacobian and the user-
      provided preconditioner Jacobian with the default matrix free version. */
 
-    ierr = SNESSetJacobian(snes,J,J,0,0);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,MatMFFDComputeJacobian,0);CHKERRQ(ierr);
     /* Force no preconditioner */
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -2178,11 +2178,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
   ierr = PetscLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
 
   PetscStackPush("SNES user Jacobian function");
-  if (snes->mf && !snes->mf_operator) {
-    ierr = MatMFFDComputeJacobian(snes,X,A,B,flg,sdm->jacobianctx);CHKERRQ(ierr);
-  } else {
-    ierr = (*sdm->computejacobian)(snes,X,A,B,flg,sdm->jacobianctx);CHKERRQ(ierr);
-  }
+  ierr = (*sdm->computejacobian)(snes,X,A,B,flg,sdm->jacobianctx);CHKERRQ(ierr);
   PetscStackPop;
 
   ierr = PetscLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
@@ -2548,7 +2544,9 @@ PetscErrorCode  SNESSetUp(SNES snes)
 
   if (snes->pc && (snes->pcside == PC_LEFT)) snes->mf = PETSC_TRUE;
 
-  if (snes->mf) { ierr = SNESSetUpMatrixFree_Private(snes, snes->mf_operator, snes->mf_version);CHKERRQ(ierr); }
+  if (snes->mf) {
+    ierr = SNESSetUpMatrixFree_Private(snes, snes->mf_operator, snes->mf_version);CHKERRQ(ierr);
+  }
 
 
   if (snes->ops->usercompute && !snes->user) {
@@ -3634,12 +3632,6 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     if (!grid) {
       if (snes->ops->computeinitialguess) {
         ierr = (*snes->ops->computeinitialguess)(snes,snes->vec_sol,snes->initialguessP);CHKERRQ(ierr);
-      } else if (snes->dm) {
-        PetscBool ig;
-        ierr = DMHasInitialGuess(snes->dm,&ig);CHKERRQ(ierr);
-        if (ig) {
-          ierr = DMComputeInitialGuess(snes->dm,snes->vec_sol);CHKERRQ(ierr);
-        }
       }
     }
 

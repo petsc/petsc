@@ -52,7 +52,7 @@ typedef struct {
 
 #define POWFLOP 5 /* assume a pow() takes five flops */
 
-extern PetscErrorCode FormInitialGuess(DM,Vec);
+extern PetscErrorCode FormInitialGuess(SNES,Vec,void*);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
@@ -93,7 +93,7 @@ int main(int argc,char **argv)
   ierr = SNESSetFunction(snes,PETSC_NULL,FormFunction,&user);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,FormJacobian,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = DMSetInitialGuess(da,FormInitialGuess);CHKERRQ(ierr);
+  ierr = SNESSetComputeInitialGuess(snes,FormInitialGuess,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = SNESSolve(snes,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
@@ -112,14 +112,16 @@ int main(int argc,char **argv)
 /* --------------------  Form initial approximation ----------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-PetscErrorCode FormInitialGuess(DM da,Vec X)
+PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
 {
   AppCtx         *user;
   PetscInt       i,j,k,xs,ys,xm,ym,zs,zm;
   PetscErrorCode ierr;
   PetscScalar    ***x;
+  DM             da;
 
   PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
