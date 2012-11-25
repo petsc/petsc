@@ -4057,6 +4057,15 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexRenumber_Private"
+/*
+  renumbering - An IS which provides the new number 
+*/
+PetscErrorCode DMComplexRenumber_Private(DM dm, IS renumbering)
+{
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexInterpolate_2D"
 PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
 {
