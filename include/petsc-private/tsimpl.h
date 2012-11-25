@@ -174,8 +174,9 @@ struct _n_TSDM {
   void *solutionctx;
 
 
-  /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */
+  /* These inner routines allow implementation-specific routines such as DMDA local functions. */
   PetscErrorCode (*destroy)(TSDM);
+  PetscErrorCode (*duplicate)(TSDM,DM);
   void *data;
 
   /* This is NOT reference counted. The SNES that originally created this context is cached here to implement copy-on-write.
