@@ -335,7 +335,7 @@ PetscErrorCode DMDASNESSetFunctionLocal(DM dm,InsertMode imode,PetscErrorCode (*
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDASNESGetContext(dm,sdm,&dmdasnes);CHKERRQ(ierr);
   dmdasnes->residuallocalimode = imode;
   dmdasnes->residuallocal = func;
@@ -378,7 +378,7 @@ PetscErrorCode DMDASNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DMDALocalIn
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDASNESGetContext(dm,sdm,&dmdasnes);CHKERRQ(ierr);
   dmdasnes->jacobianlocal = func;
   dmdasnes->jacobianlocalctx = ctx;
@@ -418,7 +418,7 @@ PetscErrorCode DMDASNESSetObjectiveLocal(DM dm,DMDASNESObjective func,void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDASNESGetContext(dm,sdm,&dmdasnes);CHKERRQ(ierr);
   dmdasnes->objectivelocal = func;
   dmdasnes->objectivelocalctx = ctx;
