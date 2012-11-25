@@ -155,6 +155,7 @@ struct _n_KSPDM {
 
   /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */
   PetscErrorCode (*destroy)(KSPDM);
+  PetscErrorCode (*duplicate)(KSPDM,DM);
   void *data;
 
   /* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way

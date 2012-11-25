@@ -253,7 +253,7 @@ PetscErrorCode DMSNESGetContextWrite(DM dm,SNESDM *snesdm)
     ierr = PetscObjectCompose((PetscObject)dm,"SNESDM",(PetscObject)container);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
     /* implementation specific copy hooks */
-    ierr = (sdm->duplicate)(oldsdm,dm);CHKERRQ(ierr);
+    if (sdm->duplicate) {ierr = (*sdm->duplicate)(oldsdm,dm);CHKERRQ(ierr);}
   }
   *snesdm = sdm;
   PetscFunctionReturn(0);

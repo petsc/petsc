@@ -125,6 +125,8 @@ PetscErrorCode DMKSPGetContextWrite(DM dm,KSPDM *snesdm)
     ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_KSPDM);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"KSPDM",(PetscObject)container);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+    /* implementation specific copy hooks */
+    if (kdm->duplicate) {ierr = (*kdm->duplicate)(oldsdm,dm);CHKERRQ(ierr);}
   }
   *snesdm = kdm;
   PetscFunctionReturn(0);
