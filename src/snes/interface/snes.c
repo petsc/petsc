@@ -2535,7 +2535,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
 
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMShellSetGlobalVector(snes->dm,snes->vec_sol);CHKERRQ(ierr);
-  /*  ierr = DMSNESSetUpLegacy(dm);CHKERRQ(ierr);*/ /* To be removed when function routines are taken out of the DM package */
+  ierr = DMSNESSetUpLegacy(dm);CHKERRQ(ierr); /* To be removed when function routines are taken out of the DM package */
   ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->computefunction) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must provide a residual function with SNESSetFunction(), DMSNESSetFunction(), DMDASNESSetFunctionLocal(), etc");
   if (!snes->vec_func) {
