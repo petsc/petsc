@@ -175,7 +175,6 @@ PetscErrorCode  KSPSetUpOnBlocks(KSP ksp)
 PetscErrorCode  KSPSetUp(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscBool      ig = PETSC_FALSE;
   Mat            A,B;
   MatStructure   stflg = SAME_NONZERO_PATTERN;
 
