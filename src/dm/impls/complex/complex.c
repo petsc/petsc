@@ -22,16 +22,20 @@ PetscErrorCode VecView_Complex_Local(Vec v, PetscViewer viewer)
   if (isvtk) {
     PetscViewerVTKFieldType ft = PETSC_VTK_POINT_FIELD;
     PetscSection            section;
-    PetscInt                dim, pStart, pEnd, cStart, vStart, cdof, vdof;
+    PetscInt                dim, pStart, pEnd, cStart, vStart, cdof = 0, vdof = 0;
 
     ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
     ierr = DMComplexGetHeightStratum(dm, 0, &cStart, PETSC_NULL);CHKERRQ(ierr);
     ierr = DMComplexGetDepthStratum(dm, 0, &vStart, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+    /* Assumes that numer of dofs per point of each stratum is constant, natural for VTK */
     if ((cStart >= pStart) && (cStart < pEnd)) {ierr = PetscSectionGetDof(section, cStart, &cdof);CHKERRQ(ierr);}
     if ((vStart >= pStart) && (vStart < pEnd)) {ierr = PetscSectionGetDof(section, vStart, &vdof);CHKERRQ(ierr);}
+    if (cdof && vdof) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"No support for viewing mixed space with dofs at both vertices and cells");
     if (cdof) {
+      /* TODO: This assumption should be removed when there is a way of identifying whether a space is conceptually a
+       * vector or just happens to have the same number of dofs as the dimension. */
       if (cdof == dim) {
         ft = PETSC_VTK_CELL_VECTOR_FIELD;
       } else {

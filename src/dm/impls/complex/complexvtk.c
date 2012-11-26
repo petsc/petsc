@@ -69,8 +69,8 @@ static PetscErrorCode DMComplexVTKGetCellType(DM dm, PetscInt dim, PetscInt corn
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexVTKWriteCells"
-PetscErrorCode DMComplexVTKWriteCells(DM dm, FILE *fp, PetscInt *totalCells)
+#define __FUNCT__ "DMComplexVTKWriteCells_ASCII"
+PetscErrorCode DMComplexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
 {
   MPI_Comm        comm = ((PetscObject) dm)->comm;
   IS              globalVertexNumbers;
@@ -228,8 +228,8 @@ PetscErrorCode DMComplexVTKWriteCells(DM dm, FILE *fp, PetscInt *totalCells)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexVTKWriteSection"
-PetscErrorCode DMComplexVTKWriteSection(DM dm, PetscSection section, PetscSection globalSection, Vec v, FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale) {
+#define __FUNCT__ "DMComplexVTKWriteSection_ASCII"
+PetscErrorCode DMComplexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec v, FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale) {
   MPI_Comm           comm    = ((PetscObject) dm)->comm;
   const MPI_Datatype mpiType = MPIU_SCALAR;
   PetscScalar       *array;
@@ -372,8 +372,8 @@ PetscErrorCode DMComplexVTKWriteSection(DM dm, PetscSection section, PetscSectio
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexVTKWriteField"
-PetscErrorCode DMComplexVTKWriteField(DM dm, PetscSection section, PetscSection globalSection, Vec field, const char name[], FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
+#define __FUNCT__ "DMComplexVTKWriteField_ASCII"
+PetscErrorCode DMComplexVTKWriteField_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec field, const char name[], FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
 {
   MPI_Comm       comm = ((PetscObject) dm)->comm;
   PetscInt       numDof = 0, maxDof;
@@ -395,7 +395,7 @@ PetscErrorCode DMComplexVTKWriteField(DM dm, PetscSection section, PetscSection 
     ierr = PetscFPrintf(comm, fp, "SCALARS %s double %d\n", name, maxDof);CHKERRQ(ierr);
     ierr = PetscFPrintf(comm, fp, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
   }
-  ierr = DMComplexVTKWriteSection(dm, section, globalSection, field, fp, enforceDof, precision, scale);CHKERRQ(ierr);
+  ierr = DMComplexVTKWriteSection_ASCII(dm, section, globalSection, field, fp, enforceDof, precision, scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -447,9 +447,9 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   }
   ierr = PetscLayoutGetSize(vLayout, &totVertices);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "POINTS %d double\n", totVertices);CHKERRQ(ierr);
-  ierr = DMComplexVTKWriteSection(dm, coordSection, globalCoordSection, coordinates, fp, 3, PETSC_DETERMINE, lengthScale);CHKERRQ(ierr);
+  ierr = DMComplexVTKWriteSection_ASCII(dm, coordSection, globalCoordSection, coordinates, fp, 3, PETSC_DETERMINE, lengthScale);CHKERRQ(ierr);
   /* Cells */
-  ierr = DMComplexVTKWriteCells(dm, fp, &totCells);CHKERRQ(ierr);
+  ierr = DMComplexVTKWriteCells_ASCII(dm, fp, &totCells);CHKERRQ(ierr);
   /* Vertex fields */
   for (link = vtk->link; link; link = link->next) {
     if ((link->ft == PETSC_VTK_POINT_FIELD) || (link->ft == PETSC_VTK_POINT_VECTOR_FIELD)) hasPoint = PETSC_TRUE;
@@ -479,7 +479,7 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
       }
       if (!section) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
       ierr = PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
-      ierr = DMComplexVTKWriteField(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0);CHKERRQ(ierr);
+      ierr = DMComplexVTKWriteField_ASCII(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
     }
   }
@@ -508,7 +508,7 @@ static PetscErrorCode DMComplexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
       }
       if (!section) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
       ierr = PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
-      ierr = DMComplexVTKWriteField(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0);CHKERRQ(ierr);
+      ierr = DMComplexVTKWriteField_ASCII(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
     }
   }
