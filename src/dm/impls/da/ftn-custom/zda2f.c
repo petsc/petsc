@@ -4,16 +4,12 @@
 #include <petscsnes.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define dmdasetlocaljacobian_          DMDASETLOCALJACOBIAN
-#define dmdasetlocalfunction_          DMDASETLOCALFUNCTION
 #define dmdanesssetjacobianlocal_      DMDASNESSETJACOBIANLOCAL
 #define dmdasnessetfunctionlocal_      DMDASNESSETFUNCTIONLOCAL
 #define dmdacreate2d_                  DMDACREATE2D
 #define dmdagetownershipranges_        DMDAGETOWNERSHIPRANGES
 #define dmdagetneighbors_              DMDAGETNEIGHBORS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define dmdasetlocaljacobian_          dmdasetlocaljacobian
-#define dmdasetlocalfunction_          dmdasetlocalfunction
 #define dmdasnessetjacobianlocal_      dmdasnessetjacobianlocal
 #define dmdasnessetfunctionlocal_      dmdasnessetfunctionlocal
 #define dmdacreate2d_                  dmdacreate2d
@@ -33,87 +29,6 @@ void PETSC_STDCALL dmdagetneighbors_(DM *da,PetscMPIInt *ranks,PetscErrorCode *i
   *ierr = PetscMemcpy(ranks,r,n*sizeof(PetscMPIInt));
 }
 
-
-/************************************************/
-static PetscErrorCode ourlj1d(DMDALocalInfo *info,PetscScalar *in,Mat m,void *ptr)
-{
-  PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(DMDALocalInfo*,PetscScalar*,Mat*,void*,PetscErrorCode*))(((PetscObject)info->da)->fortran_func_pointers[0]))(info,&in[info->dof*info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
-  return 0;
-}
-
-static PetscErrorCode ourlj2d(DMDALocalInfo *info,PetscScalar **in,Mat m,void *ptr)
-{
-  PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(DMDALocalInfo*,PetscScalar*,Mat*,void*,PetscErrorCode*))(((PetscObject)info->da)->fortran_func_pointers[1]))(info,&in[info->gys][info->dof*info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
-  return 0;
-}
-
-static PetscErrorCode ourlj3d(DMDALocalInfo *info,PetscScalar ***in,Mat m,void *ptr)
-{
-  PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(DMDALocalInfo*,PetscScalar*,Mat*,void*,PetscErrorCode*))(((PetscObject)info->da)->fortran_func_pointers[2]))(info,&in[info->gzs][info->gys][info->dof*info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
-  return 0;
-}
-
-void PETSC_STDCALL dmdasetlocaljacobian_(DM *da,void (PETSC_STDCALL *jac)(DMDALocalInfo*,void*,void*,void*,PetscErrorCode*),PetscErrorCode *ierr)
-{
-  PetscInt dim;
-
-  PetscObjectAllocateFortranPointers(*da,6);
-  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
-  if (dim == 2) {
-    ((PetscObject)*da)->fortran_func_pointers[1] = (PetscVoidFunction)jac;
-    *ierr = DMDASetLocalJacobian(*da,(DMDALocalFunction1)ourlj2d);
-  } else if (dim == 3) {
-    ((PetscObject)*da)->fortran_func_pointers[2] = (PetscVoidFunction)jac;
-    *ierr = DMDASetLocalJacobian(*da,(DMDALocalFunction1)ourlj3d);
-  } else if (dim == 1) {
-    ((PetscObject)*da)->fortran_func_pointers[0] = (PetscVoidFunction)jac;
-    *ierr = DMDASetLocalJacobian(*da,(DMDALocalFunction1)ourlj1d);
-  } else *ierr = 1;
-}
-
-/************************************************/
-
-static PetscErrorCode ourlf1d(DMDALocalInfo *info,PetscScalar *in,PetscScalar *out,void *ptr)
-{
-  PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(DMDALocalInfo*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*))(((PetscObject)info->da)->fortran_func_pointers[3]))(info,&in[info->dof*info->gxs],&out[info->dof*info->xs],ptr,&ierr);CHKERRQ(ierr);
-  return 0;
-}
-
-static PetscErrorCode ourlf2d(DMDALocalInfo *info,PetscScalar **in,PetscScalar **out,void *ptr)
-{
-  PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(DMDALocalInfo*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*))(((PetscObject)info->da)->fortran_func_pointers[4]))(info,&in[info->gys][info->dof*info->gxs],&out[info->ys][info->dof*info->xs],ptr,&ierr);CHKERRQ(ierr);
-  return 0;
-}
-
-static PetscErrorCode ourlf3d(DMDALocalInfo *info,PetscScalar ***in,PetscScalar ***out,void *ptr)
-{
-  PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(DMDALocalInfo*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*))(((PetscObject)info->da)->fortran_func_pointers[5]))(info,&in[info->gzs][info->gys][info->dof*info->gxs],&out[info->zs][info->ys][info->dof*info->xs],ptr,&ierr);CHKERRQ(ierr);
-  return 0;
-}
-
-void PETSC_STDCALL dmdasetlocalfunction_(DM *da,void (PETSC_STDCALL *func)(DMDALocalInfo*,void*,void*,void*,PetscErrorCode*),PetscErrorCode *ierr)
-{
-  PetscInt dim;
-
-  PetscObjectAllocateFortranPointers(*da,6);
-  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
-  if (dim == 2) {
-    ((PetscObject)*da)->fortran_func_pointers[4] = (PetscVoidFunction)func;
-    *ierr = DMDASetLocalFunction(*da,(DMDALocalFunction1)ourlf2d);
-  } else if (dim == 3) {
-    ((PetscObject)*da)->fortran_func_pointers[5] = (PetscVoidFunction)func;
-    *ierr = DMDASetLocalFunction(*da,(DMDALocalFunction1)ourlf3d);
-  } else if (dim == 1) {
-    ((PetscObject)*da)->fortran_func_pointers[3] = (PetscVoidFunction)func;
-    *ierr = DMDASetLocalFunction(*da,(DMDALocalFunction1)ourlf1d);
-  } else *ierr = 1;
-}
 
 /************************************************/
 
