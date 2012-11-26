@@ -2316,6 +2316,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
       size_t countused;
       char buffer[256],*p;
       FunctionalLink flink = mod->functionalMonitored[i];
+      PetscInt id = flink->offset;
       if (i % 3) {
         ierr = PetscMemcpy(buffer,"  ",2);CHKERRQ(ierr);
         p = buffer + 2;
@@ -2326,7 +2327,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
       } else {
         p = buffer;
       }
-      ierr = PetscSNPrintfCount(p,sizeof buffer-(p-buffer),"%12s [%10.7G,%10.7G] int %10.7G",&countused,flink->name,fmin[i],fmax[i],fintegral[i]);CHKERRQ(ierr);
+      ierr = PetscSNPrintfCount(p,sizeof buffer-(p-buffer),"%12s [%10.7G,%10.7G] int %10.7G",&countused,flink->name,fmin[id],fmax[id],fintegral[id]);CHKERRQ(ierr);
       countused += p - buffer;
       if (countused > ftablealloc-ftableused-1) { /* reallocate */
         char *ftablenew;
