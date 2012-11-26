@@ -106,6 +106,36 @@ typedef struct {
   PetscScalar volume;
 } CellGeom;
 
+
+PETSC_STATIC_INLINE PetscScalar DotDIM(const PetscScalar *x,const PetscScalar *y)
+{
+  PetscInt        i;
+  PetscScalar     prod=0.0;
+  for(i=0; i<DIM; i++) prod += x[i]*y[i];
+  return prod;
+}
+PETSC_STATIC_INLINE PetscReal NormDIM(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(DotDIM(x,x))); }
+PETSC_STATIC_INLINE void axDIM(const PetscScalar a,PetscScalar *x)
+{
+  PetscInt        i;
+  for(i=0; i<DIM; i++) x[i] *= a;
+}
+PETSC_STATIC_INLINE void waxDIM(const PetscScalar a,const PetscScalar *x, PetscScalar* w)
+{
+  PetscInt        i;
+  for(i=0; i<DIM; i++) w[i] = x[i]*a;
+}
+PETSC_STATIC_INLINE void NormalSplitDIM(const PetscReal *n,const PetscScalar *x,PetscScalar *xn,PetscScalar *xt)
+{                               /* Split x into normal and tangential components */
+  PetscInt        i;
+  PetscScalar     c;
+  c = DotDIM(x,n)/DotDIM(n,n);
+  for(i=0; i<DIM; i++) {
+    xn[i] = c*n[i];
+    xt[i] = x[i]-xn[i];
+  }
+}
+
 PETSC_STATIC_INLINE PetscScalar Dot2(const PetscScalar *x,const PetscScalar *y) { return x[0]*y[0] + x[1]*y[1];}
 PETSC_STATIC_INLINE PetscReal Norm2(const PetscScalar *x) { return PetscSqrtReal(PetscAbsScalar(Dot2(x,x)));}
 PETSC_STATIC_INLINE void Normalize2(PetscScalar *x) { PetscReal a = 1./Norm2(x); x[0] *= a; x[1] *= a; }
@@ -485,6 +515,191 @@ static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys)
     ierr = ModelFunctionalRegister(mod,"Height",&sw->functional.Height,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Speed",&sw->functional.Speed,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
     ierr = ModelFunctionalRegister(mod,"Energy",&sw->functional.Energy,PhysicsFunctional_SW,phys);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/******************* Euler ********************/
+typedef struct {
+  PetscScalar vals[0];
+  PetscScalar r;
+  PetscScalar ru[DIM];
+  PetscScalar e;
+} EulerNode;
+typedef PetscErrorCode (*EquationOfState)(const PetscReal*, const EulerNode*, PetscScalar*);
+typedef struct {
+  PetscInt  npars;
+  PetscReal pars[DIM];
+  EquationOfState pressure;
+  EquationOfState sound;
+  struct {
+    PetscInt Density;
+    PetscInt Momentum;
+    PetscInt Energy;
+    PetscInt Pressure;
+    PetscInt Speed;
+  } monitor;
+} PhysicsEuler;
+
+#undef __FUNCT__
+#define __FUNCT__ "Pressure_PG"
+static PetscErrorCode Pressure_PG(const PetscReal *pars,const EulerNode *x,PetscScalar *p)
+{
+  PetscScalar     ru2;
+
+  PetscFunctionBegin;
+  ru2 = DotDIM(x->ru,x->ru);
+  ru2 /= x->r;
+  // kinematic dof = params[0]
+  (*p)=2.0*(x->e-0.5*ru2)/pars[0];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SpeedOfSound_PG"
+static PetscErrorCode SpeedOfSound_PG(const PetscReal *pars,const EulerNode *x,PetscScalar *c)
+{
+  PetscScalar     p;
+
+  PetscFunctionBegin;
+  //TODO remove direct usage of Pressure_PG
+  Pressure_PG(pars,x,&p);
+  //TODO check the sign of p
+  //pars[1] = heat capacity ratio
+  (*c)=PetscSqrtScalar(pars[1]*p/x->r);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "EulerFlux"
+/*
+ * x = (rho,rho*(u_1),...,rho*e)^T
+ * x_t+div(f_1(x))+...+div(f_DIM(x)) = 0
+ *
+ * f_i(x) = u_i*x+(0,0,...,p,...,p*u_i)^T
+ *
+ * */
+static PetscErrorCode EulerFlux(Physics phys,const PetscReal *n,const EulerNode *x,EulerNode *f)
+{
+  PhysicsEuler    *eu = (PhysicsEuler *)phys->data;
+  PetscScalar     u,nu,p;
+  PetscInt        i;
+
+  PetscFunctionBegin;
+  u = DotDIM(x->ru,x->ru);
+  u /= (x->r * x->r);
+  nu = DotDIM(x->ru,n);
+  //TODO check the sign of p
+  eu->pressure(eu->pars,x,&p);
+  f->r = nu * x->r;
+  for(i=0; i<DIM; i++) f->ru[i] = nu * x->ru[i] + n[i]*p;
+  f->e = nu*(x->e+p);
+  PetscFunctionReturn(0);
+}
+
+//PetscReal* => EulerNode* conversion
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsBoundary_Euler_Wall"
+static PetscErrorCode PhysicsBoundary_Euler_Wall(Model mod, PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
+{
+  PetscInt        i;
+  PetscScalar     xn[DIM],xt[DIM];
+
+  PetscFunctionBegin;
+  xG[0] = xI[0];
+  NormalSplitDIM(n,xI+1,xn,xt);
+  for(i=0; i<DIM; i++) xG[i+1] = -xn[i]+xt[i];
+  xG[DIM+1] = xI[DIM+1];
+  PetscFunctionReturn(0);
+}
+
+//PetscReal* => EulerNode* conversion
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsRiemann_Euler_Rusanov"
+static PetscErrorCode PhysicsRiemann_Euler_Rusanov(Physics phys, const PetscReal *qp, const PetscReal *n, const PetscScalar *xL, const PetscScalar *xR, PetscScalar *flux)
+{
+  PhysicsEuler    *eu = (PhysicsEuler*)phys->data;
+  PetscScalar     cL,cR,speed;
+  const EulerNode *uL = (const EulerNode*)xL,*uR = (const EulerNode*)xR;
+  EulerNode       fL,fR;
+  PetscInt        i;
+
+  PetscFunctionBegin;
+  if (uL->r < 0 || uR->r < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed density is negative");
+  EulerFlux(phys,n,uL,&fL);
+  EulerFlux(phys,n,uR,&fR);
+  eu->sound(eu->pars,uL,&cL);
+  eu->sound(eu->pars,uR,&cR);
+  speed = PetscMax(cL,cR)+PetscMax(PetscAbsScalar(DotDIM(uL->ru,n)/NormDIM(n)),PetscAbsScalar(DotDIM(uR->ru,n)/NormDIM(n)));
+  for (i=0; i<2+DIM; i++) flux[i] = 0.5*(fL.vals[i]+fR.vals[i])+0.5*speed*(xL[i]-xR[i]);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsSolution_Euler"
+static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const PetscReal *x,PetscScalar *u,void *ctx)
+{
+  PetscInt  i;
+
+  PetscFunctionBegin;
+  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %G",time);
+  u[0] =1.0;
+  u[DIM+1] = 1.0+PetscAbsReal(x[0]);
+  for(i=1; i<DIM+1; i++) u[i] = 0.0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsFunctional_Euler"
+static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const PetscReal *coord,const PetscScalar *xx,PetscReal *f,void *ctx)
+{
+  Physics phys = (Physics)ctx;
+  PhysicsEuler    *eu = (PhysicsEuler*)phys->data;
+  const EulerNode *x = (const EulerNode*)xx;
+  PetscScalar     p;
+
+  PetscFunctionBegin;
+  f[eu->monitor.Density] = x->r;
+  f[eu->monitor.Momentum] = NormDIM(x->ru);
+  f[eu->monitor.Energy] = x->e;
+  f[eu->monitor.Speed] = NormDIM(x->ru)/x->r;
+  eu->pressure(eu->pars, x, &p);
+  f[eu->monitor.Pressure] = p;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysicsCreate_Euler"
+static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys)
+{
+  PhysicsEuler *eu;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  phys->dof = 2+DIM;
+  phys->riemann = PhysicsRiemann_Euler_Rusanov;
+  ierr = PetscNew(PhysicsEuler,&phys->data);CHKERRQ(ierr);
+  eu = phys->data;
+  ierr = PetscOptionsHead("Euler options");CHKERRQ(ierr);
+  {
+    eu->pars[0] = 3.0;
+    eu->pars[1] = 1.67;
+    ierr = PetscOptionsReal("-eu_f","Degrees of freedom","",eu->pars[0],&eu->pars[0],PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-eu_gamma","Heat capacity ratio","",eu->pars[1],&eu->pars[1],PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  eu->pressure = Pressure_PG;
+  eu->sound = SpeedOfSound_PG;
+  phys->maxspeed = 1.0;
+  {
+    const PetscInt wallids[] = {100,101,200,300};
+    ierr = ModelBoundaryRegister(mod,"wall",PhysicsBoundary_Euler_Wall,phys,ALEN(wallids),wallids);CHKERRQ(ierr);
+    ierr = ModelSolutionSetDefault(mod,PhysicsSolution_Euler,phys);CHKERRQ(ierr);
+    ierr = ModelFunctionalRegister(mod,"Speed",&eu->monitor.Speed,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
+    ierr = ModelFunctionalRegister(mod,"Energy",&eu->monitor.Energy,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
+    ierr = ModelFunctionalRegister(mod,"Density",&eu->monitor.Density,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
+    ierr = ModelFunctionalRegister(mod,"Momentum",&eu->monitor.Momentum,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
+    ierr = ModelFunctionalRegister(mod,"Pressure",&eu->monitor.Pressure,PhysicsFunctional_Euler,phys);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2179,6 +2394,7 @@ int main(int argc, char **argv)
   /* Register physical models to be available on the command line */
   ierr = PetscFListAdd(&PhysicsList,"advect"          ,"",(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
   ierr = PetscFListAdd(&PhysicsList,"sw"              ,"",(void(*)(void))PhysicsCreate_SW);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PhysicsList,"euler"              ,"",(void(*)(void))PhysicsCreate_Euler);CHKERRQ(ierr);
 
   ierr = PetscFListAdd(&LimitList,"zero"              ,"",(void(*)(void))Limit_Zero);CHKERRQ(ierr);
   ierr = PetscFListAdd(&LimitList,"none"              ,"",(void(*)(void))Limit_None);CHKERRQ(ierr);
