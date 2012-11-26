@@ -111,6 +111,7 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
   }
   ierr = DMDAVecRestoreArray(dm,Xloc,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(dm,Xdot,&xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
