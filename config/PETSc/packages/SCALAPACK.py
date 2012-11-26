@@ -39,12 +39,12 @@ class Configure(PETSc.package.NewPackage):
     else:
       g.write('WHATMPI      = -DCSAMEF77\n')
     g.write('BLACSDBGLVL  = -DBlacsDebugLvl=1\n')
-    g.write('BLACSLIB     = '+self.libraries.toString(self.blacs.lib)+'\n') 
+    g.write('BLACSLIB     = '+self.libraries.toString(self.blacs.lib)+'\n')
     g.write('SMPLIB       = '+self.libraries.toString(self.mpi.lib)+'\n')
     g.write('SCALAPACKLIB = '+os.path.join(self.installDir,self.libdir,'libscalapack.'+self.setCompilers.AR_LIB_SUFFIX)+' \n')
     g.write('CBLACSLIB    = $(BLACSCINIT) $(BLACSLIB) $(BLACSCINIT)\n')
     g.write('FBLACSLIB    = $(BLACSFINIT) $(BLACSLIB) $(BLACSFINIT)\n')
-    # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag    
+    # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag
     if self.compilers.fortranManglingDoubleUnderscore:
       blah = 'f77IsF2C'
     elif self.compilers.fortranMangling == 'underscore':
@@ -58,21 +58,21 @@ class Configure(PETSc.package.NewPackage):
     g.write('SRCdir       = $(home)/SRC\n')
     g.write('TOOLSdir     = $(home)/TOOLS\n')
     g.write('REDISTdir    = $(home)/REDIST\n')
-    self.setCompilers.pushLanguage('FC')  
+    self.setCompilers.pushLanguage('FC')
     g.write('F77          = '+self.setCompilers.getCompiler()+'\n')
     g.write('F77FLAGS     = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','')+'\n')
-    g.write('F77LOADER    = '+self.setCompilers.getLinker()+'\n')      
+    g.write('F77LOADER    = '+self.setCompilers.getLinker()+'\n')
     g.write('F77LOADFLAGS = '+self.setCompilers.getLinkerFlags()+'\n')
     self.setCompilers.popLanguage()
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CCFLAGS      = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')+'\n')      
+    g.write('CCFLAGS      = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')+'\n')
     g.write('CCLOADER     = '+self.setCompilers.getLinker()+'\n')
     g.write('CCLOADFLAGS  = '+self.setCompilers.getLinkerFlags()+'\n')
     self.setCompilers.popLanguage()
     g.write('ARCH         = '+self.setCompilers.AR+'\n')
-    g.write('ARCHFLAGS    = '+self.setCompilers.AR_FLAGS+'\n')    
-    g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')    
+    g.write('ARCHFLAGS    = '+self.setCompilers.AR_FLAGS+'\n')
+    g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
     g.close()
 
     if self.installNeeded('SLmake.inc'):
