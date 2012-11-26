@@ -249,6 +249,9 @@ ex65dm: ex65dm.o  chkopts
 ex633D_DB: ex633D_DB.o  chkopts
 	-${CLINKER} -o ex633D_DB ex633D_DB.o ${PETSC_SNES_LIB}
 	${RM} ex633D_DB.o
+ex67: ex67.o  chkopts
+	-${CLINKER} -o ex67 ex67.o ${PETSC_SNES_LIB}
+	${RM} ex67.o
 ex70: ex70.o  chkopts
 	-${CLINKER} -o ex70 ex70.o ${PETSC_SNES_LIB}
 	${RM} ex70.o

@@ -5,8 +5,11 @@ import os, sys
 if 'PETSC_DIR' in os.environ:
   configDir = os.path.join(os.environ['PETSC_DIR'], 'config')
   bsDir     = os.path.join(configDir, 'BuildSystem')
+  fiatDir   = os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'lib', 'python'+'.'.join(map(str, sys.version_info[0:2])), 'site-packages')
   sys.path.insert(0, bsDir)
   sys.path.insert(0, configDir)
+  if os.path.isdir(os.path.join(fiatDir,'FIAT')):
+    sys.path.insert(0, fiatDir)
 
 import PETSc.FEM
 from FIAT.reference_element import default_simplex
