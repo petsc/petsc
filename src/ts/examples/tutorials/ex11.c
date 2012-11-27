@@ -811,8 +811,13 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
   }
   ierr = ISRestoreIndices(innerIS, &cells);CHKERRQ(ierr);
   ierr = ISDestroy(&innerIS);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  {
+    DMLabel label;
+
+    ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMComplexGetLabel(dm, bdname, &label);CHKERRQ(ierr);
+    ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
