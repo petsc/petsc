@@ -1,37 +1,15 @@
 
-static char help[] = "Chemo-taxis Problems from Mathematical Biology.\n";
-
-/*
-     Page 18, Chemo-taxis Problems from Mathematical Biology
-
-        rho_t = 
-        c_t   = 
-
-     Further discusson on Page 134 and in 2d on Page 409
-*/
+static char help[] = ".\n";
 
 /*
 
-   Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
-   Include "petscts.h" so that we can use SNES solvers.  Note that this
-   file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
+        u_t =  u_xx + R(u)
+
+      Where u(t,x,i)    for i=1, .... N where i represents the void size 
 */
+
 #include <petscdmda.h>
 #include <petscts.h>
-
-typedef struct {
-  PetscScalar rho,c;
-} Field;
-
-typedef struct {
-  PetscScalar epsilon,delta,alpha,beta,gamma,kappa,lambda,mu,cstar;
-  PetscBool   upwind;
-} AppCtx;
 
 /*
    User-defined routines
@@ -46,32 +24,16 @@ int main(int argc,char **argv)
   Vec             U;                  /* solution, residual vectors */
   PetscErrorCode  ierr;
   DM              da;
-  AppCtx          appctx;
-
+  PetscInt        N = 2;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-  appctx.epsilon = 1.0e-3;
-  appctx.delta   = 1.0;
-  appctx.alpha   = 10.0;
-  appctx.beta    = 4.0;
-  appctx.gamma   = 1.0;
-  appctx.kappa   = .75;
-  appctx.lambda  = 1.0;
-  appctx.mu      = 100.;
-  appctx.cstar   = .2;
-  appctx.upwind  = PETSC_TRUE;
-  ierr = PetscOptionsGetScalar(PETSC_NULL,"-delta",&appctx.delta,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-upwind",&appctx.upwind,PETSC_NULL);CHKERRQ(ierr);
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,-8,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,0,"rho");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,1,"c");CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,-8,N,1,PETSC_NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
@@ -86,7 +48,7 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&appctx);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,PETSC_NULL);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -134,19 +96,18 @@ int main(int argc,char **argv)
  */
 PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
 {
-  AppCtx         *appctx = (AppCtx*)ptr;
   DM             da;
   PetscErrorCode ierr;
-  PetscInt       i,Mx,xs,xm;
-  PetscReal      hx,sx;
-  PetscScalar    rho,c,rhoxx,cxx,cx,rhox,kcxrhox;
-  Field          *u,*f,*udot;
+  PetscInt       i,j,Mx,xs,xm,N;
+  PetscReal      hx,sx,x;
+  PetscScalar    uxx;
+  PetscScalar    **u,**f,**udot;
   Vec            localU;
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,&N,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
 
@@ -162,9 +123,9 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   /*
      Get pointers to vector data
   */
-  ierr = DMDAVecGetArray(da,localU,&u);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,Udot,&udot);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayDOF(da,localU,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayDOF(da,Udot,&udot);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayDOF(da,F,&f);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
@@ -172,44 +133,45 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   if (!xs) {
-    f[0].rho = udot[0].rho; /* u[0].rho - 0.0; */
-    f[0].c   = udot[0].c; /* u[0].c   - 1.0; */
+    for (i=0; i<N; i++) {
+      f[0][i] = udot[0][i]; 
+    }
     xs++;
     xm--;
   }
   if (xs+xm == Mx) {
-    f[Mx-1].rho = udot[Mx-1].rho; /* u[Mx-1].rho - 1.0; */
-    f[Mx-1].c   = udot[Mx-1].c;  /* u[Mx-1].c   - 0.0;  */
+    for (i=0; i<N; i++) {
+      f[Mx-1][i] = udot[Mx-1][i];
+    }
     xm--;
   }
 
   /*
      Compute function over the locally owned part of the grid
   */
-  for (i=xs; i<xs+xm; i++) {
-    rho       = u[i].rho;
-    rhoxx     = (-2.0*rho + u[i-1].rho + u[i+1].rho)*sx;
-    c         = u[i].c;
-    cxx       = (-2.0*c + u[i-1].c + u[i+1].c)*sx;
+  for (j=xs; j<xs+xm; j++) {
+    x = i*hx;
 
-    if (!appctx->upwind) {
-      rhox      = .5*(u[i+1].rho - u[i-1].rho)/hx;
-      cx        = .5*(u[i+1].c - u[i-1].c)/hx;
-      kcxrhox   = appctx->kappa*(cxx*rho + cx*rhox);
-    } else {
-      kcxrhox   = appctx->kappa*((u[i+1].c - u[i].c)*u[i+1].rho - (u[i].c - u[i-1].c)*u[i].rho)*sx;
+    /*  diffusion term */
+    for (i=0; i<N; i++) {
+      uxx      = (-2.0*u[j][i] + u[j-1][i] + u[j+1][i])*sx;
+      f[j][i]   = udot[j][i] - uxx;
     }
 
-    f[i].rho = udot[i].rho - appctx->epsilon*rhoxx + kcxrhox  - appctx->mu*PetscAbsScalar(rho)*(1.0 - rho)*PetscMax(0,PetscRealPart(c - appctx->cstar)) + appctx->beta*rho;
-    f[i].c   = udot[i].c - appctx->delta*cxx + appctx->lambda*c + appctx->alpha*rho*c/(appctx->gamma + c);
+    /* reaction terms */
+    f[j][1] -= 5*u[j][0];
+    f[j][0] += 5*u[j][0];
+
+    /* forcing term */
+    f[j][0] -= 5*PetscExpScalar(1.0 - x);
   }
 
   /*
      Restore vectors
   */
-  ierr = DMDAVecRestoreArray(da,localU,&u);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,Udot,&udot);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayDOF(da,localU,&u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayDOF(da,Udot,&udot);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayDOF(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -220,19 +182,19 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
 PetscErrorCode InitialConditions(DM da,Vec U)
 {
   PetscErrorCode ierr;
-  PetscInt       i,xs,xm,Mx;
-  Field          *u;
+  PetscInt       i,j,xs,xm,Mx,N;
+  PetscScalar    **u;
   PetscReal      hx,x;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,&N,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   hx     = 1.0/(PetscReal)(Mx-1);
 
   /*
      Get pointers to vector data
   */
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayDOF(da,U,&u);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries
@@ -242,20 +204,17 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   /*
      Compute function over the locally owned part of the grid
   */
-  for (i=xs; i<xs+xm; i++) {
-    x = i*hx;
-    if (x < 1.0){
-      u[i].rho = 0.0;
-    } else {
-      u[i].rho = 1.0;
+  for (j=xs; j<xs+xm; j++) {
+    x = j*hx;
+    for (i=0; i<N; i++) {
+      u[j][i] = (i+1)*PetscCosScalar(.5*PETSC_PI*x);
     }
-    u[i].c = PetscCosScalar(.5*PETSC_PI*x);
   }
 
   /*
      Restore vectors
   */
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayDOF(da,U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
