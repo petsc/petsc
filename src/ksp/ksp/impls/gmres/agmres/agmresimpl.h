@@ -33,7 +33,7 @@ typedef struct {
   PetscScalar  *tau;            /* Scalar factors of the elementary reflectors in xgeqrf */
 
 } KSP_AGMRES;
-PetscLogEvent KSP_AGMRESComputeDeflationData, KSP_AGMRESBuildBasis, KSP_AGMRESComputeShifts, KSP_AGMRESRoddec;
+PETSC_EXTERN PetscLogEvent KSP_AGMRESComputeDeflationData, KSP_AGMRESBuildBasis, KSP_AGMRESComputeShifts, KSP_AGMRESRoddec;
 /* vector names */
 #define VEC_TMP        agmres->vecs[0]
 #define VEC_TMP_MATOP  agmres->vecs[1]

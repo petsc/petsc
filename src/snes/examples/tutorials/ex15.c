@@ -67,7 +67,7 @@ typedef struct {
 static PetscErrorCode FormInitialGuess(AppCtx*,DM,Vec);
 static PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
-static PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*);
+static PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,Mat,MatStructure*,AppCtx*);
 
 typedef struct _n_PreCheck *PreCheck;
 struct _n_PreCheck {
@@ -175,12 +175,21 @@ int main(int argc,char **argv)
   ierr = DMSetApplicationContext(da, &user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
   if (user.picard) {
-    ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionPicardLocal);CHKERRQ(ierr);
-    ierr = SNESSetPicard(snes,r,PETSC_NULL,A,B,PETSC_NULL,&user);CHKERRQ(ierr);
+    /*
+        This is not really right requiring the user to call SNESSetFunction/Jacobian but the DMDASNESSetPicardLocal() cannot access
+        the SNES to set it
+    */
+    extern PetscErrorCode  SNESPicardComputeFunction(SNES,Vec,Vec,void*);
+    extern PetscErrorCode  SNESPicardComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+    ierr = DMDASNESSetPicardLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionPicardLocal,
+                                                   (PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,PETSC_NULL,SNESPicardComputeFunction,&user);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,PETSC_NULL,PETSC_NULL,SNESPicardComputeJacobian,&user);CHKERRQ(ierr);
   } else {
-    ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
+    ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
+    ierr = DMDASNESSetJacobianLocal(da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
   }
- ierr = DMDASetLocalJacobian(da,(DMDALocalFunction1)FormJacobianLocal);CHKERRQ(ierr);
+
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -411,7 +420,7 @@ static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info,PetscScalar **
 /*
    FormJacobianLocal - Evaluates Jacobian matrix.
 */
-static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat B,AppCtx *user)
+static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat J,Mat B,MatStructure *str,AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;
@@ -547,6 +556,12 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
   */
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  if (J != B) {
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  *str = SAME_NONZERO_PATTERN;
 
   /*
      Tell the matrix we will never add a new nonzero location to the

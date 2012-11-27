@@ -1,6 +1,10 @@
 
 static char help[] = "Tests loading DM vector from file.\n\n";
 
+/*
+    ex14.c writes out the DMDA and vector read by this program.
+*/
+
 #include <petscdmda.h>
 
 #undef __FUNCT__

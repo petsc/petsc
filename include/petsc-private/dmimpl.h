@@ -123,6 +123,7 @@ struct _p_DM {
   /* Allows a non-standard data layout */
   PetscSection            defaultSection;       /* Layout for local vectors */
   PetscSection            defaultGlobalSection; /* Layout for global vectors */
+  PetscLayout             map;
   /* Coordinates */
   DM                      coordinateDM;         /* Layout for coordinates (default section) */
   Vec                     coordinates;          /* Coordinate values in global vector */

@@ -53,7 +53,6 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   DMDAStencilType  stencil;
   DMDABoundaryType bx,by,bz;
   MPI_Comm         comm;
-  PetscInt         classid = DM_FILE_CLASSID,subclassid = DMDA_FILE_CLASSID ;
   PetscBool        coors = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -62,9 +61,6 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-
-    ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&subclassid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&dim,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&m,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);

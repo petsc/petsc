@@ -83,6 +83,9 @@ int MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,
 
 int MPI_Keyval_free(int *keyval)
 {
+  attr_keyval[*keyval].extra_state = 0;
+  attr_keyval[*keyval].del         = 0;
+  *keyval = 0;
   return MPI_SUCCESS;
 }
 
@@ -146,7 +149,8 @@ int MPI_Comm_free(MPI_Comm *comm)
     if (attr[*comm-1][i].active && attr_keyval[i].del) {
       (*attr_keyval[i].del)(*comm,i,attr[*comm-1][i].attribute_val,attr_keyval[i].extra_state);
     }
-    attr[*comm-1][i].active = 0;
+    attr[*comm-1][i].active        = 0;
+    attr[*comm-1][i].attribute_val = 0;
   }
   *comm = 0;
   return MPI_SUCCESS;

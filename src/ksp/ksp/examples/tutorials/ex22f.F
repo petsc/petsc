@@ -32,6 +32,7 @@
       Vec              x
       external         ComputeRHS,ComputeMatrix
       PetscInt i1,i3
+      PetscInt         ctx
 
       call  PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
@@ -43,9 +44,9 @@
      &    DMDA_STENCIL_STAR,i3,i3,i3,PETSC_DECIDE,PETSC_DECIDE,                        &
      &    PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
      &                PETSC_NULL_INTEGER,da,ierr)
-      call DMSetFunction(da,ComputeRHS,ierr)
-      call DMSetJacobian(da,ComputeMatrix,ierr)
       call KSPSetDM(ksp,da,ierr)
+      call KSPSetComputeRHS(ksp,ComputeRHS,ctx,ierr)
+      call KSPSetComputeOperators(ksp,ComputeMatrix,ctx,ierr)
 
       call KSPSetFromOptions(ksp,ierr)
       call KSPSolve(ksp,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,ierr)
@@ -57,7 +58,7 @@
 
       end
 
-      subroutine ComputeRHS(da,x,b,ierr)
+      subroutine ComputeRHS(ksp,b,ctx,ierr)
       implicit none
 
 #include <finclude/petscsys.h>
@@ -67,9 +68,12 @@
       PetscErrorCode  ierr
       PetscInt mx,my,mz
       PetscScalar  h
-      Vec          x,b
+      Vec          b
+      KSP          ksp
       DM           da
+      PetscInt     ctx
 
+      call KSPGetDM(ksp,da,ierr)
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                        &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
@@ -83,7 +87,7 @@
       end
 
 
-      subroutine ComputeMatrix(da,x,JJ,jac,str,ierr)
+      subroutine ComputeMatrix(ksp,JJ,jac,str,ctx,ierr)
       implicit none
 
 #include <finclude/petscsys.h>
@@ -93,7 +97,7 @@
 
       Mat          jac,JJ
       PetscErrorCode    ierr
-
+      KSP          ksp
       DM           da
       PetscInt    i,j,k,mx,my,mz,xm
       PetscInt    ym,zm,xs,ys,zs,i1,i7
@@ -101,10 +105,11 @@
       PetscScalar  HxHydHz,HyHzdHx
       PetscScalar  HxHzdHy
       MatStencil   row(4),col(4,7)
-      Vec          x
       MatStructure str
+      PetscInt     ctx
       i1 = 1
       i7 = 7
+      call KSPGetDM(ksp,da,ierr)
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                       &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &

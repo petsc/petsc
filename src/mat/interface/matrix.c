@@ -4729,7 +4729,11 @@ static PetscInt MatAssemblyEnd_InUse = 0;
    use only after MatAssemblyBegin() and MatAssemblyEnd() have been called.
    Use MAT_FLUSH_ASSEMBLY when switching between ADD_VALUES and INSERT_VALUES
    in MatSetValues(); use MAT_FINAL_ASSEMBLY for the final assembly before
-   using the matrix.
+   using the matrix.  
+
+   ALL processes that share a matrix MUST call MatAssemblyBegin() and MatAssemblyEnd() the SAME NUMBER of times, and each time with the
+   same flag of MAT_FLUSH_ASSEMBLY or MAT_FINAL_ASSEMBLY for all processes. Thus you CANNOT locally change from ADD_VALUES to INSERT_VALUES, that is
+   a global collective operation requring all processes that share the matrix.
 
    Space for preallocated nonzeros that is not filled by a call to MatSetValues() or a related routine are compressed
    out by assembly. If you intend to use that extra space on a subsequent assembly, be sure to insert explicit zeros
@@ -8205,11 +8209,11 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*fP)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*ptap)(Mat,Mat,MatReuse,PetscReal,Mat*)=PETSC_NULL;
-  PetscBool      viatranspose=PETSC_FALSE;
+  PetscBool      viatranspose=PETSC_FALSE,viamatmatmatmult=PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetBool(((PetscObject)A)->prefix,"-matptap_viatranspose",&viatranspose,PETSC_NULL);CHKERRQ(ierr);
-  if (viatranspose && scall == MAT_REUSE_MATRIX) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not supported yet");
+  ierr = PetscOptionsGetBool(((PetscObject)A)->prefix,"-matptap_viamatmatmatmult",&viamatmatmatmult,PETSC_NULL);CHKERRQ(ierr);
 
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
@@ -8229,10 +8233,25 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
     PetscValidPointer(*C,5);
     PetscValidHeaderSpecific(*C,MAT_CLASSID,5);
     ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
-    ierr = (*(*C)->ops->ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
+    if (viatranspose || viamatmatmatmult){
+      Mat Pt;
+      ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
+      if (viamatmatmatmult){
+        ierr = MatMatMatMult(Pt,A,P,scall,fill,C);CHKERRQ(ierr);
+      } else {
+        Mat AP;
+        ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,fill,&AP);CHKERRQ(ierr);
+        ierr = MatMatMult(Pt,AP,scall,fill,C);CHKERRQ(ierr);
+        ierr = MatDestroy(&AP);CHKERRQ(ierr);
+      } 
+      ierr = MatDestroy(&Pt);CHKERRQ(ierr);
+    } else {
+      ierr = (*(*C)->ops->ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
+    }
     ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+
   if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
   if (fill < 1.0) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
 
@@ -8258,13 +8277,20 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   }
 
   ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
-  if (viatranspose) {
-    Mat AP,Pt;
-    ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,PETSC_DECIDE,&AP);CHKERRQ(ierr);
+  if (viatranspose || viamatmatmatmult) {
+    Mat Pt;
     ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
-    ierr = MatMatMult(Pt,AP,scall,fill,C);CHKERRQ(ierr);
+    if (viamatmatmatmult){ 
+      ierr = MatMatMatMult(Pt,A,P,scall,fill,C);CHKERRQ(ierr);
+      ierr = PetscInfo(*C,"MatPtAP via MatMatMatMult\n");CHKERRQ(ierr);
+    } else {
+      Mat AP;
+      ierr = MatMatMult(A,P,MAT_INITIAL_MATRIX,fill,&AP);CHKERRQ(ierr);
+      ierr = MatMatMult(Pt,AP,scall,fill,C);CHKERRQ(ierr);
+      ierr = MatDestroy(&AP);CHKERRQ(ierr);
+      ierr = PetscInfo(*C,"MatPtAP via MatTranspose and MatMatMult\n");CHKERRQ(ierr);
+    }
     ierr = MatDestroy(&Pt);CHKERRQ(ierr);
-    ierr = MatDestroy(&AP);CHKERRQ(ierr);
   } else {
     ierr = (*ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
   }
@@ -8322,7 +8348,7 @@ PetscErrorCode  MatPtAPNumeric(Mat A,Mat P,Mat C)
   MatCheckPreallocated(A,1);
 
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
-  ierr = (*A->ops->ptapnumeric)(A,P,C);CHKERRQ(ierr);
+  ierr = (*C->ops->ptapnumeric)(A,P,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -8377,7 +8403,6 @@ PetscErrorCode  MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
 
   /* ierr = MatSetBlockSize(*C,A->rmap->bs);CHKERRQ(ierr); NO! this is not always true -ma */
-
   PetscFunctionReturn(0);
 }
 
@@ -8989,10 +9014,15 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
   PetscValidType(B,2);
   MatCheckPreallocated(B,2);
-  if (!B->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (B->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (!B->assembled) SETERRQ(((PetscObject)B)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (B->factortype) SETERRQ(((PetscObject)B)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscValidHeaderSpecific(C,MAT_CLASSID,3);
   PetscValidPointer(C,3);
-  if (B->rmap->N!=A->cmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->cmap->N);
+  MatCheckPreallocated(C,3);
+  if (!C->assembled) SETERRQ(((PetscObject)C)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (C->factortype) SETERRQ(((PetscObject)C)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (B->rmap->N!=A->cmap->N) SETERRQ2(((PetscObject)B)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap->N,A->cmap->N);
+  if (C->rmap->N!=B->cmap->N) SETERRQ2(((PetscObject)C)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",C->rmap->N,B->cmap->N);
   if (scall == MAT_REUSE_MATRIX) {
     PetscValidPointer(*D,6);
     PetscValidHeaderSpecific(*D,MAT_CLASSID,6);

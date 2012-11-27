@@ -104,8 +104,6 @@ int DMSetVecType(DM,const char*);
 int DMSetFromOptions(DM);
 int DMDestroy(DM*);
 int DMView(DM,PetscViewer);
-int DMSetFunctionMatlab(DM,const char*);
-int DMSetJacobianMatlab(DM,const char*);
 int DMDASetBoundaryType(DM, DMDABoundaryType,DMDABoundaryType,DMDABoundaryType);
 int DMDASetDof(DM, int);
 int DMSetUp(DM);

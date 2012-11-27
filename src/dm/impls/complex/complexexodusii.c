@@ -24,10 +24,6 @@ PETSC_EXTERN PetscErrorCode DMComplexInterpolate_3D(DM, DM *);
   Output Parameter:
 . dm  - The DM object representing the mesh
 
-  ExodusII side sets are ignored
-
-  Interpolated meshes are not supported.
-
   Level: beginner
 
 .keywords: mesh,ExodusII
@@ -120,6 +116,11 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool in
     default:
       SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No mesh interpolation support for dimension %D", dim);
     }
+    if (0) {    /* Maintain Cell Sets label. Only valid on rank 0, but other code depends on collective results so skip for now. */
+      ((DM_Complex *) (*dm)->data)->labels->next->next = ((DM_Complex *)   idm->data)->labels;
+      ((DM_Complex *)   idm->data)->labels             = ((DM_Complex *) (*dm)->data)->labels->next;
+      ((DM_Complex *) (*dm)->data)->labels->next       = PETSC_NULL;
+    }
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;
   }
@@ -178,7 +179,7 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool in
   ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
 
-  /* Create vertex set label */
+  /* Create side set label */
   if (!rank && interpolate && (num_fs > 0)) {
     int  fs, f, voff;
     /* Read from ex_get_side_set_ids() */

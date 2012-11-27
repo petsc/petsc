@@ -108,6 +108,8 @@ PETSC_EXTERN PetscErrorCode PCApplyTranspose(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCApplyTransposeExists(PC,PetscBool *);
 PETSC_EXTERN PetscErrorCode PCApplyBAorABTranspose(PC,PCSide,Vec,Vec,Vec);
 
+#define PC_FILE_CLASSID 1211222
+
 /*E
     PCRichardsonConvergedReason - reason a PCApplyRichardson method terminates
 
@@ -194,6 +196,7 @@ PETSC_EXTERN PetscErrorCode PCGetOperators(PC,Mat*,Mat*,MatStructure*);
 PETSC_EXTERN PetscErrorCode PCGetOperatorsSet(PC,PetscBool *,PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PCView(PC,PetscViewer);
+PETSC_EXTERN PetscErrorCode PCLoad(PC,PetscViewer);
 
 PETSC_EXTERN PetscErrorCode PCSetOptionsPrefix(PC,const char[]);
 PETSC_EXTERN PetscErrorCode PCAppendOptionsPrefix(PC,const char[]);

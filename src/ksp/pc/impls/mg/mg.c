@@ -484,9 +484,6 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     }
   } else if (isbinary) {
     for (i=levels-1; i>=0; i--) {
-      if (i) {
-        ierr = MatView(mglevels[i]->interpolate,viewer);CHKERRQ(ierr);
-      }
       ierr = KSPView(mglevels[i]->smoothd,viewer);CHKERRQ(ierr);
       if (i && mglevels[i]->smoothd != mglevels[i]->smoothu) {
         ierr = KSPView(mglevels[i]->smoothu,viewer);CHKERRQ(ierr);
@@ -561,11 +558,11 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr = KSPSetDM(mglevels[i]->smoothd,dms[i]);CHKERRQ(ierr);
       if (mg->galerkin) {ierr = KSPSetDMActive(mglevels[i]->smoothd,PETSC_FALSE);CHKERRQ(ierr);}
       ierr = DMKSPGetContextWrite(dms[i],&kdm);CHKERRQ(ierr);
-      /* Ugly hack so that the next KSPSetUp() will use the RHS that we set */
+      /* Ugly hack so that the next KSPSetUp() will use the RHS that we set. A better fix is to change dmActive to take
+       * a bitwise OR of computing the matrix, RHS, and initial iterate. */
       kdm->computerhs = PETSC_NULL;
       kdm->rhsctx = PETSC_NULL;
       ierr = DMSetFunction(dms[i],0);
-      ierr = DMSetInitialGuess(dms[i],0);
       if (!mglevels[i+1]->interpolate) {
 	ierr = DMCreateInterpolation(dms[i],dms[i+1],&p,&rscale);CHKERRQ(ierr);
 	ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
@@ -758,6 +755,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 #endif
   ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_mg_dump_binary",&dump,PETSC_NULL);CHKERRQ(ierr);
   if (dump) {
+   
     viewer = PETSC_VIEWER_BINARY_(((PetscObject)pc)->comm);
   }
 

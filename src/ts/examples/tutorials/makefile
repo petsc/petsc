@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex9.c ex10.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
-                ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c
+                ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex28.c
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
@@ -145,6 +145,10 @@ ex26aspin: ex26aspin.o chkopts
 ex27: ex27.o chkopts
 	-${CLINKER} -o ex27 ex27.o ${PETSC_TS_LIB}
 	${RM} ex27.o
+
+ex28: ex28.o chkopts
+	-${CLINKER} -o ex28 ex28.o ${PETSC_TS_LIB}
+	${RM} ex28.o
 
 #---------------------------------------------------------------------------------
 runex1:

@@ -111,7 +111,7 @@ int main(int argc,char **argv)
   ierr = PetscObjectIncrementTabLevel((PetscObject)sneslocal,(PetscObject)snes,2);CHKERRQ(ierr);
   user.sneslocal = sneslocal;
 
-  ierr = DMDASetLocalFunction(dalocal,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DMDASNESSetFunctionLocal(dalocal,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(sneslocal);CHKERRQ(ierr);
 
@@ -248,9 +248,7 @@ PetscErrorCode FormFunctionASPIN(SNES snes,Vec X,Vec F,void *ctx)
   Vec            Xlocal,Xlocalloc,Xgloballoc;
   AppCtx         *user = (AppCtx*)ctx;
   SNES           sneslocal=user->sneslocal;
-  PetscInt       i,j;
   DMDALocalInfo  info,ginfo;
-  PetscScalar    **xloc,**xglob;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);

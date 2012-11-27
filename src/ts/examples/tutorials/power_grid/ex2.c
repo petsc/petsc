@@ -8,6 +8,8 @@ static char help[] = "Basic equation for generator stability analysis.\n";
                  \frac{d \theta}{dt} = \omega - \omega_s
 \end{eqnarray}
 
+
+   Useful options: -ts_monitor_lg_draw -ts_adapt_type none -tcl 2.27 -lg_indicate_data_points 0
 F*/
 
 /*

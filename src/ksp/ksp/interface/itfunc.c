@@ -175,7 +175,6 @@ PetscErrorCode  KSPSetUpOnBlocks(KSP ksp)
 PetscErrorCode  KSPSetUp(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscBool      ig = PETSC_FALSE;
   Mat            A,B;
   MatStructure   stflg = SAME_NONZERO_PATTERN;
 
@@ -203,10 +202,9 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     KSPDM kdm;
     ierr = DMKSPGetContext(ksp->dm,&kdm);CHKERRQ(ierr);
 
-    ierr = DMHasInitialGuess(ksp->dm,&ig);CHKERRQ(ierr);
-    if (ig && ksp->setupstage != KSP_SETUP_NEWRHS) {
+    if (kdm->computeinitialguess && ksp->setupstage != KSP_SETUP_NEWRHS) {
       /* only computes initial guess the first time through */
-      ierr = DMComputeInitialGuess(ksp->dm,ksp->vec_sol);CHKERRQ(ierr);
+      ierr = (*kdm->computeinitialguess)(ksp,ksp->vec_sol,kdm->initialguessctx);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
     if (kdm->computerhs) {
@@ -2132,11 +2130,46 @@ $  func(KSP ksp,Vec b,void *ctx)
 PetscErrorCode KSPSetComputeRHS(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  DM dm;
+  DM             dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
   ierr = DMKSPSetComputeRHS(dm,func,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPSetComputeInitialGuess"
+/*@C
+   KSPSetComputeInitialGuess - set routine to compute the initial guess of the linear system
+
+   Logically Collective
+
+   Input Arguments:
++  ksp - the KSP context
+.  func - function to compute the initial guess
+-  ctx - optional context
+
+   Calling sequence of func:
+$  func(KSP ksp,Vec x,void *ctx)
+
++  ksp - the KSP context
+.  x - solution vector
+-  ctx - optional user-provided context
+
+   Level: beginner
+
+.seealso: KSPSolve()
+@*/
+PetscErrorCode KSPSetComputeInitialGuess(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
+  ierr = DMKSPSetComputeInitialGuess(dm,func,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

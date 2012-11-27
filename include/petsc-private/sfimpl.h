@@ -32,6 +32,7 @@ struct _p_PetscSF {
   PetscInt        nleaves;      /* Number of leaf vertices on current process (this process specifies a root for each leaf) */
   PetscInt        *mine;        /* Location of leaves in leafdata arrays provided to the communication routines */
   PetscInt        *mine_alloc;
+  PetscInt        minleaf,maxleaf;
   PetscSFNode     *remote;      /* Remote references to roots for each local leaf */
   PetscSFNode     *remote_alloc;
   PetscInt        nranks;       /* Number of ranks owning roots connected to my leaves */

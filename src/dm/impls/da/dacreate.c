@@ -132,16 +132,11 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
   PetscInt         dim,m,n,p,dof,swidth;
   DMDAStencilType  stencil;
   DMDABoundaryType bx,by,bz;
-  PetscInt         classid = DM_FILE_CLASSID,subclassid = DMDA_FILE_CLASSID;
   PetscBool        coors;
   DM               dac;
   Vec              c;
 
   PetscFunctionBegin;
-  ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
-  if (classid != DM_FILE_CLASSID) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Not DM next in file");
-  ierr = PetscViewerBinaryRead(viewer,&subclassid,1,PETSC_INT);CHKERRQ(ierr);
-  if (subclassid != DMDA_FILE_CLASSID) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Not DM DA next in file");
   ierr = PetscViewerBinaryRead(viewer,&dim,1,PETSC_INT);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(viewer,&m,1,PETSC_INT);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);

@@ -680,7 +680,7 @@ static PetscErrorCode THIDARestorePrm(DM da,PrmNode ***prm)
 
 #undef __FUNCT__
 #define __FUNCT__ "THIInitial"
-static PetscErrorCode THIInitial(DM da,Vec X)
+static PetscErrorCode THIInitial(SNES snes,Vec X,void *ctx)
 {
   THI         thi;
   PetscInt    i,j,k,xs,xm,ys,ym,zs,zm,mx,my;
@@ -688,8 +688,10 @@ static PetscErrorCode THIInitial(DM da,Vec X)
   PrmNode     **prm;
   Node        ***x;
   PetscErrorCode ierr;
+  DM             da;
 
   PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(da,&thi);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0, 0,&my,&mx, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&zs,&ys,&xs,&zm,&ym,&xm);CHKERRQ(ierr);
@@ -1545,11 +1547,11 @@ int main(int argc,char *argv[])
   ierr = DMRefineHookAdd(da,DMRefineHook_THI,PETSC_NULL,thi);CHKERRQ(ierr);
 
   ierr = DMSetApplicationContext(da,thi);CHKERRQ(ierr);
-  ierr = DMSetInitialGuess(da,THIInitial);CHKERRQ(ierr);
 
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = SNESSetComputeInitialGuess(snes,THIInitial,PETSC_NULL);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = SNESSolve(snes,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);

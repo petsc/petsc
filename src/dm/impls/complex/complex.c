@@ -451,28 +451,42 @@ PetscErrorCode DMComplexGetAdjacency_Private(DM dm, PetscInt p, PetscBool useClo
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexSetPreallocationCenterDimension"
+PetscErrorCode DMComplexSetPreallocationCenterDimension(DM dm, PetscInt preallocCenterDim)
+{
+  DM_Complex *mesh = (DM_Complex *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->preallocCenterDim = preallocCenterDim;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexPreallocateOperator"
 PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection section, PetscSection sectionGlobal, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
 {
   DM_Complex        *mesh = (DM_Complex *) dm->data;
   MPI_Comm           comm = ((PetscObject) dm)->comm;
-  PetscSF            sf   = dm->sf, sfDof, sfAdj;
+  PetscSF            sf, sfDof, sfAdj;
   PetscSection       leafSectionAdj, rootSectionAdj, sectionAdj;
   PetscInt           nleaves, l, p;
   const PetscInt    *leaves;
   const PetscSFNode *remotes;
-  PetscInt           pStart, pEnd, numDof, globalOffStart, globalOffEnd, numCols;
+  PetscInt           dim, pStart, pEnd, numDof, globalOffStart, globalOffEnd, numCols;
   PetscInt          *tmpClosure, *tmpAdj, *adj, *rootAdj, *cols;
   PetscInt           depth, maxConeSize, maxSupportSize, maxClosureSize, maxAdjSize, adjSize;
   PetscLayout        rLayout;
   PetscInt           locRows, rStart, rEnd, r;
   PetscMPIInt        size;
-  PetscBool          debug = PETSC_FALSE;
+  PetscBool          useClosure, debug = PETSC_FALSE;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetBool(PETSC_NULL, "-dm_view_preallocation", &debug, PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   /* Create dof SF based on point SF */
   if (debug) {
     ierr = PetscPrintf(comm, "Input Section for Preallocation:\n");CHKERRQ(ierr);
@@ -488,7 +502,16 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     ierr = PetscSFView(sfDof, PETSC_NULL);CHKERRQ(ierr);
   }
   /* Create section for dof adjacency (dof ==> # adj dof) */
-  /*   Two points p and q are adjacent if q \in closure(star(p)) */
+  /*   FEM:   Two points p and q are adjacent if q \in closure(star(p)), preallocCenterDim = dim   */
+  /*   FVM:   Two points p and q are adjacent if q \in star(cone(p)),    preallocCenterDim = dim-1 */
+  /*   FVM++: Two points p and q are adjacent if q \in star(closure(p)), preallocCenterDim = 0     */
+  if (mesh->preallocCenterDim == dim) {
+    useClosure = PETSC_FALSE;
+  } else if (mesh->preallocCenterDim == 0) {
+    useClosure = PETSC_TRUE;
+  } else {
+    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Do not support preallocation with center points of dimension %d", mesh->preallocCenterDim);
+  }
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &numDof);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &leafSectionAdj);CHKERRQ(ierr);
@@ -526,7 +549,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
-    ierr = DMComplexGetAdjacency_Private(dm, p, PETSC_FALSE, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMComplexGetAdjacency_Private(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
     for (q = 0; q < numAdj; ++q) {
       PetscInt ndof, ncdof;
 
@@ -560,7 +583,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     if (!dof) continue;
     ierr = PetscSectionGetDof(rootSectionAdj, off, &adof);CHKERRQ(ierr);
     if (adof <= 0) continue;
-    ierr = DMComplexGetAdjacency_Private(dm, p, PETSC_FALSE, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMComplexGetAdjacency_Private(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
     for (q = 0; q < numAdj; ++q) {
       PetscInt ndof, ncdof;
 
@@ -594,7 +617,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
-    ierr = DMComplexGetAdjacency_Private(dm, p, PETSC_FALSE, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMComplexGetAdjacency_Private(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
     for (d = off; d < off+dof; ++d) {
       PetscInt aoff, i = 0;
 
@@ -647,7 +670,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     if (!dof) continue;
     ierr = PetscSectionGetDof(rootSectionAdj, off, &adof);CHKERRQ(ierr);
     if (adof <= 0) continue;
-    ierr = DMComplexGetAdjacency_Private(dm, p, PETSC_FALSE, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMComplexGetAdjacency_Private(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
     for (d = off; d < off+dof; ++d) {
       PetscInt adof, aoff, i;
 
@@ -730,7 +753,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     if (found) continue;
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
-    ierr = DMComplexGetAdjacency_Private(dm, p, PETSC_FALSE, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMComplexGetAdjacency_Private(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
     for (q = 0; q < numAdj; ++q) {
       PetscInt ndof, ncdof, noff;
 
@@ -778,7 +801,7 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
       }
     }
     if (found) continue;
-    ierr = DMComplexGetAdjacency_Private(dm, p, PETSC_FALSE, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
+    ierr = DMComplexGetAdjacency_Private(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
     for (d = goff; d < goff+dof-cdof; ++d) {
       PetscInt adof, aoff, i = 0;
 
@@ -1049,6 +1072,7 @@ PetscErrorCode DMComplexSetDimension(DM dm, PetscInt dim)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, dim, 2);
   mesh->dim = dim;
+  mesh->preallocCenterDim = dim;
   PetscFunctionReturn(0);
 }
 
@@ -1239,9 +1263,9 @@ PetscErrorCode DMComplexSetCone(DM dm, PetscInt p, const PetscInt cone[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(cone, 3);
   ierr = PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
+  if (dof) PetscValidPointer(cone, 3);
   ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
   if ((p < pStart) || (p >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %D is not in the valid range [%D, %D)", p, pStart, pEnd);
   for (c = 0; c < dof; ++c) {
@@ -1283,7 +1307,13 @@ PetscErrorCode DMComplexGetConeOrientation(DM dm, PetscInt p, const PetscInt *co
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(coneOrientation, 3);
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscInt dof;
+    ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
+    if (dof) PetscValidPointer(coneOrientation, 3);
+  }
+#endif
   ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
   *coneOrientation = &mesh->coneOrientations[off];
   PetscFunctionReturn(0);
@@ -1322,9 +1352,9 @@ PetscErrorCode DMComplexSetConeOrientation(DM dm, PetscInt p, const PetscInt con
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(coneOrientation, 3);
   ierr = PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
+  if (dof) PetscValidPointer(coneOrientation, 3);
   ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
   if ((p < pStart) || (p >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %D is not in the valid range [%D, %D)", p, pStart, pEnd);
   for (c = 0; c < dof; ++c) {
@@ -1483,9 +1513,9 @@ PetscErrorCode DMComplexSetSupport(DM dm, PetscInt p, const PetscInt support[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(support, 3);
   ierr = PetscSectionGetChart(mesh->supportSection, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetDof(mesh->supportSection, p, &dof);CHKERRQ(ierr);
+  if (dof) PetscValidPointer(support, 3);
   ierr = PetscSectionGetOffset(mesh->supportSection, p, &off);CHKERRQ(ierr);
   if ((p < pStart) || (p >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %D is not in the valid range [%D, %D)", p, pStart, pEnd);
   for (c = 0; c < dof; ++c) {
@@ -2560,9 +2590,10 @@ PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
     }
     next = next->next;
   }
-  if (!next) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label with name %s exists in this mesh", name);
   *ids = PETSC_NULL;
-  ierr = ISCreateGeneral(((PetscObject) dm)->comm, size, values, PETSC_OWN_POINTER, ids);CHKERRQ(ierr);
+  if (next) {                   /* We found the label on this process */
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, size, values, PETSC_OWN_POINTER, ids);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -3403,10 +3434,8 @@ PetscErrorCode DMComplexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexEnlargePartition"
 /* Expand the partition by BFS on the adjacency graph */
-PetscErrorCode DMComplexEnlargePartition(DM dm, const PetscInt start[], const PetscInt adjacency[], PetscSection *partSection, IS *partition) {
+PetscErrorCode DMComplexEnlargePartition(DM dm, const PetscInt start[], const PetscInt adjacency[], PetscSection origPartSection, IS origPartition, PetscSection *partSection, IS *partition) {
   PetscHashI      h;
-  PetscSection    newps;
-  IS              newpart;
   const PetscInt *points;
   PetscInt      **tmpPoints, *newPoints, totPoints = 0;
   PetscInt        pStart, pEnd, part, q;
@@ -3414,57 +3443,55 @@ PetscErrorCode DMComplexEnlargePartition(DM dm, const PetscInt start[], const Pe
 
   PetscFunctionBegin;
   PetscHashICreate(h);
-  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &newps);CHKERRQ(ierr);
-  ierr = PetscSectionGetChart(*partSection, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(newps, pStart, pEnd);CHKERRQ(ierr);
-  ierr = ISGetIndices(*partition, &points);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, partSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(origPartSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(*partSection, pStart, pEnd);CHKERRQ(ierr);
+  ierr = ISGetIndices(origPartition, &points);CHKERRQ(ierr);
   ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt *), &tmpPoints);CHKERRQ(ierr);
   for(part = pStart; part < pEnd; ++part) {
     PetscInt numPoints, nP, numNewPoints, off, p, n = 0;
 
     PetscHashIClear(h);
-    ierr = PetscSectionGetDof(*partSection, part, &numPoints);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(*partSection, part, &off);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(origPartSection, part, &numPoints);CHKERRQ(ierr);
+    ierr = PetscSectionGetOffset(origPartSection, part, &off);CHKERRQ(ierr);
     /* Add all existing points to h */
     for(p = 0; p < numPoints; ++p) {
-      PetscHashIAdd(h, points[off+p], 1);
+      const PetscInt point = points[off+p];
+      PetscHashIAdd(h, point, 1);
     }
     PetscHashISize(h, nP);
     if (nP != numPoints) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Invalid partition has %d points, but only %d were unique", numPoints, nP);
     /* Add all points in next BFS level */
     /*   TODO We are brute forcing here, but could check the adjacency size to find the boundary */
     for(p = 0; p < numPoints; ++p) {
-      PetscInt s = start[p], e = start[p+1], a;
+      const PetscInt point = points[off+p];
+      PetscInt s = start[point], e = start[point+1], a;
 
       for(a = s; a < e; ++a) {
         PetscHashIAdd(h, adjacency[a], 1);
       }
     }
     PetscHashISize(h, numNewPoints);
-    ierr = PetscSectionSetDof(newps, part, numNewPoints);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(*partSection, part, numNewPoints);CHKERRQ(ierr);
     ierr = PetscMalloc(numNewPoints * sizeof(PetscInt), &tmpPoints[part]);CHKERRQ(ierr);
     if (numNewPoints) {PetscHashIGetKeys(h, n, tmpPoints[part]);} /* Should not need this conditional */
     totPoints += numNewPoints;
   }
-  ierr = ISRestoreIndices(*partition, &points);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(origPartition, &points);CHKERRQ(ierr);
   PetscHashIDestroy(h);
-  ierr = PetscSectionSetUp(newps);CHKERRQ(ierr);
+  ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
   ierr = PetscMalloc(totPoints * sizeof(PetscInt), &newPoints);CHKERRQ(ierr);
   for(part = pStart, q = 0; part < pEnd; ++part) {
     PetscInt numPoints, p;
 
-    ierr = PetscSectionGetDof(newps, part, &numPoints);CHKERRQ(ierr);
+    ierr = PetscSectionGetDof(*partSection, part, &numPoints);CHKERRQ(ierr);
     for(p = 0; p < numPoints; ++p, ++q) {
       newPoints[q] = tmpPoints[part][p];
     }
     ierr = PetscFree(tmpPoints[part]);CHKERRQ(ierr);
   }
   ierr = PetscFree(tmpPoints);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(((PetscObject) dm)->comm, totPoints, newPoints, PETSC_OWN_POINTER, &newpart);CHKERRQ(ierr);
-  ierr = ISDestroy(partition);CHKERRQ(ierr);
-  *partition = newpart;
-  ierr = PetscSectionDestroy(partSection);CHKERRQ(ierr);
-  *partSection = newps;
+  ierr = ISCreateGeneral(((PetscObject) dm)->comm, totPoints, newPoints, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3482,18 +3509,22 @@ PetscErrorCode DMComplexEnlargePartition(DM dm, const PetscInt start[], const Pe
 
   Output Parameters:
   + partSection - The PetscSection giving the division of points by partition
-  - partition - The list of points by partition
+  . partition - The list of points by partition
+  . origPartSection - If enlarge is true, the PetscSection giving the division of points before enlarging by partition, otherwise PETSC_NULL
+  - origPartition - If enlarge is true, the list of points before enlarging by partition, otherwise PETSC_NULL
 
   Level: developer
 
 .seealso DMComplexDistribute()
 */
-PetscErrorCode DMComplexCreatePartition(DM dm, PetscInt height, PetscBool enlarge, PetscSection *partSection, IS *partition) {
+PetscErrorCode DMComplexCreatePartition(DM dm, PetscInt height, PetscBool enlarge, PetscSection *partSection, IS *partition, PetscSection *origPartSection, IS *origPartition) {
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject) dm)->comm, &size);CHKERRQ(ierr);
+  *origPartSection = PETSC_NULL;
+  *origPartition   = PETSC_NULL;
   if (size == 1) {
     PetscInt *points;
     PetscInt  cStart, cEnd, c;
@@ -3525,7 +3556,11 @@ PetscErrorCode DMComplexCreatePartition(DM dm, PetscInt height, PetscBool enlarg
       ierr = DMComplexPartition_ParMetis(dm, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
 #endif
     }
-    if (enlarge) {ierr = DMComplexEnlargePartition(dm, start, adjacency, partSection, partition);CHKERRQ(ierr);}
+    if (enlarge) {
+      *origPartSection = *partSection;
+      *origPartition   = *partition;
+      ierr = DMComplexEnlargePartition(dm, start, adjacency, *origPartSection, *origPartition, partSection, partition);CHKERRQ(ierr);
+    }
     ierr = PetscFree(start);CHKERRQ(ierr);
     ierr = PetscFree(adjacency);CHKERRQ(ierr);
 # if 0
@@ -3683,8 +3718,8 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
   MPI_Comm       comm   = ((PetscObject) dm)->comm;
   const PetscInt height = 0;
   PetscInt       dim, numRemoteRanks;
-  IS             cellPart,        part;
-  PetscSection   cellPartSection, partSection;
+  IS             origCellPart,        cellPart,        part;
+  PetscSection   origCellPartSection, cellPartSection, partSection;
   PetscSFNode   *remoteRanks;
   PetscSF        partSF, pointSF, coneSF;
   ISLocalToGlobalMapping renumbering;
@@ -3707,7 +3742,7 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   /* Create cell partition - We need to rewrite to use IS, use the MatPartition stuff */
   if (overlap > 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Overlap > 1 not yet implemented");
-  ierr = DMComplexCreatePartition(dm, height, overlap > 0 ? PETSC_TRUE : PETSC_FALSE, &cellPartSection, &cellPart);CHKERRQ(ierr);
+  ierr = DMComplexCreatePartition(dm, height, overlap > 0 ? PETSC_TRUE : PETSC_FALSE, &cellPartSection, &cellPart, &origCellPartSection, &origCellPart);CHKERRQ(ierr);
   /* Create SF assuming a serial partition for all processes: Could check for IS length here */
   if (!rank) {
     numRemoteRanks = numProcs;
@@ -3726,6 +3761,11 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
     ierr = PetscPrintf(comm, "Cell Partition:\n");CHKERRQ(ierr);
     ierr = PetscSectionView(cellPartSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = ISView(cellPart, PETSC_NULL);CHKERRQ(ierr);
+    if (origCellPart) {
+      ierr = PetscPrintf(comm, "Original Cell Partition:\n");CHKERRQ(ierr);
+      ierr = PetscSectionView(origCellPartSection, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      ierr = ISView(origCellPart, PETSC_NULL);CHKERRQ(ierr);
+    }
     ierr = PetscSFView(partSF, PETSC_NULL);CHKERRQ(ierr);
   }
   /* Close the partition over the mesh */
@@ -3796,18 +3836,22 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
   {
     PetscSection originalCoordSection, newCoordSection;
     Vec          originalCoordinates, newCoordinates;
+    const char  *name;
 
     ierr = DMComplexGetCoordinateSection(dm, &originalCoordSection);CHKERRQ(ierr);
     ierr = DMComplexGetCoordinateSection(*dmParallel, &newCoordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &originalCoordinates);CHKERRQ(ierr);
     ierr = VecCreate(comm, &newCoordinates);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) originalCoordinates, &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) newCoordinates, name);CHKERRQ(ierr);
 
     ierr = DMComplexDistributeField(dm, pointSF, originalCoordSection, originalCoordinates, newCoordSection, newCoordinates);CHKERRQ(ierr);
     ierr = DMSetCoordinatesLocal(*dmParallel, newCoordinates);CHKERRQ(ierr);
+    ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
   }
   /* Distribute labels */
   {
-    DMLabel    next      = mesh->labels, newNext = PETSC_NULL;
+    DMLabel    next      = mesh->labels, newNext = pmesh->labels;
     PetscInt   numLabels = 0, l;
 
     /* Bcast number of labels */
@@ -3817,19 +3861,24 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
     for (l = 0; l < numLabels; ++l) {
       DMLabel         newLabel;
       const PetscInt *partArray;
+      char           *name;
       PetscInt       *stratumSizes = PETSC_NULL, *points = PETSC_NULL;
       PetscMPIInt    *sendcnts = PETSC_NULL, *offsets = PETSC_NULL, *displs = PETSC_NULL;
       PetscInt        nameSize, s, p;
+      PetscBool       isdepth;
       size_t          len = 0;
 
-      ierr = PetscNew(struct _n_DMLabel, &newLabel);CHKERRQ(ierr);
       /* Bcast name (could filter for no points) */
       if (!rank) {ierr = PetscStrlen(next->name, &len);CHKERRQ(ierr);}
       nameSize = len;
       ierr = MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-      ierr = PetscMalloc(nameSize+1, &newLabel->name);CHKERRQ(ierr);
-      if (!rank) {ierr = PetscMemcpy(newLabel->name, next->name, nameSize+1);CHKERRQ(ierr);}
-      ierr = MPI_Bcast(newLabel->name, nameSize+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
+      ierr = PetscMalloc(nameSize+1, &name);CHKERRQ(ierr);
+      if (!rank) {ierr = PetscMemcpy(name, next->name, nameSize+1);CHKERRQ(ierr);}
+      ierr = MPI_Bcast(name, nameSize+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
+      ierr = PetscStrcmp(name, "depth", &isdepth);CHKERRQ(ierr);
+      if (isdepth) {ierr = PetscFree(name);CHKERRQ(ierr); continue;}
+      ierr = PetscNew(struct _n_DMLabel, &newLabel);CHKERRQ(ierr);
+      newLabel->name = name;
       /* Bcast numStrata (could filter for no points in stratum) */
       if (!rank) {newLabel->numStrata = next->numStrata;}
       ierr = MPI_Bcast(&newLabel->numStrata, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
@@ -3933,39 +3982,66 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
   /* Create point SF for parallel mesh */
   {
     const PetscInt *leaves;
-    PetscSFNode    *remotePoints;
-    PetscInt       *rowners, *lowners, *ghostPoints;
-    PetscInt        numRoots, numLeaves, numGhostPoints = 0, p, gp;
+    PetscSFNode    *remotePoints, *rowners, *lowners;
+    PetscInt        numRoots, numLeaves, numGhostPoints = 0, p, gp, *ghostPoints;;
     PetscInt        pStart, pEnd;
 
     ierr = DMComplexGetChart(*dmParallel, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = PetscSFGetGraph(pointSF, &numRoots, &numLeaves, &leaves, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscMalloc2(numRoots*2,PetscInt,&rowners,numLeaves*2,PetscInt,&lowners);CHKERRQ(ierr);
-    for (p = 0; p < numRoots*2; ++p) {
-      rowners[p] = 0;
+    ierr = PetscMalloc2(numRoots,PetscSFNode,&rowners,numLeaves,PetscSFNode,&lowners);CHKERRQ(ierr);
+    for (p=0; p<numRoots; p++) {
+      rowners[p].rank = -1;
+      rowners[p].index = -1;
     }
+    if (origCellPart) {
+      /* Make sure cells in the original partition are not assigned to other procs */
+      const PetscInt *origCells;
+
+      ierr = ISGetIndices(origCellPart, &origCells);CHKERRQ(ierr);
+      for (p = 0; p < numProcs; ++p) {
+        PetscInt dof, off, d;
+
+        ierr = PetscSectionGetDof(origCellPartSection, p, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(origCellPartSection, p, &off);CHKERRQ(ierr);
+        for(d = off; d < off+dof; ++d) {
+          rowners[origCells[d]].rank = p;
+        }
+      }
+      ierr = ISRestoreIndices(origCellPart, &origCells);CHKERRQ(ierr);
+    }
+    ierr = ISDestroy(&origCellPart);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&origCellPartSection);CHKERRQ(ierr);
+
+    ierr = PetscSFBcastBegin(pointSF, MPI_2INT, rowners, lowners);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(pointSF, MPI_2INT, rowners, lowners);CHKERRQ(ierr);
     for (p = 0; p < numLeaves; ++p) {
-      lowners[p*2+0] = rank;
-      lowners[p*2+1] = leaves ? leaves[p] : p;
+      if (lowners[p].rank < 0 || lowners[p].rank == rank) { /* Either put in a bid or we know we own it */
+        lowners[p].rank = rank;
+        lowners[p].index = leaves ? leaves[p] : p;
+      } else if (lowners[p].rank >= 0) { /* Point already claimed so flag so that MAXLOC does not listen to us */
+        lowners[p].rank = -2;
+        lowners[p].index = -2;
+      }
     }
-#if 0 /* Why doesn't this datatype work */
-    ierr = PetscSFFetchAndOpBegin(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
-    ierr = PetscSFFetchAndOpEnd(pointSF, MPIU_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
-#endif
-    ierr = PetscSFFetchAndOpBegin(pointSF, MPI_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
-    ierr = PetscSFFetchAndOpEnd(pointSF, MPI_2INT, rowners, lowners, lowners, MPI_MAXLOC);CHKERRQ(ierr);
+    for (p=0; p<numRoots; p++) { /* Root must not participate in the rediction, flag so that MAXLOC does not use */
+      rowners[p].rank = -3;
+      rowners[p].index = -3;
+    }
+    ierr = PetscSFReduceBegin(pointSF, MPI_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
+    ierr = PetscSFReduceEnd(pointSF, MPI_2INT, lowners, rowners, MPI_MAXLOC);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
     ierr = PetscSFBcastEnd(pointSF, MPIU_2INT, rowners, lowners);CHKERRQ(ierr);
     for (p = 0; p < numLeaves; ++p) {
-      if (lowners[p*2+0] != rank) ++numGhostPoints;
+      if (lowners[p].rank < 0 || lowners[p].index < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cell partition corrupt: point not claimed");
+      if (lowners[p].rank != rank) ++numGhostPoints;
     }
     ierr = PetscMalloc(numGhostPoints * sizeof(PetscInt),    &ghostPoints);CHKERRQ(ierr);
     ierr = PetscMalloc(numGhostPoints * sizeof(PetscSFNode), &remotePoints);CHKERRQ(ierr);
     for (p = 0, gp = 0; p < numLeaves; ++p) {
-      if (lowners[p*2+0] != rank) {
+      if (lowners[p].rank != rank) {
         ghostPoints[gp]       = leaves ? leaves[p] : p;
-        remotePoints[gp].rank  = lowners[p*2+0];
-        remotePoints[gp].index = lowners[p*2+1];
+        remotePoints[gp].rank  = lowners[p].rank;
+        remotePoints[gp].index = lowners[p].index;
         ++gp;
       }
     }
@@ -4020,8 +4096,10 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
     numEdges += numCorners - off[numCells];
 #endif
   }
+#if 0
   /* Check Euler characteristic V - E + F = 1 */
   if (numVertices && (numVertices-numEdges+numCells != 1)) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Euler characteristic of mesh is %d  != 1", numVertices-numEdges+numCells);
+#endif
   /* Create interpolated mesh */
   ierr = DMCreate(((PetscObject) dm)->comm, &idm);CHKERRQ(ierr);
   ierr = DMSetType(idm, DMCOMPLEX);CHKERRQ(ierr);
@@ -4375,6 +4453,7 @@ PetscErrorCode DMComplexBuildCoordinates_Private(DM dm, PetscInt spaceDim, Petsc
   ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
   ierr = VecCreate(((PetscObject) dm)->comm, &coordinates);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
@@ -7621,6 +7700,7 @@ PetscErrorCode DMComplexCreateSubmesh(DM dm, const char label[], DM *subdm)
   ierr = VecRestoreArray(coordinates,    &coords);CHKERRQ(ierr);
   ierr = VecRestoreArray(subCoordinates, &subCoords);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(*subdm, subCoordinates);CHKERRQ(ierr);
+  ierr = VecDestroy(&subCoordinates);CHKERRQ(ierr);
 
   ierr = DMComplexSetVTKCellHeight(*subdm, 1);CHKERRQ(ierr);
   /* Create map from submesh points to original mesh points */

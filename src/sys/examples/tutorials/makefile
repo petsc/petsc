@@ -6,7 +6,7 @@ FFLAGS	        = -I${PETSC_DIR}/include/finclude
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex9.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex9.c ex10.c
 EXAMPLESF       = ex3f.F ex4f.F ex4f90.F90 ex5f90.F90 ex8f90.F90
 MANSEC          = Sys
 CLEANFILES      = binaryoutput binaryoutput.info
@@ -66,6 +66,9 @@ ex9: ex9.o   chkopts
 	-${CLINKER} -o ex9 ex9.o  ${PETSC_SYS_LIB}
 	${RM} -f ex9.o
 
+ex10: ex10.o   chkopts
+	-${CLINKER} -o ex10 ex10.o  ${PETSC_SYS_LIB}
+	${RM} -f ex10.o
 #
 # ------------------------------------------------------------------------
 #
@@ -134,7 +137,6 @@ TESTEXAMPLES_C_X_MPIUNI = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 TESTEXAMPLES_FORTRAN	  = ex3f.PETSc runex3f ex3f.rm ex4f.PETSc runex4f ex4f.rm
 TESTEXAMPLES_F90	  = ex4f90.PETSc runex4f90 ex4f90.rm
 TESTEXAMPLES_F2003        = ex5f90.PETSc runex5f90 ex5f90.rm  ex8f90.PETSc runex8f90 ex8f90.rm
-TESTEXAMPLES_PTHREAD      = ex7.PETSc ex7.rm 
 
 include ${PETSC_DIR}/conf/test
 

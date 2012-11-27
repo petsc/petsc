@@ -6,7 +6,7 @@ FFLAGS	      =
 CPPFLAGS      =
 FPPFLAGS      =
 LOCDIR        = src/benchmarks/streams/
-EXAMPLESC     = BasicVersion.c OpenMPVersion.c SSEVersion.c PthreadVersion.c
+EXAMPLESC     = BasicVersionNoMPI.c BasicVersion.c OpenMPVersion.c SSEVersion.c PthreadVersion.c
 EXAMPLESF     = 
 TESTS         = BasicVersion OpenMPVersion
 MANSEC        = Sys
@@ -14,6 +14,10 @@ MANSEC        = Sys
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
+
+BasicVersionNoMPI: BasicVersionNoMPI.o  chkopts 
+	-@${CLINKER} -o BasicVersionNoMPI BasicVersionNoMPI.o ${PETSC_LIB}
+	@${RM} -f BasicVersionNoMPI.o
 
 BasicVersion: BasicVersion.o  chkopts 
 	-@${CLINKER} -o BasicVersion BasicVersion.o ${PETSC_LIB}

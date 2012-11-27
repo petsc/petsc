@@ -1,4 +1,3 @@
-#include <petscsnes.h>
 #include <petsc-private/dmimpl.h>     /*I      "petscdm.h"     I*/
 
 PetscClassId  DM_CLASSID;
@@ -225,7 +224,7 @@ PetscErrorCode MatSetDM(Mat A, DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(dm,DM_CLASSID,2);
+  if (dm) {PetscValidHeaderSpecific(dm,DM_CLASSID,2);}
   ierr = PetscObjectCompose((PetscObject) A, "__PETSc_dm", (PetscObject) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -362,6 +361,7 @@ PetscErrorCode  DMDestroy(DM *dm)
 
   ierr = PetscSectionDestroy(&(*dm)->defaultSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&(*dm)->defaultGlobalSection);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&(*dm)->map);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->defaultSF);CHKERRQ(ierr);
 
@@ -515,11 +515,27 @@ PetscErrorCode  DMSetFromOptions(DM dm)
 PetscErrorCode  DMView(DM dm,PetscViewer v)
 {
   PetscErrorCode ierr;
+  PetscBool      isbinary;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
- if (!v) {
+  if (!v) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)dm)->comm,&v);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (isbinary) {
+    PetscInt         classid = DM_FILE_CLASSID;
+    MPI_Comm         comm;
+    PetscMPIInt      rank;
+    char             type[256];
+
+    ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PetscViewerBinaryWrite(v,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscStrncpy(type,((PetscObject)dm)->type_name,256);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(v,type,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+    }
   }
   if (dm->ops->view) {
     ierr = (*dm->ops->view)(dm,v);CHKERRQ(ierr);
@@ -1742,7 +1758,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetFunction()
 
 @*/
@@ -2192,30 +2208,6 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSetInitialGuess"
-/*@C
-    DMSetInitialGuess - sets a function to compute an initial guess vector entries for the solvers
-
-    Logically Collective on DM
-
-    Input Parameter:
-+   dm - the DM object to destroy
--   f - the function to compute the initial guess
-
-    Level: intermediate
-
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
-
-@*/
-PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  dm->ops->initialguess = f;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMSetFunction"
 /*@C
     DMSetFunction - sets a function to compute the right hand side vector entries for the KSP solver or nonlinear function for SNES
@@ -2231,7 +2223,7 @@ PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
     Notes: This sets both the function for function evaluations and the function used to compute Jacobians via finite differences if no Jacobian
            computer is provided with DMSetJacobian(). Canceling cancels the function, but not the function used to compute the Jacobian.
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetJacobian()
 
 @*/
@@ -2259,7 +2251,7 @@ PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetFunction()
 
 @*/
@@ -2284,7 +2276,7 @@ PetscErrorCode  DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,Mat,Mat,MatStruct
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetJacobian()
 
 @*/
@@ -2337,7 +2329,7 @@ PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetFunction(), DMSetVariableBounds()
 
 @*/
@@ -2351,58 +2343,6 @@ PetscErrorCode  DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
     ierr = (*dm->ops->computevariablebounds)(dm, xl,xu); CHKERRQ(ierr);
   }
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "This DM is incapable of computing variable bounds.");
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeInitialGuess"
-/*@
-    DMComputeInitialGuess - computes an initial guess vector entries for the KSP solvers
-
-    Collective on DM
-
-    Input Parameter:
-+   dm - the DM object to destroy
--   x - the vector to hold the initial guess values
-
-    Level: developer
-
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetRhs(), DMSetMat()
-
-@*/
-PetscErrorCode  DMComputeInitialGuess(DM dm,Vec x)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (!dm->ops->initialguess) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetInitialGuess()");
-  ierr = (*dm->ops->initialguess)(dm,x);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMHasInitialGuess"
-/*@
-    DMHasInitialGuess - does the DM object have an initial guess function
-
-    Not Collective
-
-    Input Parameter:
-.   dm - the DM object to destroy
-
-    Output Parameter:
-.   flg - PETSC_TRUE if function exists
-
-    Level: developer
-
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
-
-@*/
-PetscErrorCode  DMHasInitialGuess(DM dm,PetscBool  *flg)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  *flg =  (dm->ops->initialguess) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2496,7 +2436,7 @@ PetscErrorCode  DMHasColoring(DM dm,PetscBool  *flg)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetFunction(), DMSetJacobian(), DMSetVariableBounds()
 
 @*/
@@ -2531,7 +2471,7 @@ PetscErrorCode  DMSetVec(DM dm,Vec x)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetJacobian()
 
 @*/
@@ -2564,7 +2504,7 @@ PetscErrorCode  DMComputeFunction(DM dm,Vec x,Vec b)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
          DMSetFunction()
 
 @*/
@@ -2649,7 +2589,7 @@ PetscErrorCode  DMSetType(DM dm, DMType method)
 
   if (!DMRegisterAllCalled) {ierr = DMRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscFListFind(DMList, ((PetscObject)dm)->comm, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
+  if (!r) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
 
   if (dm->ops->destroy) {
     ierr = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
@@ -2981,8 +2921,7 @@ PetscErrorCode  DMSetJacobianMatlab(DM dm,const char *func)
 #undef __FUNCT__
 #define __FUNCT__ "DMLoad"
 /*@C
-  DMLoad - Loads a DM that has been stored in binary or HDF5 format
-  with DMView().
+  DMLoad - Loads a DM that has been stored in binary  with DMView().
 
   Collective on PetscViewer
 
@@ -2995,7 +2934,7 @@ PetscErrorCode  DMSetJacobianMatlab(DM dm,const char *func)
    Level: intermediate
 
   Notes:
-  Defaults to the DM DA.
+   The type is determined by the data in the file, any type set into the DM before this call is ignored.
 
   Notes for advanced users:
   Most users should not need to know the details of the binary storage
@@ -3006,27 +2945,25 @@ PetscErrorCode  DMSetJacobianMatlab(DM dm,const char *func)
      has not yet been determined
 .ve
 
-   In addition, PETSc automatically does the byte swapping for
-machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
-linux, Windows and the paragon; thus if you write your own binary
-read/write routines you have to swap the bytes; see PetscBinaryRead()
-and PetscBinaryWrite() to see how this may be done.
-
-  Concepts: vector^loading from file
-
 .seealso: PetscViewerBinaryOpen(), DMView(), MatLoad(), VecLoad()
 @*/
 PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
 {
   PetscErrorCode ierr;
+  PetscBool      isbinary;
+  PetscInt       classid;
+  char           type[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(newdm,DM_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
-  if (!((PetscObject)newdm)->type_name) {
-    ierr = DMSetType(newdm, DMDA);CHKERRQ(ierr);
-  }
+  ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+  if (classid != DM_FILE_CLASSID) SETERRQ(((PetscObject)newdm)->comm,PETSC_ERR_ARG_WRONG,"Not DM next in file");
+  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = DMSetType(newdm, type);CHKERRQ(ierr);
   ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3263,6 +3200,8 @@ PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section) {
 /*@
   DMGetDefaultGlobalSection - Get the PetscSection encoding the global data layout for the DM.
 
+  Collective on DM
+
   Input Parameter:
 . dm - The DM
 
@@ -3284,6 +3223,7 @@ PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *section) {
   if (!dm->defaultGlobalSection) {
     if (!dm->defaultSection || !dm->sf) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "DM must have a default PetscSection and PetscSF in order to create a global PetscSection");
     ierr = PetscSectionCreateGlobalSection(dm->defaultSection, dm->sf, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);
+    ierr = PetscSectionGetValueLayout(((PetscObject)dm)->comm,dm->defaultGlobalSection,&dm->map);CHKERRQ(ierr);
   }
   *section = dm->defaultGlobalSection;
   PetscFunctionReturn(0);
@@ -3453,9 +3393,8 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
       for(d = 0; d < gsize; ++d, ++l) {
         PetscInt offset = -(goff+1) + d, r;
 
-        for (r = 0; r < size; ++r) {
-          if ((offset >= ranges[r]) && (offset < ranges[r+1])) break;
-        }
+        ierr = PetscFindInt(offset,size,ranges,&r);CHKERRQ(ierr);
+        if (r < 0) r = -(r+2);
         remote[l].rank  = r;
         remote[l].index = offset - ranges[r];
       }

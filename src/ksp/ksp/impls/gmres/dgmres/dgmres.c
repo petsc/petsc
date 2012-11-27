@@ -8,6 +8,9 @@
  */
 
 #include "../src/ksp/ksp/impls/gmres/dgmres/dgmresimpl.h"       /*I  "petscksp.h"  I*/
+
+PetscLogEvent KSP_DGMRESComputeDeflationData, KSP_DGMRESApplyDeflation;
+
 #define GMRES_DELTA_DIRECTIONS 10
 #define GMRES_DEFAULT_MAXK     30
 static PetscErrorCode    KSPDGMRESGetNewVectors (KSP,PetscInt);

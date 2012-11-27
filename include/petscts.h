@@ -155,7 +155,6 @@ PETSC_EXTERN PetscErrorCode TSEvaluateStep(TS,PetscInt,Vec,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSSolve(TS,Vec);
 PETSC_EXTERN PetscErrorCode TSGetConvergedReason(TS,TSConvergedReason*);
 PETSC_EXTERN PetscErrorCode TSGetSolveTime(TS,PetscReal*);
-PETSC_EXTERN PetscErrorCode TSGetSolutionTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSGetSNESIterations(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSGetKSPIterations(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSGetStepRejections(TS,PetscInt*);
@@ -312,6 +311,9 @@ PETSC_EXTERN PetscErrorCode TSGetSNES(TS,SNES*);
 PETSC_EXTERN PetscErrorCode TSGetKSP(TS,KSP*);
 
 PETSC_EXTERN PetscErrorCode TSView(TS,PetscViewer);
+PETSC_EXTERN PetscErrorCode TSLoad(TS,PetscViewer);
+
+#define TS_FILE_CLASSID 1211225
 
 PETSC_EXTERN PetscErrorCode TSSetApplicationContext(TS,void *);
 PETSC_EXTERN PetscErrorCode TSGetApplicationContext(TS,void *);

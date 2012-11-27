@@ -20,17 +20,15 @@ PetscInt main(PetscInt argc,char **args)
   Vec            *evecs;
   PetscViewer    fd;                /* viewer */
   char           file[1][PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscBool      flg,flgA=PETSC_FALSE,flgB=PETSC_FALSE,TestSYEVX=PETSC_TRUE;
+  PetscBool      flg,TestSYEVX=PETSC_TRUE;
   PetscErrorCode ierr;
   PetscBool      isSymmetric;
-  PetscScalar    sigma,*arrayA,*arrayB,*evecs_array,*work,*evals;
+  PetscScalar    *arrayA,*evecs_array,*work,*evals;
   PetscMPIInt    size;
-  PetscInt       m,n,i,j,nevs,il,iu,cklvl=2;
+  PetscInt       m,n,i,nevs,il,iu,cklvl=2;
   PetscReal      vl,vu,abstol=1.e-8;
   PetscBLASInt   *iwork,*ifail,lwork,lierr,bn;
   PetscReal      tols[2];
-  PetscInt       nzeros[2],nz;
-  PetscReal      ratio;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -62,14 +60,11 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatDestroy(&Trans);CHKERRQ(ierr);
   }
 
-  /* Convert aij matrix to MatSeqDense for LAPACK */
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&flg);CHKERRQ(ierr);
-  if (!flg) {
-    ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&A_dense);CHKERRQ(ierr);
-  }
+  /* Solve eigenvalue problem: A_dense*x = lambda*B*x */
+  /*==================================================*/
+  /* Convert aij matrix to MatSeqDense for LAPACK */ 
+  ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&A_dense);CHKERRQ(ierr);
 
-  /* Solve eigenvalue problem: A*x = lambda*B*x */
-  /*============================================*/
   lwork = PetscBLASIntCast(8*n);
   bn    = PetscBLASIntCast(n);
   ierr = PetscMalloc(n*sizeof(PetscScalar),&evals);CHKERRQ(ierr);
@@ -94,10 +89,10 @@ PetscInt main(PetscInt argc,char **args)
     LAPACKsyevx_("V","I","U",&bn,arrayA,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,iwork,ifail,&lierr);
     ierr = PetscFree(iwork);CHKERRQ(ierr);
   }
-  ierr = MatDenseRestoreArray(A,&arrayA);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(A_dense,&arrayA);CHKERRQ(ierr);
   if (nevs <= 0 ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
 
-  /* View evals */
+  /* View eigenvalues */
   ierr = PetscOptionsHasName(PETSC_NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg){
     printf(" %d evals: \n",nevs);
@@ -115,16 +110,70 @@ PetscInt main(PetscInt argc,char **args)
 
   tols[0] = 1.e-8;  tols[1] = 1.e-8;
   ierr = CkEigenSolutions(cklvl,A,il-1,iu-1,evals,evecs,tols);CHKERRQ(ierr);
-  for (i=0; i<nevs; i++){ ierr = VecDestroy(&evecs[i]);CHKERRQ(ierr);}
-  ierr = PetscFree(evecs);CHKERRQ(ierr);
 
   /* Free work space. */
+  for (i=0; i<nevs; i++){ ierr = VecDestroy(&evecs[i]);CHKERRQ(ierr);}
+  ierr = PetscFree(evecs);CHKERRQ(ierr);
+  ierr = MatDestroy(&A_dense);CHKERRQ(ierr);
+  ierr = PetscFree(work);CHKERRQ(ierr);
   if (TestSYEVX){ierr = PetscFree(evecs_array);CHKERRQ(ierr);}
 
-  ierr = PetscFree(evals);CHKERRQ(ierr);
-  ierr = PetscFree(work);CHKERRQ(ierr);
+  /* Compute SVD: A_dense = U*SIGMA*transpose(V), 
+     JOBU=JOBV='S':  the first min(m,n) columns of U and V are returned in the arrayU and arrayV; */
+  /*==============================================================================================*/
+  {
+    /* Convert aij matrix to MatSeqDense for LAPACK */ 
+    PetscScalar  *arrayU,*arrayVT,*arrayErr,alpha=1.0,beta=-1.0;
+    Mat          Err;
+    PetscBLASInt minMN,maxMN;
+    PetscInt     j;
+    PetscReal    norm;
 
-  ierr = MatDestroy(&A_dense);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&A_dense);CHKERRQ(ierr);
+  
+    minMN = PetscMin(m,n); 
+    maxMN = PetscMax(m,n);
+    lwork = 5*minMN + maxMN; 
+    ierr = PetscMalloc4(m*minMN,PetscScalar,&arrayU,m*minMN,PetscScalar,&arrayVT,m*minMN,PetscScalar,&arrayErr,lwork,PetscScalar,&work);CHKERRQ(ierr);
+
+    /* Create matrix Err for checking error */
+    ierr = MatCreate(PETSC_COMM_WORLD,&Err);CHKERRQ(ierr);
+    ierr = MatSetSizes(Err,PETSC_DECIDE,PETSC_DECIDE,m,minMN);CHKERRQ(ierr);
+    ierr = MatSetType(Err,MATSEQDENSE);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(Err,(PetscScalar*)arrayErr);CHKERRQ(ierr);
+
+    /* Save A to arrayErr for checking accuracy later. arrayA will be destroyed by LAPACKgesvd_() */
+    ierr = MatDenseGetArray(A_dense,&arrayA);CHKERRQ(ierr);
+    ierr = PetscMemcpy(arrayErr,arrayA,sizeof(PetscScalar)*m*minMN);CHKERRQ(ierr);
+
+    /* Compute A = U*SIGMA*VT */
+    LAPACKgesvd_("S","S",&m,&n,arrayA,&m,evals,arrayU,&minMN,arrayVT,&minMN,work,&lwork,&lierr);
+    ierr = MatDenseRestoreArray(A_dense,&arrayA);CHKERRQ(ierr); 
+    if (!lierr){
+      printf(" 1st 10 of %d singular values: \n",minMN);
+      for (i=0; i<10; i++) printf("%d  %G\n",i,evals[i]);
+    } else {
+      printf("LAPACKgesvd_ fails!");
+    }
+
+    /* Check Err = (U*Sigma*V^T - A) using BLASgemm() */
+    /* U = U*Sigma */
+    for (j=0; j<minMN; j++){ /* U[:,j] = sigma[j]*U[:,j] */
+      for (i=0; i<m; i++) arrayU[j*m+i] *= evals[j];
+    }
+    /* Err = U*VT - A = alpha*U*VT + beta*Err */
+    BLASgemm_("N","N",&m,&minMN,&minMN,&alpha,arrayU,&m,arrayVT,&minMN,&beta,arrayErr,&m);
+    //printf(" Err:\n");
+    //ierr = MatView(Err,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = MatNorm(Err,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+    printf(" || U*Sigma*VT - A || = %G\n",norm);
+ 
+    ierr = PetscFree4(arrayU,arrayVT,arrayErr,work);CHKERRQ(ierr);
+    ierr = PetscFree(evals);CHKERRQ(ierr);
+    ierr = MatDestroy(&A_dense);CHKERRQ(ierr);
+    ierr = MatDestroy(&Err);CHKERRQ(ierr);
+  }
+
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

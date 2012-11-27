@@ -132,27 +132,27 @@ SNES Object: 6 MPI processes
             Cholesky: out-of-place factorization
             tolerance for zero pivot 2.22045e-14
             matrix ordering: natural
-            factor fill ratio given 5, needed 1.32877
+            factor fill ratio given 5, needed 1.32237
               Factored matrix follows:
                 Matrix Object:                 1 MPI processes
                   type: seqsbaij
-                  rows=48, cols=48
+                  rows=48, cols=48, bs=2
                   package used to perform factorization: petsc
-                  total: nonzeros=776, allocated nonzeros=776
+                  total: nonzeros=804, allocated nonzeros=804
                   total number of mallocs used during MatSetValues calls =0
-                      block size is 1
+                      block size is 2
           linear system matrix = precond matrix:
           Matrix Object:           1 MPI processes
-            type: seqaij
+            type: seqsbaij
             rows=48, cols=48, bs=2
-            total: nonzeros=1120, allocated nonzeros=1120
+            total: nonzeros=608, allocated nonzeros=608
             total number of mallocs used during MatSetValues calls =0
-              using I-node routines: found 12 nodes, limit used is 5
+                block size is 2
         linear system matrix = precond matrix:
         Matrix Object:         6 MPI processes
-          type: mpiaij
+          type: mpisbaij
           rows=256, cols=256, bs=2
-          total: nonzeros=9216, allocated nonzeros=9216
+          total: nonzeros=4864, allocated nonzeros=4864
           total number of mallocs used during MatSetValues calls =0
     Up solver (post-smoother) same as down solver (pre-smoother)
     Down solver (pre-smoother) on level 2 -------------------------------
@@ -181,27 +181,27 @@ SNES Object: 6 MPI processes
             tolerance for zero pivot 2.22045e-14
             using Manteuffel shift
             matrix ordering: natural
-            factor fill ratio given 1, needed 1
+            factor fill ratio given 1, needed 1.00133
               Factored matrix follows:
                 Matrix Object:                 1 MPI processes
                   type: seqsbaij
-                  rows=192, cols=192
+                  rows=192, cols=192, bs=2
                   package used to perform factorization: petsc
-                  total: nonzeros=2912, allocated nonzeros=2912
+                  total: nonzeros=3012, allocated nonzeros=3012
                   total number of mallocs used during MatSetValues calls =0
-                      block size is 1
+                      block size is 2
           linear system matrix = precond matrix:
           Matrix Object:           1 MPI processes
-            type: seqaij
+            type: seqsbaij
             rows=192, cols=192, bs=2
-            total: nonzeros=5632, allocated nonzeros=5632
+            total: nonzeros=3008, allocated nonzeros=3008
             total number of mallocs used during MatSetValues calls =0
-              using I-node routines: found 48 nodes, limit used is 5
+                block size is 2
         linear system matrix = precond matrix:
         Matrix Object:         6 MPI processes
-          type: mpiaij
+          type: mpisbaij
           rows=1024, cols=1024, bs=2
-          total: nonzeros=36864, allocated nonzeros=36864
+          total: nonzeros=19456, allocated nonzeros=19456
           total number of mallocs used during MatSetValues calls =0
     Up solver (post-smoother) same as down solver (pre-smoother)
     Down solver (pre-smoother) on level 3 -------------------------------

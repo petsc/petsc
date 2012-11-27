@@ -99,13 +99,15 @@ int main(int argc,char **argv)
   ierr = DMSetOptionsPrefix(red,"da_");CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(packer,&user);CHKERRQ(ierr);
-  ierr = DMSNESSetFunction(packer,ComputeFunction,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMSNESSetJacobian(packer,ComputeJacobian_MF,PETSC_NULL);CHKERRQ(ierr);
+
   packer->ops->creatematrix = DMCreateMatrix_MF;
 
   /* create nonlinear multi-level solver */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,packer);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,PETSC_NULL,ComputeFunction,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,PETSC_NULL, PETSC_NULL,ComputeJacobian_MF,PETSC_NULL);CHKERRQ(ierr);
+
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   if (use_monitor) {
@@ -153,7 +155,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec U,Vec FU,void *ctx)
   DM             packer,red,da;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)U,"DM",(PetscObject*)&packer);CHKERRQ(ierr); /* Ugly way to get context */
+  ierr = VecGetDM(U, &packer);CHKERRQ(ierr);
   ierr = DMCompositeGetEntries(packer,&red,&da);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(packer,&vw,&vu_lambda);CHKERRQ(ierr);
   ierr = DMCompositeScatter(packer,U,vw,vu_lambda);CHKERRQ(ierr);

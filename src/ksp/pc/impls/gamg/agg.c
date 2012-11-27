@@ -884,7 +884,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       LAPACKgeqrf_( &Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO );
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      if ( INFO != 0 ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xGEQRS error");
+      if ( INFO != 0 ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xGEQRF error");
       /* get R - column oriented - output B_{i+1} */
       {
         PetscReal *data = &out_data[clid*nSAvec];
@@ -1339,18 +1339,37 @@ PetscErrorCode PCGAMGOptprol_AGG( PC pc,
         ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
         ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
       }
+      
+      /* zeroing out BC rows -- needed for crazy matrices */
+      {
+        PetscInt Istart,Iend,ncols,jj,Ii;
+        PetscScalar zero = 0.0;
+        ierr = MatGetOwnershipRange( Amat, &Istart, &Iend );    CHKERRQ(ierr);
+        for ( Ii = Istart, jj = 0 ; Ii < Iend ; Ii++, jj++ ) {
+          ierr = MatGetRow(Amat,Ii,&ncols,0,0); CHKERRQ(ierr);
+          if( ncols <= 1 ) {
+            ierr = VecSetValues( bb, 1, &Ii, &zero, INSERT_VALUES );  CHKERRQ(ierr); 
+          }
+          ierr = MatRestoreRow(Amat,Ii,&ncols,0,0); CHKERRQ(ierr);
+        }
+        ierr = VecAssemblyBegin(bb); CHKERRQ(ierr);
+        ierr = VecAssemblyEnd(bb); CHKERRQ(ierr);
+      }
+
       ierr = KSPCreate(wcomm,&eksp);                            CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix( eksp, "gamg_est_");         CHKERRQ(ierr);
-      ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
-      ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE );    CHKERRQ(ierr);
-      ierr = KSPSetOperators( eksp, Amat, Amat, SAME_NONZERO_PATTERN );
-      CHKERRQ( ierr );
-      ierr = KSPGetPC( eksp, &pc );                              CHKERRQ( ierr );
-      ierr = PCSetType( pc, PCJACOBI ); CHKERRQ(ierr);  /* smoother */
       ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);
       CHKERRQ(ierr);
       ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix( eksp, "gamg_est_");         CHKERRQ(ierr);
+      ierr = KSPSetFromOptions( eksp );    CHKERRQ(ierr);
+
+      ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE );    CHKERRQ(ierr);
+      ierr = KSPSetOperators( eksp, Amat, Amat, SAME_NONZERO_PATTERN );
+      CHKERRQ( ierr );
       ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE );        CHKERRQ(ierr);
+
+      ierr = KSPGetPC( eksp, &pc );                              CHKERRQ( ierr );
+      ierr = PCSetType( pc, PCJACOBI ); CHKERRQ(ierr);  /* smoother in smoothed agg. */
 
       /* solve - keep stuff out of logging */
       ierr = PetscLogEventDeactivate(KSP_Solve);CHKERRQ(ierr);

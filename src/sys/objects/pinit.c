@@ -1251,7 +1251,6 @@ PetscErrorCode  PetscFinalize(void)
   }
 #endif
 
-  ierr = PetscInfo(0,"PETSc successfully ended!\n");CHKERRQ(ierr);
   if (PetscBeganMPI) {
 #if defined(PETSC_HAVE_MPI_FINALIZED)
     PetscMPIInt flag;

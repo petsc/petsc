@@ -50,7 +50,6 @@ int main(int argc,char **argv)
 {
   AppCtx         appctx;                 /* user-defined application context */
   TS             ts;                     /* timestepping context */
-  Mat            A;                      /* matrix data structure */
   Vec            U;                      /* approximate solution vector */
   PetscErrorCode ierr;
   PetscReal      dt;
@@ -86,20 +85,13 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-     Create matrix data structure; set matrix evaluation routine.
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  ierr = DMCreateMatrix(da,MATAIJ,&A);CHKERRQ(ierr);
-
   /*
       For linear problems with a time-dependent f(U,t) in the equation
      u_t = f(u,t), the user provides the discretized right-hand-side
       as a time-dependent matrix.
   */
   ierr = TSSetRHSFunction(ts,PETSC_NULL,TSComputeRHSFunctionLinear,&appctx);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,A,A,RHSMatrixHeat,&appctx);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ts,PETSC_NULL,PETSC_NULL,RHSMatrixHeat,&appctx);CHKERRQ(ierr);
   ierr = TSSetSolutionFunction(ts,(PetscErrorCode (*)(TS,PetscReal,Vec,void*))Solution,&appctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -128,13 +120,14 @@ int main(int argc,char **argv)
   */
   ierr = TSSolve(ts,U);CHKERRQ(ierr);
 
+  ierr = TSView(ts,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 

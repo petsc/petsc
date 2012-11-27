@@ -912,8 +912,8 @@ static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine,Mat restrct,Vec rscale,Ma
 static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
 {
   TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
-  ARKTableau     tab  = ark->tableau;
-  PetscInt       s = tab->s;
+  ARKTableau     tab;
+  PetscInt       s;
   PetscErrorCode ierr;
   DM             dm;
 
@@ -921,6 +921,8 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
   if (!ark->tableau) {
     ierr = TSARKIMEXSetType(ts,TSARKIMEXDefault);CHKERRQ(ierr);
   }
+  tab  = ark->tableau;
+  s    = tab->s;
   ierr = VecDuplicateVecs(ts->vec_sol,s,&ark->Y);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,s,&ark->YdotI);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,s,&ark->YdotRHS);CHKERRQ(ierr);
@@ -1017,6 +1019,19 @@ static PetscErrorCode TSView_ARKIMEX(TS ts,PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSLoad_ARKIMEX"
+static PetscErrorCode TSLoad_ARKIMEX(TS ts,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  SNES           snes;
+
+  PetscFunctionBegin;
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESLoad(snes,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSARKIMEXSetType"
 /*@C
   TSARKIMEXSetType - Set the type of ARK IMEX scheme
@@ -1102,7 +1117,9 @@ PetscErrorCode  TSARKIMEXGetType_ARKIMEX(TS ts,TSARKIMEXType *arktype)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!ark->tableau) {ierr = TSARKIMEXSetType(ts,TSARKIMEXDefault);CHKERRQ(ierr);}
+  if (!ark->tableau) {
+    ierr = TSARKIMEXSetType(ts,TSARKIMEXDefault);CHKERRQ(ierr);
+  }
   *arktype = ark->tableau->name;
   PetscFunctionReturn(0);
 }
@@ -1178,6 +1195,7 @@ PetscErrorCode  TSCreate_ARKIMEX(TS ts)
   ts->ops->reset          = TSReset_ARKIMEX;
   ts->ops->destroy        = TSDestroy_ARKIMEX;
   ts->ops->view           = TSView_ARKIMEX;
+  ts->ops->load           = TSLoad_ARKIMEX;
   ts->ops->setup          = TSSetUp_ARKIMEX;
   ts->ops->step           = TSStep_ARKIMEX;
   ts->ops->interpolate    = TSInterpolate_ARKIMEX;

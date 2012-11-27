@@ -17,6 +17,7 @@
  */
 
 #include <../src/ksp/ksp/impls/gmres/agmres/agmresimpl.h>
+
 #define AGMRES_DEFAULT_MAXK 30
 #define AGMRES_DELTA_DIRECTIONS 10
 static PetscErrorCode KSPAGMRESBuildSoln(KSP,PetscInt);
@@ -24,6 +25,7 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP);
 static PetscErrorCode KSPAGMRESBuildBasis(KSP );
 static PetscErrorCode KSPAGMRESBuildHessenberg(KSP);
 
+PetscLogEvent KSP_AGMRESComputeDeflationData, KSP_AGMRESBuildBasis, KSP_AGMRESComputeShifts, KSP_AGMRESRoddec;
 
 /*
  * This function allocates  data for the Newton basis GMRES implementation.
@@ -832,7 +834,7 @@ PetscErrorCode  KSPCreate_AGMRES(KSP ksp)
                                            KSPDGMRESApplyDeflation_DGMRES);CHKERRQ(ierr);
 
   PetscInt KSP_CLASSID = 1;
-  ierr=PetscLogEventRegister ("AGMRESComputeDefl", KSP_CLASSID, &KSP_DGMRESComputeDeflationData);CHKERRQ(ierr);
+  ierr=PetscLogEventRegister ("AGMRESComputeDefl", KSP_CLASSID, &KSP_AGMRESComputeDeflationData);CHKERRQ(ierr);
   ierr=PetscLogEventRegister ("AGMRESBuildBasis", KSP_CLASSID, &KSP_AGMRESBuildBasis);CHKERRQ(ierr);
   ierr = PetscLogEventRegister ("AGMRESCompShifts", KSP_CLASSID, &KSP_AGMRESComputeShifts);CHKERRQ(ierr);
   ierr = PetscLogEventRegister ("AGMRESOrthog", KSP_CLASSID, &KSP_AGMRESRoddec);CHKERRQ(ierr);

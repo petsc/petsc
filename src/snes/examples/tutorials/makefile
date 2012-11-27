@@ -9,9 +9,9 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
-EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5s.c ex7.c ex8.c \
+EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5s.c ex7.c \
                 ex10.c ex12.c ex14.c ex15.c ex18.c ex19.c ex20.c ex21.c ex22.c \
-                ex25.c ex28.c ex30.c ex31.c \
+                ex25.c ex28.c ex30.c ex31.c ex33.c \
                 ex35.c ex42.c ex43.c ex46.c ex48.c \
                 ex52.c ex53.c ex54.c ex55.c ex58.c ex59.c ex60.c \
                 ex61.c ex61gen.c ex61view.c ex62.c ex63.c ex633D_DB.c ex64.c ex65.c ex70.c \
@@ -152,6 +152,9 @@ ex31: ex31.o chkopts
 ex32: ex32.o chkopts
 	-${CLINKER} -o ex32 ex32.o ${PETSC_SNES_LIB}
 	${RM} ex32.o
+ex33: ex33.o chkopts
+	-${CLINKER} -o ex33 ex33.o ${PETSC_SNES_LIB}
+	${RM} ex33.o
 ex35: ex35.o chkopts
 	-${CLINKER} -o ex35 ex35.o ${PETSC_SNES_LIB}
 	${RM} ex35.o
@@ -489,19 +492,13 @@ runex5f90t:
 	   if (${DIFF} output/ex5f90_1.out ex5f90t_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5f90t_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5f90t_1.tmp
-runex8:
-	-@${MPIEXEC} -n 2 ./ex8  -mx 16 -my 16 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always \
-                    -lidvelocity 0. -grashof 1000. > ex8_1.tmp 2>&1; \
-           if (${DIFF} output/ex8_1.out ex8_1.tmp) then true; \
-           else  echo  ${PWD} "\nPossible problem with with ex8_1, diffs above \n========================================="; fi; \
-           ${RM} -f ex8_1.tmp
-runex8_2:
-	-@${MPIEXEC} -n 2 ./ex8 -snes_monitor_solution -ksp_gmres_cgs_refinement_type refine_always > /dev/null 2>&1 
-runex8_3:
-	-@${MPIEXEC} -n 2 ./ex8 -is_coloring_view > ex8_3.tmp 2>&1;\
-           if (${DIFF} output/ex8_3.out ex8_3.tmp) then true; \
-           else  echo  ${PWD} "\nPossible problem with with ex8_3, diffs above \n========================================="; fi; \
-           ${RM} -f ex8_3.tmp
+runex7:
+	-@${MPIEXEC} -n 1 ./ex7   -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always \
+                     > ex7_1.tmp 2>&1; \
+           if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
+           else  echo  ${PWD} "\nPossible problem with with ex7_1, diffs above \n========================================="; fi; \
+           ${RM} -f ex7_1.tmp
+
 runex9:
 	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type virs -feasible 1 > ex9_1.tmp 2>&1; \
            ${DIFF} output/ex9_1.out ex9_1.tmp || printf  "${PWD}\nPossible problem with with ex9_1, diffs above \n=========================================\n"; \
@@ -726,6 +723,18 @@ testex19: ex19.PETSc
         ${RM} -f ex19_1.tmp; \
         ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm ; fi
 
+runex19_pthread:
+	-@${MPIEXEC} -n 1 ./ex19 -pc_type none -ksp_type fgmres -threadcomm_type pthread -threadcomm_nthreads 2 > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_threadcomm.out ex19.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_pthread, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19.tmp
+
+runex19_openmp:
+	-@${MPIEXEC} -n 1 ./ex19 -pc_type none -ksp_type fgmres -threadcomm_type openmp -threadcomm_nthreads 2 > ex19.tmp 2>&1; \
+	   if (${DIFF} output/ex19_threadcomm.out ex19.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_openmp, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19.tmp
+
 runex19_cusp:
 	-@${MPIEXEC} -n 1 ./ex19 -dm_vec_type cusp -dm_mat_type aijcusp -pc_type none -ksp_type fgmres -snes_monitor_short -snes_rtol 1.e-5 > ex19.tmp 2>&1; \
 	   if (${DIFF} output/ex19_cusp.out ex19.tmp) then true; \
@@ -782,6 +791,55 @@ runex30:
 	   if (${DIFF} output/ex30_1.out ex30_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex30_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex30_1.tmp
+
+runex35:
+	-@${MPIEXEC} -n 1 ./ex35 -snes_rtol 1.e-12 -snes_monitor_short -snes_type nrichardson   > ex35_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_1.out ex35_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_1.tmp
+
+runex35_2:
+	-@${MPIEXEC} -n 1 ./ex35  -snes_rtol 1.e-12 -snes_monitor_short -ksp_rtol 1.e-12  -ksp_monitor_short -ksp_type richardson -pc_type none -ksp_richardson_self_scale    > ex35_2.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_2.out ex35_2.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_2.tmp
+
+runex35_3:
+	-@${MPIEXEC} -n 1 ./ex35  -snes_rtol 1.e-12 -snes_monitor_short  -snes_type ngmres    > ex35_3.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_3.out ex35_3.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_3, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_3.tmp
+
+runex35_4:
+	-@${MPIEXEC} -n 1 ./ex35  -snes_rtol 1.e-12 -snes_monitor_short  -ksp_type gmres -ksp_monitor_short -ksp_rtol 1.e-12 -pc_type none    > ex35_4.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_4.out ex35_4.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_4, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_4.tmp
+
+runex35_5:
+	-@${MPIEXEC} -n 1 ./ex35  -snes_rtol 1.e-12 -snes_monitor_short  -snes_type ncg     > ex35_5.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_5.out ex35_5.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_5, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_5.tmp
+
+runex35_6:
+	-@${MPIEXEC} -n 1 ./ex35  -snes_rtol 1.e-12 -snes_monitor_short  -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-12 -pc_type none     > ex35_6.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_6.out ex35_6.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_6, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_6.tmp
+
+runex35_7:
+	-@${MPIEXEC} -n 1 ./ex35 -da_refine 2 -snes_rtol 1.e-12 -snes_monitor_short  -pc_type mg -mg_levels_ksp_type richardson -mg_levels_pc_type none -mg_levels_ksp_monitor_short \
+            -mg_levels_ksp_richardson_self_scale -ksp_type richardson -ksp_monitor_short -ksp_rtol 1.e-12      > ex35_7.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_7.out ex35_7.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_7, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_7.tmp
+
+runex35_8:
+	-@${MPIEXEC} -n 1 ./ex35  -da_refine 2 -snes_monitor_short  -snes_type fas -fas_levels_snes_monitor_short -fas_coarse_snes_type ls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_type fas   > ex35_8.tmp 2>&1;	  \
+	   if (${DIFF} output/ex35_8.out ex35_8.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex35_8, diffs above \n========================================="; fi; \
+	   ${RM} -f ex35_8.tmp
 
 runex40f90:
 	-@${MPIEXEC} -n 1 ./ex40f90 -snes_monitor_short -snes_view  -da_refine 1 -pc_type mg  -pc_mg_type full -ksp_type fgmres -pc_mg_galerkin  > ex40f90_1.tmp 2>&1;	  \
@@ -844,7 +902,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex5_5_ngmres runex5_5_ngmres_nrichardson runex5_5_ncg runex5_5_nrichardson \
                                  runex5_5_ngmres_ngs runex5_5_qn runex5_5_ls \
                                  runex5_5_fas runex5_5_ngmres_fas runex5_5_fas_additive \
-                                 runex5_6 ex5.rm\
+                                 runex5_6 ex5.rm ex7.PETSc runex7 ex7.rm\
                                  ex9.PETSc runex9 runex9_2 runex9_3 runex9_4 ex9.rm\
                                  ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc runex15 runex15_3 ex15.rm ex18.PETSc runex18 ex18.rm \
                                  ex19.PETSc runex19 runex19_5 \
@@ -855,6 +913,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm \
                                  ex25.PETSc runex25 runex25_2 \
                                  ex25.rm ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm ex30.PETSc runex30 ex30.rm \
+                                 ex33.PETSc ex33.rm \
+                                 ex35.PETSc runex35 runex35_2 runex35_3 runex35_4 runex35_5 runex35_6 runex35_7 runex35_8 ex35.rm \
                                  ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
                                  ex46.PETSc runex46 ex46.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
@@ -875,6 +935,7 @@ TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_4 runex19_fieldsplit_mumps r
 TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu ex19.rm
 TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm  ex19.PETSc  ex19.rm
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm  ex19.PETSc runex19_11 runex19_12 ex19.rm
-TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm ex47cu.PETSc runex47cu ex47cu.rm 
+TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm ex47cu.PETSc runex47cu ex47cu.rm
+TESTEXAMPLES_THREADCOMM        = ex19.PETSc runex19_pthread runex19_openmp ex19.rm 
 
 include ${PETSC_DIR}/conf/test

@@ -1035,6 +1035,61 @@ PetscErrorCode  TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSLoad"
+/*@C
+  TSLoad - Loads a KSP that has been stored in binary  with KSPView().
+
+  Collective on PetscViewer
+
+  Input Parameters:
++ newdm - the newly loaded TS, this needs to have been created with TSCreate() or
+           some related function before a call to TSLoad().
+- viewer - binary file viewer, obtained from PetscViewerBinaryOpen()
+
+   Level: intermediate
+
+  Notes:
+   The type is determined by the data in the file, any type set into the TS before this call is ignored.
+
+  Notes for advanced users:
+  Most users should not need to know the details of the binary storage
+  format, since TSLoad() and TSView() completely hide these details.
+  But for anyone who's interested, the standard binary matrix storage
+  format is
+.vb
+     has not yet been determined
+.ve
+
+.seealso: PetscViewerBinaryOpen(), TSView(), MatLoad(), VecLoad()
+@*/
+PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscBool      isbinary;
+  PetscInt       classid;
+  char           type[256];
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+
+  ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+  if (classid != TS_FILE_CLASSID) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_ARG_WRONG,"Not TS next in file");
+  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = TSSetType(ts, type);CHKERRQ(ierr);
+  if (ts->ops->load) {
+    ierr = (*ts->ops->load)(ts,viewer);CHKERRQ(ierr);
+  }
+  ierr = DMCreate(((PetscObject)ts)->comm,&ts->dm);CHKERRQ(ierr);
+  ierr = DMLoad(ts->dm,viewer);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(ts->dm,&ts->vec_sol);CHKERRQ(ierr);
+  ierr = VecLoad(ts->vec_sol,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSView"
 /*@C
     TSView - Prints the TS data structure.
@@ -1069,7 +1124,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   TSType         type;
-  PetscBool      iascii,isstring,isundials;
+  PetscBool      iascii,isstring,isundials,isbinary;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1081,6 +1136,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ts,viewer,"TS Object");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum steps=%D\n",ts->max_steps);CHKERRQ(ierr);
@@ -1099,6 +1155,24 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   } else if (isstring) {
     ierr = TSGetType(ts,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-7.7s",type);CHKERRQ(ierr);
+  } else if (isbinary) {
+    PetscInt         classid = TS_FILE_CLASSID;
+    MPI_Comm         comm;
+    PetscMPIInt      rank;
+    char             type[256];
+
+    ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscStrncpy(type,((PetscObject)ts)->type_name,256);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+    }
+    if (ts->ops->view) {
+      ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
+    }
+    ierr = DMView(ts->dm,viewer);CHKERRQ(ierr);
+    ierr = VecView(ts->vec_sol,viewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)ts,TSSUNDIALS,&isundials);CHKERRQ(ierr);
@@ -2229,7 +2303,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(u,VEC_CLASSID,2);
+  if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
   if (ts->exact_final_time) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
     if (!ts->vec_sol || u == ts->vec_sol) {
       Vec y;
@@ -2237,9 +2311,13 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ierr = TSSetSolution(ts,y);CHKERRQ(ierr);
       ierr = VecDestroy(&y);CHKERRQ(ierr); /* grant ownership */
     }
-    ierr = VecCopy(u,ts->vec_sol);CHKERRQ(ierr);
+    if (u) {
+      ierr = VecCopy(u,ts->vec_sol);CHKERRQ(ierr);
+    }
   } else {
-    ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
+    if (u) {
+      ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
+    }
   }
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   /* reset time step and iteration counters */
@@ -2671,6 +2749,7 @@ PetscErrorCode  TSGetIJacobian(TS ts,Mat *A,Mat *B,TSIJacobian *f,void **ctx)
 
   PetscFunctionBegin;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   ierr = SNESGetJacobian(snes,A,B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetIJacobian(dm,f,ctx);CHKERRQ(ierr);

@@ -339,10 +339,13 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                #{'numProcs': 3, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'},
                                                                #{'numProcs': 5, 'args': '-run_type full -refinement_limit 0.0625 -bc_type dirichlet -pc_type jacobi -ksp_rtol 1.0e-9 -snes_converged_reason -snes_view'}
 ],
-                        'src/ts/examples/tutorials/ex11':      [{'numProcs': 1, 'args': '-ufv_vtk_interval 0'},
-                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f sevenside-quad-15.e'},
-                                                                {'numProcs': 2, 'args': '-ufv_vtk_interval 0'},
-                                                                {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f sevenside-quad-15.e'}],
+                        'src/ts/examples/tutorials/ex11':      [{'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo'},
+                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo'},
+                                                                {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo'},
+                                                                {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo'},
+                                                                {'numProcs': 8, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad.exo'},
+                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo -ts_type rosw'},
+                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f squaremotor-30.exo'}],
                         'src/ts/examples/tutorials/ex18':      {'numProcs': 1, 'args': '-snes_mf -ts_monitor_solution -ts_monitor -snes_monitor'},
                         }
 
@@ -1274,7 +1277,11 @@ class PETScMaker(script.Script):
    self.logWrite('Linking object '+str(objects)+' into '+executable+'\n', debugSection = self.debugSection, forceScroll = True)
    self.configInfo.compilers.pushLanguage(language)
    packageIncludes, packageLibs = self.getPackageInfo()
-   cmd = self.configInfo.compilers.getFullLinkerCmd(' '.join(objects)+' -L'+self.petscLibDir+' -lpetsc '+packageLibs+' -L/usr/local/cuda/lib', executable)
+   if self.argDB.get('with-single-library') == 0:
+       libpetsc = ' -lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys '
+   else:
+       libpetsc = ' -lpetsc '
+   cmd = self.configInfo.compilers.getFullLinkerCmd(' '.join(objects)+' -L'+self.petscLibDir+libpetsc+packageLibs+' -L/usr/local/cuda/lib', executable)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
@@ -1437,44 +1444,56 @@ class PETScMaker(script.Script):
        os.remove(fname)
    return
 
- def checkTestOutput(self, testDir, executable, output, testNum):
+ def checkTestOutput(self, testDir, executable, cmd, output, testNum, replace = False):
    from difflib import unified_diff
    outputName = os.path.join(testDir, 'output', os.path.basename(executable)+'_'+str(testNum)+'.out')
    ret        = 0
    if not os.path.isfile(outputName):
-     self.logPrint("MISCONFIGURATION: Regression output file %s (test %d) is missing" % (outputName, testNum), debugSection='screen')
+     if replace:
+       with file(outputName, 'w') as f:
+         f.write(output)
+       self.logPrint("REPLACED: Regression output file %s (test %d) was stored" % (outputName, testNum), debugSection='screen')
+     else:
+       self.logPrint("MISCONFIGURATION: Regression output file %s (test %d) is missing" % (outputName, testNum), debugSection='screen')
    else:
      with file(outputName) as f:
        validOutput = f.read()
        if not validOutput == output:
-         self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match" % (executable, str(testNum)))
-         for line in unified_diff(output.split('\n'), validOutput.split('\n'), fromfile='Current Output', tofile='Saved Output'):
-           self.logPrint(line)
-         self.logPrintDivider()
-         self.logPrint(validOutput, indent = 0)
-         self.logPrintDivider()
-         self.logPrint(output, indent = 0)
-         ret = -1
+         if replace:
+           with file(outputName, 'w') as f:
+             f.write(output)
+           self.logPrint("REPLACED: Regression output file %s (test %d) was stored" % (outputName, testNum), debugSection='screen')
+         else:
+           self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match\n" % (executable, str(testNum)), debugSection = 'screen')
+           for linum,line in enumerate(unified_diff(validOutput.split('\n'), output.split('\n'), fromfile=outputName, tofile=cmd)):
+               end = '' if linum < 3 else '\n' # Control lines have their own end-lines
+               self.logWrite(line+end, debugSection = 'screen')
+           self.logPrint('Reference output from %s\n' % outputName)
+           self.logPrint(validOutput, indent = 0)
+           self.logPrint('Current output from %s' % cmd)
+           self.logPrint(output, indent = 0)
+           ret = -1
        else:
          self.logPrint("TEST SUCCESS: Regression output for %s (test %s) matches" % (executable, str(testNum)))
    return ret
 
  def getTestCommand(self, executable, **params):
    numProcs = params.get('numProcs', 1)
-   args     = params.get('args', '')
-   return ' '.join([self.configInfo.mpi.mpiexec, '-n', str(numProcs), os.path.abspath(executable), args])
+   args     = params.get('args', '') % dict(meshes=os.path.join(self.petscDir,'share','petsc','datafiles','meshes'))
+   hosts    = ','.join(['localhost']*int(numProcs))
+   return ' '.join([self.configInfo.mpi.mpiexec, '-hosts', hosts, '-n', str(numProcs), os.path.abspath(executable), args])
 
- def runTest(self, testDir, executable, testNum, **params):
+ def runTest(self, testDir, executable, testNum, replace, **params):
    cmd = self.getTestCommand(executable, **params)
-   self.logPrint('Running test for '+executable)
+   self.logPrint('Running #%d: %s' % (testNum, cmd), debugSection='screen')
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
-       self.logPrint("TEST ERROR: Failed to execute %s\n" % executable)
-       self.logPrint(output+error, indent = 0)
+       self.logPrint("TEST ERROR: Failed to execute %s\n" % executable, debugSection='screen')
+       self.logPrint(output+error, indent = 0, debugSection='screen')
        ret = -2
      else:
-       ret = self.checkTestOutput(testDir, executable, output+error, testNum)
+       ret = self.checkTestOutput(testDir, executable, cmd, output+error, testNum, replace)
    return ret
 
  def regressionTestsDir(self, dirname, dummy):
@@ -1508,10 +1527,10 @@ class PETScMaker(script.Script):
          self.link(executable, obj, 'FC')
        else:
          self.link(executable, obj, self.languages.clanguage)
-       self.runTest(dirname, executable, testNum, **regressionParameters.get(paramKey, {}))
+       self.runTest(dirname, executable, testNum, False, **regressionParameters.get(paramKey, {}))
        testNum += 1
        while '%s_%d' % (paramKey, testNum) in regressionParameters:
-         self.runTest(dirname, executable, testNum, **regressionParameters.get('%s_%d' % (paramKey, testNum), {}))
+         self.runTest(dirname, executable, testNum, False, **regressionParameters.get('%s_%d' % (paramKey, testNum), {}))
          testNum += 1
        self.cleanupTest(dirname, executable)
    return

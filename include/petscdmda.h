@@ -377,5 +377,4 @@ PETSC_EXTERN PetscErrorCode DMDARestoreClosureScalar(DM,PetscSection,PetscInt,Pe
 PETSC_EXTERN PetscErrorCode DMDASetClosureScalar(DM,PetscSection,PetscInt,PetscScalar*,const PetscScalar*,InsertMode);
 PETSC_EXTERN PetscErrorCode DMDAConvertToCell(DM, MatStencil, PetscInt *);
 
-#define DMDA_FILE_CLASSID 1211220
 #endif
