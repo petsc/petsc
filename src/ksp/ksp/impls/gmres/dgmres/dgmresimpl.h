@@ -37,7 +37,7 @@
   PetscScalar	*auau; 	/* product of (M*A*U)^T*M*A*U */ \
   PetscScalar	*auu; 	/* product of (M*A*U)^T*U */ \
   PetscScalar 	*work; 	/* work space for LAPACK functions */ \
-  PetscInt	*iwork;	/* work space for LAPACK functions */ \
+  PetscBLASInt	*iwork;	/* work space for LAPACK functions */ \
   PetscReal	*orth; 	/* Coefficients for the orthogonalization */ \
   PetscBool     HasSchur; /* Indicate if the Schur form had already been computed in this cycle */ \
   PetscInt	improve; /* 0 = do not improve the eigenvalues; This is an experimental option */
