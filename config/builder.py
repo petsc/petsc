@@ -1467,7 +1467,7 @@ class PETScMaker(script.Script):
            self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match\n" % (executable, str(testNum)), debugSection = 'screen')
            for linum,line in enumerate(unified_diff(validOutput.split('\n'), output.split('\n'), fromfile=outputName, tofile=cmd)):
                end = '' if linum < 3 else '\n' # Control lines have their own end-lines
-               self.logWrite(line+end, debugSection = 'screen')
+               self.logWrite(line+end, debugSection = 'screen', forceScroll = True)
            self.logPrint('Reference output from %s\n' % outputName)
            self.logPrint(validOutput, indent = 0)
            self.logPrint('Current output from %s' % cmd)
