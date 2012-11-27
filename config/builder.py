@@ -345,7 +345,7 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                 {'numProcs': 2, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad-15.exo'},
                                                                 {'numProcs': 8, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside-quad.exo'},
                                                                 {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/sevenside.exo -ts_type rosw'},
-                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f squaremotor-30.exo'}],
+                                                                {'numProcs': 1, 'args': '-ufv_vtk_interval 0 -f %(meshes)s/squaremotor-30.exo -ufv_split_faces'}],
                         'src/ts/examples/tutorials/ex18':      {'numProcs': 1, 'args': '-snes_mf -ts_monitor_solution -ts_monitor -snes_monitor'},
                         }
 
@@ -1467,7 +1467,7 @@ class PETScMaker(script.Script):
            self.logPrint("TEST ERROR: Regression output for %s (test %s) does not match\n" % (executable, str(testNum)), debugSection = 'screen')
            for linum,line in enumerate(unified_diff(validOutput.split('\n'), output.split('\n'), fromfile=outputName, tofile=cmd)):
                end = '' if linum < 3 else '\n' # Control lines have their own end-lines
-               self.logWrite(line+end, debugSection = 'screen')
+               self.logWrite(line+end, debugSection = 'screen', forceScroll = True)
            self.logPrint('Reference output from %s\n' % outputName)
            self.logPrint(validOutput, indent = 0)
            self.logPrint('Current output from %s' % cmd)
