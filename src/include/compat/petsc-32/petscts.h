@@ -1,5 +1,7 @@
 #include <private/tsimpl.h>
 
+#define TSSolve(ts,u) TSSolve((ts),(u),PETSC_NULL)
+
 #define TSROSW "rosw"
 
 #undef __FUNCT__

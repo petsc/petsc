@@ -504,9 +504,7 @@ cdef class TS(Object):
         CHKERR( TSReset(self.ts) )
 
     def solve(self, Vec u not None):
-        cdef PetscReal rval = 0
-        CHKERR( TSSolve(self.ts, u.vec, &rval) )
-        return toReal(rval)
+        CHKERR( TSSolve(self.ts, u.vec) )
 
     def step(self):
         CHKERR( TSStep(self.ts) )
