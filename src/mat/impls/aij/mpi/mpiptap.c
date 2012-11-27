@@ -582,7 +582,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
        0: do dense axpy in MatPtAPNumeric() - fast, but requires storage of a nonscalable dense array apa; 
        1: do sparse axpy in MatPtAPNumeric() - might slow, uses a sparse array apa */
   /* set default scalable */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-matptap_scalable",&scalable,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)C)->prefix,"-matptap_scalable",&scalable,PETSC_NULL);CHKERRQ(ierr);
   if (!scalable){  /* Do dense axpy */
     /*--------------------------------------------------*/
     /* malloc apa to store dense row A[i,:]*P - nonscalable! */
