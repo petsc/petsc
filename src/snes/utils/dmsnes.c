@@ -542,7 +542,7 @@ static PetscErrorCode SNESDefaultComputeFunction_DMLegacy(SNES snes,Vec X,Vec F,
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMComputeFunction(dm,X,F);CHKERRQ(ierr);
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Why is this ever being called?");
   PetscFunctionReturn(0);
 }
 

@@ -165,7 +165,6 @@ PETSC_EXTERN PetscErrorCode DMHasFunction(DM,PetscBool *);
 PETSC_EXTERN PetscErrorCode DMHasJacobian(DM,PetscBool *);
 PETSC_EXTERN PetscErrorCode DMHasVariableBounds(DM,PetscBool *);
 PETSC_EXTERN PetscErrorCode DMHasColoring(DM,PetscBool *);
-PETSC_EXTERN PetscErrorCode DMComputeFunction(DM,Vec,Vec);
 PETSC_EXTERN PetscErrorCode DMComputeJacobian(DM,Vec,Mat,Mat,MatStructure *);
 PETSC_EXTERN PetscErrorCode DMComputeJacobianDefault(DM,Vec,Mat,Mat,MatStructure *);
 PETSC_EXTERN PetscErrorCode DMComputeVariableBounds(DM,Vec,Vec);

@@ -1760,10 +1760,8 @@ PetscErrorCode  SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   /*  A(x)*x - b(x) */
   if (sdm->computepfunction) {
     ierr = (*sdm->computepfunction)(snes,x,f,sdm->pctx);CHKERRQ(ierr);
-  } else if (snes->dm) {
-    ierr = DMComputeFunction(snes->dm,x,f);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() or SNESSetDM() before SNESPicardComputeFunction to provide Picard function.");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard function.");
   }
 
   if (sdm->computepjacobian) {
@@ -2014,8 +2012,6 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
     PetscStackPush("SNES user function");
     ierr = (*sdm->computefunction)(snes,x,y,sdm->functionctx);CHKERRQ(ierr);
     PetscStackPop;
-  } else if (snes->dm) {
-    ierr = DMComputeFunction(snes->dm,x,y);CHKERRQ(ierr);
   } else if (snes->vec_rhs) {
     ierr = MatMult(snes->jacobian, x, y);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetFunction() or SNESSetDM() before SNESComputeFunction(), likely called from SNESSolve().");
