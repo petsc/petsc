@@ -1512,7 +1512,7 @@ PetscErrorCode IntegrateJacobianBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
 
 .seealso: FormFunctionLocal()
 */
-PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, AppCtx *user)
+PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *str,AppCtx *user)
 {
   const PetscInt debug = user->debug;
   const PetscInt dim   = user->dim;
@@ -1593,6 +1593,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, AppCtx *user)
     ierr = MatShellGetContext(Jac, &jctx);CHKERRQ(ierr);
     ierr = VecCopy(X, jctx->u);CHKERRQ(ierr);
   }
+  *str = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
@@ -1642,16 +1643,23 @@ int main(int argc, char **argv)
   } else {
     A = J;
   }
-  ierr = SNESSetJacobian(snes, A, J, SNESDMComputeJacobian, &user);CHKERRQ(ierr);
   ierr = CreatePressureNullSpace(user.dm, &user, &nullSpace);CHKERRQ(ierr);
   ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
   if (A != J) {
     ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
   }
 
+#define new
+#ifdef new
+  ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
+  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
+#else
   ierr = DMSetLocalFunction(user.dm, (DMLocalFunction1) FormFunctionLocal);CHKERRQ(ierr);
   ierr = DMSetLocalJacobian(user.dm, (DMLocalJacobian1) FormJacobianLocal);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes, r, SNESDMComputeFunction, &user);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes, A, J, SNESDMComputeJacobian, &user);CHKERRQ(ierr);
+#endif
+
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   {
@@ -1704,7 +1712,7 @@ int main(int argc, char **argv)
     ierr = ComputeError(u, &error, &user);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);
     /* Check residual */
-    ierr = SNESDMComputeFunction(snes, u, r, &user);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes, u, r);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n");CHKERRQ(ierr);
     ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
     ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -1716,12 +1724,12 @@ int main(int argc, char **argv)
       MatStructure flag;
       PetscBool    isNull;
 
-      ierr = SNESDMComputeJacobian(snes, u, &A, &A, &flag, &user);CHKERRQ(ierr);
+      ierr = SNESComputeJacobian(snes, u, &A, &A, &flag);CHKERRQ(ierr);
       ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
       if (!isNull) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
-      ierr = SNESDMComputeFunction(snes, r, b, &user);CHKERRQ(ierr);
+      ierr = SNESComputeFunction(snes, r, b);CHKERRQ(ierr);
       ierr = MatMult(A, u, r);CHKERRQ(ierr);
       ierr = VecAXPY(r, 1.0, b);CHKERRQ(ierr);
       ierr = VecDestroy(&b);CHKERRQ(ierr);
