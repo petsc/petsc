@@ -146,7 +146,9 @@ ex29: ex29.o chkopts
 ex30: ex30.o chkopts
 	-${CLINKER} -o ex30 ex30.o ${PETSC_SNES_LIB}
 	${RM} ex30.o
-ex31: ex31.o chkopts
+ex31.h:
+	-${PETSC_DIR}/bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient 2 1 1 1 identity ${PETSC_DIR}/src/snes/examples/tutorials/ex31.h
+ex31: ex31.h ex31.o chkopts
 	-${CLINKER} -o ex31 ex31.o ${PETSC_SNES_LIB}
 	${RM} ex31.o
 ex32: ex32.o chkopts
@@ -228,7 +230,9 @@ ex61gen: ex61gen.o  chkopts
 ex61view: ex61view.o  chkopts
 	-${CLINKER} -o ex61view ex61view.o ${PETSC_SNES_LIB}
 	${RM} ex61view.o
-ex62: ex62.o  chkopts
+ex62.h:
+	-${PETSC_DIR}/bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 1 laplacian 2 1 1 1 gradient ${PETSC_DIR}/src/snes/examples/tutorials/ex62.h
+ex62: ex62.h ex62.o  chkopts
 	-${CLINKER} -o ex62 ex62.o ${PETSC_SNES_LIB}
 	${RM} ex62.o
 ex63: ex63.o  chkopts
@@ -249,10 +253,17 @@ ex65dm: ex65dm.o  chkopts
 ex633D_DB: ex633D_DB.o  chkopts
 	-${CLINKER} -o ex633D_DB ex633D_DB.o ${PETSC_SNES_LIB}
 	${RM} ex633D_DB.o
+ex67.h:
+	-${PETSC_DIR}/bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 1 laplacian 2 0 1 1 gradient ${PETSC_DIR}/src/snes/examples/tutorials/ex67.h
+ex67: ex67.h ex67.o  chkopts
+	-${CLINKER} -o ex67 ex67.o ${PETSC_SNES_LIB}
+	${RM} ex67.o
 ex70: ex70.o  chkopts
 	-${CLINKER} -o ex70 ex70.o ${PETSC_SNES_LIB}
 	${RM} ex70.o
-ex72: ex72.o  chkopts
+ex72.h:
+	-${PETSC_DIR}/bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py 2 1 2 1 laplacian 2 1 1 1 gradient ${PETSC_DIR}/src/snes/examples/tutorials/ex72.h
+ex72: ex72.h ex72.o  chkopts
 	-${CLINKER} -o ex72 ex72.o ${PETSC_SNES_LIB}
 	${RM} ex72.o
 #--------------------------------------------------------------------------
