@@ -1,5 +1,5 @@
 !
-!  Demonstrates use of DMDASetLocalFunction() from Fortran
+!  Demonstrates use of DMDASNESSetFunctionLocal() from Fortran
 !
 !    Note: the access to the entries of the local arrays below use the Fortran
 !   convention of starting at zero. However calls to MatSetValues()  start at 0.
@@ -32,7 +32,8 @@
       call SNESCreate(PETSC_COMM_WORLD,snes,ierr)
       call SNESSetDM(snes,da,ierr)
 
-      call DMDASetLocalFunction(da,FormFunctionLocal,ierr)
+      call DMDASNESSetFunctionLocal(da,INSERT_VALUES,FormFunctionLocal,    &
+     &                              PETSC_NULL_OBJECT,ierr)
       call SNESSetFromOptions(snes,ierr)
 
 !      Solve the nonlinear system
@@ -45,9 +46,9 @@
       end
 
 
-      subroutine FormFunctionLocal(in,x,f,ierr)
+      subroutine FormFunctionLocal(in,x,f,dummy,ierr)
       implicit none
-      PetscInt i,j,k
+      PetscInt i,j,k,dummy
       DMDALocalInfo in(DMDA_LOCAL_INFO_SIZE)
       PetscScalar x(in(DMDA_LOCAL_INFO_DOF),                            &
      &              XG_RANGE,                                           &

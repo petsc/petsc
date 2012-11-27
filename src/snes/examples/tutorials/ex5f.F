@@ -140,8 +140,10 @@
 
 !  Set function evaluation routine and vector
 
-      call DMDASetLocalFunction(da,FormFunctionLocal,ierr)
-      call DMDASetLocalJacobian(da,FormJacobianLocal,ierr)
+      call DMDASNESSetFunctionLocal(da,INSERT_VALUES,FormFunctionLocal,            &
+     &                              PETSC_NULL_OBJECT,ierr)
+      call DMDASNESSetJacobianLocal(da,FormJacobianLocal,                          &
+     &                              PETSC_NULL_OBJECT,ierr)
       call SNESSetDM(snes,da,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -406,14 +408,15 @@
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-      subroutine FormJacobianLocal(info,x,jac,ctx,ierr)
+      subroutine FormJacobianLocal(info,x,A,jac,ctx,str,ierr)
       implicit none
 
 #include "ex5f.h"
 
 !  Input/output variables:
       PetscScalar x(gxs:gxe,gys:gye)
-      Mat         jac
+      Mat         A,jac
+      MatStructure str
       PetscErrorCode  ierr
       integer ctx
       DMDALocalInfo info(DMDA_LOCAL_INFO_SIZE)
@@ -480,6 +483,11 @@
  20   continue
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
+      if (A .ne. jac) then
+         call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
+         call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
+      endif
+      str = SAME_NONZERO_PATTERN
       return
       end
 

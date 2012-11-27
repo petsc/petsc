@@ -257,90 +257,17 @@ typedef struct {PetscScalar x,y,z;} DMDACoor3d;
 
 PETSC_EXTERN PetscErrorCode DMDAGetLocalInfo(DM,DMDALocalInfo*);
 PETSC_EXTERN PetscErrorCode DMDAGetLocalBlockInfo(DM,DMDALocalInfo*);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDALocalFunction1)(DMDALocalInfo*,void*,void*,void*);
-PETSC_EXTERN PetscErrorCode DMDAComputeFunctionLocal(DM, DMDALocalFunction1, Vec, Vec, void *);
-PETSC_EXTERN PetscErrorCode DMDAComputeFunctionLocalGhost(DM, DMDALocalFunction1, Vec, Vec, void *);
-PETSC_EXTERN PetscErrorCode DMDAFormJacobianLocal(DM, DMDALocalFunction1, Vec, Mat, void *);
-PETSC_EXTERN PetscErrorCode DMDAComputeFunction1(DM,Vec,Vec,void*);
-PETSC_EXTERN PetscErrorCode DMDAComputeFunction(DM,PetscErrorCode (*)(void),Vec,Vec,void*);
-PETSC_EXTERN PetscErrorCode DMDAComputeFunctioni1(DM,PetscInt,Vec,PetscScalar*,void*);
-PETSC_EXTERN PetscErrorCode DMDAComputeFunctionib1(DM,PetscInt,Vec,PetscScalar*,void*);
 PETSC_EXTERN PetscErrorCode DMDAComputeJacobian1WithAdic(DM,Vec,Mat,void*);
 PETSC_EXTERN PetscErrorCode DMDAComputeJacobian1WithAdifor(DM,Vec,Mat,void*);
 PETSC_EXTERN PetscErrorCode DMDAMultiplyByJacobian1WithAdic(DM,Vec,Vec,Vec,void*);
 PETSC_EXTERN PetscErrorCode DMDAMultiplyByJacobian1WithAdifor(DM,Vec,Vec,Vec,void*);
 PETSC_EXTERN PetscErrorCode DMDAMultiplyByJacobian1WithAD(DM,Vec,Vec,Vec,void*);
 PETSC_EXTERN PetscErrorCode DMDAComputeJacobian1(DM,Vec,Mat,void*);
-PETSC_EXTERN PetscErrorCode DMDAGetLocalFunction(DM,DMDALocalFunction1*);
-PETSC_EXTERN PetscErrorCode DMDASetLocalFunction(DM,DMDALocalFunction1);
-PETSC_EXTERN PetscErrorCode DMDASetLocalFunctioni(DM,PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*));
-PETSC_EXTERN PetscErrorCode DMDASetLocalFunctionib(DM,PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*));
-PETSC_EXTERN PetscErrorCode DMDAGetLocalJacobian(DM,DMDALocalFunction1*);
-PETSC_EXTERN PetscErrorCode DMDASetLocalJacobian(DM,DMDALocalFunction1);
-PETSC_EXTERN PetscErrorCode DMDASetLocalAdicFunction_Private(DM,DMDALocalFunction1);
 
 PETSC_EXTERN PetscErrorCode MatRegisterDAAD(void);
 PETSC_EXTERN PetscErrorCode MatCreateDAAD(DM,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSeqUSFFT(Vec,DM,Mat*);
 
-/*MC
-       DMDASetLocalAdicFunction - Caches in a DM a local function computed by ADIC/ADIFOR
-
-   Synopsis:
-   PetscErrorCode DMDASetLocalAdicFunction(DM da,DMDALocalFunction1 ad_lf)
-
-   Logically Collective on DM
-
-   Input Parameter:
-+  da - initial distributed array
--  ad_lf - the local function as computed by ADIC/ADIFOR
-
-   Level: intermediate
-
-.keywords:  distributed array, refine
-
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMDAGetLocalFunction(), DMDASetLocalFunction(),
-          DMDASetLocalJacobian()
-M*/
-#if defined(PETSC_HAVE_ADIC)
-#  define DMDASetLocalAdicFunction(a,d) DMDASetLocalAdicFunction_Private(a,(DMDALocalFunction1)d)
-#else
-#  define DMDASetLocalAdicFunction(a,d) DMDASetLocalAdicFunction_Private(a,0)
-#endif
-
-PETSC_EXTERN PetscErrorCode DMDASetLocalAdicMFFunction_Private(DM,DMDALocalFunction1);
-#if defined(PETSC_HAVE_ADIC)
-#  define DMDASetLocalAdicMFFunction(a,d) DMDASetLocalAdicMFFunction_Private(a,(DMDALocalFunction1)d)
-#else
-#  define DMDASetLocalAdicMFFunction(a,d) DMDASetLocalAdicMFFunction_Private(a,0)
-#endif
-PETSC_EXTERN PetscErrorCode DMDASetLocalAdicFunctioni_Private(DM,PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*));
-#if defined(PETSC_HAVE_ADIC)
-#  define DMDASetLocalAdicFunctioni(a,d) DMDASetLocalAdicFunctioni_Private(a,(PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))d)
-#else
-#  define DMDASetLocalAdicFunctioni(a,d) DMDASetLocalAdicFunctioni_Private(a,0)
-#endif
-PETSC_EXTERN PetscErrorCode DMDASetLocalAdicMFFunctioni_Private(DM,PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*));
-#if defined(PETSC_HAVE_ADIC)
-#  define DMDASetLocalAdicMFFunctioni(a,d) DMDASetLocalAdicMFFunctioni_Private(a,(PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))d)
-#else
-#  define DMDASetLocalAdicMFFunctioni(a,d) DMDASetLocalAdicMFFunctioni_Private(a,0)
-#endif
-
-PETSC_EXTERN PetscErrorCode DMDASetLocalAdicFunctionib_Private(DM,PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*));
-#if defined(PETSC_HAVE_ADIC)
-#  define DMDASetLocalAdicFunctionib(a,d) DMDASetLocalAdicFunctionib_Private(a,(PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))d)
-#else
-#  define DMDASetLocalAdicFunctionib(a,d) DMDASetLocalAdicFunctionib_Private(a,0)
-#endif
-PETSC_EXTERN PetscErrorCode DMDASetLocalAdicMFFunctionib_Private(DM,PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*));
-#if defined(PETSC_HAVE_ADIC)
-#  define DMDASetLocalAdicMFFunctionib(a,d) DMDASetLocalAdicMFFunctionib_Private(a,(PetscErrorCode (*)(DMDALocalInfo*,MatStencil*,void*,void*,void*))d)
-#else
-#  define DMDASetLocalAdicMFFunctionib(a,d) DMDASetLocalAdicMFFunctionib_Private(a,0)
-#endif
-
-PETSC_EXTERN PetscErrorCode DMDAComputeFunctioniTest1(DM,void*);
 PETSC_EXTERN PetscErrorCode DMDASetGetMatrix(DM,PetscErrorCode (*)(DM, MatType,Mat *));
 PETSC_EXTERN PetscErrorCode DMDASetBlockFills(DM,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMDASetRefinementFactor(DM,PetscInt,PetscInt,PetscInt);

@@ -66,19 +66,8 @@ typedef struct {
   void                  *startin[DMDA_MAX_WORK_ARRAYS],*startout[DMDA_MAX_WORK_ARRAYS];
   void                  *startghostedin[DMDA_MAX_WORK_ARRAYS],*startghostedout[DMDA_MAX_WORK_ARRAYS];
 
-  DMDALocalFunction1    lf;
-  DMDALocalFunction1    lj;
-  DMDALocalFunction1    adic_lf;
-  DMDALocalFunction1    adicmf_lf;
-  DMDALocalFunction1    adifor_lf;
-  DMDALocalFunction1    adiformf_lf;
-
-  PetscErrorCode        (*lfi)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
-  PetscErrorCode        (*adic_lfi)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
-  PetscErrorCode        (*adicmf_lfi)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
-  PetscErrorCode        (*lfib)(DMDALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
-  PetscErrorCode        (*adic_lfib)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
-  PetscErrorCode        (*adicmf_lfib)(DMDALocalInfo*,MatStencil*,void*,void*,void*);
+  PetscErrorCode (*lf)(DM, Vec, Vec, void *);
+  PetscErrorCode (*lj)(DM, Vec, Vec, void *);
 
   /* used by DMDASetBlockFills() */
   PetscInt              *ofill,*dfill;

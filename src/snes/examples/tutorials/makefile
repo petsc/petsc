@@ -11,7 +11,7 @@ LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5s.c ex7.c \
                 ex10.c ex12.c ex14.c ex15.c ex18.c ex19.c ex20.c ex21.c ex22.c \
-                ex25.c ex28.c ex30.c ex31.c \
+                ex25.c ex28.c ex30.c ex31.c ex33.c \
                 ex35.c ex42.c ex43.c ex46.c ex48.c \
                 ex52.c ex53.c ex54.c ex55.c ex58.c ex59.c ex60.c \
                 ex61.c ex61gen.c ex61view.c ex62.c ex63.c ex633D_DB.c ex64.c ex65.c ex70.c \
@@ -146,12 +146,17 @@ ex29: ex29.o chkopts
 ex30: ex30.o chkopts
 	-${CLINKER} -o ex30 ex30.o ${PETSC_SNES_LIB}
 	${RM} ex30.o
-ex31: ex31.o chkopts
+ex31.h:
+	-${PETSC_DIR}/bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient 2 1 1 1 identity ${PETSC_DIR}/src/snes/examples/tutorials/ex31.h
+ex31: ex31.h ex31.o chkopts
 	-${CLINKER} -o ex31 ex31.o ${PETSC_SNES_LIB}
 	${RM} ex31.o
 ex32: ex32.o chkopts
 	-${CLINKER} -o ex32 ex32.o ${PETSC_SNES_LIB}
 	${RM} ex32.o
+ex33: ex33.o chkopts
+	-${CLINKER} -o ex33 ex33.o ${PETSC_SNES_LIB}
+	${RM} ex33.o
 ex35: ex35.o chkopts
 	-${CLINKER} -o ex35 ex35.o ${PETSC_SNES_LIB}
 	${RM} ex35.o
@@ -246,6 +251,9 @@ ex65dm: ex65dm.o  chkopts
 ex633D_DB: ex633D_DB.o  chkopts
 	-${CLINKER} -o ex633D_DB ex633D_DB.o ${PETSC_SNES_LIB}
 	${RM} ex633D_DB.o
+ex67: ex67.o  chkopts
+	-${CLINKER} -o ex67 ex67.o ${PETSC_SNES_LIB}
+	${RM} ex67.o
 ex70: ex70.o  chkopts
 	-${CLINKER} -o ex70 ex70.o ${PETSC_SNES_LIB}
 	${RM} ex70.o
@@ -910,6 +918,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 ex21.rm \
                                  ex25.PETSc runex25 runex25_2 \
                                  ex25.rm ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm ex30.PETSc runex30 ex30.rm \
+                                 ex33.PETSc ex33.rm \
                                  ex35.PETSc runex35 runex35_2 runex35_3 runex35_4 runex35_5 runex35_6 runex35_7 runex35_8 ex35.rm \
                                  ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
                                  ex46.PETSc runex46 ex46.rm \
