@@ -156,7 +156,7 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
     if (pStart >= 0) {ierr = PetscSectionVecView(coordSection, coordinates, viewer);CHKERRQ(ierr);}
     ierr = DMComplexGetLabel(dm, "marker", &markers);CHKERRQ(ierr);
     if (markers) {
-      ierr = DMLabelView(markers, viewer);CHKERRQ(ierr);
+      ierr = DMLabelView(markers,viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_LATEX) {

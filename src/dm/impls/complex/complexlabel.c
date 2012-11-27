@@ -736,3 +736,80 @@ PetscErrorCode DMComplexGetLabel(DM dm, const char name[], DMLabel *label)
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexAddLabel"
+/*@C
+  DMComplexAddLabel - Add the label to this mesh
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMComplex object
+- label - The DMLabel
+
+  Level: developer
+
+.keywords: mesh
+.seealso: DMComplexCreateLabel(), DMComplexHasLabel(), DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+@*/
+PetscErrorCode DMComplexAddLabel(DM dm, DMLabel label)
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  PetscBool      hasLabel;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMComplexHasLabel(dm, label->name, &hasLabel);CHKERRQ(ierr);
+  if (hasLabel) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Label %s already exists in this DM", label->name);
+  label->next  = mesh->labels;
+  mesh->labels = label;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexRemoveLabel"
+/*@C
+  DMComplexRemoveLabel - Remove the label from this mesh
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The DMComplex object
+- name - The label name
+
+  Output Parameter:
+. label - The DMLabel, or PETSC_NULL if the label is absent
+
+  Level: developer
+
+.keywords: mesh
+.seealso: DMComplexCreateLabel(), DMComplexHasLabel(), DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
+@*/
+PetscErrorCode DMComplexRemoveLabel(DM dm, const char name[], DMLabel *label)
+{
+  DM_Complex    *mesh = (DM_Complex *) dm->data;
+  DMLabel        next = mesh->labels;
+  DMLabel        last = PETSC_NULL;
+  PetscBool      hasLabel;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMComplexHasLabel(dm, name, &hasLabel);CHKERRQ(ierr);
+  *label = PETSC_NULL;
+  if (!hasLabel) PetscFunctionReturn(0);
+  while(next) {
+    ierr = PetscStrcmp(name, next->name, &hasLabel);CHKERRQ(ierr);
+    if (hasLabel) {
+      if (last) last->next = next->next;
+      next->next = PETSC_NULL;
+      *label = next;
+      break;
+    }
+    last = next;
+    next = next->next;
+  }
+  PetscFunctionReturn(0);
+}

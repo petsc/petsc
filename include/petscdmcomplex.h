@@ -88,6 +88,8 @@ PETSC_EXTERN PetscErrorCode DMComplexGetNumLabels(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexGetLabelName(DM, PetscInt, const char **);
 PETSC_EXTERN PetscErrorCode DMComplexHasLabel(DM, const char [], PetscBool *);
 PETSC_EXTERN PetscErrorCode DMComplexGetLabel(DM, const char *, DMLabel *);
+PETSC_EXTERN PetscErrorCode DMComplexAddLabel(DM, DMLabel);
+PETSC_EXTERN PetscErrorCode DMComplexRemoveLabel(DM, const char [], DMLabel *);
 PETSC_EXTERN PetscErrorCode DMComplexGetCellNumbering(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMComplexGetVertexNumbering(DM, IS *);
 
