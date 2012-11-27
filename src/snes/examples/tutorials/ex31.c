@@ -1121,16 +1121,8 @@ int main(int argc, char **argv)
   }
   ierr = DMSetNullSpaceConstructor(user.dm, 1, CreateNullSpaces);CHKERRQ(ierr);
 
-#define new
-#ifdef new
   ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMComplexComputeResidualFEM,&user);CHKERRQ(ierr);
-  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))DMComplexComputeJacobianFEMnew,&user);CHKERRQ(ierr);
-#else
-  ierr = SNESSetJacobian(snes, A, J, SNESDMComputeJacobian, &user);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes, r, SNESDMComputeFunction, &user);CHKERRQ(ierr);
-  ierr = DMSetLocalFunction(user.dm, (DMLocalFunction1) DMComplexComputeResidualFEM);CHKERRQ(ierr);
-  ierr = DMSetLocalJacobian(user.dm, (DMLocalJacobian1) DMComplexComputeJacobianFEM);CHKERRQ(ierr);
-#endif
+  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))DMComplexComputeJacobianFEM,&user);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 

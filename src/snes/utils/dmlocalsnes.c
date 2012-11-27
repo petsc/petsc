@@ -54,7 +54,7 @@ static PetscErrorCode DMLocalSNESGetContext(DM dm,SNESDM sdm,DMLocal_SNES **dmlo
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeFunction_DMLocal"
-PetscErrorCode SNESComputeFunction_DMLocal(SNES snes,Vec X,Vec F,void *ctx)
+static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -72,20 +72,12 @@ PetscErrorCode SNESComputeFunction_DMLocal(SNES snes,Vec X,Vec F,void *ctx)
   ierr = VecZeroEntries(Floc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-  printf("x ---------------------\n");
-  VecView(X,0);
-  printf("localx --------------------\n");
-  VecView(Xloc,0);
   CHKMEMQ;
   ierr = (*dmlocalsnes->residuallocal)(dm,Xloc,Floc,dmlocalsnes->residuallocalctx);CHKERRQ(ierr);
   CHKMEMQ;
-  printf("localf ------------------\n");
-  VecView(Floc,0);
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm,Floc,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm,Floc,ADD_VALUES,F);CHKERRQ(ierr);
-  printf("f-----------------------\n");
-  VecView(F,0);
   ierr = DMRestoreLocalVector(dm,&Floc);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);

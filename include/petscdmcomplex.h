@@ -124,8 +124,7 @@ PETSC_EXTERN PetscErrorCode DMComplexProjectFunction(DM, PetscInt, PetscScalar (
 PETSC_EXTERN PetscErrorCode DMComplexComputeL2Diff(DM, PetscQuadrature[], PetscScalar (**)(const PetscReal []), Vec, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMComplexComputeResidualFEM(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMComplexComputeJacobianActionFEM(DM, Mat, Vec, Vec, void *);
-PETSC_EXTERN PetscErrorCode DMComplexComputeJacobianFEM(DM, Vec, Mat, Mat, void *);
-PETSC_EXTERN PetscErrorCode DMComplexComputeJacobianFEMnew(DM, Vec, Mat, Mat, MatStructure*,void *);
+PETSC_EXTERN PetscErrorCode DMComplexComputeJacobianFEM(DM, Vec, Mat, Mat, MatStructure*,void *);
 PETSC_EXTERN PetscErrorCode DMComplexSetFEMIntegration(DM,
                                                        PetscErrorCode (*)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
                                                                           const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],

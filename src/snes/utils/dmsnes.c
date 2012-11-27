@@ -55,21 +55,13 @@ PetscErrorCode SNESDMComputeFunction(SNES snes, Vec X, Vec F, void *ptr)
     localX = X;
   }
   ierr = DMGetLocalFunction(dm, &lf);CHKERRQ(ierr);
-  printf("x ---------------------\n");
-  VecView(X,0);
-  printf("localx --------------------\n");
-  VecView(localX,0);
   ierr = (*lf)(dm, localX, localF, ptr);CHKERRQ(ierr);
   if (n != N){
     ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
   }
-  printf("localf ------------------\n");
-  VecView(localF,0);
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, localF, ADD_VALUES, F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, localF, ADD_VALUES, F);CHKERRQ(ierr);
-  printf("f-----------------------\n");
-  VecView(F,0);
   ierr = DMRestoreLocalVector(dm, &localF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
