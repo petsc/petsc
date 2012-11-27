@@ -686,7 +686,7 @@ int main(int argc, char **argv)
     ierr = DMComplexComputeL2Diff(user.dm, user.fem.quad, user.exactFuncs, u, &error);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);
     /* Check residual */
-    ierr = SNESDMComputeFunction(snes, u, r, &user);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes, u, r);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n");CHKERRQ(ierr);
     ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
     ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -698,12 +698,12 @@ int main(int argc, char **argv)
       MatStructure flag;
       PetscBool    isNull;
 
-      ierr = SNESDMComputeJacobian(snes, u, &A, &A, &flag, &user);CHKERRQ(ierr);
+      ierr = SNESComputeJacobian(snes, u, &A, &A, &flag);CHKERRQ(ierr);
       ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
       if (!isNull) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
-      ierr = SNESDMComputeFunction(snes, r, b, &user);CHKERRQ(ierr);
+      ierr = SNESComputeFunction(snes, r, b);CHKERRQ(ierr);
       ierr = MatMult(A, u, r);CHKERRQ(ierr);
       ierr = VecAXPY(r, 1.0, b);CHKERRQ(ierr);
       ierr = VecDestroy(&b);CHKERRQ(ierr);

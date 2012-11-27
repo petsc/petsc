@@ -115,8 +115,6 @@ struct _p_DM {
   DMCoarsenHookLink       coarsenhook; /* For transfering auxiliary problem data to coarser grids */
   DMRefineHookLink        refinehook;
   DMBlockRestrictHookLink blockrestricthook;
-  DMLocalFunction1        lf;
-  DMLocalJacobian1        lj;
   /* Flexible communication */
   PetscSF                 sf;                   /* SF for parallel point overlap */
   PetscSF                 defaultSF;            /* SF for parallel dof overlap using default section */

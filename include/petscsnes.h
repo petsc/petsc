@@ -360,8 +360,6 @@ PETSC_EXTERN PetscErrorCode SNESGetConvergedReason(SNES,SNESConvergedReason*);
 
 PETSC_EXTERN PetscErrorCode SNESDMMeshComputeFunction(SNES,Vec,Vec,void*);
 PETSC_EXTERN PetscErrorCode SNESDMMeshComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-PETSC_EXTERN PetscErrorCode SNESDMComputeFunction(SNES,Vec,Vec,void *);
-PETSC_EXTERN PetscErrorCode SNESDMComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 /* --------- Solving systems of nonlinear equations --------------- */
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*);

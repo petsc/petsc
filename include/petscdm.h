@@ -198,12 +198,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer, cons
 #define DM_FILE_CLASSID 1211221
 
 /* FEM support */
-PETSC_EXTERN PetscErrorCode DMGetLocalFunction(DM, PetscErrorCode (**)(DM, Vec, Vec, void *));
-PETSC_EXTERN PetscErrorCode DMSetLocalFunction(DM, PetscErrorCode (*)(DM, Vec, Vec, void *));
-PETSC_EXTERN PetscErrorCode DMGetLocalJacobian(DM, PetscErrorCode (**)(DM, Vec, Mat, Mat, void *));
-PETSC_EXTERN PetscErrorCode DMSetLocalJacobian(DM, PetscErrorCode (*)(DM, Vec, Mat, Mat, void *));
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMLocalFunction1)(DM, Vec, Vec, void*);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMLocalJacobian1)(DM, Vec, Mat, Mat, void*);
 PETSC_EXTERN PetscErrorCode DMPrintCellVector(PetscInt, const char [], PetscInt, const PetscScalar []);
 PETSC_EXTERN PetscErrorCode DMPrintCellMatrix(PetscInt, const char [], PetscInt, PetscInt, const PetscScalar []);
 
