@@ -537,7 +537,7 @@ PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
 {
   JacActionCtx    *ctx;
   DM               dm;
-  Vec              dummy, localX, localY;
+  Vec              localX, localY;
   PetscInt         N, n;
   PetscErrorCode   ierr;
 
@@ -549,13 +549,8 @@ PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
   dm = ctx->dm;
 
   /* determine whether X = localX */
-  ierr = DMGetLocalVector(dm, &dummy);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &localY);CHKERRQ(ierr);
-  /* TODO: THIS dummy restore is necessary here so that the first available local vector has boundary conditions in it
-   I think the right thing to do is have the user put BC into a local vector and give it to us
-  */
-  ierr = DMRestoreLocalVector(dm, &dummy);CHKERRQ(ierr);
   ierr = VecGetSize(X, &N);CHKERRQ(ierr);
   ierr = VecGetSize(localX, &n);CHKERRQ(ierr);
 
@@ -640,6 +635,7 @@ int main(int argc, char **argv)
     userJ.J    = J;
     userJ.user = &user;
     ierr = DMCreateLocalVector(user.dm, &userJ.u);CHKERRQ(ierr);
+    ierr = DMComplexProjectFunctionLocal(user.dm, numComponents, user.exactFuncs, INSERT_BC_VALUES, userJ.u);CHKERRQ(ierr);
     ierr = MatShellSetContext(A, &userJ);CHKERRQ(ierr);
   } else {
     A = J;
