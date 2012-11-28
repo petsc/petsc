@@ -85,7 +85,7 @@ PetscErrorCode DMLabelGetValue(DMLabel label, PetscInt point, PetscInt *value)
   for(v = 0; v < label->numStrata; ++v) {
     PetscInt i;
 
-    ierr = PetscFindInt(point, label->stratumSizes[v], &label->points[label->stratumOffsets[v]], &i);
+    ierr = PetscFindInt(point, label->stratumSizes[v], &label->points[label->stratumOffsets[v]], &i);CHKERRQ(ierr);
     if (i >= 0) {
       *value = label->stratumValues[v];
       break;
