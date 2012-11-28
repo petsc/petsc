@@ -147,6 +147,7 @@ typedef struct {
 } JacActionCtx;
 
 PETSC_EXTERN PetscErrorCode DMComplexProjectFunction(DM, PetscInt, PetscScalar (**)(const PetscReal []), InsertMode, Vec);
+PETSC_EXTERN PetscErrorCode DMComplexProjectFunctionLocal(DM, PetscInt, PetscScalar (**)(const PetscReal []), InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMComplexComputeL2Diff(DM, PetscQuadrature[], PetscScalar (**)(const PetscReal []), Vec, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMComplexComputeResidualFEM(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMComplexComputeJacobianActionFEM(DM, Mat, Vec, Vec, void *);

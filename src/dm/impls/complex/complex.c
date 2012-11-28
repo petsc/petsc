@@ -7246,8 +7246,8 @@ PetscErrorCode DMComplexSetFEMIntegration(DM dm,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexProjectFunctionLocal_Private"
-static PetscErrorCode DMComplexProjectFunctionLocal_Private(DM dm, PetscInt numComp, PetscScalar (**funcs)(const PetscReal []), InsertMode mode, Vec localX)
+#define __FUNCT__ "DMComplexProjectFunctionLocal"
+PetscErrorCode DMComplexProjectFunctionLocal(DM dm, PetscInt numComp, PetscScalar (**funcs)(const PetscReal []), InsertMode mode, Vec localX)
 {
   Vec            coordinates;
   PetscSection   section, cSection;
@@ -7372,7 +7372,7 @@ PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**
 
   PetscFunctionBegin;
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
-  ierr = DMComplexProjectFunctionLocal_Private(dm, numComp, funcs, mode, localX);CHKERRQ(ierr);
+  ierr = DMComplexProjectFunctionLocal(dm, numComp, funcs, mode, localX);CHKERRQ(ierr);
   ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
@@ -7416,7 +7416,7 @@ PetscErrorCode DMComplexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar
   for (field = 0; field < numFields; ++field) {
     numComponents += quad[field].numComponents;
   }
-  ierr = DMComplexProjectFunctionLocal_Private(dm, numComponents, funcs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
+  ierr = DMComplexProjectFunctionLocal(dm, numComponents, funcs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
@@ -7517,7 +7517,7 @@ PetscErrorCode DMComplexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     cellDof += quad[field].numBasisFuncs*quad[field].numComponents;
     numComponents += quad[field].numComponents;
   }
-  ierr = DMComplexProjectFunctionLocal_Private(dm, numComponents, fem->bcFuncs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
+  ierr = DMComplexProjectFunctionLocal(dm, numComponents, fem->bcFuncs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc6(numCells*cellDof,PetscScalar,&u,numCells*dim,PetscReal,&v0,numCells*dim*dim,PetscReal,&J,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
@@ -7614,7 +7614,7 @@ PetscErrorCode DMComplexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, v
   PetscReal       *v0, *J, *invJ, *detJ;
   PetscScalar     *elemVec, *u, *a;
   PetscInt         dim, numFields, field, numBatchesTmp = 1, numCells, cStart, cEnd, c;
-  PetscInt         cellDof = 0, numComponents = 0;
+  PetscInt         cellDof = 0;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -7627,9 +7627,7 @@ PetscErrorCode DMComplexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, v
   numCells = cEnd - cStart;
   for (field = 0; field < numFields; ++field) {
     cellDof += quad[field].numBasisFuncs*quad[field].numComponents;
-    numComponents += quad[field].numComponents;
   }
-  ierr = DMComplexProjectFunctionLocal_Private(dm, numComponents, fem->bcFuncs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc7(numCells*cellDof,PetscScalar,&u,numCells*cellDof,PetscScalar,&a,numCells*dim,PetscReal,&v0,numCells*dim*dim,PetscReal,&J,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
@@ -7667,7 +7665,7 @@ PetscErrorCode DMComplexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, v
                                                fem->g0Funcs, fem->g1Funcs, fem->g2Funcs, fem->g3Funcs, &elemVec[offset*cellDof]);CHKERRQ(ierr);
   }
   for (c = cStart; c < cEnd; ++c) {
-    if (mesh->printFEM > 1) {ierr = DMPrintCellVector(c, "Residual", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
+    if (mesh->printFEM > 1) {ierr = DMPrintCellVector(c, "Jacobian Action", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
     ierr = DMComplexVecSetClosure(dm, PETSC_NULL, F, c, &elemVec[c*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree7(u,a,v0,J,invJ,detJ,elemVec);CHKERRQ(ierr);
@@ -7732,7 +7730,7 @@ PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatS
     cellDof += quad[field].numBasisFuncs*quad[field].numComponents;
     numComponents += quad[field].numComponents;
   }
-  ierr = DMComplexProjectFunctionLocal_Private(dm, numComponents, fem->bcFuncs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
+  ierr = DMComplexProjectFunctionLocal(dm, numComponents, fem->bcFuncs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
   ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = PetscMalloc6(numCells*cellDof,PetscScalar,&u,numCells*dim,PetscReal,&v0,numCells*dim*dim,PetscReal,&J,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof*cellDof,PetscScalar,&elemMat);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
