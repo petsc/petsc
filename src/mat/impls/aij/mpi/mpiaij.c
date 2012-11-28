@@ -3044,8 +3044,8 @@ PetscErrorCode MatGetRowMax_MPIAIJ(Mat A, Vec v, PetscInt idx[])
 
   PetscFunctionBegin;
   ierr = PetscMalloc2(n,PetscInt,&diagIdx,n,PetscInt,&offdiagIdx);CHKERRQ(ierr);
-  ierr = VecCreateSeq(((PetscObject)A)->comm, n, &diagV);CHKERRQ(ierr);
-  ierr = VecCreateSeq(((PetscObject)A)->comm, n, &offdiagV);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF, n, &diagV);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF, n, &offdiagV);CHKERRQ(ierr);
   ierr = MatGetRowMax(mat->A, diagV,    diagIdx);CHKERRQ(ierr);
   ierr = MatGetRowMax(mat->B, offdiagV, offdiagIdx);CHKERRQ(ierr);
   ierr = VecGetArray(v,        &a);CHKERRQ(ierr);
