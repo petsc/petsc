@@ -5500,7 +5500,27 @@ PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexGetDepth"
-PetscErrorCode DMComplexGetDepth(DM dm, PetscInt *depth) {
+/*@
+  DMComplexGetDepth - get the number of strata
+
+  Not Collective
+
+  Input Parameters:
+. dm           - The DMComplex object
+
+  Output Parameters:
+. depth - number of strata
+
+  Level: developer
+
+  Notes:
+  DMComplexGetHeightStratum(dm,0,..) should return the same points as DMComplexGetDepthStratum(dm,depth,..).
+
+.keywords: mesh, points
+.seealso: DMComplexGetHeightStratum(), DMComplexGetDepthStratum()
+@*/
+PetscErrorCode DMComplexGetDepth(DM dm, PetscInt *depth)
+{
   PetscInt       d;
   PetscErrorCode ierr;
 
@@ -5530,7 +5550,7 @@ PetscErrorCode DMComplexGetDepth(DM dm, PetscInt *depth) {
   Level: developer
 
 .keywords: mesh, points
-.seealso: DMComplexGetHeightStratum()
+.seealso: DMComplexGetHeightStratum(), DMComplexGetDepth()
 @*/
 PetscErrorCode DMComplexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end) {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
@@ -5590,7 +5610,7 @@ PetscErrorCode DMComplexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *
   Level: developer
 
 .keywords: mesh, points
-.seealso: DMComplexGetDepthStratum()
+.seealso: DMComplexGetDepthStratum(), DMComplexGetDepth()
 @*/
 PetscErrorCode DMComplexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end) {
   DM_Complex    *mesh = (DM_Complex *) dm->data;
