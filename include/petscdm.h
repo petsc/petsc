@@ -158,16 +158,9 @@ PETSC_EXTERN PetscErrorCode DMSetMatType(DM,MatType);
 PETSC_EXTERN PetscErrorCode DMSetApplicationContext(DM,void*);
 PETSC_EXTERN PetscErrorCode DMSetApplicationContextDestroy(DM,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode DMGetApplicationContext(DM,void*);
-PETSC_EXTERN PetscErrorCode DMSetFunction(DM,PetscErrorCode (*)(DM,Vec,Vec));
-PETSC_EXTERN PetscErrorCode DMSetJacobian(DM,PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure *));
 PETSC_EXTERN PetscErrorCode DMSetVariableBounds(DM,PetscErrorCode (*)(DM,Vec,Vec));
-PETSC_EXTERN PetscErrorCode DMHasFunction(DM,PetscBool *);
-PETSC_EXTERN PetscErrorCode DMHasJacobian(DM,PetscBool *);
 PETSC_EXTERN PetscErrorCode DMHasVariableBounds(DM,PetscBool *);
 PETSC_EXTERN PetscErrorCode DMHasColoring(DM,PetscBool *);
-PETSC_EXTERN PetscErrorCode DMComputeFunction(DM,Vec,Vec);
-PETSC_EXTERN PetscErrorCode DMComputeJacobian(DM,Vec,Mat,Mat,MatStructure *);
-PETSC_EXTERN PetscErrorCode DMComputeJacobianDefault(DM,Vec,Mat,Mat,MatStructure *);
 PETSC_EXTERN PetscErrorCode DMComputeVariableBounds(DM,Vec,Vec);
 
 PETSC_EXTERN PetscErrorCode DMCreateSubDM(DM, PetscInt, PetscInt[], IS *, DM *);
@@ -198,12 +191,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer, cons
 #define DM_FILE_CLASSID 1211221
 
 /* FEM support */
-PETSC_EXTERN PetscErrorCode DMGetLocalFunction(DM, PetscErrorCode (**)(DM, Vec, Vec, void *));
-PETSC_EXTERN PetscErrorCode DMSetLocalFunction(DM, PetscErrorCode (*)(DM, Vec, Vec, void *));
-PETSC_EXTERN PetscErrorCode DMGetLocalJacobian(DM, PetscErrorCode (**)(DM, Vec, Mat, Mat, void *));
-PETSC_EXTERN PetscErrorCode DMSetLocalJacobian(DM, PetscErrorCode (*)(DM, Vec, Mat, Mat, void *));
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMLocalFunction1)(DM, Vec, Vec, void*);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMLocalJacobian1)(DM, Vec, Mat, Mat, void*);
 PETSC_EXTERN PetscErrorCode DMPrintCellVector(PetscInt, const char [], PetscInt, const PetscScalar []);
 PETSC_EXTERN PetscErrorCode DMPrintCellMatrix(PetscInt, const char [], PetscInt, PetscInt, const PetscScalar []);
 
@@ -239,6 +226,7 @@ typedef struct {
   void (**g1Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_1 functions for each field pair */
   void (**g2Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_2 functions for each field pair */
   void (**g3Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_3 functions for each field pair */
+  PetscScalar (**bcFuncs)(const PetscReal x[]); /* The boundary condition function for each field component */
 } PetscFEM;
 
 typedef enum {PETSC_UNIT_LENGTH, PETSC_UNIT_MASS, PETSC_UNIT_TIME, PETSC_UNIT_CURRENT, PETSC_UNIT_TEMPERATURE, PETSC_UNIT_AMOUNT, PETSC_UNIT_LUMINOSITY, NUM_PETSC_UNITS} PetscUnit;

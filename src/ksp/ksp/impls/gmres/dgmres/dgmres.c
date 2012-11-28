@@ -1034,7 +1034,7 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES (KSP ksp, Vec x, Vec y)
   /* Iterative refinement -- is it really necessary ?? */
   if (!WORK) {
     ierr=PetscMalloc (3*bmax*sizeof (PetscReal), &WORK);CHKERRQ(ierr);
-    ierr=PetscMalloc (bmax*sizeof (PetscInt), &IWORK);CHKERRQ(ierr);
+    ierr=PetscMalloc (bmax*sizeof (PetscBLASInt), &IWORK);CHKERRQ(ierr);
   }
 #if defined(PETSC_MISSING_LAPACK_GERFS)
   SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GERFS - Lapack routine is unavailable.");

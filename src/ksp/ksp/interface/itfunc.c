@@ -199,8 +199,8 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   }
 
   if (ksp->dmActive) {
-    KSPDM kdm;
-    ierr = DMKSPGetContext(ksp->dm,&kdm);CHKERRQ(ierr);
+    DMKSP kdm;
+    ierr = DMGetDMKSP(ksp->dm,&kdm);CHKERRQ(ierr);
 
     if (kdm->computeinitialguess && ksp->setupstage != KSP_SETUP_NEWRHS) {
       /* only computes initial guess the first time through */
@@ -209,22 +209,13 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     }
     if (kdm->computerhs) {
       ierr = (*kdm->computerhs)(ksp,ksp->vec_rhs,kdm->rhsctx);CHKERRQ(ierr);
-    } else {
-      PetscBool irhs;
-      ierr = DMHasFunction(ksp->dm,&irhs);CHKERRQ(ierr);
-      if (irhs) {
-        ierr = DMComputeFunction(ksp->dm,PETSC_NULL,ksp->vec_rhs);CHKERRQ(ierr);
-      }
-    }
+    } 
 
     if (ksp->setupstage != KSP_SETUP_NEWRHS) {
       ierr = KSPGetOperators(ksp,&A,&B,PETSC_NULL);CHKERRQ(ierr);
       if (kdm->computeoperators) {
         ierr = (*kdm->computeoperators)(ksp,A,B,&stflg,kdm->operatorsctx);CHKERRQ(ierr);
-      } else {                  /* Eventually remove this code path */
-        if (0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_USER,"Must call KSPSetComputeOperators()");
-        ierr = DMComputeJacobian(ksp->dm,PETSC_NULL,A,B,&stflg);CHKERRQ(ierr);
-      }
+      } 
       ierr = KSPSetOperators(ksp,A,B,stflg);CHKERRQ(ierr);
     }
   }

@@ -45,8 +45,6 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->ltogmapb     = PETSC_NULL;
   v->bs           = 1;
   v->coloringtype = IS_COLORING_GLOBAL;
-  v->lf           = PETSC_NULL;
-  v->lj           = PETSC_NULL;
   ierr = PetscSFCreate(comm, &v->sf);CHKERRQ(ierr);
   ierr = PetscSFCreate(comm, &v->defaultSF);CHKERRQ(ierr);
   v->defaultSection       = PETSC_NULL;
@@ -1417,12 +1415,6 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
   ierr = (*dm->ops->refine)(dm,comm,dmf);CHKERRQ(ierr);
   if (*dmf) {
     (*dmf)->ops->creatematrix = dm->ops->creatematrix;
-    (*dmf)->ops->initialguess = dm->ops->initialguess;
-    (*dmf)->ops->function     = dm->ops->function;
-    (*dmf)->ops->functionj    = dm->ops->functionj;
-    if (dm->ops->jacobian != DMComputeJacobianDefault) {
-      (*dmf)->ops->jacobian     = dm->ops->jacobian;
-    }
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmf);CHKERRQ(ierr);
     (*dmf)->ctx       = dm->ctx;
     (*dmf)->leveldown = dm->leveldown;
@@ -1744,40 +1736,6 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComputeJacobianDefault"
-/*@
-    DMComputeJacobianDefault - computes the Jacobian using the DMComputeFunction() if Jacobian computer is not provided
-
-    Collective on DM
-
-    Input Parameter:
-+   dm - the DM object
-.   x - location to compute Jacobian at; may be ignored for linear problems
-.   A - matrix that defines the operator for the linear solve
--   B - the matrix used to construct the preconditioner
-
-    Level: developer
-
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
-         DMSetFunction()
-
-@*/
-PetscErrorCode  DMComputeJacobianDefault(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  *stflag = SAME_NONZERO_PATTERN;
-  ierr  = MatFDColoringApply(B,dm->fd,x,stflag,dm);CHKERRQ(ierr);
-  if (A != B) {
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMCoarsen"
 /*@
     DMCoarsen - Coarsens a DM object
@@ -1805,12 +1763,6 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
   (*dmc)->ops->creatematrix = dm->ops->creatematrix;
-  (*dmc)->ops->initialguess = dm->ops->initialguess;
-  (*dmc)->ops->function     = dm->ops->function;
-  (*dmc)->ops->functionj    = dm->ops->functionj;
-  if (dm->ops->jacobian != DMComputeJacobianDefault) {
-    (*dmc)->ops->jacobian     = dm->ops->jacobian;
-  }
   ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmc);CHKERRQ(ierr);
   (*dmc)->ctx       = dm->ctx;
   (*dmc)->levelup   = dm->levelup;
@@ -2208,62 +2160,6 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSetFunction"
-/*@C
-    DMSetFunction - sets a function to compute the right hand side vector entries for the KSP solver or nonlinear function for SNES
-
-    Logically Collective on DM
-
-    Input Parameter:
-+   dm - the DM object
--   f - the function to compute (use PETSC_NULL to cancel a previous function that was set)
-
-    Level: intermediate
-
-    Notes: This sets both the function for function evaluations and the function used to compute Jacobians via finite differences if no Jacobian
-           computer is provided with DMSetJacobian(). Canceling cancels the function, but not the function used to compute the Jacobian.
-
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
-         DMSetJacobian()
-
-@*/
-PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  dm->ops->function = f;
-  if (f) {
-    dm->ops->functionj = f;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMSetJacobian"
-/*@C
-    DMSetJacobian - sets a function to compute the matrix entries for the KSP solver or Jacobian for SNES
-
-    Logically Collective on DM
-
-    Input Parameter:
-+   dm - the DM object to destroy
--   f - the function to compute the matrix entries
-
-    Level: intermediate
-
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
-         DMSetFunction()
-
-@*/
-PetscErrorCode  DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,Mat,Mat,MatStructure*))
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  dm->ops->jacobian = f;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMSetVariableBounds"
 /*@C
     DMSetVariableBounds - sets a function to compute the the lower and upper bound vectors for SNESVI.
@@ -2302,7 +2198,7 @@ PetscErrorCode  DMSetVariableBounds(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext()
 
 @*/
 PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
@@ -2329,8 +2225,7 @@ PetscErrorCode  DMHasVariableBounds(DM dm,PetscBool  *flg)
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
-         DMSetFunction(), DMSetVariableBounds()
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext()
 
 @*/
 PetscErrorCode  DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
@@ -2343,58 +2238,6 @@ PetscErrorCode  DMComputeVariableBounds(DM dm, Vec xl, Vec xu)
     ierr = (*dm->ops->computevariablebounds)(dm, xl,xu); CHKERRQ(ierr);
   }
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "This DM is incapable of computing variable bounds.");
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMHasFunction"
-/*@
-    DMHasFunction - does the DM object have a function
-
-    Not Collective
-
-    Input Parameter:
-.   dm - the DM object to destroy
-
-    Output Parameter:
-.   flg - PETSC_TRUE if function exists
-
-    Level: developer
-
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
-
-@*/
-PetscErrorCode  DMHasFunction(DM dm,PetscBool  *flg)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  *flg =  (dm->ops->function) ? PETSC_TRUE : PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMHasJacobian"
-/*@
-    DMHasJacobian - does the DM object have a matrix function
-
-    Not Collective
-
-    Input Parameter:
-.   dm - the DM object to destroy
-
-    Output Parameter:
-.   flg - PETSC_TRUE if function exists
-
-    Level: developer
-
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
-
-@*/
-PetscErrorCode  DMHasJacobian(DM dm,PetscBool  *flg)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  *flg =  (dm->ops->jacobian) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2436,8 +2279,7 @@ PetscErrorCode  DMHasColoring(DM dm,PetscBool  *flg)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
-         DMSetFunction(), DMSetJacobian(), DMSetVariableBounds()
+.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext()
 
 @*/
 PetscErrorCode  DMSetVec(DM dm,Vec x)
@@ -2455,101 +2297,6 @@ PetscErrorCode  DMSetVec(DM dm,Vec x)
   }
   PetscFunctionReturn(0);
 }
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeFunction"
-/*@
-    DMComputeFunction - computes the right hand side vector entries for the KSP solver or nonlinear function for SNES
-
-    Collective on DM
-
-    Input Parameter:
-+   dm - the DM object to destroy
-.   x - the location where the function is evaluationed, may be ignored for linear problems
--   b - the vector to hold the right hand side entries
-
-    Level: developer
-
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
-         DMSetJacobian()
-
-@*/
-PetscErrorCode  DMComputeFunction(DM dm,Vec x,Vec b)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (!dm->ops->function) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetFunction()");
-  PetscStackPush("DM user function");
-  ierr = (*dm->ops->function)(dm,x,b);CHKERRQ(ierr);
-  PetscStackPop;
-  PetscFunctionReturn(0);
-}
-
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeJacobian"
-/*@
-    DMComputeJacobian - compute the matrix entries for the solver
-
-    Collective on DM
-
-    Input Parameter:
-+   dm - the DM object
-.   x - location to compute Jacobian at; will be PETSC_NULL for linear problems, for nonlinear problems if not provided then pulled from DM
-.   A - matrix that defines the operator for the linear solve
--   B - the matrix used to construct the preconditioner
-
-    Level: developer
-
-.seealso DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMGetApplicationContext(), 
-         DMSetFunction()
-
-@*/
-PetscErrorCode  DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (!dm->ops->jacobian) {
-    ISColoring     coloring;
-    MatFDColoring  fd;
-    MatType        mtype;
-
-    ierr = PetscObjectGetType((PetscObject)B,&mtype);CHKERRQ(ierr);
-    ierr = DMCreateColoring(dm,dm->coloringtype,mtype,&coloring);CHKERRQ(ierr);
-    ierr = MatFDColoringCreate(B,coloring,&fd);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(fd,(PetscErrorCode (*)(void))dm->ops->functionj,dm);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject)fd,((PetscObject)dm)->prefix);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFromOptions(fd);CHKERRQ(ierr);
-
-    dm->fd = fd;
-    dm->ops->jacobian = DMComputeJacobianDefault;
-
-    /* don't know why this is needed */
-    ierr = PetscObjectDereference((PetscObject)dm);CHKERRQ(ierr);
-  }
-  if (!x) x = dm->x;
-  ierr = (*dm->ops->jacobian)(dm,x,A,B,stflag);CHKERRQ(ierr);
-
-  /* if matrix depends on x; i.e. nonlinear problem, keep copy of input vector since needed by multigrid methods to generate coarse grid matrices */
-  if (x) {
-    if (!dm->x) {
-      ierr = DMCreateGlobalVector(dm,&dm->x);CHKERRQ(ierr);
-    }
-    ierr = VecCopy(x,dm->x);CHKERRQ(ierr);
-  }
-  if (A != B) {
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 
 PetscFList DMList                       = PETSC_NULL;
 PetscBool  DMRegisterAllCalled          = PETSC_FALSE;
@@ -2774,150 +2521,6 @@ PetscErrorCode  DMRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include <mex.h>
-
-typedef struct {char *funcname; char *jacname; mxArray *ctx;} DMMatlabContext;
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeFunction_Matlab"
-/*
-   DMComputeFunction_Matlab - Calls the function that has been set with
-                         DMSetFunctionMatlab().
-
-   For linear problems x is null
-
-.seealso: DMSetFunction(), DMGetFunction()
-*/
-PetscErrorCode  DMComputeFunction_Matlab(DM dm,Vec x,Vec y)
-{
-  PetscErrorCode    ierr;
-  DMMatlabContext   *sctx;
-  int               nlhs = 1,nrhs = 4;
-  mxArray	    *plhs[1],*prhs[4];
-  long long int     lx = 0,ly = 0,ls = 0;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(y,VEC_CLASSID,3);
-  PetscCheckSameComm(dm,1,y,3);
-
-  /* call Matlab function in ctx with arguments x and y */
-  ierr = DMGetApplicationContext(dm,&sctx);CHKERRQ(ierr);
-  ierr = PetscMemcpy(&ls,&dm,sizeof(dm));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&ly,&y,sizeof(y));CHKERRQ(ierr);
-  prhs[0] =  mxCreateDoubleScalar((double)ls);
-  prhs[1] =  mxCreateDoubleScalar((double)lx);
-  prhs[2] =  mxCreateDoubleScalar((double)ly);
-  prhs[3] =  mxCreateString(sctx->funcname);
-  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscDMComputeFunctionInternal");CHKERRQ(ierr);
-  ierr    =  mxGetScalar(plhs[0]);CHKERRQ(ierr);
-  mxDestroyArray(prhs[0]);
-  mxDestroyArray(prhs[1]);
-  mxDestroyArray(prhs[2]);
-  mxDestroyArray(prhs[3]);
-  mxDestroyArray(plhs[0]);
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMSetFunctionMatlab"
-/*
-   DMSetFunctionMatlab - Sets the function evaluation routine
-
-*/
-PetscErrorCode  DMSetFunctionMatlab(DM dm,const char *func)
-{
-  PetscErrorCode    ierr;
-  DMMatlabContext   *sctx;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  /* currently sctx is memory bleed */
-  ierr = DMGetApplicationContext(dm,&sctx);CHKERRQ(ierr);
-  if (!sctx) {
-    ierr = PetscMalloc(sizeof(DMMatlabContext),&sctx);CHKERRQ(ierr);
-  }
-  ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(dm,sctx);CHKERRQ(ierr);
-  ierr = DMSetFunction(dm,DMComputeFunction_Matlab);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComputeJacobian_Matlab"
-/*
-   DMComputeJacobian_Matlab - Calls the function that has been set with
-                         DMSetJacobianMatlab().
-
-   For linear problems x is null
-
-.seealso: DMSetFunction(), DMGetFunction()
-*/
-PetscErrorCode  DMComputeJacobian_Matlab(DM dm,Vec x,Mat A,Mat B,MatStructure *str)
-{
-  PetscErrorCode    ierr;
-  DMMatlabContext   *sctx;
-  int               nlhs = 2,nrhs = 5;
-  mxArray	    *plhs[2],*prhs[5];
-  long long int     lx = 0,lA = 0,lB = 0,ls = 0;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(A,MAT_CLASSID,3);
-
-  /* call MATLAB function in ctx with arguments x, A, and B */
-  ierr = DMGetApplicationContext(dm,&sctx);CHKERRQ(ierr);
-  ierr = PetscMemcpy(&ls,&dm,sizeof(dm));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&lA,&A,sizeof(A));CHKERRQ(ierr);
-  ierr = PetscMemcpy(&lB,&B,sizeof(B));CHKERRQ(ierr);
-  prhs[0] =  mxCreateDoubleScalar((double)ls);
-  prhs[1] =  mxCreateDoubleScalar((double)lx);
-  prhs[2] =  mxCreateDoubleScalar((double)lA);
-  prhs[3] =  mxCreateDoubleScalar((double)lB);
-  prhs[4] =  mxCreateString(sctx->jacname);
-  ierr    =  mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscDMComputeJacobianInternal");CHKERRQ(ierr);
-  *str    =  (MatStructure) mxGetScalar(plhs[0]);
-  ierr    =  (PetscInt) mxGetScalar(plhs[1]);CHKERRQ(ierr);
-  mxDestroyArray(prhs[0]);
-  mxDestroyArray(prhs[1]);
-  mxDestroyArray(prhs[2]);
-  mxDestroyArray(prhs[3]);
-  mxDestroyArray(prhs[4]);
-  mxDestroyArray(plhs[0]);
-  mxDestroyArray(plhs[1]);
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMSetJacobianMatlab"
-/*
-   DMSetJacobianMatlab - Sets the Jacobian function evaluation routine
-
-*/
-PetscErrorCode  DMSetJacobianMatlab(DM dm,const char *func)
-{
-  PetscErrorCode    ierr;
-  DMMatlabContext   *sctx;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  /* currently sctx is memory bleed */
-  ierr = DMGetApplicationContext(dm,&sctx);CHKERRQ(ierr);
-  if (!sctx) {
-    ierr = PetscMalloc(sizeof(DMMatlabContext),&sctx);CHKERRQ(ierr);
-  }
-  ierr = PetscStrallocpy(func,&sctx->jacname);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(dm,sctx);CHKERRQ(ierr);
-  ierr = DMSetJacobian(dm,DMComputeJacobian_Matlab);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "DMLoad"
 /*@C
@@ -2999,136 +2602,6 @@ PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, P
     }
     ierr = PetscPrintf(PETSC_COMM_SELF, " |\n");CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMGetLocalFunction"
-/*@C
-  DMGetLocalFunction - Get the local residual function from this DM
-
-  Not collective
-
-  Input Parameter:
-. dm - The DM
-
-  Output Parameter:
-. lf - The local residual function
-
-   Calling sequence of lf:
-$    lf (SNES snes, Vec x, Vec f, void *ctx);
-
-+  snes - the SNES context
-.  x - local vector with the state at which to evaluate residual
-.  f - local vector to put residual in
--  ctx - optional user-defined function context
-
-  Level: intermediate
-
-.seealso DMSetLocalFunction(), DMGetLocalJacobian(), DMSetLocalJacobian()
-@*/
-PetscErrorCode DMGetLocalFunction(DM dm, PetscErrorCode (**lf)(DM, Vec, Vec, void *))
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (lf) *lf = dm->lf;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMSetLocalFunction"
-/*@C
-  DMSetLocalFunction - Set the local residual function from this DM
-
-  Not collective
-
-  Input Parameters:
-+ dm - The DM
-- lf - The local residual function
-
-   Calling sequence of lf:
-$    lf (SNES snes, Vec x, Vec f, void *ctx);
-
-+  snes - the SNES context
-.  x - local vector with the state at which to evaluate residual
-.  f - local vector to put residual in
--  ctx - optional user-defined function context
-
-  Level: intermediate
-
-.seealso DMGetLocalFunction(), DMGetLocalJacobian(), DMSetLocalJacobian()
-@*/
-PetscErrorCode DMSetLocalFunction(DM dm, PetscErrorCode (*lf)(DM, Vec, Vec, void *))
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  dm->lf = lf;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMGetLocalJacobian"
-/*@C
-  DMGetLocalJacobian - Get the local Jacobian function from this DM
-
-  Not collective
-
-  Input Parameter:
-. dm - The DM
-
-  Output Parameter:
-. lj - The local Jacobian function
-
-   Calling sequence of lj:
-$    lj (SNES snes, Vec x, Mat J, Mat M, void *ctx);
-
-+  snes - the SNES context
-.  x - local vector with the state at which to evaluate residual
-.  J - matrix to put Jacobian in
-.  M - matrix to use for defining Jacobian preconditioner
--  ctx - optional user-defined function context
-
-  Level: intermediate
-
-.seealso DMSetLocalJacobian(), DMGetLocalFunction(), DMSetLocalFunction()
-@*/
-PetscErrorCode DMGetLocalJacobian(DM dm, PetscErrorCode (**lj)(DM, Vec, Mat, Mat, void *))
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (lj) *lj = dm->lj;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMSetLocalJacobian"
-/*@C
-  DMSetLocalJacobian - Set the local Jacobian function from this DM
-
-  Not collective
-
-  Input Parameters:
-+ dm - The DM
-- lj - The local Jacobian function
-
-   Calling sequence of lj:
-$    lj (SNES snes, Vec x, Mat J, Mat M, void *ctx);
-
-+  snes - the SNES context
-.  x - local vector with the state at which to evaluate residual
-.  J - matrix to put Jacobian in
-.  M - matrix to use for defining Jacobian preconditioner
--  ctx - optional user-defined function context
-
-  Level: intermediate
-
-.seealso DMGetLocalJacobian(), DMGetLocalFunction(), DMSetLocalFunction()
-@*/
-PetscErrorCode DMSetLocalJacobian(DM dm, PetscErrorCode (*lj)(DM, Vec, Mat,  Mat, void *))
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  dm->lj = lj;
   PetscFunctionReturn(0);
 }
 

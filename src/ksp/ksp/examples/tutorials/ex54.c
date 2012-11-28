@@ -1,6 +1,6 @@
 
 static char help[] = "Creates a matrix from quadrilateral finite elements in 2D, Laplacian \n\
-  -ne <size>       : problem size in number of elements (eg, -ne 31 gives 32^2 grid)\n
+  -ne <size>       : problem size in number of elements (eg, -ne 31 gives 32^2 grid)\n\
   -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
 
 #include <petscksp.h>
@@ -78,7 +78,7 @@ int main(int argc,char **args)
     else {
       for (i=0;i<4;i++)
         for (j=0;j<4;j++)
-          fscanf(file, "%le", &DD1[i][j]);
+          ierr = fscanf(file, "%le", &DD1[i][j]);
     }
     /* BC version of element */
     for (i=0;i<4;i++)

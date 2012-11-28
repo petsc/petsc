@@ -52,9 +52,28 @@ PETSC_EXTERN PetscErrorCode DMComplexGetPointGlobal(DM,PetscInt,PetscInt*,PetscI
 PETSC_EXTERN PetscErrorCode DMComplexPointGlobalRef(DM,PetscInt,PetscScalar*,void*);
 PETSC_EXTERN PetscErrorCode DMComplexPointGlobalRead(DM,PetscInt,const PetscScalar*,const void*);
 
-PETSC_EXTERN PetscErrorCode DMComplexGetNumLabels(DM, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMComplexGetLabelName(DM, PetscInt, const char **);
-PETSC_EXTERN PetscErrorCode DMComplexHasLabel(DM, const char [], PetscBool *);
+/*S
+  DMLabel - Object which encapsulates a subset of the mesh from this DM
+
+  Level: developer
+
+  Concepts: grids, grid refinement
+
+.seealso:  DM, DMComplexCreate(), DMComplexCreateLabel()
+S*/
+typedef struct _n_DMLabel *DMLabel;
+PETSC_EXTERN PetscErrorCode DMLabelCreate(const char [], DMLabel *);
+PETSC_EXTERN PetscErrorCode DMLabelView(DMLabel, PetscViewer);
+PETSC_EXTERN PetscErrorCode DMLabelDestroy(DMLabel *);
+PETSC_EXTERN PetscErrorCode DMLabelGetValue(DMLabel, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMLabelSetValue(DMLabel, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode DMLabelClearValue(DMLabel, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode DMLabelGetNumValues(DMLabel, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMLabelGetValueIS(DMLabel, IS *);
+PETSC_EXTERN PetscErrorCode DMLabelGetStratumSize(DMLabel, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMLabelGetStratumIS(DMLabel, PetscInt, IS *);
+PETSC_EXTERN PetscErrorCode DMLabelClearStratum(DMLabel, PetscInt);
+
 PETSC_EXTERN PetscErrorCode DMComplexCreateLabel(DM, const char []);
 PETSC_EXTERN PetscErrorCode DMComplexGetLabelValue(DM, const char[], PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexSetLabelValue(DM, const char[], PetscInt, PetscInt);
@@ -64,6 +83,13 @@ PETSC_EXTERN PetscErrorCode DMComplexGetLabelIdIS(DM, const char[], IS *);
 PETSC_EXTERN PetscErrorCode DMComplexGetStratumSize(DM, const char [], PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexGetStratumIS(DM, const char [], PetscInt, IS *);
 PETSC_EXTERN PetscErrorCode DMComplexClearLabelStratum(DM, const char[], PetscInt);
+
+PETSC_EXTERN PetscErrorCode DMComplexGetNumLabels(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMComplexGetLabelName(DM, PetscInt, const char **);
+PETSC_EXTERN PetscErrorCode DMComplexHasLabel(DM, const char [], PetscBool *);
+PETSC_EXTERN PetscErrorCode DMComplexGetLabel(DM, const char *, DMLabel *);
+PETSC_EXTERN PetscErrorCode DMComplexAddLabel(DM, DMLabel);
+PETSC_EXTERN PetscErrorCode DMComplexRemoveLabel(DM, const char [], DMLabel *);
 PETSC_EXTERN PetscErrorCode DMComplexGetCellNumbering(DM, IS *);
 PETSC_EXTERN PetscErrorCode DMComplexGetVertexNumbering(DM, IS *);
 
@@ -121,10 +147,11 @@ typedef struct {
 } JacActionCtx;
 
 PETSC_EXTERN PetscErrorCode DMComplexProjectFunction(DM, PetscInt, PetscScalar (**)(const PetscReal []), InsertMode, Vec);
+PETSC_EXTERN PetscErrorCode DMComplexProjectFunctionLocal(DM, PetscInt, PetscScalar (**)(const PetscReal []), InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMComplexComputeL2Diff(DM, PetscQuadrature[], PetscScalar (**)(const PetscReal []), Vec, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMComplexComputeResidualFEM(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMComplexComputeJacobianActionFEM(DM, Mat, Vec, Vec, void *);
-PETSC_EXTERN PetscErrorCode DMComplexComputeJacobianFEM(DM, Vec, Mat, Mat, void *);
+PETSC_EXTERN PetscErrorCode DMComplexComputeJacobianFEM(DM, Vec, Mat, Mat, MatStructure*,void *);
 PETSC_EXTERN PetscErrorCode DMComplexSetFEMIntegration(DM,
                                                        PetscErrorCode (*)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
                                                                           const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],

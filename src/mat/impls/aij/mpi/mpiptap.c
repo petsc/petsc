@@ -540,7 +540,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   MatScalar            **abuf_r,*ba_i,*pA,*coa,*ba;
   PetscInt             *api,*apj,*coi,*coj;
   PetscInt             *poJ=po->j,*pdJ=pd->j,pcstart=P->cmap->rstart,pcend=P->cmap->rend;
-  PetscInt             sparse_axpy;
+  PetscBool            scalable=PETSC_TRUE;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -577,17 +577,15 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr   = PetscMemzero(ba,bi[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 
   api = ptap->api; apj = ptap->apj;
-  /* flag 'sparse_axpy' determines which implementations to be used:
-       0: do dense axpy in MatPtAPNumeric() - fastest, but requires storage of a dense array apa; (default)
-       1: do one sparse axpy - uses same memory as sparse_axpy=0 and might execute less flops
-          (apnz vs. cnz in the outerproduct), slower than case '0' when cnz is not too large than apnz;
-       2: do two sparse axpy in MatPtAPNumeric() - slowest, uses a sparse array apa */
-  /* set default sparse_axpy */
-  sparse_axpy = 0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-matptap_sparseaxpy",&sparse_axpy,PETSC_NULL);CHKERRQ(ierr);
-  if (sparse_axpy == 0){  /* Do not perform sparse axpy */
+
+  /* flag 'scalable' determines which implementations to be used:
+       0: do dense axpy in MatPtAPNumeric() - fast, but requires storage of a nonscalable dense array apa; 
+       1: do sparse axpy in MatPtAPNumeric() - might slow, uses a sparse array apa */
+  /* set default scalable */
+  ierr = PetscOptionsGetBool(((PetscObject)C)->prefix,"-matptap_scalable",&scalable,PETSC_NULL);CHKERRQ(ierr);
+  if (!scalable){  /* Do dense axpy */
     /*--------------------------------------------------*/
-    /* malloc apa to store dense row A[i,:]*P */
+    /* malloc apa to store dense row A[i,:]*P - nonscalable! */
     ierr = PetscMalloc((P->cmap->N)*sizeof(PetscScalar),&apa);CHKERRQ(ierr);
     ierr = PetscMemzero(apa,P->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
 
@@ -672,99 +670,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       /* zero the current row of A*P */
       for (k=0; k<apnz; k++) apa[apJ[k]] = 0.0;
     }
-  } else if (sparse_axpy == 1){  /* Perform one sparse axpy */
-    /*------------------------------------------------------*/
-    /* malloc apa to store dense row A[i,:]*P */
-    ierr = PetscMalloc((P->cmap->N)*sizeof(PetscScalar),&apa);CHKERRQ(ierr);
-    ierr = PetscMemzero(apa,P->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
-
-    for (i=0; i<am; i++) {
-      /* 2-a) form i-th sparse row of A_loc*P = Ad*P_loc + Ao*P_oth */
-      /*------------------------------------------------------------*/
-      apJ = apj + api[i];
-
-      /* diagonal portion of A */
-      anz = adi[i+1] - adi[i];
-      adj = ad->j + adi[i];
-      ada = ad->a + adi[i];
-      for (j=0; j<anz; j++) {
-        row = adj[j];
-        pnz = pi_loc[row+1] - pi_loc[row];
-        pj  = pj_loc + pi_loc[row];
-        pa  = pa_loc + pi_loc[row];
-
-        /* perform dense axpy */
-        valtmp = ada[j];
-        for (k=0; k<pnz; k++){
-          apa[pj[k]] += valtmp*pa[k];
-        }
-        ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
-      }
-
-      /* off-diagonal portion of A */
-      anz = aoi[i+1] - aoi[i];
-      aoj = ao->j + aoi[i];
-      aoa = ao->a + aoi[i];
-      for (j=0; j<anz; j++) {
-        row = aoj[j];
-        pnz = pi_oth[row+1] - pi_oth[row];
-        pj  = pj_oth + pi_oth[row];
-        pa  = pa_oth + pi_oth[row];
-
-        /* perform dense axpy */
-        valtmp = aoa[j];
-        for (k=0; k<pnz; k++){
-          apa[pj[k]] += valtmp*pa[k];
-        }
-        ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
-      }
-
-      /* 2-b) Compute Cseq = P_loc[i,:]^T*AP[i,:] using outer product */
-      /*--------------------------------------------------------------*/
-      apnz = api[i+1] - api[i];
-      /* put the value into Co=(p->B)^T*AP (off-diagonal part, send to others) */
-      pnz = po->i[i+1] - po->i[i];
-      poJ = po->j + po->i[i];
-      pA  = po->a + po->i[i];
-      for (j=0; j<pnz; j++){
-        row    = poJ[j];
-        cj     = coj + coi[row];
-        ca     = coa + coi[row];
-        valtmp = pA[j];
-        /* perform sparse axpy */
-        nextap = 0;
-        for (k=0; nextap<apnz; k++) {
-          if (cj[k]==apJ[nextap]) { /* global column index */
-            ca[k] += valtmp*apa[cj[k]]; nextap++;
-          }
-        }
-        ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
-      }
-
-      /* put the value into Cd (diagonal part) */
-      pnz = pd->i[i+1] - pd->i[i];
-      pdJ = pd->j + pd->i[i];
-      pA  = pd->a + pd->i[i];
-      for (j=0; j<pnz; j++){
-        row    = pdJ[j];
-        cj     = bj + bi[row];
-        ca     = ba + bi[row];
-        valtmp = pA[j];
-        /* perform sparse axpy */
-        nextap = 0;
-        for (k=0; nextap<apnz; k++) {
-          if (cj[k]==apJ[nextap]) { /* global column index */
-            ca[k] += valtmp*apa[cj[k]];
-            nextap++;
-          }
-        }
-        ierr = PetscLogFlops(2.0*apnz);CHKERRQ(ierr);
-      }
-
-      /* zero the current row of A*P */
-      for (k=0; k<apnz; k++) apa[apJ[k]] = 0.0;
-    }
-  } else if (sparse_axpy == 2){/* Perform two sparse axpy */
+  } else {/* Perform sparse axpy */
     /*----------------------------------------------------*/
     /* malloc apa to store sparse row A[i,:]*P */
     ierr = PetscMalloc((ptap->rmax+1)*sizeof(MatScalar),&apa);CHKERRQ(ierr);
@@ -838,7 +744,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       /* zero the current row info for A*P */
       ierr = PetscMemzero(apa,apnz*sizeof(MatScalar));CHKERRQ(ierr);
     }
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"sparse_axpy only takes values 0, 1 and 2");
+  } 
   ierr = PetscFree(apa);CHKERRQ(ierr);
 
   /* 3) send and recv matrix values coa */
@@ -904,5 +810,12 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = PetscFree(abuf_r[0]);CHKERRQ(ierr);
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
+#if defined(PETSC_USE_INFO)
+  if (scalable){
+    ierr = PetscInfo(C,"Use scalable sparse axpy\n");CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo(C,"Use non-scalable dense axpy\n");CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }

@@ -1574,8 +1574,9 @@ PetscErrorCode VecIntGetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
 PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscScalar values[], InsertMode mode)
 {
   PetscScalar    *baseArray, *array;
-  const PetscBool doInsert    = mode == INSERT_VALUES     || mode == INSERT_ALL_VALUES ? PETSC_TRUE : PETSC_FALSE;
-  const PetscBool doBC        = mode == INSERT_ALL_VALUES || mode == ADD_ALL_VALUES    ? PETSC_TRUE : PETSC_FALSE;
+  const PetscBool doInsert    = mode == INSERT_VALUES     || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES                          ? PETSC_TRUE : PETSC_FALSE;
+  const PetscBool doInterior  = mode == INSERT_ALL_VALUES || mode == ADD_ALL_VALUES    || mode == INSERT_VALUES    || mode == ADD_VALUES    ? PETSC_TRUE : PETSC_FALSE;
+  const PetscBool doBC        = mode == INSERT_ALL_VALUES || mode == ADD_ALL_VALUES    || mode == INSERT_BC_VALUES || mode == ADD_BC_VALUES ? PETSC_TRUE : PETSC_FALSE;
   const PetscInt  p           = point - s->atlasLayout.pStart;
   const PetscInt  orientation = 0; /* Needs to be included for use in closure operations */
   PetscInt        cDim        = 0;
@@ -1585,7 +1586,7 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   ierr = PetscSectionGetConstraintDof(s, p, &cDim);CHKERRQ(ierr);
   ierr = VecGetArray(v, &baseArray);CHKERRQ(ierr);
   array = &baseArray[s->atlasOff[p]];
-  if (!cDim) {
+  if (!cDim && doInterior) {
     if (orientation >= 0) {
       const PetscInt dim = s->atlasDof[p];
       PetscInt       i;
@@ -1612,7 +1613,7 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
         offset += dim;
       }
     }
-  } else {
+  } else if (cDim) {
     if (orientation >= 0) {
       const PetscInt  dim  = s->atlasDof[p];
       PetscInt        cInd = 0, i;
@@ -1626,7 +1627,7 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
             ++cInd;
             continue;
           }
-          array[i] = values[i]; /* Unconstrained update */
+          if (doInterior) {array[i] = values[i];} /* Unconstrained update */
         }
       } else {
         for (i = 0; i < dim; ++i) {
@@ -1635,10 +1636,11 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
             ++cInd;
             continue;
           }
-          array[i] += values[i]; /* Unconstrained update */
+          if (doInterior) {array[i] += values[i];} /* Unconstrained update */
         }
       }
     } else {
+      /* TODO This is broken for add and constrained update */
       const PetscInt *cDof;
       PetscInt        offset  = 0;
       PetscInt        cOffset = 0;
@@ -1653,7 +1655,7 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
 
         for (i = 0, k = dim+offset-1; i < dim; ++i, ++j, --k) {
           if ((cInd < sDim) && (j == cDof[cInd+cOffset])) {++cInd; continue;}
-          array[j] = values[k];
+          if (doInterior) {array[j] = values[k];} /* Unconstrained update */
         }
         offset  += dim;
         cOffset += dim - tDim;
@@ -1988,6 +1990,30 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   }
   ierr = PetscMalloc(numIndices * sizeof(PetscInt), &localIndices);CHKERRQ(ierr);
   ierr = PetscMalloc(numIndices * sizeof(PetscSFNode), &remoteIndices);CHKERRQ(ierr);
+  /* Get offsets for remote data */
+  if (!remoteOffsets) {
+    PetscSF         embedSF;
+    const PetscInt *indices;
+    IS              selected;
+    PetscInt        rpStart, rpEnd, isSize;
+
+    ierr = PetscMalloc((lpEnd - lpStart) * sizeof(PetscInt), &remoteOffsets);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(rootSection, &rpStart, &rpEnd);CHKERRQ(ierr);
+    isSize = PetscMin(numRoots, rpEnd - rpStart);
+    ierr = ISCreateStride(PETSC_COMM_SELF, isSize, rpStart, 1, &selected);CHKERRQ(ierr);
+    ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
+#if 0
+    ierr = PetscSFCreateEmbeddedSF(sf, isSize, indices, &embedSF);CHKERRQ(ierr);
+#else
+    embedSF = sf;
+    ierr = PetscObjectReference((PetscObject) embedSF);CHKERRQ(ierr);
+#endif
+    ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
+    ierr = ISDestroy(&selected);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &remoteOffsets[-lpStart]);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &remoteOffsets[-lpStart]);CHKERRQ(ierr);
+    ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);
+  }
   /* Create new index graph */
   for (i = 0, ind = 0; i < numPoints; ++i) {
     PetscInt localPoint = localPoints ? localPoints[i] : i;

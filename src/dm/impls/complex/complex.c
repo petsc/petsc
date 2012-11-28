@@ -103,47 +103,12 @@ PetscErrorCode VecView_Complex(Vec v, PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexViewLabel_Ascii"
-PetscErrorCode DMComplexViewLabel_Ascii(DM dm, const char name[], PetscViewer viewer)
-{
-  IS              ids;
-  const PetscInt *markers;
-  PetscInt        num, i;
-  PetscMPIInt     rank;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Label '%s':\n", name);CHKERRQ(ierr);
-  ierr = DMComplexGetLabelIdIS(dm, name, &ids);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(ids, &num);CHKERRQ(ierr);
-  ierr = ISGetIndices(ids, &markers);CHKERRQ(ierr);
-  for(i = 0; i < num; ++i) {
-    IS              pIS;
-    const PetscInt *points;
-    PetscInt        size, p;
-
-    ierr = DMComplexGetStratumIS(dm, name, markers[i], &pIS);
-    if (!pIS) continue;
-    ierr = ISGetSize(pIS, &size);CHKERRQ(ierr);
-    ierr = ISGetIndices(pIS, &points);CHKERRQ(ierr);
-    for (p = 0; p < size; ++p) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "[%D]: %D (%D)\n", rank, points[p], markers[i]);CHKERRQ(ierr);
-    }
-    ierr = ISRestoreIndices(pIS, &points);CHKERRQ(ierr);
-    ierr = ISDestroy(&pIS);CHKERRQ(ierr);
-  }
-  ierr = ISRestoreIndices(ids, &markers);CHKERRQ(ierr);
-  ierr = ISDestroy(&ids);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMComplexView_Ascii"
 PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
 {
   DM_Complex       *mesh = (DM_Complex *) dm->data;
   DM                cdm;
+  DMLabel           markers;
   PetscSection      coordSection;
   Vec               coordinates;
   PetscViewerFormat format;
@@ -159,7 +124,6 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
     PetscInt    maxConeSize, maxSupportSize;
     PetscInt    pStart, pEnd, p;
     PetscMPIInt rank;
-    PetscBool   hasLabel;
 
     ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
@@ -193,9 +157,9 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(coordSection, &pStart, PETSC_NULL);CHKERRQ(ierr);
     if (pStart >= 0) {ierr = PetscSectionVecView(coordSection, coordinates, viewer);CHKERRQ(ierr);}
-    ierr = DMComplexHasLabel(dm, "marker", &hasLabel);CHKERRQ(ierr);
-    if (hasLabel) {
-      ierr = DMComplexViewLabel_Ascii(dm, "marker", viewer);CHKERRQ(ierr);
+    ierr = DMComplexGetLabel(dm, "marker", &markers);CHKERRQ(ierr);
+    if (markers) {
+      ierr = DMLabelView(markers,viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_LATEX) {
@@ -364,13 +328,9 @@ PetscErrorCode DMDestroy_Complex(DM dm)
   ierr = PetscFree(mesh->supports);CHKERRQ(ierr);
   ierr = PetscFree(mesh->facesTmp);CHKERRQ(ierr);
   while(next) {
-    DMLabel tmp;
+    DMLabel tmp = next->next;
 
-    ierr = PetscFree(next->name);CHKERRQ(ierr);
-    ierr = PetscFree3(next->stratumValues,next->stratumOffsets,next->stratumSizes);CHKERRQ(ierr);
-    ierr = PetscFree(next->points);CHKERRQ(ierr);
-    tmp  = next->next;
-    ierr = PetscFree(next);CHKERRQ(ierr);
+    ierr = DMLabelDestroy(&next);CHKERRQ(ierr);
     next = tmp;
   }
   ierr = ISDestroy(&mesh->subpointMap);CHKERRQ(ierr);
@@ -2088,619 +2048,6 @@ PetscErrorCode DMComplexStratify(DM dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexGetNumLabels"
-/*@
-  DMComplexGetNumLabels - Return the number of labels defined by the mesh
-
-  Not Collective
-
-  Input Parameter:
-. dm   - The DMComplex object
-
-  Output Parameter:
-. numLabels - the number of Labels
-
-  Level: intermediate
-
-.keywords: mesh
-.seealso: DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
-@*/
-PetscErrorCode DMComplexGetNumLabels(DM dm, PetscInt *numLabels)
-{
-  DM_Complex *mesh = (DM_Complex *) dm->data;
-  DMLabel     next = mesh->labels;
-  PetscInt    n    = 0;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(numLabels, 2);
-  while(next) {
-    ++n;
-    next = next->next;
-  }
-  *numLabels = n;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComplexGetLabelName"
-/*@C
-  DMComplexGetLabelName - Return the name of nth label
-
-  Not Collective
-
-  Input Parameters:
-+ dm - The DMComplex object
-- n  - the label number
-
-  Output Parameter:
-. name - the label name
-
-  Level: intermediate
-
-.keywords: mesh
-.seealso: DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
-@*/
-PetscErrorCode DMComplexGetLabelName(DM dm, PetscInt n, const char **name)
-{
-  DM_Complex *mesh = (DM_Complex *) dm->data;
-  DMLabel     next = mesh->labels;
-  PetscInt    l    = 0;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 3);
-  while(next) {
-    if (l == n) {
-      *name = next->name;
-      PetscFunctionReturn(0);
-    }
-    ++l;
-    next = next->next;
-  }
-  SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Label %d does not exist in this DM", n);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComplexHasLabel"
-/*@C
-  DMComplexHasLabel - Determine whether the mesh has a label of a given name
-
-  Not Collective
-
-  Input Parameters:
-+ dm   - The DMComplex object
-- name - The label name
-
-  Output Parameter:
-. hasLabel - PETSC_TRUE if the label is present
-
-  Level: intermediate
-
-.keywords: mesh
-.seealso: DMComplexCreateLabel(), DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
-@*/
-PetscErrorCode DMComplexHasLabel(DM dm, const char name[], PetscBool *hasLabel)
-{
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
-  DMLabel        next = mesh->labels;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidPointer(hasLabel, 3);
-  *hasLabel = PETSC_FALSE;
-  while(next) {
-    ierr = PetscStrcmp(name, next->name, hasLabel);CHKERRQ(ierr);
-    if (*hasLabel) break;
-    next = next->next;
-  }
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComplexCreateLabel"
-/*@C
-  DMComplexCreateLabel - Create a label of the given name if it does not already exist
-
-  Not Collective
-
-  Input Parameters:
-+ dm   - The DMComplex object
-- name - The label name
-
-  Level: intermediate
-
-.keywords: mesh
-.seealso: DMComplexHasLabel(), DMComplexGetLabelValue(), DMComplexSetLabelValue(), DMComplexGetStratumIS()
-@*/
-PetscErrorCode DMComplexCreateLabel(DM dm, const char name[])
-{
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
-  DMLabel        next = mesh->labels;
-  PetscBool      flg  = PETSC_FALSE;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  while(next) {
-    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
-    if (flg) break;
-    next = next->next;
-  }
-  if (!flg) {
-    DMLabel tmpLabel = mesh->labels;
-    ierr = PetscNew(struct _n_DMLabel, &mesh->labels);CHKERRQ(ierr);
-    mesh->labels->next = tmpLabel;
-    next = mesh->labels;
-    ierr = PetscStrallocpy(name, &next->name);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComplexGetLabelValue"
-/*@C
-  DMComplexGetLabelValue - Get the value in a Sieve Label for the given point, with 0 as the default
-
-  Not Collective
-
-  Input Parameters:
-+ dm   - The DMComplex object
-. name - The label name
-- point - The mesh point
-
-  Output Parameter:
-. value - The label value for this point, or -1 if the point is not in the label
-
-  Level: beginner
-
-.keywords: mesh
-.seealso: DMComplexSetLabelValue(), DMComplexGetStratumIS()
-@*/
-PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, PetscInt *value)
-{
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
-  DMLabel        next = mesh->labels;
-  PetscBool      flg;
-  PetscInt       v;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  *value = -1;
-  ierr = DMComplexHasLabel(dm, name, &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named %s was found", name);CHKERRQ(ierr);
-  /* We should have a generic GetLabel() and a Label class */
-  while(next) {
-    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
-    if (flg) break;
-    next = next->next;
-  }
-  /* Find label value */
-  for (v = 0; v < next->numStrata; ++v) {
-#if 1
-    PetscInt i;
-
-    ierr = PetscFindInt(point, next->stratumSizes[v], &next->points[next->stratumOffsets[v]], &i);
-    if (i >= 0) {
-      *value = next->stratumValues[v];
-      break;
-    }
-#else
-    for (p = next->stratumOffsets[v]; p < next->stratumOffsets[v]+next->stratumSizes[v]; ++p) {
-      if (next->points[p] == point) {
-        *value = next->stratumValues[v];
-        break;
-      }
-    }
-#endif
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComplexSetLabelValue"
-/*@C
-  DMComplexSetLabelValue - Add a point to a Sieve Label with given value
-
-  Not Collective
-
-  Input Parameters:
-+ dm   - The DMComplex object
-. name - The label name
-. point - The mesh point
-- value - The label value for this point
-
-  Output Parameter:
-
-  Level: beginner
-
-.keywords: mesh
-.seealso: DMComplexGetStratumIS(), DMComplexClearLabelValue()
-@*/
-PetscErrorCode DMComplexSetLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
-{
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
-  DMLabel        next = mesh->labels;
-  PetscBool      flg  = PETSC_FALSE;
-  PetscInt       v, loc;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  /* Find, or create, label */
-  while(next) {
-    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
-    if (flg) break;
-    next = next->next;
-  }
-  if (!flg) {
-    DMLabel tmpLabel = mesh->labels;
-    ierr = PetscNew(struct _n_DMLabel, &mesh->labels);CHKERRQ(ierr);
-    mesh->labels->next = tmpLabel;
-    next = mesh->labels;
-    ierr = PetscStrallocpy(name, &next->name);CHKERRQ(ierr);
-  }
-  /* Find, or add, label value */
-  for (v = 0; v < next->numStrata; ++v) {
-    if (next->stratumValues[v] == value) break;
-  }
-  if (v >= next->numStrata) {
-    PetscInt *tmpV, *tmpO, *tmpS;
-    ierr = PetscMalloc3(next->numStrata+1,PetscInt,&tmpV,next->numStrata+2,PetscInt,&tmpO,next->numStrata+1,PetscInt,&tmpS);CHKERRQ(ierr);
-    for (v = 0; v < next->numStrata; ++v) {
-      tmpV[v] = next->stratumValues[v];
-      tmpO[v] = next->stratumOffsets[v];
-      tmpS[v] = next->stratumSizes[v];
-    }
-    tmpV[v] = value;
-    tmpO[v] = v == 0 ? 0 : next->stratumOffsets[v];
-    tmpS[v] = 0;
-    tmpO[v+1] = tmpO[v];
-    ++next->numStrata;
-    ierr = PetscFree3(next->stratumValues,next->stratumOffsets,next->stratumSizes);CHKERRQ(ierr);
-    next->stratumValues  = tmpV;
-    next->stratumOffsets = tmpO;
-    next->stratumSizes   = tmpS;
-  }
-  /* Check whether point exists */
-  ierr = PetscFindInt(point,next->stratumSizes[v],next->points+next->stratumOffsets[v],&loc);CHKERRQ(ierr);
-  if (loc < 0) {
-    PetscInt off = next->stratumOffsets[v] - (loc+1); /* decode insert location */
-    /* Check for reallocation */
-    if (next->stratumSizes[v] >= next->stratumOffsets[v+1]-next->stratumOffsets[v]) {
-      PetscInt  oldSize   = next->stratumOffsets[v+1]-next->stratumOffsets[v];
-      PetscInt  newSize   = PetscMax(10, 2*oldSize); /* Double the size, since 2 is the optimal base for this online algorithm */
-      PetscInt  shift     = newSize - oldSize;
-      PetscInt  allocSize = next->stratumOffsets[next->numStrata] + shift;
-      PetscInt *newPoints;
-      PetscInt  w, q;
-
-      ierr = PetscMalloc(allocSize * sizeof(PetscInt), &newPoints);CHKERRQ(ierr);
-      for (q = 0; q < next->stratumOffsets[v]+next->stratumSizes[v]; ++q) {
-        newPoints[q] = next->points[q];
-      }
-      for (w = v+1; w < next->numStrata; ++w) {
-        for (q = next->stratumOffsets[w]; q < next->stratumOffsets[w]+next->stratumSizes[w]; ++q) {
-          newPoints[q+shift] = next->points[q];
-        }
-        next->stratumOffsets[w] += shift;
-      }
-      next->stratumOffsets[next->numStrata] += shift;
-      ierr = PetscFree(next->points);CHKERRQ(ierr);
-      next->points = newPoints;
-    }
-    ierr = PetscMemmove(&next->points[off+1], &next->points[off], (next->stratumSizes[v]+(loc+1)) * sizeof(PetscInt));CHKERRQ(ierr);
-    next->points[off] = point;
-    ++next->stratumSizes[v];
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComplexClearLabelValue"
-/*@C
-  DMComplexClearLabelValue - Remove a point from a Sieve Label with given value
-
-  Not Collective
-
-  Input Parameters:
-+ dm   - The DMComplex object
-. name - The label name
-. point - The mesh point
-- value - The label value for this point
-
-  Output Parameter:
-
-  Level: beginner
-
-.keywords: mesh
-.seealso: DMComplexSetLabelValue(), DMComplexGetStratumIS()
-@*/
-PetscErrorCode DMComplexClearLabelValue(DM dm, const char name[], PetscInt point, PetscInt value)
-{
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
-  DMLabel        next = mesh->labels;
-  PetscBool      flg  = PETSC_FALSE;
-  PetscInt       v, p;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  /* Find label */
-  while(next) {
-    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
-    if (flg) break;
-    next = next->next;
-  }
-  if (!flg) PetscFunctionReturn(0);
-  /* Find label value */
-  for (v = 0; v < next->numStrata; ++v) {
-    if (next->stratumValues[v] == value) break;
-  }
-  if (v >= next->numStrata) PetscFunctionReturn(0);
-  /* Check whether point exists */
-  for (p = next->stratumOffsets[v]; p < next->stratumOffsets[v]+next->stratumSizes[v]; ++p) {
-    if (next->points[p] == point) {
-      /* Found point */
-      PetscInt  q;
-
-      for (q = p+1; q < next->stratumOffsets[v]+next->stratumSizes[v]; ++q) {
-        next->points[q-1] = next->points[q];
-      }
-      --next->stratumSizes[v];
-      break;
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComplexClearLabelStratum"
-/*@C
-  DMComplexClearLabelStratum - Remove all points from a stratum from a Sieve Label
-
-  Not Collective
-
-  Input Parameters:
-+ dm   - The DMComplex object
-. name - The label name
-- value - The label value for this point
-
-  Output Parameter:
-
-  Level: beginner
-
-.keywords: mesh
-.seealso: DMComplexSetLabelValue(), DMComplexGetStratumIS(), DMComplexClearLabelValue()
-@*/
-PetscErrorCode DMComplexClearLabelStratum(DM dm, const char name[], PetscInt value)
-{
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
-  DMLabel        next = mesh->labels;
-  PetscBool      flg  = PETSC_FALSE;
-  PetscInt       v;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  /* Find label */
-  while(next) {
-    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
-    if (flg) break;
-    next = next->next;
-  }
-  if (!flg) PetscFunctionReturn(0);
-  /* Find label value */
-  for (v = 0; v < next->numStrata; ++v) {
-    if (next->stratumValues[v] == value) break;
-  }
-  if (v >= next->numStrata) PetscFunctionReturn(0);
-  next->stratumSizes[v] = 0;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComplexGetLabelSize"
-/*@C
-  DMComplexGetLabelSize - Get the number of different integer ids in a Label
-
-  Not Collective
-
-  Input Parameters:
-+ dm   - The DMComplex object
-- name - The label name
-
-  Output Parameter:
-. size - The label size (number of different integer ids)
-
-  Level: beginner
-
-.keywords: mesh
-.seealso: DMComplexSetLabelValue()
-@*/
-PetscErrorCode DMComplexGetLabelSize(DM dm, const char name[], PetscInt *size)
-{
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
-  DMLabel        next = mesh->labels;
-  PetscBool      flg;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidPointer(size, 3);
-  *size = 0;
-  while(next) {
-    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
-    if (flg) {
-      *size = next->numStrata;
-      break;
-    }
-    next = next->next;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComplexGetLabelIdIS"
-/*@C
-  DMComplexGetLabelIdIS - Get the integer ids in a label
-
-  Not Collective
-
-  Input Parameters:
-+ mesh - The DMComplex object
-- name - The label name
-
-  Output Parameter:
-. ids - The integer ids
-
-  Level: beginner
-
-.keywords: mesh
-.seealso: DMComplexGetLabelSize()
-@*/
-PetscErrorCode DMComplexGetLabelIdIS(DM dm, const char name[], IS *ids)
-{
-  DM_Complex    *mesh   = (DM_Complex *) dm->data;
-  DMLabel        next   = mesh->labels;
-  PetscInt      *values = PETSC_NULL;
-  PetscInt       size   = 0, i = 0;
-  PetscBool      flg;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidPointer(ids, 3);
-  while(next) {
-    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
-    if (flg) {
-      size = next->numStrata;
-      ierr = PetscMalloc(size * sizeof(PetscInt), &values);CHKERRQ(ierr);
-      for (i = 0; i < next->numStrata; ++i) {
-        values[i] = next->stratumValues[i];
-      }
-      break;
-    }
-    next = next->next;
-  }
-  *ids = PETSC_NULL;
-  if (next) {                   /* We found the label on this process */
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, size, values, PETSC_OWN_POINTER, ids);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComplexGetStratumSize"
-/*@C
-  DMComplexGetStratumSize - Get the number of points in a label stratum
-
-  Not Collective
-
-  Input Parameters:
-+ dm - The DMComplex object
-. name - The label name
-- value - The stratum value
-
-  Output Parameter:
-. size - The stratum size
-
-  Level: beginner
-
-.keywords: mesh
-.seealso: DMComplexGetLabelSize(), DMComplexGetLabelIds()
-@*/
-PetscErrorCode DMComplexGetStratumSize(DM dm, const char name[], PetscInt value, PetscInt *size)
-{
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
-  DMLabel        next = mesh->labels;
-  PetscBool      flg;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidPointer(size, 4);
-  *size = 0;
-  while(next) {
-    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
-    if (flg) {
-      PetscInt v;
-
-      for (v = 0; v < next->numStrata; ++v) {
-        if (next->stratumValues[v] == value) {
-          *size = next->stratumSizes[v];
-          break;
-        }
-      }
-      break;
-    }
-    next = next->next;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMComplexGetStratumIS"
-/*@C
-  DMComplexGetStratumIS - Get the points in a label stratum
-
-  Not Collective
-
-  Input Parameters:
-+ dm - The DMComplex object
-. name - The label name
-- value - The stratum value
-
-  Output Parameter:
-. is - The stratum points
-
-  Level: beginner
-
-.keywords: mesh
-.seealso: DMComplexGetStratumSize()
-@*/
-PetscErrorCode DMComplexGetStratumIS(DM dm, const char name[], PetscInt value, IS *is) {
-  DM_Complex    *mesh = (DM_Complex *) dm->data;
-  DMLabel        next = mesh->labels;
-  PetscBool      flg;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidCharPointer(name, 2);
-  PetscValidPointer(is, 4);
-  *is = PETSC_NULL;
-  while(next) {
-    ierr = PetscStrcmp(name, next->name, &flg);CHKERRQ(ierr);
-    if (flg) {
-      PetscInt v;
-
-      for (v = 0; v < next->numStrata; ++v) {
-        if (next->stratumValues[v] == value) {
-          ierr = ISCreateGeneral(PETSC_COMM_SELF, next->stratumSizes[v], &next->points[next->stratumOffsets[v]], PETSC_COPY_VALUES, is);CHKERRQ(ierr);
-          break;
-        }
-      }
-      break;
-    }
-    next = next->next;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMComplexGetJoin"
 /*@C
   DMComplexGetJoin - Get an array for the join of the set of points
@@ -4057,6 +3404,27 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
   ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dmParallel);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMCOMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexRenumber_Private"
+/*
+  Reasons to renumber:
+
+  1) Permute points, e.g. bandwidth reduction
+
+    a) Must not mix strata
+
+  2) Shift numbers for point insertion
+
+    a) Want operation brken into parts so that insertion can be interleaved
+
+  renumbering - An IS which provides the new numbering
+*/
+PetscErrorCode DMComplexRenumber_Private(DM dm, IS renumbering)
+{
+  PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
@@ -7902,30 +7270,10 @@ PetscErrorCode DMComplexSetFEMIntegration(DM dm,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexProjectFunction"
-/*@C
-  DMComplexProjectFunction - This projects the given function into the function space provided.
-
-  Input Parameters:
-+ dm      - The DM
-. numComp - The number of components (functions)
-. funcs   - The coordinate functions to evaluate
-- mode    - The insertion mode for values
-
-  Output Parameter:
-. X - vector
-
-  Level: developer
-
-  Note:
-  This currently just calls the function with the coordinates of each vertex and edge midpoint, and stores the result in a vector.
-  We will eventually fix it.
-
-,seealso: DMComplexComputeL2Diff()
-*/
-PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**funcs)(const PetscReal []), InsertMode mode, Vec X)
+#define __FUNCT__ "DMComplexProjectFunctionLocal"
+PetscErrorCode DMComplexProjectFunctionLocal(DM dm, PetscInt numComp, PetscScalar (**funcs)(const PetscReal []), InsertMode mode, Vec localX)
 {
-  Vec            localX, coordinates;
+  Vec            coordinates;
   PetscSection   section, cSection;
   PetscInt       dim, vStart, vEnd, v, c, d;
   PetscScalar   *values, *cArray;
@@ -7933,7 +7281,6 @@ PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
@@ -7986,9 +7333,6 @@ PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**
 
   ierr = PetscFree(coords);CHKERRQ(ierr);
   ierr = PetscFree(values);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
 #if 0
   const PetscInt localDof = this->_mesh->sizeWithBC(s, *cells->begin());
   PetscReal      detJ;
@@ -8022,6 +7366,43 @@ PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**
 #endif
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexProjectFunction"
+/*@C
+  DMComplexProjectFunction - This projects the given function into the function space provided.
+
+  Input Parameters:
++ dm      - The DM
+. numComp - The number of components (functions)
+. funcs   - The coordinate functions to evaluate
+- mode    - The insertion mode for values
+
+  Output Parameter:
+. X - vector
+
+  Level: developer
+
+  Note:
+  This currently just calls the function with the coordinates of each vertex and edge midpoint, and stores the result in a vector.
+  We will eventually fix it.
+
+,seealso: DMComplexComputeL2Diff()
+*/
+PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**funcs)(const PetscReal []), InsertMode mode, Vec X)
+{
+  Vec            localX;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr = DMComplexProjectFunctionLocal(dm, numComp, funcs, mode, localX);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexComputeL2Diff"
 /*@C
@@ -8046,7 +7427,7 @@ PetscErrorCode DMComplexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar
   Vec              localX;
   PetscReal       *coords, *v0, *J, *invJ, detJ;
   PetscReal        localDiff;
-  PetscInt         dim, numFields, cStart, cEnd, c, field, fieldOffset, comp;
+  PetscInt         dim, numFields, numComponents = 0, cStart, cEnd, c, field, fieldOffset, comp;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -8056,6 +7437,10 @@ PetscErrorCode DMComplexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  for (field = 0; field < numFields; ++field) {
+    numComponents += quad[field].numComponents;
+  }
+  ierr = DMComplexProjectFunctionLocal(dm, numComponents, funcs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
@@ -8142,7 +7527,7 @@ PetscErrorCode DMComplexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   PetscReal       *v0, *J, *invJ, *detJ;
   PetscScalar     *elemVec, *u;
   PetscInt         dim, numFields, field, numBatchesTmp = 1, numCells, cStart, cEnd, c;
-  PetscInt         cellDof = 0;
+  PetscInt         cellDof = 0, numComponents = 0;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -8150,12 +7535,14 @@ PetscErrorCode DMComplexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   numCells = cEnd - cStart;
   for (field = 0; field < numFields; ++field) {
     cellDof += quad[field].numBasisFuncs*quad[field].numComponents;
+    numComponents += quad[field].numComponents;
   }
+  ierr = DMComplexProjectFunctionLocal(dm, numComponents, fem->bcFuncs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
+  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc6(numCells*cellDof,PetscScalar,&u,numCells*dim,PetscReal,&v0,numCells*dim*dim,PetscReal,&J,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
@@ -8210,6 +7597,7 @@ PetscErrorCode DMComplexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
         ierr = VecChop(f, 1.0e-10);CHKERRQ(ierr);
         ierr = VecView(f, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
         ierr = VecDestroy(&f);CHKERRQ(ierr);
+        ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
       ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
     }
@@ -8250,21 +7638,21 @@ PetscErrorCode DMComplexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, v
   PetscReal       *v0, *J, *invJ, *detJ;
   PetscScalar     *elemVec, *u, *a;
   PetscInt         dim, numFields, field, numBatchesTmp = 1, numCells, cStart, cEnd, c;
-  PetscInt         cellDof  = 0;
+  PetscInt         cellDof = 0;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   /* ierr = PetscLogEventBegin(JacobianActionFEMEvent,0,0,0,0);CHKERRQ(ierr); */
+  ierr = MatShellGetContext(Jac, &jctx);CHKERRQ(ierr);
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-  ierr = MatShellGetContext(Jac, &jctx);CHKERRQ(ierr);
-  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   numCells = cEnd - cStart;
   for (field = 0; field < numFields; ++field) {
     cellDof += quad[field].numBasisFuncs*quad[field].numComponents;
   }
+  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc7(numCells*cellDof,PetscScalar,&u,numCells*cellDof,PetscScalar,&a,numCells*dim,PetscReal,&v0,numCells*dim*dim,PetscReal,&J,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
@@ -8301,7 +7689,7 @@ PetscErrorCode DMComplexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, v
                                                fem->g0Funcs, fem->g1Funcs, fem->g2Funcs, fem->g3Funcs, &elemVec[offset*cellDof]);CHKERRQ(ierr);
   }
   for (c = cStart; c < cEnd; ++c) {
-    if (mesh->printFEM > 1) {ierr = DMPrintCellVector(c, "Residual", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
+    if (mesh->printFEM > 1) {ierr = DMPrintCellVector(c, "Jacobian Action", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
     ierr = DMComplexVecSetClosure(dm, PETSC_NULL, F, c, &elemVec[c*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree7(u,a,v0,J,invJ,detJ,elemVec);CHKERRQ(ierr);
@@ -8342,7 +7730,7 @@ PetscErrorCode DMComplexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, v
 
 .seealso: FormFunctionLocal()
 */
-PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, void *user)
+PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *str,void *user)
 {
   DM_Complex      *mesh = (DM_Complex *) dm->data;
   PetscFEM        *fem  = (PetscFEM *) &((DM *) user)[1];
@@ -8351,7 +7739,7 @@ PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, void
   PetscReal       *v0, *J, *invJ, *detJ;
   PetscScalar     *elemMat, *u;
   PetscInt         dim, numFields, field, fieldI, numBatchesTmp = 1, numCells, cStart, cEnd, c;
-  PetscInt         cellDof = 0;
+  PetscInt         cellDof = 0, numComponents = 0;
   PetscBool        isShell;
   PetscErrorCode   ierr;
 
@@ -8360,12 +7748,14 @@ PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, void
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-  ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   numCells = cEnd - cStart;
   for (field = 0; field < numFields; ++field) {
     cellDof += quad[field].numBasisFuncs*quad[field].numComponents;
+    numComponents += quad[field].numComponents;
   }
+  ierr = DMComplexProjectFunctionLocal(dm, numComponents, fem->bcFuncs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
+  ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = PetscMalloc6(numCells*cellDof,PetscScalar,&u,numCells*dim,PetscReal,&v0,numCells*dim*dim,PetscReal,&J,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof*cellDof,PetscScalar,&elemMat);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
@@ -8430,5 +7820,6 @@ PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, void
     ierr = MatShellGetContext(Jac, &jctx);CHKERRQ(ierr);
     ierr = VecCopy(X, jctx->u);CHKERRQ(ierr);
   }
+  *str = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }

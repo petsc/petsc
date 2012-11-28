@@ -780,11 +780,11 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
   Vec                Y,X,F,G,W;
   KSPConvergedReason kspreason;
   DM                 dm;
-  SNESDM             sdm;
+  DMSNES             sdm;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   vi->computeuserfunction = sdm->computefunction;
   sdm->computefunction    = SNESVIComputeFunction;
 

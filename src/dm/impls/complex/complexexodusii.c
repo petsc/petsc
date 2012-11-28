@@ -116,10 +116,12 @@ PetscErrorCode DMComplexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool in
     default:
       SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No mesh interpolation support for dimension %D", dim);
     }
-    if (0) {    /* Maintain Cell Sets label. Only valid on rank 0, but other code depends on collective results so skip for now. */
-      ((DM_Complex *) (*dm)->data)->labels->next->next = ((DM_Complex *)   idm->data)->labels;
-      ((DM_Complex *)   idm->data)->labels             = ((DM_Complex *) (*dm)->data)->labels->next;
-      ((DM_Complex *) (*dm)->data)->labels->next       = PETSC_NULL;
+    /* Maintain Cell Sets label */
+    {
+      DMLabel label;
+
+      ierr = DMComplexRemoveLabel(*dm, "Cell Sets", &label);CHKERRQ(ierr);
+      if (label) {ierr = DMComplexAddLabel(idm, label);CHKERRQ(ierr);}
     }
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = idm;

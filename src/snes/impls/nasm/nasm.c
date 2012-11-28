@@ -23,13 +23,13 @@ PetscErrorCode SNESReset_NASM(SNES snes)
   PetscInt       i;
   PetscFunctionBegin;
   for (i=0;i<nasm->n;i++) {
-    if (nasm->x) ierr = VecDestroy(&nasm->x[i]);CHKERRQ(ierr);
-    if (nasm->r) ierr = VecDestroy(&nasm->r[i]);CHKERRQ(ierr);
-    if (nasm->b) ierr = VecDestroy(&nasm->b[i]);CHKERRQ(ierr);
+    if (nasm->x) { ierr = VecDestroy(&nasm->x[i]);CHKERRQ(ierr); }
+    if (nasm->r) { ierr = VecDestroy(&nasm->r[i]);CHKERRQ(ierr); }
+    if (nasm->b) { ierr = VecDestroy(&nasm->b[i]);CHKERRQ(ierr); }
 
-    if (nasm->subsnes) ierr = SNESDestroy(&nasm->subsnes[i]);CHKERRQ(ierr);
-    if (nasm->ois) ierr = ISDestroy(&nasm->ois[i]);CHKERRQ(ierr);
-    if (nasm->iis) ierr = ISDestroy(&nasm->iis[i]);CHKERRQ(ierr);
+    if (nasm->subsnes) { ierr = SNESDestroy(&nasm->subsnes[i]);CHKERRQ(ierr); }
+    if (nasm->ois) { ierr = ISDestroy(&nasm->ois[i]);CHKERRQ(ierr); }
+    if (nasm->iis) { ierr = ISDestroy(&nasm->iis[i]);CHKERRQ(ierr); }
   }
   PetscFunctionReturn(0);
 }

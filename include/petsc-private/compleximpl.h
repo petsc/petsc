@@ -7,8 +7,14 @@
 
 PETSC_EXTERN PetscLogEvent DMCOMPLEX_Distribute, DMCOMPLEX_Stratify;
 
-typedef struct _n_DMLabel *DMLabel;
+/* This is an integer map, in addition it is also a container class
+   Design points:
+     - Low storage is the most important design point
+     - We want flexible insertion and deletion
+     - We can live with O(log) query, but we need O(1) iteration over strata
+*/
 struct _n_DMLabel {
+  PetscInt  refct;
   char     *name;           /* Label name */
   PetscInt  numStrata;      /* Number of integer values */
   PetscInt *stratumValues;  /* Value of each stratum */

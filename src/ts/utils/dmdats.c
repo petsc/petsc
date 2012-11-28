@@ -14,11 +14,11 @@ typedef struct {
   void *rhsjacobianlocalctx;
   InsertMode ifunctionlocalimode;
   InsertMode rhsfunctionlocalimode;
-} DM_DA_TS;
+} DMTS_DA;
 
 #undef __FUNCT__
-#define __FUNCT__ "TSDMDestroy_DMDA"
-static PetscErrorCode TSDMDestroy_DMDA(TSDM sdm)
+#define __FUNCT__ "DMTSDestroy_DMDA"
+static PetscErrorCode DMTSDestroy_DMDA(DMTS sdm)
 {
   PetscErrorCode ierr;
 
@@ -28,33 +28,33 @@ static PetscErrorCode TSDMDestroy_DMDA(TSDM sdm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSDMDuplicate_DMDA"
-static PetscErrorCode TSDMDuplicate_DMDA(TSDM oldsdm,DM dm)
+#define __FUNCT__ "DMTSDuplicate_DMDA"
+static PetscErrorCode DMTSDuplicate_DMDA(DMTS oldsdm,DM dm)
 {
   PetscErrorCode ierr;
-  TSDM           sdm;
+  DMTS           sdm;
 
   PetscFunctionBegin;
-  ierr = DMTSGetContext(dm,&sdm);CHKERRQ(ierr);
-  ierr = PetscNewLog(dm,DM_DA_TS,&sdm->data);CHKERRQ(ierr);
-  if (oldsdm->data) {ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DM_DA_TS));CHKERRQ(ierr);}
+  ierr = DMGetDMTS(dm,&sdm);CHKERRQ(ierr);
+  ierr = PetscNewLog(dm,DMTS_DA,&sdm->data);CHKERRQ(ierr);
+  if (oldsdm->data) {ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DMTS_DA));CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDATSGetContext"
-static PetscErrorCode DMDATSGetContext(DM dm,TSDM sdm,DM_DA_TS **dmdats)
+static PetscErrorCode DMDATSGetContext(DM dm,DMTS sdm,DMTS_DA **dmdats)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *dmdats = PETSC_NULL;
   if (!sdm->data) {
-    ierr = PetscNewLog(dm,DM_DA_TS,&sdm->data);CHKERRQ(ierr);
-    sdm->destroy = TSDMDestroy_DMDA;
-    sdm->duplicate = TSDMDuplicate_DMDA;
+    ierr = PetscNewLog(dm,DMTS_DA,&sdm->data);CHKERRQ(ierr);
+    sdm->destroy = DMTSDestroy_DMDA;
+    sdm->duplicate = DMTSDuplicate_DMDA;
   }
-  *dmdats = (DM_DA_TS*)sdm->data;
+  *dmdats = (DMTS_DA*)sdm->data;
   PetscFunctionReturn(0);
 }
 
@@ -68,7 +68,7 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
 {
   PetscErrorCode ierr;
   DM             dm;
-  DM_DA_TS     *dmdats = (DM_DA_TS*)ctx;
+  DMTS_DA        *dmdats = (DMTS_DA*)ctx;
   DMDALocalInfo  info;
   Vec            Xloc;
   void           *x,*f,*xdot;
@@ -117,15 +117,11 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIJacobian_DMDA"
-/*
-  This function should eventually replace:
-    DMComputeJacobian() and DMDAComputeJacobian1()
- */
 static PetscErrorCode TSComputeIJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
-  DM_DA_TS     *dmdats = (DM_DA_TS*)ctx;
+  DMTS_DA        *dmdats = (DMTS_DA*)ctx;
   DMDALocalInfo  info;
   Vec            Xloc;
   void           *x,*xdot;
@@ -168,7 +164,7 @@ static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec 
 {
   PetscErrorCode ierr;
   DM             dm;
-  DM_DA_TS     *dmdats = (DM_DA_TS*)ctx;
+  DMTS_DA        *dmdats = (DMTS_DA*)ctx;
   DMDALocalInfo  info;
   Vec            Xloc;
   void           *x,*f;
@@ -215,15 +211,11 @@ static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec 
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSJacobian_DMDA"
-/*
-  This function should eventually replace:
-    DMComputeJacobian() and DMDAComputeJacobian1()
- */
 static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
-  DM_DA_TS     *dmdats = (DM_DA_TS*)ctx;
+  DMTS_DA        *dmdats = (DMTS_DA*)ctx;
   DMDALocalInfo  info;
   Vec            Xloc;
   void           *x;
@@ -285,12 +277,12 @@ $ func(DMDALocalInfo info,PetscReal t,void *x,void *f,void *ctx)
 PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm,InsertMode imode,DMDATSRHSFunctionLocal func,void *ctx)
 {
   PetscErrorCode ierr;
-  TSDM         sdm;
-  DM_DA_TS     *dmdats;
+  DMTS           sdm;
+  DMTS_DA        *dmdats;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMTSGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMTSWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDATSGetContext(dm,sdm,&dmdats);CHKERRQ(ierr);
   dmdats->rhsfunctionlocalimode = imode;
   dmdats->rhsfunctionlocal = func;
@@ -330,12 +322,12 @@ $ func(DMDALocalInfo* info,PetscReal t,void* x,Mat J,Mat B,MatStructure *flg,voi
 PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,DMDATSRHSJacobianLocal func,void *ctx)
 {
   PetscErrorCode ierr;
-  TSDM         sdm;
-  DM_DA_TS     *dmdats;
+  DMTS           sdm;
+  DMTS_DA        *dmdats;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMTSGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMTSWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDATSGetContext(dm,sdm,&dmdats);CHKERRQ(ierr);
   dmdats->rhsjacobianlocal = func;
   dmdats->rhsjacobianlocalctx = ctx;
@@ -371,12 +363,12 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,DMDATSRHSJacobianLocal func,void 
 PetscErrorCode DMDATSSetIFunctionLocal(DM dm,InsertMode imode,DMDATSIFunctionLocal func,void *ctx)
 {
   PetscErrorCode ierr;
-  TSDM         sdm;
-  DM_DA_TS     *dmdats;
+  DMTS           sdm;
+  DMTS_DA        *dmdats;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMTSGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMTSWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDATSGetContext(dm,sdm,&dmdats);CHKERRQ(ierr);
   dmdats->ifunctionlocalimode = imode;
   dmdats->ifunctionlocal = func;
@@ -417,12 +409,12 @@ $ func(DMDALocalInfo* info,PetscReal t,void* x,void *xdot,Mat J,Mat B,MatStructu
 PetscErrorCode DMDATSSetIJacobianLocal(DM dm,DMDATSIJacobianLocal func,void *ctx)
 {
   PetscErrorCode ierr;
-  TSDM         sdm;
-  DM_DA_TS     *dmdats;
+  DMTS           sdm;
+  DMTS_DA        *dmdats;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMTSGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMTSWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMDATSGetContext(dm,sdm,&dmdats);CHKERRQ(ierr);
   dmdats->ijacobianlocal = func;
   dmdats->ijacobianlocalctx = ctx;

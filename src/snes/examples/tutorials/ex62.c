@@ -261,6 +261,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   options->fem.g1Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->g1Funcs;
   options->fem.g2Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->g2Funcs;
   options->fem.g3Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->g3Funcs;
+  options->fem.bcFuncs = (PetscScalar (**)(const PetscReal[])) &options->exactFuncs;
 
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
@@ -536,7 +537,7 @@ PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
 {
   JacActionCtx    *ctx;
   DM               dm;
-  Vec              dummy, localX, localY;
+  Vec              localX, localY;
   PetscInt         N, n;
   PetscErrorCode   ierr;
 
@@ -548,13 +549,8 @@ PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
   dm = ctx->dm;
 
   /* determine whether X = localX */
-  ierr = DMGetLocalVector(dm, &dummy);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &localY);CHKERRQ(ierr);
-  /* TODO: THIS dummy restore is necessary here so that the first available local vector has boundary conditions in it
-   I think the right thing to do is have the user put BC into a local vector and give it to us
-  */
-  ierr = DMRestoreLocalVector(dm, &dummy);CHKERRQ(ierr);
   ierr = VecGetSize(X, &N);CHKERRQ(ierr);
   ierr = VecGetSize(localX, &n);CHKERRQ(ierr);
 
@@ -639,20 +635,21 @@ int main(int argc, char **argv)
     userJ.J    = J;
     userJ.user = &user;
     ierr = DMCreateLocalVector(user.dm, &userJ.u);CHKERRQ(ierr);
+    ierr = DMComplexProjectFunctionLocal(user.dm, numComponents, user.exactFuncs, INSERT_BC_VALUES, userJ.u);CHKERRQ(ierr);
     ierr = MatShellSetContext(A, &userJ);CHKERRQ(ierr);
   } else {
     A = J;
   }
-  ierr = SNESSetJacobian(snes, A, J, SNESDMComputeJacobian, &user);CHKERRQ(ierr);
   ierr = CreatePressureNullSpace(user.dm, &user, &nullSpace);CHKERRQ(ierr);
   ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
   if (A != J) {
     ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
   }
 
-  ierr = DMSetLocalFunction(user.dm, (DMLocalFunction1) DMComplexComputeResidualFEM);CHKERRQ(ierr);
-  ierr = DMSetLocalJacobian(user.dm, (DMLocalJacobian1) DMComplexComputeJacobianFEM);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes, r, SNESDMComputeFunction, &user);CHKERRQ(ierr);
+  ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMComplexComputeResidualFEM,&user);CHKERRQ(ierr);
+  ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))DMComplexComputeJacobianFEM,&user);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes, A, J, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   ierr = DMComplexProjectFunction(user.dm, numComponents, user.exactFuncs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
@@ -687,7 +684,7 @@ int main(int argc, char **argv)
     ierr = DMComplexComputeL2Diff(user.dm, user.fem.quad, user.exactFuncs, u, &error);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);
     /* Check residual */
-    ierr = SNESDMComputeFunction(snes, u, r, &user);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes, u, r);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial Residual\n");CHKERRQ(ierr);
     ierr = VecChop(r, 1.0e-10);CHKERRQ(ierr);
     ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -699,12 +696,12 @@ int main(int argc, char **argv)
       MatStructure flag;
       PetscBool    isNull;
 
-      ierr = SNESDMComputeJacobian(snes, u, &A, &A, &flag, &user);CHKERRQ(ierr);
+      ierr = SNESComputeJacobian(snes, u, &A, &A, &flag);CHKERRQ(ierr);
       ierr = MatNullSpaceTest(nullSpace, J, &isNull);CHKERRQ(ierr);
       if (!isNull) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
       ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
       ierr = VecSet(r, 0.0);CHKERRQ(ierr);
-      ierr = SNESDMComputeFunction(snes, r, b, &user);CHKERRQ(ierr);
+      ierr = SNESComputeFunction(snes, r, b);CHKERRQ(ierr);
       ierr = MatMult(A, u, r);CHKERRQ(ierr);
       ierr = VecAXPY(r, 1.0, b);CHKERRQ(ierr);
       ierr = VecDestroy(&b);CHKERRQ(ierr);

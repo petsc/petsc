@@ -278,7 +278,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat *A,Mat *B,MatSt
   PetscErrorCode ierr;
   PetscInt       Ustate;
   DM             dm;
-  TSDM           tsdm;
+  DMTS           tsdm;
   TSRHSJacobian  rhsjacobianfunc;
   void           *ctx;
   TSIJacobian    ijacobianfunc;
@@ -288,7 +288,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat *A,Mat *B,MatSt
   PetscValidHeaderSpecific(U,VEC_CLASSID,3);
   PetscCheckSameComm(ts,1,U,3);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMTSGetContext(dm,&tsdm);CHKERRQ(ierr);
+  ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
   ierr = DMTSGetRHSJacobian(dm,&rhsjacobianfunc,&ctx);CHKERRQ(ierr);
   ierr = DMTSGetIJacobian(dm,&ijacobianfunc,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectStateQuery((PetscObject)U,&Ustate);CHKERRQ(ierr);
@@ -2938,18 +2938,18 @@ PetscErrorCode  TSSetDM(TS ts,DM dm)
 {
   PetscErrorCode ierr;
   SNES           snes;
-  TSDM           tsdm;
+  DMTS           tsdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
-  if (ts->dm) {               /* Move the TSDM context over to the new DM unless the new DM already has one */
+  if (ts->dm) {               /* Move the DMTS context over to the new DM unless the new DM already has one */
     PetscContainer oldcontainer,container;
-    ierr = PetscObjectQuery((PetscObject)ts->dm,"TSDM",(PetscObject*)&oldcontainer);CHKERRQ(ierr);
-    ierr = PetscObjectQuery((PetscObject)dm,"TSDM",(PetscObject*)&container);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject)ts->dm,"DMTS",(PetscObject*)&oldcontainer);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject)dm,"DMTS",(PetscObject*)&container);CHKERRQ(ierr);
     if (oldcontainer && !container) {
-      ierr = DMTSCopyContext(ts->dm,dm);CHKERRQ(ierr);
-      ierr = DMTSGetContext(ts->dm,&tsdm);CHKERRQ(ierr);
+      ierr = DMCopyDMTS(ts->dm,dm);CHKERRQ(ierr);
+      ierr = DMGetDMTS(ts->dm,&tsdm);CHKERRQ(ierr);
       if (tsdm->originaldm == ts->dm) { /* Grant write privileges to the replacement DM */
         tsdm->originaldm = dm;
       }

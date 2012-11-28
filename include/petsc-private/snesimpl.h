@@ -147,8 +147,8 @@ struct _p_SNES {
 };
 
 /* Context for resolution-dependent SNES callback information */
-typedef struct _n_SNESDM *SNESDM;
-struct _n_SNESDM {
+typedef struct _n_DMSNES *DMSNES;
+struct _n_DMSNES {
   PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computegs)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -174,12 +174,12 @@ struct _n_SNESDM {
   void *blockjacobianctx;
 
   /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */
-  PetscErrorCode (*destroy)(SNESDM);
-  PetscErrorCode (*duplicate)(SNESDM,DM);
+  PetscErrorCode (*destroy)(DMSNES);
+  PetscErrorCode (*duplicate)(DMSNES,DM);
   void *data;
 
   /* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way
-   * copy-on-write. When DMSNESGetContextWrite() sees a request using a different DM, it makes a copy. Thus, if a user
+   * copy-on-write. When DMGetDMSNESWrite() sees a request using a different DM, it makes a copy. Thus, if a user
    * only interacts directly with one level, e.g., using SNESSetFunction(), then SNESSetUp_FAS() is called to build
    * coarse levels, then the user changes the routine with another call to SNESSetFunction(), it automatically
    * propagates to all the levels. If instead, they get out a specific level and set the function on that level,
@@ -187,10 +187,9 @@ struct _n_SNESDM {
    */
   DM originaldm;
 };
-PETSC_EXTERN PetscErrorCode DMSNESGetContext(DM,SNESDM*);
-PETSC_EXTERN PetscErrorCode DMSNESGetContextWrite(DM,SNESDM*);
-PETSC_EXTERN PetscErrorCode DMSNESCopyContext(DM,DM);
-PETSC_EXTERN PetscErrorCode DMSNESSetUpLegacy(DM);
+PETSC_EXTERN PetscErrorCode DMGetDMSNES(DM,DMSNES*);
+PETSC_EXTERN PetscErrorCode DMGetDMSNESWrite(DM,DMSNES*);
+PETSC_EXTERN PetscErrorCode DMCopyDMSNES(DM,DM);
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
 typedef struct {

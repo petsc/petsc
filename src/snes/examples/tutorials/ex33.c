@@ -127,6 +127,7 @@ int main(int argc, char **argv)
   AppCtx         user;   /* user-defined work context */
   PetscReal      t;      /* time */
   PetscErrorCode ierr;
+  PetscInt       n;
 
   ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
   /* Create solver */
@@ -141,7 +142,7 @@ int main(int argc, char **argv)
   ierr = DMGetGlobalVector(user.cda, &user.Kappa);CHKERRQ(ierr);
   ierr = FormPermeability(user.cda, user.Kappa, &user);CHKERRQ(ierr);
   /* Setup Problem */
-  ierr = DMDASetLocalFunction(da, (DMDALocalFunction1) FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*)) FormFunctionLocal,&user);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &u);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da, &user.uold);CHKERRQ(ierr);
   user.sl  = 1.0;
@@ -152,7 +153,7 @@ int main(int argc, char **argv)
   user.kappaNoWet = 0.3;
   /* Time Loop */
   user.dt = 0.1;
-  for (PetscInt n = 0; n < 100; ++n, t += user.dt) {
+  for (n = 0; n < 100; ++n, t += user.dt) {
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting time %g\n", t);CHKERRQ(ierr);
     ierr = VecView(u, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     /* Solve */

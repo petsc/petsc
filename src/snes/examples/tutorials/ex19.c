@@ -79,7 +79,6 @@ typedef struct {
 } Field;
 
 PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field**,Field**,void*);
-PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 
 typedef struct {
   PassiveReal lidvelocity,prandtl,grashof;  /* physical parameters */
@@ -142,7 +141,7 @@ int main(int argc,char **argv)
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
-  ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"lid velocity = %G, prandtl # = %G, grashof # = %G\n",user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
 
@@ -370,35 +369,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "FormFunction"
-PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *user)
-{
-  DMDALocalInfo  info;
-  Field          **u,**fu;
-  PetscErrorCode ierr;
-  Vec            localX;
-  DM             da;
-
-  PetscFunctionBegin;
-  ierr = SNESGetDM(snes,(DM*)&da);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
-  /*
-     Scatter ghost points to local vector, using the 2-step process
-        DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
-  */
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,localX,&u);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,F,&fu);CHKERRQ(ierr);
-  ierr = FormFunctionLocal(&info,u,fu,user);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,F,&fu);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "NonlinearGS"

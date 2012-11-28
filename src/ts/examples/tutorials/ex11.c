@@ -1026,8 +1026,13 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
   }
   ierr = ISRestoreIndices(innerIS, &cells);CHKERRQ(ierr);
   ierr = ISDestroy(&innerIS);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  {
+    DMLabel label;
+
+    ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = DMComplexGetLabel(dm, bdname, &label);CHKERRQ(ierr);
+    ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2377,7 +2382,7 @@ int main(int argc, char **argv)
   PetscViewer    viewer;
   PetscMPIInt    rank;
   char           filename[PETSC_MAX_PATH_LEN] = "sevenside.exo";
-  PetscBool      vtkCellGeom;
+  PetscBool      vtkCellGeom, splitFaces;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
@@ -2429,6 +2434,8 @@ int main(int argc, char **argv)
     user->reconstruct = PETSC_FALSE;
     ierr = PetscOptionsBool("-ufv_reconstruct","Reconstruct gradients for a second order method (grows stencil)","",user->reconstruct,&user->reconstruct,PETSC_NULL);CHKERRQ(ierr);
     user->RHSFunctionLocal = user->reconstruct ? RHSFunctionLocal_LS : RHSFunctionLocal_Upwind;
+    splitFaces = PETSC_FALSE;
+    ierr = PetscOptionsBool("-ufv_split_faces","Split faces between cell sets","",splitFaces,&splitFaces,PETSC_NULL);CHKERRQ(ierr);
     if (user->reconstruct) {
       ierr = PetscOptionsList("-ufv_limit","Limiter to apply to reconstructed solution","",LimitList,limitname,limitname,sizeof limitname,PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscFListFind(LimitList,comm,limitname,PETSC_TRUE,(void(**)(void))&user->Limit);CHKERRQ(ierr);
@@ -2452,7 +2459,7 @@ int main(int argc, char **argv)
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
 
   ierr = ConstructGhostCells(&dm, user);CHKERRQ(ierr);
-  ierr = ConstructCellBoundary(dm, user);CHKERRQ(ierr);
+  if (splitFaces) {ierr = ConstructCellBoundary(dm, user);CHKERRQ(ierr);}
   ierr = SplitFaces(&dm, "split faces", user);CHKERRQ(ierr);
   ierr = ConstructGeometry(dm, &user->facegeom, &user->cellgeom, user);CHKERRQ(ierr);
   if (0) {ierr = VecView(user->cellgeom, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
