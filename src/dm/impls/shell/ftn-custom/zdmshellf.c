@@ -49,3 +49,5 @@ void PETSC_STDCALL dmshellsetcreateglobalvector_(DM *dm,void (PETSC_STDCALL *fun
   ((PetscObject)*dm)->fortran_func_pointers[1] = (PetscVoidFunction) func;
   *ierr = DMShellSetCreateGlobalVector(*dm,ourcreateglobalvector);
 }
+
+EXTERN_C_END
