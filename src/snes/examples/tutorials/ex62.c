@@ -652,6 +652,7 @@ int main(int argc, char **argv)
 
   ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMComplexComputeResidualFEM,&user);CHKERRQ(ierr);
   ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))DMComplexComputeJacobianFEM,&user);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes, A, J, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
