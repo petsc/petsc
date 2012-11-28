@@ -532,23 +532,6 @@ PetscErrorCode DMSNESGetPicard(DM dm,PetscErrorCode (**pfunc)(SNES,Vec,Vec,void*
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESSetUpLegacy"
-/* Sets up calling of legacy DM routines */
-PetscErrorCode DMSNESSetUpLegacy(DM dm)
-{
-  PetscErrorCode ierr;
-  DMSNES         sdm;
-
-  PetscFunctionBegin;
-  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (!sdm->computefunction) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Function never provided to SNES object");
-  if (!sdm->computejacobian) {
-    ierr = DMSNESSetJacobian(dm,SNESDefaultComputeJacobianColor,PETSC_NULL);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 /* block functions */
 
 #undef __FUNCT__

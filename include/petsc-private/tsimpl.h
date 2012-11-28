@@ -192,7 +192,6 @@ struct _n_DMTS {
 PETSC_EXTERN PetscErrorCode DMGetDMTS(DM,DMTS*);
 PETSC_EXTERN PetscErrorCode DMGetDMTSWrite(DM,DMTS*);
 PETSC_EXTERN PetscErrorCode DMCopyDMTS(DM,DM);
-PETSC_EXTERN PetscErrorCode DMTSSetUpLegacy(DM);
 
 
 

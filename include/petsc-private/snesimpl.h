@@ -190,7 +190,6 @@ struct _n_DMSNES {
 PETSC_EXTERN PetscErrorCode DMGetDMSNES(DM,DMSNES*);
 PETSC_EXTERN PetscErrorCode DMGetDMSNESWrite(DM,DMSNES*);
 PETSC_EXTERN PetscErrorCode DMCopyDMSNES(DM,DM);
-PETSC_EXTERN PetscErrorCode DMSNESSetUpLegacy(DM);
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
 typedef struct {
