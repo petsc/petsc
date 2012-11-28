@@ -4,7 +4,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexVTKGetCellType"
-static PetscErrorCode DMComplexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, PetscInt *cellType) {
+PetscErrorCode DMComplexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, PetscInt *cellType) {
   PetscFunctionBegin;
   *cellType = -1;
   switch(dim) {
@@ -553,6 +553,9 @@ PetscErrorCode DMComplexVTKWriteAll(PetscObject odm, PetscViewer viewer)
   switch (viewer->format) {
   case PETSC_VIEWER_ASCII_VTK:
     ierr = DMComplexVTKWriteAll_ASCII(dm, viewer);CHKERRQ(ierr);
+    break;
+  case PETSC_VIEWER_VTK_VTU:
+    ierr = DMComplexVTKWriteAll_VTU(dm, viewer);CHKERRQ(ierr);
     break;
   default: SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
   }

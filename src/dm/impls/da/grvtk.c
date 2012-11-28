@@ -1,66 +1,6 @@
 #include <petsc-private/daimpl.h>
 #include <../src/sys/viewer/impls/vtk/vtkvimpl.h>
 
-#if defined(PETSC_HAVE_STDINT_H) /* The VTK format requires a 32-bit integer */
-typedef int32_t PetscVTKInt;
-#else
-typedef int PetscVTKInt;
-#endif
-#define PETSC_VTK_INT_MAX  2147483647
-#define PETSC_VTK_INT_MIN -2147483647
-#if defined(PETSC_USE_64BIT_INDICES)
-#  define PetscVTKIntCheck(a)  if ((a) > PETSC_VTK_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for 32-bit VTK binary format")
-#  define PetscVTKIntCast(a) (PetscVTKInt)(a);PetscVTKIntCheck(a)
-#else
-#  define PetscVTKIntCheck(a)
-#  define PetscVTKIntCast(a) a
-#endif
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscFWrite_VTK"
-/* Write binary data preceded by 32-bit int length (in bytes), does not do byte swapping. */
-static PetscErrorCode PetscFWrite_VTK(MPI_Comm comm,FILE *fp,void *data,PetscInt n,PetscDataType dtype)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt rank;
-
-  PetscFunctionBegin;
-  if (n < 0) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
-  if (!n) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (!rank) {
-    size_t count;
-    PetscInt size;
-    PetscVTKInt bytes;
-    switch (dtype) {
-    case PETSC_DOUBLE:
-      size = sizeof(double);
-      break;
-    case PETSC_FLOAT:
-      size = sizeof(float);
-      break;
-    case PETSC_INT:
-      size = sizeof(PetscInt);
-      break;
-    case PETSC_CHAR:
-      size = sizeof(char);
-      break;
-    default: SETERRQ(comm,PETSC_ERR_SUP,"Data type not supported");
-    }
-    bytes = PetscVTKIntCast(size*n);
-
-    count = fwrite(&bytes,sizeof(int),1,fp);
-    if (count != 1) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing byte count");
-    }
-    count = fwrite(data,size,(size_t)n,fp);
-    if ((PetscInt)count != n) {
-      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %D/%D array members of size %D",(PetscInt)count,n,(PetscInt)size);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "DMDAVTKWriteAll_VTS"
 static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
@@ -234,7 +174,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
           }
         }
       }
-      ierr = PetscFWrite_VTK(comm,fp,array2,nnodes*3,PETSC_SCALAR);CHKERRQ(ierr);
+      ierr = PetscViewerVTKFWrite(viewer,fp,array2,nnodes*3,PETSC_SCALAR);CHKERRQ(ierr);
     }
 
     /* Write each of the objects queued up for this file */
@@ -262,7 +202,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
               }
             }
           }
-          ierr = PetscFWrite_VTK(comm,fp,array2,nnodes,PETSC_SCALAR);CHKERRQ(ierr);
+          ierr = PetscViewerVTKFWrite(viewer,fp,array2,nnodes,PETSC_SCALAR);CHKERRQ(ierr);
         }
       } else if (r == rank) {
         ierr = MPI_Send((void*)x,nnodes*bs,MPIU_SCALAR,0,tag,comm);CHKERRQ(ierr);

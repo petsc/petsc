@@ -77,7 +77,7 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
 {
   PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
   PetscErrorCode  ierr;
-  PetscBool       isvtk, isvts;
+  PetscBool       isvtk,isvts,isvtu;
   size_t          len;
 
   PetscFunctionBegin;
@@ -86,12 +86,16 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
   ierr = PetscStrcasecmp(name+len-4,".vtk",&isvtk);CHKERRQ(ierr);
   ierr = PetscStrcasecmp(name+len-4,".vts",&isvts);CHKERRQ(ierr);
+  ierr = PetscStrcasecmp(name+len-4,".vtu",&isvtu);CHKERRQ(ierr);
   if (isvtk) {
     if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);}
     if (viewer->format != PETSC_VIEWER_ASCII_VTK) SETERRQ2(((PetscObject)viewer)->comm,PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtk' extension",name,PetscViewerFormats[viewer->format]);
   } else if (isvts) {
     if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_VTK_VTS);CHKERRQ(ierr);}
     if (viewer->format != PETSC_VIEWER_VTK_VTS) SETERRQ2(((PetscObject)viewer)->comm,PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vts' extension",name,PetscViewerFormats[viewer->format]);
+  } else if (isvtu) {
+    if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);}
+    if (viewer->format != PETSC_VIEWER_VTK_VTU) SETERRQ2(((PetscObject)viewer)->comm,PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vts' extension",name,PetscViewerFormats[viewer->format]);
   } else SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"File '%s' has unrecognized extension",name);
   ierr = PetscStrallocpy(name,&vtk->filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -209,5 +213,71 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm,const char name[],PetscFileMode 
   ierr = PetscViewerSetType(*vtk,PETSCVIEWERVTK);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(*vtk,type);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(*vtk,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerVTKFWrite"
+/*@C
+   PetscViewerVTKFWrite - write binary data preceded by 32-bit int length (in bytes), does not do byte swapping.
+
+   Logically collective on PetscViewer
+
+   Input Parameters:
++  viewer - logically collective viewer, data written from rank 0
+.  fp - file pointer valid on rank 0
+.  data - data pointer valid on rank 0
+.  n - number of data items
+-  dtype - data type
+
+   Level: developer
+
+   Concepts: VTK files
+   Concepts: PetscViewer^creating
+
+.seealso: DMDAVTKWriteAll(), DMComplexVTKWriteAll(), PetscViewerSetFormat(), PetscViewerVTKOpen(), PetscBinaryWrite()
+@*/
+PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data,PetscInt n,PetscDataType dtype)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt rank;
+
+  PetscFunctionBegin;
+  if (n < 0) SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
+  if (!n) PetscFunctionReturn(0);
+  ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    size_t count;
+    PetscInt size;
+    PetscVTKInt bytes;
+    switch (dtype) {
+    case PETSC_DOUBLE:
+      size = sizeof(double);
+      break;
+    case PETSC_FLOAT:
+      size = sizeof(float);
+      break;
+    case PETSC_INT:
+      size = sizeof(PetscInt);
+      break;
+    case PETSC_ENUM:
+      size = sizeof(PetscEnum);
+      break;
+    case PETSC_CHAR:
+      size = sizeof(char);
+      break;
+    default: SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Data type not supported");
+    }
+    bytes = PetscVTKIntCast(size*n);
+
+    count = fwrite(&bytes,sizeof(int),1,fp);
+    if (count != 1) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Error writing byte count");
+    }
+    count = fwrite(data,size,(size_t)n,fp);
+    if ((PetscInt)count != n) {
+      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %D/%D array members of size %D",(PetscInt)count,n,(PetscInt)size);
+    }
+  }
   PetscFunctionReturn(0);
 }
