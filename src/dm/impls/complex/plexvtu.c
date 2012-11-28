@@ -106,9 +106,9 @@ static PetscErrorCode DMComplexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVT
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexVTKWriteAll_VTU"
 /*
-   write all fields that have been provided to the viewer
+  Write all fields that have been provided to the viewer
+  Multi-block XML format with binary appended data.
 */
-/*@ Multi-block XML format with binary appended data. */
 PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
 {
   MPI_Comm comm = ((PetscObject)dm)->comm;
