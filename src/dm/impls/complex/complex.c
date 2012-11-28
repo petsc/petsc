@@ -7403,7 +7403,7 @@ PetscErrorCode DMComplexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar
   Vec              localX;
   PetscReal       *coords, *v0, *J, *invJ, detJ;
   PetscReal        localDiff;
-  PetscInt         dim, numFields, cStart, cEnd, c, field, fieldOffset, comp;
+  PetscInt         dim, numFields, numComponents = 0, cStart, cEnd, c, field, fieldOffset, comp;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -7413,6 +7413,10 @@ PetscErrorCode DMComplexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  for (field = 0; field < numFields; ++field) {
+    numComponents += quad[field].numComponents;
+  }
+  ierr = DMComplexProjectFunctionLocal_Private(dm, numComponents, funcs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
