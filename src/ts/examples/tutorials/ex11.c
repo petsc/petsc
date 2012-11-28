@@ -2250,7 +2250,6 @@ static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer
   ierr = PetscViewerCreate(((PetscObject) dm)->comm, viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(*viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(*viewer, filename);CHKERRQ(ierr);
-  ierr = PetscViewerSetFormat(*viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2351,7 +2350,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
     if (stepnum == -1) {        /* Final time is not multiple of normal time interval, write it anyway */
       ierr = TSGetTimeStepNumber(ts,&stepnum);CHKERRQ(ierr);
     }
-    ierr = PetscSNPrintf(filename,sizeof filename,"ex11-%03D.vtk",stepnum);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(filename,sizeof filename,"ex11-%03D.vtu",stepnum);CHKERRQ(ierr);
     ierr = OutputVTK(dm,filename,&viewer);CHKERRQ(ierr);
     ierr = VecView(X,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);

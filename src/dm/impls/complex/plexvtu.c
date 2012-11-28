@@ -113,7 +113,7 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
 {
   MPI_Comm comm = ((PetscObject)dm)->comm;
   PetscViewer_VTK          *vtk = (PetscViewer_VTK*)viewer->data;
-  //PetscViewerVTKObjectLink link;
+  PetscViewerVTKObjectLink link;
   FILE                     *fp;
   PetscMPIInt              rank,size,tag;
   PetscErrorCode ierr;
@@ -193,15 +193,41 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"      </Cells>\n");CHKERRQ(ierr);
 
       /*
-       *
-       * TODO: write data
-       *
+       * Cell Data headers
        */
-
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"      <CellData>\n");CHKERRQ(ierr);
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"        <DataArray type=\"Int32\" Name=\"Rank\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",boffset);CHKERRQ(ierr);
       boffset += gpiece[r].ncells*sizeof(int) + sizeof(int);
+      /* all the vectors */
+      for (link=vtk->link; link; link=link->next) {
+        Vec X = (Vec)link->vec;
+        PetscInt bs;
+        const char *vecname = "";
+        if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
+        if (((PetscObject)X)->name || link != vtk->link) { /* If the object is already named, use it. If it is past the first link, name it to disambiguate. */
+          ierr = PetscObjectGetName((PetscObject)X,&vecname);CHKERRQ(ierr);
+        }
+        ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
+        for (i=0; i<bs; i++) {
+          char buf[256];
+          const char *fieldname = PETSC_NULL;
+          /* ierr = DMDAGetFieldName(da,i,&fieldname);CHKERRQ(ierr); */
+          if (!fieldname) {
+            ierr = PetscSNPrintf(buf,sizeof(buf),"Unnamed%D",i);CHKERRQ(ierr);
+            fieldname = buf;
+          }
+          ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,boffset);CHKERRQ(ierr);
+          boffset += gpiece[r].ncells*sizeof(PetscScalar) + sizeof(int);
+        }
+      }
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"      </CellData>\n");CHKERRQ(ierr);
+
+      /*
+       * TODO: Point Data headers
+       */
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"      <PointData>\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"      </PointData>\n");CHKERRQ(ierr);
+
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"    </Piece>\n");CHKERRQ(ierr);
     }
   }
@@ -224,7 +250,7 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       PetscInt nsend;
       {                         /* Position */
         const PetscScalar *x;
-        PetscScalar *y;
+        PetscScalar *y = PETSC_NULL;
         Vec coords;
         nsend = piece.nvertices*3;
         ierr = DMGetCoordinatesLocal(dm,&coords);CHKERRQ(ierr);
@@ -232,13 +258,13 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         if (dim != 3) {
           ierr = PetscMalloc(piece.nvertices*3*sizeof(PetscScalar),&y);CHKERRQ(ierr);
           for (i=0; i<piece.nvertices; i++) {
-            y[i*3+0] = x[i*2+0];
-            y[i*3+1] = x[i*2+1];
+            y[i*3+0] = x[i*dim+0];
+            y[i*3+1] = (dim > 1) ? x[i*dim+1] : 0;
             y[i*3+2] = 0;
           }
-        } else y = (PetscScalar*)x;
-        ierr = TransferWrite(viewer,fp,r,0,y,buffer,nsend,PETSC_SCALAR,tag);CHKERRQ(ierr);
-        if (dim != 3) {ierr = PetscFree(y);CHKERRQ(ierr);}
+        }
+        ierr = TransferWrite(viewer,fp,r,0,y?y:x,buffer,nsend,PETSC_SCALAR,tag);CHKERRQ(ierr);
+        ierr = PetscFree(y);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(coords,&x);CHKERRQ(ierr);
       }
       {                           /* Connectivity, offsets, types */
@@ -250,19 +276,67 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         ierr = TransferWrite(viewer,fp,r,0,types,buffer,piece.ncells,PETSC_UINT8,tag);CHKERRQ(ierr);
         ierr = PetscFree3(connectivity,offsets,types);CHKERRQ(ierr);
       }
-      {                         /* Owners */
+      {                         /* Owners (cell data) */
         PetscVTKInt *owners;
         ierr = PetscMalloc(piece.ncells*sizeof(PetscVTKInt),&owners);CHKERRQ(ierr);
         for (i=0; i<piece.ncells; i++) owners[i] = rank;
         ierr = TransferWrite(viewer,fp,r,0,owners,buffer,piece.ncells,PETSC_INT32,tag);CHKERRQ(ierr);
         ierr = PetscFree(owners);CHKERRQ(ierr);
       }
+                                /* Cell data */
+      for (link=vtk->link; link; link=link->next) {
+        Vec X = (Vec)link->vec;
+        const PetscScalar *x;
+        PetscScalar *y;
+        PetscInt bs;
+        if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
+        ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+        ierr = PetscMalloc(piece.ncells*sizeof(PetscScalar),&y);CHKERRQ(ierr);
+        for (i=0; i<bs; i++) {
+          PetscInt cnt;
+          for (c=cStart,cnt=0; c<cEnd; c++) {
+            const PetscScalar *xpoint;
+            if (hasLabel) {     /* Ignore some cells */
+              PetscInt value;
+              ierr = DMComplexGetLabelValue(dm, "vtk", c, &value);CHKERRQ(ierr);
+              if (value != 1) continue;
+            }
+            ierr = DMComplexPointLocalRead(dm,c,x,&xpoint);CHKERRQ(ierr);
+            y[cnt++] = xpoint[i];
+          }
+          if (cnt != piece.ncells) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");
+          ierr = TransferWrite(viewer,fp,r,0,y,buffer,piece.ncells,PETSC_SCALAR,tag);CHKERRQ(ierr);
+        }
+        ierr = PetscFree(y);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+      }
+
+      for (link=vtk->link; link; link=link->next) {
+        if ((link->ft != PETSC_VTK_POINT_FIELD) && (link->ft != PETSC_VTK_POINT_VECTOR_FIELD)) continue;
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for point data yet");
+      }
     } else if (!rank) {
       ierr = TransferWrite(viewer,fp,r,0,PETSC_NULL,buffer,gpiece[r].nvertices*3,PETSC_SCALAR,tag);CHKERRQ(ierr); /* positions */
       ierr = TransferWrite(viewer,fp,r,0,PETSC_NULL,buffer,gpiece[r].nconn,PETSC_INT32,tag);CHKERRQ(ierr); /* connectivity */
       ierr = TransferWrite(viewer,fp,r,0,PETSC_NULL,buffer,gpiece[r].ncells,PETSC_INT32,tag);CHKERRQ(ierr); /* offsets */
       ierr = TransferWrite(viewer,fp,r,0,PETSC_NULL,buffer,gpiece[r].ncells,PETSC_UINT8,tag);CHKERRQ(ierr); /* types */
-      ierr = TransferWrite(viewer,fp,r,0,PETSC_NULL,buffer,gpiece[r].ncells,PETSC_INT32,tag);CHKERRQ(ierr); /* owners */
+      ierr = TransferWrite(viewer,fp,r,0,PETSC_NULL,buffer,gpiece[r].ncells,PETSC_INT32,tag);CHKERRQ(ierr); /* owner rank (cells) */
+      /* all cell data */
+      for (link=vtk->link; link; link=link->next) {
+        Vec X = (Vec)link->vec;
+        PetscInt bs;
+        if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
+        ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
+        for (i=0; i<bs; i++) {
+          ierr = TransferWrite(viewer,fp,r,0,PETSC_NULL,buffer,gpiece[r].ncells,PETSC_SCALAR,tag);CHKERRQ(ierr);
+        }
+      }
+      /* all point data */
+      for (link=vtk->link; link; link=link->next) {
+        if ((link->ft != PETSC_VTK_POINT_FIELD) && (link->ft != PETSC_VTK_POINT_VECTOR_FIELD)) continue;
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for point data yet");
+      }
     }
   }
   ierr = PetscFree(gpiece);CHKERRQ(ierr);
