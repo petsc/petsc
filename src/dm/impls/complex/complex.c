@@ -120,7 +120,6 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
     PetscInt    maxConeSize, maxSupportSize;
     PetscInt    pStart, pEnd, p;
     PetscMPIInt rank;
-    PetscBool   hasLabel;
 
     ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
@@ -3407,10 +3406,22 @@ PetscErrorCode DMComplexDistribute(DM dm, const char partitioner[], PetscInt ove
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexRenumber_Private"
 /*
-  renumbering - An IS which provides the new number 
+  Reasons to renumber:
+
+  1) Permute points, e.g. bandwidth reduction
+
+    a) Must not mix strata
+
+  2) Shift numbers for point insertion
+
+    a) Want operation brken into parts so that insertion can be interleaved
+
+  renumbering - An IS which provides the new numbering
 */
 PetscErrorCode DMComplexRenumber_Private(DM dm, IS renumbering)
 {
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -7235,30 +7246,10 @@ PetscErrorCode DMComplexSetFEMIntegration(DM dm,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMComplexProjectFunction"
-/*@C
-  DMComplexProjectFunction - This projects the given function into the function space provided.
-
-  Input Parameters:
-+ dm      - The DM
-. numComp - The number of components (functions)
-. funcs   - The coordinate functions to evaluate
-- mode    - The insertion mode for values
-
-  Output Parameter:
-. X - vector
-
-  Level: developer
-
-  Note:
-  This currently just calls the function with the coordinates of each vertex and edge midpoint, and stores the result in a vector.
-  We will eventually fix it.
-
-,seealso: DMComplexComputeL2Diff()
-*/
-PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**funcs)(const PetscReal []), InsertMode mode, Vec X)
+#define __FUNCT__ "DMComplexProjectFunctionLocal_Private"
+static PetscErrorCode DMComplexProjectFunctionLocal_Private(DM dm, PetscInt numComp, PetscScalar (**funcs)(const PetscReal []), InsertMode mode, Vec localX)
 {
-  Vec            localX, coordinates;
+  Vec            coordinates;
   PetscSection   section, cSection;
   PetscInt       dim, vStart, vEnd, v, c, d;
   PetscScalar   *values, *cArray;
@@ -7266,7 +7257,6 @@ PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
@@ -7319,9 +7309,6 @@ PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**
 
   ierr = PetscFree(coords);CHKERRQ(ierr);
   ierr = PetscFree(values);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
 #if 0
   const PetscInt localDof = this->_mesh->sizeWithBC(s, *cells->begin());
   PetscReal      detJ;
@@ -7355,6 +7342,43 @@ PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**
 #endif
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexProjectFunction"
+/*@C
+  DMComplexProjectFunction - This projects the given function into the function space provided.
+
+  Input Parameters:
++ dm      - The DM
+. numComp - The number of components (functions)
+. funcs   - The coordinate functions to evaluate
+- mode    - The insertion mode for values
+
+  Output Parameter:
+. X - vector
+
+  Level: developer
+
+  Note:
+  This currently just calls the function with the coordinates of each vertex and edge midpoint, and stores the result in a vector.
+  We will eventually fix it.
+
+,seealso: DMComplexComputeL2Diff()
+*/
+PetscErrorCode DMComplexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**funcs)(const PetscReal []), InsertMode mode, Vec X)
+{
+  Vec            localX;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr = DMComplexProjectFunctionLocal_Private(dm, numComp, funcs, mode, localX);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(dm, localX, mode, X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm, localX, mode, X);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexComputeL2Diff"
 /*@C
@@ -7475,7 +7499,7 @@ PetscErrorCode DMComplexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   PetscReal       *v0, *J, *invJ, *detJ;
   PetscScalar     *elemVec, *u;
   PetscInt         dim, numFields, field, numBatchesTmp = 1, numCells, cStart, cEnd, c;
-  PetscInt         cellDof = 0;
+  PetscInt         cellDof = 0, numComponents = 0;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -7483,12 +7507,14 @@ PetscErrorCode DMComplexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   numCells = cEnd - cStart;
   for (field = 0; field < numFields; ++field) {
     cellDof += quad[field].numBasisFuncs*quad[field].numComponents;
+    numComponents += quad[field].numComponents;
   }
+  ierr = DMComplexProjectFunctionLocal_Private(dm, numComponents, fem->bcFuncs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
+  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc6(numCells*cellDof,PetscScalar,&u,numCells*dim,PetscReal,&v0,numCells*dim*dim,PetscReal,&J,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
@@ -7543,6 +7569,7 @@ PetscErrorCode DMComplexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
         ierr = VecChop(f, 1.0e-10);CHKERRQ(ierr);
         ierr = VecView(f, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
         ierr = VecDestroy(&f);CHKERRQ(ierr);
+        ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
       ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
     }
@@ -7583,21 +7610,23 @@ PetscErrorCode DMComplexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, v
   PetscReal       *v0, *J, *invJ, *detJ;
   PetscScalar     *elemVec, *u, *a;
   PetscInt         dim, numFields, field, numBatchesTmp = 1, numCells, cStart, cEnd, c;
-  PetscInt         cellDof  = 0;
+  PetscInt         cellDof = 0, numComponents = 0;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   /* ierr = PetscLogEventBegin(JacobianActionFEMEvent,0,0,0,0);CHKERRQ(ierr); */
+  ierr = MatShellGetContext(Jac, &jctx);CHKERRQ(ierr);
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-  ierr = MatShellGetContext(Jac, &jctx);CHKERRQ(ierr);
-  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   numCells = cEnd - cStart;
   for (field = 0; field < numFields; ++field) {
     cellDof += quad[field].numBasisFuncs*quad[field].numComponents;
+    numComponents += quad[field].numComponents;
   }
+  ierr = DMComplexProjectFunctionLocal_Private(dm, numComponents, fem->bcFuncs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
+  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc7(numCells*cellDof,PetscScalar,&u,numCells*cellDof,PetscScalar,&a,numCells*dim,PetscReal,&v0,numCells*dim*dim,PetscReal,&J,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
@@ -7684,7 +7713,7 @@ PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatS
   PetscReal       *v0, *J, *invJ, *detJ;
   PetscScalar     *elemMat, *u;
   PetscInt         dim, numFields, field, fieldI, numBatchesTmp = 1, numCells, cStart, cEnd, c;
-  PetscInt         cellDof = 0;
+  PetscInt         cellDof = 0, numComponents = 0;
   PetscBool        isShell;
   PetscErrorCode   ierr;
 
@@ -7693,12 +7722,14 @@ PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatS
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-  ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   numCells = cEnd - cStart;
   for (field = 0; field < numFields; ++field) {
     cellDof += quad[field].numBasisFuncs*quad[field].numComponents;
+    numComponents += quad[field].numComponents;
   }
+  ierr = DMComplexProjectFunctionLocal_Private(dm, numComponents, fem->bcFuncs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
+  ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = PetscMalloc6(numCells*cellDof,PetscScalar,&u,numCells*dim,PetscReal,&v0,numCells*dim*dim,PetscReal,&J,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof*cellDof,PetscScalar,&elemMat);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
