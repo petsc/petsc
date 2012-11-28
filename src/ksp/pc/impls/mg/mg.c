@@ -553,11 +553,11 @@ PetscErrorCode PCSetUp_MG(PC pc)
     ierr = PetscMalloc(n*sizeof(DM),&dms);CHKERRQ(ierr);
     dms[n-1] = pc->dm;
     for (i=n-2; i>-1; i--) {
-      KSPDM kdm;
+      DMKSP kdm;
       ierr = DMCoarsen(dms[i+1],MPI_COMM_NULL,&dms[i]);CHKERRQ(ierr);
       ierr = KSPSetDM(mglevels[i]->smoothd,dms[i]);CHKERRQ(ierr);
       if (mg->galerkin) {ierr = KSPSetDMActive(mglevels[i]->smoothd,PETSC_FALSE);CHKERRQ(ierr);}
-      ierr = DMKSPGetContextWrite(dms[i],&kdm);CHKERRQ(ierr);
+      ierr = DMGetDMKSPWrite(dms[i],&kdm);CHKERRQ(ierr);
       /* Ugly hack so that the next KSPSetUp() will use the RHS that we set. A better fix is to change dmActive to take
        * a bitwise OR of computing the matrix, RHS, and initial iterate. */
       kdm->computerhs = PETSC_NULL;

@@ -155,8 +155,8 @@ struct _p_TSAdapt {
   PetscViewer monitor;
 };
 
-typedef struct _n_TSDM *TSDM;
-struct _n_TSDM {
+typedef struct _n_DMTS *DMTS;
+struct _n_DMTS {
   TSRHSFunction rhsfunction;
   TSRHSJacobian rhsjacobian;
 
@@ -175,12 +175,12 @@ struct _n_TSDM {
 
 
   /* These inner routines allow implementation-specific routines such as DMDA local functions. */
-  PetscErrorCode (*destroy)(TSDM);
-  PetscErrorCode (*duplicate)(TSDM,DM);
+  PetscErrorCode (*destroy)(DMTS);
+  PetscErrorCode (*duplicate)(DMTS,DM);
   void *data;
 
   /* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way
-   * copy-on-write. When DMTSGetContextWrite() sees a request using a different DM, it makes a copy. Thus, if a user
+   * copy-on-write. When DMGetDMTSWrite() sees a request using a different DM, it makes a copy. Thus, if a user
    * only interacts directly with one level, e.g., using TSSetIFunction(), then coarse levels of a multilevel item
    * integrator are built, then the user changes the routine with another call to TSSetIFunction(), it automatically
    * propagates to all the levels. If instead, they get out a specific level and set the function on that level,
@@ -189,9 +189,9 @@ struct _n_TSDM {
   DM originaldm;
 };
 
-PETSC_EXTERN PetscErrorCode DMTSGetContext(DM,TSDM*);
-PETSC_EXTERN PetscErrorCode DMTSGetContextWrite(DM,TSDM*);
-PETSC_EXTERN PetscErrorCode DMTSCopyContext(DM,DM);
+PETSC_EXTERN PetscErrorCode DMGetDMTS(DM,DMTS*);
+PETSC_EXTERN PetscErrorCode DMGetDMTSWrite(DM,DMTS*);
+PETSC_EXTERN PetscErrorCode DMCopyDMTS(DM,DM);
 PETSC_EXTERN PetscErrorCode DMTSSetUpLegacy(DM);
 
 

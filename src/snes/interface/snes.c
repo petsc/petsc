@@ -494,13 +494,13 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
 {
   PetscErrorCode ierr;
   DM             dm;
-  SNESDM         sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->computejacobian) {
-    SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESDM not properly configured");
+    SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"DMSNES not properly configured");
   } else if (!snes->jacobian && snes->mf) {
     Mat J;
     void *functx;
@@ -1752,11 +1752,11 @@ PetscErrorCode  SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
-  SNESDM         sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   /*  A(x)*x - b(x) */
   if (sdm->computepfunction) {
     ierr = (*sdm->computepfunction)(snes,x,f,sdm->pctx);CHKERRQ(ierr);
@@ -1987,7 +1987,7 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   DM             dm;
-  SNESDM         sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -1998,7 +1998,7 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
   VecValidValues(x,2,PETSC_TRUE);
 
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   if (snes->pc && snes->pcside == PC_LEFT) {
     ierr = VecCopy(x,y);CHKERRQ(ierr);
@@ -2052,7 +2052,7 @@ PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
   PetscErrorCode ierr;
   PetscInt       i;
   DM             dm;
-  SNESDM         sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -2063,7 +2063,7 @@ PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
   if (b) VecValidValues(b,2,PETSC_TRUE);
   ierr = PetscLogEventBegin(SNES_GSEval,snes,x,b,0);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (sdm->computegs) {
     for (i = 0; i < snes->gssweeps; i++) {
       PetscStackPush("SNES user GS");
@@ -2128,7 +2128,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
   PetscErrorCode ierr;
   PetscBool      flag;
   DM             dm;
-  SNESDM         sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -2137,7 +2137,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
   PetscCheckSameComm(snes,1,X,2);
   VecValidValues(X,2,PETSC_TRUE);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
 
   if (!sdm->computejacobian) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_USER,"Must call SNESSetJacobian(), DMSNESSetJacobian(), DMDASNESSetJacobianLocal(), etc");
 
@@ -2449,14 +2449,14 @@ PetscErrorCode SNESGetJacobian(SNES snes,Mat *A,Mat *B,PetscErrorCode (**func)(S
 {
   PetscErrorCode ierr;
   DM             dm;
-  SNESDM         sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (A)    *A    = snes->jacobian;
   if (B)    *B    = snes->jacobian_pre;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (func) *func = sdm->computejacobian;
   if (ctx)  *ctx  = sdm->jacobianctx;
   PetscFunctionReturn(0);
@@ -2492,7 +2492,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
 {
   PetscErrorCode              ierr;
   DM                          dm;
-  SNESDM                      sdm;
+  DMSNES                      sdm;
   SNESLineSearch              linesearch, pclinesearch;
   void                        *lsprectx,*lspostctx;
   SNESLineSearchPreCheckFunc  lsprefunc;
@@ -2524,7 +2524,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMShellSetGlobalVector(snes->dm,snes->vec_sol);CHKERRQ(ierr);
   ierr = DMSNESSetUpLegacy(dm);CHKERRQ(ierr); /* To be removed when function routines are taken out of the DM package */
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->computefunction) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must provide a residual function with SNESSetFunction(), DMSNESSetFunction(), DMDASNESSetFunctionLocal(), etc");
   if (!snes->vec_func) {
     ierr = DMCreateGlobalVector(dm,&snes->vec_func);CHKERRQ(ierr);
@@ -4448,18 +4448,18 @@ PetscErrorCode  SNESSetDM(SNES snes,DM dm)
 {
   PetscErrorCode ierr;
   KSP            ksp;
-  SNESDM         sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (dm) {ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);}
-  if (snes->dm) {               /* Move the SNESDM context over to the new DM unless the new DM already has one */
+  if (snes->dm) {               /* Move the DMSNES context over to the new DM unless the new DM already has one */
     PetscContainer oldcontainer,container;
-    ierr = PetscObjectQuery((PetscObject)snes->dm,"SNESDM",(PetscObject*)&oldcontainer);CHKERRQ(ierr);
-    ierr = PetscObjectQuery((PetscObject)dm,"SNESDM",(PetscObject*)&container);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject)snes->dm,"DMSNES",(PetscObject*)&oldcontainer);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject)dm,"DMSNES",(PetscObject*)&container);CHKERRQ(ierr);
     if (oldcontainer && snes->dmAuto && !container) {
-      ierr = DMSNESCopyContext(snes->dm,dm);CHKERRQ(ierr);
-      ierr = DMSNESGetContext(snes->dm,&sdm);CHKERRQ(ierr);
+      ierr = DMCopyDMSNES(snes->dm,dm);CHKERRQ(ierr);
+      ierr = DMGetDMSNES(snes->dm,&sdm);CHKERRQ(ierr);
       if (sdm->originaldm == snes->dm) { /* Grant write privileges to the replacement DM */
         sdm->originaldm = dm;
       }

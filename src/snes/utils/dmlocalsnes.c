@@ -6,11 +6,11 @@ typedef struct {
   PetscErrorCode (*jacobianlocal)(DM,Vec,Mat,Mat,MatStructure*,void*);
   void *residuallocalctx;
   void *jacobianlocalctx;
-} DMLocal_SNES;
+} DMSNES_Local;
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDMDestroy_DMLocal"
-static PetscErrorCode SNESDMDestroy_DMLocal(SNESDM sdm)
+#define __FUNCT__ "DMSNESDestroy_DMLocal"
+static PetscErrorCode DMSNESDestroy_DMLocal(DMSNES sdm)
 {
   PetscErrorCode ierr;
 
@@ -20,35 +20,35 @@ static PetscErrorCode SNESDMDestroy_DMLocal(SNESDM sdm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDMDuplicate_DMLocal"
-static PetscErrorCode SNESDMDuplicate_DMLocal(SNESDM oldsdm,DM dm)
+#define __FUNCT__ "DMSNESDuplicate_DMLocal"
+static PetscErrorCode DMSNESDuplicate_DMLocal(DMSNES oldsdm,DM dm)
 {
   PetscErrorCode ierr;
-  SNESDM         sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
-  ierr = PetscNewLog(dm,DMLocal_SNES,&sdm->data);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
+  ierr = PetscNewLog(dm,DMSNES_Local,&sdm->data);CHKERRQ(ierr);
   if (oldsdm->data) {
-    ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DMLocal_SNES));CHKERRQ(ierr);
+    ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DMSNES_Local));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLocalSNESGetContext"
-static PetscErrorCode DMLocalSNESGetContext(DM dm,SNESDM sdm,DMLocal_SNES **dmlocalsnes)
+static PetscErrorCode DMLocalSNESGetContext(DM dm,DMSNES sdm,DMSNES_Local **dmlocalsnes)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *dmlocalsnes = PETSC_NULL;
   if (!sdm->data) {
-    ierr = PetscNewLog(dm,DMLocal_SNES,&sdm->data);CHKERRQ(ierr);
-    sdm->destroy   = SNESDMDestroy_DMLocal;
-    sdm->duplicate = SNESDMDuplicate_DMLocal;
+    ierr = PetscNewLog(dm,DMSNES_Local,&sdm->data);CHKERRQ(ierr);
+    sdm->destroy   = DMSNESDestroy_DMLocal;
+    sdm->duplicate = DMSNESDuplicate_DMLocal;
   }
-  *dmlocalsnes = (DMLocal_SNES*)sdm->data;
+  *dmlocalsnes = (DMSNES_Local*)sdm->data;
   PetscFunctionReturn(0);
 }
 
@@ -58,7 +58,7 @@ static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes,Vec X,Vec F,void *ct
 {
   PetscErrorCode ierr;
   DM             dm;
-  DMLocal_SNES   *dmlocalsnes = (DMLocal_SNES*)ctx;
+  DMSNES_Local   *dmlocalsnes = (DMSNES_Local*)ctx;
   Vec            Xloc,Floc;
 
   PetscFunctionBegin;
@@ -89,7 +89,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat *A,Mat *B,
 {
   PetscErrorCode ierr;
   DM             dm;
-  DMLocal_SNES   *dmlocalsnes = (DMLocal_SNES*)ctx;
+  DMSNES_Local   *dmlocalsnes = (DMSNES_Local*)ctx;
   Vec            Xloc;
 
   PetscFunctionBegin;
@@ -163,12 +163,12 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat *A,Mat *B,
 PetscErrorCode DMSNESSetFunctionLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  SNESDM         sdm;
-  DMLocal_SNES   *dmlocalsnes;
+  DMSNES         sdm;
+  DMSNES_Local   *dmlocalsnes;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMLocalSNESGetContext(dm,sdm,&dmlocalsnes);CHKERRQ(ierr);
   dmlocalsnes->residuallocal = func;
   dmlocalsnes->residuallocalctx = ctx;
@@ -198,12 +198,12 @@ PetscErrorCode DMSNESSetFunctionLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Vec,vo
 PetscErrorCode DMSNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DM,Vec,Mat,Mat,MatStructure*,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  SNESDM         sdm;
-  DMLocal_SNES   *dmlocalsnes;
+  DMSNES         sdm;
+  DMSNES_Local   *dmlocalsnes;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   ierr = DMLocalSNESGetContext(dm,sdm,&dmlocalsnes);CHKERRQ(ierr);
   dmlocalsnes->jacobianlocal = func;
   dmlocalsnes->jacobianlocalctx = ctx;

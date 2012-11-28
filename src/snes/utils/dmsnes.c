@@ -2,11 +2,11 @@
 #include <petsc-private/dmimpl.h>     /*I "petscdm.h" I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscContainerDestroy_SNESDM"
-static PetscErrorCode PetscContainerDestroy_SNESDM(void *ctx)
+#define __FUNCT__ "PetscContainerDestroy_DMSNES"
+static PetscErrorCode PetscContainerDestroy_DMSNES(void *ctx)
 {
   PetscErrorCode ierr;
-  SNESDM sdm = (SNESDM)ctx;
+  DMSNES         sdm = (DMSNES)ctx;
 
   PetscFunctionBegin;
   if (sdm->destroy) {ierr = (*sdm->destroy)(sdm);CHKERRQ(ierr);}
@@ -15,24 +15,24 @@ static PetscErrorCode PetscContainerDestroy_SNESDM(void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHook_SNESDM"
-/* Attaches the SNESDM to the coarse level.
+#define __FUNCT__ "DMCoarsenHook_DMSNES"
+/* Attaches the DMSNES to the coarse level.
  * Under what conditions should we copy versus duplicate?
  */
-static PetscErrorCode DMCoarsenHook_SNESDM(DM dm,DM dmc,void *ctx)
+static PetscErrorCode DMCoarsenHook_DMSNES(DM dm,DM dmc,void *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMSNESCopyContext(dm,dmc);CHKERRQ(ierr);
+  ierr = DMCopyDMSNES(dm,dmc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMRestrictHook_SNESDM"
+#define __FUNCT__ "DMRestrictHook_DMSNES"
 /* This could restrict auxiliary information to the coarse level.
  */
-static PetscErrorCode DMRestrictHook_SNESDM(DM dm,Mat Restrict,Vec rscale,Mat Inject,DM dmc,void *ctx)
+static PetscErrorCode DMRestrictHook_DMSNES(DM dm,Mat Restrict,Vec rscale,Mat Inject,DM dmc,void *ctx)
 {
 
   PetscFunctionBegin;
@@ -40,21 +40,21 @@ static PetscErrorCode DMRestrictHook_SNESDM(DM dm,Mat Restrict,Vec rscale,Mat In
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMRefineHook_SNESDM"
-static PetscErrorCode DMRefineHook_SNESDM(DM dm,DM dmf,void *ctx)
+#define __FUNCT__ "DMRefineHook_DMSNES"
+static PetscErrorCode DMRefineHook_DMSNES(DM dm,DM dmf,void *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMSNESCopyContext(dm,dmf);CHKERRQ(ierr);
+  ierr = DMCopyDMSNES(dm,dmf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMInterpolateHook_SNESDM"
+#define __FUNCT__ "DMInterpolateHook_DMSNES"
 /* This could restrict auxiliary information to the coarse level.
  */
-static PetscErrorCode DMInterpolateHook_SNESDM(DM dm,Mat Interp,DM dmf,void *ctx)
+static PetscErrorCode DMInterpolateHook_DMSNES(DM dm,Mat Interp,DM dmf,void *ctx)
 {
 
   PetscFunctionBegin;
@@ -62,9 +62,9 @@ static PetscErrorCode DMInterpolateHook_SNESDM(DM dm,Mat Interp,DM dmf,void *ctx
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSNESGetContext"
+#define __FUNCT__ "DMGetDMSNES"
 /*@C
-   DMSNESGetContext - get read-only private SNESDM context from a DM
+   DMGetDMSNES - get read-only private DMSNES context from a DM
 
    Not Collective
 
@@ -72,35 +72,35 @@ static PetscErrorCode DMInterpolateHook_SNESDM(DM dm,Mat Interp,DM dmf,void *ctx
 .  dm - DM to be used with SNES
 
    Output Argument:
-.  snesdm - private SNESDM context
+.  snesdm - private DMSNES context
 
    Level: developer
 
    Notes:
-   Use DMSNESGetContextWrite() if write access is needed. The DMSNESSetXXX API should be used wherever possible.
+   Use DMGetDMSNESWrite() if write access is needed. The DMSNESSetXXX API should be used wherever possible.
 
-.seealso: DMSNESGetContextWrite()
+.seealso: DMGetDMSNESWrite()
 @*/
-PetscErrorCode DMSNESGetContext(DM dm,SNESDM *snesdm)
+PetscErrorCode DMGetDMSNES(DM dm,DMSNES *snesdm)
 {
   PetscErrorCode ierr;
   PetscContainer container;
-  SNESDM         sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscObjectQuery((PetscObject)dm,"SNESDM",(PetscObject*)&container);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)dm,"DMSNES",(PetscObject*)&container);CHKERRQ(ierr);
   if (container) {
     ierr = PetscContainerGetPointer(container,(void**)snesdm);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo(dm,"Creating new SNESDM\n");CHKERRQ(ierr);
+    ierr = PetscInfo(dm,"Creating new DMSNES\n");CHKERRQ(ierr);
     ierr = PetscContainerCreate(((PetscObject)dm)->comm,&container);CHKERRQ(ierr);
-    ierr = PetscNewLog(dm,struct _n_SNESDM,&sdm);CHKERRQ(ierr);
+    ierr = PetscNewLog(dm,struct _n_DMSNES,&sdm);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(container,sdm);CHKERRQ(ierr);
-    ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_SNESDM);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)dm,"SNESDM",(PetscObject)container);CHKERRQ(ierr);
-    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_SNESDM,DMRestrictHook_SNESDM,PETSC_NULL);CHKERRQ(ierr);
-    ierr = DMRefineHookAdd(dm,DMRefineHook_SNESDM,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_DMSNES);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)dm,"DMSNES",(PetscObject)container);CHKERRQ(ierr);
+    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_DMSNES,DMRestrictHook_DMSNES,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMRefineHookAdd(dm,DMRefineHook_DMSNES,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscContainerGetPointer(container,(void**)snesdm);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
   }
@@ -108,9 +108,9 @@ PetscErrorCode DMSNESGetContext(DM dm,SNESDM *snesdm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSNESGetContextWrite"
+#define __FUNCT__ "DMGetDMSNESWrite"
 /*@C
-   DMSNESGetContextWrite - get write access to private SNESDM context from a DM
+   DMGetDMSNESWrite - get write access to private DMSNES context from a DM
 
    Not Collective
 
@@ -118,31 +118,31 @@ PetscErrorCode DMSNESGetContext(DM dm,SNESDM *snesdm)
 .  dm - DM to be used with SNES
 
    Output Argument:
-.  snesdm - private SNESDM context
+.  snesdm - private DMSNES context
 
    Level: developer
 
-.seealso: DMSNESGetContext()
+.seealso: DMGetDMSNES()
 @*/
-PetscErrorCode DMSNESGetContextWrite(DM dm,SNESDM *snesdm)
+PetscErrorCode DMGetDMSNESWrite(DM dm,DMSNES *snesdm)
 {
   PetscErrorCode ierr;
-  SNESDM         sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->originaldm) sdm->originaldm = dm;
   if (sdm->originaldm != dm) {  /* Copy on write */
     PetscContainer container;
-    SNESDM         oldsdm = sdm;
-    ierr = PetscInfo(dm,"Copying SNESDM due to write\n");CHKERRQ(ierr);
+    DMSNES         oldsdm = sdm;
+    ierr = PetscInfo(dm,"Copying DMSNES due to write\n");CHKERRQ(ierr);
     ierr = PetscContainerCreate(((PetscObject)dm)->comm,&container);CHKERRQ(ierr);
-    ierr = PetscNewLog(dm,struct _n_SNESDM,&sdm);CHKERRQ(ierr);
+    ierr = PetscNewLog(dm,struct _n_DMSNES,&sdm);CHKERRQ(ierr);
     ierr = PetscMemcpy(sdm,oldsdm,sizeof(*sdm));CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(container,sdm);CHKERRQ(ierr);
-    ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_SNESDM);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)dm,"SNESDM",(PetscObject)container);CHKERRQ(ierr);
+    ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_DMSNES);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)dm,"DMSNES",(PetscObject)container);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
     /* implementation specific copy hooks */
     if (sdm->duplicate) {ierr = (*sdm->duplicate)(oldsdm,dm);CHKERRQ(ierr);}
@@ -152,9 +152,9 @@ PetscErrorCode DMSNESGetContextWrite(DM dm,SNESDM *snesdm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMSNESCopyContext"
+#define __FUNCT__ "DMCopyDMSNES"
 /*@C
-   DMSNESCopyContext - copies a DM context to a new DM
+   DMCopyDMSNES - copies a DM context to a new DM
  
    Logically Collective
 
@@ -167,9 +167,9 @@ PetscErrorCode DMSNESGetContextWrite(DM dm,SNESDM *snesdm)
    Note:
    The context is copied by reference. This function does not ensure that a context exists.
 
-.seealso: DMSNESGetContext(), SNESSetDM()
+.seealso: DMGetDMSNES(), SNESSetDM()
 @*/
-PetscErrorCode DMSNESCopyContext(DM dmsrc,DM dmdest)
+PetscErrorCode DMCopyDMSNES(DM dmsrc,DM dmdest)
 {
   PetscErrorCode ierr;
   PetscContainer container;
@@ -177,11 +177,11 @@ PetscErrorCode DMSNESCopyContext(DM dmsrc,DM dmdest)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmsrc,DM_CLASSID,1);
   PetscValidHeaderSpecific(dmdest,DM_CLASSID,2);
-  ierr = PetscObjectQuery((PetscObject)dmsrc,"SNESDM",(PetscObject*)&container);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)dmsrc,"DMSNES",(PetscObject*)&container);CHKERRQ(ierr);
   if (container) {
-    ierr = PetscObjectCompose((PetscObject)dmdest,"SNESDM",(PetscObject)container);CHKERRQ(ierr);
-    ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_SNESDM,DMRestrictHook_SNESDM,PETSC_NULL);CHKERRQ(ierr);
-    ierr = DMRefineHookAdd(dmdest,DMRefineHook_SNESDM,DMInterpolateHook_SNESDM,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)dmdest,"DMSNES",(PetscObject)container);CHKERRQ(ierr);
+    ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMSNES,DMRestrictHook_DMSNES,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMRefineHookAdd(dmdest,DMRefineHook_DMSNES,DMInterpolateHook_DMSNES,PETSC_NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -210,12 +210,12 @@ PetscErrorCode DMSNESCopyContext(DM dmsrc,DM dmdest)
 PetscErrorCode DMSNESSetFunction(DM dm,PetscErrorCode (*func)(SNES,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  SNESDM sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (func || ctx) {
-    ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+    ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   }
   if (func) sdm->computefunction = func;
   if (ctx)  sdm->functionctx = ctx;
@@ -247,11 +247,11 @@ PetscErrorCode DMSNESSetFunction(DM dm,PetscErrorCode (*func)(SNES,Vec,Vec,void*
 PetscErrorCode DMSNESGetFunction(DM dm,PetscErrorCode (**func)(SNES,Vec,Vec,void*),void **ctx)
 {
   PetscErrorCode ierr;
-  SNESDM sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (func) *func = sdm->computefunction;
   if (ctx)  *ctx = sdm->functionctx;
   PetscFunctionReturn(0);
@@ -276,12 +276,12 @@ PetscErrorCode DMSNESGetFunction(DM dm,PetscErrorCode (**func)(SNES,Vec,Vec,void
 PetscErrorCode DMSNESSetObjective(DM dm,SNESObjective func,void *ctx)
 {
   PetscErrorCode ierr;
-  SNESDM sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (func || ctx) {
-    ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+    ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   }
   if (func) sdm->computeobjective = func;
   if (ctx)  sdm->objectivectx = ctx;
@@ -313,11 +313,11 @@ PetscErrorCode DMSNESSetObjective(DM dm,SNESObjective func,void *ctx)
 PetscErrorCode DMSNESGetObjective(DM dm,SNESObjective *func,void **ctx)
 {
   PetscErrorCode ierr;
-  SNESDM sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (func) *func = sdm->computeobjective;
   if (ctx)  *ctx = sdm->objectivectx;
   PetscFunctionReturn(0);
@@ -347,12 +347,12 @@ PetscErrorCode DMSNESGetObjective(DM dm,SNESObjective *func,void **ctx)
 PetscErrorCode DMSNESSetGS(DM dm,PetscErrorCode (*func)(SNES,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  SNESDM sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (func || ctx) {
-    ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+    ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   }
   if (func) sdm->computegs = func;
   if (ctx)  sdm->gsctx = ctx;
@@ -385,11 +385,11 @@ PetscErrorCode DMSNESSetGS(DM dm,PetscErrorCode (*func)(SNES,Vec,Vec,void*),void
 PetscErrorCode DMSNESGetGS(DM dm,PetscErrorCode (**func)(SNES,Vec,Vec,void*),void **ctx)
 {
   PetscErrorCode ierr;
-  SNESDM sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (func) *func = sdm->computegs;
   if (ctx)  *ctx = sdm->gsctx;
   PetscFunctionReturn(0);
@@ -419,12 +419,12 @@ PetscErrorCode DMSNESGetGS(DM dm,PetscErrorCode (**func)(SNES,Vec,Vec,void*),voi
 PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  SNESDM         sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (func || ctx) {
-    ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+    ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   }
   if (func) sdm->computejacobian = func;
   if (ctx)  sdm->jacobianctx = ctx;
@@ -457,11 +457,11 @@ PetscErrorCode DMSNESSetJacobian(DM dm,PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*
 PetscErrorCode DMSNESGetJacobian(DM dm,PetscErrorCode (**func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
 {
   PetscErrorCode ierr;
-  SNESDM sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (func) *func = sdm->computejacobian;
   if (ctx)  *ctx = sdm->jacobianctx;
   PetscFunctionReturn(0);
@@ -487,11 +487,11 @@ PetscErrorCode DMSNESGetJacobian(DM dm,PetscErrorCode (**func)(SNES,Vec,Mat*,Mat
 PetscErrorCode DMSNESSetPicard(DM dm,PetscErrorCode (*pfunc)(SNES,Vec,Vec,void*),PetscErrorCode (*pjac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  SNESDM sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (pfunc) sdm->computepfunction = pfunc;
   if (pjac)  sdm->computepjacobian = pjac;
   if (ctx)   sdm->pctx             = ctx;
@@ -521,11 +521,11 @@ PetscErrorCode DMSNESSetPicard(DM dm,PetscErrorCode (*pfunc)(SNES,Vec,Vec,void*)
 PetscErrorCode DMSNESGetPicard(DM dm,PetscErrorCode (**pfunc)(SNES,Vec,Vec,void*),PetscErrorCode (**pjac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
 {
   PetscErrorCode ierr;
-  SNESDM sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (pfunc) *pfunc = sdm->computepfunction;
   if (pjac) *pjac   = sdm->computepjacobian;
   if (ctx)  *ctx    = sdm->pctx;
@@ -538,10 +538,10 @@ PetscErrorCode DMSNESGetPicard(DM dm,PetscErrorCode (**pfunc)(SNES,Vec,Vec,void*
 PetscErrorCode DMSNESSetUpLegacy(DM dm)
 {
   PetscErrorCode ierr;
-  SNESDM         sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->computefunction) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Function never provided to SNES object");
   if (!sdm->computejacobian) {
     ierr = DMSNESSetJacobian(dm,SNESDefaultComputeJacobianColor,PETSC_NULL);CHKERRQ(ierr);
@@ -573,12 +573,12 @@ PetscErrorCode DMSNESSetUpLegacy(DM dm)
 PetscErrorCode DMSNESSetBlockFunction(DM dm,PetscErrorCode (*func)(SNES,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  SNESDM sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (func || ctx) {
-    ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+    ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   }
   if (func) sdm->computeblockfunction = func;
   if (ctx)  sdm->blockfunctionctx = ctx;
@@ -606,11 +606,11 @@ PetscErrorCode DMSNESSetBlockFunction(DM dm,PetscErrorCode (*func)(SNES,Vec,Vec,
 PetscErrorCode DMSNESGetBlockFunction(DM dm,PetscErrorCode (**func)(SNES,Vec,Vec,void*),void **ctx)
 {
   PetscErrorCode ierr;
-  SNESDM sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (func) *func = sdm->computeblockfunction;
   if (ctx)  *ctx = sdm->blockfunctionctx;
   PetscFunctionReturn(0);
@@ -639,12 +639,12 @@ PetscErrorCode DMSNESGetBlockFunction(DM dm,PetscErrorCode (**func)(SNES,Vec,Vec
 PetscErrorCode DMSNESSetBlockJacobian(DM dm,PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  SNESDM sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (func || ctx) {
-    ierr = DMSNESGetContextWrite(dm,&sdm);CHKERRQ(ierr);
+    ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
   }
   if (func) sdm->computeblockjacobian = func;
   if (ctx)  sdm->blockjacobianctx = ctx;
@@ -672,11 +672,11 @@ PetscErrorCode DMSNESSetBlockJacobian(DM dm,PetscErrorCode (*func)(SNES,Vec,Mat*
 PetscErrorCode DMSNESGetBlockJacobian(DM dm,PetscErrorCode (**func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
 {
   PetscErrorCode ierr;
-  SNESDM sdm;
+  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (func) *func = sdm->computeblockjacobian;
   if (ctx)  *ctx = sdm->blockjacobianctx;
   PetscFunctionReturn(0);

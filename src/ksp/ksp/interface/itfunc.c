@@ -199,8 +199,8 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   }
 
   if (ksp->dmActive) {
-    KSPDM kdm;
-    ierr = DMKSPGetContext(ksp->dm,&kdm);CHKERRQ(ierr);
+    DMKSP kdm;
+    ierr = DMGetDMKSP(ksp->dm,&kdm);CHKERRQ(ierr);
 
     if (kdm->computeinitialguess && ksp->setupstage != KSP_SETUP_NEWRHS) {
       /* only computes initial guess the first time through */

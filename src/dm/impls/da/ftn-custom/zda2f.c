@@ -79,7 +79,7 @@ static PetscErrorCode sourlj3d(DMDALocalInfo *info,PetscScalar ***in,Mat A,Mat m
 }
 
 /*
-   This is buggy, the function pointers should really be attached to the SNESDM object
+   This is buggy, the function pointers should really be attached to the DMSNES object
 */
 void PETSC_STDCALL dmdasnessetjacobianlocal_(DM *da,void (PETSC_STDCALL *jac)(DMDALocalInfo*,void*,void*,void*,void*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
@@ -123,7 +123,7 @@ static PetscErrorCode sourlf3d(DMDALocalInfo *info,PetscScalar ***in,PetscScalar
 }
 
 /*
-   This is buggy, the function pointers should really be attached to the SNESDM object
+   This is buggy, the function pointers should really be attached to the DMSNES object
 */
 void PETSC_STDCALL dmdasnessetfunctionlocal_(DM *da,InsertMode *mode,void (PETSC_STDCALL *func)(DMDALocalInfo*,void*,void*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {

@@ -82,7 +82,7 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 {
   TS              ts = (TS) ctx;
   DM              dm;
-  TSDM            tsdm;
+  DMTS            tsdm;
   TSIFunction     ifunction;
   MPI_Comm        comm = ((PetscObject)ts)->comm;
   TS_Sundials     *cvode = (TS_Sundials*)ts->data;
@@ -99,7 +99,7 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 
   /* Now compute the right hand side function, via IFunction unless only the more efficient RHSFunction is set */
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMTSGetContext(dm,&tsdm);CHKERRQ(ierr);
+  ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
   ierr = DMTSGetIFunction(dm,&ifunction,PETSC_NULL);CHKERRQ(ierr);
   if (!ifunction) {
     ierr = TSComputeRHSFunction(ts,t,yy,yyd);CHKERRQ(ierr);
