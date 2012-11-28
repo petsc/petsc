@@ -532,33 +532,6 @@ PetscErrorCode DMSNESGetPicard(DM dm,PetscErrorCode (**pfunc)(SNES,Vec,Vec,void*
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESDefaultComputeFunction_DMLegacy"
-static PetscErrorCode SNESDefaultComputeFunction_DMLegacy(SNES snes,Vec X,Vec F,void *ctx)
-{
-  PetscErrorCode ierr;
-  DM             dm;
-
-  PetscFunctionBegin;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Why is this ever being called?");
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESDefaultComputeJacobian_DMLegacy"
-static PetscErrorCode SNESDefaultComputeJacobian_DMLegacy(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
-{
-  PetscErrorCode ierr;
-  DM             dm;
-
-  PetscFunctionBegin;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMComputeJacobian(dm,X,*A,*B,mstr);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "DMSNESSetUpLegacy"
 /* Sets up calling of legacy DM routines */
@@ -569,14 +542,9 @@ PetscErrorCode DMSNESSetUpLegacy(DM dm)
 
   PetscFunctionBegin;
   ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
-  if (!sdm->computefunction) {ierr = DMSNESSetFunction(dm,SNESDefaultComputeFunction_DMLegacy,PETSC_NULL);CHKERRQ(ierr);}
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
+  if (!sdm->computefunction) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Function never provided to SNES object");
   if (!sdm->computejacobian) {
-    if (dm->ops->functionj) {
-      ierr = DMSNESSetJacobian(dm,SNESDefaultComputeJacobian_DMLegacy,PETSC_NULL);CHKERRQ(ierr);
-    } else {
-      ierr = DMSNESSetJacobian(dm,SNESDefaultComputeJacobianColor,PETSC_NULL);CHKERRQ(ierr);
-    }
+    ierr = DMSNESSetJacobian(dm,SNESDefaultComputeJacobianColor,PETSC_NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

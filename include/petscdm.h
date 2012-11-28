@@ -158,15 +158,9 @@ PETSC_EXTERN PetscErrorCode DMSetMatType(DM,MatType);
 PETSC_EXTERN PetscErrorCode DMSetApplicationContext(DM,void*);
 PETSC_EXTERN PetscErrorCode DMSetApplicationContextDestroy(DM,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode DMGetApplicationContext(DM,void*);
-PETSC_EXTERN PetscErrorCode DMSetFunction(DM,PetscErrorCode (*)(DM,Vec,Vec));
-PETSC_EXTERN PetscErrorCode DMSetJacobian(DM,PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure *));
 PETSC_EXTERN PetscErrorCode DMSetVariableBounds(DM,PetscErrorCode (*)(DM,Vec,Vec));
-PETSC_EXTERN PetscErrorCode DMHasFunction(DM,PetscBool *);
-PETSC_EXTERN PetscErrorCode DMHasJacobian(DM,PetscBool *);
 PETSC_EXTERN PetscErrorCode DMHasVariableBounds(DM,PetscBool *);
 PETSC_EXTERN PetscErrorCode DMHasColoring(DM,PetscBool *);
-PETSC_EXTERN PetscErrorCode DMComputeJacobian(DM,Vec,Mat,Mat,MatStructure *);
-PETSC_EXTERN PetscErrorCode DMComputeJacobianDefault(DM,Vec,Mat,Mat,MatStructure *);
 PETSC_EXTERN PetscErrorCode DMComputeVariableBounds(DM,Vec,Vec);
 
 PETSC_EXTERN PetscErrorCode DMCreateSubDM(DM, PetscInt, PetscInt[], IS *, DM *);

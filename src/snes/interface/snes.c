@@ -1766,11 +1766,7 @@ PetscErrorCode  SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 
   if (sdm->computepjacobian) {
     ierr = (*sdm->computepjacobian)(snes,x,&snes->jacobian,&snes->jacobian_pre,&snes->matstruct,sdm->pctx);CHKERRQ(ierr);
-  } else if (snes->dm) {
-    ierr = DMComputeJacobian(snes->dm,x,snes->jacobian,snes->jacobian_pre,&snes->matstruct);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() or SNESSetDM() before SNESPicardComputeFunction to provide Picard matrix.");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard matrix.");
 
   ierr = VecView(x,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
   ierr = VecView(f,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);

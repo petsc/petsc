@@ -36,11 +36,6 @@ struct _DMOps {
   PetscErrorCode (*localtoglobalbegin)(DM,Vec,InsertMode,Vec);
   PetscErrorCode (*localtoglobalend)(DM,Vec,InsertMode,Vec);
 
-  PetscErrorCode (*initialguess)(DM,Vec);
-  PetscErrorCode (*function)(DM,Vec,Vec);
-  PetscErrorCode (*functionj)(DM,Vec,Vec);
-  PetscErrorCode (*jacobian)(DM,Vec,Mat,Mat,MatStructure*);
-
   PetscErrorCode (*destroy)(DM);
 
   PetscErrorCode (*computevariablebounds)(DM,Vec,Vec);
@@ -103,7 +98,7 @@ struct _p_DM {
   PetscErrorCode          (*ctxdestroy)(void**);
   Vec                     x;       /* location at which the functions/Jacobian are computed */
   ISColoringType          coloringtype;
-  MatFDColoring           fd;      /* used by DMComputeJacobianDefault() */
+  MatFDColoring           fd;      
   VecType                 vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
   MatType                 mattype;  /* type of matrix created with DMCreateMatrix() */
   PetscInt                bs;

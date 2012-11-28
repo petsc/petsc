@@ -209,10 +209,6 @@ PetscErrorCode SNESComputeLocalBlockFunction_DMDA(SNES snes,Vec X,Vec F,void *dm
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeJacobian_DMDA"
-/*
-  This function should eventually replace:
-    DMComputeJacobian() and DMDAComputeJacobian1()
- */
 static PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
 {
   PetscErrorCode ierr;
@@ -278,10 +274,6 @@ static PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat *A,Mat *B,Mat
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeLocalBlockJacobian_DMDA"
-/*
-  This function should eventually replace:
-    DMComputeJacobian() and DMDAComputeJacobian1()
- */
 PetscErrorCode SNESComputeLocalBlockJacobian_DMDA(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *dmctx)
 {
   PetscErrorCode ierr;

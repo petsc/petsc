@@ -116,10 +116,6 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIJacobian_DMDA"
-/*
-  This function should eventually replace:
-    DMComputeJacobian() and DMDAComputeJacobian1()
- */
 static PetscErrorCode TSComputeIJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
 {
   PetscErrorCode ierr;
@@ -214,10 +210,6 @@ static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec 
 
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSJacobian_DMDA"
-/*
-  This function should eventually replace:
-    DMComputeJacobian() and DMDAComputeJacobian1()
- */
 static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
 {
   PetscErrorCode ierr;
