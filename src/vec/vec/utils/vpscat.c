@@ -497,9 +497,10 @@ PETSC_STATIC_INLINE void Pack_1(PetscInt n,const PetscInt *indicesx,const PetscS
     y[i]  = x[indicesx[i]];
   }
 }
-PETSC_STATIC_INLINE void UnPack_1(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode UnPack_1(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i;
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -526,11 +527,13 @@ PETSC_STATIC_INLINE void UnPack_1(PetscInt n,const PetscScalar *x,const PetscInt
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE void Scatter_1(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode Scatter_1(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i;
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -557,6 +560,7 @@ PETSC_STATIC_INLINE void Scatter_1(PetscInt n,const PetscInt *indicesx,const Pet
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
 
   /* ----------------------------------------------------------------------------------------------- */
@@ -571,10 +575,11 @@ PETSC_STATIC_INLINE void Pack_2(PetscInt n,const PetscInt *indicesx,const PetscS
     y    += 2;
   }
 }
-PETSC_STATIC_INLINE void UnPack_2(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode UnPack_2(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -610,12 +615,14 @@ PETSC_STATIC_INLINE void UnPack_2(PetscInt n,const PetscScalar *x,const PetscInt
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE void Scatter_2(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode Scatter_2(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -651,6 +658,7 @@ PETSC_STATIC_INLINE void Scatter_2(PetscInt n,const PetscInt *indicesx,const Pet
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
   /* ----------------------------------------------------------------------------------------------- */
 PETSC_STATIC_INLINE void Pack_3(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y)
@@ -665,10 +673,11 @@ PETSC_STATIC_INLINE void Pack_3(PetscInt n,const PetscInt *indicesx,const PetscS
     y    += 3;
   }
 }
-PETSC_STATIC_INLINE void UnPack_3(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode UnPack_3(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -707,12 +716,14 @@ PETSC_STATIC_INLINE void UnPack_3(PetscInt n,const PetscScalar *x,const PetscInt
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE void Scatter_3(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode Scatter_3(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -751,6 +762,7 @@ PETSC_STATIC_INLINE void Scatter_3(PetscInt n,const PetscInt *indicesx,const Pet
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
   /* ----------------------------------------------------------------------------------------------- */
 PETSC_STATIC_INLINE void Pack_4(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y)
@@ -766,10 +778,11 @@ PETSC_STATIC_INLINE void Pack_4(PetscInt n,const PetscInt *indicesx,const PetscS
     y    += 4;
   }
 }
-PETSC_STATIC_INLINE void UnPack_4(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode UnPack_4(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -811,12 +824,14 @@ PETSC_STATIC_INLINE void UnPack_4(PetscInt n,const PetscScalar *x,const PetscInt
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE void Scatter_4(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode Scatter_4(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -858,6 +873,7 @@ PETSC_STATIC_INLINE void Scatter_4(PetscInt n,const PetscInt *indicesx,const Pet
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
   /* ----------------------------------------------------------------------------------------------- */
 PETSC_STATIC_INLINE void Pack_5(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y)
@@ -874,10 +890,11 @@ PETSC_STATIC_INLINE void Pack_5(PetscInt n,const PetscInt *indicesx,const PetscS
     y    += 5;
   }
 }
-PETSC_STATIC_INLINE void UnPack_5(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode UnPack_5(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -922,12 +939,14 @@ PETSC_STATIC_INLINE void UnPack_5(PetscInt n,const PetscScalar *x,const PetscInt
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE void Scatter_5(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode Scatter_5(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -972,6 +991,7 @@ PETSC_STATIC_INLINE void Scatter_5(PetscInt n,const PetscInt *indicesx,const Pet
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
   /* ----------------------------------------------------------------------------------------------- */
 PETSC_STATIC_INLINE void Pack_6(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y)
@@ -989,10 +1009,11 @@ PETSC_STATIC_INLINE void Pack_6(PetscInt n,const PetscInt *indicesx,const PetscS
     y    += 6;
   }
 }
-PETSC_STATIC_INLINE void UnPack_6(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode UnPack_6(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -1040,12 +1061,14 @@ PETSC_STATIC_INLINE void UnPack_6(PetscInt n,const PetscScalar *x,const PetscInt
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE void Scatter_6(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode Scatter_6(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -1093,6 +1116,7 @@ PETSC_STATIC_INLINE void Scatter_6(PetscInt n,const PetscInt *indicesx,const Pet
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
   /* ----------------------------------------------------------------------------------------------- */
 PETSC_STATIC_INLINE void Pack_7(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y)
@@ -1111,10 +1135,11 @@ PETSC_STATIC_INLINE void Pack_7(PetscInt n,const PetscInt *indicesx,const PetscS
     y    += 7;
   }
 }
-PETSC_STATIC_INLINE void UnPack_7(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode UnPack_7(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -1165,12 +1190,14 @@ PETSC_STATIC_INLINE void UnPack_7(PetscInt n,const PetscScalar *x,const PetscInt
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE void Scatter_7(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode Scatter_7(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -1221,6 +1248,7 @@ PETSC_STATIC_INLINE void Scatter_7(PetscInt n,const PetscInt *indicesx,const Pet
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
   /* ----------------------------------------------------------------------------------------------- */
 PETSC_STATIC_INLINE void Pack_8(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,PetscScalar *y)
@@ -1240,10 +1268,11 @@ PETSC_STATIC_INLINE void Pack_8(PetscInt n,const PetscInt *indicesx,const PetscS
     y    += 8;
   }
 }
-PETSC_STATIC_INLINE void UnPack_8(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode UnPack_8(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -1297,12 +1326,14 @@ PETSC_STATIC_INLINE void UnPack_8(PetscInt n,const PetscScalar *x,const PetscInt
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE void Scatter_8(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode Scatter_8(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -1356,6 +1387,7 @@ PETSC_STATIC_INLINE void Scatter_8(PetscInt n,const PetscInt *indicesx,const Pet
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
 
   /* ----------------------------------------------------------------------------------------------- */
@@ -1380,10 +1412,11 @@ PETSC_STATIC_INLINE void Pack_12(PetscInt n,const PetscInt *indicesx,const Petsc
     y    += 12;
   }
 }
-PETSC_STATIC_INLINE void UnPack_12(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode UnPack_12(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -1449,12 +1482,14 @@ PETSC_STATIC_INLINE void UnPack_12(PetscInt n,const PetscScalar *x,const PetscIn
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE void Scatter_12(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
+PETSC_STATIC_INLINE PetscErrorCode Scatter_12(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
 
+  PetscFunctionBegin;
   switch (addv) {
   case INSERT_VALUES:
   case INSERT_ALL_VALUES:
@@ -1520,6 +1555,7 @@ PETSC_STATIC_INLINE void Scatter_12(PetscInt n,const PetscInt *indicesx,const Pe
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle insert mode %d", addv);
   }
+  PetscFunctionReturn(0);
 }
 
 /* Create the VecScatterBegin/End_P for our chosen block sizes */

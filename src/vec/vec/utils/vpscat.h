@@ -139,7 +139,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
     if (to->local.is_copy && addv == INSERT_VALUES) {
       ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
     } else {
-      PETSCMAP1(Scatter)(to->local.n,to->local.vslots,xv,from->local.vslots,yv,addv);
+      ierr = PETSCMAP1(Scatter)(to->local.n,to->local.vslots,xv,from->local.vslots,yv,addv);CHKERRQ(ierr);
     }
   }
 #if defined(PETSC_HAVE_CUSP)
@@ -198,7 +198,7 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
     else
 #endif
     if (nrecvs && !to->use_alltoallv) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
-    PETSCMAP1(UnPack)(from->starts[from->n],from->values,indices,yv,addv);
+    ierr = PETSCMAP1(UnPack)(from->starts[from->n],from->values,indices,yv,addv);CHKERRQ(ierr);
   } else if (!to->use_alltoallw) {
     /* unpack one at a time */
     count = nrecvs;
@@ -210,7 +210,7 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
 	ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
       }
       /* unpack receives into our local space */
-      PETSCMAP1(UnPack)(rstarts[imdex+1] - rstarts[imdex],rvalues + bs*rstarts[imdex],indices + rstarts[imdex],yv,addv);
+      ierr = PETSCMAP1(UnPack)(rstarts[imdex+1] - rstarts[imdex],rvalues + bs*rstarts[imdex],indices + rstarts[imdex],yv,addv);CHKERRQ(ierr);
       count--;
     }
   }
