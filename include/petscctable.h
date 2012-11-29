@@ -39,41 +39,41 @@ PETSC_EXTERN PetscErrorCode PetscTableRemoveAll(PetscTable);
 PETSC_STATIC_INLINE PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,PetscInt data,InsertMode imode)
 {
   PetscErrorCode ierr;
-  PetscInt       ii = 0,hash = (PetscInt)PetscHash(ta,key);
+  PetscInt       i,hash = (PetscInt)PetscHash(ta,key);
 
   PetscFunctionBegin;
   if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
   if (key > ta->maxkey) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key %D is greater than largest key allowed %D",key,ta->maxkey);
   if (!data) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null data");
 
-  if (ta->count < 5*(ta->tablesize/6) - 1) {
-    while (ii++ < ta->tablesize){
-      if (ta->keytable[hash] == key) {
-        switch (imode) {
-        case INSERT_VALUES:
-          ta->table[hash] = data; /* over write */
-          break;
-        case ADD_VALUES:
-          ta->table[hash] += data;
-          break;
-        case MAX_VALUES:
-          ta->table[hash] = PetscMax(ta->table[hash],data);
-          break;
-        default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported InsertMode");
-        }
-	PetscFunctionReturn(0);
-      } else if (!ta->keytable[hash]) {
-	ta->count++; /* add */
-	ta->keytable[hash] = key;
-        ta->table[hash] = data;
-	PetscFunctionReturn(0);
+  for (i=0; i<ta->tablesize; i++) {
+    if (ta->keytable[hash] == key) {
+      switch (imode) {
+      case INSERT_VALUES:
+        ta->table[hash] = data; /* over write */
+        break;
+      case ADD_VALUES:
+        ta->table[hash] += data;
+        break;
+      case MAX_VALUES:
+        ta->table[hash] = PetscMax(ta->table[hash],data);
+        break;
+      default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported InsertMode");
       }
-      hash = (hash == (ta->tablesize-1)) ? 0 : hash+1;
+      PetscFunctionReturn(0);
+    } else if (!ta->keytable[hash]) {
+      if (ta->count < 5*(ta->tablesize/6) - 1) {
+        ta->count++; /* add */
+        ta->keytable[hash] = key;
+        ta->table[hash] = data;
+      } else {
+        ierr = PetscTableAddExpand(ta,key,data,imode);CHKERRQ(ierr);
+      }
+      PetscFunctionReturn(0);
     }
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Full table");
-  } else {
-    ierr = PetscTableAddExpand(ta,key,data,imode);CHKERRQ(ierr);
+    hash = (hash == (ta->tablesize-1)) ? 0 : hash+1;
   }
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Full table");
   PetscFunctionReturn(0);
 }
 
@@ -82,27 +82,28 @@ PETSC_STATIC_INLINE PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,Pets
 PETSC_STATIC_INLINE PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt key)
 {
   PetscErrorCode ierr;
-  PetscInt       ii = 0,hash = (PetscInt)PetscHash(ta,key);
+  PetscInt       i,hash = (PetscInt)PetscHash(ta,key);
 
   PetscFunctionBegin;
   if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
   if (key > ta->maxkey) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key %D is greater than largest key allowed %D",key,ta->maxkey);
 
-  if (ta->count < 5*(ta->tablesize/6) - 1) {
-    while (ii++ < ta->tablesize){
-      if (ta->keytable[hash] == key) {
-	PetscFunctionReturn(0);
-      } else if (!ta->keytable[hash]) {
+  for (i=0; i<ta->tablesize; i++) {
+    if (ta->keytable[hash] == key) {
+      PetscFunctionReturn(0);
+    } else if (!ta->keytable[hash]) {
+      if (ta->count < 5*(ta->tablesize/6) - 1) {
 	ta->count++; /* add */
-	ta->keytable[hash] = key; ta->table[hash] = ta->count;
-	PetscFunctionReturn(0);
+	ta->keytable[hash] = key;
+        ta->table[hash] = ta->count;
+      } else {
+        ierr = PetscTableAddCountExpand(ta,key);CHKERRQ(ierr);
       }
-      hash = (hash == (ta->tablesize-1)) ? 0 : hash+1;
+      PetscFunctionReturn(0);
     }
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Full table");
-  } else {
-    ierr = PetscTableAddCountExpand(ta,key);CHKERRQ(ierr);
+    hash = (hash == (ta->tablesize-1)) ? 0 : hash+1;
   }
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Full table");
   PetscFunctionReturn(0);
 }
 
