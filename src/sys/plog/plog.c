@@ -2400,6 +2400,16 @@ for (stage = 0; stage < numStages; stage++) {
           }
           ierr = PetscFPrintf(comm, fd, "]\n" );CHKERRQ(ierr);
         }
+        if (hasEvent) {tmpR = eventInfo[event].time2;}
+        else          {tmpR = 0.0;}
+        ierr = MPI_Gather(&tmpR, 1, MPIU_PETSCLOGDOUBLE, mydata, 1, MPIU_PETSCLOGDOUBLE, 0, comm);CHKERRQ(ierr);
+        if (!rank){
+          ierr = PetscFPrintf(comm, fd, "%s.Time2 = [ ", eventName);CHKERRQ(ierr);
+          for (i=0; i<size; i++){
+            ierr = PetscFPrintf(comm, fd, "  %5.3e,", mydata[i]);CHKERRQ(ierr);
+          }
+          ierr = PetscFPrintf(comm, fd, "]\n" );CHKERRQ(ierr);
+        }
         /* Flops */
         if (hasEvent) {tmpR = eventInfo[event].flops;}
         else          {tmpR = 0.0;}
@@ -2409,7 +2419,17 @@ for (stage = 0; stage < numStages; stage++) {
           for (i=0; i<size; i++){
             ierr = PetscFPrintf(comm, fd, "  %5.3e,",mydata[i] );CHKERRQ(ierr);
           }
-          ierr = PetscFPrintf(comm, fd, "]\n" );CHKERRQ(ierr);
+          ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
+        }
+        if (hasEvent) {tmpR = eventInfo[event].flops2;}
+        else          {tmpR = 0.0;}
+        ierr = MPI_Gather(&tmpR, 1, MPIU_PETSCLOGDOUBLE, mydata, 1, MPIU_PETSCLOGDOUBLE, 0, comm);CHKERRQ(ierr);
+        if (!rank){
+          ierr = PetscFPrintf(comm, fd, "%s.Flops2 = [ ", eventName);CHKERRQ(ierr);
+          for (i=0; i<size; i++){
+            ierr = PetscFPrintf(comm, fd, "  %5.3e,", mydata[i]);CHKERRQ(ierr);
+          }
+          ierr = PetscFPrintf(comm, fd, "]\n");CHKERRQ(ierr);
         }
         /* Num Messages */
         if (hasEvent) {tmpR = eventInfo[event].numMessages;}
