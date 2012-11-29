@@ -71,8 +71,8 @@
       One can browse the development repositories at the following location
 
       <ul>
-        <li><a href="http://petsc.cs.iit.edu/petsc/petsc-dev">http://petsc.cs.iit.edu/petsc/petsc-dev</a></li>
-        <li><a href="http://petsc.cs.iit.edu/petsc/BuildSystem">http://petsc.cs.iit.edu/petsc/BuildSystem</a></li>
+        <li><a href="https://bitbucket.org/petsc/petsc-dev">https://bitbucket.org/petsc/petsc-dev</a></li>
+        <li><a href="https://bitbucket.org/petsc/buildsystem">https://bitbucket.org/petsc/buildsystem</a></li>
       </ul>
 
       <h2><a name="obtaining">Obtaining the development version of PETSc:</a></h2>
@@ -137,7 +137,7 @@
       Once Mercurial is installed obtain petsc-dev with the following:
 
       <ul>
-        <li><code>hg clone http://petsc.cs.iit.edu/petsc/petsc-dev</code></li>
+        <li><code>hg clone https://bitbucket.org/petsc/petsc-dev</code></li>
         <li><code>cd petsc-dev</code></li>
         <li><code>edit .hg/hgrc and the two lines</code>
       <pre>
@@ -145,7 +145,7 @@
 post-pull = "$HG" $HG_ARGS -u  $@ --cwd config/BuildSystem
       </pre>
         </li>
-        <li><code>hg clone http://petsc.cs.iit.edu/petsc/BuildSystem config/BuildSystem</code></li>
+        <li><code>hg clone https://bitbucket.org/petsc/buildsystem config/BuildSystem</code></li>
       </ul>
 
       PETSc can now be configured in the usual way, specified on the
@@ -179,11 +179,11 @@ post-pull = "$HG" $HG_ARGS -u  $@ --cwd config/BuildSystem
 
       <ul>
         <li>
-          <a href="http://petsc.cs.iit.edu/petsc/petsc-dev/archive/tip.tar.gz">http://petsc.cs.iit.edu/petsc/petsc-dev/archive/tip.tar.gz</a>
+          <a href="https://bitbucket.org/petsc/petsc-dev/get/tip.tar.gz">https://bitbucket.org/petsc/petsc-dev/get/tip.tar.gz</a>
         </li>
 
         <li>
-          <a href="http://petsc.cs.iit.edu/petsc/BuildSystem/archive/tip.tar.gz">http://petsc.cs.iit.edu/petsc/BuildSystem/archive/tip.tar.gz</a>
+          <a href="https://bitbucket.org/petsc/buildsystem/get/tip.tar.gz">https://bitbucket.org/petsc/buildsystem/get/tip.tar.gz</a>
         </li>
       </ul>
 
@@ -196,18 +196,17 @@ post-pull = "$HG" $HG_ARGS -u  $@ --cwd config/BuildSystem
 
       <h4>Note 2:</h4>
       If using a web browser to download - the tarballs will get the names
-      petsc-dev-CHANGESET.tar.gz and BuildSystem-CHANGESET.tar.gz.  However, if
+      petsc-petsc-dev-CHANGESET.tar.gz and petsc-buildsystem-CHANGESET.tar.gz.  However, if
       <code>wget</code> or <code>curl</code> is used - both tarballs will get
       the name 'tip.tar.gz'.  In this case rename the tarballs [to avoid the
       name conflict].
 
       After both the tarballs are obtained - do the following:
       <ul>
-        <li><code>tar zxf petsc-dev-CHANGESET.tar.gz</code></li>
-        <li><code>mv petsc-dev-CHANGESET petsc-dev</code></li>
-        <li><code>cd petsc-dev/config</code></li>
-        <li><code>tar zxf BuildSystem-CHANGESET.tar.gz</code></li>
-        <li><code>mv BuildSystem-CHANGESET BuildSystem</code></li>
+        <li><code>tar zxf petsc-petsc-dev-CHANGESET.tar.gz</code></li>
+        <li><code>mv petsc-petsc-dev-CHANGESET petsc-dev</code></li>
+        <li><code>tar zxf petsc-buildsystem-CHANGESET.tar.gz</code></li>
+        <li><code>mv petsc-buildsystem-CHANGESET petsc-dev/config/BuildSystem</code></li>
       </ul>
 
       <p>

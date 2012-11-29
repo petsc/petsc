@@ -406,7 +406,7 @@
       <p>Here is an example:</p>
       <code>
         [linux]% hg push<br>
-        pushing to https://petsc.cs.iit.edu/petsc/petsc-dev<br>
+        pushing to https://bitbucket.org/petsc/petsc-dev<br>
         searching for changes<br>
         abort: push creates new remote branches!<br>
       </code>
@@ -1866,16 +1866,16 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
       <ul>
         <li>get petsc-dev and BuildSystem sources:
           <ul>
-            <li><code>hg clone http://petsc.cs.iit.edu/petsc/petsc-dev</code></li>
-            <li><code>hg clone http://petsc.cs.iit.edu/petsc/BuildSystem petsc-dev/config/BuildSystem</code></li>
+            <li><code>hg clone https://bitbucket.org/petsc/petsc-dev</code></li>
+            <li><code>hg clone https://bitbucket.org/petsc/buildsystem petsc-dev/config/BuildSystem</code></li>
           </ul>
         </li>
 
         <li>
           Find the <b>good</b> and <b>bad</b> markers to
           start the bisection process. This can be done either by checking
-          <code>hg log</code> or <code>hg view</code> or <a href="http://petsc.cs.iit.edu/petsc/petsc-dev">http://petsc.cs.iit.edu/petsc/petsc-dev</a>
-          or <a href="http://petsc.cs.iit.edu/petsc/BuildSystem">http://petsc.cs.iit.edu/petsc/BuildSystem</a>
+          <code>hg log</code> or <code>hg view</code> or <a href="https://bitbucket.org/petsc/petsc-dev">https://bitbucket.org/petsc/petsc-dev</a>
+          or <a href="https://bitbucket.org/petsc/buildsystem">https://bitbucket.org/petsc/buildsystem</a>
           or the web history of petsc-release clones. Lets say the known bad
           changeset is 21af4baa815c and known good changeset is 5ae5ab319844
         </li>
