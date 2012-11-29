@@ -98,7 +98,10 @@ PetscErrorCode  AODestroy(AO *ao)
 
    Input Parameters:
 +  ao - the application ordering context
--  is - the index set
+-  is - the index set; this is replaced with its mapped values
+
+   Output Parameter:
+.  is - the mapped index set
 
    Level: intermediate
 
@@ -143,7 +146,10 @@ PetscErrorCode  AOPetscToApplicationIS(AO ao,IS is)
 
    Input Parameters:
 +  ao - the application ordering context
--  is - the index set
+-  is - the index set; this is replaced with its mapped values
+
+   Output Parameter:
+.  is - the mapped index set
 
    Level: beginner
 
@@ -187,7 +193,10 @@ PetscErrorCode  AOApplicationToPetscIS(AO ao,IS is)
    Input Parameters:
 +  ao - the application ordering context
 .  n - the number of integers
--  ia - the integers
+-  ia - the integers; these are replaced with their mapped value
+
+   Output Parameter:
+.   ia - the mapped integers
 
    Level: beginner
 
@@ -226,7 +235,7 @@ PetscErrorCode  AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
 -  ia - the integers; these are replaced with their mapped value
 
    Output Parameter:
-.   ia - the mapped interges
+.   ia - the mapped integers
 
    Level: beginner
 
@@ -264,6 +273,9 @@ PetscErrorCode  AOApplicationToPetsc(AO ao,PetscInt n,PetscInt ia[])
 . block - The block size
 - array - The integer array
 
+  Output Parameter:
+. array - The permuted array
+
   Note: The length of the array should be block*N, where N is length
   provided to the AOCreate*() method that created the AO.
 
@@ -299,6 +311,9 @@ PetscErrorCode  AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt a
 + ao    - The application ordering context
 . block - The block size
 - array - The integer array
+
+  Output Parameter:
+. array - The permuted array
 
   Note: The length of the array should be block*N, where N is length
   provided to the AOCreate*() method that created the AO.
@@ -337,6 +352,9 @@ PetscErrorCode  AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt a
 . block - The block size
 - array - The integer array
 
+  Output Parameter:
+. array - The permuted array
+
   Note: The length of the array should be block*N, where N is length
   provided to the AOCreate*() method that created the AO.
 
@@ -373,6 +391,9 @@ PetscErrorCode  AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal
 + ao    - The application ordering context
 . block - The block size
 - array - The integer array
+
+  Output Parameter:
+. array - The permuted array
 
   Note: The length of the array should be block*N, where N is length
   provided to the AOCreate*() method that created the AO.
