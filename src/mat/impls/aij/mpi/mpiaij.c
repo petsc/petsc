@@ -1793,7 +1793,7 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
   ierr = PetscSFBcastEnd(rowsf,MPIU_INT,onnz,tonnz);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&rowsf);CHKERRQ(ierr);
 
-  ierr = MatCreateAIJ(((PetscObject)A)->comm,A->rmap->n,A->cmap->n,A->cmap->N,A->cmap->N,0,tdnnz,0,tonnz,&Aperm);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(((PetscObject)A)->comm,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N,0,tdnnz,0,tonnz,&Aperm);CHKERRQ(ierr);
   ierr = MatSeqAIJGetArray(aA,&aa);CHKERRQ(ierr);
   ierr = MatSeqAIJGetArray(aB,&ba);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
