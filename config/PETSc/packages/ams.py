@@ -4,7 +4,8 @@ import os
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download  = ['http://petsc.cs.iit.edu/petsc/ams-dev/archive/tip.tar.gz']
+    self.download  = ['https://bitbucket.org/petsc/ams/get/tip.tar.gz',
+                      'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ams-dev.tar.gz']
     self.functions = ['AMS_Memory_create']
     self.includes  = ['ams.h']
     self.liblist   = [['libamspub.a']]
