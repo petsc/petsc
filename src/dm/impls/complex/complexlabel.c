@@ -331,7 +331,7 @@ PetscErrorCode DMComplexGetLabelValue(DM dm, const char name[], PetscInt point, 
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   ierr = DMComplexGetLabel(dm, name, &label);CHKERRQ(ierr);
-  if (!label) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named %s was found", name);CHKERRQ(ierr);
+  if (!label) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No label named %s was found", name);CHKERRQ(ierr);
   ierr = DMLabelGetValue(label, point, value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -654,7 +654,7 @@ PetscErrorCode DMComplexGetLabelName(DM dm, PetscInt n, const char **name)
     ++l;
     next = next->next;
   }
-  SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Label %d does not exist in this DM", n);
+  SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label %d does not exist in this DM", n);
 }
 
 #undef __FUNCT__
@@ -762,7 +762,7 @@ PetscErrorCode DMComplexAddLabel(DM dm, DMLabel label)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMComplexHasLabel(dm, label->name, &hasLabel);CHKERRQ(ierr);
-  if (hasLabel) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Label %s already exists in this DM", label->name);
+  if (hasLabel) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label %s already exists in this DM", label->name);
   label->next  = mesh->labels;
   mesh->labels = label;
   PetscFunctionReturn(0);
