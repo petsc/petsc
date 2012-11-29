@@ -946,6 +946,7 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
   ierr = MatDestroy(&jac->schur);CHKERRQ(ierr);
   ierr = MatDestroy(&jac->schur_user);CHKERRQ(ierr);
   ierr = KSPDestroy(&jac->kspschur);CHKERRQ(ierr);
+  ierr = KSPDestroy(&jac->kspupper);CHKERRQ(ierr);
   ierr = MatDestroy(&jac->B);CHKERRQ(ierr);
   ierr = MatDestroy(&jac->C);CHKERRQ(ierr);
   jac->reset = PETSC_TRUE;
