@@ -855,6 +855,7 @@ PetscErrorCode ConstructGhostCells(DM *dmGhosted, User user)
     ierr = DMComplexGetLabelName(dm, l, &lname);CHKERRQ(ierr);
     ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
     if (isDepth) continue;
+    ierr = DMComplexCreateLabel(gdm, lname);CHKERRQ(ierr);
     ierr = DMComplexGetLabelIdIS(dm, lname, &idIS);CHKERRQ(ierr);
     ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
     ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
