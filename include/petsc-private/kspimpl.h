@@ -149,7 +149,7 @@ struct _DMKSPOps {
   PetscErrorCode (*computeoperators)(KSP,Mat,Mat,MatStructure*,void*);
   PetscErrorCode (*computerhs)(KSP,Vec,void*);
   PetscErrorCode (*computeinitialguess)(KSP,Vec,void*);
-  PetscErrorCode (*destroy)(DMKSP);
+  PetscErrorCode (*destroy)(DMKSP*);
   PetscErrorCode (*duplicate)(DMKSP,DM);
 };
 
