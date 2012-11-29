@@ -61,6 +61,48 @@ static PetscErrorCode DMRefineHook_DMKSP(DM dm,DM dmc,void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMKSPCopy"
+/*@C
+   DMKSPCopy - copies the information in a DMKSP to another DMKSP
+
+   Not Collective
+
+   Input Argument:
++  kdm - Original DMKSP
+-  nkdm - DMKSP to receive the data, should have been created with DMKSPCreate()
+
+   Level: developer
+
+.seealso: DMKSPCreate(), DMKSPDestroy()
+@*/
+PetscErrorCode DMKSPCopy(DMKSP kdm,DMKSP nkdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(kdm,DMKSP_CLASSID,1);
+  PetscValidHeaderSpecific(nkdm,DMKSP_CLASSID,2);
+  nkdm->ops->computeoperators     = kdm->ops->computeoperators;
+  nkdm->ops->computerhs           = kdm->ops->computerhs;
+  nkdm->ops->computeinitialguess  = kdm->ops->computeinitialguess;
+  nkdm->ops->destroy              = kdm->ops->destroy;
+  nkdm->ops->duplicate            = kdm->ops->duplicate;
+  
+  nkdm->operatorsctx    = kdm->operatorsctx;
+  nkdm->rhsctx          = kdm->rhsctx;
+  nkdm->initialguessctx = kdm->initialguessctx;
+  nkdm->data            = kdm->data;
+
+  nkdm->fortran_func_pointers[0] = kdm->fortran_func_pointers[0];
+  nkdm->fortran_func_pointers[1] = kdm->fortran_func_pointers[1];
+  nkdm->fortran_func_pointers[2] = kdm->fortran_func_pointers[2];
+
+  /* implementation specific copy hooks */
+  if (kdm->ops->duplicate) {ierr = (*kdm->ops->duplicate)(kdm,nkdm);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMGetDMKSP"
 /*@C
    DMGetDMKSP - get read-only private DMKSP context from a DM
@@ -130,26 +172,11 @@ PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
     DMKSP          oldkdm = kdm;
     ierr = PetscInfo(dm,"Copying DMKSP due to write\n");CHKERRQ(ierr);
     ierr = DMKSPCreate(((PetscObject)dm)->comm,&kdm);CHKERRQ(ierr);
-    kdm->ops->computeoperators     = oldkdm->ops->computeoperators;
-    kdm->ops->computerhs           = oldkdm->ops->computerhs;
-    kdm->ops->computeinitialguess  = oldkdm->ops->computeinitialguess;
-    kdm->ops->destroy              = oldkdm->ops->destroy;
-    kdm->ops->duplicate            = oldkdm->ops->duplicate;
-
-    kdm->operatorsctx    = oldkdm->operatorsctx;
-    kdm->rhsctx          = oldkdm->rhsctx;
-    kdm->initialguessctx = oldkdm->initialguessctx;
-    kdm->data            = oldkdm->data;
-
-    kdm->fortran_func_pointers[0] = oldkdm->fortran_func_pointers[0];
-    kdm->fortran_func_pointers[1] = oldkdm->fortran_func_pointers[1];
-    kdm->fortran_func_pointers[2] = oldkdm->fortran_func_pointers[2];
+    ierr = DMKSPCopy(oldkdm,kdm);CHKERRQ(ierr);
 
     ierr = PetscObjectCompose((PetscObject)dm,"DMKSP",(PetscObject)kdm);CHKERRQ(ierr);
     tkdm = kdm;
     ierr = DMKSPDestroy(&tkdm);CHKERRQ(ierr);
-    /* implementation specific copy hooks */
-    if (kdm->ops->duplicate) {ierr = (*kdm->ops->duplicate)(oldkdm,dm);CHKERRQ(ierr);}
   }
   *kspdm = kdm;
   PetscFunctionReturn(0);
