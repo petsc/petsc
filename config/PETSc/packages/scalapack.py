@@ -3,8 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    # use the version from PETSc ftp site - it has lapack removed
-    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/SCALAPACK-1.7.tar.gz']
+    self.download         = ['http://www.netlib.org/scalapack/scalapack-2.0.2.tgz']
     self.includes         = []
     self.liblist          = [[],['libscalapack.a']]
     self.functions        = ['pssytrd']
@@ -20,8 +19,7 @@ class Configure(PETSc.package.NewPackage):
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.blacs      = framework.require('PETSc.packages.blacs',self)
-    self.deps       = [self.blacs, self.mpi, self.blasLapack]
+    self.deps       = [self.mpi, self.blasLapack]
     return
 
   def Install(self):
@@ -30,20 +28,8 @@ class Configure(PETSc.package.NewPackage):
       raise RuntimeError('SCALAPACK requires Fortran for automatic installation')
 
     g = open(os.path.join(self.packageDir,'SLmake.inc'),'w')
-    g.write('SHELL        = /bin/sh\n')
-    g.write('home         = '+self.getDir()+'\n')
-    g.write('USEMPI       = -DUsingMpiBlacs\n')
-    g.write('SENDIS       = -DSndIsLocBlk\n')
-    if (self.mpi.commf2c):
-      g.write('WHATMPI      = -DUseMpi2\n')
-    else:
-      g.write('WHATMPI      = -DCSAMEF77\n')
-    g.write('BLACSDBGLVL  = -DBlacsDebugLvl=1\n')
-    g.write('BLACSLIB     = '+self.libraries.toString(self.blacs.lib)+'\n')
-    g.write('SMPLIB       = '+self.libraries.toString(self.mpi.lib)+'\n')
-    g.write('SCALAPACKLIB = '+os.path.join(self.installDir,self.libdir,'libscalapack.'+self.setCompilers.AR_LIB_SUFFIX)+' \n')
-    g.write('CBLACSLIB    = $(BLACSCINIT) $(BLACSLIB) $(BLACSCINIT)\n')
-    g.write('FBLACSLIB    = $(BLACSFINIT) $(BLACSLIB) $(BLACSFINIT)\n')
+    g.write('SCALAPACKLIB = '+'libscalapack.'+self.setCompilers.AR_LIB_SUFFIX+' \n')
+    g.write('LIBS         = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag
     if self.compilers.fortranManglingDoubleUnderscore:
       blah = 'f77IsF2C'
@@ -53,16 +39,12 @@ class Configure(PETSc.package.NewPackage):
       blah = 'UpCase'
     else:
       blah = 'NoChange'
-    g.write('CDEFS        =-D'+blah+' -DUsingMpiBlacs\n')
-    g.write('PBLASdir     = $(home)/PBLAS\n')
-    g.write('SRCdir       = $(home)/SRC\n')
-    g.write('TOOLSdir     = $(home)/TOOLS\n')
-    g.write('REDISTdir    = $(home)/REDIST\n')
+    g.write('CDEFS        =-D'+blah+'\n')
     self.setCompilers.pushLanguage('FC')
-    g.write('F77          = '+self.setCompilers.getCompiler()+'\n')
-    g.write('F77FLAGS     = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','')+'\n')
-    g.write('F77LOADER    = '+self.setCompilers.getLinker()+'\n')
-    g.write('F77LOADFLAGS = '+self.setCompilers.getLinkerFlags()+'\n')
+    g.write('FC           = '+self.setCompilers.getCompiler()+'\n')
+    g.write('FCFLAGS      = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','')+'\n')
+    g.write('FCLOADER     = '+self.setCompilers.getLinker()+'\n')
+    g.write('FCLOADFLAGS  = '+self.setCompilers.getLinkerFlags()+'\n')
     self.setCompilers.popLanguage()
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
@@ -82,7 +64,8 @@ class Configure(PETSc.package.NewPackage):
         pass
       try:
         self.logPrintBox('Compiling Scalapack; this may take several minutes')
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make', timeout=2500, log = self.framework.log)
+        libDir = os.path.join(self.installDir, self.libdir)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make && mv libscalapack.* '+libDir, timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))
       self.postInstall(output,'SLmake.inc')
