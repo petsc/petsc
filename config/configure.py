@@ -33,12 +33,11 @@ def getBuildSystem(configDir,bsDir):
   print '''++ Could not locate BuildSystem in %s.''' % configDir
   (status,output) = commands.getstatusoutput('hg showconfig paths.default')
   if status or not output:
-    print '++ Mercurial clone not found. Downloading it from http://petsc.cs.iit.edu/petsc/BuildSystem/archive/tip.tar.gz'
-    downloadPackage('http://petsc.cs.iit.edu/petsc/BuildSystem/archive/tip.tar.gz', 'BuildSystem.tar.gz', configDir)
+    print '++ Mercurial clone not found. Assuming petsc-dev and downloading from https://bitbucket.org/petsc/buildsystem/get/tip.tar.gz'
+    downloadPackage('https://bitbucket.org/petsc/buildsystem/get/tip.tar.gz', 'BuildSystem.tar.gz', configDir)
   else:
     print '++ Mercurial clone found. URL : ' + output
-    bsurl = output.replace('petsc-dev','BuildSystem').replace('releases/petsc-','releases/BuildSystem-')
-    if bsurl.find('bitbucket.org') >=0: bsurl = bsurl.lower()
+    bsurl = output.replace('petsc-dev','buildsystem').replace('petsc-','buildsystem-')
     print '++ Using: hg clone '+ bsurl +' '+ bsDir
     (status,output) = commands.getstatusoutput('hg clone '+ bsurl +' '+ bsDir)
     if status:
