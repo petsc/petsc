@@ -31,14 +31,12 @@ static PetscErrorCode DMSNESDestroy_DMDA(DMSNES sdm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSNESDuplicate_DMDA"
-static PetscErrorCode DMSNESDuplicate_DMDA(DMSNES oldsdm,DM dm)
+static PetscErrorCode DMSNESDuplicate_DMDA(DMSNES oldsdm,DMSNES sdm)
 {
   PetscErrorCode ierr;
-  DMSNES         sdm;
 
   PetscFunctionBegin;
-  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  ierr = PetscNewLog(dm,DMSNES_DA ,&sdm->data);CHKERRQ(ierr);
+  ierr = PetscNewLog(sdm,DMSNES_DA ,&sdm->data);CHKERRQ(ierr);
   if (oldsdm->data) {
     ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DMSNES_DA ));CHKERRQ(ierr);
   }
@@ -56,8 +54,8 @@ static PetscErrorCode DMDASNESGetContext(DM dm,DMSNES sdm,DMSNES_DA  **dmdasnes)
   *dmdasnes = PETSC_NULL;
   if (!sdm->data) {
     ierr = PetscNewLog(dm,DMSNES_DA ,&sdm->data);CHKERRQ(ierr);
-    sdm->destroy   = DMSNESDestroy_DMDA;
-    sdm->duplicate = DMSNESDuplicate_DMDA;
+    sdm->ops->destroy   = DMSNESDestroy_DMDA;
+    sdm->ops->duplicate = DMSNESDuplicate_DMDA;
   }
   *dmdasnes = (DMSNES_DA *)sdm->data;
   PetscFunctionReturn(0);
@@ -340,7 +338,7 @@ PetscErrorCode DMDASNESSetFunctionLocal(DM dm,InsertMode imode,PetscErrorCode (*
   dmdasnes->residuallocalctx = ctx;
   ierr = DMSNESSetFunction(dm,SNESComputeFunction_DMDA,dmdasnes);CHKERRQ(ierr);
   ierr = DMSNESSetBlockFunction(dm,SNESComputeLocalBlockFunction_DMDA,dm);CHKERRQ(ierr);
-  if (!sdm->computejacobian) {  /* Call us for the Jacobian too, can be overridden by the user. */
+  if (!sdm->ops->computejacobian) {  /* Call us for the Jacobian too, can be overridden by the user. */
     ierr = DMSNESSetJacobian(dm,SNESComputeJacobian_DMDA,dmdasnes);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

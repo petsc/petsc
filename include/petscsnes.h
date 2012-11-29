@@ -46,6 +46,7 @@ typedef const char* SNESType;
 
 /* Logging support */
 PETSC_EXTERN PetscClassId SNES_CLASSID;
+PETSC_EXTERN PetscClassId DMSNES_CLASSID;
 
 PETSC_EXTERN PetscErrorCode SNESInitializePackage(const char[]);
 

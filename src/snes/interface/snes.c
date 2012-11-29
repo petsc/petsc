@@ -7,7 +7,7 @@ PetscBool  SNESRegisterAllCalled = PETSC_FALSE;
 PetscFList SNESList              = PETSC_NULL;
 
 /* Logging support */
-PetscClassId  SNES_CLASSID;
+PetscClassId  SNES_CLASSID, DMSNES_CLASSID;
 PetscLogEvent  SNES_Solve, SNES_FunctionEval, SNES_JacobianEval, SNES_GSEval;
 
 #undef __FUNCT__
@@ -499,7 +499,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (!sdm->computejacobian) {
+  if (!sdm->ops->computejacobian) {
     SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"DMSNES not properly configured");
   } else if (!snes->jacobian && snes->mf) {
     Mat J;
@@ -1758,14 +1758,12 @@ PetscErrorCode  SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   /*  A(x)*x - b(x) */
-  if (sdm->computepfunction) {
-    ierr = (*sdm->computepfunction)(snes,x,f,sdm->pctx);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard function.");
-  }
+  if (sdm->ops->computepfunction) {
+    ierr = (*sdm->ops->computepfunction)(snes,x,f,sdm->pctx);CHKERRQ(ierr);
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard function.");
 
-  if (sdm->computepjacobian) {
-    ierr = (*sdm->computepjacobian)(snes,x,&snes->jacobian,&snes->jacobian_pre,&snes->matstruct,sdm->pctx);CHKERRQ(ierr);
+  if (sdm->ops->computepjacobian) {
+    ierr = (*sdm->ops->computepjacobian)(snes,x,&snes->jacobian,&snes->jacobian_pre,&snes->matstruct,sdm->pctx);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard matrix.");
 
   ierr = VecView(x,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
@@ -2004,9 +2002,9 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
     ierr = VecCopy(x,y);CHKERRQ(ierr);
     ierr = SNESSolve(snes->pc,snes->vec_rhs,y);CHKERRQ(ierr);
     ierr = VecAYPX(y,-1.0,x);CHKERRQ(ierr);
-  } else if (sdm->computefunction) {
+  } else if (sdm->ops->computefunction) {
     PetscStackPush("SNES user function");
-    ierr = (*sdm->computefunction)(snes,x,y,sdm->functionctx);CHKERRQ(ierr);
+    ierr = (*sdm->ops->computefunction)(snes,x,y,sdm->functionctx);CHKERRQ(ierr);
     PetscStackPop;
   } else if (snes->vec_rhs) {
     ierr = MatMult(snes->jacobian, x, y);CHKERRQ(ierr);
@@ -2064,10 +2062,10 @@ PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
   ierr = PetscLogEventBegin(SNES_GSEval,snes,x,b,0);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (sdm->computegs) {
+  if (sdm->ops->computegs) {
     for (i = 0; i < snes->gssweeps; i++) {
       PetscStackPush("SNES user GS");
-      ierr = (*sdm->computegs)(snes,x,b,sdm->gsctx);CHKERRQ(ierr);
+      ierr = (*sdm->ops->computegs)(snes,x,b,sdm->gsctx);CHKERRQ(ierr);
       PetscStackPop;
     }
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetGS() before SNESComputeGS(), likely called from SNESSolve().");
@@ -2139,7 +2137,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
 
-  if (!sdm->computejacobian) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_USER,"Must call SNESSetJacobian(), DMSNESSetJacobian(), DMDASNESSetJacobianLocal(), etc");
+  if (!sdm->ops->computejacobian) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_USER,"Must call SNESSetJacobian(), DMSNESSetJacobian(), DMDASNESSetJacobianLocal(), etc");
 
   /* make sure that MatAssemblyBegin/End() is called on A matrix if it is matrix free */
 
@@ -2170,7 +2168,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
   ierr = PetscLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
 
   PetscStackPush("SNES user Jacobian function");
-  ierr = (*sdm->computejacobian)(snes,X,A,B,flg,sdm->jacobianctx);CHKERRQ(ierr);
+  ierr = (*sdm->ops->computejacobian)(snes,X,A,B,flg,sdm->jacobianctx);CHKERRQ(ierr);
   PetscStackPop;
 
   ierr = PetscLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
@@ -2457,7 +2455,7 @@ PetscErrorCode SNESGetJacobian(SNES snes,Mat *A,Mat *B,PetscErrorCode (**func)(S
   if (B)    *B    = snes->jacobian_pre;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (func) *func = sdm->computejacobian;
+  if (func) *func = sdm->ops->computejacobian;
   if (ctx)  *ctx  = sdm->jacobianctx;
   PetscFunctionReturn(0);
 }
@@ -2524,8 +2522,8 @@ PetscErrorCode  SNESSetUp(SNES snes)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMShellSetGlobalVector(snes->dm,snes->vec_sol);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (!sdm->computefunction) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Function never provided to SNES object");
-  if (!sdm->computejacobian) {
+  if (!sdm->ops->computefunction) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Function never provided to SNES object");
+  if (!sdm->ops->computejacobian) {
     ierr = DMSNESSetJacobian(dm,SNESDefaultComputeJacobianColor,PETSC_NULL);CHKERRQ(ierr);
   }
   if (!snes->vec_func) {

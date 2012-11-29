@@ -146,9 +146,9 @@ struct _p_SNES {
   PetscBool   usersetbounds;     /* bounds have been set via SNESVISetVariableBounds(), rather than via computevariablebounds() callback. */
 };
 
-/* Context for resolution-dependent SNES callback information */
-typedef struct _n_DMSNES *DMSNES;
-struct _n_DMSNES {
+typedef struct _p_DMSNES *DMSNES;
+typedef struct _DMSNESOps *DMSNESOps;
+struct _DMSNESOps {
   PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computegs)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -164,6 +164,12 @@ struct _n_DMSNES {
   PetscErrorCode (*computeblockfunction)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computeblockjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
+  PetscErrorCode (*destroy)(DMSNES);
+  PetscErrorCode (*duplicate)(DMSNES,DMSNES);
+};
+
+struct _p_DMSNES {
+  PETSCHEADER(struct _DMSNESOps);
   void *functionctx;
   void *gsctx;
   void *pctx;
@@ -173,9 +179,6 @@ struct _n_DMSNES {
   void *blockfunctionctx;
   void *blockjacobianctx;
 
-  /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */
-  PetscErrorCode (*destroy)(DMSNES);
-  PetscErrorCode (*duplicate)(DMSNES,DM);
   void *data;
 
   /* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way

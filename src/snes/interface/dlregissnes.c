@@ -55,6 +55,7 @@ PetscErrorCode  SNESInitializePackage(const char path[])
   /* Register Classes */
   ierr = PetscClassIdRegister("SNES",&SNES_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("SNESLineSearch",&SNESLINESEARCH_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("DMSNES",&DMSNES_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = SNESRegisterAll(path);CHKERRQ(ierr);
   ierr = SNESLineSearchRegisterAll(path);CHKERRQ(ierr);

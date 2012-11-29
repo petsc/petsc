@@ -250,8 +250,8 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  vi->computeuserfunction    = sdm->computefunction;
-  sdm->computefunction = SNESVIComputeFunction;
+  vi->computeuserfunction    = sdm->ops->computefunction;
+  sdm->ops->computefunction = SNESVIComputeFunction;
 
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
@@ -271,7 +271,7 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
   ierr = SNESComputeFunction(snes,X,vi->phi);CHKERRQ(ierr);
   if (snes->domainerror) {
     snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-    sdm->computefunction = vi->computeuserfunction;
+    sdm->ops->computefunction = vi->computeuserfunction;
     PetscFunctionReturn(0);
   }
    /* Compute Merit function */
@@ -292,7 +292,7 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,vi->phinorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) {
-    sdm->computefunction = vi->computeuserfunction;
+    sdm->ops->computefunction = vi->computeuserfunction;
     PetscFunctionReturn(0);
   }
 
@@ -306,9 +306,9 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
     /* Solve J Y = Phi, where J is the semismooth jacobian */
 
     /* Get the jacobian -- note that the function must be the original function for snes_fd and snes_fd_color to work for this*/
-    sdm->computefunction = vi->computeuserfunction;
+    sdm->ops->computefunction = vi->computeuserfunction;
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
-    sdm->computefunction = SNESVIComputeFunction;
+    sdm->ops->computefunction = SNESVIComputeFunction;
 
     /* Get the diagonal shift and row scaling vectors */
     ierr = SNESVIComputeBsubdifferentialVectors(snes,X,F,snes->jacobian,vi->Da,vi->Db);CHKERRQ(ierr);
@@ -353,7 +353,7 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      sdm->computefunction = vi->computeuserfunction;
+      sdm->ops->computefunction = vi->computeuserfunction;
       PetscFunctionReturn(0);
     }
     ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
@@ -385,7 +385,7 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
-  sdm->computefunction = vi->computeuserfunction;
+  sdm->ops->computefunction = vi->computeuserfunction;
   PetscFunctionReturn(0);
 }
 
