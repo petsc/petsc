@@ -6033,7 +6033,7 @@ PetscErrorCode  MatGetOwnershipRangeColumn(Mat mat,PetscInt *m,PetscInt *n)
    n1 rows on the first processor, the next n2 rows on the second, etc.
    For certain parallel layouts this range may not be well defined.
 
-   Not Collective, unless matrix has not been allocated, then collective on Mat
+   Not Collective
 
    Input Parameters:
 .  mat - the matrix
@@ -6042,13 +6042,16 @@ PetscErrorCode  MatGetOwnershipRangeColumn(Mat mat,PetscInt *m,PetscInt *n)
 +  m - the global index of the first local row
 -  n - one more than the global index of the last local row
 
-   Note: both output parameters can be PETSC_NULL on input.
+   Note: Both output parameters can be PETSC_NULL on input.
+$  This function requires that the matrix be preallocated. If you have not preallocated, consider using
+$    PetscSplitOwnership(MPI_Comm comm, PetscInt *n, PetscInt *N)
+$  and then MPI_Scan() to calculate prefix sums of the local sizes.
 
    Level: beginner
 
    Concepts: matrices^row ownership
 
-.seealso:   MatGetOwnershipRanges(), MatGetOwnershipRangeColumn(), MatGetOwnershipRangesColumn()
+.seealso:   MatGetOwnershipRanges(), MatGetOwnershipRangeColumn(), MatGetOwnershipRangesColumn(), PetscSplitOwnership(), PetscSplitOwnershipBlock()
 
 @*/
 PetscErrorCode  MatGetOwnershipRange(Mat mat,PetscInt *m,PetscInt *n)
