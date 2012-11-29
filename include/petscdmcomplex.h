@@ -83,6 +83,7 @@ PETSC_EXTERN PetscErrorCode DMComplexGetLabelIdIS(DM, const char[], IS *);
 PETSC_EXTERN PetscErrorCode DMComplexGetStratumSize(DM, const char [], PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexGetStratumIS(DM, const char [], PetscInt, IS *);
 PETSC_EXTERN PetscErrorCode DMComplexClearLabelStratum(DM, const char[], PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection, PetscSF, PetscBool, DMLabel, PetscInt, PetscSection *);
 
 PETSC_EXTERN PetscErrorCode DMComplexGetNumLabels(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexGetLabelName(DM, PetscInt, const char **);

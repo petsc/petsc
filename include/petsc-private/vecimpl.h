@@ -186,6 +186,7 @@ PETSC_EXTERN PetscErrorCode PetscSectionGetConstraintIndices(PetscSection, Petsc
 PETSC_EXTERN PetscErrorCode PetscSectionSetConstraintIndices(PetscSection, PetscInt, const PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, const PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, const PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSectionSetUpBC(PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSectionSetUp(PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSectionGetMaxDof(PetscSection, PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscSectionGetStorageSize(PetscSection, PetscInt*);
