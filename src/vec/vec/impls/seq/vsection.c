@@ -770,9 +770,9 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
   the local section and an SF describing the section point overlap.
 
   Input Parameters:
-  + lsection - The PetscSection for the global field layout
+  + s - The PetscSection for the local field layout
   . sf - The SF describing parallel layout of the section points (leaves are unowned local points)
-  - includeConstraints - By default this is PETSC_FALSE, meaning that the global field vector will not posses constrained dofs
+  - includeConstraints - By default this is PETSC_FALSE, meaning that the global field vector will not possess constrained dofs
 
   Output Parameter:
   . gsection - The PetscSection for the global field layout
@@ -849,9 +849,9 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   the local section and an SF describing the section point overlap.
 
   Input Parameters:
-  + lsection - The PetscSection for the global field layout
+  + s - The PetscSection for the local field layout
   . sf - The SF describing parallel layout of the section points
-  . includeConstraints - By default this is PETSC_FALSE, meaning that the global field vector will not posses constrained dofs
+  . includeConstraints - By default this is PETSC_FALSE, meaning that the global field vector will not possess constrained dofs
   . numExcludes - The number of exclusion ranges
   - excludes - An array [start_0, end_0, start_1, end_1, ...] where there are numExcludes pairs
 

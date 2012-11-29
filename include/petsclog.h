@@ -123,8 +123,8 @@ typedef struct {
   PetscBool      visible;       /* The flag to print info in summary */
   int            depth;         /* The nesting depth of the event call */
   int            count;         /* The number of times this event was executed */
-  PetscLogDouble flops;         /* The flops used in this event */
-  PetscLogDouble time;          /* The time taken for this event */
+  PetscLogDouble flops, flops2,flopsTmp; /* The flops and flops^2 used in this event */
+  PetscLogDouble time, time2, timeTmp;   /* The time and time^2 taken for this event */
   PetscLogDouble numMessages;   /* The number of messages in this event */
   PetscLogDouble messageLength; /* The total message lengths in this event */
   PetscLogDouble numReductions; /* The number of reductions in this event */

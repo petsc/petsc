@@ -7823,3 +7823,100 @@ PetscErrorCode DMComplexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatS
   *str = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
+
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionCreateGlobalSectionLabel"
+/*@C
+  PetscSectionCreateGlobalSectionLabel - Create a section describing the global field layout using
+  the local section and an SF describing the section point overlap.
+
+  Input Parameters:
+  + s - The PetscSection for the local field layout
+  . sf - The SF describing parallel layout of the section points
+  . includeConstraints - By default this is PETSC_FALSE, meaning that the global field vector will not possess constrained dofs
+  . label - The label specifying the points
+  - labelValue - The label stratum specifying the points
+
+  Output Parameter:
+  . gsection - The PetscSection for the global field layout
+
+  Note: This gives negative sizes and offsets to points not owned by this process
+
+  Level: developer
+
+.seealso: PetscSectionCreate()
+@*/
+PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection s, PetscSF sf, PetscBool includeConstraints, DMLabel label, PetscInt labelValue, PetscSection *gsection)
+{
+  PetscInt      *neg;
+  PetscInt       pStart, pEnd, p, dof, cdof, off, globalOff = 0, nroots;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionCreate(s->atlasLayout.comm, gsection);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(*gsection, pStart, pEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt), &neg);CHKERRQ(ierr);
+  /* Mark ghost points with negative dof */
+  for (p = pStart; p < pEnd; ++p) {
+    PetscInt value;
+
+    ierr = DMLabelGetValue(label, p, &value);CHKERRQ(ierr);
+    if (value != labelValue) continue;
+    ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
+    ierr = PetscSectionSetDof(*gsection, p, dof);CHKERRQ(ierr);
+    ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
+    if (!includeConstraints && cdof > 0) {ierr = PetscSectionSetConstraintDof(*gsection, p, cdof);CHKERRQ(ierr);}
+    neg[p-pStart] = -(dof+1);
+  }
+  ierr = PetscSectionSetUpBC(*gsection);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf, &nroots, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  if (nroots >= 0) {
+    if (nroots > pEnd - pStart) {
+      PetscInt *tmpDof;
+      /* Help Jed: HAVE TO MAKE A BUFFER HERE THE SIZE OF THE COMPLETE SPACE AND THEN COPY INTO THE atlasDof FOR THIS SECTION */
+      ierr = PetscMalloc(nroots * sizeof(PetscInt), &tmpDof);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], tmpDof);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], tmpDof);CHKERRQ(ierr);
+      for (p = pStart; p < pEnd; ++p) {
+        if (tmpDof[p] < 0) {(*gsection)->atlasDof[p-pStart] = tmpDof[p];}
+      }
+      ierr = PetscFree(tmpDof);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasDof[-pStart]);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasDof[-pStart]);CHKERRQ(ierr);
+    }
+  }
+  /* Calculate new sizes, get proccess offset, and calculate point offsets */
+  for (p = 0, off = 0; p < pEnd-pStart; ++p) {
+    cdof = (!includeConstraints && s->bc) ? s->bc->atlasDof[p] : 0;
+    (*gsection)->atlasOff[p] = off;
+    off += (*gsection)->atlasDof[p] > 0 ? (*gsection)->atlasDof[p]-cdof : 0;
+  }
+  ierr = MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, s->atlasLayout.comm);CHKERRQ(ierr);
+  globalOff -= off;
+  for (p = 0, off = 0; p < pEnd-pStart; ++p) {
+    (*gsection)->atlasOff[p] += globalOff;
+    neg[p] = -((*gsection)->atlasOff[p]+1);
+  }
+  /* Put in negative offsets for ghost points */
+  if (nroots >= 0) {
+    if (nroots > pEnd - pStart) {
+      PetscInt *tmpOff;
+      /* Help Jed: HAVE TO MAKE A BUFFER HERE THE SIZE OF THE COMPLETE SPACE AND THEN COPY INTO THE atlasDof FOR THIS SECTION */
+      ierr = PetscMalloc(nroots * sizeof(PetscInt), &tmpOff);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], tmpOff);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], tmpOff);CHKERRQ(ierr);
+      for (p = pStart; p < pEnd; ++p) {
+        if (tmpOff[p] < 0) {(*gsection)->atlasOff[p-pStart] = tmpOff[p];}
+      }
+      ierr = PetscFree(tmpOff);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasOff[-pStart]);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasOff[-pStart]);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscFree(neg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
