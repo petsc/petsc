@@ -62,6 +62,7 @@ typedef const char* KSPType;
 
 /* Logging support */
 PETSC_EXTERN PetscClassId KSP_CLASSID;
+PETSC_EXTERN PetscClassId DMKSP_CLASSID;
 
 PETSC_EXTERN PetscErrorCode KSPCreate(MPI_Comm,KSP *);
 PETSC_EXTERN PetscErrorCode KSPSetType(KSP,KSPType);

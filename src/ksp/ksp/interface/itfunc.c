@@ -202,19 +202,19 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     DMKSP kdm;
     ierr = DMGetDMKSP(ksp->dm,&kdm);CHKERRQ(ierr);
 
-    if (kdm->computeinitialguess && ksp->setupstage != KSP_SETUP_NEWRHS) {
+    if (kdm->ops->computeinitialguess && ksp->setupstage != KSP_SETUP_NEWRHS) {
       /* only computes initial guess the first time through */
-      ierr = (*kdm->computeinitialguess)(ksp,ksp->vec_sol,kdm->initialguessctx);CHKERRQ(ierr);
+      ierr = (*kdm->ops->computeinitialguess)(ksp,ksp->vec_sol,kdm->initialguessctx);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
-    if (kdm->computerhs) {
-      ierr = (*kdm->computerhs)(ksp,ksp->vec_rhs,kdm->rhsctx);CHKERRQ(ierr);
+    if (kdm->ops->computerhs) {
+      ierr = (*kdm->ops->computerhs)(ksp,ksp->vec_rhs,kdm->rhsctx);CHKERRQ(ierr);
     } 
 
     if (ksp->setupstage != KSP_SETUP_NEWRHS) {
       ierr = KSPGetOperators(ksp,&A,&B,PETSC_NULL);CHKERRQ(ierr);
-      if (kdm->computeoperators) {
-        ierr = (*kdm->computeoperators)(ksp,A,B,&stflg,kdm->operatorsctx);CHKERRQ(ierr);
+      if (kdm->ops->computeoperators) {
+        ierr = (*kdm->ops->computeoperators)(ksp,A,B,&stflg,kdm->operatorsctx);CHKERRQ(ierr);
       } 
       ierr = KSPSetOperators(ksp,A,B,stflg);CHKERRQ(ierr);
     }

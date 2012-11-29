@@ -143,19 +143,21 @@ PETSC_EXTERN PetscErrorCode KSPDefaultGetWork(KSP,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPSetUpNorms_Private(KSP,KSPNormType*,PCSide*);
 PETSC_EXTERN PetscErrorCode KSPPlotEigenContours_Private(KSP,PetscInt,const PetscReal*,const PetscReal*);
 
-/* Context for resolution-dependent KSP callback information */
-typedef struct _n_DMKSP *DMKSP;
-struct _n_DMKSP {
+typedef struct _p_DMKSP *DMKSP;
+typedef struct _DMKSPOps *DMKSPOps;
+struct _DMKSPOps {
   PetscErrorCode (*computeoperators)(KSP,Mat,Mat,MatStructure*,void*);
   PetscErrorCode (*computerhs)(KSP,Vec,void*);
   PetscErrorCode (*computeinitialguess)(KSP,Vec,void*);
+  PetscErrorCode (*destroy)(DMKSP);
+  PetscErrorCode (*duplicate)(DMKSP,DM);
+};
+
+struct _p_DMKSP {
+  PETSCHEADER(struct _DMKSPOps);
   void *operatorsctx;
   void *rhsctx;
   void *initialguessctx;
-
-  /* This context/destroy pair allows implementation-specific routines such as DMDA local functions. */
-  PetscErrorCode (*destroy)(DMKSP);
-  PetscErrorCode (*duplicate)(DMKSP,DM);
   void *data;
 
   /* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way

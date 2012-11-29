@@ -6,6 +6,7 @@
 
 /* Logging support */
 PetscClassId  KSP_CLASSID;
+PetscClassId  DMKSP_CLASSID;
 PetscLogEvent  KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
 /*

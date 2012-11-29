@@ -151,6 +151,7 @@ PetscErrorCode  KSPInitializePackage(const char path[])
   KSPPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscClassIdRegister("Krylov Solver",&KSP_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("DMKSP interface",&DMKSP_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = KSPRegisterAll(path);CHKERRQ(ierr);
   /* Register matrix implementations packaged in KSP */

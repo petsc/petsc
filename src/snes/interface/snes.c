@@ -2889,8 +2889,7 @@ PetscErrorCode  SNESGetLagJacobian(SNES snes,PetscInt *lag)
 +  snes - the SNES context
 .  abstol - absolute convergence tolerance
 .  rtol - relative convergence tolerance
-.  stol -  convergence tolerance in terms of the norm
-           of the change in the solution between steps
+.  stol -  convergence tolerance in terms of the norm of the change in the solution between steps,  || delta x || < stol*|| x ||
 .  maxit - maximum number of iterations
 -  maxf - maximum number of function evaluations
 

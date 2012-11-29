@@ -1077,11 +1077,10 @@ PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (dm) {ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);}
   if (ksp->dm) {                /* Move the DMSNES context over to the new DM unless the new DM already has one */
-    PetscContainer oldcontainer,container;
-    DMKSP          kdm;
-    ierr = PetscObjectQuery((PetscObject)ksp->dm,"DMKSP",(PetscObject*)&oldcontainer);CHKERRQ(ierr);
-    ierr = PetscObjectQuery((PetscObject)dm,"DMKSP",(PetscObject*)&container);CHKERRQ(ierr);
-    if (oldcontainer && ksp->dmAuto && !container) {
+    DMKSP oldkdm,kdm;
+    ierr = PetscObjectQuery((PetscObject)ksp->dm,"DMKSP",(PetscObject*)&oldkdm);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject)dm,"DMKSP",(PetscObject*)&kdm);CHKERRQ(ierr);
+    if (oldkdm && ksp->dmAuto && !kdm) {
       ierr = DMCopyDMKSP(ksp->dm,dm);CHKERRQ(ierr);
       ierr = DMGetDMKSP(ksp->dm,&kdm);CHKERRQ(ierr);
       if (kdm->originaldm == ksp->dm) { /* Grant write privileges to the replacement DM */

@@ -497,6 +497,9 @@ PETSC_STATIC_INLINE void Pack_1(PetscInt n,const PetscInt *indicesx,const PetscS
     y[i]  = x[indicesx[i]];
   }
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "UnPack_1"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_1(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i;
@@ -530,6 +533,8 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_1(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "Scatter_1"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_1(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i;
@@ -575,6 +580,9 @@ PETSC_STATIC_INLINE void Pack_2(PetscInt n,const PetscInt *indicesx,const PetscS
     y    += 2;
   }
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "UnPack_2"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_2(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
@@ -618,6 +626,8 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_2(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "Scatter_2"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_2(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
@@ -673,6 +683,8 @@ PETSC_STATIC_INLINE void Pack_3(PetscInt n,const PetscInt *indicesx,const PetscS
     y    += 3;
   }
 }
+#undef __FUNCT__
+#define __FUNCT__ "UnPack_3"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_3(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
@@ -719,6 +731,8 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_3(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "Scatter_3"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_3(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
@@ -778,6 +792,8 @@ PETSC_STATIC_INLINE void Pack_4(PetscInt n,const PetscInt *indicesx,const PetscS
     y    += 4;
   }
 }
+#undef __FUNCT__
+#define __FUNCT__ "UnPack_4"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_4(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
@@ -827,6 +843,8 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_4(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "Scatter_4"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_4(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
@@ -890,6 +908,9 @@ PETSC_STATIC_INLINE void Pack_5(PetscInt n,const PetscInt *indicesx,const PetscS
     y    += 5;
   }
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "UnPack_5"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_5(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
@@ -942,6 +963,8 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_5(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "Scatter_5"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_5(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
@@ -1009,6 +1032,9 @@ PETSC_STATIC_INLINE void Pack_6(PetscInt n,const PetscInt *indicesx,const PetscS
     y    += 6;
   }
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "UnPack_6"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_6(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
@@ -1064,6 +1090,8 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_6(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "Scatter_6"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_6(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
@@ -1135,6 +1163,9 @@ PETSC_STATIC_INLINE void Pack_7(PetscInt n,const PetscInt *indicesx,const PetscS
     y    += 7;
   }
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "UnPack_7"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_7(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
@@ -1193,6 +1224,8 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_7(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "Scatter_7"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_7(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
@@ -1268,6 +1301,9 @@ PETSC_STATIC_INLINE void Pack_8(PetscInt n,const PetscInt *indicesx,const PetscS
     y    += 8;
   }
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "UnPack_8"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_8(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
@@ -1329,6 +1365,8 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_8(PetscInt n,const PetscScalar *x,cons
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "Scatter_8"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_8(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
@@ -1412,6 +1450,9 @@ PETSC_STATIC_INLINE void Pack_12(PetscInt n,const PetscInt *indicesx,const Petsc
     y    += 12;
   }
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "UnPack_12"
 PETSC_STATIC_INLINE PetscErrorCode UnPack_12(PetscInt n,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idy;
@@ -1485,6 +1526,8 @@ PETSC_STATIC_INLINE PetscErrorCode UnPack_12(PetscInt n,const PetscScalar *x,con
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "Scatter_12"
 PETSC_STATIC_INLINE PetscErrorCode Scatter_12(PetscInt n,const PetscInt *indicesx,const PetscScalar *x,const PetscInt *indicesy,PetscScalar *y,InsertMode addv)
 {
   PetscInt i,idx,idy;
