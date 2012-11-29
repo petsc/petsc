@@ -1725,17 +1725,25 @@ runex148_2:
 	   ${RM} -f ex148.tmp
 
 runex151:
-	-@${MPIEXEC} -n 1 ./ex151  > ex151_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex151 -view_sparse > ex151_1.tmp 2>&1; \
 	   ${DIFF} output/ex151_1.out ex151_1.tmp || echo ${PWD} "\nPossible problem with ex151, diffs above \n========================================="; \
 	   ${RM} -f ex151_1.tmp
-#runex151_2:
-#	-@${MPIEXEC} -n 2 ./ex151  > ex151_2.tmp 2>&1; \
-#	   ${DIFF} output/ex151_2.out ex151_2.tmp || echo ${PWD} "\nPossible problem with ex151_2, diffs above \n========================================="; \
-#	   ${RM} -f ex151_2.tmp
-#runex151_3:
-#	-@${MPIEXEC} -n 3 ./ex151 > ex151_3.tmp 2>&1; \
-#	   ${DIFF} output/ex151_3.out ex151_3.tmp || echo ${PWD} "\nPossible problem with ex151_3, diffs above \n========================================="; \
-#	   ${RM} -f ex151_3.tmp
+runex151_2:
+	-@${MPIEXEC} -n 2 ./ex151 -view_sparse > ex151_2.tmp 2>&1; \
+	   ${DIFF} output/ex151_2.out ex151_2.tmp || echo ${PWD} "\nPossible problem with ex151_2, diffs above \n========================================="; \
+	   ${RM} -f ex151_2.tmp
+runex151_2b:
+	-@${MPIEXEC} -n 2 ./ex151 -mat_type baij -view_sparse > ex151_2b.tmp 2>&1; \
+	   ${DIFF} output/ex151_2b.out ex151_2b.tmp || echo ${PWD} "\nPossible problem with ex151_2b, diffs above \n========================================="; \
+	   ${RM} -f ex151_2b.tmp
+runex151_3:
+	-@${MPIEXEC} -n 3 ./ex151 -view_sparse > ex151_3.tmp 2>&1; \
+	   ${DIFF} output/ex151_3.out ex151_3.tmp || echo ${PWD} "\nPossible problem with ex151_3, diffs above \n========================================="; \
+	   ${RM} -f ex151_3.tmp
+runex151_3b:
+	-@${MPIEXEC} -n 3 ./ex151 -mat_type baij -view_sparse > ex151_3b.tmp 2>&1; \
+	   ${DIFF} output/ex151_3b.out ex151_3b.tmp || echo ${PWD} "\nPossible problem with ex151_3b, diffs above \n========================================="; \
+	   ${RM} -f ex151_3b.tmp
 
 runex152:
 	-@${MPIEXEC} -n 2 ./ex152 -prefix ${DATAFILESPATH}/parmetis-test/testnp2 > ex152_1.tmp 2>&1; \

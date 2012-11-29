@@ -5,8 +5,8 @@ static char help[] = "Tests MatPermute() in parallel.\n\n";
    - seqbaij:  permutation not supported for this MATTYPE
    - seqsbaij: permutation not supported for this MATTYPE
    Parallel:
-   - mpiaij:   incorrect permutation (disable this op for now).
-   - mpibaij:  weird error indicating that it can't handle rectangular matrices (disable this op for now).
+   - mpiaij:   correct permutation
+   - mpibaij:  correct permutation
    - mpisbaij: permutation not supported for this MATTYPE
  */
 #include <petscmat.h>
@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       i,rstart,rend,cstart,cend;
   IS             isrow,iscol;
-  PetscViewer    viewer,sviewer;
+  PetscViewer    viewer;
   PetscBool      view_sparse;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
@@ -42,8 +42,7 @@ int main(int argc,char **argv)
 
   /* ------ Prepare index sets ------ */
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,rend-rstart,ixrow+rstart,PETSC_USE_POINTER,&isrow);CHKERRQ(ierr);
-  /* The column index set must currently be  */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,7,ixcol,PETSC_USE_POINTER,&iscol);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,cend-cstart,ixcol+cstart,PETSC_USE_POINTER,&iscol);CHKERRQ(ierr);
   ierr = ISSetPermutation(isrow);CHKERRQ(ierr);
   ierr = ISSetPermutation(iscol);CHKERRQ(ierr);
 
@@ -63,9 +62,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerASCIIPrintf(viewer,"Row permutation\n");CHKERRQ(ierr);
   ierr = ISView(isrow,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Column permutation\n");CHKERRQ(ierr);
-  ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
-  ierr = ISView(iscol,sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+  ierr = ISView(iscol,viewer);CHKERRQ(ierr);
 
   /* Free data structures */
   ierr = ISDestroy(&isrow);CHKERRQ(ierr);

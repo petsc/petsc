@@ -2090,9 +2090,9 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat mat,IS isrow,IS iscol,PetscIn
   if (call ==  MAT_REUSE_MATRIX) {
     ierr = PetscObjectQuery((PetscObject)*newmat,"SubMatrix",(PetscObject *)&Mreuse);CHKERRQ(ierr);
     if (!Mreuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
-    ierr  = MatGetSubMatrices_MPIBAIJ_local(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,&allrows,&allcols,&Mreuse);CHKERRQ(ierr);
+    ierr  = MatGetSubMatrices_MPIBAIJ_local(mat,1,&isrow_new,&iscol_new,MAT_REUSE_MATRIX,&allrows,&allcols,&Mreuse);CHKERRQ(ierr);
   } else {
-    ierr   = MatGetSubMatrices_MPIBAIJ_local(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&allrows,&allcols,&Mreuse);CHKERRQ(ierr);
+    ierr   = MatGetSubMatrices_MPIBAIJ_local(mat,1,&isrow_new,&iscol_new,MAT_INITIAL_MATRIX,&allrows,&allcols,&Mreuse);CHKERRQ(ierr);
   }
   ierr = ISDestroy(&isrow_new); CHKERRQ(ierr);
   ierr = ISDestroy(&iscol_new); CHKERRQ(ierr);
@@ -2175,7 +2175,7 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat mat,IS isrow,IS iscol,PetscIn
     row   = rstart/bs + i;
     nz    = ii[i+1] - ii[i];
     cwork = jj;     jj += nz;
-    vwork = aa;     aa += nz;
+    vwork = aa;     aa += nz*bs*bs;
     ierr = MatSetValuesBlocked_MPIBAIJ(M,1,&row,nz,cwork,vwork,INSERT_VALUES);CHKERRQ(ierr);
   }
 
@@ -2197,10 +2197,10 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat mat,IS isrow,IS iscol,PetscIn
 PetscErrorCode MatPermute_MPIBAIJ(Mat A,IS rowp,IS colp,Mat *B)
 {
   MPI_Comm       comm,pcomm;
-  PetscInt       first,local_size,nrows;
+  PetscInt       first,rlocal_size,clocal_size,nrows;
   const PetscInt *rows;
   PetscMPIInt    size;
-  IS             crowp,growp,irowp,lrowp,lcolp,icolp;
+  IS             crowp,growp,irowp,lrowp,lcolp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2222,11 +2222,12 @@ PetscErrorCode MatPermute_MPIBAIJ(Mat A,IS rowp,IS colp,Mat *B)
     ierr = ISDestroy(&crowp);CHKERRQ(ierr);
   }
   ierr = ISInvertPermutation(growp,PETSC_DECIDE,&irowp);CHKERRQ(ierr);
+  ierr = ISDestroy(&growp);CHKERRQ(ierr);
   /* get the local target indices */
   ierr = MatGetOwnershipRange(A,&first,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&local_size,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&rlocal_size,&clocal_size);CHKERRQ(ierr);
   ierr = ISGetIndices(irowp,&rows);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,local_size,rows+first,PETSC_COPY_VALUES,&lrowp);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,rlocal_size,rows+first,PETSC_COPY_VALUES,&lrowp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(irowp,&rows);CHKERRQ(ierr);
   ierr = ISDestroy(&irowp);CHKERRQ(ierr);
   /* the column permutation is so much easier;
@@ -2236,22 +2237,16 @@ PetscErrorCode MatPermute_MPIBAIJ(Mat A,IS rowp,IS colp,Mat *B)
   if (size==1) {
     lcolp = colp;
   } else {
-    ierr = ISGetSize(colp,&nrows);CHKERRQ(ierr);
-    ierr = ISGetIndices(colp,&rows);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,nrows,rows,PETSC_COPY_VALUES,&lcolp);CHKERRQ(ierr);
+    ierr = ISAllGather(colp,&lcolp);CHKERRQ(ierr);
   }
   ierr = ISSetPermutation(lcolp);CHKERRQ(ierr);
-  ierr = ISInvertPermutation(lcolp,PETSC_DECIDE,&icolp);CHKERRQ(ierr);
-  ierr = ISSetPermutation(icolp);CHKERRQ(ierr);
+  /* now we just get the submatrix */
+  ierr = MatGetSubMatrix_MPIBAIJ_Private(A,lrowp,lcolp,clocal_size,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
   if (size>1) {
-    ierr = ISRestoreIndices(colp,&rows);CHKERRQ(ierr);
     ierr = ISDestroy(&lcolp);CHKERRQ(ierr);
   }
-  /* now we just get the submatrix */
-  ierr = MatGetSubMatrix_MPIBAIJ_Private(A,lrowp,icolp,local_size,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
   /* clean up */
   ierr = ISDestroy(&lrowp);CHKERRQ(ierr);
-  ierr = ISDestroy(&icolp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
