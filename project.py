@@ -48,7 +48,7 @@ class Project(object):
     return path.lower().replace('/', '-')
 
   def getUrl(self):
-    '''Return the project URL, e.g. http://petsc.cs.iit.edu/petsc/petsc-dev'''
+    '''Return the project URL, e.g. https://bitbucket.org/petsc/petsc-dev'''
     return self.url
 
   def setWebDirectory(self,webdirectory):
