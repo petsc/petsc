@@ -365,6 +365,18 @@ class Configure(config.base.Configure):
     return 0
   isWindows = staticmethod(isWindows)
 
+  def addLdPath(path):
+    import os
+    if 'LD_LIBRARY_PATH' in os.environ:
+      ldPath=os.environ['LD_LIBRARY_PATH']
+    else:
+      ldPath=''
+    if ldPath == '': ldPath = path
+    else: ldPath += ':' + path
+    os.environ['LD_LIBRARY_PATH'] = ldPath
+    return
+  addLdPath = staticmethod(addLdPath)
+
   def useMPICompilers(self):
     if ('with-cc' in self.argDB and self.argDB['with-cc'] != '0') or 'CC' in self.argDB:
       return 0
@@ -1469,6 +1481,15 @@ if (dlclose(handle)) {
                 raise RuntimeError(msg)
     return
 
+  def requireMpiLdPath(self):
+    '''OpenMPI wrappers require LD_LIBRARY_PATH set'''
+    if 'with-mpi-dir' in self.argDB:
+      libdir = os.path.join(self.argDB['with-mpi-dir'], 'lib')
+      if os.path.exists(os.path.join(libdir,'libopen-rte.so')):
+        Configure.addLdPath(libdir)
+        self.logPrint('Adding to LD_LIBRARY_PATH '+libdir)
+    return
+
   def printEnvVariables(self):
     buf = '**** printenv ****'
     for key,val in os.environ.iteritems():
@@ -1490,6 +1511,7 @@ if (dlclose(handle)) {
     self.executeTest(self.printEnvVariables)
     self.executeTest(self.resetEnvCompilers)
     self.executeTest(self.checkMPICompilerOverride)
+    self.executeTest(self.requireMpiLdPath)
     self.executeTest(self.checkVendor)
     self.executeTest(self.checkInitialFlags)
     self.executeTest(self.checkCCompiler)
