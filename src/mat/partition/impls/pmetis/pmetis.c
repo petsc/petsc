@@ -61,19 +61,6 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     real_t     *tpwgts,*ubvec;
     int        status;
 
-#if defined(PETSC_USE_DEBUG)
-    /* check that matrix has no diagonal entries */
-    {
-      PetscInt rstart;
-      ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
-      for (i=0; i<mat->rmap->n; i++) {
-        for (j=xadj[i]; j<xadj[i+1]; j++) {
-          if (adjncy[j] == i+rstart) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Row %d has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
-        }
-      }
-    }
-#endif
-
     ierr = PetscMalloc(amat->rmap->n*sizeof(PetscInt),&locals);CHKERRQ(ierr);
 
     if (PetscLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
