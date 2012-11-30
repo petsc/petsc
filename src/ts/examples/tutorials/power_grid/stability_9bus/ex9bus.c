@@ -289,17 +289,18 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X, Vec Xdot, Vec F, Userctx* user
 
     ierr = ri2dq(Vr,Vi,delta,&Vd,&Vq);CHKERRQ(ierr);
     /* Algebraic equations for stator currents */
-    fgen[idx+4] = xdotgen[idx+4] - Edp + Vd + Rs[i]*Id - Xqp[i]*Iq;
-    fgen[idx+5] = xdotgen[idx+5] - Eqp + Vq + Rs[i]*Iq + Xdp[i]*Id;
-    /*    PetscScalar Zdq_inv[4],det;
+    //    fgen[idx+4] = xdotgen[idx+4] - Edp + Vd + Rs[i]*Id - Xqp[i]*Iq;
+    // fgen[idx+5] = xdotgen[idx+5] - Eqp + Vq + Rs[i]*Iq + Xdp[i]*Id;
+    PetscScalar Zdq_inv[4],det;
     det = Rs[i]*Rs[i] + Xdp[i]*Xqp[i];
     Zdq_inv[0] = Rs[i]/det;
     Zdq_inv[1] = Xqp[i]/det;
     Zdq_inv[2] = -Xdp[i]/det;
     Zdq_inv[3] = Rs[i]/det;
 
-    fgen[idx+4] = xdotgen[idx+4]
-    */
+    fgen[idx+4] = xdotgen[idx+4] + Zdq_inv[0]*(-Edp + Vd) + Zdq_inv[1]*(-Eqp + Vq) + Id;
+    fgen[idx+5] = xdotgen[idx+5] + Zdq_inv[2]*(-Edp + Vd) + Zdq_inv[3]*(-Eqp + Vq) + Iq;
+
     /* Add generator current injection to network */
     ierr = dq2ri(Id,Iq,delta,&IGr,&IGi);CHKERRQ(ierr);
     fnet[2*gbus[i]]   -= IGi;
@@ -386,7 +387,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&user.Ybus);CHKERRQ(ierr);
   ierr = MatSetSizes(user.Ybus,PETSC_DECIDE,PETSC_DECIDE,neqs_net,neqs_net);CHKERRQ(ierr);
   ierr = MatSetType(user.Ybus,MATBAIJ);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(user.Ybus,2);CHKERRQ(ierr);
+  /*  ierr = MatSetBlockSize(user.Ybus,2);CHKERRQ(ierr); */
   ierr = MatLoad(user.Ybus,Ybusview);CHKERRQ(ierr);
 
   /* Set run time options */
