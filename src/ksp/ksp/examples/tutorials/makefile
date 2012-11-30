@@ -1053,6 +1053,10 @@ runex56:
 	-@${MPIEXEC} -n 8 ./ex56 -ne 19 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_max_it 50 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -ksp_converged_reason -pc_gamg_coarse_eq_limit 80 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex56.tmp 2>&1;	\
          ${DIFF} output/ex56_0.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56_0, diffs above \n========================================="; \
         ${RM} -f ex56.tmp
+runex56_ml:
+	-@${MPIEXEC} -n 8 ./ex56 -ne 19 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_max_it 50 -pc_type ml -ksp_converged_reason -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.05,0,1.05 -mg_levels_pc_type jacobi > ex56.tmp 2>&1;	\
+         ${DIFF} output/ex56_ml.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56_2, diffs above \n========================================="; \
+        ${RM} -f ex56.tmp
 
 runex58:
 	-@${MPIEXEC} -n 1 ./ex58 -mat_type aij > ex58.tmp 2>&1;         \
