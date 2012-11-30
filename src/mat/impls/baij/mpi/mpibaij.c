@@ -2089,9 +2089,9 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat mat,IS isrow,IS iscol,PetscIn
   if (call ==  MAT_REUSE_MATRIX) {
     ierr = PetscObjectQuery((PetscObject)*newmat,"SubMatrix",(PetscObject *)&Mreuse);CHKERRQ(ierr);
     if (!Mreuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
-    ierr  = MatGetSubMatrices_MPIBAIJ_local(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,&allrows,&allcols,&Mreuse);CHKERRQ(ierr);
+    ierr  = MatGetSubMatrices_MPIBAIJ_local(mat,1,&isrow_new,&iscol_new,MAT_REUSE_MATRIX,&allrows,&allcols,&Mreuse);CHKERRQ(ierr);
   } else {
-    ierr   = MatGetSubMatrices_MPIBAIJ_local(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&allrows,&allcols,&Mreuse);CHKERRQ(ierr);
+    ierr   = MatGetSubMatrices_MPIBAIJ_local(mat,1,&isrow_new,&iscol_new,MAT_INITIAL_MATRIX,&allrows,&allcols,&Mreuse);CHKERRQ(ierr);
   }
   ierr = ISDestroy(&isrow_new); CHKERRQ(ierr);
   ierr = ISDestroy(&iscol_new); CHKERRQ(ierr);
@@ -2174,7 +2174,7 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat mat,IS isrow,IS iscol,PetscIn
     row   = rstart/bs + i;
     nz    = ii[i+1] - ii[i];
     cwork = jj;     jj += nz;
-    vwork = aa;     aa += nz;
+    vwork = aa;     aa += nz*bs*bs;
     ierr = MatSetValuesBlocked_MPIBAIJ(M,1,&row,nz,cwork,vwork,INSERT_VALUES);CHKERRQ(ierr);
   }
 
