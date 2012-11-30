@@ -30,26 +30,26 @@ int main(int argc, char **args)
   ierr = MatGetOwnershipRange(A, &start, &end);CHKERRQ(ierr);
   for (r = start; r < end; ++r) {
     if (r == 0) {
-      PetscInt    cols[2];
-      PetscScalar vals[2];
+      PetscInt    cols[1];
+      PetscScalar vals[1];
 
-      cols[0] = r;   cols[1] = r+1;
-      vals[0] = 1.0; vals[1] = 1.0;
-      ierr = MatSetValues(A, 1, &r, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
+      cols[0] = r+1;
+      vals[0] = 1.0;
+      ierr = MatSetValues(A, 1, &r, 1, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
     } else if (r == N-1) {
-      PetscInt    cols[2];
-      PetscScalar vals[2];
+      PetscInt    cols[1];
+      PetscScalar vals[1];
 
-      cols[0] = r-1; cols[1] = r;
-      vals[0] = 1.0; vals[1] = 1.0;
-      ierr = MatSetValues(A, 1, &r, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
+      cols[0] = r-1;
+      vals[0] = 1.0;
+      ierr = MatSetValues(A, 1, &r, 1, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
     } else {
       PetscInt    cols[3];
       PetscScalar vals[3];
 
-      cols[0] = r-1; cols[1] = r;   cols[2] = r+1;
-      vals[0] = 1.0; vals[1] = 1.0; vals[2] = 1.0;
-      ierr = MatSetValues(A, 1, &r, 3, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
+      cols[0] = r-1; cols[1] = r+1;
+      vals[0] = 1.0; vals[1] = 1.0;
+      ierr = MatSetValues(A, 1, &r, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
