@@ -29,14 +29,12 @@ static PetscErrorCode DMTSDestroy_DMDA(DMTS sdm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMTSDuplicate_DMDA"
-static PetscErrorCode DMTSDuplicate_DMDA(DMTS oldsdm,DM dm)
+static PetscErrorCode DMTSDuplicate_DMDA(DMTS oldsdm,DMTS sdm)
 {
   PetscErrorCode ierr;
-  DMTS           sdm;
 
   PetscFunctionBegin;
-  ierr = DMGetDMTS(dm,&sdm);CHKERRQ(ierr);
-  ierr = PetscNewLog(dm,DMTS_DA,&sdm->data);CHKERRQ(ierr);
+  ierr = PetscNewLog(sdm,DMTS_DA,&sdm->data);CHKERRQ(ierr);
   if (oldsdm->data) {ierr = PetscMemcpy(sdm->data,oldsdm->data,sizeof(DMTS_DA));CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -51,8 +49,8 @@ static PetscErrorCode DMDATSGetContext(DM dm,DMTS sdm,DMTS_DA **dmdats)
   *dmdats = PETSC_NULL;
   if (!sdm->data) {
     ierr = PetscNewLog(dm,DMTS_DA,&sdm->data);CHKERRQ(ierr);
-    sdm->destroy = DMTSDestroy_DMDA;
-    sdm->duplicate = DMTSDuplicate_DMDA;
+    sdm->ops->destroy   = DMTSDestroy_DMDA;
+    sdm->ops->duplicate = DMTSDuplicate_DMDA;
   }
   *dmdats = (DMTS_DA*)sdm->data;
   PetscFunctionReturn(0);

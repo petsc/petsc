@@ -155,8 +155,9 @@ struct _p_TSAdapt {
   PetscViewer monitor;
 };
 
-typedef struct _n_DMTS *DMTS;
-struct _n_DMTS {
+typedef struct _p_DMTS *DMTS;
+typedef struct _DMTSOps *DMTSOps;
+struct _DMTSOps {
   TSRHSFunction rhsfunction;
   TSRHSJacobian rhsjacobian;
 
@@ -165,6 +166,12 @@ struct _n_DMTS {
 
   TSSolutionFunction solution;
 
+  PetscErrorCode (*destroy)(DMTS);
+  PetscErrorCode (*duplicate)(DMTS,DMTS);
+};
+
+struct _p_DMTS {
+  PETSCHEADER(struct _DMTSOps);
   void *rhsfunctionctx;
   void *rhsjacobianctx;
 
@@ -173,10 +180,6 @@ struct _n_DMTS {
 
   void *solutionctx;
 
-
-  /* These inner routines allow implementation-specific routines such as DMDA local functions. */
-  PetscErrorCode (*destroy)(DMTS);
-  PetscErrorCode (*duplicate)(DMTS,DM);
   void *data;
 
   /* This is NOT reference counted. The DM on which this context was first created is cached here to implement one-way

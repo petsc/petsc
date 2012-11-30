@@ -112,6 +112,7 @@ M*/
 
 /* Logging support */
 PETSC_EXTERN PetscClassId TS_CLASSID;
+PETSC_EXTERN PetscClassId DMTS_CLASSID;
 
 PETSC_EXTERN PetscErrorCode TSInitializePackage(const char[]);
 

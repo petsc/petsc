@@ -55,6 +55,7 @@ PetscErrorCode  TSInitializePackage(const char path[])
   ierr = TSGLAdaptInitializePackage(path);CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("TS",&TS_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("DMTS",&DMTS_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = TSRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */

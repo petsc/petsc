@@ -3,7 +3,7 @@
 #include <petscdmshell.h>
 
 /* Logging support */
-PetscClassId  TS_CLASSID;
+PetscClassId  TS_CLASSID, DMTS_CLASSID;
 PetscLogEvent  TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 #undef __FUNCT__
