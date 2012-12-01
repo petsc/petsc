@@ -33,7 +33,7 @@ static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCoarsenHook_DMTS"
-/* Attaches the DMSNES to the coarse level.
+/* Attaches the DMTS to the coarse level.
  * Under what conditions should we copy versus duplicate?
  */
 static PetscErrorCode DMCoarsenHook_DMTS(DM dm,DM dmc,void *ctx)
@@ -131,15 +131,12 @@ PetscErrorCode DMGetDMTS(DM dm,DMTS *tsdm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscObjectQuery((PetscObject)dm,"DMTS",(PetscObject*)tsdm);CHKERRQ(ierr);
+  *tsdm = (DMTS) dm->dmts;
   if (!*tsdm) {
-    DMTS tmptsdm;
     ierr = PetscInfo(dm,"Creating new DMTS\n");CHKERRQ(ierr);
     ierr = DMTSCreate(((PetscObject)dm)->comm,tsdm);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)dm,"DMTS",(PetscObject)*tsdm);CHKERRQ(ierr);
+    dm->dmts = (PetscObject) *tsdm;
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,PETSC_NULL);CHKERRQ(ierr);
-    tmptsdm = *tsdm;
-    ierr = DMTSDestroy(&tmptsdm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -171,14 +168,12 @@ PetscErrorCode DMGetDMTSWrite(DM dm,DMTS *tsdm)
   ierr = DMGetDMTS(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->originaldm) sdm->originaldm = dm;
   if (sdm->originaldm != dm) {  /* Copy on write */
-    DMTS          oldsdm = sdm,tsdm;
+    DMTS          oldsdm = sdm;
     ierr = PetscInfo(dm,"Copying DMTS due to write\n");CHKERRQ(ierr);
     ierr = DMTSCreate(((PetscObject)dm)->comm,&sdm);CHKERRQ(ierr);
     ierr = DMTSCopy(oldsdm,sdm);CHKERRQ(ierr);
-
-    ierr = PetscObjectCompose((PetscObject)dm,"DMTS",(PetscObject)sdm);CHKERRQ(ierr);
-    tsdm = sdm;
-    ierr = DMTSDestroy(&tsdm );CHKERRQ(ierr);
+    ierr = DMTSDestroy((DMTS*)&dm->dmts);CHKERRQ(ierr);
+    dm->dmts = (PetscObject) sdm;
   }
   *tsdm = sdm;
   PetscFunctionReturn(0);
@@ -205,16 +200,14 @@ PetscErrorCode DMGetDMTSWrite(DM dm,DMTS *tsdm)
 PetscErrorCode DMCopyDMTS(DM dmsrc,DM dmdest)
 {
   PetscErrorCode ierr;
-  DMTS           sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmsrc,DM_CLASSID,1);
   PetscValidHeaderSpecific(dmdest,DM_CLASSID,2);
-  ierr = PetscObjectQuery((PetscObject)dmsrc,"DMTS",(PetscObject*)&sdm);CHKERRQ(ierr);
-  if (sdm) {
-    ierr = PetscObjectCompose((PetscObject)dmdest,"DMTS",(PetscObject)sdm);CHKERRQ(ierr);
-    ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,PETSC_NULL);CHKERRQ(ierr);
-  }
+  ierr = DMTSDestroy((DMTS*)&dmdest->dmts);CHKERRQ(ierr);
+  dmdest->dmts = dmsrc->dmts;
+  ierr = PetscObjectReference(dmdest->dmts);CHKERRQ(ierr);
+  ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

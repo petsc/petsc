@@ -2918,6 +2918,7 @@ PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec u,voi
   PetscFunctionReturn(0);
 }
 
+#include <petsc-private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "TSSetDM"
 /*@
@@ -2944,10 +2945,7 @@ PetscErrorCode  TSSetDM(TS ts,DM dm)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
   if (ts->dm) {               /* Move the DMTS context over to the new DM unless the new DM already has one */
-    PetscContainer oldcontainer,container;
-    ierr = PetscObjectQuery((PetscObject)ts->dm,"DMTS",(PetscObject*)&oldcontainer);CHKERRQ(ierr);
-    ierr = PetscObjectQuery((PetscObject)dm,"DMTS",(PetscObject*)&container);CHKERRQ(ierr);
-    if (oldcontainer && !container) {
+    if (ts->dm->dmts && !dm->dmts) {
       ierr = DMCopyDMTS(ts->dm,dm);CHKERRQ(ierr);
       ierr = DMGetDMTS(ts->dm,&tsdm);CHKERRQ(ierr);
       if (tsdm->originaldm == ts->dm) { /* Grant write privileges to the replacement DM */
