@@ -26,7 +26,7 @@ static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = TSInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(*kdm, _p_DMTS, struct _DMTSOps, DMTS_CLASSID, -1, "DMKSP", "DMTS", "DMTS", comm, DMTSDestroy, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*kdm, _p_DMTS, struct _DMTSOps, DMTS_CLASSID, -1, "DMTS", "DMTS", "DMTS", comm, DMTSDestroy, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMTSOps));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

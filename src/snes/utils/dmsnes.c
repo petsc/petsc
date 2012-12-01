@@ -26,7 +26,7 @@ static PetscErrorCode DMSNESCreate(MPI_Comm comm,DMSNES *kdm)
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = SNESInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(*kdm, _p_DMSNES, struct _DMSNESOps, DMSNES_CLASSID, -1, "DMKSP", "DMSNES", "DMSNES", comm, DMSNESDestroy, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*kdm, _p_DMSNES, struct _DMSNESOps, DMSNES_CLASSID, -1, "DMSNES", "DMSNES", "DMSNES", comm, DMSNESDestroy, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMSNESOps));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -156,16 +156,13 @@ PetscErrorCode DMGetDMSNES(DM dm,DMSNES *snesdm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscObjectQuery((PetscObject)dm,"DMSNES",(PetscObject*)snesdm);CHKERRQ(ierr);
+  *snesdm = (DMSNES) dm->dmsnes;
   if (!*snesdm) {
-    DMSNES tmpsnesdm;
     ierr = PetscInfo(dm,"Creating new DMSNES\n");CHKERRQ(ierr);
     ierr = DMSNESCreate(((PetscObject)dm)->comm,snesdm);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)dm,"DMSNES",(PetscObject)*snesdm);CHKERRQ(ierr);
+    dm->dmsnes = (PetscObject) *snesdm;
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_DMSNES,DMRestrictHook_DMSNES,PETSC_NULL);CHKERRQ(ierr);
     ierr = DMRefineHookAdd(dm,DMRefineHook_DMSNES,DMInterpolateHook_DMSNES,PETSC_NULL);CHKERRQ(ierr);
-    tmpsnesdm = *snesdm;
-    ierr = DMSNESDestroy(&tmpsnesdm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -197,14 +194,12 @@ PetscErrorCode DMGetDMSNESWrite(DM dm,DMSNES *snesdm)
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->originaldm) sdm->originaldm = dm;
   if (sdm->originaldm != dm) {  /* Copy on write */
-    DMSNES          oldsdm = sdm,tsdm;
+    DMSNES          oldsdm = sdm;
     ierr = PetscInfo(dm,"Copying DMSNES due to write\n");CHKERRQ(ierr);
     ierr = DMSNESCreate(((PetscObject)dm)->comm,&sdm);CHKERRQ(ierr);
     ierr = DMSNESCopy(oldsdm,sdm);CHKERRQ(ierr);
-
-    ierr = PetscObjectCompose((PetscObject)dm,"DMSNES",(PetscObject)sdm);CHKERRQ(ierr);
-    tsdm = sdm;
-    ierr = DMSNESDestroy(&tsdm );CHKERRQ(ierr);
+    ierr = DMSNESDestroy((DMSNES*)&dm->dmsnes);CHKERRQ(ierr);
+    dm->dmsnes = (PetscObject)sdm;
   }
   *snesdm = sdm;
   PetscFunctionReturn(0);
@@ -231,17 +226,15 @@ PetscErrorCode DMGetDMSNESWrite(DM dm,DMSNES *snesdm)
 PetscErrorCode DMCopyDMSNES(DM dmsrc,DM dmdest)
 {
   PetscErrorCode ierr;
-  DMSNES         sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmsrc,DM_CLASSID,1);
   PetscValidHeaderSpecific(dmdest,DM_CLASSID,2);
-  ierr = PetscObjectQuery((PetscObject)dmsrc,"DMSNES",(PetscObject*)&sdm);CHKERRQ(ierr);
-  if (sdm) {
-    ierr = PetscObjectCompose((PetscObject)dmdest,"DMSNES",(PetscObject)sdm);CHKERRQ(ierr);
-    ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMSNES,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    ierr = DMRefineHookAdd(dmdest,DMRefineHook_DMSNES,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  }
+  ierr = DMSNESDestroy((DMSNES*)&dmdest->dmsnes);CHKERRQ(ierr);
+  dmdest->dmsnes = dmsrc->dmsnes;
+  ierr = PetscObjectReference(dmdest->dmsnes);CHKERRQ(ierr);
+  ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMSNES,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMRefineHookAdd(dmdest,DMRefineHook_DMSNES,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

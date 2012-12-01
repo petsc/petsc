@@ -4426,6 +4426,7 @@ PetscErrorCode SNES_KSPSolve(SNES snes, KSP ksp, Vec b, Vec x)
   PetscFunctionReturn(0);
 }
 
+#include <petsc-private/dmimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetDM"
 /*@
@@ -4452,10 +4453,7 @@ PetscErrorCode  SNESSetDM(SNES snes,DM dm)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (dm) {ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);}
   if (snes->dm) {               /* Move the DMSNES context over to the new DM unless the new DM already has one */
-    PetscContainer oldcontainer,container;
-    ierr = PetscObjectQuery((PetscObject)snes->dm,"DMSNES",(PetscObject*)&oldcontainer);CHKERRQ(ierr);
-    ierr = PetscObjectQuery((PetscObject)dm,"DMSNES",(PetscObject*)&container);CHKERRQ(ierr);
-    if (oldcontainer && snes->dmAuto && !container) {
+    if (snes->dm->dmsnes && snes->dmAuto && !dm->dmsnes) {
       ierr = DMCopyDMSNES(snes->dm,dm);CHKERRQ(ierr);
       ierr = DMGetDMSNES(snes->dm,&sdm);CHKERRQ(ierr);
       if (sdm->originaldm == snes->dm) { /* Grant write privileges to the replacement DM */
