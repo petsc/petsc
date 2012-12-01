@@ -127,6 +127,8 @@ struct _p_DM {
   /* Fields are represented by objects */
   PetscInt                numFields;
   PetscObject             *fields;
+
+  PetscObject             dmksp,dmsnes,dmts;
 };
 
 PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;

@@ -375,6 +375,7 @@ PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
 PetscErrorCode  PetscObjectReference(PetscObject obj)
 {
   PetscFunctionBegin;
+  if (!obj) PetscFunctionReturn(0);
   PetscValidHeader(obj,1);
   obj->refct++;
   PetscFunctionReturn(0);

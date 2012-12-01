@@ -346,6 +346,10 @@ PetscErrorCode  DMDestroy(DM *dm)
     (*dm)->workin = PETSC_NULL;
   }
 
+  ierr = PetscObjectDestroy(&(*dm)->dmksp);CHKERRQ(ierr);
+  ierr = PetscObjectDestroy(&(*dm)->dmsnes);CHKERRQ(ierr);
+  ierr = PetscObjectDestroy(&(*dm)->dmts);CHKERRQ(ierr);
+
   if ((*dm)->ctx && (*dm)->ctxdestroy) {
     ierr = (*(*dm)->ctxdestroy)(&(*dm)->ctx);CHKERRQ(ierr);
   }

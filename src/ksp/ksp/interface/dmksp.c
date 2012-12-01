@@ -1,3 +1,4 @@
+#include <petsc-private/dmimpl.h> /*I "petscdm.h" I*/
 #include <petsc-private/kspimpl.h> /*I "petscksp.h" I*/
 #include <petscdm.h>         /*I "petscdm.h"  I*/
 
@@ -125,19 +126,16 @@ PetscErrorCode DMKSPCopy(DMKSP kdm,DMKSP nkdm)
 PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
 {
   PetscErrorCode ierr;
-  DMKSP          tmpkspdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscObjectQuery((PetscObject)dm,"DMKSP",(PetscObject*)kspdm);CHKERRQ(ierr);
+  *kspdm = (DMKSP) dm->dmksp;
   if (!*kspdm) {
     ierr = PetscInfo(dm,"Creating new DMKSP\n");CHKERRQ(ierr);
     ierr = DMKSPCreate(((PetscObject)dm)->comm,kspdm);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)dm,"DMKSP",(PetscObject)*kspdm);CHKERRQ(ierr);
+    dm->dmksp = (PetscObject) *kspdm;
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_DMKSP,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = DMRefineHookAdd(dm,DMRefineHook_DMKSP,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    tmpkspdm = *kspdm;
-    ierr = DMKSPDestroy(&tmpkspdm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -162,7 +160,7 @@ PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
 PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
 {
   PetscErrorCode ierr;
-  DMKSP          kdm,tkdm;
+  DMKSP          kdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -173,10 +171,8 @@ PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
     ierr = PetscInfo(dm,"Copying DMKSP due to write\n");CHKERRQ(ierr);
     ierr = DMKSPCreate(((PetscObject)dm)->comm,&kdm);CHKERRQ(ierr);
     ierr = DMKSPCopy(oldkdm,kdm);CHKERRQ(ierr);
-
-    ierr = PetscObjectCompose((PetscObject)dm,"DMKSP",(PetscObject)kdm);CHKERRQ(ierr);
-    tkdm = kdm;
-    ierr = DMKSPDestroy(&tkdm);CHKERRQ(ierr);
+    ierr = DMKSPDestroy((DMKSP*)&dm->dmksp);CHKERRQ(ierr);
+    dm->dmksp = (PetscObject)kdm;
   }
   *kspdm = kdm;
   PetscFunctionReturn(0);
@@ -203,17 +199,15 @@ PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
 PetscErrorCode DMCopyDMKSP(DM dmsrc,DM dmdest)
 {
   PetscErrorCode ierr;
-  DMKSP          kdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmsrc,DM_CLASSID,1);
   PetscValidHeaderSpecific(dmdest,DM_CLASSID,2);
-  ierr = PetscObjectQuery((PetscObject)dmsrc,"DMKSP",(PetscObject*)&kdm);CHKERRQ(ierr);
-  if (kdm) {
-    ierr = PetscObjectCompose((PetscObject)dmdest,"DMKSP",(PetscObject)kdm);CHKERRQ(ierr);
-    ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMKSP,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    ierr = DMRefineHookAdd(dmdest,DMRefineHook_DMKSP,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  }
+  ierr = DMKSPDestroy((DMKSP*)&dmdest->dmksp);CHKERRQ(ierr);
+  dmdest->dmksp = dmsrc->dmksp;
+  ierr = PetscObjectReference(dmdest->dmksp);CHKERRQ(ierr);
+  ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMKSP,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMRefineHookAdd(dmdest,DMRefineHook_DMKSP,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
