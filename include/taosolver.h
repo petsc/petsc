@@ -88,9 +88,14 @@ PETSC_EXTERN PetscErrorCode TaoSetHessianMat(TaoSolver, Mat, Mat);
 PETSC_EXTERN PetscErrorCode TaoSetHessianRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetSeparableObjectiveRoutine(TaoSolver, Vec, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetConstraintsRoutine(TaoSolver, Vec, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetInequalityConstraintsRoutine(TaoSolver, Vec, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetEqualityConstraintsRoutine(TaoSolver, Vec, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetJacobianRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetJacobianStateRoutine(TaoSolver,Mat,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, Mat*, MatStructure*, void*), void*);
 PETSC_EXTERN PetscErrorCode TaoSetJacobianDesignRoutine(TaoSolver,Mat,PetscErrorCode(*)(TaoSolver,Vec, Mat*, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetJacobianInequalityRoutine(TaoSolver,Mat,Mat,PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
+PETSC_EXTERN PetscErrorCode TaoSetJacobianEqualityRoutine(TaoSolver,Mat,Mat,PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
+
 PETSC_EXTERN PetscErrorCode TaoSetStateDesignIS(TaoSolver, IS, IS);
 
 PETSC_EXTERN PetscErrorCode TaoComputeObjective(TaoSolver, Vec, PetscReal*);
@@ -98,6 +103,8 @@ PETSC_EXTERN PetscErrorCode TaoComputeSeparableObjective(TaoSolver, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoComputeGradient(TaoSolver, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoComputeObjectiveAndGradient(TaoSolver, Vec, PetscReal*, Vec);
 PETSC_EXTERN PetscErrorCode TaoComputeConstraints(TaoSolver, Vec, Vec);
+PETSC_EXTERN PetscErrorCode TaoComputeInequalityConstraints(TaoSolver, Vec, Vec);
+PETSC_EXTERN PetscErrorCode TaoComputeEqualityConstraints(TaoSolver, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoDefaultComputeGradient(TaoSolver, Vec, Vec, void*);
 PETSC_EXTERN PetscErrorCode TaoIsObjectiveDefined(TaoSolver,PetscBool*);
 PETSC_EXTERN PetscErrorCode TaoIsGradientDefined(TaoSolver,PetscBool*);
@@ -106,6 +113,8 @@ PETSC_EXTERN PetscErrorCode TaoIsObjectiveAndGradientDefined(TaoSolver,PetscBool
 PETSC_EXTERN PetscErrorCode TaoComputeHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
 PETSC_EXTERN PetscErrorCode TaoComputeJacobian(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
 PETSC_EXTERN PetscErrorCode TaoComputeJacobianState(TaoSolver, Vec, Mat*, Mat*, Mat*, MatStructure*);
+PETSC_EXTERN PetscErrorCode TaoComputeJacobianEquality(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
+PETSC_EXTERN PetscErrorCode TaoComputeJacobianInequality(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
 PETSC_EXTERN PetscErrorCode TaoComputeJacobianDesign(TaoSolver, Vec, Mat*);
 
 PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);

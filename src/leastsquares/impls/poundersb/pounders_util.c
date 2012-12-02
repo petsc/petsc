@@ -1,4 +1,5 @@
 #include "private/taosolver_impl.h"
+#include "poundersb.h"
 #undef __FUNCT__
 #define __FUNCT__ "TaoPounders_formquad"
 /* Calls Matlab version of formquad for error checking in development */
@@ -6,15 +7,15 @@
 /*
   Given:
     mfqP->delta
-    mfqP->Xhist (array of n-Vec)
-    mfqP->Fhist (array of m-Vec)
+    mfqP->Xhist (nHist-array of n-Vec)
+    mfqP->Fhist (nHist-array of m-Vec)
     mfqP->minindex
 
   Computes:
-    mfqP->model_indices (array of integers)
+    mfqP->Mdir (array of n-Vec)
     mfqP->nmodelpoints
     mfqP->valid
-    mfqP->Mdir (array of n-Vec)
+    mfqP->model_indices (array of integers)
     if (!checkonly):
        mfqP->Gdel (m-array of n-Vec)
        mfqp->Hdel (m-array of nxn Mat)
@@ -22,96 +23,77 @@
 PetscErrorCode TaoPounders_formquad(TAO_POUNDERS *mfqP,PetscBool checkonly)
 {
   PetscErrorCode ierr;
-  PetscScalar *h;
-  PetscInt i,j;
-  
+  PetscScalar *h,tempx[1];
+  PetscInt i,j,*ind;
+  const char *machine="localhost";
+  char name[12];
+  Vec Mind_real;
+
+#ifdef PETSC_HAVE_MATLAB_ENGINE  
+  if (!mfqP->me) {
+    ierr = PetscMatlabEngineCreate(PETSC_COMM_SELF,machine,&mfqP->me); CHKERRQ(ierr);
+  }
+#endif
+  ierr = PetscMatlabEngineEvaluate(me,"Xhist = zeros(%d,%d);",mfqP->nHist,mfqP->n); CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(me,"Fhist = zeros(%d,%d);",mfqP->nHist,mfqP->n); CHKERRQ(ierr);
   for (i=0;i<mfqP->nHist;i++) {
-    
+    snprintf(name,12,"x%010d",i);
+    ierr = PetscObjectSetName((PetscObject)(mfqP->Xhist[i]),name);CHKERRQ(ierr);
+    ierr = PetscMatlabEnginePut(me,mfqP->Xhist[i]);CHKERRQ(ierr);
+    ierr = PetscMatlabEngineEvaluate(me,"Xhist(%d+1,:) = %s;",i,name); CHKERRQ(ierr);
+    snprintf(name,12,"f%010d",i);
+    ierr = PetscObjectSetName((PetscObject)(mfqP->Fhist[i]),name);CHKERRQ(ierr);
+    ierr = PetscMatlabEnginePut(me,mfqP->Fhist[i]);CHKERRQ(ierr);
+    ierr = PetscMatlabEngineEvaluate(me,"Fhist(%d,:) = %s;",i,name); CHKERRQ(ierr);
+  }
+  ierr = PetscMatlabEngineEvaluate(me,"delta=%f;",mfqP->delta); CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(me,"xkin=%d;",mfqP->xkin+1); CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(me,"npmax=%d;",mfqP->npmax); CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(me,"Pars = [%f,%f,%f,%f];",mfqP->par1,mfqP->par2,mfqP->par3,mfqP->par4); CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(me,"vf=%d;",checkonly?1:0); CHKERRQ(ierr);
 
-  
-  /* Write X */
-  fprintf(outfile,"X = [");
-  for (i=0;i<mfqP->nHist;i++) {
-    ierr = VecGetArray(mfqP->Xhist[i],&v); CHKERRQ(ierr);
-    for (j=0;j<mfqP->n;j++) {
-      fprintf(outfile,"%20.12f ",v[j]); CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(me,"[Mdir,np,valid,G,H,Mind] = formquad(X,F,delta,xkin,npmax,Pars,vf);"); CHKERRQ(ierr);
+
+  /* Get Mdir */
+  ierr = PetscObjectSetName((PetscObject)(mfqP->Mdir),"Mdir"); CHKERRQ(ierr);
+  ierr = PetscMatlabEngineGet(me,mfqP->Mdir); CHKERRQ(ierr);
+
+  /* Get np */
+  ierr = PetscMatlabEngineGetArray(me,1,1,tempx,"np"); CHKERRQ(ierr);
+  mfqP->nmodelpoints = floor(tempx[0]+0.5);
+
+  /* Get valid */
+  ierr = PetscMatlabEngineGetArray(me,1,1,tempx,"valid"); CHKERRQ(ierr);
+  mfqP->valid = floor(tempx[0]+0.5);
+
+  /* Get Mind */
+  ierr = VecCreate(PETSC_COMM_SELF,&Mind_real);
+  ierr = PetscObjectSetName((PetscObject)(mfqP->Mind_real),"Mind"); CHKERRQ(ierr);
+  ierr = PetscMatlabEngineGet(me,mfqP->Mind_real); CHKERRQ(ierr);
+  ierr = VecGetArray(mfqP->Mind_real,&v); CHKERRQ(ierr);
+  for (i=0;i<mfqP->n;i++) {
+    mfqP->model_indices[i] = floor(v[i]+0.5);
+  }
+  ierr = VecRestoreArray(mfqP->Mind_real,&v); CHKERRQ(ierr);
+  ierr = VecDestroy(&Mind_real); CHKERRQ(ierr);
+
+  if (!checkonly) {
+    /* Get Gdel */
+    for (i=0;i<mfqP->m;i++) {
+      snprintf(name,12,"g%010d",i);
+      ierr = PetscObjectSetName((PetscObject)(mfqP->Gdel[i]),name);CHKERRQ(ierr);
+      ierr = PetscMatlabEngineEvaluate(me,"%s = G(%d+1,:);",name,i); CHKERRQ(ierr);
+      ierr = PetscMatlabEngineGet(me,mfqP->Gdel[i]);CHKERRQ(ierr);
+    }  
+    /* Get Hdel */
+    for (i=0;i<mfqP->m;i++) {
+      snprintf(name,12,"h%010d",i);
+      ierr = PetscMatlabeEngineEvaluate(me,"%s = H(:,:,%d+1);",name,i); CHKERRQ(ierr);
+      ierr = PetscMatlabEngineGetArray(me,);
     }
-    ierr = VecRestoreArray(mfqP->Xhist[i],&v); CHKERRQ(ierr);
-    fprintf(outfile,";\n");
-  }
-  fprintf(outfile,"];\n\n");
-
-
-  /* Write F */
-  fprintf(outfile,"F = [");
-  for (i=0;i<mfqP->nHist;i++) {
-    ierr = VecGetArray(mfqP->Fhist[i],&v); CHKERRQ(ierr);
-    for (j=0;j<mfqP->m;j++) {
-      fprintf(outfile,"%20.12f ",v[j]); CHKERRQ(ierr);
-    }
-    ierr = VecRestoreArray(mfqP->Fhist[i],&v); CHKERRQ(ierr);
-    fprintf(outfile,";\n");
-  }
-  fprintf(outfile,"];\n\n");
-
-  fprintf(outfile,"delta=%20.12f;\n",mfqP->delta);
-  fprintf(outfile,"xkin=%d;\n",mfqP->minindex+1);
-  fprintf(outfile,"npmax=%d;\n",mfqP->npmax);
-  fprintf(outfile,"Pars=[%f,%f,%f,%f];\n",mfqP->par1,mfqP->par2,
-		mfqP->par3,mfqP->par4);
-  fprintf(outfile,"vf=%d;\n",checkonly?1:0);
-  fprintf(outfile,"[Mdir,np,valid,Gres,Hresdel,Mind] = formquad(X,F,delta,xkin,npmax,Pars,vf)\n");
-  fprintf(outfile,"fid = fopen('formquad.out','wt');\n");
-  fprintf(outfile,"fprintf(fid,'%d\\n',np);\n");
-  fprintf(outfile,"fprintf(fid,'%d\\n',Mind);\n");
-  fprintf(outfile,"fprintf(fid,'%d\\n',valid);\n");
-  fprintf(outfile,"fprintf(fid,'%20.12f',Gres');\n");
-  fprintf(outfile,"fprintf(fid,'\\n');\n");
-  fprintf(outfile,"fprintf(fid,'%20.12f',Hresdel');\n");
-  fprintf(outfile,"fprintf(fid,'\\n');\n");
-  fclose(outfile);
-
-  system("octave < formquad.m");
-
-  /* Read nmodelpoints,model_indices,valid,G,H,Mdir */
-  infile = fopen("formquad.out","r");
-  fscanf(infile,"%d\n",&mfqP->nmodelpoints);
-  if (mfqP->nmodelpoints > mfqP->npmax) {
-    SETERRQ(PETSC_COMM_SELF,"Cowardly bailing out, too many model points\n");
-  }
-  for (i=0;i<mfqP->nmodelpoints;i++) {
-    fscanf(infile,"%d",mfqP->model_indices[i]);
-    mfqP->model_indices[i]--;
-  }
-  fscanf(infile,"\n");
-  fscanf(infile,"%d\n",&mfqP->valid);
-
-  for (i=0;i<mfqP->m;i++) {
-    for (j=0;j<mfqP->n;j++) {
-      fscanf(infile,"%d",mfqP->Gdel_array[j]);
-    }
-    ierr = VecSetValues(mfqP->Gdel[i],mfqP->n,indices,mfqP->Gdel_array,INSERT_VALUES); CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(mfqP->Gdel[i]); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(mfqP->Gdel[i]); CHKERRQ(ierr);
-    fscanf(infile,"\n");
-  }
-  fscanf(infile,"\n");
-  for (i=0;i<mfqP->m;i++) {
-    for (j=0;j<mfqP->n;j++) {
-      for (k=0;k<mfqP->n;k++) {
-	fscanf(infile,"%d",mfqP->Hdel_array[j*mfqP->n + k]);
-      }
-      fscanf(infile,"\n");
-    }
-    ierr = MatSetValues(mfqP->Hdel[i],mfqP->n, indices, mfqP->n, indices,
-			mfqP->Hdel_array,INSERT_VALUES); CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(mfqP->Hdel[i],MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(mfqP->Hdel[i],MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
 
-  ierr = PetscFree(&indices); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-  
 }
 
 #undef __FUNCT__ 
@@ -144,6 +126,7 @@ static PetscErrorCode  pounders_fg(TaoSolver subtao, Vec x, PetscReal *f, Vec g,
 
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "TaoPounders_solvequadratic"
 PetscErrorCode TaoPounders_solvequadratic(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin) 
@@ -230,8 +213,59 @@ PetscErrorCode TaoPounders_solvequadratic(TaoSolver tao,PetscReal *gnorm, PetscR
     *qmin *= -1;
     PetscFunctionReturn(0);
 }
+#undef __FUNCT__
+#define __FUNCT__ "TaoPounders_bpmts"
+PetscErrorCode TaoPounders_bmpts(TaoSolver tao)
+{
+  /* TODO: set t1,t2 as data members of TAO_POUNDERS */
+  PetscErrorCode ierr;
+  PetscInt i,low,high;
+  PetscReal minnorm,*t1,*t2;
+  TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data; 
+  PetscFunctionBegin;
+  
+  ierr = PetscMalloc(sizeof(PetscReal)*mfqP->nmodelpoints,&t1); CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscReal)*mfqP->nmodelpoints,&t2); CHKERRQ(ierr);
+  /* For each ray, find largest t to remain feasible */
+  mint = TAO_INFINITY;
+  maxt = TAO_NINFINITY;
+  for (i=1;i<=mfqP->nmodelpoints;i++) {
+    ierr = VecStepMaxBounded(mfqP->Xhist[mfqP->modelindices[i]],mfqP->Xhist[mfqP->minindex],tao->XL,tao->XU,&t[i]); CHKERRQ(ierr);
+    ierr = VecCopy(mfqP->Xhist[mfqP->modelindices[i]],mfqP->workxvec); CHKERRQ(ierr);
+    ierr = VecScale(mfqP->workxvec,-1.0); CHKERRQ(ierr);
+    ierr = VecStepMaxBounded(mfqP->workxvec,mfqP->Xhist[mfqP->minindex],tao->XL,tao->XU,&t[i]); CHKERRQ(ierr);
+    mint = PetscMin(mint,t1);
+    mint = PetscMin(mint,t2);
+    maxt = PetscMax(maxt,t1);
+    maxt = PetscMax(maxt,t2);
+  }
+  
+  /* Compute objective at x+delta*e_i, i=1..n*/
+  ierr = VecGetOwnershipRange(mfqP->Xhist[0],&low,&high); CHKERRQ(ierr);
+  for (i=1;i<=mfqP->n;i++) {
+      ierr = VecCopy(tao->solution,mfqP->Xhist[i]); CHKERRQ(ierr);
+      if (i-1 >= low && i-1 < high) {
+	  ierr = VecGetArray(mfqP->Xhist[i],&x); CHKERRQ(ierr);
+	  x[i-1-low] += mfqP->delta;
+	  ierr = VecRestoreArray(mfqP->Xhist[i],&x); CHKERRQ(ierr);
+      }
+      ierr = TaoComputeSeparableObjective(tao,mfqP->Xhist[i],mfqP->Fhist[i]); CHKERRQ(ierr);
+      ierr = VecNorm(mfqP->Fhist[i],NORM_2,&mfqP->Fres[i]); CHKERRQ(ierr);
+      if (PetscIsInfOrNanReal(mfqP->Fres[i])) {
+	SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
+      }
+      mfqP->Fres[i]*=mfqP->Fres[i];
+      if (mfqP->Fres[i] < minnorm) {
+	  mfqP->minindex = i;
+	  minnorm = mfqP->Fres[i];
+      }
+  }
+  ierr = PetscFree(t1); CHKERRQ(ierr);
+  ierr = PetscFree(t2); CHKERRQ(ierr);
+  
 
-
+  PetscFunctionReturn(0);
+}
 /*
 #undef __FUNCT__
 #define __FUNCT__ "phi2eval"

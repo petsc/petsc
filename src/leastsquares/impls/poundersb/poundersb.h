@@ -4,6 +4,9 @@
 #include "petsc.h"
 #include "petscblaslapack.h"
 #include "taolapack.h"
+#ifdef PETSC_HAVE_MATLAB_ENGINE  
+#include "engine.h"
+#endif
 
 
 typedef struct {
@@ -59,7 +62,9 @@ typedef struct {
   Vec localf, localx, localfmin, localxmin;
   Vec workxvec;
   PetscMPIInt mpisize;
-
+#ifdef PETSC_HAVE_MATLAB_ENGINE  
+  PetscMatlabEngine me;
+#endif
 
   Mat Hs;
   Vec b;

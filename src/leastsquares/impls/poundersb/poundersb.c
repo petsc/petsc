@@ -30,38 +30,23 @@ static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
   PetscFunctionBegin;
   CHKMEMQ;
 
-  /* TODO -- use previous function evaluations */
-
-  ierr = VecCopy(tao->solution,mfqP->Xhist[0]); CHKERRQ(ierr);
-  CHKMEMQ;
-  ierr = TaoComputeSeparableObjective(tao,tao->solution,mfqP->Fhist[0]); CHKERRQ(ierr);
-  ierr = VecDot(mfqP->Fhist[0],mfqP->Fhist[0],&mfqP->Fres[0]); CHKERRQ(ierr);
-  mfqP->minindex = 0;
-  minnorm = mfqP->Fres[mfqP->minindex];
-
-  /* Compute objective at x+delta*e_i, i=1..n*/
-  ierr = VecGetOwnershipRange(mfqP->Xhist[0],&low,&high); CHKERRQ(ierr);
-  for (i=1;i<=mfqP->n;i++) {
-      ierr = VecCopy(tao->solution,mfqP->Xhist[i]); CHKERRQ(ierr);
-      if (i-1 >= low && i-1 < high) {
-	  ierr = VecGetArray(mfqP->Xhist[i],&x); CHKERRQ(ierr);
-	  x[i-1-low] += mfqP->delta;
-	  ierr = VecRestoreArray(mfqP->Xhist[i],&x); CHKERRQ(ierr);
-      }
-      CHKMEMQ;
-      ierr = TaoComputeSeparableObjective(tao,mfqP->Xhist[i],mfqP->Fhist[i]); CHKERRQ(ierr);
-      ierr = VecNorm(mfqP->Fhist[i],NORM_2,&mfqP->Fres[i]); CHKERRQ(ierr);
-      if (PetscIsInfOrNanReal(mfqP->Fres[i])) {
-	SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
-      }
-      mfqP->Fres[i]*=mfqP->Fres[i];
+  if (mfqP->nHist == 0) {
+    ierr = VecCopy(tao->solution,mfqP->Xhist[0]); CHKERRQ(ierr);
+    ierr = TaoComputeSeparableObjective(tao,tao->solution,mfqP->Fhist[0]); CHKERRQ(ierr);
+    ierr = VecDot(mfqP->Fhist[0],mfqP->Fhist[0],&mfqP->Fres[0]); CHKERRQ(ierr);
+    mfqP->minindex = 0;
+    minnorm = mfqP->Fres[0];
+    mfqP->nHist=1;
+  } else {
+    /* Starting with nHist predefined parameter/evaluations */
+    minnorm=TAO_INFINITY;
+    for (i=0;i<nHist;i++) {
       if (mfqP->Fres[i] < minnorm) {
-	  mfqP->minindex = i;
-	  minnorm = mfqP->Fres[i];
+	mfqP->minindex = i;
+	minnorm = mfqP->Fres[i];
       }
+    }
   }
-  
-  
   ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution); CHKERRQ(ierr);
   ierr = VecCopy(mfqP->Fhist[mfqP->minindex],tao->sep_objective); CHKERRQ(ierr);
 
@@ -436,6 +421,11 @@ static PetscErrorCode TaoDestroy_POUNDERS(TaoSolver tao)
   }
   ierr = PetscFree(mfqP->Xhist); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->Fhist); CHKERRQ(ierr);
+#ifdef PETSC_HAVE_MATLAB_ENGINE  
+  if (mfqP->me) {
+    ierr = PetscMatlabEngineDestroy(&mfqP->me); CHKERRQ(ierr);
+  }
+#endif
 
   if (mfqP->mpisize > 1) {
       ierr = VecDestroy(&mfqP->localx);  CHKERRQ(ierr);

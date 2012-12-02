@@ -262,3 +262,169 @@ PetscErrorCode TaoComputeDualVariables(TaoSolver tao, Vec DL, Vec DU)
     }
     PetscFunctionReturn(0);
 }
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSetEqualityConstraintsRoutine"
+/*@C
+  TaoSetEqualityConstraintsRoutine - Sets a function to be used to compute constraints.  TAO only handles constraints under certain conditions, see manual for details
+
+  Logically collective on TaoSolver
+
+  Input Parameters:
++ tao - the TaoSolver context
+. ce   - A vector that will be used to store equality constraint evaluation 
+. func - the bounds computation routine
+- ctx - [optional] user-defined context for private data for the equality constraints computation (may be PETSC_NULL)
+ 
+  Calling sequence of func:
+$      func (TaoSolver tao, Vec x, Vec ce, void *ctx);
+
++ tao - the TaoSolver
+. x   - point to evaluate equality constraints
+. ce   - vector of equality constraints evaluated at x
+- ctx - the (optional) user-defined function context
+
+  Level: intermediate
+
+.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine() TaoSetObjectiveAndGradientRoutine(), TaoSetVariableBounds()
+
+@*/
+PetscErrorCode TaoSetEqualityConstraintsRoutine(TaoSolver tao, Vec ce, PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*), void *ctx)
+{
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    tao->constraints = ce;
+    tao->user_con_equalityP = ctx;
+    tao->ops->computeequalityconstraints = func;
+    PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSetInequalityConstraintsRoutine"
+/*@C
+  TaoSetInequalityConstraintsRoutine - Sets a function to be used to compute constraints.  TAO only handles constraints under certain conditions, see manual for details
+
+  Logically collective on TaoSolver
+
+  Input Parameters:
++ tao - the TaoSolver context
+. ci   - A vector that will be used to store inequality constraint evaluation 
+. func - the bounds computation routine
+- ctx - [optional] user-defined context for private data for the inequality constraints computation (may be PETSC_NULL)
+ 
+  Calling sequence of func:
+$      func (TaoSolver tao, Vec x, Vec ci, void *ctx);
+
++ tao - the TaoSolver
+. x   - point to evaluate inequality constraints
+. ci   - vector of inequality constraints evaluated at x
+- ctx - the (optional) user-defined function context
+
+  Level: intermediate
+
+.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine() TaoSetObjectiveAndGradientRoutine(), TaoSetVariableBounds()
+
+@*/
+PetscErrorCode TaoSetInequalityConstraintsRoutine(TaoSolver tao, Vec ci, PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*), void *ctx)
+{
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    tao->constraints = ci;
+    tao->user_con_inequalityP = ctx;
+    tao->ops->computeinequalityconstraints = func;
+    PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoComputeEqualityConstraints"
+/*@C
+   TaoComputeEqualityConstraints - Compute the variable bounds using the
+   routine set by TaoSetEqualityConstraintsRoutine(). 
+
+   Collective on TaoSolver
+
+   Input Parameters:
+.  tao - the TaoSolver context
+
+   Level: developer
+
+.seealso: TaoSetEqualityConstraintsRoutine(), TaoComputeJacobianEquality()
+@*/
+
+PetscErrorCode TaoComputeEqualityConstraints(TaoSolver tao, Vec X, Vec CE)
+{
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    PetscValidHeaderSpecific(X,VEC_CLASSID,2);
+    PetscValidHeaderSpecific(CE,VEC_CLASSID,2);
+    PetscCheckSameComm(tao,1,X,2);
+    PetscCheckSameComm(tao,1,CE,3);
+
+    if (tao->ops->computeequalityconstraints == PETSC_NULL) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetEqualityConstraintsRoutine() has not been called");
+    }
+    if (tao->solution == PETSC_NULL) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetInitialVector must be called before TaoComputeEqualityConstraints");
+    }
+    ierr = PetscLogEventBegin(TaoSolver_ConstraintsEval,tao,X,CE,PETSC_NULL); CHKERRQ(ierr);
+    PetscStackPush("TaoSolver equality constraints evaluation routine");
+    CHKMEMQ;
+    ierr = (*tao->ops->computeequalityconstraints)(tao,X,CE,tao->user_conP);
+    CHKERRQ(ierr);
+    CHKMEMQ;
+    PetscStackPop;
+    ierr = PetscLogEventEnd(TaoSolver_ConstraintsEval,tao,X,CE,PETSC_NULL); CHKERRQ(ierr);
+    tao->nconstraints++;
+    PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoComputeInequalityConstraints"
+/*@C
+   TaoComputeInequalityConstraints - Compute the variable bounds using the
+   routine set by TaoSetInequalityConstraintsRoutine(). 
+
+   Collective on TaoSolver
+
+   Input Parameters:
+.  tao - the TaoSolver context
+
+   Level: developer
+
+.seealso: TaoSetInequalityConstraintsRoutine(), TaoComputeJacobianInequality()
+@*/
+
+PetscErrorCode TaoComputeInequalityConstraints(TaoSolver tao, Vec X, Vec CI)
+{
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    PetscValidHeaderSpecific(X,VEC_CLASSID,2);
+    PetscValidHeaderSpecific(CI,VEC_CLASSID,2);
+    PetscCheckSameComm(tao,1,X,2);
+    PetscCheckSameComm(tao,1,CI,3);
+
+    if (tao->ops->computeinequalityconstraints == PETSC_NULL) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetInequalityConstraintsRoutine() has not been called");
+    }
+    if (tao->solution == PETSC_NULL) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetInitialVector must be called before TaoComputeInequalityConstraints");
+    }
+    ierr = PetscLogEventBegin(TaoSolver_ConstraintsEval,tao,X,CI,PETSC_NULL); CHKERRQ(ierr);
+    PetscStackPush("TaoSolver inequality constraints evaluation routine");
+    CHKMEMQ;
+    ierr = (*tao->ops->computeinequalityconstraints)(tao,X,CI,tao->user_conP);
+    CHKERRQ(ierr);
+    CHKMEMQ;
+    PetscStackPop;
+    ierr = PetscLogEventEnd(TaoSolver_ConstraintsEval,tao,X,CI,PETSC_NULL); CHKERRQ(ierr);
+    tao->nconstraints++;
+    PetscFunctionReturn(0);
+}

@@ -15,9 +15,13 @@ struct _TaoSolverOps {
     PetscErrorCode (*computehessian)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
     PetscErrorCode (*computeseparableobjective)(TaoSolver, Vec, Vec, void*);
     PetscErrorCode (*computeconstraints)(TaoSolver, Vec, Vec, void*);
+    PetscErrorCode (*computeinequalityconstraints)(TaoSolver, Vec, Vec, void*);
+    PetscErrorCode (*computeequalityconstraints)(TaoSolver, Vec, Vec, void*);
     PetscErrorCode (*computejacobian)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
     PetscErrorCode (*computejacobianstate)(TaoSolver, Vec, Mat*, Mat*, Mat*, MatStructure*, void*);
     PetscErrorCode (*computejacobiandesign)(TaoSolver, Vec, Mat*, void*);
+    PetscErrorCode (*computejacobianinequality)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
+    PetscErrorCode (*computejacobianequality)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
     PetscErrorCode (*computebounds)(TaoSolver, Vec, Vec, void*);
 
     PetscErrorCode (*convergencetest)(TaoSolver,void*);
@@ -43,7 +47,11 @@ struct _p_TaoSolver {
     void *user_hessP;
     void *user_sepobjP;
     void *user_conP;
+    void *user_con_equalityP;
+    void *user_con_inequalityP;
     void *user_jacP;
+    void *user_jac_equalityP;
+    void *user_jac_inequalityP;
     void *user_jac_stateP;
     void *user_jac_designP;
     void *user_boundsP;
@@ -67,8 +75,14 @@ struct _p_TaoSolver {
     Mat hessian_pre;
     Vec sep_objective;
     Vec constraints;
+    Vec constraints_equality;
+    Vec constraints_inequality;
     Mat jacobian;
     Mat jacobian_pre;
+    Mat jacobian_inequality;
+    Mat jacobian_inequality_pre;
+    Mat jacobian_equality;
+    Mat jacobian_equality_pre;
     Mat jacobian_state;
     Mat jacobian_state_inv;
     Mat jacobian_design;
@@ -93,9 +107,14 @@ struct _p_TaoSolver {
     PetscInt  nhess;
     PetscInt  niter;
     PetscInt  nconstraints;
+    PetscInt  niconstraints;
+    PetscInt  neconstraints;
     PetscInt  njac;
+    PetscInt  njac_equality;
+    PetscInt  njac_inequality;
     PetscInt  njac_state;
     PetscInt  njac_design;
+
     PetscInt  ksp_its;
 
     
