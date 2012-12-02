@@ -152,7 +152,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   } else if (isdraw) {
     PetscDraw draw;
     char      str[36];
-    PetscReal x,y,bottom;
+    PetscReal x,y,bottom,h;
     PetscBool flg;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
@@ -161,7 +161,8 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     if (!flg) {
       ierr = PetscStrcpy(str,"KSP: ");CHKERRQ(ierr);
       ierr = PetscStrcat(str,((PetscObject)ksp)->type_name);CHKERRQ(ierr);
-      ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,&bottom);CHKERRQ(ierr);
+      ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
+      bottom = y - h;
     } else {
       bottom = y;
     }

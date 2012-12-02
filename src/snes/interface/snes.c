@@ -287,13 +287,14 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   } else if (isdraw) {
     PetscDraw draw;
     char      str[36];
-    PetscReal x,y,bottom;
+    PetscReal x,y,bottom,h;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
     ierr = PetscStrcpy(str,"SNES: ");CHKERRQ(ierr);
     ierr = PetscStrcat(str,((PetscObject)snes)->type_name);CHKERRQ(ierr);
-    ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_BLUE,PETSC_DRAW_BLACK,str,&bottom);CHKERRQ(ierr);
+    ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_BLUE,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
+    bottom = y - h;
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
   }
   if (snes->linesearch) {

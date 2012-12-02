@@ -1583,7 +1583,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   } else if (isdraw) {
     PetscDraw draw;
     char      str[12];
-    PetscReal x,y,bottom;
+    PetscReal x,y,bottom,h;
     PetscBool flg;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
@@ -1592,7 +1592,8 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     if (!flg) {
       ierr = PetscStrcpy(str,"PC: ");CHKERRQ(ierr);
       ierr = PetscStrcat(str,((PetscObject)pc)->type_name);CHKERRQ(ierr);
-      ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,&bottom);CHKERRQ(ierr);
+      ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
+      bottom = y - h;
     } else {
       bottom = y;
     }

@@ -56,17 +56,17 @@ PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,
 -  text - the text to draw
 
    Output Parameter:
-.   bottom - y coordinate of the bottom of the box
+.   w,h - width and height of resulting box (optional)
 
    Level: beginner
 
    Concepts: drawing^string
    Concepts: string^drawing
 
-.seealso: PetscDrawStringVertical()
+.seealso: PetscDrawStringVertical(), PetscDrawBoxedStringSize()
 
 @*/
-PetscErrorCode  PetscDrawBoxedString(PetscDraw draw,PetscReal sxl,PetscReal syl,int sc,int bc,const char text[],PetscReal *boxbottom)
+PetscErrorCode  PetscDrawBoxedString(PetscDraw draw,PetscReal sxl,PetscReal syl,int sc,int bc,const char text[],PetscReal *w,PetscReal *h)
 {
   PetscErrorCode ierr ;
   PetscBool      isnull;
@@ -93,7 +93,8 @@ PetscErrorCode  PetscDrawBoxedString(PetscDraw draw,PetscReal sxl,PetscReal syl,
   left   = sxl - .5*(mlen + 2)*tw;
   right  = sxl + .5*(mlen + 2)*tw; 
   bottom = syl - (1.0 + cnt)*th;
-  if (boxbottom) *boxbottom = bottom;
+  if (w) *w = right - left;
+  if (h) *h = top - bottom;
 
   /* top, left, bottom, right lines */
   ierr = PetscDrawLine(draw,left,top,right,top,bc);CHKERRQ(ierr);
