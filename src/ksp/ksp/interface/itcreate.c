@@ -103,7 +103,7 @@ PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
 PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool      iascii,isbinary;
+  PetscBool      iascii,isbinary,isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -113,6 +113,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer,"KSP Object");CHKERRQ(ierr);
     if (ksp->ops->view) {
@@ -148,6 +149,17 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     if (ksp->ops->view) {
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
     }
+  } else if (isdraw) {
+    PetscDraw draw;
+    char      str[36];
+    PetscReal x,y,bottom;
+
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscStrcpy(str,"KSP: ");CHKERRQ(ierr);
+    ierr = PetscStrcat(str,((PetscObject)ksp)->type_name);CHKERRQ(ierr);
+    ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
+    ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,&bottom);CHKERRQ(ierr);
+    ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
   } else {
     if (ksp->ops->view) {
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
@@ -155,6 +167,11 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   }
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCView(ksp->pc,viewer);CHKERRQ(ierr);
+  if (isdraw) {
+    PetscDraw draw;
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

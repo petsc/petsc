@@ -1516,7 +1516,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
 {
   PCType            cstr;
   PetscErrorCode    ierr;
-  PetscBool         iascii,isstring,isbinary;
+  PetscBool         iascii,isstring,isbinary,isdraw;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -1530,6 +1530,8 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pc,viewer,"PC Object");CHKERRQ(ierr);
@@ -1578,6 +1580,21 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     if (pc->ops->view) {
       ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);
     }
+  } else if (isdraw) {
+    PetscDraw draw;
+    char      str[12];
+    PetscReal x,y,bottom;
+
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscStrcpy(str,"PC: ");CHKERRQ(ierr);
+    ierr = PetscStrcat(str,((PetscObject)pc)->type_name);CHKERRQ(ierr);
+    ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
+    ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,&bottom);CHKERRQ(ierr);
+    ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
+    if (pc->ops->view) {
+      ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);
+    }
+    ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

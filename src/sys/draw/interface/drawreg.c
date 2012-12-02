@@ -69,6 +69,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
   draw->savefilename  = PETSC_NULL;
   draw->savefilemovie = PETSC_FALSE;
   draw->savefilecount = -1;
+  ierr = PetscDrawSetCurrentPoint(draw,.5,.9);CHKERRQ(ierr);
   *indraw       = draw;
   PetscFunctionReturn(0);
 }

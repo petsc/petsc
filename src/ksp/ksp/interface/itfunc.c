@@ -618,6 +618,13 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_view_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerDrawOpen(((PetscObject)ksp)->comm,PETSC_NULL,"KSP Solver",0,0,600,600,&viewer);CHKERRQ(ierr);
+    ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_final_residual",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {

@@ -449,11 +449,12 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   PC_MG_Levels   **mglevels = mg->levels;
   PetscErrorCode ierr;
   PetscInt       levels = mglevels[0]->levels,i;
-  PetscBool      iascii,isbinary;
+  PetscBool      iascii,isbinary,isdraw;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%s\n", PCMGTypes[mg->am],levels,(mglevels[0]->cycles == PC_MG_CYCLE_V) ? "v" : "w");CHKERRQ(ierr);
     if (mg->am == PC_MG_MULTIPLICATIVE) {
@@ -488,6 +489,19 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
       if (i && mglevels[i]->smoothd != mglevels[i]->smoothu) {
         ierr = KSPView(mglevels[i]->smoothu,viewer);CHKERRQ(ierr);
       }
+    }
+  } else if (isdraw) {
+    PetscDraw draw;
+    PetscReal x,y,bottom,th;
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
+    ierr = PetscDrawStringGetSize(draw,PETSC_NULL,&th);CHKERRQ(ierr);
+    bottom = y - th;
+    for (i=levels-1; i>=0; i--) {
+      ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
+      ierr = KSPView(mglevels[i]->smoothd,viewer);CHKERRQ(ierr);
+      ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+      bottom -= 5*th;
     }
   }
   PetscFunctionReturn(0);
