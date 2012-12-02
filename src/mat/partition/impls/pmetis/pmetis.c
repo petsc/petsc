@@ -46,7 +46,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     /* bs indicates if the converted matrix is "reduced" from the original and hence the
        resulting partition results need to be stretched to match the original matrix */
     ierr = MatConvert(mat,MATMPIADJ,MAT_INITIAL_MATRIX,&amat);CHKERRQ(ierr);
-    if (mat->rmap->n > 0) bs = amat->rmap->n/mat->rmap->n;
+    if (amat->rmap->n > 0) bs = mat->rmap->n/amat->rmap->n;
   }
   ierr = MatMPIAdjCreateNonemptySubcommMat(amat,&pmat);CHKERRQ(ierr);
   ierr = MPI_Barrier(((PetscObject)part)->comm);CHKERRQ(ierr);
@@ -65,8 +65,8 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     /* check that matrix has no diagonal entries */
     {
       PetscInt rstart;
-      ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
-      for (i=0; i<mat->rmap->n; i++) {
+      ierr = MatGetOwnershipRange(pmat,&rstart,PETSC_NULL);CHKERRQ(ierr);
+      for (i=0; i<pmat->rmap->n; i++) {
         for (j=xadj[i]; j<xadj[i+1]; j++) {
           if (adjncy[j] == i+rstart) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Row %d has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
         }
