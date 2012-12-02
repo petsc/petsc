@@ -1584,12 +1584,18 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     PetscDraw draw;
     char      str[12];
     PetscReal x,y,bottom;
+    PetscBool flg;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscStrcpy(str,"PC: ");CHKERRQ(ierr);
-    ierr = PetscStrcat(str,((PetscObject)pc)->type_name);CHKERRQ(ierr);
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
-    ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,&bottom);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc,PCNONE,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      ierr = PetscStrcpy(str,"PC: ");CHKERRQ(ierr);
+      ierr = PetscStrcat(str,((PetscObject)pc)->type_name);CHKERRQ(ierr);
+      ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,&bottom);CHKERRQ(ierr);
+    } else {
+      bottom = y;
+    }
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
     if (pc->ops->view) {
       ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);

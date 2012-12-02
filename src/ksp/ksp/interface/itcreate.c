@@ -153,12 +153,18 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     PetscDraw draw;
     char      str[36];
     PetscReal x,y,bottom;
+    PetscBool flg;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscStrcpy(str,"KSP: ");CHKERRQ(ierr);
-    ierr = PetscStrcat(str,((PetscObject)ksp)->type_name);CHKERRQ(ierr);
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
-    ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,&bottom);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      ierr = PetscStrcpy(str,"KSP: ");CHKERRQ(ierr);
+      ierr = PetscStrcat(str,((PetscObject)ksp)->type_name);CHKERRQ(ierr);
+      ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,&bottom);CHKERRQ(ierr);
+    } else {
+      bottom = y;
+    }
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
   } else {
     if (ksp->ops->view) {

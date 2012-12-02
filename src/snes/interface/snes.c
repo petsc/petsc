@@ -217,7 +217,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   PetscErrorCode      ierr;
   KSP                 ksp;
   SNESLineSearch      linesearch;
-  PetscBool           iascii,isstring,isbinary;
+  PetscBool           iascii,isstring,isbinary,isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -230,6 +230,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)snes,viewer,"SNES Object");CHKERRQ(ierr);
     if (snes->ops->view) {
@@ -283,6 +284,23 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     if (snes->ops->view) {
       ierr = (*snes->ops->view)(snes,viewer);CHKERRQ(ierr);
     }
+  } else if (isdraw) {
+    PetscDraw draw;
+    char      str[36];
+    PetscReal x,y,bottom;
+
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
+    ierr = PetscStrcpy(str,"SNES: ");CHKERRQ(ierr);
+    ierr = PetscStrcat(str,((PetscObject)snes)->type_name);CHKERRQ(ierr);
+    ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_BLUE,PETSC_DRAW_BLACK,str,&bottom);CHKERRQ(ierr);
+    ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
+  }
+  if (snes->linesearch) {
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESLineSearchView(linesearch, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   if (snes->pc && snes->usespc) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -295,11 +313,10 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
-  if (snes->linesearch) {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchView(linesearch, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  if (isdraw) {
+    PetscDraw draw;
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3676,6 +3693,14 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
     ierr = PetscViewerASCIIOpen(((PetscObject)snes)->comm,filename,&viewer);CHKERRQ(ierr);
+    ierr = SNESView(snes,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_view_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerDrawOpen(((PetscObject)snes)->comm,PETSC_NULL,"SNES Solver",0,0,600,600,&viewer);CHKERRQ(ierr);
     ierr = SNESView(snes,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
