@@ -16,12 +16,13 @@
 #undef __FUNCT__
 #define __FUNCT__ "PetscStrToArray"
 /*@C
-   PetscStrToArray - Seperates a string by its spaces and creates an array of strings
+   PetscStrToArray - Seperates a string by a charactor (for example ' ' or '\n') and creates an array of strings
 
    Not Collective
 
    Input Parameters:
-.  s - pointer to string
++  s - pointer to string
+-  sp - seperator charactor
 
    Output Parameter:
 +   argc - the number of entries in the array
@@ -39,7 +40,7 @@
 .seealso: PetscStrToArrayDestroy(), PetscToken, PetscTokenCreate()
 
 @*/
-PetscErrorCode  PetscStrToArray(const char s[],int *argc,char ***args)
+PetscErrorCode  PetscStrToArray(const char s[],char sp,int *argc,char ***args)
 {
   int        i,n,*lens,cnt = 0;
   PetscBool  flg = PETSC_FALSE;
@@ -48,11 +49,11 @@ PetscErrorCode  PetscStrToArray(const char s[],int *argc,char ***args)
   else    n = strlen(s);
   *argc = 0;
   for (i=0; i<n; i++) {
-    if (s[i] != ' ') break;
+    if (s[i] != sp) break;
   }
   for (;i<n+1; i++) {
-    if ((s[i] == ' ' || s[i] == 0) && !flg) {flg = PETSC_TRUE; (*argc)++;}
-    else if (s[i] != ' ') {flg = PETSC_FALSE;}
+    if ((s[i] == sp || s[i] == 0) && !flg) {flg = PETSC_TRUE; (*argc)++;}
+    else if (s[i] != sp) {flg = PETSC_FALSE;}
   }
   (*args) = (char **) malloc(((*argc)+1)*sizeof(char**)); if (!*args) return PETSC_ERR_MEM;
   lens    = (int*) malloc((*argc)*sizeof(int)); if (!lens) return PETSC_ERR_MEM;
@@ -60,11 +61,11 @@ PetscErrorCode  PetscStrToArray(const char s[],int *argc,char ***args)
 
   *argc = 0;
   for (i=0; i<n; i++) {
-    if (s[i] != ' ') break;
+    if (s[i] != sp) break;
   }
   for (;i<n+1; i++) {
-    if ((s[i] == ' ' || s[i] == 0) && !flg) {flg = PETSC_TRUE; (*argc)++;}
-    else if (s[i] != ' ') {lens[*argc]++;flg = PETSC_FALSE;}
+    if ((s[i] == sp || s[i] == 0) && !flg) {flg = PETSC_TRUE; (*argc)++;}
+    else if (s[i] != sp) {lens[*argc]++;flg = PETSC_FALSE;}
   }
 
   for (i=0; i<*argc; i++) {
@@ -74,11 +75,11 @@ PetscErrorCode  PetscStrToArray(const char s[],int *argc,char ***args)
 
   *argc = 0;
   for (i=0; i<n; i++) {
-    if (s[i] != ' ') break;
+    if (s[i] != sp) break;
   }
   for (;i<n+1; i++) {
-    if ((s[i] == ' ' || s[i] == 0) && !flg) {flg = PETSC_TRUE; (*args)[*argc][cnt++] = 0; (*argc)++; cnt = 0;}
-    else if (s[i] != ' ' && s[i] != 0) {(*args)[*argc][cnt++] = s[i]; flg = PETSC_FALSE;}
+    if ((s[i] == sp || s[i] == 0) && !flg) {flg = PETSC_TRUE; (*args)[*argc][cnt++] = 0; (*argc)++; cnt = 0;}
+    else if (s[i] != sp && s[i] != 0) {(*args)[*argc][cnt++] = s[i]; flg = PETSC_FALSE;}
   }
   return 0;
 }

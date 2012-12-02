@@ -5,6 +5,103 @@
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDrawGetCurrentPoint"
+/*@
+   PetscDrawGetCurrentPoint - Gets the current draw point, some codes use this point to determine where to draw next
+
+   Not collective
+
+   Input Parameter:
+.  draw - the drawing context
+
+   Output Parameters:
+.   x,y - the current point
+
+   Level: intermediate
+
+.seealso:  PetscDrawPushCurrentPoint(), PetscDrawPopCurrentPoint(), PetscDrawSetCurrentPoint()
+@*/
+PetscErrorCode  PetscDrawGetCurrentPoint(PetscDraw draw,PetscReal *x,PetscReal *y)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  *x = draw->currentpoint_x[draw->currentpoint];
+  *y = draw->currentpoint_y[draw->currentpoint];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawSetCurrentPoint"
+/*@
+   PetscDrawSetCurrentPoint - Sets the current draw point, some codes use this point to determine where to draw next
+
+   Not collective
+
+   Input Parameters:
++  draw - the drawing context
+-  x,y - the location of the current point
+
+   Level: intermediate
+
+.seealso:  PetscDrawPushCurrentPoint(), PetscDrawPopCurrentPoint(), PetscDrawGetCurrentPoint()
+@*/
+PetscErrorCode  PetscDrawSetCurrentPoint(PetscDraw draw,PetscReal x,PetscReal y)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  draw->currentpoint_x[draw->currentpoint] = x;
+  draw->currentpoint_y[draw->currentpoint] = y;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawPushCurrentPoint"
+/*@
+   PetscDrawPushCurrentPoint - Pushes a new current draw point, retaining the old one, some codes use this point to determine where to draw next
+
+   Not collective
+
+   Input Parameters:
++  draw - the drawing context
+-  x,y - the location of the current point
+
+   Level: intermediate
+
+.seealso:  PetscDrawPushCurrentPoint(), PetscDrawPopCurrentPoint(), PetscDrawGetCurrentPoint()
+@*/
+PetscErrorCode  PetscDrawPushCurrentPoint(PetscDraw draw,PetscReal x,PetscReal y)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  if (draw->currentpoint > 9) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"You have pushed too many current points");
+  draw->currentpoint_x[++draw->currentpoint] = x;
+  draw->currentpoint_y[draw->currentpoint] = y;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDrawPopCurrentPoint"
+/*@
+   PetscDrawPopCurrentPoint - Pops a current draw point (discarding it)
+
+   Not collective
+
+   Input Parameter:
+.  draw - the drawing context
+
+   Level: intermediate
+
+.seealso:  PetscDrawPushCurrentPoint(), PetscDrawSetCurrentPoint(), PetscDrawGetCurrentPoint()
+@*/
+PetscErrorCode  PetscDrawPopCurrentPoint(PetscDraw draw)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  if (draw->currentpoint-- == 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"You have popped too many current points");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawLine"
 /*@
    PetscDrawLine - PetscDraws a line onto a drawable.

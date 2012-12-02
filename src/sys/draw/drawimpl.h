@@ -52,6 +52,8 @@ struct _p_PetscDraw {
   PetscReal       pause;       /* sleep time after a synchronized flush */
   PetscReal       port_xl,port_yl,port_xr,port_yr;
   PetscReal       coor_xl,coor_yl,coor_xr,coor_yr;
+  PetscReal       currentpoint_x[10],currentpoint_y[10];
+  PetscInt        currentpoint;
   char            *title;
   char            *display;
   PetscDraw       popup;

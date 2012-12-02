@@ -300,7 +300,7 @@ PetscErrorCode  PetscViewerDrawSetInfo(PetscViewer v,const char display[],const 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerDrawOpen"
 /*@C
-   PetscViewerDrawOpen - Opens an X window for use as a PetscViewer. If you want to
+   PetscViewerDrawOpen - Opens a window for use as a PetscViewer. If you want to
    do graphics in this window, you must call PetscViewerDrawGetDraw() and
    perform the graphics on the PetscDraw object.
 

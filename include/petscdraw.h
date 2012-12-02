@@ -170,6 +170,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawTensorContourPatch(PetscDraw,int,int,PetscR
 PETSC_EXTERN PetscErrorCode PetscDrawTensorContour(PetscDraw,int,int,const PetscReal[],const PetscReal[],PetscReal *);
 
 PETSC_EXTERN PetscErrorCode PetscDrawString(PetscDraw,PetscReal,PetscReal,int,const char[]);
+PETSC_EXTERN PetscErrorCode PetscDrawBoxedString(PetscDraw,PetscReal,PetscReal,int,int,const char[],PetscReal*);
 PETSC_EXTERN PetscErrorCode PetscDrawStringVertical(PetscDraw,PetscReal,PetscReal,int,const char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawStringSetSize(PetscDraw,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawStringGetSize(PetscDraw,PetscReal*,PetscReal*);
@@ -200,6 +201,11 @@ PETSC_EXTERN PetscErrorCode PetscDrawEOP(PetscDraw);
 PETSC_EXTERN PetscErrorCode PetscDrawSetDisplay(PetscDraw,const char[]);
 PETSC_EXTERN PetscErrorCode PetscDrawGetSingleton(PetscDraw,PetscDraw*);
 PETSC_EXTERN PetscErrorCode PetscDrawRestoreSingleton(PetscDraw,PetscDraw*);
+
+PETSC_EXTERN PetscErrorCode PetscDrawGetCurrentPoint(PetscDraw,PetscReal*,PetscReal*);
+PETSC_EXTERN PetscErrorCode PetscDrawSetCurrentPoint(PetscDraw,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawPushCurrentPoint(PetscDraw,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawPopCurrentPoint(PetscDraw);
 
 /*E
     PetscDrawButton - Used to determine which button was pressed

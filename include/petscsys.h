@@ -1136,7 +1136,7 @@ PETSC_EXTERN PetscErrorCode PetscBitMemcpy(void*,PetscInt,const void*,PetscInt,P
 PETSC_EXTERN PetscErrorCode PetscMemmove(void*,void *,size_t);
 PETSC_EXTERN PetscErrorCode PetscMemcmp(const void*,const void*,size_t,PetscBool  *);
 PETSC_EXTERN PetscErrorCode PetscStrlen(const char[],size_t*);
-PETSC_EXTERN PetscErrorCode PetscStrToArray(const char[],int*,char ***);
+PETSC_EXTERN PetscErrorCode PetscStrToArray(const char[],char,int*,char ***);
 PETSC_EXTERN PetscErrorCode PetscStrToArrayDestroy(int,char **);
 PETSC_EXTERN PetscErrorCode PetscStrcmp(const char[],const char[],PetscBool  *);
 PETSC_EXTERN PetscErrorCode PetscStrgrt(const char[],const char[],PetscBool  *);
