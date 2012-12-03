@@ -217,6 +217,10 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
+    if (jac->kspupper != jac->head->ksp) cnt++;
+    w    = 2*PetscMin(1.0 - x,x);
+    wd   = w/(cnt + 1);
+
     ierr = PetscSNPrintf(str,32,"Schur fact. %s",PCFieldSplitSchurFactTypes[jac->schurfactorization]);CHKERRQ(ierr);
     ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
     y -= h;
@@ -225,11 +229,8 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
     } else {
       ierr = PetscSNPrintf(str,32,"Prec. for Schur from %s",PCFieldSplitSchurPreTypes[jac->schurpre]);CHKERRQ(ierr);
     }
-    ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
+    ierr = PetscDrawBoxedString(draw,x+wd*(cnt-1)/2.0,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
     y -= h;
-    if (jac->kspupper != jac->head->ksp) cnt++;
-    w    = 2*PetscMin(1.0 - x,x);
-    wd   = w/(cnt + 1);
     x    = x - wd*(cnt-1)/2.0;
 
     ierr = PetscDrawPushCurrentPoint(draw,x,y);CHKERRQ(ierr);
