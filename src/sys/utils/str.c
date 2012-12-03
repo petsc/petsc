@@ -48,6 +48,10 @@ PetscErrorCode  PetscStrToArray(const char s[],char sp,int *argc,char ***args)
   if (!s) n = 0;
   else    n = strlen(s);
   *argc = 0;
+  if (!n) {
+    *args = 0;
+    return(0);
+  }
   for (i=0; i<n; i++) {
     if (s[i] != sp) break;
   }
@@ -113,7 +117,9 @@ PetscErrorCode  PetscStrToArrayDestroy(int argc,char **args)
   for (i=0; i<argc; i++) {
     free(args[i]);
   }
-  free(args);
+  if (args) {
+    free(args);
+  }
   return 0;
 }
 

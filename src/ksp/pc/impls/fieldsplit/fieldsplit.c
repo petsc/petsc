@@ -140,12 +140,13 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
-  PetscBool         iascii;
+  PetscBool         iascii,isdraw;
   PetscInt          i,j;
   PC_FieldSplitLink ilink = jac->head;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
     if (jac->bs > 0) {
       ierr = PetscViewerASCIIPrintf(viewer,"  FieldSplit with Schur preconditioner, blocksize = %D, factorization %s\n",jac->bs,PCFieldSplitSchurFactTypes[jac->schurfactorization]);CHKERRQ(ierr);
@@ -164,7 +165,7 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
       if (jac->schur_user) {
         ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from user provided matrix\n");CHKERRQ(ierr);
       } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from the block diagonal part of A11\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  Preconditioner for the Schur complement formed from the block diagonal part of A11\n");CHKERRQ(ierr);
       }
       break;
     default:
@@ -208,8 +209,42 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PCFieldSplit",((PetscObject)viewer)->type_name);
+  } else if (isdraw) {
+    PetscDraw draw;
+    PetscReal x,y,w,wd,h;
+    PetscInt  cnt = 2;
+    char      str[32];
+
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(str,32,"Schur fact. %s",PCFieldSplitSchurFactTypes[jac->schurfactorization]);CHKERRQ(ierr);
+    ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
+    y -= h;
+    if (jac->schurpre == PC_FIELDSPLIT_SCHUR_PRE_USER &&  !jac->schur_user) {
+      ierr = PetscSNPrintf(str,32,"Prec. for Schur from %s",PCFieldSplitSchurPreTypes[PC_FIELDSPLIT_SCHUR_PRE_DIAG]);CHKERRQ(ierr);
+    } else {
+      ierr = PetscSNPrintf(str,32,"Prec. for Schur from %s",PCFieldSplitSchurPreTypes[jac->schurpre]);CHKERRQ(ierr);
+    }
+    ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
+    y -= h;
+    if (jac->kspupper != jac->head->ksp) cnt++;
+    w    = 2*PetscMin(1.0 - x,x);
+    wd   = w/(cnt + 1);
+    x    = x - wd*(cnt-1)/2.0;
+
+    ierr = PetscDrawPushCurrentPoint(draw,x,y);CHKERRQ(ierr);
+    ierr = KSPView(jac->head->ksp,viewer);CHKERRQ(ierr);
+    ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+    if (jac->kspupper != jac->head->ksp) {
+      x += wd;
+      ierr = PetscDrawPushCurrentPoint(draw,x,y);CHKERRQ(ierr);
+      ierr = KSPView(jac->kspupper,viewer);CHKERRQ(ierr);
+      ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+    }
+    x += wd;
+    ierr = PetscDrawPushCurrentPoint(draw,x,y);CHKERRQ(ierr);
+    ierr = KSPView(jac->kspschur,viewer);CHKERRQ(ierr);
+    ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
