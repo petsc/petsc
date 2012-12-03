@@ -705,264 +705,6 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ConstructGhostCells"
-PetscErrorCode ConstructGhostCells(DM *dmGhosted, User user)
-{
-  DM                 dm = *dmGhosted, gdm;
-  PetscSection       coordSection, newCoordSection;
-  Vec                coordinates;
-  const char        *name = "Face Sets";
-  IS                 idIS;
-  const PetscInt    *ids;
-  PetscInt          *newpoints;
-  PetscSF            sfPoint, gsfPoint;
-  const PetscInt    *leafLocal;
-  const PetscSFNode *leafRemote;
-  PetscInt           dim, depth, d, maxConeSize, maxSupportSize, numLabels, l;
-  PetscInt           numFS, fs, pStart, pEnd, p, cStart, cEnd, c, ghostCell, vStart, vEnd, v;
-  PetscMPIInt        rank;
-  PetscErrorCode     ierr;
-
-  PetscFunctionBegin;
-  ierr = DMCreate(((PetscObject) dm)->comm, &gdm);CHKERRQ(ierr);
-  ierr = DMSetType(gdm, DMCOMPLEX);CHKERRQ(ierr);
-  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMComplexSetDimension(gdm, dim);CHKERRQ(ierr);
-
-  ierr = DMComplexGetLabelIdIS(dm, name, &idIS);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
-  ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
-  user->numGhostCells = 0;
-  for(fs = 0; fs < numFS; ++fs) {
-    PetscInt numBdFaces;
-
-    ierr = DMComplexGetStratumSize(dm, name, ids[fs], &numBdFaces);CHKERRQ(ierr);
-    user->numGhostCells += numBdFaces;
-  }
-  ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  pEnd += user->numGhostCells;
-  ierr = DMComplexSetChart(gdm, pStart, pEnd);CHKERRQ(ierr);
-  /* Set cone and support sizes */
-  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  user->cEndInterior = cEnd;
-  for(c = cStart; c < cEnd; ++c) {
-    PetscInt size;
-
-    ierr = DMComplexGetConeSize(dm, c, &size);CHKERRQ(ierr);
-    ierr = DMComplexSetConeSize(gdm, c, size);CHKERRQ(ierr);
-  }
-  for(c = cEnd; c < cEnd+user->numGhostCells; ++c) {
-    ierr = DMComplexSetConeSize(gdm, c, 1);CHKERRQ(ierr);
-  }
-  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
-  for(d = 0; d < depth; ++d) {
-    ierr = DMComplexGetDepthStratum(dm, d, &pStart, &pEnd);CHKERRQ(ierr);
-    for(p = pStart; p < pEnd; ++p) {
-      PetscInt newp = p+user->numGhostCells;
-      PetscInt size;
-
-      ierr = DMComplexGetConeSize(dm, p, &size);CHKERRQ(ierr);
-      ierr = DMComplexSetConeSize(gdm, newp, size);CHKERRQ(ierr);
-      ierr = DMComplexGetSupportSize(dm, p, &size);CHKERRQ(ierr);
-      ierr = DMComplexSetSupportSize(gdm, newp, size);CHKERRQ(ierr);
-    }
-  }
-  for(fs = 0; fs < numFS; ++fs) {
-    IS              faceIS;
-    const PetscInt *faces;
-    PetscInt        numFaces, f;
-
-    ierr = DMComplexGetStratumIS(dm, name, ids[fs], &faceIS);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
-    ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
-    for(f = 0; f < numFaces; ++f) {
-      PetscInt size;
-
-      ierr = DMComplexGetSupportSize(dm, faces[f], &size);CHKERRQ(ierr);
-      if (size != 1) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "DM has boundary face %d with %d support cells", faces[f], size);
-      ierr = DMComplexSetSupportSize(gdm, faces[f]+user->numGhostCells, 2);CHKERRQ(ierr);
-    }
-    ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
-    ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
-  }
-  ierr = DMSetUp(gdm);CHKERRQ(ierr);
-  /* Set cones and supports, may have to orient supports here */
-  ierr = DMComplexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-  ierr = PetscMalloc(PetscMax(maxConeSize, maxSupportSize) * sizeof(PetscInt), &newpoints);CHKERRQ(ierr);
-  ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  for(p = pStart; p < pEnd; ++p) {
-    const PetscInt *points, *orientations;
-    PetscInt        size, i, newp = p >= cEnd ? p+user->numGhostCells : p;
-
-    ierr = DMComplexGetConeSize(dm, p, &size);CHKERRQ(ierr);
-    ierr = DMComplexGetCone(dm, p, &points);CHKERRQ(ierr);
-    ierr = DMComplexGetConeOrientation(dm, p, &orientations);CHKERRQ(ierr);
-    for(i = 0; i < size; ++i) {
-      newpoints[i] = points[i] >= cEnd ? points[i]+user->numGhostCells : points[i];
-    }
-    ierr = DMComplexSetCone(gdm, newp, newpoints);CHKERRQ(ierr);
-    ierr = DMComplexSetConeOrientation(gdm, newp, orientations);CHKERRQ(ierr);
-    ierr = DMComplexGetSupportSize(dm, p, &size);CHKERRQ(ierr);
-    ierr = DMComplexGetSupport(dm, p, &points);CHKERRQ(ierr);
-    for(i = 0; i < size; ++i) {
-      newpoints[i] = points[i] >= cEnd ? points[i]+user->numGhostCells : points[i];
-    }
-    ierr = DMComplexSetSupport(gdm, newp, newpoints);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(newpoints);CHKERRQ(ierr);
-  ghostCell = cEnd;
-  for(fs = 0; fs < numFS; ++fs) {
-    IS              faceIS;
-    const PetscInt *faces;
-    PetscInt        numFaces, f;
-
-    ierr = DMComplexGetStratumIS(dm, name, ids[fs], &faceIS);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(faceIS, &numFaces);CHKERRQ(ierr);
-    ierr = ISGetIndices(faceIS, &faces);CHKERRQ(ierr);
-    for(f = 0; f < numFaces; ++f, ++ghostCell) {
-      PetscInt newFace = faces[f] + user->numGhostCells;
-
-      ierr = DMComplexSetCone(gdm, ghostCell, &newFace);CHKERRQ(ierr);
-      ierr = DMComplexInsertSupport(gdm, newFace, 1, ghostCell);CHKERRQ(ierr);
-    }
-    ierr = ISRestoreIndices(faceIS, &faces);CHKERRQ(ierr);
-    ierr = ISDestroy(&faceIS);CHKERRQ(ierr);
-  }
-  ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
-  ierr = ISDestroy(&idIS);CHKERRQ(ierr);
-  ierr = DMComplexStratify(gdm);CHKERRQ(ierr);
-  /* Convert coordinates */
-  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &newCoordSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetNumFields(newCoordSection, 1);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldComponents(newCoordSection, 0, dim);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(newCoordSection, vStart+user->numGhostCells, vEnd+user->numGhostCells);CHKERRQ(ierr);
-  for(v = vStart; v < vEnd; ++v) {
-    ierr = PetscSectionSetDof(newCoordSection, v+user->numGhostCells, dim);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldDof(newCoordSection, v+user->numGhostCells, 0, dim);CHKERRQ(ierr);
-  }
-  ierr = PetscSectionSetUp(newCoordSection);CHKERRQ(ierr);
-  ierr = DMComplexSetCoordinateSection(gdm, newCoordSection);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMSetCoordinatesLocal(gdm, coordinates);CHKERRQ(ierr);
-  /* Convert labels */
-  ierr = DMComplexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
-  for(l = 0; l < numLabels; ++l) {
-    const char *lname;
-    PetscBool   isDepth;
-
-    ierr = DMComplexGetLabelName(dm, l, &lname);CHKERRQ(ierr);
-    ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
-    if (isDepth) continue;
-    ierr = DMComplexCreateLabel(gdm, lname);CHKERRQ(ierr);
-    ierr = DMComplexGetLabelIdIS(dm, lname, &idIS);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(idIS, &numFS);CHKERRQ(ierr);
-    ierr = ISGetIndices(idIS, &ids);CHKERRQ(ierr);
-    for(fs = 0; fs < numFS; ++fs) {
-      IS              pointIS;
-      const PetscInt *points;
-      PetscInt        numPoints;
-
-      ierr = DMComplexGetStratumIS(dm, lname, ids[fs], &pointIS);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
-      ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
-      for(p = 0; p < numPoints; ++p) {
-        PetscInt newpoint = points[p] >= cEnd ? points[p]+user->numGhostCells : points[p];
-
-        ierr = DMComplexSetLabelValue(gdm, lname, newpoint, ids[fs]);CHKERRQ(ierr);
-      }
-      ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
-      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
-    }
-    ierr = ISRestoreIndices(idIS, &ids);CHKERRQ(ierr);
-    ierr = ISDestroy(&idIS);CHKERRQ(ierr);
-  }
-  /* Convert pointSF */
-  const PetscSFNode *remotePoints;
-  PetscSFNode       *gremotePoints;
-  const PetscInt    *localPoints;
-  PetscInt          *glocalPoints,*newLocation,*newRemoteLocation;
-  PetscInt           numRoots, numLeaves;
-  PetscMPIInt        numProcs;
-
-  ierr = MPI_Comm_size(((PetscObject) dm)->comm, &numProcs);CHKERRQ(ierr);
-  ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
-  ierr = DMGetPointSF(gdm, &gsfPoint);CHKERRQ(ierr);
-  ierr = DMComplexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
-  if (numRoots >= 0) {
-    ierr = PetscMalloc2(numRoots,PetscInt,&newLocation,pEnd-pStart,PetscInt,&newRemoteLocation);CHKERRQ(ierr);
-    for (l=0; l<numRoots; l++) newLocation[l] = l + (l >= cEnd ? user->numGhostCells : 0);
-    ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
-    ierr = PetscMalloc(numLeaves * sizeof(PetscInt),    &glocalPoints);CHKERRQ(ierr);
-    ierr = PetscMalloc(numLeaves * sizeof(PetscSFNode), &gremotePoints);CHKERRQ(ierr);
-    for(l = 0; l < numLeaves; ++l) {
-      glocalPoints[l]        = localPoints[l] >= cEnd ? localPoints[l] + user->numGhostCells : localPoints[l];
-      gremotePoints[l].rank  = remotePoints[l].rank;
-      gremotePoints[l].index = newRemoteLocation[localPoints[l]];
-    }
-    ierr = PetscFree2(newLocation,newRemoteLocation);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(gsfPoint, numRoots+user->numGhostCells, numLeaves, glocalPoints, PETSC_OWN_POINTER, gremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  }
-  /* Make label for VTK output and ghost cells */
-  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sfPoint, PETSC_NULL, &numLeaves, &leafLocal, &leafRemote);CHKERRQ(ierr);
-  ierr = DMComplexCreateLabel(gdm, "vtk");CHKERRQ(ierr);
-  ierr = DMComplexCreateLabel(gdm, "ghost");CHKERRQ(ierr);
-  for(l = 0, c = cStart; l < numLeaves && c < cEnd; ++l, ++c) {
-    for(; c < leafLocal[l] && c < cEnd; ++c) {
-      ierr = DMComplexSetLabelValue(gdm, "vtk", c, 1);CHKERRQ(ierr);
-    }
-    if (leafLocal[l] >= cEnd) break;
-    if (leafRemote[l].rank == rank) {
-      ierr = DMComplexSetLabelValue(gdm, "vtk", c, 1);CHKERRQ(ierr);
-    } else {
-      ierr = DMComplexSetLabelValue(gdm, "ghost", c, 2);CHKERRQ(ierr);
-    }
-  }
-  for(; c < cEnd; ++c) {
-    ierr = DMComplexSetLabelValue(gdm, "vtk", c, 1);CHKERRQ(ierr);
-  }
-#if 0
-  ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMComplexViewLabel_Ascii(gdm, "vtk", PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-#endif
-  /* Make a label for ghost faces */
-  PetscInt fStart, fEnd, f;
-
-  ierr = DMComplexGetHeightStratum(gdm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  for(f = fStart; f < fEnd; ++f) {
-    PetscInt numCells;
-
-    ierr = DMComplexGetSupportSize(gdm, f, &numCells);CHKERRQ(ierr);
-    if (numCells < 2) {
-      ierr = DMComplexSetLabelValue(gdm, "ghost", f, 1);CHKERRQ(ierr);
-    } else {
-      const PetscInt *cells;
-      PetscInt        vA, vB;
-
-      ierr = DMComplexGetSupport(gdm, f, &cells);CHKERRQ(ierr);
-      ierr = DMComplexGetLabelValue(gdm, "vtk", cells[0], &vA);CHKERRQ(ierr);
-      ierr = DMComplexGetLabelValue(gdm, "vtk", cells[1], &vB);CHKERRQ(ierr);
-      if (!vA && !vB) {ierr = DMComplexSetLabelValue(gdm, "ghost", f, 1);CHKERRQ(ierr);}
-    }
-  }
-#if 0
-  ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMComplexViewLabel_Ascii(gdm, "ghost", PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-#endif
-
-  ierr = DMSetFromOptions(gdm);CHKERRQ(ierr);
-  ierr = DMDestroy(dmGhosted);CHKERRQ(ierr);
-  *dmGhosted = gdm;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "ConstructCellBoundary"
 PetscErrorCode ConstructCellBoundary(DM dm, User user)
 {
@@ -1558,7 +1300,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
       fg->normal[0] = -fg->normal[0];
       fg->normal[1] = -fg->normal[1];
     }
-    if (Dot2(fg->normal,v) <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Face direction could not be fixed");
+    if (Dot2(fg->normal,v) <= 0) SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g) v (%g,%g)", f, fg->normal[0], fg->normal[1], v[0], v[1]);
     /* Update minimum radius */
     Waxpy2(-1,fg->centroid,cL->centroid,v);
     minradius = PetscMin(minradius,Norm2(v));
@@ -2458,8 +2200,14 @@ int main(int argc, char **argv)
     dm   = dmDist;
   }
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  {
+    DM gdm;
 
-  ierr = ConstructGhostCells(&dm, user);CHKERRQ(ierr);
+    ierr = DMComplexGetHeightStratum(dm, 0, PETSC_NULL, &user->cEndInterior);CHKERRQ(ierr);
+    ierr = DMComplexConstructGhostCells(dm, PETSC_NULL, &user->numGhostCells, &gdm);CHKERRQ(ierr);
+    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    dm   = gdm;
+  }
   if (splitFaces) {ierr = ConstructCellBoundary(dm, user);CHKERRQ(ierr);}
   ierr = SplitFaces(&dm, "split faces", user);CHKERRQ(ierr);
   ierr = ConstructGeometry(dm, &user->facegeom, &user->cellgeom, user);CHKERRQ(ierr);
