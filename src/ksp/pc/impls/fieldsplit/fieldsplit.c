@@ -77,12 +77,13 @@ static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
-  PetscBool         iascii;
+  PetscBool         iascii,isdraw;
   PetscInt          i,j;
   PC_FieldSplitLink ilink = jac->head;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
     if (jac->bs > 0) {
       ierr = PetscViewerASCIIPrintf(viewer,"  FieldSplit with %s composition: total splits = %D, blocksize = %D\n",PCCompositeTypes[jac->type],jac->nsplits,jac->bs);CHKERRQ(ierr);
@@ -113,8 +114,22 @@ static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
       ilink = ilink->next;
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PCFieldSplit",((PetscObject)viewer)->type_name);
+  } if (isdraw) {
+    PetscDraw draw;
+    PetscReal x,y,w,wd;
+
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
+    w    = 2*PetscMin(1.0 - x,x);
+    wd   = w/(jac->nsplits + 1);
+    x    = x - wd*(jac->nsplits-1)/2.0;
+    for (i=0; i<jac->nsplits; i++) {
+      ierr = PetscDrawPushCurrentPoint(draw,x,y);CHKERRQ(ierr);
+      ierr = KSPView(ilink->ksp,viewer);CHKERRQ(ierr);
+      ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+      x    += wd;
+      ilink = ilink->next;
+    }
   }
   PetscFunctionReturn(0);
 }

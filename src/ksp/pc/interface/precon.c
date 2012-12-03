@@ -1582,21 +1582,16 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     }
   } else if (isdraw) {
     PetscDraw draw;
-    char      str[12];
+    char      str[25];
     PetscReal x,y,bottom,h;
-    PetscBool flg;
+    PetscInt  n;
 
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)pc,PCNONE,&flg);CHKERRQ(ierr);
-    if (!flg) {
-      ierr = PetscStrcpy(str,"PC: ");CHKERRQ(ierr);
-      ierr = PetscStrcat(str,((PetscObject)pc)->type_name);CHKERRQ(ierr);
-      ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
-      bottom = y - h;
-    } else {
-      bottom = y;
-    }
+    ierr = MatGetSize(pc->mat,&n,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(str,25,"PC: %s (%D)",((PetscObject)pc)->type_name,n);CHKERRQ(ierr);
+    ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
+    bottom = y - h;
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
     if (pc->ops->view) {
       ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);

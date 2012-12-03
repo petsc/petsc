@@ -196,12 +196,13 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
   PetscErrorCode       ierr;
   PetscMPIInt          rank;
   PetscInt             i;
-  PetscBool            iascii,isstring;
+  PetscBool            iascii,isstring,isdraw;
   PetscViewer          sviewer;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
     if (jac->use_true_local) {
       ierr = PetscViewerASCIIPrintf(viewer,"  block Jacobi: using true local matrix, number of blocks = %D\n",jac->n);CHKERRQ(ierr);
@@ -250,8 +251,20 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
     if (jac->ksp) {ierr = KSPView(jac->ksp[0],sviewer);CHKERRQ(ierr);}
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for block Jacobi",((PetscObject)viewer)->type_name);
+  } else if (isdraw) {
+    PetscDraw draw;
+    char      str[25];
+    PetscReal x,y,bottom,h;
+
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(str,25,"Number blocks %D",jac->n);CHKERRQ(ierr);
+    ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
+    bottom = y - h;
+    ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
+    /* warning the communicator on viewer is different then on ksp in parallel */
+    if (jac->ksp) {ierr = KSPView(jac->ksp[0],viewer);CHKERRQ(ierr);}
+    ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
