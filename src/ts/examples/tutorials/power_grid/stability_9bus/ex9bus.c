@@ -720,7 +720,6 @@ int main(int argc,char **argv)
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SetInitialGuess(X,&user);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
 
   ierr = TSSetDuration(ts,1000,user.tfaulton);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.01);CHKERRQ(ierr);
@@ -735,10 +734,10 @@ int main(int argc,char **argv)
   PetscInt row_loc,col_loc;
   PetscScalar val;
   row_loc = 2*user.faultbus; col_loc = 2*user.faultbus+1; /* Location for G */
-  val = 1000.0;
+  val = -1000.0;
   ierr = MatSetValues(user.Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
   row_loc = 2*user.faultbus+1; col_loc = 2*user.faultbus; /* Location for G */
-  val = 1000.0;
+  val = -1000.0;
   ierr = MatSetValues(user.Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
   
   ierr = MatAssemblyBegin(user.Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -751,10 +750,10 @@ int main(int argc,char **argv)
 
   /* Remove the fault */
   row_loc = 2*user.faultbus; col_loc = 2*user.faultbus+1;
-  val = -1000.0;
+  val = 1000.0;
   ierr = MatSetValues(user.Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
   row_loc = 2*user.faultbus+1; col_loc = 2*user.faultbus;
-  val = -1000.0;
+  val = 1000.0;
   ierr = MatSetValues(user.Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
   
   ierr = MatAssemblyBegin(user.Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
