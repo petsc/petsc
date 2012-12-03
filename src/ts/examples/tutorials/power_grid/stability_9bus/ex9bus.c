@@ -764,6 +764,15 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,1000,user.tmax);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,user.tfaultoff,.01);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
+
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.Ybus);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.V0);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.dmgen);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.dmnet);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.dmpgrid);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return(0);
 }
