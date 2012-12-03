@@ -43,7 +43,7 @@ in current balance form using rectangular coordiantes.\n\n";
 #include <petscdmcomposite.h>
 
 #define freq 60
-#define w_s (2*PETSC_PI*freq)
+#define w_s 1 //(2*PETSC_PI*freq)
 
 /* Sizes and indices */
 const PetscInt nbus = 9; /* Number of network buses */
@@ -279,7 +279,7 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X, Vec Xdot, Vec F, Userctx* user
 
     /* Generator differential equations */
     fgen[idx]   = Td0p[i]*xdotgen[idx] + Eqp + (Xd[i] - Xdp[i])*Id - Efd;
-    fgen[idx+1] = Tq0p[i]*xdotgen[idx+1] - Edp + (Xq[i] - Xqp[i])*Iq;
+    fgen[idx+1] = Tq0p[i]*xdotgen[idx+1] + Edp - (Xq[i] - Xqp[i])*Iq;
     fgen[idx+2] = xdotgen[idx+2] - w + w_s;
     fgen[idx+3] = M[i]*xdotgen[idx+3] - TM[i] + Edp*Id + Eqp*Iq + (Xqp[i] - Xdp[i])*Id*Iq + D[i]*(w - w_s);
 
@@ -446,10 +446,10 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat
 
     ierr = MatSetValues(J,1,row,3,col,val,INSERT_VALUES);CHKERRQ(ierr);
 
-    //    fgen[idx+1] = Tq0p[i]*xdotgen[idx+1] - Edp + (Xq[i] - Xqp[i])*Iq;
+    //    fgen[idx+1] = Tq0p[i]*xdotgen[idx+1] + Edp - (Xq[i] - Xqp[i])*Iq;
     row[0] = idx + 1;
     col[0] = idx + 1;       col[1] = idx+5;
-    val[0] = Tq0p[i]*a - 1; val[1] = Xq[i] - Xqp[i];
+    val[0] = Tq0p[i]*a + 1; val[1] = -(Xq[i] - Xqp[i]);
     ierr = MatSetValues(J,1,row,2,col,val,INSERT_VALUES);CHKERRQ(ierr);
 
     //    fgen[idx+2] = xdotgen[idx+2] - w + w_s;
@@ -677,7 +677,7 @@ int main(int argc,char **argv)
     user.tfaultoff = 0.2;
     user.faultbus = 4;
     ierr  = PetscOptionsReal("-tfaulton","","",user.tfaulton,&user.tfaulton,PETSC_NULL);CHKERRQ(ierr);
-    ierr  = PetscOptionsReal("-tfaultoff","","",user.tfaulton,&user.tfaulton,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = PetscOptionsReal("-tfaultoff","","",user.tfaultoff,&user.tfaultoff,PETSC_NULL);CHKERRQ(ierr);
     ierr  = PetscOptionsInt("-faultbus","","",user.faultbus,&user.faultbus,PETSC_NULL);CHKERRQ(ierr);
     user.t0 = 0.0;
     user.tmax = 10.0;
