@@ -704,6 +704,9 @@ runex19_bjacobi: #test hierarchical pc
 	   else  echo  ${PWD} "\nPossible problem with with ex19_bjacobi, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
 
+runex19_draw: 
+	-@${MPIEXEC} -n 1 ./ex19 -pc_type fieldsplit -snes_view_draw -fieldsplit_x_velocity_pc_type mg -fieldsplit_x_velocity_pc_mg_levels 2 -da_refine 1 -fieldsplit_x_velocity_mg_coarse_pc_type svd 
+
 runex18:
 	-@${MPIEXEC} -n 1 ./ex18 -pc_type mg -ksp_type fgmres -da_refine 2 -pc_mg_galerkin -snes_view > ex18_1.tmp 2>&1; \
 	   if (${DIFF} output/ex18_1.out ex18_1.tmp) then true; \
@@ -931,7 +934,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
                                  ex58.PETSc runex58 runex58_2 ex58.rm \
                                  ex54.PETSc ex54.rm ex59.PETSc ex59.rm
-TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X
+TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw ex19.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex40f90.PETSc runex40f90 ex40f90.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex30.PETSc ex30.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex5f.PETSc runex5f runex5f_3 ex5f.rm
