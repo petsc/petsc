@@ -296,6 +296,9 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     ierr = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_BLUE,PETSC_DRAW_BLACK,str,PETSC_NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
+    if (snes->ops->view) {
+      ierr = (*snes->ops->view)(snes,viewer);CHKERRQ(ierr);
+    }
   }
   if (snes->linesearch) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
