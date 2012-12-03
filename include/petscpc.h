@@ -402,7 +402,7 @@ PETSC_EXTERN PetscErrorCode PCFieldSplitGetIS(PC,const char[],IS*);
 
 .seealso: PCFieldSplitSchurPrecondition()
 E*/
-typedef enum {PC_FIELDSPLIT_SCHUR_PRE_SELF,PC_FIELDSPLIT_SCHUR_PRE_DIAG,PC_FIELDSPLIT_SCHUR_PRE_USER} PCFieldSplitSchurPreType;
+typedef enum {PC_FIELDSPLIT_SCHUR_PRE_SELF,PC_FIELDSPLIT_SCHUR_PRE_A11,PC_FIELDSPLIT_SCHUR_PRE_USER} PCFieldSplitSchurPreType;
 PETSC_EXTERN const char *const PCFieldSplitSchurPreTypes[];
 
 /*E

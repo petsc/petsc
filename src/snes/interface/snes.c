@@ -1785,7 +1785,6 @@ PetscErrorCode  SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetPicard() to provide Picard matrix.");
   ierr = VecScale(f,-1.0);CHKERRQ(ierr);
   ierr = MatMultAdd(snes->jacobian,x,f,f);CHKERRQ(ierr);
-  ierr = VecScale(f,-1.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

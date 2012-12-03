@@ -51,10 +51,10 @@
 ! PCFieldSplitSchurPreType
 !
       PetscEnum PC_FIELDSPLIT_SCHUR_PRE_SELF
-      PetscEnum PC_FIELDSPLIT_SCHUR_PRE_DIAG
+      PetscEnum PC_FIELDSPLIT_SCHUR_PRE_A11
       PetscEnum PC_FIELDSPLIT_SCHUR_PRE_USER
       parameter (PC_FIELDSPLIT_SCHUR_PRE_SELF=0)
-      parameter (PC_FIELDSPLIT_SCHUR_PRE_DIAG=1)
+      parameter (PC_FIELDSPLIT_SCHUR_PRE_A11=1)
       parameter (PC_FIELDSPLIT_SCHUR_PRE_USER=2)
 !
 ! PCPARMSGlobalType
