@@ -358,7 +358,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
 PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
 {
   SNES_FAS       *fas = (SNES_FAS *) snes->data;
-  PetscBool      isFine, iascii;
+  PetscBool      isFine,iascii,isdraw;
   PetscInt       i;
   PetscErrorCode ierr;
   SNES           smoothu, smoothd, levelsnes;
@@ -366,7 +366,8 @@ PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = SNESFASCycleIsFine(snes, &isFine);CHKERRQ(ierr);
   if (isFine) {
-    ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
     if (iascii) {
       ierr = PetscViewerASCIIPrintf(viewer, "FAS: type is %s, levels=%D, cycles=%D\n",  SNESFASTypes[fas->fastype], fas->levels, fas->n_cycles);CHKERRQ(ierr);
       if (fas->galerkin) {
@@ -393,6 +394,27 @@ PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
           ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
           ierr = SNESView(smoothu,viewer);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        }
+      }
+    } else if (isdraw) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"trying to draw");CHKERRQ(ierr);
+      PetscDraw draw;
+      PetscReal x,y,bottom,th,wth;
+      SNES_FAS *curfas = fas;
+      ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+      ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
+      ierr = PetscDrawStringGetSize(draw,&wth,&th);CHKERRQ(ierr);
+      bottom = y - th;
+      while (curfas) {
+        ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
+        if (curfas->smoothd) ierr = SNESView(curfas->smoothd,viewer);CHKERRQ(ierr);
+        ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+        /* this is totally bogus but we have no way of knowing how low the previous one was draw to */
+        bottom -= 5*th;
+        if (curfas->next) {
+          curfas = (SNES_FAS*)curfas->next->data;
+        } else {
+          curfas = PETSC_NULL;
         }
       }
     } else {
