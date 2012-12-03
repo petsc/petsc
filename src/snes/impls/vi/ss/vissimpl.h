@@ -27,7 +27,7 @@ typedef struct {
   PetscErrorCode (*computeuserfunction)(SNES,Vec,Vec,void*);
   /* user supplied function for checking redundant equations for SNESSolveVI_RS2 */
   PetscErrorCode (*checkredundancy)(SNES,IS,IS*,void*);
-} SNES_VISS;
+} SNES_VINEWTONSSLS;
 
 #endif
 

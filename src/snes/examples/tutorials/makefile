@@ -511,19 +511,19 @@ runex7:
            ${RM} -f ex7_1.tmp
 
 runex9:
-	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type virs -feasible 1 > ex9_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type vinewtonrsls -feasible 1 > ex9_1.tmp 2>&1; \
            ${DIFF} output/ex9_1.out ex9_1.tmp || printf  "${PWD}\nPossible problem with with ex9_1, diffs above \n=========================================\n"; \
            ${RM} -f ex9_1.tmp
 runex9_2:
-	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type viss -feasible 1 > ex9_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type vinewtonssls -feasible 1 > ex9_2.tmp 2>&1; \
            ${DIFF} output/ex9_2.out ex9_2.tmp || printf  "${PWD}\nPossible problem with with ex9_2, diffs above \n=========================================\n"; \
            ${RM} -f ex9_2.tmp
 runex9_3:
-	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type virs -feasible 0 > ex9_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type vinewtonrsls -feasible 0 > ex9_3.tmp 2>&1; \
            ${DIFF} output/ex9_3.out ex9_3.tmp || printf  "${PWD}\nPossible problem with with ex9_3, diffs above \n=========================================\n"; \
            ${RM} -f ex9_3.tmp
 runex9_4:
-	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type viss -feasible 0 > ex9_4.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex9 -da_refine 1 -snes_monitor_short -snes_type vinewtonssls -feasible 0 > ex9_4.tmp 2>&1; \
            ${DIFF} output/ex9_4.out ex9_4.tmp || printf  "${PWD}\nPossible problem with with ex9_4, diffs above \n=========================================\n"; \
            ${RM} -f ex9_4.tmp
 runex14:
@@ -907,7 +907,7 @@ runex58:
 	   ${DIFF} output/ex58_1.out ex58.tmp || echo  ${PWD} "\nPossible problem with ex58_1, diffs above \n========================================="; \
 	   ${RM} -f ex58.tmp
 runex58_2:
-	-@${MPIEXEC} -n 1 ./ex58 -snes_type viss -pc_type mg -ksp_monitor_short -pc_mg_galerkin -da_refine 5   -snes_vi_monitor -pc_mg_type full -snes_rtol 1.e-12 -snes_max_it 100 -snes_converged_reason > ex58.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex58 -snes_type vinewtonssls -pc_type mg -ksp_monitor_short -pc_mg_galerkin -da_refine 5   -snes_vi_monitor -pc_mg_type full -snes_rtol 1.e-12 -snes_max_it 100 -snes_converged_reason > ex58.tmp 2>&1; \
 	   ${DIFF} output/ex58_2.out ex58.tmp || echo  ${PWD} "\nPossible problem with ex58_2, diffs above \n========================================="; \
 	   ${RM} -f ex58.tmp
 

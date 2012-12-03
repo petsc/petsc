@@ -1809,7 +1809,7 @@ PetscErrorCode  SNESPicardComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStru
 +  snes - the SNES context
 .  r - vector to store function value
 .  func - function evaluation routine
-.  jmat - normally the same as mat but you can pass another matrix for which you compute the Jacobian of A(x) x - b(x) (see jmat below)
+.  jmat - normally the same as mat but you can pass another matrix for which you compute A(x) x - b(x) (see jmat below)
 .  mat - matrix to store A
 .  mfunc  - function to compute matrix value
 -  ctx - [optional] user-defined context for private data for the
@@ -1825,7 +1825,7 @@ $    func (SNES snes,Vec x,Vec f,void *ctx);
 $     mfunc (SNES snes,Vec x,Mat *jmat,Mat *mat,int *flag,void *ctx);
 
 +  x - input vector
-.  jmat - Form Jacobian matrix of A(x) x - b(x) if available, not there is really no reason to use it in this way since then you can just use SNESSetJacobian(),
+.  jmat - Form  matrix of A(x) x - b(x) if available, not there is really no reason to use it in this way since then you can just use SNESSetJacobian(),
           normally just pass mat in this location
 .  mat - form A(x) matrix
 .  flag - flag indicating information about the preconditioner matrix
@@ -1833,6 +1833,9 @@ $     mfunc (SNES snes,Vec x,Mat *jmat,Mat *mat,int *flag,void *ctx);
 -  ctx - [optional] user-defined Jacobian context
 
    Notes:
+    We do not recomemend using this routine. It is far better to provide the nonlinear function F() and some approximation to the Jacobian and use
+    an approximate Newton solver. This interface is provided to allow porting/testing a previous Picard based code in PETSc before converting it to approximate Newton.
+
     One can call SNESSetPicard() or SNESSetFunction() (and possibly SNESSetJacobian()) but cannot call both
 
 $     Solves the equation A(x) x = b(x) via the defect correction algorithm A(x^{n}) (x^{n+1} - x^{n}) = b(x^{n}) - A(x^{n})x^{n}
@@ -1847,7 +1850,7 @@ $     Note that when an exact solver is used this corresponds to the "classic" P
    believe it is the iteration  A(x^{n}) x^{n+1} = b(x^{n}) hence we use the name Picard. If anyone has an authoritative  reference that defines the Picard iteration
    different please contact us at petsc-dev@mcs.anl.gov and we'll have an entirely new argument :-).
 
-   Level: beginner
+   Level: intermediate
 
 .keywords: SNES, nonlinear, set, function
 

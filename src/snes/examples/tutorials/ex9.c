@@ -94,7 +94,7 @@ int main(int argc,char **argv)
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
   ierr = SNESSetApplicationContext(snes,&user);CHKERRQ(ierr);
-  ierr = SNESSetType(snes,SNESVIRS);CHKERRQ(ierr);
+  ierr = SNESSetType(snes,SNESVINEWTONRSLS);CHKERRQ(ierr);
   ierr = SNESVISetComputeVariableBounds(snes,&FormBounds);CHKERRQ(ierr);
 
   ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
