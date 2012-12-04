@@ -251,9 +251,6 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n) {
   SNES_FAS * fas =  (SNES_FAS *)snes->data;
   PetscErrorCode ierr = 0;
   PetscFunctionBegin;
-  if (!fas->smoothu) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothu);
-  }
   if (!fas->smoothd) {
     ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);
   }

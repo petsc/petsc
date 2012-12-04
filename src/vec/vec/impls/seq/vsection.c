@@ -1937,6 +1937,40 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSFCreateRemoteOffsets"
+PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, PetscSection leafSection, PetscInt **remoteOffsets)
+{
+  PetscSF         embedSF;
+  const PetscInt *indices;
+  IS              selected;
+  PetscInt        numRoots, rpStart, rpEnd, lpStart, lpEnd, isSize;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  *remoteOffsets = PETSC_NULL;
+  ierr = PetscSFGetGraph(sf, &numRoots, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  if (numRoots < 0) {PetscFunctionReturn(0);}
+  ierr = PetscMalloc((lpEnd - lpStart) * sizeof(PetscInt), &remoteOffsets);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(rootSection, &rpStart, &rpEnd);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(leafSection, &lpStart, &lpEnd);CHKERRQ(ierr);
+  isSize = PetscMin(numRoots, rpEnd - rpStart);
+  ierr = ISCreateStride(PETSC_COMM_SELF, isSize, rpStart, 1, &selected);CHKERRQ(ierr);
+  ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
+#if 0
+  ierr = PetscSFCreateEmbeddedSF(sf, isSize, indices, &embedSF);CHKERRQ(ierr);
+#else
+  embedSF = sf;
+  ierr = PetscObjectReference((PetscObject) embedSF);CHKERRQ(ierr);
+#endif
+  ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
+  ierr = ISDestroy(&selected);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &remoteOffsets[-lpStart]);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &remoteOffsets[-lpStart]);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSFCreateSectionSF"
 /*@C
   PetscSFCreateSectionSF - Create an expanded SF of dofs, assuming the input SF relates points
@@ -1990,30 +2024,6 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   }
   ierr = PetscMalloc(numIndices * sizeof(PetscInt), &localIndices);CHKERRQ(ierr);
   ierr = PetscMalloc(numIndices * sizeof(PetscSFNode), &remoteIndices);CHKERRQ(ierr);
-  /* Get offsets for remote data */
-  if (!remoteOffsets) {
-    PetscSF         embedSF;
-    const PetscInt *indices;
-    IS              selected;
-    PetscInt        rpStart, rpEnd, isSize;
-
-    ierr = PetscMalloc((lpEnd - lpStart) * sizeof(PetscInt), &remoteOffsets);CHKERRQ(ierr);
-    ierr = PetscSectionGetChart(rootSection, &rpStart, &rpEnd);CHKERRQ(ierr);
-    isSize = PetscMin(numRoots, rpEnd - rpStart);
-    ierr = ISCreateStride(PETSC_COMM_SELF, isSize, rpStart, 1, &selected);CHKERRQ(ierr);
-    ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
-#if 0
-    ierr = PetscSFCreateEmbeddedSF(sf, isSize, indices, &embedSF);CHKERRQ(ierr);
-#else
-    embedSF = sf;
-    ierr = PetscObjectReference((PetscObject) embedSF);CHKERRQ(ierr);
-#endif
-    ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
-    ierr = ISDestroy(&selected);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &remoteOffsets[-lpStart]);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &remoteOffsets[-lpStart]);CHKERRQ(ierr);
-    ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);
-  }
   /* Create new index graph */
   for (i = 0, ind = 0; i < numPoints; ++i) {
     PetscInt localPoint = localPoints ? localPoints[i] : i;

@@ -492,15 +492,25 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     }
   } else if (isdraw) {
     PetscDraw draw;
-    PetscReal x,y,bottom,th;
+    PetscReal x,w,y,bottom,th;
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
     ierr = PetscDrawStringGetSize(draw,PETSC_NULL,&th);CHKERRQ(ierr);
     bottom = y - th;
     for (i=levels-1; i>=0; i--) {
-      ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
-      ierr = KSPView(mglevels[i]->smoothd,viewer);CHKERRQ(ierr);
-      ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+      if (!mglevels[i]->smoothu || (mglevels[i]->smoothu == mglevels[i]->smoothd)) {
+        ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
+        ierr = KSPView(mglevels[i]->smoothd,viewer);CHKERRQ(ierr);
+        ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+      } else {
+        w = 0.5*PetscMin(1.0-x,x);
+        ierr = PetscDrawPushCurrentPoint(draw,x+w,bottom);CHKERRQ(ierr);
+        ierr = KSPView(mglevels[i]->smoothd,viewer);CHKERRQ(ierr);
+        ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+        ierr = PetscDrawPushCurrentPoint(draw,x-w,bottom);CHKERRQ(ierr);
+        ierr = KSPView(mglevels[i]->smoothu,viewer);CHKERRQ(ierr);
+        ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+      }
       /* this is totally bogus but we have no way of knowing how low the previous one was draw to */
       bottom -= 5*th;
     }
