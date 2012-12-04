@@ -1082,15 +1082,21 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,PETSC_NULL,(TSIFunction) IFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,(TSIJacobian)IJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
-  ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SetInitialGuess(X,&user);CHKERRQ(ierr);
+  /* Just to set up the Jacobian structure */
+  Vec Xdot;
+  MatStructure flg;
+  ierr = VecDuplicate(X,&Xdot);CHKERRQ(ierr);
+  ierr = IJacobian(ts,0.0,X,Xdot,0.0,&J,&J,&flg,&user);CHKERRQ(ierr);
+  ierr = VecDestroy(&Xdot);CHKERRQ(ierr);
+
   /* Save initial solution */
   PetscScalar *x,*mat; 
   PetscInt idx=user.stepnum*(user.neqs_pgrid+1);
@@ -1105,6 +1111,7 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,1000,user.tfaulton);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr);
 
   /* Prefault period */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
