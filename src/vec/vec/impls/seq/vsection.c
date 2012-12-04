@@ -1952,7 +1952,7 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   if (numRoots < 0) {PetscFunctionReturn(0);}
   ierr = PetscSectionGetChart(rootSection, &rpStart, &rpEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(leafSection, &lpStart, &lpEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc((lpEnd - lpStart) * sizeof(PetscInt), &remoteOffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc((lpEnd - lpStart) * sizeof(PetscInt), remoteOffsets);CHKERRQ(ierr);
   isSize = PetscMin(numRoots, rpEnd - rpStart);
   ierr = ISCreateStride(PETSC_COMM_SELF, isSize, rpStart, 1, &selected);CHKERRQ(ierr);
   ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
@@ -1964,8 +1964,8 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
 #endif
   ierr = ISRestoreIndices(selected, &indices);CHKERRQ(ierr);
   ierr = ISDestroy(&selected);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &remoteOffsets[-lpStart]);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &remoteOffsets[-lpStart]);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart]);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&embedSF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
