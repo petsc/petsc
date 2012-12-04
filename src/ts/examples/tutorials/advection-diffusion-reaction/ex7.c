@@ -12,9 +12,19 @@ static char help[] = ".\n";
 #include <petscts.h>
 
 /*
-   User-defined routines
+   User-defined data structures and routines
 */
-extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*),InitialConditions(DM,Vec);
+
+/* AppCtx */
+typedef struct {
+  PetscInt  N;              /* number of dofs */
+  PetscBool viewJacobian;
+} AppCtx;
+
+extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
+extern PetscErrorCode InitialConditions(DM,Vec);
+extern PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -22,33 +32,42 @@ int main(int argc,char **argv)
 {
   TS              ts;                 /* nonlinear solver */
   Vec             U;                  /* solution, residual vectors */
+  Mat             J;                  /* Jacobian matrix */
+  PetscInt        maxsteps = 1000;
   PetscErrorCode  ierr;
   DM              da;
-  PetscInt        N = 2;
+  AppCtx          user;
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char *)0,help);
+  user.viewJacobian = PETSC_FALSE;
+  user.N            = 1;
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&user.N,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,-8,N,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,-8,user.N,1,PETSC_NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Extract global vectors from DMDA; then duplicate for remaining
+   Extract global vectors from DMDA; then duplicate for remaining
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&U);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,J,J,IJacobian,&user);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,8 +79,8 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetInitialTimeStep(ts,0.0,.0001);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,PETSC_DEFAULT,1.0);CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -126,22 +145,27 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   ierr = DMDAVecGetArrayDOF(da,localU,&u);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,Udot,&udot);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,F,&f);CHKERRQ(ierr);
-
+ 
   /*
      Get local grid boundaries
   */
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
+  /* 
+     Neumann BC
+  */
   if (!xs) {
     for (i=0; i<N; i++) {
-      f[0][i] = udot[0][i]; 
+      f[0][i] = u[1][i] - u[0][i];
+      // f[0][i] = udot[0][i];
     }
     xs++;
     xm--;
   }
   if (xs+xm == Mx) {
     for (i=0; i<N; i++) {
-      f[Mx-1][i] = udot[Mx-1][i];
+      f[Mx-1][i] = u[Mx-1][i] - u[Mx-2][i];
+      //f[Mx-1][i] = udot[Mx-1][i];
     }
     xm--;
   }
@@ -159,11 +183,15 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
     }
 
     /* reaction terms */
-    f[j][1] -= 5*u[j][0];
-    f[j][0] += 5*u[j][0];
-
+    /*
+    for (i=0; i<N/3; i++) {
+      f[j][i]   += 500*u[j][i]*u[j][i+1];
+      f[j][i+1] += 500*u[j][i]*u[j][i+1];
+      f[j][i+2] -= 500*u[j][i]*u[j][i+1];
+    }
+     */
     /* forcing term */
-    f[j][0] -= 5*PetscExpScalar(1.0 - x);
+    //f[j][0] -= 5*PetscExpScalar(1.0 - x);
   }
 
   /*
@@ -173,6 +201,59 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   ierr = DMDAVecRestoreArrayDOF(da,Udot,&udot);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArrayDOF(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "IJacobian"
+PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat *Jpre,MatStructure *str,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,c,Mx,xs,xm,nc;
+  DM             da;
+  MatStencil     col[3],row;
+  PetscScalar    vals[3],hx,sx;
+  AppCtx         *user = (AppCtx*)ctx;
+  PetscInt       N = user->N;
+
+  PetscFunctionBegin;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+
+  hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
+
+  for (c=0; c<N; c++){
+    for (i=xs; i<xs+xm; i++){
+      nc    = 0;
+      row.i = i; row.c = c;
+      
+      if (i == 0) {  /* Left Neumann */
+        col[nc].c = c; col[nc].i = i;   vals[nc++] = 1.0;
+        col[nc].c = c; col[nc].i = i+1; vals[nc++] = -1.0;
+      } else if (i == Mx-1){/* Right Neumann */
+        col[nc].c = c; col[nc].i = i;   vals[nc++] = 1.0;
+        col[nc].c = c; col[nc].i = i-1; vals[nc++] = -1.0;
+      } else {   /* Interior */
+        col[nc].c = c; col[nc].i = i-1; vals[nc++] = -sx;
+        col[nc].c = c; col[nc].i = i;   vals[nc++] = 2.0*sx + a;
+        col[nc].c = c; col[nc].i = i+1; vals[nc++] = -sx;
+      }
+      ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*J != *Jpre) {
+    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+
+  if (user->viewJacobian){
+    ierr = PetscPrintf(((PetscObject)*Jpre)->comm,"Jpre:\n");CHKERRQ(ierr);
+    ierr = MatView(*Jpre,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -207,7 +288,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   for (j=xs; j<xs+xm; j++) {
     x = j*hx;
     for (i=0; i<N; i++) {
-      u[j][i] = (i+1)*PetscCosScalar(.5*PETSC_PI*x);
+      u[j][i] = PetscCosScalar(.5*PETSC_PI*x);
     }
   }
 
