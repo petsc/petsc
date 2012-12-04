@@ -179,9 +179,6 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   if (!fas->smoothd) {
     ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);CHKERRQ(ierr);
   }
-  if (!fas->smoothu && fas->level != fas->levels - 1) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothu);CHKERRQ(ierr);
-  }
 
   if (snes->dm) {
     /* set the smoother DMs properly */
@@ -397,18 +394,27 @@ PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
         }
       }
     } else if (isdraw) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"trying to draw");CHKERRQ(ierr);
       PetscDraw draw;
-      PetscReal x,y,bottom,th,wth;
+      PetscReal x,w,y,bottom,th,wth;
       SNES_FAS *curfas = fas;
       ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
       ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
       ierr = PetscDrawStringGetSize(draw,&wth,&th);CHKERRQ(ierr);
       bottom = y - th;
       while (curfas) {
-        ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
-        if (curfas->smoothd) ierr = SNESView(curfas->smoothd,viewer);CHKERRQ(ierr);
-        ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+        if (!curfas->smoothu) {
+          ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
+          if (curfas->smoothd) ierr = SNESView(curfas->smoothd,viewer);CHKERRQ(ierr);
+          ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+        } else {
+          w = 0.5*PetscMin(1.0-x,x);
+          ierr = PetscDrawPushCurrentPoint(draw,x-w,bottom);CHKERRQ(ierr);
+          if (curfas->smoothd) ierr = SNESView(curfas->smoothd,viewer);CHKERRQ(ierr);
+          ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+          ierr = PetscDrawPushCurrentPoint(draw,x+w,bottom);CHKERRQ(ierr);
+          if (curfas->smoothu) ierr = SNESView(curfas->smoothu,viewer);CHKERRQ(ierr);
+          ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+        }
         /* this is totally bogus but we have no way of knowing how low the previous one was draw to */
         bottom -= 5*th;
         if (curfas->next) {
