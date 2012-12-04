@@ -19,11 +19,12 @@
 #define kspmonitorsingularvalue_   KSPMONITORSINGULARVALUE
 #define kspfgmresmodifypcksp_      KSPFGMRESMODIFYPCKSP
 #define kspfgmresmodifypcnochange_ KSPFGMRESMODIFYPCNOCHANGE
-#define kspsetcomputerhs_              KSPSETCOMPUTERHS_
+#define kspsetcomputerhs_              KSPSETCOMPUTERHS
 #define kspsetcomputeinitialguess_     KSPSETCOMPUTEINITIALGUESS
-#define kspsetcomputeoperators_        KSPSETCOMPUTEOPERATORS_
-#define dmkspsetcomputerhs_            DMKSPSETCOMPUTERHS_       /* zdmkspf.c */
-#define dmkspsetcomputeoperators_      DMKSPSETCOMPUTEOPERATORS_ /* zdmkspf. */
+#define kspsetcomputeoperators_        KSPSETCOMPUTEOPERATORS
+#define dmkspsetcomputerhs_            DMKSPSETCOMPUTERHS          /* zdmkspf.c */
+#define dmkspsetcomputeinitialguess_   DMKSPSETCOMPUTEINITIALGUESS /* zdmkspf.c */
+#define dmkspsetcomputeoperators_      DMKSPSETCOMPUTEOPERATORS    /* zdmkspf.c */
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define kspmonitorset_                 kspmonitorset
 #define kspsetconvergencetest_         kspsetconvergencetest
@@ -44,8 +45,9 @@
 #define kspsetcomputerhs_              kspsetcomputerhs
 #define kspsetcomputeinitialguess_     kspsetcomputeinitialguess
 #define kspsetcomputeoperators_        kspsetcomputeoperators
-#define dmkspsetcomputerhs_            dmkspsetcomputerhs       /* zdmkspf.c */
-#define dmkspsetcomputeoperators_      dmkspsetcomputeoperators /* zdmkspf */
+#define dmkspsetcomputerhs_            dmkspsetcomputerhs          /* zdmkspf.c */
+#define dmkspsetcomputeinitialguess_   dmkspsetcomputeinitialguess /* zdmkspf.c */
+#define dmkspsetcomputeoperators_      dmkspsetcomputeoperators    /* zdmkspf.c */
 #endif
 
 /* These are defined in zdmkspf.c */
