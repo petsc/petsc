@@ -9,6 +9,6 @@
 
 typedef struct {
   PetscInt dummy;
-} SNES_LS;
+} SNES_NEWTONLS;
 
 #endif

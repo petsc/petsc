@@ -27,8 +27,8 @@ typedef struct _p_SNES* SNES;
 .seealso: SNESSetType(), SNES
 J*/
 typedef const char* SNESType;
-#define SNESLS           "ls"
-#define SNESTR           "tr"
+#define SNESNEWTONLS     "newtonls"
+#define SNESNEWTONTR     "newtontr"
 #define SNESPYTHON       "python"
 #define SNESTEST         "test"
 #define SNESNRICHARDSON  "nrichardson"
@@ -327,11 +327,11 @@ M*/
 M*/
 
 /*MC
-     SNES_DIVERGED_LINE_SEARCH - The line search has failed. This only occurs for a SNESType of SNESLS
+     SNES_DIVERGED_LINE_SEARCH - The line search has failed. This only occurs for a SNES solvers that use a line search
 
    Level: beginner
 
-.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances(), SNESLineSearch
 
 M*/
 

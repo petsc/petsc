@@ -120,7 +120,7 @@ struct _p_SNES {
   PetscBool   conv_hist_reset;    /* reset counter for each new SNES solve */
   PetscBool   conv_malloc;
 
-  /* the next two are used for failures in the line search; they should be put into the LS struct */
+  /* the next two are used for failures in the line search; they should be put elsewhere */
   PetscInt    numFailures;        /* number of unsuccessful step attempts */
   PetscInt    maxFailures;        /* maximum number of unsuccessful step attempts */
 

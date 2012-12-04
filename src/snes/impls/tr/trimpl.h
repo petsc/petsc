@@ -20,6 +20,6 @@ typedef struct {
   PetscReal  sigma;		/* used to detemine termination */
   PetscBool  itflag;	/* flag for convergence testing */
   PetscReal  rnorm0,ttol;   /* used for KSP convergence test */
-} SNES_TR;
+} SNES_NEWTONTR;
 
 #endif

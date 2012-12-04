@@ -95,7 +95,7 @@ runex1:
 	   else echo ${PWD} ; echo "Possible problem with with ex1_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
-	-@${MPIEXEC} -n 1 ./ex1 -snes_monitor_short -snes_type tr -ksp_gmres_cgs_refinement_type refine_always > ex1_2.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex1 -snes_monitor_short -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always > ex1_2.tmp 2>&1;\
 	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex1_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_2.tmp
@@ -106,7 +106,7 @@ runex1_3:
 	   else echo ${PWD} ; echo "Possible problem with with ex1_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_3.tmp
 runex1f:
-	-@${MPIEXEC} -n 1 ./ex1f -snes_monitor_short -nox -snes_type tr -ksp_gmres_cgs_refinement_type refine_always > ex1f_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex1f -snes_monitor_short -nox -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always > ex1f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex1f_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1f_1.tmp
@@ -132,7 +132,7 @@ runex3:
 	   else echo ${PWD} ; echo "Possible problem with with ex3_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex3_1.tmp
 runex3_2:
-	-@${MPIEXEC} -n 1 ./ex3 -ksp_gmres_cgs_refinement_type refine_always -nox -snes_monitor_short -snes_type tr -snes_view \
+	-@${MPIEXEC} -n 1 ./ex3 -ksp_gmres_cgs_refinement_type refine_always -nox -snes_monitor_short -snes_type newtontr -snes_view \
 		-pc_type jacobi > ex3_2.tmp 2>&1; \
 	   if (${DIFF} output/ex3_2.out ex3_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex3_2, diffs above \n========================================="; fi; \

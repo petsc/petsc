@@ -28,8 +28,8 @@
 !
 !  SNESType
 !
-#define SNESLS           'ls'
-#define SNESTR           'tr'
+#define SNESNEWTONLS     'newtonls'
+#define SNESNEWTONTR     'newtontr'
 #define SNESPYTHON       'python'
 #define SNESTEST         'test'
 #define SNESNRICHARDSON  'nrichardson'

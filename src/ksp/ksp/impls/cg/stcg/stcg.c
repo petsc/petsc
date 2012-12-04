@@ -715,7 +715,7 @@ PetscErrorCode KSPSetFromOptions_STCG(KSP ksp)
 /*MC
      KSPSTCG -   Code to run conjugate gradient method subject to a constraint
          on the solution norm. This is used in Trust Region methods for
-         nonlinear equations, SNESTR
+         nonlinear equations, SNESNEWTONTR
 
    Options Database Keys:
 .      -ksp_stcg_radius <r> - Trust Region Radius

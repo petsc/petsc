@@ -476,7 +476,7 @@ gradient method.  This may be used with a nonlinear preconditioner used to pick 
 chooses the initial search direction as F(x) for the initial guess x.
 
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR, SNESNGMRES, SNESNQN
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESNQN
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__

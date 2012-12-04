@@ -72,7 +72,7 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 /*MC
    SNESLINESEARCHBASIC - This line search implementation is not a line
    search at all; it simply uses the full step.  Thus, this routine is intended
-   for methods with well-scaled updates; i.e. Newton's method (SNESLS), on
+   for methods with well-scaled updates; i.e. Newton's method (SNESNEWTONLS), on
    well-behaved problems.
 
    Options Database Keys:

@@ -353,7 +353,7 @@ PetscErrorCode SNESFASSetMonitor(SNES snes, PetscBool flg) {
 /*
 Creates the default smoother type.
 
-This is SNESNRICHARDSON on each fine level and SNESLS on the coarse level.
+This is SNESNRICHARDSON on each fine level and SNESNEWTONLS on the coarse level.
 
  */
 PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth) {
@@ -372,7 +372,7 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth) {
     sprintf(tprefix,"fas_coarse_");
     ierr = SNESAppendOptionsPrefix(nsmooth, optionsprefix);CHKERRQ(ierr);
     ierr = SNESAppendOptionsPrefix(nsmooth, tprefix);CHKERRQ(ierr);
-    ierr = SNESSetType(nsmooth, SNESLS);CHKERRQ(ierr);
+    ierr = SNESSetType(nsmooth, SNESNEWTONLS);CHKERRQ(ierr);
     ierr = SNESSetTolerances(nsmooth, nsmooth->abstol, nsmooth->rtol, nsmooth->stol, nsmooth->max_its, nsmooth->max_funcs);CHKERRQ(ierr);
   } else {
     sprintf(tprefix,"fas_levels_%d_",(int)fas->level);

@@ -748,7 +748,7 @@ EXTERN_C_END
 
       Level: beginner
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR
 
 M*/
 EXTERN_C_BEGIN

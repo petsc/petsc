@@ -8,8 +8,8 @@
     for this trick. One assumes that the probability that W is in the null space of J is very, very small.
 */
 #undef __FUNCT__
-#define __FUNCT__ "SNESLSCheckLocalMin_Private"
-PetscErrorCode SNESLSCheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,PetscReal fnorm,PetscBool  *ismin)
+#define __FUNCT__ "SNESNEWTONLSCheckLocalMin_Private"
+PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,PetscReal fnorm,PetscBool  *ismin)
 {
   PetscReal      a1;
   PetscErrorCode ierr;
@@ -46,8 +46,8 @@ PetscErrorCode SNESLSCheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,PetscReal
      Checks if J^T(F - J*X) = 0
 */
 #undef __FUNCT__
-#define __FUNCT__ "SNESLSCheckResidual_Private"
-PetscErrorCode SNESLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Vec W2)
+#define __FUNCT__ "SNESNEWTONLSCheckResidual_Private"
+PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Vec W2)
 {
   PetscReal      a1,a2;
   PetscErrorCode ierr;
@@ -83,7 +83,7 @@ PetscErrorCode SNESLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Ve
           SNESSolve_XXX()           - Solves the nonlinear system
           SNESDestroy_XXX()         - Destroys the nonlinear solver context
      The suffix "_XXX" denotes a particular implementation, in this case
-     we use _LS (e.g., SNESCreate_LS, SNESSolve_LS) for solving
+     we use _NEWTONLS (e.g., SNESCreate_NEWTONLS, SNESSolve_NEWTONLS) for solving
      systems of nonlinear equations with a line search (LS) method.
      These routines are actually called via the common user interface
      routines SNESCreate(), SNESSetFromOptions(), SNESSolve(), and
@@ -108,7 +108,7 @@ PetscErrorCode SNESLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Ve
 
     -------------------------------------------------------------------- */
 /*
-   SNESSolve_LS - Solves a nonlinear system with a truncated Newton
+   SNESSolve_NEWTONLS - Solves a nonlinear system with a truncated Newton
    method with a line search.
 
    Input Parameters:
@@ -127,18 +127,18 @@ PetscErrorCode SNESLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Ve
    and Schnabel.
 */
 #undef __FUNCT__
-#define __FUNCT__ "SNESSolve_LS"
-PetscErrorCode SNESSolve_LS(SNES snes)
+#define __FUNCT__ "SNESSolve_NEWTONLS"
+PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
 {
-  PetscErrorCode     ierr;
-  PetscInt           maxits,i,lits;
-  PetscBool          lssucceed;
-  MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
-  PetscReal          fnorm,gnorm,xnorm,ynorm;
-  Vec                Y,X,F,G,W,FPC;
-  KSPConvergedReason kspreason;
-  PetscBool          domainerror;
-  SNESLineSearch    linesearch;
+  PetscErrorCode      ierr;
+  PetscInt            maxits,i,lits;
+  PetscBool           lssucceed;
+  MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
+  PetscReal           fnorm,gnorm,xnorm,ynorm;
+  Vec                 Y,X,F,G,W,FPC;
+  KSPConvergedReason  kspreason;
+  PetscBool           domainerror;
+  SNESLineSearch      linesearch;
   SNESConvergedReason reason;
 
   PetscFunctionBegin;
@@ -227,7 +227,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
 
     if (PetscLogPrintInfo){
-      ierr = SNESLSCheckResidual_Private(snes,snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
+      ierr = SNESNEWTONLSCheckResidual_Private(snes,snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
     }
 
     /* Compute a (scaled) negative update in the line search routine:
@@ -253,7 +253,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
       if (++snes->numFailures >= snes->maxFailures) {
         PetscBool  ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        ierr = SNESLSCheckLocalMin_Private(snes,snes->jacobian,F,W,fnorm,&ismin);CHKERRQ(ierr);
+        ierr = SNESNEWTONLSCheckLocalMin_Private(snes,snes->jacobian,F,W,fnorm,&ismin);CHKERRQ(ierr);
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
         break;
       }
@@ -277,8 +277,8 @@ PetscErrorCode SNESSolve_LS(SNES snes)
 }
 /* -------------------------------------------------------------------------- */
 /*
-   SNESSetUp_LS - Sets up the internal data structures for the later use
-   of the SNESLS nonlinear solver.
+   SNESSetUp_NEWTONLS - Sets up the internal data structures for the later use
+   of the SNESNEWTONLS nonlinear solver.
 
    Input Parameter:
 .  snes - the SNES context
@@ -292,8 +292,8 @@ PetscErrorCode SNESSolve_LS(SNES snes)
    the call to SNESSolve().
  */
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_LS"
-PetscErrorCode SNESSetUp_LS(SNES snes)
+#define __FUNCT__ "SNESSetUp_NEWTONLS"
+PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
 {
   PetscErrorCode ierr;
 
@@ -306,16 +306,16 @@ PetscErrorCode SNESSetUp_LS(SNES snes)
 /* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESReset_LS"
-PetscErrorCode SNESReset_LS(SNES snes)
+#define __FUNCT__ "SNESReset_NEWTONLS"
+PetscErrorCode SNESReset_NEWTONLS(SNES snes)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
 /*
-   SNESDestroy_LS - Destroys the private SNES_LS context that was created
-   with SNESCreate_LS().
+   SNESDestroy_NEWTONLS - Destroys the private SNES_NEWTONLS context that was created
+   with SNESCreate_NEWTONLS().
 
    Input Parameter:
 .  snes - the SNES context
@@ -323,20 +323,20 @@ PetscErrorCode SNESReset_LS(SNES snes)
    Application Interface Routine: SNESDestroy()
  */
 #undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_LS"
-PetscErrorCode SNESDestroy_LS(SNES snes)
+#define __FUNCT__ "SNESDestroy_NEWTONLS"
+PetscErrorCode SNESDestroy_NEWTONLS(SNES snes)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESReset_LS(snes);CHKERRQ(ierr);
+  ierr = SNESReset_NEWTONLS(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
 
 /*
-   SNESView_LS - Prints info from the SNESLS data structure.
+   SNESView_NEWTONLS - Prints info from the SNESNEWTONLS data structure.
 
    Input Parameters:
 .  SNES - the SNES context
@@ -345,8 +345,8 @@ PetscErrorCode SNESDestroy_LS(SNES snes)
    Application Interface Routine: SNESView()
 */
 #undef __FUNCT__
-#define __FUNCT__ "SNESView_LS"
-static PetscErrorCode SNESView_LS(SNES snes,PetscViewer viewer)
+#define __FUNCT__ "SNESView_NEWTONLS"
+static PetscErrorCode SNESView_NEWTONLS(SNES snes,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      iascii;
@@ -360,7 +360,7 @@ static PetscErrorCode SNESView_LS(SNES snes,PetscViewer viewer)
 
 /* -------------------------------------------------------------------------- */
 /*
-   SNESSetFromOptions_LS - Sets various parameters for the SNESLS method.
+   SNESSetFromOptions_NEWTONLS - Sets various parameters for the SNESNEWTONLS method.
 
    Input Parameter:
 .  snes - the SNES context
@@ -368,14 +368,14 @@ static PetscErrorCode SNESView_LS(SNES snes,PetscViewer viewer)
    Application Interface Routine: SNESSetFromOptions()
 */
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_LS"
-static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
+#define __FUNCT__ "SNESSetFromOptions_NEWTONLS"
+static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes)
 {
   PetscErrorCode ierr;
   SNESLineSearch linesearch;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNESLS options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead("SNESNEWTONLS options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* set the default line search type */
   if (!snes->linesearch) {
@@ -387,7 +387,7 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
 
 /* -------------------------------------------------------------------------- */
 /*MC
-      SNESLS - Newton based nonlinear solver that uses a line search
+      SNESNEWTONLS - Newton based nonlinear solver that uses a line search
 
    Options Database:
 +   -snes_linesearch_type <bt> - bt,basic.  Select line search type
@@ -403,29 +403,29 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
 
    Level: beginner
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESTR, SNESQN, SNESLineSearchSetType(), SNESLineSearchSetOrder()
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONTR, SNESQN, SNESLineSearchSetType(), SNESLineSearchSetOrder()
            SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck() SNESLineSearchSetComputeNorms()
 
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "SNESCreate_LS"
-PetscErrorCode  SNESCreate_LS(SNES snes)
+#define __FUNCT__ "SNESCreate_NEWTONLS"
+PetscErrorCode  SNESCreate_NEWTONLS(SNES snes)
 {
   PetscErrorCode ierr;
-  SNES_LS        *neP;
+  SNES_NEWTONLS  *neP;
 
   PetscFunctionBegin;
-  snes->ops->setup           = SNESSetUp_LS;
-  snes->ops->solve           = SNESSolve_LS;
-  snes->ops->destroy         = SNESDestroy_LS;
-  snes->ops->setfromoptions  = SNESSetFromOptions_LS;
-  snes->ops->view            = SNESView_LS;
-  snes->ops->reset           = SNESReset_LS;
+  snes->ops->setup           = SNESSetUp_NEWTONLS;
+  snes->ops->solve           = SNESSolve_NEWTONLS;
+  snes->ops->destroy         = SNESDestroy_NEWTONLS;
+  snes->ops->setfromoptions  = SNESSetFromOptions_NEWTONLS;
+  snes->ops->view            = SNESView_NEWTONLS;
+  snes->ops->reset           = SNESReset_NEWTONLS;
 
   snes->usesksp                      = PETSC_TRUE;
   snes->usespc                       = PETSC_FALSE;
-  ierr                               = PetscNewLog(snes,SNES_LS,&neP);CHKERRQ(ierr);
+  ierr                               = PetscNewLog(snes,SNES_NEWTONLS,&neP);CHKERRQ(ierr);
   snes->data                         = (void*)neP;
   PetscFunctionReturn(0);
 }

@@ -967,7 +967,7 @@ PetscErrorCode SNESMultiblockGetSubSNES(SNES snes, PetscInt *n, SNES *subsnes[])
 
   Level: beginner
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR, SNESNRICHARDSON
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNRICHARDSON
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__

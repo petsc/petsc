@@ -621,7 +621,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   PetscBool               flg,pcset;
   PetscInt                i,indx,lag,grids;
   MatStructure            matflag;
-  const char              *deft = SNESLS;
+  const char              *deft = SNESNEWTONLS;
   const char              *convtests[] = {"default","skip"};
   SNESKSPEW               *kctx = NULL;
   char                    type[256], monfilename[PETSC_MAX_PATH_LEN];
@@ -2528,7 +2528,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
   if (snes->setupcalled) PetscFunctionReturn(0);
 
   if (!((PetscObject)snes)->type_name) {
-    ierr = SNESSetType(snes,SNESLS);CHKERRQ(ierr);
+    ierr = SNESSetType(snes,SNESNEWTONLS);CHKERRQ(ierr);
   }
 
   ierr = SNESGetFunction(snes,&snes->vec_func,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -3546,7 +3546,7 @@ PetscErrorCode  SNESDefaultUpdate(SNES snes, PetscInt step)
 -   ynorm - 2-norm of the step
 
     Note:
-    For non-trust region methods such as SNESLS, the parameter delta
+    For non-trust region methods such as SNESNEWTONLS, the parameter delta
     is set to be the maximum allowable step size.
 
 .keywords: SNES, nonlinear, scale, step
@@ -3739,13 +3739,13 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
 
    Options Database Key:
 .  -snes_type <type> - Sets the method; use -help for a list
-   of available methods (for instance, ls or tr)
+   of available methods (for instance, newtonls or newtontr)
 
    Notes:
    See "petsc/include/petscsnes.h" for available methods (for instance)
-+    SNESLS - Newton's method with line search
++    SNESNEWTONLS - Newton's method with line search
      (systems of nonlinear equations)
-.    SNESTR - Newton's method with trust region
+.    SNESNEWTONTR - Newton's method with trust region
      (systems of nonlinear equations)
 
   Normally, it is best to use the SNESSetFromOptions() command and then

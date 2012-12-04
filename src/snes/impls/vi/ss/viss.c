@@ -229,7 +229,7 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
    line search. The default line search does not do any line seach
    but rather takes a full newton step.
 
-   Developer Note: the code in this file should be slightly modified so that this routine need not exist and the SNESSolve_LS() routine is called directly with the appropriate wrapped function and Jacobian evaluations
+   Developer Note: the code in this file should be slightly modified so that this routine need not exist and the SNESSolve_NEWTONLS() routine is called directly with the appropriate wrapped function and Jacobian evaluations
 
 */
 #undef __FUNCT__
@@ -486,7 +486,7 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes)
    - T. S. Munson, F. Facchinei, M. C. Ferris, A. Fischer, and C. Kanzow. The semismooth
      algorithm for large scale complementarity problems. INFORMS Journal on Computing, 13 (2001).
 
-.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONRSLS, SNESVINEWTONSSLS, SNESTR, SNESLineSearchSet(),
+.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONRSLS, SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSet(),
            SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(),
            SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
 

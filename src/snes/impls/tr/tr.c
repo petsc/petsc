@@ -16,7 +16,7 @@ PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,K
 {
   SNES_TR_KSPConverged_Ctx *ctx = (SNES_TR_KSPConverged_Ctx *)cctx;
   SNES                     snes = ctx->snes;
-  SNES_TR                  *neP = (SNES_TR*)snes->data;
+  SNES_NEWTONTR            *neP = (SNES_NEWTONTR*)snes->data;
   Vec                      x;
   PetscReal                nrm;
   PetscErrorCode           ierr;
@@ -59,7 +59,7 @@ PetscErrorCode SNES_TR_KSPConverged_Destroy(void *cctx)
 */
 static PetscErrorCode SNES_TR_Converged_Private(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
-  SNES_TR        *neP = (SNES_TR *)snes->data;
+  SNES_NEWTONTR  *neP = (SNES_NEWTONTR *)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -76,16 +76,16 @@ static PetscErrorCode SNES_TR_Converged_Private(SNES snes,PetscInt it,PetscReal 
 
 
 /*
-   SNESSolve_TR - Implements Newton's Method with a very simple trust
+   SNESSolve_NEWTONTR - Implements Newton's Method with a very simple trust
    region approach for solving systems of nonlinear equations.
 
 
 */
 #undef __FUNCT__
-#define __FUNCT__ "SNESSolve_TR"
-static PetscErrorCode SNESSolve_TR(SNES snes)
+#define __FUNCT__ "SNESSolve_NEWTONTR"
+static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
 {
-  SNES_TR             *neP = (SNES_TR*)snes->data;
+  SNES_NEWTONTR       *neP = (SNES_NEWTONTR*)snes->data;
   Vec                 X,F,Y,G,Ytmp;
   PetscErrorCode      ierr;
   PetscInt            maxits,i,lits;
@@ -95,7 +95,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   KSP                 ksp;
   SNESConvergedReason reason = SNES_CONVERGED_ITERATING;
   PetscBool           conv = PETSC_FALSE,breakout = PETSC_FALSE;
-  PetscBool          domainerror;
+  PetscBool           domainerror;
 
   PetscFunctionBegin;
   maxits	= snes->max_its;	/* maximum number of iterations */
@@ -248,8 +248,8 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
 }
 /*------------------------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_TR"
-static PetscErrorCode SNESSetUp_TR(SNES snes)
+#define __FUNCT__ "SNESSetUp_NEWTONTR"
+static PetscErrorCode SNESSetUp_NEWTONTR(SNES snes)
 {
   PetscErrorCode ierr;
 
@@ -260,8 +260,8 @@ static PetscErrorCode SNESSetUp_TR(SNES snes)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESReset_TR"
-PetscErrorCode SNESReset_TR(SNES snes)
+#define __FUNCT__ "SNESReset_NEWTONTR"
+PetscErrorCode SNESReset_NEWTONTR(SNES snes)
 {
 
   PetscFunctionBegin;
@@ -269,23 +269,23 @@ PetscErrorCode SNESReset_TR(SNES snes)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDestroy_TR"
-static PetscErrorCode SNESDestroy_TR(SNES snes)
+#define __FUNCT__ "SNESDestroy_NEWTONTR"
+static PetscErrorCode SNESDestroy_NEWTONTR(SNES snes)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESReset_TR(snes);CHKERRQ(ierr);
+  ierr = SNESReset_NEWTONTR(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_TR"
-static PetscErrorCode SNESSetFromOptions_TR(SNES snes)
+#define __FUNCT__ "SNESSetFromOptions_NEWTONTR"
+static PetscErrorCode SNESSetFromOptions_NEWTONTR(SNES snes)
 {
-  SNES_TR *ctx = (SNES_TR *)snes->data;
+  SNES_NEWTONTR  *ctx = (SNES_NEWTONTR *)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -303,12 +303,12 @@ static PetscErrorCode SNESSetFromOptions_TR(SNES snes)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESView_TR"
-static PetscErrorCode SNESView_TR(SNES snes,PetscViewer viewer)
+#define __FUNCT__ "SNESView_NEWTONTR"
+static PetscErrorCode SNESView_NEWTONTR(SNES snes,PetscViewer viewer)
 {
-  SNES_TR *tr = (SNES_TR *)snes->data;
+  SNES_NEWTONTR  *tr = (SNES_NEWTONTR *)snes->data;
   PetscErrorCode ierr;
-  PetscBool  iascii;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -320,7 +320,7 @@ static PetscErrorCode SNESView_TR(SNES snes,PetscViewer viewer)
 }
 /* ------------------------------------------------------------ */
 /*MC
-      SNESTR - Newton based nonlinear solver that uses a trust region
+      SNESNEWTONTR - Newton based nonlinear solver that uses a trust region
 
    Options Database:
 +    -snes_trtol <tol> Trust region tolerance
@@ -342,29 +342,29 @@ static PetscErrorCode SNESView_TR(SNES snes,PetscViewer viewer)
 
    Level: intermediate
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESSetTrustRegionTolerance()
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESSetTrustRegionTolerance()
 
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "SNESCreate_TR"
-PetscErrorCode  SNESCreate_TR(SNES snes)
+#define __FUNCT__ "SNESCreate_NEWTONTR"
+PetscErrorCode  SNESCreate_NEWTONTR(SNES snes)
 {
-  SNES_TR        *neP;
+  SNES_NEWTONTR  *neP;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  snes->ops->setup	     = SNESSetUp_TR;
-  snes->ops->solve	     = SNESSolve_TR;
-  snes->ops->destroy	     = SNESDestroy_TR;
-  snes->ops->setfromoptions  = SNESSetFromOptions_TR;
-  snes->ops->view            = SNESView_TR;
-  snes->ops->reset           = SNESReset_TR;
+  snes->ops->setup	     = SNESSetUp_NEWTONTR;
+  snes->ops->solve	     = SNESSolve_NEWTONTR;
+  snes->ops->destroy	     = SNESDestroy_NEWTONTR;
+  snes->ops->setfromoptions  = SNESSetFromOptions_NEWTONTR;
+  snes->ops->view            = SNESView_NEWTONTR;
+  snes->ops->reset           = SNESReset_NEWTONTR;
 
   snes->usesksp             = PETSC_TRUE;
   snes->usespc              = PETSC_FALSE;
 
-  ierr			= PetscNewLog(snes,SNES_TR,&neP);CHKERRQ(ierr);
+  ierr			= PetscNewLog(snes,SNES_NEWTONTR,&neP);CHKERRQ(ierr);
   snes->data	        = (void*)neP;
   neP->mu		= 0.25;
   neP->eta		= 0.75;

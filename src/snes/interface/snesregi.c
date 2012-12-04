@@ -2,8 +2,8 @@
 #include <petsc-private/snesimpl.h>     /*I  "petscsnes.h"  I*/
 
 EXTERN_C_BEGIN
-extern PetscErrorCode  SNESCreate_LS(SNES);
-extern PetscErrorCode  SNESCreate_TR(SNES);
+extern PetscErrorCode  SNESCreate_NEWTONLS(SNES);
+extern PetscErrorCode  SNESCreate_NEWTONTR(SNES);
 extern PetscErrorCode  SNESCreate_Test(SNES);
 extern PetscErrorCode  SNESCreate_NRichardson(SNES);
 extern PetscErrorCode  SNESCreate_KSPONLY(SNES);
@@ -55,8 +55,8 @@ PetscErrorCode  SNESRegisterAll(const char path[])
   PetscFunctionBegin;
   SNESRegisterAllCalled = PETSC_TRUE;
 
-  ierr = SNESRegisterDynamic(SNESLS,           path,"SNESCreate_LS",           SNESCreate_LS);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESTR,           path,"SNESCreate_TR",           SNESCreate_TR);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic(SNESNEWTONLS,     path,"SNESCreate_NEWTONLS",     SNESCreate_NEWTONLS);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic(SNESNEWTONTR,     path,"SNESCreate_NEWTONTR",     SNESCreate_NEWTONTR);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESTEST,         path,"SNESCreate_Test",         SNESCreate_Test);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESNRICHARDSON,  path,"SNESCreate_NRichardson",  SNESCreate_NRichardson);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESKSPONLY,      path,"SNESCreate_KSPONLY",      SNESCreate_KSPONLY);CHKERRQ(ierr);

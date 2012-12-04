@@ -49,7 +49,7 @@ PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 }
 
 /*
-  SNESSetFromOptions_NRichardson - Sets various parameters for the SNESLS method.
+  SNESSetFromOptions_NRichardson - Sets various parameters for the SNESNEWTONLS method.
 
   Input Parameter:
 . snes - the SNES context
@@ -233,7 +233,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
 
      This uses no derivative information thus will be much slower then Newton's method obtained with -snes_type ls
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR, SNESNGMRES, SNESQN, SNESNCG
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESQN, SNESNCG
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__

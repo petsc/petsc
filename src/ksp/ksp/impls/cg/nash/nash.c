@@ -694,7 +694,7 @@ PetscErrorCode KSPSetFromOptions_NASH(KSP ksp)
 /*MC
      KSPNASH -   Code to run conjugate gradient method subject to a constraint
          on the solution norm. This is used in Trust Region methods for
-         nonlinear equations, SNESTR
+         nonlinear equations, SNESNEWTONTR
 
    Options Database Keys:
 .      -ksp_nash_radius <r> - Trust Region Radius

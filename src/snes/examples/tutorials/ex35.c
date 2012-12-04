@@ -46,7 +46,7 @@ T*/
            -snes_rtol 1.e-12 -snes_monitor  -snes_type fas -fas_levels_snes_monitor
 
           n levels:
-            -da_refine n  -fas_coarse_snes_type ls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly
+            -da_refine n  -fas_coarse_snes_type newtonls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly
 
 */
 

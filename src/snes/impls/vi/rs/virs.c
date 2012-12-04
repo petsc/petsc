@@ -771,7 +771,7 @@ PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
    - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large-Scale
      Applications, Optimization Methods and Software, 21 (2006).
 
-.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONRSLS, SNESVINEWTONSSLS, SNESTR, SNESLineSearchSet(),
+.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONRSLS, SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSet(),
            SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(),
            SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
 

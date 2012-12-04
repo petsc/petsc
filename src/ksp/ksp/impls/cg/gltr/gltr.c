@@ -1503,7 +1503,7 @@ PetscErrorCode KSPSetFromOptions_GLTR(KSP ksp)
 /*MC
      KSPGLTR -   Code to run conjugate gradient method subject to a constraint
          on the solution norm. This is used in Trust Region methods for
-         nonlinear equations, SNESTR
+         nonlinear equations, SNESNEWTONTR
 
    Options Database Keys:
 .      -ksp_gltr_radius <r> - Trust Region Radius

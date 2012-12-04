@@ -1,42 +1,4 @@
   0 KSP Residual norm 1.00731 
-KSP Object: 1 MPI processes
-  type: gmres
-    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-    GMRES: happy breakdown tolerance 1e-30
-  maximum iterations=10
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-  left preconditioning
-  using nonzero initial guess
-  using NONE norm type for convergence test
-PC Object:(mg_levels_1_) 1 MPI processes
-  type: sor
-    SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
-  linear system matrix = precond matrix:
-  Matrix Object:   1 MPI processes
-    type: seqaij
-    rows=216, cols=216
-    total: nonzeros=1296, allocated nonzeros=1296
-    total number of mallocs used during MatSetValues calls =0
-      not using I-node routines
-KSP Object: 1 MPI processes
-  type: gmres
-    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-    GMRES: happy breakdown tolerance 1e-30
-  maximum iterations=10
-  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
-  left preconditioning
-  using nonzero initial guess
-  using NONE norm type for convergence test
-PC Object:(mg_levels_2_) 1 MPI processes
-  type: sor
-    SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
-  linear system matrix = precond matrix:
-  Matrix Object:   1 MPI processes
-    type: seqaij
-    rows=1728, cols=1728
-    total: nonzeros=11232, allocated nonzeros=11232
-    total number of mallocs used during MatSetValues calls =0
-      not using I-node routines
   1 KSP Residual norm 0.0422914 
   2 KSP Residual norm 0.00290556 
   3 KSP Residual norm 9.48719e-05 
@@ -89,7 +51,7 @@ PC Object: 1 MPI processes
       type: chebyshev
         Chebyshev: eigenvalue estimates:  min = 0.10017, max = 1.10187
         Chebyshev: estimated using:  [0 0.1; 0 1.1]
-        KSP Object:         1 MPI processes
+        KSP Object:        (mg_levels_1_est_)         1 MPI processes
           type: gmres
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             GMRES: happy breakdown tolerance 1e-30
@@ -130,7 +92,7 @@ PC Object: 1 MPI processes
       type: chebyshev
         Chebyshev: eigenvalue estimates:  min = 0.100602, max = 1.10662
         Chebyshev: estimated using:  [0 0.1; 0 1.1]
-        KSP Object:         1 MPI processes
+        KSP Object:        (mg_levels_2_est_)         1 MPI processes
           type: gmres
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             GMRES: happy breakdown tolerance 1e-30

@@ -3746,8 +3746,8 @@ few in the sections below.
 \begin{tabular}{llll}
 {\bf Method}    &{\bf SNESType}& {\bf Options Name}    &{\bf Default Convergence Test}\\
 \hline
-Line search     & SNESLS   & ls   & SNESConverged\_LS()\\
-Trust region    & SNESTR   & tr   & SNESConverged\_TR()\\
+Line search     & SNESNEWTONLS   & newtonls    & SNESConverged\_NEWTONLS()\\
+Trust region    & SNESNEWTONTR   & newtontr   & SNESConverged\_NEWTONTR()\\
 Test Jacobian   & SNESTEST        & test  & \\
 \hline
 \end{tabular}
@@ -3758,7 +3758,7 @@ Test Jacobian   & SNESTEST        & test  & \\
 
 \subsection{Line Search Techniques} \sindex{line search}
 
-The method SNESLS (\trl{-snes_type} \trl{ls}) provides a line
+The method SNESNEWTONLS (\trl{-snes_type} \trl{newtonls}) provides a line
 search Newton method for solving systems of nonlinear equations.  By
 default, this technique employs cubic backtracking \cite{dennis:83}.
 An alternative line search routine can be set with the command
@@ -3782,7 +3782,7 @@ can override the defaults by using the options
 \subsection{Trust Region Methods}\sindex{trust region}
 
 The trust region method in SNES for solving systems of nonlinear
-equations, SNESTR (\trl{-snes_type} \trl{tr}), is taken from
+equations, SNESNEWTONTR (\trl{-snes_type} \trl{newtontr}), is taken from
 the MINPACK project \cite{more84}. Several parameters can be set to
 control the variation of the trust region size during the solution
 process.  In particular, the user can control the initial trust region

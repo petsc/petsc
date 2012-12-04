@@ -288,7 +288,7 @@ runex2:
 	   else  echo  ${PWD} "\nPossible problem with with ex2_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex2_1.tmp
 runex2_2:
-	-@${MPIEXEC} -n 1 ./ex2 -nox -snes_monitor_cancel -snes_monitor_short -snes_type tr -snes_view -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always > ex2_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -nox -snes_monitor_cancel -snes_monitor_short -snes_type newtontr -snes_view -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always > ex2_2.tmp 2>&1; \
 	   if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex2_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex2_2.tmp
@@ -404,7 +404,7 @@ runex5_5_qn:
 	   ${RM} -f ex5_5_qn.tmp
 
 runex5_5_ls:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type ls \
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type newtonls \
         > ex5_5_ls.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_ls.out ex5_5_ls.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ls, diffs above \n========================================="; fi; \
@@ -423,7 +423,7 @@ runex5_5_fas_additive:
 	   ${RM} -f ex5_5_fas_additive.tmp
 
 runex5_5_ngmres_fas:
-	-@${MPIEXEC} -n 1 ./ex5 -snes_type ngmres -npc_fas_coarse_snes_max_it 1 -npc_fas_coarse_snes_type ls -npc_fas_coarse_pc_type lu -npc_fas_coarse_ksp_type preonly -snes_ngmres_m 10 -snes_rtol 1.e-12 -snes_monitor_short -npc_snes_max_it 1 -npc_snes_type fas -npc_fas_coarse_ksp_type richardson -da_refine 6 > ex5_5_ngmres_fas.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -snes_type ngmres -npc_fas_coarse_snes_max_it 1 -npc_fas_coarse_snes_type newtonls -npc_fas_coarse_pc_type lu -npc_fas_coarse_ksp_type preonly -snes_ngmres_m 10 -snes_rtol 1.e-12 -snes_monitor_short -npc_snes_max_it 1 -npc_snes_type fas -npc_fas_coarse_ksp_type richardson -da_refine 6 > ex5_5_ngmres_fas.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_ngmres_fas.out ex5_5_ngmres_fas.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_ngmres_fas, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_5_ngmres_fas.tmp
@@ -694,7 +694,7 @@ runex19_ngmres_fas: #test ex19 with NGMRES preconditioned by FAS with pointwise 
            ${RM} -f ex19_ngmres_fas.tmp
 
 runex19_ngmres_fas_ms: #test ex19 with NGMRES preconditioned by FAS with multi-stage smoother
-	-@${MPIEXEC} -n 2 ./ex19 -snes_grid_sequence 2 -lidvelocity 200 -grashof 1e4 -snes_monitor_short -snes_view -snes_converged_reason -snes_type ngmres -npc_snes_type fas -npc_fas_coarse_snes_type ls -npc_fas_coarse_ksp_type preonly -npc_snes_max_it 1 -npc_fas_snes_type ms -npc_fas_snes_max_it 1 -npc_fas_ksp_type preonly -npc_fas_pc_type none -npc_fas_snes_ms_type m62 -npc_fas_snes_max_it 1 -npc_fas_snes_ms_damping 0.22 > ex19_ngmres_fas_ms.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex19 -snes_grid_sequence 2 -lidvelocity 200 -grashof 1e4 -snes_monitor_short -snes_view -snes_converged_reason -snes_type ngmres -npc_snes_type fas -npc_fas_coarse_snes_type newtonls -npc_fas_coarse_ksp_type preonly -npc_snes_max_it 1 -npc_fas_snes_type ms -npc_fas_snes_max_it 1 -npc_fas_ksp_type preonly -npc_fas_pc_type none -npc_fas_snes_ms_type m62 -npc_fas_snes_max_it 1 -npc_fas_snes_ms_damping 0.22 > ex19_ngmres_fas_ms.tmp 2>&1; \
 	   ${DIFF} output/ex19_ngmres_fas_ms.out ex19_ngmres_fas_ms.tmp || echo  ${PWD} "\nPossible problem with ex19_ngmres_fas_ms, diffs above \n========================================="; \
            ${RM} -f ex19_ngmres_fas_ms.tmp
 
@@ -850,7 +850,7 @@ runex35_7:
 	   ${RM} -f ex35_7.tmp
 
 runex35_8:
-	-@${MPIEXEC} -n 1 ./ex35  -da_refine 2 -snes_monitor_short  -snes_type fas -fas_levels_snes_monitor_short -fas_coarse_snes_type ls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_type fas   > ex35_8.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex35  -da_refine 2 -snes_monitor_short  -snes_type fas -fas_levels_snes_monitor_short -fas_coarse_snes_type newtonls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_type fas   > ex35_8.tmp 2>&1;	  \
 	   if (${DIFF} output/ex35_8.out ex35_8.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex35_8, diffs above \n========================================="; fi; \
 	   ${RM} -f ex35_8.tmp
