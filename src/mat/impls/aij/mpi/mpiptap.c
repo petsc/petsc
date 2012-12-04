@@ -32,6 +32,7 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
     ierr = MatDestroy(&ptap->A_loc);CHKERRQ(ierr); /* used by MatTransposeMatMult() */
     if (ptap->api){ierr = PetscFree(ptap->api);CHKERRQ(ierr);}
     if (ptap->apj){ierr = PetscFree(ptap->apj);CHKERRQ(ierr);}
+    if (ptap->apa){ierr = PetscFree(ptap->apa);CHKERRQ(ierr);}
     if (merge) {
       ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
       ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
@@ -503,6 +504,19 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ptap->rmax     = ap_rmax;
 
   *C = Cmpi;
+  
+  /* flag 'scalable' determines which implementations to be used:
+       0: do dense axpy in MatPtAPNumeric() - fast, but requires storage of a nonscalable dense array apa; 
+       1: do sparse axpy in MatPtAPNumeric() - might slow, uses a sparse array apa */
+  /* set default scalable */
+  ptap->scalable = PETSC_TRUE;
+  ierr = PetscOptionsGetBool(((PetscObject)Cmpi)->prefix,"-matptap_scalable",&ptap->scalable,PETSC_NULL);CHKERRQ(ierr);
+  if (!ptap->scalable){  /* Do dense axpy */
+    ierr = PetscMalloc(pN*sizeof(PetscScalar),&ptap->apa);CHKERRQ(ierr);
+  } else {
+    ierr = PetscMalloc((ap_rmax+1)*sizeof(PetscScalar),&ptap->apa);CHKERRQ(ierr);
+  }
+
 #if defined(PETSC_USE_INFO)
   if (bi[pn] != 0) {
     ierr = PetscInfo3(Cmpi,"Reallocs %D; Fill ratio: given %G needed %G.\n",nspacedouble,fill,afill);CHKERRQ(ierr);
@@ -540,15 +554,17 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   MatScalar            **abuf_r,*ba_i,*pA,*coa,*ba;
   PetscInt             *api,*apj,*coi,*coj;
   PetscInt             *poJ=po->j,*pdJ=pd->j,pcstart=P->cmap->rstart,pcend=P->cmap->rend;
-  PetscBool            scalable=PETSC_TRUE;
+  PetscBool            scalable;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  ptap  = c->ptap;
+  ptap = c->ptap;
   if (!ptap) SETERRQ(((PetscObject)C)->comm,PETSC_ERR_ARG_INCOMP,"MatPtAP() has not been called to create matrix C yet, cannot use MAT_REUSE_MATRIX");
-  merge = ptap->merge;
+  merge    = ptap->merge;
+  apa      = ptap->apa;
+  scalable = ptap->scalable;
 
   /* 1) get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
   /*--------------------------------------------------*/
@@ -578,15 +594,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 
   api = ptap->api; apj = ptap->apj;
 
-  /* flag 'scalable' determines which implementations to be used:
-       0: do dense axpy in MatPtAPNumeric() - fast, but requires storage of a nonscalable dense array apa; 
-       1: do sparse axpy in MatPtAPNumeric() - might slow, uses a sparse array apa */
-  /* set default scalable */
-  ierr = PetscOptionsGetBool(((PetscObject)C)->prefix,"-matptap_scalable",&scalable,PETSC_NULL);CHKERRQ(ierr);
   if (!scalable){  /* Do dense axpy */
     /*--------------------------------------------------*/
-    /* malloc apa to store dense row A[i,:]*P - nonscalable! */
-    ierr = PetscMalloc((P->cmap->N)*sizeof(PetscScalar),&apa);CHKERRQ(ierr);
+    /* apa (length of pN) stores dense row A[i,:]*P - nonscalable! */
     ierr = PetscMemzero(apa,P->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
 
     for (i=0; i<am; i++) {
@@ -672,8 +682,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     }
   } else {/* Perform sparse axpy */
     /*----------------------------------------------------*/
-    /* malloc apa to store sparse row A[i,:]*P */
-    ierr = PetscMalloc((ptap->rmax+1)*sizeof(MatScalar),&apa);CHKERRQ(ierr);
+    /* apa (length ap_rmax) stores sparse row A[i,:]*P */
     ierr = PetscMemzero(apa,ptap->rmax*sizeof(MatScalar));CHKERRQ(ierr);
 
     pA=pa_loc;
@@ -745,7 +754,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       ierr = PetscMemzero(apa,apnz*sizeof(MatScalar));CHKERRQ(ierr);
     }
   } 
-  ierr = PetscFree(apa);CHKERRQ(ierr);
 
   /* 3) send and recv matrix values coa */
   /*------------------------------------*/
