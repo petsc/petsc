@@ -511,8 +511,8 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
         ierr = KSPView(mglevels[i]->smoothu,viewer);CHKERRQ(ierr);
         ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
       }
-      /* this is totally bogus but we have no way of knowing how low the previous one was draw to */
-      bottom -= 5*th;
+      ierr = PetscDrawGetBoundingBox(draw,PETSC_NULL,&bottom,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      bottom -= th;
     }
   }
   PetscFunctionReturn(0);

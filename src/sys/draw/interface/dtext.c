@@ -96,6 +96,12 @@ PetscErrorCode  PetscDrawBoxedString(PetscDraw draw,PetscReal sxl,PetscReal syl,
   if (w) *w = right - left;
   if (h) *h = top - bottom;
 
+  /* compute new bounding box */
+  draw->boundbox_xl = PetscMin(draw->boundbox_xl,left);
+  draw->boundbox_xr = PetscMax(draw->boundbox_xr,right);
+  draw->boundbox_yl = PetscMin(draw->boundbox_yl,bottom);
+  draw->boundbox_yr = PetscMax(draw->boundbox_yr,top);
+
   /* top, left, bottom, right lines */
   ierr = PetscDrawLine(draw,left,top,right,top,bc);CHKERRQ(ierr);
   ierr = PetscDrawLine(draw,left,bottom,left,top,bc);CHKERRQ(ierr);

@@ -5,6 +5,34 @@
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDrawGetBoundingBox"
+/*@
+   PetscDrawGetBoundingBox - Get's the bound box of all PetscDrawBoxedString() commands
+
+   Not collective
+
+   Input Parameter:
+.  draw - the drawing context
+
+   Output Parameters:
+.   xl,yl,xr,yr - coordinates of lower left and upper right corners of bounding box
+
+   Level: intermediate
+
+.seealso:  PetscDrawPushCurrentPoint(), PetscDrawPopCurrentPoint(), PetscDrawSetCurrentPoint()
+@*/
+PetscErrorCode  PetscDrawGetBoundingBox(PetscDraw draw,PetscReal *xl,PetscReal *yl,PetscReal *xr,PetscReal *yr)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  if (xl) *xl = draw->boundbox_xl;
+  if (yl) *yl = draw->boundbox_yl;
+  if (xr) *xr = draw->boundbox_xr;
+  if (yr) *yr = draw->boundbox_yr;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDrawGetCurrentPoint"
 /*@
    PetscDrawGetCurrentPoint - Gets the current draw point, some codes use this point to determine where to draw next
