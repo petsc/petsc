@@ -60,11 +60,11 @@ PETSC_STATIC_INLINE PetscScalar DPhi(PetscScalar a,PetscScalar b)
 #define __FUNCT__ "SNESVIComputeFunction"
 static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void* functx)
 {
-  PetscErrorCode  ierr;
-  SNES_VISS       *vi = (SNES_VISS*)snes->data;
-  Vec             Xl = snes->xl,Xu = snes->xu,F = snes->vec_func;
-  PetscScalar     *phi_arr,*x_arr,*f_arr,*l,*u;
-  PetscInt        i,nlocal;
+  PetscErrorCode    ierr;
+  SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS*)snes->data;
+  Vec               Xl = snes->xl,Xu = snes->xu,F = snes->vec_func;
+  PetscScalar       *phi_arr,*x_arr,*f_arr,*l,*u;
+  PetscInt          i,nlocal;
 
   PetscFunctionBegin;
   ierr = (*vi->computeuserfunction)(snes,X,F,functx);CHKERRQ(ierr);
@@ -213,7 +213,7 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
 
 
 /*
-   SNESSolve_VISS - Solves the complementarity problem with a semismooth Newton
+   SNESSolve_VINEWTONSSLS - Solves the complementarity problem with a semismooth Newton
    method using a line search.
 
    Input Parameters:
@@ -233,10 +233,10 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
 
 */
 #undef __FUNCT__
-#define __FUNCT__ "SNESSolve_VISS"
-PetscErrorCode SNESSolve_VISS(SNES snes)
+#define __FUNCT__ "SNESSolve_VINEWTONSSLS"
+PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
 {
-  SNES_VISS          *vi = (SNES_VISS*)snes->data;
+  SNES_VINEWTONSSLS  *vi = (SNES_VINEWTONSSLS*)snes->data;
   PetscErrorCode     ierr;
   PetscInt           maxits,i,lits;
   PetscBool          lssucceed;
@@ -391,7 +391,7 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
 
 /* -------------------------------------------------------------------------- */
 /*
-   SNESSetUp_VISS - Sets up the internal data structures for the later use
+   SNESSetUp_VINEWTONSSLS - Sets up the internal data structures for the later use
    of the SNES nonlinear solver.
 
    Input Parameter:
@@ -406,11 +406,11 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
    the call to SNESSolve().
  */
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_VISS"
-PetscErrorCode SNESSetUp_VISS(SNES snes)
+#define __FUNCT__ "SNESSetUp_VINEWTONSSLS"
+PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes)
 {
-  PetscErrorCode ierr;
-  SNES_VISS      *vi = (SNES_VISS*) snes->data;
+  PetscErrorCode    ierr;
+  SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS*) snes->data;
 
   PetscFunctionBegin;
   ierr = SNESSetUp_VI(snes);CHKERRQ(ierr);
@@ -424,11 +424,11 @@ PetscErrorCode SNESSetUp_VISS(SNES snes)
 }
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "SNESReset_VISS"
-PetscErrorCode SNESReset_VISS(SNES snes)
+#define __FUNCT__ "SNESReset_VINEWTONSSLS"
+PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
 {
-  SNES_VISS      *vi = (SNES_VISS*) snes->data;
-  PetscErrorCode ierr;
+  SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS*) snes->data;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = SNESReset_VI(snes);CHKERRQ(ierr);
@@ -443,7 +443,7 @@ PetscErrorCode SNESReset_VISS(SNES snes)
 
 /* -------------------------------------------------------------------------- */
 /*
-   SNESSetFromOptions_VISS - Sets various parameters for the SNESVI method.
+   SNESSetFromOptions_VINEWTONSSLS - Sets various parameters for the SNESVI method.
 
    Input Parameter:
 .  snes - the SNES context
@@ -451,11 +451,11 @@ PetscErrorCode SNESReset_VISS(SNES snes)
    Application Interface Routine: SNESSetFromOptions()
 */
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetFromOptions_VISS"
-static PetscErrorCode SNESSetFromOptions_VISS(SNES snes)
+#define __FUNCT__ "SNESSetFromOptions_VINEWTONSSLS"
+static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes)
 {
-  PetscErrorCode     ierr;
-  SNESLineSearch    linesearch;
+  PetscErrorCode ierr;
+  SNESLineSearch linesearch;
 
   PetscFunctionBegin;
   ierr = SNESSetFromOptions_VI(snes);CHKERRQ(ierr);
@@ -474,7 +474,7 @@ static PetscErrorCode SNESSetFromOptions_VISS(SNES snes)
 
 /* -------------------------------------------------------------------------- */
 /*MC
-      SNESVISS - Semi-smooth solver for variational inequalities based on Newton's method
+      SNESVINEWTONSSLS - Semi-smooth solver for variational inequalities based on Newton's method
 
    Options Database:
 +   -snes_vi_type <ss,rs,rsaug> a semi-smooth solver, a reduced space active set method, and a reduced space active set method that does not eliminate the active constraints from the Jacobian instead augments the Jacobian with additional variables that enforce the constraints
@@ -486,31 +486,31 @@ static PetscErrorCode SNESSetFromOptions_VISS(SNES snes)
    - T. S. Munson, F. Facchinei, M. C. Ferris, A. Fischer, and C. Kanzow. The semismooth
      algorithm for large scale complementarity problems. INFORMS Journal on Computing, 13 (2001).
 
-.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVIRS, SNESVISS, SNESTR, SNESLineSearchSet(),
+.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONRSLS, SNESVINEWTONSSLS, SNESTR, SNESLineSearchSet(),
            SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(),
            SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
 
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "SNESCreate_VISS"
-PetscErrorCode  SNESCreate_VISS(SNES snes)
+#define __FUNCT__ "SNESCreate_VINEWTONSSLS"
+PetscErrorCode  SNESCreate_VINEWTONSSLS(SNES snes)
 {
-  PetscErrorCode ierr;
-  SNES_VISS      *vi;
+  PetscErrorCode    ierr;
+  SNES_VINEWTONSSLS *vi;
 
   PetscFunctionBegin;
-  snes->ops->reset           = SNESReset_VISS;
-  snes->ops->setup           = SNESSetUp_VISS;
-  snes->ops->solve           = SNESSolve_VISS;
+  snes->ops->reset           = SNESReset_VINEWTONSSLS;
+  snes->ops->setup           = SNESSetUp_VINEWTONSSLS;
+  snes->ops->solve           = SNESSolve_VINEWTONSSLS;
   snes->ops->destroy         = SNESDestroy_VI;
-  snes->ops->setfromoptions  = SNESSetFromOptions_VISS;
+  snes->ops->setfromoptions  = SNESSetFromOptions_VINEWTONSSLS;
   snes->ops->view            = PETSC_NULL;
 
   snes->usesksp             = PETSC_TRUE;
   snes->usespc              = PETSC_FALSE;
 
-  ierr                       = PetscNewLog(snes,SNES_VISS,&vi);CHKERRQ(ierr);
+  ierr                       = PetscNewLog(snes,SNES_VINEWTONSSLS,&vi);CHKERRQ(ierr);
   snes->data                 = (void*)vi;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESVISetVariableBounds_C","SNESVISetVariableBounds_VI",SNESVISetVariableBounds_VI);CHKERRQ(ierr);

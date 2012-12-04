@@ -21,7 +21,7 @@ PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*comput
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESVISetComputeVariableBounds_C",(PetscVoidStarFunction)&f);CHKERRQ(ierr);
-  if (!f) {ierr = SNESSetType(snes,SNESVIRS);CHKERRQ(ierr);}
+  if (!f) {ierr = SNESSetType(snes,SNESVINEWTONRSLS);CHKERRQ(ierr);}
   ierr = PetscUseMethod(snes,"SNESVISetComputeVariableBounds_C",(SNES,PetscErrorCode(*)(SNES,Vec,Vec)),(snes,compute));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -511,7 +511,7 @@ PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
   PetscValidHeaderSpecific(xl,VEC_CLASSID,2);
   PetscValidHeaderSpecific(xu,VEC_CLASSID,3);
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESVISetVariableBounds_C",(PetscVoidStarFunction)&f);CHKERRQ(ierr);
-  if (!f) {ierr = SNESSetType(snes,SNESVIRS);CHKERRQ(ierr);}
+  if (!f) {ierr = SNESSetType(snes,SNESVINEWTONRSLS);CHKERRQ(ierr);}
   ierr = PetscUseMethod(snes,"SNESVISetVariableBounds_C",(SNES,Vec,Vec),(snes,xl,xu));CHKERRQ(ierr);
   snes->usersetbounds = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -531,7 +531,7 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes,Vec xl,Vec xu)
   if (!snes->vec_func) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
   if (xl->map->N != snes->vec_func->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths lower bound = %D solution vector = %D",xl->map->N,snes->vec_func->map->N);
   if (xu->map->N != snes->vec_func->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths: upper bound = %D solution vector = %D",xu->map->N,snes->vec_func->map->N);
-  ierr = SNESSetType(snes,SNESVIRS);CHKERRQ(ierr);
+  ierr = SNESSetType(snes,SNESVINEWTONRSLS);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)xl);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)xu);CHKERRQ(ierr);
   ierr = VecDestroy(&snes->xl);CHKERRQ(ierr);

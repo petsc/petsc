@@ -131,6 +131,8 @@ PETSC_EXTERN PetscErrorCode DMComplexMatSetClosure(DM, PetscSection, PetscSectio
 
 PETSC_EXTERN PetscErrorCode DMComplexCreateExodus(MPI_Comm, PetscInt, PetscBool, DM *);
 
+PETSC_EXTERN PetscErrorCode DMComplexConstructGhostCells(DM, const char [], PetscInt *, DM *);
+
 PETSC_EXTERN PetscErrorCode DMComplexGetVTKBounds(DM, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexSetVTKBounds(DM, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMComplexGetVTKCellHeight(DM, PetscInt *);

@@ -216,10 +216,10 @@ PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n) {
   PetscErrorCode ierr = 0;
   PetscFunctionBegin;
   fas->max_up_it = n;
-  if (!fas->smoothu) {
+  if (!fas->smoothu && fas->level != 0) {
     ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothu);
   }
-  ierr = SNESSetTolerances(fas->smoothu, fas->smoothu->abstol, fas->smoothu->rtol, fas->smoothu->stol, n, fas->smoothu->max_funcs);CHKERRQ(ierr);
+  if (fas->smoothu)ierr = SNESSetTolerances(fas->smoothu, fas->smoothu->abstol, fas->smoothu->rtol, fas->smoothu->stol, n, fas->smoothu->max_funcs);CHKERRQ(ierr);
   if (fas->next) {
     ierr = SNESFASSetNumberSmoothUp(fas->next, n);CHKERRQ(ierr);
   }
@@ -251,9 +251,6 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n) {
   SNES_FAS * fas =  (SNES_FAS *)snes->data;
   PetscErrorCode ierr = 0;
   PetscFunctionBegin;
-  if (!fas->smoothu) {
-    ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothu);
-  }
   if (!fas->smoothd) {
     ierr = SNESFASCycleCreateSmoother_Private(snes, &fas->smoothd);
   }

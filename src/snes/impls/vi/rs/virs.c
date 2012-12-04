@@ -19,7 +19,7 @@
  */
 PetscErrorCode SNESVIGetInactiveSet(SNES snes,IS* inact)
 {
-  SNES_VIRS        *vi = (SNES_VIRS*)snes->data;
+  SNES_VINEWTONRSLS  *vi = (SNES_VINEWTONRSLS*)snes->data;
   PetscFunctionBegin;
   *inact = vi->IS_inact_prev;
   PetscFunctionReturn(0);
@@ -255,8 +255,8 @@ PetscErrorCode  DMDestroyVI(DM dm)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESCreateIndexSets_VIRS"
-PetscErrorCode SNESCreateIndexSets_VIRS(SNES snes,Vec X,Vec F,IS* ISact,IS* ISinact)
+#define __FUNCT__ "SNESCreateIndexSets_VINEWTONRSLS"
+PetscErrorCode SNESCreateIndexSets_VINEWTONRSLS(SNES snes,Vec X,Vec F,IS* ISact,IS* ISinact)
 {
   PetscErrorCode     ierr;
 
@@ -268,8 +268,8 @@ PetscErrorCode SNESCreateIndexSets_VIRS(SNES snes,Vec X,Vec F,IS* ISact,IS* ISin
 
 /* Create active and inactive set vectors. The local size of this vector is set and petsc computes the global size */
 #undef __FUNCT__
-#define __FUNCT__ "SNESCreateSubVectors_VIRS"
-PetscErrorCode SNESCreateSubVectors_VIRS(SNES snes,PetscInt n,Vec* newv)
+#define __FUNCT__ "SNESCreateSubVectors_VINEWTONRSLS"
+PetscErrorCode SNESCreateSubVectors_VINEWTONRSLS(SNES snes,PetscInt n,Vec* newv)
 {
   PetscErrorCode ierr;
   Vec            v;
@@ -323,15 +323,15 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
    implemented in this algorithm. It basically identifies the active constraints and does
    a linear solve on the other variables (those not associated with the active constraints). */
 #undef __FUNCT__
-#define __FUNCT__ "SNESSolve_VIRS"
-PetscErrorCode SNESSolve_VIRS(SNES snes)
+#define __FUNCT__ "SNESSolve_VINEWTONRSLS"
+PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 {
-  SNES_VIRS         *vi = (SNES_VIRS*)snes->data;
-  PetscErrorCode    ierr;
-  PetscInt          maxits,i,lits;
-  PetscBool         lssucceed;
-  MatStructure      flg = DIFFERENT_NONZERO_PATTERN;
-  PetscReal         fnorm,gnorm,xnorm=0,ynorm;
+  SNES_VINEWTONRSLS  *vi = (SNES_VINEWTONRSLS*)snes->data;
+  PetscErrorCode     ierr;
+  PetscInt           maxits,i,lits;
+  PetscBool          lssucceed;
+  MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
+  PetscReal          fnorm,gnorm,xnorm=0,ynorm;
   Vec                Y,X,F;
   KSPConvergedReason kspreason;
 
@@ -465,9 +465,9 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
     ierr = ISGetLocalSize(IS_inact,&nis_inact);CHKERRQ(ierr);
 
     /* Create active and inactive set vectors */
-    ierr = SNESCreateSubVectors_VIRS(snes,nis_inact,&F_inact);CHKERRQ(ierr);
-    ierr = SNESCreateSubVectors_VIRS(snes,nis_act,&Y_act);CHKERRQ(ierr);
-    ierr = SNESCreateSubVectors_VIRS(snes,nis_inact,&Y_inact);CHKERRQ(ierr);
+    ierr = SNESCreateSubVectors_VINEWTONRSLS(snes,nis_inact,&F_inact);CHKERRQ(ierr);
+    ierr = SNESCreateSubVectors_VINEWTONRSLS(snes,nis_act,&Y_act);CHKERRQ(ierr);
+    ierr = SNESCreateSubVectors_VINEWTONRSLS(snes,nis_inact,&Y_inact);CHKERRQ(ierr);
 
     /* Create scatter contexts */
     ierr = VecScatterCreate(Y,IS_act,Y_act,PETSC_NULL,&scat_act);CHKERRQ(ierr);
@@ -627,7 +627,7 @@ PetscErrorCode SNESSolve_VIRS(SNES snes)
 #define __FUNCT__ "SNESVISetRedundancyCheck"
 PetscErrorCode SNESVISetRedundancyCheck(SNES snes,PetscErrorCode (*func)(SNES,IS,IS*,void*),void *ctx)
 {
-  SNES_VIRS  *vi = (SNES_VIRS*)snes->data;
+  SNES_VINEWTONRSLS  *vi = (SNES_VINEWTONRSLS*)snes->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -700,7 +700,7 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char* func,mxArray
 
 /* -------------------------------------------------------------------------- */
 /*
-   SNESSetUp_VIRS - Sets up the internal data structures for the later use
+   SNESSetUp_VINEWTONRSLS - Sets up the internal data structures for the later use
    of the SNESVI nonlinear solver.
 
    Input Parameter:
@@ -715,14 +715,14 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char* func,mxArray
    the call to SNESSolve().
  */
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetUp_VIRS"
-PetscErrorCode SNESSetUp_VIRS(SNES snes)
+#define __FUNCT__ "SNESSetUp_VINEWTONRSLS"
+PetscErrorCode SNESSetUp_VINEWTONRSLS(SNES snes)
 {
-  PetscErrorCode ierr;
-  SNES_VIRS       *vi = (SNES_VIRS*) snes->data;
-  PetscInt        *indices;
-  PetscInt        i,n,rstart,rend;
-  SNESLineSearch linesearch;
+  PetscErrorCode    ierr;
+  SNES_VINEWTONRSLS *vi = (SNES_VINEWTONRSLS*) snes->data;
+  PetscInt          *indices;
+  PetscInt          i,n,rstart,rend;
+  SNESLineSearch    linesearch;
 
   PetscFunctionBegin;
   ierr = SNESSetUp_VI(snes);CHKERRQ(ierr);
@@ -745,11 +745,11 @@ PetscErrorCode SNESSetUp_VIRS(SNES snes)
 }
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "SNESReset_VIRS"
-PetscErrorCode SNESReset_VIRS(SNES snes)
+#define __FUNCT__ "SNESReset_VINEWTONRSLS"
+PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
 {
-  SNES_VIRS      *vi = (SNES_VIRS*) snes->data;
-  PetscErrorCode ierr;
+  SNES_VINEWTONRSLS *vi = (SNES_VINEWTONRSLS*) snes->data;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = SNESReset_VI(snes);CHKERRQ(ierr);
@@ -759,7 +759,7 @@ PetscErrorCode SNESReset_VIRS(SNES snes)
 
 /* -------------------------------------------------------------------------- */
 /*MC
-      SNESVIRS - Reduced space active set solvers for variational inequalities based on Newton's method
+      SNESVINEWTONRSLS - Reduced space active set solvers for variational inequalities based on Newton's method
 
    Options Database:
 +   -snes_vi_type <ss,rs,rsaug> a semi-smooth solver, a reduced space active set method, and a reduced space active set method that does not eliminate the active constraints from the Jacobian instead augments the Jacobian with additional variables that enforce the constraints
@@ -771,23 +771,23 @@ PetscErrorCode SNESReset_VIRS(SNES snes)
    - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large-Scale
      Applications, Optimization Methods and Software, 21 (2006).
 
-.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVIRS, SNESVISS, SNESTR, SNESLineSearchSet(),
+.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONRSLS, SNESVINEWTONSSLS, SNESTR, SNESLineSearchSet(),
            SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(),
            SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
 
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "SNESCreate_VIRS"
-PetscErrorCode  SNESCreate_VIRS(SNES snes)
+#define __FUNCT__ "SNESCreate_VINEWTONRSLS"
+PetscErrorCode  SNESCreate_VINEWTONRSLS(SNES snes)
 {
-  PetscErrorCode ierr;
-  SNES_VIRS      *vi;
+  PetscErrorCode    ierr;
+  SNES_VINEWTONRSLS *vi;
 
   PetscFunctionBegin;
-  snes->ops->reset           = SNESReset_VIRS;
-  snes->ops->setup           = SNESSetUp_VIRS;
-  snes->ops->solve           = SNESSolve_VIRS;
+  snes->ops->reset           = SNESReset_VINEWTONRSLS;
+  snes->ops->setup           = SNESSetUp_VINEWTONRSLS;
+  snes->ops->solve           = SNESSolve_VINEWTONRSLS;
   snes->ops->destroy         = SNESDestroy_VI;
   snes->ops->setfromoptions  = SNESSetFromOptions_VI;
   snes->ops->view            = PETSC_NULL;
@@ -796,7 +796,7 @@ PetscErrorCode  SNESCreate_VIRS(SNES snes)
   snes->usesksp             = PETSC_TRUE;
   snes->usespc              = PETSC_FALSE;
 
-  ierr                       = PetscNewLog(snes,SNES_VIRS,&vi);CHKERRQ(ierr);
+  ierr                       = PetscNewLog(snes,SNES_VINEWTONRSLS,&vi);CHKERRQ(ierr);
   snes->data                 = (void*)vi;
   vi->checkredundancy        = PETSC_NULL;
 
