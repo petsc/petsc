@@ -554,7 +554,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   MatScalar            **abuf_r,*ba_i,*pA,*coa,*ba;
   PetscInt             *api,*apj,*coi,*coj;
   PetscInt             *poJ=po->j,*pdJ=pd->j,pcstart=P->cmap->rstart,pcend=P->cmap->rend;
-  PetscBool            scalable=ptap->scalable;
+  PetscBool            scalable;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -562,8 +562,9 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 
   ptap = c->ptap;
   if (!ptap) SETERRQ(((PetscObject)C)->comm,PETSC_ERR_ARG_INCOMP,"MatPtAP() has not been called to create matrix C yet, cannot use MAT_REUSE_MATRIX");
-  merge = ptap->merge;
-  apa   = ptap->apa;
+  merge    = ptap->merge;
+  apa      = ptap->apa;
+  scalable = ptap->scalable;
 
   /* 1) get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
   /*--------------------------------------------------*/
