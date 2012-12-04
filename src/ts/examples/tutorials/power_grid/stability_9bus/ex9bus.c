@@ -43,7 +43,7 @@ in current balance form using rectangular coordiantes.\n\n";
 #include <petscdmcomposite.h>
 
 #define freq 60
-#define w_s 1 //(2*PETSC_PI*freq)
+#define w_s (2*PETSC_PI*freq)
 
 /* Sizes and indices */
 const PetscInt nbus = 9; /* Number of network buses */
@@ -110,6 +110,7 @@ typedef struct{
   Vec V0;          /* Initial voltage vector (Power flow solution) */
   PetscReal tfaulton,tfaultoff; /* Fault on and off times */
   PetscInt  faultbus;  /* Fault bus */
+  PetscScalar Rfault;
   PetscReal t0,tmax;
   PetscInt  neqs_gen,neqs_net,neqs_pgrid;
   Mat       Sol; /* Matrix to save solution at each time step */
@@ -147,22 +148,23 @@ PetscErrorCode SaveSolution(TS ts)
   PetscErrorCode ierr;
   Userctx  *user;
   Vec       X;
-  PetscScalar *x;
-  PetscInt   i;
+  PetscScalar *x,*mat;
+  PetscInt   idx;
   PetscReal  t;
 
   PetscFunctionBegin;
   ierr = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
-  ierr = MatSetValue(user->Sol,user->stepnum,1,t,INSERT_VALUES);CHKERRQ(ierr);
+  idx = user->stepnum*(user->neqs_pgrid+1);
+  ierr = MatDenseGetArray(user->Sol,&mat);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  for(i=0;i< user->neqs_pgrid;i++) {
-    ierr = MatSetValue(user->Sol,user->stepnum,i+1,x[i],INSERT_VALUES);CHKERRQ(ierr);
-  }
-
+  mat[idx] = t;
+  ierr = PetscMemcpy(mat+idx+1,x,user->neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(user->Sol,&mat);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   user->stepnum++;
+
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -1012,7 +1014,7 @@ int main(int argc,char **argv)
   Vec            X;
   Mat            J;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,"petscoptions",help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
@@ -1037,14 +1039,15 @@ int main(int argc,char **argv)
   /* Set run time options */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Transient stability fault options","");CHKERRQ(ierr);
   {
-    user.tfaulton = 0.1;
-    user.tfaultoff = 0.2;
-    user.faultbus = 4;
+    user.tfaulton = 1.0;
+    user.tfaultoff = 1.2;
+    user.Rfault   = 0.0001;
+    user.faultbus = 8;
     ierr  = PetscOptionsReal("-tfaulton","","",user.tfaulton,&user.tfaulton,PETSC_NULL);CHKERRQ(ierr);
     ierr  = PetscOptionsReal("-tfaultoff","","",user.tfaultoff,&user.tfaultoff,PETSC_NULL);CHKERRQ(ierr);
     ierr  = PetscOptionsInt("-faultbus","","",user.faultbus,&user.faultbus,PETSC_NULL);CHKERRQ(ierr);
     user.t0 = 0.0;
-    user.tmax = 10.0;
+    user.tmax = 5.0;
     ierr  = PetscOptionsReal("-t0","","",user.t0,&user.t0,PETSC_NULL);CHKERRQ(ierr);
     ierr  = PetscOptionsReal("-tmax","","",user.tmax,&user.tmax,PETSC_NULL);CHKERRQ(ierr);
   }
@@ -1073,7 +1076,7 @@ int main(int argc,char **argv)
 
   /* Create matrix to save solutions at each time step */
   user.stepnum = 0;
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,1002,user.neqs_pgrid+1,user.neqs_pgrid+1,PETSC_NULL,&user.Sol);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,user.neqs_pgrid+1,1002,PETSC_NULL,&user.Sol);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -1089,13 +1092,13 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SetInitialGuess(X,&user);CHKERRQ(ierr);
   /* Save initial solution */
-  ierr = MatSetValue(user.Sol,user.stepnum,1,0.0,INSERT_VALUES);CHKERRQ(ierr);
-  PetscScalar *x;
-  PetscInt i;
+  PetscScalar *x,*mat; 
+  PetscInt idx=user.stepnum*(user.neqs_pgrid+1);
+  ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  for(i=0;i< user.neqs_pgrid;i++) {
-    ierr = MatSetValue(user.Sol,user.stepnum,i+1,x[i],INSERT_VALUES);CHKERRQ(ierr);
-  }
+  mat[idx] = 0.0;
+  ierr = PetscMemcpy(mat+idx+1,x,user.neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   user.stepnum++;
 
@@ -1127,10 +1130,10 @@ int main(int argc,char **argv)
   PetscInt row_loc,col_loc;
   PetscScalar val;
   row_loc = 2*user.faultbus; col_loc = 2*user.faultbus+1; /* Location for G */
-  val = 1000.0;
+  val = 1/user.Rfault;
   ierr = MatSetValues(user.Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
   row_loc = 2*user.faultbus+1; col_loc = 2*user.faultbus; /* Location for G */
-  val = 1000.0;
+  val = 1/user.Rfault;
   ierr = MatSetValues(user.Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
   
   ierr = MatAssemblyBegin(user.Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1138,12 +1141,14 @@ int main(int argc,char **argv)
 
   /* Solve the algebraic equations */
   ierr = SNESSolve(snes_alg,PETSC_NULL,X);CHKERRQ(ierr);
+
   /* Save fault-on solution */
-  ierr = MatSetValue(user.Sol,user.stepnum,1,user.tfaulton,INSERT_VALUES);CHKERRQ(ierr);
+  idx = user.stepnum*(user.neqs_pgrid+1);
+  ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  for(i=0;i< user.neqs_pgrid;i++) {
-    ierr = MatSetValue(user.Sol,user.stepnum,i+1,x[i],INSERT_VALUES);CHKERRQ(ierr);
-  }
+  mat[idx] = user.tfaulton;
+  ierr = PetscMemcpy(mat+idx+1,x,user.neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   user.stepnum++;
 
@@ -1154,10 +1159,10 @@ int main(int argc,char **argv)
 
   /* Remove the fault */
   row_loc = 2*user.faultbus; col_loc = 2*user.faultbus+1;
-  val = -1000.0;
+  val = -1/user.Rfault;
   ierr = MatSetValues(user.Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
   row_loc = 2*user.faultbus+1; col_loc = 2*user.faultbus;
-  val = -1000.0;
+  val = -1/user.Rfault;
   ierr = MatSetValues(user.Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
   
   ierr = MatAssemblyBegin(user.Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1168,11 +1173,12 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes_alg,PETSC_NULL,X);CHKERRQ(ierr);
   
   /* Save tfault off solution */
-  ierr = MatSetValue(user.Sol,user.stepnum,1,user.tfaultoff,INSERT_VALUES);CHKERRQ(ierr);
+  idx = user.stepnum*(user.neqs_pgrid+1);
+  ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  for(i=0;i< user.neqs_pgrid;i++) {
-    ierr = MatSetValue(user.Sol,user.stepnum,i+1,x[i],INSERT_VALUES);CHKERRQ(ierr);
-  }
+  mat[idx] = user.tfaultoff;
+  ierr = PetscMemcpy(mat+idx+1,x,user.neqs_pgrid*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   user.stepnum++;
 
@@ -1184,10 +1190,24 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(user.Sol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(user.Sol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  Mat A;
+  PetscScalar *amat;
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,user.neqs_pgrid+1,user.stepnum,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(A,&amat);CHKERRQ(ierr);
+  ierr = PetscMemcpy(amat,mat,(user.stepnum*(user.neqs_pgrid+1))*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(A,&amat);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
+  PetscViewer viewer;
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"out.bin",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+  ierr = MatView(A,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes_alg);CHKERRQ(ierr);
   ierr = VecDestroy(&F_alg);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = MatDestroy(&user.Ybus);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.Sol);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&user.V0);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dmgen);CHKERRQ(ierr);
