@@ -414,7 +414,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
   Mat_SeqAIJ    *matA, *matB=0;
   Mat_MPIAIJ    *mpimat=0;
   PetscScalar    one=1.;
-  PetscCoarsenData *agg_llists,*deleted_list;
+  PetscCoarsenData *agg_llists = PETSC_NULL,*deleted_list = PETSC_NULL;
   Mat            cMat,tMat,P;
   MatScalar     *ap;
   PetscMPIInt    tag1,tag2;
@@ -743,7 +743,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
 
       /* deal with deleted ghost on first pass */
       if (npe>1 && sub_it != n_sub_its-1 ){
-        PetscCDPos pos;  PetscBool ise;
+        PetscCDPos pos;  PetscBool ise = PETSC_FALSE;
         PetscInt nSend1, **sbuffs1,nSend2;
 #define REQ_BF_SIZE 100
         MPI_Request *sreqs2[REQ_BF_SIZE],*rreqs2[REQ_BF_SIZE];
@@ -1050,7 +1050,7 @@ PetscErrorCode heavyEdgeMatchAgg( const IS perm,
   if (npe>1){
     Mat mat;
     PetscCDPos pos;
-    PetscInt gid, NN, MM, jj, mxsz = 0;
+    PetscInt gid, NN, MM, jj = 0, mxsz = 0;
 
     for (kk=0;kk<nloc;kk++){
       ierr = PetscCDSizeAt( agg_llists, kk, &jj ); CHKERRQ(ierr);

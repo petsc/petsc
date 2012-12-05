@@ -79,8 +79,8 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields) {ierr = PetscSectionSetNumFields(*newSection, numFields);CHKERRQ(ierr);}
   for (f = 0; f < numFields; ++f) {
-    const char *name;
-    PetscInt    numComp;
+    const char *name    = PETSC_NULL;
+    PetscInt    numComp = 0;
 
     ierr = PetscSectionGetFieldName(section, f, &name);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldName(*newSection, f, name);CHKERRQ(ierr);
@@ -90,7 +90,7 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*newSection, pStart, pEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt dof, cdof, fcdof;
+    PetscInt dof, cdof, fcdof = 0;
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionSetDof(*newSection, p, dof);CHKERRQ(ierr);
@@ -107,7 +107,7 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
   }
   ierr = PetscSectionSetUp(*newSection);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt        cdof, fcdof;
+    PetscInt        cdof, fcdof = 0;
     const PetscInt *cInd;
 
     ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
@@ -1176,8 +1176,8 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
   ierr = PetscSectionCreate(s->atlasLayout.comm, subs);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(*subs, numFields);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
-    const char *name;
-    PetscInt    numComp;
+    const char *name    = PETSC_NULL;
+    PetscInt    numComp = 0;
 
     ierr = PetscSectionGetFieldName(s, fields[f], &name);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldName(*subs, f, name);CHKERRQ(ierr);
@@ -1187,7 +1187,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*subs, pStart, pEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt dof = 0, cdof = 0, fdof, cfdof;
+    PetscInt dof = 0, cdof = 0, fdof = 0, cfdof = 0;
 
     for (f = 0; f < numFields; ++f) {
       ierr = PetscSectionGetFieldDof(s, p, fields[f], &fdof);CHKERRQ(ierr);
@@ -1211,8 +1211,8 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
 
       ierr = PetscSectionGetConstraintDof(*subs, p, &cdof);CHKERRQ(ierr);
       if (cdof) {
-        const PetscInt *oldIndices;
-        PetscInt        fdof, cfdof, fc, numConst = 0, fOff = 0;
+        const PetscInt *oldIndices = PETSC_NULL;
+        PetscInt        fdof = 0, cfdof = 0, fc, numConst = 0, fOff = 0;
 
         for (f = 0; f < numFields; ++f) {
           PetscInt oldFoff = 0, oldf;
@@ -1222,7 +1222,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
           ierr = PetscSectionGetFieldConstraintIndices(s, p, fields[f], &oldIndices);CHKERRQ(ierr);
           /* This can be sped up if we assume sorted fields */
           for (oldf = 0; oldf < fields[f]; ++oldf) {
-            PetscInt oldfdof;
+            PetscInt oldfdof = 0;
             ierr = PetscSectionGetFieldDof(s, p, oldf, &oldfdof);CHKERRQ(ierr);
             oldFoff += oldfdof;
           }
@@ -1245,7 +1245,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
 #define __FUNCT__ "PetscSectionCreateSubmeshSection"
 PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs)
 {
-  const PetscInt *points, *indices;
+  const PetscInt *points, *indices = PETSC_NULL;
   PetscInt        numFields, f, numSubpoints, pStart, pEnd, p, subp;
   PetscErrorCode  ierr;
 
@@ -1254,8 +1254,8 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
   ierr = PetscSectionCreate(s->atlasLayout.comm, subs);CHKERRQ(ierr);
   if (numFields) {ierr = PetscSectionSetNumFields(*subs, numFields);CHKERRQ(ierr);}
   for(f = 0; f < numFields; ++f) {
-    const char *name;
-    PetscInt    numComp;
+    const char *name    = PETSC_NULL;
+    PetscInt    numComp = 0;
 
     ierr = PetscSectionGetFieldName(s, f, &name);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldName(*subs, f, name);CHKERRQ(ierr);
@@ -1268,7 +1268,7 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*subs, 0, numSubpoints);CHKERRQ(ierr);
   for(p = pStart; p < pEnd; ++p) {
-    PetscInt dof, cdof, fdof, cfdof;
+    PetscInt dof, cdof, fdof = 0, cfdof = 0;
 
     ierr = PetscFindInt(p, numSubpoints, points, &subp);CHKERRQ(ierr);
     if (subp < 0) continue;
@@ -1286,7 +1286,7 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
   ierr = PetscSectionSetUp(*subs);CHKERRQ(ierr);
   /* Change offsets to original offsets */
   for(p = pStart; p < pEnd; ++p) {
-    PetscInt off, foff;
+    PetscInt off, foff = 0;
 
     ierr = PetscFindInt(p, numSubpoints, points, &subp);CHKERRQ(ierr);
     if (subp < 0) continue;
@@ -1897,7 +1897,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   ierr = PetscSectionGetNumFields(rootSection, &numFields);CHKERRQ(ierr);
   if (numFields) {ierr = PetscSectionSetNumFields(leafSection, numFields);CHKERRQ(ierr);}
   for (f = 0; f < numFields; ++f) {
-    PetscInt numComp;
+    PetscInt numComp = 0;
     ierr = PetscSectionGetFieldComponents(rootSection, f, &numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldComponents(leafSection, f, numComp);CHKERRQ(ierr);
   }
@@ -1943,7 +1943,7 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   PetscSF         embedSF;
   const PetscInt *indices;
   IS              selected;
-  PetscInt        numRoots, rpStart, rpEnd, lpStart, lpEnd, isSize;
+  PetscInt        numRoots, rpStart = 0, rpEnd = 0, lpStart = 0, lpEnd = 0, isSize;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;

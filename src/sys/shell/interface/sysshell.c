@@ -786,7 +786,7 @@ PetscErrorCode  PetscShellGetKeyID_Private(PetscShell shell, const char key[], P
 #undef  __FUNCT__
 #define __FUNCT__ "PetscShellRegisterKey_Private"
 PetscErrorCode  PetscShellRegisterKey_Private(PetscShell shell, const char key[], PetscShell component, PetscInt *_id) {
-  PetscInt v, id;
+  PetscInt v, id = 0;
   PetscBool  found;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -1052,7 +1052,7 @@ PetscErrorCode  PetscShellCreate(MPI_Comm comm, PetscShell *shell){
 .seealso: PetscShellRegisterComponentShell(), PetscShellRegisterComponentURL(), PetscShellRegisterDependence()
 @*/
 PetscErrorCode  PetscShellGetComponent(PetscShell shell, const char key[], PetscShell *component, PetscBool  *found) {
-  PetscInt id;
+  PetscInt id = 0;
   PetscErrorCode ierr;
   PetscBool found_;
   PetscFunctionBegin;

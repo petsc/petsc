@@ -3085,7 +3085,7 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(c,2);
   if (!dm->coordinates && dm->coordinatesLocal) {
-    DM cdm;
+    DM cdm = PETSC_NULL;
 
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMCreateGlobalVector(cdm, &dm->coordinates);CHKERRQ(ierr);
@@ -3131,7 +3131,7 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(c,2);
   if (!dm->coordinatesLocal && dm->coordinates) {
-    DM cdm;
+    DM cdm = PETSC_NULL;
 
     ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
     ierr = DMCreateLocalVector(cdm, &dm->coordinatesLocal);CHKERRQ(ierr);

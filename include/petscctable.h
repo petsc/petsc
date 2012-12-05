@@ -74,7 +74,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,Pets
     hash = (hash == (ta->tablesize-1)) ? 0 : hash+1;
   }
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Full table");
-  PetscFunctionReturn(0);
+  /* PetscFunctionReturn(0); */
 }
 
 #undef __FUNCT__
@@ -104,7 +104,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt ke
     hash = (hash == (ta->tablesize-1)) ? 0 : hash+1;
   }
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Full table");
-  PetscFunctionReturn(0);
+  /* PetscFunctionReturn(0); */
 }
 
 

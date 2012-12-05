@@ -1540,9 +1540,9 @@ PetscErrorCode DMComplexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCon
 {
   DM_Complex     *mesh = (DM_Complex *) dm->data;
   PetscInt       *closure, *fifo;
-  const PetscInt *tmp, *tmpO = PETSC_NULL;
+  const PetscInt *tmp = PETSC_NULL, *tmpO = PETSC_NULL;
   PetscInt        tmpSize, t;
-  PetscInt        depth, maxSize;
+  PetscInt        depth = 0, maxSize;
   PetscInt        closureSize = 2, fifoSize = 0, fifoStart = 0;
   PetscErrorCode  ierr;
 
@@ -1661,9 +1661,9 @@ PetscErrorCode DMComplexRestoreTransitiveClosure(DM dm, PetscInt p, PetscBool us
 */
 PetscErrorCode DMComplexGetFaces(DM dm, PetscInt p, PetscInt *numFaces, PetscInt *faceSize, const PetscInt *faces[])
 {
-  DM_Complex     *mesh = (DM_Complex *) dm->data;
-  const PetscInt *cone;
-  PetscInt        depth, dim, coneSize;
+  DM_Complex     *mesh  = (DM_Complex *) dm->data;
+  const PetscInt *cone  = PETSC_NULL;
+  PetscInt        depth = 0, dim, coneSize;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1962,7 +1962,7 @@ PetscErrorCode DMComplexSetDepth_Private(DM dm, PetscInt p, PetscInt *depth)
   ierr = DMComplexGetLabelValue(dm, "depth", p, &d);CHKERRQ(ierr);
   if (d < 0) {
     /* We are guaranteed that the point has a cone since the depth was not yet set */
-    const PetscInt *cone;
+    const PetscInt *cone = PETSC_NULL;
     PetscInt        dCone;
 
     ierr = DMComplexGetCone(dm, p, &cone);CHKERRQ(ierr);
@@ -2176,7 +2176,7 @@ PetscErrorCode DMComplexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt po
   DM_Complex    *mesh = (DM_Complex *) dm->data;
   PetscInt      *offsets, **closures;
   PetscInt      *join[2];
-  PetscInt       depth, maxSize, joinSize = 0, i = 0;
+  PetscInt       depth = 0, maxSize, joinSize = 0, i = 0;
   PetscInt       p, d, c, m;
   PetscErrorCode ierr;
 
@@ -2379,7 +2379,7 @@ PetscErrorCode DMComplexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt po
   DM_Complex    *mesh = (DM_Complex *) dm->data;
   PetscInt      *offsets, **closures;
   PetscInt      *meet[2];
-  PetscInt       height, maxSize, meetSize = 0, i = 0;
+  PetscInt       height = 0, maxSize, meetSize = 0, i = 0;
   PetscInt       p, h, c, m;
   PetscErrorCode ierr;
 
@@ -2534,7 +2534,7 @@ PetscErrorCode DMComplexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt
   PetscInt      *off, *adj;
   PetscInt      *neighborCells, *tmpClosure;
   PetscInt       maxConeSize, maxSupportSize, maxClosure, maxNeighbors;
-  PetscInt       dim, depth, cStart, cEnd, c, numCells, cell;
+  PetscInt       dim, depth = 0, cStart, cEnd, c, numCells, cell;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3446,7 +3446,7 @@ PETSC_STATIC_INLINE PetscInt DMComplexShiftPoint_Private(PetscInt p, PetscInt de
 PetscErrorCode DMComplexShiftSizes_Private(DM dm, PetscInt depthShift[], DM dmNew)
 {
   PetscInt      *depthEnd;
-  PetscInt       depth, d, pStart, pEnd, p;
+  PetscInt       depth = 0, d, pStart, pEnd, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3482,7 +3482,7 @@ PetscErrorCode DMComplexShiftSizes_Private(DM dm, PetscInt depthShift[], DM dmNe
 PetscErrorCode DMComplexShiftPoints_Private(DM dm, PetscInt depthShift[], DM dmNew)
 {
   PetscInt      *depthEnd, *newpoints;
-  PetscInt       depth, d, maxConeSize, maxSupportSize, pStart, pEnd, p;
+  PetscInt       depth = 0, d, maxConeSize, maxSupportSize, pStart, pEnd, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3496,7 +3496,7 @@ PetscErrorCode DMComplexShiftPoints_Private(DM dm, PetscInt depthShift[], DM dmN
   /* Step 5: Set cones and supports */
   ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   for(p = pStart; p < pEnd; ++p) {
-    const PetscInt *points, *orientations;
+    const PetscInt *points = PETSC_NULL, *orientations = PETSC_NULL;
     PetscInt        size, i, newp = DMComplexShiftPoint_Private(p, depth, depthEnd, depthShift);
 
     ierr = DMComplexGetConeSize(dm, p, &size);CHKERRQ(ierr);
@@ -3525,7 +3525,7 @@ PetscErrorCode DMComplexShiftCoordinates_Private(DM dm, PetscInt depthShift[], D
   PetscSection   coordSection, newCoordSection;
   Vec            coordinates;
   PetscInt      *depthEnd;
-  PetscInt       dim, depth, d, vStart, vEnd, v;
+  PetscInt       dim, depth = 0, d, vStart, vEnd, v;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3560,7 +3560,7 @@ PetscErrorCode DMComplexShiftCoordinates_Private(DM dm, PetscInt depthShift[], D
 PetscErrorCode DMComplexShiftSF_Private(DM dm, PetscInt depthShift[], DM dmNew)
 {
   PetscInt          *depthEnd;
-  PetscInt           depth, d;
+  PetscInt           depth = 0, d;
   PetscSF            sfPoint, sfPointNew;
   const PetscSFNode *remotePoints;
   PetscSFNode       *gremotePoints;
@@ -3611,7 +3611,7 @@ PetscErrorCode DMComplexShiftLabels_Private(DM dm, PetscInt depthShift[], DM dmN
   PetscInt      *depthEnd;
   const PetscSFNode *leafRemote;
   const PetscInt    *leafLocal;
-  PetscInt       depth, d, numLeaves, numLabels, l, cStart, cEnd, c, fStart, fEnd, f;
+  PetscInt       depth = 0, d, numLeaves, numLabels, l, cStart, cEnd, c, fStart, fEnd, f;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -3696,7 +3696,7 @@ PetscErrorCode DMComplexShiftLabels_Private(DM dm, PetscInt depthShift[], DM dmN
     if (numCells < 2) {
       ierr = DMLabelSetValue(ghostLabel, f, 1);CHKERRQ(ierr);
     } else {
-      const PetscInt *cells;
+      const PetscInt *cells = PETSC_NULL;
       PetscInt        vA, vB;
 
       ierr = DMComplexGetSupport(dmNew, f, &cells);CHKERRQ(ierr);
@@ -3738,7 +3738,7 @@ PetscErrorCode DMComplexConstructGhostCells_2D(DM dm, const char labelName[], Pe
   IS              valueIS;
   const PetscInt *values;
   PetscInt       *depthShift;
-  PetscInt        depth, numFS, fs, ghostCell, cEnd, c;
+  PetscInt        depth = 0, numFS, fs, ghostCell, cEnd, c;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -3970,7 +3970,7 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
   mesh = (DM_Complex *) (idm)->data;
   /* Orient edges */
   for (c = 0; c < numCells; ++c) {
-    const PetscInt *cone, *cellFaces;
+    const PetscInt *cone = PETSC_NULL, *cellFaces;
     PetscInt        coneSize, coff, numCellFaces, faceSize, cf;
 
     ierr = DMComplexGetConeSize(idm, c, &coneSize);CHKERRQ(ierr);
@@ -3979,7 +3979,7 @@ PetscErrorCode DMComplexInterpolate_2D(DM dm, DM *dmInt)
     ierr = DMComplexGetFaces(dm, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
     if (coneSize != numCellFaces) SETERRQ3(((PetscObject) idm)->comm, PETSC_ERR_PLIB, "Invalid number of edges %D for cell %D should be %D", coneSize, c, numCellFaces);
     for (cf = 0; cf < numCellFaces; ++cf) {
-      const PetscInt *econe;
+      const PetscInt *econe = PETSC_NULL;
       PetscInt        esize;
 
       ierr = DMComplexGetConeSize(idm, cone[cf], &esize);CHKERRQ(ierr);
@@ -4068,7 +4068,7 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
 
       /* TODO Need join of vertices to check for existence of edges, which needs support (could set edge support), so just brute force for now */
       for (f = firstFace; f < face; ++f) {
-        const PetscInt *cone;
+        const PetscInt *cone = PETSC_NULL;
 
         ierr = DMComplexGetCone(idm, f, &cone);CHKERRQ(ierr);
         if (((cellFaces[cf*faceSize+0] == cone[0]) && (cellFaces[cf*faceSize+1] == cone[1]) && (cellFaces[cf*faceSize+2] == cone[2])) ||
@@ -4103,7 +4103,7 @@ PetscErrorCode DMComplexInterpolate_3D(DM dm, DM *dmInt)
 
       /* TODO Need join of vertices to check for existence of edges, which needs support (could set edge support), so just brute force for now */
       for (e = firstEdge; e < edge; ++e) {
-        const PetscInt *cone;
+        const PetscInt *cone = PETSC_NULL;
 
         ierr = DMComplexGetCone(idm, e, &cone);CHKERRQ(ierr);
         if (((cellFaces[cf*faceSize+0] == cone[0]) && (cellFaces[cf*faceSize+1] == cone[1])) ||
@@ -6737,7 +6737,7 @@ PetscErrorCode DMComplexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCor
     faceSize = faceSizeTri;
     for (i = 0; i < faceSizeTri; ++i) sortedIndices[i] = indices[i];
     ierr = PetscSortInt(faceSizeTri, sortedIndices);CHKERRQ(ierr);
-    for (iFace = 0; iFace < 4; ++iFace) {
+    for (iFace = 0; iFace < 3; ++iFace) {
       const PetscInt ii = iFace*faceSizeTri;
       PetscInt       fVertex, cVertex;
 
@@ -6882,7 +6882,7 @@ PetscErrorCode DMComplexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCor
     faceSize = faceSizeTet;
     for (i = 0; i < faceSizeTet; ++i) sortedIndices[i] = indices[i];
     ierr = PetscSortInt(faceSizeTet, sortedIndices);CHKERRQ(ierr);
-    for (iFace=0; iFace < 6; ++iFace) {
+    for (iFace=0; iFace < 4; ++iFace) {
       const PetscInt ii = iFace*faceSizeTet;
       PetscInt       fVertex, cVertex;
 
@@ -6989,7 +6989,7 @@ PetscErrorCode DMComplexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCor
 */
 PetscErrorCode DMComplexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize, const PetscInt face[], PetscInt numCorners, PetscInt indices[], PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
 {
-  const PetscInt *cone;
+  const PetscInt *cone = PETSC_NULL;
   PetscInt        coneSize, v, f, v2;
   PetscInt        oppositeVertex = -1;
   PetscErrorCode  ierr;
@@ -7744,7 +7744,7 @@ PetscErrorCode DMComplexProjectFunctionLocal(DM dm, PetscInt numComp, PetscScala
     --depth;
     if (depth > 1) {ierr = DMComplexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);}
     for (e = eStart; e < eEnd; ++e) {
-      const PetscInt *cone;
+      const PetscInt *cone = PETSC_NULL;
       PetscInt        coneSize, d;
       PetscScalar    *coordsA, *coordsB;
 
