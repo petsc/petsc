@@ -3738,7 +3738,7 @@ PetscErrorCode DMComplexConstructGhostCells_2D(DM dm, const char labelName[], Pe
   IS              valueIS;
   const PetscInt *values;
   PetscInt       *depthShift;
-  PetscInt        dim, depth, numFS, fs, ghostCell, cEnd, c;
+  PetscInt        depth, numFS, fs, ghostCell, cEnd, c;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
