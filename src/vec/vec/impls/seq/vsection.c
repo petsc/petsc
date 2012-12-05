@@ -1950,9 +1950,9 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   *remoteOffsets = PETSC_NULL;
   ierr = PetscSFGetGraph(sf, &numRoots, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   if (numRoots < 0) {PetscFunctionReturn(0);}
-  ierr = PetscMalloc((lpEnd - lpStart) * sizeof(PetscInt), &remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(rootSection, &rpStart, &rpEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(leafSection, &lpStart, &lpEnd);CHKERRQ(ierr);
+  ierr = PetscMalloc((lpEnd - lpStart) * sizeof(PetscInt), &remoteOffsets);CHKERRQ(ierr);
   isSize = PetscMin(numRoots, rpEnd - rpStart);
   ierr = ISCreateStride(PETSC_COMM_SELF, isSize, rpStart, 1, &selected);CHKERRQ(ierr);
   ierr = ISGetIndices(selected, &indices);CHKERRQ(ierr);
