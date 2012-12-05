@@ -253,12 +253,9 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
   PetscBool      flg,nox;
   char           vtype[256];
   const char     *def;
-  PetscBool      save;
 #if !defined(PETSC_USE_WINDOWS_GRAPHICS) && !defined(PETSC_HAVE_X)
   PetscBool      warn;
 #endif
-  char           filename[PETSC_MAX_PATH_LEN];
-  PetscBool      movie = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -296,10 +293,14 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
     }
     ierr = PetscOptionsName("-nox","Run without graphics","None",&nox);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_X)
-    ierr = PetscOptionsBool("-draw_save_movie","Make a movie from the images saved (X Windows only)","PetscDrawSetSave",movie,&movie,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-draw_save","Save graphics to file (X Windows only)","PetscDrawSetSave",filename,filename,PETSC_MAX_PATH_LEN,&save);CHKERRQ(ierr);
-    if (save) {
-      ierr = PetscDrawSetSave(draw,filename,movie);CHKERRQ(ierr);
+    {
+      char      filename[PETSC_MAX_PATH_LEN];
+      PetscBool save,movie = PETSC_FALSE;
+      ierr = PetscOptionsBool("-draw_save_movie","Make a movie from the images saved (X Windows only)","PetscDrawSetSave",movie,&movie,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsString("-draw_save","Save graphics to file (X Windows only)","PetscDrawSetSave",filename,filename,PETSC_MAX_PATH_LEN,&save);CHKERRQ(ierr);
+      if (save) {
+        ierr = PetscDrawSetSave(draw,filename,movie);CHKERRQ(ierr);
+      }
     }
 #endif
 
