@@ -4,7 +4,7 @@
 #include <petscsnes.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define dmdanesssetjacobianlocal_      DMDASNESSETJACOBIANLOCAL
+#define dmdasnessetjacobianlocal_      DMDASNESSETJACOBIANLOCAL
 #define dmdasnessetfunctionlocal_      DMDASNESSETFUNCTIONLOCAL
 #define dmdacreate2d_                  DMDACREATE2D
 #define dmdagetownershipranges_        DMDAGETOWNERSHIPRANGES

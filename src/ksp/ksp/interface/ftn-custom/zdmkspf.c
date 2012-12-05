@@ -2,13 +2,13 @@
 #include <petsc-private/kspimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define dmkspsetcomputerhs_            DMKSPSETCOMPUTERHS_
-#define dmkspsetcomputeinitialguess_   DMKSPSETCOMPUTEINITIALGUESS_
-#define dmkspsetcomputeoperators_      DMKSPSETCOMPUTEOPERATORS_
+#define dmkspsetcomputerhs_            DMKSPSETCOMPUTERHS
+#define dmkspsetcomputeinitialguess_   DMKSPSETCOMPUTEINITIALGUESS
+#define dmkspsetcomputeoperators_      DMKSPSETCOMPUTEOPERATORS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define dmkspsetcomputerhs_            dmkspsetcomputerhs       /* zdmkspf.c */
-#define dmkspsetcomputeinitialguess_   dmkspsetcomputeinitialguess       /* zdmkspf.c */
-#define dmkspsetcomputeoperators_      dmkspsetcomputeoperators /* zdmkspf */
+#define dmkspsetcomputerhs_            dmkspsetcomputerhs          /* zdmkspf.c */
+#define dmkspsetcomputeinitialguess_   dmkspsetcomputeinitialguess /* zdmkspf.c */
+#define dmkspsetcomputeoperators_      dmkspsetcomputeoperators    /* zdmkspf */
 #endif
 
 static PetscErrorCode ourkspcomputerhs(KSP ksp,Vec b,void *ctx)
