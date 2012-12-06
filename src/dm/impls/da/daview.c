@@ -210,20 +210,20 @@ PetscErrorCode  DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
   /* since the xs, xe ... have all been multiplied by the number of degrees
      of freedom per cell, w = dd->w, we divide that out before returning.*/
   w = dd->w;
-  info->xs = dd->xs/w;
+  info->xs = dd->xs/w + dd->xo;
   info->xm = (dd->xe - dd->xs)/w;
   /* the y and z have NOT been multiplied by w */
-  info->ys = dd->ys;
+  info->ys = dd->ys + dd->yo;
   info->ym = (dd->ye - dd->ys);
-  info->zs = dd->zs;
+  info->zs = dd->zs + dd->zo;
   info->zm = (dd->ze - dd->zs);
 
-  info->gxs = dd->Xs/w;
+  info->gxs = dd->Xs/w + dd->xo;
   info->gxm = (dd->Xe - dd->Xs)/w;
   /* the y and z have NOT been multiplied by w */
-  info->gys = dd->Ys;
+  info->gys = dd->Ys + dd->yo;
   info->gym = (dd->Ye - dd->Ys);
-  info->gzs = dd->Zs;
+  info->gzs = dd->Zs + dd->zo;
   info->gzm = (dd->Ze - dd->Zs);
   PetscFunctionReturn(0);
 }

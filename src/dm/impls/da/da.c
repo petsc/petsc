@@ -183,6 +183,74 @@ PetscErrorCode  DMDASetOverlap(DM da, PetscInt overlap)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetOffset"
+/*@
+  DMDASetOffset - Sets the index offset of the DA.
+
+  Collective on DA
+
+  Input Parameter:
++ da  - The DMDA
+. xo  - The offset in the x direction
+. yo  - The offset in the y direction
+- zo  - The offset in the z direction
+
+  Level: intermediate
+
+  Notes: This is used primarily to overlap a computation on a local DA with that on a global DA without
+  changing boundary conditions or subdomain features that depend upon the global offsets.
+
+.keywords:  distributed array, degrees of freedom
+.seealso: DMDAGetOffset(), DMDAVecGetArray()
+@*/
+PetscErrorCode  DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo)
+{
+  DM_DA *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidLogicalCollectiveInt(da,xo,2);
+  PetscValidLogicalCollectiveInt(da,yo,2);
+  PetscValidLogicalCollectiveInt(da,zo,2);
+  dd->xo = xo;
+  dd->yo = yo;
+  dd->zo = zo;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetOffset"
+/*@
+  DMDAGetOffset - Gets the index offset of the DA.
+
+  Not collective
+
+  Input Parameter:
+. da  - The DMDA
+
+  Output Parameters:
++ xo  - The offset in the x direction
+. yo  - The offset in the y direction
+- zo  - The offset in the z direction
+
+  Level: intermediate
+
+.keywords:  distributed array, degrees of freedom
+.seealso: DMDASetOffset(), DMDAVecGetArray()
+@*/
+PetscErrorCode  DMDAGetOffset(DM da, PetscInt *xo, PetscInt *yo, PetscInt *zo)
+{
+  DM_DA *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  if (xo) *xo = dd->xo;
+  if (yo) *yo = dd->yo;
+  if (zo) *zo = dd->zo;
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDASetStencilType"

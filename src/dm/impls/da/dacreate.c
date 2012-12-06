@@ -269,6 +269,9 @@ PetscErrorCode  DMCreate_DA(DM da)
   dd->Xs = -1; dd->Xe = -1; dd->Ys = -1; dd->Ye = -1; dd->Zs = -1; dd->Ze = -1;
 
   dd->overlap      = 0;
+  dd->xo           = 0;
+  dd->yo           = 0;
+  dd->zo           = 0;
 
   dd->gtol         = PETSC_NULL;
   dd->ltog         = PETSC_NULL;

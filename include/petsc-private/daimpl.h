@@ -27,6 +27,7 @@ typedef struct {
   PetscInt              nlocal,Nlocal;         /* local size of local vector and global vector */
 
   PetscInt              overlap;               /* overlap of local subdomains */
+  PetscInt              xo,yo,zo;              /* offsets for the indices in x y and z */
 
   AO                    ao;                    /* application ordering context */
 

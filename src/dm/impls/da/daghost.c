@@ -46,9 +46,9 @@ PetscErrorCode  DMDAGetGhostCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,Pe
   /* since the xs, xe ... have all been multiplied by the number of degrees
      of freedom per cell, w = dd->w, we divide that out before returning.*/
   w = dd->w;
-  if (x) *x = dd->Xs/w; if (m) *m = (dd->Xe - dd->Xs)/w;
-  if (y) *y = dd->Ys;   if (n) *n = (dd->Ye - dd->Ys);
-  if (z) *z = dd->Zs;   if (p) *p = (dd->Ze - dd->Zs);
+  if (x) *x = dd->Xs/w + dd->xo; if (m) *m = (dd->Xe - dd->Xs)/w;
+  if (y) *y = dd->Ys   + dd->yo; if (n) *n = (dd->Ye - dd->Ys);
+  if (z) *z = dd->Zs   + dd->zo; if (p) *p = (dd->Ze - dd->Zs);
   PetscFunctionReturn(0);
 }
 
