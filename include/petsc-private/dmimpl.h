@@ -72,6 +72,14 @@ struct _DMSubDomainHookLink {
   DMSubDomainHookLink next;
 };
 
+typedef struct _DMGlobalToLocalHookLink *DMGlobalToLocalHookLink;
+struct _DMGlobalToLocalHookLink {
+  PetscErrorCode (*beginhook)(DM,Vec,InsertMode,Vec,void*);
+  PetscErrorCode (*endhook)(DM,Vec,InsertMode,Vec,void*);
+  void *ctx;
+  DMGlobalToLocalHookLink next;
+};
+
 typedef enum {DMVEC_STATUS_IN,DMVEC_STATUS_OUT} DMVecStatus;
 typedef struct _DMNamedVecLink *DMNamedVecLink;
 struct _DMNamedVecLink {
@@ -112,6 +120,7 @@ struct _p_DM {
   DMCoarsenHookLink       coarsenhook; /* For transfering auxiliary problem data to coarser grids */
   DMRefineHookLink        refinehook;
   DMSubDomainHookLink     subdomainhook;
+  DMGlobalToLocalHookLink gtolhook;
   /* Flexible communication */
   PetscSF                 sf;                   /* SF for parallel point overlap */
   PetscSF                 defaultSF;            /* SF for parallel dof overlap using default section */
