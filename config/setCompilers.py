@@ -969,7 +969,10 @@ class Configure(config.base.Configure):
       languages.append('FC')
     for language in languages:
       self.pushLanguage(language)
-      for testFlag in ['-PIC', '-fPIC', '-KPIC','-qpic']:
+      #different compilers are sensitive to the order of testing these flags. So separete out GCC test.
+      if config.setCompilers.Configure.isGNU(self.getCompiler()): testFlags = ['-fPIC']
+      else: testFlags = ['-PIC', '-fPIC', '-KPIC','-qpic']
+      for testFlag in testFlags:
         try:
           self.framework.logPrint('Trying '+language+' compiler flag '+testFlag)
           if not self.checkLinkerFlag(testFlag):
