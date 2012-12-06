@@ -683,7 +683,12 @@ PetscErrorCode DMCreateMatrix_DA(DM da, MatType mtype,Mat *J)
          col - number of colors needed in one direction for single component problem
 
   */
-  ierr = DMDAGetInfo(da,&dim,&M,&N,&P,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+  M = dd->M;
+  N = dd->N;
+  P = dd->P;
+  dim = dd->dim;
+  dof = dd->w;
+  /* ierr = DMDAGetInfo(da,&dim,&M,&N,&P,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr); */
   ierr = DMDAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);

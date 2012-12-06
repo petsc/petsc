@@ -45,6 +45,7 @@ struct _DMOps {
   PetscErrorCode (*createfielddecomposition)(DM,PetscInt*,char***,IS**,DM**);
   PetscErrorCode (*createdomaindecompositiondm)(DM,const char*,DM*);
   PetscErrorCode (*createdomaindecomposition)(DM,PetscInt*,char***,IS**,IS**,DM**);
+  PetscErrorCode (*createddscatters)(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
 };
 
 typedef struct _DMCoarsenHookLink *DMCoarsenHookLink;

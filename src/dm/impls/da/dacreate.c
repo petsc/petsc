@@ -123,6 +123,8 @@ extern PetscErrorCode  DMCreateAggregates_DA(DM,DM,Mat*);
 extern PetscErrorCode  DMView_DA(DM,PetscViewer);
 extern PetscErrorCode  DMSetUp_DA(DM);
 extern PetscErrorCode  DMDestroy_DA(DM);
+extern PetscErrorCode  DMCreateDomainDecomposition_DA(DM,PetscInt*,char ***,IS**,IS**,DM**);
+extern PetscErrorCode  DMCreateDomainDecompositionScatters_DA(DM,PetscInt,DM*,VecScatter **,VecScatter**,VecScatter**);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLoad_DA"
@@ -272,6 +274,9 @@ PetscErrorCode  DMCreate_DA(DM da)
   dd->xo           = 0;
   dd->yo           = 0;
   dd->zo           = 0;
+  dd->Mo           = -1;
+  dd->No           = -1;
+  dd->Po           = -1;
 
   dd->gtol         = PETSC_NULL;
   dd->ltog         = PETSC_NULL;
@@ -314,6 +319,8 @@ PetscErrorCode  DMCreate_DA(DM da)
   da->ops->load                = DMLoad_DA;
   da->ops->createcoordinatedm  = DMCreateCoordinateDM_DA;
   da->ops->createfielddecomposition = DMCreateFieldDecomposition_DA;
+  da->ops->createdomaindecomposition = DMCreateDomainDecomposition_DA;
+  da->ops->createddscatters = DMCreateDomainDecompositionScatters_DA;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

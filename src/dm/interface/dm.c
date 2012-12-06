@@ -1369,7 +1369,7 @@ PetscErrorCode DMCreateDomainDecompositionDM(DM dm, const char* name, DM *ddm)
   The user is responsible for freeing all requested arrays. In particular, every entry of names should be freed with
   PetscFree(), every entry of is should be destroyed with ISDestroy(), every entry of dm should be destroyed with DMDestroy(),
   and all of the arrays should be freed with PetscFree().
-
+ 
 .seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateDomainDecompositionDM(), DMCreateFieldDecomposition()
 @*/
 PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelist, IS **innerislist, IS **outerislist, DM **dmlist)
@@ -1386,6 +1386,50 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
   if (dm->ops->createdomaindecomposition) {
     ierr = (*dm->ops->createdomaindecomposition)(dm,len,namelist,innerislist,outerislist,dmlist); CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateDomainDecompositionScatters"
+/*@C
+  DMCreateDomainDecompositionScatters - Returns scatters to the subdomain vectors from the global vector
+
+  Not collective
+
+  Input Parameters:
++ dm - the DM object
+. n  - the number of subdomain scatters
+- subdms - the local subdomains
+
+  Output Parameters:
++ n     - the number of scatters returned
+. iscat - scatter from global vector to nonoverlapping global vector entries on subdomain
+. oscat - scatter from global vector to overlapping global vector entries on subdomain
+- gscat - scatter from global vector to local vector on subdomain (fills in ghosts)
+
+  Notes: This is an alternative to the iis and ois arguments in DMCreateDomainDecomposition that allow for the solution
+  of general nonlinear problems with overlapping subdomain methods.  While merely having index sets that enable subsets
+  of the residual equations to be created is fine for linear problems, nonlinear problems require local assembly of
+  solution and residual data.
+
+  Level: developer
+
+.seealso DMDestroy(), DMView(), DMCreateInterpolation(), DMCreateColoring(), DMCreateMatrix(), DMCreateFieldIS()
+@*/
+PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,VecScatter **iscat,VecScatter **oscat,VecScatter **gscat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(subdms,3);
+  PetscValidPointer(iscat,4);
+  PetscValidPointer(oscat,5);
+  PetscValidPointer(gscat,6);
+  if (dm->ops->createddscatters) {
+    ierr = (*dm->ops->createddscatters)(dm,n,subdms,iscat,oscat,gscat); CHKERRQ(ierr);
+  } else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This type has no DMCreateDomainDecompositionLocalScatter implementation defined");
   PetscFunctionReturn(0);
 }
 
