@@ -64,11 +64,12 @@ struct _DMRefineHookLink {
   DMRefineHookLink next;
 };
 
-typedef struct _DMBlockRestrictHookLink *DMBlockRestrictHookLink;
-struct _DMBlockRestrictHookLink {
+typedef struct _DMSubDomainHookLink *DMSubDomainHookLink;
+struct _DMSubDomainHookLink {
+  PetscErrorCode (*ddhook)(DM,DM,void*);
   PetscErrorCode (*restricthook)(DM,VecScatter,VecScatter,DM,void*);
   void *ctx;
-  DMBlockRestrictHookLink next;
+  DMSubDomainHookLink next;
 };
 
 typedef enum {DMVEC_STATUS_IN,DMVEC_STATUS_OUT} DMVecStatus;
@@ -110,7 +111,7 @@ struct _p_DM {
   void                    *data;
   DMCoarsenHookLink       coarsenhook; /* For transfering auxiliary problem data to coarser grids */
   DMRefineHookLink        refinehook;
-  DMBlockRestrictHookLink blockrestricthook;
+  DMSubDomainHookLink     subdomainhook;
   /* Flexible communication */
   PetscSF                 sf;                   /* SF for parallel point overlap */
   PetscSF                 defaultSF;            /* SF for parallel dof overlap using default section */

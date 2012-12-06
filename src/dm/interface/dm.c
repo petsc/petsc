@@ -334,6 +334,14 @@ PetscErrorCode  DMDestroy(DM *dm)
     }
     (*dm)->refinehook = PETSC_NULL;
   }
+  {
+    DMSubDomainHookLink link,next;
+    for (link=(*dm)->subdomainhook; link; link=next) {
+      next = link->next;
+      ierr = PetscFree(link);CHKERRQ(ierr);
+    }
+    (*dm)->subdomainhook = PETSC_NULL;
+  }
   /* Destroy the work arrays */
   {
     DMWorkLink link,next;
@@ -1375,6 +1383,8 @@ PetscErrorCode DMCreateDomainDecompositionDM(DM dm, const char* name, DM *ddm)
 PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelist, IS **innerislist, IS **outerislist, DM **dmlist)
 {
   PetscErrorCode ierr;
+  DMSubDomainHookLink link;
+  PetscInt            i,l;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -1384,7 +1394,13 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
   if (outerislist)   {PetscValidPointer(outerislist,5);    *outerislist = PETSC_NULL;}
   if (dmlist)        {PetscValidPointer(dmlist,6);         *dmlist      = PETSC_NULL;}
   if (dm->ops->createdomaindecomposition) {
-    ierr = (*dm->ops->createdomaindecomposition)(dm,len,namelist,innerislist,outerislist,dmlist); CHKERRQ(ierr);
+    ierr = (*dm->ops->createdomaindecomposition)(dm,&l,namelist,innerislist,outerislist,dmlist); CHKERRQ(ierr);
+  }
+  if (len) *len = l;
+  for (i = 0; i < l; i++) {
+    for (link=dm->subdomainhook; link; link=link->next) {
+      if (link->ddhook) {ierr = (*link->ddhook)(dm,(*dmlist)[i],link->ctx);CHKERRQ(ierr);}
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -1911,14 +1927,15 @@ PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMBlockRestrictHookAdd"
+#define __FUNCT__ "DMSubDomainHookAdd"
 /*@
-   DMBlockRestrictHookAdd - adds a callback to be run when restricting a nonlinear problem to the coarse grid
+   DMSubDomainHookAdd - adds a callback to be run when restricting a problem to the coarse grid
 
    Logically Collective
 
    Input Arguments:
 +  global - global DM
+.  
 .  restricthook - function to run to update data on block solve (at the beginning of the block solve)
 -  ctx - [optional] user-defined context for provide data for the hooks (may be PETSC_NULL)
 
@@ -1943,16 +1960,17 @@ $    restricthook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
 
 .seealso: DMRefineHookAdd(), SNESFASGetInterpolation(), SNESFASGetInjection(), PetscObjectCompose(), PetscContainerCreate()
 @*/
-PetscErrorCode DMBlockRestrictHookAdd(DM global,PetscErrorCode (*restricthook)(DM,VecScatter,VecScatter,DM,void*),void *ctx)
+PetscErrorCode DMSubDomainHookAdd(DM global,PetscErrorCode (*ddhook)(DM,DM,void*),PetscErrorCode (*restricthook)(DM,VecScatter,VecScatter,DM,void*),void *ctx)
 {
   PetscErrorCode ierr;
-  DMBlockRestrictHookLink link,*p;
+  DMSubDomainHookLink link,*p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(global,DM_CLASSID,1);
-  for (p=&global->blockrestricthook; *p; p=&(*p)->next) {} /* Scan to the end of the current list of hooks */
-  ierr = PetscMalloc(sizeof(struct _DMBlockRestrictHookLink),&link);CHKERRQ(ierr);
+  for (p=&global->subdomainhook; *p; p=&(*p)->next) {} /* Scan to the end of the current list of hooks */
+  ierr = PetscMalloc(sizeof(struct _DMSubDomainHookLink),&link);CHKERRQ(ierr);
   link->restricthook = restricthook;
+  link->ddhook = ddhook;
   link->ctx = ctx;
   link->next = PETSC_NULL;
   *p = link;
@@ -1960,30 +1978,30 @@ PetscErrorCode DMBlockRestrictHookAdd(DM global,PetscErrorCode (*restricthook)(D
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMBlockRestrict"
+#define __FUNCT__ "DMSubDomainRestrict"
 /*@
-   DMBlockRestrict - restricts user-defined problem data to a block DM by running hooks registered by DMBlockRestrictHookAdd()
+   DMSubDomainRestrict - restricts user-defined problem data to a block DM by running hooks registered by DMSubDomainHookAdd()
 
    Collective if any hooks are
 
    Input Arguments:
 +  fine - finer DM to use as a base
-.  restrct - restriction matrix, apply using MatRestrict()
-.  inject - injection matrix, also use MatRestrict()
+.  oscatter - scatter from domain global vector filling subdomain global vector with overlap
+.  gscatter - scatter from domain global vector filling subdomain local vector with ghosts
 -  coarse - coarer DM to update
 
    Level: developer
 
 .seealso: DMCoarsenHookAdd(), MatRestrict()
 @*/
-PetscErrorCode DMBlockRestrict(DM global,VecScatter in,VecScatter out,DM block)
+PetscErrorCode DMSubDomainRestrict(DM global,VecScatter oscatter,VecScatter gscatter,DM subdm)
 {
   PetscErrorCode ierr;
-  DMBlockRestrictHookLink link;
+  DMSubDomainHookLink link;
 
   PetscFunctionBegin;
-  for (link=global->blockrestricthook; link; link=link->next) {
-    if (link->restricthook) {ierr = (*link->restricthook)(global,in,out,block,link->ctx);CHKERRQ(ierr);}
+  for (link=global->subdomainhook; link; link=link->next) {
+    if (link->restricthook) {ierr = (*link->restricthook)(global,oscatter,gscatter,subdm,link->ctx);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }

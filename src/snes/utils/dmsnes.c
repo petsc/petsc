@@ -57,6 +57,29 @@ static PetscErrorCode DMRestrictHook_DMSNES(DM dm,Mat Restrict,Vec rscale,Mat In
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMSubDomainHook_DMSNES"
+/* Attaches the DMSNES to the subdomain. */
+static PetscErrorCode DMSubDomainHook_DMSNES(DM dm,DM subdm,void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCopyDMSNES(dm,subdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSubDomainRestrictHook_DMSNES"
+/* This could restrict auxiliary information to the coarse level.
+ */
+static PetscErrorCode DMSubDomainRestrictHook_DMSNES(DM dm,VecScatter gscat,VecScatter lscat,DM subdm,void *ctx)
+{
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMRefineHook_DMSNES"
 static PetscErrorCode DMRefineHook_DMSNES(DM dm,DM dmf,void *ctx)
 {
@@ -163,6 +186,7 @@ PetscErrorCode DMGetDMSNES(DM dm,DMSNES *snesdm)
     dm->dmsnes = (PetscObject) *snesdm;
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_DMSNES,DMRestrictHook_DMSNES,PETSC_NULL);CHKERRQ(ierr);
     ierr = DMRefineHookAdd(dm,DMRefineHook_DMSNES,DMInterpolateHook_DMSNES,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_DMSNES,DMSubDomainRestrictHook_DMSNES,PETSC_NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -235,6 +259,7 @@ PetscErrorCode DMCopyDMSNES(DM dmsrc,DM dmdest)
   ierr = PetscObjectReference(dmdest->dmsnes);CHKERRQ(ierr);
   ierr = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMSNES,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMRefineHookAdd(dmdest,DMRefineHook_DMSNES,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMSubDomainHookAdd(dmdest,DMSubDomainHook_DMSNES,DMSubDomainRestrictHook_DMSNES,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
