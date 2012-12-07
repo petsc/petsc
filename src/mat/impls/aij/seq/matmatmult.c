@@ -16,9 +16,11 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
 {
   PetscErrorCode ierr;
   PetscBool      scalable=PETSC_FALSE,scalable_fast=PETSC_FALSE,heap = PETSC_FALSE,btheap = PETSC_FALSE;
+  PetscLogDouble t0,t1;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){
+    //ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);
     ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-matmatmult_scalable","Use a scalable but slower C=A*B","",scalable,&scalable,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-matmatmult_scalable_fast","Use a scalable but slower C=A*B","",scalable_fast,&scalable_fast,PETSC_NULL);CHKERRQ(ierr);
@@ -29,18 +31,27 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
     if (scalable_fast){
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(A,B,fill,C);CHKERRQ(ierr);
     } else if (scalable){
+      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(A,B,fill,C);CHKERRQ(ierr);
+      ierr = PetscGetTime(&t1);CHKERRQ(ierr);
+      printf("    Mat %d %d, 2MultSymbolic_SeqAIJ_Scalable time: %g\n",A->rmap->N,A->cmap->N,t1-t0);
     } else if (heap) {
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(A,B,fill,C);CHKERRQ(ierr);
     } else if (btheap) {
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(A,B,fill,C);CHKERRQ(ierr);
     } else {
+      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
+      ierr = PetscGetTime(&t1);CHKERRQ(ierr);
+      printf("    Mat %d %d, 2MultSymbolic_SeqAIJ time: %g\n",A->rmap->N,A->cmap->N,t1-t0);
     }
     ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ierr = (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
+  ierr = PetscGetTime(&t1);CHKERRQ(ierr);
+  printf("    2MultNumeric_SeqAIJ time: %g\n",t1-t0);
   ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

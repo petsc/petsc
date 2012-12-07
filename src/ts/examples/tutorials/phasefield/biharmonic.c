@@ -359,7 +359,7 @@ PetscErrorCode FormJacobian(TS ts,PetscReal ftime,Vec X,Mat *A,Mat *B,MatStructu
   PetscInt       i,Mx,xs,xm;
   MatStencil     row,cols[5];
   PetscReal      hx,sx;
-  PetscScalar    *x,c,r,l,vals[5];
+  PetscScalar    *x,vals[5];
   Vec            localX;
   UserCtx        *ctx = (UserCtx*)ptr;
 
@@ -522,7 +522,9 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   Vec                localU;
   DM                 da;
   int                colors[] = {PETSC_DRAW_YELLOW,PETSC_DRAW_RED,PETSC_DRAW_BLUE,PETSC_DRAW_PLUM,PETSC_DRAW_BLACK};
+  /*
   const char *const  legend[3][3] = {{"-kappa (\\grad u,\\grad u)","(1 - u^2)^2"},{"-kappa (\\grad u,\\grad u)","(1 - u^2)"},{"-kappa (\\grad u,\\grad u)","logarithmic"}};
+   */
   PetscDrawAxis      axis;
   PetscDrawViewPorts *ports;
   PetscReal          tol = ctx->tol, theta=ctx->theta,theta_c=ctx->theta_c,a,b; // a and b are used in the cubic truncation of the log function

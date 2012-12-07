@@ -12,7 +12,7 @@ int main(int argc,char **args)
   Vec            u,x,b;
   PetscErrorCode ierr;
   PetscMPIInt    rank,nproc;
-  PetscInt       i,m,n,nfact,nsolve,nrhs,k,ipack=0;
+  PetscInt       i,m,n,nfact,nsolve,nrhs,ipack=0;
   PetscScalar    *array,rval;
   PetscReal      norm,tol=1.e-12;
   IS             perm,iperm;
