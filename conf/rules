@@ -17,6 +17,14 @@ chkpetsc_dir:
 petscnagupgrade:
 	-@PETSC_DIR=${PETSC_DIR} ${PYTHON} ${PETSC_DIR}/bin/petscnagupgrade.py
 
+chk_makej:
+	@makeflags=`echo ${MAKEFLAGS} | sed "s+ +_+g"`;\
+	new_makeflags=`echo $${makeflags} | sed "s+--jobserver-fds+DUMMY+g"`;\
+        if [ "$${new_makeflags}" != "$${makeflags}" ]; then \
+          echo "********************* ERROR *************************" ; \
+          echo "Parallel build with 'make -j' is not supported";\
+          echo "******************************************************" ; \
+          exit 1; fi; 
 chk_loc:
 	@if [ ${LOC}foo = foo ] ; then \
 	  echo "*********************** ERROR ************************" ; \
@@ -35,7 +43,7 @@ lssrc:
 	  ls ${SOURCEC} ${SOURCEH} | cat;\
 	 fi
 
-chklib_dir:
+chklib_dir: chk_makej
 	@if [ ! -d "${INSTALL_LIB_DIR}" ]; then \
 	  echo Making directory ${INSTALL_LIB_DIR} for library; ${MKDIR} ${INSTALL_LIB_DIR} ; fi
 
@@ -68,7 +76,7 @@ chkopts: petscnagupgrade
 
 #
 # uses the cmake infrastructure to build/rebuild the libraries
-cmake:
+cmake: chk_makej
 	@echo "Building PETSc using CMake with ${MAKE_NP} build threads"
 	@echo "=========================================="
 	@cd ${PETSC_DIR}/${PETSC_ARCH} && ${OMAKE} -j ${MAKE_NP} VERBOSE=1
@@ -1011,7 +1019,7 @@ shared: shared_nomesg
 	    echo "Shared libraries disabled"; \
           fi
 
-shared_nomesg:
+shared_nomesg: chk_makej
 	-@if [ "${BUILDSHAREDLIB}" != "no" ]; then \
 	    echo "making shared libraries in ${INSTALL_LIB_DIR}"; \
             cwd=`pwd`; \
