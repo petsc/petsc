@@ -160,10 +160,6 @@ struct _DMSNESOps {
   PetscErrorCode (*computepfunction)(SNES,Vec,Vec,void*);
   PetscErrorCode (*computepjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
-  /* Block functions */
-  PetscErrorCode (*computeblockfunction)(SNES,Vec,Vec,void*);
-  PetscErrorCode (*computeblockjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-
   PetscErrorCode (*destroy)(DMSNES);
   PetscErrorCode (*duplicate)(DMSNES,DMSNES);
 };
@@ -175,9 +171,6 @@ struct _p_DMSNES {
   void *pctx;
   void *jacobianctx;
   void *objectivectx;
-
-  void *blockfunctionctx;
-  void *blockjacobianctx;
 
   void *data;
 

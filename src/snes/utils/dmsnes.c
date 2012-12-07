@@ -128,8 +128,6 @@ PetscErrorCode DMSNESCopy(DMSNES kdm,DMSNES nkdm)
   nkdm->ops->computeobjective      = kdm->ops->computeobjective;
   nkdm->ops->computepjacobian      = kdm->ops->computepjacobian;
   nkdm->ops->computepfunction      = kdm->ops->computepfunction;
-  nkdm->ops->computeblockfunction  = kdm->ops->computeblockfunction;
-  nkdm->ops->computeblockjacobian  = kdm->ops->computeblockjacobian;
   nkdm->ops->destroy               = kdm->ops->destroy;
   nkdm->ops->duplicate             = kdm->ops->duplicate;
 
@@ -138,8 +136,6 @@ PetscErrorCode DMSNESCopy(DMSNES kdm,DMSNES nkdm)
   nkdm->pctx             = kdm->pctx;
   nkdm->jacobianctx      = kdm->jacobianctx;
   nkdm->objectivectx     = kdm->objectivectx;
-  nkdm->blockfunctionctx = kdm->blockfunctionctx;
-  nkdm->blockjacobianctx = kdm->blockjacobianctx;
   nkdm->data             = kdm->data;
 
   /*
@@ -606,138 +602,5 @@ PetscErrorCode DMSNESGetPicard(DM dm,PetscErrorCode (**pfunc)(SNES,Vec,Vec,void*
   if (pfunc) *pfunc = sdm->ops->computepfunction;
   if (pjac) *pjac   = sdm->ops->computepjacobian;
   if (ctx)  *ctx    = sdm->pctx;
-  PetscFunctionReturn(0);
-}
-
-/* block functions */
-
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESSetBlockFunction"
-/*@C
-   DMSNESSetBlockFunction - set SNES residual evaluation function
-
-   Not Collective
-
-   Input Arguments:
-+  dm - DM to be used with SNES
-.  func - residual evaluation function, see SNESSetFunction() for calling sequence
--  ctx - context for residual evaluation
-
-   Level: developer
-
-   Note:
-   Mostly for use in DM implementations and transferred to a block function rather than being called from here.
-
-.seealso: DMSNESSetContext(), SNESSetFunction(), DMSNESSetJacobian()
-@*/
-PetscErrorCode DMSNESSetBlockFunction(DM dm,PetscErrorCode (*func)(SNES,Vec,Vec,void*),void *ctx)
-{
-  PetscErrorCode ierr;
-  DMSNES         sdm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (func || ctx) {
-    ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
-  }
-  if (func) sdm->ops->computeblockfunction = func;
-  if (ctx)  sdm->blockfunctionctx = ctx;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESGetBlockFunction"
-/*@C
-   DMSNESGetBlockFunction - get SNES residual evaluation function
-
-   Not Collective
-
-   Input Argument:
-.  dm - DM to be used with SNES
-
-   Output Arguments:
-+  func - residual evaluation function, see SNESSetFunction() for calling sequence
--  ctx - context for residual evaluation
-
-   Level: developer
-
-.seealso: DMSNESSetContext(), DMSNESSetFunction(), SNESSetFunction()
-@*/
-PetscErrorCode DMSNESGetBlockFunction(DM dm,PetscErrorCode (**func)(SNES,Vec,Vec,void*),void **ctx)
-{
-  PetscErrorCode ierr;
-  DMSNES         sdm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (func) *func = sdm->ops->computeblockfunction;
-  if (ctx)  *ctx = sdm->blockfunctionctx;
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESSetBlockJacobian"
-/*@C
-   DMSNESSetJacobian - set SNES Jacobian evaluation function
-
-   Not Collective
-
-   Input Argument:
-+  dm - DM to be used with SNES
-.  func - Jacobian evaluation function, see SNESSetJacobian() for calling sequence
--  ctx - context for residual evaluation
-
-   Level: advanced
-
-   Note:
-   Mostly for use in DM implementations and transferred to a block function rather than being called from here.
-
-.seealso: DMSNESSetContext(), SNESSetFunction(), DMSNESGetJacobian(), SNESSetJacobian()
-@*/
-PetscErrorCode DMSNESSetBlockJacobian(DM dm,PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
-{
-  PetscErrorCode ierr;
-  DMSNES         sdm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (func || ctx) {
-    ierr = DMGetDMSNESWrite(dm,&sdm);CHKERRQ(ierr);
-  }
-  if (func) sdm->ops->computeblockjacobian = func;
-  if (ctx)  sdm->blockjacobianctx = ctx;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMSNESGetBlockJacobian"
-/*@C
-   DMSNESGetBlockJacobian - get SNES Jacobian evaluation function
-
-   Not Collective
-
-   Input Argument:
-.  dm - DM to be used with SNES
-
-   Output Arguments:
-+  func - Jacobian evaluation function, see SNESSetJacobian() for calling sequence
--  ctx - context for residual evaluation
-
-   Level: advanced
-
-.seealso: DMSNESSetContext(), SNESSetFunction(), DMSNESSetJacobian()
-@*/
-PetscErrorCode DMSNESGetBlockJacobian(DM dm,PetscErrorCode (**func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
-{
-  PetscErrorCode ierr;
-  DMSNES         sdm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (func) *func = sdm->ops->computeblockjacobian;
-  if (ctx)  *ctx = sdm->blockjacobianctx;
   PetscFunctionReturn(0);
 }
