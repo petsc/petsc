@@ -18,13 +18,19 @@ petscnagupgrade:
 	-@PETSC_DIR=${PETSC_DIR} ${PYTHON} ${PETSC_DIR}/bin/petscnagupgrade.py
 
 chk_makej:
-	@makeflags=`echo ${MAKEFLAGS} | sed "s+ +_+g"`;\
-	new_makeflags=`echo $${makeflags} | sed "s+--jobserver-fds+DUMMY+g"`;\
-        if [ "$${new_makeflags}" != "$${makeflags}" ]; then \
+	@parallel=false;\
+        mflags=`echo _${MFLAGS}_ | sed "s+ +_+g"`;\
+        mflags_j=`echo $${mflags} | sed "s+_-j_+DUMMY+g"`;\
+        mflags_j1=`echo $${mflags} | sed "s+_-j_1_+DUMMY+g"`;\
+        if [ "$${mflags_j}" != "$${mflags}" -a "$${mflags_j1}" = "$${mflags}" ]; then parallel=true; fi;\
+        makeflags=`echo ${MAKEFLAGS} | sed "s+ +_+g"`;\
+        makeflags_j=`echo $${makeflags} | sed "s+--jobserver-fds+DUMMY+g"`;\
+        if [ "$${makeflags_j}" != "$${makeflags}" ]; then parallel=true; fi;\
+        if [ "$${parallel}" = "true" ]; then \
           echo "********************* ERROR *************************" ; \
           echo "Parallel build with 'make -j' is not supported";\
           echo "******************************************************" ; \
-          exit 1; fi; 
+          exit 1; fi;
 chk_loc:
 	@if [ ${LOC}foo = foo ] ; then \
 	  echo "*********************** ERROR ************************" ; \
