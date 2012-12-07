@@ -680,7 +680,7 @@ runex19_ngmres_nasm: #test ex19 with NASM preconditioner globalized with NGMRES
 	-@${MPIEXEC} -n 4 ./ex19 -da_refine 4 -da_overlap 2 -snes_monitor_short -snes_type ngmres -snes_max_it 10 \
         -npc_snes_type nasm -npc_snes_nasm_type basic -grashof 4e4 -lidvelocity 100 > ex19_ngmres_nasm.tmp 2>&1; \
 	   ${DIFF} output/ex19_ngmres_nasm.out ex19_ngmres_nasm.tmp || echo  ${PWD} "\nPossible problem with ex19_nasm_ngmres, diffs above \n========================================="; \
-#           ${RM} -f ex19_ngmres_nasm.tmp
+           ${RM} -f ex19_ngmres_nasm.tmp
 
 runex19_fas: #test ex19 with FAS and pointwise GS smoother
 	-@${MPIEXEC} -n 1 ./ex19 -da_refine 4 -snes_monitor_short -snes_type fas \
