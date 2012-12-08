@@ -3283,7 +3283,7 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
 .  reason - negative value indicates diverged, positive value converged, see TSConvergedReason or the
             manual pages for the individual convergence tests for complete lists
 
-   Level: beginner
+   Level: advanced
 
    Notes:
    Can only be called during TSSolve() is active.
