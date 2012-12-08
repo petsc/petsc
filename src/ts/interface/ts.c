@@ -6,6 +6,8 @@
 PetscClassId  TS_CLASSID, DMTS_CLASSID;
 PetscLogEvent  TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
+const char *const TSExactFinalTimeOptions[] = {"STEPOVER","INTERPOLATE","MATCHSTEP","TSExactFinalTimeOption","TS_EXACTFINALTIME_",0};
+
 #undef __FUNCT__
 #define __FUNCT__ "TSSetTypeFromOptions"
 /*
@@ -88,6 +90,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   SNES           snes;
   TSAdapt        adapt;
   PetscReal      time_step;
+  TSExactFinalTimeOption      eftopt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -103,9 +106,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     if (flg) {
       ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
     }
-    opt = ts->exact_final_time == PETSC_DECIDE ? PETSC_FALSE : (PetscBool)ts->exact_final_time;
-    ierr = PetscOptionsBool("-ts_exact_final_time","Interpolate output to stop exactly at the final time","TSSetExactFinalTime",opt,&opt,&flg);CHKERRQ(ierr);
-    if (flg) {ierr = TSSetExactFinalTime(ts,opt);CHKERRQ(ierr);}
+    ierr = PetscOptionsEnum("-ts_exact_final_time","Option for handling of final time step","TSSetExactFinalTime",TSExactFinalTimeOptions,(PetscEnum)ts->exact_final_time,(PetscEnum*)&eftopt,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = TSSetExactFinalTime(ts,eftopt);CHKERRQ(ierr);}
     ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","TSSetMaxSNESFailures",ts->max_snes_failures,&ts->max_snes_failures,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections before step fails","TSSetMaxStepRejections",ts->max_reject,&ts->max_reject,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_error_if_step_fails","Error if no step succeeds","TSSetErrorIfStepFails",ts->errorifstepfailed,&ts->errorifstepfailed,PETSC_NULL);CHKERRQ(ierr);
@@ -1340,26 +1342,26 @@ PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
 #undef __FUNCT__
 #define __FUNCT__ "TSSetExactFinalTime"
 /*@
-   TSSetExactFinalTime - Determines whether to interpolate solution to the
-      exact final time requested by the user or just returns it at the final time
-      it computed.
+   TSSetExactFinalTime - Determines whether to adapt the final time step to
+     match the exact final time, interpolate solution to the exact final time,
+     or just return at the final time TS computed.
 
   Logically Collective on TS
 
    Input Parameter:
 +   ts - the time-step context
--   ft - PETSC_TRUE if interpolates, else PETSC_FALSE
+-   eftopt - exact final time option 
 
    Level: beginner
 
-.seealso: TSSetDuration()
+.seealso: TSExactFinalTime
 @*/
-PetscErrorCode  TSSetExactFinalTime(TS ts,PetscBool flg)
+PetscErrorCode  TSSetExactFinalTime(TS ts,TSExactFinalTimeOption eftopt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidLogicalCollectiveBool(ts,flg,2);
-  ts->exact_final_time = flg;
+  PetscValidLogicalCollectiveEnum(ts,eftopt,2);
+  ts->exact_final_time = eftopt;
   PetscFunctionReturn(0);
 }
 
@@ -1531,7 +1533,6 @@ PetscErrorCode  TSSetUp(TS ts)
   if (!((PetscObject)ts)->type_name) {
     ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
   }
-  if (ts->exact_final_time == PETSC_DECIDE) ts->exact_final_time = PETSC_FALSE;
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
@@ -2321,7 +2322,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
-  if (ts->exact_final_time) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
+  if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
     if (!ts->vec_sol || u == ts->vec_sol) {
       Vec y;
       ierr = VecDuplicate(u,&y);CHKERRQ(ierr);
@@ -2361,7 +2362,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ierr = TSPostStep(ts);CHKERRQ(ierr);
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     }
-    if (ts->exact_final_time && ts->ptime > ts->max_time) {
+    if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,u);CHKERRQ(ierr);
       ts->solvetime = ts->max_time;
     } else {

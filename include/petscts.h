@@ -70,6 +70,21 @@ typedef enum {
 } TSConvergedReason;
 PETSC_EXTERN const char *const*TSConvergedReasons;
 
+/*E
+   TSExactFinalTimeOption - option for handling of final time step
+
+   Level: beginner
+
+   Developer Notes: this must match finclude/petscts.h
+
+$  TS_EXACTFINALTIME_STEPOVER    - Don't do anything if final time is exceeded
+$  TS_EXACTFINALTIME_INTERPOLATE - Interpolate back to final time
+$  TS_EXACTFINALTIME_MATCHSTEP - Adapt final time step to match the final time
+.seealso: TSGetConvergedReason()
+E*/
+typedef enum {TS_EXACTFINALTIME_STEPOVER=0,TS_EXACTFINALTIME_INTERPOLATE=1,TS_EXACTFINALTIME_MATCHSTEP=2} TSExactFinalTimeOption;
+PETSC_EXTERN const char *const TSExactFinalTimeOptions[];
+
 /*MC
    TS_CONVERGED_ITERATING - this only occurs if TSGetConvergedReason() is called during the TSSolve()
 
@@ -137,7 +152,7 @@ PETSC_EXTERN PetscErrorCode TSGetSolution(TS,Vec*);
 
 PETSC_EXTERN PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
-PETSC_EXTERN PetscErrorCode TSSetExactFinalTime(TS,PetscBool);
+PETSC_EXTERN PetscErrorCode TSSetExactFinalTime(TS,TSExactFinalTimeOption);
 
 PETSC_EXTERN PetscErrorCode TSMonitorDefault(TS,PetscInt,PetscReal,Vec,void*);
 
