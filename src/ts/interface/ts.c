@@ -3272,6 +3272,35 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetConvergedReason"
+/*@
+   TSSetConvergedReason - Sets the reason for handling the convergence of TSSolve.
+
+   Not Collective
+
+   Input Parameter:
++  ts - the TS context
+.  reason - negative value indicates diverged, positive value converged, see TSConvergedReason or the
+            manual pages for the individual convergence tests for complete lists
+
+   Level: beginner
+
+   Notes:
+   Can only be called during TSSolve() is active.
+
+.keywords: TS, nonlinear, set, convergence, test
+
+.seealso: TSConvergedReason
+@*/
+PetscErrorCode  TSSetConvergedReason(TS ts,TSConvergedReason reason)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->reason = reason;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSGetSolveTime"
 /*@
    TSGetSolveTime - Gets the time after a call to TSSolve()

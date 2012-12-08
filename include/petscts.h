@@ -65,26 +65,11 @@ typedef enum {
   TS_CONVERGED_ITERATING      = 0,
   TS_CONVERGED_TIME           = 1,
   TS_CONVERGED_ITS            = 2,
+  TS_CONVERGED_USER           = 3,
   TS_DIVERGED_NONLINEAR_SOLVE = -1,
   TS_DIVERGED_STEP_REJECTED   = -2
 } TSConvergedReason;
 PETSC_EXTERN const char *const*TSConvergedReasons;
-
-/*E
-   TSExactFinalTimeOption - option for handling of final time step
-
-   Level: beginner
-
-   Developer Notes: this must match finclude/petscts.h
-
-$  TS_EXACTFINALTIME_STEPOVER    - Don't do anything if final time is exceeded
-$  TS_EXACTFINALTIME_INTERPOLATE - Interpolate back to final time
-$  TS_EXACTFINALTIME_MATCHSTEP - Adapt final time step to match the final time
-.seealso: TSGetConvergedReason()
-E*/
-typedef enum {TS_EXACTFINALTIME_STEPOVER=0,TS_EXACTFINALTIME_INTERPOLATE=1,TS_EXACTFINALTIME_MATCHSTEP=2} TSExactFinalTimeOption;
-PETSC_EXTERN const char *const TSExactFinalTimeOptions[];
-
 /*MC
    TS_CONVERGED_ITERATING - this only occurs if TSGetConvergedReason() is called during the TSSolve()
 
@@ -108,6 +93,13 @@ M*/
 
 .seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetDuration()
 M*/
+/*MC
+   TS_CONVERGED_USER - user requested termination
+
+   Level: beginner
+
+.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TSSetDuration()
+M*/
 
 /*MC
    TS_DIVERGED_NONLINEAR_SOLVE - too many nonlinear solves failed
@@ -124,6 +116,22 @@ M*/
 
 .seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt()
 M*/
+
+/*E
+   TSExactFinalTimeOption - option for handling of final time step
+
+   Level: beginner
+
+   Developer Notes: this must match finclude/petscts.h
+
+$  TS_EXACTFINALTIME_STEPOVER    - Don't do anything if final time is exceeded
+$  TS_EXACTFINALTIME_INTERPOLATE - Interpolate back to final time
+$  TS_EXACTFINALTIME_MATCHSTEP - Adapt final time step to match the final time
+.seealso: TSGetConvergedReason()
+E*/
+typedef enum {TS_EXACTFINALTIME_STEPOVER=0,TS_EXACTFINALTIME_INTERPOLATE=1,TS_EXACTFINALTIME_MATCHSTEP=2} TSExactFinalTimeOption;
+PETSC_EXTERN const char *const TSExactFinalTimeOptions[];
+
 
 /* Logging support */
 PETSC_EXTERN PetscClassId TS_CLASSID;
@@ -170,6 +178,7 @@ PETSC_EXTERN PetscErrorCode TSStep(TS);
 PETSC_EXTERN PetscErrorCode TSEvaluateStep(TS,PetscInt,Vec,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSSolve(TS,Vec);
 PETSC_EXTERN PetscErrorCode TSGetConvergedReason(TS,TSConvergedReason*);
+PETSC_EXTERN PetscErrorCode TSSetConvergedReason(TS,TSConvergedReason);
 PETSC_EXTERN PetscErrorCode TSGetSolveTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSGetSNESIterations(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSGetKSPIterations(TS,PetscInt*);
