@@ -18,6 +18,7 @@ typedef struct {
                             purification <= 0: no purification
                                          = 1: purification only for new matrix (See case cheb->its = 0 in KSPSolve_Chebyshev())
                                          >1 : purification */
+  PetscRandom random;
 } KSP_Chebyshev;
 
 #endif
