@@ -225,6 +225,7 @@ EXTERN_C_END
 #define __FUNCT__ "SNESNASMSolveLocal_Private"
 PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X) {
   SNES_NASM      *nasm = (SNES_NASM *)snes->data;
+  SNES           subsnes;
   PetscInt       i;
   PetscErrorCode ierr;
   Vec            Xlloc,Xl,Bl,Yl;
@@ -234,7 +235,8 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X) {
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = VecSet(Y,0);CHKERRQ(ierr);
   for(i=0;i<nasm->n;i++) {
-    ierr = SNESGetDM(snes,&subdm);CHKERRQ(ierr);
+    subsnes = nasm->subsnes[i];
+    ierr = SNESGetDM(subsnes,&subdm);CHKERRQ(ierr);
     iscat = nasm->iscatter[i];
     oscat = nasm->oscatter[i];
     gscat = nasm->gscatter[i];
@@ -261,7 +263,7 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X) {
     } else {
       Bl = PETSC_NULL;
     }
-    ierr = SNESSolve(nasm->subsnes[i],Bl,Yl);CHKERRQ(ierr);
+    ierr = SNESSolve(subsnes,Bl,Yl);CHKERRQ(ierr);
 
     ierr = VecAXPY(Yl,-1.0,Xl);CHKERRQ(ierr);
 

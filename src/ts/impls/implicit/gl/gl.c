@@ -105,6 +105,35 @@ static PetscErrorCode DMRestrictHook_TSGL(DM fine,Mat restrct,Vec rscale,Mat inj
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMSubDomainHook_TSGL"
+static PetscErrorCode DMSubDomainHook_TSGL(DM dm,DM subdm,void *ctx)
+{
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSubDomainRestrictHook_TSGL"
+static PetscErrorCode DMSubDomainRestrictHook_TSGL(DM dm,VecScatter gscat, VecScatter lscat,DM subdm,void *ctx)
+{
+  TS ts = (TS)ctx;
+  PetscErrorCode ierr;
+  Vec Ydot,Ydot_s;
+
+  PetscFunctionBegin;
+  ierr = TSGLGetVecs(ts,dm,PETSC_NULL,&Ydot);CHKERRQ(ierr);
+  ierr = TSGLGetVecs(ts,subdm,PETSC_NULL,&Ydot_s);CHKERRQ(ierr);
+
+  ierr = VecScatterBegin(gscat,Ydot,Ydot_s,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(gscat,Ydot,Ydot_s,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  ierr = TSGLRestoreVecs(ts,dm,PETSC_NULL,&Ydot);CHKERRQ(ierr);
+  ierr = TSGLRestoreVecs(ts,subdm,PETSC_NULL,&Ydot_s);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSGLSchemeCreate"
 static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt s,const PetscScalar *c,
                                        const PetscScalar *a,const PetscScalar *b,const PetscScalar *u,const PetscScalar *v,TSGLScheme *inscheme)
@@ -1180,6 +1209,7 @@ static PetscErrorCode TSSetUp_GL(TS ts)
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   if (dm) {
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSGL,DMRestrictHook_TSGL,ts);CHKERRQ(ierr);
+    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSGL,DMSubDomainRestrictHook_TSGL,ts);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
