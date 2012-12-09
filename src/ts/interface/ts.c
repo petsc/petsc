@@ -1068,6 +1068,7 @@ PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
   PetscBool      isbinary;
   PetscInt       classid;
   char           type[256];
+  DMTS           sdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1086,6 +1087,8 @@ PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
   ierr = DMLoad(ts->dm,viewer);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(ts->dm,&ts->vec_sol);CHKERRQ(ierr);
   ierr = VecLoad(ts->vec_sol,viewer);CHKERRQ(ierr);
+  ierr = DMGetDMTS(ts->dm,&sdm);CHKERRQ(ierr);
+  ierr = DMTSLoad(sdm,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1125,7 +1128,8 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   PetscErrorCode ierr;
   TSType         type;
   PetscBool      iascii,isstring,isundials,isbinary,isdraw;
-
+  DMTS           sdm;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!viewer) {
@@ -1148,6 +1152,8 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->ksp_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of rejected steps=%D\n",ts->reject);CHKERRQ(ierr);
+    ierr = DMGetDMTS(ts->dm,&sdm);CHKERRQ(ierr);
+    ierr = DMTSView(sdm,viewer);CHKERRQ(ierr);
     if (ts->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
@@ -1174,6 +1180,8 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     }
     ierr = DMView(ts->dm,viewer);CHKERRQ(ierr);
     ierr = VecView(ts->vec_sol,viewer);CHKERRQ(ierr);
+    ierr = DMGetDMTS(ts->dm,&sdm);CHKERRQ(ierr);
+    ierr = DMTSView(sdm,viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     PetscDraw draw;
     char      str[36];

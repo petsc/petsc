@@ -200,6 +200,30 @@ static PetscErrorCode DMDestroy_Shell(DM dm)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMView_Shell"
+static PetscErrorCode DMView_Shell(DM dm,PetscViewer v)
+{
+  PetscErrorCode ierr;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+
+  PetscFunctionBegin;
+  ierr = VecView(shell->Xglobal,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLoad_Shell"
+static PetscErrorCode DMLoad_Shell(DM dm,PetscViewer v)
+{
+  PetscErrorCode ierr;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+
+  PetscFunctionBegin;
+  ierr = VecCreate(((PetscObject)dm)->comm,&shell->Xglobal);CHKERRQ(ierr);
+  ierr = VecLoad(shell->Xglobal,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Shell"
@@ -216,6 +240,8 @@ PETSC_EXTERN_C PetscErrorCode  DMCreate_Shell(DM dm)
   dm->ops->destroy            = DMDestroy_Shell;
   dm->ops->createglobalvector = DMCreateGlobalVector_Shell;
   dm->ops->creatematrix       = DMCreateMatrix_Shell;
+  dm->ops->view               = DMView_Shell;
+  dm->ops->load               = DMLoad_Shell;
   PetscFunctionReturn(0);
 }
 

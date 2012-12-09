@@ -40,7 +40,9 @@ PetscErrorCode  PetscDLLibraryPrintPath(PetscDLLibrary libs)
 -   libname - name of the library, can be relative or absolute
 
    Output Parameter:
-.   handle - library handle
++   name - actual name of file on local filesystem if found
+.   llen - length of the name buffer
+-   found - true if the file exists 
 
    Level: developer
 
@@ -78,19 +80,21 @@ PetscErrorCode  PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *
   ierr = PetscStrlen(par2,&len);CHKERRQ(ierr);
   if (par2[len-1] == 'a' && par2[len-2] == '.') par2[len-2] = 0;
 
-
-  /* see if library name does already not have suffix attached */
-  ierr = PetscStrcpy(suffix,".");CHKERRQ(ierr);
-  ierr = PetscStrcat(suffix,PETSC_SLSUFFIX);CHKERRQ(ierr);
-  ierr = PetscStrrstr(par2,suffix,&so);CHKERRQ(ierr);
-  /* and attach the suffix if it is not there */
-  if (!so) { ierr = PetscStrcat(par2,suffix);CHKERRQ(ierr); }
-
-  /* restore the .gz suffix if it was there */
-  if (gz) { ierr = PetscStrcat(par2,".gz");CHKERRQ(ierr); }
-
-  /* and finally retrieve the file */
   ierr = PetscFileRetrieve(comm,par2,lname,llen,found);CHKERRQ(ierr);
+  if (!found) {
+    /* see if library name does already not have suffix attached */
+    ierr = PetscStrcpy(suffix,".");CHKERRQ(ierr);
+    ierr = PetscStrcat(suffix,PETSC_SLSUFFIX);CHKERRQ(ierr);
+    ierr = PetscStrrstr(par2,suffix,&so);CHKERRQ(ierr);
+    /* and attach the suffix if it is not there */
+    if (!so) { ierr = PetscStrcat(par2,suffix);CHKERRQ(ierr); }
+
+    /* restore the .gz suffix if it was there */
+    if (gz) { ierr = PetscStrcat(par2,".gz");CHKERRQ(ierr); }
+
+    /* and finally retrieve the file */
+    ierr = PetscFileRetrieve(comm,par2,lname,llen,found);CHKERRQ(ierr);
+  }
 
   ierr = PetscFree(buf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -223,7 +227,6 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
 PetscErrorCode  PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *outlist,const char path[],const char insymbol[],void **value)
 {
   char           libname[PETSC_MAX_PATH_LEN],suffix[16],*symbol,*s;
-  size_t         len;
   PetscDLLibrary nlist,prev,list = PETSC_NULL;
   PetscErrorCode ierr;
 
@@ -236,13 +239,17 @@ PetscErrorCode  PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *outlist,const ch
   if (outlist) list   = *outlist;
   *value = 0;
 
-  /* make copy of symbol so we can edit it in place */
-  ierr = PetscStrlen(insymbol,&len);CHKERRQ(ierr);
-  ierr = PetscMalloc((len+1)*sizeof(char),&symbol);CHKERRQ(ierr);
-  ierr = PetscStrcpy(symbol,insymbol);CHKERRQ(ierr);
-  /* If symbol contains () then replace with a NULL, to support functionname() */
-  ierr = PetscStrchr(symbol,'(',&s);CHKERRQ(ierr);
-  if (s) s[0] = 0;
+
+  ierr = PetscStrchr(insymbol,'(',&s);CHKERRQ(ierr);
+  if (s) {
+    /* make copy of symbol so we can edit it in place */
+    ierr = PetscStrallocpy(insymbol,&symbol);CHKERRQ(ierr);
+    /* If symbol contains () then replace with a NULL, to support functionname() */
+    ierr = PetscStrchr(symbol,'(',&s);CHKERRQ(ierr);
+    s[0] = 0;
+  } else {
+    symbol = (char *)insymbol;
+  }
 
   /*
        Function name does include library
@@ -298,7 +305,9 @@ PetscErrorCode  PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *outlist,const ch
     }
   }
 
-  ierr = PetscFree(symbol);CHKERRQ(ierr);
+  if (symbol != insymbol) {
+    ierr = PetscFree(symbol);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

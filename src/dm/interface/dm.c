@@ -2571,7 +2571,9 @@ PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
   if (classid != DM_FILE_CLASSID) SETERRQ(((PetscObject)newdm)->comm,PETSC_ERR_ARG_WRONG,"Not DM next in file");
   ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
   ierr = DMSetType(newdm, type);CHKERRQ(ierr);
-  ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
+  if (newdm->ops->load) {
+    ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

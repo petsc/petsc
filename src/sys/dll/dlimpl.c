@@ -223,9 +223,8 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
 PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value)
 {
   PETSC_UNUSED dlhandle_t dlhandle;
-  dlsymbol_t dlsymbol;
+  dlsymbol_t              dlsymbol;
 
-  PetscFunctionBegin;
   PetscValidCharPointer(symbol,2);
   PetscValidPointer(value,3);
 
@@ -311,5 +310,11 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
 
   *value = *((void**)&dlsymbol);
 
-  PetscFunctionReturn(0);
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+  if (*value) {
+    PetscErrorCode ierr;
+    ierr = PetscFPTAdd(*value,symbol);CHKERRQ(ierr);
+  }
+#endif
+  return(0);
 }

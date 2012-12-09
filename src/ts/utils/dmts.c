@@ -17,6 +17,46 @@ static PetscErrorCode DMTSDestroy(DMTS *kdm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMTSLoad"
+PetscErrorCode DMTSLoad(DMTS kdm,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunction,1,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobian,1,PETSC_FUNCTION);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSView"
+PetscErrorCode DMTSView(DMTS kdm,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscBool      isascii,isbinary;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (isascii) {
+    const char *fname;
+
+    ierr = PetscFPTFind(kdm->ops->ifunction,&fname);CHKERRQ(ierr);
+    if (fname) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  IFunction used by TS: %s\n",fname);CHKERRQ(ierr);
+    }
+    ierr = PetscFPTFind(kdm->ops->ijacobian,&fname);CHKERRQ(ierr);
+    if (fname) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  IJacobian function used by TS: %s\n",fname);CHKERRQ(ierr);
+    }
+  } else if (isbinary) {
+    ierr = PetscViewerBinaryWrite(viewer,kdm->ops->ifunction,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,kdm->ops->ijacobian,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMTSCreate"
 static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
 {
@@ -26,7 +66,7 @@ static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = TSInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(*kdm, _p_DMTS, struct _DMTSOps, DMTS_CLASSID, -1, "DMTS", "DMTS", "DMTS", comm, DMTSDestroy, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*kdm, _p_DMTS, struct _DMTSOps, DMTS_CLASSID, -1, "DMTS", "DMTS", "DMTS", comm, DMTSDestroy, DMTSView);CHKERRQ(ierr);
   ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMTSOps));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

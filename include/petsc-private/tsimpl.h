@@ -195,6 +195,8 @@ struct _p_DMTS {
 PETSC_EXTERN PetscErrorCode DMGetDMTS(DM,DMTS*);
 PETSC_EXTERN PetscErrorCode DMGetDMTSWrite(DM,DMTS*);
 PETSC_EXTERN PetscErrorCode DMCopyDMTS(DM,DM);
+PETSC_EXTERN PetscErrorCode DMTSView(DMTS,PetscViewer);
+PETSC_EXTERN PetscErrorCode DMTSLoad(DMTS,PetscViewer);
 
 
 

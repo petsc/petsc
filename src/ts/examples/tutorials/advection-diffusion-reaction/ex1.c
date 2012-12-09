@@ -79,7 +79,7 @@ typedef struct {
 /*
      Defines the ODE passed to the ODE solver
 */
-static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
+PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 {
   PetscErrorCode ierr;
   PetscScalar    *u,*udot,*f;
@@ -103,7 +103,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
-static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,AppCtx *ctx)
+PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,AppCtx *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       rowcol[] = {0,1,2};
@@ -228,6 +228,8 @@ int main(int argc,char **argv)
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,U);CHKERRQ(ierr);
+
+  ierr = TSView(ts,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.

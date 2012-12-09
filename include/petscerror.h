@@ -494,7 +494,26 @@ M*/
       petscstackp->currentsize++;                                        \
     }                                                                   \
     PetscCheck__FUNCT__();						\
+    PetscRegister__FUNCT__();						\
   } while (0)
+
+#define PETSC_SERIALIZE_FUNCTIONS
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+#include <petsc-private/petscfptimpl.h>
+/*
+   Registers the current function into the global function pointer to function name table
+
+   Have to fix this to handle errors but cannot return error since used in PETSC_VIEWER_DRAW_() etc
+*/
+#define PetscRegister__FUNCT__() do { \
+  static PetscBool __chked = PETSC_FALSE; \
+  if (!__chked) {\
+  void *ptr; PetscDLSym(PETSC_NULL,__FUNCT__,&ptr);\
+  __chked = PETSC_TRUE;\
+  }} while (0)
+#else
+#define PetscRegister__FUNCT__() 
+#endif
 
 #define PetscCheck__FUNCT__() do { \
     if (strcmp(PETSC_FUNCTION_NAME,__FUNCT__) && strcmp(__FUNCT__,"User provided function")) { \
