@@ -75,6 +75,29 @@ typedef struct {
 } AppCtx;
 
 #undef __FUNCT__
+#define __FUNCT__ "IFunctionView"
+PetscErrorCode IFunctionView(AppCtx *ctx,PetscViewer v)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerBinaryWrite(v,&ctx->k,1,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "IFunctionLoad"
+PetscErrorCode IFunctionLoad(AppCtx **ctx,PetscViewer v)
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = PetscMalloc(sizeof(AppCtx),ctx);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(v,&(*ctx)->k,1,PETSC_SCALAR);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "IFunction"
 /*
      Defines the ODE passed to the ODE solver
@@ -210,6 +233,16 @@ int main(int argc,char **argv)
   ierr = TSSetIFunction(ts,PETSC_NULL,(TSIFunction) IFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&ctx);CHKERRQ(ierr);
   ierr = TSSetSolutionFunction(ts,(TSSolutionFunction)Solution,&ctx);CHKERRQ(ierr);
+
+  {
+    DM   dm;
+    void *ptr;
+    ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+    ierr = PetscDLSym(PETSC_NULL,"IFunctionView",&ptr);CHKERRQ(ierr);
+    ierr = PetscDLSym(PETSC_NULL,"IFunctionLoad",&ptr);CHKERRQ(ierr);
+    ierr = DMTSSetIFunctionSerialize(dm,(PetscErrorCode (*)(void*,PetscViewer))IFunctionView,(PetscErrorCode (*)(void**,PetscViewer))IFunctionLoad);CHKERRQ(ierr);
+    ierr = DMTSSetIJacobianSerialize(dm,(PetscErrorCode (*)(void*,PetscViewer))IFunctionView,(PetscErrorCode (*)(void**,PetscViewer))IFunctionLoad);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

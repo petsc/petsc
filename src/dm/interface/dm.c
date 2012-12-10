@@ -527,17 +527,11 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
   ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (isbinary) {
     PetscInt         classid = DM_FILE_CLASSID;
-    MPI_Comm         comm;
-    PetscMPIInt      rank;
     char             type[256];
 
-    ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    if (!rank) {
-      ierr = PetscViewerBinaryWrite(v,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-      ierr = PetscStrncpy(type,((PetscObject)dm)->type_name,256);CHKERRQ(ierr);
-      ierr = PetscViewerBinaryWrite(v,type,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
-    }
+    ierr = PetscViewerBinaryWrite(v,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscStrncpy(type,((PetscObject)dm)->type_name,256);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(v,type,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
   }
   if (dm->ops->view) {
     ierr = (*dm->ops->view)(dm,v);CHKERRQ(ierr);

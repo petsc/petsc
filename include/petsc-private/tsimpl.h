@@ -136,6 +136,7 @@ struct _TSAdaptOps {
   PetscErrorCode (*destroy)(TSAdapt);
   PetscErrorCode (*view)(TSAdapt,PetscViewer);
   PetscErrorCode (*setfromoptions)(TSAdapt);
+  PetscErrorCode (*load)(TSAdapt,PetscViewer);
 };
 
 struct _p_TSAdapt {
@@ -162,7 +163,12 @@ struct _DMTSOps {
   TSRHSJacobian rhsjacobian;
 
   TSIFunction ifunction;
+  PetscErrorCode (*ifunctionview)(void*,PetscViewer);
+  PetscErrorCode (*ifunctionload)(void**,PetscViewer);
+
   TSIJacobian ijacobian;
+  PetscErrorCode (*ijacobianview)(void*,PetscViewer);
+  PetscErrorCode (*ijacobianload)(void**,PetscViewer);
 
   TSSolutionFunction solution;
 

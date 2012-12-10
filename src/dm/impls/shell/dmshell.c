@@ -31,10 +31,16 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,MatType mtype,Mat *J)
     } else SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_USER,"Must call DMShellSetMatrix(), DMShellSetCreateMatrix(), or provide a vector");
   }
   A = shell->A;
+  /* the check below is tacky and incomplete */
   if (mtype) {
-    PetscBool flg;
+    PetscBool flg,aij,seqaij,mpiaij;
     ierr = PetscObjectTypeCompare((PetscObject)A,mtype,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ2(((PetscObject)dm)->comm,PETSC_ERR_ARG_NOTSAMETYPE,"Requested matrix of type %s, but only %s available",mtype,((PetscObject)A)->type_name);
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&seqaij);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&mpiaij);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype,MATAIJ,&aij);CHKERRQ(ierr);
+    if (!flg) {
+      if (!(aij & (seqaij || mpiaij))) SETERRQ2(((PetscObject)dm)->comm,PETSC_ERR_ARG_NOTSAMETYPE,"Requested matrix of type %s, but only %s available",mtype,((PetscObject)A)->type_name);
+    }
   }
   if (((PetscObject)A)->refct < 2) { /* We have an exclusive reference so we can give it out */
     ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);

@@ -152,14 +152,64 @@ PetscErrorCode  TSAdaptSetOptionsPrefix(TSAdapt adapt,const char prefix[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSAdaptLoad"
+/*@C
+  TSAdaptLoad - Loads a TSAdapt that has been stored in binary  with TSAdaptView().
+
+  Collective on PetscViewer
+
+  Input Parameters:
++ newdm - the newly loaded TSAdapt, this needs to have been created with TSAdaptCreate() or
+           some related function before a call to TSAdaptLoad().
+- viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
+           HDF5 file viewer, obtained from PetscViewerHDF5Open()
+
+   Level: intermediate
+
+  Notes:
+   The type is determined by the data in the file, any type set into the TSAdapt before this call is ignored.
+
+  Notes for advanced users:
+  Most users should not need to know the details of the binary storage
+  format, since TSAdaptLoad() and TSAdaptView() completely hide these details.
+  But for anyone who's interested, the standard binary matrix storage
+  format is
+.vb
+     has not yet been determined
+.ve
+
+.seealso: PetscViewerBinaryOpen(), TSAdaptView(), MatLoad(), VecLoad()
+@*/
+PetscErrorCode  TSAdaptLoad(TSAdapt tsadapt, PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscBool      isbinary;
+  char           type[256];
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tsadapt,TSADAPT_CLASSID,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+
+  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = TSAdaptSetType(tsadapt, type);CHKERRQ(ierr);
+  if (tsadapt->ops->load) {
+    ierr = (*tsadapt->ops->load)(tsadapt,viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSAdaptView"
 PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool      iascii;
+  PetscBool      iascii,isbinary;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)adapt,viewer,"TSAdapt Object");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  number of candidates %D\n",adapt->candidates.n);CHKERRQ(ierr);
@@ -168,6 +218,12 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
       ierr = (*adapt->ops->view)(adapt,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
+  } else if (isbinary) {
+    char type[256];
+
+    /* need to save FILE_CLASS_ID for adapt class */
+    ierr = PetscStrncpy(type,((PetscObject)adapt)->type_name,256);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
   } else {
     if (adapt->ops->view) {
       ierr = (*adapt->ops->view)(adapt,viewer);CHKERRQ(ierr);
@@ -259,7 +315,7 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt
    Logically Collective
 
    Input Arguments:
-+  adapt - time step adaptivity context, usually gotten with TSGetAdapt()
++  adapt - time step adaptivity context, usually gotten with TSGetTSAdapt()
 .  hmin - minimum time step
 -  hmax - maximum time step
 
@@ -298,7 +354,7 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
    Notes:
    This function is automatically called by TSSetFromOptions()
 
-.keywords: TS, TSGetAdapt(), TSAdaptSetType()
+.keywords: TS, TSGetTSAdapt(), TSAdaptSetType()
 
 .seealso: TSGetType()
 @*/
@@ -358,7 +414,7 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
    Logically Collective
 
    Input Arguments:
-+  adapt - time step adaptivity context, obtained with TSGetAdapt() or TSAdaptCreate()
++  adapt - time step adaptivity context, obtained with TSGetTSAdapt() or TSAdaptCreate()
 .  name - name of the candidate scheme to add
 .  order - order of the candidate scheme
 .  stageorder - stage order of the candidate scheme
@@ -559,7 +615,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscBool *accept)
   TSAdapt creation is handled by TS, so users should not need to call this function.
 
 .keywords: TSAdapt, create
-.seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptDestroy()
+.seealso: TSGetTSAdapt(), TSAdaptSetType(), TSAdaptDestroy()
 @*/
 PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
 {
