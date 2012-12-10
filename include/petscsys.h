@@ -1386,12 +1386,8 @@ PETSC_EXTERN PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*)(void));
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalizeAll(void);
 
 typedef void* PetscDLHandle;
-
-#define PETSC_DL_DECIDE   0
-#define PETSC_DL_NOW      1
-#define PETSC_DL_LOCAL    2
-
-extern PetscErrorCode  PetscDLOpen(const char[],int,PetscDLHandle *);
+typedef enum {PETSC_DL_DECIDE=0,PETSC_DL_NOW=1,PETSC_DL_LOCAL=2} PetscDLMode;
+extern PetscErrorCode  PetscDLOpen(const char[],PetscDLMode,PetscDLHandle *);
 extern PetscErrorCode  PetscDLClose(PetscDLHandle *);
 extern PetscErrorCode  PetscDLSym(PetscDLHandle,const char[],void **);
 

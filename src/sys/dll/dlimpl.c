@@ -37,7 +37,7 @@ typedef void* dlsymbol_t;
 
    Input Parameters:
 +    name - name of library
--    flags - options on how to open library
+-    mode - options on how to open library 
 
    Output Parameter:
 .    handle
@@ -45,10 +45,10 @@ typedef void* dlsymbol_t;
    Level: developer
 
 @*/
-PetscErrorCode  PetscDLOpen(const char name[],int flags,PetscDLHandle *handle)
+PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *handle)
 {
   PETSC_UNUSED int dlflags1,dlflags2; /* There are some preprocessor paths where these variables are set, but not used */
-  dlhandle_t dlhandle;
+  dlhandle_t       dlhandle;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,1);
@@ -67,11 +67,11 @@ PetscErrorCode  PetscDLOpen(const char name[],int flags,PetscDLHandle *handle)
   if (!dlhandle) {
 #if defined(PETSC_HAVE_GETLASTERROR)
     PetscErrorCode ierr;
-    DWORD erc;
-    char  *buff = NULL;
+    DWORD          erc;
+    char           *buff = NULL;
     erc = GetLastError();
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
-		  NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,NULL);
+		  PETSC_NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,PETSC_NULL);
     ierr = PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,PETSC_ERR_FILE_OPEN,PETSC_ERROR_REPEAT,
 		      "Unable to open dynamic library:\n  %s\n  Error message from LoadLibrary() %s\n",name,buff);
     LocalFree(buff);
@@ -95,14 +95,14 @@ PetscErrorCode  PetscDLOpen(const char name[],int flags,PetscDLHandle *handle)
   dlflags1 = RTLD_LAZY;
 #endif
 #if defined(PETSC_HAVE_RTLD_NOW)
-  if (flags & PETSC_DL_NOW)
+  if (mode & PETSC_DL_NOW)
     dlflags1 = RTLD_NOW;
 #endif
 #if defined(PETSC_HAVE_RTLD_GLOBAL)
   dlflags2 = RTLD_GLOBAL;
 #endif
 #if defined(PETSC_HAVE_RTLD_LOCAL)
-  if (flags & PETSC_DL_LOCAL)
+  if (mode & PETSC_DL_LOCAL)
     dlflags2 = RTLD_LOCAL;
 #endif
 #if defined(PETSC_HAVE_DLERROR)
@@ -126,7 +126,6 @@ PetscErrorCode  PetscDLOpen(const char name[],int flags,PetscDLHandle *handle)
 #endif
 
   *handle = (PetscDLHandle) dlhandle;
-
   PetscFunctionReturn(0);
 }
 
@@ -158,8 +157,7 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
 #if defined(PETSC_HAVE_GETLASTERROR)
     char  *buff = NULL;
     DWORD erc   = GetLastError();
-    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
-		  NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,NULL);
+    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,PETSC_NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,PETSC_NULL);
     PetscErrorPrintf("Error closing dynamic library:\n  Error message from FreeLibrary() %s\n",buff);
     LocalFree(buff);
 #else
@@ -210,7 +208,7 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
 -   symbol - name of symbol
 
    Output Parameter:
-.   value - pointer to the function
+.   value - pointer to the function, PETSC_NULL if not found
 
    Level: developer
 
@@ -230,7 +228,6 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
 
   dlhandle = (dlhandle_t) 0;
   dlsymbol = (dlsymbol_t) 0;
-
   *value   = (void *) 0;
 
   /*
@@ -238,10 +235,8 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
   */
 #if defined(PETSC_HAVE_WINDOWS_H)
 #if defined(PETSC_HAVE_GETPROCADDRESS)
-  if (handle)
-    dlhandle = (dlhandle_t) handle;
-  else
-    dlhandle = (dlhandle_t) GetCurrentProcess();
+  if (handle) dlhandle = (dlhandle_t) handle;
+  else dlhandle = (dlhandle_t) GetCurrentProcess();
   dlsymbol = (dlsymbol_t) GetProcAddress(dlhandle,symbol);
 #if defined(PETSC_HAVE_SETLASTERROR)
   SetLastError((DWORD)0); /* clear any previous error */
@@ -256,7 +251,6 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
   if (handle) {
     dlhandle = (dlhandle_t) handle;
   } else {
-
 
 #if defined(PETSC_HAVE_DLOPEN) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
     /* Attempt to retrieve the main executable's dlhandle. */
