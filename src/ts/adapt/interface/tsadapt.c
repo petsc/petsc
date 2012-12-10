@@ -525,6 +525,16 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
   if (adapt->candidates.n < 1) SETERRQ1(((PetscObject)adapt)->comm,PETSC_ERR_ARG_WRONGSTATE,"%D candidates have been registered",adapt->candidates.n);
   if (!adapt->candidates.inuse_set) SETERRQ1(((PetscObject)adapt)->comm,PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
   ierr = (*adapt->ops->choose)(adapt,ts,h,next_sc,next_h,accept,&wlte);CHKERRQ(ierr);
+  if(*accept && ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) {
+    /* Reduce time step if it overshoots max time */
+    PetscReal max_time=ts->max_time;
+    PetscReal next_dt=0.0;
+    if(ts->ptime + ts->time_step + *next_h >= max_time) {
+      next_dt = max_time - (ts->ptime + ts->time_step);
+      if(next_dt != 0.0) *next_h = next_dt;
+      else ts->reason = TS_CONVERGED_TIME;
+    }
+  }
   if (*next_sc < 0 || adapt->candidates.n <= *next_sc) SETERRQ2(((PetscObject)adapt)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Chosen scheme %D not in valid range 0..%D",*next_sc,adapt->candidates.n-1);
   if (!(*next_h > 0.)) SETERRQ1(((PetscObject)adapt)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Computed step size %G must be positive",*next_h);
 

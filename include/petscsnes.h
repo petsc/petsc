@@ -650,11 +650,6 @@ PETSC_EXTERN PetscErrorCode DMSNESGetPicard(DM,PetscErrorCode(**)(SNES,Vec,Vec,v
 PETSC_EXTERN PetscErrorCode DMSNESSetObjective(DM,SNESObjective,void*);
 PETSC_EXTERN PetscErrorCode DMSNESGetObjective(DM,SNESObjective*,void**);
 
-PETSC_EXTERN PetscErrorCode DMSNESSetBlockFunction(DM,PetscErrorCode(*)(SNES,Vec,Vec,void*),void*);
-PETSC_EXTERN PetscErrorCode DMSNESGetBlockFunction(DM,PetscErrorCode(**)(SNES,Vec,Vec,void*),void**);
-PETSC_EXTERN PetscErrorCode DMSNESSetBlockJacobian(DM,PetscErrorCode(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void*);
-PETSC_EXTERN PetscErrorCode DMSNESGetBlockJacobian(DM,PetscErrorCode(**)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void**);
-
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDASNESFunction)(DMDALocalInfo*,void*,void*,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDASNESJacobian)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDASNESObjective)(DMDALocalInfo*,void*,PetscReal*,void*);
@@ -666,9 +661,6 @@ PETSC_EXTERN PetscErrorCode DMDASNESSetPicardLocal(DM,InsertMode,PetscErrorCode 
 
 PETSC_EXTERN PetscErrorCode DMSNESSetFunctionLocal(DM,PetscErrorCode (*)(DM,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMSNESSetJacobianLocal(DM,PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*),void*);
-
-PETSC_EXTERN PetscErrorCode SNESComputeLocalBlockFunction_DMDA(SNES,Vec,Vec,void *);
-PETSC_EXTERN PetscErrorCode SNESComputeLocalBlockJacobian_DMDA(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 /* Routines for Multiblock solver */
 PETSC_EXTERN PetscErrorCode SNESMultiblockSetFields(SNES, const char [], PetscInt, const PetscInt *);

@@ -89,6 +89,20 @@ PETSC_EXTERN_C PetscErrorCode KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP k
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "KSPChebyshevEstEigSetRandom_Chebyshev"
+PETSC_EXTERN_C PetscErrorCode KSPChebyshevEstEigSetRandom_Chebyshev(KSP ksp,PetscRandom random)
+{
+  KSP_Chebyshev *cheb = (KSP_Chebyshev*)ksp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (random) {ierr = PetscObjectReference((PetscObject)random);CHKERRQ(ierr);}
+  ierr = PetscRandomDestroy(&cheb->random);CHKERRQ(ierr);
+  cheb->random = random;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPChebyshevSetNewMatrix_Chebyshev"
 PETSC_EXTERN_C PetscErrorCode  KSPChebyshevSetNewMatrix_Chebyshev(KSP ksp)
 {
@@ -182,6 +196,32 @@ PetscErrorCode KSPChebyshevSetEstimateEigenvalues(KSP ksp,PetscReal a,PetscReal 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "KSPChebyshevEstEigSetRandom"
+/*@
+   KSPChebyshevEstEigSetRandom - set random context for estimating eigenvalues
+
+   Logically Collective
+
+   Input Arguments:
++  ksp - linear solver context
+-  random - random number context or PETSC_NULL to disable randomized RHS
+
+   Level: intermediate
+
+.seealso: KSPChebyshevSetEstimateEigenvalues(), PetscRandomCreate()
+@*/
+PetscErrorCode KSPChebyshevEstEigSetRandom(KSP ksp,PetscRandom random)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  if (random) PetscValidHeaderSpecific(random,PETSC_RANDOM_CLASSID,2);
+  ierr = PetscTryMethod(ksp,"KSPChebyshevEstEigSetRandom_C",(KSP,PetscRandom),(ksp,random));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPChebyshevSetNewMatrix"
 /*@
    KSPChebyshevSetNewMatrix - Indicates that the matrix has changed, causes eigenvalue estimates to be recomputed if appropriate.
@@ -235,6 +275,19 @@ PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp)
     default: SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_INCOMP,"Must specify either 0, 2, or 4 parameters for eigenvalue estimation");
     }
   }
+  if (cheb->kspest) {
+    PetscBool estrand = PETSC_FALSE;
+    ierr = PetscOptionsBool("-ksp_chebyshev_estimate_eigenvalues_random","Use Random right hand side for eigenvalue estimation","KSPChebyshevEstEigSetRandom",estrand,&estrand,PETSC_NULL);CHKERRQ(ierr);
+    if (estrand) {
+      PetscRandom random;
+      ierr = PetscRandomCreate(((PetscObject)ksp)->comm,&random);CHKERRQ(ierr);
+      ierr = PetscObjectSetOptionsPrefix((PetscObject)random,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+      ierr = PetscObjectAppendOptionsPrefix((PetscObject)random,"ksp_chebyshev_estimate_eigenvalues_");CHKERRQ(ierr);
+      ierr = PetscRandomSetFromOptions(random);CHKERRQ(ierr);
+      ierr = KSPChebyshevEstEigSetRandom(ksp,random);CHKERRQ(ierr);
+      ierr = PetscRandomDestroy(&random);CHKERRQ(ierr);
+    }
+  }
 
   /*
    Use hybrid Chebyshev.
@@ -281,14 +334,21 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 
   if (cheb->kspest && !cheb->estimate_current) {
     PetscReal max,min;
-    Vec       X;
+    Vec       X,B;
 
     if (hybrid && purification){
       X = ksp->vec_sol;
     } else {
       X = ksp->work[0];
     }
-    ierr = KSPSolve(cheb->kspest,ksp->vec_rhs,X);CHKERRQ(ierr);
+    if (cheb->random) {
+      B = ksp->work[1];
+      ierr = VecSetRandom(B,cheb->random);CHKERRQ(ierr);
+    } else {
+      B = ksp->vec_rhs;
+    }
+
+    ierr = KSPSolve(cheb->kspest,B,X);CHKERRQ(ierr);
     if (hybrid){
       cheb->its = 0; /* initialize Chebyshev iteration associated to kspest */
       ierr = KSPSetInitialGuessNonzero(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr);
@@ -463,6 +523,12 @@ PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
       if (cheb->hybrid){ /* display info about hybrid options being used */
         ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: hybrid is used, chebysteps %D, purification %D\n",cheb->chebysteps,cheb->purification);CHKERRQ(ierr);
       }
+      if (cheb->random) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: estimating eigenvalues using random right hand side\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+        ierr = PetscRandomView(cheb->random,viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      }
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = KSPView(cheb->kspest,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -483,8 +549,10 @@ PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPDestroy(&cheb->kspest);CHKERRQ(ierr);
   ierr = PCDestroy(&cheb->pcnone);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&cheb->random);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetNewMatrix_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -556,6 +624,9 @@ PETSC_EXTERN_C PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C",
                                     "KSPChebyshevSetEstimateEigenvalues_Chebyshev",
                                     KSPChebyshevSetEstimateEigenvalues_Chebyshev);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C",
+                                    "KSPChebyshevEstEigSetRandom_Chebyshev",
+                                    KSPChebyshevEstEigSetRandom_Chebyshev);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetNewMatrix_C",
                                     "KSPChebyshevSetNewMatrix_Chebyshev",
                                     KSPChebyshevSetNewMatrix_Chebyshev);CHKERRQ(ierr);

@@ -1,4 +1,7 @@
-#-snes_type ls # Gives an error with ROSW ??
+-ts_type rosw
+-ts_exact_final_time MATCHSTEP
+-ts_monitor
+#-snes_type ls
 -snes_linesearch_type basic
 -pc_type lu
 -pc_factor_mat_ordering_type qmd

@@ -117,7 +117,7 @@ struct _p_TS {
   PetscInt max_snes_failures;
   TSConvergedReason reason;
   PetscBool errorifstepfailed;
-  PetscInt  exact_final_time;   /* PETSC_DECIDE, PETSC_TRUE, or PETSC_FALSE */
+  TSExactFinalTimeOption  exact_final_time;
   PetscBool retain_stages;
   PetscInt reject,max_reject;
 

@@ -73,7 +73,7 @@ PetscErrorCode  PetscDrawBoxedString(PetscDraw draw,PetscReal sxl,PetscReal syl,
   PetscReal      top,left,right,bottom,tw,th;
   size_t         len,mlen = 0;
   char           **array;
-  PetscInt       cnt,i;
+  int            cnt,i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);

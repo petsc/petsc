@@ -86,6 +86,39 @@ static PetscErrorCode DMRestrictHook_TSTheta(DM fine,Mat restrct,Vec rscale,Mat 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMSubDomainHook_TSTheta"
+static PetscErrorCode DMSubDomainHook_TSTheta(DM dm,DM subdm,void *ctx)
+{
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSubDomainRestrictHook_TSTheta"
+static PetscErrorCode DMSubDomainRestrictHook_TSTheta(DM dm,VecScatter gscat,VecScatter lscat,DM subdm,void *ctx)
+{
+  TS ts = (TS)ctx;
+  PetscErrorCode ierr;
+  Vec X0,Xdot,X0_sub,Xdot_sub;
+
+  PetscFunctionBegin;
+  ierr = TSThetaGetX0AndXdot(ts,dm,&X0,&Xdot);CHKERRQ(ierr);
+  ierr = TSThetaGetX0AndXdot(ts,subdm,&X0_sub,&Xdot_sub);CHKERRQ(ierr);
+
+  ierr = VecScatterBegin(gscat,X0,X0_sub,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(gscat,X0,X0_sub,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  ierr = VecScatterBegin(gscat,Xdot,Xdot_sub,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(gscat,Xdot,Xdot_sub,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  ierr = TSThetaRestoreX0AndXdot(ts,dm,&X0,&Xdot);CHKERRQ(ierr);
+  ierr = TSThetaRestoreX0AndXdot(ts,subdm,&X0_sub,&Xdot_sub);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "TSStep_Theta"
 static PetscErrorCode TSStep_Theta(TS ts)
 {
@@ -264,6 +297,7 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   if (dm) {
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSTheta,DMRestrictHook_TSTheta,ts);CHKERRQ(ierr);
+    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSTheta,DMSubDomainRestrictHook_TSTheta,ts);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

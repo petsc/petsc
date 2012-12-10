@@ -31,6 +31,8 @@ typedef const char* KSPType;
 #define KSPRICHARDSON "richardson"
 #define KSPCHEBYSHEV  "chebyshev"
 #define KSPCG         "cg"
+#define KSPGROPPCG    "groppcg"
+#define KSPPIPECG     "pipecg"
 #define   KSPCGNE       "cgne"
 #define   KSPNASH       "nash"
 #define   KSPSTCG       "stcg"
@@ -49,6 +51,7 @@ typedef const char* KSPType;
 #define KSPCGS        "cgs"
 #define KSPTFQMR      "tfqmr"
 #define KSPCR         "cr"
+#define KSPPIPECR     "pipecr"
 #define KSPLSQR       "lsqr"
 #define KSPPREONLY    "preonly"
 #define KSPQCG        "qcg"
@@ -178,6 +181,7 @@ PETSC_EXTERN PetscErrorCode KSPRichardsonSetScale(KSP,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPRichardsonSetSelfScale(KSP,PetscBool );
 PETSC_EXTERN PetscErrorCode KSPChebyshevSetEigenvalues(KSP,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode KSPChebyshevSetEstimateEigenvalues(KSP,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode KSPChebyshevEstEigSetRandom(KSP,PetscRandom);
 PETSC_EXTERN PetscErrorCode KSPChebyshevSetNewMatrix(KSP);
 PETSC_EXTERN PetscErrorCode KSPComputeExtremeSingularValues(KSP,PetscReal*,PetscReal*);
 PETSC_EXTERN PetscErrorCode KSPComputeEigenvalues(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt *);

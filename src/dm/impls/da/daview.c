@@ -153,9 +153,27 @@ PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (dim)  *dim  = dd->dim;
-  if (M)    *M    = dd->M;
-  if (N)    *N    = dd->N;
-  if (P)    *P    = dd->P;
+  if (M) {
+    if (dd->Mo < 0) {
+      *M    = dd->M;
+    } else {
+      *M    = dd->Mo;
+    }
+  }
+  if (N) {
+    if (dd->No < 0) {
+      *N    = dd->N;
+    } else {
+      *N    = dd->No;
+    }
+  }
+  if (P) {
+    if (dd->Po < 0) {
+      *P    = dd->P;
+    } else {
+      *P    = dd->Po;
+    }
+  }
   if (m)    *m    = dd->m;
   if (n)    *n    = dd->n;
   if (p)    *p    = dd->p;
@@ -197,9 +215,21 @@ PetscErrorCode  DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
   PetscValidPointer(info,2);
   info->da   = da;
   info->dim  = dd->dim;
-  info->mx   = dd->M;
-  info->my   = dd->N;
-  info->mz   = dd->P;
+  if (dd->Mo < 0) {
+    info->mx   = dd->M;
+  } else {
+    info->mx   = dd->Mo;
+  }
+  if (dd->No < 0) {
+    info->my   = dd->N;
+  } else {
+    info->my   = dd->No;
+  }
+  if (dd->Po < 0) {
+    info->mz   = dd->P;
+  } else {
+    info->mz   = dd->Po;
+  }
   info->dof  = dd->w;
   info->sw   = dd->s;
   info->bx   = dd->bx;
@@ -210,20 +240,20 @@ PetscErrorCode  DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
   /* since the xs, xe ... have all been multiplied by the number of degrees
      of freedom per cell, w = dd->w, we divide that out before returning.*/
   w = dd->w;
-  info->xs = dd->xs/w;
+  info->xs = dd->xs/w + dd->xo;
   info->xm = (dd->xe - dd->xs)/w;
   /* the y and z have NOT been multiplied by w */
-  info->ys = dd->ys;
+  info->ys = dd->ys + dd->yo;
   info->ym = (dd->ye - dd->ys);
-  info->zs = dd->zs;
+  info->zs = dd->zs + dd->zo;
   info->zm = (dd->ze - dd->zs);
 
-  info->gxs = dd->Xs/w;
+  info->gxs = dd->Xs/w + dd->xo;
   info->gxm = (dd->Xe - dd->Xs)/w;
   /* the y and z have NOT been multiplied by w */
-  info->gys = dd->Ys;
+  info->gys = dd->Ys + dd->yo;
   info->gym = (dd->Ye - dd->Ys);
-  info->gzs = dd->Zs;
+  info->gzs = dd->Zs + dd->zo;
   info->gzm = (dd->Ze - dd->Zs);
   PetscFunctionReturn(0);
 }

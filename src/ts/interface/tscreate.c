@@ -81,7 +81,7 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   t->rtol             = 1e-4;
   t->cfltime          = PETSC_MAX_REAL;
   t->cfltime_local    = PETSC_MAX_REAL;
-  t->exact_final_time = PETSC_DECIDE;
+  t->exact_final_time = TS_EXACTFINALTIME_STEPOVER;
 
   *ts = t;
   PetscFunctionReturn(0);

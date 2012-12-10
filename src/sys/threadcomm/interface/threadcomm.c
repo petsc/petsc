@@ -1270,7 +1270,7 @@ PetscErrorCode PetscThreadCommGetOwnershipRanges(MPI_Comm comm,PetscInt N,PetscI
   PetscErrorCode  ierr;
   PetscInt        Q,R;
   PetscBool       S;
-  PetscThreadComm tcomm;
+  PetscThreadComm tcomm = PETSC_NULL;
   PetscInt        *trstarts_out,nloc,i;
 
   PetscFunctionBegin;

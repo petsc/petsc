@@ -119,6 +119,27 @@ static PetscErrorCode DMRestrictHook_DMTS(DM dm,Mat Restrict,Vec rscale,Mat Inje
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMSubDomainHook_DMTS"
+static PetscErrorCode DMSubDomainHook_DMTS(DM dm,DM subdm,void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCopyDMTS(dm,subdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSubDomainRestrictHook_DMTS"
+/* This could restrict auxiliary information to the coarse level.
+ */
+static PetscErrorCode DMSubDomainRestrictHook_DMTS(DM dm,VecScatter gscat,VecScatter lscat,DM subdm,void *ctx)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMTSCopy"
 /*@C
    DMTSCopy - copies the information in a DMTS to another DMTS
@@ -199,6 +220,7 @@ PetscErrorCode DMGetDMTS(DM dm,DMTS *tsdm)
     ierr = DMTSCreate(((PetscObject)dm)->comm,tsdm);CHKERRQ(ierr);
     dm->dmts = (PetscObject) *tsdm;
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_DMTS,DMSubDomainRestrictHook_DMTS,PETSC_NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

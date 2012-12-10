@@ -136,6 +136,7 @@ PETSC_EXTERN PetscErrorCode DMSetFromOptions(DM);
 PETSC_EXTERN PetscErrorCode DMSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolationScale(DM,DM,Mat,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateAggregates(DM,DM,Mat*);
+PETSC_EXTERN PetscErrorCode DMGlobalToLocalHookAdd(DM,PetscErrorCode (*)(DM,Vec,InsertMode,Vec,void*),PetscErrorCode (*)(DM,Vec,InsertMode,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalEnd(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalBegin(DM,Vec,InsertMode,Vec);
@@ -149,8 +150,8 @@ PETSC_EXTERN PetscErrorCode DMGetCoordinatesLocal(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMSetCoordinatesLocal(DM,Vec);
 
 /* block hook interface */
-PETSC_EXTERN PetscErrorCode DMBlockRestrictHookAdd(DM,PetscErrorCode (*)(DM,VecScatter,VecScatter,DM,void*),void*);
-PETSC_EXTERN PetscErrorCode DMBlockRestrict(DM,VecScatter,VecScatter,DM);
+PETSC_EXTERN PetscErrorCode DMSubDomainHookAdd(DM,PetscErrorCode (*)(DM,DM,void*),PetscErrorCode (*)(DM,VecScatter,VecScatter,DM,void*),void*);
+PETSC_EXTERN PetscErrorCode DMSubDomainRestrict(DM,VecScatter,VecScatter,DM);
 
 PETSC_EXTERN PetscErrorCode DMSetOptionsPrefix(DM,const char []);
 PETSC_EXTERN PetscErrorCode DMSetVecType(DM,VecType);
@@ -168,6 +169,7 @@ PETSC_EXTERN PetscErrorCode DMCreateFieldDecompositionDM(DM,const char*,DM*);
 PETSC_EXTERN PetscErrorCode DMCreateFieldDecomposition(DM,PetscInt*,char***,IS**,DM**);
 PETSC_EXTERN PetscErrorCode DMCreateDomainDecompositionDM(DM,const char*,DM*);
 PETSC_EXTERN PetscErrorCode DMCreateDomainDecomposition(DM,PetscInt*,char***,IS**,IS**,DM**);
+PETSC_EXTERN PetscErrorCode DMCreateDomainDecompositionScatters(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
 
 PETSC_EXTERN PetscErrorCode DMGetRefineLevel(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMGetCoarsenLevel(DM,PetscInt*);

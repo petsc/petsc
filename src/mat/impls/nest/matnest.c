@@ -1190,7 +1190,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
   Mat_Nest       *vs = (Mat_Nest*)A->data;
   PetscInt       i,j,offset,n,nsum,bs;
   PetscErrorCode ierr;
-  Mat            sub;
+  Mat            sub = PETSC_NULL;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(IS)*nr,&vs->isglobal.row);CHKERRQ(ierr);

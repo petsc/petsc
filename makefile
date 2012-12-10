@@ -20,7 +20,7 @@ include ${PETSC_DIR}/conf/test
 #
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
-all:
+all: chk_makej
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chkpetsc_dir petscnagupgrade | tee ${PETSC_ARCH}/conf/make.log
 	@ln -sf ${PETSC_ARCH}/conf/make.log make.log
 	@if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
@@ -41,13 +41,13 @@ all:
         fi #solaris make likes to print the whole command that gave error. So split this up into the smallest chunk below
 	@if test -s ${PETSC_ARCH}/conf/error.log; then exit 1; fi
 
-all-cmake: info cmakegen cmake
+all-cmake: chk_makej info cmakegen cmake
 
-all-legacy: chklib_dir info deletelibs deletemods build shared_nomesg mpi4py petsc4py
+all-legacy: chk_makej chklib_dir info deletelibs deletemods build shared_nomesg mpi4py petsc4py
 #
 # Prints information about the system and version of PETSc being compiled
 #
-info:
+info: chk_makej
 	-@echo "=========================================="
 	-@echo " "
 	-@echo "See documentation/faq.html and documentation/bugreporting.html"
@@ -108,7 +108,7 @@ info:
 # This target also builds fortran77 and f90 interface
 # files and compiles .F files
 #
-build:
+build: chk_makej
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
@@ -189,9 +189,9 @@ ranlib:
 	${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}
 
 # Deletes PETSc libraries
-deletelibs:
+deletelibs: chk_makej
 	-${RM} -rf ${PETSC_LIB_DIR}/libpetsc*.*
-deletemods:
+deletemods: chk_makej
 	-${RM} -f ${PETSC_DIR}/${PETSC_ARCH}/include/petsc*.mod
 
 # Cleans up build

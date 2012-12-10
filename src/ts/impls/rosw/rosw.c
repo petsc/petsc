@@ -1265,6 +1265,46 @@ static PetscErrorCode DMRestrictHook_TSRosW(DM fine,Mat restrct,Vec rscale,Mat i
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSubDomainHook_TSRosW"
+static PetscErrorCode DMSubDomainHook_TSRosW(DM fine,DM coarse,void *ctx)
+{
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSubDomainRestrictHook_TSRosW"
+static PetscErrorCode DMSubDomainRestrictHook_TSRosW(DM dm,VecScatter gscat,VecScatter lscat,DM subdm,void *ctx)
+{
+  TS             ts = (TS)ctx;
+  PetscErrorCode ierr;
+  Vec            Ydot,Zdot,Ystage,Zstage;
+  Vec            Ydots,Zdots,Ystages,Zstages;
+
+  PetscFunctionBegin;
+  ierr = TSRosWGetVecs(ts,dm,&Ydot,&Ystage,&Zdot,&Zstage);CHKERRQ(ierr);
+  ierr = TSRosWGetVecs(ts,subdm,&Ydots,&Ystages,&Zdots,&Zstages);CHKERRQ(ierr);
+
+  ierr = VecScatterBegin(gscat,Ydot,Ydots,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(gscat,Ydot,Ydots,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  ierr = VecScatterBegin(gscat,Ystage,Ystages,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(gscat,Ystage,Ystages,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  ierr = VecScatterBegin(gscat,Zdot,Zdots,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(gscat,Zdot,Zdots,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  ierr = VecScatterBegin(gscat,Zstage,Zstages,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(gscat,Zstage,Zstages,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+  ierr = TSRosWRestoreVecs(ts,dm,&Ydot,&Ystage,&Zdot,&Zstage);CHKERRQ(ierr);
+  ierr = TSRosWRestoreVecs(ts,subdm,&Ydots,&Ystages,&Zdots,&Zstages);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
   This defines the nonlinear equation that is to be solved with SNES
   G(U) = F[t0+Theta*dt, U, (U-U0)*shift] = 0
@@ -1338,6 +1378,7 @@ static PetscErrorCode TSSetUp_RosW(TS ts)
   ierr = TSGetDM(ts,&dm);
   if (dm) {
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSRosW,DMRestrictHook_TSRosW,ts);CHKERRQ(ierr);
+    ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSRosW,DMSubDomainRestrictHook_TSRosW,ts);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

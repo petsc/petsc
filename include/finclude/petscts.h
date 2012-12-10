@@ -19,6 +19,17 @@
       parameter (TS_DIVERGED_STEP_REJECTED   = -2)
 
 !
+!  TSExactFinalTime
+!
+      PetscEnum TS_EXACTFINALTIME_STEPOVER
+      PetscEnum TS_EXACTFINALTIME_INTERPOLATE
+      PetscEnum TS_EXACTFINALTIME_MATCHSTEP
+
+      parameter (TS_EXACTFINALTIME_STEPOVER    = 0)
+      parameter (TS_EXACTFINALTIME_INTERPOLATE = 1)
+      parameter (TS_EXACTFINALTIME_MATCHSTEP   = 2)
+      
+!
 !  TSProblemType
 !
       PetscEnum TS_LINEAR

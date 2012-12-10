@@ -5,6 +5,8 @@ EXTERN_C_BEGIN
 extern PetscErrorCode  KSPCreate_Richardson(KSP);
 extern PetscErrorCode  KSPCreate_Chebyshev(KSP);
 extern PetscErrorCode  KSPCreate_CG(KSP);
+extern PetscErrorCode  KSPCreate_GROPPCG(KSP);
+extern PetscErrorCode  KSPCreate_PIPECG(KSP);
 extern PetscErrorCode  KSPCreate_CGNE(KSP);
 extern PetscErrorCode  KSPCreate_NASH(KSP);
 extern PetscErrorCode  KSPCreate_STCG(KSP);
@@ -21,6 +23,7 @@ extern PetscErrorCode  KSPCreate_TFQMR(KSP);
 extern PetscErrorCode  KSPCreate_LSQR(KSP);
 extern PetscErrorCode  KSPCreate_PREONLY(KSP);
 extern PetscErrorCode  KSPCreate_CR(KSP);
+extern PetscErrorCode  KSPCreate_PIPECR(KSP);
 extern PetscErrorCode  KSPCreate_QCG(KSP);
 extern PetscErrorCode  KSPCreate_BiCG(KSP);
 extern PetscErrorCode  KSPCreate_FGMRES(KSP);
@@ -64,6 +67,8 @@ PetscErrorCode  KSPRegisterAll(const char path[])
   KSPRegisterAllCalled = PETSC_TRUE;
 
   ierr = KSPRegisterDynamic(KSPCG,         path,"KSPCreate_CG",        KSPCreate_CG);CHKERRQ(ierr);
+  ierr = KSPRegisterDynamic(KSPGROPPCG,    path,"KSPCreate_GROPPCG",   KSPCreate_GROPPCG);CHKERRQ(ierr);
+  ierr = KSPRegisterDynamic(KSPPIPECG,     path,"KSPCreate_PIPECG",    KSPCreate_PIPECG);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPCGNE,       path,"KSPCreate_CGNE",      KSPCreate_CGNE);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPNASH,       path,"KSPCreate_NASH",      KSPCreate_NASH);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPSTCG,       path,"KSPCreate_STCG",      KSPCreate_STCG);CHKERRQ(ierr);
@@ -80,6 +85,7 @@ PetscErrorCode  KSPRegisterAll(const char path[])
   ierr = KSPRegisterDynamic(KSPCGS,        path,"KSPCreate_CGS",       KSPCreate_CGS);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPTFQMR,      path,"KSPCreate_TFQMR",     KSPCreate_TFQMR);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPCR,         path,"KSPCreate_CR",        KSPCreate_CR);CHKERRQ(ierr);
+  ierr = KSPRegisterDynamic(KSPPIPECR,     path,"KSPCreate_PIPECR",    KSPCreate_PIPECR);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPLSQR,       path,"KSPCreate_LSQR",      KSPCreate_LSQR);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPPREONLY,    path,"KSPCreate_PREONLY",   KSPCreate_PREONLY);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPQCG,        path,"KSPCreate_QCG",       KSPCreate_QCG);CHKERRQ(ierr);

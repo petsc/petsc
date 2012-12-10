@@ -46,9 +46,6 @@ ex4: ex4.o  chkopts
 ex5: ex5.o chkopts
 	-${CLINKER} -o ex5 ex5.o ${PETSC_SNES_LIB}
 	${RM} ex5.o
-ex5aspin: ex5aspin.o chkopts
-	-${CLINKER} -o ex5aspin ex5aspin.o ${PETSC_SNES_LIB}
-	${RM} ex5aspin.o
 ex5f: ex5f.o  chkopts
 	-${FLINKER} -o ex5f ex5f.o ${PETSC_SNES_LIB}
 	${RM} ex5f.o
@@ -356,7 +353,7 @@ runex5_5_ngmres:
 
 runex5_5_nasm:
 	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 \
-        -snes_type nasm -sub_snes_mf -snes_max_it 10 > ex5_5_nasm.tmp 2>&1; \
+        -snes_type nasm -snes_nasm_type restrict -snes_max_it 10 > ex5_5_nasm.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_nasm.out ex5_5_nasm.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_nasm, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_5_nasm.tmp
@@ -678,6 +675,12 @@ runex19_composite_fieldsplit_bjacobi_2:
 	   if (${DIFF} output/ex19_composite_fieldsplit_bjacobi_2.out ex19_6.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_composite_fieldsplit_bjacobi_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_6.tmp
+
+runex19_ngmres_nasm: #test ex19 with NASM preconditioner globalized with NGMRES
+	-@${MPIEXEC} -n 4 ./ex19 -da_refine 4 -da_overlap 2 -snes_monitor_short -snes_type ngmres -snes_max_it 10 \
+        -npc_snes_type nasm -npc_snes_nasm_type basic -grashof 4e4 -lidvelocity 100 > ex19_ngmres_nasm.tmp 2>&1; \
+	   ${DIFF} output/ex19_ngmres_nasm.out ex19_ngmres_nasm.tmp || echo  ${PWD} "\nPossible problem with ex19_nasm_ngmres, diffs above \n========================================="; \
+           ${RM} -f ex19_ngmres_nasm.tmp
 
 runex19_fas: #test ex19 with FAS and pointwise GS smoother
 	-@${MPIEXEC} -n 1 ./ex19 -da_refine 4 -snes_monitor_short -snes_type fas \

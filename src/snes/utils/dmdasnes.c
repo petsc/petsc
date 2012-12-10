@@ -337,7 +337,6 @@ PetscErrorCode DMDASNESSetFunctionLocal(DM dm,InsertMode imode,PetscErrorCode (*
   dmdasnes->residuallocal = func;
   dmdasnes->residuallocalctx = ctx;
   ierr = DMSNESSetFunction(dm,SNESComputeFunction_DMDA,dmdasnes);CHKERRQ(ierr);
-  ierr = DMSNESSetBlockFunction(dm,SNESComputeLocalBlockFunction_DMDA,dm);CHKERRQ(ierr);
   if (!sdm->ops->computejacobian) {  /* Call us for the Jacobian too, can be overridden by the user. */
     ierr = DMSNESSetJacobian(dm,SNESComputeJacobian_DMDA,dmdasnes);CHKERRQ(ierr);
   }
@@ -379,7 +378,6 @@ PetscErrorCode DMDASNESSetJacobianLocal(DM dm,PetscErrorCode (*func)(DMDALocalIn
   dmdasnes->jacobianlocal = func;
   dmdasnes->jacobianlocalctx = ctx;
   ierr = DMSNESSetJacobian(dm,SNESComputeJacobian_DMDA,dmdasnes);CHKERRQ(ierr);
-  ierr = DMSNESSetBlockJacobian(dm,SNESComputeLocalBlockJacobian_DMDA,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

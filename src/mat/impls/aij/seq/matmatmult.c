@@ -749,10 +749,8 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   PetscInt            *bti,*btj;
   Mat_MatMatTransMult *multtrans;
   PetscContainer      container;
-  PetscLogDouble      t0,tf,etime2=0.0;
 
   PetscFunctionBegin;
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
    /* create symbolic Bt */
   ierr = MatGetSymbolicTranspose_SeqAIJ(B,&bti,&btj);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,B->cmap->n,B->rmap->n,bti,btj,PETSC_NULL,&Bt);CHKERRQ(ierr);
@@ -776,30 +774,18 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   multtrans->destroy = (*C)->ops->destroy;
   (*C)->ops->destroy = MatDestroy_SeqAIJ_MatMatMultTrans;
 
-  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-  etime2 += tf - t0;
-
   ierr = PetscOptionsGetBool(PETSC_NULL,"-matmattransmult_color",&multtrans->usecoloring,PETSC_NULL);CHKERRQ(ierr);
   if (multtrans->usecoloring){
     /* Create MatTransposeColoring from symbolic C=A*B^T */
     MatTransposeColoring matcoloring;
     ISColoring           iscoloring;
     Mat                  Bt_dense,C_dense;
-    PetscLogDouble       etime0=0.0,etime01=0.0,etime1=0.0;
-
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    
     ierr = MatGetColoring(*C,MATCOLORINGLF,&iscoloring);CHKERRQ(ierr);
-    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-    etime0 += tf - t0;
-
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
     ierr = MatTransposeColoringCreate(*C,iscoloring,&matcoloring);CHKERRQ(ierr);
     multtrans->matcoloring = matcoloring;
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-    etime01 += tf - t0;
-
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+   
     /* Create Bt_dense and C_dense = A*Bt_dense */
     ierr = MatCreate(PETSC_COMM_SELF,&Bt_dense);CHKERRQ(ierr);
     ierr = MatSetSizes(Bt_dense,A->cmap->n,matcoloring->ncolors,A->cmap->n,matcoloring->ncolors);CHKERRQ(ierr);
@@ -814,14 +800,11 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     ierr = MatSeqDenseSetPreallocation(C_dense,PETSC_NULL);CHKERRQ(ierr);
     Bt_dense->assembled = PETSC_TRUE;
     multtrans->ABt_den = C_dense;
-    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-    etime1 += tf - t0;
 
 #if defined(PETSC_USE_INFO)
     {
     Mat_SeqAIJ *c=(Mat_SeqAIJ*)(*C)->data;
     ierr = PetscInfo5(*C,"Bt_dense: %D,%D; Cnz %D / (cm*ncolors %D) = %g\n",A->cmap->n,matcoloring->ncolors,c->nz,A->rmap->n*matcoloring->ncolors,(PetscReal)(c->nz)/(A->rmap->n*matcoloring->ncolors));
-    ierr = PetscInfo5(*C,"Sym = GetColor %g + ColorCreate %g + MatDenseCreate %g + non-colorSym %g = %g\n",etime0,etime01,etime1,etime2,etime0+etime01+etime1+etime2);
     }
 #endif
   }
@@ -963,32 +946,19 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
     MatTransposeColoring  matcoloring = multtrans->matcoloring;
     Mat                   Bt_dense;
     PetscInt              m,n;
-    PetscLogDouble t0,tf,etime0=0.0,etime1=0.0,etime2=0.0;
     Mat C_dense = multtrans->ABt_den;
 
     Bt_dense = multtrans->Bt_den;
     ierr = MatGetLocalSize(Bt_dense,&m,&n);CHKERRQ(ierr);
 
     /* Get Bt_dense by Apply MatTransposeColoring to B */
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
     ierr = MatTransColoringApplySpToDen(matcoloring,B,Bt_dense);CHKERRQ(ierr);
-    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-    etime0 += tf - t0;
-
+   
     /* C_dense = A*Bt_dense */
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
     ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,Bt_dense,C_dense);CHKERRQ(ierr);
-    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-    etime2 += tf - t0;
-
+   
     /* Recover C from C_dense */
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
     ierr = MatTransColoringApplyDenToSp(matcoloring,C_dense,C);CHKERRQ(ierr);
-    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
-    etime1 += tf - t0;
-#if defined(PETSC_USE_INFO)
-    ierr = PetscInfo4(C,"Num = ColoringApply: %g %g + Mult_sp_dense %g = %g\n",etime0,etime1,etime2,etime0+etime1+etime2);
-#endif
     PetscFunctionReturn(0);
   }
 
