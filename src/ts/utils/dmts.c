@@ -62,15 +62,15 @@ PetscErrorCode DMTSView(DMTS kdm,PetscViewer viewer)
     }
 #endif
   } else if (isbinary) {
-    ierr = PetscViewerBinaryWrite(viewer,kdm->ops->ifunction,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,kdm->ops->ifunctionview,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,kdm->ops->ifunctionload,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ifunction,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ifunctionview,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ifunctionload,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
     if (kdm->ops->ifunctionview) {
       ierr = (*kdm->ops->ifunctionview)(kdm->ifunctionctx,viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerBinaryWrite(viewer,kdm->ops->ijacobian,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,kdm->ops->ijacobianview,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,kdm->ops->ijacobianload,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ijacobian,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ijacobianview,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ijacobianload,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
     if (kdm->ops->ijacobianview) {
       ierr = (*kdm->ops->ijacobianview)(kdm->ijacobianctx,viewer);CHKERRQ(ierr);
     }
