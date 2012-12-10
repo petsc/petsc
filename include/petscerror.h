@@ -399,7 +399,7 @@ PETSC_STATIC_INLINE void PetscThreadLocalSetValue(pthread_key_t key,void* value)
 /* Create pthread thread local key */
 PETSC_STATIC_INLINE void PetscThreadLocalRegister(pthread_key_t *key)
 {
-  pthread_key_create(key,NULL);
+  pthread_key_create(key,PETSC_NULL);
 }
 
 /* Delete pthread thread local key */
@@ -408,18 +408,18 @@ PETSC_STATIC_INLINE void PetscThreadLocalDestroy(pthread_key_t key)
   pthread_key_delete(key);
 }
 #else
-PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(void* name)
+PETSC_STATIC_INLINE void* PetscThreadLocalGetValue(void* key)
 {
-  return name;
+  return key;
 }
 
-#define PetscThreadLocalSetValue(name,value) (name = value)
+#define PetscThreadLocalSetValue(key,value) (key = value)
 
-PETSC_STATIC_INLINE void PetscThreadLocalRegister(PETSC_UNUSED void *name)
+PETSC_STATIC_INLINE void PetscThreadLocalRegister(PETSC_UNUSED void *key)
 {
 }
 
-PETSC_STATIC_INLINE void PetscThreadLocalDestroy(PETSC_UNUSED void *name)
+PETSC_STATIC_INLINE void PetscThreadLocalDestroy(PETSC_UNUSED void *key)
 {
 } 
 #endif
@@ -609,12 +609,30 @@ M*/
 
    Input Parameters:
 +   name - string that gives the name of the function being called
--   routine - actual call to the routine
+-   routine - actual call to the routine, including ierr = and CHKERRQ(ierr);
+
+   Note: Often one should use PetscStackCallStandard() instead
 
    Developer Note: this is so that when a user or external library routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
+
+
 */
 #define PetscStackCall(name,routine) PetscStackPush(name);routine;PetscStackPop;
+
+/*
+    PetscStackCallStandard - Calls an external library routine after pushing the name of the routine on the stack.
+
+   Input Parameters:
++   func-  name of the routine
+-   args - arguments to the routine surrounded by ()
+
+   Developer Note: this is so that when a hypre routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+
+*/
+#define PetscStackCallStandard(func,args) do {                        \
+    PetscStackPush(#func);ierr = func args;PetscStackPop; if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s()",#func); \
+  } while (0)
 
 PETSC_EXTERN PetscErrorCode PetscStackCreate(void);
 PETSC_EXTERN PetscErrorCode PetscStackView(PetscViewer);
