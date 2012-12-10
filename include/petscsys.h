@@ -69,46 +69,9 @@
 #define PETSC_EXTERN extern PETSC_VISIBILITY_PUBLIC
 #define PETSC_EXTERN_TYPEDEF
 #endif
-/* ========================================================================== */
-/*
-   Current PETSc version number and release date. Also listed in
-    Web page
-    src/docs/tex/manual/intro.tex,
-    src/docs/tex/manual/manual.tex.
-    src/docs/website/index.html.
-*/
+
 #include <petscversion.h>
-#define PETSC_AUTHOR_INFO        "       The PETSc Team\n    petsc-maint@mcs.anl.gov\n http://www.mcs.anl.gov/petsc/\n"
-#if (PETSC_VERSION_RELEASE == 1)
-#define PetscGetVersion(version,len) PetscSNPrintf(version,len,"Petsc Release Version %d.%d.%d, Patch %d, %s ", \
-                                         PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
-					 PETSC_VERSION_PATCH,PETSC_VERSION_PATCH_DATE)
-#else
-#define PetscGetVersion(version,len) PetscSNPrintf(version,len,"Petsc Development HG revision: %s  HG Date: %s", \
-                                        PETSC_VERSION_HG, PETSC_VERSION_DATE_HG)
-#endif
-
-/*MC
-    PetscGetVersion - Gets the PETSc version information in a string.
-
-    Input Parameter:
-.   len - length of the string
-
-    Output Parameter:
-.   version - version string
-
-    Level: developer
-
-    Usage:
-    char version[256];
-    ierr = PetscGetVersion(version,256);CHKERRQ(ierr)
-
-    Fortran Note:
-    This routine is not supported in Fortran.
-
-.seealso: PetscGetProgramName()
-
-M*/
+#define PETSC_AUTHOR_INFO  "       The PETSc Team\n    petsc-maint@mcs.anl.gov\n http://www.mcs.anl.gov/petsc/\n"
 
 /* ========================================================================== */
 
@@ -2196,6 +2159,7 @@ PETSC_EXTERN PetscErrorCode PetscGetUserName(char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscGetProgramName(char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscSetProgramName(const char[]);
 PETSC_EXTERN PetscErrorCode PetscGetDate(char[],size_t);
+PETSC_EXTERN PetscErrorCode PetscGetVersion(char[], size_t);
 
 PETSC_EXTERN PetscErrorCode PetscSortInt(PetscInt,PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsInt(PetscInt*,PetscInt[]);
