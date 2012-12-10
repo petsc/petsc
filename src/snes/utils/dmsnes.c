@@ -39,6 +39,7 @@ PetscErrorCode DMSNESView(DMSNES kdm,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (isascii) {
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
     const char *fname;
 
     ierr = PetscFPTFind(kdm->ops->computefunction,&fname);CHKERRQ(ierr);
@@ -49,6 +50,7 @@ PetscErrorCode DMSNESView(DMSNES kdm,PetscViewer viewer)
     if (fname) {
       ierr = PetscViewerASCIIPrintf(viewer,"Jacobian function used by SNES: %s\n",fname);CHKERRQ(ierr);
     }
+#endif
   } else if (isbinary) {
     ierr = PetscViewerBinaryWrite(viewer,kdm->ops->computefunction,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,kdm->ops->computejacobian,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);

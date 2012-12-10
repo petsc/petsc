@@ -497,7 +497,6 @@ M*/
     PetscRegister__FUNCT__();						\
   } while (0)
 
-#define PETSC_SERIALIZE_FUNCTIONS
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
 #include <petsc-private/petscfptimpl.h>
 /*

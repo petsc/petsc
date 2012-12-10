@@ -49,6 +49,7 @@ PetscErrorCode DMTSView(DMTS kdm,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (isascii) {
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
     const char *fname;
 
     ierr = PetscFPTFind(kdm->ops->ifunction,&fname);CHKERRQ(ierr);
@@ -59,6 +60,7 @@ PetscErrorCode DMTSView(DMTS kdm,PetscViewer viewer)
     if (fname) {
       ierr = PetscViewerASCIIPrintf(viewer,"  IJacobian function used by TS: %s\n",fname);CHKERRQ(ierr);
     }
+#endif
   } else if (isbinary) {
     ierr = PetscViewerBinaryWrite(viewer,kdm->ops->ifunction,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,kdm->ops->ifunctionview,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);

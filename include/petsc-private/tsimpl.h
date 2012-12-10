@@ -205,7 +205,6 @@ PETSC_EXTERN PetscErrorCode DMTSView(DMTS,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMTSLoad(DMTS,PetscViewer);
 
 
-
 PETSC_EXTERN PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 typedef enum {TS_STEP_INCOMPLETE, /* vec_sol, ptime, etc point to beginning of step */
