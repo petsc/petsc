@@ -1,8 +1,8 @@
 
-ALL: lib 
-SOURCEH   = 
-DIRS      = comm viewer draw error dll fileio memory objects time utils plog mpiuni matlabengine \
-	    random adic bag examples verbose fsrc shell f90-src f90-mod python ams totalview yaml sf \
+ALL: lib
+SOURCEH   =
+DIRS      = classes comm  error dll fileio memory objects time utils logging mpiuni \
+	    adic examples info fsrc shell f90-src f90-mod python ams totalview yaml \
             threadcomm
 LOCDIR    = src/sys/
 MANSEC    = Sys

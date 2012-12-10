@@ -1,6 +1,6 @@
 #define PETSCDM_DLL
 #include <petsc-private/compleximpl.h>    /*I   "petscdmcomplex.h"   I*/
-#include <../src/sys/viewer/impls/vtk/vtkvimpl.h>
+#include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexVTKGetCellType"

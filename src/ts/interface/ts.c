@@ -1171,7 +1171,6 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     MPI_Comm         comm;
     PetscMPIInt      rank;
     char             type[256];
-    TSAdapt          tsadapt;
 
     ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #include <petsc-private/compleximpl.h>
-#include <../src/sys/viewer/impls/vtk/vtkvimpl.h>
+#include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
 typedef struct {
   PetscInt nvertices;
