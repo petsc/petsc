@@ -2390,7 +2390,12 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)ts)->prefix,"-ts_view_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
+    PetscDraw draw;
+
     ierr = PetscViewerDrawOpen(((PetscObject)ts)->comm,PETSC_NULL,"TS Solver",0,0,600,600,&viewer);CHKERRQ(ierr);
+    /* need to clear draw initially or -draw_save will not work on draw; cannot use PetscViewerDrawClear() since that only clears created windows */
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
     ierr = TSView(ts,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }

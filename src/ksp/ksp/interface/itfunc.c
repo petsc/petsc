@@ -621,7 +621,12 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_view_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
+    PetscDraw draw;
+
     ierr = PetscViewerDrawOpen(((PetscObject)ksp)->comm,PETSC_NULL,"KSP Solver",0,0,600,600,&viewer);CHKERRQ(ierr);
+    /* need to clear draw initially or -draw_save will not work on draw; cannot use PetscViewerDrawClear() since that only clears created windows */
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
     ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
