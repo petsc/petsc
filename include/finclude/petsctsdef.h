@@ -13,6 +13,7 @@
 #define TSType character*(80)
 #define TSAdaptType character*(80)
 #define TSConvergedReason PetscEnum
+#define TSExactFinalTimeOption PetscEnum
 #define TSSundialsType PetscEnum
 #define TSProblemType PetscEnum
 #define TSSundialsGramSchmidtType PetscEnum
