@@ -52,8 +52,8 @@ PetscErrorCode DMSNESView(DMSNES kdm,PetscViewer viewer)
     }
 #endif
   } else if (isbinary) {
-    ierr = PetscViewerBinaryWrite(viewer,kdm->ops->computefunction,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,kdm->ops->computejacobian,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->computefunction,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->computejacobian,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

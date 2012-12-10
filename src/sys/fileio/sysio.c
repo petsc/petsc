@@ -632,7 +632,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscIn
     type         = PETSC_CHAR;
     ptmp         = p;
     /* warning memory leak */
-    fname        = malloc(64*sizeof(char));
+    fname        = (char*)malloc(64*sizeof(char));
     p            = (void*)fname;
   }
 
