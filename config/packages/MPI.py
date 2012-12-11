@@ -649,7 +649,7 @@ class Configure(config.package.Package):
     # check if mpi.mod exists
     if self.compilers.fortranIsF90:
       self.framework.log.write('Checking for mpi.mod\n')
-      if self.libraries.check(self.lib,'', call = '       use mpi\n       integer ierr\n       call mpi_init(ierr)'):
+      if self.libraries.check(self.lib,'', call = '       use mpi\n       integer ierr,rank\n       call mpi_init(ierr)\n       call mpi_comm_rank(MPI_COMM_WORLD,rank,ierr)\n'):
         self.havef90module = 1
         self.addDefine('HAVE_MPI_F90MODULE', 1)
     self.compilers.CPPFLAGS = oldFlags
