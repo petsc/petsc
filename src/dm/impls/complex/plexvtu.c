@@ -239,9 +239,9 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
   if (!rank) {
     PetscInt maxsize = 0;
     for (r=0; r<size; r++) {
-      maxsize = PetscMax(maxsize, (PetscInt) gpiece[r].nvertices*3*sizeof(PetscScalar));
-      maxsize = PetscMax(maxsize, (PetscInt) gpiece[r].ncells*sizeof(PetscScalar));
-      maxsize = PetscMax(maxsize, (PetscInt) gpiece[r].nconn*sizeof(PetscVTKInt));
+      maxsize = PetscMax(maxsize, (PetscInt) (gpiece[r].nvertices*3*sizeof(PetscScalar)));
+      maxsize = PetscMax(maxsize, (PetscInt) (gpiece[r].ncells*sizeof(PetscScalar)));
+      maxsize = PetscMax(maxsize, (PetscInt) (gpiece[r].nconn*sizeof(PetscVTKInt)));
     }
     ierr = PetscMalloc(maxsize,&buffer);CHKERRQ(ierr);
   }
