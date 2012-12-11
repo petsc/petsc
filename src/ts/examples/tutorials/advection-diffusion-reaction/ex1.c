@@ -75,11 +75,34 @@ typedef struct {
 } AppCtx;
 
 #undef __FUNCT__
+#define __FUNCT__ "IFunctionView"
+PetscErrorCode IFunctionView(AppCtx *ctx,PetscViewer v)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerBinaryWrite(v,&ctx->k,1,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "IFunctionLoad"
+PetscErrorCode IFunctionLoad(AppCtx **ctx,PetscViewer v)
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = PetscMalloc(sizeof(AppCtx),ctx);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(v,&(*ctx)->k,1,PETSC_SCALAR);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "IFunction"
 /*
      Defines the ODE passed to the ODE solver
 */
-static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
+PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *ctx)
 {
   PetscErrorCode ierr;
   PetscScalar    *u,*udot,*f;
@@ -103,7 +126,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
-static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,AppCtx *ctx)
+PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,AppCtx *ctx)
 {
   PetscErrorCode ierr;
   PetscInt       rowcol[] = {0,1,2};
@@ -211,6 +234,16 @@ int main(int argc,char **argv)
   ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&ctx);CHKERRQ(ierr);
   ierr = TSSetSolutionFunction(ts,(TSSolutionFunction)Solution,&ctx);CHKERRQ(ierr);
 
+  {
+    DM   dm;
+    void *ptr;
+    ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+    ierr = PetscDLSym(PETSC_NULL,"IFunctionView",&ptr);CHKERRQ(ierr);
+    ierr = PetscDLSym(PETSC_NULL,"IFunctionLoad",&ptr);CHKERRQ(ierr);
+    ierr = DMTSSetIFunctionSerialize(dm,(PetscErrorCode (*)(void*,PetscViewer))IFunctionView,(PetscErrorCode (*)(void**,PetscViewer))IFunctionLoad);CHKERRQ(ierr);
+    ierr = DMTSSetIJacobianSerialize(dm,(PetscErrorCode (*)(void*,PetscViewer))IFunctionView,(PetscErrorCode (*)(void**,PetscViewer))IFunctionLoad);CHKERRQ(ierr);
+  }
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -228,6 +261,8 @@ int main(int argc,char **argv)
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,U);CHKERRQ(ierr);
+
+  ierr = TSView(ts,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.

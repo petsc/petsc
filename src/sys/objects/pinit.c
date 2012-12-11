@@ -16,6 +16,11 @@ extern PetscErrorCode PetscLogBegin_Private(void);
 #endif
 extern PetscBool  PetscHMPIWorker;
 
+
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+PetscFPT  PetscFPTData = 0;
+#endif
+
 /* -----------------------------------------------------------------------------------------*/
 
 extern FILE *petsc_history;
@@ -41,7 +46,7 @@ PetscMPIInt Petsc_OuterComm_keyval = MPI_KEYVAL_INVALID;
 const char *const PetscBools[]     = {"FALSE","TRUE","PetscBool","PETSC_",0};
 const char *const PetscCopyModes[] = {"COPY_VALUES","OWN_POINTER","USE_POINTER","PetscCopyMode","PETSC_",0};
 const char *const PetscDataTypes[] = {"INT","DOUBLE","COMPLEX","LONG","SHORT","FLOAT",
-                                "CHAR","LOGICAL","ENUM","BOOL","LONGDOUBLE","OBJECT","PetscDataType","PETSC_",0};
+                                      "CHAR","LOGICAL","ENUM","BOOL","LONGDOUBLE","OBJECT","FUNCTION","PetscDataType","PETSC_",0};
 
 PetscBool  PetscPreLoadingUsed = PETSC_FALSE;
 PetscBool  PetscPreLoadingOn   = PETSC_FALSE;
@@ -850,6 +855,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscStackCreate();CHKERRQ(ierr);
 #endif
 
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+  ierr = PetscFPTCreate(10000);CHKERRQ(ierr);
+#endif
+
   /*
       Once we are completedly initialized then we can set this variables
   */
@@ -920,6 +929,11 @@ PetscErrorCode  PetscFinalize(void)
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
   ierr = PetscInfo(PETSC_NULL,"PetscFinalize() called\n");
+
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+  ierr = PetscFPTDestroy();CHKERRQ(ierr);
+#endif
+
 
 #if defined(PETSC_HAVE_AMS)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-options_gui",&flg,PETSC_NULL);CHKERRQ(ierr);

@@ -17,6 +17,48 @@ static PetscErrorCode DMSNESDestroy(DMSNES *kdm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMSNESLoad"
+PetscErrorCode DMSNESLoad(DMSNES kdm,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->computefunction,1,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->computejacobian,1,PETSC_FUNCTION);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSNESView"
+PetscErrorCode DMSNESView(DMSNES kdm,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscBool      isascii,isbinary;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (isascii) {
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+    const char *fname;
+
+    ierr = PetscFPTFind(kdm->ops->computefunction,&fname);CHKERRQ(ierr);
+    if (fname) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Function used by SNES: %s\n",fname);CHKERRQ(ierr);
+    }
+    ierr = PetscFPTFind(kdm->ops->computejacobian,&fname);CHKERRQ(ierr);
+    if (fname) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Jacobian function used by SNES: %s\n",fname);CHKERRQ(ierr);
+    }
+#endif
+  } else if (isbinary) {
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->computefunction,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->computejacobian,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMSNESCreate"
 static PetscErrorCode DMSNESCreate(MPI_Comm comm,DMSNES *kdm)
 {
@@ -26,7 +68,7 @@ static PetscErrorCode DMSNESCreate(MPI_Comm comm,DMSNES *kdm)
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = SNESInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(*kdm, _p_DMSNES, struct _DMSNESOps, DMSNES_CLASSID, -1, "DMSNES", "DMSNES", "DMSNES", comm, DMSNESDestroy, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*kdm, _p_DMSNES, struct _DMSNESOps, DMSNES_CLASSID, -1, "DMSNES", "DMSNES", "DMSNES", comm, DMSNESDestroy, DMSNESView);CHKERRQ(ierr);
   ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMSNESOps));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

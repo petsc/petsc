@@ -46,26 +46,17 @@ PetscErrorCode MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Pets
   Mat_MatMatMatMult  *matmatmatmult;
   Mat_SeqAIJ         *d;
   PetscBool          scalable=PETSC_TRUE;
-  PetscLogDouble     t0,t1,t2;
 
   PetscFunctionBegin;
   ierr = PetscObjectOptionsBegin((PetscObject)B);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-matmatmatmult_scalable","Use a scalable but slower D=A*B*C","",scalable,&scalable,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (scalable){
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(B,C,fill,&BC);CHKERRQ(ierr);
-    ierr = PetscGetTime(&t1);CHKERRQ(ierr);
     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(A,BC,fill,D);CHKERRQ(ierr);
-    ierr = PetscGetTime(&t2);CHKERRQ(ierr);
-    printf("  Mat %d %d, 3MultSymbolic_SeqAIJ_Scalable time: %g + %g = %g\n",A->rmap->N,A->cmap->N,t1-t0,t2-t1,t2-t0);
   } else {
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(B,C,fill,&BC);CHKERRQ(ierr);
-    ierr = PetscGetTime(&t1);CHKERRQ(ierr);
     ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,BC,fill,D);CHKERRQ(ierr);
-    ierr = PetscGetTime(&t2);CHKERRQ(ierr);
-    printf("  Mat %d %d, 3MultSymbolic_SeqAIJ time: %g + %g = %g\n",A->rmap->N,A->cmap->N,t1-t0,t2-t1,t2-t0);
   }
 
   /* create struct Mat_MatMatMatMult and attached it to *D */
@@ -88,14 +79,9 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C,Mat D
   Mat_SeqAIJ        *d=(Mat_SeqAIJ*)D->data;
   Mat_MatMatMatMult *matmatmatmult=d->matmatmatmult;
   Mat               BC= matmatmatmult->BC;
-  PetscLogDouble    t0,t1,t2;
   
   PetscFunctionBegin;
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
   ierr = (BC->ops->matmultnumeric)(B,C,BC);CHKERRQ(ierr); 
-  ierr = PetscGetTime(&t1);CHKERRQ(ierr);
   ierr = (D->ops->matmultnumeric)(A,BC,D);CHKERRQ(ierr);
-  ierr = PetscGetTime(&t2);CHKERRQ(ierr);
-  printf("  3MultNumeric_SeqAIJ time: %g + %g = %g\n",t1-t0,t2-t1,t2-t0);
   PetscFunctionReturn(0);
 }

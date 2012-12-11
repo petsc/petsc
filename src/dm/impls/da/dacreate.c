@@ -169,6 +169,32 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMCreateSubDM_DA"
+PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
+{
+  PetscErrorCode ierr;
+  DM_DA          *da = (DM_DA*)dm->data;
+
+  PetscFunctionBegin;
+  if (da->dim != 2) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Support only implemented for 2d");
+  if (subdm) {
+    ierr = DMDACreate2d(((PetscObject)dm)->comm,da->bx,da->by,da->stencil_type,da->M,da->N,da->m,da->n,numFields,da->s,da->lx,da->ly,subdm);CHKERRQ(ierr);
+  }
+  if (is) {
+    PetscInt *indices,cnt = 0, dof = da->w,i,j;
+    ierr = PetscMalloc(sizeof(PetscInt)*da->Nlocal*numFields/dof,&indices);CHKERRQ(ierr);
+    for (i=da->base/dof; i<(da->base+da->Nlocal)/dof; i++) {
+      for (j=0; j<numFields; j++) {
+        indices[cnt++] = dof*i + fields[j];
+      }
+    }
+    if (cnt != da->Nlocal*numFields/dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not equal expected value");
+    ierr = ISCreateGeneral(((PetscObject)dm)->comm,da->Nlocal*numFields/dof,indices,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateFieldDecomposition_DA"
 PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***namelist, IS **islist, DM** dmlist)
 {
@@ -318,6 +344,7 @@ PetscErrorCode  DMCreate_DA(DM da)
   da->ops->setup               = DMSetUp_DA;
   da->ops->load                = DMLoad_DA;
   da->ops->createcoordinatedm  = DMCreateCoordinateDM_DA;
+  da->ops->createsubdm         = DMCreateSubDM_DA;
   da->ops->createfielddecomposition = DMCreateFieldDecomposition_DA;
   da->ops->createdomaindecomposition = DMCreateDomainDecomposition_DA;
   da->ops->createddscatters = DMCreateDomainDecompositionScatters_DA;

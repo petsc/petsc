@@ -356,6 +356,10 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
           ierr = ISDestroy(&fields[f]);CHKERRQ(ierr);
         }
       } else {
+        for (j=0; j<numFields; j++) {
+          ierr = DMDestroy(dms+j);CHKERRQ(ierr);
+        }
+        ierr = PetscFree(dms);CHKERRQ(ierr);
         ierr = PetscMalloc(i * sizeof(DM), &dms);CHKERRQ(ierr);
         for (j = 0; j < i; ++j) {
           dms[j] = subdm[j];

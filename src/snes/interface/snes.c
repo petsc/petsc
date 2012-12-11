@@ -154,28 +154,33 @@ PetscErrorCode  SNESGetFunctionDomainError(SNES snes, PetscBool *domainerror)
 
 .seealso: PetscViewerBinaryOpen(), SNESView(), MatLoad(), VecLoad()
 @*/
-PetscErrorCode  SNESLoad(SNES newdm, PetscViewer viewer)
+PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isbinary;
   PetscInt       classid;
   char           type[256];
   KSP            ksp;
+  DM             dm;
+  DMSNES         dmsnes;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(newdm,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
-  if (classid != SNES_FILE_CLASSID) SETERRQ(((PetscObject)newdm)->comm,PETSC_ERR_ARG_WRONG,"Not SNES next in file");
+  if (classid != SNES_FILE_CLASSID) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONG,"Not SNES next in file");
   ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
-  ierr = SNESSetType(newdm, type);CHKERRQ(ierr);
-  if (newdm->ops->load) {
-    ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
+  ierr = SNESSetType(snes, type);CHKERRQ(ierr);
+  if (snes->ops->load) {
+    ierr = (*snes->ops->load)(snes,viewer);CHKERRQ(ierr);
   }
-  ierr = SNESGetKSP(newdm,&ksp);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(dm,&dmsnes);CHKERRQ(ierr);
+  ierr = DMSNESLoad(dmsnes,viewer);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPLoad(ksp,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -218,6 +223,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   KSP                 ksp;
   SNESLineSearch      linesearch;
   PetscBool           iascii,isstring,isbinary,isdraw;
+  DMSNES              dmsnes;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -311,6 +317,10 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     ierr = SNESView(snes->pc, viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  ierr = DMGetDMSNES(snes->dm,&dmsnes);CHKERRQ(ierr);
+  ierr = DMSNESView(dmsnes, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   if (snes->usesksp) {
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -3704,7 +3714,11 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_view_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
+    PetscDraw draw;
     ierr = PetscViewerDrawOpen(((PetscObject)snes)->comm,PETSC_NULL,"SNES Solver",0,0,600,600,&viewer);CHKERRQ(ierr);
+    /* need to clear draw initially or -draw_save will not work on draw; cannot use PetscViewerDrawClear() since that only clears created windows */
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
     ierr = SNESView(snes,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }

@@ -184,6 +184,8 @@ struct _p_DMSNES {
   DM originaldm;
 };
 PETSC_EXTERN PetscErrorCode DMGetDMSNES(DM,DMSNES*);
+PETSC_EXTERN PetscErrorCode DMSNESView(DMSNES,PetscViewer);
+PETSC_EXTERN PetscErrorCode DMSNESLoad(DMSNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMGetDMSNESWrite(DM,DMSNES*);
 PETSC_EXTERN PetscErrorCode DMCopyDMSNES(DM,DM);
 

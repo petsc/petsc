@@ -75,7 +75,7 @@ PETSC_EXTERN const char *const*TSConvergedReasons;
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt()
 M*/
 
 /*MC
@@ -83,7 +83,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetDuration(), TSGetSolveTime()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt(), TSSetDuration(), TSGetSolveTime()
 M*/
 
 /*MC
@@ -91,7 +91,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetDuration()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt(), TSSetDuration()
 M*/
 /*MC
    TS_CONVERGED_USER - user requested termination
@@ -106,7 +106,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSGetSNES(), SNESGetConvergedReason()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt(), TSGetSNES(), SNESGetConvergedReason()
 M*/
 
 /*MC
@@ -114,7 +114,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt()
 M*/
 
 /*E
@@ -263,6 +263,8 @@ PETSC_EXTERN PetscErrorCode DMTSSetIJacobian(DM,TSIJacobian,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetIJacobian(DM,TSIJacobian*,void**);
 PETSC_EXTERN PetscErrorCode DMTSSetSolutionFunction(DM,TSSolutionFunction,void*);
 PETSC_EXTERN PetscErrorCode DMTSGetSolutionFunction(DM,TSSolutionFunction*,void**);
+PETSC_EXTERN PetscErrorCode DMTSSetIFunctionSerialize(DM,PetscErrorCode (*)(void*,PetscViewer),PetscErrorCode (*)(void**,PetscViewer));
+PETSC_EXTERN PetscErrorCode DMTSSetIJacobianSerialize(DM,PetscErrorCode (*)(void*,PetscViewer),PetscErrorCode (*)(void**,PetscViewer));
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSFunctionLocal)(DMDALocalInfo*,PetscReal,void*,void*,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSJacobianLocal)(DMDALocalInfo*,PetscReal,void*,Mat,Mat,MatStructure*,void*);
@@ -444,7 +446,7 @@ M*/
 #  define TSAdaptRegisterDynamic(a,b,c,d)  TSAdaptRegister(a,b,c,d)
 #endif
 
-PETSC_EXTERN PetscErrorCode TSGetAdapt(TS,TSAdapt*);
+PETSC_EXTERN PetscErrorCode TSGetTSAdapt(TS,TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptRegister(const char[],const char[],const char[],PetscErrorCode (*)(TSAdapt));
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(const char[]);
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterDestroy(void);
@@ -459,6 +461,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCandidatesGet(TSAdapt,PetscInt*,const PetscIn
 PETSC_EXTERN PetscErrorCode TSAdaptChoose(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSAdaptCheckStage(TSAdapt,TS,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSAdaptView(TSAdapt,PetscViewer);
+PETSC_EXTERN PetscErrorCode TSAdaptLoad(TSAdapt,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSAdaptSetFromOptions(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptDestroy(TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetMonitor(TSAdapt,PetscBool);

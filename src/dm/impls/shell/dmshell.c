@@ -31,10 +31,16 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,MatType mtype,Mat *J)
     } else SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_USER,"Must call DMShellSetMatrix(), DMShellSetCreateMatrix(), or provide a vector");
   }
   A = shell->A;
+  /* the check below is tacky and incomplete */
   if (mtype) {
-    PetscBool flg;
+    PetscBool flg,aij,seqaij,mpiaij;
     ierr = PetscObjectTypeCompare((PetscObject)A,mtype,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ2(((PetscObject)dm)->comm,PETSC_ERR_ARG_NOTSAMETYPE,"Requested matrix of type %s, but only %s available",mtype,((PetscObject)A)->type_name);
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&seqaij);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&mpiaij);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mtype,MATAIJ,&aij);CHKERRQ(ierr);
+    if (!flg) {
+      if (!(aij & (seqaij || mpiaij))) SETERRQ2(((PetscObject)dm)->comm,PETSC_ERR_ARG_NOTSAMETYPE,"Requested matrix of type %s, but only %s available",mtype,((PetscObject)A)->type_name);
+    }
   }
   if (((PetscObject)A)->refct < 2) { /* We have an exclusive reference so we can give it out */
     ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
@@ -200,6 +206,30 @@ static PetscErrorCode DMDestroy_Shell(DM dm)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMView_Shell"
+static PetscErrorCode DMView_Shell(DM dm,PetscViewer v)
+{
+  PetscErrorCode ierr;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+
+  PetscFunctionBegin;
+  ierr = VecView(shell->Xglobal,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLoad_Shell"
+static PetscErrorCode DMLoad_Shell(DM dm,PetscViewer v)
+{
+  PetscErrorCode ierr;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+
+  PetscFunctionBegin;
+  ierr = VecCreate(((PetscObject)dm)->comm,&shell->Xglobal);CHKERRQ(ierr);
+  ierr = VecLoad(shell->Xglobal,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Shell"
@@ -216,6 +246,8 @@ PETSC_EXTERN_C PetscErrorCode  DMCreate_Shell(DM dm)
   dm->ops->destroy            = DMDestroy_Shell;
   dm->ops->createglobalvector = DMCreateGlobalVector_Shell;
   dm->ops->creatematrix       = DMCreateMatrix_Shell;
+  dm->ops->view               = DMView_Shell;
+  dm->ops->load               = DMLoad_Shell;
   PetscFunctionReturn(0);
 }
 

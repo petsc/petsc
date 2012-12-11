@@ -1,5 +1,5 @@
 #include <petsc-private/daimpl.h>
-#include <../src/sys/viewer/impls/vtk/vtkvimpl.h>
+#include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAVTKWriteAll_VTS"

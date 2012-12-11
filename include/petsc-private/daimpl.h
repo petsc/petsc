@@ -17,14 +17,14 @@ typedef struct {
   PetscInt              Xs,Xe,Ys,Ye,Zs,Ze;     /* range including ghost values
                                                    values above already scaled by w */
   PetscInt              *idx,Nl;               /* local to global map */
-  PetscInt              base;                  /* global number of 1st local node */
+  PetscInt              base;                  /* global number of 1st local node, includes the * w term */
   DMDABoundaryType      bx,by,bz;              /* indicates type of ghost nodes at boundary */
   VecScatter            gtol,ltog,ltol;        /* scatters, see below for details */
   DMDAStencilType       stencil_type;          /* stencil, either box or star */
   PetscInt              dim;                   /* DMDA dimension (1,2, or 3) */
   DMDAInterpolationType interptype;
 
-  PetscInt              nlocal,Nlocal;         /* local size of local vector and global vector */
+  PetscInt              nlocal,Nlocal;         /* local size of local vector and global vector, includes the * w term */
 
   PetscInt              overlap;               /* overlap of local subdomains */
   PetscInt              xo,yo,zo;              /* offsets for the indices in x y and z */

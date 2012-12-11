@@ -226,7 +226,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       ierr = TSMonitorSet(ts,TSMonitorSolutionVTK,filetemplate,(PetscErrorCode (*)(void**))TSMonitorSolutionVTKDestroy);CHKERRQ(ierr);
     }
 
-    ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+    ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptSetFromOptions(adapt);CHKERRQ(ierr);
 
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
@@ -1070,6 +1070,8 @@ PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
   PetscBool      isbinary;
   PetscInt       classid;
   char           type[256];
+  DMTS           sdm;
+  DM             dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -1084,10 +1086,13 @@ PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
   if (ts->ops->load) {
     ierr = (*ts->ops->load)(ts,viewer);CHKERRQ(ierr);
   }
-  ierr = DMCreate(((PetscObject)ts)->comm,&ts->dm);CHKERRQ(ierr);
-  ierr = DMLoad(ts->dm,viewer);CHKERRQ(ierr);
+  ierr = DMCreate(((PetscObject)ts)->comm,&dm);CHKERRQ(ierr);
+  ierr = DMLoad(dm,viewer);CHKERRQ(ierr);
+  ierr = TSSetDM(ts,dm);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(ts->dm,&ts->vec_sol);CHKERRQ(ierr);
   ierr = VecLoad(ts->vec_sol,viewer);CHKERRQ(ierr);
+  ierr = DMGetDMTS(ts->dm,&sdm);CHKERRQ(ierr);
+  ierr = DMTSLoad(sdm,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1127,7 +1132,8 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   PetscErrorCode ierr;
   TSType         type;
   PetscBool      iascii,isstring,isundials,isbinary,isdraw;
-
+  DMTS           sdm;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!viewer) {
@@ -1150,6 +1156,8 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->ksp_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of rejected steps=%D\n",ts->reject);CHKERRQ(ierr);
+    ierr = DMGetDMTS(ts->dm,&sdm);CHKERRQ(ierr);
+    ierr = DMTSView(sdm,viewer);CHKERRQ(ierr);
     if (ts->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
@@ -1176,6 +1184,8 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     }
     ierr = DMView(ts->dm,viewer);CHKERRQ(ierr);
     ierr = VecView(ts->vec_sol,viewer);CHKERRQ(ierr);
+    ierr = DMGetDMTS(ts->dm,&sdm);CHKERRQ(ierr);
+    ierr = DMTSView(sdm,viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     PetscDraw draw;
     char      str[36];
@@ -1536,7 +1546,7 @@ PetscErrorCode  TSSetUp(TS ts)
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
-  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
+  ierr = TSGetTSAdapt(ts,&ts->adapt);CHKERRQ(ierr);
 
   if (ts->ops->setup) {
     ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
@@ -2366,7 +2376,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ierr = TSInterpolate(ts,ts->max_time,u);CHKERRQ(ierr);
       ts->solvetime = ts->max_time;
     } else {
-      ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);
+      if (u) {ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);}
       ts->solvetime = ts->ptime;
     }
   }
@@ -2380,7 +2390,12 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)ts)->prefix,"-ts_view_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
+    PetscDraw draw;
+
     ierr = PetscViewerDrawOpen(((PetscObject)ts)->comm,PETSC_NULL,"TS Solver",0,0,600,600,&viewer);CHKERRQ(ierr);
+    /* need to clear draw initially or -draw_save will not work on draw; cannot use PetscViewerDrawClear() since that only clears created windows */
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
     ierr = TSView(ts,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
@@ -3646,9 +3661,9 @@ PetscErrorCode TSMonitorSolutionVTKDestroy(void *filenametemplate)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSGetAdapt"
+#define __FUNCT__ "TSGetTSAdapt"
 /*@
-   TSGetAdapt - Get the adaptive controller context for the current method
+   TSGetTSAdapt - Get the adaptive controller context for the current method
 
    Collective on TS if controller has not been created yet
 
@@ -3662,7 +3677,7 @@ PetscErrorCode TSMonitorSolutionVTKDestroy(void *filenametemplate)
 
 .seealso: TSAdapt, TSAdaptSetType(), TSAdaptChoose()
 @*/
-PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
+PetscErrorCode TSGetTSAdapt(TS ts,TSAdapt *adapt)
 {
   PetscErrorCode ierr;
 

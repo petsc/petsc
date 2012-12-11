@@ -17,6 +17,68 @@ static PetscErrorCode DMTSDestroy(DMTS *kdm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMTSLoad"
+PetscErrorCode DMTSLoad(DMTS kdm,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunction,1,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunctionview,1,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ifunctionload,1,PETSC_FUNCTION);CHKERRQ(ierr);
+  if (kdm->ops->ifunctionload) {
+    ierr = (*kdm->ops->ifunctionload)(&kdm->ifunctionctx,viewer);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobian,1,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobianview,1,PETSC_FUNCTION);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&kdm->ops->ijacobianload,1,PETSC_FUNCTION);CHKERRQ(ierr);
+  if (kdm->ops->ijacobianload) {
+    ierr = (*kdm->ops->ijacobianload)(&kdm->ijacobianctx,viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSView"
+PetscErrorCode DMTSView(DMTS kdm,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscBool      isascii,isbinary;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (isascii) {
+#if defined(PETSC_SERIALIZE_FUNCTIONS)
+    const char *fname;
+
+    ierr = PetscFPTFind(kdm->ops->ifunction,&fname);CHKERRQ(ierr);
+    if (fname) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  IFunction used by TS: %s\n",fname);CHKERRQ(ierr);
+    }
+    ierr = PetscFPTFind(kdm->ops->ijacobian,&fname);CHKERRQ(ierr);
+    if (fname) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  IJacobian function used by TS: %s\n",fname);CHKERRQ(ierr);
+    }
+#endif
+  } else if (isbinary) {
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ifunction,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ifunctionview,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ifunctionload,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    if (kdm->ops->ifunctionview) {
+      ierr = (*kdm->ops->ifunctionview)(kdm->ifunctionctx,viewer);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ijacobian,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ijacobianview,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ijacobianload,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    if (kdm->ops->ijacobianview) {
+      ierr = (*kdm->ops->ijacobianview)(kdm->ijacobianctx,viewer);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMTSCreate"
 static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
 {
@@ -26,7 +88,7 @@ static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = TSInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(*kdm, _p_DMTS, struct _DMTSOps, DMTS_CLASSID, -1, "DMTS", "DMTS", "DMTS", comm, DMTSDestroy, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*kdm, _p_DMTS, struct _DMTSOps, DMTS_CLASSID, -1, "DMTS", "DMTS", "DMTS", comm, DMTSDestroy, DMTSView);CHKERRQ(ierr);
   ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMTSOps));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -575,5 +637,63 @@ PetscErrorCode DMTSGetRHSJacobian(DM dm,TSRHSJacobian *func,void **ctx)
   ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
   if (func) *func = tsdm->ops->rhsjacobian;
   if (ctx)  *ctx = tsdm->rhsjacobianctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSSetIFunctionSerialize"
+/*@C
+   DMTSSetIFunctionSerialize - sets functions used to view and load a IFunction context
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to be used with TS
+.  view - viewer function
+-  load - loading function
+
+   Level: advanced
+
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+@*/
+PetscErrorCode DMTSSetIFunctionSerialize(DM dm,PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*load)(void**,PetscViewer))
+{
+  PetscErrorCode ierr;
+  DMTS           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
+  tsdm->ops->ifunctionview = view;
+  tsdm->ops->ifunctionload = load;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSSetIJacobianSerialize"
+/*@C
+   DMTSSetIJacobianSerialize - sets functions used to view and load a IJacobian context
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to be used with TS
+.  view - viewer function
+-  load - loading function
+
+   Level: advanced
+
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+@*/
+PetscErrorCode DMTSSetIJacobianSerialize(DM dm,PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*load)(void**,PetscViewer))
+{
+  PetscErrorCode ierr;
+  DMTS           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
+  tsdm->ops->ijacobianview = view;
+  tsdm->ops->ijacobianload = load;
   PetscFunctionReturn(0);
 }

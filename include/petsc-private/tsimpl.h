@@ -136,6 +136,7 @@ struct _TSAdaptOps {
   PetscErrorCode (*destroy)(TSAdapt);
   PetscErrorCode (*view)(TSAdapt,PetscViewer);
   PetscErrorCode (*setfromoptions)(TSAdapt);
+  PetscErrorCode (*load)(TSAdapt,PetscViewer);
 };
 
 struct _p_TSAdapt {
@@ -162,7 +163,12 @@ struct _DMTSOps {
   TSRHSJacobian rhsjacobian;
 
   TSIFunction ifunction;
+  PetscErrorCode (*ifunctionview)(void*,PetscViewer);
+  PetscErrorCode (*ifunctionload)(void**,PetscViewer);
+
   TSIJacobian ijacobian;
+  PetscErrorCode (*ijacobianview)(void*,PetscViewer);
+  PetscErrorCode (*ijacobianload)(void**,PetscViewer);
 
   TSSolutionFunction solution;
 
@@ -195,7 +201,8 @@ struct _p_DMTS {
 PETSC_EXTERN PetscErrorCode DMGetDMTS(DM,DMTS*);
 PETSC_EXTERN PetscErrorCode DMGetDMTSWrite(DM,DMTS*);
 PETSC_EXTERN PetscErrorCode DMCopyDMTS(DM,DM);
-
+PETSC_EXTERN PetscErrorCode DMTSView(DMTS,PetscViewer);
+PETSC_EXTERN PetscErrorCode DMTSLoad(DMTS,PetscViewer);
 
 
 PETSC_EXTERN PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
