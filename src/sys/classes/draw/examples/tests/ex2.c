@@ -19,7 +19,6 @@ int main(int argc,char **argv)
     ierr = PetscDrawLine(draw,0.0,((PetscReal)i)/256.,1.0,((PetscReal)i)/256.,i);CHKERRQ(ierr);
   }
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-  ierr = PetscSleep(2);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

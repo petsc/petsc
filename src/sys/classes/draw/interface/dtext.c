@@ -81,6 +81,11 @@ PetscErrorCode  PetscDrawBoxedString(PetscDraw draw,PetscReal sxl,PetscReal syl,
   ierr = PetscObjectTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
 
+  if (draw->ops->boxedstring) {
+    ierr = (*draw->ops->boxedstring)(draw,sxl,syl,sc,bc,text,w,h);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
   ierr = PetscStrToArray(text,'\n',&cnt,&array);CHKERRQ(ierr);
   for (i=0; i<cnt; i++) {
     ierr = PetscStrlen(array[i],&len);CHKERRQ(ierr);

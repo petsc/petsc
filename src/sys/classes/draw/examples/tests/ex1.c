@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   ierr = PetscDrawSetViewPort(draw,.25,.25,.75,.75);CHKERRQ(ierr);
   ierr = PetscDrawLine(draw,0.0,0.0,1.0,1.0,PETSC_DRAW_BLACK);CHKERRQ(ierr);
   ierr = PetscDrawString(draw,.2,.2,PETSC_DRAW_RED,"Some Text");CHKERRQ(ierr);
-  ierr = PetscDrawStringSetSize(draw,.5,.5);CHKERRQ(ierr);
+  //  ierr = PetscDrawStringSetSize(draw,.5,.5);CHKERRQ(ierr);
   ierr = PetscDrawString(draw,.2,.2,PETSC_DRAW_BLUE,"Some Text");CHKERRQ(ierr);
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscSleep(2);CHKERRQ(ierr);
