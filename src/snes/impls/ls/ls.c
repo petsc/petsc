@@ -197,8 +197,8 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
 
     /* apply the nonlinear preconditioner if it's right preconditioned */
     if (snes->pc && snes->pcside == PC_RIGHT) {
-      //ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
-      //ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
+      ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
+      ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, snes->vec_rhs, X);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
