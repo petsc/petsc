@@ -409,8 +409,11 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool  hasOpera
   } else {
     /* This version replaces both the user-provided Jacobian and the user-
      provided preconditioner Jacobian with the default matrix free version. */
-
-    ierr = SNESSetJacobian(snes,J,J,MatMFFDComputeJacobian,0);CHKERRQ(ierr);
+    if ((snes->pcside == PC_LEFT) && snes->pc) {
+      ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
+    } else {
+      ierr = SNESSetJacobian(snes,J,J,MatMFFDComputeJacobian,0);CHKERRQ(ierr);
+    }
     /* Force no preconditioner */
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -2565,12 +2568,14 @@ PetscErrorCode  SNESSetUp(SNES snes)
 
   if (!snes->linesearch) {ierr = SNESGetSNESLineSearch(snes, &snes->linesearch);}
 
-  if (snes->pc && (snes->pcside == PC_LEFT)) snes->mf = PETSC_TRUE;
+  if (snes->pc && (snes->pcside == PC_LEFT)) {
+    snes->mf = PETSC_TRUE;
+    snes->mf_operator = PETSC_FALSE;
+  }
 
   if (snes->mf) {
     ierr = SNESSetUpMatrixFree_Private(snes, snes->mf_operator, snes->mf_version);CHKERRQ(ierr);
   }
-
 
   if (snes->ops->usercompute && !snes->user) {
     ierr = (*snes->ops->usercompute)(snes,(void**)&snes->user);CHKERRQ(ierr);

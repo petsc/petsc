@@ -360,7 +360,7 @@ runex5_5_nasm:
 
 runex5_5_aspin:
 	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 \
-        -npc_snes_type nasm -snes_npc_side left -npc_sub_snes_mf -snes_max_it 10 > ex5_5_aspin.tmp 2>&1; \
+        -npc_snes_type nasm -npc_snes_nasm_type restrict -snes_npc_side left -snes_max_it 10 > ex5_5_aspin.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_aspin.out ex5_5_aspin.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_aspin, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_5_aspin.tmp
