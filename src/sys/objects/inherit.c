@@ -182,7 +182,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
 PetscErrorCode  PetscObjectsDump(FILE *fd)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j;
+  PetscInt       i,j,k;
   PetscObject    h;
 
   PetscFunctionBegin;
@@ -199,10 +199,14 @@ PetscErrorCode  PetscObjectsDump(FILE *fd)
 
         /* if the PETSc function the user calls is not a create then this object was NOT directly created by them */
         ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
-        j = 0; 
-        while (!stack->petscroutine[j]) j++;
-        ierr = PetscStrstr(stack->function[j],"Create",&create);CHKERRQ(ierr);
-        ierr = PetscStrstr(stack->function[j],h->class_name,&class);CHKERRQ(ierr);
+        k = stack->currentsize-2;
+        k = 0; 
+        while (!stack->petscroutine[k]) k++;
+        ierr = PetscStrstr(stack->function[k],"Create",&create);CHKERRQ(ierr);
+        if (!create) {
+          ierr = PetscStrstr(stack->function[k],"Get",&create);CHKERRQ(ierr);
+        }
+        ierr = PetscStrstr(stack->function[k],h->class_name,&class);CHKERRQ(ierr);
 
         if (!create) continue;
         if (!class) continue;
@@ -212,7 +216,7 @@ PetscErrorCode  PetscObjectsDump(FILE *fd)
 
 #if defined(PETSC_USE_DEBUG)
         ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
-        for (j=stack->currentsize-2; j>=0; j--) {
+        for (j=k; j>=0; j--) {
           fprintf(fd,"      [%d]  %s() in %s%s\n",PetscGlobalRank,stack->function[j],stack->directory[j],stack->file[j]);
         }
 #endif
