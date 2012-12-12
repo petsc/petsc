@@ -682,6 +682,40 @@ PetscErrorCode  PetscStrendswith(const char a[],const char b[],PetscBool *flg)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscStrbeginswith"
+/*@C
+   PetscStrbeginswith - Determines if a string begins with a certain string
+
+   Not Collective
+
+   Input Parameters:
++  a - pointer to string
+-  b - string to beginwith
+
+   Output Parameter:
+.  flg - PETSC_TRUE or PETSC_FALSE
+
+   Notes:     Not for use in Fortran
+
+   Level: intermediate
+
+@*/
+PetscErrorCode  PetscStrbeginswith(const char a[],const char b[],PetscBool *flg)
+{
+  char           *test;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *flg = PETSC_FALSE;
+  ierr = PetscStrrstr(a,b,&test);CHKERRQ(ierr);
+  if (test && (test == a)) {
+    *flg = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrendswithwhich"
 /*@C
    PetscStrendswithwhich - Determines if a string ends with one of several possible strings

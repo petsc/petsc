@@ -101,6 +101,7 @@ int main(int argc,char **argv)
   Vec            x;
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return(1);
+  PetscFunctionBegin;
   comm = PETSC_COMM_WORLD;
 
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
@@ -169,7 +170,7 @@ int main(int argc,char **argv)
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  //  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

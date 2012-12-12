@@ -182,22 +182,46 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
 PetscErrorCode  PetscObjectsDump(FILE *fd)
 {
   PetscErrorCode ierr;
-  PetscInt       i;
+  PetscInt       i,j;
   PetscObject    h;
 
   PetscFunctionBegin;
   if (PetscObjectsCounts) {
-    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"The following objects %D were never freed\n",PetscObjectsCounts);
-    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"-----------------------------------------\n",PetscObjectsCounts);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"The following objects were never freed\n");
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"-----------------------------------------\n");
     for (i=0; i<PetscObjectsMaxCounts; i++) {
       if ((h = PetscObjects[i])) {
         ierr = PetscObjectName(h);CHKERRQ(ierr);
-        ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"[%d] %s %s %s\n",PetscGlobalRank,h->class_name,h->type_name,h->name);CHKERRQ(ierr);
+        {
 #if defined(PETSC_USE_DEBUG)
         PetscStack *stack;
+        PetscBool   main;
+        char        *create,*class;
         ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
-        ierr = PetscStackPrint(stack,fd);CHKERRQ(ierr);
+        ierr = PetscStrbeginswith(stack->function[0],"main",&main);CHKERRQ(ierr);
+        ierr = PetscStrstr(stack->function[1],"Create",&create);CHKERRQ(ierr);
+        ierr = PetscStrstr(stack->function[1],h->class_name,&class);CHKERRQ(ierr);
+
+        /*
+           If we had a way of distinguishing between PETSc functions and user functions we could do this
+           much better, for testing we use main as a surrogate for user code 
+        */
+        if (main) {
+          if (!create) continue;
+          if (!class) continue;
+        }
+
 #endif
+
+        ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"[%d] %s %s %s\n",PetscGlobalRank,h->class_name,h->type_name,h->name);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_DEBUG)
+        ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
+        for (j=stack->currentsize-2; j>=0; j--) {
+          fprintf(fd,"      [%d]  %s() in %s%s\n",PetscGlobalRank,stack->function[j],stack->directory[j],stack->file[j]);
+        }
+#endif
+        }
       }
     }
   }

@@ -1115,6 +1115,7 @@ PETSC_EXTERN PetscErrorCode PetscStrrchr(const char[],char,char *[]);
 PETSC_EXTERN PetscErrorCode PetscStrstr(const char[],const char[],char *[]);
 PETSC_EXTERN PetscErrorCode PetscStrrstr(const char[],const char[],char *[]);
 PETSC_EXTERN PetscErrorCode PetscStrendswith(const char[],const char[],PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscStrbeginswith(const char[],const char[],PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscStrendswithwhich(const char[],const char *const*,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscStrallocpy(const char[],char *[]);
 PETSC_EXTERN PetscErrorCode PetscStrArrayallocpy(const char *const*,char***);
