@@ -375,6 +375,13 @@ runex26_2:
 	   ${DIFF} output/ex26_2.out ex26_2.tmp || echo  ${PWD} "\nPossible problem with ex26_2, diffs above \n=========================================";  \
 	   ${RM} -f ex26_2.tmp
 
+runex26_3:
+	-@${MPIEXEC} -n 4 ./ex26 -da_refine 2 -lidvelocity 100 -grashof 1e3 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 -pc_type lu \
+        -ts_type beuler -ts_monitor -snes_monitor -snes_type newtonls -snes_npc_side left \
+        -npc_snes_type nasm -npc_snes_nasm_type restrict -da_overlap 4  > ex26_3.tmp 2>&1; \
+	   ${DIFF} output/ex26_3.out ex26_3.tmp || echo  ${PWD} "\nPossible problem with ex26_3, diffs above \n=========================================";  \
+	   ${RM} -f ex26_3.tmp
+
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
