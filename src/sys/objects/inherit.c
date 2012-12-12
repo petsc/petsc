@@ -195,21 +195,25 @@ PetscErrorCode  PetscObjectsDump(FILE *fd)
         {
 #if defined(PETSC_USE_DEBUG)
         PetscStack *stack;
-        PetscBool   main;
+        PetscBool   mainf;
         char        *create,*class;
         ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
-        ierr = PetscStrbeginswith(stack->function[0],"main",&main);CHKERRQ(ierr);
+        ierr = PetscStrbeginswith(stack->function[0],"main",&mainf);CHKERRQ(ierr);
         ierr = PetscStrstr(stack->function[1],"Create",&create);CHKERRQ(ierr);
         ierr = PetscStrstr(stack->function[1],h->class_name,&class);CHKERRQ(ierr);
 
         /*
-           If we had a way of distinguishing between PETSc functions and user functions we could do this
-           much better, for testing we use main as a surrogate for user code 
+           If we had a way of distinguishing between PETSc functions and user functions we could do this much better
+
+               1)  we use main as a surrogate for user code
+
         */
-        if (main) {
+        /*  user called create on this object */
+        if (mainf){
           if (!create) continue;
           if (!class) continue;
         }
+
 
 #endif
 
