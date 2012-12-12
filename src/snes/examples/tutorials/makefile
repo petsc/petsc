@@ -682,6 +682,12 @@ runex19_ngmres_nasm: #test ex19 with NASM preconditioner globalized with NGMRES
 	   ${DIFF} output/ex19_ngmres_nasm.out ex19_ngmres_nasm.tmp || echo  ${PWD} "\nPossible problem with ex19_nasm_ngmres, diffs above \n========================================="; \
            ${RM} -f ex19_ngmres_nasm.tmp
 
+runex19_aspin: #test ex19 with NASM preconditioner globalized with Newton
+	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -da_overlap 2 -snes_monitor_short -snes_type newtonls -snes_npc_side left -snes_max_it 10 \
+        -npc_snes_type nasm -npc_snes_nasm_type restrict -grashof 4e4 -lidvelocity 100 -ksp_monitor_short > ex19_aspin.tmp 2>&1; \
+	   ${DIFF} output/ex19_aspin.out ex19_aspin.tmp || echo  ${PWD} "\nPossible problem with ex19_aspin, diffs above \n========================================="; \
+          ${RM} -f ex19_aspin.tmp
+
 runex19_fas: #test ex19 with FAS and pointwise GS smoother
 	-@${MPIEXEC} -n 1 ./ex19 -da_refine 4 -snes_monitor_short -snes_type fas \
         -fas_levels_snes_type gs -grashof 4e4 -snes_fas_smoothup 6 -snes_fas_smoothdown 6 -lidvelocity 100 > ex19_fas.tmp 2>&1; \
