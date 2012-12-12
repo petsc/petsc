@@ -1397,7 +1397,9 @@ extern PetscErrorCode  PetscDLSym(PetscDLHandle,const char[],void **);
 */
 #include <petscerror.h>
 
+#if defined(PETSC_USE_DEBUG)
 PETSC_EXTERN PetscErrorCode PetscMallocGetStack(void*,PetscStack**);
+#endif
 PETSC_EXTERN PetscErrorCode PetscObjectsDump(FILE*);
 
 /*S
