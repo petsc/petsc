@@ -35,7 +35,7 @@ PetscErrorCode CreateProblem_gen_0(DM dm, const char *name)
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr = 0;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   {
     const ALE::Obj<ALE::Discretization>& d = new ALE::Discretization(m->comm(), m->debug());
@@ -65,7 +65,7 @@ static PetscErrorCode FormFunctionLocal_U(DM dmu, DM dmk, SectionReal sectionU, 
   ALE::Obj<PETSC_MESH_TYPE> meshK;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMMeshGetMesh(dmu, meshU);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dmk, meshK);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesU = meshU->depthStratum(0);
@@ -123,7 +123,7 @@ static PetscErrorCode FormFunctionLocal_K(DM dmu, DM dmk, SectionReal sectionU, 
   ALE::Obj<PETSC_MESH_TYPE> meshK;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMMeshGetMesh(dmu, meshU);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dmk, meshK);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesU = meshU->depthStratum(0);
@@ -167,7 +167,7 @@ static PetscErrorCode FormFunction_All(SNES snes, Vec X, Vec F, void *ctx)
   SectionReal    sectionU, sectionK, sectionFu, sectionFk;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMCompositeGetEntries(user->pack, &dmu, &dmk);CHKERRQ(ierr);
   switch (user->ptype) {
   case 0:
@@ -257,7 +257,7 @@ static PetscErrorCode FormJacobianLocal_U(DM dmu, DM dmk, SectionReal sectionU, 
   ALE::Obj<PETSC_MESH_TYPE> meshK;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMMeshGetMesh(dmu, meshU);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dmk, meshK);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesU = meshU->depthStratum(0);
@@ -310,7 +310,7 @@ static PetscErrorCode FormJacobianLocal_K(DM dmu, DM dmk, SectionReal sectionU, 
   ALE::Obj<PETSC_MESH_TYPE> meshK;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMMeshGetMesh(dmu, meshU);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dmk, meshK);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesK = meshK->depthStratum(0);
@@ -336,7 +336,7 @@ static PetscErrorCode FormJacobianLocal_UK(DM dmu, DM dmk, SectionReal sectionU,
   ALE::Obj<PETSC_MESH_TYPE> meshK;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!Buk) PetscFunctionReturn(0); /* Not assembling this block */
   ierr = DMMeshGetMesh(dmu, meshU);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dmk, meshK);CHKERRQ(ierr);
@@ -385,7 +385,7 @@ static PetscErrorCode FormJacobianLocal_KU(DM dmu, DM dmk, SectionReal sectionU,
   ALE::Obj<PETSC_MESH_TYPE> meshK;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!Bku) PetscFunctionReturn(0); /* Not assembling this block */
   ierr = DMMeshGetMesh(dmu, meshU);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dmk, meshK);CHKERRQ(ierr);
@@ -439,7 +439,7 @@ static PetscErrorCode FormJacobian_All(SNES snes, Vec X, Mat *J, Mat *B, MatStru
   SectionReal    sectionU, sectionK;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMCompositeGetEntries(user->pack, &dmu, &dmk);CHKERRQ(ierr);
   switch (user->ptype) {
   case 0:
@@ -537,7 +537,7 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
   Vec            vecU,         vecK;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMCompositeGetEntries(user->pack, &dmu, &dmk);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dmu, meshU);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dmk, meshK);CHKERRQ(ierr);

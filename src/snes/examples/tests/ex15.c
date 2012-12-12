@@ -145,7 +145,7 @@ PetscErrorCode ComputeB(AppCtx* user)
   PetscReal      ecc=user->ecc;
   PetscReal      **b;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   nx=user->nx;
   ny=user->ny;
   hx=two*pi/(nx+1.0);
@@ -190,7 +190,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G,void *ctx)
   PetscReal      zero=0.0;
   Vec            localX;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   nx=user->nx;
   ny=user->ny;
   hx=two*pi/(nx+1.0);
@@ -297,7 +297,7 @@ PetscErrorCode FormHessian(SNES snes,Vec X,Mat *H, Mat *Hpre, MatStructure *flg,
   PetscReal      **x;
   Vec            localX;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   nx=user->nx;
   ny=user->ny;
   hx=two*pi/(nx+1.0);

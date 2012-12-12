@@ -312,7 +312,7 @@ PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh,AppCtx* 
   PetscMPIInt    rank,size;
   PetscInt       localsize;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = VecSet(xl,ul);CHKERRQ(ierr);
   ierr = VecSet(xu,uh);CHKERRQ(ierr);

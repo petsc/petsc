@@ -98,7 +98,7 @@ PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp) {
   PetscInt       n = 1;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
   ierr = PCFieldSplitSetIS(pc, "0", s->isg[0]);CHKERRQ(ierr);
   ierr = PCFieldSplitSetIS(pc, "1", s->isg[1]);CHKERRQ(ierr);
@@ -120,7 +120,7 @@ PetscErrorCode StokesWriteSolution(Stokes *s) {
   PetscScalar *array;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   // write data (*warning* only works sequential)
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   //ierr = PetscPrintf(PETSC_COMM_WORLD," number of processors = %D\n",size); CHKERRQ(ierr);
@@ -144,7 +144,7 @@ PetscErrorCode StokesWriteSolution(Stokes *s) {
 PetscErrorCode StokesSetupIndexSets(Stokes *s) {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   // the two index sets
   ierr = MatNestGetISs(s->A, s->isg, PETSC_NULL);CHKERRQ(ierr);
   //  ISView(isg[0],PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
@@ -155,7 +155,7 @@ PetscErrorCode StokesSetupIndexSets(Stokes *s) {
 PetscErrorCode StokesSetupVectors(Stokes *s) {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   // solution vector x
   ierr = VecCreate(PETSC_COMM_WORLD, &s->x); CHKERRQ(ierr);
   ierr = VecSetSizes(s->x, PETSC_DECIDE, 3*s->nx*s->ny); CHKERRQ(ierr);
@@ -178,7 +178,7 @@ PetscErrorCode StokesSetupVectors(Stokes *s) {
 PetscErrorCode StokesGetPosition(Stokes *s, PetscInt row, PetscInt *i, PetscInt *j) {
   PetscInt n;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   // cell number n=j*nx+i has position (i,j) in grid
   n  = row%(s->nx*s->ny);
   *i = n%s->nx;
@@ -192,7 +192,7 @@ PetscErrorCode StokesExactSolution(Stokes *s) {
   Vec y0,y1;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   // velocity part
   ierr = VecGetSubVector(s->y, s->isg[0], &y0); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(y0, &start, &end); CHKERRQ(ierr);
@@ -225,7 +225,7 @@ PetscErrorCode StokesRhs(Stokes *s) {
   Vec b0,b1;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   // velocity part
   ierr = VecGetSubVector(s->b, s->isg[0], &b0); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(b0, &start, &end); CHKERRQ(ierr);
@@ -258,7 +258,7 @@ PetscErrorCode StokesSetupMatBlock00(Stokes *s) {
   PetscScalar vals[5];
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   // A[0] is 2N-by-2N
   ierr = MatCreate(PETSC_COMM_WORLD,&s->subA[0]); CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(s->subA[0],"a00_"); CHKERRQ(ierr);
@@ -289,7 +289,7 @@ PetscErrorCode StokesSetupMatBlock01(Stokes *s) {
   PetscScalar vals[5];
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   // A[1] is 2N-by-N
   ierr = MatCreate(PETSC_COMM_WORLD, &s->subA[1]); CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(s->subA[1],"a01_");
@@ -320,7 +320,7 @@ PetscErrorCode StokesSetupMatBlock01(Stokes *s) {
 PetscErrorCode StokesSetupMatBlock10(Stokes *s) {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   // A[2] is minus transpose of A[1]
   ierr = MatTranspose(s->subA[1], MAT_INITIAL_MATRIX, &s->subA[2]); CHKERRQ(ierr);
   ierr = MatScale(s->subA[2], -1.0); CHKERRQ(ierr);
@@ -331,7 +331,7 @@ PetscErrorCode StokesSetupMatBlock10(Stokes *s) {
 PetscErrorCode StokesSetupMatBlock11(Stokes *s) {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   // A[3] is N-by-N null matrix
   ierr = MatCreate(PETSC_COMM_WORLD, &s->subA[3]); CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(s->subA[3], "a11_"); CHKERRQ(ierr);
@@ -347,7 +347,7 @@ PetscErrorCode StokesSetupApproxSchur(Stokes *s) {
   Vec diag;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   // Schur complement approximation: myS = A11 - A10 diag(A00)^(-1) A01
   // note: A11 is zero
   // note: in real life this matrix would be build directly,
@@ -375,7 +375,7 @@ PetscErrorCode StokesSetupApproxSchur(Stokes *s) {
 PetscErrorCode StokesSetupMatrix(Stokes *s) {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = StokesSetupMatBlock00(s);CHKERRQ(ierr);
   ierr = StokesSetupMatBlock01(s);CHKERRQ(ierr);
   ierr = StokesSetupMatBlock10(s);CHKERRQ(ierr);
@@ -392,7 +392,7 @@ PetscErrorCode StokesStencilLaplacian(Stokes *s, PetscInt i, PetscInt j, PetscIn
   PetscScalar as=s->hx/s->hy, asb=s->hx/(s->hy/2);
   PetscScalar an=s->hx/s->hy, anb=s->hx/(s->hy/2);
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if ( i==0 && j==0 ) { // south-west corner
     *size=3;
     cols[0]=p; vals[0]=-(ae+awb+asb+an);
@@ -461,7 +461,7 @@ PetscErrorCode StokesStencilGradientX(Stokes *s, PetscInt i, PetscInt j, PetscIn
   PetscScalar ae= s->hy/2, aeb=s->hy;
   PetscScalar aw=-s->hy/2, awb=0;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if ( i==0 && j==0 ) { // south-west corner
     *size=2;
     cols[0]=p; vals[0]=-(ae+awb);
@@ -518,7 +518,7 @@ PetscErrorCode StokesStencilGradientY(Stokes *s, PetscInt i, PetscInt j, PetscIn
   PetscScalar as=-s->hx/2, asb=0;
   PetscScalar an= s->hx/2, anb=0;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if ( i==0 && j==0 ) { // south-west corner
     *size=2;
     cols[0]=p; vals[0]=-(asb+an);
@@ -574,7 +574,7 @@ PetscErrorCode StokesRhsMomX(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val
   PetscScalar y   = j*s->hy+s->hy/2;
   PetscScalar awb = s->hy/(s->hx/2);
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (i == 0) { // west boundary
     *val = awb*StokesExactVelocityX(y);
   } else {
@@ -584,7 +584,7 @@ PetscErrorCode StokesRhsMomX(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val
 }
 
 PetscErrorCode StokesRhsMomY(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val) {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *val = 0.0;
   PetscFunctionReturn(0);
 }
@@ -593,7 +593,7 @@ PetscErrorCode StokesRhsMass(Stokes *s, PetscInt i, PetscInt j, PetscScalar *val
   PetscScalar y   = j*s->hy+s->hy/2;
   PetscScalar aeb = s->hy;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (i == 0) { // west boundary
     *val = aeb*StokesExactVelocityX(y);
   } else {
@@ -607,7 +607,7 @@ PetscErrorCode StokesCalcResidual(Stokes *s) {
   Vec b0, b1;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   // residual Ax-b (*warning* overwrites b)
   ierr = VecScale(s->b, -1.0);CHKERRQ(ierr);
   ierr = MatMultAdd(s->A, s->x, s->b, s->b); CHKERRQ(ierr);
@@ -636,7 +636,7 @@ PetscErrorCode StokesCalcError(Stokes *s) {
   Vec y0, y1;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   // error y-x
   ierr = VecAXPY(s->y, -1.0, s->x); CHKERRQ(ierr);
   //ierr = VecView(s->y, (PetscViewer)PETSC_VIEWER_DEFAULT); CHKERRQ(ierr);

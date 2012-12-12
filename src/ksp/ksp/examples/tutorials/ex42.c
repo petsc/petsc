@@ -58,7 +58,7 @@ PetscErrorCode CellPropertiesCreate(DM da_stokes,CellProperties *C)
   CellProperties cells;
   PetscInt mx,my,mz,sex,sey,sez;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscMalloc(sizeof(struct _p_CellProperties),&cells);CHKERRQ(ierr);
 
   ierr = DMDAGetElementCorners(da_stokes,&sex,&sey,&sez,&mx,&my,&mz);CHKERRQ(ierr);
@@ -82,7 +82,7 @@ PetscErrorCode CellPropertiesDestroy(CellProperties *C)
   PetscErrorCode ierr;
   CellProperties cells;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!C) { PetscFunctionReturn(0); }
   cells = *C;
   ierr = PetscFree(cells->gpc);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ PetscErrorCode CellPropertiesDestroy(CellProperties *C)
 #define __FUNCT__ "CellPropertiesGetCell"
 PetscErrorCode CellPropertiesGetCell(CellProperties C,PetscInt I,PetscInt J,PetscInt K,GaussPointCoefficients **G)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *G = &C->gpc[ (I-C->sex) + (J-C->sey)*C->mx + (K-C->sez)*C->mx*C->my ];
   PetscFunctionReturn(0);
 }
@@ -261,7 +261,7 @@ static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,
   PetscInt sx,sy,sz;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&m,&n,&p);CHKERRQ(ierr);
 
@@ -293,7 +293,7 @@ static PetscErrorCode DMDAGetElementCorners(DM da,PetscInt *sx,PetscInt *sy,Pets
   PetscInt si,sj,sk;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,0,0,0);CHKERRQ(ierr);
 
   if (sx) {
@@ -328,7 +328,7 @@ static PetscErrorCode DMDAGetElementCorners(DM da,PetscInt *sx,PetscInt *sy,Pets
 static PetscErrorCode DMDAGetElementEqnums3D_up(MatStencil s_u[],MatStencil s_p[],PetscInt i,PetscInt j,PetscInt k)
 {
   PetscInt n;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* velocity */
   n = 0;
   /* node 0 */
@@ -383,7 +383,7 @@ static PetscErrorCode DMDAGetElementEqnums3D_up(MatStencil s_u[],MatStencil s_p[
 #define __FUNCT__ "GetElementCoords3D"
 static PetscErrorCode GetElementCoords3D(DMDACoor3d ***coords,PetscInt i,PetscInt j,PetscInt k,PetscScalar el_coord[])
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* get coords for the element */
   el_coord[0] = coords[k  ][j  ][i  ].x;
   el_coord[1] = coords[k  ][j  ][i  ].y;
@@ -423,7 +423,7 @@ static PetscErrorCode GetElementCoords3D(DMDACoor3d ***coords,PetscInt i,PetscIn
 #define __FUNCT__ "StokesDAGetNodalFields3D"
 static PetscErrorCode StokesDAGetNodalFields3D(StokesDOF ***field,PetscInt i,PetscInt j,PetscInt k,StokesDOF nodal_fields[])
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* get the nodal fields for u */
   nodal_fields[0].u_dof = field[k  ][j  ][i  ].u_dof;
   nodal_fields[0].v_dof = field[k  ][j  ][i  ].v_dof;
@@ -494,7 +494,7 @@ static PetscErrorCode DMDASetValuesLocalStencil3D_ADD_VALUES(StokesDOF ***fields
 {
   PetscInt n,I,J,K;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (n = 0; n<NODES_PER_EL; n++) {
     I = u_eqn[NSD*n  ].i;
     J = u_eqn[NSD*n  ].j;
@@ -850,7 +850,7 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,CellProperties cell_pr
   PetscLogDouble         t0,t1;
   PetscErrorCode         ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = DMDAGetInfo(stokes_da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   /* setup for coords */
@@ -943,7 +943,7 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,CellProperties cell_
   PetscInt               n,M,N,P;
   PetscErrorCode         ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = DMDAGetInfo(stokes_da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   /* setup for coords */
@@ -1031,7 +1031,7 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,CellProperties cell_pr
   PetscInt               n,M,N,P;
   PetscErrorCode         ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = DMDAGetInfo(stokes_da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   /* setup for coords */
@@ -1174,7 +1174,7 @@ static PetscErrorCode DMDACreateManufacturedSolution(PetscInt mx,PetscInt my,Pet
   PetscInt       si,sj,sk,ei,ej,ek,i,j,k;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                       mx+1,my+1,mz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,4,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"anlytic_Vx");CHKERRQ(ierr);
@@ -1250,7 +1250,7 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da,Vec X,Vec X_analytic)
   PetscReal      xymin[NSD],xymax[NSD];
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* define quadrature rule */
   ConstructGaussQuadrature3D(&ngp,gp_xi,gp_weight);
 
@@ -1425,7 +1425,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
   PetscLogDouble t0,t1;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscGetTime(&t0);CHKERRQ(ierr);
 
   /* create file name */
@@ -1546,7 +1546,7 @@ PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp,PetscInt indent_level,DM
   PetscInt       i,j,k,II,stencil;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* create file name */
   PetscObjectGetComm((PetscObject)da,&comm);
   MPI_Comm_size(comm,&nproc);
@@ -1640,7 +1640,7 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const
   PetscInt       i,dofs;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* only master generates this file */
   PetscObjectGetComm((PetscObject)da,&comm);
   MPI_Comm_size(comm,&nproc);
@@ -1705,7 +1705,7 @@ PetscErrorCode DAView3DPVTS(DM da, Vec x,const char NAME[])
   char           pvts_filename[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscSNPrintf(vts_filename,sizeof(vts_filename),"%s-mesh",NAME);CHKERRQ(ierr);
   ierr = DAView_3DVTK_StructuredGrid_appended(da,x,vts_filename);CHKERRQ(ierr);
 
@@ -1723,7 +1723,7 @@ PetscErrorCode KSPMonitorStokesBlocks(KSP ksp,PetscInt n,PetscReal rnorm,void *d
   Vec            Br,v,w;
   Mat            A;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = KSPGetOperators(ksp,&A,0,0);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
 
@@ -1750,7 +1750,7 @@ static PetscErrorCode PCMGSetupViaCoarsen(PC pc,DM da_fine)
   Mat            R;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   nlevels = 1;
   PetscOptionsGetInt(PETSC_NULL,"-levels",&nlevels,0);
 
@@ -1809,7 +1809,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   PetscBool              write_output = PETSC_FALSE;
   PetscErrorCode         ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* Generate the da for velocity and pressure */
   /* Num nodes in each direction is mx+1, my+1, mz+1 */
   u_dof         = U_DOFS; /* Vx, Vy - velocities */

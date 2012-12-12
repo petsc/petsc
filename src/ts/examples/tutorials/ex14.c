@@ -279,7 +279,7 @@ static PetscErrorCode QuadComputeGrad4(const PetscReal dphi[][4][2],PetscReal hx
   const PetscScalar (*restrict pg)[PRMNODE_SIZE] = (const PetscScalar(*)[PRMNODE_SIZE])pn; /* Get generic array pointers to the node */
   PetscScalar (*restrict dpg)[2][PRMNODE_SIZE]   = (PetscScalar(*)[2][PRMNODE_SIZE])dp;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscMemzero(dpg,4*sizeof(dpg[0]));CHKERRQ(ierr);
   for (q=0; q<4; q++) {
     for (i=0; i<4; i++) {
@@ -462,7 +462,7 @@ static void PRangeClear(PRange *p)
 static PetscErrorCode PRangeMinMax(PRange *p,PetscReal min,PetscReal max)
 {
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   p->cmin = min;
   p->cmax = max;
   if (min < p->min) p->min = min;
@@ -476,7 +476,7 @@ static PetscErrorCode THIDestroy(THI *thi)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (--((PetscObject)(*thi))->refct > 0) PetscFunctionReturn(0);
   ierr = PetscFree((*thi)->units);CHKERRQ(ierr);
   ierr = PetscFree((*thi)->mattype);CHKERRQ(ierr);
@@ -495,7 +495,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
   char             monitor_basename[PETSC_MAX_PATH_LEN] = "thi-";
   PetscErrorCode   ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *inthi = 0;
   if (!registered) {
     ierr = PetscClassIdRegister("Toy Hydrostatic Ice",&THI_CLASSID);CHKERRQ(ierr);
@@ -656,7 +656,7 @@ static PetscErrorCode THIFixGhosts(THI thi,DM da3,DM da2,Vec X3,Vec X2)
   PrmNode        **x2;
   PetscInt       i,j;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetLocalInfo(da3,&info);CHKERRQ(ierr);
   //ierr = VecView(X2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da2,X2,&x2);CHKERRQ(ierr);
@@ -678,7 +678,7 @@ static PetscErrorCode THIInitializePrm(THI thi,DM da2prm,PrmNode **p)
   PetscInt i,j,xs,xm,ys,ym,mx,my;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetGhostCorners(da2prm,&ys,&xs,0,&ym,&xm,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da2prm,0, &my,&mx,0, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
@@ -702,7 +702,7 @@ static PetscErrorCode THIInitial(THI thi,DM pack,Vec X)
   Vec         X3g,X2g,X2;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(pack,X,&X3g,&X2g);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da2,&X2);CHKERRQ(ierr);
@@ -768,7 +768,7 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
   PetscReal      hx,hy,etamin,etamax,beta2min,beta2max;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   xs = info->zs;
   ys = info->ys;
   xm = info->zm;
@@ -876,7 +876,7 @@ static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info,const Node ***x,co
 {
   PetscInt       xs,ys,xm,ym,zm,i,j,k;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   xs = info->zs;
   ys = info->ys;
   xm = info->zm;
@@ -933,7 +933,7 @@ static PetscErrorCode THIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *c
   PrmNode        **f2;
   DMDALocalInfo  info3;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&pack);CHKERRQ(ierr);
   ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
@@ -1004,7 +1004,7 @@ static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
   PetscInt       m;
   PetscMPIInt    rank;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatNorm(B,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
   ierr = MatGetSize(B,&m,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(((PetscObject)B)->comm,&rank);CHKERRQ(ierr);
@@ -1029,7 +1029,7 @@ static PetscErrorCode THISurfaceStatistics(DM pack,Vec X,PetscReal *min,PetscRea
   PetscReal      umin = 1e100,umax=-1e100;
   PetscScalar    usum=0.0,gusum;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
   *min = *max = *mean = 0;
@@ -1063,7 +1063,7 @@ static PetscErrorCode THISolveStatistics(THI thi,TS ts,PetscInt coarsened,const 
   Vec            X,X3,X2;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&pack);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
@@ -1134,7 +1134,7 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info,const Node *
   PetscReal      hx,hy;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   xs = info->zs;
   ys = info->ys;
   xm = info->zm;
@@ -1281,7 +1281,7 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,c
   PetscErrorCode ierr;
   PetscInt       xs,ys,xm,ym,zm,i,j,k;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   xs = info->zs;
   ys = info->ys;
   xm = info->zm;
@@ -1355,7 +1355,7 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   const Node     ***x3;
   const PrmNode  **x2,**xdot2;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&pack);CHKERRQ(ierr);
   ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
@@ -1430,7 +1430,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   DM             da3,da2;
   Vec            X3,X2;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   comm = ((PetscObject)thi)->comm;
   ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
@@ -1565,7 +1565,7 @@ static PetscErrorCode THITSMonitor(TS ts,PetscInt step,PetscReal t,Vec X,void *c
   DM             pack;
   char           filename3[PETSC_MAX_PATH_LEN],filename2[PETSC_MAX_PATH_LEN];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscPrintf(((PetscObject)ts)->comm,"%3D: t=%G\n",step,t);CHKERRQ(ierr);
   if (thi->monitor_interval && step % thi->monitor_interval) PetscFunctionReturn(0);
   ierr = TSGetDM(ts,&pack);CHKERRQ(ierr);
@@ -1585,7 +1585,7 @@ static PetscErrorCode THICreateDM3d(THI thi,DM *dm3d)
   DM             da;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscOptionsBegin(comm,NULL,"Grid resolution options","");CHKERRQ(ierr);
   {
     ierr = PetscOptionsInt("-M","Number of elements in x-direction on coarse level","",M,&M,NULL);CHKERRQ(ierr);

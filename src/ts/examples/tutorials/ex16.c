@@ -90,7 +90,7 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
   User user = (User)ctx;
   PetscScalar *x,*f;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = (user->imex ? x[1] : 0);
@@ -108,7 +108,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
   User user = (User)ctx;
   PetscScalar *x,*xdot,*f;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
   PetscInt rowcol[] = {0,1};
   PetscScalar *x,J[2][2];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   J[0][0] = a;                    J[0][1] = (user->imex ? 0 : 1.);
   J[1][0] = 2.*mu*x[0]*x[1]+1.;   J[1][1] = a - mu*(1. - x[0]*x[0]);
@@ -153,7 +153,7 @@ static PetscErrorCode RegisterMyARK2(void)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   {
     const PetscReal
       A[3][3] = {{0,0,0},
@@ -179,7 +179,7 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
   User user = (User)ctx;
   Vec interpolatedX;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
   ierr = TSGetDuration(ts,PETSC_NULL,&tfinal);CHKERRQ(ierr);
 

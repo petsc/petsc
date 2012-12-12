@@ -154,7 +154,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec U,Vec FU,void *ctx)
   Vec            vw,vfw,vu_lambda,vfu_lambda;
   DM             packer,red,da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetDM(U, &packer);CHKERRQ(ierr);
   ierr = DMCompositeGetEntries(packer,&red,&da);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(packer,&vw,&vu_lambda);CHKERRQ(ierr);
@@ -209,7 +209,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec U,Vec FU,void *ctx)
 PetscErrorCode u_solution(void *dummy,PetscInt n,const PetscScalar *x,PetscScalar *u)
 {
   PetscInt i;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (i=0; i<n; i++) {
     u[2*i] = x[i]*x[i] - 1.25*x[i] + .25;
   }
@@ -227,7 +227,7 @@ PetscErrorCode ExactSolution(DM packer,Vec U)
   PetscErrorCode ierr;
   PetscInt       m;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMCompositeGetEntries(packer,&m,&da);CHKERRQ(ierr);
 
   ierr = PFCreate(PETSC_COMM_WORLD,1,2,&pf);CHKERRQ(ierr);
@@ -258,7 +258,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   PetscReal      norm;
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&packer);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(packer,&user);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);
@@ -294,7 +294,7 @@ PetscErrorCode DMCreateMatrix_MF(DM packer,MatType stype,Mat *A)
   Vec            t;
   PetscInt       m;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetGlobalVector(packer,&t);CHKERRQ(ierr);
   ierr = VecGetLocalSize(t,&m);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(packer,&t);CHKERRQ(ierr);
@@ -309,7 +309,7 @@ PetscErrorCode ComputeJacobian_MF(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *st
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatMFFDSetFunction(*A,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
   ierr = MatMFFDSetBase(*A,x,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

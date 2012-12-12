@@ -67,7 +67,7 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
   PetscScalar    xx,yy,zz;
   DM             cda;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (idx==0) {
     PetscFunctionReturn(0);
   } else if (idx==1) { /* dam break */
@@ -210,7 +210,7 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
   PetscScalar    xx,yy,zz;
   DM             cda;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0 );CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
@@ -268,7 +268,7 @@ PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
   PetscScalar    **FF;
   DM             cda;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
 
@@ -301,7 +301,7 @@ PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
   PetscScalar    ***FF;
   DM             cda;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
 
@@ -344,7 +344,7 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   Vec            scale;
   PetscBool      output = PETSC_FALSE;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDACreate1d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,
                       mx+1,
                       1, /* 1 dof */
@@ -436,7 +436,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   Vec            scale;
   PetscBool      output = PETSC_FALSE;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX,
                       mx+1, my+1,
                       PETSC_DECIDE, PETSC_DECIDE,
@@ -537,7 +537,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   Vec            scale;
   PetscBool      output = PETSC_FALSE;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                       mx+1, my+1,mz+1,
                       PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,

@@ -272,7 +272,7 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
   PetscScalar    *xx,*wv_p,*cv_p,*wi_p,*ci_p,*eta_p;
 
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetLocalSize(user->wv,&n);CHKERRQ(ierr);
 
   ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
@@ -308,7 +308,7 @@ PetscErrorCode Update_q(AppCtx *user)
   PetscScalar    *q_p, *w1, *w2;
   PetscInt       i,n;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = VecPointwiseMult(user->Riv,user->eta,user->eta);CHKERRQ(ierr); //Riv = eta.^2
   ierr = VecScale(user->Riv,user->Rsurf);CHKERRQ(ierr); // Riv = Rsurf * eta.^2
@@ -373,7 +373,7 @@ PetscErrorCode DPsi(AppCtx* user)
   PetscScalar     *cv_p,*ci_p,*eta_p,*logcv_p,*logci_p,*logcvi_p,*DPsiv_p,*DPsii_p,*DPsieta_p;
   PetscInt        n,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = VecGetLocalSize(user->cv,&n);
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
@@ -430,7 +430,7 @@ PetscErrorCode Llog(Vec X, Vec Y)
   PetscScalar       *x,*y;
   PetscInt          n,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
@@ -467,7 +467,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
 	PetscViewer       view;
 	PetscScalar       xwidth = user->xmax - user->xmin, ywidth = user->ymax - user->ymin, zwidth = user->zmax - user->zmin;
 	
-	PetscFunctionBegin;
+	PetscFunctionBeginUser;
 	
 	ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
 	
@@ -595,7 +595,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   static PetscRandom rand = 0;
   static PetscInt    step = 0;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!rand) {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
@@ -639,7 +639,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ctx)
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatMultAdd(user->M,X,user->q,F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -651,7 +651,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *flg = SAME_NONZERO_PATTERN;
   ierr = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -667,7 +667,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 	PetscInt       xs,xm,ys,ym,zs,zm;
 	PetscInt       k,j,i;
 	
-	PetscFunctionBegin;
+	PetscFunctionBeginUser;
 	ierr = DMDAVecGetArrayDOF(da,xl,&l);CHKERRQ(ierr);
 	ierr = DMDAVecGetArrayDOF(da,xu,&u);CHKERRQ(ierr);
 	
@@ -706,7 +706,7 @@ PetscErrorCode GetParams(AppCtx* user)
   PetscErrorCode ierr;
   PetscBool      flg;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   /* Set default parameters */
   user->xmin = 0.0; user->xmax = 64.0;
@@ -760,7 +760,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   PetscScalar       *cv_p,*ci_p;
   Vec               cvlocal,cilocal;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = DMGetLocalVector(user->da2,&cvlocal);CHKERRQ(ierr);
   ierr = DMGetLocalVector(user->da2,&cilocal);CHKERRQ(ierr);
@@ -994,7 +994,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
   /* newly added */
   Vec               cvlocal,cilocal;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = DMGetLocalVector(user->da2,&cvlocal);CHKERRQ(ierr);
   ierr = DMGetLocalVector(user->da2,&cilocal);CHKERRQ(ierr);

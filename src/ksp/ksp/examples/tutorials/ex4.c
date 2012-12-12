@@ -57,7 +57,7 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elem
   PetscLogEvent  integrationEvent;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscLogEventRegister("ElemIntegration", DM_CLASSID, &integrationEvent);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(integrationEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dm, 0, &X, &Y,0,0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);

@@ -71,7 +71,7 @@ PetscErrorCode Create1dLaplacian(PetscInt n,Mat *mat)
   PetscInt       i,j,loc_start,loc_end;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n,PETSC_DECIDE, PETSC_NULL, PETSC_DECIDE, PETSC_NULL, mat);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(*mat,&loc_start,&loc_end);CHKERRQ(ierr);
@@ -94,7 +94,7 @@ PetscErrorCode CalculateRhs(Vec u)
   PetscReal      h;
   PetscScalar    uu;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetSize(u,&n);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(u,&loc_start,&loc_end);CHKERRQ(ierr);
   h = 1.0/((PetscReal)(n+1));

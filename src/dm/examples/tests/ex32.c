@@ -10,7 +10,7 @@ static PetscErrorCode CompareGhostedCoords(Vec gc1,Vec gc2)
   PetscReal      nrm,gnrm;
   Vec            tmp;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecDuplicate(gc1,&tmp);CHKERRQ(ierr);
   ierr = VecWAXPY(tmp,-1.0,gc1,gc2);CHKERRQ(ierr);
   ierr = VecNorm(tmp,NORM_INFINITY,&nrm);CHKERRQ(ierr);

@@ -583,7 +583,7 @@ PetscErrorCode RHSFunctionHeat(TS ts,PetscReal t,Vec globalin,Vec globalout,void
   Mat            A;
   MatStructure   A_structure;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = TSGetRHSJacobian(ts,&A,PETSC_NULL,PETSC_NULL,&ctx);CHKERRQ(ierr);
   ierr = RHSMatrixHeat(ts,t,globalin,&A,PETSC_NULL,&A_structure,ctx);CHKERRQ(ierr);
   /* ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */

@@ -14,7 +14,7 @@ PetscErrorCode test_solve( void )
   int n, np, i,j;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscPrintf( PETSC_COMM_WORLD, "%s \n", PETSC_FUNCTION_NAME );
 
   n = 3;
@@ -130,7 +130,7 @@ PetscErrorCode test_solve_matgetvecs( void )
   Vec *tmp_x;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscPrintf( PETSC_COMM_WORLD, "%s \n", PETSC_FUNCTION_NAME );
 
   n = 3;

@@ -123,10 +123,11 @@ PetscErrorCode  PetscStackCopy(PetscStack* sint,PetscStack* sout)
     sout->currentsize = 0;
   } else {
     for (i=0; i<sint->currentsize; i++) {
-      sout->function[i]  = sint->function[i];
-      sout->file[i]      = sint->file[i];
-      sout->directory[i] = sint->directory[i];
-      sout->line[i]      = sint->line[i];
+      sout->function[i]     = sint->function[i];
+      sout->file[i]         = sint->file[i];
+      sout->directory[i]    = sint->directory[i];
+      sout->line[i]         = sint->line[i];
+      sout->petscroutine[i] = sint->petscroutine[i];
     }
     sout->currentsize = sint->currentsize;
   }

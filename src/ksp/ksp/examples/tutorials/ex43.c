@@ -168,7 +168,7 @@ static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,
   PetscInt m,n,p,M,N,P;
   PetscInt sx,sy,sz;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);
   DMDAGetCorners(da,&sx,&sy,&sz,&m,&n,&p);
 
@@ -201,7 +201,7 @@ static PetscErrorCode DMDAGetElementCorners(DM da,
 {
   PetscInt si,sj,sk;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   DMDAGetGhostCorners(da,&si,&sj,&sk,0,0,0);
 
   *sx = si;
@@ -235,7 +235,7 @@ The s[].c is used to indicate the degree of freedom.
 #define __FUNCT__ "DMDAGetElementEqnums_up"
 static PetscErrorCode DMDAGetElementEqnums_up(MatStencil s_u[],MatStencil s_p[],PetscInt i,PetscInt j)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* velocity */
   /* node 0 */
   s_u[0].i = i;s_u[0].j = j;s_u[0].c = 0;                         /* Vx0 */
@@ -277,7 +277,7 @@ static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da,PetscInt **_lx,Petsc
   Vec            V_SEQ;
   VecScatter     ctx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
   DMDAGetInfo(da,0,0,0,0,&cpu_x,&cpu_y,0,0,0,0,0,0,0);
@@ -350,7 +350,7 @@ static PetscErrorCode DMDACoordViewGnuplot2d(DM da,const char prefix[])
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp);CHKERRQ(ierr);
@@ -392,7 +392,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
   PetscScalar    *_fields;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   ierr = PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp);CHKERRQ(ierr);
@@ -459,7 +459,7 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char 
   GaussPointCoefficients **_coefficients;
   PetscErrorCode         ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp);CHKERRQ(ierr);
@@ -744,7 +744,7 @@ static void FormMomentumRhsQ1(PetscScalar Fe[],PetscScalar coords[],PetscScalar 
 #define __FUNCT__ "GetElementCoords"
 static PetscErrorCode GetElementCoords(DMDACoor2d **_coords,PetscInt ei,PetscInt ej,PetscScalar el_coords[])
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* get coords for the element */
   el_coords[NSD*0+0] = _coords[ej][ei].x;el_coords[NSD*0+1] = _coords[ej][ei].y;
   el_coords[NSD*1+0] = _coords[ej+1][ei].x;el_coords[NSD*1+1] = _coords[ej+1][ei].y;
@@ -774,7 +774,7 @@ static PetscErrorCode AssembleA_Stokes(Mat A,DM stokes_da,DM properties_da,Vec p
   PetscScalar            *prop_eta;
   PetscErrorCode         ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   /* setup for coords */
   ierr = DMGetCoordinateDM(stokes_da,&cda);CHKERRQ(ierr);
@@ -847,7 +847,7 @@ static PetscErrorCode AssembleA_PCStokes(Mat A,DM stokes_da,DM properties_da,Vec
   PetscScalar            *prop_eta;
   PetscErrorCode         ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* setup for coords */
   ierr = DMGetCoordinateDM(stokes_da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(stokes_da,&coords);CHKERRQ(ierr);
@@ -905,7 +905,7 @@ static PetscErrorCode DMDASetValuesLocalStencil_ADD_VALUES(StokesDOF **fields_F,
 {
   PetscInt n;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (n = 0; n < 4; n++) {
     fields_F[ u_eqn[2*n  ].j ][ u_eqn[2*n  ].i ].u_dof = fields_F[ u_eqn[2*n  ].j ][ u_eqn[2*n  ].i ].u_dof+Fe_u[2*n  ];
     fields_F[ u_eqn[2*n+1].j ][ u_eqn[2*n+1].i ].v_dof = fields_F[ u_eqn[2*n+1].j ][ u_eqn[2*n+1].i ].v_dof+Fe_u[2*n+1];
@@ -935,7 +935,7 @@ static PetscErrorCode AssembleF_Stokes(Vec F,DM stokes_da,DM properties_da,Vec p
   StokesDOF              **ff;
   PetscErrorCode         ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* setup for coords */
   ierr = DMGetCoordinateDM(stokes_da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(stokes_da,&coords);CHKERRQ(ierr);
@@ -1005,7 +1005,7 @@ static PetscErrorCode DMDACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc
   PetscInt       si,sj,ei,ej,i,j;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                     mx+1,my+1,PETSC_DECIDE,PETSC_DECIDE,3,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"anlytic_Vx");CHKERRQ(ierr);
@@ -1057,7 +1057,7 @@ static PetscErrorCode DMDACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc
 #define __FUNCT__ "StokesDAGetNodalFields"
 static PetscErrorCode StokesDAGetNodalFields(StokesDOF **fields,PetscInt ei,PetscInt ej,StokesDOF nodal_fields[])
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* get the nodal fields */
   nodal_fields[0].u_dof = fields[ej  ][ei  ].u_dof;nodal_fields[0].v_dof = fields[ej  ][ei  ].v_dof;nodal_fields[0].p_dof = fields[ej  ][ei  ].p_dof;
   nodal_fields[1].u_dof = fields[ej+1][ei  ].u_dof;nodal_fields[1].v_dof = fields[ej+1][ei  ].v_dof;nodal_fields[1].p_dof = fields[ej+1][ei  ].p_dof;
@@ -1091,7 +1091,7 @@ static PetscErrorCode DMDAIntegrateErrors(DM stokes_da,Vec X,Vec X_analytic)
   PetscReal      xymin[2],xymax[2];
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* define quadrature rule */
   ConstructGaussQuadrature(&ngp,gp_xi,gp_weight);
 
@@ -1203,7 +1203,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   char                   filename[PETSC_MAX_PATH_LEN];
   PetscErrorCode         ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* Generate the da for velocity and pressure */
   /*
   We use Q1 elements for the temperature.
@@ -1641,7 +1641,7 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   PetscInt       n_dofs;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* enforce bc's */
   ierr = DMDAGetGlobalIndices(da,PETSC_NULL,&g_idx);CHKERRQ(ierr);
 
@@ -1709,7 +1709,7 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   PetscInt       n_dofs;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* enforce bc's */
   ierr = DMDAGetGlobalIndices(da,PETSC_NULL,&g_idx);CHKERRQ(ierr);
 
@@ -1777,7 +1777,7 @@ static PetscErrorCode BCApply_NORTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
   PetscInt       n_dofs;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* enforce bc's */
   ierr = DMDAGetGlobalIndices(da,PETSC_NULL,&g_idx);CHKERRQ(ierr);
 
@@ -1845,7 +1845,7 @@ static PetscErrorCode BCApply_SOUTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
   PetscInt       n_dofs;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* enforce bc's */
   ierr = DMDAGetGlobalIndices(da,PETSC_NULL,&g_idx);CHKERRQ(ierr);
 
@@ -1909,7 +1909,7 @@ static PetscErrorCode DMDABCApplyFreeSlip(DM da_Stokes,Mat A,Vec f)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = BCApply_NORTH(da_Stokes,1,0.0,A,f);CHKERRQ(ierr);
   ierr = BCApply_EAST(da_Stokes,0,0.0,A,f);CHKERRQ(ierr);
   ierr = BCApply_SOUTH(da_Stokes,1,0.0,A,f);CHKERRQ(ierr);

@@ -150,7 +150,7 @@ PetscErrorCode Update_u(Vec u1,Vec u2,Vec u3,Vec X)
   PetscInt       i,n;
   PetscScalar    *u1_arr,*u2_arr,*u3_arr,*x_arr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetLocalSize(u1,&n);CHKERRQ(ierr);
   ierr = VecGetArray(u1,&u1_arr);CHKERRQ(ierr);
   ierr = VecGetArray(u2,&u2_arr);CHKERRQ(ierr);
@@ -177,7 +177,7 @@ PetscErrorCode Update_q(Vec q,Vec u1,Vec u2,Vec u3,Mat M_0,AppCtx *user)
   PetscInt       i,n;
   //PetscViewer    view_q;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecSet(user->work1,user->dt/3);CHKERRQ(ierr);
   //    ierr = VecView(user->work1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatMult(M_0,user->work1,user->work2);CHKERRQ(ierr);
@@ -240,7 +240,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
         PetscScalar        *xx,*w1,*w2,*u1,*u2,*u3;
         PetscViewer               view_out;
 
-        PetscFunctionBegin;
+        PetscFunctionBeginUser;
         /* Get ghosted coordinates */
         ierr = DMGetCoordinatesLocal(user->da,&coords);CHKERRQ(ierr);
         ierr = VecDuplicate(user->u1,&rand1);
@@ -350,7 +350,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ctx)
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatMultAdd(user->M,X,user->q,F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -362,7 +362,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *flg = SAME_NONZERO_PATTERN;
   ierr = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -379,7 +379,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   PetscInt       xs,xm,ys,ym;
   PetscInt       j,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,xl,&l);CHKERRQ(ierr);
@@ -408,7 +408,7 @@ PetscErrorCode GetParams(AppCtx* user)
   PetscErrorCode ierr;
   PetscBool      flg;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   /* Set default parameters */
   user->xmin = 0.0; user->xmax = 1.0;
@@ -445,7 +445,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   PetscInt n,Mda,Nda;
   DM               da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* Get ghosted coordinates */
   ierr = DMGetCoordinatesLocal(user->da,&coords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);

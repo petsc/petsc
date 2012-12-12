@@ -263,7 +263,7 @@ static PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   PetscReal      temp1,temp,hx,hy;
   PetscScalar    **x;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
@@ -342,7 +342,7 @@ static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,Pets
   PetscReal      hx,hy,dhx,dhy,sc,source;
   PetscInt       i,j;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*user->lambda;
@@ -396,7 +396,7 @@ static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info,PetscScalar **
   PetscReal      hx,hy,sc,source;
   PetscInt       i,j;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*user->lambda;
@@ -428,7 +428,7 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat 
   PetscScalar    v[9];
   PetscReal      hx,hy,hxdhy,hydhx,dhx,dhy,sc;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*user->lambda;
@@ -581,7 +581,7 @@ PetscErrorCode PreCheckSetFromOptions(PreCheck precheck)
   PetscErrorCode ierr;
   PetscBool flg;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscOptionsBegin(precheck->comm,PETSC_NULL,"PreCheck Options","none");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-precheck_angle","Angle in degrees between successive search directions necessary to activate step correction","",precheck->angle,&precheck->angle,PETSC_NULL);CHKERRQ(ierr);
   flg = PETSC_FALSE;
@@ -608,7 +608,7 @@ PetscErrorCode PreCheckFunction(SNESLineSearch linesearch,Vec X,Vec Y,PetscBool 
   PetscReal      ynorm,ylastnorm,theta,angle_radians;
   SNES           snes;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
   precheck = (PreCheck)ctx;
   if (!precheck->Ylast) {ierr = VecDuplicate(Y,&precheck->Ylast);CHKERRQ(ierr);}
@@ -653,7 +653,7 @@ PetscErrorCode PreCheckDestroy(PreCheck *precheck)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!*precheck) PetscFunctionReturn(0);
   ierr = VecDestroy(&(*precheck)->Ylast);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&(*precheck)->monitor);CHKERRQ(ierr);
@@ -667,7 +667,7 @@ PetscErrorCode PreCheckCreate(MPI_Comm comm,PreCheck *precheck)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscMalloc(sizeof(struct _n_PreCheck),precheck);CHKERRQ(ierr);
   ierr = PetscMemzero(*precheck,sizeof(struct _n_PreCheck));CHKERRQ(ierr);
   (*precheck)->comm = comm;

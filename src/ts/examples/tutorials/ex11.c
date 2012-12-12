@@ -229,7 +229,7 @@ static PetscErrorCode PhysicsBoundary_Advect_Inflow(Model mod, PetscReal time, c
   Physics phys = (Physics)ctx;
   Physics_Advect *advect = (Physics_Advect*)phys->data;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   xG[0] = advect->inflowState;
   PetscFunctionReturn(0);
 }
@@ -238,7 +238,7 @@ static PetscErrorCode PhysicsBoundary_Advect_Inflow(Model mod, PetscReal time, c
 #define __FUNCT__ "PhysicsBoundary_Advect_Outflow"
 static PetscErrorCode PhysicsBoundary_Advect_Outflow(Model mod, PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   xG[0] = xI[0];
   PetscFunctionReturn(0);
 }
@@ -250,7 +250,7 @@ static PetscErrorCode PhysicsRiemann_Advect(Physics phys, const PetscReal *qp, c
   Physics_Advect *advect = (Physics_Advect*)phys->data;
   PetscReal wind[DIM],wn;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   switch (advect->soltype) {
   case ADVECT_SOL_TILTED: {
     Physics_Advect_Tilted *tilted = &advect->sol.tilted;
@@ -275,7 +275,7 @@ static PetscErrorCode PhysicsSolution_Advect(Model mod,PetscReal time,const Pets
   Physics phys = (Physics)ctx;
   Physics_Advect *advect = (Physics_Advect*)phys->data;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   switch (advect->soltype) {
   case ADVECT_SOL_TILTED: {
     PetscReal x0[DIM];
@@ -316,7 +316,7 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
   PetscScalar yexact[1];
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PhysicsSolution_Advect(mod,time,x,yexact,phys);CHKERRQ(ierr);
   f[advect->functional.Error] = PetscAbsScalar(y[0]-yexact[0]);
   PetscFunctionReturn(0);
@@ -329,7 +329,7 @@ static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys)
   Physics_Advect *advect = (Physics_Advect*)phys->data;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   phys->dof = 1;
   phys->riemann = PhysicsRiemann_Advect;
   ierr = PetscNew(Physics_Advect,&phys->data);CHKERRQ(ierr);
@@ -408,7 +408,7 @@ static PetscErrorCode SWFlux(Physics phys,const PetscReal *n,const SWNode *x,SWN
   PetscScalar uhn,u[DIM];
   PetscInt i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   Scale2(1./x->h,x->uh,u);
   uhn = Dot2(x->uh,n);
   f->h = uhn;
@@ -420,7 +420,7 @@ static PetscErrorCode SWFlux(Physics phys,const PetscReal *n,const SWNode *x,SWN
 #define __FUNCT__ "PhysicsBoundary_SW_Wall"
 static PetscErrorCode PhysicsBoundary_SW_Wall(Model mod, PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   xG[0] = xI[0];
   xG[1] = -xI[1];
   xG[2] = -xI[2];
@@ -437,7 +437,7 @@ static PetscErrorCode PhysicsRiemann_SW(Physics phys, const PetscReal *qp, const
   SWNode fL,fR;
   PetscInt i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (uL->h < 0 || uR->h < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed thickness is negative");
   nn[0] = n[0];
   nn[1] = n[1];
@@ -457,7 +457,7 @@ static PetscErrorCode PhysicsSolution_SW(Model mod,PetscReal time,const PetscRea
 {
   PetscReal dx[2],r,sigma;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %G",time);
   dx[0] = x[0] - 1.5;
   dx[1] = x[1] - 1.0;
@@ -479,7 +479,7 @@ static PetscErrorCode PhysicsFunctional_SW(Model mod,PetscReal time,const PetscR
   PetscScalar u[2];
   PetscReal h;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   h = PetscRealPart(x->h);
   Scale2(1./x->h,x->uh,u);
   f[sw->functional.Height] = h;
@@ -495,7 +495,7 @@ static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys)
   Physics_SW *sw;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   phys->dof = 1+DIM;
   phys->riemann = PhysicsRiemann_SW;
   ierr = PetscNew(Physics_SW,&phys->data);CHKERRQ(ierr);
@@ -547,7 +547,7 @@ static PetscErrorCode Pressure_PG(const PetscReal *pars,const EulerNode *x,Petsc
 {
   PetscScalar     ru2;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ru2 = DotDIM(x->ru,x->ru);
   ru2 /= x->r;
   // kinematic dof = params[0]
@@ -561,7 +561,7 @@ static PetscErrorCode SpeedOfSound_PG(const PetscReal *pars,const EulerNode *x,P
 {
   PetscScalar     p;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   //TODO remove direct usage of Pressure_PG
   Pressure_PG(pars,x,&p);
   //TODO check the sign of p
@@ -585,7 +585,7 @@ static PetscErrorCode EulerFlux(Physics phys,const PetscReal *n,const EulerNode 
   PetscScalar     u,nu,p;
   PetscInt        i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   u = DotDIM(x->ru,x->ru);
   u /= (x->r * x->r);
   nu = DotDIM(x->ru,n);
@@ -605,7 +605,7 @@ static PetscErrorCode PhysicsBoundary_Euler_Wall(Model mod, PetscReal time, cons
   PetscInt        i;
   PetscScalar     xn[DIM],xt[DIM];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   xG[0] = xI[0];
   NormalSplitDIM(n,xI+1,xn,xt);
   for(i=0; i<DIM; i++) xG[i+1] = -xn[i]+xt[i];
@@ -624,7 +624,7 @@ static PetscErrorCode PhysicsRiemann_Euler_Rusanov(Physics phys, const PetscReal
   EulerNode       fL,fR;
   PetscInt        i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (uL->r < 0 || uR->r < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reconstructed density is negative");
   EulerFlux(phys,n,uL,&fL);
   EulerFlux(phys,n,uR,&fR);
@@ -641,7 +641,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod,PetscReal time,const Petsc
 {
   PetscInt  i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %G",time);
   u[0] =1.0;
   u[DIM+1] = 1.0+PetscAbsReal(x[0]);
@@ -658,7 +658,7 @@ static PetscErrorCode PhysicsFunctional_Euler(Model mod,PetscReal time,const Pet
   const EulerNode *x = (const EulerNode*)xx;
   PetscScalar     p;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   f[eu->monitor.Density] = x->r;
   f[eu->monitor.Momentum] = NormDIM(x->ru);
   f[eu->monitor.Energy] = x->e;
@@ -675,7 +675,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys)
   PhysicsEuler *eu;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   phys->dof = 2+DIM;
   phys->riemann = PhysicsRiemann_Euler_Rusanov;
   ierr = PetscNew(PhysicsEuler,&phys->data);CHKERRQ(ierr);
@@ -719,7 +719,7 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
   PetscBool       hasLabel;
   PetscErrorCode  ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
 
@@ -799,7 +799,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   PetscBool          hasLabel;
   PetscErrorCode     ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMComplexHasLabel(dm, labelName, &hasLabel);CHKERRQ(ierr);
   if (!hasLabel) PetscFunctionReturn(0);
   ierr = DMCreate(((PetscObject) dm)->comm, &sdm);CHKERRQ(ierr);
@@ -989,7 +989,7 @@ static PetscErrorCode IsExteriorGhostFace(DM dm,PetscInt face,PetscBool *isghost
   PetscErrorCode ierr;
   PetscInt ghost,boundary;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *isghost = PETSC_FALSE;
   ierr = DMComplexGetLabelValue(dm, "ghost", face, &ghost);CHKERRQ(ierr);
   ierr = DMComplexGetLabelValue(dm, "Face Sets", face, &boundary);CHKERRQ(ierr);
@@ -1007,7 +1007,7 @@ static PetscErrorCode PseudoInverse(PetscInt m,PetscInt mstride,PetscInt n,Petsc
   PetscBLASInt M,N,K,lda,ldb,ldwork,info;
   PetscScalar *R,*Q,*Aback,Alpha;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (debug) {
     ierr = PetscMalloc(m*n*sizeof(PetscScalar),&Aback);CHKERRQ(ierr);
     ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1054,7 +1054,7 @@ static PetscErrorCode PseudoInverseGetWorkRequired(PetscInt maxFaces,PetscInt *w
 {
   PetscInt m,n,nrhs,minwork;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   m = maxFaces;
   n = DIM;
   nrhs = maxFaces;
@@ -1074,7 +1074,7 @@ static PetscErrorCode PseudoInverseSVD(PetscInt m,PetscInt mstride,PetscInt n,Pe
   PetscBLASInt M,N,nrhs,lda,ldb,irank,ldwork,info;
   PetscScalar rcond,*tmpwork,*Brhs,*Aback;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (debug) {
     ierr = PetscMalloc(m*n*sizeof(PetscScalar),&Aback);CHKERRQ(ierr);
     ierr = PetscMemcpy(Aback,A,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1119,7 +1119,7 @@ static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,Pe
   PetscInt c,cStart,cEnd,maxNumFaces,worksize;
   PetscScalar *B,*Binv,*work,*tau,**gref;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMComplexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMComplexGetMaxSizes(dm,&maxNumFaces,PETSC_NULL);CHKERRQ(ierr);
   ierr = PseudoInverseGetWorkRequired(maxNumFaces,&worksize);CHKERRQ(ierr);
@@ -1201,7 +1201,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   PetscInt       dim, cStart, cEnd, c, fStart, fEnd, f;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
@@ -1341,7 +1341,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMComplexClone(dm, dmCell);CHKERRQ(ierr);
@@ -1385,7 +1385,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   PetscInt       vStart, vEnd, v;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMComplexClone(dm, &dmMass);CHKERRQ(ierr);
@@ -1456,7 +1456,7 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
   PetscInt       dof = user->model->physics->dof, *cind, d, stateSize, cStart, cEnd, c;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &stateSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(stateSection, cStart, cEnd);CHKERRQ(ierr);
@@ -1504,7 +1504,7 @@ PetscErrorCode SetUpBoundaries(DM dm, User user)
   PetscErrorCode ierr;
   BoundaryLink b;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscOptionsBegin(((PetscObject)dm)->comm,PETSC_NULL,"Boundary condition options","");CHKERRQ(ierr);
   for (b = mod->boundary; b; b=b->next) {
     char optname[512];
@@ -1533,7 +1533,7 @@ static PetscErrorCode ModelBoundaryRegister(Model mod,const char *name,BoundaryF
   PetscErrorCode ierr;
   BoundaryLink link;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscNew(struct _n_BoundaryLink,&link);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
   link->numids = numids;
@@ -1553,7 +1553,7 @@ static PetscErrorCode BoundaryLinkDestroy(BoundaryLink *link)
   PetscErrorCode ierr;
   BoundaryLink l,next;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!link) PetscFunctionReturn(0);
   l = *link;
   *link = PETSC_NULL;
@@ -1573,7 +1573,7 @@ static PetscErrorCode ModelBoundaryFind(Model mod,PetscInt id,BoundaryFunction *
   BoundaryLink link;
   PetscInt i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *bcFunc = PETSC_NULL;
   for (link=mod->boundary; link; link=link->next) {
     for (i=0; i<link->numids; i++) {
@@ -1592,7 +1592,7 @@ static PetscErrorCode ModelBoundaryFind(Model mod,PetscInt id,BoundaryFunction *
 /* Behavior will be different for multi-physics or when using non-default boundary conditions */
 static PetscErrorCode ModelSolutionSetDefault(Model mod,SolutionFunction func,void *ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   mod->solution = func;
   mod->solutionctx = ctx;
   PetscFunctionReturn(0);
@@ -1606,7 +1606,7 @@ static PetscErrorCode ModelFunctionalRegister(Model mod,const char *name,PetscIn
   FunctionalLink link,*ptr;
   PetscInt lastoffset = -1;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (ptr=&mod->functionalRegistry; *ptr; ptr = &(*ptr)->next) lastoffset = (*ptr)->offset;
   ierr = PetscNew(struct _n_FunctionalLink,&link);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&link->name);CHKERRQ(ierr);
@@ -1628,7 +1628,7 @@ static PetscErrorCode ModelFunctionalSetFromOptions(Model mod)
   FunctionalLink link;
   char *names[256];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   mod->numMonitored = ALEN(names);
   ierr = PetscOptionsStringArray("-monitor","list of functionals to monitor","",names,&mod->numMonitored,PETSC_NULL);CHKERRQ(ierr);
   /* Create list of functionals that will be computed somehow */
@@ -1672,7 +1672,7 @@ static PetscErrorCode FunctionalLinkDestroy(FunctionalLink *link)
   PetscErrorCode ierr;
   FunctionalLink l,next;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!link) PetscFunctionReturn(0);
   l = *link;
   *link = PETSC_NULL;
@@ -1695,7 +1695,7 @@ PetscErrorCode SetInitialCondition(DM dm, Vec X, User user)
   PetscInt           cStart, cEnd, cEndInterior = user->cEndInterior, c;
   PetscErrorCode     ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetDM(user->cellgeom, &dmCell);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->cellgeom, &cellgeom);CHKERRQ(ierr);
@@ -1727,7 +1727,7 @@ static PetscErrorCode ApplyBC(DM dm, PetscReal time, Vec locX, User user)
   PetscInt       numFS, fs;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetDM(user->facegeom,&dmFace);CHKERRQ(ierr);
   ierr = DMComplexGetLabelIdIS(dm, name, &idIS);CHKERRQ(ierr);
   if (!idIS) PetscFunctionReturn(0);
@@ -1778,7 +1778,7 @@ static PetscErrorCode RHSFunctionLocal_Upwind(DM dm,DM dmFace,DM dmCell,PetscRea
   PetscScalar       *f;
   PetscInt           fStart, fEnd, face;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetArrayRead(user->facegeom,&facegeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->cellgeom,&cellgeom);CHKERRQ(ierr);
   ierr = VecGetArrayRead(locX,&x);CHKERRQ(ierr);
@@ -1829,7 +1829,7 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,PetscReal ti
   PetscInt          fStart, fEnd, face, cStart, cell;
   Vec               locGrad,Grad;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetGlobalVector(dmGrad,&Grad);CHKERRQ(ierr);
   ierr = VecZeroEntries(Grad);CHKERRQ(ierr);
   ierr = VecGetArrayRead(user->facegeom,&facegeom);CHKERRQ(ierr);
@@ -1971,7 +1971,7 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *ctx)
   Vec                locX;
   PetscErrorCode     ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = VecGetDM(user->facegeom,&dmFace);CHKERRQ(ierr);
   ierr = VecGetDM(user->cellgeom,&dmCell);CHKERRQ(ierr);
@@ -1994,7 +1994,7 @@ static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscViewerCreate(((PetscObject) dm)->comm, viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(*viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(*viewer, filename);CHKERRQ(ierr);
@@ -2012,7 +2012,7 @@ static PetscErrorCode MonitorVTK(TS ts,PetscInt stepnum,PetscReal time,Vec X,voi
   PetscReal      xnorm;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscObjectSetName((PetscObject) X, "solution");CHKERRQ(ierr);
   ierr = VecGetDM(X,&dm);CHKERRQ(ierr);
   ierr = VecNorm(X,NORM_INFINITY,&xnorm);CHKERRQ(ierr);

@@ -13,7 +13,7 @@ PetscErrorCode SetCoordinates1d(DM da)
   PetscScalar    *coors;
   DM             cda;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(da,&gc);CHKERRQ(ierr);
@@ -41,7 +41,7 @@ PetscErrorCode SetCoordinates2d(DM da)
   DMDACoor2d       **coors;
   DM             cda;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(da,&gc);CHKERRQ(ierr);
@@ -74,7 +74,7 @@ PetscErrorCode SetCoordinates3d(DM da)
   DMDACoor3d       ***coors;
   DM             cda;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(da,&gc);CHKERRQ(ierr);

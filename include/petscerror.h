@@ -432,11 +432,12 @@ PETSC_STATIC_INLINE void PetscThreadLocalDestroy(PETSC_UNUSED void *key)
 #define PETSCSTACKSIZE 64
 
 typedef struct  {
-  const char *function[PETSCSTACKSIZE];
-  const char *file[PETSCSTACKSIZE];
-  const char *directory[PETSCSTACKSIZE];
-        int  line[PETSCSTACKSIZE];
-        int  currentsize;
+  const char      *function[PETSCSTACKSIZE];
+  const char      *file[PETSCSTACKSIZE];
+  const char      *directory[PETSCSTACKSIZE];
+        int       line[PETSCSTACKSIZE];
+        PetscBool petscroutine[PETSCSTACKSIZE];
+        int       currentsize;
 } PetscStack;
 
 #if defined(PETSC_HAVE_PTHREADCLASSES)
@@ -491,11 +492,53 @@ M*/
       petscstackp->file[petscstackp->currentsize]      = __FILE__;        \
       petscstackp->directory[petscstackp->currentsize] = __SDIR__;        \
       petscstackp->line[petscstackp->currentsize]      = __LINE__;        \
+      petscstackp->petscroutine[petscstackp->currentsize] = PETSC_TRUE;  \
       petscstackp->currentsize++;                                        \
     }                                                                   \
     PetscCheck__FUNCT__();						\
     PetscRegister__FUNCT__();						\
   } while (0)
+
+/*MC
+   PetscFunctionBeginUser - First executable line of user provided PETSc routine
+
+   Synopsis:
+   void PetscFunctionBeginUser;
+
+   Not Collective
+
+   Usage:
+.vb
+     int something;
+
+     PetscFunctionBegin;
+.ve
+
+   Notes:
+     Not available in Fortran
+
+   Level: developer
+
+.seealso: PetscFunctionReturn()
+
+.keywords: traceback, error handling
+M*/
+#define PetscFunctionBeginUser \
+  do {									\
+    PetscStack* petscstackp;                                            \
+    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);     \
+    if (petscstackp && (petscstackp->currentsize < PETSCSTACKSIZE)) {	\
+      petscstackp->function[petscstackp->currentsize]  = PETSC_FUNCTION_NAME; \
+      petscstackp->file[petscstackp->currentsize]      = __FILE__;        \
+      petscstackp->directory[petscstackp->currentsize] = __SDIR__;        \
+      petscstackp->line[petscstackp->currentsize]      = __LINE__;        \
+      petscstackp->petscroutine[petscstackp->currentsize] = PETSC_FALSE;  \
+      petscstackp->currentsize++;                                        \
+    }                                                                   \
+    PetscCheck__FUNCT__();						\
+    PetscRegister__FUNCT__();						\
+  } while (0)
+
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
 #include <petsc-private/petscfptimpl.h>

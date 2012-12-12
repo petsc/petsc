@@ -247,7 +247,7 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscReal ptime,Field **x,
   PetscReal      grashof,prandtl,lid;
   PetscScalar    u,udot,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   grashof = user->grashof;
   prandtl = user->prandtl;
   lid     = user->lidvelocity;

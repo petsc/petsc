@@ -82,7 +82,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   PetscScalar    **array;
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);
   uu = user->uu; tt = user->tt;
@@ -125,7 +125,7 @@ PetscErrorCode ComputeJacobian(KSP ksp,Mat J, Mat jac,MatStructure *str,void *ct
   MatStencil     row, col[5];
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);
   Hx    = 1.0 / (PetscReal)(M);

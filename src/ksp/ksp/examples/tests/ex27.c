@@ -134,7 +134,7 @@ PetscErrorCode PCShellApply_Matinv(PC pc,Vec xin,Vec xout)
   PetscErrorCode ierr;
   Mat            X;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PCShellGetContext(pc,(void**)&X);CHKERRQ(ierr);
   ierr = MatMult(X,xin,xout);CHKERRQ(ierr);
   PetscFunctionReturn(0);

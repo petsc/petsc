@@ -198,7 +198,7 @@ int main(int argc,char **args)
    /* element stiffness for Laplacian */
 PetscErrorCode FormElementStiffness(PetscReal H,PetscScalar *Ke)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
   Ke[4]  = -.125*H;  Ke[5]  = H/6.0;   Ke[6]  = -.125*H;  Ke[7]  = H/12.0;
   Ke[8]  = H/12.0;   Ke[9]  = -.125*H; Ke[10] = H/6.0;    Ke[11] = -.125*H;
@@ -210,7 +210,7 @@ PetscErrorCode FormElementStiffness(PetscReal H,PetscScalar *Ke)
 #define __FUNCT__ "FormElementRhs"
 PetscErrorCode FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0;
   PetscFunctionReturn(0);
 }

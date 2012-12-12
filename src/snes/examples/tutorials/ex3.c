@@ -321,7 +321,7 @@ PetscErrorCode FormInitialGuess(Vec x)
    PetscErrorCode ierr;
    PetscScalar    pfive = .50;
 
-   PetscFunctionBegin;
+   PetscFunctionBeginUser;
    ierr = VecSet(x,pfive);CHKERRQ(ierr);
    PetscFunctionReturn(0);
 }
@@ -352,7 +352,7 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   PetscInt       i,M,xs,xm;
   Vec            xlocal;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetLocalVector(da,&xlocal);CHKERRQ(ierr);
   /*
      Scatter ghost points to local vector, using the 2-step process
@@ -436,7 +436,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,vo
   PetscInt       i,j[3],M,xs,xm;
   DM             da = user->da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /*
      Get pointer to vector data
   */
@@ -517,7 +517,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
   MonitorCtx     *monP = (MonitorCtx*) ctx;
   Vec            x;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"iter = %D,SNES Function norm %G\n",its,fnorm);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
   ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
@@ -542,7 +542,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
  */
 PetscErrorCode PreCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y, PetscBool *changed_y, void * ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *changed_y = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -578,7 +578,7 @@ PetscErrorCode PostCheck(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,Pets
   DM             da;
   SNES           snes;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *changed_x = PETSC_FALSE;
   *changed_y = PETSC_FALSE;
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
@@ -650,7 +650,7 @@ PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch,Vec xcurrent,Vec y,Vec x,
   PetscReal      ksp_ratio;
   SNES           snes;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESLineSearchGetSNES(linesearch, &snes);CHKERRQ(ierr);
   check = (SetSubKSPCtx *)ctx;
   ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);

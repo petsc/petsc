@@ -913,7 +913,7 @@ PetscErrorCode  PetscFinalize(void)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscInt       i,nopt;
+  PetscInt       nopt;
   PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,objects_dump = PETSC_FALSE;
 #if defined(PETSC_HAVE_AMS)
   PetscBool      flg = PETSC_FALSE;

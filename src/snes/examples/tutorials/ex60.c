@@ -224,7 +224,7 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
   PetscInt       i,n;
   PetscScalar    *xx,*wv_p,*cv_p,*wi_p,*ci_p,*eta_p;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetLocalSize(user->wv,&n);CHKERRQ(ierr);
   ierr = VecGetArray(X,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(user->wv,&wv_p);CHKERRQ(ierr);
@@ -259,7 +259,7 @@ PetscErrorCode Update_q(AppCtx *user)
   PetscScalar    *q_p,*w1,*w2;
   PetscInt       i,n;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = VecPointwiseMult(user->Rr,user->eta,user->eta);CHKERRQ(ierr);
   ierr = VecScale(user->Rr,user->Rsurf);CHKERRQ(ierr);
@@ -324,7 +324,7 @@ PetscErrorCode DPsi(AppCtx* user)
   PetscScalar     *cv_p,*ci_p,*eta_p,*logcv_p,*logci_p,*logcvi_p,*DPsiv_p,*DPsii_p,*DPsieta_p;
   PetscInt        n,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = VecGetLocalSize(user->cv,&n);CHKERRQ(ierr);
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
@@ -383,7 +383,7 @@ PetscErrorCode Llog(Vec X, Vec Y)
   PetscScalar       *x,*y;
   PetscInt          n,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
@@ -411,7 +411,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   PetscViewer       view;
   PetscScalar       initv = .00069;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_initial",FILE_MODE_WRITE,&view);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
@@ -462,7 +462,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   PetscScalar    *w1,*w2,*Pv_p,*eta_p;
 
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = VecSetRandom(user->work1,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecSetRandom(user->work2,PETSC_NULL);CHKERRQ(ierr);
@@ -504,7 +504,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ctx)
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatMultAdd(user->M,X,user->q,F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -516,7 +516,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *flg = SAME_NONZERO_PATTERN;
   ierr = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -532,7 +532,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   PetscInt       xs,xm,ys,ym;
   PetscInt       j,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAVecGetArrayDOF(da,xl,&l);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,xu,&u);CHKERRQ(ierr);
 
@@ -566,7 +566,7 @@ PetscErrorCode GetParams(AppCtx* user)
   PetscErrorCode ierr;
   PetscBool      flg;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   /* Set default parameters */
   user->xmin = 0.0; user->xmax = 1.0;
@@ -610,7 +610,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   PetscInt          Mda=user->Mda, Nda=user->Nda, ld, rd, ru, lu;
   PetscScalar       *cv_p,*ci_p;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   /*  ierr = MatSetOption(M,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
    ierr = MatSetOption(M_0,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);*/
@@ -857,7 +857,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
   PetscScalar       eM_2_odd[3][3],eM_2_even[3][3],h,dt=user->dt;
   Mat               M=user->M;
   PetscScalar       *cv_p,*ci_p,cv_sum,ci_sum;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   /* Create the mass matrix M_0 */
   ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);

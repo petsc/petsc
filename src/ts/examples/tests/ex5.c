@@ -327,7 +327,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "calcfluxs"
 PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar fract, PetscScalar cloudTemp, PetscScalar* flux)
 {
- PetscFunctionBegin;
+ PetscFunctionBeginUser;
   *flux = SIG*((EMMSFC*emma*pow(airtemp,4)) + (EMMSFC*fract*(1 - emma)*pow(cloudTemp,4)) - (EMMSFC*pow(sfctemp,4)));   //calculates flux using Stefan-Boltzmann relation
   PetscFunctionReturn(0);
 }
@@ -337,7 +337,7 @@ PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar e
 PetscErrorCode calcfluxa(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar* flux)   //this function is not currently called upon
 {
     PetscScalar emm = 0.001;
-    PetscFunctionBegin;
+    PetscFunctionBeginUser;
     *flux = SIG*(- emm*(pow(airtemp,4)));     //calculates flux usinge Stefan-Boltzmann relation
     PetscFunctionReturn(0);
 }
@@ -349,7 +349,7 @@ PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScala
       PetscScalar Cp = 1005;   //heat capicity for dry air
       PetscScalar wndmix;      //temperature change from wind mixing: wind*Ch
 
-      PetscFunctionBegin;
+      PetscFunctionBeginUser;
 
       wndmix = 0.0025 + 0.0042*wind;                               //regression equation valid for neutral and stable BL
       *sheat = density*Cp*wndmix*(airtemp - sfctemp);               //calculates sensible heat flux
@@ -370,7 +370,7 @@ PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar 
       PetscScalar lhcnst;        //latent heat of vaporization constant = 2501000 J/kg at 0c
                                  //latent heat of saturation const = 2834000 J/kg
                                  //latent heat of fusion const = 333700 J/kg
-      PetscFunctionBegin;
+      PetscFunctionBeginUser;
 
       wind = mph2mpers(wind);              //converts wind from mph to meters per second
       wndmix = 0.0025 + 0.0042*wind;       //regression equation valid for neutral BL
@@ -393,7 +393,7 @@ PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, Pe
      PetscScalar pavg;    //average atmospheric pressure
      PetscScalar mixratio;//mixing ratio
 
-     PetscFunctionBegin;
+     PetscFunctionBeginUser;
      mixratio = calcmixingr(sfctemp,pressure1);
 
    /*initialize poisson constant */
@@ -434,7 +434,7 @@ PetscErrorCode calc_gflux(PetscScalar sfctemp, PetscScalar deep_grnd_temp, Petsc
       PetscScalar dz = 1;                  //depth of layer between soil surface and deep soil layer
       PetscScalar unit_soil_weight = 2700; //unit soil weight in kg/m^3
 
-      PetscFunctionBegin;
+      PetscFunctionBeginUser;
 
       k = ((0.135*(1-n)*unit_soil_weight) + 64.7)/(unit_soil_weight - (0.947*(1-n)*unit_soil_weight));  //dry soil conductivity
       *Gflux = (k*(deep_grnd_temp - sfctemp)/dz);   //calculates flux from deep ground layer
@@ -554,7 +554,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec Xglobal,void *ctx)
   FILE           *ifp;
   FILE           *ofp;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ofp = fopen("swing", "w");
   ifp = fopen("grid.in", "r");
   deltT = 0.8;
@@ -652,7 +652,7 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
   PetscScalar         groundflux;      //flux from conduction of deep ground layer in contact with top soil
   PetscInt       xend,yend;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetLocalVector(da,&localT);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
@@ -752,7 +752,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
   PetscMPIInt    rank;
   PetscReal      norm;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(((PetscObject)ts)->comm,&rank);CHKERRQ(ierr);
   ierr = VecNorm(T,NORM_INFINITY,&norm);CHKERRQ(ierr);
   

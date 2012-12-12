@@ -69,7 +69,7 @@ static PetscErrorCode assembled_system(void)
   PetscScalar    pfive = .5,*xx;
   PetscBool      flg;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscPrintf( PETSC_COMM_WORLD, "\n\n========================= Assembled system =========================\n\n" );
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -191,7 +191,7 @@ static PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
   PetscErrorCode ierr;
   PetscScalar    *xx,*ff;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /*
   Get pointers to vector data.
   - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -238,7 +238,7 @@ static PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure
   PetscErrorCode ierr;
   PetscInt       idx[2] = {0,1};
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /*
   Get pointer to vector data
   */
@@ -276,7 +276,7 @@ static PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
   PetscErrorCode ierr;
   PetscScalar    *xx,*ff;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /*
   Get pointers to vector data.
   - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -309,7 +309,7 @@ static PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure
   PetscErrorCode ierr;
   PetscInt       idx[2] = {0,1};
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /*
   Get pointer to vector data
   */
@@ -358,7 +358,7 @@ static int block_system(void)
   Vec bx[2];
   Mat bA[2][2];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscPrintf( PETSC_COMM_WORLD, "\n\n========================= Block system =========================\n\n" );
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
@@ -531,7 +531,7 @@ static PetscErrorCode FormFunction1_block(SNES snes,Vec x,Vec f,void *dummy)
   PetscInt index,nb;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* get blocks for function */
   ierr = VecNestGetSubVecs( f, &nb, &ff );CHKERRQ(ierr);
   f1 = ff[0];  f2 = ff[1];
@@ -572,7 +572,7 @@ static PetscErrorCode FormJacobian1_block(SNES snes,Vec x,Mat *jac,Mat *B,MatStr
   Mat            **mats;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* get blocks for solution */
   ierr = VecNestGetSubVecs( x, &nb, &xx );CHKERRQ(ierr);
   x1 = xx[0];  x2 = xx[1];
@@ -618,7 +618,7 @@ static PetscErrorCode FormFunction2_block(SNES snes,Vec x,Vec f,void *dummy)
   PetscErrorCode ierr;
   PetscScalar    *xx,*ff;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /*
   Get pointers to vector data.
   - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -651,7 +651,7 @@ static PetscErrorCode FormJacobian2_block(SNES snes,Vec x,Mat *jac,Mat *B,MatStr
   PetscErrorCode ierr;
   PetscInt       idx[2] = {0,1};
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /*
   Get pointer to vector data
   */

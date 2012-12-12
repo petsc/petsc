@@ -183,7 +183,7 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
   double         *v = hinfo->vol, *t = hinfo->St0;
   int            num=hinfo->n;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank){
     ierr = PetscFOpen(PETSC_COMM_SELF,DATAFILENAME,"r",&fd);CHKERRQ(ierr);

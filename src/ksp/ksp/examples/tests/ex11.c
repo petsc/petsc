@@ -15,7 +15,7 @@ PetscErrorCode LSCLoadTestOperators(Mat *A11,Mat *A12,Mat *A21,Mat *A22,Vec *b1,
   char           filename[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatCreate(PETSC_COMM_WORLD,A11);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,A12);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,A21);CHKERRQ(ierr);
@@ -52,7 +52,7 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   /* fetch test matrices and vectors */
   ierr = LSCLoadTestOperators(&Auu,&Aup,&Apu,&App,&f,&h);CHKERRQ(ierr);
@@ -129,7 +129,7 @@ PetscErrorCode port_lsd_bfbt(void)
   IS             isu,isp;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = LoadTestMatrices(&A,&x,&b,&isu,&isp);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp_A);CHKERRQ(ierr);

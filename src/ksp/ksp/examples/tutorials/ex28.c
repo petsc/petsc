@@ -53,7 +53,7 @@ PetscErrorCode ComputeInitialSolution(DM da,Vec x)
   PetscInt       mx,col[2],xs,xm,i;
   PetscScalar    Hx,val[2];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx = 2.0*PETSC_PI / (PetscReal)(mx);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
@@ -78,7 +78,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   Vec            x;
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(da,&x);CHKERRQ(ierr);
@@ -99,7 +99,7 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
   PetscScalar    lambda;
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = PetscMemzero(col,7*sizeof(MatStencil));CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);

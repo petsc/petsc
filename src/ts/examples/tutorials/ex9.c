@@ -213,7 +213,7 @@ PetscErrorCode RiemannListAdd(PetscFList *flist,const char *name,RiemannFunction
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscFListAdd(flist,name,"",(void(*)(void))rsolve);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -224,7 +224,7 @@ PetscErrorCode RiemannListFind(PetscFList flist,const char *name,RiemannFunction
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscFListFind(flist,PETSC_COMM_WORLD,name,PETSC_FALSE,(void(**)(void))rsolve);CHKERRQ(ierr);
   if (!*rsolve) SETERRQ1(PETSC_COMM_SELF,1,"Riemann solver \"%s\" could not be found",name);
   PetscFunctionReturn(0);
@@ -236,7 +236,7 @@ PetscErrorCode ReconstructListAdd(PetscFList *flist,const char *name,Reconstruct
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscFListAdd(flist,name,"",(void(*)(void))r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -247,7 +247,7 @@ PetscErrorCode ReconstructListFind(PetscFList flist,const char *name,Reconstruct
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscFListFind(flist,PETSC_COMM_WORLD,name,PETSC_FALSE,(void(**)(void))r);CHKERRQ(ierr);
   if (!*r) SETERRQ1(PETSC_COMM_SELF,1,"Reconstruction \"%s\" could not be found",name);
   PetscFunctionReturn(0);
@@ -268,7 +268,7 @@ static PetscErrorCode PhysicsCharacteristic_Conservative(void *vctx,PetscInt m,c
 {
   PetscInt i,j;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (i=0; i<m; i++) {
     for (j=0; j<m; j++) {
       Xi[i*m+j] = X[i*m+j] = (PetscScalar)(i==j);
@@ -284,7 +284,7 @@ static PetscErrorCode PhysicsDestroy_SimpleFree(void *vctx)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscFree(vctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -304,7 +304,7 @@ static PetscErrorCode PhysicsRiemann_Advect(void *vctx,PetscInt m,const PetscSca
   AdvectCtx *ctx = (AdvectCtx*)vctx;
   PetscReal speed;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   speed = ctx->a;
   flux[0] = PetscMax(0,speed)*uL[0] + PetscMin(0,speed)*uR[0];
   *maxspeed = speed;
@@ -317,7 +317,7 @@ static PetscErrorCode PhysicsCharacteristic_Advect(void *vctx,PetscInt m,const P
 {
   AdvectCtx *ctx = (AdvectCtx*)vctx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   X[0] = 1.;
   Xi[0] = 1.;
   speeds[0] = ctx->a;
@@ -331,7 +331,7 @@ static PetscErrorCode PhysicsSample_Advect(void *vctx,PetscInt initial,FVBCType 
   AdvectCtx *ctx = (AdvectCtx*)vctx;
   PetscReal a = ctx->a,x0;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   switch (bctype) {
     case FVBC_OUTFLOW: x0 = x-a*t; break;
     case FVBC_PERIODIC: x0 = RangeMod(x-a*t,xmin,xmax); break;
@@ -357,7 +357,7 @@ static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
   PetscErrorCode ierr;
   AdvectCtx *user;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscNew(*user,&user);CHKERRQ(ierr);
   ctx->physics.sample         = PhysicsSample_Advect;
   ctx->physics.riemann        = PhysicsRiemann_Advect;
@@ -388,7 +388,7 @@ typedef struct {
 static PetscErrorCode PhysicsSample_Burgers(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (bctype == FVBC_PERIODIC && t > 0) SETERRQ(PETSC_COMM_SELF,1,"Exact solution not implemented for periodic");
   switch (initial) {
     case 0: u[0] = (x < 0) ? 1 : -1; break;
@@ -426,7 +426,7 @@ static PetscErrorCode PhysicsSample_Burgers(void *vctx,PetscInt initial,FVBCType
 static PetscErrorCode PhysicsRiemann_Burgers_Exact(void *vctx,PetscInt m,const PetscScalar *uL,const PetscScalar *uR,PetscScalar *flux,PetscReal *maxspeed)
 {
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (uL[0] < uR[0]) {          /* rarefaction */
     flux[0] = (uL[0]*uR[0] < 0)
       ? 0                       /* sonic rarefaction */
@@ -444,7 +444,7 @@ static PetscErrorCode PhysicsRiemann_Burgers_Roe(void *vctx,PetscInt m,const Pet
 {
   PetscReal speed;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   speed = 0.5*(uL[0] + uR[0]);
   flux[0] = 0.25*(PetscSqr(uL[0]) + PetscSqr(uR[0])) - 0.5*PetscAbs(speed)*(uR[0]-uL[0]);
   if (uL[0] <= 0 && 0 <= uR[0]) flux[0] = 0; /* Entropy fix for sonic rarefaction */
@@ -459,7 +459,7 @@ static PetscErrorCode PhysicsRiemann_Burgers_LxF(void *vctx,PetscInt m,const Pet
   PetscReal c;
   PetscScalar fL,fR;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   c = ((BurgersCtx*)vctx)->lxf_speed;
   fL = 0.5*PetscSqr(uL[0]);
   fR = 0.5*PetscSqr(uR[0]);
@@ -475,7 +475,7 @@ static PetscErrorCode PhysicsRiemann_Burgers_Rusanov(void *vctx,PetscInt m,const
   PetscReal c;
   PetscScalar fL,fR;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   c = PetscMax(PetscAbs(uL[0]),PetscAbs(uR[0]));
   fL = 0.5*PetscSqr(uL[0]);
   fR = 0.5*PetscSqr(uR[0]);
@@ -494,7 +494,7 @@ static PetscErrorCode PhysicsCreate_Burgers(FVCtx *ctx)
   PetscFList rlist = 0;
   char rname[256] = "exact";
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscNew(*user,&user);CHKERRQ(ierr);
   ctx->physics.sample         = PhysicsSample_Burgers;
   ctx->physics.characteristic = PhysicsCharacteristic_Conservative;
@@ -540,7 +540,7 @@ static PetscErrorCode PhysicsSample_Traffic(void *vctx,PetscInt initial,FVBCType
 {
   PetscReal a = ((TrafficCtx*)vctx)->a;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (bctype == FVBC_PERIODIC && t > 0) SETERRQ(PETSC_COMM_SELF,1,"Exact solution not implemented for periodic");
   switch (initial) {
     case 0:
@@ -565,7 +565,7 @@ static PetscErrorCode PhysicsRiemann_Traffic_Exact(void *vctx,PetscInt m,const P
 {
   PetscReal a = ((TrafficCtx*)vctx)->a;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (uL[0] < uR[0]) {
     flux[0] = PetscMin(TrafficFlux(a,uL[0]),
                        TrafficFlux(a,uR[0]));
@@ -586,7 +586,7 @@ static PetscErrorCode PhysicsRiemann_Traffic_Roe(void *vctx,PetscInt m,const Pet
   PetscReal a = ((TrafficCtx*)vctx)->a;
   PetscReal speed;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   speed = a*(1 - (uL[0] + uR[0]));
   flux[0] = 0.5*(TrafficFlux(a,uL[0]) + TrafficFlux(a,uR[0])) - 0.5*PetscAbs(speed)*(uR[0]-uL[0]);
   *maxspeed = speed;
@@ -601,7 +601,7 @@ static PetscErrorCode PhysicsRiemann_Traffic_LxF(void *vctx,PetscInt m,const Pet
   PetscReal a = phys->a;
   PetscReal speed;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   speed = a*(1 - (uL[0] + uR[0]));
   flux[0] = 0.5*(TrafficFlux(a,uL[0]) + TrafficFlux(a,uR[0])) - 0.5*phys->lxf_speed*(uR[0]-uL[0]);
   *maxspeed = speed;
@@ -615,7 +615,7 @@ static PetscErrorCode PhysicsRiemann_Traffic_Rusanov(void *vctx,PetscInt m,const
   PetscReal a = ((TrafficCtx*)vctx)->a;
   PetscReal speed;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   speed = a*PetscMax(PetscAbs(1-2*uL[0]),PetscAbs(1-2*uR[0]));
   flux[0] = 0.5*(TrafficFlux(a,uL[0]) + TrafficFlux(a,uR[0])) - 0.5*speed*(uR[0]-uL[0]);
   *maxspeed = speed;
@@ -632,7 +632,7 @@ static PetscErrorCode PhysicsCreate_Traffic(FVCtx *ctx)
   PetscFList rlist = 0;
   char rname[256] = "exact";
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscNew(*user,&user);CHKERRQ(ierr);
   ctx->physics.sample         = PhysicsSample_Traffic;
   ctx->physics.characteristic = PhysicsCharacteristic_Conservative;
@@ -696,7 +696,7 @@ static PetscErrorCode PhysicsCharacteristic_Acoustics(void *vctx,PetscInt m,cons
   AcousticsCtx *phys = (AcousticsCtx*)vctx;
   PetscReal z = phys->z,c = phys->c;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   X[0*2+0] = -z;
   X[0*2+1] = z;
   X[1*2+0] = 1;
@@ -714,7 +714,7 @@ static PetscErrorCode PhysicsCharacteristic_Acoustics(void *vctx,PetscInt m,cons
 #define __FUNCT__ "PhysicsSample_Acoustics_Initial"
 static PetscErrorCode PhysicsSample_Acoustics_Initial(AcousticsCtx *phys,PetscInt initial,PetscReal xmin,PetscReal xmax,PetscReal x,PetscReal *u)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   switch (initial) {
   case 0:
     u[0] = (PetscAbs((x - xmin)/(xmax - xmin) - 0.2) < 0.1) ? 1 : 0.5;
@@ -739,7 +739,7 @@ static PetscErrorCode PhysicsSample_Acoustics(void *vctx,PetscInt initial,FVBCTy
   PetscReal X[2][2],Xi[2][2],dummy[2];
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   switch (bctype) {
   case FVBC_OUTFLOW:
     x0a = x+c*t;
@@ -773,7 +773,7 @@ static PetscErrorCode PhysicsRiemann_Acoustics_Exact(void *vctx,PetscInt m,const
     Ar[2][2] = {{c/2      , c*z/2  },
                 {c/(2*z)  , c/2    }}; /* Right traveling waves */
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   flux[0] = Al[0][0]*uR[0] + Al[0][1]*uR[1] + Ar[0][0]*uL[0] + Ar[0][1]*uL[1];
   flux[1] = Al[1][0]*uR[0] + Al[1][1]*uR[1] + Ar[1][0]*uL[0] + Ar[1][1]*uL[1];
   *maxspeed = c;
@@ -789,7 +789,7 @@ static PetscErrorCode PhysicsCreate_Acoustics(FVCtx *ctx)
   PetscFList rlist = 0,rclist = 0;
   char rname[256] = "exact",rcname[256] = "characteristic";
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscNew(*user,&user);CHKERRQ(ierr);
   ctx->physics.sample         = PhysicsSample_Acoustics;
   ctx->physics.destroy        = PhysicsDestroy_SimpleFree;
@@ -834,7 +834,7 @@ static inline void IsoGasFlux(PetscReal c,const PetscScalar *u,PetscScalar *f)
 static PetscErrorCode PhysicsSample_IsoGas(void *vctx,PetscInt initial,FVBCType bctype,PetscReal xmin,PetscReal xmax,PetscReal t,PetscReal x,PetscReal *u)
 {
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (t > 0) SETERRQ(PETSC_COMM_SELF,1,"Exact solutions not implemented for t > 0");
   switch (initial) {
     case 0:
@@ -859,7 +859,7 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Roe(void *vctx,PetscInt m,const Pets
   PetscScalar ubar,du[2],a[2],fL[2],fR[2],lam[2],ustar[2],R[2][2];
   PetscInt i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ubar = (uL[1]/PetscSqrtScalar(uL[0]) + uR[1]/PetscSqrtScalar(uR[0])) / (PetscSqrtScalar(uL[0]) + PetscSqrtScalar(uR[0]));
   /* write fluxuations in characteristic basis */
   du[0] = uR[0] - uL[0];
@@ -906,7 +906,7 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Exact(void *vctx,PetscInt m,const Pe
   struct {PetscScalar rho,u;} L = {uL[0],uL[1]/uL[0]},R = {uR[0],uR[1]/uR[0]},star;
   PetscInt i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!(L.rho > 0 && R.rho > 0)) SETERRQ(PETSC_COMM_SELF,1,"Reconstructed density is negative");
   {
     /* Solve for star state */
@@ -975,7 +975,7 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Rusanov(void *vctx,PetscInt m,const 
   PetscScalar c = phys->acoustic_speed,fL[2],fR[2],s;
   struct {PetscScalar rho,u;} L = {uL[0],uL[1]/uL[0]},R = {uR[0],uR[1]/uR[0]};
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!(L.rho > 0 && R.rho > 0)) SETERRQ(PETSC_COMM_SELF,1,"Reconstructed density is negative");
   IsoGasFlux(c,uL,fL);
   IsoGasFlux(c,uR,fR);
@@ -994,7 +994,7 @@ static PetscErrorCode PhysicsCharacteristic_IsoGas(void *vctx,PetscInt m,const P
   PetscReal c = phys->acoustic_speed;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   speeds[0] = u[1]/u[0] - c;
   speeds[1] = u[1]/u[0] + c;
   X[0*2+0] = 1;
@@ -1015,7 +1015,7 @@ static PetscErrorCode PhysicsCreate_IsoGas(FVCtx *ctx)
   PetscFList rlist = 0,rclist = 0;
   char rname[256] = "exact",rcname[256] = "characteristic";
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscNew(*user,&user);CHKERRQ(ierr);
   ctx->physics.sample         = PhysicsSample_IsoGas;
   ctx->physics.destroy        = PhysicsDestroy_SimpleFree;
@@ -1066,7 +1066,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx,PetscInt m,const P
   struct {PetscScalar h,u;} L = {uL[0],uL[1]/uL[0]},R = {uR[0],uR[1]/uR[0]},star;
   PetscInt i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!(L.h > 0 && R.h > 0)) SETERRQ(PETSC_COMM_SELF,1,"Reconstructed thickness is negative");
   cL = PetscSqrtScalar(g*L.h);
   cR = PetscSqrtScalar(g*R.h);
@@ -1147,7 +1147,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Rusanov(void *vctx,PetscInt m,const
   PetscScalar g = phys->gravity,fL[2],fR[2],s;
   struct {PetscScalar h,u;} L = {uL[0],uL[1]/uL[0]},R = {uR[0],uR[1]/uR[0]};
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!(L.h > 0 && R.h > 0)) SETERRQ(PETSC_COMM_SELF,1,"Reconstructed thickness is negative");
   ShallowFlux(phys,uL,fL);
   ShallowFlux(phys,uR,fR);
@@ -1166,7 +1166,7 @@ static PetscErrorCode PhysicsCharacteristic_Shallow(void *vctx,PetscInt m,const 
   PetscReal c;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   c = PetscSqrtScalar(u[0]*phys->gravity);
   speeds[0] = u[1]/u[0] - c;
   speeds[1] = u[1]/u[0] + c;
@@ -1188,7 +1188,7 @@ static PetscErrorCode PhysicsCreate_Shallow(FVCtx *ctx)
   PetscFList rlist = 0,rclist = 0;
   char rname[256] = "exact",rcname[256] = "characteristic";
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscNew(*user,&user);CHKERRQ(ierr);
   /* Shallow water and Isothermal Gas dynamics are similar so we reuse initial conditions for now */
   ctx->physics.sample         = PhysicsSample_IsoGas;
@@ -1232,7 +1232,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
   Vec             Xloc;
   DM              da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
@@ -1334,7 +1334,7 @@ static PetscErrorCode SmallMatMultADB(PetscScalar *C,PetscInt bs,const PetscScal
 {
   PetscInt i,j,k;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (i=0; i<bs; i++) {
     for (j=0; j<bs; j++) {
       PetscScalar tmp = 0;
@@ -1360,7 +1360,7 @@ static PetscErrorCode FVIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
   DM da;
   DMDALocalInfo dainfo;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&dainfo);CHKERRQ(ierr);
@@ -1393,7 +1393,7 @@ static PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
   PetscScalar *u,*uj;
   PetscInt i,j,k,dof,xs,xm,Mx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!ctx->physics.sample) SETERRQ(PETSC_COMM_SELF,1,"Physics has not provided a sampling function");
   ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
@@ -1426,7 +1426,7 @@ static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
   Vec Xloc;
   PetscBool  iascii;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     /* PETSc lacks a function to compute total variation norm (difficult in multiple dimensions), we do it here */
@@ -1462,7 +1462,7 @@ static PetscErrorCode SolutionErrorNorms(FVCtx *ctx,DM da,PetscReal t,Vec X,Pets
   Vec Y;
   PetscInt Mx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetSize(X,&Mx);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
   ierr = FVSample(ctx,da,t,Y);CHKERRQ(ierr);

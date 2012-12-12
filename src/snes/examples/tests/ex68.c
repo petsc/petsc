@@ -23,7 +23,7 @@ PetscErrorCode ComputeFunctionLinear(SNES snes, Vec x, Vec f, void *ctx)
   Mat            A = (Mat) ctx;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatMult(A, x, f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -32,7 +32,7 @@ PetscErrorCode ComputeFunctionLinear(SNES snes, Vec x, Vec f, void *ctx)
 #define __FUNCT__ "ComputeJacobianLinear"
 PetscErrorCode ComputeJacobianLinear(SNES snes, Vec x, Mat *A, Mat *J, MatStructure *flag, void *ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
@@ -43,7 +43,7 @@ PetscErrorCode ConstructProblem1(Mat A, Vec b)
   PetscInt       rStart, rEnd, row;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecSet(b, -3.0);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A, &rStart, &rEnd);CHKERRQ(ierr);
   for (row = rStart; row < rEnd; ++row) {
@@ -64,7 +64,7 @@ PetscErrorCode CheckProblem1(Mat A, Vec b, Vec u)
   PetscReal      norm, error;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecDuplicate(b, &errorVec);CHKERRQ(ierr);
   ierr = VecWAXPY(errorVec, -1.0, b, u);CHKERRQ(ierr);
   ierr = VecNorm(errorVec, NORM_2, &error);CHKERRQ(ierr);
@@ -82,7 +82,7 @@ PetscErrorCode ConstructProblem2(Mat A, Vec b)
   PetscInt       row;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecSet(b, -3.0);CHKERRQ(ierr);
   for (row = 0; row < constraintSize; ++row) {
     PetscInt    cols[2] = {row, row + N - constraintSize};
@@ -115,7 +115,7 @@ PetscErrorCode CheckProblem2(Mat A, Vec b, Vec u)
   PetscScalar   *uArray, *bArray;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecNorm(b, NORM_2, &norm);CHKERRQ(ierr);
   ierr = VecGetArray(u, &uArray);CHKERRQ(ierr);
   ierr = VecGetArray(b, &bArray);CHKERRQ(ierr);

@@ -133,7 +133,7 @@ PetscErrorCode VecChop(Vec v, PetscReal tol)
   PetscInt       n, i;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   for (i = 0; i < n; ++i) {
@@ -148,7 +148,7 @@ PetscErrorCode VecChop(Vec v, PetscReal tol)
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   options->debug           = 0;
   options->dim             = 2;
   options->numBatches      = 1;
@@ -186,7 +186,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       dim = user->dim;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   switch(dim) {
   case 2:
     ierr = DMDACreate2d(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, -4, -4, PETSC_DECIDE, PETSC_DECIDE, 2, 1, PETSC_NULL, PETSC_NULL, dm);CHKERRQ(ierr);
@@ -207,7 +207,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #undef __FUNCT__
 #define __FUNCT__ "SetupQuadrature"
 PetscErrorCode SetupQuadrature(AppCtx *user) {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   user->q[0].numQuadPoints = NUM_QUADRATURE_POINTS_0;
   user->q[0].quadPoints    = points_0;
   user->q[0].quadWeights   = weights_0;
@@ -237,7 +237,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscInt       d;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (d = 0; d < dim; ++d) {
     numFaceDof[0*dim + d] = 0;
     numFaceDof[1*dim + d] = 0;
@@ -250,7 +250,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
 #undef __FUNCT__
 #define __FUNCT__ "SetupExactSolution"
 PetscErrorCode SetupExactSolution(AppCtx *user) {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   user->f0Funcs[0] = f0_u;
   user->f0Funcs[1] = f0_p;
   user->f1Funcs[0] = f1_u;
@@ -283,7 +283,7 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
   PetscInt       eOffset = 0, e;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->integrateResCPUEvent,0,0,0,0);CHKERRQ(ierr);
   for (e = 0; e < Ne; ++e) {
     const PetscReal  detJ = jacobianDeterminants[e];
@@ -444,7 +444,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   PetscInt         numCells, cStart, cEnd, c, field, d;
   PetscErrorCode   ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->residualEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = DMDAGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -536,7 +536,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

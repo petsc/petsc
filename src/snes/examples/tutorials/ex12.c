@@ -513,7 +513,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscInt       run, bc;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   options->debug           = 0;
   options->run             = RUN_FULL;
   options->dim             = 2;
@@ -550,7 +550,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
 #undef __FUNCT__
 #define __FUNCT__ "SetupQuadrature"
 PetscErrorCode SetupQuadrature(AppCtx *user) {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   switch(user->dim) {
   case 1:
     user->q.numQuadPoints = NUM_QUADRATURE_POINTS_0;
@@ -596,7 +596,7 @@ PetscErrorCode SetupSection(AppCtx *user) {
   IS             bcPoints[1] = {PETSC_NULL};
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   switch(user->dim) {
   case 1:
     numDof = numDof_0;
@@ -625,7 +625,7 @@ PetscErrorCode SetupSection(AppCtx *user) {
 #undef __FUNCT__
 #define __FUNCT__ "SetupExactSolution"
 PetscErrorCode SetupExactSolution(AppCtx *user) {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   switch(user->dim) {
   case 2:
     if (user->bcType == DIRICHLET) {
@@ -678,7 +678,7 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
   PetscInt         cStart, cEnd;
   PetscErrorCode   ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetLocalVector(user->dm, &localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(user->dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(user->dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
@@ -916,7 +916,7 @@ PetscErrorCode FormInitialGuess(Vec X, PetscScalar (*guessFunc)(const PetscReal 
   PetscInt       vStart, vEnd;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetLocalVector(user->dm, &localX);CHKERRQ(ierr);
   ierr = DMMeshGetDepthStratum(user->dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMMeshGetDefaultSection(user->dm, &section);CHKERRQ(ierr);
@@ -998,7 +998,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   PetscInt         cStart, cEnd;
   PetscErrorCode   ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscScalar,&realSpaceDer,dim,PetscScalar,&fieldGrad,numBasisFuncs,PetscScalar,&elemVec);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
@@ -1093,7 +1093,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
   PetscInt         cStart, cEnd;
   PetscErrorCode   ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatZeroEntries(Jac);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscScalar,&realSpaceTestDer,dim,PetscScalar,&realSpaceBasisDer,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);

@@ -241,7 +241,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscInt       bc, run;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   options->debug           = 0;
   options->runType         = RUN_FULL;
   options->dim             = 2;
@@ -298,7 +298,7 @@ PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
   PetscMPIInt    rank, numProcs;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject) dm)->comm, &numProcs);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &lv);CHKERRQ(ierr);
@@ -323,7 +323,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   const char    *partitioner     = user->partitioner;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = DMComplexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
   {
@@ -353,7 +353,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #undef __FUNCT__
 #define __FUNCT__ "SetupQuadrature"
 PetscErrorCode SetupQuadrature(AppCtx *user) {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   user->fem.quad[0].numQuadPoints = NUM_QUADRATURE_POINTS_0;
   user->fem.quad[0].quadPoints    = points_0;
   user->fem.quad[0].quadWeights   = weights_0;
@@ -389,7 +389,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscInt       f, d;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (dim != SPATIAL_DIM_0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);
   if (dim != SPATIAL_DIM_1) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_1);
   for (d = 0; d <= dim; ++d) {
@@ -421,7 +421,7 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user) {
   PetscFEM      *fem = &user->fem;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   fem->f0Funcs[0] = f0_u;
   fem->f0Funcs[1] = f0_p;
   fem->f1Funcs[0] = f1_u;
@@ -467,7 +467,7 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSp
   Vec            vec, localVec;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetGlobalVector(dm, &vec);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &localVec);CHKERRQ(ierr);
   ierr = VecSet(vec,  0.0);CHKERRQ(ierr);
@@ -541,7 +541,7 @@ PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
   PetscInt         N, n;
   PetscErrorCode   ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscValidHeaderSpecific(J, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(Y, VEC_CLASSID, 3);

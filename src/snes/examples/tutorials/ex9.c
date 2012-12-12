@@ -158,7 +158,7 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible)
                  x, y, r,
                  afree = 0.69797, A = 0.68026, B = 0.47152, pi = 3.1415926;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
@@ -217,7 +217,7 @@ PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu)
   PetscErrorCode ierr;
   ObsCtx         *user;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetApplicationContext(snes,&user);CHKERRQ(ierr);
   ierr = VecCopy(user->psi,Xl);CHKERRQ(ierr);  /* u >= psi */
   ierr = VecSet(Xu,SNES_VI_INF);CHKERRQ(ierr);
@@ -235,7 +235,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   PetscReal      dx,dy,uxx,uyy,
                  **uexact;  /* for boundary values only */
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   dx = 4.0 / (PetscReal)(info->mx-1);
   dy = 4.0 / (PetscReal)(info->my-1);
 
@@ -268,7 +268,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat j
   MatStencil     col[5],row;
   PetscReal      v[5],dx,dy,oxx,oyy;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   dx = 4.0 / (PetscReal)(info->mx-1);
   dy = 4.0 / (PetscReal)(info->my-1);
   oxx = 1.0 / (dx * dx);

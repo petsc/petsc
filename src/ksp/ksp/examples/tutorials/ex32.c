@@ -97,7 +97,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   PetscScalar    **array;
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx   = 1.0 / (PetscReal)(mx);
@@ -137,7 +137,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac,MatStructure *str, void *ctx
   MatStencil     row, col[5];
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx    = 1.0 / (PetscReal)(mx);

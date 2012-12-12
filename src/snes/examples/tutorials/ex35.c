@@ -152,7 +152,7 @@ PetscErrorCode MyComputeFunction(SNES snes,Vec x,Vec F,void *ctx)
   Mat            J;
   DM             dm;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm,&J);CHKERRQ(ierr);
   if (!J) {
@@ -173,7 +173,7 @@ PetscErrorCode MyComputeJacobian(SNES snes,Vec x,Mat *J,Mat *Jp,MatStructure *st
   PetscErrorCode ierr;
   DM             dm;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = FormMatrix(dm,*Jp);CHKERRQ(ierr);
   *str = SAME_NONZERO_PATTERN;
@@ -190,7 +190,7 @@ PetscErrorCode FormMatrix(DM da,Mat jac)
   PetscScalar    v[5],hx,hy,hxdhy,hydhx;
   DMDALocalInfo  info;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   hx     = 1.0/(PetscReal)(info.mx-1);
   hy     = 1.0/(PetscReal)(info.my-1);
@@ -264,7 +264,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
   DM             da;
   Vec            localX;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetTolerances(snes,PETSC_NULL,PETSC_NULL,PETSC_NULL,&its,PETSC_NULL);CHKERRQ(ierr);
   ierr = SNESShellGetContext(snes,(void**)&da);CHKERRQ(ierr);
 

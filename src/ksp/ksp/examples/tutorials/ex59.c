@@ -202,7 +202,7 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS* dirichlet,
   PetscInt       localsize,i,j,k,*indices;
   PetscBool      *touched;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   localsize = dd.xm_l*dd.ym_l*dd.zm_l;
   ierr = PetscMalloc(localsize*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   ierr = PetscMalloc(localsize*sizeof(PetscBool),&touched);CHKERRQ(ierr);
@@ -323,7 +323,7 @@ static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping* isg2l
   PetscInt               i,j,k,ig,jg,kg,lindex,gindex,localsize;
   PetscInt               *global_indices;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* Not an efficient mapping: this function computes a very simple lexicographic mapping
      just to illustrate the creation of a MATIS object */
   localsize = dd.xm_l*dd.ym_l*dd.zm_l;
@@ -358,7 +358,7 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   Mat            temp_local_mat,elem_mat_DBC=0,*usedmat;
   IS             submatIS;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatGetSize(glldata.elem_mat,&i,&j);CHKERRQ(ierr);
   ierr = PetscMalloc(i*sizeof(PetscInt),&indexg);CHKERRQ(ierr);
   ierr = PetscMalloc(i*sizeof(PetscInt),&colsg);CHKERRQ(ierr);
@@ -478,7 +478,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData* glldata)
   PetscInt       i,j,n,k,s,r,q,ii,jj,p=dd.p;
   PetscInt       xloc,yloc,zloc,xyloc,xyzloc;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   /* Gauss-Lobatto-Legendre nodes zGL on [-1,1] */
   ierr = PetscMalloc((p+1)*sizeof(PetscScalar),&glldata->zGL);CHKERRQ(ierr);
@@ -660,7 +660,7 @@ static PetscErrorCode DomainDecomposition(DomainData* dd)
   PetscMPIInt rank;
   PetscInt    i,j,k;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* Subdomain index in cartesian coordinates */
   MPI_Comm_rank(dd->gcomm,&rank);
   dd->ipx = rank%dd->npx;
@@ -743,7 +743,7 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat* A)
   ISLocalToGlobalMapping matis_map=0;
   IS                     dirichletIS=0;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* Compute some stuff of Gauss-Legendre-Lobatto quadrature rule */
   ierr = GLLStuffs(dd,&gll);CHKERRQ(ierr);
   /* Compute matrix of subdomain Neumann problem */ 
@@ -801,7 +801,7 @@ static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP* ksp_fet
   PC             pc,D;
   Mat            F;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = KSPGetPC(ksp_bddc,&pc);CHKERRQ(ierr);
   ierr = PCBDDCCreateFETIDPOperators(pc,&F,&D);CHKERRQ(ierr);
   ierr = KSPCreate(((PetscObject)F)->comm,&temp_ksp);CHKERRQ(ierr);
@@ -830,7 +830,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP* ksp)
   PetscInt       localsize,*xadj,*adjncy;
   MatNullSpace   near_null_space;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = KSPCreate(dd.gcomm,&temp_ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(temp_ksp,A,A,SAME_PRECONDITIONER);CHKERRQ(ierr);
   ierr = KSPSetType(temp_ksp,KSPCG);CHKERRQ(ierr);
@@ -908,7 +908,7 @@ static PetscErrorCode InitializeDomainData(DomainData* dd)
   PetscErrorCode ierr;
   PetscMPIInt nprocs,rank;
   PetscInt factor;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   dd->gcomm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(dd->gcomm,&nprocs);

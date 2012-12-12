@@ -153,7 +153,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   PetscInt     xs,xm,ys,ym;
   Vec          localX;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* Initialize vector to zero */
   info = VecSet(G,0.0);CHKERRQ(info);
 
@@ -292,7 +292,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   PetscInt        xs,xm,ys,ym;
   Vec             localX;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* Set various matrix options */
   info = MatAssembled(H,&assembled); CHKERRQ(info);
   if (assembled){info = MatZeroEntries(H);  CHKERRQ(info);}
@@ -473,7 +473,7 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   PetscScalar     b=-0.5, t=0.5, l=-0.5, r=0.5;
   PetscScalar     *boundary;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
 
   info = PetscMalloc(bsize*sizeof(PetscScalar), &user->bottom);CHKERRQ(info);
@@ -555,7 +555,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
   PetscScalar     zero=0.0;
   PetscBool       flg;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   info = PetscOptionsGetInt(PETSC_NULL,"-start",&start,&flg); CHKERRQ(info);
 
   if (flg && start==0){ /* The zero vector is reasonable */

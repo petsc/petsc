@@ -222,7 +222,7 @@ PetscErrorCode Initial(Vec global,void *ctx)
   PetscInt       i,mybase,myend,locsize;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* make the local  copies of parameters */
   m = data->m;
   dx = data->dx;
@@ -261,7 +261,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   Data           *data = (Data*)ctx;
   PetscReal      tfinal = data->tfinal;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (time > tfinal) PetscFunctionReturn(0);
 
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
@@ -310,7 +310,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure 
   PetscInt       m,n,mn;
   PetscReal      dx,dy,a,epsilon,xc,xl,xr,yl,yr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   m = data->m;
   n = data->n;
   mn = m*n;
@@ -405,7 +405,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   VecScatter     scatter;
   Vec            tmp_in,tmp_out;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   m       = data->m;
   n       = data->n;
   mn      = m*n;
@@ -495,7 +495,7 @@ PetscErrorCode PostStep(TS ts)
   PetscErrorCode  ierr;
   PetscReal       t;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = TSGetTime(ts,&t); CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"  PostStep, t: %g\n",t);
   PetscFunctionReturn(0);

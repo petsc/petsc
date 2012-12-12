@@ -35,7 +35,7 @@ static PetscErrorCode RoberFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   PetscErrorCode ierr;
   PetscScalar    *x,*xdot,*f;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
@@ -56,7 +56,7 @@ static PetscErrorCode RoberJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a
   PetscInt       rowcol[] = {0,1,2};
   PetscScalar    *x,*xdot,J[3][3];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr    = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   J[0][0] = a + 0.04;     J[0][1] = -1e4*x[2];                   J[0][2] = -1e4*x[1];
@@ -83,7 +83,7 @@ static PetscErrorCode RoberSolution(PetscReal t,Vec X,void *ctx)
   PetscErrorCode ierr;
   PetscScalar    *x;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (t != 0) SETERRQ(PETSC_COMM_SELF,1,"not implemented");
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   x[0] = 1;
@@ -98,7 +98,7 @@ static PetscErrorCode RoberSolution(PetscReal t,Vec X,void *ctx)
 static PetscErrorCode RoberCreate(Problem p)
 {
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   p->destroy    = 0;
   p->function   = &RoberFunction;
   p->jacobian   = &RoberJacobian;
@@ -122,7 +122,7 @@ static PetscErrorCode CEDestroy(Problem p)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscFree(p->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -135,7 +135,7 @@ static PetscErrorCode CEFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ct
   PetscReal      l = ((CECtx*)ctx)->lambda;
   PetscScalar    *x,*xdot,*f;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
@@ -158,7 +158,7 @@ static PetscErrorCode CEJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Ma
   PetscInt       rowcol[] = {0};
   PetscScalar    *x,*xdot,J[1][1];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr    = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   J[0][0] = a + l;
@@ -184,7 +184,7 @@ static PetscErrorCode CESolution(PetscReal t,Vec X,void *ctx)
   PetscErrorCode ierr;
   PetscScalar    *x;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   x[0] = l/(l*l+1)*(l*cos(t)+sin(t)) - l*l/(l*l+1)*exp(-l*t);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
@@ -198,7 +198,7 @@ static PetscErrorCode CECreate(Problem p)
   PetscErrorCode ierr;
   CECtx          *ce;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr    = PetscMalloc(sizeof(CECtx),&ce);CHKERRQ(ierr);
   p->data = (void*)ce;
 
@@ -229,7 +229,7 @@ static PetscErrorCode OregoFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   PetscErrorCode ierr;
   PetscScalar    *x,*xdot,*f;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
@@ -250,7 +250,7 @@ static PetscErrorCode OregoJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a
   PetscInt       rowcol[] = {0,1,2};
   PetscScalar    *x,*xdot,J[3][3];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr    = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   J[0][0] = a - 77.27*((1. - 8.375e-6*x[0] - x[1]) - 8.375e-6*x[0]);
@@ -283,7 +283,7 @@ static PetscErrorCode OregoSolution(PetscReal t,Vec X,void *ctx)
   PetscErrorCode ierr;
   PetscScalar    *x;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (t != 0) SETERRQ(PETSC_COMM_SELF,1,"not implemented");
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   x[0] = 1;
@@ -298,7 +298,7 @@ static PetscErrorCode OregoSolution(PetscReal t,Vec X,void *ctx)
 static PetscErrorCode OregoCreate(Problem p)
 {
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   p->destroy    = 0;
   p->function   = &OregoFunction;
   p->jacobian   = &OregoJacobian;
@@ -326,7 +326,7 @@ static PetscErrorCode MonitorError(TS ts,PetscInt step,PetscReal t,Vec x,void *c
   MonitorCtx     *mon = (MonitorCtx*)ctx;
   PetscReal      h,nrm_x,nrm_exact,nrm_diff;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!mon->problem->solution) PetscFunctionReturn(0);
   ierr = (*mon->problem->solution)(t,mon->x,mon->problem->data);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&nrm_x);CHKERRQ(ierr);

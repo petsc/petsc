@@ -232,7 +232,7 @@ PetscErrorCode computeMaxEigVal(Mat A, PetscInt its, PetscScalar *eig) {
   PetscScalar     lambda_its, lambda_its_1;
   PetscInt        i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   ierr = MatGetVecs(A, &x_1, &x);CHKERRQ(ierr);

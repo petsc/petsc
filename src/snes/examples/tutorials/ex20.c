@@ -120,7 +120,7 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
   PetscScalar    ***x;
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
@@ -153,7 +153,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
   Vec            localX;
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_NULL,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -472,7 +472,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   Mat            jac = *B;
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_NULL,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);

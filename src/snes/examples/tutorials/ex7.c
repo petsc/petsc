@@ -177,7 +177,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "ExactSolution"
 PetscErrorCode ExactSolution(PetscReal x, PetscReal y, Field *u)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   (*u).u = x;
   (*u).v = -y;
   (*u).p = 0.0;
@@ -192,7 +192,7 @@ PetscErrorCode CreateNullSpace(DM da, Vec *N)
   PetscInt       xs,ys,xm,ym,i,j;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetCorners(da, &xs, &ys, PETSC_NULL, &xm, &ym, PETSC_NULL);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,N);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da, *N, &x);CHKERRQ(ierr);
@@ -228,7 +228,7 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
   Field        **x;
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
@@ -298,7 +298,7 @@ PetscErrorCode constantResidual(PetscReal lambda, PetscBool  isLower, int i, int
   Field       res;
   PetscInt    q, k;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (q = 0; q < 4; q++) {
     phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
     phi[1] = quadPoints[q*2];
@@ -336,7 +336,7 @@ PetscErrorCode nonlinearResidual(PetscReal lambda, Field u[], Field r[]) {
   Field       res;
   PetscInt    q;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (q = 0; q < 4; q++) {
     phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
     phi[1] = quadPoints[q*2];
@@ -377,7 +377,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, AppC
   PetscInt       i,j,k,l;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   /* Naive Jacobian calculation:
 
@@ -553,7 +553,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, AppC
 #define __FUNCT__ "nonlinearJacobian"
 PetscErrorCode nonlinearJacobian(PetscReal lambda, Field u[], PetscScalar J[])
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
@@ -576,7 +576,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
   MatNullSpace   nullspace;
   Vec            N;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   alpha  = user->alpha;
   lambda = user->lambda;
   hx     = 1.0/(PetscReal)(info->mx-1);
@@ -867,7 +867,7 @@ PetscErrorCode L_2Error(DM da, Vec fVec, double *error, AppCtx *user)
   PetscInt       i, j, q;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da, &fLocalVec);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,fVec, INSERT_VALUES, fLocalVec);CHKERRQ(ierr);

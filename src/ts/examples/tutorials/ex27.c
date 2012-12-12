@@ -77,7 +77,7 @@ extern PetscErrorCode ReactingFlowPostCheck(SNESLineSearch,Vec,Vec,Vec,PetscBool
 PetscErrorCode SetFromOptions(AppCtx * ctx) {
   PetscErrorCode ierr;
   PetscInt i,j;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ctx->dispersivity = 0.5;
   ctx->porosity = 0.25;
   ctx->saturation = 1.0;
@@ -179,7 +179,7 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *ctx,Vec X)
   PetscErrorCode ierr;
   Field          **x;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
 		     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
@@ -217,7 +217,7 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscScalar ptime,Field **
   PetscScalar    vx, vy,sxp,syp,sxm,sym,avx,vxp,vxm,avy,vyp,vym,f_advect;
   PetscScalar    rate;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   hx     = ctx->length[0]/((PetscReal)(info->mx-1));
   hy     = ctx->length[1]/((PetscReal)(info->my-1));
@@ -319,7 +319,7 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info,PetscScalar ptime,Field **
 #define __FUNCT__ "ReactingFlowPostCheck"
 
 PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Vec W, PetscBool *changed_y, PetscBool *changed_w, void *vctx) {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscInt       i,j,l,Mx,My,xs,ys,xm,ym;
   PetscErrorCode ierr;
   Field          **x;
@@ -327,7 +327,7 @@ PetscErrorCode ReactingFlowPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, Ve
   DM             da;
   PetscScalar    min;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
    *changed_w = PETSC_FALSE;
   ierr = VecMin(X,PETSC_NULL,&min);CHKERRQ(ierr);
   if (min >= 0.) {
@@ -364,7 +364,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal ptime,Vec X,Vec Xdot,Vec F,void *us
   Vec            localX;
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = TSGetDM(ts,(DM*)&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);

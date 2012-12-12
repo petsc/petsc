@@ -15,7 +15,7 @@ PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
   PetscInt         periodicity;
   DMDABoundaryType bx,by,bz;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   bx = DMDA_BOUNDARY_NONE;
   by = DMDA_BOUNDARY_NONE;
   bz = DMDA_BOUNDARY_NONE;

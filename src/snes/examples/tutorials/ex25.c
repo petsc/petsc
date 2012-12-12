@@ -79,7 +79,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **t,PetscScalar
   PetscScalar  gradup,graddown,gradleft,gradright,gradx,grady;
   PetscScalar  coeffup,coeffdown,coeffleft,coeffright;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   hx    = 1.0/(PetscReal)(info->mx-1);  hy    = 1.0/(PetscReal)(info->my-1);
 
   /* Evaluate function */

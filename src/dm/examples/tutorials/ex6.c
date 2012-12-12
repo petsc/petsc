@@ -21,7 +21,7 @@ typedef struct {
 
 PetscErrorCode FAGetLocalCorners(FA fa,PetscInt j,PetscInt *x,PetscInt *y,PetscInt *m,PetscInt *n)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (fa->comm[j]) {
     *x = fa->xl[j];
     *y = fa->yl[j];
@@ -35,7 +35,7 @@ PetscErrorCode FAGetLocalCorners(FA fa,PetscInt j,PetscInt *x,PetscInt *y,PetscI
 
 PetscErrorCode FAGetGlobalCorners(FA fa,PetscInt j,PetscInt *x,PetscInt *y,PetscInt *m,PetscInt *n)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (fa->comm[j]) {
     *x = fa->xg[j];
     *y = fa->yg[j];
@@ -54,7 +54,7 @@ PetscErrorCode FAGetLocalArray(FA fa,Vec v,PetscInt j,Field ***f)
   PetscInt       i;
   Field          **a;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (fa->comm[j]) {
     ierr = VecGetArray(v,&va);CHKERRQ(ierr);
     ierr = PetscMalloc(fa->nl[j]*sizeof(Field*),&a);CHKERRQ(ierr);
@@ -72,7 +72,7 @@ PetscErrorCode FARestoreLocalArray(FA fa,Vec v,PetscInt j,Field ***f)
   PetscErrorCode ierr;
   void           *dummy;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (fa->comm[j]) {
     dummy = *f + fa->yl[j];
     ierr  = PetscFree(dummy);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ PetscErrorCode FAGetGlobalArray(FA fa,Vec v,PetscInt j,Field ***f)
   PetscInt       i;
   Field          **a;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (fa->comm[j]) {
     ierr = VecGetArray(v,&va);CHKERRQ(ierr);
     ierr = PetscMalloc(fa->ng[j]*sizeof(Field*),&a);CHKERRQ(ierr);
@@ -105,7 +105,7 @@ PetscErrorCode FARestoreGlobalArray(FA fa,Vec v,PetscInt j,Field ***f)
   PetscErrorCode ierr;
   void           *dummy;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (fa->comm[j]) {
     dummy = *f + fa->yg[j];
     ierr  = PetscFree(dummy);CHKERRQ(ierr);
@@ -116,7 +116,7 @@ PetscErrorCode FARestoreGlobalArray(FA fa,Vec v,PetscInt j,Field ***f)
 PetscErrorCode FAGetGlobalVector(FA fa,Vec *v)
 {
   PetscErrorCode ierr;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecDuplicate(fa->g,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -124,7 +124,7 @@ PetscErrorCode FAGetGlobalVector(FA fa,Vec *v)
 PetscErrorCode FAGetLocalVector(FA fa,Vec *v)
 {
   PetscErrorCode ierr;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecDuplicate(fa->l,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -132,7 +132,7 @@ PetscErrorCode FAGetLocalVector(FA fa,Vec *v)
 PetscErrorCode FAGlobalToLocal(FA fa,Vec g,Vec l)
 {
   PetscErrorCode ierr;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecScatterBegin(fa->vscat,g,l,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(fa->vscat,g,l,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -142,7 +142,7 @@ PetscErrorCode FADestroy(FA *fa)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecDestroy(&(*fa)->g);CHKERRQ(ierr);
   ierr = VecDestroy(&(*fa)->l);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&(*fa)->vscat);CHKERRQ(ierr);
@@ -532,7 +532,7 @@ PetscErrorCode DrawPatch(PetscDraw draw,void *ctx)
   PetscReal      x1,x2,x3,x4,y_1,y2,y3,y4;
   PetscScalar    *xy;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (k=0; k<3; k++) {
     m    = zctx->m[k];
     n    = zctx->n[k];
@@ -565,7 +565,7 @@ PetscErrorCode DrawFA(FA fa,Vec v)
   PetscReal      xmin,xmax,ymin,ymax;
   PetscInt       i,vn,ln,j;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetArray(v,&va);CHKERRQ(ierr);
   ierr = VecGetSize(v,&vn);CHKERRQ(ierr);
   ierr = VecGetSize(fa->l,&ln);CHKERRQ(ierr);
@@ -614,7 +614,7 @@ PetscErrorCode FAMapRegion3(FA fa,Vec g)
   PetscInt       i,k,x,y,m,n;
   Field          **ga;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   Rscale = R/(fa->r2-1);
   Ascale = 2.0*PETSC_PI/(3.0*(fa->p1 - fa->p2 - 1));
 
@@ -637,7 +637,7 @@ PetscErrorCode FAMapRegion2(FA fa,Vec g)
   PetscInt       i,k,x,y,m,n;
   Field          **ga;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   Rscale = R/(fa->r2-1);
   Ascale = 2.0*PETSC_PI/fa->p2;
 
@@ -660,7 +660,7 @@ PetscErrorCode FAMapRegion1(FA fa,Vec g)
   PetscInt       i,k,x,y,m,n;
   Field          **ga;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   Rscale  = R/(fa->r1-1);
   Ascale1 = 2.0*PETSC_PI/fa->p2;
   Ascale3 = 2.0*PETSC_PI/(3.0*(fa->p1 - fa->p2 - 1));
@@ -697,7 +697,7 @@ PetscErrorCode FATest(FA fa)
   PetscInt       x,y,m,n,j,i,k,p;
   PetscMPIInt    rank;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   ierr = FAGetGlobalVector(fa,&g);CHKERRQ(ierr);

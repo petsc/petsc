@@ -241,7 +241,7 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
   PetscInt       i,n;
   PetscScalar    *xx,*wv_p,*cv_p,*eta_p;
   
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetLocalSize(user->wv,&n);CHKERRQ(ierr);
     
   ierr = VecGetArray(X,&xx);CHKERRQ(ierr); 
@@ -271,7 +271,7 @@ PetscErrorCode Update_q(AppCtx *user)
   PetscScalar    *q_p, *w1, *w2;
   PetscInt       n,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   
   ierr = VecGetArray(user->q,&q_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->work1,&w1);CHKERRQ(ierr);
@@ -316,7 +316,7 @@ PetscErrorCode DPsi(AppCtx* user)
   PetscScalar     *cv_p,*eta_p,*logcv_p,*logcv2_p,*DPsiv_p,*DPsieta_p;
   PetscInt        n,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = VecGetLocalSize(user->cv,&n);
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
@@ -362,7 +362,7 @@ PetscErrorCode Llog(Vec X, Vec Y)
   PetscScalar       *x,*y;
   PetscInt          n,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
  
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
@@ -396,7 +396,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   const PetscScalar *_coords;
 	PetscScalar       xwidth = user->xmax - user->xmin;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
    
@@ -512,7 +512,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ctx)
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
   
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatMultAdd(user->M,X,user->q,F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -524,7 +524,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
   
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *flg = SAME_NONZERO_PATTERN;
   ierr = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -540,7 +540,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 	PetscInt       xs,xm,ys,ym,zs,zm;
 	PetscInt       k,j,i;
 	
-	PetscFunctionBegin;
+	PetscFunctionBeginUser;
 	ierr = DMDAVecGetArrayDOF(da,xl,&l);CHKERRQ(ierr);
 	ierr = DMDAVecGetArrayDOF(da,xu,&u);CHKERRQ(ierr);
 	
@@ -574,7 +574,7 @@ PetscErrorCode GetParams(AppCtx* user)
   PetscErrorCode ierr;
   PetscBool      flg;
   
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   
   /* Set default parameters */
   user->xmin  = 0.0; user->xmax = 128.0;
@@ -619,7 +619,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   Mat               M_0=user->M_0;
   PetscInt          Xda,Yda,Zda;
 	   
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
 
   ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);

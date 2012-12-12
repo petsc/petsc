@@ -126,7 +126,7 @@ PetscErrorCode FormBounds(SNES snes, Vec xl, Vec xu)
   PetscErrorCode ierr;
   AppCtx         *ctx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetApplicationContext(snes,&ctx);CHKERRQ(ierr);
   ierr = VecSet(xl,ctx->lb);CHKERRQ(ierr);
   ierr = VecSet(xu,ctx->ub);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
   Vec          localX;
   DM           da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = SNESGetApplicationContext(snes,(void**)&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
@@ -305,7 +305,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   Vec             localX;
   DM              da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = SNESGetApplicationContext(snes,(void**)&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
@@ -494,7 +494,7 @@ PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
   AppCtx          *user;
   DM              da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr     = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr     = PetscNew(AppCtx,&user);CHKERRQ(ierr);
   *ouser   = user;
@@ -572,7 +572,7 @@ PetscErrorCode DestroyBoundaryConditions(AppCtx **ouser)
   PetscErrorCode  ierr;
   AppCtx          *user = *ouser;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscFree(user->bottom);CHKERRQ(ierr);
   ierr = PetscFree(user->top);CHKERRQ(ierr);
   ierr = PetscFree(user->left);CHKERRQ(ierr);
@@ -604,7 +604,7 @@ PetscErrorCode ComputeInitialGuess(SNES snes, Vec X,void *dummy)
   PetscScalar     **x;
   PetscInt        xs,xm,ys,ym;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = SNESGetApplicationContext(snes,(void**)&user);CHKERRQ(ierr);
 

@@ -195,26 +195,17 @@ PetscErrorCode  PetscObjectsDump(FILE *fd)
         {
 #if defined(PETSC_USE_DEBUG)
         PetscStack *stack;
-        PetscBool   mainf;
         char        *create,*class;
+
+        /* if the PETSc function the user calls is not a create then this object was NOT directly created by them */
         ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
-        ierr = PetscStrbeginswith(stack->function[0],"main",&mainf);CHKERRQ(ierr);
-        ierr = PetscStrstr(stack->function[1],"Create",&create);CHKERRQ(ierr);
-        ierr = PetscStrstr(stack->function[1],h->class_name,&class);CHKERRQ(ierr);
+        j = 0; 
+        while (!stack->petscroutine[j]) j++;
+        ierr = PetscStrstr(stack->function[j],"Create",&create);CHKERRQ(ierr);
+        ierr = PetscStrstr(stack->function[j],h->class_name,&class);CHKERRQ(ierr);
 
-        /*
-           If we had a way of distinguishing between PETSc functions and user functions we could do this much better
-
-               1)  we use main as a surrogate for user code
-
-        */
-        /*  user called create on this object */
-        if (mainf){
-          if (!create) continue;
-          if (!class) continue;
-        }
-
-
+        if (!create) continue;
+        if (!class) continue;
 #endif
 
         ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"[%d] %s %s %s\n",PetscGlobalRank,h->class_name,h->type_name,h->name);CHKERRQ(ierr);

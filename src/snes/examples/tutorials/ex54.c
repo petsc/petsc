@@ -128,7 +128,7 @@ PetscErrorCode Update_q(Vec q,Vec u,Mat M_0,AppCtx *user)
   PetscScalar    *q_arr,*w_arr;
   PetscInt       i,n;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(event_update_q,0,0,0,0);CHKERRQ(ierr);
   ierr = MatMult(M_0,u,user->work1);CHKERRQ(ierr);
   ierr = VecScale(user->work1,-1.0);CHKERRQ(ierr);
@@ -153,7 +153,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   PetscInt        n,i;
   Vec             rand;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* u = -0.4 + 0.05*rand(N,1)*(rand(N,1) - 0.5) */
   ierr = VecDuplicate(user->u,&rand);
   ierr = VecSetRandom(rand,PETSC_NULL);
@@ -184,7 +184,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ctx)
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatMultAdd(user->M,X,user->q,F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -197,7 +197,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
   AppCtx           *user=(AppCtx*)ctx;
   static PetscBool copied = PETSC_FALSE;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* for active set method the matrix does not get changed, so do not need to copy each time,
      if the active set remains the same for several solves the preconditioner does not need to be rebuilt*/
   *flg = SAME_PRECONDITIONER;
@@ -218,7 +218,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   PetscInt       xs,xm,ys,ym;
   PetscInt       j,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAVecGetArrayDOF(da,xl,&l);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,xu,&u);CHKERRQ(ierr);
 
@@ -245,7 +245,7 @@ PetscErrorCode GetParams(AppCtx* user)
   PetscErrorCode ierr;
   PetscBool      flg;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   /* Set default parameters */
   user->tsmonitor = PETSC_FALSE;
@@ -329,7 +329,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   PetscInt          n,rstart;
   IS                isrow,iscol;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* Get ghosted coordinates */
   ierr = DMGetCoordinatesLocal(user->da,&coords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);

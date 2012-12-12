@@ -67,7 +67,7 @@ static PetscErrorCode RDDestroy(RD *rd)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDestroy(&(*rd)->da);CHKERRQ(ierr);
   ierr = PetscFree(*rd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -182,7 +182,7 @@ static PetscErrorCode RDStateView(RD rd,Vec X,Vec Xdot,Vec F)
   RDNode *x,*xdot,*f;
   MPI_Comm comm = ((PetscObject)rd->da)->comm;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(rd->da,X,&x);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(rd->da,Xdot,&xdot);CHKERRQ(ierr);
@@ -261,7 +261,7 @@ static PetscErrorCode RDGetLocalArrays(RD rd,TS ts,Vec X,Vec Xdot,PetscReal *The
   PetscErrorCode ierr;
   PetscBool  istheta;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetLocalVector(rd->da,X0loc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(rd->da,Xloc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(rd->da,Xloc_t);CHKERRQ(ierr);
@@ -300,7 +300,7 @@ static PetscErrorCode RDRestoreLocalArrays(RD rd,Vec *X0loc,RDNode **x0,Vec *Xlo
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAVecRestoreArray(rd->da,*X0loc,x0);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(rd->da,*Xloc,x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(rd->da,*Xloc_t,xdot);CHKERRQ(ierr);
@@ -317,7 +317,7 @@ static PetscErrorCode RDCheckDomain_Private(RD rd,TS ts,Vec X,PetscBool  *in) {
   PetscInt       minloc;
   PetscReal      min;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecMin(X,&minloc,&min);CHKERRQ(ierr);
   if (min < 0) {
     SNES snes;
@@ -351,7 +351,7 @@ static PetscErrorCode RDIFunction_FD(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   DMDALocalInfo    info;
   PetscInt       i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   RDCheckDomain(rd,ts,X);
   ierr = RDGetLocalArrays(rd,ts,X,Xdot,&Theta,&dt,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(rd->da,F,&f);CHKERRQ(ierr);
@@ -420,7 +420,7 @@ static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
   DMDALocalInfo    info;
   PetscInt       i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   RDCheckDomain(rd,ts,X);
   ierr = RDGetLocalArrays(rd,ts,X,Xdot,&Theta,&dt,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
@@ -538,7 +538,7 @@ static PetscErrorCode RDGetQuadrature(RD rd,PetscReal hx,PetscInt *nq,PetscReal 
   PetscInt q,j;
   const PetscReal *refweight,(*refinterp)[2],(*refderiv)[2];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   switch (rd->quadrature) {
   case QUADRATURE_GAUSS1: {
     static const PetscReal ww[1] = {1.},ii[1][2] = {{0.5,0.5}},dd[1][2] = {{-1.,1.}};
@@ -598,7 +598,7 @@ static PetscErrorCode RDIFunction_FE(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void
   DMDALocalInfo    info;
   PetscInt       i,j,q,nq;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   RDCheckDomain(rd,ts,X);
   ierr = RDGetLocalArrays(rd,ts,X,Xdot,&Theta,&dt,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
 
@@ -685,7 +685,7 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
   PetscInt       i,j,k,q,nq;
   PetscScalar    K[4][4];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   RDCheckDomain(rd,ts,X);
   ierr = RDGetLocalArrays(rd,ts,X,Xdot,&Theta,&dt,&X0loc,&x0,&Xloc,&x,&Xloc_t,&xdot);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
@@ -759,7 +759,7 @@ static PetscErrorCode RDInitialState(RD rd,Vec X)
   RDNode *x;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetLocalInfo(rd->da,&info);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(rd->da,X,&x);CHKERRQ(ierr);
   for (i=info.xs; i<info.xs+info.xm; i++) {
@@ -796,7 +796,7 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
   const PetscInt *lx;
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /*
     Create a DMDA (one dof per node, zero stencil width, same layout) to hold Trad
     (radiation temperature).  It is not necessary to create a DMDA for this, but this way
@@ -834,7 +834,7 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
   RDNode n,nx;
   PetscScalar epsilon;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   epsilon = 1e-8;
   {
     RDNode dEm,fdEm;
@@ -904,7 +904,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
   RD             rd;
   PetscReal      meter,kilogram,second,Kelvin,Joule,Watt;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *inrd = 0;
   ierr = PetscNew(struct _n_RD,&rd);CHKERRQ(ierr);
 

@@ -141,7 +141,7 @@ PetscErrorCode Update_q(TS ts)
   PetscInt       i,n;
   PetscScalar    scale;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&x);CHKERRQ(ierr);
   ierr = VecStrideGather(x,1,user->u,INSERT_VALUES);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   PetscRandom     rand;
   PetscScalar     value;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
@@ -233,7 +233,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t, Vec X,Vec Xdot,Vec F,void* ctx)
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatMult(user->M,Xdot,F);CHKERRQ(ierr);
   ierr = MatMultAdd(user->S,X,F,F);CHKERRQ(ierr);
   if (!user->implicit) {
@@ -250,7 +250,7 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, M
   AppCtx           *user=(AppCtx*)ctx;
   static PetscBool copied = PETSC_FALSE;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* for active set method the matrix does not get changed, so do not need to copy each time,
      if the active set remains the same for several solves the preconditioner does not need to be rebuilt*/
   *flg = SAME_PRECONDITIONER;
@@ -275,7 +275,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
   PetscInt       xs,xm,ys,ym;
   PetscInt       j,i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAVecGetArrayDOF(da,xl,&l);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,xu,&u);CHKERRQ(ierr);
 
@@ -302,7 +302,7 @@ PetscErrorCode GetParams(AppCtx* user)
   PetscErrorCode ierr;
   PetscBool      flg;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   /* Set default parameters */
   user->tsmonitor = PETSC_FALSE;
@@ -342,7 +342,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   PetscScalar       gamma=user->gamma,theta_c=user->theta_c;
   PetscInt          implicit = user->implicit;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* Get ghosted coordinates */
   ierr = DMGetCoordinatesLocal(user->da,&coords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
@@ -455,7 +455,7 @@ PetscErrorCode Monitor(TS ts,PetscInt steps,PetscReal time,Vec x,void* mctx)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Solution vector at t = %5.4f\n",time,steps);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 

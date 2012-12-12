@@ -256,7 +256,7 @@ PetscErrorCode computeMinEigVal(Mat A, PetscInt its, PetscScalar *eig) {
   Mat             G;
   PetscInt        i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
 

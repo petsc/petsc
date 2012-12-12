@@ -75,7 +75,7 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
   PetscScalar    Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
   PetscScalar    ***barray;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dm,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
@@ -104,7 +104,7 @@ PetscErrorCode ComputeInitialGuess(KSP ksp,Vec b,void *ctx)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecSet(b,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -119,7 +119,7 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,MatStructure *stflg,void *ctx
   PetscScalar    v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
   MatStencil     row,col[7];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);

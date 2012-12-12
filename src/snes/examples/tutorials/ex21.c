@@ -114,7 +114,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscScalar    *u,*lambda,*w,*fu,*fw,*flambda,d,h;
   Vec            vw,vu,vlambda,vfw,vfu,vflambda;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMCompositeGetLocalVectors(user->packer,&vw,&vu,&vlambda);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(user->packer,&vfw,&vfu,&vflambda);CHKERRQ(ierr);
   ierr = DMCompositeScatter(user->packer,U,vw,vu,vlambda);CHKERRQ(ierr);
@@ -172,7 +172,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   PetscErrorCode ierr;
   Vec            w,u,lambda,U,F;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(user->packer,U,&w,&u,&lambda);CHKERRQ(ierr);
   ierr = VecView(u,user->u_viewer);CHKERRQ(ierr);

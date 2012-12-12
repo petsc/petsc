@@ -117,7 +117,7 @@ PetscErrorCode CreateStructures(DM da, UserContext *user)
   PetscInt        ne,nc;
   PetscErrorCode  ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetElements(da,&ne,&nc,&necon);CHKERRQ(ierr);
   ierr = DMDARestoreElements(da,&ne,&nc,&necon);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da, &user->sol_n.rho);CHKERRQ(ierr);
@@ -153,7 +153,7 @@ PetscErrorCode DestroyStructures(DM da, UserContext   *user)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecDestroy(&user->sol_n.rho);CHKERRQ(ierr);
   ierr = VecDestroy(&user->sol_n.rho_u);CHKERRQ(ierr);
   ierr = VecDestroy(&user->sol_n.rho_v);CHKERRQ(ierr);
@@ -190,7 +190,7 @@ PetscErrorCode CalculateElementVelocity(DM da, UserContext *user)
   PetscInt        j, e, ne, nc;
   PetscErrorCode  ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetElements(da, &ne, &nc, &necon);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_n.u, &u_n);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_n.v, &v_n);CHKERRQ(ierr);
@@ -246,7 +246,7 @@ PetscErrorCode TaylorGalerkinStepI(DM da, UserContext *user)
   PetscInt        j, e, ne, nc, mx, my;
   PetscErrorCode  ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx   = 1.0 / (PetscReal)(mx-1);
   hy   = 1.0 / (PetscReal)(my-1);
@@ -347,7 +347,7 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
   PetscInt        j, k, e, ne, nc, mx, my;
   PetscErrorCode  ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
   ierr = MatSetOption(mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
@@ -477,7 +477,7 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
   PetscInt        j, k, e, ne, nc, mx, my;
   PetscErrorCode  ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
   ierr = DMCreateMatrix(da, MATAIJ, &mat);CHKERRQ(ierr);
   ierr = MatSetOption(mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
@@ -605,7 +605,7 @@ PetscErrorCode ComputePredictor(DM da, UserContext *user)
   PetscScalar   *p;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetGlobalVector(da, &uOld);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da, &uOldLocal);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da, &uLocal);CHKERRQ(ierr);
@@ -663,7 +663,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   Vec            blocal;
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   /* access a local vector with room for the ghost points */
   ierr = DMGetLocalVector(da,&blocal);CHKERRQ(ierr);
@@ -734,7 +734,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, MatStructure *flag,void *c
   PetscErrorCode ierr;
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = KSPGetDM(ksp,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
@@ -774,7 +774,7 @@ PetscErrorCode ComputeCorrector(DM da, Vec uOld, Vec u)
   const PetscInt *e;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecSet(u,0.0);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da, &uOldLocal);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da, &uLocal);CHKERRQ(ierr);

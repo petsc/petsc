@@ -41,7 +41,7 @@ static PetscErrorCode FormFunctionLocal_U(User user,DMDALocalInfo *info,const Pe
   PetscReal hx = 1./info->mx;
   PetscInt i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (i=info->xs; i<info->xs+info->xm; i++) {
     if (i == 0) f[i] = 1./hx*u[i];
     else if (i == info->mx-1) f[i] = 1./hx*(u[i] - 1.0);
@@ -57,7 +57,7 @@ static PetscErrorCode FormFunctionLocal_K(User user,DMDALocalInfo *info,const Pe
   PetscReal hx = 1./info->mx;
   PetscInt  i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (i=info->xs; i<info->xs+info->xm; i++) {
     const PetscScalar
       ubar = 0.5*(u[i+1]+u[i]),
@@ -81,7 +81,7 @@ static PetscErrorCode FormFunction_All(SNES snes,Vec X,Vec F,void *ctx)
   PetscErrorCode    ierr;
   Vec               Uloc,Kloc,Fu,Fk;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMCompositeGetEntries(user->pack,&dau,&dak);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dau,&infou);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dak,&infok);CHKERRQ(ierr);
@@ -137,7 +137,7 @@ static PetscErrorCode FormJacobianLocal_U(User user,DMDALocalInfo *info,const Pe
   PetscErrorCode ierr;
   PetscInt       i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (i=info->xs; i<info->xs+info->xm; i++) {
     PetscInt row = i-info->gxs,cols[] = {row-1,row,row+1};
     PetscScalar val = 1./hx;
@@ -159,7 +159,7 @@ static PetscErrorCode FormJacobianLocal_K(User user,DMDALocalInfo *info,const Pe
   PetscErrorCode ierr;
   PetscInt       i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (i=info->xs; i<info->xs+info->xm; i++) {
     PetscInt row = i-info->gxs;
     PetscScalar vals[] = {hx*(PetscExpScalar(k[i]-1.)+1.)};
@@ -178,7 +178,7 @@ static PetscErrorCode FormJacobianLocal_UK(User user,DMDALocalInfo *info,DMDALoc
   PetscInt row,cols[2];
   PetscScalar vals[2];
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!Buk) PetscFunctionReturn(0); /* Not assembling this block */
   for (i=info->xs; i<info->xs+info->xm; i++) {
     if (i == 0 || i == info->mx-1) continue;
@@ -198,7 +198,7 @@ static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALoc
   PetscInt       i;
   PetscReal      hx = 1./(info->mx-1);
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (!Bku) PetscFunctionReturn(0); /* Not assembling this block */
   for (i=infok->xs; i<infok->xs+infok->xm; i++) {
     PetscInt row = i-infok->gxs,cols[2];
@@ -236,7 +236,7 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructur
   PetscErrorCode    ierr;
   Vec               Uloc,Kloc;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMCompositeGetEntries(user->pack,&dau,&dak);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dau,&infou);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dak,&infok);CHKERRQ(ierr);
@@ -309,7 +309,7 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
   PetscScalar    *u,*k,hx;
   PetscInt       i;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMCompositeGetEntries(user->pack,&dau,&dak);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(user->pack,X,&Xu,&Xk);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(dau,Xu,&u);CHKERRQ(ierr);

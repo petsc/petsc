@@ -12,7 +12,7 @@ PetscErrorCode Create(MPI_Comm comm,Mat *inA,IS *is0,IS *is1)
   PetscInt r,rend,M;
   PetscMPIInt rank;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *inA = 0;
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,4,4,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -54,7 +54,7 @@ PetscErrorCode Destroy(Mat A,IS is0,IS is1)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = ISDestroy(&is0);CHKERRQ(ierr);
   ierr = ISDestroy(&is1);CHKERRQ(ierr);

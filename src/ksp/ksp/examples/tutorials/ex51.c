@@ -235,7 +235,7 @@ static PetscErrorCode Form1DElementMass(PetscReal H,PetscInt P,double* gqn,
   int i,j,k;
   int indx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (j=0;j<(P+1);++j) {
     for (i=0;i<(P+1);++i) {
       indx = j*(P+1)+i;
@@ -259,7 +259,7 @@ static PetscErrorCode Form1DElementStiffness(PetscReal H,PetscInt P,double* gqn,
   int i,j,k;
   int indx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (j=0;j<(P+1);++j) {
     for (i=0;i<(P+1);++i) {
       indx = j*(P+1)+i;
@@ -283,7 +283,7 @@ static PetscErrorCode Form2DElementMass(PetscInt P,PetscScalar *Me1D,PetscScalar
   int i1,j1,i2,j2;
   int indx1,indx2,indx3;
 
-  PetscFunctionBegin;;
+  PetscFunctionBeginUser;;
   for (j2=0;j2<(P+1);++j2) {
     for (i2=0; i2<(P+1);++i2) {
       for (j1=0;j1<(P+1);++j1) {
@@ -310,7 +310,7 @@ static PetscErrorCode Form2DElementStiffness(PetscInt P,PetscScalar *Ke1D,PetscS
   int i1,j1,i2,j2;
   int indx1,indx2,indx3;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (j2=0;j2<(P+1);++j2) {
     for (i2=0; i2<(P+1);++i2) {
       for (j1=0;j1<(P+1);++j1) {
@@ -334,7 +334,7 @@ static PetscErrorCode FormNodalRhs(PetscInt P,PetscReal x,PetscReal y,PetscReal 
 {
   int i,j,indx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   indx=0;
   for (j=0;j<(P+1);++j) {
     for (i=0;i<(P+1);++i) {
@@ -353,7 +353,7 @@ static PetscErrorCode FormNodalSoln(PetscInt P,PetscReal x,PetscReal y,PetscReal
 {
   int i,j,indx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   indx=0;
   for (j=0;j<(P+1);++j) {
     for (i=0;i<(P+1);++i) {

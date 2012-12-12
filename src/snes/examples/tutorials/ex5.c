@@ -192,7 +192,7 @@ PetscErrorCode FormInitialGuess(DM da,AppCtx *user,Vec X)
   PetscReal      lambda,temp1,temp,hx,hy;
   PetscScalar    **x;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
@@ -255,7 +255,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   PetscReal      lambda,hx,hy,hxdhy,hydhx,sc;
   PetscScalar    u,ue,uw,un,us,uxx,uyy;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   lambda = user->param;
   hx     = 1.0/(PetscReal)(info->mx-1);
@@ -305,7 +305,7 @@ PetscErrorCode FormObjectiveLocal(DMDALocalInfo *info,PetscScalar **x,PetscReal 
   PetscReal      lambda,hx,hy,hxdhy,hydhx,sc,lobj=0;
   PetscScalar    u,ue,uw,un,us,uxux,uyuy;
   MPI_Comm       comm;
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *obj = 0;
   comm = ((PetscObject)info->da)->comm;
   lambda = user->param;
@@ -358,7 +358,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jacpre,
   MatStencil     col[5],row;
   PetscScalar    lambda,v[5],hx,hy,hxdhy,hydhx,sc;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   lambda = user->param;
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
@@ -443,7 +443,7 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
   MPI_Comm       comm;
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localF);CHKERRQ(ierr);
@@ -497,7 +497,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
   AppCtx         *user;
   Vec            localX,localB;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetTolerances(snes,PETSC_NULL,PETSC_NULL,PETSC_NULL,&its,PETSC_NULL);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(da,(void**)&user);CHKERRQ(ierr);

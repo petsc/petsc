@@ -205,7 +205,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscInt       bc, run;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   options->debug           = 0;
   options->runType         = RUN_FULL;
   options->dim             = 2;
@@ -257,7 +257,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   const char    *partitioner     = user->partitioner;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDACreate(comm, &da);CHKERRQ(ierr);
   ierr = DMDASetDim(da, dim);CHKERRQ(ierr);
@@ -295,7 +295,7 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
   PetscInt       dim = user->dim;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   user->q[0].numQuadPoints = NUM_QUADRATURE_POINTS_0;
   user->q[0].quadPoints    = points_0;
   user->q[0].quadWeights   = weights_0;
@@ -325,7 +325,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscInt       numDof[numFields*(SPATIAL_DIM_0+1)];
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (dim != SPATIAL_DIM_0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);
   if (dim != SPATIAL_DIM_1) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_1);
   for (PetscInt d = 0; d <= dim; ++d) {
@@ -352,7 +352,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
 #undef __FUNCT__
 #define __FUNCT__ "SetupExactSolution"
 PetscErrorCode SetupExactSolution(AppCtx *user) {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   user->f0Funcs[0] = f0_u;
   user->f0Funcs[1] = f0_p;
   user->f1Funcs[0] = f1_u;
@@ -403,7 +403,7 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
   PetscInt         cStart, cEnd;
   PetscErrorCode   ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetLocalVector(user->dm, &localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(user->dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(user->dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
@@ -483,7 +483,7 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
   PetscScalar   *values;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
   ierr = DMMeshGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMMeshGetDefaultSection(dm, &section);CHKERRQ(ierr);
@@ -553,7 +553,7 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSp
   Vec            pressure, localP;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetGlobalVector(dm, &pressure);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &localP);CHKERRQ(ierr);
   ierr = VecSet(pressure, 0.0);CHKERRQ(ierr);
@@ -599,7 +599,7 @@ PetscErrorCode IntegrateResidualBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
   PetscInt       eOffset = 0;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->integrateResCPUEvent,0,0,0,0);CHKERRQ(ierr);
   for (PetscInt e = 0; e < Ne; ++e) {
     const PetscReal  detJ = jacobianDeterminants[e];
@@ -746,7 +746,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   PetscInt         cStart, cEnd;
   PetscErrorCode   ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->residualEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
@@ -831,7 +831,7 @@ PetscErrorCode IntegrateJacobianBatchCPU(PetscInt Ne, PetscInt numFields, PetscI
   PetscInt         offsetJ = 0; // Offset into an element vector for fieldJ
   PetscErrorCode   ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (PetscInt field = 0; field < numFields; ++field) {
     if (field == fieldI) {offsetI = cellDof;}
     if (field == fieldJ) {offsetJ = cellDof;}
@@ -1008,7 +1008,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
   PetscInt       cStart, cEnd;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = MatZeroEntries(Jac);CHKERRQ(ierr);
   ierr = PetscMalloc2(dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);

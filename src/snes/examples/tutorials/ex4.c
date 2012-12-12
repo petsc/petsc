@@ -157,7 +157,7 @@ PetscErrorCode PrintVector(DM da, Vec U)
   PetscInt       i,j,xs,ys,xm,ym;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
   for (j = ys+ym-1; j >= ys; j--) {
@@ -174,7 +174,7 @@ PetscErrorCode PrintVector(DM da, Vec U)
 #define __FUNCT__ "ExactSolution"
 PetscErrorCode ExactSolution(PetscReal x, PetscReal y, PetscScalar *u)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *u = x*x;
   PetscFunctionReturn(0);
 }
@@ -199,7 +199,7 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
   PetscScalar    **x;
   DM             da;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
@@ -266,7 +266,7 @@ PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, Pe
   PetscScalar res;
   PetscInt    q, k;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (q = 0; q < 4; q++) {
     phi[0] = (1.0 - quadPoints[q*2])*(1.0 - quadPoints[q*2+1]);
     phi[1] =  quadPoints[q*2]       *(1.0 - quadPoints[q*2+1]);
@@ -290,7 +290,7 @@ PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, Pe
 #undef __FUNCT__
 #define __FUNCT__ "nonlinearResidual"
 PetscErrorCode nonlinearResidual(PetscReal lambda, PetscScalar u[], PetscScalar r[]) {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   r[0] += lambda*(48.0*u[0]*u[0]*u[0] + 12.0*u[1]*u[1]*u[1] + 9.0*u[0]*u[0]*(4.0*u[1] + u[2] + 4.0*u[3]) + u[1]*u[1]*(9.0*u[2] + 6.0*u[3]) + u[1]*(6.0*u[2]*u[2] + 8.0*u[2]*u[3] + 6.0*u[3]*u[3])
            + 3.0*(u[2]*u[2]*u[2] + 2.0*u[2]*u[2]*u[3] + 3.0*u[2]*u[3]*u[3] + 4.0*u[3]*u[3]*u[3])
            + 2.0*u[0]*(12.0*u[1]*u[1] + u[1]*(6.0*u[2] + 9.0*u[3]) + 2.0*(u[2]*u[2] + 3.0*u[2]*u[3] + 6.0*u[3]*u[3])))/1200.0;
@@ -313,7 +313,7 @@ PetscErrorCode nonlinearResidualBratu(PetscReal lambda, PetscScalar u[], PetscSc
   PetscScalar res;
   PetscInt q;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (q = 0; q < 4; q++) {
     phi[0] = (1.0 - quadPoints[q*2])*(1.0 - quadPoints[q*2+1]);
     phi[1] =  quadPoints[q*2]       *(1.0 - quadPoints[q*2+1]);
@@ -335,7 +335,7 @@ PetscErrorCode nonlinearResidualBratu(PetscReal lambda, PetscScalar u[], PetscSc
 #undef __FUNCT__
 #define __FUNCT__ "nonlinearJacobian"
 PetscErrorCode nonlinearJacobian(PetscScalar lambda, PetscScalar u[], PetscScalar J[]) {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   J[0]  = lambda*(72.0*u[0]*u[0] + 12.0*u[1]*u[1] + 9.0*u[0]*(4.0*u[1] + u[2] + 4.0*u[3]) + u[1]*(6.0*u[2] + 9.0*u[3]) + 2.0*(u[2]*u[2] + 3.0*u[2]*u[3] + 6.0*u[3]*u[3]))/600.0;
   J[1]  = lambda*(18.0*u[0]*u[0] + 18.0*u[1]*u[1] + 3.0*u[2]*u[2] + 4.0*u[2]*u[3] + 3.0*u[3]*u[3] + 3.0*u[0]*(8.0*u[1] + 2.0*u[2] + 3.0*u[3]) + u[1]*(9.0*u[2] + 6.0*u[3]))/600.0;
   J[2]  = lambda*( 9.0*u[0]*u[0] +  9.0*u[1]*u[1] + 9.0*u[2]*u[2] + 12.0*u[2]*u[3] + 9.0*u[3]*u[3] + 4.0*u[1]*(3.0*u[2] + 2.0*u[3]) + 4.0*u[0]*(3.0*u[1] + 2.0*u[2] + 3.0*u[3]))/1200.0;
@@ -375,7 +375,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   PetscInt       i,j,k,l;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   alpha  = user->alpha;
   lambda = user->lambda;
   hx     = 1.0/(PetscReal)(info->mx-1);
@@ -453,7 +453,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat A,Mat j
   PetscInt       i,j,k,l,numRows;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   alpha  = user->alpha;
   lambda = user->lambda;
   hx     = 1.0/(PetscReal)(info->mx-1);

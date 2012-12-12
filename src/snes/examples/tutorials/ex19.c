@@ -101,6 +101,7 @@ int main(int argc,char **argv)
   Vec            x;
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return(1);
+  PetscFunctionBeginUser;
   comm = PETSC_COMM_WORLD;
 
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
@@ -169,7 +170,7 @@ int main(int argc,char **argv)
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  //  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
@@ -249,7 +250,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   PetscReal      grashof,prandtl,lid;
   PetscScalar    u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   grashof = user->grashof;
   prandtl = user->prandtl;
   lid     = user->lidvelocity;
@@ -396,7 +397,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   PetscScalar    pfnorm, pfnorm0;
   AppCtx         *user = (AppCtx*)ctx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   grashof = user->grashof;
   prandtl = user->prandtl;
   lid     = user->lidvelocity;

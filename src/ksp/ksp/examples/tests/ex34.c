@@ -22,7 +22,7 @@ PetscErrorCode MyMult(MPI_Comm comm,MyMultCtx *ctx,void *dummy)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscSynchronizedPrintf(ctx->comm,"Doing multiply\n");
   ierr = PetscSynchronizedFlush(ctx->comm);CHKERRQ(ierr);
   /* moves data that lives only on master processes to all processes */
@@ -45,7 +45,7 @@ PetscErrorCode MySubsolver(MyMultCtx *ctx)
   PetscErrorCode ierr;
   void           *subctx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"MySubsolver\n");
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
   /* allocates memory on each process, both masters and workers */

@@ -227,7 +227,7 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
   PetscBool           q = PETSC_FALSE;
   DM                  dm;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dm,&user->x);CHKERRQ(ierr);
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
@@ -1161,7 +1161,7 @@ PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
   PetscInt       i,j,is,js,im,jm,ilim,jlim,ivt;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetApplicationContext(da,&user);CHKERRQ(ierr);
   param = user->param;
   grid  = user->grid;
@@ -1327,7 +1327,7 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm,
   KSP            ksp;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (param->interrupted) {
     param->interrupted = PETSC_FALSE;
     PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: exiting SNES solve. \n");
@@ -1388,7 +1388,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   PetscInt       i,j,mx,mz,ilim,jlim;
   PetscInt       is,ie,js,je,ibound; /* ,ivisc */
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
 
   /* Define global and local grid parameters */
   mx   = info->mx;     mz   = info->my;

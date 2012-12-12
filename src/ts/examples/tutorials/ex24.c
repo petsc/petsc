@@ -108,7 +108,7 @@ static PetscErrorCode MonitorObjective(TS ts,PetscInt step,PetscReal t,Vec X,voi
   SNES              snes;
   Vec               Xdot,F;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* Compute objective functional */
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   f = 0;
@@ -163,7 +163,7 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   PetscInt       i;
   Ctx            *ctx = (Ctx*)ictx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /*
     Get pointers to vector data.
     - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -216,7 +216,7 @@ static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal s
   PetscInt       i;
   Ctx            *ctx = (Ctx*)ictx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatZeroEntries(*B);CHKERRQ(ierr);
   /*
      Get pointer to vector data
