@@ -639,6 +639,7 @@ M*/
 #else
 
 #define PetscFunctionBegin
+#define PetscFunctionBeginUser
 #define PetscFunctionReturn(a)  return(a)
 #define PetscFunctionReturnVoid() return
 #define PetscStackPop     CHKMEMQ
