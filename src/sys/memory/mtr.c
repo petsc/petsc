@@ -42,7 +42,7 @@ typedef struct _trSPACE {
    It is sizeof(TRSPACE) padded to be a multiple of PETSC_MEMALIGN.
 */
 
-#define HEADER_BYTES      (sizeof(TRSPACE)+(PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1)
+#define HEADER_BYTES      ((sizeof(TRSPACE)+(PETSC_MEMALIGN-1)) & ~(PETSC_MEMALIGN-1))
 
 
 /* This union is used to insure that the block passed to the user retains
@@ -287,9 +287,9 @@ PetscErrorCode  PetscTrFreeDefault(void *aa,int line,const char function[],const
       (*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() line %d in %s%s\n",function,line,dir,file);
       (*PetscErrorPrintf)("Block [id=%d(%.0f)] at address %p was already freed\n",head->id,(PetscLogDouble)head->size,a + sizeof(TrSPACE));
       if (head->lineno > 0 && head->lineno < 50000 /* sanity check */) {
-	(*PetscErrorPrintf)("Block freed in %s() line %d in %s%s\n",head->functionname,head->lineno,head->dirname,head->filename);	
+	(*PetscErrorPrintf)("Block freed in %s() line %d in %s%s\n",head->functionname,head->lineno,head->dirname,head->filename);
       } else {
-        (*PetscErrorPrintf)("Block allocated in %s() line %d in %s%s\n",head->functionname,-head->lineno,head->dirname,head->filename);	
+        (*PetscErrorPrintf)("Block allocated in %s() line %d in %s%s\n",head->functionname,-head->lineno,head->dirname,head->filename);
       }
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Memory already freed");
     } else {
@@ -425,6 +425,35 @@ PetscErrorCode  PetscMallocGetMaximumUsage(PetscLogDouble *space)
   *space = (PetscLogDouble) TRMaxMem;
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_USE_DEBUG)
+#undef __FUNCT__
+#define __FUNCT__ "PetscMallocGetStack"
+/*@C
+   PetscMallocGetStack - returns a pointer to the stack for the location in the program a call to PetscMalloc() was used to obtain that memory
+
+   Collective on PETSC_COMM_WORLD
+
+   Input Parameter:
+.    ptr - the memory location
+
+   Output Paramter:
+.    stack - the stack indicating where the program allocated this memory
+
+   Level: intermediate
+
+.seealso:  PetscMallocGetCurrentUsage(), PetscMallocDumpLog()
+@*/
+PetscErrorCode  PetscMallocGetStack(void *ptr,PetscStack **stack)
+{
+  TRSPACE        *head;
+
+  PetscFunctionBegin;
+  head   = (TRSPACE*) (((char*)ptr) - HEADER_BYTES);
+  *stack = &head->stack;
+  PetscFunctionReturn(0);
+}
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscMallocDump"

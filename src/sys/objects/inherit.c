@@ -165,6 +165,47 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscObjectsDump"
+/*@C
+   PetscObjectsDump - Prints the currently existing objects.
+
+   Logically Collective on PetscViewer
+
+   Input Parameter:
+.  viewer - must be an PETSCVIEWERASCII viewer
+
+   Level: advanced
+
+   Concepts: options database^printing
+
+@*/
+PetscErrorCode  PetscObjectsDump(FILE *fd)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscObject    h;
+
+  PetscFunctionBegin;
+  if (PetscObjectsCounts) {
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"The following objects %D were never freed\n",PetscObjectsCounts);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"-----------------------------------------\n",PetscObjectsCounts);
+    for (i=0; i<PetscObjectsMaxCounts; i++) {
+      if ((h = PetscObjects[i])) {
+        ierr = PetscObjectName(h);CHKERRQ(ierr);
+        ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"[%d] %s %s %s\n",PetscGlobalRank,h->class_name,h->type_name,h->name);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+        PetscStack *stack;
+        ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
+        ierr = PetscStackPrint(stack,fd);CHKERRQ(ierr);
+#endif
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectsView"
 /*@C
    PetscObjectsView - Prints the currently existing objects.
@@ -182,21 +223,15 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
 PetscErrorCode  PetscObjectsView(PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscInt       i;
   PetscBool      isascii;
-  PetscObject    h;
+  FILE           *fd;
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_WORLD;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (!isascii) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Only supports ASCII viewer");
-
-  for (i=0; i<PetscObjectsMaxCounts; i++) {
-    if ((h = PetscObjects[i])) {
-      ierr = PetscObjectName(h);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"%s %s %s\n",h->class_name,h->type_name,h->name);CHKERRQ(ierr);
-    }
-  }
+  ierr = PetscViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
+  ierr = PetscObjectsDump(fd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

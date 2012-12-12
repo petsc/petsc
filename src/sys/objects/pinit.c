@@ -881,7 +881,7 @@ extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
    Options Database Keys:
 +  -options_table - Calls PetscOptionsView()
 .  -options_left - Prints unused options that remain in the database
-.  -objects_left  - Prints list of all objects that have not been freed
+.  -objects_dump  - Prints list of all objects that have not been freed
 .  -mpidump - Calls PetscMPIDump()
 .  -malloc_dump - Calls PetscMallocDump()
 .  -malloc_info - Prints total memory usage
@@ -914,7 +914,7 @@ PetscErrorCode  PetscFinalize(void)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       i,nopt;
-  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,objects_left = PETSC_FALSE;
+  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,objects_dump = PETSC_FALSE;
 #if defined(PETSC_HAVE_AMS)
   PetscBool      flg = PETSC_FALSE;
 #endif
@@ -1033,6 +1033,7 @@ PetscErrorCode  PetscFinalize(void)
   flg2 = PETSC_FALSE;
   /* preemptive call to avoid listing this option in options table as unused */
   ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_dump",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-options_table",&flg2,PETSC_NULL);CHKERRQ(ierr);
 
   if (flg2) {
@@ -1042,7 +1043,7 @@ PetscErrorCode  PetscFinalize(void)
   /* to prevent PETSc -options_left from warning */
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-objects_left",&objects_left,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-objects_dump",&objects_dump,PETSC_NULL);CHKERRQ(ierr);
 
   if (!PetscHMPIWorker) { /* worker processes skip this because they do not usually process options */
     flg3 = PETSC_FALSE; /* default value is required */
@@ -1081,17 +1082,16 @@ PetscErrorCode  PetscFinalize(void)
   /*
        List all objects the user may have forgot to free
   */
-  if (objects_left && PetscObjectsCounts) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"The following objects %D were never freed\n",PetscObjectsCounts);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-objects_dump",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  if (flg1) {
+    MPI_Comm local_comm;
+
+    ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
+    ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
+    ierr = PetscObjectsDump(stdout);CHKERRQ(ierr);
+    ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
   }
-  for (i=0; i<PetscObjectsMaxCounts; i++) {
-    if (PetscObjects[i]) {
-      if (objects_left) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  %s %s %s\n",PetscObjects[i]->class_name,PetscObjects[i]->type_name,PetscObjects[i]->name);CHKERRQ(ierr);
-      }
-    }
-  }
-  /* cannot actually destroy the left over objects, but destroy the list */
   PetscObjectsCounts    = 0;
   PetscObjectsMaxCounts = 0;
   ierr = PetscFree(PetscObjects);CHKERRQ(ierr);
@@ -1160,6 +1160,7 @@ PetscErrorCode  PetscFinalize(void)
       ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
     }
   }
+
   {
     char fname[PETSC_MAX_PATH_LEN];
     FILE *fd = PETSC_NULL;
