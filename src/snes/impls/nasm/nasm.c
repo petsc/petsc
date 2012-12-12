@@ -278,6 +278,9 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X) {
     }
   }
 
+  ierr = VecAssemblyBegin(Y);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
+
   ierr = VecAXPY(X,1.0,Y);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
