@@ -1334,7 +1334,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
    Synopsis:
    PetscErrorCode VecGetArray(Vec x,PetscScalar *a[])
 
-   Not Collective
+   Collective on Vec
 
    Input Parameter:
 .  x - the vector
@@ -1375,7 +1375,7 @@ M*/
    that were created by a call to VecDuplicateVecs().  You MUST call
    VecRestoreArrays() when you no longer need access to the array.
 
-   Not Collective
+   Collective on Vec
 
    Input Parameter:
 +  x - the vectors
@@ -1416,7 +1416,7 @@ PetscErrorCode  VecGetArrays(const Vec x[],PetscInt n,PetscScalar **a[])
    VecRestoreArrays - Restores a group of vectors after VecGetArrays()
    has been called.
 
-   Not Collective
+   Collective on Vec
 
    Input Parameters:
 +  x - the vector
@@ -1460,7 +1460,7 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
    Synopsis:
    PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
 
-   Not Collective
+   Collective on Vec
 
    Input Parameters:
 +  x - the vector
@@ -1623,7 +1623,7 @@ M*/
     Synopsis:
     VecRestoreArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-    Not collective
+    Collective on Vec
 
     Input Parameters:
 +   x - vector
@@ -1680,7 +1680,7 @@ M*/
     Synopsis:
     VecGetArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-    Not Collective
+    Collective on Vec
 
     Input Parameter:
 .   x - vector
