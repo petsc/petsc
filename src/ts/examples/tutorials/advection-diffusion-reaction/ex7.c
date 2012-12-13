@@ -156,8 +156,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   */
   if (!xs) {
     for (i=0; i<N; i++) {
-      f[0][i] = u[1][i] - u[0][i];
-      // f[0][i] = udot[0][i];
+      f[0][i] = u[0][i] - u[1][i];
     }
     xs++;
     xm--;
@@ -165,7 +164,6 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   if (xs+xm == Mx) {
     for (i=0; i<N; i++) {
       f[Mx-1][i] = u[Mx-1][i] - u[Mx-2][i];
-      //f[Mx-1][i] = udot[Mx-1][i];
     }
     xm--;
   }
@@ -190,8 +188,11 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
       f[j][i+2] -= 500*u[j][i]*u[j][i+1];
     }
      */
+
     /* forcing term */
-    //f[j][0] -= 5*PetscExpScalar(1.0 - x);
+    /*
+    f[j][0] -= 5*PetscExpScalar(1.0 - x);
+     */
   }
 
   /*
@@ -288,7 +289,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   for (j=xs; j<xs+xm; j++) {
     x = j*hx;
     for (i=0; i<N; i++) {
-      u[j][i] = PetscCosScalar(.5*PETSC_PI*x);
+      u[j][i] = PetscCosScalar(PETSC_PI*x);
     }
   }
 
