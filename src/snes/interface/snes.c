@@ -707,6 +707,12 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsReal("-snes_ksp_ew_threshold","0 < threshold < 1","SNESKSPSetParametersEW",kctx->threshold,&kctx->threshold,0);CHKERRQ(ierr);
 
     flg  = PETSC_FALSE;
+    ierr = PetscOptionsBool("-snes_check_jacobian","Check each Jacobian with a differenced one","SNESUpdateCheckJacobian",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    if (flg) {
+      ierr = SNESSetUpdate(snes,SNESUpdateCheckJacobian);CHKERRQ(ierr);
+    }
+
+    flg  = PETSC_FALSE;
     ierr = PetscOptionsBool("-snes_monitor_cancel","Remove all monitors","SNESMonitorCancel",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);}
 

@@ -482,6 +482,8 @@ PETSC_EXTERN PetscErrorCode SNESSetGSSweeps(SNES,PetscInt);
 PETSC_EXTERN PetscErrorCode SNESGetGSSweeps(SNES,PetscInt *);
 PETSC_EXTERN PetscErrorCode SNESComputeGS(SNES,Vec,Vec);
 
+PETSC_EXTERN PetscErrorCode SNESUpdateCheckJacobian(SNES,PetscInt);
+
 PETSC_EXTERN PetscErrorCode SNESShellGetContext(SNES,void**);
 PETSC_EXTERN PetscErrorCode SNESShellSetContext(SNES,void*);
 PETSC_EXTERN PetscErrorCode SNESShellSetSolve(SNES,PetscErrorCode (*)(SNES,Vec));

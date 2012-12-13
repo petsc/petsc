@@ -33,6 +33,11 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
     ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
   }
 
+  /* Call general purpose update function */
+  if (snes->ops->update) {
+    ierr = (*snes->ops->update)(snes, 0);CHKERRQ(ierr);
+  }
+
   /* Solve J Y = F, where J is Jacobian matrix */
   ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
   ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);

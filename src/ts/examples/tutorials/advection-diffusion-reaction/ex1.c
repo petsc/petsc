@@ -137,7 +137,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *A,Mat
   ierr    = VecGetArray(Udot,&udot);CHKERRQ(ierr);
   J[0][0] = a + ctx->k*u[1];   J[0][1] = ctx->k*u[0];       J[0][2] = 0.0;
   J[1][0] = ctx->k*u[1];       J[1][1] = a + ctx->k*u[0];   J[1][2] = 0.0;
-  J[2][0] = ctx->k*u[1];       J[2][1] = ctx->k*u[0];       J[2][2] = a;
+  J[2][0] = -ctx->k*u[1];      J[2][1] = -ctx->k*u[0];      J[2][2] = a;
   ierr    = MatSetValues(*B,3,rowcol,3,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArray(U,&u);CHKERRQ(ierr);
   ierr    = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
