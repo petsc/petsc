@@ -379,7 +379,7 @@ PetscErrorCode  MatCreate_Composite(Mat A)
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
   A->assembled     = PETSC_TRUE;
-  A->preallocated  = PETSC_FALSE;
+  A->preallocated  = PETSC_TRUE;
   b->type          = MAT_COMPOSITE_ADDITIVE;
   b->scale         = 1.0;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATCOMPOSITE);CHKERRQ(ierr);
