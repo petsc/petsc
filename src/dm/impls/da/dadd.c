@@ -95,9 +95,9 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM 
   PetscFunctionBegin;
 
   /* allocate the arrays of scatters */
-  if (iscat) ierr = PetscMalloc(sizeof(VecScatter *),iscat);CHKERRQ(ierr);
-  if (oscat) ierr = PetscMalloc(sizeof(VecScatter *),oscat);CHKERRQ(ierr);
-  if (lscat) ierr = PetscMalloc(sizeof(VecScatter *),lscat);CHKERRQ(ierr);
+  if (iscat) {ierr = PetscMalloc(sizeof(VecScatter *),iscat);CHKERRQ(ierr);}
+  if (oscat) {ierr = PetscMalloc(sizeof(VecScatter *),oscat);CHKERRQ(ierr);}
+  if (lscat) {ierr = PetscMalloc(sizeof(VecScatter *),lscat);CHKERRQ(ierr);}
 
   ierr = DMDAGetLocalInfo(dm,&dinfo);CHKERRQ(ierr);
   ierr = DMDAGetGlobalIndices(dm,&n_global,&idx_global);CHKERRQ(ierr);
