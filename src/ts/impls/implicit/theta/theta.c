@@ -6,12 +6,18 @@
 #include <petscsnesfas.h>
 
 typedef struct {
-  Vec       X,Xdot;                   /* Storage for one stage */
-  Vec       affine;                   /* Affine vector needed for residual at beginning of step */
-  PetscBool extrapolate;
-  PetscBool endpoint;
-  PetscReal Theta;
-  PetscReal stage_time;
+  Vec          X,Xdot;                   /* Storage for one stage */
+  Vec          X0;                       /* work vector to store X0 */
+  Vec          affine;                   /* Affine vector needed for residual at beginning of step */
+  PetscBool    extrapolate;
+  PetscBool    endpoint;
+  PetscReal    Theta;
+  PetscReal    stage_time;
+  TSStepStatus status;
+  char*        name;
+  PetscInt     order;
+  PetscReal    ccfl;               /* Placeholder for CFL coefficient relative to forward Euler */
+  PetscBool    adapt;  /* use time-step adaptivity ? */
 } TS_Theta;
 
 #undef __FUNCT__
@@ -117,24 +123,45 @@ static PetscErrorCode DMSubDomainRestrictHook_TSTheta(DM dm,VecScatter gscat,Vec
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSEvaluateStep_Theta"
+static PetscErrorCode TSEvaluateStep_Theta(TS ts,PetscInt order,Vec U,PetscBool *done)
+{
+  PetscErrorCode ierr;
+  TS_Theta       *th = (TS_Theta*)ts->data;
+
+  PetscFunctionBegin;
+  if(order == 0) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"No time-step adaptivity implemented for 1st order theta method; Run with -ts_adapt_type none");
+  if(order == th->order) {
+    if (th->endpoint) {
+      ierr = VecCopy(th->X,U);CHKERRQ(ierr);
+    } else {
+      PetscReal shift = 1./(th->Theta*ts->time_step);
+      ierr = VecAXPBYPCZ(th->Xdot,-shift,shift,0,U,th->X);CHKERRQ(ierr);
+      ierr = VecAXPY(U,ts->time_step,th->Xdot);CHKERRQ(ierr);
+    }
+  } else if(order == th->order-1 && order) {
+    ierr = VecWAXPY(U,ts->time_step,th->Xdot,th->X0);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}  
 
 #undef __FUNCT__
 #define __FUNCT__ "TSStep_Theta"
 static PetscErrorCode TSStep_Theta(TS ts)
 {
   TS_Theta            *th = (TS_Theta*)ts->data;
-  PetscInt            its,lits,reject;
-  PetscReal           next_time_step = 0.0;
+  PetscInt            its,lits,reject,next_scheme;
+  PetscReal           next_time_step;
   SNESConvergedReason snesreason;
   PetscErrorCode      ierr;
+  TSAdapt             adapt;
+  PetscBool           accept;
 
   PetscFunctionBegin;
-  if (ts->time_steps_since_decrease > 3 && ts->time_step < ts->time_step_orig) {
-    /* smaller time step has worked successfully for three time-steps, try increasing time step*/
-    ts->time_step = 2.0*ts->time_step;
-    ts->time_steps_since_decrease = 0; /* don't want to increase time step two time steps in a row */
-  }
-  for (reject=0; reject<ts->max_reject && !ts->reason; reject++,ts->reject++) {
+  th->status = TS_STEP_INCOMPLETE;
+  ierr = VecCopy(ts->vec_sol,th->X0);CHKERRQ(ierr);
+  for (reject=0; reject<ts->max_reject && !ts->reason && th->status != TS_STEP_COMPLETE; reject++,ts->reject++) {
     PetscReal shift = 1./(th->Theta*ts->time_step);
     next_time_step = ts->time_step;
     th->stage_time = ts->ptime + (th->endpoint ? 1. : th->Theta)*ts->time_step;
@@ -157,28 +184,28 @@ static PetscErrorCode TSStep_Theta(TS ts)
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
     ts->snes_its += its; ts->ksp_its += lits;
-    if (its < 10) ts->time_steps_since_decrease++;
-    else ts->time_steps_since_decrease = 0;
-    if (snesreason > 0) break;
-    ierr = PetscInfo3(ts,"Step=%D, Cutting time-step from %g to %g\n",ts->steps,(double)ts->time_step,(double).5*ts->time_step);CHKERRQ(ierr);
-    ts->time_step = .5*ts->time_step;
-    ts->time_steps_since_decrease = 0;
+    ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
+    ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
+    if (!accept) continue;
+    ierr = TSEvaluateStep(ts,th->order,ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
+    /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
+    ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
+    ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
+    ierr = TSAdaptCandidateAdd(adapt,PETSC_NULL,th->order,1,th->ccfl,1.0,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
+
+    if (accept) {
+      /* ignore next_scheme for now */
+      ts->ptime += ts->time_step;
+      ts->time_step = next_time_step;
+      ts->steps++;
+      th->status = TS_STEP_COMPLETE;
+    } else {                    /* Roll back the current step */
+      ierr = VecCopy(th->X0,ts->vec_sol);CHKERRQ(ierr);
+      ts->time_step = next_time_step;
+      th->status = TS_STEP_INCOMPLETE;
+    }
   }
-  if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
-    ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
-    ierr = PetscInfo2(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-  if (th->endpoint) {
-    ierr = VecCopy(th->X,ts->vec_sol);CHKERRQ(ierr);
-  } else {
-    PetscReal shift = 1./(th->Theta*ts->time_step);
-    ierr = VecAXPBYPCZ(th->Xdot,-shift,shift,0,ts->vec_sol,th->X);CHKERRQ(ierr);
-    ierr = VecAXPY(ts->vec_sol,ts->time_step,th->Xdot);CHKERRQ(ierr);
-  }
-  ts->ptime += ts->time_step;
-  ts->time_step = next_time_step;
-  ts->steps++;
   PetscFunctionReturn(0);
 }
 
@@ -208,6 +235,7 @@ static PetscErrorCode TSReset_Theta(TS ts)
   PetscFunctionBegin;
   ierr = VecDestroy(&th->X);CHKERRQ(ierr);
   ierr = VecDestroy(&th->Xdot);CHKERRQ(ierr);
+  ierr = VecDestroy(&th->X0);CHKERRQ(ierr);
   ierr = VecDestroy(&th->affine);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -293,11 +321,21 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&th->X);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->Xdot);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&th->X0);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   if (dm) {
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSTheta,DMRestrictHook_TSTheta,ts);CHKERRQ(ierr);
     ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_TSTheta,DMSubDomainRestrictHook_TSTheta,ts);CHKERRQ(ierr);
+  }
+  if(th->Theta == 0.5 && th->endpoint) th->order = 2;
+  else th->order = 1;
+
+  if(!th->adapt) {
+    TSAdapt adapt;
+    ierr = TSAdaptDestroy(&ts->adapt);CHKERRQ(ierr);
+    ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
+    ierr = TSAdaptSetType(adapt,TSADAPTNONE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -316,6 +354,7 @@ static PetscErrorCode TSSetFromOptions_Theta(TS ts)
     ierr = PetscOptionsReal("-ts_theta_theta","Location of stage (0<Theta<=1)","TSThetaSetTheta",th->Theta,&th->Theta,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_theta_extrapolate","Extrapolate stage solution from previous solution (sometimes unstable)","TSThetaSetExtrapolate",th->extrapolate,&th->extrapolate,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_theta_endpoint","Use the endpoint instead of midpoint form of the Theta method","TSThetaSetEndpoint",th->endpoint,&th->endpoint,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_theta_adapt","Use time-step adaptivity with the Theta method","",th->adapt,&th->adapt,PETSC_NULL);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -468,6 +507,7 @@ PetscErrorCode  TSCreate_Theta(TS ts)
   ts->ops->setup           = TSSetUp_Theta;
   ts->ops->step            = TSStep_Theta;
   ts->ops->interpolate     = TSInterpolate_Theta;
+  ts->ops->evaluatestep   = TSEvaluateStep_Theta;
   ts->ops->setfromoptions  = TSSetFromOptions_Theta;
   ts->ops->snesfunction    = SNESTSFormFunction_Theta;
   ts->ops->snesjacobian    = SNESTSFormJacobian_Theta;
@@ -480,7 +520,8 @@ PetscErrorCode  TSCreate_Theta(TS ts)
 
   th->extrapolate = PETSC_FALSE;
   th->Theta       = 0.5;
-
+  th->ccfl        = 1.0;
+  th->adapt       = PETSC_FALSE;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaGetTheta_C","TSThetaGetTheta_Theta",TSThetaGetTheta_Theta);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaSetTheta_C","TSThetaSetTheta_Theta",TSThetaSetTheta_Theta);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaGetEndpoint_C","TSThetaGetEndpoint_Theta",TSThetaGetEndpoint_Theta);CHKERRQ(ierr);
