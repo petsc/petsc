@@ -575,7 +575,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
     ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
   } else {
     coloring->fset = PETSC_FALSE;
-}
+  }
 
   if (!coloring->w3) {
     ierr = VecDuplicate(x1_tmp,&coloring->w3);CHKERRQ(ierr);
