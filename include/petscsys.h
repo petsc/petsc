@@ -1400,7 +1400,7 @@ extern PetscErrorCode  PetscDLSym(PetscDLHandle,const char[],void **);
 #if defined(PETSC_USE_DEBUG)
 PETSC_EXTERN PetscErrorCode PetscMallocGetStack(void*,PetscStack**);
 #endif
-PETSC_EXTERN PetscErrorCode PetscObjectsDump(FILE*);
+PETSC_EXTERN PetscErrorCode PetscObjectsDump(FILE*,PetscBool);
 
 /*S
      PetscOList - Linked list of PETSc objects, each accessable by string name

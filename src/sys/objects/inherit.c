@@ -172,14 +172,15 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
    Logically Collective on PetscViewer
 
    Input Parameter:
-.  viewer - must be an PETSCVIEWERASCII viewer
++  viewer - must be an PETSCVIEWERASCII viewer
+-  all - by default only tries to display objects created explicitly by the user, if all is PETSC_TRUE then lists all outstanding objects
 
    Level: advanced
 
    Concepts: options database^printing
 
 @*/
-PetscErrorCode  PetscObjectsDump(FILE *fd)
+PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,k;
@@ -200,16 +201,18 @@ PetscErrorCode  PetscObjectsDump(FILE *fd)
         /* if the PETSc function the user calls is not a create then this object was NOT directly created by them */
         ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
         k = stack->currentsize-2;
-        k = 0; 
-        while (!stack->petscroutine[k]) k++;
-        ierr = PetscStrstr(stack->function[k],"Create",&create);CHKERRQ(ierr);
-        if (!create) {
-          ierr = PetscStrstr(stack->function[k],"Get",&create);CHKERRQ(ierr);
-        }
-        ierr = PetscStrstr(stack->function[k],h->class_name,&rclass);CHKERRQ(ierr);
+        if (!all) {
+          k = 0; 
+          while (!stack->petscroutine[k]) k++;
+          ierr = PetscStrstr(stack->function[k],"Create",&create);CHKERRQ(ierr);
+          if (!create) {
+            ierr = PetscStrstr(stack->function[k],"Get",&create);CHKERRQ(ierr);
+          }
+          ierr = PetscStrstr(stack->function[k],h->class_name,&rclass);CHKERRQ(ierr);
 
-        if (!create) continue;
-        if (!rclass) continue;
+          if (!create) continue;
+          if (!rclass) continue;
+        }
 #endif
 
         ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"[%d] %s %s %s\n",PetscGlobalRank,h->class_name,h->type_name,h->name);CHKERRQ(ierr);
@@ -254,7 +257,7 @@ PetscErrorCode  PetscObjectsView(PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (!isascii) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Only supports ASCII viewer");
   ierr = PetscViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-  ierr = PetscObjectsDump(fd);CHKERRQ(ierr);
+  ierr = PetscObjectsDump(fd,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

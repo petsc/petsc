@@ -881,7 +881,7 @@ extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
    Options Database Keys:
 +  -options_table - Calls PetscOptionsView()
 .  -options_left - Prints unused options that remain in the database
-.  -objects_dump  - Prints list of all objects that have not been freed
+.  -objects_dump [all] - Prints list of objects allocated by the user that have not been freed, the option all cause all outstanding objects to be listed
 .  -mpidump - Calls PetscMPIDump()
 .  -malloc_dump - Calls PetscMallocDump()
 .  -malloc_info - Prints total memory usage
@@ -1043,7 +1043,6 @@ PetscErrorCode  PetscFinalize(void)
   /* to prevent PETSc -options_left from warning */
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-objects_dump",&objects_dump,PETSC_NULL);CHKERRQ(ierr);
 
   if (!PetscHMPIWorker) { /* worker processes skip this because they do not usually process options */
     flg3 = PETSC_FALSE; /* default value is required */
@@ -1082,13 +1081,16 @@ PetscErrorCode  PetscFinalize(void)
   /*
        List all objects the user may have forgot to free
   */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-objects_dump",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
   if (flg1) {
-    MPI_Comm local_comm;
+    MPI_Comm  local_comm;
+    PetscBool all;
+    char      string[64];
 
+    ierr = PetscOptionsGetString(PETSC_NULL,"-objects_dump",string,64,PETSC_NULL);CHKERRQ(ierr);
     ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
     ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
-    ierr = PetscObjectsDump(stdout);CHKERRQ(ierr);
+    ierr = PetscObjectsDump(stdout,(string[0] == 'a') ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
     ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
   }
