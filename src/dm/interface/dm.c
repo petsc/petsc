@@ -1397,12 +1397,15 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
   if (dmlist)        {PetscValidPointer(dmlist,6);         *dmlist      = PETSC_NULL;}
   if (dm->ops->createdomaindecomposition) {
     ierr = (*dm->ops->createdomaindecomposition)(dm,&l,namelist,innerislist,outerislist,dmlist); CHKERRQ(ierr);
+  } else {
+    SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"DMCreateDomainDecomposition not supported for this DM type!");CHKERRQ(ierr);
   }
   if (len) *len = l;
   for (i = 0; i < l; i++) {
     for (link=dm->subdomainhook; link; link=link->next) {
       if (link->ddhook) {ierr = (*link->ddhook)(dm,(*dmlist)[i],link->ctx);CHKERRQ(ierr);}
     }
+    (*dmlist)[i]->ctx = dm->ctx;
   }
   PetscFunctionReturn(0);
 }
