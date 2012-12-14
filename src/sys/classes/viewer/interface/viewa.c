@@ -5,8 +5,6 @@ const char *const PetscViewerFormats[] = {
   "DEFAULT",
   "ASCII_MATLAB",
   "ASCII_MATHEMATICA",
-  "ASCII_MATLAB",
-  "ASCII_MATHEMATICA",
   "ASCII_IMPL",
   "ASCII_INFO",
   "ASCII_INFO_DETAIL",
@@ -21,13 +19,18 @@ const char *const PetscViewerFormats[] = {
   "ASCII_PCICE",
   "ASCII_PYTHON",
   "ASCII_FACTOR_INFO",
+  "ASCII_LATEX",
   "DRAW_BASIC",
   "DRAW_LG",
   "DRAW_CONTOUR",
   "DRAW_PORTS",
   "VTK_VTS",
+  "VTK_VTU",
   "NATIVE",
-  "NOFORMAT"
+  "NOFORMAT",
+  "PetscViewerFormat",
+  "PETSC_VIEWER_",
+  0
 };
 
 #undef __FUNCT__
