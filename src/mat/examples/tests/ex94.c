@@ -3,8 +3,8 @@ static char help[] = "Tests sequential and parallel MatMatMult() and MatPtAP(), 
 Input arguments are:\n\
   -f0 <input_file> -f1 <input_file> -f2 <input_file> -f3 <input_file> : file to load\n\n";
 /* Example of usage:
-   ./ex94 -f0 <A_binary> -f1 <B_binary> -matmatmult_mat_view_info -matmatmulttr_mat_view_info
-   mpiexec -n 3 ./ex94 -f0 medium -f1 medium -f2 arco1 -f3 arco1 -matmatmult_mat_view_info
+   ./ex94 -f0 <A_binary> -f1 <B_binary> -matmatmult_mat_view ::ascii_info -matmatmulttr_mat_view ::ascii_info
+   mpiexec -n 3 ./ex94 -f0 medium -f1 medium -f2 arco1 -f3 arco1 -matmatmult_mat_view ::ascii_info
 */
 
 #include <petscmat.h>

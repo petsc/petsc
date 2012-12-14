@@ -155,7 +155,7 @@ $      MATORDERINGQMD - Quotient Minimum Degree
 
 
    Options Database Key:
-. -mat_view_ordering_draw - plots matrix nonzero structure in new ordering
+. -mat_view_ordering draw - plots matrix nonzero structure in new ordering
 
    Level: intermediate
 
@@ -272,22 +272,15 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   if (mmat > mis) {ierr = MatInodeAdjustForInodes(mat,rperm,cperm);CHKERRQ(ierr);}
   ierr = PetscLogEventEnd(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(((PetscObject)mat)->prefix,"-mat_view_ordering_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscOptionsHasName(((PetscObject)mat)->prefix,"-mat_view_ordering",&flg);CHKERRQ(ierr);
   if (flg) {
     Mat tmat;
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(((PetscObject)mat)->prefix,"-mat_view_contour",&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscViewerPushFormat(PETSC_VIEWER_DRAW_(((PetscObject)mat)->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
-    }
     ierr = MatPermute(mat,*rperm,*cperm,&tmat);CHKERRQ(ierr);
-    ierr = MatView(tmat,PETSC_VIEWER_DRAW_(((PetscObject)mat)->comm));CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscViewerPopFormat(PETSC_VIEWER_DRAW_(((PetscObject)mat)->comm));CHKERRQ(ierr);
-    }
+    ierr = MatView_Private(tmat,"-mat_view_ordering");CHKERRQ(ierr);
     ierr = MatDestroy(&tmat);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 

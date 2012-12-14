@@ -80,7 +80,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
       } else {
         ierr = PetscStrchr(loc,':',&loc2);CHKERRQ(ierr);
         if (loc2) {*loc2 = 0; loc2++;}
-        if (loc2 && !*loc) { /* ASCII format without file name */
+        if (loc2 && !*loc && (cnt == 0)) { /* ASCII format without file name */
           ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
         } else {
           ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);

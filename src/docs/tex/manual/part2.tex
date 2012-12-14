@@ -4816,9 +4816,9 @@ the PETSc program and (4) directly in MATLAB using PETSc objects.
 \section{Dumping Data for MATLAB}
 One can dump PETSc matrices and vectors to the screen (and thus save in a file via
 \trl{> filename.m}) in a format that MATLAB can read in directly. This is done with the
-command line options \trl{-vec_view_matlab} or \trl{-mat_view_matlab}. This causes the PETSc program
+command line options \trl{-vec_view ::ascii_matlab} or \trl{-mat_view ::ascii_matlab}. This causes the PETSc program
 to print the vectors and matrices every time a VecAssemblyXXX() and MatAssemblyXXX()
-is called. \findex{-vec_view_matlab} \findex{-mat_view_matlab} To provide finer control
+is called. \findex{-vec_view ::ascii_matlab} \findex{-mat_view ::ascii_matlab} To provide finer control
 over when and what vectors and matrices are dumped one can use the VecView() and 
 MatView() functions with a viewer type of ASCII (see PetscViewerASCIIOpen(), 
 \trl{PETSC_VIEWER_STDOUT_WORLD}, \trl{PETSC_VIEWER_STDOUT_SELF}, or \trl{PETSC_VIEWER_STDOUT_(MPI_Comm)}). Before calling
@@ -6273,7 +6273,7 @@ have intervening spaces either, and tab characters cannot be used
 between the option names and values.
 The user can employ any naming convention.  For uniformity throughout
 PETSc, we employ the format \trl{-package_option} (for instance, 
-\trl{-ksp_type} and \trl{-mat_view_info}).
+\trl{-ksp_type} and \trl{-mat_view ::info}).
 
 Users can specify an alias for any option name (to avoid typing the 
 sometimes lengthy default name) by adding an alias to the 

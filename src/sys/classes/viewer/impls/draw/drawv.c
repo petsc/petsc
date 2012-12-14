@@ -436,6 +436,8 @@ PetscErrorCode  PetscViewerCreate_Draw(PetscViewer viewer)
   /* these are created on the fly if requested */
   vdraw->draw_max  = 5;
   vdraw->draw_base = 0;
+  vdraw->w         = PETSC_DECIDE;
+  vdraw->h         = PETSC_DECIDE;
   ierr = PetscMalloc3(vdraw->draw_max,PetscDraw,&vdraw->draw,vdraw->draw_max,PetscDrawLG,&vdraw->drawlg,vdraw->draw_max,PetscDrawAxis,&vdraw->drawaxis);CHKERRQ(ierr);
   ierr = PetscMemzero(vdraw->draw,vdraw->draw_max*sizeof(PetscDraw));CHKERRQ(ierr);
   ierr = PetscMemzero(vdraw->drawlg,vdraw->draw_max*sizeof(PetscDrawLG));CHKERRQ(ierr);

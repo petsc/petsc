@@ -1617,32 +1617,32 @@ runex134:
 	   ${RM} -f ex134_1.tmp
 
 runex135:
-	-@${MPIEXEC} -n 4 ./ex135 -n 1000 -mat_view_info_detailed | ${SED} 's,mem [0-9]\{5\},mem SKIP,' > ex135_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex135 -n 1000 -mat_view ::ascii_info_detailed | ${SED} 's,mem [0-9]\{5\},mem SKIP,' > ex135_1.tmp 2>&1; \
 	   ${DIFF} output/ex135_1.out ex135_1.tmp || echo ${PWD} "\nPossible problem with ex135, diffs above \n========================================="; \
 	   ${RM} -f ex135_1.tmp
 
 runex136:
-	-@${MPIEXEC} -n 3 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view_info -aij > ex136_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ::ascii_info -aij > ex136_1.tmp 2>&1; \
 	   ${DIFF} output/ex136_1.out ex136_1.tmp || echo ${PWD} "\nPossible problem with ex136, diffs above \n========================================="; \
 	   ${RM} -f ex136_1.tmp
 runex136_2:
-	-@${MPIEXEC} -n 5 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view_info -aij > ex136_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 5 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ::ascii_info -aij > ex136_2.tmp 2>&1; \
 	   ${DIFF} output/ex136_2.out ex136_2.tmp || echo ${PWD} "\nPossible problem with ex136, diffs above \n========================================="; \
 	   ${RM} -f ex136_2.tmp
 runex136_3:
-	-@${MPIEXEC} -n 7 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view_info -aij > ex136_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 7 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ::ascii_info -aij > ex136_3.tmp 2>&1; \
 	   ${DIFF} output/ex136_3.out ex136_3.tmp || echo ${PWD} "\nPossible problem with ex136, diffs above \n========================================="; \
 	   ${RM} -f ex136_3.tmp
 runex136_4:
-	-@${MPIEXEC} -n 3 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view_info  > ex136_4.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ::ascii_info  > ex136_4.tmp 2>&1; \
 	   ${DIFF} output/ex136_4.out ex136_4.tmp || echo ${PWD} "\nPossible problem with ex136, diffs above \n========================================="; \
 	   ${RM} -f ex136_4.tmp
 runex136_5:
-	-@${MPIEXEC} -n 5 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view_info > ex136_5.tmp 2>&1; \
+	-@${MPIEXEC} -n 5 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ::ascii_info > ex136_5.tmp 2>&1; \
 	   ${DIFF} output/ex136_5.out ex136_5.tmp || echo ${PWD} "\nPossible problem with ex136, diffs above \n========================================="; \
 	   ${RM} -f ex136_5.tmp
 runex136_6:
-	-@${MPIEXEC} -n 7 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view_info > ex136_6.tmp 2>&1; \
+	-@${MPIEXEC} -n 7 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ::ascii_info > ex136_6.tmp 2>&1; \
 	   ${DIFF} output/ex136_6.out ex136_6.tmp || echo ${PWD} "\nPossible problem with ex136, diffs above \n========================================="; \
 	   ${RM} -f ex136_6.tmp
 runex137:
