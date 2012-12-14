@@ -183,7 +183,10 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src,PetscObjec
 PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j,k;
+  PetscInt       i;
+#if defined(PETSC_USE_DEBUG)
+  PetscInt       j,k;
+#endif
   PetscObject    h;
 
   PetscFunctionBegin;

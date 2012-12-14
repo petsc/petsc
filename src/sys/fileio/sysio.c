@@ -378,8 +378,8 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
   char           *pp = (char*)p;
   int            err,wsize;
   size_t         m = (size_t)n,maxblock=65536;
-#if !defined(PETSC_WORDS_BIGENDIAN)
   PetscErrorCode ierr;
+#if !defined(PETSC_WORDS_BIGENDIAN)
   void           *ptmp = p;
 #endif
   char           fname[64];
