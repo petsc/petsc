@@ -302,7 +302,6 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscBool         iascii;
-  PetscViewerType   cstr;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -317,18 +316,12 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+    if (format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       ierr = PetscObjectPrintClassNamePrefixType((PetscObject)v,viewer,"PetscViewer Object");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerGetType(v,&cstr);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"type=%s\n",cstr);CHKERRQ(ierr);
-    }
-  }
-  if (!iascii) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported",((PetscObject)viewer)->type_name);
-  } else {
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+      if (v->ops->view) {
+        ierr = (*v->ops->view)(v,viewer);CHKERRQ(ierr);
+      }
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   }

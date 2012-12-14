@@ -914,7 +914,7 @@ PetscErrorCode  PetscFinalize(void)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       nopt;
-  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,objects_dump = PETSC_FALSE;
+  PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE;
 #if defined(PETSC_HAVE_AMS)
   PetscBool      flg = PETSC_FALSE;
 #endif
@@ -1084,7 +1084,6 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-objects_dump",&flg1);CHKERRQ(ierr);
   if (flg1) {
     MPI_Comm  local_comm;
-    PetscBool all;
     char      string[64];
 
     ierr = PetscOptionsGetString(PETSC_NULL,"-objects_dump",string,64,PETSC_NULL);CHKERRQ(ierr);

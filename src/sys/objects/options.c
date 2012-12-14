@@ -1099,7 +1099,7 @@ PetscErrorCode  PetscOptionsSetAlias(const char inewname[],const char ioldname[]
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsFindPair_Private"
-static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char name[],char *value[],PetscBool  *flg)
+PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char name[],char *value[],PetscBool  *flg)
 {
   PetscErrorCode ierr;
   PetscInt       i,N;

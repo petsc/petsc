@@ -857,6 +857,20 @@ PetscErrorCode PetscViewerRestoreSubcomm_ASCII(PetscViewer viewer,MPI_Comm subco
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerView_ASCII"
+PetscErrorCode  PetscViewerView_ASCII(PetscViewer v,PetscViewer viewer)
+{
+  PetscErrorCode     ierr;
+  PetscViewer_ASCII *ascii  = (PetscViewer_ASCII *)v->data;
+
+  PetscFunctionBegin;
+  if (ascii->filename) {
+    ierr = PetscViewerASCIIPrintf(viewer,"Filename: %s\n",ascii->filename);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_ASCII"
@@ -875,6 +889,7 @@ PetscErrorCode  PetscViewerCreate_ASCII(PetscViewer viewer)
   viewer->ops->restoresingleton = PetscViewerRestoreSingleton_ASCII;
   viewer->ops->getsubcomm       = PetscViewerGetSubcomm_ASCII;
   viewer->ops->restoresubcomm   = PetscViewerRestoreSubcomm_ASCII;
+  viewer->ops->view             = PetscViewerView_ASCII;
 
   /* defaults to stdout unless set with PetscViewerFileSetName() */
   vascii->fd             = PETSC_STDOUT;

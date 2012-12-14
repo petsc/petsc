@@ -1232,6 +1232,20 @@ PetscErrorCode PetscViewerBinarySetMPIIO_Binary(PetscViewer viewer)
 EXTERN_C_END
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerView_Binary"
+PetscErrorCode  PetscViewerView_Binary(PetscViewer v,PetscViewer viewer)
+{
+  PetscErrorCode     ierr;
+  PetscViewer_Binary *binary  = (PetscViewer_Binary *)v->data;
+
+  PetscFunctionBegin;
+  if (binary->filename) {
+    ierr = PetscViewerASCIIPrintf(viewer,"Filename: %s\n",binary->filename);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Binary"
@@ -1247,6 +1261,7 @@ PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   ierr               = PetscNewLog(v,PetscViewer_Binary,&vbinary);CHKERRQ(ierr);
   v->data            = (void*)vbinary;
   v->ops->destroy    = PetscViewerDestroy_Binary;
+  v->ops->view       = PetscViewerView_Binary;
   v->ops->flush      = 0;
   v->iformat         = 0;
   vbinary->fdes_info = 0;

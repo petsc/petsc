@@ -244,6 +244,13 @@ PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer
   if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelViewer,&Petsc_Viewer_keyval,(void*)0);CHKERRQ(ierr);
   }
+  /*
+       It would be better to move this code to PetscFileSetName() but since it must return a preexiting communicator
+     we cannot do that, since PetscFileSetName() takes a communicator that already exists. 
+
+      Plus if the original communicator that created the file has since been close this will not detect the old
+      communictor and hence will overwrite the old data. It may be better to simply remove all this code
+  */
   /* make sure communicator is a PETSc communicator */
   ierr = PetscCommDuplicate(comm,&comm,PETSC_NULL);CHKERRQ(ierr);
   /* has file already been opened into a viewer */

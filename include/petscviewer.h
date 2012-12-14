@@ -189,6 +189,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerPopFormat(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerGetFormat(PetscViewer,PetscViewerFormat*);
 PETSC_EXTERN PetscErrorCode PetscViewerFlush(PetscViewer);
 
+PETSC_EXTERN PetscErrorCode PetscOptionsGetViewer(MPI_Comm,const char[],const char[],PetscViewer*,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscOptionsRestoreViewer(PetscViewer);
+
 /*
    Operations explicit to a particular class of viewers
 */
