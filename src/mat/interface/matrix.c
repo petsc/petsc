@@ -754,7 +754,7 @@ PetscErrorCode  MatSetUp(Mat A)
 
    Options Database Keys:
 +  -mat_view ::ascii_info - Prints info on matrix at conclusion of MatEndAssembly()
-.  -mat_view ::ascii_info_detailed - Prints more detailed info
+.  -mat_view ::ascii_info_detail - Prints more detailed info
 .  -mat_view - Prints matrix in ASCII format
 .  -mat_view ::ascii_matlab - Prints matrix in Matlab format
 .  -mat_view draw - PetscDraws nonzero structure of matrix, using MatView() and PetscDrawOpenX().
@@ -4818,8 +4818,8 @@ PetscErrorCode MatView_Private(Mat mat,const char optionname[])
   ierr = PetscOptionsGetViewer(((PetscObject)mat)->comm,((PetscObject)mat)->prefix,optionname,&viewer,&flg);
   if (flg) {
     ierr = MatView(mat,viewer);CHKERRQ(ierr);
+    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
   incall = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -4838,7 +4838,7 @@ PetscErrorCode MatView_Private(Mat mat,const char optionname[])
 
    Options Database Keys:
 +  -mat_view ::ascii_info - Prints info on matrix at conclusion of MatEndAssembly()
-.  -mat_view ::ascii_info_detailed - Prints more detailed info
+.  -mat_view ::ascii_info_detail - Prints more detailed info
 .  -mat_view - Prints matrix in ASCII format
 .  -mat_view ::ascii_matlab - Prints matrix in Matlab format
 .  -mat_view draw - PetscDraws nonzero structure of matrix, using MatView() and PetscDrawOpenX().

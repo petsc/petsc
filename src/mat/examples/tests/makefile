@@ -1617,7 +1617,7 @@ runex134:
 	   ${RM} -f ex134_1.tmp
 
 runex135:
-	-@${MPIEXEC} -n 4 ./ex135 -n 1000 -mat_view ::ascii_info_detailed | ${SED} 's,mem [0-9]\{5\},mem SKIP,' > ex135_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex135 -n 1000 -mat_view ::ascii_info_detail | ${SED} 's,mem [0-9]\{5\},mem SKIP,' > ex135_1.tmp 2>&1; \
 	   ${DIFF} output/ex135_1.out ex135_1.tmp || echo ${PWD} "\nPossible problem with ex135, diffs above \n========================================="; \
 	   ${RM} -f ex135_1.tmp
 
