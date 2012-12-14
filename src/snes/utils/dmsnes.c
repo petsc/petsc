@@ -166,6 +166,7 @@ PetscErrorCode DMSNESCopy(DMSNES kdm,DMSNES nkdm)
   PetscValidHeaderSpecific(kdm,DMSNES_CLASSID,1);
   PetscValidHeaderSpecific(nkdm,DMSNES_CLASSID,2);
   nkdm->ops->computefunction       = kdm->ops->computefunction;
+  nkdm->ops->computejacobian       = kdm->ops->computejacobian;
   nkdm->ops->computegs             = kdm->ops->computegs;
   nkdm->ops->computeobjective      = kdm->ops->computeobjective;
   nkdm->ops->computepjacobian      = kdm->ops->computepjacobian;
