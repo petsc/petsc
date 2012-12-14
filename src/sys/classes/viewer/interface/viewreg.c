@@ -23,7 +23,8 @@ PetscErrorCode PetscOptionsFindPair_Private(const char[],const char[],char *[],P
    Level: intermediate
 
    Notes: If no value is provided ascii:stdout is used
-$       ascii[:filename]    defaults to stdout
+$       ascii[:[filename][:format]]   defaults to stdout - format can be one of info, info_detailed, or matlab, for example ascii::info prints just the info
+$                                     about the object to standard out
 $       binary[:filename]   defaults to binaryoutput
 $       draw
 $       socket[:port]    defaults to the standard output port
@@ -54,37 +55,41 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
     if (!value) {
       ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
     } else {
-      PetscBool         isbinary = PETSC_FALSE,isascii = PETSC_FALSE;
-      char              *cvalue,*loc;
-      PetscInt          cnt;
-      const char  const *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,0};
+      char        *cvalue,*loc,*loc2 = PETSC_NULL;
+      PetscInt    cnt;
+      const char  *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,0};
 
       ierr = PetscStrallocpy(value,&cvalue);CHKERRQ(ierr);
       ierr = PetscStrchr(cvalue,':',&loc);CHKERRQ(ierr);
       if (loc) {*loc = 0; loc++;}
-      ierr = PetscStrendswithwhich(cvalue,viewers,&cnt);CHKERRQ(ierr);
+      ierr = PetscStrendswithwhich(*cvalue ? cvalue : "ascii",viewers,&cnt);CHKERRQ(ierr);
       if (cnt == 4) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown viewer type: %s",cvalue);
       if (!loc) {
-        ierr = PetscStrcmp(cvalue,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
-        if (isbinary) {
-          *viewer = PETSC_VIEWER_BINARY_(comm);CHKERRQ(ierr);
-          ierr = PetscFree(cvalue);CHKERRQ(ierr);
-          PetscFunctionReturn(0);
-        }
-        ierr = PetscStrcmp(cvalue,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-        if (isascii) {
+        if (cnt == 0) {
           ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
-          ierr = PetscFree(cvalue);CHKERRQ(ierr);
-          PetscFunctionReturn(0);
+        }
+        if (cnt == 1) {
+          *viewer = PETSC_VIEWER_BINARY_(comm);CHKERRQ(ierr);
+        }
+        if (cnt == 2) {
+          *viewer = PETSC_VIEWER_DRAW_(comm);CHKERRQ(ierr);
+        }
+        if (cnt == 3) {
+          *viewer = PETSC_VIEWER_SOCKET_(comm);CHKERRQ(ierr);
+        }
+      } else {
+        ierr = PetscStrchr(loc,':',&loc2);CHKERRQ(ierr);
+        if (loc2) {*loc2 = 0; loc2++;}
+        if (loc2 && !*loc) { /* ASCII format without file name */
+          ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
+          ierr = PetscViewerSetType(*viewer,*cvalue ? cvalue : "ascii");CHKERRQ(ierr);
+          ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+          ierr = PetscViewerFileSetName(*viewer,loc);CHKERRQ(ierr);
+          ierr = PetscObjectComposeFunction((PetscObject)*viewer,"PetscOptionsDestroyViewer","PetscViewerDestroy",(void (*)(void))PetscViewerDestroy);CHKERRQ(ierr);
         }
       }
-      ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(*viewer,cvalue);CHKERRQ(ierr);
-      if (loc) {
-        ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-        ierr = PetscViewerFileSetName(*viewer,loc);CHKERRQ(ierr);
-      }
-      ierr = PetscObjectComposeFunction((PetscObject)*viewer,"PetscOptionsDestroyViewer","PetscViewerDestroy",(void (*)(void))PetscViewerDestroy);CHKERRQ(ierr);
       ierr = PetscFree(cvalue);CHKERRQ(ierr);
       ierr = PetscViewerSetUp(*viewer);CHKERRQ(ierr);
     }
