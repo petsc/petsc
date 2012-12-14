@@ -57,25 +57,33 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
     } else {
       char        *cvalue,*loc,*loc2 = PETSC_NULL;
       PetscInt    cnt;
-      const char  *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,0};
+      const char  *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,0};
 
       ierr = PetscStrallocpy(value,&cvalue);CHKERRQ(ierr);
       ierr = PetscStrchr(cvalue,':',&loc);CHKERRQ(ierr);
       if (loc) {*loc = 0; loc++;}
       ierr = PetscStrendswithwhich(*cvalue ? cvalue : "ascii",viewers,&cnt);CHKERRQ(ierr);
-      if (cnt == 4) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown viewer type: %s",cvalue);
+      if (cnt > sizeof(viewers)-1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown viewer type: %s",cvalue);
       if (!loc) {
-        if (cnt == 0) {
+        switch (cnt) {
+        case 0: 
           ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
-        }
-        if (cnt == 1) {
+          break;
+        case 1:
           *viewer = PETSC_VIEWER_BINARY_(comm);CHKERRQ(ierr);
-        }
-        if (cnt == 2) {
+          break;
+        case 2:
           *viewer = PETSC_VIEWER_DRAW_(comm);CHKERRQ(ierr);
-        }
-        if (cnt == 3) {
+          break;
+        case 3:
           *viewer = PETSC_VIEWER_SOCKET_(comm);CHKERRQ(ierr);
+          break;
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+        case 4:
+          *viewer = PETSC_VIEWER_MATLAB_(comm);CHKERRQ(ierr);
+          break;
+#endif
+        default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported viewer %s",cvalue);CHKERRQ(ierr);
         }
       } else {
         ierr = PetscStrchr(loc,':',&loc2);CHKERRQ(ierr);

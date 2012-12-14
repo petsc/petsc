@@ -4815,7 +4815,7 @@ PetscErrorCode MatView_Private(Mat mat,const char optionname[])
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
-  ierr = PetscOptionsGetViewer(((PetscObject)mat)->comm,((PetscObject)mat)->prefix,optionname,&viewer,&flg);
+  ierr = PetscOptionsGetViewer(((PetscObject)mat)->comm,((PetscObject)mat)->prefix,optionname,&viewer,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatView(mat,viewer);CHKERRQ(ierr);
     ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
