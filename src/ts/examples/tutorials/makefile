@@ -387,7 +387,7 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
                             ex10.PETSc runex10 runex10_2 runex10_3  ex10.rm \
-                            ex11.PETSc ex11.rm ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
+                            ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm \
                             ex17.PETSc runex17 runex17_2 ex17.rm ex22.PETSc ex22.rm
 TESTEXAMPLES_C_X	  = 
@@ -395,5 +395,6 @@ TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm e
 TESTEXAMPLES_C_X_MPIUNI = 
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm
+TESTEXAMPLES_EXODUSII = ex11.PETSc runex11 ex11.rm
 
 include ${PETSC_DIR}/conf/test
