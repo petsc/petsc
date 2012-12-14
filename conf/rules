@@ -82,23 +82,17 @@ chkopts: petscnagupgrade
 
 #
 # uses the cmake infrastructure to build/rebuild the libraries
-cmake: chk_makej
+ccmake: chk_makej
 	@echo "Building PETSc using CMake with ${MAKE_NP} build threads"
 	@echo "=========================================="
-	@cd ${PETSC_DIR}/${PETSC_ARCH} && ${OMAKE} -j ${MAKE_NP} VERBOSE=1
+	@cd ${PETSC_DIR}/${PETSC_ARCH} && ${OMAKE} -j ${MAKE_NP} VERBOSE=${VERBOSE}
 	@if [ "${BUILDSHAREDLIB}" = "yes" -a "${DSYMUTIL}" != "true" ]; then \
         echo "Running ${DSYMUTIL} on ${SHLIBS}";\
         for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
 	@echo "========================================="
 
-ccmake: chk_makej
-	@echo "Building PETSc using CMake with ${MAKE_NP} build threads"
-	@echo "=========================================="
-	@cd ${PETSC_DIR}/${PETSC_ARCH} && ${OMAKE} -j ${MAKE_NP}
-	@if [ "${BUILDSHAREDLIB}" = "yes" -a "${DSYMUTIL}" != "true" ]; then \
-        echo "Running ${DSYMUTIL} on ${SHLIBS}";\
-        for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
-	@echo "========================================="
+cmake: chk_makej
+	@${OMAKE} ccmake VERBOSE=1
 
 # Does nothing; needed for some rules that require actions.
 foo:
