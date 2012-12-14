@@ -294,7 +294,7 @@ PetscErrorCode TaoSetEqualityConstraintsRoutine(TaoSolver tao, Vec ce, PetscErro
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
-    tao->constraints = ce;
+    tao->constraints_equality = ce;
     tao->user_con_equalityP = ctx;
     tao->ops->computeequalityconstraints = func;
     PetscFunctionReturn(0);
@@ -331,7 +331,7 @@ PetscErrorCode TaoSetInequalityConstraintsRoutine(TaoSolver tao, Vec ci, PetscEr
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
-    tao->constraints = ci;
+    tao->constraints_inequality = ci;
     tao->user_con_inequalityP = ctx;
     tao->ops->computeinequalityconstraints = func;
     PetscFunctionReturn(0);

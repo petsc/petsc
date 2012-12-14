@@ -56,6 +56,7 @@ typedef struct {
 /* -------- User-defined Routines --------- */
 
 PetscErrorCode InitializeProblem(AppCtx*);
+PetscErrorCode DestroyProblem(AppCtx *);
 PetscErrorCode FormFunctionGradient(TaoSolver,Vec,PetscReal *,Vec,void *);
 PetscErrorCode FormHessian(TaoSolver,Vec,Mat*,Mat*, MatStructure *,void*);
 PetscErrorCode FormInequalityConstraints(TaoSolver,Vec,Vec,void*);
@@ -74,33 +75,32 @@ PetscErrorCode main(int argc,char **argv)
   Vec         ceq,cin;
   PetscBool   flg;                 /* A return value when checking for use options */
   TaoSolver   tao;                 /* TaoSolver solver context */
-  Vec         constraintsE,constraintsI;
   TaoSolverTerminationReason reason;        
   AppCtx      user;                /* application context */
 
   /* Initialize TAO,PETSc */
-
-  /* Specify default parameters for the problem, check for command-line overrides */
-  ierr = PetscStrncpy(user.name,"LOTSCHD",8); CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-cutername",&user.name,24,&flg);CHKERRQ(ierr);
-
   PetscInitialize(&argc,&argv,(char *)0,help);
   TaoInitialize(&argc,&argv,(char *)0,help);
+
+  /* Specify default parameters for the problem, check for command-line overrides */
+  ierr = PetscStrncpy(user.name,"HS21",8); CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-cutername",user.name,24,&flg);CHKERRQ(ierr);
+
   PetscPrintf(PETSC_COMM_SELF,"\n---- MAROS Problem %s -----\n",user.name);CHKERRQ(ierr);
   ierr = InitializeProblem(&user);CHKERRQ(ierr);
-  ierr = VecDuplicate(user->d,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(user->beq,&ceq);CHKERRQ(ierr);
-  ierr = VecDuplicate(user->bin,&cin);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.d,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.beq,&ceq);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.bin,&cin);CHKERRQ(ierr);
   ierr = VecSet(x,1.0);CHKERRQ(ierr);
 
   ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,TAO_IPM);CHKERRQ(ierr);
+  ierr = TaoSetType(tao,"tao_ipm");CHKERRQ(ierr);
   ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormObjectiveAndGradient,(void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetEqualityConstraintsRoutine(tao,ceq,FormEqualityConstraints,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetInequalityConstraintsRoutine(tao,cin,FormInequalityConstraints,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetEqualityJacobianRoutine(tao,user.Aeq,user.Aeq,FormEqualityJacobian,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetInequalityJacobianRoutine(tao,user.Ain,user.Ain,FormInequalityJacobian,(void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetJacobianEqualityRoutine(tao,user.Aeq,user.Aeq,FormEqualityJacobian,(void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetJacobianInequalityRoutine(tao,user.Ain,user.Ain,FormInequalityJacobian,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
 
@@ -134,16 +134,17 @@ PetscErrorCode main(int argc,char **argv)
 #define __FUNCT__ "InitializeProblem"
 PetscErrorCode InitializeProblem(AppCtx *user)
 {
+  PetscErrorCode ierr;
   PetscViewer loader;
-  MPIComm     comm;
+  MPI_Comm    comm;
   PetscInt    nrows,ncols,i;
   PetscScalar one=1.0;
-  char[128]   filebase;
-  char[128]   filename;
+  char        filebase[128];
+  char        filename[128];
 
   PetscFunctionBegin;
   comm = PETSC_COMM_SELF;
-  ierr = PetscStrncpy(filebase,user.name,128);CHKERRQ(ierr);
+  ierr = PetscStrncpy(filebase,user->name,128);CHKERRQ(ierr);
   ierr = PetscStrncat(filebase,"/",1);CHKERRQ(ierr);
 
 
@@ -152,32 +153,36 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   ierr = PetscStrncat(filename,"f",3);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);CHKERRQ(ierr);
   if (ierr) {
-    SETERRQ(comm,"file 'f' not found");
+    SETERRQ(comm,0,"file 'f' not found");
   } else {
     ierr = VecCreate(comm,&user->d);CHKERRQ(ierr);
     ierr = VecLoad(user->d,loader);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&loader);CHKERRQ(ierr);
     ierr = VecGetSize(user->d,&nrows);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(user->d);CHKERRQ(ierr);
     user->n = nrows;
   }
     
   ierr = PetscStrncpy(filename,filebase,128);CHKERRQ(ierr);
   ierr = PetscStrncat(filename,"H",3);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);CHKERRQ(ierr);
-  user->n=0;
+
   if (ierr) {
     user->H = 0;
   } else {
     ierr = MatCreate(comm,&user->H);CHKERRQ(ierr);
+    ierr = MatSetSizes(user->H,PETSC_DECIDE,PETSC_DECIDE,nrows,nrows);CHKERRQ(ierr);
     ierr = MatLoad(user->H,loader);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&loader);CHKERRQ(ierr);
+    ierr = MatView(user->H,PETSC_VIEWER_STDOUT_SELF);
     ierr = MatGetSize(user->H,&nrows,&ncols);CHKERRQ(ierr);
     if (nrows != user->n) {
-      SETERRQ(comm,"H: nrows != n\n");
+      SETERRQ(comm,0,"H: nrows != n\n");
     }
     if (ncols != user->n) {
-      SETERRQ(comm,"H: ncols != n\n");
+      SETERRQ(comm,0,"H: ncols != n\n");
     }
+    ierr = MatSetFromOptions(user->H);CHKERRQ(ierr);
 
   }
 
@@ -193,8 +198,9 @@ PetscErrorCode InitializeProblem(AppCtx *user)
     ierr = PetscViewerDestroy(&loader);CHKERRQ(ierr);
     ierr = MatGetSize(user->Aeq,&nrows,&ncols);CHKERRQ(ierr);
     if (ncols != user->n) {
-      SETERRQ(comm,"Aeq ncols != H nrows\n");
+      SETERRQ(comm,0,"Aeq ncols != H nrows\n");
     }
+    ierr = MatSetFromOptions(user->Aeq);CHKERRQ(ierr);
     user->me = nrows;
   }
 
@@ -209,13 +215,15 @@ PetscErrorCode InitializeProblem(AppCtx *user)
     ierr = PetscViewerDestroy(&loader);CHKERRQ(ierr);
     ierr = VecGetSize(user->beq,&nrows);CHKERRQ(ierr);
     if (nrows != user->me) {
-      SETERRQ(comm,"Aeq nrows != Beq n\n");
+      SETERRQ(comm,0,"Aeq nrows != Beq n\n");
     }
+    ierr = VecSetFromOptions(user->beq); CHKERRQ(ierr);
   }
 
   user->mi = user->n;
   /* Ain = eye(n,n) */
   ierr = MatCreate(comm,&user->Ain);CHKERRQ(ierr);
+  ierr = MatSetType(user->Ain,MATAIJ); CHKERRQ(ierr);
   ierr = MatSetSizes(user->Ain,user->mi,user->mi,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(user->Ain,1,PETSC_NULL);CHKERRQ(ierr);
   for (i=0;i<user->mi;i++) {
@@ -223,11 +231,14 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   }
   ierr = MatAssemblyBegin(user->Ain,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(user->Ain,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(user->Ain); CHKERRQ(ierr);
 
   /* bin = [0,0 ... 0]' */
   ierr = VecCreate(comm,&user->bin);CHKERRQ(ierr);
-  ierr = VecSetSize(user->bin,&user->mi,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetType(user->bin,VECMPI);CHKERRQ(ierr);
+  ierr = VecSetSizes(user->bin,user->mi,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSet(user->bin,0.0);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(user->bin); CHKERRQ(ierr);
   user->m = user->me + user->mi;
   PetscFunctionReturn(0);
 }
@@ -236,12 +247,15 @@ PetscErrorCode InitializeProblem(AppCtx *user)
 #define __FUNCT__ "DestroyProblem"
 PetscErrorCode DestroyProblem(AppCtx *user)
 {
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
   ierr = MatDestroy(&user->H);CHKERRQ(ierr);
   ierr = MatDestroy(&user->Aeq);CHKERRQ(ierr);
   ierr = MatDestroy(&user->Ain);CHKERRQ(ierr);
   ierr = VecDestroy(&user->beq);CHKERRQ(ierr);
   ierr = VecDestroy(&user->bin);CHKERRQ(ierr);
   ierr = VecDestroy(&user->d);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionGradient"
@@ -273,25 +287,29 @@ PetscErrorCode FormHessian(TaoSolver tao, Vec x, Mat *H, Mat *Hpre, MatStructure
   PetscFunctionReturn(0);
 }
 
-#unedf __FUNCT__
-#define __FUNCT__ "FormInequaliteConstraints"
+#undef __FUNCT__
+#define __FUNCT__ "FormInequalityConstraints"
 PetscErrorCode FormInequalityConstraints(TaoSolver tao, Vec x, Vec ci, void *ctx)
 {
-  AppCtx *user = (AppCtx*)ctx;
+  //AppCtx *user = (AppCtx*)ctx;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   /* 
   ierr = MatMult(user->Ain,x,ci);CHKERRQ(ierr);
-  ierr = VecAXPY(ci,-1.0,user->bin);CHKERRQ(ierr);
-  /*
+  ierr = VecAXPY(ci,-1.0,user->bin);CHKERRQ(ierr);*/
+
   /* Special case -- Ain =I and bin =0 */
   ierr = VecCopy(x,ci);CHKERRQ(ierr);
   PetscFunctionReturn(0);
   
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "FormEqualityConstraints"
 PetscErrorCode FormEqualityConstraints(TaoSolver tao, Vec x, Vec ce,void *ctx)
 {
   AppCtx *user = (AppCtx*)ctx;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
 
   ierr = MatMult(user->Aeq,x,ce);CHKERRQ(ierr);
