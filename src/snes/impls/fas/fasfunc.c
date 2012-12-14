@@ -115,9 +115,10 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms) {
     fas->next = PETSC_NULL;
     if (i > 0) {
       ierr = SNESCreate(comm, &fas->next);CHKERRQ(ierr);
+      ierr = SNESGetOptionsPrefix(fas->fine, &optionsprefix);CHKERRQ(ierr);
       sprintf(tprefix,"fas_levels_%d_cycle_",(int)fas->level);
-      ierr = SNESAppendOptionsPrefix(fas->next,tprefix);CHKERRQ(ierr);
       ierr = SNESAppendOptionsPrefix(fas->next,optionsprefix);CHKERRQ(ierr);
+      ierr = SNESAppendOptionsPrefix(fas->next,tprefix);CHKERRQ(ierr);
       ierr = SNESSetType(fas->next, SNESFAS);CHKERRQ(ierr);
       ierr = SNESSetTolerances(fas->next, fas->next->abstol, fas->next->rtol, fas->next->stol, fas->n_cycles, fas->next->max_funcs);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)fas->next, (PetscObject)snes, levels - i);CHKERRQ(ierr);
