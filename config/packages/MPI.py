@@ -400,6 +400,8 @@ class Configure(config.package.Package):
     if not self.framework.argDB['with-shared-libraries']:
       args.append('--enable-shared=no')
       args.append('--enable-static=yes')
+    # openmpi install breaks with papi-5?
+    args.append('--disable-vt')
     args = ' '.join(args)
 
     f = file(os.path.join(self.packageDir, 'args.petsc'), 'w')
