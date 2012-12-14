@@ -129,10 +129,10 @@ static PetscErrorCode TaoSetup_IPM(TaoSolver tao)
   kgrid[2] = ipmP->Ae_T;
   kgrid[3] = ipmP->mAi_T;
 
-  kgrid[4] = tao->jacobian_inequality;
+  kgrid[4] = tao->jacobian_equality;
   kgrid[5] = kgrid[6] = kgrid[7] = PETSC_NULL;
 
-  kgrid[8] = tao->jacobian_equality;
+  kgrid[8] = tao->jacobian_inequality;
   kgrid[9] = ipmP->minusI;
   kgrid[10] = kgrid[11] = kgrid[12] = PETSC_NULL;
   kgrid[13] = ipmP->L;
