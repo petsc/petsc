@@ -236,70 +236,13 @@ PetscErrorCode  VecView_Private(Vec vec)
 {
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
+  PetscViewer    viewer;
 
   PetscFunctionBegin;
-  ierr = PetscObjectOptionsBegin((PetscObject)vec);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-vec_view_info","Information on vector size","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      PetscViewer viewer;
-
-      ierr = PetscViewerASCIIGetStdout(((PetscObject)vec)->comm,&viewer);CHKERRQ(ierr);
-      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-      ierr = VecView(vec,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    }
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-vec_view","Print vector to stdout","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      PetscViewer viewer;
-      ierr = PetscViewerASCIIGetStdout(((PetscObject)vec)->comm,&viewer);CHKERRQ(ierr);
-      ierr = VecView(vec,viewer);CHKERRQ(ierr);
-    }
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-vec_view_matlab","Print vector to stdout in a format MATLAB can read","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      PetscViewer viewer;
-      ierr = PetscViewerASCIIGetStdout(((PetscObject)vec)->comm,&viewer);CHKERRQ(ierr);
-      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-      ierr = VecView(vec,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    }
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-vec_view_matlab_file","Print vector to matlaboutput.mat format MATLAB can read","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = VecView(vec,PETSC_VIEWER_MATLAB_(((PetscObject)vec)->comm));CHKERRQ(ierr);
-    }
-#endif
-#if defined(PETSC_USE_SOCKET_VIEWER)
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-vec_view_socket","Send vector to socket (can be read from matlab)","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = VecView(vec,PETSC_VIEWER_SOCKET_(((PetscObject)vec)->comm));CHKERRQ(ierr);
-      ierr = PetscViewerFlush(PETSC_VIEWER_SOCKET_(((PetscObject)vec)->comm));CHKERRQ(ierr);
-    }
-#endif
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-vec_view_binary","Save vector to file in binary format","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = VecView(vec,PETSC_VIEWER_BINARY_(((PetscObject)vec)->comm));CHKERRQ(ierr);
-      ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(((PetscObject)vec)->comm));CHKERRQ(ierr);
-    }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  /* These invoke PetscDrawGetDraw which invokes PetscOptionsBegin/End, */
-  /* hence they should not be inside the above PetscOptionsBegin/End block. */
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)vec)->prefix,"-vec_view_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(((PetscObject)vec)->comm,((PetscObject)vec)->prefix,"-vec_view",&viewer,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = VecView(vec,PETSC_VIEWER_DRAW_(((PetscObject)vec)->comm));CHKERRQ(ierr);
-    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(((PetscObject)vec)->comm));CHKERRQ(ierr);
-  }
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)vec)->prefix,"-vec_view_draw_lg",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerSetFormat(PETSC_VIEWER_DRAW_(((PetscObject)vec)->comm),PETSC_VIEWER_DRAW_LG);CHKERRQ(ierr);
-    ierr = VecView(vec,PETSC_VIEWER_DRAW_(((PetscObject)vec)->comm));CHKERRQ(ierr);
-    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(((PetscObject)vec)->comm));CHKERRQ(ierr);
+    ierr = VecView(vec,viewer);CHKERRQ(ierr);
+    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -317,12 +260,12 @@ PetscErrorCode  VecView_Private(Vec vec)
 
    Options Database Keys:
 +  -vec_view - Prints vector in ASCII format
-.  -vec_view_matlab - Prints vector in ASCII MATLAB format to stdout
-.  -vec_view_matlab_file - Prints vector in MATLAB format to matlaboutput.mat
-.  -vec_view_draw - Activates vector viewing using drawing tools
+.  -vec_view ::ascii_matlab - Prints vector in ASCII MATLAB format to stdout
+.  -vec_view matlab:filename - Prints vector in MATLAB format to matlaboutput.mat
+.  -vec_view draw - Activates vector viewing using drawing tools
 .  -display <name> - Sets display name (default is host)
 .  -draw_pause <sec> - Sets number of seconds to pause after display
--  -vec_view_socket - Activates vector viewing using a socket
+-  -vec_view socket - Activates vector viewing using a socket
 
    Level: beginner
 
@@ -655,31 +598,6 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
   if (m < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of vectors %D",m);
   ierr = (*(**vv)->ops->destroyvecs)(m,*vv);CHKERRQ(ierr);
   *vv = 0;
-  PetscFunctionReturn(0);
-}
-
-#undef  __FUNCT__
-#define __FUNCT__ "VecViewFromOptions"
-/*@
-  VecViewFromOptions - This function visualizes the vector based upon user options.
-
-  Collective on Vec
-
-  Input Parameters:
-. vec   - The vector
-. title - The title (currently ignored)
-
-  Level: intermediate
-
-.keywords: Vec, view, options, database
-.seealso: VecSetFromOptions(), VecView()
-@*/
-PetscErrorCode  VecViewFromOptions(Vec vec, const char *title)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecView_Private(vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1456,8 +1374,6 @@ PetscErrorCode  VecSetFromOptions(Vec vec)
     /* process any options handlers added with PetscObjectAddOptionsHandler() */
     ierr = PetscObjectProcessOptionsHandlers((PetscObject)vec);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
-  ierr = VecViewFromOptions(vec, ((PetscObject)vec)->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

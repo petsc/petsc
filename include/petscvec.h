@@ -387,7 +387,6 @@ PETSC_EXTERN PetscErrorCode VecGetArrays(const Vec[],PetscInt,PetscScalar**[]);
 PETSC_EXTERN PetscErrorCode VecRestoreArrays(const Vec[],PetscInt,PetscScalar**[]);
 
 PETSC_EXTERN PetscErrorCode VecView(Vec,PetscViewer);
-PETSC_EXTERN PetscErrorCode VecViewFromOptions(Vec, const char *);
 PETSC_EXTERN PetscErrorCode VecEqual(Vec,Vec,PetscBool *);
 PETSC_EXTERN PetscErrorCode VecLoad(Vec, PetscViewer);
 

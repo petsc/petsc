@@ -32,7 +32,7 @@ PetscInt main(PetscInt argc,char **args)
 #endif
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "FFTW Options", "ex143");CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-vec_view_draw", "View the vectors", "ex143", view, &view, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-vec_view draw", "View the vectors", "ex143", view, &view, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex143",use_interface, &use_interface, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
