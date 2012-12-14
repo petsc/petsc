@@ -646,6 +646,31 @@ PetscErrorCode  PetscStrtolower(char a[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscStrtoupper"
+/*@C
+   PetscStrtolower - Converts string to upper case
+
+   Not Collective
+
+   Input Parameters:
+.  a - pointer to string
+
+   Level: intermediate
+
+   Notes:    Not for use in Fortran
+
+@*/
+PetscErrorCode  PetscStrtoupper(char a[])
+{
+  PetscFunctionBegin;
+  while (*a) {
+    if (*a >= 'a' && *a <= 'z') *a += 'A' - 'a';
+    a++;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrendswith"
 /*@C
    PetscStrendswith - Determines if a string ends with a certain string

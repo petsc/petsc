@@ -90,8 +90,15 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
           ierr = PetscObjectComposeFunction((PetscObject)*viewer,"PetscOptionsDestroyViewer","PetscViewerDestroy",(void (*)(void))PetscViewerDestroy);CHKERRQ(ierr);
         }
       }
-      ierr = PetscFree(cvalue);CHKERRQ(ierr);
       ierr = PetscViewerSetUp(*viewer);CHKERRQ(ierr);
+      if (loc2 && *loc2) {
+        ierr = PetscStrtoupper(loc2);CHKERRQ(ierr);
+        ierr = PetscStrendswithwhich(loc2,PetscViewerFormats,&cnt);CHKERRQ(ierr);
+        if (!PetscViewerFormats[cnt]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2);CHKERRQ(ierr);
+        ierr = PetscViewerPushFormat(*viewer,(PetscViewerFormat)cnt);CHKERRQ(ierr);
+        ierr = PetscObjectComposeFunction((PetscObject)*viewer,"PetscOptionsPopViewer","PetscViewerPopFormat",(void (*)(void))PetscViewerPopFormat);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(cvalue);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -119,9 +126,13 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
 @*/
 PetscErrorCode  PetscOptionsRestoreViewer(PetscViewer viewer)
 {
-  PetscErrorCode ierr,(*f)(PetscViewer*);
+  PetscErrorCode ierr,(*f)(PetscViewer*),(*g)(PetscViewer);
 
   PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscOptionsPopViewer",(void (**)(void))&g);CHKERRQ(ierr);
+  if (g) {
+    ierr = (*g)(viewer);CHKERRQ(ierr);
+  }
   ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscOptionsDestroyViewer",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(&viewer);CHKERRQ(ierr);

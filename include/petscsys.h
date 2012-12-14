@@ -1111,6 +1111,7 @@ PETSC_EXTERN PetscErrorCode PetscStrncat(char[],const char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscStrncpy(char[],const char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscStrchr(const char[],char,char *[]);
 PETSC_EXTERN PetscErrorCode PetscStrtolower(char[]);
+PETSC_EXTERN PetscErrorCode PetscStrtoupper(char[]);
 PETSC_EXTERN PetscErrorCode PetscStrrchr(const char[],char,char *[]);
 PETSC_EXTERN PetscErrorCode PetscStrstr(const char[],const char[],char *[]);
 PETSC_EXTERN PetscErrorCode PetscStrrstr(const char[],const char[],char *[]);
