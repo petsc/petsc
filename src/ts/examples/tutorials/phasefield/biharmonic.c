@@ -122,7 +122,7 @@ int main(int argc,char **argv)
   ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,J,J,FormJacobian,&ctx);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxsteps,.02);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_INTERPOLATE);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
