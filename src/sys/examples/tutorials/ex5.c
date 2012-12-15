@@ -115,17 +115,6 @@ int main(int argc,char **argv)
   ierr = PetscBagGetData(bag,(void**)&params);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"The value of rho after loading is: %f\n",(double)params->rho);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_SOCKET_VIEWER)
-  {
-    PetscBool  flg;
-    ierr = PetscOptionsName("-bag_view_socket","Sends bag to socket (can be read from matlab)","PetscBagView",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscBagView(bag,PETSC_VIEWER_SOCKET_(PETSC_COMM_WORLD));CHKERRQ(ierr);
-      ierr = PetscViewerFlush(PETSC_VIEWER_SOCKET_(PETSC_COMM_WORLD));CHKERRQ(ierr);
-    }
-  }
-#endif
-
   /* clean up and exit */
   ierr = PetscBagDestroy(&bag);CHKERRQ(ierr);
   ierr = PetscFinalize();

@@ -295,8 +295,13 @@ PetscErrorCode  KSPSetUp(KSP ksp)
 .  -ksp_plot_eigenvalues - plot the computed eigenvalues in an X-window
 .  -ksp_compute_eigenvalues_explicitly - compute the eigenvalues by forming the dense operator and useing LAPACK
 .  -ksp_plot_eigenvalues_explicitly - plot the explicitly computing eigenvalues
-.  -ksp_view_binary - save matrix and right hand side that define linear system to the default binary viewer (can be
-                                read later with src/ksp/examples/tutorials/ex10.c for testing solvers)
+.  -ksp_view_mat binary - save matrix to the default binary viewer
+.  -ksp_view_pmat binary - save matrix to the default binary viewer
+.  -ksp_view_rhs binary - save matrix to the default binary viewer
+.  -ksp_view_solution binary - save matrix to the default binary viewer
+           (can be read later with src/ksp/examples/tutorials/ex10.c for testing solvers)
+.  -ksp_view_mat_explicit - for matrix-free operators, computes the matrix entries and views them
+.  -ksp_view_preconditioned_operator_explicit - computes the product of the preconditioner and matrix as an explicit matrix and views it
 .  -ksp_converged_reason - print reason for converged or diverged, also prints number of iterations
 .  -ksp_final_residual - print 2-norm of true linear system residual at the end of the solution process
 -  -ksp_view - print the ksp data structure at the end of the system solution
@@ -332,10 +337,8 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscBool      flag1,flag2,flag3,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
-  char           view[10];
-  char           filename[PETSC_MAX_PATH_LEN];
   PetscViewer    viewer;
-
+  Mat            mat,premat;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -358,29 +361,15 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ksp->vec_sol = x;
   }
 
-  flag1 = flag2 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_view_binary",&flag1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_view_binary_pre",&flag2,PETSC_NULL);CHKERRQ(ierr);
-  if (flag1 || flag2) {
-    Mat         mat,premat;
-    PetscViewer viewer = PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm);
-    ierr = PCGetOperators(ksp->pc,&mat,&premat,PETSC_NULL);CHKERRQ(ierr);
-    if (flag1) {ierr = MatView(mat,viewer);CHKERRQ(ierr);}
-    if (flag2) {ierr = MatView(premat,viewer);CHKERRQ(ierr);}
-    ierr = VecView(ksp->vec_rhs,viewer);CHKERRQ(ierr);
-  }
+  ierr = PCGetOperators(ksp->pc,&mat,&premat,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(mat,"-ksp_view_mat");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(premat,"-ksp_view_mat");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ksp->vec_rhs,"-ksp_view_rhs");CHKERRQ(ierr);
+
   ierr = PetscLogEventBegin(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
   /* reset the residual history list if requested */
   if (ksp->res_hist_reset) ksp->res_hist_len = 0;
-
-  ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view_before",view,10,&flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)ksp)->comm,&viewer);CHKERRQ(ierr);
-    ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
-  }
-
   ksp->transpose_solve = PETSC_FALSE;
 
   if (ksp->guess) {
@@ -573,43 +562,19 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = PetscFree2(r,c);CHKERRQ(ierr);
   }
 
-  flag2 = PETSC_FALSE;
-  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_view_operator",&flag2,PETSC_NULL);CHKERRQ(ierr);
-  if (flag2) {
-    Mat         A,B;
-    PetscViewer viewer;
-
-    ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)ksp)->comm,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = MatView(B,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
-  }
-  flag2 = PETSC_FALSE;
-  ierr  = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_view_operator_binary",&flag2,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_mat_explicit",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat A,B;
     ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
+    ierr = MatViewFromOptions(B,"-ksp_view_mat_exlicit");CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
-  flag2 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_binary",&flag2,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_explicit",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat B;
     ierr = KSPComputeExplicitOperator(ksp,&B);CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
-  }
-  flag2 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_view_preconditioner_binary",&flag2,PETSC_NULL);CHKERRQ(ierr);
-  if (flag2) {
-    Mat B;
-    ierr = PCComputeExplicitOperator(ksp->pc,&B);CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
+    ierr = MatViewFromOptions(B,"-ksp_view_preconditioned_operator_explicit");CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetViewer(((PetscObject)ksp)->comm,((PetscObject)ksp)->prefix,"-ksp_view",&viewer,&flg);CHKERRQ(ierr);
@@ -617,6 +582,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
     ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
   }
+
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_final_residual",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
@@ -632,23 +598,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecDestroy(&t);CHKERRQ(ierr);
     ierr = PetscPrintf(((PetscObject)ksp)->comm,"KSP final norm of residual %G\n",norm);CHKERRQ(ierr);
   }
-  flg = PETSC_FALSE;
-  ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view_solution",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewer viewer;
-    viewer = PETSC_VIEWER_DRAW_(((PetscObject)ksp)->comm);
-    ierr = VecView(ksp->vec_sol,viewer);CHKERRQ(ierr);
-  }
-  flg = PETSC_FALSE;
-  ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view_solution_vtk",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscViewer viewer;
-    ierr = PetscViewerCreate(((PetscObject)ksp)->comm,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer,filename);CHKERRQ(ierr);
-    ierr = VecView(ksp->vec_sol,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = VecViewFromOptions(ksp->vec_sol,"-ksp_view_solution");CHKERRQ(ierr);
 
   if (inXisinB) {
     ierr = VecCopy(x,b);CHKERRQ(ierr);
