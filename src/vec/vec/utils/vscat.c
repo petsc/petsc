@@ -777,7 +777,7 @@ PetscErrorCode  VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
 
    Options Database Keys: (uses regular MPI_Sends by default)
 +  -vecscatter_view         - Prints detail of communications
-.  -vecscatter_view_info    - Print less details about communication
+.  -vecscatter_view ::ascii_info    - Print less details about communication
 .  -vecscatter_ssend        - Uses MPI_Ssend_init() instead of MPI_Send_init()
 .  -vecscatter_rsend           - use ready receiver mode for MPI sends
 .  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop
@@ -840,6 +840,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   MPI_Comm       comm,ycomm;
   PetscBool      ixblock,iyblock,iystride,islocal,cando,flag;
   IS             tix = 0,tiy = 0;
+  PetscViewer    viewer;
 
   PetscFunctionBegin;
   if (!ix && !iy) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_SUP,"Cannot pass default in for both input and output indices");
@@ -1439,21 +1440,11 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   *newctx = ctx;
   ierr = ISDestroy(&tix);CHKERRQ(ierr);
   ierr = ISDestroy(&tiy);CHKERRQ(ierr);
-  flag = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-vecscatter_view_info",&flag,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetViewer(((PetscObject)ctx)->comm,((PetscObject)ctx)->prefix,"-vecscatter_view",&viewer,&flag);CHKERRQ(ierr);
   if (flag) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = VecScatterView(ctx,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  }
-  flag = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-vecscatter_view",&flag,PETSC_NULL);CHKERRQ(ierr);
-  if (flag) {
-    PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
-    ierr = VecScatterView(ctx,viewer);CHKERRQ(ierr);
+    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
