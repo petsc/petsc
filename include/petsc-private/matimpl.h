@@ -208,8 +208,6 @@ PETSC_EXTERN MatBaseName MatBaseNameList;
 */
 PETSC_EXTERN PetscErrorCode MatConvert_Basic(Mat, MatType,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
-PETSC_EXTERN PetscErrorCode MatView_Private(Mat,const char[]);
-
 PETSC_EXTERN PetscErrorCode MatHeaderMerge(Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscInt*, PetscInt*,PetscInt*,PetscInt*, PetscInt**);

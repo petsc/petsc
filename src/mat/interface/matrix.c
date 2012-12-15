@@ -2864,7 +2864,7 @@ PetscErrorCode  MatLUFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
   ierr = (fact->ops->lufactornumeric)(fact,mat,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
 
-  ierr = MatView_Private(fact,"-mat_view");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(fact,"-mat_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3035,7 +3035,7 @@ PetscErrorCode  MatCholeskyFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *i
   ierr = (fact->ops->choleskyfactornumeric)(fact,mat,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_CholeskyFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
 
-  ierr = MatView_Private(fact,"-mat_view");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(fact,"-mat_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4800,12 +4800,12 @@ PetscErrorCode  MatAssembled(Mat mat,PetscBool  *assembled)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatView_Private"
+#define __FUNCT__ "MatViewFromOptions"
 /*
     Processes command line options to determine if/how a matrix
   is to be viewed. Called by MatAssemblyEnd() and MatLoad().
 */
-PetscErrorCode MatView_Private(Mat mat,const char optionname[])
+PetscErrorCode MatViewFromOptions(Mat mat,const char optionname[])
 {
   PetscErrorCode   ierr;
   PetscViewer      viewer;
@@ -4907,7 +4907,7 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
   }
 #endif
   if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
-    ierr = MatView_Private(mat,"-mat_view");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(mat,"-mat_view");CHKERRQ(ierr);
     ierr = PetscOptionsHasName(((PetscObject)mat)->prefix,"-mat_is_symmetric",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscReal tol = 0.0;
@@ -5201,7 +5201,7 @@ PetscErrorCode  MatZeroRowsColumns(Mat mat,PetscInt numRows,const PetscInt rows[
   MatCheckPreallocated(mat,1);
 
   ierr = (*mat->ops->zerorowscolumns)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
-  ierr = MatView_Private(mat,"-mat_view");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(mat,"-mat_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
@@ -5327,7 +5327,7 @@ PetscErrorCode  MatZeroRows(Mat mat,PetscInt numRows,const PetscInt rows[],Petsc
   MatCheckPreallocated(mat,1);
 
   ierr = (*mat->ops->zerorows)(mat,numRows,rows,diag,x,b);CHKERRQ(ierr);
-  ierr = MatView_Private(mat,"-mat_view");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(mat,"-mat_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
@@ -7569,7 +7569,7 @@ PetscErrorCode  MatSetValuesAdic(Mat mat,void *v)
   if (!mat->ops->setvaluesadic) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = (*mat->ops->setvaluesadic)(mat,v);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  ierr = MatView_Private(mat,"-mat_view");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(mat,"-mat_view");CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

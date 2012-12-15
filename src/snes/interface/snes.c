@@ -3597,7 +3597,6 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode  VecView_Private(Vec,const char[]);
 #undef __FUNCT__
 #define __FUNCT__ "SNESSolve"
 /*@C
@@ -3719,7 +3718,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     ierr = SNESView(snes,viewer);CHKERRQ(ierr);
     ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
   }
-  ierr = VecView_Private(snes->vec_sol,"-snes_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(snes->vec_sol,"-snes_view_solution");CHKERRQ(ierr);
 
   ierr = VecDestroy(&xcreated);CHKERRQ(ierr);
   PetscFunctionReturn(0);
