@@ -201,7 +201,7 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
       ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscRandomViewFromOptions(rnd, ((PetscObject)rnd)->name);CHKERRQ(ierr);
+  ierr = PetscRandomViewFromOptions(rnd, "-random_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -276,38 +276,17 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
 .keywords: PetscRandom, view, options, database
 .seealso: PetscRandomSetFromOptions()
 @*/
-PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, char *title)
+PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, const char optionname[])
 {
-  PetscBool      opt = PETSC_FALSE;
+  PetscBool      flg;
   PetscViewer    viewer;
-  char           typeName[1024];
-  char           fileName[PETSC_MAX_PATH_LEN];
-  size_t         len;
-
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject)rnd)->prefix, "-random_view", &opt,PETSC_NULL);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscOptionsGetString(((PetscObject)rnd)->prefix, "-random_view", typeName, 1024, &opt);CHKERRQ(ierr);
-    ierr = PetscStrlen(typeName, &len);CHKERRQ(ierr);
-    if (len > 0) {
-      ierr = PetscViewerCreate(((PetscObject)rnd)->comm, &viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer, typeName);CHKERRQ(ierr);
-      ierr = PetscOptionsGetString(((PetscObject)rnd)->prefix, "-random_view_file", fileName, 1024, &opt);CHKERRQ(ierr);
-      if (opt) {
-        ierr = PetscViewerFileSetName(viewer, fileName);CHKERRQ(ierr);
-      } else {
-        ierr = PetscViewerFileSetName(viewer, ((PetscObject)rnd)->name);CHKERRQ(ierr);
-      }
-      ierr = PetscRandomView(rnd, viewer);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    } else {
-      PetscViewer viewer;
-      ierr = PetscViewerASCIIGetStdout(((PetscObject)rnd)->comm,&viewer);CHKERRQ(ierr);
-      ierr = PetscRandomView(rnd, viewer);CHKERRQ(ierr);
-    }
+  ierr = PetscOptionsGetViewer(((PetscObject)rnd)->comm,((PetscObject)rnd)->prefix,optionname,&viewer,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscRandomView(rnd,viewer);CHKERRQ(ierr);
+    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

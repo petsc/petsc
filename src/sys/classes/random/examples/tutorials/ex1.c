@@ -6,7 +6,7 @@ static char help[] = "Tests PetscRandom functions.\n\n";
 /* Usage:
    mpiexec -n <np> ./ex1 -n <num_of_random_numbers> -random_type <type> -log_summary
                          -view_randomvalues <view_rank>
-                         -random_view ascii -random_view_file <filename>
+                         -random_view ascii -random_view :filename
 */
 
 #undef __FUNCT__

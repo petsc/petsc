@@ -561,8 +561,9 @@ PetscErrorCode PetscSFGetLeafRange(PetscSF sf,PetscInt *minleaf,PetscInt *maxlea
 @*/
 PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-  PetscBool iascii;
+  PetscErrorCode    ierr;
+  PetscBool         iascii;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
@@ -572,8 +573,8 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscMPIInt rank;
-    PetscInt i,j;
-    PetscBool verbose;
+    PetscInt    i,j;
+
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sf,viewer,"Star Forest Object");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"synchronization=%s sort=%s\n",PetscSFSynchronizationTypes[sf->sync],sf->rankorder?"rank-order":"unordered");CHKERRQ(ierr);
@@ -584,9 +585,8 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D <- (%D,%D)\n",rank,sf->mine?sf->mine[i]:i,sf->remote[i].rank,sf->remote[i].index);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    verbose = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(((PetscObject)sf)->prefix,"-sf_view_verbose",&verbose,PETSC_NULL);CHKERRQ(ierr);
-    if (verbose) {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Roots referenced by my leaves, by rank\n",rank);CHKERRQ(ierr);
       for (i=0; i<sf->nranks; i++) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D: %D edges\n",rank,sf->ranks[i],sf->roffset[i+1]-sf->roffset[i]);CHKERRQ(ierr);
