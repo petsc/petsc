@@ -3597,6 +3597,7 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode  VecView_Private(Vec,const char[]);
 #undef __FUNCT__
 #define __FUNCT__ "SNESSolve"
 /*@C
@@ -3626,7 +3627,6 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
 {
   PetscErrorCode ierr;
   PetscBool      flg;
-  char           filename[PETSC_MAX_PATH_LEN];
   PetscViewer    viewer;
   PetscInt       grid;
   Vec            xcreated = PETSC_NULL;
@@ -3719,16 +3719,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     ierr = SNESView(snes,viewer);CHKERRQ(ierr);
     ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
   }
-
-  flg = PETSC_FALSE;
-  ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_view_solution_vtk",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerCreate(((PetscObject)snes)->comm,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer,filename);CHKERRQ(ierr);
-    ierr = VecView(snes->vec_sol,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = VecView_Private(snes->vec_sol,"-snes_view_solution");CHKERRQ(ierr);
 
   ierr = VecDestroy(&xcreated);CHKERRQ(ierr);
   PetscFunctionReturn(0);

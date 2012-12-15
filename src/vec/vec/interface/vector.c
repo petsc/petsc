@@ -227,19 +227,19 @@ PetscErrorCode  VecAssemblyBegin(Vec vec)
 #define __FUNCT__ "VecView_Private"
 /*
   Processes command line options to determine if/how a matrix
-  is to be viewed. Called by VecAssemblyEnd().
+  is to be viewed. Called by VecAssemblyEnd() and VecLoad()
 
 .seealso: MatView_Private()
 
 */
-PetscErrorCode  VecView_Private(Vec vec)
+PetscErrorCode  VecView_Private(Vec vec,const char optionname[])
 {
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
+  PetscBool      flg;
   PetscViewer    viewer;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(((PetscObject)vec)->comm,((PetscObject)vec)->prefix,"-vec_view",&viewer,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(((PetscObject)vec)->comm,((PetscObject)vec)->prefix,optionname,&viewer,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = VecView(vec,viewer);CHKERRQ(ierr);
     ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
@@ -283,7 +283,7 @@ PetscErrorCode  VecAssemblyEnd(Vec vec)
     ierr = (*vec->ops->assemblyend)(vec);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(VEC_AssemblyEnd,vec,0,0,0);CHKERRQ(ierr);
-  ierr = VecView_Private(vec);CHKERRQ(ierr);
+  ierr = VecView_Private(vec,"-vec_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

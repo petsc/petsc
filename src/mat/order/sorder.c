@@ -276,7 +276,6 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   ierr = PetscOptionsHasName(((PetscObject)mat)->prefix,"-mat_view_ordering",&flg);CHKERRQ(ierr);
   if (flg) {
     Mat tmat;
-    flg  = PETSC_FALSE;
     ierr = MatPermute(mat,*rperm,*cperm,&tmat);CHKERRQ(ierr);
     ierr = MatView_Private(tmat,"-mat_view_ordering");CHKERRQ(ierr);
     ierr = MatDestroy(&tmat);CHKERRQ(ierr);

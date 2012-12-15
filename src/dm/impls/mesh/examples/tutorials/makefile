@@ -16,7 +16,7 @@ MANSEC          = DM
 NP              = 1
 MATTSDISPLAY         = :0.0
 ORDER           = 2
-EXTRA_ARGS      = -mesh_view_vtk -vec_view_vtk -mat_type umfpack -pc_type lu
+EXTRA_ARGS      = -mesh_view_vtk  -mat_type umfpack -pc_type lu
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
