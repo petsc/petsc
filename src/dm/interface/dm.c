@@ -477,7 +477,6 @@ PetscErrorCode  DMSetFromOptions(DM dm)
 {
   PetscBool      flg;
   PetscErrorCode ierr;
-  char           typeName[256] = MATAIJ;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
