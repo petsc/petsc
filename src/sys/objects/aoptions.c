@@ -1441,6 +1441,62 @@ PetscErrorCode  PetscOptionsBoolArray(const char opt[],const char text[],const c
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsViewer"
+/*@C
+   PetscOptionsInt - Gets a viewer appropriate for the type indicated by the user
+
+   Logically Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+-  man - manual page with additional information on option
+
+   Output Parameter:
++  viewer - the viewer
+-  set - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Concepts: options database^has int
+
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+If no value is provided ascii:stdout is used
+$       ascii[:[filename][:format]]   defaults to stdout - format can be one of info, info_detailed, or matlab, for example ascii::info prints just the info
+$                                     about the object to standard out
+$       binary[:filename]   defaults to binaryoutput
+$       draw
+$       socket[:port]    defaults to the standard output port
+
+   Use PetscOptionsRestoreViewer() after using the viewer, otherwise a memory leak may occur
+
+.seealso: PetscOptionsGetViewer(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
+PetscErrorCode  PetscOptionsViewer(const char opt[],const char text[],const char man[],PetscViewer *viewer,PetscBool  *set)
+{
+  PetscErrorCode ierr;
+  PetscOptions   amsopt;
+
+  PetscFunctionBegin;
+  if (!PetscOptionsPublishCount) {
+    ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscInt),&amsopt->data);CHKERRQ(ierr);
+    *(const char**)amsopt->data = "";
+  }
+  ierr = PetscOptionsGetViewer(PetscOptionsObject.comm,PetscOptionsObject.prefix,opt,viewer,set);CHKERRQ(ierr);
+  if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
+    ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%s>: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,"",text,ManSection(man));CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsHead"

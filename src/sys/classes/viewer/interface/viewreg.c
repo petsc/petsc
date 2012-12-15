@@ -23,7 +23,7 @@ PetscErrorCode PetscOptionsFindPair_Private(const char[],const char[],char *[],P
    Level: intermediate
 
    Notes: If no value is provided ascii:stdout is used
-$       ascii[:[filename][:format]]   defaults to stdout - format can be one of info, info_detailed, or matlab, for example ascii::info prints just the info
+$       ascii[:[filename][:format]]   defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab, for example ascii::ascii_info prints just the info
 $                                     about the object to standard out
 $       binary[:filename]   defaults to binaryoutput
 $       draw
@@ -117,7 +117,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsRestoreViewer"
 /*@C
-   PetscOptionsRestoresViewer - Restores a viewer obtained with PetscOptionsGetViewer()
+   PetscOptionsRestoreViewer - Restores a viewer obtained with PetscOptionsGetViewer()
 
    Collective on PetscViewer
 
