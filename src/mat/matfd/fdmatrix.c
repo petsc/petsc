@@ -279,8 +279,8 @@ PetscErrorCode  MatFDColoringSetFunction(MatFDColoring matfd,PetscErrorCode (*f)
 .  -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
 .  -mat_fd_type - "wp" or "ds" (see MATMFFD_WP or MATMFFD_DS)
 .  -mat_fd_coloring_view - Activates basic viewing
-.  -mat_fd_coloring_view_info - Activates viewing info
--  -mat_fd_coloring_view_draw - Activates drawing
+.  -mat_fd_coloring_view ::ascii_info - Activates viewing info
+-  -mat_fd_coloring_view draw - Activates drawing
 
     Level: intermediate
 
@@ -307,11 +307,6 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
       else if (value[0] == 'd' && value[1] == 's') matfd->htype = "ds";
       else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown finite differencing type %s",value);
     }
-    /* not used here; but so they are presented in the GUI */
-    ierr = PetscOptionsName("-mat_fd_coloring_view","Print entire datastructure used for Jacobian","None",0);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-mat_fd_coloring_view_info","Print number of colors etc for Jacobian","None",0);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-mat_fd_coloring_view_draw","Plot nonzero structure ofJacobian","None",0);CHKERRQ(ierr);
-
     /* process any options handlers added with PetscObjectAddOptionsHandler() */
     ierr = PetscObjectProcessOptionsHandlers((PetscObject)matfd);CHKERRQ(ierr);
   PetscOptionsEnd();CHKERRQ(ierr);
@@ -319,31 +314,18 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatFDColoringView_Private"
-PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
+#define __FUNCT__ "MatFDColoringViewFromOptions"
+PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd,const char optionname[])
 {
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
+  PetscBool      flg;
   PetscViewer    viewer;
 
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIGetStdout(((PetscObject)fd)->comm,&viewer);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_fd_coloring_view",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(((PetscObject)fd)->comm,((PetscObject)fd)->prefix,optionname,&viewer,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatFDColoringView(fd,viewer);CHKERRQ(ierr);
-  }
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_fd_coloring_view_info",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-    ierr = MatFDColoringView(fd,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  }
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_fd_coloring_view_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MatFDColoringView(fd,PETSC_VIEWER_DRAW_(((PetscObject)fd)->comm));CHKERRQ(ierr);
-    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(((PetscObject)fd)->comm));CHKERRQ(ierr);
+    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -500,8 +482,8 @@ PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring coloring,PetscInt
     Options Database Keys:
 +    -mat_fd_type - "wp" or "ds"  (see MATMFFD_WP or MATMFFD_DS)
 .    -mat_fd_coloring_view - Activates basic viewing or coloring
-.    -mat_fd_coloring_view_draw - Activates drawing of coloring
--    -mat_fd_coloring_view_info - Activates viewing of coloring info
+.    -mat_fd_coloring_view draw - Activates drawing of coloring
+-    -mat_fd_coloring_view ::ascii_info - Activates viewing of coloring info
 
     Level: intermediate
 
@@ -689,6 +671,6 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
 
-  ierr = MatFDColoringView_Private(coloring);CHKERRQ(ierr);
+  ierr = MatFDColoringViewFromOptions(coloring,"-mat_fd_coloring_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
