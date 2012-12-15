@@ -131,6 +131,11 @@
         <li>PC_FIELDSPLIT_SCHUR_PRE_DIAG changed to PC_FIELDSPLIT_SCHUR_PRE_A11.</li>
       </ul>
       <h4>KSP:</h4>
+      <ul>
+        <li> Replace -ksp_view_binary with either -ksp_view_mat binary - save matrix to the default binary viewer or-ksp_view_pmat binary - 
+           save matrix to the default binary viewer followed by -ksp_view_rhs binary - save right hand side vector to the default binary viewer. Also many other 
+           combinations are possible.</li>
+      </ul>
       <h4>SNES:</h4>
        <ul>
         <li> Added added -snes_check_jacobian a very powerful way to check if your Jacobian is correct for small problems, see SNESUpdateCheckJacobian()</li>

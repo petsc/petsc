@@ -296,9 +296,9 @@ PetscErrorCode  KSPSetUp(KSP ksp)
 .  -ksp_compute_eigenvalues_explicitly - compute the eigenvalues by forming the dense operator and useing LAPACK
 .  -ksp_plot_eigenvalues_explicitly - plot the explicitly computing eigenvalues
 .  -ksp_view_mat binary - save matrix to the default binary viewer
-.  -ksp_view_pmat binary - save matrix to the default binary viewer
-.  -ksp_view_rhs binary - save matrix to the default binary viewer
-.  -ksp_view_solution binary - save matrix to the default binary viewer
+.  -ksp_view_pmat binary - save matrix used to build preconditioner to the default binary viewer
+.  -ksp_view_rhs binary - save right hand side vector to the default binary viewer
+.  -ksp_view_solution binary - save computed solution vector to the default binary viewer
            (can be read later with src/ksp/examples/tutorials/ex10.c for testing solvers)
 .  -ksp_view_mat_explicit - for matrix-free operators, computes the matrix entries and views them
 .  -ksp_view_preconditioned_operator_explicit - computes the product of the preconditioner and matrix as an explicit matrix and views it
