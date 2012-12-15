@@ -361,11 +361,6 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ksp->vec_sol = x;
   }
 
-  ierr = PCGetOperators(ksp->pc,&mat,&premat,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(mat,"-ksp_view_mat");CHKERRQ(ierr);
-  ierr = MatViewFromOptions(premat,"-ksp_view_mat");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(ksp->vec_rhs,"-ksp_view_rhs");CHKERRQ(ierr);
-
   ierr = PetscLogEventBegin(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
   /* reset the residual history list if requested */
@@ -459,6 +454,11 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   }
 
   ierr = MPI_Comm_rank(((PetscObject)ksp)->comm,&rank);CHKERRQ(ierr);
+
+  ierr = PCGetOperators(ksp->pc,&mat,&premat,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(mat,"-ksp_view_mat");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(premat,"-ksp_view_mat");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ksp->vec_rhs,"-ksp_view_rhs");CHKERRQ(ierr);
 
   flag1 = PETSC_FALSE;
   flag2 = PETSC_FALSE;
