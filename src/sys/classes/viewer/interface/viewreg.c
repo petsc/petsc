@@ -54,6 +54,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
     if (set) *set = PETSC_TRUE;
     if (!value) {
       ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
     } else {
       char        *cvalue,*loc,*loc2 = PETSC_NULL;
       PetscInt    cnt;
@@ -86,18 +87,20 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
           break;
 #endif
         default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported viewer %s",cvalue);CHKERRQ(ierr);
+          break;
         }
+        ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
       } else {
         ierr = PetscStrchr(loc,':',&loc2);CHKERRQ(ierr);
         if (loc2) {*loc2 = 0; loc2++;}
         if (loc2 && !*loc && (cnt == 0)) { /* ASCII format without file name */
           ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
+          ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
         } else {
           ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
           ierr = PetscViewerSetType(*viewer,*cvalue ? cvalue : "ascii");CHKERRQ(ierr);
           ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
           ierr = PetscViewerFileSetName(*viewer,loc);CHKERRQ(ierr);
-          ierr = PetscObjectComposeFunction((PetscObject)*viewer,"PetscOptionsDestroyViewer","PetscViewerDestroy",(void (*)(void))PetscViewerDestroy);CHKERRQ(ierr);
         }
       }
       ierr = PetscViewerSetUp(*viewer);CHKERRQ(ierr);
@@ -138,17 +141,14 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
 @*/
 PetscErrorCode  PetscOptionsRestoreViewer(PetscViewer viewer)
 {
-  PetscErrorCode ierr,(*f)(PetscViewer*),(*g)(PetscViewer);
+  PetscErrorCode ierr,(*g)(PetscViewer);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscOptionsPopViewer",(void (**)(void))&g);CHKERRQ(ierr);
   if (g) {
     ierr = (*g)(viewer);CHKERRQ(ierr);
   }
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscOptionsDestroyViewer",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(&viewer);CHKERRQ(ierr);
-  }
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

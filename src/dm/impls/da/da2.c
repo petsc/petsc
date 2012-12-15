@@ -822,7 +822,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 .  da - the resulting distributed array object
 
    Options Database Key:
-+  -da_view - Calls DMView() at the conclusion of DMDACreate2d()
++  -dm_view - Calls DMView() at the conclusion of DMDACreate2d()
 .  -da_grid_x <nx> - number of grid points in x direction, if M < 0
 .  -da_grid_y <ny> - number of grid points in y direction, if N < 0
 .  -da_processors_x <nx> - number of processors in x direction

@@ -330,7 +330,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 .  da - the resulting distributed array object
 
    Options Database Key:
-+  -da_view - Calls DMView() at the conclusion of DMDACreate1d()
++  -dm_view - Calls DMView() at the conclusion of DMDACreate1d()
 .  -da_grid_x <nx> - number of grid points in x direction; can set if M < 0
 .  -da_refine_x <rx> - refinement factor
 -  -da_refine <n> - refine the DMDA n times before creating it, if M < 0

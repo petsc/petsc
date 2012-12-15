@@ -291,7 +291,7 @@ runex32:
 	  ${DIFF} output/ex32_1.out ex32_1.tmp || echo ${PWD} "\n Possible problem with with ex32, diffs above \n========================================="; \
 	  ${RM} -f ex32_1.tmp
 runex34:
-	-@${MPIEXEC} -n 12 ./ex34 -da_view -dim 3 -da_grid_x 11 -da_grid_y 5 -da_grid_z 7 > ex34_1.tmp; \
+	-@${MPIEXEC} -n 12 ./ex34 -dm_view -dim 3 -da_grid_x 11 -da_grid_y 5 -da_grid_z 7 > ex34_1.tmp; \
 	  ${DIFF} output/ex34_1.out ex34_1.tmp || echo ${PWD} "\n Possible problem with with ex34, diffs above \n========================================="; \
 	  ${RM} -f ex34_1.tmp
 

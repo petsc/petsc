@@ -1418,7 +1418,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 .  da - the resulting distributed array object
 
    Options Database Key:
-+  -da_view - Calls DMView() at the conclusion of DMDACreate3d()
++  -dm_view - Calls DMView() at the conclusion of DMDACreate3d()
 .  -da_grid_x <nx> - number of grid points in x direction, if M < 0
 .  -da_grid_y <ny> - number of grid points in y direction, if N < 0
 .  -da_grid_z <nz> - number of grid points in z direction, if P < 0
