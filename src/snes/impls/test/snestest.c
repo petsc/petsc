@@ -201,6 +201,8 @@ PetscErrorCode  SNESCreate_Test(SNES  snes)
 }
 EXTERN_C_END
 
+extern PetscErrorCode MatView_Private(Mat,const char[]);
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESUpdateCheckJacobian"
 /*@C
@@ -208,7 +210,7 @@ EXTERN_C_END
 
    Options Database:
 +    -snes_check_jacobian - use this every time SNESSolve() is called
--    -snes_check_jacobian_display -  Display difference between approximate and hand-coded Jacobian
+-    -snes_check_jacobian_view -  Display difference between approximate and hand-coded Jacobian
 
    Level: intermediate
 
@@ -231,13 +233,13 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   PetscViewer    viewer = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(((PetscObject)snes)->prefix,"-snes_check_jacobian_display",&complete_print);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)snes)->prefix,"-snes_check_jacobian_view",&complete_print);CHKERRQ(ierr);
   if (A != snes->jacobian_pre) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot check Jacobian with alternative preconditioner");
 
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"      Testing hand-coded Jacobian, if the ratio is O(1.e-8), the hand-coded Jacobian is probably correct.\n");CHKERRQ(ierr);
   if (!complete_print) {
-    ierr = PetscViewerASCIIPrintf(viewer,"      Run with -snes_check_jacobian_display to show difference of hand-coded and finite difference Jacobian.\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"      Run with -snes_check_jacobian_view [viewer][:filename][:format] to show difference of hand-coded and finite difference Jacobian.\n");CHKERRQ(ierr);
   }
 
   /* compute both versions of Jacobian */
@@ -254,7 +256,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
 
   if (complete_print) {
     ierr = PetscViewerASCIIPrintf(viewer,"    Finite difference Jacobian\n");CHKERRQ(ierr);
-    ierr = MatView(B,viewer);CHKERRQ(ierr);
+    ierr = MatView_Private(B,"-snes_check_jacobian_view");CHKERRQ(ierr);
   }
   /* compare */
   ierr = MatAYPX(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -262,9 +264,9 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
   if (complete_print) {
     ierr = PetscViewerASCIIPrintf(viewer,"    Hand-coded Jacobian\n");CHKERRQ(ierr);
-    ierr = MatView(A,viewer);CHKERRQ(ierr);
+    ierr = MatView_Private(A,"-snes_check_jacobian_view");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    Hand-coded minus finite difference Jacobian\n");CHKERRQ(ierr);
-    ierr = MatView(B,viewer);CHKERRQ(ierr);
+    ierr = MatView_Private(B,"-snes_check_jacobian_view");CHKERRQ(ierr);
   }
   if (!gnorm) gnorm = 1; /* just in case */
   ierr = PetscViewerASCIIPrintf(viewer,"    %g = ||J - Jfd||//J|| %g  = ||J - Jfd||\n",(double)(nrm/gnorm),(double)nrm);CHKERRQ(ierr);

@@ -352,8 +352,9 @@ static PetscErrorCode PetscDrawSynchronizedClear_X(PetscDraw draw)
     ierr = PetscDrawClear_X(draw);CHKERRQ(ierr);
   }
   XFlush(XiWin->disp);
+  XFlush(XiWin->disp);
   ierr = MPI_Barrier(((PetscObject)draw)->comm);CHKERRQ(ierr);
-  XSync(XiWin->disp,False);
+  /*  XSync(XiWin->disp,False); */
   ierr = MPI_Barrier(((PetscObject)draw)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

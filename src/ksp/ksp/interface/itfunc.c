@@ -612,23 +612,10 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = MatView(B,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(((PetscObject)ksp)->comm,((PetscObject)ksp)->prefix,"-ksp_view",&viewer,&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerASCIIOpen(((PetscObject)ksp)->comm,filename,&viewer);CHKERRQ(ierr);
     ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_view_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscDraw draw;
-
-    ierr = PetscViewerDrawOpen(((PetscObject)ksp)->comm,PETSC_NULL,"KSP Solver",0,0,600,600,&viewer);CHKERRQ(ierr);
-    /* need to clear draw initially or -draw_save will not work on draw; cannot use PetscViewerDrawClear() since that only clears created windows */
-    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
-    ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_final_residual",&flg,PETSC_NULL);CHKERRQ(ierr);

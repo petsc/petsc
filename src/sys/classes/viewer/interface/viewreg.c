@@ -57,7 +57,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
     } else {
       char        *cvalue,*loc,*loc2 = PETSC_NULL;
       PetscInt    cnt;
-      const char  *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,0};
+      const char  *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,PETSCVIEWERVTK,0};
 
       ierr = PetscStrallocpy(value,&cvalue);CHKERRQ(ierr);
       ierr = PetscStrchr(cvalue,':',&loc);CHKERRQ(ierr);
@@ -75,9 +75,11 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
         case 2:
           *viewer = PETSC_VIEWER_DRAW_(comm);CHKERRQ(ierr);
           break;
+#if defined(PETSC_USE_SOCKET_VIEWER)
         case 3:
           *viewer = PETSC_VIEWER_SOCKET_(comm);CHKERRQ(ierr);
           break;
+#endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
         case 4:
           *viewer = PETSC_VIEWER_MATLAB_(comm);CHKERRQ(ierr);

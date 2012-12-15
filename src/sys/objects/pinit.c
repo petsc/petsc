@@ -1017,6 +1017,11 @@ PetscErrorCode  PetscFinalize(void)
   }
 #endif
 
+  /*
+     Free all objects registered with PetscObjectRegisterDestroy() such as PETSC_VIEWER_XXX_().
+  */
+  ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);
+
 #if defined(PETSC_USE_DEBUG)
   ierr = PetscStackDestroy();CHKERRQ(ierr);
 #endif
@@ -1072,11 +1077,6 @@ PetscErrorCode  PetscFinalize(void)
       ierr = PetscOptionsLeft();CHKERRQ(ierr);
     }
   }
-
-  /*
-     Free all objects registered with PetscObjectRegisterDestroy() such as PETSC_VIEWER_XXX_().
-  */
-  ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);
 
   /*
        List all objects the user may have forgot to free

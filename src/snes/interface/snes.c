@@ -3714,30 +3714,15 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     }
   }
   /* monitoring and viewing */
-  flg = PETSC_FALSE;
-  ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(((PetscObject)snes)->comm,((PetscObject)snes)->prefix,"-snes_view",&viewer,&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerASCIIOpen(((PetscObject)snes)->comm,filename,&viewer);CHKERRQ(ierr);
     ierr = SNESView(snes,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-
-  flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_view_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscDraw draw;
-    ierr = PetscViewerDrawOpen(((PetscObject)snes)->comm,PETSC_NULL,"SNES Solver",0,0,600,600,&viewer);CHKERRQ(ierr);
-    /* need to clear draw initially or -draw_save will not work on draw; cannot use PetscViewerDrawClear() since that only clears created windows */
-    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
-    ierr = SNESView(snes,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
   }
 
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_view_solution_vtk",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {
-    PetscViewer viewer;
     ierr = PetscViewerCreate(((PetscObject)snes)->comm,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer,filename);CHKERRQ(ierr);

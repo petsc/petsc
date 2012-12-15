@@ -2325,7 +2325,6 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
 PetscErrorCode TSSolve(TS ts,Vec u)
 {
   PetscBool      flg;
-  char           filename[PETSC_MAX_PATH_LEN];
   PetscViewer    viewer;
   PetscErrorCode ierr;
 
@@ -2381,23 +2380,10 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     }
   }
   ierr = TSMonitor(ts,-1,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(((PetscObject)ts)->prefix,"-ts_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(((PetscObject)ts)->comm,((PetscObject)ts)->prefix,"-ts_view",&viewer,&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerASCIIOpen(((PetscObject)ts)->comm,filename,&viewer);CHKERRQ(ierr);
     ierr = TSView(ts,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)ts)->prefix,"-ts_view_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) {
-    PetscDraw draw;
-
-    ierr = PetscViewerDrawOpen(((PetscObject)ts)->comm,PETSC_NULL,"TS Solver",0,0,600,600,&viewer);CHKERRQ(ierr);
-    /* need to clear draw initially or -draw_save will not work on draw; cannot use PetscViewerDrawClear() since that only clears created windows */
-    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
-    ierr = TSView(ts,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
