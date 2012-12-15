@@ -12,7 +12,7 @@
          based on petsc/src/ksp/ksp/examples/tutorials/ex29.c and ex32.c
 
      Example of Usage:
-          ./ex50 -mglevels 3 -ksp_monitor -M 3 -N 3 -ksp_view -da_view_draw -draw_pause -1
+          ./ex50 -mglevels 3 -ksp_monitor -M 3 -N 3 -ksp_view -dm_view draw -draw_pause -1
           ./ex50 -M 100 -N 100 -mglevels 1 -mg_levels_0_pc_factor_levels <ilu_levels> -ksp_monitor -cmp_solu
           ./ex50 -M 100 -N 100 -mglevels 1 -mg_levels_0_pc_type lu -mg_levels_0_pc_factor_shift_type NONZERO -ksp_monitor -cmp_solu
           mpiexec -n 4 ./ex50 -M 3 -N 3 -ksp_monitor -ksp_view -mglevels 10 -log_summary

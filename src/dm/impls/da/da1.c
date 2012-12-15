@@ -101,31 +101,6 @@ PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMView_DA_Private"
-/*
-    Processes command line options to determine if/how a DMDA
-  is to be viewed. Called by DMDACreateXX()
-*/
-PetscErrorCode DMView_DA_Private(DM da)
-{
-  PetscErrorCode ierr;
-  PetscBool      flg1 = PETSC_FALSE;
-  PetscViewer    view;
-
-  PetscFunctionBegin;
-  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DMDA viewing options","DMDA");CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-da_view","Print information about the DMDA's distribution","DMView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
-    if (flg1) {
-      ierr = PetscViewerASCIIGetStdout(((PetscObject)da)->comm,&view);CHKERRQ(ierr);
-      ierr = DMView(da,view);CHKERRQ(ierr);
-    }
-    flg1 = PETSC_FALSE;
-    ierr = PetscOptionsBool("-da_view_draw","Draw how the DMDA is distributed","DMView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
-    if (flg1) {ierr = DMView(da,PETSC_VIEWER_DRAW_(((PetscObject)da)->comm));CHKERRQ(ierr);}
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetUp_DA_1D"
@@ -392,6 +367,6 @@ PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDABoundaryType bx, PetscInt M, Pet
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
   ierr = DMSetUp(*da);CHKERRQ(ierr);
-  ierr = DMView_DA_Private(*da);CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*da,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -25,12 +25,12 @@ ex2f90: ex2f90.o  chkopts
 
 #--------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1 ./ex1 -dim 3 -ctetgen_verbose 4 -dm_view_detail -info -info_exclude null > ex1_0.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex1 -dim 3 -ctetgen_verbose 4 -dm_view ::ascii_info_detail -info -info_exclude null > ex1_0.tmp 2>&1;\
 	   if (${DIFF} output/ex1_0.out ex1_0.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with with runex1, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex1_0.tmp
 runex1_2:
-	-@${MPIEXEC} -n 1 ./ex1 -dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view_detail -info -info_exclude null > ex1_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex1 -dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ::ascii_info_detail -info -info_exclude null > ex1_1.tmp 2>&1;\
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with with runex1_2, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex1_1.tmp

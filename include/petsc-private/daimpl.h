@@ -97,7 +97,6 @@ EXTERN_C_BEGIN
 PETSC_EXTERN PetscErrorCode VecView_MPI_DA(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Default_DA(Vec, PetscViewer);
 EXTERN_C_END
-PETSC_EXTERN PetscErrorCode DMView_DA_Private(DM);
 PETSC_EXTERN PetscErrorCode DMView_DA_Matlab(DM,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMView_DA_Binary(DM,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMView_DA_VTK(DM,PetscViewer);
