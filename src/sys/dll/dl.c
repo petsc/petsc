@@ -81,7 +81,7 @@ PetscErrorCode  PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *
   if (par2[len-1] == 'a' && par2[len-2] == '.') par2[len-2] = 0;
 
   ierr = PetscFileRetrieve(comm,par2,lname,llen,found);CHKERRQ(ierr);
-  if (!found) {
+  if (!(*found)) {
     /* see if library name does already not have suffix attached */
     ierr = PetscStrcpy(suffix,".");CHKERRQ(ierr);
     ierr = PetscStrcat(suffix,PETSC_SLSUFFIX);CHKERRQ(ierr);
