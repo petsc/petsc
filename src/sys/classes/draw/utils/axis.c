@@ -92,7 +92,7 @@ PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 
   PetscFunctionBegin;
   /* Find the string */
-  if (PetscAbsReal(val)/sep <  1.e-6) {
+  if (PetscAbsReal(val)/sep <  1.e-4) {
     buf[0] = '0'; buf[1] = 0;
   } else if (PetscAbsReal(val) < 1.0e6 && PetscAbsReal(val) > 1.e-4) {
     /* Compute the number of digits */
