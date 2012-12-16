@@ -107,7 +107,10 @@ PETSC_EXTERN PetscErrorCode DMComplexCreatePartition(DM, PetscInt, PetscBool, Pe
 PETSC_EXTERN PetscErrorCode DMComplexCreatePartitionClosure(DM, PetscSection, IS, PetscSection *, IS *);
 
 PETSC_EXTERN PetscErrorCode DMComplexGenerate(DM, const char [], PetscBool , DM *);
+PETSC_EXTERN PetscErrorCode DMComplexGetRefinementLimit(DM, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMComplexSetRefinementLimit(DM, PetscReal);
+PETSC_EXTERN PetscErrorCode DMComplexGetRefinementUniform(DM, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMComplexSetRefinementUniform(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMComplexDistribute(DM, const char[], PetscInt, DM*);
 PETSC_EXTERN PetscErrorCode DMComplexLoad(PetscViewer, DM);
 PETSC_EXTERN PetscErrorCode DMComplexGetSubpointMap(DM, IS*);

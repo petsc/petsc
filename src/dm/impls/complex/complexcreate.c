@@ -517,16 +517,17 @@ PetscErrorCode DMCreate_Complex(DM dm)
   ierr = PetscNewLog(dm, DM_Complex, &mesh);CHKERRQ(ierr);
   dm->data = mesh;
 
-  mesh->refct            = 1;
-  mesh->dim              = 0;
+  mesh->refct             = 1;
+  mesh->dim               = 0;
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coneSection);CHKERRQ(ierr);
-  mesh->maxConeSize      = 0;
-  mesh->cones            = PETSC_NULL;
-  mesh->coneOrientations = PETSC_NULL;
+  mesh->maxConeSize       = 0;
+  mesh->cones             = PETSC_NULL;
+  mesh->coneOrientations  = PETSC_NULL;
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->supportSection);CHKERRQ(ierr);
-  mesh->maxSupportSize   = 0;
-  mesh->supports         = PETSC_NULL;
-  mesh->refinementLimit  = -1.0;
+  mesh->maxSupportSize    = 0;
+  mesh->supports          = PETSC_NULL;
+  mesh->refinementUniform = PETSC_TRUE;
+  mesh->refinementLimit   = -1.0;
 
   mesh->facesTmp         = PETSC_NULL;
 
