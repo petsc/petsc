@@ -23,6 +23,9 @@ static PetscErrorCode PetscRint(PetscReal x,PetscReal *result)
 .   xmin,xmax - limits in x
 -   ymin,ymax - limits in y
 
+    Options Database:
+.   -drawaxis_hold - hold the initial set of axis limits for future plotting
+
     Level: advanced
 
 .seealso:  PetscDrawAxisSetHoldLimits()
@@ -30,6 +33,8 @@ static PetscErrorCode PetscRint(PetscReal x,PetscReal *result)
 @*/
 PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
   if (axis->hold) PetscFunctionReturn(0);
@@ -37,6 +42,7 @@ PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRe
   axis->xhigh= xmax;
   axis->ylow = ymin;
   axis->yhigh= ymax;
+  ierr = PetscOptionsHasName(((PetscObject)axis)->prefix,"-drawaxis_hold",&axis->hold);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
