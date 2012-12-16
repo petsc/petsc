@@ -3655,7 +3655,6 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat newmat,PetscViewer viewer)
 
   ierr = MatAssemblyBegin(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(newmat,"-mat_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

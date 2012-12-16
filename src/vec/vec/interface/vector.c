@@ -286,7 +286,11 @@ PetscErrorCode  VecAssemblyEnd(Vec vec)
     ierr = (*vec->ops->assemblyend)(vec);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(VEC_AssemblyEnd,vec,0,0,0);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(vec,"-vec_view");CHKERRQ(ierr);
+  if (vec->viewonassembly) {
+    ierr = PetscViewerPushFormat(vec->viewonassembly,vec->viewformatonassembly);CHKERRQ(ierr);
+    ierr = VecView(vec,vec->viewonassembly);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(vec->viewonassembly);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -521,6 +525,8 @@ PetscErrorCode  VecDestroy(Vec *v)
   if (!*v) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*v),VEC_CLASSID,1);
   if (--((PetscObject)(*v))->refct > 0) {*v = 0; PetscFunctionReturn(0);}
+
+  ierr = PetscViewerDestroy(&(*v)->viewonassembly);CHKERRQ(ierr);
   /* destroy the internal part */
   if ((*v)->ops->destroy) {
     ierr = (*(*v)->ops->destroy)(*v);CHKERRQ(ierr);
@@ -1368,6 +1374,8 @@ PetscErrorCode  VecSetFromOptions(Vec vec)
   ierr = PetscObjectOptionsBegin((PetscObject)vec);CHKERRQ(ierr);
     /* Handle vector type options */
     ierr = VecSetTypeFromOptions_Private(vec);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&vec->viewonassembly);CHKERRQ(ierr);
+    ierr = PetscOptionsViewer("-vec_view","Display vector with the viewer on VecAssemblyEnd()","VecViewe",&vec->viewonassembly,&vec->viewformatonassembly,PETSC_NULL);CHKERRQ(ierr);
 
     /* Handle specific vector options */
     if (vec->ops->setfromoptions) {

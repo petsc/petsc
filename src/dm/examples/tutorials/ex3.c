@@ -144,6 +144,7 @@ int main(int argc,char **argv)
     ierr = SetCoordinates3d(daf);CHKERRQ(ierr);
   }
   ierr = DMCreateInterpolation(dac,daf,&A,0);CHKERRQ(ierr);
+  ierr = MatViewFromOptions(A,"-mat_view");CHKERRQ(ierr);
 
 
   /* Free memory */

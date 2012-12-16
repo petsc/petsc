@@ -341,6 +341,8 @@ struct _p_Vec {
   PetscBool              array_gotten;
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
   PetscBool              petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
+  PetscViewer            viewonassembly;   /* if -vec_view is set in VecSetFromOptions() then these variables are used to implement it */
+  PetscViewerFormat      viewformatonassembly;
 #if defined(PETSC_HAVE_CUSP)
   PetscCUSPFlag          valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
   void                   *spptr; /* if we're using CUSP, then this is the special pointer to the array on the GPU */
