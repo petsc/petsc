@@ -458,7 +458,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 
   ierr = PCGetOperators(ksp->pc,&mat,&premat,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatViewFromOptions(mat,"-ksp_view_mat");CHKERRQ(ierr);
-  ierr = MatViewFromOptions(premat,"-ksp_view_mat");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(premat,"-ksp_view_pmat");CHKERRQ(ierr);
   ierr = VecViewFromOptions(ksp->vec_rhs,"-ksp_view_rhs");CHKERRQ(ierr);
 
   flag1 = PETSC_FALSE;
