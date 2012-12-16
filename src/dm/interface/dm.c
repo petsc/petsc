@@ -12,15 +12,18 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 */
 PetscErrorCode  DMViewFromOptions(DM dm,const char optionname[])
 {
-  PetscErrorCode ierr;
-  PetscBool      flg;
-  PetscViewer    viewer;
+  PetscErrorCode    ierr;
+  PetscBool         flg;
+  PetscViewer       viewer;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(((PetscObject)dm)->comm,((PetscObject)dm)->prefix,optionname,&viewer,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(((PetscObject)dm)->comm,((PetscObject)dm)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = DMView(dm,viewer);CHKERRQ(ierr);
-    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

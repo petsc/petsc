@@ -317,15 +317,18 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
 #define __FUNCT__ "MatFDColoringViewFromOptions"
 PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd,const char optionname[])
 {
-  PetscErrorCode ierr;
-  PetscBool      flg;
-  PetscViewer    viewer;
+  PetscErrorCode    ierr;
+  PetscBool         flg;
+  PetscViewer       viewer;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(((PetscObject)fd)->comm,((PetscObject)fd)->prefix,optionname,&viewer,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(((PetscObject)fd)->comm,((PetscObject)fd)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = MatFDColoringView(fd,viewer);CHKERRQ(ierr);
-    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

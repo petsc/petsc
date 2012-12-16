@@ -4807,18 +4807,21 @@ PetscErrorCode  MatAssembled(Mat mat,PetscBool  *assembled)
 */
 PetscErrorCode MatViewFromOptions(Mat mat,const char optionname[])
 {
-  PetscErrorCode   ierr;
-  PetscViewer      viewer;
-  PetscBool        flg;
-  PetscBool        incall = PETSC_FALSE;
+  PetscErrorCode    ierr;
+  PetscViewer       viewer;
+  PetscBool         flg;
+  PetscBool         incall = PETSC_FALSE;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
-  ierr = PetscOptionsGetViewer(((PetscObject)mat)->comm,((PetscObject)mat)->prefix,optionname,&viewer,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(((PetscObject)mat)->comm,((PetscObject)mat)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = MatView(mat,viewer);CHKERRQ(ierr);
-    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   incall = PETSC_FALSE;
   PetscFunctionReturn(0);

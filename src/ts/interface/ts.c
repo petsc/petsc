@@ -2324,9 +2324,10 @@ PetscErrorCode TSEvaluateStep(TS ts,PetscInt order,Vec U,PetscBool *done)
 @*/
 PetscErrorCode TSSolve(TS ts,Vec u)
 {
-  PetscBool      flg;
-  PetscViewer    viewer;
-  PetscErrorCode ierr;
+  PetscBool         flg;
+  PetscViewer       viewer;
+  PetscErrorCode    ierr;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -2380,10 +2381,12 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     }
   }
   ierr = TSMonitor(ts,-1,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(((PetscObject)ts)->comm,((PetscObject)ts)->prefix,"-ts_view",&viewer,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(((PetscObject)ts)->comm,((PetscObject)ts)->prefix,"-ts_view",&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = TSView(ts,viewer);CHKERRQ(ierr);
-    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

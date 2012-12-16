@@ -234,15 +234,18 @@ PetscErrorCode  VecAssemblyBegin(Vec vec)
 */
 PetscErrorCode  VecViewFromOptions(Vec vec,const char optionname[])
 {
-  PetscErrorCode ierr;
-  PetscBool      flg;
-  PetscViewer    viewer;
+  PetscErrorCode    ierr;
+  PetscBool         flg;
+  PetscViewer       viewer;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(((PetscObject)vec)->comm,((PetscObject)vec)->prefix,optionname,&viewer,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(((PetscObject)vec)->comm,((PetscObject)vec)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = VecView(vec,viewer);CHKERRQ(ierr);
-    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

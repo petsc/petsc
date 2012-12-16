@@ -278,15 +278,18 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
 @*/
 PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, const char optionname[])
 {
-  PetscBool      flg;
-  PetscViewer    viewer;
-  PetscErrorCode ierr;
+  PetscBool         flg;
+  PetscViewer       viewer;
+  PetscErrorCode    ierr;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(((PetscObject)rnd)->comm,((PetscObject)rnd)->prefix,optionname,&viewer,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(((PetscObject)rnd)->comm,((PetscObject)rnd)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = PetscRandomView(rnd,viewer);CHKERRQ(ierr);
-    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

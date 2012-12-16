@@ -18,6 +18,7 @@ PetscErrorCode PetscOptionsFindPair_Private(const char[],const char[],char *[],P
 
    Output Parameter:
 +  viewer - the viewer
+.  format - the PetscViewerFormat requested by the user
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: intermediate
@@ -29,7 +30,7 @@ $       binary[:filename]   defaults to binaryoutput
 $       draw
 $       socket[:port]    defaults to the standard output port
 
-   Use PetscOptionsRestoreViewer() after using the viewer, otherwise a memory leak may occur
+   Use PetscViewerDestroy() after using the viewer, otherwise a memory leak will occur
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -37,9 +38,9 @@ $       socket[:port]    defaults to the standard output port
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList(), PetscOptionsRestoreViewer()
+          PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char name[],PetscViewer *viewer,PetscBool  *set)
+PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char name[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool  *set)
 {
   char           *value;
   PetscErrorCode ierr;
@@ -48,6 +49,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
 
+  *format = PETSC_VIEWER_DEFAULT;
   if (set) *set = PETSC_FALSE;
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
@@ -108,47 +110,11 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
         ierr = PetscStrtoupper(loc2);CHKERRQ(ierr);
         ierr = PetscStrendswithwhich(loc2,PetscViewerFormats,&cnt);CHKERRQ(ierr);
         if (!PetscViewerFormats[cnt]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2);CHKERRQ(ierr);
-        ierr = PetscViewerPushFormat(*viewer,(PetscViewerFormat)cnt);CHKERRQ(ierr);
-        ierr = PetscObjectComposeFunction((PetscObject)*viewer,"PetscOptionsPopViewer","PetscViewerPopFormat",(void (*)(void))PetscViewerPopFormat);CHKERRQ(ierr);
+        *format = (PetscViewerFormat)cnt;
       }
       ierr = PetscFree(cvalue);CHKERRQ(ierr);
     }
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsRestoreViewer"
-/*@C
-   PetscOptionsRestoreViewer - Restores a viewer obtained with PetscOptionsGetViewer()
-
-   Collective on PetscViewer
-
-   Input Parameters:
-.  viewer - the viewer
-
-   Level: intermediate
-
-   Notes: Should only be called on the viewer if the call to PetscOptionsGetViewer() was successful and actually obtained a viewer
-
-.seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
-          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
-          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
-          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList(), PetscOptionsRestoreViewer()
-@*/
-PetscErrorCode  PetscOptionsRestoreViewer(PetscViewer viewer)
-{
-  PetscErrorCode ierr,(*g)(PetscViewer);
-
-  PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscOptionsPopViewer",(void (**)(void))&g);CHKERRQ(ierr);
-  if (g) {
-    ierr = (*g)(viewer);CHKERRQ(ierr);
-  }
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

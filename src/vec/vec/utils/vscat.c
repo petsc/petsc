@@ -832,15 +832,16 @@ $
 @*/
 PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
-  VecScatter     ctx;
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-  PetscInt       totalv,xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID,*range;
-  PetscInt       ix_type = IS_GENERAL_ID,iy_type = IS_GENERAL_ID;
-  MPI_Comm       comm,ycomm;
-  PetscBool      ixblock,iyblock,iystride,islocal,cando,flag;
-  IS             tix = 0,tiy = 0;
-  PetscViewer    viewer;
+  VecScatter        ctx;
+  PetscErrorCode    ierr;
+  PetscMPIInt       size;
+  PetscInt          totalv,xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID,*range;
+  PetscInt          ix_type = IS_GENERAL_ID,iy_type = IS_GENERAL_ID;
+  MPI_Comm          comm,ycomm;
+  PetscBool         ixblock,iyblock,iystride,islocal,cando,flag;
+  IS                tix = 0,tiy = 0;
+  PetscViewer       viewer;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   if (!ix && !iy) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_SUP,"Cannot pass default in for both input and output indices");
@@ -1441,10 +1442,12 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   ierr = ISDestroy(&tix);CHKERRQ(ierr);
   ierr = ISDestroy(&tiy);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetViewer(((PetscObject)ctx)->comm,((PetscObject)ctx)->prefix,"-vecscatter_view",&viewer,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(((PetscObject)ctx)->comm,((PetscObject)ctx)->prefix,"-vecscatter_view",&viewer,&format,&flag);CHKERRQ(ierr);
   if (flag) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = VecScatterView(ctx,viewer);CHKERRQ(ierr);
-    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

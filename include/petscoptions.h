@@ -205,7 +205,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsRealArray(const char[],const char[],cons
 PETSC_EXTERN PetscErrorCode PetscOptionsIntArray(const char[],const char[],const char[],PetscInt[],PetscInt*,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsStringArray(const char[],const char[],const char[],char*[],PetscInt*,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsBoolArray(const char[],const char[],const char[],PetscBool [],PetscInt*,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsViewer(const char[],const char[],const char[],PetscViewer*,PetscBool *);
+
 
 PETSC_EXTERN PetscErrorCode PetscOptionsSetFromOptions(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsAMSDestroy(void);

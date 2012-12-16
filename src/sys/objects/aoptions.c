@@ -1469,7 +1469,7 @@ $       binary[:filename]   defaults to binaryoutput
 $       draw
 $       socket[:port]    defaults to the standard output port
 
-   Use PetscOptionsRestoreViewer() after using the viewer, otherwise a memory leak may occur
+   Use PetscRestoreViewerDestroy() after using the viewer, otherwise a memory leak will occur
 
 .seealso: PetscOptionsGetViewer(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
           PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
@@ -1479,7 +1479,7 @@ $       socket[:port]    defaults to the standard output port
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode  PetscOptionsViewer(const char opt[],const char text[],const char man[],PetscViewer *viewer,PetscBool  *set)
+PetscErrorCode  PetscOptionsViewer(const char opt[],const char text[],const char man[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscOptions   amsopt;
@@ -1490,7 +1490,7 @@ PetscErrorCode  PetscOptionsViewer(const char opt[],const char text[],const char
     ierr = PetscMalloc(sizeof(PetscInt),&amsopt->data);CHKERRQ(ierr);
     *(const char**)amsopt->data = "";
   }
-  ierr = PetscOptionsGetViewer(PetscOptionsObject.comm,PetscOptionsObject.prefix,opt,viewer,set);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(PetscOptionsObject.comm,PetscOptionsObject.prefix,opt,viewer,format,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%s>: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,"",text,ManSection(man));CHKERRQ(ierr);
   }

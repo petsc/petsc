@@ -3624,12 +3624,13 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
 @*/
 PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
 {
-  PetscErrorCode ierr;
-  PetscBool      flg;
-  PetscViewer    viewer;
-  PetscInt       grid;
-  Vec            xcreated = PETSC_NULL;
-  DM             dm;
+  PetscErrorCode    ierr;
+  PetscBool         flg;
+  PetscViewer       viewer;
+  PetscInt          grid;
+  Vec               xcreated = PETSC_NULL;
+  DM                dm;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -3713,10 +3714,12 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     }
   }
   /* monitoring and viewing */
-  ierr = PetscOptionsGetViewer(((PetscObject)snes)->comm,((PetscObject)snes)->prefix,"-snes_view",&viewer,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetViewer(((PetscObject)snes)->comm,((PetscObject)snes)->prefix,"-snes_view",&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = SNESView(snes,viewer);CHKERRQ(ierr);
-    ierr = PetscOptionsRestoreViewer(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   ierr = VecViewFromOptions(snes->vec_sol,"-snes_view_solution");CHKERRQ(ierr);
 
