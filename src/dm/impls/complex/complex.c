@@ -4478,6 +4478,7 @@ PetscErrorCode DMComplexGenerate_Triangle(DM boundary, PetscBool interpolate, DM
         }
       }
     }
+    ierr = DMComplexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
   }
 #if 0 /* Do not currently support holes */
   ierr = DMComplexCopyHoles(*dm, boundary);CHKERRQ(ierr);
@@ -4606,6 +4607,7 @@ PetscErrorCode DMComplexRefine_Triangle(DM dm, double *maxVolumes, DM *dmRefined
         }
       }
     }
+    ierr = DMComplexSetRefinementUniform(*dmRefined, PETSC_FALSE);CHKERRQ(ierr);
   }
 #if 0 /* Do not currently support holes */
   ierr = DMComplexCopyHoles(*dm, boundary);CHKERRQ(ierr);
@@ -4737,6 +4739,7 @@ PetscErrorCode DMComplexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *
         }
       }
     }
+    ierr = DMComplexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -4854,6 +4857,7 @@ PetscErrorCode DMComplexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
         }
       }
     }
+    ierr = DMComplexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -4994,6 +4998,7 @@ PetscErrorCode DMComplexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM 
         }
       }
     }
+    ierr = DMComplexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
   }
 
   ierr = PLCDestroy(&in);CHKERRQ(ierr);
@@ -5121,6 +5126,7 @@ PetscErrorCode DMComplexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefin
         }
       }
     }
+    ierr = DMComplexSetRefinementUniform(*dmRefined, PETSC_FALSE);CHKERRQ(ierr);
   }
   ierr = PLCDestroy(&in);CHKERRQ(ierr);
   ierr = PLCDestroy(&out);CHKERRQ(ierr);
@@ -5198,6 +5204,257 @@ PetscErrorCode DMComplexGenerate(DM boundary, const char name[], PetscBool inter
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexRefine_Uniform"
+PetscErrorCode DMComplexRefine_Uniform(DM dm/*, CellRefiner refiner*/, DM *dmRefined)
+{
+#if 0
+  DM_Complex *mesh = (DM_Complex *) dm->data;
+  PetscInt    dim, cStart, cEnd, cMax, c, vStart, vEnd, vMax;
+  //ALE::ISieveVisitor::PointRetriever<mesh_type::sieve_type> cV(std::max(1, sieve->getMaxConeSize()));
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  /* PyLith: _refineCensored(newMesh, mesh, refiner); */
+  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetVTKBounds(dm, &cMax, &vMax);CHKERRQ(ierr);
+
+  /* Count number of new cells which are normal and extra */
+  PetscInt cEnd2 = cMax >= 0 ? cMax : cEnd;
+  PetscInt newNumCellsNormal = 0, newNumCellsExtra = 0, newNumCells;
+  for(c = cStart; c < cEnd2; ++c) {
+    PetscInt n;
+    ierr = CellRefinerGetNumSubcells(c, &n);CHKERRQ(ierr); // refiner.numNewCells
+    newNumCellsNormal += n;
+  }
+  for(c = cEnd2; c < cEnd; ++c) {
+    PetscInt n;
+    ierr = CellRefinerGetNumSubcells(c, &n);CHKERRQ(ierr); // refiner.numNewCells
+    newNumCellsExtra += n;
+  }
+  newNumCells = newNumCellsNormal + newNumCellsExtra;
+  /* Count number of new vertices which are normal and extra */
+  PetscInt vEnd2 = vMax >= 0 ? vMax : vEnd;
+  PetscInt newNumVertices, newNumVerticesNormal, newNumVerticesExtra, newFirstVertex = newNumCells + (vEnd2 - vStart), newVertex = newFirstVertex;
+  for(c = cStart; c < cEnd; ++c) {
+    PetscInt *closure = PETSC_NULL;
+    PetscInt  closureSize, numCorners = 0, p;
+
+    ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for(p = 0; p < closureSize*2; p += 2) {
+      const PetscInt point = closure[p];
+      if ((point >= vStart) && (point < vEnd)) {
+        closure[numCorners++] = point;
+      }
+    }
+    ierr = CellRefinerSplitCell(c, closure, numCorners, &newVertex);CHKERRQ(ierr); // refiner.splitCell
+    ierr = DMComplexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+  }
+  newNumVerticesNormal = newVertex - newFirstVertex + (vEnd2 - vStart);
+  for(c = cEnd2; c < cEnd; ++c) {
+    PetscInt *closure = PETSC_NULL;
+    PetscInt  closureSize, numCorners = 0, p;
+
+    ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for(p = 0; p < closureSize*2; p += 2) {
+      const PetscInt point = closure[p];
+      if ((point >= vStart) && (point < vEnd)) {
+        closure[numCorners++] = point;
+      }
+    }
+    ierr = CellRefinerSplitCellExtra(c, closure, numCorners, &newVertex);CHKERRQ(ierr); // refiner.splitCellUncensored
+    ierr = DMComplexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+  } // for
+  newNumVerticesExtra = newVertex - newFirstVertex - newNumVerticesNormal;
+  newNumVertices = newNumVerticesNormal + newNumVerticesExtra;
+
+#if 1
+  PetscInt oldNumCellsNormal   = cEnd2 - cStart;
+  PetscInt oldNumCellsExtra = cEnd  - cEnd2;
+  ierr = PetscSynchronizedPrintf(comm, "[%d]Old normal cells    [%d, %d)\n", rank, 0, oldNumCellsNormal);
+  ierr = PetscSynchronizedPrintf(comm, "[%d]Old fault  cells    [%d, %d)\n", rank, oldNumCellsNormal+oldNumVerticesNormal+oldNumVerticesExtra, oldNumCellsNormal+oldNumVerticesNormal+oldNumVerticesExtra+oldNumCellsExtra);
+  ierr = PetscSynchronizedPrintf(comm, "[%d]Old normal vertices [%d, %d)\n", rank, oldNumCellsNormal, oldNumCellsNormal+oldNumVerticesNormal);
+  ierr = PetscSynchronizedPrintf(comm, "[%d]Old fault  vertices [%d, %d)\n", rank, oldNumCellsNormal+oldNumVerticesNormal, oldNumCellsNormal+oldNumVerticesNormal+oldNumVerticesExtra);
+  ierr = PetscSynchronizedPrintf(comm, "[%d]New normal cells    [%d, %d)\n", rank, 0, newNumCellsNormal);
+  ierr = PetscSynchronizedPrintf(comm, "[%d]New fault  cells    [%d, %d)\n", rank, newNumCellsNormal+newNumVerticesNormal+newNumVerticesExtra, newNumCellsNormal+newNumVerticesNormal+newNumVerticesExtra+newNumCellsExtra);
+  ierr = PetscSynchronizedPrintf(comm, "[%d]New normal vertices [%d, %d)\n", rank, newNumCellsNormal, newNumCellsNormal+newNumVerticesNormal);
+  ierr = PetscSynchronizedPrintf(comm, "[%d]New fault  vertices [%d, %d)\n", rank, newNumCellsNormal+newNumVerticesNormal, newNumCellsNormal+newNumVerticesNormal+newNumVerticesExtra);
+  ierr = PetscSynchronizedFlush(comm);
+#endif
+
+  ierr = DMCreate(comm, dmRefined);CHKERRQ(ierr);
+  ierr = DMSetType(*dmRefined, DMCOMPLEX);CHKERRQ(ierr);
+  ierr = DMComplexSetDimension(*dm, dim);CHKERRQ(ierr);
+  ierr = DMComplexSetChart(*dmRefined, 0, newNumCells+newNumVertices);CHKERRQ(ierr);
+  ierr = DMComplexGetVTKBounds(*dmRefined, newNumCellsNormal, newFirstVertex+newNumVerticesNormal);CHKERRQ(ierr);
+  /* Set cone and support sizes for new normal cells */
+  PetscInt newCell = 0;
+  for(c = cStart; c < cEnd2; ++c) {
+    PetscInt coneSize, n, i;
+
+    ierr = DMComplexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
+    ierr = CellRefinerGetNumSubcells(refiner, c, &n); // refiner.getNewCells(&newCells, &numNewCells, *c_iter, cone, coneSize, *_orderOldMesh, *_orderNewMesh);
+    for(i = 0; i < n; ++i, ++newCell) {
+      ierr = DMComplexSetConeSize(*dmRefined, newCell, coneSize);CHKERRQ(ierr);
+    }
+
+    PetscInt *closure = PETSC_NULL;
+    PetscInt  closureSize, numCorners = 0, p;
+
+    ierr = DMComplexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for(p = 0; p < closureSize*2; p += 2) {
+      const PetscInt point = closure[p];
+      if ((point >= vStart) && (point < vEnd)) {
+        closure[numCorners++] = point;
+      }
+    }
+    // ierr = CellRefinerGetSubcells(refiner, c, numCorners, closure, &numNewCells, &newCells);CHKERRQ(ierr); // refiner.getNewCells(&newCells, &numNewCells, *c_iter, cone, coneSize, *_orderOldMesh, *_orderNewMesh);
+    ierr = DMComplexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+  }
+
+  // Reset current new cell value and loop over censored cells.
+  curNewCell = _orderNewMesh->cellsCensored().min();
+  oldCellsEnd = _orderOldMesh->cellsCensored().end();
+  for (interval_type::const_iterator c_iter=_orderOldMesh->cellsCensored().begin(); c_iter != oldCellsEnd; ++c_iter) {
+    // Set new cone and support sizes
+    cV.clear();
+    sieve->cone(*c_iter, cV);
+    const point_type* cone = cV.getPoints();
+    const int coneSize = cV.getSize();
+
+    const point_type* newCells;
+    int numNewCells = 0;
+    refiner.getNewCells(&newCells, &numNewCells, *c_iter, cone, coneSize, *_orderOldMesh, *_orderNewMesh);
+
+    for(int iCell=0; iCell < numNewCells; ++iCell, ++curNewCell) {
+      newSieve->setConeSize(curNewCell, coneSize);
+      for(int iVertex=0; iVertex < coneSize; ++iVertex) {
+	newSieve->addSupportSize(newCells[iCell*coneSize+iVertex], 1);
+      } // for
+    } // for
+  } // for
+  newSieve->allocate();
+
+  ierr = DMComplexSymmetrizeSizes();CHKERRQ(ierr);
+
+  // Create refined cells in new sieve.
+  curNewCell = _orderNewMesh->cellsNormal().min();
+  oldCellsEnd = _orderOldMesh->cellsNormal().end();
+  for (interval_type::const_iterator c_iter=_orderOldMesh->cellsNormal().begin(); c_iter != oldCellsEnd; ++c_iter) {
+    cV.clear();
+    sieve->cone(*c_iter, cV);
+    const point_type *cone = cV.getPoints();
+    const int coneSize = cV.getSize();
+    
+    const point_type* newCells;
+    int numNewCells = 0;
+    refiner.getNewCells(&newCells, &numNewCells, *c_iter, cone, coneSize, *_orderOldMesh, *_orderNewMesh);
+    
+    for(int iCell=0; iCell < numNewCells; ++iCell, ++curNewCell) {
+      newSieve->setCone(&newCells[iCell*coneSize], curNewCell);
+    } // for
+  } // for
+  curNewCell = _orderNewMesh->cellsCensored().min();
+  oldCellsEnd = _orderOldMesh->cellsCensored().end();
+  for (interval_type::const_iterator c_iter=_orderOldMesh->cellsCensored().begin(); c_iter != oldCellsEnd; ++c_iter) {
+    cV.clear();
+    sieve->cone(*c_iter, cV);
+    const point_type *cone = cV.getPoints();
+    const int coneSize = cV.getSize();
+    
+    const point_type* newCells;
+    int numNewCells = 0;
+    refiner.getNewCells(&newCells, &numNewCells, *c_iter, cone, coneSize, *_orderOldMesh, *_orderNewMesh);
+    
+    for(int iCell=0; iCell < numNewCells; ++iCell, ++curNewCell) {
+      newSieve->setCone(&newCells[iCell*coneSize], curNewCell);
+    } // for
+  } // for
+  newSieve->symmetrize();
+
+  // Set coordinates in refined mesh.
+  const Obj<mesh_type::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+  assert(!coordinates.isNull());
+  const Obj<mesh_type::real_section_type>& newCoordinates = newMesh->getRealSection("coordinates");
+  assert(!newCoordinates.isNull());
+
+  const mesh_type::label_sequence::const_iterator verticesEnd = vertices->end();
+  assert(vertices->size() > 0);
+  const int spaceDim = coordinates->getFiberDimension(*vertices->begin());
+  assert(spaceDim > 0);
+  newCoordinates->setChart(mesh_type::sieve_type::chart_type(_orderNewMesh->verticesNormal().min(), _orderNewMesh->verticesCensored().max()));
+
+  const interval_type::const_iterator newVerticesEnd = _orderNewMesh->verticesCensored().end();
+  for (interval_type::const_iterator v_iter=_orderNewMesh->verticesNormal().begin(); v_iter != newVerticesEnd; ++v_iter) {
+    newCoordinates->setFiberDimension(*v_iter, spaceDim);
+  } // for
+  newCoordinates->allocatePoint();
+      
+  interval_type::const_iterator oldVerticesEnd = _orderOldMesh->verticesNormal().end();
+  for (interval_type::const_iterator vOld_iter=_orderOldMesh->verticesNormal().begin(), vNew_iter=_orderNewMesh->verticesNormal().begin(); vOld_iter != oldVerticesEnd; ++vOld_iter, ++vNew_iter) {
+    //std::cout << "Copy coordinates from old vertex " << *vOld_iter << " to new vertex " << *vNew_iter << std::endl;
+    newCoordinates->updatePoint(*vNew_iter, coordinates->restrictPoint(*vOld_iter));
+  } // for
+  oldVerticesEnd = _orderOldMesh->verticesCensored().end();
+  for (interval_type::const_iterator vOld_iter=_orderOldMesh->verticesCensored().begin(), vNew_iter=_orderNewMesh->verticesCensored().begin(); vOld_iter != oldVerticesEnd; ++vOld_iter, ++vNew_iter) {
+    //std::cout << "Copy coordinates from old vertex " << *vOld_iter << " to new vertex " << *vNew_iter << std::endl;
+    newCoordinates->updatePoint(*vNew_iter, coordinates->restrictPoint(*vOld_iter));
+  } // for
+
+  refiner.setCoordsNewVertices(newCoordinates, coordinates);
+
+  // Create sensored depth
+  const ALE::Obj<SieveFlexMesh::label_type>& censoredLabel = newMesh->createLabel("censored depth");
+  assert(!censoredLabel.isNull());
+
+  mesh_type::DepthVisitor depthVisitor(*newSieve, _orderNewMesh->verticesCensored().min(), *censoredLabel);
+
+  newSieve->roots(depthVisitor);
+  while(depthVisitor.isModified()) {
+    // FIX: Avoid the copy here somehow by fixing the traversal
+    std::vector<mesh_type::point_type> modifiedPoints(depthVisitor.getModifiedPoints().begin(), depthVisitor.getModifiedPoints().end());
+    
+    depthVisitor.clear();
+    newSieve->support(modifiedPoints, depthVisitor);
+  } // while
+  // Stratify refined mesh
+  // Calculate new point SF
+  _calcNewOverlap(newMesh, mesh, refiner);
+  // Calculate new labels
+  _createLabels(newMesh, mesh, refiner);
+  PetscFunctionReturn(0);
+#else
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+#endif
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexSetRefinementUniform"
+PetscErrorCode DMComplexSetRefinementUniform(DM dm, PetscBool refinementUniform)
+{
+  DM_Complex *mesh = (DM_Complex *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->refinementUniform = refinementUniform;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMComplexGetRefinementUniform"
+PetscErrorCode DMComplexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
+{
+  DM_Complex *mesh = (DM_Complex *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(refinementUniform,  2);
+  *refinementUniform = mesh->refinementUniform;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMComplexSetRefinementLimit"
 PetscErrorCode DMComplexSetRefinementLimit(DM dm, PetscReal refinementLimit)
 {
@@ -5216,7 +5473,6 @@ PetscErrorCode DMComplexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
   DM_Complex *mesh = (DM_Complex *) dm->data;
 
   PetscFunctionBegin;
-
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(refinementLimit,  2);
   /* if (mesh->refinementLimit < 0) = getMaxVolume()/2.0; */
@@ -5231,10 +5487,15 @@ PetscErrorCode DMRefine_Complex(DM dm, MPI_Comm comm, DM *dmRefined)
   PetscReal      refinementLimit;
   PetscInt       dim, cStart, cEnd;
   char           genname[1024], *name = PETSC_NULL;
-  PetscBool      isTriangle = PETSC_FALSE, isTetgen = PETSC_FALSE, isCTetgen = PETSC_FALSE, flg;
+  PetscBool      isUniform, isTriangle = PETSC_FALSE, isTetgen = PETSC_FALSE, isCTetgen = PETSC_FALSE, flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMComplexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
+  if (isUniform) {
+    ierr = DMComplexRefine_Uniform(dm, dmRefined);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = DMComplexGetRefinementLimit(dm, &refinementLimit);CHKERRQ(ierr);
   if (refinementLimit == 0.0) PetscFunctionReturn(0);
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
@@ -5469,15 +5730,13 @@ PetscErrorCode DMComplexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numFi
     }
   }
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, section);CHKERRQ(ierr);
-  if (numFields > 1) {
+  if (numFields > 0) {
     ierr = PetscSectionSetNumFields(*section, numFields);CHKERRQ(ierr);
     if (numComp) {
       for(f = 0; f < numFields; ++f) {
         ierr = PetscSectionSetFieldComponents(*section, f, numComp[f]);CHKERRQ(ierr);
       }
     }
-  } else {
-    numFields = 0;
   }
   ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*section, pStart, pEnd);CHKERRQ(ierr);

@@ -26,25 +26,26 @@ struct _n_DMLabel {
 
 typedef struct {
   PetscInt             refct;
-  PetscInt             dim;              /* Topological mesh dimension */
+  PetscInt             dim;               /* Topological mesh dimension */
 
   /* Sieve */
-  PetscSection         coneSection;      /* Layout of cones (inedges for DAG) */
-  PetscInt             maxConeSize;      /* Cached for fast lookup */
-  PetscInt            *cones;            /* Cone for each point */
-  PetscInt            *coneOrientations; /* Orientation of each cone point, means cone traveral should start on point 'o', and if negative start on -(o+1) and go in reverse */
-  PetscSection         supportSection;   /* Layout of cones (inedges for DAG) */
-  PetscInt             maxSupportSize;   /* Cached for fast lookup */
-  PetscInt            *supports;         /* Cone for each point */
-  PetscReal            refinementLimit;  /* Maximum volume for refined cell */
+  PetscSection         coneSection;       /* Layout of cones (inedges for DAG) */
+  PetscInt             maxConeSize;       /* Cached for fast lookup */
+  PetscInt            *cones;             /* Cone for each point */
+  PetscInt            *coneOrientations;  /* Orientation of each cone point, means cone traveral should start on point 'o', and if negative start on -(o+1) and go in reverse */
+  PetscSection         supportSection;    /* Layout of cones (inedges for DAG) */
+  PetscInt             maxSupportSize;    /* Cached for fast lookup */
+  PetscInt            *supports;          /* Cone for each point */
+  PetscBool            refinementUniform; /* Flag for uniform cell refinement */
+  PetscReal            refinementLimit;   /* Maximum volume for refined cell */
 
-  PetscInt            *facesTmp;            /* Work space for faces operation */
+  PetscInt            *facesTmp;          /* Work space for faces operation */
 
   /* Submesh */
-  IS                   subpointMap;      /* map[submesh point] = original mesh point, original points are sorted so we can use PetscFindInt() */
+  IS                   subpointMap;       /* map[submesh point] = original mesh point, original points are sorted so we can use PetscFindInt() */
 
   /* Labels and numbering */
-  DMLabel              labels;           /* Linked list of labels */
+  DMLabel              labels;            /* Linked list of labels */
   IS                   globalVertexNumbers;
   IS                   globalCellNumbers;
 
