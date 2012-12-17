@@ -156,14 +156,14 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   */
   if (!xs) {
     for (i=0; i<N; i++) {
-      f[0][i] = u[0][i] - u[1][i];
+      f[0][i] = udot[0][i] + 2.0*(u[0][i] - u[1][i])*sx;
     }
     xs++;
     xm--;
   }
   if (xs+xm == Mx) {
     for (i=0; i<N; i++) {
-      f[Mx-1][i] = u[Mx-1][i] - u[Mx-2][i];
+      f[Mx-1][i] = udot[Mx-1][i] +  2.0*(u[Mx-1][i] - u[Mx-2][i])*sx;
     }
     xm--;
   }
@@ -228,13 +228,13 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
     for (i=xs; i<xs+xm; i++){
       nc    = 0;
       row.i = i; row.c = c;
-      
+
       if (i == 0) {  /* Left Neumann */
-        col[nc].c = c; col[nc].i = i;   vals[nc++] = 1.0;
-        col[nc].c = c; col[nc].i = i+1; vals[nc++] = -1.0;
+        col[nc].c = c; col[nc].i = i;   vals[nc++] = 2.0*sx + a;
+        col[nc].c = c; col[nc].i = i+1; vals[nc++] = -2.0*sx;
       } else if (i == Mx-1){/* Right Neumann */
-        col[nc].c = c; col[nc].i = i;   vals[nc++] = 1.0;
-        col[nc].c = c; col[nc].i = i-1; vals[nc++] = -1.0;
+        col[nc].c = c; col[nc].i = i;   vals[nc++] = 2.0*sx + a;
+        col[nc].c = c; col[nc].i = i-1; vals[nc++] = -2.0*sx;
       } else {   /* Interior */
         col[nc].c = c; col[nc].i = i-1; vals[nc++] = -sx;
         col[nc].c = c; col[nc].i = i;   vals[nc++] = 2.0*sx + a;
