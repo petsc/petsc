@@ -402,7 +402,7 @@ static PetscErrorCode MatGetDiagonal_Elemental(Mat A,Vec D)
     RO2E(A,1,crank,cidx,&ecol);
     if (crank < 0 || cidx < 0 || ecol < 0) SETERRQ(comm,PETSC_ERR_PLIB,"Incorrect col translation");
     v = a->emat->Get(erow,ecol);
-    ierr = VecSetValue(D,i,(PetscScalar)v,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecSetValues(D,1,&i,(PetscScalar*)&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(D);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(D);CHKERRQ(ierr);

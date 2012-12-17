@@ -289,9 +289,9 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
       case 3: // logarithmic + double well
         f[i] +=  6.*.25*x[i]*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (3.*x[i]*x[i] - 1.)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
         if (ctx->truncation==2) { // log function with approximated with a quadratic polynomial outside -1.0+2*tol, 1.0-2*tol
-          if (x[i] < -1.0 + 2.0*tol) {
+          if (PetscRealPart(x[i]) < -1.0 + 2.0*tol) {
             f[i] += (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
-          } else if (x[i] > 1.0 - 2.0*tol) {
+          } else if (PetscRealPart(x[i]) > 1.0 - 2.0*tol) {
             f[i] += (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
           } else {
             f[i] += 2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
@@ -299,9 +299,9 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
         } else { // log function is approximated with a cubic polynomial outside -1.0+2*tol, 1.0-2*tol
           a = 2.0*theta*(1.0-2.0*tol)/(16.0*tol*tol*(1.0-tol)*(1.0-tol));
           b = theta/(4.0*tol*(1.0-tol)) - a*(1.0-2.0*tol);
-          if (x[i] < -1.0 + 2.0*tol) {
+          if (PetscRealPart(x[i]) < -1.0 + 2.0*tol) {
             f[i] += -1.0*a*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (-1.0*a*x[i] + b)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
-          } else if (x[i] > 1.0 - 2.0*tol) {
+          } else if (PetscRealPart(x[i]) > 1.0 - 2.0*tol) {
             f[i] +=  1.0*a*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (     a*x[i] + b)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
           } else {
             f[i] += 2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
@@ -312,9 +312,9 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
       case 4: // logarithmic + double obstacle
         f[i] += - theta_c*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
         if (ctx->truncation==2) { // quadratic
-          if (x[i] < -1.0 + 2.0*tol) {
+          if (PetscRealPart(x[i]) < -1.0 + 2.0*tol) {
             f[i] += (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
-          } else if (x[i] > 1.0 - 2.0*tol) {
+          } else if (PetscRealPart(x[i]) > 1.0 - 2.0*tol) {
             f[i] += (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
           } else {
             f[i] += 2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
@@ -322,9 +322,9 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
         } else { // cubic
           a = 2.0*theta*(1.0-2.0*tol)/(16.0*tol*tol*(1.0-tol)*(1.0-tol));
           b = theta/(4.0*tol*(1.0-tol)) - a*(1.0-2.0*tol);
-          if (x[i] < -1.0 + 2.0*tol) {
+          if (PetscRealPart(x[i]) < -1.0 + 2.0*tol) {
             f[i] += -1.0*a*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (-1.0*a*x[i] + b)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
-          } else if (x[i] > 1.0 - 2.0*tol) {
+          } else if (PetscRealPart(x[i]) > 1.0 - 2.0*tol) {
             f[i] +=  1.0*a*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (     a*x[i] + b)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
           } else {
             f[i] +=  2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
@@ -446,8 +446,8 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
 {
   PetscErrorCode    ierr;
   PetscInt          i,xs,xm,Mx,N,scale;
-  PetscScalar       *u,r;
-  PetscReal         hx,x;
+  PetscScalar       *u;
+  PetscReal         r,hx,x;
   const PetscScalar *f;
   Vec               finesolution;
   PetscViewer       viewer;
@@ -485,7 +485,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   */
   for (i=xs; i<xs+xm; i++) {
     x = i*hx;
-    r = PetscSqrtScalar((x-.5)*(x-.5));
+    r = PetscSqrtReal((x-.5)*(x-.5));
     if (r < .125) {
       u[i] = 1.0;
     } else {
@@ -580,22 +580,22 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
         break;
       case 3: // logarithm + double well
         yy[1] = .25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i]));
-        if (u[i] < -1.0 + 2.0*tol) {
-          yy[2] = .5*theta*(2.0*tol*log(tol) + (1.0-u[i])*log((1-u[i])/2.0));
-        } else if (u[i] > 1.0 - 2.0*tol) {
-          yy[2] = .5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + 2.0*tol*log(tol));
+        if (PetscRealPart(u[i]) < -1.0 + 2.0*tol) {
+          yy[2] = .5*theta*(2.0*tol*PetscLogReal(tol) + PetscRealPart(1.0-u[i])*PetscLogReal(PetscRealPart(1.-u[i])/2.0));
+        } else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) {
+          yy[2] = .5*theta*(PetscRealPart(1.0+u[i])*PetscLogReal(PetscRealPart(1.0+u[i])/2.0) + 2.0*tol*PetscLogReal(tol));
         } else {
-          yy[2] = .5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + (1.0-u[i])*log((1.0-u[i])/2.0));
+          yy[2] = .5*theta*(PetscRealPart(1.0+u[i])*PetscLogReal(PetscRealPart(1.0+u[i])/2.0) + PetscRealPart(1.0-u[i])*PetscLogReal(PetscRealPart(1.0-u[i])/2.0));
         }
         break;
       case 4: // logarithm + double obstacle
-        yy[1] = .5*theta_c*(1.0-u[i]*u[i]);
-        if (u[i] < -1.0 + 2.0*tol) {
-          yy[2] = .5*theta*(2.0*tol*log(tol) + (1.0-u[i])*log((1-u[i])/2.0));
-        } else if (u[i] > 1.0 - 2.0*tol) {
-          yy[2] = .5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + 2.0*tol*log(tol));
+        yy[1] = .5*theta_c*PetscRealPart(1.0-u[i]*u[i]);
+        if (PetscRealPart(u[i]) < -1.0 + 2.0*tol) {
+          yy[2] = .5*theta*(2.0*tol*PetscLogReal(tol) + PetscRealPart(1.0-u[i])*PetscLogReal(PetscRealPart(1.-u[i])/2.0));
+        } else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) {
+          yy[2] = .5*theta*(PetscRealPart(1.0+u[i])*PetscLogReal(PetscRealPart(1.0+u[i])/2.0) + 2.0*tol*PetscLogReal(tol));
         } else {
-          yy[2] = .5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + (1.0-u[i])*log((1.0-u[i])/2.0));
+          yy[2] = .5*theta*(PetscRealPart(1.0+u[i])*PetscLogReal(PetscRealPart(1.0+u[i])/2.0) + PetscRealPart(1.0-u[i])*PetscLogReal(PetscRealPart(1.0-u[i])/2.0));
         }
         break;
       }
@@ -639,50 +639,50 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
         yy[1] = PetscRealPart(6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
         break;
       case 2: // double obstacle
-        yy[1] = -(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+        yy[1] = -PetscRealPart(u[i-1] + u[i+1] - 2.0*u[i])*sx;
         break;
       case 3: // logarithmic + double well
-        yy[1] =  6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+        yy[1] =  PetscRealPart(6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
         if (ctx->truncation==2) { // quadratic
-          if (u[i] < -1.0 + 2.0*tol) {
-            yy[2] = (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
-          } else if (u[i] > 1.0 - 2.0*tol) {
-            yy[2] = (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          if (PetscRealPart(u[i]) < -1.0 + 2.0*tol) {
+            yy[2] = (.25*theta/(tol-tol*tol))*PetscRealPart(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          } else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) {
+            yy[2] = (.25*theta/(tol-tol*tol))*PetscRealPart(u[i-1] + u[i+1] - 2.0*u[i])*sx;
           } else {
-            yy[2] = 2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+            yy[2] = PetscRealPart(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
           }
         } else { // cubic
           a = 2.0*theta*(1.0-2.0*tol)/(16.0*tol*tol*(1.0-tol)*(1.0-tol));
           b = theta/(4.0*tol*(1.0-tol)) - a*(1.0-2.0*tol);
-          if (u[i] < -1.0 + 2.0*tol) {
-            yy[2] = -1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (-1.0*a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
-          } else if (u[i] > 1.0 - 2.0*tol) {
-            yy[2] =  1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (     a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          if (PetscRealPart(u[i]) < -1.0 + 2.0*tol) {
+            yy[2] = PetscRealPart(-1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (-1.0*a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+          } else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) {
+            yy[2] =  PetscRealPart(1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (     a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
           } else {
-            yy[2] = 2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+            yy[2] = PetscRealPart(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
           }
         }
         break;
       case 4: // logarithmic + double obstacle
-        yy[1] = theta_c*(-(u[i-1] + u[i+1] - 2.0*u[i]))*sx;
+        yy[1] = theta_c*PetscRealPart(-(u[i-1] + u[i+1] - 2.0*u[i]))*sx;
         if (ctx->truncation==2) {
-          if (u[i] < -1.0 + 2.0*tol) {
-            yy[2] = (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
-        } else if (u[i] > 1.0 - 2.0*tol) {
-            yy[2] = (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          if (PetscRealPart(u[i]) < -1.0 + 2.0*tol) {
+            yy[2] = (.25*theta/(tol-tol*tol))*PetscRealPart(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          } else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) {
+            yy[2] = (.25*theta/(tol-tol*tol))*PetscRealPart(u[i-1] + u[i+1] - 2.0*u[i])*sx;
           } else {
-            yy[2] = (2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+            yy[2] = PetscRealPart(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
           }
         }
         else {
           a = 2.0*theta*(1.0-2.0*tol)/(16.0*tol*tol*(1.0-tol)*(1.0-tol));
           b = theta/(4.0*tol*(1.0-tol)) - a*(1.0-2.0*tol);
-          if (u[i] < -1.0 + 2.0*tol) {
-            yy[2] = -1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (-1.0*a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
-          } else if (u[i] > 1.0 - 2.0*tol) {
-            yy[2] =  1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (     a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          if (PetscRealPart(u[i]) < -1.0 + 2.0*tol) {
+            yy[2] = PetscRealPart(-1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (-1.0*a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+          } else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) {
+            yy[2] =  PetscRealPart(1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (     a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
           } else {
-            yy[2] =  2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+            yy[2] =  PetscRealPart(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
           }
         }
         break;
@@ -753,7 +753,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
         len = .5*PetscRealPart(6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
         break;
       case 2: // double obstacle
-        len = -.5*(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
+        len = -.5*PetscRealPart(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
         break;
       case 3: // logarithmic + double well
         len   = .5*PetscRealPart(6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
@@ -763,51 +763,51 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
            yup += len;
          }
          if (ctx->truncation==2){ // quadratic
-           if (u[i] < -1.0 + 2.0*tol) {
-             len2 = .5*(.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
-           } else if (u[i] > 1.0 - 2.0*tol) {
-             len2 = .5*(.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
+           if (PetscRealPart(u[i]) < -1.0 + 2.0*tol) {
+             len2 = .5*(.25*theta/(tol-tol*tol))*PetscRealPart(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
+           } else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) {
+             len2 = .5*(.25*theta/(tol-tol*tol))*PetscRealPart(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
            } else {
-             len2 = .5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+             len2 = PetscRealPart(.5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max);
            }
          } else { // cubic
            a = 2.0*theta*(1.0-2.0*tol)/(16.0*tol*tol*(1.0-tol)*(1.0-tol));
            b = theta/(4.0*tol*(1.0-tol)) - a*(1.0-2.0*tol);
-           if (u[i] < -1.0 + 2.0*tol) {
-             len2 = .5*(-1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (-1.0*a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
-           } else if (u[i] > 1.0 - 2.0*tol) {
-             len2 = .5*(a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (     a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+           if (PetscRealPart(u[i]) < -1.0 + 2.0*tol) {
+             len2 = PetscRealPart(.5*(-1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (-1.0*a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max);
+           } else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) {
+             len2 = PetscRealPart(.5*(a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (     a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max);
            } else {
-             len2 = .5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+             len2 = PetscRealPart(.5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max);
            }
          }
          y2 = len < 0 ? ydown : yup;
          ierr = PetscDrawArrow(draw,x,y2,x,y2+len2,PETSC_DRAW_PLUM);CHKERRQ(ierr);
          break;
       case 4: // logarithmic + double obstacle
-        len   = -.5*theta_c*(-(u[i-1] + u[i+1] - 2.0*u[i])*sx/max);
+        len   = -.5*theta_c*PetscRealPart(-(u[i-1] + u[i+1] - 2.0*u[i])*sx/max);
         if (len < 0.) {
           ydown += len;
         } else {
           yup += len;
         }
         if (ctx->truncation==2) { // quadratic
-          if (u[i] < -1.0 + 2.0*tol) {
-            len2 = .5*(.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
-          } else if (u[i] > 1.0 - 2.0*tol) {
-            len2 = .5*(.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
+          if (PetscRealPart(u[i]) < -1.0 + 2.0*tol) {
+            len2 = .5*(.25*theta/(tol-tol*tol))*PetscRealPart(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
+          } else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) {
+            len2 = .5*(.25*theta/(tol-tol*tol))*PetscRealPart(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
           } else {
-            len2 = .5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+            len2 = PetscRealPart(.5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max);
           }
         } else { // cubic
           a = 2.0*theta*(1.0-2.0*tol)/(16.0*tol*tol*(1.0-tol)*(1.0-tol));
           b = theta/(4.0*tol*(1.0-tol)) - a*(1.0-2.0*tol);
-          if (u[i] < -1.0 + 2.0*tol) {
-            len2 = .5*(-1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (-1.0*a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
-          } else if (u[i] > 1.0 - 2.0*tol) {
-            len2 =  .5*(a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (     a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+          if (PetscRealPart(u[i]) < -1.0 + 2.0*tol) {
+            len2 = .5*PetscRealPart(-1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (-1.0*a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+          } else if (PetscRealPart(u[i]) > 1.0 - 2.0*tol) {
+            len2 =  .5*PetscRealPart(a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (     a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
           } else {
-            len2 =  .5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+            len2 =  .5*PetscRealPart(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
           }
         }
         y2 = len < 0 ? ydown : yup;
