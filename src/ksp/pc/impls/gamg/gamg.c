@@ -653,11 +653,12 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     if (pc_gamg->verbose==1) ierr =  MatGetInfo(Pmat,MAT_LOCAL,&info);
     else ierr = MatGetInfo(Pmat,MAT_GLOBAL_SUM,&info);
     CHKERRQ(ierr);
+    int nn = pc_gamg->verbose==1 ? qq : M; 
     nnz0 = info.nz_used;
     nnztot = info.nz_used;
     PetscPrintf(wcomm,"\t[%d]%s level %d N=%d, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
                 mype,__FUNCT__,0,M,pc_gamg->data_cell_rows,pc_gamg->data_cell_cols,
-                (int)(nnz0/(PetscReal)M),npe);
+                (int)(nnz0/(PetscReal)nn),npe);
   }
 
   /* Get A_i and R_i */

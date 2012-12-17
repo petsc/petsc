@@ -603,7 +603,7 @@ static PetscErrorCode smoothAggs( const Mat Gmat_2, /* base (squared) graph */
     ierr = VecDestroy( &tempVec ); CHKERRQ(ierr);
 
     /* look for deleted ghosts and add to table */
-    ierr = GAMGTableCreate( 2*nghost_2, &gid_cpid ); CHKERRQ(ierr);
+    ierr = GAMGTableCreate( 2*nghost_2+1, &gid_cpid ); CHKERRQ(ierr);
     for ( cpid = 0 ; cpid < nghost_2 ; cpid++ ) {
       NState state = (NState)PetscRealPart(cpcol_2_state[cpid]);
       if ( state==DELETED ) {
@@ -782,7 +782,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists,/* list from 
   Iend /= bs;
   nghosts = data_stride/bs - nloc;
 
-  ierr = GAMGTableCreate( 2*nghosts, &fgid_flid ); CHKERRQ(ierr);
+  ierr = GAMGTableCreate( 2*nghosts+1, &fgid_flid ); CHKERRQ(ierr);
   for (kk=0;kk<nghosts;kk++) {
     ierr = GAMGTableAdd( &fgid_flid, flid_fgid[nloc+kk], nloc+kk ); CHKERRQ(ierr);
   }
@@ -1037,6 +1037,10 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC a_pc,
     CHKERRQ(ierr);
     if ( verbose > 2 ) {
       PetscPrintf(wcomm,"[%d]%s square graph done\n",mype,__FUNCT__);
+      /* check for symetry */
+      if ( verbose > 4 ) {
+        
+      }
     }
   }
   else Gmat2 = Gmat1;
@@ -1101,7 +1105,7 @@ PetscErrorCode PCGAMGCoarsen_AGG( PC a_pc,
   }
   else {
     const PetscCoarsenData *llist = *agg_lists;
-    /* see if we have a matrix that takes pecedence (returned from MatCoarsenAppply) */
+    /* see if we have a matrix that takes precedence (returned from MatCoarsenAppply) */
     ierr = PetscCDGetMat( llist, &mat );   CHKERRQ(ierr);
     if ( mat ) {
       ierr = MatDestroy( &Gmat1 );  CHKERRQ(ierr);

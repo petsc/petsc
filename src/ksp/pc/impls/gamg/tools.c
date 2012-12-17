@@ -306,8 +306,11 @@ PetscErrorCode GAMGTableDestroy( GAMGHashTable *a_tab )
 PetscErrorCode GAMGTableAdd( GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data )
 {
   PetscInt kk,idx;
-  if (a_key<0)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Table size %d too small.",a_tab->size);
-  for ( kk = 0, idx = GAMG_HASH(a_key) ; kk < a_tab->size ; kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1 ){
+  if (a_key<0)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Negative key %d.",a_key);
+  for ( kk = 0, idx = GAMG_HASH(a_key) ; 
+        kk < a_tab->size ; 
+        kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1 ){
+
     if ( a_tab->table[idx] == a_key ) {
       /* exists */
       assert(0); /* not used this way now */
@@ -321,14 +324,34 @@ PetscErrorCode GAMGTableAdd( GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_da
       break;
     }
   }
-  if (kk==a_tab->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Table size %d too small.",a_tab->size);
+  if(kk==a_tab->size) {
+    // this is not to efficient, waiting until completely full
+    //SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Table size %d too small.",a_tab->size);
+    PetscInt oldsize = a_tab->size, new_size = 2*a_tab->size + 5, *oldtable = a_tab->table, *olddata = a_tab->data;
+    PetscErrorCode ierr;
+    //PetscMPIInt    mype;
+    //ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&mype);CHKERRQ(ierr);
+    //PetscPrintf(PETSC_COMM_SELF,"[%d]%s grow table %d --> %d, rehash\n",mype,__FUNCT__,oldsize,new_size);
+    a_tab->size = new_size;
+    ierr = PetscMalloc(a_tab->size*sizeof(PetscInt), &a_tab->table );  CHKERRQ(ierr);
+    ierr = PetscMalloc(a_tab->size*sizeof(PetscInt), &a_tab->data );  CHKERRQ(ierr);
+    for (kk=0;kk<a_tab->size;kk++) a_tab->table[kk] = -1;
+    for (kk=0;kk<oldsize;kk++) {
+      if ( oldtable[kk] != -1 ) { 
+        ierr = GAMGTableAdd( a_tab, oldtable[kk], olddata[kk] );  CHKERRQ(ierr);
+       }
+    }
+    ierr = PetscFree( oldtable );  CHKERRQ(ierr);
+    ierr = PetscFree( olddata );  CHKERRQ(ierr);
+    ierr = GAMGTableAdd( a_tab, a_key, a_data );  CHKERRQ(ierr);
+  }
   return 0;
 }
 
 PetscErrorCode GAMGTableFind( GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data )
 {
   PetscInt kk,idx;
-  if (a_key<0)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Table size %d too small.",a_tab->size);
+  if (a_key<0)SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Negative key %d.",a_key);
   for ( kk = 0, idx = GAMG_HASH(a_key) ; kk < a_tab->size ; kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1 ){
     if ( a_tab->table[idx] == a_key ) {
       *a_data = a_tab->data[idx];
@@ -340,6 +363,8 @@ PetscErrorCode GAMGTableFind( GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_
       break;
     }
   }
-  if (kk==a_tab->size) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Table size %d too small.",a_tab->size);
+  if (kk==a_tab->size) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"key %d not found in table",a_key);
+  }
   return 0;
 }
