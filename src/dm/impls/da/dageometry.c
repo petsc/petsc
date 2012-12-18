@@ -112,9 +112,8 @@ PetscErrorCode DMDAGetClosure(DM dm, PetscSection section, PetscInt p,PetscInt *
   if ((p < pStart) || (p >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid point %d should be in [%d, %d)", p, pStart, pEnd);
   if ((p >= cStart) || (p < cEnd)) {
     /* Cell */
-    if (dim == 1) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
-    } else if (dim == 2) {
+    if (dim == 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
+    else if (dim == 2) {
       /* 4 faces, 4 vertices
          Bottom-left vertex follows same order as cells
          Bottom y-face same order as cells
@@ -134,17 +133,14 @@ PetscErrorCode DMDAGetClosure(DM dm, PetscSection section, PetscInt p,PetscInt *
       PetscInt points[9] = {p, yf, xf+1, yf+nyF, xf+0, v+0, v+1, v+nVx+1, v+nVx+0};
 
       ierr = GetPointArray_Private(dm,9,points,n,closure);CHKERRQ(ierr);
-    } else {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
-    }
+    } else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
   } else if ((p >= vStart) || (p < vEnd)) {
     /* Vertex */
     ierr = GetPointArray_Private(dm,1,&p,n,closure);CHKERRQ(ierr);
   } else if ((p >= fStart) || (p < fStart + nXF)) {
     /* X Face */
-    if (dim == 1) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
-    } else if (dim == 2) {
+    if (dim == 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
+    else if (dim == 2) {
       /* 2 vertices: The bottom vertex has the same numbering as the face */
       PetscInt f         = p - xfStart;
       PetscInt points[3] = {p, f, f+nVx};
@@ -157,9 +153,8 @@ PetscErrorCode DMDAGetClosure(DM dm, PetscSection section, PetscInt p,PetscInt *
     }
   } else if ((p >= fStart + nXF) || (p < fStart + nXF + nYF)) {
     /* Y Face */
-    if (dim == 1) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
-    } else if (dim == 2) {
+    if (dim == 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
+    else if (dim == 2) {
       /* 2 vertices: The left vertex has the same numbering as the face */
       PetscInt f         = p - yfStart;
       PetscInt points[3] = {p, f, f+1};
@@ -172,11 +167,9 @@ PetscErrorCode DMDAGetClosure(DM dm, PetscSection section, PetscInt p,PetscInt *
     }
   } else {
     /* Z Face */
-    if (dim == 1) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
-    } else if (dim == 2) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no z-faces in 2D");
-    } else if (dim == 3) {
+    if (dim == 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
+    else if (dim == 2) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no z-faces in 2D");
+    else if (dim == 3) {
       /* 4 vertices */
       SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
     }
@@ -227,9 +220,8 @@ PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section,PetscInt p,Petsc
   if ((p < pStart) || (p >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid point %d should be in [%d, %d)", p, pStart, pEnd);
   if ((p >= cStart) || (p < cEnd)) {
     /* Cell */
-    if (dim == 1) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
-    } else if (dim == 2) {
+    if (dim == 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
+    else if (dim == 2) {
       /* 4 faces, 4 vertices
          Bottom-left vertex follows same order as cells
          Bottom y-face same order as cells
@@ -279,9 +271,8 @@ PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section,PetscInt p,Petsc
     ierr = FillClosureArray_Private(dm, section, 1, &p, vArray, values);CHKERRQ(ierr);
   } else if ((p >= fStart) || (p < fStart + nXF)) {
     /* X Face */
-    if (dim == 1) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
-    } else if (dim == 2) {
+    if (dim == 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
+    else if (dim == 2) {
       /* 2 vertices: The bottom vertex has the same numbering as the face */
       PetscInt f         = p - xfStart;
       PetscInt points[3] = {p, f, f+nVx};
@@ -294,9 +285,8 @@ PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section,PetscInt p,Petsc
     }
   } else if ((p >= fStart + nXF) || (p < fStart + nXF + nYF)) {
     /* Y Face */
-    if (dim == 1) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
-    } else if (dim == 2) {
+    if (dim == 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
+    else if (dim == 2) {
       /* 2 vertices: The left vertex has the same numbering as the face */
       PetscInt f         = p - yfStart;
       PetscInt points[3] = {p, f, f+1};
@@ -309,11 +299,9 @@ PetscErrorCode DMDAGetClosureScalar(DM dm, PetscSection section,PetscInt p,Petsc
     }
   } else {
     /* Z Face */
-    if (dim == 1) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
-    } else if (dim == 2) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no z-faces in 2D");
-    } else if (dim == 3) {
+    if (dim == 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
+    else if (dim == 2) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no z-faces in 2D");
+    else if (dim == 3) {
       /* 4 vertices */
       SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
     }
@@ -395,9 +383,8 @@ PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,Pets
   if ((p < pStart) || (p >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid point %d should be in [%d, %d)", p, pStart, pEnd);
   if ((p >= cStart) || (p < cEnd)) {
     /* Cell */
-    if (dim == 1) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
-    } else if (dim == 2) {
+    if (dim == 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
+    else if (dim == 2) {
       /* 4 faces, 4 vertices
          Bottom-left vertex follows same order as cells
          Bottom y-face same order as cells
@@ -443,9 +430,8 @@ PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,Pets
     ierr = FillClosureVec_Private(dm, section, 1, &p, vArray, values, mode);CHKERRQ(ierr);
   } else if ((p >= fStart) || (p < fStart + nXF)) {
     /* X Face */
-    if (dim == 1) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
-    } else if (dim == 2) {
+    if (dim == 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
+    else if (dim == 2) {
       /* 2 vertices: The bottom vertex has the same numbering as the face */
       PetscInt f         = p - xfStart;
       PetscInt points[3] = {p, f, f+nVx};
@@ -457,9 +443,8 @@ PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,Pets
     }
   } else if ((p >= fStart + nXF) || (p < fStart + nXF + nYF)) {
     /* Y Face */
-    if (dim == 1) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
-    } else if (dim == 2) {
+    if (dim == 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
+    else if (dim == 2) {
       /* 2 vertices: The left vertex has the same numbering as the face */
       PetscInt f         = p - yfStart;
       PetscInt points[3] = {p, f, f+1};
@@ -471,11 +456,9 @@ PetscErrorCode DMDASetClosureScalar(DM dm, PetscSection section, PetscInt p,Pets
     }
   } else {
     /* Z Face */
-    if (dim == 1) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
-    } else if (dim == 2) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no z-faces in 2D");
-    } else if (dim == 3) {
+    if (dim == 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no faces in 1D");
+    else if (dim == 2) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "There are no z-faces in 2D");
+    else if (dim == 3) {
       /* 4 vertices */
       SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not implemented");
     }

@@ -277,8 +277,7 @@ PetscErrorCode DMSetUp_AKKT(DM dm) {
       PetscInt i;
       ierr = DMCreateFieldDecompositionDM(kkt->dm, kkt->dname, &ddm); CHKERRQ(ierr);
       ierr = DMCreateFieldDecomposition(ddm, &n, &names, &iss, &dms); CHKERRQ(ierr);
-      if (n < 1 || n > 2) 
-        SETERRQ2(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "Number of parts in decomposition %s must be between 1 and 2.  Got %D instead",kkt->dname, n);
+      if (n < 1 || n > 2) SETERRQ2(((PetscObject)dm)->comm, PETSC_ERR_ARG_WRONG, "Number of parts in decomposition %s must be between 1 and 2.  Got %D instead",kkt->dname, n);
       for (i = 0; i < n; ++i) {
         if (!iss[i] && dms[i]) {
           const char* label;

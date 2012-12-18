@@ -47,9 +47,8 @@ PetscErrorCode VecView_Complex_Local(Vec v, PetscViewer viewer)
       } else {
         ft = PETSC_VTK_POINT_FIELD;
       }
-    } else {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Could not classify input Vec for VTK");
-    }
+    } else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Could not classify input Vec for VTK");
+
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr); /* viewer drops reference */
     ierr = PetscObjectReference((PetscObject) v);CHKERRQ(ierr);  /* viewer drops reference */
     ierr = PetscViewerVTKAddField(viewer, (PetscObject) dm, DMComplexVTKWriteAll, ft, (PetscObject) v);CHKERRQ(ierr);
@@ -474,9 +473,8 @@ PetscErrorCode DMComplexPreallocateOperator(DM dm, PetscInt bs, PetscSection sec
     useClosure = PETSC_FALSE;
   } else if (mesh->preallocCenterDim == 0) {
     useClosure = PETSC_TRUE;
-  } else {
-    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Do not support preallocation with center points of dimension %d", mesh->preallocCenterDim);
-  }
+  } else SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Do not support preallocation with center points of dimension %d", mesh->preallocCenterDim);
+
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(section, &numDof);CHKERRQ(ierr);
   ierr = PetscSectionCreate(comm, &leafSectionAdj);CHKERRQ(ierr);
@@ -5878,9 +5876,8 @@ PetscErrorCode DMComplexCreateSectionBCIndicesField(DM dm, PetscInt field, IS bc
 
   PetscFunctionBegin;
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-  if ((field < 0) || (field >= numFields)) {
-    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, numFields);
-  }
+  if ((field < 0) || (field >= numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section field %d should be in [%d, %d)", field, 0, numFields);
+
   ierr = ISGetLocalSize(bcPoints, &numPoints);CHKERRQ(ierr);
   ierr = ISGetIndices(bcPoints, &points);CHKERRQ(ierr);
   if (!constraintIndices) {
@@ -6972,9 +6969,7 @@ PetscErrorCode DMComplexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCor
     } else {
       if (((indices[0] > indices[1]) && (indices[0] - indices[1] == 1)) || ((indices[0] == 0) && (indices[1] == 3))) {
         posOrient = PETSC_FALSE;
-      } else {
-        SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid quad crossedge");
-      }
+      } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid quad crossedge");
     }
   } else if (cellDim == 2 && numCorners == 6) {
     /* Quadratic triangle (I hate this) */
@@ -7220,7 +7215,7 @@ PetscErrorCode DMComplexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCor
         break;
       }
     }
-    if (!found) {SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid hex crossface");}
+    if (!found) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid hex crossface");
     if (posOriented) {*posOriented = PETSC_TRUE;}
     PetscFunctionReturn(0);
   } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Unknown cell type for faceOrientation().");
@@ -7542,9 +7537,8 @@ PetscErrorCode DMComplexInsertFace_Private(DM dm, DM subdm, PetscInt numFaceVert
     }
   }
 #endif
-  if (numFaces > 1) {
-    SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Vertex set had %d faces, not one", numFaces);
-  } else if (numFaces == 1) {
+  if (numFaces > 1) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Vertex set had %d faces, not one", numFaces);
+  else if (numFaces == 1) {
     /* Add the other cell neighbor for this face */
     ierr = DMComplexSetCone(subdm, cell, faces);CHKERRQ(ierr);
   } else {
