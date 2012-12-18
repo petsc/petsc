@@ -121,7 +121,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   IS               to, from;
   PetscBool        flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
   PetscMPIInt      rank, size;
-  PetscInt         i,*idx,nn,left,xs,xe,x,Xs,Xe,start,end,m,IXs,IXe;
+  PetscInt         i,j,*idx,nn,left,xs,xe,x,Xs,Xe,start,end,m,IXs,IXe;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -217,7 +217,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
     IXe = M*dof;
   }
 
-  if (bx == DMDA_BOUNDARY_PERIODIC) {
+  if (bx == DMDA_BOUNDARY_PERIODIC || bx == DMDA_BOUNDARY_MIRROR) {
     Xs = xs - sDist - oDist;
     Xe = xe + sDist + oDist;
     IXs = xs - sDist - oDist;
@@ -250,26 +250,42 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   for (i=0; i<IXs-Xs; i++) {idx[i] = -1; } /* prepend with -1s if needed for ghosted case*/
 
   nn = IXs-Xs;
-  if (bx == DMDA_BOUNDARY_PERIODIC) { /* Handle all cases with wrap first */
+  if (bx == DMDA_BOUNDARY_PERIODIC) { /* Handle all cases with periodic first */
     for (i=0; i<sDist+oDist; i++) {  /* Left ghost points */
-      if ((xs-sDist-oDist+i)>=0) { idx[nn++] = xs-sDist-oDist+i;}
-      else                 { idx[nn++] = M*dof+(xs-sDist-oDist+i);}
+      if ((xs-sDist-oDist+i)>=0) {idx[nn++] = xs-sDist-oDist+i;}
+      else                       {idx[nn++] = M*dof+(xs-sDist-oDist+i);}
     }
 
     for (i=0; i<x; i++) { idx [nn++] = xs + i;}  /* Non-ghost points */
 
     for (i=0; i<sDist+oDist; i++) { /* Right ghost points */
-      if ((xe+i)<M*dof) { idx [nn++] =  xe+i; }
-      else              { idx [nn++] = (xe+i) - M*dof;}
+      if ((xe+i)<M*dof) {idx [nn++] =  xe+i; }
+      else              {idx [nn++] = (xe+i) - M*dof;}
     }
-  } else {      /* Now do all cases with no wrapping */
+  } else if (bx == DMDA_BOUNDARY_MIRROR) { /* Handle all cases with periodic first */
+    for (i=0; i<(sDist+oDist)/dof; i++) {  /* Left ghost points */
+      for (j=0; j<dof; j++) {
+        if ((xs-sDist-oDist+i*dof + j)>=0) {idx[nn++] = xs-sDist-oDist+i*dof +j;}
+        else                               {idx[nn++] = sDist+oDist - dof*(i + 1) + j;}
+      }
+    }
+
+    for (i=0; i<x; i++) { idx [nn++] = xs + i;}  /* Non-ghost points */
+
+    for (i=0; i<(sDist+oDist)/dof; i++) { /* Right ghost points */
+      for (j=0; j<dof; j++) {
+        if ((xe+i)<M*dof) {idx[nn++] =  xe+i*dof+j; }
+        else              {idx[nn++] = M*dof - dof*(i + 1) + j ;}
+      }
+    }
+  } else {      /* Now do all cases with no periodicity */
     if (0 <= xs-sDist-oDist) {for (i=0; i<sDist+oDist; i++) {idx[nn++] = xs - sDist - oDist + i;}}
-    else               {for (i=0; i<xs;    i++) {idx[nn++] = i;}}
+    else                     {for (i=0; i<xs;    i++) {idx[nn++] = i;}}
 
     for (i=0; i<x; i++) { idx [nn++] = xs + i;}
 
     if ((xe+sDist+oDist)<=M*dof) {for (i=0;  i<sDist+oDist;   i++) {idx[nn++]=xe+i;}}
-    else                   {for (i=xe; i<(M*dof); i++) {idx[nn++]=i;}}
+    else                         {for (i=xe; i<(M*dof); i++) {idx[nn++]=i;}}
   }
 
   ierr = ISCreateGeneral(comm,nn-IXs+Xs,&idx[IXs-Xs],PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
