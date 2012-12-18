@@ -8761,7 +8761,6 @@ PetscErrorCode  MatMatMultNumeric(Mat A,Mat B,Mat C)
   PetscValidHeaderSpecific(C,MAT_CLASSID,3);
   PetscValidType(C,3);
   MatCheckPreallocated(C,3);
-  if (!C->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (C->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   if (B->cmap->N!=C->cmap->N) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->cmap->N,C->cmap->N);

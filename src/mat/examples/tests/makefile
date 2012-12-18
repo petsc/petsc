@@ -1478,6 +1478,16 @@ runex104:
 	   if (${DIFF} output/ex104.out ex104.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with ex104, diffs above \n========================================="; fi; \
 	   ${RM} -f ex104.tmp
+runex104_elemental:
+	-@${MPIEXEC} -n 1 ./ex104 -mat_type elemental > ex104.tmp 2>&1; \
+	   if (${DIFF} output/ex104.out ex104.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with ex104_elemental, diffs above \n========================================="; fi; \
+	   ${RM} -f ex104.tmp
+runex104_elemental_2:
+	-@${MPIEXEC} -n 3 ./ex104 -mat_type elemental > ex104.tmp 2>&1; \
+	   if (${DIFF} output/ex104.out ex104.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with ex104_elemental_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex104.tmp
 
 runex109:
 	-@${MPIEXEC} -n 1 ./ex109 > ex109.tmp 2>&1; \
@@ -1844,6 +1854,7 @@ TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_2 runex112_3 run
 TESTEXAMPLES_C_COMPLEX	       = ex127.PETSc runex127 runex127_2 ex127.rm 
 TESTEXAMPLES_ELEMENTAL         = ex38.PETSc runex38 runex38_2 runex38_3 ex38.rm \
                                  ex39.PETSc runex39 runex39_2 ex39.rm \
+                                 ex104_elemental.PETSc runex104_elemental runex104_elemental_2 ex104_elemental.rm \
                                  ex145.PETSc runex145 runex145_2 ex145.rm
 
 include ${PETSC_DIR}/conf/test
