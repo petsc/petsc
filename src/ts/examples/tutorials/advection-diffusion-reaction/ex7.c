@@ -50,7 +50,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,-8,user.N,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_MIRROR,-8,user.N,1,PETSC_NULL,&da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Extract global vectors from DMDA; then duplicate for remaining
@@ -93,6 +93,7 @@ int main(int argc,char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecDestroy(&U);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
@@ -139,7 +140,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
 
-  /*
+   /*
      Get pointers to vector data
   */
   ierr = DMDAVecGetArrayDOF(da,localU,&u);CHKERRQ(ierr);
@@ -150,23 +151,6 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
      Get local grid boundaries
   */
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-
-  /* 
-     Neumann BC
-  */
-  if (!xs) {
-    for (i=0; i<N; i++) {
-      f[0][i] = udot[0][i] + 2.0*(u[0][i] - u[1][i])*sx;
-    }
-    xs++;
-    xm--;
-  }
-  if (xs+xm == Mx) {
-    for (i=0; i<N; i++) {
-      f[Mx-1][i] = udot[Mx-1][i] +  2.0*(u[Mx-1][i] - u[Mx-2][i])*sx;
-    }
-    xm--;
-  }
 
   /*
      Compute function over the locally owned part of the grid
@@ -216,13 +200,26 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
   PetscScalar    vals[3],hx,sx;
   AppCtx         *user = (AppCtx*)ctx;
   PetscInt       N = user->N;
+  Vec            localU;
+  PetscScalar    **u;
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
+
+ /*
+     Scatter ghost points to local vector,using the 2-step process
+        DMGlobalToLocalBegin(),DMGlobalToLocalEnd().
+     By placing code between these two statements, computations can be
+     done while messages are in transition.
+  */
+  ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayDOF(da,localU,&u);CHKERRQ(ierr);
 
   for (c=0; c<N; c++){
     for (i=xs; i<xs+xm; i++){
@@ -249,6 +246,8 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
     ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
+  ierr = DMDAVecRestoreArrayDOF(da,localU,&u);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
 
   if (user->viewJacobian){
     ierr = PetscPrintf(((PetscObject)*Jpre)->comm,"Jpre:\n");CHKERRQ(ierr);

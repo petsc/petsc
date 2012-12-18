@@ -39,6 +39,7 @@ int main(int argc,char **argv)
   ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
   ierr = VecView(local,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
+  ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = VecDestroy(&local);CHKERRQ(ierr);

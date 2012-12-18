@@ -266,7 +266,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
     for (i=0; i<(sDist+oDist)/dof; i++) {  /* Left ghost points */
       for (j=0; j<dof; j++) {
         if ((xs-sDist-oDist+i*dof + j)>=0) {idx[nn++] = xs-sDist-oDist+i*dof +j;}
-        else                               {idx[nn++] = sDist+oDist - dof*(i + 1) + j;}
+        else                               {idx[nn++] = sDist+oDist - dof*(i) + j;}
       }
     }
 
@@ -275,7 +275,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
     for (i=0; i<(sDist+oDist)/dof; i++) { /* Right ghost points */
       for (j=0; j<dof; j++) {
         if ((xe+i)<M*dof) {idx[nn++] =  xe+i*dof+j; }
-        else              {idx[nn++] = M*dof - dof*(i + 1) + j ;}
+        else              {idx[nn++] = M*dof - dof*(i + 2) + j ;}
       }
     }
   } else {      /* Now do all cases with no periodicity */
