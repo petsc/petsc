@@ -122,7 +122,7 @@ PETSC_EXTERN PetscErrorCode DMComplexCreateHexBoxMesh(MPI_Comm,PetscInt,const Pe
 PETSC_EXTERN PetscErrorCode DMComplexGetDepth(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMComplexGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMComplexCreateSection(DM, PetscInt, PetscInt, PetscInt [], PetscInt [], PetscInt, PetscInt [], IS [], PetscSection *);
+PETSC_EXTERN PetscErrorCode DMComplexCreateSection(DM, PetscInt, PetscInt,const PetscInt [],const PetscInt [], PetscInt,const PetscInt [],const IS [], PetscSection *);
 PETSC_EXTERN PetscErrorCode DMComplexCreateConeSection(DM, PetscSection *);
 
 /* FEM Support */

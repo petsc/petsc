@@ -5713,7 +5713,7 @@ PetscErrorCode DMComplexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt 
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexCreateSectionInitial"
 /* Set the number of dof on each point and separate by fields */
-PetscErrorCode DMComplexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numFields, PetscInt numComp[], PetscInt numDof[], PetscSection *section) {
+PetscErrorCode DMComplexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numFields,const PetscInt numComp[],const PetscInt numDof[], PetscSection *section) {
   PetscInt      *numDofTot;
   PetscInt       pStart = 0, pEnd = 0;
   PetscInt       p, d, f;
@@ -5756,7 +5756,7 @@ PetscErrorCode DMComplexCreateSectionInitial(DM dm, PetscInt dim, PetscInt numFi
 /* Set the number of dof on each point and separate by fields
    If constDof is PETSC_DETERMINE, constrain every dof on the point
 */
-PetscErrorCode DMComplexCreateSectionBCDof(DM dm, PetscInt numBC, PetscInt bcField[], IS bcPoints[], PetscInt constDof, PetscSection section) {
+PetscErrorCode DMComplexCreateSectionBCDof(DM dm, PetscInt numBC,const PetscInt bcField[],const IS bcPoints[], PetscInt constDof, PetscSection section) {
   PetscInt       numFields;
   PetscInt       bc;
   PetscErrorCode ierr;
@@ -5977,7 +5977,7 @@ PetscErrorCode DMComplexCreateSectionBCIndices(DM dm, PetscSection section) {
 .keywords: mesh, elements
 .seealso: DMComplexCreate(), PetscSectionCreate()
 @*/
-PetscErrorCode DMComplexCreateSection(DM dm, PetscInt dim, PetscInt numFields, PetscInt numComp[], PetscInt numDof[], PetscInt numBC, PetscInt bcField[], IS bcPoints[], PetscSection *section) {
+PetscErrorCode DMComplexCreateSection(DM dm, PetscInt dim, PetscInt numFields,const PetscInt numComp[],const PetscInt numDof[], PetscInt numBC,const PetscInt bcField[],const IS bcPoints[], PetscSection *section) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
