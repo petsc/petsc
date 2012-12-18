@@ -348,10 +348,10 @@ class BaseTestSNES(object):
 # --------------------------------------------------------------------
 
 class TestSNESLS(BaseTestSNES, unittest.TestCase):
-    SNES_TYPE = PETSc.SNES.Type.LS
+    SNES_TYPE = PETSc.SNES.Type.NEWTONLS
 
 class TestSNESTR(BaseTestSNES, unittest.TestCase):
-    SNES_TYPE = PETSc.SNES.Type.TR
+    SNES_TYPE = PETSc.SNES.Type.NEWTONTR
 
 ## class TestSNESTEST(BaseTestSNES, unittest.TestCase):
 ##     SNES_TYPE = PETSc.SNES.Type.TEST

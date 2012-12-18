@@ -1,21 +1,20 @@
 # --------------------------------------------------------------------
 
 class SNESType(object):
-    LS      = S_(SNESLS)
-    TR      = S_(SNESTR)
-    PYTHON  = S_(SNESPYTHON)
-    TEST    = S_(SNESTEST)
-    NRICHARDSON = S_(SNESNRICHARDSON)
-    KSPONLY = S_(SNESKSPONLY)
-    VIRS    = S_(SNESVIRS)
-    VISS    = S_(SNESVISS)
-    NGMRES  = S_(SNESNGMRES)
-    QN      = S_(SNESQN)
-    SHELL   = S_(SNESSHELL)
-    GS      = S_(SNESGS)
-    NCG     = S_(SNESNCG)
-    FAS     = S_(SNESFAS)
-    MS      = S_(SNESMS)
+    NEWTONLS     = S_(SNESNEWTONLS)
+    NEWTONTR     = S_(SNESNEWTONTR)
+    PYTHON       = S_(SNESPYTHON)
+    NRICHARDSON  = S_(SNESNRICHARDSON)
+    KSPONLY      = S_(SNESKSPONLY)
+    VINEWTONRSLS = S_(SNESVINEWTONRSLS)
+    VINEWTONSSLS = S_(SNESVINEWTONSSLS)
+    NGMRES       = S_(SNESNGMRES)
+    QN           = S_(SNESQN)
+    SHELL        = S_(SNESSHELL)
+    GS           = S_(SNESGS)
+    NCG          = S_(SNESNCG)
+    FAS          = S_(SNESFAS)
+    MS           = S_(SNESMS)
 
 class SNESConvergedReason(object):
     # iterating

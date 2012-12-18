@@ -1,14 +1,14 @@
 cdef extern from * nogil:
 
     ctypedef char* PetscSNESType "const char*"
-    PetscSNESType SNESLS
-    PetscSNESType SNESTR
+    PetscSNESType SNESNEWTONLS
+    PetscSNESType SNESNEWTONTR
     #PetscSNESType SNESPYTHON
     PetscSNESType SNESTEST
     PetscSNESType SNESNRICHARDSON
     PetscSNESType SNESKSPONLY
-    PetscSNESType SNESVIRS
-    PetscSNESType SNESVISS
+    PetscSNESType SNESVINEWTONRSLS
+    PetscSNESType SNESVINEWTONSSLS
     PetscSNESType SNESNGMRES
     PetscSNESType SNESQN
     PetscSNESType SNESSHELL
