@@ -220,24 +220,16 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
   ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,localU,&u);CHKERRQ(ierr);
-
+ 
+  ierr = MatZeroEntries(*Jpre);CHKERRQ(ierr);
   for (c=0; c<N; c++){
     for (i=xs; i<xs+xm; i++){
       nc    = 0;
       row.i = i; row.c = c;
-
-      if (i == 0) {  /* Left Neumann */
-        col[nc].c = c; col[nc].i = i;   vals[nc++] = 2.0*sx + a;
-        col[nc].c = c; col[nc].i = i+1; vals[nc++] = -2.0*sx;
-      } else if (i == Mx-1){/* Right Neumann */
-        col[nc].c = c; col[nc].i = i;   vals[nc++] = 2.0*sx + a;
-        col[nc].c = c; col[nc].i = i-1; vals[nc++] = -2.0*sx;
-      } else {   /* Interior */
-        col[nc].c = c; col[nc].i = i-1; vals[nc++] = -sx;
-        col[nc].c = c; col[nc].i = i;   vals[nc++] = 2.0*sx + a;
-        col[nc].c = c; col[nc].i = i+1; vals[nc++] = -sx;
-      }
-      ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,INSERT_VALUES);CHKERRQ(ierr);
+      col[nc].c = c; col[nc].i = i-1; vals[nc++] = -sx;
+      col[nc].c = c; col[nc].i = i;   vals[nc++] = 2.0*sx + a;
+      col[nc].c = c; col[nc].i = i+1; vals[nc++] = -sx;
+      ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -248,11 +240,6 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
   }
   ierr = DMDAVecRestoreArrayDOF(da,localU,&u);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
-
-  if (user->viewJacobian){
-    ierr = PetscPrintf(((PetscObject)*Jpre)->comm,"Jpre:\n");CHKERRQ(ierr);
-    ierr = MatView(*Jpre,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
 
   PetscFunctionReturn(0);
 }
