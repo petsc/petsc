@@ -260,7 +260,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
 PetscErrorCode InitialConditions(DM da,Vec U)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j,xs,xm,Mx,N;
+  PetscInt       i,c,xs,xm,Mx,N;
   PetscScalar    **u;
   PetscReal      hx,x;
 
@@ -282,10 +282,10 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   /*
      Compute function over the locally owned part of the grid
   */
-  for (j=xs; j<xs+xm; j++) {
-    x = j*hx;
-    for (i=0; i<N; i++) {
-      u[j][i] = 0.0; /*PetscCosScalar(PETSC_PI*x);*/
+  for (i=xs; i<xs+xm; i++) {
+    x = i*hx;
+    for (c=0; c<N; c++) {
+      u[i][c] = 0.0; /*PetscCosScalar(PETSC_PI*x);*/
     }
   }
 
