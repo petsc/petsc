@@ -682,7 +682,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     n0 = sn0; n2 = sn2; n6 = sn6; n8 = sn8;
   }
 
-  if (((stencil_type == DMDA_STENCIL_STAR) ||
+  if (((stencil_type == DMDA_STENCIL_STAR)  ||
        (bx && bx != DMDA_BOUNDARY_PERIODIC) ||
        (by && by != DMDA_BOUNDARY_PERIODIC)) && o == 0) {
     /*
@@ -707,7 +707,11 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
         s_t = bases[n1] + x_t*y_t - (s_y+1-i)*x_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       } else if (ys-Ys > 0) {
-        for (j=0; j<x; j++) { idx[nn++] = -1;}
+        if (by == DMDA_BOUNDARY_MIRROR) {
+          for (j=0; j<x; j++) { idx[nn++] = bases[rank] + x*(s_y - i + 1)  + j;}
+        } else {
+          for (j=0; j<x; j++) { idx[nn++] = -1;}
+        }
       }
       if (n2 >= 0) { /* right below */
         x_t = lx[n2 % m];
@@ -726,7 +730,11 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
         s_t = bases[n3] + (i+1)*x_t - s_x;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       } else if (xs-Xs > 0) {
-        for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+        if (bx == DMDA_BOUNDARY_MIRROR) {
+          for (j=0; j<s_x; j++) { idx[nn++] = bases[rank] + x*i + s_x - j;}
+        } else {
+          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+        }
       }
 
       for (j=0; j<x; j++) { idx[nn++] = xbase++; } /* interior */
@@ -737,7 +745,11 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
         s_t = bases[n5] + (i)*x_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       } else if (Xe-xe > 0) {
-        for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+        if (bx == DMDA_BOUNDARY_MIRROR) {
+          for (j=0; j<s_x; j++) { idx[nn++] = bases[rank] + x*(i + 1) - 2 - j;}
+        } else {
+          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+        }
       }
     }
 
@@ -756,7 +768,11 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
         s_t = bases[n7] + (i-1)*x_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       } else if (Ye-ye > 0) {
-        for (j=0; j<x; j++) { idx[nn++] = -1;}
+        if (by == DMDA_BOUNDARY_MIRROR) {
+          for (j=0; j<x; j++) { idx[nn++] = bases[rank] + x*(y - i - 1)  + j;}
+        } else {
+          for (j=0; j<x; j++) { idx[nn++] = -1;}
+        }
       }
       if (n8 >= 0) { /* right above */
         x_t = lx[n8 % m];
@@ -779,6 +795,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = PetscMemcpy(idx_cpy,idx_full,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISRestoreIndices(ltogis, &idx_full);
   ierr = ISLocalToGlobalMappingCreateIS(ltogis,&da->ltogmap);CHKERRQ(ierr);
+ISLocalToGlobalMappingView(da->ltogmap,PETSC_VIEWER_STDOUT_SELF);
   ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
   ierr = ISDestroy(&ltogis);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
