@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&user);CHKERRQ(ierr);
-  /*  ierr = TSSetIJacobian(ts,J,J,IJacobian,&user);CHKERRQ(ierr); */
+  ierr = TSSetIJacobian(ts,J,J,IJacobian,&user);CHKERRQ(ierr); 
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -167,9 +167,9 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
     /* reaction terms */
     
     for (c=0; c<N/3; c++) {
-      f[i][c]   += 500*u[i][c]*u[i][c+1] + 500*u[i][c]*u[i][c];
-      f[i][c+1] += 500*u[i][c]*u[i][c+1] - 500*u[i][c]*u[i][c];
-      f[i][c+2] -= 500*u[i][c]*u[i][c+1];
+      f[i][c]   +=  500*u[i][c]*u[i][c] + 500*u[i][c]*u[i][c+1];
+      f[i][c+1] += -500*u[i][c]*u[i][c] + 500*u[i][c]*u[i][c+1];
+      f[i][c+2] -=                        500*u[i][c]*u[i][c+1];
     }
      
 
@@ -213,15 +213,35 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
  
   ierr = MatZeroEntries(*Jpre);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++){
-    nc = 0;
     for (c=0; c<N; c++){
-      row.i = i; row.c = c;
+      nc = 0;
+      row.c     = c; row.i = i; 
       col[nc].c = c; col[nc].i = i-1; vals[nc++] = -sx;
       col[nc].c = c; col[nc].i = i;   vals[nc++] = 2.0*sx + a;
       col[nc].c = c; col[nc].i = i+1; vals[nc++] = -sx;
       ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
     }
 
+    for (c=0; c<N/3; c++) {
+      nc = 0;
+      row.c      = c;   row.i = i; 
+      col[nc].c  = c;   col[nc].i = i; vals[nc++] = 1000*u[i][c] + 500*u[i][c+1];
+      col[nc].c  = c+1; col[nc].i = i; vals[nc++] =  500*u[i][c];
+      ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
+
+      nc = 0;
+      row.c      = c+1; row.i = i; 
+      col[nc].c  = c;   col[nc].i = i; vals[nc++] = -1000*u[i][c] + 500*u[i][c+1];
+      col[nc].c  = c+1; col[nc].i = i; vals[nc++] =   500*u[i][c];
+      ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
+
+      nc = 0;
+      row.c      = c+2; row.i = i; 
+      col[nc].c  = c;   col[nc].i = i; vals[nc++] =  -500*u[i][c+1];
+      col[nc].c  = c+1; col[nc].i = i; vals[nc++] =  -500*u[i][c];
+      ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
+
+    }
   }
   ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
