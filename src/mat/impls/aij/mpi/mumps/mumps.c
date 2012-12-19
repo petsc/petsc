@@ -68,12 +68,13 @@ typedef struct {
 
   MatStructure   matstruc;
   PetscMPIInt    myid,size;
-  PetscInt       *irn,*jcn,nz,sym,nSolve;
+  PetscInt       *irn,*jcn,nz,sym;
   PetscScalar    *val;
   MPI_Comm       comm_mumps;
   VecScatter     scat_rhs, scat_sol;
   PetscBool      isAIJ,CleanUpMUMPS;
   Vec            b_seq,x_seq;
+  PetscInt       ICNTL9_pre; /* check if ICNTL(9) is changed from previous MatSolve */
   PetscErrorCode (*Destroy)(Mat);
   PetscErrorCode (*ConvertToTriples)(Mat, int, MatReuse, int*, int**, int**, PetscScalar**);
 } Mat_MUMPS;
@@ -507,25 +508,25 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A,int shift,MatReuse reus
 #define __FUNCT__ "MatDestroy_MUMPS"
 PetscErrorCode MatDestroy_MUMPS(Mat A)
 {
-  Mat_MUMPS      *lu=(Mat_MUMPS*)A->spptr;
+  Mat_MUMPS      *mumps=(Mat_MUMPS*)A->spptr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (lu && lu->CleanUpMUMPS) {
+  if (mumps->CleanUpMUMPS) {
     /* Terminate instance, deallocate memories */
-    ierr = PetscFree2(lu->id.sol_loc,lu->id.isol_loc);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&lu->scat_rhs);CHKERRQ(ierr);
-    ierr = VecDestroy(&lu->b_seq);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&lu->scat_sol);CHKERRQ(ierr);
-    ierr = VecDestroy(&lu->x_seq);CHKERRQ(ierr);
-    ierr=PetscFree(lu->id.perm_in);CHKERRQ(ierr);
-    ierr = PetscFree(lu->irn);CHKERRQ(ierr);
-    lu->id.job=JOB_END;
-    PetscMUMPS_c(&lu->id);
-    ierr = MPI_Comm_free(&(lu->comm_mumps));CHKERRQ(ierr);
+    ierr = PetscFree2(mumps->id.sol_loc,mumps->id.isol_loc);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&mumps->scat_rhs);CHKERRQ(ierr);
+    ierr = VecDestroy(&mumps->b_seq);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&mumps->scat_sol);CHKERRQ(ierr);
+    ierr = VecDestroy(&mumps->x_seq);CHKERRQ(ierr);
+    ierr = PetscFree(mumps->id.perm_in);CHKERRQ(ierr);
+    ierr = PetscFree(mumps->irn);CHKERRQ(ierr);
+    mumps->id.job = JOB_END;
+    PetscMUMPS_c(&mumps->id);
+    ierr = MPI_Comm_free(&(mumps->comm_mumps));CHKERRQ(ierr);
   }
-  if (lu && lu->Destroy) {
-    ierr = (lu->Destroy)(A);CHKERRQ(ierr);
+  if (mumps->Destroy) {
+    ierr = (mumps->Destroy)(A);CHKERRQ(ierr);
   }
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
@@ -539,7 +540,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
 #define __FUNCT__ "MatSolve_MUMPS"
 PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
 {
-  Mat_MUMPS      *lu=(Mat_MUMPS*)A->spptr;
+  Mat_MUMPS      *mumps=(Mat_MUMPS*)A->spptr;
   PetscScalar    *array;
   Vec            b_seq;
   IS             is_iden,is_petsc;
@@ -547,51 +548,56 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
   PetscInt       i;
 
   PetscFunctionBegin;
-  lu->id.nrhs = 1;
-  b_seq = lu->b_seq;
-  if (lu->size > 1){
+  mumps->id.nrhs = 1;
+  b_seq = mumps->b_seq;
+  if (mumps->size > 1){
     /* MUMPS only supports centralized rhs. Scatter b into a seqential rhs vector */
-    ierr = VecScatterBegin(lu->scat_rhs,b,b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(lu->scat_rhs,b,b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    if (!lu->myid) {ierr = VecGetArray(b_seq,&array);CHKERRQ(ierr);}
+    ierr = VecScatterBegin(mumps->scat_rhs,b,b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(mumps->scat_rhs,b,b_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    if (!mumps->myid) {ierr = VecGetArray(b_seq,&array);CHKERRQ(ierr);}
   } else {  /* size == 1 */
     ierr = VecCopy(b,x);CHKERRQ(ierr);
     ierr = VecGetArray(x,&array);CHKERRQ(ierr);
   }
-  if (!lu->myid) { /* define rhs on the host */
-    lu->id.nrhs = 1;
+  if (!mumps->myid) { /* define rhs on the host */
+    mumps->id.nrhs = 1;
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-    lu->id.rhs = (mumps_complex*)array;
+    mumps->id.rhs = (mumps_complex*)array;
 #else
-    lu->id.rhs = (mumps_double_complex*)array;
+    mumps->id.rhs = (mumps_double_complex*)array;
 #endif
 #else
-    lu->id.rhs = array;
+    mumps->id.rhs = array;
 #endif
   }
 
   /* solve phase */
   /*-------------*/
-  lu->id.job = JOB_SOLVE;
-  PetscMUMPS_c(&lu->id);
-  if (lu->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",lu->id.INFOG(1));
+  mumps->id.job = JOB_SOLVE;
+  PetscMUMPS_c(&mumps->id);
+  if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in solve phase: INFOG(1)=%d\n",mumps->id.INFOG(1));
 
-  if (lu->size > 1) { /* convert mumps distributed solution to petsc mpi x */
-    if (!lu->nSolve){ /* create scatter scat_sol */
-      ierr = ISCreateStride(PETSC_COMM_SELF,lu->id.lsol_loc,0,1,&is_iden);CHKERRQ(ierr); /* from */
-      for (i=0; i<lu->id.lsol_loc; i++){
-        lu->id.isol_loc[i] -= 1; /* change Fortran style to C style */
+  if (mumps->size > 1) { /* convert mumps distributed solution to petsc mpi x */
+    if (mumps->scat_sol && mumps->ICNTL9_pre != mumps->id.ICNTL(9)){
+      /* when id.ICNTL(9) changes, the contents of lsol_loc may change (not its size, lsol_loc), recreates scat_sol */
+      ierr = VecScatterDestroy(&mumps->scat_sol);CHKERRQ(ierr);
+    }
+    if (!mumps->scat_sol){ /* create scatter scat_sol */
+      ierr = ISCreateStride(PETSC_COMM_SELF,mumps->id.lsol_loc,0,1,&is_iden);CHKERRQ(ierr); /* from */
+      for (i=0; i<mumps->id.lsol_loc; i++){
+        mumps->id.isol_loc[i] -= 1; /* change Fortran style to C style */
       }
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->id.lsol_loc,lu->id.isol_loc,PETSC_COPY_VALUES,&is_petsc);CHKERRQ(ierr);  /* to */
-      ierr = VecScatterCreate(lu->x_seq,is_iden,x,is_petsc,&lu->scat_sol);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,mumps->id.lsol_loc,mumps->id.isol_loc,PETSC_COPY_VALUES,&is_petsc);CHKERRQ(ierr);  /* to */
+      ierr = VecScatterCreate(mumps->x_seq,is_iden,x,is_petsc,&mumps->scat_sol);CHKERRQ(ierr);
       ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
       ierr = ISDestroy(&is_petsc);CHKERRQ(ierr);
+      mumps->ICNTL9_pre = mumps->id.ICNTL(9); /* save current value of id.ICNTL(9) */
     }
-    ierr = VecScatterBegin(lu->scat_sol,lu->x_seq,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(lu->scat_sol,lu->x_seq,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+    ierr = VecScatterBegin(mumps->scat_sol,mumps->x_seq,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(mumps->scat_sol,mumps->x_seq,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
-  lu->nSolve++;
   PetscFunctionReturn(0);
 }
 
@@ -599,13 +605,13 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatSolveTranspose_MUMPS"
 PetscErrorCode MatSolveTranspose_MUMPS(Mat A,Vec b,Vec x)
 {
-  Mat_MUMPS      *lu=(Mat_MUMPS*)A->spptr;
+  Mat_MUMPS      *mumps=(Mat_MUMPS*)A->spptr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  lu->id.ICNTL(9) = 0;
+  mumps->id.ICNTL(9) = 0;
   ierr = MatSolve_MUMPS(A,b,x);CHKERRQ(ierr);
-  lu->id.ICNTL(9) = 1;
+  mumps->id.ICNTL(9) = 1;
   PetscFunctionReturn(0);
 }
 
@@ -638,19 +644,19 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
 #define __FUNCT__ "MatGetInertia_SBAIJMUMPS"
 PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
 {
-  Mat_MUMPS      *lu =(Mat_MUMPS*)F->spptr;
+  Mat_MUMPS      *mumps =(Mat_MUMPS*)F->spptr;
   PetscErrorCode ierr;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)F)->comm,&size);CHKERRQ(ierr);
   /* MUMPS 4.3.1 calls ScaLAPACK when ICNTL(13)=0 (default), which does not offer the possibility to compute the inertia of a dense matrix. Set ICNTL(13)=1 to skip ScaLAPACK */
-  if (size > 1 && lu->id.ICNTL(13) != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ICNTL(13)=%d. -mat_mumps_icntl_13 must be set as 1 for correct global matrix inertia\n",lu->id.INFOG(13));
+  if (size > 1 && mumps->id.ICNTL(13) != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"ICNTL(13)=%d. -mat_mumps_icntl_13 must be set as 1 for correct global matrix inertia\n",mumps->id.INFOG(13));
   if (nneg){
-    if (!lu->myid){
-      *nneg = lu->id.INFOG(12);
+    if (!mumps->myid){
+      *nneg = mumps->id.INFOG(12);
     }
-    ierr = MPI_Bcast(nneg,1,MPI_INT,0,lu->comm_mumps);CHKERRQ(ierr);
+    ierr = MPI_Bcast(nneg,1,MPI_INT,0,mumps->comm_mumps);CHKERRQ(ierr);
   }
   if (nzero) *nzero = 0;
   if (npos)  *npos  = F->rmap->N - (*nneg);
@@ -662,48 +668,48 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
 #define __FUNCT__ "MatFactorNumeric_MUMPS"
 PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
 {
-  Mat_MUMPS       *lu =(Mat_MUMPS*)(F)->spptr;
+  Mat_MUMPS       *mumps =(Mat_MUMPS*)(F)->spptr;
   PetscErrorCode  ierr;
   Mat             F_diag;
   PetscBool       isMPIAIJ;
 
   PetscFunctionBegin;
-  ierr = (*lu->ConvertToTriples)(A, 1, MAT_REUSE_MATRIX, &lu->nz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
+  ierr = (*mumps->ConvertToTriples)(A, 1, MAT_REUSE_MATRIX, &mumps->nz, &mumps->irn, &mumps->jcn, &mumps->val);CHKERRQ(ierr);
 
   /* numerical factorization phase */
   /*-------------------------------*/
-  lu->id.job = JOB_FACTNUMERIC;
-  if (!lu->id.ICNTL(18)) {
-    if (!lu->myid) {
+  mumps->id.job = JOB_FACTNUMERIC;
+  if (!mumps->id.ICNTL(18)) {
+    if (!mumps->myid) {
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-      lu->id.a = (mumps_complex*)lu->val; 
+      mumps->id.a = (mumps_complex*)mumps->val; 
 #else
-      lu->id.a = (mumps_double_complex*)lu->val; 
+      mumps->id.a = (mumps_double_complex*)mumps->val; 
 #endif
 #else
-      lu->id.a = lu->val;
+      mumps->id.a = mumps->val;
 #endif
     }
   } else {
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-    lu->id.a_loc = (mumps_complex*)lu->val; 
+    mumps->id.a_loc = (mumps_complex*)mumps->val; 
 #else
-    lu->id.a_loc = (mumps_double_complex*)lu->val; 
+    mumps->id.a_loc = (mumps_double_complex*)mumps->val; 
 #endif
 #else
-    lu->id.a_loc = lu->val;
+    mumps->id.a_loc = mumps->val;
 #endif
   }
-  PetscMUMPS_c(&lu->id);
-  if (lu->id.INFOG(1) < 0) {
-    if (lu->id.INFO(1) == -13) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: Cannot allocate required memory %d megabytes\n",lu->id.INFO(2));
-    else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFO(1)=%d, INFO(2)=%d\n",lu->id.INFO(1),lu->id.INFO(2));
+  PetscMUMPS_c(&mumps->id);
+  if (mumps->id.INFOG(1) < 0) {
+    if (mumps->id.INFO(1) == -13) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: Cannot allocate required memory %d megabytes\n",mumps->id.INFO(2));
+    else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in numerical factorization phase: INFO(1)=%d, INFO(2)=%d\n",mumps->id.INFO(1),mumps->id.INFO(2));
   }
-  if (!lu->myid && lu->id.ICNTL(16) > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"  lu->id.ICNTL(16):=%d\n",lu->id.INFOG(16));
+  if (!mumps->myid && mumps->id.ICNTL(16) > 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"  mumps->id.ICNTL(16):=%d\n",mumps->id.INFOG(16));
 
-  if (lu->size > 1){
+  if (mumps->size > 1){
     ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isMPIAIJ);CHKERRQ(ierr);
     if (isMPIAIJ) {
       F_diag = ((Mat_MPIAIJ *)(F)->data)->A;
@@ -711,36 +717,35 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
       F_diag = ((Mat_MPISBAIJ *)(F)->data)->A;
     }
     F_diag->assembled = PETSC_TRUE;
-    if (lu->nSolve){
-      ierr = VecScatterDestroy(&lu->scat_sol);CHKERRQ(ierr);
-      ierr = PetscFree2(lu->id.sol_loc,lu->id.isol_loc);CHKERRQ(ierr);
-      ierr = VecDestroy(&lu->x_seq);CHKERRQ(ierr);
+    if (mumps->scat_sol){
+      ierr = VecScatterDestroy(&mumps->scat_sol);CHKERRQ(ierr);
+      ierr = PetscFree2(mumps->id.sol_loc,mumps->id.isol_loc);CHKERRQ(ierr);
+      ierr = VecDestroy(&mumps->x_seq);CHKERRQ(ierr);
     }
   }
   (F)->assembled   = PETSC_TRUE;
-  lu->matstruc     = SAME_NONZERO_PATTERN;
-  lu->CleanUpMUMPS = PETSC_TRUE;
-  lu->nSolve       = 0;
+  mumps->matstruc     = SAME_NONZERO_PATTERN;
+  mumps->CleanUpMUMPS = PETSC_TRUE;
 
-  if (lu->size > 1){
+  if (mumps->size > 1){
     /* distributed solution */
-    if (!lu->nSolve){
+    if (!mumps->scat_sol){
       /* Create x_seq=sol_loc for repeated use */
       PetscInt    lsol_loc;
       PetscScalar *sol_loc;
-      lsol_loc = lu->id.INFO(23); /* length of sol_loc */
-      ierr = PetscMalloc2(lsol_loc,PetscScalar,&sol_loc,lsol_loc,PetscInt,&lu->id.isol_loc);CHKERRQ(ierr);
-      lu->id.lsol_loc = lsol_loc;
+      lsol_loc = mumps->id.INFO(23); /* length of sol_loc */
+      ierr = PetscMalloc2(lsol_loc,PetscScalar,&sol_loc,lsol_loc,PetscInt,&mumps->id.isol_loc);CHKERRQ(ierr);
+      mumps->id.lsol_loc = lsol_loc;
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-      lu->id.sol_loc  = (mumps_complex*)sol_loc;
+      mumps->id.sol_loc  = (mumps_complex*)sol_loc;
 #else
-      lu->id.sol_loc  = (mumps_double_complex*)sol_loc;
+      mumps->id.sol_loc  = (mumps_double_complex*)sol_loc;
 #endif
 #else
-      lu->id.sol_loc  = sol_loc;
+      mumps->id.sol_loc  = sol_loc;
 #endif
-      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,lsol_loc,sol_loc,&lu->x_seq);CHKERRQ(ierr);
+      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,lsol_loc,sol_loc,&mumps->x_seq);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -836,7 +841,6 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS* mumps)
   mumps->CleanUpMUMPS = PETSC_FALSE;
   mumps->scat_rhs     = PETSC_NULL;
   mumps->scat_sol     = PETSC_NULL;
-  mumps->nSolve       = 0;
 
   /* set PETSc-MUMPS default options - override MUMPS default */
   mumps->id.ICNTL(3) = 0;
@@ -850,57 +854,57 @@ PetscErrorCode PetscInitializeMUMPS(Mat A,Mat_MUMPS* mumps)
   PetscFunctionReturn(0);
 }
 
-/* Note Petsc r(=c) permutation is used when lu->id.ICNTL(7)==1 with centralized assembled matrix input; otherwise r and c are ignored */
+/* Note Petsc r(=c) permutation is used when mumps->id.ICNTL(7)==1 with centralized assembled matrix input; otherwise r and c are ignored */
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_AIJMUMPS"
 PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
-  Mat_MUMPS          *lu = (Mat_MUMPS*)F->spptr;
+  Mat_MUMPS          *mumps = (Mat_MUMPS*)F->spptr;
   PetscErrorCode     ierr;
   Vec                b;
   IS                 is_iden;
   const PetscInt     M = A->rmap->N;
 
   PetscFunctionBegin;
-  lu->matstruc = DIFFERENT_NONZERO_PATTERN;
+  mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
 
   /* Set MUMPS options from the options database */
   ierr = PetscSetMUMPSFromOptions(F,A);CHKERRQ(ierr);
 
-  ierr = (*lu->ConvertToTriples)(A, 1, MAT_INITIAL_MATRIX, &lu->nz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
+  ierr = (*mumps->ConvertToTriples)(A, 1, MAT_INITIAL_MATRIX, &mumps->nz, &mumps->irn, &mumps->jcn, &mumps->val);CHKERRQ(ierr);
 
   /* analysis phase */
   /*----------------*/
-  lu->id.job = JOB_FACTSYMBOLIC;
-  lu->id.n = M;
-  switch (lu->id.ICNTL(18)){
+  mumps->id.job = JOB_FACTSYMBOLIC;
+  mumps->id.n = M;
+  switch (mumps->id.ICNTL(18)){
   case 0:  /* centralized assembled matrix input */
-    if (!lu->myid) {
-      lu->id.nz =lu->nz; lu->id.irn=lu->irn; lu->id.jcn=lu->jcn;
-      if (lu->id.ICNTL(6)>1){
+    if (!mumps->myid) {
+      mumps->id.nz =mumps->nz; mumps->id.irn=mumps->irn; mumps->id.jcn=mumps->jcn;
+      if (mumps->id.ICNTL(6)>1){
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-        lu->id.a = (mumps_complex*)lu->val; 
+        mumps->id.a = (mumps_complex*)mumps->val; 
 #else
-        lu->id.a = (mumps_double_complex*)lu->val; 
+        mumps->id.a = (mumps_double_complex*)mumps->val; 
 #endif
 #else
-        lu->id.a = lu->val;
+        mumps->id.a = mumps->val;
 #endif
       }
-      if (lu->id.ICNTL(7) == 1){ /* use user-provide matrix ordering - assuming r = c ordering */
+      if (mumps->id.ICNTL(7) == 1){ /* use user-provide matrix ordering - assuming r = c ordering */
         /*
         PetscBool      flag;
         ierr = ISEqual(r,c,&flag);CHKERRQ(ierr);
         if (!flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"row_perm != col_perm");
         ierr = ISView(r,PETSC_VIEWER_STDOUT_SELF); 
          */
-        if (!lu->myid) {
+        if (!mumps->myid) {
           const PetscInt *idx;
           PetscInt i,*perm_in;
           ierr = PetscMalloc(M*sizeof(PetscInt),&perm_in);CHKERRQ(ierr);
           ierr = ISGetIndices(r,&idx);CHKERRQ(ierr);
-          lu->id.perm_in = perm_in;
+          mumps->id.perm_in = perm_in;
           for (i=0; i<M; i++) perm_in[i] = idx[i]+1; /* perm_in[]: start from 1, not 0! */
           ierr = ISRestoreIndices(r,&idx);CHKERRQ(ierr);
         }
@@ -908,38 +912,38 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
     }
     break;
   case 3:  /* distributed assembled matrix input (size>1) */
-    lu->id.nz_loc = lu->nz;
-    lu->id.irn_loc=lu->irn; lu->id.jcn_loc=lu->jcn;
-    if (lu->id.ICNTL(6)>1) {
+    mumps->id.nz_loc = mumps->nz;
+    mumps->id.irn_loc=mumps->irn; mumps->id.jcn_loc=mumps->jcn;
+    if (mumps->id.ICNTL(6)>1) {
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-      lu->id.a_loc = (mumps_complex*)lu->val;
+      mumps->id.a_loc = (mumps_complex*)mumps->val;
 #else
-      lu->id.a_loc = (mumps_double_complex*)lu->val;
+      mumps->id.a_loc = (mumps_double_complex*)mumps->val;
 #endif
 #else
-      lu->id.a_loc = lu->val;
+      mumps->id.a_loc = mumps->val;
 #endif
     }
     /* MUMPS only supports centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
-    if (!lu->myid){
-      ierr = VecCreateSeq(PETSC_COMM_SELF,A->cmap->N,&lu->b_seq);CHKERRQ(ierr);
+    if (!mumps->myid){
+      ierr = VecCreateSeq(PETSC_COMM_SELF,A->cmap->N,&mumps->b_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,A->cmap->N,0,1,&is_iden);CHKERRQ(ierr);
     } else {
-      ierr = VecCreateSeq(PETSC_COMM_SELF,0,&lu->b_seq);CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF,0,&mumps->b_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_iden);CHKERRQ(ierr);
     }
     ierr = VecCreate(((PetscObject)A)->comm,&b);CHKERRQ(ierr);
     ierr = VecSetSizes(b,A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
-    ierr = VecScatterCreate(b,is_iden,lu->b_seq,is_iden,&lu->scat_rhs);CHKERRQ(ierr);
+    ierr = VecScatterCreate(b,is_iden,mumps->b_seq,is_iden,&mumps->scat_rhs);CHKERRQ(ierr);
     ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
     break;
     }    
-  PetscMUMPS_c(&lu->id);
-  if (lu->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",lu->id.INFOG(1)); 
+  PetscMUMPS_c(&mumps->id);
+  if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",mumps->id.INFOG(1)); 
   
   F->ops->lufactornumeric  = MatFactorNumeric_MUMPS;
   F->ops->solve            = MatSolve_MUMPS;
@@ -953,75 +957,74 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
 #define __FUNCT__ "MatLUFactorSymbolic_BAIJMUMPS"
 PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
-
-  Mat_MUMPS       *lu = (Mat_MUMPS*)F->spptr;
+  Mat_MUMPS       *mumps = (Mat_MUMPS*)F->spptr;
   PetscErrorCode  ierr;
   Vec             b;
   IS              is_iden;
   const PetscInt  M = A->rmap->N;
 
   PetscFunctionBegin;
-  lu->matstruc = DIFFERENT_NONZERO_PATTERN;
+  mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
 
   /* Set MUMPS options from the options database */
   ierr = PetscSetMUMPSFromOptions(F,A);CHKERRQ(ierr);
 
-  ierr = (*lu->ConvertToTriples)(A, 1, MAT_INITIAL_MATRIX, &lu->nz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
+  ierr = (*mumps->ConvertToTriples)(A, 1, MAT_INITIAL_MATRIX, &mumps->nz, &mumps->irn, &mumps->jcn, &mumps->val);CHKERRQ(ierr);
 
   /* analysis phase */
   /*----------------*/
-  lu->id.job = JOB_FACTSYMBOLIC;
-  lu->id.n = M;
-  switch (lu->id.ICNTL(18)){
+  mumps->id.job = JOB_FACTSYMBOLIC;
+  mumps->id.n = M;
+  switch (mumps->id.ICNTL(18)){
   case 0:  /* centralized assembled matrix input */
-    if (!lu->myid) {
-      lu->id.nz =lu->nz; lu->id.irn=lu->irn; lu->id.jcn=lu->jcn;
-      if (lu->id.ICNTL(6)>1){
+    if (!mumps->myid) {
+      mumps->id.nz =mumps->nz; mumps->id.irn=mumps->irn; mumps->id.jcn=mumps->jcn;
+      if (mumps->id.ICNTL(6)>1){
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-        lu->id.a = (mumps_complex*)lu->val; 
+        mumps->id.a = (mumps_complex*)mumps->val; 
 #else
-        lu->id.a = (mumps_double_complex*)lu->val; 
+        mumps->id.a = (mumps_double_complex*)mumps->val; 
 #endif
 #else
-        lu->id.a = lu->val;
+        mumps->id.a = mumps->val;
 #endif
       }
     }
     break;
   case 3:  /* distributed assembled matrix input (size>1) */
-    lu->id.nz_loc = lu->nz;
-    lu->id.irn_loc=lu->irn; lu->id.jcn_loc=lu->jcn;
-    if (lu->id.ICNTL(6)>1) {
+    mumps->id.nz_loc = mumps->nz;
+    mumps->id.irn_loc=mumps->irn; mumps->id.jcn_loc=mumps->jcn;
+    if (mumps->id.ICNTL(6)>1) {
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-      lu->id.a_loc = (mumps_complex*)lu->val;
+      mumps->id.a_loc = (mumps_complex*)mumps->val;
 #else
-      lu->id.a_loc = (mumps_double_complex*)lu->val;
+      mumps->id.a_loc = (mumps_double_complex*)mumps->val;
 #endif
 #else
-      lu->id.a_loc = lu->val;
+      mumps->id.a_loc = mumps->val;
 #endif
     }
     /* MUMPS only supports centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
-    if (!lu->myid){
-      ierr = VecCreateSeq(PETSC_COMM_SELF,A->cmap->N,&lu->b_seq);CHKERRQ(ierr);
+    if (!mumps->myid){
+      ierr = VecCreateSeq(PETSC_COMM_SELF,A->cmap->N,&mumps->b_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,A->cmap->N,0,1,&is_iden);CHKERRQ(ierr);
     } else {
-      ierr = VecCreateSeq(PETSC_COMM_SELF,0,&lu->b_seq);CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF,0,&mumps->b_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_iden);CHKERRQ(ierr);
     }
     ierr = VecCreate(((PetscObject)A)->comm,&b);CHKERRQ(ierr);
     ierr = VecSetSizes(b,A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
-    ierr = VecScatterCreate(b,is_iden,lu->b_seq,is_iden,&lu->scat_rhs);CHKERRQ(ierr);
+    ierr = VecScatterCreate(b,is_iden,mumps->b_seq,is_iden,&mumps->scat_rhs);CHKERRQ(ierr);
     ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
     break;
     }    
-  PetscMUMPS_c(&lu->id);
-  if (lu->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",lu->id.INFOG(1)); 
+  PetscMUMPS_c(&mumps->id);
+  if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",mumps->id.INFOG(1)); 
  
   F->ops->lufactornumeric  = MatFactorNumeric_MUMPS;
   F->ops->solve            = MatSolve_MUMPS;
@@ -1034,74 +1037,74 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MUMPS"
 PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorInfo *info)
 {
-  Mat_MUMPS          *lu = (Mat_MUMPS*)F->spptr;
+  Mat_MUMPS          *mumps = (Mat_MUMPS*)F->spptr;
   PetscErrorCode     ierr;
   Vec                b;
   IS                 is_iden;
   const PetscInt     M = A->rmap->N;
 
   PetscFunctionBegin;
-  lu->matstruc = DIFFERENT_NONZERO_PATTERN;
+  mumps->matstruc = DIFFERENT_NONZERO_PATTERN;
 
   /* Set MUMPS options from the options database */
   ierr = PetscSetMUMPSFromOptions(F,A);CHKERRQ(ierr);
 
-  ierr = (*lu->ConvertToTriples)(A, 1 , MAT_INITIAL_MATRIX, &lu->nz, &lu->irn, &lu->jcn, &lu->val);CHKERRQ(ierr);
+  ierr = (*mumps->ConvertToTriples)(A, 1 , MAT_INITIAL_MATRIX, &mumps->nz, &mumps->irn, &mumps->jcn, &mumps->val);CHKERRQ(ierr);
 
   /* analysis phase */
   /*----------------*/
-  lu->id.job = JOB_FACTSYMBOLIC;
-  lu->id.n = M;
-  switch (lu->id.ICNTL(18)){
+  mumps->id.job = JOB_FACTSYMBOLIC;
+  mumps->id.n = M;
+  switch (mumps->id.ICNTL(18)){
   case 0:  /* centralized assembled matrix input */
-    if (!lu->myid) {
-      lu->id.nz =lu->nz; lu->id.irn=lu->irn; lu->id.jcn=lu->jcn;
-      if (lu->id.ICNTL(6)>1){
+    if (!mumps->myid) {
+      mumps->id.nz =mumps->nz; mumps->id.irn=mumps->irn; mumps->id.jcn=mumps->jcn;
+      if (mumps->id.ICNTL(6)>1){
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-        lu->id.a = (mumps_complex*)lu->val; 
+        mumps->id.a = (mumps_complex*)mumps->val; 
 #else
-        lu->id.a = (mumps_double_complex*)lu->val; 
+        mumps->id.a = (mumps_double_complex*)mumps->val; 
 #endif
 #else
-        lu->id.a = lu->val;
+        mumps->id.a = mumps->val;
 #endif
       }
     }
     break;
   case 3:  /* distributed assembled matrix input (size>1) */
-    lu->id.nz_loc = lu->nz;
-    lu->id.irn_loc=lu->irn; lu->id.jcn_loc=lu->jcn;
-    if (lu->id.ICNTL(6)>1) {
+    mumps->id.nz_loc = mumps->nz;
+    mumps->id.irn_loc=mumps->irn; mumps->id.jcn_loc=mumps->jcn;
+    if (mumps->id.ICNTL(6)>1) {
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-      lu->id.a_loc = (mumps_complex*)lu->val;
+      mumps->id.a_loc = (mumps_complex*)mumps->val;
 #else
-      lu->id.a_loc = (mumps_double_complex*)lu->val;
+      mumps->id.a_loc = (mumps_double_complex*)mumps->val;
 #endif
 #else
-      lu->id.a_loc = lu->val;
+      mumps->id.a_loc = mumps->val;
 #endif
     }
     /* MUMPS only supports centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
-    if (!lu->myid){
-      ierr = VecCreateSeq(PETSC_COMM_SELF,A->cmap->N,&lu->b_seq);CHKERRQ(ierr);
+    if (!mumps->myid){
+      ierr = VecCreateSeq(PETSC_COMM_SELF,A->cmap->N,&mumps->b_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,A->cmap->N,0,1,&is_iden);CHKERRQ(ierr);
     } else {
-      ierr = VecCreateSeq(PETSC_COMM_SELF,0,&lu->b_seq);CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF,0,&mumps->b_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_iden);CHKERRQ(ierr);
     }
     ierr = VecCreate(((PetscObject)A)->comm,&b);CHKERRQ(ierr);
     ierr = VecSetSizes(b,A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
-    ierr = VecScatterCreate(b,is_iden,lu->b_seq,is_iden,&lu->scat_rhs);CHKERRQ(ierr);
+    ierr = VecScatterCreate(b,is_iden,mumps->b_seq,is_iden,&mumps->scat_rhs);CHKERRQ(ierr);
     ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
     break;
     }    
-  PetscMUMPS_c(&lu->id);
-  if (lu->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",lu->id.INFOG(1)); 
+  PetscMUMPS_c(&mumps->id);
+  if (mumps->id.INFOG(1) < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error reported by MUMPS in analysis phase: INFOG(1)=%d\n",mumps->id.INFOG(1)); 
 
   F->ops->choleskyfactornumeric = MatFactorNumeric_MUMPS;
   F->ops->solve                 = MatSolve_MUMPS;
@@ -1122,7 +1125,7 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscBool         iascii;
   PetscViewerFormat format;
-  Mat_MUMPS         *lu=(Mat_MUMPS*)A->spptr;
+  Mat_MUMPS         *mumps=(Mat_MUMPS*)A->spptr;
 
   PetscFunctionBegin;
   /* check if matrix is mumps type */
@@ -1133,108 +1136,108 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO){
       ierr = PetscViewerASCIIPrintf(viewer,"MUMPS run parameters:\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  SYM (matrix type):                   %d \n",lu->id.sym);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  PAR (host participation):            %d \n",lu->id.par);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(1) (output for error):         %d \n",lu->id.ICNTL(1));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(2) (output of diagnostic msg): %d \n",lu->id.ICNTL(2));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(3) (output for global info):   %d \n",lu->id.ICNTL(3));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(4) (level of printing):        %d \n",lu->id.ICNTL(4));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(5) (input mat struct):         %d \n",lu->id.ICNTL(5));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(6) (matrix prescaling):        %d \n",lu->id.ICNTL(6));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(7) (sequentia matrix ordering):%d \n",lu->id.ICNTL(7));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(8) (scalling strategy):        %d \n",lu->id.ICNTL(8));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(10) (max num of refinements):  %d \n",lu->id.ICNTL(10));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(11) (error analysis):          %d \n",lu->id.ICNTL(11));CHKERRQ(ierr);
-      if (lu->id.ICNTL(11)>0) {
-        ierr = PetscViewerASCIIPrintf(viewer,"    RINFOG(4) (inf norm of input mat):        %g\n",lu->id.RINFOG(4));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"    RINFOG(5) (inf norm of solution):         %g\n",lu->id.RINFOG(5));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"    RINFOG(6) (inf norm of residual):         %g\n",lu->id.RINFOG(6));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"    RINFOG(7),RINFOG(8) (backward error est): %g, %g\n",lu->id.RINFOG(7),lu->id.RINFOG(8));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"    RINFOG(9) (error estimate):               %g \n",lu->id.RINFOG(9));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"    RINFOG(10),RINFOG(11)(condition numbers): %g, %g\n",lu->id.RINFOG(10),lu->id.RINFOG(11));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  SYM (matrix type):                   %d \n",mumps->id.sym);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  PAR (host participation):            %d \n",mumps->id.par);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(1) (output for error):         %d \n",mumps->id.ICNTL(1));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(2) (output of diagnostic msg): %d \n",mumps->id.ICNTL(2));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(3) (output for global info):   %d \n",mumps->id.ICNTL(3));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(4) (level of printing):        %d \n",mumps->id.ICNTL(4));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(5) (input mat struct):         %d \n",mumps->id.ICNTL(5));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(6) (matrix prescaling):        %d \n",mumps->id.ICNTL(6));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(7) (sequentia matrix ordering):%d \n",mumps->id.ICNTL(7));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(8) (scalling strategy):        %d \n",mumps->id.ICNTL(8));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(10) (max num of refinements):  %d \n",mumps->id.ICNTL(10));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(11) (error analysis):          %d \n",mumps->id.ICNTL(11));CHKERRQ(ierr);
+      if (mumps->id.ICNTL(11)>0) {
+        ierr = PetscViewerASCIIPrintf(viewer,"    RINFOG(4) (inf norm of input mat):        %g\n",mumps->id.RINFOG(4));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"    RINFOG(5) (inf norm of solution):         %g\n",mumps->id.RINFOG(5));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"    RINFOG(6) (inf norm of residual):         %g\n",mumps->id.RINFOG(6));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"    RINFOG(7),RINFOG(8) (backward error est): %g, %g\n",mumps->id.RINFOG(7),mumps->id.RINFOG(8));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"    RINFOG(9) (error estimate):               %g \n",mumps->id.RINFOG(9));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"    RINFOG(10),RINFOG(11)(condition numbers): %g, %g\n",mumps->id.RINFOG(10),mumps->id.RINFOG(11));CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(12) (efficiency control):                         %d \n",lu->id.ICNTL(12));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(13) (efficiency control):                         %d \n",lu->id.ICNTL(13));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(14) (percentage of estimated workspace increase): %d \n",lu->id.ICNTL(14));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(12) (efficiency control):                         %d \n",mumps->id.ICNTL(12));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(13) (efficiency control):                         %d \n",mumps->id.ICNTL(13));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(14) (percentage of estimated workspace increase): %d \n",mumps->id.ICNTL(14));CHKERRQ(ierr);
       /* ICNTL(15-17) not used */
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(18) (input mat struct):                           %d \n",lu->id.ICNTL(18));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(19) (Shur complement info):                       %d \n",lu->id.ICNTL(19));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(20) (rhs sparse pattern):                         %d \n",lu->id.ICNTL(20));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(21) (solution struct):                            %d \n",lu->id.ICNTL(21));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(22) (in-core/out-of-core facility):               %d \n",lu->id.ICNTL(22));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(23) (max size of memory can be allocated locally):%d \n",lu->id.ICNTL(23));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(18) (input mat struct):                           %d \n",mumps->id.ICNTL(18));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(19) (Shur complement info):                       %d \n",mumps->id.ICNTL(19));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(20) (rhs sparse pattern):                         %d \n",mumps->id.ICNTL(20));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(21) (somumpstion struct):                            %d \n",mumps->id.ICNTL(21));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(22) (in-core/out-of-core facility):               %d \n",mumps->id.ICNTL(22));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(23) (max size of memory can be allocated locally):%d \n",mumps->id.ICNTL(23));CHKERRQ(ierr);
 
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(24) (detection of null pivot rows):               %d \n",lu->id.ICNTL(24));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(25) (computation of a null space basis):          %d \n",lu->id.ICNTL(25));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(26) (Schur options for rhs or solution):          %d \n",lu->id.ICNTL(26));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(27) (experimental parameter):                     %d \n",lu->id.ICNTL(27));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(28) (use parallel or sequential ordering):        %d \n",lu->id.ICNTL(28));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(29) (parallel ordering):                          %d \n",lu->id.ICNTL(29));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(24) (detection of null pivot rows):               %d \n",mumps->id.ICNTL(24));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(25) (computation of a null space basis):          %d \n",mumps->id.ICNTL(25));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(26) (Schur options for rhs or solution):          %d \n",mumps->id.ICNTL(26));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(27) (experimental parameter):                     %d \n",mumps->id.ICNTL(27));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(28) (use parallel or sequential ordering):        %d \n",mumps->id.ICNTL(28));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(29) (parallel ordering):                          %d \n",mumps->id.ICNTL(29));CHKERRQ(ierr);
 
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(30) (user-specified set of entries in inv(A)):    %d \n",lu->id.ICNTL(30));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(31) (factors is discarded in the solve phase):    %d \n",lu->id.ICNTL(31));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(33) (compute determinant):                        %d \n",lu->id.ICNTL(33));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(30) (user-specified set of entries in inv(A)):    %d \n",mumps->id.ICNTL(30));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(31) (factors is discarded in the solve phase):    %d \n",mumps->id.ICNTL(31));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(33) (compute determinant):                        %d \n",mumps->id.ICNTL(33));CHKERRQ(ierr);
 
-      ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(1) (relative pivoting threshold):      %g \n",lu->id.CNTL(1));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(2) (stopping criterion of refinement): %g \n",lu->id.CNTL(2));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(3) (absolute pivoting threshold):      %g \n",lu->id.CNTL(3));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(4) (value of static pivoting):         %g \n",lu->id.CNTL(4));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(5) (fixation for null pivots):         %g \n",lu->id.CNTL(5));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(1) (relative pivoting threshold):      %g \n",mumps->id.CNTL(1));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(2) (stopping criterion of refinement): %g \n",mumps->id.CNTL(2));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(3) (absomumpste pivoting threshold):      %g \n",mumps->id.CNTL(3));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(4) (vamumpse of static pivoting):         %g \n",mumps->id.CNTL(4));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(5) (fixation for null pivots):         %g \n",mumps->id.CNTL(5));CHKERRQ(ierr);
 
       /* infomation local to each processor */
       ierr = PetscViewerASCIIPrintf(viewer, "  RINFO(1) (local estimated flops for the elimination after analysis): \n");CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %g \n",lu->myid,lu->id.RINFO(1));CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %g \n",mumps->myid,mumps->id.RINFO(1));CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);
       ierr = PetscViewerASCIIPrintf(viewer, "  RINFO(2) (local estimated flops for the assembly after factorization): \n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d]  %g \n",lu->myid,lu->id.RINFO(2));CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d]  %g \n",mumps->myid,mumps->id.RINFO(2));CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);
       ierr = PetscViewerASCIIPrintf(viewer, "  RINFO(3) (local estimated flops for the elimination after factorization): \n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d]  %g \n",lu->myid,lu->id.RINFO(3));CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d]  %g \n",mumps->myid,mumps->id.RINFO(3));CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);
 
       ierr = PetscViewerASCIIPrintf(viewer, "  INFO(15) (estimated size of (in MB) MUMPS internal data for running numerical factorization): \n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] %d \n",lu->myid,lu->id.INFO(15));CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] %d \n",mumps->myid,mumps->id.INFO(15));CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);
 
       ierr = PetscViewerASCIIPrintf(viewer, "  INFO(16) (size of (in MB) MUMPS internal data used during numerical factorization): \n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d \n",lu->myid,lu->id.INFO(16));CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d \n",mumps->myid,mumps->id.INFO(16));CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);
 
       ierr = PetscViewerASCIIPrintf(viewer, "  INFO(23) (num of pivots eliminated on this processor after factorization): \n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d \n",lu->myid,lu->id.INFO(23));CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d \n",mumps->myid,mumps->id.INFO(23));CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);
       ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
 
-      if (!lu->myid){ /* information from the host */
-        ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(1) (global estimated flops for the elimination after analysis): %g \n",lu->id.RINFOG(1));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(2) (global estimated flops for the assembly after factorization): %g \n",lu->id.RINFOG(2));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(3) (global estimated flops for the elimination after factorization): %g \n",lu->id.RINFOG(3));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  (RINFOG(12) RINFOG(13))*2^INFOG(34) (determinant): (%g,%g)*(2^%d)\n",lu->id.RINFOG(12),lu->id.RINFOG(13),lu->id.INFOG(34));CHKERRQ(ierr);
+      if (!mumps->myid){ /* information from the host */
+        ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(1) (global estimated flops for the elimination after analysis): %g \n",mumps->id.RINFOG(1));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(2) (global estimated flops for the assembly after factorization): %g \n",mumps->id.RINFOG(2));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(3) (global estimated flops for the elimination after factorization): %g \n",mumps->id.RINFOG(3));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  (RINFOG(12) RINFOG(13))*2^INFOG(34) (determinant): (%g,%g)*(2^%d)\n",mumps->id.RINFOG(12),mumps->id.RINFOG(13),mumps->id.INFOG(34));CHKERRQ(ierr);
 
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(3) (estimated real workspace for factors on all processors after analysis): %d \n",lu->id.INFOG(3));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(4) (estimated integer workspace for factors on all processors after analysis): %d \n",lu->id.INFOG(4));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(5) (estimated maximum front size in the complete tree): %d \n",lu->id.INFOG(5));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(6) (number of nodes in the complete tree): %d \n",lu->id.INFOG(6));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(7) (ordering option effectively use after analysis): %d \n",lu->id.INFOG(7));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(8) (structural symmetry in percent of the permuted matrix after analysis): %d \n",lu->id.INFOG(8));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(9) (total real/complex workspace to store the matrix factors after factorization): %d \n",lu->id.INFOG(9));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(10) (total integer space store the matrix factors after factorization): %d \n",lu->id.INFOG(10));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(11) (order of largest frontal matrix after factorization): %d \n",lu->id.INFOG(11));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(12) (number of off-diagonal pivots): %d \n",lu->id.INFOG(12));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(13) (number of delayed pivots after factorization): %d \n",lu->id.INFOG(13));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(14) (number of memory compress after factorization): %d \n",lu->id.INFOG(14));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(15) (number of steps of iterative refinement after solution): %d \n",lu->id.INFOG(15));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(16) (estimated size (in MB) of all MUMPS internal data for factorization after analysis: value on the most memory consuming processor): %d \n",lu->id.INFOG(16));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(17) (estimated size of all MUMPS internal data for factorization after analysis: sum over all processors): %d \n",lu->id.INFOG(17));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(18) (size of all MUMPS internal data allocated during factorization: value on the most memory consuming processor): %d \n",lu->id.INFOG(18));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(19) (size of all MUMPS internal data allocated during factorization: sum over all processors): %d \n",lu->id.INFOG(19));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(20) (estimated number of entries in the factors): %d \n",lu->id.INFOG(20));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(21) (size in MB of memory effectively used during factorization - value on the most memory consuming processor): %d \n",lu->id.INFOG(21));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(22) (size in MB of memory effectively used during factorization - sum over all processors): %d \n",lu->id.INFOG(22));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(23) (after analysis: value of ICNTL(6) effectively used): %d \n",lu->id.INFOG(23));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(24) (after analysis: value of ICNTL(12) effectively used): %d \n",lu->id.INFOG(24));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(25) (after factorization: number of pivots modified by static pivoting): %d \n",lu->id.INFOG(25));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(3) (estimated real workspace for factors on all processors after analysis): %d \n",mumps->id.INFOG(3));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(4) (estimated integer workspace for factors on all processors after analysis): %d \n",mumps->id.INFOG(4));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(5) (estimated maximum front size in the complete tree): %d \n",mumps->id.INFOG(5));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(6) (number of nodes in the complete tree): %d \n",mumps->id.INFOG(6));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(7) (ordering option effectively use after analysis): %d \n",mumps->id.INFOG(7));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(8) (structural symmetry in percent of the permuted matrix after analysis): %d \n",mumps->id.INFOG(8));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(9) (total real/complex workspace to store the matrix factors after factorization): %d \n",mumps->id.INFOG(9));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(10) (total integer space store the matrix factors after factorization): %d \n",mumps->id.INFOG(10));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(11) (order of largest frontal matrix after factorization): %d \n",mumps->id.INFOG(11));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(12) (number of off-diagonal pivots): %d \n",mumps->id.INFOG(12));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(13) (number of delayed pivots after factorization): %d \n",mumps->id.INFOG(13));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(14) (number of memory compress after factorization): %d \n",mumps->id.INFOG(14));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(15) (number of steps of iterative refinement after solution): %d \n",mumps->id.INFOG(15));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(16) (estimated size (in MB) of all MUMPS internal data for factorization after analysis: value on the most memory consuming processor): %d \n",mumps->id.INFOG(16));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(17) (estimated size of all MUMPS internal data for factorization after analysis: sum over all processors): %d \n",mumps->id.INFOG(17));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(18) (size of all MUMPS internal data allocated during factorization: value on the most memory consuming processor): %d \n",mumps->id.INFOG(18));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(19) (size of all MUMPS internal data allocated during factorization: sum over all processors): %d \n",mumps->id.INFOG(19));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(20) (estimated number of entries in the factors): %d \n",mumps->id.INFOG(20));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(21) (size in MB of memory effectively used during factorization - value on the most memory consuming processor): %d \n",mumps->id.INFOG(21));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(22) (size in MB of memory effectively used during factorization - sum over all processors): %d \n",mumps->id.INFOG(22));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(23) (after analysis: value of ICNTL(6) effectively used): %d \n",mumps->id.INFOG(23));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(24) (after analysis: value of ICNTL(12) effectively used): %d \n",mumps->id.INFOG(24));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(25) (after factorization: number of pivots modified by static pivoting): %d \n",mumps->id.INFOG(25));CHKERRQ(ierr);
       }
     }
   }
@@ -1266,10 +1269,10 @@ PetscErrorCode MatGetInfo_MUMPS(Mat A,MatInfoType flag,MatInfo *info)
 #define __FUNCT__ "MatMumpsSetIcntl_MUMPS"
 PetscErrorCode MatMumpsSetIcntl_MUMPS(Mat F,PetscInt icntl,PetscInt ival)
 {
-  Mat_MUMPS *lu =(Mat_MUMPS*)F->spptr;
+  Mat_MUMPS *mumps =(Mat_MUMPS*)F->spptr;
 
   PetscFunctionBegin;
-  lu->id.ICNTL(icntl) = ival;
+  mumps->id.ICNTL(icntl) = ival;
   PetscFunctionReturn(0);
 }
 

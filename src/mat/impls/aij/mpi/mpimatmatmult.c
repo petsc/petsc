@@ -312,7 +312,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
 
   ptap->destroy             = Cmpi->ops->destroy;
   ptap->duplicate           = Cmpi->ops->duplicate;
-  Cmpi->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ;
   Cmpi->ops->destroy        = MatDestroy_MPIAIJ_MatMatMult;
   Cmpi->ops->duplicate      = MatDuplicate_MPIAIJ_MatMatMult;
 
@@ -396,7 +395,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   ierr = MatMPIDenseSetPreallocation(*C,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  (*C)->ops->matmult = MatMatMult_MPIAIJ_MPIDense;
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIDense;
 
   ierr = PetscNew(MPIAIJ_MPIDense,&contents);CHKERRQ(ierr);
   /* Create work matrix used to store off processor rows of B needed for local product */

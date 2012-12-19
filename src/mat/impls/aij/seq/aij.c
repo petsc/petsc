@@ -3753,8 +3753,8 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat
   ierr = MatSetBlockSizes(Cmat,A->rmap->bs,B->cmap->bs);CHKERRQ(ierr);
   ierr = MatSetType(Cmat,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(Cmat,PETSC_NULL);CHKERRQ(ierr);
-  Cmat->assembled    = PETSC_TRUE;
-  Cmat->ops->matmult = MatMatMult_SeqDense_SeqAIJ;
+
+  Cmat->ops->matmultnumeric = MatMatMultNumeric_SeqDense_SeqAIJ;
   *C = Cmat;
   PetscFunctionReturn(0);
 }

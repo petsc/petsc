@@ -8598,7 +8598,7 @@ PetscErrorCode  MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
     PetscValidPointer(*C,5);
     PetscValidHeaderSpecific(*C,MAT_CLASSID,5);
     ierr = PetscLogEventBegin(MAT_MatMult,A,B,0,0);CHKERRQ(ierr);
-    ierr = (*(*C)->ops->matmult)(A,B,scall,fill,C);CHKERRQ(ierr);
+    ierr = (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_MatMult,A,B,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
