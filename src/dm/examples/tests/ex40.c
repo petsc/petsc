@@ -1,5 +1,5 @@
 
-static char help[] = "Tests mirror boundary conditions in 1-d.\n\n";
+static char help[] = "Tests mirror boundary conditions in 2-d.\n\n";
 
 #include <petscdmda.h>
 
@@ -8,10 +8,10 @@ static char help[] = "Tests mirror boundary conditions in 1-d.\n\n";
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       M = 6,stencil_width = 1, dof = 1,m,xstart,i,j;
+  PetscInt       M = 3, N = 4,stencil_width = 1, dof = 1,m,n,xstart,ystart,i,j,c;
   DM             da;
   Vec            global,local;
-  PetscScalar     **vglobal;
+  PetscScalar     ***vglobal;
   
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   PetscFunctionBeginUser;
@@ -19,14 +19,16 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(0,"-stencil_width",&stencil_width,0);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(0,"-dof",&dof,0);CHKERRQ(ierr);
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_MIRROR,M,dof,stencil_width,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xstart,0,0,&m,0,0);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_MIRROR,DMDA_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xstart,&ystart,0,&m,&n,0);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMDAVecGetArrayDOF(da,global,&vglobal);CHKERRQ(ierr);
-  for (i=xstart; i<xstart+m; i++) {
-    for (j=0; j<dof; j++) {
-      vglobal[i][j] = 100*(i+1) + j;
+  for (j=ystart; j<ystart+n; j++) {
+    for (i=xstart; i<xstart+m; i++) {
+      for (c=0; c<dof; c++) {
+        vglobal[j][i][c] = 100*j + 10*(i+1) + c;
+      }
     }
   }
   ierr = DMDAVecRestoreArrayDOF(da,global,&vglobal);CHKERRQ(ierr);
