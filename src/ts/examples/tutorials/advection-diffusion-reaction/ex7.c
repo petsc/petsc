@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&user);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,J,J,IJacobian,&user);CHKERRQ(ierr);
+  /*  ierr = TSSetIJacobian(ts,J,J,IJacobian,&user);CHKERRQ(ierr); */
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -156,7 +156,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
      Compute function over the locally owned part of the grid
   */
   for (j=xs; j<xs+xm; j++) {
-    x = i*hx;
+    x = j*hx;
 
     /*  diffusion term */
     for (i=0; i<N; i++) {
@@ -165,18 +165,18 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
     }
 
     /* reaction terms */
-    /*
+    
     for (i=0; i<N/3; i++) {
-      f[j][i]   += 500*u[j][i]*u[j][i+1];
-      f[j][i+1] += 500*u[j][i]*u[j][i+1];
+      f[j][i]   += 500*u[j][i]*u[j][i+1] + 500*u[j][i]*u[j][i];
+      f[j][i+1] += 500*u[j][i]*u[j][i+1] - 500*u[j][i]*u[j][i];
       f[j][i+2] -= 500*u[j][i]*u[j][i+1];
     }
-     */
+     
 
     /* forcing term */
-    /*
-    f[j][0] -= 5*PetscExpScalar(1.0 - x);
-     */
+    
+    f[j][0] -= 5*PetscExpScalar((1.0 - x)*(1.0 - x));
+    
   }
 
   /*
@@ -200,37 +200,28 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
   PetscScalar    vals[3],hx,sx;
   AppCtx         *user = (AppCtx*)ctx;
   PetscInt       N = user->N;
-  Vec            localU;
   PetscScalar    **u;
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
 
- /*
-     Scatter ghost points to local vector,using the 2-step process
-        DMGlobalToLocalBegin(),DMGlobalToLocalEnd().
-     By placing code between these two statements, computations can be
-     done while messages are in transition.
-  */
-  ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayDOF(da,localU,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArrayDOF(da,U,&u);CHKERRQ(ierr);
  
   ierr = MatZeroEntries(*Jpre);CHKERRQ(ierr);
-  for (c=0; c<N; c++){
-    for (i=xs; i<xs+xm; i++){
-      nc    = 0;
+  for (i=xs; i<xs+xm; i++){
+    nc = 0;
+    for (c=0; c<N; c++){
       row.i = i; row.c = c;
       col[nc].c = c; col[nc].i = i-1; vals[nc++] = -sx;
       col[nc].c = c; col[nc].i = i;   vals[nc++] = 2.0*sx + a;
       col[nc].c = c; col[nc].i = i+1; vals[nc++] = -sx;
       ierr = MatSetValuesStencil(*Jpre,1,&row,nc,col,vals,ADD_VALUES);CHKERRQ(ierr);
     }
+
   }
   ierr = MatAssemblyBegin(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*Jpre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -238,8 +229,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J,Mat
     ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  ierr = DMDAVecRestoreArrayDOF(da,localU,&u);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArrayDOF(da,U,&u);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -275,7 +265,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   for (j=xs; j<xs+xm; j++) {
     x = j*hx;
     for (i=0; i<N; i++) {
-      u[j][i] = PetscCosScalar(PETSC_PI*x);
+      u[j][i] = 0.0; /*PetscCosScalar(PETSC_PI*x);*/
     }
   }
 
