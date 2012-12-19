@@ -377,7 +377,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     IXe = M;
   }
 
-  if (bx == DMDA_BOUNDARY_PERIODIC) {
+  if (bx == DMDA_BOUNDARY_PERIODIC || by == DMDA_BOUNDARY_MIRROR) {
     IXs = xs - s - o;
     IXe = xe + s + o;
     Xs = xs - s - o;
@@ -405,7 +405,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     IYe = N;
   }
 
-  if (by == DMDA_BOUNDARY_PERIODIC) {
+  if (by == DMDA_BOUNDARY_PERIODIC || by == DMDA_BOUNDARY_MIRROR) {
     IYs = ys - s - o;
     IYe = ye + s + o;
     Ys = ys - s - o;
@@ -606,19 +606,23 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       y_t = ly[(n0/m)];
       s_t = bases[n0] + x_t*y_t - (s_y-i)*x_t - s_x;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
-    }
+    } 
+
     if (n1 >= 0) { /* directly below */
       x_t = x;
       y_t = ly[(n1/m)];
       s_t = bases[n1] + x_t*y_t - (s_y+1-i)*x_t;
       for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+    } else if (by == DMDA_BOUNDARY_MIRROR) {
+      for (j=0; j<x; j++) { idx[nn++] = bases[rank] + x*(s_y - i + 1)  + j;}
     }
+
     if (n2 >= 0) { /* right below */
       x_t = lx[n2 % m];
       y_t = ly[(n2/m)];
       s_t = bases[n2] + x_t*y_t - (s_y+1-i)*x_t;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
-    }
+    } 
   }
 
   for (i=0; i<y; i++) {
@@ -627,6 +631,8 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       /* y_t = y; */
       s_t = bases[n3] + (i+1)*x_t - s_x;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+    } else if (bx == DMDA_BOUNDARY_MIRROR) {
+      for (j=0; j<s_x; j++) { idx[nn++] = bases[rank] + x*i + s_x - j;}
     }
 
     for (j=0; j<x; j++) { idx[nn++] = xbase++; } /* interior */
@@ -636,6 +642,8 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       /* y_t = y; */
       s_t = bases[n5] + (i)*x_t;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+    } else if (bx == DMDA_BOUNDARY_MIRROR) {
+      for (j=0; j<s_x; j++) { idx[nn++] = bases[rank] + x*(i + 1) - 2 - j;}
     }
   }
 
@@ -645,19 +653,23 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       /* y_t = ly[(n6/m)]; */
       s_t = bases[n6] + (i)*x_t - s_x;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
-    }
+    } 
+
     if (n7 >= 0) { /* directly above */
       x_t = x;
       /* y_t = ly[(n7/m)]; */
       s_t = bases[n7] + (i-1)*x_t;
       for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+    } else if (by == DMDA_BOUNDARY_MIRROR){
+      for (j=0; j<x; j++) { idx[nn++] = bases[rank] + x*(y - i - 1)  + j;}
     }
+
     if (n8 >= 0) { /* right above */
       x_t = lx[n8 % m];
       /* y_t = ly[(n8/m)]; */
       s_t = bases[n8] + (i-1)*x_t;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
-    }
+    } 
   }
 
   ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
