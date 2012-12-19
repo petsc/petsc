@@ -118,7 +118,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
 {
   DM             da;
   PetscErrorCode ierr;
-  PetscInt       i,j,Mx,xs,xm,N;
+  PetscInt       i,c,Mx,xs,xm,N;
   PetscReal      hx,sx,x;
   PetscScalar    uxx;
   PetscScalar    **u,**f,**udot;
@@ -155,27 +155,27 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   /*
      Compute function over the locally owned part of the grid
   */
-  for (j=xs; j<xs+xm; j++) {
-    x = j*hx;
+  for (i=xs; i<xs+xm; i++) {
+    x = i*hx;
 
     /*  diffusion term */
-    for (i=0; i<N; i++) {
-      uxx      = (-2.0*u[j][i] + u[j-1][i] + u[j+1][i])*sx;
-      f[j][i]   = udot[j][i] - uxx;
+    for (c=0; c<N; c++) {
+      uxx      = (-2.0*u[i][c] + u[i-1][c] + u[i+1][c])*sx;
+      f[i][c]   = udot[i][c] - uxx;
     }
 
     /* reaction terms */
     
-    for (i=0; i<N/3; i++) {
-      f[j][i]   += 500*u[j][i]*u[j][i+1] + 500*u[j][i]*u[j][i];
-      f[j][i+1] += 500*u[j][i]*u[j][i+1] - 500*u[j][i]*u[j][i];
-      f[j][i+2] -= 500*u[j][i]*u[j][i+1];
+    for (c=0; c<N/3; c++) {
+      f[i][c]   += 500*u[i][c]*u[i][c+1] + 500*u[i][c]*u[i][c];
+      f[i][c+1] += 500*u[i][c]*u[i][c+1] - 500*u[i][c]*u[i][c];
+      f[i][c+2] -= 500*u[i][c]*u[i][c+1];
     }
      
 
     /* forcing term */
     
-    f[j][0] -= 5*PetscExpScalar((1.0 - x)*(1.0 - x));
+    f[i][0] -= 5*PetscExpScalar((1.0 - x)*(1.0 - x));
     
   }
 
