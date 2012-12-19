@@ -217,7 +217,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
 
   /* sets the down (pre) smoother's default norm and sets it from options */
   if (fas->smoothd){
-    if (fas->level == 0) {
+    if (fas->level == 0 && fas->levels != 1) {
       ierr = SNESSetNormType(fas->smoothd, SNES_NORM_NONE);CHKERRQ(ierr);
      } else {
       ierr = SNESSetNormType(fas->smoothd, SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
