@@ -1139,7 +1139,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat
 
   PetscFunctionBegin;
   ierr = MatMatMultSymbolic_SeqDense_SeqDense(A,B,0.0,C);CHKERRQ(ierr);
-  (*C)->ops->matmult = MatMatMult_SeqAIJ_SeqDense;
+  (*C)->ops->matmultnumeric = MatMatMultNumeric_SeqAIJ_SeqDense;
   PetscFunctionReturn(0);
 }
 

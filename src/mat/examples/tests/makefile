@@ -1494,6 +1494,11 @@ runex109:
 	   if (${DIFF} output/ex109.out ex109.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with ex109, diffs above \n========================================="; fi; \
 	   ${RM} -f ex109.tmp
+runex109_1:
+	-@${MPIEXEC} -n 1 ./ex109 -M 10 -N 10> ex109.tmp 2>&1; \
+	   if (${DIFF} output/ex109.out ex109.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with ex109_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex109.tmp
 runex109_2:
 	-@${MPIEXEC} -n 3 ./ex109 > ex109.tmp 2>&1; \
 	   if (${DIFF} output/ex109.out ex109.tmp) then true; \
@@ -1805,7 +1810,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex86.PETSc runex86 ex86.rm \
                                  ex88.PETSc runex88 ex88.rm ex92.PETSc runex92 runex92_2 runex92_3 runex92_4 ex92.rm \
                                  ex97.PETSc runex97 ex97.rm ex104.PETSc runex104 ex104.rm \
-                                 ex109.PETSc runex109 runex109_2 ex109.rm ex110.PETSc runex110 ex110.rm ex122.PETSc runex122 ex122.rm \
+                                 ex109.PETSc runex109 runex109_1 runex109_2 ex109.rm ex110.PETSc runex110 ex110.rm ex122.PETSc runex122 ex122.rm \
                                  ex114.PETSc runex114 runex114_2 runex114_3 ex114.rm ex117.PETSc ex117.rm ex118.PETSc ex118.rm ex119.PETSc ex119.rm \
                                  ex128.PETSc runex128 runex128_2 ex128.rm ex129.PETSc runex129 runex129_2 ex129.rm ex131.PETSc ex131.rm ex132.PETSc ex132.rm \
                                  ex133.PETSc ex133.rm ex134.PETSc runex134 ex134.rm ex135.PETSc runex135 ex135.rm ex136.PETSc ex136.rm \
