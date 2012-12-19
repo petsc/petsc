@@ -795,7 +795,6 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = PetscMemcpy(idx_cpy,idx_full,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISRestoreIndices(ltogis, &idx_full);
   ierr = ISLocalToGlobalMappingCreateIS(ltogis,&da->ltogmap);CHKERRQ(ierr);
-ISLocalToGlobalMappingView(da->ltogmap,PETSC_VIEWER_STDOUT_SELF);
   ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
   ierr = ISDestroy(&ltogis);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
