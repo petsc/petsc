@@ -85,62 +85,27 @@ PetscErrorCode  PetscDrawAxisGetLimits(PetscDrawAxis axis,PetscReal *xmin,PetscR
 PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 {
   static char    buf[40];
-  char           fmat[10];
   PetscErrorCode ierr;
-  int            w,d;
   PetscReal      rval;
 
   PetscFunctionBegin;
   /* Find the string */
   if (PetscAbsReal(val)/sep <  1.e-4) {
     buf[0] = '0'; buf[1] = 0;
-  } else if (PetscAbsReal(val) < 1.0e6 && PetscAbsReal(val) > 1.e-4) {
-    /* Compute the number of digits */
-    w = 0;
-    d = 0;
-    if (sep > 0.0) {
-	d = (int)ceil(- log10 (sep));
-	if (d < 0) d = 0;
-	if (PetscAbsReal(val) < 1.0e-6*sep) {
-	    /* This is the case where we are near zero and less than a small
-	       fraction of the sep.  In this case, we use 0 as the value */
-	    val = 0.0;
-	    w   = d;
-        }
-	else if (val == 0.0) w   = d;
-	else w = (int)(ceil(log10(PetscAbsReal(val))) + d);
-	if (w < 1)   w ++;
-	if (val < 0) w ++;
-    }
-
+  } else {
     ierr = PetscRint(val,&rval);CHKERRQ(ierr);
     if (rval == val) {
-	if (w > 0) sprintf(fmat,"%%%dd",w);
-	else {ierr = PetscStrcpy(fmat,"%d");CHKERRQ(ierr);}
-	sprintf(buf,fmat,(int)val);
-        ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
-        ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
-        ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
+      sprintf(buf,"%d",(int)val);
+      ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
+      ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
+      ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
     } else {
-	/* The code used here is inappropriate for a val of 0, which
-	   tends to print with an excessive numer of digits.  In this
-	   case, we should look at the next/previous values and
-	   use those widths */
-	if (w > 0) sprintf(fmat,"%%%d.%dlf",w + 1,d);
-	else {ierr = PetscStrcpy(fmat,"%lf");CHKERRQ(ierr);}
-	sprintf(buf,fmat,(double)val);
-        ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
-        ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
-        ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
+      sprintf(buf,"%0.1le",(double)val);
+      ierr = PetscStripe0(buf);CHKERRQ(ierr);
+      ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
+      ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
+      ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
     }
-  } else {
-    ierr = PetscSNPrintf(buf,40,"%g",(double)val);
-    /* remove the extraneous 0 before the e */
-    ierr = PetscStripZeros(buf);CHKERRQ(ierr);
-    ierr = PetscStripZerosPlus(buf);CHKERRQ(ierr);
-    ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
-    ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
-    ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
   }
   *p =buf;
   PetscFunctionReturn(0);

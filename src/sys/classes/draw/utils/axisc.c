@@ -209,7 +209,7 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
   numx = (int)(.15*(xr-xl)/tw); if (numx > 6) numx = 6; if (numx< 2) numx = 2;
   numy = (int)(.5*(yr-yl)/th); if (numy > 6) numy = 6; if (numy< 2) numy = 2;
-  xl -= 8*tw; xr += 2*tw; yl -= 2.5*th; yr += 2*th;
+  xl -= 11*tw; xr += 2*tw; yl -= 2.5*th; yr += 2*th;
   if (axis->xlabel) yl -= 2*th;
   if (axis->ylabel) xl -= 2*tw;
   ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
@@ -275,6 +275,37 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
     h    = yl + .5*(yr - yl) + .5*len*th;
     w    = xl + .5*tw;
     ierr = PetscDrawStringVertical(draw,w,h,cc,axis->ylabel);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscStripe0"
+/*
+    Removes all zeros but one from .0000
+*/
+PetscErrorCode PetscStripe0(char *buf)
+{
+  PetscErrorCode ierr;
+  size_t         n;
+  PetscBool      flg;
+  char           *str;
+
+  PetscFunctionBegin;
+  ierr = PetscStrlen(buf,&n);CHKERRQ(ierr);
+  ierr = PetscStrendswith(buf,"e00",&flg);CHKERRQ(ierr);
+  if (flg) {
+    buf[n-3] = 0;
+  }
+  ierr = PetscStrstr(buf,"e0",&str);CHKERRQ(ierr);
+  if (str) {
+    buf[n-2] = buf[n-1];
+    buf[n-1] = 0;
+  }
+  ierr = PetscStrstr(buf,"e-0",&str);CHKERRQ(ierr);
+  if (str) {
+    buf[n-2] = buf[n-1];
+    buf[n-1] = 0;
   }
   PetscFunctionReturn(0);
 }

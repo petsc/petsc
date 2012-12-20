@@ -22,6 +22,7 @@ extern PetscErrorCode PetscADefLabel(PetscReal,PetscReal,char**);
 extern PetscErrorCode PetscAGetNice(PetscReal,PetscReal,int,PetscReal*);
 extern PetscErrorCode PetscAGetBase(PetscReal,PetscReal,int,PetscReal*,int*);
 
+extern PetscErrorCode PetscStripe0(char*);
 extern PetscErrorCode PetscStripAllZeros(char*);
 extern PetscErrorCode PetscStripTrailingZeros(char*);
 extern PetscErrorCode PetscStripInitialZero(char*);
