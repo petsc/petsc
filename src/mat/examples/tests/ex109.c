@@ -7,36 +7,48 @@ static char help[] = "Test MatMatMult() for AIJ and Dense matrices.\n\n";
 int main(int argc,char **argv)
 {
   Mat            A,B,C,D;
-  PetscInt       i,M=10,N=5;
+  PetscInt       i,M,N,Istart,Iend,n=7,j,J,Ii,m=8,am,an;
+  PetscScalar    v;
   PetscErrorCode ierr;
   PetscRandom    r;
   PetscBool      equal=PETSC_FALSE;
   PetscReal      fill = 1.0;
-  PetscInt       nza,am,an;
   PetscMPIInt    size;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-fill",&fill,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&r);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
 
-  /* create a aij matrix A */
+  /* Create a aij matrix A */
+  M = N = m*n;
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,M);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-  nza  = (PetscInt)(.3*M); /* num of nozeros in each row of A */
-  ierr = MatSeqAIJSetPreallocation(A,nza,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,nza,PETSC_NULL,nza,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetRandom(A,r);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A,5,PETSC_NULL);CHKERRQ(ierr);
 
-  /* create a dense matrix B */
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+  am = Iend - Istart;
+  for (Ii=Istart; Ii<Iend; Ii++) {
+    v = -1.0; i = Ii/n; j = Ii - i*n;
+    if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* Create a dense matrix B */
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,an,PETSC_DECIDE,PETSC_DECIDE,N);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,an,PETSC_DECIDE,PETSC_DECIDE,M);CHKERRQ(ierr);
   ierr = MatSetType(B,MATDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
@@ -58,23 +70,19 @@ int main(int argc,char **argv)
   if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");
   ierr = MatDestroy(&D);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  /* Test D = C*A (dense*aij) */
+  ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); 
+  ierr = MatMatMult(C,A,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);  
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
+  
+  /* Test D = A*C (aij*dense) */
+  ierr = MatMatMult(A,C,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
+  ierr = MatMatMult(A,C,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
+
+  /* Test D = B*C (dense*dense) */
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);   
   if (size == 1){
-    /* Test D = C*A (dense*aij) */
-    ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); // error when size=2 - check later!
-    ierr = MatMatMult(C,A,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);  
-    ierr = MatDestroy(&D);CHKERRQ(ierr);
-
-    /* Test D = A*C (aij*dense) */
-    if (M == N){
-      //printf(" Test D = A*C (aij*dense) ...\n");
-      ierr = MatMatMult(A,C,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
-      ierr = MatMatMult(A,C,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
-      ierr = MatDestroy(&D);CHKERRQ(ierr);
-    }
-
-    /* Test D = B*C (dense*dense) */
-    //printf(" Test D = B*C (dense*dense) ...\n");
     ierr = MatMatMult(B,C,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr);
     ierr = MatMatMult(B,C,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
     ierr = MatDestroy(&D);CHKERRQ(ierr);

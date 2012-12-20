@@ -820,7 +820,7 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
       if (mat->ops->getinfo) {
         MatInfo info;
         ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"total: nonzeros=%D, allocated nonzeros=%D\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"total: nonzeros=%lld, allocated nonzeros=%lld\n",(Petsc64bitInt)info.nz_used,(Petsc64bitInt)info.nz_allocated);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"total number of mallocs used during MatSetValues calls =%D\n",(PetscInt)info.mallocs);CHKERRQ(ierr);
       }
     }
@@ -8214,7 +8214,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
       } 
       ierr = MatDestroy(&Pt);CHKERRQ(ierr);
     } else {
-      ierr = (*(*C)->ops->ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
+      ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
     }
     ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);

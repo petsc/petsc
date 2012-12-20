@@ -15,6 +15,7 @@ configure_options = [
   '--download-blacs=1',
   '--download-scalapack=1',
   '--download-mumps=1',
+  '--download-elemental=1',
   '--download-spai=1',
   '--download-chaco=1'
   ]
