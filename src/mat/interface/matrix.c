@@ -8214,7 +8214,7 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
       } 
       ierr = MatDestroy(&Pt);CHKERRQ(ierr);
     } else {
-      ierr = (*(*C)->ops->ptap)(A,P,scall,fill,C);CHKERRQ(ierr);
+      ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
     }
     ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
