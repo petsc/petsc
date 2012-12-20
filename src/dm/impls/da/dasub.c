@@ -6,6 +6,79 @@
 #include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDAGetRay"
+/*@C
+   DMDAGetRay - Returns a vector on process zero that contains a row or column of the values in a DMDA vector
+
+   Collective on DMDA
+
+   Input Parameters:
++  da - the distributed array
+.  vec - the vector
+.  dir - Cartesian direction, either DMDA_X, DMDA_Y, or DMDA_Z
+-  gp - global grid point number in this direction
+
+   Output Parameters:
++  newvec - the new vector that can hold the values (size zero on all processes except process 0)
+-  scatter - the VecScatter that will map from the original vector to the slice
+
+   Level: advanced
+
+   Notes:
+   All processors that share the DMDA must call this with the same gp value
+
+.keywords: distributed array, get, processor subset
+@*/
+PetscErrorCode  DMDAGetRay(DM da,DMDADirection dir,PetscInt gp,Vec *newvec,VecScatter *scatter)
+{
+  PetscMPIInt    rank;
+  DM_DA          *dd = (DM_DA*)da->data;
+  PetscErrorCode ierr;
+  IS             is;
+  AO             ao;
+  Vec            vec;
+
+  PetscFunctionBegin;
+  if (dd->dim == 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot get slice from 1d DMDA");
+  if (dd->dim == 3) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot get slice from 3d DMDA");
+  ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    if (dir == DMDA_Y) {
+      PetscInt *indices,i;
+      ierr = PetscMalloc(dd->M*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+      indices[0] = gp*dd->M;
+      for (i=1; i<dd->M; i++) {indices[i] = indices[i-1] + 1;}
+      ierr = AOApplicationToPetsc(ao,dd->M,indices);CHKERRQ(ierr);
+      ierr = VecCreate(PETSC_COMM_SELF,newvec);CHKERRQ(ierr);
+      ierr = VecSetBlockSize(*newvec,dd->w);CHKERRQ(ierr);
+      ierr = VecSetSizes(*newvec,dd->M*dd->w,PETSC_DETERMINE);CHKERRQ(ierr);
+      ierr = VecSetType(*newvec,VECSEQ);CHKERRQ(ierr);
+      ierr = ISCreateBlock(PETSC_COMM_SELF,dd->w,dd->M,indices,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+    } else if (dir == DMDA_X) {
+      PetscInt *indices,i;
+      ierr = PetscMalloc(dd->N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+      indices[0] = gp;
+      for (i=1; i<dd->N; i++) {indices[i] = indices[i-1] + dd->M;}
+      ierr = AOApplicationToPetsc(ao,dd->M,indices);CHKERRQ(ierr);
+      ierr = VecCreate(PETSC_COMM_SELF,newvec);CHKERRQ(ierr);
+      ierr = VecSetBlockSize(*newvec,dd->w);CHKERRQ(ierr);
+      ierr = VecSetSizes(*newvec,dd->N*dd->w,PETSC_DETERMINE);CHKERRQ(ierr);
+      ierr = VecSetType(*newvec,VECSEQ);CHKERRQ(ierr);
+      ierr = ISCreateBlock(PETSC_COMM_SELF,dd->w,dd->N,indices,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown DMDADirection");
+  } else {
+    ierr = VecCreateSeq(PETSC_COMM_SELF,0,newvec);CHKERRQ(ierr);
+    ierr = ISCreateBlock(PETSC_COMM_SELF,dd->w,0,0,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+  }
+  ierr = DMGetGlobalVector(da,&vec);CHKERRQ(ierr);
+  ierr = VecScatterCreate(vec,is,*newvec,PETSC_NULL,scatter);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(da,&vec);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetProcessorSubset"
 /*@C
    DMDAGetProcessorSubset - Returns a communicator consisting only of the

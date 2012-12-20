@@ -837,39 +837,33 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,n = xin->map->n;
+  PetscInt          i,c,bs = xin->map->bs,n = xin->map->n/bs;
   PetscDraw         win;
   PetscReal         *xx;
   PetscDrawLG       lg;
   const PetscScalar *xv;
+  PetscReal         *yy;
 
   PetscFunctionBegin;
-  ierr = PetscViewerDrawGetDrawLG(v,0,&lg);CHKERRQ(ierr);
-  ierr = PetscDrawLGGetDraw(lg,&win);CHKERRQ(ierr);
-  ierr = PetscDrawCheckResizedWindow(win);CHKERRQ(ierr);
-  ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
-  ierr = PetscMalloc((n+1)*sizeof(PetscReal),&xx);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    xx[i] = (PetscReal) i;
-  }
+  ierr = PetscMalloc(n*sizeof(PetscReal),&xx);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscReal),&yy);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
-#if !defined(PETSC_USE_COMPLEX)
-  ierr = PetscDrawLGAddPoints(lg,n,&xx,(PetscReal**)&xv);CHKERRQ(ierr);
-#else
-  {
-    PetscReal *yy;
-    ierr = PetscMalloc((n+1)*sizeof(PetscReal),&yy);CHKERRQ(ierr);
+  for (c=0; c<bs; c++) {
+    ierr = PetscViewerDrawGetDrawLG(v,c,&lg);CHKERRQ(ierr);
+    ierr = PetscDrawLGGetDraw(lg,&win);CHKERRQ(ierr);
+    ierr = PetscDrawCheckResizedWindow(win);CHKERRQ(ierr);
+    ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      yy[i] = PetscRealPart(xv[i]);
+      xx[i] = (PetscReal) i;
+      yy[i] = PetscRealPart(xv[c + i*bs]);
     }
     ierr = PetscDrawLGAddPoints(lg,n,&xx,&yy);CHKERRQ(ierr);
-    ierr = PetscFree(yy);CHKERRQ(ierr);
+    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+    ierr = PetscDrawSynchronizedFlush(win);CHKERRQ(ierr);
   }
-#endif
   ierr = VecRestoreArrayRead(xin,&xv);CHKERRQ(ierr);
+  ierr = PetscFree(yy);CHKERRQ(ierr);
   ierr = PetscFree(xx);CHKERRQ(ierr);
-  ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
-  ierr = PetscDrawSynchronizedFlush(win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

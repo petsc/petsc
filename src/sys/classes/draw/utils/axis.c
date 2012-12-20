@@ -184,6 +184,7 @@ PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,Pe
   if (i < 2 && num < 10) {
     ierr = PetscADefTicks(low,high,num+1,ntick,tickloc,maxtick);CHKERRQ(ierr);
   }
+  if (num == 10) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"trouble");
   PetscFunctionReturn(0);
 }
 

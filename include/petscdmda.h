@@ -11,7 +11,7 @@
 
    Level: beginner
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate()
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate(), DMDASetStencilType()
 E*/
 typedef enum { DMDA_STENCIL_STAR,DMDA_STENCIL_BOX } DMDAStencilType;
 
@@ -21,7 +21,7 @@ typedef enum { DMDA_STENCIL_STAR,DMDA_STENCIL_BOX } DMDAStencilType;
 
      Level: beginner
 
-.seealso: DMDA_STENCIL_BOX, DMDAStencilType
+.seealso: DMDA_STENCIL_BOX, DMDAStencilType, DMDASetStencilType()
 M*/
 
 /*MC
@@ -30,7 +30,7 @@ M*/
 
      Level: beginner
 
-.seealso: DMDA_STENCIL_STAR, DMDAStencilType
+.seealso: DMDA_STENCIL_STAR, DMDAStencilType, DMDASetStencilType()
 M*/
 
 /*E
@@ -40,7 +40,7 @@ M*/
 
    A boundary may be of type DMDA_BOUNDARY_NONE (no ghost nodes), DMDA_BOUNDARY_GHOST (ghost nodes
    exist but aren't filled, you can put values into them and then apply a stencil that uses those ghost locations),
-   DMDA_BOUNDARY_MIRROR (not yet implemented), or DMDA_BOUNDARY_PERIODIC
+   DMDA_BOUNDARY_MIRROR (not yet implemented for 3d), or DMDA_BOUNDARY_PERIODIC
    (ghost nodes filled by the opposite edge of the domain).
 
    Note: This is information for the boundary of the __PHYSICAL__ domain. It has nothing to do with boundaries between
@@ -105,6 +105,7 @@ PETSC_EXTERN PetscErrorCode DMDAGetGhostCorners(DM,PetscInt*,PetscInt*,PetscInt*
 PETSC_EXTERN PetscErrorCode DMDAGetInfo(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,DMDABoundaryType*,DMDABoundaryType*,DMDABoundaryType*,DMDAStencilType*);
 PETSC_EXTERN PetscErrorCode DMDAGetProcessorSubset(DM,DMDADirection,PetscInt,MPI_Comm*);
 PETSC_EXTERN PetscErrorCode DMDAGetProcessorSubsets(DM,DMDADirection,MPI_Comm*);
+PETSC_EXTERN PetscErrorCode DMDAGetRay(DM,DMDADirection,PetscInt,Vec*,VecScatter*);
 
 PETSC_EXTERN PetscErrorCode DMDAGlobalToNaturalAllCreate(DM,VecScatter*);
 PETSC_EXTERN PetscErrorCode DMDANaturalAllToGlobalCreate(DM,VecScatter*);
@@ -121,7 +122,7 @@ PETSC_EXTERN PetscErrorCode DMDAGetLocalBoundingBox(DM,PetscReal[],PetscReal[]);
 /* function to wrap coordinates around boundary */
 PETSC_EXTERN PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM,PetscScalar*,PetscScalar*);
 
-PETSC_EXTERN PetscErrorCode DMDAGetReducedDA(DM,PetscInt,DM*);
+PETSC_EXTERN PetscErrorCode DMDAGetReducedDMDA(DM,PetscInt,DM*);
 
 PETSC_EXTERN PetscErrorCode DMDASetFieldName(DM,PetscInt,const char[]);
 PETSC_EXTERN PetscErrorCode DMDAGetFieldName(DM,PetscInt,const char**);
@@ -259,12 +260,6 @@ typedef struct {PetscScalar x,y,z;} DMDACoor3d;
 
 PETSC_EXTERN PetscErrorCode DMDAGetLocalInfo(DM,DMDALocalInfo*);
 PETSC_EXTERN PetscErrorCode DMDAGetLocalBlockInfo(DM,DMDALocalInfo*);
-PETSC_EXTERN PetscErrorCode DMDAComputeJacobian1WithAdic(DM,Vec,Mat,void*);
-PETSC_EXTERN PetscErrorCode DMDAComputeJacobian1WithAdifor(DM,Vec,Mat,void*);
-PETSC_EXTERN PetscErrorCode DMDAMultiplyByJacobian1WithAdic(DM,Vec,Vec,Vec,void*);
-PETSC_EXTERN PetscErrorCode DMDAMultiplyByJacobian1WithAdifor(DM,Vec,Vec,Vec,void*);
-PETSC_EXTERN PetscErrorCode DMDAMultiplyByJacobian1WithAD(DM,Vec,Vec,Vec,void*);
-PETSC_EXTERN PetscErrorCode DMDAComputeJacobian1(DM,Vec,Mat,void*);
 
 PETSC_EXTERN PetscErrorCode MatRegisterDAAD(void);
 PETSC_EXTERN PetscErrorCode MatCreateDAAD(DM,Mat*);

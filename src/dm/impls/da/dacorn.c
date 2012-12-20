@@ -280,9 +280,9 @@ PetscErrorCode  DMDAGetBoundingBox(DM da,PetscReal gmin[],PetscReal gmax[])
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAGetReducedDA"
+#define __FUNCT__ "DMDAGetReducedDMDA"
 /*@
-   DMDAGetReducedDA - Gets the DMDA with the same layout but with fewer or more fields
+   DMDAGetReducedDMDA - Gets the DMDA with the same layout but with fewer or more fields
 
    Collective on DMDA
 
@@ -299,7 +299,7 @@ PetscErrorCode  DMDAGetBoundingBox(DM da,PetscReal gmin[],PetscReal gmax[])
 
 .seealso: DMDAGetGhostCorners(), DMSetCoordinates(), DMDASetUniformCoordinates(), DMGetCoordinates(), DMDAGetGhostedCoordinates()
 @*/
-PetscErrorCode  DMDAGetReducedDA(DM da,PetscInt nfields,DM *nda)
+PetscErrorCode  DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
 {
   PetscErrorCode   ierr;
   DM_DA            *dd = (DM_DA*)da->data;

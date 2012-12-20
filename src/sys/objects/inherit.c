@@ -362,7 +362,7 @@ PetscErrorCode  PetscObjectAddOptionsHandler(PetscObject obj,PetscErrorCode (*ha
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectProcessOptionsHandlers"
 /*@C
-    PetscObjectProcessOptionsHandlers - Calls all the options handler attached to an object
+    PetscObjectProcessOptionsHandlers - Calls all the options handlers attached to an object
 
     Not Collective
 
