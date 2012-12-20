@@ -8,7 +8,7 @@ static char help[] = "Tests mirror boundary conditions in 2-d.\n\n";
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       M = 3, N = 4,stencil_width = 1, dof = 1,m,n,xstart,ystart,i,j,c;
+  PetscInt       M = -8, N = -8,stencil_width = 1, dof = 1,m,n,xstart,ystart,i,j,c;
   DM             da;
   Vec            global,local;
   PetscScalar     ***vglobal;

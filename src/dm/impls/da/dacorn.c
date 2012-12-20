@@ -39,7 +39,11 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
       for(i = 0; i < N; ++i) {
         ld[i] = ld[M*i];
       }
-      ierr = DMDACreate2d(((PetscObject)dm)->comm,bx,by,DMDA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,cdm);CHKERRQ(ierr);
+      if (bx == DMDA_BOUNDARY_MIRROR || by == DMDA_BOUNDARY_MIRROR) {
+        ierr = DMDACreate2d(((PetscObject)dm)->comm,bx,by,DMDA_STENCIL_STAR,m,n,M,N,2,s,lc,ld,cdm);CHKERRQ(ierr);
+      } else {
+        ierr = DMDACreate2d(((PetscObject)dm)->comm,bx,by,DMDA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,cdm);CHKERRQ(ierr);
+      }
       ierr = PetscFree2(lc,ld);CHKERRQ(ierr);
   } else if (da->dim == 3) {
     PetscInt         i,s,m,*lc,*ld,*le,l,k,q,n,M,N,P,p;

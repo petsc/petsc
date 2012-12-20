@@ -250,6 +250,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  if (stencil_type == DMDA_STENCIL_BOX && (bx == DMDA_BOUNDARY_MIRROR || by == DMDA_BOUNDARY_MIRROR)) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Mirror boundary and box stencil");
   if (dof < 1) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
   if (s < 0) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);

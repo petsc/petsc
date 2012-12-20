@@ -855,6 +855,7 @@ PetscErrorCode  PetscDrawCreate_X(PetscDraw draw)
   */
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
+  flg = PETSC_TRUE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_double_buffer",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
      ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);

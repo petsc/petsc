@@ -5,7 +5,9 @@ static char help[] = ".\n";
 
         u_t =  u_xx + R(u)
 
-      Where u(t,x,i)    for i=1, .... N where i represents the void size 
+      Where u(t,x,i)    for i=0, .... N-1 where i+1 represents the void size
+ 
+      ex9.c is the 2d version of this code
 */
 
 #include <petscdmda.h>
@@ -18,7 +20,6 @@ static char help[] = ".\n";
 /* AppCtx */
 typedef struct {
   PetscInt  N;              /* number of dofs */
-  PetscBool viewJacobian;
 } AppCtx;
 
 extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
@@ -37,20 +38,25 @@ int main(int argc,char **argv)
   PetscErrorCode  ierr;
   DM              da;
   AppCtx          user;
+  PetscInt        i;
+  char            Name[16];
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char *)0,help);
-  user.viewJacobian = PETSC_FALSE;
   user.N            = 1;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&user.N,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_MIRROR,-8,user.N,1,PETSC_NULL,&da);CHKERRQ(ierr);
+
+  for (i=0; i<user.N; i++) {
+    ierr = PetscSNPrintf(Name,16,"Void size %d",(int)(i+1));
+    ierr = DMDASetFieldName(da,i,Name);CHKERRQ(ierr);
+  }
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Extract global vectors from DMDA; then duplicate for remaining
