@@ -12,8 +12,8 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.3.tar.gz']
-    self.download_mpich     = ['http://www.mpich.org/static/tarballs/3.0/mpich-3.0.tar.gz',
-                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.0.tar.gz']
+    self.download_mpich     = ['http://www.mpich.org/static/tarballs/3.0.1/mpich-3.0.1.tar.gz',
+                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.0.1.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
