@@ -32,6 +32,7 @@ if __name__ == '__main__':
     '--download-blacs',
     '--download-hypre',
     '--download-mumps',
+    '--download-elemental=1',
     '--download-cmake=1',
     '--download-metis=1',
     '--download-parmetis',
