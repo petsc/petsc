@@ -3,7 +3,8 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/elemental-dev-072512.tar.gz']
+    self.download   = ['https://elemental.googlecode.com/files/elemental-0.77.tgz',
+                       'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/elemental-0.77.tgz']
     self.liblist    = [['libelemental.a','libplcg.a','libpmrrr.a']]
     self.includes   = ['elemental.hpp']
     self.cxx              = 1
