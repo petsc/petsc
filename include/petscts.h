@@ -276,6 +276,15 @@ PETSC_EXTERN PetscErrorCode DMDATSSetRHSJacobianLocal(DM,PetscErrorCode (*)(DMDA
 PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM,InsertMode,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*),void *);
 PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,MatStructure*,void*),void *);
 
+typedef struct {
+  Vec         ray;
+  VecScatter  scatter;
+  PetscViewer viewer;
+} TSMonitorDMDARayCtx;
+PETSC_EXTERN PetscErrorCode TSMonitorDMDARayDestroy(void**);
+PETSC_EXTERN PetscErrorCode TSMonitorDMDARay(TS,PetscInt,PetscReal,Vec,void*);
+
+
 /* Dynamic creation and loading functions */
 PETSC_EXTERN PetscFList TSList;
 PETSC_EXTERN PetscBool TSRegisterAllCalled;

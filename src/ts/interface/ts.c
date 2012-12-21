@@ -83,14 +83,15 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 @*/
 PetscErrorCode  TSSetFromOptions(TS ts)
 {
-  PetscBool      opt,flg;
-  PetscErrorCode ierr;
-  PetscViewer    monviewer;
-  char           monfilename[PETSC_MAX_PATH_LEN];
-  SNES           snes;
-  TSAdapt        adapt;
-  PetscReal      time_step;
-  TSExactFinalTimeOption      eftopt;
+  PetscBool              opt,flg;
+  PetscErrorCode         ierr;
+  PetscViewer            monviewer;
+  char                   monfilename[PETSC_MAX_PATH_LEN];
+  SNES                   snes;
+  TSAdapt                adapt;
+  PetscReal              time_step;
+  TSExactFinalTimeOption eftopt;
+  char                   dir[16];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
@@ -224,6 +225,31 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       }
       ierr = PetscStrallocpy(monfilename,&filetemplate);CHKERRQ(ierr);
       ierr = TSMonitorSet(ts,TSMonitorSolutionVTK,filetemplate,(PetscErrorCode (*)(void**))TSMonitorSolutionVTKDestroy);CHKERRQ(ierr);
+    }
+
+    ierr = PetscOptionsString("-ts_monitor_dmda_ray","Display a ray of the solution","None","y=0",dir,16,&flg);CHKERRQ(ierr);
+    if (flg) {
+      TSMonitorDMDARayCtx *rayctx;
+      int                 ray = 0;
+      DMDADirection       ddir;
+      DM                  da;
+      PetscMPIInt         rank;
+
+      if (dir[1] != '=') SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_ARG_WRONG,"Unknown ray %s",dir);
+      if (dir[0] == 'x') ddir = DMDA_X;
+      else if (dir[0] == 'y') ddir = DMDA_Y;
+      else SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_ARG_WRONG,"Unknown ray %s",dir);
+      sscanf(dir+2,"%d",&ray);
+
+      ierr = PetscInfo2(((PetscObject)ts),"Displaying DMDA ray %c = %D\n",dir[0],ray);CHKERRQ(ierr);
+      ierr = PetscNew(TSMonitorDMDARayCtx,&rayctx);CHKERRQ(ierr);
+      ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+      ierr = DMDAGetRay(da,ddir,ray,&rayctx->ray,&rayctx->scatter);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(((PetscObject)ts)->comm,&rank);CHKERRQ(ierr);
+      if (!rank) {
+        ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,600,300,&rayctx->viewer);CHKERRQ(ierr);
+      }
+      ierr = TSMonitorSet(ts,TSMonitorDMDARay,rayctx,TSMonitorDMDARayDestroy);CHKERRQ(ierr);
     }
 
     ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);

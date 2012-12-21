@@ -419,3 +419,36 @@ PetscErrorCode DMDATSSetIJacobianLocal(DM dm,DMDATSIJacobianLocal func,void *ctx
   ierr = DMTSSetIJacobian(dm,TSComputeIJacobian_DMDA,dmdats);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorDMDARayDestroy"
+PetscErrorCode TSMonitorDMDARayDestroy(void **mctx)
+{
+  TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx*)*mctx;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = VecDestroy(&rayctx->ray);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&rayctx->scatter);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&rayctx->viewer);CHKERRQ(ierr);
+  ierr = PetscFree(rayctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorDMDARay"
+PetscErrorCode TSMonitorDMDARay(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx)
+{
+  TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx*)mctx;
+  Vec                 solution;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = TSGetSolution(ts,&solution);CHKERRQ(ierr);
+  ierr = VecScatterBegin(rayctx->scatter,solution,rayctx->ray,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(rayctx->scatter,solution,rayctx->ray,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  if (rayctx->viewer) {
+    ierr = VecView(rayctx->ray,rayctx->viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
