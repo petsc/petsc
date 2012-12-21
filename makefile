@@ -226,6 +226,10 @@ alletags:
 	-@${PYTHON} bin/maint/generateetags.py
 	-@find config -type f -name "*.py" |grep -v SCCS | xargs etags -o TAGS_PYTHON
 
+# obtain gtags from http://www.gnu.org/s/global/
+allgtags:
+	-@find -E ${PETSC_DIR}/{include,src,bin} -regex '(.*makefile|.*\.(cc|hh|cpp|C|hpp|c|h|cu|m)$$)' | grep -v ftn-auto  | gtags -f -
+
 allfortranstubs:
 	-@${RM} -rf include/finclude/ftn-auto/*-tmpdir
 	-@${PYTHON} bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
