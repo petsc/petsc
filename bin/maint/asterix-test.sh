@@ -30,7 +30,7 @@ make PETSC_ARCH=asterix64-sun all test
 make PETSC_ARCH=asterix64-sun-dynamic all alltests tests_DATAFILESPATH DATAFILESPATH=/home/balay/datafiles
 ./config/examples/asterix/asterix64-sun.py --with-clanguage=cxx -PETSC_ARCH=asterix64-sun-cxx  --with-debugging=0 --with-pic=0 \
 --download-f-blaslapack=1 --download-spooles=1 --download-superlu=1 \
---download-superlu_dist=1 --download-hypre=1 --download-spai=1 --download-blacs=1 --download-scalapack=1 \
+--download-superlu_dist=1 --download-hypre=1 --download-spai=1 --download-scalapack=1 \
 --download-mumps=1 --download-mpe=1 --download-sundials=1
 make PETSC_ARCH=asterix64-sun-cxx all
 make PETSC_ARCH=asterix64-sun-cxx CLINKER=sun-cc shared

@@ -30,9 +30,8 @@ class Configure(PETSc.package.NewPackage):
     if self.framework.argDB['with-mumps-serial']:
       self.deps       = [self.blasLapack]
     else:
-      self.blacs      = framework.require('PETSc.packages.blacs',self)
-      self.scalapack  = framework.require('PETSc.packages.SCALAPACK',self)
-      self.deps       = [self.scalapack,self.blacs,self.mpi,self.blasLapack]
+      self.scalapack  = framework.require('PETSc.packages.scalapack',self)
+      self.deps       = [self.scalapack,self.mpi,self.blasLapack]
       self.parmetis   = framework.require('PETSc.packages.parmetis',self)
       self.ptscotch   = framework.require('PETSc.packages.PTScotch',self)
     return
@@ -108,7 +107,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('AR      = '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' \n')
     g.write('LIBEXT  = .'+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('RANLIB  = '+self.setCompilers.RANLIB+'\n') 
-    g.write('SCALAP  = '+self.libraries.toString(self.scalapack.lib)+' '+self.libraries.toString(self.blacs.lib)+'\n')
+    g.write('SCALAP  = '+self.libraries.toString(self.scalapack.lib)+'\n')
     g.write('INCPAR  = '+self.headers.toString(self.mpi.include)+'\n')
     g.write('LIBPAR  = $(SCALAP) '+self.libraries.toString(self.mpi.lib)+'\n') #PARALLE LIBRARIES USED by MUMPS
     g.write('INCSEQ  = -I$(topdir)/libseq\n')
