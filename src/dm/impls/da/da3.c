@@ -203,6 +203,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
 
   PetscFunctionBegin;
+  if (stencil_type == DMDA_STENCIL_BOX && (bx == DMDA_BOUNDARY_MIRROR || by == DMDA_BOUNDARY_MIRROR || bz == DMDA_BOUNDARY_MIRROR)) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Mirror boundary and box stencil");
   if (dof < 1) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
   if (s < 0) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
@@ -370,7 +371,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     IXe = M;
   }
 
-  if (bx == DMDA_BOUNDARY_PERIODIC) {
+  if (bx == DMDA_BOUNDARY_PERIODIC || bx == DMDA_BOUNDARY_MIRROR) {
     IXs = xs - s - o;
     IXe = xe + s + o;
     Xs = xs - s - o;
@@ -398,7 +399,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     IYe = N;
   }
 
-  if (by == DMDA_BOUNDARY_PERIODIC) {
+  if (by == DMDA_BOUNDARY_PERIODIC || by == DMDA_BOUNDARY_MIRROR) {
     IYs = ys - s - o;
     IYe = ye + s + o;
     Ys = ys - s - o;
@@ -426,7 +427,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     IZe = P;
   }
 
-  if (bz == DMDA_BOUNDARY_PERIODIC) {
+  if (bz == DMDA_BOUNDARY_PERIODIC || bz == DMDA_BOUNDARY_MIRROR) {
     IZs = zs - s - o;
     IZe = ze + s + o;
     Zs = zs - s - o;
@@ -851,6 +852,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         s_t = bases[n4] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
         if (twod && (s_t < 0)) {s_t = bases[n4] + i*x_t + x_t*y_t*z_t - x_t*y_t;} /* 2D case */
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+      } else if (bz == DMDA_BOUNDARY_MIRROR) {
+        for (j=0; j<x; j++) { idx[nn++] = 0;}
       }
 
       if (n5 >= 0) { /* directly right */
@@ -907,6 +910,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         /* z_t = z; */
         s_t = bases[n10] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+      }  else if (by == DMDA_BOUNDARY_MIRROR) {
+        for (j=0; j<x; j++) { idx[nn++] = 0;}
       }
       if (n11 >= 0) { /* right below */
         x_t = lx[n11 % m];
@@ -924,6 +929,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         /* z_t = z; */
         s_t = bases[n12] + (i+1)*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+      }  else if (bx == DMDA_BOUNDARY_MIRROR) {
+        for (j=0; j<s_x; j++) { idx[nn++] = 0;}
       }
 
       /* Interior */
@@ -936,6 +943,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         /* z_t = z; */
         s_t = bases[n14] + i*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
+      } else if (bx == DMDA_BOUNDARY_MIRROR) {
+        for (j=0; j<s_x; j++) { idx[nn++] = 0;}
       }
     }
 
@@ -953,6 +962,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         /* z_t = z; */
         s_t = bases[n16] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+      } else if (by == DMDA_BOUNDARY_MIRROR) {
+        for (j=0; j<x; j++) { idx[nn++] = 0;}
       }
       if (n17 >= 0) { /* right above */
         x_t = lx[n17 % m];
@@ -1010,6 +1021,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         s_t = bases[n22] + i*x_t + k*x_t*y_t;
         if (twod && (s_t >= M*N*P)) {s_t = bases[n22] + i*x_t;} /* 2d case */
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
+      } else if (bz == DMDA_BOUNDARY_MIRROR) {
+        for (j=0; j<x; j++) { idx[nn++] = 0;}
       }
 
       if (n23 >= 0) { /* directly right */
@@ -1122,7 +1135,11 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           s_t = bases[n4] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         } else if (Zs-zs < 0) {
-          for (j=0; j<x; j++) { idx[nn++] = -1;}
+          if (bz == DMDA_BOUNDARY_MIRROR) {
+            for (j=0; j<x; j++) { idx[nn++] = 0;}
+          } else {
+            for (j=0; j<x; j++) { idx[nn++] = -1;}
+          }
         }
 
         if (n5 >= 0) { /* directly right */
@@ -1186,7 +1203,11 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           s_t = bases[n10] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         } else if (Ys-ys < 0) {
-          for (j=0; j<x; j++) { idx[nn++] = -1;}
+          if (by == DMDA_BOUNDARY_MIRROR) {
+            for (j=0; j<x; j++) { idx[nn++] = -1;}
+          } else {
+            for (j=0; j<x; j++) { idx[nn++] = -1;}
+          }
         }
         if (n11 >= 0) { /* right below */
           x_t = lx[n11 % m];
@@ -1207,7 +1228,11 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           s_t = bases[n12] + (i+1)*x_t - s_x + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         } else if (Xs-xs < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          if (bx == DMDA_BOUNDARY_MIRROR) {
+            for (j=0; j<s_x; j++) { idx[nn++] = 0;}
+          } else {
+            for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          }
         }
 
         /* Interior */
@@ -1221,7 +1246,11 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           s_t = bases[n14] + i*x_t + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         } else if (xe-Xe < 0) {
-          for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          if (bx == DMDA_BOUNDARY_MIRROR) {
+            for (j=0; j<s_x; j++) { idx[nn++] = 0;}
+          } else {
+            for (j=0; j<s_x; j++) { idx[nn++] = -1;}
+          }
         }
       }
 
@@ -1242,7 +1271,11 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           s_t = bases[n16] + (i-1)*x_t + k*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         } else if (ye-Ye < 0) {
-          for (j=0; j<x; j++) { idx[nn++] = -1;}
+          if (by == DMDA_BOUNDARY_MIRROR) {
+            for (j=0; j<x; j++) { idx[nn++] = 0;}
+          } else {
+            for (j=0; j<x; j++) { idx[nn++] = -1;}
+          }
         }
         if (n17 >= 0) { /* right above */
           x_t = lx[n17 % m];
@@ -1306,7 +1339,11 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           s_t = bases[n22] + i*x_t + k*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         } else if (ze-Ze < 0) {
-          for (j=0; j<x; j++) { idx[nn++] = -1;}
+          if (bz == DMDA_BOUNDARY_MIRROR) {
+            for (j=0; j<x; j++) { idx[nn++] = 0;}
+          } else {
+            for (j=0; j<x; j++) { idx[nn++] = -1;}
+          }
         }
 
         if (n23 >= 0) { /* directly right */

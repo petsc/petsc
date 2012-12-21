@@ -378,7 +378,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     IXe = M;
   }
 
-  if (bx == DMDA_BOUNDARY_PERIODIC || by == DMDA_BOUNDARY_MIRROR) {
+  if (bx == DMDA_BOUNDARY_PERIODIC || bx == DMDA_BOUNDARY_MIRROR) {
     IXs = xs - s - o;
     IXe = xe + s + o;
     Xs = xs - s - o;
