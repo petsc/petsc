@@ -13,21 +13,25 @@ static char help[] = ".\n";
 #define N 2
 
 /*
-     Define all the concentrations (there is one of these structs at each grid point)
+     Define all the concentrations (there is one of these unions at each grid point)
 
-      He[He] represents the clusters of pure Helium of size He + 1,
-      V[V] the Vacencies of size V+1,
-      I[I] represents the clusters of Interstials of size I + 1,  and
-      HeV[He][V]  the mixed Helium-Vacancy clusters of size He+1 and V+1
+      He[He] represents the clusters of pure Helium of size He
+      V[V] the Vacencies of size V,
+      I[I] represents the clusters of Interstials of size I,  and
+      HeV[He][V]  the mixed Helium-Vacancy clusters of size He and V
 
       The variables He, V, I are always used to index into the concentrations of He, V, and I respectively
+      Note that unlike in traditional C code the indices for He[], V[] and I[] run from 1 to N, NOT 0 to N-1
+      (the use of the union below "tricks" the C compiler to allow the indices to start at 1.) 
 
 */
 typedef struct {
   PetscScalar He[N];
   PetscScalar V[N];
-  PetscScalar I[N];
-  PetscScalar HeV[N][N];
+  union {
+    PetscScalar I[N];
+    PetscScalar HeV[N+1][N]; /* actual size is N by N, the N+1 is there only to "trick" the compiler to have indices start at 1.*/
+  };
 } Concentrations;
 
 extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
@@ -107,11 +111,11 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "InitialConditions"
-PetscErrorCode InitialConditions(DM da,Vec U)
+PetscErrorCode InitialConditions(DM da,Vec C)
 {
   PetscErrorCode ierr;
   PetscInt       i,I,He,V,xs,xm,Mx,cnt = 0;
-  Concentrations *u;
+  Concentrations *c;
   PetscReal      hx,x;
   char           string[16];
   
@@ -120,21 +124,21 @@ PetscErrorCode InitialConditions(DM da,Vec U)
 
   /* Name each of the concentrations */
 
-  for (He=0; He<N; He++) {
-    ierr = PetscSNPrintf(string,16,"%d He",He+1);CHKERRQ(ierr);
+  for (He=1; He<N+1; He++) {
+    ierr = PetscSNPrintf(string,16,"%d He",He);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,cnt++,string);CHKERRQ(ierr);
   }
-  for (V=0; V<N; V++) {
-    ierr = PetscSNPrintf(string,16,"%d V",V+1);CHKERRQ(ierr);
+  for (V=1; V<N+1; V++) {
+    ierr = PetscSNPrintf(string,16,"%d V",V);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,cnt++,string);CHKERRQ(ierr);
   }
-  for (I=0; I<N; I++) {
-    ierr = PetscSNPrintf(string,16,"%d I",I+1);CHKERRQ(ierr);
+  for (I=1; I<N+1; I++) {
+    ierr = PetscSNPrintf(string,16,"%d I",I);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,cnt++,string);CHKERRQ(ierr);
   }
-  for (He=0; He<N; He++) {
-    for (V=0; V<N; V++) {
-      ierr = PetscSNPrintf(string,16,"%d He %d Ve",He+1,V+1);CHKERRQ(ierr);
+  for (He=1; He<N+1; He++) {
+    for (V=1; V<N+1; V++) {
+      ierr = PetscSNPrintf(string,16,"%d He %d Ve",He,V);CHKERRQ(ierr);
       ierr = DMDASetFieldName(da,cnt++,string);CHKERRQ(ierr);
     }
   }
@@ -144,7 +148,9 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   /*
      Get pointers to vector data
   */
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,C,&c);CHKERRQ(ierr);
+  /* Shift the c pointer to allow accessing with index of 1, instead of 0 */
+  c = (Concentrations*)(((PetscScalar*)c)-1);
 
   /*
      Get local grid boundaries
@@ -156,18 +162,18 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   */
   for (i=xs; i<xs+xm; i++) {
     x = i*hx;
-    for (He=0; He<N; He++) {
-      u[i].He[V] = x;
+    for (He=1; He<N+1; He++) {
+      c[i].He[V] = x;
     }
-    for (V=0; V<N; V++) {
-      u[i].V[V] = x;
+    for (V=1; V<N+1; V++) {
+      c[i].V[V] = x;
     }
-    for (I=0; I<N; I++) {
-      u[i].I[I] = x;
+    for (I=1; I<N+1; I++) {
+      c[i].I[I] = x;
     }
-    for (He=0; He<N; He++) {
-      for (V=0; V<N; V++) {
-        u[i].HeV[He][V] = 0.0;
+    for (He=1; He<N+1; He++) {
+      for (V=1; V<N+1; V++) {
+        c[i].HeV[He][V] = 0.0;
       }
     }
   }
@@ -175,7 +181,8 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   /*
      Restore vectors
   */
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  c = (Concentrations*)(((PetscScalar*)c)+1);
+  ierr = DMDAVecRestoreArray(da,C,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -193,27 +200,26 @@ PetscErrorCode InitialConditions(DM da,Vec U)
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
+PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
 {
   DM             da;
   PetscErrorCode ierr;
   PetscInt       i,Mx,xs,xm,I,He,V,he;
   PetscReal      hx,sx,x;
-  PetscScalar    uxx;
-  Concentrations *u,*f;
-  Vec            localU;
+  Concentrations *c,*f;
+  Vec            localC;
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localC);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
 
   /*
-       F  = Udot +  all the diffusion and reaction terms added below 
+       F  = Cdot +  all the diffusion and reaction terms added below 
   */
-  ierr = VecCopy(Udot,F);CHKERRQ(ierr);
+  ierr = VecCopy(Cdot,F);CHKERRQ(ierr);
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -221,14 +227,17 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,C,INSERT_VALUES,localC);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,C,INSERT_VALUES,localC);CHKERRQ(ierr);
 
    /*
      Get pointers to vector data
   */
-  ierr = DMDAVecGetArray(da,localU,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,localC,&c);CHKERRQ(ierr);
+  /* Shift the c pointer to allow accessing with index of 1, instead of 0 */
+  c = (Concentrations*)(((PetscScalar*)c)-1);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
+  f = (Concentrations*)(((PetscScalar*)f)-1);
 
   /*
      Get local grid boundaries
@@ -245,13 +254,13 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
      ---- Compute diffusion over the locally owned part of the grid
     */
     /* He clusters larger than 5 do not diffuse -- are immobile */
-    for (He=0; He<PetscMin(N,5); He++) {
-      f[i].He[He] -=  (-2.0*u[i].He[He] + u[i-1].He[He] + u[i+1].He[He])*sx;
+    for (He=1; He<PetscMin(N+1,6); He++) {
+      f[i].He[He] -=  (-2.0*c[i].He[He] + c[i-1].He[He] + c[i+1].He[He])*sx;
     }
 
     /* V and I clusters ONLY of size 1 diffuse */
-    f[i].V[0] -=  - (-2.0*u[i].V[0] + u[i-1].V[0] + u[i+1].V[0])*sx;
-    f[i].I[0] -=  - (-2.0*u[i].I[0] + u[i-1].I[0] + u[i+1].I[0])*sx;
+    f[i].V[1] -=  - (-2.0*c[i].V[1] + c[i-1].V[1] + c[i+1].V[1])*sx;
+    f[i].I[1] -=  - (-2.0*c[i].I[1] + c[i-1].I[1] + c[i+1].I[1])*sx;
 
     /* Mixed He - V clusters are immobile  */
 
@@ -259,16 +268,16 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
     /*
      ---- Compute reaction terms that can create a cluster of given size
     */
-    for (He=1; He<N; He++) {
-      /* compute all pairs of clusters of smaller size that can combine to create a cluster of size He+1,
+    for (He=2; He<N; He++) {
+      /* compute all pairs of clusters of smaller size that can combine to create a cluster of size He,
          remove the upper half since they are symmetric to the lower half of the pairs. For example
-              when He = 4 (cluster size 5) the pairs are
-                 0   3    (cluster sizes 1 and 4)
-                 1   2    (cluster sizes 2 and 3)
-                 2   1    (cluster sizes 3 and 2) these last two are not needed in the sum.
-                 3   0    (cluster sizes 4 and 1)               */
-      for (he=0; he<(He+1)/2; he++) {
-        f[i].He[He] += /* coeefficient */ f[i].He[he]*f[i].He[He-he-1];
+              when He = 5 (cluster size 5) the pairs are
+                 1   4
+                 2   2
+                 3   2  these last two are not needed in the sum since they repeat from above
+                 4   1               */
+      for (he=1; he<1+(He/2); he++) {
+        f[i].He[He] += /* coeefficient */ f[i].He[he]*f[i].He[He-he];
       }
     }
 
@@ -277,9 +286,11 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec U,Vec Udot,Vec F,void *ptr)
   /*
      Restore vectors
   */
-  ierr = DMDAVecRestoreArray(da,localU,&u);CHKERRQ(ierr);
+  c = (Concentrations*)(((PetscScalar*)c)+1);
+  ierr = DMDAVecRestoreArray(da,localC,&c);CHKERRQ(ierr);
+  f = (Concentrations*)(((PetscScalar*)f)+1);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
