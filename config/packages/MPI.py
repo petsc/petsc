@@ -14,6 +14,7 @@ class Configure(config.package.Package):
     self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.3.tar.gz']
     self.download_mpich     = ['http://www.mpich.org/static/tarballs/3.0.1/mpich-3.0.1.tar.gz',
                                'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.0.1.tar.gz']
+    self.download_mpich_sol = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.5.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
@@ -323,7 +324,10 @@ class Configure(config.package.Package):
       if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows. Sugest installing windows version of MPICH manually')
       self.liblist      = [[]]
-      self.download         = self.download_mpich
+      if config.setCompilers.Configure.isSolaris():
+        self.download         = self.download_mpich_sol
+      else:
+        self.download         = self.download_mpich
       self.downloadname     = 'mpich'
       self.downloadfilename = 'mpich'
       return config.package.Package.checkDownload(self, requireDownload)
