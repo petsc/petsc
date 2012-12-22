@@ -201,8 +201,10 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
 
   if (axis->xlow == axis->xhigh) {axis->xlow -= .5; axis->xhigh += .5;}
   if ((axis->yhigh - axis->ylow) <= 1.e-5*PetscMax(PetscAbsReal(axis->yhigh),PetscAbsReal(axis->ylow))) {
-    axis->ylow -= 1.e-5; axis->yhigh += 1.e-5;
+    axis->ylow  -= 1.e-5*PetscMax(PetscAbsReal(axis->yhigh),PetscAbsReal(axis->ylow)); 
+    axis->yhigh += 1.e-5*PetscMax(PetscAbsReal(axis->yhigh),PetscAbsReal(axis->ylow));
   }
+  if (axis->ylow == axis->yhigh) {axis->ylow -= .5; axis->yhigh += .5;}
 
   xl = axis->xlow; xr = axis->xhigh; yl = axis->ylow; yr = axis->yhigh;
   ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
@@ -234,15 +236,15 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
     }
     /* label ticks */
     for (i=0; i<ntick; i++) {
-	if (axis->xlabelstr) {
-	    if (i < ntick - 1) sep = tickloc[i+1] - tickloc[i];
-	    else if (i > 0)    sep = tickloc[i]   - tickloc[i-1];
-	    else               sep = 0.0;
-	    ierr = (*axis->xlabelstr)(tickloc[i],sep,&p);CHKERRQ(ierr);
-            ierr = PetscStrlen(p,&len);CHKERRQ(ierr);
-	    w    = .5*len*tw;
-	    ierr = PetscDrawString(draw,tickloc[i]-w,axis->ylow-1.2*th,cc,p);CHKERRQ(ierr);
-        }
+      if (axis->xlabelstr) {
+        if (i < ntick - 1) sep = tickloc[i+1] - tickloc[i];
+        else if (i > 0)    sep = tickloc[i]   - tickloc[i-1];
+        else               sep = 0.0;
+        ierr = (*axis->xlabelstr)(tickloc[i],sep,&p);CHKERRQ(ierr);
+        ierr = PetscStrlen(p,&len);CHKERRQ(ierr);
+        w    = .5*len*tw;
+        ierr = PetscDrawString(draw,tickloc[i]-w,axis->ylow-1.2*th,cc,p);CHKERRQ(ierr);
+      }
     }
   }
   if (axis->xlabel) {
@@ -259,15 +261,15 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
     }
     /* label ticks */
     for (i=0; i<ntick; i++) {
-	if (axis->ylabelstr) {
-	    if (i < ntick - 1) sep = tickloc[i+1] - tickloc[i];
-	    else if (i > 0)    sep = tickloc[i]   - tickloc[i-1];
-	    else               sep = 0.0;
-	    ierr = (*axis->xlabelstr)(tickloc[i],sep,&p);CHKERRQ(ierr);
-            ierr = PetscStrlen(p,&len);CHKERRQ(ierr);
-	    w    = axis->xlow - len * tw - 1.2*tw;
-	    ierr = PetscDrawString(draw,w,tickloc[i]-.5*th,cc,p);CHKERRQ(ierr);
-        }
+      if (axis->ylabelstr) {
+        if (i < ntick - 1) sep = tickloc[i+1] - tickloc[i];
+        else if (i > 0)    sep = tickloc[i]   - tickloc[i-1];
+        else               sep = 0.0;
+        ierr = (*axis->xlabelstr)(tickloc[i],sep,&p);CHKERRQ(ierr);
+        ierr = PetscStrlen(p,&len);CHKERRQ(ierr);
+        w    = axis->xlow - len * tw - 1.2*tw;
+        ierr = PetscDrawString(draw,w,tickloc[i]-.5*th,cc,p);CHKERRQ(ierr);
+      }
     }
   }
   if (axis->ylabel) {

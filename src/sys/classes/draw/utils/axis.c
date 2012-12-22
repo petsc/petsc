@@ -2,16 +2,6 @@
 #include <../src/sys/classes/draw/utils/axisimpl.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscRint"
-static PetscErrorCode PetscRint(PetscReal x,PetscReal *result)
-{
-  PetscFunctionBegin;
-  if (x > 0) *result = floor(x + 0.5);
-  else       *result = floor(x - 0.5);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscDrawAxisSetLimits"
 /*@
     PetscDrawAxisSetLimits -  Sets the limits (in user coords) of the axis
@@ -86,26 +76,18 @@ PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 {
   static char    buf[40];
   PetscErrorCode ierr;
-  PetscReal      rval;
 
   PetscFunctionBegin;
   /* Find the string */
   if (PetscAbsReal(val)/sep <  1.e-4) {
     buf[0] = '0'; buf[1] = 0;
   } else {
-    ierr = PetscRint(val,&rval);CHKERRQ(ierr);
-    if (rval == val) {
-      sprintf(buf,"%d",(int)val);
-      ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
-      ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
-      ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
-    } else {
-      sprintf(buf,"%0.1le",(double)val);
-      ierr = PetscStripe0(buf);CHKERRQ(ierr);
-      ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
-      ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
-      ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
-    }
+    sprintf(buf,"%0.1le",(double)val);
+    ierr = PetscStripZerosPlus(buf);CHKERRQ(ierr);
+    ierr = PetscStripe0(buf);CHKERRQ(ierr);
+    ierr = PetscStripInitialZero(buf);CHKERRQ(ierr);
+    ierr = PetscStripAllZeros(buf);CHKERRQ(ierr);
+    ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
   }
   *p =buf;
   PetscFunctionReturn(0);
@@ -121,17 +103,6 @@ PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,Pe
   PetscReal      x = 0.0,base=0.0;
 
   PetscFunctionBegin;
-  /* patch if low == high */
-  if (low == high) {
-    low  -= .01;
-    high += .01;
-  }
-
-  /*  if (PetscAbsReal(low-high) < 1.e-8) {
-    low  -= .01;
-    high += .01;
-  } */
-
   ierr = PetscAGetBase(low,high,num,&base,&power);CHKERRQ(ierr);
   ierr = PetscAGetNice(low,base,-1,&x);CHKERRQ(ierr);
 
@@ -149,7 +120,6 @@ PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,Pe
   if (i < 2 && num < 10) {
     ierr = PetscADefTicks(low,high,num+1,ntick,tickloc,maxtick);CHKERRQ(ierr);
   }
-  if (num == 10) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"trouble");
   PetscFunctionReturn(0);
 }
 
