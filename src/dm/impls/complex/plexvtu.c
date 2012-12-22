@@ -207,7 +207,7 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         if (((PetscObject)X)->name || link != vtk->link) { /* If the object is already named, use it. If it is past the first link, name it to disambiguate. */
           ierr = PetscObjectGetName((PetscObject)X,&vecname);CHKERRQ(ierr);
         }
-        ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
+        ierr = PetscSectionGetDof(dm->defaultSection,cStart,&bs);CHKERRQ(ierr);
         for (i=0; i<bs; i++) {
           char buf[256];
           const char *fieldname = PETSC_NULL;
@@ -223,9 +223,25 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"      </CellData>\n");CHKERRQ(ierr);
 
       /*
-       * TODO: Point Data headers
+       * Point Data headers
        */
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"      <PointData>\n");CHKERRQ(ierr);
+      for (link=vtk->link; link; link=link->next) {
+        Vec X = (Vec)link->vec;
+        PetscInt bs;
+        const char *vecname = "";
+        if ((link->ft != PETSC_VTK_POINT_FIELD) && (link->ft != PETSC_VTK_POINT_VECTOR_FIELD)) continue;
+        if (((PetscObject)X)->name || link != vtk->link) { /* If the object is already named, use it. If it is past the first link, name it to disambiguate. */
+          ierr = PetscObjectGetName((PetscObject)X,&vecname);CHKERRQ(ierr);
+        }
+        ierr = PetscSectionGetDof(dm->defaultSection,vStart,&bs);CHKERRQ(ierr);
+        for (i=0; i<bs; i++) {
+          char fieldname[256];
+          ierr = PetscSNPrintf(fieldname,sizeof(fieldname),"Point%D",i);CHKERRQ(ierr);
+          ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,boffset);CHKERRQ(ierr);
+          boffset += gpiece[r].nvertices*sizeof(PetscScalar) + sizeof(int);
+        }
+      }
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"      </PointData>\n");CHKERRQ(ierr);
 
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"    </Piece>\n");CHKERRQ(ierr);
@@ -290,7 +306,7 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         PetscScalar *y;
         PetscInt bs;
         if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
-        ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
+        ierr = PetscSectionGetDof(dm->defaultSection,cStart,&bs);CHKERRQ(ierr);
         ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
         ierr = PetscMalloc(piece.ncells*sizeof(PetscScalar),&y);CHKERRQ(ierr);
         for (i=0; i<bs; i++) {
@@ -313,8 +329,26 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       }
 
       for (link=vtk->link; link; link=link->next) {
+        Vec X = (Vec)link->vec;
+        const PetscScalar *x;
+        PetscScalar *y;
+        PetscInt bs;
         if ((link->ft != PETSC_VTK_POINT_FIELD) && (link->ft != PETSC_VTK_POINT_VECTOR_FIELD)) continue;
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for point data yet");
+        ierr = PetscSectionGetDof(dm->defaultSection,vStart,&bs);CHKERRQ(ierr);
+        ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+        ierr = PetscMalloc(piece.nvertices*sizeof(PetscScalar),&y);CHKERRQ(ierr);
+        for (i=0; i<bs; i++) {
+          PetscInt cnt;
+          for (v=vStart,cnt=0; v<vEnd; v++) {
+            const PetscScalar *xpoint;
+            ierr = DMComplexPointLocalRead(dm,c,x,&xpoint);CHKERRQ(ierr);
+            y[cnt++] = xpoint[i];
+          }
+          if (cnt != piece.nvertices) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");
+          ierr = TransferWrite(viewer,fp,r,0,y,buffer,piece.nvertices,PETSC_SCALAR,tag);CHKERRQ(ierr);
+        }
+        ierr = PetscFree(y);CHKERRQ(ierr);
+        ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
       }
     } else if (!rank) {
       ierr = TransferWrite(viewer,fp,r,0,PETSC_NULL,buffer,gpiece[r].nvertices*3,PETSC_SCALAR,tag);CHKERRQ(ierr); /* positions */
@@ -324,18 +358,21 @@ PetscErrorCode DMComplexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       ierr = TransferWrite(viewer,fp,r,0,PETSC_NULL,buffer,gpiece[r].ncells,PETSC_INT32,tag);CHKERRQ(ierr); /* owner rank (cells) */
       /* all cell data */
       for (link=vtk->link; link; link=link->next) {
-        Vec X = (Vec)link->vec;
         PetscInt bs;
         if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
-        ierr = VecGetBlockSize(X,&bs);CHKERRQ(ierr);
+        ierr = PetscSectionGetDof(dm->defaultSection,vStart,&bs);CHKERRQ(ierr);
         for (i=0; i<bs; i++) {
           ierr = TransferWrite(viewer,fp,r,0,PETSC_NULL,buffer,gpiece[r].ncells,PETSC_SCALAR,tag);CHKERRQ(ierr);
         }
       }
       /* all point data */
       for (link=vtk->link; link; link=link->next) {
+        PetscInt bs;
         if ((link->ft != PETSC_VTK_POINT_FIELD) && (link->ft != PETSC_VTK_POINT_VECTOR_FIELD)) continue;
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for point data yet");
+        ierr = PetscSectionGetDof(dm->defaultSection,vStart,&bs);CHKERRQ(ierr);
+        for (i=0; i<bs; i++) {
+          ierr = TransferWrite(viewer,fp,r,0,PETSC_NULL,buffer,gpiece[r].nvertices,PETSC_SCALAR,tag);CHKERRQ(ierr);
+        }
       }
     }
   }
