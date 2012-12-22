@@ -18,7 +18,7 @@ configure_options = [
   '--download-superlu_dist=1',
   '--download-scalapack=1',
   '--download-mumps=1',
-  '--download-elemental=1',
+  #'--download-elemental=1', breaks with solaris compilers
   #'--download-hdf5',
   #'--download-sundials=1',
   #'--download-hypre=1',
