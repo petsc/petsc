@@ -34,6 +34,7 @@ class Configure(PETSc.package.NewPackage):
 
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
+    args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
     args.append('-DCMAKE_AR='+self.setCompilers.AR)
     ranlib = shlex.split(self.setCompilers.RANLIB)[0]
     args.append('-DCMAKE_RANLIB='+ranlib)
@@ -43,6 +44,7 @@ class Configure(PETSc.package.NewPackage):
 
     self.framework.pushLanguage('Cxx')
     args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
+    args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
     cxxflags = self.setCompilers.getCompilerFlags()
     args.append('-DCMAKE_CXX_FLAGS:STRING="'+cxxflags+'"')
     self.framework.popLanguage()
