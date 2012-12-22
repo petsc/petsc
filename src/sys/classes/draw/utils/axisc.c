@@ -200,10 +200,10 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   if (rank) PetscFunctionReturn(0);
 
   if (axis->xlow == axis->xhigh) {axis->xlow -= .5; axis->xhigh += .5;}
-  if ((axis->yhigh - axis->ylow) <= 1.e-5*PetscMax(PetscAbsReal(axis->yhigh),PetscAbsReal(axis->ylow))) {
+  /*  if ((axis->yhigh - axis->ylow) <= 1.e-5*PetscMax(PetscAbsReal(axis->yhigh),PetscAbsReal(axis->ylow))) {
     axis->ylow  -= 1.e-5*PetscMax(PetscAbsReal(axis->yhigh),PetscAbsReal(axis->ylow)); 
     axis->yhigh += 1.e-5*PetscMax(PetscAbsReal(axis->yhigh),PetscAbsReal(axis->ylow));
-  }
+   } */
   if (axis->ylow == axis->yhigh) {axis->ylow -= .5; axis->yhigh += .5;}
 
   xl = axis->xlow; xr = axis->xhigh; yl = axis->ylow; yr = axis->yhigh;

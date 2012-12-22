@@ -34,6 +34,10 @@ typedef struct {
   };
 } Concentrations;
 
+typedef struct {
+  PetscBool reactions;
+} AppCtx;
+
 extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 extern PetscErrorCode InitialConditions(DM,Vec);
 extern PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
@@ -47,11 +51,15 @@ int main(int argc,char **argv)
   Vec             C;                  /* solution, residual vectors */
   PetscErrorCode  ierr;
   DM              da;
+  AppCtx          ctx;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char *)0,help);
+
+  ctx.reactions = PETSC_FALSE;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-reactions",&ctx.reactions);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -71,13 +79,13 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,0);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,100,1.0);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,100,5.0);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
 
@@ -156,7 +164,7 @@ PetscErrorCode InitialConditions(DM da,Vec C)
   for (i=xs; i<xs+xm; i++) {
     x = i*hx;
     for (He=1; He<N+1; He++) {
-      c[i].He[V] = x;
+      c[i].He[He] = x;
     }
     for (V=1; V<N+1; V++) {
       c[i].V[V] = x;
@@ -195,9 +203,10 @@ PetscErrorCode InitialConditions(DM da,Vec C)
  */
 PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
 {
+  AppCtx         *ctx = (AppCtx*) ptr;
   DM             da;
   PetscErrorCode ierr;
-  PetscInt       i,Mx,xs,xm,I,He,V,he;
+  PetscInt       i,Mx,xs,xm,He,he;
   PetscReal      hx,sx,x;
   Concentrations *c,*f;
   Vec            localC;
@@ -252,16 +261,16 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
     }
 
     /* V and I clusters ONLY of size 1 diffuse */
-    f[i].V[1] -=  - (-2.0*c[i].V[1] + c[i-1].V[1] + c[i+1].V[1])*sx;
-    f[i].I[1] -=  - (-2.0*c[i].I[1] + c[i-1].I[1] + c[i+1].I[1])*sx;
+    f[i].V[1] -=  (-2.0*c[i].V[1] + c[i-1].V[1] + c[i+1].V[1])*sx;
+    f[i].I[1] -=  (-2.0*c[i].I[1] + c[i-1].I[1] + c[i+1].I[1])*sx;
 
     /* Mixed He - V clusters are immobile  */
 
-
+    if (!ctx->reactions) continue;
     /*
      ---- Compute reaction terms that can create a cluster of given size
     */
-    for (He=2; He<N; He++) {
+    for (He=2; He<N+1; He++) {
       /* compute all pairs of clusters of smaller size that can combine to create a cluster of size He,
          remove the upper half since they are symmetric to the lower half of the pairs. For example
               when He = 5 (cluster size 5) the pairs are
