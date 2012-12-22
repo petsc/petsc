@@ -17,6 +17,7 @@ configure_options = [
   '--download-triangle=1',
   #'--download-superlu=1',
   #'--download-superlu_dist=1',
+  '--download-f-blas-lapack=1', # -lsunperf is insufficient for scalapack
   '--download-scalapack=1',
   '--download-mumps=1',
   #'--download-elemental=1', breaks with solaris compilers
