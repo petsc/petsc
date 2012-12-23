@@ -354,7 +354,19 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
         }
       }
     }
-    /* Need reactions He-V  + He-V  */
+    /*  He-V  + He-V  */
+    for (He=1; He<N; He++) {
+      for (V=1; V<N; V++) {
+        for (he=1; he<N-He+1; he++) {
+          for (v=1; v<N-V+1; v++) {
+            f[xi].HeV[He+he][V+v] -= ctx->reactionScale*c[xi].HeV[He][V]*c[xi].HeV[he][v];
+            /* remove the two clusters that merged to form the larger cluster */
+            f[xi].HeV[he][V]      += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].HeV[he][v];
+            f[xi].HeV[He][V]      += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].HeV[he][v];
+          }
+        }
+      }
+    }
 
     /* -------------------------------------------------------------------------
      ---- Compute dissociation terms that removes an item from a cluster
