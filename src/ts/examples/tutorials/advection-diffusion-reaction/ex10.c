@@ -10,7 +10,7 @@ static char help[] = ".\n";
 #include <petscdmda.h>
 #include <petscts.h>
 
-#define N 4
+#define N 2
 
 /*
      Define all the concentrations (there is one of these unions at each grid point)
@@ -180,10 +180,10 @@ PetscErrorCode InitialConditions(DM da,Vec C)
       c[i].He[He] = 0.0;
     }
     for (V=1; V<N+1; V++) {
-      c[i].V[V] = 0.0;
+      c[i].V[V] = 1.0;
     }
     for (I=1; I<N+1; I++) {
-      c[i].I[I] = 0.0;
+      c[i].I[I] = 1.0;
     }
     for (He=1; He<N+1; He++) {
       for (V=1; V<N+1; V++) {
@@ -299,31 +299,38 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
                  3   2  these last two are not needed in the sum since they repeat from above
                  4   1  this is why he < (He/2) + 1            */
       for (he=1; he<(He/2)+1; he++) {
-        f[xi].He[He]    -= ctx->reactionScale*f[xi].He[he]*f[xi].He[He-he];
+        f[xi].He[He]    -= ctx->reactionScale*c[xi].He[he]*c[xi].He[He-he];
 
         /* remove the two clusters that merged to form the larger cluster */
-        f[xi].He[he]    += ctx->reactionScale*f[xi].He[he]*f[xi].He[He-he];
-        f[xi].He[He-he] += ctx->reactionScale*f[xi].He[he]*f[xi].He[He-he];
+        f[xi].He[he]    += ctx->reactionScale*c[xi].He[he]*c[xi].He[He-he];
+        f[xi].He[He-he] += ctx->reactionScale*c[xi].He[he]*c[xi].He[He-he];
       }
     }
     for (V=2; V<N+1; V++) {
       for (v=1; v<(V/2)+1; v++) {
-        f[xi].V[V]    -= ctx->reactionScale*f[xi].V[v]*f[xi].V[V-v];
+        f[xi].V[V]    -= ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];
 
         /* remove the clusters that merged to form the larger cluster */
-        f[xi].V[v]    += ctx->reactionScale*f[xi].V[v]*f[xi].V[V-v];
-        f[xi].V[V-v]  += ctx->reactionScale*f[xi].V[v]*f[xi].V[V-v];
+        f[xi].V[v]    += ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];
+        f[xi].V[V-v]  += ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];
       }
     }
     for (I=2; I<N+1; I++) {
       for (i=1; i<(I/2)+1; i++) {
-        f[xi].I[I]    -= ctx->reactionScale*f[xi].I[i]*f[xi].I[I-i];
+        f[xi].I[I]    -= ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];
 
         /* remove the clusters that merged to form the larger cluster */
-        f[xi].I[i]    += ctx->reactionScale*f[xi].I[i]*f[xi].I[I-i];
-        f[xi].I[I-i]  += ctx->reactionScale*f[xi].I[i]*f[xi].I[I-i];
+        f[xi].I[i]    += ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];
+        f[xi].I[I-i]  += ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];
       }
-    }
+    }  
+    /* creation of He-V of size 1,1 */
+    f[xi].HeV[1][1]   -= 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
+
+     /* remove the He and V  that merged to form the He-V cluster */
+    f[xi].He[1]   += 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
+    f[xi].V[1]    += 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
+
     /* Need reactions that create larger clusters of He-V */
 
     /* -------------------------------------------------------------------------
@@ -331,21 +338,21 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
     */
     for (He=2; He<N+1; He++) {
       /* He cluster of size He becomes a cluster of size He-1 and a cluster of size 1 */
-      f[xi].He[He-1]  -= ctx->dissociationScale*f[xi].He[He];
-      f[xi].He[1]     -= ctx->dissociationScale*f[xi].He[He];
-      f[xi].He[He]    += ctx->dissociationScale*f[xi].He[He];
+      f[xi].He[He-1]  -= ctx->dissociationScale*c[xi].He[He];
+      f[xi].He[1]     -= ctx->dissociationScale*c[xi].He[He];
+      f[xi].He[He]    += ctx->dissociationScale*c[xi].He[He];
     }
     for (V=2; V<N+1; V++) {
       /* V cluster of size V becomes a cluster of size V-1 and a cluster of size 1 */
-      f[xi].V[V-1]  -= ctx->dissociationScale*f[xi].V[V];
-      f[xi].V[1]    -= ctx->dissociationScale*f[xi].V[V];
-      f[xi].V[V]    += ctx->dissociationScale*f[xi].V[V];
+      f[xi].V[V-1]  -= ctx->dissociationScale*c[xi].V[V];
+      f[xi].V[1]    -= ctx->dissociationScale*c[xi].V[V];
+      f[xi].V[V]    += ctx->dissociationScale*c[xi].V[V];
     }
     for (I=2; I<N+1; I++) {
       /* I cluster of size I becomes a cluster of size I-1 and a cluster of size 1 */
-      f[xi].I[I-1]   -= ctx->dissociationScale*f[xi].I[I];
-      f[xi].I[1]     -= ctx->dissociationScale*f[xi].I[I];
-      f[xi].I[I]     += ctx->dissociationScale*f[xi].I[I];
+      f[xi].I[I-1]   -= ctx->dissociationScale*c[xi].I[I];
+      f[xi].I[1]     -= ctx->dissociationScale*c[xi].I[I];
+      f[xi].I[I]     += ctx->dissociationScale*c[xi].I[I];
     }
     /* need dissociation of mixed He-V clusters */
 
