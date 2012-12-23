@@ -35,13 +35,14 @@ typedef struct {
 } Concentrations;
 
 typedef struct {
-  PetscBool reactions;
+  PetscBool   reactions;
+  PetscScalar HeDiffusion[6];
+  PetscScalar VDiffusion[2];
+  PetscScalar IDiffusion[2];
 } AppCtx;
 
 extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 extern PetscErrorCode InitialConditions(DM,Vec);
-extern PetscErrorCode IJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
-
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -60,7 +61,13 @@ int main(int argc,char **argv)
 
   ctx.reactions = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-reactions",&ctx.reactions);CHKERRQ(ierr);
-
+  ctx.HeDiffusion[1] = 1000*2.95e-4;
+  ctx.HeDiffusion[2] = 1000*3.24e-4;
+  ctx.HeDiffusion[3] = 1000*2.26e-4;
+  ctx.HeDiffusion[4] = 1000*1.68e-4;
+  ctx.HeDiffusion[5] = 1000*5.20e-5;
+  ctx.VDiffusion[1]  = 1000*2.71e-3;
+  ctx.IDiffusion[1]  = 1000*2.13e-4;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -164,13 +171,13 @@ PetscErrorCode InitialConditions(DM da,Vec C)
   for (i=xs; i<xs+xm; i++) {
     x = i*hx;
     for (He=1; He<N+1; He++) {
-      c[i].He[He] = x;
+      c[i].He[He] = 0.0;
     }
     for (V=1; V<N+1; V++) {
-      c[i].V[V] = x;
+      c[i].V[V] = 0.0;
     }
     for (I=1; I<N+1; I++) {
-      c[i].I[I] = x;
+      c[i].I[I] = 0.0;
     }
     for (He=1; He<N+1; He++) {
       for (V=1; V<N+1; V++) {
@@ -216,7 +223,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
   ierr = DMGetLocalVector(da,&localC);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
-  hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
+  hx     = 8.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
 
   /*
        F  = Cdot +  all the diffusion and reaction terms added below 
@@ -257,14 +264,17 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
     */
     /* He clusters larger than 5 do not diffuse -- are immobile */
     for (He=1; He<PetscMin(N+1,6); He++) {
-      f[i].He[He] -=  (-2.0*c[i].He[He] + c[i-1].He[He] + c[i+1].He[He])*sx;
+      f[i].He[He] -=  ctx->HeDiffusion[He]*(-2.0*c[i].He[He] + c[i-1].He[He] + c[i+1].He[He])*sx;
     }
 
     /* V and I clusters ONLY of size 1 diffuse */
-    f[i].V[1] -=  (-2.0*c[i].V[1] + c[i-1].V[1] + c[i+1].V[1])*sx;
-    f[i].I[1] -=  (-2.0*c[i].I[1] + c[i-1].I[1] + c[i+1].I[1])*sx;
+    f[i].V[1] -=  ctx->VDiffusion[1]*(-2.0*c[i].V[1] + c[i-1].V[1] + c[i+1].V[1])*sx;
+    f[i].I[1] -=  ctx->IDiffusion[1]*(-2.0*c[i].I[1] + c[i-1].I[1] + c[i+1].I[1])*sx;
 
     /* Mixed He - V clusters are immobile  */
+
+    /*  forcing produces He of cluster size 1 */
+    f[i].He[1] -=  100.0*PetscMax(0.0,0.0006*x*x*x  - 0.0087*x*x + 0.0300*x);
 
     if (!ctx->reactions) continue;
     /*
@@ -282,6 +292,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
         f[i].He[He] += /* coeefficient */ f[i].He[he]*f[i].He[He-he];
       }
     }
+
 
   }
 
