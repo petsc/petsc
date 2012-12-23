@@ -329,23 +329,23 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
     /* -------------------------------------------------------------------------
      ---- Compute dissociation terms that removes an item from a cluster
     */
-    for (He=2; He<N; He++) {
-      /* He cluster of size He+1 becomes a cluster of size He and a cluster of size 1 */
-      f[xi].He[He]    -= ctx->dissociationScale*f[xi].He[He+1];
-      f[xi].He[1]     -= ctx->dissociationScale*f[xi].He[He+1];
-      f[xi].He[He+1]  += ctx->dissociationScale*f[xi].He[He+1];
+    for (He=2; He<N+1; He++) {
+      /* He cluster of size He becomes a cluster of size He-1 and a cluster of size 1 */
+      f[xi].He[He-1]  -= ctx->dissociationScale*f[xi].He[He];
+      f[xi].He[1]     -= ctx->dissociationScale*f[xi].He[He];
+      f[xi].He[He]    += ctx->dissociationScale*f[xi].He[He];
     }
-    for (V=2; V<N; V++) {
-      /* V cluster of size V+1 becomes a cluster of size V and a cluster of size 1 */
-      f[xi].V[V]    -= ctx->dissociationScale*f[xi].V[V+1];
-      f[xi].V[1]    -= ctx->dissociationScale*f[xi].V[V+1];
-      f[xi].V[V+1]  += ctx->dissociationScale*f[xi].V[V+1];
+    for (V=2; V<N+1; V++) {
+      /* V cluster of size V becomes a cluster of size V-1 and a cluster of size 1 */
+      f[xi].V[V-1]  -= ctx->dissociationScale*f[xi].V[V];
+      f[xi].V[1]    -= ctx->dissociationScale*f[xi].V[V];
+      f[xi].V[V]    += ctx->dissociationScale*f[xi].V[V];
     }
-    for (I=2; I<N; I++) {
-      /* I cluster of size I+1 becomes a cluster of size I and a cluster of size 1 */
-      f[xi].I[I]    -= ctx->dissociationScale*f[xi].I[I+1];
-      f[xi].I[1]     -= ctx->dissociationScale*f[xi].I[I+1];
-      f[xi].I[I+1]  += ctx->dissociationScale*f[xi].I[I+1];
+    for (I=2; I<N+1; I++) {
+      /* I cluster of size I becomes a cluster of size I-1 and a cluster of size 1 */
+      f[xi].I[I-1]   -= ctx->dissociationScale*f[xi].I[I];
+      f[xi].I[1]     -= ctx->dissociationScale*f[xi].I[I];
+      f[xi].I[I]     += ctx->dissociationScale*f[xi].I[I];
     }
     /* need dissociation of mixed He-V clusters */
 
