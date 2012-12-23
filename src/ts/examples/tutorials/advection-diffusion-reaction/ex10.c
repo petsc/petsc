@@ -41,6 +41,7 @@ typedef struct {
   PetscScalar IDiffusion[2];
   PetscScalar forcingScale;
   PetscScalar reactionScale;
+  PetscScalar dissociationScale;
 } AppCtx;
 
 extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
@@ -63,15 +64,16 @@ int main(int argc,char **argv)
 
   ctx.reactions = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-reactions",&ctx.reactions);CHKERRQ(ierr);
-  ctx.HeDiffusion[1] = 1000*2.95e-4;
-  ctx.HeDiffusion[2] = 1000*3.24e-4;
-  ctx.HeDiffusion[3] = 1000*2.26e-4;
-  ctx.HeDiffusion[4] = 1000*1.68e-4;
-  ctx.HeDiffusion[5] = 1000*5.20e-5;
-  ctx.VDiffusion[1]  = 1000*2.71e-3;
-  ctx.IDiffusion[1]  = 1000*2.13e-4;
-  ctx.forcingScale   = 100.;
-  ctx.reactionScale  = .001;
+  ctx.HeDiffusion[1]    = 1000*2.95e-4; /* From Tibo's notes times 1,000 */
+  ctx.HeDiffusion[2]    = 1000*3.24e-4;
+  ctx.HeDiffusion[3]    = 1000*2.26e-4;
+  ctx.HeDiffusion[4]    = 1000*1.68e-4;
+  ctx.HeDiffusion[5]    = 1000*5.20e-5;
+  ctx.VDiffusion[1]     = 1000*2.71e-3;
+  ctx.IDiffusion[1]     = 1000*2.13e-4;
+  ctx.forcingScale      = 100.;         /* made up numbers */
+  ctx.reactionScale     = .001;
+  ctx.dissociationScale = .0001;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -217,7 +219,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
   AppCtx         *ctx = (AppCtx*) ptr;
   DM             da;
   PetscErrorCode ierr;
-  PetscInt       i,Mx,xs,xm,He,he;
+  PetscInt       xi,Mx,xs,xm,He,he,V,v,I,i;
   PetscReal      hx,sx,x;
   Concentrations *c,*f;
   Vec            localC;
@@ -260,28 +262,32 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
   /*
      Loop over grid points computing ODE terms for each grid point
   */
-  for (i=xs; i<xs+xm; i++) {
-    x = i*hx;
+  for (xi=xs; xi<xs+xm; xi++) {
+    x = xi*hx;
 
-    /*
+    /* -------------------------------------------------------------
      ---- Compute diffusion over the locally owned part of the grid
     */
     /* He clusters larger than 5 do not diffuse -- are immobile */
     for (He=1; He<PetscMin(N+1,6); He++) {
-      f[i].He[He] -=  ctx->HeDiffusion[He]*(-2.0*c[i].He[He] + c[i-1].He[He] + c[i+1].He[He])*sx;
+      f[xi].He[He] -=  ctx->HeDiffusion[He]*(-2.0*c[xi].He[He] + c[xi-1].He[He] + c[xi+1].He[He])*sx;
     }
 
     /* V and I clusters ONLY of size 1 diffuse */
-    f[i].V[1] -=  ctx->VDiffusion[1]*(-2.0*c[i].V[1] + c[i-1].V[1] + c[i+1].V[1])*sx;
-    f[i].I[1] -=  ctx->IDiffusion[1]*(-2.0*c[i].I[1] + c[i-1].I[1] + c[i+1].I[1])*sx;
+    f[xi].V[1] -=  ctx->VDiffusion[1]*(-2.0*c[xi].V[1] + c[xi-1].V[1] + c[xi+1].V[1])*sx;
+    f[xi].I[1] -=  ctx->IDiffusion[1]*(-2.0*c[xi].I[1] + c[xi-1].I[1] + c[xi+1].I[1])*sx;
 
     /* Mixed He - V clusters are immobile  */
 
-    /*  forcing produces He of cluster size 1 */
-    f[i].He[1] -=  ctx->forcingScale*PetscMax(0.0,0.0006*x*x*x  - 0.0087*x*x + 0.0300*x);
+    /* ----------------------------------------------------------------
+     ---- Compute forcing that produces He of cluster size 1
+          Crude cubic approximation of graph from Tibo's notes 
+    */
+    f[xi].He[1] -=  ctx->forcingScale*PetscMax(0.0,0.0006*x*x*x  - 0.0087*x*x + 0.0300*x);
+    /* Are V or I produced? */
 
     if (!ctx->reactions) continue;
-    /*
+    /* ----------------------------------------------------------------
      ---- Compute reaction terms that can create a cluster of given size
     */
     for (He=2; He<N+1; He++) {
@@ -293,14 +299,55 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
                  3   2  these last two are not needed in the sum since they repeat from above
                  4   1  this is why he < (He/2) + 1            */
       for (he=1; he<(He/2)+1; he++) {
-        f[i].He[He]    -= ctx->reactionScale*f[i].He[he]*f[i].He[He-he];
+        f[xi].He[He]    -= ctx->reactionScale*f[xi].He[he]*f[xi].He[He-he];
 
         /* remove the two clusters that merged to form the larger cluster */
-        f[i].He[he]    += ctx->reactionScale*f[i].He[he]*f[i].He[He-he];
-        f[i].He[He-he] += ctx->reactionScale*f[i].He[he]*f[i].He[He-he];
+        f[xi].He[he]    += ctx->reactionScale*f[xi].He[he]*f[xi].He[He-he];
+        f[xi].He[He-he] += ctx->reactionScale*f[xi].He[he]*f[xi].He[He-he];
       }
     }
+    for (V=2; V<N+1; V++) {
+      for (v=1; v<(V/2)+1; v++) {
+        f[xi].V[V]    -= ctx->reactionScale*f[xi].V[v]*f[xi].V[V-v];
 
+        /* remove the clusters that merged to form the larger cluster */
+        f[xi].V[v]    += ctx->reactionScale*f[xi].V[v]*f[xi].V[V-v];
+        f[xi].V[V-v]  += ctx->reactionScale*f[xi].V[v]*f[xi].V[V-v];
+      }
+    }
+    for (I=2; I<N+1; I++) {
+      for (i=1; i<(I/2)+1; i++) {
+        f[xi].I[I]    -= ctx->reactionScale*f[xi].I[i]*f[xi].I[I-i];
+
+        /* remove the clusters that merged to form the larger cluster */
+        f[xi].I[i]    += ctx->reactionScale*f[xi].I[i]*f[xi].I[I-i];
+        f[xi].I[I-i]  += ctx->reactionScale*f[xi].I[i]*f[xi].I[I-i];
+      }
+    }
+    /* Need reactions that create larger clusters of He-V */
+
+    /* -------------------------------------------------------------------------
+     ---- Compute dissociation terms that removes an item from a cluster
+    */
+    for (He=2; He<N; He++) {
+      /* He cluster of size He+1 becomes a cluster of size He and a cluster of size 1 */
+      f[xi].He[He]    -= ctx->dissociationScale*f[xi].He[He+1];
+      f[xi].He[1]     -= ctx->dissociationScale*f[xi].He[He+1];
+      f[xi].He[He+1]  += ctx->dissociationScale*f[xi].He[He+1];
+    }
+    for (V=2; V<N; V++) {
+      /* V cluster of size V+1 becomes a cluster of size V and a cluster of size 1 */
+      f[xi].V[V]    -= ctx->dissociationScale*f[xi].V[V+1];
+      f[xi].V[1]    -= ctx->dissociationScale*f[xi].V[V+1];
+      f[xi].V[V+1]  += ctx->dissociationScale*f[xi].V[V+1];
+    }
+    for (I=2; I<N; I++) {
+      /* I cluster of size I+1 becomes a cluster of size I and a cluster of size 1 */
+      f[xi].I[I]    -= ctx->dissociationScale*f[xi].I[I+1];
+      f[xi].I[1]     -= ctx->dissociationScale*f[xi].I[I+1];
+      f[xi].I[I+1]  += ctx->dissociationScale*f[xi].I[I+1];
+    }
+    /* need dissociation of mixed He-V clusters */
 
   }
 
