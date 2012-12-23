@@ -5206,10 +5206,399 @@ PetscErrorCode DMComplexGenerate(DM boundary, const char name[], PetscBool inter
   PetscFunctionReturn(0);
 }
 
+typedef PetscInt CellRefiner;
+
+#undef __FUNCT__
+#define __FUNCT__ "CellRefinerGetSizes"
+PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt depthSize[])
+{
+  PetscInt cStart, cEnd, vStart, vEnd, fStart, fEnd, eStart, eEnd;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+  switch(refiner) {
+  case 1:
+    /* Simplicial 2D */
+    depthSize[0] = vEnd - vStart + fEnd - fStart;         /* Add a vertex on every face */
+    depthSize[1] = 2*(fEnd - fStart) + 3*(cEnd - cStart); /* Every face is split into 2 faces and 3 faces are added for each cell */
+    depthSize[2] = 4*(cEnd - cStart);                     /* Every cell split into 4 cells */
+    break;
+  case 2:
+    /* Hex 2D */
+    depthSize[0] = vEnd - vStart + cEnd - cStart + fEnd - fStart; /* Add a vertex on every face and cell */
+    depthSize[1] = 2*(fEnd - fStart) + 4*(cEnd - cStart);         /* Every face is split into 2 faces and 4 faces are added for each cell */
+    depthSize[2] = 4*(cEnd - cStart);                             /* Every cell split into 4 cells */
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CellRefinerSetConeSizes"
+PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
+{
+  PetscInt cStart, cStartNew, cEnd, vStart, vStartNew, vEnd, fStart, fStartNew, fEnd, eStart, eEnd;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+  cStartNew = 0;
+  vStartNew = depthSize[2];
+  fStartNew = depthSize[2] + depthSize[0];
+  switch(refiner) {
+  case 1:
+    /* Simplicial 2D */
+    /* All cells have 3 faces */
+    for(c = cStart; c < cEnd; ++c) {
+      for(r = 0; r < 4; ++r) {
+        const PetscInt newp = (c - cStart)*4 + r;
+
+        ierr = DMComplexSetConeSize(rdm, newp, 3);CHKERRQ(ierr);
+      }
+    }
+    /* Split faces have 2 vertices and the same cells as the parent */
+    for(f = fStart; f < fEnd; ++f) {
+      for(r = 0; r < 2; ++r) {
+        const PetscInt newp = fStartNew + (f - fStart)*2 + r;
+        PetscInt       size;
+
+        ierr = DMComplexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
+        ierr = DMComplexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
+        ierr = DMComplexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
+      }
+    }
+    /* Interior faces have 2 vertices and 2 cells */
+    for(c = cStart; c < cEnd; ++c) {
+      for(r = 0; r < 3; ++r) {
+        const PetscInt newp = fStartNew + (fEnd - fStart)*2 + (c - cStart)*3 + r;
+
+        ierr = DMComplexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
+        ierr = DMComplexSetSupportSize(rdm, newp, 2);CHKERRQ(ierr);
+      }
+    }
+    /* Old vertices have identical supports */
+    for(v = vStart; v < vEnd; ++v) {
+      const PetscInt newp = vStartNew + (v - vStart);
+      PetscInt       size;
+
+      ierr = DMComplexGetSupportSize(dm, v, &size);CHKERRQ(ierr);
+      ierr = DMComplexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
+    }
+    /* Face vertices have 2 + cells*2 supports */
+    for(f = fStart; f < fEnd; ++f) {
+      const PetscInt newp = vStartNew + (vEnd - vStart) + (f - fStart);
+      PetscInt       size;
+
+      ierr = DMComplexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
+      ierr = DMComplexSetSupportSize(rdm, newp, 2 + size*2);CHKERRQ(ierr);
+    }
+    break;
+  case 2:
+    /* Hex 2D */
+    /* All cells have 4 faces */
+    for(c = cStart; c < cEnd; ++c) {
+      for(r = 0; r < 4; ++r) {
+        const PetscInt newp = (c - cStart)*4 + r;
+
+        ierr = DMComplexSetConeSize(rdm, newp, 4);CHKERRQ(ierr);
+      }
+    }
+    /* Split faces have 2 vertices and the same cells as the parent */
+    for(f = fStart; f < fEnd; ++f) {
+      for(r = 0; r < 2; ++r) {
+        const PetscInt newp = fStartNew + (f - fStart)*2 + r;
+        PetscInt       size;
+
+        ierr = DMComplexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
+        ierr = DMComplexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
+        ierr = DMComplexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
+      }
+    }
+    /* Interior faces have 2 vertices and 2 cells */
+    for(c = cStart; c < cEnd; ++c) {
+      for(r = 0; r < 4; ++r) {
+        const PetscInt newp = fStartNew + (fEnd - fStart)*2 + (c - cStart)*4 + r;
+
+        ierr = DMComplexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
+        ierr = DMComplexSetSupportSize(rdm, newp, 2);CHKERRQ(ierr);
+      }
+    }
+    /* Old vertices have identical supports */
+    for(v = vStart; v < vEnd; ++v) {
+      const PetscInt newp = vStartNew + (v - vStart);
+      PetscInt       size;
+
+      ierr = DMComplexGetSupportSize(dm, v, &size);CHKERRQ(ierr);
+      ierr = DMComplexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
+    }
+    /* Face vertices have 2 + cells supports */
+    for(f = fStart; f < fEnd; ++f) {
+      const PetscInt newp = vStartNew + (vEnd - vStart) + (f - fStart);
+      PetscInt       size;
+
+      ierr = DMComplexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
+      ierr = DMComplexSetSupportSize(rdm, newp, 2 + size);CHKERRQ(ierr);
+    }
+    /* Cell vertices have 4 supports */
+    for(c = cStart; c < cEnd; ++c) {
+      const PetscInt newp = vStartNew + (vEnd - vStart) + (fEnd - fStart) + (c - cStart);
+
+      ierr = DMComplexSetSupportSize(rdm, newp, 4);CHKERRQ(ierr);
+    }
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CellRefinerSetCones"
+PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
+{
+  PetscInt cStart, cStartNew, cEnd, vStart, vStartNew, vEnd, fStart, fStartNew, fEnd, eStart, eEnd;
+  PetscInt maxSupportSize, *supportRef;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+  cStartNew = 0;
+  vStartNew = depthSize[2];
+  fStartNew = depthSize[2] + depthSize[0];
+  switch(refiner) {
+  case 1:
+    /* Simplicial 2D */
+    /*
+     2
+     |\
+     | \
+     |  \
+     |   \
+     | C  \
+     |     \
+     |      \
+     2---1---1
+     |\  D  / \
+     | 2   0   \
+     |A \ /  B  \
+     0---0-------1
+     */
+    /* All cells have 3 faces */
+    for(c = cStart; c < cEnd; ++c) {
+      const PetscInt  newp = (c - cStart)*4 + 0;
+      const PetscInt *cone;
+      PetscInt        coneNew[3];
+
+      ierr = DMComplexGetCone(dm, c, &cone);CHKERRQ(ierr);
+      /* A triangle */
+      coneNew[0] = fStartNew + (cone[0] - fStart)*2 + 0;
+      coneNew[1] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*3 + 2;
+      coneNew[2] = fStartNew + (cone[2] - fStart)*2 + 1;
+      ierr = DMComplexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      /* B triangle */
+      coneNew[0] = fStartNew + (cone[0] - fStart)*2 + 1;
+      coneNew[1] = fStartNew + (cone[1] - fStart)*2 + 0;
+      coneNew[2] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*3 + 0;
+      ierr = DMComplexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      /* C triangle */
+      coneNew[0] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*3 + 1;
+      coneNew[1] = fStartNew + (cone[1] - fStart)*2 + 1;
+      coneNew[2] = fStartNew + (cone[2] - fStart)*2 + 0;
+      ierr = DMComplexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      /* D triangle */
+      coneNew[0] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*3 + 0;
+      coneNew[1] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*3 + 1;
+      coneNew[2] = fStartNew + (fEnd    - fStart)*2 + (c - cStart)*3 + 2;
+      ierr = DMComplexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+    }
+    /* Split faces have 2 vertices and the same cells as the parent */
+    for(f = fStart; f < fEnd; ++f) {
+      const PetscInt newv = vStartNew + (vEnd - vStart) + (f - fStart);
+
+      for(r = 0; r < 2; ++r) {
+        const PetscInt  newp = fStartNew + (f - fStart)*2 + r;
+        const PetscInt *cone, *support;
+        const PetscInt  coneNew[2];
+        PetscInt       size;
+
+        ierr = DMComplexGetCone(rdm, p, &cone);CHKERRQ(ierr);
+        coneNew[0] = cone[0];coneNew[1] = cone[1];
+        coneNew[r] = newv;
+        ierr = DMComplexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+        ierr = DMComplexGetSupport(dm, f, &support);CHKERRQ(ierr);
+        ierr = DMComplexSetSupport(rdm, newp, support);CHKERRQ(ierr);
+      }
+    }
+    /* Interior faces have 2 vertices and 2 cells */
+    for(c = cStart; c < cEnd; ++c) {
+      for(r = 0; r < 3; ++r) {
+        const PetscInt newp = fStartNew + (fEnd - fStart)*2 + (c - cStart)*3 + r;
+        const PetscInt coneNew[2];
+        const PetscInt supportNew[2];
+
+        supportNew[0] = fStartNew + (fEnd - fStart)*2 + (c - cStart)*3 + (r+2)%3;
+        supportNew[1] = fStartNew + (fEnd - fStart)*2 + (c - cStart)*3 + r;
+        ierr = DMComplexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+        supportNew[0] = (c - cStart)*4 + r;
+        supportNew[1] = (c - cStart)*4 + 3;
+        ierr = DMComplexSetSupportSize(rdm, newp, supportNew);CHKERRQ(ierr);
+      }
+    }
+    ierr = DMComplexGetMaxSizes(dm, PTESC_NULL, &maxSupportSize);CHKERRQ(ierr);
+    ierr = PetscMalloc((2 + maxSupportSize*2) * sizeof(PetscInt), &supportRef);CHKERRQ(ierr);
+    /* Old vertices have identical supports */
+    for(v = vStart; v < vEnd; ++v) {
+      const PetscInt  newp = vStartNew + (v - vStart);
+      const PetscInt *support, *cone;
+      PetscInt        size, s;
+
+      ierr = DMComplexGetSupportSize(dm, v, &size);CHKERRQ(ierr);
+      ierr = DMComplexGetSupport(dm, v, &support);CHKERRQ(ierr);
+      for(s = 0; s < size; ++s) {
+        PetscInt r = 0;
+
+        ierr = DMComplexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+        if (cone[1] == v) r = 1;
+        supportRef[s] = fStartNew + (support[s] - fStart)*2 + r;
+      }
+      ierr = DMComplexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
+    }
+    /* Face vertices have 2 + cells*2 supports */
+    for(f = fStart; f < fEnd; ++f) {
+      const PetscInt  newp = vStartNew + (vEnd - vStart) + (f - fStart);
+      const PetscInt *support;
+      PetscInt        size, s;
+
+      ierr = DMComplexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
+      ierr = DMComplexGetSupport(dm, f, &support);CHKERRQ(ierr);
+      supportRef[0] = fStartNew + (f - fStart)*2 + 0;
+      supportRef[1] = fStartNew + (f - fStart)*2 + 1;
+      for(s = 0; s < size; ++s) {
+        PetscInt r = 0;
+
+        ierr = DMComplexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+        if      (cone[1] == f) r = 1;
+        else if (cone[2] == f) r = 2;
+        supportRef[2+s*2+0] = fStartNew + (fEnd - fStart)*2 + (support[s] - cStart)*3 + (r+2)%3;
+        supportRef[2+s*2+1] = fStartNew + (fEnd - fStart)*2 + (support[s] - cStart)*3 + r;
+      }
+      ierr = DMComplexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(supportRef);CHKERRQ(ierr);
+    break;
+#if 0
+  case 2:
+    /* Hex 2D */
+    /* All cells have 4 faces */
+    for(c = cStart; c < cEnd; ++c) {
+      for(r = 0; r < 4; ++r) {
+        const PetscInt newp = (c - cStart)*4 + r;
+
+        ierr = DMComplexSetConeSize(rdm, newp, 4);CHKERRQ(ierr);
+      }
+    }
+    /* Split faces have 2 vertices and the same cells as the parent */
+    for(f = fStart; f < fEnd; ++f) {
+      for(r = 0; r < 2; ++r) {
+        const PetscInt newp = fStartNew + (f - fStart)*2 + r;
+        PetscInt       size;
+
+        ierr = DMComplexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
+        ierr = DMComplexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
+        ierr = DMComplexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
+      }
+    }
+    /* Interior faces have 2 vertices and 2 cells */
+    for(c = cStart; c < cEnd; ++c) {
+      for(r = 0; r < 4; ++r) {
+        const PetscInt newp = fStartNew + (fEnd - fStart)*2 + (c - cStart)*4 + r;
+
+        ierr = DMComplexSetConeSize(rdm, newp, 2);CHKERRQ(ierr);
+        ierr = DMComplexSetSupportSize(rdm, newp, 2);CHKERRQ(ierr);
+      }
+    }
+    /* Old vertices have identical supports */
+    for(v = vStart; v < vEnd; ++v) {
+      const PetscInt newp = vStartNew + (v - vStart);
+      PetscInt       size;
+
+      ierr = DMComplexGetSupportSize(dm, v, &size);CHKERRQ(ierr);
+      ierr = DMComplexSetSupportSize(rdm, newp, size);CHKERRQ(ierr);
+    }
+    /* Face vertices have 2 + cells supports */
+    for(f = fStart; f < fEnd; ++f) {
+      const PetscInt newp = vStartNew + (vEnd - vStart) + (f - fStart);
+      PetscInt       size;
+
+      ierr = DMComplexGetSupportSize(dm, f, &size);CHKERRQ(ierr);
+      ierr = DMComplexSetSupportSize(rdm, newp, 2 + size);CHKERRQ(ierr);
+    }
+    /* Cell vertices have 4 supports */
+    for(c = cStart; c < cEnd; ++c) {
+      const PetscInt newp = vStartNew + (vEnd - vStart) + (fEnd - fStart) + (c - cStart);
+
+      ierr = DMComplexSetSupportSize(rdm, newp, 4);CHKERRQ(ierr);
+    }
+    break;
+#endif
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMComplexRefine_Uniform"
-PetscErrorCode DMComplexRefine_Uniform(DM dm/*, CellRefiner refiner*/, DM *dmRefined)
+/* This will only work for interpolated meshes */
+PetscErrorCode DMComplexRefine_Uniform(DM dm, CellRefiner refiner, DM *dmRefined)
 {
+  DM              rdm;
+  PetscInt       *depthSize;
+  PetscInt        depth = 0, pStart = 0, pEnd = 0;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCreate(((PetscObject) dm)->comm, &rdm);CHKERRQ(ierr);
+  ierr = DMSetType(rdm, DMCOMPLEX);CHKERRQ(ierr);
+  ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMComplexSetDimension(rdm, dim);CHKERRQ(ierr);
+  /* Calculate number of new points of each depth */
+  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = PetscMalloc((depth+1) * sizeof(PetscInt), &depthShift);CHKERRQ(ierr);
+  ierr = PetscMemzero(depthShift, (depth+1) * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = CellRefinerGetSizes(cellRefiner, dm, depthSize);CHKERRQ(ierr);
+  /* Step 1: Set chart */
+  for(d = 0; d <= depth; ++d) {
+    pEnd += depthSize[d];
+  }
+  ierr = DMComplexSetChart(dmNew, pStart, pEnd);CHKERRQ(ierr);
+  /* Step 2: Set cone/support sizes */
+  ierr = CellRefinerSetConeSizes(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
+  /* Step 3: Setup refined DM */
+  ierr = DMSetUp(rdm);CHKERRQ(ierr);
+  /* Step 4: Set cones and supports */
+  ierr = CellRefinerSetCones(cellRefiner, dm, depthShift, rdm);CHKERRQ(ierr);
+  /* Step 7: Stratify */
+  ierr = DMComplexStratify(rdm);CHKERRQ(ierr);
+
+  ierr = DMComplexShiftCoordinates_Private(dm, depthShift, rdm);CHKERRQ(ierr);
+  /* Step 8b: Add in coordinates for new vertices */
+  ierr = DMComplexShiftSF_Private(dm, depthShift, rdm);CHKERRQ(ierr);
+  /* Step 9b: Add in new vertices to pointSF */
+  //ierr = DMComplexShiftLabels_Private(dm, depthShift, rdm);CHKERRQ(ierr);
+  ierr = PetscFree(depthSize);CHKERRQ(ierr);
+
+  ierr = DMSetFromOptions(rdm);CHKERRQ(ierr);
+  *dmRefined = rdm;
 #if 0
   DM_Complex *mesh = (DM_Complex *) dm->data;
   PetscInt    dim, cStart, cEnd, cMax, c, vStart, vEnd, vMax;
