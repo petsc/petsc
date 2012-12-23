@@ -290,6 +290,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
     /* ----------------------------------------------------------------
      ---- Compute reaction terms that can create a cluster of given size
     */
+    /*   He + He   */
     for (He=2; He<N+1; He++) {
       /* compute all pairs of clusters of smaller size that can combine to create a cluster of size He,
          remove the upper half since they are symmetric to the lower half of the pairs. For example
@@ -306,6 +307,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
         f[xi].He[He-he] += ctx->reactionScale*c[xi].He[he]*c[xi].He[He-he];
       }
     }
+    /*   V  +  V  */
     for (V=2; V<N+1; V++) {
       for (v=1; v<(V/2)+1; v++) {
         f[xi].V[V]    -= ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];
@@ -315,6 +317,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
         f[xi].V[V-v]  += ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];
       }
     }
+    /*   I +  I */
     for (I=2; I<N+1; I++) {
       for (i=1; i<(I/2)+1; i++) {
         f[xi].I[I]    -= ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];
@@ -323,15 +326,35 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
         f[xi].I[i]    += ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];
         f[xi].I[I-i]  += ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];
       }
-    }  
-    /* creation of He-V of size 1,1 */
+    }
+    /* He +  V  ->  He-V of size 1,1 */
     f[xi].HeV[1][1]   -= 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
-
      /* remove the He and V  that merged to form the He-V cluster */
     f[xi].He[1]   += 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
     f[xi].V[1]    += 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
-
-    /* Need reactions that create larger clusters of He-V */
+    /*  He-V + He  */
+    for (He=1; He<N; He++) {
+      for (V=1; V<N+1; V++) {
+        for (he=1; he<N-He+1; he++) {
+          f[xi].HeV[He+he][V] -= ctx->reactionScale*c[xi].HeV[He][V]*c[xi].He[he];
+          /* remove the two clusters that merged to form the larger cluster */
+          f[xi].He[he]     += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].He[he];
+          f[xi].HeV[He][V] += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].He[he];
+        }
+      }
+    }
+    /*  He-V + V  */
+    for (He=1; He<N+1; He++) {
+      for (V=1; V<N; V++) {
+        for (v=1; v<N-V+1; v++) {
+          f[xi].HeV[He][V+v] -= ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];
+          /* remove the two clusters that merged to form the larger cluster */
+          f[xi].V[v]         += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];
+          f[xi].HeV[He][V]   += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];
+        }
+      }
+    }
+    /* Need reactions He-V  + He-V  */
 
     /* -------------------------------------------------------------------------
      ---- Compute dissociation terms that removes an item from a cluster
