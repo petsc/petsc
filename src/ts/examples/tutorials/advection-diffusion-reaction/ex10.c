@@ -10,7 +10,7 @@ static char help[] = ".\n";
 #include <petscdmda.h>
 #include <petscts.h>
 
-#define N 2
+#define N 4
 
 /*
      Define all the concentrations (there is one of these unions at each grid point)
@@ -39,6 +39,8 @@ typedef struct {
   PetscScalar HeDiffusion[6];
   PetscScalar VDiffusion[2];
   PetscScalar IDiffusion[2];
+  PetscScalar forcingScale;
+  PetscScalar reactionScale;
 } AppCtx;
 
 extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
@@ -68,6 +70,8 @@ int main(int argc,char **argv)
   ctx.HeDiffusion[5] = 1000*5.20e-5;
   ctx.VDiffusion[1]  = 1000*2.71e-3;
   ctx.IDiffusion[1]  = 1000*2.13e-4;
+  ctx.forcingScale   = 100.;
+  ctx.reactionScale  = .001;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -92,7 +96,7 @@ int main(int argc,char **argv)
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,100,5.0);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,100,50.0);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
 
@@ -274,7 +278,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
     /* Mixed He - V clusters are immobile  */
 
     /*  forcing produces He of cluster size 1 */
-    f[i].He[1] -=  100.0*PetscMax(0.0,0.0006*x*x*x  - 0.0087*x*x + 0.0300*x);
+    f[i].He[1] -=  ctx->forcingScale*PetscMax(0.0,0.0006*x*x*x  - 0.0087*x*x + 0.0300*x);
 
     if (!ctx->reactions) continue;
     /*
@@ -287,9 +291,13 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
                  1   4
                  2   2
                  3   2  these last two are not needed in the sum since they repeat from above
-                 4   1               */
-      for (he=1; he<1+(He/2); he++) {
-        f[i].He[He] += /* coeefficient */ f[i].He[he]*f[i].He[He-he];
+                 4   1  this is why he < (He/2) + 1            */
+      for (he=1; he<(He/2)+1; he++) {
+        f[i].He[He]    -= ctx->reactionScale*f[i].He[he]*f[i].He[He-he];
+
+        /* remove the two clusters that merged to form the larger cluster */
+        f[i].He[he]    += ctx->reactionScale*f[i].He[he]*f[i].He[He-he];
+        f[i].He[He-he] += ctx->reactionScale*f[i].He[he]*f[i].He[He-he];
       }
     }
 
