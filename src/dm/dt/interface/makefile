@@ -1,9 +1,14 @@
 
 ALL: lib
 
-DIRS     = ao impls f90-mod interface examples dt
-LOCDIR   = src/dm/
+CFLAGS   =
+FFLAGS   =
+SOURCEC  = dt.c
+SOURCEF  =
+SOURCEH  =
+LIBBASE  = libpetscdm
 MANSEC   = DM
+LOCDIR   = src/dm/dt/interface/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
