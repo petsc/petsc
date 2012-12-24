@@ -170,6 +170,48 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDASelectFields"
+PetscErrorCode DMDASelectFields(DM da,PetscInt *outfields,PetscInt **fields)
+{
+  PetscErrorCode ierr;
+  PetscInt       step,ndisplayfields,*displayfields,k,j;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  ierr = DMDAGetInfo(da,0,0,0,0,0,0,0,&step,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscMalloc(step*sizeof(PetscInt),&displayfields);CHKERRQ(ierr);
+  for (k=0; k<step; k++) displayfields[k] = k;
+  ndisplayfields = step;
+  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-draw_fields",displayfields,&ndisplayfields,&flg);CHKERRQ(ierr);
+  if (!ndisplayfields) ndisplayfields = step;
+  if (!flg) {
+    char       **fields;
+    const char *fieldname;
+    PetscInt   nfields = step;
+    ierr = PetscMalloc(step*sizeof(char*),&fields);CHKERRQ(ierr);
+    ierr = PetscOptionsGetStringArray(PETSC_NULL,"-draw_fields_by_name",fields,&nfields,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ndisplayfields = 0;
+      for (k=0; k<nfields;k++) {
+        for (j=0; j<step; j++) {
+          ierr = DMDAGetFieldName(da,j,&fieldname);CHKERRQ(ierr);
+          ierr = PetscStrcmp(fieldname,fields[k],&flg);CHKERRQ(ierr);
+          if (flg) {
+            goto found;
+          }
+        }
+        SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_USER,"Unknown fieldname %s",fields[k]);
+        found: displayfields[ndisplayfields++] = j;
+      }
+    }
+    ierr = PetscFree(fields);CHKERRQ(ierr);
+  }
+  *fields    = displayfields;
+  *outfields = ndisplayfields;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VecView_MPI_Draw_DA1d"
 PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 {
@@ -189,7 +231,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   const PetscReal   *bounds;
   PetscInt          *displayfields;
   PetscInt          k,ndisplayfields;
-  PetscBool         flg,hold;
+  PetscBool         hold;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
@@ -231,11 +273,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   ierr = MPI_Bcast(&xmin,1,MPIU_REAL,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&xmax,1,MPIU_REAL,size-1,comm);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(step*sizeof(PetscInt),&displayfields);CHKERRQ(ierr);
-  for (i=0; i<step; i++) displayfields[i] = i;
-  ndisplayfields = step;
-  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-draw_fields",displayfields,&ndisplayfields,&flg);CHKERRQ(ierr);
-  if (!flg) ndisplayfields = step;
+  ierr = DMDASelectFields(da,&ndisplayfields,&displayfields);CHKERRQ(ierr);
   for (k=0; k<ndisplayfields; k++) {
     j = displayfields[k];
     ierr = PetscViewerDrawGetDraw(v,k,&draw);CHKERRQ(ierr);

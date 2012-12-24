@@ -1,21 +1,27 @@
 
-static char help[] = ".\n";
+static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirth's SciDAC project.\n";
 
 /*
-
         C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirth's SciDAC project.
 
         D*C_xx  - diffusion of He[1-5] and V[1] and I[1]
-        R(C)  -   reaction terms   (clusters combining) 
-        D(C)  -   dissociation terms (cluster breaking up)
         F(C)  -   forcing function; He being created.
+        R(C)  -   reaction terms   (clusters combining)
+        D(C)  -   dissociation terms (cluster breaking up)
+
+        Sample Options:
+          -ts_monitor_draw_solution               -- plot the solution for all concentrations
+              -draw_fields_by_name 1-He-2-V,1-He  -- only plot the solution for these two concentrations
+          -da_refine                              -- run on a finer grid
+          -ts_max_steps maxsteps                  -- maximum number of time-steps to take
+          -ts_final_time time                     -- maximum time to compute to
 
 */
 
 #include <petscdmda.h>
 #include <petscts.h>
 
-#define N 6
+#define N 2
 
 /*
      Define all the concentrations (there is one of these unions at each grid point)
@@ -43,8 +49,8 @@ typedef struct {
      Holds problem specific options and data 
 */
 typedef struct {
-  PetscBool   reactions;           /* run the reaction terms */
-  PetscBool   dissociations;       /* run the dissociation terms */
+  PetscBool   noreactions;           /* run without the reaction terms */
+  PetscBool   nodissociations;       /* run without the dissociation terms */
   PetscScalar HeDiffusion[6];
   PetscScalar VDiffusion[2];
   PetscScalar IDiffusion[2];
@@ -71,10 +77,10 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-  ctx.reactions     = PETSC_FALSE;
-  ctx.dissociations = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-reactions",&ctx.reactions);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-dissociations",&ctx.dissociations);CHKERRQ(ierr);
+  ctx.noreactions     = PETSC_FALSE;
+  ctx.nodissociations = PETSC_FALSE;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-noreactions",&ctx.noreactions);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-nodissociations",&ctx.nodissociations);CHKERRQ(ierr);
   ctx.HeDiffusion[1]    = 1000*2.95e-4; /* From Tibo's notes times 1,000 */
   ctx.HeDiffusion[2]    = 1000*3.24e-4;
   ctx.HeDiffusion[3]    = 1000*2.26e-4;
@@ -148,20 +154,20 @@ PetscErrorCode InitialConditions(DM da,Vec C)
 
   /* Name each of the concentrations */
   for (He=1; He<N+1; He++) {
-    ierr = PetscSNPrintf(string,16,"%d He",He);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(string,16,"%d-He",He);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,cnt++,string);CHKERRQ(ierr);
   }
   for (V=1; V<N+1; V++) {
-    ierr = PetscSNPrintf(string,16,"%d V",V);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(string,16,"%d-V",V);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,cnt++,string);CHKERRQ(ierr);
   }
   for (I=1; I<N+1; I++) {
-    ierr = PetscSNPrintf(string,16,"%d I",I);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(string,16,"%d-I",I);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,cnt++,string);CHKERRQ(ierr);
   }
   for (He=1; He<N+1; He++) {
     for (V=1; V<N+1; V++) {
-      ierr = PetscSNPrintf(string,16,"%d He %d Ve",He,V);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(string,16,"%d-He-%d-V",He,V);CHKERRQ(ierr);
       ierr = DMDASetFieldName(da,cnt++,string);CHKERRQ(ierr);
     }
   }
@@ -292,7 +298,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
     f[xi].He[1] -=  ctx->forcingScale*PetscMax(0.0,0.0006*x*x*x  - 0.0087*x*x + 0.0300*x);
     /* Are V or I produced? */
 
-    if (!ctx->reactions) continue;
+    if (ctx->noreactions) continue;
     /* ----------------------------------------------------------------
      ---- Compute reaction terms that can create a cluster of given size
     */
@@ -372,7 +378,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
       }
     }
 
-    if (!ctx->dissociations) continue;
+    if (ctx->nodissociations) continue;
     /* -------------------------------------------------------------------------
      ---- Compute dissociation terms that removes an item from a cluster
           I assume dissociation means losing only a single item from a cluster 

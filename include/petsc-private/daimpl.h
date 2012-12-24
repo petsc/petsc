@@ -101,6 +101,7 @@ PETSC_EXTERN PetscErrorCode DMView_DA_Matlab(DM,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMView_DA_Binary(DM,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMView_DA_VTK(DM,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMDAVTKWriteAll(PetscObject,PetscViewer);
+PETSC_EXTERN PetscErrorCode DMDASelectFields(DM,PetscInt*,PetscInt**);
 
 PETSC_EXTERN PetscLogEvent DMDA_LocalADFunction;
 

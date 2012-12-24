@@ -89,7 +89,6 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   PetscViewerFormat  format;
   PetscInt           *displayfields;
   PetscInt           ndisplayfields,i,nbounds;
-  PetscBool          flg;
   const PetscReal    *bounds;
 
   PetscFunctionBegin;
@@ -197,11 +196,8 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = DMDAGetGhostCorners(dac,0,0,0,&zctx.m,&zctx.n,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_contour_grid",&zctx.showgrid,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc(zctx.step*sizeof(PetscInt),&displayfields);CHKERRQ(ierr);
-  for (i=0; i<zctx.step; i++) displayfields[i] = i;
-  ndisplayfields = zctx.step;
-  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-draw_fields",displayfields,&ndisplayfields,&flg);CHKERRQ(ierr);
-  if (!flg) ndisplayfields = zctx.step;
+
+  ierr = DMDASelectFields(da,&ndisplayfields,&displayfields);CHKERRQ(ierr);
 
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_ports",&useports,PETSC_NULL);CHKERRQ(ierr);
