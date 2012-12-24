@@ -40,6 +40,7 @@
 #  define LAPACKsygv_  ssygv_
 #  define LAPACKsygvx_ ssygvx_
 #  define LAPACKstebz_ sstebz_
+#  define LAPACKstev_  sstev_
 #  define LAPACKhseqr_ shseqr_
 #  define LAPACKgges_  sgges_
 #  define LAPACKtrsen_ strsen_
@@ -81,6 +82,7 @@
 #  define LAPACKsygv_  dsygv_
 #  define LAPACKsygvx_ dsygvx_
 #  define LAPACKstebz_ dstebz_
+#  define LAPACKstev_  dstev_
 #  define LAPACKhseqr_ dhseqr_
 #  define LAPACKgges_  dgges_
 #  define LAPACKtrsen_ dtrsen_
@@ -122,6 +124,7 @@
 #  define LAPACKsygv_  qsygv_
 #  define LAPACKsygvx_ qsygvx_
 #  define LAPACKstebz_ qstebz_
+#  define LAPACKstev_  qstev_
 #  define LAPACKhseqr_ qhseqr_
 #  define LAPACKgges_  qgges_
 #  define LAPACKtrsen_ qtrsen_
@@ -165,6 +168,7 @@
 #  define LAPACKsygvx_ chegvx_
 #  define LAPACKpttrs_ cpttrs_ 
 /* LAPACKstebz_ does not exist for complex. */
+#  define LAPACKstev_  csteqr_ /* there is no cstev, but the interface is the same */
 #  define LAPACKhseqr_ chseqr_
 #  define LAPACKgges_  cgges_
 #  define LAPACKtrsen_ ctrsen_
@@ -206,6 +210,7 @@
 #  define LAPACKsygvx_ zhegvx_
 #  define LAPACKpttrs_ zpttrs_ 
 /* LAPACKstebz_ does not exist for complex. */
+#  define LAPACKstev_  zsteqr_ /* there is no zstev, but the interface is the same */
 #  define LAPACKhseqr_ zhseqr_
 #  define LAPACKgges_  zgges_
 #  define LAPACKtrsen_ ztrsen_
@@ -247,6 +252,7 @@
 #  define LAPACKsygvx_ whegvx_
 #  define LAPACKpttrs_ wpttrs_ 
 /* LAPACKstebz_ does not exist for complex. */
+#  define LAPACKstev_  wsteqr_ /* there is no wstev, but the interface is the same */
 #  define LAPACKhseqr_ whseqr_
 #  define LAPACKgges_  wgges_
 #  define LAPACKtrsen_ wtrsen_
