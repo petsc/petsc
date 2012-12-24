@@ -49,7 +49,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
   PetscFunctionBegin;
   PetscValidCharPointer(name,3);
 
-  *format = PETSC_VIEWER_DEFAULT;
+  if (format) *format = PETSC_VIEWER_DEFAULT;
   if (set) *set = PETSC_FALSE;
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
@@ -110,7 +110,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
         ierr = PetscStrtoupper(loc2);CHKERRQ(ierr);
         ierr = PetscStrendswithwhich(loc2,PetscViewerFormats,&cnt);CHKERRQ(ierr);
         if (!PetscViewerFormats[cnt]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2);CHKERRQ(ierr);
-        *format = (PetscViewerFormat)cnt;
+        if (format) *format = (PetscViewerFormat)cnt;
       }
       ierr = PetscFree(cvalue);CHKERRQ(ierr);
     }

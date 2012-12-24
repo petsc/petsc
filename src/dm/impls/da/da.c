@@ -80,7 +80,8 @@ PetscErrorCode  DMDASetSizes(DM da, PetscInt M, PetscInt N, PetscInt P)
 @*/
 PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 {
-  DM_DA *dd = (DM_DA*)da->data;
+  DM_DA          *dd = (DM_DA*)da->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
@@ -91,6 +92,18 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
   dd->m = m;
   dd->n = n;
   dd->p = p;
+  if (dd->dim == 2) {
+    PetscMPIInt size;
+    ierr = MPI_Comm_size(((PetscObject)da)->comm,&size);CHKERRQ(ierr);
+    if ((dd->m > 0) && (dd->n < 0)) {
+      dd->n = size/dd->m;
+      if (dd->n*dd->m != size) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"%D processes in X direction not divisible into comm size %d",m,size);
+    }
+    if ((dd->n > 0) && (dd->m < 0)) {
+      dd->m = size/dd->n;
+      if (dd->n*dd->m != size) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"%D processes in Y direction not divisible into comm size %d",n,size);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -336,6 +349,8 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt
 
   Level: intermediate
 
+  Note: these numbers are NOT multiplied by the number of dof per node. 
+
 .keywords:  distributed array
 .seealso: DMDACreate(), DMDestroy(), DMDA
 @*/
@@ -493,6 +508,8 @@ PetscErrorCode  DMDAGetNeighbors(DM da,const PetscMPIInt *ranks[])
 
      In C you should not free these arrays, nor change the values in them. They will only have valid values while the
     DMDA they came from still exists (has not been destroyed).
+
+    These numbers are NOT multiplied by the number of dof per node. 
 
 .seealso: DMDAGetCorners(), DMDAGetGhostCorners(), DMDACreate(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), VecGetOwnershipRanges()
 @*/

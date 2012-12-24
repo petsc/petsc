@@ -204,6 +204,9 @@ PetscErrorCode DMDASelectFields(DM da,PetscInt *outfields,PetscInt **fields)
         found: displayfields[ndisplayfields++] = j;
       }
     }
+    for (k=0; k<nfields; k++) {
+      ierr = PetscFree(fields[k]);CHKERRQ(ierr);
+    }
     ierr = PetscFree(fields);CHKERRQ(ierr);
   }
   *fields    = displayfields;

@@ -1,4 +1,3 @@
-
 static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirth's SciDAC project.\n";
 
 /*
@@ -61,6 +60,7 @@ typedef struct {
 
 extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 extern PetscErrorCode InitialConditions(DM,Vec);
+extern PetscErrorCode MyMonitorSetUp(TS);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -76,6 +76,7 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscFunctionBeginUser;
 
   ctx.noreactions     = PETSC_FALSE;
   ctx.nodissociations = PETSC_FALSE;
@@ -109,6 +110,7 @@ int main(int argc,char **argv)
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetSolution(ts,C);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
@@ -116,6 +118,7 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,100,50.0);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  ierr = MyMonitorSetUp(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -148,7 +151,7 @@ PetscErrorCode InitialConditions(DM da,Vec C)
   PetscReal      hx,x;
   char           string[16];
   
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx     = 1.0/(PetscReal)(Mx-1);
 
@@ -237,7 +240,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
   Concentrations *c,*f;
   Vec            localC;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localC);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
@@ -447,4 +450,89 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
   PetscFunctionReturn(0);
 }
 
+/* ------------------------------------------------------------------- */
+
+typedef struct {
+  DM          da;       /* defines the 2d layout of the He subvector */
+  Vec         He;
+  VecScatter  scatter;
+  PetscViewer viewer;
+} MyMonitorCtx;
+
+#undef __FUNCT__
+#define __FUNCT__ "MyMonitorMonitor"
+/*
+   Display He as a function of space and cluster size for each time step
+*/
+PetscErrorCode MyMonitorMonitor(TS ts,PetscInt timestep,PetscReal time,Vec solution, void *ictx)
+{
+  MyMonitorCtx   *ctx = (MyMonitorCtx*)ictx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MyMonitorDestroy"
+/*
+   Frees all data structures associated with the monitor
+*/
+PetscErrorCode MyMonitorDestroy(void **ictx)
+{
+  MyMonitorCtx   **ctx = (MyMonitorCtx**)ictx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = VecScatterDestroy(&(*ctx)->scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*ctx)->He);CHKERRQ(ierr);
+  ierr = DMDestroy(&(*ctx)->da);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&(*ctx)->viewer);CHKERRQ(ierr);
+  ierr = PetscFree(*ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MyMonitorSetUp"
+/*
+   Sets up a monitor that will display He as a function of space and cluster size for each time step
+*/
+PetscErrorCode MyMonitorSetUp(TS ts)
+{
+  DM             da;
+  PetscErrorCode ierr;
+  PetscInt       xi,xs,xm,*idx,M;
+  const PetscInt *lx;
+  Vec            C;
+  MyMonitorCtx   *ctx;
+  PetscViewer    viewer;
+  PetscBool      flg;
+  IS             is;
+
+  PetscFunctionBeginUser;
+  ierr = PetscOptionsGetViewer(((PetscObject)ts)->comm,PETSC_NULL,"-mymonitor",&viewer,PETSC_NULL,&flg);CHKERRQ(ierr);
+  if (!flg) PetscFunctionReturn(0);
+
+  ierr = PetscNew(MyMonitorCtx,&ctx);CHKERRQ(ierr);
+  ctx->viewer = viewer;
+
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DMDAGetOwnershipRanges(da,&lx,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDACreate2d(((PetscObject)da)->comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DETERMINE,1,1,1,lx,PETSC_NULL,&ctx->da);CHKERRQ(ierr);
+
+  ierr = DMCreateGlobalVector(ctx->da,&ctx->He);CHKERRQ(ierr);
+  ierr = PetscMalloc(xm*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  for (xi=xs; xi<xs+xm; xi++) {
+    idx[xi] = (3+N)*xi;
+  }
+  ierr = ISCreateBlock(((PetscObject)ts)->comm,N,xm,idx,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+  ierr = TSGetSolution(ts,&C);CHKERRQ(ierr);
+  ierr = VecScatterCreate(C,is,ctx->He,PETSC_NULL,&ctx->scatter);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+
+  ierr = TSMonitorSet(ts,MyMonitorMonitor,ctx,MyMonitorDestroy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
