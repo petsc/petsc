@@ -9,6 +9,7 @@ typedef struct {
   /* Domain and mesh definition */
   PetscInt      dim;               /* The topological mesh dimension */
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
+  PetscBool     refinementUniform; /* Uniformly refine the mesh */
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
 } AppCtx;
 
@@ -18,16 +19,18 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->debug           = 0;
-  options->dim             = 2;
-  options->interpolate     = PETSC_FALSE;
-  options->refinementLimit = 0.0;
+  options->debug             = 0;
+  options->dim               = 2;
+  options->interpolate       = PETSC_FALSE;
+  options->refinementUniform = 0.0;
+  options->refinementLimit   = 0.0;
 
   ierr = PetscOptionsBegin(comm, "", "Bratu Problem Options", "DMMESH");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex62.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex62.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex62.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex62.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex1.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex1.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-refinement_uniform", "Uniformly refine the mesh", "ex1.c", options->refinementUniform, &options->refinementUniform, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex1.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
@@ -38,20 +41,23 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim             = user->dim;
-  PetscBool      interpolate     = user->interpolate;
-  PetscReal      refinementLimit = user->refinementLimit;
-  const char    *partitioner     = "chaco";
+  PetscInt       dim               = user->dim;
+  PetscBool      interpolate       = user->interpolate;
+  PetscReal      refinementUniform = user->refinementUniform;
+  PetscReal      refinementLimit   = user->refinementLimit;
+  const char    *partitioner       = "chaco";
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = DMComplexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   {
     DM refinedMesh     = PETSC_NULL;
     DM distributedMesh = PETSC_NULL;
 
     /* Refine mesh using a volume constraint */
+    ierr = DMComplexSetRefinementUniform(*dm, refinementUniform);CHKERRQ(ierr);
     ierr = DMComplexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
     ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
     if (refinedMesh) {
