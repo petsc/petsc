@@ -14,6 +14,7 @@ typedef struct {
   PetscReal    min,max,scale;
   PetscScalar  *xy,*v;
   PetscBool    showgrid;
+  const char   *name0,*name1;
 } ZoomCtx;
 
 /*
@@ -64,6 +65,16 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
         ierr = PetscDrawLine(draw,x4,y4,x1,y_1,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
     }
+  }
+  if (zctx->name0) {
+    PetscReal xl,yl,xr,yr,x,y;
+    ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
+    x  = xl + .3*(xr - xl);
+    xl = xl + .01*(xr - xl);
+    y  = yr - .3*(yr - yl);
+    yl = yl + .01*(yr - yl);
+    ierr = PetscDrawString(draw,x,yl,PETSC_DRAW_BLACK,zctx->name0);CHKERRQ(ierr);
+    ierr = PetscDrawStringVertical(draw,xl,y,PETSC_DRAW_BLACK,zctx->name1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -204,6 +215,11 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   if (useports || format == PETSC_VIEWER_DRAW_PORTS){
     ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
     ierr = PetscDrawViewPortsCreate(draw,ndisplayfields,&ports);CHKERRQ(ierr);
+    zctx.name0 = 0;
+    zctx.name1 = 0;
+  } else {
+    ierr = DMDAGetCoordinateName(da,0,&zctx.name0);CHKERRQ(ierr);
+    ierr = DMDAGetCoordinateName(da,1,&zctx.name1);CHKERRQ(ierr);
   }
 
   /*

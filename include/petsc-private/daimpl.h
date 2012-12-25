@@ -32,7 +32,8 @@ typedef struct {
 
   AO                    ao;                    /* application ordering context */
 
-  char                  **fieldname;        /* names of individual components in vectors */
+  char                  **fieldname;           /* names of individual components in vectors */
+  char                  **coordinatename;      /* names of coordinate directions, for example, x, y, z */
 
   PetscInt              *lx,*ly,*lz;        /* number of nodes in each partition block along 3 axis */
   Vec                   natural;            /* global vector for storing items in natural order */

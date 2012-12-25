@@ -87,7 +87,7 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
 
 .keywords: distributed array, get, component name
 
-.seealso: DMDAGetFieldName()
+.seealso: DMDAGetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName()
 @*/
 PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
 {
@@ -122,7 +122,7 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
 
 .keywords: distributed array, get, component name
 
-.seealso: DMDASetFieldName()
+.seealso: DMDASetFieldName(), DMDASetCoordinateName(), DMDAGetCoordinateName()
 @*/
 PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 {
@@ -133,6 +133,69 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
   PetscValidPointer(name,3);
   if (nf < 0 || nf >= dd->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
   *name = dd->fieldname[nf];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetCoordinateName"
+/*@C
+   DMDASetCoordinateName - Sets the name of the coordinate directions associated with a DMDA, for example "x" or "y"
+
+   Not Collective
+
+   Input Parameters:
++  da - the distributed array
+.  nf - coordinate number for the DMDA (0, 1, ... dim-1), 
+-  name - the name of the coordinate
+
+  Level: intermediate
+
+.keywords: distributed array, get, component name
+
+.seealso: DMDAGetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName()
+@*/
+PetscErrorCode  DMDASetCoordinateName(DM da,PetscInt nf,const char name[])
+{
+  PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+   PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  if (nf < 0 || nf >= dd->dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
+  ierr = PetscFree(dd->coordinatename[nf]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name,&dd->coordinatename[nf]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetCoordinateName"
+/*@C
+   DMDAGetCoordinateName - Gets the name of a coodinate direction associated with a DMDA.
+
+   Not Collective
+
+   Input Parameter:
++  da - the distributed array
+-  nf -  number for the DMDA (0, 1, ... dim-1)
+
+   Output Parameter:
+.  names - the name of the coordinate direction
+
+  Level: intermediate
+
+.keywords: distributed array, get, component name
+
+.seealso: DMDASetCoordinateName(), DMDASetFieldName(), DMDAGetFieldName()
+@*/
+PetscErrorCode  DMDAGetCoordinateName(DM da,PetscInt nf,const char **name)
+{
+  DM_DA          *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidPointer(name,3);
+  if (nf < 0 || nf >= dd->dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
+  *name = dd->coordinatename[nf];
   PetscFunctionReturn(0);
 }
 

@@ -102,6 +102,12 @@ PetscErrorCode  DMDestroy_DA(DM da)
     }
     ierr = PetscFree(dd->fieldname);CHKERRQ(ierr);
   }
+  if (dd->coordinatename) {
+    for (i=0; i<dd->dim; i++) {
+      ierr = PetscFree(dd->coordinatename[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(dd->coordinatename);CHKERRQ(ierr);
+  }
   ierr = ISColoringDestroy(&dd->localcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&dd->ghostedcoloring);CHKERRQ(ierr);
 

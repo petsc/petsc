@@ -14,6 +14,13 @@ PetscErrorCode  DMSetUp_DA(DM da)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID,1);
+  if (dd->w < 1) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dd->w);
+  if (dd->s < 0) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",dd->s);
+
+  ierr = PetscMalloc(dd->w*sizeof(char*),&dd->fieldname);CHKERRQ(ierr);
+  ierr = PetscMemzero(dd->fieldname,dd->w*sizeof(char*));CHKERRQ(ierr);
+  ierr = PetscMalloc(dd->dim*sizeof(char*),&dd->coordinatename);CHKERRQ(ierr);
+  ierr = PetscMemzero(dd->coordinatename,dd->dim*sizeof(char*));CHKERRQ(ierr);
   if (dd->dim == 1) {
     ierr = DMSetUp_DA_1D(da);CHKERRQ(ierr);
   } else if (dd->dim == 2) {

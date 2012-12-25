@@ -125,12 +125,6 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  if (dof < 1) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
-  if (s < 0) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
-
-  dd->dim = 1;
-  ierr = PetscMalloc(dof*sizeof(char*),&dd->fieldname);CHKERRQ(ierr);
-  ierr = PetscMemzero(dd->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
