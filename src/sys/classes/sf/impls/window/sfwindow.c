@@ -1,10 +1,29 @@
 #include <petsc-private/sfimpl.h> /*I "petscsf.h" I*/
 
+typedef struct _n_PetscSFDataLink *PetscSFDataLink;
+typedef struct _n_PetscSFWinLink  *PetscSFWinLink;
+
 typedef struct {
   PetscSFWindowSyncType sync; /* FENCE, LOCK, or ACTIVE synchronization */
   PetscSFDataLink link;         /* List of MPI data types and windows, lazily constructed for each data type */
   PetscSFWinLink  wins;         /* List of active windows */
 } PetscSF_Window;
+
+struct _n_PetscSFDataLink {
+  MPI_Datatype unit;
+  MPI_Datatype *mine;
+  MPI_Datatype *remote;
+  PetscSFDataLink next;
+};
+
+struct _n_PetscSFWinLink {
+  PetscBool      inuse;
+  size_t         bytes;
+  void           *addr;
+  MPI_Win        win;
+  PetscBool      epoch;
+  PetscSFWinLink next;
+};
 
 const char *const PetscSFWindowSyncTypes[] = {"FENCE","LOCK","ACTIVE","PetscSFWindowSyncType","PETSCSF_WINDOW_SYNC_",0};
 

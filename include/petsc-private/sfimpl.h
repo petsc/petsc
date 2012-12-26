@@ -3,25 +3,6 @@
 
 #include <petscsf.h>
 
-typedef struct _n_PetscSFDataLink *PetscSFDataLink;
-typedef struct _n_PetscSFWinLink  *PetscSFWinLink;
-
-struct _n_PetscSFDataLink {
-  MPI_Datatype unit;
-  MPI_Datatype *mine;
-  MPI_Datatype *remote;
-  PetscSFDataLink next;
-};
-
-struct _n_PetscSFWinLink {
-  PetscBool      inuse;
-  size_t         bytes;
-  void           *addr;
-  MPI_Win        win;
-  PetscBool      epoch;
-  PetscSFWinLink next;
-};
-
 struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);
   PetscErrorCode (*Destroy)(PetscSF);
