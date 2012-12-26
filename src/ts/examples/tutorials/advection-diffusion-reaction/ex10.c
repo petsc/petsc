@@ -519,6 +519,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   PetscBool      flg;
   IS             is;
   char           ycoor[32];
+  PetscReal      valuebounds[4]  = {0, 1.2, 0, 1.2};
 
   PetscFunctionBeginUser;
   ierr = PetscOptionsHasName(PETSC_NULL,"-mymonitor",&flg);CHKERRQ(ierr);
@@ -551,6 +552,9 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = TSGetSolution(ts,&C);CHKERRQ(ierr);
   ierr = VecScatterCreate(C,is,ctx->He,PETSC_NULL,&ctx->scatter);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
+
+  /* sets the bounds on the contour plot values so the colors mean the same thing for different timesteps */
+  ierr = PetscViewerDrawSetBounds(ctx->viewer,2,valuebounds);CHKERRQ(ierr);
 
   ierr = TSMonitorSet(ts,MyMonitorMonitor,ctx,MyMonitorDestroy);CHKERRQ(ierr);
   PetscFunctionReturn(0);

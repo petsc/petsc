@@ -697,6 +697,10 @@ PetscViewer  PETSC_VIEWER_DRAW_(MPI_Comm comm)
 
     Level: intermediate
 
+    Notes: this determines the colors used in 2d contour plots generated with VecView() for DMDA in 2d. Any values in the vector below or above the
+      bounds are moved to the bound value before plotting. In this way the color index from color to physical value remains the same for all plots generated with
+      this viewer. Otherwise the color to physical value meaning changes with each new image if this is not set.
+
    Concepts: drawing^accessing PetscDraw context from PetscViewer
    Concepts: graphics
 
@@ -735,7 +739,7 @@ PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer viewer,PetscInt nbounds,con
    Concepts: drawing^accessing PetscDraw context from PetscViewer
    Concepts: graphics
 
-.seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
+.seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen(), PetscViewerDrawSetBounds()
 @*/
 PetscErrorCode  PetscViewerDrawGetBounds(PetscViewer viewer,PetscInt *nbounds,const PetscReal **bounds)
 {
