@@ -4,6 +4,8 @@ PetscClassId PETSCSF_CLASSID;
 
 static PetscBool PetscSFPackageInitialized = PETSC_FALSE;
 
+PetscBool PetscSFRegisterAllCalled;
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFInitializePackage"
 /*@C
@@ -26,6 +28,7 @@ PetscErrorCode PetscSFInitializePackage(const char *path)
   if (PetscSFPackageInitialized) PetscFunctionReturn(0);
   PetscSFPackageInitialized = PETSC_TRUE;
   ierr = PetscClassIdRegister("Bipartite Graph",&PETSCSF_CLASSID);CHKERRQ(ierr);
+  ierr = PetscSFRegisterAll(path);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(PetscSFFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

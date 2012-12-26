@@ -1,10 +1,10 @@
 ALL: lib
 
-SOURCEH	 = ../../../include/petsc-private/sfimpl.h ../../../include/petscsf.h
-SOURCEC  =
+SOURCEH	 =
+SOURCEC  = dlregissf.c sfregi.c sf.c sftype.c
 LIBBASE	 = libpetscsys
-DIRS	 = interface impls examples
-LOCDIR   = src/sys/classes/sf/
+DIRS	 =
+LOCDIR   = src/sys/classes/sf/interface/
 MANSEC   = PetscSF
 
 include ${PETSC_DIR}/conf/variables

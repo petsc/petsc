@@ -3820,7 +3820,7 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
 
 .keywords: SNES, nonlinear, register, destroy
 
-.seealso: SNESRegisterAll(), SNESRegisterAll()
+.seealso: SNESRegisterAll()
 @*/
 PetscErrorCode  SNESRegisterDestroy(void)
 {
