@@ -9,9 +9,10 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
         D(C)  -   dissociation terms (cluster breaking up)
 
         Sample Options:
-          -ts_monitor_draw_solution               -- plot the solution for all concentrations
+          -ts_monitor_draw_solution               -- plot the solution for each concentration as a function of x each in a separate 1d graph
               -draw_fields_by_name 1-He-2-V,1-He  -- only plot the solution for these two concentrations
-          -da_refine                              -- run on a finer grid
+          -mymonitor                              -- plot the concentrations of He and V as a function of x and cluster size (2d contour plot)
+          -da_refine <n=1,2,...>                  -- run on a finer grid
           -ts_max_steps maxsteps                  -- maximum number of time-steps to take
           -ts_final_time time                     -- maximum time to compute to
 
@@ -20,6 +21,7 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
 #include <petscdmda.h>
 #include <petscts.h>
 
+/*    Hard wire the number of cluster sizes for He, V, and I */
 #define N 15
 
 /*
