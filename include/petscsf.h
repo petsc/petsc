@@ -18,6 +18,19 @@ PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 S*/
 typedef struct _p_PetscSF* PetscSF;
 
+
+/*J
+    PetscSFType - String with the name of a PetscSF method or the creation function
+       with an optional dynamic library name, for example
+       http://www.mcs.anl.gov/petsc/lib.so:mysfcreate()
+
+   Level: beginner
+
+.seealso: PetscSFSetType(), PetscSF
+J*/
+typedef const char *PetscSFType;
+#define PETSCSFWINDOW "window"
+
 /*S
    PetscSFNode - specifier of owner and index
 
@@ -33,30 +46,88 @@ typedef struct {
 } PetscSFNode;
 
 /*E
-    PetscSFSynchronizationType - Type of synchronization for PetscSF
+    PetscSFWindowSyncType - Type of synchronization for PETSCSFWINDOW
 
-$  PETSCSF_SYNCHRONIZATION_FENCE - simplest model, synchronizing across communicator
-$  PETSCSF_SYNCHRONIZATION_LOCK - passive model, less synchronous, requires less setup than PETSCSF_SYNCHRONIZATION_ACTIVE, but may require more handshakes
-$  PETSCSF_SYNCHRONIZATION_ACTIVE - active model, provides most information to MPI implementation, needs to construct 2-way process groups (more setup than PETSCSF_SYNCHRONIZATION_LOCK)
+$  PETSCSF_WINDOW_SYNC_FENCE - simplest model, synchronizing across communicator
+$  PETSCSF_WINDOW_SYNC_LOCK - passive model, less synchronous, requires less setup than PETSCSF_WINDOW_SYNC_ACTIVE, but may require more handshakes
+$  PETSCSF_WINDOW_SYNC_ACTIVE - active model, provides most information to MPI implementation, needs to construct 2-way process groups (more setup than PETSCSF_WINDOW_SYNC_LOCK)
 
    Level: beginner
 
-.seealso: PetscSFSetSynchronizationType()
+.seealso: PetscSFWindowSetSyncType()
 E*/
-typedef enum {PETSCSF_SYNCHRONIZATION_FENCE,PETSCSF_SYNCHRONIZATION_LOCK,PETSCSF_SYNCHRONIZATION_ACTIVE} PetscSFSynchronizationType;
-PETSC_EXTERN const char *const PetscSFSynchronizationTypes[];
+typedef enum {PETSCSF_WINDOW_SYNC_FENCE,PETSCSF_WINDOW_SYNC_LOCK,PETSCSF_WINDOW_SYNC_ACTIVE} PetscSFWindowSyncType;
+PETSC_EXTERN const char *const PetscSFWindowSyncTypes[];
 
 #if !defined(PETSC_HAVE_MPI_WIN_CREATE) /* The intent here is to be able to compile even without a complete MPI. */
 typedef struct MPI_Win_MISSING *MPI_Win;
 #endif
 
+PETSC_EXTERN PetscFList PetscSFList;
+PETSC_EXTERN PetscErrorCode PetscSFRegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode PetscSFRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscSF));
+
+/*MC
+   PetscSFRegisterDynamic - Adds an implementation of the PetscSF communication protocol.
+
+   Synopsis:
+   PetscErrorCode PetscSFRegisterDynamic(const char *name_method,const char *path,const char *name_create,PetscErrorCode (*routine_create)(PetscSF))
+
+   Not collective
+
+   Input Parameters:
++  name_impl - name of a new user-defined implementation
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   PetscSFRegisterDynamic() may be called multiple times to add several user-defined implementations.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
+   and others of the form ${any_environmental_variable} occuring in pathname will be
+   replaced with appropriate values.
+
+   Sample usage:
+.vb
+   PetscSFRegisterDynamic("my_impl",/home/username/my_lib/lib/libg/solaris/mylib.a,
+                "MyImplCreate",MyImplCreate);
+.ve
+
+   Then, this implementation can be chosen with the procedural interface via
+$     PetscSFSetType(sf,"my_impl")
+   or at runtime via the option
+$     -snes_type my_solver
+
+   Level: advanced
+
+    Note: If your function is not being put into a shared library then use PetscSFRegister() instead
+
+.keywords: PetscSF, register
+
+.seealso: PetscSFRegisterAll(), PetscSFRegisterDestroy()
+M*/
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define PetscSFRegisterDynamic(a,b,c,d) PetscSFRegister(a,b,c,0)
+#else
+#define PetscSFRegisterDynamic(a,b,c,d) PetscSFRegister(a,b,c,d)
+#endif
+
+
 PETSC_EXTERN PetscErrorCode PetscSFInitializePackage(const char*);
 PETSC_EXTERN PetscErrorCode PetscSFFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFDestroy(PetscSF*);
+PETSC_EXTERN PetscErrorCode PetscSFSetType(PetscSF,PetscSFType);
 PETSC_EXTERN PetscErrorCode PetscSFView(PetscSF,PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscSFSetUp(PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSFSetFromOptions(PetscSF);
-PETSC_EXTERN PetscErrorCode PetscSFSetSynchronizationType(PetscSF,PetscSFSynchronizationType);
+PETSC_EXTERN PetscErrorCode PetscSFWindowSetSyncType(PetscSF,PetscSFWindowSyncType);
+PETSC_EXTERN PetscErrorCode PetscSFWindowGetSyncType(PetscSF,PetscSFWindowSyncType*);
 PETSC_EXTERN PetscErrorCode PetscSFSetRankOrder(PetscSF,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscSFSetGraph(PetscSF,PetscInt,PetscInt,const PetscInt*,PetscCopyMode,const PetscSFNode*,PetscCopyMode);
 PETSC_EXTERN PetscErrorCode PetscSFGetGraph(PetscSF,PetscInt *nroots,PetscInt *nleaves,const PetscInt **ilocal,const PetscSFNode **iremote);
@@ -66,10 +137,6 @@ PETSC_EXTERN PetscErrorCode PetscSFCreateArray(PetscSF,MPI_Datatype,void*,void*)
 PETSC_EXTERN PetscErrorCode PetscSFDestroyArray(PetscSF,MPI_Datatype,void*,void*);
 PETSC_EXTERN PetscErrorCode PetscSFReset(PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSFGetRanks(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscMPIInt**,const PetscMPIInt**);
-PETSC_EXTERN PetscErrorCode PetscSFGetDataTypes(PetscSF,MPI_Datatype,const MPI_Datatype**,const MPI_Datatype**);
-PETSC_EXTERN PetscErrorCode PetscSFGetWindow(PetscSF,MPI_Datatype,void*,PetscBool,PetscMPIInt,PetscMPIInt,PetscMPIInt,MPI_Win*);
-PETSC_EXTERN PetscErrorCode PetscSFFindWindow(PetscSF,MPI_Datatype,const void*,MPI_Win*);
-PETSC_EXTERN PetscErrorCode PetscSFRestoreWindow(PetscSF,MPI_Datatype,const void*,PetscBool,PetscMPIInt,MPI_Win*);
 PETSC_EXTERN PetscErrorCode PetscSFGetGroups(PetscSF,MPI_Group*,MPI_Group*);
 PETSC_EXTERN PetscErrorCode PetscSFGetMultiSF(PetscSF,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFCreateInverseSF(PetscSF,PetscSF*);

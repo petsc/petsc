@@ -23,7 +23,16 @@ struct _n_PetscSFWinLink {
 };
 
 struct _PetscSFOps {
-  int dummy;
+  PetscErrorCode (*Reset)(PetscSF);
+  PetscErrorCode (*Destroy)(PetscSF);
+  PetscErrorCode (*SetFromOptions)(PetscSF);
+  PetscErrorCode (*View)(PetscSF,PetscViewer);
+  PetscErrorCode (*BcastBegin)(PetscSF,MPI_Datatype,const void*,void*);
+  PetscErrorCode (*BcastEnd)(PetscSF,MPI_Datatype,const void*,void*);
+  PetscErrorCode (*ReduceBegin)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
+  PetscErrorCode (*ReduceEnd)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
+  PetscErrorCode (*FetchAndOpBegin)(PetscSF,MPI_Datatype,void*,const void*,void*,MPI_Op);
+  PetscErrorCode (*FetchAndOpEnd)(PetscSF,MPI_Datatype,void*,const void *,void *,MPI_Op);
 };
 
 struct _p_PetscSF {
@@ -40,17 +49,23 @@ struct _p_PetscSF {
   PetscInt        *roffset;     /* Array of length nranks+1, offset in rmine/rremote for each rank */
   PetscMPIInt     *rmine;       /* Concatenated array holding local indices referencing each remote rank */
   PetscMPIInt     *rremote;     /* Concatenated array holding remote indices referenced for each remote rank */
-  PetscSFDataLink link;         /* List of MPI data types and windows, lazily constructed for each data type */
-  PetscSFWinLink  wins;         /* List of active windows */
   PetscBool       degreeknown;  /* The degree is currently known, do not have to recompute */
   PetscInt        *degree;      /* Degree of each of my root vertices */
   PetscInt        *degreetmp;   /* Temporary local array for computing degree */
-  PetscSFSynchronizationType sync; /* FENCE, LOCK, or ACTIVE synchronization */
   PetscBool       rankorder;    /* Sort ranks for gather and scatter operations */
   MPI_Group       ingroup;      /* Group of processes connected to my roots */
   MPI_Group       outgroup;     /* Group of processes connected to my leaves */
   PetscSF         multi;        /* Internal graph used to implement gather and scatter operations */
   PetscBool       graphset;     /* Flag indicating that the graph has been set, required before calling communication routines */
+  PetscBool       setupcalled;  /* Type and communication structures have been set up */
+
+  void *data;                   /* Pointer to implementation */
 };
+
+PETSC_EXTERN PetscBool PetscSFRegisterAllCalled;
+
+PETSC_EXTERN PetscErrorCode PetscSFOpTranslate(MPI_Op*);
+PETSC_EXTERN PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype,MPI_Datatype*);
+PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype,MPI_Datatype,PetscBool*);
 
 #endif
