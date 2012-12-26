@@ -74,6 +74,7 @@ typedef struct {
 
   /* used by DMDASetBlockFills() */
   PetscInt              *ofill,*dfill;
+  PetscInt              *ofillcols;
 
   /* used by DMDASetMatPreallocateOnly() */
   PetscBool             prealloc_only;

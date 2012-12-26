@@ -467,10 +467,16 @@ static PetscErrorCode PetscDrawGetPopup_X(PetscDraw draw,PetscDraw *popup)
 {
   PetscErrorCode ierr;
   PetscDraw_X*   win = (PetscDraw_X*)draw->data;
+  PetscBool      flg = PETSC_TRUE;
 
   PetscFunctionBegin;
-  ierr = PetscDrawOpenX(((PetscObject)draw)->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+36,220,220,popup);CHKERRQ(ierr);
-  draw->popup = *popup;
+  ierr = PetscOptionsGetBool(((PetscObject)draw)->prefix,"-draw_popup",&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscDrawOpenX(((PetscObject)draw)->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+36,220,220,popup);CHKERRQ(ierr);
+    draw->popup = *popup;
+  } else {
+    *popup = PETSC_NULL;
+  }
   PetscFunctionReturn(0);
 }
 

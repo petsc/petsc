@@ -91,10 +91,24 @@ PetscErrorCode  DMDASetBlockFills(DM da,const PetscInt *dfill,const PetscInt *of
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
+  PetscInt       i,k,cnt = 1;
 
   PetscFunctionBegin;
   ierr = DMDASetBlockFills_Private(dfill,dd->w,&dd->dfill);CHKERRQ(ierr);
   ierr = DMDASetBlockFills_Private(ofill,dd->w,&dd->ofill);CHKERRQ(ierr);
+
+  /* ofillcount tracks the columns of ofill that have any nonzero in thems; the value in each location is the number of
+   columns to the left with any nonzeros in them plus 1 */
+  ierr = PetscMalloc(dd->w*sizeof(PetscBool),&dd->ofillcols);CHKERRQ(ierr);
+  ierr = PetscMemzero(dd->ofillcols,dd->w*sizeof(PetscBool));CHKERRQ(ierr);
+  for (i=0; i<dd->w; i++) {
+    for (k=dd->ofill[i]; k<dd->ofill[i+1]; k++) dd->ofillcols[dd->ofill[k]] = 1;
+  }
+  for (i=0; i<dd->w; i++) {
+    if (dd->ofillcols[i]) {
+      dd->ofillcols[i] = cnt++;
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -369,13 +383,29 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da,ISColoringType ctype,ISColori
   if (ctype == IS_COLORING_GLOBAL) {
     if (!dd->localcoloring) {
       ierr = PetscMalloc(nc*nx*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
-      i1 = 0;
-      for (i=xs; i<xs+nx; i++) {
-        for (l=0; l<nc; l++) {
-          colors[i1++] = l + nc*(i % col);
+      if (dd->ofillcols) {
+        PetscInt tc = 0;
+        for (i=0; i<nc; i++) tc += (PetscInt) (dd->ofillcols[i] > 0);
+        i1 = 0;
+        for (i=xs; i<xs+nx; i++) {
+          for (l=0; l<nc; l++) {
+            if (dd->ofillcols[l] && (i % col)) {
+              colors[i1++] =  nc - 1 + tc*((i % col) - 1) + dd->ofillcols[l];
+            } else {
+              colors[i1++] = l;
+            }
+          }
         }
+        ncolors = nc + 2*s*tc;
+      } else {
+        i1 = 0;
+        for (i=xs; i<xs+nx; i++) {
+          for (l=0; l<nc; l++) {
+            colors[i1++] = l + nc*(i % col);
+          }
+        }
+        ncolors = nc + nc*(col-1);
       }
-      ncolors = nc + nc*(col-1);
       ierr = ISColoringCreate(comm,ncolors,nc*nx,colors,&dd->localcoloring);CHKERRQ(ierr);
     }
     *coloring = dd->localcoloring;
