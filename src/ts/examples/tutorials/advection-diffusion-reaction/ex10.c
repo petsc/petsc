@@ -20,7 +20,7 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
 #include <petscdmda.h>
 #include <petscts.h>
 
-#define N 4
+#define N 15
 
 /*
      Define all the concentrations (there is one of these unions at each grid point)
@@ -71,6 +71,7 @@ int main(int argc,char **argv)
   PetscErrorCode  ierr;
   DM              da;                 /* manages the grid data */
   AppCtx          ctx;                /* holds problem specific paramters */
+  PetscInt        He,dof = 3*N+N*N,*ofill;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -95,7 +96,14 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_MIRROR,-8,3*N+N*N,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_MIRROR,-8,dof,1,PETSC_NULL,&da);CHKERRQ(ierr);
+
+  /* the only spacial coupling in the Jacobian (diffusion) is for the first 5 He, the first V, and the first I */
+  ierr = PetscMalloc(dof*dof*sizeof(PetscInt),&ofill);CHKERRQ(ierr);
+  ierr = PetscMemzero(ofill,dof*dof*sizeof(PetscInt));CHKERRQ(ierr);
+  for (He=0; He<PetscMin(N,5); He++) ofill[He*dof + He] = 1; ofill[N*dof + N] = ofill[2*N*dof + 2*N] = 1;
+  ierr = DMDASetBlockFills(da,PETSC_NULL,ofill);CHKERRQ(ierr);
+  ierr = PetscFree(ofill);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Extract global vector from DMDA to hold solution
