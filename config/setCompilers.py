@@ -214,13 +214,11 @@ class Configure(config.base.Configure):
   isCompaqF90 = staticmethod(isCompaqF90)
 
   def isSun(compiler):
-    '''Returns true if the compiler is a Sun compiler'''
+    '''Returns true if the compiler is a Sun/Oracle compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -flags')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V')
       output = output + error
-      if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
-        return 0
-      if output.find('http://www.sun.com') >= 0 or output.find('http://docs.sun.com') >=0:
+      if output.find(' Sun ') >= 0:
         return 1
     except RuntimeError:
       pass
