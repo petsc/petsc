@@ -17,7 +17,7 @@ typedef struct {
   const char   *name0,*name1;
 } ZoomCtx;
 
-#define RestrictBetween(x,min,max) ((PetscRealPart(x) > max) ? max ((PetscRealPart(x) < min) ? min : PetscRealPart(x)))
+#define RestrictBetween(x,min,max) ((PetscRealPart(x) > max) ? max : ((PetscRealPart(x) < min) ? min : PetscRealPart(x)))
 
 /*
        This does the drawing for one particular field
@@ -31,7 +31,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
   ZoomCtx        *zctx = (ZoomCtx*)ctx;
   PetscErrorCode ierr;
   PetscInt       m,n,i,j,k,step,id,c1,c2,c3,c4;
-  PetscReal      s,min,x1,x2,x3,x4,y_1,y2,y3,y4;
+  PetscReal      s,min,max,x1,x2,x3,x4,y_1,y2,y3,y4;
   PetscScalar   *v,*xy;
 
   PetscFunctionBegin;
