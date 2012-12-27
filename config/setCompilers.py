@@ -216,7 +216,7 @@ class Configure(config.base.Configure):
   def isSun(compiler):
     '''Returns true if the compiler is a Sun/Oracle compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck)
       output = output + error
       if output.find(' Sun ') >= 0:
         return 1
