@@ -51,13 +51,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = DMComplexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
   {
     DM refinedMesh     = PETSC_NULL;
     DM distributedMesh = PETSC_NULL;
 
     /* Refine mesh using a volume constraint */
-    ierr = DMComplexSetRefinementUniform(*dm, refinementUniform);CHKERRQ(ierr);
     ierr = DMComplexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
     ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
     if (refinedMesh) {
@@ -69,6 +67,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
+    }
+    if (refinementUniform) {
+      ierr = DMComplexSetRefinementUniform(*dm, refinementUniform);CHKERRQ(ierr);
+      ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
+      if (refinedMesh) {
+        ierr = DMDestroy(dm);CHKERRQ(ierr);
+        *dm  = refinedMesh;
+      }
     }
   }
   ierr = PetscObjectSetName((PetscObject) *dm, "Simplical Mesh");CHKERRQ(ierr);

@@ -5845,6 +5845,7 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
   ierr = DMGetPointSF(rdm, &sfNew);CHKERRQ(ierr);
   /* Caculate size of new SF */
   ierr = PetscSFGetGraph(sf, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
+  if (numRoots < 0) PetscFunctionReturn(0);
   for(l = 0; l < numLeaves; ++l) {
     const PetscInt p = localPoints[l];
 
