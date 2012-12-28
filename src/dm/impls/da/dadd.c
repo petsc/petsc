@@ -8,7 +8,7 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm) {
   PetscErrorCode   ierr;
   DMDALocalInfo    info;
   PetscReal        lmin[3],lmax[3];
-  PetscInt         xsize,ysize,zsize;
+  PetscInt         i,xsize,ysize,zsize;
   PetscInt         xo,yo,zo;
 
   PetscFunctionBegin;
@@ -65,6 +65,7 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm) {
 
   /* todo - nonuniform coordinates */
   ierr = DMDAGetLocalBoundingBox(dm,lmin,lmax);CHKERRQ(ierr);
+  for (i=info.dim; i<3; i++) {lmin[i] = 0; lmax[i] = 0;}
   ierr = DMDASetUniformCoordinates(da,lmin[0],lmax[0],lmin[1],lmax[1],lmin[2],lmax[2]);CHKERRQ(ierr);
 
   dd = (DM_DA *)da->data;
