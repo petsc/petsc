@@ -747,6 +747,10 @@ class Configure(config.package.Package):
       self.addDefine('HAVE_MPI_REPLACE',1) # MPI_REPLACE is strictly for use with the one-sided function MPI_Accumulate
     if self.libraries.check(self.dlib, "MPI_Type_get_envelope"):
       self.addDefine('HAVE_MPI_TYPE_GET_ENVELOPE',1)
+    if self.libraries.check(self.dlib, "MPI_Type_get_extent"):
+      self.addDefine('HAVE_MPI_TYPE_GET_EXTENT',1)
+    if self.libraries.check(self.dlib, "MPI_Type_dup"):
+      self.addDefine('HAVE_MPI_TYPE_DUP',1)
     if self.libraries.check(self.dlib, 'MPI_Init_thread'):
         self.addDefine('HAVE_MPI_INIT_THREAD',1)
     if self.libraries.check(self.dlib, "MPIX_Iallreduce"):
