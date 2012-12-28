@@ -127,9 +127,10 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
     const char *name;
     PetscInt    maxConeSize, maxSupportSize;
     PetscInt    pStart, pEnd, p;
-    PetscMPIInt rank;
+    PetscMPIInt rank, size;
 
     ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject) dm)->comm, &size);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
     ierr = DMComplexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = DMComplexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
@@ -164,6 +165,12 @@ PetscErrorCode DMComplexView_Ascii(DM dm, PetscViewer viewer)
     ierr = DMComplexGetLabel(dm, "marker", &markers);CHKERRQ(ierr);
     if (markers) {
       ierr = DMLabelView(markers,viewer);CHKERRQ(ierr);
+    }
+    if (size > 1) {
+      PetscSF sf;
+
+      ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+      ierr = PetscSFView(sf, viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_LATEX) {
@@ -5234,6 +5241,30 @@ PetscErrorCode DMComplexGenerate(DM boundary, const char name[], PetscBool inter
 typedef PetscInt CellRefiner;
 
 #undef __FUNCT__
+#define __FUNCT__ "GetDepthStart_Private"
+PETSC_STATIC_INLINE PetscErrorCode GetDepthStart_Private(PetscInt depth, PetscInt depthSize[], PetscInt *cStart, PetscInt *fStart, PetscInt *eStart, PetscInt *vStart)
+{
+  PetscFunctionBegin;
+  if (cStart) *cStart = 0;
+  if (vStart) *vStart = depthSize[depth];
+  if (fStart) *fStart = depthSize[depth] + depthSize[0];
+  if (eStart) *eStart = depthSize[depth] + depthSize[0] + depthSize[depth-1];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "GetDepthEnd_Private"
+PETSC_STATIC_INLINE PetscErrorCode GetDepthEnd_Private(PetscInt depth, PetscInt depthSize[], PetscInt *cEnd, PetscInt *fEnd, PetscInt *eEnd, PetscInt *vEnd)
+{
+  PetscFunctionBegin;
+  if (cEnd) *cEnd = depthSize[depth];
+  if (vEnd) *vEnd = depthSize[depth] + depthSize[0];
+  if (fEnd) *fEnd = depthSize[depth] + depthSize[0] + depthSize[depth-1];
+  if (eEnd) *eEnd = depthSize[depth] + depthSize[0] + depthSize[depth-1] + depthSize[1];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CellRefinerGetSizes"
 PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt depthSize[])
 {
@@ -5268,17 +5299,16 @@ PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt depthSiz
 #define __FUNCT__ "CellRefinerSetConeSizes"
 PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
-  PetscInt       cStart, cStartNew, cEnd, c, vStart, vStartNew, vEnd, v, fStart, fStartNew, fEnd, f, eStart, eEnd, r;
+  PetscInt       depth, cStart, cStartNew, cEnd, c, vStart, vStartNew, vEnd, v, fStart, fStartNew, fEnd, f, eStart, eStartNew, eEnd, r;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMComplexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  cStartNew = 0;
-  vStartNew = depthSize[2];
-  fStartNew = depthSize[2] + depthSize[0];
+  ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);
   switch(refiner) {
   case 1:
     /* Simplicial 2D */
@@ -5390,18 +5420,18 @@ PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt dept
 #define __FUNCT__ "CellRefinerSetCones"
 PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
-  PetscInt       cStart, cEnd, cStartNew, cEndNew, c, vStart, vEnd, vStartNew, vEndNew, v, fStart, fEnd, fStartNew, fEndNew, f, eStart, eEnd, r, p;
+  PetscInt       depth, cStart, cEnd, cStartNew, cEndNew, c, vStart, vEnd, vStartNew, vEndNew, v, fStart, fEnd, fStartNew, fEndNew, f, eStart, eEnd, eStartNew, eEndNew, r, p;
   PetscInt       maxSupportSize, *supportRef;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMComplexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  cStartNew = 0;                           cEndNew = depthSize[2];
-  vStartNew = depthSize[2];                vEndNew = depthSize[2] + depthSize[0];
-  fStartNew = depthSize[2] + depthSize[0]; fEndNew = depthSize[2] + depthSize[0] + depthSize[1];
+  ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);
+  ierr = GetDepthEnd_Private(depth, depthSize, &cEndNew, &fEndNew, &eEndNew, &vEndNew);CHKERRQ(ierr);
   switch(refiner) {
   case 1:
     /* Simplicial 2D */
@@ -5682,14 +5712,15 @@ PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, PetscInt de
   PetscSection   coordSection, coordSectionNew;
   Vec            coordinates, coordinatesNew;
   PetscScalar   *coords, *coordsNew;
-  PetscInt       dim, coordSizeNew, vStart, vStartNew, vEnd, v, fStart, fEnd, f;
+  PetscInt       dim, depth, coordSizeNew, vStart, vStartNew, vEnd, v, fStart, fEnd, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMComplexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  vStartNew = depthSize[2];
+  ierr = GetDepthStart_Private(depth, depthSize, PETSC_NULL, PETSC_NULL, PETSC_NULL, &vStartNew);CHKERRQ(ierr);
   ierr = DMComplexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = PetscSectionCreate(((PetscObject) dm)->comm, &coordSectionNew);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSectionNew, 1);CHKERRQ(ierr);
@@ -5752,6 +5783,170 @@ PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, PetscInt de
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMComplexCreateProcessSF"
+PetscErrorCode DMComplexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, PetscSF *sfProcess)
+{
+  PetscInt           numRoots, numLeaves, l;
+  const PetscInt    *localPoints;
+  const PetscSFNode *remotePoints;
+  PetscInt          *localPointsNew;
+  PetscSFNode       *remotePointsNew;
+  PetscInt          *ranks, *ranksNew;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
+  ierr = PetscMalloc(numLeaves * sizeof(PetscInt), &ranks);CHKERRQ(ierr);
+  for(l = 0; l < numLeaves; ++l) {
+    ranks[l] = remotePoints[l].rank;
+  }
+  ierr = PetscSortRemoveDupsInt(&numLeaves, ranks);CHKERRQ(ierr);
+  ierr = PetscMalloc(numLeaves * sizeof(PetscInt),    &ranksNew);CHKERRQ(ierr);
+  ierr = PetscMalloc(numLeaves * sizeof(PetscInt),    &localPointsNew);CHKERRQ(ierr);
+  ierr = PetscMalloc(numLeaves * sizeof(PetscSFNode), &remotePointsNew);CHKERRQ(ierr);
+  for(l = 0; l < numLeaves; ++l) {
+    ranksNew[l]              = ranks[l];
+    localPointsNew[l]        = l;
+    remotePointsNew[l].index = 0;
+    remotePointsNew[l].rank  = ranksNew[l];
+  }
+  ierr = PetscFree(ranks);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject) dm)->comm, numLeaves, ranksNew, PETSC_OWN_POINTER, processRanks);CHKERRQ(ierr);
+  ierr = PetscSFCreate(((PetscObject) dm)->comm, sfProcess);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(*sfProcess, 1, numLeaves, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CellRefinerCreateSF"
+PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
+{
+  PetscSF            sf, sfNew, sfProcess;
+  IS                 processRanks;
+  MPI_Datatype       depthType;
+  PetscInt           numRoots, numLeaves, numLeavesNew, l, m;
+  const PetscInt    *localPoints, *neighbors;
+  const PetscSFNode *remotePoints;
+  PetscInt          *localPointsNew;
+  PetscSFNode       *remotePointsNew;
+  PetscInt          *depthSizeOld, *rdepthSize, *rdepthSizeOld, *rvStart, *rvStartNew, *reStart, *reStartNew, *rfStart, *rfStartNew, *rcStart, *rcStartNew;
+  PetscInt           depth, numNeighbors, pStartNew, pEndNew, cStart, cStartNew, cEnd, vStart, vStartNew, vEnd, fStart, fStartNew, fEnd, eStart, eStartNew, eEnd, r, n;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = DMComplexGetChart(rdm, &pStartNew, &pEndNew);CHKERRQ(ierr);
+  ierr = DMComplexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMComplexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMComplexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+  ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);
+  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  ierr = DMGetPointSF(rdm, &sfNew);CHKERRQ(ierr);
+  /* Caculate size of new SF */
+  ierr = PetscSFGetGraph(sf, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
+  for(l = 0; l < numLeaves; ++l) {
+    const PetscInt p = localPoints[l];
+
+    switch(refiner) {
+    case 1:
+      /* Simplicial 2D */
+      if ((p >= vStart) && (p < vEnd)) {
+        /* Old vertices stay the same */
+        ++numLeavesNew;
+      } else if ((p >= fStart) && (p < fEnd)) {
+        /* Old faces add new faces and vertex */
+        numLeavesNew += 1 + 2;
+      } else if ((p >= cStart) && (p < cEnd)) {
+        /* Old cells add new cells and interior faces */
+        numLeavesNew += 4 + 3;
+      }
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
+    }
+  }
+  /* Communicate depthSizes for each remote rank */
+  ierr = DMComplexCreateProcessSF(dm, sf, &processRanks, &sfProcess);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(processRanks, &numNeighbors);CHKERRQ(ierr);
+  ierr = PetscMalloc5((depth+1)*numNeighbors,PetscInt,&rdepthSize,numNeighbors,PetscInt,&rvStartNew,numNeighbors,PetscInt,&reStartNew,numNeighbors,PetscInt,&rfStartNew,numNeighbors,PetscInt,&rcStartNew);CHKERRQ(ierr);
+  ierr = PetscMalloc6(depth+1,PetscInt,&depthSizeOld,(depth+1)*numNeighbors,PetscInt,&rdepthSizeOld,numNeighbors,PetscInt,&rvStart,numNeighbors,PetscInt,&reStart,numNeighbors,PetscInt,&rfStart,numNeighbors,PetscInt,&rcStart);CHKERRQ(ierr);
+  ierr = MPI_Type_contiguous(depth+1, MPIU_INT, &depthType);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(&depthType);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(sfProcess, depthType, depthSize, rdepthSize);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfProcess, depthType, depthSize, rdepthSize);CHKERRQ(ierr);
+  for(n = 0; n < numNeighbors; ++n) {
+    ierr = GetDepthStart_Private(depth, &rdepthSize[n*(depth+1)], &rcStartNew[n], &rfStartNew[n], &reStartNew[n], &rvStartNew[n]);CHKERRQ(ierr);
+  }
+  depthSizeOld[depth]   = cEnd - cStart;
+  depthSizeOld[0]       = vEnd - vStart;
+  depthSizeOld[depth-1] = fEnd - fStart;
+  depthSizeOld[1]       = eEnd - eStart;
+  ierr = PetscSFBcastBegin(sfProcess, depthType, depthSizeOld, rdepthSizeOld);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(sfProcess, depthType, depthSizeOld, rdepthSizeOld);CHKERRQ(ierr);
+  for(n = 0; n < numNeighbors; ++n) {
+    ierr = GetDepthStart_Private(depth, &rdepthSizeOld[n*(depth+1)], &rcStart[n], &rfStart[n], &reStart[n], &rvStart[n]);CHKERRQ(ierr);
+  }
+  ierr = MPI_Type_free(&depthType);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&sfProcess);CHKERRQ(ierr);
+  /* Calculate new point SF */
+  ierr = PetscMalloc(numLeavesNew * sizeof(PetscInt),    &localPointsNew);CHKERRQ(ierr);
+  ierr = PetscMalloc(numLeavesNew * sizeof(PetscSFNode), &remotePointsNew);CHKERRQ(ierr);
+  ierr = ISGetIndices(processRanks, &neighbors);CHKERRQ(ierr);
+  for(l = 0, m = 0; l < numLeaves; ++l) {
+    PetscInt    p     = localPoints[l];
+    PetscInt    rp    = remotePoints[l].index, n;
+    PetscMPIInt rrank = remotePoints[l].rank;
+
+    ierr = PetscFindInt(rrank, numNeighbors, neighbors, &n);CHKERRQ(ierr);
+    if (n < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Could not locate remote rank %d", rrank);
+    switch(refiner) {
+    case 1:
+      /* Simplicial 2D */
+      if ((p >= vStart) && (p < vEnd)) {
+        /* Old vertices stay the same */
+        localPointsNew[m]        = vStartNew     + (p  - vStart);
+        remotePointsNew[m].index = rvStartNew[n] + (rp - rvStart[n]);
+        remotePointsNew[m].rank  = rrank;
+        ++m;
+      } else if ((p >= fStart) && (p < fEnd)) {
+        /* Old faces add new faces and vertex */
+        localPointsNew[m]        = vStartNew     + (vEnd - vStart)              + (p  - fStart);
+        remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+0] + (rp - rfStart[n]);
+        remotePointsNew[m].rank  = rrank;
+        ++m;
+        for(r = 0; r < 2; ++r, ++m) {
+          localPointsNew[m]        = fStartNew     + (p  - fStart)*2     + r;
+          remotePointsNew[m].index = rfStartNew[n] + (rp - rfStart[n])*2 + r;
+          remotePointsNew[m].rank  = rrank;
+        }
+      } else if ((p >= cStart) && (p < cEnd)) {
+        /* Old cells add new cells and interior faces */
+        for(r = 0; r < 4; ++r, ++m) {
+          localPointsNew[m]        = cStartNew     + (p  - cStart)*4     + r;
+          remotePointsNew[m].index = rcStartNew[n] + (rp - rcStart[n])*4 + r;
+          remotePointsNew[m].rank  = rrank;
+        }
+        for(r = 0; r < 3; ++r, ++m) {
+          localPointsNew[m]        = fStartNew     + (fEnd - fStart)*2                    + (p  - cStart)*3     + r;
+          remotePointsNew[m].index = rfStartNew[n] + rdepthSizeOld[n*(depth+1)+depth-1]*2 + (rp - rcStart[n])*3 + r;
+          remotePointsNew[m].rank  = rrank;
+        }
+      }
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
+    }
+  }
+  ierr = ISRestoreIndices(processRanks, &neighbors);CHKERRQ(ierr);
+  ierr = ISDestroy(&processRanks);CHKERRQ(ierr);
+  ierr = PetscSFSetGraph(sfNew, pEndNew-pStartNew, numLeavesNew, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  ierr = PetscFree5(rdepthSize,rvStartNew,reStartNew,rfStartNew,rcStartNew);CHKERRQ(ierr);
+  ierr = PetscFree6(depthSizeOld,rdepthSizeOld,rvStart,reStart,rfStart,rcStart);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CellRefinerCreateLabels"
 PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
 {
@@ -5767,7 +5962,6 @@ PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscInt dept
   cStartNew = 0;
   vStartNew = depthSize[2];
   fStartNew = depthSize[2] + depthSize[0];
-  /* Step 10: Convert labels */
   ierr = DMComplexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
   for(l = 0; l < numLabels; ++l) {
     DMLabel         label, labelNew;
@@ -5878,7 +6072,7 @@ PetscErrorCode DMComplexRefine_Uniform(DM dm, CellRefiner refiner, DM *dmRefined
   /* Step 6: Set coordinates for vertices */
   ierr = CellRefinerSetCoordinates(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
   /* Step 7: Create pointSF */
-  ierr = DMComplexShiftSF_Private(dm, depthSize, rdm);CHKERRQ(ierr);
+  ierr = CellRefinerCreateSF(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
   /* Step 8: Create labels */
   ierr = CellRefinerCreateLabels(cellRefiner, dm, depthSize, rdm);CHKERRQ(ierr);
   ierr = PetscFree(depthSize);CHKERRQ(ierr);
