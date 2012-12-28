@@ -40,7 +40,7 @@
 #  define BLASgemm_    SGEMM
 #  define BLAStrsm_    STRSM
 #  define LAPACKstebz_ SSTEBZ
-#  define LAPACKstev_  SSTEV  /* eigenvalues of symm tridiagonal matrix */
+#  define LAPACKsteqr_ SSTEQR  /* eigenvalues of symm tridiagonal matrix */
 #  define LAPACKhseqr_ SHSEQR
 #  define LAPACKgges_  SGGES
 #  define LAPACKtrsen_ STRSEN
@@ -82,7 +82,7 @@
 #  define BLASgemm_    DGEMM
 #  define BLAStrsm_    DTRSM
 #  define LAPACKstebz_ DSTEBZ
-#  define LAPACKstev_  DSTEV
+#  define LAPACKsteqr_ DSTEQR
 #  define LAPACKhseqr_ DHSEQR
 #  define LAPACKgges_  DGGES
 #  define LAPACKtrsen_ DTRSEN
@@ -127,7 +127,7 @@
 #  define LAPACKsygvx_ CHEGVX
 #  define LAPACKpttrs_ CPTTRS 
 /* LAPACKstebz_ does not exist for complex. */
-#  define LAPACKstev_  CSTEQR /* there is no cstev, but the interface is the same */
+#  define LAPACKsteqr_ CSTEQR
 #  define LAPACKhseqr_ CHSEQR
 #  define LAPACKgges_  CGGES
 #  define LAPACKtrsen_ CTRSEN
@@ -169,7 +169,7 @@
 #  define LAPACKsygvx_ ZHEGVX
 #  define LAPACKpttrs_ ZPTTRS 
 /* LAPACKstebz_ does not exist for complex. */
-#  define LAPACKstev_  ZSTEQR /* there is no zstev, but the interface is the same */
+#  define LAPACKsteqr_ ZSTEQR
 #  define LAPACKhseqr_ ZHSEQR
 #  define LAPACKgges_  ZGGES
 #  define LAPACKtrsen_ ZTRSEN
