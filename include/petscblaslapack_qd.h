@@ -37,7 +37,7 @@
 #  define LAPACKsygv_  ssygv_
 #  define LAPACKsygvx_ ssygvx_
 #  define LAPACKstebz_ sstebz_
-#  define LAPACKstev_  sstev_
+#  define LAPACKsteqr_ ssteqr_
 #else
 /* Complex with no character string arguments */
 #  define LAPACKgeqrf_ cgeqrf_

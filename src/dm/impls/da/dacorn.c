@@ -287,7 +287,7 @@ PetscErrorCode  DMDAGetLocalBoundingBox(DM da,PetscReal lmin[],PetscReal lmax[])
     for (i=0; i<Ni; i++) {
       for (j=0; j<3; j++) {
         min[j] = j < dim ? PetscMin(min[j],PetscRealPart(local_coords[i*dim+j])) : 0;
-        max[j] = j < dim ? PetscMax(min[j],PetscRealPart(local_coords[i*dim+j])) : 0;
+        max[j] = j < dim ? PetscMax(max[j],PetscRealPart(local_coords[i*dim+j])) : 0;
       }
     }
     ierr = VecRestoreArrayRead(coords,&local_coords);CHKERRQ(ierr);

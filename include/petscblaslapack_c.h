@@ -41,7 +41,7 @@
 #  define LAPACKsygv_  ssygv
 #  define LAPACKsygvx_ ssygvx
 #  define LAPACKstebz_ sstebz /* eigenvalues of symm tridiagonal matrix */
-#  define LAPACKstev_  sstev  /* eigenvalues and eigenvectors of symm tridiagonal */
+#  define LAPACKsteqr_ ssteqr  /* eigenvalues and eigenvectors of symm tridiagonal */
 #  define LAPACKhseqr_ shseqr
 #  define LAPACKgges_  sgges
 #  define LAPACKtrsen_ strsen
@@ -83,7 +83,7 @@
 #  define LAPACKsygv_  dsygv
 #  define LAPACKsygvx_ dsygvx
 #  define LAPACKstebz_ dstebz
-#  define LAPACKstev_  dstev
+#  define LAPACKsteqr_ dsteqr
 #  define LAPACKhseqr_ dhseqr
 #  define LAPACKgges_  dgges
 #  define LAPACKtrsen_ dtrsen
@@ -133,7 +133,7 @@
 #  define LAPACKhgeqz_ chgeqz
 #  define LAPACKtrtrs_ ctrtrs
 /* LAPACKstebz_ does not exist for complex. */
-#  define LAPACKstev_  csteqr /* there is no cstev, but the interface is the same */
+#  define LAPACKsteqr_ csteqr
 # else
 /* Complex double precision with no character string arguments */
 #  define LAPACKgeqrf_ zgeqrf
@@ -175,7 +175,7 @@
 #  define LAPACKhgeqz_ zhgeqz
 #  define LAPACKtrtrs_ ztrtrs
 /* LAPACKstebz_ does not exist for complex. */
-#  define LAPACKstev_ zsteqr /* there is no zstev, but the interface is the same */
+#  define LAPACKsteqr_ zsteqr
 # endif
 #endif
 

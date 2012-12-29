@@ -99,11 +99,6 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
   PetscInt i;
   PetscReal *work;
   PetscScalar *Z;
-#if defined(PETSC_HAVE_COMPLEX)
-  char compz[] = "I";           /* compute the eigenvectors of the tridiagonal matrix directly */
-#else
-  char compz[] = "V";
-#endif
   PetscBLASInt N,LDZ,info;
 
   PetscFunctionBegin;
@@ -117,9 +112,9 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
   N = PetscBLASIntCast(npoints);
   LDZ = N;
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-  LAPACKstev_(compz,&N,x,w,Z,&LDZ,work,&info);
+  LAPACKsteqr_("I",&N,x,w,Z,&LDZ,work,&info);
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xSTEV/xSTEQR error");
+  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xSTEQR error");
 
   for (i=0; i<(npoints+1)/2; i++) {
     PetscReal y = 0.5 * (-x[i] + x[npoints-i-1]); /* enforces symmetry */
