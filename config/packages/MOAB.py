@@ -18,10 +18,11 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.mpi             = framework.require('config.packages.MPI', self)
-    self.hdf5            = framework.require('config.packages.hdf5', self)
-    self.netcdf          = framework.require('config.packages.netcdf', self)
-    self.odeps           = [self.mpi, self.hdf5, self.netcdf]
+    self.mpi       = framework.require('config.packages.MPI', self)
+    self.hdf5      = framework.require('config.packages.hdf5', self)
+    self.netcdf    = framework.require('config.packages.netcdf', self)
+    self.netcdfcxx = framework.require('config.packages.netcdfcxx', self)
+    self.odeps     = [self.mpi, self.hdf5, self.netcdf, self.netcdfcxx]
     return
 
 

@@ -172,6 +172,7 @@ class Package(config.base.Configure):
     return []
 
   def getInstallDir(self):
+    if not self.arch:  raise RuntimeError('Why the hell is self.arch not defined for this package -- '+self.package+'\n')
     self.installDir = os.path.join(self.defaultInstallDir, self.arch)
     self.confDir    = os.path.join(self.installDir, 'conf')
     self.includeDir = os.path.join(self.installDir, 'include')
@@ -600,7 +601,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
     self.includes         - names of header files to locate               [list of strings]
     self.liblist          - names of library files to locate              [list of lists of strings]
     self.functions        - names of functions to locate in libraries     [list of strings]
-    self.cxx              - whether C++ is required for this package      [bool]
+    self.cxx              - whether C++ compiler, (this does not require that PETSc be built with C++, should it?) is required for this package      [bool]
     self.functionsFortran - whether to mangle self.functions symbols      [bool]
   Most of these instance variables determine the behavior of the location/installation and the testing stages.
   Ideally, a package subclass would extend only the __init__ method and parameterize the remainder of
