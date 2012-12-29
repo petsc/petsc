@@ -1,5 +1,5 @@
 
-DIRS     = multiphysics
+DIRS     = python
 LOCDIR   = tutorials/
 MANSEC   = SNES
 
