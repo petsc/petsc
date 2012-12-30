@@ -63,6 +63,7 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a,MPI_Datatype b,PetscBool *ma
         ierr = PetscMemcmp(atypes,btypes,atypecount*sizeof(atypes[0]),&same);CHKERRQ(ierr);
       }
     }
+    ierr = PetscFree6(aints,bints,aaddrs,baddrs,atypes,btypes);CHKERRQ(ierr);
     if (same) *match = PETSC_TRUE;
     PetscFunctionReturn(0);
   }
