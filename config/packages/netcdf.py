@@ -13,6 +13,7 @@ class Configure(config.package.GNUPackage):
     self.includes        = ['netcdf.h']
     self.liblist         = [['libnetcdf.a']]
     self.cxx             = 1
+    self.excludedDirs    = ['netcdf-cxx']
     return
 
   def setupDependencies(self, framework):
@@ -35,7 +36,7 @@ class Configure(config.package.GNUPackage):
     configOpts.append('--libdir='+os.path.join(self.installDir,self.libdir))
     configOpts.append('--disable-dap')
     configOpts.append('--disable-hdf4')
-    configOpts.append('--disable-netcdf-4')
+    configOpts.append('--enable-netcdf-4')
 
     self.setCompilers.pushLanguage('C')
     cflags = self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')

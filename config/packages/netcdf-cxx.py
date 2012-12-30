@@ -3,14 +3,18 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.downloadpath    = 'http://www.unidata.ucar.edu/downloads/netcdf/ftp/'
-    self.downloadext     = 'tar.gz'
-    self.downloadversion = '4.4.2'
-    self.functions       = ['nccreate']
-    self.includes        = ['netcdf.h']
-    self.liblist         = [['libnetcdf.a']]
-    self.cxx             = 1
+    self.downloadpath     = 'http://www.unidata.ucar.edu/downloads/netcdf/ftp/'
+    self.downloadext      = 'tar.gz'
+    self.downloadversion  = '4-4.2'
+    self.functions        = []
+    self.includes         = ['netcdfcpp.h']
+    self.liblist          = [['libnetcdf_c++.a']]
+    self.cxx              = 1
     return
+
+  def setupDownload(self):
+    '''Need this because the default puts a '-' between the name and the version number'''
+    self.download = [self.downloadpath+self.downloadname+self.downloadversion+'.'+self.downloadext]
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
