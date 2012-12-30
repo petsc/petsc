@@ -74,8 +74,9 @@
        parameter (MPI_INTEGER8=8)
        parameter (MPI_2DOUBLE_PRECISION=9)
 
-       integer MPI_MAXLOC
+       integer MPI_MAXLOC,MPI_MINLOC
        parameter (MPI_MAXLOC=5)
+       parameter (MPI_MINLOC=6)
 
        integer MPI_MAX_PROCESSOR_NAME
        parameter (MPI_MAX_PROCESSOR_NAME=128-1)
