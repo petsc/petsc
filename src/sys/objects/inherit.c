@@ -191,8 +191,8 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
 
   PetscFunctionBegin;
   if (PetscObjectsCounts) {
-    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"The following objects were never freed\n");
-    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"-----------------------------------------\n");
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"The following objects were never freed\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"-----------------------------------------\n");CHKERRQ(ierr);
     for (i=0; i<PetscObjectsMaxCounts; i++) {
       if ((h = PetscObjects[i])) {
         ierr = PetscObjectName(h);CHKERRQ(ierr);

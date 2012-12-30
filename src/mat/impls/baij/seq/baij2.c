@@ -501,7 +501,7 @@ PetscErrorCode MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
   PetscScalar       x1,x2,x3,x4,x5,x6,*zarray;
   const MatScalar   *v;
   PetscErrorCode    ierr;
-  PetscInt          mbs=a->mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscInt          mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL,nonzerorow=0;
   PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
@@ -984,7 +984,7 @@ PetscErrorCode MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
   PetscScalar    *x,*z = 0,*xb,*work,*workt,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,i,*idx,*ii,bs=A->rmap->bs,j,n,bs2=a->bs2;
+  PetscInt       mbs,i,*idx,*ii,bs=A->rmap->bs,j,n,bs2=a->bs2;
   PetscInt       ncols,k,*ridx=PETSC_NULL,nonzerorow=0;
   PetscBool      usecprow=a->compressedrow.use;
 
@@ -1590,7 +1590,6 @@ PetscErrorCode MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
 #undef __FUNCT__
 #define __FUNCT__ "MatMultHermitianTransposeAdd_SeqBAIJ"
 PetscErrorCode MatMultHermitianTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
-
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar       *zb,*x,*z,*xb = 0,x1,x2,x3,x4,x5;

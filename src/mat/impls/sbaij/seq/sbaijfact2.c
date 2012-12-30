@@ -2196,7 +2196,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,const MatFa
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b;
   PetscErrorCode ierr;
-  const PetscInt *rip,mbs = a->mbs,*ai = a->i,*aj = a->j;
+  const PetscInt *rip,mbs = a->mbs,*ai,*aj;
   PetscInt       *jutmp,bs = A->rmap->bs,bs2=a->bs2,i;
   PetscInt       m,reallocs = 0,*levtmp;
   PetscInt       *prowl,*q,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;

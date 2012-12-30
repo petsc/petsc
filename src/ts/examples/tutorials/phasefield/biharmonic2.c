@@ -97,7 +97,7 @@ int main(int argc,char **argv)
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,PETSC_NULL,FormFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxsteps,.02);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_INTERPOLATE);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine

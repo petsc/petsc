@@ -599,16 +599,16 @@ PetscErrorCode  PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar 
 PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const PetscInt *aJ, PetscInt bn, const PetscInt *bI, const PetscInt *bJ, PetscInt *n, PetscInt **L, PetscInt **J)
 {
   PetscErrorCode ierr;
-  PetscInt n_, *L_ = *L, *J_= *J, ak, bk, k;
+  PetscInt       n_, *L_ = *L, *J_= *J, ak, bk, k;
 
   n_ = an + bn;
   *n = n_;
   if (!L_) {
-    ierr = PetscMalloc(n_*sizeof(PetscInt), L); CHKERRQ(ierr);
+    ierr = PetscMalloc(n_*sizeof(PetscInt), L);CHKERRQ(ierr);
     L_ = *L;
   }
   if (!J_){
-    ierr = PetscMalloc(n_*sizeof(PetscInt), &J_); CHKERRQ(ierr);
+    ierr = PetscMalloc(n_*sizeof(PetscInt), &J_);CHKERRQ(ierr);
     J_ = *J;
   }
   k = ak = bk = 0;
@@ -627,14 +627,13 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt *aI, const Pet
     }
   }
   if (ak < an) {
-    ierr = PetscMemcpy(L_+k,aI+ak,(an-ak)*sizeof(PetscInt)); CHKERRQ(ierr);
-    ierr = PetscMemcpy(J_+k,aJ+ak,(an-ak)*sizeof(PetscInt)); CHKERRQ(ierr);
+    ierr = PetscMemcpy(L_+k,aI+ak,(an-ak)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(J_+k,aJ+ak,(an-ak)*sizeof(PetscInt));CHKERRQ(ierr);
     k += (an-ak);
   }
   if (bk < bn) {
-    ierr = PetscMemcpy(L_+k,bI+bk,(bn-bk)*sizeof(PetscInt)); CHKERRQ(ierr);
-    ierr = PetscMemcpy(J_+k,bJ+bk,(bn-bk)*sizeof(PetscInt)); CHKERRQ(ierr);
-    k += (bn-bk);
+    ierr = PetscMemcpy(L_+k,bI+bk,(bn-bk)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMemcpy(J_+k,bJ+bk,(bn-bk)*sizeof(PetscInt));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -677,7 +676,6 @@ PetscErrorCode  PetscProcessTree(PetscInt n,const PetscBool  mask[],const PetscI
     if (parentid[i]  == i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Node labeled as own parent");
     if (parentid[i] && mask[parentid[i]]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Parent is masked");
   }
-
 
   for (i=0; i<n; i++) {
     if (!mask[i]) nmask++;

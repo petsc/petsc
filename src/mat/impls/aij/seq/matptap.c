@@ -77,7 +77,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
 
   /* Set initial free space to be fill*nnz(A). */
   /* This should be reasonable if sparsity of PtAP is similar to that of A. */
-  ierr          = PetscFreeSpaceGet((PetscInt)(fill*ai[am]),&free_space);
+  ierr          = PetscFreeSpaceGet((PetscInt)(fill*ai[am]),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   /* Determine symbolic info for each row of C: */

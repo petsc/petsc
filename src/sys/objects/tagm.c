@@ -201,7 +201,7 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   ierr = MPI_Attr_get(*comm_out,Petsc_ThreadComm_keyval,(PetscThreadComm*)&tcomm,&flg);CHKERRQ(ierr);
   if (flg) {
     PetscInt trank;
-    ierr = PetscThreadCommGetRank(tcomm,&trank);
+    ierr = PetscThreadCommGetRank(tcomm,&trank);CHKERRQ(ierr);
     if (!trank) counter->refcount++; /* number of references to this comm */
   } else counter->refcount++;
 

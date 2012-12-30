@@ -4820,7 +4820,7 @@ PetscErrorCode MatViewFromOptions(Mat mat,const char optionname[])
   PetscErrorCode    ierr;
   PetscViewer       viewer;
   PetscBool         flg;
-  PetscBool         incall = PETSC_FALSE;
+  static PetscBool  incall = PETSC_FALSE;
   PetscViewerFormat format;
 
   PetscFunctionBegin;

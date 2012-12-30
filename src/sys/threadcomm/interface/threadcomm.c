@@ -359,7 +359,7 @@ PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt
       for (i=0;i<tcomm->nworkThreads;i++) tcomm->affinities[i] = i%N_CORES;
     }
   } else {
-    ierr = PetscMemcpy(tcomm->affinities,affinities,tcomm->nworkThreads*sizeof(PetscInt));
+    ierr = PetscMemcpy(tcomm->affinities,affinities,tcomm->nworkThreads*sizeof(PetscInt));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

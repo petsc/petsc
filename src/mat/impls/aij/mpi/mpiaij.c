@@ -2367,7 +2367,7 @@ PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     ierr = MatAXPYGetPreallocation_MPIAIJ(yy->B,yy->garray,xx->B,xx->garray,nnz_o);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(B,0,nnz_d,0,nnz_o);CHKERRQ(ierr);
     ierr = MatAXPY_BasicWithPreallocation(B,Y,a,X,str);CHKERRQ(ierr);
-    ierr = MatHeaderReplace(Y,B);
+    ierr = MatHeaderReplace(Y,B);CHKERRQ(ierr);
     ierr = PetscFree(nnz_d);CHKERRQ(ierr);
     ierr = PetscFree(nnz_o);CHKERRQ(ierr);
   }
@@ -2647,7 +2647,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
     /* get the destination processors' id send_rank, nsends and nrecvs */
     ierr = MPI_Comm_rank(subcomm,&subrank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
-    ierr = PetscMalloc2(size,PetscMPIInt,&send_rank,size,PetscMPIInt,&recv_rank);
+    ierr = PetscMalloc2(size,PetscMPIInt,&send_rank,size,PetscMPIInt,&recv_rank);CHKERRQ(ierr);
     np_subcomm = size/nsubcomm;
     nleftover  = size - nsubcomm*np_subcomm;
     nsends = 0; nrecvs = 0;
@@ -2723,8 +2723,9 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
       row = i + rstart;
       nzA    = a->i[i+1] - a->i[i]; nzB = b->i[i+1] - b->i[i];
       ncols  = nzA + nzB;
-      cworkA = a->j + a->i[i]; cworkB = b->j + b->i[i];
-      aworkA = a->a + a->i[i]; aworkB = b->a + b->i[i];
+      cworkB = b->j + b->i[i];
+      aworkA = a->a + a->i[i];
+      aworkB = b->a + b->i[i];
       lwrite = 0;
       for (l=0; l<nzB; l++) {
         if ((ctmp = bmap[cworkB[l]]) < cstart) vals[lwrite++] = aworkB[l];
@@ -4568,7 +4569,7 @@ PetscErrorCode MatFileSplit(Mat A,char *outfile)
   ierr = PetscMalloc((len+5)*sizeof(char),&name);CHKERRQ(ierr);
   sprintf(name,"%s.%d",outfile,rank);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_APPEND,&out);CHKERRQ(ierr);
-  ierr = PetscFree(name);
+  ierr = PetscFree(name);CHKERRQ(ierr);
   ierr = MatView(B,out);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&out);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -4619,7 +4620,7 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJNumeric(Mat seqmat,Mat mpimat)
   MPI_Comm             comm=((PetscObject)mpimat)->comm;
   Mat_SeqAIJ           *a=(Mat_SeqAIJ*)seqmat->data;
   PetscMPIInt          size,rank,taga,*len_s;
-  PetscInt             N=mpimat->cmap->N,i,j,*owners,*ai=a->i,*aj=a->j;
+  PetscInt             N=mpimat->cmap->N,i,j,*owners,*ai=a->i,*aj;
   PetscInt             proc,m;
   PetscInt             **buf_ri,**buf_rj;
   PetscInt             k,anzi,*bj_i,*bi,*bj,arow,bnzi,nextaj;
@@ -4773,7 +4774,6 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscI
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&merge->len_s);CHKERRQ(ierr);
 
   m      = merge->rowmap->n;
-  M      = merge->rowmap->N;
   owners = merge->rowmap->range;
 
   /* determine the number of messages to send, their lengths */
@@ -4887,7 +4887,6 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm,Mat seqmat,PetscI
   ierr = PetscLLCreate(N,N,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
   /* initial FreeSpace size is 2*(num of local nnz(seqmat)) */
-  len = 0;
   len  = ai[owners[rank+1]] - ai[owners[rank]];
   ierr = PetscFreeSpaceGet((PetscInt)(2*len+1),&free_space);CHKERRQ(ierr);
   current_space = free_space;

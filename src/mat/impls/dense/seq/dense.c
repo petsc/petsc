@@ -1225,7 +1225,7 @@ PetscErrorCode MatEqual_SeqDense(Mat A1,Mat A2,PetscBool  *flg)
   Mat_SeqDense *mat1 = (Mat_SeqDense*)A1->data;
   Mat_SeqDense *mat2 = (Mat_SeqDense*)A2->data;
   PetscInt     i,j;
-  PetscScalar  *v1 = mat1->v,*v2 = mat2->v;
+  PetscScalar  *v1,*v2;
 
   PetscFunctionBegin;
   if (A1->rmap->n != A2->rmap->n) {*flg = PETSC_FALSE; PetscFunctionReturn(0);}

@@ -1268,7 +1268,7 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 	for (j=0; j<n; j++) {
 	  r1 += (*aa++)*b1[*aj++];
 	}
-	c[col*am + ridx[i]] += r1;
+	c[colam + ridx[i]] += r1;
       }
       b1 += bm;
     }
@@ -1297,6 +1297,7 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
       b4 += bm4;
     }
     for (;col<cn; col++){     /* over extra columns of C */
+      colam = col*am;
       for (i=0; i<am; i++) {  /* over rows of C in those columns */
 	r1 = 0.0;
 	n   = a->i[i+1] - a->i[i];
@@ -1306,7 +1307,7 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 	for (j=0; j<n; j++) {
 	  r1 += (*aa++)*b1[*aj++];
 	}
-	c[col*am + i]     += r1;
+	c[colam + i]     += r1;
       }
       b1 += bm;
     }

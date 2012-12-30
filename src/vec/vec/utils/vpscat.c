@@ -225,8 +225,8 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   ierr = PetscFree(from->local.slots_nonmatching);CHKERRQ(ierr);
   ierr = PetscFree(to->rev_requests);CHKERRQ(ierr);
   ierr = PetscFree(from->rev_requests);CHKERRQ(ierr);
-  ierr = PetscFree(to->requests);
-  ierr = PetscFree(from->requests);
+  ierr = PetscFree(to->requests);CHKERRQ(ierr);
+  ierr = PetscFree(from->requests);CHKERRQ(ierr);
   ierr = PetscFree4(to->values,to->indices,to->starts,to->procs);CHKERRQ(ierr);
   ierr = PetscFree2(to->sstatus,to->rstatus);CHKERRQ(ierr);
   ierr = PetscFree4(from->values,from->indices,from->starts,from->procs);CHKERRQ(ierr);
@@ -1981,7 +1981,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
   if (to->use_alltoallv) {
 
     ierr       = PetscMalloc2(size,PetscMPIInt,&to->counts,size,PetscMPIInt,&to->displs);CHKERRQ(ierr);
-    ierr       = PetscMemzero(to->counts,size*sizeof(PetscMPIInt));
+    ierr       = PetscMemzero(to->counts,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
     for (i=0; i<to->n; i++) {
       to->counts[to->procs[i]] = bs*(to->starts[i+1] - to->starts[i]);
     }
@@ -1991,7 +1991,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
     }
 
     ierr       = PetscMalloc2(size,PetscMPIInt,&from->counts,size,PetscMPIInt,&from->displs);CHKERRQ(ierr);
-    ierr       = PetscMemzero(from->counts,size*sizeof(PetscMPIInt));
+    ierr       = PetscMemzero(from->counts,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
     for (i=0; i<from->n; i++) {
       from->counts[from->procs[i]] = bs*(from->starts[i+1] - from->starts[i]);
     }

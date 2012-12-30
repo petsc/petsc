@@ -928,7 +928,7 @@ PetscErrorCode  PetscFinalize(void)
     printf("PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
-  ierr = PetscInfo(PETSC_NULL,"PetscFinalize() called\n");
+  ierr = PetscInfo(PETSC_NULL,"PetscFinalize() called\n");CHKERRQ(ierr);
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
   ierr = PetscFPTDestroy();CHKERRQ(ierr);

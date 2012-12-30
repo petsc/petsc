@@ -820,7 +820,7 @@ PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pet
     ierr = MPI_Waitall(nrecvs2,recv_waits,recv_statuses);CHKERRQ(ierr);
     ierr = PetscFree(recv_statuses);CHKERRQ(ierr);
   }
-  ierr = PetscFree(recv_waits);
+  ierr = PetscFree(recv_waits);CHKERRQ(ierr);
 
   starts3[0] = 0;
   nt         = 0;

@@ -1390,7 +1390,7 @@ PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
 
    Level: beginner
 
-.seealso: TSExactFinalTime
+.seealso: TSExactFinalTimeOption
 @*/
 PetscErrorCode  TSSetExactFinalTime(TS ts,TSExactFinalTimeOption eftopt)
 {

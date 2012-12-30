@@ -401,7 +401,7 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
       while ((string = Petscgetline(fd))) {
         /* eliminate comments from each line */
         for (i=0; i<3; i++){
-          ierr = PetscStrchr(string,cmt[i],&cmatch);
+          ierr = PetscStrchr(string,cmt[i],&cmatch);CHKERRQ(ierr);
           if (cmatch) *cmatch = 0;
         }
         ierr = PetscStrlen(string,&len);CHKERRQ(ierr);
@@ -798,7 +798,7 @@ PetscErrorCode  PetscOptionsPrefixPush(const char prefix[])
   PetscValidCharPointer(prefix,1);
   /* Want to check validity of the key using PetscOptionsValidKey(), which requires that the first character is a '-' */
   buf[0] = '-';
-  ierr = PetscStrncpy(buf+1,prefix,sizeof(buf) - 1);
+  ierr = PetscStrncpy(buf+1,prefix,sizeof(buf) - 1);CHKERRQ(ierr);
   buf[sizeof(buf) - 1] = 0;
   ierr = PetscOptionsValidKey(buf,&key);CHKERRQ(ierr);
   if (!key) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Given prefix \"%s\" not valid (the first character must be a letter, do not include leading '-')",prefix);
