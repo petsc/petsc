@@ -43,17 +43,33 @@ runex1_4:
 	-@${MPIEXEC} -n 4 ./ex1 -test_gather  > ex1_4.tmp 2>&1; \
 	   ${DIFF} output/ex1_4.out ex1_4.tmp || echo "${PWD}\n Possible problem with with ex1_4, diffs above \n========================================="; \
 	   ${RM} -f ex1_4.tmp
+runex1_4_basic:
+	-@${MPIEXEC} -n 4 ./ex1 -test_gather -sf_type basic  > ex1_4.tmp 2>&1; \
+	   ${DIFF} output/ex1_4_basic.out ex1_4.tmp || echo "${PWD}\n Possible problem with with ex1_4_basic, diffs above \n========================================="; \
+	   ${RM} -f ex1_4.tmp
 runex1_5:
 	-@${MPIEXEC} -n 4 ./ex1 -test_scatter  > ex1_5.tmp 2>&1; \
 	   ${DIFF} output/ex1_5.out ex1_5.tmp || echo "${PWD}\n Possible problem with with ex1_5, diffs above \n========================================="; \
+	   ${RM} -f ex1_5.tmp
+runex1_5_basic:
+	-@${MPIEXEC} -n 4 ./ex1 -test_scatter -sf_type basic  > ex1_5.tmp 2>&1; \
+	   ${DIFF} output/ex1_5_basic.out ex1_5.tmp || echo "${PWD}\n Possible problem with with ex1_5_basic, diffs above \n========================================="; \
 	   ${RM} -f ex1_5.tmp
 runex1_6:
 	-@${MPIEXEC} -n 4 ./ex1 -test_embed  > ex1_6.tmp 2>&1; \
 	   ${DIFF} output/ex1_6.out ex1_6.tmp || echo "${PWD}\n Possible problem with with ex1_6, diffs above \n========================================="; \
 	   ${RM} -f ex1_6.tmp
+runex1_6_basic:
+	-@${MPIEXEC} -n 4 ./ex1 -test_embed -sf_type basic > ex1_6.tmp 2>&1; \
+	   ${DIFF} output/ex1_6_basic.out ex1_6.tmp || echo "${PWD}\n Possible problem with with ex1_6_basic, diffs above \n========================================="; \
+	   ${RM} -f ex1_6.tmp
 runex1_7:
 	-@${MPIEXEC} -n 4 ./ex1 -test_invert  > ex1_7.tmp 2>&1; \
 	   ${DIFF} output/ex1_7.out ex1_7.tmp || echo "${PWD}\n Possible problem with with ex1_7, diffs above \n========================================="; \
+	   ${RM} -f ex1_7.tmp
+runex1_7_basic:
+	-@${MPIEXEC} -n 4 ./ex1 -test_invert -sf_type basic > ex1_7.tmp 2>&1; \
+	   ${DIFF} output/ex1_7_basic.out ex1_7.tmp || echo "${PWD}\n Possible problem with with ex1_7_basic, diffs above \n========================================="; \
 	   ${RM} -f ex1_7.tmp
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6 runex1_7 ex1.rm

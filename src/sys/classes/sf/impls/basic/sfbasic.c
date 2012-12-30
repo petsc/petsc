@@ -10,6 +10,12 @@ struct _n_PetscSFBasicPack {
   void (*UnpackMax)(PetscInt,const PetscInt*,void*,const void*);
   void (*UnpackMinloc)(PetscInt,const PetscInt*,void*,const void*);
   void (*UnpackMaxloc)(PetscInt,const PetscInt*,void*,const void*);
+  void (*FetchAndInsert)(PetscInt,const PetscInt*,void*,void*);
+  void (*FetchAndAdd)(PetscInt,const PetscInt*,void*,void*);
+  void (*FetchAndMin)(PetscInt,const PetscInt*,void*,void*);
+  void (*FetchAndMax)(PetscInt,const PetscInt*,void*,void*);
+  void (*FetchAndMinloc)(PetscInt,const PetscInt*,void*,void*);
+  void (*FetchAndMaxloc)(PetscInt,const PetscInt*,void*,void*);
   MPI_Datatype unit;
   size_t unitbytes;             /* Number of bytes in a unit */
   const void *key;              /* Array used as key for operation */
@@ -58,6 +64,28 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
     const type *p = (const type *)packed;                               \
     PetscInt i;                                                         \
     for (i=0; i<n; i++) u[idx[i]] += p[i];                              \
+  }                                                                     \
+  static void FetchAndInsert_ ## type(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
+    type *u = (type *)unpacked;                                         \
+    type *p = (type *)packed;                                           \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      PetscInt j = idx[i];                                              \
+      type t = u[j];                                                    \
+      u[j] = p[i];                                                      \
+      p[i] = t;                                                         \
+    }                                                                   \
+  }                                                                     \
+  static void FetchAndAdd_ ## type(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
+    type *u = (type *)unpacked;                                         \
+    type *p = (type *)packed;                                           \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      PetscInt j = idx[i];                                              \
+      type t = u[j];                                                    \
+      u[j] = t + p[i];                                                  \
+      p[i] = t;                                                         \
+    }                                                                   \
   }
 #define DEF_Pack(type) \
   DEF_PackNoInit(type)                                                  \
@@ -65,19 +93,21 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
     link->Pack = Pack_ ## type;                                         \
     link->UnpackInsert = UnpackInsert_ ## type;                         \
     link->UnpackAdd = UnpackAdd_ ## type;                               \
+    link->FetchAndInsert = FetchAndInsert_ ## type;                     \
+    link->FetchAndAdd = FetchAndAdd_ ## type;                           \
     link->unitbytes = sizeof(type);                                     \
   }
 /* Comparable types */
 #define DEF_PackCmp(type)                                               \
   DEF_PackNoInit(type)                                                  \
   static void UnpackMax_ ## type(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
-    type *u = (type *)unpacked;                                           \
-    const type *p = (const type *)packed;                                 \
-    PetscInt i;                                                           \
-    for (i=0; i<n; i++) {                                                 \
-      type v = u[idx[i]];                                                 \
-      u[idx[i]] = PetscMax(v,p[i]);                                       \
-    }                                                                     \
+    type *u = (type *)unpacked;                                         \
+    const type *p = (const type *)packed;                               \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      type v = u[idx[i]];                                               \
+      u[idx[i]] = PetscMax(v,p[i]);                                     \
+    }                                                                   \
   }                                                                     \
   static void UnpackMin_ ## type(PetscInt n,const PetscInt *idx,void *unpacked,const void *packed) { \
     type *u = (type *)unpacked;                                         \
@@ -88,12 +118,38 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
       u[idx[i]] = PetscMin(v,p[i]);                                     \
     }                                                                   \
   }                                                                     \
-  static void PackInit_ ## type(PetscSFBasicPack link) {                 \
+  static void FetchAndMax_ ## type(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
+    type *u = (type *)unpacked;                                         \
+    type *p = (type *)packed;                                           \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      PetscInt j = idx[i];                                              \
+      type v = u[j];                                                    \
+      u[j] = PetscMax(v,p[i]);                                          \
+      p[i] = v;                                                         \
+    }                                                                   \
+  }                                                                     \
+  static void FetchAndMin_ ## type(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
+    type *u = (type *)unpacked;                                         \
+    type *p = (type *)packed;                                           \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      PetscInt j = idx[i];                                              \
+      type v = u[j];                                                    \
+      u[j] = PetscMin(v,p[i]);                                          \
+      p[i] = v;                                                         \
+    }                                                                   \
+  }                                                                     \
+  static void PackInit_ ## type(PetscSFBasicPack link) {                \
     link->Pack = Pack_ ## type;                                         \
     link->UnpackInsert = UnpackInsert_ ## type;                         \
     link->UnpackAdd = UnpackAdd_ ## type;                               \
     link->UnpackMax = UnpackMax_ ## type;                               \
     link->UnpackMin = UnpackMin_ ## type;                               \
+    link->FetchAndInsert = FetchAndInsert_ ## type;                     \
+    link->FetchAndAdd = FetchAndAdd_ ## type;                           \
+    link->FetchAndMax = FetchAndMax_ ## type;                           \
+    link->FetchAndMin = FetchAndMin_ ## type;                           \
     link->unitbytes = sizeof(type);                                     \
   }
 
@@ -112,6 +168,25 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
       } else if (u[j].a == p[i].a) {                                    \
         u[j].b = PetscMin(u[j].b,p[i].b);                               \
       }                                                                 \
+    }                                                                   \
+  }                                                                     \
+  static void FetchAnd##locname##loc_ ## type1 ## _ ## type2(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
+    PairType(type1,type2) *u = (PairType(type1,type2) *)unpacked;       \
+    PairType(type1,type2) *p = (PairType(type1,type2) *)packed;         \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      PetscInt j = idx[i];                                              \
+      PairType(type1,type2) v;                                          \
+      v.a = u[j].a;                                                     \
+      v.b = u[j].b;                                                     \
+      if (u[j].a op p[i].a) {                                           \
+        u[j].a = p[i].a;                                                \
+        u[j].b = p[i].b;                                                \
+      } else if (u[j].a == p[i].a) {                                    \
+        u[j].b = PetscMin(u[j].b,p[i].b);                               \
+      }                                                                 \
+      p[i].a = v.a;                                                     \
+      p[i].b = v.b;                                                     \
     }                                                                   \
   }
 #define DEF_PackPair(type1,type2)                                       \
@@ -143,14 +218,48 @@ PETSC_STATIC_INLINE PetscErrorCode MPI_Type_dup(MPI_Datatype datatype,MPI_Dataty
       u[idx[i]].b += p[i].b;                                            \
     }                                                                   \
   }                                                                     \
+  static void FetchAndInsert_ ## type1 ## _ ## type2(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
+    PairType(type1,type2) *u = (PairType(type1,type2) *)unpacked;       \
+    PairType(type1,type2) *p = (PairType(type1,type2) *)packed;         \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      PetscInt j = idx[i];                                              \
+      PairType(type1,type2) v;                                          \
+      v.a = u[j].a;                                                     \
+      v.b = u[j].b;                                                     \
+      u[j].a = p[i].a;                                                  \
+      u[j].b = p[i].b;                                                  \
+      p[i].a = v.a;                                                     \
+      p[i].b = v.b;                                                     \
+    }                                                                   \
+  }                                                                     \
+  static void FetchAndAdd_ ## type1 ## _ ## type2(PetscInt n,const PetscInt *idx,void *unpacked,void *packed) { \
+    PairType(type1,type2) *u = (PairType(type1,type2) *)unpacked;       \
+    PairType(type1,type2) *p = (PairType(type1,type2) *)packed;         \
+    PetscInt i;                                                         \
+    for (i=0; i<n; i++) {                                               \
+      PetscInt j = idx[i];                                              \
+      PairType(type1,type2) v;                                          \
+      v.a = u[j].a;                                                     \
+      v.b = u[j].b;                                                     \
+      u[j].a = v.a + p[i].a;                                            \
+      u[j].b = v.b + p[i].b;                                            \
+      p[i].a = v.a;                                                     \
+      p[i].b = v.b;                                                     \
+    }                                                                   \
+  }                                                                     \
   DEF_UnpackXloc(type1,type2,Max,>)                                     \
   DEF_UnpackXloc(type1,type2,Min,<)                                     \
-  static void PackInit_ ## type1 ## _ ## type2(PetscSFBasicPack link) {  \
+  static void PackInit_ ## type1 ## _ ## type2(PetscSFBasicPack link) { \
     link->Pack = Pack_ ## type1 ## _ ## type2;                          \
     link->UnpackInsert = UnpackInsert_ ## type1 ## _ ## type2;          \
     link->UnpackAdd = UnpackAdd_ ## type1 ## _ ## type2;                \
     link->UnpackMaxloc = UnpackMaxloc_ ## type1 ## _ ## type2;          \
     link->UnpackMinloc = UnpackMinloc_ ## type1 ## _ ## type2;          \
+    link->FetchAndInsert = FetchAndInsert_ ## type1 ## _ ## type2;      \
+    link->FetchAndAdd = FetchAndAdd_ ## type1 ## _ ## type2;            \
+    link->FetchAndMaxloc = FetchAndMaxloc_ ## type1 ## _ ## type2;      \
+    link->FetchAndMinloc = FetchAndMinloc_ ## type1 ## _ ## type2;      \
     link->unitbytes = sizeof(PairType(type1,type2));                    \
   }
 
@@ -257,6 +366,21 @@ static PetscErrorCode PetscSFBasicPackGetUnpackOp(PetscSF sf,PetscSFBasicPack li
   else if (op == MPI_MIN || op == MPIU_MIN) *UnpackOp = link->UnpackMin;
   else if (op == MPI_MAXLOC) *UnpackOp = link->UnpackMaxloc;
   else if (op == MPI_MINLOC) *UnpackOp = link->UnpackMinloc;
+  else SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_SUP,"No support for MPI_Op");
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "PetscSFBasicPackGetFetchAndOp"
+static PetscErrorCode PetscSFBasicPackGetFetchAndOp(PetscSF sf,PetscSFBasicPack link,MPI_Op op,void (**FetchAndOp)(PetscInt,const PetscInt*,void*,void*))
+{
+  PetscFunctionBegin;
+  *FetchAndOp = PETSC_NULL;
+  if (op == MPI_REPLACE) *FetchAndOp = link->FetchAndInsert;
+  else if (op == MPI_SUM || op == MPIU_SUM) *FetchAndOp = link->FetchAndAdd;
+  else if (op == MPI_MAX || op == MPIU_MAX) *FetchAndOp = link->FetchAndMax;
+  else if (op == MPI_MIN || op == MPIU_MIN) *FetchAndOp = link->FetchAndMin;
+  else if (op == MPI_MAXLOC) *FetchAndOp = link->FetchAndMaxloc;
+  else if (op == MPI_MINLOC) *FetchAndOp = link->FetchAndMinloc;
   else SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_SUP,"No support for MPI_Op");
   PetscFunctionReturn(0);
 }
@@ -434,8 +558,6 @@ static PetscErrorCode PetscSFDestroy_Basic(PetscSF sf)
   PetscFunctionBegin;
   ierr = PetscSFReset_Basic(sf);CHKERRQ(ierr);
   ierr = PetscFree(sf->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)sf,"PetscSFBasicSetSyncType_C",0,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)sf,"PetscSFBasicGetSyncType_C",0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -485,7 +607,7 @@ static PetscErrorCode PetscSFBcastBegin_Basic(PetscSF sf,MPI_Datatype unit,const
     PetscMPIInt n = rootoffset[i+1] - rootoffset[i];
     void *packstart = link->root+rootoffset[i]*unitbytes;
     (*link->Pack)(n,rootloc+rootoffset[i],rootdata,packstart);
-    ierr = MPI_Isend(packstart,n,unit,bas->iranks[i],bas->tag,((PetscObject)sf)->comm,&rootreqs[i]);CHKERRQ(ierr);
+    ierr = MPI_Isend(packstart,n,unit,rootranks[i],bas->tag,((PetscObject)sf)->comm,&rootreqs[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -578,14 +700,56 @@ static PetscErrorCode PetscSFReduceEnd_Basic(PetscSF sf,MPI_Datatype unit,const 
 #define __FUNCT__ "PetscSFFetchAndOpBegin_Basic"
 static PetscErrorCode PetscSFFetchAndOpBegin_Basic(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
 {
-  SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_SUP,"not implemented");
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSFReduceBegin_Basic(sf,unit,leafdata,rootdata,op);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFFetchAndOpEnd_Basic"
 static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,void *rootdata,const void *leafdata,void *leafupdate,MPI_Op op)
 {
-  SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_SUP,"not implemented");
+  PetscSF_Basic     *bas = (PetscSF_Basic*)sf->data;
+  void              (*FetchAndOp)(PetscInt,const PetscInt*,void*,void*);
+  PetscErrorCode    ierr;
+  PetscSFBasicPack  link;
+  PetscInt          i,nrootranks,nleafranks;
+  const PetscInt    *rootoffset,*leafoffset;
+  const PetscMPIInt *rootloc,*leafloc,*rootranks,*leafranks;
+  MPI_Request       *rootreqs,*leafreqs;
+  size_t            unitbytes;
+
+  PetscFunctionBegin;
+  ierr = PetscSFBasicGetPackInUse(sf,unit,rootdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
+  /* This implementation could be changed to unpack as receives arrive, at the cost of non-determinism */
+  ierr = PetscSFBasicPackWaitall(sf,link);CHKERRQ(ierr);
+  unitbytes = link->unitbytes;
+  ierr = PetscSFBasicGetRootInfo(sf,&nrootranks,&rootranks,&rootoffset,&rootloc);CHKERRQ(ierr);
+  ierr = PetscSFBasicGetLeafInfo(sf,&nleafranks,&leafranks,&leafoffset,&leafloc);CHKERRQ(ierr);
+  ierr = PetscSFBasicPackGetReqs(sf,link,&rootreqs,&leafreqs);CHKERRQ(ierr);
+  /* Post leaf receives */
+  for (i=0; i<nleafranks; i++) {
+    PetscMPIInt n = leafoffset[i+1] - leafoffset[i];
+    ierr = MPI_Irecv(link->leaf+leafoffset[i]*unitbytes,n,unit,leafranks[i],bas->tag,((PetscObject)sf)->comm,&leafreqs[i]);CHKERRQ(ierr);
+  }
+  /* Process local fetch-and-op, post root sends */
+  ierr = PetscSFBasicPackGetFetchAndOp(sf,link,op,&FetchAndOp);CHKERRQ(ierr);
+  for (i=0; i<nrootranks; i++) {
+    PetscMPIInt n = rootoffset[i+1] - rootoffset[i];
+    void *packstart = link->root+rootoffset[i]*unitbytes;
+    (*FetchAndOp)(n,rootloc+rootoffset[i],rootdata,packstart);
+    ierr = MPI_Isend(packstart,n,unit,rootranks[i],bas->tag,((PetscObject)sf)->comm,&rootreqs[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscSFBasicPackWaitall(sf,link);CHKERRQ(ierr);
+  for (i=0; i<nleafranks; i++) {
+    PetscMPIInt n = leafoffset[i+1] - leafoffset[i];
+    const void *packstart = link->leaf+leafoffset[i]*unitbytes;
+    (*link->UnpackInsert)(n,leafloc+leafoffset[i],leafupdate,packstart);
+  }
+  ierr = PetscSFBasicReclaimPack(sf,&link);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
